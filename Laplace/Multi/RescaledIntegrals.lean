@@ -822,4 +822,45 @@ lemma abs_gaussianWeight_mul_exp_sub_one_le_uniform
 
 end CoerciveIntegrability
 
+section PairSplit
+
+open MeasureTheory
+
+/-- **Pointwise pair-product expansion** for two observables φ, ψ with
+gradients a, b: writing `r_φ(w) := φ(w) - dot a w` and similarly `r_ψ`,
+
+  `φ((√t)⁻¹ u) · ψ((√t)⁻¹ u)
+    = (1/t) · dot a u · dot b u
+      + (√t)⁻¹ · dot a u · r_ψ((√t)⁻¹ u)
+      + (√t)⁻¹ · r_φ((√t)⁻¹ u) · dot b u
+      + r_φ((√t)⁻¹ u) · r_ψ((√t)⁻¹ u)`.
+
+Direct algebraic identity. Used in the **pair asymptote** to extract
+the `(1/t) · ⟨a, Hinv b⟩` leading term and bound the residuals. -/
+lemma pair_product_expansion
+    (φ ψ : (ι → ℝ) → ℝ) (a b : ι → ℝ) (t : ℝ) (ht : 0 < t) (u : ι → ℝ) :
+    φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)
+      = (1/t) * (dot a u * dot b u)
+        + (Real.sqrt t)⁻¹ * dot a u *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)
+        + (Real.sqrt t)⁻¹ * dot b u *
+            (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u)
+        + (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) := by
+  -- Set X = φ((√t)⁻¹ u), A = (√t)⁻¹ · dot a u (analogously Y, B).
+  -- Then φψ = X · Y, and the RHS is (1/t) · (a·u)(b·u) + A · (Y - B) + B · (X - A) + (X - A)(Y - B).
+  -- Expand: (X - A)(Y - B) = XY - XB - AY + AB. So:
+  --  RHS = AB + A·(Y - B) + B·(X - A) + (X - A)(Y - B)
+  --      = AB + AY - AB + BX - AB + XY - XB - AY + AB
+  --      = XY. ✓
+  -- Note (1/t) · (a·u)(b·u) = ((√t)⁻¹)² · dot a u · dot b u = A · B.
+  have h_t_inv_sq : (1/t : ℝ) = ((Real.sqrt t)⁻¹) ^ 2 := by
+    rw [inv_pow, Real.sq_sqrt ht.le]; ring
+  rw [show (1/t : ℝ) * (dot a u * dot b u) =
+      ((Real.sqrt t)⁻¹ * dot a u) * ((Real.sqrt t)⁻¹ * dot b u) from by
+    rw [h_t_inv_sq]; ring]
+  ring
+
+end PairSplit
+
 end Laplace.Multi
