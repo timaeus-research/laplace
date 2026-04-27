@@ -389,4 +389,93 @@ lemma integral_sliceDeriv_eq_zero
 
 end SliceDerivative
 
+section CoreIBP
+
+open MeasureTheory
+
+/-- **Slice IBP hypotheses package** for `gaussian_ibp_coord`.
+
+Bundles the analytic facts needed at each "outer" basepoint to apply the
+1D full-line FTC slice-by-slice. Concretely, for each `(i, j, u₀)`:
+- `slice_top u₀`, `slice_bot u₀`: the slice integrand `(u₀ + s•eᵢ)ⱼ · gW`
+  decays to `0` at `±∞`.
+- `slice_int u₀`: the slice derivative `δ_{ij} · gW - u_j · (H u)_i · gW`
+  is integrable on `ℝ`.
+
+Each of these can be derived from coercivity of `H`
+(i.e., `quadForm H u ≥ c · ‖u‖²` for some `c > 0`); we package them
+explicitly here and defer the coercivity-derivation to a follow-on
+file (`GaussianDecay.lean`). -/
+structure SliceHypotheses
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (i j : ι) where
+  slice_top : ∀ u₀ : ι → ℝ,
+    Filter.Tendsto (sliceIntegrand H i j u₀) Filter.atTop (nhds 0)
+  slice_bot : ∀ u₀ : ι → ℝ,
+    Filter.Tendsto (sliceIntegrand H i j u₀) Filter.atBot (nhds 0)
+  slice_int : ∀ u₀ : ι → ℝ, Integrable (sliceDeriv H i j u₀)
+
+/-- **Fubini-IBP hypothesis** for the global integral:
+
+For each `(i, j)`, the global integral of `sliceDeriv H i j u₀` over the
+basepoint and `s` reduces, by Fubini on the product measure
+`(ι → ℝ) ≃ᵐ ((ι\{i}) → ℝ) × ℝ`, to a slice-by-slice integral that vanishes
+by `integral_sliceDeriv_eq_zero` (Step 4b).
+
+Concretely, the hypothesis `h_fubini` asserts:
+
+  `∫ u : ι → ℝ, sliceDeriv H i j u s_at_u_i evaluated at s = u_i = 0`
+
+stated more directly as: the global integral of the *natural* expression
+
+  `(if i = j then 1 else 0) · gW(u) - u_j · (H u)_i · gW(u)`
+
+equals `0`. This is the Fubini-mediated content of the IBP identity,
+which we state as a hypothesis (Option A from the GPT-5.5 Pro Phase 4
+memo). -/
+def FubiniIBPHypothesis
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (i j : ι) : Prop :=
+  ∫ u : ι → ℝ, ((if i = j then (1 : ℝ) else 0) * gaussianWeight H u
+      - u j * (H u) i * gaussianWeight H u) = 0
+
+/-- **Core IBP identity** (`gaussian_ibp_coord`):
+
+Under integrability of the Gaussian weight and the IBP integrand, plus the
+Fubini-IBP hypothesis, we have
+
+  `∫ u, u_j · (H u)_i · exp(-(1/2) quadForm H u) du = δ_{ij} · Z`.
+
+The Fubini-IBP hypothesis is proved (in a separate file) under coercivity
+hypotheses on `H` via Fubini + 1D-FTC slice-by-slice. -/
+theorem gaussian_ibp_coord
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (i j : ι)
+    (h_int_gW : Integrable (gaussianWeight H))
+    (h_int_uj_Hi_gW :
+      Integrable (fun u : ι → ℝ => u j * (H u) i * gaussianWeight H u))
+    (h_fubini : FubiniIBPHypothesis H i j) :
+    ∫ u : ι → ℝ, u j * (H u) i * gaussianWeight H u
+      = (if i = j then 1 else 0) * gaussianZ H := by
+  -- Rearrange the Fubini hypothesis: ∫ A - B = 0 ⇒ ∫ A = ∫ B.
+  -- Where A u := δ_{ij} · gW(u), B u := u_j · (H u)_i · gW(u).
+  unfold FubiniIBPHypothesis at h_fubini
+  have h_intA : Integrable (fun u : ι → ℝ =>
+      (if i = j then (1 : ℝ) else 0) * gaussianWeight H u) :=
+    h_int_gW.const_mul _
+  have h_split :
+      ∫ u : ι → ℝ, ((if i = j then (1 : ℝ) else 0) * gaussianWeight H u
+        - u j * (H u) i * gaussianWeight H u) =
+      (∫ u : ι → ℝ, (if i = j then (1 : ℝ) else 0) * gaussianWeight H u)
+        - (∫ u : ι → ℝ, u j * (H u) i * gaussianWeight H u) :=
+    integral_sub h_intA h_int_uj_Hi_gW
+  rw [h_split] at h_fubini
+  have h_const_factor :
+      ∫ u : ι → ℝ, (if i = j then (1 : ℝ) else 0) * gaussianWeight H u =
+        (if i = j then (1 : ℝ) else 0) * gaussianZ H := by
+    unfold gaussianZ
+    rw [integral_const_mul]
+  rw [h_const_factor] at h_fubini
+  linarith
+
+end CoreIBP
+
 end Laplace.Multi
