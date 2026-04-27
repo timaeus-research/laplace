@@ -863,4 +863,106 @@ lemma pair_product_expansion
 
 end PairSplit
 
+section QuadFormLowerBound
+
+/-- **Quadratic lower bound for `(1/2) · quadForm H`** under
+coercivity + local cubic remainder hypotheses (the analytic content of
+`PotentialApprox`). Concretely: `(c/2) · ‖u‖² ≤ (1/2) · quadForm H u`
+for all `u`. -/
+lemma quadForm_lower_bound
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {R : ℝ} (hR_pos : 0 < R)
+    {C : ℝ} (hC_nn : 0 ≤ C)
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ C * ‖w‖ ^ 3) :
+    ∀ u : ι → ℝ, (c/2) * ‖u‖ ^ 2 ≤ (1/2) * quadForm H u := by
+  -- Choose r := min R (c / (2 * (C + 1))).
+  set r := min R (c / (2 * (C + 1))) with hr_def
+  have hC1_pos : (0 : ℝ) < C + 1 := by linarith
+  have hr_pos : 0 < r := lt_min hR_pos (by positivity)
+  have hr_le_R : r ≤ R := min_le_left _ _
+  have hr_le_bound : r ≤ c / (2 * (C + 1)) := min_le_right _ _
+  have hCr_le : C * r ≤ c / 2 := by
+    calc C * r ≤ C * (c / (2 * (C + 1))) :=
+          mul_le_mul_of_nonneg_left hr_le_bound hC_nn
+      _ = (C / (C + 1)) * (c / 2) := by field_simp
+      _ ≤ 1 * (c / 2) := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ c/2)
+          rw [div_le_one hC1_pos]
+          linarith
+      _ = c / 2 := one_mul _
+  -- Step 1: bound holds on ‖w‖ ≤ r.
+  have h_local_bound : ∀ w : ι → ℝ, ‖w‖ ≤ r →
+      (c / 2) * ‖w‖ ^ 2 ≤ (1/2) * quadForm H w := by
+    intro w hw
+    have hw_nn : 0 ≤ ‖w‖ := norm_nonneg _
+    have h_coer_w := h_coer w  -- c · ‖w‖² ≤ V w
+    have h_local_w := h_local w (le_trans hw hr_le_R)
+    -- |V w - (1/2) quadForm H w| ≤ C ‖w‖³.
+    have h_lb : V w - C * ‖w‖ ^ 3 ≤ (1/2) * quadForm H w := by
+      have h := abs_le.mp h_local_w
+      linarith
+    -- C ‖w‖³ = C · ‖w‖² · ‖w‖ ≤ C · ‖w‖² · r ≤ (c/2) · ‖w‖².
+    have h_cube_le : C * ‖w‖ ^ 3 ≤ (c / 2) * ‖w‖ ^ 2 := by
+      have h_cube : ‖w‖ ^ 3 = ‖w‖ ^ 2 * ‖w‖ := by ring
+      rw [h_cube]
+      calc C * (‖w‖ ^ 2 * ‖w‖) = (C * ‖w‖) * ‖w‖ ^ 2 := by ring
+        _ ≤ (C * r) * ‖w‖ ^ 2 :=
+            mul_le_mul_of_nonneg_right
+              (mul_le_mul_of_nonneg_left hw hC_nn) (sq_nonneg _)
+        _ ≤ (c / 2) * ‖w‖ ^ 2 :=
+            mul_le_mul_of_nonneg_right hCr_le (sq_nonneg _)
+    -- Combine: V w ≥ c‖w‖², so (1/2) quadForm H w ≥ V w - C‖w‖³ ≥ c‖w‖² - (c/2)‖w‖² = (c/2)‖w‖².
+    linarith
+  -- Step 2: extend to all u by homogeneity.
+  intro u
+  by_cases hu : u = 0
+  · subst hu; simp [quadForm]
+  · -- u ≠ 0: set λ := r / ‖u‖ > 0, w := λ • u, ‖w‖ = r.
+    have hu_norm_pos : 0 < ‖u‖ := norm_pos_iff.mpr hu
+    set lam : ℝ := r / ‖u‖ with hlam_def
+    have hlam_pos : 0 < lam := div_pos hr_pos hu_norm_pos
+    set w : ι → ℝ := lam • u with hw_def
+    have hw_norm : ‖w‖ = r := by
+      rw [hw_def, norm_smul, Real.norm_eq_abs, abs_of_pos hlam_pos, hlam_def]
+      field_simp
+    have h_w_in : ‖w‖ ≤ r := le_of_eq hw_norm
+    have h_w_bound := h_local_bound w h_w_in
+    -- (c/2) · r² ≤ (1/2) · quadForm H w = (1/2) · lam² · quadForm H u.
+    rw [hw_norm] at h_w_bound
+    rw [show (1/2 : ℝ) * quadForm H w = (1/2) * (lam ^ 2 * quadForm H u) from by
+      rw [hw_def, quadForm_smul]] at h_w_bound
+    -- (c/2) r² ≤ (lam²/2) · quadForm H u, i.e., (c/2) · ‖u‖² ≤ (1/2) quadForm H u.
+    -- Since lam² = r²/‖u‖², (lam²/2) · quadForm = (r²/(2‖u‖²)) · quadForm.
+    -- So (c/2) r² ≤ (r²/(2‖u‖²)) · quadForm, i.e., (c/2) ‖u‖² ≤ (1/2) quadForm.
+    have h_lam_sq : lam ^ 2 = r ^ 2 / ‖u‖ ^ 2 := by
+      rw [hlam_def]; ring
+    rw [h_lam_sq] at h_w_bound
+    -- Now h_w_bound : (c/2) · r² ≤ (1/2) · ((r²/‖u‖²) · quadForm H u)
+    -- Rearrange: (c/2) · ‖u‖² ≤ (1/2) · quadForm H u.
+    have hr_sq_pos : 0 < r ^ 2 := by positivity
+    have h_u_sq_pos : 0 < ‖u‖ ^ 2 := by positivity
+    have h_eq : (1 / 2 : ℝ) * (r ^ 2 / ‖u‖ ^ 2 * quadForm H u)
+        = (r ^ 2 / ‖u‖ ^ 2) * ((1 / 2) * quadForm H u) := by ring
+    rw [h_eq] at h_w_bound
+    -- (c/2) · r² ≤ (r²/‖u‖²) · ((1/2) quadForm). Multiply both sides by ‖u‖²/r²:
+    -- (c/2) · ‖u‖² ≤ (1/2) · quadForm.
+    have h_div :
+        (c/2) * ‖u‖ ^ 2 = (c/2) * r ^ 2 * (‖u‖ ^ 2 / r ^ 2) := by
+      field_simp
+    rw [h_div]
+    have h_target : (c/2) * r ^ 2 * (‖u‖ ^ 2 / r ^ 2)
+        ≤ (r ^ 2 / ‖u‖ ^ 2) * ((1 / 2) * quadForm H u) * (‖u‖ ^ 2 / r ^ 2) := by
+      apply mul_le_mul_of_nonneg_right h_w_bound
+      positivity
+    have h_cancel : (r ^ 2 / ‖u‖ ^ 2) * ((1 / 2) * quadForm H u)
+            * (‖u‖ ^ 2 / r ^ 2) = (1 / 2) * quadForm H u := by
+      field_simp
+    rw [h_cancel] at h_target
+    exact h_target
+
+end QuadFormLowerBound
+
 end Laplace.Multi
