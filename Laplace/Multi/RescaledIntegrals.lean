@@ -1281,4 +1281,98 @@ lemma abs_gaussianWeight_mul_exp_sub_one_le_local
 
 end LocalPartitionBound
 
+section TailPartitionBound
+
+/-- **Tail pointwise bound** on the partition integrand outside the
+local Taylor region: for `‖u‖ > δ · √t`,
+
+  `|gW · (exp(-s_t) - 1)| ≤ 2 · exp(-((c/4) · ‖u‖²)) · exp(-((c · δ²/4) · t))`.
+
+This decomposes the uniform bound (Phase 5.4s) into a Gaussian factor
+(integrable) times an explicit `t`-dependent decay factor. The
+exponential `exp(-(cδ²/4) · t)` decays faster than any power of `1/√t`,
+so the tail contribution to the partition asymptote is `o(1/√t)`. -/
+lemma abs_gaussianWeight_mul_exp_sub_one_le_tail
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c R Cs : ℝ}
+    (hc_pos : 0 < c) (hR_pos : 0 < R) (hCs_nn : 0 ≤ Cs)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ Cs * ‖w‖ ^ 3)
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : δ * Real.sqrt t < ‖u‖) :
+    |gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ 2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t)) := by
+  -- First, the uniform bound: |gW · (exp(-s_t) - 1)| ≤ gW + exp(-c‖u‖²).
+  have h_uniform :=
+    abs_gaussianWeight_mul_exp_sub_one_le_uniform V H hc_pos h_coer ht u
+  -- gW ≤ exp(-(c/2)‖u‖²) from quadForm lower bound.
+  have h_qlb := quadForm_lower_bound V H hc_pos h_coer hR_pos hCs_nn h_local
+  have h_gW_le : gaussianWeight H u ≤ Real.exp (-((c / 2) * ‖u‖ ^ 2)) := by
+    unfold gaussianWeight
+    apply Real.exp_le_exp.mpr
+    have := h_qlb u
+    linarith
+  -- exp(-c‖u‖²) ≤ exp(-(c/2)‖u‖²) since c ≥ c/2.
+  have h_e_le : Real.exp (-(c * ‖u‖ ^ 2)) ≤ Real.exp (-((c / 2) * ‖u‖ ^ 2)) := by
+    apply Real.exp_le_exp.mpr
+    have h_norm_sq_nn : 0 ≤ ‖u‖ ^ 2 := sq_nonneg _
+    have : (c / 2) * ‖u‖ ^ 2 ≤ c * ‖u‖ ^ 2 := by
+      apply mul_le_mul_of_nonneg_right _ h_norm_sq_nn
+      linarith
+    linarith
+  -- So |gW · (exp(-s_t) - 1)| ≤ 2 · exp(-(c/2)‖u‖²).
+  have h_le_2_exp :
+      |gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+        ≤ 2 * Real.exp (-((c / 2) * ‖u‖ ^ 2)) := by
+    calc |gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+        ≤ gaussianWeight H u + Real.exp (-(c * ‖u‖ ^ 2)) := h_uniform
+      _ ≤ Real.exp (-((c / 2) * ‖u‖ ^ 2)) +
+            Real.exp (-((c / 2) * ‖u‖ ^ 2)) :=
+          add_le_add h_gW_le h_e_le
+      _ = 2 * Real.exp (-((c / 2) * ‖u‖ ^ 2)) := by ring
+  -- On the tail, ‖u‖² > δ² · t, so (c/2)‖u‖² ≥ (c/4)‖u‖² + (cδ²/4) · t.
+  have h_norm_sq_lb : (δ * Real.sqrt t) ^ 2 < ‖u‖ ^ 2 := by
+    have h_pos : 0 ≤ δ * Real.sqrt t := by positivity
+    have := mul_self_lt_mul_self h_pos hu
+    rw [show (δ * Real.sqrt t) * (δ * Real.sqrt t) = (δ * Real.sqrt t) ^ 2 from by ring,
+        show ‖u‖ * ‖u‖ = ‖u‖ ^ 2 from by ring] at this
+    exact this
+  have h_norm_sq_lb' : δ ^ 2 * t < ‖u‖ ^ 2 := by
+    rw [mul_pow, Real.sq_sqrt ht.le] at h_norm_sq_lb; exact h_norm_sq_lb
+  have h_split : (c / 2) * ‖u‖ ^ 2 ≥
+      (c / 4) * ‖u‖ ^ 2 + (c * δ ^ 2 / 4) * t := by
+    have h1 : (c / 4) * ‖u‖ ^ 2 + (c * δ ^ 2 / 4) * t
+        ≤ (c / 4) * ‖u‖ ^ 2 + (c / 4) * ‖u‖ ^ 2 := by
+      have hc4_pos : 0 < c / 4 := by linarith
+      have h_le : (c * δ ^ 2 / 4) * t ≤ (c / 4) * ‖u‖ ^ 2 := by
+        rw [show (c * δ ^ 2 / 4) * t = (c / 4) * (δ ^ 2 * t) from by ring]
+        exact mul_le_mul_of_nonneg_left h_norm_sq_lb'.le hc4_pos.le
+      linarith
+    linarith
+  -- exp(-(c/2)‖u‖²) ≤ exp(-(c/4)‖u‖²) · exp(-(cδ²/4) t).
+  have h_exp_split :
+      Real.exp (-((c / 2) * ‖u‖ ^ 2))
+        ≤ Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+            Real.exp (-((c * δ ^ 2 / 4) * t)) := by
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    linarith
+  -- Combine.
+  calc |gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ 2 * Real.exp (-((c / 2) * ‖u‖ ^ 2)) := h_le_2_exp
+    _ ≤ 2 * (Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t))) :=
+        mul_le_mul_of_nonneg_left h_exp_split (by norm_num : (0:ℝ) ≤ 2)
+    _ = 2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t)) := by ring
+
+end TailPartitionBound
+
 end Laplace.Multi
