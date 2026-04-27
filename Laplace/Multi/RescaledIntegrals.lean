@@ -262,4 +262,57 @@ lemma abs_rescaledObservable_linear_error_le
 
 end RescaledLocalBounds
 
+section GaussianFactorization
+
+/-- **Pointwise factorization of the rescaled weight** (via `rescaling_identity`):
+
+  `exp(-(t · V ((√t)⁻¹ u))) = gaussianWeight H u · exp(-rescaledPerturbation V H t u)`.
+
+This lets us express rescaled integrals as Gaussian integrals against the
+`exp(-s_t)` correction, which is the form on which all asymptotic estimates
+operate. -/
+lemma rescaled_weight_factor
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (t : ℝ) (u : ι → ℝ) :
+    Real.exp (-(t * V ((Real.sqrt t)⁻¹ • u)))
+      = gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)) := by
+  unfold gaussianWeight
+  rw [← Real.exp_add]
+  congr 1
+  -- LHS: -(t · V((√t)⁻¹ • u))
+  -- RHS: -(1/2) quadForm H u + (-rescaledPerturbation V H t u)
+  -- where rescaledPerturbation = t · V((√t)⁻¹ • u) - (1/2) quadForm H u.
+  unfold rescaledPerturbation
+  ring
+
+/-- **Numerator factorization**: the rescaled numerator equals the Gaussian
+integral of `F((√t)⁻¹ u)` against the `exp(-s_t)` correction. -/
+lemma rescaledNumerator_eq_gaussian_form
+    (V F : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (t : ℝ) :
+    rescaledNumerator V t F
+      = ∫ u : ι → ℝ, F ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)) := by
+  unfold rescaledNumerator
+  apply MeasureTheory.integral_congr_ae
+  filter_upwards with u
+  show F ((Real.sqrt t)⁻¹ • u) * Real.exp (-(t * V ((Real.sqrt t)⁻¹ • u)))
+    = F ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+  rw [rescaled_weight_factor V H t u]
+  ring
+
+/-- **Partition factorization**: similar form with `F = 1`. -/
+lemma rescaledPartition_eq_gaussian_form
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (t : ℝ) :
+    rescaledPartition V t
+      = ∫ u : ι → ℝ, gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)) := by
+  unfold rescaledPartition
+  apply MeasureTheory.integral_congr_ae
+  filter_upwards with u
+  exact rescaled_weight_factor V H t u
+
+end GaussianFactorization
+
 end Laplace.Multi
