@@ -157,6 +157,30 @@ lemma abs_apply_le_norm (u : ι → ℝ) (i : ι) : |u i| ≤ ‖u‖ := by
   have := norm_le_pi_norm u i
   simpa [Real.norm_eq_abs] using this
 
+/-- **Sup-norm-squared bounded by sum-of-squares**: `‖u‖² ≤ ∑ i, u_i²`.
+
+Proof via `pi_norm_le_iff_of_nonneg` and `Real.sqrt_sq` after taking the
+square root of each side. -/
+lemma sq_norm_le_sum_sq (u : ι → ℝ) :
+    ‖u‖ ^ 2 ≤ ∑ i, (u i) ^ 2 := by
+  have h_sum_nn : 0 ≤ ∑ i, (u i) ^ 2 :=
+    Finset.sum_nonneg (fun i _ => sq_nonneg _)
+  rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq ‖u‖]
+  rw [show (∑ i, (u i) ^ 2 : ℝ)
+        = Real.sqrt (∑ i, (u i) ^ 2) * Real.sqrt (∑ i, (u i) ^ 2) from
+      (Real.mul_self_sqrt h_sum_nn).symm]
+  -- Suffices ‖u‖ ≤ √(∑ u_i²), then square.
+  have h_norm_le_sqrt : ‖u‖ ≤ Real.sqrt (∑ i, (u i) ^ 2) := by
+    rw [pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg _)]
+    intro i
+    rw [Real.norm_eq_abs]
+    rw [show |u i| = Real.sqrt ((u i) ^ 2) from by
+        rw [Real.sqrt_sq_eq_abs]]
+    apply Real.sqrt_le_sqrt
+    exact Finset.single_le_sum (f := fun j => (u j) ^ 2)
+      (fun j _ => sq_nonneg _) (Finset.mem_univ i)
+  exact mul_self_le_mul_self (norm_nonneg _) h_norm_le_sqrt
+
 /-- Sum-of-squares bounded by `card ι · ‖u‖²` (componentwise sup bound). -/
 lemma sum_sq_le_card_mul_sq_norm (u : ι → ℝ) :
     ∑ i, (u i) ^ 2 ≤ Fintype.card ι * ‖u‖ ^ 2 := by
@@ -171,6 +195,33 @@ lemma sum_sq_le_card_mul_sq_norm (u : ι → ℝ) :
     _ = Fintype.card ι * ‖u‖ ^ 2 := by
         rw [Finset.sum_const, Finset.card_univ]
         ring
+
+/-- **`‖u‖² · gaussianWeight H u` integrability**: under
+`LaplaceCovHypotheses`, dominated pointwise by `(∑ u_i²) · gaussianWeight H u`
+which is integrable from `integrable_sum_sq_mul_gaussianWeight`. -/
+lemma integrable_sq_norm_mul_gaussianWeight
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    Integrable (fun u : ι → ℝ => ‖u‖ ^ 2 * gaussianWeight H u) := by
+  have h_dom := integrable_sum_sq_mul_gaussianWeight hGauss
+  refine h_dom.mono' ?_ ?_
+  · -- AE strongly measurable: ‖·‖² · gaussianWeight is continuous.
+    have h_quad : Continuous (fun u : ι → ℝ => quadForm H u) := by
+      unfold quadForm
+      apply continuous_finset_sum
+      intro i _
+      exact (continuous_apply i).mul ((continuous_apply i).comp H.continuous)
+    have h_gW : Continuous (fun u : ι → ℝ => gaussianWeight H u) := by
+      unfold gaussianWeight
+      exact Real.continuous_exp.comp (continuous_const.mul h_quad)
+    exact ((continuous_norm.pow 2).mul h_gW).aestronglyMeasurable
+  · filter_upwards with u
+    have h_le : ‖u‖ ^ 2 ≤ ∑ i, (u i) ^ 2 := sq_norm_le_sum_sq u
+    have h_gW_pos : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    have h_lhs_nn : 0 ≤ ‖u‖ ^ 2 * gaussianWeight H u :=
+      mul_nonneg (sq_nonneg _) h_gW_pos
+    rw [Real.norm_eq_abs, abs_of_nonneg h_lhs_nn]
+    exact mul_le_mul_of_nonneg_right h_le h_gW_pos
 
 end GaussianMomentInfrastructure
 
