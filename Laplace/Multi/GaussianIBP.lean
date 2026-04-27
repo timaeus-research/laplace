@@ -624,4 +624,89 @@ theorem gaussian_second_moment_eq_inverse_entry_scalar
 
 end InverseEntry
 
+section BilinearMoment
+
+open MeasureTheory
+
+/-- The standard inner product on `ι → ℝ`: `dot a b = ∑ i, a i * b i`. -/
+noncomputable def dot (a b : ι → ℝ) : ℝ := ∑ i, a i * b i
+
+omit [DecidableEq ι] in
+/-- Definitional unfolding of `dot`. -/
+lemma dot_def (a b : ι → ℝ) : dot a b = ∑ i, a i * b i := rfl
+
+/-- **Gaussian bilinear-moment contraction**:
+
+For any `a, b : ι → ℝ`,
+
+  `∫ u, ⟨a, u⟩ · ⟨b, u⟩ · exp(-(1/2) quadForm H u) du = Z · ⟨a, Hinv b⟩`.
+
+This is the Phase 5 interface to Gaussian moments: it packages
+`gaussian_second_moment_eq_inverse_entry_scalar` over linear functionals,
+absorbing the index sums and the linear-combination expansion of the
+inverse witness on the standard basis. -/
+theorem gaussian_dot_mul_dot
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hHinv : H.comp Hinv = ContinuousLinearMap.id ℝ (ι → ℝ))
+    (hH_inj : Function.Injective H)
+    (h_int_gW : Integrable (gaussianWeight H))
+    (h_int_uk_uj_gW : ∀ k j : ι, Integrable
+      (fun u : ι → ℝ => u k * u j * gaussianWeight H u))
+    (h_int_uj_Hi_gW : ∀ j i : ι, Integrable
+      (fun u : ι → ℝ => u j * (H u) i * gaussianWeight H u))
+    (h_fubini : ∀ i j : ι, FubiniIBPHypothesis H i j)
+    (a b : ι → ℝ) :
+    ∫ u : ι → ℝ, dot a u * dot b u * gaussianWeight H u
+      = gaussianZ H * dot a (Hinv b) := by
+  classical
+  -- Step A: pointwise expansion.
+  -- `dot a u * dot b u = ∑_{i, j} a i * b j * u i * u j`.
+  have h_pt : ∀ u : ι → ℝ,
+      dot a u * dot b u * gaussianWeight H u =
+        ∑ i, ∑ j, (a i * b j) * (u i * u j * gaussianWeight H u) := by
+    intro u
+    unfold dot
+    rw [Finset.sum_mul, Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [Finset.mul_sum, Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro j _; ring
+  -- Step B: convert integrand and swap sum/integral.
+  rw [show (fun u : ι → ℝ => dot a u * dot b u * gaussianWeight H u) =
+        fun u => ∑ i, ∑ j, (a i * b j) * (u i * u j * gaussianWeight H u)
+        from funext h_pt]
+  -- Per-term identity for use under sum.
+  have h_inner : ∀ i j : ι,
+      ∫ u : ι → ℝ, (a i * b j) * (u i * u j * gaussianWeight H u)
+        = (a i * b j) *
+            (gaussianZ H *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) := by
+    intro i j
+    rw [integral_const_mul]
+    rw [gaussian_second_moment_eq_inverse_entry_scalar H Hinv hHinv hH_inj i j
+        h_int_gW (h_int_uk_uj_gW · j) (h_int_uj_Hi_gW j) (h_fubini · j)]
+  -- Step C: Swap outer sum and integral.
+  rw [integral_finset_sum Finset.univ
+        (fun i _ =>
+          (integrable_finset_sum Finset.univ
+            (fun j _ => (h_int_uk_uj_gW i j).const_mul _)))]
+  -- Step D: Algebraic rearrangement of RHS.
+  -- Use H_apply_eq_sum on Hinv to expand (Hinv b) i = ∑ j, b j * (Hinv e_j) i.
+  unfold dot
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro i _
+  -- Inner: ∫ ∑ j, ... = ∑ j, ∫ ... and apply h_inner.
+  rw [integral_finset_sum Finset.univ
+        (fun j _ => (h_int_uk_uj_gW i j).const_mul _)]
+  rw [Finset.sum_congr rfl (fun j _ => h_inner i j)]
+  -- Goal: ∑ j, a i * b j * (Z * (Hinv e_j) i) = Z * (a i * (Hinv b) i)
+  rw [H_apply_eq_sum Hinv b i, Finset.mul_sum, Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro j _; ring
+
+end BilinearMoment
+
 end Laplace.Multi
