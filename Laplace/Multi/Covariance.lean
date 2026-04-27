@@ -419,10 +419,11 @@ factor; integrability of `dot a u · rescaledWeight` and `dot a u · gW`
 remain as internal sorries (each follows from `‖u‖ · rescaledWeight`
 integrability + the `abs_dot_le_l1_mul_norm` bound). -/
 private lemma abs_integral_dot_mul_rescaled_weight_correction_le
-    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a : ι → ℝ)
     [Nonempty ι]
-    (hV : PotentialApprox V H) :
+    (hV : PotentialApprox V H)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |∫ u : ι → ℝ, dot a u * gaussianWeight H u *
           (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
@@ -533,10 +534,48 @@ private lemma abs_integral_dot_mul_rescaled_weight_correction_le
                 rw [pow_one]; ring
       have h_lin2 : MeasureTheory.Integrable (fun u : ι → ℝ =>
           dot a u * gaussianWeight H u) := by
-        -- Same `mono'` argument as h_lin1, with rescaledWeight replaced by
-        -- gW alone (taking t = 1 in `integrable_pow_norm_mul_rescaled_weight`
-        -- with V having `s_t = 0`, or directly via Phase 2).
-        sorry  -- structurally same as h_lin1; defer
+        -- Bound by A · ‖u‖ · gW. The latter is integrable from the
+        -- second-moment package: ‖u‖ ≤ 1 + ‖u‖², and ‖u‖² · gW is
+        -- integrable (`integrable_sq_norm_mul_gaussianWeight`).
+        have h_dom : MeasureTheory.Integrable (fun u : ι → ℝ =>
+            A * (gaussianWeight H u + ‖u‖ ^ 2 * gaussianWeight H u)) := by
+          have h_int_sq := integrable_sq_norm_mul_gaussianWeight hGauss
+          have h_int_gW := hGauss.int_gW
+          have h_sum : MeasureTheory.Integrable (fun u : ι → ℝ =>
+              gaussianWeight H u + ‖u‖ ^ 2 * gaussianWeight H u) :=
+            h_int_gW.add h_int_sq
+          exact h_sum.const_mul A
+        refine h_dom.mono' ?_ ?_
+        · have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
+            unfold dot
+            apply continuous_finset_sum
+            intro i _
+            exact continuous_const.mul (continuous_apply i)
+          exact (h_dot_cont.mul (continuous_gaussianWeight H)).aestronglyMeasurable
+        · filter_upwards with u
+          have h_dot_le : |dot a u| ≤ A * ‖u‖ := by
+            rw [hA_def]; exact abs_dot_le_l1_mul_norm a u
+          have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+          have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+          rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_gW_nn]
+          calc |dot a u| * gaussianWeight H u
+              ≤ A * ‖u‖ * gaussianWeight H u :=
+                mul_le_mul_of_nonneg_right h_dot_le h_gW_nn
+            _ = A * (‖u‖ * gaussianWeight H u) := by ring
+            _ ≤ A * ((1 + ‖u‖ ^ 2) * gaussianWeight H u) := by
+                apply mul_le_mul_of_nonneg_left _ hA_nn
+                apply mul_le_mul_of_nonneg_right _ h_gW_nn
+                -- ‖u‖ ≤ 1 + ‖u‖²: split on ‖u‖ ≤ 1 vs > 1.
+                by_cases h1 : ‖u‖ ≤ 1
+                · linarith [sq_nonneg ‖u‖]
+                · push_neg at h1
+                  have h_sq_le : ‖u‖ ≤ ‖u‖ ^ 2 := by
+                    have := mul_le_mul_of_nonneg_left h1.le h_norm_nn
+                    rw [mul_one] at this
+                    rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]
+                    exact this
+                  linarith
+            _ = A * (gaussianWeight H u + ‖u‖ ^ 2 * gaussianWeight H u) := by ring
       exact h_lin1.sub h_lin2
     apply h_diff.congr
     filter_upwards with u
