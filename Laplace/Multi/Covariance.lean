@@ -122,6 +122,73 @@ structure LaplaceCovHypotheses
 
 end HypothesisPackage
 
+section AsymptoticIntegrals
+
+/-- **Partition asymptote (weak rate)**.
+
+Under the bundled `LaplaceCovHypotheses` and `PotentialApprox`, the
+rescaled partition function approaches `gaussianZ H` at rate `O(1/√t)`:
+
+  `∃ K T₀, 1 ≤ T₀ ∧ ∀ t ≥ T₀,
+     |rescaledPartition V t - gaussianZ H| ≤ K / √t`.
+
+The proof splits the integral
+`rescaledPartition V t - gaussianZ H
+  = ∫ gaussianWeight H u · (exp(-rescaledPerturbation V H t u) - 1) du`
+into a local region (bounded `‖u‖ ≤ M`) where the rescaled cubic bound
+gives `|exp(-s_t) - 1| ≤ K · ‖u‖³ / √t`, and a coercive tail. -/
+theorem rescaledPartition_eq_gaussianZ_add_O_inv_sqrt
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (_hV : PotentialApprox V H)
+    (_hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |rescaledPartition V t - gaussianZ H| ≤ K / Real.sqrt t := by
+  sorry
+
+/-- **Single-observable asymptote (weak rate)**.
+
+For an observable `φ` with gradient `a`, `rescaledExpectation V t φ` is
+`O(1/√t)`:
+
+  `∃ K T₀, 1 ≤ T₀ ∧ ∀ t ≥ T₀,
+     |rescaledExpectation V t φ| ≤ K / √t`.
+
+The leading-order term of `rescaledExpectation V t φ` is
+`(1/√t) · ⟨a, ⟨u⟩_t⟩ ≈ 0` since the Gaussian mean is `0`; the residual
+is `O(1/√t)` from the quadratic remainder. -/
+theorem rescaledExpectation_observable_bound_inv_sqrt
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    (_hV : PotentialApprox V H)
+    (_hφ : ObservableApprox φ a)
+    (_hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |rescaledExpectation V t φ| ≤ K / Real.sqrt t := by
+  sorry
+
+/-- **Pair-observable asymptote (weak rate)**.
+
+For observables `φ, ψ` with gradients `a, b`, the rescaled pair
+expectation equals `(1/t) · ⟨a, Hinv b⟩` up to `O(1/t^{3/2})`:
+
+  `∃ K T₀, 1 ≤ T₀ ∧ ∀ t ≥ T₀,
+     |t · rescaledExpectation V t (φ · ψ) - ⟨a, Hinv b⟩| ≤ K / √t`.
+
+This is the main quantitative content of the weak `lem:laplace_cov`. -/
+theorem rescaledExpectation_pair_eq_main_add_O_inv_sqrt
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    (_hV : PotentialApprox V H)
+    (_hφ : ObservableApprox φ a)
+    (_hψ : ObservableApprox ψ b)
+    (_hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b)|
+        ≤ K / Real.sqrt t := by
+  sorry
+
+end AsymptoticIntegrals
+
 section MainStatement
 
 /-- **`lem:laplace_cov` (weak-rate version, statement only)**.
