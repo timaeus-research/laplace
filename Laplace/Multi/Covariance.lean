@@ -1,5 +1,4 @@
 import Laplace.Multi.RescaledIntegrals
-import Laplace.Multi.GaussianIBP
 
 /-!
 # Multivariate Laplace covariance theorem (`lem:laplace_cov`)

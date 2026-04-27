@@ -1,5 +1,6 @@
 import Laplace.Multi.Basic
 import Laplace.Multi.QuadraticApprox
+import Laplace.Multi.GaussianIBP
 import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.LinearAlgebra.Dimension.Constructions
@@ -32,7 +33,7 @@ namespace Laplace.Multi
 
 open MeasureTheory Module
 
-variable {ι : Type*} [Fintype ι]
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-- The rescaled partition function:
 `Z_t' := ∫ exp(-(t · V ((√t)⁻¹ u))) du`.
@@ -214,6 +215,50 @@ lemma abs_rescaledPerturbation_le
     _ = (t * ((Real.sqrt t)⁻¹) ^ 3) * (C * ‖u‖ ^ 3) := by ring
     _ = (Real.sqrt t)⁻¹ * (C * ‖u‖ ^ 3) := by rw [h_t_inv_cube]
     _ = C * ‖u‖ ^ 3 / Real.sqrt t := by field_simp
+
+/-- The `dot` form is linear in the second argument: `dot a (c • u) = c · dot a u`. -/
+lemma dot_smul (a : ι → ℝ) (c : ℝ) (u : ι → ℝ) :
+    dot a (c • u) = c * dot a u := by
+  unfold dot
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro i _
+  simp [Pi.smul_apply, smul_eq_mul]; ring
+
+/-- **Rescaled quadratic bound on an observable**: under the local linear
+remainder `|φ w - ⟨a, w⟩| ≤ C ‖w‖²` on `‖w‖ ≤ R`, for `t > 0` and
+`‖u‖ ≤ R · √t`,
+
+  `|φ((√t)⁻¹ u) - (√t)⁻¹ · ⟨a, u⟩| ≤ C · ‖u‖² / t`. -/
+lemma abs_rescaledObservable_linear_error_le
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    {R C : ℝ}
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |φ w - dot a w| ≤ C * ‖w‖ ^ 2)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ R * Real.sqrt t) :
+    |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
+      ≤ C * ‖u‖ ^ 2 / t := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  -- Step 1: ‖(√t)⁻¹ • u‖ ≤ R.
+  have h_norm : ‖(Real.sqrt t)⁻¹ • u‖ ≤ R := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  -- Step 2: Apply the local bound.
+  have h_loc := h_local ((Real.sqrt t)⁻¹ • u) h_norm
+  rw [dot_smul] at h_loc
+  -- h_loc : |φ((√t)⁻¹•u) - (√t)⁻¹ · dot a u| ≤ C · ‖(√t)⁻¹•u‖²
+  -- Step 3: ‖(√t)⁻¹ • u‖² = ((√t)⁻¹)² · ‖u‖² = ‖u‖² / t.
+  have h_norm_sq : ‖(Real.sqrt t)⁻¹ • u‖ ^ 2 = ‖u‖ ^ 2 / t := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos, mul_pow]
+    rw [inv_pow, Real.sq_sqrt ht.le]
+    field_simp
+  rw [h_norm_sq] at h_loc
+  calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
+      ≤ C * (‖u‖ ^ 2 / t) := h_loc
+    _ = C * ‖u‖ ^ 2 / t := by ring
 
 end RescaledLocalBounds
 
