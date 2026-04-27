@@ -1,5 +1,6 @@
 import Laplace.Multi.QuadraticApprox
 import Laplace.Multi.GaussianDomination
+import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 
 /-!
 # Multivariate Gaussian integration by parts
@@ -130,5 +131,36 @@ lemma H_coord_symm
   simpa [Pi.single, Function.update, Finset.sum_ite_eq', Finset.mem_univ] using h
 
 end LinearAlgebraHelpers
+
+section FullLineFTC
+
+open MeasureTheory
+
+/-- **1D full-line FTC**: if `f` is differentiable everywhere with derivative
+`f'`, `f'` is integrable on `ℝ`, and `f` tends to `0` at both `±∞`, then
+`∫ f' = 0`. Composes Mathlib's `integral_Ioi_of_hasDerivAt_of_tendsto'` and
+`integral_Iic_of_hasDerivAt_of_tendsto'` via the half-line split.
+
+Used in the IBP step to discard the boundary term after Fubini reduction
+to a single coordinate. -/
+lemma integral_full_line_deriv_eq_zero
+    (f f' : ℝ → ℝ)
+    (hf : ∀ x, HasDerivAt f (f' x) x)
+    (hf'_int : Integrable f')
+    (hf_top : Filter.Tendsto f Filter.atTop (nhds 0))
+    (hf_bot : Filter.Tendsto f Filter.atBot (nhds 0)) :
+    ∫ x : ℝ, f' x = 0 := by
+  have hf'_Ioi : IntegrableOn f' (Set.Ioi (0 : ℝ)) := hf'_int.integrableOn
+  have hf'_Iic : IntegrableOn f' (Set.Iic (0 : ℝ)) := hf'_int.integrableOn
+  have h_Ioi : ∫ x in Set.Ioi (0 : ℝ), f' x = 0 - f 0 :=
+    integral_Ioi_of_hasDerivAt_of_tendsto' (fun x _ => hf x) hf'_Ioi hf_top
+  have h_Iic : ∫ x in Set.Iic (0 : ℝ), f' x = f 0 - 0 :=
+    integral_Iic_of_hasDerivAt_of_tendsto' (fun x _ => hf x) hf'_Iic hf_bot
+  have h_split : ∫ x : ℝ, f' x =
+      (∫ x in Set.Iic (0 : ℝ), f' x) + (∫ x in Set.Ioi (0 : ℝ), f' x) := by
+    rw [← intervalIntegral.integral_Iic_add_Ioi hf'_Iic hf'_Ioi]
+  rw [h_split, h_Iic, h_Ioi]; ring
+
+end FullLineFTC
 
 end Laplace.Multi
