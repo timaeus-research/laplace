@@ -203,6 +203,7 @@ into a local region (bounded `‖u‖ ≤ M`) where the rescaled cubic bound
 gives `|exp(-s_t) - 1| ≤ K · ‖u‖³ / √t`, and a coercive tail. -/
 theorem rescaledPartition_eq_gaussianZ_add_O_inv_sqrt
     (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
     (_hV : PotentialApprox V H)
     (_hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
@@ -225,6 +226,7 @@ by oddness (`integral_odd_mul_gaussian_eq_zero`); the residual is
 theorem rescaledExpectation_observable_bound_inv
     (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a : ι → ℝ)
+    [Nonempty ι]
     (_hV : PotentialApprox V H)
     (_hφ : ObservableApprox φ a)
     (_hGauss : LaplaceCovHypotheses H Hinv) :
@@ -244,6 +246,7 @@ This is the main quantitative content of the weak `lem:laplace_cov`. -/
 theorem rescaledExpectation_pair_eq_main_add_O_inv_sqrt
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
+    [Nonempty ι]
     (_hV : PotentialApprox V H)
     (_hφ : ObservableApprox φ a)
     (_hψ : ObservableApprox ψ b)
@@ -275,6 +278,7 @@ theorem gibbsCov_first_order_rate_weak
     (V φ ψ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
+    [Nonempty ι]
     (hV : PotentialApprox V H)
     (hφ : ObservableApprox φ a)
     (hψ : ObservableApprox ψ b)
