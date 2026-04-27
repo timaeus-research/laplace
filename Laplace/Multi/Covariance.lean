@@ -472,26 +472,137 @@ theorem rescaledExpectation_observable_bound_inv
   -- substantial integral assembly omitted here.
   sorry
 
-/-- **Pair-observable asymptote (weak rate)**.
+-- (Theorem statement moved below the private quotient-reduction lemma; see
+-- `rescaledExpectation_pair_eq_main_add_O_inv_sqrt` further down.)
 
-For observables `φ, ψ` with gradients `a, b`, the rescaled pair
-expectation equals `(1/t) · ⟨a, Hinv b⟩` up to `O(1/t^{3/2})`:
+/-- **Pair quotient reduction lemma**: from a pair-numerator asymptote
+plus the partition asymptote, derive the pair expectation asymptote.
 
-  `∃ K T₀, 1 ≤ T₀ ∧ ∀ t ≥ T₀,
-     |t · rescaledExpectation V t (φ · ψ) - ⟨a, Hinv b⟩| ≤ K / √t`.
+Uses the algebraic identity
+`N_t/D_t - m = (N_t - Zm)/D_t + m·(Z - D_t)/D_t` (per GPT-5.5 Pro
+Phase 5 assembly memo Q6) plus the denominator lower bound. -/
+private lemma rescaledExpectation_pair_eq_main_add_O_inv_sqrt_of_num
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (φψ : (ι → ℝ) → ℝ) (a b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialApprox V H)
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    (h_num_bound : ∃ K_N T_N : ℝ, 1 ≤ T_N ∧ ∀ t : ℝ, T_N ≤ t →
+      |t * rescaledNumerator V t φψ - gaussianZ H * dot a (Hinv b)|
+        ≤ K_N / Real.sqrt t) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t * rescaledExpectation V t φψ - dot a (Hinv b)| ≤ K / Real.sqrt t := by
+  obtain ⟨K_N, T_N, hT_N, hN⟩ := h_num_bound
+  obtain ⟨T_D, hT_D, hD⟩ :=
+    rescaledPartition_ge_half_gaussianZ V H Hinv hV hGauss
+  obtain ⟨K_part, T_part, hT_part, hpart⟩ :=
+    rescaledPartition_eq_gaussianZ_add_O_inv_sqrt V H Hinv hV hGauss
+  have hZ_pos := hGauss.Z_pos
+  -- Construct K and T₀.
+  set m : ℝ := dot a (Hinv b) with hm_def
+  set K : ℝ := 2 * K_N / gaussianZ H + 2 * |m| * |K_part| / gaussianZ H
+    with hK_def
+  refine ⟨K, max T_N (max T_D T_part), ?_, ?_⟩
+  · exact le_max_of_le_left hT_N
+  · intro t ht
+    have htN : T_N ≤ t := le_of_max_le_left ht
+    have ht' : max T_D T_part ≤ t := le_of_max_le_right ht
+    have htD : T_D ≤ t := le_of_max_le_left ht'
+    have htP : T_part ≤ t := le_of_max_le_right ht'
+    have ht_pos : 0 < t := lt_of_lt_of_le (by linarith [hT_N]) htN
+    have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+    have hD_t : gaussianZ H / 2 ≤ rescaledPartition V t := hD t htD
+    have hD_pos : 0 < rescaledPartition V t :=
+      lt_of_lt_of_le (by linarith) hD_t
+    have hN_t : |t * rescaledNumerator V t φψ - gaussianZ H * m| ≤
+        K_N / Real.sqrt t := hN t htN
+    have hpart_t : |rescaledPartition V t - gaussianZ H| ≤
+        K_part / Real.sqrt t := hpart t htP
+    have hpart_t' : |rescaledPartition V t - gaussianZ H| ≤
+        |K_part| / Real.sqrt t :=
+      le_trans hpart_t (div_le_div_of_nonneg_right (le_abs_self _) hsqrt_pos.le)
+    -- Algebraic decomposition:
+    -- t·E_t - m = t·N_t/D_t - m = (t·N_t - Z·m)/D_t + m·(Z - D_t)/D_t.
+    have h_alg :
+        t * rescaledExpectation V t φψ - m
+          = (t * rescaledNumerator V t φψ - gaussianZ H * m) /
+              rescaledPartition V t
+            + m * (gaussianZ H - rescaledPartition V t) /
+              rescaledPartition V t := by
+      unfold rescaledExpectation
+      field_simp
+      ring
+    rw [h_alg]
+    -- Triangle inequality.
+    have h_tri :
+        |(t * rescaledNumerator V t φψ - gaussianZ H * m) /
+              rescaledPartition V t
+            + m * (gaussianZ H - rescaledPartition V t) /
+              rescaledPartition V t|
+          ≤ |(t * rescaledNumerator V t φψ - gaussianZ H * m) /
+                rescaledPartition V t|
+            + |m * (gaussianZ H - rescaledPartition V t) /
+                rescaledPartition V t| := abs_add_le _ _
+    refine le_trans h_tri ?_
+    -- First piece: |(N_t - Z·m)/D_t| ≤ (K_N/√t) / (Z/2) = 2K_N / (Z · √t).
+    have h_part1 :
+        |(t * rescaledNumerator V t φψ - gaussianZ H * m) /
+            rescaledPartition V t|
+          ≤ 2 * K_N / gaussianZ H / Real.sqrt t := by
+      rw [abs_div, abs_of_pos hD_pos]
+      calc |t * rescaledNumerator V t φψ - gaussianZ H * m| /
+              rescaledPartition V t
+          ≤ |t * rescaledNumerator V t φψ - gaussianZ H * m| /
+              (gaussianZ H / 2) :=
+            div_le_div_of_nonneg_left (abs_nonneg _) (by linarith) hD_t
+        _ ≤ (K_N / Real.sqrt t) / (gaussianZ H / 2) :=
+            div_le_div_of_nonneg_right hN_t (by linarith)
+        _ = 2 * K_N / gaussianZ H / Real.sqrt t := by field_simp
+    -- Second piece: |m·(Z - D_t)/D_t| ≤ |m| · (|K_part|/√t) / (Z/2) = 2|m|·|K_part|/(Z·√t).
+    have h_part2 :
+        |m * (gaussianZ H - rescaledPartition V t) /
+            rescaledPartition V t|
+          ≤ 2 * |m| * |K_part| / gaussianZ H / Real.sqrt t := by
+      rw [abs_div, abs_of_pos hD_pos, abs_mul]
+      have habs_diff_eq : |gaussianZ H - rescaledPartition V t|
+          = |rescaledPartition V t - gaussianZ H| := abs_sub_comm _ _
+      rw [habs_diff_eq]
+      calc |m| * |rescaledPartition V t - gaussianZ H| /
+              rescaledPartition V t
+          ≤ |m| * (|K_part| / Real.sqrt t) / rescaledPartition V t := by
+            apply div_le_div_of_nonneg_right _ hD_pos.le
+            apply mul_le_mul_of_nonneg_left hpart_t' (abs_nonneg _)
+        _ ≤ |m| * (|K_part| / Real.sqrt t) / (gaussianZ H / 2) := by
+            apply div_le_div_of_nonneg_left
+              (mul_nonneg (abs_nonneg _) (div_nonneg (abs_nonneg _) hsqrt_pos.le))
+              (by linarith) hD_t
+        _ = 2 * |m| * |K_part| / gaussianZ H / Real.sqrt t := by field_simp
+    -- Combine.
+    calc |(t * rescaledNumerator V t φψ - gaussianZ H * m) /
+              rescaledPartition V t|
+          + |m * (gaussianZ H - rescaledPartition V t) /
+              rescaledPartition V t|
+        ≤ 2 * K_N / gaussianZ H / Real.sqrt t
+            + 2 * |m| * |K_part| / gaussianZ H / Real.sqrt t :=
+          add_le_add h_part1 h_part2
+      _ = K / Real.sqrt t := by rw [hK_def]; ring
 
-This is the main quantitative content of the weak `lem:laplace_cov`. -/
 theorem rescaledExpectation_pair_eq_main_add_O_inv_sqrt
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
     [Nonempty ι]
-    (_hV : PotentialApprox V H)
+    (hV : PotentialApprox V H)
     (_hφ : ObservableApprox φ a)
     (_hψ : ObservableApprox ψ b)
-    (_hGauss : LaplaceCovHypotheses H Hinv) :
+    (hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b)|
         ≤ K / Real.sqrt t := by
+  apply rescaledExpectation_pair_eq_main_add_O_inv_sqrt_of_num
+    V H Hinv (fun w => φ w * ψ w) a b hV hGauss
+  -- The pair-numerator asymptote follows from `pair_product_expansion` +
+  -- `gaussian_dot_mul_dot` for the leading term + bounds for cross/quadratic
+  -- residuals. Substantial integral assembly omitted here.
   sorry
 
 end AsymptoticIntegrals
