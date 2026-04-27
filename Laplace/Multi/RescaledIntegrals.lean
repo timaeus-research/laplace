@@ -1375,4 +1375,63 @@ lemma abs_gaussianWeight_mul_exp_sub_one_le_tail
 
 end TailPartitionBound
 
+section NormPowExpIntegrability
+
+open MeasureTheory
+
+/-- **Integrability of `‖u‖^k · exp(-α ‖u‖²)`** for any `α > 0`, `k : ℕ`,
+under `Nonempty ι`. Dominated by `M_k · exp(-(α/(2|ι|)) · ∑ u_i²)`
+from Phase 2's `integrable_exp_neg_const_mul_sum_sq`. -/
+lemma integrable_norm_pow_mul_exp_neg_const_sq
+    [Nonempty ι] {α : ℝ} (hα_pos : 0 < α) (k : ℕ) :
+    Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ k * Real.exp (-(α * ‖u‖ ^ 2))) := by
+  have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
+  have hα_card_pos : 0 < α / (2 * Fintype.card ι) := by positivity
+  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * α)) with hM_def
+  have hM_nn : 0 ≤ M_k := (Real.exp_pos _).le
+  have h_dom_int :=
+    (integrable_exp_neg_const_mul_sum_sq (ι := ι) hα_card_pos).const_mul M_k
+  refine h_dom_int.mono' ?_ ?_
+  · -- AE strongly measurable: continuous.
+    exact ((continuous_norm.pow k).mul
+      (Real.continuous_exp.comp (continuous_const.mul
+        (continuous_norm.pow 2)).neg)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_norm_pow_nn : 0 ≤ ‖u‖ ^ k := pow_nonneg (norm_nonneg _) k
+    have h_lhs_nn : 0 ≤ ‖u‖ ^ k * Real.exp (-(α * ‖u‖ ^ 2)) :=
+      mul_nonneg h_norm_pow_nn (Real.exp_pos _).le
+    rw [Real.norm_eq_abs, abs_of_nonneg h_lhs_nn]
+    -- ‖u‖^k · exp(-α‖u‖²) ≤ M_k · exp(-(α/2)‖u‖²) (poly-Gaussian decay).
+    have h_decay := pow_mul_exp_neg_sq_le_half_decay k hα_pos (norm_nonneg u)
+    -- exp(-(α/2)‖u‖²) ≤ exp(-(α/(2|ι|)) · ∑ u_i²) (sum-norm bridge).
+    have h_sum_to_norm := sq_norm_ge_sum_sq_div_card u
+    have h_exp_le : Real.exp (-((α / 2) * ‖u‖ ^ 2))
+        ≤ Real.exp (-((α / (2 * Fintype.card ι)) * ∑ i, (u i) ^ 2)) := by
+      apply Real.exp_le_exp.mpr
+      have h_lb : (1 / (Fintype.card ι : ℝ)) * (∑ i, (u i) ^ 2) ≤ ‖u‖ ^ 2 :=
+        h_sum_to_norm
+      have h_mul := mul_le_mul_of_nonneg_left h_lb (by linarith : (0:ℝ) ≤ α/2)
+      rw [show (α / 2 : ℝ) * ((1 / (Fintype.card ι : ℝ)) * (∑ i, (u i) ^ 2))
+            = (α / (2 * Fintype.card ι)) * ∑ i, (u i) ^ 2 from by
+          field_simp] at h_mul
+      linarith
+    calc ‖u‖ ^ k * Real.exp (-(α * ‖u‖ ^ 2))
+        ≤ M_k * Real.exp (-((α / 2) * ‖u‖ ^ 2)) := h_decay
+      _ ≤ M_k *
+            Real.exp (-((α / (2 * Fintype.card ι)) * ∑ i, (u i) ^ 2)) :=
+          mul_le_mul_of_nonneg_left h_exp_le hM_nn
+
+/-- Integrability of `exp(-α ‖u‖²)` (k = 0 case). -/
+lemma integrable_exp_neg_const_norm_sq
+    [Nonempty ι] {α : ℝ} (hα_pos : 0 < α) :
+    Integrable (fun u : ι → ℝ => Real.exp (-(α * ‖u‖ ^ 2))) := by
+  have h := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 0
+  apply h.congr
+  filter_upwards with u
+  show ‖u‖ ^ 0 * Real.exp (-(α * ‖u‖ ^ 2)) = Real.exp (-(α * ‖u‖ ^ 2))
+  ring
+
+end NormPowExpIntegrability
+
 end Laplace.Multi
