@@ -723,7 +723,46 @@ private lemma abs_integral_remainder_mul_rescaled_weight_le
             gaussianWeight H u *
             Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / t := by
-  sorry  -- ~150 LOC structurally same as linear-correction but with ‖u‖² · exp instead of ‖u‖⁴ · exp
+  -- Constants from hV (same as partition asymptote).
+  set c := hV.coercive_const with hc_def
+  set R := hV.local_radius with hR_def
+  have hc_pos : 0 < c := hV.coercive_const_pos
+  have hR_pos : 0 < R := hV.local_radius_pos
+  have h_coer := hV.coercive_bound
+  set δ : ℝ := min R 1 with hδ_def
+  have hδ_pos : 0 < δ := lt_min hR_pos zero_lt_one
+  have hδ_le_R : δ ≤ R := min_le_left _ _
+  have hδ_le_one : δ ≤ 1 := min_le_right _ _
+  -- Observable constants.
+  set Cφ : ℝ := hφ.local_const with hCφ_def
+  set Rφ : ℝ := hφ.local_radius with hRφ_def
+  have hCφ_nn : 0 ≤ Cφ := hφ.local_const_nonneg
+  have hRφ_pos : 0 < Rφ := hφ.local_radius_pos
+  have h_obs_local := hφ.local_bound
+  -- Use δ' := min(δ, Rφ) so both V and φ local bounds apply.
+  set δ' : ℝ := min δ Rφ with hδ'_def
+  have hδ'_pos : 0 < δ' := lt_min hδ_pos hRφ_pos
+  have hδ'_le_R : δ' ≤ R := le_trans (min_le_left _ _) hδ_le_R
+  have hδ'_le_Rφ : δ' ≤ Rφ := min_le_right _ _
+  set α : ℝ := c / 2 with hα_def
+  have hα_pos : 0 < α := by rw [hα_def]; linarith
+  -- M₂ := ∫ ‖u‖² · exp(-α‖u‖²).
+  set M₂ : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 2 * Real.exp (-(α * ‖u‖ ^ 2)) with hM₂_def
+  have hM₂_nn : 0 ≤ M₂ := by
+    rw [hM₂_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    exact mul_nonneg (sq_nonneg _) (Real.exp_pos _).le
+  -- For the local-only bound, we use:
+  -- on `‖u‖ ≤ δ' · √t`: `|rem(u)| ≤ Cφ · ‖u‖²/t`,
+  --   `gW · exp(-s_t) ≤ exp(-α · ‖u‖²)` (using α = c/2 < c).
+  -- Hence `|rem · gW · exp(-s_t)| ≤ (Cφ/t) · ‖u‖² · exp(-α‖u‖²)`.
+  -- Integrating: `(Cφ · M₂)/t`.
+  -- Tail handling (`‖u‖ > δ'√t`) needs polynomial growth; deferred via sorry.
+  refine ⟨Cφ * M₂ + 1, max 1 (1 / δ' ^ 2), le_max_left _ _, ?_⟩
+  -- The full proof is substantial (~200 LOC for tail handling). Skipping
+  -- the rigorous tail-region argument here.
+  sorry
 
 /-- **Quotient reduction lemma**: from a numerator bound, deduce the
 expectation bound via the denominator lower bound. -/
