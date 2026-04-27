@@ -478,4 +478,73 @@ theorem gaussian_ibp_coord
 
 end CoreIBP
 
+section ColumnIBP
+
+open MeasureTheory
+
+/-- **Column-form IBP identity**: assuming `gaussian_ibp_coord` applies for
+all coordinates `i`, the matrix equation `H · M_col_j = Z · eⱼ` holds. -/
+theorem gaussian_ibp_column
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (j : ι)
+    (h_int_gW : Integrable (gaussianWeight H))
+    (h_int_uk_uj_gW : ∀ k : ι, Integrable
+      (fun u : ι → ℝ => u k * u j * gaussianWeight H u))
+    (h_int_uj_Hi_gW : ∀ i : ι, Integrable
+      (fun u : ι → ℝ => u j * (H u) i * gaussianWeight H u))
+    (h_fubini : ∀ i : ι, FubiniIBPHypothesis H i j) :
+    H (momentColumn H j)
+      = (gaussianZ H) • (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) := by
+  ext i
+  -- Goal: (H (momentColumn H j)) i = (gaussianZ H • e_j) i
+  -- Step A: Expand (H (momentColumn H j)) i via H_apply_eq_sum.
+  have h_lhs : (H (momentColumn H j)) i =
+      ∑ k, (momentColumn H j) k *
+        (H (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i :=
+    H_apply_eq_sum H (momentColumn H j) i
+  -- Step B: Use `gaussian_ibp_coord` to get
+  --   ∫ u_j (H u)_i gW = (if i=j then 1 else 0) * Z.
+  have h_ibp : ∫ u : ι → ℝ, u j * (H u) i * gaussianWeight H u =
+      (if i = j then (1 : ℝ) else 0) * gaussianZ H :=
+    gaussian_ibp_coord H i j h_int_gW (h_int_uj_Hi_gW i) (h_fubini i)
+  -- Step C: Expand ∫ u_j (H u)_i gW via H_apply_eq_sum + linearity.
+  have h_int_eq : ∫ u : ι → ℝ, u j * (H u) i * gaussianWeight H u =
+      ∑ k, (momentColumn H j) k *
+        (H (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i := by
+    -- Pointwise: u j * (H u) i * gW = ∑_k (H e_k) i * (u_k * u_j * gW)
+    -- after using H_apply_eq_sum and reordering.
+    have h_pt : ∀ u : ι → ℝ,
+        u j * (H u) i * gaussianWeight H u =
+          ∑ k, (H (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i *
+            (u k * u j * gaussianWeight H u) := by
+      intro u
+      rw [H_apply_eq_sum H u i, Finset.mul_sum, Finset.sum_mul]
+      apply Finset.sum_congr rfl
+      intro k _; ring
+    rw [show (fun u : ι → ℝ => u j * (H u) i * gaussianWeight H u) =
+        (fun u : ι → ℝ =>
+          ∑ k, (H (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i *
+            (u k * u j * gaussianWeight H u)) from funext h_pt]
+    -- Swap sum and integral.
+    rw [integral_finset_sum Finset.univ (fun k _ =>
+      (h_int_uk_uj_gW k).const_mul _)]
+    -- Pull out constants from each integral.
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [integral_const_mul]
+    -- Goal: const · M_kj = M_kj · const.
+    show _ = (momentColumn H j) k *
+      (H (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i
+    unfold momentColumn
+    ring
+  -- Step D: Combine.
+  rw [h_lhs, ← h_int_eq, h_ibp]
+  -- Goal: (if i=j then 1 else 0) * gaussianZ H = (gaussianZ H • e_j) i
+  rw [Pi.smul_apply, smul_eq_mul]
+  by_cases hij : i = j
+  · subst hij; simp
+  · simp [hij]
+
+end ColumnIBP
+
 end Laplace.Multi
