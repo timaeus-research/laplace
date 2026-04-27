@@ -1507,6 +1507,41 @@ lemma exp_neg_const_mul_le_inv
   rw [← h_sq_eq]
   exact h_sq_le
 
+/-- **Sharp tail decay (cube)**: for `β > 0` and `t ≥ 9/β²`,
+`exp(-β · t) ≤ 1/(t · √t)`. Cubed form of `exp_neg_const_mul_le_inv_sqrt`. -/
+lemma exp_neg_const_mul_le_inv_t_sqrt
+    {β : ℝ} (hβ_pos : 0 < β) {t : ℝ} (ht : 9 / β ^ 2 ≤ t) :
+    Real.exp (-(β * t)) ≤ 1 / (t * Real.sqrt t) := by
+  have hβ3_pos : 0 < β / 3 := by linarith
+  have ht' : 1 / (β / 3) ^ 2 ≤ t := by
+    rw [show (β / 3 : ℝ) ^ 2 = β ^ 2 / 9 from by ring]
+    rw [show (1 : ℝ) / (β ^ 2 / 9) = 9 / β ^ 2 from by
+      rw [show (1 : ℝ) / (β ^ 2 / 9) = 1 * (9 / β ^ 2) from by
+          rw [div_div_eq_mul_div]; ring]; ring]
+    exact ht
+  have hthird := exp_neg_const_mul_le_inv_sqrt hβ3_pos ht'
+  have ht_pos : 0 < t := lt_of_lt_of_le (by positivity) ht
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have h_inv_sqrt_nn : (0 : ℝ) ≤ 1 / Real.sqrt t := by positivity
+  have h_exp_eq : Real.exp (-(β * t)) = (Real.exp (-((β / 3) * t))) ^ 3 := by
+    rw [show (Real.exp (-((β / 3) * t))) ^ 3
+        = Real.exp (-((β / 3) * t)) * Real.exp (-((β / 3) * t)) *
+            Real.exp (-((β / 3) * t)) from by ring]
+    rw [← Real.exp_add, ← Real.exp_add]
+    congr 1
+    ring
+  rw [h_exp_eq]
+  have h_exp_nn : 0 ≤ Real.exp (-((β / 3) * t)) := (Real.exp_pos _).le
+  have h_cube_le : (Real.exp (-((β / 3) * t))) ^ 3 ≤ (1 / Real.sqrt t) ^ 3 := by
+    apply pow_le_pow_left₀ h_exp_nn hthird
+  have h_cube_eq : (1 / Real.sqrt t : ℝ) ^ 3 = 1 / (t * Real.sqrt t) := by
+    rw [div_pow, one_pow]
+    rw [show (Real.sqrt t : ℝ) ^ 3 = Real.sqrt t * Real.sqrt t * Real.sqrt t
+      from by ring]
+    rw [Real.mul_self_sqrt ht_pos.le]
+  rw [← h_cube_eq]
+  exact h_cube_le
+
 end TailExpDecayHelper
 
 end Laplace.Multi
