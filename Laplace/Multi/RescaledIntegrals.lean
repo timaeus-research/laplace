@@ -963,6 +963,36 @@ lemma quadForm_lower_bound
     rw [h_cancel] at h_target
     exact h_target
 
+/-- **Gaussian weight bounded by an explicit Gaussian** under the
+quadratic lower bound: if `κ_H · ‖u‖² ≤ (1/2) quadForm H u`,
+then `gaussianWeight H u ≤ exp(-(κ_H · ‖u‖²))`. -/
+lemma gaussianWeight_le_exp_neg_const_sq
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {κ : ℝ}
+    (h_lb : ∀ u : ι → ℝ, κ * ‖u‖ ^ 2 ≤ (1/2) * quadForm H u)
+    (u : ι → ℝ) :
+    gaussianWeight H u ≤ Real.exp (-(κ * ‖u‖ ^ 2)) := by
+  unfold gaussianWeight
+  apply Real.exp_le_exp.mpr
+  have := h_lb u
+  linarith
+
+/-- **Linear-functional bound by sup-norm**: `|⟨a, u⟩| ≤ (∑ |a_i|) · ‖u‖`
+(sup-norm), via the triangle inequality and `abs_apply_le_norm`. -/
+lemma abs_dot_le_l1_mul_norm (a u : ι → ℝ) :
+    |dot a u| ≤ (∑ i, |a i|) * ‖u‖ := by
+  unfold dot
+  calc |∑ i, a i * u i|
+      ≤ ∑ i, |a i * u i| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ i, |a i| * |u i| := by
+        apply Finset.sum_congr rfl
+        intro i _; rw [abs_mul]
+    _ ≤ ∑ i, |a i| * ‖u‖ := by
+        apply Finset.sum_le_sum
+        intro i _
+        exact mul_le_mul_of_nonneg_left (abs_apply_le_norm u i) (abs_nonneg _)
+    _ = (∑ i, |a i|) * ‖u‖ := by rw [Finset.sum_mul]
+
 end QuadFormLowerBound
 
 end Laplace.Multi
