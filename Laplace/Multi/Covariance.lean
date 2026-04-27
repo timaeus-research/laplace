@@ -151,6 +151,27 @@ lemma integrable_sum_sq_mul_gaussianWeight
   show ∑ i, u i ^ 2 * gaussianWeight H u = (∑ i, u i ^ 2) * gaussianWeight H u
   rw [Finset.sum_mul]
 
+/-- **Coordinate bound by sup-norm**: `|u i| ≤ ‖u‖` for the standard
+Pi sup-norm. (Mathlib's `norm_le_pi_norm`, restated.) -/
+lemma abs_apply_le_norm (u : ι → ℝ) (i : ι) : |u i| ≤ ‖u‖ := by
+  have := norm_le_pi_norm u i
+  simpa [Real.norm_eq_abs] using this
+
+/-- Sum-of-squares bounded by `card ι · ‖u‖²` (componentwise sup bound). -/
+lemma sum_sq_le_card_mul_sq_norm (u : ι → ℝ) :
+    ∑ i, (u i) ^ 2 ≤ Fintype.card ι * ‖u‖ ^ 2 := by
+  have h_each : ∀ i : ι, (u i) ^ 2 ≤ ‖u‖ ^ 2 := by
+    intro i
+    have h := abs_apply_le_norm u i
+    have h_sq : (u i) ^ 2 = |u i| * |u i| := by rw [← sq_abs, sq]
+    have h_norm_sq : ‖u‖ ^ 2 = ‖u‖ * ‖u‖ := sq ‖u‖
+    rw [h_sq, h_norm_sq]
+    exact mul_self_le_mul_self (abs_nonneg _) h
+  calc ∑ i, (u i) ^ 2 ≤ ∑ _i : ι, ‖u‖ ^ 2 := Finset.sum_le_sum (fun i _ => h_each i)
+    _ = Fintype.card ι * ‖u‖ ^ 2 := by
+        rw [Finset.sum_const, Finset.card_univ]
+        ring
+
 end GaussianMomentInfrastructure
 
 section AsymptoticIntegrals
