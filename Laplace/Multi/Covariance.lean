@@ -3686,28 +3686,207 @@ theorem rescaledExpectation_pair_eq_main_add_O_inv_sqrt
       = gaussianZ H * dot a (Hinv b) :=
     gaussian_dot_mul_dot H Hinv hGauss.H_inv_right hGauss.H_inj hGauss.int_gW
       hGauss.int_uk_uj_gW hGauss.int_uj_Hi_gW hGauss.fubini_ibp a b
-  -- Now compute t · N_t(φψ) using the algebraic decomposition.
-  -- Strategy: compute t · N_t(φψ) - Z·m as ∫ G1 + √t·∫ G2 + √t·∫ G3 + t·∫ G4.
-  -- We use the identity:
-  -- t · pair = dot a u · dot b u + √t · dot a u · remψ + √t · dot b u · remφ + t · remφ · remψ
-  -- via pair_product_expansion.
-  -- Need integrability of t · pair · gW · exp(-s_t).
+  -- Integrability of G2, G3, G4 from companion lemmas.
+  have hG2_int : MeasureTheory.Integrable G2 :=
+    integrable_dot_mul_remainder_mul_rescaled_weight V ψ H Hinv a b hV hψ hGauss ht1
+  have hG3_int : MeasureTheory.Integrable G3 :=
+    integrable_dot_mul_remainder_mul_rescaled_weight V φ H Hinv b a hV hφ hGauss ht1
+  have hG4_int : MeasureTheory.Integrable G4 :=
+    integrable_remainder_mul_remainder_mul_rescaled_weight V φ ψ H Hinv a b hV hφ hψ hGauss ht1
+  -- Apply pair_product_expansion to get pointwise expansion.
+  -- The full t·pair·gW·exp expansion: t·pair·gW·exp = (dot a · dot b · gW · exp(-s_t)) + √t·G2 + √t·G3 + t·G4.
+  have h_pp_pointwise : ∀ u : ι → ℝ,
+      t * (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = dot a u * dot b u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+        + Real.sqrt t * G2 u + Real.sqrt t * G3 u + t * G4 u := by
+    intro u
+    have h_pp := pair_product_expansion φ ψ a b t ht_pos u
+    have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht_pos.le
+    have h_sqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+    have h_t_ne : t ≠ 0 := ne_of_gt ht_pos
+    -- LHS = t · pair · gW · exp. Use h_pp to replace pair.
+    -- After substitution we get t · (1/t · ... + (√t)⁻¹ · ... + ...) · gW · exp.
+    -- Use field_simp to clear 1/t and (√t)⁻¹ (substituting via h_sq).
+    show t * (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = dot a u * dot b u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+        + Real.sqrt t *
+            (dot a u *
+              (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) +
+          Real.sqrt t *
+            (dot b u *
+              (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) +
+          t *
+            ((φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+              (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+    have h_t_inv_sqrt : t * (Real.sqrt t)⁻¹ = Real.sqrt t := by
+      field_simp
+      rw [sq]; exact h_sq.symm
+    have h_t_inv_self : t * (1/t) = 1 := mul_one_div_cancel h_t_ne
+    rw [h_pp]
+    linear_combination
+      (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)) *
+        (dot a u * dot b u)) * h_t_inv_self +
+      (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)) *
+        (dot a u *
+          (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) +
+         dot b u *
+          (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u))) * h_t_inv_sqrt
+  -- Integrability of t · pair · gW · exp(-s_t).
   have h_int_t_pair : MeasureTheory.Integrable (fun u : ι → ℝ =>
       t * (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)) *
         gaussianWeight H u *
         Real.exp (-(rescaledPerturbation V H t u))) := by
-    -- Decompose via pair_product_expansion: t·pair·gW·exp = dot a · dot b · gW · exp(-s_t) + √t·G2 + √t·G3 + t·G4.
-    -- It suffices to show each of those is integrable, and their sum equals t·pair·gW·exp.
-    sorry
-  -- For now, just bound directly using algebra.
-  -- Here's the approach: use gaussian_dot_mul_dot via h_split_lin + h_gauss_lin, then
-  -- pair_product_expansion to relate. But it's easier to bound directly via triangle on the integrand.
-  --
-  -- Actually, we use the key identity:
-  -- t · N_t(φψ) - Z·⟨a, Hinv b⟩ = ∫ (t · pair · gW · exp(-s_t) - dot a u · dot b u · gW)
-  --                              = ∫ (G1 + √t·G2 + √t·G3 + t·G4)
-  --                              = ∫ G1 + √t·∫ G2 + √t·∫ G3 + t·∫ G4.
-  sorry
+    -- = (dot a · dot b · gW · exp) + √t·G2 + √t·G3 + t·G4 (each integrable).
+    have h_int_sum : MeasureTheory.Integrable (fun u : ι → ℝ =>
+        dot a u * dot b u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)) +
+        Real.sqrt t * G2 u + Real.sqrt t * G3 u + t * G4 u) := by
+      have h_G2_const := hG2_int.const_mul (Real.sqrt t)
+      have h_G3_const := hG3_int.const_mul (Real.sqrt t)
+      have h_G4_const := hG4_int.const_mul t
+      exact ((h_int_lin_rescaled.add h_G2_const).add h_G3_const).add h_G4_const
+    apply h_int_sum.congr
+    filter_upwards with u
+    exact (h_pp_pointwise u).symm
+  -- t · N_t(φψ) = ∫ (sum of 4 pieces) = (∫ dot · dot · gW · exp) + √t · ∫ G2 + √t · ∫ G3 + t · ∫ G4.
+  have h_t_N : t * rescaledNumerator V t (fun w => φ w * ψ w)
+      = (∫ u : ι → ℝ, dot a u * dot b u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) +
+        Real.sqrt t * (∫ u : ι → ℝ, G2 u) +
+        Real.sqrt t * (∫ u : ι → ℝ, G3 u) +
+        t * (∫ u : ι → ℝ, G4 u) := by
+    rw [rescaledNumerator_eq_gaussian_form V (fun w => φ w * ψ w) H t,
+        ← MeasureTheory.integral_const_mul]
+    -- ∫ t · pair · gW · exp = ∫ (sum of 4) by h_pp_pointwise.
+    have h_eq : ∫ u : ι → ℝ, t * (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+        = ∫ u : ι → ℝ,
+            (dot a u * dot b u * gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))
+              + Real.sqrt t * G2 u + Real.sqrt t * G3 u + t * G4 u) := by
+      apply MeasureTheory.integral_congr_ae
+      filter_upwards with u
+      have hpw := h_pp_pointwise u
+      show t * (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+          = dot a u * dot b u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            + Real.sqrt t * G2 u + Real.sqrt t * G3 u + t * G4 u
+      rw [show t * (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+          = t * (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)) from by ring]
+      exact hpw
+    rw [h_eq]
+    have h_G2_const := hG2_int.const_mul (Real.sqrt t)
+    have h_G3_const := hG3_int.const_mul (Real.sqrt t)
+    have h_G4_const := hG4_int.const_mul t
+    -- Compute integral of sum step-by-step.
+    have h_e2 : ∫ u : ι → ℝ, Real.sqrt t * G2 u
+        = Real.sqrt t * ∫ u : ι → ℝ, G2 u := MeasureTheory.integral_const_mul _ _
+    have h_e3 : ∫ u : ι → ℝ, Real.sqrt t * G3 u
+        = Real.sqrt t * ∫ u : ι → ℝ, G3 u := MeasureTheory.integral_const_mul _ _
+    have h_e4 : ∫ u : ι → ℝ, t * G4 u = t * ∫ u : ι → ℝ, G4 u :=
+      MeasureTheory.integral_const_mul _ _
+    calc ∫ u : ι → ℝ,
+          (dot a u * dot b u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            + Real.sqrt t * G2 u + Real.sqrt t * G3 u + t * G4 u)
+        = (∫ u : ι → ℝ,
+            (dot a u * dot b u * gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))
+              + Real.sqrt t * G2 u + Real.sqrt t * G3 u)) +
+          ∫ u : ι → ℝ, t * G4 u :=
+            MeasureTheory.integral_add (h_int_lin_rescaled.add h_G2_const |>.add h_G3_const) h_G4_const
+      _ = ((∫ u : ι → ℝ,
+            (dot a u * dot b u * gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))
+              + Real.sqrt t * G2 u)) +
+          ∫ u : ι → ℝ, Real.sqrt t * G3 u) + ∫ u : ι → ℝ, t * G4 u := by
+            congr 1
+            exact MeasureTheory.integral_add (h_int_lin_rescaled.add h_G2_const) h_G3_const
+      _ = (((∫ u : ι → ℝ, dot a u * dot b u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) +
+            ∫ u : ι → ℝ, Real.sqrt t * G2 u) +
+          ∫ u : ι → ℝ, Real.sqrt t * G3 u) + ∫ u : ι → ℝ, t * G4 u := by
+            congr 1
+            congr 1
+            exact MeasureTheory.integral_add h_int_lin_rescaled h_G2_const
+      _ = (∫ u : ι → ℝ, dot a u * dot b u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) +
+          Real.sqrt t * (∫ u : ι → ℝ, G2 u) +
+          Real.sqrt t * (∫ u : ι → ℝ, G3 u) +
+          t * (∫ u : ι → ℝ, G4 u) := by
+            rw [h_e2, h_e3, h_e4]
+  -- Use h_split_lin and h_gauss_lin to substitute the first integral.
+  rw [h_t_N, h_split_lin, h_gauss_lin]
+  -- Goal: |Z·m + ∫ G1 + √t·∫G2 + √t·∫G3 + t·∫G4 - Z·m| ≤ K_total / √t.
+  -- Simplify Z·m cancellation.
+  have h_simp : (gaussianZ H * dot a (Hinv b) +
+        ∫ u : ι → ℝ, G1 u) +
+      Real.sqrt t * (∫ u : ι → ℝ, G2 u) +
+      Real.sqrt t * (∫ u : ι → ℝ, G3 u) +
+      t * (∫ u : ι → ℝ, G4 u) -
+      gaussianZ H * dot a (Hinv b)
+      = (∫ u : ι → ℝ, G1 u) +
+        Real.sqrt t * (∫ u : ι → ℝ, G2 u) +
+        Real.sqrt t * (∫ u : ι → ℝ, G3 u) +
+        t * (∫ u : ι → ℝ, G4 u) := by ring
+  rw [h_simp]
+  -- Triangle inequality.
+  calc |(∫ u : ι → ℝ, G1 u) +
+          Real.sqrt t * (∫ u : ι → ℝ, G2 u) +
+          Real.sqrt t * (∫ u : ι → ℝ, G3 u) +
+          t * (∫ u : ι → ℝ, G4 u)|
+      ≤ |∫ u : ι → ℝ, G1 u| +
+        |Real.sqrt t * (∫ u : ι → ℝ, G2 u)| +
+        |Real.sqrt t * (∫ u : ι → ℝ, G3 u)| +
+        |t * (∫ u : ι → ℝ, G4 u)| := by
+          have h1 := abs_add_le ((∫ u : ι → ℝ, G1 u) +
+              Real.sqrt t * (∫ u : ι → ℝ, G2 u) +
+              Real.sqrt t * (∫ u : ι → ℝ, G3 u))
+            (t * (∫ u : ι → ℝ, G4 u))
+          have h2 := abs_add_le ((∫ u : ι → ℝ, G1 u) +
+              Real.sqrt t * (∫ u : ι → ℝ, G2 u))
+            (Real.sqrt t * (∫ u : ι → ℝ, G3 u))
+          have h3 := abs_add_le (∫ u : ι → ℝ, G1 u)
+            (Real.sqrt t * (∫ u : ι → ℝ, G2 u))
+          linarith
+    _ = |∫ u : ι → ℝ, G1 u| +
+        Real.sqrt t * |∫ u : ι → ℝ, G2 u| +
+        Real.sqrt t * |∫ u : ι → ℝ, G3 u| +
+        t * |∫ u : ι → ℝ, G4 u| := by
+          rw [abs_mul (Real.sqrt t), abs_mul (Real.sqrt t), abs_mul t,
+              abs_of_pos hsqrt_pos, abs_of_pos ht_pos]
+    _ ≤ K_lead / Real.sqrt t +
+        Real.sqrt t * (K_x1 / t) +
+        Real.sqrt t * (K_x2 / t) +
+        t * (K_q / (t * Real.sqrt t)) := by
+          have h1 := h_lead_t
+          have h2 := mul_le_mul_of_nonneg_left h_x1_t hsqrt_pos.le
+          have h3 := mul_le_mul_of_nonneg_left h_x2_t hsqrt_pos.le
+          have h4 := mul_le_mul_of_nonneg_left h_q_t ht_pos.le
+          linarith
+    _ = (K_lead + K_x1 + K_x2 + K_q) / Real.sqrt t := by
+          have h_sq : Real.sqrt t ^ 2 = t := Real.sq_sqrt ht_pos.le
+          field_simp
+          linear_combination (K_x1 + K_x2) * h_sq
 
 end AsymptoticIntegrals
 
