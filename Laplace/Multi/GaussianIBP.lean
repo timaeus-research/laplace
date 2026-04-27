@@ -767,6 +767,26 @@ theorem integral_odd_mul_gaussian_eq_zero
   -- h_sub : -∫ ... = ∫ ..., so ∫ ... = 0.
   linarith
 
+omit [DecidableEq ι] in
+/-- **`dot a` is odd in its second argument**: `dot a (-u) = -dot a u`. -/
+lemma dot_neg (a u : ι → ℝ) : dot a (-u) = -(dot a u) := by
+  unfold dot
+  rw [← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro i _
+  simp [Pi.neg_apply]
+
+omit [DecidableEq ι] in
+/-- **Linear-functional Gaussian integral vanishes**: for any `a : ι → ℝ`,
+`∫ u, ⟨a, u⟩ · gaussianWeight H u du = 0`.
+
+Direct corollary of `integral_odd_mul_gaussian_eq_zero` since `u ↦ dot a u`
+is odd in `u`. -/
+theorem integral_dot_mul_gaussianWeight_eq_zero
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (a : ι → ℝ) :
+    ∫ u : ι → ℝ, dot a u * gaussianWeight H u = 0 :=
+  integral_odd_mul_gaussian_eq_zero H (fun u => dot a u) (dot_neg a)
+
 end OddGaussian
 
 end Laplace.Multi
