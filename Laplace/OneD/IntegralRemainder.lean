@@ -1593,6 +1593,57 @@ theorem mean_anharmonic_J_form_asymptotic
   rw [hval] at hquot
   exact hquot
 
+/-- **Exact bridge**: for `t > 0` and `J_0(t) ≠ 0`,
+`t · ⟨x⟩_t = √t · J_1(t) / (√λ · J_0(t))`. -/
+private lemma mean_J_form_exact
+    {lam alpha gamma : ℝ} (hlam : 0 < lam)
+    {t : ℝ} (ht : 0 < t)
+    (hJ0_ne : J_n lam alpha gamma 0 t ≠ 0) :
+    t * Laplace.gibbsExpectation
+      (anharmonicPotential lam alpha gamma) t (fun x => x) =
+    Real.sqrt t * J_n lam alpha gamma 1 t /
+      (Real.sqrt lam * J_n lam alpha gamma 0 t) := by
+  have hlamt : 0 < lam * t := mul_pos hlam ht
+  have hsqrt_lamt_pos : 0 < Real.sqrt (lam * t) := Real.sqrt_pos.mpr hlamt
+  have hsqrt_lamt_ne : Real.sqrt (lam * t) ≠ 0 := hsqrt_lamt_pos.ne'
+  have hsqrt_lam_pos : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
+  have hsqrt_lam_ne : Real.sqrt lam ≠ 0 := hsqrt_lam_pos.ne'
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
+  have hlam_ne : lam ≠ 0 := hlam.ne'
+  have ht_ne : t ≠ 0 := ht.ne'
+  unfold Laplace.gibbsExpectation Laplace.partitionFunction
+  set Z := ∫ x : ℝ, Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hZ_def
+  set IL1 := ∫ x : ℝ, x * Real.exp (-(t * anharmonicPotential lam alpha gamma x))
+    with hIL1_def
+  have h0 := I_n_J_n_relation lam alpha gamma 0 hlam ht
+  have h1 := I_n_J_n_relation lam alpha gamma 1 hlam ht
+  rw [pow_one] at h0
+  rw [show (1 + 1 : ℕ) = 2 from rfl] at h1
+  simp only [pow_zero, one_mul] at h0
+  simp only [pow_one] at h1
+  have hZ_eq : Real.sqrt (lam * t) * Z = J_n lam alpha gamma 0 t := by
+    unfold J_n; simp only [pow_zero, one_mul]; exact h0
+  have hIL1_eq : Real.sqrt (lam * t) ^ 2 * IL1 = J_n lam alpha gamma 1 t := by
+    unfold J_n; simp only [pow_one]; exact h1
+  have hsqrt_lamt_sq : Real.sqrt (lam * t) ^ 2 = lam * t := Real.sq_sqrt hlamt.le
+  have hsqrt_lamt_split : Real.sqrt (lam * t) = Real.sqrt lam * Real.sqrt t :=
+    Real.sqrt_mul hlam.le t
+  have hZ_sub : Z = J_n lam alpha gamma 0 t / Real.sqrt (lam * t) := by
+    rw [eq_div_iff hsqrt_lamt_ne, mul_comm]; exact hZ_eq
+  have hIL1_sub : IL1 = J_n lam alpha gamma 1 t / (lam * t) := by
+    rw [eq_div_iff hlamt.ne', mul_comm, ← hsqrt_lamt_sq]; exact hIL1_eq
+  have hZ_ne : Z ≠ 0 := fun hZ => hJ0_ne (by rw [← hZ_eq, hZ, mul_zero])
+  rw [hZ_sub, hIL1_sub, hsqrt_lamt_split]
+  set sl : ℝ := Real.sqrt lam with hsl_def
+  set st : ℝ := Real.sqrt t with hst_def
+  have hsl2 : sl ^ 2 = lam := Real.sq_sqrt hlam.le
+  have hst2 : st ^ 2 = t := Real.sq_sqrt ht.le
+  have hsl_ne : sl ≠ 0 := hsqrt_lam_ne
+  have hst_ne : st ≠ 0 := hsqrt_t_ne
+  rw [← hsl2, ← hst2]
+  field_simp
+
 /-- (a) **Mean asymptotic** in `gibbsExpectation` form: `t · ⟨x⟩_t → -α/(2λ²)`.
 
 Equivalently `⟨x⟩_t = -α/(2λ² t) + o(t⁻¹)` as `t → ∞`. -/
@@ -1737,6 +1788,88 @@ theorem cov_self_anharmonic_asymptotic
       Filter.Tendsto.eventually_const_lt sqrt_two_pi_pos hJ0
     filter_upwards [h_pos_J0] with t ht; exact ht.ne'
   filter_upwards [Filter.eventually_gt_atTop (0 : ℝ), hJ0_ev] with t ht hJ0_ne
+  have hlamt : 0 < lam * t := mul_pos hlam ht
+  have hsqrt_lamt_pos : 0 < Real.sqrt (lam * t) := Real.sqrt_pos.mpr hlamt
+  have hsqrt_lamt_ne : Real.sqrt (lam * t) ≠ 0 := hsqrt_lamt_pos.ne'
+  have hsqrt_lam_pos : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
+  have hsqrt_lam_ne : Real.sqrt lam ≠ 0 := hsqrt_lam_pos.ne'
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
+  have hlam_ne : lam ≠ 0 := hlam.ne'
+  have ht_ne : t ≠ 0 := ht.ne'
+  rw [gibbsCov_x_x_eq_I_form]
+  set Z := ∫ x : ℝ, Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hZ_def
+  set IL1 := ∫ x : ℝ, x * Real.exp (-(t * anharmonicPotential lam alpha gamma x))
+    with hIL1_def
+  set IL2 := ∫ x : ℝ, x ^ 2 *
+      Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hIL2_def
+  have h0 := I_n_J_n_relation lam alpha gamma 0 hlam ht
+  have h1 := I_n_J_n_relation lam alpha gamma 1 hlam ht
+  have h2 := I_n_J_n_relation lam alpha gamma 2 hlam ht
+  rw [pow_one] at h0
+  rw [show (1 + 1 : ℕ) = 2 from rfl] at h1
+  rw [show (2 + 1 : ℕ) = 3 from rfl] at h2
+  simp only [pow_zero, one_mul] at h0
+  simp only [pow_one] at h1
+  have hZ_eq : Real.sqrt (lam * t) * Z = J_n lam alpha gamma 0 t := by
+    unfold J_n; simp only [pow_zero, one_mul]; exact h0
+  have hIL1_eq : Real.sqrt (lam * t) ^ 2 * IL1 = J_n lam alpha gamma 1 t := by
+    unfold J_n; simp only [pow_one]; exact h1
+  have hIL2_eq : Real.sqrt (lam * t) ^ 3 * IL2 = J_n lam alpha gamma 2 t := by
+    unfold J_n; exact h2
+  have hsqrt_lamt_sq : Real.sqrt (lam * t) ^ 2 = lam * t := Real.sq_sqrt hlamt.le
+  have hsqrt_lamt_split : Real.sqrt (lam * t) = Real.sqrt lam * Real.sqrt t :=
+    Real.sqrt_mul hlam.le t
+  have hZ_sub : Z = J_n lam alpha gamma 0 t / Real.sqrt (lam * t) := by
+    rw [eq_div_iff hsqrt_lamt_ne, mul_comm]; exact hZ_eq
+  have hIL1_sub : IL1 = J_n lam alpha gamma 1 t / (lam * t) := by
+    rw [eq_div_iff hlamt.ne', mul_comm, ← hsqrt_lamt_sq]; exact hIL1_eq
+  have hIL2_sub : IL2 = J_n lam alpha gamma 2 t /
+      (lam * t * Real.sqrt (lam * t)) := by
+    rw [eq_div_iff (mul_ne_zero hlamt.ne' hsqrt_lamt_ne), mul_comm,
+        show (lam * t * Real.sqrt (lam * t) : ℝ) = Real.sqrt (lam * t) ^ 3 from by
+          rw [show (3 : ℕ) = 2 + 1 from rfl, pow_add, pow_one, hsqrt_lamt_sq]]
+    exact hIL2_eq
+  have hZ_ne : Z ≠ 0 := fun hZ => hJ0_ne (by rw [← hZ_eq, hZ, mul_zero])
+  rw [hZ_sub, hIL1_sub, hIL2_sub, hsqrt_lamt_split]
+  set sl : ℝ := Real.sqrt lam with hsl_def
+  set st : ℝ := Real.sqrt t with hst_def
+  have hsl2 : sl ^ 2 = lam := Real.sq_sqrt hlam.le
+  have hst2 : st ^ 2 = t := Real.sq_sqrt ht.le
+  have hsl_ne : sl ≠ 0 := hsqrt_lam_ne
+  have hst_ne : st ≠ 0 := hsqrt_t_ne
+  have hJ0_sq_ne : J_n lam alpha gamma 0 t ^ 2 ≠ 0 := pow_ne_zero 2 hJ0_ne
+  rw [← hsl2, ← hst2]
+  field_simp
+
+/-! ## Explicit O(t⁻²) rate for the mean and self-covariance
+
+GPT-5.5 Pro consultation (`gpt_responses/o2_strategy_check.md`) showed that the
+upgrade from `Tendsto` to explicit `O(t⁻²)` rate does not require building a
+full second-order `J_n` asymptotic. Instead:
+
+- For self-covariance, the existing first-order `J_n` bounds suffice via
+  `t·Cov[x,x] - 1/λ = (J_0(J_2-J_0) - J_1²) / (λ·J_0²)`.
+- For the mean, an exact Stein/score identity
+  `J_1 + (3A/√t)·J_2 + (4B/t)·J_3 = 0` gives the rate from the same
+  first-order bounds.
+
+The scalar Taylor-2 bound (`abs_exp_neg_sub_one_add_sub_half_sq_le`) in
+`ScalarBound.lean` is now unused for these two theorems, but kept as a
+general-purpose result for future strengthening.
+-/
+
+/-- **Exact bridge** for the self-covariance: for `t > 0` and `J_0(t) ≠ 0`,
+`t · Cov_t[x, x] = (J_2·J_0 - J_1²) / (λ·J_0²)`. -/
+private lemma cov_self_J_form_exact
+    {lam alpha gamma : ℝ} (hlam : 0 < lam)
+    {t : ℝ} (ht : 0 < t)
+    (hJ0_ne : J_n lam alpha gamma 0 t ≠ 0) :
+    t * Laplace.gibbsCov
+      (anharmonicPotential lam alpha gamma) t (fun x => x) (fun x => x) =
+    (J_n lam alpha gamma 2 t * J_n lam alpha gamma 0 t -
+      J_n lam alpha gamma 1 t ^ 2) /
+    (lam * J_n lam alpha gamma 0 t ^ 2) := by
   have hlamt : 0 < lam * t := mul_pos hlam ht
   have hsqrt_lamt_pos : 0 < Real.sqrt (lam * t) := Real.sqrt_pos.mpr hlamt
   have hsqrt_lamt_ne : Real.sqrt (lam * t) ≠ 0 := hsqrt_lamt_pos.ne'
