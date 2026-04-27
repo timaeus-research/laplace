@@ -347,6 +347,46 @@ lemma hasDerivAt_sliceIntegrand
   convert h_prod using 1
   ring
 
+/-- The derivative of the slice integrand, expressed as a function of `s`.
+
+This is the function whose integral over `ℝ` will vanish (the IBP step).
+It equals `∂_s sliceIntegrand = δ_{ij} · gW - u_j · (H u)_i · gW`,
+where `u = u₀ + s • eᵢ`. -/
+noncomputable def sliceDeriv
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (i j : ι) (u₀ : ι → ℝ) : ℝ → ℝ :=
+  fun s =>
+    (if i = j then (1 : ℝ) else 0) *
+      gaussianWeight H (u₀ + s • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))
+    - (u₀ + s • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j *
+      (H (u₀ + s • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))) i *
+      gaussianWeight H (u₀ + s • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))
+
+/-- The slice derivative is indeed the pointwise derivative of `sliceIntegrand`. -/
+lemma hasDerivAt_sliceIntegrand_eq_sliceDeriv
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hSymm : ∀ x y, ∑ k, x k * (H y) k = ∑ k, y k * (H x) k)
+    (i j : ι) (u₀ : ι → ℝ) (t : ℝ) :
+    HasDerivAt (sliceIntegrand H i j u₀) (sliceDeriv H i j u₀ t) t := by
+  unfold sliceDeriv
+  exact hasDerivAt_sliceIntegrand H hSymm i j u₀ t
+
+/-- **Slice IBP**: under decay-at-infinity and integrability hypotheses, the
+slice derivative integrates to zero on ℝ. This is the 1D-FTC content of the
+multivariate IBP step. -/
+lemma integral_sliceDeriv_eq_zero
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hSymm : ∀ x y, ∑ k, x k * (H y) k = ∑ k, y k * (H x) k)
+    (i j : ι) (u₀ : ι → ℝ)
+    (h_deriv_int : Integrable (sliceDeriv H i j u₀))
+    (h_top : Filter.Tendsto (sliceIntegrand H i j u₀) Filter.atTop (nhds 0))
+    (h_bot : Filter.Tendsto (sliceIntegrand H i j u₀) Filter.atBot (nhds 0)) :
+    ∫ s : ℝ, sliceDeriv H i j u₀ s = 0 :=
+  integral_full_line_deriv_eq_zero
+    (sliceIntegrand H i j u₀)
+    (sliceDeriv H i j u₀)
+    (fun t => hasDerivAt_sliceIntegrand_eq_sliceDeriv H hSymm i j u₀ t)
+    h_deriv_int h_top h_bot
+
 end SliceDerivative
 
 end Laplace.Multi
