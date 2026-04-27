@@ -9,3 +9,4 @@ import Laplace.ScalarBound
 import Laplace.OneD.IntegralRemainder
 import Laplace.OneD.Rescaling
 import Laplace.Multi.Basic
+import Laplace.Multi.GaussianDomination
