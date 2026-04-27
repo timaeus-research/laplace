@@ -1434,4 +1434,48 @@ lemma integrable_exp_neg_const_norm_sq
 
 end NormPowExpIntegrability
 
+section TailExpDecayHelper
+
+/-- **Exp tail beats `1/√t`**: for `β > 0` and `t ≥ 1/β²`,
+`exp(-β · t) ≤ 1 / Real.sqrt t`.
+
+Uses `exp(βt) ≥ βt` (from `Real.add_one_le_exp`) and that `√t ≤ βt` for
+`t ≥ 1/β²`. -/
+lemma exp_neg_const_mul_le_inv_sqrt
+    {β : ℝ} (hβ_pos : 0 < β) {t : ℝ} (ht : 1 / β ^ 2 ≤ t) :
+    Real.exp (-(β * t)) ≤ 1 / Real.sqrt t := by
+  have hβ_sq_pos : (0 : ℝ) < β ^ 2 := by positivity
+  have ht_pos : 0 < t := lt_of_lt_of_le (by positivity) ht
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  -- Step 1: β · √t ≥ 1.
+  have hβsqrt_ge_one : 1 ≤ β * Real.sqrt t := by
+    have h_sq_bound : 1 ≤ (β * Real.sqrt t) ^ 2 := by
+      rw [mul_pow, Real.sq_sqrt ht_pos.le]
+      have h := mul_le_mul_of_nonneg_left ht (le_of_lt hβ_sq_pos)
+      rw [show (β ^ 2 : ℝ) * (1 / β ^ 2) = 1 from by field_simp] at h
+      linarith
+    have h_prod_pos : 0 < β * Real.sqrt t := mul_pos hβ_pos hsqrt_pos
+    nlinarith [sq_nonneg (β * Real.sqrt t - 1)]
+  -- Step 2: √t ≤ β · t.
+  have h_sqrt_le_betat : Real.sqrt t ≤ β * t := by
+    have h := mul_le_mul_of_nonneg_left hβsqrt_ge_one hsqrt_pos.le
+    rw [mul_one] at h
+    have h_eq : Real.sqrt t * (β * Real.sqrt t)
+        = β * (Real.sqrt t * Real.sqrt t) := by ring
+    rw [h_eq, Real.mul_self_sqrt ht_pos.le] at h
+    exact h
+  -- Step 3: exp(-βt) = 1/exp(βt). And exp(βt) ≥ βt ≥ √t > 0.
+  have hβt_nn : 0 ≤ β * t := mul_nonneg hβ_pos.le ht_pos.le
+  have h_exp_lb : β * t ≤ Real.exp (β * t) := by
+    have h := Real.add_one_le_exp (β * t)
+    linarith
+  have h_exp_ge_sqrt : Real.sqrt t ≤ Real.exp (β * t) :=
+    le_trans h_sqrt_le_betat h_exp_lb
+  -- Step 4: exp(-βt) ≤ 1/√t.
+  rw [Real.exp_neg]
+  rw [show (1 : ℝ) / Real.sqrt t = (Real.sqrt t)⁻¹ from one_div _]
+  exact inv_anti₀ hsqrt_pos h_exp_ge_sqrt
+
+end TailExpDecayHelper
+
 end Laplace.Multi
