@@ -409,6 +409,41 @@ theorem rescaledPartition_ge_half_gaussianZ
   have habs_le := abs_le.mp hpart'
   linarith
 
+/-- **Quotient reduction lemma**: from a numerator bound, deduce the
+expectation bound via the denominator lower bound. -/
+private lemma rescaledExpectation_observable_bound_inv_of_num
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialApprox V H)
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    (h_num_bound : ∃ K_N T_N : ℝ, 1 ≤ T_N ∧ ∀ t : ℝ, T_N ≤ t →
+      |rescaledNumerator V t φ| ≤ K_N / t) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |rescaledExpectation V t φ| ≤ K / t := by
+  obtain ⟨K_N, T_N, hT_N, hN⟩ := h_num_bound
+  obtain ⟨T_D, hT_D, hD⟩ :=
+    rescaledPartition_ge_half_gaussianZ V H Hinv hV hGauss
+  have hZ_pos := hGauss.Z_pos
+  refine ⟨2 * K_N / gaussianZ H, max T_N T_D, le_max_of_le_left hT_N, ?_⟩
+  intro t ht
+  have htN : T_N ≤ t := le_of_max_le_left ht
+  have htD : T_D ≤ t := le_of_max_le_right ht
+  have ht_pos : 0 < t := lt_of_lt_of_le (by linarith [hT_N]) htN
+  have hD_t : gaussianZ H / 2 ≤ rescaledPartition V t := hD t htD
+  have hD_pos : 0 < rescaledPartition V t :=
+    lt_of_lt_of_le (by linarith) hD_t
+  have hN_t : |rescaledNumerator V t φ| ≤ K_N / t := hN t htN
+  calc |rescaledExpectation V t φ|
+      = |rescaledNumerator V t φ| / rescaledPartition V t := by
+        unfold rescaledExpectation
+        rw [abs_div, abs_of_pos hD_pos]
+    _ ≤ |rescaledNumerator V t φ| / (gaussianZ H / 2) := by
+        apply div_le_div_of_nonneg_left (abs_nonneg _) (by linarith) hD_t
+    _ ≤ (K_N / t) / (gaussianZ H / 2) := by
+        apply div_le_div_of_nonneg_right hN_t (by linarith)
+    _ = (2 * K_N / gaussianZ H) / t := by
+        field_simp
+
 /-- **Single-observable asymptote (weak rate)**.
 
 For an observable `φ` with gradient `a`, `rescaledExpectation V t φ` is
@@ -426,11 +461,15 @@ theorem rescaledExpectation_observable_bound_inv
     (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a : ι → ℝ)
     [Nonempty ι]
-    (_hV : PotentialApprox V H)
+    (hV : PotentialApprox V H)
     (_hφ : ObservableApprox φ a)
-    (_hGauss : LaplaceCovHypotheses H Hinv) :
+    (hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |rescaledExpectation V t φ| ≤ K / t := by
+  -- Apply the quotient reduction with the numerator bound (still a sorry).
+  apply rescaledExpectation_observable_bound_inv_of_num V φ H Hinv hV hGauss
+  -- The numerator bound follows from the linear-plus-remainder decomposition;
+  -- substantial integral assembly omitted here.
   sorry
 
 /-- **Pair-observable asymptote (weak rate)**.
