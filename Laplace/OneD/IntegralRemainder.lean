@@ -2175,4 +2175,137 @@ theorem cov_self_anharmonic_O2_rate
     _ = (3 * c * K_d / 2 + K_1 ^ 2) * 4 / (lam * c ^ 2) / t := by
         field_simp
 
+/-! ## Stein/score identity for the J_n integrals
+
+The exact identity `J_1(t) + (3A/√t)·J_2(t) + (4B/t)·J_3(t) = 0` follows from
+`0 = ∫_ℝ d/du(e^{-u²/2 - s_t(u)}) du` (boundary terms vanish by Gaussian decay).
+-/
+
+/-- The score function `S_t(u) = u + 3A·u²/√t + 4B·u³/t`. This is the
+derivative of `u²/2 + s_t(u)` with respect to `u`. -/
+private noncomputable def scoreFun (lam alpha gamma : ℝ) (t : ℝ) (u : ℝ) : ℝ :=
+  u + 3 * cubicScale lam alpha * u ^ 2 / Real.sqrt t +
+    4 * quarticScale lam gamma * u ^ 3 / t
+
+/-- The integrand `f_t(u) = e^{-u²/2}·e^{-s_t(u)}` (matches the integrand of
+`J_0` minus the `u^n` factor). -/
+private noncomputable def fGauss (lam alpha gamma : ℝ) (t : ℝ) (u : ℝ) : ℝ :=
+  Real.exp (-(u ^ 2) / 2) * Real.exp (-rescaledPerturbation lam alpha gamma t u)
+
+/-- The derivative of `rescaledPerturbation` in `u`. -/
+private lemma rescaledPerturbation_hasDerivAt
+    (lam alpha gamma : ℝ) {t : ℝ} (ht : 0 < t) (u : ℝ) :
+    HasDerivAt (fun u => rescaledPerturbation lam alpha gamma t u)
+      (3 * cubicScale lam alpha * u ^ 2 / Real.sqrt t +
+        4 * quarticScale lam gamma * u ^ 3 / t) u := by
+  unfold rescaledPerturbation
+  have hsqrt_t_ne : Real.sqrt t ≠ 0 := (Real.sqrt_pos.mpr ht).ne'
+  have ht_ne : t ≠ 0 := ht.ne'
+  have h_cube : HasDerivAt (fun u : ℝ => u ^ 3) (3 * u ^ 2) u := by
+    have := (hasDerivAt_id u).pow 3
+    simpa using this
+  have h_quart : HasDerivAt (fun u : ℝ => u ^ 4) (4 * u ^ 3) u := by
+    have := (hasDerivAt_id u).pow 4
+    simpa using this
+  have h_term1 : HasDerivAt
+      (fun u => cubicScale lam alpha * u ^ 3 / Real.sqrt t)
+      (3 * cubicScale lam alpha * u ^ 2 / Real.sqrt t) u := by
+    have h1 := (h_cube.const_mul (cubicScale lam alpha)).div_const (Real.sqrt t)
+    convert h1 using 1; ring
+  have h_term2 : HasDerivAt
+      (fun u => quarticScale lam gamma * u ^ 4 / t)
+      (4 * quarticScale lam gamma * u ^ 3 / t) u := by
+    have h2 := (h_quart.const_mul (quarticScale lam gamma)).div_const t
+    convert h2 using 1; ring
+  exact h_term1.add h_term2
+
+/-- `f_t(u) = exp(-u²/2)·exp(-s_t(u))` has derivative `-S_t(u)·f_t(u)`. -/
+private lemma fGauss_hasDerivAt
+    (lam alpha gamma : ℝ) {t : ℝ} (ht : 0 < t) (u : ℝ) :
+    HasDerivAt (fGauss lam alpha gamma t)
+      (-(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) u := by
+  unfold fGauss scoreFun
+  have h_neg_half_sq : HasDerivAt (fun u : ℝ => -(u ^ 2) / 2) (-u) u := by
+    have := (hasDerivAt_id u).pow 2
+    have h1 : HasDerivAt (fun u : ℝ => u ^ 2) (2 * u) u := by simpa using this
+    have h2 := h1.neg.div_const 2
+    convert h2 using 1; ring
+  have h_exp1 : HasDerivAt (fun u : ℝ => Real.exp (-(u ^ 2) / 2))
+      (-u * Real.exp (-(u ^ 2) / 2)) u := by
+    have := (Real.hasDerivAt_exp (-(u ^ 2) / 2)).comp u h_neg_half_sq
+    convert this using 1; ring
+  have h_neg_sp : HasDerivAt (fun u => -rescaledPerturbation lam alpha gamma t u)
+      (-(3 * cubicScale lam alpha * u ^ 2 / Real.sqrt t +
+        4 * quarticScale lam gamma * u ^ 3 / t)) u :=
+    (rescaledPerturbation_hasDerivAt lam alpha gamma ht u).neg
+  have h_exp2 : HasDerivAt (fun u : ℝ => Real.exp (-rescaledPerturbation lam alpha gamma t u))
+      (-(3 * cubicScale lam alpha * u ^ 2 / Real.sqrt t +
+        4 * quarticScale lam gamma * u ^ 3 / t) *
+       Real.exp (-rescaledPerturbation lam alpha gamma t u)) u := by
+    have := (Real.hasDerivAt_exp _).comp u h_neg_sp
+    convert this using 1; ring
+  have h_prod := h_exp1.mul h_exp2
+  convert h_prod using 1; ring
+
+/-- `exp(-c·u²) → 0` as `|u| → ∞` (for `c > 0`). Helper for `fGauss` decay. -/
+private lemma exp_neg_const_mul_sq_tendsto_atTop_zero {c : ℝ} (hc : 0 < c) :
+    Filter.Tendsto (fun u : ℝ => Real.exp (-(c * u ^ 2))) Filter.atTop (nhds 0) := by
+  have h_sq : Filter.Tendsto (fun u : ℝ => u ^ 2) Filter.atTop Filter.atTop :=
+    Filter.tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)
+  have h_cmul : Filter.Tendsto (fun u : ℝ => c * u ^ 2) Filter.atTop Filter.atTop :=
+    h_sq.const_mul_atTop hc
+  have h_neg : Filter.Tendsto (fun u : ℝ => -(c * u ^ 2)) Filter.atTop Filter.atBot :=
+    Filter.tendsto_neg_atTop_atBot.comp h_cmul
+  exact Real.tendsto_exp_atBot.comp h_neg
+
+private lemma exp_neg_const_mul_sq_tendsto_atBot_zero {c : ℝ} (hc : 0 < c) :
+    Filter.Tendsto (fun u : ℝ => Real.exp (-(c * u ^ 2))) Filter.atBot (nhds 0) := by
+  have h_neg_id : Filter.Tendsto (fun u : ℝ => -u) Filter.atBot Filter.atTop :=
+    Filter.tendsto_neg_atBot_atTop
+  have h_pow : Filter.Tendsto (fun u : ℝ => u ^ 2) Filter.atTop Filter.atTop :=
+    Filter.tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)
+  have h_sq : Filter.Tendsto (fun u : ℝ => u ^ 2) Filter.atBot Filter.atTop := by
+    have h := h_pow.comp h_neg_id
+    convert h using 1
+    ext u; simp [Function.comp]
+  have h_cmul : Filter.Tendsto (fun u : ℝ => c * u ^ 2) Filter.atBot Filter.atTop :=
+    h_sq.const_mul_atTop hc
+  have h_neg : Filter.Tendsto (fun u : ℝ => -(c * u ^ 2)) Filter.atBot Filter.atBot :=
+    Filter.tendsto_neg_atTop_atBot.comp h_cmul
+  exact Real.tendsto_exp_atBot.comp h_neg
+
+/-- `f_t(u) → 0` as `u → ∞`. -/
+private lemma fGauss_tendsto_atTop_zero
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma)
+    {t : ℝ} (ht : 0 < t) :
+    Filter.Tendsto (fGauss lam alpha gamma t) Filter.atTop (nhds 0) := by
+  obtain ⟨c₀, hc₀_pos, hbound⟩ := rescaled_boltzmann_decay hlam hgamma hdisc
+  apply squeeze_zero (g := fun u => Real.exp (-(c₀ * u ^ 2))) _ _
+    (exp_neg_const_mul_sq_tendsto_atTop_zero hc₀_pos)
+  · intro u; unfold fGauss; positivity
+  · intro u
+    unfold fGauss
+    rw [show Real.exp (-(u ^ 2) / 2) * Real.exp (-rescaledPerturbation lam alpha gamma t u) =
+        Real.exp (-(u ^ 2 / 2 + rescaledPerturbation lam alpha gamma t u)) from by
+        rw [← Real.exp_add]; congr 1; ring]
+    exact hbound ht u
+
+/-- `f_t(u) → 0` as `u → -∞`. -/
+private lemma fGauss_tendsto_atBot_zero
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma)
+    {t : ℝ} (ht : 0 < t) :
+    Filter.Tendsto (fGauss lam alpha gamma t) Filter.atBot (nhds 0) := by
+  obtain ⟨c₀, hc₀_pos, hbound⟩ := rescaled_boltzmann_decay hlam hgamma hdisc
+  apply squeeze_zero (g := fun u => Real.exp (-(c₀ * u ^ 2))) _ _
+    (exp_neg_const_mul_sq_tendsto_atBot_zero hc₀_pos)
+  · intro u; unfold fGauss; positivity
+  · intro u
+    unfold fGauss
+    rw [show Real.exp (-(u ^ 2) / 2) * Real.exp (-rescaledPerturbation lam alpha gamma t u) =
+        Real.exp (-(u ^ 2 / 2 + rescaledPerturbation lam alpha gamma t u)) from by
+        rw [← Real.exp_add]; congr 1; ring]
+    exact hbound ht u
+
 end Laplace.OneD
