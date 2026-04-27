@@ -251,4 +251,102 @@ lemma hasDerivAt_exp_neg_half_quadForm_along_basis
 
 end DerivativeOfExpNegQ
 
+section Definitions
+
+open MeasureTheory
+
+/-- The Gaussian weight `exp(-(1/2) · quadForm H u)`. -/
+noncomputable def gaussianWeight
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) : ℝ :=
+  Real.exp (-(1/2) * quadForm H u)
+
+/-- The Gaussian normalising constant `Z := ∫ exp(-(1/2) quadForm H u) du`. -/
+noncomputable def gaussianZ
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) : ℝ :=
+  ∫ u : ι → ℝ, gaussianWeight H u
+
+/-- The `j`-th column of the Gaussian second-moment matrix:
+`(momentColumn H j) k = ∫ uₖ uⱼ · exp(-(1/2) quadForm H u) du`. -/
+noncomputable def momentColumn
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (j : ι) : ι → ℝ :=
+  fun k => ∫ u : ι → ℝ, u k * u j * gaussianWeight H u
+
+omit [DecidableEq ι] in
+/-- Definitional unfolding for `gaussianWeight`. -/
+lemma gaussianWeight_def (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) :
+    gaussianWeight H u = Real.exp (-(1/2) * quadForm H u) := rfl
+
+omit [DecidableEq ι] in
+/-- The Gaussian weight is positive. -/
+lemma gaussianWeight_pos (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) :
+    0 < gaussianWeight H u := Real.exp_pos _
+
+end Definitions
+
+section SliceDerivative
+
+open MeasureTheory
+
+/-- The "slice integrand" for the IBP step: for fixed basepoint `u₀` and
+coordinate `i, j`, this is the function
+
+  `s ↦ (u₀ + s • eᵢ)_j · gaussianWeight H (u₀ + s • eᵢ)`
+
+whose derivative we will integrate to zero (assuming Gaussian decay) to
+extract the IBP identity. -/
+noncomputable def sliceIntegrand
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (i j : ι) (u₀ : ι → ℝ) : ℝ → ℝ :=
+  fun s => (u₀ + s • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j *
+    gaussianWeight H (u₀ + s • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))
+
+/-- Slice derivative (product rule):
+
+  `d/ds [(u₀ + s•eᵢ)_j · exp(-Q)] = δ_{ij} · exp(-Q)
+       - (u₀ + s•eᵢ)_j · (H (u₀ + s•eᵢ))_i · exp(-Q)`.
+
+This is the analytic identity that the IBP step exploits: integrating the
+LHS over ℝ gives `0` (boundary terms vanish), so the integrals of the two
+RHS terms are equal up to sign. -/
+lemma hasDerivAt_sliceIntegrand
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hSymm : ∀ x y, ∑ k, x k * (H y) k = ∑ k, y k * (H x) k)
+    (i j : ι) (u₀ : ι → ℝ) (t : ℝ) :
+    HasDerivAt (sliceIntegrand H i j u₀)
+      ((if i = j then 1 else 0) *
+          gaussianWeight H (u₀ + t • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))
+        - (u₀ + t • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j *
+          (H (u₀ + t • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))) i *
+          gaussianWeight H (u₀ + t • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))))
+      t := by
+  classical
+  set e : ι → ℝ := Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ) with he_def
+  -- Slice u(s) := u₀ + s • e.
+  -- Inner derivative of u(s) j: it's e_j = δ_{ij} as constant in s.
+  have h_ej : e j = if i = j then (1 : ℝ) else 0 := by
+    by_cases hij : i = j
+    · subst hij; simp [he_def]
+    · rw [if_neg hij, he_def]
+      exact Pi.single_eq_of_ne (Ne.symm hij) 1
+  have h_func_eq : (fun s : ℝ => (u₀ + s • e) j) = fun s => u₀ j + s * e j := by
+    funext s; simp [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+  have h_uj_deriv : HasDerivAt (fun s : ℝ => (u₀ + s • e) j)
+      (if i = j then (1 : ℝ) else 0) t := by
+    rw [h_func_eq, ← h_ej]
+    have h := ((hasDerivAt_id t).mul_const (e j)).const_add (u₀ j)
+    simpa using h
+  -- Derivative of gaussianWeight along slice (Step 3).
+  have h_gW_deriv : HasDerivAt
+      (fun s : ℝ => gaussianWeight H (u₀ + s • e))
+      (-((H (u₀ + t • e)) i) * gaussianWeight H (u₀ + t • e)) t := by
+    unfold gaussianWeight
+    exact hasDerivAt_exp_neg_half_quadForm_along_basis H hSymm u₀ i t
+  -- Product rule.
+  have h_prod := h_uj_deriv.mul h_gW_deriv
+  -- Adjust the form.
+  unfold sliceIntegrand
+  convert h_prod using 1
+  ring
+
+end SliceDerivative
+
 end Laplace.Multi
