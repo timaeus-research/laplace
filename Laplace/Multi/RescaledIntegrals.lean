@@ -1476,6 +1476,37 @@ lemma exp_neg_const_mul_le_inv_sqrt
   rw [show (1 : ℝ) / Real.sqrt t = (Real.sqrt t)⁻¹ from one_div _]
   exact inv_anti₀ hsqrt_pos h_exp_ge_sqrt
 
+/-- **Exp tail beats `1/t`**: for `β > 0` and `t ≥ 4/β²`,
+`exp(-β · t) ≤ 1/t`. Squared form of `exp_neg_const_mul_le_inv_sqrt`. -/
+lemma exp_neg_const_mul_le_inv
+    {β : ℝ} (hβ_pos : 0 < β) {t : ℝ} (ht : 4 / β ^ 2 ≤ t) :
+    Real.exp (-(β * t)) ≤ 1 / t := by
+  have hβ2_pos : 0 < β / 2 := by linarith
+  have ht' : 1 / (β / 2) ^ 2 ≤ t := by
+    rw [show (β / 2 : ℝ) ^ 2 = β ^ 2 / 4 from by ring]
+    rw [show (1 : ℝ) / (β ^ 2 / 4) = 4 / β ^ 2 from by
+      rw [show (1 : ℝ) / (β ^ 2 / 4) = 1 * (4 / β ^ 2) from by
+          rw [div_div_eq_mul_div]; ring]; ring]
+    exact ht
+  have hhalf := exp_neg_const_mul_le_inv_sqrt hβ2_pos ht'
+  have ht_pos : 0 < t := lt_of_lt_of_le (by positivity) ht
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have h_inv_sqrt_pos : (0 : ℝ) < 1 / Real.sqrt t := by positivity
+  have h_exp_eq : Real.exp (-(β * t)) = (Real.exp (-((β / 2) * t))) ^ 2 := by
+    have h_pow : (Real.exp (-((β / 2) * t)))^2
+        = Real.exp (-((β / 2) * t)) * Real.exp (-((β / 2) * t)) := sq _
+    rw [h_pow, ← Real.exp_add]
+    congr 1
+    ring
+  rw [h_exp_eq]
+  have h_sq_le : (Real.exp (-((β / 2) * t)))^2 ≤ (1 / Real.sqrt t)^2 := by
+    have h_pos : 0 ≤ Real.exp (-((β / 2) * t)) := (Real.exp_pos _).le
+    exact sq_le_sq' (by linarith [h_inv_sqrt_pos.le]) hhalf
+  have h_sq_eq : (1 / Real.sqrt t : ℝ) ^ 2 = 1 / t := by
+    rw [div_pow, one_pow, Real.sq_sqrt ht_pos.le]
+  rw [← h_sq_eq]
+  exact h_sq_le
+
 end TailExpDecayHelper
 
 end Laplace.Multi
