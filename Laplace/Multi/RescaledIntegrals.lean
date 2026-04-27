@@ -748,6 +748,45 @@ lemma integrable_sq_norm_mul_rescaled_weight
             Real.exp (-((c / Fintype.card ι) * ∑ i, (u i) ^ 2)) :=
           mul_le_mul_of_nonneg_right h_norm_sq_le (Real.exp_pos _).le
 
+/-- **Coordinate moment integrability against the rescaled weight**: for
+each `i`, `u i · rescaledWeight` is integrable. Proved via dominated
+convergence using the absolute-value bound and Phase 2's first-moment
+Gaussian integrability. -/
+lemma integrable_coord_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (hV_cont : Continuous V) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    [Nonempty ι]
+    {t : ℝ} (ht : 0 < t) (i : ι) :
+    Integrable (fun u : ι → ℝ =>
+      u i * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) := by
+  have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
+  have hd : (0 : ℝ) < (c / Fintype.card ι) := div_pos hc_pos hcard
+  have h_dom_int := integrable_coord_mul_exp_neg_const_mul_sum_sq
+    (ι := ι) (c := c / Fintype.card ι) hd i
+  -- `h_dom_int.norm` is `Integrable ‖u_i · exp(-...)‖ = Integrable |u_i| · exp(-...)`.
+  have h_abs_dom : Integrable (fun u : ι → ℝ =>
+      |u i| * Real.exp (-((c / Fintype.card ι) * ∑ k, (u k) ^ 2))) := by
+    apply h_dom_int.norm.congr
+    filter_upwards with u
+    have h_exp_pos : 0 < Real.exp (-((c / Fintype.card ι) * ∑ k, (u k) ^ 2)) :=
+      Real.exp_pos _
+    rw [Real.norm_eq_abs, abs_mul, abs_of_pos h_exp_pos]
+  refine h_abs_dom.mono' ?_ ?_
+  · apply Continuous.aestronglyMeasurable
+    refine (continuous_apply i).mul ((continuous_gaussianWeight H).mul ?_)
+    exact Real.continuous_exp.comp
+      (continuous_rescaledPerturbation hV_cont H t).neg
+  · filter_upwards with u
+    have h_rw_le := rescaled_weight_le_sum_sq_coercive V H hc_pos h_coer ht u
+    have h_rw_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_rw_nn]
+    -- |u i| · rescaledW ≤ |u i| · exp(-(c/|ι|) · ∑ u_i²).
+    exact mul_le_mul_of_nonneg_left h_rw_le (abs_nonneg _)
+
 end CoerciveIntegrability
 
 end Laplace.Multi
