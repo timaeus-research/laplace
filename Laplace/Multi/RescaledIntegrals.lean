@@ -787,6 +787,39 @@ lemma integrable_coord_mul_rescaled_weight
     -- |u i| · rescaledW ≤ |u i| · exp(-(c/|ι|) · ∑ u_i²).
     exact mul_le_mul_of_nonneg_left h_rw_le (abs_nonneg _)
 
+/-- **Pointwise triangle-style bound** for the partition integrand:
+`|gW(u) · (exp(-s_t(u)) - 1)| ≤ gW(u) + exp(-(c·‖u‖²))`
+under coercivity. This is the simplest absolute pointwise bound that
+makes `gW · (exp(-s_t) - 1)` dominated by an integrable function
+uniformly in `t > 0`. -/
+lemma abs_gaussianWeight_mul_exp_sub_one_le_uniform
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    |gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ gaussianWeight H u + Real.exp (-(c * ‖u‖ ^ 2)) := by
+  set g := gaussianWeight H u
+  set r := Real.exp (-(rescaledPerturbation V H t u))
+  have hg_pos : 0 < g := gaussianWeight_pos H u
+  have hr_pos : 0 < r := Real.exp_pos _
+  -- |g · (r - 1)| ≤ g · |r - 1| ≤ g · (r + 1) = g·r + g.
+  -- And g·r ≤ exp(-c‖u‖²) by `rescaled_weight_le_coercive`.
+  have h_gr_le : g * r ≤ Real.exp (-(c * ‖u‖ ^ 2)) :=
+    rescaled_weight_le_coercive V H hc_pos h_coer ht u
+  rw [abs_mul, abs_of_pos hg_pos]
+  calc g * |r - 1| ≤ g * (r + 1) := by
+        apply mul_le_mul_of_nonneg_left _ hg_pos.le
+        rw [abs_le]
+        refine ⟨?_, ?_⟩
+        · linarith
+        · have h_r_nn : 0 ≤ r := hr_pos.le
+          linarith
+    _ = g * r + g := by ring
+    _ ≤ Real.exp (-(c * ‖u‖ ^ 2)) + g := by linarith
+    _ = g + Real.exp (-(c * ‖u‖ ^ 2)) := by ring
+
 end CoerciveIntegrability
 
 end Laplace.Multi
