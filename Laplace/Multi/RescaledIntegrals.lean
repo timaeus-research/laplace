@@ -137,4 +137,84 @@ theorem gibbsCov_eq_rescaledCov
 
 end Dilation
 
+section RescaledLocalBounds
+
+/-- The quadratic form scales as the square: `quadForm H (c • u) = c² · quadForm H u`. -/
+lemma quadForm_smul (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (c : ℝ) (u : ι → ℝ) :
+    quadForm H (c • u) = c ^ 2 * quadForm H u := by
+  unfold quadForm
+  rw [ContinuousLinearMap.map_smul, Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro i _
+  simp [Pi.smul_apply, smul_eq_mul]
+  ring
+
+/-- **Rescaled cubic bound on the perturbation**: under the local cubic
+remainder hypothesis, for `t > 0` and `‖u‖ ≤ R · √t`,
+
+  `|rescaledPerturbation V H t u| ≤ C · ‖u‖³ / √t`. -/
+lemma abs_rescaledPerturbation_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {R C : ℝ}
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ C * ‖w‖ ^ 3)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ R * Real.sqrt t) :
+    |rescaledPerturbation V H t u| ≤ C * ‖u‖ ^ 3 / Real.sqrt t := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  -- Step 1: Bound `‖(√t)⁻¹ • u‖ ≤ R`.
+  have h_norm : ‖(Real.sqrt t)⁻¹ • u‖ ≤ R := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by
+        field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  -- Step 2: Apply the local bound at the rescaled point.
+  have h_loc := h_local ((Real.sqrt t)⁻¹ • u) h_norm
+  rw [quadForm_smul] at h_loc
+  -- Step 3: ((√t)⁻¹)² = t⁻¹, so t · ((√t)⁻¹)² = 1.
+  have h_t_inv_sq : t * ((Real.sqrt t)⁻¹) ^ 2 = 1 := by
+    rw [inv_pow, Real.sq_sqrt ht.le]
+    exact mul_inv_cancel₀ (ne_of_gt ht)
+  -- Step 4: ((√t)⁻¹)³ = ((√t)⁻¹)² · (√t)⁻¹, and t · ((√t)⁻¹)³ = (√t)⁻¹.
+  have h_t_inv_cube : t * ((Real.sqrt t)⁻¹) ^ 3 = (Real.sqrt t)⁻¹ := by
+    rw [show ((Real.sqrt t)⁻¹) ^ 3 = ((Real.sqrt t)⁻¹) ^ 2 * (Real.sqrt t)⁻¹
+        from by ring]
+    rw [← mul_assoc, h_t_inv_sq, one_mul]
+  -- Step 5: ‖(√t)⁻¹ • u‖³ = ((√t)⁻¹)³ · ‖u‖³.
+  have h_norm_smul_cube : ‖(Real.sqrt t)⁻¹ • u‖ ^ 3
+      = ((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3 := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos, mul_pow]
+  rw [h_norm_smul_cube] at h_loc
+  -- Step 6: Multiply both sides of h_loc by t (≥ 0).
+  -- Goal: |rescaledPerturbation V H t u| = |t · V((√t)⁻¹ • u) - (1/2) quadForm H u|
+  --     ≤ C · ‖u‖³ / √t.
+  unfold rescaledPerturbation
+  -- LHS = |t·V(...) - (1/2) quadForm H u|.
+  -- Note: t · ((1/2) ((√t)⁻¹)² · quadForm H u) = (1/2) · quadForm H u (by h_t_inv_sq).
+  -- So LHS = |t · (V(...) - (1/2) ((√t)⁻¹)² quadForm H u)|
+  --        = t · |V(...) - (1/2) ((√t)⁻¹)² quadForm H u|.
+  have h_rearrange :
+      t * V ((Real.sqrt t)⁻¹ • u) - (1/2) * quadForm H u
+        = t * (V ((Real.sqrt t)⁻¹ • u)
+            - (1/2) * (((Real.sqrt t)⁻¹) ^ 2 * quadForm H u)) := by
+    have : t * ((1/2) * (((Real.sqrt t)⁻¹) ^ 2 * quadForm H u))
+        = (1/2) * quadForm H u := by
+      have : t * (((Real.sqrt t)⁻¹) ^ 2 * quadForm H u)
+          = quadForm H u := by
+        rw [← mul_assoc, h_t_inv_sq, one_mul]
+      linarith
+    linarith
+  rw [h_rearrange, abs_mul, abs_of_pos ht]
+  -- Goal: t · |V((√t)⁻¹ u) - (1/2)((√t)⁻¹)² quadForm H u| ≤ C · ‖u‖³ / √t
+  calc t * |V ((Real.sqrt t)⁻¹ • u)
+            - (1/2) * (((Real.sqrt t)⁻¹) ^ 2 * quadForm H u)|
+      ≤ t * (C * (((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3)) :=
+        mul_le_mul_of_nonneg_left h_loc (le_of_lt ht)
+    _ = (t * ((Real.sqrt t)⁻¹) ^ 3) * (C * ‖u‖ ^ 3) := by ring
+    _ = (Real.sqrt t)⁻¹ * (C * ‖u‖ ^ 3) := by rw [h_t_inv_cube]
+    _ = C * ‖u‖ ^ 3 / Real.sqrt t := by field_simp
+
+end RescaledLocalBounds
+
 end Laplace.Multi
