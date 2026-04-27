@@ -698,6 +698,33 @@ private lemma abs_integral_dot_mul_rescaled_weight_correction_le
           linarith
     _ = (A * Cs * M4 + 2 * A * M1) / Real.sqrt t := by field_simp
 
+/-- **Remainder bound (placeholder)**: for the rescaled-observable
+remainder `rem(u) = φ((√t)⁻¹ u) - (√t)⁻¹ · ⟨a, u⟩`, the integral
+`∫ rem(u) · gW · exp(-rescaledPerturbation) du` is `O(1/t)`.
+
+The local part follows from `abs_rescaledObservable_linear_error_le`
+(quadratic remainder bound `|rem| ≤ Cφ·‖u‖²/t` on `‖u‖ ≤ R√t`),
+combined with `rescaled_weight_le_coercive` and integrability of
+`‖u‖² · exp(-c‖u‖²)`. The tail requires polynomial growth of `φ`
+(`HasPolyGrowth`) plus exponential rescaled-weight decay.
+
+Substantial integral assembly omitted; see `gpt_responses/phase5_assembly.md`
+for the recipe. -/
+private lemma abs_integral_remainder_mul_rescaled_weight_le
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialApprox V H)
+    (hφ : ObservableApprox φ a)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |∫ u : ι → ℝ,
+          (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ K / t := by
+  sorry  -- ~150 LOC structurally same as linear-correction but with ‖u‖² · exp instead of ‖u‖⁴ · exp
+
 /-- **Quotient reduction lemma**: from a numerator bound, deduce the
 expectation bound via the denominator lower bound. -/
 private lemma rescaledExpectation_observable_bound_inv_of_num
@@ -755,10 +782,16 @@ theorem rescaledExpectation_observable_bound_inv
     (hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |rescaledExpectation V t φ| ≤ K / t := by
-  -- Apply the quotient reduction with the numerator bound (still a sorry).
   apply rescaledExpectation_observable_bound_inv_of_num V φ H Hinv hV hGauss
-  -- The numerator bound follows from the linear-plus-remainder decomposition;
-  -- substantial integral assembly omitted here.
+  -- Numerator bound `|N_t(φ)| ≤ K/t`: composes
+  -- (1) `abs_integral_dot_mul_rescaled_weight_correction_le` for the linear
+  --     part (gives `|(1/√t)·I_lin| = K_lc/t` since the leading
+  --     `∫ ⟨a,u⟩·gW = 0` cancels by oddness),
+  -- (2) `abs_integral_remainder_mul_rescaled_weight_le` for the remainder
+  --     (gives `|I_rem| ≤ K_r/t`),
+  -- via `rescaledNumerator_eq_linear_plus_remainder` (with appropriate
+  -- integrability hypotheses) and triangle inequality. Substantial
+  -- integral-bookkeeping omitted.
   sorry
 
 -- (Theorem statement moved below the private quotient-reduction lemma; see
