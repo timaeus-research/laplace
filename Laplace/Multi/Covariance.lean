@@ -122,6 +122,37 @@ structure LaplaceCovHypotheses
 
 end HypothesisPackage
 
+section GaussianMomentInfrastructure
+
+open MeasureTheory
+
+/-- **Sum-of-squares Gaussian moment integrability**: under
+`LaplaceCovHypotheses`, `(∑_i u_i²) · gaussianWeight H u` is integrable. -/
+lemma integrable_sum_sq_mul_gaussianWeight
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    Integrable (fun u : ι → ℝ =>
+      (∑ i, (u i) ^ 2) * gaussianWeight H u) := by
+  -- Each term `u_i^2 · gW = u_i * u_i * gW` is integrable from
+  -- `int_uk_uj_gW i i`. Sum gives `(∑ u_i^2) · gW`.
+  have h_each : ∀ i : ι,
+      Integrable (fun u : ι → ℝ => (u i) ^ 2 * gaussianWeight H u) := by
+    intro i
+    have h := hGauss.int_uk_uj_gW i i
+    apply h.congr
+    filter_upwards with u
+    show u i * u i * gaussianWeight H u = u i ^ 2 * gaussianWeight H u
+    ring
+  have h_sum : Integrable
+      (fun u : ι → ℝ => ∑ i, (u i) ^ 2 * gaussianWeight H u) :=
+    integrable_finset_sum Finset.univ (fun i _ => h_each i)
+  apply h_sum.congr
+  filter_upwards with u
+  show ∑ i, u i ^ 2 * gaussianWeight H u = (∑ i, u i ^ 2) * gaussianWeight H u
+  rw [Finset.sum_mul]
+
+end GaussianMomentInfrastructure
+
 section AsymptoticIntegrals
 
 /-- **Partition asymptote (weak rate)**.
