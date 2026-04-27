@@ -995,4 +995,90 @@ lemma abs_dot_le_l1_mul_norm (a u : ι → ℝ) :
 
 end QuadFormLowerBound
 
+section PolynomialGaussianDecay
+
+/-- For `x ≥ 0`, `x ≤ exp x`. Direct from `Real.add_one_le_exp`. -/
+lemma le_exp_self_of_nonneg {x : ℝ} (hx : 0 ≤ x) : x ≤ Real.exp x := by
+  have h := Real.add_one_le_exp x
+  have hone : (1 : ℝ) ≤ Real.exp x := by
+    calc (1 : ℝ) ≤ 1 + 0 := by linarith
+      _ ≤ 1 + x := by linarith
+      _ ≤ Real.exp x := by linarith
+  linarith
+
+/-- For `x ≥ 0` and `k : ℕ`, `x^k ≤ exp(k · x)`. -/
+lemma pow_le_exp_nsmul_of_nonneg {x : ℝ} (hx : 0 ≤ x) (k : ℕ) :
+    x ^ k ≤ Real.exp (k * x) := by
+  induction k with
+  | zero => simp
+  | succ n ih =>
+    have hexp_pos : 0 < Real.exp ((n:ℝ) * x) := Real.exp_pos _
+    have hx_le : x ≤ Real.exp x := le_exp_self_of_nonneg hx
+    calc x ^ (n + 1) = x ^ n * x := by ring
+      _ ≤ Real.exp ((n:ℝ) * x) * x :=
+          mul_le_mul_of_nonneg_right ih hx
+      _ ≤ Real.exp ((n:ℝ) * x) * Real.exp x :=
+          mul_le_mul_of_nonneg_left hx_le hexp_pos.le
+      _ = Real.exp ((n:ℝ) * x + x) := (Real.exp_add _ _).symm
+      _ = Real.exp ((↑(n + 1) : ℝ) * x) := by
+          congr 1; push_cast; ring
+
+/-- For `α > 0`, `k : ℕ`, and `x ≥ 0`,
+`x^k · exp(-α · x²) ≤ exp(k²/(4α))`. -/
+lemma pow_mul_exp_neg_sq_le_const
+    (k : ℕ) {α : ℝ} (hα_pos : 0 < α) {x : ℝ} (hx : 0 ≤ x) :
+    x ^ k * Real.exp (-(α * x ^ 2)) ≤ Real.exp ((k:ℝ) ^ 2 / (4 * α)) := by
+  -- x^k · exp(-αx²) ≤ exp(kx) · exp(-αx²) = exp(kx - αx²) ≤ exp(k²/(4α)).
+  have h_pow_le := pow_le_exp_nsmul_of_nonneg hx k
+  have hexp_neg_sq_pos : 0 < Real.exp (-(α * x ^ 2)) := Real.exp_pos _
+  -- Bound on quadratic: kx - αx² ≤ k²/(4α).
+  -- α · (x - k/(2α))² ≥ 0 ⟹ αx² - kx + k²/(4α) ≥ 0 ⟹ kx - αx² ≤ k²/(4α).
+  have h_quad : (k:ℝ) * x - α * x ^ 2 ≤ (k:ℝ) ^ 2 / (4 * α) := by
+    have h_sq : 0 ≤ α * (x - (k:ℝ) / (2 * α)) ^ 2 :=
+      mul_nonneg hα_pos.le (sq_nonneg _)
+    have h_expand : α * (x - (k:ℝ) / (2 * α)) ^ 2
+        = α * x ^ 2 - (k:ℝ) * x + (k:ℝ) ^ 2 / (4 * α) := by
+      have h2α_ne : (2 * α : ℝ) ≠ 0 := by positivity
+      have h4α_ne : (4 * α : ℝ) ≠ 0 := by positivity
+      field_simp
+      ring
+    linarith
+  -- Combine.
+  calc x ^ k * Real.exp (-(α * x ^ 2))
+      ≤ Real.exp ((k:ℝ) * x) * Real.exp (-(α * x ^ 2)) :=
+        mul_le_mul_of_nonneg_right h_pow_le hexp_neg_sq_pos.le
+    _ = Real.exp ((k:ℝ) * x + -(α * x ^ 2)) := by rw [← Real.exp_add]
+    _ = Real.exp ((k:ℝ) * x - α * x ^ 2) := by ring_nf
+    _ ≤ Real.exp ((k:ℝ) ^ 2 / (4 * α)) := Real.exp_le_exp.mpr h_quad
+
+/-- **Polynomial-Gaussian decay (scalar form)**: for `α > 0`, `k : ℕ`,
+and `x ≥ 0`,
+`x^k · exp(-α · x²) ≤ M_k · exp(-(α/2) · x²)`
+with `M_k := exp(k²/(2α))`. -/
+lemma pow_mul_exp_neg_sq_le_half_decay
+    (k : ℕ) {α : ℝ} (hα_pos : 0 < α) {x : ℝ} (hx : 0 ≤ x) :
+    x ^ k * Real.exp (-(α * x ^ 2))
+      ≤ Real.exp ((k:ℝ) ^ 2 / (2 * α)) * Real.exp (-((α / 2) * x ^ 2)) := by
+  -- x^k · exp(-α·x²) = (x^k · exp(-(α/2)·x²)) · exp(-(α/2)·x²) ≤ M_k · exp(-(α/2)·x²).
+  -- Use pow_mul_exp_neg_sq_le_const with α' = α/2.
+  have hα2_pos : 0 < α / 2 := by linarith
+  have h_const := pow_mul_exp_neg_sq_le_const k hα2_pos hx
+  -- h_const : x^k · exp(-((α/2) * x²)) ≤ exp(k²/(4 · α/2)) = exp(k²/(2α)).
+  have h_4α2 : (4 : ℝ) * (α / 2) = 2 * α := by ring
+  rw [h_4α2] at h_const
+  -- Now: x^k · exp(-((α/2) · x²)) ≤ exp(k² / (2α)).
+  -- Multiply both sides by exp(-(α/2) · x²).
+  have hexp_pos : 0 < Real.exp (-((α / 2) * x ^ 2)) := Real.exp_pos _
+  have h_split :
+      x ^ k * Real.exp (-(α * x ^ 2))
+        = (x ^ k * Real.exp (-((α / 2) * x ^ 2)))
+            * Real.exp (-((α / 2) * x ^ 2)) := by
+    rw [mul_assoc, ← Real.exp_add]
+    congr 2
+    ring
+  rw [h_split]
+  exact mul_le_mul_of_nonneg_right h_const hexp_pos.le
+
+end PolynomialGaussianDecay
+
 end Laplace.Multi
