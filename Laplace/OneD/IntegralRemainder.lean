@@ -1538,4 +1538,257 @@ theorem cov_anharmonic_asymptotic
   rw [← hsl2, ← hst2]
   field_simp
 
+/-! ## Two more 1D anharmonic asymptotics
+
+The primer's `figures/plot1_convergence.png` plots three asymptotic limits
+side by side:
+
+  (a) `t · ⟨w⟩_t      → -α/(2λ²)`   (`lem:laplace_exp` in 1D)
+  (b) `t · Cov_t[w,w] → 1/λ`         (`lem:laplace_cov` in 1D)
+  (c) `t² · Cov_t[w²,w] → -2α/λ³`    (`lem:laplace_cov2` in 1D)
+
+We have already proved (c) above. (a) and (b) are essentially algebraic
+combinations of the `I_n` and `J_n` asymptotics already established. -/
+
+/-- (a) **Mean asymptotic, J-form**: `√t · J_1 / (√λ · J_0) → -α/(2λ²)`.
+
+Recall `√t · J_1 → -3·A·√(2π)` (`tendsto_sqrt_t_mul_J_1`) and
+`J_0 → √(2π)` (`tendsto_J_0`); divide by `√(2π)` and by `√λ`, and use
+`A = α/(6 λ^{3/2})` to get `-α/(2λ²)`. -/
+theorem mean_anharmonic_J_form_asymptotic
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    Filter.Tendsto (fun t : ℝ =>
+        Real.sqrt t * J_n lam alpha gamma 1 t /
+          (Real.sqrt lam * J_n lam alpha gamma 0 t)) Filter.atTop
+      (nhds (-alpha / (2 * lam ^ 2))) := by
+  have hJ1 := tendsto_sqrt_t_mul_J_1 hlam hgamma hdisc
+  have hJ0 := tendsto_J_0 hlam hgamma hdisc
+  have hsqrt_lam_pos : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
+  have hsqrt_lam_ne : Real.sqrt lam ≠ 0 := hsqrt_lam_pos.ne'
+  -- Build denominator: √λ · J_0 → √λ · √(2π).
+  have hden : Filter.Tendsto
+      (fun t : ℝ => Real.sqrt lam * J_n lam alpha gamma 0 t) Filter.atTop
+      (nhds (Real.sqrt lam * Real.sqrt (2 * Real.pi))) :=
+    (tendsto_const_nhds).mul hJ0
+  have hden_ne : Real.sqrt lam * Real.sqrt (2 * Real.pi) ≠ 0 :=
+    mul_ne_zero hsqrt_lam_ne sqrt_two_pi_ne
+  -- Quotient tends to (-3 A √(2π)) / (√λ · √(2π)) = -α/(2λ²).
+  have hquot := hJ1.div hden hden_ne
+  have hval : -3 * cubicScale lam alpha * Real.sqrt (2 * Real.pi) /
+      (Real.sqrt lam * Real.sqrt (2 * Real.pi)) = -alpha / (2 * lam ^ 2) := by
+    unfold cubicScale
+    have hlam_self : Real.sqrt lam * Real.sqrt lam = lam :=
+      Real.mul_self_sqrt hlam.le
+    have hlam_ne : lam ≠ 0 := hlam.ne'
+    have h2pi_ne : Real.sqrt (2 * Real.pi) ≠ 0 := sqrt_two_pi_ne
+    have hsqrt_lam_ne : Real.sqrt lam ≠ 0 := hsqrt_lam_ne
+    rw [show (-3 * (alpha / (6 * lam * Real.sqrt lam)) * Real.sqrt (2 * Real.pi)) /
+            (Real.sqrt lam * Real.sqrt (2 * Real.pi)) =
+          -3 * alpha / (6 * lam * (Real.sqrt lam * Real.sqrt lam)) from by
+            field_simp]
+    rw [hlam_self]
+    field_simp
+    ring
+  rw [hval] at hquot
+  exact hquot
+
+/-- (a) **Mean asymptotic** in `gibbsExpectation` form: `t · ⟨x⟩_t → -α/(2λ²)`.
+
+Equivalently `⟨x⟩_t = -α/(2λ² t) + o(t⁻¹)` as `t → ∞`. -/
+theorem mean_anharmonic_asymptotic
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    Filter.Tendsto (fun t : ℝ => t * Laplace.gibbsExpectation
+        (anharmonicPotential lam alpha gamma) t (fun x => x)) Filter.atTop
+      (nhds (-alpha / (2 * lam ^ 2))) := by
+  have hJ_form := mean_anharmonic_J_form_asymptotic hlam hgamma hdisc
+  apply Filter.Tendsto.congr' _ hJ_form
+  have hJ0_ev : ∀ᶠ t in Filter.atTop, J_n lam alpha gamma 0 t ≠ 0 := by
+    have hJ0 := tendsto_J_0 hlam hgamma hdisc
+    have h_pos_J0 : ∀ᶠ t in Filter.atTop, 0 < J_n lam alpha gamma 0 t :=
+      Filter.Tendsto.eventually_const_lt sqrt_two_pi_pos hJ0
+    filter_upwards [h_pos_J0] with t ht; exact ht.ne'
+  filter_upwards [Filter.eventually_gt_atTop (0 : ℝ), hJ0_ev] with t ht hJ0_ne
+  have hlamt : 0 < lam * t := mul_pos hlam ht
+  have hsqrt_lamt_pos : 0 < Real.sqrt (lam * t) := Real.sqrt_pos.mpr hlamt
+  have hsqrt_lamt_ne : Real.sqrt (lam * t) ≠ 0 := hsqrt_lamt_pos.ne'
+  have hsqrt_lam_pos : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
+  have hsqrt_lam_ne : Real.sqrt lam ≠ 0 := hsqrt_lam_pos.ne'
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
+  have hlam_ne : lam ≠ 0 := hlam.ne'
+  have ht_ne : t ≠ 0 := ht.ne'
+  unfold Laplace.gibbsExpectation Laplace.partitionFunction
+  set Z := ∫ x : ℝ, Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hZ_def
+  set IL1 := ∫ x : ℝ, x * Real.exp (-(t * anharmonicPotential lam alpha gamma x))
+    with hIL1_def
+  -- Substitution identities.
+  have h0 := I_n_J_n_relation lam alpha gamma 0 hlam ht
+  have h1 := I_n_J_n_relation lam alpha gamma 1 hlam ht
+  rw [pow_one] at h0
+  rw [show (1 + 1 : ℕ) = 2 from rfl] at h1
+  simp only [pow_zero, one_mul] at h0
+  simp only [pow_one] at h1
+  have hZ_eq : Real.sqrt (lam * t) * Z = J_n lam alpha gamma 0 t := by
+    unfold J_n; simp only [pow_zero, one_mul]; exact h0
+  have hIL1_eq : Real.sqrt (lam * t) ^ 2 * IL1 = J_n lam alpha gamma 1 t := by
+    unfold J_n; simp only [pow_one]; exact h1
+  have hsqrt_lamt_sq : Real.sqrt (lam * t) ^ 2 = lam * t := Real.sq_sqrt hlamt.le
+  have hsqrt_lamt_split : Real.sqrt (lam * t) = Real.sqrt lam * Real.sqrt t :=
+    Real.sqrt_mul hlam.le t
+  have hZ_sub : Z = J_n lam alpha gamma 0 t / Real.sqrt (lam * t) := by
+    rw [eq_div_iff hsqrt_lamt_ne, mul_comm]; exact hZ_eq
+  have hIL1_sub : IL1 = J_n lam alpha gamma 1 t / (lam * t) := by
+    rw [eq_div_iff hlamt.ne', mul_comm, ← hsqrt_lamt_sq]; exact hIL1_eq
+  have hZ_ne : Z ≠ 0 := fun hZ => hJ0_ne (by rw [← hZ_eq, hZ, mul_zero])
+  rw [hZ_sub, hIL1_sub, hsqrt_lamt_split]
+  -- GPT-5.5-Pro recipe: substitute fresh symbols for the square roots.
+  set sl : ℝ := Real.sqrt lam with hsl_def
+  set st : ℝ := Real.sqrt t with hst_def
+  have hsl2 : sl ^ 2 = lam := Real.sq_sqrt hlam.le
+  have hst2 : st ^ 2 = t := Real.sq_sqrt ht.le
+  have hsl_ne : sl ≠ 0 := hsqrt_lam_ne
+  have hst_ne : st ≠ 0 := hsqrt_t_ne
+  rw [← hsl2, ← hst2]
+  field_simp
+
+/-- (b) **Self-covariance asymptotic, J-form**: `(J_2·J_0 - J_1²) / (λ·J_0²) → 1/λ`.
+
+Recall `J_0, J_2 → √(2π)` and `J_1 → 0`. So the numerator
+`J_2·J_0 - J_1² → (√(2π))² - 0 = 2π` and the denominator
+`λ·J_0² → λ · 2π`. The ratio is `1/λ`. -/
+theorem var_anharmonic_J_form_asymptotic
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    Filter.Tendsto (fun t : ℝ =>
+        (J_n lam alpha gamma 2 t * J_n lam alpha gamma 0 t
+          - J_n lam alpha gamma 1 t ^ 2) /
+        (lam * J_n lam alpha gamma 0 t ^ 2)) Filter.atTop
+      (nhds (1 / lam)) := by
+  have hJ0 := tendsto_J_0 hlam hgamma hdisc
+  have hJ2 := tendsto_J_2 hlam hgamma hdisc
+  have hsqrtJ1 := tendsto_sqrt_t_mul_J_1 hlam hgamma hdisc
+  -- Step 1: J_1 → 0, since √t·J_1 → finite and √t → atTop.
+  have hJ1 : Filter.Tendsto (J_n lam alpha gamma 1) Filter.atTop (nhds 0) := by
+    have h := hsqrtJ1.div_atTop Real.tendsto_sqrt_atTop
+    -- h : Tendsto ((√t · J_1)/√t) → 0
+    apply h.congr'
+    filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
+    have hsqrt_ne : Real.sqrt t ≠ 0 := (Real.sqrt_pos.mpr ht).ne'
+    field_simp
+  -- Numerator: J_2·J_0 - J_1² → √(2π)·√(2π) - 0 = 2π.
+  have hnum : Filter.Tendsto (fun t : ℝ =>
+        J_n lam alpha gamma 2 t * J_n lam alpha gamma 0 t
+        - J_n lam alpha gamma 1 t ^ 2) Filter.atTop
+      (nhds (Real.sqrt (2 * Real.pi) * Real.sqrt (2 * Real.pi) - 0 ^ 2)) :=
+    (hJ2.mul hJ0).sub (hJ1.pow 2)
+  -- Denominator: λ·J_0² → λ·2π.
+  have hden : Filter.Tendsto (fun t : ℝ =>
+        lam * J_n lam alpha gamma 0 t ^ 2) Filter.atTop
+      (nhds (lam * Real.sqrt (2 * Real.pi) ^ 2)) :=
+    tendsto_const_nhds.mul (hJ0.pow 2)
+  have h2pi_pos : 0 < 2 * Real.pi := by positivity
+  have hsqrt2pi_sq : Real.sqrt (2 * Real.pi) ^ 2 = 2 * Real.pi :=
+    Real.sq_sqrt h2pi_pos.le
+  have hden_ne : lam * Real.sqrt (2 * Real.pi) ^ 2 ≠ 0 := by
+    rw [hsqrt2pi_sq]; positivity
+  have hquot := hnum.div hden hden_ne
+  -- Compute: (2π - 0)/(λ · 2π) = 1/λ.
+  have hval : (Real.sqrt (2 * Real.pi) * Real.sqrt (2 * Real.pi) - 0 ^ 2) /
+      (lam * Real.sqrt (2 * Real.pi) ^ 2) = 1 / lam := by
+    rw [hsqrt2pi_sq, Real.mul_self_sqrt h2pi_pos.le]
+    have hlam_ne : lam ≠ 0 := hlam.ne'
+    have h2pi_ne : (2 * Real.pi : ℝ) ≠ 0 := h2pi_pos.ne'
+    field_simp
+    ring
+  rw [hval] at hquot
+  exact hquot
+
+/-- `gibbsCov(L, t, x, x) = (Z·∫x²e^{-tL} - (∫xe^{-tL})²) / Z²`. -/
+private lemma gibbsCov_x_x_eq_I_form
+    (L : ℝ → ℝ) (t : ℝ) :
+    Laplace.gibbsCov L t (fun x => x) (fun x => x) =
+      ((∫ x : ℝ, Real.exp (-(t * L x))) *
+          (∫ x : ℝ, x ^ 2 * Real.exp (-(t * L x)))
+        - (∫ x : ℝ, x * Real.exp (-(t * L x))) ^ 2) /
+      (∫ x : ℝ, Real.exp (-(t * L x))) ^ 2 := by
+  unfold Laplace.gibbsCov Laplace.gibbsExpectation Laplace.partitionFunction
+  rw [show (fun x : ℝ => x * x) = (fun x : ℝ => x ^ 2) from by ext x; ring]
+  by_cases hZ : (∫ x : ℝ, Real.exp (-(t * L x))) = 0
+  · rw [hZ]; simp
+  · field_simp
+
+/-- (b) **Self-covariance asymptotic** in `gibbsCov` form: `t · Cov_t[x,x] → 1/λ`.
+
+Equivalently `Cov_t[x,x] = 1/(λ t) + o(t⁻¹)` as `t → ∞`. -/
+theorem cov_self_anharmonic_asymptotic
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    Filter.Tendsto (fun t : ℝ => t * Laplace.gibbsCov
+        (anharmonicPotential lam alpha gamma) t
+        (fun x => x) (fun x => x)) Filter.atTop
+      (nhds (1 / lam)) := by
+  have hJ_form := var_anharmonic_J_form_asymptotic hlam hgamma hdisc
+  apply Filter.Tendsto.congr' _ hJ_form
+  have hJ0_ev : ∀ᶠ t in Filter.atTop, J_n lam alpha gamma 0 t ≠ 0 := by
+    have hJ0 := tendsto_J_0 hlam hgamma hdisc
+    have h_pos_J0 : ∀ᶠ t in Filter.atTop, 0 < J_n lam alpha gamma 0 t :=
+      Filter.Tendsto.eventually_const_lt sqrt_two_pi_pos hJ0
+    filter_upwards [h_pos_J0] with t ht; exact ht.ne'
+  filter_upwards [Filter.eventually_gt_atTop (0 : ℝ), hJ0_ev] with t ht hJ0_ne
+  have hlamt : 0 < lam * t := mul_pos hlam ht
+  have hsqrt_lamt_pos : 0 < Real.sqrt (lam * t) := Real.sqrt_pos.mpr hlamt
+  have hsqrt_lamt_ne : Real.sqrt (lam * t) ≠ 0 := hsqrt_lamt_pos.ne'
+  have hsqrt_lam_pos : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
+  have hsqrt_lam_ne : Real.sqrt lam ≠ 0 := hsqrt_lam_pos.ne'
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
+  have hlam_ne : lam ≠ 0 := hlam.ne'
+  have ht_ne : t ≠ 0 := ht.ne'
+  rw [gibbsCov_x_x_eq_I_form]
+  set Z := ∫ x : ℝ, Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hZ_def
+  set IL1 := ∫ x : ℝ, x * Real.exp (-(t * anharmonicPotential lam alpha gamma x))
+    with hIL1_def
+  set IL2 := ∫ x : ℝ, x ^ 2 *
+      Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hIL2_def
+  have h0 := I_n_J_n_relation lam alpha gamma 0 hlam ht
+  have h1 := I_n_J_n_relation lam alpha gamma 1 hlam ht
+  have h2 := I_n_J_n_relation lam alpha gamma 2 hlam ht
+  rw [pow_one] at h0
+  rw [show (1 + 1 : ℕ) = 2 from rfl] at h1
+  rw [show (2 + 1 : ℕ) = 3 from rfl] at h2
+  simp only [pow_zero, one_mul] at h0
+  simp only [pow_one] at h1
+  have hZ_eq : Real.sqrt (lam * t) * Z = J_n lam alpha gamma 0 t := by
+    unfold J_n; simp only [pow_zero, one_mul]; exact h0
+  have hIL1_eq : Real.sqrt (lam * t) ^ 2 * IL1 = J_n lam alpha gamma 1 t := by
+    unfold J_n; simp only [pow_one]; exact h1
+  have hIL2_eq : Real.sqrt (lam * t) ^ 3 * IL2 = J_n lam alpha gamma 2 t := by
+    unfold J_n; exact h2
+  have hsqrt_lamt_sq : Real.sqrt (lam * t) ^ 2 = lam * t := Real.sq_sqrt hlamt.le
+  have hsqrt_lamt_split : Real.sqrt (lam * t) = Real.sqrt lam * Real.sqrt t :=
+    Real.sqrt_mul hlam.le t
+  have hZ_sub : Z = J_n lam alpha gamma 0 t / Real.sqrt (lam * t) := by
+    rw [eq_div_iff hsqrt_lamt_ne, mul_comm]; exact hZ_eq
+  have hIL1_sub : IL1 = J_n lam alpha gamma 1 t / (lam * t) := by
+    rw [eq_div_iff hlamt.ne', mul_comm, ← hsqrt_lamt_sq]; exact hIL1_eq
+  have hIL2_sub : IL2 = J_n lam alpha gamma 2 t /
+      (lam * t * Real.sqrt (lam * t)) := by
+    rw [eq_div_iff (mul_ne_zero hlamt.ne' hsqrt_lamt_ne), mul_comm,
+        show (lam * t * Real.sqrt (lam * t) : ℝ) = Real.sqrt (lam * t) ^ 3 from by
+          rw [show (3 : ℕ) = 2 + 1 from rfl, pow_add, pow_one, hsqrt_lamt_sq]]
+    exact hIL2_eq
+  have hZ_ne : Z ≠ 0 := fun hZ => hJ0_ne (by rw [← hZ_eq, hZ, mul_zero])
+  rw [hZ_sub, hIL1_sub, hIL2_sub, hsqrt_lamt_split]
+  set sl : ℝ := Real.sqrt lam with hsl_def
+  set st : ℝ := Real.sqrt t with hst_def
+  have hsl2 : sl ^ 2 = lam := Real.sq_sqrt hlam.le
+  have hst2 : st ^ 2 = t := Real.sq_sqrt ht.le
+  have hsl_ne : sl ≠ 0 := hsqrt_lam_ne
+  have hst_ne : st ≠ 0 := hsqrt_t_ne
+  have hJ0_sq_ne : J_n lam alpha gamma 0 t ^ 2 ≠ 0 := pow_ne_zero 2 hJ0_ne
+  rw [← hsl2, ← hst2]
+  field_simp
+
 end Laplace.OneD
