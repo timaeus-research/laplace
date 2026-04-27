@@ -669,6 +669,85 @@ lemma integrable_rescaled_weight
     rw [Real.norm_eq_abs, abs_of_nonneg h_lhs_nn]
     exact h_le
 
+/-- Integrability of `(∑ u_i²) · exp(-c · ∑ u_k²)`: directly from
+Phase 2's diagonal second-moment integrability summed over indices. -/
+lemma integrable_sum_sq_mul_exp_neg_const_mul_sum_sq
+    {c : ℝ} (hc : 0 < c) :
+    Integrable (fun u : ι → ℝ =>
+      (∑ i, (u i) ^ 2) * Real.exp (-(c * ∑ k, (u k) ^ 2))) := by
+  have h_each : ∀ i : ι,
+      Integrable (fun u : ι → ℝ =>
+        (u i) ^ 2 * Real.exp (-(c * ∑ k, (u k) ^ 2))) := by
+    intro i
+    have h := integrable_coord_mul_coord_mul_exp_neg_const_mul_sum_sq
+      (ι := ι) (c := c) hc i i
+    apply h.congr
+    filter_upwards with u
+    show u i * u i * Real.exp (-(c * ∑ k, u k ^ 2))
+      = u i ^ 2 * Real.exp (-(c * ∑ k, u k ^ 2))
+    ring
+  have h_sum :
+      Integrable (fun u : ι → ℝ =>
+        ∑ i, (u i) ^ 2 * Real.exp (-(c * ∑ k, (u k) ^ 2))) :=
+    integrable_finset_sum Finset.univ (fun i _ => h_each i)
+  apply h_sum.congr
+  filter_upwards with u
+  show ∑ i, (u i) ^ 2 * Real.exp (-(c * ∑ k, u k ^ 2))
+    = (∑ i, (u i) ^ 2) * Real.exp (-(c * ∑ k, u k ^ 2))
+  rw [Finset.sum_mul]
+
+/-- **Integrability of `‖u‖² · rescaledWeight`** under coercivity:
+`u ↦ ‖u‖² · gaussianWeight H u · exp(-rescaledPerturbation V H t u)`
+is integrable, dominated by `‖u‖² · exp(-((c/|ι|) · ∑ u_i²))` ≤
+`(∑ u_i²) · exp(-((c/|ι|) · ∑ u_i²))` from Phase 2. -/
+lemma integrable_sq_norm_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (hV_cont : Continuous V) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    [Nonempty ι]
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ 2 * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) := by
+  have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
+  have hd : (0 : ℝ) < (c / Fintype.card ι) := div_pos hc_pos hcard
+  have h_dom_int :=
+    integrable_sum_sq_mul_exp_neg_const_mul_sum_sq (ι := ι)
+      (c := c / Fintype.card ι) hd
+  refine h_dom_int.mono' ?_ ?_
+  · -- AE strongly measurable.
+    have h_cont :
+        Continuous (fun u : ι → ℝ =>
+          ‖u‖ ^ 2 *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) :=
+      (continuous_norm.pow 2).mul
+        ((continuous_gaussianWeight H).mul
+          (Real.continuous_exp.comp
+            (continuous_rescaledPerturbation hV_cont H t).neg))
+    exact h_cont.aestronglyMeasurable
+  · filter_upwards with u
+    have h_rw_le := rescaled_weight_le_sum_sq_coercive V H hc_pos h_coer ht u
+    have h_norm_sq_le : ‖u‖ ^ 2 ≤ ∑ i, (u i) ^ 2 := sq_norm_le_sum_sq u
+    have h_norm_sq_nn : 0 ≤ ‖u‖ ^ 2 := sq_nonneg _
+    have h_rw_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+    have h_lhs_nn : 0 ≤ ‖u‖ ^ 2 *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) :=
+      mul_nonneg h_norm_sq_nn h_rw_nn
+    rw [Real.norm_eq_abs, abs_of_nonneg h_lhs_nn]
+    -- ‖u‖² · rescaledW ≤ ‖u‖² · exp(-(c/|ι|) · ∑ u_i²) ≤ (∑ u_i²) · exp(...)
+    calc ‖u‖ ^ 2 * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ ‖u‖ ^ 2 *
+            Real.exp (-((c / Fintype.card ι) * ∑ i, (u i) ^ 2)) :=
+          mul_le_mul_of_nonneg_left h_rw_le h_norm_sq_nn
+      _ ≤ (∑ i, (u i) ^ 2) *
+            Real.exp (-((c / Fintype.card ι) * ∑ i, (u i) ^ 2)) :=
+          mul_le_mul_of_nonneg_right h_norm_sq_le (Real.exp_pos _).le
+
 end CoerciveIntegrability
 
 end Laplace.Multi
