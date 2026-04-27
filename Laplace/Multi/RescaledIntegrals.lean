@@ -315,4 +315,55 @@ lemma rescaledPartition_eq_gaussian_form
 
 end GaussianFactorization
 
+section ExpErrorBounds
+
+/-- **Scalar `exp(-r) - 1` bound**: for any real `r`,
+`|exp(-r) - 1| ≤ |r| · exp |r|`.
+
+Used in the partition expansion `exp(-s_t) ≈ 1 + O(s_t)`. -/
+lemma abs_exp_neg_sub_one_le (r : ℝ) :
+    |Real.exp (-r) - 1| ≤ |r| * Real.exp |r| := by
+  rcases lt_or_ge r 0 with hr | hr
+  swap
+  · -- Case r ≥ 0: exp(-r) ≤ 1, so |exp(-r) - 1| = 1 - exp(-r).
+    -- We have 1 - exp(-r) ≤ r ≤ r · exp(r) = |r| · exp(|r|).
+    have h1 : Real.exp (-r) ≤ 1 :=
+      le_trans (Real.exp_le_exp.mpr (by linarith : (-r : ℝ) ≤ 0))
+        (le_of_eq Real.exp_zero)
+    have h2 : 1 - Real.exp (-r) ≤ r := by
+      have := Real.add_one_le_exp (-r)
+      linarith
+    have h3 : Real.exp (-r) - 1 ≤ 0 := by linarith
+    rw [abs_of_nonpos h3, abs_of_nonneg hr]
+    have h_exp_r : 1 ≤ Real.exp r := Real.one_le_exp hr
+    calc -(Real.exp (-r) - 1) = 1 - Real.exp (-r) := by ring
+      _ ≤ r := h2
+      _ = r * 1 := (mul_one r).symm
+      _ ≤ r * Real.exp r := mul_le_mul_of_nonneg_left h_exp_r hr
+  · -- Case r < 0: exp(-r) > 1, so |exp(-r) - 1| = exp(-r) - 1.
+    -- Setting y = -r > 0, we want exp(y) - 1 ≤ y · exp(y).
+    -- Equivalent to exp(y) · (1 - y) ≤ 1, i.e., 1 - y ≤ exp(-y).
+    -- Latter follows from exp(z) ≥ 1 + z (with z = -y).
+    have hy : (0 : ℝ) < -r := by linarith
+    have h1 : 1 ≤ Real.exp (-r) := Real.one_le_exp hy.le
+    have h_exp_neg_r_pos : 0 < Real.exp (-r) := Real.exp_pos _
+    rw [abs_of_neg hr]
+    rw [abs_of_nonneg (by linarith : (0 : ℝ) ≤ Real.exp (-r) - 1)]
+    -- Goal: exp(-r) - 1 ≤ (-r) · exp(-r).
+    -- Equivalent to exp(-r) · (1 - (-r)) ≤ 1, i.e. (1 + r) ≤ exp(r).
+    have h_exp_r : 1 + r ≤ Real.exp r := by
+      have := Real.add_one_le_exp r
+      linarith
+    -- So 1 - (-r) ≤ exp(r), hence exp(-r) · (1 - (-r)) ≤ exp(-r) · exp(r) = exp(0) = 1.
+    have h_prod : Real.exp (-r) * (1 - (-r)) ≤ 1 := by
+      have h_one_sub_le : 1 - (-r) ≤ Real.exp r := by linarith
+      have hmul : Real.exp (-r) * (1 - (-r)) ≤ Real.exp (-r) * Real.exp r :=
+        mul_le_mul_of_nonneg_left h_one_sub_le h_exp_neg_r_pos.le
+      have h_exp_sum : Real.exp (-r) * Real.exp r = 1 := by
+        rw [← Real.exp_add]; simp
+      linarith
+    linarith
+
+end ExpErrorBounds
+
 end Laplace.Multi
