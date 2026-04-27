@@ -366,4 +366,33 @@ lemma abs_exp_neg_sub_one_le (r : ℝ) :
 
 end ExpErrorBounds
 
+section PartitionDiffIntegral
+
+open MeasureTheory
+
+/-- **Partition difference as an integral**: under integrability of the
+Gaussian weight and of the rescaled-weight factorization,
+
+  `rescaledPartition V t - gaussianZ H
+    = ∫ u, gaussianWeight H u · (exp(-rescaledPerturbation V H t u) - 1) du`. -/
+lemma rescaledPartition_sub_gaussianZ_eq_integral
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (t : ℝ)
+    (h_int_gW : Integrable (gaussianWeight H))
+    (h_int_rescaled : Integrable
+      (fun u : ι → ℝ =>
+        gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))) :
+    rescaledPartition V t - gaussianZ H
+      = ∫ u : ι → ℝ, gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1) := by
+  unfold gaussianZ
+  rw [rescaledPartition_eq_gaussian_form V H t]
+  -- LHS: ∫ gW · exp(-s_t) - ∫ gW = ∫ (gW · exp(-s_t) - gW) = ∫ gW · (exp(-s_t) - 1).
+  rw [← integral_sub h_int_rescaled h_int_gW]
+  apply MeasureTheory.integral_congr_ae
+  filter_upwards with u
+  ring
+
+end PartitionDiffIntegral
+
 end Laplace.Multi
