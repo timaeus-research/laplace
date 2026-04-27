@@ -1859,6 +1859,27 @@ The scalar Taylor-2 bound (`abs_exp_neg_sub_one_add_sub_half_sq_le`) in
 general-purpose result for future strengthening.
 -/
 
+/-- `J_0(t)` eventually lives in `[√(2π)/2, 3√(2π)/2]` as `t → ∞`. Useful as
+a denominator bound in the explicit-rate proofs. -/
+private lemma J_0_eventually_bounded
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ T, 1 ≤ T ∧ ∀ {t : ℝ}, T ≤ t →
+      Real.sqrt (2 * Real.pi) / 2 ≤ J_n lam alpha gamma 0 t ∧
+      J_n lam alpha gamma 0 t ≤ 3 * Real.sqrt (2 * Real.pi) / 2 := by
+  have hJ0 := tendsto_J_0 hlam hgamma hdisc
+  rw [Metric.tendsto_atTop] at hJ0
+  set c := Real.sqrt (2 * Real.pi) with hc_def
+  have hc_pos : 0 < c := sqrt_two_pi_pos
+  obtain ⟨T, hT⟩ := hJ0 (c / 2) (by linarith)
+  refine ⟨max 1 T, le_max_left _ _, ?_⟩
+  intro t ht
+  have ht_T : T ≤ t := le_trans (le_max_right _ _) ht
+  have h := hT t ht_T
+  rw [Real.dist_eq] at h
+  have h_abs := abs_le.mp h.le
+  refine ⟨by linarith [h_abs.1], by linarith [h_abs.2]⟩
+
 /-- **Exact bridge** for the self-covariance: for `t > 0` and `J_0(t) ≠ 0`,
 `t · Cov_t[x, x] = (J_2·J_0 - J_1²) / (λ·J_0²)`. -/
 private lemma cov_self_J_form_exact
@@ -1923,5 +1944,235 @@ private lemma cov_self_J_form_exact
   have hJ0_sq_ne : J_n lam alpha gamma 0 t ^ 2 ≠ 0 := pow_ne_zero 2 hJ0_ne
   rw [← hsl2, ← hst2]
   field_simp
+
+/-- For `t ≥ 1`, `K/t ≤ K/√t` (with `K ≥ 0`). -/
+private lemma div_t_le_div_sqrt_t {K t : ℝ} (hK : 0 ≤ K) (ht : 1 ≤ t) :
+    K / t ≤ K / Real.sqrt t := by
+  have ht_pos : 0 < t := by linarith
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_ge_one : 1 ≤ Real.sqrt t := by
+    rw [show (1 : ℝ) = Real.sqrt 1 from (Real.sqrt_one).symm]
+    exact Real.sqrt_le_sqrt ht
+  rcases eq_or_lt_of_le hK with heq | hpos
+  · rw [← heq]; simp
+  · rw [div_le_div_iff₀ ht_pos hsqrt_t_pos]
+    have h_st_le_t : Real.sqrt t ≤ t :=
+      calc Real.sqrt t = Real.sqrt t * 1 := by ring
+        _ ≤ Real.sqrt t * Real.sqrt t := by
+              exact mul_le_mul_of_nonneg_left hsqrt_ge_one hsqrt_t_pos.le
+        _ = t := Real.mul_self_sqrt ht_pos.le
+    nlinarith [hpos]
+
+/-- `|J_1(t)| ≤ K/√t` for some `K ≥ 0`, for all `t ≥ 1`. -/
+private lemma J_1_abs_bound
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ {t : ℝ}, 1 ≤ t →
+      |J_n lam alpha gamma 1 t| ≤ K / Real.sqrt t := by
+  obtain ⟨K, hK_nn, hbound⟩ := J_1_asymptotic hlam hgamma hdisc
+  refine ⟨K + 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi), by positivity, ?_⟩
+  intro t ht1
+  have ht_pos : 0 < t := by linarith
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
+  set L : ℝ := -3 * cubicScale lam alpha * Real.sqrt (2 * Real.pi) / Real.sqrt t with hL_def
+  have h_J1_diff : |J_n lam alpha gamma 1 t - L| ≤ K / t := by
+    rw [hL_def]; unfold J_n; exact hbound ht1
+  have h_abs_L : |L| = 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) / Real.sqrt t := by
+    rw [hL_def, abs_div, abs_of_pos hsqrt_t_pos]
+    have h_eq : -3 * cubicScale lam alpha * Real.sqrt (2 * Real.pi) =
+        -(3 * cubicScale lam alpha * Real.sqrt (2 * Real.pi)) := by ring
+    rw [h_eq, abs_neg, abs_mul, abs_mul, abs_of_pos sqrt_two_pi_pos]
+    have h3 : |(3 : ℝ)| = 3 := abs_of_pos (by norm_num)
+    rw [h3]
+  -- |J_1| ≤ |J_1 - L| + |L| ≤ K/t + 3|A|√(2π)/√t.
+  have h_tri : |J_n lam alpha gamma 1 t| ≤ |J_n lam alpha gamma 1 t - L| + |L| := by
+    have := abs_add_le (J_n lam alpha gamma 1 t - L) L
+    rw [show (J_n lam alpha gamma 1 t - L) + L = J_n lam alpha gamma 1 t from by ring] at this
+    exact this
+  have hKt_le := div_t_le_div_sqrt_t hK_nn ht1
+  calc |J_n lam alpha gamma 1 t|
+      ≤ |J_n lam alpha gamma 1 t - L| + |L| := h_tri
+    _ ≤ K / t + 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) / Real.sqrt t := by
+          rw [h_abs_L] at *; linarith
+    _ ≤ K / Real.sqrt t + 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) /
+          Real.sqrt t := by linarith
+    _ = (K + 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi)) / Real.sqrt t := by
+          rw [← add_div]
+
+/-- `|J_3(t)| ≤ K/√t` for some `K ≥ 0`, for all `t ≥ 1`. -/
+private lemma J_3_abs_bound
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ {t : ℝ}, 1 ≤ t →
+      |J_n lam alpha gamma 3 t| ≤ K / Real.sqrt t := by
+  obtain ⟨K, hK_nn, hbound⟩ := J_3_asymptotic hlam hgamma hdisc
+  refine ⟨K + 15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi), by positivity, ?_⟩
+  intro t ht1
+  have ht_pos : 0 < t := by linarith
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  set L : ℝ := -15 * cubicScale lam alpha * Real.sqrt (2 * Real.pi) / Real.sqrt t with hL_def
+  have h_J3_diff : |J_n lam alpha gamma 3 t - L| ≤ K / t := by
+    rw [hL_def]; unfold J_n; exact hbound ht1
+  have h_abs_L : |L| =
+      15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) / Real.sqrt t := by
+    rw [hL_def, abs_div, abs_of_pos hsqrt_t_pos]
+    have h_eq : -15 * cubicScale lam alpha * Real.sqrt (2 * Real.pi) =
+        -(15 * cubicScale lam alpha * Real.sqrt (2 * Real.pi)) := by ring
+    rw [h_eq, abs_neg, abs_mul, abs_mul, abs_of_pos sqrt_two_pi_pos]
+    have h15 : |(15 : ℝ)| = 15 := abs_of_pos (by norm_num)
+    rw [h15]
+  have h_tri : |J_n lam alpha gamma 3 t| ≤ |J_n lam alpha gamma 3 t - L| + |L| := by
+    have := abs_add_le (J_n lam alpha gamma 3 t - L) L
+    rw [show (J_n lam alpha gamma 3 t - L) + L = J_n lam alpha gamma 3 t from by ring] at this
+    exact this
+  have hKt_le := div_t_le_div_sqrt_t hK_nn ht1
+  calc |J_n lam alpha gamma 3 t|
+      ≤ |J_n lam alpha gamma 3 t - L| + |L| := h_tri
+    _ ≤ K / t + 15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) / Real.sqrt t := by
+          rw [h_abs_L] at *; linarith
+    _ ≤ K / Real.sqrt t + 15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) /
+          Real.sqrt t := by linarith
+    _ = (K + 15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi)) / Real.sqrt t := by
+          rw [← add_div]
+
+/-- `|J_2(t) - J_0(t)| ≤ K/t` for some `K ≥ 0`, for all `t ≥ 1`. Both have
+the same leading constant `√(2π)` so the difference is `O(1/t)`. -/
+private lemma J_2_sub_J_0_bound
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ {t : ℝ}, 1 ≤ t →
+      |J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t| ≤ K / t := by
+  obtain ⟨K_0, hK_0_nn, hbound_0⟩ := J_0_asymptotic hlam hgamma hdisc
+  obtain ⟨K_2, hK_2_nn, hbound_2⟩ := J_2_asymptotic hlam hgamma hdisc
+  refine ⟨K_0 + K_2, by linarith, ?_⟩
+  intro t ht1
+  have ht_pos : 0 < t := by linarith
+  have h0 := hbound_0 ht1
+  have h2 := hbound_2 ht1
+  -- h0 : |J_0 t - √(2π)| ≤ K_0/t (after spelling J_n in u^0 form)
+  -- h2 : |J_2 t - √(2π)| ≤ K_2/t (after spelling J_n in u^2 form)
+  have h_J0 : |J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)| ≤ K_0 / t := by
+    unfold J_n; exact h0
+  have h_J2 : |J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi)| ≤ K_2 / t := by
+    unfold J_n; exact h2
+  -- |J_2 - J_0| ≤ |J_2 - c| + |c - J_0| ≤ K_2/t + K_0/t.
+  have h_decomp :
+      J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t =
+      (J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi)) +
+        -(J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)) := by ring
+  rw [h_decomp]
+  have h_tri := abs_add_le (J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi))
+      (-(J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)))
+  rw [abs_neg] at h_tri
+  calc _ ≤ |J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi)|
+          + |J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)| := h_tri
+    _ ≤ K_2 / t + K_0 / t := by linarith
+    _ = (K_0 + K_2) / t := by ring
+
+/-- (b) **Self-covariance, explicit `O(t⁻²)` rate**:
+`|t · Cov_t[x,x] - 1/λ| ≤ K/t` for some constant `K`, for all `t ≥ T`.
+
+Equivalently `Cov_t[x,x] = 1/(λ t) + O(t⁻²)` as `t → ∞`. -/
+theorem cov_self_anharmonic_O2_rate
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K T : ℝ, 0 ≤ K ∧ 1 ≤ T ∧ ∀ {t : ℝ}, T ≤ t →
+      |t * Laplace.gibbsCov
+        (anharmonicPotential lam alpha gamma) t (fun x => x) (fun x => x) -
+        1 / lam| ≤ K / t := by
+  obtain ⟨T_J0, hT_J0_ge, hJ0_bd⟩ := J_0_eventually_bounded hlam hgamma hdisc
+  obtain ⟨K_d, hK_d_nn, hbound_d⟩ := J_2_sub_J_0_bound hlam hgamma hdisc
+  obtain ⟨K_1, hK_1_nn, hbound_1⟩ := J_1_abs_bound hlam hgamma hdisc
+  set c := Real.sqrt (2 * Real.pi) with hc_def
+  have hc_pos : 0 < c := sqrt_two_pi_pos
+  have hc2_pos : 0 < c ^ 2 := by positivity
+  have hlam_pos : 0 < lam := hlam
+  have hlam_ne : lam ≠ 0 := hlam.ne'
+  -- The constant. Bound on |numerator|/(λ·J_0²): use J_0 ∈ [c/2, 3c/2] and J_1 = O(1/√t).
+  refine ⟨(3 * c * K_d / 2 + K_1 ^ 2) * 4 / (lam * c ^ 2), T_J0, ?_, hT_J0_ge, ?_⟩
+  · positivity
+  intro t ht
+  have ht_pos : 0 < t := by linarith
+  have ht1 : 1 ≤ t := le_trans hT_J0_ge ht
+  obtain ⟨h_lo, h_hi⟩ := hJ0_bd ht
+  -- J_0 t ≥ c/2 > 0, so J_0 t ≠ 0 and J_0 t² ≥ (c/2)² = c²/4.
+  have hJ0_pos : 0 < J_n lam alpha gamma 0 t := by linarith
+  have hJ0_ne : J_n lam alpha gamma 0 t ≠ 0 := hJ0_pos.ne'
+  have hJ0_sq_lo : c ^ 2 / 4 ≤ J_n lam alpha gamma 0 t ^ 2 := by
+    have h := mul_self_le_mul_self (by linarith : (0:ℝ) ≤ c / 2) h_lo
+    nlinarith
+  -- Bridge to J-form.
+  rw [cov_self_J_form_exact hlam ht_pos hJ0_ne]
+  -- Goal: |(J_2·J_0 - J_1²)/(λ·J_0²) - 1/λ| ≤ K/t.
+  -- Rewrite as (J_0(J_2 - J_0) - J_1²)/(λ·J_0²).
+  have hbridge :
+      (J_n lam alpha gamma 2 t * J_n lam alpha gamma 0 t -
+        J_n lam alpha gamma 1 t ^ 2) / (lam * J_n lam alpha gamma 0 t ^ 2) - 1 / lam =
+      (J_n lam alpha gamma 0 t * (J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t)
+        - J_n lam alpha gamma 1 t ^ 2) / (lam * J_n lam alpha gamma 0 t ^ 2) := by
+    have hJ0_sq_ne : J_n lam alpha gamma 0 t ^ 2 ≠ 0 := pow_ne_zero 2 hJ0_ne
+    field_simp
+    ring
+  rw [hbridge]
+  -- Bound numerator and denominator separately.
+  have h_d := hbound_d ht1
+  have h_J1 := hbound_1 ht1
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  -- |J_1²| ≤ (K_1/√t)² = K_1²/t.
+  have h_J1_sq : J_n lam alpha gamma 1 t ^ 2 ≤ K_1 ^ 2 / t := by
+    have h_abs_sq : J_n lam alpha gamma 1 t ^ 2 = |J_n lam alpha gamma 1 t| ^ 2 := by
+      rw [sq_abs]
+    rw [h_abs_sq]
+    have h_K_sq : (K_1 / Real.sqrt t) * (K_1 / Real.sqrt t) = K_1 ^ 2 / t := by
+      rw [show (K_1 / Real.sqrt t) * (K_1 / Real.sqrt t) =
+          K_1 ^ 2 / (Real.sqrt t) ^ 2 from by rw [div_mul_div_comm]; ring]
+      rw [Real.sq_sqrt ht_pos.le]
+    rw [show |J_n lam alpha gamma 1 t| ^ 2 = |J_n lam alpha gamma 1 t| *
+        |J_n lam alpha gamma 1 t| from by ring, ← h_K_sq]
+    exact mul_self_le_mul_self (abs_nonneg _) h_J1
+  -- |numerator| ≤ |J_0|·|J_2 - J_0| + J_1² ≤ (3c/2)·K_d/t + K_1²/t.
+  have h_num_bound :
+      |J_n lam alpha gamma 0 t * (J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t)
+        - J_n lam alpha gamma 1 t ^ 2| ≤
+      (3 * c / 2) * (K_d / t) + K_1 ^ 2 / t := by
+    set X := J_n lam alpha gamma 0 t * (J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t)
+    set Y := J_n lam alpha gamma 1 t ^ 2
+    have h_tri : |X - Y| ≤ |X| + |Y| := by
+      have := abs_add_le X (-Y)
+      rw [show X + (-Y) = X - Y from by ring] at this
+      rw [abs_neg] at this
+      exact this
+    have h_abs_X : |X| ≤ (3 * c / 2) * (K_d / t) := by
+      simp only [X, abs_mul, abs_of_pos hJ0_pos]
+      exact mul_le_mul h_hi h_d (abs_nonneg _) (by linarith)
+    have h_abs_Y : |Y| ≤ K_1 ^ 2 / t := by
+      simp only [Y]
+      rw [abs_of_nonneg (sq_nonneg _)]
+      exact h_J1_sq
+    linarith
+  -- |denominator| ≥ λ·c²/4.
+  have h_denom_lo : lam * c ^ 2 / 4 ≤ lam * J_n lam alpha gamma 0 t ^ 2 := by
+    have := mul_le_mul_of_nonneg_left hJ0_sq_lo hlam_pos.le
+    linarith
+  have h_denom_pos : 0 < lam * J_n lam alpha gamma 0 t ^ 2 :=
+    mul_pos hlam_pos (pow_pos hJ0_pos 2)
+  -- Final calc.
+  rw [abs_div, abs_of_pos h_denom_pos]
+  have h_num_nn : 0 ≤ (3 * c / 2) * (K_d / t) + K_1 ^ 2 / t := by
+    have h1 : 0 ≤ (3 * c / 2) * (K_d / t) :=
+      mul_nonneg (by linarith) (div_nonneg hK_d_nn ht_pos.le)
+    have h2 : 0 ≤ K_1 ^ 2 / t := div_nonneg (sq_nonneg _) ht_pos.le
+    linarith
+  have h_lc_pos : 0 < lam * c ^ 2 / 4 := by positivity
+  calc |J_n lam alpha gamma 0 t * (J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t)
+        - J_n lam alpha gamma 1 t ^ 2| / (lam * J_n lam alpha gamma 0 t ^ 2)
+      ≤ ((3 * c / 2) * (K_d / t) + K_1 ^ 2 / t) /
+          (lam * J_n lam alpha gamma 0 t ^ 2) :=
+        div_le_div_of_nonneg_right h_num_bound (le_of_lt h_denom_pos)
+    _ ≤ ((3 * c / 2) * (K_d / t) + K_1 ^ 2 / t) / (lam * c ^ 2 / 4) :=
+        div_le_div_of_nonneg_left h_num_nn h_lc_pos h_denom_lo
+    _ = (3 * c * K_d / 2 + K_1 ^ 2) * 4 / (lam * c ^ 2) / t := by
+        field_simp
 
 end Laplace.OneD
