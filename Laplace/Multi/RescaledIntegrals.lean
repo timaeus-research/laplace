@@ -395,4 +395,60 @@ lemma rescaledPartition_sub_gaussianZ_eq_integral
 
 end PartitionDiffIntegral
 
+section NumeratorSplit
+
+open MeasureTheory
+
+/-- **Rescaled numerator decomposition**: for any observable `φ` with
+gradient `a`, given integrability of the two pieces,
+
+  `rescaledNumerator V t φ
+    = (√t)⁻¹ · ∫ ⟨a, u⟩ · gaussianWeight H u · exp(-s_t(u)) du
+      + ∫ (φ((√t)⁻¹ u) - (√t)⁻¹ · ⟨a, u⟩)
+          · gaussianWeight H u · exp(-s_t(u)) du`.
+
+Algebraic decomposition `φ((√t)⁻¹ u) = (√t)⁻¹ · ⟨a, u⟩ + remainder`
+applied inside the rescaled-numerator integral.
+
+Used in the observable-asymptote argument: the linear-part integral
+vanishes by `integral_odd_mul_gaussian_eq_zero` (when `exp(-s_t) ≈ 1`),
+leaving the quadratic-remainder integral as the leading term. -/
+lemma rescaledNumerator_eq_linear_plus_remainder
+    (V φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (t : ℝ)
+    (h_int_lin : Integrable
+      (fun u : ι → ℝ => dot a u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))))
+    (h_int_rem : Integrable
+      (fun u : ι → ℝ =>
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))) :
+    rescaledNumerator V t φ
+      = (Real.sqrt t)⁻¹ *
+          (∫ u : ι → ℝ, dot a u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + ∫ u : ι → ℝ,
+            (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)) := by
+  rw [rescaledNumerator_eq_gaussian_form V φ H t]
+  -- Goal: ∫ φ((√t)⁻¹ • u) · gW · exp(-s_t) du
+  --     = (√t)⁻¹ · ∫ ⟨a, u⟩ · gW · exp(-s_t) du
+  --       + ∫ (φ((√t)⁻¹ • u) - (√t)⁻¹ ⟨a, u⟩) · gW · exp(-s_t) du.
+  -- Move (√t)⁻¹ inside the integral.
+  rw [show
+      (Real.sqrt t)⁻¹ *
+        ∫ u : ι → ℝ, dot a u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+        = ∫ u : ι → ℝ, (Real.sqrt t)⁻¹ * (dot a u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+      from (integral_const_mul _ _).symm]
+  rw [← integral_add (h_int_lin.const_mul _) h_int_rem]
+  apply MeasureTheory.integral_congr_ae
+  filter_upwards with u
+  ring
+
+end NumeratorSplit
+
 end Laplace.Multi
