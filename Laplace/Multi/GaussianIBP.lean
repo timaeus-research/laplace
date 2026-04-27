@@ -709,4 +709,64 @@ theorem gaussian_dot_mul_dot
 
 end BilinearMoment
 
+section OddGaussian
+
+open MeasureTheory
+
+omit [DecidableEq ι] in
+/-- Negation is volume-preserving on `ι → ℝ`: from componentwise
+`Measure.measurePreserving_neg` on `ℝ` and the product structure. -/
+private lemma measurePreserving_neg_pi :
+    MeasurePreserving (Neg.neg : (ι → ℝ) → (ι → ℝ))
+      (volume : Measure (ι → ℝ)) (volume : Measure (ι → ℝ)) :=
+  measurePreserving_pi (fun _ : ι => (volume : Measure ℝ))
+    (fun _ : ι => (volume : Measure ℝ))
+    (fun _ : ι => Measure.measurePreserving_neg (volume : Measure ℝ))
+
+omit [DecidableEq ι] in
+/-- The quadratic form is invariant under negation (for any linear `H`):
+`quadForm H (-u) = quadForm H u`. -/
+lemma quadForm_neg (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) :
+    quadForm H (-u) = quadForm H u := by
+  unfold quadForm
+  simp only [map_neg, Pi.neg_apply, neg_mul_neg]
+
+omit [DecidableEq ι] in
+/-- The Gaussian weight is invariant under negation:
+`gaussianWeight H (-u) = gaussianWeight H u`. -/
+lemma gaussianWeight_neg (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) :
+    gaussianWeight H (-u) = gaussianWeight H u := by
+  unfold gaussianWeight
+  rw [quadForm_neg]
+
+omit [DecidableEq ι] in
+/-- **Odd Gaussian integrals vanish**: if `f` is odd (`f(-u) = -f(u)`),
+then `∫ f · gW = 0`. The Gaussian weight is even (`quadForm H` is
+invariant under negation), so the integrand flips sign under `u ↦ -u`.
+
+No integrability hypothesis is needed: if `f · gW` is not integrable,
+`MeasureTheory.integral` returns `0` and the conclusion holds trivially. -/
+theorem integral_odd_mul_gaussian_eq_zero
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (f : (ι → ℝ) → ℝ)
+    (hf_odd : ∀ u, f (-u) = -f u) :
+    ∫ u : ι → ℝ, f u * gaussianWeight H u = 0 := by
+  -- Substitute u ↦ -u: gives ∫ f(-u) · gW(-u) du = ∫ f u · gW u du.
+  have h_sub : ∫ u : ι → ℝ, f (-u) * gaussianWeight H (-u)
+      = ∫ u : ι → ℝ, f u * gaussianWeight H u := by
+    have h := measurePreserving_neg_pi (ι := ι)
+    have h_emb : MeasurableEmbedding (Neg.neg : (ι → ℝ) → (ι → ℝ)) :=
+      (Homeomorph.neg (ι → ℝ)).measurableEmbedding
+    exact h.integral_comp h_emb (fun u => f u * gaussianWeight H u)
+  -- After substitution: f(-u) · gW(-u) = (-f u) · gW u = -(f u · gW u).
+  have h_eq : ∀ u : ι → ℝ, f (-u) * gaussianWeight H (-u) = -(f u * gaussianWeight H u) := by
+    intro u; rw [hf_odd, gaussianWeight_neg]; ring
+  rw [show (fun u : ι → ℝ => f (-u) * gaussianWeight H (-u)) =
+        (fun u => -(f u * gaussianWeight H u)) from funext h_eq] at h_sub
+  rw [integral_neg] at h_sub
+  -- h_sub : -∫ ... = ∫ ..., so ∫ ... = 0.
+  linarith
+
+end OddGaussian
+
 end Laplace.Multi
