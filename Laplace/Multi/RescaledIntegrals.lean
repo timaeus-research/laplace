@@ -451,4 +451,58 @@ lemma rescaledNumerator_eq_linear_plus_remainder
 
 end NumeratorSplit
 
+section CoerciveDomination
+
+/-- **Algebraic identity**: `gaussianWeight H u · exp(-rescaledPerturbation V H t u)
+= exp(-(t · V ((√t)⁻¹ u)))`.
+
+Direct from the definitions: the rescaled weight in the original
+`exp(-tV)` form. -/
+lemma gaussianWeight_mul_exp_neg_s_t
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (t : ℝ) (u : ι → ℝ) :
+    gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))
+      = Real.exp (-(t * V ((Real.sqrt t)⁻¹ • u))) := by
+  rw [rescaled_weight_factor V H t u]
+
+/-- **Coercive domination**: under the coercivity hypothesis
+`c · ‖w‖² ≤ V w`, the rescaled weight `gaussianWeight H u · exp(-s_t)`
+is bounded above by `exp(-c · ‖u‖²)` for `t > 0`, INDEPENDENT of `t`.
+
+This is the key uniform-in-`t` tail-domination lemma: any polynomial
+times the rescaled weight is integrable (against the Lebesgue measure),
+with bound independent of `t`, so dominated convergence theorems apply
+to the family of integrals indexed by `t`. -/
+lemma rescaled_weight_le_coercive
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))
+      ≤ Real.exp (-(c * ‖u‖ ^ 2)) := by
+  rw [gaussianWeight_mul_exp_neg_s_t V H t u]
+  -- Goal: exp(-tV((√t)⁻¹ u)) ≤ exp(-c‖u‖²).
+  -- Use coercivity: c · ‖(√t)⁻¹ u‖² ≤ V((√t)⁻¹ u), so
+  -- ct · ‖(√t)⁻¹ u‖² ≤ tV((√t)⁻¹ u). And ‖(√t)⁻¹ u‖² = (1/t) ‖u‖².
+  -- Therefore c · ‖u‖² ≤ tV((√t)⁻¹ u), hence -tV((√t)⁻¹ u) ≤ -c · ‖u‖².
+  apply Real.exp_le_exp.mpr
+  rw [neg_le_neg_iff]
+  -- Goal: c · ‖u‖² ≤ t · V((√t)⁻¹ • u).
+  have h_coer_at : c * ‖(Real.sqrt t)⁻¹ • u‖ ^ 2 ≤ V ((Real.sqrt t)⁻¹ • u) :=
+    h_coer ((Real.sqrt t)⁻¹ • u)
+  have h_norm_sq : ‖(Real.sqrt t)⁻¹ • u‖ ^ 2 = ‖u‖ ^ 2 / t := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity : (0:ℝ) < (Real.sqrt t)⁻¹), mul_pow]
+    rw [inv_pow, Real.sq_sqrt ht.le]
+    field_simp
+  rw [h_norm_sq] at h_coer_at
+  -- h_coer_at : c · (‖u‖²/t) ≤ V((√t)⁻¹ • u).
+  -- Multiply by t > 0: c · ‖u‖² ≤ t · V((√t)⁻¹ • u). ✓
+  have ht_le : c * ‖u‖ ^ 2 ≤ t * V ((Real.sqrt t)⁻¹ • u) := by
+    have := mul_le_mul_of_nonneg_left h_coer_at ht.le
+    rw [show t * (c * (‖u‖ ^ 2 / t)) = c * ‖u‖ ^ 2 from by field_simp] at this
+    exact this
+  exact ht_le
+
+end CoerciveDomination
+
 end Laplace.Multi
