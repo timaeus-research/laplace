@@ -610,4 +610,65 @@ lemma rescaled_weight_le_sum_sq_coercive
 
 end CoerciveDomination
 
+section CoerciveIntegrability
+
+open MeasureTheory
+
+/-- Continuity of `quadForm H` as a function on `ι → ℝ`. -/
+lemma continuous_quadForm (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) :
+    Continuous (fun u : ι → ℝ => quadForm H u) := by
+  unfold quadForm
+  apply continuous_finset_sum
+  intro i _
+  exact (continuous_apply i).mul ((continuous_apply i).comp H.continuous)
+
+/-- Continuity of `gaussianWeight H`. -/
+lemma continuous_gaussianWeight (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) :
+    Continuous (fun u : ι → ℝ => gaussianWeight H u) := by
+  unfold gaussianWeight
+  exact Real.continuous_exp.comp (continuous_const.mul (continuous_quadForm H))
+
+/-- Continuity of `rescaledPerturbation V H t` (assuming continuous `V`). -/
+lemma continuous_rescaledPerturbation
+    {V : (ι → ℝ) → ℝ} (hV : Continuous V) (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (t : ℝ) :
+    Continuous (fun u : ι → ℝ => rescaledPerturbation V H t u) := by
+  unfold rescaledPerturbation
+  refine (continuous_const.mul (hV.comp ?_)).sub
+    (continuous_const.mul (continuous_quadForm H))
+  exact continuous_const.smul continuous_id
+
+/-- **Integrability of the rescaled weight under coercivity**: for any
+`t > 0`, `gW · exp(-rescaledPerturbation)` is integrable, dominated by
+`exp(-((c/|ι|) · ∑ u_i²))` from Phase 2. -/
+lemma integrable_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (hV_cont : Continuous V) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    [Nonempty ι]
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) := by
+  have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
+  have hd : (0 : ℝ) < (c / Fintype.card ι) := div_pos hc_pos hcard
+  have h_dom :=
+    integrable_exp_neg_const_mul_sum_sq (ι := ι) (c := c / Fintype.card ι) hd
+  refine h_dom.mono' ?_ ?_
+  · -- AE strongly measurable from continuity.
+    have h_cont :
+        Continuous (fun u : ι → ℝ =>
+          gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) :=
+      (continuous_gaussianWeight H).mul
+        (Real.continuous_exp.comp
+          (continuous_rescaledPerturbation hV_cont H t).neg)
+    exact h_cont.aestronglyMeasurable
+  · filter_upwards with u
+    have h_le := rescaled_weight_le_sum_sq_coercive V H hc_pos h_coer ht u
+    have h_lhs_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+    rw [Real.norm_eq_abs, abs_of_nonneg h_lhs_nn]
+    exact h_le
+
+end CoerciveIntegrability
+
 end Laplace.Multi
