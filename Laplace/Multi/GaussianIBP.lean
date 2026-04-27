@@ -163,4 +163,92 @@ lemma integral_full_line_deriv_eq_zero
 
 end FullLineFTC
 
+section DerivativeOfExpNegQ
+
+/-- Derivative of `s ↦ quadForm H (u + s • eᵢ)` at `t`, assuming `H` symmetric,
+equals `2 · (H (u + t • eᵢ))ᵢ`. -/
+lemma hasDerivAt_quadForm_along_basis
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hSymm : ∀ x y, ∑ k, x k * (H y) k = ∑ k, y k * (H x) k)
+    (u : ι → ℝ) (i : ι) (t : ℝ) :
+    HasDerivAt
+      (fun s : ℝ => quadForm H (u + s • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))))
+      (2 * (H (u + t • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))) i)
+      t := by
+  classical
+  set e : ι → ℝ := Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ) with he_def
+  -- Polynomial form: quadForm H (u + s•e) = Q₀ + 2 s · A + s² · B
+  set Q0 : ℝ := quadForm H u with hQ0
+  set A : ℝ := (H u) i with hA
+  set B : ℝ := (H e) i with hB
+  have h_poly : ∀ s : ℝ,
+      quadForm H (u + s • e) = Q0 + 2 * s * A + s ^ 2 * B := by
+    intro s
+    simpa [Q0, A, B, he_def] using
+      quadForm_add_smul_stdBasis H hSymm i u s
+  -- Derivative of `s ↦ Q₀ + 2 s A + s² B` at `t` is `2 A + 2 t B`.
+  have h_at : HasDerivAt (fun s : ℝ => Q0 + 2 * s * A + s ^ 2 * B)
+      (2 * A + 2 * t * B) t := by
+    have h1 : HasDerivAt (fun s : ℝ => Q0) 0 t := hasDerivAt_const t Q0
+    have h2 : HasDerivAt (fun s : ℝ => 2 * s * A) (2 * A) t := by
+      have h := (hasDerivAt_id t).const_mul 2
+      have h' := h.mul_const A
+      simpa using h'
+    have h3 : HasDerivAt (fun s : ℝ => s ^ 2 * B) (2 * t * B) t := by
+      have h := (hasDerivAt_pow 2 t).mul_const B
+      simpa [pow_one] using h
+    have := (h1.add h2).add h3
+    simpa using this
+  -- Express the derivative in terms of (H (u + t•e)) i.
+  have h_deriv_eq :
+      2 * A + 2 * t * B = 2 * (H (u + t • e)) i := by
+    have hH_lin : H (u + t • e) = H u + t • H e := by
+      rw [map_add, ContinuousLinearMap.map_smul]
+    have h_apply : (H (u + t • e)) i = (H u) i + t * (H e) i := by
+      rw [hH_lin]
+      simp [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+    rw [h_apply]
+    simp [A, B]
+    ring
+  -- Replace polynomial form with quadForm form via `congr` of HasDerivAt.
+  have h_final : HasDerivAt (fun s : ℝ => quadForm H (u + s • e))
+      (2 * A + 2 * t * B) t := by
+    apply HasDerivAt.congr_of_eventuallyEq h_at
+    apply Filter.Eventually.of_forall
+    intro s
+    exact h_poly s
+  rw [h_deriv_eq] at h_final
+  exact h_final
+
+/-- Derivative of `s ↦ exp(-(1/2) · quadForm H (u + s • eᵢ))` at `t` equals
+`-(H (u + t • eᵢ))ᵢ · exp(-(1/2) · quadForm H (u + t • eᵢ))`, assuming
+`H` symmetric. -/
+lemma hasDerivAt_exp_neg_half_quadForm_along_basis
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hSymm : ∀ x y, ∑ k, x k * (H y) k = ∑ k, y k * (H x) k)
+    (u : ι → ℝ) (i : ι) (t : ℝ) :
+    HasDerivAt
+      (fun s : ℝ =>
+        Real.exp (-(1/2) *
+          quadForm H (u + s • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))))
+      (-((H (u + t • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))) i) *
+        Real.exp (-(1/2) *
+          quadForm H (u + t • (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))))
+      t := by
+  set e : ι → ℝ := Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ) with he_def
+  -- Step 1: HasDerivAt of -(1/2) * quadForm H (u + s • e).
+  have h_inner : HasDerivAt
+      (fun s : ℝ => -(1/2) * quadForm H (u + s • e))
+      (-((H (u + t • e)) i)) t := by
+    have h := (hasDerivAt_quadForm_along_basis H hSymm u i t).const_mul (-(1/2))
+    convert h using 1
+    ring
+  -- Step 2: chain with exp.
+  have h_exp := h_inner.exp
+  -- Reorder factors: `exp(...) * (-(H ...) i)` ↔ `(-(H ...) i) * exp(...)`.
+  convert h_exp using 1
+  ring
+
+end DerivativeOfExpNegQ
+
 end Laplace.Multi
