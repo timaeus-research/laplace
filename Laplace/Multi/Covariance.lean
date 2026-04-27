@@ -367,6 +367,48 @@ theorem rescaledPartition_eq_gaussianZ_add_O_inv_sqrt
     _ = (Cs * Mlocal + 2 * Mtail) / Real.sqrt t := by
           field_simp
 
+/-- **Denominator lower bound** for `t` large enough:
+`gaussianZ H / 2 ≤ rescaledPartition V t`.
+
+Direct corollary of the partition asymptote: for `t ≥ ((2|K|)/Z)²`,
+`|partition - Z| ≤ |K|/√t ≤ Z/2`, hence `partition ≥ Z - Z/2 = Z/2`. -/
+theorem rescaledPartition_ge_half_gaussianZ
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialApprox V H)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ T₁ : ℝ, 1 ≤ T₁ ∧ ∀ t : ℝ, T₁ ≤ t →
+      gaussianZ H / 2 ≤ rescaledPartition V t := by
+  obtain ⟨K, T, hT, hpart⟩ :=
+    rescaledPartition_eq_gaussianZ_add_O_inv_sqrt V H Hinv hV hGauss
+  refine ⟨max T (max 1 (((2 * |K|) / gaussianZ H) ^ 2)),
+    le_max_of_le_right (le_max_left _ _), ?_⟩
+  intro t ht
+  have htT : T ≤ t := le_of_max_le_left ht
+  have ht' : max 1 (((2 * |K|) / gaussianZ H) ^ 2) ≤ t := le_of_max_le_right ht
+  have ht1 : 1 ≤ t := le_of_max_le_left ht'
+  have htsq : ((2 * |K|) / gaussianZ H) ^ 2 ≤ t := le_of_max_le_right ht'
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hZ_pos := hGauss.Z_pos
+  have hpart' : |rescaledPartition V t - gaussianZ H| ≤ |K| / Real.sqrt t := by
+    calc |rescaledPartition V t - gaussianZ H|
+        ≤ K / Real.sqrt t := hpart t htT
+      _ ≤ |K| / Real.sqrt t :=
+          div_le_div_of_nonneg_right (le_abs_self K) hsqrt_pos.le
+  have h_K_div_nn : 0 ≤ (2 * |K|) / gaussianZ H :=
+    div_nonneg (by positivity) hZ_pos.le
+  have h_sqrt_lb : (2 * |K|) / gaussianZ H ≤ Real.sqrt t := by
+    have h := Real.sqrt_le_sqrt htsq
+    rw [Real.sqrt_sq h_K_div_nn] at h
+    exact h
+  have hhalf : |K| / Real.sqrt t ≤ gaussianZ H / 2 := by
+    rw [div_le_div_iff₀ hsqrt_pos (by linarith : (0:ℝ) < 2)]
+    rw [div_le_iff₀ hZ_pos] at h_sqrt_lb
+    linarith
+  have habs_le := abs_le.mp hpart'
+  linarith
+
 /-- **Single-observable asymptote (weak rate)**.
 
 For an observable `φ` with gradient `a`, `rescaledExpectation V t φ` is
