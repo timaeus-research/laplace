@@ -61,6 +61,8 @@ an odd cubic jet and a quartic remainder; that's `PotentialJetApprox`
 (future work). -/
 structure PotentialApprox (V : (ι → ℝ) → ℝ)
     (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) where
+  /-- `V` is continuous (needed for global integrability bounds). -/
+  V_continuous : Continuous V
   /-- `V` vanishes at the minimum. -/
   V_zero : V 0 = 0
   /-- Local cubic remainder: `|V(w) - (1/2) quadForm H w| ≤ C · ‖w‖³`
