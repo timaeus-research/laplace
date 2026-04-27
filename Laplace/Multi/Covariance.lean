@@ -148,22 +148,24 @@ theorem rescaledPartition_eq_gaussianZ_add_O_inv_sqrt
 /-- **Single-observable asymptote (weak rate)**.
 
 For an observable `φ` with gradient `a`, `rescaledExpectation V t φ` is
-`O(1/√t)`:
+`O(1/t)`:
 
   `∃ K T₀, 1 ≤ T₀ ∧ ∀ t ≥ T₀,
-     |rescaledExpectation V t φ| ≤ K / √t`.
+     |rescaledExpectation V t φ| ≤ K / t`.
 
-The leading-order term of `rescaledExpectation V t φ` is
-`(1/√t) · ⟨a, ⟨u⟩_t⟩ ≈ 0` since the Gaussian mean is `0`; the residual
-is `O(1/√t)` from the quadratic remainder. -/
-theorem rescaledExpectation_observable_bound_inv_sqrt
+The leading-order term of `rescaledExpectation V t φ` would be
+`(1/√t) · ⟨a, ⟨u⟩_t⟩` but the linear-times-Gaussian integral vanishes
+by oddness (`integral_odd_mul_gaussian_eq_zero`); the residual is
+`O(1/t)` from the quadratic remainder of `φ` and the cubic perturbation
+`s_t = O(‖u‖³ / √t)`. -/
+theorem rescaledExpectation_observable_bound_inv
     (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a : ι → ℝ)
     (_hV : PotentialApprox V H)
     (_hφ : ObservableApprox φ a)
     (_hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
-      |rescaledExpectation V t φ| ≤ K / Real.sqrt t := by
+      |rescaledExpectation V t φ| ≤ K / t := by
   sorry
 
 /-- **Pair-observable asymptote (weak rate)**.
@@ -209,13 +211,87 @@ theorem gibbsCov_first_order_rate_weak
     (V φ ψ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
-    (_hV : PotentialApprox V H)
-    (_hφ : ObservableApprox φ a)
-    (_hψ : ObservableApprox ψ b)
-    (_hGauss : LaplaceCovHypotheses H Hinv) :
+    (hV : PotentialApprox V H)
+    (hφ : ObservableApprox φ a)
+    (hψ : ObservableApprox ψ b)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |t * gibbsCov V t φ ψ - dot a (Hinv b)| ≤ K / Real.sqrt t := by
-  sorry
+  -- Pull asymptote constants from the three asymptote stubs.
+  obtain ⟨K_pair, T_pair, hT_pair, h_pair⟩ :=
+    rescaledExpectation_pair_eq_main_add_O_inv_sqrt V φ ψ H Hinv a b hV hφ hψ hGauss
+  obtain ⟨K_phi, T_phi, hT_phi, h_phi⟩ :=
+    rescaledExpectation_observable_bound_inv V φ H Hinv a hV hφ hGauss
+  obtain ⟨K_psi, T_psi, hT_psi, h_psi⟩ :=
+    rescaledExpectation_observable_bound_inv V ψ H Hinv b hV hψ hGauss
+  -- K and T₀ bookkeeping.
+  refine ⟨K_pair + |K_phi * K_psi|, max T_pair (max T_phi T_psi), ?_, ?_⟩
+  · -- 1 ≤ max T_pair (max T_phi T_psi).
+    exact le_max_of_le_left hT_pair
+  · intro t ht_max
+    have ht_pair : T_pair ≤ t := le_of_max_le_left ht_max
+    have ht_other : max T_phi T_psi ≤ t := le_of_max_le_right ht_max
+    have ht_phi : T_phi ≤ t := le_of_max_le_left ht_other
+    have ht_psi : T_psi ≤ t := le_of_max_le_right ht_other
+    have ht_pos : 0 < t := lt_of_lt_of_le (lt_of_lt_of_le zero_lt_one hT_pair) ht_pair
+    -- Switch to rescaled side.
+    rw [gibbsCov_eq_rescaledCov V φ ψ ht_pos]
+    unfold rescaledCov
+    -- t · (E[φψ] - E[φ]·E[ψ]) = (t · E[φψ]) - (t · E[φ] · E[ψ]).
+    -- Apply triangle inequality.
+    have hpair_use := h_pair t ht_pair
+    have hphi_use := h_phi t ht_phi
+    have hpsi_use := h_psi t ht_psi
+    have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+    have ht_ge_one : 1 ≤ t := le_trans hT_pair ht_pair
+    have hsqrt_ge_one : 1 ≤ Real.sqrt t :=
+      Real.one_le_sqrt.mpr ht_ge_one
+    -- Step A: bound the cross term `t · E[φ] · E[ψ]`.
+    have habs_phi_nonneg : 0 ≤ K_phi / t :=
+      le_trans (abs_nonneg _) hphi_use
+    have habs_psi_nonneg : 0 ≤ K_psi / t :=
+      le_trans (abs_nonneg _) hpsi_use
+    have h_cross :
+        |t * (rescaledExpectation V t φ * rescaledExpectation V t ψ)|
+          ≤ |K_phi * K_psi| / t := by
+      rw [abs_mul, abs_of_pos ht_pos, abs_mul]
+      have h_prod_le :
+          |rescaledExpectation V t φ| * |rescaledExpectation V t ψ|
+            ≤ (K_phi / t) * (K_psi / t) :=
+        mul_le_mul hphi_use hpsi_use (abs_nonneg _) habs_phi_nonneg
+      have h1 : t * (|rescaledExpectation V t φ| * |rescaledExpectation V t ψ|)
+          ≤ t * ((K_phi / t) * (K_psi / t)) :=
+        mul_le_mul_of_nonneg_left h_prod_le ht_pos.le
+      have h2 : t * ((K_phi / t) * (K_psi / t)) = K_phi * K_psi / t := by
+        field_simp
+      have h3 : K_phi * K_psi / t ≤ |K_phi * K_psi| / t :=
+        div_le_div_of_nonneg_right (le_abs_self _) ht_pos.le
+      linarith
+    -- Step B: triangle inequality.
+    have h_split :
+        t * (rescaledExpectation V t (fun w => φ w * ψ w)
+              - rescaledExpectation V t φ * rescaledExpectation V t ψ)
+            - dot a (Hinv b)
+        = (t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b))
+            - t * (rescaledExpectation V t φ * rescaledExpectation V t ψ) := by
+      ring
+    rw [h_split]
+    calc |(t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b))
+              - t * (rescaledExpectation V t φ * rescaledExpectation V t ψ)|
+        ≤ |t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b)|
+            + |t * (rescaledExpectation V t φ * rescaledExpectation V t ψ)| := by
+          exact abs_sub _ _
+      _ ≤ K_pair / Real.sqrt t + |K_phi * K_psi| / t := by
+          exact add_le_add hpair_use h_cross
+      _ ≤ K_pair / Real.sqrt t + |K_phi * K_psi| / Real.sqrt t := by
+          have h_sqrt_le_t : Real.sqrt t ≤ t := by
+            calc Real.sqrt t ≤ Real.sqrt t * Real.sqrt t :=
+                    le_mul_of_one_le_right hsqrt_pos.le hsqrt_ge_one
+              _ = t := Real.mul_self_sqrt ht_pos.le
+          have h_div : |K_phi * K_psi| / t ≤ |K_phi * K_psi| / Real.sqrt t :=
+            div_le_div_of_nonneg_left (abs_nonneg _) hsqrt_pos h_sqrt_le_t
+          linarith
+      _ = (K_pair + |K_phi * K_psi|) / Real.sqrt t := by ring
 
 end MainStatement
 
