@@ -547,4 +547,81 @@ theorem gaussian_ibp_column
 
 end ColumnIBP
 
+section InverseEntry
+
+open MeasureTheory
+
+/-- **Inverse-entry corollary**: given an inverse witness `Σ` of `H` (a
+right inverse such that `H ∘ Σ = id`) and `H` injective, the moment
+column equals `Z • Σ eⱼ`, i.e., `M_{ij} = Z · (Σ eⱼ)ᵢ`.
+
+The injectivity hypothesis upgrades the right-inverse `Σ` to a two-sided
+inverse: `Σ ∘ H = id` follows from `H (Σ ∘ H) = H` and `H` injective.
+For applications, `H` injective comes from positive-definiteness. -/
+theorem gaussian_second_moment_eq_inverse_entry
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hHinv : H.comp Hinv = ContinuousLinearMap.id ℝ (ι → ℝ))
+    (hH_inj : Function.Injective H)
+    (j : ι)
+    (h_int_gW : Integrable (gaussianWeight H))
+    (h_int_uk_uj_gW : ∀ k : ι, Integrable
+      (fun u : ι → ℝ => u k * u j * gaussianWeight H u))
+    (h_int_uj_Hi_gW : ∀ i : ι, Integrable
+      (fun u : ι → ℝ => u j * (H u) i * gaussianWeight H u))
+    (h_fubini : ∀ i : ι, FubiniIBPHypothesis H i j) :
+    momentColumn H j
+      = (gaussianZ H) • Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) := by
+  -- Column form: H (momentColumn H j) = Z • e_j.
+  have h_col := gaussian_ibp_column H j h_int_gW h_int_uk_uj_gW
+    h_int_uj_Hi_gW h_fubini
+  -- Apply `Hinv` to both sides; use `Hinv ∘ H = id` (from `H ∘ Hinv = id` + injectivity).
+  -- Step A: derive `H (Hinv x) = x` from `H ∘ Hinv = id`.
+  have h_apply : ∀ x, H (Hinv x) = x := by
+    intro x
+    have := congrArg (fun (T : (ι → ℝ) →L[ℝ] (ι → ℝ)) => T x) hHinv
+    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply] at this
+    exact this
+  -- Step B: derive `Hinv (H x) = x` from injectivity.
+  have h_left : ∀ x, Hinv (H x) = x := by
+    intro x
+    apply hH_inj
+    rw [h_apply]
+  -- Step C: apply h_left to `momentColumn H j` using the column form.
+  have h_chain : Hinv (H (momentColumn H j)) = momentColumn H j := h_left _
+  -- Step D: substitute `h_col` into `h_chain`.
+  rw [h_col] at h_chain
+  rw [ContinuousLinearMap.map_smul] at h_chain
+  exact h_chain.symm
+
+/-- **Scalar inverse-entry form**:
+`∫ uᵢ uⱼ · gaussianWeight H u = gaussianZ H · (Σ eⱼ)ᵢ`. -/
+theorem gaussian_second_moment_eq_inverse_entry_scalar
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hHinv : H.comp Hinv = ContinuousLinearMap.id ℝ (ι → ℝ))
+    (hH_inj : Function.Injective H)
+    (i j : ι)
+    (h_int_gW : Integrable (gaussianWeight H))
+    (h_int_uk_uj_gW : ∀ k : ι, Integrable
+      (fun u : ι → ℝ => u k * u j * gaussianWeight H u))
+    (h_int_uj_Hi_gW : ∀ i : ι, Integrable
+      (fun u : ι → ℝ => u j * (H u) i * gaussianWeight H u))
+    (h_fubini : ∀ i : ι, FubiniIBPHypothesis H i j) :
+    ∫ u : ι → ℝ, u i * u j * gaussianWeight H u
+      = gaussianZ H * (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+  have h_col := gaussian_second_moment_eq_inverse_entry H Hinv hHinv hH_inj j
+    h_int_gW h_int_uk_uj_gW h_int_uj_Hi_gW h_fubini
+  have h_apply : (momentColumn H j) i =
+      (gaussianZ H • Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+    rw [h_col]
+  -- Unfold momentColumn at coordinate i.
+  change ∫ u : ι → ℝ, u i * u j * gaussianWeight H u =
+      gaussianZ H * (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i
+  have h_lhs : (momentColumn H j) i =
+      ∫ u : ι → ℝ, u i * u j * gaussianWeight H u := rfl
+  rw [← h_lhs, h_apply, Pi.smul_apply, smul_eq_mul]
+
+end InverseEntry
+
 end Laplace.Multi
