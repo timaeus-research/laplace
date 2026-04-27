@@ -2308,4 +2308,196 @@ private lemma fGauss_tendsto_atBot_zero
         rw [← Real.exp_add]; congr 1; ring]
     exact hbound ht u
 
+/-- `f_t(u) ≤ exp(-c₀·u²)` for some `c₀ > 0`. Direct corollary of
+`rescaled_boltzmann_decay`. -/
+private lemma fGauss_le_exp_neg_const_mul_sq
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ c₀ > 0, ∀ {t : ℝ}, 0 < t → ∀ u : ℝ,
+      fGauss lam alpha gamma t u ≤ Real.exp (-(c₀ * u ^ 2)) := by
+  obtain ⟨c₀, hc₀_pos, hbound⟩ := rescaled_boltzmann_decay hlam hgamma hdisc
+  refine ⟨c₀, hc₀_pos, ?_⟩
+  intro t ht u
+  unfold fGauss
+  rw [← Real.exp_add]
+  apply le_trans _ (hbound ht u)
+  apply Real.exp_le_exp.mpr
+  linarith
+
+/-- `u^n · f_t(u)` is integrable (over all of `ℝ`). -/
+private lemma integrable_pow_mul_fGauss
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma)
+    {t : ℝ} (ht : 0 < t) (n : ℕ) :
+    Integrable (fun u : ℝ => u ^ n * fGauss lam alpha gamma t u) := by
+  obtain ⟨c₀, hc₀_pos, hbound⟩ := fGauss_le_exp_neg_const_mul_sq hlam hgamma hdisc
+  have h_dom := integrable_abs_pow_mul_exp_neg_mul_sq hc₀_pos n
+  apply h_dom.mono
+  · apply Continuous.aestronglyMeasurable
+    unfold fGauss rescaledPerturbation cubicScale quarticScale
+    fun_prop
+  · apply Filter.Eventually.of_forall
+    intro u
+    have h_f_nn : 0 ≤ fGauss lam alpha gamma t u := by unfold fGauss; positivity
+    have h_exp_nn : 0 ≤ Real.exp (-(c₀ * u ^ 2)) := (Real.exp_pos _).le
+    rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_mul, abs_pow,
+        abs_of_nonneg h_f_nn, abs_mul, abs_pow, abs_abs,
+        abs_of_nonneg h_exp_nn]
+    exact mul_le_mul_of_nonneg_left (hbound ht u) (pow_nonneg (abs_nonneg _) n)
+
+/-- The score function times `f_t` is integrable on `ℝ`. -/
+private lemma integrable_scoreFun_mul_fGauss
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ℝ =>
+      scoreFun lam alpha gamma t u * fGauss lam alpha gamma t u) := by
+  unfold scoreFun
+  -- score · f = u·f + (3A/√t)·u²·f + (4B/t)·u³·f
+  have h1 : Integrable (fun u : ℝ => u ^ 1 * fGauss lam alpha gamma t u) :=
+    integrable_pow_mul_fGauss hlam hgamma hdisc ht 1
+  have h2 : Integrable (fun u : ℝ => u ^ 2 * fGauss lam alpha gamma t u) :=
+    integrable_pow_mul_fGauss hlam hgamma hdisc ht 2
+  have h3 : Integrable (fun u : ℝ => u ^ 3 * fGauss lam alpha gamma t u) :=
+    integrable_pow_mul_fGauss hlam hgamma hdisc ht 3
+  have hsum := (h1.add (h2.const_mul (3 * cubicScale lam alpha / Real.sqrt t))).add
+    (h3.const_mul (4 * quarticScale lam gamma / t))
+  apply hsum.congr
+  apply Filter.Eventually.of_forall
+  intro u
+  simp only [Pi.add_apply, pow_one]
+  ring
+
+/-- The Stein/score identity: `J_1 + (3A/√t)·J_2 + (4B/t)·J_3 = 0`. -/
+private lemma J_score_identity
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma)
+    {t : ℝ} (ht : 0 < t) :
+    J_n lam alpha gamma 1 t
+      + 3 * cubicScale lam alpha / Real.sqrt t * J_n lam alpha gamma 2 t
+      + 4 * quarticScale lam gamma / t * J_n lam alpha gamma 3 t = 0 := by
+  -- Set f = fGauss; f' = -score · f.
+  -- ∫_Ioi 0 f' = 0 - f(0) and ∫_Iic 0 f' = f(0) - 0, so ∫_ℝ f' = 0.
+  -- And ∫_ℝ f' = -∫_ℝ score · f = -(J_1 + (3A/√t)·J_2 + (4B/t)·J_3).
+  have hderiv : ∀ u : ℝ, HasDerivAt (fGauss lam alpha gamma t)
+      (-(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) u :=
+    fun u => fGauss_hasDerivAt lam alpha gamma ht u
+  have h_fp_int : Integrable (fun u : ℝ =>
+      -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) := by
+    have h := integrable_scoreFun_mul_fGauss hlam hgamma hdisc ht
+    have hneg := h.neg
+    apply hneg.congr
+    apply Filter.Eventually.of_forall; intro u
+    simp only [Pi.neg_apply]
+    ring
+  have h_fp_int_Ioi : IntegrableOn (fun u : ℝ =>
+      -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) (Set.Ioi 0) :=
+    h_fp_int.integrableOn
+  have h_fp_int_Iic : IntegrableOn (fun u : ℝ =>
+      -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) (Set.Iic 0) :=
+    h_fp_int.integrableOn
+  have h_top := fGauss_tendsto_atTop_zero hlam hgamma hdisc ht
+  have h_bot := fGauss_tendsto_atBot_zero hlam hgamma hdisc ht
+  have h_Ioi : ∫ u in Set.Ioi (0 : ℝ),
+      -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u =
+      0 - fGauss lam alpha gamma t 0 :=
+    integral_Ioi_of_hasDerivAt_of_tendsto'
+      (fun x _ => hderiv x) h_fp_int_Ioi h_top
+  have h_Iic : ∫ u in Set.Iic (0 : ℝ),
+      -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u =
+      fGauss lam alpha gamma t 0 - 0 :=
+    integral_Iic_of_hasDerivAt_of_tendsto'
+      (fun x _ => hderiv x) h_fp_int_Iic h_bot
+  -- ∫_ℝ f' = ∫_Iic 0 f' + ∫_Ioi 0 f' = (f(0) - 0) + (0 - f(0)) = 0.
+  have h_split : ∫ u : ℝ,
+      -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u =
+      (∫ u in Set.Iic (0 : ℝ),
+        -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) +
+      (∫ u in Set.Ioi (0 : ℝ),
+        -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) := by
+    rw [← intervalIntegral.integral_Iic_add_Ioi h_fp_int_Iic h_fp_int_Ioi]
+  have h_int_zero : ∫ u : ℝ,
+      -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u = 0 := by
+    rw [h_split, h_Iic, h_Ioi]; ring
+  -- ∫ -score·f = 0 ⇒ ∫ score·f = 0.
+  have h_score_int : ∫ u : ℝ,
+      scoreFun lam alpha gamma t u * fGauss lam alpha gamma t u = 0 := by
+    have h_eq : (fun u : ℝ =>
+        -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) =
+        (fun u : ℝ => -(scoreFun lam alpha gamma t u * fGauss lam alpha gamma t u)) := by
+      ext u; ring
+    rw [h_eq] at h_int_zero
+    rw [MeasureTheory.integral_neg] at h_int_zero
+    linarith
+  -- Identify J_n with the corresponding integrals.
+  have hi1 : Integrable (fun u : ℝ => u * fGauss lam alpha gamma t u) := by
+    have h := integrable_pow_mul_fGauss hlam hgamma hdisc ht 1
+    simp only [pow_one] at h; exact h
+  have hi2 : Integrable (fun u : ℝ => u ^ 2 * fGauss lam alpha gamma t u) :=
+    integrable_pow_mul_fGauss hlam hgamma hdisc ht 2
+  have hi3 : Integrable (fun u : ℝ => u ^ 3 * fGauss lam alpha gamma t u) :=
+    integrable_pow_mul_fGauss hlam hgamma hdisc ht 3
+  have hJ1_eq : ∫ u : ℝ, u * fGauss lam alpha gamma t u = J_n lam alpha gamma 1 t := by
+    unfold J_n fGauss
+    apply MeasureTheory.integral_congr_ae
+    apply Filter.Eventually.of_forall; intro u
+    simp only [pow_one]; ring
+  have hJ2_eq : ∫ u : ℝ, u ^ 2 * fGauss lam alpha gamma t u =
+      J_n lam alpha gamma 2 t := by
+    unfold J_n fGauss
+    apply MeasureTheory.integral_congr_ae
+    apply Filter.Eventually.of_forall; intro u
+    simp only []; ring
+  have hJ3_eq : ∫ u : ℝ, u ^ 3 * fGauss lam alpha gamma t u =
+      J_n lam alpha gamma 3 t := by
+    unfold J_n fGauss
+    apply MeasureTheory.integral_congr_ae
+    apply Filter.Eventually.of_forall; intro u
+    simp only []; ring
+  -- Combine: ∫ score·f = ∫ u·f + (3A/√t)·∫ u²·f + (4B/t)·∫ u³·f.
+  -- Rewrite the integrand pointwise to a clean associated form, then split.
+  have hi23 : Integrable (fun u : ℝ =>
+      3 * cubicScale lam alpha / Real.sqrt t * (u ^ 2 * fGauss lam alpha gamma t u) +
+      4 * quarticScale lam gamma / t * (u ^ 3 * fGauss lam alpha gamma t u)) := by
+    have := (hi2.const_mul (3 * cubicScale lam alpha / Real.sqrt t)).add
+      (hi3.const_mul (4 * quarticScale lam gamma / t))
+    apply this.congr
+    apply Filter.Eventually.of_forall; intro u; simp [Pi.add_apply]
+  have h_LHS_eq :
+      ∫ u : ℝ, scoreFun lam alpha gamma t u * fGauss lam alpha gamma t u =
+      J_n lam alpha gamma 1 t +
+      3 * cubicScale lam alpha / Real.sqrt t * J_n lam alpha gamma 2 t +
+      4 * quarticScale lam gamma / t * J_n lam alpha gamma 3 t := by
+    -- Step 1: rewrite integrand to (u·f) + (rest).
+    have h_split1 : ∫ u : ℝ,
+        scoreFun lam alpha gamma t u * fGauss lam alpha gamma t u =
+        ∫ u : ℝ,
+          u * fGauss lam alpha gamma t u +
+          (3 * cubicScale lam alpha / Real.sqrt t *
+            (u ^ 2 * fGauss lam alpha gamma t u) +
+            4 * quarticScale lam gamma / t *
+              (u ^ 3 * fGauss lam alpha gamma t u)) := by
+      apply MeasureTheory.integral_congr_ae
+      apply Filter.Eventually.of_forall
+      intro u; unfold scoreFun; ring
+    rw [h_split1]
+    rw [MeasureTheory.integral_add hi1 hi23]
+    -- Now split the inner sum.
+    have h_inner : ∫ u : ℝ,
+        3 * cubicScale lam alpha / Real.sqrt t *
+          (u ^ 2 * fGauss lam alpha gamma t u) +
+        4 * quarticScale lam gamma / t *
+          (u ^ 3 * fGauss lam alpha gamma t u) =
+        3 * cubicScale lam alpha / Real.sqrt t *
+          (∫ u, u ^ 2 * fGauss lam alpha gamma t u) +
+        4 * quarticScale lam gamma / t *
+          (∫ u, u ^ 3 * fGauss lam alpha gamma t u) := by
+      rw [MeasureTheory.integral_add
+            (hi2.const_mul (3 * cubicScale lam alpha / Real.sqrt t))
+            (hi3.const_mul (4 * quarticScale lam gamma / t))]
+      rw [MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
+    rw [h_inner, hJ1_eq, hJ2_eq, hJ3_eq]
+    ring
+  linarith [h_LHS_eq, h_score_int]
+
 end Laplace.OneD
