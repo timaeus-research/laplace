@@ -1174,4 +1174,111 @@ lemma integrable_pow_norm_mul_rescaled_weight
 
 end PolynomialMomentIntegrability
 
+section LocalPartitionBound
+
+/-- **Local pointwise bound for the partition integrand**: under
+hypotheses extracted from `PotentialApprox`, on the Taylor-validity
+region `‖u‖ ≤ δ · √t` (where `δ` is chosen so that
+`local_const · δ ≤ c / 4`),
+
+  `|gaussianWeight H u · (exp(-rescaledPerturbation V H t u) - 1)|
+    ≤ (local_const · ‖u‖³ / √t) · exp(-((c/4) · ‖u‖²))`.
+
+Proof chain:
+1. `|s_t| ≤ Cs · ‖u‖³ / √t` (rescaled cubic) and on local region
+   `‖u‖ ≤ δ √t`, this is `≤ Cs · δ · ‖u‖²` and `Cs · δ ≤ c/4`.
+2. So `|s_t| ≤ (c/4) · ‖u‖²` on the local region.
+3. `gW ≤ exp(-(c/2) · ‖u‖²)` via `quadForm_lower_bound` +
+   `gaussianWeight_le_exp_neg_const_sq`.
+4. `|exp(-s_t) - 1| ≤ |s_t| · exp(|s_t|) ≤ (Cs ‖u‖³/√t) · exp((c/4)‖u‖²)`.
+5. Combine:
+   `gW · |exp(-s_t) - 1|
+     ≤ exp(-(c/2)‖u‖²) · (Cs ‖u‖³/√t) · exp((c/4)‖u‖²)
+     = (Cs ‖u‖³/√t) · exp(-(c/4)‖u‖²)`. -/
+lemma abs_gaussianWeight_mul_exp_sub_one_le_local
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c R Cs δ : ℝ}
+    (hc_pos : 0 < c)
+    (hR_pos : 0 < R) (hCs_nn : 0 ≤ Cs)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ Cs * ‖w‖ ^ 3)
+    (hδ_pos : 0 < δ) (hδ_le_R : δ ≤ R)
+    (hδ_const : Cs * δ ≤ c / 4)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ δ * Real.sqrt t) :
+    |gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (Cs * ‖u‖ ^ 3 / Real.sqrt t) *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  -- Step 1: ‖u‖ ≤ δ · √t ≤ R · √t (via δ ≤ R), so abs_rescaledPerturbation_le applies.
+  have hu_le_R_sqrt : ‖u‖ ≤ R * Real.sqrt t :=
+    le_trans hu (mul_le_mul_of_nonneg_right hδ_le_R hsqrt_pos.le)
+  have h_st_le := abs_rescaledPerturbation_le V H h_local ht u hu_le_R_sqrt
+  -- |s_t(u)| ≤ Cs · ‖u‖³ / √t.
+  -- Step 2: on local region ‖u‖ ≤ δ √t, ‖u‖³/√t ≤ δ · ‖u‖².
+  have h_cube_to_sq : ‖u‖ ^ 3 / Real.sqrt t ≤ δ * ‖u‖ ^ 2 := by
+    have h_cube : ‖u‖ ^ 3 = ‖u‖ ^ 2 * ‖u‖ := by ring
+    rw [h_cube]
+    rw [div_le_iff₀ hsqrt_pos]
+    calc ‖u‖ ^ 2 * ‖u‖ ≤ ‖u‖ ^ 2 * (δ * Real.sqrt t) :=
+          mul_le_mul_of_nonneg_left hu (sq_nonneg _)
+      _ = δ * ‖u‖ ^ 2 * Real.sqrt t := by ring
+  -- Step 3: |s_t(u)| ≤ Cs · δ · ‖u‖² ≤ (c/4) · ‖u‖².
+  have h_st_le_quart : |rescaledPerturbation V H t u| ≤ (c / 4) * ‖u‖ ^ 2 := by
+    calc |rescaledPerturbation V H t u|
+        ≤ Cs * ‖u‖ ^ 3 / Real.sqrt t := h_st_le
+      _ = Cs * (‖u‖ ^ 3 / Real.sqrt t) := by ring
+      _ ≤ Cs * (δ * ‖u‖ ^ 2) :=
+          mul_le_mul_of_nonneg_left h_cube_to_sq hCs_nn
+      _ = (Cs * δ) * ‖u‖ ^ 2 := by ring
+      _ ≤ (c / 4) * ‖u‖ ^ 2 :=
+          mul_le_mul_of_nonneg_right hδ_const (sq_nonneg _)
+  -- Step 4: gW · exp(|s_t|) ≤ exp(-(c/2)‖u‖²) · exp((c/4)‖u‖²) = exp(-(c/4)‖u‖²).
+  have h_gW_le : gaussianWeight H u ≤ Real.exp (-((c / 2) * ‖u‖ ^ 2)) := by
+    -- From quadForm_lower_bound: (c/2) ‖u‖² ≤ (1/2) quadForm H u.
+    -- So gW = exp(-(1/2) quadForm) ≤ exp(-(c/2) ‖u‖²).
+    have h_qlb := quadForm_lower_bound V H hc_pos h_coer hR_pos hCs_nn h_local u
+    unfold gaussianWeight
+    apply Real.exp_le_exp.mpr
+    linarith
+  -- Step 5: |exp(-s_t) - 1| ≤ |s_t| · exp(|s_t|) ≤ (Cs ‖u‖³/√t) · exp((c/4) ‖u‖²).
+  have h_exp_sub_one_bound :
+      |Real.exp (-(rescaledPerturbation V H t u)) - 1|
+        ≤ Cs * ‖u‖ ^ 3 / Real.sqrt t *
+            Real.exp ((c / 4) * ‖u‖ ^ 2) := by
+    calc |Real.exp (-(rescaledPerturbation V H t u)) - 1|
+        ≤ |rescaledPerturbation V H t u| *
+            Real.exp |rescaledPerturbation V H t u| :=
+          abs_exp_neg_sub_one_le _
+      _ ≤ (Cs * ‖u‖ ^ 3 / Real.sqrt t) *
+            Real.exp ((c / 4) * ‖u‖ ^ 2) := by
+          apply mul_le_mul h_st_le _ (Real.exp_pos _).le _
+          · apply Real.exp_le_exp.mpr; exact h_st_le_quart
+          · positivity
+  -- Step 6: gW · |exp(-s_t) - 1| ≤ exp(-(c/2)‖u‖²) · (Cs ‖u‖³/√t) · exp((c/4)‖u‖²)
+  --                              = (Cs ‖u‖³/√t) · exp(-(c/4)‖u‖²).
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  rw [abs_mul, abs_of_pos h_gW_pos]
+  calc gaussianWeight H u *
+          |Real.exp (-(rescaledPerturbation V H t u)) - 1|
+      ≤ Real.exp (-((c / 2) * ‖u‖ ^ 2)) *
+          ((Cs * ‖u‖ ^ 3 / Real.sqrt t) *
+            Real.exp ((c / 4) * ‖u‖ ^ 2)) := by
+          apply mul_le_mul h_gW_le h_exp_sub_one_bound (abs_nonneg _)
+            (Real.exp_pos _).le
+    _ = (Cs * ‖u‖ ^ 3 / Real.sqrt t) *
+          (Real.exp (-((c / 2) * ‖u‖ ^ 2)) *
+            Real.exp ((c / 4) * ‖u‖ ^ 2)) := by ring
+    _ = (Cs * ‖u‖ ^ 3 / Real.sqrt t) *
+          Real.exp (-((c / 2) * ‖u‖ ^ 2) + (c / 4) * ‖u‖ ^ 2) := by
+          rw [← Real.exp_add]
+    _ = (Cs * ‖u‖ ^ 3 / Real.sqrt t) *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+          congr 2; ring
+
+end LocalPartitionBound
+
 end Laplace.Multi
