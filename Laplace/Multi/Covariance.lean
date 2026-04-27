@@ -204,11 +204,168 @@ gives `|exp(-s_t) - 1| ≤ K · ‖u‖³ / √t`, and a coercive tail. -/
 theorem rescaledPartition_eq_gaussianZ_add_O_inv_sqrt
     (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     [Nonempty ι]
-    (_hV : PotentialApprox V H)
-    (_hGauss : LaplaceCovHypotheses H Hinv) :
+    (hV : PotentialApprox V H)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |rescaledPartition V t - gaussianZ H| ≤ K / Real.sqrt t := by
-  sorry
+  -- Constants from hV.
+  set c := hV.coercive_const with hc_def
+  set R := hV.local_radius with hR_def
+  set Cs := hV.local_const with hCs_def
+  have hc_pos : 0 < c := hV.coercive_const_pos
+  have hR_pos : 0 < R := hV.local_radius_pos
+  have hCs_nn : 0 ≤ Cs := hV.local_const_nonneg
+  have h_coer := hV.coercive_bound
+  have h_local := hV.local_bound
+  have hV_cont := hV.V_continuous
+  -- Choose δ.
+  set δ : ℝ := min R (c / (4 * (Cs + 1))) with hδ_def
+  have hCs1_pos : (0 : ℝ) < Cs + 1 := by linarith
+  have hδ_pos : 0 < δ := lt_min hR_pos (by positivity)
+  have hδ_le_R : δ ≤ R := min_le_left _ _
+  have hδ_const : Cs * δ ≤ c / 4 := by
+    have h_le : δ ≤ c / (4 * (Cs + 1)) := min_le_right _ _
+    calc Cs * δ ≤ Cs * (c / (4 * (Cs + 1))) :=
+          mul_le_mul_of_nonneg_left h_le hCs_nn
+      _ = (Cs / (Cs + 1)) * (c / 4) := by field_simp
+      _ ≤ 1 * (c / 4) := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ c/4)
+          rw [div_le_one hCs1_pos]; linarith
+      _ = c / 4 := one_mul _
+  set α : ℝ := c / 4 with hα_def
+  set β : ℝ := c * δ ^ 2 / 4 with hβ_def
+  have hα_pos : 0 < α := by rw [hα_def]; linarith
+  have hβ_pos : 0 < β := by rw [hβ_def]; positivity
+  -- M constants.
+  set Mlocal : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 3 * Real.exp (-(α * ‖u‖ ^ 2))
+    with hMlocal_def
+  set Mtail : ℝ := ∫ u : ι → ℝ, Real.exp (-(α * ‖u‖ ^ 2)) with hMtail_def
+  have hMlocal_nn : 0 ≤ Mlocal := by
+    rw [hMlocal_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    exact mul_nonneg (pow_nonneg (norm_nonneg _) 3) (Real.exp_pos _).le
+  have hMtail_nn : 0 ≤ Mtail := by
+    rw [hMtail_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    exact (Real.exp_pos _).le
+  -- K and T₀.
+  refine ⟨Cs * Mlocal + 2 * Mtail, max 1 (1 / β ^ 2), le_max_left _ _, ?_⟩
+  intro t ht
+  have ht1 : 1 ≤ t := le_trans (le_max_left _ _) ht
+  have htβ : 1 / β ^ 2 ≤ t := le_trans (le_max_right _ _) ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_inv_pos : 0 < 1 / Real.sqrt t := by positivity
+  -- Integrability + difference identity.
+  have h_int_rw :=
+    integrable_rescaled_weight V hV_cont H hc_pos h_coer ht_pos
+  have h_part_id :=
+    rescaledPartition_sub_gaussianZ_eq_integral V H t hGauss.int_gW h_int_rw
+  -- F = the integrand.
+  set F : (ι → ℝ) → ℝ := fun u =>
+    gaussianWeight H u *
+      (Real.exp (-(rescaledPerturbation V H t u)) - 1) with hF_def
+  -- F integrable.
+  have hF_int : MeasureTheory.Integrable F := by
+    have h_diff : MeasureTheory.Integrable (fun u : ι → ℝ =>
+        gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)) -
+          gaussianWeight H u) :=
+      h_int_rw.sub hGauss.int_gW
+    apply h_diff.congr
+    filter_upwards with u
+    show gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)) -
+        gaussianWeight H u =
+      gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+    ring
+  -- Glocal, Gtail majorants.
+  set Glocal : (ι → ℝ) → ℝ := fun u =>
+    (Cs / Real.sqrt t) * (‖u‖ ^ 3 * Real.exp (-(α * ‖u‖ ^ 2)))
+    with hGlocal_def
+  set Gtail : (ι → ℝ) → ℝ := fun u =>
+    (2 * Real.exp (-(β * t))) * Real.exp (-(α * ‖u‖ ^ 2))
+    with hGtail_def
+  -- Glocal, Gtail integrable.
+  have hGlocal_int : MeasureTheory.Integrable Glocal := by
+    rw [hGlocal_def]
+    exact (integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 3).const_mul _
+  have hGtail_int : MeasureTheory.Integrable Gtail := by
+    rw [hGtail_def]
+    exact (integrable_exp_neg_const_norm_sq (ι := ι) hα_pos).const_mul _
+  -- Glocal integral = (Cs/√t) * Mlocal.
+  have hGlocal_eq : ∫ u : ι → ℝ, Glocal u = (Cs / Real.sqrt t) * Mlocal := by
+    rw [hGlocal_def, hMlocal_def, MeasureTheory.integral_const_mul]
+  have hGtail_eq : ∫ u : ι → ℝ, Gtail u = (2 * Real.exp (-(β * t))) * Mtail := by
+    rw [hGtail_def, hMtail_def, MeasureTheory.integral_const_mul]
+  -- Pointwise bound |F u| ≤ Glocal u + Gtail u.
+  have hpt : ∀ u : ι → ℝ, |F u| ≤ Glocal u + Gtail u := by
+    intro u
+    by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
+    · -- Local case
+      have h_local_bound :=
+        abs_gaussianWeight_mul_exp_sub_one_le_local V H hc_pos hR_pos hCs_nn
+          h_coer h_local hδ_pos hδ_le_R hδ_const ht_pos u hu
+      have h_match :
+          (Cs * ‖u‖ ^ 3 / Real.sqrt t) * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+            = Glocal u := by
+        rw [hGlocal_def, hα_def]
+        ring
+      have h_F_le : |F u| ≤ Glocal u := by
+        rw [hF_def]
+        rw [← h_match]
+        exact h_local_bound
+      have h_tail_nn : 0 ≤ Gtail u := by
+        rw [hGtail_def]
+        exact mul_nonneg (mul_nonneg (by norm_num) (Real.exp_pos _).le)
+          (Real.exp_pos _).le
+      linarith
+    · -- Tail case
+      push_neg at hu
+      have h_tail_bound :=
+        abs_gaussianWeight_mul_exp_sub_one_le_tail V H hc_pos hR_pos hCs_nn
+          h_coer h_local hδ_pos ht_pos u hu
+      have h_match :
+          2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+              Real.exp (-((c * δ ^ 2 / 4) * t)) = Gtail u := by
+        rw [hGtail_def, hα_def, hβ_def]
+        ring
+      have h_F_le : |F u| ≤ Gtail u := by
+        rw [hF_def]
+        rw [← h_match]
+        exact h_tail_bound
+      have h_loc_nn : 0 ≤ Glocal u := by
+        rw [hGlocal_def]
+        positivity
+      linarith
+  -- Final calculation.
+  have htail_sqrt : Real.exp (-(β * t)) ≤ 1 / Real.sqrt t :=
+    exp_neg_const_mul_le_inv_sqrt hβ_pos htβ
+  calc |rescaledPartition V t - gaussianZ H|
+      = |∫ u : ι → ℝ, F u| := by rw [h_part_id]
+    _ ≤ ∫ u : ι → ℝ, |F u| := by
+          rw [show |∫ u : ι → ℝ, F u| = ‖∫ u : ι → ℝ, F u‖ from
+            (Real.norm_eq_abs _).symm]
+          exact MeasureTheory.norm_integral_le_integral_norm _
+    _ ≤ ∫ u : ι → ℝ, (Glocal u + Gtail u) := by
+          apply MeasureTheory.integral_mono_ae hF_int.norm
+            (hGlocal_int.add hGtail_int)
+          filter_upwards with u
+          rw [Real.norm_eq_abs]
+          exact hpt u
+    _ = (∫ u : ι → ℝ, Glocal u) + ∫ u : ι → ℝ, Gtail u :=
+          MeasureTheory.integral_add hGlocal_int hGtail_int
+    _ = (Cs / Real.sqrt t) * Mlocal + (2 * Real.exp (-(β * t))) * Mtail := by
+          rw [hGlocal_eq, hGtail_eq]
+    _ ≤ (Cs / Real.sqrt t) * Mlocal + (2 * (1 / Real.sqrt t)) * Mtail := by
+          have h_step : (2 * Real.exp (-(β * t))) * Mtail
+              ≤ (2 * (1 / Real.sqrt t)) * Mtail := by
+            apply mul_le_mul_of_nonneg_right _ hMtail_nn
+            apply mul_le_mul_of_nonneg_left htail_sqrt (by norm_num : (0:ℝ) ≤ 2)
+          linarith
+    _ = (Cs * Mlocal + 2 * Mtail) / Real.sqrt t := by
+          field_simp
 
 /-- **Single-observable asymptote (weak rate)**.
 
