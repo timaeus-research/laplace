@@ -1081,4 +1081,97 @@ lemma pow_mul_exp_neg_sq_le_half_decay
 
 end PolynomialGaussianDecay
 
+section PolynomialMomentIntegrability
+
+open MeasureTheory
+
+/-- **Sup-norm² ≥ (1/|ι|) · ∑ u_i²**: derived directly from
+`sum_sq_le_card_mul_sq_norm`. -/
+lemma sq_norm_ge_sum_sq_div_card [hne : Nonempty ι] (u : ι → ℝ) :
+    (1 / Fintype.card ι) * (∑ i, (u i) ^ 2) ≤ ‖u‖ ^ 2 := by
+  have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
+  have h_le : ∑ i, (u i) ^ 2 ≤ Fintype.card ι * ‖u‖ ^ 2 := sum_sq_le_card_mul_sq_norm u
+  have h := mul_le_mul_of_nonneg_left h_le (le_of_lt (one_div_pos.mpr hcard))
+  rw [show (1 / Fintype.card ι : ℝ) * (Fintype.card ι * ‖u‖ ^ 2)
+        = ‖u‖ ^ 2 from by field_simp] at h
+  exact h
+
+/-- **`‖u‖^k · gaussianWeight H u · exp(-rescaledPerturbation V H t u)`
+is integrable** under coercivity, for any `k : ℕ` and `t > 0`.
+
+Bound chain:
+1. `gW · exp(-s_t) ≤ exp(-c · ‖u‖²)` (uniform-in-`t` coercive domination).
+2. `‖u‖^k · exp(-c · ‖u‖²) ≤ M_k · exp(-(c/2) · ‖u‖²)` (poly-Gaussian decay).
+3. `‖u‖² ≥ (1/|ι|) · ∑ u_i²`, so `exp(-(c/2) · ‖u‖²) ≤ exp(-(c/(2|ι|)) · ∑ u_i²)`.
+4. The latter is integrable from Phase 2.
+-/
+lemma integrable_pow_norm_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (hV_cont : Continuous V) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    [Nonempty ι]
+    (k : ℕ) {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ k * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) := by
+  have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
+  have hc_half_card_pos : (0 : ℝ) < c / (2 * Fintype.card ι) := by positivity
+  -- Dominating function: `M_k · exp(-(c/(2|ι|)) · ∑ u_i²)`.
+  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * c)) with hM_def
+  have hM_nn : 0 ≤ M_k := (Real.exp_pos _).le
+  have h_dom_int :=
+    (integrable_exp_neg_const_mul_sum_sq (ι := ι) hc_half_card_pos).const_mul M_k
+  refine h_dom_int.mono' ?_ ?_
+  · -- AE strongly measurable: continuous.
+    have h_cont : Continuous (fun u : ι → ℝ =>
+        ‖u‖ ^ k *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) :=
+      (continuous_norm.pow k).mul
+        ((continuous_gaussianWeight H).mul
+          (Real.continuous_exp.comp
+            (continuous_rescaledPerturbation hV_cont H t).neg))
+    exact h_cont.aestronglyMeasurable
+  · filter_upwards with u
+    -- Step 1: gW · exp(-s_t) ≤ exp(-c · ‖u‖²).
+    have h_rw_le := rescaled_weight_le_coercive V H hc_pos h_coer ht u
+    have h_rw_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+    have h_norm_pow_nn : 0 ≤ ‖u‖ ^ k := pow_nonneg (norm_nonneg _) k
+    have h_lhs_nn : 0 ≤ ‖u‖ ^ k * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+      mul_nonneg h_norm_pow_nn h_rw_nn
+    -- Step 2: ‖u‖^k · exp(-c‖u‖²) ≤ M_k · exp(-(c/2)‖u‖²).
+    have h_poly_decay := pow_mul_exp_neg_sq_le_half_decay k hc_pos (norm_nonneg u)
+    -- h_poly_decay : ‖u‖^k · exp(-(c · ‖u‖²)) ≤ exp(k²/(2c)) · exp(-(c/2) · ‖u‖²)
+    -- Step 3: exp(-(c/2)‖u‖²) ≤ exp(-(c/(2|ι|)) · ∑ u_i²).
+    have h_sum_to_norm := sq_norm_ge_sum_sq_div_card u
+    -- `(1/|ι|) · ∑ ≤ ‖u‖²`, so `(c/2) · ‖u‖² ≥ (c/(2|ι|)) · ∑ u_i²`,
+    -- so `exp(-(c/2)‖u‖²) ≤ exp(-(c/(2|ι|)) · ∑ u_i²)`.
+    have h_exp_le : Real.exp (-((c / 2) * ‖u‖ ^ 2))
+        ≤ Real.exp (-((c / (2 * Fintype.card ι)) * ∑ i, (u i) ^ 2)) := by
+      apply Real.exp_le_exp.mpr
+      have : (c / 2) * ‖u‖ ^ 2 ≥ (c / (2 * Fintype.card ι)) * ∑ i, (u i) ^ 2 := by
+        have hbound : (1 / (Fintype.card ι : ℝ)) * (∑ i, (u i) ^ 2) ≤ ‖u‖ ^ 2 := h_sum_to_norm
+        have h_mul := mul_le_mul_of_nonneg_left hbound (by linarith : (0:ℝ) ≤ c/2)
+        rw [show (c / 2 : ℝ) * ((1 / (Fintype.card ι : ℝ)) * (∑ i, (u i) ^ 2))
+              = (c / (2 * Fintype.card ι)) * ∑ i, (u i) ^ 2 from by
+            field_simp] at h_mul
+        linarith
+      linarith
+    -- Combine pieces.
+    rw [Real.norm_eq_abs, abs_of_nonneg h_lhs_nn]
+    calc ‖u‖ ^ k *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ ‖u‖ ^ k * Real.exp (-(c * ‖u‖ ^ 2)) :=
+          mul_le_mul_of_nonneg_left h_rw_le h_norm_pow_nn
+      _ ≤ M_k * Real.exp (-((c / 2) * ‖u‖ ^ 2)) := h_poly_decay
+      _ ≤ M_k *
+          Real.exp (-((c / (2 * Fintype.card ι)) * ∑ i, (u i) ^ 2)) :=
+          mul_le_mul_of_nonneg_left h_exp_le hM_nn
+
+end PolynomialMomentIntegrability
+
 end Laplace.Multi
