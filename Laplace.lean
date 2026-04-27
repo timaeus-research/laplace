@@ -11,3 +11,4 @@ import Laplace.OneD.Rescaling
 import Laplace.Multi.Basic
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox
+import Laplace.Multi.GaussianIBP
