@@ -503,6 +503,111 @@ lemma rescaled_weight_le_coercive
     exact this
   exact ht_le
 
+/-- **Coordinate bound by sup-norm**: `|u i| ≤ ‖u‖` for the standard
+Pi sup-norm. (Mathlib's `norm_le_pi_norm`, restated.) -/
+lemma abs_apply_le_norm (u : ι → ℝ) (i : ι) : |u i| ≤ ‖u‖ := by
+  have := norm_le_pi_norm u i
+  simpa [Real.norm_eq_abs] using this
+
+/-- Sum-of-squares bounded by `card ι · ‖u‖²` (componentwise sup bound). -/
+lemma sum_sq_le_card_mul_sq_norm (u : ι → ℝ) :
+    ∑ i, (u i) ^ 2 ≤ Fintype.card ι * ‖u‖ ^ 2 := by
+  have h_each : ∀ i : ι, (u i) ^ 2 ≤ ‖u‖ ^ 2 := by
+    intro i
+    have h := abs_apply_le_norm u i
+    have h_sq : (u i) ^ 2 = |u i| * |u i| := by rw [← sq_abs, sq]
+    have h_norm_sq : ‖u‖ ^ 2 = ‖u‖ * ‖u‖ := sq ‖u‖
+    rw [h_sq, h_norm_sq]
+    exact mul_self_le_mul_self (abs_nonneg _) h
+  calc ∑ i, (u i) ^ 2 ≤ ∑ _i : ι, ‖u‖ ^ 2 := Finset.sum_le_sum (fun i _ => h_each i)
+    _ = Fintype.card ι * ‖u‖ ^ 2 := by
+        rw [Finset.sum_const, Finset.card_univ]
+        ring
+
+/-- **Sup-norm-squared bounded by sum-of-squares**: `‖u‖² ≤ ∑ i, u_i²`. -/
+lemma sq_norm_le_sum_sq (u : ι → ℝ) :
+    ‖u‖ ^ 2 ≤ ∑ i, (u i) ^ 2 := by
+  have h_sum_nn : 0 ≤ ∑ i, (u i) ^ 2 :=
+    Finset.sum_nonneg (fun i _ => sq_nonneg _)
+  rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq ‖u‖]
+  rw [show (∑ i, (u i) ^ 2 : ℝ)
+        = Real.sqrt (∑ i, (u i) ^ 2) * Real.sqrt (∑ i, (u i) ^ 2) from
+      (Real.mul_self_sqrt h_sum_nn).symm]
+  have h_norm_le_sqrt : ‖u‖ ≤ Real.sqrt (∑ i, (u i) ^ 2) := by
+    rw [pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg _)]
+    intro i
+    rw [Real.norm_eq_abs]
+    rw [show |u i| = Real.sqrt ((u i) ^ 2) from by rw [Real.sqrt_sq_eq_abs]]
+    apply Real.sqrt_le_sqrt
+    exact Finset.single_le_sum (f := fun j => (u j) ^ 2)
+      (fun j _ => sq_nonneg _) (Finset.mem_univ i)
+  exact mul_self_le_mul_self (norm_nonneg _) h_norm_le_sqrt
+
+/-- **Sup-norm coercivity ⇒ sum-of-squares coercivity** (bridge):
+under `c · ‖w‖² ≤ V w` (sup-norm) and `Nonempty ι`,
+`(c / |ι|) · ∑ w_i² ≤ V w`.
+
+Direct from `‖w‖² ≥ (1/|ι|) · ∑ w_i²`, equivalently the
+`sum_sq_le_card_mul_sq_norm` bound. -/
+lemma coercive_sum_sq_of_norm
+    (V : (ι → ℝ) → ℝ)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    [hne : Nonempty ι]
+    (w : ι → ℝ) :
+    (c / Fintype.card ι) * ∑ i, (w i) ^ 2 ≤ V w := by
+  have hd : (0 : ℝ) < Fintype.card ι := by
+    rw [show (Fintype.card ι : ℝ) = ((Fintype.card ι : ℕ) : ℝ) from rfl]
+    exact_mod_cast Fintype.card_pos
+  have h_le : ∑ i, (w i) ^ 2 ≤ Fintype.card ι * ‖w‖ ^ 2 :=
+    sum_sq_le_card_mul_sq_norm w
+  have h1 : (c / Fintype.card ι) * ∑ i, (w i) ^ 2
+      ≤ (c / Fintype.card ι) * (Fintype.card ι * ‖w‖ ^ 2) :=
+    mul_le_mul_of_nonneg_left h_le (div_nonneg hc_pos.le hd.le)
+  have h2 : (c / Fintype.card ι) * (Fintype.card ι * ‖w‖ ^ 2) = c * ‖w‖ ^ 2 := by
+    field_simp
+  rw [h2] at h1
+  exact le_trans h1 (h_coer w)
+
+/-- **Coercive domination, sum-of-squares form**: under `c · ‖w‖² ≤ V w`,
+the rescaled weight satisfies
+
+  `gaussianWeight H u · exp(-rescaledPerturbation V H t u)
+    ≤ Real.exp (-((c / |ι|) · ∑ i, u_i²))`
+
+uniformly in `t > 0`. The sum-of-squares form connects directly to
+`integrable_exp_neg_const_mul_sum_sq` from `Multi/GaussianDomination.lean`,
+giving polynomial-times-rescaled-weight integrability uniformly in `t`. -/
+lemma rescaled_weight_le_sum_sq_coercive
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    [Nonempty ι]
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))
+      ≤ Real.exp (-((c / Fintype.card ι) * ∑ i, (u i) ^ 2)) := by
+  rw [gaussianWeight_mul_exp_neg_s_t V H t u]
+  apply Real.exp_le_exp.mpr
+  rw [neg_le_neg_iff]
+  -- Goal: (c / |ι|) · ∑ u_i² ≤ t · V((√t)⁻¹ u).
+  have h_coer_at := coercive_sum_sq_of_norm V hc_pos h_coer ((Real.sqrt t)⁻¹ • u)
+  -- h_coer_at : (c / |ι|) · ∑ ((√t)⁻¹ u i)² ≤ V ((√t)⁻¹ • u).
+  have h_sum_sq : ∑ i, ((Real.sqrt t)⁻¹ • u) i ^ 2
+      = (∑ i, (u i) ^ 2) / t := by
+    have h_each : ∀ i, ((Real.sqrt t)⁻¹ • u) i ^ 2 = (u i) ^ 2 / t := by
+      intro i
+      rw [Pi.smul_apply, smul_eq_mul, mul_pow, inv_pow, Real.sq_sqrt ht.le]
+      ring
+    rw [show (∑ i, ((Real.sqrt t)⁻¹ • u) i ^ 2) = ∑ i, (u i) ^ 2 / t from by
+      apply Finset.sum_congr rfl; intro i _; exact h_each i]
+    rw [Finset.sum_div]
+  rw [h_sum_sq] at h_coer_at
+  -- Multiply h_coer_at by t > 0.
+  have h := mul_le_mul_of_nonneg_left h_coer_at ht.le
+  rw [show t * ((c / Fintype.card ι) * ((∑ i, (u i) ^ 2) / t))
+        = (c / Fintype.card ι) * ∑ i, (u i) ^ 2 from by field_simp] at h
+  exact h
+
 end CoerciveDomination
 
 end Laplace.Multi

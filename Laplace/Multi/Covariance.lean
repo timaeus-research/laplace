@@ -151,50 +151,9 @@ lemma integrable_sum_sq_mul_gaussianWeight
   show ∑ i, u i ^ 2 * gaussianWeight H u = (∑ i, u i ^ 2) * gaussianWeight H u
   rw [Finset.sum_mul]
 
-/-- **Coordinate bound by sup-norm**: `|u i| ≤ ‖u‖` for the standard
-Pi sup-norm. (Mathlib's `norm_le_pi_norm`, restated.) -/
-lemma abs_apply_le_norm (u : ι → ℝ) (i : ι) : |u i| ≤ ‖u‖ := by
-  have := norm_le_pi_norm u i
-  simpa [Real.norm_eq_abs] using this
-
-/-- **Sup-norm-squared bounded by sum-of-squares**: `‖u‖² ≤ ∑ i, u_i²`.
-
-Proof via `pi_norm_le_iff_of_nonneg` and `Real.sqrt_sq` after taking the
-square root of each side. -/
-lemma sq_norm_le_sum_sq (u : ι → ℝ) :
-    ‖u‖ ^ 2 ≤ ∑ i, (u i) ^ 2 := by
-  have h_sum_nn : 0 ≤ ∑ i, (u i) ^ 2 :=
-    Finset.sum_nonneg (fun i _ => sq_nonneg _)
-  rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq ‖u‖]
-  rw [show (∑ i, (u i) ^ 2 : ℝ)
-        = Real.sqrt (∑ i, (u i) ^ 2) * Real.sqrt (∑ i, (u i) ^ 2) from
-      (Real.mul_self_sqrt h_sum_nn).symm]
-  -- Suffices ‖u‖ ≤ √(∑ u_i²), then square.
-  have h_norm_le_sqrt : ‖u‖ ≤ Real.sqrt (∑ i, (u i) ^ 2) := by
-    rw [pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg _)]
-    intro i
-    rw [Real.norm_eq_abs]
-    rw [show |u i| = Real.sqrt ((u i) ^ 2) from by
-        rw [Real.sqrt_sq_eq_abs]]
-    apply Real.sqrt_le_sqrt
-    exact Finset.single_le_sum (f := fun j => (u j) ^ 2)
-      (fun j _ => sq_nonneg _) (Finset.mem_univ i)
-  exact mul_self_le_mul_self (norm_nonneg _) h_norm_le_sqrt
-
-/-- Sum-of-squares bounded by `card ι · ‖u‖²` (componentwise sup bound). -/
-lemma sum_sq_le_card_mul_sq_norm (u : ι → ℝ) :
-    ∑ i, (u i) ^ 2 ≤ Fintype.card ι * ‖u‖ ^ 2 := by
-  have h_each : ∀ i : ι, (u i) ^ 2 ≤ ‖u‖ ^ 2 := by
-    intro i
-    have h := abs_apply_le_norm u i
-    have h_sq : (u i) ^ 2 = |u i| * |u i| := by rw [← sq_abs, sq]
-    have h_norm_sq : ‖u‖ ^ 2 = ‖u‖ * ‖u‖ := sq ‖u‖
-    rw [h_sq, h_norm_sq]
-    exact mul_self_le_mul_self (abs_nonneg _) h
-  calc ∑ i, (u i) ^ 2 ≤ ∑ _i : ι, ‖u‖ ^ 2 := Finset.sum_le_sum (fun i _ => h_each i)
-    _ = Fintype.card ι * ‖u‖ ^ 2 := by
-        rw [Finset.sum_const, Finset.card_univ]
-        ring
+-- Pi-norm coordinate bridges (`abs_apply_le_norm`, `sq_norm_le_sum_sq`,
+-- `sum_sq_le_card_mul_sq_norm`) live in `Multi/RescaledIntegrals.lean` so
+-- that the coercive-domination lemmas there can use them.
 
 /-- **`‖u‖² · gaussianWeight H u` integrability**: under
 `LaplaceCovHypotheses`, dominated pointwise by `(∑ u_i²) · gaussianWeight H u`
