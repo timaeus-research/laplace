@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Lean 4 + Mathlib formalisation of Laplace asymptotic expansions and Wick
-contractions, following the SLT Susceptibility Primer (Baker et al., 2025).
+contractions, following the SLT Susceptibility Primer (Elliott & Murfet, 2026).
 
 ## Project Goal
 

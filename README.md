@@ -1,7 +1,7 @@
 # laplace
 
 A Lean 4 + Mathlib formalisation of the anharmonic Laplace asymptotic from
-the SLT Susceptibility Primer (Baker et al., 2025).
+the SLT Susceptibility Primer (Elliott & Murfet, 2026).
 
 ## Headline theorem
 
@@ -110,6 +110,6 @@ references discovered along the way, and recurrent tactic gotchas.
 - Strategic guidance for the proof structure and several key tactical
   unblocks were provided by GPT-5.5 Pro consultations, recorded in
   [`gpt_responses/`](gpt_responses/).
-- The mathematical content tracks the SLT Susceptibility Primer (Baker et
-  al., 2025) and depends throughout on
+- The mathematical content tracks the SLT Susceptibility Primer (Elliott &
+  Murfet, 2026) and depends throughout on
   [Mathlib](https://github.com/leanprover-community/mathlib4).
