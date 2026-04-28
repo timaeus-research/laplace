@@ -656,6 +656,138 @@ lemma integral_centered_bilinear_gaussianWeight_eq_zero
   rw [MeasureTheory.integral_sub h_int_dot_dot h_int_m, h_dot_dot, h_const]
   ring
 
+/-- **Corrected-bracket decomposition for the centered bilinear integrand**.
+
+The original integral `∫ B · gW · exp(-s_t)` (where `B(u) := dot a u · dot b u
+- m`, `m := dot a (Hinv b)`) equals the *corrected-bracket* form
+
+  `∫ B · gW · (exp(-s_t) - 1 + c_t)`
+
+where `c_t(u) := t · cV((√t)⁻¹•u)`. The argument:
+- pointwise `B · gW · (exp(-s_t) - 1 + c_t)
+            = B · gW · exp(-s_t) - B · gW + B · gW · c_t`;
+- `∫ B · gW = 0` (centering identity, helper 1A);
+- `∫ B · gW · c_t = 0` (parity vanishing — `B` is even, `c_t` is odd).
+
+This is the cleanest setup for the K/t bound: the corrected bracket is
+`O(‖u‖^4/t · gW · exp_factor)` locally (Stage 1's Taylor remainder + Stage
+2's quartic remainder), so the K/t rate falls out of the local bound + an
+indicator-trick tail. -/
+private lemma integral_centered_bilinear_eq_corrected_bracket
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ) [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    {t : ℝ} (ht_pos : 0 < t) :
+    ∫ u : ι → ℝ, (dot a u * dot b u - dot a (Hinv b)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+    = ∫ u : ι → ℝ, (dot a u * dot b u - dot a (Hinv b)) *
+        gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+         t * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+  set m := dot a (Hinv b) with hm_def
+  -- Define the three integrand pieces as named functions for clean
+  -- elaboration of `MeasureTheory.integral_{add,sub}`.
+  set F : (ι → ℝ) → ℝ := fun u =>
+    (dot a u * dot b u - m) * gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) with hF_def
+  set G : (ι → ℝ) → ℝ := fun u =>
+    (dot a u * dot b u - m) * gaussianWeight H u with hG_def
+  set K : (ι → ℝ) → ℝ := fun u =>
+    (dot a u * dot b u - m) * gaussianWeight H u *
+      (t * hV.cV ((Real.sqrt t)⁻¹ • u)) with hK_def
+  -- Pointwise: RHS_integrand = F - G + K.
+  have h_pt : ∀ u : ι → ℝ,
+      (dot a u * dot b u - m) * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+         t * hV.cV ((Real.sqrt t)⁻¹ • u))
+      = F u - G u + K u := by
+    intro u; rw [hF_def, hG_def, hK_def]; ring
+  -- Integrability of F (the original LHS integrand).
+  have h_int_dd_exp : Integrable (fun u : ι → ℝ =>
+      dot a u * dot b u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_dot_mul_dot_mul_rescaled_weight V H a b
+      hV.toPotentialApprox.V_continuous
+      hV.toPotentialApprox.coercive_const_pos
+      hV.toPotentialApprox.coercive_bound ht_pos
+  have h_int_m_exp : Integrable (fun u : ι → ℝ =>
+      m * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    (integrable_rescaled_weight V hV.toPotentialApprox.V_continuous H
+      hV.toPotentialApprox.coercive_const_pos
+      hV.toPotentialApprox.coercive_bound ht_pos).const_mul m
+  have h_int_F : Integrable F := by
+    rw [hF_def]
+    have h_sum := h_int_dd_exp.sub h_int_m_exp
+    apply h_sum.congr
+    filter_upwards with u
+    simp only [Pi.sub_apply]; ring
+  -- Integrability of G.
+  have h_int_G : Integrable G := by
+    rw [hG_def]
+    have h_dd := integrable_dot_mul_dot_mul_gaussianWeight hGauss a b
+    have h_m := hGauss.int_gW.const_mul m
+    have h_sum := h_dd.sub h_m
+    apply h_sum.congr
+    filter_upwards with u
+    simp only [Pi.sub_apply]; ring
+  -- Integrability of K.
+  have h_int_K : Integrable K := by
+    rw [hK_def]
+    exact integrable_centered_bilinear_mul_gaussianWeight_mul_scaledCubic
+      V H hV a b m ht_pos
+  -- Integrability of F - G.
+  have h_int_FsubG : Integrable (F - G) := h_int_F.sub h_int_G
+  -- ∫ G = 0 (centering identity).
+  have h_int_G_zero : ∫ u, G u = 0 := by
+    rw [hG_def]
+    exact integral_centered_bilinear_gaussianWeight_eq_zero hGauss a b
+  -- ∫ K = 0 (parity).
+  have h_int_K_zero : ∫ u, K u = 0 := by
+    rw [hK_def]
+    have h_rearrange : ∀ u : ι → ℝ,
+        (dot a u * dot b u - m) * gaussianWeight H u *
+          (t * hV.cV ((Real.sqrt t)⁻¹ • u))
+        = t * ((dot a u * dot b u - m) *
+              hV.cV ((Real.sqrt t)⁻¹ • u) *
+              gaussianWeight H u) := by intro u; ring
+    rw [show (fun u : ι → ℝ => (dot a u * dot b u - m) * gaussianWeight H u *
+              (t * hV.cV ((Real.sqrt t)⁻¹ • u)))
+            = fun u => t * ((dot a u * dot b u - m) *
+                  hV.cV ((Real.sqrt t)⁻¹ • u) *
+                  gaussianWeight H u) from funext h_rearrange]
+    rw [MeasureTheory.integral_const_mul,
+        integral_centered_bilinear_cubicJet_eq_zero H hV.cV hV.cV_odd a b m t]
+    ring
+  -- ∫ RHS_integrand = ∫ (F - G + K). Split via integral linearity:
+  -- ∫ (F - G + K) = ∫ ((F + K) - G) = ∫ (F + K) - ∫ G = ∫ F + ∫ K - ∫ G.
+  -- Using ∫ G = 0 and ∫ K = 0 (centering identity + parity), this equals ∫ F.
+  -- Provide the F + K integrability witness in pointwise-lambda form so that
+  -- `MeasureTheory.integral_sub` matches the rewrite pattern.
+  have h_int_F_plus_K : Integrable (fun u : ι → ℝ => F u + K u) :=
+    h_int_F.add h_int_K
+  have h_int_RHS_eq : ∫ u : ι → ℝ,
+        (dot a u * dot b u - m) * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+           t * hV.cV ((Real.sqrt t)⁻¹ • u))
+      = ∫ u, F u := by
+    -- Step 1: Rewrite integrand to (F u + K u) - G u.
+    rw [show (fun u : ι → ℝ =>
+              (dot a u * dot b u - m) * gaussianWeight H u *
+                (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+                 t * hV.cV ((Real.sqrt t)⁻¹ • u)))
+            = fun u => (F u + K u) - G u from funext (fun u => by
+              rw [h_pt u]; ring)]
+    -- Step 2: Apply integral_sub then integral_add.
+    rw [MeasureTheory.integral_sub h_int_F_plus_K h_int_G,
+        MeasureTheory.integral_add h_int_F h_int_K,
+        h_int_G_zero, h_int_K_zero]
+    ring
+  rw [hF_def] at h_int_RHS_eq
+  rw [← h_int_RHS_eq]
+
 end ParityLemmas
 
 section SharpHelpers
