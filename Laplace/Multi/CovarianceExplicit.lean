@@ -1,0 +1,315 @@
+/-
+Copyright (c) 2026 Daniel Murfet. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Laplace.Multi.CovarianceSharp
+
+/-!
+# Explicit-coefficient multivariate Laplace asymptotics (skeleton, in progress)
+
+This file aims at the **explicit-coefficient** $O(t^{-2})$ companions to the
+Susceptibility Primer's `lem:laplace_cov`:
+
+* `lem:laplace_exp` — multivariate expectation at order $t^{-1}$:
+  $$
+  \langle \phi \rangle_t = \tfrac{1}{2t}\big[\mathrm{tr}(\nabla^2\phi\,\Sigma) -
+  \nabla\phi^\top\Sigma\,(T{:}\Sigma)\big] + O(t^{-2}),
+  $$
+  for $\phi$ vanishing at $w^*$, with $T = \nabla^3 V(w^*)$.
+* `lem:laplace_cov2` — multivariate covariance at order $t^{-2}$:
+  $$
+  \mathrm{Cov}_t[\phi,\psi] = \tfrac{1}{t^2}\Big[\tfrac{1}{2}\mathrm{tr}(A\Sigma B\Sigma)
+  + \tfrac{1}{2}(\Sigma b)\!\cdot\!(\Phi{:}\Sigma) - \tfrac{1}{2}b^\top\Sigma A\Sigma(T{:}\Sigma)
+  - \tfrac{1}{2}(\Sigma b)\!\cdot\!(T{:}(\Sigma A\Sigma))\Big] + o(t^{-2}),
+  $$
+  for $\phi$ vanishing to second order ($\phi(w^*) = 0$, $\nabla\phi(w^*) = 0$),
+  $\psi$ vanishing at $w^*$. Here $A = \nabla^2\phi(w^*)$, $\Phi = \nabla^3\phi(w^*)$,
+  $b = \nabla\psi(w^*)$, $B = \nabla^2\psi(w^*)$, $T = \nabla^3 V(w^*)$, $\Sigma = H^{-1}$.
+
+The implicit-coefficient sharp covariance `gibbsCov_first_order_rate_sharp` (the
+weaker statement asserting only that the leading coefficient is
+$\nabla\phi^\top\Sigma\nabla\psi$) is already proven in
+`Laplace.Multi.CovarianceSharp`. This file extends that to the *explicit*
+coefficient by exposing tensor-valued local jets and computing the leading
+Gaussian terms via specialised contraction lemmas.
+
+## Architectural choices (per `gpt_responses/strategy_lem_laplace_cov2.md`)
+
+1. **New companion structures.** `PotentialTensorApprox` and
+   `ObservableTensorApprox` extend `PotentialJetApprox`/`ObservableJetApprox`
+   with *exact* tensor data (a `ContinuousMultilinearMap` for the cubic part)
+   plus a *quartic* local remainder. We do not modify the existing sharp-track
+   structures.
+2. **Multilinear-map tensor data.** Cubic tensors are stored as
+   `ContinuousMultilinearMap ℝ (fun _ : Fin 3 => (ι → ℝ)) ℝ` rather than
+   indexed coefficients; the theorem-level API uses scalar / contracted forms.
+3. **Specialised contraction lemmas.** We do *not* build a general Isserlis
+   theorem. Instead we prove the four or five Gaussian moment identities that
+   the appendix proofs of `lem:laplace_exp` and `lem:laplace_cov2` actually
+   need:
+   - `gaussian_quad_expectation` — $\int \tfrac12 u^\top A u\, gW
+     = Z\cdot\tfrac12\mathrm{tr}(A\Sigma)$.
+   - `gaussian_linear_cubic` — $\int (a\cdot u)\,T(u,u,u)\,gW
+     = Z\cdot 3\,(\Sigma a)\cdot(T{:}\Sigma)$ (then $1/6$ prefactor gives $\tfrac12$).
+   - `gaussian_quad_quad` — $\int (\tfrac12 u^\top A u)(\tfrac12 u^\top B u)\,gW
+     = Z[\tfrac14\mathrm{tr}(A\Sigma)\mathrm{tr}(B\Sigma)+\tfrac12\mathrm{tr}(A\Sigma B\Sigma)]$.
+   - `gaussian_cubic_linear` — $\int \tfrac16\Phi(u,u,u)(b\cdot u)\,gW
+     = Z\cdot\tfrac12(\Sigma b)\cdot(\Phi{:}\Sigma)$.
+   - `gaussian_quad_linear_cubic` — directly in the contracted final form for
+     the 6th-moment term.
+4. **Glocal+Gtail for error control only.** The exact algebraic main term is
+   computed via the contraction lemmas; the local Taylor and tail remainders
+   are bounded via the `Glocal+Gtail` template proven 4× in `CovarianceSharp`.
+
+## Status
+
+- Stage 0 (this file): tensor jet structures + theorem signatures, all
+  sorry'd. Skeleton-correctness milestone, not proof completion.
+- Subsequent stages will fill the sorries bottom-up: contraction lemmas →
+  `lem:laplace_exp` → `lem:laplace_cov2`.
+
+-/
+
+namespace Laplace.Multi
+
+open MeasureTheory
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
+section TensorJetStructures
+
+/-- **Exact-tensor potential package**.
+
+Extends `PotentialJetApprox` with an *exact* symmetric trilinear cubic
+tensor `T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => (ι → ℝ)) ℝ` such
+that the cubic-scale jet `cV` is its diagonal up to a `1/6` factor:
+`cV w = (1/6) · T (fun _ => w)` (cubic *homogeneity*, the strict
+strengthening of the parity-only `cV_odd` hypothesis used by the sharp
+track). The local quartic remainder upgrades to the *exact*
+$V - \tfrac12 H w \cdot w - \tfrac16 T(w,w,w) = O(\|w\|^4)$ form. -/
+structure PotentialTensorApprox
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    extends PotentialJetApprox V H where
+  /-- Symmetric trilinear cubic tensor `T = ∇³V(0)`. -/
+  T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ
+  /-- Symmetry of `T` under permutations of arguments. -/
+  T_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+    T (fun i => v (σ i)) = T v
+  /-- Cubic homogeneity: the scalar cubic jet `cV` is the diagonal of `T`. -/
+  cV_eq_T_diag : ∀ w : ι → ℝ, cV w = (1 / 6 : ℝ) * T (fun _ => w)
+  /-- Local quartic remainder, upgraded from `jet_bound` to use the
+  exact `T`-tensor form: on `‖w‖ ≤ jet_radius`,
+  `|V w - ((1/2) · quadForm H w + (1/6) · T(w,w,w))| ≤ jet_const · ‖w‖^4`. -/
+  T_jet_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
+    |V w - ((1 / 2 : ℝ) * quadForm H w + (1 / 6 : ℝ) * T (fun _ => w))|
+      ≤ jet_const * ‖w‖ ^ 4
+
+/-- **Exact-tensor observable package**.
+
+Extends `ObservableJetApprox` with an *exact* symmetric bilinear quadratic
+form `A : (ι → ℝ) →L[ℝ] (ι → ℝ)` (so the Hessian quadratic part is
+`(1/2) · quadForm A w`) and an *exact* symmetric trilinear cubic tensor
+`Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => (ι → ℝ)) ℝ`. The local
+remainder is now *quartic* against `dot a w + (1/2) quadForm A w + (1/6) Φ(w,w,w)`.
+
+For `lem:laplace_exp` we only need the `A` data (and the existing `qφ`
+linkage `qφ w = (1/2) quadForm A w`); `Φ` is needed for `lem:laplace_cov2`'s
+$\langle \phi_3 \psi_1\rangle$ term when $\phi$ vanishes to second order. -/
+structure ObservableTensorApprox
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    extends ObservableJetApprox φ a where
+  /-- Symmetric bilinear quadratic Hessian, as a continuous linear map
+  `(ι → ℝ) →L[ℝ] (ι → ℝ)`. The bilinear form is `quadForm A`. -/
+  A : (ι → ℝ) →L[ℝ] (ι → ℝ)
+  /-- Symmetry of `A`: `dot u (A v) = dot v (A u)`. -/
+  A_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u)
+  /-- Quadratic-jet linkage: `qφ w = (1/2) · quadForm A w`. -/
+  qφ_eq_A_diag : ∀ w : ι → ℝ, qφ w = (1 / 2 : ℝ) * quadForm A w
+  /-- Symmetric trilinear cubic tensor `Φ = ∇³φ(0)`. -/
+  Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ
+  /-- Symmetry of `Φ` under permutations of arguments. -/
+  Φ_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+    Φ (fun i => v (σ i)) = Φ v
+  /-- Local quartic remainder (exact-tensor form): on `‖w‖ ≤ jet_radius`,
+  `|φ w - (dot a w + (1/2) quadForm A w + (1/6) Φ(w,w,w))| ≤ jet_const · ‖w‖^4`. -/
+  Φ_jet_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
+    |φ w - (dot a w + (1 / 2 : ℝ) * quadForm A w
+            + (1 / 6 : ℝ) * Φ (fun _ => w))| ≤ jet_const * ‖w‖ ^ 4
+
+end TensorJetStructures
+
+section TensorContractions
+
+/-- Contraction `(T : Sig)_i := ∑_{jk} T_ijk Sig_jk`, where `T` is a symmetric
+trilinear form (read as `T_ijk = T(eᵢ, eⱼ, e_k)` for the standard basis)
+and `Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)` represents `Sig_jk = Sig(e_k)_j`. The result
+is a vector in `(ι → ℝ)`. -/
+noncomputable def tensorContractMatrix
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)) : ι → ℝ :=
+  fun i => ∑ j, T (fun k =>
+    match k with
+    | 0 => Pi.single i (1 : ℝ)
+    | 1 => Pi.single j (1 : ℝ)
+    | 2 => Sig (Pi.single j (1 : ℝ)))
+
+/-- Trace `tr(A Sig) := ∑_i (A (Sig eᵢ))_i`, for a symmetric bilinear form `A` and
+its conjugate against `Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)`. -/
+noncomputable def trASig
+    (A Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)) : ℝ :=
+  ∑ i, (A (Sig (Pi.single i (1 : ℝ)))) i
+
+end TensorContractions
+
+set_option maxHeartbeats 800000
+
+section GaussianContractions
+
+variable {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+
+/-- **4th-moment contraction (`A`-quadratic form against Gaussian)**:
+$\int \tfrac12\,u^\top A u \cdot gW = Z\cdot\tfrac12\,\mathrm{tr}(A\Sigma)$.
+The first specialised Gaussian contraction lemma — used as the leading
+Gaussian term of `lem:laplace_exp` (Hessian piece). -/
+private lemma gaussian_quad_expectation
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∫ u : ι → ℝ, (1 / 2 : ℝ) * quadForm A u * gaussianWeight H u
+      = gaussianZ H * (1 / 2 : ℝ) * trASig A Hinv := by
+  sorry
+
+/-- **4th-moment contraction (linear · cubic against Gaussian)**:
+$\int (a\cdot u)\,T(u,u,u)\,gW = Z\cdot 3\,(\Sigma a)\cdot(T{:}\Sigma)$.
+The second specialised Gaussian contraction lemma — used in
+`lem:laplace_exp` (cubic-anharmonic piece) and `lem:laplace_cov2` (term 2). -/
+private lemma gaussian_linear_cubic
+    (a : ι → ℝ)
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      T (fun i => v (σ i)) = T v)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∫ u : ι → ℝ, dot a u * T (fun _ => u) * gaussianWeight H u
+      = gaussianZ H * 3 * dot (Hinv a) (tensorContractMatrix T Hinv) := by
+  sorry
+
+/-- **4th-moment contraction (quad · quad)**:
+$\int (\tfrac12 u^\top A u)(\tfrac12 u^\top B u)\,gW
+  = Z[\tfrac14\mathrm{tr}(A\Sigma)\mathrm{tr}(B\Sigma) + \tfrac12\mathrm{tr}(A\Sigma B\Sigma)]$.
+The third specialised Gaussian contraction lemma — used in `lem:laplace_cov2`
+term 1 ($\langle\phi_2\psi_2\rangle$). -/
+private lemma gaussian_quad_quad
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hB_symm : ∀ u v : ι → ℝ, dot u (B v) = dot v (B u))
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u)
+        * gaussianWeight H u
+      = gaussianZ H * ((1 / 4 : ℝ) * trASig A Hinv * trASig B Hinv
+        + (1 / 2 : ℝ) * trASig A (B.comp Hinv |>.comp Hinv)) := by
+  sorry
+
+/-- **4th-moment contraction (cubic · linear)**:
+$\int \tfrac16 \Phi(u,u,u)(b\cdot u)\,gW = Z\cdot\tfrac12(\Sigma b)\cdot(\Phi{:}\Sigma)$.
+Symmetric to `gaussian_linear_cubic` modulo the $1/6$ prefactor; the
+fourth specialised Gaussian contraction lemma. -/
+private lemma gaussian_cubic_linear
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hΦ_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      Φ (fun i => v (σ i)) = Φ v)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∫ u : ι → ℝ, (1 / 6 : ℝ) * Φ (fun _ => u) * dot b u * gaussianWeight H u
+      = gaussianZ H * (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv) := by
+  sorry
+
+/-- **6th-moment contraction (quad · linear · cubic)**:
+$\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = $
+the contracted six-pairing form, in the appendix's expanded coefficient
+shape (the three classes after $\tfrac{1}{12}$ prefactor). The fifth
+specialised Gaussian contraction lemma — used in `lem:laplace_cov2` term 3. -/
+private lemma gaussian_quad_linear_cubic
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ)
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      T (fun i => v (σ i)) = T v)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ result : ℝ, ∫ u : ι → ℝ,
+        ((1 / 2 : ℝ) * quadForm A u) * dot b u * ((1 / 6 : ℝ) * T (fun _ => u))
+          * gaussianWeight H u
+      = gaussianZ H * result := by
+  sorry
+
+end GaussianContractions
+
+section MainTheorems
+
+/-- **Sharp expectation rate (explicit coefficient, `lem:laplace_exp`)**:
+for $\phi$ with $\phi(0) = 0$,
+$$
+  \langle\phi\rangle_t = \tfrac{1}{2t}\big[\mathrm{tr}(A\Sigma)
+    - (\Sigma\,\nabla\phi(0))\!\cdot\!(T{:}\Sigma)\big] + O(t^{-2}),
+$$
+where $A = \nabla^2\phi(0)$, $T = \nabla^3 V(0)$, $\Sigma = H^{-1}$.
+
+The Lean theorem packages this as: there exist constants $K, T_0$ with
+$T_0 \ge 1$ such that for all $t \ge T_0$,
+$$
+  \big| 2t\,\langle\phi\rangle_t - \mathrm{tr}(A\Sigma)
+    + (\Sigma\,\nabla\phi(0))\!\cdot\!(T{:}\Sigma) \big| \le K/t.
+$$ -/
+theorem gibbsExpectation_first_order_rate_explicit
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |2 * t * gibbsExpectation V t φ - trASig hφ.A Hinv
+          + dot (Hinv a) (tensorContractMatrix hV.T Hinv)| ≤ K / t := by
+  sorry
+
+/-- **Sharp covariance rate (explicit coefficient, `lem:laplace_cov2`)**:
+for $\phi$ vanishing to second order ($\phi(0) = 0$, $\nabla\phi(0) = 0$)
+and $\psi$ with $\psi(0) = 0$ and $\nabla\psi(0) = b$,
+$$
+  \mathrm{Cov}_t[\phi,\psi] = \tfrac{1}{t^2}\Big[\tfrac{1}{2}\mathrm{tr}(A\Sigma B\Sigma)
+    + \tfrac{1}{2}(\Sigma b)\!\cdot\!(\Phi{:}\Sigma)
+    - \tfrac{1}{2}b^\top\Sigma A\Sigma(T{:}\Sigma)
+    - \tfrac{1}{2}(\Sigma b)\!\cdot\!(T{:}(\Sigma A\Sigma))\Big] + o(t^{-2}),
+$$
+where $A = \nabla^2\phi(0)$, $\Phi = \nabla^3\phi(0)$, $b = \nabla\psi(0)$,
+$B = \nabla^2\psi(0)$, $T = \nabla^3 V(0)$, $\Sigma = H^{-1}$.
+
+The Lean theorem packages the explicit coefficient as a single `ℝ`-valued
+function `cov2_coefficient` of `(hV, hφ, hψ)` so the conclusion has the form
+`|t² · gibbsCov V t φ ψ - cov2_coefficient| ≤ K/t`, i.e. a sharp $o(t^{-2})$
+remainder. The decomposition into the four named terms (and the `tr(A\Sigma)`
+cancellation between connected and disconnected pieces) is exposed via the
+helper lemma `cov2_coefficient_eq`. -/
+theorem gibbsCov_first_order_rate_explicit
+    (V φ ψ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hψ : ObservableTensorApprox ψ b)
+    (h_phi_grad_zero : a = 0)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t ^ 2 * gibbsCov V t φ ψ -
+        ((1 / 2 : ℝ) * trASig (hφ.A.comp ((Hinv).comp (hψ.A.comp Hinv))) (1 : (ι → ℝ) →L[ℝ] (ι → ℝ))
+        + (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix hφ.Φ Hinv)
+        - (1 / 2 : ℝ) * dot b (Hinv (hφ.A (Hinv (tensorContractMatrix hV.T Hinv))))
+        - (1 / 2 : ℝ) * dot (Hinv b)
+            (tensorContractMatrix hV.T (Hinv.comp (hφ.A.comp Hinv))))|
+      ≤ K / t := by
+  sorry
+
+end MainTheorems
+
+end Laplace.Multi
