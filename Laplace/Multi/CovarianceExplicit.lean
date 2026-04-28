@@ -1547,10 +1547,19 @@ private lemma gaussian_quad_quad
     have h := hA_symm (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
         (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))
     simpa [dot, Pi.single_apply, mul_comm] using h
-  -- The remaining trace identifications (h_pair3, h_pair1', h_pair2, final calc)
-  -- need careful Finset.sum_mul_sum application — bound variable shadowing in
-  -- trASig_eq_double_sum's `∑ i, ∑ j` form interacts with the outer-quad sum.
-  -- Deferred for next focused round.
+  -- Renamed trASig double-sum forms to avoid bound-variable shadowing.
+  have htrAS_form : trASig A Hinv =
+      ∑ x, ∑ y, (A (Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ))) x *
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ))) x :=
+    trASig_eq_double_sum (hGauss := hGauss.toLaplaceCovHypotheses) A
+  have htrBS_form : trASig B Hinv =
+      ∑ x, ∑ y, (B (Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ))) x *
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ))) x :=
+    trASig_eq_double_sum (hGauss := hGauss.toLaplaceCovHypotheses) B
+  -- h_pair3 (sorry'd): factors as trASig A Hinv * trASig B Hinv via Finset.sum_mul_sum
+  -- (modulo Finset.sum_comm to align j/k order).
+  -- h_pair1', h_pair2 (sorry'd): the two tr(AΣBΣ) identifications.
+  -- Final calc to assemble: deferred.
   sorry
 
 /-- **4th-moment contraction (cubic · linear)**:
