@@ -2005,29 +2005,19 @@ end CorrectedBracketBounds
 
 section SharpHelpers
 
-/-- **Bound on the corrected-bracket integral** (the technical heart of
-sharp helper 1).
-
-Given the centered bilinear factor `B(u) := dot a u · dot b u - m` and the
-scaled cubic jet `c_t(u) := t · cV((√t)⁻¹•u)`, we bound
-
-  `|∫ B · gW · (exp(-s_t) - 1 + c_t)| ≤ K/t`.
-
-The argument splits the integral by `1_{‖u‖ ≤ ρ√t} + 1_{‖u‖ > ρ√t}`:
-
-* **Local** (`‖u‖ ≤ ρ√t`): use Stage 1 (`|exp(-r) - (1-r)| ≤ r² · exp|r|`)
-  and Stage 2 (`|s_t - c_t| ≤ C₄·‖u‖^4/t`). Pick `ρ` small enough that
-  `gW · exp|s_t|` decays as a Gaussian on the local ball, then the
-  integrand is `O(‖u‖^p / t · exp(-α·‖u‖²))` for various `p`, with
-  finite Gaussian moments.
-
-* **Tail** (`‖u‖ > ρ√t`): use the indicator trick
-  `1 ≤ ‖u‖² / (ρ²·t)` to gain `1/t` from the tail mass, combined with
-  the crude bound `|exp(-s_t) - 1 + c_t| ≤ exp(-s_t) + 1 + |c_t|`
-  and existing rescaled-weight integrability.
-
-This is the Glocal+Gtail bookkeeping that mirrors the weak helpers but at
-the sharp scale. ~500-700 LOC of integral arithmetic — deferred. -/
+-- **Bound on the corrected-bracket integral** (the technical heart of
+-- sharp helper 1). Given the centered bilinear factor
+-- `B(u) := dot a u · dot b u - m` and the scaled cubic jet
+-- `c_t(u) := t · cV((√t)⁻¹•u)`, we bound
+--   `|∫ B · gW · (exp(-s_t) - 1 + c_t)| ≤ K/t`.
+-- The argument splits the integral by `1_{‖u‖ ≤ ρ√t} + 1_{‖u‖ > ρ√t}`,
+-- combining Stage 1 (Taylor) + Stage 2 (quartic) bounds locally with the
+-- indicator trick `1 ≤ ‖u‖² / (ρ²·t)` on the tail.
+-- Higher heartbeat limit needed: the proof body chains a long calc
+-- block with multiple `MeasureTheory.integral_add` rewrites whose
+-- whnf-normalisation against the 4-term sum integrand pushes past the
+-- default 200000 heartbeat budget.
+set_option maxHeartbeats 1600000 in
 private lemma abs_integral_corrected_bracket_centered_bilinear_le
     (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
@@ -2592,19 +2582,154 @@ private lemma abs_integral_corrected_bracket_centered_bilinear_le
       ring
     rw [h_eq]
     exact h_sum
-  -- Integrate Glocal: ∫ Glocal = K_loc / t. Deferred — multi-step
-  -- integral_add + integral_const_mul composition, ~50 LOC.
+  -- Integrate Glocal: ∫ Glocal = K_loc / t.
   have hGlocal_eq : ∫ u, Glocal u =
       (A * B * Cs ^ 2 * M_loc_8 +
        (A * B * jet_C + |m| * Cs ^ 2) * M_loc_6 +
        |m| * jet_C * M_loc_4) / t := by
-    sorry
-  -- Integrate Gtail: ∫ Gtail = K_tail / t. Deferred.
+    have hc'4_pos : (0 : ℝ) < c' / 4 := by linarith
+    have h4 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc'4_pos 4
+    have h6 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc'4_pos 6
+    have h8 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc'4_pos 8
+    have h4' := h4.const_mul (|m| * jet_C / t)
+    have h6' := h6.const_mul ((A * B * jet_C + |m| * Cs ^ 2) / t)
+    have h8' := h8.const_mul (A * B * Cs ^ 2 / t)
+    have h_eq : ∀ u : ι → ℝ, Glocal u =
+        (A * B * Cs ^ 2 / t) *
+          (‖u‖ ^ 8 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) +
+        ((A * B * jet_C + |m| * Cs ^ 2) / t) *
+          (‖u‖ ^ 6 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) +
+        (|m| * jet_C / t) *
+          (‖u‖ ^ 4 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) := by
+      intro u
+      rw [hGlocal_def]
+      field_simp
+      ring
+    calc ∫ u, Glocal u
+        = ∫ u,
+            (A * B * Cs ^ 2 / t) *
+              (‖u‖ ^ 8 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) +
+            ((A * B * jet_C + |m| * Cs ^ 2) / t) *
+              (‖u‖ ^ 6 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) +
+            (|m| * jet_C / t) *
+              (‖u‖ ^ 4 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) :=
+          MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall h_eq)
+      _ = (∫ u,
+              (A * B * Cs ^ 2 / t) *
+                (‖u‖ ^ 8 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) +
+              ((A * B * jet_C + |m| * Cs ^ 2) / t) *
+                (‖u‖ ^ 6 * Real.exp (-((c' / 4) * ‖u‖ ^ 2)))) +
+            ∫ u, (|m| * jet_C / t) *
+              (‖u‖ ^ 4 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) :=
+          MeasureTheory.integral_add (h8'.add h6') h4'
+      _ = ((∫ u, (A * B * Cs ^ 2 / t) *
+                (‖u‖ ^ 8 * Real.exp (-((c' / 4) * ‖u‖ ^ 2)))) +
+            ∫ u, ((A * B * jet_C + |m| * Cs ^ 2) / t) *
+                (‖u‖ ^ 6 * Real.exp (-((c' / 4) * ‖u‖ ^ 2)))) +
+            ∫ u, (|m| * jet_C / t) *
+              (‖u‖ ^ 4 * Real.exp (-((c' / 4) * ‖u‖ ^ 2))) := by
+            rw [MeasureTheory.integral_add h8' h6']
+      _ = (A * B * Cs ^ 2 / t) * M_loc_8 +
+          ((A * B * jet_C + |m| * Cs ^ 2) / t) * M_loc_6 +
+          (|m| * jet_C / t) * M_loc_4 := by
+            rw [MeasureTheory.integral_const_mul,
+                MeasureTheory.integral_const_mul,
+                MeasureTheory.integral_const_mul,
+                ← hM_loc_8_def, ← hM_loc_6_def, ← hM_loc_4_def]
+      _ = (A * B * Cs ^ 2 * M_loc_8 +
+           (A * B * jet_C + |m| * Cs ^ 2) * M_loc_6 +
+           |m| * jet_C * M_loc_4) / t := by
+            field_simp
+  -- Integrate Gtail: ∫ Gtail = K_tail / t.
   have hGtail_eq : ∫ u, Gtail u =
       (1 / ρ ^ 2) *
         (2 * A * B * M_tail_4 + 2 * |m| * M_tail_2 +
          A * B * Cc * M_tail_7 + |m| * Cc * M_tail_5) / t := by
-    sorry
+    have h2 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 2
+    have h4 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 4
+    have h5 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 5
+    have h7 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 7
+    have h2' := h2.const_mul (2 * |m| / (ρ ^ 2 * t))
+    have h4' := h4.const_mul (2 * A * B / (ρ ^ 2 * t))
+    have h5' := h5.const_mul (|m| * Cc / (ρ ^ 2 * t))
+    have h7' := h7.const_mul (A * B * Cc / (ρ ^ 2 * t))
+    -- Single-lambda integrability for partial sums (avoids Pi-form mismatch in `rw`).
+    have h_42 : Integrable (fun u : ι → ℝ =>
+        (2 * A * B / (ρ ^ 2 * t)) * (‖u‖ ^ 4 * Real.exp (-(α * ‖u‖ ^ 2))) +
+        (2 * |m| / (ρ ^ 2 * t)) * (‖u‖ ^ 2 * Real.exp (-(α * ‖u‖ ^ 2)))) :=
+      h4'.add h2'
+    have h_427 : Integrable (fun u : ι → ℝ =>
+        (2 * A * B / (ρ ^ 2 * t)) * (‖u‖ ^ 4 * Real.exp (-(α * ‖u‖ ^ 2))) +
+        (2 * |m| / (ρ ^ 2 * t)) * (‖u‖ ^ 2 * Real.exp (-(α * ‖u‖ ^ 2))) +
+        (A * B * Cc / (ρ ^ 2 * t)) * (‖u‖ ^ 7 * Real.exp (-(α * ‖u‖ ^ 2)))) :=
+      h_42.add h7'
+    have h_eq : ∀ u : ι → ℝ, Gtail u =
+        (2 * A * B / (ρ ^ 2 * t)) *
+          (‖u‖ ^ 4 * Real.exp (-(α * ‖u‖ ^ 2))) +
+        (2 * |m| / (ρ ^ 2 * t)) *
+          (‖u‖ ^ 2 * Real.exp (-(α * ‖u‖ ^ 2))) +
+        (A * B * Cc / (ρ ^ 2 * t)) *
+          (‖u‖ ^ 7 * Real.exp (-(α * ‖u‖ ^ 2))) +
+        (|m| * Cc / (ρ ^ 2 * t)) *
+          (‖u‖ ^ 5 * Real.exp (-(α * ‖u‖ ^ 2))) := by
+      intro u
+      rw [hGtail_def]
+      field_simp
+      ring
+    calc ∫ u, Gtail u
+        = ∫ u,
+            (2 * A * B / (ρ ^ 2 * t)) *
+              (‖u‖ ^ 4 * Real.exp (-(α * ‖u‖ ^ 2))) +
+            (2 * |m| / (ρ ^ 2 * t)) *
+              (‖u‖ ^ 2 * Real.exp (-(α * ‖u‖ ^ 2))) +
+            (A * B * Cc / (ρ ^ 2 * t)) *
+              (‖u‖ ^ 7 * Real.exp (-(α * ‖u‖ ^ 2))) +
+            (|m| * Cc / (ρ ^ 2 * t)) *
+              (‖u‖ ^ 5 * Real.exp (-(α * ‖u‖ ^ 2))) :=
+          MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall h_eq)
+      _ = (∫ u,
+              (2 * A * B / (ρ ^ 2 * t)) *
+                (‖u‖ ^ 4 * Real.exp (-(α * ‖u‖ ^ 2))) +
+              (2 * |m| / (ρ ^ 2 * t)) *
+                (‖u‖ ^ 2 * Real.exp (-(α * ‖u‖ ^ 2))) +
+              (A * B * Cc / (ρ ^ 2 * t)) *
+                (‖u‖ ^ 7 * Real.exp (-(α * ‖u‖ ^ 2)))) +
+            ∫ u, (|m| * Cc / (ρ ^ 2 * t)) *
+              (‖u‖ ^ 5 * Real.exp (-(α * ‖u‖ ^ 2))) :=
+          MeasureTheory.integral_add h_427 h5'
+      _ = ((∫ u,
+                (2 * A * B / (ρ ^ 2 * t)) *
+                  (‖u‖ ^ 4 * Real.exp (-(α * ‖u‖ ^ 2))) +
+                (2 * |m| / (ρ ^ 2 * t)) *
+                  (‖u‖ ^ 2 * Real.exp (-(α * ‖u‖ ^ 2)))) +
+              ∫ u, (A * B * Cc / (ρ ^ 2 * t)) *
+                (‖u‖ ^ 7 * Real.exp (-(α * ‖u‖ ^ 2)))) +
+            ∫ u, (|m| * Cc / (ρ ^ 2 * t)) *
+              (‖u‖ ^ 5 * Real.exp (-(α * ‖u‖ ^ 2))) := by
+            rw [MeasureTheory.integral_add h_42 h7']
+      _ = (((∫ u, (2 * A * B / (ρ ^ 2 * t)) *
+                  (‖u‖ ^ 4 * Real.exp (-(α * ‖u‖ ^ 2)))) +
+              ∫ u, (2 * |m| / (ρ ^ 2 * t)) *
+                  (‖u‖ ^ 2 * Real.exp (-(α * ‖u‖ ^ 2)))) +
+              ∫ u, (A * B * Cc / (ρ ^ 2 * t)) *
+                (‖u‖ ^ 7 * Real.exp (-(α * ‖u‖ ^ 2)))) +
+            ∫ u, (|m| * Cc / (ρ ^ 2 * t)) *
+              (‖u‖ ^ 5 * Real.exp (-(α * ‖u‖ ^ 2))) := by
+            rw [MeasureTheory.integral_add h4' h2']
+      _ = (2 * A * B / (ρ ^ 2 * t)) * M_tail_4 +
+          (2 * |m| / (ρ ^ 2 * t)) * M_tail_2 +
+          (A * B * Cc / (ρ ^ 2 * t)) * M_tail_7 +
+          (|m| * Cc / (ρ ^ 2 * t)) * M_tail_5 := by
+            rw [MeasureTheory.integral_const_mul,
+                MeasureTheory.integral_const_mul,
+                MeasureTheory.integral_const_mul,
+                MeasureTheory.integral_const_mul,
+                ← hM_tail_4_def, ← hM_tail_2_def,
+                ← hM_tail_7_def, ← hM_tail_5_def]
+      _ = (1 / ρ ^ 2) *
+            (2 * A * B * M_tail_4 + 2 * |m| * M_tail_2 +
+             A * B * Cc * M_tail_7 + |m| * Cc * M_tail_5) / t := by
+            field_simp
   -- Combine.
   calc |∫ u : ι → ℝ, (dot a u * dot b u - dot a (Hinv b)) *
             gaussianWeight H u *
