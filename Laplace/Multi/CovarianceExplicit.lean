@@ -2390,6 +2390,122 @@ private lemma integrable_expNumQuad_mul_gaussianWeight
       _ = ((1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖))
             * (‖u‖ ^ 2 * gaussianWeight H u) := by ring
 
+/-- Integrability of `expNumCubic φ a hφ t u · gaussianWeight H u` for `t > 0`.
+Dominated by `((√t)⁻¹/t)·(‖Φ‖/6)·‖u‖³·gW`, integrable from `int_norm_pow_gW 3`. -/
+private lemma integrable_expNumCubic_mul_gaussianWeight
+    (V φ : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      expNumCubic φ a hφ t u * gaussianWeight H u) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      ((Real.sqrt t)⁻¹ / t * (‖hφ.Φ‖ / 6)) *
+        (‖u‖ ^ 3 * gaussianWeight H u)) :=
+    (hV.int_norm_pow_gW 3).const_mul _
+  apply h_dom_int.mono'
+  · have h_Φ_cont : Continuous (fun u : ι → ℝ => hφ.Φ (fun _ : Fin 3 => u)) := by
+      have h_diag : Continuous (fun u : ι → ℝ => fun _ : Fin 3 => u) :=
+        continuous_pi (fun _ => continuous_id)
+      exact hφ.Φ.cont.comp h_diag
+    have h_eN_cont : Continuous (fun u : ι → ℝ => expNumCubic φ a hφ t u) := by
+      unfold expNumCubic
+      exact continuous_const.mul (continuous_const.mul h_Φ_cont)
+    exact (h_eN_cont.mul (continuous_gaussianWeight H)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_cubic_le := abs_expNumCubic_le φ a hφ ht u
+    -- |expNumCubic| ≤ ‖Φ‖/6/(t·√t) · ‖u‖³ = ((√t)⁻¹/t · ‖Φ‖/6) · ‖u‖³.
+    have h_factor_eq : ‖hφ.Φ‖ / 6 / (t * Real.sqrt t)
+        = (Real.sqrt t)⁻¹ / t * (‖hφ.Φ‖ / 6) := by
+      have ht_ne : t ≠ 0 := ne_of_gt ht
+      have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+      field_simp
+    rw [h_factor_eq] at h_cubic_le
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_gW_nn]
+    calc |expNumCubic φ a hφ t u| * gaussianWeight H u
+        ≤ ((Real.sqrt t)⁻¹ / t * (‖hφ.Φ‖ / 6) * ‖u‖ ^ 3) * gaussianWeight H u :=
+          mul_le_mul_of_nonneg_right h_cubic_le h_gW_nn
+      _ = ((Real.sqrt t)⁻¹ / t * (‖hφ.Φ‖ / 6)) *
+            (‖u‖ ^ 3 * gaussianWeight H u) := by ring
+
+/-- Integrability of `expNumLin a t u · expPotCubic V H hV t u · gaussianWeight H u`
+for `t > 0`. Dominated by `(1/(6t))·(∑|aᵢ|)·‖T‖·‖u‖⁴·gW`, integrable from
+`int_norm_pow_gW 4`. -/
+private lemma integrable_expNumLin_mul_expPotCubic_mul_gaussianWeight
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      expNumLin a t u * expPotCubic V H hV t u * gaussianWeight H u) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      ((1 / t) * ((∑ i, |a i|) * (‖hV.T‖ / 6))) *
+        (‖u‖ ^ 4 * gaussianWeight H u)) :=
+    (hV.int_norm_pow_gW 4).const_mul _
+  apply h_dom_int.mono'
+  · have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
+      unfold dot
+      exact continuous_finset_sum _
+        (fun i _ => continuous_const.mul (continuous_apply i))
+    have h_T_cont : Continuous (fun u : ι → ℝ => hV.T (fun _ : Fin 3 => u)) := by
+      have h_diag : Continuous (fun u : ι → ℝ => fun _ : Fin 3 => u) :=
+        continuous_pi (fun _ => continuous_id)
+      exact hV.T.cont.comp h_diag
+    have h_lin_cont : Continuous (fun u : ι → ℝ => expNumLin a t u) := by
+      unfold expNumLin
+      exact continuous_const.mul h_dot_cont
+    have h_pot_cont : Continuous (fun u : ι → ℝ => expPotCubic V H hV t u) := by
+      unfold expPotCubic
+      exact continuous_const.mul (continuous_const.mul h_T_cont)
+    exact ((h_lin_cont.mul h_pot_cont).mul
+      (continuous_gaussianWeight H)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_lin := abs_expNumLin_le a ht u
+    -- |expPotCubic| ≤ (√t)⁻¹·(1/6)·‖T‖·‖u‖³.
+    have h_pot : |expPotCubic V H hV t u| ≤ (Real.sqrt t)⁻¹ * ((‖hV.T‖ / 6) * ‖u‖ ^ 3) := by
+      unfold expPotCubic
+      have h_norm : ‖(fun _ : Fin 3 => u)‖ ≤ ‖u‖ := by
+        rw [pi_norm_le_iff_of_nonneg (norm_nonneg _)]
+        intro i; exact le_refl _
+      have h_T : |hV.T (fun _ => u)| ≤ ‖hV.T‖ * ‖u‖ ^ 3 := by
+        have := hV.T.le_opNorm_mul_pow_of_le h_norm
+        simpa [Real.norm_eq_abs] using this
+      rw [abs_mul, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
+      have h_one_six : (0 : ℝ) ≤ 1/6 := by norm_num
+      rw [show ((1 / 6 : ℝ) * hV.T (fun _ => u))
+            = (1 / 6) * hV.T (fun _ => u) from rfl]
+      rw [abs_mul, abs_of_nonneg h_one_six]
+      calc (Real.sqrt t)⁻¹ * (1 / 6 * |hV.T fun _ => u|)
+          ≤ (Real.sqrt t)⁻¹ * (1 / 6 * (‖hV.T‖ * ‖u‖ ^ 3)) := by
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
+            apply mul_le_mul_of_nonneg_left h_T (by norm_num)
+        _ = (Real.sqrt t)⁻¹ * (‖hV.T‖ / 6 * ‖u‖ ^ 3) := by ring
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    have h_lin_nn : 0 ≤ |expNumLin a t u| := abs_nonneg _
+    have h_pot_nn : 0 ≤ |expPotCubic V H hV t u| := abs_nonneg _
+    have h_lin_dom_nn : 0 ≤ (∑ i, |a i|) / Real.sqrt t * ‖u‖ := by
+      apply mul_nonneg (by positivity) (norm_nonneg _)
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_gW_nn, abs_mul]
+    calc |expNumLin a t u| * |expPotCubic V H hV t u| * gaussianWeight H u
+        ≤ ((∑ i, |a i|) / Real.sqrt t * ‖u‖) *
+            ((Real.sqrt t)⁻¹ * ((‖hV.T‖ / 6) * ‖u‖ ^ 3))
+            * gaussianWeight H u := by
+          apply mul_le_mul_of_nonneg_right _ h_gW_nn
+          exact mul_le_mul h_lin h_pot h_pot_nn h_lin_dom_nn
+      _ = ((1 / t) * ((∑ i, |a i|) * (‖hV.T‖ / 6))) *
+            (‖u‖ ^ 4 * gaussianWeight H u) := by
+          have h_sq : Real.sqrt t * Real.sqrt t = t :=
+            Real.mul_self_sqrt ht.le
+          have ht_ne : t ≠ 0 := ne_of_gt ht
+          have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+          have h_sq2 : (Real.sqrt t) ^ 2 = t := by rw [sq]; exact h_sq
+          field_simp
+          rw [h_sq2]; ring
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
