@@ -1530,7 +1530,27 @@ private lemma gaussian_quad_quad
               (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
               (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) := by
     intros; rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
-  -- Trace identification deferred: 3 sub-claims each require Finset manipulation.
+  -- Trace identification per GPT recipe in tactics_gaussian_quad_quad.md.
+  have hSigSymm : ∀ i j : ι,
+      (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i =
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j := by
+    intro i j
+    have h := Hinv_symm (H := H) (Hinv := Hinv)
+        (hGauss := hGauss.toLaplaceCovHypotheses)
+        (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+        (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))
+    simpa [Pi.single_apply] using h
+  have hAij : ∀ i j : ι,
+      (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i =
+        (A (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j := by
+    intro i j
+    have h := hA_symm (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+        (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))
+    simpa [dot, Pi.single_apply, mul_comm] using h
+  -- The remaining trace identifications (h_pair3, h_pair1', h_pair2, final calc)
+  -- need careful Finset.sum_mul_sum application — bound variable shadowing in
+  -- trASig_eq_double_sum's `∑ i, ∑ j` form interacts with the outer-quad sum.
+  -- Deferred for next focused round.
   sorry
 
 /-- **4th-moment contraction (cubic · linear)**:
