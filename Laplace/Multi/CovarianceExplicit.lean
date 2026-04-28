@@ -1909,6 +1909,107 @@ private lemma abs_expNumLin_le
 
 -- (Bound on `expNumQuad` deferred — not needed for J₂.)
 
+/-- **Local pointwise bound for J₂ integrand**: on `‖u‖ ≤ δ · √t`,
+`|expNumCubic · gW · (exp(-s_t) - 1)| ≤ (‖Φ‖·Cs / 6) / t² · ‖u‖⁶ · exp(-(c/4)·‖u‖²)`.
+
+Combines `abs_expNumCubic_le` with the existing
+`abs_gaussianWeight_mul_exp_sub_one_le_local`. -/
+private lemma abs_expNumCubic_mul_gW_mul_exp_sub_one_local_le
+    (V φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hφ : ObservableTensorApprox φ a)
+    {c R Cs : ℝ}
+    (hc_pos : 0 < c) (hR_pos : 0 < R) (hCs_nn : 0 ≤ Cs)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ Cs * ‖w‖ ^ 3)
+    {δ : ℝ} (hδ_pos : 0 < δ) (hδ_le_R : δ ≤ R)
+    (hδ_const : Cs * δ ≤ c / 4)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ δ * Real.sqrt t) :
+    |expNumCubic φ a hφ t u * gaussianWeight H u
+        * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (‖hφ.Φ‖ * Cs / 6 / t ^ 2) * ‖u‖ ^ 6 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have hΦ_nn : 0 ≤ ‖hφ.Φ‖ := norm_nonneg _
+  have h_cubic := abs_expNumCubic_le φ a hφ ht u
+  have h_gW_exp :=
+    abs_gaussianWeight_mul_exp_sub_one_le_local V H hc_pos hR_pos hCs_nn
+      h_coer h_local hδ_pos hδ_le_R hδ_const ht u hu
+  have h_cubic_nn : 0 ≤ ‖hφ.Φ‖ / 6 / (t * Real.sqrt t) * ‖u‖ ^ 3 := by positivity
+  have h_gW_exp_nn : 0 ≤ Cs * ‖u‖ ^ 3 / Real.sqrt t *
+      Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by positivity
+  rw [show expNumCubic φ a hφ t u * gaussianWeight H u
+        * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+      = expNumCubic φ a hφ t u
+        * (gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)) from by ring,
+      abs_mul]
+  calc |expNumCubic φ a hφ t u| *
+            |gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (‖hφ.Φ‖ / 6 / (t * Real.sqrt t) * ‖u‖ ^ 3) *
+          (Cs * ‖u‖ ^ 3 / Real.sqrt t *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2))) :=
+        mul_le_mul h_cubic h_gW_exp (abs_nonneg _) h_cubic_nn
+    _ = (‖hφ.Φ‖ * Cs / 6 / t ^ 2) * ‖u‖ ^ 6 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+        have h_sq : Real.sqrt t * Real.sqrt t = t :=
+          Real.mul_self_sqrt ht.le
+        rw [show ‖u‖ ^ 6 = ‖u‖ ^ 3 * ‖u‖ ^ 3 from by ring,
+            show (t : ℝ) ^ 2 = (t * Real.sqrt t) * Real.sqrt t from by
+              rw [show (t * Real.sqrt t) * Real.sqrt t = t * (Real.sqrt t * Real.sqrt t) from by ring,
+                  h_sq, sq]]
+        field_simp
+
+/-- **Tail pointwise bound for J₂ integrand**: on `‖u‖ > δ · √t`,
+`|expNumCubic · gW · (exp(-s_t) - 1)| ≤ (‖Φ‖ / 3) / (t·√t) · ‖u‖³ ·
+  exp(-(c/4)·‖u‖²) · exp(-(c·δ²/4)·t)`.
+
+Combines `abs_expNumCubic_le` with the existing
+`abs_gaussianWeight_mul_exp_sub_one_le_tail`. -/
+private lemma abs_expNumCubic_mul_gW_mul_exp_sub_one_tail_le
+    (V φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hφ : ObservableTensorApprox φ a)
+    {c R Cs : ℝ}
+    (hc_pos : 0 < c) (hR_pos : 0 < R) (hCs_nn : 0 ≤ Cs)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ Cs * ‖w‖ ^ 3)
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : δ * Real.sqrt t < ‖u‖) :
+    |expNumCubic φ a hφ t u * gaussianWeight H u
+        * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (‖hφ.Φ‖ / 3 / (t * Real.sqrt t)) * ‖u‖ ^ 3 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t)) := by
+  have h_cubic := abs_expNumCubic_le φ a hφ ht u
+  have h_gW_exp :=
+    abs_gaussianWeight_mul_exp_sub_one_le_tail V H hc_pos hR_pos hCs_nn
+      h_coer h_local hδ_pos ht u hu
+  have h_cubic_nn : 0 ≤ ‖hφ.Φ‖ / 6 / (t * Real.sqrt t) * ‖u‖ ^ 3 := by positivity
+  rw [show expNumCubic φ a hφ t u * gaussianWeight H u
+        * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+      = expNumCubic φ a hφ t u
+        * (gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)) from by ring,
+      abs_mul]
+  calc |expNumCubic φ a hφ t u| *
+            |gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (‖hφ.Φ‖ / 6 / (t * Real.sqrt t) * ‖u‖ ^ 3) *
+          (2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+            Real.exp (-((c * δ ^ 2 / 4) * t))) :=
+        mul_le_mul h_cubic h_gW_exp (abs_nonneg _) h_cubic_nn
+    _ = (‖hφ.Φ‖ / 3 / (t * Real.sqrt t)) * ‖u‖ ^ 3 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t)) := by
+        ring
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
