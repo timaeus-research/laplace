@@ -30,12 +30,33 @@ The full theorem lives at the end of
 
 ## Status
 
-- 3279 lines of Lean 4 + Mathlib.
-- 60+ proved theorems.
+- ~15.8k lines of Lean 4 + Mathlib across the 1D and multi-D tracks.
+- 100+ proved theorems.
 - **0 sorries, 0 axioms, 0 `native_decide`.**
-- `lake build` succeeds in ~20s (warm cache).
+- `lake build` succeeds (warm cache).
 
 Audit with `scripts/sorries`.
+
+In addition to the headline 1D theorem, the repo now also contains an
+unconditional multivariate counterpart in `Laplace/Multi/`:
+
+```lean
+theorem gibbsCov_first_order_rate_sharp
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ) [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hφ : ObservableJetApprox φ a) (hψ : ObservableJetApprox ψ b)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t * gibbsCov V t φ ψ - dot a (Hinv b)| ≤ K / t
+```
+
+i.e. `Cov_t[φ, ψ] = (1/t)·⟨a, H⁻¹b⟩ + O(t⁻²)` as `t → ∞`, where
+`a := ∇φ(0)`, `b := ∇ψ(0)`, `H` is the Hessian of `V` at `0`. This is
+`lem:laplace_cov` of the primer at the sharp $O(t^{-2})$ rate.
+
+The full theorem is at the end of
+[`Laplace/Multi/CovarianceSharp.lean`](Laplace/Multi/CovarianceSharp.lean).
 
 ## Build
 
@@ -54,18 +75,32 @@ Pulling the Mathlib cache is essential. Building Mathlib from source takes
 
 ## File map
 
-| File | Lines | Role |
-|---|---|---|
-| [`Laplace/Basic.lean`](Laplace/Basic.lean) | 22 | Roadmap |
-| [`Laplace/Gibbs.lean`](Laplace/Gibbs.lean) | 65 | `partitionFunction`, `gibbsExpectation`, `gibbsCov` |
-| [`Laplace/ScalarBound.lean`](Laplace/ScalarBound.lean) | 179 | The Taylor-1 cornerstone |
-| [`Laplace/OneD/GaussianMoments.lean`](Laplace/OneD/GaussianMoments.lean) | 231 | Standard 1D Gaussian moments |
-| [`Laplace/OneD/Harmonic.lean`](Laplace/OneD/Harmonic.lean) | 165 | Closed-form harmonic Gibbs expectations |
-| [`Laplace/OneD/Anharmonic.lean`](Laplace/OneD/Anharmonic.lean) | 140 | Anharmonic potential + coercivity |
-| [`Laplace/OneD/TailBound.lean`](Laplace/OneD/TailBound.lean) | 532 | Mill's-ratio family of tail bounds |
-| [`Laplace/OneD/Localisation.lean`](Laplace/OneD/Localisation.lean) | 164 | Harmonic-Gibbs tail localisation |
-| [`Laplace/OneD/Rescaling.lean`](Laplace/OneD/Rescaling.lean) | 230 | Rescaling identity + uniform Gaussian decay |
-| [`Laplace/OneD/IntegralRemainder.lean`](Laplace/OneD/IntegralRemainder.lean) | 1541 | Pointwise + integrability + integral bound + asymptotics |
+### 1D track (anharmonic potential)
+
+| File | Role |
+|---|---|
+| [`Laplace/Basic.lean`](Laplace/Basic.lean) | Roadmap |
+| [`Laplace/Gibbs.lean`](Laplace/Gibbs.lean) | `partitionFunction`, `gibbsExpectation`, `gibbsCov` |
+| [`Laplace/ScalarBound.lean`](Laplace/ScalarBound.lean) | The Taylor-1 cornerstone |
+| [`Laplace/OneD/GaussianMoments.lean`](Laplace/OneD/GaussianMoments.lean) | Standard 1D Gaussian moments |
+| [`Laplace/OneD/Harmonic.lean`](Laplace/OneD/Harmonic.lean) | Closed-form harmonic Gibbs expectations |
+| [`Laplace/OneD/Anharmonic.lean`](Laplace/OneD/Anharmonic.lean) | Anharmonic potential + coercivity |
+| [`Laplace/OneD/TailBound.lean`](Laplace/OneD/TailBound.lean) | Mill's-ratio family of tail bounds |
+| [`Laplace/OneD/Localisation.lean`](Laplace/OneD/Localisation.lean) | Harmonic-Gibbs tail localisation |
+| [`Laplace/OneD/Rescaling.lean`](Laplace/OneD/Rescaling.lean) | Rescaling identity + uniform Gaussian decay |
+| [`Laplace/OneD/IntegralRemainder.lean`](Laplace/OneD/IntegralRemainder.lean) | Pointwise + integrability + integral bound + asymptotics |
+
+### Multi-D track (sharp covariance asymptotic)
+
+| File | Role |
+|---|---|
+| [`Laplace/Multi/Basic.lean`](Laplace/Multi/Basic.lean) | `dot`, `gaussianWeight`, `quadForm`, abstract Gaussian hypotheses |
+| [`Laplace/Multi/QuadraticApprox.lean`](Laplace/Multi/QuadraticApprox.lean) | `PotentialApprox`, `ObservableApprox` (local cubic remainder packages) |
+| [`Laplace/Multi/GaussianDomination.lean`](Laplace/Multi/GaussianDomination.lean) | Coercivity ⟹ Gaussian-dominated rescaled weight |
+| [`Laplace/Multi/RescaledIntegrals.lean`](Laplace/Multi/RescaledIntegrals.lean) | Polynomial-Gaussian moment integrability + uniform tail bounds |
+| [`Laplace/Multi/GaussianIBP.lean`](Laplace/Multi/GaussianIBP.lean) | Multivariate IBP / parity for Gaussian against odd integrands |
+| [`Laplace/Multi/Covariance.lean`](Laplace/Multi/Covariance.lean) | Weak-track `gibbsCov_first_order_rate_weak` (`O(t^{-3/2})`) |
+| [`Laplace/Multi/CovarianceSharp.lean`](Laplace/Multi/CovarianceSharp.lean) | Sharp-track `gibbsCov_first_order_rate_sharp` (`O(t^{-2})`) |
 
 ## Proof strategy
 
