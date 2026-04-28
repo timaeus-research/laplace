@@ -889,11 +889,57 @@ private lemma gaussian_linear_cubic
     have h_cov_eq : cov i j = cov j i := hcov_symm i j
     -- cov j i = (Hinv e_j) i, which is the basic 2nd-moment value.
     rw [h_basic, h_cov_eq]
-  -- The remaining steps (T-symm coordinate swaps, Tcoord contraction
-  -- identity, hterm via IBP, 3 trace identifications, full assembly) follow
-  -- the corrected GPT recipe in `gpt_responses/tactics_gaussian_linear_cubic.md`
-  -- + `tactics_gaussian_linear_cubic_fix.md`. Each is its own substantial
-  -- proof step; deferred for next focused session.
+  -- T-symmetry coordinate swap helpers (per GPT recipe + fix-up).
+  have hswap01 : ∀ x y z : ι,
+      (fun n : Fin 3 =>
+        match (Equiv.swap (0 : Fin 3) 1) n with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ)
+        | 1 => Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ)
+        | 2 => Pi.single (M := fun _ : ι => ℝ) z (1 : ℝ)) =
+      (fun n : Fin 3 =>
+        match n with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ)
+        | 1 => Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ)
+        | 2 => Pi.single (M := fun _ : ι => ℝ) z (1 : ℝ)) := by
+    intros x y z
+    funext n
+    fin_cases n <;> simp [Equiv.swap_apply_def]
+  have hsym01 : ∀ x y z : ι, Tcoord T y x z = Tcoord T x y z := by
+    intro x y z
+    have h := hT_symm (Equiv.swap (0 : Fin 3) 1) (fun n : Fin 3 =>
+      match n with
+      | 0 => Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ)
+      | 1 => Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ)
+      | 2 => Pi.single (M := fun _ : ι => ℝ) z (1 : ℝ))
+    rw [hswap01 x y z] at h
+    -- h : T (fun n => match n with | 0 => Pi.single y 1 | ...) = T (fun n => match n with | 0 => Pi.single x 1 | ...)
+    -- These are exactly Tcoord T y x z = Tcoord T x y z by definition.
+    exact h
+  -- Similar swap for slots 1, 2
+  have hswap12 : ∀ x y z : ι,
+      (fun n : Fin 3 =>
+        match (Equiv.swap (1 : Fin 3) 2) n with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ)
+        | 1 => Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ)
+        | 2 => Pi.single (M := fun _ : ι => ℝ) z (1 : ℝ)) =
+      (fun n : Fin 3 =>
+        match n with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ)
+        | 1 => Pi.single (M := fun _ : ι => ℝ) z (1 : ℝ)
+        | 2 => Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ)) := by
+    intros x y z
+    funext n
+    fin_cases n <;> simp [Equiv.swap_apply_def]
+  have hsym12 : ∀ x y z : ι, Tcoord T x z y = Tcoord T x y z := by
+    intro x y z
+    have h := hT_symm (Equiv.swap (1 : Fin 3) 2) (fun n : Fin 3 =>
+      match n with
+      | 0 => Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ)
+      | 1 => Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ)
+      | 2 => Pi.single (M := fun _ : ι => ℝ) z (1 : ℝ))
+    rw [hswap12 x y z] at h
+    exact h
+  -- Remaining: hcontract, hterm, 3 trace identifications, assembly. Deferred.
   sorry
 
 /-- **4th-moment contraction (quad · quad)**:
