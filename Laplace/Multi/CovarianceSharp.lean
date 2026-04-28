@@ -2100,25 +2100,596 @@ private lemma abs_integral_dot_mul_jet_remainder_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / (t * Real.sqrt t) := by
-  -- Strategy: split the integrand as F = F_q + F_r where
-  --   F_q(u) := dot c · qψ((√t)⁻¹•u) · gW · exp(-s_t)
-  --   F_r(u) := dot c · (remψ - qψ((√t)⁻¹•u)) · gW · exp(-s_t)
-  -- Then |∫ F| ≤ |∫ F_q| + |∫ F_r|.
-  --
-  -- For ∫ F_q, parity reduction gives
-  --   ∫ F_q = ∫ dot c · qψ · gW · (exp(-s_t) - 1),
-  -- bounded by `K_q/(t·√t)` via Glocal
-  -- (`abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_local_le`)
-  -- + Gtail.
-  -- For ∫ F_r, directly bounded by `K_r/(t·√t)` via Glocal
-  -- (`abs_dot_mul_cubic_remainder_mul_rescaled_weight_local_le`) + Gtail.
-  --
-  -- The two Glocal sub-lemmas above formalize the integrand-level local
-  -- bounds; the remaining work is the Gtail (k=3 indicator) + the
-  -- integral-level parity rewriting + composition (~300-400 LOC).
-  -- Deferred — same Glocal+Gtail template as sharp helper 4 but with the
-  -- additional parity step.
-  sorry
+  -- Constants.
+  set c := hV.toPotentialApprox.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.toPotentialApprox.coercive_const_pos
+  have h_coer := hV.toPotentialApprox.coercive_bound
+  set Cs := hV.toPotentialApprox.local_const with hCs_def
+  set R_pot := hV.toPotentialApprox.local_radius with hR_pot_def
+  have hCs_nn : 0 ≤ Cs := hV.toPotentialApprox.local_const_nonneg
+  have hR_pot_pos : 0 < R_pot := hV.toPotentialApprox.local_radius_pos
+  have h_V_local := hV.toPotentialApprox.local_bound
+  set Cq := hφ.qφ_bound_const with hCq_def
+  have hCq_nn : 0 ≤ Cq := hφ.qφ_bound_const_nonneg
+  have h_qψ_bound := hφ.qφ_bound
+  set jet_R := hφ.jet_radius with hjet_R_def
+  set jet_C := hφ.jet_const with hjet_C_def
+  have hjet_R_pos : 0 < jet_R := hφ.jet_radius_pos
+  have hjet_C_nn : 0 ≤ jet_C := hφ.jet_const_nonneg
+  have h_jet_bound := hφ.jet_bound
+  obtain ⟨Kφ, p, hKφ_nn, hpoly_φ⟩ := hφ.toObservableApprox.poly_growth
+  set DC : ℝ := ∑ i, |dotCoef i| with hDC_def
+  set PG : ℝ := ∑ i, |phiGrad i| with hPG_def
+  have hDC_nn : 0 ≤ DC := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hPG_nn : 0 ≤ PG := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  set Cφ' : ℝ := 2 * Kφ + 2 * PG with hCφ'_def
+  have hCφ'_nn : 0 ≤ Cφ' := by rw [hCφ'_def]; linarith
+  -- Choose δ ≤ min(R_pot, jet_R, c/(4·(Cs+1))).
+  have hCs1_pos : (0 : ℝ) < Cs + 1 := by linarith
+  set δ : ℝ := min (min R_pot jet_R) (c / (4 * (Cs + 1))) with hδ_def
+  have hδ_pos : 0 < δ :=
+    lt_min (lt_min hR_pot_pos hjet_R_pos) (by positivity)
+  have hδ_le_R_pot : δ ≤ R_pot := le_trans (min_le_left _ _) (min_le_left _ _)
+  have hδ_le_jet_R : δ ≤ jet_R :=
+    le_trans (min_le_left _ _) (min_le_right _ _)
+  have hδ_const : Cs * δ ≤ c / 4 := by
+    have h_le : δ ≤ c / (4 * (Cs + 1)) := min_le_right _ _
+    calc Cs * δ ≤ Cs * (c / (4 * (Cs + 1))) :=
+          mul_le_mul_of_nonneg_left h_le hCs_nn
+      _ = (Cs / (Cs + 1)) * (c / 4) := by field_simp
+      _ ≤ 1 * (c / 4) := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ c/4)
+          rw [div_le_one hCs1_pos]; linarith
+      _ = c / 4 := one_mul _
+  -- Tail decay constant.
+  set β : ℝ := c * δ ^ 2 / 4 with hβ_def
+  have hβ_pos : 0 < β := by rw [hβ_def]; positivity
+  -- Polynomial degree for r₃ tail.
+  set N_r : ℕ := p + 2 with hN_r_def
+  -- Gaussian moments.
+  set M_loc_q : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 6 *
+    Real.exp (-((c / 4) * ‖u‖ ^ 2)) with hM_loc_q_def
+  set M_tail_q : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 3 *
+    Real.exp (-((c / 4) * ‖u‖ ^ 2)) with hM_tail_q_def
+  set M_loc_r : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 4 *
+    Real.exp (-(c * ‖u‖ ^ 2)) with hM_loc_r_def
+  set M_tail_r : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) *
+    Real.exp (-(c * ‖u‖ ^ 2)) with hM_tail_r_def
+  have hM_loc_q_nn : 0 ≤ M_loc_q := by
+    rw [hM_loc_q_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    exact mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  have hM_tail_q_nn : 0 ≤ M_tail_q := by
+    rw [hM_tail_q_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    exact mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  have hM_loc_r_nn : 0 ≤ M_loc_r := by
+    rw [hM_loc_r_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    exact mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  have hM_tail_r_nn : 0 ≤ M_tail_r := by
+    rw [hM_tail_r_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    have h1 : 0 ≤ ‖u‖ ^ 4 := pow_nonneg (norm_nonneg _) _
+    have h2 : 0 ≤ 1 + ‖u‖ ^ N_r := by positivity
+    exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+  -- K and T₀.
+  set K : ℝ :=
+    DC * Cq * Cs * M_loc_q +
+    2 * DC * Cq * M_tail_q +
+    DC * jet_C * M_loc_r +
+    DC * (2 * Cφ' + Cq) / δ ^ 3 * M_tail_r with hK_def
+  refine ⟨K, max 1 (1 / β ^ 2), le_max_left _ _, ?_⟩
+  intro t ht
+  have ht1 : 1 ≤ t := le_of_max_le_left ht
+  have htβ : 1 / β ^ 2 ≤ t := le_of_max_le_right ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have ht_sqrt_pos : 0 < t * Real.sqrt t := mul_pos ht_pos hsqrt_pos
+  have h_tail_decay : Real.exp (-(β * t)) ≤ 1 / Real.sqrt t :=
+    exp_neg_const_mul_le_inv_sqrt hβ_pos htβ
+  -- Define the four majorant pieces (global functions).
+  set Glocal_q : (ι → ℝ) → ℝ := fun u =>
+    DC * Cq * Cs / (t * Real.sqrt t) * ‖u‖ ^ 6 *
+      Real.exp (-((c / 4) * ‖u‖ ^ 2)) with hGlocal_q_def
+  set Gtail_q : (ι → ℝ) → ℝ := fun u =>
+    2 * DC * Cq / (t * Real.sqrt t) * ‖u‖ ^ 3 *
+      Real.exp (-((c / 4) * ‖u‖ ^ 2)) with hGtail_q_def
+  set Glocal_r : (ι → ℝ) → ℝ := fun u =>
+    DC * jet_C / (t * Real.sqrt t) * ‖u‖ ^ 4 *
+      Real.exp (-(c * ‖u‖ ^ 2)) with hGlocal_r_def
+  set Gtail_r : (ι → ℝ) → ℝ := fun u =>
+    DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+      ‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) *
+      Real.exp (-(c * ‖u‖ ^ 2)) with hGtail_r_def
+  -- All majorants are nonneg.
+  have hGlocal_q_nn : ∀ u, 0 ≤ Glocal_q u := by
+    intro u
+    rw [hGlocal_q_def]
+    have h1 : 0 ≤ DC * Cq * Cs / (t * Real.sqrt t) :=
+      div_nonneg (mul_nonneg (mul_nonneg hDC_nn hCq_nn) hCs_nn)
+        ht_sqrt_pos.le
+    have h2 : 0 ≤ ‖u‖ ^ 6 := pow_nonneg (norm_nonneg _) _
+    exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+  have hGtail_q_nn : ∀ u, 0 ≤ Gtail_q u := by
+    intro u
+    rw [hGtail_q_def]
+    have h1 : 0 ≤ 2 * DC * Cq / (t * Real.sqrt t) :=
+      div_nonneg (by positivity) ht_sqrt_pos.le
+    have h2 : 0 ≤ ‖u‖ ^ 3 := pow_nonneg (norm_nonneg _) _
+    exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+  have hGlocal_r_nn : ∀ u, 0 ≤ Glocal_r u := by
+    intro u
+    rw [hGlocal_r_def]
+    have h1 : 0 ≤ DC * jet_C / (t * Real.sqrt t) :=
+      div_nonneg (mul_nonneg hDC_nn hjet_C_nn) ht_sqrt_pos.le
+    have h2 : 0 ≤ ‖u‖ ^ 4 := pow_nonneg (norm_nonneg _) _
+    exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+  have hGtail_r_nn : ∀ u, 0 ≤ Gtail_r u := by
+    intro u
+    rw [hGtail_r_def]
+    have h1 : 0 ≤ DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) := by
+      apply div_nonneg (mul_nonneg hDC_nn (by linarith))
+      exact mul_nonneg (pow_nonneg hδ_pos.le 3) ht_sqrt_pos.le
+    have h2 : 0 ≤ DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+        ‖u‖ ^ 4 := mul_nonneg h1 (pow_nonneg (norm_nonneg _) _)
+    have h3 : 0 ≤ DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+        ‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) :=
+      mul_nonneg h2 (by positivity)
+    exact mul_nonneg h3 (Real.exp_pos _).le
+  -- Integrability of the original integrand and its qψ/r₃ split pieces.
+  have h_int_F : Integrable (fun u : ι → ℝ =>
+      dot dotCoef u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_dot_mul_remainder_mul_rescaled_weight V φ H Hinv dotCoef phiGrad
+      hV.toPotentialApprox hφ.toObservableApprox hGauss ht1
+  have h_int_F_q : Integrable (fun u : ι → ℝ =>
+      dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_dot_mul_quadJet_mul_rescaled_weight V H hc_pos h_coer
+      hV.toPotentialApprox.V_continuous hφ.qφ hφ.qφ_continuous hCq_nn
+      h_qψ_bound dotCoef ht_pos
+  have h_int_F_r : Integrable (fun u : ι → ℝ =>
+      dot dotCoef u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+          hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h_diff := h_int_F.sub h_int_F_q
+    apply h_diff.congr
+    filter_upwards with u
+    simp only [Pi.sub_apply]
+    ring
+  -- Pointwise: F(u) = F_q(u) + F_r(u).
+  have h_F_split : ∀ u : ι → ℝ,
+      dot dotCoef u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = (dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+        + (dot dotCoef u *
+          (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+            hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+    intro u; ring
+  -- ∫ F = ∫ F_q + ∫ F_r.
+  have h_int_F_eq : ∫ u : ι → ℝ,
+      dot dotCoef u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+    = (∫ u : ι → ℝ, dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+      + (∫ u : ι → ℝ, dot dotCoef u *
+          (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+            hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+    rw [show (fun u : ι → ℝ => dot dotCoef u *
+              (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            = fun u =>
+              (dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+              + (dot dotCoef u *
+                (φ ((Real.sqrt t)⁻¹ • u) -
+                  (Real.sqrt t)⁻¹ * dot phiGrad u -
+                  hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) from funext h_F_split]
+    exact MeasureTheory.integral_add h_int_F_q h_int_F_r
+  -- Parity rewriting of ∫ F_q.
+  -- ∫ F_q = ∫ dot c · qψ · gW · (exp(-s_t) - 1) via integral_sub + parity.
+  have h_int_qψ_gW : Integrable (fun u : ι → ℝ =>
+      dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u) :=
+    integrable_dot_mul_quadJet_mul_gaussianWeight V H hV hφ.qφ
+      hφ.qφ_continuous hCq_nn h_qψ_bound dotCoef ht_pos
+  have h_parity : ∫ u : ι → ℝ, dot dotCoef u *
+      hφ.qφ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u = 0 :=
+    integral_dot_mul_quadJet_eq_zero H hφ.qφ hφ.qφ_even dotCoef t
+  have h_F_q_parity : ∫ u : ι → ℝ,
+        dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+      = ∫ u : ι → ℝ, dot dotCoef u *
+          hφ.qφ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1) := by
+    have h_pt : ∀ u : ι → ℝ,
+        dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+        = dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+            gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+          dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+            gaussianWeight H u := by intro u; ring
+    have h_int_diff : Integrable (fun u : ι → ℝ =>
+        dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+          gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)) := by
+      have h_sum := h_int_F_q.sub h_int_qψ_gW
+      apply h_sum.congr
+      filter_upwards with u
+      simp only [Pi.sub_apply]
+      ring
+    rw [show (fun u : ι → ℝ => dot dotCoef u *
+              hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            = fun u => (dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+                gaussianWeight H u *
+                (Real.exp (-(rescaledPerturbation V H t u)) - 1)) +
+              (dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+                gaussianWeight H u) from funext h_pt]
+    rw [MeasureTheory.integral_add h_int_diff h_int_qψ_gW]
+    rw [h_parity, add_zero]
+  -- Pointwise bound on |F_q(u)| via Glocal_q + Gtail_q.
+  have hpt_q : ∀ u : ι → ℝ,
+      |dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ Glocal_q u + Gtail_q u := by
+    intro u
+    by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
+    · -- Local case.
+      have h_local := abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_local_le
+        V φ H hc_pos hR_pot_pos hCs_nn hCq_nn h_coer h_V_local hφ.qφ
+        h_qψ_bound dotCoef hδ_pos hδ_le_R_pot hδ_const ht_pos u hu
+      have h_eq : DC * Cq * Cs / (t * Real.sqrt t) * ‖u‖ ^ 6 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) = Glocal_q u := by rw [hGlocal_q_def]
+      have h_bound : DC * Cq * Cs / (t * Real.sqrt t) * ‖u‖ ^ 6 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) =
+          (DC * Cq * Cs / (t * Real.sqrt t)) * ‖u‖ ^ 6 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := rfl
+      have h_local' : |dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+          gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+          ≤ Glocal_q u := by
+        rw [← h_eq]
+        rw [show DC * Cq * Cs / (t * Real.sqrt t) * ‖u‖ ^ 6 *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2))
+            = DC * Cq * Cs / (t * Real.sqrt t) * ‖u‖ ^ 6 *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)) from rfl]
+        have h_simp : ((∑ i, |dotCoef i|) * Cq * Cs / (t * Real.sqrt t)) *
+            ‖u‖ ^ 6 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+            = DC * Cq * Cs / (t * Real.sqrt t) * ‖u‖ ^ 6 *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+          rw [hDC_def]
+        rw [← h_simp]
+        exact h_local
+      linarith [hGtail_q_nn u]
+    · -- Tail case.
+      push_neg at hu
+      have h_tail := abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_tail_le
+        V H hc_pos hR_pot_pos hCs_nn hCq_nn h_coer h_V_local hφ.qφ
+        h_qψ_bound dotCoef hδ_pos ht_pos u hu
+      -- h_tail : ... ≤ (2 · DC · Cq / t) · ‖u‖³ · exp(-(c/4)·‖u‖²) · exp(-β·t)
+      have h_step : (2 * DC * Cq / t) * ‖u‖ ^ 3 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t))
+          ≤ Gtail_q u := by
+        rw [hGtail_q_def]
+        have h_decay : Real.exp (-(β * t)) ≤ 1 / Real.sqrt t := h_tail_decay
+        have h_β_eq : c * δ ^ 2 / 4 = β := by rw [hβ_def]
+        rw [h_β_eq]
+        have h_lhs_nn : 0 ≤ (2 * DC * Cq / t) * ‖u‖ ^ 3 *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+          have h1 : 0 ≤ 2 * DC * Cq / t :=
+            div_nonneg (by positivity) ht_pos.le
+          have h2 : 0 ≤ ‖u‖ ^ 3 := pow_nonneg (norm_nonneg _) _
+          exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+        have h_decay_step : (2 * DC * Cq / t) * ‖u‖ ^ 3 *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) * Real.exp (-(β * t))
+            ≤ (2 * DC * Cq / t) * ‖u‖ ^ 3 *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) * (1 / Real.sqrt t) :=
+          mul_le_mul_of_nonneg_left h_decay h_lhs_nn
+        calc (2 * DC * Cq / t) * ‖u‖ ^ 3 *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+              Real.exp (-(β * t))
+            ≤ (2 * DC * Cq / t) * ‖u‖ ^ 3 *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)) * (1 / Real.sqrt t) :=
+            h_decay_step
+          _ = 2 * DC * Cq / (t * Real.sqrt t) * ‖u‖ ^ 3 *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+            field_simp
+      have h_simp_lhs : (∑ i, |dotCoef i|) = DC := hDC_def.symm
+      rw [h_simp_lhs] at h_tail
+      have h_F_q_le_Gtail : |dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+          gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+          ≤ Gtail_q u := le_trans h_tail h_step
+      linarith [hGlocal_q_nn u]
+  -- Pointwise bound on |F_r(u)| via Glocal_r + Gtail_r.
+  have hpt_r : ∀ u : ι → ℝ,
+      |dot dotCoef u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+          hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ Glocal_r u + Gtail_r u := by
+    intro u
+    by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
+    · -- Local case.
+      have hu_jet : ‖u‖ ≤ jet_R * Real.sqrt t :=
+        le_trans hu (mul_le_mul_of_nonneg_right hδ_le_jet_R hsqrt_pos.le)
+      have h_local := abs_dot_mul_cubic_remainder_mul_rescaled_weight_local_le
+        V φ H hc_pos hjet_C_nn h_coer hφ.qφ phiGrad h_jet_bound dotCoef
+        ht_pos u hu_jet
+      -- h_local : |F_r(u)| ≤ (DC·jet_C/(t·√t))·‖u‖^4·exp(-c·‖u‖²)
+      have h_simp : (∑ i, |dotCoef i|) = DC := hDC_def.symm
+      rw [h_simp] at h_local
+      have h_eq : DC * jet_C / (t * Real.sqrt t) * ‖u‖ ^ 4 *
+          Real.exp (-(c * ‖u‖ ^ 2)) = Glocal_r u := by rw [hGlocal_r_def]
+      rw [h_eq] at h_local
+      linarith [hGtail_r_nn u]
+    · -- Tail case.
+      push_neg at hu
+      have h_tail := abs_dot_mul_cubic_remainder_mul_rescaled_weight_tail_le
+        V φ H hc_pos h_coer hKφ_nn hpoly_φ hφ.qφ hCq_nn h_qψ_bound
+        dotCoef phiGrad hδ_pos ht1 u hu
+      -- h_tail : |F_r(u)| ≤ (DC·(2·Cφ' + Cq)/(δ³·t·√t))·‖u‖^4·(1+‖u‖^(p+2))·exp(-c·‖u‖²)
+      have h_simp_DC : (∑ i, |dotCoef i|) = DC := hDC_def.symm
+      have h_simp_Cφ' : 2 * Kφ + 2 * (∑ i, |phiGrad i|) = Cφ' := by
+        rw [hCφ'_def, hPG_def]
+      have h_simp_N : p + 2 = N_r := hN_r_def.symm
+      rw [h_simp_DC, h_simp_Cφ', h_simp_N] at h_tail
+      have h_eq : DC * (2 * Cφ' + Cq) /
+          (δ ^ 3 * (t * Real.sqrt t)) * ‖u‖ ^ 4 *
+          (1 + ‖u‖ ^ N_r) * Real.exp (-(c * ‖u‖ ^ 2)) = Gtail_r u := by
+        rw [hGtail_r_def]
+      rw [h_eq] at h_tail
+      linarith [hGlocal_r_nn u]
+  -- Integrability of the four majorants.
+  have hGlocal_q_int : Integrable Glocal_q := by
+    rw [hGlocal_q_def]
+    have h := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι)
+      (by linarith : 0 < c / 4) 6
+    have h_eq : (fun u : ι → ℝ =>
+          DC * Cq * Cs / (t * Real.sqrt t) * ‖u‖ ^ 6 *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)))
+        = fun u => (DC * Cq * Cs / (t * Real.sqrt t)) *
+            (‖u‖ ^ 6 * Real.exp (-((c / 4) * ‖u‖ ^ 2))) := by
+      funext u; ring
+    rw [h_eq]
+    exact h.const_mul _
+  have hGtail_q_int : Integrable Gtail_q := by
+    rw [hGtail_q_def]
+    have h := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι)
+      (by linarith : 0 < c / 4) 3
+    have h_eq : (fun u : ι → ℝ =>
+          2 * DC * Cq / (t * Real.sqrt t) * ‖u‖ ^ 3 *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)))
+        = fun u => (2 * DC * Cq / (t * Real.sqrt t)) *
+            (‖u‖ ^ 3 * Real.exp (-((c / 4) * ‖u‖ ^ 2))) := by
+      funext u; ring
+    rw [h_eq]
+    exact h.const_mul _
+  have hGlocal_r_int : Integrable Glocal_r := by
+    rw [hGlocal_r_def]
+    have h := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 4
+    have h_eq : (fun u : ι → ℝ =>
+          DC * jet_C / (t * Real.sqrt t) * ‖u‖ ^ 4 *
+            Real.exp (-(c * ‖u‖ ^ 2)))
+        = fun u => (DC * jet_C / (t * Real.sqrt t)) *
+            (‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2))) := by
+      funext u; ring
+    rw [h_eq]
+    exact h.const_mul _
+  have hGtail_r_int : Integrable Gtail_r := by
+    rw [hGtail_r_def]
+    have h_a := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 4
+    have h_b := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos
+      (4 + N_r)
+    have h_sum : Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2)) +
+        ‖u‖ ^ (4 + N_r) * Real.exp (-(c * ‖u‖ ^ 2))) := h_a.add h_b
+    have h_eq : (fun u : ι → ℝ =>
+          DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+            ‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) *
+            Real.exp (-(c * ‖u‖ ^ 2)))
+        = fun u => (DC * (2 * Cφ' + Cq) /
+            (δ ^ 3 * (t * Real.sqrt t))) *
+            (‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2)) +
+             ‖u‖ ^ (4 + N_r) * Real.exp (-(c * ‖u‖ ^ 2))) := by
+      funext u
+      have h_pow_eq : ‖u‖ ^ 4 * ‖u‖ ^ N_r = ‖u‖ ^ (4 + N_r) := by
+        rw [← pow_add]
+      have h1 : ‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) =
+          ‖u‖ ^ 4 + ‖u‖ ^ (4 + N_r) := by
+        rw [show ‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) =
+              ‖u‖ ^ 4 + ‖u‖ ^ 4 * ‖u‖ ^ N_r from by ring]
+        rw [h_pow_eq]
+      calc DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+              ‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) * Real.exp (-(c * ‖u‖ ^ 2))
+          = DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+              (‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r)) *
+              Real.exp (-(c * ‖u‖ ^ 2)) := by ring
+        _ = DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+              (‖u‖ ^ 4 + ‖u‖ ^ (4 + N_r)) *
+              Real.exp (-(c * ‖u‖ ^ 2)) := by rw [h1]
+        _ = DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+              (‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2)) +
+               ‖u‖ ^ (4 + N_r) * Real.exp (-(c * ‖u‖ ^ 2))) := by ring
+    rw [h_eq]
+    exact h_sum.const_mul _
+  -- ∫ Glocal_q = (DC·Cq·Cs/(t·√t)) · M_loc_q.
+  have hGlocal_q_eq : ∫ u, Glocal_q u =
+      DC * Cq * Cs / (t * Real.sqrt t) * M_loc_q := by
+    rw [hGlocal_q_def, hM_loc_q_def]
+    rw [show (fun u : ι → ℝ =>
+              DC * Cq * Cs / (t * Real.sqrt t) * ‖u‖ ^ 6 *
+                Real.exp (-((c / 4) * ‖u‖ ^ 2)))
+            = fun u => (DC * Cq * Cs / (t * Real.sqrt t)) *
+                (‖u‖ ^ 6 * Real.exp (-((c / 4) * ‖u‖ ^ 2))) from by
+        funext u; ring]
+    rw [MeasureTheory.integral_const_mul]
+  have hGtail_q_eq : ∫ u, Gtail_q u =
+      2 * DC * Cq / (t * Real.sqrt t) * M_tail_q := by
+    rw [hGtail_q_def, hM_tail_q_def]
+    rw [show (fun u : ι → ℝ =>
+              2 * DC * Cq / (t * Real.sqrt t) * ‖u‖ ^ 3 *
+                Real.exp (-((c / 4) * ‖u‖ ^ 2)))
+            = fun u => (2 * DC * Cq / (t * Real.sqrt t)) *
+                (‖u‖ ^ 3 * Real.exp (-((c / 4) * ‖u‖ ^ 2))) from by
+        funext u; ring]
+    rw [MeasureTheory.integral_const_mul]
+  have hGlocal_r_eq : ∫ u, Glocal_r u =
+      DC * jet_C / (t * Real.sqrt t) * M_loc_r := by
+    rw [hGlocal_r_def, hM_loc_r_def]
+    rw [show (fun u : ι → ℝ =>
+              DC * jet_C / (t * Real.sqrt t) * ‖u‖ ^ 4 *
+                Real.exp (-(c * ‖u‖ ^ 2)))
+            = fun u => (DC * jet_C / (t * Real.sqrt t)) *
+                (‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2))) from by
+        funext u; ring]
+    rw [MeasureTheory.integral_const_mul]
+  have hGtail_r_eq : ∫ u, Gtail_r u =
+      DC * (2 * Cφ' + Cq) / δ ^ 3 / (t * Real.sqrt t) * M_tail_r := by
+    rw [hGtail_r_def, hM_tail_r_def]
+    rw [show (fun u : ι → ℝ =>
+              DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) *
+                ‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) *
+                Real.exp (-(c * ‖u‖ ^ 2)))
+            = fun u => (DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t))) *
+                (‖u‖ ^ 4 * (1 + ‖u‖ ^ N_r) *
+                  Real.exp (-(c * ‖u‖ ^ 2))) from by
+        funext u; ring]
+    rw [MeasureTheory.integral_const_mul]
+    have hδ3_ne : δ ^ 3 ≠ 0 := pow_ne_zero 3 hδ_pos.ne'
+    have ht_sqrt_ne : t * Real.sqrt t ≠ 0 := ht_sqrt_pos.ne'
+    rw [show DC * (2 * Cφ' + Cq) / δ ^ 3 / (t * Real.sqrt t) =
+          DC * (2 * Cφ' + Cq) / (δ ^ 3 * (t * Real.sqrt t)) from by
+        field_simp]
+  -- Combine via triangle.
+  have h_int_F_q_abs : Integrable (fun u : ι → ℝ =>
+      dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)) := by
+    have h_sum := h_int_F_q.sub h_int_qψ_gW
+    apply h_sum.congr
+    filter_upwards with u
+    simp only [Pi.sub_apply]
+    ring
+  -- |∫ F_q| ≤ ∫ |F_q (parity-rewritten)| ≤ ∫ Glocal_q + ∫ Gtail_q.
+  have h_F_q_bound : |∫ u : ι → ℝ,
+      dot dotCoef u * hφ.qφ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ DC * Cq * Cs / (t * Real.sqrt t) * M_loc_q +
+        2 * DC * Cq / (t * Real.sqrt t) * M_tail_q := by
+    rw [h_F_q_parity]
+    calc |∫ u : ι → ℝ, dot dotCoef u *
+              hφ.qφ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+        ≤ ∫ u : ι → ℝ, |dot dotCoef u *
+            hφ.qφ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)| := by
+          rw [show |∫ u, _| = ‖∫ u, _‖ from (Real.norm_eq_abs _).symm]
+          exact MeasureTheory.norm_integral_le_integral_norm _
+      _ ≤ ∫ u, (Glocal_q u + Gtail_q u) := by
+          apply MeasureTheory.integral_mono_ae h_int_F_q_abs.norm
+            (hGlocal_q_int.add hGtail_q_int)
+          filter_upwards with u
+          rw [Real.norm_eq_abs]
+          exact hpt_q u
+      _ = (∫ u, Glocal_q u) + ∫ u, Gtail_q u :=
+          MeasureTheory.integral_add hGlocal_q_int hGtail_q_int
+      _ = DC * Cq * Cs / (t * Real.sqrt t) * M_loc_q +
+          2 * DC * Cq / (t * Real.sqrt t) * M_tail_q := by
+          rw [hGlocal_q_eq, hGtail_q_eq]
+  -- |∫ F_r| ≤ ∫ |F_r| ≤ ∫ Glocal_r + ∫ Gtail_r.
+  have h_F_r_bound : |∫ u : ι → ℝ,
+      dot dotCoef u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+          hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ DC * jet_C / (t * Real.sqrt t) * M_loc_r +
+        DC * (2 * Cφ' + Cq) / δ ^ 3 / (t * Real.sqrt t) * M_tail_r := by
+    calc |∫ u : ι → ℝ, dot dotCoef u *
+              (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+                hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ ∫ u : ι → ℝ, |dot dotCoef u *
+            (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+              hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))| := by
+          rw [show |∫ u, _| = ‖∫ u, _‖ from (Real.norm_eq_abs _).symm]
+          exact MeasureTheory.norm_integral_le_integral_norm _
+      _ ≤ ∫ u, (Glocal_r u + Gtail_r u) := by
+          apply MeasureTheory.integral_mono_ae h_int_F_r.norm
+            (hGlocal_r_int.add hGtail_r_int)
+          filter_upwards with u
+          rw [Real.norm_eq_abs]
+          exact hpt_r u
+      _ = (∫ u, Glocal_r u) + ∫ u, Gtail_r u :=
+          MeasureTheory.integral_add hGlocal_r_int hGtail_r_int
+      _ = DC * jet_C / (t * Real.sqrt t) * M_loc_r +
+          DC * (2 * Cφ' + Cq) / δ ^ 3 / (t * Real.sqrt t) * M_tail_r := by
+          rw [hGlocal_r_eq, hGtail_r_eq]
+  -- Combine.
+  rw [h_int_F_eq]
+  calc |(∫ u : ι → ℝ, dot dotCoef u *
+              hφ.qφ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) +
+            ∫ u : ι → ℝ, dot dotCoef u *
+              (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+                hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ |(∫ u : ι → ℝ, dot dotCoef u *
+              hφ.qφ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))| +
+          |∫ u : ι → ℝ, dot dotCoef u *
+              (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+                hφ.qφ ((Real.sqrt t)⁻¹ • u)) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))| := abs_add_le _ _
+    _ ≤ (DC * Cq * Cs / (t * Real.sqrt t) * M_loc_q +
+          2 * DC * Cq / (t * Real.sqrt t) * M_tail_q) +
+        (DC * jet_C / (t * Real.sqrt t) * M_loc_r +
+          DC * (2 * Cφ' + Cq) / δ ^ 3 / (t * Real.sqrt t) * M_tail_r) := by
+        linarith
+    _ = K / (t * Real.sqrt t) := by
+        rw [hK_def]
+        field_simp
+        ring
 
 /-- **Sharp helper 4 (quadratic remainder)**: the product of two
 observable remainders integrated against `gW · exp(-s_t)` is `O(1/t²)`.
