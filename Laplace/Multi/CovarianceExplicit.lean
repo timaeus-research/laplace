@@ -202,6 +202,23 @@ lemma Tcoord_perm
   have h := hT_symm σ (fun m => stdBasisVec (r m))
   exact h
 
+/-- **Multilinear-map slot expansion**: for `T : ContinuousMultilinearMap ℝ
+(fun _ : Fin 3 => (ι → ℝ)) ℝ` and `u : ι → ℝ`,
+$$
+  T(u, u, u) = \sum_{i,j,k} u_i u_j u_k \cdot T_{ijk}.
+$$
+The proof uses `eq_sum_stdBasis` to decompose `u` per slot, applies
+`ContinuousMultilinearMap.map_sum` to expand the trilinear over the 3 slots
+(getting a `Fin 3 → ι` indexed sum), uses `map_smul_univ` to factor scalars,
+and converts the `Fin 3 → ι` sum to a triple sum via `Fin.cons`-style
+decomposition. -/
+lemma T_apply_diag_eq_sum
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (u : ι → ℝ) :
+    T (fun _ : Fin 3 => u) =
+      ∑ i, ∑ j, ∑ k, u i * u j * u k * Tcoord T i j k := by
+  sorry
+
 end TensorContractions
 
 section FourthMomentInfrastructure
