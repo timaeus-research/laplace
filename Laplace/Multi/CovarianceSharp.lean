@@ -47,8 +47,9 @@ we adopt two architectural decisions:
 * Stage 3 — centered numerator bound: structurally complete with four
   technical sorries:
   - `abs_integral_corrected_bracket_centered_bilinear_le` (helper 1's K/t
-    bound on the corrected-bracket integral; deferred Glocal+Gtail
-    bookkeeping ~500-700 LOC);
+    bound; the Glocal pointwise bound
+    `abs_gaussianWeight_mul_corrected_bracket_local_le` is now formalized,
+    leaving the Gtail half + integral steps ~250-350 LOC);
   - `abs_integral_dot_mul_jet_remainder_sharp_le` (helpers 2/3, cross
     terms, K/(t·√t));
   - `abs_integral_remainder_remainder_sharp_le` (helper 4, quadratic
