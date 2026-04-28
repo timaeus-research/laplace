@@ -1804,16 +1804,216 @@ private noncomputable def expNumeratorCoeff
     (hφ : ObservableTensorApprox φ a) : ℝ :=
   (trASig hφ.A Hinv - dot (Hinv a) (tensorContractMatrix hV.T Hinv)) / 2
 
+/-! ### Scaled jets for the EXP numerator decomposition
+
+Per `gpt_responses/tactics_centered_numerator_exp.md`, decompose the centered
+numerator into 4 error terms `J₁..J₄`. The scaled jets for the observable are:
+
+- `expNumLin a t u   = (1/√t) · ⟨a, u⟩`
+- `expNumQuad hφ t u = (1/t) · (1/2) · uᵀA u`
+- `expNumCubic hφ t u = (1/(t·√t)) · (1/6) · Φ(u,u,u)`
+- `expNumObsRem φ hφ t u = φ((√t)⁻¹•u) - L_t - Q_t - P_t`  (quartic remainder)
+
+For the potential we additionally need:
+
+- `expPotCubic hV t u = (1/√t) · (1/6) · T(u,u,u)`
+-/
+
+/-- Scaled linear jet of `φ((√t)⁻¹ • u)`: `L_t(u) = (1/√t) · dot a u`. -/
+private noncomputable def expNumLin
+    (a : ι → ℝ) (t : ℝ) (u : ι → ℝ) : ℝ :=
+  (Real.sqrt t)⁻¹ * dot a u
+
+/-- Scaled quadratic jet of `φ((√t)⁻¹ • u)`:
+`Q_t(u) = (1/t) · (1/2) · quadForm A u`. -/
+private noncomputable def expNumQuad
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (hφ : ObservableTensorApprox φ a) (t : ℝ) (u : ι → ℝ) : ℝ :=
+  (1 / t) * ((1 / 2 : ℝ) * quadForm hφ.A u)
+
+/-- Scaled cubic jet of `φ((√t)⁻¹ • u)`:
+`P_t(u) = (1/(t·√t)) · (1/6) · Φ(u,u,u)`. -/
+private noncomputable def expNumCubic
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (hφ : ObservableTensorApprox φ a) (t : ℝ) (u : ι → ℝ) : ℝ :=
+  ((Real.sqrt t)⁻¹ / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+
+/-- Scaled cubic jet of the potential:
+`C_t(u) = (1/√t) · (1/6) · T(u,u,u)`. The pointwise leading-order term in
+`exp(-s_t) - 1`. -/
+private noncomputable def expPotCubic
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialTensorApprox V H) (t : ℝ) (u : ι → ℝ) : ℝ :=
+  (Real.sqrt t)⁻¹ * ((1 / 6 : ℝ) * hV.T (fun _ => u))
+
+/-- Quartic-and-higher observable remainder:
+`R_{φ,t}(u) = φ((√t)⁻¹•u) - L_t(u) - Q_t(u) - P_t(u)`. -/
+private noncomputable def expNumObsRem
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (hφ : ObservableTensorApprox φ a) (t : ℝ) (u : ι → ℝ) : ℝ :=
+  φ ((Real.sqrt t)⁻¹ • u)
+    - expNumLin a t u
+    - expNumQuad φ a hφ t u
+    - expNumCubic φ a hφ t u
+
+/-! ### The 4 error integrals -/
+
+/-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
+against the full Gibbs factor. -/
+private noncomputable def expNumErr₁
+    (V φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hφ : ObservableTensorApprox φ a) (t : ℝ) : ℝ :=
+  ∫ u : ι → ℝ, expNumObsRem φ a hφ t u
+      * Real.exp (-(rescaledPerturbation V H t u))
+      * gaussianWeight H u
+
+/-- `J₂ = ∫ P_t(u) · (e^{-s_t} - 1) · gW(u) du` — cubic observable jet against
+the perturbation residual. -/
+private noncomputable def expNumErr₂
+    (V φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hφ : ObservableTensorApprox φ a) (t : ℝ) : ℝ :=
+  ∫ u : ι → ℝ, expNumCubic φ a hφ t u
+      * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+      * gaussianWeight H u
+
+/-- `J₃ = ∫ L_t(u) · (e^{-s_t} - 1 + C_t) · gW(u) du` — linear observable jet
+against the odd remainder of the perturbation. -/
+private noncomputable def expNumErr₃
+    (V : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialTensorApprox V H)
+    (a : ι → ℝ) (t : ℝ) : ℝ :=
+  ∫ u : ι → ℝ, expNumLin a t u
+      * (Real.exp (-(rescaledPerturbation V H t u)) - 1 + expPotCubic V H hV t u)
+      * gaussianWeight H u
+
+/-- `J₄ = ∫ (Q_t(u) - μ/t) · (e^{-s_t} - 1) · gW(u) du` — centered quadratic
+observable jet against the perturbation residual. -/
+private noncomputable def expNumErr₄
+    (V φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a) (t : ℝ) : ℝ :=
+  ∫ u : ι → ℝ, (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t)
+      * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+      * gaussianWeight H u
+
+/-! ### Decomposition + 4 bounds -/
+
+/-- **Centered numerator decomposition**: the EXP analogue of the COV
+`pair_product_expansion`. Decomposes the centered numerator as a sum of
+the 4 helper integrals, with the Gaussian main terms
+`(-L_t - Q_t - P_t + L_t·C_t + μ/t)` integrating to zero by oddness +
+`gaussian_quad_expectation` + `gaussian_linear_cubic`. -/
+private lemma expNumerator_centered_decomp
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv)
+    {t : ℝ} (ht : 0 < t) :
+    rescaledNumerator V t φ
+      - rescaledPartition V t * (expNumeratorCoeff V φ H Hinv a hV hφ / t)
+      = expNumErr₁ V φ a H hφ t
+        + expNumErr₂ V φ a H hφ t
+        + expNumErr₃ V H hV a t
+        + expNumErr₄ V φ a H Hinv hV hφ t := by
+  -- Decompose `φ((√t)⁻¹•u) = L_t + Q_t + P_t + R_{φ,t}` and
+  -- `exp(-t V((√t)⁻¹•u)) = gW(u) · exp(-s_t(u))`. Distribute, then
+  -- the Gaussian main block `∫(-L_t - Q_t - P_t + L_t·C_t + μ/t) gW du = 0`
+  -- by oddness (L_t, P_t) + gaussian_quad_expectation (Q_t) +
+  -- gaussian_linear_cubic (L_t · C_t). Substantial bookkeeping
+  -- (~150-250 LOC); deferred.
+  sorry
+
+/-- **J₁ bound**: quartic observable remainder × full Gibbs factor is `O(t⁻²)`.
+Reuses the `Φ_jet_bound` rescaled and the existing Glocal+Gtail integrability
+on the full Gibbs factor. -/
+private lemma expNumErr₁_bound
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |expNumErr₁ V φ a H hφ t| ≤ K / t ^ 2 := by
+  -- Pointwise: |R_{φ,t}(u)| ≤ jet_const · t⁻² · ‖u‖⁴ (rescaled Φ_jet_bound),
+  -- combined with the existing Glocal+Gtail bookkeeping on the full Gibbs
+  -- factor (cf. `abs_remainder_mul_remainder_local_le` and tail twin in
+  -- CovarianceSharp.lean). ~150 LOC; deferred.
+  sorry
+
+/-- **J₂ bound**: cubic observable jet × `(e^{-s_t} - 1)` is `O(t⁻²)`.
+`P_t = O(t⁻³ᐟ²·‖u‖³)` and `e^{-s_t}-1 = O(t⁻¹ᐟ²·‖u‖³)` directly,
+so the product is `O(t⁻²·‖u‖⁶)` after multiplying. -/
+private lemma expNumErr₂_bound
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |expNumErr₂ V φ a H hφ t| ≤ K / t ^ 2 := by
+  -- Reuse the Stage-1 `abs_exp_neg_sub_one_add_le` and Stage-2
+  -- `abs_rescaledPerturbation_sub_scaledCubicJet_le` bounds.
+  -- Then Glocal+Gtail. ~150 LOC; deferred.
+  sorry
+
+/-- **J₃ bound**: linear observable jet × `(e^{-s_t} - 1 + C_t)` is `O(t⁻²)`.
+
+Uses the `u ↦ -u` parity symmetrization:
+`J₃ = (1/2) ∫ L_t(u) · [R(u) - R(-u)] · gW(u) du` where
+`R(u) = e^{-s_t(u)} - 1 + C_t(u)`. The odd part `R(u) - R(-u)` is `O(t⁻³ᐟ²)`
+because the leading `√t⁻¹·C_t` part is odd and cancels. -/
+private lemma expNumErr₃_bound
+    (V : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |expNumErr₃ V H hV a t| ≤ K / t ^ 2 := by
+  -- New EXP-specific helper. Symmetrise under u ↦ -u, then bound the odd
+  -- part using a quartic Taylor expansion of `exp(-s_t) - 1 + C_t`.
+  -- ~200 LOC; deferred.
+  sorry
+
+/-- **J₄ bound**: centered quadratic observable jet × `(e^{-s_t} - 1)` is `O(t⁻²)`.
+
+Uses the `u ↦ -u` parity symmetrization:
+`J₄ = (1/2) ∫ (Q_t(u)-μ/t) · [R(u) + R(-u)] · gW(u) du` where
+`R(u) = e^{-s_t(u)} - 1`. The even part `R(u) + R(-u)` is `O(t⁻¹)`
+because the leading `√t⁻¹·C_t` part is odd and cancels in the sum. -/
+private lemma expNumErr₄_bound
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |expNumErr₄ V φ a H Hinv hV hφ t| ≤ K / t ^ 2 := by
+  -- New EXP-specific helper. Symmetrise under u ↦ -u, then bound the even
+  -- part using a quartic Taylor expansion of `exp(-s_t) - 1`.
+  -- ~200 LOC; deferred.
+  sorry
+
 /-- **Centered EXP numerator (sharp rate)**: the centered numerator
 `rescaledNumerator V t φ - rescaledPartition V t · μ/t` is `O(t⁻²)`,
 where `μ := (tr(AΣ) - dot(Hinv a)(T:Σ))/2` is the explicit `lem:laplace_exp`
 coefficient.
 
-Per `gpt_responses/tactics_centered_numerator_exp.md`, the proof decomposes
-the centered numerator into 4 error terms (J₁, J₂, J₃, J₄) using the
-parity structure of the rescaled jets, each bounded by Glocal+Gtail
-methods analogous to the COV sharp track. The 4 sub-bounds + the
-algebraic decomposition are factored as private sub-lemmas. -/
+Proven by combining the 4 sub-bounds via the triangle inequality. -/
 private theorem rescaledNumerator_first_order_centered_explicit
     (V φ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
@@ -1827,10 +2027,61 @@ private theorem rescaledNumerator_first_order_centered_explicit
         - rescaledPartition V t *
             (expNumeratorCoeff V φ H Hinv a hV hφ / t)|
         ≤ K / t ^ 2 := by
-  -- Full proof: decomposition + 4 error bounds + triangle inequality.
-  -- Substantial (~600-800 LOC); deferred. Skeleton committed in
-  -- gpt_responses/tactics_centered_numerator_exp.md.
-  sorry
+  obtain ⟨K₁, T₁, hT₁, h₁⟩ :=
+    expNumErr₁_bound (V := V) (φ := φ) (H := H) (Hinv := Hinv)
+      (a := a) hV hφ hGauss
+  obtain ⟨K₂, T₂, hT₂, h₂⟩ :=
+    expNumErr₂_bound (V := V) (φ := φ) (H := H) (Hinv := Hinv)
+      (a := a) hV hφ hGauss
+  obtain ⟨K₃, T₃, hT₃, h₃⟩ :=
+    expNumErr₃_bound (V := V) (H := H) (Hinv := Hinv)
+      (a := a) hV hGauss
+  obtain ⟨K₄, T₄, hT₄, h₄⟩ :=
+    expNumErr₄_bound (V := V) (φ := φ) (H := H) (Hinv := Hinv)
+      (a := a) hV hφ hGauss
+  refine ⟨K₁ + K₂ + K₃ + K₄, max (max T₁ T₂) (max T₃ T₄), ?_, ?_⟩
+  · exact le_trans hT₁ (le_trans (le_max_left _ _) (le_max_left _ _))
+  · intro t ht
+    have ht1 : T₁ ≤ t :=
+      le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht)
+    have ht2 : T₂ ≤ t :=
+      le_trans (le_max_right _ _) (le_trans (le_max_left _ _) ht)
+    have ht3 : T₃ ≤ t :=
+      le_trans (le_max_left _ _) (le_trans (le_max_right _ _) ht)
+    have ht4 : T₄ ≤ t :=
+      le_trans (le_max_right _ _) (le_trans (le_max_right _ _) ht)
+    have ht_pos : 0 < t :=
+      lt_of_lt_of_le zero_lt_one (le_trans hT₁ ht1)
+    have hdecomp :=
+      expNumerator_centered_decomp (V := V) (φ := φ) (H := H) (Hinv := Hinv)
+        (a := a) hV hφ hGauss ht_pos
+    rw [hdecomp]
+    have hK1 := h₁ t ht1
+    have hK2 := h₂ t ht2
+    have hK3 := h₃ t ht3
+    have hK4 := h₄ t ht4
+    have ht_sq_pos : 0 < t ^ 2 := by positivity
+    calc |expNumErr₁ V φ a H hφ t + expNumErr₂ V φ a H hφ t
+            + expNumErr₃ V H hV a t + expNumErr₄ V φ a H Hinv hV hφ t|
+        ≤ |expNumErr₁ V φ a H hφ t| + |expNumErr₂ V φ a H hφ t|
+            + |expNumErr₃ V H hV a t| + |expNumErr₄ V φ a H Hinv hV hφ t| := by
+          calc |expNumErr₁ V φ a H hφ t + expNumErr₂ V φ a H hφ t
+                  + expNumErr₃ V H hV a t + expNumErr₄ V φ a H Hinv hV hφ t|
+              ≤ |expNumErr₁ V φ a H hφ t + expNumErr₂ V φ a H hφ t
+                  + expNumErr₃ V H hV a t|
+                + |expNumErr₄ V φ a H Hinv hV hφ t| := abs_add_le _ _
+            _ ≤ (|expNumErr₁ V φ a H hφ t + expNumErr₂ V φ a H hφ t|
+                  + |expNumErr₃ V H hV a t|)
+                + |expNumErr₄ V φ a H Hinv hV hφ t| := by
+                  gcongr; exact abs_add_le _ _
+            _ ≤ ((|expNumErr₁ V φ a H hφ t| + |expNumErr₂ V φ a H hφ t|)
+                  + |expNumErr₃ V H hV a t|)
+                + |expNumErr₄ V φ a H Hinv hV hφ t| := by
+                  gcongr; exact abs_add_le _ _
+            _ = _ := by ring
+      _ ≤ K₁ / t ^ 2 + K₂ / t ^ 2 + K₃ / t ^ 2 + K₄ / t ^ 2 := by
+          gcongr
+      _ = (K₁ + K₂ + K₃ + K₄) / t ^ 2 := by ring
 
 /-- **Sharp expectation rate (explicit coefficient, `lem:laplace_exp`)**:
 for $\phi$ with $\phi(0) = 0$,
