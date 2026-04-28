@@ -1762,6 +1762,104 @@ private lemma abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_tail_le
         rw [show ‖u‖ ^ 3 = ‖u‖ * ‖u‖ ^ 2 from by ring]
         field_simp
 
+/-- **Global bound on `|r₃|`** (helpers 2/3 tail).
+
+For `t ≥ 1`, the cubic remainder
+`r₃(u, t) := remψ(u) - qψ((√t)⁻¹•u)` satisfies
+
+  `|r₃(u, t)| ≤ (2 Cφ' + Cq) · (1 + ‖u‖^(p+2))`
+
+where `Cφ' := 2 Kφ + 2 (∑|phiGrad|)` from the global polynomial bound on
+`remψ`, and `Cq` from `|qψ(w)| ≤ Cq · ‖w‖²`. -/
+private lemma abs_cubic_remainder_global_le
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    {Kφ : ℝ} {p : ℕ} (hKφ_nn : 0 ≤ Kφ)
+    (hpoly : ∀ w : ι → ℝ, |φ w| ≤ Kφ * (1 + ‖w‖ ^ p))
+    (qψ : (ι → ℝ) → ℝ)
+    {Cq : ℝ} (hCq_nn : 0 ≤ Cq)
+    (h_qψ_bound : ∀ w : ι → ℝ, |qψ w| ≤ Cq * ‖w‖ ^ 2)
+    {t : ℝ} (ht : 1 ≤ t) (u : ι → ℝ) :
+    |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u -
+        qψ ((Real.sqrt t)⁻¹ • u)|
+      ≤ (2 * (2 * Kφ + 2 * (∑ i, |a i|)) + Cq) *
+          (1 + ‖u‖ ^ (p + 2)) := by
+  set Cφ' : ℝ := 2 * Kφ + 2 * (∑ i, |a i|) with hCφ'_def
+  have hA_nn : 0 ≤ ∑ i, |a i| :=
+    Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hCφ'_nn : 0 ≤ Cφ' := by rw [hCφ'_def]; linarith
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_pow_nn : 0 ≤ ‖u‖ ^ (p + 2) := pow_nonneg h_norm_nn _
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_t_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  -- |remψ| ≤ Cφ' · (1 + ‖u‖^(p+1)).
+  have h_remψ : |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
+      ≤ Cφ' * (1 + ‖u‖ ^ (p + 1)) := by
+    rw [hCφ'_def]
+    exact abs_rescaledObservable_global_le φ a hKφ_nn hpoly ht u
+  -- |qψ((√t)⁻¹•u)| ≤ Cq · ‖u‖²/t ≤ Cq · ‖u‖² for t ≥ 1.
+  have h_qψ : |qψ ((Real.sqrt t)⁻¹ • u)| ≤ Cq * ‖u‖ ^ 2 := by
+    have h := h_qψ_bound ((Real.sqrt t)⁻¹ • u)
+    have h_norm_sm : ‖(Real.sqrt t)⁻¹ • u‖ ≤ ‖u‖ := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_t_inv_pos]
+      have h_inv_le_one : (Real.sqrt t)⁻¹ ≤ 1 := by
+        rw [inv_le_one_iff₀]; right; exact Real.one_le_sqrt.mpr ht
+      exact mul_le_of_le_one_left h_norm_nn h_inv_le_one
+    have h_norm_sm_sq : ‖(Real.sqrt t)⁻¹ • u‖ ^ 2 ≤ ‖u‖ ^ 2 :=
+      pow_le_pow_left₀ (norm_nonneg _) h_norm_sm 2
+    calc |qψ ((Real.sqrt t)⁻¹ • u)|
+        ≤ Cq * ‖(Real.sqrt t)⁻¹ • u‖ ^ 2 := h
+      _ ≤ Cq * ‖u‖ ^ 2 := mul_le_mul_of_nonneg_left h_norm_sm_sq hCq_nn
+  -- ‖u‖^(p+1) ≤ 1 + ‖u‖^(p+2).
+  have h_p1_le : ‖u‖ ^ (p + 1) ≤ 1 + ‖u‖ ^ (p + 2) := by
+    by_cases hu : ‖u‖ ≤ 1
+    · have : ‖u‖ ^ (p + 1) ≤ 1 := pow_le_one₀ h_norm_nn hu
+      linarith
+    · push_neg at hu
+      have h_le : ‖u‖ ^ (p + 1) ≤ ‖u‖ ^ (p + 2) := by
+        apply pow_le_pow_right₀ hu.le
+        omega
+      linarith
+  -- ‖u‖^2 ≤ 1 + ‖u‖^(p+2).
+  have h_2_le : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ (p + 2) := by
+    by_cases hu : ‖u‖ ≤ 1
+    · have : ‖u‖ ^ 2 ≤ 1 := pow_le_one₀ h_norm_nn hu
+      linarith
+    · push_neg at hu
+      have h_le : ‖u‖ ^ 2 ≤ ‖u‖ ^ (p + 2) := by
+        apply pow_le_pow_right₀ hu.le
+        omega
+      linarith
+  calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u -
+            qψ ((Real.sqrt t)⁻¹ • u)|
+      ≤ |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u| +
+          |qψ ((Real.sqrt t)⁻¹ • u)| := by
+            rw [show φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u -
+                  qψ ((Real.sqrt t)⁻¹ • u)
+                = (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) -
+                  qψ ((Real.sqrt t)⁻¹ • u) from by ring]
+            exact abs_sub _ _
+    _ ≤ Cφ' * (1 + ‖u‖ ^ (p + 1)) + Cq * ‖u‖ ^ 2 :=
+        add_le_add h_remψ h_qψ
+    _ ≤ Cφ' * (1 + (1 + ‖u‖ ^ (p + 2))) +
+          Cq * (1 + ‖u‖ ^ (p + 2)) := by
+        have h1 : Cφ' * (1 + ‖u‖ ^ (p + 1)) ≤
+            Cφ' * (1 + (1 + ‖u‖ ^ (p + 2))) := by
+          apply mul_le_mul_of_nonneg_left _ hCφ'_nn
+          linarith
+        have h2 : Cq * ‖u‖ ^ 2 ≤ Cq * (1 + ‖u‖ ^ (p + 2)) :=
+          mul_le_mul_of_nonneg_left h_2_le hCq_nn
+        linarith
+    _ = (2 * Cφ' + Cq) + (Cφ' + Cq) * ‖u‖ ^ (p + 2) := by ring
+    _ ≤ (2 * Cφ' + Cq) * (1 + ‖u‖ ^ (p + 2)) := by
+        rw [show (2 * Cφ' + Cq) * (1 + ‖u‖ ^ (p + 2))
+              = (2 * Cφ' + Cq) + (2 * Cφ' + Cq) * ‖u‖ ^ (p + 2) from by ring]
+        have h_le : (Cφ' + Cq) * ‖u‖ ^ (p + 2) ≤
+            (2 * Cφ' + Cq) * ‖u‖ ^ (p + 2) := by
+          apply mul_le_mul_of_nonneg_right _ h_pow_nn
+          linarith
+        linarith
+
 end CorrectedBracketBounds
 
 section SharpHelpers
