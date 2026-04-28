@@ -1556,8 +1556,26 @@ private lemma gaussian_quad_quad
       ∑ x, ∑ y, (B (Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ))) x *
         (Hinv (Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ))) x :=
     trASig_eq_double_sum (hGauss := hGauss.toLaplaceCovHypotheses) B
-  -- h_pair3 (sorry'd): factors as trASig A Hinv * trASig B Hinv via Finset.sum_mul_sum
-  -- (modulo Finset.sum_comm to align j/k order).
+  -- h_pair3: factors as trASig A Hinv * trASig B Hinv.
+  have h_pair3 :
+      (∑ i, ∑ k, ∑ j, ∑ l,
+        (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)
+      = trASig A Hinv * trASig B Hinv := by
+    rw [htrAS_form, htrBS_form]
+    rw [Finset.sum_mul_sum]
+    refine Finset.sum_congr rfl ?_
+    intros x _
+    refine Finset.sum_congr rfl ?_
+    intros x' _
+    rw [Finset.sum_mul_sum]
+    refine Finset.sum_congr rfl ?_
+    intros y _
+    refine Finset.sum_congr rfl ?_
+    intros y' _
+    ring
   -- h_pair1', h_pair2 (sorry'd): the two tr(AΣBΣ) identifications.
   -- Final calc to assemble: deferred.
   sorry
