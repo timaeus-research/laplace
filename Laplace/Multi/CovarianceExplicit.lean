@@ -939,6 +939,23 @@ private lemma gaussian_linear_cubic
       | 2 => Pi.single (M := fun _ : ι => ℝ) z (1 : ℝ))
     rw [hswap12 x y z] at h
     exact h
+  -- Pointwise expansion: (Hu)_l · T(u,u,u) · gW = ∑_{i,j,k} Tcoord T i j k · (u_i u_j u_k (Hu)_l gW).
+  have hExpandHuT : ∀ l : ι, ∀ u : ι → ℝ,
+      (H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u =
+        ∑ i, ∑ j, ∑ k,
+          Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u) := by
+    intro l u
+    rw [T_apply_diag_eq_sum]
+    rw [Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl ?_
+    intro i _
+    rw [Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl ?_
+    intro j _
+    rw [Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl ?_
+    intro k _
+    ring
   -- Remaining: hcontract, hterm, 3 trace identifications, assembly. Deferred.
   sorry
 
