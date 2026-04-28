@@ -1106,8 +1106,248 @@ private lemma gaussian_linear_cubic
     -- Final: factor out gaussianZ H.
     by_cases hli : l = i <;> by_cases hlj : l = j <;> by_cases hlk : l = k <;>
       simp [hli, hlj, hlk, mul_add, mul_zero, add_zero, zero_add]
-  -- Remaining: 3 trace identifications + assembly. Deferred.
-  sorry
+  -- 3 trace identifications.
+  have hS1 : ∀ l : ι,
+      (∑ i, ∑ j, ∑ k, Tcoord T i j k *
+        (gaussianZ H * (if l = i then cov j k else 0)))
+        = gaussianZ H * tensorContractMatrix T Hinv l := by
+    intro l
+    have h_inner : ∀ i, ∑ j, ∑ k, Tcoord T i j k *
+        (gaussianZ H * (if l = i then cov j k else 0))
+        = if l = i then gaussianZ H * (∑ j, ∑ k, Tcoord T i j k * cov j k) else 0 := by
+      intro i
+      by_cases hli : l = i
+      · simp only [if_pos hli]
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_
+        intros j _
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_
+        intros k _; ring
+      · simp only [if_neg hli, mul_zero]
+        simp
+    rw [show (∑ i, ∑ j, ∑ k, Tcoord T i j k *
+            (gaussianZ H * (if l = i then cov j k else 0))) =
+          ∑ i, (if l = i then gaussianZ H * (∑ j, ∑ k, Tcoord T i j k * cov j k) else 0)
+        from Finset.sum_congr rfl (fun i _ => h_inner i)]
+    rw [Finset.sum_eq_single l]
+    · rw [if_pos rfl, hcontract l]
+    · intros i _ hli; rw [if_neg (Ne.symm hli)]
+    · intro h; exact absurd (Finset.mem_univ l) h
+  have hS2 : ∀ l : ι,
+      (∑ i, ∑ j, ∑ k, Tcoord T i j k *
+        (gaussianZ H * (if l = j then cov i k else 0)))
+        = gaussianZ H * tensorContractMatrix T Hinv l := by
+    intro l
+    -- Push j-sum to outer: by Finset.sum_comm.
+    rw [show (∑ i, ∑ j, ∑ k, Tcoord T i j k *
+              (gaussianZ H * (if l = j then cov i k else 0))) =
+          ∑ j, ∑ i, ∑ k, Tcoord T i j k *
+              (gaussianZ H * (if l = j then cov i k else 0)) from Finset.sum_comm]
+    have h_inner : ∀ j, ∑ i, ∑ k, Tcoord T i j k *
+        (gaussianZ H * (if l = j then cov i k else 0))
+        = if l = j then gaussianZ H * (∑ i, ∑ k, Tcoord T i j k * cov i k) else 0 := by
+      intro j
+      by_cases hlj : l = j
+      · simp only [if_pos hlj]
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_
+        intros i _
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_
+        intros k _; ring
+      · simp only [if_neg hlj, mul_zero]
+        simp
+    rw [show (∑ j, ∑ i, ∑ k, Tcoord T i j k *
+            (gaussianZ H * (if l = j then cov i k else 0))) =
+          ∑ j, (if l = j then gaussianZ H * (∑ i, ∑ k, Tcoord T i j k * cov i k) else 0)
+        from Finset.sum_congr rfl (fun j _ => h_inner j)]
+    rw [Finset.sum_eq_single l]
+    · rw [if_pos rfl]
+      -- Need: ∑ i, ∑ k, Tcoord T i l k * cov i k = tensorContractMatrix T Hinv l
+      -- Use hsym01: Tcoord T i l k = Tcoord T l i k
+      rw [show (∑ i, ∑ k, Tcoord T i l k * cov i k) =
+            ∑ i, ∑ k, Tcoord T l i k * cov i k from by
+        refine Finset.sum_congr rfl ?_
+        intros i _
+        refine Finset.sum_congr rfl ?_
+        intros k _
+        rw [hsym01 l i k]]
+      rw [hcontract l]
+    · intros j _ hlj; rw [if_neg (Ne.symm hlj)]
+    · intro h; exact absurd (Finset.mem_univ l) h
+  have hS3 : ∀ l : ι,
+      (∑ i, ∑ j, ∑ k, Tcoord T i j k *
+        (gaussianZ H * (if l = k then cov i j else 0)))
+        = gaussianZ H * tensorContractMatrix T Hinv l := by
+    intro l
+    -- Push k-sum to outermost: ∑ i ∑ j ∑ k → ∑ k ∑ i ∑ j.
+    rw [show (∑ i, ∑ j, ∑ k, Tcoord T i j k *
+              (gaussianZ H * (if l = k then cov i j else 0))) =
+          ∑ k, ∑ i, ∑ j, Tcoord T i j k *
+              (gaussianZ H * (if l = k then cov i j else 0)) from by
+        rw [show (∑ i, ∑ j, ∑ k, Tcoord T i j k *
+                (gaussianZ H * (if l = k then cov i j else 0))) =
+              ∑ i, ∑ k, ∑ j, Tcoord T i j k *
+                (gaussianZ H * (if l = k then cov i j else 0)) from by
+          refine Finset.sum_congr rfl ?_
+          intros i _
+          rw [Finset.sum_comm]]
+        rw [Finset.sum_comm]]
+    have h_inner : ∀ k, ∑ i, ∑ j, Tcoord T i j k *
+        (gaussianZ H * (if l = k then cov i j else 0))
+        = if l = k then gaussianZ H * (∑ i, ∑ j, Tcoord T i j k * cov i j) else 0 := by
+      intro k
+      by_cases hlk : l = k
+      · simp only [if_pos hlk]
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_
+        intros i _
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_
+        intros j _; ring
+      · simp only [if_neg hlk, mul_zero]
+        simp
+    rw [show (∑ k, ∑ i, ∑ j, Tcoord T i j k *
+            (gaussianZ H * (if l = k then cov i j else 0))) =
+          ∑ k, (if l = k then gaussianZ H * (∑ i, ∑ j, Tcoord T i j k * cov i j) else 0)
+        from Finset.sum_congr rfl (fun k _ => h_inner k)]
+    rw [Finset.sum_eq_single l]
+    · rw [if_pos rfl]
+      -- Need: ∑ i, ∑ j, Tcoord T i j l * cov i j = tensorContractMatrix T Hinv l
+      -- Use hsym12 + hsym01: Tcoord T i j l = Tcoord T i l j = Tcoord T l i j.
+      rw [show (∑ i, ∑ j, Tcoord T i j l * cov i j) =
+            ∑ i, ∑ j, Tcoord T l i j * cov i j from by
+        refine Finset.sum_congr rfl ?_
+        intros i _
+        refine Finset.sum_congr rfl ?_
+        intros j _
+        rw [show Tcoord T i j l = Tcoord T i l j from (hsym12 i j l).symm]
+        rw [hsym01 i l j]]
+      rw [hcontract l]
+    · intros k _ hlk; rw [if_neg (Ne.symm hlk)]
+    · intro h; exact absurd (Finset.mem_univ l) h
+  -- Per-l contraction: ∫ (Hu)_l · T(u,u,u) · gW = Z · 3 · tCM T Hinv l.
+  have hfixed : ∀ l : ι,
+      ∫ u : ι → ℝ, (H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u
+        = gaussianZ H * 3 * tensorContractMatrix T Hinv l := by
+    intro l
+    -- Integrability of each (i,j,k) term.
+    have hInt_ijk : ∀ i j k : ι,
+        Integrable (fun u : ι → ℝ =>
+          Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u)) := by
+      intros i j k
+      exact (hGauss.int_3_Hl i j k l).const_mul (Tcoord T i j k)
+    have hInt_ij : ∀ i j : ι,
+        Integrable (fun u : ι → ℝ =>
+          ∑ k, Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u)) := by
+      intros i j
+      exact integrable_finset_sum _ (fun k _ => hInt_ijk i j k)
+    have hInt_i : ∀ i : ι,
+        Integrable (fun u : ι → ℝ =>
+          ∑ j, ∑ k, Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u)) := by
+      intro i
+      exact integrable_finset_sum _ (fun j _ => hInt_ij i j)
+    -- Calc chain:
+    have h_step1 : ∫ u : ι → ℝ, (H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u
+        = ∫ u : ι → ℝ, ∑ i, ∑ j, ∑ k,
+            Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u) := by
+      apply MeasureTheory.integral_congr_ae
+      exact Filter.Eventually.of_forall (hExpandHuT l)
+    rw [h_step1]
+    -- Swap quadruple sum / integral.
+    rw [integral_finset_sum _ (fun i _ => hInt_i i)]
+    conv_lhs =>
+      enter [2, i]
+      rw [integral_finset_sum _ (fun j _ => hInt_ij i j)]
+      enter [2, j]
+      rw [integral_finset_sum _ (fun k _ => hInt_ijk i j k)]
+      enter [2, k]
+      rw [integral_const_mul]
+      rw [hterm i j k l]
+    -- Goal: ∑ i ∑ j ∑ k, Tcoord T i j k * (Z * (3-pairing sum)) = Z * 3 * tCM T Hinv l.
+    -- Distribute the 3-pairing sum into 3 sums via h_dist.
+    have h_dist : ∀ i j k : ι,
+        Tcoord T i j k *
+          (gaussianZ H *
+            ((if l = i then cov j k else 0) +
+             (if l = j then cov i k else 0) +
+             (if l = k then cov i j else 0)))
+        = Tcoord T i j k * (gaussianZ H * (if l = i then cov j k else 0))
+          + Tcoord T i j k * (gaussianZ H * (if l = j then cov i k else 0))
+          + Tcoord T i j k * (gaussianZ H * (if l = k then cov i j else 0)) := by
+      intros i j k; ring
+    conv_lhs =>
+      enter [2, i, 2, j, 2, k]
+      rw [h_dist i j k]
+    -- Sum-add-distrib: ∑ (a+b+c) = ∑ a + ∑ b + ∑ c. Apply 3 times nested.
+    rw [show (∑ i, ∑ j, ∑ k,
+          (Tcoord T i j k * (gaussianZ H * (if l = i then cov j k else 0)) +
+           Tcoord T i j k * (gaussianZ H * (if l = j then cov i k else 0)) +
+           Tcoord T i j k * (gaussianZ H * (if l = k then cov i j else 0)))) =
+        (∑ i, ∑ j, ∑ k, Tcoord T i j k * (gaussianZ H * (if l = i then cov j k else 0))) +
+        (∑ i, ∑ j, ∑ k, Tcoord T i j k * (gaussianZ H * (if l = j then cov i k else 0))) +
+        (∑ i, ∑ j, ∑ k, Tcoord T i j k * (gaussianZ H * (if l = k then cov i j else 0)))
+        from by
+      simp only [Finset.sum_add_distrib]]
+    rw [hS1 l, hS2 l, hS3 l]
+    ring
+  -- Pointwise: dot a u * T(u,u,u) * gW = ∑_l (Hinv a)_l * ((Hu)_l * T(u,u,u) * gW).
+  have hExpandMain : ∀ u : ι → ℝ,
+      dot a u * T (fun _ : Fin 3 => u) * gaussianWeight H u
+        = ∑ l, (Hinv a) l *
+            ((H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u) := by
+    intro u
+    rw [dot_eq_sum_Hinv_mul_H (H := H) (Hinv := Hinv)
+          (hGauss := hGauss.toLaplaceCovHypotheses) a u]
+    calc
+      (∑ l, (Hinv a) l * (H u) l) * T (fun _ : Fin 3 => u) * gaussianWeight H u
+          = (∑ l, (Hinv a) l * (H u) l) *
+              (T (fun _ : Fin 3 => u) * gaussianWeight H u) := by ring
+        _ = ∑ l, ((Hinv a) l * (H u) l) *
+              (T (fun _ : Fin 3 => u) * gaussianWeight H u) := by
+            rw [Finset.sum_mul]
+        _ = ∑ l, (Hinv a) l *
+              ((H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u) := by
+            refine Finset.sum_congr rfl ?_
+            intros l _; ring
+  -- Integrability for the main calc.
+  have hIntHuT : ∀ l : ι, Integrable (fun u : ι → ℝ =>
+      (H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u) := by
+    intro l
+    have hRHS_int : Integrable (fun u : ι → ℝ =>
+        ∑ i, ∑ j, ∑ k,
+          Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u)) := by
+      refine integrable_finset_sum _ (fun i _ => ?_)
+      refine integrable_finset_sum _ (fun j _ => ?_)
+      refine integrable_finset_sum _ (fun k _ => ?_)
+      exact (hGauss.int_3_Hl i j k l).const_mul _
+    exact hRHS_int.congr <|
+      Filter.Eventually.of_forall (fun u => (hExpandHuT l u).symm)
+  have hIntMain : ∀ l : ι, Integrable (fun u : ι → ℝ =>
+      (Hinv a) l * ((H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u)) :=
+    fun l => (hIntHuT l).const_mul _
+  -- Final calc.
+  calc ∫ u : ι → ℝ, dot a u * T (fun _ : Fin 3 => u) * gaussianWeight H u
+      = ∫ u : ι → ℝ, ∑ l, (Hinv a) l *
+          ((H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u) := by
+        apply MeasureTheory.integral_congr_ae
+        exact Filter.Eventually.of_forall hExpandMain
+    _ = ∑ l, ∫ u : ι → ℝ,
+          (Hinv a) l * ((H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u) := by
+        rw [integral_finset_sum _ (fun l _ => hIntMain l)]
+    _ = ∑ l, (Hinv a) l *
+          ∫ u : ι → ℝ, (H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u := by
+        simp_rw [integral_const_mul]
+    _ = ∑ l, (Hinv a) l * (gaussianZ H * 3 * tensorContractMatrix T Hinv l) := by
+        simp_rw [hfixed]
+    _ = gaussianZ H * 3 * dot (Hinv a) (tensorContractMatrix T Hinv) := by
+        unfold dot
+        rw [show gaussianZ H * 3 * ∑ i, Hinv a i * tensorContractMatrix T Hinv i =
+              ∑ i, gaussianZ H * 3 * (Hinv a i * tensorContractMatrix T Hinv i) from by
+          rw [Finset.mul_sum]]
+        refine Finset.sum_congr rfl ?_
+        intros l _; ring
 
 /-- **4th-moment contraction (quad · quad)**:
 $\int (\tfrac12 u^\top A u)(\tfrac12 u^\top B u)\,gW
