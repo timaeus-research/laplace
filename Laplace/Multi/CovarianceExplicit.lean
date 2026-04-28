@@ -1698,8 +1698,50 @@ private lemma gaussian_quad_quad
     -- Goal: pointwise equality. Use hSigSymm to align (Hinv e_l) i = (Hinv e_i) l.
     rw [← hSigSymm i l]
     ring
-  -- Final calc deferred.
-  sorry
+  -- Final assembly: distribute the 3-pairing sum, identify each via h_pair3, h_pair2, h_pair1'.
+  -- Distribute the inner +-sum into 3 separate quadruple sums.
+  have h_distrib_outer : ∀ i k j l : ι,
+      gaussianZ H * (1 / 4 : ℝ) *
+        ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j +
+        (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i +
+        (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)
+      = gaussianZ H * (1 / 4 : ℝ) *
+          ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j) +
+        gaussianZ H * (1 / 4 : ℝ) *
+          ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i) +
+        gaussianZ H * (1 / 4 : ℝ) *
+          ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) := by
+    intros i k j l; ring
+  -- Push gaussianZ H * (1/4) inside the quadruple sum via repeated Finset.mul_sum.
+  simp_rw [Finset.mul_sum]
+  -- Now LHS: ∑ i ∑ k ∑ j ∑ l, gaussianZ H * (1/4) * (P+P+P).
+  -- Apply h_distrib_outer pointwise.
+  simp_rw [h_distrib_outer]
+  -- Distribute the +-of-3 outwards.
+  simp_rw [Finset.sum_add_distrib]
+  -- Now we have 3 separate quadruple sums. Pull gaussianZ H * (1/4) out of each.
+  simp_rw [← Finset.mul_sum]
+  -- Apply h_pair3, h_pair2, h_pair1'.
+  rw [h_pair3, h_pair2, ← h_pair1']
+  ring
 
 /-- **4th-moment contraction (cubic · linear)**:
 $\int \tfrac16 \Phi(u,u,u)(b\cdot u)\,gW = Z\cdot\tfrac12(\Sigma b)\cdot(\Phi{:}\Sigma)$.
