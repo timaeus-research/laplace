@@ -2506,6 +2506,66 @@ private lemma integrable_expNumLin_mul_expPotCubic_mul_gaussianWeight
           field_simp
           rw [h_sq2]; ring
 
+/-! ### Integrability of the J_i integrands (for the decomposition) -/
+
+/-- Integrability of `expNumCubic φ a hφ t u · gW(u) · exp(-(rescaledPerturbation V H t u))`,
+the J₁-style integrand with full Gibbs factor. -/
+private lemma integrable_expNumCubic_mul_gW_mul_rescaled_weight
+    (V φ : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      expNumCubic φ a hφ t u * gaussianWeight H u
+        * Real.exp (-(rescaledPerturbation V H t u))) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      ((Real.sqrt t)⁻¹ / t * (‖hφ.Φ‖ / 6)) *
+        (‖u‖ ^ 3 * (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))))) :=
+    (integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 3 ht).const_mul _
+  apply h_dom_int.mono'
+  · have h_Φ_cont : Continuous (fun u : ι → ℝ => hφ.Φ (fun _ : Fin 3 => u)) := by
+      have h_diag : Continuous (fun u : ι → ℝ => fun _ : Fin 3 => u) :=
+        continuous_pi (fun _ => continuous_id)
+      exact hφ.Φ.cont.comp h_diag
+    have h_eN_cont : Continuous (fun u : ι → ℝ => expNumCubic φ a hφ t u) := by
+      unfold expNumCubic
+      exact continuous_const.mul (continuous_const.mul h_Φ_cont)
+    exact ((h_eN_cont.mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp
+        (continuous_rescaledPerturbation hV_cont H t).neg)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_cubic_le := abs_expNumCubic_le φ a hφ ht u
+    have h_factor_eq : ‖hφ.Φ‖ / 6 / (t * Real.sqrt t)
+        = (Real.sqrt t)⁻¹ / t * (‖hφ.Φ‖ / 6) := by
+      have ht_ne : t ≠ 0 := ne_of_gt ht
+      have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+      field_simp
+    rw [h_factor_eq] at h_cubic_le
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    have h_exp_nn : 0 ≤ Real.exp (-(rescaledPerturbation V H t u)) := (Real.exp_pos _).le
+    have h_prod_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg h_gW_nn h_exp_nn
+    rw [Real.norm_eq_abs]
+    rw [show expNumCubic φ a hφ t u * gaussianWeight H u
+          * Real.exp (-(rescaledPerturbation V H t u))
+        = expNumCubic φ a hφ t u * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) from by ring,
+        abs_mul, abs_of_nonneg h_prod_nn]
+    calc |expNumCubic φ a hφ t u| *
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ ((Real.sqrt t)⁻¹ / t * (‖hφ.Φ‖ / 6) * ‖u‖ ^ 3) *
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) := by
+          apply mul_le_mul_of_nonneg_right h_cubic_le h_prod_nn
+      _ = ((Real.sqrt t)⁻¹ / t * (‖hφ.Φ‖ / 6)) *
+            (‖u‖ ^ 3 * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by ring
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
