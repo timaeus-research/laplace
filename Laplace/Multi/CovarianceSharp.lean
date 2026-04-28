@@ -1457,17 +1457,322 @@ private lemma abs_integral_remainder_remainder_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / t ^ 2 := by
-  -- Reduce to the existing weak helper 4 (rate K/(t·√t)) — the sharp K/t²
-  -- rate is a strict tightening, which we defer. The weak rate suffices
-  -- to give a finite K, but with the correctly typed bound `K / t^2`
-  -- we'd need T₀ chosen so that t ≥ T₀ implies K_weak/(t·√t) ≤ K_sharp/t².
-  -- That is: K_weak · t ≤ K_sharp · √t i.e., t ≤ (K_sharp/K_weak)² · ...
-  -- which doesn't hold for t → ∞. So this reduction does NOT give K/t².
-  -- The proof requires the sharp local + tail (k=4 indicator) bookkeeping.
-  -- Deferred — see weak helper 4 in `Laplace.Multi.Covariance` for the
-  -- ~1488 LOC template; sharp helper 4 follows the same structure with
-  -- the indicator power changed from 3 to 4.
-  sorry
+  -- Constants from hypotheses.
+  set c := hV.toPotentialApprox.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.toPotentialApprox.coercive_const_pos
+  have h_coer := hV.toPotentialApprox.coercive_bound
+  set Cφ := hφ.toObservableApprox.local_const with hCφ_def
+  set Cψ := hψ.toObservableApprox.local_const with hCψ_def
+  set Rφ := hφ.toObservableApprox.local_radius with hRφ_def
+  set Rψ := hψ.toObservableApprox.local_radius with hRψ_def
+  have hCφ_nn : 0 ≤ Cφ := hφ.toObservableApprox.local_const_nonneg
+  have hCψ_nn : 0 ≤ Cψ := hψ.toObservableApprox.local_const_nonneg
+  have hRφ_pos : 0 < Rφ := hφ.toObservableApprox.local_radius_pos
+  have hRψ_pos : 0 < Rψ := hψ.toObservableApprox.local_radius_pos
+  have h_obs_φ_local := hφ.toObservableApprox.local_bound
+  have h_obs_ψ_local := hψ.toObservableApprox.local_bound
+  obtain ⟨Kφ, p, hKφ_nn, hpoly_φ⟩ := hφ.toObservableApprox.poly_growth
+  obtain ⟨Kψ, q, hKψ_nn, hpoly_ψ⟩ := hψ.toObservableApprox.poly_growth
+  set A : ℝ := ∑ i, |a i| with hA_def
+  set B : ℝ := ∑ i, |b i| with hB_def
+  have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hB_nn : 0 ≤ B := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  set Cφ' : ℝ := 2 * Kφ + 2 * A with hCφ'_def
+  set Cψ' : ℝ := 2 * Kψ + 2 * B with hCψ'_def
+  have hCφ'_nn : 0 ≤ Cφ' := by rw [hCφ'_def]; linarith
+  have hCψ'_nn : 0 ≤ Cψ' := by rw [hCψ'_def]; linarith
+  -- Local radius and tail decay constant.
+  set R : ℝ := min Rφ Rψ with hR_def
+  have hR_pos : 0 < R := lt_min hRφ_pos hRψ_pos
+  have hR_le_Rφ : R ≤ Rφ := min_le_left _ _
+  have hR_le_Rψ : R ≤ Rψ := min_le_right _ _
+  -- Polynomial degree for the tail.
+  set N : ℕ := p + q + 2 with hN_def
+  -- Gaussian moment constants.
+  set M4 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2))
+    with hM4_def
+  set M_N4 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 4 *
+    (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2)) with hM_N4_def
+  have hM4_nn : 0 ≤ M4 := by
+    rw [hM4_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    exact mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  have hM_N4_nn : 0 ≤ M_N4 := by
+    rw [hM_N4_def]
+    apply MeasureTheory.integral_nonneg
+    intro u
+    have h1 : 0 ≤ ‖u‖ ^ 4 := pow_nonneg (norm_nonneg _) _
+    have h2 : 0 ≤ 1 + ‖u‖ ^ N := by positivity
+    exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+  -- Choose K and T₀.
+  refine ⟨Cφ * Cψ * M4 + (3 * Cφ' * Cψ' / R ^ 4) * M_N4,
+    1, le_refl _, ?_⟩
+  intro t ht1
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have ht_sq_pos : 0 < t ^ 2 := pow_pos ht_pos 2
+  -- Define Glocal and Gtail majorants.
+  set Glocal : (ι → ℝ) → ℝ := fun u =>
+    Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 * Real.exp (-(c * ‖u‖ ^ 2))
+    with hGlocal_def
+  set Gtail : (ι → ℝ) → ℝ := fun u =>
+    (3 * Cφ' * Cψ' / R ^ 4 / t ^ 2) * (‖u‖ ^ 4 * (1 + ‖u‖ ^ N)) *
+      Real.exp (-(c * ‖u‖ ^ 2)) with hGtail_def
+  have hGlocal_nn : ∀ u, 0 ≤ Glocal u := by
+    intro u
+    rw [hGlocal_def]
+    have h1 : 0 ≤ Cφ * Cψ * ‖u‖ ^ 4 :=
+      mul_nonneg (mul_nonneg hCφ_nn hCψ_nn) (pow_nonneg (norm_nonneg _) _)
+    exact mul_nonneg (div_nonneg h1 ht_sq_pos.le) (Real.exp_pos _).le
+  have hGtail_nn : ∀ u, 0 ≤ Gtail u := by
+    intro u
+    rw [hGtail_def]
+    have h1 : 0 ≤ 3 * Cφ' * Cψ' / R ^ 4 / t ^ 2 := by
+      apply div_nonneg
+      apply div_nonneg
+      · positivity
+      · positivity
+      · exact ht_sq_pos.le
+    have h2 : 0 ≤ ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) := by positivity
+    exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+  -- Pointwise bound: |F(u)| ≤ Glocal(u) + Gtail(u).
+  have hpt : ∀ u : ι → ℝ,
+      |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+          (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ Glocal u + Gtail u := by
+    intro u
+    by_cases hu : ‖u‖ ≤ R * Real.sqrt t
+    · -- Local case.
+      have huφ : ‖u‖ ≤ Rφ * Real.sqrt t :=
+        le_trans hu (mul_le_mul_of_nonneg_right hR_le_Rφ hsqrt_pos.le)
+      have huψ : ‖u‖ ≤ Rψ * Real.sqrt t :=
+        le_trans hu (mul_le_mul_of_nonneg_right hR_le_Rψ hsqrt_pos.le)
+      have h_local := abs_remainder_mul_remainder_mul_rescaled_weight_local_le
+        V φ ψ H a b hCφ_nn hCψ_nn hc_pos h_obs_φ_local h_obs_ψ_local
+        h_coer ht_pos u huφ huψ
+      have h_glocal_eq : Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 *
+            Real.exp (-(c * ‖u‖ ^ 2)) = Glocal u := by
+        rw [hGlocal_def]
+      rw [h_glocal_eq] at h_local
+      linarith [hGtail_nn u]
+    · -- Tail case.
+      push_neg at hu
+      have h_tail_indicator : 1 ≤ ‖u‖ ^ 4 / (R * Real.sqrt t) ^ 4 := by
+        have h_pos : 0 < R * Real.sqrt t := mul_pos hR_pos hsqrt_pos
+        have h_pow_le : (R * Real.sqrt t) ^ 4 ≤ ‖u‖ ^ 4 :=
+          pow_le_pow_left₀ h_pos.le hu.le 4
+        have h_pow_pos : 0 < (R * Real.sqrt t) ^ 4 := pow_pos h_pos 4
+        rw [le_div_iff₀ h_pow_pos]
+        linarith
+      have h_RT4 : (R * Real.sqrt t) ^ 4 = R ^ 4 * t ^ 2 := by
+        rw [mul_pow]
+        rw [show (Real.sqrt t) ^ 4 = ((Real.sqrt t) ^ 2) ^ 2 from by ring,
+            Real.sq_sqrt ht_pos.le]
+      have h_tail_indicator' : 1 ≤ ‖u‖ ^ 4 / (R ^ 4 * t ^ 2) := by
+        rw [← h_RT4]; exact h_tail_indicator
+      -- Crude rem bound: |remφ · remψ · gW · exp| ≤ |remφ · remψ| · exp(-c·‖u‖²).
+      have h_rw_le := rescaled_weight_le_coercive V H hc_pos h_coer ht_pos u
+      have h_rem_glob := abs_remainder_mul_remainder_global_le φ ψ a b
+        hKφ_nn hKψ_nn hpoly_φ hpoly_ψ ht1 u
+      have h_poly_unify := poly_pair_le_single (ι := ι) p q u
+      have hCφ'_eq : 2 * Kφ + 2 * (∑ i, |a i|) = Cφ' := by
+        rw [hCφ'_def, hA_def]
+      have hCψ'_eq : 2 * Kψ + 2 * (∑ i, |b i|) = Cψ' := by
+        rw [hCψ'_def, hB_def]
+      rw [hCφ'_eq, hCψ'_eq] at h_rem_glob
+      -- Unify: |remφ · remψ| ≤ Cφ' · Cψ' · 3 · (1 + ‖u‖^N).
+      have h_rem_unified : |(φ ((Real.sqrt t)⁻¹ • u) -
+            (Real.sqrt t)⁻¹ * dot a u) *
+          (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)|
+          ≤ Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) := by
+        have h_step1 : |(φ ((Real.sqrt t)⁻¹ • u) -
+                (Real.sqrt t)⁻¹ * dot a u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)|
+            ≤ Cφ' * Cψ' * ((1 + ‖u‖ ^ (p + 1)) *
+                (1 + ‖u‖ ^ (q + 1))) := by
+          have h := h_rem_glob
+          -- h : ... ≤ Cφ' * Cψ' * (1 + ‖u‖^(p+1)) * (1 + ‖u‖^(q+1))
+          have hCφψ_nn : 0 ≤ Cφ' * Cψ' := mul_nonneg hCφ'_nn hCψ'_nn
+          linarith [h]
+        have hCφψ_nn : 0 ≤ Cφ' * Cψ' := mul_nonneg hCφ'_nn hCψ'_nn
+        have h_step2 : Cφ' * Cψ' * ((1 + ‖u‖ ^ (p + 1)) *
+                (1 + ‖u‖ ^ (q + 1)))
+            ≤ Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) := by
+          rw [hN_def]
+          exact mul_le_mul_of_nonneg_left h_poly_unify hCφψ_nn
+        linarith
+      -- Now combine: |F u| ≤ |remφ·remψ| · gW · exp ≤ ... · exp(-c‖u‖²).
+      have h_rw_nn : 0 ≤ gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)) :=
+        mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+      have h_rearr : (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+          = ((φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by ring
+      rw [h_rearr, abs_mul, abs_of_nonneg h_rw_nn]
+      have hCφψ3_nn : 0 ≤ Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) := by
+        apply mul_nonneg (mul_nonneg hCφ'_nn hCψ'_nn)
+        positivity
+      have h_step_a :
+          |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)| *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ (Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N))) *
+              Real.exp (-(c * ‖u‖ ^ 2)) := by
+        calc |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+              (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)| *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+            ≤ (Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N))) *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) :=
+              mul_le_mul_of_nonneg_right h_rem_unified h_rw_nn
+          _ ≤ (Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N))) *
+              Real.exp (-(c * ‖u‖ ^ 2)) :=
+              mul_le_mul_of_nonneg_left h_rw_le hCφψ3_nn
+      -- Multiply by indicator gain.
+      have h_step_b : (Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N))) *
+            Real.exp (-(c * ‖u‖ ^ 2))
+          ≤ Gtail u := by
+        rw [hGtail_def]
+        have h_exp_nn : 0 ≤ Real.exp (-(c * ‖u‖ ^ 2)) := (Real.exp_pos _).le
+        have h_R4_pos : 0 < R ^ 4 := pow_pos hR_pos 4
+        -- Use indicator: 1 ≤ ‖u‖^4 / (R^4 · t²).
+        have h_lhs_le : Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) ≤
+            Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) *
+              (‖u‖ ^ 4 / (R ^ 4 * t ^ 2)) := by
+          have h_lhs_nn : 0 ≤ Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) := hCφψ3_nn
+          calc Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N))
+              = Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) * 1 := (mul_one _).symm
+            _ ≤ Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) *
+                (‖u‖ ^ 4 / (R ^ 4 * t ^ 2)) :=
+                mul_le_mul_of_nonneg_left h_tail_indicator' h_lhs_nn
+        have h_step_b_calc : Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) *
+              (‖u‖ ^ 4 / (R ^ 4 * t ^ 2)) *
+              Real.exp (-(c * ‖u‖ ^ 2))
+            = 3 * Cφ' * Cψ' / R ^ 4 / t ^ 2 *
+              (‖u‖ ^ 4 * (1 + ‖u‖ ^ N)) *
+              Real.exp (-(c * ‖u‖ ^ 2)) := by
+          field_simp
+        calc (Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N))) *
+              Real.exp (-(c * ‖u‖ ^ 2))
+            ≤ (Cφ' * Cψ' * (3 * (1 + ‖u‖ ^ N)) *
+                (‖u‖ ^ 4 / (R ^ 4 * t ^ 2))) *
+                Real.exp (-(c * ‖u‖ ^ 2)) :=
+              mul_le_mul_of_nonneg_right h_lhs_le h_exp_nn
+          _ = 3 * Cφ' * Cψ' / R ^ 4 / t ^ 2 *
+              (‖u‖ ^ 4 * (1 + ‖u‖ ^ N)) *
+              Real.exp (-(c * ‖u‖ ^ 2)) := h_step_b_calc
+      have h_F_le_Gtail :
+          |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+              (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ Gtail u := le_trans h_step_a h_step_b
+      linarith [hGlocal_nn u]
+  -- Integrability of Glocal, Gtail.
+  have hGlocal_int : MeasureTheory.Integrable Glocal := by
+    rw [hGlocal_def]
+    have h1 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 4
+    -- Glocal = (Cφ·Cψ/t²) · (‖u‖^4 · exp(-c·‖u‖²))
+    have h_eq : (fun u : ι → ℝ =>
+          Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 * Real.exp (-(c * ‖u‖ ^ 2)))
+        = fun u => (Cφ * Cψ / t ^ 2) *
+            (‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2))) := by
+      funext u; ring
+    rw [h_eq]
+    exact h1.const_mul _
+  have hGtail_int : MeasureTheory.Integrable Gtail := by
+    rw [hGtail_def]
+    have h_a : MeasureTheory.Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2))) :=
+      integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 4
+    have h_b : MeasureTheory.Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ (4 + N) * Real.exp (-(c * ‖u‖ ^ 2))) :=
+      integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos (4 + N)
+    have h_sum : MeasureTheory.Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2)) +
+        ‖u‖ ^ (4 + N) * Real.exp (-(c * ‖u‖ ^ 2))) := h_a.add h_b
+    have h_eq : (fun u : ι → ℝ =>
+          3 * Cφ' * Cψ' / R ^ 4 / t ^ 2 * (‖u‖ ^ 4 * (1 + ‖u‖ ^ N)) *
+            Real.exp (-(c * ‖u‖ ^ 2)))
+        = fun u => (3 * Cφ' * Cψ' / R ^ 4 / t ^ 2) *
+            (‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2)) +
+             ‖u‖ ^ (4 + N) * Real.exp (-(c * ‖u‖ ^ 2))) := by
+      funext u
+      have h_pow_eq : ‖u‖ ^ 4 * ‖u‖ ^ N = ‖u‖ ^ (4 + N) := by
+        rw [← pow_add]
+      rw [show ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) = ‖u‖ ^ 4 + ‖u‖ ^ 4 * ‖u‖ ^ N from
+            by ring,
+          h_pow_eq]
+      ring
+    rw [h_eq]
+    exact h_sum.const_mul _
+  -- ∫ Glocal = (Cφ·Cψ/t²) · M4.
+  have hGlocal_eq : ∫ u : ι → ℝ, Glocal u = Cφ * Cψ * M4 / t ^ 2 := by
+    rw [hGlocal_def, hM4_def]
+    rw [show (fun u : ι → ℝ =>
+              Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 * Real.exp (-(c * ‖u‖ ^ 2)))
+            = fun u => (Cφ * Cψ / t ^ 2) *
+                (‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2))) from by
+        funext u; ring]
+    rw [MeasureTheory.integral_const_mul]
+    ring
+  -- ∫ Gtail = (3·Cφ'·Cψ'/(R^4·t²)) · M_N4.
+  have hGtail_eq : ∫ u : ι → ℝ, Gtail u =
+      (3 * Cφ' * Cψ' / R ^ 4) * M_N4 / t ^ 2 := by
+    rw [hGtail_def, hM_N4_def]
+    rw [show (fun u : ι → ℝ =>
+              3 * Cφ' * Cψ' / R ^ 4 / t ^ 2 * (‖u‖ ^ 4 * (1 + ‖u‖ ^ N)) *
+                Real.exp (-(c * ‖u‖ ^ 2)))
+            = fun u => (3 * Cφ' * Cψ' / R ^ 4 / t ^ 2) *
+                (‖u‖ ^ 4 * (1 + ‖u‖ ^ N) *
+                  Real.exp (-(c * ‖u‖ ^ 2))) from by
+        funext u; ring]
+    rw [MeasureTheory.integral_const_mul]
+    ring
+  -- Combine via triangle + integral_mono.
+  have h_F_int_abs : MeasureTheory.Integrable (fun u : ι → ℝ =>
+      (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+      (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+      gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_remainder_mul_remainder_mul_rescaled_weight V φ ψ H Hinv a b
+      hV.toPotentialApprox hφ.toObservableApprox hψ.toObservableApprox
+      hGauss ht1
+  calc |∫ u : ι → ℝ,
+            (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ ∫ u : ι → ℝ,
+          |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))| := by
+            rw [show |∫ u, _| = ‖∫ u, _‖ from (Real.norm_eq_abs _).symm]
+            exact MeasureTheory.norm_integral_le_integral_norm _
+    _ ≤ ∫ u : ι → ℝ, (Glocal u + Gtail u) := by
+          apply MeasureTheory.integral_mono_ae h_F_int_abs.norm
+            (hGlocal_int.add hGtail_int)
+          filter_upwards with u
+          rw [Real.norm_eq_abs]
+          exact hpt u
+    _ = (∫ u, Glocal u) + ∫ u, Gtail u :=
+          MeasureTheory.integral_add hGlocal_int hGtail_int
+    _ = Cφ * Cψ * M4 / t ^ 2 +
+        (3 * Cφ' * Cψ' / R ^ 4) * M_N4 / t ^ 2 := by
+          rw [hGlocal_eq, hGtail_eq]
+    _ = (Cφ * Cψ * M4 + (3 * Cφ' * Cψ' / R ^ 4) * M_N4) / t ^ 2 := by
+          field_simp
 
 end SharpHelpers
 
