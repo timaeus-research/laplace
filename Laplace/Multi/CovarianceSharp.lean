@@ -792,17 +792,56 @@ end ParityLemmas
 
 section SharpHelpers
 
+/-- **Bound on the corrected-bracket integral** (the technical heart of
+sharp helper 1).
+
+Given the centered bilinear factor `B(u) := dot a u · dot b u - m` and the
+scaled cubic jet `c_t(u) := t · cV((√t)⁻¹•u)`, we bound
+
+  `|∫ B · gW · (exp(-s_t) - 1 + c_t)| ≤ K/t`.
+
+The argument splits the integral by `1_{‖u‖ ≤ ρ√t} + 1_{‖u‖ > ρ√t}`:
+
+* **Local** (`‖u‖ ≤ ρ√t`): use Stage 1 (`|exp(-r) - (1-r)| ≤ r² · exp|r|`)
+  and Stage 2 (`|s_t - c_t| ≤ C₄·‖u‖^4/t`). Pick `ρ` small enough that
+  `gW · exp|s_t|` decays as a Gaussian on the local ball, then the
+  integrand is `O(‖u‖^p / t · exp(-α·‖u‖²))` for various `p`, with
+  finite Gaussian moments.
+
+* **Tail** (`‖u‖ > ρ√t`): use the indicator trick
+  `1 ≤ ‖u‖² / (ρ²·t)` to gain `1/t` from the tail mass, combined with
+  the crude bound `|exp(-s_t) - 1 + c_t| ≤ exp(-s_t) + 1 + |c_t|`
+  and existing rescaled-weight integrability.
+
+This is the Glocal+Gtail bookkeeping that mirrors the weak helpers but at
+the sharp scale. ~500-700 LOC of integral arithmetic — deferred. -/
+private lemma abs_integral_corrected_bracket_centered_bilinear_le
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |∫ u : ι → ℝ, (dot a u * dot b u - dot a (Hinv b)) *
+          gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+           t * hV.cV ((Real.sqrt t)⁻¹ • u))|
+        ≤ K / t := by
+  sorry
+
 /-- **Sharp helper 1 (centered bilinear correction)**: the centered
 bilinear factor `(dot a u · dot b u - m)` against `gW · exp(-s_t)`
 integrates to `O(1/t)`, where `m := dot a (Hinv b)`.
 
-The two-step argument:
-- `∫ (dot a · dot b - m) · gW = m · Z - m · Z = 0` via `gaussian_dot_mul_dot`.
-- `|∫ (dot a · dot b - m) · gW · (exp(-s_t) - 1)| ≤ K/t` via parity:
-  expand `exp(-s_t) - 1 = -s_t + Taylor remainder`, then
-  `s_t = t · cV((√t)⁻¹•u) + O(‖u‖^4/t)` (Stage 2 bound), and the leading
-  `-(t·cV)` term integrates to zero against the even bilinear factor and
-  even Gaussian weight. -/
+This is the parity-resolved upgrade of the weak `O(1/√t)` bound. The
+strategy:
+- the original integral equals the *corrected-bracket* integral
+  `∫ B · gW · (exp(-s_t) - 1 + c_t)` via
+  `integral_centered_bilinear_eq_corrected_bracket`;
+- the corrected bracket is `O(1/t)` on the local ball (Stage 1's Taylor
+  remainder + Stage 2's quartic remainder) and `O(1/t)` on the tail
+  (indicator trick `1_{‖u‖ ≥ ρ√t} ≤ ‖u‖²/(ρ²·t)`);
+- combining gives the K/t bound. -/
 private lemma abs_integral_centered_bilinear_sharp_le
     (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
@@ -814,34 +853,14 @@ private lemma abs_integral_centered_bilinear_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / t := by
-  -- Per gpt_responses/sharp_helpers_recipe.md, this proof uses the
-  -- 'corrected bracket' trick:
-  --
-  --   I(t) = ∫ B · gW · exp(-s_t)
-  --        = ∫ B · gW · 1                                     [1]
-  --          - ∫ B · gW · c_t                                 [2]
-  --          + ∫ B · gW · (exp(-s_t) - 1 + c_t)               [3]
-  --
-  --   where B(u) := dot a u · dot b u - m,
-  --         c_t(u) := t · hV.cV ((√t)⁻¹ • u).
-  --
-  -- [1] = 0 via gaussian_dot_mul_dot (∫ dot a · dot b · gW = m·Z and ∫ gW = Z).
-  -- [2] = 0 via parity (B even, c_t odd, gW even — integrand odd).
-  --       Use integral_centered_bilinear_cubicJet_eq_zero.
-  -- [3] = ∫ B · gW · ((exp(-s_t) - (1-s_t)) + (c_t - s_t))
-  --       Two pieces:
-  --         (a) Taylor remainder |exp(-s) - (1-s)| ≤ s² · exp|s| (Stage 1).
-  --             Locally |s_t| ≤ C·‖u‖³/√t (existing weak), so piece is
-  --             ≤ const · ‖u‖^6 / t · gW · exp_factor → K/t.
-  --         (b) Quartic remainder |s_t - c_t| ≤ C₄·‖u‖^4/t (Stage 2,
-  --             abs_rescaledPerturbation_sub_scaledCubicJet_le).
-  --             So piece is ≤ const · ‖u‖^4 / t · gW · poly → K/t.
-  --
-  -- Tail: indicator `1_{‖u‖≥ρ√t} ≤ ‖u‖²/(ρ²·t)` gains the extra 1/t factor.
-  --
-  -- Full proof ~600-800 LOC. Deferred — track in
-  -- notes/sharp_helpers_recipe.md.
-  sorry
+  obtain ⟨K, T₀, hT₀, h_bound⟩ :=
+    abs_integral_corrected_bracket_centered_bilinear_le V H Hinv a b hV hGauss
+  refine ⟨K, T₀, hT₀, ?_⟩
+  intro t ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hT₀ ht)
+  rw [integral_centered_bilinear_eq_corrected_bracket V H Hinv a b hV hGauss
+        ht_pos]
+  exact h_bound t ht
 
 /-- **Sharp helper 2/3 (cross term)**: `∫ dot c u · (φ((√t)⁻¹•u) -
 (√t)⁻¹·dot d u) · gW · exp(-s_t)` integrates to `O(1/(t·√t))`. The proof
