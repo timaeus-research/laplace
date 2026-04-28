@@ -44,23 +44,19 @@ we adopt two architectural decisions:
 * Stage 2 — rescaled decomposition lemmas
   (`abs_rescaledPerturbation_sub_scaledCubicJet_le`,
   `abs_rescaledObservable_quadratic_error_le`): complete.
-* Stage 3 — centered numerator bound: structurally complete with three
+* Stage 3 — centered numerator bound: structurally complete with two
   technical sorries:
   - `abs_integral_corrected_bracket_centered_bilinear_le` (helper 1's K/t
     bound; the Glocal pointwise bound
     `abs_gaussianWeight_mul_corrected_bracket_local_le` is now formalized,
     leaving the Gtail half + integral steps ~250-350 LOC);
   - `abs_integral_dot_mul_jet_remainder_sharp_le` (helpers 2/3, cross
-    terms, K/(t·√t));
-  - `abs_integral_remainder_remainder_sharp_le` (helper 4, quadratic
-    remainder, K/t² — local pointwise bounds
-    `abs_remainder_mul_remainder_local_le` and
-    `abs_remainder_mul_remainder_mul_rescaled_weight_local_le` are
-    formalized; remaining ~250-300 LOC covers Gtail (k = 4 indicator) +
-    integration + composition).
+    terms, K/(t·√t) — requires parity decomposition `qψ + r₃` plus
+    Glocal+Gtail with k = 3 indicator).
   The algebraic identity `h_decomp` inside
-  `rescaledNumerator_centered_pair_sharp` is fully formalized via
-  `pair_product_expansion` + integral linearity.
+  `rescaledNumerator_centered_pair_sharp` and sharp helper 4
+  (`abs_integral_remainder_remainder_sharp_le`, K/t² with k = 4
+  indicator) are fully formalized.
 * Stage 4 — `gibbsCov_first_order_rate_sharp`: complete given Stage 3.
 
 The helper-1 statement reduces (via `integral_centered_bilinear_eq_corrected_bracket`)
