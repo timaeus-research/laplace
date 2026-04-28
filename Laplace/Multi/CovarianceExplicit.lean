@@ -1857,11 +1857,55 @@ theorem gibbsExpectation_first_order_rate_explicit
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |2 * t * gibbsExpectation V t φ - trASig hφ.A Hinv
           + dot (Hinv a) (tensorContractMatrix hV.T Hinv)| ≤ K / t := by
-  -- Combine rescaledNumerator_first_order_centered_explicit with
-  -- rescaledPartition_ge_half_gaussianZ (per the GPT recipe in
-  -- strategy_lem_laplace_exp_proof.md). The reduction is straightforward
-  -- algebra; deferred for next round.
-  sorry
+  -- Reduce to centered-numerator helper + partition lower bound.
+  set μ : ℝ := expNumeratorCoeff V φ H Hinv a hV hφ with hμ_def
+  set c : ℝ := trASig hφ.A Hinv -
+      dot (Hinv a) (tensorContractMatrix hV.T Hinv) with hc_def
+  have hc_eq : c = 2 * μ := by
+    rw [hμ_def, hc_def, expNumeratorCoeff]; ring
+  obtain ⟨K₁, T₁, hT₁, hNum⟩ :=
+    rescaledNumerator_first_order_centered_explicit
+      (V := V) (φ := φ) (H := H) (Hinv := Hinv) (a := a) hV hφ hGauss
+  obtain ⟨T₂, hT₂, hPart⟩ :=
+    rescaledPartition_ge_half_gaussianZ V H Hinv
+      hV.toPotentialJetApprox.toPotentialApprox hGauss.toLaplaceCovHypotheses
+  have hZ_pos : 0 < gaussianZ H := hGauss.Z_pos
+  set K : ℝ := 4 * K₁ / gaussianZ H with hK_def
+  refine ⟨K, max T₁ T₂, le_max_of_le_left hT₁, ?_⟩
+  intro t ht
+  have ht_T1 : T₁ ≤ t := le_of_max_le_left ht
+  have ht_T2 : T₂ ≤ t := le_of_max_le_right ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hT₁ ht_T1)
+  have hP_ge : gaussianZ H / 2 ≤ rescaledPartition V t := hPart t ht_T2
+  have hP_pos : 0 < rescaledPartition V t := lt_of_lt_of_le (by linarith) hP_ge
+  -- Rewrite gibbsExpectation via the rescaled bridge.
+  rw [gibbsExpectation_eq_rescaledExpectation V φ ht_pos]
+  unfold rescaledExpectation
+  -- Goal: |2*t * (rescaledNumerator V t φ / rescaledPartition V t) - c| ≤ K/t
+  -- = |((2*t) / D_t) * (N_t - D_t * μ/t)| ≤ K/t.
+  -- Re-express the goal LHS in terms of `c`.
+  have hgoal_eq : 2 * t * (rescaledNumerator V t φ / rescaledPartition V t)
+        - trASig hφ.A Hinv + dot (Hinv a) (tensorContractMatrix hV.T Hinv)
+      = 2 * t * (rescaledNumerator V t φ / rescaledPartition V t) - c := by
+    rw [hc_def]; ring
+  rw [hgoal_eq]
+  have hAlg : 2 * t * (rescaledNumerator V t φ / rescaledPartition V t) - c
+      = ((2 * t) / rescaledPartition V t) *
+          (rescaledNumerator V t φ - rescaledPartition V t * (μ / t)) := by
+    rw [hc_eq]
+    field_simp
+  rw [hAlg]
+  rw [abs_mul, abs_div, abs_of_pos hP_pos, abs_of_pos (by positivity : (0 : ℝ) < 2 * t)]
+  -- Bound each factor.
+  have h2 : |rescaledNumerator V t φ - rescaledPartition V t * (μ / t)| ≤ K₁ / t ^ 2 :=
+    hNum t ht_T1
+  have h_zsim : (2 * t) / (gaussianZ H / 2) * (K₁ / t ^ 2) = K / t := by
+    rw [hK_def]; field_simp; ring
+  calc (2 * t) / rescaledPartition V t *
+        |rescaledNumerator V t φ - rescaledPartition V t * (μ / t)|
+      ≤ (2 * t) / (gaussianZ H / 2) * (K₁ / t ^ 2) := by
+        gcongr
+    _ = K / t := h_zsim
 
 /-- **Sharp covariance rate (explicit coefficient, `lem:laplace_cov2`)**:
 for $\phi$ vanishing to second order ($\phi(0) = 0$, $\nabla\phi(0) = 0$)
