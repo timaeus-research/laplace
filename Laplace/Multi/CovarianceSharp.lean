@@ -89,6 +89,23 @@ structure PotentialJetApprox
   `|V w - ((1/2) · quadForm H w + cV w)| ≤ jet_const · ‖w‖^4`. -/
   jet_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
     |V w - ((1 / 2 : ℝ) * quadForm H w + cV w)| ≤ jet_const * ‖w‖ ^ 4
+  /-- Higher-moment integrability for the *bare* Gaussian weight:
+  `‖u‖^k · gaussianWeight H u` is integrable for every `k : ℕ`.
+
+  The corrected-bracket sharp-track decomposition (helper 1) requires
+  `B · gW · c_t` integrability, which dominates by `polynomial(‖u‖) · gW`
+  with degrees up to 5–6. The existing `LaplaceCovHypotheses.int_uk_uj_gW`
+  only delivers quadratic Gaussian moments, so we include this stronger
+  integrability hypothesis here.
+
+  This is implied by *positive-definiteness* of `H` (which is in turn
+  implied by `LaplaceCovHypotheses.int_gW` plus injectivity, but the
+  implication is non-trivial to formalise). For now we take it as an
+  independent hypothesis on the sharp jet package; it is straightforward
+  to discharge in concrete examples (e.g., `H = id`) via
+  `integrable_norm_pow_mul_exp_neg_const_sq`. -/
+  int_norm_pow_gW : ∀ k : ℕ,
+    Integrable (fun u : ι → ℝ => ‖u‖ ^ k * gaussianWeight H u)
 
 /-- **Sharp local approximation package for an observable**.
 
