@@ -1856,6 +1856,59 @@ private noncomputable def expNumObsRem
     - expNumQuad φ a hφ t u
     - expNumCubic φ a hφ t u
 
+/-! ### Pointwise bounds on the scaled jets
+
+These pointwise bounds will feed into the Glocal+Gtail integration arguments
+for `expNumErr_i_bound` (i = 1..4). -/
+
+/-- Pointwise bound on the cubic observable jet. For `t > 0`,
+`|expNumCubic φ a hφ t u| ≤ (‖Φ‖ / 6) / (t · √t) · ‖u‖³`. -/
+private lemma abs_expNumCubic_le
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    |expNumCubic φ a hφ t u| ≤ ‖hφ.Φ‖ / 6 / (t * Real.sqrt t) * ‖u‖ ^ 3 := by
+  unfold expNumCubic
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_norm : ‖(fun _ : Fin 3 => u)‖ ≤ ‖u‖ := by
+    rw [pi_norm_le_iff_of_nonneg (norm_nonneg _)]
+    intro i; exact le_refl _
+  have h_Φ : |hφ.Φ (fun _ => u)| ≤ ‖hφ.Φ‖ * ‖u‖ ^ 3 := by
+    have := hφ.Φ.le_opNorm_mul_pow_of_le h_norm
+    simpa [Real.norm_eq_abs] using this
+  have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 3 := pow_nonneg (norm_nonneg _) _
+  have h_sqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  have h_factor_nn : 0 ≤ (Real.sqrt t)⁻¹ / t * (1 / 6) := by positivity
+  rw [show (Real.sqrt t)⁻¹ / t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+        = ((Real.sqrt t)⁻¹ / t * (1 / 6)) * hφ.Φ (fun _ => u) from by ring,
+      abs_mul, abs_of_nonneg h_factor_nn]
+  calc (Real.sqrt t)⁻¹ / t * (1 / 6) * |hφ.Φ (fun _ => u)|
+      ≤ (Real.sqrt t)⁻¹ / t * (1 / 6) * (‖hφ.Φ‖ * ‖u‖ ^ 3) := by
+        gcongr
+    _ = ‖hφ.Φ‖ / 6 / (t * Real.sqrt t) * ‖u‖ ^ 3 := by
+        field_simp
+
+/-- Pointwise bound on the linear observable jet. For `t > 0`,
+`|expNumLin a t u| ≤ (∑|aᵢ|) / √t · ‖u‖`. -/
+private lemma abs_expNumLin_le
+    (a : ι → ℝ)
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    |expNumLin a t u| ≤ (∑ i, |a i|) / Real.sqrt t * ‖u‖ := by
+  unfold expNumLin
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  rw [abs_mul]
+  rw [show |(Real.sqrt t)⁻¹| = (Real.sqrt t)⁻¹ from
+      abs_of_pos (by positivity)]
+  have h_dot : |dot a u| ≤ (∑ i, |a i|) * ‖u‖ := abs_dot_le_l1_mul_norm a u
+  have h_inv_nn : 0 ≤ (Real.sqrt t)⁻¹ := by positivity
+  calc (Real.sqrt t)⁻¹ * |dot a u|
+      ≤ (Real.sqrt t)⁻¹ * ((∑ i, |a i|) * ‖u‖) := by
+        gcongr
+    _ = (∑ i, |a i|) / Real.sqrt t * ‖u‖ := by
+        rw [div_eq_inv_mul]; ring
+
+-- (Bound on `expNumQuad` deferred — not needed for J₂.)
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
