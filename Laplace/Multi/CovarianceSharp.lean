@@ -5,10 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Laplace.Multi.Covariance
 
 /-!
-# Sharp-rate multivariate Laplace covariance asymptotic (in progress)
+# Sharp-rate multivariate Laplace covariance asymptotic
 
-This file aims at the **sharp** $O(t^{-2})$ rate for `lem:laplace_cov` of the
-Susceptibility Primer, building on the **weak** $O(t^{-3/2})$ rate already
+This file establishes the **sharp** $O(t^{-2})$ rate for `lem:laplace_cov` of
+the Susceptibility Primer (the multivariate `lem:laplace_cov2` companion to
+the 1D anharmonic case), building on the **weak** $O(t^{-3/2})$ rate already
 proved as `gibbsCov_first_order_rate_weak` in `Laplace.Multi.Covariance`.
 
 The sharp rate exploits *parity-resolved Taylor jets*:
@@ -38,37 +39,35 @@ we adopt two architectural decisions:
 
 ## Status
 
+All stages are complete. `gibbsCov_first_order_rate_sharp` is unconditional.
+
 * Stage 0 — jet hypothesis structures (`PotentialJetApprox`,
-  `ObservableJetApprox`): complete.
-* Stage 1 — scalar Taylor-1 bound `abs_exp_neg_sub_one_add_le`: complete.
+  `ObservableJetApprox`).
+* Stage 1 — scalar Taylor-1 bound `abs_exp_neg_sub_one_add_le`.
 * Stage 2 — rescaled decomposition lemmas
   (`abs_rescaledPerturbation_sub_scaledCubicJet_le`,
-  `abs_rescaledObservable_quadratic_error_le`): complete.
-* Stage 3 — centered numerator bound: structurally complete with two
-  small technical sorries (both inside helper 1E):
-  - `abs_integral_corrected_bracket_centered_bilinear_le` has its main
-    proof structure formalized (constants, Glocal+Gtail majorants,
-    pointwise bound, integrability). Two remaining sorries: the
-    integral computations `∫ Glocal = K_loc/t` and `∫ Gtail = K_tail/t`,
-    each ~50 LOC of integral_add + integral_const_mul composition.
-
-  All other Stage 3 components are fully formalized:
+  `abs_rescaledObservable_quadratic_error_le`).
+* Stage 3 — centered numerator bound, decomposed into:
   - The algebraic identity `h_decomp` inside
     `rescaledNumerator_centered_pair_sharp` (via `pair_product_expansion`
     + integral linearity).
-  - Sharp helper 4 `abs_integral_remainder_remainder_sharp_le` (K/t²,
-    Glocal+Gtail with k = 4 indicator).
+  - Sharp helper 1 `abs_integral_centered_bilinear_sharp_le` (K/t,
+    corrected-bracket reduction + Glocal+Gtail).
   - Sharp helpers 2/3 `abs_integral_dot_mul_jet_remainder_sharp_le`
     (K/(t·√t), parity decomposition `qψ + r₃` plus Glocal+Gtail with
     k = 3 indicator).
-* Stage 4 — `gibbsCov_first_order_rate_sharp`: complete given Stage 3.
+  - Sharp helper 4 `abs_integral_remainder_remainder_sharp_le` (K/t²,
+    Glocal+Gtail with k = 4 indicator).
+* Stage 4 — `gibbsCov_first_order_rate_sharp` (the sharp covariance
+  asymptotic), using Stage 3 for the centered numerator and the existing
+  weak lower bound `rescaledPartition_ge_half_gaussianZ` for the partition.
 
-The helper-1 statement reduces (via `integral_centered_bilinear_eq_corrected_bracket`)
+Helper 1 reduces (via `integral_centered_bilinear_eq_corrected_bracket`)
 to bounding `|∫ B · gW · (exp(-s_t) - 1 + c_t)|` by `K/t`, where
 `B := dot a · dot b - m`, `c_t := t · cV((√t)⁻¹•u)`. Both `∫ B · gW = 0`
-(centering identity) and `∫ B · gW · c_t = 0` (parity) are formalized.
-The remaining work is the integrand-level Glocal+Gtail bound on the
-corrected bracket itself.
+(centering identity) and `∫ B · gW · c_t = 0` (parity) are exact; the
+corrected bracket is then dominated pointwise by Glocal + Gtail majorants
+and integrated piecewise via `integrable_norm_pow_mul_exp_neg_const_sq`.
 
 -/
 
