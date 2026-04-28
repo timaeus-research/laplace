@@ -2105,7 +2105,15 @@ private lemma expNumErr₁_bound
 
 /-- **J₂ bound**: cubic observable jet × `(e^{-s_t} - 1)` is `O(t⁻²)`.
 `P_t = O(t⁻³ᐟ²·‖u‖³)` and `e^{-s_t}-1 = O(t⁻¹ᐟ²·‖u‖³)` directly,
-so the product is `O(t⁻²·‖u‖⁶)` after multiplying. -/
+so the product is `O(t⁻²·‖u‖⁶)` after multiplying.
+
+Proof: Glocal+Gtail decomposition. Pointwise local bound
+(`abs_expNumCubic_mul_gW_mul_exp_sub_one_local_le`) gives
+`(‖Φ‖·Cs/6/t²) · ‖u‖⁶ · exp(-(c/4)·‖u‖²)` on `‖u‖ ≤ δ·√t`.
+Pointwise tail bound has an extra `exp(-(c·δ²/4)·t)` factor, and
+`exp(-βt)/(t·√t) ≤ 1/t²` for `t ≥ 4/β²` via `exp_neg_const_mul_le_inv_sqrt`.
+Both pieces dominated by integrable Gaussian-poly envelopes
+(`integrable_norm_pow_mul_exp_neg_const_sq`). -/
 private lemma expNumErr₂_bound
     (V φ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
@@ -2116,10 +2124,224 @@ private lemma expNumErr₂_bound
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |expNumErr₂ V φ a H hφ t| ≤ K / t ^ 2 := by
-  -- Reuse the Stage-1 `abs_exp_neg_sub_one_add_le` and Stage-2
-  -- `abs_rescaledPerturbation_sub_scaledCubicJet_le` bounds.
-  -- Then Glocal+Gtail. ~150 LOC; deferred.
-  sorry
+  -- Extract constants from hV (PotentialTensorApprox extends PotentialJetApprox
+  -- extends PotentialApprox).
+  set c : ℝ := hV.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.coercive_const_pos
+  have h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w := hV.coercive_bound
+  set R : ℝ := hV.local_radius with hR_def
+  have hR_pos : 0 < R := hV.local_radius_pos
+  set Cs : ℝ := hV.local_const with hCs_def
+  have hCs_nn : 0 ≤ Cs := hV.local_const_nonneg
+  have h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ Cs * ‖w‖ ^ 3 := hV.local_bound
+  -- Choose δ ≤ min(R, c/(4·(Cs+1))) to satisfy Cs·δ ≤ c/4.
+  have hCs1_pos : (0 : ℝ) < Cs + 1 := by linarith
+  set δ : ℝ := min R (c / (4 * (Cs + 1))) with hδ_def
+  have hδ_pos : 0 < δ :=
+    lt_min hR_pos (by positivity)
+  have hδ_le_R : δ ≤ R := min_le_left _ _
+  have hδ_const : Cs * δ ≤ c / 4 := by
+    have h_le : δ ≤ c / (4 * (Cs + 1)) := min_le_right _ _
+    calc Cs * δ ≤ Cs * (c / (4 * (Cs + 1))) :=
+          mul_le_mul_of_nonneg_left h_le hCs_nn
+      _ = (Cs / (Cs + 1)) * (c / 4) := by field_simp
+      _ ≤ 1 * (c / 4) := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ c/4)
+          rw [div_le_one hCs1_pos]; linarith
+      _ = c / 4 := one_mul _
+  set β : ℝ := c * δ ^ 2 / 4 with hβ_def
+  have hβ_pos : 0 < β := by rw [hβ_def]; positivity
+  -- Gaussian moments (t-independent).
+  set M_loc : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 6 *
+    Real.exp (-((c / 4) * ‖u‖ ^ 2)) with hM_loc_def
+  set M_tail : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 3 *
+    Real.exp (-((c / 4) * ‖u‖ ^ 2)) with hM_tail_def
+  have h_c_quart_pos : 0 < c / 4 := by linarith
+  have hM_loc_int : Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ 6 * Real.exp (-((c / 4) * ‖u‖ ^ 2))) :=
+    integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) h_c_quart_pos 6
+  have hM_tail_int : Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ 3 * Real.exp (-((c / 4) * ‖u‖ ^ 2))) :=
+    integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) h_c_quart_pos 3
+  have hM_loc_nn : 0 ≤ M_loc := by
+    rw [hM_loc_def]
+    apply MeasureTheory.integral_nonneg
+    intro u; positivity
+  have hM_tail_nn : 0 ≤ M_tail := by
+    rw [hM_tail_def]
+    apply MeasureTheory.integral_nonneg
+    intro u; positivity
+  -- K and T₀.
+  set K : ℝ := ‖hφ.Φ‖ * Cs / 6 * M_loc + ‖hφ.Φ‖ / 3 * M_tail with hK_def
+  refine ⟨K, max 1 (4 / β ^ 2), le_max_left _ _, ?_⟩
+  intro t ht
+  have ht1 : 1 ≤ t := le_of_max_le_left ht
+  have htβ : 4 / β ^ 2 ≤ t := le_of_max_le_right ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have ht_sqrt_pos : 0 < t * Real.sqrt t := mul_pos ht_pos hsqrt_pos
+  have ht_sq_pos : 0 < t ^ 2 := by positivity
+  have h_tail_decay : Real.exp (-(β * t)) ≤ 1 / t :=
+    exp_neg_const_mul_le_inv hβ_pos htβ
+  -- Define majorants.
+  set Glocal : (ι → ℝ) → ℝ := fun u =>
+    (‖hφ.Φ‖ * Cs / 6 / t ^ 2) * ‖u‖ ^ 6 *
+      Real.exp (-((c / 4) * ‖u‖ ^ 2)) with hGlocal_def
+  set Gtail : (ι → ℝ) → ℝ := fun u =>
+    (‖hφ.Φ‖ / 3 / (t * Real.sqrt t)) * ‖u‖ ^ 3 *
+      Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+      Real.exp (-(β * t)) with hGtail_def
+  have hGlocal_nn : ∀ u, 0 ≤ Glocal u := by
+    intro u; rw [hGlocal_def]; positivity
+  have hGtail_nn : ∀ u, 0 ≤ Gtail u := by
+    intro u; rw [hGtail_def]; positivity
+  -- Pointwise: |J₂ integrand u| ≤ Glocal u + Gtail u.
+  have h_pointwise : ∀ u : ι → ℝ,
+      ‖expNumCubic φ a hφ t u
+        * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+        * gaussianWeight H u‖ ≤ Glocal u + Gtail u := by
+    intro u
+    rw [Real.norm_eq_abs]
+    by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
+    · -- Local: bound by Glocal, Gtail nonneg.
+      have h_loc :
+          |expNumCubic φ a hφ t u * gaussianWeight H u
+              * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+            ≤ (‖hφ.Φ‖ * Cs / 6 / t ^ 2) * ‖u‖ ^ 6 *
+                Real.exp (-((c / 4) * ‖u‖ ^ 2)) :=
+        abs_expNumCubic_mul_gW_mul_exp_sub_one_local_le
+          (V := V) (φ := φ) (a := a) (H := H) hφ
+          hc_pos hR_pos hCs_nn h_coer h_local
+          hδ_pos hδ_le_R hδ_const ht_pos u hu
+      have h_eq : expNumCubic φ a hφ t u
+            * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+            * gaussianWeight H u
+          = expNumCubic φ a hφ t u * gaussianWeight H u
+            * (Real.exp (-(rescaledPerturbation V H t u)) - 1) := by ring
+      rw [h_eq]
+      calc |expNumCubic φ a hφ t u * gaussianWeight H u
+              * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+          ≤ (‖hφ.Φ‖ * Cs / 6 / t ^ 2) * ‖u‖ ^ 6 *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)) := h_loc
+        _ = Glocal u := by rw [hGlocal_def]
+        _ ≤ Glocal u + Gtail u := by linarith [hGtail_nn u]
+    · -- Tail: bound by Gtail, Glocal nonneg.
+      push_neg at hu
+      have h_tail :
+          |expNumCubic φ a hφ t u * gaussianWeight H u
+              * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+            ≤ (‖hφ.Φ‖ / 3 / (t * Real.sqrt t)) * ‖u‖ ^ 3 *
+                Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+                Real.exp (-((c * δ ^ 2 / 4) * t)) :=
+        abs_expNumCubic_mul_gW_mul_exp_sub_one_tail_le
+          (V := V) (φ := φ) (a := a) (H := H) hφ
+          hc_pos hR_pos hCs_nn h_coer h_local
+          hδ_pos ht_pos u hu
+      have h_eq : expNumCubic φ a hφ t u
+            * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+            * gaussianWeight H u
+          = expNumCubic φ a hφ t u * gaussianWeight H u
+            * (Real.exp (-(rescaledPerturbation V H t u)) - 1) := by ring
+      rw [h_eq]
+      calc |expNumCubic φ a hφ t u * gaussianWeight H u
+              * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+          ≤ (‖hφ.Φ‖ / 3 / (t * Real.sqrt t)) * ‖u‖ ^ 3 *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+              Real.exp (-((c * δ ^ 2 / 4) * t)) := h_tail
+        _ = Gtail u := by rw [hGtail_def, hβ_def]
+        _ ≤ Glocal u + Gtail u := by linarith [hGlocal_nn u]
+  -- Integrability of Glocal + Gtail.
+  have hGlocal_int : Integrable Glocal := by
+    rw [hGlocal_def]
+    have := hM_loc_int.const_mul (‖hφ.Φ‖ * Cs / 6 / t ^ 2)
+    convert this using 1
+    funext u; ring
+  have hGtail_int : Integrable Gtail := by
+    rw [hGtail_def]
+    have := hM_tail_int.const_mul
+      ((‖hφ.Φ‖ / 3 / (t * Real.sqrt t)) * Real.exp (-(β * t)))
+    convert this using 1
+    funext u; ring
+  have hSum_int : Integrable (fun u => Glocal u + Gtail u) :=
+    hGlocal_int.add hGtail_int
+  -- Conclude.
+  have h_main :=
+    norm_integral_le_of_norm_le hSum_int (Filter.Eventually.of_forall h_pointwise)
+  -- ∫ Glocal = ‖Φ‖·Cs/6/t² · M_loc.
+  have h_intGlocal : ∫ u : ι → ℝ, Glocal u =
+      ‖hφ.Φ‖ * Cs / 6 / t ^ 2 * M_loc := by
+    rw [hGlocal_def, hM_loc_def]
+    rw [show (fun u : ι → ℝ => ‖hφ.Φ‖ * Cs / 6 / t ^ 2 *
+              ‖u‖ ^ 6 * Real.exp (-(c / 4 * ‖u‖ ^ 2)))
+          = (fun u => (‖hφ.Φ‖ * Cs / 6 / t ^ 2) *
+              (‖u‖ ^ 6 * Real.exp (-(c / 4 * ‖u‖ ^ 2)))) from by
+        funext u; ring]
+    exact integral_const_mul _ _
+  have h_intGtail : ∫ u : ι → ℝ, Gtail u =
+      ‖hφ.Φ‖ / 3 / (t * Real.sqrt t) * Real.exp (-(β * t)) * M_tail := by
+    rw [hGtail_def, hM_tail_def]
+    rw [show (fun u : ι → ℝ => ‖hφ.Φ‖ / 3 / (t * Real.sqrt t) *
+              ‖u‖ ^ 3 * Real.exp (-(c / 4 * ‖u‖ ^ 2)) *
+              Real.exp (-(β * t)))
+          = (fun u => (‖hφ.Φ‖ / 3 / (t * Real.sqrt t) *
+              Real.exp (-(β * t))) *
+              (‖u‖ ^ 3 * Real.exp (-(c / 4 * ‖u‖ ^ 2)))) from by
+        funext u; ring]
+    rw [integral_const_mul]
+  -- Bound the tail piece by 1/t².
+  have h_tail_bound : ‖hφ.Φ‖ / 3 / (t * Real.sqrt t) * Real.exp (-(β * t)) * M_tail
+      ≤ ‖hφ.Φ‖ / 3 * M_tail / t ^ 2 := by
+    have h1 : Real.exp (-(β * t)) ≤ 1 / t := h_tail_decay
+    have h2 : (1 : ℝ) ≤ Real.sqrt t := by
+      rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
+      exact Real.sqrt_le_sqrt ht1
+    have h3 : 1 / (t * Real.sqrt t) ≤ 1 / t := by
+      apply one_div_le_one_div_of_le ht_pos
+      calc t = t * 1 := (mul_one t).symm
+        _ ≤ t * Real.sqrt t := mul_le_mul_of_nonneg_left h2 ht_pos.le
+    have hΦ_nn : 0 ≤ ‖hφ.Φ‖ / 3 := by positivity
+    have h4 : ‖hφ.Φ‖ / 3 / (t * Real.sqrt t) ≤ ‖hφ.Φ‖ / 3 / t := by
+      rw [div_eq_mul_inv (‖hφ.Φ‖ / 3) (t * Real.sqrt t),
+          div_eq_mul_inv (‖hφ.Φ‖ / 3) t]
+      apply mul_le_mul_of_nonneg_left _ hΦ_nn
+      rw [show (t * Real.sqrt t)⁻¹ = 1 / (t * Real.sqrt t) from by rw [one_div],
+          show t⁻¹ = 1 / t from by rw [one_div]]
+      exact h3
+    have h_M_tail_nn : 0 ≤ M_tail := hM_tail_nn
+    have hexp_nn : 0 ≤ Real.exp (-(β * t)) := (Real.exp_pos _).le
+    calc ‖hφ.Φ‖ / 3 / (t * Real.sqrt t) * Real.exp (-(β * t)) * M_tail
+        ≤ ‖hφ.Φ‖ / 3 / t * Real.exp (-(β * t)) * M_tail := by
+          apply mul_le_mul_of_nonneg_right _ h_M_tail_nn
+          exact mul_le_mul_of_nonneg_right h4 hexp_nn
+      _ ≤ ‖hφ.Φ‖ / 3 / t * (1 / t) * M_tail := by
+          apply mul_le_mul_of_nonneg_right _ h_M_tail_nn
+          apply mul_le_mul_of_nonneg_left h1
+          exact div_nonneg hΦ_nn ht_pos.le
+      _ = ‖hφ.Φ‖ / 3 * M_tail / t ^ 2 := by
+          field_simp
+  -- Combine.
+  have h_intSum :
+      ∫ u : ι → ℝ, Glocal u + Gtail u
+      = ‖hφ.Φ‖ * Cs / 6 / t ^ 2 * M_loc
+        + ‖hφ.Φ‖ / 3 / (t * Real.sqrt t) * Real.exp (-(β * t)) * M_tail := by
+    rw [integral_add hGlocal_int hGtail_int, h_intGlocal, h_intGtail]
+  have h_intSum_nn : 0 ≤ ∫ u : ι → ℝ, Glocal u + Gtail u := by
+    apply MeasureTheory.integral_nonneg
+    intro u
+    show (0 : ℝ) ≤ Glocal u + Gtail u
+    linarith [hGlocal_nn u, hGtail_nn u]
+  calc |expNumErr₂ V φ a H hφ t|
+      = ‖∫ u : ι → ℝ, expNumCubic φ a hφ t u
+          * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+          * gaussianWeight H u‖ := by
+        rw [Real.norm_eq_abs]; rfl
+    _ ≤ ∫ u : ι → ℝ, Glocal u + Gtail u := h_main
+    _ = ‖hφ.Φ‖ * Cs / 6 / t ^ 2 * M_loc
+        + ‖hφ.Φ‖ / 3 / (t * Real.sqrt t) * Real.exp (-(β * t)) * M_tail := h_intSum
+    _ ≤ ‖hφ.Φ‖ * Cs / 6 / t ^ 2 * M_loc
+        + ‖hφ.Φ‖ / 3 * M_tail / t ^ 2 := by linarith [h_tail_bound]
+    _ = K / t ^ 2 := by rw [hK_def]; ring
 
 /-- **J₃ bound**: linear observable jet × `(e^{-s_t} - 1 + C_t)` is `O(t⁻²)`.
 
