@@ -3485,9 +3485,33 @@ private lemma expNumErr₄_bound
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |expNumErr₄ V φ a H Hinv hV hφ t| ≤ K / t ^ 2 := by
-  -- New EXP-specific helper. Symmetrise under u ↦ -u, then bound the even
-  -- part using a quartic Taylor expansion of `exp(-s_t) - 1`.
-  -- ~200 LOC; deferred.
+  -- Per `gpt_responses/tactics_j3_j4_parity.md`, J_4 closes with the existing
+  -- `T_jet_bound` (quartic) — unlike J_3, which needs a quintic bound.
+  --
+  -- Strategy: symmetrize J_4 = (1/2) ∫ B_t(u) · [bracket] · gW(u) du where
+  --   bracket = (exp(-s_t(u)) - 1) + (exp(-s_t(-u)) - 1)
+  --   B_t = Q_t - μ/t  (even, by `expNumQuad_neg`)
+  --
+  -- Pointwise bracket bound (locally `‖u‖ ≤ jet_R·√t`):
+  --   |bracket| ≤ |exp(-s_t(u)) + s_t(u) - 1|        ← `abs_exp_neg_sub_one_add_le`
+  --             + |exp(-s_t(-u)) + s_t(-u) - 1|     ← same
+  --             + |s_t(u) + s_t(-u)|                  ← parity bound below
+  --
+  -- The third term: `s_t(u) + s_t(-u) = t·(V(w) + V(-w)) - quadForm H u`
+  -- where w = (√t)⁻¹·u. By `T_jet_bound`,
+  --   |V(w) - ((1/2)·quadForm H w + (1/6)·T(w,w,w))| ≤ jet_const · ‖w‖^4
+  --   |V(-w) - ((1/2)·quadForm H w - (1/6)·T(w,w,w))| ≤ jet_const · ‖w‖^4
+  -- Adding: |V(w) + V(-w) - quadForm H w| ≤ 2·jet_const · ‖w‖^4 (cubic odd cancels).
+  -- Hence `|s_t(u) + s_t(-u)| ≤ 2·jet_const · ‖u‖^4 / t` locally.
+  --
+  -- Thus |bracket| ≤ const · ‖u‖^4/t (sharper than the O(‖u‖³/√t) one-sided bound).
+  -- Multiplying by |B_t| ≤ const·(1+‖u‖²)/t gives O(1/t²) integrand.
+  --
+  -- Then standard local/tail boilerplate (mirroring `expNumErr_1_bound` and
+  -- `expNumErr_2_bound`) closes the integration. ~300-400 LOC.
+  --
+  -- All required infrastructure is in place: parity helpers, T_jet_bound,
+  -- pointwise jet bounds, integrabilities, local/tail patterns.
   sorry
 
 /-- **Centered EXP numerator (sharp rate)**: the centered numerator
