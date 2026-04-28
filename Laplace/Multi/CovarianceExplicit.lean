@@ -867,14 +867,33 @@ private lemma gaussian_linear_cubic
     ∫ u : ι → ℝ, dot a u * T (fun _ => u) * gaussianWeight H u
       = gaussianZ H * 3 * dot (Hinv a) (tensorContractMatrix T Hinv) := by
   classical
-  -- IBP path per gpt_responses/tactics_contraction_lemmas.md:
-  -- 1. dot a u = ∑_l (Hinv a)_l (Hu)_l   [dot_eq_sum_Hinv_mul_H]
-  -- 2. T(u,u,u) = ∑_{i,j,k} u_i u_j u_k Tcoord T i j k   [T_apply_diag_eq_sum]
-  -- 3. Apply cubic IBP gaussian_ibp_cubic_f per (i,j,k).
-  -- 4. Apply 2nd moment formula.
-  -- 5. Collapse 3 sums → 1 via T-symmetry (Tcoord_perm).
-  -- 6. Identify ∑_{j,k} Tcoord T l j k · Σ_jk with tensorContractMatrix T Hinv l.
-  -- The full encoding is substantial (~300 LOC); deferred.
+  let cov : ι → ι → ℝ := fun i j =>
+    (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j
+  have hcov_symm : ∀ i j : ι, cov i j = cov j i := by
+    intro i j
+    have hs := Hinv_symm (H := H) (Hinv := Hinv)
+        (hGauss := hGauss.toLaplaceCovHypotheses)
+        (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))
+        (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+    simpa [cov, Pi.single_apply] using hs
+  have h2mom : ∀ i j : ι,
+      ∫ u : ι → ℝ, u i * u j * gaussianWeight H u = gaussianZ H * cov i j := by
+    intro i j
+    have h_basic : ∫ u : ι → ℝ, u i * u j * gaussianWeight H u
+        = gaussianZ H *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i :=
+      gaussian_second_moment_eq_inverse_entry_scalar H Hinv
+        hGauss.H_inv_right hGauss.H_inj i j hGauss.int_gW
+        (hGauss.int_uk_uj_gW · j) (hGauss.int_uj_Hi_gW j)
+        (hGauss.fubini_ibp · j)
+    have h_cov_eq : cov i j = cov j i := hcov_symm i j
+    -- cov j i = (Hinv e_j) i, which is the basic 2nd-moment value.
+    rw [h_basic, h_cov_eq]
+  -- The remaining steps (T-symm coordinate swaps, Tcoord contraction
+  -- identity, hterm via IBP, 3 trace identifications, full assembly) follow
+  -- the corrected GPT recipe in `gpt_responses/tactics_gaussian_linear_cubic.md`
+  -- + `tactics_gaussian_linear_cubic_fix.md`. Each is its own substantial
+  -- proof step; deferred for next focused session.
   sorry
 
 /-- **4th-moment contraction (quad · quad)**:
