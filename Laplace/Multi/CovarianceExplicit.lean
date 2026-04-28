@@ -956,7 +956,83 @@ private lemma gaussian_linear_cubic
     refine Finset.sum_congr rfl ?_
     intro k _
     ring
-  -- Remaining: hcontract, hterm, 3 trace identifications, assembly. Deferred.
+  -- Hinv e_j basis decomposition (used in hcontract).
+  have hHinv_basis : ∀ j : ι, Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) =
+      ∑ k, cov j k • (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) := by
+    intro j
+    funext m
+    simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
+    -- LHS: (Hinv e_j) m = cov j m. RHS: ∑ k, cov j k * (Pi.single k 1) m = cov j m (single survives).
+    rw [show (cov j) = (fun k => cov j k) from rfl]
+    rw [Finset.sum_eq_single m]
+    · simp [cov, Pi.single_apply]
+    · intros k _ hk
+      have : Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ) m = 0 := by
+        simp [Pi.single_apply, hk]
+      rw [this]; ring
+    · intro h; exact absurd (Finset.mem_univ m) h
+  -- hcontract: ∑_{j,k} Tcoord T l j k · cov j k = tensorContractMatrix T Hinv l.
+  -- Expand the slot-2 Hinv via multilinearity.
+  have hcontract : ∀ l : ι,
+      (∑ j, ∑ k, Tcoord T l j k * cov j k) = tensorContractMatrix T Hinv l := by
+    intro l
+    unfold tensorContractMatrix
+    refine Finset.sum_congr rfl ?_
+    intro j _
+    -- Slot-2 expansion: T (e_l, e_j, Hinv e_j) = T (e_l, e_j, ∑_k cov j k • e_k)
+    --                                          = ∑_k cov j k • T (e_l, e_j, e_k)
+    --                                          = ∑_k cov j k * Tcoord T l j k.
+    -- Symmetrically equal to ∑_k Tcoord T l j k * cov j k.
+    have h_slot2 :
+        T (fun k : Fin 3 => match k with
+          | 0 => Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ)
+          | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+          | 2 => Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) =
+        ∑ k, cov j k * Tcoord T l j k := by
+      -- Set up `m` matching the slot configuration with slot 2 = Hinv e_j.
+      set m : Fin 3 → (ι → ℝ) := fun n => match n with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ)
+        | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 2 => Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) with hm_def
+      have hm2 : m 2 = Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) := rfl
+      -- Express T m as T (Function.update m 2 (∑ k, cov j k • e_k)).
+      have h_eq : T m = T (Function.update m (2 : Fin 3)
+            (∑ k, cov j k • (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)))) := by
+        congr 1
+        funext n
+        by_cases h : n = 2
+        · subst h
+          rw [Function.update_self]
+          exact hHinv_basis j
+        · simp [Function.update, h]
+      rw [h_eq]
+      -- Apply map_update_sum at the multilinear-map level. Need to bridge T vs T.toMultilinearMap.
+      change T.toMultilinearMap (Function.update m (2 : Fin 3)
+          (∑ k, cov j k • (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)))) = _
+      rw [T.toMultilinearMap.map_update_sum
+          (t := Finset.univ) (i := (2 : Fin 3))
+          (g := fun k : ι => cov j k • (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) (m := m)]
+      refine Finset.sum_congr rfl ?_
+      intro k _
+      rw [T.toMultilinearMap.map_update_smul (m := m) (i := (2 : Fin 3))
+          (c := cov j k) (x := Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))]
+      -- Goal: cov j k • T (Function.update m 2 (Pi.single k 1)) = cov j k * Tcoord T l j k.
+      have h_update_eq :
+          (Function.update m (2 : Fin 3)
+              (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) =
+          (fun n : Fin 3 => match n with
+            | 0 => Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ)
+            | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+            | 2 => Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) := by
+        funext n
+        fin_cases n <;> simp [Function.update, hm_def]
+      rw [h_update_eq]
+      show cov j k • Tcoord T l j k = cov j k * Tcoord T l j k
+      simp [smul_eq_mul]
+    rw [h_slot2]
+    refine Finset.sum_congr rfl ?_
+    intro k _; ring
+  -- Remaining: hterm, 3 trace identifications, assembly. Deferred.
   sorry
 
 /-- **4th-moment contraction (quad · quad)**:
