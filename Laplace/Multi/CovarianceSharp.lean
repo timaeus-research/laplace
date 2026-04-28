@@ -1074,6 +1074,95 @@ private lemma abs_gaussianWeight_mul_corrected_bracket_local_le
           Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := by
           field_simp
 
+/-- **Global polynomial bound for the rescaled observable remainder**.
+
+Given the polynomial-growth hypothesis `|φ(w)| ≤ K · (1 + ‖w‖^p)` and the
+linear coefficient `a` (with l1-sum `A := ∑ |a i|`), for `t ≥ 1`,
+
+  `|φ((√t)⁻¹•u) - (√t)⁻¹·dot a u| ≤ (2K + 2A) · (1 + ‖u‖^(p+1))`
+
+globally in `u`. This is the workhorse global bound used by helpers 2/3
+and helper 4 in the tail integration. -/
+private lemma abs_rescaledObservable_global_le
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    {K : ℝ} {p : ℕ} (hK_nn : 0 ≤ K)
+    (hpoly : ∀ w : ι → ℝ, |φ w| ≤ K * (1 + ‖w‖ ^ p))
+    {t : ℝ} (ht : 1 ≤ t) (u : ι → ℝ) :
+    |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
+      ≤ (2 * K + 2 * (∑ i, |a i|)) * (1 + ‖u‖ ^ (p + 1)) := by
+  set A : ℝ := ∑ i, |a i| with hA_def
+  have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  have hsqrt_ge_one : 1 ≤ Real.sqrt t := Real.one_le_sqrt.mpr ht
+  have hinv_sqrt_le_one : (Real.sqrt t)⁻¹ ≤ 1 := by
+    rw [inv_le_one_iff₀]; right; exact hsqrt_ge_one
+  have h_phi_le : |φ ((Real.sqrt t)⁻¹ • u)|
+      ≤ K * (1 + ‖(Real.sqrt t)⁻¹ • u‖ ^ p) := hpoly _
+  have h_norm_sm : ‖(Real.sqrt t)⁻¹ • u‖ ≤ ‖u‖ := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos]
+    exact mul_le_of_le_one_left (norm_nonneg _) hinv_sqrt_le_one
+  have h_norm_sm_p : ‖(Real.sqrt t)⁻¹ • u‖ ^ p ≤ ‖u‖ ^ p :=
+    pow_le_pow_left₀ (norm_nonneg _) h_norm_sm p
+  have h_phi_le' : |φ ((Real.sqrt t)⁻¹ • u)| ≤ K + K * ‖u‖ ^ p := by
+    calc |φ ((Real.sqrt t)⁻¹ • u)|
+        ≤ K * (1 + ‖(Real.sqrt t)⁻¹ • u‖ ^ p) := h_phi_le
+      _ ≤ K * (1 + ‖u‖ ^ p) :=
+          mul_le_mul_of_nonneg_left (by linarith) hK_nn
+      _ = K + K * ‖u‖ ^ p := by ring
+  have h_dot_a_le : |dot a u| ≤ A * ‖u‖ := by
+    rw [hA_def]; exact abs_dot_le_l1_mul_norm a u
+  have h_lin_le : (Real.sqrt t)⁻¹ * |dot a u| ≤ A * ‖u‖ :=
+    calc (Real.sqrt t)⁻¹ * |dot a u|
+        ≤ 1 * (A * ‖u‖) :=
+          mul_le_mul hinv_sqrt_le_one h_dot_a_le (abs_nonneg _) zero_le_one
+      _ = A * ‖u‖ := by ring
+  have h_step1 : |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
+      ≤ K + K * ‖u‖ ^ p + A * ‖u‖ := by
+    calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
+        ≤ |φ ((Real.sqrt t)⁻¹ • u)| + |(Real.sqrt t)⁻¹ * dot a u| :=
+            abs_sub _ _
+      _ = |φ ((Real.sqrt t)⁻¹ • u)| + (Real.sqrt t)⁻¹ * |dot a u| := by
+          rw [abs_mul, abs_of_pos hsqrt_inv_pos]
+      _ ≤ (K + K * ‖u‖ ^ p) + A * ‖u‖ := add_le_add h_phi_le' h_lin_le
+      _ = K + K * ‖u‖ ^ p + A * ‖u‖ := by ring
+  have h_pow_le : ‖u‖ ^ p ≤ 1 + ‖u‖ ^ (p + 1) := by
+    by_cases hu : ‖u‖ ≤ 1
+    · have h_pow_le_one : ‖u‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
+      have h_pow_pos : 0 ≤ ‖u‖ ^ (p + 1) := pow_nonneg (norm_nonneg _) _
+      linarith
+    · push_neg at hu
+      have h_le : ‖u‖ ^ p ≤ ‖u‖ ^ (p + 1) := by
+        rw [pow_succ]
+        nlinarith [pow_nonneg (norm_nonneg u) p]
+      linarith [pow_nonneg (norm_nonneg u) (p+1)]
+  have h_norm_le_pow : ‖u‖ ≤ 1 + ‖u‖ ^ (p + 1) := by
+    by_cases h1 : ‖u‖ ≤ 1
+    · linarith [pow_nonneg (norm_nonneg u) (p+1)]
+    · push_neg at h1
+      have h_one_le : (1 : ℕ) ≤ p + 1 := Nat.le_add_left 1 p
+      have h_pow_le' : ‖u‖ ^ 1 ≤ ‖u‖ ^ (p + 1) :=
+        pow_le_pow_right₀ h1.le h_one_le
+      rw [pow_one] at h_pow_le'
+      linarith [pow_nonneg (norm_nonneg u) (p+1)]
+  calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
+      ≤ K + K * ‖u‖ ^ p + A * ‖u‖ := h_step1
+    _ ≤ K + K * (1 + ‖u‖ ^ (p + 1)) + A * (1 + ‖u‖ ^ (p + 1)) := by
+        have h1 : K * ‖u‖ ^ p ≤ K * (1 + ‖u‖ ^ (p+1)) :=
+          mul_le_mul_of_nonneg_left h_pow_le hK_nn
+        have h2 : A * ‖u‖ ≤ A * (1 + ‖u‖ ^ (p+1)) :=
+          mul_le_mul_of_nonneg_left h_norm_le_pow hA_nn
+        linarith
+    _ = (K + K + A) + (K + A) * ‖u‖ ^ (p + 1) := by ring
+    _ ≤ (2 * K + 2 * A) + (2 * K + 2 * A) * ‖u‖ ^ (p + 1) := by
+        have h1 : K + K + A ≤ 2 * K + 2 * A := by linarith
+        have h2 : (K + A) * ‖u‖ ^ (p+1) ≤ (2 * K + 2 * A) * ‖u‖ ^ (p+1) := by
+          apply mul_le_mul_of_nonneg_right _ (by positivity)
+          linarith
+        linarith
+    _ = (2 * K + 2 * A) * (1 + ‖u‖ ^ (p + 1)) := by ring
+
 /-- **Local pointwise bound on the product of two observable remainders**.
 
 Under quadratic local Taylor remainders for `φ` and `ψ`,
