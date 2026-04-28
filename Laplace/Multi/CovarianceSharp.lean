@@ -151,6 +151,43 @@ but from the local cubic remainder bound at `w = 0` together with `φ 0 = 0`:
 
 end JetHypotheses
 
+section ScalarBounds
+
+/-- **Sharp Taylor-1 bound for `Real.exp`**:
+`|exp(-r) - (1 - r)| ≤ r^2 · exp |r|`.
+
+The weak counterpart is `abs_exp_neg_sub_one_le` in `RescaledIntegrals`,
+which gives `|exp(-r) - 1| ≤ |r| · exp |r|`. Subtracting one more Taylor term
+(`-r`) tightens the rate from linear to quadratic in `r`, which is what the
+sharp covariance proof needs to extract the `1/√t · ∫ ⟨a,u⟩⟨b,u⟩ · cV · gW = 0`
+parity cancellation cleanly.
+
+The constant is `1` (not the optimal `1/2`); per the GPT-5.5 Pro consult, the
+half-factor is not needed for the bound-only sharp rate. -/
+lemma abs_exp_neg_sub_one_add_le (r : ℝ) :
+    |Real.exp (-r) - (1 - r)| ≤ r ^ 2 * Real.exp |r| := by
+  -- Bridge via `Complex.norm_exp_sub_sum_le_norm_mul_exp` at `n = 2`.
+  have h := Complex.norm_exp_sub_sum_le_norm_mul_exp (-r : ℂ) 2
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, pow_zero,
+    pow_one, Nat.factorial_zero, Nat.factorial_one, Nat.cast_one,
+    div_one, zero_add] at h
+  have hL :
+      ‖Complex.exp (-↑r : ℂ) - (1 + -↑r)‖ = |Real.exp (-r) - (1 - r)| := by
+    rw [show (1 + -↑r : ℂ) = ↑(1 - r) from by push_cast; ring]
+    rw [show (-↑r : ℂ) = ↑(-r) from by push_cast; ring]
+    rw [← Complex.ofReal_exp]
+    rw [show (↑(Real.exp (-r)) : ℂ) - ↑(1 - r)
+         = ↑(Real.exp (-r) - (1 - r)) from by push_cast; ring]
+    rw [Complex.norm_real, Real.norm_eq_abs]
+  have hR : ‖(-↑r : ℂ)‖ = |r| := by
+    rw [show (-↑r : ℂ) = ↑(-r) from by push_cast; ring]
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_neg]
+  rw [hL, hR] at h
+  rw [show (|r| : ℝ) ^ 2 = r ^ 2 from sq_abs r] at h
+  exact h
+
+end ScalarBounds
+
 section MainTheorem
 
 /-- **`lem:laplace_cov` (sharp-rate version, statement only)**.
