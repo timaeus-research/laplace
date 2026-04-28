@@ -38,9 +38,31 @@ we adopt two architectural decisions:
 
 ## Status
 
-Stage 0 (jet hypothesis structures) below. Stages 1–4 (scalar bound,
-rescaled decomposition lemmas, centered numerator bound, sharp covariance
-theorem) are tracked as `sorry` stubs.
+* Stage 0 — jet hypothesis structures (`PotentialJetApprox`,
+  `ObservableJetApprox`): complete.
+* Stage 1 — scalar Taylor-1 bound `abs_exp_neg_sub_one_add_le`: complete.
+* Stage 2 — rescaled decomposition lemmas
+  (`abs_rescaledPerturbation_sub_scaledCubicJet_le`,
+  `abs_rescaledObservable_quadratic_error_le`): complete.
+* Stage 3 — centered numerator bound: structurally complete with four
+  technical sorries:
+  - `abs_integral_corrected_bracket_centered_bilinear_le` (helper 1's K/t
+    bound on the corrected-bracket integral; deferred Glocal+Gtail
+    bookkeeping ~500-700 LOC);
+  - `abs_integral_dot_mul_jet_remainder_sharp_le` (helpers 2/3, cross
+    terms, K/(t·√t));
+  - `abs_integral_remainder_remainder_sharp_le` (helper 4, quadratic
+    remainder, K/t²);
+  - `h_decomp` algebraic identity inside
+    `rescaledNumerator_centered_pair_sharp`.
+* Stage 4 — `gibbsCov_first_order_rate_sharp`: complete given Stage 3.
+
+The helper-1 statement reduces (via `integral_centered_bilinear_eq_corrected_bracket`)
+to bounding `|∫ B · gW · (exp(-s_t) - 1 + c_t)|` by `K/t`, where
+`B := dot a · dot b - m`, `c_t := t · cV((√t)⁻¹•u)`. Both `∫ B · gW = 0`
+(centering identity) and `∫ B · gW · c_t = 0` (parity) are formalized.
+The remaining work is the integrand-level Glocal+Gtail bound on the
+corrected bracket itself.
 
 -/
 
