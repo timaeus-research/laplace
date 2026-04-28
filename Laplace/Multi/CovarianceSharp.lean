@@ -44,7 +44,7 @@ we adopt two architectural decisions:
 * Stage 2 — rescaled decomposition lemmas
   (`abs_rescaledPerturbation_sub_scaledCubicJet_le`,
   `abs_rescaledObservable_quadratic_error_le`): complete.
-* Stage 3 — centered numerator bound: structurally complete with four
+* Stage 3 — centered numerator bound: structurally complete with three
   technical sorries:
   - `abs_integral_corrected_bracket_centered_bilinear_le` (helper 1's K/t
     bound; the Glocal pointwise bound
@@ -53,9 +53,10 @@ we adopt two architectural decisions:
   - `abs_integral_dot_mul_jet_remainder_sharp_le` (helpers 2/3, cross
     terms, K/(t·√t));
   - `abs_integral_remainder_remainder_sharp_le` (helper 4, quadratic
-    remainder, K/t²);
-  - `h_decomp` algebraic identity inside
-    `rescaledNumerator_centered_pair_sharp`.
+    remainder, K/t² — Glocal+Gtail with k = 4 indicator).
+  The algebraic identity `h_decomp` inside
+  `rescaledNumerator_centered_pair_sharp` is fully formalized via
+  `pair_product_expansion` + integral linearity.
 * Stage 4 — `gibbsCov_first_order_rate_sharp`: complete given Stage 3.
 
 The helper-1 statement reduces (via `integral_centered_bilinear_eq_corrected_bracket`)
@@ -1165,7 +1166,17 @@ private lemma abs_integral_dot_mul_jet_remainder_sharp_le
 
 /-- **Sharp helper 4 (quadratic remainder)**: the product of two
 observable remainders integrated against `gW · exp(-s_t)` is `O(1/t²)`.
-Local: `|remφ · remψ| ≤ Cφ·Cψ·‖u‖^4/t²` via the quadratic jets. -/
+
+The bound uses the Glocal+Gtail template from the weak helpers, with two
+upgrades:
+* the local bound `|remφ · remψ| ≤ Cφ·Cψ·‖u‖⁴/t²` already gives `K/t²`
+  on the local ball (from the weak quadratic Taylor bound, no parity
+  needed);
+* the tail uses the indicator trick `1_{‖u‖>R√t} ≤ ‖u‖⁴/(R⁴·t²)`
+  (k = 4) to gain `1/t²` over the global polynomial bound.
+
+This is essentially the weak helper 4 with `k = 3` indicator replaced by
+`k = 4`. -/
 private lemma abs_integral_remainder_remainder_sharp_le
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
