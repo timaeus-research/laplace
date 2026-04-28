@@ -642,7 +642,7 @@ private lemma gaussian_linear_cubic
     (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
     (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
       T (fun i => v (σ i)) = T v)
-    (hGauss : LaplaceCovHypotheses H Hinv) :
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∫ u : ι → ℝ, dot a u * T (fun _ => u) * gaussianWeight H u
       = gaussianZ H * 3 * dot (Hinv a) (tensorContractMatrix T Hinv) := by
   sorry
@@ -656,7 +656,7 @@ private lemma gaussian_quad_quad
     (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
     (hB_symm : ∀ u v : ι → ℝ, dot u (B v) = dot v (B u))
-    (hGauss : LaplaceCovHypotheses H Hinv) :
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u)
         * gaussianWeight H u
       = gaussianZ H * ((1 / 4 : ℝ) * trASig A Hinv * trASig B Hinv
@@ -672,7 +672,7 @@ private lemma gaussian_cubic_linear
     (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
     (hΦ_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
       Φ (fun i => v (σ i)) = Φ v)
-    (hGauss : LaplaceCovHypotheses H Hinv) :
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∫ u : ι → ℝ, (1 / 6 : ℝ) * Φ (fun _ => u) * dot b u * gaussianWeight H u
       = gaussianZ H * (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv) := by
   sorry
