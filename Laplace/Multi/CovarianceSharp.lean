@@ -311,6 +311,46 @@ lemma abs_rescaledObservable_quadratic_error_le
 
 end RescaledLocalBounds
 
+section CenteredNumerator
+
+/-- **Centered pair-numerator bound (sharp rate)**.
+
+The centered formulation `t·N_t(φψ) - m·D_t` (where `m := dot a (Hinv b)`,
+`N_t` is the rescaled numerator, `D_t` is the rescaled partition) is `O(1/t)`.
+
+Per the GPT-5.5 Pro consult, this is the cleanest target for the sharp
+track: it avoids the requirement to also sharpen the partition asymptote
+`D_t - Z`, which is only `O(1/√t)` in the weak track but the existing
+weak denominator lower bound `D_t ≥ Z/2` is enough to extract the sharp
+expectation rate from this centered bound.
+
+Proof decomposes via `pair_product_expansion` into 4 pieces:
+- `∫ (dot a · dot b - m) · gW · exp(-s_t)` (centered leading), bounded `K/t`
+  using parity vanishing of the cubic-jet correction `t·cV((√t)⁻¹•u)`.
+- `√t · ∫ dot a · remψ · gW · exp(-s_t)` (cross 1), bounded `K/t` via the
+  even quadratic jet `qψ((√t)⁻¹•u)`.
+- `√t · ∫ dot b · remφ · gW · exp(-s_t)` (cross 2), symmetric.
+- `t · ∫ remφ · remψ · gW · exp(-s_t)` (quadratic), bounded `K/t` via
+  product of quadratic jets.
+
+Sub-helpers will be added in subsequent stages. -/
+private theorem rescaledNumerator_centered_pair_sharp
+    (V φ ψ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hφ : ObservableJetApprox φ a)
+    (hψ : ObservableJetApprox ψ b)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t * rescaledNumerator V t (fun w => φ w * ψ w)
+          - dot a (Hinv b) * rescaledPartition V t|
+        ≤ K / t := by
+  sorry
+
+end CenteredNumerator
+
 section MainTheorem
 
 /-- **`lem:laplace_cov` (sharp-rate version, statement only)**.
@@ -343,7 +383,97 @@ theorem gibbsCov_first_order_rate_sharp
     (hGauss : LaplaceCovHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |t * gibbsCov V t φ ψ - dot a (Hinv b)| ≤ K / t := by
-  sorry
+  -- Pull the three asymptote constants.
+  obtain ⟨K_num, T_num, hT_num, h_num⟩ :=
+    rescaledNumerator_centered_pair_sharp V φ ψ H Hinv a b hV hφ hψ hGauss
+  obtain ⟨T_den, hT_den, h_den⟩ :=
+    rescaledPartition_ge_half_gaussianZ V H Hinv hV.toPotentialApprox hGauss
+  obtain ⟨K_phi, T_phi, hT_phi, h_phi⟩ :=
+    rescaledExpectation_observable_bound_inv V φ H Hinv a hV.toPotentialApprox
+      hφ.toObservableApprox hGauss
+  obtain ⟨K_psi, T_psi, hT_psi, h_psi⟩ :=
+    rescaledExpectation_observable_bound_inv V ψ H Hinv b hV.toPotentialApprox
+      hψ.toObservableApprox hGauss
+  have hZ_pos := hGauss.Z_pos
+  -- K and T₀ bookkeeping.
+  set K : ℝ := 2 * K_num / gaussianZ H + |K_phi * K_psi| with hK_def
+  refine ⟨K, max T_num (max T_den (max T_phi T_psi)), ?_, ?_⟩
+  · exact le_max_of_le_left hT_num
+  intro t ht
+  have ht_num : T_num ≤ t := le_of_max_le_left ht
+  have ht_rest : max T_den (max T_phi T_psi) ≤ t := le_of_max_le_right ht
+  have ht_den : T_den ≤ t := le_of_max_le_left ht_rest
+  have ht_pp : max T_phi T_psi ≤ t := le_of_max_le_right ht_rest
+  have ht_phi : T_phi ≤ t := le_of_max_le_left ht_pp
+  have ht_psi : T_psi ≤ t := le_of_max_le_right ht_pp
+  have ht_pos : 0 < t := lt_of_lt_of_le (by linarith [hT_num]) ht_num
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  -- Specific bounds at t.
+  have h_num_t := h_num t ht_num
+  have h_den_t := h_den t ht_den
+  have h_phi_t := h_phi t ht_phi
+  have h_psi_t := h_psi t ht_psi
+  -- Rewrite gibbsCov via rescaledCov.
+  rw [gibbsCov_eq_rescaledCov V φ ψ ht_pos]
+  unfold rescaledCov
+  -- t · (E_t[φψ] - E_t[φ]·E_t[ψ]) - m
+  --   = (t · E_t[φψ] - m) - (t · E_t[φ] · E_t[ψ])
+  --   where E_t[X] = N_t(X)/D_t.
+  have hD_pos : 0 < rescaledPartition V t :=
+    lt_of_lt_of_le (by linarith [hZ_pos]) h_den_t
+  -- t · E_t[φψ] - m = (t · N_t(φψ) - m · D_t) / D_t.
+  have h_centered_eq :
+      t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b)
+        = (t * rescaledNumerator V t (fun w => φ w * ψ w)
+            - dot a (Hinv b) * rescaledPartition V t) / rescaledPartition V t := by
+    unfold rescaledExpectation
+    field_simp
+  -- Decompose: t · gibbsCov - m = (t · E_t[φψ] - m) - t · E_t[φ] · E_t[ψ].
+  have h_decompose :
+      t * (rescaledExpectation V t (fun w => φ w * ψ w)
+            - rescaledExpectation V t φ * rescaledExpectation V t ψ)
+        - dot a (Hinv b)
+        = (t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b))
+          - t * (rescaledExpectation V t φ * rescaledExpectation V t ψ) := by
+    ring
+  rw [h_decompose]
+  -- Bound each piece.
+  -- Piece 1: |t · E_t[φψ] - m| ≤ (2/Z) · K_num/t.
+  have hpart1 : |t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b)|
+      ≤ 2 * K_num / gaussianZ H / t := by
+    rw [h_centered_eq, abs_div, abs_of_pos hD_pos]
+    calc |t * rescaledNumerator V t (fun w => φ w * ψ w)
+              - dot a (Hinv b) * rescaledPartition V t| / rescaledPartition V t
+        ≤ (K_num / t) / rescaledPartition V t :=
+          div_le_div_of_nonneg_right h_num_t hD_pos.le
+      _ ≤ (K_num / t) / (gaussianZ H / 2) := by
+          apply div_le_div_of_nonneg_left _ (by linarith) h_den_t
+          exact le_trans (abs_nonneg _) h_num_t
+      _ = 2 * K_num / gaussianZ H / t := by field_simp
+  -- Piece 2: |t · E_t[φ] · E_t[ψ]| ≤ |K_phi · K_psi| / t.
+  have hpart2 : |t * (rescaledExpectation V t φ * rescaledExpectation V t ψ)|
+      ≤ |K_phi * K_psi| / t := by
+    rw [abs_mul, abs_of_pos ht_pos, abs_mul]
+    have h_prod_le :
+        |rescaledExpectation V t φ| * |rescaledExpectation V t ψ|
+          ≤ (K_phi / t) * (K_psi / t) :=
+      mul_le_mul h_phi_t h_psi_t (abs_nonneg _) (le_trans (abs_nonneg _) h_phi_t)
+    calc t * (|rescaledExpectation V t φ| * |rescaledExpectation V t ψ|)
+        ≤ t * ((K_phi / t) * (K_psi / t)) :=
+          mul_le_mul_of_nonneg_left h_prod_le ht_pos.le
+      _ = (K_phi * K_psi) / t := by field_simp
+      _ ≤ |K_phi * K_psi| / t := by
+          apply div_le_div_of_nonneg_right (le_abs_self _) ht_pos.le
+  -- Combine via triangle inequality.
+  calc |((t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b))
+          - t * (rescaledExpectation V t φ * rescaledExpectation V t ψ))|
+      ≤ |t * rescaledExpectation V t (fun w => φ w * ψ w) - dot a (Hinv b)|
+        + |t * (rescaledExpectation V t φ * rescaledExpectation V t ψ)| :=
+        abs_sub _ _
+    _ ≤ 2 * K_num / gaussianZ H / t + |K_phi * K_psi| / t :=
+        add_le_add hpart1 hpart2
+    _ = K / t := by
+        rw [hK_def]; ring
 
 end MainTheorem
 
