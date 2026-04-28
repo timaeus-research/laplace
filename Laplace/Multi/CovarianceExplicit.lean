@@ -2281,6 +2281,48 @@ private lemma abs_expNumObsRem_global_le
         + ‖hφ.Φ‖ / 6 * ‖u‖ ^ 3 := by
         gcongr
 
+/-! ### Integrability building blocks for the decomposition lemma -/
+
+/-- Integrability of `expNumLin a t u · gaussianWeight H u` for `t > 0`.
+Dominated by `(√t)⁻¹·(∑|aᵢ|)·‖u‖·gW(u)`, which is integrable from
+`PotentialJetApprox.int_norm_pow_gW 1`. -/
+private lemma integrable_expNumLin_mul_gaussianWeight
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ => expNumLin a t u * gaussianWeight H u) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) * (‖u‖ * gaussianWeight H u)) := by
+    have := hV.int_norm_pow_gW 1
+    simp only [pow_one] at this
+    exact this.const_mul _
+  apply h_dom_int.mono'
+  · -- Strongly measurable.
+    have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
+      unfold dot
+      exact continuous_finset_sum _
+        (fun i _ => continuous_const.mul (continuous_apply i))
+    exact ((continuous_const.mul h_dot_cont).mul
+      (continuous_gaussianWeight H)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_lin_le : |expNumLin a t u|
+        ≤ ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) * ‖u‖ := by
+      unfold expNumLin
+      rw [abs_mul, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
+      have h_dot_le : |dot a u| ≤ (∑ i, |a i|) * ‖u‖ := abs_dot_le_l1_mul_norm a u
+      calc (Real.sqrt t)⁻¹ * |dot a u|
+          ≤ (Real.sqrt t)⁻¹ * ((∑ i, |a i|) * ‖u‖) := by
+            apply mul_le_mul_of_nonneg_left h_dot_le (by positivity)
+        _ = (Real.sqrt t)⁻¹ * (∑ i, |a i|) * ‖u‖ := by ring
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_gW_nn]
+    calc |expNumLin a t u| * gaussianWeight H u
+        ≤ ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) * ‖u‖ * gaussianWeight H u :=
+          mul_le_mul_of_nonneg_right h_lin_le h_gW_nn
+      _ = ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) * (‖u‖ * gaussianWeight H u) := by ring
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
