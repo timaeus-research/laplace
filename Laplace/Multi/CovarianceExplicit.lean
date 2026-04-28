@@ -292,6 +292,61 @@ lemma Hinv_symm
     apply Finset.sum_congr rfl; intros; ring
   rw [h_lhs, h_rhs]; exact h_apply
 
+/-- **`trASig` as a coordinate-form double sum**: under symmetry of `Hinv`,
+`trASig A Hinv = ∑_i ∑_j (A e_j) i · (Hinv e_j) i`. This is `tr(A · Σ)` in
+the coordinate-pairing form needed for the Wick-pairing trace identifications. -/
+lemma trASig_eq_double_sum
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ)) :
+    trASig A Hinv =
+      ∑ i, ∑ j, (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+  -- trASig A Hinv = ∑ i, (A (Hinv e_i)) i.
+  -- Expand (A (Hinv e_i)) i = ∑ k, (Hinv e_i) k · (A e_k) i (by H_apply_eq_sum).
+  -- Use Hinv symmetry: (Hinv e_i) k = (Hinv e_k) i.
+  -- Substitute: ∑ k, (Hinv e_k) i · (A e_k) i.
+  -- Renaming k → j: ∑ j, (A e_j) i · (Hinv e_j) i.
+  unfold trASig
+  apply Finset.sum_congr rfl; intros i _
+  rw [H_apply_eq_sum A (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) i]
+  apply Finset.sum_congr rfl; intros j _
+  -- Need: (Hinv (Pi.single i 1)) j * (A (Pi.single j 1)) i
+  --     = (A (Pi.single j 1)) i * (Hinv (Pi.single j 1)) i.
+  -- The second factor needs (Hinv (Pi.single i 1)) j = (Hinv (Pi.single j 1)) i (Hinv symm).
+  have h_swap : (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j =
+      (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+    -- Apply Hinv_symm with x = Pi.single i 1, y = Pi.single j 1.
+    have h := Hinv_symm hGauss (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))
+      (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+    -- h : ∑ k, (Pi.single j 1) k * (Hinv (Pi.single i 1)) k
+    --   = ∑ k, (Pi.single i 1) k * (Hinv (Pi.single j 1)) k
+    -- LHS evaluates to (Hinv (Pi.single i 1)) j (only k = j survives).
+    -- RHS evaluates to (Hinv (Pi.single j 1)) i.
+    have h_lhs : ∑ k, (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) k *
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) k
+        = (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j := by
+      rw [Finset.sum_eq_single j]
+      · rw [Pi.single_eq_same]; ring
+      · intros k _ hk
+        have h_zero : Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ) k = 0 := by
+          simp [Pi.single_apply, hk.symm]
+        rw [h_zero]; ring
+      · intro h; exact absurd (Finset.mem_univ j) h
+    have h_rhs : ∑ k, (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)) k *
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) k
+        = (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+      rw [Finset.sum_eq_single i]
+      · rw [Pi.single_eq_same]; ring
+      · intros k _ hk
+        have h_zero : Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ) k = 0 := by
+          simp [Pi.single_apply, hk.symm]
+        rw [h_zero]; ring
+      · intro h; exact absurd (Finset.mem_univ i) h
+    rw [h_lhs, h_rhs] at h
+    exact h
+  rw [h_swap]; ring
+
 /-- **Linear factor as Hinv-weighted Hu sum**: `dot a u = ∑_l (Hinv a)_l (Hu)_l`.
 Uses `Hinv` symmetry + `H ∘ Hinv = id`. The bridge from a generic linear factor
 to the cubic-IBP lemma `gaussian_ibp_cubic_f`. -/
