@@ -470,6 +470,73 @@ private lemma integrable_dot_mul_dot_mul_gaussianWeight
       _ = A * B * (‖u‖ ^ 2 * gaussianWeight H u) := by
           rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]; ring
 
+/-- **Integrability of `dot c · qψ((√t)⁻¹•u) · gW`** (no exp factor).
+
+Required for the parity reduction `∫ dot c · qψ · gW · exp(-s_t)
+= ∫ dot c · qψ · gW · (exp(-s_t) - 1)` in helpers 2/3. Dominated by
+
+  `|dot c · qψ · gW| ≤ DC · Cq / t · ‖u‖^3 · gW`,
+
+and `‖u‖^3 · gW` integrable via `hV.int_norm_pow_gW 3`. -/
+private lemma integrable_dot_mul_quadJet_mul_gaussianWeight
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialJetApprox V H) [Nonempty ι]
+    (qψ : (ι → ℝ) → ℝ) (qψ_continuous : Continuous qψ)
+    {Cq : ℝ} (hCq_nn : 0 ≤ Cq)
+    (h_qψ_bound : ∀ w : ι → ℝ, |qψ w| ≤ Cq * ‖w‖ ^ 2)
+    (dotCoef : ι → ℝ)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      dot dotCoef u * qψ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u) := by
+  set DC : ℝ := ∑ i, |dotCoef i| with hDC_def
+  have hDC_nn : 0 ≤ DC := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_t_inv_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_t_pos
+  have h_dot_cont : Continuous (fun u : ι → ℝ => dot dotCoef u) := by
+    unfold dot
+    exact continuous_finset_sum _
+      (fun i _ => continuous_const.mul (continuous_apply i))
+  have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
+    continuous_const_smul _
+  -- Dominant: K · ‖u‖^3 · gW where K = DC · Cq / t.
+  set K : ℝ := DC * Cq / t with hK_def
+  have hK_nn : 0 ≤ K := by
+    rw [hK_def]
+    exact div_nonneg (mul_nonneg hDC_nn hCq_nn) ht_pos.le
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      K * (‖u‖ ^ 3 * gaussianWeight H u)) :=
+    (hV.int_norm_pow_gW 3).const_mul K
+  refine h_dom.mono' ?_ ?_
+  · exact ((h_dot_cont.mul (qψ_continuous.comp h_smul_cont)).mul
+      (continuous_gaussianWeight H)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_dot_le : |dot dotCoef u| ≤ DC * ‖u‖ := by
+      rw [hDC_def]; exact abs_dot_le_l1_mul_norm dotCoef u
+    have h_qψ_le : |qψ ((Real.sqrt t)⁻¹ • u)| ≤ Cq * ‖u‖ ^ 2 / t := by
+      have h := h_qψ_bound ((Real.sqrt t)⁻¹ • u)
+      have h_norm_sm_sq : ‖(Real.sqrt t)⁻¹ • u‖ ^ 2 = ‖u‖ ^ 2 / t := by
+        rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_t_inv_pos]
+        rw [show ((Real.sqrt t)⁻¹ * ‖u‖) ^ 2
+              = ((Real.sqrt t) ^ 2)⁻¹ * ‖u‖ ^ 2 from by
+            rw [mul_pow, inv_pow]]
+        rw [Real.sq_sqrt ht_pos.le]; ring
+      rw [h_norm_sm_sq] at h
+      rw [show Cq * ‖u‖ ^ 2 / t = Cq * (‖u‖ ^ 2 / t) from by ring]
+      exact h
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+    have h_DC_norm_nn : 0 ≤ DC * ‖u‖ := mul_nonneg hDC_nn h_norm_nn
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_gW_nn, abs_mul]
+    calc |dot dotCoef u| * |qψ ((Real.sqrt t)⁻¹ • u)| * gaussianWeight H u
+        ≤ (DC * ‖u‖) * (Cq * ‖u‖ ^ 2 / t) * gaussianWeight H u :=
+          mul_le_mul_of_nonneg_right
+            (mul_le_mul h_dot_le h_qψ_le (abs_nonneg _) h_DC_norm_nn) h_gW_nn
+      _ = K * (‖u‖ ^ 3 * gaussianWeight H u) := by
+          rw [hK_def]
+          rw [show ‖u‖ ^ 3 = ‖u‖ * ‖u‖ ^ 2 from by ring]
+          field_simp
+
 /-- **Integrability of `(dot a u · dot b u - m) · gW · t · cV((√t)⁻¹•u)`**.
 
 Under `PotentialJetApprox` (which provides `cV_bound` and the higher-moment
