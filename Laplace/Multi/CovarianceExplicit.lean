@@ -164,6 +164,18 @@ in tensor contraction proofs (per `gpt_responses/tactics_contraction_lemmas.md`)
 noncomputable def stdBasisVec (i : ι) : ι → ℝ :=
   Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)
 
+/-- **Trilinear diagonal is odd**: for any continuous trilinear form `T`,
+`T(-u, -u, -u) = -T(u, u, u)`. Used for parity arguments against the Gaussian
+weight (e.g. `∫ Φ(u,u,u) · gW = 0`). -/
+lemma cmm_diag_odd
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) (u : ι → ℝ) :
+    T (fun _ => -u) = -T (fun _ => u) := by
+  have h := T.map_smul_univ (fun _ : Fin 3 => (-1 : ℝ)) (fun _ => u)
+  simp only [Fin.prod_univ_three] at h
+  rw [show (fun _ : Fin 3 => -u)
+        = (fun _ : Fin 3 => ((-1 : ℝ)) • u) from by funext _; simp]
+  rw [h]; simp
+
 /-- Coordinate-form tensor: `Tcoord T i j k := T(e_i, e_j, e_k)` for the
 standard basis. The fundamental object for index-based reasoning about T. -/
 noncomputable def Tcoord
