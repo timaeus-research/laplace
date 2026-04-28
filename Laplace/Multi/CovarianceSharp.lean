@@ -880,6 +880,194 @@ private lemma abs_corrected_bracket_local_le
             Real.exp |rescaledPerturbation V H t u|
           + hV.jet_const * ‖u‖ ^ 4 / t := by linarith
 
+/-- **Pointwise bound on `gW · |exp(-s_t) - 1 + c_t|` on the local ball**.
+
+Assuming the V coercive bound `c·‖w‖² ≤ V w` (hence
+`gW(u) · exp|s_t| ≤ exp(-(c'/4)·‖u‖²)` for ρ small) and the H coercive
+bound `c'·‖u‖² ≤ quadForm H u`, this packages helper 1C with the gW
+pointwise control to give
+
+  `gW · |exp(-s_t) - 1 + c_t| ≤ (Cs²·‖u‖^6 + jet_const·‖u‖^4) / t ·
+                                  exp(-(c'/4)·‖u‖²)`
+
+on `‖u‖ ≤ ρ·√t` with `ρ ≤ min(jet_radius, c'/(4·max(Cs,1)))`. -/
+private lemma abs_gaussianWeight_mul_corrected_bracket_local_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    {ρ : ℝ} (hρ_pos : 0 < ρ)
+    (hρ_le_jet_R : ρ ≤ hV.jet_radius)
+    (hρ_le_local_R : ρ ≤ hV.toPotentialApprox.local_radius)
+    (hρ_decay : hV.toPotentialApprox.local_const * ρ ≤
+        hV.H_coercive_const / 4)
+    {t : ℝ} (ht_pos : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ ρ * Real.sqrt t) :
+    gaussianWeight H u *
+        |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+          t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+      ≤ (hV.toPotentialApprox.local_const ^ 2 * ‖u‖ ^ 6 +
+          hV.jet_const * ‖u‖ ^ 4) / t *
+          Real.exp (-(hV.H_coercive_const / 4 * ‖u‖ ^ 2)) := by
+  set Cs := hV.toPotentialApprox.local_const with hCs_def
+  set R := hV.toPotentialApprox.local_radius with hR_def
+  set c' := hV.H_coercive_const with hc'_def
+  have hCs_nn : 0 ≤ Cs := hV.toPotentialApprox.local_const_nonneg
+  have hR_pos : 0 < R := hV.toPotentialApprox.local_radius_pos
+  have hc'_pos : 0 < c' := hV.H_coercive_const_pos
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_t_sq : Real.sqrt t * Real.sqrt t = t :=
+    Real.mul_self_sqrt ht_pos.le
+  have hu_le_R_sqrt : ‖u‖ ≤ R * Real.sqrt t :=
+    le_trans hu (mul_le_mul_of_nonneg_right hρ_le_local_R hsqrt_t_pos.le)
+  have hu_le_jetR_sqrt : ‖u‖ ≤ hV.jet_radius * Real.sqrt t :=
+    le_trans hu (mul_le_mul_of_nonneg_right hρ_le_jet_R hsqrt_t_pos.le)
+  -- Helper 1C local pointwise bound on the corrected bracket (no gW factor).
+  have h_bracket :=
+    abs_corrected_bracket_local_le V H hV ht_pos u hu_le_jetR_sqrt
+  -- |s_t| ≤ Cs·‖u‖³/√t locally (V cubic bound).
+  have h_st_le := abs_rescaledPerturbation_le V H
+    hV.toPotentialApprox.local_bound ht_pos u hu_le_R_sqrt
+  -- On local ball: |s_t| ≤ Cs·ρ·‖u‖² since ‖u‖/√t ≤ ρ.
+  have h_norm_quotient : ‖u‖ / Real.sqrt t ≤ ρ := by
+    rw [div_le_iff₀ hsqrt_t_pos]; linarith
+  have h_st_quad : |rescaledPerturbation V H t u| ≤ Cs * ρ * ‖u‖ ^ 2 := by
+    calc |rescaledPerturbation V H t u|
+        ≤ Cs * ‖u‖ ^ 3 / Real.sqrt t := h_st_le
+      _ = Cs * (‖u‖ / Real.sqrt t) * ‖u‖ ^ 2 := by
+          have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
+          field_simp
+      _ ≤ Cs * ρ * ‖u‖ ^ 2 := by
+          have h_pow_nn : 0 ≤ ‖u‖ ^ 2 := sq_nonneg _
+          have h_step : Cs * (‖u‖ / Real.sqrt t) ≤ Cs * ρ :=
+            mul_le_mul_of_nonneg_left h_norm_quotient hCs_nn
+          exact mul_le_mul_of_nonneg_right h_step h_pow_nn
+  -- s_t² ≤ Cs²·‖u‖^6/t (square of |s_t| ≤ Cs·‖u‖³/√t).
+  have h_st_sq : rescaledPerturbation V H t u ^ 2 ≤ Cs ^ 2 * ‖u‖ ^ 6 / t := by
+    have h_abs_sq : rescaledPerturbation V H t u ^ 2 =
+        |rescaledPerturbation V H t u| ^ 2 := by
+      rw [sq_abs]
+    rw [h_abs_sq]
+    have h_div_nn : 0 ≤ Cs * ‖u‖ ^ 3 / Real.sqrt t :=
+      div_nonneg (mul_nonneg hCs_nn (pow_nonneg (norm_nonneg _) _)) hsqrt_t_pos.le
+    calc |rescaledPerturbation V H t u| ^ 2
+        ≤ (Cs * ‖u‖ ^ 3 / Real.sqrt t) ^ 2 := by
+          exact pow_le_pow_left₀ (abs_nonneg _) h_st_le 2
+      _ = Cs ^ 2 * ‖u‖ ^ 6 / t := by
+          rw [div_pow]
+          rw [show (Cs * ‖u‖ ^ 3) ^ 2 = Cs ^ 2 * ‖u‖ ^ 6 from by ring,
+              show (Real.sqrt t) ^ 2 = t from Real.sq_sqrt ht_pos.le]
+  -- exp|s_t| ≤ exp(Cs·ρ·‖u‖²) on local ball.
+  have h_exp_st : Real.exp |rescaledPerturbation V H t u| ≤
+      Real.exp (Cs * ρ * ‖u‖ ^ 2) :=
+    Real.exp_le_exp.mpr h_st_quad
+  -- gW(u) ≤ exp(-(c'/2)·‖u‖²) using H_coercive_bound.
+  have h_gW_le : gaussianWeight H u ≤ Real.exp (-(c' / 2 * ‖u‖ ^ 2)) := by
+    rw [gaussianWeight_def]
+    apply Real.exp_le_exp.mpr
+    have h_coer := hV.H_coercive_bound u
+    linarith [hV.H_coercive_bound u]
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  -- gW · exp|s_t| ≤ exp(-(c'/4)·‖u‖²) (using Cs·ρ ≤ c'/4).
+  have h_gW_exp_st : gaussianWeight H u *
+      Real.exp |rescaledPerturbation V H t u|
+        ≤ Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := by
+    have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 2 := sq_nonneg _
+    have h_combine : gaussianWeight H u *
+        Real.exp |rescaledPerturbation V H t u|
+          ≤ Real.exp (-(c' / 2 * ‖u‖ ^ 2)) *
+            Real.exp (Cs * ρ * ‖u‖ ^ 2) :=
+      mul_le_mul h_gW_le h_exp_st (Real.exp_pos _).le (Real.exp_pos _).le
+    have h_exp_combine : Real.exp (-(c' / 2 * ‖u‖ ^ 2)) *
+        Real.exp (Cs * ρ * ‖u‖ ^ 2)
+          = Real.exp (-(c' / 2 * ‖u‖ ^ 2) + Cs * ρ * ‖u‖ ^ 2) := by
+      rw [← Real.exp_add]
+    rw [h_exp_combine] at h_combine
+    have h_arg_le : -(c' / 2 * ‖u‖ ^ 2) + Cs * ρ * ‖u‖ ^ 2 ≤
+        -(c' / 4 * ‖u‖ ^ 2) := by
+      have h_coef : Cs * ρ - c' / 2 ≤ -(c' / 4) := by linarith
+      have : (-(c' / 2 * ‖u‖ ^ 2) + Cs * ρ * ‖u‖ ^ 2)
+            = (Cs * ρ - c' / 2) * ‖u‖ ^ 2 := by ring
+      rw [this]
+      have h_mul := mul_le_mul_of_nonneg_right h_coef h_norm_pow_nn
+      linarith
+    have h_exp_le : Real.exp (-(c' / 2 * ‖u‖ ^ 2) + Cs * ρ * ‖u‖ ^ 2) ≤
+        Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := Real.exp_le_exp.mpr h_arg_le
+    linarith
+  -- Combine: gW · |exp(-s_t)-1+c_t| ≤ gW · (s_t² · exp|s_t| + jet_const · ‖u‖^4/t).
+  have h_bracket_pos : 0 ≤ |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+      t * hV.cV ((Real.sqrt t)⁻¹ • u)| := abs_nonneg _
+  have h_step1 : gaussianWeight H u *
+      |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+        t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+      ≤ gaussianWeight H u *
+        (rescaledPerturbation V H t u ^ 2 *
+            Real.exp |rescaledPerturbation V H t u|
+          + hV.jet_const * ‖u‖ ^ 4 / t) :=
+    mul_le_mul_of_nonneg_left h_bracket h_gW_pos.le
+  -- s_t² · exp|s_t| · gW ≤ s_t² · exp(-(c'/4)·‖u‖²).
+  have h_st_sq_nn : 0 ≤ rescaledPerturbation V H t u ^ 2 := sq_nonneg _
+  have h_step2_a : gaussianWeight H u *
+      (rescaledPerturbation V H t u ^ 2 *
+        Real.exp |rescaledPerturbation V H t u|)
+      ≤ rescaledPerturbation V H t u ^ 2 *
+        Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := by
+    have h_rearr : gaussianWeight H u *
+        (rescaledPerturbation V H t u ^ 2 *
+          Real.exp |rescaledPerturbation V H t u|)
+        = rescaledPerturbation V H t u ^ 2 *
+          (gaussianWeight H u *
+            Real.exp |rescaledPerturbation V H t u|) := by ring
+    rw [h_rearr]
+    exact mul_le_mul_of_nonneg_left h_gW_exp_st h_st_sq_nn
+  -- jet_const · ‖u‖^4/t · gW ≤ jet_const · ‖u‖^4/t · exp(-(c'/4)·‖u‖²).
+  have hjet_div_nn : 0 ≤ hV.jet_const * ‖u‖ ^ 4 / t :=
+    div_nonneg (mul_nonneg hV.jet_const_nonneg
+      (pow_nonneg (norm_nonneg _) _)) ht_pos.le
+  have h_gW_le_quarter : gaussianWeight H u ≤
+      Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := by
+    have h_quarter : -(c' / 2 * ‖u‖ ^ 2) ≤ -(c' / 4 * ‖u‖ ^ 2) := by
+      have : c' / 4 * ‖u‖ ^ 2 ≤ c' / 2 * ‖u‖ ^ 2 := by
+        apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
+        linarith
+      linarith
+    have h_exp_step : Real.exp (-(c' / 2 * ‖u‖ ^ 2)) ≤
+        Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := Real.exp_le_exp.mpr h_quarter
+    linarith
+  have h_step2_b : gaussianWeight H u * (hV.jet_const * ‖u‖ ^ 4 / t)
+      ≤ hV.jet_const * ‖u‖ ^ 4 / t *
+        Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := by
+    rw [mul_comm (gaussianWeight H u) _]
+    exact mul_le_mul_of_nonneg_left h_gW_le_quarter hjet_div_nn
+  -- Combine pointwise bounds.
+  have h_st_bound : rescaledPerturbation V H t u ^ 2 ≤ Cs ^ 2 * ‖u‖ ^ 6 / t :=
+    h_st_sq
+  have h_st_sq_exp : rescaledPerturbation V H t u ^ 2 *
+      Real.exp (-(c' / 4 * ‖u‖ ^ 2))
+      ≤ Cs ^ 2 * ‖u‖ ^ 6 / t * Real.exp (-(c' / 4 * ‖u‖ ^ 2)) :=
+    mul_le_mul_of_nonneg_right h_st_bound (Real.exp_pos _).le
+  calc gaussianWeight H u *
+        |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+          t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+      ≤ gaussianWeight H u *
+        (rescaledPerturbation V H t u ^ 2 *
+            Real.exp |rescaledPerturbation V H t u|
+          + hV.jet_const * ‖u‖ ^ 4 / t) := h_step1
+    _ = gaussianWeight H u *
+          (rescaledPerturbation V H t u ^ 2 *
+            Real.exp |rescaledPerturbation V H t u|)
+        + gaussianWeight H u * (hV.jet_const * ‖u‖ ^ 4 / t) := by ring
+    _ ≤ rescaledPerturbation V H t u ^ 2 *
+          Real.exp (-(c' / 4 * ‖u‖ ^ 2))
+        + hV.jet_const * ‖u‖ ^ 4 / t *
+          Real.exp (-(c' / 4 * ‖u‖ ^ 2)) :=
+        add_le_add h_step2_a h_step2_b
+    _ ≤ Cs ^ 2 * ‖u‖ ^ 6 / t * Real.exp (-(c' / 4 * ‖u‖ ^ 2))
+        + hV.jet_const * ‖u‖ ^ 4 / t *
+          Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := by linarith
+    _ = (Cs ^ 2 * ‖u‖ ^ 6 + hV.jet_const * ‖u‖ ^ 4) / t *
+          Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := by
+          field_simp
+
 end CorrectedBracketBounds
 
 section SharpHelpers
