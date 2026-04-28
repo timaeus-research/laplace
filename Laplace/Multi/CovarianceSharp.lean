@@ -1681,6 +1681,85 @@ private lemma abs_remainder_mul_remainder_mul_rescaled_weight_local_le
     _ ≤ (Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2) * Real.exp (-(c * ‖u‖ ^ 2)) :=
         mul_le_mul_of_nonneg_left h_rw_bound h_rem_rem_nn
 
+/-- **Gtail pointwise bound for the parity-reduced cross term** (helpers 2/3).
+
+On the tail `‖u‖ > δ · √t`,
+
+  `|dot c · qψ((√t)⁻¹•u) · gW · (exp(-s_t) - 1)|
+    ≤ (2 · DC · Cq / t) · ‖u‖³ · exp(-(c/4)·‖u‖²) · exp(-(c·δ²/4)·t)`. -/
+private lemma abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_tail_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    {c R Cs Cq : ℝ}
+    (hc_pos : 0 < c) (hR_pos : 0 < R) (hCs_nn : 0 ≤ Cs) (hCq_nn : 0 ≤ Cq)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ Cs * ‖w‖ ^ 3)
+    (qψ : (ι → ℝ) → ℝ)
+    (h_qψ_bound : ∀ w : ι → ℝ, |qψ w| ≤ Cq * ‖w‖ ^ 2)
+    (dotCoef : ι → ℝ)
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : δ * Real.sqrt t < ‖u‖) :
+    |dot dotCoef u * qψ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (2 * (∑ i, |dotCoef i|) * Cq / t) * ‖u‖ ^ 3 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t)) := by
+  set DC : ℝ := ∑ i, |dotCoef i| with hDC_def
+  have hDC_nn : 0 ≤ DC := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_t_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_gW_exp_bound :=
+    abs_gaussianWeight_mul_exp_sub_one_le_tail V H hc_pos hR_pos hCs_nn
+      h_coer h_local hδ_pos ht u hu
+  have h_qψ_le : |qψ ((Real.sqrt t)⁻¹ • u)| ≤ Cq * ‖u‖ ^ 2 / t := by
+    have h := h_qψ_bound ((Real.sqrt t)⁻¹ • u)
+    have h_norm_sm_sq : ‖(Real.sqrt t)⁻¹ • u‖ ^ 2 = ‖u‖ ^ 2 / t := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_t_inv_pos]
+      rw [show ((Real.sqrt t)⁻¹ * ‖u‖) ^ 2
+            = ((Real.sqrt t) ^ 2)⁻¹ * ‖u‖ ^ 2 from by
+          rw [mul_pow, inv_pow]]
+      rw [Real.sq_sqrt ht.le]; ring
+    rw [h_norm_sm_sq] at h
+    rw [show Cq * ‖u‖ ^ 2 / t = Cq * (‖u‖ ^ 2 / t) from by ring]
+    exact h
+  have h_dot_le : |dot dotCoef u| ≤ DC * ‖u‖ := by
+    rw [hDC_def]; exact abs_dot_le_l1_mul_norm dotCoef u
+  have h_DC_norm_nn : 0 ≤ DC * ‖u‖ := mul_nonneg hDC_nn h_norm_nn
+  have h_qψ_div_nn : 0 ≤ Cq * ‖u‖ ^ 2 / t :=
+    div_nonneg (mul_nonneg hCq_nn (sq_nonneg _)) ht.le
+  have h_exp1_nn : 0 ≤ 2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+      Real.exp (-((c * δ ^ 2 / 4) * t)) := by
+    apply mul_nonneg
+    · apply mul_nonneg (by norm_num) (Real.exp_pos _).le
+    · exact (Real.exp_pos _).le
+  rw [show dot dotCoef u * qψ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+      = (dot dotCoef u * qψ ((Real.sqrt t)⁻¹ • u)) *
+        (gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)) from by ring]
+  rw [abs_mul]
+  rw [abs_mul (dot dotCoef u)]
+  calc |dot dotCoef u| * |qψ ((Real.sqrt t)⁻¹ • u)| *
+            |gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (DC * ‖u‖) * (Cq * ‖u‖ ^ 2 / t) *
+          (2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+            Real.exp (-((c * δ ^ 2 / 4) * t))) := by
+        have h1 : |dot dotCoef u| * |qψ ((Real.sqrt t)⁻¹ • u)| ≤
+            (DC * ‖u‖) * (Cq * ‖u‖ ^ 2 / t) :=
+          mul_le_mul h_dot_le h_qψ_le (abs_nonneg _) h_DC_norm_nn
+        have h2_nn : 0 ≤ DC * ‖u‖ * (Cq * ‖u‖ ^ 2 / t) :=
+          mul_nonneg h_DC_norm_nn h_qψ_div_nn
+        exact mul_le_mul h1 h_gW_exp_bound (abs_nonneg _) h2_nn
+    _ = (2 * DC * Cq / t) * ‖u‖ ^ 3 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t)) := by
+        rw [show ‖u‖ ^ 3 = ‖u‖ * ‖u‖ ^ 2 from by ring]
+        field_simp
+
 end CorrectedBracketBounds
 
 section SharpHelpers
