@@ -1109,6 +1109,60 @@ private lemma abs_remainder_mul_remainder_local_le
             show ‖u‖ ^ 2 * ‖u‖ ^ 2 = ‖u‖ ^ 4 from by ring]
         field_simp
 
+/-- **Glocal pointwise bound for helper 4**: on the local ball,
+
+  `|remφ(u) · remψ(u) · gW · exp(-s_t)| ≤ Cφ · Cψ · ‖u‖⁴ / t² · exp(-c·‖u‖²)`
+
+where `c` is the V coercive constant. Combines the local rem·rem bound
+with `rescaled_weight_le_coercive`. -/
+private lemma abs_remainder_mul_remainder_mul_rescaled_weight_local_le
+    (V φ ψ : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ) [Nonempty ι]
+    {Cφ Cψ Rφ Rψ c : ℝ}
+    (hCφ_nn : 0 ≤ Cφ) (hCψ_nn : 0 ≤ Cψ) (hc_pos : 0 < c)
+    (h_obs_φ_local : ∀ w : ι → ℝ, ‖w‖ ≤ Rφ →
+      |φ w - dot a w| ≤ Cφ * ‖w‖ ^ 2)
+    (h_obs_ψ_local : ∀ w : ι → ℝ, ‖w‖ ≤ Rψ →
+      |ψ w - dot b w| ≤ Cψ * ‖w‖ ^ 2)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ)
+    (huφ : ‖u‖ ≤ Rφ * Real.sqrt t)
+    (huψ : ‖u‖ ≤ Rψ * Real.sqrt t) :
+    |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+        (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 * Real.exp (-(c * ‖u‖ ^ 2)) := by
+  have h_rem_rem := abs_remainder_mul_remainder_local_le φ ψ a b
+    hCφ_nn hCψ_nn h_obs_φ_local h_obs_ψ_local ht u huφ huψ
+  have h_rw_bound := rescaled_weight_le_coercive V H hc_pos h_coer ht u
+  have h_rw_nn : 0 ≤ gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) :=
+    mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+  have h_rem_rem_nn : 0 ≤ Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 :=
+    div_nonneg (mul_nonneg (mul_nonneg hCφ_nn hCψ_nn)
+      (pow_nonneg (norm_nonneg _) _)) (pow_pos ht 2).le
+  have h_rearr : (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+      (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+      gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u))
+      = ((φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+        (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)) *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by ring
+  rw [h_rearr, abs_mul, abs_of_nonneg h_rw_nn]
+  calc |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)| *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+      ≤ (Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2) *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) :=
+        mul_le_mul_of_nonneg_right h_rem_rem h_rw_nn
+    _ ≤ (Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2) * Real.exp (-(c * ‖u‖ ^ 2)) :=
+        mul_le_mul_of_nonneg_left h_rw_bound h_rem_rem_nn
+
 end CorrectedBracketBounds
 
 section SharpHelpers
