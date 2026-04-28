@@ -53,7 +53,11 @@ we adopt two architectural decisions:
   - `abs_integral_dot_mul_jet_remainder_sharp_le` (helpers 2/3, cross
     terms, K/(t·√t));
   - `abs_integral_remainder_remainder_sharp_le` (helper 4, quadratic
-    remainder, K/t² — Glocal+Gtail with k = 4 indicator).
+    remainder, K/t² — local pointwise bounds
+    `abs_remainder_mul_remainder_local_le` and
+    `abs_remainder_mul_remainder_mul_rescaled_weight_local_le` are
+    formalized; remaining ~250-300 LOC covers Gtail (k = 4 indicator) +
+    integration + composition).
   The algebraic identity `h_decomp` inside
   `rescaledNumerator_centered_pair_sharp` is fully formalized via
   `pair_product_expansion` + integral linearity.
