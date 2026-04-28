@@ -1,19 +1,30 @@
-# Laplace formalisation: final progress snapshot
+# Laplace formalisation: progress snapshot
 
-Goal: formally prove the SLT Susceptibility Primer's anharmonic asymptotic
+Two unconditional headline results:
 
-> For `L(x) = (λ/2)x² + (α/6)x³ + (γ/24)x⁴` with `λ, γ > 0` and `α² < 3λγ`,
-> `Cov_t[x², x] = -2α/(λ³t²) + o(t⁻²)` as `t → ∞`.
+* **1D anharmonic** (the original target).
+  > For `L(x) = (λ/2)x² + (α/6)x³ + (γ/24)x⁴` with `λ, γ > 0` and `α² < 3λγ`,
+  > `Cov_t[x², x] = -2α/(λ³t²) + o(t⁻²)` as `t → ∞`.
 
-Following GPT-5.5-Pro's recommendation (rescaled Gaussian + global remainder
-under the discriminant condition `α² < 3λγ`).
+  Following GPT-5.5 Pro's recommendation (rescaled Gaussian + global
+  remainder under the discriminant condition `α² < 3λγ`).
 
-## Build status (final)
+* **Multivariate sharp covariance** (primer `lem:laplace_cov`).
+  > For potentials `V` with a coercive quadratic-cubic-quartic Taylor
+  > approximation and observables `φ, ψ` admitting quadratic-jet
+  > expansions, with `a := ∇φ(0)`, `b := ∇ψ(0)`,
+  > `Cov_t[φ, ψ] = (1/t)·⟨a, H⁻¹b⟩ + O(t⁻²)` as `t → ∞`.
 
-- 10 files, **2822 lines** of Lean 4 + Mathlib.
-- **60+ proved theorems**.
+  Implicit-coefficient version. The full explicit-coefficient
+  `lem:laplace_cov2` (with `tr(AΣBΣ)`, anharmonic-tensor terms etc.) is
+  not yet formalised.
+
+## Build status
+
+- ~15.8k lines of Lean 4 + Mathlib across the 1D and Multi-D tracks.
+- 100+ proved theorems.
 - 0 sorries, 0 axioms, 0 native_decides.
-- `lake build` succeeds in ~20s warm.
+- `lake build` succeeds.
 
 ## Headline results, in order
 
@@ -37,20 +48,58 @@ under the discriminant condition `α² < 3λγ`).
 
 ## File map
 
-| File | Lines | Role |
-|---|---|---|
-| `Basic.lean` | 22 | Roadmap |
-| `Gibbs.lean` | 65 | `partitionFunction`, `gibbsExpectation`, `gibbsCov` |
-| `ScalarBound.lean` | 179 | The Taylor-1 cornerstone |
-| `OneD/GaussianMoments.lean` | 231 | Stage 1: standard 1D Gaussian moments |
-| `OneD/Harmonic.lean` | 165 | Closed-form harmonic Gibbs expectations |
-| `OneD/Anharmonic.lean` | 140 | Anharmonic potential + coercivity |
-| `OneD/TailBound.lean` | 532 | Mill's-ratio family of tail bounds |
-| `OneD/Localisation.lean` | 164 | Harmonic-Gibbs tail localisation |
-| `OneD/Rescaling.lean` | 230 | Rescaling identity + uniform Gaussian decay |
-| `OneD/IntegralRemainder.lean` | 1094 | Pointwise + integrability + integral bound + asymptotics |
+The 1D track lives in `Laplace/OneD/`; the multi-D track in
+`Laplace/Multi/`. See [`README.md`](README.md) for the per-file role
+breakdown. Briefly:
 
-## Final theorem statements
+* **1D track.** Gibbs definitions, scalar Taylor cornerstone, 1D
+  Gaussian moments, harmonic Gibbs (mostly unused detour),
+  anharmonic potential + coercivity, Mill's-ratio tail bounds,
+  rescaling identity, perturbation bound, integral remainder, `J_n` and
+  `I_n` asymptotics, coefficient cancellation.
+* **Multi-D track.** `dot`/`gaussianWeight`/`quadForm` basics,
+  `PotentialApprox`/`ObservableApprox` (local cubic remainder packages),
+  Gaussian-domination of rescaled weights, polynomial-Gaussian moment
+  integrability, multivariate IBP/parity, weak-track covariance bound
+  (`O(t^{-3/2})`), and the sharp-track `O(t^{-2})` covariance bound
+  with parity-resolved Taylor jets and corrected-bracket reduction.
+
+## Multi-D headline theorem
+
+```lean
+theorem gibbsCov_first_order_rate_sharp
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ) [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hφ : ObservableJetApprox φ a) (hψ : ObservableJetApprox ψ b)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t * gibbsCov V t φ ψ - dot a (Hinv b)| ≤ K / t
+```
+
+In words: `Cov_t[φ, ψ] = (1/t)·⟨a, H⁻¹b⟩ + O(t⁻²)` where `a := ∇φ(0)`,
+`b := ∇ψ(0)`, `H` is the Hessian of `V` at `0`, and `Hinv` is its
+inverse (hypothesised, not constructed). Proved in
+[`Laplace/Multi/CovarianceSharp.lean`](Laplace/Multi/CovarianceSharp.lean)
+via the corrected-bracket reduction described in
+`gpt_responses/sharp_helpers_recipe.md` and `strategy_sharp_track.md`.
+
+## What's next on the multi-D track
+
+The implicit-coefficient sharp covariance is done. Natural follow-ons:
+
+1. **`lem:laplace_cov2` (explicit coefficient).** Formalise the explicit
+   `O(t^{-2})` coefficient
+   `½ tr(AΣBΣ) + ½(Σb)·(Φ:Σ) - ½ b^TΣAΣ(T:Σ) - ½(Σb)·(T:(ΣAΣ))`
+   for `φ` vanishing to second order. Requires tensor-valued jets
+   (`Φ = ∇³φ(0)`, `B = ∇²ψ(0)`, `T = ∇³V(0)`) and Wick contractions on
+   `R^d` (Isserlis). Substantial new infrastructure.
+
+2. **Tag in primer (bridge step).** Add a `\leanref` to
+   `lem:laplace_cov` in `papers/SusceptibilityPrimer_main.tex`,
+   pinned to a SHA. Currently only the 1D specialisations are tagged.
+
+## 1D theorem statements (reference)
 
 ### `I_n` asymptotics (the four moment expansions)
 
