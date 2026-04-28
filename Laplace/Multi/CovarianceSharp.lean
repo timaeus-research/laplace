@@ -1273,6 +1273,96 @@ private lemma poly_pair_le_single
     _ = 3 + 3 * ‖u‖ ^ (p + q + 2) := by ring
     _ = 3 * (1 + ‖u‖ ^ (p + q + 2)) := by ring
 
+/-- **Glocal pointwise bound for the parity-reduced cross term** (helpers 2/3).
+
+On the local ball `‖u‖ ≤ δ · √t` (with `δ ≤ R_pot`, `Cs · δ ≤ c/4`),
+combining `|dot c| ≤ DC·‖u‖`, `|qψ((√t)⁻¹•u)| ≤ Cq·‖u‖²/t`, and
+`|gW · (exp(-s_t) - 1)| ≤ Cs·‖u‖³/√t · exp(-(c/4)·‖u‖²)` gives
+
+  `|dot c · qψ((√t)⁻¹•u) · gW · (exp(-s_t) - 1)|
+    ≤ (DC·Cq·Cs / (t·√t)) · ‖u‖⁶ · exp(-(c/4)·‖u‖²)`.
+
+This is the integrand-level Glocal bound after the parity reduction
+(∫ dot c · qψ · gW = 0). -/
+private lemma abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_local_le
+    (V φ : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    {c R Cs Cq : ℝ}
+    (hc_pos : 0 < c) (hR_pos : 0 < R) (hCs_nn : 0 ≤ Cs) (hCq_nn : 0 ≤ Cq)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - (1/2) * quadForm H w| ≤ Cs * ‖w‖ ^ 3)
+    (qψ : (ι → ℝ) → ℝ)
+    (h_qψ_bound : ∀ w : ι → ℝ, |qψ w| ≤ Cq * ‖w‖ ^ 2)
+    (dotCoef : ι → ℝ)
+    {δ : ℝ} (hδ_pos : 0 < δ) (hδ_le_R : δ ≤ R)
+    (hδ_const : Cs * δ ≤ c / 4)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ δ * Real.sqrt t) :
+    |dot dotCoef u * qψ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ ((∑ i, |dotCoef i|) * Cq * Cs / (t * Real.sqrt t)) * ‖u‖ ^ 6 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+  set DC : ℝ := ∑ i, |dotCoef i| with hDC_def
+  have hDC_nn : 0 ≤ DC := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_t_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  have h_gW_exp_bound :=
+    abs_gaussianWeight_mul_exp_sub_one_le_local V H hc_pos hR_pos hCs_nn
+      h_coer h_local hδ_pos hδ_le_R hδ_const ht u hu
+  -- |qψ((√t)⁻¹•u)| ≤ Cq · ‖u‖²/t (using ((√t)⁻¹)² = 1/t).
+  have h_qψ_le : |qψ ((Real.sqrt t)⁻¹ • u)| ≤ Cq * ‖u‖ ^ 2 / t := by
+    have h := h_qψ_bound ((Real.sqrt t)⁻¹ • u)
+    have h_norm_sm : ‖(Real.sqrt t)⁻¹ • u‖ = (Real.sqrt t)⁻¹ * ‖u‖ := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_t_inv_pos]
+    have h_norm_sm_sq : ‖(Real.sqrt t)⁻¹ • u‖ ^ 2 = ‖u‖ ^ 2 / t := by
+      rw [h_norm_sm]
+      rw [show ((Real.sqrt t)⁻¹ * ‖u‖) ^ 2
+            = ((Real.sqrt t) ^ 2)⁻¹ * ‖u‖ ^ 2 from by
+          rw [mul_pow, inv_pow]]
+      rw [Real.sq_sqrt ht.le]
+      ring
+    rw [h_norm_sm_sq] at h
+    -- h : |qψ ((√t)⁻¹ • u)| ≤ Cq * (‖u‖^2 / t)
+    rw [show Cq * ‖u‖ ^ 2 / t = Cq * (‖u‖ ^ 2 / t) from by ring]
+    exact h
+  -- |dot c| ≤ DC · ‖u‖.
+  have h_dot_le : |dot dotCoef u| ≤ DC * ‖u‖ := by
+    rw [hDC_def]; exact abs_dot_le_l1_mul_norm dotCoef u
+  -- Combine.
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_qψ_div_nn : 0 ≤ Cq * ‖u‖ ^ 2 / t :=
+    div_nonneg (mul_nonneg hCq_nn (sq_nonneg _)) ht.le
+  have h_gW_exp_nn : 0 ≤ Cs * ‖u‖ ^ 3 / Real.sqrt t *
+      Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    apply mul_nonneg _ (Real.exp_pos _).le
+    apply div_nonneg _ hsqrt_pos.le
+    exact mul_nonneg hCs_nn (pow_nonneg h_norm_nn _)
+  have h_DC_norm_nn : 0 ≤ DC * ‖u‖ := mul_nonneg hDC_nn h_norm_nn
+  rw [show dot dotCoef u * qψ ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+      = (dot dotCoef u * qψ ((Real.sqrt t)⁻¹ • u)) *
+        (gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)) from by ring]
+  rw [abs_mul]
+  rw [abs_mul (dot dotCoef u)]
+  calc |dot dotCoef u| * |qψ ((Real.sqrt t)⁻¹ • u)| *
+            |gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (DC * ‖u‖) * (Cq * ‖u‖ ^ 2 / t) *
+          (Cs * ‖u‖ ^ 3 / Real.sqrt t *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2))) := by
+        have h1 : |dot dotCoef u| * |qψ ((Real.sqrt t)⁻¹ • u)| ≤
+            (DC * ‖u‖) * (Cq * ‖u‖ ^ 2 / t) :=
+          mul_le_mul h_dot_le h_qψ_le (abs_nonneg _) h_DC_norm_nn
+        have h2_nn : 0 ≤ DC * ‖u‖ * (Cq * ‖u‖ ^ 2 / t) :=
+          mul_nonneg h_DC_norm_nn h_qψ_div_nn
+        exact mul_le_mul h1 h_gW_exp_bound (abs_nonneg _) h2_nn
+    _ = (DC * Cq * Cs / (t * Real.sqrt t)) * ‖u‖ ^ 6 *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+        rw [show ‖u‖ ^ 6 = ‖u‖ * ‖u‖ ^ 2 * ‖u‖ ^ 3 from by ring]
+        field_simp
+
 /-- **Glocal pointwise bound for helper 4**: on the local ball,
 
   `|remφ(u) · remψ(u) · gW · exp(-s_t)| ≤ Cφ · Cψ · ‖u‖⁴ / t² · exp(-c·‖u‖²)`
