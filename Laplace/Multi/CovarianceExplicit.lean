@@ -159,6 +159,22 @@ noncomputable def trASig
     (A Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)) : ℝ :=
   ∑ i, (A (Sig (Pi.single i (1 : ℝ)))) i
 
+/-- Standard basis vector `e i := Pi.single i 1`. Local abbreviation for use
+in tensor contraction proofs (per `gpt_responses/tactics_contraction_lemmas.md`). -/
+noncomputable def stdBasisVec (i : ι) : ι → ℝ :=
+  Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)
+
+/-- Coordinate-form tensor: `Tcoord T i j k := T(e_i, e_j, e_k)` for the
+standard basis. The fundamental object for index-based reasoning about T. -/
+noncomputable def Tcoord
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (i j k : ι) : ℝ :=
+  T (fun n : Fin 3 =>
+    match n with
+    | 0 => stdBasisVec i
+    | 1 => stdBasisVec j
+    | 2 => stdBasisVec k)
+
 end TensorContractions
 
 section FourthMomentInfrastructure
