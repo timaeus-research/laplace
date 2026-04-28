@@ -2327,6 +2327,95 @@ private noncomputable def expNumErr₄
 
 /-! ### Decomposition + 4 bounds -/
 
+/-- **Gaussian background identity** (Wick algebra step in the decomposition):
+
+`∫ [-L_t - Q_t - P_t + L_t·C_t + μ/t] · gW du = 0`
+
+where `L_t, Q_t, P_t, C_t, μ` are the standard scaled jets and the explicit
+coefficient. This is the algebraic identity that makes the centered-numerator
+decomposition close: the Gaussian background of the linear+quadratic+cubic
+jets cancels the `μ/t` correction.
+
+Proof: oddness for L_t, P_t (linear/cubic against even gW vanish);
+`gaussian_quad_expectation` for Q_t; `gaussian_linear_cubic` for L_t·C_t;
+and the algebraic identity `2μ = trASig - dot(Hinv a)(T:Σ)`. -/
+private lemma expNumerator_gaussian_background_eq_zero
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv)
+    {t : ℝ} (ht : 0 < t) :
+    (∫ u : ι → ℝ, expNumLin a t u * gaussianWeight H u)
+      + (∫ u : ι → ℝ, expNumQuad φ a hφ t u * gaussianWeight H u)
+      + (∫ u : ι → ℝ, expNumCubic φ a hφ t u * gaussianWeight H u)
+      - expNumeratorCoeff V φ H Hinv a hV hφ / t *
+          (∫ u : ι → ℝ, gaussianWeight H u)
+      - (∫ u : ι → ℝ, expNumLin a t u * expPotCubic V H hV t u
+          * gaussianWeight H u)
+      = 0 := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have ht_ne : t ≠ 0 := ne_of_gt ht
+  have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  -- ∫ L_t · gW = (√t)⁻¹ · ∫ ⟨a,u⟩ · gW = 0.
+  have h_L_zero : ∫ u : ι → ℝ, expNumLin a t u * gaussianWeight H u = 0 := by
+    have h_eq : (fun u : ι → ℝ => expNumLin a t u * gaussianWeight H u)
+        = (fun u => (Real.sqrt t)⁻¹ * (dot a u * gaussianWeight H u)) := by
+      funext u; unfold expNumLin; ring
+    rw [h_eq, integral_const_mul]
+    rw [integral_dot_mul_gaussianWeight_eq_zero]
+    ring
+  -- ∫ Q_t · gW = (1/t) · gaussianZ · (1/2) · trASig.
+  have h_Q_eval : ∫ u : ι → ℝ, expNumQuad φ a hφ t u * gaussianWeight H u
+      = (1 / t) * (gaussianZ H * (1 / 2 : ℝ) * trASig hφ.A Hinv) := by
+    have h_eq : (fun u : ι → ℝ => expNumQuad φ a hφ t u * gaussianWeight H u)
+        = (fun u => (1 / t) *
+            ((1 / 2 : ℝ) * quadForm hφ.A u * gaussianWeight H u)) := by
+      funext u; unfold expNumQuad; ring
+    rw [h_eq, integral_const_mul]
+    rw [gaussian_quad_expectation hφ.A hφ.A_symm hGauss.toLaplaceCovHypotheses]
+  -- ∫ P_t · gW = 0 (oddness).
+  have h_P_zero : ∫ u : ι → ℝ, expNumCubic φ a hφ t u * gaussianWeight H u = 0 := by
+    have h_eq : (fun u : ι → ℝ => expNumCubic φ a hφ t u * gaussianWeight H u)
+        = (fun u => ((Real.sqrt t)⁻¹ / t * (1 / 6 : ℝ)) *
+            (hφ.Φ (fun _ => u) * gaussianWeight H u)) := by
+      funext u; unfold expNumCubic; ring
+    rw [h_eq, integral_const_mul]
+    rw [integral_cmm_diag_mul_gaussianWeight_eq_zero H hφ.Φ]
+    ring
+  -- ∫ L_t · C_t · gW = ((√t)⁻¹·(√t)⁻¹·(1/6)) · ∫ ⟨a,u⟩ · T(u,u,u) · gW
+  --                  = (1/(6t)) · gaussianZ · 3 · dot(Hinv a)(T:Σ)
+  --                  = (Z/(2t)) · dot(Hinv a)(T:Σ).
+  have h_LC_eval : ∫ u : ι → ℝ, expNumLin a t u * expPotCubic V H hV t u
+                       * gaussianWeight H u
+      = (1 / (2 * t)) * (gaussianZ H *
+          dot (Hinv a) (tensorContractMatrix hV.T Hinv)) := by
+    have h_sqrt_inv_sq : (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ = 1 / t := by
+      rw [show (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹
+            = ((Real.sqrt t) * (Real.sqrt t))⁻¹ from by rw [mul_inv]]
+      rw [Real.mul_self_sqrt ht.le]
+      rw [one_div]
+    have h_eq : (fun u : ι → ℝ => expNumLin a t u * expPotCubic V H hV t u
+                * gaussianWeight H u)
+        = (fun u => ((Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ * (1 / 6 : ℝ)) *
+            (dot a u * hV.T (fun _ => u) * gaussianWeight H u)) := by
+      funext u; unfold expNumLin expPotCubic; ring
+    rw [h_eq, integral_const_mul]
+    rw [gaussian_linear_cubic a hV.T hV.T_symm hGauss]
+    rw [h_sqrt_inv_sq]
+    field_simp
+    ring
+  -- ∫ gW = gaussianZ (definitional).
+  have h_gW_eval : ∫ u : ι → ℝ, gaussianWeight H u = gaussianZ H := rfl
+  -- Combine: 0 + (1/(2t))·Z·trASig + 0 - (μ/t)·Z - (Z/(2t))·dot = 0.
+  rw [h_L_zero, h_Q_eval, h_P_zero, h_LC_eval, h_gW_eval]
+  -- Goal: 0 + (1/t)·(Z·(1/2)·trASig) + 0 - (μ/t)·Z - (1/(2t))·(Z·dot) = 0.
+  -- With μ = (trASig - dot)/2.
+  unfold expNumeratorCoeff
+  ring
+
 /-- **Centered numerator decomposition**: the EXP analogue of the COV
 `pair_product_expansion`. Decomposes the centered numerator as a sum of
 the 4 helper integrals, with the Gaussian main terms
