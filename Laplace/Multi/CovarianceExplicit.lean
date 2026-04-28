@@ -161,6 +161,179 @@ noncomputable def trASig
 
 end TensorContractions
 
+section FourthMomentInfrastructure
+
+/-- **Cubic Fubini-IBP hypothesis**: the multivariate analog of
+`FubiniIBPHypothesis` for cubic test functions `f(u) = u_a u_b u_c`. The
+content is that the boundary terms in the integration-by-parts identity
+$\int (\partial_l f) \cdot gW = \int f \cdot (Hu)_l \cdot gW$
+vanish; concretely,
+$$
+  \int \big[(\delta_{la} u_b u_c + \delta_{lb} u_a u_c + \delta_{lc} u_a u_b)
+  \,gW - u_a u_b u_c (Hu)_l \, gW\big] = 0.
+$$
+This is provable under coercivity hypotheses on `H` via Fubini + 1D-FTC
+slice-by-slice, as in the existing `FubiniIBPHypothesis`. We expose it as
+a hypothesis here, packaged into `LaplaceCov4MomentHypotheses` below. -/
+def FubiniIBPHypothesisCubic
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (a b c l : ι) : Prop :=
+  ∫ u : ι → ℝ,
+    (((if l = a then u b * u c else 0) +
+      (if l = b then u a * u c else 0) +
+      (if l = c then u a * u b else 0)) * gaussianWeight H u
+      - u a * u b * u c * (H u) l * gaussianWeight H u) = 0
+
+/-- **4th-moment hypothesis package**: extends `LaplaceCovHypotheses` with
+the integrability and Fubini-IBP fields needed to prove the 4th-moment
+Wick formula `gaussian_fourth_moment_formula`. -/
+structure LaplaceCov4MomentHypotheses
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    extends LaplaceCovHypotheses H Hinv where
+  /-- 4th-moment integrability. -/
+  int_4moment : ∀ a b c d : ι,
+    Integrable (fun u : ι → ℝ => u a * u b * u c * u d * gaussianWeight H u)
+  /-- Cubic-IBP integrand integrability: `u_a · u_b · u_c · (Hu)_l · gW`
+  is integrable. -/
+  int_3_Hl : ∀ a b c l : ι,
+    Integrable (fun u : ι → ℝ => u a * u b * u c * (H u) l * gaussianWeight H u)
+  /-- Cubic Fubini-IBP. -/
+  fubini_ibp_cubic : ∀ a b c l : ι, FubiniIBPHypothesisCubic H a b c l
+
+end FourthMomentInfrastructure
+
+section InverseSymmetry
+
+/-- **Symmetry of the inverse**: under `LaplaceCovHypotheses` (`H`
+symmetric, `Hinv` a right-inverse for `H`, `H` injective), `Hinv` is
+also symmetric: $\sum_k x_k (Hinv\, y)_k = \sum_k y_k (Hinv\, x)_k$.
+
+This is needed for the 4th-moment Wick proof: the trace cyclicity
+`tr(A Σ) = tr(Σ A)` in coordinate form needs Σ symmetry. -/
+lemma Hinv_symm
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCovHypotheses H Hinv) (x y : ι → ℝ) :
+    ∑ k, x k * (Hinv y) k = ∑ k, y k * (Hinv x) k := by
+  -- Apply H_symm to (Hinv y, Hinv x): gives
+  --   ∑ (Hinv y)_k (H (Hinv x))_k = ∑ (Hinv x)_k (H (Hinv y))_k.
+  -- Use H ∘ Hinv = id: (H (Hinv x)) = x, (H (Hinv y)) = y.
+  have h1 : H (Hinv x) = x := by
+    have := congrArg (fun f => f x) hGauss.H_inv_right
+    simpa using this
+  have h2 : H (Hinv y) = y := by
+    have := congrArg (fun f => f y) hGauss.H_inv_right
+    simpa using this
+  have h_apply := hGauss.H_symm (Hinv y) (Hinv x)
+  rw [h1, h2] at h_apply
+  -- h_apply : ∑ (Hinv y)_k * x k = ∑ (Hinv x)_k * y k
+  -- Goal:    ∑ x k * (Hinv y) k = ∑ y k * (Hinv x) k
+  have h_lhs : ∑ k, x k * (Hinv y) k = ∑ k, (Hinv y) k * x k := by
+    apply Finset.sum_congr rfl; intros; ring
+  have h_rhs : ∑ k, y k * (Hinv x) k = ∑ k, (Hinv x) k * y k := by
+    apply Finset.sum_congr rfl; intros; ring
+  rw [h_lhs, h_rhs]; exact h_apply
+
+end InverseSymmetry
+
+section CubicIBP
+
+/-- **Cubic-test-function IBP**: from the cubic Fubini-IBP hypothesis,
+integration by parts on the cubic monomial $u_a u_b u_c$ yields
+$$
+  \int u_a u_b u_c (Hu)_l \, gW
+   = \int \big[(\delta_{la} u_b u_c + \delta_{lb} u_a u_c
+     + \delta_{lc} u_a u_b)\big] \, gW.
+$$
+This is the direct analog of `gaussian_ibp_coord`, lifted to cubic test
+functions; together with the 2nd-moment identity it gives the 4th-moment
+Wick formula. -/
+theorem gaussian_ibp_cubic_f
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv)
+    (a b c l : ι) :
+    ∫ u : ι → ℝ, u a * u b * u c * (H u) l * gaussianWeight H u
+      = ∫ u : ι → ℝ,
+          ((if l = a then u b * u c else 0) +
+           (if l = b then u a * u c else 0) +
+           (if l = c then u a * u b else 0)) * gaussianWeight H u := by
+  -- Fubini-IBP says the integral of (LHS − RHS in integrand form) is 0.
+  have h_fubini := hGauss.fubini_ibp_cubic a b c l
+  unfold FubiniIBPHypothesisCubic at h_fubini
+  -- h_fubini : ∫ ((δ-form * gW - u_a u_b u_c (Hu)_l * gW)) = 0
+  -- Split into ∫ A - ∫ B = 0 and rearrange.
+  have h_intA : Integrable (fun u : ι → ℝ =>
+      ((if l = a then u b * u c else 0) +
+       (if l = b then u a * u c else 0) +
+       (if l = c then u a * u b else 0)) * gaussianWeight H u) := by
+    -- Sum of three indicator-times-2nd-moment integrands.
+    have h1 : Integrable (fun u : ι → ℝ =>
+        (if l = a then u b * u c else 0) * gaussianWeight H u) := by
+      by_cases hla : l = a
+      · simp only [if_pos hla]; exact hGauss.int_uk_uj_gW b c
+      · simp only [if_neg hla, zero_mul]; exact integrable_zero _ _ _
+    have h2 : Integrable (fun u : ι → ℝ =>
+        (if l = b then u a * u c else 0) * gaussianWeight H u) := by
+      by_cases hlb : l = b
+      · simp only [if_pos hlb]; exact hGauss.int_uk_uj_gW a c
+      · simp only [if_neg hlb, zero_mul]; exact integrable_zero _ _ _
+    have h3 : Integrable (fun u : ι → ℝ =>
+        (if l = c then u a * u b else 0) * gaussianWeight H u) := by
+      by_cases hlc : l = c
+      · simp only [if_pos hlc]; exact hGauss.int_uk_uj_gW a b
+      · simp only [if_neg hlc, zero_mul]; exact integrable_zero _ _ _
+    have h_sum_lambda : Integrable (fun u : ι → ℝ =>
+        (if l = a then u b * u c else 0) * gaussianWeight H u
+        + (if l = b then u a * u c else 0) * gaussianWeight H u
+        + (if l = c then u a * u b else 0) * gaussianWeight H u) :=
+      (h1.add h2).add h3
+    apply h_sum_lambda.congr
+    filter_upwards with u
+    ring
+  have h_intB := hGauss.int_3_Hl a b c l
+  have h_split :
+      ∫ u : ι → ℝ,
+        (((if l = a then u b * u c else 0) +
+          (if l = b then u a * u c else 0) +
+          (if l = c then u a * u b else 0)) * gaussianWeight H u
+          - u a * u b * u c * (H u) l * gaussianWeight H u)
+      = (∫ u, ((if l = a then u b * u c else 0) +
+              (if l = b then u a * u c else 0) +
+              (if l = c then u a * u b else 0)) * gaussianWeight H u)
+        - (∫ u, u a * u b * u c * (H u) l * gaussianWeight H u) :=
+    integral_sub h_intA h_intB
+  rw [h_split] at h_fubini
+  linarith
+
+end CubicIBP
+
+section FourthMomentFormula
+
+/-- **4th-moment Wick formula**: for indices $a, b, c, d$,
+$$
+  \int u_a u_b u_c u_d \, gW
+   = Z \cdot \big[\Sigma_{ab}\Sigma_{cd} + \Sigma_{ac}\Sigma_{bd}
+     + \Sigma_{ad}\Sigma_{bc}\big],
+$$
+where $\Sigma_{ij} = (Hinv\, e_j)_i$ in coordinate form.
+
+The proof multiplies the cubic IBP identity by $\Sigma_{lp}$ and sums over
+$l$; the contraction $\sum_l \Sigma_{lp} (Hu)_l = u_p$ (using $\Sigma$
+symmetric and $\Sigma H = I$) reduces the LHS to the 4th moment. -/
+theorem gaussian_fourth_moment_formula
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv)
+    (a b c d : ι) :
+    ∫ u : ι → ℝ, u a * u b * u c * u d * gaussianWeight H u
+      = gaussianZ H *
+          ((Hinv (Pi.single (M := fun _ : ι => ℝ) b (1 : ℝ))) a *
+             (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) c
+           + (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) a *
+             (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) b
+           + (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) a *
+             (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) b) := by
+  sorry
+
+end FourthMomentFormula
+
 set_option maxHeartbeats 800000
 
 section GaussianContractions
