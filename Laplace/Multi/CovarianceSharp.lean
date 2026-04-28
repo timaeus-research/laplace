@@ -383,6 +383,54 @@ private lemma integrable_dot_mul_dot_mul_rescaled_weight
 
 end IntegrabilityHelpers
 
+section ParityLemmas
+
+/-- **Parity vanishing for the centered bilinear correction**: the integral
+of `(dot a u · dot b u - m) · gW · cV((√t)⁻¹•u)` against the Gaussian
+weight is zero, since the integrand is odd in u (even · even · odd).
+
+This is the parity argument that drives the sharp `O(1/t)` rate for the
+centered bilinear correction (sharp helper 1): it kills the leading
+`1/√t` contribution that the weak track was forced to triangle-bound. -/
+lemma integral_centered_bilinear_cubicJet_eq_zero
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (cV : (ι → ℝ) → ℝ) (cV_odd : Function.Odd cV)
+    (a b : ι → ℝ) (m : ℝ) (t : ℝ) :
+    ∫ u : ι → ℝ, (dot a u * dot b u - m) *
+      cV ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u = 0 := by
+  apply integral_odd_mul_gaussian_eq_zero H
+    (fun u => (dot a u * dot b u - m) * cV ((Real.sqrt t)⁻¹ • u))
+  intro u
+  -- Show odd: (dot a (-u) · dot b (-u) - m) · cV((√t)⁻¹ • (-u))
+  --         = (dot a u · dot b u - m) · (-cV((√t)⁻¹ • u))
+  --         = -((dot a u · dot b u - m) · cV((√t)⁻¹ • u)).
+  have h_dot_a : dot a (-u) = -(dot a u) := dot_neg a u
+  have h_dot_b : dot b (-u) = -(dot b u) := dot_neg b u
+  have h_smul : (Real.sqrt t)⁻¹ • (-u) = -((Real.sqrt t)⁻¹ • u) := by
+    simp [smul_neg]
+  rw [h_dot_a, h_dot_b, h_smul, cV_odd ((Real.sqrt t)⁻¹ • u)]
+  ring
+
+/-- **Parity vanishing for the cross-term jet correction**: the integral of
+`dot c u · qφ((√t)⁻¹•u) · gW` is zero, since the integrand is odd in u
+(odd · even · even). Used by sharp helpers 2/3. -/
+lemma integral_dot_mul_quadJet_eq_zero
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (qφ : (ι → ℝ) → ℝ) (qφ_even : Function.Even qφ)
+    (c : ι → ℝ) (t : ℝ) :
+    ∫ u : ι → ℝ, dot c u * qφ ((Real.sqrt t)⁻¹ • u) *
+      gaussianWeight H u = 0 := by
+  apply integral_odd_mul_gaussian_eq_zero H
+    (fun u => dot c u * qφ ((Real.sqrt t)⁻¹ • u))
+  intro u
+  have h_dot : dot c (-u) = -(dot c u) := dot_neg c u
+  have h_smul : (Real.sqrt t)⁻¹ • (-u) = -((Real.sqrt t)⁻¹ • u) := by
+    simp [smul_neg]
+  rw [h_dot, h_smul, qφ_even ((Real.sqrt t)⁻¹ • u)]
+  ring
+
+end ParityLemmas
+
 section SharpHelpers
 
 /-- **Sharp helper 1 (centered bilinear correction)**: the centered
