@@ -1545,7 +1545,23 @@ private lemma gaussian_cubic_linear
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∫ u : ι → ℝ, (1 / 6 : ℝ) * Φ (fun _ => u) * dot b u * gaussianWeight H u
       = gaussianZ H * (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv) := by
-  sorry
+  -- Reduce to gaussian_linear_cubic with (a, T) := (b, Φ); both sides differ by 1/6.
+  have h := gaussian_linear_cubic (H := H) (Hinv := Hinv) b Φ hΦ_symm hGauss
+  -- h : ∫ dot b u * Φ (fun _ => u) * gaussianWeight H u
+  --       = gaussianZ H * 3 * dot (Hinv b) (tensorContractMatrix Φ Hinv)
+  -- Pull (1/6) inside the integral and rewrite the integrand.
+  have h_integrand : ∀ u : ι → ℝ,
+      (1 / 6 : ℝ) * Φ (fun _ => u) * dot b u * gaussianWeight H u
+      = (1 / 6 : ℝ) *
+          (dot b u * Φ (fun _ : Fin 3 => u) * gaussianWeight H u) := by
+    intro u; ring
+  rw [show (fun u : ι → ℝ =>
+        (1 / 6 : ℝ) * Φ (fun _ => u) * dot b u * gaussianWeight H u) =
+      fun u => (1 / 6 : ℝ) *
+          (dot b u * Φ (fun _ : Fin 3 => u) * gaussianWeight H u)
+      from funext h_integrand]
+  rw [integral_const_mul, h]
+  ring
 
 /-- **6th-moment contraction (quad · linear · cubic)**:
 $\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = $
