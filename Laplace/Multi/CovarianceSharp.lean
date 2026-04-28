@@ -1293,6 +1293,16 @@ private lemma abs_integral_remainder_remainder_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / t ^ 2 := by
+  -- Reduce to the existing weak helper 4 (rate K/(t·√t)) — the sharp K/t²
+  -- rate is a strict tightening, which we defer. The weak rate suffices
+  -- to give a finite K, but with the correctly typed bound `K / t^2`
+  -- we'd need T₀ chosen so that t ≥ T₀ implies K_weak/(t·√t) ≤ K_sharp/t².
+  -- That is: K_weak · t ≤ K_sharp · √t i.e., t ≤ (K_sharp/K_weak)² · ...
+  -- which doesn't hold for t → ∞. So this reduction does NOT give K/t².
+  -- The proof requires the sharp local + tail (k=4 indicator) bookkeeping.
+  -- Deferred — see weak helper 4 in `Laplace.Multi.Covariance` for the
+  -- ~1488 LOC template; sharp helper 4 follows the same structure with
+  -- the indicator power changed from 3 to 4.
   sorry
 
 end SharpHelpers
