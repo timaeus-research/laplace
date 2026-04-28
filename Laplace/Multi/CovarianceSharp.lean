@@ -311,6 +311,74 @@ lemma abs_rescaledObservable_quadratic_error_le
 
 end RescaledLocalBounds
 
+section SharpHelpers
+
+/-- **Sharp helper 1 (centered bilinear correction)**: the centered
+bilinear factor `(dot a u · dot b u - m)` against `gW · exp(-s_t)`
+integrates to `O(1/t)`, where `m := dot a (Hinv b)`.
+
+The two-step argument:
+- `∫ (dot a · dot b - m) · gW = m · Z - m · Z = 0` via `gaussian_dot_mul_dot`.
+- `|∫ (dot a · dot b - m) · gW · (exp(-s_t) - 1)| ≤ K/t` via parity:
+  expand `exp(-s_t) - 1 = -s_t + Taylor remainder`, then
+  `s_t = t · cV((√t)⁻¹•u) + O(‖u‖^4/t)` (Stage 2 bound), and the leading
+  `-(t·cV)` term integrates to zero against the even bilinear factor and
+  even Gaussian weight. -/
+private lemma abs_integral_centered_bilinear_sharp_le
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |∫ u : ι → ℝ, (dot a u * dot b u - dot a (Hinv b)) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ K / t := by
+  sorry
+
+/-- **Sharp helper 2/3 (cross term)**: `∫ dot c u · (φ((√t)⁻¹•u) -
+(√t)⁻¹·dot d u) · gW · exp(-s_t)` integrates to `O(1/(t·√t))`. The proof
+uses the quadratic jet decomposition `remψ = qφ((√t)⁻¹•u) + r₃` (Stage 2),
+with `dot c · qφ((√t)⁻¹•u)` integrating to zero by parity (linear · even
+= odd) against the even Gaussian. -/
+private lemma abs_integral_dot_mul_jet_remainder_sharp_le
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (dotCoef phiGrad : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hφ : ObservableJetApprox φ phiGrad)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |∫ u : ι → ℝ, dot dotCoef u *
+          (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ K / (t * Real.sqrt t) := by
+  sorry
+
+/-- **Sharp helper 4 (quadratic remainder)**: the product of two
+observable remainders integrated against `gW · exp(-s_t)` is `O(1/t²)`.
+Local: `|remφ · remψ| ≤ Cφ·Cψ·‖u‖^4/t²` via the quadratic jets. -/
+private lemma abs_integral_remainder_remainder_sharp_le
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hφ : ObservableJetApprox φ a)
+    (hψ : ObservableJetApprox ψ b)
+    (hGauss : LaplaceCovHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |∫ u : ι → ℝ,
+          (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+          (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ K / t ^ 2 := by
+  sorry
+
+end SharpHelpers
+
 section CenteredNumerator
 
 /-- **Centered pair-numerator bound (sharp rate)**.
