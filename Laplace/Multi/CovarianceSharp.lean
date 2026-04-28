@@ -455,21 +455,33 @@ private lemma abs_integral_centered_bilinear_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / t := by
-  -- Strategy:
-  -- ∫ (dot a · dot b - m) · gW · exp(-s_t)
-  --   = ∫ (dot a · dot b - m) · gW · 1
-  --     + ∫ (dot a · dot b - m) · gW · (exp(-s_t) - 1)
-  --   = 0 + (parity-resolved bound).
-  -- The first integral vanishes via gaussian_dot_mul_dot:
-  --   ∫ dot a · dot b · gW = m · Z.
-  --   ∫ gW = Z.
-  --   So ∫ (dot a · dot b - m) · gW = m·Z - m·Z = 0.
-  -- Bounding the second by parity is the technical heart.
-  -- This proof is non-trivial (~500 LOC). For now we use the existing
-  -- weak-track bound via |gW · (exp(-s_t)-1)| ≤ Cs·‖u‖³/√t locally + tail,
-  -- combined with |dot a · dot b - m| ≤ (A·B+|m|)·(1 + ‖u‖²), giving an
-  -- absolute bound of K/√t. To upgrade to K/t we need the parity argument
-  -- exploiting oddness of `t · cV((√t)⁻¹•u)` — deferred to a follow-on file.
+  -- Per gpt_responses/sharp_helpers_recipe.md, this proof uses the
+  -- 'corrected bracket' trick:
+  --
+  --   I(t) = ∫ B · gW · exp(-s_t)
+  --        = ∫ B · gW · 1                                     [1]
+  --          - ∫ B · gW · c_t                                 [2]
+  --          + ∫ B · gW · (exp(-s_t) - 1 + c_t)               [3]
+  --
+  --   where B(u) := dot a u · dot b u - m,
+  --         c_t(u) := t · hV.cV ((√t)⁻¹ • u).
+  --
+  -- [1] = 0 via gaussian_dot_mul_dot (∫ dot a · dot b · gW = m·Z and ∫ gW = Z).
+  -- [2] = 0 via parity (B even, c_t odd, gW even — integrand odd).
+  --       Use integral_centered_bilinear_cubicJet_eq_zero.
+  -- [3] = ∫ B · gW · ((exp(-s_t) - (1-s_t)) + (c_t - s_t))
+  --       Two pieces:
+  --         (a) Taylor remainder |exp(-s) - (1-s)| ≤ s² · exp|s| (Stage 1).
+  --             Locally |s_t| ≤ C·‖u‖³/√t (existing weak), so piece is
+  --             ≤ const · ‖u‖^6 / t · gW · exp_factor → K/t.
+  --         (b) Quartic remainder |s_t - c_t| ≤ C₄·‖u‖^4/t (Stage 2,
+  --             abs_rescaledPerturbation_sub_scaledCubicJet_le).
+  --             So piece is ≤ const · ‖u‖^4 / t · gW · poly → K/t.
+  --
+  -- Tail: indicator `1_{‖u‖≥ρ√t} ≤ ‖u‖²/(ρ²·t)` gains the extra 1/t factor.
+  --
+  -- Full proof ~600-800 LOC. Deferred — track in
+  -- notes/sharp_helpers_recipe.md.
   sorry
 
 /-- **Sharp helper 2/3 (cross term)**: `∫ dot c u · (φ((√t)⁻¹•u) -

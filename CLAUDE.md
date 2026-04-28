@@ -55,11 +55,34 @@ file or via the Lean LSP in your editor.
 
 ```bash
 lake exe cache get   # Download prebuilt Mathlib oleans (run after fresh clone or lake clean)
-lake build           # Build the Laplace library
+lake build           # Build the Laplace library (full)
 ```
 
 The Mathlib cache is essential — building Mathlib from source is ~30+ min;
 pulling the cache is ~1 min.
+
+### Prefer the MCP Lean server for incremental checking
+
+`lake build` is slow (~20-60s per file even when warm). For iterative
+proof work, **use the project-local MCP server** registered in `.mcp.json`,
+which wraps a persistent `lake serve` LSP. Tools exposed (Claude Code
+namespaces them as `mcp__lean__<tool>`):
+
+- `mcp__lean__lean_run_code` — run an ad-hoc Lean snippet (`#check`, `#eval`, mini-proof). Replaces "edit a scratch file and call `lake env lean` via Bash".
+- `mcp__lean__lean_diagnostic_messages` — get errors/warnings for a file from the live LSP. Sub-second after warm.
+- `mcp__lean__lean_goal` — proof state at a position. Useful while iterating on a tactic block.
+- `mcp__lean__lean_hover_info`, `mcp__lean__lean_completions` — definition lookup, completions.
+- `mcp__lean__lean_leansearch`, `mcp__lean__lean_loogle`, `mcp__lean__lean_leanfinder` — Mathlib semantic / pattern search.
+
+Use `lake build` only as a final-verification fallback, or to refresh
+oleans after a structural change. The MCP server is much faster and
+keeps the iteration prefix small (cheaper sessions).
+
+The MCP server runs `uvx --from lean-lsp-mcp lean-lsp-mcp` against this
+project root. First invocation downloads the package (~30s, cached
+thereafter); subsequent calls are sub-second. If the server appears
+stuck, restart Claude Code or kill stale `lake serve` processes
+(`pkill -f lake; pkill -f lean`).
 
 ## Lean / Mathlib conventions
 
