@@ -1898,6 +1898,44 @@ private noncomputable def expNumObsRem
     - expNumQuad φ a hφ t u
     - expNumCubic φ a hφ t u
 
+/-! ### Parity (oddness/evenness) of scaled jets — for J₃, J₄ symmetrization -/
+
+omit [DecidableEq ι] in
+/-- The linear obs jet is odd: `L_t(-u) = -L_t(u)`. -/
+private lemma expNumLin_neg (a : ι → ℝ) (t : ℝ) (u : ι → ℝ) :
+    expNumLin a t (-u) = - expNumLin a t u := by
+  unfold expNumLin
+  have h_dot_neg : dot a (-u) = -(dot a u) := dot_neg a u
+  rw [h_dot_neg]
+  ring
+
+/-- The quadratic obs jet is even: `Q_t(-u) = Q_t(u)`. -/
+private lemma expNumQuad_neg
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (hφ : ObservableTensorApprox φ a)
+    (t : ℝ) (u : ι → ℝ) :
+    expNumQuad φ a hφ t (-u) = expNumQuad φ a hφ t u := by
+  unfold expNumQuad quadForm
+  show (1 / t) * ((1 / 2 : ℝ) * ∑ i, (-u) i * (hφ.A (-u)) i)
+      = (1 / t) * ((1 / 2 : ℝ) * ∑ i, u i * (hφ.A u) i)
+  have h_eq : ∀ i, (-u) i * (hφ.A (-u)) i = u i * (hφ.A u) i := by
+    intro i
+    have h1 : (-u) i = -(u i) := by simp [Pi.neg_apply]
+    have h2 : hφ.A (-u) = -(hφ.A u) := by rw [map_neg]
+    rw [h1, h2]; simp [Pi.neg_apply]
+  congr 1; congr 1; exact Finset.sum_congr rfl (fun i _ => h_eq i)
+
+/-- The cubic potential jet is odd: `C_t(-u) = -C_t(u)`. -/
+private lemma expPotCubic_neg
+    (V : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialTensorApprox V H)
+    (t : ℝ) (u : ι → ℝ) :
+    expPotCubic V H hV t (-u) = - expPotCubic V H hV t u := by
+  unfold expPotCubic
+  rw [cmm_diag_odd hV.T u]
+  ring
+
 /-! ### Pointwise bounds on the scaled jets
 
 These pointwise bounds will feed into the Glocal+Gtail integration arguments
