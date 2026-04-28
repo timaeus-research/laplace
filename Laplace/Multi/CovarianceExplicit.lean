@@ -207,17 +207,102 @@ lemma Tcoord_perm
 $$
   T(u, u, u) = \sum_{i,j,k} u_i u_j u_k \cdot T_{ijk}.
 $$
-The proof uses `eq_sum_stdBasis` to decompose `u` per slot, applies
-`ContinuousMultilinearMap.map_sum` to expand the trilinear over the 3 slots
-(getting a `Fin 3 → ι` indexed sum), uses `map_smul_univ` to factor scalars,
-and converts the `Fin 3 → ι` sum to a triple sum via `Fin.cons`-style
-decomposition. -/
+Slot-by-slot via `MultilinearMap.map_update_sum` + `map_update_smul`, per
+the GPT-5.5 Pro recipe in `gpt_responses/tactics_T_apply_diag.md`. -/
 lemma T_apply_diag_eq_sum
     (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
     (u : ι → ℝ) :
     T (fun _ : Fin 3 => u) =
       ∑ i, ∑ j, ∑ k, u i * u j * u k * Tcoord T i j k := by
-  sorry
+  classical
+  -- Reusable one-slot expansion helper.
+  have expand_slot (m : Fin 3 → ι → ℝ) (s : Fin 3) (hs : m s = u) :
+      T m = ∑ a : ι, u a * T (Function.update m s (stdBasisVec a)) := by
+    calc
+      T m = T (Function.update m s (∑ a : ι, u a • stdBasisVec a)) := by
+        congr 1
+        funext n
+        by_cases h : n = s
+        · subst h
+          simpa [hs] using (eq_sum_stdBasis u)
+        · simp [Function.update, h]
+      _ = ∑ a : ι, T (Function.update m s (u a • stdBasisVec a)) := by
+        simpa using
+          (T.toMultilinearMap.map_update_sum
+            (t := Finset.univ) (i := s)
+            (g := fun a : ι => u a • stdBasisVec a) (m := m))
+      _ = ∑ a : ι, u a * T (Function.update m s (stdBasisVec a)) := by
+        refine Finset.sum_congr rfl ?_
+        intro a _
+        simpa [smul_eq_mul] using
+          (T.toMultilinearMap.map_update_smul
+            (m := m) (i := s) (c := u a) (x := stdBasisVec a))
+  -- Apply expand_slot at each of the three slots.
+  have h0 := expand_slot (m := fun _ : Fin 3 => u) (s := (0 : Fin 3)) rfl
+  have h1 (i : ι) :=
+    expand_slot
+      (m := Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i))
+      (s := (1 : Fin 3)) (by simp [Function.update])
+  have h2 (i j : ι) :=
+    expand_slot
+      (m := Function.update
+        (Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i))
+        (1 : Fin 3) (stdBasisVec j))
+      (s := (2 : Fin 3)) (by simp [Function.update])
+  -- Identify the fully-expanded slot configuration with Tcoord.
+  have hcoord (i j k : ι) :
+      T (Function.update
+          (Function.update
+            (Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i))
+            (1 : Fin 3) (stdBasisVec j))
+          (2 : Fin 3) (stdBasisVec k)) = Tcoord T i j k := by
+    have hfun :
+        Function.update
+          (Function.update
+            (Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i))
+            (1 : Fin 3) (stdBasisVec j))
+          (2 : Fin 3) (stdBasisVec k)
+        =
+        (fun n : Fin 3 =>
+          match n with
+          | 0 => stdBasisVec i
+          | 1 => stdBasisVec j
+          | 2 => stdBasisVec k) := by
+      funext n
+      fin_cases n <;> simp [Function.update]
+    simpa [Tcoord] using congrArg T hfun
+  -- Combine the three slot expansions.
+  calc
+    T (fun _ : Fin 3 => u)
+        = ∑ i : ι, u i *
+            T (Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i)) := h0
+    _ = ∑ i : ι, ∑ j : ι, u i * (u j *
+            T (Function.update
+              (Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i))
+              (1 : Fin 3) (stdBasisVec j))) := by
+          refine Finset.sum_congr rfl ?_
+          intro i _
+          rw [h1 i, Finset.mul_sum]
+    _ = ∑ i : ι, ∑ j : ι, ∑ k : ι, u i * (u j * (u k *
+            T (Function.update
+              (Function.update
+                (Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i))
+                (1 : Fin 3) (stdBasisVec j))
+              (2 : Fin 3) (stdBasisVec k)))) := by
+          refine Finset.sum_congr rfl ?_
+          intro i _
+          refine Finset.sum_congr rfl ?_
+          intro j _
+          rw [h2 i j, Finset.mul_sum, Finset.mul_sum]
+    _ = ∑ i, ∑ j, ∑ k, u i * u j * u k * Tcoord T i j k := by
+          refine Finset.sum_congr rfl ?_
+          intro i _
+          refine Finset.sum_congr rfl ?_
+          intro j _
+          refine Finset.sum_congr rfl ?_
+          intro k _
+          rw [hcoord i j k]
+          ring
 
 end TensorContractions
 
