@@ -188,6 +188,129 @@ lemma abs_exp_neg_sub_one_add_le (r : ℝ) :
 
 end ScalarBounds
 
+section RescaledLocalBounds
+
+/-- **Sharp rescaled-perturbation bound** (parametrized).
+
+Given a quartic local remainder `|V w - ((1/2)·quadForm H w + cV w)| ≤ C·‖w‖^4`
+on `‖w‖ ≤ R`, the rescaled perturbation differs from the *scaled cubic jet*
+`s₁(t,u) := t · cV((√t)⁻¹ • u)` by `O(‖u‖^4/t)` on the local region:
+
+  `|rescaledPerturbation V H t u - t · cV((√t)⁻¹ • u)| ≤ C · ‖u‖^4 / t`,
+  for `‖u‖ ≤ R · √t`.
+
+This is the sharp analogue of `abs_rescaledPerturbation_le` (which only
+controls `|rescaledPerturbation| ≤ C·‖u‖³/√t`); it isolates the *odd*
+1/√t-scale leading correction `t · cV((√t)⁻¹ • u)`. -/
+lemma abs_rescaledPerturbation_sub_scaledCubicJet_le
+    (V cV : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {R C : ℝ}
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |V w - ((1 / 2 : ℝ) * quadForm H w + cV w)| ≤ C * ‖w‖ ^ 4)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ R * Real.sqrt t) :
+    |rescaledPerturbation V H t u - t * cV ((Real.sqrt t)⁻¹ • u)|
+      ≤ C * ‖u‖ ^ 4 / t := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  have ht_ne : t ≠ 0 := ne_of_gt ht
+  have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  -- ‖(√t)⁻¹ • u‖ ≤ R.
+  have h_norm : ‖(Real.sqrt t)⁻¹ • u‖ ≤ R := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  have h_loc := h_local ((Real.sqrt t)⁻¹ • u) h_norm
+  -- ‖(√t)⁻¹ • u‖^4 = ‖u‖^4 / t^2.
+  have h_norm_pow : ‖(Real.sqrt t)⁻¹ • u‖ ^ 4 = ‖u‖ ^ 4 / t ^ 2 := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos, mul_pow, inv_pow]
+    rw [show (Real.sqrt t) ^ 4 = (Real.sqrt t * Real.sqrt t) ^ 2 from by ring,
+        h_sq]
+    field_simp
+  rw [h_norm_pow] at h_loc
+  -- quadForm H ((√t)⁻¹ • u) = quadForm H u / t.
+  have h_qf : quadForm H ((Real.sqrt t)⁻¹ • u) = quadForm H u / t := by
+    rw [quadForm_smul]
+    rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from by
+      rw [inv_pow]]
+    rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
+    field_simp
+  -- Restate the goal in terms of the local bound expression.
+  unfold rescaledPerturbation
+  have h_eq : t * V ((Real.sqrt t)⁻¹ • u) - (1 / 2) * quadForm H u
+      - t * cV ((Real.sqrt t)⁻¹ • u)
+      = t * (V ((Real.sqrt t)⁻¹ • u) -
+              ((1 / 2 : ℝ) * quadForm H ((Real.sqrt t)⁻¹ • u)
+                + cV ((Real.sqrt t)⁻¹ • u))) := by
+    rw [h_qf]
+    field_simp
+    ring
+  rw [h_eq, abs_mul, abs_of_pos ht]
+  calc t * |V ((Real.sqrt t)⁻¹ • u) - ((1 / 2 : ℝ) * quadForm H ((Real.sqrt t)⁻¹ • u)
+            + cV ((Real.sqrt t)⁻¹ • u))|
+      ≤ t * (C * (‖u‖ ^ 4 / t ^ 2)) :=
+        mul_le_mul_of_nonneg_left h_loc ht.le
+    _ = C * ‖u‖ ^ 4 / t := by
+        rw [show (t : ℝ) ^ 2 = t * t from sq t]
+        field_simp
+
+/-- **Sharp rescaled-observable bound** (parametrized).
+
+Given a cubic local remainder `|φ w - (dot a w + qφ w)| ≤ C·‖w‖^3` on
+`‖w‖ ≤ R`, the rescaled observable error differs from the *scaled
+quadratic jet* `qφ_t(u) := qφ((√t)⁻¹ • u)` by `O(‖u‖^3/t^(3/2))`:
+
+  `|φ((√t)⁻¹ • u) - (√t)⁻¹ · dot a u - qφ((√t)⁻¹ • u)| ≤ C · ‖u‖^3 / t^(3/2)`,
+  for `‖u‖ ≤ R · √t`.
+
+Sharp analogue of `abs_rescaledObservable_linear_error_le`. -/
+lemma abs_rescaledObservable_quadratic_error_le
+    (φ qφ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    {R C : ℝ}
+    (h_local : ∀ w : ι → ℝ, ‖w‖ ≤ R →
+      |φ w - (dot a w + qφ w)| ≤ C * ‖w‖ ^ 3)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ R * Real.sqrt t) :
+    |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u - qφ ((Real.sqrt t)⁻¹ • u)|
+      ≤ C * ‖u‖ ^ 3 / (t * Real.sqrt t) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
+  have ht_ne : t ≠ 0 := ne_of_gt ht
+  have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  have h_norm : ‖(Real.sqrt t)⁻¹ • u‖ ≤ R := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  have h_loc := h_local ((Real.sqrt t)⁻¹ • u) h_norm
+  -- ‖(√t)⁻¹ • u‖^3 = ‖u‖^3 / (t · √t).
+  have h_norm_pow : ‖(Real.sqrt t)⁻¹ • u‖ ^ 3 = ‖u‖ ^ 3 / (t * Real.sqrt t) := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos, mul_pow, inv_pow]
+    rw [show (Real.sqrt t) ^ 3 = Real.sqrt t * (Real.sqrt t * Real.sqrt t) from by
+      ring]
+    rw [h_sq, mul_comm (Real.sqrt t) t]
+    field_simp
+  rw [h_norm_pow] at h_loc
+  -- dot a ((√t)⁻¹ • u) = (√t)⁻¹ · dot a u.
+  have h_dot : dot a ((Real.sqrt t)⁻¹ • u) = (Real.sqrt t)⁻¹ * dot a u :=
+    dot_smul a (Real.sqrt t)⁻¹ u
+  rw [h_dot] at h_loc
+  -- h_loc : |φ((√t)⁻¹•u) - ((√t)⁻¹·dot a u + qφ((√t)⁻¹•u))| ≤ C · ‖u‖^3/(t·√t)
+  -- Goal: |φ((√t)⁻¹•u) - (√t)⁻¹·dot a u - qφ((√t)⁻¹•u)| ≤ C · ‖u‖^3 / (t · √t)
+  -- Just associativity of subtraction inside the abs.
+  have h_eq : φ ((Real.sqrt t)⁻¹ • u) - ((Real.sqrt t)⁻¹ * dot a u + qφ ((Real.sqrt t)⁻¹ • u))
+      = φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u - qφ ((Real.sqrt t)⁻¹ • u) := by
+    ring
+  rw [h_eq] at h_loc
+  -- Also fix the RHS form: C * (‖u‖^3 / (t·√t)) = C * ‖u‖^3 / (t·√t).
+  have h_eq2 : C * (‖u‖ ^ 3 / (t * Real.sqrt t)) = C * ‖u‖ ^ 3 / (t * Real.sqrt t) := by
+    ring
+  rw [h_eq2] at h_loc
+  exact h_loc
+
+end RescaledLocalBounds
+
 section MainTheorem
 
 /-- **`lem:laplace_cov` (sharp-rate version, statement only)**.
