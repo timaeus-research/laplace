@@ -439,6 +439,137 @@ private lemma integrable_dot_mul_dot_mul_gaussianWeight
       _ = A * B * (‖u‖ ^ 2 * gaussianWeight H u) := by
           rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]; ring
 
+/-- **Integrability of `(dot a u · dot b u - m) · gW · t · cV((√t)⁻¹•u)`**.
+
+Under `PotentialJetApprox` (which provides `cV_bound` and the higher-moment
+integrability `int_norm_pow_gW`), the centered-bilinear-times-scaled-cubic
+integrand is integrable. Dominated pointwise by
+
+  `(A·B·‖u‖² + |m|) · gW · (Cc/√t) · ‖u‖³`
+
+which after expansion gives a sum of `‖u‖^5 · gW` and `‖u‖^3 · gW` pieces,
+each integrable from `hV.int_norm_pow_gW`. -/
+private lemma integrable_centered_bilinear_mul_gaussianWeight_mul_scaledCubic
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialJetApprox V H) [Nonempty ι]
+    (a b : ι → ℝ) (m : ℝ)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      (dot a u * dot b u - m) * gaussianWeight H u *
+        (t * hV.cV ((Real.sqrt t)⁻¹ • u))) := by
+  set A : ℝ := ∑ i, |a i| with hA_def
+  set B : ℝ := ∑ i, |b i| with hB_def
+  have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hB_nn : 0 ≤ B := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  set Cc : ℝ := hV.cV_bound_const with hCc_def
+  have hCc_nn : 0 ≤ Cc := hV.cV_bound_const_nonneg
+  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_t_inv_nn : 0 ≤ (Real.sqrt t)⁻¹ := inv_nonneg.mpr hsqrt_t_pos.le
+  have hsqrt_t_sq : Real.sqrt t * Real.sqrt t = t :=
+    Real.mul_self_sqrt ht_pos.le
+  have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
+    unfold dot
+    exact continuous_finset_sum _
+      (fun i _ => continuous_const.mul (continuous_apply i))
+  have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
+    unfold dot
+    exact continuous_finset_sum _
+      (fun i _ => continuous_const.mul (continuous_apply i))
+  have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
+    continuous_const_smul _
+  set K1 : ℝ := (Cc / Real.sqrt t) * (A * B) with hK1_def
+  set K2 : ℝ := (Cc / Real.sqrt t) * |m| with hK2_def
+  have hK1_nn : 0 ≤ K1 := by
+    rw [hK1_def]
+    exact mul_nonneg (div_nonneg hCc_nn hsqrt_t_pos.le)
+      (mul_nonneg hA_nn hB_nn)
+  have hK2_nn : 0 ≤ K2 := by
+    rw [hK2_def]
+    exact mul_nonneg (div_nonneg hCc_nn hsqrt_t_pos.le) (abs_nonneg _)
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      K1 * (‖u‖ ^ 5 * gaussianWeight H u) +
+      K2 * (‖u‖ ^ 3 * gaussianWeight H u)) :=
+    ((hV.int_norm_pow_gW 5).const_mul K1).add
+      ((hV.int_norm_pow_gW 3).const_mul K2)
+  refine h_dom.mono' ?_ ?_
+  · exact ((((h_dot_a_cont.mul h_dot_b_cont).sub continuous_const).mul
+      (continuous_gaussianWeight H)).mul (continuous_const.mul
+        (hV.cV_continuous.comp h_smul_cont))).aestronglyMeasurable
+  · filter_upwards with u
+    have h_dot_a_le : |dot a u| ≤ A * ‖u‖ := by
+      rw [hA_def]; exact abs_dot_le_l1_mul_norm a u
+    have h_dot_b_le : |dot b u| ≤ B * ‖u‖ := by
+      rw [hB_def]; exact abs_dot_le_l1_mul_norm b u
+    have h_diff_le : |dot a u * dot b u - m| ≤ A * B * ‖u‖ ^ 2 + |m| := by
+      have h_prod : |dot a u| * |dot b u| ≤ (A * ‖u‖) * (B * ‖u‖) :=
+        mul_le_mul h_dot_a_le h_dot_b_le (abs_nonneg _)
+          (mul_nonneg hA_nn (norm_nonneg _))
+      calc |dot a u * dot b u - m|
+          ≤ |dot a u * dot b u| + |m| := abs_sub _ _
+        _ = |dot a u| * |dot b u| + |m| := by rw [abs_mul]
+        _ ≤ (A * ‖u‖) * (B * ‖u‖) + |m| := by linarith
+        _ = A * B * ‖u‖ ^ 2 + |m| := by
+            rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]; ring
+    have h_norm_smul : ‖(Real.sqrt t)⁻¹ • u‖ = (Real.sqrt t)⁻¹ * ‖u‖ := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hsqrt_t_inv_nn]
+    have h_cV_le : |hV.cV ((Real.sqrt t)⁻¹ • u)| ≤
+        Cc * ((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3 := by
+      have h_raw := hV.cV_bound ((Real.sqrt t)⁻¹ • u)
+      rw [h_norm_smul] at h_raw
+      rw [show ((Real.sqrt t)⁻¹ * ‖u‖) ^ 3
+            = ((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3 from by ring] at h_raw
+      have hCc_eq : Cc = hV.cV_bound_const := rfl
+      linarith
+    have h_t_cV_le : |t * hV.cV ((Real.sqrt t)⁻¹ • u)| ≤
+        (Cc / Real.sqrt t) * ‖u‖ ^ 3 := by
+      rw [abs_mul, abs_of_pos ht_pos]
+      have h_step : t * |hV.cV ((Real.sqrt t)⁻¹ • u)| ≤
+          t * (Cc * ((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3) :=
+        mul_le_mul_of_nonneg_left h_cV_le ht_pos.le
+      have h_simp : t * (Cc * ((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3)
+          = (Cc / Real.sqrt t) * ‖u‖ ^ 3 := by
+        have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
+        have h_t_inv_sq : t * ((Real.sqrt t)⁻¹) ^ 2 = 1 := by
+          rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from inv_pow _ _,
+              Real.sq_sqrt ht_pos.le]
+          exact mul_inv_cancel₀ ht_pos.ne'
+        calc t * (Cc * ((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3)
+            = (t * ((Real.sqrt t)⁻¹) ^ 2) *
+                (Cc * (Real.sqrt t)⁻¹ * ‖u‖ ^ 3) := by ring
+          _ = 1 * (Cc * (Real.sqrt t)⁻¹ * ‖u‖ ^ 3) := by rw [h_t_inv_sq]
+          _ = (Cc / Real.sqrt t) * ‖u‖ ^ 3 := by
+                rw [div_eq_mul_inv]; ring
+      linarith
+    have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+    have h_lhs_eq : (dot a u * dot b u - m) * gaussianWeight H u *
+        (t * hV.cV ((Real.sqrt t)⁻¹ • u))
+        = (dot a u * dot b u - m) * (t * hV.cV ((Real.sqrt t)⁻¹ • u)) *
+          gaussianWeight H u := by ring
+    rw [Real.norm_eq_abs, h_lhs_eq, abs_mul, abs_of_pos h_gW_pos, abs_mul]
+    have h_pos : (0 : ℝ) ≤ A * B * ‖u‖ ^ 2 + |m| := by
+      have h1 : 0 ≤ A * B * ‖u‖ ^ 2 :=
+        mul_nonneg (mul_nonneg hA_nn hB_nn) (sq_nonneg _)
+      linarith [abs_nonneg m]
+    have h_step1 : |dot a u * dot b u - m| *
+        |t * hV.cV ((Real.sqrt t)⁻¹ • u)| ≤
+        (A * B * ‖u‖ ^ 2 + |m|) * ((Cc / Real.sqrt t) * ‖u‖ ^ 3) :=
+      mul_le_mul h_diff_le h_t_cV_le (abs_nonneg _) h_pos
+    have h_step2 : (A * B * ‖u‖ ^ 2 + |m|) * ((Cc / Real.sqrt t) * ‖u‖ ^ 3)
+        = K1 * ‖u‖ ^ 5 + K2 * ‖u‖ ^ 3 := by
+      rw [hK1_def, hK2_def, show ‖u‖ ^ 5 = ‖u‖ ^ 2 * ‖u‖ ^ 3 from by ring]
+      ring
+    have h_step3 : (K1 * ‖u‖ ^ 5 + K2 * ‖u‖ ^ 3) * gaussianWeight H u
+        = K1 * (‖u‖ ^ 5 * gaussianWeight H u) +
+          K2 * (‖u‖ ^ 3 * gaussianWeight H u) := by ring
+    calc |dot a u * dot b u - m| *
+            |t * hV.cV ((Real.sqrt t)⁻¹ • u)| * gaussianWeight H u
+        ≤ ((A * B * ‖u‖ ^ 2 + |m|) * ((Cc / Real.sqrt t) * ‖u‖ ^ 3)) *
+            gaussianWeight H u :=
+          mul_le_mul_of_nonneg_right h_step1 h_gW_pos.le
+      _ = (K1 * ‖u‖ ^ 5 + K2 * ‖u‖ ^ 3) * gaussianWeight H u := by rw [h_step2]
+      _ = K1 * (‖u‖ ^ 5 * gaussianWeight H u) +
+          K2 * (‖u‖ ^ 3 * gaussianWeight H u) := h_step3
+
 end IntegrabilityHelpers
 
 section ParityLemmas
