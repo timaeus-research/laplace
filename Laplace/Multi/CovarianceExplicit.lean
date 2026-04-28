@@ -747,6 +747,117 @@ private lemma gaussian_quad_quad
         * gaussianWeight H u
       = gaussianZ H * ((1 / 4 : ℝ) * trASig A Hinv * trASig B Hinv
         + (1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv)) := by
+  classical
+  -- Step 1: pointwise expansion via H_apply_eq_sum + sum_mul_sum.
+  -- Note: proof's natural sum order is (i, k, j, l) — matching that here.
+  have h_pt : ∀ u : ι → ℝ,
+      ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u) *
+        gaussianWeight H u =
+        ∑ i, ∑ k, ∑ j, ∑ l,
+          ((1 / 4 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
+          (u i * u j * u k * u l * gaussianWeight H u) := by
+    intro u
+    -- quadForm A u = ∑_i ∑_j u_i u_j (A e_j) i.
+    have h_qA : quadForm A u =
+        ∑ i, ∑ j, u i * u j * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+      unfold quadForm
+      apply Finset.sum_congr rfl; intros i _
+      rw [H_apply_eq_sum A u i, Finset.mul_sum]
+      apply Finset.sum_congr rfl; intros j _; ring
+    have h_qB : quadForm B u =
+        ∑ k, ∑ l, u k * u l * (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k := by
+      unfold quadForm
+      apply Finset.sum_congr rfl; intros k _
+      rw [H_apply_eq_sum B u k, Finset.mul_sum]
+      apply Finset.sum_congr rfl; intros l _; ring
+    rw [h_qA, h_qB]
+    -- Now: (1/2 * X) * (1/2 * Y) * gW where X, Y are double sums.
+    -- = (1/4) X Y gW
+    -- = (1/4) [∑_i ∑_j ...] [∑_k ∑_l ...] gW
+    -- = (1/4) ∑_i ∑_j ∑_k ∑_l ... gW (via sum_mul_sum twice).
+    rw [show ((1 / 2 : ℝ) *
+            ∑ i, ∑ j, u i * u j *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+          ((1 / 2 : ℝ) *
+            ∑ k, ∑ l, u k * u l *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
+          gaussianWeight H u =
+          ((1 / 4 : ℝ) * gaussianWeight H u) *
+            ((∑ i, ∑ j, u i * u j *
+                (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+              (∑ k, ∑ l, u k * u l *
+                (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k))
+        from by ring]
+    rw [Finset.sum_mul_sum]
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros i _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros k _
+    -- Inner: (∑_j ...) * (∑_l ...) → use sum_mul_sum again.
+    rw [Finset.sum_mul_sum]
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros j _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros l _
+    -- Goal now: pointwise term identity. ring handles.
+    ring
+  -- Step 2: rewrite the integrand using h_pt, then swap quadruple sum/integral.
+  rw [show (fun u : ι → ℝ =>
+        ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u) *
+          gaussianWeight H u) =
+        fun u => ∑ i, ∑ k, ∑ j, ∑ l,
+          ((1 / 4 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
+          (u i * u j * u k * u l * gaussianWeight H u) from funext h_pt]
+  -- Step 3: per-term integral via gaussian_fourth_moment_formula.
+  -- Each term has form `const * ∫ u_i u_j u_k u_l gW`.
+  have h_inner : ∀ i j k l : ι,
+      ∫ u : ι → ℝ,
+          ((1 / 4 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
+          (u i * u j * u k * u l * gaussianWeight H u)
+      = ((1 / 4 : ℝ) *
+          (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
+        (gaussianZ H *
+          ((Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j
+            + (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i
+            + (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)) := by
+    intro i j k l
+    rw [integral_const_mul]
+    rw [gaussian_fourth_moment_formula hGauss i j k l]
+  -- Swap quadruple sum/integral. Sum order is (i, k, j, l) per h_pt.
+  rw [integral_finset_sum Finset.univ
+        (fun i _ => integrable_finset_sum Finset.univ
+          (fun k _ => integrable_finset_sum Finset.univ
+            (fun j _ => integrable_finset_sum Finset.univ
+              (fun l _ => (hGauss.int_4moment i j k l).const_mul _))))]
+  conv_lhs =>
+    enter [2, i]
+    rw [integral_finset_sum Finset.univ
+        (fun k _ => integrable_finset_sum Finset.univ
+          (fun j _ => integrable_finset_sum Finset.univ
+            (fun l _ => (hGauss.int_4moment i j k l).const_mul _)))]
+    enter [2, k]
+    rw [integral_finset_sum Finset.univ
+        (fun j _ => integrable_finset_sum Finset.univ
+          (fun l _ => (hGauss.int_4moment i j k l).const_mul _))]
+    enter [2, j]
+    rw [integral_finset_sum Finset.univ
+        (fun l _ => (hGauss.int_4moment i j k l).const_mul _)]
+    enter [2, l]
+    rw [h_inner i j k l]
+  -- Step 4: identify the three Wick-pairing sums with trace forms.
+  -- This requires: pairing 3 (Σ_{kl}Σ_{ij}) → tr(AΣ)tr(BΣ);
+  -- pairings 1+2 → 2 tr(AΣBΣ) (after A symm).
+  -- Substantial Finset manipulation; deferred for now.
   sorry
 
 /-- **4th-moment contraction (cubic · linear)**:
