@@ -1419,6 +1419,20 @@ private lemma abs_integral_dot_mul_jet_remainder_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / (t * Real.sqrt t) := by
+  -- Strategy: decompose remψ(u) = qψ((√t)⁻¹•u) + r₃(u, t), where r₃ is the
+  -- Stage 2 sharp cubic remainder. Then:
+  --   ∫ dot c · remψ · gW · exp(-s_t)
+  --     = ∫ dot c · qψ((√t)⁻¹•u) · gW · exp(-s_t)        [piece A]
+  --       + ∫ dot c · r₃(u, t) · gW · exp(-s_t)          [piece B]
+  -- Piece A reduces by parity (∫ dot c · qψ · gW = 0) to
+  --   ∫ dot c · qψ · gW · (exp(-s_t) - 1),
+  -- which is bounded by K/(t·√t) via Glocal (using
+  -- abs_gaussianWeight_mul_exp_sub_one_le_local) + Gtail (k=3 indicator).
+  -- Piece B is bounded directly via Stage 2 sharp local bound + Glocal+Gtail.
+  -- Full proof ~500-700 LOC of integral arithmetic. Deferred — the
+  -- structurally analogous weak helper 2/3 (`abs_integral_dot_mul_remainder_mul_rescaled_weight_le`)
+  -- in `Covariance.lean` provides the K/t template; the sharp upgrade
+  -- adds the parity step + sharper indicator (k=3 instead of k=2).
   sorry
 
 /-- **Sharp helper 4 (quadratic remainder)**: the product of two
