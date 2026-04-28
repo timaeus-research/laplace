@@ -1576,8 +1576,63 @@ private lemma gaussian_quad_quad
     refine Finset.sum_congr rfl ?_
     intros y' _
     ring
-  -- h_pair1', h_pair2 (sorry'd): the two tr(AΣBΣ) identifications.
-  -- Final calc to assemble: deferred.
+  -- h_pair2: i ↔ j swap via f/g helpers + sum_comm chain + alpha-renaming.
+  -- Per GPT recipe in gpt_responses/tactics_h_pair2.md.
+  have h_pair2 :
+      (∑ i, ∑ k, ∑ j, ∑ l,
+        (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i)
+        =
+      ∑ i, ∑ k, ∑ j, ∑ l,
+        (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j := by
+    classical
+    let f : ι → ι → ι → ι → ℝ := fun i k j l =>
+      (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+        (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i
+    let g : ι → ι → ι → ι → ℝ := fun i k j l =>
+      (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+        (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j
+    suffices hs :
+        (∑ i, ∑ k, ∑ j, ∑ l, f i k j l) =
+          ∑ i, ∑ k, ∑ j, ∑ l, g i k j l by
+      simpa [f, g] using hs
+    have hfg : ∀ i k j l, f j k i l = g i k j l := by
+      intro i k j l
+      dsimp [f, g]
+      rw [← hAij i j]
+    calc
+      (∑ i, ∑ k, ∑ j, ∑ l, f i k j l)
+          = ∑ i, ∑ j, ∑ k, ∑ l, f i k j l := by
+              refine Finset.sum_congr rfl ?_
+              intro i _
+              rw [Finset.sum_comm]
+        _ = ∑ j, ∑ i, ∑ k, ∑ l, f i k j l := by
+              rw [Finset.sum_comm]
+        _ = ∑ j, ∑ k, ∑ i, ∑ l, f i k j l := by
+              refine Finset.sum_congr rfl ?_
+              intro j _
+              rw [Finset.sum_comm]
+        _ = ∑ i, ∑ k, ∑ j, ∑ l, f j k i l := rfl
+        _ = ∑ i, ∑ k, ∑ j, ∑ l, g i k j l := by
+              refine Finset.sum_congr rfl ?_
+              intro i _
+              refine Finset.sum_congr rfl ?_
+              intro k _
+              refine Finset.sum_congr rfl ?_
+              intro j _
+              refine Finset.sum_congr rfl ?_
+              intro l _
+              exact hfg i k j l
+  -- h_pair1' (sorry'd) and Final calc deferred.
   sorry
 
 /-- **4th-moment contraction (cubic · linear)**:
