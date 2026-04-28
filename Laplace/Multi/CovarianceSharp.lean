@@ -96,16 +96,23 @@ structure PotentialJetApprox
   `B · gW · c_t` integrability, which dominates by `polynomial(‖u‖) · gW`
   with degrees up to 5–6. The existing `LaplaceCovHypotheses.int_uk_uj_gW`
   only delivers quadratic Gaussian moments, so we include this stronger
-  integrability hypothesis here.
-
-  This is implied by *positive-definiteness* of `H` (which is in turn
-  implied by `LaplaceCovHypotheses.int_gW` plus injectivity, but the
-  implication is non-trivial to formalise). For now we take it as an
-  independent hypothesis on the sharp jet package; it is straightforward
-  to discharge in concrete examples (e.g., `H = id`) via
-  `integrable_norm_pow_mul_exp_neg_const_sq`. -/
+  integrability hypothesis here. -/
   int_norm_pow_gW : ∀ k : ℕ,
     Integrable (fun u : ι → ℝ => ‖u‖ ^ k * gaussianWeight H u)
+  /-- Coercive lower bound on the Gaussian quadratic form: there is a
+  positive constant `H_coercive_const` such that `H_coercive_const · ‖u‖² ≤
+  quadForm H u`. Used by the corrected-bracket pointwise bound to write
+  `gW(u) ≤ exp(-(H_coercive_const/2)·‖u‖²)` and combine with `exp|s_t|`
+  for Gaussian decay on the local ball.
+
+  This is equivalent to *positive-definiteness* of `H` (which is implied
+  by `LaplaceCovHypotheses.int_gW` plus injectivity, but the implication
+  is non-trivial to formalise). The coercive constant also implies
+  `int_norm_pow_gW` (via `integrable_norm_pow_mul_exp_neg_const_sq`),
+  but we keep both fields for direct use. -/
+  H_coercive_const : ℝ
+  H_coercive_const_pos : 0 < H_coercive_const
+  H_coercive_bound : ∀ u : ι → ℝ, H_coercive_const * ‖u‖ ^ 2 ≤ quadForm H u
 
 /-- **Sharp local approximation package for an observable**.
 
