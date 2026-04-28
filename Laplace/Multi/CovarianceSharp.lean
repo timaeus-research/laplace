@@ -1273,7 +1273,11 @@ upgrades:
   (k = 4) to gain `1/t²` over the global polynomial bound.
 
 This is essentially the weak helper 4 with `k = 3` indicator replaced by
-`k = 4`. -/
+`k = 4`. The two key local pointwise bounds
+(`abs_remainder_mul_remainder_local_le` and
+`abs_remainder_mul_remainder_mul_rescaled_weight_local_le`) are
+formalized above; the remaining ~250-300 LOC Gtail+integration
+bookkeeping is deferred. -/
 private lemma abs_integral_remainder_remainder_sharp_le
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
