@@ -2010,6 +2010,82 @@ private lemma abs_expNumCubic_mul_gW_mul_exp_sub_one_tail_le
           Real.exp (-((c * δ ^ 2 / 4) * t)) := by
         ring
 
+/-- **Local pointwise bound on `expNumObsRem`**: on `‖u‖ ≤ jet_radius·√t`,
+`|R_{φ,t}(u)| ≤ jet_const · ‖u‖⁴ / t²`.
+
+This is `Φ_jet_bound` rescaled. The proof uses tensor scaling for the cubic,
+quadratic, and linear jets:
+`(1/2) quadForm A ((√t)⁻¹·u) = (1/(2t)) · quadForm A u`,
+`Φ((√t)⁻¹·u, ..., (√t)⁻¹·u) = (1/(t·√t)) · Φ(u, u, u)` (trilinear),
+`dot a ((√t)⁻¹·u) = (√t)⁻¹ · dot a u`. -/
+private lemma abs_expNumObsRem_local_le
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ)
+    (hu : ‖u‖ ≤ hφ.jet_radius * Real.sqrt t) :
+    |expNumObsRem φ a hφ t u| ≤ hφ.jet_const * ‖u‖ ^ 4 / t ^ 2 := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  have ht_ne : t ≠ 0 := ne_of_gt ht
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  have hjet_R_pos : 0 < hφ.jet_radius := hφ.jet_radius_pos
+  -- ‖(√t)⁻¹•u‖ ≤ jet_radius
+  have h_norm_le : ‖(Real.sqrt t)⁻¹ • u‖ ≤ hφ.jet_radius := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  -- ‖(√t)⁻¹•u‖^4 = ‖u‖^4 / t²
+  have h_norm_pow : ‖(Real.sqrt t)⁻¹ • u‖ ^ 4 = ‖u‖ ^ 4 / t ^ 2 := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹),
+        mul_pow, inv_pow]
+    rw [show (Real.sqrt t) ^ 4 = (Real.sqrt t * Real.sqrt t) ^ 2 from by ring, h_sq]
+    field_simp
+  -- Apply Φ_jet_bound to w = (√t)⁻¹·u.
+  have h_jet := hφ.Φ_jet_bound ((Real.sqrt t)⁻¹ • u) h_norm_le
+  rw [h_norm_pow] at h_jet
+  -- dot a ((√t)⁻¹·u) = (√t)⁻¹ · dot a u
+  have h_dot_eq : dot a ((Real.sqrt t)⁻¹ • u) = (Real.sqrt t)⁻¹ * dot a u := by
+    unfold dot
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    show a i * ((Real.sqrt t)⁻¹ * u i) = (Real.sqrt t)⁻¹ * (a i * u i)
+    ring
+  -- quadForm A ((√t)⁻¹·u) = (1/t) · quadForm A u
+  have h_qf : quadForm hφ.A ((Real.sqrt t)⁻¹ • u) = (1 / t) * quadForm hφ.A u := by
+    rw [quadForm_smul]
+    rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from by rw [inv_pow]]
+    rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
+    ring
+  -- Φ ((√t)⁻¹·u, ..., (√t)⁻¹·u) = (√t)⁻¹³ · Φ(u,u,u)
+  have h_Φ_eq : hφ.Φ (fun _ : Fin 3 => (Real.sqrt t)⁻¹ • u)
+      = ((Real.sqrt t)⁻¹) ^ 3 * hφ.Φ (fun _ => u) := by
+    have h1 := hφ.Φ.map_smul_univ (fun _ : Fin 3 => (Real.sqrt t)⁻¹) (fun _ => u)
+    simpa using h1
+  rw [h_dot_eq, h_qf, h_Φ_eq] at h_jet
+  unfold expNumObsRem expNumLin expNumQuad expNumCubic
+  rw [show hφ.jet_const * ‖u‖ ^ 4 / t ^ 2
+        = hφ.jet_const * (‖u‖ ^ 4 / t ^ 2) from by ring]
+  have h_sqcube : (Real.sqrt t)⁻¹ ^ 3 = (Real.sqrt t)⁻¹ / t := by
+    rw [show (Real.sqrt t)⁻¹ ^ 3
+          = (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ from by ring]
+    rw [show (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ = ((Real.sqrt t) * (Real.sqrt t))⁻¹ from by
+        rw [mul_inv]]
+    rw [h_sq]
+    field_simp
+  rw [h_sqcube] at h_jet
+  have h_inner_eq : φ ((Real.sqrt t)⁻¹ • u) -
+        (Real.sqrt t)⁻¹ * dot a u -
+        1 / t * (1 / 2 * quadForm hφ.A u) -
+        (Real.sqrt t)⁻¹ / t * (1 / 6 * hφ.Φ (fun _ => u))
+      = φ ((Real.sqrt t)⁻¹ • u) -
+        ((Real.sqrt t)⁻¹ * dot a u + 1 / 2 * (1 / t * quadForm hφ.A u) +
+          1 / 6 * ((Real.sqrt t)⁻¹ / t * hφ.Φ (fun _ => u))) := by
+    ring
+  rw [h_inner_eq]
+  exact h_jet
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
