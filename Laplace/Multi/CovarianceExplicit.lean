@@ -1032,7 +1032,81 @@ private lemma gaussian_linear_cubic
     rw [h_slot2]
     refine Finset.sum_congr rfl ?_
     intro k _; ring
-  -- Remaining: hterm, 3 trace identifications, assembly. Deferred.
+  -- hterm: 4-moment per (i,j,k,l) via cubic IBP + 2nd moment.
+  have hterm : ∀ i j k l : ι,
+      ∫ u : ι → ℝ, u i * u j * u k * (H u) l * gaussianWeight H u
+        = gaussianZ H *
+            ((if l = i then cov j k else 0) +
+             (if l = j then cov i k else 0) +
+             (if l = k then cov i j else 0)) := by
+    intro i j k l
+    -- Apply cubic IBP.
+    have h_ibp := gaussian_ibp_cubic_f (H := H) (Hinv := Hinv) (hGauss := hGauss) i j k l
+    rw [h_ibp]
+    -- Integrand is `((if l=i then u_j u_k else 0) + (if l=j then u_i u_k else 0) +
+    --                (if l=k then u_i u_j else 0)) * gW`.
+    -- Distribute: each (if X then Y else 0) * gW = if X then Y*gW else 0.
+    have h_distrib : ∀ u : ι → ℝ,
+        ((if l = i then u j * u k else 0) +
+         (if l = j then u i * u k else 0) +
+         (if l = k then u i * u j else 0)) * gaussianWeight H u =
+        (if l = i then u j * u k * gaussianWeight H u else 0) +
+        (if l = j then u i * u k * gaussianWeight H u else 0) +
+        (if l = k then u i * u j * gaussianWeight H u else 0) := by
+      intro u; split_ifs <;> ring
+    rw [show (fun u : ι → ℝ =>
+        ((if l = i then u j * u k else 0) +
+         (if l = j then u i * u k else 0) +
+         (if l = k then u i * u j else 0)) * gaussianWeight H u) =
+      fun u =>
+        (if l = i then u j * u k * gaussianWeight H u else 0) +
+        (if l = j then u i * u k * gaussianWeight H u else 0) +
+        (if l = k then u i * u j * gaussianWeight H u else 0) from funext h_distrib]
+    -- Split via integral_add. Need integrability of each indicator term.
+    have hint_jk : Integrable (fun u : ι → ℝ =>
+        (if l = i then u j * u k * gaussianWeight H u else 0)) := by
+      by_cases hli : l = i
+      · simp only [if_pos hli]; exact hGauss.int_uk_uj_gW j k
+      · simp only [if_neg hli]; exact integrable_zero _ _ _
+    have hint_ik : Integrable (fun u : ι → ℝ =>
+        (if l = j then u i * u k * gaussianWeight H u else 0)) := by
+      by_cases hlj : l = j
+      · simp only [if_pos hlj]; exact hGauss.int_uk_uj_gW i k
+      · simp only [if_neg hlj]; exact integrable_zero _ _ _
+    have hint_ij : Integrable (fun u : ι → ℝ =>
+        (if l = k then u i * u j * gaussianWeight H u else 0)) := by
+      by_cases hlk : l = k
+      · simp only [if_pos hlk]; exact hGauss.int_uk_uj_gW i j
+      · simp only [if_neg hlk]; exact integrable_zero _ _ _
+    have hint_jk_ik : Integrable (fun u : ι → ℝ =>
+        (if l = i then u j * u k * gaussianWeight H u else 0) +
+        (if l = j then u i * u k * gaussianWeight H u else 0)) :=
+      hint_jk.add hint_ik
+    rw [integral_add hint_jk_ik hint_ij, integral_add hint_jk hint_ik]
+    -- Each integral = if condition then 2nd-moment value else 0.
+    have h_int1 : ∫ u : ι → ℝ,
+        (if l = i then u j * u k * gaussianWeight H u else 0)
+        = if l = i then gaussianZ H * cov j k else 0 := by
+      by_cases hli : l = i
+      · simp only [if_pos hli]; exact h2mom j k
+      · simp only [if_neg hli, MeasureTheory.integral_zero]
+    have h_int2 : ∫ u : ι → ℝ,
+        (if l = j then u i * u k * gaussianWeight H u else 0)
+        = if l = j then gaussianZ H * cov i k else 0 := by
+      by_cases hlj : l = j
+      · simp only [if_pos hlj]; exact h2mom i k
+      · simp only [if_neg hlj, MeasureTheory.integral_zero]
+    have h_int3 : ∫ u : ι → ℝ,
+        (if l = k then u i * u j * gaussianWeight H u else 0)
+        = if l = k then gaussianZ H * cov i j else 0 := by
+      by_cases hlk : l = k
+      · simp only [if_pos hlk]; exact h2mom i j
+      · simp only [if_neg hlk, MeasureTheory.integral_zero]
+    rw [h_int1, h_int2, h_int3]
+    -- Final: factor out gaussianZ H.
+    by_cases hli : l = i <;> by_cases hlj : l = j <;> by_cases hlk : l = k <;>
+      simp [hli, hlj, hlk, mul_add, mul_zero, add_zero, zero_add]
+  -- Remaining: 3 trace identifications + assembly. Deferred.
   sorry
 
 /-- **4th-moment contraction (quad · quad)**:
