@@ -1202,6 +1202,81 @@ private lemma abs_remainder_mul_remainder_local_le
             show ‖u‖ ^ 2 * ‖u‖ ^ 2 = ‖u‖ ^ 4 from by ring]
         field_simp
 
+/-- **Global polynomial bound for the product of two observable remainders**.
+
+Composes `abs_rescaledObservable_global_le` for `φ` and `ψ`. -/
+private lemma abs_remainder_mul_remainder_global_le
+    (φ ψ : (ι → ℝ) → ℝ) (a b : ι → ℝ)
+    {Kφ Kψ : ℝ} {p q : ℕ}
+    (hKφ_nn : 0 ≤ Kφ) (hKψ_nn : 0 ≤ Kψ)
+    (hpoly_φ : ∀ w : ι → ℝ, |φ w| ≤ Kφ * (1 + ‖w‖ ^ p))
+    (hpoly_ψ : ∀ w : ι → ℝ, |ψ w| ≤ Kψ * (1 + ‖w‖ ^ q))
+    {t : ℝ} (ht : 1 ≤ t) (u : ι → ℝ) :
+    |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+        (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)|
+      ≤ (2 * Kφ + 2 * (∑ i, |a i|)) * (2 * Kψ + 2 * (∑ i, |b i|)) *
+          (1 + ‖u‖ ^ (p + 1)) * (1 + ‖u‖ ^ (q + 1)) := by
+  rw [abs_mul]
+  have h_phi := abs_rescaledObservable_global_le φ a hKφ_nn hpoly_φ ht u
+  have h_psi := abs_rescaledObservable_global_le ψ b hKψ_nn hpoly_ψ ht u
+  have hA_nn : 0 ≤ ∑ i, |a i| :=
+    Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hCφ_nn : 0 ≤ 2 * Kφ + 2 * (∑ i, |a i|) := by linarith
+  have h_norm_pow_nn : 0 ≤ 1 + ‖u‖ ^ (p + 1) := by positivity
+  have h_phi_rhs_nn : 0 ≤ (2 * Kφ + 2 * (∑ i, |a i|)) *
+      (1 + ‖u‖ ^ (p + 1)) := mul_nonneg hCφ_nn h_norm_pow_nn
+  calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u| *
+          |ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u|
+      ≤ ((2 * Kφ + 2 * (∑ i, |a i|)) * (1 + ‖u‖ ^ (p + 1))) *
+          ((2 * Kψ + 2 * (∑ i, |b i|)) * (1 + ‖u‖ ^ (q + 1))) :=
+        mul_le_mul h_phi h_psi (abs_nonneg _) h_phi_rhs_nn
+    _ = (2 * Kφ + 2 * (∑ i, |a i|)) * (2 * Kψ + 2 * (∑ i, |b i|)) *
+          (1 + ‖u‖ ^ (p + 1)) * (1 + ‖u‖ ^ (q + 1)) := by ring
+
+/-- **Polynomial product unification**: for natural numbers `p, q`,
+
+  `(1 + ‖u‖^(p+1)) · (1 + ‖u‖^(q+1)) ≤ 3 · (1 + ‖u‖^(p+q+2))`.
+
+Used to dominate the rem·rem global bound by a single polynomial degree
+for cleaner Gaussian-moment integration. -/
+private lemma poly_pair_le_single
+    (p q : ℕ) (u : ι → ℝ) :
+    (1 + ‖u‖ ^ (p + 1)) * (1 + ‖u‖ ^ (q + 1)) ≤
+      3 * (1 + ‖u‖ ^ (p + q + 2)) := by
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_pow_eq : ‖u‖ ^ (p + 1) * ‖u‖ ^ (q + 1) = ‖u‖ ^ (p + q + 2) := by
+    rw [← pow_add]; congr 1; omega
+  have h_p_pow_le : ‖u‖ ^ (p + 1) ≤ 1 + ‖u‖ ^ (p + q + 2) := by
+    by_cases hu : ‖u‖ ≤ 1
+    · have : ‖u‖ ^ (p + 1) ≤ 1 := pow_le_one₀ h_norm_nn hu
+      have : 0 ≤ ‖u‖ ^ (p + q + 2) := pow_nonneg h_norm_nn _
+      linarith
+    · push_neg at hu
+      have h_le : ‖u‖ ^ (p + 1) ≤ ‖u‖ ^ (p + q + 2) := by
+        apply pow_le_pow_right₀ hu.le
+        omega
+      linarith [pow_nonneg h_norm_nn (p + q + 2)]
+  have h_q_pow_le : ‖u‖ ^ (q + 1) ≤ 1 + ‖u‖ ^ (p + q + 2) := by
+    by_cases hu : ‖u‖ ≤ 1
+    · have : ‖u‖ ^ (q + 1) ≤ 1 := pow_le_one₀ h_norm_nn hu
+      have : 0 ≤ ‖u‖ ^ (p + q + 2) := pow_nonneg h_norm_nn _
+      linarith
+    · push_neg at hu
+      have h_le : ‖u‖ ^ (q + 1) ≤ ‖u‖ ^ (p + q + 2) := by
+        apply pow_le_pow_right₀ hu.le
+        omega
+      linarith [pow_nonneg h_norm_nn (p + q + 2)]
+  have h_pq_pow_nn : 0 ≤ ‖u‖ ^ (p + q + 2) := pow_nonneg h_norm_nn _
+  calc (1 + ‖u‖ ^ (p + 1)) * (1 + ‖u‖ ^ (q + 1))
+      = 1 + ‖u‖ ^ (p + 1) + ‖u‖ ^ (q + 1) +
+          ‖u‖ ^ (p + 1) * ‖u‖ ^ (q + 1) := by ring
+    _ = 1 + ‖u‖ ^ (p + 1) + ‖u‖ ^ (q + 1) +
+          ‖u‖ ^ (p + q + 2) := by rw [h_pow_eq]
+    _ ≤ 1 + (1 + ‖u‖ ^ (p + q + 2)) + (1 + ‖u‖ ^ (p + q + 2)) +
+          ‖u‖ ^ (p + q + 2) := by linarith
+    _ = 3 + 3 * ‖u‖ ^ (p + q + 2) := by ring
+    _ = 3 * (1 + ‖u‖ ^ (p + q + 2)) := by ring
+
 /-- **Glocal pointwise bound for helper 4**: on the local ball,
 
   `|remφ(u) · remψ(u) · gW · exp(-s_t)| ≤ Cφ · Cψ · ‖u‖⁴ / t² · exp(-c·‖u‖²)`
