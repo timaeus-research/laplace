@@ -2105,6 +2105,159 @@ private lemma abs_expNumObsRem_local_le
   rw [h_inner_eq]
   exact h_jet
 
+/-- **Global polynomial bound on `expNumObsRem`** (for J₁ tail). For `t ≥ 1`,
+`|R_{φ,t}(u)| ≤ R_const · (1 + ‖u‖^N)` where `N := max p 3` and the constant
+combines `Kφ`, `∑|aᵢ|`, `|ι|·‖A‖_op`, and `‖Φ‖_op`. T-independent. -/
+private lemma abs_expNumObsRem_global_le
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (hφ : ObservableTensorApprox φ a)
+    {Kφ : ℝ} {p : ℕ} (hKφ_nn : 0 ≤ Kφ)
+    (hpoly : ∀ w : ι → ℝ, |φ w| ≤ Kφ * (1 + ‖w‖ ^ p))
+    {t : ℝ} (ht : 1 ≤ t) (u : ι → ℝ) :
+    |expNumObsRem φ a hφ t u|
+      ≤ Kφ * (1 + ‖u‖ ^ p)
+        + (∑ i, |a i|) * ‖u‖
+        + (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2
+        + (‖hφ.Φ‖ / 6) * ‖u‖ ^ 3 := by
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_ge_one : 1 ≤ Real.sqrt t := by
+    rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
+    exact Real.sqrt_le_sqrt ht
+  have hsqrt_inv_le : (Real.sqrt t)⁻¹ ≤ 1 := by
+    rw [show (1 : ℝ) = (1 : ℝ)⁻¹ from (inv_one).symm]
+    exact inv_anti₀ Real.zero_lt_one hsqrt_ge_one
+  have h_norm_sm_le : ‖(Real.sqrt t)⁻¹ • u‖ ≤ ‖u‖ := by
+    rw [norm_smul, Real.norm_eq_abs,
+        abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
+    nlinarith [norm_nonneg u]
+  -- |φ((√t)⁻¹·u)| ≤ Kφ · (1 + ‖u‖^p)
+  have h_phi : |φ ((Real.sqrt t)⁻¹ • u)| ≤ Kφ * (1 + ‖u‖ ^ p) := by
+    have h := hpoly ((Real.sqrt t)⁻¹ • u)
+    have h_norm_pow : ‖(Real.sqrt t)⁻¹ • u‖ ^ p ≤ ‖u‖ ^ p :=
+      pow_le_pow_left₀ (norm_nonneg _) h_norm_sm_le p
+    calc |φ ((Real.sqrt t)⁻¹ • u)|
+        ≤ Kφ * (1 + ‖(Real.sqrt t)⁻¹ • u‖ ^ p) := h
+      _ ≤ Kφ * (1 + ‖u‖ ^ p) := by
+            apply mul_le_mul_of_nonneg_left _ hKφ_nn; linarith
+  -- |L_t| ≤ (∑|aᵢ|) · ‖u‖
+  have h_lin : |expNumLin a t u| ≤ (∑ i, |a i|) * ‖u‖ := by
+    have h := abs_expNumLin_le a ht_pos u
+    have hA_nn : 0 ≤ ∑ i, |a i| := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+    have hsqrt_inv_le' : (∑ i, |a i|) / Real.sqrt t ≤ ∑ i, |a i| := by
+      rw [div_le_iff₀ hsqrt_pos]
+      nlinarith
+    calc |expNumLin a t u|
+        ≤ (∑ i, |a i|) / Real.sqrt t * ‖u‖ := h
+      _ ≤ (∑ i, |a i|) * ‖u‖ :=
+          mul_le_mul_of_nonneg_right hsqrt_inv_le' (norm_nonneg _)
+  -- |Q_t| ≤ (1/2) · |ι| · ‖A‖ · ‖u‖²
+  have h_quad : |expNumQuad φ a hφ t u|
+      ≤ (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by
+    unfold expNumQuad
+    have h_qf : |quadForm hφ.A u| ≤ Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by
+      unfold quadForm
+      show |∑ i, u i * (hφ.A u) i| ≤ Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2
+      have h_each : ∀ i, |u i * (hφ.A u) i| ≤ ‖u‖ * ‖hφ.A u‖ := fun i => by
+        rw [abs_mul]
+        apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (hφ.A u) i)
+          (abs_nonneg _) (norm_nonneg _)
+      have h_sum_le : |∑ i, u i * (hφ.A u) i| ≤ ∑ i, |u i * (hφ.A u) i| :=
+        Finset.abs_sum_le_sum_abs _ _
+      have h_sum_le2 : ∑ i, |u i * (hφ.A u) i|
+          ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
+        calc ∑ i, |u i * (hφ.A u) i|
+            ≤ ∑ _ : ι, ‖u‖ * ‖hφ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+          _ = Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
+                rw [Finset.sum_const, Finset.card_univ]; ring
+      have h_Au : ‖hφ.A u‖ ≤ ‖hφ.A‖ * ‖u‖ := hφ.A.le_opNorm u
+      calc |∑ i, u i * (hφ.A u) i|
+          ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := le_trans h_sum_le h_sum_le2
+        _ ≤ Fintype.card ι * (‖u‖ * (‖hφ.A‖ * ‖u‖)) := by
+            apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
+            apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+        _ = Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by ring
+    have ht_inv_le : 1 / t ≤ 1 := by
+      rw [div_le_iff₀ ht_pos]; linarith
+    have h_one_div_t_nn : 0 ≤ 1 / t := by positivity
+    have h_qf_nn : 0 ≤ Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by positivity
+    rw [show (1 / t : ℝ) * ((1 / 2 : ℝ) * quadForm hφ.A u)
+          = (1 / t) * (1 / 2) * quadForm hφ.A u from by ring,
+        abs_mul, abs_mul,
+        abs_of_nonneg h_one_div_t_nn,
+        abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]
+    calc 1 / t * (1 / 2) * |quadForm hφ.A u|
+        ≤ 1 / t * (1 / 2) *
+            (Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2) := by gcongr
+      _ ≤ 1 * (1 / 2) *
+            (Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2) := by
+              apply mul_le_mul_of_nonneg_right _ h_qf_nn
+              apply mul_le_mul_of_nonneg_right ht_inv_le (by norm_num)
+      _ = (1 / 2 : ℝ) * Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by ring
+  -- |P_t| ≤ (‖Φ‖/6) · ‖u‖³
+  have h_cubic : |expNumCubic φ a hφ t u| ≤ (‖hφ.Φ‖ / 6) * ‖u‖ ^ 3 := by
+    have h := abs_expNumCubic_le φ a hφ ht_pos u
+    have h_t_sqrt_ge_one : 1 ≤ t * Real.sqrt t := by
+      calc (1 : ℝ) = 1 * 1 := (mul_one _).symm
+        _ ≤ t * Real.sqrt t := mul_le_mul ht hsqrt_ge_one (by norm_num) ht_pos.le
+    have h_inv_le : 1 / (t * Real.sqrt t) ≤ 1 := by
+      rw [div_le_iff₀ (by positivity)]; linarith
+    have h_div_nn : 0 ≤ ‖hφ.Φ‖ / 6 := by positivity
+    have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 3 := pow_nonneg (norm_nonneg _) _
+    calc |expNumCubic φ a hφ t u|
+        ≤ ‖hφ.Φ‖ / 6 / (t * Real.sqrt t) * ‖u‖ ^ 3 := h
+      _ = ‖hφ.Φ‖ / 6 * (1 / (t * Real.sqrt t)) * ‖u‖ ^ 3 := by ring
+      _ ≤ ‖hφ.Φ‖ / 6 * 1 * ‖u‖ ^ 3 := by
+          apply mul_le_mul_of_nonneg_right _ h_norm_pow_nn
+          apply mul_le_mul_of_nonneg_left h_inv_le h_div_nn
+      _ = ‖hφ.Φ‖ / 6 * ‖u‖ ^ 3 := by ring
+  -- Combine via triangle inequality.
+  unfold expNumObsRem
+  calc |φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+          - expNumQuad φ a hφ t u - expNumCubic φ a hφ t u|
+      ≤ |φ ((Real.sqrt t)⁻¹ • u)| + |expNumLin a t u|
+        + |expNumQuad φ a hφ t u| + |expNumCubic φ a hφ t u| := by
+        calc |φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+                - expNumQuad φ a hφ t u - expNumCubic φ a hφ t u|
+            ≤ |φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+                - expNumQuad φ a hφ t u| + |expNumCubic φ a hφ t u| := by
+                rw [show φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+                      - expNumQuad φ a hφ t u - expNumCubic φ a hφ t u
+                    = (φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+                        - expNumQuad φ a hφ t u) + (- expNumCubic φ a hφ t u) from by
+                    ring]
+                calc |(φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+                        - expNumQuad φ a hφ t u) + (- expNumCubic φ a hφ t u)|
+                    ≤ |φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+                        - expNumQuad φ a hφ t u| + |- expNumCubic φ a hφ t u| :=
+                      abs_add_le _ _
+                  _ = _ := by rw [abs_neg]
+          _ ≤ (|φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u|
+                + |expNumQuad φ a hφ t u|) + |expNumCubic φ a hφ t u| := by
+              gcongr
+              rw [show φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+                    - expNumQuad φ a hφ t u
+                  = (φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u)
+                    + (-expNumQuad φ a hφ t u) from by ring]
+              calc |(φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u)
+                    + (-expNumQuad φ a hφ t u)|
+                  ≤ |φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u|
+                    + |-expNumQuad φ a hφ t u| := abs_add_le _ _
+                _ = _ := by rw [abs_neg]
+          _ ≤ (|φ ((Real.sqrt t)⁻¹ • u)| + |expNumLin a t u|
+                + |expNumQuad φ a hφ t u|) + |expNumCubic φ a hφ t u| := by
+              gcongr
+              rw [show φ ((Real.sqrt t)⁻¹ • u) - expNumLin a t u
+                  = φ ((Real.sqrt t)⁻¹ • u) + (-expNumLin a t u) from by ring]
+              calc |φ ((Real.sqrt t)⁻¹ • u) + (-expNumLin a t u)|
+                  ≤ |φ ((Real.sqrt t)⁻¹ • u)| + |-expNumLin a t u| := abs_add_le _ _
+                _ = _ := by rw [abs_neg]
+          _ = _ := by ring
+    _ ≤ Kφ * (1 + ‖u‖ ^ p) + (∑ i, |a i|) * ‖u‖
+        + (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2
+        + ‖hφ.Φ‖ / 6 * ‖u‖ ^ 3 := by
+        gcongr
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
