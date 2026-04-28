@@ -597,8 +597,9 @@ private theorem rescaledNumerator_centered_pair_sharp
         gaussianWeight H u *
         Real.exp (-(rescaledPerturbation V H t u)) with hI4_def
   -- The centered numerator decomposes into I1 + √t · I2 + √t · I3 + t · I4.
-  -- Algebraic identity (~300 LOC of integrability bookkeeping); proof in
-  -- progress.
+  -- Algebraic identity (~300 LOC of integrability bookkeeping); proof
+  -- deferred — see notes/sharp_helpers_recipe.md for the recipe (extract
+  -- as a separate lemma rescaledNumerator_centered_pair_decomposition).
   have h_decomp : t * rescaledNumerator V t (fun w => φ w * ψ w)
         - m * rescaledPartition V t
         = I1 + Real.sqrt t * I2 + Real.sqrt t * I3 + t * I4 := by
