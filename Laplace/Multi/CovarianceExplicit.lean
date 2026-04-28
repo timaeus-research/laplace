@@ -177,7 +177,117 @@ private lemma gaussian_quad_expectation
     (hGauss : LaplaceCovHypotheses H Hinv) :
     ∫ u : ι → ℝ, (1 / 2 : ℝ) * quadForm A u * gaussianWeight H u
       = gaussianZ H * (1 / 2 : ℝ) * trASig A Hinv := by
-  sorry
+  classical
+  -- Step 1: pointwise expansion of `quadForm A u` to a double Finset sum.
+  have h_pt : ∀ u : ι → ℝ,
+      (1 / 2 : ℝ) * quadForm A u * gaussianWeight H u =
+        ∑ i, ∑ j, (1 / 2 : ℝ) *
+          ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+          (u i * u j * gaussianWeight H u) := by
+    intro u
+    unfold quadForm
+    -- u i * (A u) i = u i * ∑ j, u j * (A e_j) i
+    -- = ∑ j, (A e_j) i * (u i * u j).
+    have h_inner : ∀ i : ι, u i * (A u) i =
+        ∑ j, (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (u i * u j) := by
+      intro i
+      rw [H_apply_eq_sum A u i]
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _; ring
+    simp_rw [h_inner]
+    rw [Finset.mul_sum, Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [Finset.mul_sum, Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro j _; ring
+  -- Step 2: rewrite the integrand using the pointwise expansion.
+  rw [show (fun u : ι → ℝ => (1 / 2 : ℝ) * quadForm A u * gaussianWeight H u) =
+        fun u => ∑ i, ∑ j, (1 / 2 : ℝ) *
+          ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+          (u i * u j * gaussianWeight H u)
+        from funext h_pt]
+  -- Step 3: per-term identity from `gaussian_second_moment_eq_inverse_entry_scalar`.
+  have h_inner : ∀ i j : ι,
+      ∫ u : ι → ℝ, (1 / 2 : ℝ) *
+            ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+            (u i * u j * gaussianWeight H u)
+        = (1 / 2 : ℝ) *
+            ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+            (gaussianZ H *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) := by
+    intro i j
+    rw [integral_const_mul]
+    rw [gaussian_second_moment_eq_inverse_entry_scalar H Hinv
+        hGauss.H_inv_right hGauss.H_inj i j hGauss.int_gW
+        (hGauss.int_uk_uj_gW · j) (hGauss.int_uj_Hi_gW j)
+        (hGauss.fubini_ibp · j)]
+  -- Step 4: swap inner sum / integral.
+  rw [integral_finset_sum Finset.univ
+        (fun i _ =>
+          (integrable_finset_sum Finset.univ
+            (fun j _ => (hGauss.int_uk_uj_gW i j).const_mul _)))]
+  conv_lhs =>
+    enter [2, i]
+    rw [integral_finset_sum Finset.univ
+          (fun j _ => (hGauss.int_uk_uj_gW i j).const_mul _)]
+    enter [2, j]
+    rw [h_inner i j]
+  -- Step 5: pull `gaussianZ H` and `(1/2)` outside the double sum.
+  have h_factor : ∀ i j : ι,
+      (1 / 2 : ℝ) *
+          ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+          (gaussianZ H *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)
+        = gaussianZ H * ((1 / 2 : ℝ) *
+            ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)) := by
+    intro i j; ring
+  simp_rw [h_factor]
+  -- After simp_rw, goal:
+  --   ∑ i, ∑ j, gaussianZ H * (1/2 * (A_e_j_i * Hinv_e_j_i)) = Z * (1/2) * trASig A Hinv.
+  -- Pull `gaussianZ H` and `(1/2)` outside both sums via simp_rw on the inner.
+  simp_rw [← Finset.mul_sum]
+  -- Step 6: identify the remaining double sum with `trASig A Hinv`.
+  unfold trASig
+  have h_sum_eq : ∑ i, ∑ j,
+        ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)
+      = ∑ j, (A (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))) j := by
+    rw [Finset.sum_comm]
+    apply Finset.sum_congr rfl
+    intro j _
+    -- ∑ i, (A e_j) i * (Hinv e_j) i = dot (A e_j) (Hinv e_j)
+    --                               = dot e_j (A (Hinv e_j)) = (A (Hinv e_j)) j.
+    have h_dot : ∑ i, (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i
+        = dot (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) := by
+      unfold dot; rfl
+    rw [h_dot]
+    -- dot (A e_j) (Hinv e_j) = dot (Hinv e_j) (A e_j) (by symmetry of dot)
+    --                       = dot e_j (A (Hinv e_j)) (by hA_symm).
+    have h_dot_comm : dot (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))
+        = dot (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) := by
+      unfold dot; apply Finset.sum_congr rfl; intros; ring
+    rw [h_dot_comm,
+      hA_symm (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))
+        (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))]
+    -- dot e_j (A (Hinv e_j)) = (A (Hinv e_j)) j.
+    unfold dot
+    rw [Finset.sum_eq_single j]
+    · simp [Pi.single_eq_same]
+    · intros i _ hij
+      have h_zero : Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ) i = 0 := by
+        simp [Pi.single_apply, hij.symm]
+      rw [h_zero]; ring
+    · intro h; exact absurd (Finset.mem_univ j) h
+  rw [h_sum_eq]
+  ring
 
 /-- **4th-moment contraction (linear · cubic against Gaussian)**:
 $\int (a\cdot u)\,T(u,u,u)\,gW = Z\cdot 3\,(\Sigma a)\cdot(T{:}\Sigma)$.
