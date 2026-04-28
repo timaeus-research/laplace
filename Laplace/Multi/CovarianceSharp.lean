@@ -335,6 +335,10 @@ private lemma abs_integral_centered_bilinear_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / t := by
+  -- Rate-only sharp bound: bounds on the leading correction integral
+  -- exploiting parity vanishing of the cubic-jet term `t · cV((√t)⁻¹•u)`.
+  -- This proof is in progress; see notes/sharp_helper1_plan.md for the
+  -- decomposition into Glocal + Gtail majorants.
   sorry
 
 /-- **Sharp helper 2/3 (cross term)**: `∫ dot c u · (φ((√t)⁻¹•u) -
@@ -415,7 +419,81 @@ private theorem rescaledNumerator_centered_pair_sharp
       |t * rescaledNumerator V t (fun w => φ w * ψ w)
           - dot a (Hinv b) * rescaledPartition V t|
         ≤ K / t := by
-  sorry
+  -- Get sharp bounds for the four pieces.
+  obtain ⟨K1, T1, hT1, h1⟩ :=
+    abs_integral_centered_bilinear_sharp_le V H Hinv a b hV hGauss
+  obtain ⟨K2, T2, hT2, h2⟩ :=
+    abs_integral_dot_mul_jet_remainder_sharp_le V ψ H Hinv a b hV hψ hGauss
+  obtain ⟨K3, T3, hT3, h3⟩ :=
+    abs_integral_dot_mul_jet_remainder_sharp_le V φ H Hinv b a hV hφ hGauss
+  obtain ⟨K4, T4, hT4, h4⟩ :=
+    abs_integral_remainder_remainder_sharp_le V φ ψ H Hinv a b hV hφ hψ hGauss
+  refine ⟨K1 + K2 + K3 + K4,
+    max 1 (max T1 (max T2 (max T3 T4))), le_max_left _ _, ?_⟩
+  intro t ht
+  have ht1 : 1 ≤ t := le_of_max_le_left ht
+  have ht_rest : max T1 (max T2 (max T3 T4)) ≤ t := le_of_max_le_right ht
+  have ht_T1 : T1 ≤ t := le_of_max_le_left ht_rest
+  have ht_R2 : max T2 (max T3 T4) ≤ t := le_of_max_le_right ht_rest
+  have ht_T2 : T2 ≤ t := le_of_max_le_left ht_R2
+  have ht_R3 : max T3 T4 ≤ t := le_of_max_le_right ht_R2
+  have ht_T3 : T3 ≤ t := le_of_max_le_left ht_R3
+  have ht_T4 : T4 ≤ t := le_of_max_le_right ht_R3
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_ge_one : 1 ≤ Real.sqrt t := Real.one_le_sqrt.mpr ht1
+  -- Sharp bounds at t.
+  have h1_t := h1 t ht_T1
+  have h2_t := h2 t ht_T2
+  have h3_t := h3 t ht_T3
+  have h4_t := h4 t ht_T4
+  -- Notation for the four integrals.
+  set m : ℝ := dot a (Hinv b) with hm_def
+  set I1 : ℝ := ∫ u : ι → ℝ, (dot a u * dot b u - m) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) with hI1_def
+  set I2 : ℝ := ∫ u : ι → ℝ, dot a u *
+        (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) with hI2_def
+  set I3 : ℝ := ∫ u : ι → ℝ, dot b u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) with hI3_def
+  set I4 : ℝ := ∫ u : ι → ℝ,
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+        (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) with hI4_def
+  -- The centered numerator decomposes into I1 + √t · I2 + √t · I3 + t · I4.
+  -- Algebraic identity (the technical heart) — admitted via sorry for now;
+  -- proof follows the weak track's pair_product_expansion + linearity steps,
+  -- modulo replacing `gaussian_dot_mul_dot` with the centered version.
+  have h_decomp : t * rescaledNumerator V t (fun w => φ w * ψ w)
+        - m * rescaledPartition V t
+        = I1 + Real.sqrt t * I2 + Real.sqrt t * I3 + t * I4 := by
+    sorry
+  rw [h_decomp]
+  -- Triangle inequality.
+  calc |I1 + Real.sqrt t * I2 + Real.sqrt t * I3 + t * I4|
+      ≤ |I1| + |Real.sqrt t * I2| + |Real.sqrt t * I3| + |t * I4| := by
+        have h_a := abs_add_le (I1 + Real.sqrt t * I2 + Real.sqrt t * I3) (t * I4)
+        have h_b := abs_add_le (I1 + Real.sqrt t * I2) (Real.sqrt t * I3)
+        have h_c := abs_add_le I1 (Real.sqrt t * I2)
+        linarith
+    _ = |I1| + Real.sqrt t * |I2| + Real.sqrt t * |I3| + t * |I4| := by
+        rw [abs_mul (Real.sqrt t), abs_mul (Real.sqrt t), abs_mul t,
+            abs_of_pos hsqrt_pos, abs_of_pos ht_pos]
+    _ ≤ K1 / t + Real.sqrt t * (K2 / (t * Real.sqrt t)) +
+          Real.sqrt t * (K3 / (t * Real.sqrt t)) + t * (K4 / t ^ 2) := by
+        have hI1_b : |I1| ≤ K1 / t := h1_t
+        have hI2_b := mul_le_mul_of_nonneg_left h2_t hsqrt_pos.le
+        have hI3_b := mul_le_mul_of_nonneg_left h3_t hsqrt_pos.le
+        have hI4_b := mul_le_mul_of_nonneg_left h4_t ht_pos.le
+        linarith
+    _ = (K1 + K2 + K3 + K4) / t := by
+        rw [show (t : ℝ) ^ 2 = t * t from sq t]
+        field_simp
 
 end CenteredNumerator
 
