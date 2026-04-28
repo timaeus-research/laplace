@@ -344,6 +344,25 @@ structure LaplaceCov4MomentHypotheses
   /-- Cubic Fubini-IBP. -/
   fubini_ibp_cubic : ∀ a b c l : ι, FubiniIBPHypothesisCubic H a b c l
 
+/-- **6th-moment hypothesis package** (Stage 3 prerequisite for `lem:laplace_cov2`):
+extends `LaplaceCov4MomentHypotheses` with 6th-moment integrability and the
+quintic Fubini-IBP needed for `gaussian_quad_linear_cubic`.
+
+The signature is intentionally minimal — fill in the integrability fields once
+the Stage 3 proof clarifies exactly which ones are needed. -/
+structure LaplaceCov6MomentHypotheses
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    extends LaplaceCov4MomentHypotheses H Hinv where
+  /-- 6th-moment integrability. -/
+  int_6moment : ∀ a b c d e f : ι,
+    Integrable (fun u : ι → ℝ =>
+      u a * u b * u c * u d * u e * u f * gaussianWeight H u)
+  /-- Quintic-IBP integrand integrability:
+  `u_a · u_b · u_c · u_d · u_e · (Hu)_l · gW` is integrable. -/
+  int_5_Hl : ∀ a b c d e l : ι,
+    Integrable (fun u : ι → ℝ =>
+      u a * u b * u c * u d * u e * (H u) l * gaussianWeight H u)
+
 end FourthMomentInfrastructure
 
 section InverseSymmetry
@@ -2637,7 +2656,7 @@ theorem gibbsCov_first_order_rate_explicit
     (hφ : ObservableTensorApprox φ a)
     (hψ : ObservableTensorApprox ψ b)
     (h_phi_grad_zero : a = 0)
-    (hGauss : LaplaceCovHypotheses H Hinv) :
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |t ^ 2 * gibbsCov V t φ ψ -
         ((1 / 2 : ℝ) * trASig (hφ.A.comp ((Hinv).comp (hψ.A.comp Hinv))) (1 : (ι → ℝ) →L[ℝ] (ι → ℝ))
