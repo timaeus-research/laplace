@@ -1936,6 +1936,17 @@ private lemma expPotCubic_neg
   rw [cmm_diag_odd hV.T u]
   ring
 
+/-! ### Symmetrization helper -/
+
+omit [DecidableEq ι] in
+/-- Substitution `u ↦ -u` for the volume measure on `ι → ℝ`.
+Direct from `MeasureTheory.integral_neg_eq_self` plus `IsNegInvariant`
+on the `Pi`-volume measure. -/
+private lemma integral_pi_comp_neg
+    (f : (ι → ℝ) → ℝ) :
+    ∫ u : ι → ℝ, f (-u) = ∫ u : ι → ℝ, f u :=
+  MeasureTheory.integral_neg_eq_self f _
+
 /-! ### Pointwise bounds on the scaled jets
 
 These pointwise bounds will feed into the Glocal+Gtail integration arguments
