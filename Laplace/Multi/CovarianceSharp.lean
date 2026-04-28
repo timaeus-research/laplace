@@ -44,12 +44,13 @@ we adopt two architectural decisions:
 * Stage 2 — rescaled decomposition lemmas
   (`abs_rescaledPerturbation_sub_scaledCubicJet_le`,
   `abs_rescaledObservable_quadratic_error_le`): complete.
-* Stage 3 — centered numerator bound: structurally complete with one
-  technical sorry:
-  - `abs_integral_corrected_bracket_centered_bilinear_le` (helper 1's K/t
-    bound; the Glocal pointwise bound
-    `abs_gaussianWeight_mul_corrected_bracket_local_le` is formalized,
-    leaving the Gtail half + integral steps ~250-350 LOC).
+* Stage 3 — centered numerator bound: structurally complete with two
+  small technical sorries (both inside helper 1E):
+  - `abs_integral_corrected_bracket_centered_bilinear_le` has its main
+    proof structure formalized (constants, Glocal+Gtail majorants,
+    pointwise bound, integrability). Two remaining sorries: the
+    integral computations `∫ Glocal = K_loc/t` and `∫ Gtail = K_tail/t`,
+    each ~50 LOC of integral_add + integral_const_mul composition.
 
   All other Stage 3 components are fully formalized:
   - The algebraic identity `h_decomp` inside
