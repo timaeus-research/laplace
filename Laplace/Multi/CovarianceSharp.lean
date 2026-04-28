@@ -44,30 +44,22 @@ we adopt two architectural decisions:
 * Stage 2 — rescaled decomposition lemmas
   (`abs_rescaledPerturbation_sub_scaledCubicJet_le`,
   `abs_rescaledObservable_quadratic_error_le`): complete.
-* Stage 3 — centered numerator bound: structurally complete with two
-  technical sorries:
+* Stage 3 — centered numerator bound: structurally complete with one
+  technical sorry:
   - `abs_integral_corrected_bracket_centered_bilinear_le` (helper 1's K/t
     bound; the Glocal pointwise bound
-    `abs_gaussianWeight_mul_corrected_bracket_local_le` is now formalized,
-    leaving the Gtail half + integral steps ~250-350 LOC);
-  - `abs_integral_dot_mul_jet_remainder_sharp_le` (helpers 2/3, cross
-    terms, K/(t·√t) — requires parity decomposition `qψ + r₃` plus
-    Glocal+Gtail with k = 3 indicator). Integrand-level Glocal bounds
-    `abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_local_le`
-    (parity-reduced qψ piece) and
-    `abs_dot_mul_cubic_remainder_mul_rescaled_weight_local_le` (r₃ piece)
-    are formalized, along with integrability companions
-    `integrable_dot_mul_quadJet_mul_gaussianWeight` and
-    `integrable_dot_mul_quadJet_mul_rescaled_weight`. Gtail pointwise
-    bound for the parity-reduced qψ piece is also formalized
-    (`abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_tail_le`),
-    along with the global cubic remainder bound
-    `abs_cubic_remainder_global_le` for the r₃ tail. Remaining work is
-    the pointwise r₃ tail bound + composition (~150-200 LOC).
-  The algebraic identity `h_decomp` inside
-  `rescaledNumerator_centered_pair_sharp` and sharp helper 4
-  (`abs_integral_remainder_remainder_sharp_le`, K/t² with k = 4
-  indicator) are fully formalized.
+    `abs_gaussianWeight_mul_corrected_bracket_local_le` is formalized,
+    leaving the Gtail half + integral steps ~250-350 LOC).
+
+  All other Stage 3 components are fully formalized:
+  - The algebraic identity `h_decomp` inside
+    `rescaledNumerator_centered_pair_sharp` (via `pair_product_expansion`
+    + integral linearity).
+  - Sharp helper 4 `abs_integral_remainder_remainder_sharp_le` (K/t²,
+    Glocal+Gtail with k = 4 indicator).
+  - Sharp helpers 2/3 `abs_integral_dot_mul_jet_remainder_sharp_le`
+    (K/(t·√t), parity decomposition `qψ + r₃` plus Glocal+Gtail with
+    k = 3 indicator).
 * Stage 4 — `gibbsCov_first_order_rate_sharp`: complete given Stage 3.
 
 The helper-1 statement reduces (via `integral_centered_bilinear_eq_corrected_bracket`)
