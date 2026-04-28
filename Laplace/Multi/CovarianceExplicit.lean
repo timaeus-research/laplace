@@ -1962,7 +1962,12 @@ private lemma expPotCubic_neg
   rw [cmm_diag_odd hV.T u]
   ring
 
-/-! ### Symmetrization helper -/
+/-! ### Quintic remainder rescaling (for J₃) -/
+
+-- Rescaled quintic-remainder lemma for J_3:
+--   |s_t(u) - s_t(-u) - 2·C_t(u)| ≤ Q_const · ‖u‖^5 / (t · √t)
+-- on the local region. Derives from `V_odd_quintic_bound` applied to
+-- `w = (√t)⁻¹·u`. Substantial algebraic manipulation; not yet written.
 
 omit [DecidableEq ι] in
 /-- Substitution `u ↦ -u` for the volume measure on `ι → ℝ`.
