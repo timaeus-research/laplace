@@ -52,7 +52,14 @@ we adopt two architectural decisions:
     leaving the Gtail half + integral steps ~250-350 LOC);
   - `abs_integral_dot_mul_jet_remainder_sharp_le` (helpers 2/3, cross
     terms, K/(t·√t) — requires parity decomposition `qψ + r₃` plus
-    Glocal+Gtail with k = 3 indicator).
+    Glocal+Gtail with k = 3 indicator). Integrand-level Glocal bounds
+    `abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_local_le`
+    (parity-reduced qψ piece) and
+    `abs_dot_mul_cubic_remainder_mul_rescaled_weight_local_le` (r₃ piece)
+    are formalized, along with integrability companions
+    `integrable_dot_mul_quadJet_mul_gaussianWeight` and
+    `integrable_dot_mul_quadJet_mul_rescaled_weight`. Remaining work:
+    Gtail bounds + composition (~250-350 LOC).
   The algebraic identity `h_decomp` inside
   `rescaledNumerator_centered_pair_sharp` and sharp helper 4
   (`abs_integral_remainder_remainder_sharp_le`, K/t² with k = 4
