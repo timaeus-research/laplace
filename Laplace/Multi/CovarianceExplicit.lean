@@ -2436,12 +2436,20 @@ private lemma expNumerator_centered_decomp
         + expNumErr₂ V φ a H hφ t
         + expNumErr₃ V H hV a t
         + expNumErr₄ V φ a H Hinv hV hφ t := by
-  -- Decompose `φ((√t)⁻¹•u) = L_t + Q_t + P_t + R_{φ,t}` and
-  -- `exp(-t V((√t)⁻¹•u)) = gW(u) · exp(-s_t(u))`. Distribute, then
-  -- the Gaussian main block `∫(-L_t - Q_t - P_t + L_t·C_t + μ/t) gW du = 0`
-  -- by oddness (L_t, P_t) + gaussian_quad_expectation (Q_t) +
-  -- gaussian_linear_cubic (L_t · C_t). Substantial bookkeeping
-  -- (~150-250 LOC); deferred.
+  -- Decompose via 5 stages:
+  --   A. LHS = ∫ X du where X(u) := (φ((√t)⁻¹·u) - μ/t)·gW·exp(-s_t).
+  --      Uses `rescaledNumerator_eq_gaussian_form` + `rescaledPartition_eq_gaussian_form`
+  --      + `integral_const_mul` + `integral_sub`.
+  --   B. Pointwise identity: X(u) = J₁_int(u) + J₂_int(u) + J₃_int(u) + J₄_int(u) + bg(u),
+  --      where bg(u) := (L_t + Q_t + P_t - μ/t)·gW(u) - L_t·C_t·gW(u).
+  --      Uses `expNumObsRem` definition + `ring`.
+  --   C. ∫ (sum) = ∫ J₁_int + ∫ J₂_int + ∫ J₃_int + ∫ J₄_int + ∫ bg
+  --      via `integral_add` chain (requires integrability of each piece).
+  --   D. ∫ bg = 0 via `expNumerator_gaussian_background_eq_zero` (just proven).
+  --   E. ∫ Jᵢ_int = expNumErrᵢ by definition.
+  --
+  -- The painful step is C — each piece needs an integrability witness, which
+  -- requires reusing the J_i bound dominators. ~250-300 LOC of bookkeeping.
   sorry
 
 /-- **J₁ bound**: quartic observable remainder × full Gibbs factor is `O(t⁻²)`.
