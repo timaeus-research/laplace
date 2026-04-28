@@ -1419,20 +1419,23 @@ private lemma abs_integral_dot_mul_jet_remainder_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / (t * Real.sqrt t) := by
-  -- Strategy: decompose remψ(u) = qψ((√t)⁻¹•u) + r₃(u, t), where r₃ is the
-  -- Stage 2 sharp cubic remainder. Then:
-  --   ∫ dot c · remψ · gW · exp(-s_t)
-  --     = ∫ dot c · qψ((√t)⁻¹•u) · gW · exp(-s_t)        [piece A]
-  --       + ∫ dot c · r₃(u, t) · gW · exp(-s_t)          [piece B]
-  -- Piece A reduces by parity (∫ dot c · qψ · gW = 0) to
-  --   ∫ dot c · qψ · gW · (exp(-s_t) - 1),
-  -- which is bounded by K/(t·√t) via Glocal (using
-  -- abs_gaussianWeight_mul_exp_sub_one_le_local) + Gtail (k=3 indicator).
-  -- Piece B is bounded directly via Stage 2 sharp local bound + Glocal+Gtail.
-  -- Full proof ~500-700 LOC of integral arithmetic. Deferred — the
-  -- structurally analogous weak helper 2/3 (`abs_integral_dot_mul_remainder_mul_rescaled_weight_le`)
-  -- in `Covariance.lean` provides the K/t template; the sharp upgrade
-  -- adds the parity step + sharper indicator (k=3 instead of k=2).
+  -- Strategy: bound |F(u)| pointwise using a Glocal+Gtail majorant that
+  -- captures BOTH the |dot c · remψ| ≤ DC·‖u‖ · const local bound and the
+  -- crude global poly bound, with the indicator trick `1 ≤ ‖u‖³/(R³t√t)`
+  -- on tail.
+  --
+  -- The local bound on `|F(u)|`: using
+  --   |remψ(u)| ≤ Cψ · ‖u‖² / t                (weak observable bound)
+  -- gives `|F(u)| ≤ DC · Cψ · ‖u‖³ / t · exp(-c·‖u‖²)` locally. Integrating:
+  --   ≤ K_local / t.
+  --
+  -- This is the WEAK rate (K/t). To get the SHARP rate K/(t·√t), we'd
+  -- need the parity step at the integral level (∫ qψ · dot c · gW = 0,
+  -- with the cubic remainder r₃ ≤ jet_const·‖u‖³/(t·√t) for the residual).
+  --
+  -- The full sharp proof is ~500-700 LOC. For now we settle for the
+  -- weak K/t bound — which does NOT satisfy the sharp K/(t·√t) target.
+  -- The sorry below records this gap.
   sorry
 
 /-- **Sharp helper 4 (quadratic remainder)**: the product of two
