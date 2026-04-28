@@ -867,10 +867,14 @@ private lemma gaussian_linear_cubic
     ∫ u : ι → ℝ, dot a u * T (fun _ => u) * gaussianWeight H u
       = gaussianZ H * 3 * dot (Hinv a) (tensorContractMatrix T Hinv) := by
   classical
-  -- Strategy: use 4th-moment formula directly. Expand T(u,u,u) and (a·u) into
-  -- index sums, apply gaussian_fourth_moment_formula per (l,i,j,k), then
-  -- collapse via T-symmetry and Σ-symmetry.
-  -- For now, the proof is pending — the bookkeeping is substantial.
+  -- IBP path per gpt_responses/tactics_contraction_lemmas.md:
+  -- 1. dot a u = ∑_l (Hinv a)_l (Hu)_l   [dot_eq_sum_Hinv_mul_H]
+  -- 2. T(u,u,u) = ∑_{i,j,k} u_i u_j u_k Tcoord T i j k   [T_apply_diag_eq_sum]
+  -- 3. Apply cubic IBP gaussian_ibp_cubic_f per (i,j,k).
+  -- 4. Apply 2nd moment formula.
+  -- 5. Collapse 3 sums → 1 via T-symmetry (Tcoord_perm).
+  -- 6. Identify ∑_{j,k} Tcoord T l j k · Σ_jk with tensorContractMatrix T Hinv l.
+  -- The full encoding is substantial (~300 LOC); deferred.
   sorry
 
 /-- **4th-moment contraction (quad · quad)**:
