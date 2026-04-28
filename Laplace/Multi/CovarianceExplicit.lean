@@ -3453,9 +3453,20 @@ private lemma expNumErr₃_bound
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |expNumErr₃ V H hV a t| ≤ K / t ^ 2 := by
-  -- New EXP-specific helper. Symmetrise under u ↦ -u, then bound the odd
-  -- part using a quartic Taylor expansion of `exp(-s_t) - 1 + C_t`.
-  -- ~200 LOC; deferred.
+  -- Per `gpt_responses/tactics_j3_j4_parity.md`, this requires a QUINTIC
+  -- Taylor remainder bound on V (sharper than the current `T_jet_bound`
+  -- quartic). Specifically, the symmetrization gives
+  --   J₃ = (1/2) ∫ L_t(u) · [R(u) - R(-u)] · gW(u) du
+  -- where R(u) = exp(-s_t(u)) - 1 + C_t(u). After Taylor expansion, the
+  -- bracket reduces to bounding `s_t(u) - s_t(-u) - 2·C_t(u)`, which is
+  -- `t·((V(w) - V(-w)) - (1/3)·T(w,w,w))` for `w = (√t)⁻¹·u`. The current
+  -- `T_jet_bound` only gives `O(‖w‖^4)` for this, but parity-symmetrized
+  -- subtracts the quartic EVEN remainder cleanly only if we have a SHARPER
+  -- quintic bound `|V(w) - (... + (1/24)·V_4(w,...,w))| ≤ C·‖w‖^5`.
+  --
+  -- This requires extending `PotentialTensorApprox` with a quintic remainder
+  -- field, OR proving the sharper bound from existing data + extra smoothness.
+  -- Deferred pending hypothesis-package strengthening.
   sorry
 
 /-- **J₄ bound**: centered quadratic observable jet × `(e^{-s_t} - 1)` is `O(t⁻²)`.
