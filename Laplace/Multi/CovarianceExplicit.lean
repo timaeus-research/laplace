@@ -1654,11 +1654,50 @@ private lemma gaussian_quad_quad
     -- Combine: ((A∘Hinv) ((B∘Hinv) e_i)) i = ∑_l ∑_k ∑_j (Hinv e_i) l · (B e_l) j · (Hinv e_j) k · (A e_k) i.
     -- Sum over i: this is the desired sum modulo Σ-symmetry to align indices.
     unfold trASig
-    -- Step 1: rewrite (A.comp Hinv) f and (B.comp Hinv) f as A (Hinv f), B (Hinv f).
     simp only [ContinuousLinearMap.comp_apply]
-    -- Step 2: expand each application via H_apply_eq_sum twice.
-    -- Substantial Finset manipulation; deferred.
-    sorry
+    -- Per-i pointwise expansion via H_apply_eq_sum × 3.
+    have h_per_i : ∀ i : ι,
+        (A (Hinv (B (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))))) i =
+          ∑ k, ∑ j, ∑ l,
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) l *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) k *
+              (A (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i := by
+      intro i
+      rw [H_apply_eq_sum A (Hinv (B (Hinv (Pi.single i (1 : ℝ))))) i]
+      refine Finset.sum_congr rfl ?_
+      intro k _
+      rw [H_apply_eq_sum Hinv (B (Hinv (Pi.single i (1 : ℝ)))) k]
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_
+      intro j _
+      rw [H_apply_eq_sum B (Hinv (Pi.single i (1 : ℝ))) j]
+      rw [Finset.sum_mul, Finset.sum_mul]
+    rw [show (∑ i, (A (Hinv (B (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))))) i) =
+        ∑ i, ∑ k, ∑ j, ∑ l,
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) l *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) k *
+            (A (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i
+        from Finset.sum_congr rfl (fun i _ => h_per_i i)]
+    -- Now LHS: ∑ i ∑ k ∑ j ∑ l (Hinv e_i)_l · (B e_l)_j · (Hinv e_j)_k · (A e_k)_i.
+    -- RHS: ∑ i ∑ k ∑ j ∑ l (A e_j)_i · (B e_l)_k · (Hinv e_l)_i · (Hinv e_k)_j.
+    -- Need: swap j ↔ k in LHS (via Finset.sum_comm), then use Σ-symm and ring.
+    refine Finset.sum_congr rfl ?_
+    intro i _
+    -- LHS: ∑ k ∑ j ∑ l, ...; RHS: ∑ k ∑ j ∑ l, ...
+    -- Bound vars in LHS body have (k j l), in RHS body have (k j l) but in different positions.
+    -- After this congr, we still have ∑ k ∑ j ∑ l. Swap k ↔ j to align.
+    rw [Finset.sum_comm]  -- swap LHS's outer ∑ k and ∑ j
+    refine Finset.sum_congr rfl ?_
+    intro j _
+    refine Finset.sum_congr rfl ?_
+    intro k _
+    refine Finset.sum_congr rfl ?_
+    intro l _
+    -- Goal: pointwise equality. Use hSigSymm to align (Hinv e_l) i = (Hinv e_i) l.
+    rw [← hSigSymm i l]
+    ring
   -- Final calc deferred.
   sorry
 
