@@ -910,9 +910,66 @@ private lemma gaussian_quad_quad
     enter [2, l]
     rw [h_inner i j k l]
   -- Step 4: identify the three Wick-pairing sums with trace forms.
-  -- This requires: pairing 3 (Σ_{kl}Σ_{ij}) → tr(AΣ)tr(BΣ);
-  -- pairings 1+2 → 2 tr(AΣBΣ) (after A symm).
-  -- Substantial Finset manipulation; deferred for now.
+  -- Distribute the sum over (Pairing1 + Pairing2 + Pairing3) and pull out Z, 1/4.
+  have h_distrib : ∀ i k j l : ι,
+      (1 / 4 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+        (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+        (gaussianZ H *
+          ((Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j
+          + (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i
+          + (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i))
+      = gaussianZ H * (1 / 4 : ℝ) *
+          ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j
+          + (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i
+          + (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+            (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) := by
+    intros i k j l; ring
+  conv_lhs =>
+    enter [2, i, 2, k, 2, j, 2, l]
+    rw [h_distrib i k j l]
+  -- Pull out `gaussianZ H * (1/4)` from the quadruple sum.
+  simp_rw [← Finset.mul_sum]
+  -- Now the sum is over `(P1ijkl + P2ijkl + P3ijkl)` where:
+  -- P1 = A_ij B_kl Σ_li Σ_kj, P2 = A_ij B_kl Σ_lj Σ_ki, P3 = A_ij B_kl Σ_lk Σ_ji.
+  -- Distribute: ∑(P1+P2+P3) = ∑P1 + ∑P2 + ∑P3.
+  have h_sum_split : ∀ i k j : ι,
+      ∑ l, ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j
+            + (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i
+            + (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)
+      = (∑ l, (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j)
+        + (∑ l, (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) j *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i)
+        + (∑ l, (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+              (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) := by
+    intros; rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
+  -- Trace identification deferred: 3 sub-claims each require Finset manipulation.
   sorry
 
 /-- **4th-moment contraction (cubic · linear)**:
