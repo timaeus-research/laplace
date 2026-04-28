@@ -407,10 +407,21 @@ private lemma abs_integral_centered_bilinear_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / t := by
-  -- Rate-only sharp bound: bounds on the leading correction integral
-  -- exploiting parity vanishing of the cubic-jet term `t · cV((√t)⁻¹•u)`.
-  -- This proof is in progress; see notes/sharp_helper1_plan.md for the
-  -- decomposition into Glocal + Gtail majorants.
+  -- Strategy:
+  -- ∫ (dot a · dot b - m) · gW · exp(-s_t)
+  --   = ∫ (dot a · dot b - m) · gW · 1
+  --     + ∫ (dot a · dot b - m) · gW · (exp(-s_t) - 1)
+  --   = 0 + (parity-resolved bound).
+  -- The first integral vanishes via gaussian_dot_mul_dot:
+  --   ∫ dot a · dot b · gW = m · Z.
+  --   ∫ gW = Z.
+  --   So ∫ (dot a · dot b - m) · gW = m·Z - m·Z = 0.
+  -- Bounding the second by parity is the technical heart.
+  -- This proof is non-trivial (~500 LOC). For now we use the existing
+  -- weak-track bound via |gW · (exp(-s_t)-1)| ≤ Cs·‖u‖³/√t locally + tail,
+  -- combined with |dot a · dot b - m| ≤ (A·B+|m|)·(1 + ‖u‖²), giving an
+  -- absolute bound of K/√t. To upgrade to K/t we need the parity argument
+  -- exploiting oddness of `t · cV((√t)⁻¹•u)` — deferred to a follow-on file.
   sorry
 
 /-- **Sharp helper 2/3 (cross term)**: `∫ dot c u · (φ((√t)⁻¹•u) -
