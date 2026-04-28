@@ -1070,6 +1070,45 @@ private lemma abs_gaussianWeight_mul_corrected_bracket_local_le
           Real.exp (-(c' / 4 * ‖u‖ ^ 2)) := by
           field_simp
 
+/-- **Local pointwise bound on the product of two observable remainders**.
+
+Under quadratic local Taylor remainders for `φ` and `ψ`,
+
+  `|remφ(u) · remψ(u)| ≤ Cφ · Cψ · ‖u‖⁴ / t²`
+
+on the local ball `‖u‖ ≤ min(Rφ, Rψ) · √t`. Used by sharp helper 4 to
+extract the K/t² rate on the local region. -/
+private lemma abs_remainder_mul_remainder_local_le
+    (φ ψ : (ι → ℝ) → ℝ) (a b : ι → ℝ)
+    {Cφ Cψ Rφ Rψ : ℝ}
+    (hCφ_nn : 0 ≤ Cφ) (hCψ_nn : 0 ≤ Cψ)
+    (h_obs_φ_local : ∀ w : ι → ℝ, ‖w‖ ≤ Rφ →
+      |φ w - dot a w| ≤ Cφ * ‖w‖ ^ 2)
+    (h_obs_ψ_local : ∀ w : ι → ℝ, ‖w‖ ≤ Rψ →
+      |ψ w - dot b w| ≤ Cψ * ‖w‖ ^ 2)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ)
+    (huφ : ‖u‖ ≤ Rφ * Real.sqrt t)
+    (huψ : ‖u‖ ≤ Rψ * Real.sqrt t) :
+    |(φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
+        (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u)|
+      ≤ Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 := by
+  have h_phi := abs_rescaledObservable_linear_error_le φ a h_obs_φ_local ht u huφ
+  have h_psi := abs_rescaledObservable_linear_error_le ψ b h_obs_ψ_local ht u huψ
+  have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 2 := sq_nonneg _
+  have h_quotient_nn : 0 ≤ Cφ * ‖u‖ ^ 2 / t :=
+    div_nonneg (mul_nonneg hCφ_nn h_norm_pow_nn) ht.le
+  rw [abs_mul]
+  calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u| *
+          |ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u|
+      ≤ (Cφ * ‖u‖ ^ 2 / t) * (Cψ * ‖u‖ ^ 2 / t) :=
+        mul_le_mul h_phi h_psi (abs_nonneg _) h_quotient_nn
+    _ = Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 := by
+        rw [show Cφ * Cψ * ‖u‖ ^ 4 / t ^ 2 =
+              Cφ * Cψ * (‖u‖ ^ 2 * ‖u‖ ^ 2) / (t * t) from by ring,
+            show ‖u‖ ^ 2 * ‖u‖ ^ 2 = ‖u‖ ^ 4 from by ring]
+        field_simp
+
 end CorrectedBracketBounds
 
 section SharpHelpers
