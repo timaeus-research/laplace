@@ -1608,23 +1608,24 @@ private lemma abs_integral_dot_mul_jet_remainder_sharp_le
           gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / (t * Real.sqrt t) := by
-  -- Strategy: bound |F(u)| pointwise using a Glocal+Gtail majorant that
-  -- captures BOTH the |dot c · remψ| ≤ DC·‖u‖ · const local bound and the
-  -- crude global poly bound, with the indicator trick `1 ≤ ‖u‖³/(R³t√t)`
-  -- on tail.
+  -- Strategy: split the integrand as F = F_q + F_r where
+  --   F_q(u) := dot c · qψ((√t)⁻¹•u) · gW · exp(-s_t)
+  --   F_r(u) := dot c · (remψ - qψ((√t)⁻¹•u)) · gW · exp(-s_t)
+  -- Then |∫ F| ≤ |∫ F_q| + |∫ F_r|.
   --
-  -- The local bound on `|F(u)|`: using
-  --   |remψ(u)| ≤ Cψ · ‖u‖² / t                (weak observable bound)
-  -- gives `|F(u)| ≤ DC · Cψ · ‖u‖³ / t · exp(-c·‖u‖²)` locally. Integrating:
-  --   ≤ K_local / t.
+  -- For ∫ F_q, parity reduction gives
+  --   ∫ F_q = ∫ dot c · qψ · gW · (exp(-s_t) - 1),
+  -- bounded by `K_q/(t·√t)` via Glocal
+  -- (`abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_local_le`)
+  -- + Gtail.
+  -- For ∫ F_r, directly bounded by `K_r/(t·√t)` via Glocal
+  -- (`abs_dot_mul_cubic_remainder_mul_rescaled_weight_local_le`) + Gtail.
   --
-  -- This is the WEAK rate (K/t). To get the SHARP rate K/(t·√t), we'd
-  -- need the parity step at the integral level (∫ qψ · dot c · gW = 0,
-  -- with the cubic remainder r₃ ≤ jet_const·‖u‖³/(t·√t) for the residual).
-  --
-  -- The full sharp proof is ~500-700 LOC. For now we settle for the
-  -- weak K/t bound — which does NOT satisfy the sharp K/(t·√t) target.
-  -- The sorry below records this gap.
+  -- The two Glocal sub-lemmas above formalize the integrand-level local
+  -- bounds; the remaining work is the Gtail (k=3 indicator) + the
+  -- integral-level parity rewriting + composition (~300-400 LOC).
+  -- Deferred — same Glocal+Gtail template as sharp helper 4 but with the
+  -- additional parity step.
   sorry
 
 /-- **Sharp helper 4 (quadratic remainder)**: the product of two
