@@ -176,6 +176,17 @@ lemma cmm_diag_odd
         = (fun _ : Fin 3 => ((-1 : ℝ)) • u) from by funext _; simp]
   rw [h]; simp
 
+/-- **Diagonal of trilinear form against Gaussian vanishes**: for any continuous
+trilinear `T`, `∫ T(u, u, u) · gW = 0`. Direct corollary of `cmm_diag_odd` and
+`integral_odd_mul_gaussian_eq_zero`. -/
+lemma integral_cmm_diag_mul_gaussianWeight_eq_zero
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) :
+    ∫ u : ι → ℝ, T (fun _ => u) * gaussianWeight H u = 0 := by
+  apply integral_odd_mul_gaussian_eq_zero
+  intro u
+  exact cmm_diag_odd T u
+
 /-- Coordinate-form tensor: `Tcoord T i j k := T(e_i, e_j, e_k)` for the
 standard basis. The fundamental object for index-based reasoning about T. -/
 noncomputable def Tcoord
