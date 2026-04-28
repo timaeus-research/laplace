@@ -645,6 +645,11 @@ private lemma gaussian_linear_cubic
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∫ u : ι → ℝ, dot a u * T (fun _ => u) * gaussianWeight H u
       = gaussianZ H * 3 * dot (Hinv a) (tensorContractMatrix T Hinv) := by
+  classical
+  -- Strategy: use 4th-moment formula directly. Expand T(u,u,u) and (a·u) into
+  -- index sums, apply gaussian_fourth_moment_formula per (l,i,j,k), then
+  -- collapse via T-symmetry and Σ-symmetry.
+  -- For now, the proof is pending — the bookkeeping is substantial.
   sorry
 
 /-- **4th-moment contraction (quad · quad)**:
@@ -660,7 +665,7 @@ private lemma gaussian_quad_quad
     ∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u)
         * gaussianWeight H u
       = gaussianZ H * ((1 / 4 : ℝ) * trASig A Hinv * trASig B Hinv
-        + (1 / 2 : ℝ) * trASig A (B.comp Hinv |>.comp Hinv)) := by
+        + (1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv)) := by
   sorry
 
 /-- **4th-moment contraction (cubic · linear)**:
