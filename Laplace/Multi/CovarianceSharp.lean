@@ -381,6 +381,47 @@ private lemma integrable_dot_mul_dot_mul_rescaled_weight
               Real.exp (-(rescaledPerturbation V H t u)))) := by
           rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]; ring
 
+/-- **Integrability of `dot a · dot b · gW`** (no `exp(-s_t)` factor) under
+`LaplaceCovHypotheses`. Dominated by `A · B · ‖u‖² · gW`, and `‖u‖² · gW`
+is integrable from `integrable_sq_norm_mul_gaussianWeight`. -/
+private lemma integrable_dot_mul_dot_mul_gaussianWeight
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    (a b : ι → ℝ) :
+    Integrable (fun u : ι → ℝ => dot a u * dot b u * gaussianWeight H u) := by
+  set A : ℝ := ∑ i, |a i| with hA_def
+  set B : ℝ := ∑ i, |b i| with hB_def
+  have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hB_nn : 0 ≤ B := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
+    unfold dot
+    exact continuous_finset_sum _
+      (fun i _ => continuous_const.mul (continuous_apply i))
+  have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
+    unfold dot
+    exact continuous_finset_sum _
+      (fun i _ => continuous_const.mul (continuous_apply i))
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      A * B * (‖u‖ ^ 2 * gaussianWeight H u)) :=
+    (integrable_sq_norm_mul_gaussianWeight hGauss).const_mul (A * B)
+  refine h_dom.mono' ?_ ?_
+  · exact ((h_dot_a_cont.mul h_dot_b_cont).mul
+      (continuous_gaussianWeight H)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_dot_a_le : |dot a u| ≤ A * ‖u‖ := by
+      rw [hA_def]; exact abs_dot_le_l1_mul_norm a u
+    have h_dot_b_le : |dot b u| ≤ B * ‖u‖ := by
+      rw [hB_def]; exact abs_dot_le_l1_mul_norm b u
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_gW_nn, abs_mul]
+    calc |dot a u| * |dot b u| * gaussianWeight H u
+        ≤ (A * ‖u‖) * (B * ‖u‖) * gaussianWeight H u :=
+          mul_le_mul_of_nonneg_right
+            (mul_le_mul h_dot_a_le h_dot_b_le (abs_nonneg _)
+              (mul_nonneg hA_nn (norm_nonneg _))) h_gW_nn
+      _ = A * B * (‖u‖ ^ 2 * gaussianWeight H u) := by
+          rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]; ring
+
 end IntegrabilityHelpers
 
 section ParityLemmas
@@ -427,6 +468,44 @@ lemma integral_dot_mul_quadJet_eq_zero
   have h_smul : (Real.sqrt t)⁻¹ • (-u) = -((Real.sqrt t)⁻¹ • u) := by
     simp [smul_neg]
   rw [h_dot, h_smul, qφ_even ((Real.sqrt t)⁻¹ • u)]
+  ring
+
+/-- **Centering identity for the bilinear factor**: for `m := dot a (Hinv b)`,
+the centered bilinear factor `dot a u · dot b u - m` integrates to zero
+against the Gaussian weight.
+
+This is the `[1] = 0` piece of the corrected-bracket decomposition in
+sharp helper 1: it is *not* a parity argument, but rather a direct
+consequence of the second-moment formula `gaussian_dot_mul_dot`. -/
+lemma integral_centered_bilinear_gaussianWeight_eq_zero
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)} [Nonempty ι]
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    (a b : ι → ℝ) :
+    ∫ u : ι → ℝ, (dot a u * dot b u - dot a (Hinv b)) *
+      gaussianWeight H u = 0 := by
+  set m := dot a (Hinv b) with hm_def
+  -- ∫ dot a · dot b · gW = Z · m via gaussian_dot_mul_dot.
+  have h_dot_dot : ∫ u : ι → ℝ, dot a u * dot b u * gaussianWeight H u
+      = gaussianZ H * m :=
+    gaussian_dot_mul_dot H Hinv hGauss.H_inv_right hGauss.H_inj
+      hGauss.int_gW hGauss.int_uk_uj_gW hGauss.int_uj_Hi_gW
+      hGauss.fubini_ibp a b
+  -- ∫ m · gW = m · Z (constant times the partition definition).
+  have h_const : ∫ u : ι → ℝ, m * gaussianWeight H u = m * gaussianZ H := by
+    rw [MeasureTheory.integral_const_mul]
+    rfl
+  -- Integrability companions for the integral_sub split.
+  have h_int_dot_dot :
+      Integrable (fun u : ι → ℝ => dot a u * dot b u * gaussianWeight H u) :=
+    integrable_dot_mul_dot_mul_gaussianWeight hGauss a b
+  have h_int_m : Integrable (fun u : ι → ℝ => m * gaussianWeight H u) :=
+    hGauss.int_gW.const_mul m
+  -- Split via `integral_sub`.
+  rw [show (fun u : ι → ℝ => (dot a u * dot b u - m) * gaussianWeight H u)
+        = fun u => dot a u * dot b u * gaussianWeight H u
+                 - m * gaussianWeight H u from by
+        funext u; ring]
+  rw [MeasureTheory.integral_sub h_int_dot_dot h_int_m, h_dot_dot, h_const]
   ring
 
 end ParityLemmas
