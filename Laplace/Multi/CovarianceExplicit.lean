@@ -2566,6 +2566,151 @@ private lemma integrable_expNumCubic_mul_gW_mul_rescaled_weight
             (‖u‖ ^ 3 * (gaussianWeight H u *
               Real.exp (-(rescaledPerturbation V H t u)))) := by ring
 
+/-- Integrability of `expNumLin a t u · gW(u) · exp(-(rescaledPerturbation V H t u))`. -/
+private lemma integrable_expNumLin_mul_gW_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      expNumLin a t u * gaussianWeight H u
+        * Real.exp (-(rescaledPerturbation V H t u))) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) *
+        (‖u‖ * (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))))) := by
+    have := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 1 ht
+    simp only [pow_one] at this
+    exact this.const_mul _
+  apply h_dom_int.mono'
+  · have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
+      unfold dot
+      exact continuous_finset_sum _
+        (fun i _ => continuous_const.mul (continuous_apply i))
+    have h_lin_cont : Continuous (fun u : ι → ℝ => expNumLin a t u) := by
+      unfold expNumLin
+      exact continuous_const.mul h_dot_cont
+    exact ((h_lin_cont.mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp
+        (continuous_rescaledPerturbation hV_cont H t).neg)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_lin_le : |expNumLin a t u|
+        ≤ ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) * ‖u‖ := by
+      unfold expNumLin
+      rw [abs_mul, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
+      have h_dot_le : |dot a u| ≤ (∑ i, |a i|) * ‖u‖ := abs_dot_le_l1_mul_norm a u
+      calc (Real.sqrt t)⁻¹ * |dot a u|
+          ≤ (Real.sqrt t)⁻¹ * ((∑ i, |a i|) * ‖u‖) := by
+            apply mul_le_mul_of_nonneg_left h_dot_le (by positivity)
+        _ = ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) * ‖u‖ := by ring
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    have h_exp_nn : 0 ≤ Real.exp (-(rescaledPerturbation V H t u)) :=
+      (Real.exp_pos _).le
+    have h_prod_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg h_gW_nn h_exp_nn
+    rw [Real.norm_eq_abs]
+    rw [show expNumLin a t u * gaussianWeight H u
+          * Real.exp (-(rescaledPerturbation V H t u))
+        = expNumLin a t u * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) from by ring,
+        abs_mul, abs_of_nonneg h_prod_nn]
+    calc |expNumLin a t u| *
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ (((Real.sqrt t)⁻¹ * (∑ i, |a i|)) * ‖u‖) *
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) :=
+          mul_le_mul_of_nonneg_right h_lin_le h_prod_nn
+      _ = ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) *
+            (‖u‖ * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by ring
+
+/-- Integrability of `expNumQuad φ a hφ t u · gW(u) · exp(-(rescaledPerturbation V H t u))`. -/
+private lemma integrable_expNumQuad_mul_gW_mul_rescaled_weight
+    (V φ : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      expNumQuad φ a hφ t u * gaussianWeight H u
+        * Real.exp (-(rescaledPerturbation V H t u))) := by
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      ((1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖)) *
+        (‖u‖ ^ 2 * (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))))) :=
+    (integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 2 ht).const_mul _
+  apply h_dom_int.mono'
+  · have h_qf_cont : Continuous (fun u : ι → ℝ => quadForm hφ.A u) := by
+      show Continuous (fun u : ι → ℝ => ∑ i, u i * (hφ.A u) i)
+      refine continuous_finset_sum _ (fun i _ => ?_)
+      exact (continuous_apply i).mul ((continuous_apply i).comp hφ.A.continuous)
+    have h_quad_cont : Continuous (fun u : ι → ℝ => expNumQuad φ a hφ t u) := by
+      unfold expNumQuad
+      exact continuous_const.mul (continuous_const.mul h_qf_cont)
+    exact ((h_quad_cont.mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp
+        (continuous_rescaledPerturbation hV_cont H t).neg)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_qf_le : |quadForm hφ.A u| ≤ Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by
+      unfold quadForm
+      show |∑ i, u i * (hφ.A u) i| ≤ Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2
+      have h_each : ∀ i, |u i * (hφ.A u) i| ≤ ‖u‖ * ‖hφ.A u‖ := fun i => by
+        rw [abs_mul]
+        apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (hφ.A u) i)
+          (abs_nonneg _) (norm_nonneg _)
+      have h_sum_le : |∑ i, u i * (hφ.A u) i| ≤ ∑ i, |u i * (hφ.A u) i| :=
+        Finset.abs_sum_le_sum_abs _ _
+      have h_sum_le2 : ∑ i, |u i * (hφ.A u) i|
+          ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
+        calc ∑ i, |u i * (hφ.A u) i|
+            ≤ ∑ _ : ι, ‖u‖ * ‖hφ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+          _ = Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
+                rw [Finset.sum_const, Finset.card_univ]; ring
+      have h_Au : ‖hφ.A u‖ ≤ ‖hφ.A‖ * ‖u‖ := hφ.A.le_opNorm u
+      calc |∑ i, u i * (hφ.A u) i|
+          ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := le_trans h_sum_le h_sum_le2
+        _ ≤ Fintype.card ι * (‖u‖ * (‖hφ.A‖ * ‖u‖)) := by
+            apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
+            apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+        _ = Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by ring
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    have h_exp_nn : 0 ≤ Real.exp (-(rescaledPerturbation V H t u)) :=
+      (Real.exp_pos _).le
+    have h_prod_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg h_gW_nn h_exp_nn
+    have h_quad_le : |expNumQuad φ a hφ t u|
+        ≤ (1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖) * ‖u‖ ^ 2 := by
+      unfold expNumQuad
+      rw [show (1 / t : ℝ) * ((1/2 : ℝ) * quadForm hφ.A u)
+            = (1 / t) * (1 / 2) * quadForm hφ.A u from by ring,
+          abs_mul, abs_mul,
+          abs_of_pos (by positivity : (0:ℝ) < 1/t),
+          abs_of_pos (by norm_num : (0:ℝ) < 1/2)]
+      calc (1 / t) * (1 / 2) * |quadForm hφ.A u|
+          ≤ (1 / t) * (1 / 2) *
+              (Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2) := by gcongr
+        _ = (1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖) * ‖u‖ ^ 2 := by ring
+    rw [Real.norm_eq_abs]
+    rw [show expNumQuad φ a hφ t u * gaussianWeight H u
+          * Real.exp (-(rescaledPerturbation V H t u))
+        = expNumQuad φ a hφ t u * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) from by ring,
+        abs_mul, abs_of_nonneg h_prod_nn]
+    calc |expNumQuad φ a hφ t u| *
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ ((1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖) * ‖u‖ ^ 2) *
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) :=
+          mul_le_mul_of_nonneg_right h_quad_le h_prod_nn
+      _ = ((1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖)) *
+            (‖u‖ ^ 2 * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by ring
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
