@@ -1363,6 +1363,105 @@ private lemma abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_local_le
         rw [show ‖u‖ ^ 6 = ‖u‖ * ‖u‖ ^ 2 * ‖u‖ ^ 3 from by ring]
         field_simp
 
+/-- **Glocal pointwise bound for the r₃ residual** (helpers 2/3).
+
+On the local ball `‖u‖ ≤ jet_R · √t` (where `jet_R, jet_C` are the
+Stage 2 sharp jet constants for the observable),
+
+  `|dot c · (remψ - qψ((√t)⁻¹•u)) · gW · exp(-s_t)|
+    ≤ (DC · jet_C / (t·√t)) · ‖u‖⁴ · exp(-c·‖u‖²)`.
+
+Combines `|remψ - qψ((√t)⁻¹•u)| ≤ jet_C · ‖u‖³/(t·√t)` (Stage 2 sharp)
+with `|dot c| ≤ DC·‖u‖` and `gW · exp(-s_t) ≤ exp(-c·‖u‖²)` (V coercive). -/
+private lemma abs_dot_mul_cubic_remainder_mul_rescaled_weight_local_le
+    (V φ : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    {c jet_R jet_C : ℝ}
+    (hc_pos : 0 < c) (hjet_C_nn : 0 ≤ jet_C)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (qψ : (ι → ℝ) → ℝ) (phiGrad : ι → ℝ)
+    (h_obs_jet : ∀ w : ι → ℝ, ‖w‖ ≤ jet_R →
+      |φ w - (dot phiGrad w + qψ w)| ≤ jet_C * ‖w‖ ^ 3)
+    (dotCoef : ι → ℝ)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ jet_R * Real.sqrt t) :
+    |dot dotCoef u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u
+          - qψ ((Real.sqrt t)⁻¹ • u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ ((∑ i, |dotCoef i|) * jet_C / (t * Real.sqrt t)) * ‖u‖ ^ 4 *
+          Real.exp (-(c * ‖u‖ ^ 2)) := by
+  set DC : ℝ := ∑ i, |dotCoef i| with hDC_def
+  have hDC_nn : 0 ≤ DC := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  -- Stage 2 sharp local bound on r₃.
+  have h_r3_le := abs_rescaledObservable_quadratic_error_le φ qψ phiGrad
+    h_obs_jet ht u hu
+  -- |dot c| ≤ DC · ‖u‖.
+  have h_dot_le : |dot dotCoef u| ≤ DC * ‖u‖ := by
+    rw [hDC_def]; exact abs_dot_le_l1_mul_norm dotCoef u
+  -- gW · exp(-s_t) ≤ exp(-c·‖u‖²).
+  have h_rw_le := rescaled_weight_le_coercive V H hc_pos h_coer ht u
+  have h_rw_nn : 0 ≤ gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) :=
+    mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+  -- Combine.
+  have h_DC_norm_nn : 0 ≤ DC * ‖u‖ := mul_nonneg hDC_nn h_norm_nn
+  have h_jet_div_nn : 0 ≤ jet_C * ‖u‖ ^ 3 / (t * Real.sqrt t) := by
+    apply div_nonneg
+    · exact mul_nonneg hjet_C_nn (pow_nonneg h_norm_nn _)
+    · exact mul_nonneg ht.le hsqrt_pos.le
+  rw [show dot dotCoef u *
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+          qψ ((Real.sqrt t)⁻¹ • u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = (dot dotCoef u *
+          (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+            qψ ((Real.sqrt t)⁻¹ • u))) *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+  rw [abs_mul]
+  rw [abs_mul (dot dotCoef u)]
+  rw [abs_of_nonneg h_rw_nn]
+  calc |dot dotCoef u| *
+          |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+            qψ ((Real.sqrt t)⁻¹ • u)| *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+      ≤ (DC * ‖u‖) * (jet_C * ‖u‖ ^ 3 / (t * Real.sqrt t)) *
+          Real.exp (-(c * ‖u‖ ^ 2)) := by
+        have h1 : |dot dotCoef u| *
+            |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+              qψ ((Real.sqrt t)⁻¹ • u)| ≤
+            (DC * ‖u‖) * (jet_C * ‖u‖ ^ 3 / (t * Real.sqrt t)) :=
+          mul_le_mul h_dot_le h_r3_le (abs_nonneg _) h_DC_norm_nn
+        have h2 : (DC * ‖u‖) * (jet_C * ‖u‖ ^ 3 / (t * Real.sqrt t)) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            ≤ (DC * ‖u‖) * (jet_C * ‖u‖ ^ 3 / (t * Real.sqrt t)) *
+              Real.exp (-(c * ‖u‖ ^ 2)) := by
+          have h_lhs_nn : 0 ≤ (DC * ‖u‖) *
+              (jet_C * ‖u‖ ^ 3 / (t * Real.sqrt t)) :=
+            mul_nonneg h_DC_norm_nn h_jet_div_nn
+          exact mul_le_mul_of_nonneg_left h_rw_le h_lhs_nn
+        have h3 : |dot dotCoef u| *
+              |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot phiGrad u -
+                qψ ((Real.sqrt t)⁻¹ • u)| *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+            ≤ ((DC * ‖u‖) * (jet_C * ‖u‖ ^ 3 / (t * Real.sqrt t))) *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) :=
+          mul_le_mul_of_nonneg_right h1 h_rw_nn
+        linarith
+    _ = (DC * jet_C / (t * Real.sqrt t)) * ‖u‖ ^ 4 *
+          Real.exp (-(c * ‖u‖ ^ 2)) := by
+        rw [show ‖u‖ ^ 4 = ‖u‖ * ‖u‖ ^ 3 from by ring]
+        field_simp
+
 /-- **Glocal pointwise bound for helper 4**: on the local ball,
 
   `|remφ(u) · remψ(u) · gW · exp(-s_t)| ≤ Cφ · Cψ · ‖u‖⁴ / t² · exp(-c·‖u‖²)`
