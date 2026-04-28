@@ -104,6 +104,32 @@ structure PotentialTensorApprox
     |V w - ((1 / 2 : ℝ) * quadForm H w + (1 / 6 : ℝ) * T (fun _ => w))|
       ≤ jet_const * ‖w‖ ^ 4
 
+/-- **Quintic-remainder strengthening** of `PotentialTensorApprox`.
+
+Adds a sharper bound on the *odd* part of `V`'s Taylor remainder, needed
+specifically for `expNumErr_3_bound` (J₃) where the parity symmetrization
+reduces to bounding `s_t(u) - s_t(-u) - 2·C_t(u)`.
+
+The bound `|V w - V(-w) - (1/3) · T(w,w,w)| ≤ Q_const · ‖w‖^5` says the
+odd part of `V`'s Taylor expansion is captured by `(1/6)·T(w,w,w)` modulo
+a quintic remainder. Equivalently, `V w + (1/6)·T(w,w,w) = V(-w) + (1/6)·T(-w,-w,-w) - (1/3)·T(w,w,w)`,
+i.e. the symmetric (even) part of `V` is captured by quartic-or-higher terms.
+
+Holds when `V` is `C^5` near 0 (the explicit Taylor coefficient at order 5
+gives the bound). Independent from `T_jet_bound` (quartic bound) since the
+odd part has its own structure. -/
+structure PotentialQuinticApprox
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    extends PotentialTensorApprox V H where
+  /-- Constant for the odd-quintic remainder. -/
+  Q_const : ℝ
+  Q_const_nn : 0 ≤ Q_const
+  /-- Odd-part quintic remainder: on `‖w‖ ≤ jet_radius`,
+  `|V w - V(-w) - (1/3)·T(w,w,w)| ≤ Q_const · ‖w‖^5`. -/
+  V_odd_quintic_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
+    |V w - V (-w) - (1 / 3 : ℝ) * T (fun _ => w)|
+      ≤ Q_const * ‖w‖ ^ 5
+
 /-- **Exact-tensor observable package**.
 
 Extends `ObservableJetApprox` with an *exact* symmetric bilinear quadratic
