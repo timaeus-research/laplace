@@ -819,6 +819,69 @@ private lemma integral_centered_bilinear_eq_corrected_bracket
 
 end ParityLemmas
 
+section CorrectedBracketBounds
+
+/-- **Pointwise local bound on the corrected bracket**.
+
+On the local ball `‖u‖ ≤ hV.jet_radius · √t`, the corrected bracket
+`exp(-s_t) - 1 + c_t` satisfies
+
+  `|exp(-s_t) - 1 + c_t| ≤ s_t² · exp|s_t| + jet_const · ‖u‖^4 / t`.
+
+The bound combines:
+- Stage 1 (`abs_exp_neg_sub_one_add_le`) for `|exp(-s) - (1-s)| ≤ s² · exp|s|`;
+- Stage 2 (`abs_rescaledPerturbation_sub_scaledCubicJet_le`) for
+  `|c_t - s_t| ≤ jet_const · ‖u‖^4 / t` on the local ball.
+
+This is the integrand-level pointwise step toward helper 1's K/t bound. -/
+private lemma abs_corrected_bracket_local_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    {t : ℝ} (ht_pos : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ hV.jet_radius * Real.sqrt t) :
+    |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+        t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+      ≤ rescaledPerturbation V H t u ^ 2 *
+            Real.exp |rescaledPerturbation V H t u|
+        + hV.jet_const * ‖u‖ ^ 4 / t := by
+  have h_taylor :=
+    abs_exp_neg_sub_one_add_le (rescaledPerturbation V H t u)
+  have h_stage2 :=
+    abs_rescaledPerturbation_sub_scaledCubicJet_le V hV.cV H
+      hV.jet_bound ht_pos u hu
+  have h_identity :
+      Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+          t * hV.cV ((Real.sqrt t)⁻¹ • u)
+        = (Real.exp (-(rescaledPerturbation V H t u)) -
+              (1 - rescaledPerturbation V H t u))
+          + (t * hV.cV ((Real.sqrt t)⁻¹ • u) -
+              rescaledPerturbation V H t u) := by
+    ring
+  rw [h_identity]
+  have h_neg : t * hV.cV ((Real.sqrt t)⁻¹ • u) -
+        rescaledPerturbation V H t u
+      = -(rescaledPerturbation V H t u -
+          t * hV.cV ((Real.sqrt t)⁻¹ • u)) := by ring
+  calc |(Real.exp (-(rescaledPerturbation V H t u)) -
+              (1 - rescaledPerturbation V H t u))
+          + (t * hV.cV ((Real.sqrt t)⁻¹ • u) -
+              rescaledPerturbation V H t u)|
+      ≤ |Real.exp (-(rescaledPerturbation V H t u)) -
+              (1 - rescaledPerturbation V H t u)|
+        + |t * hV.cV ((Real.sqrt t)⁻¹ • u) -
+              rescaledPerturbation V H t u| := abs_add_le _ _
+    _ = |Real.exp (-(rescaledPerturbation V H t u)) -
+              (1 - rescaledPerturbation V H t u)|
+        + |rescaledPerturbation V H t u -
+              t * hV.cV ((Real.sqrt t)⁻¹ • u)| := by
+            rw [h_neg, abs_neg]
+    _ ≤ rescaledPerturbation V H t u ^ 2 *
+            Real.exp |rescaledPerturbation V H t u|
+          + hV.jet_const * ‖u‖ ^ 4 / t := by linarith
+
+end CorrectedBracketBounds
+
 section SharpHelpers
 
 /-- **Bound on the corrected-bracket integral** (the technical heart of
