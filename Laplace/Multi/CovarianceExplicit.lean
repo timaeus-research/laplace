@@ -175,6 +175,33 @@ noncomputable def Tcoord
     | 1 => stdBasisVec j
     | 2 => stdBasisVec k)
 
+/-- Convenience: `Tcoord` viewed as a function of a triple `(r 0, r 1, r 2)`
+for `r : Fin 3 → ι`. -/
+lemma Tcoord_eq_apply
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (r : Fin 3 → ι) :
+    Tcoord T (r 0) (r 1) (r 2) = T (fun n : Fin 3 => stdBasisVec (r n)) := by
+  unfold Tcoord
+  congr 1
+  funext n
+  fin_cases n <;> rfl
+
+/-- **Tensor coordinate symmetry**: from the abstract `T_symm` field, the
+coordinate-form tensor is invariant under any permutation of its 3 indices. -/
+lemma Tcoord_perm
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      T (fun i => v (σ i)) = T v)
+    (σ : Equiv.Perm (Fin 3)) (r : Fin 3 → ι) :
+    Tcoord T (r (σ 0)) (r (σ 1)) (r (σ 2)) = Tcoord T (r 0) (r 1) (r 2) := by
+  rw [Tcoord_eq_apply T (fun n => r (σ n)),
+      Tcoord_eq_apply T r]
+  -- LHS: T (fun n => stdBasisVec (r (σ n)))
+  -- RHS: T (fun n => stdBasisVec (r n))
+  -- By T_symm with v := (fun m => stdBasisVec (r m)).
+  have h := hT_symm σ (fun m => stdBasisVec (r m))
+  exact h
+
 end TensorContractions
 
 section FourthMomentInfrastructure
@@ -247,6 +274,27 @@ lemma Hinv_symm
   have h_rhs : ∑ k, y k * (Hinv x) k = ∑ k, (Hinv x) k * y k := by
     apply Finset.sum_congr rfl; intros; ring
   rw [h_lhs, h_rhs]; exact h_apply
+
+/-- **Linear factor as Hinv-weighted Hu sum**: `dot a u = ∑_l (Hinv a)_l (Hu)_l`.
+Uses `Hinv` symmetry + `H ∘ Hinv = id`. The bridge from a generic linear factor
+to the cubic-IBP lemma `gaussian_ibp_cubic_f`. -/
+lemma dot_eq_sum_Hinv_mul_H
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    (a u : ι → ℝ) :
+    dot a u = ∑ l, (Hinv a) l * (H u) l := by
+  have h_h_inv : H (Hinv a) = a := by
+    have := congrArg (fun f => f a) hGauss.H_inv_right
+    simpa using this
+  -- H_symm gives: ∑ k, u k * (H (Hinv a)) k = ∑ k, (Hinv a) k * (H u) k.
+  have h_sym := hGauss.H_symm u (Hinv a)
+  rw [h_h_inv] at h_sym
+  -- h_sym: ∑ k, u k * a k = ∑ k, (Hinv a) k * (H u) k
+  -- Goal: dot a u = ∑ l, (Hinv a) l * (H u) l
+  unfold dot
+  have h_swap : ∑ i, a i * u i = ∑ k, u k * a k := by
+    apply Finset.sum_congr rfl; intros; ring
+  rw [h_swap, h_sym]
 
 end InverseSymmetry
 
