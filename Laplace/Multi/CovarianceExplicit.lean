@@ -2356,8 +2356,16 @@ private lemma expNumerator_centered_decomp
   sorry
 
 /-- **J₁ bound**: quartic observable remainder × full Gibbs factor is `O(t⁻²)`.
-Reuses the `Φ_jet_bound` rescaled and the existing Glocal+Gtail integrability
-on the full Gibbs factor. -/
+
+Proof: unified Glocal+Gtail majorant via the "absorption trick" from
+`abs_integral_remainder_remainder_sharp_le` (CovarianceSharp.lean):
+- Local (`‖u‖ ≤ jet_R·√t`): `|R| ≤ jet_C·‖u‖⁴/t²` (sharp).
+- Tail (`‖u‖ > jet_R·√t`): use `1 ≤ ‖u‖⁴/(jet_R⁴·t²)` to absorb the
+  global polynomial bound into a `1/t²` factor.
+
+Both pieces combine into a single majorant `(const/t²) · ‖u‖⁴·(1 + ‖u‖^N) ·
+exp(-c·‖u‖²)`, which is t-independent up to the `1/t²` prefactor and
+integrable via `integrable_norm_pow_mul_exp_neg_const_sq`. -/
 private lemma expNumErr₁_bound
     (V φ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
@@ -2368,11 +2376,251 @@ private lemma expNumErr₁_bound
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |expNumErr₁ V φ a H hφ t| ≤ K / t ^ 2 := by
-  -- Pointwise: |R_{φ,t}(u)| ≤ jet_const · t⁻² · ‖u‖⁴ (rescaled Φ_jet_bound),
-  -- combined with the existing Glocal+Gtail bookkeeping on the full Gibbs
-  -- factor (cf. `abs_remainder_mul_remainder_local_le` and tail twin in
-  -- CovarianceSharp.lean). ~150 LOC; deferred.
-  sorry
+  -- Extract constants.
+  set c : ℝ := hV.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.coercive_const_pos
+  have h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w := hV.coercive_bound
+  set jet_R : ℝ := hφ.jet_radius with hjet_R_def
+  have hjet_R_pos : 0 < jet_R := hφ.jet_radius_pos
+  set jet_C : ℝ := hφ.jet_const with hjet_C_def
+  have hjet_C_nn : 0 ≤ jet_C := hφ.jet_const_nonneg
+  obtain ⟨Kφ, p, hKφ_nn, hpoly⟩ := hφ.toObservableApprox.poly_growth
+  -- Polynomial degree N for the tail majorant; we need N ≥ p (so all four
+  -- pieces of the polynomial bound are dominated by `1 + ‖u‖^N`).
+  set N : ℕ := max p 3 with hN_def
+  -- Polynomial constant: combines the four pieces of the global bound.
+  -- The factor 2 in front of Kφ accounts for the (1 + ‖u‖^p) ≤ 2·(1 + ‖u‖^N)
+  -- absorption.
+  set C_glob : ℝ :=
+    2 * Kφ + (∑ i, |a i|) + (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖
+      + ‖hφ.Φ‖ / 6 with hC_glob_def
+  have hC_glob_nn : 0 ≤ C_glob := by rw [hC_glob_def]; positivity
+  -- Gaussian moment for the unified majorant.
+  set M : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) *
+    Real.exp (-(c * ‖u‖ ^ 2)) with hM_def
+  have hM_int : Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2))) := by
+    have h4 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 4
+    have h4N := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos (4 + N)
+    have h_sum := h4.add h4N
+    convert h_sum using 1
+    funext u
+    rw [show ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2))
+          = ‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2))
+            + ‖u‖ ^ (4 + N) * Real.exp (-(c * ‖u‖ ^ 2)) from by
+        rw [show ‖u‖ ^ (4 + N) = ‖u‖ ^ 4 * ‖u‖ ^ N from by rw [pow_add]]
+        ring]
+    rfl
+  have hM_nn : 0 ≤ M := by
+    rw [hM_def]
+    apply MeasureTheory.integral_nonneg
+    intro u; positivity
+  -- Tail-absorption constant: when ‖u‖ > jet_R·√t, ‖u‖⁴/t² ≥ jet_R⁴.
+  -- So the global bound `C_glob · (1 + ‖u‖^N)` ≤ (C_glob / jet_R⁴) · ‖u‖⁴/t² · (1+‖u‖^N).
+  set C_tail_factor : ℝ := C_glob / jet_R ^ 4 with hC_tail_factor_def
+  have hC_tail_factor_nn : 0 ≤ C_tail_factor := by
+    rw [hC_tail_factor_def]; positivity
+  -- The combined majorant constant: max(jet_C, C_tail_factor) for unified prefactor.
+  -- Sum form (since both pieces are nonneg, sum dominates max).
+  set K : ℝ := (jet_C + C_tail_factor) * M with hK_def
+  refine ⟨K, 1, le_refl _, ?_⟩
+  intro t ht1
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have ht_sq_pos : 0 < t ^ 2 := pow_pos ht_pos 2
+  -- Define the unified majorant.
+  set G : (ι → ℝ) → ℝ := fun u =>
+    ((jet_C + C_tail_factor) / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) *
+      Real.exp (-(c * ‖u‖ ^ 2)) with hG_def
+  have hG_nn : ∀ u, 0 ≤ G u := by
+    intro u; rw [hG_def]; positivity
+  have hG_int : Integrable G := by
+    rw [hG_def]
+    have := hM_int.const_mul ((jet_C + C_tail_factor) / t ^ 2)
+    convert this using 1; funext u; ring
+  -- Pointwise bound.
+  have h_pointwise : ∀ u : ι → ℝ,
+      ‖expNumObsRem φ a hφ t u
+        * Real.exp (-(rescaledPerturbation V H t u))
+        * gaussianWeight H u‖ ≤ G u := by
+    intro u
+    rw [Real.norm_eq_abs]
+    have h_gibbs_le : gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+        ≤ Real.exp (-(c * ‖u‖ ^ 2)) :=
+      rescaled_weight_le_coercive V H hc_pos h_coer ht_pos u
+    have h_gibbs_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+    rw [show expNumObsRem φ a hφ t u
+          * Real.exp (-(rescaledPerturbation V H t u))
+          * gaussianWeight H u
+        = expNumObsRem φ a hφ t u *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) from by ring,
+        abs_mul, abs_of_nonneg h_gibbs_nn]
+    -- Pointwise: |R| ≤ ((jet_C + C_tail_factor) / t²) · ‖u‖⁴ · (1 + ‖u‖^N).
+    have h_R_ptw : |expNumObsRem φ a hφ t u|
+        ≤ ((jet_C + C_tail_factor) / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) := by
+      by_cases hu : ‖u‖ ≤ jet_R * Real.sqrt t
+      · -- Local: use sharp bound; the remaining factors absorb.
+        have h_loc :=
+          abs_expNumObsRem_local_le (φ := φ) (a := a) hφ ht_pos u (by
+            show ‖u‖ ≤ hφ.jet_radius * Real.sqrt t
+            exact hu)
+        have h_loc' : |expNumObsRem φ a hφ t u| ≤ jet_C * ‖u‖ ^ 4 / t ^ 2 := by
+          rw [hjet_C_def]; exact h_loc
+        have h_pow_N_nn : 0 ≤ ‖u‖ ^ N := pow_nonneg (norm_nonneg _) _
+        have h_C_tail_nn : 0 ≤ C_tail_factor := hC_tail_factor_nn
+        have h_jet_C_nn : 0 ≤ jet_C := hjet_C_nn
+        have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 4 := pow_nonneg (norm_nonneg _) _
+        calc |expNumObsRem φ a hφ t u|
+            ≤ jet_C * ‖u‖ ^ 4 / t ^ 2 := h_loc'
+          _ = (jet_C / t ^ 2) * ‖u‖ ^ 4 * 1 := by ring
+          _ ≤ (jet_C / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) := by
+              apply mul_le_mul_of_nonneg_left _ (by positivity)
+              linarith [h_pow_N_nn]
+          _ ≤ ((jet_C + C_tail_factor) / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) := by
+              gcongr
+              linarith
+      · -- Tail: use global bound, absorb `1` into `‖u‖⁴/(jet_R⁴·t²)`.
+        push_neg at hu
+        have h_glob :=
+          abs_expNumObsRem_global_le (φ := φ) (a := a) hφ hKφ_nn hpoly ht1 u
+        have h_norm_sq_lb : jet_R ^ 2 * t < ‖u‖ ^ 2 := by
+          have h1 : 0 ≤ jet_R * Real.sqrt t := by positivity
+          have h2 := mul_self_lt_mul_self h1 hu
+          rw [show (jet_R * Real.sqrt t) * (jet_R * Real.sqrt t)
+                = (jet_R * Real.sqrt t) ^ 2 from by ring,
+              show ‖u‖ * ‖u‖ = ‖u‖ ^ 2 from by ring] at h2
+          rw [mul_pow, Real.sq_sqrt ht_pos.le] at h2
+          exact h2
+        have h_norm_pow_lb : jet_R ^ 4 * t ^ 2 < ‖u‖ ^ 4 := by
+          calc jet_R ^ 4 * t ^ 2 = (jet_R ^ 2 * t) ^ 2 := by ring
+            _ < (‖u‖ ^ 2) ^ 2 := by
+                apply sq_lt_sq'
+                · have h_pos : 0 ≤ jet_R ^ 2 * t := by positivity
+                  linarith [sq_nonneg (‖u‖ ^ 2)]
+                · exact h_norm_sq_lb
+            _ = ‖u‖ ^ 4 := by ring
+        have h_one_le : (1 : ℝ) ≤ ‖u‖ ^ 4 / (jet_R ^ 4 * t ^ 2) := by
+          rw [le_div_iff₀ (by positivity : (0:ℝ) < jet_R^4 * t^2)]
+          linarith
+        -- Bound each piece of the global polynomial bound.
+        -- |R| ≤ Kφ·(1 + ‖u‖^p) + (∑|aᵢ|)·‖u‖ + (|ι|/2)·‖A‖·‖u‖² + (‖Φ‖/6)·‖u‖³
+        -- Each piece ≤ C_glob · (1 + ‖u‖^N).
+        have h_p_le_N : ‖u‖ ^ p ≤ 1 + ‖u‖ ^ N := by
+          have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+          by_cases h1u : ‖u‖ ≤ 1
+          · have : ‖u‖ ^ p ≤ 1 := pow_le_one₀ h_norm_nn h1u
+            have : 0 ≤ ‖u‖ ^ N := pow_nonneg h_norm_nn _
+            linarith
+          · push_neg at h1u
+            have h_p_le : ‖u‖ ^ p ≤ ‖u‖ ^ N := by
+              apply pow_le_pow_right₀ h1u.le
+              rw [hN_def]; exact le_max_left _ _
+            linarith [pow_nonneg h_norm_nn N]
+        have h_1_le_N : (1 : ℝ) ≤ 1 + ‖u‖ ^ N := by
+          linarith [pow_nonneg (norm_nonneg u) N]
+        have h_norm_le_N : ‖u‖ ≤ 1 + ‖u‖ ^ N := by
+          by_cases h1u : ‖u‖ ≤ 1
+          · linarith [pow_nonneg (norm_nonneg u) N]
+          · push_neg at h1u
+            have h_le : ‖u‖ ≤ ‖u‖ ^ N := by
+              calc ‖u‖ = ‖u‖ ^ 1 := by ring
+                _ ≤ ‖u‖ ^ N := by
+                    apply pow_le_pow_right₀ h1u.le
+                    rw [hN_def]; have := le_max_right p 3; omega
+            linarith [pow_nonneg (norm_nonneg u) N]
+        have h_norm_sq_le_N : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ N := by
+          by_cases h1u : ‖u‖ ≤ 1
+          · have : ‖u‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) h1u
+            linarith [pow_nonneg (norm_nonneg u) N]
+          · push_neg at h1u
+            have h_le : ‖u‖ ^ 2 ≤ ‖u‖ ^ N := by
+              apply pow_le_pow_right₀ h1u.le
+              rw [hN_def]; have := le_max_right p 3; omega
+            linarith [pow_nonneg (norm_nonneg u) N]
+        have h_norm_cube_le_N : ‖u‖ ^ 3 ≤ 1 + ‖u‖ ^ N := by
+          by_cases h1u : ‖u‖ ≤ 1
+          · have : ‖u‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) h1u
+            linarith [pow_nonneg (norm_nonneg u) N]
+          · push_neg at h1u
+            have h_le : ‖u‖ ^ 3 ≤ ‖u‖ ^ N := by
+              apply pow_le_pow_right₀ h1u.le
+              rw [hN_def]; exact le_max_right _ _
+            linarith [pow_nonneg (norm_nonneg u) N]
+        have h_glob_simp : |expNumObsRem φ a hφ t u| ≤ C_glob * (1 + ‖u‖ ^ N) := by
+          rw [hC_glob_def]
+          calc |expNumObsRem φ a hφ t u|
+              ≤ Kφ * (1 + ‖u‖ ^ p) + (∑ i, |a i|) * ‖u‖
+                + (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2
+                + ‖hφ.Φ‖ / 6 * ‖u‖ ^ 3 := h_glob
+            _ ≤ 2 * Kφ * (1 + ‖u‖ ^ N) + (∑ i, |a i|) * (1 + ‖u‖ ^ N)
+                + (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖ * (1 + ‖u‖ ^ N)
+                + ‖hφ.Φ‖ / 6 * (1 + ‖u‖ ^ N) := by
+                  -- Kφ·(1 + ‖u‖^p) ≤ 2·Kφ·(1 + ‖u‖^N) via h_p_le_N
+                  have hKφ_factor : Kφ * (1 + ‖u‖ ^ p) ≤ 2 * Kφ * (1 + ‖u‖ ^ N) := by
+                    have h_pow_N_nn : 0 ≤ ‖u‖ ^ N := pow_nonneg (norm_nonneg _) _
+                    have h_factor : 1 + ‖u‖ ^ p ≤ 2 * (1 + ‖u‖ ^ N) := by linarith
+                    calc Kφ * (1 + ‖u‖ ^ p)
+                        ≤ Kφ * (2 * (1 + ‖u‖ ^ N)) :=
+                          mul_le_mul_of_nonneg_left h_factor hKφ_nn
+                      _ = 2 * Kφ * (1 + ‖u‖ ^ N) := by ring
+                  have ha_factor : (∑ i, |a i|) * ‖u‖ ≤ (∑ i, |a i|) * (1 + ‖u‖ ^ N) := by
+                    apply mul_le_mul_of_nonneg_left h_norm_le_N
+                    exact Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+                  have hA_factor : (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2
+                      ≤ (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖ * (1 + ‖u‖ ^ N) := by
+                    apply mul_le_mul_of_nonneg_left h_norm_sq_le_N
+                    positivity
+                  have hΦ_factor : ‖hφ.Φ‖ / 6 * ‖u‖ ^ 3
+                      ≤ ‖hφ.Φ‖ / 6 * (1 + ‖u‖ ^ N) := by
+                    apply mul_le_mul_of_nonneg_left h_norm_cube_le_N
+                    positivity
+                  linarith
+            _ = (2 * Kφ + (∑ i, |a i|) + (1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖
+                  + ‖hφ.Φ‖ / 6) * (1 + ‖u‖ ^ N) := by ring
+        -- Now absorb: C_glob · (1 + ‖u‖^N) ≤ C_tail_factor · (‖u‖⁴/t²) · (1 + ‖u‖^N).
+        calc |expNumObsRem φ a hφ t u|
+            ≤ C_glob * (1 + ‖u‖ ^ N) := h_glob_simp
+          _ = C_glob * 1 * (1 + ‖u‖ ^ N) := by ring
+          _ ≤ C_glob * (‖u‖ ^ 4 / (jet_R ^ 4 * t ^ 2)) * (1 + ‖u‖ ^ N) := by
+              apply mul_le_mul_of_nonneg_right _ (by linarith [pow_nonneg (norm_nonneg u) N])
+              apply mul_le_mul_of_nonneg_left h_one_le hC_glob_nn
+          _ = (C_glob / jet_R ^ 4) * (‖u‖ ^ 4 / t ^ 2) * (1 + ‖u‖ ^ N) := by
+              field_simp
+          _ = (C_tail_factor / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) := by
+              rw [hC_tail_factor_def]; field_simp
+          _ ≤ ((jet_C + C_tail_factor) / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) := by
+              gcongr
+              linarith
+    calc |expNumObsRem φ a hφ t u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ ((jet_C + C_tail_factor) / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) *
+            Real.exp (-(c * ‖u‖ ^ 2)) := by
+          apply mul_le_mul h_R_ptw h_gibbs_le h_gibbs_nn (by positivity)
+      _ = G u := by rw [hG_def]
+  -- Conclude.
+  have h_main :=
+    norm_integral_le_of_norm_le hG_int (Filter.Eventually.of_forall h_pointwise)
+  have h_intG : ∫ u : ι → ℝ, G u = K / t ^ 2 := by
+    rw [hG_def, hK_def, hM_def]
+    rw [show (fun u : ι → ℝ =>
+            (jet_C + C_tail_factor) / t ^ 2 * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) *
+              Real.exp (-(c * ‖u‖ ^ 2)))
+          = (fun u => ((jet_C + C_tail_factor) / t ^ 2) *
+              (‖u‖ ^ 4 * (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2)))) from by
+        funext u; ring]
+    rw [integral_const_mul]
+    ring
+  calc |expNumErr₁ V φ a H hφ t|
+      = ‖∫ u : ι → ℝ, expNumObsRem φ a hφ t u
+          * Real.exp (-(rescaledPerturbation V H t u))
+          * gaussianWeight H u‖ := by rw [Real.norm_eq_abs]; rfl
+    _ ≤ ∫ u : ι → ℝ, G u := h_main
+    _ = K / t ^ 2 := h_intG
 
 /-- **J₂ bound**: cubic observable jet × `(e^{-s_t} - 1)` is `O(t⁻²)`.
 `P_t = O(t⁻³ᐟ²·‖u‖³)` and `e^{-s_t}-1 = O(t⁻¹ᐟ²·‖u‖³)` directly,
