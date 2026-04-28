@@ -1632,7 +1632,34 @@ private lemma gaussian_quad_quad
               refine Finset.sum_congr rfl ?_
               intro l _
               exact hfg i k j l
-  -- h_pair1' (sorry'd) and Final calc deferred.
+  -- h_pair1': identifies trASig (A.comp Hinv) (B.comp Hinv) with the Pairing 1 form.
+  have h_pair1' :
+      trASig (A.comp Hinv) (B.comp Hinv) =
+      ∑ i, ∑ k, ∑ j, ∑ l,
+        (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) i *
+          (Hinv (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) j := by
+    -- trASig X Y = ∑ i, (X (Y (Pi.single i 1))) i.
+    -- For X = A.comp Hinv, Y = B.comp Hinv: ((A∘Hinv) ((B∘Hinv) e_i)) i.
+    -- = (A (Hinv (B (Hinv e_i)))) i.
+    -- Expand B (Hinv e_i) via H_apply_eq_sum: = ∑_l (Hinv e_i) l · (B e_l).
+    -- Apply Hinv to that: ∑_l (Hinv e_i) l · (Hinv (B e_l)).
+    -- Apply A to that and read at i: ∑_l (Hinv e_i) l · (A (Hinv (B e_l))) i.
+    -- Now expand (A (Hinv (B e_l))) i via H_apply_eq_sum:
+    --   = ∑_k (Hinv (B e_l)) k · (A e_k) i
+    -- Substitute Hinv (B e_l) k via H_apply_eq_sum:
+    --   = ∑_j (B e_l) j · (Hinv e_j) k
+    -- So (A (Hinv (B e_l))) i = ∑_k ∑_j (B e_l) j · (Hinv e_j) k · (A e_k) i.
+    -- Combine: ((A∘Hinv) ((B∘Hinv) e_i)) i = ∑_l ∑_k ∑_j (Hinv e_i) l · (B e_l) j · (Hinv e_j) k · (A e_k) i.
+    -- Sum over i: this is the desired sum modulo Σ-symmetry to align indices.
+    unfold trASig
+    -- Step 1: rewrite (A.comp Hinv) f and (B.comp Hinv) f as A (Hinv f), B (Hinv f).
+    simp only [ContinuousLinearMap.comp_apply]
+    -- Step 2: expand each application via H_apply_eq_sum twice.
+    -- Substantial Finset manipulation; deferred.
+    sorry
+  -- Final calc deferred.
   sorry
 
 /-- **4th-moment contraction (cubic · linear)**:
