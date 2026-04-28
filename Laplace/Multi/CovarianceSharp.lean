@@ -311,6 +311,78 @@ lemma abs_rescaledObservable_quadratic_error_le
 
 end RescaledLocalBounds
 
+section IntegrabilityHelpers
+
+/-- **Integrability of `dot a · dot b · gW · exp(-s_t)`** under
+`PotentialApprox` + `LaplaceCovHypotheses`. Needed by the centered
+numerator decomposition.
+
+The bound is `|dot a u · dot b u · gW · exp(-s_t)| ≤ A·B·‖u‖² · gW · exp(-s_t)`,
+and `‖u‖² · gW · exp(-s_t)` is integrable via `integrable_pow_norm_mul_rescaled_weight` (k = 2). -/
+private lemma integrable_dot_mul_dot_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t) :
+    MeasureTheory.Integrable (fun u : ι → ℝ =>
+      dot a u * dot b u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+  set A : ℝ := ∑ i, |a i| with hA_def
+  set B : ℝ := ∑ i, |b i| with hB_def
+  have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hB_nn : 0 ≤ B := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
+    unfold dot
+    exact continuous_finset_sum _
+      (fun i _ => continuous_const.mul (continuous_apply i))
+  have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
+    unfold dot
+    exact continuous_finset_sum _
+      (fun i _ => continuous_const.mul (continuous_apply i))
+  have h_dom : MeasureTheory.Integrable (fun u : ι → ℝ =>
+      A * B * (‖u‖ ^ 2 *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))))) :=
+    (integrable_pow_norm_mul_rescaled_weight V hV_cont H
+      hc_pos h_coer 2 ht).const_mul (A * B)
+  refine h_dom.mono' ?_ ?_
+  · exact (((h_dot_a_cont.mul h_dot_b_cont).mul
+      (continuous_gaussianWeight H)).mul (Real.continuous_exp.comp
+        (continuous_rescaledPerturbation hV_cont H t).neg)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_dot_a_le : |dot a u| ≤ A * ‖u‖ := by
+      rw [hA_def]; exact abs_dot_le_l1_mul_norm a u
+    have h_dot_b_le : |dot b u| ≤ B * ‖u‖ := by
+      rw [hB_def]; exact abs_dot_le_l1_mul_norm b u
+    have h_rw_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+    rw [Real.norm_eq_abs]
+    rw [show dot a u * dot b u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+        = (dot a u * dot b u) *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+    rw [abs_mul, abs_of_nonneg h_rw_nn, abs_mul]
+    calc |dot a u| * |dot b u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ (A * ‖u‖) * (B * ‖u‖) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) :=
+          mul_le_mul_of_nonneg_right
+            (mul_le_mul h_dot_a_le h_dot_b_le (abs_nonneg _)
+              (mul_nonneg hA_nn (norm_nonneg _))) h_rw_nn
+      _ = A * B * (‖u‖ ^ 2 *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by
+          rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]; ring
+
+end IntegrabilityHelpers
+
 section SharpHelpers
 
 /-- **Sharp helper 1 (centered bilinear correction)**: the centered
@@ -466,9 +538,8 @@ private theorem rescaledNumerator_centered_pair_sharp
         gaussianWeight H u *
         Real.exp (-(rescaledPerturbation V H t u)) with hI4_def
   -- The centered numerator decomposes into I1 + √t · I2 + √t · I3 + t · I4.
-  -- Algebraic identity (the technical heart) — admitted via sorry for now;
-  -- proof follows the weak track's pair_product_expansion + linearity steps,
-  -- modulo replacing `gaussian_dot_mul_dot` with the centered version.
+  -- Algebraic identity (~300 LOC of integrability bookkeeping); proof in
+  -- progress.
   have h_decomp : t * rescaledNumerator V t (fun w => φ w * ψ w)
         - m * rescaledPartition V t
         = I1 + Real.sqrt t * I2 + Real.sqrt t * I3 + t * I4 := by

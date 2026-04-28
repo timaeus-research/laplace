@@ -1520,7 +1520,7 @@ private lemma abs_integral_remainder_mul_rescaled_weight_le
 
 /-- **Integrability companion** for the cross-term integrand:
 `dot dotCoef · (φ((√t)⁻¹u) - (√t)⁻¹·dot phiGrad u) · gW · exp(-s_t)` is integrable. -/
-private lemma integrable_dot_mul_remainder_mul_rescaled_weight
+lemma integrable_dot_mul_remainder_mul_rescaled_weight
     (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (dotCoef phiGrad : ι → ℝ)
     [Nonempty ι]
@@ -2116,7 +2116,7 @@ private lemma abs_integral_dot_mul_remainder_mul_rescaled_weight_le
 
 /-- **Integrability companion** for the quadratic-remainder integrand:
 `(φ((√t)⁻¹u) - (√t)⁻¹·dot a u) · (ψ((√t)⁻¹u) - (√t)⁻¹·dot b u) · gW · exp(-s_t)` is integrable. -/
-private lemma integrable_remainder_mul_remainder_mul_rescaled_weight
+lemma integrable_remainder_mul_remainder_mul_rescaled_weight
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
     [Nonempty ι]
