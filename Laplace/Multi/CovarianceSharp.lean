@@ -58,8 +58,10 @@ we adopt two architectural decisions:
     `abs_dot_mul_cubic_remainder_mul_rescaled_weight_local_le` (r₃ piece)
     are formalized, along with integrability companions
     `integrable_dot_mul_quadJet_mul_gaussianWeight` and
-    `integrable_dot_mul_quadJet_mul_rescaled_weight`. Remaining work:
-    Gtail bounds + composition (~250-350 LOC).
+    `integrable_dot_mul_quadJet_mul_rescaled_weight`. Gtail pointwise
+    bound for the parity-reduced qψ piece is also formalized
+    (`abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_tail_le`);
+    remaining work is Gtail for the r₃ piece + composition (~150-250 LOC).
   The algebraic identity `h_decomp` inside
   `rescaledNumerator_centered_pair_sharp` and sharp helper 4
   (`abs_integral_remainder_remainder_sharp_le`, K/t² with k = 4
