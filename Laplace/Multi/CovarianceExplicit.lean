@@ -1795,6 +1795,43 @@ end GaussianContractions
 
 section MainTheorems
 
+/-- The explicit first-order coefficient in the EXP numerator:
+`μ := (tr(AΣ) - dot(Hinv a)(T:Σ))/2`. -/
+private noncomputable def expNumeratorCoeff
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a) : ℝ :=
+  (trASig hφ.A Hinv - dot (Hinv a) (tensorContractMatrix hV.T Hinv)) / 2
+
+/-- **Centered EXP numerator (sharp rate)**: the centered numerator
+`rescaledNumerator V t φ - rescaledPartition V t · μ/t` is `O(t⁻²)`,
+where `μ := (tr(AΣ) - dot(Hinv a)(T:Σ))/2` is the explicit `lem:laplace_exp`
+coefficient.
+
+Per `gpt_responses/tactics_centered_numerator_exp.md`, the proof decomposes
+the centered numerator into 4 error terms (J₁, J₂, J₃, J₄) using the
+parity structure of the rescaled jets, each bounded by Glocal+Gtail
+methods analogous to the COV sharp track. The 4 sub-bounds + the
+algebraic decomposition are factored as private sub-lemmas. -/
+private theorem rescaledNumerator_first_order_centered_explicit
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |rescaledNumerator V t φ
+        - rescaledPartition V t *
+            (expNumeratorCoeff V φ H Hinv a hV hφ / t)|
+        ≤ K / t ^ 2 := by
+  -- Full proof: decomposition + 4 error bounds + triangle inequality.
+  -- Substantial (~600-800 LOC); deferred. Skeleton committed in
+  -- gpt_responses/tactics_centered_numerator_exp.md.
+  sorry
+
 /-- **Sharp expectation rate (explicit coefficient, `lem:laplace_exp`)**:
 for $\phi$ with $\phi(0) = 0$,
 $$
@@ -1816,10 +1853,14 @@ theorem gibbsExpectation_first_order_rate_explicit
     [Nonempty ι]
     (hV : PotentialTensorApprox V H)
     (hφ : ObservableTensorApprox φ a)
-    (hGauss : LaplaceCovHypotheses H Hinv) :
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |2 * t * gibbsExpectation V t φ - trASig hφ.A Hinv
           + dot (Hinv a) (tensorContractMatrix hV.T Hinv)| ≤ K / t := by
+  -- Combine rescaledNumerator_first_order_centered_explicit with
+  -- rescaledPartition_ge_half_gaussianZ (per the GPT recipe in
+  -- strategy_lem_laplace_exp_proof.md). The reduction is straightforward
+  -- algebra; deferred for next round.
   sorry
 
 /-- **Sharp covariance rate (explicit coefficient, `lem:laplace_cov2`)**:
