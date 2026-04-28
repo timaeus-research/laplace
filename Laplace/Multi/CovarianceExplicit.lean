@@ -2323,6 +2323,73 @@ private lemma integrable_expNumLin_mul_gaussianWeight
           mul_le_mul_of_nonneg_right h_lin_le h_gW_nn
       _ = ((Real.sqrt t)⁻¹ * (∑ i, |a i|)) * (‖u‖ * gaussianWeight H u) := by ring
 
+/-- Integrability of `expNumQuad φ a hφ t u · gaussianWeight H u` for `t > 0`.
+Dominated by `(1/(2t))·|ι|·‖A‖·‖u‖²·gW`, integrable from `int_norm_pow_gW 2`. -/
+private lemma integrable_expNumQuad_mul_gaussianWeight
+    (V φ : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      expNumQuad φ a hφ t u * gaussianWeight H u) := by
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      ((1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖)) *
+        (‖u‖ ^ 2 * gaussianWeight H u)) :=
+    (hV.int_norm_pow_gW 2).const_mul _
+  apply h_dom_int.mono'
+  · have h_qf_cont : Continuous (fun u : ι → ℝ => quadForm hφ.A u) := by
+      show Continuous (fun u : ι → ℝ => ∑ i, u i * (hφ.A u) i)
+      refine continuous_finset_sum _ (fun i _ => ?_)
+      exact (continuous_apply i).mul ((continuous_apply i).comp hφ.A.continuous)
+    have h_eN_cont : Continuous (fun u : ι → ℝ => expNumQuad φ a hφ t u) := by
+      unfold expNumQuad
+      exact continuous_const.mul (continuous_const.mul h_qf_cont)
+    exact (h_eN_cont.mul (continuous_gaussianWeight H)).aestronglyMeasurable
+  · filter_upwards with u
+    have h_qf_le : |quadForm hφ.A u| ≤ Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by
+      unfold quadForm
+      have h_each : ∀ i, |u i * (hφ.A u) i| ≤ ‖u‖ * ‖hφ.A u‖ := fun i => by
+        rw [abs_mul]
+        apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (hφ.A u) i)
+          (abs_nonneg _) (norm_nonneg _)
+      have h_sum_le : |∑ i, u i * (hφ.A u) i| ≤ ∑ i, |u i * (hφ.A u) i| :=
+        Finset.abs_sum_le_sum_abs _ _
+      have h_sum_le2 : ∑ i, |u i * (hφ.A u) i|
+          ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
+        calc ∑ i, |u i * (hφ.A u) i|
+            ≤ ∑ _ : ι, ‖u‖ * ‖hφ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+          _ = Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
+                rw [Finset.sum_const, Finset.card_univ]; ring
+      have h_Au : ‖hφ.A u‖ ≤ ‖hφ.A‖ * ‖u‖ := hφ.A.le_opNorm u
+      calc |∑ i, u i * (hφ.A u) i|
+          ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := le_trans h_sum_le h_sum_le2
+        _ ≤ Fintype.card ι * (‖u‖ * (‖hφ.A‖ * ‖u‖)) := by
+            apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
+            apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+        _ = Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by ring
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 2 := pow_nonneg (norm_nonneg _) _
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_gW_nn]
+    have h_quad_le : |expNumQuad φ a hφ t u|
+        ≤ (1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖) * ‖u‖ ^ 2 := by
+      unfold expNumQuad
+      rw [show (1 / t : ℝ) * ((1/2 : ℝ) * quadForm hφ.A u)
+            = (1 / t) * (1 / 2) * quadForm hφ.A u from by ring,
+          abs_mul, abs_mul,
+          abs_of_pos (by positivity : (0:ℝ) < 1/t),
+          abs_of_pos (by norm_num : (0:ℝ) < 1/2)]
+      calc (1 / t) * (1 / 2) * |quadForm hφ.A u|
+          ≤ (1 / t) * (1 / 2) *
+              (Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2) := by gcongr
+        _ = (1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖) * ‖u‖ ^ 2 := by ring
+    calc |expNumQuad φ a hφ t u| * gaussianWeight H u
+        ≤ ((1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖) * ‖u‖ ^ 2)
+            * gaussianWeight H u := by
+          apply mul_le_mul_of_nonneg_right h_quad_le h_gW_nn
+      _ = ((1 / t) * ((1/2 : ℝ) * Fintype.card ι * ‖hφ.A‖))
+            * (‖u‖ ^ 2 * gaussianWeight H u) := by ring
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
