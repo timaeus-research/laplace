@@ -2844,6 +2844,31 @@ private lemma integrable_J4_integrand
   filter_upwards with u
   ring
 
+/-- Integrability of the J₄ integrand with `-u` substituted in `s_t`:
+`(Q_t(u) - μ/t) · gW(u) · (exp(-s_t(-u)) - 1)`.
+
+This follows from `integrable_J4_integrand` via `Integrable.comp_neg`
+(since the volume on `ι → ℝ` is `IsNegInvariant`), then using parity
+(Q_t even, gW even) to swap `-u` for `u` in those factors. -/
+private lemma integrable_J4_integrand_neg
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+        (Real.exp (-(rescaledPerturbation V H t (-u))) - 1) *
+        gaussianWeight H u) := by
+  have h_orig := integrable_J4_integrand V φ H Hinv a hV hφ ht
+  -- f(-u) is integrable by Integrable.comp_neg.
+  have h_neg := h_orig.comp_neg
+  -- f(-u) = (Q_t(-u) - μ/t) · gW(-u) · (exp(-s_t(-u)) - 1).
+  -- By parity: Q_t(-u) = Q_t(u), gW(-u) = gW(u).
+  apply h_neg.congr
+  filter_upwards with u
+  rw [expNumQuad_neg, gaussianWeight_neg]
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
