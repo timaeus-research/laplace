@@ -3,6 +3,7 @@ Copyright (c) 2026 Daniel Murfet. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Laplace.Multi.CovarianceSharp
+import Laplace.ScalarBound
 
 /-!
 # Explicit-coefficient multivariate Laplace asymptotics (skeleton, in progress)
@@ -2443,6 +2444,272 @@ private lemma abs_J4_bracket_local_le
     _ = 2 * hV.jet_const * ‖u‖ ^ 4 / t
         + 2 * hV.local_const ^ 2 * ‖u‖ ^ 6 *
             Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / t := by ring
+
+/-! ### J₃ bracket bound (the symmetrized perturbation residual)
+
+Locally on `‖u‖ ≤ δ·√t` with `δ` chosen as in `abs_J4_bracket_local_le`, the
+J₃ bracket
+  `[(exp(-s_t(u)) - 1 + C_t(u)) - (exp(-s_t(-u)) - 1 + C_t(-u))]`
+is bounded by `O(‖u‖^5/(t·√t)) + O(‖u‖^7/(t·√t)) + O(‖u‖^9·exp((c/4)‖u‖²)/(t·√t))`.
+
+The leading `O(‖u‖^5/(t·√t))` term comes from the quintic remainder
+`s_t(u) - s_t(-u) - 2·C_t(u)`. The `O(‖u‖^7)` term from the square-difference
+`(s_t(u)² - s_t(-u)²)/2`. The `O(‖u‖^9)` term from the Stage-2 Taylor remainder
+`exp(-r) - (1 - r + r²/2)` applied at `r = s_t(±u)`.
+
+After multiplying by `|L_t|·gW = O(‖u‖/√t)·exp(-(c/2)‖u‖²)`, all three terms
+become `O(1/t²)·poly(‖u‖)·exp(-(c/4)‖u‖²)`, giving J₃'s `O(t⁻²)` rate.
+
+The `PotentialQuinticApprox` hypothesis provides the quintic bound. -/
+private lemma abs_J3_bracket_local_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialQuinticApprox V H)
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    (hδ_le_R : δ ≤ hV.local_radius)
+    (hδ_le_jet_R : δ ≤ hV.jet_radius)
+    (hδ_const : hV.local_const * δ ≤ hV.coercive_const / 4)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ δ * Real.sqrt t) :
+    |(Real.exp (-(rescaledPerturbation V H t u)) - 1
+        + expPotCubic V H hV.toPotentialTensorApprox t u)
+      - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+          + expPotCubic V H hV.toPotentialTensorApprox t (-u))|
+      ≤ hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+        + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+        + hV.local_const ^ 3 * ‖u‖ ^ 9 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hCs_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
+  have hsqrt_t_sq : (Real.sqrt t) ^ 2 = t := Real.sq_sqrt ht.le
+  have hu_jet : ‖u‖ ≤ hV.jet_radius * Real.sqrt t :=
+    le_trans hu (mul_le_mul_of_nonneg_right hδ_le_jet_R hsqrt_pos.le)
+  have hu_R : ‖u‖ ≤ hV.local_radius * Real.sqrt t :=
+    le_trans hu (mul_le_mul_of_nonneg_right hδ_le_R hsqrt_pos.le)
+  have hnu_R : ‖-u‖ ≤ hV.local_radius * Real.sqrt t := by
+    rw [norm_neg]; exact hu_R
+  -- Cubic upper bounds on s_t(±u).
+  have h_st_u_le : |rescaledPerturbation V H t u|
+      ≤ hV.local_const * ‖u‖ ^ 3 / Real.sqrt t :=
+    abs_rescaledPerturbation_le V H hV.local_bound ht u hu_R
+  have h_st_neg_u_le : |rescaledPerturbation V H t (-u)|
+      ≤ hV.local_const * ‖u‖ ^ 3 / Real.sqrt t := by
+    have h := abs_rescaledPerturbation_le V H hV.local_bound ht (-u) hnu_R
+    rw [show ‖(-u : ι → ℝ)‖ = ‖u‖ from norm_neg _] at h
+    exact h
+  -- Quadratic upper bounds on |s_t(±u)| via local condition.
+  have h_cube_to_sq : ‖u‖ ^ 3 / Real.sqrt t ≤ δ * ‖u‖ ^ 2 := by
+    rw [show ‖u‖ ^ 3 = ‖u‖ ^ 2 * ‖u‖ from by ring,
+        div_le_iff₀ hsqrt_pos]
+    calc ‖u‖ ^ 2 * ‖u‖ ≤ ‖u‖ ^ 2 * (δ * Real.sqrt t) :=
+          mul_le_mul_of_nonneg_left hu (sq_nonneg _)
+      _ = δ * ‖u‖ ^ 2 * Real.sqrt t := by ring
+  have h_st_quart_u : |rescaledPerturbation V H t u|
+      ≤ (hV.coercive_const / 4) * ‖u‖ ^ 2 := by
+    calc |rescaledPerturbation V H t u|
+        ≤ hV.local_const * ‖u‖ ^ 3 / Real.sqrt t := h_st_u_le
+      _ = hV.local_const * (‖u‖ ^ 3 / Real.sqrt t) := by ring
+      _ ≤ hV.local_const * (δ * ‖u‖ ^ 2) :=
+          mul_le_mul_of_nonneg_left h_cube_to_sq hCs_nn
+      _ = (hV.local_const * δ) * ‖u‖ ^ 2 := by ring
+      _ ≤ (hV.coercive_const / 4) * ‖u‖ ^ 2 :=
+          mul_le_mul_of_nonneg_right hδ_const (sq_nonneg _)
+  have h_st_quart_neg_u : |rescaledPerturbation V H t (-u)|
+      ≤ (hV.coercive_const / 4) * ‖u‖ ^ 2 := by
+    calc |rescaledPerturbation V H t (-u)|
+        ≤ hV.local_const * ‖u‖ ^ 3 / Real.sqrt t := h_st_neg_u_le
+      _ = hV.local_const * (‖u‖ ^ 3 / Real.sqrt t) := by ring
+      _ ≤ hV.local_const * (δ * ‖u‖ ^ 2) :=
+          mul_le_mul_of_nonneg_left h_cube_to_sq hCs_nn
+      _ = (hV.local_const * δ) * ‖u‖ ^ 2 := by ring
+      _ ≤ (hV.coercive_const / 4) * ‖u‖ ^ 2 :=
+          mul_le_mul_of_nonneg_right hδ_const (sq_nonneg _)
+  -- Quintic difference bound.
+  have h_quintic := abs_rescaledPerturbation_sub_neg_quintic_le V H hV ht u hu_jet
+  -- Sum bound (quartic).
+  have h_sum := abs_rescaledPerturbation_add_neg_le V H hV.toPotentialTensorApprox
+    ht u hu_jet
+  -- |s_t(u) - s_t(-u)| ≤ 2·Cs·‖u‖^3/√t.
+  have h_st_diff : |rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)|
+      ≤ 2 * hV.local_const * ‖u‖ ^ 3 / Real.sqrt t := by
+    calc |rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)|
+        ≤ |rescaledPerturbation V H t u| + |rescaledPerturbation V H t (-u)| :=
+          abs_sub _ _
+      _ ≤ hV.local_const * ‖u‖ ^ 3 / Real.sqrt t
+          + hV.local_const * ‖u‖ ^ 3 / Real.sqrt t := by
+          linarith [h_st_u_le, h_st_neg_u_le]
+      _ = 2 * hV.local_const * ‖u‖ ^ 3 / Real.sqrt t := by ring
+  -- |s_t(u)² - s_t(-u)²|/2 ≤ 2·jet_C·Cs·‖u‖^7/(t·√t).
+  have h_sq_diff : |rescaledPerturbation V H t u ^ 2
+        - rescaledPerturbation V H t (-u) ^ 2| / 2
+      ≤ 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t) := by
+    have h_factor : rescaledPerturbation V H t u ^ 2
+          - rescaledPerturbation V H t (-u) ^ 2
+        = (rescaledPerturbation V H t u + rescaledPerturbation V H t (-u))
+          * (rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)) := by
+      ring
+    rw [h_factor, abs_mul]
+    have h_diff_nn : 0 ≤ |rescaledPerturbation V H t u
+        - rescaledPerturbation V H t (-u)| := abs_nonneg _
+    calc |rescaledPerturbation V H t u + rescaledPerturbation V H t (-u)|
+          * |rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)| / 2
+        ≤ (2 * hV.jet_const * ‖u‖ ^ 4 / t)
+          * (2 * hV.local_const * ‖u‖ ^ 3 / Real.sqrt t) / 2 := by
+          apply div_le_div_of_nonneg_right _ (by norm_num : (0 : ℝ) < 2).le
+          have h_jet_C_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
+          have h_b_nn : 0 ≤ 2 * hV.jet_const * ‖u‖ ^ 4 / t := by
+            apply div_nonneg _ ht.le
+            apply mul_nonneg (mul_nonneg (by norm_num) h_jet_C_nn)
+              (pow_nonneg (norm_nonneg _) _)
+          exact mul_le_mul h_sum h_st_diff h_diff_nn h_b_nn
+      _ = 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t) := by
+          field_simp
+  -- Stage-2 Taylor remainder bounds for exp(-s_t(±u)).
+  have h_taylor2_u := Laplace.abs_exp_neg_sub_one_add_sub_half_sq_le
+    (rescaledPerturbation V H t u)
+  have h_taylor2_neg_u := Laplace.abs_exp_neg_sub_one_add_sub_half_sq_le
+    (rescaledPerturbation V H t (-u))
+  -- max(1, exp(-r)) ≤ exp((c/4)‖u‖²) when |r| ≤ (c/4)‖u‖².
+  have h_max_le : ∀ r : ℝ, |r| ≤ (hV.coercive_const / 4) * ‖u‖ ^ 2 →
+      max 1 (Real.exp (-r)) ≤ Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) := by
+    intro r hr
+    apply max_le
+    · rw [show (1 : ℝ) = Real.exp 0 from Real.exp_zero.symm]
+      apply Real.exp_le_exp.mpr
+      have h_c_nn : 0 ≤ hV.coercive_const := hV.coercive_const_pos.le
+      have : 0 ≤ hV.coercive_const / 4 * ‖u‖ ^ 2 :=
+        mul_nonneg (by linarith) (sq_nonneg _)
+      linarith
+    · apply Real.exp_le_exp.mpr
+      calc -r ≤ |r| := neg_le_abs r
+        _ ≤ (hV.coercive_const / 4) * ‖u‖ ^ 2 := hr
+  -- |s_t(u)|³ ≤ Cs³·‖u‖^9/(t·√t).
+  have h_st_cube_u : |rescaledPerturbation V H t u| ^ 3
+      ≤ hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t) := by
+    have h_pow := pow_le_pow_left₀ (abs_nonneg _) h_st_u_le 3
+    rw [show (hV.local_const * ‖u‖ ^ 3 / Real.sqrt t) ^ 3
+          = hV.local_const ^ 3 * ‖u‖ ^ 9 / (Real.sqrt t) ^ 3 from by
+        rw [div_pow]; ring] at h_pow
+    rw [show (Real.sqrt t) ^ 3 = (Real.sqrt t) ^ 2 * Real.sqrt t from by ring,
+        hsqrt_t_sq] at h_pow
+    exact h_pow
+  have h_st_cube_neg_u : |rescaledPerturbation V H t (-u)| ^ 3
+      ≤ hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t) := by
+    have h_pow := pow_le_pow_left₀ (abs_nonneg _) h_st_neg_u_le 3
+    rw [show (hV.local_const * ‖u‖ ^ 3 / Real.sqrt t) ^ 3
+          = hV.local_const ^ 3 * ‖u‖ ^ 9 / (Real.sqrt t) ^ 3 from by
+        rw [div_pow]; ring] at h_pow
+    rw [show (Real.sqrt t) ^ 3 = (Real.sqrt t) ^ 2 * Real.sqrt t from by ring,
+        hsqrt_t_sq] at h_pow
+    exact h_pow
+  -- |R₃(±u)| ≤ Cs³·‖u‖^9·exp((c/4)‖u‖²)/(2·(t·√t)).
+  have h_R3_u : |Real.exp (-(rescaledPerturbation V H t u))
+        - (1 - rescaledPerturbation V H t u
+            + rescaledPerturbation V H t u ^ 2 / 2)|
+      ≤ hV.local_const ^ 3 * ‖u‖ ^ 9 *
+          Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (2 * (t * Real.sqrt t)) := by
+    calc |Real.exp (-(rescaledPerturbation V H t u))
+            - (1 - rescaledPerturbation V H t u
+                + rescaledPerturbation V H t u ^ 2 / 2)|
+        ≤ |rescaledPerturbation V H t u| ^ 3 / 2 *
+            max 1 (Real.exp (-(rescaledPerturbation V H t u))) := h_taylor2_u
+      _ ≤ (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) / 2 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) := by
+          apply mul_le_mul (by linarith [h_st_cube_u]) (h_max_le _ h_st_quart_u)
+            (le_trans zero_le_one (le_max_left _ _)) (by positivity)
+      _ = hV.local_const ^ 3 * ‖u‖ ^ 9 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (2 * (t * Real.sqrt t)) := by
+          field_simp
+  have h_R3_neg_u : |Real.exp (-(rescaledPerturbation V H t (-u)))
+        - (1 - rescaledPerturbation V H t (-u)
+            + rescaledPerturbation V H t (-u) ^ 2 / 2)|
+      ≤ hV.local_const ^ 3 * ‖u‖ ^ 9 *
+          Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (2 * (t * Real.sqrt t)) := by
+    calc |Real.exp (-(rescaledPerturbation V H t (-u)))
+            - (1 - rescaledPerturbation V H t (-u)
+                + rescaledPerturbation V H t (-u) ^ 2 / 2)|
+        ≤ |rescaledPerturbation V H t (-u)| ^ 3 / 2 *
+            max 1 (Real.exp (-(rescaledPerturbation V H t (-u)))) := h_taylor2_neg_u
+      _ ≤ (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) / 2 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) := by
+          apply mul_le_mul (by linarith [h_st_cube_neg_u])
+            (h_max_le _ h_st_quart_neg_u)
+            (le_trans zero_le_one (le_max_left _ _)) (by positivity)
+      _ = hV.local_const ^ 3 * ‖u‖ ^ 9 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (2 * (t * Real.sqrt t)) := by
+          field_simp
+  -- C_t(-u) = -C_t(u).
+  have h_C_neg : expPotCubic V H hV.toPotentialTensorApprox t (-u)
+      = -expPotCubic V H hV.toPotentialTensorApprox t u :=
+    expPotCubic_neg V H hV.toPotentialTensorApprox t u
+  -- Algebraic decomposition of bracket.
+  have h_bracket_eq :
+      (Real.exp (-(rescaledPerturbation V H t u)) - 1
+          + expPotCubic V H hV.toPotentialTensorApprox t u)
+        - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t (-u))
+      = -(rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)
+          - 2 * expPotCubic V H hV.toPotentialTensorApprox t u)
+        + (rescaledPerturbation V H t u ^ 2
+            - rescaledPerturbation V H t (-u) ^ 2) / 2
+        + (Real.exp (-(rescaledPerturbation V H t u))
+            - (1 - rescaledPerturbation V H t u
+                + rescaledPerturbation V H t u ^ 2 / 2))
+        - (Real.exp (-(rescaledPerturbation V H t (-u)))
+            - (1 - rescaledPerturbation V H t (-u)
+                + rescaledPerturbation V H t (-u) ^ 2 / 2)) := by
+    rw [h_C_neg]; ring
+  -- Triangle inequality for 4 terms.
+  have h_tri : ∀ a b c d : ℝ, |a + b + c - d| ≤ |a| + |b| + |c| + |d| := by
+    intro a b c d
+    calc |a + b + c - d| ≤ |a + b + c| + |d| := abs_sub _ _
+      _ ≤ |a + b| + |c| + |d| := by gcongr; exact abs_add_le _ _
+      _ ≤ |a| + |b| + |c| + |d| := by gcongr; exact abs_add_le _ _
+  -- Apply.
+  rw [h_bracket_eq]
+  calc |-(rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)
+            - 2 * expPotCubic V H hV.toPotentialTensorApprox t u)
+          + (rescaledPerturbation V H t u ^ 2
+              - rescaledPerturbation V H t (-u) ^ 2) / 2
+          + (Real.exp (-(rescaledPerturbation V H t u))
+              - (1 - rescaledPerturbation V H t u
+                  + rescaledPerturbation V H t u ^ 2 / 2))
+          - (Real.exp (-(rescaledPerturbation V H t (-u)))
+              - (1 - rescaledPerturbation V H t (-u)
+                  + rescaledPerturbation V H t (-u) ^ 2 / 2))|
+      ≤ |-(rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)
+              - 2 * expPotCubic V H hV.toPotentialTensorApprox t u)|
+        + |(rescaledPerturbation V H t u ^ 2
+            - rescaledPerturbation V H t (-u) ^ 2) / 2|
+        + |Real.exp (-(rescaledPerturbation V H t u))
+            - (1 - rescaledPerturbation V H t u
+                + rescaledPerturbation V H t u ^ 2 / 2)|
+        + |Real.exp (-(rescaledPerturbation V H t (-u)))
+            - (1 - rescaledPerturbation V H t (-u)
+                + rescaledPerturbation V H t (-u) ^ 2 / 2)| := h_tri _ _ _ _
+    _ = |rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)
+              - 2 * expPotCubic V H hV.toPotentialTensorApprox t u|
+        + |rescaledPerturbation V H t u ^ 2
+            - rescaledPerturbation V H t (-u) ^ 2| / 2
+        + |Real.exp (-(rescaledPerturbation V H t u))
+            - (1 - rescaledPerturbation V H t u
+                + rescaledPerturbation V H t u ^ 2 / 2)|
+        + |Real.exp (-(rescaledPerturbation V H t (-u)))
+            - (1 - rescaledPerturbation V H t (-u)
+                + rescaledPerturbation V H t (-u) ^ 2 / 2)| := by
+          rw [abs_neg, abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
+    _ ≤ hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+        + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+        + hV.local_const ^ 3 * ‖u‖ ^ 9 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (2 * (t * Real.sqrt t))
+        + hV.local_const ^ 3 * ‖u‖ ^ 9 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (2 * (t * Real.sqrt t)) := by
+          gcongr
+    _ = hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+        + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+        + hV.local_const ^ 3 * ‖u‖ ^ 9 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t) := by
+          field_simp
+          ring
 
 /-! ### Pointwise bounds on the scaled jets
 
