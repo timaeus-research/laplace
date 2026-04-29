@@ -6586,6 +6586,215 @@ private lemma integral_even_centered_eq_corrected_bracket
   rw [h_cV_eq, h_parity]
   ring
 
+/-- **The FQQ kernel** for Lemma B Step 2: doubly-centered quartic
+`FQQ(u) = (Q^c_A · Q_B)(u) - c_QQ`, where `Q^c_A := (1/2)Q_A - (1/2)tr(AΣ)`
+is the centered quadratic, `Q_B := (1/2) quadForm B`, and
+`c_QQ := (1/2) trASig (A∘Hinv) (B∘Hinv)`.
+
+By construction, `∫ FQQ · gW = 0` (centering kills both the quadratic mean
+of `Q_A` and the resulting product mean), and `FQQ` is even in `u`. -/
+private noncomputable def fqqKernel
+    (A B Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) : ℝ :=
+  ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+      ((1 / 2 : ℝ) * quadForm B u)
+    - (1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv)
+
+/-- **`fqqKernel` is even**: `quadForm` is even in `u`, so the entire
+quartic-minus-constant kernel is invariant under `u ↦ -u`. -/
+private lemma fqqKernel_even
+    (A B Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) :
+    fqqKernel A B Hinv (-u) = fqqKernel A B Hinv u := by
+  unfold fqqKernel
+  rw [quadForm_neg, quadForm_neg]
+
+/-- **`fqqKernel` has zero Gaussian mean**: by `gaussian_quad_centered_quad_eq`,
+the quartic centered-product integrates to `Z · c_QQ`; subtracting `c_QQ`
+gives `∫ FQQ · gW = Z · c_QQ - c_QQ · Z = 0`. -/
+private lemma integral_fqqKernel_mul_gaussianWeight_eq_zero
+    {Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hB_symm : ∀ u v : ι → ℝ, dot u (B v) = dot v (B u))
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∫ u : ι → ℝ, fqqKernel A B Hinv u * gaussianWeight H u = 0 := by
+  unfold fqqKernel
+  set c_QQ : ℝ := (1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv) with hc_QQ_def
+  -- The integrand `((Q_A - tr_A)/2 · Q_B/2) · gW` is integrable as a sum of
+  -- two `int_4`/`int_uk_uj_gW` pieces.
+  have h_int_QcQ_gW : Integrable (fun u : ι → ℝ =>
+      ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+        ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u) := by
+    have hQQ := (integrable_quadForm_mul_quadForm_mul_gaussianWeight A B hGauss).const_mul
+      (1 / 4 : ℝ)
+    have hQB := (integrable_quadForm_mul_gaussianWeight B hGauss).const_mul
+      ((1 / 4 : ℝ) * trASig A Hinv)
+    have h_diff := hQQ.sub hQB
+    apply h_diff.congr
+    filter_upwards with u
+    simp only [Pi.sub_apply]; ring
+  have h_int_const_gW :
+      Integrable (fun u : ι → ℝ => c_QQ * gaussianWeight H u) :=
+    hGauss.toLaplaceCovHypotheses.int_gW.const_mul c_QQ
+  rw [show (fun u : ι → ℝ =>
+        (((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+            ((1 / 2 : ℝ) * quadForm B u) - c_QQ) * gaussianWeight H u)
+        = fun u =>
+            (((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+                ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u)
+            - c_QQ * gaussianWeight H u from by
+      funext u; ring]
+  rw [MeasureTheory.integral_sub h_int_QcQ_gW h_int_const_gW]
+  rw [gaussian_quad_centered_quad_eq A B hA_symm hB_symm hGauss]
+  rw [MeasureTheory.integral_const_mul]
+  have h_int_gW_eq : ∫ u : ι → ℝ, gaussianWeight H u = gaussianZ H := rfl
+  rw [h_int_gW_eq, hc_QQ_def]
+  ring
+
+/-- **Polynomial bound on `fqqKernel`**: `|FQQ(u)| ≤ C_FQQ · (1 + ‖u‖^4)`
+where `C_FQQ` depends on `A`, `B`, `|trASig A Hinv|`, `|trASig (A∘Hinv) (B∘Hinv)|`,
+and `Fintype.card ι`. This gives the polynomial growth needed for the
+tail estimates in the K/t bound. -/
+private lemma abs_fqqKernel_le
+    (A B Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) :
+    ∃ C : ℝ, 0 ≤ C ∧ |fqqKernel A B Hinv u| ≤ C * (1 + ‖u‖ ^ 4) := by
+  classical
+  set N : ℝ := (Fintype.card ι : ℝ) with hN_def
+  have hN_nn : 0 ≤ N := by rw [hN_def]; exact_mod_cast Nat.zero_le _
+  have hA_nn : 0 ≤ ‖A‖ := norm_nonneg _
+  have hB_nn : 0 ≤ ‖B‖ := norm_nonneg _
+  set tA : ℝ := |trASig A Hinv| with htA_def
+  set tAB : ℝ := |trASig (A.comp Hinv) (B.comp Hinv)| with htAB_def
+  have htA_nn : 0 ≤ tA := abs_nonneg _
+  have htAB_nn : 0 ≤ tAB := abs_nonneg _
+  set C : ℝ := (1 / 4 : ℝ) * (N * ‖A‖ * (N * ‖B‖))
+              + (1 / 4 : ℝ) * tA * (N * ‖B‖)
+              + (1 / 2 : ℝ) * tAB with hC_def
+  have hC_nn : 0 ≤ C := by
+    rw [hC_def]; positivity
+  refine ⟨C, hC_nn, ?_⟩
+  -- Pointwise bounds on each piece.
+  have h_qf_A : |quadForm A u| ≤ N * ‖A‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (A u) i| ≤ ‖u‖ * ‖A u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (A u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (A u) i| ≤ ∑ i, |u i * (A u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (A u) i|
+        ≤ N * (‖u‖ * ‖A u‖) := by
+      calc ∑ i, |u i * (A u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖A u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]
+              rw [hN_def]; push_cast; ring
+    have h_Au : ‖A u‖ ≤ ‖A‖ * ‖u‖ := A.le_opNorm u
+    calc |∑ i, u i * (A u) i|
+        ≤ N * (‖u‖ * ‖A u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ N * (‖u‖ * (‖A‖ * ‖u‖)) := by
+          apply mul_le_mul_of_nonneg_left _ hN_nn
+          apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+      _ = N * ‖A‖ * ‖u‖ ^ 2 := by ring
+  have h_qf_B : |quadForm B u| ≤ N * ‖B‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (B u) i| ≤ ‖u‖ * ‖B u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (B u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (B u) i| ≤ ∑ i, |u i * (B u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (B u) i|
+        ≤ N * (‖u‖ * ‖B u‖) := by
+      calc ∑ i, |u i * (B u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖B u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖B u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]
+              rw [hN_def]; push_cast; ring
+    have h_Bu : ‖B u‖ ≤ ‖B‖ * ‖u‖ := B.le_opNorm u
+    calc |∑ i, u i * (B u) i|
+        ≤ N * (‖u‖ * ‖B u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ N * (‖u‖ * (‖B‖ * ‖u‖)) := by
+          apply mul_le_mul_of_nonneg_left _ hN_nn
+          apply mul_le_mul_of_nonneg_left h_Bu (norm_nonneg _)
+      _ = N * ‖B‖ * ‖u‖ ^ 2 := by ring
+  have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 2 := sq_nonneg _
+  have h_norm_pow4_nn : 0 ≤ ‖u‖ ^ 4 := by positivity
+  -- Bound `(1/2 Q_A - 1/2 trASig A Hinv) · (1/2 Q_B)`.
+  have h_h2_pos : (0 : ℝ) ≤ 1 / 2 := by norm_num
+  have h_QcQ : |((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+        ((1 / 2 : ℝ) * quadForm B u)|
+      ≤ (1 / 4 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) * (N * ‖B‖ * ‖u‖ ^ 2) := by
+    rw [abs_mul]
+    have h1 : |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv|
+        ≤ (1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) := by
+      have h_split : |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv|
+          ≤ |(1 / 2 : ℝ) * quadForm A u| + |(1 / 2 : ℝ) * trASig A Hinv| :=
+        abs_sub _ _
+      have h_qA_abs : |(1 / 2 : ℝ) * quadForm A u| = (1 / 2 : ℝ) * |quadForm A u| := by
+        rw [abs_mul, abs_of_nonneg h_h2_pos]
+      have h_tA_abs : |(1 / 2 : ℝ) * trASig A Hinv| = (1 / 2 : ℝ) * tA := by
+        rw [abs_mul, abs_of_nonneg h_h2_pos, htA_def]
+      have h_step : (1 / 2 : ℝ) * |quadForm A u| ≤ (1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2) :=
+        mul_le_mul_of_nonneg_left h_qf_A h_h2_pos
+      linarith
+    have h2 : |(1 / 2 : ℝ) * quadForm B u| ≤ (1 / 2 : ℝ) * (N * ‖B‖ * ‖u‖ ^ 2) := by
+      rw [show |(1 / 2 : ℝ) * quadForm B u| = (1 / 2 : ℝ) * |quadForm B u| from by
+        rw [abs_mul, abs_of_nonneg h_h2_pos]]
+      exact mul_le_mul_of_nonneg_left h_qf_B h_h2_pos
+    have h_step1 : |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv| *
+          |(1 / 2 : ℝ) * quadForm B u|
+        ≤ (1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) *
+          ((1 / 2 : ℝ) * (N * ‖B‖ * ‖u‖ ^ 2)) :=
+      mul_le_mul h1 h2 (abs_nonneg _) (by positivity)
+    linarith [h_step1]
+  -- Polynomial monotonicity facts.
+  have h_one_le : (1 : ℝ) ≤ 1 + ‖u‖ ^ 4 := by linarith
+  have h_u4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 4 := by linarith
+  have h_u2_le_one_plus_u4 : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ 4 := by
+    nlinarith [sq_nonneg (‖u‖ ^ 2 - 1)]
+  -- Bound `1/4 (N‖A‖ ‖u‖² + tA)(N‖B‖ ‖u‖²)` by expanding.
+  have h_expand_QcQ :
+      (1 / 4 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) * (N * ‖B‖ * ‖u‖ ^ 2)
+        = (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * ‖u‖ ^ 4
+        + (1 / 4 : ℝ) * tA * (N * ‖B‖) * ‖u‖ ^ 2 := by
+    have h_uu : ‖u‖ ^ 2 * ‖u‖ ^ 2 = ‖u‖ ^ 4 := by ring
+    nlinarith [h_uu, sq_nonneg (‖u‖ ^ 2)]
+  -- Three-piece bound: each scalar coefficient is nonneg, pieces are
+  -- monotonic in (1 + ‖u‖^4).
+  have h_NANB_nn : (0 : ℝ) ≤ (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) := by positivity
+  have h_tANB_nn : (0 : ℝ) ≤ (1 / 4 : ℝ) * tA * (N * ‖B‖) := by positivity
+  have h_tAB_nn : (0 : ℝ) ≤ (1 / 2 : ℝ) * tAB := by positivity
+  have h_step_NANB : (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * ‖u‖ ^ 4
+      ≤ (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * (1 + ‖u‖ ^ 4) :=
+    mul_le_mul_of_nonneg_left h_u4_le h_NANB_nn
+  have h_step_tANB : (1 / 4 : ℝ) * tA * (N * ‖B‖) * ‖u‖ ^ 2
+      ≤ (1 / 4 : ℝ) * tA * (N * ‖B‖) * (1 + ‖u‖ ^ 4) :=
+    mul_le_mul_of_nonneg_left h_u2_le_one_plus_u4 h_tANB_nn
+  have h_step_tAB : (1 / 2 : ℝ) * tAB ≤ (1 / 2 : ℝ) * tAB * (1 + ‖u‖ ^ 4) := by
+    have := mul_le_mul_of_nonneg_left h_one_le h_tAB_nn
+    linarith
+  unfold fqqKernel
+  calc |((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+          ((1 / 2 : ℝ) * quadForm B u) -
+        (1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv)|
+      ≤ |((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+          ((1 / 2 : ℝ) * quadForm B u)| +
+        |(1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv)| := abs_sub _ _
+    _ ≤ (1 / 4 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) * (N * ‖B‖ * ‖u‖ ^ 2)
+        + (1 / 2 : ℝ) * tAB := by
+        have h_tAB_eq : |(1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv)|
+            = (1 / 2 : ℝ) * tAB := by
+          rw [abs_mul, abs_of_nonneg h_h2_pos, htAB_def]
+        linarith [h_QcQ, h_tAB_eq.le]
+    _ = (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * ‖u‖ ^ 4
+        + (1 / 4 : ℝ) * tA * (N * ‖B‖) * ‖u‖ ^ 2
+        + (1 / 2 : ℝ) * tAB := by linarith [h_expand_QcQ]
+    _ ≤ (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * (1 + ‖u‖ ^ 4)
+        + (1 / 4 : ℝ) * tA * (N * ‖B‖) * (1 + ‖u‖ ^ 4)
+        + (1 / 2 : ℝ) * tAB * (1 + ‖u‖ ^ 4) := by
+        linarith [h_step_NANB, h_step_tANB, h_step_tAB]
+    _ = C * (1 + ‖u‖ ^ 4) := by rw [hC_def]; ring
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
