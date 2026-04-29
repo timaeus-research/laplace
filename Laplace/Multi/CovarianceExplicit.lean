@@ -408,12 +408,37 @@ structure LaplaceCov4MomentHypotheses
   /-- Cubic Fubini-IBP. -/
   fubini_ibp_cubic : ∀ a b c l : ι, FubiniIBPHypothesisCubic H a b c l
 
+/-- **Quintic Fubini-IBP hypothesis**: the multivariate analog of
+`FubiniIBPHypothesisCubic` for quintic test functions
+`f(u) = u_a u_b u_c u_d u_e`. The content is that the boundary terms in
+the integration-by-parts identity
+$\int (\partial_l f) \cdot gW = \int f \cdot (Hu)_l \cdot gW$
+vanish; concretely (writing `δ_xy` for Kronecker `δ`):
+$$
+  \int \big[(\delta_{la} u_b u_c u_d u_e + \delta_{lb} u_a u_c u_d u_e
+            + \delta_{lc} u_a u_b u_d u_e + \delta_{ld} u_a u_b u_c u_e
+            + \delta_{le} u_a u_b u_c u_d) \, gW
+  - u_a u_b u_c u_d u_e \cdot (Hu)_l \, gW\big] = 0.
+$$
+This is provable under coercivity hypotheses on `H` via Fubini + 1D-FTC
+slice-by-slice, as in the existing cubic version. We expose it as a
+hypothesis here, packaged into `LaplaceCov6MomentHypotheses` below.
+
+Used in `gaussian_sixth_moment_formula` (which reduces 6-moment to 4-moment
+via Stein's identity) → `gaussian_quad_linear_cubic_explicit` → Lemma A. -/
+def FubiniIBPHypothesisQuintic
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (a b c d e l : ι) : Prop :=
+  ∫ u : ι → ℝ,
+    (((if l = a then u b * u c * u d * u e else 0) +
+      (if l = b then u a * u c * u d * u e else 0) +
+      (if l = c then u a * u b * u d * u e else 0) +
+      (if l = d then u a * u b * u c * u e else 0) +
+      (if l = e then u a * u b * u c * u d else 0)) * gaussianWeight H u
+      - u a * u b * u c * u d * u e * (H u) l * gaussianWeight H u) = 0
+
 /-- **6th-moment hypothesis package** (Stage 3 prerequisite for `lem:laplace_cov2`):
 extends `LaplaceCov4MomentHypotheses` with 6th-moment integrability and the
-quintic Fubini-IBP needed for `gaussian_quad_linear_cubic`.
-
-The signature is intentionally minimal — fill in the integrability fields once
-the Stage 3 proof clarifies exactly which ones are needed. -/
+quintic Fubini-IBP needed for `gaussian_quad_linear_cubic`. -/
 structure LaplaceCov6MomentHypotheses
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     extends LaplaceCov4MomentHypotheses H Hinv where
@@ -426,6 +451,9 @@ structure LaplaceCov6MomentHypotheses
   int_5_Hl : ∀ a b c d e l : ι,
     Integrable (fun u : ι → ℝ =>
       u a * u b * u c * u d * u e * (H u) l * gaussianWeight H u)
+  /-- Quintic Fubini-IBP. -/
+  fubini_ibp_quintic : ∀ a b c d e l : ι,
+    FubiniIBPHypothesisQuintic H a b c d e l
 
 end FourthMomentInfrastructure
 
