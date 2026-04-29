@@ -11050,7 +11050,656 @@ private theorem rescaledIntegral_rr_connected_asymptotic
   --       • `abs_integral_bulkErr_le` (~100 LOC): integrate local + tail
   --         majorants, get `|∫ bulkErr · gW · exp(-s_t)| ≤ K/t`.
   --   ⏳ Final 3-term triangle inequality assembly (~50 LOC).
-  sorry
+  --
+  -- 2026-04-30 v6 final: bulkErr local+tail+integrated bounds landed.
+  -- This proof composes the three helpers (transport, odd, bulkErr).
+  classical
+  -- Coercivity / continuity from hV.
+  have hV_jet : PotentialJetApprox V H :=
+    hV.toPotentialTensorApprox.toPotentialJetApprox
+  have hV_pot : PotentialApprox V H := hV_jet.toPotentialApprox
+  set c : ℝ := hV_pot.coercive_const with hc_def
+  have hc_pos : 0 < c := hV_pot.coercive_const_pos
+  have h_coer := hV_pot.coercive_bound
+  have hV_cont : Continuous V := hV_pot.V_continuous
+  -- Bridge c_QQ identity:
+  --   trASig (A_φ.comp Hinv) (A_ψ.comp Hinv)
+  --   = trASig (A_φ.comp (Hinv.comp (A_ψ.comp Hinv))) 1
+  have h_trASig_bridge :
+      trASig (hφ.A.comp Hinv) (hψ.A.comp Hinv)
+        = trASig (hφ.A.comp (Hinv.comp (hψ.A.comp Hinv)))
+            (1 : (ι → ℝ) →L[ℝ] (ι → ℝ)) := by
+    unfold trASig
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    simp [ContinuousLinearMap.comp_apply, ContinuousLinearMap.one_apply]
+  set c_QQ : ℝ := (1 / 2 : ℝ) *
+      trASig (hφ.A.comp (Hinv.comp (hψ.A.comp Hinv)))
+        (1 : (ι → ℝ) →L[ℝ] (ι → ℝ)) with hc_QQ_def
+  set c_QQ_alt : ℝ := (1 / 2 : ℝ) *
+      trASig (hφ.A.comp Hinv) (hψ.A.comp Hinv) with hc_QQ_alt_def
+  have h_c_QQ_eq : c_QQ_alt = c_QQ := by
+    rw [hc_QQ_alt_def, hc_QQ_def, h_trASig_bridge]
+  -- Three helpers.
+  obtain ⟨K_lead, T_lead, hT_lead, h_lead⟩ :=
+    rescaledIntegral_QcQ_transport V H Hinv hφ.A hψ.A hV_jet
+      hφ.A_symm hψ.A_symm hGauss.toLaplaceCov4MomentHypotheses
+  obtain ⟨K_odd, T_odd, hT_odd, h_odd⟩ :=
+    abs_integral_inv_sqrt_t_mul_odd5Kernel_le V H Hinv hφ.A hψ.A hφ.Φ hψ.Φ
+      hV_jet hGauss.toLaplaceCovHypotheses.int_gW
+  obtain ⟨K_bulk, T_bulk, hT_bulk, h_bulk⟩ :=
+    abs_integral_bulkErr_le V φ ψ H Hinv b
+      hV.toPotentialTensorApprox hφ hψ
+  set K_tot : ℝ := K_lead + K_odd + K_bulk with hK_tot_def
+  refine ⟨K_tot, max T_lead (max T_odd T_bulk), ?_, ?_⟩
+  · exact le_max_of_le_left hT_lead
+  intro t ht
+  have ht_lead : T_lead ≤ t := le_of_max_le_left ht
+  have ht_pp : max T_odd T_bulk ≤ t := le_of_max_le_right ht
+  have ht_odd : T_odd ≤ t := le_of_max_le_left ht_pp
+  have ht_bulk : T_bulk ≤ t := le_of_max_le_right ht_pp
+  have ht1 : 1 ≤ t := le_trans hT_lead ht_lead
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  have ht_ne : t ≠ 0 := ne_of_gt ht_pos
+  -- Integrability witnesses for the 3-term split.
+  -- (I) q_c · Q_ψ · gW · exp(-s_t) = fqqKernel · gW · exp(-s_t) + c_QQ_alt · gW · exp(-s_t).
+  have h_int_FQQ : Integrable (fun u : ι → ℝ =>
+      fqqKernel hφ.A hψ.A Hinv u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_fqqKernel_mul_rescaled_weight V H Hinv hφ.A hψ.A
+      hV_cont hc_pos h_coer ht_pos
+  have h_int_gW_exp_sm : Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ 0 * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 0 ht_pos
+  have h_int_gW_exp : Integrable (fun u : ι → ℝ =>
+      gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    refine h_int_gW_exp_sm.congr (Filter.Eventually.of_forall fun u => ?_)
+    simp only [pow_zero, one_mul]
+  have h_int_qcQ : Integrable (fun u : ι → ℝ =>
+      ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+        ((1 / 2 : ℝ) * quadForm hψ.A u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h_sum := h_int_FQQ.add (h_int_gW_exp.const_mul c_QQ_alt)
+    refine h_sum.congr (Filter.Eventually.of_forall fun u => ?_)
+    simp only [Pi.add_apply]
+    unfold fqqKernel
+    rw [hc_QQ_alt_def]
+    ring
+  -- (II) odd5K · gW · exp(-s_t) integrability via polynomial bound.
+  obtain ⟨M_odd, hM_odd_nn, h_odd_bd⟩ :=
+    abs_odd5Kernel_le hφ.A hψ.A Hinv hφ.Φ hψ.Φ
+  have h_int3 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos
+    h_coer 3 ht_pos
+  have h_int5 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos
+    h_coer 5 ht_pos
+  have h_odd5_cont :
+      Continuous (fun u : ι → ℝ => odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u) := by
+    have h_quadφ_cont : Continuous (fun u : ι → ℝ => quadForm hφ.A u) :=
+      continuous_quadForm hφ.A
+    have h_quadψ_cont : Continuous (fun u : ι → ℝ => quadForm hψ.A u) :=
+      continuous_quadForm hψ.A
+    have h_diag_cont :
+        Continuous (fun u : ι → ℝ => (fun _ : Fin 3 => u)) := by
+      apply continuous_pi; intro _; exact continuous_id
+    have h_Φφ_cont :
+        Continuous (fun u : ι → ℝ => hφ.Φ (fun _ => u)) :=
+      hφ.Φ.cont.comp h_diag_cont
+    have h_Φψ_cont :
+        Continuous (fun u : ι → ℝ => hψ.Φ (fun _ => u)) :=
+      hψ.Φ.cont.comp h_diag_cont
+    unfold odd5Kernel
+    refine Continuous.add ?_ ?_
+    · exact ((continuous_const.mul h_quadφ_cont).sub continuous_const).mul
+        (continuous_const.mul h_Φψ_cont)
+    · exact (continuous_const.mul h_Φφ_cont).mul
+        (continuous_const.mul h_quadψ_cont)
+  have h_odd_int_cont : Continuous (fun u : ι → ℝ =>
+      odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    (h_odd5_cont.mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp
+        (continuous_rescaledPerturbation hV_cont H t).neg)
+  have h_int_odd5 : Integrable (fun u : ι → ℝ =>
+      odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    -- Dominated by M_odd · (‖u‖^3 + ‖u‖^5) · gW · exp(-s_t).
+    have h_dom_3 := h_int3.const_mul M_odd
+    have h_dom_5 := h_int5.const_mul M_odd
+    have h_dom_sum : Integrable (fun u : ι → ℝ =>
+        M_odd * (‖u‖ ^ 3 *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) +
+        M_odd * (‖u‖ ^ 5 *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))))) :=
+      h_dom_3.add h_dom_5
+    refine h_dom_sum.mono' h_odd_int_cont.aestronglyMeasurable ?_
+    filter_upwards with u
+    have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+    have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) :=
+      Real.exp_pos _
+    have h_combined_pos : 0 < gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_pos h_gW_pos h_exp_pos
+    have h_odd_le : |odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u|
+        ≤ M_odd * (‖u‖ ^ 3 + ‖u‖ ^ 5) := h_odd_bd u
+    rw [Real.norm_eq_abs]
+    calc |odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))|
+        = |odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by
+          rw [show odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))
+              = odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                (gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+          rw [abs_mul, abs_of_pos h_combined_pos]
+      _ ≤ M_odd * (‖u‖ ^ 3 + ‖u‖ ^ 5) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) :=
+          mul_le_mul_of_nonneg_right h_odd_le h_combined_pos.le
+      _ = M_odd * (‖u‖ ^ 3 *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) +
+          M_odd * (‖u‖ ^ 5 *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by ring
+  -- (III) bulkErr · gW · exp(-s_t) integrability — re-prove inline using
+  -- the same dominated-bound argument as in `abs_integral_bulkErr_le`.
+  obtain ⟨K_loc, hK_loc_nn, h_loc_bound⟩ :=
+    abs_bulkErr_local_le V φ ψ H Hinv b hV.toPotentialTensorApprox hφ hψ
+  obtain ⟨K_tail, M_tail, hK_tail_nn, h_tail_bound⟩ :=
+    abs_bulkErr_tail_le V φ ψ H Hinv b hV.toPotentialTensorApprox hφ hψ
+  set R_jet : ℝ := min hφ.jet_radius hψ.jet_radius with hR_jet_def
+  have hR_jet_pos : 0 < R_jet :=
+    lt_min hφ.jet_radius_pos hψ.jet_radius_pos
+  have hR_jet2_pos : 0 < R_jet ^ 2 := pow_pos hR_jet_pos 2
+  have hR_jet2_t_pos : 0 < R_jet ^ 2 * t := mul_pos hR_jet2_pos ht_pos
+  have h_int_pow8 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 8
+  have h_int_pow0 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 0
+  have h_int_pow2 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 2
+  have h_int_pow_M2 :=
+    integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos (M_tail + 2)
+  have h_φ_cont : Continuous φ := hφ.toObservableApprox.phi_continuous
+  have h_ψ_cont : Continuous ψ := hψ.toObservableApprox.phi_continuous
+  have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
+    continuous_const.smul continuous_id
+  have h_phiconn_cont : Continuous (fun u : ι → ℝ =>
+      expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV.toPotentialTensorApprox hφ t u) := by
+    unfold expCovPhiConn
+    exact (h_φ_cont.comp h_smul_cont).sub continuous_const
+  have h_dot_cont : Continuous (fun u : ι → ℝ => dot b u) := by
+    unfold dot
+    exact continuous_finset_sum _ (fun i _ =>
+      continuous_const.mul (continuous_apply i))
+  have h_psirem_cont : Continuous (fun u : ι → ℝ =>
+      expCovPsiRem ψ b t u) := by
+    unfold expCovPsiRem
+    exact (h_ψ_cont.comp h_smul_cont).sub
+      (continuous_const.mul h_dot_cont)
+  have h_quadφ_cont : Continuous (fun u : ι → ℝ => quadForm hφ.A u) :=
+    continuous_quadForm hφ.A
+  have h_quadψ_cont : Continuous (fun u : ι → ℝ => quadForm hψ.A u) :=
+    continuous_quadForm hψ.A
+  have h_bulk_cont : Continuous (fun u : ι → ℝ =>
+      bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV.toPotentialTensorApprox
+        hφ hψ t u) := by
+    unfold bulkErr
+    refine Continuous.sub (Continuous.sub ?_ ?_) ?_
+    · exact (continuous_const.mul h_phiconn_cont).mul h_psirem_cont
+    · exact ((continuous_const.mul h_quadφ_cont).sub continuous_const).mul
+        (continuous_const.mul h_quadψ_cont)
+    · exact continuous_const.mul h_odd5_cont
+  have h_bulk_int_cont : Continuous (fun u : ι → ℝ =>
+      bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV.toPotentialTensorApprox
+        hφ hψ t u *
+      gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u))) :=
+    (h_bulk_cont.mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp
+        (continuous_rescaledPerturbation hV_cont H t).neg)
+  -- Pointwise majorant for bulkErr (clone of abs_integral_bulkErr_le).
+  set GlocalB : (ι → ℝ) → ℝ := fun u =>
+      (K_loc / t) * (1 + ‖u‖ ^ 8) * Real.exp (-(c * ‖u‖ ^ 2))
+      with hGlocalB_def
+  set GtailB : (ι → ℝ) → ℝ := fun u =>
+      (K_tail / (R_jet ^ 2 * t)) * (‖u‖ ^ 2 + ‖u‖ ^ (M_tail + 2)) *
+        Real.exp (-(c * ‖u‖ ^ 2)) with hGtailB_def
+  have hGlocalB_int : Integrable GlocalB := by
+    have h0 := h_int_pow0.const_mul (K_loc / t)
+    have h8 := h_int_pow8.const_mul (K_loc / t)
+    refine (h0.add h8).congr (Filter.Eventually.of_forall fun u => ?_)
+    simp only [Pi.add_apply]
+    rw [hGlocalB_def, pow_zero]; ring
+  have hGtailB_int : Integrable GtailB := by
+    have h2 := h_int_pow2.const_mul (K_tail / (R_jet ^ 2 * t))
+    have hM2 := h_int_pow_M2.const_mul (K_tail / (R_jet ^ 2 * t))
+    refine (h2.add hM2).congr (Filter.Eventually.of_forall fun u => ?_)
+    simp only [Pi.add_apply]
+    rw [hGtailB_def]; ring
+  have h_int_bulk : Integrable (fun u : ι → ℝ =>
+      bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV.toPotentialTensorApprox
+        hφ hψ t u *
+      gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u))) := by
+    refine (hGlocalB_int.add hGtailB_int).mono'
+      h_bulk_int_cont.aestronglyMeasurable ?_
+    filter_upwards with u
+    rw [Real.norm_eq_abs]
+    have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+    have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) :=
+      Real.exp_pos _
+    have h_combined_pos : 0 < gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_pos h_gW_pos h_exp_pos
+    have h_combined_le : gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+          ≤ Real.exp (-(c * ‖u‖ ^ 2)) :=
+      rescaled_weight_le_coercive V H hc_pos h_coer ht_pos u
+    have h_eq_abs : |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+          hV.toPotentialTensorApprox hφ hψ t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+        = |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+            hV.toPotentialTensorApprox hφ hψ t u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by
+      rw [show bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+              hV.toPotentialTensorApprox hφ hψ t u
+            * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+          = bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+            hV.toPotentialTensorApprox hφ hψ t u *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            from by ring]
+      rw [abs_mul, abs_of_pos h_combined_pos]
+    rw [h_eq_abs]
+    by_cases hu : ‖u‖ ≤ R_jet * Real.sqrt t
+    · -- Local.
+      have h_bb := h_loc_bound t ht1 u hu
+      have h_loc_factor_nn : 0 ≤ K_loc / t * (1 + ‖u‖ ^ 8) := by
+        apply mul_nonneg (div_nonneg hK_loc_nn ht_pos.le); positivity
+      have h1 :
+          |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+              hV.toPotentialTensorApprox hφ hψ t u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ K_loc / t * (1 + ‖u‖ ^ 8) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) :=
+        mul_le_mul_of_nonneg_right h_bb h_combined_pos.le
+      have h2 :
+          K_loc / t * (1 + ‖u‖ ^ 8) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ GlocalB u := by
+        rw [hGlocalB_def]
+        exact mul_le_mul_of_nonneg_left h_combined_le h_loc_factor_nn
+      have hGtailB_nn : 0 ≤ GtailB u := by
+        rw [hGtailB_def]
+        have h_div : 0 ≤ K_tail / (R_jet ^ 2 * t) :=
+          div_nonneg hK_tail_nn hR_jet2_t_pos.le
+        have h_pol : 0 ≤ ‖u‖ ^ 2 + ‖u‖ ^ (M_tail + 2) := by positivity
+        exact mul_nonneg (mul_nonneg h_div h_pol) (Real.exp_pos _).le
+      simp only [Pi.add_apply]
+      linarith
+    · -- Tail.
+      push_neg at hu
+      have h_bb := h_tail_bound t ht1 u hu
+      have hRsqrt_pos : 0 < R_jet * Real.sqrt t :=
+        mul_pos hR_jet_pos hsqrt_pos
+      have h_indicator : 1 ≤ ‖u‖ ^ 2 / (R_jet ^ 2 * t) := by
+        have h_pow_le : (R_jet * Real.sqrt t) ^ 2 ≤ ‖u‖ ^ 2 :=
+          pow_le_pow_left₀ hRsqrt_pos.le hu.le 2
+        have h_RT2 : (R_jet * Real.sqrt t) ^ 2 = R_jet ^ 2 * t := by
+          rw [mul_pow, Real.sq_sqrt ht_pos.le]
+        rw [le_div_iff₀ hR_jet2_t_pos]
+        rw [show R_jet ^ 2 * t = (R_jet * Real.sqrt t) ^ 2 from h_RT2.symm]
+        linarith
+      have h_pol_nn : 0 ≤ 1 + ‖u‖ ^ M_tail := by positivity
+      have h_K_pol_nn : 0 ≤ K_tail * (1 + ‖u‖ ^ M_tail) :=
+        mul_nonneg hK_tail_nn h_pol_nn
+      have h_split_pow : ‖u‖ ^ (M_tail + 2) = ‖u‖ ^ M_tail * ‖u‖ ^ 2 := by
+        rw [pow_add]
+      have h1 :
+          |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+              hV.toPotentialTensorApprox hφ hψ t u|
+          ≤ K_tail / (R_jet ^ 2 * t) *
+              (‖u‖ ^ 2 + ‖u‖ ^ (M_tail + 2)) := by
+        calc |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+                hV.toPotentialTensorApprox hφ hψ t u|
+            ≤ K_tail * (1 + ‖u‖ ^ M_tail) := h_bb
+          _ = 1 * (K_tail * (1 + ‖u‖ ^ M_tail)) := (one_mul _).symm
+          _ ≤ (‖u‖ ^ 2 / (R_jet ^ 2 * t)) *
+                (K_tail * (1 + ‖u‖ ^ M_tail)) :=
+              mul_le_mul_of_nonneg_right h_indicator h_K_pol_nn
+          _ = K_tail / (R_jet ^ 2 * t) *
+                (‖u‖ ^ 2 + ‖u‖ ^ M_tail * ‖u‖ ^ 2) := by
+              field_simp
+          _ = K_tail / (R_jet ^ 2 * t) *
+                (‖u‖ ^ 2 + ‖u‖ ^ (M_tail + 2)) := by rw [h_split_pow]
+      have h_tail_factor_nn :
+          0 ≤ K_tail / (R_jet ^ 2 * t) *
+              (‖u‖ ^ 2 + ‖u‖ ^ (M_tail + 2)) := by
+        apply mul_nonneg (div_nonneg hK_tail_nn hR_jet2_t_pos.le); positivity
+      have h2 :
+          |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+              hV.toPotentialTensorApprox hφ hψ t u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ K_tail / (R_jet ^ 2 * t) *
+              (‖u‖ ^ 2 + ‖u‖ ^ (M_tail + 2)) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) :=
+        mul_le_mul_of_nonneg_right h1 h_combined_pos.le
+      have h3 :
+          K_tail / (R_jet ^ 2 * t) *
+              (‖u‖ ^ 2 + ‖u‖ ^ (M_tail + 2)) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ GtailB u := by
+        rw [hGtailB_def]
+        exact mul_le_mul_of_nonneg_left h_combined_le h_tail_factor_nn
+      have hGlocalB_nn : 0 ≤ GlocalB u := by
+        rw [hGlocalB_def]
+        have h_div : 0 ≤ K_loc / t := div_nonneg hK_loc_nn ht_pos.le
+        have h_pol : 0 ≤ 1 + ‖u‖ ^ 8 := by positivity
+        exact mul_nonneg (mul_nonneg h_div h_pol) (Real.exp_pos _).le
+      simp only [Pi.add_apply]
+      linarith
+  -- (IV) Sum integrability and pointwise identity.
+  have h_int_sum : Integrable (fun u : ι → ℝ =>
+      bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV.toPotentialTensorApprox
+        hφ hψ t u *
+      gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) +
+      ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+        ((1 / 2 : ℝ) * quadForm hψ.A u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) +
+      (1 / Real.sqrt t) *
+        (odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))) := by
+    have h12 := h_int_bulk.add h_int_qcQ
+    exact h12.add (h_int_odd5.const_mul (1 / Real.sqrt t))
+  -- Pointwise: t² · φ_conn · ψ_rem · gW · exp(-s_t) = sum of three pieces.
+  have h_pt_eq : ∀ u : ι → ℝ,
+      t ^ 2 *
+        (expCovPhiConn V φ H Hinv (0 : ι → ℝ)
+            hV.toPotentialTensorApprox hφ t u *
+          expCovPsiRem ψ b t u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+            hV.toPotentialTensorApprox hφ hψ t u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)) +
+        ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+          ((1 / 2 : ℝ) * quadForm hψ.A u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)) +
+        (1 / Real.sqrt t) *
+          (odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) := by
+    intro u
+    unfold bulkErr
+    ring
+  -- Pull `t²` inside and split the integral.
+  have h_lhs_int_eq :
+      t ^ 2 *
+        (∫ u : ι → ℝ,
+            expCovPhiConn V φ H Hinv (0 : ι → ℝ)
+              hV.toPotentialTensorApprox hφ t u *
+            expCovPsiRem ψ b t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+      = (∫ u : ι → ℝ,
+            bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+              hV.toPotentialTensorApprox hφ hψ t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        + (∫ u : ι → ℝ,
+            ((1 / 2 : ℝ) * quadForm hφ.A u
+                - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+              ((1 / 2 : ℝ) * quadForm hψ.A u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        + (1 / Real.sqrt t) *
+            (∫ u : ι → ℝ,
+              odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) := by
+    rw [← MeasureTheory.integral_const_mul]
+    have h_eq_pt : (fun u : ι → ℝ => t ^ 2 *
+        (expCovPhiConn V φ H Hinv (0 : ι → ℝ)
+            hV.toPotentialTensorApprox hφ t u *
+          expCovPsiRem ψ b t u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))))
+        = fun u => bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+            hV.toPotentialTensorApprox hφ hψ t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)) +
+          ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+            ((1 / 2 : ℝ) * quadForm hψ.A u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)) +
+          (1 / Real.sqrt t) *
+            (odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by
+      funext u
+      have h := h_pt_eq u
+      linarith
+    rw [h_eq_pt]
+    -- Build a single-lambda integrability for `bulk + qcQ` to feed
+    -- `MeasureTheory.integral_add` cleanly without Pi.add unification issues.
+    have h_int_b_q : Integrable (fun u : ι → ℝ =>
+        bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+            hV.toPotentialTensorApprox hφ hψ t u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)) +
+        ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+          ((1 / 2 : ℝ) * quadForm hψ.A u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+      refine (h_int_bulk.add h_int_qcQ).congr
+        (Filter.Eventually.of_forall fun u => ?_)
+      simp only [Pi.add_apply]
+    have h_int_o_const :
+        Integrable (fun u : ι → ℝ => (1 / Real.sqrt t) *
+          (odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) :=
+      h_int_odd5.const_mul (1 / Real.sqrt t)
+    calc ∫ u : ι → ℝ,
+            bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+              hV.toPotentialTensorApprox hφ hψ t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)) +
+            ((1 / 2 : ℝ) * quadForm hφ.A u
+                - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+              ((1 / 2 : ℝ) * quadForm hψ.A u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)) +
+            (1 / Real.sqrt t) *
+              (odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+        = (∫ u : ι → ℝ,
+              bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+                hV.toPotentialTensorApprox hφ hψ t u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)) +
+              ((1 / 2 : ℝ) * quadForm hφ.A u
+                  - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+                ((1 / 2 : ℝ) * quadForm hψ.A u) *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+          + ∫ u : ι → ℝ, (1 / Real.sqrt t) *
+              (odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) :=
+            MeasureTheory.integral_add h_int_b_q h_int_o_const
+      _ = ((∫ u : ι → ℝ,
+              bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+                hV.toPotentialTensorApprox hφ hψ t u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+            + ∫ u : ι → ℝ,
+              ((1 / 2 : ℝ) * quadForm hφ.A u
+                  - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+                ((1 / 2 : ℝ) * quadForm hψ.A u) *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+          + ∫ u : ι → ℝ, (1 / Real.sqrt t) *
+              (odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) := by
+            congr 1
+            exact MeasureTheory.integral_add h_int_bulk h_int_qcQ
+      _ = ((∫ u : ι → ℝ,
+              bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+                hV.toPotentialTensorApprox hφ hψ t u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+            + ∫ u : ι → ℝ,
+              ((1 / 2 : ℝ) * quadForm hφ.A u
+                  - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+                ((1 / 2 : ℝ) * quadForm hψ.A u) *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+          + (1 / Real.sqrt t) *
+              ∫ u : ι → ℝ,
+                odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                  gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u)) := by
+            rw [MeasureTheory.integral_const_mul]
+  -- Triangle inequality.
+  rw [h_lhs_int_eq, ← h_c_QQ_eq, hc_QQ_alt_def]
+  have h_reorg :
+      (∫ u : ι → ℝ,
+          bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+            hV.toPotentialTensorApprox hφ hψ t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + (∫ u : ι → ℝ,
+            ((1 / 2 : ℝ) * quadForm hφ.A u -
+                (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+              ((1 / 2 : ℝ) * quadForm hψ.A u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        + (1 / Real.sqrt t) *
+            (∫ u : ι → ℝ,
+              odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+        - (1 / 2 : ℝ) * trASig (hφ.A.comp Hinv) (hψ.A.comp Hinv)
+            * rescaledPartition V t
+      = (∫ u : ι → ℝ,
+          bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+            hV.toPotentialTensorApprox hφ hψ t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + ((∫ u : ι → ℝ,
+            ((1 / 2 : ℝ) * quadForm hφ.A u -
+                (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+              ((1 / 2 : ℝ) * quadForm hψ.A u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          - (1 / 2 : ℝ) * trASig (hφ.A.comp Hinv) (hψ.A.comp Hinv)
+              * rescaledPartition V t)
+        + (1 / Real.sqrt t) *
+            (∫ u : ι → ℝ,
+              odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) := by ring
+  rw [h_reorg]
+  -- Now triangle: |a + b + c| ≤ |a| + |b| + |c| ≤ K_bulk/t + K_lead/t + K_odd/t.
+  calc |(∫ u : ι → ℝ,
+            bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+              hV.toPotentialTensorApprox hφ hψ t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          + ((∫ u : ι → ℝ,
+              ((1 / 2 : ℝ) * quadForm hφ.A u -
+                  (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+                ((1 / 2 : ℝ) * quadForm hψ.A u) *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+            - (1 / 2 : ℝ) * trASig (hφ.A.comp Hinv) (hψ.A.comp Hinv)
+                * rescaledPartition V t)
+          + (1 / Real.sqrt t) *
+              (∫ u : ι → ℝ,
+                odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                  gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u)))|
+      ≤ |(∫ u : ι → ℝ,
+            bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+              hV.toPotentialTensorApprox hφ hψ t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))|
+        + |(∫ u : ι → ℝ,
+            ((1 / 2 : ℝ) * quadForm hφ.A u -
+                (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+              ((1 / 2 : ℝ) * quadForm hψ.A u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          - (1 / 2 : ℝ) * trASig (hφ.A.comp Hinv) (hψ.A.comp Hinv)
+              * rescaledPartition V t|
+        + |(1 / Real.sqrt t) *
+            (∫ u : ι → ℝ,
+              odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))| := by
+        have h1 := abs_add_le
+            ((∫ u : ι → ℝ, bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+                hV.toPotentialTensorApprox hφ hψ t u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+              + ((∫ u : ι → ℝ,
+                  ((1 / 2 : ℝ) * quadForm hφ.A u -
+                      (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+                    ((1 / 2 : ℝ) * quadForm hψ.A u) *
+                    gaussianWeight H u *
+                    Real.exp (-(rescaledPerturbation V H t u)))
+                - (1 / 2 : ℝ) * trASig (hφ.A.comp Hinv) (hψ.A.comp Hinv)
+                    * rescaledPartition V t))
+            ((1 / Real.sqrt t) *
+              (∫ u : ι → ℝ,
+                odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u *
+                  gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u))))
+        have h2 := abs_add_le
+            (∫ u : ι → ℝ, bulkErr V φ ψ H Hinv (0 : ι → ℝ) b
+                hV.toPotentialTensorApprox hφ hψ t u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+            ((∫ u : ι → ℝ,
+                ((1 / 2 : ℝ) * quadForm hφ.A u -
+                    (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+                  ((1 / 2 : ℝ) * quadForm hψ.A u) *
+                  gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u)))
+              - (1 / 2 : ℝ) * trASig (hφ.A.comp Hinv) (hψ.A.comp Hinv)
+                  * rescaledPartition V t)
+        linarith
+    _ ≤ K_bulk / t + K_lead / t + K_odd / t :=
+        add_le_add (add_le_add (h_bulk t ht_bulk) (h_lead t ht_lead))
+          (h_odd t ht_odd)
+    _ = K_tot / t := by rw [hK_tot_def]; ring
 
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
 when $\nabla\phi(0) = 0$, the rescaled pair numerator $N_t(\phi\psi)$ has
