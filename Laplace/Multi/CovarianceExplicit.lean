@@ -637,6 +637,104 @@ theorem gaussian_ibp_cubic_f
 
 end CubicIBP
 
+section QuinticIBP
+
+/-- **Quintic-IBP integral identity**: extracting the IBP relation
+from the `FubiniIBPHypothesisQuintic` hypothesis (analog of
+`gaussian_ibp_cubic_f`). For indices $a, b, c, d, e, l$,
+$$
+  \int u_a u_b u_c u_d u_e (Hu)_l\, gW
+   = \int \big[\delta_{la} u_b u_c u_d u_e + \delta_{lb} u_a u_c u_d u_e
+     + \delta_{lc} u_a u_b u_d u_e + \delta_{ld} u_a u_b u_c u_e
+     + \delta_{le} u_a u_b u_c u_d\big] \, gW.
+$$
+Used in `gaussian_sixth_moment_formula` to reduce 6-moment to 4-moment. -/
+theorem gaussian_ibp_quintic_f
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv)
+    (a b c d e l : ι) :
+    ∫ u : ι → ℝ,
+        u a * u b * u c * u d * u e * (H u) l * gaussianWeight H u
+      = ∫ u : ι → ℝ,
+          ((if l = a then u b * u c * u d * u e else 0) +
+           (if l = b then u a * u c * u d * u e else 0) +
+           (if l = c then u a * u b * u d * u e else 0) +
+           (if l = d then u a * u b * u c * u e else 0) +
+           (if l = e then u a * u b * u c * u d else 0)) *
+          gaussianWeight H u := by
+  have h_fubini := hGauss.fubini_ibp_quintic a b c d e l
+  unfold FubiniIBPHypothesisQuintic at h_fubini
+  -- Integrability of the indicator-times-4th-moment integrand sum.
+  have h_intA : Integrable (fun u : ι → ℝ =>
+      ((if l = a then u b * u c * u d * u e else 0) +
+       (if l = b then u a * u c * u d * u e else 0) +
+       (if l = c then u a * u b * u d * u e else 0) +
+       (if l = d then u a * u b * u c * u e else 0) +
+       (if l = e then u a * u b * u c * u d else 0)) *
+        gaussianWeight H u) := by
+    have h1 : Integrable (fun u : ι → ℝ =>
+        (if l = a then u b * u c * u d * u e else 0) * gaussianWeight H u) := by
+      by_cases hla : l = a
+      · simp only [if_pos hla]; exact hGauss.int_4moment b c d e
+      · simp only [if_neg hla, zero_mul]; exact integrable_zero _ _ _
+    have h2 : Integrable (fun u : ι → ℝ =>
+        (if l = b then u a * u c * u d * u e else 0) * gaussianWeight H u) := by
+      by_cases hlb : l = b
+      · simp only [if_pos hlb]; exact hGauss.int_4moment a c d e
+      · simp only [if_neg hlb, zero_mul]; exact integrable_zero _ _ _
+    have h3 : Integrable (fun u : ι → ℝ =>
+        (if l = c then u a * u b * u d * u e else 0) * gaussianWeight H u) := by
+      by_cases hlc : l = c
+      · simp only [if_pos hlc]; exact hGauss.int_4moment a b d e
+      · simp only [if_neg hlc, zero_mul]; exact integrable_zero _ _ _
+    have h4 : Integrable (fun u : ι → ℝ =>
+        (if l = d then u a * u b * u c * u e else 0) * gaussianWeight H u) := by
+      by_cases hld : l = d
+      · simp only [if_pos hld]; exact hGauss.int_4moment a b c e
+      · simp only [if_neg hld, zero_mul]; exact integrable_zero _ _ _
+    have h5 : Integrable (fun u : ι → ℝ =>
+        (if l = e then u a * u b * u c * u d else 0) * gaussianWeight H u) := by
+      by_cases hle : l = e
+      · simp only [if_pos hle]; exact hGauss.int_4moment a b c d
+      · simp only [if_neg hle, zero_mul]; exact integrable_zero _ _ _
+    have h_sum_lambda : Integrable (fun u : ι → ℝ =>
+        (if l = a then u b * u c * u d * u e else 0) * gaussianWeight H u
+        + (if l = b then u a * u c * u d * u e else 0) * gaussianWeight H u
+        + (if l = c then u a * u b * u d * u e else 0) * gaussianWeight H u
+        + (if l = d then u a * u b * u c * u e else 0) * gaussianWeight H u
+        + (if l = e then u a * u b * u c * u d else 0) *
+            gaussianWeight H u) :=
+      ((((h1.add h2).add h3).add h4).add h5)
+    apply h_sum_lambda.congr
+    filter_upwards with u
+    ring
+  have h_intB := hGauss.int_5_Hl a b c d e l
+  have h_split :
+      ∫ u : ι → ℝ,
+        (((if l = a then u b * u c * u d * u e else 0) +
+          (if l = b then u a * u c * u d * u e else 0) +
+          (if l = c then u a * u b * u d * u e else 0) +
+          (if l = d then u a * u b * u c * u e else 0) +
+          (if l = e then u a * u b * u c * u d else 0)) *
+            gaussianWeight H u
+          - u a * u b * u c * u d * u e * (H u) l *
+              gaussianWeight H u)
+      = (∫ u : ι → ℝ,
+          ((if l = a then u b * u c * u d * u e else 0) +
+           (if l = b then u a * u c * u d * u e else 0) +
+           (if l = c then u a * u b * u d * u e else 0) +
+           (if l = d then u a * u b * u c * u e else 0) +
+           (if l = e then u a * u b * u c * u d else 0)) *
+            gaussianWeight H u)
+        - (∫ u : ι → ℝ,
+            u a * u b * u c * u d * u e * (H u) l *
+              gaussianWeight H u) :=
+    integral_sub h_intA h_intB
+  rw [h_split] at h_fubini
+  linarith
+
+end QuinticIBP
+
 section FourthMomentFormula
 
 /-- **4th-moment Wick formula**: for indices $a, b, c, d$,
