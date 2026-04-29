@@ -1964,10 +1964,94 @@ private lemma expPotCubic_neg
 
 /-! ### Quintic remainder rescaling (for J₃) -/
 
--- Rescaled quintic-remainder lemma for J_3:
---   |s_t(u) - s_t(-u) - 2·C_t(u)| ≤ Q_const · ‖u‖^5 / (t · √t)
--- on the local region. Derives from `V_odd_quintic_bound` applied to
--- `w = (√t)⁻¹·u`. Substantial algebraic manipulation; not yet written.
+/-- **Rescaled quintic odd-remainder bound** (for J₃ rate). For `‖u‖ ≤ jet_radius·√t`,
+
+  `|s_t(u) - s_t(-u) - 2·C_t(u)| ≤ Q_const · ‖u‖^5 / (t · √t)`.
+
+The cubic part `(1/3)·T(w,w,w)` doubles in `V(w) - V(-w)` (cubic odd, doubles
+in the difference); rescaled to `2·C_t(u)`. The remainder is the quintic
+odd part — sharper than the quartic `T_jet_bound` provides.
+
+Critical for J₃'s rate: parity gives `O(‖u‖^5/(t·√t))` for the bracket of
+the symmetrized integrand, instead of the `O(‖u‖^4/t)` from quartic alone. -/
+private lemma abs_rescaledPerturbation_sub_neg_quintic_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialQuinticApprox V H)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ hV.jet_radius * Real.sqrt t) :
+    |rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)
+        - 2 * expPotCubic V H hV.toPotentialTensorApprox t u|
+      ≤ hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  have ht_ne : t ≠ 0 := ne_of_gt ht
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  have hjet_R_pos : 0 < hV.jet_radius := hV.jet_radius_pos
+  -- ‖(√t)⁻¹·u‖ ≤ jet_radius
+  have h_norm_le : ‖(Real.sqrt t)⁻¹ • u‖ ≤ hV.jet_radius := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  -- ‖(√t)⁻¹·u‖^5 = ‖u‖^5 / (t^2 · √t)
+  have h_norm_pow : ‖(Real.sqrt t)⁻¹ • u‖ ^ 5 = ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t) := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹),
+        mul_pow, inv_pow]
+    rw [show (Real.sqrt t) ^ 5 = (Real.sqrt t * Real.sqrt t) ^ 2 * Real.sqrt t from by ring,
+        h_sq]
+    field_simp
+  set w := (Real.sqrt t)⁻¹ • u with hw_def
+  -- Apply V_odd_quintic_bound to w.
+  have h_quintic := hV.V_odd_quintic_bound w h_norm_le
+  rw [h_norm_pow] at h_quintic
+  -- Trilinear scaling: T(fun _ => w) = ((√t)⁻¹)^3 * T(fun _ => u).
+  have h_T_scale : hV.T (fun _ : Fin 3 => w)
+      = ((Real.sqrt t)⁻¹) ^ 3 * hV.T (fun _ => u) := by
+    rw [hw_def]
+    have h1 := hV.T.map_smul_univ (fun _ : Fin 3 => (Real.sqrt t)⁻¹) (fun _ => u)
+    simpa using h1
+  rw [h_T_scale] at h_quintic
+  -- quadForm cancels in s_t(u) - s_t(-u).
+  unfold rescaledPerturbation
+  have h_qf_neg_u : quadForm H (-u) = quadForm H u := by
+    rw [show (-u : ι → ℝ) = (-1 : ℝ) • u from by rw [neg_one_smul]]
+    rw [quadForm_smul]; ring
+  have h_smul_neg : (Real.sqrt t)⁻¹ • (-u) = -w := by rw [hw_def, smul_neg]
+  -- Express s_t(u) - s_t(-u) - 2·C_t(u) = t·(V(w) - V(-w) - (1/3)·T(w,w,w) at w-scale).
+  -- 2·C_t(u) = (√t)⁻¹·(1/3)·T(u,u,u).
+  have h_eq : t * V w - 1 / 2 * quadForm H u
+      - (t * V ((Real.sqrt t)⁻¹ • (-u)) - 1 / 2 * quadForm H (-u))
+      - 2 * ((Real.sqrt t)⁻¹ * (1/6 : ℝ) * hV.T (fun _ => u))
+      = t * (V w - V (-w) - (1/3 : ℝ) *
+          (((Real.sqrt t)⁻¹) ^ 3 * hV.T (fun _ => u))) := by
+    rw [h_smul_neg, h_qf_neg_u]
+    have h_inv_pow : ((Real.sqrt t)⁻¹) ^ 3 = (Real.sqrt t)⁻¹ * ((Real.sqrt t) ^ 2)⁻¹ := by
+      rw [show ((Real.sqrt t)⁻¹) ^ 3
+            = (Real.sqrt t)⁻¹ * ((Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹) from by ring]
+      rw [show (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ = ((Real.sqrt t) * (Real.sqrt t))⁻¹ from by
+          rw [mul_inv]]
+      rw [show (Real.sqrt t) * (Real.sqrt t) = (Real.sqrt t) ^ 2 from by rw [sq]]
+    rw [show (Real.sqrt t)⁻¹ * (1/6 : ℝ) = (1/6 : ℝ) * (Real.sqrt t)⁻¹ from by ring]
+    have h_sqrt_t_inv_sq : ((Real.sqrt t)⁻¹) ^ 2 = (1 / t : ℝ) := by
+      rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from by rw [inv_pow]]
+      rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
+      rw [one_div]
+    rw [h_inv_pow]
+    rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
+    field_simp
+    ring
+  -- Show expPotCubic = (√t)⁻¹·(1/6)·T(u,u,u).
+  have h_C_t_eq : 2 * expPotCubic V H hV.toPotentialTensorApprox t u
+      = 2 * ((Real.sqrt t)⁻¹ * (1/6 : ℝ) * hV.T (fun _ => u)) := by
+    unfold expPotCubic
+    ring
+  rw [h_C_t_eq, h_eq]
+  rw [abs_mul, abs_of_pos ht]
+  calc t * |V w - V (-w) - (1/3 : ℝ) * (((Real.sqrt t)⁻¹) ^ 3 * hV.T (fun _ => u))|
+      ≤ t * (hV.Q_const * (‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t))) :=
+        mul_le_mul_of_nonneg_left h_quintic ht.le
+    _ = hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t) := by
+        rw [show (t : ℝ) ^ 2 = t * t from sq t]
+        field_simp
 
 omit [DecidableEq ι] in
 /-- Substitution `u ↦ -u` for the volume measure on `ι → ℝ`.
