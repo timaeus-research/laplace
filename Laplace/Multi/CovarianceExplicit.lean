@@ -6795,6 +6795,80 @@ private lemma abs_fqqKernel_le
         linarith [h_step_NANB, h_step_tANB, h_step_tAB]
     _ = C * (1 + ‖u‖ ^ 4) := by rw [hC_def]; ring
 
+/-- **Local pointwise bound for the FQQ corrected-bracket integrand** (item 5
+of GPT path response). On the local ball `‖u‖ ≤ ρ·√t`,
+\[
+  |F_{QQ}(u) \cdot gW(u) \cdot (e^{-s_t} - 1 + c_t)|
+    \le \frac{C_{FQQ}}{t}\,(1+\|u\|^4)\,(C_s^2\|u\|^6 + j\|u\|^4)
+    \,e^{-(c'/4)\,\|u\|^2}.
+\]
+
+Combines the polynomial bound `abs_fqqKernel_le` with the corrected-bracket
+local bound `abs_gaussianWeight_mul_corrected_bracket_local_le`.
+
+The polynomial RHS has degree 10 in `‖u‖`; integrating against a Gaussian
+gives `O(1/t)` after multiplying by the Gaussian moment constants. -/
+private lemma abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_local_le
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    {ρ : ℝ} (hρ_pos : 0 < ρ)
+    (hρ_le_jet_R : ρ ≤ hV.jet_radius)
+    (hρ_le_local_R : ρ ≤ hV.toPotentialApprox.local_radius)
+    (hρ_decay : hV.toPotentialApprox.local_const * ρ ≤
+        hV.H_coercive_const / 4)
+    {t : ℝ} (ht_pos : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ ρ * Real.sqrt t) :
+    ∃ C_FQQ : ℝ, 0 ≤ C_FQQ ∧
+      |fqqKernel A B Hinv u| * (gaussianWeight H u *
+          |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+            t * hV.cV ((Real.sqrt t)⁻¹ • u)|)
+        ≤ C_FQQ * (1 + ‖u‖ ^ 4) *
+          ((hV.toPotentialApprox.local_const ^ 2 * ‖u‖ ^ 6 +
+            hV.jet_const * ‖u‖ ^ 4) / t) *
+          Real.exp (-(hV.H_coercive_const / 4 * ‖u‖ ^ 2)) := by
+  obtain ⟨C_FQQ, hC_FQQ_nn, hF_bound⟩ := abs_fqqKernel_le A B Hinv u
+  refine ⟨C_FQQ, hC_FQQ_nn, ?_⟩
+  -- Local bracket bound (existing helper).
+  have h_bracket :=
+    abs_gaussianWeight_mul_corrected_bracket_local_le V H hV
+      hρ_pos hρ_le_jet_R hρ_le_local_R hρ_decay ht_pos u hu
+  -- |F| · (gW · |bracket|) ≤ |F| · (poly/t · gauss-decay)
+  -- ≤ C(1+‖u‖^4) · (poly/t · gauss-decay).
+  have h_F_nn : 0 ≤ |fqqKernel A B Hinv u| := abs_nonneg _
+  have h_one_plus_u4_nn : 0 ≤ 1 + ‖u‖ ^ 4 := by positivity
+  have h_poly_decay_nn : 0 ≤ (hV.toPotentialApprox.local_const ^ 2 * ‖u‖ ^ 6 +
+          hV.jet_const * ‖u‖ ^ 4) / t *
+          Real.exp (-(hV.H_coercive_const / 4 * ‖u‖ ^ 2)) := by
+    apply mul_nonneg
+    · apply div_nonneg
+      · have h1 : 0 ≤ hV.toPotentialApprox.local_const ^ 2 * ‖u‖ ^ 6 :=
+          mul_nonneg (sq_nonneg _) (pow_nonneg (norm_nonneg _) _)
+        have h2 : 0 ≤ hV.jet_const * ‖u‖ ^ 4 :=
+          mul_nonneg hV.jet_const_nonneg (pow_nonneg (norm_nonneg _) _)
+        linarith
+      · exact ht_pos.le
+    · exact (Real.exp_pos _).le
+  calc |fqqKernel A B Hinv u| *
+        (gaussianWeight H u *
+          |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+            t * hV.cV ((Real.sqrt t)⁻¹ • u)|)
+      ≤ |fqqKernel A B Hinv u| *
+          ((hV.toPotentialApprox.local_const ^ 2 * ‖u‖ ^ 6 +
+              hV.jet_const * ‖u‖ ^ 4) / t *
+            Real.exp (-(hV.H_coercive_const / 4 * ‖u‖ ^ 2))) :=
+        mul_le_mul_of_nonneg_left h_bracket h_F_nn
+    _ ≤ (C_FQQ * (1 + ‖u‖ ^ 4)) *
+          ((hV.toPotentialApprox.local_const ^ 2 * ‖u‖ ^ 6 +
+              hV.jet_const * ‖u‖ ^ 4) / t *
+            Real.exp (-(hV.H_coercive_const / 4 * ‖u‖ ^ 2))) :=
+        mul_le_mul_of_nonneg_right hF_bound h_poly_decay_nn
+    _ = C_FQQ * (1 + ‖u‖ ^ 4) *
+          ((hV.toPotentialApprox.local_const ^ 2 * ‖u‖ ^ 6 +
+            hV.jet_const * ‖u‖ ^ 4) / t) *
+          Real.exp (-(hV.H_coercive_const / 4 * ‖u‖ ^ 2)) := by ring
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
