@@ -9937,6 +9937,9 @@ private lemma abs_bulkErr_tail_le
     linarith
   linarith [h_tri, h_P1_le, h_P2_le, h_P3_le]
 
+-- Heartbeat bump: large 4-step calc with two `MeasureTheory.integral_add` rewrites
+-- pushes the default 200000 budget. See CLAUDE.md (Pi.add unification cost).
+set_option maxHeartbeats 1600000 in
 /-- **Integrated K/t bound on `bulkErr`** (Lemma B Step 4-9 closure).
 
 Combines `abs_bulkErr_local_le` and `abs_bulkErr_tail_le` to bound the
@@ -9948,8 +9951,7 @@ integral by `K/t`:
   `∫_tail ≤ K_tail/(R²·t) · ∫(1+‖u‖^M)·‖u‖²·gW·exp(-s_t) ≤ K_tail/(R²·t) · const`.
 - Sum: `K/t`.
 
-Stub for next session — composition follows the pattern of
-`abs_integral_corrected_bracket_FQQ_le`. Estimated ~150 LOC. -/
+Composition follows the pattern of `abs_integral_corrected_bracket_FQQ_le`. -/
 private lemma abs_integral_bulkErr_le
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (b : ι → ℝ) (hV : PotentialTensorApprox V H)
@@ -9961,7 +9963,302 @@ private lemma abs_integral_bulkErr_le
           * gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u))|
         ≤ K / t := by
-  sorry
+  classical
+  set c := hV.toPotentialApprox.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.toPotentialApprox.coercive_const_pos
+  have h_coer := hV.toPotentialApprox.coercive_bound
+  have hV_cont : Continuous V := hV.toPotentialApprox.V_continuous
+  obtain ⟨K_loc, hK_loc_nn, h_loc_bound⟩ :=
+    abs_bulkErr_local_le V φ ψ H Hinv b hV hφ hψ
+  obtain ⟨K_tail, M, hK_tail_nn, h_tail_bound⟩ :=
+    abs_bulkErr_tail_le V φ ψ H Hinv b hV hφ hψ
+  set R : ℝ := min hφ.jet_radius hψ.jet_radius with hR_def
+  have hR_pos : 0 < R := lt_min hφ.jet_radius_pos hψ.jet_radius_pos
+  have hR2_pos : 0 < R ^ 2 := pow_pos hR_pos 2
+  have h_int0 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 0
+  have h_int8 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 8
+  have h_int2 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 2
+  have h_intM2 :=
+    integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos (M + 2)
+  set I0 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 0 * Real.exp (-(c * ‖u‖ ^ 2)) with hI0_def
+  set I8 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 8 * Real.exp (-(c * ‖u‖ ^ 2)) with hI8_def
+  set I2 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 2 * Real.exp (-(c * ‖u‖ ^ 2)) with hI2_def
+  set IM2 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ (M + 2) * Real.exp (-(c * ‖u‖ ^ 2))
+    with hIM2_def
+  set Kbound : ℝ :=
+      K_loc * (I0 + I8) + (K_tail / R ^ 2) * (I2 + IM2) with hKbound_def
+  refine ⟨Kbound, 1, le_refl _, fun t ht1 => ?_⟩
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have ht_ne : t ≠ 0 := ne_of_gt ht_pos
+  have hR2t_pos : 0 < R ^ 2 * t := mul_pos hR2_pos ht_pos
+  have hR2t_ne : R ^ 2 * t ≠ 0 := ne_of_gt hR2t_pos
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  -- Define majorant.
+  set Glocal : (ι → ℝ) → ℝ := fun u =>
+      (K_loc / t) * (1 + ‖u‖ ^ 8) * Real.exp (-(c * ‖u‖ ^ 2))
+      with hGlocal_def
+  set Gtail : (ι → ℝ) → ℝ := fun u =>
+      (K_tail / (R ^ 2 * t)) * (‖u‖ ^ 2 + ‖u‖ ^ (M + 2)) *
+        Real.exp (-(c * ‖u‖ ^ 2)) with hGtail_def
+  have hGlocal_nn : ∀ u, 0 ≤ Glocal u := by
+    intro u; rw [hGlocal_def]
+    have h_div : 0 ≤ K_loc / t := div_nonneg hK_loc_nn ht_pos.le
+    have h_pol : 0 ≤ 1 + ‖u‖ ^ 8 := by positivity
+    exact mul_nonneg (mul_nonneg h_div h_pol) (Real.exp_pos _).le
+  have hGtail_nn : ∀ u, 0 ≤ Gtail u := by
+    intro u; rw [hGtail_def]
+    have h_div : 0 ≤ K_tail / (R ^ 2 * t) := div_nonneg hK_tail_nn hR2t_pos.le
+    have h_pol : 0 ≤ ‖u‖ ^ 2 + ‖u‖ ^ (M + 2) := by positivity
+    exact mul_nonneg (mul_nonneg h_div h_pol) (Real.exp_pos _).le
+  -- Pointwise: |bulkErr · gW · exp(-s_t)| ≤ Glocal u + Gtail u.
+  have hpt : ∀ u : ι → ℝ,
+      |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u *
+        gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ Glocal u + Gtail u := by
+    intro u
+    have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+    have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) :=
+      Real.exp_pos _
+    have h_combined_pos : 0 < gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) := mul_pos h_gW_pos h_exp_pos
+    have h_combined_le : gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+          ≤ Real.exp (-(c * ‖u‖ ^ 2)) :=
+      rescaled_weight_le_coercive V H hc_pos h_coer ht_pos u
+    have h_eq_abs : |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u *
+        gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))|
+        = |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by
+      rw [show bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u
+            * gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))
+          = bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+      rw [abs_mul, abs_of_pos h_combined_pos]
+    rw [h_eq_abs]
+    by_cases hu : ‖u‖ ≤ R * Real.sqrt t
+    · -- Local region.
+      have h_bulk := h_loc_bound t ht1 u hu
+      have h_loc_factor_nn : 0 ≤ K_loc / t * (1 + ‖u‖ ^ 8) := by
+        apply mul_nonneg (div_nonneg hK_loc_nn ht_pos.le); positivity
+      have h_step1 :
+          |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ K_loc / t * (1 + ‖u‖ ^ 8) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) :=
+        mul_le_mul_of_nonneg_right h_bulk h_combined_pos.le
+      have h_step2 :
+          K_loc / t * (1 + ‖u‖ ^ 8) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ K_loc / t * (1 + ‖u‖ ^ 8) * Real.exp (-(c * ‖u‖ ^ 2)) :=
+        mul_le_mul_of_nonneg_left h_combined_le h_loc_factor_nn
+      have h_eq_glocal : K_loc / t * (1 + ‖u‖ ^ 8) *
+          Real.exp (-(c * ‖u‖ ^ 2)) = Glocal u := by rw [hGlocal_def]
+      rw [h_eq_glocal] at h_step2
+      have h_le := le_trans h_step1 h_step2
+      linarith [hGtail_nn u]
+    · -- Tail region.
+      push_neg at hu
+      have h_bulk := h_tail_bound t ht1 u hu
+      have h_indicator : 1 ≤ ‖u‖ ^ 2 / (R ^ 2 * t) := by
+        have hRsqrt_pos : 0 < R * Real.sqrt t := mul_pos hR_pos hsqrt_pos
+        have h_pow_le : (R * Real.sqrt t) ^ 2 ≤ ‖u‖ ^ 2 :=
+          pow_le_pow_left₀ hRsqrt_pos.le hu.le 2
+        have h_RT2 : (R * Real.sqrt t) ^ 2 = R ^ 2 * t := by
+          rw [mul_pow, Real.sq_sqrt ht_pos.le]
+        rw [le_div_iff₀ hR2t_pos]
+        rw [show R ^ 2 * t = (R * Real.sqrt t) ^ 2 from h_RT2.symm]
+        linarith
+      have h_pol_nn : 0 ≤ 1 + ‖u‖ ^ M := by positivity
+      have h_K_pol_nn : 0 ≤ K_tail * (1 + ‖u‖ ^ M) :=
+        mul_nonneg hK_tail_nn h_pol_nn
+      have h_split_pow : ‖u‖ ^ (M + 2) = ‖u‖ ^ M * ‖u‖ ^ 2 := by
+        rw [pow_add]
+      have h_step1 :
+          |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u|
+          ≤ K_tail / (R ^ 2 * t) * (‖u‖ ^ 2 + ‖u‖ ^ (M + 2)) := by
+        calc |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u|
+            ≤ K_tail * (1 + ‖u‖ ^ M) := h_bulk
+          _ = 1 * (K_tail * (1 + ‖u‖ ^ M)) := (one_mul _).symm
+          _ ≤ (‖u‖ ^ 2 / (R ^ 2 * t)) * (K_tail * (1 + ‖u‖ ^ M)) :=
+              mul_le_mul_of_nonneg_right h_indicator h_K_pol_nn
+          _ = K_tail / (R ^ 2 * t) * (‖u‖ ^ 2 + ‖u‖ ^ M * ‖u‖ ^ 2) := by
+              field_simp
+          _ = K_tail / (R ^ 2 * t) * (‖u‖ ^ 2 + ‖u‖ ^ (M + 2)) := by
+              rw [h_split_pow]
+      have h_tail_factor_nn :
+          0 ≤ K_tail / (R ^ 2 * t) * (‖u‖ ^ 2 + ‖u‖ ^ (M + 2)) := by
+        apply mul_nonneg (div_nonneg hK_tail_nn hR2t_pos.le)
+        positivity
+      have h_step2 :
+          |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u| *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ K_tail / (R ^ 2 * t) * (‖u‖ ^ 2 + ‖u‖ ^ (M + 2)) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) :=
+        mul_le_mul_of_nonneg_right h_step1 h_combined_pos.le
+      have h_step3 :
+          K_tail / (R ^ 2 * t) * (‖u‖ ^ 2 + ‖u‖ ^ (M + 2)) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          ≤ K_tail / (R ^ 2 * t) * (‖u‖ ^ 2 + ‖u‖ ^ (M + 2)) *
+            Real.exp (-(c * ‖u‖ ^ 2)) :=
+        mul_le_mul_of_nonneg_left h_combined_le h_tail_factor_nn
+      have h_eq_gtail : K_tail / (R ^ 2 * t) * (‖u‖ ^ 2 + ‖u‖ ^ (M + 2)) *
+          Real.exp (-(c * ‖u‖ ^ 2)) = Gtail u := by rw [hGtail_def]
+      rw [h_eq_gtail] at h_step3
+      have h_le := le_trans h_step2 h_step3
+      linarith [hGlocal_nn u]
+  -- Integrability of Glocal and Gtail (split into sums of pure poly·Gaussian).
+  set kL : ℝ := K_loc / t with hkL_def
+  set kT : ℝ := K_tail / (R ^ 2 * t) with hkT_def
+  have hL0 : Integrable (fun u : ι → ℝ =>
+      kL * (‖u‖ ^ 0 * Real.exp (-(c * ‖u‖ ^ 2)))) := h_int0.const_mul kL
+  have hL8 : Integrable (fun u : ι → ℝ =>
+      kL * (‖u‖ ^ 8 * Real.exp (-(c * ‖u‖ ^ 2)))) := h_int8.const_mul kL
+  have hT2 : Integrable (fun u : ι → ℝ =>
+      kT * (‖u‖ ^ 2 * Real.exp (-(c * ‖u‖ ^ 2)))) := h_int2.const_mul kT
+  have hTM2 : Integrable (fun u : ι → ℝ =>
+      kT * (‖u‖ ^ (M + 2) * Real.exp (-(c * ‖u‖ ^ 2)))) :=
+    h_intM2.const_mul kT
+  have hGlocal_eq_pt : ∀ u : ι → ℝ, Glocal u =
+      kL * (‖u‖ ^ 0 * Real.exp (-(c * ‖u‖ ^ 2))) +
+      kL * (‖u‖ ^ 8 * Real.exp (-(c * ‖u‖ ^ 2))) := by
+    intro u
+    rw [hGlocal_def, hkL_def, pow_zero]; ring
+  have hGtail_eq_pt : ∀ u : ι → ℝ, Gtail u =
+      kT * (‖u‖ ^ 2 * Real.exp (-(c * ‖u‖ ^ 2))) +
+      kT * (‖u‖ ^ (M + 2) * Real.exp (-(c * ‖u‖ ^ 2))) := by
+    intro u
+    rw [hGtail_def, hkT_def]; ring
+  have hGlocal_int : Integrable Glocal := by
+    refine (hL0.add hL8).congr (Filter.Eventually.of_forall fun u => ?_)
+    simp only [Pi.add_apply]
+    exact (hGlocal_eq_pt u).symm
+  have hGtail_int : Integrable Gtail := by
+    refine (hT2.add hTM2).congr (Filter.Eventually.of_forall fun u => ?_)
+    simp only [Pi.add_apply]
+    exact (hGtail_eq_pt u).symm
+  have hGsum_int : Integrable (fun u => Glocal u + Gtail u) :=
+    hGlocal_int.add hGtail_int
+  have hGlocal_int_eq : ∫ u, Glocal u = kL * I0 + kL * I8 := by
+    calc ∫ u, Glocal u
+        = ∫ u, kL * (‖u‖ ^ 0 * Real.exp (-(c * ‖u‖ ^ 2))) +
+              kL * (‖u‖ ^ 8 * Real.exp (-(c * ‖u‖ ^ 2))) :=
+          MeasureTheory.integral_congr_ae
+            (Filter.Eventually.of_forall hGlocal_eq_pt)
+      _ = (∫ u, kL * (‖u‖ ^ 0 * Real.exp (-(c * ‖u‖ ^ 2)))) +
+          ∫ u, kL * (‖u‖ ^ 8 * Real.exp (-(c * ‖u‖ ^ 2))) :=
+          MeasureTheory.integral_add hL0 hL8
+      _ = kL * I0 + kL * I8 := by
+          rw [MeasureTheory.integral_const_mul,
+              MeasureTheory.integral_const_mul,
+              ← hI0_def, ← hI8_def]
+  have hGtail_int_eq : ∫ u, Gtail u = kT * I2 + kT * IM2 := by
+    calc ∫ u, Gtail u
+        = ∫ u, kT * (‖u‖ ^ 2 * Real.exp (-(c * ‖u‖ ^ 2))) +
+              kT * (‖u‖ ^ (M + 2) * Real.exp (-(c * ‖u‖ ^ 2))) :=
+          MeasureTheory.integral_congr_ae
+            (Filter.Eventually.of_forall hGtail_eq_pt)
+      _ = (∫ u, kT * (‖u‖ ^ 2 * Real.exp (-(c * ‖u‖ ^ 2)))) +
+          ∫ u, kT * (‖u‖ ^ (M + 2) * Real.exp (-(c * ‖u‖ ^ 2))) :=
+          MeasureTheory.integral_add hT2 hTM2
+      _ = kT * I2 + kT * IM2 := by
+          rw [MeasureTheory.integral_const_mul,
+              MeasureTheory.integral_const_mul,
+              ← hI2_def, ← hIM2_def]
+  -- Continuity of bulkErr · gW · exp(-s_t).
+  have h_φ_cont : Continuous φ := hφ.toObservableApprox.phi_continuous
+  have h_ψ_cont : Continuous ψ := hψ.toObservableApprox.phi_continuous
+  have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
+    continuous_const.smul continuous_id
+  have h_φ_smul : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
+    h_φ_cont.comp h_smul_cont
+  have h_ψ_smul : Continuous (fun u : ι → ℝ => ψ ((Real.sqrt t)⁻¹ • u)) :=
+    h_ψ_cont.comp h_smul_cont
+  have h_phiconn_cont : Continuous (fun u : ι → ℝ =>
+      expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u) := by
+    unfold expCovPhiConn
+    exact h_φ_smul.sub continuous_const
+  have h_dot_cont : Continuous (fun u : ι → ℝ => dot b u) := by
+    unfold dot
+    exact continuous_finset_sum _ (fun i _ =>
+      continuous_const.mul (continuous_apply i))
+  have h_psirem_cont : Continuous (fun u : ι → ℝ =>
+      expCovPsiRem ψ b t u) := by
+    unfold expCovPsiRem
+    exact h_ψ_smul.sub (continuous_const.mul h_dot_cont)
+  have h_quadφ_cont :
+      Continuous (fun u : ι → ℝ => quadForm hφ.A u) := continuous_quadForm hφ.A
+  have h_quadψ_cont :
+      Continuous (fun u : ι → ℝ => quadForm hψ.A u) := continuous_quadForm hψ.A
+  have h_diag_cont :
+      Continuous (fun u : ι → ℝ => (fun _ : Fin 3 => u)) := by
+    apply continuous_pi; intro _; exact continuous_id
+  have h_Φφ_cont :
+      Continuous (fun u : ι → ℝ => hφ.Φ (fun _ => u)) :=
+    hφ.Φ.cont.comp h_diag_cont
+  have h_Φψ_cont :
+      Continuous (fun u : ι → ℝ => hψ.Φ (fun _ => u)) :=
+    hψ.Φ.cont.comp h_diag_cont
+  have h_odd5_cont : Continuous (fun u : ι → ℝ =>
+      odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u) := by
+    unfold odd5Kernel
+    refine Continuous.add ?_ ?_
+    · exact ((continuous_const.mul h_quadφ_cont).sub continuous_const).mul
+        (continuous_const.mul h_Φψ_cont)
+    · exact (continuous_const.mul h_Φφ_cont).mul
+        (continuous_const.mul h_quadψ_cont)
+  have h_bulk_cont : Continuous (fun u : ι → ℝ =>
+      bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u) := by
+    unfold bulkErr
+    refine Continuous.sub (Continuous.sub ?_ ?_) ?_
+    · exact (continuous_const.mul h_phiconn_cont).mul h_psirem_cont
+    · exact ((continuous_const.mul h_quadφ_cont).sub continuous_const).mul
+        (continuous_const.mul h_quadψ_cont)
+    · exact continuous_const.mul h_odd5_cont
+  have h_int_cont : Continuous (fun u : ι → ℝ =>
+      bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    (h_bulk_cont.mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp
+        (continuous_rescaledPerturbation hV_cont H t).neg)
+  -- Integrability of bulkErr · gW · exp(-s_t) via dominated bound.
+  have h_main_int : Integrable (fun u : ι → ℝ =>
+      bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    refine hGsum_int.mono' h_int_cont.aestronglyMeasurable ?_
+    filter_upwards with u
+    rw [Real.norm_eq_abs]
+    exact hpt u
+  -- Final integral chain.
+  calc |∫ u : ι → ℝ, bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u
+            * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ ∫ u : ι → ℝ, |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u
+            * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))| := by
+        rw [show |∫ u, _| = ‖∫ u, _‖ from (Real.norm_eq_abs _).symm]
+        exact MeasureTheory.norm_integral_le_integral_norm _
+    _ ≤ ∫ u, Glocal u + Gtail u := by
+        apply MeasureTheory.integral_mono_ae h_main_int.norm hGsum_int
+        filter_upwards with u
+        rw [Real.norm_eq_abs]
+        exact hpt u
+    _ = (∫ u, Glocal u) + ∫ u, Gtail u :=
+        MeasureTheory.integral_add hGlocal_int hGtail_int
+    _ = (kL * I0 + kL * I8) + (kT * I2 + kT * IM2) := by
+        rw [hGlocal_int_eq, hGtail_int_eq]
+    _ = Kbound / t := by
+        rw [hKbound_def, hkL_def, hkT_def]
+        field_simp
 
 /-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
 two pieces of `pair_product_expansion` vanish, leaving only the cross
