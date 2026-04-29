@@ -2445,6 +2445,103 @@ private lemma abs_J4_bracket_local_le
         + 2 * hV.local_const ^ 2 * ‖u‖ ^ 6 *
             Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / t := by ring
 
+/-! ### J₃ uniform bracket bound (global, for tail case) -/
+
+/-- **Global uniform bound on `gW · J₃-bracket`**: for any `u`,
+
+`|gW(u) · ((exp(-s_t(u)) - 1 + C_t(u)) - (exp(-s_t(-u)) - 1 + C_t(-u)))|`
+  `≤ 2·gW(u) + 2·exp(-c·‖u‖²) + 2·gW(u) · ‖T‖/6 · ‖u‖³ / √t`.
+
+Direct from triangle inequality + applying `abs_gaussianWeight_mul_exp_sub_one_le_uniform`
+at `u` and `-u` for the exponential parts, plus the global cubic |C_t| bound for the
+cubic parts. The right-hand side has a `1/√t` factor which absorbs into `1/t²` via
+`1/√t ≤ ‖u‖/(δ·t)` when `‖u‖ > δ·√t`. -/
+private lemma abs_gW_J3_bracket_le_uniform
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialTensorApprox V H)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    |gaussianWeight H u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u)) ) - 1
+              + expPotCubic V H hV t (-u)))|
+      ≤ 2 * gaussianWeight H u + 2 * Real.exp (-(c * ‖u‖ ^ 2))
+        + 2 * gaussianWeight H u * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_norm_neg : ‖(-u : ι → ℝ)‖ = ‖u‖ := norm_neg _
+  have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+  have h_gW_neg_eq : gaussianWeight H (-u) = gaussianWeight H u := gaussianWeight_neg H u
+  -- Cubic |C_t| bound.
+  have h_C_bound : ∀ v : ι → ℝ,
+      |expPotCubic V H hV t v| ≤ ‖hV.T‖ / 6 * ‖v‖ ^ 3 / Real.sqrt t := by
+    intro v
+    unfold expPotCubic
+    have h_T_le : |hV.T (fun _ => v)| ≤ ‖hV.T‖ * ‖v‖ ^ 3 := by
+      have := hV.T.le_opNorm (fun _ : Fin 3 => v)
+      simpa [Fin.prod_univ_three] using this
+    have h_six_pos : (0 : ℝ) < 1 / 6 := by norm_num
+    have h_inv_sqrt_pos : (0 : ℝ) < (Real.sqrt t)⁻¹ := by positivity
+    rw [abs_mul, abs_of_pos h_inv_sqrt_pos]
+    rw [show (Real.sqrt t)⁻¹ = 1 / Real.sqrt t from by rw [one_div]]
+    rw [abs_mul, abs_of_pos h_six_pos]
+    calc 1 / Real.sqrt t * (1 / 6 * |hV.T (fun _ => v)|)
+        ≤ 1 / Real.sqrt t * (1 / 6 * (‖hV.T‖ * ‖v‖ ^ 3)) := by
+          apply mul_le_mul_of_nonneg_left _ (by positivity)
+          exact mul_le_mul_of_nonneg_left h_T_le h_six_pos.le
+      _ = ‖hV.T‖ / 6 * ‖v‖ ^ 3 / Real.sqrt t := by field_simp
+  have h_C_u : |expPotCubic V H hV t u|
+      ≤ ‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t := h_C_bound u
+  have h_C_neg_u : |expPotCubic V H hV t (-u)|
+      ≤ ‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t := by
+    have := h_C_bound (-u); rw [h_norm_neg] at this; exact this
+  -- Distribute: gW · bracket = (gW·(exp-1)_u) + (gW·C_t(u)) - (gW·(exp-1)_{-u}) - (gW·C_t(-u)).
+  have h_eq : gaussianWeight H u *
+      ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+          + expPotCubic V H hV t u)
+        - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+            + expPotCubic V H hV t (-u)))
+      = (gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t u)) - 1))
+        + (gaussianWeight H u * expPotCubic V H hV t u)
+        - (gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))
+        - (gaussianWeight H u * expPotCubic V H hV t (-u)) := by ring
+  rw [h_eq]
+  -- Triangle inequality.
+  have h_tri : ∀ a b c d : ℝ, |a + b - c - d| ≤ |a| + |b| + |c| + |d| := by
+    intro a b c d
+    calc |a + b - c - d| ≤ |a + b - c| + |d| := abs_sub _ _
+      _ ≤ |a + b| + |c| + |d| := by gcongr; exact abs_sub _ _
+      _ ≤ |a| + |b| + |c| + |d| := by gcongr; exact abs_add_le _ _
+  have h_uniform_u := abs_gaussianWeight_mul_exp_sub_one_le_uniform V H hc_pos h_coer ht u
+  have h_uniform_neg_u := abs_gaussianWeight_mul_exp_sub_one_le_uniform V H hc_pos h_coer ht (-u)
+  rw [h_norm_neg, h_gW_neg_eq] at h_uniform_neg_u
+  -- |gW · C_t(±u)| = gW · |C_t(±u)| ≤ gW · (‖T‖/6 · ‖u‖^3 / √t).
+  have h_gW_Cu : |gaussianWeight H u * expPotCubic V H hV t u|
+      ≤ gaussianWeight H u * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) := by
+    rw [abs_mul, abs_of_nonneg h_gW_nn]
+    exact mul_le_mul_of_nonneg_left h_C_u h_gW_nn
+  have h_gW_C_neg_u : |gaussianWeight H u * expPotCubic V H hV t (-u)|
+      ≤ gaussianWeight H u * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) := by
+    rw [abs_mul, abs_of_nonneg h_gW_nn]
+    exact mul_le_mul_of_nonneg_left h_C_neg_u h_gW_nn
+  -- Apply triangle.
+  calc |(gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t u)) - 1))
+          + (gaussianWeight H u * expPotCubic V H hV t u)
+          - (gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))
+          - (gaussianWeight H u * expPotCubic V H hV t (-u))|
+      ≤ |gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+        + |gaussianWeight H u * expPotCubic V H hV t u|
+        + |gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)|
+        + |gaussianWeight H u * expPotCubic V H hV t (-u)| := h_tri _ _ _ _
+    _ ≤ (gaussianWeight H u + Real.exp (-(c * ‖u‖ ^ 2)))
+        + gaussianWeight H u * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t)
+        + (gaussianWeight H u + Real.exp (-(c * ‖u‖ ^ 2)))
+        + gaussianWeight H u * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) :=
+        add_le_add (add_le_add (add_le_add h_uniform_u h_gW_Cu) h_uniform_neg_u) h_gW_C_neg_u
+    _ = 2 * gaussianWeight H u + 2 * Real.exp (-(c * ‖u‖ ^ 2))
+        + 2 * gaussianWeight H u * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) := by ring
+
 /-! ### J₃ bracket bound (the symmetrized perturbation residual)
 
 Locally on `‖u‖ ≤ δ·√t` with `δ` chosen as in `abs_J4_bracket_local_le`, the
