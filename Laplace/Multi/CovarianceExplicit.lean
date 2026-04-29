@@ -6487,6 +6487,105 @@ theorem gibbsExpectation_first_order_rate_explicit
         gcongr
     _ = K / t := h_zsim
 
+/-- **Corrected-bracket transformation for an even, Gaussian-centered kernel**
+(parity helper P1, transformation half).
+
+For an even kernel `F` (i.e. `F(-u) = F(u)`) with zero Gaussian mean
+(`∫ F · gW = 0`) and the integrability witnesses listed below,
+\[
+  \int F(u)\,gW(u)\,e^{-s_t(u)}\,du =
+    \int F(u)\,gW(u)\bigl(e^{-s_t(u)} - 1 + t\cdot c_V((\sqrt t)^{-1}{\cdot}u)\bigr)\,du,
+\]
+where `c_V` is the `cV` field of `PotentialJetApprox` (the cubic correction).
+
+This is the generic analogue of `integral_centered_bilinear_eq_corrected_bracket`
+in `CovarianceSharp.lean`. The proof is purely algebraic + parity:
+- the constant-1 piece vanishes by Gaussian-centering of `F`;
+- the `t · cV` piece vanishes by parity (`F` even, `cV(·)` odd, `gW` even).
+
+The remaining `∫ F · gW · (exp(-s_t) - 1 + t·cV)` is what the Stage 5 K/t bound
+actually controls via the corrected-bracket pointwise estimate
+(`abs_corrected_bracket_local_le`). -/
+private lemma integral_even_centered_eq_corrected_bracket
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (F : (ι → ℝ) → ℝ) (hF_even : ∀ u, F (-u) = F u)
+    (h_F_centered : ∫ u : ι → ℝ, F u * gaussianWeight H u = 0)
+    {t : ℝ} (ht_pos : 0 < t)
+    (h_int_F_gW : Integrable (fun u : ι → ℝ => F u * gaussianWeight H u))
+    (h_int_F_cV : Integrable (fun u : ι → ℝ =>
+      F u * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)))
+    (h_int_F_exp : Integrable (fun u : ι → ℝ =>
+      F u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :
+    ∫ u : ι → ℝ, F u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = ∫ u : ι → ℝ, F u * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+         t * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+  -- Pointwise: integrand_RHS = F·gW·exp(-s_t) - F·gW + t·F·gW·cV.
+  have h_pt : ∀ u : ι → ℝ,
+      F u * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+         t * hV.cV ((Real.sqrt t)⁻¹ • u))
+      = F u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+        - F u * gaussianWeight H u
+        + t * (F u * gaussianWeight H u *
+              hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+    intro u; ring
+  rw [show (fun u : ι → ℝ => F u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+             t * hV.cV ((Real.sqrt t)⁻¹ • u))) =
+        fun u => F u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            - F u * gaussianWeight H u
+            + t * (F u * gaussianWeight H u *
+                  hV.cV ((Real.sqrt t)⁻¹ • u)) from funext h_pt]
+  -- Integrability of `F · gW · exp(-s_t) - F · gW` (in single-lambda form).
+  have h_int_diff : Integrable (fun u : ι → ℝ =>
+      F u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+        - F u * gaussianWeight H u) := by
+    have := h_int_F_exp.sub h_int_F_gW
+    apply this.congr
+    filter_upwards with u
+    simp only [Pi.sub_apply]
+  -- Integrability of `t · (F · gW · cV)` (in single-lambda form).
+  have h_int_cV : Integrable (fun u : ι → ℝ =>
+      t * (F u * gaussianWeight H u *
+        hV.cV ((Real.sqrt t)⁻¹ • u))) := h_int_F_cV.const_mul t
+  rw [MeasureTheory.integral_add h_int_diff h_int_cV]
+  rw [MeasureTheory.integral_sub h_int_F_exp h_int_F_gW]
+  rw [h_F_centered]
+  -- ∫ t · F · gW · cV = 0 (parity: F even, cV odd, gW even).
+  have h_parity : ∫ u : ι → ℝ,
+        F u * gaussianWeight H u *
+          hV.cV ((Real.sqrt t)⁻¹ • u) = 0 := by
+    rw [show (fun u : ι → ℝ => F u * gaussianWeight H u *
+              hV.cV ((Real.sqrt t)⁻¹ • u))
+            = fun u => (F u * hV.cV ((Real.sqrt t)⁻¹ • u)) *
+              gaussianWeight H u from by funext u; ring]
+    apply integral_odd_mul_gaussian_eq_zero H
+      (fun u => F u * hV.cV ((Real.sqrt t)⁻¹ • u))
+    intro u
+    have h_smul : (Real.sqrt t)⁻¹ • (-u) = -((Real.sqrt t)⁻¹ • u) := by
+      simp [smul_neg]
+    rw [show F (-u) * hV.cV ((Real.sqrt t)⁻¹ • -u)
+          = F u * hV.cV (-((Real.sqrt t)⁻¹ • u)) from by
+        rw [hF_even, h_smul]]
+    rw [hV.cV_odd ((Real.sqrt t)⁻¹ • u)]
+    ring
+  -- Pull `t` out of the cV integral.
+  have h_cV_eq : ∫ u : ι → ℝ,
+        t * (F u * gaussianWeight H u *
+          hV.cV ((Real.sqrt t)⁻¹ • u))
+      = t * ∫ u : ι → ℝ, F u * gaussianWeight H u *
+          hV.cV ((Real.sqrt t)⁻¹ • u) := by
+    rw [MeasureTheory.integral_const_mul]
+  rw [h_cV_eq, h_parity]
+  ring
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
