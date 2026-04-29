@@ -2152,6 +2152,47 @@ private lemma abs_rescaledPerturbation_add_neg_le
         rw [show (t : ℝ) ^ 2 = t * t from sq t]
         field_simp
 
+/-! ### J₄ bracket × gW global uniform bound -/
+
+/-- **Global uniform bound on `gW · bracket`** for J₄: for any `u`,
+
+`|gW(u) · ((exp(-s_t(u)) - 1) + (exp(-s_t(-u)) - 1))| ≤ 2·gW(u) + 2·exp(-c·‖u‖²)`.
+
+Direct from triangle inequality + applying
+`abs_gaussianWeight_mul_exp_sub_one_le_uniform` at `u` and `-u`. The
+right-hand side is integrable in `u` (independent of t), so this gives
+the GLOBAL integrability dominator for J₄'s integrand. -/
+private lemma abs_gW_J4_bracket_le_uniform
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    |gaussianWeight H u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1)
+          + (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|
+      ≤ 2 * gaussianWeight H u + 2 * Real.exp (-(c * ‖u‖ ^ 2)) := by
+  -- Distribute: gW · bracket = gW · (exp(-s_t(u))-1) + gW · (exp(-s_t(-u))-1).
+  have h_eq : gaussianWeight H u *
+      ((Real.exp (-(rescaledPerturbation V H t u)) - 1)
+        + (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))
+      = gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+        + gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t (-u))) - 1) := by
+    ring
+  rw [h_eq]
+  have h_first := abs_gaussianWeight_mul_exp_sub_one_le_uniform V H hc_pos h_coer ht u
+  have h_second := abs_gaussianWeight_mul_exp_sub_one_le_uniform V H hc_pos h_coer ht (-u)
+  rw [show ‖(-u : ι → ℝ)‖ = ‖u‖ from norm_neg _,
+      gaussianWeight_neg] at h_second
+  calc |gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+        + gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)|
+      ≤ |gaussianWeight H u * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+        + |gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)| := abs_add_le _ _
+    _ ≤ (gaussianWeight H u + Real.exp (-(c * ‖u‖ ^ 2)))
+        + (gaussianWeight H u + Real.exp (-(c * ‖u‖ ^ 2))) := by
+        gcongr
+    _ = 2 * gaussianWeight H u + 2 * Real.exp (-(c * ‖u‖ ^ 2)) := by ring
+
 /-! ### J₄ centered-quadratic-jet pointwise bound -/
 
 /-- **Pointwise bound on `B_t(u) := Q_t(u) - μ/t`** (for J₄ rate). For `t > 0`,
