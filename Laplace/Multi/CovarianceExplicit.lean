@@ -9153,20 +9153,28 @@ private theorem rescaledIntegral_rr_connected_asymptotic
   --  14. `abs_integral_bounded_poly_mul_rescaled_weight_le`: generic
   --      polynomial-bounded integral helper for Steps 4-9 (~100 LOC).
   --  15. `abs_integral_cubic_cubic_le`: Step 4 / piece 4 = (1/t) · C·C bound (~80 LOC).
+  --  16. `odd5Kernel`, `odd5Kernel_odd`, `abs_odd5Kernel_le`: bundles Steps 2+3
+  --      (the two odd cross-terms `Q^c·C` and `C·Q`) into one degree-5 odd kernel
+  --      with parity + uniform polynomial bound `M·(‖u‖^3+‖u‖^5)` (~180 LOC).
   --
-  -- Remaining 7 step bounds (Steps 3, 5-9, 2 from GPT plan: ~600-1000 LOC):
-  -- After Steps 1-4 closed, the remaining pieces in the 9-piece decomposition
-  -- (recall: 1=Q^cQ leading [done], 2=(1/√t)Q^c·C [odd], 3=(1/√t)C·Q [odd],
-  -- 4=(1/t)C·C [done], 5=t·Q^c·R, 6=t·R·Q, 7=√t·C·R, 8=√t·R·C, 9=t²·R·R):
-  --   • Steps 2/3 (odd kernels): need K/√t bound by parity + Stage 1 Taylor.
-  --     Pattern from `rescaledPartition_eq_gaussianZ_add_O_inv_sqrt`
-  --     (`Multi/Covariance.lean:208`). ~250-300 LOC each.
-  --   • Steps 5-8 (poly·R): use `Φ_jet_bound` for local |R| ≤ jet·‖u‖^4/t² +
-  --     polynomial growth for tail. Local + tail decomposition ~150-200 LOC each.
-  --   • Step 9 (R·R): via existing `abs_integral_remainder_remainder_sharp_le`.
-  --   • Final assembly: pointwise expand `t² · φ_conn · ψ_rem`, sum 9 pieces by
-  --     triangle, conclude. ~100-150 LOC.
-  -- Total remaining ~1000 LOC. Hardest are odd-kernel steps 2/3.
+  -- 2026-04-29 v4 (GPT consult #3, see `gpt_responses/strategy_stage5_lemmaB_close.md`):
+  -- The B/C-hybrid recommendation is to bundle the 9 pieces into 3 groups:
+  --   (A) Piece 1 (leading Q^c·Q): use `rescaledIntegral_QcQ_transport` (DONE).
+  --   (B) Pieces 2+3 (odd cross): one helper for `(1/√t) · odd5Kernel` integral,
+  --       proving K/t directly via parity + Stage 1 Taylor + corrected bracket
+  --       (~80-150 LOC).
+  --   (C) Pieces 4-9 (bulk error): one helper for `bulkErr := t² φ_conn · ψ_rem
+  --       - Q^c_φ·Q_ψ - (1/√t) odd5Kernel`, with local/tail split:
+  --         • Local (‖u‖ ≤ R√t): Taylor expand to get pointwise
+  --           `|bulkErr| ≤ K/t · (1 + ‖u‖^8)`.
+  --         • Tail (‖u‖ > R√t): use exact definition + polynomial growth + tail
+  --           relation `R√t ≤ ‖u‖`, get `|bulkErr| ≤ K · (1 + ‖u‖^M)` and combine
+  --           with Gaussian + indicator.
+  --       (~150-250 LOC).
+  -- Total remaining: ~250-450 LOC for closure (per GPT — much less than the
+  -- 9-piece estimate of ~1000 LOC).
+  --
+  -- Final assembly: 3-term triangle inequality over (A) + (B) + (C). ~50 LOC.
   sorry
 
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
