@@ -2913,6 +2913,73 @@ private noncomputable def expNumErr₄
       * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
       * gaussianWeight H u
 
+/-- **J₄ symmetrization**: by `u ↦ -u` substitution (preserves `Q_t`, `gW`),
+
+`2 · J₄ = ∫ (Q_t(u) - μ/t) · [(e^{-s_t(u)} - 1) + (e^{-s_t(-u)} - 1)] · gW(u) du`.
+
+The bracket is `2 · (even part of e^{-s_t(u)} - 1)`, with sharper local
+decay (`O(‖u‖^4/t)` from `s_t(u) + s_t(-u) = O(‖u‖^4/t)`, since the cubic
+piece in `s_t` cancels) — this is what makes J₄'s rate `O(t⁻²)` rather
+than `O(t⁻³ᐟ²)`. -/
+private lemma expNumErr₄_symmetric
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    2 * expNumErr₄ V φ a H Hinv hV hφ t
+      = ∫ u : ι → ℝ,
+          (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+              (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)) *
+            gaussianWeight H u := by
+  unfold expNumErr₄
+  -- Step 1: ∫ f(u) du = ∫ f(-u) du (substitution), then use parity.
+  have h_neg :
+      (∫ u : ι → ℝ,
+          (expNumQuad φ a hφ t u -
+              expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1) *
+            gaussianWeight H u)
+      = (∫ u : ι → ℝ,
+            (expNumQuad φ a hφ t u -
+              expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+            (Real.exp (-(rescaledPerturbation V H t (-u))) - 1) *
+            gaussianWeight H u) := by
+    have h_sub :=
+      integral_pi_comp_neg
+        (fun u : ι → ℝ =>
+          (expNumQuad φ a hφ t u -
+              expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1) *
+            gaussianWeight H u)
+    rw [← h_sub]
+    apply MeasureTheory.integral_congr_ae
+    filter_upwards with u
+    rw [expNumQuad_neg, gaussianWeight_neg]
+  -- Step 2: 2·J₄ = J₄ + J₄_neg = ∫ (f + f_neg).
+  have h_int_orig := integrable_J4_integrand V φ H Hinv a hV hφ ht
+  have h_int_neg := integrable_J4_integrand_neg V φ H Hinv a hV hφ ht
+  have h_two_mul : (2 : ℝ) * (∫ u : ι → ℝ,
+        (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t)
+          * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+          * gaussianWeight H u)
+      = (∫ u : ι → ℝ,
+          (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t)
+            * (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+            * gaussianWeight H u)
+        + (∫ u : ι → ℝ,
+          (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t)
+            * (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)
+            * gaussianWeight H u) := by
+    rw [← h_neg]; ring
+  rw [h_two_mul, ← MeasureTheory.integral_add h_int_orig h_int_neg]
+  apply MeasureTheory.integral_congr_ae
+  filter_upwards with u
+  ring
+
 /-! ### Decomposition + 4 bounds -/
 
 /-- **Gaussian background identity** (Wick algebra step in the decomposition):
