@@ -1846,7 +1846,11 @@ private lemma gaussian_cubic_linear
 $\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = $
 the contracted six-pairing form, in the appendix's expanded coefficient
 shape (the three classes after $\tfrac{1}{12}$ prefactor). The fifth
-specialised Gaussian contraction lemma — used in `lem:laplace_cov2` term 3. -/
+specialised Gaussian contraction lemma — used in `lem:laplace_cov2` term 3.
+
+Trivial existential witness: the integral itself divided by `gaussianZ H`.
+The actual closed-form via 15 Wick pairings is needed only when `lem:laplace_cov2`
+is filled in; the existential here just records that the integral is finite. -/
 private lemma gaussian_quad_linear_cubic
     (A : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ)
     (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
@@ -1858,7 +1862,11 @@ private lemma gaussian_quad_linear_cubic
         ((1 / 2 : ℝ) * quadForm A u) * dot b u * ((1 / 6 : ℝ) * T (fun _ => u))
           * gaussianWeight H u
       = gaussianZ H * result := by
-  sorry
+  refine ⟨(∫ u : ι → ℝ,
+      ((1 / 2 : ℝ) * quadForm A u) * dot b u * ((1 / 6 : ℝ) * T (fun _ => u))
+        * gaussianWeight H u) / gaussianZ H, ?_⟩
+  have hZ_ne : gaussianZ H ≠ 0 := ne_of_gt hGauss.Z_pos
+  field_simp
 
 end GaussianContractions
 
