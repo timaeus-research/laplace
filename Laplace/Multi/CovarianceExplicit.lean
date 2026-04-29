@@ -9579,6 +9579,47 @@ private lemma abs_bulkErr_local_le
   linarith [h_pieces_abs, h_total, h_K1_bound, h_K2_bound, h_K3_bound,
             h_K4_bound, h_K5_bound, h_K6_bound, h_K_sum]
 
+/-- **Tail pointwise bound on `bulkErr`** (Lemma B Steps 4-9 closure, tail region).
+
+On the tail set `‖u‖ > R · √t` with `R := min hφ.jet_radius hψ.jet_radius`,
+and for `t ≥ 1`,
+`|bulkErr| ≤ K_tail · (1 + ‖u‖^M)` for some constants `K_tail, M` independent of `t`.
+
+**Proof outline (per GPT consult #3)**: bound bulkErr by the triangle inequality
+on its definition, using:
+- `|t² · expCovPhiConn · expCovPsiRem| ≤ t² · |expCovPhiConn| · |expCovPsiRem|`,
+  with `t² ≤ ‖u‖^4 / R^4` on tail, and polynomial growth of `φ`, `ψ`.
+- `|q_c · Q_ψ|`: polynomial in u, no t dependence.
+- `|(1/√t) · odd5K| ≤ |odd5K|` (since `1/√t ≤ 1` for `t ≥ 1`).
+
+**Strategy details**:
+- Extract `K_φ, p_φ` from `hφ.poly_growth` and `K_ψ, p_ψ` from `hψ.poly_growth`.
+- For `t ≥ 1`, `√t ≥ 1`, so `‖(√t)⁻¹•u‖ = ‖u‖/√t ≤ ‖u‖`.
+  Hence `|φ((√t)⁻¹•u)| ≤ K_φ · (1 + ‖u‖^p_φ)` and similarly for `ψ`.
+- `|expCovPhiConn| ≤ (K_φ + |μ_φ|)·(1+‖u‖^p_φ)` (using `1/t ≤ 1`).
+- `|expCovPsiRem| ≤ (K_ψ + ‖b‖)·(1 + ‖u‖^p_ψ + ‖u‖)` (using `1/√t ≤ 1`).
+- `t² ≤ ‖u‖^4/R^4` on tail.
+- Combined: `|t² · φ_conn · ψ_rem| ≤ K_P1 · ‖u‖^4 · (1+‖u‖^p_φ) · (1+‖u‖^p_ψ+‖u‖)`.
+- After expansion, max degree is `4 + p_φ + p_ψ + 1`, so `M := max (p_φ + p_ψ + 6) 5`
+  works (since `5 ≥ 5` for the odd5K piece).
+
+The proof is conceptually straightforward but requires substantial bookkeeping
+(~400-500 LOC) to discharge the polynomial bounds termwise. The local bound
+`abs_bulkErr_local_le` already discharges the harder piece via the abstract
+identity `bulk_algebraic_identity_aux`. -/
+private lemma abs_bulkErr_tail_le
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (hψ : ObservableTensorApprox ψ b)
+    [Nonempty ι] :
+    ∃ K_tail : ℝ, ∃ M : ℕ, 0 ≤ K_tail ∧ ∀ t : ℝ, 1 ≤ t →
+      ∀ u : ι → ℝ,
+        min hφ.jet_radius hψ.jet_radius * Real.sqrt t < ‖u‖ →
+        |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u|
+          ≤ K_tail * (1 + ‖u‖ ^ M) := by
+  sorry
+
 /-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
 two pieces of `pair_product_expansion` vanish, leaving only the cross
 term `(√t)⁻¹·(b·u)·φ((√t)⁻¹u)` and the rem-rem term
