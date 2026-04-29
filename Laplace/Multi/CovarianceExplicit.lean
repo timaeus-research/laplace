@@ -6314,6 +6314,173 @@ theorem gibbsExpectation_first_order_rate_explicit
         gcongr
     _ = K / t := h_zsim
 
+/-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
+two pieces of `pair_product_expansion` vanish, leaving only the cross
+term `(√t)⁻¹·(b·u)·φ((√t)⁻¹u)` and the rem-rem term
+`φ((√t)⁻¹u)·(ψ((√t)⁻¹u) - (√t)⁻¹·b·u)`. -/
+private lemma pair_product_expansion_a_zero
+    (φ ψ : (ι → ℝ) → ℝ) (b : ι → ℝ) (t : ℝ) (ht : 0 < t) (u : ι → ℝ) :
+    φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)
+      = (Real.sqrt t)⁻¹ * dot b u * φ ((Real.sqrt t)⁻¹ • u)
+        + φ ((Real.sqrt t)⁻¹ • u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) := by
+  have h_pp := pair_product_expansion φ ψ (0 : ι → ℝ) b t ht u
+  -- pair_product_expansion: φψ = (1/t)·dot 0 u·dot b u
+  --   + (√t)⁻¹·dot 0 u·(ψ - (√t)⁻¹·dot b u)
+  --   + (√t)⁻¹·dot b u·(φ - (√t)⁻¹·dot 0 u)
+  --   + (φ - (√t)⁻¹·dot 0 u)(ψ - (√t)⁻¹·dot b u)
+  -- with `dot 0 u = 0`, the first two pieces vanish and `φ - 0 = φ`.
+  have h_dot0 : dot (0 : ι → ℝ) u = 0 := by
+    unfold dot
+    apply Finset.sum_eq_zero
+    intros i _
+    simp [Pi.zero_apply]
+  rw [h_pp, h_dot0]
+  ring
+
+/-- **Integrated pair-product decomposition when `a = 0`**: integrating the
+pointwise identity `pair_product_expansion_a_zero` against `gW · exp(-s_t)`
+gives
+\[
+  t^2 \cdot N_t(\phi\psi)
+    = t \sqrt{t} \cdot I_{\text{cross}} + t^2 \cdot I_{\text{rem-rem}}
+\]
+where
+\[
+  I_{\text{cross}} := \int (b\!\cdot\!u)\,\phi((\sqrt t)^{-1} u)\,gW\,e^{-s_t}\,du,
+\]
+\[
+  I_{\text{rem-rem}} := \int \phi((\sqrt t)^{-1} u)\,
+        (\psi((\sqrt t)^{-1} u) - (\sqrt t)^{-1} (b\!\cdot\!u))\,gW\,e^{-s_t}\,du.
+\]
+
+Reuses the sharp-track integrability lemmas
+`integrable_dot_mul_remainder_mul_rescaled_weight` (with `a = 0`) and
+`integrable_remainder_mul_remainder_mul_rescaled_weight`. -/
+private lemma rescaledNumerator_pair_decompose_a_zero
+    (V φ ψ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hφ : ObservableJetApprox φ (0 : ι → ℝ))
+    (hψ : ObservableJetApprox ψ b)
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    {t : ℝ} (ht1 : 1 ≤ t) :
+    t ^ 2 * rescaledNumerator V t (fun w => φ w * ψ w)
+      = t * Real.sqrt t *
+          (∫ u : ι → ℝ, dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        + t ^ 2 *
+          (∫ u : ι → ℝ, φ ((Real.sqrt t)⁻¹ • u) *
+              (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have h_sqrt_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht_pos.le
+  -- Pointwise identity: t² · pair = t·√t · cross + t² · rem-rem.
+  have h_pt : ∀ u : ι → ℝ,
+      t ^ 2 * (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = t * Real.sqrt t *
+          (dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        + t ^ 2 *
+          (φ ((Real.sqrt t)⁻¹ • u) *
+              (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by
+    intro u
+    have h_pp := pair_product_expansion_a_zero φ ψ b t ht_pos u
+    -- Need: t² · pair · gW · e = t·√t · (b·u·φ + ...) · gW · e + ...
+    -- From h_pp: pair = (√t)⁻¹·(b·u)·φ + φ·rψ.
+    -- Multiplying by t² · gW · e:
+    -- LHS = t² · ((√t)⁻¹·(b·u)·φ + φ·rψ) · gW · e
+    --     = t²·(√t)⁻¹·(b·u)·φ·gW·e + t²·φ·rψ·gW·e
+    -- We need: t·√t · ((b·u)·φ·gW·e) = t²·(√t)⁻¹·(b·u)·φ·gW·e
+    -- Since t·√t·(√t) = t·t = t² ⇒ t·√t = t²·(√t)⁻¹. ✓
+    have h_t_sqrt_eq : t * Real.sqrt t = t ^ 2 * (Real.sqrt t)⁻¹ := by
+      have hne : Real.sqrt t ≠ 0 := hsqrt_pos.ne'
+      field_simp
+      exact Real.sq_sqrt ht_pos.le
+    rw [h_pp]; rw [h_t_sqrt_eq]; ring
+  -- Apply h_pt as integrand congruence and split.
+  rw [rescaledNumerator_eq_gaussian_form V (fun w => φ w * ψ w) H t]
+  -- Goal: t² · (∫ (φψ)((√t)⁻¹u) · gW · e) = ...
+  rw [show (fun u : ι → ℝ => (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            = fun u => φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u) *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)) from rfl]
+  rw [← MeasureTheory.integral_const_mul]
+  -- Pointwise integrand identity.
+  have h_integrand_eq :
+      (fun u : ι → ℝ => t ^ 2 *
+          (φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))))
+      = fun u : ι → ℝ =>
+          t * Real.sqrt t *
+              (dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+                  gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u)))
+            + t ^ 2 *
+              (φ ((Real.sqrt t)⁻¹ • u) *
+                  (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+                  gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u))) := by
+    funext u
+    have hu := h_pt u
+    -- hu : t²·(φψ)·gW·e = (t·√t)·(b·u·φ·gW·e) + t²·(φ·rψ·gW·e)
+    -- Goal LHS has the (φψ) inside ‹...›; just rearrange.
+    linarith [hu]
+  rw [h_integrand_eq]
+  -- Split ∫ (a + b) = ∫ a + ∫ b.
+  have h_cross_int : Integrable (fun u : ι → ℝ =>
+      dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    -- Reuse sharp-track helper with `dotCoef = b`, `phiGrad = 0`.
+    -- It gives `dot b u · (φ((√t)⁻¹u) - (√t)⁻¹·dot 0 u) · gW · e` integrable.
+    have h := integrable_dot_mul_remainder_mul_rescaled_weight V φ H Hinv b
+        (0 : ι → ℝ) hV.toPotentialApprox hφ.toObservableApprox hGauss ht1
+    apply h.congr
+    filter_upwards with u
+    have h_dot0 : dot (0 : ι → ℝ) u = 0 := by
+      unfold dot; apply Finset.sum_eq_zero; intros i _; simp [Pi.zero_apply]
+    rw [h_dot0]; ring
+  have h_remrem_int : Integrable (fun u : ι → ℝ =>
+      φ ((Real.sqrt t)⁻¹ • u) *
+        (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h := integrable_remainder_mul_remainder_mul_rescaled_weight V φ ψ H Hinv
+        (0 : ι → ℝ) b hV.toPotentialApprox hφ.toObservableApprox hψ.toObservableApprox
+        hGauss ht1
+    apply h.congr
+    filter_upwards with u
+    have h_dot0 : dot (0 : ι → ℝ) u = 0 := by
+      unfold dot; apply Finset.sum_eq_zero; intros i _; simp [Pi.zero_apply]
+    rw [h_dot0]; ring
+  have h_cross_smul : Integrable (fun u : ι → ℝ =>
+      t * Real.sqrt t *
+        (dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) := h_cross_int.const_mul _
+  have h_remrem_smul : Integrable (fun u : ι → ℝ =>
+      t ^ 2 *
+        (φ ((Real.sqrt t)⁻¹ • u) *
+            (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) := h_remrem_int.const_mul _
+  rw [MeasureTheory.integral_add h_cross_smul h_remrem_smul,
+      MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
+
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
 when $\nabla\phi(0) = 0$, the rescaled pair numerator $N_t(\phi\psi)$ has
 $t^{-2}$ coefficient `cov2Coefficient_full · D_t / t² + O(D_t / t^3)`, i.e.
