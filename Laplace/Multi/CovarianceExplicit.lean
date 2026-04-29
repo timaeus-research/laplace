@@ -214,6 +214,20 @@ lemma integral_cmm_diag_mul_gaussianWeight_eq_zero
   intro u
   exact cmm_diag_odd T u
 
+/-- **Even kernel · trilinear diagonal · Gaussian vanishes**: for any continuous
+trilinear `T` and any function `F` with `F(-u) = F(u)` (even),
+`∫ F(u) · T(u, u, u) · gW = 0`. The integrand is (even)·(odd)·(even) = odd.
+Used in parity helpers P1, P2 for the centered-pair Stage 5 lemmas. -/
+lemma integral_even_mul_cmm_diag_mul_gaussianWeight_eq_zero
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (F : (ι → ℝ) → ℝ) (hF_even : ∀ u, F (-u) = F u)
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) :
+    ∫ u : ι → ℝ, F u * T (fun _ => u) * gaussianWeight H u = 0 := by
+  apply integral_odd_mul_gaussian_eq_zero
+  intro u
+  rw [hF_even u, cmm_diag_odd T u]
+  ring
+
 /-- Coordinate-form tensor: `Tcoord T i j k := T(e_i, e_j, e_k)` for the
 standard basis. The fundamental object for index-based reasoning about T. -/
 noncomputable def Tcoord
