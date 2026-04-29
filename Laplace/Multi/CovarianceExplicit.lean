@@ -2152,6 +2152,68 @@ private lemma abs_rescaledPerturbation_add_neg_le
         rw [show (t : ℝ) ^ 2 = t * t from sq t]
         field_simp
 
+/-! ### J₄ centered-quadratic-jet pointwise bound -/
+
+/-- **Pointwise bound on `B_t(u) := Q_t(u) - μ/t`** (for J₄ rate). For `t > 0`,
+
+`|expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t|`
+  `≤ (|ι|·‖A‖/(2·t)) · ‖u‖² + |μ|/t`.
+
+Combines the cardinality-factor bound on `|quadForm A u|` with constant μ. -/
+private lemma abs_expNumQuad_sub_coeff_le
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    |expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t|
+      ≤ (Fintype.card ι * ‖hφ.A‖ / (2 * t)) * ‖u‖ ^ 2
+        + |expNumeratorCoeff V φ H Hinv a hV hφ| / t := by
+  have h_qf_le : |quadForm hφ.A u| ≤ Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    show |∑ i, u i * (hφ.A u) i| ≤ Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2
+    have h_each : ∀ i, |u i * (hφ.A u) i| ≤ ‖u‖ * ‖hφ.A u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (hφ.A u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (hφ.A u) i| ≤ ∑ i, |u i * (hφ.A u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (hφ.A u) i|
+        ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
+      calc ∑ i, |u i * (hφ.A u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖hφ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]; ring
+    have h_Au : ‖hφ.A u‖ ≤ ‖hφ.A‖ * ‖u‖ := hφ.A.le_opNorm u
+    calc |∑ i, u i * (hφ.A u) i|
+        ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ Fintype.card ι * (‖u‖ * (‖hφ.A‖ * ‖u‖)) := by
+          apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
+          apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+      _ = Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2 := by ring
+  have h_quad : |expNumQuad φ a hφ t u|
+      ≤ (Fintype.card ι * ‖hφ.A‖ / (2 * t)) * ‖u‖ ^ 2 := by
+    unfold expNumQuad
+    rw [show (1 / t : ℝ) * ((1/2 : ℝ) * quadForm hφ.A u)
+          = (1 / (2 * t)) * quadForm hφ.A u from by
+        field_simp,
+        abs_mul, abs_of_pos (by positivity : (0:ℝ) < 1 / (2 * t))]
+    calc 1 / (2 * t) * |quadForm hφ.A u|
+        ≤ 1 / (2 * t) * (Fintype.card ι * ‖hφ.A‖ * ‖u‖ ^ 2) := by gcongr
+      _ = (Fintype.card ι * ‖hφ.A‖ / (2 * t)) * ‖u‖ ^ 2 := by ring
+  calc |expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t|
+      ≤ |expNumQuad φ a hφ t u| +
+          |expNumeratorCoeff V φ H Hinv a hV hφ / t| := by
+        have := abs_sub (expNumQuad φ a hφ t u)
+          (expNumeratorCoeff V φ H Hinv a hV hφ / t)
+        linarith
+    _ ≤ (Fintype.card ι * ‖hφ.A‖ / (2 * t)) * ‖u‖ ^ 2 +
+          |expNumeratorCoeff V φ H Hinv a hV hφ / t| := by
+        gcongr
+    _ = (Fintype.card ι * ‖hφ.A‖ / (2 * t)) * ‖u‖ ^ 2
+        + |expNumeratorCoeff V φ H Hinv a hV hφ| / t := by
+        rw [abs_div, abs_of_pos ht]
+
 /-! ### J₄ bracket bound (the symmetrized perturbation residual) -/
 
 /-- **J₄ bracket bound** (locally `‖u‖ ≤ δ·√t` with `δ ≤ jet_radius`,
