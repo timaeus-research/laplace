@@ -8962,21 +8962,30 @@ private theorem rescaledIntegral_rr_connected_asymptotic
   --  10. `integrable_fqqKernel_mul_gaussianWeight`: `Integrable (FQQ · gW)`.
   --  11. `integrable_fqqKernel_mul_gaussianWeight_mul_cV`:
   --      `Integrable (FQQ · gW · cV((√t)⁻¹•u))`.
-  -- All prerequisites for the K/t bound are in place. Remaining (~300-400 LOC):
-  -- the integral assembly itself, with structure parallel to
-  -- `abs_integral_corrected_bracket_centered_bilinear_le`
-  -- (`Multi/CovarianceSharp.lean:2020-2760`):
-  --   • Setup constants, define Glocal/Gtail (~150 LOC).
-  --   • Pointwise: `|F·gW·bracket| ≤ Glocal + Gtail` via case split — uses
-  --     items 6 + 7 above (~50 LOC).
-  --   • Integrability of Glocal/Gtail — uses
-  --     `integrable_norm_pow_mul_exp_neg_const_sq` at degrees 4,6,8,10 (Glocal)
-  --     and 2,5,6,9 (Gtail).
-  --   • Final integral chain: `|∫| ≤ ∫|·| ≤ ∫(Glocal+Gtail) = (K_loc+K_tail)/t`.
-  --   • Bookkeeping note: an earlier draft hit Pi.add unfolding gotchas
-  --     (CLAUDE.md mentions this); use intermediate `have` lambda witnesses to
-  --     keep `MeasureTheory.integral_add` rewriting clean.
-  -- After K/t bound: transport corollary (~50 LOC) closes Step 2.
+  --
+  -- 2026-04-29 v3 update: K/t bound + transport corollary now landed:
+  --  12. `abs_integral_corrected_bracket_FQQ_le`:
+  --      `|∫ FQQ · gW · (corrected bracket)| ≤ K/t` (~570 LOC).
+  --  13. `rescaledIntegral_QcQ_transport`:
+  --      `|∫ Q^c_A · Q_B · gW · exp(-s_t) - c_QQ · D_t| ≤ K/t` (~80 LOC).
+  --      This is GPT plan **item 10**; closes Lemma B Step 2 (the leading term).
+  --  14. `abs_integral_bounded_poly_mul_rescaled_weight_le`: generic
+  --      polynomial-bounded integral helper for Steps 4-9 (~100 LOC).
+  --  15. `abs_integral_cubic_cubic_le`: Step 4 / piece 4 = (1/t) · C·C bound (~80 LOC).
+  --
+  -- Remaining 7 step bounds (Steps 3, 5-9, 2 from GPT plan: ~600-1000 LOC):
+  -- After Steps 1-4 closed, the remaining pieces in the 9-piece decomposition
+  -- (recall: 1=Q^cQ leading [done], 2=(1/√t)Q^c·C [odd], 3=(1/√t)C·Q [odd],
+  -- 4=(1/t)C·C [done], 5=t·Q^c·R, 6=t·R·Q, 7=√t·C·R, 8=√t·R·C, 9=t²·R·R):
+  --   • Steps 2/3 (odd kernels): need K/√t bound by parity + Stage 1 Taylor.
+  --     Pattern from `rescaledPartition_eq_gaussianZ_add_O_inv_sqrt`
+  --     (`Multi/Covariance.lean:208`). ~250-300 LOC each.
+  --   • Steps 5-8 (poly·R): use `Φ_jet_bound` for local |R| ≤ jet·‖u‖^4/t² +
+  --     polynomial growth for tail. Local + tail decomposition ~150-200 LOC each.
+  --   • Step 9 (R·R): via existing `abs_integral_remainder_remainder_sharp_le`.
+  --   • Final assembly: pointwise expand `t² · φ_conn · ψ_rem`, sum 9 pieces by
+  --     triangle, conclude. ~100-150 LOC.
+  -- Total remaining ~1000 LOC. Hardest are odd-kernel steps 2/3.
   sorry
 
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
