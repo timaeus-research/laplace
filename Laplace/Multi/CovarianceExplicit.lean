@@ -2152,6 +2152,24 @@ private lemma abs_rescaledPerturbation_add_neg_le
         rw [show (t : ℝ) ^ 2 = t * t from sq t]
         field_simp
 
+/-! ### Gaussian weight Gaussian-quadratic upper bound (for J₄ pointwise) -/
+
+/-- **`gW(u) ≤ exp(-(c/2)·‖u‖²)`** under V-coercivity + V-quadratic-remainder.
+Direct corollary of `quadForm_lower_bound`. -/
+private lemma gaussianWeight_le_exp_neg_coercive
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialTensorApprox V H) (u : ι → ℝ) :
+    gaussianWeight H u
+      ≤ Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) := by
+  have hc_pos : 0 < hV.coercive_const := hV.coercive_const_pos
+  have h_coer : ∀ w : ι → ℝ, hV.coercive_const * ‖w‖ ^ 2 ≤ V w := hV.coercive_bound
+  have hR_pos : 0 < hV.local_radius := hV.local_radius_pos
+  have hCs_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
+  have h_qlb := quadForm_lower_bound V H hc_pos h_coer hR_pos hCs_nn hV.local_bound u
+  unfold gaussianWeight
+  apply Real.exp_le_exp.mpr
+  linarith
+
 /-! ### J₄ bracket × gW global uniform bound -/
 
 /-- **Global uniform bound on `gW · bracket`** for J₄: for any `u`,
