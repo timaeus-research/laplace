@@ -5016,36 +5016,261 @@ private lemma expNumErr₂_bound
         + ‖hφ.Φ‖ / 3 * M_tail / t ^ 2 := by linarith [h_tail_bound]
     _ = K / t ^ 2 := by rw [hK_def]; ring
 
+set_option maxHeartbeats 3200000 in
+/-- **Pointwise local bound for J₃ integrand.** -/
+private lemma J3_local_pointwise_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    (hδ_le_R : δ ≤ hV.local_radius)
+    (hδ_le_jet_R : δ ≤ hV.jet_radius)
+    (hδ_const : hV.local_const * δ ≤ hV.coercive_const / 4)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ δ * Real.sqrt t) :
+    |expNumLin a t u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+        gaussianWeight H u|
+      ≤ ((∑ i, |a i|) * (hV.Q_const + 2 * hV.jet_const * hV.local_const +
+            hV.local_const ^ 3) / t ^ 2) *
+          (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+  sorry
+
+set_option maxHeartbeats 3200000 in
+/-- **Pointwise tail bound for J₃ integrand.** -/
+private lemma J3_tail_pointwise_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    {c : ℝ} (hc_pos : 0 < c) (hc_eq : c = hV.coercive_const)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : δ * Real.sqrt t < ‖u‖) :
+    |expNumLin a t u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+        gaussianWeight H u|
+      ≤ ((∑ i, |a i|) * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) / t ^ 2) *
+          (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+  sorry
+
 /-- **J₃ bound**: linear observable jet × `(e^{-s_t} - 1 + C_t)` is `O(t⁻²)`.
 
-Uses the `u ↦ -u` parity symmetrization:
-`J₃ = (1/2) ∫ L_t(u) · [R(u) - R(-u)] · gW(u) du` where
-`R(u) = e^{-s_t(u)} - 1 + C_t(u)`. The odd part `R(u) - R(-u)` is `O(t⁻³ᐟ²)`
-because the leading `√t⁻¹·C_t` part is odd and cancels. -/
+Hypothesis: `PotentialQuinticApprox` (provides quintic remainder bound on V).
+Combines `J3_local_pointwise_le` and `J3_tail_pointwise_le` by case-split,
+then applies `norm_integral_le_of_norm_le` for the integral bound. -/
 private lemma expNumErr₃_bound
     (V : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a : ι → ℝ)
     [Nonempty ι]
-    (hV : PotentialTensorApprox V H)
+    (hV : PotentialQuinticApprox V H)
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
-      |expNumErr₃ V H hV a t| ≤ K / t ^ 2 := by
-  -- Per `gpt_responses/tactics_j3_j4_parity.md`, this requires a QUINTIC
-  -- Taylor remainder bound on V (sharper than the current `T_jet_bound`
-  -- quartic). Specifically, the symmetrization gives
-  --   J₃ = (1/2) ∫ L_t(u) · [R(u) - R(-u)] · gW(u) du
-  -- where R(u) = exp(-s_t(u)) - 1 + C_t(u). After Taylor expansion, the
-  -- bracket reduces to bounding `s_t(u) - s_t(-u) - 2·C_t(u)`, which is
-  -- `t·((V(w) - V(-w)) - (1/3)·T(w,w,w))` for `w = (√t)⁻¹·u`. The current
-  -- `T_jet_bound` only gives `O(‖w‖^4)` for this, but parity-symmetrized
-  -- subtracts the quartic EVEN remainder cleanly only if we have a SHARPER
-  -- quintic bound `|V(w) - (... + (1/24)·V_4(w,...,w))| ≤ C·‖w‖^5`.
-  --
-  -- This requires extending `PotentialTensorApprox` with a quintic remainder
-  -- field, OR proving the sharper bound from existing data + extra smoothness.
-  -- Deferred pending hypothesis-package strengthening.
-  sorry
+      |expNumErr₃ V H hV.toPotentialTensorApprox a t| ≤ K / t ^ 2 := by
+  -- Setup constants.
+  have hc_pos : 0 < hV.coercive_const := hV.coercive_const_pos
+  have h_coer : ∀ w : ι → ℝ, hV.coercive_const * ‖w‖ ^ 2 ≤ V w := hV.coercive_bound
+  have hCs_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
+  have hjet_C_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
+  have hQ_nn : 0 ≤ hV.Q_const := hV.Q_const_nn
+  have hT_nn : 0 ≤ ‖hV.T‖ := norm_nonneg _
+  have hCs1_pos : (0 : ℝ) < hV.local_const + 1 := by linarith
+  set δ : ℝ := min (min hV.local_radius hV.jet_radius)
+      (hV.coercive_const / (4 * (hV.local_const + 1))) with hδ_def
+  have hδ_pos : 0 < δ :=
+    lt_min (lt_min hV.local_radius_pos hV.jet_radius_pos) (by positivity)
+  have hδ_le_R : δ ≤ hV.local_radius :=
+    le_trans (min_le_left _ _) (min_le_left _ _)
+  have hδ_le_jet_R : δ ≤ hV.jet_radius :=
+    le_trans (min_le_left _ _) (min_le_right _ _)
+  have hδ_const : hV.local_const * δ ≤ hV.coercive_const / 4 := by
+    have h_le : δ ≤ hV.coercive_const / (4 * (hV.local_const + 1)) := min_le_right _ _
+    calc hV.local_const * δ
+        ≤ hV.local_const * (hV.coercive_const / (4 * (hV.local_const + 1))) :=
+          mul_le_mul_of_nonneg_left h_le hCs_nn
+      _ = (hV.local_const / (hV.local_const + 1)) * (hV.coercive_const / 4) := by field_simp
+      _ ≤ 1 * (hV.coercive_const / 4) := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ hV.coercive_const / 4)
+          rw [div_le_one hCs1_pos]; linarith
+      _ = hV.coercive_const / 4 := one_mul _
+  have hδ_sq_pos : 0 < δ ^ 2 := by positivity
+  have hδ_cube_pos : 0 < δ ^ 3 := by positivity
+  have hc4_pos : 0 < hV.coercive_const / 4 := by linarith
+  -- Polynomial-Gaussian moments (k=4,6,8,10).
+  have hM4 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 4
+  have hM6 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 6
+  have hM8 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 8
+  have hM10 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 10
+  set La : ℝ := ∑ i, |a i| with hLa_def
+  have hLa_nn : 0 ≤ La := by rw [hLa_def]; exact Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  -- Local moment integral.
+  set M_loc : ℝ := ∫ u : ι → ℝ,
+      (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hM_loc_def
+  have hM_loc_int : Integrable (fun u : ι → ℝ =>
+      (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) := by
+    have h_sum : Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ 6 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 8 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 10 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) :=
+      ((hM6.add hM8).add hM10)
+    apply h_sum.congr
+    filter_upwards with u
+    ring
+  have hM_loc_nn : 0 ≤ M_loc := by
+    rw [hM_loc_def]; apply MeasureTheory.integral_nonneg; intro u; positivity
+  -- Tail moment integral.
+  set M_tail : ℝ := ∫ u : ι → ℝ,
+      (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hM_tail_def
+  have hM_tail_int : Integrable (fun u : ι → ℝ =>
+      (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) := by
+    have h_sum : Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ 4 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 6 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) :=
+      (hM4.add hM6)
+    apply h_sum.congr
+    filter_upwards with u
+    ring
+  have hM_tail_nn : 0 ≤ M_tail := by
+    rw [hM_tail_def]; apply MeasureTheory.integral_nonneg; intro u; positivity
+  -- Constants.
+  set C_loc : ℝ := La * (hV.Q_const + 2 * hV.jet_const * hV.local_const +
+    hV.local_const ^ 3) with hC_loc_def
+  have hC_loc_nn : 0 ≤ C_loc := by
+    rw [hC_loc_def]
+    have h_jc_nn : 0 ≤ hV.jet_const * hV.local_const := mul_nonneg hjet_C_nn hCs_nn
+    have h_cs3_nn : 0 ≤ hV.local_const ^ 3 := by positivity
+    have : 0 ≤ hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3 := by
+      linarith
+    exact mul_nonneg hLa_nn this
+  set C_tail : ℝ := La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) with hC_tail_def
+  have hC_tail_nn : 0 ≤ C_tail := by rw [hC_tail_def]; positivity
+  set K : ℝ := (C_loc * M_loc + C_tail * M_tail) / 2 with hK_def
+  refine ⟨K, 1, le_refl _, ?_⟩
+  intro t ht1
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have ht_sq_pos : 0 < t ^ 2 := pow_pos ht_pos 2
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have h_sym := expNumErr₃_symmetric V H a hV.toPotentialTensorApprox ht_pos
+  -- Define summed majorant G_t(u) := G_loc(u) + G_tail(u).
+  set G_loc : (ι → ℝ) → ℝ := fun u =>
+    (C_loc / t ^ 2) * (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+      Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hG_loc_def
+  set G_tail : (ι → ℝ) → ℝ := fun u =>
+    (C_tail / t ^ 2) * (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+      Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hG_tail_def
+  have hG_loc_nn : ∀ u, 0 ≤ G_loc u := by intro u; rw [hG_loc_def]; positivity
+  have hG_tail_nn : ∀ u, 0 ≤ G_tail u := by intro u; rw [hG_tail_def]; positivity
+  have hG_loc_int : Integrable G_loc := by
+    rw [hG_loc_def]
+    have := hM_loc_int.const_mul (C_loc / t ^ 2)
+    convert this using 1; funext u; ring
+  have hG_tail_int : Integrable G_tail := by
+    rw [hG_tail_def]
+    have := hM_tail_int.const_mul (C_tail / t ^ 2)
+    convert this using 1; funext u; ring
+  have hG_sum_int : Integrable (fun u => G_loc u + G_tail u) :=
+    hG_loc_int.add hG_tail_int
+  -- Pointwise: |F u| ≤ G_loc u + G_tail u via case split.
+  have h_pointwise : ∀ u : ι → ℝ,
+      ‖expNumLin a t u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+          gaussianWeight H u‖ ≤ G_loc u + G_tail u := by
+    intro u
+    rw [Real.norm_eq_abs]
+    by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
+    · have h_loc := J3_local_pointwise_le V H a hV hδ_pos hδ_le_R hδ_le_jet_R
+        hδ_const ht_pos u hu
+      have h_tail_nn : 0 ≤ G_tail u := hG_tail_nn u
+      have h_loc_eq : G_loc u = (La * (hV.Q_const + 2 * hV.jet_const * hV.local_const +
+            hV.local_const ^ 3) / t ^ 2) *
+          (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        rw [hG_loc_def, hC_loc_def]
+      linarith [h_loc, h_tail_nn, h_loc_eq.le, h_loc_eq.ge]
+    · push_neg at hu
+      have h_tail := J3_tail_pointwise_le V H a hV hδ_pos hc_pos rfl h_coer ht_pos u hu
+      have h_loc_nn : 0 ≤ G_loc u := hG_loc_nn u
+      have h_tail_eq : G_tail u = (La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) / t ^ 2) *
+          (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        rw [hG_tail_def, hC_tail_def]
+      linarith [h_tail, h_loc_nn, h_tail_eq.le, h_tail_eq.ge]
+  -- Apply norm_integral_le_of_norm_le.
+  have h_main : ‖∫ u : ι → ℝ,
+        expNumLin a t u *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t u)
+              - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+            gaussianWeight H u‖
+      ≤ ∫ u : ι → ℝ, G_loc u + G_tail u := by
+    apply norm_integral_le_of_norm_le hG_sum_int
+    filter_upwards with u
+    exact h_pointwise u
+  -- Compute ∫ G_loc + ∫ G_tail.
+  have h_int_sum : ∫ u : ι → ℝ, G_loc u + G_tail u
+      = (C_loc * M_loc + C_tail * M_tail) / t ^ 2 := by
+    rw [integral_add hG_loc_int hG_tail_int]
+    rw [hG_loc_def, hG_tail_def, hM_loc_def, hM_tail_def]
+    rw [show (fun u : ι → ℝ =>
+            C_loc / t ^ 2 * (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))
+          = (fun u => (C_loc / t ^ 2) *
+              ((‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))) from by
+        funext u; ring]
+    rw [show (fun u : ι → ℝ =>
+            C_tail / t ^ 2 * (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))
+          = (fun u => (C_tail / t ^ 2) *
+              ((‖u‖ ^ 4 + ‖u‖ ^ 6) *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))) from by
+        funext u; ring]
+    rw [integral_const_mul, integral_const_mul]
+    ring
+  -- Conclude.
+  have h_2J3_le : |2 * expNumErr₃ V H hV.toPotentialTensorApprox a t|
+      ≤ (C_loc * M_loc + C_tail * M_tail) / t ^ 2 := by
+    rw [h_sym]
+    calc |∫ u : ι → ℝ,
+            expNumLin a t u *
+              ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t u)
+                - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                    + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+              gaussianWeight H u|
+        = ‖∫ u : ι → ℝ,
+            expNumLin a t u *
+              ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t u)
+                - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                    + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+              gaussianWeight H u‖ := (Real.norm_eq_abs _).symm
+      _ ≤ ∫ u : ι → ℝ, G_loc u + G_tail u := h_main
+      _ = (C_loc * M_loc + C_tail * M_tail) / t ^ 2 := h_int_sum
+  have h_abs_2 : |2 * expNumErr₃ V H hV.toPotentialTensorApprox a t|
+      = 2 * |expNumErr₃ V H hV.toPotentialTensorApprox a t| := by
+    rw [abs_mul, abs_of_pos (by norm_num : (0:ℝ) < 2)]
+  rw [h_abs_2] at h_2J3_le
+  rw [hK_def, show (C_loc * M_loc + C_tail * M_tail) / 2 / t ^ 2
+        = (C_loc * M_loc + C_tail * M_tail) / t ^ 2 / 2 from by ring]
+  linarith
 
 set_option maxHeartbeats 1600000 in
 /-- **J₄ bound**: centered quadratic observable jet × `(e^{-s_t} - 1)` is `O(t⁻²)`.
@@ -5457,26 +5682,26 @@ private theorem rescaledNumerator_first_order_centered_explicit
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a : ι → ℝ)
     [Nonempty ι]
-    (hV : PotentialTensorApprox V H)
+    (hV : PotentialQuinticApprox V H)
     (hφ : ObservableTensorApprox φ a)
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |rescaledNumerator V t φ
         - rescaledPartition V t *
-            (expNumeratorCoeff V φ H Hinv a hV hφ / t)|
+            (expNumeratorCoeff V φ H Hinv a hV.toPotentialTensorApprox hφ / t)|
         ≤ K / t ^ 2 := by
   obtain ⟨K₁, T₁, hT₁, h₁⟩ :=
     expNumErr₁_bound (V := V) (φ := φ) (H := H) (Hinv := Hinv)
-      (a := a) hV hφ hGauss
+      (a := a) hV.toPotentialTensorApprox hφ hGauss
   obtain ⟨K₂, T₂, hT₂, h₂⟩ :=
     expNumErr₂_bound (V := V) (φ := φ) (H := H) (Hinv := Hinv)
-      (a := a) hV hφ hGauss
+      (a := a) hV.toPotentialTensorApprox hφ hGauss
   obtain ⟨K₃, T₃, hT₃, h₃⟩ :=
     expNumErr₃_bound (V := V) (H := H) (Hinv := Hinv)
       (a := a) hV hGauss
   obtain ⟨K₄, T₄, hT₄, h₄⟩ :=
     expNumErr₄_bound (V := V) (φ := φ) (H := H) (Hinv := Hinv)
-      (a := a) hV hφ hGauss
+      (a := a) hV.toPotentialTensorApprox hφ hGauss
   refine ⟨K₁ + K₂ + K₃ + K₄, max (max T₁ T₂) (max T₃ T₄), ?_, ?_⟩
   · exact le_trans hT₁ (le_trans (le_max_left _ _) (le_max_left _ _))
   · intro t ht
@@ -5492,7 +5717,7 @@ private theorem rescaledNumerator_first_order_centered_explicit
       lt_of_lt_of_le zero_lt_one (le_trans hT₁ ht1)
     have hdecomp :=
       expNumerator_centered_decomp (V := V) (φ := φ) (H := H) (Hinv := Hinv)
-        (a := a) hV hφ hGauss ht_pos
+        (a := a) hV.toPotentialTensorApprox hφ hGauss ht_pos
     rw [hdecomp]
     have hK1 := h₁ t ht1
     have hK2 := h₂ t ht2
@@ -5500,21 +5725,25 @@ private theorem rescaledNumerator_first_order_centered_explicit
     have hK4 := h₄ t ht4
     have ht_sq_pos : 0 < t ^ 2 := by positivity
     calc |expNumErr₁ V φ a H hφ t + expNumErr₂ V φ a H hφ t
-            + expNumErr₃ V H hV a t + expNumErr₄ V φ a H Hinv hV hφ t|
+            + expNumErr₃ V H hV.toPotentialTensorApprox a t
+            + expNumErr₄ V φ a H Hinv hV.toPotentialTensorApprox hφ t|
         ≤ |expNumErr₁ V φ a H hφ t| + |expNumErr₂ V φ a H hφ t|
-            + |expNumErr₃ V H hV a t| + |expNumErr₄ V φ a H Hinv hV hφ t| := by
+            + |expNumErr₃ V H hV.toPotentialTensorApprox a t|
+            + |expNumErr₄ V φ a H Hinv hV.toPotentialTensorApprox hφ t| := by
           calc |expNumErr₁ V φ a H hφ t + expNumErr₂ V φ a H hφ t
-                  + expNumErr₃ V H hV a t + expNumErr₄ V φ a H Hinv hV hφ t|
+                  + expNumErr₃ V H hV.toPotentialTensorApprox a t
+                  + expNumErr₄ V φ a H Hinv hV.toPotentialTensorApprox hφ t|
               ≤ |expNumErr₁ V φ a H hφ t + expNumErr₂ V φ a H hφ t
-                  + expNumErr₃ V H hV a t|
-                + |expNumErr₄ V φ a H Hinv hV hφ t| := abs_add_le _ _
+                  + expNumErr₃ V H hV.toPotentialTensorApprox a t|
+                + |expNumErr₄ V φ a H Hinv hV.toPotentialTensorApprox hφ t| :=
+                  abs_add_le _ _
             _ ≤ (|expNumErr₁ V φ a H hφ t + expNumErr₂ V φ a H hφ t|
-                  + |expNumErr₃ V H hV a t|)
-                + |expNumErr₄ V φ a H Hinv hV hφ t| := by
+                  + |expNumErr₃ V H hV.toPotentialTensorApprox a t|)
+                + |expNumErr₄ V φ a H Hinv hV.toPotentialTensorApprox hφ t| := by
                   gcongr; exact abs_add_le _ _
             _ ≤ ((|expNumErr₁ V φ a H hφ t| + |expNumErr₂ V φ a H hφ t|)
-                  + |expNumErr₃ V H hV a t|)
-                + |expNumErr₄ V φ a H Hinv hV hφ t| := by
+                  + |expNumErr₃ V H hV.toPotentialTensorApprox a t|)
+                + |expNumErr₄ V φ a H Hinv hV.toPotentialTensorApprox hφ t| := by
                   gcongr; exact abs_add_le _ _
             _ = _ := by ring
       _ ≤ K₁ / t ^ 2 + K₂ / t ^ 2 + K₃ / t ^ 2 + K₄ / t ^ 2 := by
@@ -5540,14 +5769,14 @@ theorem gibbsExpectation_first_order_rate_explicit
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a : ι → ℝ)
     [Nonempty ι]
-    (hV : PotentialTensorApprox V H)
+    (hV : PotentialQuinticApprox V H)
     (hφ : ObservableTensorApprox φ a)
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |2 * t * gibbsExpectation V t φ - trASig hφ.A Hinv
           + dot (Hinv a) (tensorContractMatrix hV.T Hinv)| ≤ K / t := by
   -- Reduce to centered-numerator helper + partition lower bound.
-  set μ : ℝ := expNumeratorCoeff V φ H Hinv a hV hφ with hμ_def
+  set μ : ℝ := expNumeratorCoeff V φ H Hinv a hV.toPotentialTensorApprox hφ with hμ_def
   set c : ℝ := trASig hφ.A Hinv -
       dot (Hinv a) (tensorContractMatrix hV.T Hinv) with hc_def
   have hc_eq : c = 2 * μ := by
