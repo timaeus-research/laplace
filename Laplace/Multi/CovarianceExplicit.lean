@@ -6941,20 +6941,42 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
               (tensorContractMatrix hV.T (Hinv.comp (hφ.A.comp Hinv))))
           * rescaledPartition V t|
         ≤ K / t := by
-  -- See `gpt_responses/strategy_stage5_decomposition.md`. Steps:
-  -- 1. Expand `φ_conn = (1/t)·Q^c_φ + (1/(t√t))·C_φ + E_φ` where Q^c_φ
-  --    is the centered quadratic and E_φ is a quartic+ remainder.
-  -- 2. Multiply integrand by `t·√t`:
-  --    `t·√t · L_ψ · ((1/t)·Q^c + (1/(t√t))·C_φ + E_φ)`
-  --    = `√t · L_ψ · Q^c + L_ψ · C_φ + t·√t · L_ψ · E_φ`
-  -- 3. Identify main terms via Wick:
-  --    - `√t · L_ψ · Q^c`: integrand vanishes at parity 1+2=3 odd; with
-  --       `exp(-s_t)`'s `-V_3/√t` correction (cubic, parity 3 odd → even
-  --       overall, integrand parity 6), gives the two `T`-contractions.
-  --    - `L_ψ · C_φ`: integrand parity 1+3=4 even, leading order. By
-  --       `gaussian_cubic_linear` gives `(1/2)<Σb, Φ_φ:Σ>`.
-  -- 4. Bound remaining errors: `t·√t · L_ψ · E_φ` (using parity-aware
-  --    odd-part bound on E_φ) gives `O(1/t)`.
+  -- 4-step plan per `gpt_responses/strategy_stage5_lemmas_attack.md`:
+  --
+  -- Pointwise: t·√t · (b·u) · φ_conn expands to 3 terms (with Q^c_φ = Q_φ - μ_φ):
+  --   √t · (b·u) · Q^c_φ   (parity-vanishing odd; pairs with -V_3/√t correction)
+  --   (b·u) · C_φ          (even, leading)
+  --   t·√t · (b·u) · R_φ   (quartic remainder)
+  --
+  -- Steps:
+  -- 1. **Strengthen `gaussian_quad_linear_cubic`** from existential to explicit.
+  --    GPT recommends: ONE IBP on `(b·u)`, NOT full 15-pairing 6-moment Wick.
+  --    Differentiate `(1/2 Q_A) · (1/6 T(u,u,u))`:
+  --     - derivative on `Q_A` yields `linear · cubic` integral → use
+  --       `gaussian_linear_cubic` (already proved, 4-moment).
+  --     - derivative on `T` yields `quad · quad` integral → use
+  --       `gaussian_quad_quad` (already proved, 4-moment).
+  --    Net: explicit closed form bypasses sextic moment formula entirely.
+  -- 2. **Apply parity helper P2** to `Fodd := (b·u) · Q^c_φ`:
+  --    `Fodd` is odd (linear · even). The (-V_3/√t) Taylor correction makes
+  --    `(b·u) · Q^c_φ · V_3` even, integrating to the two T-contractions
+  --    (after centering subtracts the disconnected trace via Step 1).
+  --    Note: centering MATTERS here despite parity zeroing the leading —
+  --    `μ_φ · (b·u) · V_3 · gW` is NOT zero by parity (linear·cubic = even).
+  -- 3. **Apply parity helper P1** (or direct gaussian_cubic_linear) to
+  --    `Feven := (b·u) · C_φ`:
+  --    `(b·u) · (1/6 Φ_φ(u,u,u))` integrates to `Z · (1/2)⟨Σb, Φ_φ:Σ⟩`
+  --    via `gaussian_cubic_linear`.
+  -- 4. **Bound** `t·√t · (b·u) · R_φ` using local quartic + tail:
+  --    `|R_φ| ≤ jet_const · ‖u‖^4 / t^2`, so `t·√t · |b·u| · |R_φ|
+  --    ≤ const · ‖u‖^5 / √t`. Multiplied by gW · exp(-s_t), gives K/√t.
+  --    For tighter K/t, need parity-aware bound on the odd part of R_φ.
+  --
+  -- Prerequisites (shared with Lemma B): parity helpers P1, P2 + the
+  -- explicit `gaussian_quad_linear_cubic` (Step 1 above, ~150-200 LOC).
+  --
+  -- Status: GPT plan locked in; depends on Lemma B's parity helpers + the
+  -- explicit Wick strengthening. Total ~400-600 LOC after parity helpers exist.
   sorry
 
 /-- **Stage-5 rem-rem asymptotic** (lemma B in `gpt_responses/strategy_stage5_decomposition.md`).
@@ -6996,13 +7018,45 @@ private theorem rescaledIntegral_rr_connected_asymptotic
               (1 : (ι → ℝ) →L[ℝ] (ι → ℝ))
             * rescaledPartition V t|
         ≤ K / t := by
-  -- See `gpt_responses/strategy_stage5_decomposition.md`. Steps:
-  -- 1. Expand `φ_conn · ψ_rem = (1/t²) · Q^c_φ · Q_ψ + smaller`.
-  -- 2. Multiply by t² to get leading `Q^c_φ · Q_ψ` integrand.
-  -- 3. Apply `gaussian_quad_quad` Wick formula (already proved):
-  --    `∫ Q_φ · Q_ψ · gW = Z · ((1/4) tr(AΣ) tr(BΣ) + (1/2) tr(AΣBΣ))`
-  --    The `Q^c_φ` centering subtracts (1/4) tr(AΣ) tr(BΣ).
-  -- 4. Bound smaller terms (cubic·cubic ~ 1/t³, etc.) all O(1/t).
+  -- 10-step plan per `gpt_responses/strategy_stage5_lemmas_attack.md`:
+  --
+  -- Pointwise: t² · φ_conn · ψ_rem expands to 9 terms (with Q^c_φ = Q_φ - μ_φ):
+  --   QQ := Q^c_φ · Q_ψ          (leading)
+  --   QC := (1/√t) · Q^c_φ · C_ψ  (parity-vanishing odd)
+  --   t · Q^c_φ · R_ψ
+  --   CQ := (1/√t) · C_φ · Q_ψ   (parity-vanishing odd)
+  --   (1/t) · C_φ · C_ψ
+  --   √t · C_φ · R_ψ
+  --   t · R_φ · Q_ψ
+  --   √t · R_φ · C_ψ
+  --   t² · R_φ · R_ψ
+  --
+  -- Steps (each producing an `O(K/t)` bound on its piece):
+  -- 1. **Main coefficient** `gaussian_QcQ_mean`:
+  --    `∫ Q^c_φ · Q_ψ · gW = Z · (1/2) trASig (A_φ.comp(Hinv.comp(A_ψ.comp Hinv))) 1`
+  --    via `gaussian_quad_quad` + `gaussian_quad_expectation`; the (1/4)tr·tr
+  --    disconnected piece cancels against the μ_φ subtraction.
+  -- 2. **Apply parity helper P1** to FQQ = QQ - c_QQ:
+  --    `|∫ FQQ · gW · exp(-s_t)| ≤ K/t`. The (-V_3/√t) term in the Taylor
+  --    expansion of `exp(-s_t)-1` vanishes by parity (FQQ even, V_3 odd).
+  -- 3. **Coarse odd-kernel bound** for QC = Q^c_φ · C_ψ:
+  --    `|∫ odd · gW · exp(-s_t)| ≤ K/√t` (parity zero + Stage-1 Taylor for the
+  --    perturbation correction). Multiplied by 1/√t in the decomposition gives K/t.
+  -- 4. **Same** for CQ.
+  -- 5-6. **Quad·remainder bounds** for `t · Q^c_φ · R_ψ` and `t · R_φ · Q_ψ`.
+  --    Direct domination by polynomial × Gaussian using
+  --    `integrable_pow_norm_mul_rescaled_weight`.
+  -- 7. **Cubic·cubic** `(1/t) · C_φ · C_ψ`: direct moment bound
+  --    `|C_φ C_ψ| ≤ const · ‖u‖^6`, integral O(1), times 1/t gives K/t.
+  -- 8. **Cubic·remainder** `√t · C_φ · R_ψ` (and symmetric):
+  --    `|C·R| ≤ const · ‖u‖^7 / t^2`, multiplied by √t gives O(1/t^(3/2)) ≤ O(1/t).
+  -- 9. **Remainder·remainder** via existing `abs_integral_remainder_remainder_sharp_le`.
+  -- 10. **Final assembly**: triangle inequality over the 9 pieces.
+  --
+  -- Prerequisites (shared with Lemma A): parity helpers P1, P2 — see
+  -- `gpt_responses/strategy_stage5_lemmas_attack.md` § "Shared infrastructure".
+  --
+  -- Status: GPT plan locked in; helpers + 10 sub-steps not yet implemented (~500 LOC).
   sorry
 
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
