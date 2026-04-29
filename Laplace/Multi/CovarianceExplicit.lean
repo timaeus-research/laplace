@@ -4343,6 +4343,7 @@ private lemma expNumErr₃_bound
   -- Deferred pending hypothesis-package strengthening.
   sorry
 
+set_option maxHeartbeats 1600000 in
 /-- **J₄ bound**: centered quadratic observable jet × `(e^{-s_t} - 1)` is `O(t⁻²)`.
 
 Uses the `u ↦ -u` parity symmetrization:
@@ -4389,47 +4390,357 @@ private lemma expNumErr₄_bound
           apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ hV.coercive_const / 4)
           rw [div_le_one hCs1_pos]; linarith
       _ = hV.coercive_const / 4 := one_mul _
-  -- The standard Gaussian moments we'll need.
+  have hδ_sq_pos : 0 < δ ^ 2 := by positivity
+  -- Gaussian moment dominator: ∫ (1 + ‖u‖^8) · exp(-(c/4)‖u‖²).
   have hc4_pos : 0 < hV.coercive_const / 4 := by linarith
-  set M_loc : ℝ := ∫ u : ι → ℝ,
-      ‖u‖ ^ 8 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hM_loc_def
-  have hM_loc_int : Integrable (fun u : ι → ℝ =>
-      ‖u‖ ^ 8 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) :=
-    integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 8
-  have hM_loc_nn : 0 ≤ M_loc := by
-    rw [hM_loc_def]; apply MeasureTheory.integral_nonneg
+  set M : ℝ := ∫ u : ι → ℝ,
+      (1 + ‖u‖ ^ 8) * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hM_def
+  have hM_int : Integrable (fun u : ι → ℝ =>
+      (1 + ‖u‖ ^ 8) * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) := by
+    have h0 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 0
+    have h8 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 8
+    have h_sum : Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ 0 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 8 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) := h0.add h8
+    apply h_sum.congr
+    filter_upwards with u
+    rw [pow_zero]; ring
+  have hM_nn : 0 ≤ M := by
+    rw [hM_def]; apply MeasureTheory.integral_nonneg
     intro u; positivity
-  -- Combined K and T_0.
+  -- Constants for B and bracket bounds.
   set Cμ : ℝ := |expNumeratorCoeff V φ H Hinv a hV hφ| with hCμ_def
   have hCμ_nn : 0 ≤ Cμ := abs_nonneg _
-  -- The constant K (loose upper bound for the proof).
-  set K : ℝ :=
-      ((Fintype.card ι * ‖hφ.A‖ + 1) * (hV.jet_const + hV.local_const ^ 2 + 1)
-        + Cμ * (hV.jet_const + hV.local_const ^ 2 + 1)) * M_loc with hK_def
+  -- b := bound on t·|B(u)|/(1+‖u‖²): |B| ≤ b·(1+‖u‖²)/t.
+  set b : ℝ := Fintype.card ι * ‖hφ.A‖ / 2 + Cμ with hb_def
+  have hb_nn : 0 ≤ b := by rw [hb_def]; positivity
+  -- D := jet_C + Cs² (combined bracket constant for unified poly).
+  set D : ℝ := hV.jet_const + hV.local_const ^ 2 with hD_def
+  have hD_nn : 0 ≤ D := by rw [hD_def]; positivity
+  -- Unified majorant constant.
+  set K_unified : ℝ := 8 * b * (D + 1 / δ ^ 2) with hKun_def
+  have hKun_nn : 0 ≤ K_unified := by rw [hKun_def]; positivity
+  set K : ℝ := K_unified * M / 2 with hK_def
   refine ⟨K, 1, le_refl _, ?_⟩
   intro t ht1
-  -- Use expNumErr₄_symmetric: 2·J₄ = ∫ B · bracket · gW.
-  -- Hence |J₄| = (1/2) · |2·J₄| ≤ (1/2) · ∫ |B · bracket · gW|.
-  -- Then bound the integral via a unified majorant.
-  --
-  -- Full integration assembly: ~400 LOC of careful bookkeeping. The
-  -- analytical content is fully proven via the building blocks above.
-  -- Implementation strategy:
-  --   1. h_sym := expNumErr₄_symmetric ... ht_pos  [factor 2]
-  --   2. h_int_sym := integrable_J4_integrand_sym ... ht_pos
-  --   3. Define G(u) := (K_local + K_tail) / t² · poly(‖u‖) · exp(-(c/4)‖u‖²)
-  --      with poly chosen large enough to dominate both local and tail bounds.
-  --   4. Show |B · bracket · gW| ≤ G(u) pointwise:
-  --      - Local (‖u‖ ≤ δ·√t): combine abs_J4_bracket_local_le, |B| bound,
-  --        gW ≤ exp(-(c/2)‖u‖²); gives `(local terms with exp((c/4)‖u‖²) ·
-  --        exp(-(c/2)‖u‖²) = exp(-(c/4)‖u‖²))`.
-  --      - Tail (‖u‖ > δ·√t): use abs_gW_J4_bracket_le_uniform giving
-  --        `|gW · bracket| ≤ 2·gW + 2·exp(-c·‖u‖²)`, plus |B| bound, plus
-  --        absorption `1/t ≤ ‖u‖²/(δ²·t²)` to get the 1/t² prefactor.
-  --   5. norm_integral_le_of_norm_le with G as dominator → final inequality.
-  --
-  -- Deferred for the next session due to length.
-  sorry
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have ht_sq_pos : 0 < t ^ 2 := pow_pos ht_pos 2
+  -- Apply symmetrization: 2·J₄ = ∫ (B · bracket · gW).
+  have h_sym := expNumErr₄_symmetric V φ H Hinv a hV hφ ht_pos
+  -- Define unified majorant G.
+  set G : (ι → ℝ) → ℝ := fun u =>
+    (K_unified / t ^ 2) * (1 + ‖u‖ ^ 8) *
+      Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hG_def
+  have hG_nn : ∀ u, 0 ≤ G u := by
+    intro u; rw [hG_def]; positivity
+  have hG_int : Integrable G := by
+    rw [hG_def]
+    have := hM_int.const_mul (K_unified / t ^ 2)
+    convert this using 1; funext u; ring
+  -- KEY POINTWISE BOUND: |B · bracket · gW| ≤ G(u).
+  have h_pointwise : ∀ u : ι → ℝ,
+      ‖(expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+            (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)) *
+          gaussianWeight H u‖ ≤ G u := by
+    intro u
+    rw [Real.norm_eq_abs]
+    -- Rearrange product as |B| · |gW · bracket|.
+    rw [show (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+              (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)) *
+            gaussianWeight H u
+          = (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+            (gaussianWeight H u *
+              ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))) from by ring,
+        abs_mul]
+    -- |B| bound: |B| ≤ b·(1+‖u‖²)/t.
+    have h_B_bound : |expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t|
+        ≤ b * (1 + ‖u‖ ^ 2) / t := by
+      have h := abs_expNumQuad_sub_coeff_le V φ H Hinv a hV hφ ht_pos u
+      have h_card_nn : (0 : ℝ) ≤ Fintype.card ι * ‖hφ.A‖ := by positivity
+      calc |expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t|
+          ≤ (Fintype.card ι * ‖hφ.A‖ / (2 * t)) * ‖u‖ ^ 2 + Cμ / t := h
+        _ = ((Fintype.card ι * ‖hφ.A‖ / 2) * ‖u‖ ^ 2 + Cμ) / t := by
+            field_simp
+        _ ≤ b * (1 + ‖u‖ ^ 2) / t := by
+            apply div_le_div_of_nonneg_right _ ht_pos.le
+            rw [hb_def]
+            nlinarith [sq_nonneg ‖u‖, h_card_nn, hCμ_nn]
+    have h_B_nn : 0 ≤ b * (1 + ‖u‖ ^ 2) / t := by
+      apply div_nonneg _ ht_pos.le
+      apply mul_nonneg hb_nn (by linarith [sq_nonneg ‖u‖])
+    -- gW nonnegativity for `|gW · X| = gW · |X|`.
+    have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+    have h_gW_bracket_eq :
+        |gaussianWeight H u *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+              (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|
+          = gaussianWeight H u *
+            |(Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+              (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)| := by
+      rw [abs_mul, abs_of_nonneg h_gW_nn]
+    -- Helper: each ‖u‖^k ≤ 1 + ‖u‖^8 for k = 2, 4, 6.
+    have h_pow_le_8 : ∀ k : ℕ, k ≤ 8 → ‖u‖ ^ k ≤ 1 + ‖u‖ ^ 8 := by
+      intro k hk
+      have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+      by_cases h1u : ‖u‖ ≤ 1
+      · have : ‖u‖ ^ k ≤ 1 := pow_le_one₀ h_norm_nn h1u
+        have h8 : 0 ≤ ‖u‖ ^ 8 := pow_nonneg h_norm_nn _
+        linarith
+      · push_neg at h1u
+        have : ‖u‖ ^ k ≤ ‖u‖ ^ 8 := pow_le_pow_right₀ h1u.le hk
+        linarith
+    have h_u2 : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 2 (by omega)
+    have h_u4 : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 4 (by omega)
+    have h_u6 : ‖u‖ ^ 6 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 6 (by omega)
+    have h_u8 : ‖u‖ ^ 8 ≤ 1 + ‖u‖ ^ 8 := by linarith [pow_nonneg (norm_nonneg u) 8]
+    by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
+    · -- LOCAL CASE: ‖u‖ ≤ δ·√t.
+      have h_bracket_loc :=
+        abs_J4_bracket_local_le V H hV hδ_pos hδ_le_R hδ_le_jet_R hδ_const ht_pos u hu
+      have h_gW_le := gaussianWeight_le_exp_neg_coercive V H hV u
+      -- Bound `gW · |bracket|` by combining h_gW_le and h_bracket_loc.
+      have h_bracket_nn : 0 ≤ |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))| := abs_nonneg _
+      have h_exp_c2_le_c4 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
+          ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        apply Real.exp_le_exp.mpr
+        nlinarith [sq_nonneg ‖u‖, hc_pos]
+      -- gW · |bracket| ≤ 2·D·(‖u‖^4 + ‖u‖^6)·exp(-(c/4)‖u‖²)/t.
+      have h_gWbr_local :
+          gaussianWeight H u *
+              |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|
+            ≤ 2 * D * (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) / t := by
+        calc gaussianWeight H u *
+                |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                  (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|
+            ≤ Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) *
+                (2 * hV.jet_const * ‖u‖ ^ 4 / t
+                  + 2 * hV.local_const ^ 2 * ‖u‖ ^ 6 *
+                      Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / t) := by
+              apply mul_le_mul h_gW_le h_bracket_loc h_bracket_nn (Real.exp_pos _).le
+          _ = 2 * hV.jet_const * ‖u‖ ^ 4 *
+                Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) / t
+              + 2 * hV.local_const ^ 2 * ‖u‖ ^ 6 *
+                (Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) *
+                  Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))) / t := by ring
+          _ = 2 * hV.jet_const * ‖u‖ ^ 4 *
+                Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) / t
+              + 2 * hV.local_const ^ 2 * ‖u‖ ^ 6 *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) / t := by
+              rw [show Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) *
+                    Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
+                  = Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) from by
+                rw [← Real.exp_add]
+                congr 1; ring]
+          _ ≤ 2 * hV.jet_const * ‖u‖ ^ 4 *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) / t
+              + 2 * hV.local_const ^ 2 * ‖u‖ ^ 6 *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) / t := by
+              gcongr
+          _ = (2 * hV.jet_const * ‖u‖ ^ 4 +
+                2 * hV.local_const ^ 2 * ‖u‖ ^ 6) *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) / t := by ring
+          _ ≤ 2 * D * (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) / t := by
+              apply div_le_div_of_nonneg_right _ ht_pos.le
+              apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+              rw [hD_def]
+              have h_u4_nn : 0 ≤ ‖u‖ ^ 4 := pow_nonneg (norm_nonneg _) _
+              have h_u6_nn : 0 ≤ ‖u‖ ^ 6 := pow_nonneg (norm_nonneg _) _
+              have h_Cs_sq_nn : 0 ≤ hV.local_const ^ 2 := sq_nonneg _
+              nlinarith
+      have h_gWbr_nn : 0 ≤ gaussianWeight H u *
+            |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+              (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))| :=
+        mul_nonneg h_gW_nn (abs_nonneg _)
+      rw [h_gW_bracket_eq]
+      -- Combine: |B| · (gW · |bracket|) ≤ b·(1+‖u‖²)/t · 2D·(‖u‖^4+‖u‖^6)·exp(-(c/4)‖u‖²)/t.
+      calc |expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t| *
+              (gaussianWeight H u *
+                |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                  (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|)
+          ≤ (b * (1 + ‖u‖ ^ 2) / t) *
+              (2 * D * (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) / t) := by
+            exact mul_le_mul h_B_bound h_gWbr_local h_gWbr_nn h_B_nn
+        _ = (2 * b * D / t ^ 2) *
+              ((1 + ‖u‖ ^ 2) * (‖u‖ ^ 4 + ‖u‖ ^ 6)) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+            have ht_ne : t ≠ 0 := ne_of_gt ht_pos
+            field_simp
+        _ ≤ (2 * b * D / t ^ 2) * (4 * (1 + ‖u‖ ^ 8)) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+            apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
+            -- (1 + ‖u‖²)(‖u‖^4 + ‖u‖^6) = ‖u‖^4 + 2‖u‖^6 + ‖u‖^8 ≤ 4·(1+‖u‖^8).
+            have h_expand : (1 + ‖u‖ ^ 2) * (‖u‖ ^ 4 + ‖u‖ ^ 6)
+                = ‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 6 + ‖u‖ ^ 8 := by ring
+            rw [h_expand]
+            linarith [h_u4, h_u6, h_u8]
+        _ = (8 * b * D / t ^ 2) * (1 + ‖u‖ ^ 8) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by ring
+        _ ≤ (K_unified / t ^ 2) * (1 + ‖u‖ ^ 8) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+            apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+            apply mul_le_mul_of_nonneg_right _ (by linarith [pow_nonneg (norm_nonneg u) 8])
+            rw [hKun_def]
+            apply div_le_div_of_nonneg_right _ ht_sq_pos.le
+            -- 8bD ≤ 8b(D + 1/δ²).
+            have h_inv_nn : 0 ≤ 1 / δ ^ 2 := by positivity
+            nlinarith
+        _ = G u := by rw [hG_def]
+    · -- TAIL CASE: ‖u‖ > δ·√t.
+      push_neg at hu
+      have h_uniform := abs_gW_J4_bracket_le_uniform V H hc_pos h_coer ht_pos u
+      -- Switch from `|gW · bracket| ≤ ...` (bound on |...|) to `gW · |bracket| ≤ ...`.
+      -- Note h_uniform: |gW · bracket| ≤ 2·gW + 2·exp(-c·‖u‖²).
+      -- And |gW · bracket| = gW · |bracket|, so gW · |bracket| ≤ 2·gW + 2·exp(-c·‖u‖²).
+      have h_gWbr_uniform :
+          gaussianWeight H u *
+              |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|
+            ≤ 2 * gaussianWeight H u + 2 * Real.exp (-(hV.coercive_const * ‖u‖ ^ 2)) := by
+        rw [← h_gW_bracket_eq]; exact h_uniform
+      -- Bound by 4·exp(-(c/4)‖u‖²).
+      have h_gW_le := gaussianWeight_le_exp_neg_coercive V H hV u
+      have h_exp_c2_le_c4 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
+          ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        apply Real.exp_le_exp.mpr
+        nlinarith [sq_nonneg ‖u‖, hc_pos]
+      have h_exp_c_le_c4 : Real.exp (-(hV.coercive_const * ‖u‖ ^ 2))
+          ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        apply Real.exp_le_exp.mpr
+        nlinarith [sq_nonneg ‖u‖, hc_pos]
+      have h_gWbr_4 :
+          gaussianWeight H u *
+              |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|
+            ≤ 4 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        calc gaussianWeight H u *
+                |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                  (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|
+            ≤ 2 * gaussianWeight H u + 2 * Real.exp (-(hV.coercive_const * ‖u‖ ^ 2)) :=
+              h_gWbr_uniform
+          _ ≤ 2 * Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
+              + 2 * Real.exp (-(hV.coercive_const * ‖u‖ ^ 2)) := by
+              linarith [h_gW_le]
+          _ ≤ 2 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+              + 2 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+              linarith [h_exp_c2_le_c4, h_exp_c_le_c4]
+          _ = 4 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by ring
+      have h_gWbr_4_nn : 0 ≤ 4 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        positivity
+      rw [h_gW_bracket_eq]
+      -- |B| · (gW · |bracket|) ≤ (b·(1+‖u‖²)/t) · 4·exp(-(c/4)‖u‖²).
+      -- Then absorb 1/t by 1/t ≤ ‖u‖²/(δ²·t²).
+      have h_norm_sq_lb : δ ^ 2 * t < ‖u‖ ^ 2 := by
+        have h1 : 0 ≤ δ * Real.sqrt t := by positivity
+        have h2 := mul_self_lt_mul_self h1 hu
+        rw [show (δ * Real.sqrt t) * (δ * Real.sqrt t) = (δ * Real.sqrt t) ^ 2 from by ring,
+            show ‖u‖ * ‖u‖ = ‖u‖ ^ 2 from by ring] at h2
+        rw [mul_pow, Real.sq_sqrt ht_pos.le] at h2
+        exact h2
+      have h_t_inv : (1 : ℝ) / t ≤ ‖u‖ ^ 2 / (δ ^ 2 * t ^ 2) := by
+        rw [div_le_div_iff₀ ht_pos (by positivity : (0:ℝ) < δ^2 * t^2)]
+        -- 1·(δ²·t²) ≤ ‖u‖²·t.
+        calc (1 : ℝ) * (δ ^ 2 * t ^ 2) = (δ ^ 2 * t) * t := by ring
+          _ ≤ ‖u‖ ^ 2 * t := by
+              apply mul_le_mul_of_nonneg_right h_norm_sq_lb.le ht_pos.le
+      calc |expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t| *
+              (gaussianWeight H u *
+                |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                  (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))|)
+          ≤ (b * (1 + ‖u‖ ^ 2) / t) *
+              (4 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) := by
+            have h_gWbr_nn : 0 ≤ gaussianWeight H u *
+                |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                  (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))| :=
+              mul_nonneg h_gW_nn (abs_nonneg _)
+            exact mul_le_mul h_B_bound h_gWbr_4 h_gWbr_nn h_B_nn
+        _ = 4 * b * (1 + ‖u‖ ^ 2) * (1 / t) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by ring
+        _ ≤ 4 * b * (1 + ‖u‖ ^ 2) * (‖u‖ ^ 2 / (δ ^ 2 * t ^ 2)) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+            apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+            apply mul_le_mul_of_nonneg_left h_t_inv
+            apply mul_nonneg (mul_nonneg (by norm_num) hb_nn)
+            linarith [sq_nonneg ‖u‖]
+        _ = (4 * b / δ ^ 2 / t ^ 2) * ((1 + ‖u‖ ^ 2) * ‖u‖ ^ 2) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+            have ht_ne : t ≠ 0 := ne_of_gt ht_pos
+            have hδ_ne : δ ≠ 0 := ne_of_gt hδ_pos
+            field_simp
+        _ ≤ (4 * b / δ ^ 2 / t ^ 2) * (2 * (1 + ‖u‖ ^ 8)) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+            apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
+            -- (1 + ‖u‖²)·‖u‖² = ‖u‖² + ‖u‖^4 ≤ 2·(1+‖u‖^8).
+            have h_expand : (1 + ‖u‖ ^ 2) * ‖u‖ ^ 2 = ‖u‖ ^ 2 + ‖u‖ ^ 4 := by ring
+            rw [h_expand]
+            linarith [h_u2, h_u4]
+        _ = (8 * b / δ ^ 2 / t ^ 2) * (1 + ‖u‖ ^ 8) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by ring
+        _ ≤ (K_unified / t ^ 2) * (1 + ‖u‖ ^ 8) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+            apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+            apply mul_le_mul_of_nonneg_right _ (by linarith [pow_nonneg (norm_nonneg u) 8])
+            rw [hKun_def]
+            -- 8b/δ² ≤ 8b·(D + 1/δ²). Compare 1/δ² ≤ D + 1/δ² (since D ≥ 0).
+            rw [show (8 * b * (D + 1 / δ ^ 2) : ℝ) / t ^ 2
+                  = (8 * b * D + 8 * b / δ ^ 2) / t ^ 2 from by ring,
+                show (8 * b / δ ^ 2 / t ^ 2 : ℝ)
+                  = (0 + 8 * b / δ ^ 2) / t ^ 2 from by ring]
+            apply div_le_div_of_nonneg_right _ ht_sq_pos.le
+            have h_8bD_nn : 0 ≤ 8 * b * D := by positivity
+            linarith
+        _ = G u := by rw [hG_def]
+  -- Apply norm_integral_le_of_norm_le to bound |∫ ...| by ∫ G.
+  have h_main : ‖∫ u : ι → ℝ,
+        (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+              (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)) *
+            gaussianWeight H u‖
+      ≤ ∫ u : ι → ℝ, G u :=
+    norm_integral_le_of_norm_le hG_int (Filter.Eventually.of_forall h_pointwise)
+  -- Compute ∫ G.
+  have h_intG : ∫ u : ι → ℝ, G u = K_unified * M / t ^ 2 := by
+    rw [hG_def, hM_def]
+    rw [show (fun u : ι → ℝ =>
+            K_unified / t ^ 2 * (1 + ‖u‖ ^ 8) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))
+          = (fun u => (K_unified / t ^ 2) *
+              ((1 + ‖u‖ ^ 8) * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))) from by
+        funext u; ring]
+    rw [integral_const_mul]
+    ring
+  -- Combine: 2·|J₄| = |2·J₄| = |∫ ...| ≤ ∫G = K_unified·M/t², so |J₄| ≤ K/t².
+  have h_2J4_le : |2 * expNumErr₄ V φ a H Hinv hV hφ t| ≤ K_unified * M / t ^ 2 := by
+    rw [h_sym]
+    calc |∫ u : ι → ℝ,
+            (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+              ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)) *
+              gaussianWeight H u|
+        = ‖∫ u : ι → ℝ,
+            (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+              ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+                (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)) *
+              gaussianWeight H u‖ := (Real.norm_eq_abs _).symm
+      _ ≤ ∫ u : ι → ℝ, G u := h_main
+      _ = K_unified * M / t ^ 2 := h_intG
+  have h_abs_2 : |2 * expNumErr₄ V φ a H Hinv hV hφ t|
+      = 2 * |expNumErr₄ V φ a H Hinv hV hφ t| := by
+    rw [abs_mul, abs_of_pos (by norm_num : (0:ℝ) < 2)]
+  rw [h_abs_2] at h_2J4_le
+  -- 2·|J₄| ≤ K_unified·M/t², so |J₄| ≤ K_unified·M/(2t²) = K/t².
+  rw [hK_def, show K_unified * M / 2 / t ^ 2 = K_unified * M / t ^ 2 / 2 from by ring]
+  linarith
 
 /-- **Centered EXP numerator (sharp rate)**: the centered numerator
 `rescaledNumerator V t φ - rescaledPartition V t · μ/t` is `O(t⁻²)`,
