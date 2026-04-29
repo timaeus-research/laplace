@@ -8105,6 +8105,88 @@ private lemma abs_integral_bounded_poly_mul_rescaled_weight_le
             Real.exp (-(rescaledPerturbation V H t u))) :=
         MeasureTheory.integral_const_mul _ _
 
+/-- **Cubic-cubic bound** (Lemma B Step 4 / piece 4): for the cross-cubic
+term `(1/(t√t))·C_φ · (1/(t√t))·C_ψ` with `C_φ = (1/6)Φ_φ(u,u,u)`,
+\[
+  \left|\int (1/6\,\Phi_\phi(u,u,u))(1/6\,\Phi_\psi(u,u,u))\cdot gW\cdot e^{-s_t}\,du\right|
+    \le \frac{\|\Phi_\phi\|\|\Phi_\psi\|}{36}\cdot M_6
+\]
+where `M_6 := ∫ ‖u‖^6 · gW · exp(-s_t)`. This bound multiplied by `(1/t)`
+(the prefactor in the 9-piece decomposition) gives `K/t`. -/
+private lemma abs_integral_cubic_cubic_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (Φ_φ Φ_ψ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht_pos : 0 < t) :
+    |∫ u : ι → ℝ, ((1 / 6 : ℝ) * Φ_φ (fun _ => u)) *
+        ((1 / 6 : ℝ) * Φ_ψ (fun _ => u)) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ (‖Φ_φ‖ * ‖Φ_ψ‖ / 36) *
+        ∫ u : ι → ℝ, ‖u‖ ^ 6 *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) := by
+  -- Define g = C_φ · C_ψ. Bound |g| ≤ M·‖u‖^6 with M = ‖Φ_φ‖·‖Φ_ψ‖/36.
+  set g : (ι → ℝ) → ℝ := fun u =>
+    ((1 / 6 : ℝ) * Φ_φ (fun _ => u)) * ((1 / 6 : ℝ) * Φ_ψ (fun _ => u))
+    with hg_def
+  set M : ℝ := ‖Φ_φ‖ * ‖Φ_ψ‖ / 36 with hM_def
+  have hM_nn : 0 ≤ M := by
+    rw [hM_def]; positivity
+  have hg_cont : Continuous g := by
+    rw [hg_def]
+    have h_diag_cont : Continuous (fun u : ι → ℝ => (fun _ : Fin 3 => u)) := by
+      apply continuous_pi; intro _; exact continuous_id
+    have h_φ_cont : Continuous (fun u : ι → ℝ => Φ_φ (fun _ => u)) :=
+      Φ_φ.cont.comp h_diag_cont
+    have h_ψ_cont : Continuous (fun u : ι → ℝ => Φ_ψ (fun _ => u)) :=
+      Φ_ψ.cont.comp h_diag_cont
+    exact (continuous_const.mul h_φ_cont).mul (continuous_const.mul h_ψ_cont)
+  have hg_bound : ∀ u : ι → ℝ, |g u| ≤ M * ‖u‖ ^ 6 := by
+    intro u
+    rw [hg_def, hM_def]
+    have h_φ_le : |Φ_φ (fun _ : Fin 3 => u)| ≤ ‖Φ_φ‖ * ‖u‖ ^ 3 := by
+      have := Φ_φ.le_opNorm (fun _ : Fin 3 => u)
+      simpa [Fin.prod_univ_three] using this
+    have h_ψ_le : |Φ_ψ (fun _ : Fin 3 => u)| ≤ ‖Φ_ψ‖ * ‖u‖ ^ 3 := by
+      have := Φ_ψ.le_opNorm (fun _ : Fin 3 => u)
+      simpa [Fin.prod_univ_three] using this
+    have h_one_six_pos : (0 : ℝ) < 1 / 6 := by norm_num
+    have h_φ_abs : |(1 / 6 : ℝ) * Φ_φ (fun _ : Fin 3 => u)|
+        = (1 / 6 : ℝ) * |Φ_φ (fun _ : Fin 3 => u)| := by
+      rw [abs_mul, abs_of_pos h_one_six_pos]
+    have h_ψ_abs : |(1 / 6 : ℝ) * Φ_ψ (fun _ : Fin 3 => u)|
+        = (1 / 6 : ℝ) * |Φ_ψ (fun _ : Fin 3 => u)| := by
+      rw [abs_mul, abs_of_pos h_one_six_pos]
+    have h_uu : ‖u‖ ^ 3 * ‖u‖ ^ 3 = ‖u‖ ^ 6 := by ring
+    calc |((1 / 6 : ℝ) * Φ_φ (fun _ => u)) *
+            ((1 / 6 : ℝ) * Φ_ψ (fun _ => u))|
+        = |(1 / 6 : ℝ) * Φ_φ (fun _ : Fin 3 => u)| *
+          |(1 / 6 : ℝ) * Φ_ψ (fun _ : Fin 3 => u)| := abs_mul _ _
+      _ = (1 / 6 : ℝ) * |Φ_φ (fun _ : Fin 3 => u)| *
+          ((1 / 6 : ℝ) * |Φ_ψ (fun _ : Fin 3 => u)|) := by
+            rw [h_φ_abs, h_ψ_abs]
+      _ ≤ (1 / 6 : ℝ) * (‖Φ_φ‖ * ‖u‖ ^ 3) *
+          ((1 / 6 : ℝ) * (‖Φ_ψ‖ * ‖u‖ ^ 3)) := by
+            apply mul_le_mul
+            · apply mul_le_mul_of_nonneg_left h_φ_le h_one_six_pos.le
+            · apply mul_le_mul_of_nonneg_left h_ψ_le h_one_six_pos.le
+            · exact mul_nonneg h_one_six_pos.le (abs_nonneg _)
+            · apply mul_nonneg h_one_six_pos.le
+              exact mul_nonneg (norm_nonneg _) (pow_nonneg (norm_nonneg _) _)
+      _ = ‖Φ_φ‖ * ‖Φ_ψ‖ / 36 * ‖u‖ ^ 6 := by
+            rw [show ‖u‖ ^ 6 = ‖u‖ ^ 3 * ‖u‖ ^ 3 from h_uu.symm]; ring
+  -- Apply generic helper.
+  have h_apply := abs_integral_bounded_poly_mul_rescaled_weight_le V H
+    hV_cont hc_pos h_coer g hg_cont 6 M hM_nn hg_bound ht_pos
+  rw [hg_def, hM_def] at h_apply
+  -- Goal has integrand in form `((1/6)Φ_φ)((1/6)Φ_ψ) · gW · exp(-s_t)`,
+  -- helper has it as `g · gW · exp(-s_t)`. Same lambda after unfold.
+  exact h_apply
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
