@@ -8390,6 +8390,432 @@ private noncomputable def expCovPsiRem
     (ψ : (ι → ℝ) → ℝ) (b : ι → ℝ) (t : ℝ) (u : ι → ℝ) : ℝ :=
   ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u
 
+/-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
+per GPT B/C-hybrid plan).
+
+For `t` large, `|(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)| ≤ K/t`.
+
+Proof:
+- `∫ odd5Kernel · gW = 0` by parity (using `integral_odd_mul_gaussian_eq_zero`
+  and `odd5Kernel_odd`).
+- So `∫ odd5Kernel · gW · exp(-s_t) = ∫ odd5Kernel · gW · (exp(-s_t) - 1)`.
+- Bound `|∫ odd5Kernel · gW · (exp(-s_t) - 1)| ≤ K'/√t` via local + tail decomposition,
+  using `abs_gaussianWeight_mul_exp_sub_one_le_local` (local) and
+  `abs_gaussianWeight_mul_exp_sub_one_le_tail` (tail) combined with
+  `abs_odd5Kernel_le` (polynomial weight `M · (‖u‖^3 + ‖u‖^5)`).
+- Then `(1/√t) · (K'/√t) = K'/t`. -/
+private lemma abs_integral_inv_sqrt_t_mul_odd5Kernel_le
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A_φ A_ψ : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (Φ_φ Φ_ψ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hGauss_int_gW : Integrable (fun u : ι → ℝ => gaussianWeight H u)) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |(1 / Real.sqrt t) *
+          ∫ u : ι → ℝ, odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ K / t := by
+  classical
+  set c := hV.toPotentialApprox.coercive_const with hc_def
+  set R := hV.toPotentialApprox.local_radius with hR_def
+  set Cs := hV.toPotentialApprox.local_const with hCs_def
+  have hc_pos : 0 < c := hV.toPotentialApprox.coercive_const_pos
+  have hR_pos : 0 < R := hV.toPotentialApprox.local_radius_pos
+  have hCs_nn : 0 ≤ Cs := hV.toPotentialApprox.local_const_nonneg
+  have h_coer := hV.toPotentialApprox.coercive_bound
+  have h_local := hV.toPotentialApprox.local_bound
+  have hV_cont := hV.toPotentialApprox.V_continuous
+  -- Polynomial bound on odd5Kernel.
+  obtain ⟨M, hM_nn, h_odd_bound⟩ := abs_odd5Kernel_le A_φ A_ψ Hinv Φ_φ Φ_ψ
+  -- Choose δ.
+  set δ : ℝ := min R (c / (4 * (Cs + 1))) with hδ_def
+  have hCs1_pos : (0 : ℝ) < Cs + 1 := by linarith
+  have hδ_pos : 0 < δ := lt_min hR_pos (by positivity)
+  have hδ_le_R : δ ≤ R := min_le_left _ _
+  have hδ_const : Cs * δ ≤ c / 4 := by
+    have h_le : δ ≤ c / (4 * (Cs + 1)) := min_le_right _ _
+    calc Cs * δ ≤ Cs * (c / (4 * (Cs + 1))) :=
+          mul_le_mul_of_nonneg_left h_le hCs_nn
+      _ = (Cs / (Cs + 1)) * (c / 4) := by field_simp
+      _ ≤ 1 * (c / 4) := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ c/4)
+          rw [div_le_one hCs1_pos]; linarith
+      _ = c / 4 := one_mul _
+  set α : ℝ := c / 4 with hα_def
+  set β : ℝ := c * δ ^ 2 / 4 with hβ_def
+  have hα_pos : 0 < α := by rw [hα_def]; linarith
+  have hβ_pos : 0 < β := by rw [hβ_def]; positivity
+  -- Gaussian moment integrals.
+  set M_loc_6 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 6 *
+    Real.exp (-(α * ‖u‖ ^ 2)) with hM_loc_6_def
+  set M_loc_8 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 8 *
+    Real.exp (-(α * ‖u‖ ^ 2)) with hM_loc_8_def
+  set M_tail_3 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 3 *
+    Real.exp (-(α * ‖u‖ ^ 2)) with hM_tail_3_def
+  set M_tail_5 : ℝ := ∫ u : ι → ℝ, ‖u‖ ^ 5 *
+    Real.exp (-(α * ‖u‖ ^ 2)) with hM_tail_5_def
+  have hM_loc_6_nn : 0 ≤ M_loc_6 := MeasureTheory.integral_nonneg fun u =>
+    mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  have hM_loc_8_nn : 0 ≤ M_loc_8 := MeasureTheory.integral_nonneg fun u =>
+    mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  have hM_tail_3_nn : 0 ≤ M_tail_3 := MeasureTheory.integral_nonneg fun u =>
+    mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  have hM_tail_5_nn : 0 ≤ M_tail_5 := MeasureTheory.integral_nonneg fun u =>
+    mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  have h_loc6 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 6
+  have h_loc8 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 8
+  have h_tail3 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 3
+  have h_tail5 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hα_pos 5
+  -- K' and T₀: result is bounded by K = K' (after the 1/√t prefactor cancellation).
+  set K_loc : ℝ := M * Cs * (M_loc_6 + M_loc_8) with hK_loc_def
+  set K_tail : ℝ := 2 * M * (M_tail_3 + M_tail_5) with hK_tail_def
+  refine ⟨K_loc + K_tail, max 1 (1 / β ^ 2), le_max_left _ _, ?_⟩
+  intro t ht
+  have ht1 : 1 ≤ t := le_trans (le_max_left _ _) ht
+  have htβ : 1 / β ^ 2 ≤ t := le_trans (le_max_right _ _) ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  -- Integrability of odd5K · gW · exp(-s_t).
+  have h_int_F : Integrable (fun u : ι → ℝ =>
+      odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h0 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos
+      h_coer 3 ht_pos
+    have h5 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos
+      h_coer 5 ht_pos
+    have h_continuous : Continuous (fun u : ι → ℝ =>
+        odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+      have h_qA_cont : Continuous (fun u : ι → ℝ => quadForm A_φ u) :=
+        continuous_quadForm A_φ
+      have h_qB_cont : Continuous (fun u : ι → ℝ => quadForm A_ψ u) :=
+        continuous_quadForm A_ψ
+      have h_diag_cont : Continuous (fun u : ι → ℝ => (fun _ : Fin 3 => u)) := by
+        apply continuous_pi; intro _; exact continuous_id
+      have h_φ_cont : Continuous (fun u : ι → ℝ => Φ_φ (fun _ => u)) :=
+        Φ_φ.cont.comp h_diag_cont
+      have h_ψ_cont : Continuous (fun u : ι → ℝ => Φ_ψ (fun _ => u)) :=
+        Φ_ψ.cont.comp h_diag_cont
+      have h_odd_cont : Continuous (fun u : ι → ℝ =>
+          odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u) := by
+        unfold odd5Kernel
+        exact ((continuous_const.mul h_qA_cont).sub continuous_const).mul
+            (continuous_const.mul h_ψ_cont)
+          |>.add ((continuous_const.mul h_φ_cont).mul (continuous_const.mul h_qB_cont))
+      exact (h_odd_cont.mul (continuous_gaussianWeight H)).mul
+        (Real.continuous_exp.comp (continuous_rescaledPerturbation hV_cont H t).neg)
+    have h_dom : Integrable (fun u : ι → ℝ =>
+        M * (‖u‖ ^ 3 *
+          (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))) +
+        M * (‖u‖ ^ 5 *
+          (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))))) :=
+      (h0.const_mul M).add (h5.const_mul M)
+    refine h_dom.mono' h_continuous.aestronglyMeasurable ?_
+    filter_upwards with u
+    rw [Real.norm_eq_abs]
+    have h_F_le := h_odd_bound u
+    have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+    have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) :=
+      Real.exp_pos _
+    have h_combined_pos : 0 < gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_pos h_gW_pos h_exp_pos
+    calc |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))|
+        = |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u| *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) := by
+          rw [show odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))
+              = odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+                (gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+          rw [abs_mul, abs_of_pos h_combined_pos]
+      _ ≤ (M * (‖u‖ ^ 3 + ‖u‖ ^ 5)) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) :=
+          mul_le_mul_of_nonneg_right h_F_le h_combined_pos.le
+      _ = M * (‖u‖ ^ 3 *
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))) +
+          M * (‖u‖ ^ 5 *
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))) := by
+            ring
+  -- Integrability of odd5K · gW.
+  have h_int_F_gW : Integrable (fun u : ι → ℝ =>
+      odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u) := by
+    have h0 := hV.int_norm_pow_gW 3
+    have h5 := hV.int_norm_pow_gW 5
+    have h_continuous : Continuous (fun u : ι → ℝ =>
+        odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u) := by
+      have h_qA_cont : Continuous (fun u : ι → ℝ => quadForm A_φ u) :=
+        continuous_quadForm A_φ
+      have h_qB_cont : Continuous (fun u : ι → ℝ => quadForm A_ψ u) :=
+        continuous_quadForm A_ψ
+      have h_diag_cont : Continuous (fun u : ι → ℝ => (fun _ : Fin 3 => u)) := by
+        apply continuous_pi; intro _; exact continuous_id
+      have h_φ_cont : Continuous (fun u : ι → ℝ => Φ_φ (fun _ => u)) :=
+        Φ_φ.cont.comp h_diag_cont
+      have h_ψ_cont : Continuous (fun u : ι → ℝ => Φ_ψ (fun _ => u)) :=
+        Φ_ψ.cont.comp h_diag_cont
+      have h_odd_cont : Continuous (fun u : ι → ℝ =>
+          odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u) := by
+        unfold odd5Kernel
+        exact ((continuous_const.mul h_qA_cont).sub continuous_const).mul
+            (continuous_const.mul h_ψ_cont)
+          |>.add ((continuous_const.mul h_φ_cont).mul (continuous_const.mul h_qB_cont))
+      exact h_odd_cont.mul (continuous_gaussianWeight H)
+    have h_dom : Integrable (fun u : ι → ℝ =>
+        M * (‖u‖ ^ 3 * gaussianWeight H u) +
+        M * (‖u‖ ^ 5 * gaussianWeight H u)) :=
+      (h0.const_mul M).add (h5.const_mul M)
+    refine h_dom.mono' h_continuous.aestronglyMeasurable ?_
+    filter_upwards with u
+    rw [Real.norm_eq_abs]
+    have h_F_le := h_odd_bound u
+    have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+    calc |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u|
+        = |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u| * gaussianWeight H u := by
+          rw [abs_mul, abs_of_pos h_gW_pos]
+      _ ≤ (M * (‖u‖ ^ 3 + ‖u‖ ^ 5)) * gaussianWeight H u :=
+          mul_le_mul_of_nonneg_right h_F_le h_gW_pos.le
+      _ = M * (‖u‖ ^ 3 * gaussianWeight H u) +
+          M * (‖u‖ ^ 5 * gaussianWeight H u) := by ring
+  -- Parity: ∫ odd5K · gW = 0.
+  have h_parity : ∫ u : ι → ℝ, odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+      gaussianWeight H u = 0 :=
+    integral_odd_mul_gaussian_eq_zero H (odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ)
+      (odd5Kernel_odd A_φ A_ψ Hinv Φ_φ Φ_ψ)
+  -- ∫ odd5K · gW · exp(-s_t) = ∫ odd5K · gW · (exp(-s_t) - 1) (using parity).
+  have h_int_eq : ∫ u : ι → ℝ, odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = ∫ u : ι → ℝ, odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+          gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1) := by
+    have h_eq_pt : ∀ u : ι → ℝ,
+        odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+          = odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+            + odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u := by
+      intro u; ring
+    have h_int_F_diff : Integrable (fun u : ι → ℝ =>
+        odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)) := by
+      have := h_int_F.sub h_int_F_gW
+      apply this.congr
+      filter_upwards with u
+      simp only [Pi.sub_apply]; ring
+    rw [show (fun u : ι → ℝ => odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) =
+        fun u => odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+          + odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u from
+      funext h_eq_pt]
+    rw [MeasureTheory.integral_add h_int_F_diff h_int_F_gW]
+    rw [h_parity]; ring
+  -- Pointwise bound on odd5K · gW · (exp(-s_t)-1) by Glocal + Gtail.
+  set Glocal : (ι → ℝ) → ℝ := fun u =>
+    (M * Cs / Real.sqrt t) * ((‖u‖ ^ 6 + ‖u‖ ^ 8) * Real.exp (-(α * ‖u‖ ^ 2)))
+    with hGlocal_def
+  set Gtail : (ι → ℝ) → ℝ := fun u =>
+    (2 * M * Real.exp (-(β * t))) *
+      ((‖u‖ ^ 3 + ‖u‖ ^ 5) * Real.exp (-(α * ‖u‖ ^ 2)))
+    with hGtail_def
+  have hGlocal_nn : ∀ u, 0 ≤ Glocal u := by
+    intro u; rw [hGlocal_def]
+    apply mul_nonneg
+    · apply mul_nonneg (mul_nonneg hM_nn hCs_nn) (by positivity)
+    · apply mul_nonneg (by positivity) (Real.exp_pos _).le
+  have hGtail_nn : ∀ u, 0 ≤ Gtail u := by
+    intro u; rw [hGtail_def]
+    apply mul_nonneg
+    · apply mul_nonneg (mul_nonneg (by norm_num) hM_nn) (Real.exp_pos _).le
+    · apply mul_nonneg (by positivity) (Real.exp_pos _).le
+  have hpt : ∀ u : ι → ℝ,
+      |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+        ≤ Glocal u + Gtail u := by
+    intro u
+    -- |odd5K · gW · (exp-1)| = |odd5K| · |gW · (exp-1)|
+    have h_F_abs : |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+        = |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u| *
+          |gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)| := by
+      rw [show odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+          = odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+            (gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)) from by ring,
+          abs_mul]
+    rw [h_F_abs]
+    have h_F_le := h_odd_bound u
+    by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
+    · -- Local case.
+      have h_local_bound :=
+        abs_gaussianWeight_mul_exp_sub_one_le_local V H hc_pos hR_pos hCs_nn
+          h_coer h_local hδ_pos hδ_le_R hδ_const ht_pos u hu
+      -- |gW · (exp-1)| ≤ Cs·‖u‖^3/√t · exp(-c‖u‖²/4).
+      have h_step : |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u| *
+          |gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+          ≤ (M * (‖u‖ ^ 3 + ‖u‖ ^ 5)) *
+            (Cs * ‖u‖ ^ 3 / Real.sqrt t * Real.exp (-(α * ‖u‖ ^ 2))) := by
+        apply mul_le_mul h_F_le _ (abs_nonneg _) (by positivity)
+        rw [hα_def]; exact h_local_bound
+      have h_eq_glocal : (M * (‖u‖ ^ 3 + ‖u‖ ^ 5)) *
+          (Cs * ‖u‖ ^ 3 / Real.sqrt t * Real.exp (-(α * ‖u‖ ^ 2)))
+          = Glocal u := by
+        rw [hGlocal_def]
+        show M * (‖u‖ ^ 3 + ‖u‖ ^ 5) *
+            (Cs * ‖u‖ ^ 3 / Real.sqrt t * Real.exp (-(α * ‖u‖ ^ 2)))
+          = M * Cs / Real.sqrt t *
+            ((‖u‖ ^ 6 + ‖u‖ ^ 8) * Real.exp (-(α * ‖u‖ ^ 2)))
+        ring
+      rw [h_eq_glocal] at h_step
+      linarith [hGtail_nn u]
+    · -- Tail case.
+      push_neg at hu
+      have h_tail_bound :=
+        abs_gaussianWeight_mul_exp_sub_one_le_tail V H hc_pos hR_pos hCs_nn
+          h_coer h_local hδ_pos ht_pos u hu
+      -- |gW · (exp-1)| ≤ 2·exp(-c‖u‖²/4)·exp(-cδ²t/4).
+      have h_step : |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u| *
+          |gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+          ≤ (M * (‖u‖ ^ 3 + ‖u‖ ^ 5)) *
+            (2 * Real.exp (-(α * ‖u‖ ^ 2)) * Real.exp (-(β * t))) := by
+        apply mul_le_mul h_F_le _ (abs_nonneg _) (by positivity)
+        rw [hα_def, hβ_def]
+        exact h_tail_bound
+      have h_eq_gtail : (M * (‖u‖ ^ 3 + ‖u‖ ^ 5)) *
+          (2 * Real.exp (-(α * ‖u‖ ^ 2)) * Real.exp (-(β * t)))
+          = Gtail u := by
+        rw [hGtail_def]; ring
+      rw [h_eq_gtail] at h_step
+      linarith [hGlocal_nn u]
+  -- Integrability of Glocal and Gtail.
+  have hGlocal_int : Integrable Glocal := by
+    rw [hGlocal_def]
+    have h_eq : ∀ u : ι → ℝ, M * Cs / Real.sqrt t *
+        ((‖u‖ ^ 6 + ‖u‖ ^ 8) * Real.exp (-(α * ‖u‖ ^ 2)))
+        = M * Cs / Real.sqrt t * (‖u‖ ^ 6 * Real.exp (-(α * ‖u‖ ^ 2))) +
+          M * Cs / Real.sqrt t * (‖u‖ ^ 8 * Real.exp (-(α * ‖u‖ ^ 2))) := by
+      intro u; ring
+    have h_combined := (h_loc6.const_mul (M * Cs / Real.sqrt t)).add
+      (h_loc8.const_mul (M * Cs / Real.sqrt t))
+    apply h_combined.congr
+    filter_upwards with u
+    show M * Cs / Real.sqrt t * (‖u‖ ^ 6 * Real.exp (-(α * ‖u‖ ^ 2))) +
+        M * Cs / Real.sqrt t * (‖u‖ ^ 8 * Real.exp (-(α * ‖u‖ ^ 2)))
+      = M * Cs / Real.sqrt t *
+        ((‖u‖ ^ 6 + ‖u‖ ^ 8) * Real.exp (-(α * ‖u‖ ^ 2)))
+    ring
+  have hGtail_int : Integrable Gtail := by
+    rw [hGtail_def]
+    have h_eq : ∀ u : ι → ℝ, 2 * M * Real.exp (-(β * t)) *
+        ((‖u‖ ^ 3 + ‖u‖ ^ 5) * Real.exp (-(α * ‖u‖ ^ 2)))
+        = 2 * M * Real.exp (-(β * t)) *
+            (‖u‖ ^ 3 * Real.exp (-(α * ‖u‖ ^ 2))) +
+          2 * M * Real.exp (-(β * t)) *
+            (‖u‖ ^ 5 * Real.exp (-(α * ‖u‖ ^ 2))) := by
+      intro u; ring
+    have h_combined := (h_tail3.const_mul (2 * M * Real.exp (-(β * t)))).add
+      (h_tail5.const_mul (2 * M * Real.exp (-(β * t))))
+    apply h_combined.congr
+    filter_upwards with u
+    show 2 * M * Real.exp (-(β * t)) *
+        (‖u‖ ^ 3 * Real.exp (-(α * ‖u‖ ^ 2))) +
+        2 * M * Real.exp (-(β * t)) *
+          (‖u‖ ^ 5 * Real.exp (-(α * ‖u‖ ^ 2)))
+      = 2 * M * Real.exp (-(β * t)) *
+        ((‖u‖ ^ 3 + ‖u‖ ^ 5) * Real.exp (-(α * ‖u‖ ^ 2)))
+    ring
+  -- Glocal integral.
+  have hGlocal_eq : ∫ u, Glocal u =
+      M * Cs / Real.sqrt t * (M_loc_6 + M_loc_8) := by
+    rw [hGlocal_def, MeasureTheory.integral_const_mul]
+    rw [show (fun u : ι → ℝ =>
+            (‖u‖ ^ 6 + ‖u‖ ^ 8) * Real.exp (-(α * ‖u‖ ^ 2))) =
+        fun u => ‖u‖ ^ 6 * Real.exp (-(α * ‖u‖ ^ 2)) +
+            ‖u‖ ^ 8 * Real.exp (-(α * ‖u‖ ^ 2)) from by funext u; ring]
+    rw [MeasureTheory.integral_add h_loc6 h_loc8, ← hM_loc_6_def, ← hM_loc_8_def]
+  -- Gtail integral.
+  have hGtail_eq : ∫ u, Gtail u =
+      2 * M * Real.exp (-(β * t)) * (M_tail_3 + M_tail_5) := by
+    rw [hGtail_def, MeasureTheory.integral_const_mul]
+    rw [show (fun u : ι → ℝ =>
+            (‖u‖ ^ 3 + ‖u‖ ^ 5) * Real.exp (-(α * ‖u‖ ^ 2))) =
+        fun u => ‖u‖ ^ 3 * Real.exp (-(α * ‖u‖ ^ 2)) +
+            ‖u‖ ^ 5 * Real.exp (-(α * ‖u‖ ^ 2)) from by funext u; ring]
+    rw [MeasureTheory.integral_add h_tail3 h_tail5, ← hM_tail_3_def, ← hM_tail_5_def]
+  -- Tail decay: exp(-βt) ≤ 1/√t for t ≥ 1/β².
+  have htail_sqrt : Real.exp (-(β * t)) ≤ 1 / Real.sqrt t :=
+    exp_neg_const_mul_le_inv_sqrt hβ_pos htβ
+  -- Integrability of odd5K · gW · (exp(-s_t)-1).
+  have h_int_F_diff : Integrable (fun u : ι → ℝ =>
+      odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)) := by
+    have := h_int_F.sub h_int_F_gW
+    apply this.congr
+    filter_upwards with u
+    simp only [Pi.sub_apply]; ring
+  -- Compute the integral bound.
+  have h_int_diff_le : |∫ u, odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+        gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ (K_loc + K_tail) / Real.sqrt t := by
+    calc |∫ u, odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+            gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+        ≤ ∫ u, |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+              gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)| := by
+          rw [show |∫ u, _| = ‖∫ u, _‖ from (Real.norm_eq_abs _).symm]
+          exact MeasureTheory.norm_integral_le_integral_norm _
+      _ ≤ ∫ u, (Glocal u + Gtail u) := by
+          apply MeasureTheory.integral_mono_ae h_int_F_diff.norm
+            (hGlocal_int.add hGtail_int)
+          filter_upwards with u
+          rw [Real.norm_eq_abs]
+          exact hpt u
+      _ = (∫ u, Glocal u) + ∫ u, Gtail u :=
+          MeasureTheory.integral_add hGlocal_int hGtail_int
+      _ = M * Cs / Real.sqrt t * (M_loc_6 + M_loc_8) +
+          2 * M * Real.exp (-(β * t)) * (M_tail_3 + M_tail_5) := by
+            rw [hGlocal_eq, hGtail_eq]
+      _ ≤ M * Cs / Real.sqrt t * (M_loc_6 + M_loc_8) +
+          2 * M * (1 / Real.sqrt t) * (M_tail_3 + M_tail_5) := by
+            have h_step : 2 * M * Real.exp (-(β * t)) * (M_tail_3 + M_tail_5)
+                ≤ 2 * M * (1 / Real.sqrt t) * (M_tail_3 + M_tail_5) := by
+              apply mul_le_mul_of_nonneg_right _
+                (by linarith [hM_tail_3_nn, hM_tail_5_nn])
+              exact mul_le_mul_of_nonneg_left htail_sqrt (by linarith)
+            linarith
+      _ = (K_loc + K_tail) / Real.sqrt t := by
+            rw [hK_loc_def, hK_tail_def]; field_simp
+  -- Now multiply by 1/√t to get K/t.
+  rw [h_int_eq]
+  have h_sqrt_sq : Real.sqrt t * Real.sqrt t = t :=
+    Real.mul_self_sqrt ht_pos.le
+  calc |1 / Real.sqrt t *
+        ∫ u, odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+          gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      = (1 / Real.sqrt t) * |∫ u, odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u *
+          gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1)| := by
+        rw [abs_mul, abs_of_pos (by positivity : (0:ℝ) < 1 / Real.sqrt t)]
+    _ ≤ (1 / Real.sqrt t) * ((K_loc + K_tail) / Real.sqrt t) := by
+        apply mul_le_mul_of_nonneg_left h_int_diff_le (by positivity)
+    _ = (K_loc + K_tail) / t := by
+        rw [div_mul_div_comm, one_mul, h_sqrt_sq]
+
 /-- **The bulk error kernel** for Lemma B Steps 4-9 closure (per GPT B/C-hybrid plan
 `gpt_responses/strategy_stage5_lemmaB_close.md`):
 
