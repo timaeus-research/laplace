@@ -6569,9 +6569,13 @@ private lemma rescaledNumerator_pair_decompose_centered_a_zero
               Real.exp (-(rescaledPerturbation V H t u))) := by
   -- Currently a sorry; the algebraic substitution at the integral level
   -- requires integrability witnesses for `ψ((√t)⁻¹u)·gW·e^{-s_t}` and
-  -- `φ_conn(u)·gW·e^{-s_t}`. The witnesses are derivable from existing
-  -- sharp-track helpers + the `integrable_rescaled_weight` family but
-  -- the bookkeeping is ~100 LOC. Deferred.
+  -- `φ_conn(u)·gW·e^{-s_t}` (i.e. `φ_t · gW · exp` directly, not via
+  -- the dot-multiplied sharp helpers). The witnesses can be built from
+  -- the `integrable_rescaled_weight` family + polynomial growth dominators
+  -- (cf. Stage 4 `expNumerator_centered_decomp` ~200 LOC), but the
+  -- bookkeeping is ~100 LOC. Deferred — the pointwise identity
+  -- `pair_product_centered_decomposition` already establishes the
+  -- algebraic content.
   sorry
 
 /-- **Stage-5 cross asymptotic** (lemma A in `gpt_responses/strategy_stage5_decomposition.md`).
