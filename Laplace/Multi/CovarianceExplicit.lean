@@ -5038,7 +5038,231 @@ private lemma J3_local_pointwise_le
             hV.local_const ^ 3) / t ^ 2) *
           (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
           Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
-  sorry
+  set La : ℝ := ∑ i, |a i| with hLa_def
+  set D : ℝ := hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3
+    with hD_def
+  have hLa_nn : 0 ≤ La := by rw [hLa_def]; exact Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hCs_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
+  have hjet_C_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
+  have hQ_nn : 0 ≤ hV.Q_const := hV.Q_const_nn
+  have hc_pos : 0 < hV.coercive_const := hV.coercive_const_pos
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_sqrt_t_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+  have ht_sq_pos : 0 < t ^ 2 := pow_pos ht 2
+  -- Rearrange |F| = |L_t| · gW · |bracket|.
+  have h_F_eq : |expNumLin a t u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+        gaussianWeight H u|
+      = |expNumLin a t u| * (gaussianWeight H u *
+          |((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|) := by
+    rw [show expNumLin a t u *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t u)
+              - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+            gaussianWeight H u
+          = expNumLin a t u *
+              (gaussianWeight H u *
+                ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                    + expPotCubic V H hV.toPotentialTensorApprox t u)
+                  - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                      + expPotCubic V H hV.toPotentialTensorApprox t (-u)))) from by
+        ring,
+        abs_mul, abs_mul (gaussianWeight H u), abs_of_nonneg h_gW_nn]
+  rw [h_F_eq]
+  -- |L_t| ≤ La·‖u‖/√t.
+  have h_L_bound : |expNumLin a t u| ≤ La * ‖u‖ / Real.sqrt t := by
+    unfold expNumLin
+    rw [abs_mul, abs_of_pos (by positivity : (0 : ℝ) < (Real.sqrt t)⁻¹)]
+    have h_dot_le : |dot a u| ≤ La * ‖u‖ := by
+      rw [hLa_def]; unfold dot
+      calc |∑ i, a i * u i|
+          ≤ ∑ i, |a i * u i| := Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ i, |a i| * ‖u‖ := by
+            apply Finset.sum_le_sum; intro i _; rw [abs_mul]
+            exact mul_le_mul_of_nonneg_left (norm_le_pi_norm u i) (abs_nonneg _)
+        _ = (∑ i, |a i|) * ‖u‖ := by rw [Finset.sum_mul]
+    have h2 : (Real.sqrt t)⁻¹ * (La * ‖u‖) = La * ‖u‖ / Real.sqrt t := by field_simp
+    have h1 : (Real.sqrt t)⁻¹ * |dot a u|
+        ≤ (Real.sqrt t)⁻¹ * (La * ‖u‖) :=
+      mul_le_mul_of_nonneg_left h_dot_le (by positivity)
+    linarith [h2.le, h2.ge]
+  have h_L_nn : 0 ≤ La * ‖u‖ / Real.sqrt t := by positivity
+  -- gW · |bracket| bound combining helper and gW absorption.
+  have h_br := abs_J3_bracket_local_le V H hV hδ_pos hδ_le_R hδ_le_jet_R hδ_const ht u hu
+  have h_gW_le := gaussianWeight_le_exp_neg_coercive V H hV.toPotentialTensorApprox u
+  have h_gW_quart : gaussianWeight H u
+      ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+    have h2 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+      apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hc_pos]
+    linarith
+  have h_gW_combine : gaussianWeight H u *
+        Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)
+      ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+    have h_eq : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) *
+        Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)
+        = Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+      rw [← Real.exp_add]; congr 1; ring
+    have h_mul : gaussianWeight H u * Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)
+        ≤ Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) *
+          Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) :=
+      mul_le_mul_of_nonneg_right h_gW_le (by positivity)
+    linarith [h_eq.le, h_eq.ge]
+  -- gW · |bracket| ≤ exp(-(c/4)) · (Q·‖u‖^5/(t·√t) + 2·jet_C·Cs·‖u‖^7/(t·√t) + Cs³·‖u‖^9/(t·√t)).
+  have h_gWbr : gaussianWeight H u *
+        |((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|
+      ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+        (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+          + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+          + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) := by
+    -- Step a: gW · |bracket| ≤ gW · h_br.
+    have h_step_a : gaussianWeight H u *
+          |((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|
+        ≤ gaussianWeight H u * (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+              + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+              + hV.local_const ^ 3 * ‖u‖ ^ 9 *
+                  Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t)) :=
+      mul_le_mul_of_nonneg_left h_br h_gW_nn
+    -- Step b: gW · sum ≤ exp(-(c/4)) · sum-without-extra-exp.
+    have h_t1 : gaussianWeight H u * (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)) :=
+      mul_le_mul_of_nonneg_right h_gW_quart (by positivity)
+    have h_t2 : gaussianWeight H u *
+          (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)) :=
+      mul_le_mul_of_nonneg_right h_gW_quart (by positivity)
+    have h_t3 : gaussianWeight H u *
+          (hV.local_const ^ 3 * ‖u‖ ^ 9 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) := by
+      have h_factor : gaussianWeight H u *
+            (hV.local_const ^ 3 * ‖u‖ ^ 9 *
+              Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t))
+          = (gaussianWeight H u * Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+            (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) := by ring
+      rw [h_factor]
+      exact mul_le_mul_of_nonneg_right h_gW_combine (by positivity)
+    have h_dist_lhs : gaussianWeight H u *
+          (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+              + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+              + hV.local_const ^ 3 * ‖u‖ ^ 9 *
+                  Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t))
+        = gaussianWeight H u * (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t))
+          + gaussianWeight H u *
+              (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t))
+          + gaussianWeight H u *
+              (hV.local_const ^ 3 * ‖u‖ ^ 9 *
+                Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) /
+                  (t * Real.sqrt t)) := by ring
+    have h_dist_rhs : Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+            + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+            + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t))
+        = Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+            (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t))
+          + Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+              (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t))
+          + Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+              (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) := by ring
+    linarith [h_step_a, h_t1, h_t2, h_t3, h_dist_lhs.le, h_dist_lhs.ge,
+              h_dist_rhs.le, h_dist_rhs.ge]
+  -- Multiply by |L_t| ≤ La·‖u‖/√t.
+  have h_step1 : |expNumLin a t u| * (gaussianWeight H u *
+          |((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|)
+      ≤ (La * ‖u‖ / Real.sqrt t) *
+        (Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+        (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+          + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+          + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t))) := by
+    apply mul_le_mul h_L_bound h_gWbr (mul_nonneg h_gW_nn (abs_nonneg _)) h_L_nn
+  -- Algebraic identity: (X/√t) · (Y/(t·√t)) = X·Y/t².
+  have h_simp_factor : ∀ X : ℝ, (‖u‖ / Real.sqrt t) * (X / (t * Real.sqrt t))
+      = ‖u‖ * X / t ^ 2 := by
+    intro X
+    rw [div_mul_div_comm]
+    rw [mul_comm (Real.sqrt t) (t * Real.sqrt t), mul_assoc t _ _, h_sqrt_t_sq]
+    ring
+  -- Distribute La·(‖u‖/√t) over the three terms.
+  have h_distrib : (La * ‖u‖ / Real.sqrt t) *
+        (Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+        (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+          + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+          + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)))
+      = (La * (hV.Q_const * ‖u‖ ^ 6
+            + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 8
+            + hV.local_const ^ 3 * ‖u‖ ^ 10) / t ^ 2) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+    have h_t1 := h_simp_factor (hV.Q_const * ‖u‖ ^ 5)
+    have h_t2 := h_simp_factor (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7)
+    have h_t3 := h_simp_factor (hV.local_const ^ 3 * ‖u‖ ^ 9)
+    have h_lhs : (La * ‖u‖ / Real.sqrt t) *
+          (Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+            + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+            + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)))
+        = La * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          ((‖u‖ / Real.sqrt t) * (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t))
+            + (‖u‖ / Real.sqrt t) *
+              (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t))
+            + (‖u‖ / Real.sqrt t) *
+              (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t))) := by ring
+    rw [h_lhs, h_t1, h_t2, h_t3]
+    ring
+  -- Final: La·(Q·‖u‖^6 + 2·jet_C·Cs·‖u‖^8 + Cs³·‖u‖^10) ≤ La·D·(‖u‖^6+‖u‖^8+‖u‖^10).
+  have h_final : (La * (hV.Q_const * ‖u‖ ^ 6
+            + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 8
+            + hV.local_const ^ 3 * ‖u‖ ^ 10) / t ^ 2) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+      ≤ (La * D / t ^ 2) *
+        (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+    rw [show (La * D / t ^ 2) * (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) *
+            Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          = (La * D * (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10) / t ^ 2) *
+            Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) from by ring]
+    apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+    apply div_le_div_of_nonneg_right _ ht_sq_pos.le
+    rw [hD_def]
+    have h_u6_nn : 0 ≤ ‖u‖ ^ 6 := pow_nonneg (norm_nonneg _) _
+    have h_u8_nn : 0 ≤ ‖u‖ ^ 8 := pow_nonneg (norm_nonneg _) _
+    have h_u10_nn : 0 ≤ ‖u‖ ^ 10 := pow_nonneg (norm_nonneg _) _
+    have h_jc_nn : 0 ≤ hV.jet_const * hV.local_const := mul_nonneg hjet_C_nn hCs_nn
+    have h_cs3_nn : 0 ≤ hV.local_const ^ 3 := by positivity
+    -- La·D·(‖u‖^6+‖u‖^8+‖u‖^10) - La·(Q·‖u‖^6 + 2·jet·Cs·‖u‖^8 + Cs³·‖u‖^10) ≥ 0
+    -- because LHS includes Q·‖u‖^8, Q·‖u‖^10, 2·jet·Cs·‖u‖^6, 2·jet·Cs·‖u‖^10,
+    -- Cs³·‖u‖^6, Cs³·‖u‖^8 as extra terms.
+    nlinarith [mul_nonneg hLa_nn hQ_nn, mul_nonneg hLa_nn h_jc_nn,
+               mul_nonneg hLa_nn h_cs3_nn,
+               mul_nonneg (mul_nonneg hLa_nn hQ_nn) h_u6_nn,
+               mul_nonneg (mul_nonneg hLa_nn hQ_nn) h_u8_nn,
+               mul_nonneg (mul_nonneg hLa_nn hQ_nn) h_u10_nn,
+               mul_nonneg (mul_nonneg hLa_nn h_jc_nn) h_u6_nn,
+               mul_nonneg (mul_nonneg hLa_nn h_jc_nn) h_u8_nn,
+               mul_nonneg (mul_nonneg hLa_nn h_jc_nn) h_u10_nn,
+               mul_nonneg (mul_nonneg hLa_nn h_cs3_nn) h_u6_nn,
+               mul_nonneg (mul_nonneg hLa_nn h_cs3_nn) h_u8_nn,
+               mul_nonneg (mul_nonneg hLa_nn h_cs3_nn) h_u10_nn]
+  linarith [h_step1, h_distrib.le, h_distrib.ge, h_final]
 
 set_option maxHeartbeats 3200000 in
 /-- **Pointwise tail bound for J₃ integrand.** -/
