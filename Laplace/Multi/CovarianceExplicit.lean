@@ -6652,11 +6652,15 @@ private lemma integral_fqqKernel_mul_gaussianWeight_eq_zero
 
 /-- **Polynomial bound on `fqqKernel`**: `|FQQ(u)| ≤ C_FQQ · (1 + ‖u‖^4)`
 where `C_FQQ` depends on `A`, `B`, `|trASig A Hinv|`, `|trASig (A∘Hinv) (B∘Hinv)|`,
-and `Fintype.card ι`. This gives the polynomial growth needed for the
-tail estimates in the K/t bound. -/
+and `Fintype.card ι` (independent of `u`). This gives the polynomial growth
+needed for the tail estimates in the K/t bound.
+
+The existential is OUTSIDE the universal over `u`, so the constant `C` is
+uniform across all `u` — needed for integrability domination. -/
 private lemma abs_fqqKernel_le
-    (A B Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) :
-    ∃ C : ℝ, 0 ≤ C ∧ |fqqKernel A B Hinv u| ≤ C * (1 + ‖u‖ ^ 4) := by
+    (A B Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ι → ℝ,
+      |fqqKernel A B Hinv u| ≤ C * (1 + ‖u‖ ^ 4) := by
   classical
   set N : ℝ := (Fintype.card ι : ℝ) with hN_def
   have hN_nn : 0 ≤ N := by rw [hN_def]; exact_mod_cast Nat.zero_le _
@@ -6671,7 +6675,7 @@ private lemma abs_fqqKernel_le
               + (1 / 2 : ℝ) * tAB with hC_def
   have hC_nn : 0 ≤ C := by
     rw [hC_def]; positivity
-  refine ⟨C, hC_nn, ?_⟩
+  refine ⟨C, hC_nn, fun u => ?_⟩
   -- Pointwise bounds on each piece.
   have h_qf_A : |quadForm A u| ≤ N * ‖A‖ * ‖u‖ ^ 2 := by
     unfold quadForm
@@ -6828,7 +6832,8 @@ private lemma abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_local_le
           ((hV.toPotentialApprox.local_const ^ 2 * ‖u‖ ^ 6 +
             hV.jet_const * ‖u‖ ^ 4) / t) *
           Real.exp (-(hV.H_coercive_const / 4 * ‖u‖ ^ 2)) := by
-  obtain ⟨C_FQQ, hC_FQQ_nn, hF_bound⟩ := abs_fqqKernel_le A B Hinv u
+  obtain ⟨C_FQQ, hC_FQQ_nn, hF_bound_all⟩ := abs_fqqKernel_le A B Hinv
+  have hF_bound := hF_bound_all u
   refine ⟨C_FQQ, hC_FQQ_nn, ?_⟩
   -- Local bracket bound (existing helper).
   have h_bracket :=
@@ -6960,7 +6965,8 @@ private lemma abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_tail_le
         ≤ ‖u‖ ^ 2 / (ρ ^ 2 * t) *
           (C_FQQ * (1 + ‖u‖ ^ 4) * (2 + hV.cV_bound_const * ‖u‖ ^ 3)) *
           Real.exp (-(min c (hV.H_coercive_const / 2) * ‖u‖ ^ 2)) := by
-  obtain ⟨C_FQQ, hC_FQQ_nn, hF_bound⟩ := abs_fqqKernel_le A B Hinv u
+  obtain ⟨C_FQQ, hC_FQQ_nn, hF_bound_all⟩ := abs_fqqKernel_le A B Hinv
+  have hF_bound := hF_bound_all u
   refine ⟨C_FQQ, hC_FQQ_nn, ?_⟩
   set Cc : ℝ := hV.cV_bound_const with hCc_def
   set c' : ℝ := hV.H_coercive_const with hc'_def
