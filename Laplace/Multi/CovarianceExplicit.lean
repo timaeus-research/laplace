@@ -6304,6 +6304,23 @@ theorem gibbsCov_first_order_rate_explicit
         - (1 / 2 : ℝ) * dot (Hinv b)
             (tensorContractMatrix hV.T (Hinv.comp (hφ.A.comp Hinv))))|
       ≤ K / t := by
+  -- Per gpt_responses/strategy_stage5_cov2.md, this requires a new
+  -- centered-pair-explicit lemma and cannot be reduced to existing
+  -- (sharp + explicit expectation) infrastructure. The product observable
+  -- φ·ψ requires the t^{-2}-coefficient of E_t[φψ], which is computed via
+  -- 6-moment Wick contractions on quadratic·linear·cubic forms.
+  --
+  -- Cheapest path (~1000 LOC):
+  --  1. Strengthen `gaussian_quad_linear_cubic` from existential to explicit
+  --     formula (the actual Wick contraction value).
+  --  2. Prove `rescaledNumerator_centered_pair_explicit` (analog of sharp,
+  --     ~300 LOC) using `pair_product_expansion` + 6-moment Wick + remainder
+  --     bounds (mostly reused from the sharp track).
+  --  3. Wrap via numerator → covariance transfer (same as sharp track).
+  --
+  -- Currently deferred — see notes/cov2_explicit_session_handoff.md for
+  -- the breakdown of remaining work and gpt_responses/strategy_stage5_cov2.md
+  -- for the strategic recipe.
   sorry
 
 end MainTheorems
