@@ -2791,6 +2791,42 @@ private lemma integrable_expNumQuad_mul_gW_mul_rescaled_weight
             (‖u‖ ^ 2 * (gaussianWeight H u *
               Real.exp (-(rescaledPerturbation V H t u)))) := by ring
 
+/-- Integrability of the J₃ integrand `L_t · gW · (exp(-s_t) - 1 + C_t)`. -/
+private lemma integrable_J3_integrand
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      expNumLin a t u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1 + expPotCubic V H hV t u) *
+        gaussianWeight H u) := by
+  -- L_t · gW · (exp(-s_t) - 1 + C_t)
+  -- = L_t · gW · exp(-s_t) - L_t · gW + L_t · C_t · gW.
+  have h_coer : ∀ w : ι → ℝ, hV.coercive_const * ‖w‖ ^ 2 ≤ V w :=
+    hV.coercive_bound
+  have h_piece1 : Integrable (fun u : ι → ℝ =>
+      expNumLin a t u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_expNumLin_mul_gW_mul_rescaled_weight V H a
+      hV.V_continuous hV.coercive_const_pos h_coer ht
+  have h_piece2 : Integrable (fun u : ι → ℝ =>
+      expNumLin a t u * gaussianWeight H u) :=
+    integrable_expNumLin_mul_gaussianWeight V H a hV.toPotentialJetApprox ht
+  have h_piece3 : Integrable (fun u : ι → ℝ =>
+      expNumLin a t u * expPotCubic V H hV t u * gaussianWeight H u) :=
+    integrable_expNumLin_mul_expPotCubic_mul_gaussianWeight V H a hV ht
+  have h_combine : Integrable (fun u : ι → ℝ =>
+      expNumLin a t u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      - expNumLin a t u * gaussianWeight H u
+      + expNumLin a t u * expPotCubic V H hV t u * gaussianWeight H u) := by
+    have := (h_piece1.sub h_piece2).add h_piece3
+    convert this using 1
+  apply h_combine.congr
+  filter_upwards with u
+  ring
+
 /-- Integrability of the J₄ integrand `(Q_t - μ/t) · gW · (exp(-s_t) - 1)`. -/
 private lemma integrable_J4_integrand
     (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
