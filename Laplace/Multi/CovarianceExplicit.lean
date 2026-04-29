@@ -2015,6 +2015,124 @@ private lemma gaussian_cubic_linear
   rw [integral_const_mul, h]
   ring
 
+/-- **Partial quadratic operator from a 3-tensor**: given a continuous
+trilinear form `T : (ι → ℝ)³ → ℝ` and a vector `c : ι → ℝ`, fix the third
+slot of `T` to `c` to obtain a continuous linear operator
+`(cubicPartialOp T c) : (ι → ℝ) →L[ℝ] (ι → ℝ)` such that
+`((cubicPartialOp T c) u) i = T(e_i, u, c)`.
+
+The corresponding bilinear form is `(u, v) ↦ T(u, v, c)`, and when `T` is
+symmetric this gives a symmetric operator with
+`quadForm (cubicPartialOp T c) u = T(u, u, c)`.
+
+Used to bridge `gaussian_quad_quad` (operator-form Wick) with the
+quad·cubic·linear integral after a Stein-style IBP on `(b·u)`. -/
+private noncomputable def cubicPartialOp
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (c : ι → ℝ) : (ι → ℝ) →L[ℝ] (ι → ℝ) :=
+  LinearMap.toContinuousLinearMap
+    { toFun := fun u : ι → ℝ => fun i : ι => T (fun k : Fin 3 =>
+        match k with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)
+        | 1 => u
+        | 2 => c)
+      map_add' := by
+        intro u v; funext i; simp only [Pi.add_apply]
+        set m_base : Fin 3 → (ι → ℝ) := fun k =>
+          match k with
+          | 0 => Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)
+          | 1 => (0 : ι → ℝ)
+          | 2 => c with hm
+        have h_eq : ∀ w : ι → ℝ, (fun k : Fin 3 =>
+            match k with
+            | 0 => Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)
+            | 1 => w
+            | 2 => c) = Function.update m_base 1 w := by
+          intro w; funext k
+          fin_cases k <;> simp [m_base, Function.update]
+        rw [h_eq u, h_eq v, h_eq (u + v)]
+        exact T.map_update_add m_base 1 u v
+      map_smul' := by
+        intro a u; funext i; simp only [RingHom.id_apply, Pi.smul_apply]
+        set m_base : Fin 3 → (ι → ℝ) := fun k =>
+          match k with
+          | 0 => Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)
+          | 1 => (0 : ι → ℝ)
+          | 2 => c with hm
+        have h_eq : ∀ w : ι → ℝ, (fun k : Fin 3 =>
+            match k with
+            | 0 => Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)
+            | 1 => w
+            | 2 => c) = Function.update m_base 1 w := by
+          intro w; funext k
+          fin_cases k <;> simp [m_base, Function.update]
+        rw [h_eq u, h_eq (a • u)]
+        exact T.map_update_smul m_base 1 a u }
+
+/-- Coordinate formula: `((cubicPartialOp T c) u) i = T(e_i, u, c)`. -/
+private lemma cubicPartialOp_apply
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (c u : ι → ℝ) (i : ι) :
+    ((cubicPartialOp T c) u) i = T (fun k : Fin 3 =>
+        match k with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)
+        | 1 => u
+        | 2 => c) := rfl
+
+/-- **`quadForm` characterisation**: `quadForm (cubicPartialOp T c) u = T(u, u, c)`.
+The defining property of the partial quadratic operator. Proved via slot-0
+multilinearity of `T` and basis decomposition `u = ∑ j, u j • e_j`. -/
+private lemma quadForm_cubicPartialOp
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (c u : ι → ℝ) :
+    quadForm (cubicPartialOp T c) u =
+      T (fun k : Fin 3 =>
+        match k with
+        | 0 => u
+        | 1 => u
+        | 2 => c) := by
+  unfold quadForm
+  set m_base : Fin 3 → (ι → ℝ) := fun k =>
+    match k with
+    | 0 => (0 : ι → ℝ)
+    | 1 => u
+    | 2 => c with hm
+  have h_match_e : ∀ j : ι, (fun k : Fin 3 =>
+      match k with
+      | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+      | 1 => u
+      | 2 => c) = Function.update m_base 0
+        (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) := by
+    intro j; funext k
+    fin_cases k <;> simp [m_base, Function.update]
+  have h_match_u : (fun k : Fin 3 =>
+      match k with
+      | 0 => u
+      | 1 => u
+      | 2 => c) = Function.update m_base 0 u := by
+    funext k
+    fin_cases k <;> simp [m_base, Function.update]
+  conv_lhs =>
+    enter [2, j]
+    rw [cubicPartialOp_apply T c u j, h_match_e j]
+  rw [h_match_u]
+  have h_decomp : u = ∑ j : ι, u j • Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ) := by
+    funext k
+    rw [Finset.sum_apply]
+    simp [Pi.single_apply]
+  change ∑ j, u j * T.toMultilinearMap _ = T.toMultilinearMap _
+  rw [show (T.toMultilinearMap (Function.update m_base 0 u))
+      = (T.toMultilinearMap (Function.update m_base 0
+          (∑ j : ι, u j • Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))) by
+        congr 1; rw [← h_decomp]]
+  rw [T.toMultilinearMap.map_update_sum (Finset.univ : Finset ι) 0
+      (fun j : ι => u j • Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) m_base]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [T.toMultilinearMap.map_update_smul m_base 0 (u j)
+      (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))]
+  change u j * _ = u j • _
+  rfl
+
 /-- **6th-moment contraction (quad · linear · cubic)**:
 $\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = $
 the contracted six-pairing form, in the appendix's expanded coefficient
@@ -2023,7 +2141,11 @@ specialised Gaussian contraction lemma — used in `lem:laplace_cov2` term 3.
 
 Trivial existential witness: the integral itself divided by `gaussianZ H`.
 The actual closed-form via 15 Wick pairings is needed only when `lem:laplace_cov2`
-is filled in; the existential here just records that the integral is finite. -/
+is filled in; the existential here just records that the integral is finite.
+
+**v7 plan**: strengthen via single IBP on `(b·u)` (Stein's identity),
+reducing to existing 4-moment helpers `gaussian_linear_cubic` and
+`gaussian_quad_quad` with `cubicPartialOp` for the quad·quad piece. -/
 private lemma gaussian_quad_linear_cubic
     (A : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ)
     (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
