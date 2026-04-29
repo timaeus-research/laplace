@@ -3353,6 +3353,54 @@ private lemma integrable_J4_integrand_neg
   filter_upwards with u
   rw [expNumQuad_neg, gaussianWeight_neg]
 
+/-- Integrability of the J₃ symmetrized integrand
+`L_t · gW · ((exp(-s_t(u)) - 1 + C_t(u)) - (exp(-s_t(-u)) - 1 + C_t(-u)))`.
+Difference of the original and `-u`-substituted (after parity adjustment)
+J_3 integrands. -/
+private lemma integrable_J3_integrand_sym
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      expNumLin a t u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1 + expPotCubic V H hV t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV t (-u))) *
+        gaussianWeight H u) := by
+  have h_int_orig := integrable_J3_integrand V H a hV ht
+  -- Derive integrability of the substituted version (with -u in s_t and C_t).
+  have h_int_neg : Integrable (fun u : ι → ℝ =>
+      expNumLin a t u *
+        (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+            + expPotCubic V H hV t (-u)) *
+        gaussianWeight H u) := by
+    have h_int_orig_neg := h_int_orig.comp_neg
+    -- J_3_integrand(-u) = -L_t(u)·(exp(-s_t(-u)) - 1 - C_t(u))·gW(u).
+    have h_neg_int : Integrable (fun u : ι → ℝ =>
+        -(expNumLin a t (-u) *
+          (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV t (-u)) *
+          gaussianWeight H (-u))) := h_int_orig_neg.neg
+    apply h_neg_int.congr
+    filter_upwards with u
+    rw [expNumLin_neg, expPotCubic_neg, gaussianWeight_neg]
+    ring
+  -- Sum/difference structure: L_t · (R(u) - R(-u)) · gW = orig - neg.
+  have h_combine : Integrable (fun u : ι → ℝ =>
+      expNumLin a t u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1 + expPotCubic V H hV t u) *
+        gaussianWeight H u -
+      expNumLin a t u *
+        (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+            + expPotCubic V H hV t (-u)) *
+        gaussianWeight H u) := by
+    have := h_int_orig.sub h_int_neg
+    convert this using 1
+  apply h_combine.congr
+  filter_upwards with u
+  ring
+
 /-- Integrability of the J₄ symmetrized integrand
 `(Q_t - μ/t) · gW · ((exp(-s_t(u)) - 1) + (exp(-s_t(-u)) - 1))`.
 Sum of the original and `-u`-substituted J₄ integrands. -/
