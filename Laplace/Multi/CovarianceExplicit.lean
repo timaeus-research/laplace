@@ -1812,6 +1812,165 @@ private lemma gaussian_quad_quad
   rw [h_pair3, h_pair2, ← h_pair1']
   ring
 
+/-- **`quadForm B · gW` integrability** under `LaplaceCov4MomentHypotheses`.
+Decompose `quadForm B u = ∑_{i,j} (B e_j)_i · u_i · u_j` and use
+`int_uk_uj_gW` per term + `integrable_finset_sum`. -/
+private lemma integrable_quadForm_mul_gaussianWeight
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    Integrable (fun u : ι → ℝ => quadForm B u * gaussianWeight H u) := by
+  classical
+  have h_eq : ∀ u : ι → ℝ,
+      quadForm B u * gaussianWeight H u
+      = ∑ i, ∑ j, (B (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          (u i * u j * gaussianWeight H u) := by
+    intro u
+    unfold quadForm
+    simp_rw [Finset.sum_mul]
+    refine Finset.sum_congr rfl ?_
+    intro i _
+    rw [H_apply_eq_sum B u i]
+    simp_rw [Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl ?_
+    intro j _; ring
+  rw [show (fun u : ι → ℝ => quadForm B u * gaussianWeight H u)
+        = fun u => ∑ i, ∑ j,
+            (B (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (u i * u j * gaussianWeight H u) from funext h_eq]
+  apply integrable_finset_sum
+  intros i _
+  apply integrable_finset_sum
+  intros j _
+  exact (hGauss.toLaplaceCovHypotheses.int_uk_uj_gW i j).const_mul _
+
+/-- **`quadForm A · quadForm B · gW` integrability** under `LaplaceCov4MomentHypotheses`.
+Decompose into a finite sum of `u_i u_j u_k u_l · gW` terms via `H_apply_eq_sum`,
+each integrable by `int_4moment`. -/
+private lemma integrable_quadForm_mul_quadForm_mul_gaussianWeight
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    Integrable (fun u : ι → ℝ => quadForm A u * quadForm B u * gaussianWeight H u) := by
+  classical
+  have h_qA : ∀ u : ι → ℝ, quadForm A u =
+      ∑ i, ∑ j, u i * u j * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+    intro u
+    unfold quadForm
+    apply Finset.sum_congr rfl; intros i _
+    rw [H_apply_eq_sum A u i, Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros j _; ring
+  have h_qB : ∀ u : ι → ℝ, quadForm B u =
+      ∑ k, ∑ l, u k * u l * (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k := by
+    intro u
+    unfold quadForm
+    apply Finset.sum_congr rfl; intros k _
+    rw [H_apply_eq_sum B u k, Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros l _; ring
+  have h_eq : ∀ u : ι → ℝ,
+      quadForm A u * quadForm B u * gaussianWeight H u
+      = ∑ i, ∑ k, ∑ j, ∑ l,
+          ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
+          (u i * u j * u k * u l * gaussianWeight H u) := by
+    intro u
+    rw [h_qA u, h_qB u]
+    rw [show (∑ i, ∑ j, u i * u j *
+          (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+          (∑ k, ∑ l, u k * u l *
+            (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
+          gaussianWeight H u
+        = gaussianWeight H u *
+          ((∑ i, ∑ j, u i * u j *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) *
+            (∑ k, ∑ l, u k * u l *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k)) from by ring]
+    rw [Finset.sum_mul_sum]
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros i _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros k _
+    rw [Finset.sum_mul_sum]
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros j _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intros l _
+    ring
+  rw [show (fun u : ι → ℝ => quadForm A u * quadForm B u * gaussianWeight H u)
+        = fun u => ∑ i, ∑ k, ∑ j, ∑ l,
+            ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
+            (u i * u j * u k * u l * gaussianWeight H u) from funext h_eq]
+  apply integrable_finset_sum; intros i _
+  apply integrable_finset_sum; intros k _
+  apply integrable_finset_sum; intros j _
+  apply integrable_finset_sum; intros l _
+  exact (hGauss.int_4moment i j k l).const_mul _
+
+/-- **Centered 4th-moment contraction** (Step 1 of Lemma B in
+`gpt_responses/strategy_stage5_lemmas_attack.md`):
+$\int (\tfrac12 \mathrm{Q}_A - \tfrac12 \mathrm{tr}(A\Sigma)) \cdot \tfrac12 \mathrm{Q}_B \cdot gW
+  = Z \cdot \tfrac12 \mathrm{tr}(A\Sigma B\Sigma)$.
+
+Centering by `μ_A = (1/2) tr(AΣ)` cancels the disconnected
+`(1/4) tr(AΣ) tr(BΣ)` piece of `gaussian_quad_quad`, leaving the
+connected `tr(AΣ BΣ)` term. -/
+private lemma gaussian_quad_centered_quad_eq
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hB_symm : ∀ u v : ι → ℝ, dot u (B v) = dot v (B u))
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+        ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u
+      = gaussianZ H * (1 / 2 : ℝ) *
+          trASig (A.comp Hinv) (B.comp Hinv) := by
+  have h_qq := gaussian_quad_quad A B hA_symm hB_symm hGauss
+  have h_qe := gaussian_quad_expectation B hB_symm hGauss.toLaplaceCovHypotheses
+  -- Pointwise: (Q_A - μ_A) · Q_B · gW = Q_A · Q_B · gW - μ_A · Q_B · gW.
+  have h_int_QQgW : Integrable (fun u : ι → ℝ =>
+      ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u) *
+        gaussianWeight H u) := by
+    have h := integrable_quadForm_mul_quadForm_mul_gaussianWeight A B hGauss
+    have h_eq : (fun u : ι → ℝ =>
+        ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u) *
+          gaussianWeight H u)
+        = fun u : ι → ℝ => (1 / 4 : ℝ) *
+          (quadForm A u * quadForm B u * gaussianWeight H u) := by
+      funext u; ring
+    rw [h_eq]; exact h.const_mul _
+  have h_int_QgW : Integrable (fun u : ι → ℝ =>
+      ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u) := by
+    have h := integrable_quadForm_mul_gaussianWeight B hGauss
+    have h_eq : (fun u : ι → ℝ =>
+        ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u)
+        = fun u : ι → ℝ => (1 / 2 : ℝ) *
+          (quadForm B u * gaussianWeight H u) := by
+      funext u; ring
+    rw [h_eq]; exact h.const_mul _
+  have h_int_const_QgW : Integrable (fun u : ι → ℝ =>
+      ((1 / 2 : ℝ) * trASig A Hinv) *
+        (((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u)) :=
+    h_int_QgW.const_mul _
+  have h_pt : ∀ u : ι → ℝ,
+      ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+          ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u
+      = ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u) *
+          gaussianWeight H u
+        - ((1 / 2 : ℝ) * trASig A Hinv) *
+          (((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u) := by
+    intro u; ring
+  rw [show (fun u : ι → ℝ =>
+        ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+            ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u)
+        = fun u => ((1 / 2 : ℝ) * quadForm A u) *
+              ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u
+            - ((1 / 2 : ℝ) * trASig A Hinv) *
+                (((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u) from
+      funext h_pt]
+  rw [MeasureTheory.integral_sub h_int_QQgW h_int_const_QgW]
+  rw [MeasureTheory.integral_const_mul, h_qq, h_qe]
+  ring
+
 /-- **4th-moment contraction (cubic · linear)**:
 $\int \tfrac16 \Phi(u,u,u)(b\cdot u)\,gW = Z\cdot\tfrac12(\Sigma b)\cdot(\Phi{:}\Sigma)$.
 Symmetric to `gaussian_linear_cubic` modulo the $1/6$ prefactor; the
