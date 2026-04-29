@@ -4342,16 +4342,27 @@ private lemma expNumErr₄_bound
         + Cμ * (hV.jet_const + hV.local_const ^ 2 + 1)) * M_loc with hK_def
   refine ⟨K, 1, le_refl _, ?_⟩
   intro t ht1
-  -- Per `gpt_responses/tactics_j3_j4_parity.md`:
-  -- J_4 closes via symmetrization + local/tail integration. The full assembly
-  -- is mechanical (~400 LOC) but each step requires careful integrability
-  -- bookkeeping. Building blocks proven:
-  -- - `expNumErr₄_symmetric`
-  -- - `abs_J4_bracket_local_le`, `abs_gW_J4_bracket_le_uniform`
-  -- - `abs_expNumQuad_sub_coeff_le`, `abs_rescaledPerturbation_add_neg_le`
-  -- - `integrable_J4_integrand`, `integrable_J4_integrand_neg`,
-  --   `integrable_J4_integrand_sym`
-  -- Implementation deferred for next session.
+  -- Use expNumErr₄_symmetric: 2·J₄ = ∫ B · bracket · gW.
+  -- Hence |J₄| = (1/2) · |2·J₄| ≤ (1/2) · ∫ |B · bracket · gW|.
+  -- Then bound the integral via a unified majorant.
+  --
+  -- Full integration assembly: ~400 LOC of careful bookkeeping. The
+  -- analytical content is fully proven via the building blocks above.
+  -- Implementation strategy:
+  --   1. h_sym := expNumErr₄_symmetric ... ht_pos  [factor 2]
+  --   2. h_int_sym := integrable_J4_integrand_sym ... ht_pos
+  --   3. Define G(u) := (K_local + K_tail) / t² · poly(‖u‖) · exp(-(c/4)‖u‖²)
+  --      with poly chosen large enough to dominate both local and tail bounds.
+  --   4. Show |B · bracket · gW| ≤ G(u) pointwise:
+  --      - Local (‖u‖ ≤ δ·√t): combine abs_J4_bracket_local_le, |B| bound,
+  --        gW ≤ exp(-(c/2)‖u‖²); gives `(local terms with exp((c/4)‖u‖²) ·
+  --        exp(-(c/2)‖u‖²) = exp(-(c/4)‖u‖²))`.
+  --      - Tail (‖u‖ > δ·√t): use abs_gW_J4_bracket_le_uniform giving
+  --        `|gW · bracket| ≤ 2·gW + 2·exp(-c·‖u‖²)`, plus |B| bound, plus
+  --        absorption `1/t ≤ ‖u‖²/(δ²·t²)` to get the 1/t² prefactor.
+  --   5. norm_integral_le_of_norm_le with G as dominator → final inequality.
+  --
+  -- Deferred for the next session due to length.
   sorry
 
 /-- **Centered EXP numerator (sharp rate)**: the centered numerator
