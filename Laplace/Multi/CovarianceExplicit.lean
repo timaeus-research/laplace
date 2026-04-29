@@ -2938,6 +2938,125 @@ private noncomputable def expNumErr₃
       * (Real.exp (-(rescaledPerturbation V H t u)) - 1 + expPotCubic V H hV t u)
       * gaussianWeight H u
 
+/-- **J₃ symmetrization**: by `u ↦ -u` substitution (L_t flips sign,
+gW invariant),
+
+`2 · J₃ = ∫ L_t(u) · [(e^{-s_t(u)} + C_t(u)) - (e^{-s_t(-u)} + C_t(-u))] · gW(u) du`.
+
+The bracket is the ODD part of `e^{-s_t(u)} - 1 + C_t(u)`. The leading
+cubic-jet `C_t(u)` doubles in the difference (cubic = odd), giving
+`exp(-s_t(u)) - exp(-s_t(-u)) + 2·C_t(u)`, which by Stage-1 + Stage-2 ≈
+`-(s_t(u) - s_t(-u)) + 2·C_t(u) + O(s_t² · exp|s_t|)`.
+
+The main term `s_t(u) - s_t(-u) = 2·C_t(u) + O(‖u‖⁴/t)` (from quartic `T_jet_bound`),
+so the leading part of the bracket cancels modulo `O(‖u‖⁴/t)`. To get a
+sharper `O(‖u‖⁵/t^(3/2))` bound (needed for the `O(t⁻²)` rate), the
+QUINTIC bound from `PotentialQuinticApprox` is required. -/
+private lemma expNumErr₃_symmetric
+    (V : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht : 0 < t) :
+    2 * expNumErr₃ V H hV a t
+      = ∫ u : ι → ℝ,
+          expNumLin a t u *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV t u)
+              - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV t (-u))) *
+            gaussianWeight H u := by
+  unfold expNumErr₃
+  -- Step 1: ∫ f(u) du = -∫ -f(-u) du = -∫ -L_t(u)·R(-u)·gW(u) du
+  --       = ∫ L_t(u)·R(-u)·gW(u) du after rewriting with parity.
+  -- Actually: ∫ f(u) du = ∫ f(-u) du by substitution. f(-u) = -L_t(u)·R(-u)·gW(u).
+  have h_neg :
+      (∫ u : ι → ℝ,
+        expNumLin a t u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV t u) *
+          gaussianWeight H u)
+      = (∫ u : ι → ℝ,
+          - (expNumLin a t u *
+            (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV t (-u)) *
+            gaussianWeight H u)) := by
+    have h_sub :=
+      integral_pi_comp_neg
+        (fun u : ι → ℝ =>
+          expNumLin a t u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV t u) *
+            gaussianWeight H u)
+    rw [← h_sub]
+    apply MeasureTheory.integral_congr_ae
+    filter_upwards with u
+    rw [expNumLin_neg, gaussianWeight_neg]
+    ring
+  -- Step 2: 2·J₃ = J₃ + J₃ = ∫ f - (-∫ f) wait no...
+  -- 2·J₃ = J₃ + J₃ = ∫f + ∫f = ∫f - (-∫f). And -∫f = ∫(-f(-u) under sub) = ∫(-(...))
+  -- Actually: 2J₃ = J₃ + J₃ = J₃ - (-J₃). And from step 1, -J₃ = ∫(-(...))... hmm.
+  -- Let me reformulate: 2·J₃ = J₃ + J₃, and using J₃ = -∫(−L_t·R(-u)·gW) (the negative
+  -- of the substituted form), so J₃ = -(-J₃_neg) where J₃_neg := ∫ L_t(u)·R(-u)·gW(u).
+  -- Hmm getting tangled. Let me just compute directly.
+  have h_int_orig := integrable_J3_integrand V H a hV ht
+  -- Integrability of J_3 with -u substituted: similar to J_4_integrand_neg.
+  have h_int_neg : Integrable (fun u : ι → ℝ =>
+      expNumLin a t u *
+        (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+            + expPotCubic V H hV t (-u)) *
+        gaussianWeight H u) := by
+    have h_int_orig_neg := h_int_orig.comp_neg
+    -- Note: J_3_integrand(-u) = -L_t(u)·(exp(-s_t(-u)) - 1 - C_t(u))·gW(u), so
+    -- the integrand differs by a global sign from what we want. Negate.
+    have h_neg_int : Integrable (fun u : ι → ℝ =>
+        -(expNumLin a t (-u) *
+          (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV t (-u)) *
+          gaussianWeight H (-u))) := h_int_orig_neg.neg
+    apply h_neg_int.congr
+    filter_upwards with u
+    rw [expNumLin_neg, expPotCubic_neg, gaussianWeight_neg]
+    ring
+  -- 2·J₃ = J₃ + J₃ = ∫ f - ∫ f_neg' where f_neg'(u) = -L_t(u)·R(-u)·gW(u) (from h_neg).
+  have h_two_mul : (2 : ℝ) * (∫ u : ι → ℝ,
+        expNumLin a t u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV t u) *
+          gaussianWeight H u)
+      = (∫ u : ι → ℝ,
+          expNumLin a t u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV t u) *
+            gaussianWeight H u)
+        - (∫ u : ι → ℝ,
+            expNumLin a t u *
+              (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV t (-u)) *
+              gaussianWeight H u) := by
+    -- LHS = 2·J₃, RHS = J₃ - (-J₃) = J₃ + J₃ from h_neg.
+    rw [show (∫ u : ι → ℝ,
+            expNumLin a t u *
+              (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV t (-u)) *
+              gaussianWeight H u)
+          = -(∫ u : ι → ℝ,
+              expNumLin a t u *
+                (Real.exp (-(rescaledPerturbation V H t u)) - 1
+                    + expPotCubic V H hV t u) *
+                gaussianWeight H u) from by
+        conv_rhs => rw [h_neg]
+        rw [← MeasureTheory.integral_neg]
+        apply MeasureTheory.integral_congr_ae
+        filter_upwards with u
+        ring]
+    ring
+  rw [h_two_mul, ← MeasureTheory.integral_sub h_int_orig h_int_neg]
+  apply MeasureTheory.integral_congr_ae
+  filter_upwards with u
+  ring
+
 /-- `J₄ = ∫ (Q_t(u) - μ/t) · (e^{-s_t} - 1) · gW(u) du` — centered quadratic
 observable jet against the perturbation residual. -/
 private noncomputable def expNumErr₄
