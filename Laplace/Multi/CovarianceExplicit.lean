@@ -1251,6 +1251,77 @@ theorem gaussian_sixth_moment_formula
 
 end SixthMomentFormula
 
+section QuinticCoordStein
+
+/-- **Coordinate-level quintic Stein identity**: for indices $k, a, b, c, d, e$,
+$$
+  \int u_k u_a u_b u_c u_d u_e \, gW
+   = \Sigma_{ka} \cdot \int u_b u_c u_d u_e \, gW
+   + \Sigma_{kb} \cdot \int u_a u_c u_d u_e \, gW
+   + \Sigma_{kc} \cdot \int u_a u_b u_d u_e \, gW
+   + \Sigma_{kd} \cdot \int u_a u_b u_c u_e \, gW
+   + \Sigma_{ke} \cdot \int u_a u_b u_c u_d \, gW.
+$$
+This is the Stein identity reducing 6-moment to 4-moment via one IBP.
+
+Proof: apply `gaussian_sixth_moment_formula` to LHS, then
+`gaussian_fourth_moment_formula` to each of the 5 RHS integrals. Both
+sides expand to $Z \cdot$ (15 explicit Σ products); equality by Σ-symmetry
++ `ring`. -/
+private lemma gaussian_quintic_coord_stein
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv)
+    (k a b c d e : ι) :
+    ∫ u : ι → ℝ,
+        u k * u a * u b * u c * u d * u e * gaussianWeight H u
+      = (Hinv (Pi.single (M := fun _ : ι => ℝ) a (1 : ℝ))) k *
+          (∫ u, u b * u c * u d * u e * gaussianWeight H u)
+        + (Hinv (Pi.single (M := fun _ : ι => ℝ) b (1 : ℝ))) k *
+          (∫ u, u a * u c * u d * u e * gaussianWeight H u)
+        + (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) k *
+          (∫ u, u a * u b * u d * u e * gaussianWeight H u)
+        + (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) k *
+          (∫ u, u a * u b * u c * u e * gaussianWeight H u)
+        + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) k *
+          (∫ u, u a * u b * u c * u d * gaussianWeight H u) := by
+  -- Reorder LHS to match 6-moment formula pattern.
+  have h_reorder : ∀ u : ι → ℝ,
+      u k * u a * u b * u c * u d * u e * gaussianWeight H u
+      = u a * u b * u c * u d * u e * u k * gaussianWeight H u := by
+    intro u; ring
+  rw [show (fun u : ι → ℝ =>
+        u k * u a * u b * u c * u d * u e * gaussianWeight H u) =
+        fun u => u a * u b * u c * u d * u e * u k * gaussianWeight H u
+        from funext h_reorder]
+  -- Apply 6-moment formula (with f = k) on LHS.
+  rw [gaussian_sixth_moment_formula hGauss a b c d e k]
+  -- Apply 4-moment formula 5 times on RHS.
+  rw [gaussian_fourth_moment_formula
+      hGauss.toLaplaceCov4MomentHypotheses b c d e,
+      gaussian_fourth_moment_formula
+        hGauss.toLaplaceCov4MomentHypotheses a c d e,
+      gaussian_fourth_moment_formula
+        hGauss.toLaplaceCov4MomentHypotheses a b d e,
+      gaussian_fourth_moment_formula
+        hGauss.toLaplaceCov4MomentHypotheses a b c e,
+      gaussian_fourth_moment_formula
+        hGauss.toLaplaceCov4MomentHypotheses a b c d]
+  -- Σ symmetry: (Hinv e_x) y = (Hinv e_y) x. Use hSigSymm-style identity.
+  have hSigSymm : ∀ x y : ι,
+      (Hinv (Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ))) y =
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ))) x := by
+    intro x y
+    have h := Hinv_symm (H := H) (Hinv := Hinv)
+        (hGauss := hGauss.toLaplaceCovHypotheses)
+        (Pi.single (M := fun _ : ι => ℝ) y (1 : ℝ))
+        (Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ))
+    simpa [Pi.single_apply] using h
+  -- Five Σ symmetry rewrites to align k's position in the outer factors.
+  rw [hSigSymm k a, hSigSymm k b, hSigSymm k c, hSigSymm k d, hSigSymm k e]
+  ring
+
+end QuinticCoordStein
+
 set_option maxHeartbeats 800000
 
 section GaussianContractions
