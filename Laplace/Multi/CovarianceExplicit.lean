@@ -7586,8 +7586,17 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
   -- Prerequisites (shared with Lemma B): parity helpers P1, P2 + the
   -- explicit `gaussian_quad_linear_cubic` (Step 1 above, ~150-200 LOC).
   --
-  -- Status: GPT plan locked in; depends on Lemma B's parity helpers + the
-  -- explicit Wick strengthening. Total ~400-600 LOC after parity helpers exist.
+  -- 2026-04-29 update: After Lemma B is closed (next session), Lemma A reuses
+  -- its FQQ-style scaffolding with adaptations:
+  --   - `(b·u) · C_φ`: linear·cubic = even kernel — analogous to FQQ but
+  --     polynomial degree 4 (not centered around constant); main term via
+  --     `gaussian_cubic_linear`.
+  --   - `(b·u) · Q^c_φ · V_3`: odd kernel; needs P2 (odd analogue of FQQ
+  --     transformation). Main term from explicit `gaussian_quad_linear_cubic`.
+  --   - Strengthened `gaussian_quad_linear_cubic`: per GPT recommendation, ONE
+  --     IBP on `(b·u)` (NOT full sextic Wick), reducing to existing 4-moment
+  --     `gaussian_linear_cubic` + `gaussian_quad_quad`. ~150-200 LOC.
+  -- Total after Lemma B + strengthened Wick: ~400-600 LOC.
   sorry
 
 /-- **Stage-5 rem-rem asymptotic** (lemma B in `gpt_responses/strategy_stage5_decomposition.md`).
@@ -7667,7 +7676,30 @@ private theorem rescaledIntegral_rr_connected_asymptotic
   -- Prerequisites (shared with Lemma A): parity helpers P1, P2 — see
   -- `gpt_responses/strategy_stage5_lemmas_attack.md` § "Shared infrastructure".
   --
-  -- Status: GPT plan locked in; helpers + 10 sub-steps not yet implemented (~500 LOC).
+  -- 2026-04-29 update: GPT consult #2 locked in Path 2 (specialize, not generic
+  -- P1) — see `gpt_responses/strategy_stage5_lemmaB_path.md`. Items 1-6 of the
+  -- 10-item plan are now in this file as named helpers (compiles, 0 sorry):
+  --   1. `fqqKernel A B Hinv u`: doubly-centered quartic FQQ.
+  --   2. `fqqKernel_even`: parity (via `quadForm_neg`).
+  --   3. `integral_fqqKernel_mul_gaussianWeight_eq_zero`: zero Gaussian mean
+  --      (via `gaussian_quad_centered_quad_eq` − constant·Z cancellation).
+  --   4. `abs_fqqKernel_le`: `|FQQ(u)| ≤ C · (1 + ‖u‖^4)` polynomial bound.
+  --   5. `integral_even_centered_eq_corrected_bracket`: generic transformation
+  --      `∫ F · gW · exp(-s_t) = ∫ F · gW · (exp(-s_t) - 1 + t·cV)` for any
+  --      centered even kernel.
+  --   6. `abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_local_le`:
+  --      local pointwise bound on `‖u‖ ≤ ρ√t`.
+  --   7. `integrable_pow_norm_mul_gaussianWeight_mul_cV`: `‖u‖^k · gW · cV(...)`
+  --      integrability for arbitrary `k : ℕ`.
+  -- Remaining (~600 LOC): clone-and-adapt of `abs_integral_corrected_bracket_centered_bilinear_le`
+  -- in `Multi/CovarianceSharp.lean` (lines 2020-2760) for the FQQ kernel:
+  --   • Adapt polynomial bound from `A·B·‖u‖²+|m|` → `C_FQQ·(1+‖u‖^4)`.
+  --   • Bump Gaussian moment exponents: Glocal needs degrees 4,6,8,10; Gtail
+  --     needs degrees 4,6,7,9.
+  --   • Combine local + tail via case analysis at pointwise level.
+  -- After that, item 9 (corrected-bracket K/t bound) closes via this clone +
+  -- the transformation lemma; item 10 (transport corollary) closes Step 2 of
+  -- the 10-step Lemma B plan above.
   sorry
 
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
