@@ -935,6 +935,322 @@ theorem gaussian_fourth_moment_formula
 
 end FourthMomentFormula
 
+section SixthMomentFormula
+
+-- Bookkeeping for the 5×3 Wick collapse pushes past the default heartbeat budget.
+set_option maxHeartbeats 800000 in
+/-- **6th-moment Wick formula**: for indices $a, b, c, d, e, f$,
+$$
+  \int u_a u_b u_c u_d u_e u_f \, gW
+   = Z \cdot \sum_{\text{pairings}} \prod_3 \Sigma_{**}.
+$$
+The 15 Wick pairings arise as: `f` pairs with one of `{a, b, c, d, e}`
+(5 choices), then the remaining 4 indices give 3 pairings via the
+4th-moment formula. Total: 5 × 3 = 15 terms.
+
+The proof multiplies the quintic IBP identity by $\Sigma_{lp}$ and sums
+over $l$; the contraction $\sum_l \Sigma_{lp} (Hu)_l = u_p$ reduces the
+LHS to the 6th moment, and each of the 5 indicator pieces collapses to
+a 4-moment integral. -/
+theorem gaussian_sixth_moment_formula
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv)
+    (a b c d e f : ι) :
+    ∫ u : ι → ℝ, u a * u b * u c * u d * u e * u f * gaussianWeight H u
+      = gaussianZ H *
+          ((Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) a *
+            ((Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) b *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) c
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) c *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) b
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) d *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) b)
+           + (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) b *
+            ((Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) a *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) c
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) c *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) a
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) d *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) a)
+           + (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) c *
+            ((Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) a *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) b
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) b *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) a
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) d *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) b (1 : ℝ))) a)
+           + (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) d *
+            ((Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) a *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) b
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) b *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) a
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) e (1 : ℝ))) c *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) b (1 : ℝ))) a)
+           + (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) e *
+            ((Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) a *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) b
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) b *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) c (1 : ℝ))) a
+              + (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) c *
+                (Hinv (Pi.single (M := fun _ : ι => ℝ) b (1 : ℝ))) a)) := by
+  classical
+  -- Step 1: pointwise contraction `u_f = ∑_l (Σ e_f) l · (Hu) l`.
+  have h_h_inv : H (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) =
+      Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ) := by
+    have := congrArg (fun g => g (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ)))
+      hGauss.H_inv_right
+    simpa using this
+  have h_contract : ∀ u : ι → ℝ,
+      u f = ∑ l, (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+        (H u) l := by
+    intro u
+    have h_sym := hGauss.H_symm u
+      (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ)))
+    rw [h_h_inv] at h_sym
+    have h_lhs : ∑ k, u k *
+        (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ)) k = u f := by
+      rw [Finset.sum_eq_single f]
+      · rw [Pi.single_eq_same]; ring
+      · intros k _ hk
+        have h_zero : Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ) k = 0 := by
+          simp [Pi.single_apply, hk.symm]
+        rw [h_zero]; ring
+      · intro h; exact absurd (Finset.mem_univ f) h
+    rw [h_lhs] at h_sym
+    exact h_sym
+  -- Step 2: rewrite integrand and swap sum/integral.
+  have h_integrand_eq : ∀ u : ι → ℝ,
+      u a * u b * u c * u d * u e * u f * gaussianWeight H u =
+        ∑ l, (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (u a * u b * u c * u d * u e * (H u) l *
+                gaussianWeight H u) := by
+    intro u
+    have h := h_contract u
+    calc u a * u b * u c * u d * u e * u f * gaussianWeight H u
+        = u a * u b * u c * u d * u e *
+            (∑ l, (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (H u) l) * gaussianWeight H u := by rw [h]
+      _ = ∑ l, (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (u a * u b * u c * u d * u e * (H u) l *
+                gaussianWeight H u) := by
+          rw [Finset.mul_sum, Finset.sum_mul]
+          apply Finset.sum_congr rfl
+          intros l _; ring
+  rw [show (fun u : ι → ℝ => u a * u b * u c * u d * u e * u f *
+            gaussianWeight H u) =
+        fun u => ∑ l, (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (u a * u b * u c * u d * u e * (H u) l *
+                gaussianWeight H u)
+        from funext h_integrand_eq]
+  rw [integral_finset_sum Finset.univ
+        (fun l _ => (hGauss.int_5_Hl a b c d e l).const_mul _)]
+  -- Step 3: per l, pull constant out and apply quintic IBP.
+  conv_lhs =>
+    enter [2, l]
+    rw [integral_const_mul]
+    rw [gaussian_ibp_quintic_f hGauss a b c d e l]
+  -- Step 4: split each integral into 5 indicator pieces.
+  have h_int_each_eq : ∀ l : ι,
+      ∫ u : ι → ℝ,
+          ((if l = a then u b * u c * u d * u e else 0) +
+           (if l = b then u a * u c * u d * u e else 0) +
+           (if l = c then u a * u b * u d * u e else 0) +
+           (if l = d then u a * u b * u c * u e else 0) +
+           (if l = e then u a * u b * u c * u d else 0)) *
+          gaussianWeight H u =
+        (if l = a then ∫ u, u b * u c * u d * u e *
+                    gaussianWeight H u else 0)
+        + (if l = b then ∫ u, u a * u c * u d * u e *
+                    gaussianWeight H u else 0)
+        + (if l = c then ∫ u, u a * u b * u d * u e *
+                    gaussianWeight H u else 0)
+        + (if l = d then ∫ u, u a * u b * u c * u e *
+                    gaussianWeight H u else 0)
+        + (if l = e then ∫ u, u a * u b * u c * u d *
+                    gaussianWeight H u else 0) := by
+    intro l
+    have h_pt : ∀ u : ι → ℝ,
+        ((if l = a then u b * u c * u d * u e else 0) +
+         (if l = b then u a * u c * u d * u e else 0) +
+         (if l = c then u a * u b * u d * u e else 0) +
+         (if l = d then u a * u b * u c * u e else 0) +
+         (if l = e then u a * u b * u c * u d else 0)) *
+          gaussianWeight H u =
+        (if l = a then (1 : ℝ) else 0) *
+          (u b * u c * u d * u e * gaussianWeight H u)
+        + (if l = b then (1 : ℝ) else 0) *
+          (u a * u c * u d * u e * gaussianWeight H u)
+        + (if l = c then (1 : ℝ) else 0) *
+          (u a * u b * u d * u e * gaussianWeight H u)
+        + (if l = d then (1 : ℝ) else 0) *
+          (u a * u b * u c * u e * gaussianWeight H u)
+        + (if l = e then (1 : ℝ) else 0) *
+          (u a * u b * u c * u d * gaussianWeight H u) := by
+      intro u
+      split_ifs <;> ring
+    rw [show (fun u : ι → ℝ =>
+            ((if l = a then u b * u c * u d * u e else 0) +
+             (if l = b then u a * u c * u d * u e else 0) +
+             (if l = c then u a * u b * u d * u e else 0) +
+             (if l = d then u a * u b * u c * u e else 0) +
+             (if l = e then u a * u b * u c * u d else 0)) *
+              gaussianWeight H u) =
+          fun u =>
+            (if l = a then (1 : ℝ) else 0) *
+              (u b * u c * u d * u e * gaussianWeight H u)
+            + (if l = b then (1 : ℝ) else 0) *
+              (u a * u c * u d * u e * gaussianWeight H u)
+            + (if l = c then (1 : ℝ) else 0) *
+              (u a * u b * u d * u e * gaussianWeight H u)
+            + (if l = d then (1 : ℝ) else 0) *
+              (u a * u b * u c * u e * gaussianWeight H u)
+            + (if l = e then (1 : ℝ) else 0) *
+              (u a * u b * u c * u d * gaussianWeight H u)
+          from funext h_pt]
+    have h1 : Integrable (fun u : ι → ℝ =>
+        (if l = a then (1 : ℝ) else 0) *
+          (u b * u c * u d * u e * gaussianWeight H u)) :=
+      (hGauss.int_4moment b c d e).const_mul _
+    have h2 : Integrable (fun u : ι → ℝ =>
+        (if l = b then (1 : ℝ) else 0) *
+          (u a * u c * u d * u e * gaussianWeight H u)) :=
+      (hGauss.int_4moment a c d e).const_mul _
+    have h3 : Integrable (fun u : ι → ℝ =>
+        (if l = c then (1 : ℝ) else 0) *
+          (u a * u b * u d * u e * gaussianWeight H u)) :=
+      (hGauss.int_4moment a b d e).const_mul _
+    have h4 : Integrable (fun u : ι → ℝ =>
+        (if l = d then (1 : ℝ) else 0) *
+          (u a * u b * u c * u e * gaussianWeight H u)) :=
+      (hGauss.int_4moment a b c e).const_mul _
+    have h5 : Integrable (fun u : ι → ℝ =>
+        (if l = e then (1 : ℝ) else 0) *
+          (u a * u b * u c * u d * gaussianWeight H u)) :=
+      (hGauss.int_4moment a b c d).const_mul _
+    have h12 : Integrable (fun u : ι → ℝ =>
+        (if l = a then (1 : ℝ) else 0) *
+          (u b * u c * u d * u e * gaussianWeight H u)
+        + (if l = b then (1 : ℝ) else 0) *
+          (u a * u c * u d * u e * gaussianWeight H u)) := h1.add h2
+    have h123 : Integrable (fun u : ι → ℝ =>
+        (if l = a then (1 : ℝ) else 0) *
+          (u b * u c * u d * u e * gaussianWeight H u)
+        + (if l = b then (1 : ℝ) else 0) *
+          (u a * u c * u d * u e * gaussianWeight H u)
+        + (if l = c then (1 : ℝ) else 0) *
+          (u a * u b * u d * u e * gaussianWeight H u)) := h12.add h3
+    have h1234 : Integrable (fun u : ι → ℝ =>
+        (if l = a then (1 : ℝ) else 0) *
+          (u b * u c * u d * u e * gaussianWeight H u)
+        + (if l = b then (1 : ℝ) else 0) *
+          (u a * u c * u d * u e * gaussianWeight H u)
+        + (if l = c then (1 : ℝ) else 0) *
+          (u a * u b * u d * u e * gaussianWeight H u)
+        + (if l = d then (1 : ℝ) else 0) *
+          (u a * u b * u c * u e * gaussianWeight H u)) := h123.add h4
+    rw [integral_add h1234 h5, integral_add h123 h4,
+        integral_add h12 h3, integral_add h1 h2,
+        integral_const_mul, integral_const_mul,
+        integral_const_mul, integral_const_mul, integral_const_mul]
+    congr 1
+    · congr 1
+      · congr 1
+        · congr 1
+          · split_ifs <;> ring
+          · split_ifs <;> ring
+        · split_ifs <;> ring
+      · split_ifs <;> ring
+    · split_ifs <;> ring
+  conv_lhs =>
+    enter [2, l]
+    rw [h_int_each_eq l]
+  -- Step 5: distribute outer (Σ e_f)_l multiplier and split into 5 sums.
+  have h_dist : ∀ l : ι,
+      (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+        ((if l = a then ∫ u, u b * u c * u d * u e *
+                    gaussianWeight H u else 0)
+         + (if l = b then ∫ u, u a * u c * u d * u e *
+                    gaussianWeight H u else 0)
+         + (if l = c then ∫ u, u a * u b * u d * u e *
+                    gaussianWeight H u else 0)
+         + (if l = d then ∫ u, u a * u b * u c * u e *
+                    gaussianWeight H u else 0)
+         + (if l = e then ∫ u, u a * u b * u c * u d *
+                    gaussianWeight H u else 0))
+      = (if l = a then (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (∫ u, u b * u c * u d * u e * gaussianWeight H u) else 0)
+        + (if l = b then (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (∫ u, u a * u c * u d * u e * gaussianWeight H u) else 0)
+        + (if l = c then (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (∫ u, u a * u b * u d * u e * gaussianWeight H u) else 0)
+        + (if l = d then (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (∫ u, u a * u b * u c * u e * gaussianWeight H u) else 0)
+        + (if l = e then (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+              (∫ u, u a * u b * u c * u d * gaussianWeight H u) else 0) := by
+    intro l
+    split_ifs <;> ring
+  conv_lhs =>
+    enter [2, l]
+    rw [h_dist l]
+  rw [Finset.sum_add_distrib, Finset.sum_add_distrib,
+      Finset.sum_add_distrib, Finset.sum_add_distrib]
+  -- Step 6: collapse each indicator-sum via Finset.sum_eq_single.
+  have h_sum_a : ∑ l, (if l = a then
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+          (∫ u, u b * u c * u d * u e * gaussianWeight H u) else 0)
+      = (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) a *
+          (∫ u, u b * u c * u d * u e * gaussianWeight H u) := by
+    rw [Finset.sum_eq_single a]
+    · rw [if_pos rfl]
+    · intros l _ hla; rw [if_neg hla]
+    · intro h; exact absurd (Finset.mem_univ a) h
+  have h_sum_b : ∑ l, (if l = b then
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+          (∫ u, u a * u c * u d * u e * gaussianWeight H u) else 0)
+      = (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) b *
+          (∫ u, u a * u c * u d * u e * gaussianWeight H u) := by
+    rw [Finset.sum_eq_single b]
+    · rw [if_pos rfl]
+    · intros l _ hlb; rw [if_neg hlb]
+    · intro h; exact absurd (Finset.mem_univ b) h
+  have h_sum_c : ∑ l, (if l = c then
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+          (∫ u, u a * u b * u d * u e * gaussianWeight H u) else 0)
+      = (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) c *
+          (∫ u, u a * u b * u d * u e * gaussianWeight H u) := by
+    rw [Finset.sum_eq_single c]
+    · rw [if_pos rfl]
+    · intros l _ hlc; rw [if_neg hlc]
+    · intro h; exact absurd (Finset.mem_univ c) h
+  have h_sum_d : ∑ l, (if l = d then
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+          (∫ u, u a * u b * u c * u e * gaussianWeight H u) else 0)
+      = (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) d *
+          (∫ u, u a * u b * u c * u e * gaussianWeight H u) := by
+    rw [Finset.sum_eq_single d]
+    · rw [if_pos rfl]
+    · intros l _ hld; rw [if_neg hld]
+    · intro h; exact absurd (Finset.mem_univ d) h
+  have h_sum_e : ∑ l, (if l = e then
+        (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
+          (∫ u, u a * u b * u c * u d * gaussianWeight H u) else 0)
+      = (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) e *
+          (∫ u, u a * u b * u c * u d * gaussianWeight H u) := by
+    rw [Finset.sum_eq_single e]
+    · rw [if_pos rfl]
+    · intros l _ hle; rw [if_neg hle]
+    · intro h; exact absurd (Finset.mem_univ e) h
+  rw [h_sum_a, h_sum_b, h_sum_c, h_sum_d, h_sum_e]
+  -- Step 7: apply 4-moment formula to the 5 4-moment integrals.
+  rw [gaussian_fourth_moment_formula hGauss.toLaplaceCov4MomentHypotheses b c d e]
+  rw [gaussian_fourth_moment_formula hGauss.toLaplaceCov4MomentHypotheses a c d e]
+  rw [gaussian_fourth_moment_formula hGauss.toLaplaceCov4MomentHypotheses a b d e]
+  rw [gaussian_fourth_moment_formula hGauss.toLaplaceCov4MomentHypotheses a b c e]
+  rw [gaussian_fourth_moment_formula hGauss.toLaplaceCov4MomentHypotheses a b c d]
+  ring
+
+end SixthMomentFormula
+
 set_option maxHeartbeats 800000
 
 section GaussianContractions
