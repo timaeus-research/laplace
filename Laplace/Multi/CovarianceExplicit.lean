@@ -9579,6 +9579,8 @@ private lemma abs_bulkErr_local_le
   linarith [h_pieces_abs, h_total, h_K1_bound, h_K2_bound, h_K3_bound,
             h_K4_bound, h_K5_bound, h_K6_bound, h_K_sum]
 
+set_option maxHeartbeats 4000000 in
+-- Heavy: 3 piece bounds + 5 polynomial-degree absorbtions.
 /-- **Tail pointwise bound on `bulkErr`** (Lemma B Steps 4-9 closure, tail region).
 
 On the tail set `‖u‖ > R · √t` with `R := min hφ.jet_radius hψ.jet_radius`,
@@ -9618,7 +9620,322 @@ private lemma abs_bulkErr_tail_le
         min hφ.jet_radius hψ.jet_radius * Real.sqrt t < ‖u‖ →
         |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u|
           ≤ K_tail * (1 + ‖u‖ ^ M) := by
-  sorry
+  classical
+  obtain ⟨K_φ, p_φ, hKφ_nn, h_φ_growth⟩ := hφ.toObservableApprox.poly_growth
+  obtain ⟨K_ψ, p_ψ, hKψ_nn, h_ψ_growth⟩ := hψ.toObservableApprox.poly_growth
+  obtain ⟨M_odd, hM_odd_nn, h_odd_bound⟩ :=
+    abs_odd5Kernel_le hφ.A hψ.A Hinv hφ.Φ hψ.Φ
+  -- Setup constants.
+  set R : ℝ := min hφ.jet_radius hψ.jet_radius with hR_def
+  have hR_pos : 0 < R := lt_min hφ.jet_radius_pos hψ.jet_radius_pos
+  set N : ℝ := (Fintype.card ι : ℝ) with hN_def
+  have hN_nn : 0 ≤ N := by rw [hN_def]; exact_mod_cast Nat.zero_le _
+  set tA : ℝ := |trASig hφ.A Hinv| with htA_def
+  have htA_nn : 0 ≤ tA := abs_nonneg _
+  set bL1 : ℝ := ∑ i, |b i| with hbL1_def
+  have hbL1_nn : 0 ≤ bL1 := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hAφ_nn : 0 ≤ ‖hφ.A‖ := norm_nonneg _
+  have hAψ_nn : 0 ≤ ‖hψ.A‖ := norm_nonneg _
+  -- Per-piece constants.
+  set CP1 : ℝ := (K_φ + tA) * (K_ψ + bL1) / R ^ 4 with hCP1_def
+  set CP2 : ℝ := (1 / 4 : ℝ) * (N * ‖hφ.A‖ + tA) * (N * ‖hψ.A‖) with hCP2_def
+  set CP3 : ℝ := M_odd with hCP3_def
+  have hCP1_nn : 0 ≤ CP1 := by rw [hCP1_def]; positivity
+  have hCP2_nn : 0 ≤ CP2 := by rw [hCP2_def]; positivity
+  have hCP3_nn : 0 ≤ CP3 := hM_odd_nn
+  -- M big enough to absorb all polynomial degrees.
+  set M : ℕ := p_φ + p_ψ + 6 with hM_def
+  -- K_tail: enough for 6 P1-terms + 2 P2-terms + 2 P3-terms.
+  refine ⟨6 * CP1 + 2 * CP2 + 2 * CP3, M, by positivity,
+          fun t ht_one u hu_tail => ?_⟩
+  -- Setup positivity facts.
+  have ht_pos : 0 < t := by linarith
+  have ht_sq_pos : 0 < t ^ 2 := by positivity
+  have hsqt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqt_pos
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht_pos.le
+  have hsqt_one_le : 1 ≤ Real.sqrt t := by
+    rw [show (1 : ℝ) = Real.sqrt 1 from (Real.sqrt_one).symm]
+    exact Real.sqrt_le_sqrt ht_one
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_one_uM_nn : 0 ≤ 1 + ‖u‖ ^ M := by
+    have := pow_nonneg h_norm_nn M; linarith
+  -- Tail facts: t ≤ ‖u‖²/R², t² ≤ ‖u‖⁴/R⁴.
+  have h_R_sqt_lt_u : R * Real.sqrt t < ‖u‖ := hu_tail
+  have h_t_le : t ≤ ‖u‖ ^ 2 / R ^ 2 := by
+    have h_sqt_le : Real.sqrt t ≤ ‖u‖ / R := by
+      rw [le_div_iff₀ hR_pos]; linarith
+    rw [show ‖u‖ ^ 2 / R ^ 2 = (‖u‖ / R) ^ 2 from by field_simp]
+    rw [show t = Real.sqrt t * Real.sqrt t from h_sq.symm, sq]
+    exact mul_le_mul h_sqt_le h_sqt_le hsqt_pos.le (by positivity)
+  have h_t2_le : t ^ 2 ≤ ‖u‖ ^ 4 / R ^ 4 := by
+    have h_p4 : ‖u‖ ^ 4 / R ^ 4 = (‖u‖ ^ 2 / R ^ 2) * (‖u‖ ^ 2 / R ^ 2) := by
+      field_simp
+    rw [show t ^ 2 = t * t from sq t, h_p4]
+    exact mul_le_mul h_t_le h_t_le ht_pos.le (by positivity)
+  -- For t ≥ 1: ‖(√t)⁻¹•u‖ = ‖u‖/√t ≤ ‖u‖.
+  have h_inv_norm : ‖(Real.sqrt t)⁻¹ • u‖ ≤ ‖u‖ := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hsqt_pos)]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rw [div_le_iff₀ hsqt_pos]
+    nlinarith [hsqt_one_le, h_norm_nn]
+  have h_pow_inv_le : ∀ k : ℕ,
+      ‖(Real.sqrt t)⁻¹ • u‖ ^ k ≤ ‖u‖ ^ k :=
+    fun k => pow_le_pow_left₀ (norm_nonneg _) h_inv_norm k
+  have h_φ_at : |φ ((Real.sqrt t)⁻¹ • u)| ≤ K_φ * (1 + ‖u‖ ^ p_φ) := by
+    refine le_trans (h_φ_growth _) ?_
+    apply mul_le_mul_of_nonneg_left _ hKφ_nn
+    linarith [h_pow_inv_le p_φ]
+  have h_ψ_at : |ψ ((Real.sqrt t)⁻¹ • u)| ≤ K_ψ * (1 + ‖u‖ ^ p_ψ) := by
+    refine le_trans (h_ψ_growth _) ?_
+    apply mul_le_mul_of_nonneg_left _ hKψ_nn
+    linarith [h_pow_inv_le p_ψ]
+  -- |dot b u| ≤ bL1 · ‖u‖.
+  have h_dot_b_le : |dot b u| ≤ bL1 * ‖u‖ := by
+    rw [hbL1_def]; exact abs_dot_le_l1_mul_norm b u
+  -- Power monotonicity: ‖u‖^k ≤ 1 + ‖u‖^M for k ≤ M.
+  have h_pow_le : ∀ k : ℕ, k ≤ M → ‖u‖ ^ k ≤ 1 + ‖u‖ ^ M := by
+    intro k hk
+    by_cases hcase : ‖u‖ ≤ 1
+    · have h1 : ‖u‖ ^ k ≤ 1 := pow_le_one₀ h_norm_nn hcase
+      have hMpow : 0 ≤ ‖u‖ ^ M := pow_nonneg h_norm_nn _
+      linarith
+    · push_neg at hcase
+      have h1 : 1 ≤ ‖u‖ := hcase.le
+      have hk_pow : ‖u‖ ^ k ≤ ‖u‖ ^ M := pow_le_pow_right₀ h1 hk
+      linarith
+  -- Bound for |expCovPhiConn|.
+  -- expCovPhiConn = φ((√t)⁻¹•u) - μ_φ/t. With a=0, μ_φ = (1/2)·trASig.
+  have h_phi_conn :
+      |expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u|
+        ≤ (K_φ + tA) * (1 + ‖u‖ ^ p_φ) := by
+    unfold expCovPhiConn expNumeratorCoeff
+    rw [show Hinv (0 : ι → ℝ) = 0 from map_zero Hinv]
+    rw [show dot (0 : ι → ℝ) (tensorContractMatrix hV.T Hinv) = 0 from by
+      unfold dot; simp]
+    rw [sub_zero]
+    have h_tri : |φ ((Real.sqrt t)⁻¹ • u) - trASig hφ.A Hinv / 2 / t|
+        ≤ |φ ((Real.sqrt t)⁻¹ • u)| + |trASig hφ.A Hinv / 2 / t| := abs_sub _ _
+    have h_μ_at : |trASig hφ.A Hinv / 2 / t| ≤ tA := by
+      have h_eq : trASig hφ.A Hinv / 2 / t
+          = trASig hφ.A Hinv * (1 / (2 * t)) := by ring
+      rw [h_eq, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < 1 / (2 * t)),
+          ← htA_def]
+      have h_inv_le : (1 : ℝ) / (2 * t) ≤ 1 := by
+        rw [div_le_iff₀ (by linarith)]; linarith
+      have := mul_le_mul_of_nonneg_left h_inv_le htA_nn
+      linarith
+    have h_pow_p_nn : (0 : ℝ) ≤ ‖u‖ ^ p_φ := pow_nonneg h_norm_nn _
+    -- Want: (K_φ + tA) * (1 + ‖u‖^p_φ) ≥ K_φ·(1+‖u‖^p_φ) + tA.
+    nlinarith [h_φ_at, h_μ_at, h_tri, h_pow_p_nn, htA_nn, hKφ_nn]
+  -- Bound for |expCovPsiRem|.
+  have h_psi_rem :
+      |expCovPsiRem ψ b t u|
+        ≤ (K_ψ + bL1) * (1 + ‖u‖ ^ p_ψ + ‖u‖) := by
+    unfold expCovPsiRem
+    have h_tri : |ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u|
+        ≤ |ψ ((Real.sqrt t)⁻¹ • u)| + |(Real.sqrt t)⁻¹ * dot b u| := abs_sub _ _
+    have h_dot_at : |(Real.sqrt t)⁻¹ * dot b u| ≤ bL1 * ‖u‖ := by
+      rw [abs_mul, abs_of_pos (inv_pos.mpr hsqt_pos)]
+      have h_inv_le : (Real.sqrt t)⁻¹ ≤ 1 := by
+        rw [inv_le_one₀ hsqt_pos]; linarith
+      have h_step : (Real.sqrt t)⁻¹ * |dot b u| ≤ 1 * |dot b u| :=
+        mul_le_mul_of_nonneg_right h_inv_le (abs_nonneg _)
+      linarith [h_dot_b_le]
+    have h_pow_p_nn : (0 : ℝ) ≤ ‖u‖ ^ p_ψ := pow_nonneg h_norm_nn _
+    nlinarith [h_ψ_at, h_dot_at, h_tri, h_pow_p_nn, h_norm_nn, hKψ_nn, hbL1_nn]
+  -- Bound for |t² · expCovPhiConn · expCovPsiRem|.
+  have hKpφ_sum_nn : 0 ≤ K_φ + tA := by linarith
+  have hKpψ_sum_nn : 0 ≤ K_ψ + bL1 := by linarith
+  have h_phi_conn_nn : 0 ≤ (K_φ + tA) * (1 + ‖u‖ ^ p_φ) := by
+    apply mul_nonneg hKpφ_sum_nn
+    have := pow_nonneg h_norm_nn p_φ; linarith
+  have h_psi_rem_nn : 0 ≤ (K_ψ + bL1) * (1 + ‖u‖ ^ p_ψ + ‖u‖) := by
+    apply mul_nonneg hKpψ_sum_nn
+    have h1 := pow_nonneg h_norm_nn p_ψ
+    linarith
+  have h_P1_step : |t ^ 2 *
+        expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+        expCovPsiRem ψ b t u|
+      ≤ (‖u‖ ^ 4 / R ^ 4) *
+          ((K_φ + tA) * (1 + ‖u‖ ^ p_φ)) *
+          ((K_ψ + bL1) * (1 + ‖u‖ ^ p_ψ + ‖u‖)) := by
+    rw [show t ^ 2 *
+            expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+            expCovPsiRem ψ b t u
+          = t ^ 2 *
+              (expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+                expCovPsiRem ψ b t u) from by ring,
+        abs_mul, abs_of_pos (by positivity : (0 : ℝ) < t ^ 2)]
+    have h_prod : |expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+        expCovPsiRem ψ b t u|
+        ≤ ((K_φ + tA) * (1 + ‖u‖ ^ p_φ)) *
+            ((K_ψ + bL1) * (1 + ‖u‖ ^ p_ψ + ‖u‖)) := by
+      rw [abs_mul]
+      exact mul_le_mul h_phi_conn h_psi_rem (abs_nonneg _) h_phi_conn_nn
+    have h_step : t ^ 2 * |expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+        expCovPsiRem ψ b t u|
+        ≤ (‖u‖ ^ 4 / R ^ 4) *
+            (((K_φ + tA) * (1 + ‖u‖ ^ p_φ)) *
+              ((K_ψ + bL1) * (1 + ‖u‖ ^ p_ψ + ‖u‖))) := by
+      apply mul_le_mul h_t2_le h_prod (abs_nonneg _) (by positivity)
+    linarith
+  -- Bound: (‖u‖⁴/R⁴) * (Kφ+tA) * (1+‖u‖^pφ) * (Kψ+bL1) * (1+‖u‖^pψ+‖u‖) = CP1·‖u‖⁴·(...)·(...)
+  have h_P1_eq : (‖u‖ ^ 4 / R ^ 4) *
+        ((K_φ + tA) * (1 + ‖u‖ ^ p_φ)) *
+        ((K_ψ + bL1) * (1 + ‖u‖ ^ p_ψ + ‖u‖))
+      = CP1 * ‖u‖ ^ 4 * (1 + ‖u‖ ^ p_φ) * (1 + ‖u‖ ^ p_ψ + ‖u‖) := by
+    rw [hCP1_def]; field_simp
+  -- Expand: ‖u‖^4·(1+‖u‖^pφ)·(1+‖u‖^pψ+‖u‖) =
+  --    ‖u‖^4 + ‖u‖^(4+pψ) + ‖u‖^5 + ‖u‖^(4+pφ) + ‖u‖^(4+pφ+pψ) + ‖u‖^(5+pφ).
+  have h_poly_expand : ‖u‖ ^ 4 * (1 + ‖u‖ ^ p_φ) * (1 + ‖u‖ ^ p_ψ + ‖u‖)
+      = ‖u‖ ^ 4 + ‖u‖ ^ (4 + p_ψ) + ‖u‖ ^ 5
+        + ‖u‖ ^ (4 + p_φ) + ‖u‖ ^ (4 + p_φ + p_ψ) + ‖u‖ ^ (5 + p_φ) := by
+    simp only [pow_add]; ring
+  -- Each ‖u‖^k for k ∈ {4, 4+p_ψ, 5, 4+p_φ, 4+p_φ+p_ψ, 5+p_φ} ≤ 1 + ‖u‖^M.
+  have h_4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ M := h_pow_le 4 (by rw [hM_def]; omega)
+  have h_4pψ_le : ‖u‖ ^ (4 + p_ψ) ≤ 1 + ‖u‖ ^ M := by
+    apply h_pow_le; rw [hM_def]; omega
+  have h_5_le : ‖u‖ ^ 5 ≤ 1 + ‖u‖ ^ M := h_pow_le 5 (by rw [hM_def]; omega)
+  have h_4pφ_le : ‖u‖ ^ (4 + p_φ) ≤ 1 + ‖u‖ ^ M := by
+    apply h_pow_le; rw [hM_def]; omega
+  have h_4pp_le : ‖u‖ ^ (4 + p_φ + p_ψ) ≤ 1 + ‖u‖ ^ M := by
+    apply h_pow_le; rw [hM_def]; omega
+  have h_5pφ_le : ‖u‖ ^ (5 + p_φ) ≤ 1 + ‖u‖ ^ M := by
+    apply h_pow_le; rw [hM_def]; omega
+  have h_poly_le : ‖u‖ ^ 4 * (1 + ‖u‖ ^ p_φ) * (1 + ‖u‖ ^ p_ψ + ‖u‖)
+      ≤ 6 * (1 + ‖u‖ ^ M) := by
+    rw [h_poly_expand]; linarith
+  have h_P1_le : |t ^ 2 *
+        expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+        expCovPsiRem ψ b t u|
+      ≤ 6 * CP1 * (1 + ‖u‖ ^ M) := by
+    have h_step : CP1 * ‖u‖ ^ 4 * (1 + ‖u‖ ^ p_φ) * (1 + ‖u‖ ^ p_ψ + ‖u‖)
+        ≤ CP1 * (6 * (1 + ‖u‖ ^ M)) := by
+      have h_factored : CP1 * ‖u‖ ^ 4 * (1 + ‖u‖ ^ p_φ) * (1 + ‖u‖ ^ p_ψ + ‖u‖)
+          = CP1 * (‖u‖ ^ 4 * (1 + ‖u‖ ^ p_φ) * (1 + ‖u‖ ^ p_ψ + ‖u‖)) := by ring
+      rw [h_factored]
+      exact mul_le_mul_of_nonneg_left h_poly_le hCP1_nn
+    linarith
+  -- Bound for |q_c · Q_ψ|.
+  have h_qf_φ : |quadForm hφ.A u| ≤ N * ‖hφ.A‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (hφ.A u) i| ≤ ‖u‖ * ‖hφ.A u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (hφ.A u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (hφ.A u) i| ≤ ∑ i, |u i * (hφ.A u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (hφ.A u) i| ≤ N * (‖u‖ * ‖hφ.A u‖) := by
+      calc ∑ i, |u i * (hφ.A u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖hφ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖hφ.A u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]; push_cast; ring
+    have h_Au : ‖hφ.A u‖ ≤ ‖hφ.A‖ * ‖u‖ := hφ.A.le_opNorm u
+    calc |∑ i, u i * (hφ.A u) i|
+        ≤ N * (‖u‖ * ‖hφ.A u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ N * (‖u‖ * (‖hφ.A‖ * ‖u‖)) :=
+          mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)) hN_nn
+      _ = N * ‖hφ.A‖ * ‖u‖ ^ 2 := by ring
+  have h_qf_ψ : |quadForm hψ.A u| ≤ N * ‖hψ.A‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (hψ.A u) i| ≤ ‖u‖ * ‖hψ.A u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (hψ.A u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (hψ.A u) i| ≤ ∑ i, |u i * (hψ.A u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (hψ.A u) i| ≤ N * (‖u‖ * ‖hψ.A u‖) := by
+      calc ∑ i, |u i * (hψ.A u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖hψ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖hψ.A u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]; push_cast; ring
+    have h_Au : ‖hψ.A u‖ ≤ ‖hψ.A‖ * ‖u‖ := hψ.A.le_opNorm u
+    calc |∑ i, u i * (hψ.A u) i|
+        ≤ N * (‖u‖ * ‖hψ.A u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ N * (‖u‖ * (‖hψ.A‖ * ‖u‖)) :=
+          mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)) hN_nn
+      _ = N * ‖hψ.A‖ * ‖u‖ ^ 2 := by ring
+  have h_qc_le : |(1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv|
+      ≤ (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA) := by
+    calc |(1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv|
+        ≤ |(1 / 2 : ℝ) * quadForm hφ.A u| + |(1 / 2 : ℝ) * trASig hφ.A Hinv| :=
+          abs_sub _ _
+      _ ≤ (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2) + (1 / 2 : ℝ) * tA := by
+          rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2),
+              abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2), htA_def]
+          have h1 := mul_le_mul_of_nonneg_left h_qf_φ (by norm_num : (0:ℝ) ≤ 1/2)
+          linarith
+      _ = (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA) := by ring
+  have h_Qψ_le : |(1 / 2 : ℝ) * quadForm hψ.A u|
+      ≤ (1 / 2 : ℝ) * (N * ‖hψ.A‖ * ‖u‖ ^ 2) := by
+    rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2)]
+    exact mul_le_mul_of_nonneg_left h_qf_ψ (by norm_num : (0:ℝ) ≤ 1/2)
+  have h_P2_step : |((1 / 2 : ℝ) * quadForm hφ.A u
+        - (1 / 2 : ℝ) * trASig hφ.A Hinv) * ((1 / 2 : ℝ) * quadForm hψ.A u)|
+      ≤ (1 / 4 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA) * (N * ‖hψ.A‖ * ‖u‖ ^ 2) := by
+    rw [abs_mul]
+    have h_step := mul_le_mul h_qc_le h_Qψ_le (abs_nonneg _) (by positivity)
+    linarith
+  -- |q_c · Q_ψ| ≤ (1/4)·(N·‖A_φ‖·‖u‖^2 + tA)·(N·‖A_ψ‖·‖u‖^2)
+  -- = (1/4)·N²·‖A_φ‖·‖A_ψ‖·‖u‖^4 + (1/4)·tA·N·‖A_ψ‖·‖u‖^2.
+  have h_P2_eq : (1 / 4 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA) * (N * ‖hψ.A‖ * ‖u‖ ^ 2)
+      = ((1 / 4 : ℝ) * (N * ‖hφ.A‖) * (N * ‖hψ.A‖)) * ‖u‖ ^ 4
+        + ((1 / 4 : ℝ) * tA * (N * ‖hψ.A‖)) * ‖u‖ ^ 2 := by ring
+  -- Both coefficients are ≤ CP2 (CP2 = (1/4)·(N·‖A_φ‖ + tA)·N·‖A_ψ‖ ≥ each).
+  have h_NA_nn : 0 ≤ N * ‖hφ.A‖ := mul_nonneg hN_nn hAφ_nn
+  have h_NAψ_nn : 0 ≤ N * ‖hψ.A‖ := mul_nonneg hN_nn hAψ_nn
+  have h_coef1_le : (1 / 4 : ℝ) * (N * ‖hφ.A‖) * (N * ‖hψ.A‖) ≤ CP2 := by
+    rw [hCP2_def]; nlinarith [h_NA_nn, h_NAψ_nn, htA_nn]
+  have h_coef2_le : (1 / 4 : ℝ) * tA * (N * ‖hψ.A‖) ≤ CP2 := by
+    rw [hCP2_def]; nlinarith [h_NA_nn, h_NAψ_nn, htA_nn]
+  have h_2_le : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ M := h_pow_le 2 (by rw [hM_def]; omega)
+  have h_P2_le : |((1 / 2 : ℝ) * quadForm hφ.A u
+        - (1 / 2 : ℝ) * trASig hφ.A Hinv) * ((1 / 2 : ℝ) * quadForm hψ.A u)|
+      ≤ 2 * CP2 * (1 + ‖u‖ ^ M) := by
+    have h_u4_nn : 0 ≤ ‖u‖ ^ 4 := pow_nonneg h_norm_nn _
+    have h_u2_nn : 0 ≤ ‖u‖ ^ 2 := pow_nonneg h_norm_nn _
+    have h_term1_aux : ((1 / 4 : ℝ) * (N * ‖hφ.A‖) * (N * ‖hψ.A‖)) * ‖u‖ ^ 4
+        ≤ CP2 * ‖u‖ ^ 4 := mul_le_mul_of_nonneg_right h_coef1_le h_u4_nn
+    have h_term1 : CP2 * ‖u‖ ^ 4 ≤ CP2 * (1 + ‖u‖ ^ M) :=
+      mul_le_mul_of_nonneg_left h_4_le hCP2_nn
+    have h_term2_aux : ((1 / 4 : ℝ) * tA * (N * ‖hψ.A‖)) * ‖u‖ ^ 2
+        ≤ CP2 * ‖u‖ ^ 2 := mul_le_mul_of_nonneg_right h_coef2_le h_u2_nn
+    have h_term2 : CP2 * ‖u‖ ^ 2 ≤ CP2 * (1 + ‖u‖ ^ M) :=
+      mul_le_mul_of_nonneg_left h_2_le hCP2_nn
+    linarith [h_P2_step, h_P2_eq, h_term1_aux, h_term1, h_term2_aux, h_term2]
+  -- Bound for |(1/√t) · odd5K|.
+  have h_3_le : ‖u‖ ^ 3 ≤ 1 + ‖u‖ ^ M := h_pow_le 3 (by rw [hM_def]; omega)
+  have h_P3_le : |(1 / Real.sqrt t) * odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u|
+      ≤ 2 * CP3 * (1 + ‖u‖ ^ M) := by
+    rw [abs_mul, abs_of_pos (by positivity : (0 : ℝ) < 1 / Real.sqrt t)]
+    have h_inv_le : (1 : ℝ) / Real.sqrt t ≤ 1 := by
+      rw [div_le_iff₀ hsqt_pos]; linarith
+    have h_step : (1 / Real.sqrt t) * |odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u|
+        ≤ 1 * (M_odd * (‖u‖ ^ 3 + ‖u‖ ^ 5)) := by
+      apply mul_le_mul h_inv_le (h_odd_bound u) (abs_nonneg _) (by linarith)
+    have h_eq : 1 * (M_odd * (‖u‖ ^ 3 + ‖u‖ ^ 5)) = CP3 * ‖u‖ ^ 3 + CP3 * ‖u‖ ^ 5 := by
+      rw [hCP3_def]; ring
+    have h_term3 : CP3 * ‖u‖ ^ 3 ≤ CP3 * (1 + ‖u‖ ^ M) :=
+      mul_le_mul_of_nonneg_left h_3_le hCP3_nn
+    have h_term5 : CP3 * ‖u‖ ^ 5 ≤ CP3 * (1 + ‖u‖ ^ M) :=
+      mul_le_mul_of_nonneg_left h_5_le hCP3_nn
+    linarith
+  -- Triangle inequality on bulkErr.
+  unfold bulkErr
+  set P1 : ℝ := t ^ 2 * expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+      expCovPsiRem ψ b t u with hP1_def
+  set P2 : ℝ := ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+      ((1 / 2 : ℝ) * quadForm hψ.A u) with hP2_def
+  set P3 : ℝ := (1 / Real.sqrt t) * odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u
+      with hP3_def
+  have h_tri : |P1 - P2 - P3| ≤ |P1| + |P2| + |P3| := by
+    have h1 : |P1 - P2 - P3| ≤ |P1 - P2| + |P3| := abs_sub _ _
+    have h2 : |P1 - P2| ≤ |P1| + |P2| := abs_sub _ _
+    linarith
+  linarith [h_tri, h_P1_le, h_P2_le, h_P3_le]
 
 /-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
 two pieces of `pair_product_expansion` vanish, leaving only the cross
