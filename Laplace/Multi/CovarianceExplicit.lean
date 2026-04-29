@@ -3353,6 +3353,35 @@ private lemma integrable_J4_integrand_neg
   filter_upwards with u
   rw [expNumQuad_neg, gaussianWeight_neg]
 
+/-- Integrability of the J₄ symmetrized integrand
+`(Q_t - μ/t) · gW · ((exp(-s_t(u)) - 1) + (exp(-s_t(-u)) - 1))`.
+Sum of the original and `-u`-substituted J₄ integrands. -/
+private lemma integrable_J4_integrand_sym
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
+          (Real.exp (-(rescaledPerturbation V H t (-u))) - 1)) *
+        gaussianWeight H u) := by
+  have h_int_orig := integrable_J4_integrand V φ H Hinv a hV hφ ht
+  have h_int_neg := integrable_J4_integrand_neg V φ H Hinv a hV hφ ht
+  have h_sum : Integrable (fun u : ι → ℝ =>
+      (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1) *
+          gaussianWeight H u
+        + (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+          (Real.exp (-(rescaledPerturbation V H t (-u))) - 1) *
+          gaussianWeight H u) := by
+    have := h_int_orig.add h_int_neg
+    convert this using 1
+  apply h_sum.congr
+  filter_upwards with u
+  ring
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
