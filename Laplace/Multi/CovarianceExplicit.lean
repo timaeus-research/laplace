@@ -2133,6 +2133,89 @@ private lemma quadForm_cubicPartialOp
   change u j * _ = u j • _
   rfl
 
+/-- **Bilinear form characterisation**: `dot v ((cubicPartialOp T c) u) = T(v, u, c)`.
+Proved via slot-0 multilinearity of `T` and basis decomposition of `v`. -/
+private lemma dot_cubicPartialOp
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (c v u : ι → ℝ) :
+    dot v ((cubicPartialOp T c) u) =
+      T (fun k : Fin 3 =>
+        match k with
+        | 0 => v
+        | 1 => u
+        | 2 => c) := by
+  unfold dot
+  set m_base : Fin 3 → (ι → ℝ) := fun k =>
+    match k with
+    | 0 => (0 : ι → ℝ)
+    | 1 => u
+    | 2 => c with hm
+  have h_match_e : ∀ j : ι, (fun k : Fin 3 =>
+      match k with
+      | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+      | 1 => u
+      | 2 => c) = Function.update m_base 0
+        (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) := by
+    intro j; funext k
+    fin_cases k <;> simp [m_base, Function.update]
+  have h_match_v : (fun k : Fin 3 =>
+      match k with
+      | 0 => v
+      | 1 => u
+      | 2 => c) = Function.update m_base 0 v := by
+    funext k
+    fin_cases k <;> simp [m_base, Function.update]
+  conv_lhs =>
+    enter [2, j]
+    rw [cubicPartialOp_apply T c u j, h_match_e j]
+  rw [h_match_v]
+  have h_decomp : v = ∑ j : ι, v j • Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ) := by
+    funext k
+    rw [Finset.sum_apply]
+    simp [Pi.single_apply]
+  change ∑ j, v j * T.toMultilinearMap _ = T.toMultilinearMap _
+  rw [show (T.toMultilinearMap (Function.update m_base 0 v))
+      = (T.toMultilinearMap (Function.update m_base 0
+          (∑ j : ι, v j • Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))) by
+        congr 1; rw [← h_decomp]]
+  rw [T.toMultilinearMap.map_update_sum (Finset.univ : Finset ι) 0
+      (fun j : ι => v j • Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) m_base]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [T.toMultilinearMap.map_update_smul m_base 0 (v j)
+      (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))]
+  change v j * _ = v j • _
+  rfl
+
+/-- **Symmetry of `cubicPartialOp`**: when `T` is symmetric under
+permutations, `cubicPartialOp T c` is a symmetric operator. -/
+private lemma cubicPartialOp_symm
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (c : ι → ℝ)
+    (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      T (fun i => v (σ i)) = T v) :
+    ∀ u v : ι → ℝ,
+      dot u ((cubicPartialOp T c) v) = dot v ((cubicPartialOp T c) u) := by
+  intro u v
+  rw [dot_cubicPartialOp T c u v, dot_cubicPartialOp T c v u]
+  -- T(u, v, c) = T(v, u, c) via swap on slots 0 and 1.
+  have h := hT_symm (Equiv.swap (0 : Fin 3) 1)
+    (fun k : Fin 3 => match k with
+      | 0 => v
+      | 1 => u
+      | 2 => c)
+  have h_eq : (fun i : Fin 3 => match (Equiv.swap (0 : Fin 3) 1) i with
+      | (0 : Fin 3) => v
+      | (1 : Fin 3) => u
+      | (2 : Fin 3) => c) =
+      (fun k : Fin 3 => match k with
+        | (0 : Fin 3) => u
+        | (1 : Fin 3) => v
+        | (2 : Fin 3) => c) := by
+    funext i
+    fin_cases i <;> rfl
+  rw [h_eq] at h
+  exact h
+
 /-- **6th-moment contraction (quad · linear · cubic)**:
 $\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = $
 the contracted six-pairing form, in the appendix's expanded coefficient
