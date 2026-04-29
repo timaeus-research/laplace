@@ -6314,6 +6314,28 @@ theorem gibbsExpectation_first_order_rate_explicit
         gcongr
     _ = K / t := h_zsim
 
+/-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
+Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
+`φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
+
+Per `gpt_responses/strategy_stage5_decomposition.md`, the centered split
+`φ_t = μ_φ/t + φ_conn_t` lets the disconnected `μ_φ μ_ψ` piece of `cov2_full`
+be absorbed into the Stage-4 wrapper for `t · N_t(ψ)`, leaving only
+"connected" Wick contractions in the new asymptotic lemmas. -/
+private noncomputable def expCovPhiConn
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a) (t : ℝ) (u : ι → ℝ) : ℝ :=
+  φ ((Real.sqrt t)⁻¹ • u) -
+    expNumeratorCoeff V φ H Hinv a hV hφ / t
+
+/-- **Linear remainder of `ψ((√t)⁻¹u)`**: subtracts the linear jet
+`(√t)⁻¹ · (b·u)`, giving
+`ψ_rem_t(u) = (1/t)·(½ A_ψ u²) + (1/(t√t))·(1/6 Φ_ψ(u,u,u)) + R_ψ`. -/
+private noncomputable def expCovPsiRem
+    (ψ : (ι → ℝ) → ℝ) (b : ι → ℝ) (t : ℝ) (u : ι → ℝ) : ℝ :=
+  ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u
+
 /-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
 two pieces of `pair_product_expansion` vanish, leaving only the cross
 term `(√t)⁻¹·(b·u)·φ((√t)⁻¹u)` and the rem-rem term
@@ -6481,6 +6503,184 @@ private lemma rescaledNumerator_pair_decompose_a_zero
   rw [MeasureTheory.integral_add h_cross_smul h_remrem_smul,
       MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
 
+/-- **Pointwise centered decomposition** when `a = 0`: the substitution
+`φ((√t)⁻¹u) = μ_φ/t + φ_conn(u)` and `ψ((√t)⁻¹u) = (√t)⁻¹·(b·u) + ψ_rem(u)`
+yields
+\[
+  \phi((\sqrt t)^{-1}u)\,\psi((\sqrt t)^{-1}u)
+    = \tfrac{\mu_\phi}{t}\,\psi((\sqrt t)^{-1}u)
+      + (\sqrt t)^{-1} (b\!\cdot\!u)\,\phi_{\text{conn}}(u)
+      + \phi_{\text{conn}}(u)\,\psi_{\text{rem}}(u).
+\]
+Pure algebraic identity. -/
+private lemma pair_product_centered_decomposition
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (t : ℝ) (u : ι → ℝ) :
+    φ ((Real.sqrt t)⁻¹ • u) * ψ ((Real.sqrt t)⁻¹ • u)
+      = (expNumeratorCoeff V φ H Hinv (0 : ι → ℝ) hV hφ / t) *
+            ψ ((Real.sqrt t)⁻¹ • u)
+        + (Real.sqrt t)⁻¹ * dot b u *
+            expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u
+        + expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+            expCovPsiRem ψ b t u := by
+  -- Substitute the defs and ring.
+  unfold expCovPhiConn expCovPsiRem
+  ring
+
+/-- **GPT-style decomposition of `t² · N(φψ)`** when `a = 0`: peeling
+`μ_φ/t` off `φ_t` first, the centered numerator splits as
+\[
+  t^2 N_t(\phi\psi)
+    = \mu_\phi \cdot \bigl(t \cdot N_t(\psi)\bigr)
+      + t\sqrt t \cdot \texttt{cross}_t
+      + t^2 \cdot \texttt{rr}_t.
+\]
+The disconnected `μ_φ μ_ψ` contribution is absorbed into `μ_φ · t · N_t(ψ)`
+(handled by Stage-4); the two new integrals contain only connected Wick
+contributions, which simplifies the asymptotic lemmas A and B.
+
+Proof: integrate `pair_product_centered_decomposition` against
+`gW · exp(-s_t)`, multiply by `t²`, and use `t² · (√t)⁻¹ = t · √t`. -/
+private lemma rescaledNumerator_pair_decompose_centered_a_zero
+    (V φ ψ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (hψ : ObservableTensorApprox ψ b)
+    (hGauss : LaplaceCovHypotheses H Hinv)
+    {t : ℝ} (ht1 : 1 ≤ t) :
+    t ^ 2 * rescaledNumerator V t (fun w => φ w * ψ w)
+      = expNumeratorCoeff V φ H Hinv (0 : ι → ℝ) hV hφ
+          * (t * rescaledNumerator V t ψ)
+        + t * Real.sqrt t *
+          (∫ u : ι → ℝ, dot b u *
+              expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        + t ^ 2 *
+          (∫ u : ι → ℝ,
+              expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+              expCovPsiRem ψ b t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by
+  -- Currently a sorry; the algebraic substitution at the integral level
+  -- requires integrability witnesses for `ψ((√t)⁻¹u)·gW·e^{-s_t}` and
+  -- `φ_conn(u)·gW·e^{-s_t}`. The witnesses are derivable from existing
+  -- sharp-track helpers + the `integrable_rescaled_weight` family but
+  -- the bookkeeping is ~100 LOC. Deferred.
+  sorry
+
+/-- **Stage-5 cross asymptotic** (lemma A in `gpt_responses/strategy_stage5_decomposition.md`).
+With `a = 0` and `φ_conn_t = φ((√t)⁻¹u) - μ_φ/t`, the cross integral
+\[
+  \texttt{cross}_t \;:=\;
+    \int (b\!\cdot\!u)\,\phi_{\text{conn},t}\,gW\,e^{-s_t}\,du
+\]
+satisfies the asymptotic
+\[
+  \bigl|\,t^{3/2} \cdot \texttt{cross}_t - c_{\text{cross}} \cdot D_t\,\bigr|
+    \le K/t,
+\]
+where `c_cross = (1/2)<Σb, Φ_φ:Σ> - (1/2)<b, A_φΣ T:Σ> - (1/2)<Σb, T:(ΣA_φΣ)>`
+is the connected (non-QQ) piece of `cov2Coefficient`.
+
+The 3 connected terms come from:
+- `Lψ · Cφ · 1` → `(1/2)<Σb, Φ_φ:Σ>` (Wick `gaussian_cubic_linear`).
+- `Lψ · Q_φ^c · (-V_3/√t)` → the two `T`-contractions
+  (Wick `gaussian_quad_linear_cubic` — explicit form, requires strengthening).
+The Q^c centering removes the `μ_φ μ_ψ` disconnected contribution.
+
+Currently a sorry; proof recipe in `strategy_stage5_decomposition.md`. -/
+private theorem rescaledIntegral_cross_linear_connected_asymptotic
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t * Real.sqrt t *
+          (∫ u : ι → ℝ, dot b u *
+              expCovPhiConn V φ H Hinv (0 : ι → ℝ)
+                hV.toPotentialTensorApprox hφ t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        - ((1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix hφ.Φ Hinv)
+          - (1 / 2 : ℝ) * dot b
+              (Hinv (hφ.A (Hinv (tensorContractMatrix hV.T Hinv))))
+          - (1 / 2 : ℝ) * dot (Hinv b)
+              (tensorContractMatrix hV.T (Hinv.comp (hφ.A.comp Hinv))))
+          * rescaledPartition V t|
+        ≤ K / t := by
+  -- See `gpt_responses/strategy_stage5_decomposition.md`. Steps:
+  -- 1. Expand `φ_conn = (1/t)·Q^c_φ + (1/(t√t))·C_φ + E_φ` where Q^c_φ
+  --    is the centered quadratic and E_φ is a quartic+ remainder.
+  -- 2. Multiply integrand by `t·√t`:
+  --    `t·√t · L_ψ · ((1/t)·Q^c + (1/(t√t))·C_φ + E_φ)`
+  --    = `√t · L_ψ · Q^c + L_ψ · C_φ + t·√t · L_ψ · E_φ`
+  -- 3. Identify main terms via Wick:
+  --    - `√t · L_ψ · Q^c`: integrand vanishes at parity 1+2=3 odd; with
+  --       `exp(-s_t)`'s `-V_3/√t` correction (cubic, parity 3 odd → even
+  --       overall, integrand parity 6), gives the two `T`-contractions.
+  --    - `L_ψ · C_φ`: integrand parity 1+3=4 even, leading order. By
+  --       `gaussian_cubic_linear` gives `(1/2)<Σb, Φ_φ:Σ>`.
+  -- 4. Bound remaining errors: `t·√t · L_ψ · E_φ` (using parity-aware
+  --    odd-part bound on E_φ) gives `O(1/t)`.
+  sorry
+
+/-- **Stage-5 rem-rem asymptotic** (lemma B in `gpt_responses/strategy_stage5_decomposition.md`).
+With `a = 0` and `ψ_rem_t = ψ((√t)⁻¹u) - (√t)⁻¹·(b·u)`, the rem-rem integral
+\[
+  \texttt{rr}_t \;:=\;
+    \int \phi_{\text{conn},t}\,\psi_{\text{rem},t}\,gW\,e^{-s_t}\,du
+\]
+satisfies the asymptotic
+\[
+  \bigl|\,t^2 \cdot \texttt{rr}_t
+    - \tfrac12\,\mathrm{tr}(A_\phi \Sigma A_\psi \Sigma) \cdot D_t\,\bigr|
+    \le K/t.
+\]
+
+Main term comes from `Q^c_φ · Q_ψ · 1` via `gaussian_quad_quad` (already
+proved). Centering of `Q_φ` automatically subtracts the disconnected
+trace product `(1/2)tr(A_φ Σ) · (1/2)tr(A_ψ Σ) = μ_φ μ_ψ`.
+
+Currently a sorry. -/
+private theorem rescaledIntegral_rr_connected_asymptotic
+    (V φ ψ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (hψ : ObservableTensorApprox ψ b)
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t ^ 2 *
+          (∫ u : ι → ℝ,
+              expCovPhiConn V φ H Hinv (0 : ι → ℝ)
+                hV.toPotentialTensorApprox hφ t u *
+              expCovPsiRem ψ b t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        - (1 / 2 : ℝ) * trASig (hφ.A.comp ((Hinv).comp (hψ.A.comp Hinv)))
+              (1 : (ι → ℝ) →L[ℝ] (ι → ℝ))
+            * rescaledPartition V t|
+        ≤ K / t := by
+  -- See `gpt_responses/strategy_stage5_decomposition.md`. Steps:
+  -- 1. Expand `φ_conn · ψ_rem = (1/t²) · Q^c_φ · Q_ψ + smaller`.
+  -- 2. Multiply by t² to get leading `Q^c_φ · Q_ψ` integrand.
+  -- 3. Apply `gaussian_quad_quad` Wick formula (already proved):
+  --    `∫ Q_φ · Q_ψ · gW = Z · ((1/4) tr(AΣ) tr(BΣ) + (1/2) tr(AΣBΣ))`
+  --    The `Q^c_φ` centering subtracts (1/4) tr(AΣ) tr(BΣ).
+  -- 4. Bound smaller terms (cubic·cubic ~ 1/t³, etc.) all O(1/t).
+  sorry
+
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
 when $\nabla\phi(0) = 0$, the rescaled pair numerator $N_t(\phi\psi)$ has
 $t^{-2}$ coefficient `cov2Coefficient_full · D_t / t² + O(D_t / t^3)`, i.e.
@@ -6513,25 +6713,124 @@ private theorem rescaledNumerator_centered_pair_explicit
               hV.toPotentialTensorApprox hφ hψ
             * rescaledPartition V t|
         ≤ K / t := by
-  -- Outline (~300 LOC, currently deferred):
-  -- 1. Apply `pair_product_expansion` to decompose
-  --    `t² · N_t(φψ) = ∫ t · (t · φ((√t)⁻¹u) · ψ((√t)⁻¹u)) · gW · exp(-s_t) du`
-  --    into pieces I₁..I₄ analogous to the sharp track.
-  -- 2. With a = 0, the leading I₁ piece reshapes: `dot a u · dot b u = 0`,
-  --    so the surviving t^{-2} contributions come from the cross-pieces I₂, I₃
-  --    (quadratic-jet × linear or cubic-jet × linear) and from the
-  --    quad-quad/quad-linear-cubic Gaussian terms.
-  -- 3. The 4-piece breakdown:
-  --    - quad(φ) × quad(ψ): gives `(1/2) tr(AΣBΣ) + μ_φ μ_ψ` (connected + disc).
-  --    - cubic(φ) × linear(ψ): gives `(1/2) <Σb, Φ:Σ>`.
-  --    - quad(φ) × linear(ψ) × cubic(V): gives the two `T:Σ` cubic-correction terms.
-  --    - higher-order remainders (quartic+) absorbed into K/t bound.
-  -- 4. Each main term computed via a specialised Gaussian contraction lemma
-  --    (`gaussian_quad_quad`, `gaussian_cubic_linear`,
-  --     `gaussian_quad_linear_cubic` — the last must be strengthened from
-  --     existential to explicit closed form).
-  -- See `gpt_responses/strategy_stage5_cov2.md` for the full recipe.
-  sorry
+  -- Per `gpt_responses/strategy_stage5_decomposition.md`, decompose:
+  --   t² · N(φψ) = μ_φ · (t · N(ψ)) + t·√t · I_cross + t² · I_rr
+  -- and bound each piece:
+  --   - μ_φ · (t · N(ψ) - μ_ψ · D)  via Stage 4 numerator helper.
+  --   - t·√t · I_cross - c_cross · D  via lemma A (cross asymptotic).
+  --   - t² · I_rr - c_QQ · D  via lemma B (rr asymptotic).
+  -- The disconnected μ_φ μ_ψ piece in cov2_full cancels against the
+  -- μ_φ μ_ψ · D contribution of `μ_φ · μ_ψ · D` once Stage 4 is applied.
+  set μ_φ : ℝ := expNumeratorCoeff V φ H Hinv a hV.toPotentialTensorApprox hφ
+    with hμφ_def
+  set μ_ψ : ℝ := expNumeratorCoeff V ψ H Hinv b hV.toPotentialTensorApprox hψ
+    with hμψ_def
+  set c_QQ : ℝ := (1 / 2 : ℝ) *
+      trASig (hφ.A.comp ((Hinv).comp (hψ.A.comp Hinv)))
+        (1 : (ι → ℝ) →L[ℝ] (ι → ℝ)) with hc_QQ_def
+  set c_cross : ℝ :=
+      (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix hφ.Φ Hinv)
+      - (1 / 2 : ℝ) * dot b
+          (Hinv (hφ.A (Hinv (tensorContractMatrix hV.T Hinv))))
+      - (1 / 2 : ℝ) * dot (Hinv b)
+          (tensorContractMatrix hV.T (Hinv.comp (hφ.A.comp Hinv)))
+    with hc_cross_def
+  -- cov2Coefficient_full = c_QQ + c_cross + μ_φ μ_ψ.
+  have h_full_eq : cov2Coefficient_full V φ ψ H Hinv a b
+        hV.toPotentialTensorApprox hφ hψ
+      = c_QQ + c_cross + μ_φ * μ_ψ := by
+    simp [cov2Coefficient_full, cov2Coefficient,
+          hc_QQ_def, hc_cross_def, hμφ_def, hμψ_def]
+    ring
+  -- Specialize hypothesis a = 0.
+  subst h_phi_grad_zero
+  -- Pull the three asymptotic constants.
+  obtain ⟨K_dec_unused, T_dec, hT_dec, _⟩ : ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ True := ⟨0, 1, le_refl _, trivial⟩
+  obtain ⟨K_ψN, T_ψN, hT_ψN, h_ψN⟩ :=
+    rescaledNumerator_first_order_centered_explicit V ψ H Hinv b hV hψ
+      hGauss.toLaplaceCov4MomentHypotheses
+  obtain ⟨K_A, T_A, hT_A, h_A⟩ :=
+    rescaledIntegral_cross_linear_connected_asymptotic V φ H Hinv b hV hφ hGauss
+  obtain ⟨K_B, T_B, hT_B, h_B⟩ :=
+    rescaledIntegral_rr_connected_asymptotic V φ ψ H Hinv b hV hφ hψ hGauss
+  -- Final K and T₀.
+  set K : ℝ := |μ_φ| * K_ψN + K_A + K_B with hK_def
+  refine ⟨K,
+    max T_ψN (max T_A T_B),
+    le_max_of_le_left hT_ψN, ?_⟩
+  intro t ht
+  have ht_ψN : T_ψN ≤ t := le_of_max_le_left ht
+  have ht_pp : max T_A T_B ≤ t := le_of_max_le_right ht
+  have ht_A : T_A ≤ t := le_of_max_le_left ht_pp
+  have ht_B : T_B ≤ t := le_of_max_le_right ht_pp
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hT_ψN ht_ψN)
+  have ht1 : 1 ≤ t := le_trans hT_ψN ht_ψN
+  -- Apply the decomposition.
+  have h_decomp := rescaledNumerator_pair_decompose_centered_a_zero V φ ψ H Hinv b
+    hV.toPotentialTensorApprox hφ hψ hGauss.toLaplaceCovHypotheses ht1
+  -- Substitute and rewrite the goal.
+  rw [h_decomp, h_full_eq]
+  set I_A : ℝ := t * Real.sqrt t *
+        (∫ u : ι → ℝ, dot b u *
+            expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV.toPotentialTensorApprox hφ t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) with hI_A_def
+  set I_B : ℝ := t ^ 2 *
+        (∫ u : ι → ℝ,
+            expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV.toPotentialTensorApprox hφ t u *
+            expCovPsiRem ψ b t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) with hI_B_def
+  -- Goal: |μ_φ · t · N(ψ) + I_A + I_B - (c_QQ + c_cross + μ_φ μ_ψ) · D| ≤ K/t.
+  -- Reorganize: μ_φ·t·N(ψ) - μ_φ μ_ψ · D = μ_φ · (t · N(ψ) - μ_ψ · D).
+  have h_reorg :
+      μ_φ * (t * rescaledNumerator V t ψ) + I_A + I_B
+        - (c_QQ + c_cross + μ_φ * μ_ψ) * rescaledPartition V t
+      = μ_φ * (t * rescaledNumerator V t ψ - μ_ψ * rescaledPartition V t)
+        + (I_A - c_cross * rescaledPartition V t)
+        + (I_B - c_QQ * rescaledPartition V t) := by ring
+  rw [h_reorg]
+  -- Bound piece 1: |μ_φ · (t · N(ψ) - μ_ψ · D)| ≤ |μ_φ| · K_ψN / t.
+  have h_ψN_t : |rescaledNumerator V t ψ
+      - rescaledPartition V t * (μ_ψ / t)| ≤ K_ψN / t ^ 2 := h_ψN t ht_ψN
+  have hpiece1 : |μ_φ * (t * rescaledNumerator V t ψ
+        - μ_ψ * rescaledPartition V t)| ≤ |μ_φ| * K_ψN / t := by
+    rw [abs_mul]
+    have h_alg : t * rescaledNumerator V t ψ - μ_ψ * rescaledPartition V t
+        = t * (rescaledNumerator V t ψ - rescaledPartition V t * (μ_ψ / t)) := by
+      have ht_ne : t ≠ 0 := ht_pos.ne'
+      field_simp
+    rw [h_alg, abs_mul, abs_of_pos ht_pos]
+    have : t * (K_ψN / t ^ 2) = K_ψN / t := by
+      have : t ^ 2 = t * t := sq t
+      field_simp
+    calc |μ_φ| * (t * |rescaledNumerator V t ψ
+            - rescaledPartition V t * (μ_ψ / t)|)
+        ≤ |μ_φ| * (t * (K_ψN / t ^ 2)) := by
+          gcongr
+      _ = |μ_φ| * K_ψN / t := by rw [this]; ring
+  have hpiece2 : |I_A - c_cross * rescaledPartition V t| ≤ K_A / t := by
+    rw [hI_A_def, hc_cross_def]; exact h_A t ht_A
+  have hpiece3 : |I_B - c_QQ * rescaledPartition V t| ≤ K_B / t := by
+    rw [hI_B_def, hc_QQ_def]; exact h_B t ht_B
+  -- Combine via triangle inequality.
+  calc |μ_φ * (t * rescaledNumerator V t ψ - μ_ψ * rescaledPartition V t)
+          + (I_A - c_cross * rescaledPartition V t)
+          + (I_B - c_QQ * rescaledPartition V t)|
+      ≤ |μ_φ * (t * rescaledNumerator V t ψ - μ_ψ * rescaledPartition V t)|
+        + |I_A - c_cross * rescaledPartition V t|
+        + |I_B - c_QQ * rescaledPartition V t| := by
+        have h1 := abs_add_le
+            (μ_φ * (t * rescaledNumerator V t ψ - μ_ψ * rescaledPartition V t)
+              + (I_A - c_cross * rescaledPartition V t))
+            (I_B - c_QQ * rescaledPartition V t)
+        have h2 := abs_add_le
+            (μ_φ * (t * rescaledNumerator V t ψ - μ_ψ * rescaledPartition V t))
+            (I_A - c_cross * rescaledPartition V t)
+        linarith
+    _ ≤ |μ_φ| * K_ψN / t + K_A / t + K_B / t :=
+        add_le_add (add_le_add hpiece1 hpiece2) hpiece3
+    _ = K / t := by rw [hK_def]; ring
 
 /-- **Sharp covariance rate (explicit coefficient, `lem:laplace_cov2`)**:
 for $\phi$ vanishing to second order ($\phi(0) = 0$, $\nabla\phi(0) = 0$)
