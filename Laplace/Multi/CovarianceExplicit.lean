@@ -5284,7 +5284,226 @@ private lemma J3_tail_pointwise_le
       ≤ ((∑ i, |a i|) * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) / t ^ 2) *
           (‖u‖ ^ 4 + ‖u‖ ^ 6) *
           Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
-  sorry
+  set La : ℝ := ∑ i, |a i| with hLa_def
+  have hLa_nn : 0 ≤ La := by rw [hLa_def]; exact Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hT_nn : 0 ≤ ‖hV.T‖ := norm_nonneg _
+  have hδ_sq_pos : 0 < δ ^ 2 := by positivity
+  have hδ_cube_pos : 0 < δ ^ 3 := by positivity
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_sqrt_t_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+  have ht_sq_pos : 0 < t ^ 2 := pow_pos ht 2
+  -- Use uniform helper.
+  have h_uniform := abs_gW_J3_bracket_le_uniform V H hV.toPotentialTensorApprox
+    hc_pos h_coer ht u
+  -- Rearrange |F| = |L_t| · |gW · bracket|.
+  have h_F_eq : |expNumLin a t u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+        gaussianWeight H u|
+      = |expNumLin a t u| *
+        |gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))| := by
+    rw [show expNumLin a t u *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t u)
+              - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+            gaussianWeight H u
+          = expNumLin a t u *
+              (gaussianWeight H u *
+                ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                    + expPotCubic V H hV.toPotentialTensorApprox t u)
+                  - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                      + expPotCubic V H hV.toPotentialTensorApprox t (-u)))) from by
+        ring,
+        abs_mul]
+  rw [h_F_eq]
+  -- |L_t| ≤ La·‖u‖/√t.
+  have h_L_bound : |expNumLin a t u| ≤ La * ‖u‖ / Real.sqrt t := by
+    unfold expNumLin
+    rw [abs_mul, abs_of_pos (by positivity : (0 : ℝ) < (Real.sqrt t)⁻¹)]
+    have h_dot_le : |dot a u| ≤ La * ‖u‖ := by
+      rw [hLa_def]; unfold dot
+      calc |∑ i, a i * u i|
+          ≤ ∑ i, |a i * u i| := Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ i, |a i| * ‖u‖ := by
+            apply Finset.sum_le_sum; intro i _; rw [abs_mul]
+            exact mul_le_mul_of_nonneg_left (norm_le_pi_norm u i) (abs_nonneg _)
+        _ = (∑ i, |a i|) * ‖u‖ := by rw [Finset.sum_mul]
+    have h2 : (Real.sqrt t)⁻¹ * (La * ‖u‖) = La * ‖u‖ / Real.sqrt t := by field_simp
+    have h1 : (Real.sqrt t)⁻¹ * |dot a u|
+        ≤ (Real.sqrt t)⁻¹ * (La * ‖u‖) :=
+      mul_le_mul_of_nonneg_left h_dot_le (by positivity)
+    linarith [h2.le, h2.ge]
+  have h_L_nn : 0 ≤ La * ‖u‖ / Real.sqrt t := by positivity
+  -- Tail uniform bound: |gW·bracket| ≤ 2·gW + 2·exp(-c·‖u‖²) + 2·gW·‖T‖/6·‖u‖³/√t.
+  -- Bound each piece by exp(-(c/4)).
+  have h_gW_le : gaussianWeight H u ≤ Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    rw [hc_eq] at *
+    have h1 := gaussianWeight_le_exp_neg_coercive V H hV.toPotentialTensorApprox u
+    have h2 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+      apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hV.coercive_const_pos]
+    linarith
+  have h_exp_c_quart : Real.exp (-(c * ‖u‖ ^ 2))
+      ≤ Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hc_pos]
+  -- Simpler form: |gW·bracket| ≤ 4·exp(-(c/4)) + 2·(‖T‖/6·‖u‖³/√t)·exp(-(c/4)).
+  have h_unif_simpler : |gaussianWeight H u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|
+      ≤ 4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+        + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    have h_T_term_nn : 0 ≤ ‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t := by positivity
+    have h_step_a : 2 * gaussianWeight H u ≤ 2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+      linarith [h_gW_le]
+    have h_step_b : 2 * Real.exp (-(c * ‖u‖ ^ 2))
+        ≤ 2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by linarith
+    have h_step_c : 2 * gaussianWeight H u *
+          (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t)
+        ≤ 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+      have h_factor : 2 * gaussianWeight H u *
+            (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t)
+          = 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) * gaussianWeight H u := by ring
+      rw [h_factor]
+      apply mul_le_mul_of_nonneg_left h_gW_le (by positivity)
+    linarith [h_uniform, h_step_a, h_step_b, h_step_c]
+  -- |F| ≤ La·(‖u‖/√t) · (4·exp + 2·(‖T‖/6·‖u‖³/√t)·exp).
+  have h_step1 : |expNumLin a t u| *
+        |gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|
+      ≤ (La * ‖u‖ / Real.sqrt t) *
+        (4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+          + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2))) := by
+    apply mul_le_mul h_L_bound h_unif_simpler (abs_nonneg _) h_L_nn
+  -- Distribute: La·(‖u‖/√t)·4·exp = 4·La·(‖u‖/√t)·exp.
+  -- La·(‖u‖/√t)·2·(‖T‖/6·‖u‖³/√t)·exp = (La·‖T‖/3)·(‖u‖^4/t)·exp.
+  have h_distrib : (La * ‖u‖ / Real.sqrt t) *
+        (4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+          + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)))
+      = (4 * La * (‖u‖ / Real.sqrt t)
+          + La * ‖hV.T‖ / 3 * (‖u‖ ^ 4 / t)) *
+        Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    have h_t_factor : (‖u‖ / Real.sqrt t) * (‖u‖ ^ 3 / Real.sqrt t)
+        = ‖u‖ ^ 4 / t := by
+      rw [div_mul_div_comm, h_sqrt_t_sq]
+      ring
+    have h_lhs_simp : (La * ‖u‖ / Real.sqrt t) *
+          (4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+            + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+                Real.exp (-((c / 4) * ‖u‖ ^ 2)))
+        = (4 * La * (‖u‖ / Real.sqrt t)
+            + La * ‖hV.T‖ / 3 *
+              ((‖u‖ / Real.sqrt t) * (‖u‖ ^ 3 / Real.sqrt t))) *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by ring
+    rw [h_lhs_simp, h_t_factor]
+  -- Tail absorption: ‖u‖ > δ·√t ⟹ ‖u‖/√t ≤ ‖u‖^4/(δ³·t²) and ‖u‖^4/t ≤ ‖u‖^6/(δ²·t²).
+  have h_norm_sq_lb : δ ^ 2 * t < ‖u‖ ^ 2 := by
+    have h1 : 0 ≤ δ * Real.sqrt t := by positivity
+    have h2 := mul_self_lt_mul_self h1 hu
+    rw [show (δ * Real.sqrt t) * (δ * Real.sqrt t) = (δ * Real.sqrt t) ^ 2 from by ring,
+        show ‖u‖ * ‖u‖ = ‖u‖ ^ 2 from by ring] at h2
+    rw [mul_pow, Real.sq_sqrt ht.le] at h2; exact h2
+  have h_one_le : (1 : ℝ) ≤ ‖u‖ ^ 2 / (δ ^ 2 * t) := by
+    rw [le_div_iff₀ (by positivity : (0:ℝ) < δ^2 * t)]; linarith [h_norm_sq_lb]
+  have h_norm_sqt_le : ‖u‖ / Real.sqrt t ≤ ‖u‖ ^ 2 / (δ * t) := by
+    rw [div_le_div_iff₀ hsqrt_pos (by positivity : (0 : ℝ) < δ * t)]
+    calc ‖u‖ * (δ * t) = ‖u‖ * δ * t := by ring
+      _ = ‖u‖ * δ * ((Real.sqrt t) * (Real.sqrt t)) := by
+          rw [Real.mul_self_sqrt ht.le]
+      _ = (δ * Real.sqrt t) * (‖u‖ * Real.sqrt t) := by ring
+      _ ≤ ‖u‖ * (‖u‖ * Real.sqrt t) :=
+          mul_le_mul_of_nonneg_right hu.le (by positivity)
+      _ = ‖u‖ ^ 2 * Real.sqrt t := by ring
+  have h_norm_sqt_to_t2 : ‖u‖ / Real.sqrt t ≤ ‖u‖ ^ 4 / (δ ^ 3 * t ^ 2) := by
+    calc ‖u‖ / Real.sqrt t ≤ ‖u‖ ^ 2 / (δ * t) := h_norm_sqt_le
+      _ = ‖u‖ ^ 2 / (δ * t) * 1 := (mul_one _).symm
+      _ ≤ ‖u‖ ^ 2 / (δ * t) * (‖u‖ ^ 2 / (δ ^ 2 * t)) :=
+          mul_le_mul_of_nonneg_left h_one_le (by positivity)
+      _ = ‖u‖ ^ 4 / (δ ^ 3 * t ^ 2) := by field_simp
+  have h_u4_t_to_t2 : ‖u‖ ^ 4 / t ≤ ‖u‖ ^ 6 / (δ ^ 2 * t ^ 2) := by
+    calc ‖u‖ ^ 4 / t = ‖u‖ ^ 4 / t * 1 := (mul_one _).symm
+      _ ≤ ‖u‖ ^ 4 / t * (‖u‖ ^ 2 / (δ ^ 2 * t)) :=
+          mul_le_mul_of_nonneg_left h_one_le (by positivity)
+      _ = ‖u‖ ^ 6 / (δ ^ 2 * t ^ 2) := by field_simp
+  -- Final: 4·La·(‖u‖/√t) + (La·‖T‖/3)·(‖u‖^4/t) ≤ La·(4/δ³ + ‖T‖/(3·δ²)) · (‖u‖^4 + ‖u‖^6)/t².
+  have h_absorbed : 4 * La * (‖u‖ / Real.sqrt t)
+        + La * ‖hV.T‖ / 3 * (‖u‖ ^ 4 / t)
+      ≤ La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2 := by
+    have h_a : 4 * La * (‖u‖ / Real.sqrt t)
+        ≤ 4 * La * (‖u‖ ^ 4 / (δ ^ 3 * t ^ 2)) := by
+      apply mul_le_mul_of_nonneg_left h_norm_sqt_to_t2 (by positivity)
+    have h_b : La * ‖hV.T‖ / 3 * (‖u‖ ^ 4 / t)
+        ≤ La * ‖hV.T‖ / 3 * (‖u‖ ^ 6 / (δ ^ 2 * t ^ 2)) := by
+      apply mul_le_mul_of_nonneg_left h_u4_t_to_t2 (by positivity)
+    have h_a_eq : 4 * La * (‖u‖ ^ 4 / (δ ^ 3 * t ^ 2))
+        = (La * (4 / δ ^ 3)) * (‖u‖ ^ 4 / t ^ 2) := by field_simp
+    have h_b_eq : La * ‖hV.T‖ / 3 * (‖u‖ ^ 6 / (δ ^ 2 * t ^ 2))
+        = (La * ‖hV.T‖ / (3 * δ ^ 2)) * (‖u‖ ^ 6 / t ^ 2) := by field_simp
+    rw [h_a_eq] at h_a
+    rw [h_b_eq] at h_b
+    have h_u4_nn : 0 ≤ ‖u‖ ^ 4 := pow_nonneg (norm_nonneg _) _
+    have h_u6_nn : 0 ≤ ‖u‖ ^ 6 := pow_nonneg (norm_nonneg _) _
+    have h_4_nn : 0 ≤ La * (4 / δ ^ 3) := by positivity
+    have h_T_nn' : 0 ≤ La * ‖hV.T‖ / (3 * δ ^ 2) := by positivity
+    -- Goal: La·(4/δ³)·‖u‖^4/t² + La·‖T‖/(3δ²)·‖u‖^6/t² ≤ La·(4/δ³+‖T‖/(3δ²))·(‖u‖^4+‖u‖^6)/t².
+    have h_bound : La * (4 / δ ^ 3) * (‖u‖ ^ 4 / t ^ 2)
+          + La * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 / t ^ 2)
+        ≤ La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) *
+          (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2 := by
+      have h_expand : La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) *
+            (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2
+          = (La * (4 / δ ^ 3) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2)
+            + (La * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2) := by ring
+      rw [h_expand]
+      have h_split_a : La * (4 / δ ^ 3) * (‖u‖ ^ 4 / t ^ 2)
+          ≤ La * (4 / δ ^ 3) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2 := by
+        rw [show La * (4 / δ ^ 3) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2
+              = La * (4 / δ ^ 3) * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2) from by ring,
+            show La * (4 / δ ^ 3) * (‖u‖ ^ 4 / t ^ 2)
+              = La * (4 / δ ^ 3) * (‖u‖ ^ 4 / t ^ 2) from rfl]
+        apply mul_le_mul_of_nonneg_left _ h_4_nn
+        apply div_le_div_of_nonneg_right _ ht_sq_pos.le
+        linarith
+      have h_split_b : La * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 / t ^ 2)
+          ≤ La * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2 := by
+        rw [show La * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2
+              = La * ‖hV.T‖ / (3 * δ ^ 2) * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2) from by ring]
+        apply mul_le_mul_of_nonneg_left _ h_T_nn'
+        apply div_le_div_of_nonneg_right _ ht_sq_pos.le
+        linarith
+      linarith
+    linarith [h_a, h_b, h_bound]
+  -- Combine.
+  have h_combine_final : (4 * La * (‖u‖ / Real.sqrt t)
+          + La * ‖hV.T‖ / 3 * (‖u‖ ^ 4 / t)) *
+        Real.exp (-((c / 4) * ‖u‖ ^ 2))
+      ≤ La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) / t ^ 2 *
+        (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+        Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    rw [show La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) / t ^ 2 *
+            (‖u‖ ^ 4 + ‖u‖ ^ 6) *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2))
+          = (La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) *
+              (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2) *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) from by ring]
+    exact mul_le_mul_of_nonneg_right h_absorbed (Real.exp_pos _).le
+  linarith [h_step1, h_distrib.le, h_distrib.ge, h_combine_final]
 
 /-- **J₃ bound**: linear observable jet × `(e^{-s_t} - 1 + C_t)` is `O(t⁻²)`.
 
