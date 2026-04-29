@@ -1978,6 +1978,96 @@ private lemma integral_pi_comp_neg
     ∫ u : ι → ℝ, f (-u) = ∫ u : ι → ℝ, f u :=
   MeasureTheory.integral_neg_eq_self f _
 
+/-! ### Sum-of-perturbations bound for J₄ symmetrization -/
+
+/-- **Local bound on `s_t(u) + s_t(-u)`** (for J₄ rate). For `‖u‖ ≤ jet_radius·√t`,
+
+  `|rescaledPerturbation V H t u + rescaledPerturbation V H t (-u)| ≤ 2·jet_const · ‖u‖^4 / t`.
+
+The cubic piece `(1/6)·T(w,w,w)` (which is odd) cancels in `V(w) + V(-w)`,
+leaving only the EVEN quartic remainder. This is the key bound that makes
+J₄'s symmetrized bracket sharper, giving `O(1/t²)` instead of `O(1/t^(3/2))`. -/
+private lemma abs_rescaledPerturbation_add_neg_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ hV.jet_radius * Real.sqrt t) :
+    |rescaledPerturbation V H t u + rescaledPerturbation V H t (-u)|
+      ≤ 2 * hV.jet_const * ‖u‖ ^ 4 / t := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  have ht_ne : t ≠ 0 := ne_of_gt ht
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  have hjet_R_pos : 0 < hV.jet_radius := hV.jet_radius_pos
+  have h_norm_le : ‖(Real.sqrt t)⁻¹ • u‖ ≤ hV.jet_radius := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  have h_smul_neg : (Real.sqrt t)⁻¹ • (-u) = -((Real.sqrt t)⁻¹ • u) := by
+    rw [smul_neg]
+  have h_norm_neg_le : ‖(Real.sqrt t)⁻¹ • (-u)‖ ≤ hV.jet_radius := by
+    rw [h_smul_neg, norm_neg]
+    exact h_norm_le
+  have h_norm_pow : ‖(Real.sqrt t)⁻¹ • u‖ ^ 4 = ‖u‖ ^ 4 / t ^ 2 := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹),
+        mul_pow, inv_pow]
+    rw [show (Real.sqrt t) ^ 4 = (Real.sqrt t * Real.sqrt t) ^ 2 from by ring, h_sq]
+    field_simp
+  set w := (Real.sqrt t)⁻¹ • u with hw_def
+  have h_qf_neg_w : quadForm H (-w) = quadForm H w := by
+    rw [show (-w : ι → ℝ) = (-1 : ℝ) • w from by rw [neg_one_smul]]
+    rw [quadForm_smul]; ring
+  have h_T_neg : hV.T (fun _ : Fin 3 => -w) = -hV.T (fun _ => w) := cmm_diag_odd hV.T w
+  have h_jet_pos := hV.T_jet_bound w h_norm_le
+  have h_jet_neg : |V (-w) - ((1 / 2 : ℝ) * quadForm H (-w)
+      + (1 / 6 : ℝ) * hV.T (fun _ => -w))| ≤ hV.jet_const * ‖w‖ ^ 4 := by
+    have h := hV.T_jet_bound (-w) (by rw [norm_neg]; exact h_norm_le)
+    rw [show ‖(-w : ι → ℝ)‖ = ‖w‖ from norm_neg w] at h
+    exact h
+  rw [h_qf_neg_w, h_T_neg] at h_jet_neg
+  -- Add the two: |V(w) + V(-w) - quadForm H w| ≤ 2·jet_const · ‖w‖^4
+  have h_pos_neg_sum :
+      |V w + V (-w) - quadForm H w|
+        ≤ 2 * hV.jet_const * ‖w‖ ^ 4 := by
+    have h_add :=
+      abs_add_le
+        (V w - ((1 / 2 : ℝ) * quadForm H w + (1 / 6 : ℝ) * hV.T (fun _ => w)))
+        (V (-w) - ((1 / 2 : ℝ) * quadForm H w +
+          (1 / 6 : ℝ) * (-(hV.T (fun _ => w)))))
+    have h_arg_eq : V w - ((1 / 2 : ℝ) * quadForm H w +
+          (1 / 6 : ℝ) * hV.T (fun _ => w))
+        + (V (-w) - ((1 / 2 : ℝ) * quadForm H w +
+          (1 / 6 : ℝ) * (-(hV.T (fun _ => w)))))
+        = V w + V (-w) - quadForm H w := by ring
+    rw [h_arg_eq] at h_add
+    linarith
+  -- Multiply by t and convert ‖w‖^4 to ‖u‖^4/t².
+  have h_qf_eq : quadForm H w = quadForm H u / t := by
+    rw [hw_def, quadForm_smul]
+    rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from by rw [inv_pow]]
+    rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
+    field_simp
+  rw [h_qf_eq, h_norm_pow] at h_pos_neg_sum
+  unfold rescaledPerturbation
+  have h_qf_neg_u : quadForm H (-u) = quadForm H u := by
+    rw [show (-u : ι → ℝ) = (-1 : ℝ) • u from by rw [neg_one_smul]]
+    rw [quadForm_smul]; ring
+  have h_eq : t * V ((Real.sqrt t)⁻¹ • u) - (1/2) * quadForm H u +
+      (t * V ((Real.sqrt t)⁻¹ • (-u)) - (1/2) * quadForm H (-u))
+      = t * (V w + V (-w) - quadForm H u / t) := by
+    rw [h_qf_neg_u]
+    rw [show (((Real.sqrt t)⁻¹ • u) : ι → ℝ) = w from rfl]
+    rw [show (((Real.sqrt t)⁻¹ • (-u)) : ι → ℝ) = -w from h_smul_neg]
+    field_simp
+    ring
+  rw [h_eq, abs_mul, abs_of_pos ht]
+  calc t * |V w + V (-w) - quadForm H u / t|
+      ≤ t * (2 * hV.jet_const * (‖u‖ ^ 4 / t ^ 2)) :=
+        mul_le_mul_of_nonneg_left h_pos_neg_sum ht.le
+    _ = 2 * hV.jet_const * ‖u‖ ^ 4 / t := by
+        rw [show (t : ℝ) ^ 2 = t * t from sq t]
+        field_simp
+
 /-! ### Pointwise bounds on the scaled jets
 
 These pointwise bounds will feed into the Glocal+Gtail integration arguments
