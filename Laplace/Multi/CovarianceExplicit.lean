@@ -9016,6 +9016,569 @@ private lemma abs_psi_rem_taylor_remainder_le
         = hψ.jet_const * (‖u‖ ^ 4 / t ^ 2) from by field_simp]
   exact h_jet
 
+/-- **Abstract algebraic identity for `bulkErr`** (used for Lemma B closure).
+
+This is the polynomial identity that drives the `bulkErr` decomposition into
+6 pieces. After substituting Taylor expansions for `φ((√t)⁻¹u)` and ψ_rem,
+the cancellations of `q_c·Q_ψ` and the `(1/√t)·odd5K` cross-pieces leave
+exactly the 6 terms on the RHS. The use of `s² = t` is in just one place
+(the `Cφ·Cψ/s²` → `Cφ·Cψ/t` reduction). -/
+private lemma bulk_algebraic_identity_aux
+    (qφ qψ μ A B R_φ R_ψ t s : ℝ)
+    (ht_ne : t ≠ 0) (hs_ne : s ≠ 0) (h_sq : s * s = t) :
+    t ^ 2 *
+        ((1 / (2 * t)) * qφ + (1 / (6 * t * s)) * A + R_φ - (1 / (2 * t)) * μ) *
+        ((1 / (2 * t)) * qψ + (1 / (6 * t * s)) * B + R_ψ)
+      - ((1 / 2 : ℝ) * qφ - (1 / 2 : ℝ) * μ) * ((1 / 2 : ℝ) * qψ)
+      - (1 / s) * (((1 / 2 : ℝ) * qφ - (1 / 2 : ℝ) * μ) * ((1 / 6 : ℝ) * B)
+                  + ((1 / 6 : ℝ) * A) * ((1 / 2 : ℝ) * qψ))
+    = (1 / t) * ((1 / 6 : ℝ) * A) * ((1 / 6 : ℝ) * B)
+      + t * ((1 / 2 : ℝ) * qφ - (1 / 2 : ℝ) * μ) * R_ψ
+      + t * R_φ * ((1 / 2 : ℝ) * qψ)
+      + s * ((1 / 6 : ℝ) * A) * R_ψ
+      + s * R_φ * ((1 / 6 : ℝ) * B)
+      + t ^ 2 * R_φ * R_ψ := by
+  field_simp
+  -- field_simp multiplies goal by 144; coefficient = -144 · [s t R_φ B/6 + s t A R_ψ/6 + A B/36]
+  -- = -(24 s t R_φ B + 24 s t A R_ψ + 4 A B).
+  linear_combination
+    (-(24 * s * t * R_φ * B + 24 * s * t * A * R_ψ + 4 * A * B)) * h_sq
+
+set_option maxHeartbeats 6400000 in
+-- Heavy: 6 piece bounds + abstract identity + 6 K_i arithmetic dispatches.
+/-- **Local pointwise bound on `bulkErr`** (Lemma B Step 4-9 closure).
+
+On the local ball `‖u‖ ≤ R · √t` with `R := min hφ.jet_radius hψ.jet_radius`,
+and for `t ≥ 1`,
+`|bulkErr V φ ψ H Hinv 0 b hV hφ hψ t u| ≤ K_loc / t · (1 + ‖u‖^8)`.
+
+**Proof outline (per GPT B/C-hybrid plan)**: substitute the Taylor expansions
+`φ((√t)⁻¹u) = (1/(2t))·quadForm A_φ u + (1/(6t√t))·Φ_φ(u,u,u) + R_φ` and
+`ψ_rem(u) = (1/(2t))·quadForm A_ψ u + (1/(6t√t))·Φ_ψ(u,u,u) + R_ψ` into
+`bulkErr := t² · φ_conn · ψ_rem - q_c·Q_ψ - (1/√t)·odd5K`. The leading
+`q_c·Q_ψ` and the odd cross-pieces cancel, leaving the algebraic identity
+```
+bulkErr = (1/t)·C_φ·C_ψ + t·q_c·R_ψ + t·R_φ·Q_ψ
+        + √t·C_φ·R_ψ + √t·R_φ·C_ψ + t²·R_φ·R_ψ
+```
+Each piece is bounded termwise:
+- `(1/t)·|C_φ·C_ψ| ≤ K_1·‖u‖^6/t`
+- `t·|q_c·R_ψ| ≤ K_2·(‖u‖^4 + ‖u‖^6)/t`
+- `t·|R_φ·Q_ψ| ≤ K_3·‖u‖^6/t`
+- `√t·|C_φ·R_ψ| ≤ K_4·‖u‖^7/t^(3/2) ≤ K_4·‖u‖^7/t` (since t ≥ 1)
+- `√t·|R_φ·C_ψ| ≤ K_5·‖u‖^7/t`
+- `t²·|R_φ·R_ψ| ≤ K_6·‖u‖^8/t²  ≤ K_6·‖u‖^8/t` (since t ≥ 1)
+
+Sum: bounded by `K_loc·(1+‖u‖^8)/t` using `‖u‖^k ≤ 1+‖u‖^8` for `k ≤ 8`. -/
+private lemma abs_bulkErr_local_le
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (hψ : ObservableTensorApprox ψ b)
+    [Nonempty ι] :
+    ∃ K_loc : ℝ, 0 ≤ K_loc ∧ ∀ t : ℝ, 1 ≤ t →
+      ∀ u : ι → ℝ,
+        ‖u‖ ≤ min hφ.jet_radius hψ.jet_radius * Real.sqrt t →
+        |bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u|
+          ≤ K_loc / t * (1 + ‖u‖ ^ 8) := by
+  classical
+  set N : ℝ := (Fintype.card ι : ℝ) with hN_def
+  have hN_nn : 0 ≤ N := by rw [hN_def]; exact_mod_cast Nat.zero_le _
+  set tA : ℝ := |trASig hφ.A Hinv| with htA_def
+  have htA_nn : 0 ≤ tA := abs_nonneg _
+  have hjφ_nn : 0 ≤ hφ.jet_const := hφ.jet_const_nonneg
+  have hjψ_nn : 0 ≤ hψ.jet_const := hψ.jet_const_nonneg
+  have hAφ_nn : 0 ≤ ‖hφ.A‖ := norm_nonneg _
+  have hAψ_nn : 0 ≤ ‖hψ.A‖ := norm_nonneg _
+  have hΦφ_nn : 0 ≤ ‖hφ.Φ‖ := norm_nonneg _
+  have hΦψ_nn : 0 ≤ ‖hψ.Φ‖ := norm_nonneg _
+  -- Six per-piece constants:
+  set K1 : ℝ := (1 / 36 : ℝ) * ‖hφ.Φ‖ * ‖hψ.Φ‖ with hK1_def
+  set K2 : ℝ := hψ.jet_const * (N * ‖hφ.A‖ + tA) with hK2_def
+  set K3 : ℝ := (1 / 2 : ℝ) * hφ.jet_const * N * ‖hψ.A‖ with hK3_def
+  set K4 : ℝ := (1 / 6 : ℝ) * ‖hφ.Φ‖ * hψ.jet_const with hK4_def
+  set K5 : ℝ := (1 / 6 : ℝ) * hφ.jet_const * ‖hψ.Φ‖ with hK5_def
+  set K6 : ℝ := hφ.jet_const * hψ.jet_const with hK6_def
+  set K_loc : ℝ := K1 + K2 + K3 + K4 + K5 + K6 with hK_loc_def
+  have hK1_nn : 0 ≤ K1 := by rw [hK1_def]; positivity
+  have hK2_nn : 0 ≤ K2 := by rw [hK2_def]; positivity
+  have hK3_nn : 0 ≤ K3 := by rw [hK3_def]; positivity
+  have hK4_nn : 0 ≤ K4 := by rw [hK4_def]; positivity
+  have hK5_nn : 0 ≤ K5 := by rw [hK5_def]; positivity
+  have hK6_nn : 0 ≤ K6 := by rw [hK6_def]; positivity
+  have hK_loc_nn : 0 ≤ K_loc := by rw [hK_loc_def]; linarith
+  refine ⟨K_loc, hK_loc_nn, fun t ht_one u hu => ?_⟩
+  have ht_pos : 0 < t := by linarith
+  have ht_sq_pos : 0 < t ^ 2 := by positivity
+  set sqt : ℝ := Real.sqrt t with hsqt_def
+  have hsqt_pos : 0 < sqt := Real.sqrt_pos.mpr ht_pos
+  have hsqt_ne : sqt ≠ 0 := ne_of_gt hsqt_pos
+  have h_sq : sqt * sqt = t := Real.mul_self_sqrt ht_pos.le
+  have ht_ne : t ≠ 0 := ne_of_gt ht_pos
+  have hsqt_one_le : 1 ≤ sqt := by
+    rw [hsqt_def]; rw [show (1 : ℝ) = Real.sqrt 1 from (Real.sqrt_one).symm]
+    exact Real.sqrt_le_sqrt ht_one
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  -- Local Taylor bounds on the chosen radius.
+  have hu_φ : ‖u‖ ≤ hφ.jet_radius * Real.sqrt t :=
+    le_trans hu (mul_le_mul_of_nonneg_right (min_le_left _ _) hsqt_pos.le)
+  have hu_ψ : ‖u‖ ≤ hψ.jet_radius * Real.sqrt t :=
+    le_trans hu (mul_le_mul_of_nonneg_right (min_le_right _ _) hsqt_pos.le)
+  have h_taylor_φ := abs_phi_taylor_remainder_le φ hφ ht_pos u hu_φ
+  have h_taylor_ψ := abs_psi_rem_taylor_remainder_le ψ b hψ ht_pos u hu_ψ
+  -- Define R_φ and R_ψ explicitly so we can substitute φ and ψ_rem.
+  set R_φ : ℝ := φ ((Real.sqrt t)⁻¹ • u)
+                  - ((1 / (2 * t)) * quadForm hφ.A u
+                    + (1 / (6 * t * Real.sqrt t)) * hφ.Φ (fun _ => u))
+                  with hR_φ_def
+  set R_ψ : ℝ := expCovPsiRem ψ b t u
+                  - ((1 / (2 * t)) * quadForm hψ.A u
+                    + (1 / (6 * t * Real.sqrt t)) * hψ.Φ (fun _ => u))
+                  with hR_ψ_def
+  have h_Rφ_le : |R_φ| ≤ hφ.jet_const * ‖u‖ ^ 4 / t ^ 2 := h_taylor_φ
+  have h_Rψ_le : |R_ψ| ≤ hψ.jet_const * ‖u‖ ^ 4 / t ^ 2 := h_taylor_ψ
+  -- Inverse bound for the Taylor remainders:
+  -- |R_φ| ≤ jet · ‖u‖^4 / t² and similarly |R_ψ|.
+  -- Polynomial bounds on quadForm/Φ.
+  have h_qf_φ : |quadForm hφ.A u| ≤ N * ‖hφ.A‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (hφ.A u) i| ≤ ‖u‖ * ‖hφ.A u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (hφ.A u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (hφ.A u) i| ≤ ∑ i, |u i * (hφ.A u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (hφ.A u) i| ≤ N * (‖u‖ * ‖hφ.A u‖) := by
+      calc ∑ i, |u i * (hφ.A u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖hφ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖hφ.A u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]
+              rw [hN_def]; push_cast; ring
+    have h_Au : ‖hφ.A u‖ ≤ ‖hφ.A‖ * ‖u‖ := hφ.A.le_opNorm u
+    calc |∑ i, u i * (hφ.A u) i|
+        ≤ N * (‖u‖ * ‖hφ.A u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ N * (‖u‖ * (‖hφ.A‖ * ‖u‖)) := by
+          apply mul_le_mul_of_nonneg_left _ hN_nn
+          apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+      _ = N * ‖hφ.A‖ * ‖u‖ ^ 2 := by ring
+  have h_qf_ψ : |quadForm hψ.A u| ≤ N * ‖hψ.A‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (hψ.A u) i| ≤ ‖u‖ * ‖hψ.A u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (hψ.A u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (hψ.A u) i| ≤ ∑ i, |u i * (hψ.A u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (hψ.A u) i| ≤ N * (‖u‖ * ‖hψ.A u‖) := by
+      calc ∑ i, |u i * (hψ.A u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖hψ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖hψ.A u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]
+              rw [hN_def]; push_cast; ring
+    have h_Au : ‖hψ.A u‖ ≤ ‖hψ.A‖ * ‖u‖ := hψ.A.le_opNorm u
+    calc |∑ i, u i * (hψ.A u) i|
+        ≤ N * (‖u‖ * ‖hψ.A u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ N * (‖u‖ * (‖hψ.A‖ * ‖u‖)) := by
+          apply mul_le_mul_of_nonneg_left _ hN_nn
+          apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+      _ = N * ‖hψ.A‖ * ‖u‖ ^ 2 := by ring
+  have h_Φφ : |hφ.Φ (fun _ : Fin 3 => u)| ≤ ‖hφ.Φ‖ * ‖u‖ ^ 3 := by
+    have := hφ.Φ.le_opNorm (fun _ : Fin 3 => u)
+    simpa [Fin.prod_univ_three] using this
+  have h_Φψ : |hψ.Φ (fun _ : Fin 3 => u)| ≤ ‖hψ.Φ‖ * ‖u‖ ^ 3 := by
+    have := hψ.Φ.le_opNorm (fun _ : Fin 3 => u)
+    simpa [Fin.prod_univ_three] using this
+  -- ‖u‖^k ≤ 1 + ‖u‖^8 for k ∈ {4, 6, 7}.
+  have h_pow_le : ∀ k : ℕ, k ≤ 8 → ‖u‖ ^ k ≤ 1 + ‖u‖ ^ 8 := by
+    intro k hk
+    by_cases hcase : ‖u‖ ≤ 1
+    · have h1 : ‖u‖ ^ k ≤ 1 := pow_le_one₀ h_norm_nn hcase
+      linarith [pow_nonneg h_norm_nn 8]
+    · push_neg at hcase
+      have h1 : 1 ≤ ‖u‖ := hcase.le
+      have hk_pow : ‖u‖ ^ k ≤ ‖u‖ ^ 8 := pow_le_pow_right₀ h1 hk
+      linarith
+  have h_u4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 8 := h_pow_le 4 (by norm_num)
+  have h_u6_le : ‖u‖ ^ 6 ≤ 1 + ‖u‖ ^ 8 := h_pow_le 6 (by norm_num)
+  have h_u7_le : ‖u‖ ^ 7 ≤ 1 + ‖u‖ ^ 8 := h_pow_le 7 (by norm_num)
+  have h_u8_le : ‖u‖ ^ 8 ≤ 1 + ‖u‖ ^ 8 := by linarith [pow_nonneg h_norm_nn 8]
+  -- Establish algebraic identity for bulkErr.
+  -- expCovPhiConn V φ H Hinv 0 hV hφ t u = φ((√t)⁻¹u) - (1/(2t))·trASig hφ.A Hinv.
+  have h_phi_conn_eq : expCovPhiConn V φ H Hinv 0 hV hφ t u
+      = φ ((Real.sqrt t)⁻¹ • u) - (1 / (2 * t)) * trASig hφ.A Hinv := by
+    unfold expCovPhiConn expNumeratorCoeff
+    have h_Hinv0 : Hinv (0 : ι → ℝ) = 0 := map_zero Hinv
+    rw [h_Hinv0]
+    have h_dot0 : dot (0 : ι → ℝ) (tensorContractMatrix hV.T Hinv) = 0 := by
+      unfold dot; simp
+    rw [h_dot0, sub_zero]
+    rw [show (trASig hφ.A Hinv : ℝ) / 2 / t = 1 / (2 * t) * trASig hφ.A Hinv from by
+      field_simp]
+  -- Substitute Taylor decomposition into expCovPhiConn and expCovPsiRem,
+  -- and unfold bulkErr.
+  -- Key intermediate: bulkErr = (sum of 6 pieces).
+  -- Strategy: rewrite `1/sqt = sqt/t` and `1/(6 t sqt) = sqt/(6 t²)` to remove
+  -- sqt from denominators, then `ring` (with `sqt²` factors that survive being
+  -- closed via `h_sq` substitution).
+  have h_id : bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u
+      = (1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+          * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+        + t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv)
+            * R_ψ
+        + t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)
+        + Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ
+        + Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+        + t ^ 2 * R_φ * R_ψ := by
+    unfold bulkErr odd5Kernel
+    rw [h_phi_conn_eq]
+    -- Express φ((√t)⁻¹u) and expCovPsiRem in terms of R_φ, R_ψ.
+    have h_phi_repl : φ ((Real.sqrt t)⁻¹ • u)
+        = (1 / (2 * t)) * quadForm hφ.A u
+          + (1 / (6 * t * Real.sqrt t)) * hφ.Φ (fun _ => u)
+          + R_φ := by
+      rw [hR_φ_def]; ring
+    have h_psi_repl : expCovPsiRem ψ b t u
+        = (1 / (2 * t)) * quadForm hψ.A u
+          + (1 / (6 * t * Real.sqrt t)) * hψ.Φ (fun _ => u)
+          + R_ψ := by
+      rw [hR_ψ_def]; ring
+    rw [h_phi_repl, h_psi_repl]
+    -- Apply the abstract algebraic identity.
+    exact bulk_algebraic_identity_aux
+      (quadForm hφ.A u) (quadForm hψ.A u) (trASig hφ.A Hinv)
+      (hφ.Φ (fun _ => u)) (hψ.Φ (fun _ => u))
+      R_φ R_ψ t (Real.sqrt t) ht_ne hsqt_ne h_sq
+  -- Now bound each piece.
+  rw [h_id]
+  -- Bound on |q_c| := |(1/2)·quadForm A_φ u - (1/2)·trASig A_φ Hinv|
+  have h_qc_le : |(1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv|
+      ≤ (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA) := by
+    calc |(1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv|
+        ≤ |(1 / 2 : ℝ) * quadForm hφ.A u| + |(1 / 2 : ℝ) * trASig hφ.A Hinv| :=
+          abs_sub _ _
+      _ = (1 / 2 : ℝ) * |quadForm hφ.A u| + (1 / 2 : ℝ) * tA := by
+          rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2),
+              abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2), htA_def]
+      _ ≤ (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2) + (1 / 2 : ℝ) * tA := by
+          have := mul_le_mul_of_nonneg_left h_qf_φ (by norm_num : (0:ℝ) ≤ 1/2)
+          linarith
+      _ = (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA) := by ring
+  -- Bound on |Q_ψ| := |(1/2)·quadForm A_ψ u|
+  have h_Q_le : |(1 / 2 : ℝ) * quadForm hψ.A u|
+      ≤ (1 / 2 : ℝ) * (N * ‖hψ.A‖ * ‖u‖ ^ 2) := by
+    rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2)]
+    exact mul_le_mul_of_nonneg_left h_qf_ψ (by norm_num : (0:ℝ) ≤ 1/2)
+  -- Bound on |C_φ| := |(1/6)·Φ_φ(u,u,u)|
+  have h_Cφ_le : |(1 / 6 : ℝ) * hφ.Φ (fun _ => u)|
+      ≤ (1 / 6 : ℝ) * (‖hφ.Φ‖ * ‖u‖ ^ 3) := by
+    rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/6)]
+    exact mul_le_mul_of_nonneg_left h_Φφ (by norm_num : (0:ℝ) ≤ 1/6)
+  -- Bound on |C_ψ| := |(1/6)·Φ_ψ(u,u,u)|
+  have h_Cψ_le : |(1 / 6 : ℝ) * hψ.Φ (fun _ => u)|
+      ≤ (1 / 6 : ℝ) * (‖hψ.Φ‖ * ‖u‖ ^ 3) := by
+    rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/6)]
+    exact mul_le_mul_of_nonneg_left h_Φψ (by norm_num : (0:ℝ) ≤ 1/6)
+  -- Bound the absolute value of the 6-term sum by sum of absolute values.
+  have h_pieces_abs :
+      |(1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          + t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv)
+              * R_ψ
+          + t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)
+          + Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ
+          + Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          + t ^ 2 * R_φ * R_ψ|
+      ≤ |(1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))|
+        + |t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv)
+              * R_ψ|
+        + |t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)|
+        + |Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ|
+        + |Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))|
+        + |t ^ 2 * R_φ * R_ψ| := by
+    have h1 := abs_add_le
+      ((1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          + t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv)
+              * R_ψ
+          + t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)
+          + Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ
+          + Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u)))
+      (t ^ 2 * R_φ * R_ψ)
+    have h2 := abs_add_le
+      ((1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          + t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv)
+              * R_ψ
+          + t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)
+          + Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ)
+      (Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u)))
+    have h3 := abs_add_le
+      ((1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          + t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv)
+              * R_ψ
+          + t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u))
+      (Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ)
+    have h4 := abs_add_le
+      ((1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          + t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv)
+              * R_ψ)
+      (t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u))
+    have h5 := abs_add_le
+      ((1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u)))
+      (t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) * R_ψ)
+    linarith
+  -- Bound piece 1: |(1/t)·Cφ·Cψ| ≤ K1·‖u‖^6/t.
+  have h_piece1 : |(1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+        * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))| ≤ K1 * ‖u‖ ^ 6 / t := by
+    have ht_inv_nn : 0 ≤ 1 / t := by positivity
+    rw [show (1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          = (1 / t) * (((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+              * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))) from by ring,
+        abs_mul, abs_of_nonneg ht_inv_nn]
+    have h_prod : |((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+        * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))|
+        ≤ (1 / 6 : ℝ) * (‖hφ.Φ‖ * ‖u‖ ^ 3) * ((1 / 6 : ℝ) * (‖hψ.Φ‖ * ‖u‖ ^ 3)) := by
+      rw [abs_mul]
+      exact mul_le_mul h_Cφ_le h_Cψ_le (abs_nonneg _) (by positivity)
+    have h_step : (1 / t) * |((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+        * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))|
+        ≤ (1 / t) * ((1 / 6 : ℝ) * (‖hφ.Φ‖ * ‖u‖ ^ 3) *
+            ((1 / 6 : ℝ) * (‖hψ.Φ‖ * ‖u‖ ^ 3))) :=
+      mul_le_mul_of_nonneg_left h_prod ht_inv_nn
+    have h_eq : (1 / t) * ((1 / 6 : ℝ) * (‖hφ.Φ‖ * ‖u‖ ^ 3) *
+        ((1 / 6 : ℝ) * (‖hψ.Φ‖ * ‖u‖ ^ 3)))
+        = K1 * ‖u‖ ^ 6 / t := by
+      rw [hK1_def]
+      have h_pow : ‖u‖ ^ 3 * ‖u‖ ^ 3 = ‖u‖ ^ 6 := by ring
+      field_simp
+      ring
+    linarith
+  -- Bound piece 2: |t·q_c·R_ψ| ≤ K2·(‖u‖^4 + ‖u‖^6)/(2t).
+  -- Use |q_c·R_ψ| ≤ (1/2)(N·‖A_φ‖·‖u‖² + tA)·jψ·‖u‖^4/t².
+  -- So |t·q_c·R_ψ| ≤ (1/2)(N·‖A_φ‖·‖u‖² + tA)·jψ·‖u‖^4/t.
+  have h_piece2 : |t * ((1 / 2 : ℝ) * quadForm hφ.A u
+        - (1 / 2 : ℝ) * trASig hφ.A Hinv) * R_ψ|
+      ≤ K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) / (2 * t) := by
+    rw [show t * ((1 / 2 : ℝ) * quadForm hφ.A u
+              - (1 / 2 : ℝ) * trASig hφ.A Hinv) * R_ψ
+          = t * (((1 / 2 : ℝ) * quadForm hφ.A u
+              - (1 / 2 : ℝ) * trASig hφ.A Hinv) * R_ψ) from by ring,
+        abs_mul, abs_of_nonneg ht_pos.le]
+    have h_prod : |((1 / 2 : ℝ) * quadForm hφ.A u
+            - (1 / 2 : ℝ) * trASig hφ.A Hinv) * R_ψ|
+        ≤ (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA)
+          * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2) := by
+      rw [abs_mul]
+      exact mul_le_mul h_qc_le h_Rψ_le (abs_nonneg _) (by positivity)
+    have h_step : t * |((1 / 2 : ℝ) * quadForm hφ.A u
+            - (1 / 2 : ℝ) * trASig hφ.A Hinv) * R_ψ|
+        ≤ t * ((1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA)
+            * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2)) :=
+      mul_le_mul_of_nonneg_left h_prod ht_pos.le
+    have h_eq : t * ((1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA)
+            * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2))
+        = hψ.jet_const * (N * ‖hφ.A‖ * ‖u‖ ^ 6 + tA * ‖u‖ ^ 4) / (2 * t) := by
+      field_simp
+    have h_le : hψ.jet_const * (N * ‖hφ.A‖ * ‖u‖ ^ 6 + tA * ‖u‖ ^ 4) / (2 * t)
+        ≤ K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) / (2 * t) := by
+      apply div_le_div_of_nonneg_right _ (by linarith)
+      rw [hK2_def]
+      have h_lhs : hψ.jet_const * (N * ‖hφ.A‖ * ‖u‖ ^ 6 + tA * ‖u‖ ^ 4)
+          ≤ hψ.jet_const * ((N * ‖hφ.A‖ + tA) * (‖u‖ ^ 6 + ‖u‖ ^ 4)) := by
+        apply mul_le_mul_of_nonneg_left _ hjψ_nn
+        have h_u4_nn : (0:ℝ) ≤ ‖u‖^4 := pow_nonneg h_norm_nn _
+        have h_u6_nn : (0:ℝ) ≤ ‖u‖^6 := pow_nonneg h_norm_nn _
+        have h_NA_nn : 0 ≤ N * ‖hφ.A‖ := mul_nonneg hN_nn hAφ_nn
+        -- (N·A + tA)·(u^6 + u^4) = N·A·u^6 + N·A·u^4 + tA·u^6 + tA·u^4
+        -- We want N·A·u^6 + tA·u^4 ≤ this, i.e., 0 ≤ N·A·u^4 + tA·u^6.
+        have h_extra1 : (0 : ℝ) ≤ N * ‖hφ.A‖ * ‖u‖ ^ 4 := mul_nonneg h_NA_nn h_u4_nn
+        have h_extra2 : (0 : ℝ) ≤ tA * ‖u‖ ^ 6 := mul_nonneg htA_nn h_u6_nn
+        nlinarith [h_extra1, h_extra2]
+      linarith
+    linarith
+  -- Bound piece 3: |t·R_φ·Q_ψ| ≤ K3·‖u‖^6/t.
+  have h_piece3 : |t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)|
+      ≤ K3 * ‖u‖ ^ 6 / t := by
+    rw [show t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)
+          = t * (R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)) from by ring,
+        abs_mul, abs_of_nonneg ht_pos.le]
+    have h_prod : |R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)|
+        ≤ (hφ.jet_const * ‖u‖ ^ 4 / t ^ 2)
+          * ((1 / 2 : ℝ) * (N * ‖hψ.A‖ * ‖u‖ ^ 2)) := by
+      rw [abs_mul]
+      exact mul_le_mul h_Rφ_le h_Q_le (abs_nonneg _) (by positivity)
+    have h_step : t * |R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)|
+        ≤ t * ((hφ.jet_const * ‖u‖ ^ 4 / t ^ 2)
+            * ((1 / 2 : ℝ) * (N * ‖hψ.A‖ * ‖u‖ ^ 2))) :=
+      mul_le_mul_of_nonneg_left h_prod ht_pos.le
+    have h_eq : t * ((hφ.jet_const * ‖u‖ ^ 4 / t ^ 2)
+            * ((1 / 2 : ℝ) * (N * ‖hψ.A‖ * ‖u‖ ^ 2)))
+        = K3 * ‖u‖ ^ 6 / t := by
+      rw [hK3_def]
+      field_simp
+    linarith
+  -- Bound piece 4: |√t·Cφ·R_ψ| ≤ K4·‖u‖^7/t (since t ≥ 1).
+  have h_piece4 : |Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ|
+      ≤ K4 * ‖u‖ ^ 7 / t := by
+    rw [show Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ
+          = Real.sqrt t * (((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ) from by ring,
+        abs_mul, abs_of_nonneg hsqt_pos.le]
+    have h_prod : |((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ|
+        ≤ (1 / 6 : ℝ) * (‖hφ.Φ‖ * ‖u‖ ^ 3)
+          * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2) := by
+      rw [abs_mul]
+      exact mul_le_mul h_Cφ_le h_Rψ_le (abs_nonneg _) (by positivity)
+    have h_step : Real.sqrt t * |((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ|
+        ≤ Real.sqrt t * ((1 / 6 : ℝ) * (‖hφ.Φ‖ * ‖u‖ ^ 3)
+            * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2)) :=
+      mul_le_mul_of_nonneg_left h_prod hsqt_pos.le
+    have h_eq : Real.sqrt t * ((1 / 6 : ℝ) * (‖hφ.Φ‖ * ‖u‖ ^ 3)
+            * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2))
+        = K4 * ‖u‖ ^ 7 * Real.sqrt t / t ^ 2 := by
+      rw [hK4_def]
+      field_simp
+    -- Real.sqrt t / t^2 = 1 / (t * sqt) ≤ 1/t for t ≥ 1.
+    have h_sqt_t2_le : Real.sqrt t / t ^ 2 ≤ 1 / t := by
+      rw [div_le_div_iff₀ ht_sq_pos ht_pos]
+      -- Goal: Real.sqrt t * t ≤ t^2 * 1, i.e., sqrt t ≤ t.
+      have h_sqrt_le_t : Real.sqrt t ≤ t := by
+        calc Real.sqrt t = Real.sqrt t * 1 := by ring
+          _ ≤ Real.sqrt t * Real.sqrt t :=
+              mul_le_mul_of_nonneg_left hsqt_one_le hsqt_pos.le
+          _ = t := h_sq
+      nlinarith [h_sqrt_le_t, ht_pos]
+    have h_K4_nn := hK4_nn
+    have h_u7_nn : 0 ≤ ‖u‖ ^ 7 := pow_nonneg h_norm_nn _
+    have h_K4_u7_nn : 0 ≤ K4 * ‖u‖ ^ 7 := mul_nonneg h_K4_nn h_u7_nn
+    have h_final : K4 * ‖u‖ ^ 7 * Real.sqrt t / t ^ 2 ≤ K4 * ‖u‖ ^ 7 / t := by
+      rw [show K4 * ‖u‖ ^ 7 * Real.sqrt t / t ^ 2
+            = (K4 * ‖u‖ ^ 7) * (Real.sqrt t / t ^ 2) from by ring,
+          show K4 * ‖u‖ ^ 7 / t = (K4 * ‖u‖ ^ 7) * (1 / t) from by ring]
+      exact mul_le_mul_of_nonneg_left h_sqt_t2_le h_K4_u7_nn
+    linarith
+  -- Bound piece 5: |√t·R_φ·Cψ| ≤ K5·‖u‖^7/t.
+  have h_piece5 : |Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))|
+      ≤ K5 * ‖u‖ ^ 7 / t := by
+    rw [show Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          = Real.sqrt t * (R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))) from by ring,
+        abs_mul, abs_of_nonneg hsqt_pos.le]
+    have h_prod : |R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))|
+        ≤ (hφ.jet_const * ‖u‖ ^ 4 / t ^ 2)
+          * ((1 / 6 : ℝ) * (‖hψ.Φ‖ * ‖u‖ ^ 3)) := by
+      rw [abs_mul]
+      exact mul_le_mul h_Rφ_le h_Cψ_le (abs_nonneg _) (by positivity)
+    have h_step : Real.sqrt t * |R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))|
+        ≤ Real.sqrt t * ((hφ.jet_const * ‖u‖ ^ 4 / t ^ 2)
+            * ((1 / 6 : ℝ) * (‖hψ.Φ‖ * ‖u‖ ^ 3))) :=
+      mul_le_mul_of_nonneg_left h_prod hsqt_pos.le
+    have h_eq : Real.sqrt t * ((hφ.jet_const * ‖u‖ ^ 4 / t ^ 2)
+            * ((1 / 6 : ℝ) * (‖hψ.Φ‖ * ‖u‖ ^ 3)))
+        = K5 * ‖u‖ ^ 7 * Real.sqrt t / t ^ 2 := by
+      rw [hK5_def]
+      field_simp
+    have h_sqt_t2_le : Real.sqrt t / t ^ 2 ≤ 1 / t := by
+      rw [div_le_div_iff₀ ht_sq_pos ht_pos]
+      -- Goal: Real.sqrt t * t ≤ t^2 * 1, i.e., sqrt t ≤ t.
+      have h_sqrt_le_t : Real.sqrt t ≤ t := by
+        calc Real.sqrt t = Real.sqrt t * 1 := by ring
+          _ ≤ Real.sqrt t * Real.sqrt t :=
+              mul_le_mul_of_nonneg_left hsqt_one_le hsqt_pos.le
+          _ = t := h_sq
+      nlinarith [h_sqrt_le_t, ht_pos]
+    have h_K5_nn := hK5_nn
+    have h_u7_nn : 0 ≤ ‖u‖ ^ 7 := pow_nonneg h_norm_nn _
+    have h_K5_u7_nn : 0 ≤ K5 * ‖u‖ ^ 7 := mul_nonneg h_K5_nn h_u7_nn
+    have h_final : K5 * ‖u‖ ^ 7 * Real.sqrt t / t ^ 2 ≤ K5 * ‖u‖ ^ 7 / t := by
+      rw [show K5 * ‖u‖ ^ 7 * Real.sqrt t / t ^ 2
+            = (K5 * ‖u‖ ^ 7) * (Real.sqrt t / t ^ 2) from by ring,
+          show K5 * ‖u‖ ^ 7 / t = (K5 * ‖u‖ ^ 7) * (1 / t) from by ring]
+      exact mul_le_mul_of_nonneg_left h_sqt_t2_le h_K5_u7_nn
+    linarith
+  -- Bound piece 6: |t²·R_φ·R_ψ| ≤ K6·‖u‖^8/t (since t ≥ 1).
+  have h_piece6 : |t ^ 2 * R_φ * R_ψ| ≤ K6 * ‖u‖ ^ 8 / t := by
+    rw [show t ^ 2 * R_φ * R_ψ = t ^ 2 * (R_φ * R_ψ) from by ring,
+        abs_mul, abs_of_nonneg ht_sq_pos.le]
+    have h_prod : |R_φ * R_ψ|
+        ≤ (hφ.jet_const * ‖u‖ ^ 4 / t ^ 2) * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2) := by
+      rw [abs_mul]
+      exact mul_le_mul h_Rφ_le h_Rψ_le (abs_nonneg _) (by positivity)
+    have h_step : t ^ 2 * |R_φ * R_ψ|
+        ≤ t ^ 2 * ((hφ.jet_const * ‖u‖ ^ 4 / t ^ 2)
+            * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2)) :=
+      mul_le_mul_of_nonneg_left h_prod ht_sq_pos.le
+    have h_eq : t ^ 2 * ((hφ.jet_const * ‖u‖ ^ 4 / t ^ 2)
+            * (hψ.jet_const * ‖u‖ ^ 4 / t ^ 2))
+        = K6 * ‖u‖ ^ 8 / t ^ 2 := by
+      rw [hK6_def]
+      field_simp
+    have h_t2_t : (1 : ℝ) / t ^ 2 ≤ 1 / t := by
+      rw [div_le_div_iff₀ ht_sq_pos ht_pos]
+      nlinarith [ht_pos.le, ht_one]
+    have h_K6_nn := hK6_nn
+    have h_u8_nn : 0 ≤ ‖u‖ ^ 8 := pow_nonneg h_norm_nn _
+    have h_K6_u8_nn : 0 ≤ K6 * ‖u‖ ^ 8 := mul_nonneg h_K6_nn h_u8_nn
+    have h_final : K6 * ‖u‖ ^ 8 / t ^ 2 ≤ K6 * ‖u‖ ^ 8 / t := by
+      rw [show K6 * ‖u‖ ^ 8 / t ^ 2 = (K6 * ‖u‖ ^ 8) * (1 / t ^ 2) from by ring,
+          show K6 * ‖u‖ ^ 8 / t = (K6 * ‖u‖ ^ 8) * (1 / t) from by ring]
+      exact mul_le_mul_of_nonneg_left h_t2_t h_K6_u8_nn
+    linarith
+  -- Combine piece bounds with h_pieces_abs and conclude.
+  have h_total :
+      |(1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
+            * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          + t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv)
+              * R_ψ
+          + t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)
+          + Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ
+          + Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))
+          + t ^ 2 * R_φ * R_ψ|
+      ≤ K1 * ‖u‖ ^ 6 / t + K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) / (2 * t)
+          + K3 * ‖u‖ ^ 6 / t + K4 * ‖u‖ ^ 7 / t + K5 * ‖u‖ ^ 7 / t
+          + K6 * ‖u‖ ^ 8 / t := by
+    linarith
+  -- Now bound each per-piece term by the corresponding K_i·(1+‖u‖^8)/t fraction.
+  have h_K1_bound : K1 * ‖u‖ ^ 6 / t ≤ K1 * (1 + ‖u‖ ^ 8) / t := by
+    apply div_le_div_of_nonneg_right _ ht_pos.le
+    exact mul_le_mul_of_nonneg_left h_u6_le hK1_nn
+  have h_K2_bound : K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) / (2 * t) ≤ K2 * (1 + ‖u‖ ^ 8) / t := by
+    have h_u_sum_le : ‖u‖ ^ 6 + ‖u‖ ^ 4 ≤ 2 * (1 + ‖u‖ ^ 8) := by linarith
+    have ht_pos2 : 0 < 2 * t := by linarith
+    rw [div_le_div_iff₀ ht_pos2 ht_pos]
+    have hK2_u : K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) * t
+        ≤ K2 * (2 * (1 + ‖u‖ ^ 8)) * t := by
+      apply mul_le_mul_of_nonneg_right _ ht_pos.le
+      apply mul_le_mul_of_nonneg_left h_u_sum_le hK2_nn
+    linarith
+  have h_K3_bound : K3 * ‖u‖ ^ 6 / t ≤ K3 * (1 + ‖u‖ ^ 8) / t := by
+    apply div_le_div_of_nonneg_right _ ht_pos.le
+    exact mul_le_mul_of_nonneg_left h_u6_le hK3_nn
+  have h_K4_bound : K4 * ‖u‖ ^ 7 / t ≤ K4 * (1 + ‖u‖ ^ 8) / t := by
+    apply div_le_div_of_nonneg_right _ ht_pos.le
+    exact mul_le_mul_of_nonneg_left h_u7_le hK4_nn
+  have h_K5_bound : K5 * ‖u‖ ^ 7 / t ≤ K5 * (1 + ‖u‖ ^ 8) / t := by
+    apply div_le_div_of_nonneg_right _ ht_pos.le
+    exact mul_le_mul_of_nonneg_left h_u7_le hK5_nn
+  have h_K6_bound : K6 * ‖u‖ ^ 8 / t ≤ K6 * (1 + ‖u‖ ^ 8) / t := by
+    apply div_le_div_of_nonneg_right _ ht_pos.le
+    exact mul_le_mul_of_nonneg_left h_u8_le hK6_nn
+  -- Sum all per-piece bounds.
+  have h_K_sum :
+      K1 * (1 + ‖u‖ ^ 8) / t + K2 * (1 + ‖u‖ ^ 8) / t + K3 * (1 + ‖u‖ ^ 8) / t
+        + K4 * (1 + ‖u‖ ^ 8) / t + K5 * (1 + ‖u‖ ^ 8) / t + K6 * (1 + ‖u‖ ^ 8) / t
+      = K_loc * (1 + ‖u‖ ^ 8) / t := by
+    rw [hK_loc_def]
+    field_simp
+  have h_swap : K_loc / t * (1 + ‖u‖ ^ 8) = K_loc * (1 + ‖u‖ ^ 8) / t := by
+    field_simp
+  rw [h_swap]
+  linarith [h_pieces_abs, h_total, h_K1_bound, h_K2_bound, h_K3_bound,
+            h_K4_bound, h_K5_bound, h_K6_bound, h_K_sum]
+
 /-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
 two pieces of `pair_product_expansion` vanish, leaving only the cross
 term `(√t)⁻¹·(b·u)·φ((√t)⁻¹u)` and the rem-rem term
