@@ -2791,6 +2791,59 @@ private lemma integrable_expNumQuad_mul_gW_mul_rescaled_weight
             (‖u‖ ^ 2 * (gaussianWeight H u *
               Real.exp (-(rescaledPerturbation V H t u)))) := by ring
 
+/-- Integrability of the J₄ integrand `(Q_t - μ/t) · gW · (exp(-s_t) - 1)`. -/
+private lemma integrable_J4_integrand
+    (V φ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ) [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1) *
+        gaussianWeight H u) := by
+  -- (Q_t - μ/t) · gW · (exp(-s_t) - 1)
+  -- = Q_t · gW · exp(-s_t) - Q_t · gW - (μ/t) · gW · exp(-s_t) + (μ/t) · gW.
+  -- Each piece is integrable.
+  have h_coer : ∀ w : ι → ℝ, hV.coercive_const * ‖w‖ ^ 2 ≤ V w :=
+    hV.coercive_bound
+  -- Piece 1: Q_t · gW · exp(-s_t).
+  have h_piece1 : Integrable (fun u : ι → ℝ =>
+      expNumQuad φ a hφ t u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_expNumQuad_mul_gW_mul_rescaled_weight V φ H a
+      hV.V_continuous hV.coercive_const_pos h_coer hφ ht
+  -- Piece 2: Q_t · gW.
+  have h_piece2 : Integrable (fun u : ι → ℝ =>
+      expNumQuad φ a hφ t u * gaussianWeight H u) :=
+    integrable_expNumQuad_mul_gaussianWeight V φ H a hV.toPotentialJetApprox hφ ht
+  -- Piece 3: (μ/t) · gW · exp(-s_t).
+  have h_piece3 : Integrable (fun u : ι → ℝ =>
+      (expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+        (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))) := by
+    have := integrable_pow_norm_mul_rescaled_weight V hV.V_continuous H
+      hV.coercive_const_pos h_coer 0 ht
+    simpa using this.const_mul _
+  -- Piece 4: (μ/t) · gW.
+  have h_piece4 : Integrable (fun u : ι → ℝ =>
+      (expNumeratorCoeff V φ H Hinv a hV hφ / t) * gaussianWeight H u) := by
+    have := (hV.int_norm_pow_gW 0).const_mul
+      (expNumeratorCoeff V φ H Hinv a hV hφ / t)
+    simpa using this
+  -- Combine: integrand = piece1 - piece2 - piece3 + piece4.
+  have h_combine : Integrable (fun u : ι → ℝ =>
+      expNumQuad φ a hφ t u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      - expNumQuad φ a hφ t u * gaussianWeight H u
+      - (expNumeratorCoeff V φ H Hinv a hV hφ / t) *
+          (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))
+      + (expNumeratorCoeff V φ H Hinv a hV hφ / t) * gaussianWeight H u) := by
+    have := ((h_piece1.sub h_piece2).sub h_piece3).add h_piece4
+    convert this using 1
+  apply h_combine.congr
+  filter_upwards with u
+  ring
+
 /-! ### The 4 error integrals -/
 
 /-- `J₁ = ∫ R_{φ,t}(u) · exp(-s_t) · gW(u) du` — quartic observable remainder
