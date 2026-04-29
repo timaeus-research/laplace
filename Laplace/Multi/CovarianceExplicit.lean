@@ -1881,6 +1881,52 @@ private noncomputable def expNumeratorCoeff
     (hφ : ObservableTensorApprox φ a) : ℝ :=
   (trASig hφ.A Hinv - dot (Hinv a) (tensorContractMatrix hV.T Hinv)) / 2
 
+/-- **Connected $t^{-2}$ coefficient of $\mathrm{Cov}_t[\phi,\psi]$** when
+$\nabla\phi(0) = 0$, $\nabla\psi(0) = b$:
+\[
+  \tfrac{1}{2}\mathrm{tr}(A\Sigma B\Sigma)
+    + \tfrac{1}{2}(\Sigma b)\!\cdot\!(\Phi{:}\Sigma)
+    - \tfrac{1}{2}b^\top\Sigma A\Sigma(T{:}\Sigma)
+    - \tfrac{1}{2}(\Sigma b)\!\cdot\!(T{:}(\Sigma A\Sigma)),
+\]
+with $A = \nabla^2\phi(0)$, $\Phi = \nabla^3\phi(0)$, $B = \nabla^2\psi(0)$,
+$T = \nabla^3 V(0)$, $\Sigma = H^{-1}$.
+
+This is the connected ("cumulant") part of the $t^{-2}$ coefficient — it
+equals the full pair coefficient `cov2_full` minus the disconnected piece
+`expNumeratorCoeff(φ) · expNumeratorCoeff(ψ)`. -/
+private noncomputable def cov2Coefficient
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hψ : ObservableTensorApprox ψ b) : ℝ :=
+  (1 / 2 : ℝ) * trASig (hφ.A.comp ((Hinv).comp (hψ.A.comp Hinv)))
+      (1 : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    + (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix hφ.Φ Hinv)
+    - (1 / 2 : ℝ) * dot b (Hinv (hφ.A (Hinv (tensorContractMatrix hV.T Hinv))))
+    - (1 / 2 : ℝ) * dot (Hinv b)
+        (tensorContractMatrix hV.T (Hinv.comp (hφ.A.comp Hinv)))
+
+/-- **Full $t^{-2}$ coefficient of $t^2 \cdot \mathrm{E}_t[\phi\psi]$**:
+the connected `cov2Coefficient` plus the disconnected piece
+`μ_φ · μ_ψ = expNumeratorCoeff(V,φ,a) · expNumeratorCoeff(V,ψ,b)`.
+
+This is the coefficient that appears in the centered-pair numerator
+asymptote `|t² · N_t(φψ) - cov2Coefficient_full · D_t| ≤ K/t`; the
+disconnected piece cancels in the wrapper against
+`(t · E_t[φ])(t · E_t[ψ]) → μ_φ · μ_ψ` from the explicit expectation
+theorem (Stage 4), leaving `t² · gibbsCov → cov2Coefficient`. -/
+private noncomputable def cov2Coefficient_full
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hψ : ObservableTensorApprox ψ b) : ℝ :=
+  cov2Coefficient V φ ψ H Hinv a b hV hφ hψ
+    + expNumeratorCoeff V φ H Hinv a hV hφ
+      * expNumeratorCoeff V ψ H Hinv b hV hψ
+
 /-! ### Scaled jets for the EXP numerator decomposition
 
 Per `gpt_responses/tactics_centered_numerator_exp.md`, decompose the centered
@@ -6268,6 +6314,58 @@ theorem gibbsExpectation_first_order_rate_explicit
         gcongr
     _ = K / t := h_zsim
 
+/-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
+when $\nabla\phi(0) = 0$, the rescaled pair numerator $N_t(\phi\psi)$ has
+$t^{-2}$ coefficient `cov2Coefficient_full · D_t / t² + O(D_t / t^3)`, i.e.
+\[
+  | t^2 \cdot N_t(\phi\psi) - \texttt{cov2\_full} \cdot D_t | \le K/t.
+\]
+Here `cov2_full = cov2Coefficient + μ_φ · μ_ψ` includes both the connected
+4-term coefficient (the theorem's `cov2Coefficient`) and the disconnected
+piece $\mathbb{E}_t[\phi]\mathbb{E}_t[\psi]$-product part; the wrapper
+`gibbsCov_first_order_rate_explicit` cancels the disconnected piece against
+the explicit expectation theorem, leaving the 4-term `cov2Coefficient`.
+
+Proof recipe (per `gpt_responses/strategy_stage5_cov2.md`): decompose via
+`pair_product_expansion` and identify the surviving $t^{-2}$ Gaussian terms
+using a 6-moment quad·linear·cubic Wick contraction; reuse the sharp-track
+remainder/integrability bounds. Currently a sorry. -/
+private theorem rescaledNumerator_centered_pair_explicit
+    (V φ ψ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hψ : ObservableTensorApprox ψ b)
+    (h_phi_grad_zero : a = 0)
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |t ^ 2 * rescaledNumerator V t (fun w => φ w * ψ w)
+          - cov2Coefficient_full V φ ψ H Hinv a b
+              hV.toPotentialTensorApprox hφ hψ
+            * rescaledPartition V t|
+        ≤ K / t := by
+  -- Outline (~300 LOC, currently deferred):
+  -- 1. Apply `pair_product_expansion` to decompose
+  --    `t² · N_t(φψ) = ∫ t · (t · φ((√t)⁻¹u) · ψ((√t)⁻¹u)) · gW · exp(-s_t) du`
+  --    into pieces I₁..I₄ analogous to the sharp track.
+  -- 2. With a = 0, the leading I₁ piece reshapes: `dot a u · dot b u = 0`,
+  --    so the surviving t^{-2} contributions come from the cross-pieces I₂, I₃
+  --    (quadratic-jet × linear or cubic-jet × linear) and from the
+  --    quad-quad/quad-linear-cubic Gaussian terms.
+  -- 3. The 4-piece breakdown:
+  --    - quad(φ) × quad(ψ): gives `(1/2) tr(AΣBΣ) + μ_φ μ_ψ` (connected + disc).
+  --    - cubic(φ) × linear(ψ): gives `(1/2) <Σb, Φ:Σ>`.
+  --    - quad(φ) × linear(ψ) × cubic(V): gives the two `T:Σ` cubic-correction terms.
+  --    - higher-order remainders (quartic+) absorbed into K/t bound.
+  -- 4. Each main term computed via a specialised Gaussian contraction lemma
+  --    (`gaussian_quad_quad`, `gaussian_cubic_linear`,
+  --     `gaussian_quad_linear_cubic` — the last must be strengthened from
+  --     existential to explicit closed form).
+  -- See `gpt_responses/strategy_stage5_cov2.md` for the full recipe.
+  sorry
+
 /-- **Sharp covariance rate (explicit coefficient, `lem:laplace_cov2`)**:
 for $\phi$ vanishing to second order ($\phi(0) = 0$, $\nabla\phi(0) = 0$)
 and $\psi$ with $\psi(0) = 0$ and $\nabla\psi(0) = b$,
@@ -6280,48 +6378,228 @@ $$
 where $A = \nabla^2\phi(0)$, $\Phi = \nabla^3\phi(0)$, $b = \nabla\psi(0)$,
 $B = \nabla^2\psi(0)$, $T = \nabla^3 V(0)$, $\Sigma = H^{-1}$.
 
-The Lean theorem packages the explicit coefficient as a single `ℝ`-valued
-function `cov2_coefficient` of `(hV, hφ, hψ)` so the conclusion has the form
-`|t² · gibbsCov V t φ ψ - cov2_coefficient| ≤ K/t`, i.e. a sharp $o(t^{-2})$
-remainder. The decomposition into the four named terms (and the `tr(A\Sigma)`
-cancellation between connected and disconnected pieces) is exposed via the
-helper lemma `cov2_coefficient_eq`. -/
+The conclusion uses the named coefficient `cov2Coefficient`:
+`|t² · gibbsCov V t φ ψ - cov2Coefficient ...| ≤ K/t`.
+
+The proof composes:
+1. `rescaledNumerator_centered_pair_explicit`:
+   `|t² · N(φψ) - cov2_full · D| ≤ K_N/t`.
+2. The existing weak denominator lower bound `D ≥ Z/2`.
+3. `gibbsExpectation_first_order_rate_explicit` (Stage 4):
+   `|2t · E_t[φ] - 2 μ_φ| ≤ K_φ/t`, similarly for `ψ`.
+The disconnected piece `μ_φ · μ_ψ` from `cov2_full` cancels against
+`(t · E_t[φ])(t · E_t[ψ]) → μ_φ · μ_ψ`, leaving `cov2Coefficient`. -/
 theorem gibbsCov_first_order_rate_explicit
     (V φ ψ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
     [Nonempty ι]
-    (hV : PotentialTensorApprox V H)
+    (hV : PotentialQuinticApprox V H)
     (hφ : ObservableTensorApprox φ a)
     (hψ : ObservableTensorApprox ψ b)
     (h_phi_grad_zero : a = 0)
     (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |t ^ 2 * gibbsCov V t φ ψ -
-        ((1 / 2 : ℝ) * trASig (hφ.A.comp ((Hinv).comp (hψ.A.comp Hinv))) (1 : (ι → ℝ) →L[ℝ] (ι → ℝ))
-        + (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix hφ.Φ Hinv)
-        - (1 / 2 : ℝ) * dot b (Hinv (hφ.A (Hinv (tensorContractMatrix hV.T Hinv))))
-        - (1 / 2 : ℝ) * dot (Hinv b)
-            (tensorContractMatrix hV.T (Hinv.comp (hφ.A.comp Hinv))))|
-      ≤ K / t := by
-  -- Per gpt_responses/strategy_stage5_cov2.md, this requires a new
-  -- centered-pair-explicit lemma and cannot be reduced to existing
-  -- (sharp + explicit expectation) infrastructure. The product observable
-  -- φ·ψ requires the t^{-2}-coefficient of E_t[φψ], which is computed via
-  -- 6-moment Wick contractions on quadratic·linear·cubic forms.
-  --
-  -- Cheapest path (~1000 LOC):
-  --  1. Strengthen `gaussian_quad_linear_cubic` from existential to explicit
-  --     formula (the actual Wick contraction value).
-  --  2. Prove `rescaledNumerator_centered_pair_explicit` (analog of sharp,
-  --     ~300 LOC) using `pair_product_expansion` + 6-moment Wick + remainder
-  --     bounds (mostly reused from the sharp track).
-  --  3. Wrap via numerator → covariance transfer (same as sharp track).
-  --
-  -- Currently deferred — see notes/cov2_explicit_session_handoff.md for
-  -- the breakdown of remaining work and gpt_responses/strategy_stage5_cov2.md
-  -- for the strategic recipe.
-  sorry
+          cov2Coefficient V φ ψ H Hinv a b
+            hV.toPotentialTensorApprox hφ hψ|
+        ≤ K / t := by
+  -- Bookkeeping abbreviations.
+  set μ_φ : ℝ := expNumeratorCoeff V φ H Hinv a hV.toPotentialTensorApprox hφ
+    with hμφ_def
+  set μ_ψ : ℝ := expNumeratorCoeff V ψ H Hinv b hV.toPotentialTensorApprox hψ
+    with hμψ_def
+  set ν   : ℝ := cov2Coefficient V φ ψ H Hinv a b
+      hV.toPotentialTensorApprox hφ hψ with hν_def
+  set ν_full : ℝ := cov2Coefficient_full V φ ψ H Hinv a b
+      hV.toPotentialTensorApprox hφ hψ with hνfull_def
+  have hν_full_eq : ν_full = ν + μ_φ * μ_ψ := by
+    simp [hνfull_def, hν_def, hμφ_def, hμψ_def, cov2Coefficient_full]
+  -- Pull the centered-pair numerator bound (sorry'd helper).
+  obtain ⟨K_N, T_N, hT_N, h_N⟩ :=
+    rescaledNumerator_centered_pair_explicit V φ ψ H Hinv a b
+      hV hφ hψ h_phi_grad_zero hGauss
+  -- Pull the existing denominator lower bound.
+  obtain ⟨T_D, hT_D, h_D⟩ :=
+    rescaledPartition_ge_half_gaussianZ V H Hinv
+      hV.toPotentialJetApprox.toPotentialApprox
+      hGauss.toLaplaceCovHypotheses
+  -- Pull Stage 4 explicit expectation bounds for φ and ψ.
+  obtain ⟨K_φ, T_φ, hT_φ, h_φ⟩ :=
+    gibbsExpectation_first_order_rate_explicit V φ H Hinv a hV hφ
+      hGauss.toLaplaceCov4MomentHypotheses
+  obtain ⟨K_ψ, T_ψ, hT_ψ, h_ψ⟩ :=
+    gibbsExpectation_first_order_rate_explicit V ψ H Hinv b hV hψ
+      hGauss.toLaplaceCov4MomentHypotheses
+  have hZ_pos : 0 < gaussianZ H := hGauss.Z_pos
+  -- Final K and T₀.
+  set K : ℝ := 2 * K_N / gaussianZ H
+      + (K_φ * |μ_ψ| + |μ_φ| * K_ψ) / 2
+      + K_φ * K_ψ / 4 with hK_def
+  refine ⟨K,
+    max T_N (max T_D (max T_φ T_ψ)),
+    le_max_of_le_left hT_N, ?_⟩
+  intro t ht
+  have ht_N : T_N ≤ t := le_of_max_le_left ht
+  have ht_rest : max T_D (max T_φ T_ψ) ≤ t := le_of_max_le_right ht
+  have ht_D : T_D ≤ t := le_of_max_le_left ht_rest
+  have ht_pp : max T_φ T_ψ ≤ t := le_of_max_le_right ht_rest
+  have ht_φ : T_φ ≤ t := le_of_max_le_left ht_pp
+  have ht_ψ : T_ψ ≤ t := le_of_max_le_right ht_pp
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hT_N ht_N)
+  have hP_ge : gaussianZ H / 2 ≤ rescaledPartition V t := h_D t ht_D
+  have hP_pos : 0 < rescaledPartition V t :=
+    lt_of_lt_of_le (by linarith) hP_ge
+  -- Specific bounds at t.
+  have h_N_t := h_N t ht_N
+  have h_φ_t := h_φ t ht_φ
+  have h_ψ_t := h_ψ t ht_ψ
+  -- Goal-side: rewrite gibbsCov via rescaledCov.
+  rw [gibbsCov_eq_rescaledCov V φ ψ ht_pos]
+  unfold rescaledCov
+  -- Rewrite ν using the def-set.
+  show |t ^ 2 * (rescaledExpectation V t (fun w => φ w * ψ w)
+        - rescaledExpectation V t φ * rescaledExpectation V t ψ) - ν| ≤ K / t
+  -- Decomposition (cleaner with `t² · E_t[φψ] - ν_full` on one side
+  -- and `(t · E_φ)(t · E_ψ) - μ_φ · μ_ψ` on the other; their
+  -- difference equals `t² · gibbsCov - ν` since `ν_full = ν + μ_φ μ_ψ`).
+  have h_decompose :
+      t ^ 2 * (rescaledExpectation V t (fun w => φ w * ψ w)
+            - rescaledExpectation V t φ * rescaledExpectation V t ψ) - ν
+        = (t ^ 2 * rescaledExpectation V t (fun w => φ w * ψ w) - ν_full)
+          - ((t * rescaledExpectation V t φ) *
+              (t * rescaledExpectation V t ψ) - μ_φ * μ_ψ) := by
+    rw [hν_full_eq]; ring
+  rw [h_decompose]
+  -- Bound piece 1: |t² · E_t[φψ] - ν_full| ≤ 2·K_N / (Z·t).
+  have hpart1 :
+      |t ^ 2 * rescaledExpectation V t (fun w => φ w * ψ w) - ν_full|
+        ≤ 2 * K_N / gaussianZ H / t := by
+    -- t² · E_t[φψ] - ν_full = (t² · N(φψ) - ν_full · D) / D.
+    have h_centered_eq :
+        t ^ 2 * rescaledExpectation V t (fun w => φ w * ψ w) - ν_full
+          = (t ^ 2 * rescaledNumerator V t (fun w => φ w * ψ w)
+              - ν_full * rescaledPartition V t) / rescaledPartition V t := by
+      unfold rescaledExpectation
+      field_simp
+    rw [h_centered_eq, abs_div, abs_of_pos hP_pos]
+    calc |t ^ 2 * rescaledNumerator V t (fun w => φ w * ψ w)
+              - ν_full * rescaledPartition V t| / rescaledPartition V t
+        ≤ (K_N / t) / rescaledPartition V t :=
+          div_le_div_of_nonneg_right h_N_t hP_pos.le
+      _ ≤ (K_N / t) / (gaussianZ H / 2) := by
+          apply div_le_div_of_nonneg_left _ (by linarith) hP_ge
+          exact le_trans (abs_nonneg _) h_N_t
+      _ = 2 * K_N / gaussianZ H / t := by field_simp
+  -- For piece 2, convert Stage 4 bounds to the `|t · E_t[φ] - μ_φ|` form.
+  -- Stage 4 gives: |2t · E - 2 μ_•| ≤ K_•/t, i.e. |t · E - μ_•| ≤ K_•/(2t).
+  have h_φ_centered : |t * rescaledExpectation V t φ - μ_φ|
+        ≤ K_φ / (2 * t) := by
+    have h_eq : 2 * t * gibbsExpectation V t φ - trASig hφ.A Hinv
+          + dot (Hinv a) (tensorContractMatrix hV.T Hinv)
+          = 2 * (t * rescaledExpectation V t φ - μ_φ) := by
+      rw [gibbsExpectation_eq_rescaledExpectation V φ ht_pos, hμφ_def,
+          expNumeratorCoeff]; ring
+    have h_φ_t' := h_φ_t
+    rw [h_eq] at h_φ_t'
+    rw [show (K_φ / (2 * t) : ℝ) = K_φ / t / 2 by field_simp]
+    rw [show |2 * (t * rescaledExpectation V t φ - μ_φ)|
+          = 2 * |t * rescaledExpectation V t φ - μ_φ| from by
+        rw [abs_mul]; simp] at h_φ_t'
+    linarith
+  have h_ψ_centered : |t * rescaledExpectation V t ψ - μ_ψ|
+        ≤ K_ψ / (2 * t) := by
+    have h_eq : 2 * t * gibbsExpectation V t ψ - trASig hψ.A Hinv
+          + dot (Hinv b) (tensorContractMatrix hV.T Hinv)
+          = 2 * (t * rescaledExpectation V t ψ - μ_ψ) := by
+      rw [gibbsExpectation_eq_rescaledExpectation V ψ ht_pos, hμψ_def,
+          expNumeratorCoeff]; ring
+    have h_ψ_t' := h_ψ_t
+    rw [h_eq] at h_ψ_t'
+    rw [show (K_ψ / (2 * t) : ℝ) = K_ψ / t / 2 by field_simp]
+    rw [show |2 * (t * rescaledExpectation V t ψ - μ_ψ)|
+          = 2 * |t * rescaledExpectation V t ψ - μ_ψ| from by
+        rw [abs_mul]; simp] at h_ψ_t'
+    linarith
+  -- Bound piece 2: |(t · E_φ)(t · E_ψ) - μ_φ · μ_ψ| ≤ (K_φ |μ_ψ| + |μ_φ| K_ψ)/(2t)
+  --                                                  + K_φ K_ψ / (4t²).
+  -- Use the identity: AB - ab = (A - a) B + a (B - b).
+  have hpart2 :
+      |(t * rescaledExpectation V t φ) * (t * rescaledExpectation V t ψ)
+          - μ_φ * μ_ψ|
+        ≤ (K_φ * |μ_ψ| + |μ_φ| * K_ψ) / (2 * t) + K_φ * K_ψ / (4 * t ^ 2) := by
+    set A : ℝ := t * rescaledExpectation V t φ with hA_def
+    set B : ℝ := t * rescaledExpectation V t ψ with hB_def
+    have h_id : A * B - μ_φ * μ_ψ
+        = (A - μ_φ) * (B - μ_ψ) + (A - μ_φ) * μ_ψ + μ_φ * (B - μ_ψ) := by ring
+    rw [h_id]
+    have hA_diff : |A - μ_φ| ≤ K_φ / (2 * t) := h_φ_centered
+    have hB_diff : |B - μ_ψ| ≤ K_ψ / (2 * t) := h_ψ_centered
+    have h_t2_pos : 0 < 2 * t := by linarith
+    have hK_φ_nn : 0 ≤ K_φ := by
+      have h0 : 0 ≤ K_φ / (2 * t) := le_trans (abs_nonneg _) h_φ_centered
+      have := mul_nonneg h0 h_t2_pos.le
+      have hsimp : K_φ / (2 * t) * (2 * t) = K_φ := by field_simp
+      linarith [hsimp ▸ this]
+    have hK_ψ_nn : 0 ≤ K_ψ := by
+      have h0 : 0 ≤ K_ψ / (2 * t) := le_trans (abs_nonneg _) h_ψ_centered
+      have := mul_nonneg h0 h_t2_pos.le
+      have hsimp : K_ψ / (2 * t) * (2 * t) = K_ψ := by field_simp
+      linarith [hsimp ▸ this]
+    calc |(A - μ_φ) * (B - μ_ψ) + (A - μ_φ) * μ_ψ + μ_φ * (B - μ_ψ)|
+        ≤ |(A - μ_φ) * (B - μ_ψ)| + |(A - μ_φ) * μ_ψ| + |μ_φ * (B - μ_ψ)| := by
+          have := abs_add_le ((A - μ_φ) * (B - μ_ψ) + (A - μ_φ) * μ_ψ)
+              (μ_φ * (B - μ_ψ))
+          have h2 := abs_add_le ((A - μ_φ) * (B - μ_ψ)) ((A - μ_φ) * μ_ψ)
+          linarith
+      _ = |A - μ_φ| * |B - μ_ψ| + |A - μ_φ| * |μ_ψ| + |μ_φ| * |B - μ_ψ| := by
+          rw [abs_mul, abs_mul, abs_mul]
+      _ ≤ (K_φ / (2 * t)) * (K_ψ / (2 * t))
+          + (K_φ / (2 * t)) * |μ_ψ| + |μ_φ| * (K_ψ / (2 * t)) := by
+          gcongr
+      _ = (K_φ * |μ_ψ| + |μ_φ| * K_ψ) / (2 * t) + K_φ * K_ψ / (4 * t ^ 2) := by
+          field_simp; ring
+  -- Combine with triangle inequality.
+  calc |(t ^ 2 * rescaledExpectation V t (fun w => φ w * ψ w) - ν_full)
+          - ((t * rescaledExpectation V t φ) *
+              (t * rescaledExpectation V t ψ) - μ_φ * μ_ψ)|
+      ≤ |t ^ 2 * rescaledExpectation V t (fun w => φ w * ψ w) - ν_full|
+        + |(t * rescaledExpectation V t φ) *
+              (t * rescaledExpectation V t ψ) - μ_φ * μ_ψ| := abs_sub _ _
+    _ ≤ 2 * K_N / gaussianZ H / t
+        + ((K_φ * |μ_ψ| + |μ_φ| * K_ψ) / (2 * t) + K_φ * K_ψ / (4 * t ^ 2)) :=
+        add_le_add hpart1 hpart2
+    _ ≤ K / t := by
+        rw [hK_def]
+        have ht_ge_1 : 1 ≤ t := le_trans hT_N ht_N
+        have h_inv_t_ge : (1 : ℝ) / t ^ 2 ≤ 1 / t := by
+          have : t ≤ t ^ 2 := by nlinarith [ht_ge_1]
+          have ht_pos2 : 0 < t ^ 2 := by positivity
+          rw [div_le_div_iff₀ ht_pos2 ht_pos]
+          linarith
+        have h_t2_pos : 0 < 2 * t := by linarith
+        have hK_φ_nn : 0 ≤ K_φ := by
+          have h0 : 0 ≤ K_φ / (2 * t) := le_trans (abs_nonneg _) h_φ_centered
+          have := mul_nonneg h0 h_t2_pos.le
+          have hsimp : K_φ / (2 * t) * (2 * t) = K_φ := by field_simp
+          linarith [hsimp ▸ this]
+        have hK_ψ_nn : 0 ≤ K_ψ := by
+          have h0 : 0 ≤ K_ψ / (2 * t) := le_trans (abs_nonneg _) h_ψ_centered
+          have := mul_nonneg h0 h_t2_pos.le
+          have hsimp : K_ψ / (2 * t) * (2 * t) = K_ψ := by field_simp
+          linarith [hsimp ▸ this]
+        have h_K_φψ_nn : 0 ≤ K_φ * K_ψ := mul_nonneg hK_φ_nn hK_ψ_nn
+        have h_t2_le : K_φ * K_ψ / (4 * t ^ 2) ≤ K_φ * K_ψ / (4 * t) := by
+          apply div_le_div_of_nonneg_left h_K_φψ_nn (by linarith)
+          have : t ≤ t ^ 2 := by nlinarith [ht_ge_1]
+          linarith
+        have h_terms_eq : 2 * K_N / gaussianZ H / t
+            + (K_φ * |μ_ψ| + |μ_φ| * K_ψ) / (2 * t)
+            + K_φ * K_ψ / (4 * t)
+          = (2 * K_N / gaussianZ H + (K_φ * |μ_ψ| + |μ_φ| * K_ψ) / 2
+              + K_φ * K_ψ / 4) / t := by
+          field_simp
+        linarith [h_t2_le]
 
 end MainTheorems
 
