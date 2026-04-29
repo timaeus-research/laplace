@@ -6869,6 +6869,62 @@ private lemma abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_local_le
             hV.jet_const * ‖u‖ ^ 4) / t) *
           Real.exp (-(hV.H_coercive_const / 4 * ‖u‖ ^ 2)) := by ring
 
+/-- **Integrability of `‖u‖^k · gaussianWeight H · cV((√t)⁻¹•u)`** for
+any `k : ℕ` and `t > 0`. Bounds `|cV(w)| ≤ Cc · ‖w‖^3` (via
+`PotentialJetApprox.cV_bound`), then dominated by polynomial-times-Gaussian. -/
+private lemma integrable_pow_norm_mul_gaussianWeight_mul_cV
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (k : ℕ) {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ k * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+  classical
+  set Cc := hV.cV_bound_const with hCc_def
+  set c' := hV.H_coercive_const with hc'_def
+  have hc'_pos : 0 < c' := hV.H_coercive_const_pos
+  have hCc_nn : 0 ≤ Cc := hV.cV_bound_const_nonneg
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_pos
+  -- Dominate: |‖u‖^k · gW · cV((√t)⁻¹•u)| ≤ Cc · ‖u‖^(k+3) · ((√t)⁻¹)^3 · exp(-c'/2 ‖u‖²).
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      ‖u‖ ^ k * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) :=
+    ((continuous_norm.pow k).mul (continuous_gaussianWeight H)).mul
+      (hV.cV_continuous.comp (continuous_const.smul continuous_id))
+  -- Use `integrable_pow_norm_mul_gaussianWeight` to get
+  -- `Integrable (‖u‖^(k+3) · gW)` and bound by const.
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      Cc * ((Real.sqrt t)⁻¹) ^ 3 *
+        (‖u‖ ^ (k + 3) * gaussianWeight H u)) :=
+    (hV.int_norm_pow_gW (k + 3)).const_mul _
+  refine h_dom.mono' h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  have h_norm_sm : ‖(Real.sqrt t)⁻¹ • u‖ ^ 3 =
+      ((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3 := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos, mul_pow]
+  have h_cV_le : |hV.cV ((Real.sqrt t)⁻¹ • u)| ≤ Cc * ‖(Real.sqrt t)⁻¹ • u‖ ^ 3 :=
+    hV.cV_bound _
+  have h_uk_nn : 0 ≤ ‖u‖ ^ k := pow_nonneg (norm_nonneg _) _
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  rw [Real.norm_eq_abs]
+  calc |‖u‖ ^ k * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)|
+      = ‖u‖ ^ k * gaussianWeight H u * |hV.cV ((Real.sqrt t)⁻¹ • u)| := by
+        rw [show ‖u‖ ^ k * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)
+              = (‖u‖ ^ k * gaussianWeight H u) *
+                  hV.cV ((Real.sqrt t)⁻¹ • u) from by ring]
+        rw [abs_mul, abs_of_nonneg (mul_nonneg h_uk_nn h_gW_pos.le)]
+    _ ≤ ‖u‖ ^ k * gaussianWeight H u *
+          (Cc * ‖(Real.sqrt t)⁻¹ • u‖ ^ 3) :=
+        mul_le_mul_of_nonneg_left h_cV_le
+          (mul_nonneg h_uk_nn h_gW_pos.le)
+    _ = ‖u‖ ^ k * gaussianWeight H u *
+          (Cc * (((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3)) := by rw [h_norm_sm]
+    _ = Cc * ((Real.sqrt t)⁻¹) ^ 3 *
+          (‖u‖ ^ (k + 3) * gaussianWeight H u) := by
+        rw [show ‖u‖ ^ (k + 3) = ‖u‖ ^ k * ‖u‖ ^ 3 from by
+              rw [pow_add]]
+        ring
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
