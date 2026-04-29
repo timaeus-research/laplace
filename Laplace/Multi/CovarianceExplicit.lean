@@ -9784,23 +9784,27 @@ private theorem rescaledIntegral_rr_connected_asymptotic
   --      with parity + uniform polynomial bound `M·(‖u‖^3+‖u‖^5)` (~180 LOC).
   --
   -- 2026-04-29 v4 (GPT consult #3, see `gpt_responses/strategy_stage5_lemmaB_close.md`):
-  -- The B/C-hybrid recommendation is to bundle the 9 pieces into 3 groups:
-  --   (A) Piece 1 (leading Q^c·Q): use `rescaledIntegral_QcQ_transport` (DONE).
-  --   (B) Pieces 2+3 (odd cross): one helper for `(1/√t) · odd5Kernel` integral,
-  --       proving K/t directly via parity + Stage 1 Taylor + corrected bracket
-  --       (~80-150 LOC).
-  --   (C) Pieces 4-9 (bulk error): one helper for `bulkErr := t² φ_conn · ψ_rem
-  --       - Q^c_φ·Q_ψ - (1/√t) odd5Kernel`, with local/tail split:
-  --         • Local (‖u‖ ≤ R√t): Taylor expand to get pointwise
-  --           `|bulkErr| ≤ K/t · (1 + ‖u‖^8)`.
-  --         • Tail (‖u‖ > R√t): use exact definition + polynomial growth + tail
-  --           relation `R√t ≤ ‖u‖`, get `|bulkErr| ≤ K · (1 + ‖u‖^M)` and combine
-  --           with Gaussian + indicator.
-  --       (~150-250 LOC).
-  -- Total remaining: ~250-450 LOC for closure (per GPT — much less than the
-  -- 9-piece estimate of ~1000 LOC).
+  -- B/C-hybrid plan with 3 groups instead of 9 piece-bounds.
   --
-  -- Final assembly: 3-term triangle inequality over (A) + (B) + (C). ~50 LOC.
+  -- 2026-04-29 v5 update — substantial progress on B/C plan:
+  --   ✅ (A) Leading transport: `rescaledIntegral_QcQ_transport` (DONE).
+  --   ✅ (B) Odd integrated K/t: `abs_integral_inv_sqrt_t_mul_odd5Kernel_le`
+  --       (DONE, ~430 LOC). Closes Steps 2+3.
+  --   ⚒️ (C) Bulk error helper — two of the three required pieces landed:
+  --       ✅ `bulkErr` definition.
+  --       ✅ `abs_phi_taylor_remainder_le`: `|φ((√t)⁻¹u) - (1/(2t))·quadForm A_φ u
+  --           - (1/(6t√t))·Φ_φ(u,u,u)| ≤ jet · ‖u‖^4 / t²` locally.
+  --       ✅ `abs_psi_rem_taylor_remainder_le`: same for ψ_rem.
+  --       Remaining (~250 LOC):
+  --       • bulkErr local pointwise bound `|bulkErr| ≤ K/t · (1 + ‖u‖^8)`,
+  --         proved via algebraic identity:
+  --         bulkErr = (1/t)·C_φ·C_ψ + t·(Q^c_φ·R_ψ + R_φ·Q_ψ)
+  --                 + √t·(C_φ·R_ψ + R_φ·C_ψ) + t²·R_φ·R_ψ
+  --         where R_φ, R_ψ are the Taylor remainders (just landed).
+  --       • bulkErr tail pointwise bound (uses exact definition + polynomial
+  --         growth + R√t ≤ ‖u‖).
+  --       • Integrated bulkErr K/t bound via local + tail decomposition.
+  --   ⏳ Final 3-term triangle inequality assembly (~50 LOC).
   sorry
 
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
