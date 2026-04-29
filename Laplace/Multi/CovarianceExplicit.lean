@@ -8187,6 +8187,187 @@ private lemma abs_integral_cubic_cubic_le
   -- helper has it as `g · gW · exp(-s_t)`. Same lambda after unfold.
   exact h_apply
 
+/-- **The odd5 kernel** for Lemma B Steps 2+3 (per GPT plan
+`gpt_responses/strategy_stage5_lemmaB_close.md`):
+`odd5Kernel u := Q^c_φ(u) · C_ψ(u) + C_φ(u) · Q_ψ(u)`,
+the sum of two odd cross-terms (degree 2 even × degree 3 odd = degree 5 odd).
+
+Bundling these two into one helper saves LOC: parity vanishing applies once,
+and the resulting K/t bound (after the `(1/√t)` prefactor) covers both pieces. -/
+private noncomputable def odd5Kernel
+    (A_φ A_ψ Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (Φ_φ Φ_ψ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (u : ι → ℝ) : ℝ :=
+  ((1 / 2 : ℝ) * quadForm A_φ u - (1 / 2 : ℝ) * trASig A_φ Hinv) *
+      ((1 / 6 : ℝ) * Φ_ψ (fun _ => u))
+    + ((1 / 6 : ℝ) * Φ_φ (fun _ => u)) *
+      ((1 / 2 : ℝ) * quadForm A_ψ u)
+
+/-- **`odd5Kernel` is odd in `u`**: even·odd + odd·even = odd. -/
+private lemma odd5Kernel_odd
+    (A_φ A_ψ Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (Φ_φ Φ_ψ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (u : ι → ℝ) :
+    odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ (-u)
+      = -(odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u) := by
+  unfold odd5Kernel
+  rw [quadForm_neg, quadForm_neg, cmm_diag_odd Φ_φ, cmm_diag_odd Φ_ψ]
+  ring
+
+/-- **Polynomial bound on `odd5Kernel`**: `|odd5Kernel u| ≤ M_odd · ‖u‖^5 + M_const`
+where `M_odd, M_const` depend on `‖A_φ‖, ‖A_ψ‖, ‖Φ_φ‖, ‖Φ_ψ‖, |trASig A_φ Hinv|`,
+and `Fintype.card ι`. The constant term comes from the centering. -/
+private lemma abs_odd5Kernel_le
+    (A_φ A_ψ Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (Φ_φ Φ_ψ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) :
+    ∃ M : ℝ, 0 ≤ M ∧ ∀ u : ι → ℝ,
+      |odd5Kernel A_φ A_ψ Hinv Φ_φ Φ_ψ u| ≤ M * (‖u‖ ^ 3 + ‖u‖ ^ 5) := by
+  classical
+  set N : ℝ := (Fintype.card ι : ℝ) with hN_def
+  have hN_nn : 0 ≤ N := by rw [hN_def]; exact_mod_cast Nat.zero_le _
+  set tA : ℝ := |trASig A_φ Hinv| with htA_def
+  have htA_nn : 0 ≤ tA := abs_nonneg _
+  -- M = (1/12) (N²·‖A_φ‖·‖Φ_ψ‖ + tA·‖Φ_ψ‖) + (1/12) N²·‖A_ψ‖·‖Φ_φ‖.
+  set M : ℝ := (1 / 12 : ℝ) * (N * ‖A_φ‖ * ‖Φ_ψ‖ + tA * ‖Φ_ψ‖)
+              + (1 / 12 : ℝ) * (N * ‖A_ψ‖ * ‖Φ_φ‖) with hM_def
+  have hM_nn : 0 ≤ M := by rw [hM_def]; positivity
+  refine ⟨M, hM_nn, fun u => ?_⟩
+  -- |Q^c_φ(u)| ≤ (1/2)(N·‖A_φ‖·‖u‖² + tA).
+  -- |Q_ψ(u)| ≤ (1/2) N·‖A_ψ‖·‖u‖².
+  -- |C_φ(u)| ≤ (1/6) ‖Φ_φ‖·‖u‖³.
+  -- |C_ψ(u)| ≤ (1/6) ‖Φ_ψ‖·‖u‖³.
+  have h_qf_φ : |quadForm A_φ u| ≤ N * ‖A_φ‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (A_φ u) i| ≤ ‖u‖ * ‖A_φ u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (A_φ u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (A_φ u) i| ≤ ∑ i, |u i * (A_φ u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (A_φ u) i| ≤ N * (‖u‖ * ‖A_φ u‖) := by
+      calc ∑ i, |u i * (A_φ u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖A_φ u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖A_φ u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]
+              rw [hN_def]; push_cast; ring
+    have h_Au : ‖A_φ u‖ ≤ ‖A_φ‖ * ‖u‖ := A_φ.le_opNorm u
+    calc |∑ i, u i * (A_φ u) i|
+        ≤ N * (‖u‖ * ‖A_φ u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ N * (‖u‖ * (‖A_φ‖ * ‖u‖)) := by
+          apply mul_le_mul_of_nonneg_left _ hN_nn
+          apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+      _ = N * ‖A_φ‖ * ‖u‖ ^ 2 := by ring
+  have h_qf_ψ : |quadForm A_ψ u| ≤ N * ‖A_ψ‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (A_ψ u) i| ≤ ‖u‖ * ‖A_ψ u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (A_ψ u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_le : |∑ i, u i * (A_ψ u) i| ≤ ∑ i, |u i * (A_ψ u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_le2 : ∑ i, |u i * (A_ψ u) i| ≤ N * (‖u‖ * ‖A_ψ u‖) := by
+      calc ∑ i, |u i * (A_ψ u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖A_ψ u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖A_ψ u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]
+              rw [hN_def]; push_cast; ring
+    have h_Au : ‖A_ψ u‖ ≤ ‖A_ψ‖ * ‖u‖ := A_ψ.le_opNorm u
+    calc |∑ i, u i * (A_ψ u) i|
+        ≤ N * (‖u‖ * ‖A_ψ u‖) := le_trans h_sum_le h_sum_le2
+      _ ≤ N * (‖u‖ * (‖A_ψ‖ * ‖u‖)) := by
+          apply mul_le_mul_of_nonneg_left _ hN_nn
+          apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+      _ = N * ‖A_ψ‖ * ‖u‖ ^ 2 := by ring
+  have h_Φ_φ : |Φ_φ (fun _ : Fin 3 => u)| ≤ ‖Φ_φ‖ * ‖u‖ ^ 3 := by
+    have := Φ_φ.le_opNorm (fun _ : Fin 3 => u)
+    simpa [Fin.prod_univ_three] using this
+  have h_Φ_ψ : |Φ_ψ (fun _ : Fin 3 => u)| ≤ ‖Φ_ψ‖ * ‖u‖ ^ 3 := by
+    have := Φ_ψ.le_opNorm (fun _ : Fin 3 => u)
+    simpa [Fin.prod_univ_three] using this
+  have h_h2_pos : (0 : ℝ) ≤ 1 / 2 := by norm_num
+  have h_h6_pos : (0 : ℝ) ≤ 1 / 6 := by norm_num
+  -- Bound the two summands of odd5Kernel.
+  have h_term1 : |((1 / 2 : ℝ) * quadForm A_φ u - (1 / 2 : ℝ) * trASig A_φ Hinv) *
+        ((1 / 6 : ℝ) * Φ_ψ (fun _ => u))|
+      ≤ (1 / 12 : ℝ) * (N * ‖A_φ‖ * ‖u‖ ^ 2 + tA) * (‖Φ_ψ‖ * ‖u‖ ^ 3) := by
+    rw [abs_mul]
+    have hL : |(1 / 2 : ℝ) * quadForm A_φ u - (1 / 2 : ℝ) * trASig A_φ Hinv|
+        ≤ (1 / 2 : ℝ) * (N * ‖A_φ‖ * ‖u‖ ^ 2 + tA) := by
+      calc |(1 / 2 : ℝ) * quadForm A_φ u - (1 / 2 : ℝ) * trASig A_φ Hinv|
+          ≤ |(1 / 2 : ℝ) * quadForm A_φ u| + |(1 / 2 : ℝ) * trASig A_φ Hinv| :=
+            abs_sub _ _
+        _ = (1 / 2 : ℝ) * |quadForm A_φ u| + (1 / 2 : ℝ) * tA := by
+            rw [abs_mul, abs_of_nonneg h_h2_pos, abs_mul,
+                abs_of_nonneg h_h2_pos, htA_def]
+        _ ≤ (1 / 2 : ℝ) * (N * ‖A_φ‖ * ‖u‖ ^ 2) + (1 / 2 : ℝ) * tA := by
+            have := mul_le_mul_of_nonneg_left h_qf_φ h_h2_pos
+            linarith
+        _ = (1 / 2 : ℝ) * (N * ‖A_φ‖ * ‖u‖ ^ 2 + tA) := by ring
+    have hR : |(1 / 6 : ℝ) * Φ_ψ (fun _ : Fin 3 => u)|
+        ≤ (1 / 6 : ℝ) * (‖Φ_ψ‖ * ‖u‖ ^ 3) := by
+      rw [abs_mul, abs_of_nonneg h_h6_pos]
+      exact mul_le_mul_of_nonneg_left h_Φ_ψ h_h6_pos
+    have h_step : |(1 / 2 : ℝ) * quadForm A_φ u - (1 / 2 : ℝ) * trASig A_φ Hinv| *
+        |(1 / 6 : ℝ) * Φ_ψ (fun _ : Fin 3 => u)|
+        ≤ (1 / 2 : ℝ) * (N * ‖A_φ‖ * ‖u‖ ^ 2 + tA) *
+          ((1 / 6 : ℝ) * (‖Φ_ψ‖ * ‖u‖ ^ 3)) :=
+      mul_le_mul hL hR (abs_nonneg _) (by positivity)
+    linarith [h_step]
+  have h_term2 : |((1 / 6 : ℝ) * Φ_φ (fun _ => u)) *
+        ((1 / 2 : ℝ) * quadForm A_ψ u)|
+      ≤ (1 / 12 : ℝ) * (‖Φ_φ‖ * ‖u‖ ^ 3) * (N * ‖A_ψ‖ * ‖u‖ ^ 2) := by
+    rw [abs_mul]
+    have hL : |(1 / 6 : ℝ) * Φ_φ (fun _ : Fin 3 => u)|
+        ≤ (1 / 6 : ℝ) * (‖Φ_φ‖ * ‖u‖ ^ 3) := by
+      rw [abs_mul, abs_of_nonneg h_h6_pos]
+      exact mul_le_mul_of_nonneg_left h_Φ_φ h_h6_pos
+    have hR : |(1 / 2 : ℝ) * quadForm A_ψ u|
+        ≤ (1 / 2 : ℝ) * (N * ‖A_ψ‖ * ‖u‖ ^ 2) := by
+      rw [abs_mul, abs_of_nonneg h_h2_pos]
+      exact mul_le_mul_of_nonneg_left h_qf_ψ h_h2_pos
+    have h_step := mul_le_mul hL hR (abs_nonneg _)
+      (by positivity)
+    linarith [h_step]
+  -- Sum the two bounds, factor.
+  unfold odd5Kernel
+  calc |((1 / 2 : ℝ) * quadForm A_φ u - (1 / 2 : ℝ) * trASig A_φ Hinv) *
+          ((1 / 6 : ℝ) * Φ_ψ (fun _ => u)) +
+        ((1 / 6 : ℝ) * Φ_φ (fun _ => u)) *
+          ((1 / 2 : ℝ) * quadForm A_ψ u)|
+      ≤ |((1 / 2 : ℝ) * quadForm A_φ u - (1 / 2 : ℝ) * trASig A_φ Hinv) *
+          ((1 / 6 : ℝ) * Φ_ψ (fun _ => u))| +
+        |((1 / 6 : ℝ) * Φ_φ (fun _ => u)) *
+          ((1 / 2 : ℝ) * quadForm A_ψ u)| := abs_add_le _ _
+    _ ≤ (1 / 12 : ℝ) * (N * ‖A_φ‖ * ‖u‖ ^ 2 + tA) * (‖Φ_ψ‖ * ‖u‖ ^ 3) +
+        (1 / 12 : ℝ) * (‖Φ_φ‖ * ‖u‖ ^ 3) * (N * ‖A_ψ‖ * ‖u‖ ^ 2) := by
+        linarith [h_term1, h_term2]
+    _ ≤ M * (‖u‖ ^ 3 + ‖u‖ ^ 5) := by
+        rw [hM_def]
+        have h_pow_5 : ‖u‖ ^ 2 * ‖u‖ ^ 3 = ‖u‖ ^ 5 := by ring
+        have h_u3_nn : (0:ℝ) ≤ ‖u‖^3 := pow_nonneg (norm_nonneg _) _
+        have h_u5_nn : (0:ℝ) ≤ ‖u‖^5 := pow_nonneg (norm_nonneg _) _
+        have hAφ_nn : 0 ≤ ‖A_φ‖ := norm_nonneg _
+        have hAψ_nn : 0 ≤ ‖A_ψ‖ := norm_nonneg _
+        have hΦφ_nn : 0 ≤ ‖Φ_φ‖ := norm_nonneg _
+        have hΦψ_nn : 0 ≤ ‖Φ_ψ‖ := norm_nonneg _
+        -- LHS - RHS = (1/12)·N·‖A_φ‖·‖Φ_ψ‖·‖u‖^3 + (1/12)·tA·‖Φ_ψ‖·‖u‖^5
+        --           + (1/12)·N·‖A_ψ‖·‖Φ_φ‖·‖u‖^3 ≥ 0.
+        have h_extra1 : (0:ℝ) ≤ (1/12) * N * ‖A_φ‖ * ‖Φ_ψ‖ * ‖u‖^3 := by
+          apply mul_nonneg _ h_u3_nn
+          apply mul_nonneg _ hΦψ_nn
+          apply mul_nonneg _ hAφ_nn
+          apply mul_nonneg (by norm_num : (0:ℝ) ≤ 1/12) hN_nn
+        have h_extra2 : (0:ℝ) ≤ (1/12) * tA * ‖Φ_ψ‖ * ‖u‖^5 := by
+          apply mul_nonneg _ h_u5_nn
+          apply mul_nonneg _ hΦψ_nn
+          apply mul_nonneg (by norm_num : (0:ℝ) ≤ 1/12) htA_nn
+        have h_extra3 : (0:ℝ) ≤ (1/12) * N * ‖A_ψ‖ * ‖Φ_φ‖ * ‖u‖^3 := by
+          apply mul_nonneg _ h_u3_nn
+          apply mul_nonneg _ hΦφ_nn
+          apply mul_nonneg _ hAψ_nn
+          apply mul_nonneg (by norm_num : (0:ℝ) ≤ 1/12) hN_nn
+        nlinarith [h_extra1, h_extra2, h_extra3, h_pow_5, h_u3_nn, h_u5_nn]
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
