@@ -10394,20 +10394,21 @@ private theorem rescaledIntegral_rr_connected_asymptotic
   --   ✅ (A) Leading transport: `rescaledIntegral_QcQ_transport` (DONE).
   --   ✅ (B) Odd integrated K/t: `abs_integral_inv_sqrt_t_mul_odd5Kernel_le`
   --       (DONE, ~430 LOC). Closes Steps 2+3.
-  --   ⚒️ (C) Bulk error helper — two of the three required pieces landed:
+  --   ⚒️ (C) Bulk error helper — substantial progress:
   --       ✅ `bulkErr` definition.
   --       ✅ `abs_phi_taylor_remainder_le`: `|φ((√t)⁻¹u) - (1/(2t))·quadForm A_φ u
   --           - (1/(6t√t))·Φ_φ(u,u,u)| ≤ jet · ‖u‖^4 / t²` locally.
   --       ✅ `abs_psi_rem_taylor_remainder_le`: same for ψ_rem.
-  --       Remaining (~250 LOC):
-  --       • bulkErr local pointwise bound `|bulkErr| ≤ K/t · (1 + ‖u‖^8)`,
-  --         proved via algebraic identity:
-  --         bulkErr = (1/t)·C_φ·C_ψ + t·(Q^c_φ·R_ψ + R_φ·Q_ψ)
-  --                 + √t·(C_φ·R_ψ + R_φ·C_ψ) + t²·R_φ·R_ψ
-  --         where R_φ, R_ψ are the Taylor remainders (just landed).
-  --       • bulkErr tail pointwise bound (uses exact definition + polynomial
-  --         growth + R√t ≤ ‖u‖).
-  --       • Integrated bulkErr K/t bound via local + tail decomposition.
+  --       ✅ `bulk_algebraic_identity_aux` (~30 LOC): abstract polynomial
+  --           identity in 9 vars with `s² = t`, closes 6-piece decomposition.
+  --       ✅ `abs_bulkErr_local_le` (~530 LOC): pointwise local bound
+  --           `|bulkErr| ≤ K_loc/t · (1 + ‖u‖^8)` on ‖u‖ ≤ R·√t.
+  --       Remaining (~400 LOC + 50 LOC assembly):
+  --       • `abs_bulkErr_tail_le` (currently sorry stub, ~250-400 LOC):
+  --         polynomial bound `|bulkErr| ≤ K_tail · (1 + ‖u‖^M)` on tail
+  --         ‖u‖ > R·√t. Uses poly_growth + 1/√t ≤ 1 + t² ≤ ‖u‖^4/R^4.
+  --       • `abs_integral_bulkErr_le` (~100 LOC): integrate local + tail
+  --         majorants, get `|∫ bulkErr · gW · exp(-s_t)| ≤ K/t`.
   --   ⏳ Final 3-term triangle inequality assembly (~50 LOC).
   sorry
 
