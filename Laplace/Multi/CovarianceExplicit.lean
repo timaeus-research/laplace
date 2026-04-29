@@ -7883,6 +7883,125 @@ private lemma abs_integral_corrected_bracket_FQQ_le
     _ = K_loc / t + K_tail / t := by rw [hGlocal_eq, hGtail_eq]
     _ = (K_loc + K_tail) / t := by field_simp
 
+/-- **Transport corollary** (item 10 of GPT plan, Lemma B Step 2 closure):
+the centered quartic Gaussian identity `gaussian_quad_centered_quad_eq` is
+transported across the perturbation with `O(K/t)` error.
+
+Specifically, for `c_QQ := (1/2) trASig (A.comp Hinv) (B.comp Hinv)`,
+\[
+  \left|\int Q^c_A(u)\cdot Q_B(u)\cdot gW(u)\cdot e^{-s_t(u)}\,du - c_{QQ}\cdot D_t\right|
+    \le \frac{K}{t}.
+\]
+
+Combines:
+- `integral_even_centered_eq_corrected_bracket` (transformation lemma)
+  applied to `FQQ = QcQ - c_QQ`.
+- `abs_integral_corrected_bracket_FQQ_le` (K/t bound on corrected-bracket integral).
+- Algebraic decomposition `Q^c_A · Q_B · gW · exp(-s_t) = (FQQ + c_QQ) · gW · exp(-s_t)`. -/
+private lemma rescaledIntegral_QcQ_transport
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hB_symm : ∀ u v : ι → ℝ, dot u (B v) = dot v (B u))
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |(∫ u : ι → ℝ,
+          ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+            ((1 / 2 : ℝ) * quadForm B u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        - (1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv) *
+            rescaledPartition V t|
+        ≤ K / t := by
+  obtain ⟨K, T₀, hT₀, h_K_bound⟩ :=
+    abs_integral_corrected_bracket_FQQ_le V H Hinv A B hV
+  refine ⟨K, T₀, hT₀, ?_⟩
+  intro t ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hT₀ ht)
+  set c_QQ : ℝ := (1 / 2 : ℝ) * trASig (A.comp Hinv) (B.comp Hinv) with hc_QQ_def
+  -- Rewrite the LHS integral using fqqKernel.
+  -- ∫ Q^c_A · Q_B · gW · exp(-s_t) = ∫ (FQQ + c_QQ) · gW · exp(-s_t)
+  --                               = ∫ FQQ · gW · exp(-s_t) + c_QQ · ∫ gW · exp(-s_t)
+  -- After the transformation lemma:
+  -- ∫ FQQ · gW · exp(-s_t) = ∫ FQQ · gW · (corrected bracket).
+  have h_int_F_gW : Integrable (fun u : ι → ℝ =>
+      fqqKernel A B Hinv u * gaussianWeight H u) :=
+    integrable_fqqKernel_mul_gaussianWeight H Hinv A B hV
+  have h_int_F_cV : Integrable (fun u : ι → ℝ =>
+      fqqKernel A B Hinv u * gaussianWeight H u *
+        hV.cV ((Real.sqrt t)⁻¹ • u)) :=
+    integrable_fqqKernel_mul_gaussianWeight_mul_cV V H Hinv A B hV ht_pos
+  have h_int_F_exp : Integrable (fun u : ι → ℝ =>
+      fqqKernel A B Hinv u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_fqqKernel_mul_rescaled_weight V H Hinv A B
+      hV.toPotentialApprox.V_continuous
+      hV.toPotentialApprox.coercive_const_pos
+      hV.toPotentialApprox.coercive_bound ht_pos
+  have h_F_centered : ∫ u : ι → ℝ, fqqKernel A B Hinv u *
+      gaussianWeight H u = 0 :=
+    integral_fqqKernel_mul_gaussianWeight_eq_zero A B hA_symm hB_symm hGauss
+  -- Apply transformation lemma.
+  have h_transform :=
+    integral_even_centered_eq_corrected_bracket V H hV
+      (fqqKernel A B Hinv) (fqqKernel_even A B Hinv)
+      h_F_centered ht_pos h_int_F_gW h_int_F_cV h_int_F_exp
+  -- Rewrite Q^c_A · Q_B · gW · exp(-s_t) as (FQQ + c_QQ) · gW · exp(-s_t).
+  have h_pt : ∀ u : ι → ℝ,
+      ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+          ((1 / 2 : ℝ) * quadForm B u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+      = fqqKernel A B Hinv u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+        + c_QQ * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) := by
+    intro u; rw [hc_QQ_def]; unfold fqqKernel; ring
+  have h_int_const_gW_exp : Integrable (fun u : ι → ℝ =>
+      c_QQ * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    (integrable_rescaled_weight V hV.toPotentialApprox.V_continuous H
+      hV.toPotentialApprox.coercive_const_pos
+      hV.toPotentialApprox.coercive_bound ht_pos).const_mul c_QQ
+  have h_eq_lhs : ∫ u : ι → ℝ,
+        ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+            ((1 / 2 : ℝ) * quadForm B u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+      = (∫ u : ι → ℝ, fqqKernel A B Hinv u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + c_QQ * rescaledPartition V t := by
+    rw [show (fun u : ι → ℝ =>
+          ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+              ((1 / 2 : ℝ) * quadForm B u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        = fun u => fqqKernel A B Hinv u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            + c_QQ * (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) from
+      funext h_pt]
+    rw [MeasureTheory.integral_add h_int_F_exp h_int_const_gW_exp,
+        MeasureTheory.integral_const_mul,
+        rescaledPartition_eq_gaussian_form V H t]
+  -- Establish the main equation:
+  -- (LHS integral) - c_QQ * D_t = ∫ FQQ · gW · (corrected bracket).
+  have h_main_eq : (∫ u : ι → ℝ,
+          ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+              ((1 / 2 : ℝ) * quadForm B u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        - c_QQ * rescaledPartition V t
+      = ∫ u : ι → ℝ, fqqKernel A B Hinv u * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+            t * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+    rw [h_eq_lhs, h_transform]; ring
+  -- Goal already has `c_QQ` (`set` rewrote it). Apply h_main_eq directly.
+  rw [h_main_eq]
+  exact h_K_bound t ht
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
