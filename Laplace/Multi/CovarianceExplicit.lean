@@ -8002,6 +8002,109 @@ private lemma rescaledIntegral_QcQ_transport
   rw [h_main_eq]
   exact h_K_bound t ht
 
+/-- **Polynomial integral bound** (helper for Lemma B Steps 4-9): for any
+continuous `g` with `|g(u)| ≤ M·‖u‖^k`, the integral against `gW · exp(-s_t)`
+is bounded by `M · ∫ ‖u‖^k · gW · exp(-s_t)`, which is finite by
+`integrable_pow_norm_mul_rescaled_weight`. -/
+private lemma abs_integral_bounded_poly_mul_rescaled_weight_le
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (g : (ι → ℝ) → ℝ) (hg_cont : Continuous g)
+    (k : ℕ) (M : ℝ) (hM_nn : 0 ≤ M)
+    (hg_bound : ∀ u : ι → ℝ, |g u| ≤ M * ‖u‖ ^ k)
+    {t : ℝ} (ht_pos : 0 < t) :
+    |∫ u : ι → ℝ, g u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ M * ∫ u : ι → ℝ, ‖u‖ ^ k *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+  -- Integrand g · gW · exp(-s_t) has continuous, integrable absolute majorant
+  -- M · ‖u‖^k · gW · exp(-s_t).
+  have h_int_g : Integrable (fun u : ι → ℝ =>
+      g u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h_dom := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos
+      h_coer k ht_pos
+    have h_dom_M : Integrable (fun u : ι → ℝ =>
+        M * (‖u‖ ^ k *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))))) :=
+      h_dom.const_mul M
+    have h_continuous : Continuous (fun u : ι → ℝ =>
+        g u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) :=
+      (hg_cont.mul (continuous_gaussianWeight H)).mul
+        (Real.continuous_exp.comp (continuous_rescaledPerturbation hV_cont H t).neg)
+    refine h_dom_M.mono' h_continuous.aestronglyMeasurable ?_
+    filter_upwards with u
+    rw [Real.norm_eq_abs]
+    have h_g_le := hg_bound u
+    have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+    have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) :=
+      Real.exp_pos _
+    have h_combined_pos : 0 < gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_pos h_gW_pos h_exp_pos
+    calc |g u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))|
+        = |g u| * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) := by
+          rw [show g u * gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))
+              = g u * (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+          rw [abs_mul, abs_of_pos h_combined_pos]
+      _ ≤ (M * ‖u‖ ^ k) * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) :=
+          mul_le_mul_of_nonneg_right h_g_le h_combined_pos.le
+      _ = M * (‖u‖ ^ k *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by ring
+  -- Apply norm_integral_le_integral_norm + integral_mono.
+  have h_dom_int := (integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos
+    h_coer k ht_pos).const_mul M
+  calc |∫ u : ι → ℝ, g u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))|
+      ≤ ∫ u : ι → ℝ, |g u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))| := by
+        rw [show |∫ u, _| = ‖∫ u, _‖ from (Real.norm_eq_abs _).symm]
+        exact MeasureTheory.norm_integral_le_integral_norm _
+    _ ≤ ∫ u : ι → ℝ, M * (‖u‖ ^ k *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) := by
+        apply MeasureTheory.integral_mono_ae h_int_g.norm h_dom_int
+        filter_upwards with u
+        rw [Real.norm_eq_abs]
+        have h_g_le := hg_bound u
+        have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+        have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) :=
+          Real.exp_pos _
+        have h_combined_pos : 0 < gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)) :=
+          mul_pos h_gW_pos h_exp_pos
+        calc |g u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))|
+            = |g u| * (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) := by
+              rw [show g u * gaussianWeight H u *
+                    Real.exp (-(rescaledPerturbation V H t u))
+                  = g u * (gaussianWeight H u *
+                    Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+              rw [abs_mul, abs_of_pos h_combined_pos]
+          _ ≤ (M * ‖u‖ ^ k) * (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) :=
+              mul_le_mul_of_nonneg_right h_g_le h_combined_pos.le
+          _ = M * (‖u‖ ^ k *
+                (gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u)))) := by ring
+    _ = M * ∫ u : ι → ℝ, ‖u‖ ^ k *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) :=
+        MeasureTheory.integral_const_mul _ _
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
