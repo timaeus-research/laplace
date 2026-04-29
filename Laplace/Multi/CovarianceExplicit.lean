@@ -8390,6 +8390,37 @@ private noncomputable def expCovPsiRem
     (ψ : (ι → ℝ) → ℝ) (b : ι → ℝ) (t : ℝ) (u : ι → ℝ) : ℝ :=
   ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u
 
+/-- **The bulk error kernel** for Lemma B Steps 4-9 closure (per GPT B/C-hybrid plan
+`gpt_responses/strategy_stage5_lemmaB_close.md`):
+
+`bulkErr := t² · φ_conn(u) · ψ_rem(u) - Q^c_φ(u)·Q_ψ(u) - (1/√t) · odd5Kernel(u)`.
+
+This bundles pieces 4-9 of the 9-piece decomposition (cubic-cubic, quad-remainder×2,
+cubic-remainder×2, remainder-remainder, plus the higher-order parts of φ_conn and
+ψ_rem) into one expression. The integral `∫ bulkErr · gW · exp(-s_t)` is bounded
+by K/t via local + tail decomposition:
+- **Local** (`‖u‖ ≤ R√t`): Taylor expansion of φ, ψ via `Φ_jet_bound` gives
+  `|bulkErr| ≤ K/t · (1 + ‖u‖^8)`.
+- **Tail** (`‖u‖ > R√t`): use the EXACT definition + polynomial growth of φ, ψ
+  + the relation `R√t < ‖u‖` ⟹ `t < ‖u‖²/R²`, trading bad powers of `t` for
+  extra powers of `‖u‖`. Get `|bulkErr| ≤ K · (1 + ‖u‖^M)` on tail set,
+  uniformly in `t ≥ 1`.
+
+The integrated bound is then `|∫ bulkErr · gW · exp(-s_t)| ≤ K/t`. -/
+private noncomputable def bulkErr
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a b : ι → ℝ) (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ a)
+    (hψ : ObservableTensorApprox ψ b)
+    (t : ℝ) (u : ι → ℝ) : ℝ :=
+  t ^ 2 *
+      expCovPhiConn V φ H Hinv a hV hφ t u *
+      expCovPsiRem ψ b t u
+    - ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) *
+        ((1 / 2 : ℝ) * quadForm hψ.A u)
+    - (1 / Real.sqrt t) *
+        odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u
+
 /-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
 two pieces of `pair_product_expansion` vanish, leaving only the cross
 term `(√t)⁻¹·(b·u)·φ((√t)⁻¹u)` and the rem-rem term
