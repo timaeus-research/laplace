@@ -8084,29 +8084,44 @@ private theorem rescaledIntegral_rr_connected_asymptotic
   -- `gpt_responses/strategy_stage5_lemmas_attack.md` § "Shared infrastructure".
   --
   -- 2026-04-29 update: GPT consult #2 locked in Path 2 (specialize, not generic
-  -- P1) — see `gpt_responses/strategy_stage5_lemmaB_path.md`. Items 1-6 of the
-  -- 10-item plan are now in this file as named helpers (compiles, 0 sorry):
+  -- P1) — see `gpt_responses/strategy_stage5_lemmaB_path.md`. Items 1-7 of the
+  -- 10-item plan + supporting infrastructure are now in this file as named
+  -- helpers (compiles, 0 sorry):
   --   1. `fqqKernel A B Hinv u`: doubly-centered quartic FQQ.
-  --   2. `fqqKernel_even`: parity (via `quadForm_neg`).
+  --   2. `fqqKernel_even`, `fqqKernel_continuous`: parity + continuity.
   --   3. `integral_fqqKernel_mul_gaussianWeight_eq_zero`: zero Gaussian mean
   --      (via `gaussian_quad_centered_quad_eq` − constant·Z cancellation).
-  --   4. `abs_fqqKernel_le`: `|FQQ(u)| ≤ C · (1 + ‖u‖^4)` polynomial bound.
+  --   4. `abs_fqqKernel_le`: `|FQQ(u)| ≤ C · (1 + ‖u‖^4)` polynomial bound,
+  --      uniform in u (universal-quantifier-inside-existential form).
   --   5. `integral_even_centered_eq_corrected_bracket`: generic transformation
   --      `∫ F · gW · exp(-s_t) = ∫ F · gW · (exp(-s_t) - 1 + t·cV)` for any
   --      centered even kernel.
   --   6. `abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_local_le`:
   --      local pointwise bound on `‖u‖ ≤ ρ√t`.
-  --   7. `integrable_pow_norm_mul_gaussianWeight_mul_cV`: `‖u‖^k · gW · cV(...)`
-  --      integrability for arbitrary `k : ℕ`.
-  -- Remaining (~600 LOC): clone-and-adapt of `abs_integral_corrected_bracket_centered_bilinear_le`
-  -- in `Multi/CovarianceSharp.lean` (lines 2020-2760) for the FQQ kernel:
-  --   • Adapt polynomial bound from `A·B·‖u‖²+|m|` → `C_FQQ·(1+‖u‖^4)`.
-  --   • Bump Gaussian moment exponents: Glocal needs degrees 4,6,8,10; Gtail
-  --     needs degrees 4,6,7,9.
-  --   • Combine local + tail via case analysis at pointwise level.
-  -- After that, item 9 (corrected-bracket K/t bound) closes via this clone +
-  -- the transformation lemma; item 10 (transport corollary) closes Step 2 of
-  -- the 10-step Lemma B plan above.
+  --   7. `abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_tail_le`:
+  --      tail pointwise bound on `‖u‖ > ρ√t` via indicator trick.
+  --   8. `integrable_pow_norm_mul_gaussianWeight_mul_cV`:
+  --      `‖u‖^k · gW · cV(...)` integrability for arbitrary `k : ℕ`.
+  --   9. `integrable_fqqKernel_mul_rescaled_weight`:
+  --      `Integrable (FQQ · gW · exp(-s_t))`.
+  --  10. `integrable_fqqKernel_mul_gaussianWeight`: `Integrable (FQQ · gW)`.
+  --  11. `integrable_fqqKernel_mul_gaussianWeight_mul_cV`:
+  --      `Integrable (FQQ · gW · cV((√t)⁻¹•u))`.
+  -- All prerequisites for the K/t bound are in place. Remaining (~300-400 LOC):
+  -- the integral assembly itself, with structure parallel to
+  -- `abs_integral_corrected_bracket_centered_bilinear_le`
+  -- (`Multi/CovarianceSharp.lean:2020-2760`):
+  --   • Setup constants, define Glocal/Gtail (~150 LOC).
+  --   • Pointwise: `|F·gW·bracket| ≤ Glocal + Gtail` via case split — uses
+  --     items 6 + 7 above (~50 LOC).
+  --   • Integrability of Glocal/Gtail — uses
+  --     `integrable_norm_pow_mul_exp_neg_const_sq` at degrees 4,6,8,10 (Glocal)
+  --     and 2,5,6,9 (Gtail).
+  --   • Final integral chain: `|∫| ≤ ∫|·| ≤ ∫(Glocal+Gtail) = (K_loc+K_tail)/t`.
+  --   • Bookkeeping note: an earlier draft hit Pi.add unfolding gotchas
+  --     (CLAUDE.md mentions this); use intermediate `have` lambda witnesses to
+  --     keep `MeasureTheory.integral_add` rewriting clean.
+  -- After K/t bound: transport corollary (~50 LOC) closes Step 2.
   sorry
 
 /-- **Centered pair-numerator asymptote (explicit, `lem:laplace_cov2` core)**:
