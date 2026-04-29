@@ -6925,6 +6925,237 @@ private lemma integrable_pow_norm_mul_gaussianWeight_mul_cV
               rw [pow_add]]
         ring
 
+/-- **Tail pointwise bound for the FQQ corrected-bracket integrand**.
+
+For `t ≥ 1` and `‖u‖ > ρ·√t`, with `ρ > 0`,
+\[
+  |F_{QQ}(u)\cdot gW(u)\cdot (e^{-s_t}-1+c_t)|
+    \le \frac{\|u\|^2}{\rho^2 t}\cdot C_{FQQ}(1+\|u\|^4)\cdot(2+C_c\|u\|^3)
+    \cdot e^{-\alpha\|u\|^2}
+\]
+where `α := min(c, c'/2)` (with `c` the V-coercivity constant and `c'` the
+H-coercivity constant) and `C_c` is the cubic-correction bound constant.
+
+The bound combines:
+- **Triangle inequality** on `|exp(-s_t) - 1 + c_t| ≤ exp(-s_t) + 1 + |c_t|`.
+- **cV decay**: `t · |cV((√t)⁻¹•u)| ≤ C_c · ‖u‖^3` (using `t·((√t)⁻¹)^3 = (√t)⁻¹ ≤ 1`).
+- **Gaussian weight bound**: `gW · exp(-s_t) ≤ exp(-α‖u‖²)` (V-coercivity).
+- **Gaussian weight bound**: `gW ≤ exp(-α‖u‖²)` (H-coercivity).
+- **Polynomial bound** on FQQ from `abs_fqqKernel_le`.
+- **Indicator trick**: `1 ≤ ‖u‖²/(ρ²t)` for `‖u‖ > ρ√t`. -/
+private lemma abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_tail_le
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {ρ : ℝ} (hρ_pos : 0 < ρ)
+    {t : ℝ} (ht1 : 1 ≤ t)
+    (u : ι → ℝ) (hu : ρ * Real.sqrt t < ‖u‖) :
+    ∃ C_FQQ : ℝ, 0 ≤ C_FQQ ∧
+      |fqqKernel A B Hinv u * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+           t * hV.cV ((Real.sqrt t)⁻¹ • u))|
+        ≤ ‖u‖ ^ 2 / (ρ ^ 2 * t) *
+          (C_FQQ * (1 + ‖u‖ ^ 4) * (2 + hV.cV_bound_const * ‖u‖ ^ 3)) *
+          Real.exp (-(min c (hV.H_coercive_const / 2) * ‖u‖ ^ 2)) := by
+  obtain ⟨C_FQQ, hC_FQQ_nn, hF_bound⟩ := abs_fqqKernel_le A B Hinv u
+  refine ⟨C_FQQ, hC_FQQ_nn, ?_⟩
+  set Cc : ℝ := hV.cV_bound_const with hCc_def
+  set c' : ℝ := hV.H_coercive_const with hc'_def
+  set α : ℝ := min c (c' / 2) with hα_def
+  have hCc_nn : 0 ≤ Cc := hV.cV_bound_const_nonneg
+  have hc'_pos : 0 < c' := hV.H_coercive_const_pos
+  have hα_pos : 0 < α := lt_min hc_pos (by linarith)
+  have hα_le_c : α ≤ c := min_le_left _ _
+  have hα_le_c'_half : α ≤ c' / 2 := min_le_right _ _
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_pos
+  have hsqrt_inv_le_one : (Real.sqrt t)⁻¹ ≤ 1 := by
+    rw [inv_le_one_iff₀]; right; exact Real.one_le_sqrt.mpr ht1
+  have h_F_nn : 0 ≤ |fqqKernel A B Hinv u| := abs_nonneg _
+  have h_one_plus_u4_nn : 0 ≤ 1 + ‖u‖ ^ 4 := by positivity
+  -- Indicator: 1 ≤ ‖u‖²/(ρ²t).
+  have h_indicator : 1 ≤ ‖u‖ ^ 2 / (ρ ^ 2 * t) := by
+    have h_pos : 0 < ρ * Real.sqrt t := mul_pos hρ_pos hsqrt_pos
+    have h_pow_le : (ρ * Real.sqrt t) ^ 2 ≤ ‖u‖ ^ 2 :=
+      pow_le_pow_left₀ h_pos.le hu.le 2
+    have h_RT2 : (ρ * Real.sqrt t) ^ 2 = ρ ^ 2 * t := by
+      rw [mul_pow, Real.sq_sqrt ht_pos.le]
+    rw [le_div_iff₀ (mul_pos (pow_pos hρ_pos 2) ht_pos)]
+    rw [show ρ ^ 2 * t = (ρ * Real.sqrt t) ^ 2 from h_RT2.symm]
+    linarith
+  -- Triangle on bracket.
+  have h_brack_le : |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+      t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+      ≤ Real.exp (-(rescaledPerturbation V H t u)) + 1 +
+        t * |hV.cV ((Real.sqrt t)⁻¹ • u)| := by
+    have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) :=
+      Real.exp_pos _
+    calc |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+            t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+        ≤ |Real.exp (-(rescaledPerturbation V H t u)) - 1| +
+          |t * hV.cV ((Real.sqrt t)⁻¹ • u)| := abs_add_le _ _
+      _ ≤ (Real.exp (-(rescaledPerturbation V H t u)) + 1) +
+          t * |hV.cV ((Real.sqrt t)⁻¹ • u)| := by
+          have h1 : |Real.exp (-(rescaledPerturbation V H t u)) - 1|
+              ≤ Real.exp (-(rescaledPerturbation V H t u)) + 1 := by
+            rw [abs_sub_le_iff]
+            refine ⟨?_, ?_⟩ <;> linarith [h_exp_pos]
+          have h2 : |t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+              = t * |hV.cV ((Real.sqrt t)⁻¹ • u)| := by
+            rw [abs_mul, abs_of_pos ht_pos]
+          linarith
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  have h_rw_le := rescaled_weight_le_coercive V H hc_pos h_coer ht_pos u
+  -- gW ≤ exp(-α·‖u‖²).
+  have h_gW_le_α : gaussianWeight H u ≤ Real.exp (-(α * ‖u‖ ^ 2)) := by
+    rw [gaussianWeight_def]
+    apply Real.exp_le_exp.mpr
+    have h_coer_H := hV.H_coercive_bound u
+    have h_α_le : α * ‖u‖ ^ 2 ≤ c' / 2 * ‖u‖ ^ 2 :=
+      mul_le_mul_of_nonneg_right hα_le_c'_half (sq_nonneg _)
+    have h_qf : c' / 2 * ‖u‖ ^ 2 ≤ 1 / 2 * quadForm H u := by
+      linarith
+    linarith
+  -- gW · exp(-s_t) ≤ exp(-α·‖u‖²).
+  have h_rw_le_α : gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u))
+      ≤ Real.exp (-(α * ‖u‖ ^ 2)) := by
+    have h_α_le_c : α * ‖u‖ ^ 2 ≤ c * ‖u‖ ^ 2 :=
+      mul_le_mul_of_nonneg_right hα_le_c (sq_nonneg _)
+    have h_arg_le : -(c * ‖u‖ ^ 2) ≤ -(α * ‖u‖ ^ 2) := by linarith
+    have h_exp_le : Real.exp (-(c * ‖u‖ ^ 2)) ≤
+        Real.exp (-(α * ‖u‖ ^ 2)) := Real.exp_le_exp.mpr h_arg_le
+    linarith
+  -- t · |cV((√t)⁻¹•u)| ≤ Cc · ‖u‖^3.
+  have h_cV_le : t * |hV.cV ((Real.sqrt t)⁻¹ • u)| ≤ Cc * ‖u‖ ^ 3 := by
+    have h_cV_bound := hV.cV_bound ((Real.sqrt t)⁻¹ • u)
+    have h_norm_sm : ‖(Real.sqrt t)⁻¹ • u‖ = (Real.sqrt t)⁻¹ * ‖u‖ := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos]
+    have h_norm_sm_3 : ‖(Real.sqrt t)⁻¹ • u‖ ^ 3 =
+        ((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3 := by
+      rw [h_norm_sm]; ring
+    have h_t_inv_sq : t * ((Real.sqrt t)⁻¹) ^ 2 = 1 := by
+      rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from
+            inv_pow _ _, Real.sq_sqrt ht_pos.le]
+      exact mul_inv_cancel₀ ht_pos.ne'
+    have h_t_pow : t * ((Real.sqrt t)⁻¹) ^ 3 = (Real.sqrt t)⁻¹ := by
+      calc t * ((Real.sqrt t)⁻¹) ^ 3
+          = (t * ((Real.sqrt t)⁻¹) ^ 2) * (Real.sqrt t)⁻¹ := by ring
+        _ = 1 * (Real.sqrt t)⁻¹ := by rw [h_t_inv_sq]
+        _ = (Real.sqrt t)⁻¹ := one_mul _
+    have h_pow_nn : 0 ≤ ‖u‖ ^ 3 := pow_nonneg (norm_nonneg _) _
+    calc t * |hV.cV ((Real.sqrt t)⁻¹ • u)|
+        ≤ t * (Cc * ‖(Real.sqrt t)⁻¹ • u‖ ^ 3) :=
+          mul_le_mul_of_nonneg_left h_cV_bound ht_pos.le
+      _ = t * (Cc * (((Real.sqrt t)⁻¹) ^ 3 * ‖u‖ ^ 3)) := by
+          rw [h_norm_sm_3]
+      _ = Cc * (t * ((Real.sqrt t)⁻¹) ^ 3) * ‖u‖ ^ 3 := by ring
+      _ = Cc * (Real.sqrt t)⁻¹ * ‖u‖ ^ 3 := by rw [h_t_pow]
+      _ ≤ Cc * 1 * ‖u‖ ^ 3 :=
+          mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left hsqrt_inv_le_one hCc_nn) h_pow_nn
+      _ = Cc * ‖u‖ ^ 3 := by ring
+  -- gW · (exp(-s_t) + 1 + t·|cV|) ≤ (2 + Cc·‖u‖^3) · exp(-α·‖u‖²).
+  have h_gW_brack : gaussianWeight H u *
+      (Real.exp (-(rescaledPerturbation V H t u)) + 1 +
+        t * |hV.cV ((Real.sqrt t)⁻¹ • u)|)
+      ≤ (2 + Cc * ‖u‖ ^ 3) * Real.exp (-(α * ‖u‖ ^ 2)) := by
+    have h_split : gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) + 1 +
+          t * |hV.cV ((Real.sqrt t)⁻¹ • u)|)
+        = gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)) +
+          gaussianWeight H u +
+          gaussianWeight H u *
+            (t * |hV.cV ((Real.sqrt t)⁻¹ • u)|) := by ring
+    rw [h_split]
+    have h_part3 : gaussianWeight H u *
+        (t * |hV.cV ((Real.sqrt t)⁻¹ • u)|)
+        ≤ Cc * ‖u‖ ^ 3 * Real.exp (-(α * ‖u‖ ^ 2)) := by
+      calc gaussianWeight H u *
+            (t * |hV.cV ((Real.sqrt t)⁻¹ • u)|)
+          ≤ Real.exp (-(α * ‖u‖ ^ 2)) *
+            (t * |hV.cV ((Real.sqrt t)⁻¹ • u)|) :=
+            mul_le_mul_of_nonneg_right h_gW_le_α
+              (mul_nonneg ht_pos.le (abs_nonneg _))
+        _ ≤ Real.exp (-(α * ‖u‖ ^ 2)) * (Cc * ‖u‖ ^ 3) :=
+            mul_le_mul_of_nonneg_left h_cV_le (Real.exp_pos _).le
+        _ = Cc * ‖u‖ ^ 3 * Real.exp (-(α * ‖u‖ ^ 2)) := by ring
+    linarith [h_rw_le_α, h_gW_le_α, h_part3]
+  -- Combine: |F · gW · brack| ≤ |F| · gW · |brack| ≤ |F| · gW · (exp + 1 + t·|cV|)
+  --                            ≤ C(1+‖u‖^4) · (2 + Cc·‖u‖^3) · exp(-α·‖u‖²)
+  --                            ≤ ‖u‖²/(ρ²t) · ... (indicator).
+  have h_2Cc_nn : 0 ≤ 2 + Cc * ‖u‖ ^ 3 := by
+    have : 0 ≤ Cc * ‖u‖ ^ 3 :=
+      mul_nonneg hCc_nn (pow_nonneg (norm_nonneg _) _)
+    linarith
+  have h_F_abs : |fqqKernel A B Hinv u * gaussianWeight H u *
+      (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+        t * hV.cV ((Real.sqrt t)⁻¹ • u))|
+      = |fqqKernel A B Hinv u| * gaussianWeight H u *
+        |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+          t * hV.cV ((Real.sqrt t)⁻¹ • u)| := by
+    rw [show fqqKernel A B Hinv u * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+            t * hV.cV ((Real.sqrt t)⁻¹ • u))
+        = fqqKernel A B Hinv u *
+          (gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+              t * hV.cV ((Real.sqrt t)⁻¹ • u))) from by ring]
+    rw [abs_mul, abs_mul, abs_of_pos h_gW_pos]
+    ring
+  rw [h_F_abs]
+  have h_F_bound : |fqqKernel A B Hinv u| * gaussianWeight H u *
+      |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+        t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+      ≤ (C_FQQ * (1 + ‖u‖ ^ 4)) *
+        ((2 + Cc * ‖u‖ ^ 3) * Real.exp (-(α * ‖u‖ ^ 2))) := by
+    calc |fqqKernel A B Hinv u| * gaussianWeight H u *
+            |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+              t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+        = |fqqKernel A B Hinv u| *
+          (gaussianWeight H u *
+            |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+              t * hV.cV ((Real.sqrt t)⁻¹ • u)|) := by ring
+      _ ≤ |fqqKernel A B Hinv u| *
+          (gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) + 1 +
+              t * |hV.cV ((Real.sqrt t)⁻¹ • u)|)) := by
+          apply mul_le_mul_of_nonneg_left _ h_F_nn
+          exact mul_le_mul_of_nonneg_left h_brack_le h_gW_pos.le
+      _ ≤ (C_FQQ * (1 + ‖u‖ ^ 4)) *
+          ((2 + Cc * ‖u‖ ^ 3) * Real.exp (-(α * ‖u‖ ^ 2))) := by
+          apply mul_le_mul hF_bound h_gW_brack _ (by positivity)
+          have h_exp_pos := Real.exp_pos (-(rescaledPerturbation V H t u))
+          have h_cV_abs_nn := abs_nonneg (hV.cV ((Real.sqrt t)⁻¹ • u))
+          have h_t_cV_nn : 0 ≤ t * |hV.cV ((Real.sqrt t)⁻¹ • u)| :=
+            mul_nonneg ht_pos.le h_cV_abs_nn
+          apply mul_nonneg h_gW_pos.le
+          linarith [h_exp_pos]
+  -- Apply indicator: multiply by ‖u‖²/(ρ²t) ≥ 1.
+  have h_RHS_nn : 0 ≤ (C_FQQ * (1 + ‖u‖ ^ 4)) *
+      ((2 + Cc * ‖u‖ ^ 3) * Real.exp (-(α * ‖u‖ ^ 2))) :=
+    mul_nonneg (mul_nonneg hC_FQQ_nn h_one_plus_u4_nn)
+      (mul_nonneg h_2Cc_nn (Real.exp_pos _).le)
+  calc |fqqKernel A B Hinv u| * gaussianWeight H u *
+        |Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+          t * hV.cV ((Real.sqrt t)⁻¹ • u)|
+      ≤ (C_FQQ * (1 + ‖u‖ ^ 4)) *
+          ((2 + Cc * ‖u‖ ^ 3) * Real.exp (-(α * ‖u‖ ^ 2))) := h_F_bound
+    _ = (C_FQQ * (1 + ‖u‖ ^ 4)) *
+          ((2 + Cc * ‖u‖ ^ 3) * Real.exp (-(α * ‖u‖ ^ 2))) * 1 := (mul_one _).symm
+    _ ≤ (C_FQQ * (1 + ‖u‖ ^ 4)) *
+          ((2 + Cc * ‖u‖ ^ 3) * Real.exp (-(α * ‖u‖ ^ 2))) *
+          (‖u‖ ^ 2 / (ρ ^ 2 * t)) :=
+        mul_le_mul_of_nonneg_left h_indicator h_RHS_nn
+    _ = ‖u‖ ^ 2 / (ρ ^ 2 * t) *
+          (C_FQQ * (1 + ‖u‖ ^ 4) * (2 + Cc * ‖u‖ ^ 3)) *
+          Real.exp (-(α * ‖u‖ ^ 2)) := by ring
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
