@@ -9937,6 +9937,32 @@ private lemma abs_bulkErr_tail_le
     linarith
   linarith [h_tri, h_P1_le, h_P2_le, h_P3_le]
 
+/-- **Integrated K/t bound on `bulkErr`** (Lemma B Step 4-9 closure).
+
+Combines `abs_bulkErr_local_le` and `abs_bulkErr_tail_le` to bound the
+integral by `K/t`:
+- Local: `|bulkErr| ≤ K_loc/t · (1+‖u‖^8)`. Multiply by `gW · exp(-s_t)`,
+  integrate: `∫ ≤ K_loc/t · ∫(1+‖u‖^8)·gW·exp(-s_t) ≤ K_loc/t · const`.
+- Tail: `|bulkErr| ≤ K_tail · (1+‖u‖^M)`. Multiply by indicator `1_{‖u‖>R√t}`,
+  use `1_{‖u‖>R√t} ≤ ‖u‖²/(R²·t)`, integrate:
+  `∫_tail ≤ K_tail/(R²·t) · ∫(1+‖u‖^M)·‖u‖²·gW·exp(-s_t) ≤ K_tail/(R²·t) · const`.
+- Sum: `K/t`.
+
+Stub for next session — composition follows the pattern of
+`abs_integral_corrected_bracket_FQQ_le`. Estimated ~150 LOC. -/
+private lemma abs_integral_bulkErr_le
+    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (hψ : ObservableTensorApprox ψ b)
+    [Nonempty ι] :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |∫ u : ι → ℝ, bulkErr V φ ψ H Hinv (0 : ι → ℝ) b hV hφ hψ t u
+          * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))|
+        ≤ K / t := by
+  sorry
+
 /-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
 two pieces of `pair_product_expansion` vanish, leaving only the cross
 term `(√t)⁻¹·(b·u)·φ((√t)⁻¹u)` and the rem-rem term
