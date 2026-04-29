@@ -2335,6 +2335,231 @@ private lemma cubicPartialOp_trASig
   refine Finset.sum_congr rfl fun k _ => ?_
   rw [Finset.mul_sum]
 
+/-- **Second trace identity for `cubicPartialOp`**:
+`trASig (A.comp Σ) ((cubicPartialOp T c).comp Σ)
+   = dot c (tensorContractMatrix T (Σ.comp (A.comp Σ)))`.
+
+Proof outline (extends `cubicPartialOp_trASig`):
+- LHS coordinate expansion: each `i`-component of the inner trace involves
+  `(A(Σ((cubicPartialOp T c)(Σ e_i))))_i`, which expands via basis
+  decomposition of the inner vector `v := (cubicPartialOp T c)(Σ e_i)`.
+- Slot-1 multilinearity of `T` collapses the `i`-sum into
+  `T(e_j, Σ(A(Σ e_j)), c)`.
+- T-symmetry (cyclic permutation, same as in `cubicPartialOp_trASig`)
+  rotates `c` into slot 0.
+- Decompose `c = ∑ k, c_k • e_k`; slot-0 multilinearity yields
+  `c_k * T(e_k, e_j, Σ(A(Σ e_j)))`.
+- Recognize `Σ(A(Σ e_j)) = (Σ.comp (A.comp Σ)) e_j` and read off
+  `tensorContractMatrix`. -/
+private lemma cubicPartialOp_trASig_compSig
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (c : ι → ℝ) (A Sig : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      T (fun i => v (σ i)) = T v) :
+    trASig (A.comp Sig) ((cubicPartialOp T c).comp Sig) =
+      dot c (tensorContractMatrix T (Sig.comp (A.comp Sig))) := by
+  unfold trASig dot tensorContractMatrix
+  have h_unfold : ∀ i : ι,
+      ((A.comp Sig) (((cubicPartialOp T c).comp Sig)
+          (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))) i
+      = ∑ j : ι,
+          T (fun k : Fin 3 =>
+            match k with
+            | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+            | 1 => Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+            | 2 => c) *
+          (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))) i := by
+    intro i
+    set v : ι → ℝ :=
+      (cubicPartialOp T c) (Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))
+        with hv
+    have h_v_def : ∀ j : ι, v j = T (fun k : Fin 3 =>
+        match k with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 1 => Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+        | 2 => c) := fun j => rfl
+    change (A (Sig v)) i = _
+    have h_v_decomp : v =
+        ∑ j : ι, v j • Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ) := by
+      funext k; rw [Finset.sum_apply]; simp [Pi.single_apply]
+    have h_Sig_v : Sig v =
+        ∑ j : ι, v j • Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)) := by
+      conv_lhs => rw [h_v_decomp]
+      rw [map_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [map_smul]
+    have h_AS_v : A (Sig v) =
+        ∑ j : ι, v j • A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) := by
+      rw [h_Sig_v, map_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [map_smul]
+    rw [h_AS_v]
+    rw [Finset.sum_apply]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [Pi.smul_apply, h_v_def j, smul_eq_mul]
+  conv_lhs => enter [2, i]; rw [h_unfold i]
+  rw [Finset.sum_comm]
+  -- Push `i`-sum inside T via slot-1 multilinearity, with `w := A(Σ e_j)`.
+  have h_slot1 : ∀ j : ι,
+      ∑ i : ι, T (fun k : Fin 3 =>
+            match k with
+            | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+            | 1 => Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+            | 2 => c) *
+          (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))) i =
+      T (fun k : Fin 3 =>
+        match k with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 1 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))))
+        | 2 => c) := by
+    intro j
+    set w : ι → ℝ := A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) with hw
+    set m_base : Fin 3 → (ι → ℝ) := fun n =>
+      match n with
+      | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+      | 1 => (0 : ι → ℝ)
+      | 2 => c with hm
+    have h_match_e : ∀ i : ι, (fun n : Fin 3 =>
+        match n with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 1 => Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+        | 2 => c) =
+        Function.update m_base 1
+          (Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) := by
+      intro i; funext n; fin_cases n <;> simp [m_base, Function.update]
+    have h_match_Sw : (fun n : Fin 3 =>
+        match n with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 1 => Sig w
+        | 2 => c) = Function.update m_base 1 (Sig w) := by
+      funext n; fin_cases n <;> simp [m_base, Function.update]
+    have h_swap : ∀ i : ι,
+        T (fun k : Fin 3 =>
+          match k with
+          | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+          | 1 => Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+          | 2 => c) * w i =
+        w i * T (fun k : Fin 3 =>
+          match k with
+          | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+          | 1 => Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+          | 2 => c) := fun i => by ring
+    conv_lhs => enter [2, i]; rw [h_swap i, h_match_e i]
+    rw [h_match_Sw]
+    have h_Sig_w : Sig w =
+        ∑ i : ι, w i • Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)) := by
+      have h_decomp_w : w = ∑ i : ι, w i • Pi.single
+          (M := fun _ : ι => ℝ) i (1 : ℝ) := by
+        funext k; rw [Finset.sum_apply]; simp [Pi.single_apply]
+      conv_lhs => rw [h_decomp_w]
+      rw [map_sum]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [map_smul]
+    rw [h_Sig_w]
+    change ∑ i, w i * T.toMultilinearMap _ = T.toMultilinearMap _
+    rw [T.toMultilinearMap.map_update_sum (Finset.univ : Finset ι) 1
+        (fun i : ι =>
+          w i • Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) m_base]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [T.toMultilinearMap.map_update_smul m_base 1 (w i)
+        (Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))]
+    change w i * _ = w i • _
+    rfl
+  conv_lhs => enter [2, j]; rw [h_slot1 j]
+  -- T-symmetry: rotate c into slot 0 (same cyclic perm as cubicPartialOp_trASig).
+  have h_perm : ∀ j : ι,
+      T (fun k : Fin 3 =>
+        match k with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 1 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))))
+        | 2 => c) =
+      T (fun k : Fin 3 =>
+        match k with
+        | 0 => c
+        | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 2 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))))) := by
+    intro j
+    have h := hT_symm (Equiv.swap (0 : Fin 3) 1 * Equiv.swap (1 : Fin 3) 2)
+      (fun k : Fin 3 => match k with
+        | 0 => c
+        | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 2 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))))
+    have h_eq : (fun k : Fin 3 =>
+        (fun k' : Fin 3 => match k' with
+          | (0 : Fin 3) => c
+          | (1 : Fin 3) => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+          | (2 : Fin 3) =>
+              Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))))
+        ((Equiv.swap (0 : Fin 3) 1 * Equiv.swap (1 : Fin 3) 2 :
+            Equiv.Perm (Fin 3)) k)) =
+        (fun k : Fin 3 => match k with
+          | (0 : Fin 3) => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+          | (1 : Fin 3) =>
+              Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))))
+          | (2 : Fin 3) => c) := by
+      funext k
+      fin_cases k <;> simp [Equiv.swap_apply_def]
+    rw [h_eq] at h
+    exact h
+  conv_lhs => enter [2, j]; rw [h_perm j]
+  -- Decompose c, slot-0 multilinearity, recognize as tensorContractMatrix.
+  have h_decomp_c : c = ∑ k : ι, c k • Pi.single
+      (M := fun _ : ι => ℝ) k (1 : ℝ) := by
+    funext n; rw [Finset.sum_apply]; simp [Pi.single_apply]
+  have h_expand : ∀ j : ι,
+      T (fun k : Fin 3 =>
+        match k with
+        | 0 => c
+        | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 2 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))))) =
+      ∑ k : ι, c k *
+        T (fun n : Fin 3 =>
+          match n with
+          | 0 => Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)
+          | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+          | 2 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))))) := by
+    intro j
+    set m_base : Fin 3 → (ι → ℝ) := fun n =>
+      match n with
+      | 0 => (0 : ι → ℝ)
+      | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+      | 2 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))) with hm
+    have h_match_c : (fun n : Fin 3 =>
+        match n with
+        | 0 => c
+        | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 2 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))))) =
+        Function.update m_base 0 c := by
+      funext n; fin_cases n <;> simp [m_base, Function.update]
+    have h_match_e : ∀ k : ι, (fun n : Fin 3 =>
+        match n with
+        | 0 => Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)
+        | 1 => Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)
+        | 2 => Sig (A (Sig (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))))) =
+        Function.update m_base 0
+          (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) := by
+      intro k; funext n; fin_cases n <;> simp [m_base, Function.update]
+    rw [h_match_c]
+    conv_rhs => enter [2, k]; rw [h_match_e k]
+    change T.toMultilinearMap _ = ∑ k : ι, c k * T.toMultilinearMap _
+    rw [show (T.toMultilinearMap (Function.update m_base 0 c))
+        = (T.toMultilinearMap (Function.update m_base 0
+            (∑ k : ι, c k • Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)))) by
+          congr 1; rw [← h_decomp_c]]
+    rw [T.toMultilinearMap.map_update_sum (Finset.univ : Finset ι) 0
+        (fun k : ι => c k • Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) m_base]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [T.toMultilinearMap.map_update_smul m_base 0 (c k)
+        (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))]
+    change c k • _ = c k * _
+    rfl
+  conv_lhs => enter [2, j]; rw [h_expand j]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rfl
+
 /-- **6th-moment contraction (quad · linear · cubic)**:
 $\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = $
 the contracted six-pairing form, in the appendix's expanded coefficient
