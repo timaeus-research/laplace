@@ -8934,6 +8934,88 @@ private lemma abs_phi_taylor_remainder_le
     field_simp] at h_jet
   exact h_jet
 
+/-- **Reduced quartic remainder for `ψ((√t)⁻¹u) - (√t)⁻¹·(b·u)`** (Stage 5).
+On the local ball `‖u‖ ≤ jet_radius · √t`, the difference between
+`ψ_rem(u) = ψ((√t)⁻¹u) - (√t)⁻¹·(b·u)` and its quadratic + cubic Taylor
+truncation is bounded by `jet_const · ‖u‖^4 / t²`. -/
+private lemma abs_psi_rem_taylor_remainder_le
+    (ψ : (ι → ℝ) → ℝ) (b : ι → ℝ)
+    (hψ : ObservableTensorApprox ψ b)
+    {t : ℝ} (ht_pos : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ hψ.jet_radius * Real.sqrt t) :
+    |expCovPsiRem ψ b t u
+        - ((1 / (2 * t)) * quadForm hψ.A u
+          + (1 / (6 * t * Real.sqrt t)) * hψ.Φ (fun _ => u))|
+      ≤ hψ.jet_const * ‖u‖ ^ 4 / t ^ 2 := by
+  unfold expCovPsiRem
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_pos
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht_pos.le
+  have h_norm_sm : ‖(Real.sqrt t)⁻¹ • u‖ = (Real.sqrt t)⁻¹ * ‖u‖ := by
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos hsqrt_inv_pos]
+  have h_norm_le : ‖(Real.sqrt t)⁻¹ • u‖ ≤ hψ.jet_radius := by
+    rw [h_norm_sm]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  have h_jet := hψ.Φ_jet_bound ((Real.sqrt t)⁻¹ • u) h_norm_le
+  -- |ψ((√t)⁻¹u) - (b·((√t)⁻¹u) + (1/2)quadForm A_ψ((√t)⁻¹u) + (1/6)Φ_ψ((√t)⁻¹u,...))| ≤ jet · ‖(√t)⁻¹u‖^4
+  have h_dot_b : dot b ((Real.sqrt t)⁻¹ • u) = (Real.sqrt t)⁻¹ * dot b u := by
+    unfold dot
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intros i _
+    show b i * ((Real.sqrt t)⁻¹ • u) i = (Real.sqrt t)⁻¹ * (b i * u i)
+    simp [Pi.smul_apply, smul_eq_mul]; ring
+  have h_qf : quadForm hψ.A ((Real.sqrt t)⁻¹ • u) = quadForm hψ.A u / t := by
+    rw [quadForm_smul]
+    rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from inv_pow _ _]
+    rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
+    field_simp
+  have h_Φ : hψ.Φ (fun _ : Fin 3 => (Real.sqrt t)⁻¹ • u)
+      = ((Real.sqrt t)⁻¹) ^ 3 * hψ.Φ (fun _ => u) := by
+    have h := hψ.Φ.toMultilinearMap.map_smul_univ
+      (fun _ : Fin 3 => (Real.sqrt t)⁻¹) (fun _ => u)
+    simp only [Fin.prod_univ_three, smul_eq_mul] at h
+    have h' : hψ.Φ (fun _ : Fin 3 => (Real.sqrt t)⁻¹ • u)
+        = (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ * hψ.Φ (fun _ => u) := h
+    rw [h']; ring
+  have h_inv_cube : ((Real.sqrt t)⁻¹) ^ 3 = (Real.sqrt t)⁻¹ / t := by
+    have h_inv_sq : ((Real.sqrt t)⁻¹) ^ 2 = 1 / t := by
+      rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from inv_pow _ _]
+      rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
+      field_simp
+    calc ((Real.sqrt t)⁻¹) ^ 3
+        = ((Real.sqrt t)⁻¹) ^ 2 * (Real.sqrt t)⁻¹ := by ring
+      _ = (1 / t) * (Real.sqrt t)⁻¹ := by rw [h_inv_sq]
+      _ = (Real.sqrt t)⁻¹ / t := by field_simp
+  have h_norm_pow : ‖(Real.sqrt t)⁻¹ • u‖ ^ 4 = ‖u‖ ^ 4 / t ^ 2 := by
+    rw [h_norm_sm]
+    rw [mul_pow, show (Real.sqrt t)⁻¹ ^ 4 = ((Real.sqrt t) ^ 2)⁻¹ ^ 2 from by
+      rw [show ((Real.sqrt t)⁻¹) ^ 4 = (((Real.sqrt t)⁻¹) ^ 2) ^ 2 from by ring]
+      rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from inv_pow _ _]]
+    rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
+    rw [show (t⁻¹) ^ 2 = (t ^ 2)⁻¹ from by rw [inv_pow]]
+    field_simp
+  rw [h_dot_b, h_qf, h_Φ, h_inv_cube] at h_jet
+  rw [h_norm_pow] at h_jet
+  -- h_jet form: |ψ((√t)⁻¹u) - ((√t)⁻¹·dot b u + (1/2)·(quadForm A_ψ u / t)
+  --                + (1/6)·((√t)⁻¹/t · Φ(u,u,u)))| ≤ jet · (‖u‖^4 / t^2).
+  -- Goal: |ψ((√t)⁻¹u) - (√t)⁻¹·dot b u - ((1/(2t))·quadForm A_ψ u
+  --                  + (1/(6t√t))·Φ_ψ(u,u,u))| ≤ jet · ‖u‖^4 / t^2.
+  have h_eq_form : ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u -
+        ((1 / (2 * t)) * quadForm hψ.A u +
+          (1 / (6 * t * Real.sqrt t)) * hψ.Φ (fun _ => u))
+      = ψ ((Real.sqrt t)⁻¹ • u) - ((Real.sqrt t)⁻¹ * dot b u +
+          (1 / 2 : ℝ) * (quadForm hψ.A u / t) +
+          (1 / 6 : ℝ) * ((Real.sqrt t)⁻¹ / t *
+            hψ.Φ (fun _ => u))) := by
+    field_simp
+    ring
+  rw [h_eq_form]
+  rw [show hψ.jet_const * ‖u‖ ^ 4 / t ^ 2
+        = hψ.jet_const * (‖u‖ ^ 4 / t ^ 2) from by field_simp]
+  exact h_jet
+
 /-- **Pointwise pair-product expansion when `a = 0`**: with `a = 0`, the first
 two pieces of `pair_product_expansion` vanish, leaving only the cross
 term `(√t)⁻¹·(b·u)·φ((√t)⁻¹u)` and the rem-rem term
