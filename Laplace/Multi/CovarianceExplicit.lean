@@ -4293,33 +4293,65 @@ private lemma expNumErr₄_bound
     (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |expNumErr₄ V φ a H Hinv hV hφ t| ≤ K / t ^ 2 := by
-  -- Per `gpt_responses/tactics_j3_j4_parity.md`, J_4 closes with the existing
-  -- `T_jet_bound` (quartic) — unlike J_3, which needs a quintic bound.
-  --
-  -- Strategy: symmetrize J_4 = (1/2) ∫ B_t(u) · [bracket] · gW(u) du where
-  --   bracket = (exp(-s_t(u)) - 1) + (exp(-s_t(-u)) - 1)
-  --   B_t = Q_t - μ/t  (even, by `expNumQuad_neg`)
-  --
-  -- Pointwise bracket bound (locally `‖u‖ ≤ jet_R·√t`):
-  --   |bracket| ≤ |exp(-s_t(u)) + s_t(u) - 1|        ← `abs_exp_neg_sub_one_add_le`
-  --             + |exp(-s_t(-u)) + s_t(-u) - 1|     ← same
-  --             + |s_t(u) + s_t(-u)|                  ← parity bound below
-  --
-  -- The third term: `s_t(u) + s_t(-u) = t·(V(w) + V(-w)) - quadForm H u`
-  -- where w = (√t)⁻¹·u. By `T_jet_bound`,
-  --   |V(w) - ((1/2)·quadForm H w + (1/6)·T(w,w,w))| ≤ jet_const · ‖w‖^4
-  --   |V(-w) - ((1/2)·quadForm H w - (1/6)·T(w,w,w))| ≤ jet_const · ‖w‖^4
-  -- Adding: |V(w) + V(-w) - quadForm H w| ≤ 2·jet_const · ‖w‖^4 (cubic odd cancels).
-  -- Hence `|s_t(u) + s_t(-u)| ≤ 2·jet_const · ‖u‖^4 / t` locally.
-  --
-  -- Thus |bracket| ≤ const · ‖u‖^4/t (sharper than the O(‖u‖³/√t) one-sided bound).
-  -- Multiplying by |B_t| ≤ const·(1+‖u‖²)/t gives O(1/t²) integrand.
-  --
-  -- Then standard local/tail boilerplate (mirroring `expNumErr_1_bound` and
-  -- `expNumErr_2_bound`) closes the integration. ~300-400 LOC.
-  --
-  -- All required infrastructure is in place: parity helpers, T_jet_bound,
-  -- pointwise jet bounds, integrabilities, local/tail patterns.
+  -- Setup constants from hV.
+  have hc_pos : 0 < hV.coercive_const := hV.coercive_const_pos
+  have h_coer : ∀ w : ι → ℝ, hV.coercive_const * ‖w‖ ^ 2 ≤ V w := hV.coercive_bound
+  have hCs_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
+  have hR_pos : 0 < hV.local_radius := hV.local_radius_pos
+  have hjet_R_pos : 0 < hV.jet_radius := hV.jet_radius_pos
+  have hjet_C_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
+  -- Choose δ for the local region.
+  have hCs1_pos : (0 : ℝ) < hV.local_const + 1 := by linarith
+  set δ : ℝ := min (min hV.local_radius hV.jet_radius)
+      (hV.coercive_const / (4 * (hV.local_const + 1))) with hδ_def
+  have hδ_pos : 0 < δ :=
+    lt_min (lt_min hR_pos hjet_R_pos) (by positivity)
+  have hδ_le_R : δ ≤ hV.local_radius :=
+    le_trans (min_le_left _ _) (min_le_left _ _)
+  have hδ_le_jet_R : δ ≤ hV.jet_radius :=
+    le_trans (min_le_left _ _) (min_le_right _ _)
+  have hδ_const : hV.local_const * δ ≤ hV.coercive_const / 4 := by
+    have h_le : δ ≤ hV.coercive_const / (4 * (hV.local_const + 1)) :=
+      min_le_right _ _
+    calc hV.local_const * δ
+        ≤ hV.local_const *
+            (hV.coercive_const / (4 * (hV.local_const + 1))) :=
+          mul_le_mul_of_nonneg_left h_le hCs_nn
+      _ = (hV.local_const / (hV.local_const + 1)) * (hV.coercive_const / 4) := by
+          field_simp
+      _ ≤ 1 * (hV.coercive_const / 4) := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ hV.coercive_const / 4)
+          rw [div_le_one hCs1_pos]; linarith
+      _ = hV.coercive_const / 4 := one_mul _
+  -- The standard Gaussian moments we'll need.
+  have hc4_pos : 0 < hV.coercive_const / 4 := by linarith
+  set M_loc : ℝ := ∫ u : ι → ℝ,
+      ‖u‖ ^ 8 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hM_loc_def
+  have hM_loc_int : Integrable (fun u : ι → ℝ =>
+      ‖u‖ ^ 8 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) :=
+    integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 8
+  have hM_loc_nn : 0 ≤ M_loc := by
+    rw [hM_loc_def]; apply MeasureTheory.integral_nonneg
+    intro u; positivity
+  -- Combined K and T_0.
+  set Cμ : ℝ := |expNumeratorCoeff V φ H Hinv a hV hφ| with hCμ_def
+  have hCμ_nn : 0 ≤ Cμ := abs_nonneg _
+  -- The constant K (loose upper bound for the proof).
+  set K : ℝ :=
+      ((Fintype.card ι * ‖hφ.A‖ + 1) * (hV.jet_const + hV.local_const ^ 2 + 1)
+        + Cμ * (hV.jet_const + hV.local_const ^ 2 + 1)) * M_loc with hK_def
+  refine ⟨K, 1, le_refl _, ?_⟩
+  intro t ht1
+  -- Per `gpt_responses/tactics_j3_j4_parity.md`:
+  -- J_4 closes via symmetrization + local/tail integration. The full assembly
+  -- is mechanical (~400 LOC) but each step requires careful integrability
+  -- bookkeeping. Building blocks proven:
+  -- - `expNumErr₄_symmetric`
+  -- - `abs_J4_bracket_local_le`, `abs_gW_J4_bracket_le_uniform`
+  -- - `abs_expNumQuad_sub_coeff_le`, `abs_rescaledPerturbation_add_neg_le`
+  -- - `integrable_J4_integrand`, `integrable_J4_integrand_neg`,
+  --   `integrable_J4_integrand_sym`
+  -- Implementation deferred for next session.
   sorry
 
 /-- **Centered EXP numerator (sharp rate)**: the centered numerator
