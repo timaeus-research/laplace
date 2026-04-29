@@ -6503,6 +6503,114 @@ private lemma rescaledNumerator_pair_decompose_a_zero
   rw [MeasureTheory.integral_add h_cross_smul h_remrem_smul,
       MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
 
+/-- **Single-dot integrability against `gW · exp(-s_t)`**: dominate
+`|dot a u|` by `A · ‖u‖` where `A = ∑ |a_i|`, then use
+`integrable_pow_norm_mul_rescaled_weight` at `k = 1`. -/
+private lemma integrable_dot_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      dot a u * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) := by
+  set A : ℝ := ∑ i, |a i| with hA_def
+  have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
+    unfold dot
+    exact continuous_finset_sum _
+      (fun i _ => continuous_const.mul (continuous_apply i))
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      A * (‖u‖ ^ 1 *
+        (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))))) :=
+    (integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 1 ht).const_mul A
+  refine h_dom.mono' ?_ ?_
+  · exact (h_dot_a_cont.mul ((continuous_gaussianWeight H).mul
+      (Real.continuous_exp.comp
+        (continuous_rescaledPerturbation hV_cont H t).neg))).aestronglyMeasurable
+  · filter_upwards with u
+    have h_dot_le : |dot a u| ≤ A * ‖u‖ := by
+      rw [hA_def]; exact abs_dot_le_l1_mul_norm a u
+    have h_rw_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_rw_nn]
+    calc |dot a u| * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ A * ‖u‖ * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) := by
+          gcongr
+      _ = A * (‖u‖ ^ 1 * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) := by
+          rw [pow_one]; ring
+
+/-- **Observable-times-rescaled-weight integrability**: with polynomial
+growth of `φ` (degree `p`), dominate `|φ((√t)⁻¹·u)| · gW · exp(-s_t)` by
+a Gaussian polynomial bound. Template lifted from `expNumerator_centered_decomp`. -/
+private lemma integrable_obs_mul_rescaled_weight
+    (V φ : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (a : ι → ℝ)
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    (hφ : ObservableApprox φ a)
+    {t : ℝ} (ht : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      φ ((Real.sqrt t)⁻¹ • u) *
+        (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hinv_sqrt_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_pos
+  obtain ⟨Kφ, p, hKφ_nn, hpoly⟩ := hφ.poly_growth
+  have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
+    hφ.phi_continuous.comp (continuous_const.smul continuous_id)
+  have h_rw_cont : Continuous (fun u : ι → ℝ =>
+      gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) :=
+    (continuous_gaussianWeight H).mul (Real.continuous_exp.comp
+      (continuous_rescaledPerturbation hV_cont H t).neg)
+  set Cinv_p : ℝ := ((Real.sqrt t)⁻¹) ^ p with hCinv_def
+  have hCinv_nn : 0 ≤ Cinv_p := by rw [hCinv_def]; positivity
+  have h0 := integrable_exp_neg_const_norm_sq (ι := ι) hc_pos
+  have hpInt := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos p
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      Kφ * (Real.exp (-(c * ‖u‖ ^ 2)) +
+        Cinv_p * (‖u‖ ^ p * Real.exp (-(c * ‖u‖ ^ 2))))) :=
+    (h0.add (hpInt.const_mul Cinv_p)).const_mul Kφ
+  refine h_dom.mono' ?_ ?_
+  · exact (h_phi_cont.mul h_rw_cont).aestronglyMeasurable
+  · filter_upwards with u
+    have h_phi_le : |φ ((Real.sqrt t)⁻¹ • u)|
+        ≤ Kφ * (1 + ‖(Real.sqrt t)⁻¹ • u‖ ^ p) := hpoly _
+    have h_norm_sm : ‖(Real.sqrt t)⁻¹ • u‖ = (Real.sqrt t)⁻¹ * ‖u‖ := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_pos hinv_sqrt_pos]
+    have h_norm_sm_p : ‖(Real.sqrt t)⁻¹ • u‖ ^ p = Cinv_p * ‖u‖ ^ p := by
+      rw [h_norm_sm, mul_pow]
+    have h_phi_le' : |φ ((Real.sqrt t)⁻¹ • u)|
+        ≤ Kφ * (1 + Cinv_p * ‖u‖ ^ p) := by
+      rw [← h_norm_sm_p]; exact h_phi_le
+    have h_rw_nn : 0 ≤ gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) :=
+      mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
+    have h_rw_le : gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+        ≤ Real.exp (-(c * ‖u‖ ^ 2)) :=
+      rescaled_weight_le_coercive V H hc_pos h_coer ht u
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h_rw_nn]
+    calc |φ ((Real.sqrt t)⁻¹ • u)| * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        ≤ Kφ * (1 + Cinv_p * ‖u‖ ^ p) * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) :=
+          mul_le_mul_of_nonneg_right h_phi_le' h_rw_nn
+      _ ≤ Kφ * (1 + Cinv_p * ‖u‖ ^ p) *
+            Real.exp (-(c * ‖u‖ ^ 2)) :=
+          mul_le_mul_of_nonneg_left h_rw_le
+            (mul_nonneg hKφ_nn (by positivity))
+      _ = Kφ * (Real.exp (-(c * ‖u‖ ^ 2)) +
+          Cinv_p * (‖u‖ ^ p * Real.exp (-(c * ‖u‖ ^ 2)))) := by ring
+
 /-- **Pointwise centered decomposition** when `a = 0`: the substitution
 `φ((√t)⁻¹u) = μ_φ/t + φ_conn(u)` and `ψ((√t)⁻¹u) = (√t)⁻¹·(b·u) + ψ_rem(u)`
 yields
@@ -6567,16 +6675,228 @@ private lemma rescaledNumerator_pair_decompose_centered_a_zero
               expCovPsiRem ψ b t u *
               gaussianWeight H u *
               Real.exp (-(rescaledPerturbation V H t u))) := by
-  -- Currently a sorry; the algebraic substitution at the integral level
-  -- requires integrability witnesses for `ψ((√t)⁻¹u)·gW·e^{-s_t}` and
-  -- `φ_conn(u)·gW·e^{-s_t}` (i.e. `φ_t · gW · exp` directly, not via
-  -- the dot-multiplied sharp helpers). The witnesses can be built from
-  -- the `integrable_rescaled_weight` family + polynomial growth dominators
-  -- (cf. Stage 4 `expNumerator_centered_decomp` ~200 LOC), but the
-  -- bookkeeping is ~100 LOC. Deferred — the pointwise identity
-  -- `pair_product_centered_decomposition` already establishes the
-  -- algebraic content.
-  sorry
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have h_sqrt_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht_pos.le
+  have ht_ne : t ≠ 0 := ht_pos.ne'
+  set μ_φ : ℝ := expNumeratorCoeff V φ H Hinv (0 : ι → ℝ) hV hφ with hμ_def
+  -- Apply the raw decomposition.
+  rw [rescaledNumerator_pair_decompose_a_zero V φ ψ H Hinv b
+    hV.toPotentialJetApprox hφ.toObservableJetApprox hψ.toObservableJetApprox
+    hGauss ht1]
+  -- Integrability witnesses (use new helpers).
+  have hVc := hV.toPotentialJetApprox.toPotentialApprox.V_continuous
+  have hc_pos : 0 < hV.toPotentialJetApprox.toPotentialApprox.coercive_const :=
+    hV.toPotentialJetApprox.toPotentialApprox.coercive_const_pos
+  have h_coer := hV.toPotentialJetApprox.toPotentialApprox.coercive_bound
+  have h_int_b : Integrable (fun u : ι → ℝ =>
+      dot b u * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    integrable_dot_mul_rescaled_weight V H b hVc hc_pos h_coer ht_pos
+  have h_int_phi : Integrable (fun u : ι → ℝ =>
+      φ ((Real.sqrt t)⁻¹ • u) * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    integrable_obs_mul_rescaled_weight V φ H (0 : ι → ℝ) hVc hc_pos h_coer
+      hφ.toObservableApprox ht_pos
+  have h_int_psi : Integrable (fun u : ι → ℝ =>
+      ψ ((Real.sqrt t)⁻¹ • u) * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    integrable_obs_mul_rescaled_weight V ψ H b hVc hc_pos h_coer
+      hψ.toObservableApprox ht_pos
+  have h_int_b_phi : Integrable (fun u : ι → ℝ =>
+      dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h := integrable_dot_mul_remainder_mul_rescaled_weight V φ H Hinv b
+        (0 : ι → ℝ) hV.toPotentialJetApprox.toPotentialApprox hφ.toObservableApprox
+        hGauss ht1
+    have h_eq : (fun u : ι → ℝ =>
+        dot b u * (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot (0 : ι → ℝ) u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+        = fun u : ι → ℝ =>
+          dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)) := by
+      funext u
+      have h_dot0 : dot (0 : ι → ℝ) u = 0 := by
+        unfold dot; apply Finset.sum_eq_zero; intros i _; simp [Pi.zero_apply]
+      rw [h_dot0]; ring
+    rw [← h_eq]; exact h
+  have h_int_phi_psirem : Integrable (fun u : ι → ℝ =>
+      φ ((Real.sqrt t)⁻¹ • u) * expCovPsiRem ψ b t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h := integrable_remainder_mul_remainder_mul_rescaled_weight V φ ψ H Hinv
+        (0 : ι → ℝ) b hV.toPotentialJetApprox.toPotentialApprox
+        hφ.toObservableApprox hψ.toObservableApprox hGauss ht1
+    have h_eq : (fun u : ι → ℝ =>
+        (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot (0 : ι → ℝ) u) *
+          (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+        = fun u : ι → ℝ =>
+          φ ((Real.sqrt t)⁻¹ • u) * expCovPsiRem ψ b t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)) := by
+      funext u
+      have h_dot0 : dot (0 : ι → ℝ) u = 0 := by
+        unfold dot; apply Finset.sum_eq_zero; intros i _; simp [Pi.zero_apply]
+      rw [h_dot0, expCovPsiRem]; ring
+    rw [← h_eq]; exact h
+  -- Set abbreviations.
+  set J_b : ℝ := ∫ u : ι → ℝ, dot b u *
+      (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) with hJ_b_def
+  set J_rem : ℝ := ∫ u : ι → ℝ, expCovPsiRem ψ b t u *
+      (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) with hJ_rem_def
+  set I_conn_cross : ℝ := ∫ u : ι → ℝ, dot b u *
+      expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+      gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) with hI_cc_def
+  set I_conn_rr : ℝ := ∫ u : ι → ℝ,
+      expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+      expCovPsiRem ψ b t u *
+      gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) with hI_rr_def
+  -- Show: I_raw_cross = (μ_φ/t)·J_b + I_conn_cross.
+  have h_int_b_conn : Integrable (fun u : ι → ℝ =>
+      dot b u * expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h_eq : (fun u : ι → ℝ =>
+        dot b u * expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+        = fun u : ι → ℝ =>
+          dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+          - (μ_φ / t) * (dot b u *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))) := by
+      funext u; rw [expCovPhiConn, hμ_def]; ring
+    rw [h_eq]; exact h_int_b_phi.sub (h_int_b.const_mul _)
+  have h_int_phi_conn_psirem : Integrable (fun u : ι → ℝ =>
+      expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+        expCovPsiRem ψ b t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+    -- need J_rem' integrable.
+    have h_int_psirem : Integrable (fun u : ι → ℝ =>
+        expCovPsiRem ψ b t u * (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))) := by
+      have h_eq : (fun u : ι → ℝ =>
+          expCovPsiRem ψ b t u * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))))
+          = fun u : ι → ℝ =>
+            ψ ((Real.sqrt t)⁻¹ • u) * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            - (Real.sqrt t)⁻¹ * (dot b u * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by
+        funext u; rw [expCovPsiRem]; ring
+      rw [h_eq]; exact h_int_psi.sub (h_int_b.const_mul _)
+    have h_eq : (fun u : ι → ℝ =>
+        expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u *
+          expCovPsiRem ψ b t u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+        = fun u : ι → ℝ =>
+          φ ((Real.sqrt t)⁻¹ • u) * expCovPsiRem ψ b t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+          - (μ_φ / t) * (expCovPsiRem ψ b t u *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))) := by
+      funext u; rw [expCovPhiConn, hμ_def]; ring
+    rw [h_eq]; exact h_int_phi_psirem.sub (h_int_psirem.const_mul _)
+  -- Identity 1: I_raw_cross = (μ_φ/t)·J_b + I_conn_cross.
+  have h_id_cross :
+      (∫ u : ι → ℝ, dot b u * φ ((Real.sqrt t)⁻¹ • u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))
+      = (μ_φ / t) * J_b + I_conn_cross := by
+    rw [hJ_b_def, hI_cc_def, ← MeasureTheory.integral_const_mul]
+    rw [← MeasureTheory.integral_add (h_int_b.const_mul _) h_int_b_conn]
+    apply MeasureTheory.integral_congr_ae
+    filter_upwards with u
+    rw [expCovPhiConn, hμ_def]; ring
+  -- Identity 2: I_raw_rr = (μ_φ/t)·J_rem + I_conn_rr.
+  have h_id_rr :
+      (∫ u : ι → ℝ, φ ((Real.sqrt t)⁻¹ • u) *
+        (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))
+      = (μ_φ / t) * J_rem + I_conn_rr := by
+    have h_int_psirem : Integrable (fun u : ι → ℝ =>
+        expCovPsiRem ψ b t u * (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))) := by
+      have h_eq : (fun u : ι → ℝ =>
+          expCovPsiRem ψ b t u * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))))
+          = fun u : ι → ℝ =>
+            ψ ((Real.sqrt t)⁻¹ • u) * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            - (Real.sqrt t)⁻¹ * (dot b u * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by
+        funext u; rw [expCovPsiRem]; ring
+      rw [h_eq]; exact h_int_psi.sub (h_int_b.const_mul _)
+    rw [hJ_rem_def, hI_rr_def, ← MeasureTheory.integral_const_mul]
+    rw [← MeasureTheory.integral_add (h_int_psirem.const_mul _) h_int_phi_conn_psirem]
+    apply MeasureTheory.integral_congr_ae
+    filter_upwards with u
+    rw [expCovPhiConn, expCovPsiRem, hμ_def]; ring
+  -- Identity 3: t·N(ψ) = √t·J_b + t·J_rem.
+  have h_tN_psi : t * rescaledNumerator V t ψ
+      = Real.sqrt t * J_b + t * J_rem := by
+    rw [rescaledNumerator_eq_gaussian_form V ψ H t]
+    have h_eq_lambda : (fun u : ι → ℝ => ψ ((Real.sqrt t)⁻¹ • u) *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+          = fun u : ι → ℝ => ψ ((Real.sqrt t)⁻¹ • u) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))) := by
+      funext u; ring
+    rw [h_eq_lambda]
+    have h_int_psirem : Integrable (fun u : ι → ℝ =>
+        expCovPsiRem ψ b t u * (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))) := by
+      have h_eq : (fun u : ι → ℝ =>
+          expCovPsiRem ψ b t u * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))))
+          = fun u : ι → ℝ =>
+            ψ ((Real.sqrt t)⁻¹ • u) * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            - (Real.sqrt t)⁻¹ * (dot b u * (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))) := by
+        funext u; rw [expCovPsiRem]; ring
+      rw [h_eq]; exact h_int_psi.sub (h_int_b.const_mul _)
+    -- Pointwise: ψ_t · h = (√t)⁻¹·(b·u)·h + ψ_rem·h.
+    have h_split_eq :
+        (fun u : ι → ℝ => ψ ((Real.sqrt t)⁻¹ • u) *
+            (gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))))
+          = fun u : ι → ℝ =>
+              (Real.sqrt t)⁻¹ * (dot b u * (gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u))))
+              + expCovPsiRem ψ b t u * (gaussianWeight H u *
+                  Real.exp (-(rescaledPerturbation V H t u))) := by
+      funext u; rw [expCovPsiRem]; ring
+    rw [h_split_eq, MeasureTheory.integral_add (h_int_b.const_mul _) h_int_psirem]
+    rw [MeasureTheory.integral_const_mul]
+    rw [← hJ_b_def, ← hJ_rem_def]
+    have h_t_inv_sqrt : t * (Real.sqrt t)⁻¹ = Real.sqrt t := by
+      field_simp; exact (Real.sq_sqrt ht_pos.le).symm
+    linear_combination J_b * h_t_inv_sqrt
+  -- Final algebra.
+  rw [h_id_cross, h_id_rr]
+  -- Use h_tN_psi to expand t · N(ψ) = √t·J_b + t·J_rem.
+  rw [h_tN_psi]
+  -- Distribute and cancel.
+  have h1 : t * Real.sqrt t * (μ_φ / t) = μ_φ * Real.sqrt t := by
+    field_simp
+  have h2 : t ^ 2 * (μ_φ / t) = μ_φ * t := by
+    rw [show (t : ℝ)^2 = t * t from sq t]; field_simp
+  linear_combination J_b * h1 + J_rem * h2
 
 /-- **Stage-5 cross asymptotic** (lemma A in `gpt_responses/strategy_stage5_decomposition.md`).
 With `a = 0` and `φ_conn_t = φ((√t)⁻¹u) - μ_φ/t`, the cross integral
