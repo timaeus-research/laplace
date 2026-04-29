@@ -7162,6 +7162,176 @@ private lemma abs_fqqKernel_mul_gaussianWeight_mul_corrected_bracket_tail_le
           (C_FQQ * (1 + ‖u‖ ^ 4) * (2 + Cc * ‖u‖ ^ 3)) *
           Real.exp (-(α * ‖u‖ ^ 2)) := by ring
 
+/-- **Continuity of `fqqKernel`**: as a polynomial in `u`'s entries, FQQ is
+continuous. Used to derive `AEStronglyMeasurable` for integrability proofs. -/
+private lemma fqqKernel_continuous
+    (A B Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) :
+    Continuous (fun u : ι → ℝ => fqqKernel A B Hinv u) := by
+  unfold fqqKernel
+  have h_qA : Continuous (fun u : ι → ℝ => quadForm A u) := continuous_quadForm A
+  have h_qB : Continuous (fun u : ι → ℝ => quadForm B u) := continuous_quadForm B
+  apply Continuous.sub
+  · apply Continuous.mul
+    · exact (continuous_const.mul h_qA).sub continuous_const
+    · exact continuous_const.mul h_qB
+  · exact continuous_const
+
+/-- **Integrability of `FQQ · gW · exp(-s_t)`**: dominate `|FQQ| ≤ C·(1+‖u‖^4)`,
+then bound the integrand by sum of integrable
+`‖u‖^k · gW · exp(-s_t)` pieces (`integrable_pow_norm_mul_rescaled_weight`). -/
+private lemma integrable_fqqKernel_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ => fqqKernel A B Hinv u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+  classical
+  obtain ⟨C, hC_nn, hF_bound⟩ := abs_fqqKernel_le A B Hinv
+  have h0 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 0 ht_pos
+  have h4 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 4 ht_pos
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      C * (1 + ‖u‖ ^ 4) *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))) := by
+    have h_combined : Integrable (fun u : ι → ℝ =>
+        C * (‖u‖ ^ 0 *
+          (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))) +
+        C * (‖u‖ ^ 4 *
+          (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))))) :=
+      (h0.const_mul C).add (h4.const_mul C)
+    apply h_combined.congr
+    filter_upwards with u
+    simp only [Pi.add_apply, pow_zero]
+    ring
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      fqqKernel A B Hinv u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    ((fqqKernel_continuous A B Hinv).mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp (continuous_rescaledPerturbation hV_cont H t).neg)
+  refine h_dom_int.mono' h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  rw [Real.norm_eq_abs]
+  have h_F_le := hF_bound u
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) := Real.exp_pos _
+  have h_combined_pos : 0 < gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) :=
+    mul_pos h_gW_pos h_exp_pos
+  calc |fqqKernel A B Hinv u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      = |fqqKernel A B Hinv u| *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+        rw [show fqqKernel A B Hinv u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            = fqqKernel A B Hinv u *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+        rw [abs_mul, abs_of_pos h_combined_pos]
+    _ ≤ (C * (1 + ‖u‖ ^ 4)) *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) :=
+        mul_le_mul_of_nonneg_right h_F_le h_combined_pos.le
+
+/-- **Integrability of `FQQ · gW`**: dominate `|FQQ| ≤ C·(1+‖u‖^4)` and use
+`int_norm_pow_gW` from `PotentialJetApprox`. -/
+private lemma integrable_fqqKernel_mul_gaussianWeight
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    {V : (ι → ℝ) → ℝ}
+    (hV : PotentialJetApprox V H) :
+    Integrable (fun u : ι → ℝ => fqqKernel A B Hinv u * gaussianWeight H u) := by
+  classical
+  obtain ⟨C, hC_nn, hF_bound⟩ := abs_fqqKernel_le A B Hinv
+  have h0 := hV.int_norm_pow_gW 0
+  have h4 := hV.int_norm_pow_gW 4
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      C * (1 + ‖u‖ ^ 4) * gaussianWeight H u) := by
+    have h_combined : Integrable (fun u : ι → ℝ =>
+        C * (‖u‖ ^ 0 * gaussianWeight H u) +
+        C * (‖u‖ ^ 4 * gaussianWeight H u)) :=
+      (h0.const_mul C).add (h4.const_mul C)
+    apply h_combined.congr
+    filter_upwards with u
+    simp only [Pi.add_apply, pow_zero]
+    ring
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      fqqKernel A B Hinv u * gaussianWeight H u) :=
+    (fqqKernel_continuous A B Hinv).mul (continuous_gaussianWeight H)
+  refine h_dom_int.mono' h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  rw [Real.norm_eq_abs]
+  have h_F_le := hF_bound u
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  calc |fqqKernel A B Hinv u * gaussianWeight H u|
+      = |fqqKernel A B Hinv u| * gaussianWeight H u := by
+        rw [abs_mul, abs_of_pos h_gW_pos]
+    _ ≤ (C * (1 + ‖u‖ ^ 4)) * gaussianWeight H u :=
+        mul_le_mul_of_nonneg_right h_F_le h_gW_pos.le
+
+/-- **Integrability of `FQQ · gW · cV((√t)⁻¹•u)`**: dominate by integrable
+`C(1+‖u‖^4) · gW · cV` using `Integrable.mono` (which compares norms, not values). -/
+private lemma integrable_fqqKernel_mul_gaussianWeight_mul_cV
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A B : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ => fqqKernel A B Hinv u * gaussianWeight H u *
+        hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+  classical
+  obtain ⟨C, hC_nn, hF_bound⟩ := abs_fqqKernel_le A B Hinv
+  have h0 := integrable_pow_norm_mul_gaussianWeight_mul_cV V H hV 0 ht_pos
+  have h4 := integrable_pow_norm_mul_gaussianWeight_mul_cV V H hV 4 ht_pos
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      C * (1 + ‖u‖ ^ 4) *
+        (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u))) := by
+    have h_combined : Integrable (fun u : ι → ℝ =>
+        C * (‖u‖ ^ 0 * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) +
+        C * (‖u‖ ^ 4 * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u))) :=
+      (h0.const_mul C).add (h4.const_mul C)
+    apply h_combined.congr
+    filter_upwards with u
+    simp only [Pi.add_apply, pow_zero]
+    ring
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      fqqKernel A B Hinv u * gaussianWeight H u *
+        hV.cV ((Real.sqrt t)⁻¹ • u)) :=
+    ((fqqKernel_continuous A B Hinv).mul (continuous_gaussianWeight H)).mul
+      (hV.cV_continuous.comp (continuous_const.smul continuous_id))
+  refine h_dom_int.mono h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  -- Goal: ‖FQQ · gW · cV‖ ≤ ‖C(1+‖u‖^4) · gW · cV‖.
+  -- Both sides have form |·|; use abs_mul splits.
+  have h_F_le := hF_bound u
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  have h_one_plus_u4_nn : 0 ≤ 1 + ‖u‖ ^ 4 := by positivity
+  rw [Real.norm_eq_abs, Real.norm_eq_abs]
+  -- |FQQ · gW · cV| = |FQQ| · gW · |cV|; |C(1+‖u‖^4) · gW · cV| = C(1+‖u‖^4) · gW · |cV|.
+  have h_lhs : |fqqKernel A B Hinv u * gaussianWeight H u *
+      hV.cV ((Real.sqrt t)⁻¹ • u)|
+      = |fqqKernel A B Hinv u| * (gaussianWeight H u *
+          |hV.cV ((Real.sqrt t)⁻¹ • u)|) := by
+    rw [show fqqKernel A B Hinv u * gaussianWeight H u *
+          hV.cV ((Real.sqrt t)⁻¹ • u)
+        = fqqKernel A B Hinv u *
+          (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) from by ring]
+    rw [abs_mul, abs_mul, abs_of_pos h_gW_pos]
+  have h_rhs : |C * (1 + ‖u‖ ^ 4) *
+      (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u))|
+      = C * (1 + ‖u‖ ^ 4) * (gaussianWeight H u *
+          |hV.cV ((Real.sqrt t)⁻¹ • u)|) := by
+    rw [abs_mul, abs_of_nonneg (mul_nonneg hC_nn h_one_plus_u4_nn),
+        abs_mul, abs_of_pos h_gW_pos]
+  rw [h_lhs, h_rhs]
+  apply mul_le_mul_of_nonneg_right h_F_le
+  exact mul_nonneg h_gW_pos.le (abs_nonneg _)
+
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
 `φ_conn_t(u) = (1/t)·(½ A_φ u² - μ_φ) + (1/(t√t))·(1/6 Φ_φ(u,u,u)) + R_φ`.
