@@ -11892,6 +11892,115 @@ private lemma rescaledIntegral_evenCross_asymptotic
   rw [h_main_eq]
   exact h_K_bound t ht
 
+/-- **Partition rate** `|D_t - Z| ≤ K/t`: bridges `gaussianZ H` to
+`rescaledPartition V t` with O(1/t) error. Instantiates the generic
+poly-4 corrected-bracket bound with the constant kernel F ≡ 1. Used by
+the odd-block transport to convert `gaussianZ` (from the Gaussian Wick
+formula) into `rescaledPartition V t` (from the rescaled integrals). -/
+private lemma rescaledPartition_rate_one_over_t
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |rescaledPartition V t - gaussianZ H| ≤ K / t := by
+  classical
+  -- Apply the generic poly-4 corrected-bracket bound with F ≡ 1.
+  have h_int_F_gW : Integrable (fun u : ι → ℝ =>
+      (1 : ℝ) * gaussianWeight H u) := by
+    apply (hV.int_norm_pow_gW 0).congr
+    filter_upwards with u; simp
+  have h_int_F_cV : ∀ {t : ℝ}, 0 < t →
+      Integrable (fun u : ι → ℝ =>
+        (1 : ℝ) * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+    intro t ht
+    have h := integrable_pow_norm_mul_gaussianWeight_mul_cV V H hV 0 ht
+    apply h.congr; filter_upwards with u; simp
+  have h_int_F_exp : ∀ {t : ℝ}, 0 < t →
+      Integrable (fun u : ι → ℝ =>
+        (1 : ℝ) * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+    intro t ht
+    have h := integrable_pow_norm_mul_rescaled_weight V
+      hV.toPotentialApprox.V_continuous H
+      hV.toPotentialApprox.coercive_const_pos
+      hV.toPotentialApprox.coercive_bound 0 ht
+    apply h.congr; filter_upwards with u; simp
+  obtain ⟨K, T₀, hT₀, hK⟩ :=
+    abs_integral_corrected_bracket_poly4_le V H hV
+      (fun _ => (1 : ℝ)) (by norm_num : (0 : ℝ) ≤ 1)
+      (by
+        intro u
+        rw [abs_one]
+        have h_nn : (0 : ℝ) ≤ ‖u‖ ^ 4 := by positivity
+        nlinarith [h_nn])
+      h_int_F_gW @h_int_F_cV @h_int_F_exp
+  refine ⟨K, T₀, hT₀, ?_⟩
+  intro t ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hT₀ ht)
+  -- Reduce `D_t - Z = ∫ gW · (exp(-s_t) - 1 + t·cV)`.
+  have h_int_gW : Integrable (fun u : ι → ℝ => gaussianWeight H u) :=
+    hV.int_norm_pow_gW 0 |>.congr (by filter_upwards with u; simp [pow_zero])
+  have h_int_rw : Integrable (fun u : ι → ℝ =>
+      gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) := by
+    have h := integrable_pow_norm_mul_rescaled_weight V
+      hV.toPotentialApprox.V_continuous H
+      hV.toPotentialApprox.coercive_const_pos
+      hV.toPotentialApprox.coercive_bound 0 ht_pos
+    apply h.congr; filter_upwards with u; simp [pow_zero]
+  have h_int_cV : Integrable (fun u : ι → ℝ =>
+      gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+    have h := integrable_pow_norm_mul_gaussianWeight_mul_cV V H hV 0 ht_pos
+    apply h.congr; filter_upwards with u; simp [pow_zero]
+  have h_parity : ∫ u : ι → ℝ,
+      gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u) = 0 := by
+    rw [show (fun u : ι → ℝ =>
+            gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u))
+          = fun u => hV.cV ((Real.sqrt t)⁻¹ • u) * gaussianWeight H u from by
+            funext u; ring]
+    apply integral_odd_mul_gaussian_eq_zero
+    intro u
+    have hsm : (Real.sqrt t)⁻¹ • (-u) = -((Real.sqrt t)⁻¹ • u) := by
+      simp [smul_neg]
+    rw [hsm, hV.cV_odd]
+  -- Reduce: D_t - Z = ∫ gW · (exp - 1 + t · cV).
+  have h_eq : rescaledPartition V t - gaussianZ H
+      = ∫ u : ι → ℝ, (1 : ℝ) * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+            t * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+    rw [rescaledPartition_eq_gaussian_form V H t]
+    have h_gZ : gaussianZ H = ∫ u : ι → ℝ, gaussianWeight H u := rfl
+    rw [h_gZ]
+    -- Goal: (∫ gW·exp) - (∫ gW) = ∫ 1·gW·(exp-1+t·cV)
+    have h_int_diff : Integrable (fun u : ι → ℝ =>
+        gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))
+        - gaussianWeight H u) := h_int_rw.sub h_int_gW
+    have h_int_cV_t : Integrable (fun u : ι → ℝ =>
+        t * (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u))) :=
+      h_int_cV.const_mul t
+    have h_pt : ∀ u : ι → ℝ,
+        (1 : ℝ) * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+            t * hV.cV ((Real.sqrt t)⁻¹ • u))
+        = (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))
+            - gaussianWeight H u)
+          + t * (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+      intro u; ring
+    rw [show (fun u : ι → ℝ =>
+            (1 : ℝ) * gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+                t * hV.cV ((Real.sqrt t)⁻¹ • u)))
+          = fun u =>
+            (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))
+              - gaussianWeight H u)
+            + t * (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) from
+      funext h_pt]
+    rw [MeasureTheory.integral_add h_int_diff h_int_cV_t]
+    rw [MeasureTheory.integral_sub h_int_rw h_int_gW]
+    rw [MeasureTheory.integral_const_mul, h_parity]
+    ring
+  rw [h_eq]
+  exact hK t ht
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
