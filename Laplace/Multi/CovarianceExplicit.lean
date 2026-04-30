@@ -10449,6 +10449,117 @@ private noncomputable def expCovPsiRem
     (ψ : (ι → ℝ) → ℝ) (b : ι → ℝ) (t : ℝ) (u : ι → ℝ) : ℝ :=
   ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u
 
+/-! ### Cross-linear kernels for Lemma A
+
+Per `gpt_responses/strategy_stage5_lemmaA_bulkErrA.md`, decompose the
+Lemma A integrand `t·√t · (b·u) · φ_conn(u)` into three pieces:
+
+- `crossEvenKernel`: `(b·u) · (1/6) Φ_φ(u,u,u)` — even, leading.
+- `crossOddKernel`: `(b·u) · ((1/2) quadForm A_φ - (1/2) trASig A_φ Σ)` — odd.
+- `bulkErrA`: `t·√t · (b·u) · expNumObsRem` — quartic remainder.
+
+The pointwise identity is
+`t·√t · (b·u) · expCovPhiConn = crossEven + √t · crossOdd + bulkErrA`. -/
+
+/-- **Even cross kernel**: `(b·u) · (1/6) Φ(u,u,u)`. -/
+private noncomputable def crossEvenKernel
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (u : ι → ℝ) : ℝ :=
+  dot b u * ((1 / 6 : ℝ) * Φ (fun _ => u))
+
+/-- **Odd cross kernel**: `(b·u) · ((1/2) quadForm A u - (1/2) trASig A Σ)`.
+The "centered" quadratic factor is essential for parity-based vanishing. -/
+private noncomputable def crossOddKernel
+    (A Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) (u : ι → ℝ) : ℝ :=
+  dot b u * ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv)
+
+/-- **Bulk remainder for Lemma A**: `t·√t · (b·u) · R_φ,t(u)` where
+`R_φ,t = expNumObsRem` is the observable quartic remainder. -/
+private noncomputable def bulkErrA
+    (φ : (ι → ℝ) → ℝ)
+    (b : ι → ℝ)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (t : ℝ) (u : ι → ℝ) : ℝ :=
+  t * Real.sqrt t * dot b u * expNumObsRem φ (0 : ι → ℝ) hφ t u
+
+/-- **`crossEvenKernel` is even**: `(b·u) · (1/6) Φ(u,u,u)` flips sign in
+both `(b·u)` and `Φ(u,u,u)` under `u ↦ -u`, so the product is even. -/
+private lemma crossEvenKernel_even
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (u : ι → ℝ) :
+    crossEvenKernel b Φ (-u) = crossEvenKernel b Φ u := by
+  unfold crossEvenKernel
+  have h_dot : dot b (-u) = -(dot b u) := dot_neg b u
+  have h_Φ : Φ (fun _ : Fin 3 => -u) = -(Φ (fun _ : Fin 3 => u)) :=
+    cmm_diag_odd Φ u
+  show dot b (-u) * ((1 / 6 : ℝ) * Φ (fun _ : Fin 3 => -u))
+      = dot b u * ((1 / 6 : ℝ) * Φ (fun _ : Fin 3 => u))
+  rw [h_dot, h_Φ]; ring
+
+/-- **`crossOddKernel` is odd**: `(b·u)` is odd, `quadForm A u` is even,
+the constant `trASig A Σ` is even, so the difference times the linear
+factor is odd. -/
+private lemma crossOddKernel_odd
+    (A Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) (u : ι → ℝ) :
+    crossOddKernel A Hinv b (-u) = -crossOddKernel A Hinv b u := by
+  unfold crossOddKernel
+  rw [dot_neg]
+  have h_qf : quadForm A (-u) = quadForm A u := by
+    unfold quadForm
+    refine Finset.sum_congr rfl ?_; intro i _
+    have h1 : (-u) i = -(u i) := by simp [Pi.neg_apply]
+    have h2 : A (-u) = -(A u) := by rw [map_neg]
+    rw [h1, h2]; simp [Pi.neg_apply]
+  rw [h_qf]; ring
+
+/-- **`crossOddKernel` integrates to zero**: parity vanishing against the
+even Gaussian. -/
+private lemma integral_crossOddKernel_mul_gaussianWeight_eq_zero
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) :
+    ∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u = 0 := by
+  apply integral_odd_mul_gaussian_eq_zero
+  intro u
+  exact crossOddKernel_odd A Hinv b u
+
+/-- **Pointwise decomposition for Lemma A**: when `a = 0` and `t > 0`,
+`t·√t · (b·u) · φ_conn(u) = crossEvenKernel + √t · crossOddKernel + bulkErrA`.
+
+The disconnected `μ_φ/t` correction in `expCovPhiConn` collapses (since
+`expNumeratorCoeff` with `a = 0` simplifies to `(1/2) trASig A_φ Σ`); the
+remaining algebraic identity follows from `t · t⁻¹ = 1` and
+`√t · (√t)⁻¹ = 1`, hence the positivity hypothesis. -/
+private lemma cross_linear_connected_pointwise
+    (V φ : (ι → ℝ) → ℝ)
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    t * Real.sqrt t * dot b u *
+        expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV hφ t u
+      = crossEvenKernel b hφ.Φ u
+        + Real.sqrt t * crossOddKernel hφ.A Hinv b u
+        + bulkErrA φ b hφ t u := by
+  have hsqt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have ht_ne : t ≠ 0 := ne_of_gt ht
+  have hsqt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqt_pos
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  unfold bulkErrA crossEvenKernel crossOddKernel
+  unfold expCovPhiConn expNumObsRem expNumeratorCoeff
+  unfold expNumLin expNumQuad expNumCubic
+  rw [show Hinv (0 : ι → ℝ) = 0 from map_zero Hinv]
+  rw [show dot (0 : ι → ℝ) (tensorContractMatrix hV.T Hinv) = 0 from by
+    unfold dot; simp]
+  rw [show dot (0 : ι → ℝ) u = 0 from by unfold dot; simp]
+  field_simp
+  ring
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
