@@ -13293,6 +13293,180 @@ private lemma abs_integral_crossOdd_corrected_diff_le
   rw [← h_norm_eq]
   linarith [h_main, h_int_sum.le, h_int_sum.ge]
 
+/-- **Odd-block transport for Lemma A**: under `PotentialQuinticApprox`,
+the centered cubic Gaussian identity is transported across the
+perturbation with `O(K/t)` error.
+
+Specifically, for `oddCrossMainConst Σ A b T`:
+\[
+  \left|\sqrt t \cdot \int (b\cdot u)\cdot Q^c_A(u)\cdot gW(u)\cdot e^{-s_t(u)}\,du
+        + C_{\text{odd}} \cdot D_t\right| \le \frac{K}{t}.
+\]
+
+Composition:
+- `oddCross_split`: rewrite `√t · ∫ ...` as `-Z · oddCrossMainConst +
+  √t · ∫ corrected-bracket-form` via the cubic identity.
+- `oddCross_main_gaussian`: the cubic Gaussian integral evaluates to
+  `Z · oddCrossMainConst`.
+- `integral_odd_mul_eq_half_integral_sub_neg`: convert the corrected-
+  bracket integral to `(1/2) · ∫ crossOdd · gW · (Corr u - Corr(-u))`.
+- `abs_integral_crossOdd_corrected_diff_le`: bound the symmetrized
+  integral by `Krem/(t·√t)`. After multiplying by `√t/2`: `Krem/(2t)`.
+- `rescaledPartition_rate_one_over_t`: bridge `gaussianZ → rescaledPartition`. -/
+private lemma rescaledIntegral_oddCross_asymptotic
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |Real.sqrt t *
+          (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + oddCrossMainConst Hinv A b hV.toPotentialTensorApprox.T *
+            rescaledPartition V t|
+        ≤ K / t := by
+  classical
+  set T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ :=
+    hV.toPotentialTensorApprox.T
+  have hT_symm := hV.toPotentialTensorApprox.T_symm
+  set Codd : ℝ := oddCrossMainConst Hinv A b T with hCodd_def
+  -- 1. Partition rate.
+  obtain ⟨Kpart, Tpart, hTpart, h_part⟩ :=
+    rescaledPartition_rate_one_over_t V H hV.toPotentialJetApprox
+  -- 2. Symmetrized remainder rate.
+  obtain ⟨Krem, Trem, hTrem, h_rem⟩ :=
+    abs_integral_crossOdd_corrected_diff_le V H Hinv A b hV
+  refine ⟨|Codd| * Kpart + Krem / 2, max Tpart Trem,
+    le_max_of_le_left hTpart, ?_⟩
+  intro t ht
+  have ht_part : Tpart ≤ t := le_of_max_le_left ht
+  have ht_rem : Trem ≤ t := le_of_max_le_right ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hTpart ht_part)
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  -- 3. Apply the algebraic split.
+  have h_split := oddCross_split V H Hinv A b hV.toPotentialTensorApprox ht_pos
+  -- 4. Apply the Gaussian main term.
+  have h_main_gauss : ∫ u : ι → ℝ, crossOddKernel A Hinv b u *
+      ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
+      = gaussianZ H * Codd := by
+    have := oddCross_main_gaussian (H := H) (Hinv := Hinv) A b T hA_symm hT_symm hGauss
+    rw [hCodd_def]; exact this
+  -- 5. Symmetrize the corrected-bracket integral.
+  have h_int_corr := integrable_crossOddKernel_mul_rescaled_corrected V H Hinv A b
+    hV.toPotentialTensorApprox ht_pos
+  have h_int_corr_neg : Integrable (fun u : ι → ℝ =>
+      crossOddKernel A Hinv b u * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+          + expPotCubic V H hV.toPotentialTensorApprox t (-u))) := by
+    -- The integrand at u in question equals the u ↦ -u substitution of
+    -- (-crossOdd · gW · Corr) (using crossOdd_odd, gW_neg). And the latter
+    -- is integrable because (-crossOdd · gW · Corr) is.
+    have h_image : Integrable (fun u : ι → ℝ =>
+        (- crossOddKernel A Hinv b u) * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)) := by
+      have h := h_int_corr.neg
+      apply h.congr
+      filter_upwards with u
+      simp only [Pi.neg_apply]
+      ring
+    have h_subst :=
+      MeasureTheory.Integrable.comp_neg (μ := (volume : MeasureTheory.Measure (ι → ℝ)))
+        (f := fun u : ι → ℝ =>
+          (- crossOddKernel A Hinv b u) * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)) h_image
+    apply h_subst.congr
+    filter_upwards with u
+    have h_cross_neg : crossOddKernel A Hinv b (-u) = -crossOddKernel A Hinv b u :=
+      crossOddKernel_odd A Hinv b u
+    have h_gW_neg : gaussianWeight H (-u) = gaussianWeight H u := gaussianWeight_neg H u
+    rw [h_cross_neg, h_gW_neg]; ring
+  have h_symm := integral_odd_mul_eq_half_integral_sub_neg H
+    (crossOddKernel A Hinv b)
+    (fun u => Real.exp (-(rescaledPerturbation V H t u)) - 1
+      + expPotCubic V H hV.toPotentialTensorApprox t u)
+    (crossOddKernel_odd A Hinv b) h_int_corr h_int_corr_neg
+  -- 6. Algebra to extract main constant + remainder.
+  have h_split_t : Real.sqrt t *
+        (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+      = - (gaussianZ H * Codd) + Real.sqrt t *
+          (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)) := by
+    rw [h_split, h_main_gauss]
+  have h_part_form : rescaledPartition V t = gaussianZ H +
+      (rescaledPartition V t - gaussianZ H) := by ring
+  have h_combine : Real.sqrt t *
+        (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+      + Codd * rescaledPartition V t
+      = Codd * (rescaledPartition V t - gaussianZ H) +
+          Real.sqrt t *
+            (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t u)) := by
+    rw [h_split_t]
+    rw [h_part_form]
+    ring
+  rw [h_combine]
+  -- Bound by triangle inequality.
+  have h_part_bd : |Codd * (rescaledPartition V t - gaussianZ H)| ≤ |Codd| * Kpart / t := by
+    rw [abs_mul]
+    have h := h_part t ht_part
+    have h_Codd_nn : 0 ≤ |Codd| := abs_nonneg _
+    calc |Codd| * |rescaledPartition V t - gaussianZ H|
+        ≤ |Codd| * (Kpart / t) := by
+          apply mul_le_mul_of_nonneg_left h h_Codd_nn
+      _ = |Codd| * Kpart / t := by ring
+  -- Symmetrization gives (√t/2) · |∫ ... (Corr - Corr_neg)| ≤ √t/2 · Krem/(t·√t) = Krem/(2t).
+  have h_sym_bd : |Real.sqrt t *
+        (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u))|
+      ≤ Krem / 2 / t := by
+    rw [h_symm]
+    -- Goal: |√t · (1/2) · ∫ crossOdd · gW · (Corr u - Corr (-u))| ≤ Krem/2/t.
+    have h_integral_bd := h_rem t ht_rem
+    -- Reassociate: √t · (1/2 · I) = (√t · 1/2) · I.
+    have h_assoc : ∀ I : ℝ, Real.sqrt t * ((1 / 2 : ℝ) * I)
+        = (Real.sqrt t * (1 / 2 : ℝ)) * I := fun I => by ring
+    rw [h_assoc]
+    -- Now |(√t · 1/2) · I| = (√t · 1/2) · |I| since √t · 1/2 ≥ 0.
+    have h_pos : 0 ≤ Real.sqrt t * (1 / 2 : ℝ) := by positivity
+    rw [abs_mul, abs_of_nonneg h_pos]
+    -- Goal: (√t · 1/2) · |I| ≤ Krem/2/t.
+    have h_step1 : Real.sqrt t * (1 / 2 : ℝ) *
+        |∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+            ((fun u => Real.exp (-(rescaledPerturbation V H t u)) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t u) u
+              - (fun u => Real.exp (-(rescaledPerturbation V H t u)) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t u) (-u))|
+        ≤ Real.sqrt t * (1 / 2 : ℝ) * (Krem / (t * Real.sqrt t)) := by
+      apply mul_le_mul_of_nonneg_left h_integral_bd h_pos
+    have h_simp : Real.sqrt t * (1 / 2 : ℝ) * (Krem / (t * Real.sqrt t))
+        = Krem / 2 / t := by
+      have ht_ne : t ≠ 0 := ht_pos.ne'
+      have hsqrt_ne : Real.sqrt t ≠ 0 := hsqrt_pos.ne'
+      field_simp
+    linarith [h_step1, h_simp.le, h_simp.ge]
+  calc |Codd * (rescaledPartition V t - gaussianZ H) +
+        Real.sqrt t *
+          (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u))|
+      ≤ |Codd * (rescaledPartition V t - gaussianZ H)| +
+        |Real.sqrt t *
+          (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u))| := abs_add_le _ _
+    _ ≤ |Codd| * Kpart / t + Krem / 2 / t := by linarith [h_part_bd, h_sym_bd]
+    _ = (|Codd| * Kpart + Krem / 2) / t := by ring
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
