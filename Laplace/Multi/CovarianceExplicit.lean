@@ -11457,6 +11457,48 @@ private lemma bulkErrA_symmetric
   unfold bulkErrASymmIntegrand
   ring
 
+/-! ### Helpers for `bulkErrA_gaussian_asymptotic`
+
+Three tight helpers per GPT consult `gpt_responses/strategy_stage5_gauss_asym_skeleton.md`:
+- `abs_mul4_of_nonneg`: `|a · x · y · d| = a · |x| · |y| · d` when `a, d ≥ 0`.
+- `t_sqrt_mul_div_tsq_sqrt`: `t·√t · (A / (t²·√t)) = A / t` (avoids `√t·√t = t` rewrites).
+- `exp_neg_mul_le_inv`: `exp(-βt) ≤ 1/(βt)` from `Real.add_one_le_exp`.
+-/
+
+/-- **Absolute-value of 4-fold product with two known-nonneg factors.**
+Pulls the absolute value off positive endpoints `a` and `d`, leaving
+`|x|` and `|y|` for the middle factors. Used to keep `t · √t` and
+`gaussianWeight H u` intact through `abs_mul`-style splitting. -/
+private lemma abs_mul4_of_nonneg {a x y d : ℝ}
+    (ha : 0 ≤ a) (hd : 0 ≤ d) :
+    |a * x * y * d| = a * |x| * |y| * d := by
+  rw [abs_mul, abs_mul, abs_mul,
+      abs_of_nonneg ha, abs_of_nonneg hd]
+
+/-- **Algebraic identity for `t·√t/(t²·√t) = 1/t`.**
+Proved by `field_simp` with explicit nonzero hypotheses for `t` and
+`Real.sqrt t`. Avoids the over-aggressive `rw [t = √t·√t]` rewrites
+that would substitute inside `Real.sqrt t` itself. -/
+private lemma t_sqrt_mul_div_tsq_sqrt {t : ℝ} (ht : 0 < t) (A : ℝ) :
+    t * Real.sqrt t * (A / (t ^ 2 * Real.sqrt t)) = A / t := by
+  have htnz : t ≠ 0 := ne_of_gt ht
+  have hsqrtnz : Real.sqrt t ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr ht)
+  field_simp
+
+/-- **Exponential tail decay bound**: `exp(-(β·t)) ≤ 1/(β·t)`.
+Direct corollary of `Real.add_one_le_exp` (gives `1 + x ≤ exp(x)`),
+specialised to `x = β·t > 0`. The standard tool for converting an
+`exp(-βt)` factor in tail integrals to a `K/t` rate. -/
+private lemma exp_neg_mul_le_inv {β t : ℝ} (hβ : 0 < β) (ht : 0 < t) :
+    Real.exp (-(β * t)) ≤ 1 / (β * t) := by
+  have hβt : 0 < β * t := mul_pos hβ ht
+  have haux : β * t ≤ Real.exp (β * t) := by
+    have h := Real.add_one_le_exp (β * t)
+    linarith
+  rw [show Real.exp (-(β * t)) = 1 / Real.exp (β * t)
+      from by rw [Real.exp_neg]; ring]
+  exact one_div_le_one_div_of_le hβt haux
+
 /-- **Gaussian-only symmetrization for `bulkErrA`** (per GPT consult
 `gpt_responses/strategy_stage5_alt_path.md`).
 
