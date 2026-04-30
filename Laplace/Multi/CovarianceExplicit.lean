@@ -12753,6 +12753,286 @@ private lemma abs_crossOdd_J3_diff_local_le
     linarith [h_eq.le, h_eq.ge]
   linarith
 
+/-- **Pointwise tail bound for the odd-block symmetrized integrand**
+(mirror of `J3_tail_pointwise_le`).
+
+For `‖u‖ > δ·√t`, using the uniform bracket bound + tail absorption,
+\[
+  \big|\text{crossOdd}(u)\cdot ((Corr_t(u)) - (Corr_t(-u)))\cdot gW(u)\big|
+    \le \frac{K_{\text{tail}}}{t\sqrt t}\cdot
+        (\|u\|^4 + \|u\|^6 + \|u\|^8)\cdot
+        e^{-(c/4)\|u\|^2}.
+\]
+
+The key tail tricks:
+- `‖u‖² > δ²·t` ⟹ `1 ≤ ‖u‖²/(δ²·t)` (absorbs a factor of `1/t`).
+- `‖u‖ > δ·√t` ⟹ `1 ≤ ‖u‖/(δ·√t)` (absorbs a factor of `1/√t`).
+
+Combined indicator `‖u‖³/(δ³·t·√t) ≥ 1` upgrades the constant pieces of
+the uniform bracket bound. -/
+private lemma abs_crossOdd_J3_diff_tail_le
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    {c : ℝ} (hc_pos : 0 < c) (hc_eq : c = hV.coercive_const)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : δ * Real.sqrt t < ‖u‖) :
+    ∃ K_tail : ℝ, 0 ≤ K_tail ∧
+      |crossOddKernel A Hinv b u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV t (-u))) *
+          gaussianWeight H u|
+        ≤ K_tail / (t * Real.sqrt t) *
+            (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+  classical
+  obtain ⟨C_K, hC_K_nn, hF_bound⟩ := abs_crossOddKernel_le (Hinv := Hinv) A b
+  set K_tail : ℝ := C_K * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) with hK_tail_def
+  have hT_nn : 0 ≤ ‖hV.T‖ := norm_nonneg _
+  have hδ_sq_pos : 0 < δ ^ 2 := by positivity
+  have hδ_cube_pos : 0 < δ ^ 3 := by positivity
+  have hK_tail_nn : 0 ≤ K_tail := by
+    rw [hK_tail_def]; positivity
+  refine ⟨K_tail, hK_tail_nn, ?_⟩
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_sqrt_t_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_norm_pos : 0 < ‖u‖ :=
+    lt_of_le_of_lt (by positivity : (0 : ℝ) ≤ δ * Real.sqrt t) hu
+  -- Rearrange.
+  have h_F_eq : |crossOddKernel A Hinv b u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV t (-u))) *
+        gaussianWeight H u|
+      = |crossOddKernel A Hinv b u| *
+        |gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV t (-u)))| := by
+    rw [show crossOddKernel A Hinv b u *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV t u)
+              - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV t (-u))) *
+            gaussianWeight H u
+          = crossOddKernel A Hinv b u *
+              (gaussianWeight H u *
+                ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                    + expPotCubic V H hV t u)
+                  - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                      + expPotCubic V H hV t (-u)))) from by ring,
+        abs_mul]
+  rw [h_F_eq]
+  have h_K_le : |crossOddKernel A Hinv b u| ≤ C_K * (‖u‖ + ‖u‖ ^ 3) := hF_bound u
+  have h_K_nn_aux : 0 ≤ C_K * (‖u‖ + ‖u‖ ^ 3) :=
+    mul_nonneg hC_K_nn (by positivity)
+  -- Uniform bracket bound.
+  have h_uniform := abs_gW_J3_bracket_le_uniform V H hV hc_pos h_coer ht u
+  have h_gW_quart : gaussianWeight H u ≤ Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    have h1 := gaussianWeight_le_exp_neg_coercive V H hV u
+    have h2 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+      apply Real.exp_le_exp.mpr
+      nlinarith [sq_nonneg ‖u‖, hV.coercive_const_pos]
+    rw [hc_eq]
+    linarith
+  have h_exp_c_quart : Real.exp (-(c * ‖u‖ ^ 2))
+      ≤ Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hc_pos]
+  -- Simplify uniform: |gW·bracket| ≤ 4·exp(-(c/4)) + 2·(‖T‖/6·‖u‖³/√t)·exp(-(c/4)).
+  have h_unif_simpler : |gaussianWeight H u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV t (-u)))|
+      ≤ 4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+        + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    have h_T_term_nn : 0 ≤ ‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t := by positivity
+    have h_step_a : 2 * gaussianWeight H u ≤ 2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+      linarith [h_gW_quart]
+    have h_step_b : 2 * Real.exp (-(c * ‖u‖ ^ 2))
+        ≤ 2 * Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by linarith
+    have h_step_c : 2 * gaussianWeight H u *
+          (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t)
+        ≤ 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+            Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+      have h_factor : 2 * gaussianWeight H u *
+            (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t)
+          = 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) * gaussianWeight H u := by ring
+      rw [h_factor]
+      apply mul_le_mul_of_nonneg_left h_gW_quart (by positivity)
+    linarith [h_uniform, h_step_a, h_step_b, h_step_c]
+  -- |F| ≤ |crossOdd| · |gW·bracket| ≤ C_K·(‖u‖+‖u‖³) · simpler.
+  have h_step1 : |crossOddKernel A Hinv b u| *
+        |gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV t (-u)))|
+      ≤ (C_K * (‖u‖ + ‖u‖ ^ 3)) *
+        (4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+          + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2))) := by
+    apply mul_le_mul h_K_le h_unif_simpler (abs_nonneg _) h_K_nn_aux
+  -- Distribute and identify (‖u‖+‖u‖^3)·‖u‖³/√t = (‖u‖^4+‖u‖^6)/√t.
+  have h_distrib : (C_K * (‖u‖ + ‖u‖ ^ 3)) *
+        (4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+          + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2)))
+      = (4 * C_K * (‖u‖ + ‖u‖ ^ 3)
+          + C_K * ‖hV.T‖ / 3 * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / Real.sqrt t)) *
+        Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    have h_expand : (‖u‖ + ‖u‖ ^ 3) * ‖u‖ ^ 3 = ‖u‖ ^ 4 + ‖u‖ ^ 6 := by ring
+    have h_lhs_simp : (C_K * (‖u‖ + ‖u‖ ^ 3)) *
+          (4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+            + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+                Real.exp (-((c / 4) * ‖u‖ ^ 2)))
+        = (4 * C_K * (‖u‖ + ‖u‖ ^ 3)
+            + C_K * ‖hV.T‖ / 3 *
+              ((‖u‖ + ‖u‖ ^ 3) * ‖u‖ ^ 3 / Real.sqrt t)) *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by ring
+    rw [h_lhs_simp, h_expand]
+  -- Tail absorption.
+  have h_norm_sq_lb : δ ^ 2 * t < ‖u‖ ^ 2 := by
+    have h1 : 0 ≤ δ * Real.sqrt t := by positivity
+    have h2 := mul_self_lt_mul_self h1 hu
+    rw [show (δ * Real.sqrt t) * (δ * Real.sqrt t) = (δ * Real.sqrt t) ^ 2 from by ring,
+        show ‖u‖ * ‖u‖ = ‖u‖ ^ 2 from by ring] at h2
+    rw [mul_pow, Real.sq_sqrt ht.le] at h2; exact h2
+  have h_one_le_sq : (1 : ℝ) ≤ ‖u‖ ^ 2 / (δ ^ 2 * t) := by
+    rw [le_div_iff₀ (by positivity : (0:ℝ) < δ^2 * t)]; linarith [h_norm_sq_lb]
+  -- ‖u‖+‖u‖^3 ≤ (‖u‖+‖u‖^3)·‖u‖³/(δ³·t·√t) = (‖u‖^4+‖u‖^6)/(δ³·t·√t).
+  -- Use combined: ‖u‖²/(δ²·t) ≥ 1 and ‖u‖/(δ·√t) ≥ 1.
+  have h_norm_to_t_sqrt : (1 : ℝ) ≤ ‖u‖ ^ 3 / (δ ^ 3 * (t * Real.sqrt t)) := by
+    have h_t_sqrt : ‖u‖ * (δ * Real.sqrt t) ≤ ‖u‖ * ‖u‖ := by
+      apply mul_le_mul_of_nonneg_left hu.le h_norm_nn
+    have h_sq_sqrt : δ ^ 2 * t * (δ * Real.sqrt t) = δ ^ 3 * (t * Real.sqrt t) := by ring
+    have h_pos : (0 : ℝ) < δ ^ 3 * (t * Real.sqrt t) := by positivity
+    rw [le_div_iff₀ h_pos]
+    -- Goal: 1 * (δ³·t·√t) ≤ ‖u‖^3.
+    -- We have: ‖u‖^2 > δ²·t and ‖u‖ > δ·√t. Multiply: ‖u‖^3 > δ³·t·√t.
+    have h_mul : (δ ^ 2 * t) * (δ * Real.sqrt t) ≤ ‖u‖ ^ 2 * ‖u‖ := by
+      apply mul_le_mul h_norm_sq_lb.le hu.le (by positivity)
+        (by positivity)
+    rw [h_sq_sqrt] at h_mul
+    rw [show ‖u‖ ^ 2 * ‖u‖ = ‖u‖ ^ 3 from by ring] at h_mul
+    linarith
+  have h_const_to_t_sqrt : 4 * C_K * (‖u‖ + ‖u‖ ^ 3)
+      ≤ 4 * C_K / δ ^ 3 * (‖u‖ ^ 4 + ‖u‖ ^ 6) / (t * Real.sqrt t) := by
+    have h_step : 4 * C_K * (‖u‖ + ‖u‖ ^ 3)
+        ≤ 4 * C_K * (‖u‖ + ‖u‖ ^ 3) *
+            (‖u‖ ^ 3 / (δ ^ 3 * (t * Real.sqrt t))) := by
+      have h_lhs_nn : 0 ≤ 4 * C_K * (‖u‖ + ‖u‖ ^ 3) := by
+        apply mul_nonneg (mul_nonneg (by norm_num) hC_K_nn) (by positivity)
+      have := mul_le_mul_of_nonneg_left h_norm_to_t_sqrt h_lhs_nn
+      simpa using this
+    have h_eq : 4 * C_K * (‖u‖ + ‖u‖ ^ 3) *
+          (‖u‖ ^ 3 / (δ ^ 3 * (t * Real.sqrt t)))
+        = 4 * C_K / δ ^ 3 * (‖u‖ ^ 4 + ‖u‖ ^ 6) / (t * Real.sqrt t) := by
+      have hδ3_ne : δ ^ 3 ≠ 0 := ne_of_gt hδ_cube_pos
+      have hsqrt_ne : Real.sqrt t ≠ 0 := hsqrt_pos.ne'
+      have ht_ne : t ≠ 0 := ht.ne'
+      field_simp <;> ring
+    linarith [h_eq.le, h_eq.ge]
+  -- For the cubic piece, absorb t to get 1/(t·√t).
+  -- (‖u‖^4+‖u‖^6)/√t · ‖u‖²/(δ²·t) = (‖u‖^6+‖u‖^8)/(δ²·t·√t).
+  have h_cubic_to_t_sqrt : C_K * ‖hV.T‖ / 3 *
+        ((‖u‖ ^ 4 + ‖u‖ ^ 6) / Real.sqrt t)
+      ≤ C_K * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 + ‖u‖ ^ 8) / (t * Real.sqrt t) := by
+    have h_lhs_nn : 0 ≤ C_K * ‖hV.T‖ / 3 *
+        ((‖u‖ ^ 4 + ‖u‖ ^ 6) / Real.sqrt t) := by positivity
+    have h_step : C_K * ‖hV.T‖ / 3 * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / Real.sqrt t)
+        ≤ C_K * ‖hV.T‖ / 3 * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / Real.sqrt t) *
+            (‖u‖ ^ 2 / (δ ^ 2 * t)) := by
+      have := mul_le_mul_of_nonneg_left h_one_le_sq h_lhs_nn
+      simpa using this
+    have h_eq : C_K * ‖hV.T‖ / 3 * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / Real.sqrt t) *
+          (‖u‖ ^ 2 / (δ ^ 2 * t))
+        = C_K * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 + ‖u‖ ^ 8) /
+            (t * Real.sqrt t) := by
+      have hδ2_ne : δ ^ 2 ≠ 0 := ne_of_gt hδ_sq_pos
+      have hsqrt_ne : Real.sqrt t ≠ 0 := hsqrt_pos.ne'
+      have ht_ne : t ≠ 0 := ht.ne'
+      field_simp <;> ring
+    linarith [h_eq.le, h_eq.ge]
+  -- Sum: 4·C_K·(‖u‖+‖u‖³) + C_K·‖T‖/3·(‖u‖^4+‖u‖^6)/√t ≤
+  --   (4·C_K/δ³·(‖u‖^4+‖u‖^6) + C_K·‖T‖/(3·δ²)·(‖u‖^6+‖u‖^8))/(t·√t).
+  have h_sum_le : 4 * C_K * (‖u‖ + ‖u‖ ^ 3)
+        + C_K * ‖hV.T‖ / 3 * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / Real.sqrt t)
+      ≤ 4 * C_K / δ ^ 3 * (‖u‖ ^ 4 + ‖u‖ ^ 6) / (t * Real.sqrt t)
+        + C_K * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 + ‖u‖ ^ 8) / (t * Real.sqrt t) := by
+    linarith [h_const_to_t_sqrt, h_cubic_to_t_sqrt]
+  -- Now bound by K_tail/(t·√t)·(‖u‖^4+‖u‖^6+‖u‖^8).
+  set polyTail : ℝ := ‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8 with hpolyTail_def
+  have h_46 : ‖u‖ ^ 4 + ‖u‖ ^ 6 ≤ polyTail := by
+    rw [hpolyTail_def]
+    have : (0 : ℝ) ≤ ‖u‖ ^ 8 := by positivity
+    linarith
+  have h_68 : ‖u‖ ^ 6 + ‖u‖ ^ 8 ≤ polyTail := by
+    rw [hpolyTail_def]
+    have : (0 : ℝ) ≤ ‖u‖ ^ 4 := by positivity
+    linarith
+  have h_4Cδ_nn : 0 ≤ 4 * C_K / δ ^ 3 := by positivity
+  have h_TC_nn : 0 ≤ C_K * ‖hV.T‖ / (3 * δ ^ 2) := by positivity
+  have h_t_sqrt_pos : 0 < t * Real.sqrt t := by positivity
+  have h_combined : 4 * C_K / δ ^ 3 * (‖u‖ ^ 4 + ‖u‖ ^ 6) / (t * Real.sqrt t)
+        + C_K * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 + ‖u‖ ^ 8) / (t * Real.sqrt t)
+      ≤ K_tail / (t * Real.sqrt t) * polyTail := by
+    have h_lhs : 4 * C_K / δ ^ 3 * (‖u‖ ^ 4 + ‖u‖ ^ 6) / (t * Real.sqrt t)
+        ≤ 4 * C_K / δ ^ 3 * polyTail / (t * Real.sqrt t) := by
+      apply div_le_div_of_nonneg_right _ h_t_sqrt_pos.le
+      exact mul_le_mul_of_nonneg_left h_46 h_4Cδ_nn
+    have h_rhs : C_K * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 + ‖u‖ ^ 8) / (t * Real.sqrt t)
+        ≤ C_K * ‖hV.T‖ / (3 * δ ^ 2) * polyTail / (t * Real.sqrt t) := by
+      apply div_le_div_of_nonneg_right _ h_t_sqrt_pos.le
+      exact mul_le_mul_of_nonneg_left h_68 h_TC_nn
+    have h_eq : 4 * C_K / δ ^ 3 * polyTail / (t * Real.sqrt t)
+          + C_K * ‖hV.T‖ / (3 * δ ^ 2) * polyTail / (t * Real.sqrt t)
+        = K_tail / (t * Real.sqrt t) * polyTail := by
+      rw [hK_tail_def]
+      have hδ3_ne : δ ^ 3 ≠ 0 := ne_of_gt hδ_cube_pos
+      have hδ2_ne : δ ^ 2 ≠ 0 := ne_of_gt hδ_sq_pos
+      have hsqrt_ne : Real.sqrt t ≠ 0 := hsqrt_pos.ne'
+      have ht_ne : t ≠ 0 := ht.ne'
+      field_simp <;> ring
+    linarith [h_eq.le, h_eq.ge]
+  -- Final assembly.
+  have h_polyTail_nn : 0 ≤ polyTail := by rw [hpolyTail_def]; positivity
+  have h_exp_pos : 0 < Real.exp (-((c / 4) * ‖u‖ ^ 2)) := Real.exp_pos _
+  calc |crossOddKernel A Hinv b u| *
+        |gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV t (-u)))|
+      ≤ (C_K * (‖u‖ + ‖u‖ ^ 3)) *
+        (4 * Real.exp (-((c / 4) * ‖u‖ ^ 2))
+          + 2 * (‖hV.T‖ / 6 * ‖u‖ ^ 3 / Real.sqrt t) *
+              Real.exp (-((c / 4) * ‖u‖ ^ 2))) := h_step1
+    _ = (4 * C_K * (‖u‖ + ‖u‖ ^ 3)
+          + C_K * ‖hV.T‖ / 3 * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / Real.sqrt t)) *
+        Real.exp (-((c / 4) * ‖u‖ ^ 2)) := h_distrib
+    _ ≤ (4 * C_K / δ ^ 3 * (‖u‖ ^ 4 + ‖u‖ ^ 6) / (t * Real.sqrt t)
+          + C_K * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 + ‖u‖ ^ 8) /
+              (t * Real.sqrt t)) *
+        Real.exp (-((c / 4) * ‖u‖ ^ 2)) :=
+      mul_le_mul_of_nonneg_right h_sum_le h_exp_pos.le
+    _ ≤ (K_tail / (t * Real.sqrt t) * polyTail) *
+        Real.exp (-((c / 4) * ‖u‖ ^ 2)) :=
+      mul_le_mul_of_nonneg_right h_combined h_exp_pos.le
+    _ = K_tail / (t * Real.sqrt t) * (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+        Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by rw [hpolyTail_def]
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
