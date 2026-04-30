@@ -16786,54 +16786,18 @@ private lemma rescaledNumerator_pair_decompose_centered_a_zero
     rw [show (t : ℝ)^2 = t * t from sq t]; field_simp
   linear_combination J_b * h1 + J_rem * h2
 
--- Helper lemmas for Lemma A's bulk-block (`bulkErrA`):
--- `abs_bulkErrA_local_le`, `abs_bulkErrA_tail_le`, `abs_integral_bulkErrA_le`.
--- These feed into `rescaledIntegral_cross_linear_connected_asymptotic` below.
-
-/-- **Local pointwise bound on `bulkErrASymmIntegrand`** (Lemma A bulk Step A).
-
-On the local ball `‖u‖ ≤ ρ·√t`, the symmetrized bulk integrand satisfies
-`|bulkErrASymmIntegrand(u)| ≤ K_loc/t · (‖u‖^6 + ‖u‖^8) · exp(-(c/4)·‖u‖²)`
-where `c = hV.coercive_const`.
-
-**Proof strategy** (per `gpt_responses/strategy_stage5_lemmaA_bulkErrA.md`):
-the symmetrized integrand factors as
-`t·√t·(b·u)·(r(u)·X - r(-u)·Y)·gW(u)` with `r := expNumObsRem`, `X := exp(-s_t(u))`,
-`Y := exp(-s_t(-u))`. Decompose `r(u)·X - r(-u)·Y = (r(u) - r(-u))·X + r(-u)·(X - Y)`.
-
-- **Term 1** (parity gain in `r`): `|r(u) - r(-u)| ≤ Q·‖u‖^5/(t²·√t)` from
-  `abs_expNumObsRem_sub_neg_quintic_le`. Times `t·√t·|b·u|` and `gW·X ≤
-  exp(-c·‖u‖²)` gives `Q·‖b‖_1·‖u‖^6/t · exp(-c·‖u‖²)`.
-
-- **Term 2** (parity gain in `exp(-s_t)`): `|r(-u)| ≤ jet·‖u‖^4/t²` from
-  `abs_expNumObsRem_local_le`. `|gW·(X-Y)| ≤ 2·Cs·‖u‖³/√t · exp(-(c/4)·‖u‖²)`
-  via `abs_gaussianWeight_mul_exp_sub_one_le_local` at `u` and `-u`.
-  Times `t·√t·|b·u|` gives `2·jet·Cs·‖b‖_1·‖u‖^8/t · exp(-(c/4)·‖u‖²)`.
-
-Combined (and absorbing `‖u‖^6` into the larger bound by `exp(-c·‖u‖²) ≤
-exp(-(c/4)·‖u‖²)`): `K_loc/t · (‖u‖^6 + ‖u‖^8) · exp(-(c/4)·‖u‖²)`. -/
-private lemma abs_bulkErrA_local_le
-    (V φ : (ι → ℝ) → ℝ)
-    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
-    (b : ι → ℝ)
-    [Nonempty ι]
-    (hV : PotentialQuinticApprox V H)
-    (hφ : ObservableQuinticApprox φ (0 : ι → ℝ))
-    {ρ : ℝ} (hρ_pos : 0 < ρ)
-    (hρ_le_R : ρ ≤ hV.local_radius)
-    (hρ_le_jet_V : ρ ≤ hV.jet_radius)
-    (hρ_le_jet_φ : ρ ≤ hφ.toObservableTensorApprox.jet_radius)
-    (hρ_decay : hV.local_const * ρ ≤ hV.coercive_const / 4) :
-    ∃ K_loc : ℝ, 0 ≤ K_loc ∧ ∀ t : ℝ, 0 < t →
-      ∀ u : ι → ℝ, ‖u‖ ≤ ρ * Real.sqrt t →
-        |bulkErrASymmIntegrand V φ H b hφ.toObservableTensorApprox t u|
-          ≤ K_loc / t * (‖u‖ ^ 6 + ‖u‖ ^ 8) *
-              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
-  -- See `gpt_responses/strategy_stage5_lemmaA_bulkErrA.md` and
-  -- `gpt_responses/strategy_stage5_bulk_O1t.md` for the proof recipe.
-  -- Mirror of `abs_bulkErr_local_le` (line ~14300) but using the symmetrized
-  -- integrand and the quintic bound `abs_expNumObsRem_sub_neg_quintic_le`.
-  sorry
+-- Helper lemmas for Lemma A's bulk-block (`bulkErrA`).
+-- The new architecture (per `gpt_responses/strategy_stage5_alt_path.md`)
+-- decomposes `exp(-s_t) = 1 + (exp(-s_t) - 1)` so the bulk integral splits as
+-- Gaussian + perturbative pieces. See `bulkErrA_gaussian_symm`,
+-- `abs_bulkErrA_mul_gW_mul_exp_sub_one_local_le` /
+-- `abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le`,
+-- `bulkErrA_gaussian_asymptotic` / `bulkErrA_exp_sub_one_asymptotic`,
+-- and `abs_integral_bulkErrA_le` below.
+--
+-- Note: `abs_bulkErrA_tail_le` (the tail bound for the *original*
+-- symmetrized integrand `bulkErrASymmIntegrand` from the v9 architecture)
+-- is now orphaned but preserved for posterity.
 
 /-- **Tail pointwise bound on `bulkErrASymmIntegrand`** (Lemma A bulk Step B).
 
