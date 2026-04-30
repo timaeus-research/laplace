@@ -3935,6 +3935,171 @@ private lemma gaussian_quad_linear_cubic_explicit
   rw [show c = Hinv b from hc_def]
   ring
 
+/-- **Centered 6th-moment contraction (quad · linear · cubic)**:
+$\int (\tfrac12\mathrm{Q}_A - \tfrac12\mathrm{tr}(A\Sigma))(b\!\cdot\!u)
+  (\tfrac16 T(u,u,u))\,gW
+   = Z\cdot\!\big[\tfrac12\,b\!\cdot\!\Sigma A\Sigma(T{:}\Sigma)
+      + \tfrac12\,(\Sigma b)\!\cdot\!(T{:}(\Sigma A\Sigma))\big]$.
+
+Centering by $\mu_\phi = \tfrac12\mathrm{tr}(A\Sigma)$ kills the
+disconnected `(1/4)trASig A Σ * dot (Σb) (T:Σ)` middle term in
+`gaussian_quad_linear_cubic_explicit`, leaving exactly the two
+"connected" T-contractions used in `lem:laplace_cov2`'s cross-linear
+term (Lemma A). -/
+private lemma gaussian_centeredQuad_linear_cubic_explicit
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ)
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      T (fun i => v (σ i)) = T v)
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
+    ∫ u : ι → ℝ,
+        (((1 / 2 : ℝ) * quadForm A u) - ((1 / 2 : ℝ) * trASig A Hinv)) *
+          dot b u * ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
+      = gaussianZ H *
+          ((1 / 2 : ℝ) * dot b
+              (Hinv (A (Hinv (tensorContractMatrix T Hinv))))
+            + (1 / 2 : ℝ) * dot (Hinv b)
+                (tensorContractMatrix T (Hinv.comp (A.comp Hinv)))) := by
+  -- Pointwise: (Q^c · b·u · cubic) gW = (Q · b·u · cubic) gW - μ · (b·u · cubic) gW.
+  have h_int_quad_lin_cub : Integrable (fun u : ι → ℝ =>
+      ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+        ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u) := by
+    -- (1/2 Q_A)(b·u)(1/6 T(u,u,u)) is a degree-6 polynomial integrable
+    -- against gW. Use the same `h_int_dotbu`-style decomposition.
+    have h_pt : ∀ u : ι → ℝ,
+        ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+            ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+          ((1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r) *
+            (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u) := by
+      intro u
+      have h_qA : quadForm A u =
+          ∑ i, ∑ j, u i * u j *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+        unfold quadForm
+        refine Finset.sum_congr rfl ?_; intro i _
+        rw [H_apply_eq_sum A u i, Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_; intro j _; ring
+      rw [T_apply_diag_eq_sum T u, h_qA]
+      simp only [Finset.sum_mul, Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro p _
+      refine Finset.sum_congr rfl ?_; intro q _
+      refine Finset.sum_congr rfl ?_; intro r _
+      refine Finset.sum_congr rfl ?_; intro i _
+      refine Finset.sum_congr rfl ?_; intro j _
+      ring
+    rw [show (fun u : ι → ℝ =>
+            ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+              ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u) =
+          fun u => ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            ((1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+                Tcoord T p q r) *
+              (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)
+        from funext h_pt]
+    refine integrable_finset_sum _ (fun p _ => ?_)
+    refine integrable_finset_sum _ (fun q _ => ?_)
+    refine integrable_finset_sum _ (fun r _ => ?_)
+    refine integrable_finset_sum _ (fun i _ => ?_)
+    refine integrable_finset_sum _ (fun j _ => ?_)
+    -- Need integrability of `dot b u * u_i u_j u_p u_q u_r * gW`.
+    have h_pt' : ∀ u : ι → ℝ,
+        dot b u * u i * u j * u p * u q * u r * gaussianWeight H u =
+          ∑ l, b l *
+            (u l * u i * u j * u p * u q * u r * gaussianWeight H u) := by
+      intro u
+      unfold dot
+      rw [Finset.sum_mul, Finset.sum_mul, Finset.sum_mul, Finset.sum_mul,
+          Finset.sum_mul, Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_; intros l _; ring
+    have h_int_5 : Integrable (fun u : ι → ℝ =>
+        dot b u * u i * u j * u p * u q * u r * gaussianWeight H u) := by
+      rw [show (fun u : ι → ℝ =>
+              dot b u * u i * u j * u p * u q * u r * gaussianWeight H u) =
+            fun u => ∑ l, b l *
+              (u l * u i * u j * u p * u q * u r * gaussianWeight H u)
+          from funext h_pt']
+      exact integrable_finset_sum _
+        (fun l _ => (hGauss.int_6moment l i j p q r).const_mul _)
+    exact h_int_5.const_mul _
+  have h_int_lin_cub : Integrable (fun u : ι → ℝ =>
+      dot b u * ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u) := by
+    -- (b·u) (1/6 T(u,u,u)) is a degree-4 polynomial integrable against gW.
+    have h_pt : ∀ u : ι → ℝ,
+        dot b u * ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u =
+        ∑ p, ∑ q, ∑ r,
+          ((1 / 6 : ℝ) * Tcoord T p q r) *
+            (dot b u * u p * u q * u r * gaussianWeight H u) := by
+      intro u
+      rw [T_apply_diag_eq_sum T u]
+      simp only [Finset.sum_mul, Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro p _
+      refine Finset.sum_congr rfl ?_; intro q _
+      refine Finset.sum_congr rfl ?_; intro r _
+      ring
+    rw [show (fun u : ι → ℝ =>
+            dot b u * ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u) =
+          fun u => ∑ p, ∑ q, ∑ r,
+            ((1 / 6 : ℝ) * Tcoord T p q r) *
+              (dot b u * u p * u q * u r * gaussianWeight H u)
+        from funext h_pt]
+    refine integrable_finset_sum _ (fun p _ => ?_)
+    refine integrable_finset_sum _ (fun q _ => ?_)
+    refine integrable_finset_sum _ (fun r _ => ?_)
+    have h_pt' : ∀ u : ι → ℝ,
+        dot b u * u p * u q * u r * gaussianWeight H u =
+          ∑ l, b l * (u l * u p * u q * u r * gaussianWeight H u) := by
+      intro u
+      unfold dot
+      rw [Finset.sum_mul, Finset.sum_mul, Finset.sum_mul, Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_; intros l _; ring
+    have h_int_4 : Integrable (fun u : ι → ℝ =>
+        dot b u * u p * u q * u r * gaussianWeight H u) := by
+      rw [show (fun u : ι → ℝ =>
+              dot b u * u p * u q * u r * gaussianWeight H u) =
+            fun u => ∑ l, b l * (u l * u p * u q * u r * gaussianWeight H u)
+          from funext h_pt']
+      refine integrable_finset_sum _ (fun l _ => ?_)
+      -- Need integrable u_l u_p u_q u_r * gW. Use int_4moment.
+      exact (hGauss.toLaplaceCov4MomentHypotheses.int_4moment l p q r).const_mul _
+    exact h_int_4.const_mul _
+  -- Pointwise identity: (Q_A - μ) (b·u) (1/6 T(u,u,u)) gW = LHS - μ · RHS_part.
+  have h_pt : ∀ u : ι → ℝ,
+      (((1 / 2 : ℝ) * quadForm A u) - ((1 / 2 : ℝ) * trASig A Hinv)) *
+          dot b u * ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
+      =
+      ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+          ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
+        - ((1 / 2 : ℝ) * trASig A Hinv) *
+            (dot b u * ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u) := by
+    intro u; ring
+  rw [show (fun u : ι → ℝ =>
+          (((1 / 2 : ℝ) * quadForm A u) - ((1 / 2 : ℝ) * trASig A Hinv)) *
+            dot b u * ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u) =
+        fun u => ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+              ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
+            - ((1 / 2 : ℝ) * trASig A Hinv) *
+                (dot b u * ((1 / 6 : ℝ) * T (fun _ => u)) *
+                  gaussianWeight H u) from funext h_pt]
+  rw [MeasureTheory.integral_sub h_int_quad_lin_cub
+      (h_int_lin_cub.const_mul _)]
+  rw [MeasureTheory.integral_const_mul]
+  rw [gaussian_quad_linear_cubic_explicit A b T hA_symm hT_symm hGauss]
+  -- Now need: ∫ (b·u) * (1/6 T(u,u,u)) * gW = Z · (1/2) dot (Hinv b) (T:Σ).
+  -- gaussian_cubic_linear has integrand (1/6 T(u,u,u)) * dot b u * gW
+  -- (different factor order). Use integral_congr_ae to reorder, then apply.
+  rw [show (∫ a : ι → ℝ,
+        dot b a * ((1 / 6 : ℝ) * T (fun _ => a)) * gaussianWeight H a) =
+        ∫ a : ι → ℝ,
+          (1 / 6 : ℝ) * T (fun _ => a) * dot b a * gaussianWeight H a from by
+      apply MeasureTheory.integral_congr_ae
+      filter_upwards with a; ring]
+  rw [gaussian_cubic_linear b T hT_symm
+      hGauss.toLaplaceCov4MomentHypotheses]
+  ring
+
 end GaussianContractions
 
 section MainTheorems
