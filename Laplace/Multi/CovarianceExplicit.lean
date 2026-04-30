@@ -11542,17 +11542,94 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_local_le
         (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
       ≤ ((∑ i, |b i|) * hφ.jet_const * hV.local_const) / t * ‖u‖ ^ 8 *
           Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
-  -- Recipe (per `gpt_responses/strategy_stage5_alt_path.md`):
-  -- 1. `|B_t(u)| ≤ jet · ‖b‖_1 · ‖u‖^5 / √t` from `abs_expNumObsRem_local_le`.
-  -- 2. `|gW · (exp(-s_t) - 1)| ≤ Cs · ‖u‖^3 / √t · exp(-(c/4)·‖u‖²)` from
-  --    `abs_gaussianWeight_mul_exp_sub_one_le_local`.
-  -- 3. Multiply: `(jet·‖b‖_1·Cs/t) · ‖u‖^8 · exp(-(c/4)·‖u‖²)` (uses √t·√t = t).
-  --
-  -- The algebra to combine `1/√t · 1/√t = 1/t` requires `Real.mul_self_sqrt`
-  -- substitution combined with `field_simp + ring`. Initial attempt hit
-  -- residual `√(√t^2)` issues from `field_simp` normalization; needs more
-  -- careful handling of the square-root identities.
-  sorry
+  classical
+  set c : ℝ := hV.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.coercive_const_pos
+  have h_coer := hV.coercive_bound
+  set Cs : ℝ := hV.local_const with hCs_def
+  have hCs_nn : 0 ≤ Cs := hV.local_const_nonneg
+  set bL1 : ℝ := ∑ i, |b i| with hbL1_def
+  have hbL1_nn : 0 ≤ bL1 := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hjet_nn : 0 ≤ hφ.jet_const := hφ.jet_const_nonneg
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_sqt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  have h_t_ne : t ≠ 0 := ne_of_gt ht
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have hu_jet : ‖u‖ ≤ hφ.jet_radius * Real.sqrt t :=
+    le_trans hu (mul_le_mul_of_nonneg_right hδ_le_jet_φ hsqrt_pos.le)
+  have h_R_local := abs_expNumObsRem_local_le (φ := φ) (a := (0 : ι → ℝ))
+    (hφ := hφ) ht u hu_jet
+  have h_dot_b : |dot b u| ≤ bL1 * ‖u‖ := by
+    rw [hbL1_def]; exact abs_dot_le_l1_mul_norm b u
+  have h_t_sqt_pos : 0 < t * Real.sqrt t := by positivity
+  -- Key identity: 1/√t · 1/√t = 1/t.
+  have h_inv_sqrt_sq : (1 : ℝ) / Real.sqrt t * (1 / Real.sqrt t) = 1 / t := by
+    rw [div_mul_div_comm, one_mul, Real.mul_self_sqrt ht.le]
+  -- Step 1: bound |B_t(u)| ≤ jet · bL1 · ‖u‖^5 / √t.
+  have h_B_t_le : |bulkErrA φ b hφ t u| ≤ hφ.jet_const * bL1 * ‖u‖ ^ 5 / Real.sqrt t := by
+    unfold bulkErrA
+    rw [show t * Real.sqrt t * dot b u * expNumObsRem φ (0 : ι → ℝ) hφ t u
+          = (t * Real.sqrt t) * (dot b u * expNumObsRem φ (0 : ι → ℝ) hφ t u)
+        from by ring,
+        abs_mul, abs_of_pos h_t_sqt_pos, abs_mul]
+    have h_dot_R := mul_le_mul h_dot_b h_R_local (abs_nonneg _)
+      (mul_nonneg hbL1_nn h_norm_nn)
+    have h_step := mul_le_mul_of_nonneg_left h_dot_R h_t_sqt_pos.le
+    -- t·√t · (bL1·‖u‖ · jet·‖u‖^4/t^2) = jet·bL1·‖u‖^5/√t.
+    -- Use t = √t · √t.
+    have h_eq : t * Real.sqrt t * (bL1 * ‖u‖ * (hφ.jet_const * ‖u‖ ^ 4 / t ^ 2))
+        = hφ.jet_const * bL1 * ‖u‖ ^ 5 / Real.sqrt t := by
+      have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+      -- Rearrange LHS: t·√t/t^2 · (jet · bL1 · ‖u‖^5).
+      have h_lhs_factor : t * Real.sqrt t * (bL1 * ‖u‖ * (hφ.jet_const * ‖u‖ ^ 4 / t ^ 2))
+          = (t * Real.sqrt t / t ^ 2) * (hφ.jet_const * bL1 * ‖u‖ ^ 5) := by
+        rw [show ‖u‖ ^ 5 = ‖u‖ * ‖u‖ ^ 4 from by ring]
+        field_simp
+      rw [h_lhs_factor]
+      -- t·√t/t^2 = 1/√t.
+      have h_div_eq : t * Real.sqrt t / t ^ 2 = 1 / Real.sqrt t := by
+        rw [show t ^ 2 = t * t from sq t]
+        rw [show t * Real.sqrt t / (t * t) = Real.sqrt t / t from by field_simp]
+        rw [eq_div_iff h_sqt_ne, div_mul_eq_mul_div, h_sq, div_self h_t_ne]
+      rw [h_div_eq]
+      ring
+    linarith
+  -- Step 2: bound |gW · (exp(-s_t) - 1)| locally.
+  have h_gW_exp := abs_gaussianWeight_mul_exp_sub_one_le_local
+    V H hc_pos hV.local_radius_pos hCs_nn h_coer hV.local_bound
+    hδ_pos hδ_le_R hδ_decay ht u hu
+  -- Step 3: |B_t · gW · (exp - 1)| ≤ |B_t| · |gW · (exp - 1)|.
+  have h_eq_abs : |bulkErrA φ b hφ t u * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      = |bulkErrA φ b hφ t u| *
+          |gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)| := by
+    rw [show bulkErrA φ b hφ t u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1)
+          = bulkErrA φ b hφ t u *
+            (gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1)) from by ring,
+        abs_mul]
+  rw [h_eq_abs]
+  -- Step 4: combine bounds via mul_le_mul.
+  have h_B_t_nn : 0 ≤ hφ.jet_const * bL1 * ‖u‖ ^ 5 / Real.sqrt t := by positivity
+  have h_term_le := mul_le_mul h_B_t_le h_gW_exp (abs_nonneg _) h_B_t_nn
+  -- The product equals (bL1·jet·Cs/t) · ‖u‖^8 · exp(...).
+  have h_product_eq :
+      hφ.jet_const * bL1 * ‖u‖ ^ 5 / Real.sqrt t *
+        (Cs * ‖u‖ ^ 3 / Real.sqrt t * Real.exp (-(c / 4 * ‖u‖ ^ 2)))
+      = bL1 * hφ.jet_const * Cs / t * ‖u‖ ^ 8 *
+          Real.exp (-(c / 4 * ‖u‖ ^ 2)) := by
+    -- Factor out (1/√t · 1/√t) = 1/t.
+    rw [show hφ.jet_const * bL1 * ‖u‖ ^ 5 / Real.sqrt t *
+            (Cs * ‖u‖ ^ 3 / Real.sqrt t * Real.exp (-(c / 4 * ‖u‖ ^ 2)))
+          = hφ.jet_const * bL1 * Cs * ‖u‖ ^ 8 *
+            ((1 : ℝ) / Real.sqrt t * (1 / Real.sqrt t)) *
+            Real.exp (-(c / 4 * ‖u‖ ^ 2))
+        from by rw [show ‖u‖ ^ 8 = ‖u‖ ^ 5 * ‖u‖ ^ 3 from by ring]; ring]
+    rw [h_inv_sqrt_sq]
+    ring
+  linarith [h_term_le, h_product_eq.le, h_product_eq.ge]
 private lemma integrable_crossEvenKernel_mul_gaussianWeight
     {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
     (b : ι → ℝ)
