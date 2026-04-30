@@ -10560,6 +10560,94 @@ private lemma cross_linear_connected_pointwise
   field_simp
   ring
 
+/-- **Symmetrized bulk-A integrand**:
+`bulkErrA(u)·exp(-s_t(u)) + bulkErrA(-u)·exp(-s_t(-u)))·gW(u)`. Captures
+the leading parity cancellation in the bulk integrand, sharpening the
+local pointwise bound from `O(‖u‖^4/t)` to `O((‖u‖^5+‖u‖^8)/t)`. -/
+private noncomputable def bulkErrASymmIntegrand
+    (V φ : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (t : ℝ) (u : ι → ℝ) : ℝ :=
+  (bulkErrA φ b hφ t u *
+      Real.exp (-(rescaledPerturbation V H t u))
+    + bulkErrA φ b hφ t (-u) *
+      Real.exp (-(rescaledPerturbation V H t (-u))))
+    * gaussianWeight H u
+
+/-- **`bulkErrA` symmetrization**: by `u ↦ -u` substitution (with `gW`
+even),
+```
+2·∫ bulkErrA(u)·gW(u)·exp(-s_t(u)) du
+  = ∫ bulkErrASymmIntegrand V φ H b hφ t u du.
+```
+Same template as `expNumErr₃_symmetric` / `expNumErr₄_symmetric`. -/
+private lemma bulkErrA_symmetric
+    (V φ : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    {t : ℝ} (_ht : 0 < t)
+    (h_int : Integrable (fun u : ι → ℝ =>
+      bulkErrA φ b hφ t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :
+    2 * (∫ u : ι → ℝ,
+        bulkErrA φ b hφ t u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+      = ∫ u : ι → ℝ, bulkErrASymmIntegrand V φ H b hφ t u := by
+  -- ∫ f(u) du = ∫ f(-u) du under the standard substitution.
+  have h_neg :
+      (∫ u : ι → ℝ,
+          bulkErrA φ b hφ t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        = (∫ u : ι → ℝ,
+            bulkErrA φ b hφ t (-u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t (-u)))) := by
+    have h_sub :=
+      integral_pi_comp_neg
+        (fun u : ι → ℝ =>
+          bulkErrA φ b hφ t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+    rw [← h_sub]
+    apply MeasureTheory.integral_congr_ae
+    filter_upwards with u
+    rw [gaussianWeight_neg]
+  -- Integrability of the negated form follows from h_int via comp_neg.
+  have h_int_neg : Integrable (fun u : ι → ℝ =>
+      bulkErrA φ b hφ t (-u) *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t (-u)))) := by
+    have h_comp := h_int.comp_neg
+    apply h_comp.congr
+    filter_upwards with u
+    rw [gaussianWeight_neg]
+  -- 2·LHS = LHS + LHS = LHS + (LHS substituted) = ∫ (f(u) + f(-u)).
+  have h_two_mul : (2 : ℝ) * (∫ u : ι → ℝ,
+        bulkErrA φ b hφ t u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+      = (∫ u : ι → ℝ,
+          bulkErrA φ b hφ t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + (∫ u : ι → ℝ,
+            bulkErrA φ b hφ t (-u) *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t (-u)))) := by
+    rw [← h_neg]; ring
+  rw [h_two_mul, ← MeasureTheory.integral_add h_int h_int_neg]
+  apply MeasureTheory.integral_congr_ae
+  filter_upwards with u
+  unfold bulkErrASymmIntegrand
+  ring
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
