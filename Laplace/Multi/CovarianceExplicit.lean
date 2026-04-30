@@ -12456,6 +12456,303 @@ private lemma oddCross_split
   rw [mul_sub, mul_add, h_zero, mul_zero, h_cubic_id]
   ring
 
+/-- **Pointwise local bound for the odd-block symmetrized integrand**
+(mirror of `J3_local_pointwise_le`).
+
+For `‖u‖ ≤ δ·√t` with `δ` chosen as in `abs_J3_bracket_local_le`,
+\[
+  \big|\text{crossOdd}(u)\cdot ((Corr_t(u)) - (Corr_t(-u)))\cdot gW(u)\big|
+    \le \frac{C_K \cdot D}{t\sqrt t}\cdot
+        (\|u\|^6 + \|u\|^8 + \|u\|^{10} + \|u\|^{12})\cdot
+        e^{-(c/4)\|u\|^2}.
+\]
+
+Where `Corr_t(u) := exp(-s_t(u)) - 1 + expPotCubic(u)`, `C_K` is the
+crossOddKernel polynomial constant, and `D = Q + 2·jet·local + local^3`
+combines the J3 quintic remainder constants. -/
+private lemma abs_crossOdd_J3_diff_local_le
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    (hδ_le_R : δ ≤ hV.local_radius)
+    (hδ_le_jet_R : δ ≤ hV.jet_radius)
+    (hδ_const : hV.local_const * δ ≤ hV.coercive_const / 4)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ δ * Real.sqrt t) :
+    ∃ K_loc : ℝ, 0 ≤ K_loc ∧
+      |crossOddKernel A Hinv b u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+          gaussianWeight H u|
+        ≤ K_loc / (t * Real.sqrt t) *
+            (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+            Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+  classical
+  obtain ⟨C_K, hC_K_nn, hF_bound⟩ := abs_crossOddKernel_le (Hinv := Hinv) A b
+  set D : ℝ := hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3
+    with hD_def
+  have hD_nn : 0 ≤ D := by
+    rw [hD_def]
+    have h1 : 0 ≤ hV.Q_const := hV.Q_const_nn
+    have hjet_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
+    have hlocal_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
+    have h2 : 0 ≤ 2 * hV.jet_const * hV.local_const :=
+      mul_nonneg (mul_nonneg (by norm_num) hjet_nn) hlocal_nn
+    have h3 : 0 ≤ hV.local_const ^ 3 := pow_nonneg hlocal_nn 3
+    linarith
+  refine ⟨C_K * D, mul_nonneg hC_K_nn hD_nn, ?_⟩
+  have hCs_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
+  have hjet_C_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
+  have hQ_nn : 0 ≤ hV.Q_const := hV.Q_const_nn
+  have hc_pos : 0 < hV.coercive_const := hV.coercive_const_pos
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_sqrt_t_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  -- Rearrange: |crossOdd · bracket · gW| = |crossOdd| · gW · |bracket|.
+  have h_F_eq : |crossOddKernel A Hinv b u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+        gaussianWeight H u|
+      = |crossOddKernel A Hinv b u| * (gaussianWeight H u *
+          |((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|) := by
+    rw [show crossOddKernel A Hinv b u *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t u)
+              - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+            gaussianWeight H u
+          = crossOddKernel A Hinv b u *
+              (gaussianWeight H u *
+                ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                    + expPotCubic V H hV.toPotentialTensorApprox t u)
+                  - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                      + expPotCubic V H hV.toPotentialTensorApprox t (-u)))) from by
+        ring,
+        abs_mul, abs_mul (gaussianWeight H u), abs_of_nonneg h_gW_nn]
+  rw [h_F_eq]
+  -- |crossOdd| ≤ C_K · (‖u‖ + ‖u‖^3).
+  have h_K_le : |crossOddKernel A Hinv b u| ≤ C_K * (‖u‖ + ‖u‖ ^ 3) := hF_bound u
+  have h_K_nn_aux : 0 ≤ C_K * (‖u‖ + ‖u‖ ^ 3) := by
+    apply mul_nonneg hC_K_nn
+    positivity
+  -- gW · |bracket| ≤ exp(-(c/4)) · D·(‖u‖^5+‖u‖^7+‖u‖^9)/(t·√t).
+  have h_br := abs_J3_bracket_local_le V H hV hδ_pos hδ_le_R hδ_le_jet_R hδ_const ht u hu
+  have h_gW_le := gaussianWeight_le_exp_neg_coercive V H hV.toPotentialTensorApprox u
+  have h_gW_quart : gaussianWeight H u
+      ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+    have h2 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+      apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hc_pos]
+    linarith
+  have h_gW_combine : gaussianWeight H u *
+        Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)
+      ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+    have h_eq : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) *
+        Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)
+        = Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+      rw [← Real.exp_add]; congr 1; ring
+    have h_mul : gaussianWeight H u * Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)
+        ≤ Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) *
+          Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) :=
+      mul_le_mul_of_nonneg_right h_gW_le (by positivity)
+    linarith [h_eq.le, h_eq.ge]
+  -- gW · |bracket| ≤ exp(-c/4) · (Q·‖u‖^5 + 2·jet·local·‖u‖^7 + local³·‖u‖^9)/(t·√t).
+  have h_gWbr : gaussianWeight H u *
+        |((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|
+      ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+        (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+          + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+          + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) := by
+    have h_step_a : gaussianWeight H u *
+          |((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|
+        ≤ gaussianWeight H u * (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+              + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+              + hV.local_const ^ 3 * ‖u‖ ^ 9 *
+                  Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t)) :=
+      mul_le_mul_of_nonneg_left h_br h_gW_nn
+    have h_t1 : gaussianWeight H u * (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)) :=
+      mul_le_mul_of_nonneg_right h_gW_quart (by positivity)
+    have h_t2 : gaussianWeight H u *
+          (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)) :=
+      mul_le_mul_of_nonneg_right h_gW_quart (by positivity)
+    have h_t3 : gaussianWeight H u *
+          (hV.local_const ^ 3 * ‖u‖ ^ 9 *
+            Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t))
+        ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) := by
+      have h_factor : gaussianWeight H u *
+            (hV.local_const ^ 3 * ‖u‖ ^ 9 *
+              Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t))
+          = (gaussianWeight H u * Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+            (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) := by ring
+      rw [h_factor]
+      exact mul_le_mul_of_nonneg_right h_gW_combine (by positivity)
+    have h_dist_lhs : gaussianWeight H u *
+          (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+              + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+              + hV.local_const ^ 3 * ‖u‖ ^ 9 *
+                  Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) / (t * Real.sqrt t))
+        = gaussianWeight H u * (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t))
+          + gaussianWeight H u *
+              (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t))
+          + gaussianWeight H u *
+              (hV.local_const ^ 3 * ‖u‖ ^ 9 *
+                Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2) /
+                  (t * Real.sqrt t)) := by ring
+    have h_dist_rhs : Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+            + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+            + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t))
+        = Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+            (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t))
+          + Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+              (2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t))
+          + Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+              (hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)) := by ring
+    linarith [h_step_a, h_t1, h_t2, h_t3, h_dist_lhs.le, h_dist_lhs.ge,
+              h_dist_rhs.le, h_dist_rhs.ge]
+  -- Multiply: |crossOdd · gW · bracket| ≤ |crossOdd| · gW · |bracket|.
+  have h_step1 : |crossOddKernel A Hinv b u| * (gaussianWeight H u *
+          |((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|)
+      ≤ (C_K * (‖u‖ + ‖u‖ ^ 3)) *
+        (Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+        (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+          + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+          + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t))) := by
+    apply mul_le_mul h_K_le h_gWbr (mul_nonneg h_gW_nn (abs_nonneg _)) h_K_nn_aux
+  -- Now expand: (‖u‖+‖u‖^3) · (X_5+X_7+X_9) where X_k = ‖u‖^k/(t√t).
+  -- = (‖u‖^6+‖u‖^8) · Q/(t√t) + (‖u‖^8+‖u‖^10)·2·jet·local/(t√t) + (‖u‖^10+‖u‖^12)·local^3/(t√t).
+  -- All bounded by D · (‖u‖^6+‖u‖^8+‖u‖^10+‖u‖^12)/(t√t).
+  set polyU : ℝ := ‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12 with hpolyU_def
+  have hpolyU_nn : 0 ≤ polyU := by rw [hpolyU_def]; positivity
+  have h_target : (C_K * (‖u‖ + ‖u‖ ^ 3)) *
+        (Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+        (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+          + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+          + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)))
+      ≤ C_K * D / (t * Real.sqrt t) * polyU *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+    have ht_sqrt_pos : 0 < t * Real.sqrt t := mul_pos ht hsqrt_pos
+    -- Bring 1/(t·√t) and exp out.
+    have h_factor_lhs : (C_K * (‖u‖ + ‖u‖ ^ 3)) *
+          (Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+          (hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
+            + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
+            + hV.local_const ^ 3 * ‖u‖ ^ 9 / (t * Real.sqrt t)))
+        = C_K * (‖u‖ + ‖u‖ ^ 3) *
+          (hV.Q_const * ‖u‖ ^ 5 + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7
+            + hV.local_const ^ 3 * ‖u‖ ^ 9) / (t * Real.sqrt t) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+      have ht_ne : t ≠ 0 := ht.ne'
+      have hsqrt_ne : Real.sqrt t ≠ 0 := hsqrt_pos.ne'
+      field_simp
+    rw [h_factor_lhs]
+    -- Inner inequality: C_K · (‖u‖+‖u‖^3) · (poly_quintic) ≤ C_K · D · polyU.
+    have h_poly_le : (‖u‖ + ‖u‖ ^ 3) *
+        (hV.Q_const * ‖u‖ ^ 5 + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7
+          + hV.local_const ^ 3 * ‖u‖ ^ 9)
+        ≤ D * polyU := by
+      rw [hpolyU_def, hD_def]
+      have h_u6 : 0 ≤ ‖u‖ ^ 6 := by positivity
+      have h_u8 : 0 ≤ ‖u‖ ^ 8 := by positivity
+      have h_u10 : 0 ≤ ‖u‖ ^ 10 := by positivity
+      have h_u12 : 0 ≤ ‖u‖ ^ 12 := by positivity
+      have h_jet_local_nn : 0 ≤ 2 * hV.jet_const * hV.local_const :=
+        mul_nonneg (mul_nonneg (by norm_num) hjet_C_nn) hCs_nn
+      have h_local3_nn : 0 ≤ hV.local_const ^ 3 := pow_nonneg hCs_nn 3
+      -- Expand LHS termwise.
+      have h_lhs_eq : (‖u‖ + ‖u‖ ^ 3) *
+            (hV.Q_const * ‖u‖ ^ 5 + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7
+              + hV.local_const ^ 3 * ‖u‖ ^ 9)
+          = hV.Q_const * (‖u‖ ^ 6 + ‖u‖ ^ 8)
+            + 2 * hV.jet_const * hV.local_const * (‖u‖ ^ 8 + ‖u‖ ^ 10)
+            + hV.local_const ^ 3 * (‖u‖ ^ 10 + ‖u‖ ^ 12) := by ring
+      rw [h_lhs_eq]
+      -- RHS expands as:
+      have h_rhs_eq : (hV.Q_const + 2 * hV.jet_const * hV.local_const +
+              hV.local_const ^ 3) *
+            (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12)
+          = hV.Q_const * (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12)
+            + 2 * hV.jet_const * hV.local_const *
+                (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12)
+            + hV.local_const ^ 3 *
+                (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) := by ring
+      rw [h_rhs_eq]
+      -- Each piece: (‖u‖^a + ‖u‖^b) ≤ ‖u‖^6+‖u‖^8+‖u‖^10+‖u‖^12 since the
+      -- missing terms are nonneg.
+      have h1 : ‖u‖ ^ 6 + ‖u‖ ^ 8 ≤ ‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12 := by
+        linarith
+      have h2 : ‖u‖ ^ 8 + ‖u‖ ^ 10 ≤ ‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12 := by
+        linarith
+      have h3 : ‖u‖ ^ 10 + ‖u‖ ^ 12 ≤ ‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12 := by
+        linarith
+      have hp1 : hV.Q_const * (‖u‖ ^ 6 + ‖u‖ ^ 8)
+          ≤ hV.Q_const * (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) :=
+        mul_le_mul_of_nonneg_left h1 hQ_nn
+      have hp2 : 2 * hV.jet_const * hV.local_const * (‖u‖ ^ 8 + ‖u‖ ^ 10)
+          ≤ 2 * hV.jet_const * hV.local_const *
+              (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) :=
+        mul_le_mul_of_nonneg_left h2 h_jet_local_nn
+      have hp3 : hV.local_const ^ 3 * (‖u‖ ^ 10 + ‖u‖ ^ 12)
+          ≤ hV.local_const ^ 3 *
+              (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) :=
+        mul_le_mul_of_nonneg_left h3 h_local3_nn
+      linarith
+    have h_K_poly : C_K * (‖u‖ + ‖u‖ ^ 3) *
+          (hV.Q_const * ‖u‖ ^ 5 + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7
+            + hV.local_const ^ 3 * ‖u‖ ^ 9)
+        ≤ C_K * (D * polyU) := by
+      have := mul_le_mul_of_nonneg_left h_poly_le hC_K_nn
+      linarith [show C_K * ((‖u‖ + ‖u‖ ^ 3) *
+            (hV.Q_const * ‖u‖ ^ 5 + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7
+              + hV.local_const ^ 3 * ‖u‖ ^ 9))
+          = C_K * (‖u‖ + ‖u‖ ^ 3) *
+            (hV.Q_const * ‖u‖ ^ 5 + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7
+              + hV.local_const ^ 3 * ‖u‖ ^ 9) from by ring]
+    have h_div : C_K * (‖u‖ + ‖u‖ ^ 3) *
+          (hV.Q_const * ‖u‖ ^ 5 + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7
+            + hV.local_const ^ 3 * ‖u‖ ^ 9) / (t * Real.sqrt t)
+        ≤ C_K * D * polyU / (t * Real.sqrt t) := by
+      apply div_le_div_of_nonneg_right _ ht_sqrt_pos.le
+      calc _ ≤ C_K * (D * polyU) := h_K_poly
+        _ = C_K * D * polyU := by ring
+    have h_div2 : C_K * (‖u‖ + ‖u‖ ^ 3) *
+          (hV.Q_const * ‖u‖ ^ 5 + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7
+            + hV.local_const ^ 3 * ‖u‖ ^ 9) / (t * Real.sqrt t) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+        ≤ C_K * D * polyU / (t * Real.sqrt t) *
+            Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) :=
+      mul_le_mul_of_nonneg_right h_div (Real.exp_pos _).le
+    have h_eq : C_K * D * polyU / (t * Real.sqrt t) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+        = C_K * D / (t * Real.sqrt t) * polyU *
+            Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by ring
+    linarith [h_eq.le, h_eq.ge]
+  linarith
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
