@@ -12001,6 +12001,133 @@ private lemma rescaledPartition_rate_one_over_t
   rw [h_eq]
   exact hK t ht
 
+/-- **The cubic identity** for the rescaled potential jet: under
+`PotentialTensorApprox`, `t · cV((√t)⁻¹•u) = expPotCubic(u)`.
+
+Both sides equal `(1/√t) · (1/6) T(u,u,u)`. This identity is what
+turns the corrected bracket `exp(-s_t) - 1 + t·cV(...)` into
+`exp(-s_t) - 1 + expPotCubic`, used by the odd-block transport. -/
+private lemma t_mul_cV_eq_expPotCubic
+    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
+    t * hV.cV ((Real.sqrt t)⁻¹ • u)
+      = expPotCubic V H hV t u := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_ne : Real.sqrt t ≠ 0 := ne_of_gt hsqrt_pos
+  have h_sq : (Real.sqrt t) ^ 2 = t := Real.sq_sqrt ht.le
+  unfold expPotCubic
+  rw [hV.cV_eq_T_diag]
+  have hT : hV.T (fun _ : Fin 3 => (Real.sqrt t)⁻¹ • u)
+        = ((Real.sqrt t)⁻¹) ^ 3 * hV.T (fun _ => u) := by
+    simpa [Fin.prod_univ_three] using
+      hV.T.map_smul_univ (fun _ : Fin 3 => (Real.sqrt t)⁻¹) (fun _ => u)
+  rw [hT]
+  -- Goal: t * ((1/6) * ((√t)⁻¹^3 * T)) = (√t)⁻¹ * ((1/6) * T)
+  -- I.e., t * (√t)⁻¹^3 = (√t)⁻¹, which uses t = (√t)^2.
+  field_simp
+  -- After field_simp: t * T = (√t)^2 * T, which holds by h_sq.
+  rw [h_sq]
+
+/-- **Parity trick**: for any odd `F` (against the symmetric Gaussian
+weight) and any `K`, the integral `∫ F·gW·K = (1/2) ∫ F·gW·(K(u) - K(-u))`.
+
+The mechanism: by the `u ↦ -u` substitution and oddness of F, we have
+`∫ F(u)·gW(u)·K(u) = -∫ F(u)·gW(u)·K(-u)`. Adding gives `2I = ∫ F·gW·(K - K∘(-·))`.
+
+Used in the odd-block transport to extract the ODD PART of the corrected
+bracket — the part that's small (O(1/t) after multiplying by √t). -/
+private lemma integral_odd_mul_eq_half_integral_sub_neg
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (F K : (ι → ℝ) → ℝ)
+    [Nonempty ι]
+    (hF_odd : ∀ u, F (-u) = -F u)
+    (h_int_pos : Integrable (fun u : ι → ℝ => F u * gaussianWeight H u * K u))
+    (h_int_neg : Integrable (fun u : ι → ℝ => F u * gaussianWeight H u * K (-u))) :
+    ∫ u : ι → ℝ, F u * gaussianWeight H u * K u
+      = (1 / 2 : ℝ) * ∫ u : ι → ℝ,
+          F u * gaussianWeight H u * (K u - K (-u)) := by
+  have h_subst : (∫ u : ι → ℝ, F u * gaussianWeight H u * K u)
+      = - ∫ u : ι → ℝ, F u * gaussianWeight H u * K (-u) := by
+    -- u ↦ -u substitution: ∫ f(u) du = ∫ f(-u) du. Then use F(-u) = -F(u).
+    have h0 := integral_pi_comp_neg
+      (fun u : ι → ℝ => F u * gaussianWeight H u * K u)
+    -- h0: ∫ F(-u) gW(-u) K(-u) = ∫ F u gW u K u
+    -- Rewrite LHS of h0 using F(-u) = -F u and gW(-u) = gW u.
+    have h_eq_pre : (fun u : ι → ℝ => F (-u) * gaussianWeight H (-u) * K (-u))
+        = fun u => -(F u * gaussianWeight H u * K (-u)) := by
+      funext u; rw [hF_odd, gaussianWeight_neg]; ring
+    rw [h_eq_pre] at h0
+    rw [MeasureTheory.integral_neg] at h0
+    linarith
+  have h_diff : (∫ u : ι → ℝ, F u * gaussianWeight H u * K u)
+        - (∫ u : ι → ℝ, F u * gaussianWeight H u * K (-u))
+      = ∫ u : ι → ℝ, F u * gaussianWeight H u * (K u - K (-u)) := by
+    rw [← MeasureTheory.integral_sub h_int_pos h_int_neg]
+    apply MeasureTheory.integral_congr_ae
+    filter_upwards with u
+    ring
+  -- 2I = I - (-I from substitution) = I + I_subst,  where I_subst = -I, so 2I = ∫(K - K(-·)).
+  have h_two : (∫ u : ι → ℝ, F u * gaussianWeight H u * K u) +
+      (∫ u : ι → ℝ, F u * gaussianWeight H u * K u)
+      = ∫ u : ι → ℝ, F u * gaussianWeight H u * (K u - K (-u)) := by
+    have h_combine : (∫ u : ι → ℝ, F u * gaussianWeight H u * K u) +
+        (∫ u : ι → ℝ, F u * gaussianWeight H u * K u)
+        = (∫ u : ι → ℝ, F u * gaussianWeight H u * K u)
+          - (∫ u : ι → ℝ, F u * gaussianWeight H u * K (-u)) := by
+      linarith [h_subst]
+    rw [h_combine]
+    exact h_diff
+  linarith
+
+/-- **The odd-block main constant** `oddCrossMainConst` = the leading
+contribution of the odd block to Lemma A's `cross_coeff`. Specifically:
+\[
+  C_{\text{odd}} := \tfrac{1}{2} (b)(\Sigma A \Sigma (T:\Sigma))
+                  + \tfrac{1}{2} (\Sigma b)(T : \Sigma A \Sigma)
+\]
+
+This is exactly the two T-contraction terms that the odd-block contributes
+to Lemma A; the even-block contributes the third (`Φ`) term. -/
+private noncomputable def oddCrossMainConst
+    (Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) : ℝ :=
+  (1 / 2 : ℝ) * dot b (Hinv (A (Hinv (tensorContractMatrix T Hinv))))
+  + (1 / 2 : ℝ) * dot (Hinv b)
+      (tensorContractMatrix T (Hinv.comp (A.comp Hinv)))
+
+/-- **Odd-block Gaussian main term**: by the centered Wick computation
+(`gaussian_centeredQuad_linear_cubic_explicit`), the integral of
+`crossOddKernel · (1/6) T(u,u,u) · gW` equals `Z · oddCrossMainConst`. -/
+private lemma oddCross_main_gaussian
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
+    (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      T (fun i => v (σ i)) = T v)
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
+    ∫ u : ι → ℝ, crossOddKernel A Hinv b u *
+        ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
+      = gaussianZ H * oddCrossMainConst Hinv A b T := by
+  unfold crossOddKernel oddCrossMainConst
+  have h := gaussian_centeredQuad_linear_cubic_explicit
+    (H := H) (Hinv := Hinv) A b T hA_symm hT_symm hGauss
+  -- h: ∫ ((1/2 Q_A) - (1/2 trASig)) · (b·u) · ((1/6) T) · gW
+  --      = Z · ((1/2) dot b (...) + (1/2) dot (Σb) (...))
+  -- Goal: ∫ ((b·u) · ((1/2 Q_A) - (1/2 trASig))) · ((1/6) T) · gW = Z · (...)
+  -- Just reorder factors with integral_congr_ae + ring.
+  rw [show (fun u : ι → ℝ => dot b u *
+          ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+          ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u)
+        = fun u => ((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
+            (dot b u) * ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u from by
+      funext u; ring]
+  exact h
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
