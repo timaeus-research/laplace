@@ -10759,6 +10759,64 @@ private lemma bulkErrA_symmetric
   unfold bulkErrASymmIntegrand
   ring
 
+/-- **`crossEvenKernel · gW` integrability**: from coord expansion +
+4-moment integrability. -/
+private lemma integrable_crossEvenKernel_mul_gaussianWeight
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    Integrable (fun u : ι → ℝ => crossEvenKernel b Φ u * gaussianWeight H u) := by
+  unfold crossEvenKernel
+  have h_pt : ∀ u : ι → ℝ,
+      dot b u * ((1 / 6 : ℝ) * Φ (fun _ : Fin 3 => u)) * gaussianWeight H u
+        = ∑ p, ∑ q, ∑ r, ∑ l,
+          ((1 / 6 : ℝ) * b l * Tcoord Φ p q r) *
+            (u l * u p * u q * u r * gaussianWeight H u) := by
+    intro u
+    rw [T_apply_diag_eq_sum Φ u]
+    unfold dot
+    simp only [Finset.sum_mul, Finset.mul_sum]
+    refine Finset.sum_congr rfl ?_; intro p _
+    refine Finset.sum_congr rfl ?_; intro q _
+    refine Finset.sum_congr rfl ?_; intro r _
+    refine Finset.sum_congr rfl ?_; intro l _
+    ring
+  rw [show (fun u : ι → ℝ =>
+          dot b u * ((1 / 6 : ℝ) * Φ (fun _ : Fin 3 => u)) *
+            gaussianWeight H u) =
+        fun u => ∑ p, ∑ q, ∑ r, ∑ l,
+          ((1 / 6 : ℝ) * b l * Tcoord Φ p q r) *
+            (u l * u p * u q * u r * gaussianWeight H u)
+      from funext h_pt]
+  refine integrable_finset_sum _ (fun p _ => ?_)
+  refine integrable_finset_sum _ (fun q _ => ?_)
+  refine integrable_finset_sum _ (fun r _ => ?_)
+  refine integrable_finset_sum _ (fun l _ => ?_)
+  exact (hGauss.int_4moment l p q r).const_mul _
+
+/-- **`crossEvenKernelCentered · gW` integrability**: difference of two
+integrable functions. -/
+private lemma integrable_crossEvenKernelCentered_mul_gaussianWeight
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    Integrable (fun u : ι → ℝ =>
+      crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u) := by
+  set c : ℝ := (1 / 2 : ℝ) *
+      dot (Hinv b) (tensorContractMatrix Φ Hinv) with hc_def
+  have h1 := integrable_crossEvenKernel_mul_gaussianWeight (Hinv := Hinv) b Φ hGauss
+  have h2 : Integrable (fun u : ι → ℝ => c * gaussianWeight H u) :=
+    hGauss.toLaplaceCovHypotheses.int_gW.const_mul c
+  have h_diff : Integrable (fun u : ι → ℝ =>
+      crossEvenKernel b Φ u * gaussianWeight H u - c * gaussianWeight H u) :=
+    h1.sub h2
+  apply h_diff.congr
+  filter_upwards with u
+  unfold crossEvenKernelCentered
+  rw [hc_def]; ring
+
 /-- **Polynomial bound on `crossEvenKernel`**: `|(b·u)·(1/6)Φ(u,u,u)|
 ≤ C · ‖u‖^4` where `C = (1/6) · (∑|b_i|) · ‖Φ‖`. Used downstream for the
 local + tail integrability arguments in the even-cross transport. -/
