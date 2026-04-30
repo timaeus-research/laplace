@@ -12456,20 +12456,23 @@ private lemma oddCross_split
   rw [mul_sub, mul_add, h_zero, mul_zero, h_cubic_id]
   ring
 
-/-- **Pointwise local bound for the odd-block symmetrized integrand**
-(mirror of `J3_local_pointwise_le`).
+/-- The pointwise constant from `abs_crossOddKernel_le`, exposed as a
+noncomputable definition so it can be referenced by name in downstream
+proofs. -/
+private noncomputable def crossOddPolyConst
+    (A Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ) [Nonempty ι] : ℝ :=
+  Classical.choose (abs_crossOddKernel_le A Hinv b)
 
-For `‖u‖ ≤ δ·√t` with `δ` chosen as in `abs_J3_bracket_local_le`,
-\[
-  \big|\text{crossOdd}(u)\cdot ((Corr_t(u)) - (Corr_t(-u)))\cdot gW(u)\big|
-    \le \frac{C_K \cdot D}{t\sqrt t}\cdot
-        (\|u\|^6 + \|u\|^8 + \|u\|^{10} + \|u\|^{12})\cdot
-        e^{-(c/4)\|u\|^2}.
-\]
+private lemma crossOddPolyConst_nn
+    (A Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ) [Nonempty ι] :
+    0 ≤ crossOddPolyConst A Hinv b :=
+  (Classical.choose_spec (abs_crossOddKernel_le A Hinv b)).1
 
-Where `Corr_t(u) := exp(-s_t(u)) - 1 + expPotCubic(u)`, `C_K` is the
-crossOddKernel polynomial constant, and `D = Q + 2·jet·local + local^3`
-combines the J3 quintic remainder constants. -/
+private lemma abs_crossOddKernel_le_const
+    (A Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ) [Nonempty ι] (u : ι → ℝ) :
+    |crossOddKernel A Hinv b u| ≤ crossOddPolyConst A Hinv b * (‖u‖ + ‖u‖ ^ 3) :=
+  (Classical.choose_spec (abs_crossOddKernel_le A Hinv b)).2 u
+
 private lemma abs_crossOdd_J3_diff_local_le
     (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
@@ -12481,18 +12484,22 @@ private lemma abs_crossOdd_J3_diff_local_le
     (hδ_const : hV.local_const * δ ≤ hV.coercive_const / 4)
     {t : ℝ} (ht : 0 < t)
     (u : ι → ℝ) (hu : ‖u‖ ≤ δ * Real.sqrt t) :
-    ∃ K_loc : ℝ, 0 ≤ K_loc ∧
-      |crossOddKernel A Hinv b u *
-          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
-              + expPotCubic V H hV.toPotentialTensorApprox t u)
-            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
-                + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
-          gaussianWeight H u|
-        ≤ K_loc / (t * Real.sqrt t) *
-            (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
-            Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+    |crossOddKernel A Hinv b u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+        gaussianWeight H u|
+      ≤ crossOddPolyConst A Hinv b *
+          (hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3) /
+          (t * Real.sqrt t) *
+          (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
   classical
-  obtain ⟨C_K, hC_K_nn, hF_bound⟩ := abs_crossOddKernel_le (Hinv := Hinv) A b
+  set C_K : ℝ := crossOddPolyConst A Hinv b
+  have hC_K_nn : 0 ≤ C_K := crossOddPolyConst_nn A Hinv b
+  have hF_bound : ∀ u : ι → ℝ, |crossOddKernel A Hinv b u| ≤ C_K * (‖u‖ + ‖u‖ ^ 3) :=
+    abs_crossOddKernel_le_const A Hinv b
   set D : ℝ := hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3
     with hD_def
   have hD_nn : 0 ≤ D := by
@@ -12504,7 +12511,6 @@ private lemma abs_crossOdd_J3_diff_local_le
       mul_nonneg (mul_nonneg (by norm_num) hjet_nn) hlocal_nn
     have h3 : 0 ≤ hV.local_const ^ 3 := pow_nonneg hlocal_nn 3
     linarith
-  refine ⟨C_K * D, mul_nonneg hC_K_nn hD_nn, ?_⟩
   have hCs_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
   have hjet_C_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
   have hQ_nn : 0 ≤ hV.Q_const := hV.Q_const_nn
@@ -12780,25 +12786,27 @@ private lemma abs_crossOdd_J3_diff_tail_le
     (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
     {t : ℝ} (ht : 0 < t)
     (u : ι → ℝ) (hu : δ * Real.sqrt t < ‖u‖) :
-    ∃ K_tail : ℝ, 0 ≤ K_tail ∧
-      |crossOddKernel A Hinv b u *
-          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
-              + expPotCubic V H hV t u)
-            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
-                + expPotCubic V H hV t (-u))) *
-          gaussianWeight H u|
-        ≤ K_tail / (t * Real.sqrt t) *
-            (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
-            Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
+    |crossOddKernel A Hinv b u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV t (-u))) *
+        gaussianWeight H u|
+      ≤ crossOddPolyConst A Hinv b * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) /
+          (t * Real.sqrt t) *
+          (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
   classical
-  obtain ⟨C_K, hC_K_nn, hF_bound⟩ := abs_crossOddKernel_le (Hinv := Hinv) A b
+  set C_K : ℝ := crossOddPolyConst A Hinv b
+  have hC_K_nn : 0 ≤ C_K := crossOddPolyConst_nn A Hinv b
+  have hF_bound : ∀ u : ι → ℝ, |crossOddKernel A Hinv b u| ≤ C_K * (‖u‖ + ‖u‖ ^ 3) :=
+    abs_crossOddKernel_le_const A Hinv b
   set K_tail : ℝ := C_K * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) with hK_tail_def
   have hT_nn : 0 ≤ ‖hV.T‖ := norm_nonneg _
   have hδ_sq_pos : 0 < δ ^ 2 := by positivity
   have hδ_cube_pos : 0 < δ ^ 3 := by positivity
   have hK_tail_nn : 0 ≤ K_tail := by
     rw [hK_tail_def]; positivity
-  refine ⟨K_tail, hK_tail_nn, ?_⟩
   have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
   have h_sqrt_t_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
   have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
