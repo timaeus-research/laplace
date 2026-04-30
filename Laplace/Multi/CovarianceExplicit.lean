@@ -11774,6 +11774,124 @@ private lemma integrable_crossEvenKernelCentered_mul_gaussianWeight_mul_cV
   unfold crossEvenKernelCentered
   rw [hcF_def]; ring
 
+/-- **Even-block transport for Lemma A**: the cross-linear cubic Gaussian
+identity `gaussian_cubic_linear` is transported across the perturbation
+with `O(K/t)` error.
+
+Specifically, for `cF := (1/2) dot (Σ b) (Φ : Σ)` (the even-block leading
+constant in Lemma A's cross_coeff),
+\[
+  \left|\int (b\cdot u)\cdot \tfrac{1}{6}\Phi(u,u,u)\cdot gW(u)\cdot e^{-s_t(u)}\,du
+        - c_F \cdot D_t\right| \le \frac{K}{t}.
+\]
+
+Combines:
+- `integral_even_centered_eq_corrected_bracket` applied to
+  `crossEvenKernelCentered = crossEvenKernel - cF`.
+- `abs_integral_corrected_bracket_poly4_le` instantiated on
+  `crossEvenKernelCentered` (uses its polynomial bound and integrability
+  witnesses).
+- Algebraic decomposition `crossEvenKernel = crossEvenKernelCentered + cF`
+  to relate the original integral to the corrected-bracket form. -/
+private lemma rescaledIntegral_evenCross_asymptotic
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    (hΦ_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      Φ (fun i => v (σ i)) = Φ v)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |(∫ u : ι → ℝ, crossEvenKernel b Φ u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        - (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv) *
+            rescaledPartition V t|
+        ≤ K / t := by
+  classical
+  obtain ⟨C_K, hC_K_nn, hF_bound⟩ := abs_crossEvenKernelCentered_le Hinv b Φ
+  -- Apply the generic poly-4 corrected-bracket bound to the centered kernel.
+  have h_int_F_gW : Integrable (fun u : ι → ℝ =>
+      crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u) :=
+    integrable_crossEvenKernelCentered_mul_gaussianWeight (Hinv := Hinv) b Φ
+      hGauss
+  have h_int_F_cV : ∀ {t : ℝ}, 0 < t →
+      Integrable (fun u : ι → ℝ =>
+        crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u *
+          hV.cV ((Real.sqrt t)⁻¹ • u)) := fun ht =>
+    integrable_crossEvenKernelCentered_mul_gaussianWeight_mul_cV V H Hinv b Φ
+      hV ht
+  have h_int_F_exp : ∀ {t : ℝ}, 0 < t →
+      Integrable (fun u : ι → ℝ =>
+        crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := fun ht =>
+    integrable_crossEvenKernelCentered_mul_rescaled_weight V H Hinv b Φ
+      hV.toPotentialApprox.V_continuous
+      hV.toPotentialApprox.coercive_const_pos
+      hV.toPotentialApprox.coercive_bound ht
+  obtain ⟨K, T₀, hT₀, h_K_bound⟩ :=
+    abs_integral_corrected_bracket_poly4_le V H hV
+      (fun u => crossEvenKernelCentered Hinv b Φ u) hC_K_nn hF_bound
+      h_int_F_gW @h_int_F_cV @h_int_F_exp
+  refine ⟨K, T₀, hT₀, ?_⟩
+  intro t ht
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hT₀ ht)
+  set cF : ℝ := (1 / 2 : ℝ) *
+      dot (Hinv b) (tensorContractMatrix Φ Hinv) with hcF_def
+  -- Apply the transformation lemma using parity and centering.
+  have h_F_centered : ∫ u : ι → ℝ,
+      crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u = 0 :=
+    integral_crossEvenKernelCentered_mul_gaussianWeight_eq_zero (Hinv := Hinv)
+      b Φ hΦ_symm hGauss
+  have h_transform :=
+    integral_even_centered_eq_corrected_bracket V H hV
+      (fun u => crossEvenKernelCentered Hinv b Φ u)
+      (fun u => crossEvenKernelCentered_even Hinv b Φ u)
+      h_F_centered ht_pos h_int_F_gW (h_int_F_cV ht_pos) (h_int_F_exp ht_pos)
+  -- Decomposition: crossEvenKernel = crossEvenKernelCentered + cF.
+  have h_pt : ∀ u : ι → ℝ,
+      crossEvenKernel b Φ u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+      = crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+        + cF * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) := by
+    intro u
+    unfold crossEvenKernelCentered
+    rw [hcF_def]; ring
+  have h_int_const_gW_exp : Integrable (fun u : ι → ℝ =>
+      cF * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    (integrable_rescaled_weight V hV.toPotentialApprox.V_continuous H
+      hV.toPotentialApprox.coercive_const_pos
+      hV.toPotentialApprox.coercive_bound ht_pos).const_mul cF
+  have h_eq_lhs : ∫ u : ι → ℝ,
+        crossEvenKernel b Φ u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+      = (∫ u : ι → ℝ, crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + cF * rescaledPartition V t := by
+    rw [show (fun u : ι → ℝ => crossEvenKernel b Φ u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        = fun u => crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            + cF * (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) from
+      funext h_pt]
+    rw [MeasureTheory.integral_add (h_int_F_exp ht_pos) h_int_const_gW_exp,
+        MeasureTheory.integral_const_mul,
+        rescaledPartition_eq_gaussian_form V H t]
+  have h_main_eq : (∫ u : ι → ℝ,
+          crossEvenKernel b Φ u * gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        - cF * rescaledPartition V t
+      = ∫ u : ι → ℝ, crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1 +
+            t * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+    rw [h_eq_lhs, h_transform]; ring
+  rw [h_main_eq]
+  exact h_K_bound t ht
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
