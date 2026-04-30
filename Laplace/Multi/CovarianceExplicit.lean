@@ -11514,8 +11514,45 @@ private lemma bulkErrA_gaussian_symm
   rw [h_dot_neg]
   ring
 
-/-- **`crossEvenKernel · gW` integrability**: from coord expansion +
-4-moment integrability. -/
+/-- **Local pointwise bound on the perturbative bulk integrand** (per GPT
+alt-path: `gpt_responses/strategy_stage5_alt_path.md`).
+
+For `‖u‖ ≤ δ·√t` (the local Taylor region),
+`|B_t(u) · gW(u) · (exp(-s_t(u)) - 1)| ≤ K/t · ‖u‖^8 · exp(-(c/4)·‖u‖²)`
+where `K = ‖b‖_1 · jet · Cs` and `c = hV.coercive_const`.
+
+The rate combines:
+- `|B_t(u)| ≤ jet · ‖b‖_1 · ‖u‖^5 / √t` from `abs_expNumObsRem_local_le`,
+- `|gW · (exp(-s_t) - 1)| ≤ Cs · ‖u‖^3 / √t · exp(-(c/4)·‖u‖²)` from
+  `abs_gaussianWeight_mul_exp_sub_one_le_local`. -/
+private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_local_le
+    (V φ : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    (hδ_le_R : δ ≤ hV.local_radius)
+    (hδ_le_jet_φ : δ ≤ hφ.jet_radius)
+    (hδ_decay : hV.local_const * δ ≤ hV.coercive_const / 4)
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ δ * Real.sqrt t) :
+    |bulkErrA φ b hφ t u * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
+      ≤ ((∑ i, |b i|) * hφ.jet_const * hV.local_const) / t * ‖u‖ ^ 8 *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+  -- Recipe (per `gpt_responses/strategy_stage5_alt_path.md`):
+  -- 1. `|B_t(u)| ≤ jet · ‖b‖_1 · ‖u‖^5 / √t` from `abs_expNumObsRem_local_le`.
+  -- 2. `|gW · (exp(-s_t) - 1)| ≤ Cs · ‖u‖^3 / √t · exp(-(c/4)·‖u‖²)` from
+  --    `abs_gaussianWeight_mul_exp_sub_one_le_local`.
+  -- 3. Multiply: `(jet·‖b‖_1·Cs/t) · ‖u‖^8 · exp(-(c/4)·‖u‖²)` (uses √t·√t = t).
+  --
+  -- The algebra to combine `1/√t · 1/√t = 1/t` requires `Real.mul_self_sqrt`
+  -- substitution combined with `field_simp + ring`. Initial attempt hit
+  -- residual `√(√t^2)` issues from `field_simp` normalization; needs more
+  -- careful handling of the square-root identities.
+  sorry
 private lemma integrable_crossEvenKernel_mul_gaussianWeight
     {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
     (b : ι → ℝ)
