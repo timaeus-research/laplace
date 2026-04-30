@@ -163,6 +163,35 @@ structure ObservableTensorApprox
     |φ w - (dot a w + (1 / 2 : ℝ) * quadForm A w
             + (1 / 6 : ℝ) * Φ (fun _ => w))| ≤ jet_const * ‖w‖ ^ 4
 
+/-- **Quintic-remainder strengthening for observables**.
+
+Adds a sharper bound on the *odd* part of `φ`'s Taylor remainder, needed
+specifically for Lemma A's bulk-block bound (`abs_integral_bulkErrA_le`).
+Without this stronger control, Lemma A is genuinely false: one can
+construct a φ satisfying `ObservableTensorApprox` (with a = 0, A = 0,
+Φ = 0) for which `|φ(w)| ≤ ‖w‖^4` but with non-trivial odd quartic
+remainder, giving a Θ(t⁻¹/²) bulk contribution rather than O(t⁻¹). See
+`gpt_responses/strategy_stage5_bulk_O1t.md` for the counterexample.
+
+The bound `|φ w - φ(-w) - 2·a·w - (1/3)·Φ(w,w,w)| ≤ Q_const · ‖w‖^5` says
+the odd part of `φ`'s Taylor expansion is captured by `a·w + (1/6)·Φ(w³)`
+modulo a quintic remainder. Holds when `φ` is `C^5` near 0 (the explicit
+Taylor coefficient at order 5 gives the bound). Independent from
+`Φ_jet_bound` (quartic bound) since the odd part has its own structure.
+
+Mirrors the analogous V-side `PotentialQuinticApprox` from `CovarianceSharp.lean`. -/
+structure ObservableQuinticApprox
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    extends ObservableTensorApprox φ a where
+  /-- Constant for the odd-quintic remainder. -/
+  Q_const : ℝ
+  Q_const_nn : 0 ≤ Q_const
+  /-- Odd-part quintic remainder: on `‖w‖ ≤ jet_radius`,
+  `|φ w - φ(-w) - 2·dot a w - (1/3)·Φ(w,w,w)| ≤ Q_const · ‖w‖^5`. -/
+  φ_odd_quintic_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
+    |φ w - φ (-w) - 2 * dot a w - (1 / 3 : ℝ) * Φ (fun _ => w)|
+      ≤ Q_const * ‖w‖ ^ 5
+
 end TensorJetStructures
 
 section TensorContractions
@@ -15926,20 +15955,23 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
     (b : ι → ℝ)
     [Nonempty ι]
     (hV : PotentialQuinticApprox V H)
-    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    (hφ : ObservableQuinticApprox φ (0 : ι → ℝ))
     (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |t * Real.sqrt t *
           (∫ u : ι → ℝ, dot b u *
               expCovPhiConn V φ H Hinv (0 : ι → ℝ)
-                hV.toPotentialTensorApprox hφ t u *
+                hV.toPotentialTensorApprox hφ.toObservableTensorApprox t u *
               gaussianWeight H u *
               Real.exp (-(rescaledPerturbation V H t u)))
-        - ((1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix hφ.Φ Hinv)
+        - ((1 / 2 : ℝ) * dot (Hinv b)
+              (tensorContractMatrix hφ.toObservableTensorApprox.Φ Hinv)
           - (1 / 2 : ℝ) * dot b
-              (Hinv (hφ.A (Hinv (tensorContractMatrix hV.T Hinv))))
+              (Hinv (hφ.toObservableTensorApprox.A
+                (Hinv (tensorContractMatrix hV.T Hinv))))
           - (1 / 2 : ℝ) * dot (Hinv b)
-              (tensorContractMatrix hV.T (Hinv.comp (hφ.A.comp Hinv))))
+              (tensorContractMatrix hV.T
+                (Hinv.comp (hφ.toObservableTensorApprox.A.comp Hinv))))
           * rescaledPartition V t|
         ≤ K / t := by
   -- 4-step plan per `gpt_responses/strategy_stage5_lemmas_attack.md`:
@@ -16800,14 +16832,14 @@ private theorem rescaledNumerator_centered_pair_explicit
     (a b : ι → ℝ)
     [Nonempty ι]
     (hV : PotentialQuinticApprox V H)
-    (hφ : ObservableTensorApprox φ a)
+    (hφ : ObservableQuinticApprox φ a)
     (hψ : ObservableTensorApprox ψ b)
     (h_phi_grad_zero : a = 0)
     (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |t ^ 2 * rescaledNumerator V t (fun w => φ w * ψ w)
           - cov2Coefficient_full V φ ψ H Hinv a b
-              hV.toPotentialTensorApprox hφ hψ
+              hV.toPotentialTensorApprox hφ.toObservableTensorApprox hψ
             * rescaledPartition V t|
         ≤ K / t := by
   -- Per `gpt_responses/strategy_stage5_decomposition.md`, decompose:
@@ -16818,8 +16850,8 @@ private theorem rescaledNumerator_centered_pair_explicit
   --   - t² · I_rr - c_QQ · D  via lemma B (rr asymptotic).
   -- The disconnected μ_φ μ_ψ piece in cov2_full cancels against the
   -- μ_φ μ_ψ · D contribution of `μ_φ · μ_ψ · D` once Stage 4 is applied.
-  set μ_φ : ℝ := expNumeratorCoeff V φ H Hinv a hV.toPotentialTensorApprox hφ
-    with hμφ_def
+  set μ_φ : ℝ := expNumeratorCoeff V φ H Hinv a hV.toPotentialTensorApprox
+    hφ.toObservableTensorApprox with hμφ_def
   set μ_ψ : ℝ := expNumeratorCoeff V ψ H Hinv b hV.toPotentialTensorApprox hψ
     with hμψ_def
   set c_QQ : ℝ := (1 / 2 : ℝ) *
@@ -16834,7 +16866,7 @@ private theorem rescaledNumerator_centered_pair_explicit
     with hc_cross_def
   -- cov2Coefficient_full = c_QQ + c_cross + μ_φ μ_ψ.
   have h_full_eq : cov2Coefficient_full V φ ψ H Hinv a b
-        hV.toPotentialTensorApprox hφ hψ
+        hV.toPotentialTensorApprox hφ.toObservableTensorApprox hψ
       = c_QQ + c_cross + μ_φ * μ_ψ := by
     simp [cov2Coefficient_full, cov2Coefficient,
           hc_QQ_def, hc_cross_def, hμφ_def, hμψ_def]
@@ -16849,7 +16881,8 @@ private theorem rescaledNumerator_centered_pair_explicit
   obtain ⟨K_A, T_A, hT_A, h_A⟩ :=
     rescaledIntegral_cross_linear_connected_asymptotic V φ H Hinv b hV hφ hGauss
   obtain ⟨K_B, T_B, hT_B, h_B⟩ :=
-    rescaledIntegral_rr_connected_asymptotic V φ ψ H Hinv b hV hφ hψ hGauss
+    rescaledIntegral_rr_connected_asymptotic V φ ψ H Hinv b hV
+      hφ.toObservableTensorApprox hψ hGauss
   -- Final K and T₀.
   set K : ℝ := |μ_φ| * K_ψN + K_A + K_B with hK_def
   refine ⟨K,
@@ -16864,17 +16897,20 @@ private theorem rescaledNumerator_centered_pair_explicit
   have ht1 : 1 ≤ t := le_trans hT_ψN ht_ψN
   -- Apply the decomposition.
   have h_decomp := rescaledNumerator_pair_decompose_centered_a_zero V φ ψ H Hinv b
-    hV.toPotentialTensorApprox hφ hψ hGauss.toLaplaceCovHypotheses ht1
+    hV.toPotentialTensorApprox hφ.toObservableTensorApprox hψ
+    hGauss.toLaplaceCovHypotheses ht1
   -- Substitute and rewrite the goal.
   rw [h_decomp, h_full_eq]
   set I_A : ℝ := t * Real.sqrt t *
         (∫ u : ι → ℝ, dot b u *
-            expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV.toPotentialTensorApprox hφ t u *
+            expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV.toPotentialTensorApprox
+              hφ.toObservableTensorApprox t u *
             gaussianWeight H u *
             Real.exp (-(rescaledPerturbation V H t u))) with hI_A_def
   set I_B : ℝ := t ^ 2 *
         (∫ u : ι → ℝ,
-            expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV.toPotentialTensorApprox hφ t u *
+            expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV.toPotentialTensorApprox
+              hφ.toObservableTensorApprox t u *
             expCovPsiRem ψ b t u *
             gaussianWeight H u *
             Real.exp (-(rescaledPerturbation V H t u))) with hI_B_def
@@ -16907,7 +16943,11 @@ private theorem rescaledNumerator_centered_pair_explicit
           gcongr
       _ = |μ_φ| * K_ψN / t := by rw [this]; ring
   have hpiece2 : |I_A - c_cross * rescaledPartition V t| ≤ K_A / t := by
-    rw [hI_A_def, hc_cross_def]; exact h_A t ht_A
+    rw [hI_A_def, hc_cross_def]
+    -- h_A is in terms of hφ_quintic.toObservableTensorApprox; goal uses
+    -- shadowed `hφ`. They're definitionally equal — exact closes the
+    -- goal up to defeq.
+    exact h_A t ht_A
   have hpiece3 : |I_B - c_QQ * rescaledPartition V t| ≤ K_B / t := by
     rw [hI_B_def, hc_QQ_def]; exact h_B t ht_B
   -- Combine via triangle inequality.
@@ -16958,24 +16998,24 @@ theorem gibbsCov_first_order_rate_explicit
     (a b : ι → ℝ)
     [Nonempty ι]
     (hV : PotentialQuinticApprox V H)
-    (hφ : ObservableTensorApprox φ a)
+    (hφ : ObservableQuinticApprox φ a)
     (hψ : ObservableTensorApprox ψ b)
     (h_phi_grad_zero : a = 0)
     (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
     ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       |t ^ 2 * gibbsCov V t φ ψ -
           cov2Coefficient V φ ψ H Hinv a b
-            hV.toPotentialTensorApprox hφ hψ|
+            hV.toPotentialTensorApprox hφ.toObservableTensorApprox hψ|
         ≤ K / t := by
   -- Bookkeeping abbreviations.
-  set μ_φ : ℝ := expNumeratorCoeff V φ H Hinv a hV.toPotentialTensorApprox hφ
-    with hμφ_def
+  set μ_φ : ℝ := expNumeratorCoeff V φ H Hinv a hV.toPotentialTensorApprox
+    hφ.toObservableTensorApprox with hμφ_def
   set μ_ψ : ℝ := expNumeratorCoeff V ψ H Hinv b hV.toPotentialTensorApprox hψ
     with hμψ_def
   set ν   : ℝ := cov2Coefficient V φ ψ H Hinv a b
-      hV.toPotentialTensorApprox hφ hψ with hν_def
+      hV.toPotentialTensorApprox hφ.toObservableTensorApprox hψ with hν_def
   set ν_full : ℝ := cov2Coefficient_full V φ ψ H Hinv a b
-      hV.toPotentialTensorApprox hφ hψ with hνfull_def
+      hV.toPotentialTensorApprox hφ.toObservableTensorApprox hψ with hνfull_def
   have hν_full_eq : ν_full = ν + μ_φ * μ_ψ := by
     simp [hνfull_def, hν_def, hμφ_def, hμψ_def, cov2Coefficient_full]
   -- Pull the centered-pair numerator bound (sorry'd helper).
@@ -16989,7 +17029,8 @@ theorem gibbsCov_first_order_rate_explicit
       hGauss.toLaplaceCovHypotheses
   -- Pull Stage 4 explicit expectation bounds for φ and ψ.
   obtain ⟨K_φ, T_φ, hT_φ, h_φ⟩ :=
-    gibbsExpectation_first_order_rate_explicit V φ H Hinv a hV hφ
+    gibbsExpectation_first_order_rate_explicit V φ H Hinv a hV
+      hφ.toObservableTensorApprox
       hGauss.toLaplaceCov4MomentHypotheses
   obtain ⟨K_ψ, T_ψ, hT_ψ, h_ψ⟩ :=
     gibbsExpectation_first_order_rate_explicit V ψ H Hinv b hV hψ
@@ -17046,13 +17087,17 @@ theorem gibbsCov_first_order_rate_explicit
       unfold rescaledExpectation
       field_simp
     rw [h_centered_eq, abs_div, abs_of_pos hP_pos]
+    -- h_N_t uses hφ_quintic.toObservableTensorApprox; ν_full uses shadowed
+    -- hφ. They're definitionally equal.
+    have h_N_t' : |t ^ 2 * rescaledNumerator V t (fun w => φ w * ψ w)
+          - ν_full * rescaledPartition V t| ≤ K_N / t := h_N_t
     calc |t ^ 2 * rescaledNumerator V t (fun w => φ w * ψ w)
               - ν_full * rescaledPartition V t| / rescaledPartition V t
         ≤ (K_N / t) / rescaledPartition V t :=
-          div_le_div_of_nonneg_right h_N_t hP_pos.le
+          div_le_div_of_nonneg_right h_N_t' hP_pos.le
       _ ≤ (K_N / t) / (gaussianZ H / 2) := by
           apply div_le_div_of_nonneg_left _ (by linarith) hP_ge
-          exact le_trans (abs_nonneg _) h_N_t
+          exact le_trans (abs_nonneg _) h_N_t'
       _ = 2 * K_N / gaussianZ H / t := by field_simp
   -- For piece 2, convert Stage 4 bounds to the `|t · E_t[φ] - μ_φ|` form.
   -- Stage 4 gives: |2t · E - 2 μ_•| ≤ K_•/t, i.e. |t · E - μ_•| ≤ K_•/(2t).
