@@ -11610,6 +11610,281 @@ private lemma abs_bulkErrA_gaussian_symm_local_le
     ring
   linarith [h_step1, h_step2, h_eq_loc.le, h_eq_loc.ge]
 
+/-- **Tail pointwise bound on the Gaussian-symmetric integrand**
+(helper for `bulkErrA_gaussian_asymptotic`).
+
+For `‖u‖ > δ·√t` (with δ = jet_radius_φ),
+`|t·√t · (b·u) · (r(u) - r(-u)) · gW(u)| ≤ K_tail · (1+‖u‖^M) ·
+  exp(-(c/4)·‖u‖²) · exp(-(c·δ²/4)·t)`.
+
+Uses global polynomial bound on `r(±u)` via `abs_expNumObsRem_global_le`,
+tail trick `t·√t ≤ ‖u‖³/δ³`, and exp split using
+`(c/2)‖u‖² = (c/4)‖u‖² + (c/4)‖u‖²` ≥ (c/4)‖u‖² + (c·δ²/4)·t in tail.
+Pattern mirrors `abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le` but with
+`gW` (no exp(-s_t)) factor. -/
+private lemma abs_bulkErrA_gaussian_symm_tail_le
+    (V φ : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    (hφ : ObservableQuinticApprox φ (0 : ι → ℝ)) :
+    ∃ K_tail : ℝ, ∃ M : ℕ, 0 ≤ K_tail ∧ ∀ t : ℝ, 1 ≤ t →
+      ∀ u : ι → ℝ, hφ.toObservableTensorApprox.jet_radius * Real.sqrt t < ‖u‖ →
+        |t * Real.sqrt t * dot b u *
+            (expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+              - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)) *
+            gaussianWeight H u|
+          ≤ K_tail * (1 + ‖u‖ ^ M) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) *
+              Real.exp (-((hV.coercive_const *
+                hφ.toObservableTensorApprox.jet_radius ^ 2 / 4) * t)) := by
+  classical
+  obtain ⟨Kφ, p, hKφ_nn, h_poly_φ⟩ := hφ.toObservableApprox.poly_growth
+  set N : ℕ := max p 3 with hN_def
+  set N₁ : ℝ := (Fintype.card ι : ℝ) with hN1_def
+  have hN1_nn : 0 ≤ N₁ := by rw [hN1_def]; exact_mod_cast Nat.zero_le _
+  set R_const : ℝ :=
+    2 * Kφ + (1/2 : ℝ) * N₁ * ‖hφ.toObservableTensorApprox.A‖
+      + ‖hφ.toObservableTensorApprox.Φ‖ / 6 with hR_const_def
+  have hR_const_nn : 0 ≤ R_const := by rw [hR_const_def]; positivity
+  set bL1 : ℝ := ∑ i, |b i| with hbL1_def
+  have hbL1_nn : 0 ≤ bL1 := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  set δ : ℝ := hφ.toObservableTensorApprox.jet_radius with hδ_def
+  have hδ_pos : 0 < δ := hφ.toObservableTensorApprox.jet_radius_pos
+  have hδ3_pos : 0 < δ ^ 3 := pow_pos hδ_pos 3
+  set K_tail : ℝ := 4 * bL1 * R_const / δ ^ 3 with hK_tail_def
+  have hK_tail_nn : 0 ≤ K_tail := by rw [hK_tail_def]; positivity
+  refine ⟨K_tail, N + 4, hK_tail_nn, ?_⟩
+  intro t ht_one u hu_tail
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht_one
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  set c : ℝ := hV.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.toPotentialApprox.coercive_const_pos
+  have h_t_sqt_nn : 0 ≤ t * Real.sqrt t := by positivity
+  have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+  -- Polynomial bound on |expNumObsRem|.
+  have h_R_global : ∀ v : ι → ℝ,
+      |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t v|
+        ≤ R_const * (1 + ‖v‖ ^ N) := by
+    intro v
+    have h := abs_expNumObsRem_global_le (φ := φ) (a := (0 : ι → ℝ))
+      (hφ := hφ.toObservableTensorApprox) hKφ_nn h_poly_φ ht_one v
+    have h_dot_zero : ∑ i : ι, |((0 : ι → ℝ)) i| = 0 := by simp
+    rw [h_dot_zero, zero_mul, add_zero] at h
+    have h_normN_nn : 0 ≤ ‖v‖ ^ N := pow_nonneg (norm_nonneg _) _
+    have h_p_le_N : p ≤ N := le_max_left _ _
+    have h_3_le_N : 3 ≤ N := le_max_right _ _
+    have h_v_p_le : ‖v‖ ^ p ≤ 1 + ‖v‖ ^ N := by
+      by_cases hv : ‖v‖ ≤ 1
+      · have : ‖v‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
+        linarith
+      · push_neg at hv
+        have h1 : ‖v‖ ^ p ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_p_le_N
+        linarith
+    have h_v_2_le : ‖v‖ ^ 2 ≤ 1 + ‖v‖ ^ N := by
+      by_cases hv : ‖v‖ ≤ 1
+      · have : ‖v‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
+        linarith
+      · push_neg at hv
+        have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
+          pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
+        linarith
+    have h_v_3_le : ‖v‖ ^ 3 ≤ 1 + ‖v‖ ^ N := by
+      by_cases hv : ‖v‖ ≤ 1
+      · have : ‖v‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
+        linarith
+      · push_neg at hv
+        have h1 : ‖v‖ ^ 3 ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_3_le_N
+        linarith
+    calc |expNumObsRem φ 0 hφ.toObservableTensorApprox t v|
+        ≤ Kφ * (1 + ‖v‖ ^ p)
+            + (1 / 2 : ℝ) * ↑(Fintype.card ι) *
+                ‖hφ.toObservableTensorApprox.A‖ * ‖v‖ ^ 2
+            + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * ‖v‖ ^ 3 := h
+      _ ≤ Kφ * (1 + (1 + ‖v‖ ^ N))
+            + (1 / 2 : ℝ) * N₁ * ‖hφ.toObservableTensorApprox.A‖ *
+                (1 + ‖v‖ ^ N)
+            + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * (1 + ‖v‖ ^ N) := by gcongr
+      _ ≤ R_const * (1 + ‖v‖ ^ N) := by
+          rw [hR_const_def]; nlinarith [hKφ_nn, h_normN_nn]
+  -- |dot b u| ≤ bL1·‖u‖.
+  have h_dot : |dot b u| ≤ bL1 * ‖u‖ := by
+    rw [hbL1_def]; exact abs_dot_le_l1_mul_norm b u
+  -- |r(u) - r(-u)| ≤ 2·R·(1+‖u‖^N).
+  have h_diff_le : |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+        - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)|
+      ≤ 2 * (R_const * (1 + ‖u‖ ^ N)) := by
+    have h1 := h_R_global u
+    have h2 := h_R_global (-u)
+    rw [show ‖(-u : ι → ℝ)‖ = ‖u‖ from norm_neg _] at h2
+    calc |expNumObsRem φ 0 hφ.toObservableTensorApprox t u
+          - expNumObsRem φ 0 hφ.toObservableTensorApprox t (-u)|
+        ≤ |expNumObsRem φ 0 hφ.toObservableTensorApprox t u|
+          + |expNumObsRem φ 0 hφ.toObservableTensorApprox t (-u)| := abs_sub _ _
+      _ ≤ R_const * (1 + ‖u‖ ^ N) + R_const * (1 + ‖u‖ ^ N) := by linarith
+      _ = 2 * (R_const * (1 + ‖u‖ ^ N)) := by ring
+  -- gW(u) ≤ exp(-c/2·‖u‖²).
+  have h_gW_le : gaussianWeight H u ≤ Real.exp (-((c / 2) * ‖u‖ ^ 2)) :=
+    gaussianWeight_le_exp_neg_coercive V H hV.toPotentialTensorApprox u
+  -- Tail trick: t·√t·δ³ ≤ ‖u‖³.
+  have h_t_sqt : t * Real.sqrt t * δ ^ 3 ≤ ‖u‖ ^ 3 := by
+    have h_sqt_le : Real.sqrt t < ‖u‖ / δ := by
+      rw [lt_div_iff₀ hδ_pos]; linarith
+    have h_sqrt_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht_pos.le
+    calc t * Real.sqrt t * δ ^ 3
+        = (Real.sqrt t * Real.sqrt t) * Real.sqrt t * δ ^ 3 := by rw [h_sqrt_sq]
+      _ ≤ (‖u‖ / δ) * (‖u‖ / δ) * (‖u‖ / δ) * δ ^ 3 := by
+          have h_div_nn : 0 ≤ ‖u‖ / δ := div_nonneg h_norm_nn hδ_pos.le
+          have h1 : Real.sqrt t * Real.sqrt t ≤ (‖u‖ / δ) * (‖u‖ / δ) :=
+            mul_le_mul h_sqt_le.le h_sqt_le.le hsqrt_pos.le h_div_nn
+          have h2 : Real.sqrt t * Real.sqrt t * Real.sqrt t
+              ≤ (‖u‖ / δ) * (‖u‖ / δ) * (‖u‖ / δ) :=
+            mul_le_mul h1 h_sqt_le.le hsqrt_pos.le (by positivity)
+          exact mul_le_mul_of_nonneg_right h2 (by positivity)
+      _ = ‖u‖ ^ 3 := by field_simp
+  -- exp(-c/2·‖u‖²) ≤ exp(-c/4·‖u‖²)·exp(-cδ²/4·t) on tail.
+  have h_norm_sq_lt : δ ^ 2 * t < ‖u‖ ^ 2 := by
+    have h1 : (δ * Real.sqrt t) ^ 2 < ‖u‖ ^ 2 := by
+      have hRsqrt_pos : 0 < δ * Real.sqrt t := mul_pos hδ_pos hsqrt_pos
+      exact pow_lt_pow_left₀ hu_tail hRsqrt_pos.le (by norm_num)
+    have h_eq : (δ * Real.sqrt t) ^ 2 = δ ^ 2 * t := by
+      rw [mul_pow, Real.sq_sqrt ht_pos.le]
+    rw [h_eq] at h1; exact h1
+  have h_exp_split :
+      Real.exp (-((c / 2) * ‖u‖ ^ 2))
+      ≤ Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t)) := by
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    nlinarith [h_norm_sq_lt, hc_pos]
+  -- Combine: |Sym(u)| ≤ t·√t · |dot b u| · |r(u)-r(-u)| · gW
+  --       ≤ t·√t · bL1·‖u‖ · 2R·(1+‖u‖^N) · gW
+  --       ≤ t·√t · bL1·‖u‖ · 2R·(1+‖u‖^N) · exp(-c/2·‖u‖²)
+  --       ≤ (‖u‖^3/δ³) · bL1·‖u‖ · 2R·(1+‖u‖^N) · exp(-c/4·‖u‖²)·exp(-cδ²/4·t)
+  --       ≤ (4·bL1·R/δ³)·(1+‖u‖^(N+4))·exp(-c/4·‖u‖²)·exp(-cδ²/4·t)
+  have h_abs_eq : |t * Real.sqrt t * dot b u *
+        (expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+          - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)) *
+        gaussianWeight H u|
+      = t * Real.sqrt t * |dot b u| *
+          |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+            - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)| *
+          gaussianWeight H u :=
+    abs_mul4_of_nonneg h_t_sqt_nn h_gW_nn
+  rw [h_abs_eq]
+  -- Step 1: bound |dot| · |r-r| via the factor inequalities.
+  have h_dot_q := mul_le_mul h_dot h_diff_le (abs_nonneg _)
+    (mul_nonneg hbL1_nn h_norm_nn)
+  have h_step1 := mul_le_mul_of_nonneg_left h_dot_q h_t_sqt_nn
+  have h_assoc1 : t * Real.sqrt t * |dot b u| *
+          |expNumObsRem φ 0 hφ.toObservableTensorApprox t u
+            - expNumObsRem φ 0 hφ.toObservableTensorApprox t (-u)|
+        = t * Real.sqrt t * (|dot b u| *
+            |expNumObsRem φ 0 hφ.toObservableTensorApprox t u
+              - expNumObsRem φ 0 hφ.toObservableTensorApprox t (-u)|) := by ring
+  have h_step1' : t * Real.sqrt t * |dot b u| *
+        |expNumObsRem φ 0 hφ.toObservableTensorApprox t u
+          - expNumObsRem φ 0 hφ.toObservableTensorApprox t (-u)|
+      ≤ t * Real.sqrt t * (bL1 * ‖u‖ * (2 * (R_const * (1 + ‖u‖ ^ N)))) := by
+    rw [h_assoc1]; exact h_step1
+  -- Multiply by gW.
+  have h_step2 : t * Real.sqrt t * |dot b u| *
+          |expNumObsRem φ 0 hφ.toObservableTensorApprox t u
+            - expNumObsRem φ 0 hφ.toObservableTensorApprox t (-u)| *
+          gaussianWeight H u
+      ≤ t * Real.sqrt t * (bL1 * ‖u‖ * (2 * (R_const * (1 + ‖u‖ ^ N)))) *
+          gaussianWeight H u :=
+    mul_le_mul_of_nonneg_right h_step1' h_gW_nn
+  -- Replace gW by exp(-c/2·‖u‖²).
+  have h_factor_nn : 0 ≤ t * Real.sqrt t *
+      (bL1 * ‖u‖ * (2 * (R_const * (1 + ‖u‖ ^ N)))) := by positivity
+  have h_step3 : t * Real.sqrt t *
+        (bL1 * ‖u‖ * (2 * (R_const * (1 + ‖u‖ ^ N)))) *
+        gaussianWeight H u
+      ≤ t * Real.sqrt t * (bL1 * ‖u‖ * (2 * (R_const * (1 + ‖u‖ ^ N)))) *
+          Real.exp (-((c / 2) * ‖u‖ ^ 2)) :=
+    mul_le_mul_of_nonneg_left h_gW_le h_factor_nn
+  -- Apply tail trick + exp split. End at 4·bL1·R/δ³ · (1+‖u‖^(N+4)) · exp(...)
+  -- Tail trick: t·√t·‖u‖ ≤ ‖u‖^4/δ³.
+  have h_t_sqt_norm : t * Real.sqrt t * ‖u‖ ≤ ‖u‖ ^ 4 / δ ^ 3 := by
+    rw [le_div_iff₀ hδ3_pos]
+    calc t * Real.sqrt t * ‖u‖ * δ ^ 3
+        = (t * Real.sqrt t * δ ^ 3) * ‖u‖ := by ring
+      _ ≤ ‖u‖ ^ 3 * ‖u‖ := mul_le_mul_of_nonneg_right h_t_sqt h_norm_nn
+      _ = ‖u‖ ^ 4 := by ring
+  have h_pow_combine : ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) ≤ 2 * (1 + ‖u‖ ^ (N + 4)) := by
+    have h_pow4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ (N + 4) := by
+      by_cases hu1 : ‖u‖ ≤ 1
+      · have : ‖u‖ ^ 4 ≤ 1 := pow_le_one₀ (norm_nonneg _) hu1
+        linarith [pow_nonneg (norm_nonneg u) (N + 4)]
+      · push_neg at hu1
+        have h1 : ‖u‖ ^ 4 ≤ ‖u‖ ^ (N + 4) :=
+          pow_le_pow_right₀ hu1.le (by linarith)
+        linarith
+    have h_pow_eq : ‖u‖ ^ 4 * ‖u‖ ^ N = ‖u‖ ^ (N + 4) := by
+      rw [show (N + 4 : ℕ) = 4 + N from by ring, pow_add]
+    calc ‖u‖ ^ 4 * (1 + ‖u‖ ^ N)
+        = ‖u‖ ^ 4 + ‖u‖ ^ 4 * ‖u‖ ^ N := by ring
+      _ = ‖u‖ ^ 4 + ‖u‖ ^ (N + 4) := by rw [h_pow_eq]
+      _ ≤ 2 * (1 + ‖u‖ ^ (N + 4)) := by linarith
+  -- Now combine: t·√t·bL1·‖u‖ · 2R(1+‖u‖^N) ≤ 2·bL1·R · (t·√t·‖u‖)·(1+‖u‖^N)
+  --   ≤ 2·bL1·R · (‖u‖^4/δ³) · (1+‖u‖^N)
+  --   = (2·bL1·R/δ³) · ‖u‖^4·(1+‖u‖^N)
+  --   ≤ (2·bL1·R/δ³) · 2·(1+‖u‖^(N+4)) = K_tail · (1+‖u‖^(N+4)).
+  have h_combine_pol : t * Real.sqrt t *
+        (bL1 * ‖u‖ * (2 * (R_const * (1 + ‖u‖ ^ N))))
+      ≤ K_tail * (1 + ‖u‖ ^ (N + 4)) := by
+    have h_eq1 : t * Real.sqrt t * (bL1 * ‖u‖ * (2 * (R_const * (1 + ‖u‖ ^ N))))
+        = 2 * (bL1 * R_const) * (t * Real.sqrt t * ‖u‖) * (1 + ‖u‖ ^ N) := by ring
+    rw [h_eq1]
+    have h_2bR_nn : 0 ≤ 2 * (bL1 * R_const) := by positivity
+    have h_pow_nn : 0 ≤ 1 + ‖u‖ ^ N := by positivity
+    have h_step_t : (t * Real.sqrt t * ‖u‖) * (1 + ‖u‖ ^ N)
+        ≤ (‖u‖ ^ 4 / δ ^ 3) * (1 + ‖u‖ ^ N) :=
+      mul_le_mul_of_nonneg_right h_t_sqt_norm h_pow_nn
+    have h_step_pow : (‖u‖ ^ 4 / δ ^ 3) * (1 + ‖u‖ ^ N)
+        ≤ 2 / δ ^ 3 * (1 + ‖u‖ ^ (N + 4)) := by
+      have h_inv_pos : 0 < 1 / δ ^ 3 := by positivity
+      calc (‖u‖ ^ 4 / δ ^ 3) * (1 + ‖u‖ ^ N)
+          = (1 / δ ^ 3) * (‖u‖ ^ 4 * (1 + ‖u‖ ^ N)) := by ring
+        _ ≤ (1 / δ ^ 3) * (2 * (1 + ‖u‖ ^ (N + 4))) :=
+            mul_le_mul_of_nonneg_left h_pow_combine h_inv_pos.le
+        _ = 2 / δ ^ 3 * (1 + ‖u‖ ^ (N + 4)) := by ring
+    have h_assoc2 : 2 * (bL1 * R_const) * (t * Real.sqrt t * ‖u‖) * (1 + ‖u‖ ^ N)
+        = 2 * (bL1 * R_const) *
+            ((t * Real.sqrt t * ‖u‖) * (1 + ‖u‖ ^ N)) := by ring
+    rw [h_assoc2]
+    have h_combine := mul_le_mul_of_nonneg_left
+      (le_trans h_step_t h_step_pow) h_2bR_nn
+    have h_K_eq : 2 * (bL1 * R_const) * (2 / δ ^ 3 * (1 + ‖u‖ ^ (N + 4)))
+        = K_tail * (1 + ‖u‖ ^ (N + 4)) := by rw [hK_tail_def]; ring
+    linarith [h_combine, h_K_eq.le, h_K_eq.ge]
+  -- Apply the polynomial bound multiplied by exp(-c/2·‖u‖²).
+  have h_exp_nn : 0 ≤ Real.exp (-((c / 2) * ‖u‖ ^ 2)) := (Real.exp_pos _).le
+  have h_K_pol_nn : 0 ≤ K_tail * (1 + ‖u‖ ^ (N + 4)) :=
+    mul_nonneg hK_tail_nn (by positivity)
+  have h_step4 : t * Real.sqrt t *
+        (bL1 * ‖u‖ * (2 * (R_const * (1 + ‖u‖ ^ N)))) *
+        Real.exp (-((c / 2) * ‖u‖ ^ 2))
+      ≤ K_tail * (1 + ‖u‖ ^ (N + 4)) * Real.exp (-((c / 2) * ‖u‖ ^ 2)) :=
+    mul_le_mul_of_nonneg_right h_combine_pol h_exp_nn
+  -- Apply exp split.
+  have h_step5 : K_tail * (1 + ‖u‖ ^ (N + 4)) * Real.exp (-((c / 2) * ‖u‖ ^ 2))
+      ≤ K_tail * (1 + ‖u‖ ^ (N + 4)) *
+          (Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+            Real.exp (-((c * δ ^ 2 / 4) * t))) :=
+    mul_le_mul_of_nonneg_left h_exp_split h_K_pol_nn
+  have h_assoc_final : K_tail * (1 + ‖u‖ ^ (N + 4)) *
+      (Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+        Real.exp (-((c * δ ^ 2 / 4) * t)))
+      = K_tail * (1 + ‖u‖ ^ (N + 4)) *
+          Real.exp (-((c / 4) * ‖u‖ ^ 2)) *
+          Real.exp (-((c * δ ^ 2 / 4) * t)) := by ring
+  linarith [h_step2, h_step3, h_step4, h_step5,
+    h_assoc_final.le, h_assoc_final.ge]
+
 /-- **Gaussian-only symmetrization for `bulkErrA`** (per GPT consult
 `gpt_responses/strategy_stage5_alt_path.md`).
 
