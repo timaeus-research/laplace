@@ -12128,6 +12128,201 @@ private lemma oddCross_main_gaussian
       funext u; ring]
   exact h
 
+/-- **`crossOddKernel` is continuous**: a polynomial in `u`. -/
+private lemma crossOddKernel_continuous
+    (A Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) :
+    Continuous (fun u : ι → ℝ => crossOddKernel A Hinv b u) := by
+  unfold crossOddKernel
+  have h_dot_cont : Continuous (fun u : ι → ℝ => dot b u) := by
+    unfold dot
+    exact continuous_finset_sum _ (fun i _ =>
+      continuous_const.mul (continuous_apply i))
+  have h_qA_cont : Continuous (fun u : ι → ℝ => quadForm A u) :=
+    continuous_quadForm A
+  exact h_dot_cont.mul
+    ((continuous_const.mul h_qA_cont).sub continuous_const)
+
+/-- **`crossOddKernel · gW` integrability**: dominated by
+`C · (‖u‖ + ‖u‖^3) · gW`. -/
+private lemma integrable_crossOddKernel_mul_gaussianWeight
+    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    {V : (ι → ℝ) → ℝ}
+    (hV : PotentialJetApprox V H) :
+    Integrable (fun u : ι → ℝ =>
+      crossOddKernel A Hinv b u * gaussianWeight H u) := by
+  classical
+  obtain ⟨C, hC_nn, hF_bound⟩ := abs_crossOddKernel_le (Hinv := Hinv) A b
+  have h1 := hV.int_norm_pow_gW 1
+  have h3 := hV.int_norm_pow_gW 3
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      C * (‖u‖ * gaussianWeight H u) +
+      C * (‖u‖ ^ 3 * gaussianWeight H u)) := by
+    have h := (h1.const_mul C).add (h3.const_mul C)
+    apply h.congr; filter_upwards with u
+    simp only [Pi.add_apply, pow_one]
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      crossOddKernel A Hinv b u * gaussianWeight H u) :=
+    (crossOddKernel_continuous A Hinv b).mul (continuous_gaussianWeight H)
+  refine h_dom.mono' h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  rw [Real.norm_eq_abs]
+  have h_F_le := hF_bound u
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  rw [abs_mul, abs_of_pos h_gW_pos]
+  calc |crossOddKernel A Hinv b u| * gaussianWeight H u
+      ≤ (C * (‖u‖ + ‖u‖ ^ 3)) * gaussianWeight H u :=
+        mul_le_mul_of_nonneg_right h_F_le h_gW_pos.le
+    _ = C * (‖u‖ * gaussianWeight H u) +
+        C * (‖u‖ ^ 3 * gaussianWeight H u) := by ring
+
+/-- **`crossOddKernel · gW · exp(-s_t)` integrability**: dominated by
+`C · (‖u‖ + ‖u‖^3) · gW · exp(-s_t)`. -/
+private lemma integrable_crossOddKernel_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ => crossOddKernel A Hinv b u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+  classical
+  obtain ⟨C, hC_nn, hF_bound⟩ := abs_crossOddKernel_le (Hinv := Hinv) A b
+  have h1 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 1 ht_pos
+  have h3 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 3 ht_pos
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      C * (‖u‖ * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) +
+      C * (‖u‖ ^ 3 * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))))) := by
+    have h := (h1.const_mul C).add (h3.const_mul C)
+    apply h.congr; filter_upwards with u
+    simp only [Pi.add_apply, pow_one]
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      crossOddKernel A Hinv b u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    ((crossOddKernel_continuous A Hinv b).mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp (continuous_rescaledPerturbation hV_cont H t).neg)
+  refine h_dom.mono' h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  rw [Real.norm_eq_abs]
+  have h_F_le := hF_bound u
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) :=
+    Real.exp_pos _
+  have h_combined_pos : 0 < gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) :=
+    mul_pos h_gW_pos h_exp_pos
+  calc |crossOddKernel A Hinv b u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      = |crossOddKernel A Hinv b u| *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+        rw [show crossOddKernel A Hinv b u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            = crossOddKernel A Hinv b u *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+        rw [abs_mul, abs_of_pos h_combined_pos]
+    _ ≤ (C * (‖u‖ + ‖u‖ ^ 3)) *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) :=
+        mul_le_mul_of_nonneg_right h_F_le h_combined_pos.le
+    _ = C * (‖u‖ * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) +
+        C * (‖u‖ ^ 3 * (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) := by ring
+
+/-- **`crossOddKernel · gW · expPotCubic` integrability**: dominated by
+`C · (‖u‖^4 + ‖u‖^6) · gW · (1/√t)`, which is integrable. -/
+private lemma integrable_crossOddKernel_mul_gaussianWeight_mul_expPotCubic
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ => crossOddKernel A Hinv b u * gaussianWeight H u *
+        expPotCubic V H hV t u) := by
+  classical
+  -- expPotCubic = (√t)⁻¹ · (1/6) · T(u,u,u). Bound: ≤ (1/(6√t)) · ‖T‖ · ‖u‖^3.
+  -- Combined polynomial bound: |crossOdd · expPotCubic| ≤ C · (‖u‖^4 + ‖u‖^6) / √t.
+  obtain ⟨C, hC_nn, hF_bound⟩ := abs_crossOddKernel_le (Hinv := Hinv) A b
+  have hT_bound : ∀ u : ι → ℝ, |hV.T (fun _ : Fin 3 => u)| ≤ ‖hV.T‖ * ‖u‖ ^ 3 := by
+    intro u
+    have := hV.T.le_opNorm (fun _ : Fin 3 => u)
+    simpa [Fin.prod_univ_three] using this
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hsqrt_inv_nn : 0 ≤ (Real.sqrt t)⁻¹ := le_of_lt (inv_pos.mpr hsqrt_pos)
+  set CT : ℝ := C * ((1 / 6 : ℝ) * ‖hV.T‖ * (Real.sqrt t)⁻¹) with hCT_def
+  have hCT_nn : 0 ≤ CT := by
+    rw [hCT_def]; positivity
+  -- Use int_norm_pow_gW 4 and 6 from PotentialJetApprox.
+  have h4 := hV.int_norm_pow_gW 4
+  have h6 := hV.int_norm_pow_gW 6
+  have h_dom : Integrable (fun u : ι → ℝ =>
+      CT * (‖u‖ ^ 4 * gaussianWeight H u) +
+      CT * (‖u‖ ^ 6 * gaussianWeight H u)) := by
+    have := (h4.const_mul CT).add (h6.const_mul CT)
+    apply this.congr; filter_upwards with u; rfl
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      crossOddKernel A Hinv b u * gaussianWeight H u *
+        expPotCubic V H hV t u) := by
+    unfold expPotCubic
+    have h_diag_cont : Continuous (fun u : ι → ℝ => (fun _ : Fin 3 => u)) := by
+      apply continuous_pi; intro _; exact continuous_id
+    have h_T_cont : Continuous (fun u : ι → ℝ => hV.T (fun _ : Fin 3 => u)) :=
+      hV.T.cont.comp h_diag_cont
+    exact ((crossOddKernel_continuous A Hinv b).mul (continuous_gaussianWeight H)).mul
+      (continuous_const.mul (continuous_const.mul h_T_cont))
+  refine h_dom.mono' h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  rw [Real.norm_eq_abs]
+  have h_F_le := hF_bound u
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  have h_T_le := hT_bound u
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_norm3_nn : 0 ≤ ‖u‖ ^ 3 := pow_nonneg h_norm_nn _
+  -- |crossOdd · gW · expPotCubic| ≤ C·(‖u‖+‖u‖^3) · gW · (1/√t)·(1/6)·‖T‖·‖u‖^3
+  --                            = (C·(1/6)·‖T‖/√t) · (‖u‖^4 + ‖u‖^6) · gW
+  have h_step1 : |crossOddKernel A Hinv b u * gaussianWeight H u *
+      expPotCubic V H hV t u|
+      = |crossOddKernel A Hinv b u| * gaussianWeight H u *
+        |expPotCubic V H hV t u| := by
+    rw [show crossOddKernel A Hinv b u * gaussianWeight H u *
+          expPotCubic V H hV t u
+        = (crossOddKernel A Hinv b u * gaussianWeight H u) *
+          expPotCubic V H hV t u from by ring]
+    rw [abs_mul, abs_mul, abs_of_pos h_gW_pos]
+  have h_step2 : |expPotCubic V H hV t u| ≤
+      (1 / 6 : ℝ) * ‖hV.T‖ * (Real.sqrt t)⁻¹ * ‖u‖ ^ 3 := by
+    unfold expPotCubic
+    rw [abs_mul, abs_of_nonneg hsqrt_inv_nn, abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/6)]
+    have h_pos : 0 ≤ (Real.sqrt t)⁻¹ * ((1 / 6 : ℝ)) := by positivity
+    calc (Real.sqrt t)⁻¹ * ((1 / 6 : ℝ) * |hV.T (fun _ => u)|)
+        ≤ (Real.sqrt t)⁻¹ * ((1 / 6 : ℝ) * (‖hV.T‖ * ‖u‖ ^ 3)) := by
+          apply mul_le_mul_of_nonneg_left _ hsqrt_inv_nn
+          exact mul_le_mul_of_nonneg_left h_T_le (by norm_num)
+      _ = (1 / 6 : ℝ) * ‖hV.T‖ * (Real.sqrt t)⁻¹ * ‖u‖ ^ 3 := by ring
+  rw [h_step1]
+  calc |crossOddKernel A Hinv b u| * gaussianWeight H u *
+        |expPotCubic V H hV t u|
+      ≤ (C * (‖u‖ + ‖u‖ ^ 3)) * gaussianWeight H u *
+        ((1 / 6 : ℝ) * ‖hV.T‖ * (Real.sqrt t)⁻¹ * ‖u‖ ^ 3) := by
+        gcongr
+    _ = CT * (‖u‖ ^ 4 * gaussianWeight H u) +
+        CT * (‖u‖ ^ 6 * gaussianWeight H u) := by
+        rw [hCT_def]
+        have h_u4 : ‖u‖ * ‖u‖ ^ 3 = ‖u‖ ^ 4 := by ring
+        have h_u6 : ‖u‖ ^ 3 * ‖u‖ ^ 3 = ‖u‖ ^ 6 := by ring
+        ring
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
