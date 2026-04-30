@@ -10759,6 +10759,68 @@ private lemma bulkErrA_symmetric
   unfold bulkErrASymmIntegrand
   ring
 
+/-- **Polynomial bound on `crossEvenKernel`**: `|(b·u)·(1/6)Φ(u,u,u)|
+≤ C · ‖u‖^4` where `C = (1/6) · (∑|b_i|) · ‖Φ‖`. Used downstream for the
+local + tail integrability arguments in the even-cross transport. -/
+private lemma abs_crossEvenKernel_le
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ι → ℝ,
+      |crossEvenKernel b Φ u| ≤ C * ‖u‖ ^ 4 := by
+  classical
+  set bL : ℝ := ∑ i : ι, |b i| with hbL_def
+  have hbL_nn : 0 ≤ bL := by
+    rw [hbL_def]; exact Finset.sum_nonneg (fun i _ => abs_nonneg _)
+  have hΦ_nn : 0 ≤ ‖Φ‖ := norm_nonneg _
+  set C : ℝ := (1 / 6 : ℝ) * (bL * ‖Φ‖) with hC_def
+  have hC_nn : 0 ≤ C := by rw [hC_def]; positivity
+  refine ⟨C, hC_nn, fun u => ?_⟩
+  unfold crossEvenKernel
+  rw [show dot b u * ((1 / 6 : ℝ) * Φ (fun _ => u))
+        = (1 / 6 : ℝ) * (dot b u * Φ (fun _ => u)) from by ring]
+  rw [show |(1 / 6 : ℝ) * (dot b u * Φ (fun _ => u))|
+        = (1 / 6 : ℝ) * |dot b u * Φ (fun _ => u)| from by
+      rw [abs_mul, abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 1 / 6)]]
+  rw [abs_mul]
+  -- Bound |b·u| ≤ bL · ‖u‖.
+  have h_dot : |dot b u| ≤ bL * ‖u‖ := by
+    unfold dot
+    have h_each : ∀ i, |b i * u i| ≤ |b i| * ‖u‖ := fun i => by
+      rw [abs_mul]
+      exact mul_le_mul_of_nonneg_left (norm_le_pi_norm u i) (abs_nonneg _)
+    have h_sum_abs : |∑ i, b i * u i| ≤ ∑ i, |b i * u i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_each : ∑ i, |b i * u i| ≤ ∑ i, |b i| * ‖u‖ :=
+      Finset.sum_le_sum (fun i _ => h_each i)
+    have h_factor : ∑ i, |b i| * ‖u‖ = bL * ‖u‖ := by
+      rw [hbL_def, ← Finset.sum_mul]
+    linarith
+  -- Bound |Φ(u,u,u)| ≤ ‖Φ‖ · ‖u‖^3.
+  have h_Φ : |Φ (fun _ : Fin 3 => u)| ≤ ‖Φ‖ * ‖u‖ ^ 3 := by
+    have h := Φ.le_opNorm (fun _ : Fin 3 => u)
+    simp only [Fin.prod_univ_three] at h
+    have h_abs : |Φ (fun _ : Fin 3 => u)| = ‖Φ (fun _ : Fin 3 => u)‖ :=
+      (Real.norm_eq_abs _).symm
+    rw [h_abs]
+    have h_pow : ‖u‖ * ‖u‖ * ‖u‖ = ‖u‖ ^ 3 := by ring
+    linarith
+  have h_dot_nn : 0 ≤ |dot b u| := abs_nonneg _
+  have h_Φ_nn : 0 ≤ |Φ (fun _ : Fin 3 => u)| := abs_nonneg _
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_prod : |dot b u| * |Φ (fun _ : Fin 3 => u)|
+      ≤ (bL * ‖u‖) * (‖Φ‖ * ‖u‖ ^ 3) := by
+    have h1 : |dot b u| * |Φ (fun _ : Fin 3 => u)|
+        ≤ (bL * ‖u‖) * |Φ (fun _ : Fin 3 => u)| :=
+      mul_le_mul_of_nonneg_right h_dot h_Φ_nn
+    have h2 : (bL * ‖u‖) * |Φ (fun _ : Fin 3 => u)|
+        ≤ (bL * ‖u‖) * (‖Φ‖ * ‖u‖ ^ 3) :=
+      mul_le_mul_of_nonneg_left h_Φ (by positivity)
+    linarith
+  calc (1 / 6 : ℝ) * (|dot b u| * |Φ (fun _ : Fin 3 => u)|)
+      ≤ (1 / 6 : ℝ) * ((bL * ‖u‖) * (‖Φ‖ * ‖u‖ ^ 3)) :=
+        mul_le_mul_of_nonneg_left h_prod (by norm_num)
+    _ = C * ‖u‖ ^ 4 := by rw [hC_def]; ring
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
