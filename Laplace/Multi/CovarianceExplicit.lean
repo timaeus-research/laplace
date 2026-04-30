@@ -10527,6 +10527,117 @@ private lemma integral_crossOddKernel_mul_gaussianWeight_eq_zero
   intro u
   exact crossOddKernel_odd A Hinv b u
 
+/-- **`crossEvenKernel` Gaussian moment**:
+`∫ crossEvenKernel b Φ u · gW(u) du = Z · (1/2) (Σb)·(Φ:Σ)`.
+
+Direct application of `gaussian_cubic_linear` after unfolding
+`crossEvenKernel = (b·u)·(1/6 Φ(u,u,u))`. Used to compute the main
+constant in the `evenCross` block of Lemma A. -/
+private lemma integral_crossEvenKernel_mul_gaussianWeight
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hΦ_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      Φ (fun i => v (σ i)) = Φ v)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∫ u : ι → ℝ, crossEvenKernel b Φ u * gaussianWeight H u
+      = gaussianZ H * (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv) := by
+  unfold crossEvenKernel
+  rw [show (fun u : ι → ℝ =>
+          dot b u * ((1 / 6 : ℝ) * Φ (fun _ => u)) * gaussianWeight H u) =
+        fun u => (1 / 6 : ℝ) * Φ (fun _ => u) * dot b u * gaussianWeight H u
+      from by funext u; ring]
+  exact gaussian_cubic_linear b Φ hΦ_symm hGauss
+
+/-- **Centered cross-even kernel**:
+`crossEvenKernel - (1/2)·(Σb)·(Φ:Σ)`. Subtract the partition-density-form
+constant (no `Z` factor) so that the Gaussian moment vanishes —
+since `∫ K · gW = Z · const` and `∫ gW = Z`, subtracting `const · gW`
+gives a centered kernel.
+
+Even, with zero Gaussian mean. Base for `rescaledIntegral_evenCross_asymptotic`. -/
+private noncomputable def crossEvenKernelCentered
+    (Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (u : ι → ℝ) : ℝ :=
+  crossEvenKernel b Φ u
+    - (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv)
+
+/-- **`crossEvenKernelCentered` is even**: difference of an even kernel
+and a constant remains even. -/
+private lemma crossEvenKernelCentered_even
+    (Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (u : ι → ℝ) :
+    crossEvenKernelCentered Hinv b Φ (-u)
+      = crossEvenKernelCentered Hinv b Φ u := by
+  unfold crossEvenKernelCentered
+  rw [crossEvenKernel_even b Φ u]
+
+/-- **`crossEvenKernelCentered` has zero Gaussian mean**: by construction
+the Gaussian moment of the constant subtraction `c · gW` equals the
+Gaussian moment of `crossEvenKernel` (both equal `Z · c`). -/
+private lemma integral_crossEvenKernelCentered_mul_gaussianWeight_eq_zero
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (hΦ_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
+      Φ (fun i => v (σ i)) = Φ v)
+    (hGauss : LaplaceCov4MomentHypotheses H Hinv) :
+    ∫ u : ι → ℝ,
+        crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u = 0 := by
+  set c : ℝ := (1 / 2 : ℝ) *
+      dot (Hinv b) (tensorContractMatrix Φ Hinv) with hc_def
+  have h_int_main := integral_crossEvenKernel_mul_gaussianWeight
+      (H := H) (Hinv := Hinv) b Φ hΦ_symm hGauss
+  have h_int_gW_eq : ∫ u : ι → ℝ, gaussianWeight H u = gaussianZ H := rfl
+  have h_int_const_gW : Integrable (fun u : ι → ℝ => c * gaussianWeight H u) :=
+    hGauss.toLaplaceCovHypotheses.int_gW.const_mul c
+  have h_int_K_gW : Integrable (fun u : ι → ℝ =>
+      crossEvenKernel b Φ u * gaussianWeight H u) := by
+    unfold crossEvenKernel
+    have h_pt : ∀ u : ι → ℝ,
+        dot b u * ((1 / 6 : ℝ) * Φ (fun _ : Fin 3 => u)) * gaussianWeight H u
+          = ∑ p, ∑ q, ∑ r, ∑ l,
+            ((1 / 6 : ℝ) * b l * Tcoord Φ p q r) *
+              (u l * u p * u q * u r * gaussianWeight H u) := by
+      intro u
+      rw [T_apply_diag_eq_sum Φ u]
+      unfold dot
+      simp only [Finset.sum_mul, Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro p _
+      refine Finset.sum_congr rfl ?_; intro q _
+      refine Finset.sum_congr rfl ?_; intro r _
+      refine Finset.sum_congr rfl ?_; intro l _
+      ring
+    rw [show (fun u : ι → ℝ =>
+            dot b u * ((1 / 6 : ℝ) * Φ (fun _ : Fin 3 => u)) *
+              gaussianWeight H u) =
+          fun u => ∑ p, ∑ q, ∑ r, ∑ l,
+            ((1 / 6 : ℝ) * b l * Tcoord Φ p q r) *
+              (u l * u p * u q * u r * gaussianWeight H u)
+        from funext h_pt]
+    refine integrable_finset_sum _ (fun p _ => ?_)
+    refine integrable_finset_sum _ (fun q _ => ?_)
+    refine integrable_finset_sum _ (fun r _ => ?_)
+    refine integrable_finset_sum _ (fun l _ => ?_)
+    exact (hGauss.int_4moment l p q r).const_mul _
+  unfold crossEvenKernelCentered
+  rw [show (fun u : ι → ℝ =>
+        (crossEvenKernel b Φ u
+          - (1 / 2 : ℝ) *
+            dot (Hinv b) (tensorContractMatrix Φ Hinv))
+          * gaussianWeight H u) =
+        fun u => crossEvenKernel b Φ u * gaussianWeight H u
+            - c * gaussianWeight H u from by
+      funext u; rw [hc_def]; ring]
+  rw [MeasureTheory.integral_sub h_int_K_gW h_int_const_gW]
+  rw [MeasureTheory.integral_const_mul]
+  rw [h_int_gW_eq, h_int_main]
+  rw [hc_def]; ring
+
 /-- **Pointwise decomposition for Lemma A**: when `a = 0` and `t > 0`,
 `t·√t · (b·u) · φ_conn(u) = crossEvenKernel + √t · crossOddKernel + bulkErrA`.
 
