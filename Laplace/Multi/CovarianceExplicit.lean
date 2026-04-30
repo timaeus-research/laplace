@@ -3073,19 +3073,196 @@ private lemma cubicPartialOp_trASig_compSig
   refine Finset.sum_congr rfl fun j _ => ?_
   rfl
 
+/-! ### Helper lemmas for `gaussian_quad_linear_cubic_explicit`
+
+Per `gpt_responses/strategy_stage5_hsplit_tactic.md`, four small helpers
+isolate the bookkeeping-heavy sub-steps so that the main lemma's `hsplit`
+proof stays compact (~150-250 LOC instead of 600-800 LOC). -/
+
+/-- **`(b·u)`-contracted quintic Stein**: integrating `dot b u · u_i u_j u_p
+u_q u_r` against a Gaussian collapses (via Stein's identity + `Hinv_symm`) to
+five Σ-coefficient pairings indexed by which moment-slot `b` contracts into.
+Each pairing has shape `(Hinv b) x · ∫ (deg-4 monomial) gW`.
+
+This bundles `gaussian_quintic_coord_stein` (the coordinate Stein identity)
+with the `∑_l b_l (Hinv e_x)_l = (Hinv b)_x` collapse, removing the `l`-index
+mess from `gaussian_quad_linear_cubic_explicit`. -/
+private lemma gaussian_dot_quintic_stein
+    {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv)
+    (b : ι → ℝ) (i j p q r : ι) :
+    ∫ u : ι → ℝ,
+        dot b u * u i * u j * u p * u q * u r * gaussianWeight H u
+      = (Hinv b) i *
+          (∫ u : ι → ℝ, u j * u p * u q * u r * gaussianWeight H u)
+        + (Hinv b) j *
+          (∫ u : ι → ℝ, u i * u p * u q * u r * gaussianWeight H u)
+        + (Hinv b) p *
+          (∫ u : ι → ℝ, u i * u j * u q * u r * gaussianWeight H u)
+        + (Hinv b) q *
+          (∫ u : ι → ℝ, u i * u j * u p * u r * gaussianWeight H u)
+        + (Hinv b) r *
+          (∫ u : ι → ℝ, u i * u j * u p * u q * gaussianWeight H u) := by
+  classical
+  -- Pointwise: dot b u · u_i u_j u_p u_q u_r · gW
+  --   = ∑_l b_l · (u_l u_i u_j u_p u_q u_r · gW).
+  have h_pt : ∀ u : ι → ℝ,
+      dot b u * u i * u j * u p * u q * u r * gaussianWeight H u =
+        ∑ l, b l * (u l * u i * u j * u p * u q * u r * gaussianWeight H u) := by
+    intro u
+    unfold dot
+    rw [Finset.sum_mul, Finset.sum_mul, Finset.sum_mul, Finset.sum_mul,
+        Finset.sum_mul, Finset.sum_mul]
+    refine Finset.sum_congr rfl ?_; intros l _; ring
+  rw [show (fun u : ι → ℝ =>
+        dot b u * u i * u j * u p * u q * u r * gaussianWeight H u) =
+        fun u => ∑ l, b l * (u l * u i * u j * u p * u q * u r *
+            gaussianWeight H u) from funext h_pt]
+  -- Swap finite sum with integral.
+  rw [integral_finset_sum Finset.univ
+      (fun l _ => (hGauss.int_6moment l i j p q r).const_mul _)]
+  -- Pull const out of each integral; apply quintic-coord-Stein.
+  conv_lhs =>
+    enter [2, l]
+    rw [integral_const_mul, gaussian_quintic_coord_stein hGauss l i j p q r]
+  -- Distribute the 5-way + over `b l * (.)`.
+  have h_dist : ∀ l : ι,
+      b l *
+        ((Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) l *
+            (∫ u, u j * u p * u q * u r * gaussianWeight H u)
+          + (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) l *
+            (∫ u, u i * u p * u q * u r * gaussianWeight H u)
+          + (Hinv (Pi.single (M := fun _ : ι => ℝ) p (1 : ℝ))) l *
+            (∫ u, u i * u j * u q * u r * gaussianWeight H u)
+          + (Hinv (Pi.single (M := fun _ : ι => ℝ) q (1 : ℝ))) l *
+            (∫ u, u i * u j * u p * u r * gaussianWeight H u)
+          + (Hinv (Pi.single (M := fun _ : ι => ℝ) r (1 : ℝ))) l *
+            (∫ u, u i * u j * u p * u q * gaussianWeight H u))
+      = b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) l *
+            (∫ u, u j * u p * u q * u r * gaussianWeight H u)
+        + b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) l *
+            (∫ u, u i * u p * u q * u r * gaussianWeight H u)
+        + b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) p (1 : ℝ))) l *
+            (∫ u, u i * u j * u q * u r * gaussianWeight H u)
+        + b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) q (1 : ℝ))) l *
+            (∫ u, u i * u j * u p * u r * gaussianWeight H u)
+        + b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) r (1 : ℝ))) l *
+            (∫ u, u i * u j * u p * u q * gaussianWeight H u) := by
+    intro l; ring
+  conv_lhs =>
+    enter [2, l]
+    rw [h_dist l]
+  -- Distribute the 5-way + outside.
+  rw [Finset.sum_add_distrib, Finset.sum_add_distrib,
+      Finset.sum_add_distrib, Finset.sum_add_distrib]
+  -- ∑_l b_l (Hinv e_x)_l (∫ ...) = (∑_l b_l (Hinv e_x)_l) * (∫ ...).
+  -- Pull integral out via Finset.sum_mul_distrib.
+  -- The pattern: ∑ l, X l * C = (∑ l, X l) * C.
+  -- Use Finset.sum_mul.
+  -- Then collapse ∑_l b_l (Hinv e_x)_l = (Hinv b) x via Hinv_symm.
+  have h_collapse : ∀ x : ι,
+      (∑ l, b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ))) l)
+        = (Hinv b) x := by
+    intro x
+    -- By Hinv_symm: ∑ k, b k * (Hinv (Pi.single x 1)) k = ∑ k, (Pi.single x 1) k * (Hinv b) k.
+    have h := Hinv_symm hGauss.toLaplaceCovHypotheses
+        (Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ)) b
+    -- h : ∑ k, (Pi.single x 1) k * (Hinv b) k = ∑ k, b k * (Hinv (Pi.single x 1)) k.
+    have h_lhs : ∑ k, (Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ)) k * (Hinv b) k
+        = (Hinv b) x := by
+      rw [Finset.sum_eq_single x]
+      · rw [Pi.single_eq_same]; ring
+      · intros k _ hk
+        have h_zero : Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ) k = 0 := by
+          simp [Pi.single_apply, hk.symm]
+        rw [h_zero]; ring
+      · intro h; exact absurd (Finset.mem_univ x) h
+    rw [h_lhs] at h
+    exact h.symm
+  -- Each of the 5 outer sums has the form ∑_l b_l * Σ_{l,?} * Const.
+  -- Pull out the Const, apply h_collapse, multiply.
+  have h_pull : ∀ x : ι, ∀ C : ℝ,
+      ∑ l, b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ))) l * C
+        = (Hinv b) x * C := by
+    intro x C
+    rw [show (∑ l, b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ))) l
+              * C)
+          = (∑ l, b l * (Hinv (Pi.single (M := fun _ : ι => ℝ) x (1 : ℝ))) l)
+              * C from by rw [Finset.sum_mul]]
+    rw [h_collapse x]
+  rw [h_pull i, h_pull j, h_pull p, h_pull q, h_pull r]
+
+/-- **Coordinate formula for `cubicPartialOp T c` against basis vectors**:
+`((cubicPartialOp T c) e_q)_p = ∑_k c_k · Tcoord T p q k`. The `(p, q)` matrix
+entry of `cubicPartialOp T c` as a linear operator. Used for piece-2
+identification in `gaussian_quad_linear_cubic_explicit`. -/
+private lemma cubicPartialOp_basis_coord
+    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    (c : ι → ℝ) (p q : ι) :
+    ((cubicPartialOp T c) (Pi.single (M := fun _ : ι => ℝ) q (1 : ℝ))) p
+      = ∑ k, c k * Tcoord T p q k := by
+  rw [cubicPartialOp_apply]
+  -- Goal: T (fun n => match n with | 0 => Pi.single p 1 | 1 => Pi.single q 1
+  --                              | 2 => c) = ∑ k, c k * Tcoord T p q k.
+  -- Slot-2 multilinearity: c = ∑_k c_k • Pi.single k 1.
+  have h_decomp : c = ∑ k : ι, c k • Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ) := by
+    funext m
+    rw [Finset.sum_apply]
+    simp [Pi.single_apply]
+  set m_base : Fin 3 → (ι → ℝ) := fun n =>
+    match n with
+    | 0 => Pi.single (M := fun _ : ι => ℝ) p (1 : ℝ)
+    | 1 => Pi.single (M := fun _ : ι => ℝ) q (1 : ℝ)
+    | 2 => (0 : ι → ℝ) with hm
+  have h_match_c : (fun n : Fin 3 =>
+      match n with
+      | 0 => Pi.single (M := fun _ : ι => ℝ) p (1 : ℝ)
+      | 1 => Pi.single (M := fun _ : ι => ℝ) q (1 : ℝ)
+      | 2 => c) = Function.update m_base 2 c := by
+    funext n; fin_cases n <;> simp [m_base, Function.update]
+  have h_match_e : ∀ k : ι, (fun n : Fin 3 =>
+      match n with
+      | 0 => Pi.single (M := fun _ : ι => ℝ) p (1 : ℝ)
+      | 1 => Pi.single (M := fun _ : ι => ℝ) q (1 : ℝ)
+      | 2 => Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) =
+      Function.update m_base 2 (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) := by
+    intro k; funext n; fin_cases n <;> simp [m_base, Function.update]
+  rw [h_match_c]
+  change T.toMultilinearMap _ = _
+  rw [show (T.toMultilinearMap (Function.update m_base 2 c))
+      = (T.toMultilinearMap (Function.update m_base 2
+          (∑ k : ι, c k • Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)))) by
+        congr 1; rw [← h_decomp]]
+  rw [T.toMultilinearMap.map_update_sum (Finset.univ : Finset ι) 2
+      (fun k : ι => c k • Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) m_base]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [T.toMultilinearMap.map_update_smul m_base 2 (c k)
+      (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))]
+  -- Now goal: c k • T (Function.update m_base 2 (Pi.single k 1))
+  --         = c k * Tcoord T p q k.
+  rw [← h_match_e k]
+  show c k • T _ = c k * Tcoord T p q k
+  unfold Tcoord stdBasisVec
+  rfl
+
 /-- **6th-moment contraction (quad · linear · cubic)**:
-$\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = $
-the contracted six-pairing form, in the appendix's expanded coefficient
-shape (the three classes after $\tfrac{1}{12}$ prefactor). The fifth
-specialised Gaussian contraction lemma — used in `lem:laplace_cov2` term 3.
+$\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = Z\cdot$
+the contracted six-pairing form. The fifth specialised Gaussian contraction
+lemma — used in `lem:laplace_cov2` term 3.
 
-Trivial existential witness: the integral itself divided by `gaussianZ H`.
-The actual closed-form via 15 Wick pairings is needed only when `lem:laplace_cov2`
-is filled in; the existential here just records that the integral is finite.
-
-**v7 plan**: strengthen via single IBP on `(b·u)` (Stein's identity),
-reducing to existing 4-moment helpers `gaussian_linear_cubic` and
-`gaussian_quad_quad` with `cubicPartialOp` for the quad·quad piece. -/
+Currently an existential placeholder; the explicit closed form (per
+`gpt_responses/strategy_stage5_strengthening_tactic.md` and
+`strategy_stage5_hsplit_tactic.md`) reduces via `gaussian_dot_quintic_stein`
++ `cubicPartialOp_basis_coord` (already landed) to the identity
+\[
+  \int (\tfrac12 \mathrm{Q}_A)(b\cdot u)(\tfrac16 T(u,u,u))\,gW
+    = Z \cdot
+      \big[\tfrac12\,b\!\cdot\!\Sigma A\Sigma(T{:}\Sigma)
+       + \tfrac14\,\mathrm{tr}(A\Sigma)\,(\Sigma b)\!\cdot\!(T{:}\Sigma)
+       + \tfrac12\,(\Sigma b)\!\cdot\!(T{:}(\Sigma A\Sigma))\big].
+\]
+Closing the closed form is the next concrete step before Lemma A; the
+existential here records that the integral is finite and well-defined. -/
 private lemma gaussian_quad_linear_cubic
     (A : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ)
     (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
