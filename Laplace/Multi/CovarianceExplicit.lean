@@ -13041,6 +13041,258 @@ private lemma abs_crossOdd_J3_diff_tail_le
     _ = K_tail / (t * Real.sqrt t) * (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
         Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by rw [hpolyTail_def]
 
+/-- **Integration assembly: K/(t·√t) bound on the symmetrized
+corrected-bracket integral**.
+
+Combines `abs_crossOdd_J3_diff_local_le` and `abs_crossOdd_J3_diff_tail_le`
+by case-split + dominated convergence to bound
+
+\[
+  \left|\int \text{crossOdd}(u)\cdot gW(u)\cdot (\text{Corr}_t(u) - \text{Corr}_t(-u))\,du\right|
+    \le \frac{K}{t\sqrt t}.
+\]
+
+After multiplying by `√t/2` (the symmetrization factor in the odd-block
+transport), this gives the K/t remainder bound for Lemma A's odd-block. -/
+private lemma abs_integral_crossOdd_corrected_diff_le
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) [Nonempty ι]
+    (hV : PotentialQuinticApprox V H) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+        ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV.toPotentialTensorApprox t u)
+          - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|
+        ≤ K / (t * Real.sqrt t) := by
+  classical
+  have hc_pos : 0 < hV.coercive_const := hV.coercive_const_pos
+  have h_coer : ∀ w : ι → ℝ, hV.coercive_const * ‖w‖ ^ 2 ≤ V w := hV.coercive_bound
+  have hCs_nn : 0 ≤ hV.local_const := hV.local_const_nonneg
+  have hCs1_pos : (0 : ℝ) < hV.local_const + 1 := by linarith
+  set δ : ℝ := min (min hV.local_radius hV.jet_radius)
+      (hV.coercive_const / (4 * (hV.local_const + 1))) with hδ_def
+  have hδ_pos : 0 < δ :=
+    lt_min (lt_min hV.local_radius_pos hV.jet_radius_pos) (by positivity)
+  have hδ_le_R : δ ≤ hV.local_radius :=
+    le_trans (min_le_left _ _) (min_le_left _ _)
+  have hδ_le_jet_R : δ ≤ hV.jet_radius :=
+    le_trans (min_le_left _ _) (min_le_right _ _)
+  have hδ_const : hV.local_const * δ ≤ hV.coercive_const / 4 := by
+    have h_le : δ ≤ hV.coercive_const / (4 * (hV.local_const + 1)) := min_le_right _ _
+    calc hV.local_const * δ
+        ≤ hV.local_const * (hV.coercive_const / (4 * (hV.local_const + 1))) :=
+          mul_le_mul_of_nonneg_left h_le hCs_nn
+      _ = (hV.local_const / (hV.local_const + 1)) * (hV.coercive_const / 4) := by field_simp
+      _ ≤ 1 * (hV.coercive_const / 4) := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ hV.coercive_const / 4)
+          rw [div_le_one hCs1_pos]; linarith
+      _ = hV.coercive_const / 4 := one_mul _
+  have hδ_sq_pos : 0 < δ ^ 2 := by positivity
+  have hδ_cube_pos : 0 < δ ^ 3 := by positivity
+  have hc4_pos : 0 < hV.coercive_const / 4 := by linarith
+  -- Polynomial moments.
+  have hM4 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 4
+  have hM6 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 6
+  have hM8 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 8
+  have hM10 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 10
+  have hM12 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 12
+  set M_loc : ℝ := ∫ u : ι → ℝ,
+      (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hM_loc_def
+  have hM_loc_int : Integrable (fun u : ι → ℝ =>
+      (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) := by
+    have h_sum : Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ 6 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 8 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 10 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 12 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) :=
+      ((hM6.add hM8).add hM10).add hM12
+    apply h_sum.congr; filter_upwards with u; ring
+  set M_tail : ℝ := ∫ u : ι → ℝ,
+      (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hM_tail_def
+  have hM_tail_int : Integrable (fun u : ι → ℝ =>
+      (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+        Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) := by
+    have h_sum : Integrable (fun u : ι → ℝ =>
+        ‖u‖ ^ 4 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 6 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          + ‖u‖ ^ 8 * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))) :=
+      (hM4.add hM6).add hM8
+    apply h_sum.congr; filter_upwards with u; ring
+  -- K_loc = crossOddPolyConst·D, K_tail = crossOddPolyConst·(4/δ³+‖T‖/(3δ²))
+  set K_loc_const : ℝ := crossOddPolyConst A Hinv b *
+    (hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3)
+    with hK_loc_const_def
+  set K_tail_const : ℝ := crossOddPolyConst A Hinv b *
+    (4 / δ ^ 3 + ‖hV.toPotentialTensorApprox.T‖ / (3 * δ ^ 2))
+    with hK_tail_const_def
+  have hC_K_nn : 0 ≤ crossOddPolyConst A Hinv b := crossOddPolyConst_nn A Hinv b
+  have hT_nn : 0 ≤ ‖hV.toPotentialTensorApprox.T‖ := norm_nonneg _
+  have hjet_C_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
+  have hQ_nn : 0 ≤ hV.Q_const := hV.Q_const_nn
+  have hD_nn : 0 ≤ hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3 := by
+    have h2 : 0 ≤ 2 * hV.jet_const * hV.local_const :=
+      mul_nonneg (mul_nonneg (by norm_num) hjet_C_nn) hCs_nn
+    have h3 : 0 ≤ hV.local_const ^ 3 := pow_nonneg hCs_nn 3
+    linarith
+  have hK_loc_const_nn : 0 ≤ K_loc_const := by
+    rw [hK_loc_const_def]; exact mul_nonneg hC_K_nn hD_nn
+  have hK_tail_const_nn : 0 ≤ K_tail_const := by
+    rw [hK_tail_const_def]
+    apply mul_nonneg hC_K_nn
+    positivity
+  set K : ℝ := K_loc_const * M_loc + K_tail_const * M_tail with hK_def
+  refine ⟨K, 1, le_refl _, ?_⟩
+  intro t ht1
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have h_t_sqrt_pos : 0 < t * Real.sqrt t := mul_pos ht_pos hsqrt_pos
+  -- Define majorants.
+  set G_loc : (ι → ℝ) → ℝ := fun u =>
+    (K_loc_const / (t * Real.sqrt t)) *
+      (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+      Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hG_loc_def
+  set G_tail : (ι → ℝ) → ℝ := fun u =>
+    (K_tail_const / (t * Real.sqrt t)) *
+      (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+      Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hG_tail_def
+  have hG_loc_nn : ∀ u, 0 ≤ G_loc u := by
+    intro u
+    rw [hG_loc_def]
+    have h1 : 0 ≤ K_loc_const / (t * Real.sqrt t) :=
+      div_nonneg hK_loc_const_nn h_t_sqrt_pos.le
+    have h2 : 0 ≤ ‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12 := by positivity
+    exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+  have hG_tail_nn : ∀ u, 0 ≤ G_tail u := by
+    intro u
+    rw [hG_tail_def]
+    have h1 : 0 ≤ K_tail_const / (t * Real.sqrt t) :=
+      div_nonneg hK_tail_const_nn h_t_sqrt_pos.le
+    have h2 : 0 ≤ ‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8 := by positivity
+    exact mul_nonneg (mul_nonneg h1 h2) (Real.exp_pos _).le
+  have hG_loc_int : Integrable G_loc := by
+    rw [hG_loc_def]
+    have := hM_loc_int.const_mul (K_loc_const / (t * Real.sqrt t))
+    convert this using 1; funext u; ring
+  have hG_tail_int : Integrable G_tail := by
+    rw [hG_tail_def]
+    have := hM_tail_int.const_mul (K_tail_const / (t * Real.sqrt t))
+    convert this using 1; funext u; ring
+  have hG_sum_int : Integrable (fun u => G_loc u + G_tail u) :=
+    hG_loc_int.add hG_tail_int
+  -- Pointwise bound: ‖F u‖ ≤ G_loc u + G_tail u.
+  have h_pointwise : ∀ u : ι → ℝ,
+      ‖crossOddKernel A Hinv b u * gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))‖
+        ≤ G_loc u + G_tail u := by
+    intro u
+    rw [Real.norm_eq_abs]
+    -- Align `|crossOdd · gW · diff|` with `|crossOdd · diff · gW|` via ring.
+    have h_abs_eq : |crossOddKernel A Hinv b u * gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))|
+        = |crossOddKernel A Hinv b u *
+            ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t u)
+              - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                  + expPotCubic V H hV.toPotentialTensorApprox t (-u))) *
+            gaussianWeight H u| := by
+      congr 1; ring
+    rw [h_abs_eq]
+    by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
+    · have h_loc := abs_crossOdd_J3_diff_local_le V H Hinv A b hV hδ_pos hδ_le_R
+        hδ_le_jet_R hδ_const ht_pos u hu
+      have h_tail_nn : 0 ≤ G_tail u := hG_tail_nn u
+      have h_loc_eq : G_loc u = K_loc_const / (t * Real.sqrt t) *
+          (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by rw [hG_loc_def]
+      have h_loc_form : K_loc_const / (t * Real.sqrt t) *
+          (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          = crossOddPolyConst A Hinv b *
+              (hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3) /
+                (t * Real.sqrt t) *
+              (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        rw [hK_loc_const_def]
+      linarith [h_loc, h_tail_nn, h_loc_eq.le, h_loc_eq.ge, h_loc_form.le, h_loc_form.ge]
+    · push_neg at hu
+      have h_tail := abs_crossOdd_J3_diff_tail_le V H Hinv A b hV.toPotentialTensorApprox
+        hδ_pos hc_pos rfl h_coer ht_pos u hu
+      have h_loc_nn : 0 ≤ G_loc u := hG_loc_nn u
+      have h_tail_eq : G_tail u = K_tail_const / (t * Real.sqrt t) *
+          (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by rw [hG_tail_def]
+      have h_tail_form : K_tail_const / (t * Real.sqrt t) *
+          (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
+          = crossOddPolyConst A Hinv b *
+              (4 / δ ^ 3 + ‖hV.toPotentialTensorApprox.T‖ / (3 * δ ^ 2)) /
+                (t * Real.sqrt t) *
+              (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
+        rw [hK_tail_const_def]
+      linarith [h_tail, h_loc_nn, h_tail_eq.le, h_tail_eq.ge,
+                h_tail_form.le, h_tail_form.ge]
+  -- Main bound.
+  have h_main : ‖∫ u : ι → ℝ,
+        crossOddKernel A Hinv b u * gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))‖
+      ≤ ∫ u : ι → ℝ, G_loc u + G_tail u := by
+    apply norm_integral_le_of_norm_le hG_sum_int
+    filter_upwards with u
+    exact h_pointwise u
+  have h_int_sum : ∫ u : ι → ℝ, G_loc u + G_tail u
+      = (K_loc_const * M_loc + K_tail_const * M_tail) / (t * Real.sqrt t) := by
+    rw [MeasureTheory.integral_add hG_loc_int hG_tail_int]
+    rw [hG_loc_def, hG_tail_def, hM_loc_def, hM_tail_def]
+    rw [show (fun u : ι → ℝ =>
+            K_loc_const / (t * Real.sqrt t) *
+              (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))
+          = (fun u => (K_loc_const / (t * Real.sqrt t)) *
+              ((‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))) from by
+        funext u; ring]
+    rw [show (fun u : ι → ℝ =>
+            K_tail_const / (t * Real.sqrt t) *
+              (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+              Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))
+          = (fun u => (K_tail_const / (t * Real.sqrt t)) *
+              ((‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
+                Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)))) from by
+        funext u; ring]
+    rw [MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
+    ring
+  have h_norm_eq : ‖∫ u : ι → ℝ,
+        crossOddKernel A Hinv b u * gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))‖
+      = |∫ u : ι → ℝ,
+        crossOddKernel A Hinv b u * gaussianWeight H u *
+          ((Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV.toPotentialTensorApprox t u)
+            - (Real.exp (-(rescaledPerturbation V H t (-u))) - 1
+                + expPotCubic V H hV.toPotentialTensorApprox t (-u)))| :=
+    Real.norm_eq_abs _
+  rw [hK_def]
+  rw [← h_norm_eq]
+  linarith [h_main, h_int_sum.le, h_int_sum.ge]
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
