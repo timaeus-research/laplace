@@ -11457,6 +11457,63 @@ private lemma bulkErrA_symmetric
   unfold bulkErrASymmIntegrand
   ring
 
+/-- **Gaussian-only symmetrization for `bulkErrA`** (per GPT consult
+`gpt_responses/strategy_stage5_alt_path.md`).
+
+Symmetrizing only against the even Gaussian weight `gW` (instead of the
+full perturbed density `gW · exp(-s_t)`):
+```
+2 · ∫ bulkErrA(u) · gW(u) du = ∫ t·√t · (b·u) · (r(u) - r(-u)) · gW(u) du
+```
+where `r := expNumObsRem`. The RHS already exposes the parity gain in `r`,
+which under `ObservableQuinticApprox` gives `O(‖u‖^5/(t²·√t))` locally —
+exactly what the quintic bound `abs_expNumObsRem_sub_neg_quintic_le` provides. -/
+private lemma bulkErrA_gaussian_symm
+    (φ : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hφ : ObservableTensorApprox φ (0 : ι → ℝ))
+    {t : ℝ} (_ht : 0 < t)
+    (h_int : Integrable (fun u : ι → ℝ =>
+      bulkErrA φ b hφ t u * gaussianWeight H u)) :
+    2 * (∫ u : ι → ℝ, bulkErrA φ b hφ t u * gaussianWeight H u)
+      = ∫ u : ι → ℝ,
+          t * Real.sqrt t * dot b u *
+            (expNumObsRem φ (0 : ι → ℝ) hφ t u
+              - expNumObsRem φ (0 : ι → ℝ) hφ t (-u)) *
+            gaussianWeight H u := by
+  -- ∫ B_t(u) · gW = ∫ B_t(-u) · gW under u ↦ -u (gW even).
+  have h_neg : (∫ u : ι → ℝ, bulkErrA φ b hφ t u * gaussianWeight H u)
+      = (∫ u : ι → ℝ, bulkErrA φ b hφ t (-u) * gaussianWeight H u) := by
+    have h_sub := integral_pi_comp_neg
+      (fun u : ι → ℝ => bulkErrA φ b hφ t u * gaussianWeight H u)
+    rw [← h_sub]
+    apply MeasureTheory.integral_congr_ae
+    filter_upwards with u
+    rw [gaussianWeight_neg]
+  have h_int_neg : Integrable (fun u : ι → ℝ =>
+      bulkErrA φ b hφ t (-u) * gaussianWeight H u) := by
+    have h_comp := h_int.comp_neg
+    apply h_comp.congr
+    filter_upwards with u
+    rw [gaussianWeight_neg]
+  have h_two_mul : (2 : ℝ) * (∫ u : ι → ℝ,
+        bulkErrA φ b hφ t u * gaussianWeight H u)
+      = (∫ u : ι → ℝ, bulkErrA φ b hφ t u * gaussianWeight H u)
+        + (∫ u : ι → ℝ, bulkErrA φ b hφ t (-u) * gaussianWeight H u) := by
+    rw [← h_neg]; ring
+  rw [h_two_mul, ← MeasureTheory.integral_add h_int h_int_neg]
+  apply MeasureTheory.integral_congr_ae
+  filter_upwards with u
+  -- bulkErrA φ b hφ t u + bulkErrA φ b hφ t (-u)
+  -- = t√t·(b·u)·r(u) + t√t·(b·-u)·r(-u)
+  -- = t√t·(b·u)·(r(u) - r(-u))     [using b·-u = -(b·u)]
+  unfold bulkErrA
+  have h_dot_neg : dot b (-u) = -(dot b u) := dot_neg b u
+  rw [h_dot_neg]
+  ring
+
 /-- **`crossEvenKernel · gW` integrability**: from coord expansion +
 4-moment integrability. -/
 private lemma integrable_crossEvenKernel_mul_gaussianWeight
