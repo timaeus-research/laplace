@@ -10821,6 +10821,148 @@ private lemma abs_crossEvenKernel_le
         mul_le_mul_of_nonneg_left h_prod (by norm_num)
     _ = C * ‖u‖ ^ 4 := by rw [hC_def]; ring
 
+/-- **Polynomial bound on `crossEvenKernelCentered`**: standard `1 + ‖u‖^4`
+form (incorporating the constant subtraction). -/
+private lemma abs_crossEvenKernelCentered_le
+    (Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ι → ℝ,
+      |crossEvenKernelCentered Hinv b Φ u| ≤ C * (1 + ‖u‖ ^ 4) := by
+  obtain ⟨C₁, hC₁_nn, hC₁_bound⟩ := abs_crossEvenKernel_le b Φ
+  set c : ℝ := |((1 / 2 : ℝ) *
+      dot (Hinv b) (tensorContractMatrix Φ Hinv))| with hc_def
+  have hc_nn : 0 ≤ c := abs_nonneg _
+  refine ⟨C₁ + c, by linarith, fun u => ?_⟩
+  unfold crossEvenKernelCentered
+  -- |K - const| ≤ |K| + |const| ≤ C₁ ‖u‖^4 + c ≤ (C₁+c)(1+‖u‖^4).
+  have h_split : |crossEvenKernel b Φ u
+      - (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv)|
+      ≤ |crossEvenKernel b Φ u|
+        + |(1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv)| :=
+    abs_sub _ _
+  have h_K : |crossEvenKernel b Φ u| ≤ C₁ * ‖u‖ ^ 4 := hC₁_bound u
+  have h_norm_pow : 0 ≤ ‖u‖ ^ 4 := by positivity
+  calc |crossEvenKernel b Φ u
+        - (1 / 2 : ℝ) * dot (Hinv b) (tensorContractMatrix Φ Hinv)|
+      ≤ C₁ * ‖u‖ ^ 4 + c := by
+        have := h_split
+        rw [hc_def] at *
+        linarith
+    _ ≤ (C₁ + c) * (1 + ‖u‖ ^ 4) := by nlinarith [hC₁_nn, hc_nn]
+
+/-- **Polynomial bound on `crossOddKernel`**: `|(b·u)·((1/2)Q_A - μ)|
+≤ C · (‖u‖^3 + ‖u‖)`. The `(b·u)` factor gives ‖u‖, the Q_A part gives
+‖u‖² (for ‖u‖³ total), and the constant μ gives just ‖u‖. -/
+private lemma abs_crossOddKernel_le
+    (A Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ι → ℝ,
+      |crossOddKernel A Hinv b u| ≤ C * (‖u‖ + ‖u‖ ^ 3) := by
+  classical
+  set N : ℝ := (Fintype.card ι : ℝ) with hN_def
+  have hN_nn : 0 ≤ N := by rw [hN_def]; exact_mod_cast Nat.zero_le _
+  set bL : ℝ := ∑ i : ι, |b i| with hbL_def
+  have hbL_nn : 0 ≤ bL := Finset.sum_nonneg (fun i _ => abs_nonneg _)
+  set tA : ℝ := |trASig A Hinv| with htA_def
+  have htA_nn : 0 ≤ tA := abs_nonneg _
+  have hA_nn : 0 ≤ ‖A‖ := norm_nonneg _
+  set C : ℝ := (1 / 2 : ℝ) * bL * (N * ‖A‖ + tA) with hC_def
+  have hC_nn : 0 ≤ C := by rw [hC_def]; positivity
+  refine ⟨C, hC_nn, fun u => ?_⟩
+  unfold crossOddKernel
+  rw [abs_mul]
+  -- |b·u| ≤ bL · ‖u‖.
+  have h_dot : |dot b u| ≤ bL * ‖u‖ := by
+    unfold dot
+    have h_each : ∀ i, |b i * u i| ≤ |b i| * ‖u‖ := fun i => by
+      rw [abs_mul]
+      exact mul_le_mul_of_nonneg_left (norm_le_pi_norm u i) (abs_nonneg _)
+    have h_sum_abs : |∑ i, b i * u i| ≤ ∑ i, |b i * u i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_each : ∑ i, |b i * u i| ≤ ∑ i, |b i| * ‖u‖ :=
+      Finset.sum_le_sum (fun i _ => h_each i)
+    have h_factor : ∑ i, |b i| * ‖u‖ = bL * ‖u‖ := by
+      rw [hbL_def, ← Finset.sum_mul]
+    linarith
+  -- |quadForm A u| ≤ N · ‖A‖ · ‖u‖^2.
+  have h_qf : |quadForm A u| ≤ N * ‖A‖ * ‖u‖ ^ 2 := by
+    unfold quadForm
+    have h_each : ∀ i, |u i * (A u) i| ≤ ‖u‖ * ‖A u‖ := fun i => by
+      rw [abs_mul]
+      apply mul_le_mul (norm_le_pi_norm u i) (norm_le_pi_norm (A u) i)
+        (abs_nonneg _) (norm_nonneg _)
+    have h_sum_abs : |∑ i, u i * (A u) i| ≤ ∑ i, |u i * (A u) i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    have h_sum_each : ∑ i, |u i * (A u) i|
+        ≤ N * (‖u‖ * ‖A u‖) := by
+      calc ∑ i, |u i * (A u) i|
+          ≤ ∑ _ : ι, ‖u‖ * ‖A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
+        _ = N * (‖u‖ * ‖A u‖) := by
+              rw [Finset.sum_const, Finset.card_univ]
+              rw [hN_def]; push_cast; ring
+    have h_Au : ‖A u‖ ≤ ‖A‖ * ‖u‖ := A.le_opNorm u
+    calc |∑ i, u i * (A u) i|
+        ≤ N * (‖u‖ * ‖A u‖) := le_trans h_sum_abs h_sum_each
+      _ ≤ N * (‖u‖ * (‖A‖ * ‖u‖)) := by
+          apply mul_le_mul_of_nonneg_left _ hN_nn
+          apply mul_le_mul_of_nonneg_left h_Au (norm_nonneg _)
+      _ = N * ‖A‖ * ‖u‖ ^ 2 := by ring
+  -- Bound |(1/2) Q_A - (1/2) trASig| ≤ (1/2)(N ‖A‖ ‖u‖² + tA).
+  have h_qf_min : |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv|
+      ≤ (1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) := by
+    have h_split : |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv|
+        ≤ |(1 / 2 : ℝ) * quadForm A u| + |(1 / 2 : ℝ) * trASig A Hinv| :=
+      abs_sub _ _
+    have h_h2_nn : (0 : ℝ) ≤ 1 / 2 := by norm_num
+    have h_qA_abs : |(1 / 2 : ℝ) * quadForm A u|
+        ≤ (1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2) := by
+      rw [show |(1 / 2 : ℝ) * quadForm A u|
+            = (1 / 2 : ℝ) * |quadForm A u| from by
+          rw [abs_mul, abs_of_nonneg h_h2_nn]]
+      exact mul_le_mul_of_nonneg_left h_qf h_h2_nn
+    have h_tA_abs : |(1 / 2 : ℝ) * trASig A Hinv| = (1 / 2 : ℝ) * tA := by
+      rw [abs_mul, abs_of_nonneg h_h2_nn, htA_def]
+    linarith
+  -- Combine: |b·u| · |centered Q| ≤ (bL ‖u‖) · (1/2)(N ‖A‖ ‖u‖² + tA).
+  have h_dot_nn : 0 ≤ |dot b u| := abs_nonneg _
+  have h_qm_nn : 0 ≤ |(1 / 2 : ℝ) * quadForm A u
+      - (1 / 2 : ℝ) * trASig A Hinv| := abs_nonneg _
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_prod : |dot b u| * |(1 / 2 : ℝ) * quadForm A u
+      - (1 / 2 : ℝ) * trASig A Hinv|
+      ≤ (bL * ‖u‖) * ((1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA)) := by
+    have h1 : |dot b u| *
+          |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv|
+        ≤ (bL * ‖u‖) *
+          |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv| :=
+      mul_le_mul_of_nonneg_right h_dot h_qm_nn
+    have h2 : (bL * ‖u‖) *
+          |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv|
+        ≤ (bL * ‖u‖) * ((1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA)) :=
+      mul_le_mul_of_nonneg_left h_qf_min (by positivity)
+    linarith
+  calc |dot b u| * |(1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv|
+      ≤ (bL * ‖u‖) * ((1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA)) := h_prod
+    _ = (1 / 2 : ℝ) * bL * (N * ‖A‖ * ‖u‖ ^ 3 + tA * ‖u‖) := by
+        have h_ucubed : ‖u‖ * ‖u‖ ^ 2 = ‖u‖ ^ 3 := by ring
+        rw [show (bL * ‖u‖) * ((1 / 2 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA))
+              = (1 / 2 : ℝ) * bL *
+                (N * ‖A‖ * (‖u‖ * ‖u‖ ^ 2) + tA * ‖u‖) from by ring,
+            h_ucubed]
+    _ ≤ C * (‖u‖ + ‖u‖ ^ 3) := by
+        rw [hC_def]
+        have h_norm_3_nn : 0 ≤ ‖u‖ ^ 3 := by positivity
+        have hbL_N_A_nn : 0 ≤ bL * (N * ‖A‖) := mul_nonneg hbL_nn (mul_nonneg hN_nn hA_nn)
+        have hbL_tA_nn : 0 ≤ bL * tA := mul_nonneg hbL_nn htA_nn
+        -- RHS - LHS = (1/2) bL N ‖A‖ ‖u‖ + (1/2) bL tA ‖u‖^3 ≥ 0.
+        have h_extra_nn : 0 ≤ (1 / 2 : ℝ) * (bL * (N * ‖A‖) * ‖u‖
+            + bL * tA * ‖u‖ ^ 3) := by
+          have h1 : 0 ≤ bL * (N * ‖A‖) * ‖u‖ := mul_nonneg hbL_N_A_nn h_norm_nn
+          have h2 : 0 ≤ bL * tA * ‖u‖ ^ 3 := mul_nonneg hbL_tA_nn h_norm_3_nn
+          positivity
+        linarith [h_extra_nn]
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
