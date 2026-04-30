@@ -12323,6 +12323,139 @@ private lemma integrable_crossOddKernel_mul_gaussianWeight_mul_expPotCubic
         have h_u6 : ‖u‖ ^ 3 * ‖u‖ ^ 3 = ‖u‖ ^ 6 := by ring
         ring
 
+/-- **`crossOddKernel · gW · (corrected bracket via expPotCubic)` integrability**:
+sum/diff of integrables. -/
+private lemma integrable_crossOddKernel_mul_rescaled_corrected
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      crossOddKernel A Hinv b u * gaussianWeight H u *
+        (Real.exp (-(rescaledPerturbation V H t u)) - 1
+          + expPotCubic V H hV t u)) := by
+  have h_exp := integrable_crossOddKernel_mul_rescaled_weight V H Hinv A b
+    hV.toPotentialApprox.V_continuous
+    hV.toPotentialApprox.coercive_const_pos
+    hV.toPotentialApprox.coercive_bound ht_pos
+  have h_gW := integrable_crossOddKernel_mul_gaussianWeight (Hinv := Hinv)
+    (A := A) (b := b) H (V := V) hV.toPotentialJetApprox
+  have h_pot := integrable_crossOddKernel_mul_gaussianWeight_mul_expPotCubic
+    V H Hinv A b hV ht_pos
+  have h_combined := (h_exp.sub h_gW).add h_pot
+  apply h_combined.congr
+  filter_upwards with u
+  simp only [Pi.add_apply, Pi.sub_apply]
+  ring
+
+/-- **The odd-block algebraic split**: combine the parity vanishing
+`∫ crossOdd · gW = 0`, the cubic identity `√t · ∫ crossOdd · gW · expPotCubic
+= ∫ crossOdd · (1/6 T) · gW`, and the integrability witnesses to get
+
+```
+√t · ∫ crossOdd · gW · exp(-s_t)
+  = - ∫ crossOdd · (1/6) T(u,u,u) · gW
+    + √t · ∫ crossOdd · gW · (exp(-s_t) - 1 + expPotCubic)
+```
+
+The first term is the gaussian main; the second is the corrected-bracket
+remainder. -/
+private lemma oddCross_split
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (A : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialTensorApprox V H)
+    {t : ℝ} (ht : 0 < t) :
+    Real.sqrt t *
+        (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+      = - (∫ u : ι → ℝ, crossOddKernel A Hinv b u *
+            ((1 / 6 : ℝ) * hV.T (fun _ => u)) * gaussianWeight H u)
+        + Real.sqrt t *
+            (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV t u)) := by
+  classical
+  have h_int_exp := integrable_crossOddKernel_mul_rescaled_weight V H Hinv A b
+    hV.toPotentialApprox.V_continuous
+    hV.toPotentialApprox.coercive_const_pos
+    hV.toPotentialApprox.coercive_bound ht
+  have h_int_gW := integrable_crossOddKernel_mul_gaussianWeight (Hinv := Hinv)
+    (A := A) (b := b) H (V := V) hV.toPotentialJetApprox
+  have h_int_corr := integrable_crossOddKernel_mul_rescaled_corrected V H Hinv A b
+    hV ht
+  have h_int_epot := integrable_crossOddKernel_mul_gaussianWeight_mul_expPotCubic
+    V H Hinv A b hV ht
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_zero : ∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u = 0 :=
+    integral_crossOddKernel_mul_gaussianWeight_eq_zero (H := H) A Hinv b
+  -- Cubic identity: √t · ∫ crossOdd · gW · expPotCubic = ∫ crossOdd · (1/6) T · gW.
+  have h_cubic_id : Real.sqrt t *
+        (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+          expPotCubic V H hV t u)
+      = ∫ u : ι → ℝ, crossOddKernel A Hinv b u *
+          ((1 / 6 : ℝ) * hV.T (fun _ => u)) * gaussianWeight H u := by
+    rw [← MeasureTheory.integral_const_mul]
+    apply MeasureTheory.integral_congr_ae
+    filter_upwards with u
+    unfold expPotCubic
+    have hsqrt_inv : Real.sqrt t * (Real.sqrt t)⁻¹ = 1 := by
+      rw [mul_inv_cancel₀ hsqrt_pos.ne']
+    have h_assoc : Real.sqrt t *
+          (crossOddKernel A Hinv b u * gaussianWeight H u *
+            ((Real.sqrt t)⁻¹ * ((1 / 6 : ℝ) * hV.T (fun _ => u))))
+        = (Real.sqrt t * (Real.sqrt t)⁻¹) *
+          (crossOddKernel A Hinv b u *
+            ((1 / 6 : ℝ) * hV.T (fun _ => u)) *
+            gaussianWeight H u) := by ring
+    rw [h_assoc, hsqrt_inv, one_mul]
+  -- Decomposition: exp(-s_t) = (exp(-s_t) - 1 + expPotCubic) + 1 - expPotCubic.
+  have h_pt : ∀ u : ι → ℝ,
+      crossOddKernel A Hinv b u * gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+      = crossOddKernel A Hinv b u * gaussianWeight H u *
+          (Real.exp (-(rescaledPerturbation V H t u)) - 1
+            + expPotCubic V H hV t u)
+        + crossOddKernel A Hinv b u * gaussianWeight H u
+        - crossOddKernel A Hinv b u * gaussianWeight H u *
+            expPotCubic V H hV t u := by
+    intro u; ring
+  have h_lhs_eq : ∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      = (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV t u))
+        + (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u)
+        - (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
+            expPotCubic V H hV t u) := by
+    -- Build single-lambda integrability witnesses for the additive split.
+    have h_int_corr_plus_gW : Integrable (fun u : ι → ℝ =>
+        crossOddKernel A Hinv b u * gaussianWeight H u *
+            (Real.exp (-(rescaledPerturbation V H t u)) - 1
+              + expPotCubic V H hV t u)
+          + crossOddKernel A Hinv b u * gaussianWeight H u) := by
+      have := h_int_corr.add h_int_gW
+      apply this.congr; filter_upwards with u
+      simp only [Pi.add_apply]
+    rw [show (fun u : ι → ℝ => crossOddKernel A Hinv b u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          = fun u => (crossOddKernel A Hinv b u * gaussianWeight H u *
+              (Real.exp (-(rescaledPerturbation V H t u)) - 1
+                + expPotCubic V H hV t u)
+            + crossOddKernel A Hinv b u * gaussianWeight H u)
+            - crossOddKernel A Hinv b u * gaussianWeight H u *
+                expPotCubic V H hV t u from by
+        funext u; have := h_pt u; linarith]
+    rw [MeasureTheory.integral_sub h_int_corr_plus_gW h_int_epot,
+        MeasureTheory.integral_add h_int_corr h_int_gW]
+  -- Multiply by √t and use h_zero, h_cubic_id.
+  rw [h_lhs_eq]
+  rw [mul_sub, mul_add, h_zero, mul_zero, h_cubic_id]
+  ring
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
