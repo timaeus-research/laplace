@@ -3245,40 +3245,695 @@ private lemma cubicPartialOp_basis_coord
   unfold Tcoord stdBasisVec
   rfl
 
-/-- **6th-moment contraction (quad · linear · cubic)**:
-$\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = Z\cdot$
-the contracted six-pairing form. The fifth specialised Gaussian contraction
-lemma — used in `lem:laplace_cov2` term 3.
+set_option maxHeartbeats 1600000 in
+/-- **6th-moment contraction (quad · linear · cubic), explicit closed form**:
+$\int (\tfrac12 u^\top A u)(b\cdot u)(\tfrac16 T(u,u,u))\,gW = Z\cdot\!
+  \big[\tfrac12\,b\!\cdot\!\Sigma A\Sigma(T{:}\Sigma)
+   + \tfrac14\,\mathrm{tr}(A\Sigma)\,(\Sigma b)\!\cdot\!(T{:}\Sigma)
+   + \tfrac12\,(\Sigma b)\!\cdot\!(T{:}(\Sigma A\Sigma))\big]$.
 
-Currently an existential placeholder; the explicit closed form (per
-`gpt_responses/strategy_stage5_strengthening_tactic.md` and
-`strategy_stage5_hsplit_tactic.md`) reduces via `gaussian_dot_quintic_stein`
-+ `cubicPartialOp_basis_coord` (already landed) to the identity
-\[
-  \int (\tfrac12 \mathrm{Q}_A)(b\cdot u)(\tfrac16 T(u,u,u))\,gW
-    = Z \cdot
-      \big[\tfrac12\,b\!\cdot\!\Sigma A\Sigma(T{:}\Sigma)
-       + \tfrac14\,\mathrm{tr}(A\Sigma)\,(\Sigma b)\!\cdot\!(T{:}\Sigma)
-       + \tfrac12\,(\Sigma b)\!\cdot\!(T{:}(\Sigma A\Sigma))\big].
-\]
-Closing the closed form is the next concrete step before Lemma A; the
-existential here records that the integral is finite and well-defined. -/
-private lemma gaussian_quad_linear_cubic
+Built via one Stein IBP on $(b\!\cdot\!u)$, reducing the 6-moment integral to:
+
+- **piece 1** $\tfrac16\!\int (Ac\!\cdot\!u)\,T(u,u,u)\,gW$ with $c := \Sigma b$,
+  closed by `gaussian_linear_cubic`;
+- **piece 2** $\!\int(\tfrac12 u^\top A u)(\tfrac12 u^\top B u)\,gW$ with
+  $B := $ `cubicPartialOp T c`, closed by `gaussian_quad_quad`.
+
+Per `gpt_responses/strategy_stage5_hsplit_concrete.md`, the proof
+- coord-expands the LHS to a 5-fold sum, keeping `dot b u` intact;
+- applies `gaussian_dot_quintic_stein` to absorb `b_l` into c-coefficients,
+  yielding 5 separate 5-fold sums (T1..T5);
+- collapses T2=T1 via A-symm + index swap;
+- collapses T3=T5 (cyclic 0→2) and T4=T5 (slot 1↔2) via T-symm;
+- identifies `2·T1` with piece 1 by forward coord expansion;
+- identifies `3·T5` with piece 2 by forward expansion using
+  `cubicPartialOp_basis_coord` to rewrite `(B e_q)_p = ∑_k c_k T_{pqk}`;
+- applies `gaussian_linear_cubic`, `gaussian_quad_quad`, then the two
+  `cubicPartialOp` trace identities to convert the operator-form constants
+  into the explicit `tensorContractMatrix` shape used by `lem:laplace_cov2`.
+
+First-term rotation uses Σ self-adjointness (`Hinv_symm`) and A symmetry. -/
+private lemma gaussian_quad_linear_cubic_explicit
     (A : (ι → ℝ) →L[ℝ] (ι → ℝ)) (b : ι → ℝ)
     (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
     (hA_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u))
     (hT_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
       T (fun i => v (σ i)) = T v)
-    (hGauss : LaplaceCovHypotheses H Hinv) :
-    ∃ result : ℝ, ∫ u : ι → ℝ,
-        ((1 / 2 : ℝ) * quadForm A u) * dot b u * ((1 / 6 : ℝ) * T (fun _ => u))
-          * gaussianWeight H u
-      = gaussianZ H * result := by
-  refine ⟨(∫ u : ι → ℝ,
-      ((1 / 2 : ℝ) * quadForm A u) * dot b u * ((1 / 6 : ℝ) * T (fun _ => u))
-        * gaussianWeight H u) / gaussianZ H, ?_⟩
-  have hZ_ne : gaussianZ H ≠ 0 := ne_of_gt hGauss.Z_pos
-  field_simp
+    (hGauss : LaplaceCov6MomentHypotheses H Hinv) :
+    ∫ u : ι → ℝ,
+        ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+          ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
+      = gaussianZ H *
+          ((1 / 2 : ℝ) * dot b
+              (Hinv (A (Hinv (tensorContractMatrix T Hinv))))
+            + (1 / 4 : ℝ) * trASig A Hinv *
+                dot (Hinv b) (tensorContractMatrix T Hinv)
+            + (1 / 2 : ℝ) * dot (Hinv b)
+                (tensorContractMatrix T (Hinv.comp (A.comp Hinv)))) := by
+  classical
+  set c : ι → ℝ := Hinv b with hc_def
+  set B : (ι → ℝ) →L[ℝ] (ι → ℝ) := cubicPartialOp T c with hB_def
+  have hB_symm : ∀ u v : ι → ℝ, dot u (B v) = dot v (B u) :=
+    cubicPartialOp_symm T c hT_symm
+  -- A symmetry in coord form: (A e_j) i = (A e_i) j.
+  have hAcoord_symm : ∀ i j : ι,
+      (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i =
+        (A (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j := by
+    intro i j
+    have h := hA_symm (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+        (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))
+    have h_lhs_simp : dot (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))
+          (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ)))
+        = (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+      unfold dot
+      rw [Finset.sum_eq_single i]
+      · rw [Pi.single_eq_same]; ring
+      · intros k _ hk
+        have h_zero : Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ) k = 0 := by
+          simp [Pi.single_apply, hk.symm]
+        rw [h_zero]; ring
+      · intro h; exact absurd (Finset.mem_univ i) h
+    have h_rhs_simp : dot (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))
+          (A (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))
+        = (A (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j := by
+      unfold dot
+      rw [Finset.sum_eq_single j]
+      · rw [Pi.single_eq_same]; ring
+      · intros k _ hk
+        have h_zero : Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ) k = 0 := by
+          simp [Pi.single_apply, hk.symm]
+        rw [h_zero]; ring
+      · intro h; exact absurd (Finset.mem_univ j) h
+    rw [h_lhs_simp, h_rhs_simp] at h
+    exact h
+  -- Hinv self-adjointness: dot (Hinv x) y = dot x (Hinv y).
+  have hHinv_dot : ∀ x y : ι → ℝ, dot (Hinv x) y = dot x (Hinv y) := by
+    intro x y
+    have h := Hinv_symm hGauss.toLaplaceCovHypotheses x y
+    unfold dot
+    have h_lhs : ∑ k, (Hinv x) k * y k = ∑ k, y k * (Hinv x) k := by
+      apply Finset.sum_congr rfl; intros; ring
+    rw [h_lhs, ← h]
+  -- Rotation identity for piece 1's closed form.
+  have hRotate :
+      dot (Hinv (A c)) (tensorContractMatrix T Hinv) =
+        dot b (Hinv (A (Hinv (tensorContractMatrix T Hinv)))) := by
+    rw [hHinv_dot (A c) (tensorContractMatrix T Hinv)]
+    rw [show dot (A c) (Hinv (tensorContractMatrix T Hinv))
+          = dot c (A (Hinv (tensorContractMatrix T Hinv))) from by
+        have := hA_symm c (Hinv (tensorContractMatrix T Hinv))
+        unfold dot at this ⊢
+        have h_swap : ∑ k, (A c) k * (Hinv (tensorContractMatrix T Hinv)) k
+            = ∑ k, (Hinv (tensorContractMatrix T Hinv)) k * (A c) k := by
+          apply Finset.sum_congr rfl; intros; ring
+        rw [h_swap]; exact this.symm]
+    show dot c _ = _
+    rw [hc_def]
+    exact hHinv_dot b (A (Hinv (tensorContractMatrix T Hinv)))
+  -- The heart: split LHS into piece 1 + piece 2.
+  -- Per gpt_responses/strategy_stage5_hsplit_concrete.md.
+  have hsplit :
+      ∫ u : ι → ℝ,
+          ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+            ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
+        = (1 / 6 : ℝ) *
+            (∫ u : ι → ℝ, dot (A c) u * T (fun _ => u) * gaussianWeight H u)
+          + ∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u) *
+                ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u := by
+    classical
+    -- Local definitions for the 5 Stein-output sums (T1..T5).
+    let T1 : ℝ :=
+      ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+        (1 / 12 : ℝ) *
+          (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          Tcoord T p q r * c i *
+          (∫ u : ι → ℝ, u j * u p * u q * u r * gaussianWeight H u)
+    let T2 : ℝ :=
+      ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+        (1 / 12 : ℝ) *
+          (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          Tcoord T p q r * c j *
+          (∫ u : ι → ℝ, u i * u p * u q * u r * gaussianWeight H u)
+    let T3 : ℝ :=
+      ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+        (1 / 12 : ℝ) *
+          (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          Tcoord T p q r * c p *
+          (∫ u : ι → ℝ, u i * u j * u q * u r * gaussianWeight H u)
+    let T4 : ℝ :=
+      ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+        (1 / 12 : ℝ) *
+          (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          Tcoord T p q r * c q *
+          (∫ u : ι → ℝ, u i * u j * u p * u r * gaussianWeight H u)
+    let T5 : ℝ :=
+      ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+        (1 / 12 : ℝ) *
+          (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+          Tcoord T p q r * c r *
+          (∫ u : ι → ℝ, u i * u j * u p * u q * gaussianWeight H u)
+    -- T-symmetry helpers.
+    have hperm_rpq : ∀ p q r : ι, Tcoord T r p q = Tcoord T p q r := by
+      intro p q r
+      let ρ : Fin 3 → ι := fun n =>
+        match n with
+        | 0 => p
+        | 1 => q
+        | 2 => r
+      have h := Tcoord_perm T hT_symm
+        (Equiv.swap (1 : Fin 3) 2 * Equiv.swap (0 : Fin 3) 1) ρ
+      simpa [ρ, Equiv.swap_apply_def] using h
+    have hperm_prq : ∀ p q r : ι, Tcoord T p r q = Tcoord T p q r := by
+      intro p q r
+      let ρ : Fin 3 → ι := fun n =>
+        match n with
+        | 0 => p
+        | 1 => q
+        | 2 => r
+      have h := Tcoord_perm T hT_symm (Equiv.swap (1 : Fin 3) 2) ρ
+      simpa [ρ, Equiv.swap_apply_def] using h
+    -- T2 = T1 via inner i↔j swap + hAcoord_symm.
+    have hT2_eq_T1 : T2 = T1 := by
+      show (∑ p, ∑ q, ∑ r, ∑ i, ∑ j, _) = _
+      refine Finset.sum_congr rfl ?_; intro p _
+      refine Finset.sum_congr rfl ?_; intro q _
+      refine Finset.sum_congr rfl ?_; intro r _
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl ?_; intro i _
+      refine Finset.sum_congr rfl ?_; intro j _
+      rw [hAcoord_symm j i]
+    -- T3 = T5 via cyclic Tcoord_perm + index renaming.
+    have hT3_eq_T5 : T3 = T5 := by
+      show (∑ p, ∑ q, ∑ r, ∑ i, ∑ j, _) = _
+      calc
+        (∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            (1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c p *
+              (∫ u : ι → ℝ, u i * u j * u q * u r * gaussianWeight H u))
+          =
+        ∑ q, ∑ r, ∑ p, ∑ i, ∑ j,
+            (1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c p *
+              (∫ u : ι → ℝ, u i * u j * u q * u r * gaussianWeight H u) := by
+            rw [Finset.sum_comm]
+            refine Finset.sum_congr rfl ?_
+            intro q _
+            rw [Finset.sum_comm]
+        _ =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            (1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T r p q * c r *
+              (∫ u : ι → ℝ, u i * u j * u p * u q * gaussianWeight H u) := rfl
+        _ =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            (1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c r *
+              (∫ u : ι → ℝ, u i * u j * u p * u q * gaussianWeight H u) := by
+            refine Finset.sum_congr rfl ?_; intro p _
+            refine Finset.sum_congr rfl ?_; intro q _
+            refine Finset.sum_congr rfl ?_; intro r _
+            refine Finset.sum_congr rfl ?_; intro i _
+            refine Finset.sum_congr rfl ?_; intro j _
+            rw [hperm_rpq p q r]
+    -- T4 = T5 via slot-1↔2 Tcoord_perm + index renaming.
+    have hT4_eq_T5 : T4 = T5 := by
+      show (∑ p, ∑ q, ∑ r, ∑ i, ∑ j, _) = _
+      calc
+        (∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            (1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c q *
+              (∫ u : ι → ℝ, u i * u j * u p * u r * gaussianWeight H u))
+          =
+        ∑ p, ∑ r, ∑ q, ∑ i, ∑ j,
+            (1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c q *
+              (∫ u : ι → ℝ, u i * u j * u p * u r * gaussianWeight H u) := by
+            refine Finset.sum_congr rfl ?_
+            intro p _
+            rw [Finset.sum_comm]
+        _ =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            (1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p r q * c r *
+              (∫ u : ι → ℝ, u i * u j * u p * u q * gaussianWeight H u) := rfl
+        _ =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            (1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c r *
+              (∫ u : ι → ℝ, u i * u j * u p * u q * gaussianWeight H u) := by
+            refine Finset.sum_congr rfl ?_; intro p _
+            refine Finset.sum_congr rfl ?_; intro q _
+            refine Finset.sum_congr rfl ?_; intro r _
+            refine Finset.sum_congr rfl ?_; intro i _
+            refine Finset.sum_congr rfl ?_; intro j _
+            rw [hperm_prq p q r]
+    -- Forward expansion of `dot (A c) u` in coords.
+    have h_dot_Ac_expand : ∀ u : ι → ℝ,
+        dot (A c) u =
+          ∑ i, ∑ j,
+            c i * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i * u j := by
+      intro u
+      have hdot_comm : dot (A c) u = dot u (A c) := by
+        unfold dot
+        refine Finset.sum_congr rfl ?_; intros; ring
+      calc
+        dot (A c) u = dot u (A c) := hdot_comm
+        _ = dot c (A u) := hA_symm u c
+        _ = ∑ i, ∑ j,
+              c i * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i * u j := by
+              unfold dot
+              refine Finset.sum_congr rfl ?_; intro i _
+              rw [H_apply_eq_sum A u i, Finset.mul_sum]
+              refine Finset.sum_congr rfl ?_; intro j _; ring
+    -- Pointwise expansion of piece 1's integrand.
+    have h_pt_piece1 : ∀ u : ι → ℝ,
+        dot (A c) u * T (fun _ : Fin 3 => u) * gaussianWeight H u =
+          ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c i *
+              (u j * u p * u q * u r * gaussianWeight H u) := by
+      intro u
+      rw [h_dot_Ac_expand u, T_apply_diag_eq_sum]
+      rw [show (∑ i, ∑ j,
+            c i * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i * u j) *
+            (∑ p, ∑ q, ∑ r, u p * u q * u r * Tcoord T p q r) *
+            gaussianWeight H u
+          = (∑ p, ∑ q, ∑ r, u p * u q * u r * Tcoord T p q r) *
+              ((∑ i, ∑ j,
+                c i * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i * u j) *
+                gaussianWeight H u) from by ring]
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_; intro p _
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_; intro q _
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_; intro r _
+      rw [show (u p * u q * u r * Tcoord T p q r) *
+            ((∑ i, ∑ j,
+              c i * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i * u j) *
+              gaussianWeight H u)
+          = ((u p * u q * u r * Tcoord T p q r) * gaussianWeight H u) *
+              (∑ i, ∑ j,
+                c i * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i * u j)
+          from by ring]
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro i _
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro j _
+      ring
+    -- Forward expansion of piece 1: integrate the pointwise identity.
+    have h_piece1_expand :
+        (1 / 6 : ℝ) *
+            ∫ u : ι → ℝ, dot (A c) u * T (fun _ : Fin 3 => u) * gaussianWeight H u
+          =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+          (1 / 6 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r * c i *
+            (∫ u : ι → ℝ, u j * u p * u q * u r * gaussianWeight H u) := by
+      rw [show (fun u : ι → ℝ =>
+            dot (A c) u * T (fun _ : Fin 3 => u) * gaussianWeight H u)
+          = fun u : ι → ℝ =>
+              ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+                (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+                  Tcoord T p q r * c i *
+                  (u j * u p * u q * u r * gaussianWeight H u) from
+        funext h_pt_piece1]
+      rw [integral_finset_sum Finset.univ
+          (fun p _ => integrable_finset_sum Finset.univ
+            (fun q _ => integrable_finset_sum Finset.univ
+              (fun r _ => integrable_finset_sum Finset.univ
+                (fun i _ => integrable_finset_sum Finset.univ
+                  (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+                      j p q r).const_mul _)))))]
+      conv_lhs =>
+        enter [2, 2, p]
+        rw [integral_finset_sum Finset.univ
+          (fun q _ => integrable_finset_sum Finset.univ
+            (fun r _ => integrable_finset_sum Finset.univ
+              (fun i _ => integrable_finset_sum Finset.univ
+                (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+                    j p q r).const_mul _))))]
+        enter [2, q]
+        rw [integral_finset_sum Finset.univ
+          (fun r _ => integrable_finset_sum Finset.univ
+            (fun i _ => integrable_finset_sum Finset.univ
+              (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+                  j p q r).const_mul _)))]
+        enter [2, r]
+        rw [integral_finset_sum Finset.univ
+          (fun i _ => integrable_finset_sum Finset.univ
+            (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+                j p q r).const_mul _))]
+        enter [2, i]
+        rw [integral_finset_sum Finset.univ
+          (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+              j p q r).const_mul _)]
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro p _
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro q _
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro r _
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro i _
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro j _
+      rw [integral_const_mul]; ring
+    -- T1 + T2 = piece 1.
+    have h_piece1 : T1 + T2
+        = (1 / 6 : ℝ) *
+            ∫ u : ι → ℝ, dot (A c) u * T (fun _ => u) * gaussianWeight H u := by
+      rw [hT2_eq_T1]
+      calc
+        T1 + T1 = (2 : ℝ) * T1 := by ring
+        _ =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+          (1 / 6 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r * c i *
+            (∫ u : ι → ℝ, u j * u p * u q * u r * gaussianWeight H u) := by
+          show (2 : ℝ) * (∑ p, ∑ q, ∑ r, ∑ i, ∑ j, _) = _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro p _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro q _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro r _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro i _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro j _
+          ring
+        _ = (1 / 6 : ℝ) *
+              ∫ u : ι → ℝ, dot (A c) u * T (fun _ => u) * gaussianWeight H u :=
+            h_piece1_expand.symm
+    -- Forward expansion of `quadForm A` in coords.
+    have h_qA_expand : ∀ u : ι → ℝ,
+        quadForm A u =
+          ∑ i, ∑ j,
+            u i * u j * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
+      intro u
+      unfold quadForm
+      refine Finset.sum_congr rfl ?_; intro i _
+      rw [H_apply_eq_sum A u i, Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro j _; ring
+    -- Forward expansion of `quadForm B` using cubicPartialOp_basis_coord.
+    have h_qB_expand : ∀ u : ι → ℝ,
+        quadForm B u =
+          ∑ p, ∑ q, ∑ r, u p * u q * c r * Tcoord T p q r := by
+      intro u
+      unfold quadForm
+      refine Finset.sum_congr rfl ?_; intro p _
+      rw [H_apply_eq_sum B u p]
+      simp_rw [show ∀ q : ι, (B (Pi.single (M := fun _ : ι => ℝ) q (1 : ℝ))) p
+            = ∑ r, c r * Tcoord T p q r from fun q => by
+              simpa [B] using cubicPartialOp_basis_coord (T := T) (c := c) p q]
+      simp only [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro q _
+      refine Finset.sum_congr rfl ?_; intro r _; ring
+    -- Pointwise expansion of piece 2's integrand.
+    have h_pt_piece2 : ∀ u : ι → ℝ,
+        ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u) *
+            gaussianWeight H u
+          =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+          (1 / 4 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r * c r *
+            (u i * u j * u p * u q * gaussianWeight H u) := by
+      intro u
+      rw [h_qA_expand u, h_qB_expand u]
+      rw [show ((1 / 2 : ℝ) *
+              (∑ i, ∑ j, u i * u j *
+                (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)) *
+            ((1 / 2 : ℝ) *
+              (∑ p, ∑ q, ∑ r, u p * u q * c r * Tcoord T p q r)) *
+            gaussianWeight H u
+          = (∑ p, ∑ q, ∑ r, u p * u q * c r * Tcoord T p q r) *
+              (((1 / 4 : ℝ) * gaussianWeight H u) *
+                (∑ i, ∑ j, u i * u j *
+                  (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i)) from by ring]
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_; intro p _
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_; intro q _
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl ?_; intro r _
+      rw [show (u p * u q * c r * Tcoord T p q r) *
+            (((1 / 4 : ℝ) * gaussianWeight H u) *
+              (∑ i, ∑ j, u i * u j *
+                (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i))
+          = ((u p * u q * c r * Tcoord T p q r) *
+              ((1 / 4 : ℝ) * gaussianWeight H u)) *
+              (∑ i, ∑ j, u i * u j *
+                (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i) from by ring]
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro i _
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro j _
+      ring
+    -- Forward expansion of piece 2: integrate the pointwise identity.
+    have h_piece2_expand :
+        (∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u) *
+            ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u)
+          =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+          (1 / 4 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r * c r *
+            (∫ u : ι → ℝ, u i * u j * u p * u q * gaussianWeight H u) := by
+      rw [show (fun u : ι → ℝ =>
+            ((1 / 2 : ℝ) * quadForm A u) * ((1 / 2 : ℝ) * quadForm B u) *
+              gaussianWeight H u)
+          = fun u : ι → ℝ =>
+              ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+                (1 / 4 : ℝ) *
+                  (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+                  Tcoord T p q r * c r *
+                  (u i * u j * u p * u q * gaussianWeight H u) from
+        funext h_pt_piece2]
+      rw [integral_finset_sum Finset.univ
+          (fun p _ => integrable_finset_sum Finset.univ
+            (fun q _ => integrable_finset_sum Finset.univ
+              (fun r _ => integrable_finset_sum Finset.univ
+                (fun i _ => integrable_finset_sum Finset.univ
+                  (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+                      i j p q).const_mul _)))))]
+      conv_lhs =>
+        enter [2, p]
+        rw [integral_finset_sum Finset.univ
+          (fun q _ => integrable_finset_sum Finset.univ
+            (fun r _ => integrable_finset_sum Finset.univ
+              (fun i _ => integrable_finset_sum Finset.univ
+                (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+                    i j p q).const_mul _))))]
+        enter [2, q]
+        rw [integral_finset_sum Finset.univ
+          (fun r _ => integrable_finset_sum Finset.univ
+            (fun i _ => integrable_finset_sum Finset.univ
+              (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+                  i j p q).const_mul _)))]
+        enter [2, r]
+        rw [integral_finset_sum Finset.univ
+          (fun i _ => integrable_finset_sum Finset.univ
+            (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+                i j p q).const_mul _))]
+        enter [2, i]
+        rw [integral_finset_sum Finset.univ
+          (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
+              i j p q).const_mul _)]
+      simp_rw [integral_const_mul]
+    -- T3 + T4 + T5 = piece 2.
+    have h_piece2 : T3 + T4 + T5
+        = ∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u) *
+            ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u := by
+      rw [hT3_eq_T5, hT4_eq_T5]
+      calc
+        T5 + T5 + T5 = (3 : ℝ) * T5 := by ring
+        _ =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+          (1 / 4 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r * c r *
+            (∫ u : ι → ℝ, u i * u j * u p * u q * gaussianWeight H u) := by
+          show (3 : ℝ) * (∑ p, ∑ q, ∑ r, ∑ i, ∑ j, _) = _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro p _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro q _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro r _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro i _
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl ?_; intro j _
+          ring
+        _ = ∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u) *
+              ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u :=
+            h_piece2_expand.symm
+    -- LHS coord-expand and apply gaussian_dot_quintic_stein.
+    have h_lhs_pt : ∀ u : ι → ℝ,
+        ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+            ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u =
+        ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+          ((1 / 12 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r) *
+            (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u) := by
+      intro u
+      rw [T_apply_diag_eq_sum T u, h_qA_expand u]
+      simp only [Finset.sum_mul, Finset.mul_sum]
+      refine Finset.sum_congr rfl ?_; intro p _
+      refine Finset.sum_congr rfl ?_; intro q _
+      refine Finset.sum_congr rfl ?_; intro r _
+      refine Finset.sum_congr rfl ?_; intro i _
+      refine Finset.sum_congr rfl ?_; intro j _
+      ring
+    -- Integrability of individual terms.
+    have h_int_dotbu : ∀ i j p q r : ι, Integrable (fun u : ι → ℝ =>
+        dot b u * u i * u j * u p * u q * u r * gaussianWeight H u) := by
+      intros i j p q r
+      have h_pt : ∀ u : ι → ℝ,
+          dot b u * u i * u j * u p * u q * u r * gaussianWeight H u =
+            ∑ l, b l *
+              (u l * u i * u j * u p * u q * u r * gaussianWeight H u) := by
+        intro u
+        unfold dot
+        rw [Finset.sum_mul, Finset.sum_mul, Finset.sum_mul, Finset.sum_mul,
+            Finset.sum_mul, Finset.sum_mul]
+        refine Finset.sum_congr rfl ?_; intros l _; ring
+      rw [show (fun u : ι → ℝ =>
+              dot b u * u i * u j * u p * u q * u r * gaussianWeight H u) =
+            fun u => ∑ l, b l *
+              (u l * u i * u j * u p * u q * u r * gaussianWeight H u)
+          from funext h_pt]
+      exact integrable_finset_sum _
+        (fun l _ => (hGauss.int_6moment l i j p q r).const_mul _)
+    have h_int_term : ∀ p q r i j : ι, Integrable (fun u : ι → ℝ =>
+        ((1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r) *
+          (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
+      fun p q r i j => (h_int_dotbu i j p q r).const_mul _
+    have h_int_j : ∀ p q r i, Integrable (fun u : ι → ℝ =>
+        ∑ j, ((1 / 12 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r) *
+          (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
+      fun p q r i => integrable_finset_sum _ (fun j _ => h_int_term p q r i j)
+    have h_int_i : ∀ p q r, Integrable (fun u : ι → ℝ =>
+        ∑ i, ∑ j, ((1 / 12 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r) *
+          (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
+      fun p q r => integrable_finset_sum _ (fun i _ => h_int_j p q r i)
+    have h_int_r : ∀ p q, Integrable (fun u : ι → ℝ =>
+        ∑ r, ∑ i, ∑ j, ((1 / 12 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r) *
+          (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
+      fun p q => integrable_finset_sum _ (fun r _ => h_int_i p q r)
+    have h_int_q : ∀ p, Integrable (fun u : ι → ℝ =>
+        ∑ q, ∑ r, ∑ i, ∑ j, ((1 / 12 : ℝ) *
+            (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r) *
+          (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
+      fun p => integrable_finset_sum _ (fun q _ => h_int_r p q)
+    -- Compute LHS: integrate, swap sums/integral, apply Stein, distribute.
+    rw [show (fun u : ι → ℝ =>
+            ((1 / 2 : ℝ) * quadForm A u) * dot b u *
+              ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u) =
+          fun u => ∑ p, ∑ q, ∑ r, ∑ i, ∑ j,
+            ((1 / 12 : ℝ) *
+              (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+                Tcoord T p q r) *
+              (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)
+        from funext h_lhs_pt]
+    rw [integral_finset_sum _ (fun p _ => h_int_q p)]
+    conv_lhs =>
+      enter [2, p]
+      rw [integral_finset_sum _ (fun q _ => h_int_r p q)]
+      enter [2, q]
+      rw [integral_finset_sum _ (fun r _ => h_int_i p q r)]
+      enter [2, r]
+      rw [integral_finset_sum _ (fun i _ => h_int_j p q r i)]
+      enter [2, i]
+      rw [integral_finset_sum _ (fun j _ => h_int_term p q r i j)]
+      enter [2, j]
+      rw [integral_const_mul]
+      rw [gaussian_dot_quintic_stein hGauss b i j p q r]
+    -- Distribute and identify with T1..T5.
+    have h_dist : ∀ p q r i j : ι,
+        ((1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+            Tcoord T p q r) *
+          ((Hinv b) i *
+              (∫ u, u j * u p * u q * u r * gaussianWeight H u)
+            + (Hinv b) j *
+              (∫ u, u i * u p * u q * u r * gaussianWeight H u)
+            + (Hinv b) p *
+              (∫ u, u i * u j * u q * u r * gaussianWeight H u)
+            + (Hinv b) q *
+              (∫ u, u i * u j * u p * u r * gaussianWeight H u)
+            + (Hinv b) r *
+              (∫ u, u i * u j * u p * u q * gaussianWeight H u))
+        = (1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c i *
+              (∫ u, u j * u p * u q * u r * gaussianWeight H u)
+          + (1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c j *
+              (∫ u, u i * u p * u q * u r * gaussianWeight H u)
+          + (1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c p *
+              (∫ u, u i * u j * u q * u r * gaussianWeight H u)
+          + (1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c q *
+              (∫ u, u i * u j * u p * u r * gaussianWeight H u)
+          + (1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
+              Tcoord T p q r * c r *
+              (∫ u, u i * u j * u p * u q * gaussianWeight H u) := by
+      intros p q r i j
+      simp only [hc_def]; ring
+    conv_lhs =>
+      enter [2, p, 2, q, 2, r, 2, i, 2, j]
+      rw [h_dist p q r i j]
+    simp_rw [Finset.sum_add_distrib]
+    -- Now LHS = T1 + T2 + T3 + T4 + T5.
+    -- Combine with h_piece1, h_piece2.
+    show T1 + T2 + T3 + T4 + T5 = _
+    calc
+      T1 + T2 + T3 + T4 + T5 = (T1 + T2) + (T3 + T4 + T5) := by ring
+      _ = (1 / 6 : ℝ) *
+              (∫ u : ι → ℝ, dot (A c) u * T (fun _ => u) * gaussianWeight H u) +
+            ∫ u : ι → ℝ, ((1 / 2 : ℝ) * quadForm A u) *
+                ((1 / 2 : ℝ) * quadForm B u) * gaussianWeight H u := by
+          rw [h_piece1, h_piece2]
+  -- Combine: split, evaluate two integrals, identify trace forms, rotate, ring.
+  rw [hsplit]
+  rw [show (1 / 6 : ℝ) *
+        (∫ u : ι → ℝ, dot (A c) u * T (fun _ => u) * gaussianWeight H u) =
+      (1 / 6 : ℝ) *
+        (gaussianZ H * 3 *
+          dot (Hinv (A c)) (tensorContractMatrix T Hinv)) from by
+    rw [gaussian_linear_cubic (A c) T hT_symm
+        hGauss.toLaplaceCov4MomentHypotheses]]
+  rw [gaussian_quad_quad A B hA_symm hB_symm
+      hGauss.toLaplaceCov4MomentHypotheses]
+  rw [show trASig B Hinv = dot c (tensorContractMatrix T Hinv) from
+      cubicPartialOp_trASig T c Hinv hT_symm]
+  rw [show trASig (A.comp Hinv) (B.comp Hinv) =
+        dot c (tensorContractMatrix T (Hinv.comp (A.comp Hinv))) from
+      cubicPartialOp_trASig_compSig T c A Hinv hT_symm]
+  rw [hRotate]
+  rw [show c = Hinv b from hc_def]
+  ring
 
 end GaussianContractions
 
