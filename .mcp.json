@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "lean": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "lean-lsp-mcp",
+        "lean-lsp-mcp",
+        "--lean-project-path",
+        "${HOME}/Coding/timaeus/sri/lean/laplace"
+      ]
+    }
+  }
+}
