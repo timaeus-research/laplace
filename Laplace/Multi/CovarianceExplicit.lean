@@ -4278,6 +4278,16 @@ private lemma expPotCubic_neg
   rw [cmm_diag_odd hV.T u]
   ring
 
+/-- The cubic obs jet is odd: `P_t(-u) = -P_t(u)`. -/
+private lemma expNumCubic_neg
+    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
+    (hφ : ObservableTensorApprox φ a)
+    (t : ℝ) (u : ι → ℝ) :
+    expNumCubic φ a hφ t (-u) = - expNumCubic φ a hφ t u := by
+  unfold expNumCubic
+  rw [cmm_diag_odd hφ.Φ u]
+  ring
+
 /-! ### Quintic remainder rescaling (for J₃) -/
 
 /-- **Rescaled quintic odd-remainder bound** (for J₃ rate). For `‖u‖ ≤ jet_radius·√t`,
@@ -5352,6 +5362,117 @@ private lemma abs_expNumObsRem_local_le
     ring
   rw [h_inner_eq]
   exact h_jet
+
+/-- **Odd-quintic bound on `expNumObsRem`'s u → -u difference** (for
+Lemma A's bulk-block).
+
+On the local ball `‖u‖ ≤ jet_radius · √t`, given `ObservableQuinticApprox`,
+\[
+  |\text{expNumObsRem}(u) - \text{expNumObsRem}(-u)|
+    \le \frac{Q_{\text{const}} \cdot \|u\|^5}{t^2 \cdot \sqrt t}.
+\]
+
+Key observation: with `a = 0`, the linear and quadratic parts of
+`expNumObsRem` cancel under `u → -u` (linear is odd at a=0 ⟹ becomes 0,
+quadratic Q_A is even ⟹ cancels). The cubic `expNumCubic` doubles. So
+the difference is `(φ(w) - φ(-w)) - 2·expNumCubic(u)`. Using
+`expNumCubic = (1/6)·Φ(w,w,w)` (Φ rescaling), this equals
+`(φ(w) - φ(-w)) - (1/3)·Φ(w,w,w)`, which is exactly the quintic-bound
+LHS for `a = 0`. -/
+private lemma abs_expNumObsRem_sub_neg_quintic_le
+    (φ : (ι → ℝ) → ℝ)
+    (hφ : ObservableQuinticApprox φ (0 : ι → ℝ))
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ)
+    (hu : ‖u‖ ≤ hφ.toObservableTensorApprox.jet_radius * Real.sqrt t) :
+    |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+        - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)|
+      ≤ hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t) := by
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hsqrt_ne : Real.sqrt t ≠ 0 := hsqrt_pos.ne'
+  have ht_ne : t ≠ 0 := ht.ne'
+  have h_sq : Real.sqrt t * Real.sqrt t = t := Real.mul_self_sqrt ht.le
+  -- Apply quintic bound at w = (√t)⁻¹ • u.
+  have h_norm_le : ‖(Real.sqrt t)⁻¹ • u‖ ≤ hφ.toObservableTensorApprox.jet_radius := by
+    rw [norm_smul, Real.norm_eq_abs,
+        abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
+    rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
+    rwa [div_le_iff₀ hsqrt_pos]
+  have h_quintic := hφ.φ_odd_quintic_bound ((Real.sqrt t)⁻¹ • u) h_norm_le
+  -- Simplify: 2 · dot 0 ((√t)⁻¹ • u) = 0.
+  have h_dot_zero_w : (2 : ℝ) * dot (0 : ι → ℝ) ((Real.sqrt t)⁻¹ • u) = 0 := by
+    unfold dot; simp
+  rw [h_dot_zero_w, sub_zero] at h_quintic
+  -- ‖(√t)⁻¹ • u‖^5 = ‖u‖^5 / (t² · √t).
+  have h_norm5 : ‖(Real.sqrt t)⁻¹ • u‖ ^ 5 = ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t) := by
+    rw [norm_smul, Real.norm_eq_abs,
+        abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹), mul_pow]
+    have h_sqrt5_eq : (Real.sqrt t) ^ 5 = t ^ 2 * Real.sqrt t := by
+      have h_sqrt2 : (Real.sqrt t) ^ 2 = t := Real.sq_sqrt ht.le
+      have h_sqrt4 : (Real.sqrt t) ^ 4 = t ^ 2 := by
+        rw [show (Real.sqrt t) ^ 4 = ((Real.sqrt t) ^ 2) ^ 2 from by ring, h_sqrt2]
+      rw [show (Real.sqrt t) ^ 5 = (Real.sqrt t) ^ 4 * Real.sqrt t from by ring,
+          h_sqrt4]
+    have h_inv5 : ((Real.sqrt t)⁻¹) ^ 5 = ((Real.sqrt t) ^ 5)⁻¹ := by
+      rw [← inv_pow]
+    rw [h_inv5, h_sqrt5_eq]
+    field_simp
+  rw [h_norm5] at h_quintic
+  -- Reduce expNumObsRem(u) - expNumObsRem(-u) to quintic-bound LHS form.
+  have h_smul_neg : (Real.sqrt t)⁻¹ • (-u : ι → ℝ) = -((Real.sqrt t)⁻¹ • u) := by
+    simp [smul_neg]
+  -- expNumLin (a=0): both are 0.
+  have h_lin_zero : expNumLin (0 : ι → ℝ) t u = 0 := by
+    unfold expNumLin dot; simp
+  have h_lin_zero_neg : expNumLin (0 : ι → ℝ) t (-u) = 0 := by
+    unfold expNumLin dot; simp
+  -- expNumQuad(u) = expNumQuad(-u).
+  have h_Q_neg := expNumQuad_neg φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+  -- expNumCubic(-u) = -expNumCubic(u).
+  have h_P_neg := expNumCubic_neg φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+  -- Compute the difference directly.
+  have h_diff_eq : expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+      - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)
+      = (φ ((Real.sqrt t)⁻¹ • u) - φ (-((Real.sqrt t)⁻¹ • u)))
+        - 2 * expNumCubic φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u := by
+    unfold expNumObsRem
+    rw [h_lin_zero, h_lin_zero_neg, h_Q_neg, h_P_neg]
+    -- LHS: (φ(w) - 0 - Q - P(u)) - (φ((√t)⁻¹•(-u)) - 0 - Q - (-P(u)))
+    --    = φ(w) - φ(...) - 2P(u)
+    rw [show ((Real.sqrt t)⁻¹ • -u : ι → ℝ) = -((Real.sqrt t)⁻¹ • u) from h_smul_neg]
+    ring
+  rw [h_diff_eq]
+  -- Now show 2 * expNumCubic(u) = (1/3) · Φ((√t)⁻¹ • u, ...).
+  -- expNumCubic(u) = (√t)⁻¹/t · (1/6) · Φ(u,u,u). Using Φ(w,w,w) = (√t)⁻¹^3 Φ(u,u,u),
+  -- 2·expNumCubic(u) = 2·(√t)⁻¹/t·(1/6)·Φ(u,u,u) = (1/(3·t·√t))·Φ(u,u,u)
+  --                 = (1/3)·(√t)⁻¹^3·Φ(u,u,u) = (1/3)·Φ(w,w,w).
+  have h_Φ_rescale : hφ.toObservableTensorApprox.Φ (fun _ : Fin 3 => (Real.sqrt t)⁻¹ • u)
+      = ((Real.sqrt t)⁻¹) ^ 3 * hφ.toObservableTensorApprox.Φ (fun _ => u) := by
+    have := hφ.toObservableTensorApprox.Φ.map_smul_univ
+      (fun _ : Fin 3 => (Real.sqrt t)⁻¹) (fun _ => u)
+    simpa using this
+  have h_2P_eq : 2 * expNumCubic φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+      = (1 / 3 : ℝ) * hφ.toObservableTensorApprox.Φ
+          (fun _ : Fin 3 => (Real.sqrt t)⁻¹ • u) := by
+    unfold expNumCubic
+    rw [h_Φ_rescale]
+    have h_inv3 : ((Real.sqrt t)⁻¹) ^ 3 = (Real.sqrt t)⁻¹ / t := by
+      rw [show ((Real.sqrt t)⁻¹) ^ 3
+            = (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ from by ring]
+      rw [show (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ =
+            ((Real.sqrt t) * (Real.sqrt t))⁻¹ from by rw [mul_inv]]
+      rw [h_sq]
+      field_simp
+    rw [h_inv3]
+    field_simp
+    ring
+  rw [h_2P_eq]
+  -- h_quintic gives Q · (‖u‖^5 / (t²·√t)); goal wants Q · ‖u‖^5 / (t²·√t).
+  -- Convert via mul_div_assoc.
+  have h_eq : hφ.Q_const * (‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t))
+      = hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t) := by
+    rw [mul_div_assoc]
+  linarith [h_quintic, h_eq.le, h_eq.ge]
 
 /-- **Global polynomial bound on `expNumObsRem`** (for J₁ tail). For `t ≥ 1`,
 `|R_{φ,t}(u)| ≤ R_const · (1 + ‖u‖^N)` where `N := max p 3` and the constant
