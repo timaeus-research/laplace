@@ -12194,6 +12194,208 @@ private lemma bulkErrA_gaussian_asymptotic
   -- (a) `set Sym := fun u => ...` + `|Sym u|` not beta-reducing under `rw`,
   -- (b) `rw [t = √t·√t]` rewriting too aggressively into `Real.sqrt t`.
   sorry
+
+/-- **`bulkErrA · gW · exp(-s_t)` integrability** (helper for main theorem
+`rescaledIntegral_cross_linear_connected_asymptotic`).
+
+Polynomial dominance:
+- `|bulkErrA(u)| ≤ t·√t·‖b‖_1·‖u‖·R_const·(1+‖u‖^N)` globally for `t ≥ 1`
+  via `abs_expNumObsRem_global_le`.
+- `gW · exp(-s_t) ≤ exp(-c·‖u‖²)` via `rescaled_weight_le_coercive`.
+- Combined: dominator `Cdom · ‖u‖·(1+‖u‖^N) · exp(-c·‖u‖²)` is integrable.
+
+Same dominance pattern as in `abs_integral_bulkErrA_le`; extracted here as
+a standalone helper for clean use in the main theorem assembly. -/
+private lemma integrable_bulkErrA_mul_rescaled_weight
+    (V φ : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    (hφ : ObservableQuinticApprox φ (0 : ι → ℝ))
+    {t : ℝ} (ht : 1 ≤ t) :
+    Integrable (fun u : ι → ℝ =>
+      bulkErrA φ b hφ.toObservableTensorApprox t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+  classical
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht
+  set c : ℝ := hV.toPotentialApprox.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.toPotentialApprox.coercive_const_pos
+  have h_coer := hV.toPotentialApprox.coercive_bound
+  have hVc : Continuous V := hV.toPotentialApprox.V_continuous
+  have hφ_cont : Continuous φ := hφ.toObservableApprox.phi_continuous
+  -- Setup constants for global polynomial bound on expNumObsRem.
+  obtain ⟨Kφ, p, hKφ_nn, h_poly_φ⟩ := hφ.toObservableApprox.poly_growth
+  set N : ℕ := max p 3 with hN_def
+  set N₁ : ℝ := (Fintype.card ι : ℝ) with hN1_def
+  have hN1_nn : 0 ≤ N₁ := by rw [hN1_def]; exact_mod_cast Nat.zero_le _
+  set R_const : ℝ :=
+    2 * Kφ + (1/2 : ℝ) * N₁ * ‖hφ.toObservableTensorApprox.A‖
+      + ‖hφ.toObservableTensorApprox.Φ‖ / 6 with hR_const_def
+  have hR_const_nn : 0 ≤ R_const := by rw [hR_const_def]; positivity
+  set bL1 : ℝ := ∑ i, |b i| with hbL1_def
+  have hbL1_nn : 0 ≤ bL1 := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  -- |expNumObsRem(u)| ≤ R_const · (1+‖u‖^N) globally for t ≥ 1.
+  have h_R_global : ∀ v : ι → ℝ,
+      |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t v|
+        ≤ R_const * (1 + ‖v‖ ^ N) := by
+    intro v
+    have h := abs_expNumObsRem_global_le (φ := φ) (a := (0 : ι → ℝ))
+      (hφ := hφ.toObservableTensorApprox) hKφ_nn h_poly_φ ht v
+    have h_dot_zero : ∑ i : ι, |((0 : ι → ℝ)) i| = 0 := by simp
+    rw [h_dot_zero, zero_mul, add_zero] at h
+    have h_normN_nn : 0 ≤ ‖v‖ ^ N := pow_nonneg (norm_nonneg _) _
+    have h_p_le_N : p ≤ N := le_max_left _ _
+    have h_3_le_N : 3 ≤ N := le_max_right _ _
+    have h_v_p_le : ‖v‖ ^ p ≤ 1 + ‖v‖ ^ N := by
+      by_cases hv : ‖v‖ ≤ 1
+      · have : ‖v‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
+        linarith
+      · push_neg at hv
+        have h1 : ‖v‖ ^ p ≤ ‖v‖ ^ N :=
+          pow_le_pow_right₀ hv.le h_p_le_N
+        linarith
+    have h_v_2_le : ‖v‖ ^ 2 ≤ 1 + ‖v‖ ^ N := by
+      by_cases hv : ‖v‖ ≤ 1
+      · have : ‖v‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
+        linarith
+      · push_neg at hv
+        have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
+          pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
+        linarith
+    have h_v_3_le : ‖v‖ ^ 3 ≤ 1 + ‖v‖ ^ N := by
+      by_cases hv : ‖v‖ ≤ 1
+      · have : ‖v‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
+        linarith
+      · push_neg at hv
+        have h1 : ‖v‖ ^ 3 ≤ ‖v‖ ^ N :=
+          pow_le_pow_right₀ hv.le h_3_le_N
+        linarith
+    calc |expNumObsRem φ 0 hφ.toObservableTensorApprox t v|
+        ≤ Kφ * (1 + ‖v‖ ^ p)
+            + (1 / 2 : ℝ) * ↑(Fintype.card ι) *
+                ‖hφ.toObservableTensorApprox.A‖ * ‖v‖ ^ 2
+            + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * ‖v‖ ^ 3 := h
+      _ ≤ Kφ * (1 + (1 + ‖v‖ ^ N))
+            + (1 / 2 : ℝ) * N₁ * ‖hφ.toObservableTensorApprox.A‖ *
+                (1 + ‖v‖ ^ N)
+            + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * (1 + ‖v‖ ^ N) := by gcongr
+      _ ≤ R_const * (1 + ‖v‖ ^ N) := by
+          rw [hR_const_def]; nlinarith [hKφ_nn, h_normN_nn]
+  -- Continuity of integrand.
+  have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
+    continuous_const.smul continuous_id
+  have h_phi_smul : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
+    hφ_cont.comp h_smul
+  have h_dot_b : Continuous (fun u : ι → ℝ => dot b u) := by
+    unfold dot
+    exact continuous_finset_sum _ (fun i _ =>
+      continuous_const.mul (continuous_apply i))
+  have h_quadφ : Continuous (fun u : ι → ℝ =>
+      quadForm hφ.toObservableTensorApprox.A u) :=
+    continuous_quadForm hφ.toObservableTensorApprox.A
+  have h_diag : Continuous (fun u : ι → ℝ => fun _ : Fin 3 => u) := by
+    apply continuous_pi; intro _; exact continuous_id
+  have h_Φφ : Continuous (fun u : ι → ℝ =>
+      hφ.toObservableTensorApprox.Φ (fun _ : Fin 3 => u)) :=
+    hφ.toObservableTensorApprox.Φ.cont.comp h_diag
+  have h_R_cont : Continuous (fun u : ι → ℝ =>
+      expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u) := by
+    unfold expNumObsRem expNumLin expNumQuad expNumCubic
+    have h_lin_cont : Continuous (fun u : ι → ℝ =>
+        (Real.sqrt t)⁻¹ * dot (0 : ι → ℝ) u) := by
+      have h_eq : (fun u : ι → ℝ => (Real.sqrt t)⁻¹ * dot (0 : ι → ℝ) u)
+          = fun _ => 0 := by funext u; unfold dot; simp
+      rw [h_eq]; exact continuous_const
+    have h_quad_cont : Continuous (fun u : ι → ℝ =>
+        (1 / t) * ((1 / 2 : ℝ) *
+          quadForm hφ.toObservableTensorApprox.A u)) :=
+      continuous_const.mul (continuous_const.mul h_quadφ)
+    have h_cubic_cont : Continuous (fun u : ι → ℝ =>
+        (Real.sqrt t)⁻¹ / t * ((1 / 6 : ℝ) *
+          hφ.toObservableTensorApprox.Φ (fun _ : Fin 3 => u))) :=
+      continuous_const.mul (continuous_const.mul h_Φφ)
+    exact ((h_phi_smul.sub h_lin_cont).sub h_quad_cont).sub h_cubic_cont
+  have h_bulkErrA_cont : Continuous (fun u : ι → ℝ =>
+      bulkErrA φ b hφ.toObservableTensorApprox t u) := by
+    unfold bulkErrA
+    exact (continuous_const.mul h_dot_b).mul h_R_cont
+  have h_exp_cont : Continuous (fun u : ι → ℝ =>
+      Real.exp (-(rescaledPerturbation V H t u))) :=
+    Real.continuous_exp.comp (continuous_rescaledPerturbation hVc H t).neg
+  have h_int_cont : Continuous (fun u : ι → ℝ =>
+      bulkErrA φ b hφ.toObservableTensorApprox t u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    (h_bulkErrA_cont.mul (continuous_gaussianWeight H)).mul h_exp_cont
+  -- Polynomial dominator.
+  set Cdom : ℝ := t * Real.sqrt t * bL1 * R_const with hCdom_def
+  have hCdom_nn : 0 ≤ Cdom := by rw [hCdom_def]; positivity
+  have h_int1 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 1
+  have h_intN1 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos (N + 1)
+  have h_int_dom : Integrable (fun u : ι → ℝ =>
+      Cdom * (‖u‖ * (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2)))) := by
+    have ha := h_int1.const_mul Cdom
+    have hb := h_intN1.const_mul Cdom
+    refine (ha.add hb).congr (Filter.Eventually.of_forall fun u => ?_)
+    have h_pow : ‖u‖ * ‖u‖ ^ N = ‖u‖ ^ (N + 1) := by
+      rw [show (N + 1 : ℕ) = 1 + N from by ring, pow_add, pow_one]
+    show Cdom * (‖u‖ ^ 1 * Real.exp (-(c * ‖u‖ ^ 2)))
+          + Cdom * (‖u‖ ^ (N + 1) * Real.exp (-(c * ‖u‖ ^ 2)))
+        = Cdom * (‖u‖ * (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2)))
+    rw [pow_one, ← h_pow]; ring
+  -- Apply Integrable.mono'.
+  refine h_int_dom.mono' h_int_cont.aestronglyMeasurable ?_
+  filter_upwards with u
+  rw [Real.norm_eq_abs]
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  have h_combined_pos : 0 < gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) :=
+    mul_pos h_gW_pos (Real.exp_pos _)
+  have h_combined_le : gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u))
+        ≤ Real.exp (-(c * ‖u‖ ^ 2)) :=
+    rescaled_weight_le_coercive V H hc_pos h_coer ht_pos u
+  have h_dot_b_le : |dot b u| ≤ bL1 * ‖u‖ := by
+    rw [hbL1_def]; exact abs_dot_le_l1_mul_norm b u
+  rw [show bulkErrA φ b hφ.toObservableTensorApprox t u *
+          gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))
+        = bulkErrA φ b hφ.toObservableTensorApprox t u *
+          (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))
+      from by ring,
+      abs_mul, abs_of_pos h_combined_pos]
+  have h_B_t_le : |bulkErrA φ b hφ.toObservableTensorApprox t u|
+      ≤ Cdom * (‖u‖ * (1 + ‖u‖ ^ N)) := by
+    unfold bulkErrA
+    rw [show t * Real.sqrt t * dot b u *
+            expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+          = (t * Real.sqrt t) * (dot b u *
+              expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u)
+        from by ring,
+        abs_mul, abs_of_pos (by positivity : 0 < t * Real.sqrt t), abs_mul]
+    have h_t_nn : 0 ≤ t * Real.sqrt t := by positivity
+    have h_dot_R := mul_le_mul h_dot_b_le (h_R_global u) (abs_nonneg _)
+      (mul_nonneg hbL1_nn h_norm_nn)
+    have h_step := mul_le_mul_of_nonneg_left h_dot_R h_t_nn
+    have h_eq : t * Real.sqrt t * (bL1 * ‖u‖ * (R_const * (1 + ‖u‖ ^ N)))
+        = Cdom * (‖u‖ * (1 + ‖u‖ ^ N)) := by rw [hCdom_def]; ring
+    linarith
+  have h_first : |bulkErrA φ b hφ.toObservableTensorApprox t u| *
+      (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))
+      ≤ Cdom * (‖u‖ * (1 + ‖u‖ ^ N)) *
+          (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) :=
+    mul_le_mul_of_nonneg_right h_B_t_le h_combined_pos.le
+  have h_step_nn : 0 ≤ Cdom * (‖u‖ * (1 + ‖u‖ ^ N)) := by
+    apply mul_nonneg hCdom_nn (by positivity)
+  have h_second : Cdom * (‖u‖ * (1 + ‖u‖ ^ N)) *
+      (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))
+      ≤ Cdom * (‖u‖ * (1 + ‖u‖ ^ N)) * Real.exp (-(c * ‖u‖ ^ 2)) :=
+    mul_le_mul_of_nonneg_left h_combined_le h_step_nn
+  have h_eq_dom : Cdom * (‖u‖ * (1 + ‖u‖ ^ N)) * Real.exp (-(c * ‖u‖ ^ 2))
+      = Cdom * (‖u‖ * (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2))) := by ring
+  linarith [h_first, h_second, h_eq_dom.le, h_eq_dom.ge]
+
 /-- **`crossEvenKernel · gW` integrability**: from coord expansion +
 4-moment integrability. -/
 private lemma integrable_crossEvenKernel_mul_gaussianWeight
