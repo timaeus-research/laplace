@@ -17835,52 +17835,229 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
                 (Hinv.comp (hφ.toObservableTensorApprox.A.comp Hinv))))
           * rescaledPartition V t|
         ≤ K / t := by
-  -- 4-step plan per `gpt_responses/strategy_stage5_lemmas_attack.md`:
-  --
-  -- Pointwise: t·√t · (b·u) · φ_conn expands to 3 terms (with Q^c_φ = Q_φ - μ_φ):
-  --   √t · (b·u) · Q^c_φ   (parity-vanishing odd; pairs with -V_3/√t correction)
-  --   (b·u) · C_φ          (even, leading)
-  --   t·√t · (b·u) · R_φ   (quartic remainder)
-  --
-  -- Steps:
-  -- 1. **Strengthen `gaussian_quad_linear_cubic`** from existential to explicit.
-  --    GPT recommends: ONE IBP on `(b·u)`, NOT full 15-pairing 6-moment Wick.
-  --    Differentiate `(1/2 Q_A) · (1/6 T(u,u,u))`:
-  --     - derivative on `Q_A` yields `linear · cubic` integral → use
-  --       `gaussian_linear_cubic` (already proved, 4-moment).
-  --     - derivative on `T` yields `quad · quad` integral → use
-  --       `gaussian_quad_quad` (already proved, 4-moment).
-  --    Net: explicit closed form bypasses sextic moment formula entirely.
-  -- 2. **Apply parity helper P2** to `Fodd := (b·u) · Q^c_φ`:
-  --    `Fodd` is odd (linear · even). The (-V_3/√t) Taylor correction makes
-  --    `(b·u) · Q^c_φ · V_3` even, integrating to the two T-contractions
-  --    (after centering subtracts the disconnected trace via Step 1).
-  --    Note: centering MATTERS here despite parity zeroing the leading —
-  --    `μ_φ · (b·u) · V_3 · gW` is NOT zero by parity (linear·cubic = even).
-  -- 3. **Apply parity helper P1** (or direct gaussian_cubic_linear) to
-  --    `Feven := (b·u) · C_φ`:
-  --    `(b·u) · (1/6 Φ_φ(u,u,u))` integrates to `Z · (1/2)⟨Σb, Φ_φ:Σ⟩`
-  --    via `gaussian_cubic_linear`.
-  -- 4. **Bound** `t·√t · (b·u) · R_φ` using local quartic + tail:
-  --    `|R_φ| ≤ jet_const · ‖u‖^4 / t^2`, so `t·√t · |b·u| · |R_φ|
-  --    ≤ const · ‖u‖^5 / √t`. Multiplied by gW · exp(-s_t), gives K/√t.
-  --    For tighter K/t, need parity-aware bound on the odd part of R_φ.
-  --
-  -- Prerequisites (shared with Lemma B): parity helpers P1, P2 + the
-  -- explicit `gaussian_quad_linear_cubic` (Step 1 above, ~150-200 LOC).
-  --
-  -- 2026-04-29 update: After Lemma B is closed (next session), Lemma A reuses
-  -- its FQQ-style scaffolding with adaptations:
-  --   - `(b·u) · C_φ`: linear·cubic = even kernel — analogous to FQQ but
-  --     polynomial degree 4 (not centered around constant); main term via
-  --     `gaussian_cubic_linear`.
-  --   - `(b·u) · Q^c_φ · V_3`: odd kernel; needs P2 (odd analogue of FQQ
-  --     transformation). Main term from explicit `gaussian_quad_linear_cubic`.
-  --   - Strengthened `gaussian_quad_linear_cubic`: per GPT recommendation, ONE
-  --     IBP on `(b·u)` (NOT full sextic Wick), reducing to existing 4-moment
-  --     `gaussian_linear_cubic` + `gaussian_quad_quad`. ~150-200 LOC.
-  -- Total after Lemma B + strengthened Wick: ~400-600 LOC.
-  sorry
+  -- Architecture per GPT alt-path (`gpt_responses/strategy_stage5_alt_path.md`
+  -- and `gpt_responses/strategy_stage5_main_thm_skeleton.md`):
+  -- 1. Apply 3 transport asymptotics (even, odd, bulk).
+  -- 2. Pointwise identity from `cross_linear_connected_pointwise`.
+  -- 3. Integral identity via `integral_const_mul` + `integral_congr_ae` + `integral_add`.
+  -- 4. Triangle inequality on the 3-block decomposition.
+  classical
+  obtain ⟨K_E, T_E, hT_E, h_even⟩ :=
+    rescaledIntegral_evenCross_asymptotic V H Hinv b
+      hφ.toObservableTensorApprox.Φ hV.toPotentialJetApprox
+      hφ.toObservableTensorApprox.Φ_symm hGauss.toLaplaceCov4MomentHypotheses
+  obtain ⟨K_O, T_O, hT_O, h_odd⟩ :=
+    rescaledIntegral_oddCross_asymptotic V H Hinv b
+      hφ.toObservableTensorApprox.A hV
+      hφ.toObservableTensorApprox.A_symm hGauss
+  obtain ⟨K_B, T_B, hT_B, h_bulk⟩ := abs_integral_bulkErrA_le V φ H b hV hφ
+  refine ⟨K_E + K_O + K_B, max T_E (max T_O T_B), ?_, ?_⟩
+  · exact le_trans hT_E (le_max_left _ _)
+  intro t ht
+  have ht_E : T_E ≤ t := le_of_max_le_left ht
+  have ht_OB : max T_O T_B ≤ t := le_of_max_le_right ht
+  have ht_O : T_O ≤ t := le_of_max_le_left ht_OB
+  have ht_B : T_B ≤ t := le_of_max_le_right ht_OB
+  have ht_one : 1 ≤ t := le_trans hT_E ht_E
+  have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht_one
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
+  have hE := h_even t ht_E
+  have hO := h_odd t ht_O
+  have hB := h_bulk t ht_B
+  -- Setup constants for integrability witnesses.
+  set c : ℝ := hV.toPotentialApprox.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.toPotentialApprox.coercive_const_pos
+  have h_coer := hV.toPotentialApprox.coercive_bound
+  have hVc : Continuous V := hV.toPotentialApprox.V_continuous
+  -- Integrability of the 3 RHS pieces.
+  have h_int_E : Integrable (fun u : ι → ℝ =>
+      crossEvenKernel b hφ.toObservableTensorApprox.Φ u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_crossEvenKernel_mul_rescaled_weight V H Hinv b
+      hφ.toObservableTensorApprox.Φ hVc hc_pos h_coer ht_pos
+  have h_int_O : Integrable (fun u : ι → ℝ =>
+      crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_crossOddKernel_mul_rescaled_weight V H Hinv
+      hφ.toObservableTensorApprox.A b hVc hc_pos h_coer ht_pos
+  have h_int_B : Integrable (fun u : ι → ℝ =>
+      bulkErrA φ b hφ.toObservableTensorApprox t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    integrable_bulkErrA_mul_rescaled_weight V φ H b hV hφ ht_one
+  -- Integrability of √t·crossOdd·gW·exp(-s_t).
+  have h_int_O_sqrt : Integrable (fun u : ι → ℝ =>
+      Real.sqrt t * (crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    h_int_O.const_mul (Real.sqrt t)
+  -- Pointwise identity (multiply cross_linear_connected_pointwise by gW · exp(-s_t)).
+  have h_pt : ∀ u : ι → ℝ,
+      t * Real.sqrt t * (dot b u *
+          expCovPhiConn V φ H Hinv (0 : ι → ℝ)
+            hV.toPotentialTensorApprox hφ.toObservableTensorApprox t u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))
+        = crossEvenKernel b hφ.toObservableTensorApprox.Φ u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))
+          + Real.sqrt t * (crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+          + bulkErrA φ b hφ.toObservableTensorApprox t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)) := by
+    intro u
+    have h := cross_linear_connected_pointwise V φ H Hinv b
+      hV.toPotentialTensorApprox hφ.toObservableTensorApprox ht_pos u
+    -- h : t·√t·(b·u)·φ_conn = crossEven + √t·crossOdd + bulkErrA.
+    -- Multiply both sides by gW · exp(-s_t).
+    linear_combination
+      (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) * h
+  -- Integral identity:
+  -- t·√t · ∫ (b·u)·φ_conn·gW·exp(-s_t) = ∫crossEven·gW·exp + √t·∫crossOdd·gW·exp + ∫bulkErrA·gW·exp.
+  have h_int_id :
+      t * Real.sqrt t *
+          (∫ u : ι → ℝ, dot b u *
+              expCovPhiConn V φ H Hinv (0 : ι → ℝ)
+                hV.toPotentialTensorApprox hφ.toObservableTensorApprox t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+      = (∫ u, crossEvenKernel b hφ.toObservableTensorApprox.Φ u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + Real.sqrt t * (∫ u, crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        + (∫ u, bulkErrA φ b hφ.toObservableTensorApprox t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) := by
+    rw [← MeasureTheory.integral_const_mul]
+    rw [show (fun u : ι → ℝ => t * Real.sqrt t * (dot b u *
+              expCovPhiConn V φ H Hinv (0 : ι → ℝ)
+                hV.toPotentialTensorApprox hφ.toObservableTensorApprox t u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))))
+        = fun u => crossEvenKernel b hφ.toObservableTensorApprox.Φ u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            + Real.sqrt t * (crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+            + bulkErrA φ b hφ.toObservableTensorApprox t u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))
+        from funext h_pt]
+    -- Build single-lambda integrability for E + √t·O.
+    have h_int_E_O : Integrable (fun u : ι → ℝ =>
+        crossEvenKernel b hφ.toObservableTensorApprox.Φ u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))
+        + Real.sqrt t * (crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+          gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u)))) := by
+      refine (h_int_E.add h_int_O_sqrt).congr
+        (Filter.Eventually.of_forall fun u => ?_)
+      simp only [Pi.add_apply]
+    rw [MeasureTheory.integral_add h_int_E_O h_int_B]
+    rw [MeasureTheory.integral_add h_int_E h_int_O_sqrt]
+    rw [MeasureTheory.integral_const_mul]
+  -- Triangle inequality.
+  rw [h_int_id]
+  -- Algebraic split: t·√t · ∫f - C·D = (∫E - C_E·D) + (√t·∫O + C_O·D) + ∫B
+  -- where C = C_E - (C_O₁ + C_O₂) and oddCrossMainConst = C_O₁ + C_O₂.
+  set Cmain : ℝ := (1 / 2 : ℝ) * dot (Hinv b)
+      (tensorContractMatrix hφ.toObservableTensorApprox.Φ Hinv)
+    - (1 / 2 : ℝ) * dot b
+        (Hinv (hφ.toObservableTensorApprox.A
+          (Hinv (tensorContractMatrix hV.T Hinv))))
+    - (1 / 2 : ℝ) * dot (Hinv b)
+        (tensorContractMatrix hV.T
+          (Hinv.comp (hφ.toObservableTensorApprox.A.comp Hinv)))
+    with hCmain_def
+  set C_E : ℝ := (1 / 2 : ℝ) * dot (Hinv b)
+      (tensorContractMatrix hφ.toObservableTensorApprox.Φ Hinv)
+    with hC_E_def
+  set C_O : ℝ := oddCrossMainConst Hinv hφ.toObservableTensorApprox.A b hV.T
+    with hC_O_def
+  have hC_O_eq : C_O =
+      (1 / 2 : ℝ) * dot b
+          (Hinv (hφ.toObservableTensorApprox.A
+            (Hinv (tensorContractMatrix hV.T Hinv))))
+        + (1 / 2 : ℝ) * dot (Hinv b)
+            (tensorContractMatrix hV.T
+              (Hinv.comp (hφ.toObservableTensorApprox.A.comp Hinv))) := by
+    rw [hC_O_def]; unfold oddCrossMainConst; rfl
+  set D : ℝ := rescaledPartition V t with hD_def
+  -- Rewrite target.
+  have h_target_eq : Cmain = C_E - C_O := by
+    rw [hCmain_def, hC_E_def, hC_O_eq]; ring
+  -- Now the bounds in the desired form.
+  have hE' : |(∫ u, crossEvenKernel b hφ.toObservableTensorApprox.Φ u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))
+        - C_E * D| ≤ K_E / t := by
+    rw [hC_E_def, hD_def]; exact hE
+  have hO' : |Real.sqrt t *
+            (∫ u, crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+        + C_O * D| ≤ K_O / t := by
+    rw [hC_O_def, hD_def]; exact hO
+  have hB' : |∫ u, bulkErrA φ b hφ.toObservableTensorApprox t u *
+            gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))| ≤ K_B / t := hB
+  -- Algebraic split.
+  set IE : ℝ := ∫ u, crossEvenKernel b hφ.toObservableTensorApprox.Φ u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) with hIE_def
+  set IO : ℝ := ∫ u, crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) with hIO_def
+  set IB : ℝ := ∫ u, bulkErrA φ b hφ.toObservableTensorApprox t u *
+        gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)) with hIB_def
+  -- Goal after h_int_id: |IE + √t·IO + IB - Cmain · D| ≤ ...
+  -- Substitute Cmain = C_E - C_O.
+  rw [show (((1 / 2 : ℝ) * dot (Hinv b)
+            (tensorContractMatrix hφ.toObservableTensorApprox.Φ Hinv)
+        - (1 / 2 : ℝ) * dot b
+            (Hinv (hφ.toObservableTensorApprox.A
+              (Hinv (tensorContractMatrix hV.T Hinv))))
+        - (1 / 2 : ℝ) * dot (Hinv b)
+            (tensorContractMatrix hV.T
+              (Hinv.comp (hφ.toObservableTensorApprox.A.comp Hinv)))) *
+            rescaledPartition V t)
+      = Cmain * D from by rw [hCmain_def, hD_def]]
+  rw [h_target_eq]
+  -- IE + √t·IO + IB - (C_E - C_O)·D = (IE - C_E·D) + (√t·IO + C_O·D) + IB.
+  have h_split :
+      IE + Real.sqrt t * IO + IB - (C_E - C_O) * D
+      = (IE - C_E * D) + (Real.sqrt t * IO + C_O * D) + IB := by ring
+  rw [show (∫ u, crossEvenKernel b hφ.toObservableTensorApprox.Φ u *
+              gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u)))
+            + Real.sqrt t *
+              (∫ u, crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+            + (∫ u, bulkErrA φ b hφ.toObservableTensorApprox t u *
+                gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u)))
+          = IE + Real.sqrt t * IO + IB from by rw [hIE_def, hIO_def, hIB_def]]
+  rw [h_split]
+  -- Triangle.
+  have h_tri := abs_add_le ((IE - C_E * D) + (Real.sqrt t * IO + C_O * D)) IB
+  have h_tri2 := abs_add_le (IE - C_E * D) (Real.sqrt t * IO + C_O * D)
+  -- |IE - C_E·D| ≤ K_E/t, etc.
+  have hE'' : |IE - C_E * D| ≤ K_E / t := by rw [hIE_def]; exact hE'
+  have hO'' : |Real.sqrt t * IO + C_O * D| ≤ K_O / t := by rw [hIO_def]; exact hO'
+  have hB'' : |IB| ≤ K_B / t := by rw [hIB_def]; exact hB'
+  have h_sum : K_E / t + K_O / t + K_B / t = (K_E + K_O + K_B) / t := by
+    field_simp
+  linarith [h_tri, h_tri2, hE'', hO'', hB'', h_sum.le, h_sum.ge]
 
 /-- **Stage-5 rem-rem asymptotic** (lemma B in `gpt_responses/strategy_stage5_decomposition.md`).
 With `a = 0` and `ψ_rem_t = ψ((√t)⁻¹u) - (√t)⁻¹·(b·u)`, the rem-rem integral
