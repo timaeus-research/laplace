@@ -12162,6 +12162,38 @@ private lemma bulkErrA_exp_sub_one_asymptotic
     linarith
   exact le_trans h_abs_int_le h_combined
 
+/-- **Gaussian-bulk integral asymptotic** (Lemma A new architecture, per GPT
+alt-path: `gpt_responses/strategy_stage5_alt_path.md`).
+
+`|∫ B_t · gW| ≤ K/t` for `t ≥ T₀`.
+
+Uses `bulkErrA_gaussian_symm` to convert to the symmetric form, then
+bounds via:
+- Local: quintic difference bound `|r(u) - r(-u)| ≤ Q·‖u‖^5/(t²·√t)` from
+  `abs_expNumObsRem_sub_neg_quintic_le`, combined with `t·√t·|b·u|` to
+  give `Q·‖b‖_1/t · ‖u‖^6`. Times `gW(u) ≤ exp(-c/2·‖u‖²)` from
+  `gaussianWeight_le_exp_neg_coercive`.
+- Tail: global polynomial bound on `r(±u)`, tail trick `t·√t ≤ ‖u‖³/δ³`,
+  and exp-split `exp(-c/2·‖u‖²) ≤ exp(-c/4·‖u‖²)·exp(-cδ²/4·t)` to get
+  K_tail · exp(-βt) decay → K/t via `exp(-βt) ≤ 1/(βt)`. -/
+private lemma bulkErrA_gaussian_asymptotic
+    (V φ : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    (hφ : ObservableQuinticApprox φ (0 : ι → ℝ)) :
+    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
+      |∫ u : ι → ℝ,
+          bulkErrA φ b hφ.toObservableTensorApprox t u *
+            gaussianWeight H u| ≤ K / t := by
+  -- See `gpt_responses/strategy_stage5_alt_path.md` for the proof recipe.
+  -- Mirrors `bulkErrA_exp_sub_one_asymptotic` but with the Gaussian-only
+  -- factorization via `bulkErrA_gaussian_symm` + quintic difference bound.
+  -- Same overall structure: ~400 LOC. Initial attempt hit issues with
+  -- (a) `set Sym := fun u => ...` + `|Sym u|` not beta-reducing under `rw`,
+  -- (b) `rw [t = √t·√t]` rewriting too aggressively into `Real.sqrt t`.
+  sorry
 /-- **`crossEvenKernel · gW` integrability**: from coord expansion +
 4-moment integrability. -/
 private lemma integrable_crossEvenKernel_mul_gaussianWeight
