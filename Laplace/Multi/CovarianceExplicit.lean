@@ -11569,6 +11569,211 @@ private lemma abs_crossOddKernel_le
           positivity
         linarith [h_extra_nn]
 
+/-- **`crossEvenKernel` is continuous**: `b · u` is continuous (linear
+combination of `u_i`), `Φ (fun _ => u)` is continuous (composition of
+continuous diagonal map with continuous multilinear map). -/
+private lemma crossEvenKernel_continuous
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) :
+    Continuous (fun u : ι → ℝ => crossEvenKernel b Φ u) := by
+  unfold crossEvenKernel
+  have h_dot_cont : Continuous (fun u : ι → ℝ => dot b u) := by
+    unfold dot
+    exact continuous_finset_sum _ (fun i _ =>
+      continuous_const.mul (continuous_apply i))
+  have h_diag_cont :
+      Continuous (fun u : ι → ℝ => (fun _ : Fin 3 => u)) := by
+    apply continuous_pi; intro _; exact continuous_id
+  have h_Φ_cont :
+      Continuous (fun u : ι → ℝ => Φ (fun _ => u)) :=
+    Φ.cont.comp h_diag_cont
+  exact h_dot_cont.mul (continuous_const.mul h_Φ_cont)
+
+/-- **`crossEvenKernelCentered` is continuous**: difference of a
+continuous kernel and a constant. -/
+private lemma crossEvenKernelCentered_continuous
+    (Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ) :
+    Continuous (fun u : ι → ℝ => crossEvenKernelCentered Hinv b Φ u) := by
+  unfold crossEvenKernelCentered
+  exact (crossEvenKernel_continuous b Φ).sub continuous_const
+
+/-- **Integrability of `crossEvenKernel · gW · exp(-s_t)`**: dominate
+`|crossEven| ≤ C · ‖u‖^4` and use `integrable_pow_norm_mul_rescaled_weight`. -/
+private lemma integrable_crossEvenKernel_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ => crossEvenKernel b Φ u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+  classical
+  obtain ⟨C, hC_nn, hF_bound⟩ := abs_crossEvenKernel_le b Φ
+  have h4 := integrable_pow_norm_mul_rescaled_weight V hV_cont H hc_pos h_coer 4 ht_pos
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      C * (‖u‖ ^ 4 *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))))) :=
+    h4.const_mul C
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      crossEvenKernel b Φ u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) :=
+    ((crossEvenKernel_continuous b Φ).mul (continuous_gaussianWeight H)).mul
+      (Real.continuous_exp.comp (continuous_rescaledPerturbation hV_cont H t).neg)
+  refine h_dom_int.mono' h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  rw [Real.norm_eq_abs]
+  have h_F_le := hF_bound u
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  have h_exp_pos : 0 < Real.exp (-(rescaledPerturbation V H t u)) := Real.exp_pos _
+  have h_combined_pos : 0 < gaussianWeight H u *
+      Real.exp (-(rescaledPerturbation V H t u)) :=
+    mul_pos h_gW_pos h_exp_pos
+  calc |crossEvenKernel b Φ u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))|
+      = |crossEvenKernel b Φ u| *
+        (gaussianWeight H u *
+          Real.exp (-(rescaledPerturbation V H t u))) := by
+        rw [show crossEvenKernel b Φ u * gaussianWeight H u *
+              Real.exp (-(rescaledPerturbation V H t u))
+            = crossEvenKernel b Φ u *
+              (gaussianWeight H u *
+                Real.exp (-(rescaledPerturbation V H t u))) from by ring]
+        rw [abs_mul, abs_of_pos h_combined_pos]
+    _ ≤ (C * ‖u‖ ^ 4) *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u))) :=
+        mul_le_mul_of_nonneg_right h_F_le h_combined_pos.le
+    _ = C * (‖u‖ ^ 4 *
+          (gaussianWeight H u *
+            Real.exp (-(rescaledPerturbation V H t u)))) := by ring
+
+/-- **Integrability of `crossEvenKernel · gW · cV((√t)⁻¹•u)`**: dominate
+by integrable `C · ‖u‖^4 · gW · cV` using `Integrable.mono`. -/
+private lemma integrable_crossEvenKernel_mul_gaussianWeight_mul_cV
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ => crossEvenKernel b Φ u * gaussianWeight H u *
+        hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+  classical
+  obtain ⟨C, hC_nn, hF_bound⟩ := abs_crossEvenKernel_le b Φ
+  have h4 := integrable_pow_norm_mul_gaussianWeight_mul_cV V H hV 4 ht_pos
+  have h_dom_int : Integrable (fun u : ι → ℝ =>
+      C * (‖u‖ ^ 4 *
+        (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)))) := by
+    have h := h4.const_mul C
+    apply h.congr
+    filter_upwards with u
+    ring
+  have h_continuous : Continuous (fun u : ι → ℝ =>
+      crossEvenKernel b Φ u * gaussianWeight H u *
+        hV.cV ((Real.sqrt t)⁻¹ • u)) :=
+    ((crossEvenKernel_continuous b Φ).mul (continuous_gaussianWeight H)).mul
+      (hV.cV_continuous.comp (continuous_const.smul continuous_id))
+  refine h_dom_int.mono h_continuous.aestronglyMeasurable ?_
+  filter_upwards with u
+  have h_F_le := hF_bound u
+  have h_gW_pos : 0 < gaussianWeight H u := gaussianWeight_pos H u
+  have h_norm4_nn : 0 ≤ ‖u‖ ^ 4 := pow_nonneg (norm_nonneg _) _
+  rw [Real.norm_eq_abs, Real.norm_eq_abs]
+  have h_lhs : |crossEvenKernel b Φ u * gaussianWeight H u *
+      hV.cV ((Real.sqrt t)⁻¹ • u)|
+      = |crossEvenKernel b Φ u| * (gaussianWeight H u *
+          |hV.cV ((Real.sqrt t)⁻¹ • u)|) := by
+    rw [show crossEvenKernel b Φ u * gaussianWeight H u *
+          hV.cV ((Real.sqrt t)⁻¹ • u)
+        = crossEvenKernel b Φ u *
+          (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) from by ring]
+    rw [abs_mul, abs_mul, abs_of_pos h_gW_pos]
+  have h_rhs : |C * (‖u‖ ^ 4 *
+      (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)))|
+      = C * (‖u‖ ^ 4 * (gaussianWeight H u *
+          |hV.cV ((Real.sqrt t)⁻¹ • u)|)) := by
+    rw [abs_mul, abs_of_nonneg hC_nn, abs_mul, abs_of_nonneg h_norm4_nn,
+        abs_mul, abs_of_pos h_gW_pos]
+  rw [h_lhs, h_rhs]
+  have h_step : |crossEvenKernel b Φ u| *
+        (gaussianWeight H u * |hV.cV ((Real.sqrt t)⁻¹ • u)|)
+      ≤ (C * ‖u‖ ^ 4) *
+        (gaussianWeight H u * |hV.cV ((Real.sqrt t)⁻¹ • u)|) :=
+    mul_le_mul_of_nonneg_right h_F_le
+      (mul_nonneg h_gW_pos.le (abs_nonneg _))
+  calc |crossEvenKernel b Φ u| *
+        (gaussianWeight H u * |hV.cV ((Real.sqrt t)⁻¹ • u)|)
+      ≤ (C * ‖u‖ ^ 4) *
+        (gaussianWeight H u * |hV.cV ((Real.sqrt t)⁻¹ • u)|) := h_step
+    _ = C * (‖u‖ ^ 4 *
+          (gaussianWeight H u * |hV.cV ((Real.sqrt t)⁻¹ • u)|)) := by ring
+
+/-- **Integrability of `crossEvenKernelCentered · gW · exp(-s_t)`**:
+difference of integrable terms. -/
+private lemma integrable_crossEvenKernelCentered_mul_rescaled_weight
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    [Nonempty ι]
+    (hV_cont : Continuous V)
+    {c : ℝ} (hc_pos : 0 < c)
+    (h_coer : ∀ w : ι → ℝ, c * ‖w‖ ^ 2 ≤ V w)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))) := by
+  set cF : ℝ := (1 / 2 : ℝ) *
+      dot (Hinv b) (tensorContractMatrix Φ Hinv) with hcF_def
+  have h1 := integrable_crossEvenKernel_mul_rescaled_weight V H Hinv b Φ
+    hV_cont hc_pos h_coer ht_pos
+  have h2 : Integrable (fun u : ι → ℝ =>
+      cF * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) :=
+    (integrable_rescaled_weight V hV_cont H hc_pos h_coer ht_pos).const_mul cF
+  have h_diff : Integrable (fun u : ι → ℝ =>
+      crossEvenKernel b Φ u * gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u))
+      - cF * (gaussianWeight H u *
+        Real.exp (-(rescaledPerturbation V H t u)))) := h1.sub h2
+  apply h_diff.congr
+  filter_upwards with u
+  unfold crossEvenKernelCentered
+  rw [hcF_def]; ring
+
+/-- **Integrability of `crossEvenKernelCentered · gW · cV((√t)⁻¹•u)`**:
+difference of integrable terms. -/
+private lemma integrable_crossEvenKernelCentered_mul_gaussianWeight_mul_cV
+    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    (Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
+    [Nonempty ι]
+    (hV : PotentialJetApprox V H)
+    {t : ℝ} (ht_pos : 0 < t) :
+    Integrable (fun u : ι → ℝ =>
+      crossEvenKernelCentered Hinv b Φ u * gaussianWeight H u *
+        hV.cV ((Real.sqrt t)⁻¹ • u)) := by
+  set cF : ℝ := (1 / 2 : ℝ) *
+      dot (Hinv b) (tensorContractMatrix Φ Hinv) with hcF_def
+  have h1 := integrable_crossEvenKernel_mul_gaussianWeight_mul_cV V H Hinv b Φ hV ht_pos
+  have h2 : Integrable (fun u : ι → ℝ =>
+      cF * (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u))) :=
+    (integrable_pow_norm_mul_gaussianWeight_mul_cV V H hV 0 ht_pos).const_mul cF |>.congr
+      (by filter_upwards with u; simp [pow_zero])
+  have h_diff : Integrable (fun u : ι → ℝ =>
+      crossEvenKernel b Φ u * gaussianWeight H u *
+        hV.cV ((Real.sqrt t)⁻¹ • u)
+      - cF * (gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u))) := h1.sub h2
+  apply h_diff.congr
+  filter_upwards with u
+  unfold crossEvenKernelCentered
+  rw [hcF_def]; ring
+
 /-- **K/t bound on `(1/√t) · ∫ odd5Kernel · gW · exp(-s_t)`** (Lemma B Steps 2+3 closure,
 per GPT B/C-hybrid plan).
 
