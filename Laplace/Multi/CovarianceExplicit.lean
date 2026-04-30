@@ -11499,6 +11499,117 @@ private lemma exp_neg_mul_le_inv {β t : ℝ} (hβ : 0 < β) (ht : 0 < t) :
       from by rw [Real.exp_neg]; ring]
   exact one_div_le_one_div_of_le hβt haux
 
+/-- **Local pointwise bound on the Gaussian-symmetric integrand**
+(helper for `bulkErrA_gaussian_asymptotic`).
+
+For `‖u‖ ≤ δ·√t` (with δ = jet_radius_φ),
+`|t·√t · (b·u) · (r(u) - r(-u)) · gW(u)| ≤ K_loc/t · ‖u‖^6 · exp(-(c/2)·‖u‖²)`
+where `K_loc = (∑|b_i|)·Q_const`, `c = hV.coercive_const`, and
+`r := expNumObsRem`.
+
+Combines:
+- `abs_expNumObsRem_sub_neg_quintic_le` for `|r(u) - r(-u)| ≤ Q·‖u‖^5/(t²·√t)`
+- `abs_dot_le_l1_mul_norm` for `|b·u| ≤ (∑|b_i|)·‖u‖`
+- `gaussianWeight_le_exp_neg_coercive` for `gW(u) ≤ exp(-(c/2)·‖u‖²)`
+- `abs_mul4_of_nonneg` to pull the absolute value off `t·√t` and `gW`
+- `t_sqrt_mul_div_tsq_sqrt` for `t·√t · A/(t²·√t) = A/t`. -/
+private lemma abs_bulkErrA_gaussian_symm_local_le
+    (V φ : (ι → ℝ) → ℝ)
+    (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
+    (b : ι → ℝ)
+    [Nonempty ι]
+    (hV : PotentialQuinticApprox V H)
+    (hφ : ObservableQuinticApprox φ (0 : ι → ℝ))
+    {t : ℝ} (ht : 0 < t)
+    (u : ι → ℝ) (hu : ‖u‖ ≤ hφ.toObservableTensorApprox.jet_radius * Real.sqrt t) :
+    |t * Real.sqrt t * dot b u *
+        (expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+          - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)) *
+        gaussianWeight H u|
+      ≤ ((∑ i, |b i|) * hφ.Q_const) / t * ‖u‖ ^ 6 *
+          Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2)) := by
+  classical
+  set c : ℝ := hV.coercive_const with hc_def
+  have hc_pos : 0 < c := hV.toPotentialApprox.coercive_const_pos
+  set bL1 : ℝ := ∑ i, |b i| with hbL1_def
+  have hbL1_nn : 0 ≤ bL1 := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+  have hQ_nn : 0 ≤ hφ.Q_const := hφ.Q_const_nn
+  have h_norm_nn : 0 ≤ ‖u‖ := norm_nonneg _
+  have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have h_t_sqt_nn : 0 ≤ t * Real.sqrt t := by positivity
+  have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
+  -- |t·√t · (b·u) · (r(u) - r(-u)) · gW| = t·√t · |b·u| · |r(u) - r(-u)| · gW.
+  have h_abs_eq : |t * Real.sqrt t * dot b u *
+        (expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+          - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)) *
+        gaussianWeight H u|
+      = t * Real.sqrt t * |dot b u| *
+          |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+            - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)| *
+          gaussianWeight H u :=
+    abs_mul4_of_nonneg h_t_sqt_nn h_gW_nn
+  rw [h_abs_eq]
+  -- |b·u| ≤ bL1·‖u‖, |r(u) - r(-u)| ≤ Q·‖u‖^5/(t²·√t).
+  have h_dot : |dot b u| ≤ bL1 * ‖u‖ := by
+    rw [hbL1_def]; exact abs_dot_le_l1_mul_norm b u
+  have h_quint := abs_expNumObsRem_sub_neg_quintic_le (φ := φ) (hφ := hφ)
+    ht u hu
+  -- Combined: t·√t · bL1·‖u‖ · Q·‖u‖^5/(t²·√t) · gW.
+  have h_step1 : t * Real.sqrt t * |dot b u| *
+        |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+          - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)| *
+        gaussianWeight H u
+      ≤ t * Real.sqrt t * (bL1 * ‖u‖) *
+          (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t)) *
+          gaussianWeight H u := by
+    have h_dot_q := mul_le_mul h_dot h_quint (abs_nonneg _)
+      (mul_nonneg hbL1_nn h_norm_nn)
+    have h_step := mul_le_mul_of_nonneg_left h_dot_q h_t_sqt_nn
+    have h_assoc_lhs : t * Real.sqrt t * |dot b u| *
+          |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+            - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)|
+        = t * Real.sqrt t * (|dot b u| *
+            |expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
+              - expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t (-u)|) := by
+      ring
+    have h_assoc_rhs : t * Real.sqrt t * (bL1 * ‖u‖ *
+            (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t)))
+        = t * Real.sqrt t * (bL1 * ‖u‖) *
+            (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t)) := by ring
+    rw [h_assoc_lhs]
+    rw [show t * Real.sqrt t * (bL1 * ‖u‖) *
+              (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t))
+            = t * Real.sqrt t * (bL1 * ‖u‖ *
+                (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t))) from h_assoc_rhs.symm]
+    exact mul_le_mul_of_nonneg_right h_step h_gW_nn
+  -- Apply gW ≤ exp(-c/2·‖u‖²).
+  have h_gW_le : gaussianWeight H u ≤ Real.exp (-((c / 2) * ‖u‖ ^ 2)) :=
+    gaussianWeight_le_exp_neg_coercive V H hV.toPotentialTensorApprox u
+  have h_factor_nn : 0 ≤ t * Real.sqrt t * (bL1 * ‖u‖) *
+      (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t)) := by positivity
+  have h_step2 : t * Real.sqrt t * (bL1 * ‖u‖) *
+        (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t)) * gaussianWeight H u
+      ≤ t * Real.sqrt t * (bL1 * ‖u‖) *
+          (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t)) *
+          Real.exp (-((c / 2) * ‖u‖ ^ 2)) :=
+    mul_le_mul_of_nonneg_left h_gW_le h_factor_nn
+  -- Algebra: t·√t · bL1·‖u‖ · Q·‖u‖^5/(t²·√t) = bL1·Q·‖u‖^6/t.
+  have h_eq_loc : t * Real.sqrt t * (bL1 * ‖u‖) *
+        (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t)) *
+        Real.exp (-((c / 2) * ‖u‖ ^ 2))
+      = bL1 * hφ.Q_const / t * ‖u‖ ^ 6 *
+          Real.exp (-((c / 2) * ‖u‖ ^ 2)) := by
+    rw [show ‖u‖ ^ 6 = ‖u‖ * ‖u‖ ^ 5 from by ring,
+        show t * Real.sqrt t * (bL1 * ‖u‖) *
+              (hφ.Q_const * ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t))
+            = (bL1 * hφ.Q_const * ‖u‖ * ‖u‖ ^ 5) *
+              (t * Real.sqrt t * (1 / (t ^ 2 * Real.sqrt t))) from by ring,
+        show t * Real.sqrt t * (1 / (t ^ 2 * Real.sqrt t)) = 1 / t from by
+          have := t_sqrt_mul_div_tsq_sqrt ht (1 : ℝ)
+          linarith [this.le, this.ge]]
+    ring
+  linarith [h_step1, h_step2, h_eq_loc.le, h_eq_loc.ge]
+
 /-- **Gaussian-only symmetrization for `bulkErrA`** (per GPT consult
 `gpt_responses/strategy_stage5_alt_path.md`).
 
