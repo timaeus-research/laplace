@@ -15,3 +15,4 @@ import Laplace.Multi.QuadraticApprox
 import Laplace.Multi.GaussianIBP
 import Laplace.Multi.RescaledIntegrals
 import Laplace.Multi.Covariance
+import Laplace.TwoD.SemiDegenerate
