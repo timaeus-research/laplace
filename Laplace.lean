@@ -5,6 +5,7 @@ import Laplace.OneD.Harmonic
 import Laplace.OneD.TailBound
 import Laplace.OneD.Localisation
 import Laplace.OneD.Anharmonic
+import Laplace.OneD.Quartic
 import Laplace.ScalarBound
 import Laplace.OneD.IntegralRemainder
 import Laplace.OneD.Rescaling
