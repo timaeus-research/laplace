@@ -191,3 +191,30 @@ not `MeasureTheory.integral_comp_mul_right`. When in doubt, write a scratch
 
 **`rpow_natCast` for converting Nat to Real powers.** `x ^ ((n : ℕ) : ℝ) = x ^ n`
 unconditionally. Use it when the goal mixes `x^(n:ℝ)` (rpow) with `x^(n:ℕ)` (npow).
+
+**Pi.add vs single-lambda mismatch in `rw [MeasureTheory.integral_add ...]`.**
+`Integrable.add` returns `Integrable (f + g)` where `f + g` is `Pi.add` —
+*not* a single lambda `fun u => f u + g u`. When `rw [MeasureTheory.integral_add (h1.add h2) h3]`
+fires, Lean's pattern-matcher tries to syntactically match
+`∫ a, ((fun x => ...) + fun x => ...) a + h3.f a` (Pi.add over lambdas)
+against the goal `∫ u, T1 u + T2 u + T3 u`. Beta-reduction is automatic
+in `rw`, but Pi.add unfolding is *not*. Symptom: `rewrite failed: did not
+find an occurrence of the pattern` even though the math is correct.
+
+Workaround: introduce a *type-ascribed* single-lambda integrability
+witness:
+
+```lean
+have h_12 : Integrable (fun u : ι → ℝ => T1 u + T2 u) volume := h1.add h2
+-- ... now `MeasureTheory.integral_add h_12 h3` matches cleanly because
+-- h_12.f IS a single lambda, so the pattern reduces under beta only.
+```
+
+**Calc chains over multi-term sum integrands push past the default
+heartbeat budget.** A calc chain that combines `MeasureTheory.integral_congr_ae`
++ N×`MeasureTheory.integral_add` + N×`MeasureTheory.integral_const_mul`
+over a 4-term integrand can exceed the default 200000 heartbeat budget
+in `whnf`/`isDefEq`. Symptom: `(deterministic) timeout at whnf` on the
+calc step, not on any specific tactic. Workaround:
+`set_option maxHeartbeats 1600000 in` on the lemma. Add a comment
+explaining why (the linter requires it).

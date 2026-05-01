@@ -997,7 +997,7 @@ The bound combines:
   `|c_t - s_t| ≤ jet_const · ‖u‖^4 / t` on the local ball.
 
 This is the integrand-level pointwise step toward helper 1's K/t bound. -/
-private lemma abs_corrected_bracket_local_le
+lemma abs_corrected_bracket_local_le
     (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
     [Nonempty ι]
     (hV : PotentialJetApprox V H)
@@ -1054,7 +1054,7 @@ pointwise control to give
                                   exp(-(c'/4)·‖u‖²)`
 
 on `‖u‖ ≤ ρ·√t` with `ρ ≤ min(jet_radius, c'/(4·max(Cs,1)))`. -/
-private lemma abs_gaussianWeight_mul_corrected_bracket_local_le
+lemma abs_gaussianWeight_mul_corrected_bracket_local_le
     (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
     [Nonempty ι]
     (hV : PotentialJetApprox V H)
