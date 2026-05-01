@@ -6,6 +6,7 @@ import Laplace.OneD.TailBound
 import Laplace.OneD.Localisation
 import Laplace.OneD.Anharmonic
 import Laplace.OneD.Quartic
+import Laplace.OneD.NearDegenerate
 import Laplace.ScalarBound
 import Laplace.OneD.IntegralRemainder
 import Laplace.OneD.Rescaling
