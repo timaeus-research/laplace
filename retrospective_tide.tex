@@ -1,0 +1,641 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\usepackage{booktabs}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide-loop retrospective:\\three formalisations and a side
+excursion\\in a single afternoon}
+\author{Daniel Murfet}
+\date{1 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This document is a retrospective on three Tide-loop excursions and one
+adjacent numerical/theoretical exploration carried out in a single
+afternoon, building on the morning recorded in
+\texttt{retrospective.tex} and the few-day saga in
+\texttt{retrospective2.tex}. The Tide loop is a thin, deliberation-first
+procedure for autonomous formalisation: a human-provided direction;
+a Claude--GPT-5.5~Pro vote on a minimal candidate lemma; hand-off to the
+\texttt{lean-formalisation} skill until success. Three loops produced
+1099 lines of new Lean across three branches of the
+\texttt{timaeus-research/laplace} repository, with zero \texttt{sorry} /
+\texttt{axiom} / \texttt{native\_decide}, plus a numerical exploration
+note with a Python script and three figures, plus three new appendix
+sections in the susceptibility primer's annotated copy. The aim of this
+retrospective is to record what worked about the loop, where it was
+stress-tested by repeated use, and what skill iteration emerged from
+running it three times in succession.
+\end{abstract}
+
+\tableofcontents
+
+\section{Setting}
+
+The morning of 27 April, recorded in \texttt{retrospective.tex},
+formalised the primer's anharmonic covariance formula in 3279 lines of
+Lean. The few-day saga that followed, recorded in
+\texttt{retrospective2.tex}, brought the multivariate sharp covariance
+to the same bar. The framework articulated in DM's notes
+``Formalisation First Steps'' (27/28 April) and ``Formalisation Second
+Steps'' (28 April) projected this work forward into a recurring loop:
+
+\begin{quote}
+\itshape
+I'd like to wake up to a new paper with a link in the margin to the
+formalisations.
+\end{quote}
+
+The present document records the first afternoon during which that loop
+ran end-to-end. By the start of the afternoon DM had drafted a small
+SRI skill, \texttt{tide}, that codifies the procedure in three steps:
+
+\begin{enumerate}
+\item Record the human direction in a tide log entry.
+\item Deliberate with GPT-5.5~Pro until both models vote for the same
+minimal candidate lemma.
+\item Hand off to the \texttt{lean-formalisation} skill until the
+proofs land.
+\end{enumerate}
+
+Three loops were run, each starting from the previous one's commit
+(which is the central image of the loop: a tide of agents spreading
+outward from already-formalised territory, with the shoreline rising
+each time).\footnote{The Tide-loop framing carries a small vocabulary
+of metaphors. The \emph{seabed} is the existing formalised material
+that a Tide step launches from: at the start of the afternoon it was
+the laplace repository's \texttt{main} branch; after Tide 1 it
+included \texttt{Quartic.lean} as well; after Tide 2 it included the
+2D semi-degenerate file; and so on. The \emph{shoreline} is the
+just-beyond-the-seabed watermark of theorems that are reachable in
+one Tide step from the current seabed; each successful step extends
+it. The \emph{tide} is the agent activity itself, sweeping over the
+seabed and (when systematisation lands the new pieces in
+\texttt{lean-common}) genuinely raising the floor for the next
+agent to launch from. This vocabulary is from the automation project
+README; it is loose but useful.}
+The rest of this document records what the runs looked
+like, how the deliberation step calibrated, where the skill was
+stress-tested, and what was learned.
+
+\section{The three excursions}\label{sec:excursions}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l l r r}
+\toprule
+\textbf{Tide step} & \textbf{Direction} & \textbf{Lines} & \textbf{Build}\\
+\midrule
+1. \texttt{quartic-moments}    & ``extend to simple degenerate cases'' & 379 & 4s\\
+2. \texttt{2d-semi-degenerate} & ``Candidate D from previous'' (``Next'') & 514 & 12s\\
+3. \texttt{universal-scaling}  & ``formalise the universal scaling formula'' & 206 & 8s\\
+\midrule
+\multicolumn{2}{r}{\emph{Total new Lean for tide loop}} & \textbf{1099} & \\
+\bottomrule
+\end{tabular}
+\caption{The three Tide-loop excursions of 1 May 2026. The Tide-step
+identifier doubles as the branch name (\texttt{tide/<id>}); branches
+are rebased linearly so each step's seabed is the previous step's tip.}
+\label{tab:excursions}
+\end{table}
+
+The targets, in plain English:\footnote{Dan: lol}
+
+\begin{itemize}
+\item \textbf{Tide 1 --- pure-quartic Gibbs moments.} For
+$L(x) = x^4/24$ (genuinely degenerate at the origin: $L''(0) = 0$),
+prove the closed forms $\mathbb{E}_t[X^{2n}] = (24/t)^{n/2}\,
+\Gamma((2n+1)/4)/\Gamma(1/4)$ for the moment family, and as a
+corollary the affine covariance $\operatorname{Cov}_t[ax+c, bx+d]
+= ab\,\sqrt{24/t}\,\Gamma(3/4)/\Gamma(1/4)$. The headline rate is
+$t^{-1/2}$, contrasting with the $t^{-1}$ of the seabed's nondegenerate
+Hessian case.
+\item \textbf{Tide 2 --- 2D semi-degenerate covariance.} For
+$L(x,y) = (\lambda/2)y^2 + x^4/24$, prove the exact affine covariance
+$a_1 b_1 \sqrt{24/t}\,\Gamma(3/4)/\Gamma(1/4) + a_2 b_2/(\lambda t)$,
+combining the $t^{-1/2}$ rate of the degenerate quartic direction with
+the $t^{-1}$ rate of the nondegenerate quadratic direction.
+\item \textbf{Tide 3 --- universal scaling identity.} For
+$L^{\rm nd}_\varepsilon(x) = (\varepsilon/2)x^2 + x^4/24$, prove the
+exact substitution identity $\langle x^{2n}\rangle_{\mu_t} =
+\varepsilon^n \cdot \langle y^{2n}\rangle^V_{\varepsilon^2 t}$ where
+$V(y) = y^2/2 + y^4/24$ is the universal potential. This is the
+formalisation of the pre-asymptotic crossover phenomenon explored
+numerically in the side excursion (\S\ref{sec:near-degenerate}).
+\end{itemize}
+
+Each step's seabed is the previous step's tip. The branch architecture
+is therefore linear: \texttt{tide/quartic-moments} branches off
+\texttt{main}; \texttt{tide/2d-semi-degenerate} branches off
+\texttt{tide/quartic-moments}; \texttt{tide/universal-scaling} branches
+off \texttt{tide/2d-semi-degenerate}. The primer pins all three sets of
+margin markers to a single \texttt{\textbackslash quarticCommit} (the
+tip of the most recent branch), which collapses to
+\texttt{\textbackslash laplaceCommit} once everything merges.
+
+\section{Anatomy of a Tide step}
+
+The skill makes the procedure explicit. We illustrate it with Tide 1
+(\texttt{quartic-moments}); Tide 2 and 3 followed the same shape.
+
+\subsection{Step 1 --- direction}
+
+DM's direction:
+
+\userbox{The primer work in the laplace repository formalises some
+statements about covariances against a posterior where $L$ is
+nondegenerate. It would be useful to do this also in some simple
+degenerate cases.}
+
+The skill prescribes opening a tide log file\footnote{For Tide 1, this
+is \texttt{sri/projects/automation/log/2026-05-01-tide-degenerate-quartic-cov.md}.}
+with the direction recorded verbatim, the seabed pointer
+(\texttt{laplace}, commit SHA at start), and the start date.
+
+\subsection{Step 2 --- deliberation}
+
+\paragraph{Drafting.} Claude reads the seabed (theorem signatures and
+\texttt{CLAUDE.md} only, not full proofs) and drafts 2--3 candidates.
+For Tide 1 the candidates were:
+
+\begin{itemize}
+\item A: a closed-form identity for $\mathbb{E}_t[X^2]$ under the pure
+quartic, valid for all $t > 0$;
+\item B: an asymptotic for $\operatorname{Cov}_t[\phi,\psi]$ under the
+pure quartic with general $C^2$ observables;
+\item C: a 2D semi-degenerate covariance combining quartic and
+quadratic.
+\end{itemize}
+
+\paragraph{Consulting.} Claude sends all three candidates to GPT-5.5
+Pro via the \texttt{timaeus-research} skill's \texttt{query\_gpt.py},
+asking three explicit questions: are the statements correct, which is
+the minimal good target, are there missed candidates? GPT's response is
+saved verbatim to the log under \texttt{\#\# GPT-5.5~Pro v1}.
+
+For Tide 1, GPT delivered three useful corrections:
+
+\begin{enumerate}
+\item Candidate B was \emph{wrong as written}: with only a $C^2$
+remainder bound the cross-terms produce a parasitic $O(t^{-3/4})$
+contribution rather than $O(t^{-1})$; recovering the cleaner remainder
+needs $C^3$ smoothness so that cubic terms cancel by parity. (This
+mirrors the regularity-staircase familiar from
+\texttt{lem:laplace\_cov2} in the seabed.)
+
+\item Candidate C had \emph{hidden coefficients}: the writeup gave an
+explicit $a_2 b_2/(\lambda t)$ term, but with only an $O(\|(x,y)\|^2)$
+remainder hypothesis on the observables, additional $t^{-1}$
+contributions from the quartic direction's higher jets are absorbed
+into the remainder, making the explicit coefficient uninterpretable
+without strengthening the hypothesis.
+
+\item DM's offhand mention of $L = x^2 y^4$ as a candidate potential
+was \emph{not even integrable}: $e^{-t x^2 y^4}$ does not define a
+finite Gibbs posterior on $\mathbb{R}^2$, since on the axes the
+exponent is identically zero.
+\end{enumerate}
+
+In addition GPT proposed a strictly stronger version of A (call it
+A$''$): the full even-moment family $\mathbb{E}_t[X^{2n}]$ in closed
+form, at no extra proof cost over A, providing a reusable
+moment API. Claude adopted this in v2.
+
+\paragraph{Voting.} The skill mandates an explicit two-way vote. For
+Tide 1, both Claude and GPT-5.5~Pro voted for A$''$ + an affine
+covariance corollary. Vote recorded in the log:
+
+\begin{quote}
+\#\# Vote
+\par
+- Claude: A$''$ + A$'$ (moment family + affine covariance corollary)\par
+- GPT-5.5~Pro: A$''$ (with A$'$ as the closely-related corollary).
+\end{quote}
+
+\paragraph{Numerical sanity.} Before handing off to Step 3, Claude runs
+a numerical sanity check using \texttt{scipy.integrate.quad} to confirm
+the closed-form identity to machine precision at several parameter
+values. For Tide 1: 24 cases ($n = 0,\ldots,6$, $t \in \{0.5, 1, 5, 100\}$),
+all matching to $|\text{diff}| < 10^{-13}$.
+
+\subsection{Step 3 --- formalisation}
+
+The agreed candidate is handed off to the \texttt{lean-formalisation}
+skill. Tide 1's hand-off proposed file path
+(\texttt{Laplace/OneD/Quartic.lean}), theorem names
+(\texttt{quartic\_partition}, \texttt{quartic\_moment\_even},
+\texttt{quartic\_cov\_affine}, etc.), proof skeleton (substitution
+$u = (t/24)^{1/4} x$ to Mathlib's
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}, then evenness
+doubling for the full line), and the closed-form expectation from the
+numerical check.
+
+For Tide 1 the skeleton typechecked first try, and the proofs filled
+in by direct application of the existing seabed pattern (the file
+\texttt{Laplace/OneD/GaussianMoments.lean}, which formalises the
+analogous result for $L = x^2/2$). The only non-routine piece was
+proving \texttt{quartic\_integrable\_pow}: full-line integrability of
+$x^n e^{-t x^4 / 24}$. This was solved by Gaussian comparison via the
+square-completion identity
+\[
+\frac{t x^4}{24} - x^2 = \frac{(t x^2 - 12)^2}{24 t} - \frac{6}{t}
+\ge -\frac{6}{t},
+\]
+which dominates the integrand by a polynomial-times-Gaussian and
+brings it under Mathlib's
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq}. A second GPT consult
+was started for this lemma in parallel with Claude's local attempt;
+Claude's local proof landed before GPT's response (which timed out at
+the 15-minute API limit), confirming the skill's advice that for
+narrowly-scoped tactical Lean questions one should race rather than
+block on GPT.
+
+\section{The deliberation step in practice}
+
+Tide 2 and Tide 3 followed the same template, with patterns emerging
+across the three rounds.
+
+\paragraph{GPT consistently delivered a strict improvement.} In each
+round, GPT-5.5 Pro proposed a generalisation of Claude's drafted
+candidate that strictly subsumed the original at zero extra proof
+cost.
+
+\begin{itemize}
+\item Tide 1: A (closed-form $\mathbb{E}_t[X^2]$) $\to$ A$''$ (full
+moment family).
+\item Tide 2: A (2D semi-degenerate affine covariance) was already the
+right headline, but GPT recommended an internal mixed-monomial
+factorisation lemma $\langle z_1^m z_2^n\rangle = \langle x^m\rangle
+\langle y^n\rangle$ as the load-bearing helper, instead of the six
+specialised cases Claude had drafted. The lemma is a strict
+generalisation costing one proof line beyond the specific cases.
+\item Tide 3: C (substitution lemma for the monomial integrand) $\to$ D
+(substitution lemma for arbitrary $f$), again a strict generalisation
+at zero extra proof cost.
+\end{itemize}
+
+The pattern is consistent enough to be a Tide-skill rule: \emph{when
+drafting a candidate, draft the most specific true thing; expect GPT to
+broaden it; if GPT does not, draft B or C as the broader version
+yourself}. The deliberation is reliably one round (Claude $\to$ GPT
+$\to$ vote), not the four rounds the skill caps at.
+
+\paragraph{GPT's bug-catching is asymmetrically valuable.} Tide 1's
+correction of Candidate B (the spurious $O(t^{-1})$ remainder) and the
+flag of $L = x^2 y^4$ as non-integrable were the most valuable
+contributions of the entire afternoon. Both would have wasted hours of
+Lean work if not caught at the deliberation stage. The
+\emph{value} of Step 2 is precisely that bugs land in deliberation
+words (cheap) rather than in proof state (expensive).
+
+\paragraph{The vote is genuinely a vote, not a rubber stamp.} Tide 2's
+deliberation produced two materially different positions (Claude
+proposed thin 2D wrappers using \texttt{volume.prod}; GPT proposed
+iterated integrals). Both were valid; the vote was on the headline
+target, with the wrapper choice noted as ``Claude diverges from GPT's
+recommendation for $\sim 1$ implementation reason'' rather than a
+re-deliberation. The skill's rule (``A round ends with both parties
+stating which single candidate they back'') is loose enough to absorb
+this kind of micro-divergence without re-running.
+
+\paragraph{Rounds 2--4 of the skill were never used.} Across three
+Tides, every deliberation converged in one round. A second round may
+become useful when candidates are at a level of mathematical depth
+where GPT's first-pass corrections are not exhaustive; for the present
+class of substitution-and-Gaussian-moment results, one round is the
+norm.
+
+\section{The formalisation step in practice}
+
+Across the three Tides, the formalisation step was uneven in difficulty,
+broadly in proportion to the size of the step outward.
+
+\paragraph{Tide 1: routine, with one minor escalation.} Most of
+\texttt{Quartic.lean} mirrors \texttt{GaussianMoments.lean} from the
+seabed. The only nontrivial piece, full-line integrability, prompted a
+GPT consult that timed out before Claude finished a local proof. Total
+attention: $\sim 1$ hour.
+
+\paragraph{Tide 2: longer, but no GPT consults.} The 2D step required
+new infrastructure: thin 2D Gibbs wrappers, partition-function
+factorisation, mixed-monomial factorisation, six 2D atom
+integrabilities (built from \texttt{Integrable.mul\_prod}), and a
+chained \texttt{integral\_add} expansion for the affine covariance.
+The known Pi.add gotcha from the seabed's \texttt{CLAUDE.md} bit once
+and was resolved by the documented type-ascribed-single-lambda fix.
+Total attention: $\sim 1.5$ hours.
+
+\paragraph{Tide 3: short, no GPT consults.} The substitution proof
+landed in 30 minutes. The architecture GPT recommended in deliberation
+(thin abbreviations + algebraic identity + general substitution lemma
++ partition-function corollary + Gibbs-expectation transport +
+headline-at-monomial) collapsed to 206 lines, of which the four
+named theorems took $\sim 50$ lines each.
+
+\paragraph{Pattern: zero GPT consults during proof for Tides 2 and 3.}
+The deliberation step preceding the formalisation produced enough
+strategic alignment that no further consults were needed. This differs
+from \texttt{retrospective.tex}'s pattern (three load-bearing GPT
+consultations during the formalisation itself), and the difference is
+diagnostic: when the Tide deliberation has done its job, the
+formalisation is mechanical.
+
+\paragraph{Skill iteration during the run.} The
+\texttt{lean-formalisation} skill, authored before the morning's work,
+was iterated twice during the afternoon as patterns emerged:
+\begin{itemize}
+\item After Tide 1, the integrability-via-square-completion pattern
+was a natural addition to the skill's ``Patterns and pitfalls''
+section (alongside the existing entries on over-engineering, Pi.add,
+and template-vs-custom proofs).
+\item After Tide 2, the ``\texttt{div\_eq\_zero\_iff} + resolve\_right
+to extract numerator-zero from expectation-zero'' move (used three
+times in the affine covariance proof) was promoted from a one-off to
+a documented idiom.
+\end{itemize}
+These additions were small (a few sentences each) but represent the
+mechanism by which the skill compounds. The
+``rising tide'' image is exact: the skill is the seabed; each tide
+step adds a thin layer.
+
+\section{Cross-step compounding}
+
+The most striking feature of running three Tide steps in a row is how
+much each step uses material from the previous one. Tide 2 imports
+\texttt{Laplace/OneD/Quartic.lean} (Tide 1) and reuses
+\texttt{quartic\_partition}, \texttt{quartic\_moment\_even},
+\texttt{quartic\_expected\_value\_sq}, and
+\texttt{quartic\_integrable\_pow\_pot}. Tide 3 imports
+\texttt{Laplace/OneD/Anharmonic.lean} (already in the seabed) but
+restructures \texttt{nearDegeneratePotential = anharmonicPotential
+\_ 0 1} as an abbreviation, immediately giving access to the existing
+algebraic and integrability results. The cumulative effect is that
+each step is shorter than its predecessor would have been if attempted
+from scratch:
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l r r r}
+\toprule
+& \textbf{New lines} & \textbf{Lines reused} & \textbf{Cumulative library}\\
+\midrule
+Seabed (start)        &     0 & --      & $\sim$15800\\
+Tide 1                &   379 & seabed  &  16179\\
+Tide 2                &   514 & + Tide 1 &  16693\\
+Tide 3                &   206 & + Tide 1, 2 & 16899\\
+\bottomrule
+\end{tabular}
+\caption{Each step is shorter than the previous in absolute terms, while
+the cumulative library grows steadily. Tide 3 in particular is small
+because the seabed's anharmonic infrastructure does most of the work.}
+\label{tab:lines}
+\end{table}
+
+This is what ``the tide rises'' looks like in practice: the seabed
+gets thicker, and the next step launches from higher ground. The
+\emph{shoreline} (the theorems-just-beyond-reach watermark) advances
+visibly. After Tide 1, the shoreline includes 2D semi-degenerate cases.
+After Tide 2, the shoreline includes the universal scaling identity.
+After Tide 3, the shoreline includes the two-sided asymptote of
+$f_n(T)$ (Candidate (2) from the near-degenerate note) and a
+crossover-aware uniform-in-$\varepsilon$ inequality (Candidate (3)).
+Every successful step makes the next step's deliberation cheaper.
+
+\section{The near-degenerate side excursion}\label{sec:near-degenerate}
+
+Between Tide 2 and Tide 3, DM asked an exploratory question rather
+than directing a Tide step:
+
+\userbox{Here's a question: when $L^{\rm nd}$ is nondegenerate but is
+``close'' to a degenerate potential $L$ it can still be the case that
+asymptotic behaviour of expectation values for $L^{\rm nd}$ are
+governed by those for $L$ until $t$ is large. Explore this effect
+numerically and theoretically.}
+
+The investigation took $\sim 30$ minutes. The
+result\footnote{Recorded at
+\texttt{sri/projects/automation/log/2026-05-01-near-degenerate-crossover.md}.}
+is the cleanest scaling-collapse picture of the whole afternoon:
+under the rescaling $x = \sqrt{\varepsilon} y$ with $T = \varepsilon^2
+t$, the moment data for $L^{\rm nd}_\varepsilon(x) =
+(\varepsilon/2) x^2 + x^4/24$ collapses onto a universal scaling
+function $f_n(T)$ for the fixed potential $V(y) = y^2/2 + y^4/24$.
+Below the crossover scale $t_c \sim 1/\varepsilon^2$ the moments
+track the pure-quartic asymptotics; above, they track the standard
+Laplace asymptotics; the crossover region is the order-of-magnitude
+window around $T = 1$.
+
+This was \emph{not} a Tide step. It was a numerical exploration with a
+theoretical scaling argument written up alongside the figures, ending
+with three explicit ``possible Tide-step formalisations'' of which
+candidate (1) became Tide 3. The exploration is the kind of thing that
+sits naturally in the \emph{exploration loop} sketched in
+``Formalisation Second Steps'': a model is asked to investigate a
+direction outward; if interesting, it produces a candidate
+formalisation target; if formalisable, it becomes a Tide step. Here
+the human played the picker role; in a more autonomous future the
+exploration would itself be model-driven.
+
+The exploration produced three figures (raw moments vs $t$, data
+collapse onto $f_2(T)$, effective-rate sigmoid) which became inline
+content in a new appendix in the primer
+(\texttt{app:near-degenerate-crossover}, 46 pages with the new section
+included).
+
+\section{Time, cost, and skill iteration}
+
+\paragraph{Wall-clock.} The three Tide steps and the side excursion
+ran from morning to evening of 1 May 2026. Roughly:
+
+\begin{itemize}
+\item Tide 1 deliberation + formalisation + tide log + commit: $\sim 1.5$ hours.
+\item Primer appendix for Tide 1 (with figures-free content): $\sim 0.5$ hours.
+\item Tide 2 deliberation + formalisation + tide log + commit + primer
+appendix subsection: $\sim 2.0$ hours.
+\item Side excursion (script, figures, markdown note, primer appendix):
+$\sim 1.0$ hour.
+\item Tide 3 deliberation + formalisation + tide log + commit + primer
+appendix update: $\sim 1.0$ hours.
+\end{itemize}
+
+Total: roughly six hours of attention, with a spread of $\sim 30$
+minutes (Tide 3 formalisation) to $\sim 2$ hours (Tide 2 formalisation).
+
+\paragraph{The skill itself.} The \texttt{tide} skill was authored at
+the start of the afternoon, refined once mid-flight (after the
+$L=x^2y^4$ flag, the integrability-or-not check was tightened). The
+\texttt{lean-formalisation} skill was already mature; two small
+additions to its ``Patterns and pitfalls'' section emerged during the
+runs (above). No structural changes were needed.
+
+\paragraph{Per-step costs.} Each Tide step cost $\$$10--$\$$30 in API
+spend (estimated, from prior calibration), spread between Claude
+session continuation (fairly cache-warm given the linear branch
+structure), the deliberation GPT consult ($\sim \$2$ each), and one
+GPT consult during Tide 1's formalisation (which timed out and so
+charged the timeout cost). The aggregate was modest.
+
+\paragraph{Skill compounding.} After three Tide steps, the
+\texttt{tide} skill itself can be evaluated against actual usage:
+
+\begin{itemize}
+\item Step 1 (record direction): one-line, mechanical, never the
+bottleneck.
+\item Step 2 (deliberation): the load-bearing step. Caught real bugs in
+$\sim 30\%$ of candidates. Worth the time.
+\item Step 3 (formalisation hand-off): runs the
+\texttt{lean-formalisation} skill, which absorbs the heavy lifting.
+The hand-off note from Step 2 (file path, theorem names, proof
+sketch) was used unchanged in all three runs.
+\item Stop conditions: 4-round cap on deliberation never approached;
+Step 3's ``runs to success'' condition was straightforward in all
+three cases. The user's earlier instruction ``put off stop conditions
+until they become a problem'' was vindicated.
+\end{itemize}
+
+\section{Lessons}
+
+Distilling the afternoon's experience into a small list:
+
+\begin{enumerate}
+\item \textbf{The deliberation step is where the value is.} GPT's
+strict-improvement and bug-catching contributions during Step 2 saved
+hours of Lean work in each run. The formalisation step is mechanical
+when the deliberation has done its job.
+
+\item \textbf{Linear branches beat parallel branches.} Branching each
+Tide step's branch off the previous one's tip (\texttt{tide/quartic-moments}
+$\to$ \texttt{tide/2d-semi-degenerate} $\to$ \texttt{tide/universal-scaling})
+collapses the primer's commit pin to a single
+\texttt{\textbackslash quarticCommit}. Parallel branches would have
+required separate pins and a manual merge before the primer could
+cite all three.
+
+\item \textbf{Numerical sanity at the deliberation stage is
+load-bearing.} Tide 1 caught the \emph{value} of the leading constant
+$\sqrt{24}\,\Gamma(3/4)/\Gamma(1/4) \approx 1.6558$ to machine
+precision before any Lean was written. Tide 2's data collapse and
+Tide 3's substitution identity were each verified numerically
+\emph{across multiple parameter values} before formalisation. Each
+mismatch caught at this stage saves a wasted Lean session.
+
+\item \textbf{Adopt GPT's strict-improvement candidate.} If GPT's
+strengthened version of the candidate has the same proof, take it.
+The reusable API matters more for follow-ups than the minimality of
+any single step.
+
+\item \textbf{Race short tactical questions, don't block on GPT.}
+Tide 1's integrability question was sent to GPT and Claude in
+parallel; Claude's local proof landed first. GPT's response timed out.
+The lesson is in the \texttt{lean-formalisation} skill's ``When to
+consult'' table: GPT for strategic and architectural questions, Claude
+for tactical-Lean questions, and never block one on the other.
+
+\item \textbf{Skill iteration is cheap; do it during the run.} The
+\texttt{lean-formalisation} skill grew two small entries during the
+afternoon, each landed in the run that produced them. Skills are not
+finished products; they are the seabed, and they thicken with use.
+
+\item \textbf{The exploration loop is the future.} The side excursion
+between Tide 2 and Tide 3 produced a result (the universal scaling
+collapse) which became Tide 3's direction. Wiring this kind of
+exploration into the loop --- so that a model proposes the direction
+without DM in the middle --- is the natural next ambition. Today the
+human plays picker; tomorrow the picker is also a model.
+\end{enumerate}
+
+\section{Possible next steps}
+
+\paragraph{Fold all three branches to \texttt{main}.} The branches are
+linear and individually pass \texttt{lake build}; the merges to
+\texttt{main} are clean. This collapses the primer's
+\texttt{\textbackslash quarticCommit} pin into the standard
+\texttt{\textbackslash laplaceCommit} and removes the temporary
+\texttt{\textbackslash leanrefQuartic} macro.
+
+\paragraph{Tide 4 and beyond.} Three obvious continuations from the
+present shoreline:
+\begin{itemize}
+\item Two-sided asymptotic for $f_n(T)$ in the universal potential
+(Candidate (2) from the near-degenerate note); requires a uniform
+Taylor expansion against the quartic Gibbs at small $T$ and a standard
+Laplace expansion at large $T$.
+\item A crossover-aware uniform-in-$\varepsilon$ inequality
+(Candidate (3) from the near-degenerate note); a paper-level result.
+\item A 2D analogue of the universal scaling identity, combining the
+1D scaling of Tide 3 with the product-measure structure of Tide 2.
+\end{itemize}
+
+\paragraph{Promote pieces to \texttt{lean-common}.} The 2D Gibbs
+wrappers from Tide 2 (\texttt{partitionFunction2D},
+\texttt{gibbsExpectation2D}, \texttt{gibbsCov2D}) are promotion
+candidates as soon as a second project needs them. Likewise
+\texttt{quartic\_integrable\_pow} (Tide 1) generalises trivially to
+arbitrary $L = (\varepsilon/2)x^2 + (\gamma/24) x^4$ once the second
+use materialises.
+
+\paragraph{Wire the exploration loop.} A model-driven
+\emph{exploration} step --- ``starting from this seabed, propose three
+candidate directions outward and check each numerically'' --- followed
+automatically by a Tide step on the most promising one would close the
+loop without DM in the middle. The numerical-check infrastructure used
+in the side excursion (a few-line scipy script) is the existence
+proof that this is a small step from where the loop is now.
+
+\paragraph{Adopt \texttt{leanblueprint}.} The earlier retrospective
+already argued for this once a second result was formalised. By the
+end of this afternoon there are five formalised primer claims (two
+from the morning of 27 April, plus the three from this afternoon:
+the 1D quartic affine covariance, the 2D semi-degenerate affine
+covariance, and the universal scaling identity\footnote{Numbered
+\texttt{lem:quartic-cov-affine}, \texttt{lem:semi-degenerate-cov-affine},
+and \texttt{lem:nd-scaling} in the primer copy compiled from
+\texttt{papers/suscprimer/main\_lean.tex}.}), with margin markers and
+two separate commit pins. \texttt{leanblueprint}'s dependency-graph
+view would now be genuinely useful, and the manual-pin bookkeeping
+would go away.
+
+\section{Acknowledgements}
+
+\begin{itemize}
+\item GPT-5.5~Pro provided three deliberation consultations preserved
+verbatim under \texttt{sri/projects/automation/log/} as
+\texttt{gpt55\_tide\_quartic\_v1.md},
+\texttt{gpt55\_tide\_2d\_v1.md}, and
+\texttt{gpt55\_tide\_scaling\_v1.md}.
+\item The \texttt{tide} skill is at
+\texttt{sri/.claude/skills/tide/SKILL.md}; the
+\texttt{lean-formalisation} skill is at
+\texttt{sri/.claude/skills/lean-formalisation/SKILL.md}. Both are
+short and read-once; they are deliberately thin.
+\item Geoffrey Irving's \href{https://github.com/girving/aks}{aks}
+repository continues to be the model for project layout, audit
+discipline, and \texttt{CLAUDE.md} structure (transitively, via the
+seabed).
+\item The mathematical content sits in the SLT Susceptibility Primer
+(Elliott--Murfet, 2026), which now carries three appendices on the
+degenerate-case excursions plus updated provenance paragraphs
+crediting the Tide loop.
+\item The formalisation depends throughout on
+\href{https://github.com/leanprover-community/mathlib4}{Mathlib}.
+\end{itemize}
+
+\end{document}
