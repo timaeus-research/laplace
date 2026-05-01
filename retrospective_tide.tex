@@ -29,7 +29,7 @@ excursion\\in a single afternoon}
 This document is a retrospective on three Tide-loop excursions and one
 adjacent numerical/theoretical exploration carried out in a single
 afternoon, building on the morning recorded in
-\texttt{retrospective.tex} and the multi-week saga in
+\texttt{retrospective.tex} and the few-day saga in
 \texttt{retrospective2.tex}. The Tide loop is a thin, deliberation-first
 procedure for autonomous formalisation: a human-provided direction;
 a Claude--GPT-5.5~Pro vote on a minimal candidate lemma; hand-off to the
@@ -50,7 +50,7 @@ running it three times in succession.
 
 The morning of 27 April, recorded in \texttt{retrospective.tex},
 formalised the primer's anharmonic covariance formula in 3279 lines of
-Lean. The multi-week saga that followed, recorded in
+Lean. The few-day saga that followed, recorded in
 \texttt{retrospective2.tex}, brought the multivariate sharp covariance
 to the same bar. The framework articulated in DM's notes
 ``Formalisation First Steps'' (27/28 April) and ``Formalisation Second
@@ -77,7 +77,20 @@ proofs land.
 Three loops were run, each starting from the previous one's commit
 (which is the central image of the loop: a tide of agents spreading
 outward from already-formalised territory, with the shoreline rising
-each time). The rest of this document records what the runs looked
+each time).\footnote{The Tide-loop framing carries a small vocabulary
+of metaphors. The \emph{seabed} is the existing formalised material
+that a Tide step launches from: at the start of the afternoon it was
+the laplace repository's \texttt{main} branch; after Tide 1 it
+included \texttt{Quartic.lean} as well; after Tide 2 it included the
+2D semi-degenerate file; and so on. The \emph{shoreline} is the
+just-beyond-the-seabed watermark of theorems that are reachable in
+one Tide step from the current seabed; each successful step extends
+it. The \emph{tide} is the agent activity itself, sweeping over the
+seabed and (when systematisation lands the new pieces in
+\texttt{lean-common}) genuinely raising the floor for the next
+agent to launch from. This vocabulary is from the automation project
+README; it is loose but useful.}
+The rest of this document records what the runs looked
 like, how the deliberation step calibrated, where the skill was
 stress-tested, and what was learned.
 
@@ -86,23 +99,24 @@ stress-tested, and what was learned.
 \begin{table}[h]
 \centering
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l l l l l}
+\begin{tabular}{l l r r}
 \toprule
-\textbf{Tide step} & \textbf{Direction} & \textbf{Branch} & \textbf{Lines} & \textbf{Lake build}\\
+\textbf{Tide step} & \textbf{Direction} & \textbf{Lines} & \textbf{Build}\\
 \midrule
-1. quartic-moments        & ``extend the formalisation to simple degenerate cases''    & \texttt{tide/quartic-moments}        & 379 & 4s\\
-2. 2d-semi-degenerate     & ``Candidate D from the previous deliberation'' (i.e.\ ``Next'')          & \texttt{tide/2d-semi-degenerate}     & 514 & 12s\\
-3. universal-scaling      & ``formalise the universal scaling formula''                & \texttt{tide/universal-scaling}      & 206 & 8s\\
+1. \texttt{quartic-moments}    & ``extend to simple degenerate cases'' & 379 & 4s\\
+2. \texttt{2d-semi-degenerate} & ``Candidate D from previous'' (``Next'') & 514 & 12s\\
+3. \texttt{universal-scaling}  & ``formalise the universal scaling formula'' & 206 & 8s\\
 \midrule
-\multicolumn{3}{r}{\emph{Total new Lean for tide loop}} & \textbf{1099} & \\
+\multicolumn{2}{r}{\emph{Total new Lean for tide loop}} & \textbf{1099} & \\
 \bottomrule
 \end{tabular}
-\caption{The three Tide-loop excursions of 1 May 2026, with branch
-names rebased linearly: each step's seabed is the previous step's tip.}
+\caption{The three Tide-loop excursions of 1 May 2026. The Tide-step
+identifier doubles as the branch name (\texttt{tide/<id>}); branches
+are rebased linearly so each step's seabed is the previous step's tip.}
 \label{tab:excursions}
 \end{table}
 
-The targets, in plain English:
+The targets, in plain English:\footnote{Dan: lol}
 
 \begin{itemize}
 \item \textbf{Tide 1 --- pure-quartic Gibbs moments.} For
@@ -150,8 +164,8 @@ statements about covariances against a posterior where $L$ is
 nondegenerate. It would be useful to do this also in some simple
 degenerate cases.}
 
-The skill prescribes opening a tide log file
-(\texttt{sri/projects/automation/log/2026-05-01-tide-degenerate-quartic-cov.md})
+The skill prescribes opening a tide log file\footnote{For Tide 1, this
+is \texttt{sri/projects/automation/log/2026-05-01-tide-degenerate-quartic-cov.md}.}
 with the direction recorded verbatim, the seabed pointer
 (\texttt{laplace}, commit SHA at start), and the start date.
 
@@ -416,9 +430,10 @@ asymptotic behaviour of expectation values for $L^{\rm nd}$ are
 governed by those for $L$ until $t$ is large. Explore this effect
 numerically and theoretically.}
 
-The investigation took $\sim 30$ minutes. The result --- recorded in
-\texttt{sri/projects/automation/log/2026-05-01-near-degenerate-crossover.md}
---- is the cleanest scaling-collapse picture of the whole afternoon:
+The investigation took $\sim 30$ minutes. The
+result\footnote{Recorded at
+\texttt{sri/projects/automation/log/2026-05-01-near-degenerate-crossover.md}.}
+is the cleanest scaling-collapse picture of the whole afternoon:
 under the rescaling $x = \sqrt{\varepsilon} y$ with $T = \varepsilon^2
 t$, the moment data for $L^{\rm nd}_\varepsilon(x) =
 (\varepsilon/2) x^2 + x^4/24$ collapses onto a universal scaling
