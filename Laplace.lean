@@ -18,3 +18,4 @@ import Laplace.Multi.GaussianIBP
 import Laplace.Multi.RescaledIntegrals
 import Laplace.Multi.Covariance
 import Laplace.TwoD.SemiDegenerate
+import Laplace.TwoD.PureQuartic
