@@ -35,58 +35,58 @@
 
 \begin{abstract}
 A single Tide-loop excursion in the \texttt{laplace} seabed, generalising
-\texttt{Laplace/OneD/Quartic.lean} from $L(x) = x^4/24$ to $L(x) = x^6/720$.
-The headline theorem \texttt{Laplace.OneD.sextic\_cov\_affine} gives the affine
-covariance of the 1D pure-sextic Gibbs measure as
+the pure-quartic 1D file from $L(x) = x^4/24$ to $L(x) = x^6/720$. The
+headline theorem (\texttt{sextic\_cov\_affine}) gives the affine covariance
+of the 1D pure-sextic Gibbs measure as
 $\operatorname{Cov}_t[ax+c, bx+d] = ab \cdot (720/t)^{1/3} \cdot
 \Gamma(1/2)/\Gamma(1/6)$, a rate-$t^{-1/3}$ analogue of the quartic's
-$t^{-1/2}$. The new file \texttt{Laplace/OneD/Sextic.lean} (396 lines) parallels
-\texttt{Quartic.lean} section by section. Zero \texttt{sorry}, zero
-\texttt{axiom}, zero \texttt{native\_decide}; clean Lean diagnostics on first
-pass. The interesting features of this run were two tactical refinements
-suggested by GPT-5.5 Pro at the deliberation step --- a \emph{B+ refinement}
-stating the half-line moment lemma for arbitrary natural power $m$ rather than
-just $2n$, and a piecewise (rather than discriminant-based) proof of the
-polynomial bound $x^2 \leq 1 + x^6$ used for Gaussian-comparison integrability
---- both of which made the file genuinely cleaner than the quartic template
-it descended from. Like the concurrent \texttt{tide/2d-pure-quartic} excursion,
-this run hit a working-tree race when another agent rewrote \texttt{Laplace.lean}
-in the staging window; the fix was atomic re-staging plus a branch-ref
-re-pointing dance.
+$t^{-1/2}$. The new file (396 lines) parallels its quartic predecessor
+section by section. Zero \texttt{sorry}, zero \texttt{axiom}, zero
+\texttt{native\_decide}; clean Lean diagnostics on first pass. The
+interesting features of this run were two tactical refinements suggested by
+GPT-5.5 Pro at the deliberation step --- a \emph{B+ refinement} stating the
+half-line moment lemma for arbitrary natural power $m$ rather than just
+$2n$, and a piecewise (rather than discriminant-based) proof of the
+polynomial bound $x^2 \leq 1 + x^6$ used for Gaussian-comparison
+integrability --- both of which made the file genuinely cleaner than the
+quartic template it descended from. Like the concurrent 2D pure-quartic
+excursion, this run hit a working-tree race when another agent rewrote the
+top-level import file in the staging window; the fix was atomic re-staging
+plus a branch-ref re-pointing dance.
 \end{abstract}
 
 \section{Setting}
 
 This Tide step is the sixth excursion outward from the same seabed: the
 \texttt{laplace} repo, which originally formalised the 1D anharmonic
-asymptotic
-$\operatorname{Cov}_t[x^2,x] = -2\alpha/(\lambda^3 t^2) + o(t^{-2})$
-(Susceptibility Primer, eq.~4.10) and has since been extended through five
-prior tide steps (\texttt{tide/quartic-moments}, \texttt{tide/2d-semi-degenerate},
-\texttt{tide/universal-scaling}, \texttt{tide/f1-large-t}, and the concurrent
-\texttt{tide/2d-pure-quartic}). The first four merged into \texttt{main} on
-1\,May (\texttt{44a6001}); this step shares its base with \texttt{2d-pure-quartic}
-and was branched off the latter's tip per the Tide skill's branch-hygiene
-rule.
+asymptotic $\operatorname{Cov}_t[x^2,x] = -2\alpha/(\lambda^3 t^2) +
+o(t^{-2})$ (Susceptibility Primer, eq.~4.10) and has since been extended
+through five prior tide steps.\footnote{Branches
+\texttt{tide/quartic-moments}, \texttt{tide/2d-semi-degenerate},
+\texttt{tide/universal-scaling}, \texttt{tide/f1-large-t}, and the
+concurrent \texttt{tide/2d-pure-quartic}.}
+The first four merged into \texttt{main} on 1\,May (commit
+\texttt{44a6001}); this step shares its base with the parallel 2D
+pure-quartic run and was branched off the latter's tip per the Tide skill's
+branch-hygiene rule.
 
-The candidate was picked from the cross-tide candidate survey
-(\texttt{projects/automation/log/2026-05-02-tide-candidates-survey.md}): of
-the five candidates listed there, \emph{Sextic 1D moments} scored as the third
-choice, behind the threepoint $\kappa_3$ candidate (different seabed) and the
-2D pure-quartic case (the parallel run). It is the cleanest test of whether
-the substitution-and-$\Gamma$ template established by
-\texttt{Quartic.lean} generalises beyond a single exponent class. The pattern
+The candidate was picked from a cross-tide candidate survey written
+earlier the same day.\footnote{\texttt{projects/automation/log/}\allowbreak\texttt{2026-05-02-tide-candidates-survey.md}.}
+Of the five candidates listed there, \emph{Sextic 1D moments} scored as the
+third choice, behind the threepoint $\kappa_3$ candidate (different seabed)
+and the 2D pure-quartic case (the parallel run). It is the cleanest test
+of whether the substitution-and-$\Gamma$ template established by the
+quartic file generalises beyond a single exponent class. The pattern
 $L = x^{2k}/(2k)!$ predicts a rate $t^{-1/(2k-1)}$, with $k=2$ giving the
 quartic's $t^{-1/2}$ and $k=3$ giving the sextic's $t^{-1/3}$; this tide is
 the second data point.
 
 The Step~2 deliberation (Claude $\leftrightarrow$ GPT-5.5 Pro) drafted three
-candidates: A, the full sextic package paralleling \texttt{Quartic.lean}; B,
-just the atomic half-line moment as a kernel; C, the general
-$p = 2k$ family covering quartic and sextic uniformly. Both parties backed A,
-with GPT making two tactical refinements that were carried into Step~3. The
-full deliberation is at
-\texttt{projects/primer/tide-log/2026-05-02-tide-sextic-moments.md}.
+candidates: A, the full sextic package paralleling the quartic file; B,
+just the atomic half-line moment as a kernel; C, the general $p = 2k$
+family covering quartic and sextic uniformly. Both parties backed A, with
+GPT making two tactical refinements that were carried into Step~3. The full
+deliberation is in the tide log.\footnote{\texttt{projects/primer/tide-log/}\allowbreak\texttt{2026-05-02-tide-sextic-moments.md}.}
 
 \section{The thing formalised}
 
@@ -151,13 +151,14 @@ natural power $m$:
   \;=\; \tfrac{1}{6} \left(\tfrac{720}{t}\right)^{(m+1)/6}
         \Gamma\!\left(\tfrac{m+1}{6}\right).
 \]
-This is a direct application of Mathlib's master gamma-integral lemma
-\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} with $p = 6$, $q = m$,
-$b = t/720$, plus a conversion between $\mathbb{N}$- and $\mathbb{R}$-powers
-via \texttt{rpow\_natCast} and a single $(t/720)^{-(m+1)/6} \to (720/t)^{(m+1)/6}$
-inversion via \texttt{inv\_rpow}. Stating this for all $m$ (the
-\emph{B+ refinement}) costs nothing extra in the proof and makes the even and
-odd full-line cases share a single substitution argument.
+This is a direct application of Mathlib's master gamma-integral
+lemma\footnote{\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}.} with
+$p = 6$, $q = m$, $b = t/720$, plus a conversion between $\mathbb{N}$- and
+$\mathbb{R}$-powers via \texttt{rpow\_natCast} and a single
+$(t/720)^{-(m+1)/6} \to (720/t)^{(m+1)/6}$ inversion via \texttt{inv\_rpow}.
+Stating this for all $m$ (the \emph{B+ refinement}) costs nothing extra in
+the proof and makes the even and odd full-line cases share a single
+substitution argument.
 
 From the half-line lemma the rest of the file is mechanical. The full-line
 even moment doubles via \texttt{integral\_comp\_abs} after rewriting the
@@ -288,21 +289,26 @@ algebra. \texttt{Real.Gamma\_pos\_of\_pos} for partition-function positivity.
 seabed-side infrastructure was needed.
 
 \paragraph{What was new in this tide.}
-The 1D pure-sextic potential \texttt{sexticPotential}, the Gaussian-comparison
-integrability \texttt{sextic\_integrable\_pow} (with the piecewise polynomial
-bound \texttt{sq\_le\_one\_add\_pow\_six} as a private helper), the half-line
-moment \texttt{integral\_pow\_mul\_exp\_neg\_sextic\_Ioi} (in the B+ form for
-arbitrary natural power), the full-line moments
-(\texttt{sextic\_moment\_even}, \texttt{sextic\_moment\_odd}), the partition
-function (\texttt{sextic\_partition}, \texttt{sextic\_partition\_pos}), the
-expected values (\texttt{sextic\_expected\_value\_even/odd/sq/lin}), and the
-headline \texttt{sextic\_cov\_affine}. There is no novel mathematical content;
-what is new is the substitution-into-the-template that confirms the
-substitution template ports cleanly to a second exponent class. As the
-\texttt{tide/2d-pure-quartic} retrospective predicted in its
-\emph{Lessons}: ``the next test is whether [the factorisation template]
-ports across the sextic side; if so, the abstraction is genuinely the right
-shape.'' It does, and it is.
+The 1D pure-sextic potential, a Gaussian-comparison integrability lemma
+(with the piecewise polynomial bound $x^2 \leq 1 + x^6$ as a private
+helper), the half-line moment lemma in the B+ form for arbitrary natural
+power, the full-line even and odd moments, the partition function and its
+positivity, the four expected-value lemmas (even, odd, $n=1$, linear
+specialisation), and the headline affine
+covariance.\footnote{Lean names: \texttt{sexticPotential};
+\texttt{sextic\_integrable\_pow}; \texttt{sq\_le\_one\_add\_pow\_six} (private);
+\texttt{integral\_pow\_mul\_exp\_neg\_sextic\_Ioi};
+\texttt{sextic\_moment\_even}, \texttt{sextic\_moment\_odd};
+\texttt{sextic\_partition}, \texttt{sextic\_partition\_pos};
+\texttt{sextic\_expected\_value\_even}, \texttt{\_odd},
+\texttt{\_sq}, \texttt{\_lin};
+\texttt{sextic\_cov\_affine}.}
+There is no novel mathematical content; what is new is the
+substitution-into-the-template that confirms the substitution template
+ports cleanly to a second exponent class. As the parallel 2D pure-quartic
+retrospective predicted in its \emph{Lessons}: ``the next test is whether
+[the factorisation template] ports across the sextic side; if so, the
+abstraction is genuinely the right shape.'' It does, and it is.
 
 \section{Lessons}
 
@@ -390,12 +396,13 @@ skill as a preflight setup step.
 GPT-5.5 Pro contributed the deliberation-stage advisory at Step~2,
 including the B+ refinement of the half-line moment lemma and the piecewise
 proof of the polynomial bound $x^2 \leq 1 + x^6$. Both were carried into
-the final proof, and both were the right call. The full consult is
-preserved at
-\texttt{projects/primer/tide-log/gpt55\_tide\_sextic\_v1.md}. The tide log
-itself, with candidate drafts, vote, numerical check, and result, is at
-\texttt{projects/primer/tide-log/2026-05-02-tide-sextic-moments.md}. The
-parallel \texttt{tide/2d-pure-quartic} run shared the seabed and the
+the final proof, and both were the right call. The full consult and the
+tide log (with candidate drafts, vote, numerical check, and result) are
+both preserved in the primer project's tide-log
+directory.\footnote{\texttt{projects/primer/tide-log/}\allowbreak\texttt{gpt55\_tide\_sextic\_v1.md}
+and
+\texttt{projects/primer/tide-log/}\allowbreak\texttt{2026-05-02-tide-sextic-moments.md}.}
+The parallel 2D pure-quartic run shared the seabed and the
 integration race; its retrospective is the immediate predecessor to this
 one and recorded the same lessons from the other side.
 
