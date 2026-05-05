@@ -1,0 +1,345 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{2D pure-quartic affine covariance}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{2 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A single Tide-loop excursion in the \texttt{laplace} seabed, formalising the
+affine covariance for the doubly-degenerate 2D potential
+$L(x,y) = (x^4 + y^4)/24$. The headline theorem
+\texttt{Laplace.TwoD.PureQuartic.cov\_affine\_pureQuartic} adds 478 lines of
+Lean to the seabed; the proof is a near-mechanical mirror of
+\texttt{cov\_affine\_semiDegenerate}, with the harmonic $y$-direction replaced
+by a second copy of the quartic. Zero \texttt{sorry}, zero \texttt{axiom},
+zero \texttt{native\_decide}; clean Lean diagnostics on first pass after a
+namespace fix. The interesting friction in this run was not mathematical: two
+other Tide agents (sextic, bounded-prior) were operating in the same checkout
+concurrently, and one of them clobbered \texttt{Laplace.lean} in the
+\texttt{git add}\,$\to$\,\texttt{git commit} window. The fix was a trailing
+single-line commit; the lesson is to run concurrent Tide agents in separate
+\texttt{git worktree} checkouts.
+\end{abstract}
+
+\section{Setting}
+
+This Tide step is the fifth excursion outward from the same seabed: the
+\texttt{laplace} repo, which originally formalised the 1D anharmonic
+asymptotic
+$\operatorname{Cov}_t[x^2,x] = -2\alpha/(\lambda^3 t^2) + o(t^{-2})$
+(Susceptibility Primer, eq.~4.10) and has since been extended by tide steps
+to the 1D pure-quartic case (\texttt{tide/quartic-moments}), the 2D
+semi-degenerate case (\texttt{tide/2d-semi-degenerate}), the universal scaling
+identity (\texttt{tide/universal-scaling}), and the large-$t$ asymptotics of
+$f_1$ (\texttt{tide/f1-large-t}). All four were merged into \texttt{main}
+on 1\,May; this step branches off the resulting commit \texttt{44a6001}.
+
+The candidate was picked from the cross-tide candidate survey
+(\texttt{projects/automation/log/2026-05-02-tide-candidates-survey.md}),
+which catalogued five candidate steps drawn from the wider research
+portfolio. Of those, the 2D pure-quartic case scored as the cleanest
+mechanical extension: the existing \texttt{Laplace/TwoD/SemiDegenerate.lean}
+already provides potential-agnostic 2D wrappers
+(\texttt{partitionFunction\,/\,gibbsExpectation\,/\,gibbsCov}) and a
+worked example of the
+$\exp(-tL)$ factorisation pattern; the existing \texttt{Laplace/OneD/Quartic.lean}
+provides closed-form 1D moments. Combining them is a substitution exercise.
+
+The Step~2 deliberation (Claude $\leftrightarrow$ GPT-5.5 Pro) drafted three
+candidates: A, the affine covariance itself; B, the more general mixed
+even-power moment family $\langle x^{2m} y^{2n}\rangle_t$; C, just the
+moment table $\langle z_j\rangle$, $\langle z_1 z_2\rangle$,
+$\langle z_j^2\rangle$. Both parties backed A on the same grounds:
+A is the smallest statement that closes a useful interface (the affine
+covariance is what subsequent susceptibility work will call), and B's
+closed form is mathematically clean but introduces \texttt{Real.rpow}
+exponent bookkeeping (half-integral when $m+n$ is odd) that costs more in
+Lean than its incremental power justifies. The full deliberation is at
+\texttt{projects/primer/tide-log/2026-05-02-tide-2d-pure-quartic.md}.
+
+\section{The thing formalised}
+
+For the centred quartic-quartic 2D potential
+\[
+  L(x,y) = \frac{x^4}{24} + \frac{y^4}{24}
+\]
+and affine observables $\varphi(x,y) = a_1 x + a_2 y + c$,
+$\psi(x,y) = b_1 x + b_2 y + d$, against the Gibbs measure
+$e^{-t L(x,y)}\,dx\,dy / Z(t)$ on $\mathbb{R}^2$:
+
+\begin{quote}\itshape
+For all $t > 0$,
+\[
+  \operatorname{Cov}_t[\varphi,\psi]
+  \;=\; (a_1 b_1 + a_2 b_2) \cdot \sqrt{24/t} \cdot
+        \frac{\Gamma(3/4)}{\Gamma(1/4)}.
+\]
+\end{quote}
+
+\noindent The Lean signature:
+\begin{verbatim}
+theorem cov_affine_pureQuartic {t : ℝ} (ht : 0 < t)
+    (a₁ a₂ b₁ b₂ c d : ℝ) :
+    gibbsCov pureQuarticPotential t
+        (fun z : ℝ × ℝ => a₁ * z.1 + a₂ * z.2 + c)
+        (fun z : ℝ × ℝ => b₁ * z.1 + b₂ * z.2 + d) =
+      (a₁ * b₁ + a₂ * b₂) * Real.sqrt (24 / t) *
+        Real.Gamma ((3 : ℝ) / 4) / Real.Gamma ((1 : ℝ) / 4)
+\end{verbatim}
+
+\noindent located at \texttt{Laplace/TwoD/PureQuartic.lean}, in namespace
+\texttt{Laplace.TwoD.PureQuartic}.
+
+The statement is the doubly-degenerate analogue of the existing
+\texttt{cov\_affine\_semiDegenerate}: where the latter has one harmonic
+direction (rate $t^{-1}$) and one quartic direction (rate $t^{-1/2}$), the
+present theorem has both directions degenerate and a single rate
+$t^{-1/2}$. The constants $c, d$ drop out (covariance is shift-invariant in
+each argument); the cross terms $a_1 b_2$ and $a_2 b_1$ vanish because
+$\langle z_1 z_2\rangle = 0$ by parity in either factor; what survives is the
+diagonal contribution $(a_1 b_1 + a_2 b_2) \langle z_j^2\rangle$, with
+$\langle z_j^2\rangle = \sqrt{24/t}\,\Gamma(3/4)/\Gamma(1/4)$ from the 1D
+quartic moment lemma.
+
+Numerical sanity check: \texttt{scipy.integrate.dblquad} over $[-6,6]^2$
+agreed with the closed form to $1.4\times 10^{-14}$ across four
+$(a_i,b_j,c,d,t)$ test points (and analogously to machine precision for
+candidates B and C; all are recorded in the tide log).
+
+\section{Proof strategy}
+
+The Boltzmann factor $\exp(-t L(x,y))$ separates as
+\[
+  \exp(-t (x^4 + y^4)/24)
+  = \exp(-t \cdot x^4/24) \cdot \exp(-t \cdot y^4/24),
+\]
+so the 2D Gibbs measure is the product of two copies of the 1D
+quartic Gibbs measure. The proof rides this factorisation throughout. The
+load-bearing Mathlib lemma is
+\texttt{MeasureTheory.integral\_prod\_mul}: under no hypotheses, the
+integral over $\mathbb{R}^2$ of a separable function $f(x)\,g(y)$
+equals the product of the 1D integrals (and is $0$ on both sides if
+non-integrable, by Bochner convention). Applied to the partition function
+this gives \texttt{partitionFunction\_factor}:
+$Z_{2D}(t) = Z_{\text{quartic}}(t)^2$. Applied to monomials this gives
+\texttt{integral\_pow\_pow\_factor}:
+\[
+  \int_{\mathbb{R}^2} z_1^m z_2^n e^{-t L(z)} \,dz
+  \;=\; \Big(\int_\mathbb{R} x^m e^{-t x^4/24}\,dx\Big)
+        \Big(\int_\mathbb{R} y^n e^{-t y^4/24}\,dy\Big).
+\]
+The 1D factors are then \texttt{Laplace.OneD.quartic\_moment\_even}
+and \texttt{quartic\_moment\_odd} (zero by parity).
+
+From there the proof is mechanical: the means $\langle z_j\rangle = 0$ and
+the mixed first moment $\langle z_1 z_2\rangle = 0$ vanish via the parity
+factor; the second moments $\langle z_j^2\rangle$ reduce via
+\texttt{quartic\_expected\_value\_sq}; the headline covariance follows by
+expanding $(a_1 z_1 + a_2 z_2 + c)(b_1 z_1 + b_2 z_2 + d)$ and using
+linearity of \texttt{gibbsExpectation} (which itself is unfolded against
+\texttt{integral\_add} and \texttt{integral\_const\_mul}, having first
+established 2D atom integrability for each
+$z_1^m z_2^n e^{-t L}$ via \texttt{Integrable.mul\_prod} from two
+\texttt{quartic\_integrable\_pow\_pot} witnesses).
+
+The proof body in \texttt{cov\_affine\_pureQuartic} is a six-term
+\texttt{integral\_add} cascade (six monomial cross-terms in the expansion
+of the product of the two affine observables) followed by a \texttt{field\_simp}
+and \texttt{ring} closer. This is verbatim the same skeleton as
+\texttt{cov\_affine\_semiDegenerate}; the only changes are the potential,
+the namespaces, and the absence of the harmonic-direction integrability
+helper.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{Namespace clash with the existing 2D excursion.}
+The first build attempt produced a wall of \emph{has already been declared}
+errors. The cause was straightforward: \texttt{SemiDegenerate.lean} put its
+helper lemmas at \texttt{Laplace.TwoD.partitionFunction\_factor},
+\texttt{Laplace.TwoD.gibbsExpectation\_fst\_sq}, etc.\,---\,under the same
+generic names that the present file naturally wants for the
+quartic-quartic potential. With both files in \texttt{namespace Laplace.TwoD},
+the lemma-name space collides.
+
+The cheap fix (taken here) is to put the present file's lemmas in a
+nested sub-namespace \texttt{Laplace.TwoD.PureQuartic}; the bare
+identifiers \texttt{partitionFunction}, \texttt{gibbsExpectation}, and
+\texttt{gibbsCov} still resolve because Lean searches outward for
+unqualified names. This is the lighter of the two routes.
+
+The heavier and structurally cleaner route, suggested by GPT-5.5 Pro at
+the deliberation step and deferred here, is to extract a generic
+\emph{additively-separable potential} factorisation: prove once that for
+any $L(x,y) = U(x) + V(y)$ the partition function factorises and
+expectations of separable observables factorise, then specialise to
+$U = V = x^4/24$ (this file) and to $U = x^4/24,\,V = \lambda y^2/2$
+(the existing semi-degenerate file). With this abstraction in place,
+GPT noted, ``B becomes almost free''\,---\,i.e.\ the mixed even-power
+moment table $\langle x^{2m} y^{2n}\rangle$ falls out without further
+work. The decision to defer was deliberate: the Tide skill prefers small
+finished steps to medium-sized refactors, and the namespace pressure is
+manageable at two 2D potentials. It will not be at three.
+
+\paragraph{Concurrent-agent staging race.}
+The repository hosting this Tide step had two other Tide branches
+running simultaneously
+(\texttt{tide/sextic-moments}, on a 1D sextic excursion, and
+\texttt{tide/grammar-precursor-bounded-prior}, an in-progress excursion
+toward the grammar paper) operating in the same checkout. Multiple times
+during this run, the working-tree copy of \texttt{Laplace.lean} was
+overwritten by another agent who was also adding an
+import for their new file. Once, the overwrite happened in the window between
+\texttt{git add Laplace.lean} and \texttt{git commit}\,---\,the staged
+content survived, but Git's index appears to have been touched again before
+the commit fired, with the result that the
+\texttt{import Laplace.TwoD.PureQuartic} change did not make it into the
+first commit (\texttt{1e8954b}). The working tree then showed
+\texttt{Laplace.lean} as unmodified relative to the new \texttt{HEAD}, so a
+quick \texttt{git diff} did not surface the problem; only inspecting the
+commit's file list revealed it.
+
+The fix was a single-line trailing commit (\texttt{efafbfa}) wiring the
+import. This worked but is not a satisfying mitigation. The operational
+lesson, written up under \emph{Lessons} below, is that concurrent Tide
+agents should run in separate \texttt{git worktree} checkouts so that
+their working-tree edits cannot interleave.
+
+Beyond these two, no proof-side roadblocks: the proof typechecked clean
+on the first compile after the namespace fix, with zero warnings. The
+candidate had been picked precisely so that the seabed's machinery would
+already cover the moves; the run paid the cost of that prediction.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+\texttt{MeasureTheory.integral\_prod\_mul} for the partition-function and
+moment factorisations. \texttt{Integrable.mul\_prod} for promoting two 1D
+integrability witnesses to a 2D one. \texttt{Real.exp\_add} for the
+Boltzmann factor decomposition. The standard
+\texttt{integral\_add\,/\,integral\_const\_mul\,/\,integral\_neg} lemmas
+for the affine-observable expansion. \texttt{mul\_div\_mul\_left} and
+\texttt{mul\_div\_mul\_right} for the
+$Z_{\text{quartic}}$-cancellation in the second-moment lemmas.
+
+\paragraph{The seabed provided.}
+This step did not consume new Mathlib API; everything not shipped by
+Mathlib was already in the seabed. From
+\texttt{Laplace/OneD/Quartic.lean}: \texttt{quartic\_partition},
+\texttt{quartic\_partition\_pos}, \texttt{quartic\_moment\_even/odd},
+\texttt{quartic\_expected\_value\_sq}, \texttt{quartic\_integrable\_pow\_pot}.
+From \texttt{Laplace/TwoD/SemiDegenerate.lean}: the potential-agnostic
+\texttt{Laplace.TwoD.partitionFunction\,/\,gibbsExpectation\,/\,gibbsCov}
+wrappers (which this file reuses unchanged) and the proof skeleton that
+this file mirrors.
+
+\paragraph{What was new in this tide.}
+The 2D pure-quartic potential
+\texttt{pureQuarticPotential},
+its Boltzmann factor decomposition, the four moment lemmas
+(\texttt{gibbsExpectation\_fst}, \texttt{\_snd}, \texttt{\_fst\_mul\_snd},
+\texttt{\_fst\_sq}, \texttt{\_snd\_sq}; \texttt{\_fst} and \texttt{\_snd}
+are visibly symmetric, but Lean wants both because of the asymmetric
+structure of the underlying product space), the private 2D atom
+integrability \texttt{pureQuartic\_integrable\_pow\_pow}, and the
+headline \texttt{cov\_affine\_pureQuartic}. There is no novel mathematical
+content; what is new is the substitution-into-the-template that gives a
+working Lean proof.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{Concurrent Tide agents need filesystem isolation.} The
+\texttt{Laplace.lean} import-list is a contention point because every
+new top-level file edits it. Two agents in the same checkout will race; it
+is not a question of careful sequencing. The structural fix is to run each
+Tide agent in its own \texttt{git worktree} attached to its own branch.
+Worth lifting to the Tide skill as a preflight step alongside the
+existing one-tide-branch-per-repo rule.
+
+\item \emph{Generic lemma names in the master 2D namespace are a smell.}
+The existing \texttt{Laplace.TwoD.partitionFunction\_factor} reads as if
+it were a property of the namespace, but it is in fact specific to one
+potential. A second potential can only coexist by sub-namespacing or by
+suffixing every lemma; neither scales. The right time to extract a
+generic \emph{additively-separable factorisation} is now (two potentials),
+not later (three or four). This is the
+deferred-but-already-cost-positive refactor noted in the follow-ups.
+
+\item \emph{The substitution template is robust at one more exponent.}
+This step confirmed that the
+$\exp(-tL_1) \cdot \exp(-tL_2)$ factorisation ports cleanly across the
+quartic--quartic and harmonic--quartic boundary. The next test is whether
+it ports across the sextic side
+(\texttt{Laplace/OneD/Sextic.lean} from the concurrent
+\texttt{tide/sextic-moments} run); if so, the abstraction is genuinely the
+right shape.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Generic separable-potential factorisation.} For any
+$L(x,y) = U(x) + V(y)$, a single file proving the partition-function
+factorisation, the separable-observable factorisation
+$\langle f(x) g(y)\rangle = \langle f\rangle_U \langle g\rangle_V$, and
+optionally the bilinear/symmetric/affine-shift algebra of \texttt{gibbsCov}.
+Specialises to both \texttt{SemiDegenerate} and \texttt{PureQuartic};
+candidate B (mixed even-power 2D moments) drops out for free. Best
+opened as a cleanup PR after the next 2D Tide step lands.
+
+\item \emph{Candidate B harvesting.} The mixed even-power moment table
+$\langle x^{2m} y^{2n}\rangle_t = (24/t)^{(m+n)/2} \cdot \Gamma((2m+1)/4)
+\Gamma((2n+1)/4)/\Gamma(1/4)^2$ is now reachable in $\sim$\,30 lines from
+the present file (or in $\sim$\,3 lines from the separable-potential
+abstraction above). A small future Tide could harvest it; it is more
+naturally a corollary of the abstraction than a standalone target.
+
+\item \emph{Quartic--sextic mixed potential.}
+$L(x,y) = x^4/24 + y^6/720$, with rates $t^{-1/2}$ and $t^{-1/3}$
+respectively. Mechanical given the present file plus
+\texttt{Laplace/OneD/Sextic.lean} from the concurrent sextic Tide. Worth
+a Tide step once that file merges.
+
+\item \emph{Worktree-isolated Tide runs.} Process change rather than
+maths: prepare a small wrapper that creates a \texttt{git worktree} for
+each Tide branch and runs the Tide agent against that worktree. Avoids
+the staging race observed in this run.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro contributed the deliberation-stage advisory at Step~2,
+including the \texttt{Real.rpow}-vs-\texttt{Nat}-pow caveat for candidate
+B and the deferred separable-potential refactor suggestion. The full
+consult is preserved at
+\texttt{projects/primer/tide-log/gpt55\_tide\_2d\_pure\_quartic\_v1.md}.
+The tide log itself, with candidate drafts, vote, numerical check, and
+result, is at
+\texttt{projects/primer/tide-log/2026-05-02-tide-2d-pure-quartic.md}.
+
+\end{document}
