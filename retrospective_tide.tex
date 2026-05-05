@@ -17,8 +17,8 @@
 \newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
 \newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
 
-\title{Tide-loop retrospective:\\three formalisations and a side
-excursion\\in a single afternoon}
+\title{Tide-loop retrospective:\\five formalisations, a side excursion,\\
+and the first cross-repo step}
 \author{Daniel Murfet}
 \date{1 May 2026}
 
@@ -26,22 +26,30 @@ excursion\\in a single afternoon}
 \maketitle
 
 \begin{abstract}
-This document is a retrospective on three Tide-loop excursions and one
-adjacent numerical/theoretical exploration carried out in a single
-afternoon, building on the morning recorded in
+This document is a retrospective on five Tide-loop excursions and one
+adjacent numerical/theoretical exploration carried out across two
+afternoons (1--2 May 2026), building on the morning recorded in
 \texttt{retrospective.tex} and the few-day saga in
 \texttt{retrospective2.tex}. The Tide loop is a thin, deliberation-first
 procedure for autonomous formalisation: a human-provided direction;
 a Claude--GPT-5.5~Pro vote on a minimal candidate lemma; hand-off to the
-\texttt{lean-formalisation} skill until success. Three loops produced
-1099 lines of new Lean across three branches of the
-\texttt{timaeus-research/laplace} repository, with zero \texttt{sorry} /
-\texttt{axiom} / \texttt{native\_decide}, plus a numerical exploration
-note with a Python script and three figures, plus three new appendix
-sections in the susceptibility primer's annotated copy. The aim of this
-retrospective is to record what worked about the loop, where it was
-stress-tested by repeated use, and what skill iteration emerged from
-running it three times in succession.
+\texttt{lean-formalisation} skill until success. Three loops on day~1
+produced 1099 lines of new Lean across three branches of the
+\texttt{timaeus-research/laplace} repository, plus an adjacent
+numerical-and-theoretical exploration with a Python script, three
+figures, and three new appendix sections in the susceptibility primer.
+A fourth loop the same evening added the rate-aware large-$T$
+asymptotic of the universal scaling function. A fifth loop on day~2,
+the first to instantiate the framework on a Lean repo other than
+\texttt{laplace}, formalised the vanishing of the third cumulant under
+the harmonic Gibbs measure in \texttt{timaeus-research/threepoint}.
+All five excursions zero \texttt{sorry} / \texttt{axiom} /
+\texttt{native\_decide}; total new Lean is 1414 lines across four
+branches in \texttt{laplace} (now merged) plus 126 lines in
+\texttt{threepoint} (now merged). The aim of this retrospective is to
+record what worked about the loop, where it was stress-tested by
+repeated use, what skill iteration emerged, and what we learned by
+running the loop on a second repo.
 \end{abstract}
 
 \tableofcontents
@@ -94,25 +102,29 @@ The rest of this document records what the runs looked
 like, how the deliberation step calibrated, where the skill was
 stress-tested, and what was learned.
 
-\section{The three excursions}\label{sec:excursions}
+\section{The five excursions}\label{sec:excursions}
 
 \begin{table}[h]
 \centering
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l l r r}
+\begin{tabular}{l l l r r}
 \toprule
-\textbf{Tide step} & \textbf{Direction} & \textbf{Lines} & \textbf{Build}\\
+\textbf{Tide step} & \textbf{Repo} & \textbf{Direction} & \textbf{Lines} & \textbf{Build}\\
 \midrule
-1. \texttt{quartic-moments}    & ``extend to simple degenerate cases'' & 379 & 4s\\
-2. \texttt{2d-semi-degenerate} & ``Candidate D from previous'' (``Next'') & 514 & 12s\\
-3. \texttt{universal-scaling}  & ``formalise the universal scaling formula'' & 206 & 8s\\
+1. \texttt{quartic-moments}    & \texttt{laplace}    & ``extend to simple degenerate cases'' & 379 & 4s\\
+2. \texttt{2d-semi-degenerate} & \texttt{laplace}    & ``Next''  & 514 & 12s\\
+3. \texttt{universal-scaling}  & \texttt{laplace}    & ``formalise the universal scaling formula'' & 206 & 8s\\
+4. \texttt{f1-large-t}         & \texttt{laplace}    & ``proceed with (a)'' (large-$T$ asymptotic) & 189 & 8s\\
+5. \texttt{kappa3-harmonic}    & \texttt{threepoint} & ``$\kappa_3$ vanishes for harmonic Gibbs'' & 126 & 31s\\
 \midrule
-\multicolumn{2}{r}{\emph{Total new Lean for tide loop}} & \textbf{1099} & \\
+\multicolumn{3}{r}{\emph{Total new Lean for tide loop}} & \textbf{1414} & \\
 \bottomrule
 \end{tabular}
-\caption{The three Tide-loop excursions of 1 May 2026. The Tide-step
-identifier doubles as the branch name (\texttt{tide/<id>}); branches
-are rebased linearly so each step's seabed is the previous step's tip.}
+\caption{The five Tide-loop excursions of 1--2 May 2026. The Tide-step
+identifier doubles as the branch name (\texttt{tide/<id>}). Branches
+1--3 are linearly rebased on each other within \texttt{laplace}; branch
+4 attaches to \texttt{laplace/main} after 1--3 merged; branch 5 is the
+first cross-repo step, on \texttt{threepoint}.}
 \label{tab:excursions}
 \end{table}
 
@@ -165,7 +177,7 @@ nondegenerate. It would be useful to do this also in some simple
 degenerate cases.}
 
 The skill prescribes opening a tide log file\footnote{For Tide 1, this
-is \texttt{sri/projects/automation/log/2026-05-01-tide-degenerate-quartic-cov.md}.}
+is \texttt{sri/projects/primer/tide-log/2026-05-01-tide-degenerate-quartic-cov.md}.}
 with the direction recorded verbatim, the seabed pointer
 (\texttt{laplace}, commit SHA at start), and the start date.
 
@@ -432,7 +444,7 @@ numerically and theoretically.}
 
 The investigation took $\sim 30$ minutes. The
 result\footnote{Recorded at
-\texttt{sri/projects/automation/log/2026-05-01-near-degenerate-crossover.md}.}
+\texttt{sri/projects/primer/tide-log/2026-05-01-near-degenerate-crossover.md}.}
 is the cleanest scaling-collapse picture of the whole afternoon:
 under the rescaling $x = \sqrt{\varepsilon} y$ with $T = \varepsilon^2
 t$, the moment data for $L^{\rm nd}_\varepsilon(x) =
@@ -511,6 +523,115 @@ three cases. The user's earlier instruction ``put off stop conditions
 until they become a problem'' was vindicated.
 \end{itemize}
 
+\section{Tides 4 and 5: deepening and a cross-repo step}\label{sec:t4t5}
+
+The original three excursions all formalised material in
+\texttt{laplace}, building linearly on each other. Tides 4 and 5
+extended the loop in two distinct directions.
+
+\subsection*{Tide 4: rate-aware large-$T$ asymptotic for $f_1$}
+
+Same evening as Tides 1--3 but after a brief detour through the
+near-degenerate-crossover side excursion (\S\ref{sec:near-degenerate}),
+which produced the universal scaling function $f_n(T) := \langle
+y^{2n}\rangle^V_T$ for $V(y) = y^2/2 + y^4/24$ as a research artefact
+sitting just outside the formal seabed. The note flagged a
+``two-sided asymptotic for $f_n$'' as a candidate Tide step. After one
+further Tide step (Tide 3, the universal scaling identity) had landed
+the connection $\langle x^{2n}\rangle_{\mu_t}^{L^{\rm nd}_\varepsilon}
+= \varepsilon^n f_n(\varepsilon^2 t)$, the natural next step was the
+large-$T$ leading asymptotic of $f_1$:
+\[
+T \cdot f_1(T) \;=\; 1 + O(1/T) \qquad (T \to \infty).
+\]
+
+GPT recommended the rate-aware version (rather than a plain Tendsto)
+because the seabed's $I_n$ asymptotics already carry rates; deriving
+Tendsto from the rate is one line, deriving the rate from Tendsto is
+not. GPT also flagged a strict-improvement candidate I had missed: an
+all-$n$ proof via Gaussian rescaling $y = z/\sqrt T$, which bypasses
+the seabed's $I_k$ ceiling at $k = 3$ entirely. We took the
+seabed-bridge route as the smallest minimal step and recorded the
+Gaussian-rescaling all-$n$ approach as a follow-up.
+
+The proof bridges to the seabed's
+\texttt{I\_0\_asymptotic} and \texttt{I\_2\_asymptotic} for the
+anharmonic potential at the parameters $\alpha = 0$, $\lambda = \gamma
+= 1$ (which is exactly $V$); the discriminant condition $\alpha^2 <
+3\lambda\gamma$ becomes $0 < 3$, trivially. The bridge consists in
+rescaling $D := \int e^{-TV}$ and $N := \int y^2 e^{-TV}$ to forms
+$\sqrt T \cdot D$ and $T\sqrt T \cdot N$, each within $K/T$ of $a :=
+\sqrt{2\pi}$, then bounding the ratio $(T\sqrt T \cdot N)/(\sqrt T
+\cdot D)$ to $1$ by the standard ``small perturbation of constant''
+estimate. 189 lines, no GPT consults during Step 3, single session.
+
+The most useful incidental finding: Mathlib renamed
+\texttt{div\_lt\_iff}, \texttt{div\_le\_iff},
+\texttt{div\_le\_div\_iff} to their \texttt{$\cdot{}_0$} variants
+(\texttt{div\_lt\_iff${}_0$} etc., adding explicit positivity
+hypotheses); \texttt{push\_neg} is deprecated in favour of \texttt{push
+Not}; \texttt{field\_simp} sometimes closes the goal outright and
+sometimes leaves a polynomial residue requiring \texttt{ring} (the
+diagnostic tells you which). Worth promoting to the
+\texttt{lean-formalisation} skill's gotchas.
+
+\subsection*{Tide 5: $\kappa_3$ vanishes under the harmonic Gibbs}
+
+The next afternoon began with a survey of Tide-loop candidates across
+the wider SRI portfolio (recorded as
+\texttt{2026-05-02-tide-candidates-survey.md}), which produced five
+options: the cumulant-vanishing in \texttt{threepoint}, a 2D
+pure-quartic affine covariance in \texttt{laplace}, sextic 1D moments
+also in \texttt{laplace}, the \texttt{sustm} factorisation
+proposition, and a Gaussian/monomial precursor for the grammar paper.
+The first won on Tide-shapedness: small, lands on an
+existing-but-underused Lean repo, and demonstrates the loop on a
+seabed other than \texttt{laplace}.
+
+The headline statement:
+\[
+\kappa_3(\mu, L_{\rm harm}, x, t, x, x) = 0
+\]
+where $L_{\rm harm}(x) = (\lambda/2) x^2$ and the three observables in
+the cumulant are all the linear function $x$. Mathematically, the
+third cumulant of a centred Gaussian is zero; in the
+\texttt{threepoint} formalism, this is one specific instance of the
+abstract \texttt{kappa3} framework that had so far only been used in
+its conditional form (every previous theorem in the repo was generic
+over $(W, \mu, L, A)$, awaiting an instantiation).
+
+GPT's most valuable contribution was negative: \emph{do not} attempt
+to instantiate the \texttt{GibbsRegularity} or \texttt{GibbsObservable}
+hypothesis bundles for the harmonic case. Those bundles encode the
+differentiability needed for the FDT and cross-susceptibility
+\emph{derivative} theorems. \texttt{kappa3} is defined at $h = 0$, so
+only the value-at-zero matters. Unfolding \texttt{gibbsExp ... 0} and
+simplifying $0 \cdot A w + L w = L w$ via \texttt{simp only [zero\_mul,
+add\_zero]} reduces the proof to two parity integrals. Without that
+advice, this Tide step would have grown into the kind of
+``differentiation-under-the-integral plumbing'' detour that Tide
+discipline is supposed to prevent. Estimated saving: $\sim 150$ lines.
+
+The proof itself is light: one generic
+\texttt{integral\_eq\_zero\_of\_odd} helper (using the standard $\int f
+= -\int f$ argument from \texttt{integral\_neg\_eq\_self}), specialised
+to the integrands $x \cdot e^{-tL}$ and $x^3 \cdot e^{-tL}$, then
+\texttt{ring} to combine. 126 lines, no GPT consults during Step 3,
+$\sim 1$ hour.
+
+\subsection*{What was new about Tide 5}
+
+The cross-repo step revealed nothing structurally surprising. The
+\texttt{tide} skill, the \texttt{lean-formalisation} skill, the
+deliberation-then-formalisation rhythm --- all of these transported
+without modification. The seabed for \texttt{threepoint} is shaped
+differently from \texttt{laplace}'s (a generic abstract framework
+awaiting instantiation, rather than a concrete sequence of
+asymptotics), and the GPT consult correctly diagnosed which parts of
+that framework were load-bearing for our specific Tide step (none of
+the analytic hypotheses) and which were not. The transport is real:
+the loop is not coupled to any specific repo's conventions.
+
 \section{Lessons}
 
 Distilling the afternoon's experience into a small list:
@@ -564,24 +685,43 @@ human plays picker; tomorrow the picker is also a model.
 
 \section{Possible next steps}
 
-\paragraph{Fold all three branches to \texttt{main}.} The branches are
-linear and individually pass \texttt{lake build}; the merges to
-\texttt{main} are clean. This collapses the primer's
-\texttt{\textbackslash quarticCommit} pin into the standard
-\texttt{\textbackslash laplaceCommit} and removes the temporary
-\texttt{\textbackslash leanrefQuartic} macro.
+\paragraph{All Tide branches now merged.} Tides 1--3 were merged to
+\texttt{laplace/main} in three sequential PRs (\#2, replacement \#5,
+\#4); Tide 4 was merged as PR \#6; Tide 5 was merged as PR \#1 in the
+\texttt{threepoint} repo. The primer's
+\texttt{\textbackslash quarticCommit} pin and
+\texttt{\textbackslash leanrefQuartic} macro have been collapsed into
+the standard \texttt{\textbackslash laplaceCommit}, which now points
+at \texttt{44a6001} (the \texttt{laplace} main tip after Tide 4).
 
-\paragraph{Tide 4 and beyond.} Three obvious continuations from the
-present shoreline:
+\paragraph{Continuation directions.} A candidates survey
+(\texttt{2026-05-02-tide-candidates-survey.md}) inventories five
+options drawn from across the SRI portfolio. The two next steps that
+extend Tide 5's thread:
 \begin{itemize}
-\item Two-sided asymptotic for $f_n(T)$ in the universal potential
-(Candidate (2) from the near-degenerate note); requires a uniform
-Taylor expansion against the quartic Gibbs at small $T$ and a standard
-Laplace expansion at large $T$.
-\item A crossover-aware uniform-in-$\varepsilon$ inequality
-(Candidate (3) from the near-degenerate note); a paper-level result.
-\item A 2D analogue of the universal scaling identity, combining the
-1D scaling of Tide 3 with the product-measure structure of Tide 2.
+\item Abstract parity ($\kappa_3$ vanishes for any odd-observable
+triple under negation-invariant $\mu$ and even $L$). Strict
+generalisation of Tide 5; ${\sim}50$ lines.
+\item Four-point cumulant ($\kappa_4$) for the harmonic Gibbs.
+Pairs naturally with $\kappa_3$ and the flow equation; closes the
+cumulant story for the Gaussian case.
+\end{itemize}
+Other directions still open:
+\begin{itemize}
+\item Two-sided asymptotic for $f_n(T)$ in the universal potential at
+small $T$ (Candidate~B from the Tide~4 deliberation); requires a
+uniform Taylor expansion against the quartic Gibbs.
+\item All-$n$ large-$T$ asymptotic via Gaussian rescaling rather than
+seabed $I_n$ extension (the strict-improvement candidate from the
+Tide~4 deliberation; the natural follow-up to Tide~4).
+\item 2D pure-quartic affine covariance and sextic 1D moments
+(candidates~2 and~3 from the survey); both are mechanical extensions.
+\item \texttt{sustm} Proposition~1 (factorisation for mismatched
+input--component pairs); requires a fresh seabed for noisy Turing
+machine susceptibilities.
+\item Grammar-paper precursors (Gaussian or single-monomial $Z_n[\phi]$
+expansion); the start of a planned multi-Tide programme rather than a
+single excursion.
 \end{itemize}
 
 \paragraph{Promote pieces to \texttt{lean-common}.} The 2D Gibbs
@@ -602,25 +742,31 @@ proof that this is a small step from where the loop is now.
 
 \paragraph{Adopt \texttt{leanblueprint}.} The earlier retrospective
 already argued for this once a second result was formalised. By the
-end of this afternoon there are five formalised primer claims (two
-from the morning of 27 April, plus the three from this afternoon:
-the 1D quartic affine covariance, the 2D semi-degenerate affine
-covariance, and the universal scaling identity\footnote{Numbered
+end of this two-afternoon stretch there are six formalised primer
+claims (three from the morning of 27 April plus its multi-day
+follow-up, plus four more from days 1--2 of May: the 1D quartic affine
+covariance, the 2D semi-degenerate affine covariance, the universal
+scaling identity, and the rate-aware large-$T$ asymptotic of the
+universal $f_1$\footnote{Numbered
 \texttt{lem:quartic-cov-affine}, \texttt{lem:semi-degenerate-cov-affine},
-and \texttt{lem:nd-scaling} in the primer copy compiled from
-\texttt{papers/suscprimer/main\_lean.tex}.}), with margin markers and
-two separate commit pins. \texttt{leanblueprint}'s dependency-graph
-view would now be genuinely useful, and the manual-pin bookkeeping
-would go away.
+\texttt{lem:nd-scaling}, and the inline-referenced
+\texttt{gibbsExpectation\_universal\_sq\_large\_t\_rate} in the
+\texttt{near-degenerate-crossover} appendix.}), with margin markers
+across two repos (\texttt{laplace} and \texttt{threepoint}).
+\texttt{leanblueprint}'s dependency-graph view would now be genuinely
+useful, and the cross-repo coordination would benefit from the
+shared-blueprint workflow.
 
 \section{Acknowledgements}
 
 \begin{itemize}
-\item GPT-5.5~Pro provided three deliberation consultations preserved
-verbatim under \texttt{sri/projects/automation/log/} as
+\item GPT-5.5~Pro provided five deliberation consultations preserved
+verbatim under the relevant project's \texttt{tide-log/} directory (\texttt{sri/projects/primer/tide-log/} for tides 1--4, \texttt{sri/projects/patterning/tide-log/} for tide 5):
 \texttt{gpt55\_tide\_quartic\_v1.md},
-\texttt{gpt55\_tide\_2d\_v1.md}, and
-\texttt{gpt55\_tide\_scaling\_v1.md}.
+\texttt{gpt55\_tide\_2d\_v1.md},
+\texttt{gpt55\_tide\_scaling\_v1.md},
+\texttt{gpt55\_tide\_fn\_v1.md}, and
+\texttt{gpt55\_tide\_kappa3\_v1.md}.
 \item The \texttt{tide} skill is at
 \texttt{sri/.claude/skills/tide/SKILL.md}; the
 \texttt{lean-formalisation} skill is at
