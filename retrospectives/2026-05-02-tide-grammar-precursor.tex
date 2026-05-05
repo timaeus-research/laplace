@@ -20,6 +20,8 @@
 \newunicodechar{λ}{\ensuremath{\lambda}}
 \newunicodechar{≤}{\ensuremath{\le}}
 
+\setlength{\emergencystretch}{3em}
+
 \newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
 \newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
 \newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
@@ -35,10 +37,10 @@
 A single Tide-loop excursion in the \texttt{laplace} seabed, formalising
 the smallest possible step toward the grammar paper's
 $Z_n[\varphi] = \int \varphi(w) e^{-n K(w)} \pi(w)\,dw$ machinery: replace
-the integration domain $\mathbb{R}$ in the existing
-\texttt{quartic\_partition} by a bounded interval $[-a,a]$ and quantify
-the resulting boundary correction. The headline theorem
-\texttt{Laplace.OneD.QuarticBoundedPrior.quartic\_partition\_bounded\_prior}
+the integration domain $\mathbb{R}$ in the existing partition function
+by a bounded interval $[-a,a]$ and quantify the resulting boundary
+correction.\footnote{Headline theorem:
+\texttt{Laplace.OneD.quartic\_partition\_bounded\_prior}.} The proof
 adds 232 lines of Lean to the seabed. Zero \texttt{sorry}, zero
 \texttt{axiom}, zero \texttt{native\_decide}; clean diagnostics on first
 build after a parser fix on the absolute-value statement. The interesting
@@ -51,14 +53,16 @@ constant in the candidate statement before any Lean was written.
 
 \section{Setting}
 
-This Tide step sits in the same \texttt{laplace} seabed used by the
-preceding tide steps (\texttt{tide/quartic-moments},
+This Tide step sits in the same \texttt{laplace} seabed used by five
+preceding tide steps (the quartic moments, 2D semi-degenerate, universal
+scaling, $f_1$ large-$t$, and 2D pure-quartic
+excursions),\footnote{Branches: \texttt{tide/quartic-moments},
 \texttt{tide/2d-semi-degenerate}, \texttt{tide/universal-scaling},
-\texttt{tide/f1-large-t}, \texttt{tide/2d-pure-quartic}), but it is the
+\texttt{tide/f1-large-t}, \texttt{tide/2d-pure-quartic}.} but it is the
 first tide aimed not at the Susceptibility Primer's Section~4 but at the
 \emph{grammar paper} (Gerraty et al., \emph{Expectations and the
-Exceptional Divisor}). Per the cross-tide candidates survey
-(\texttt{projects/automation/log/2026-05-02-tide-candidates-survey.md}),
+Exceptional Divisor}). Per the cross-tide candidates
+survey,\footnote{\texttt{projects/automation/log/2026-05-02-tide-candidates-survey.md}}
 the grammar paper's \emph{simplest resolution example}\,---\,$K(w) =
 w_1^2 \cdot w_2^4$ on a 2D parameter space with bounded prior, leading
 asymptotic $Z_n[\varphi] \sim C_\varphi \cdot n^{-3/4} \log n$ with RLCT
@@ -79,13 +83,14 @@ to do), C is too large because it bundles bounded-prior, test-function
 localisation, change-of-variables, and dominated convergence in one
 step. A introduces \emph{exactly one} ingredient (bounded prior, with
 the necessary new quartic tail bound) on the most-recently-finished
-tide step's potential. The full deliberation is in
-\texttt{projects/grammar/tide-log/2026-05-02-tide-grammar-precursor.md};
-the GPT consult is preserved verbatim alongside as
-\texttt{gpt55\_tide\_grammar\_v1.md}.
+tide step's potential. The full deliberation, with the GPT consult
+preserved verbatim alongside, lives in the grammar project's
+tide-log.\footnote{\texttt{projects/grammar/tide-log/2026-05-02-tide-grammar-precursor.md}
+and \texttt{gpt55\_tide\_grammar\_v1.md} alongside it.}
 
-The branch (\texttt{tide/grammar-precursor-bounded-prior}) is chained on
-top of \texttt{tide/2d-pure-quartic}'s tip (\texttt{efafbfa}) per the
+The branch is chained on top of the prior 2D pure-quartic tide's
+tip\footnote{Branch \texttt{tide/grammar-precursor-bounded-prior} on top
+of \texttt{tide/2d-pure-quartic} at commit \texttt{efafbfa}.} per the
 linear-chain branch-hygiene rule, so a single SHA-pin covers all
 in-flight tides on the way to a squash-merge.
 
@@ -161,24 +166,25 @@ at $M = a$, $b = t a^2/12$:
   \int_a^\infty e^{-(b w^2)/2}\, dw \le \frac{e^{-b a^2 / 2}}{b \cdot a}
   = \frac{12}{t a^3}\,\exp\!\big(-\tfrac{t a^4}{24}\big).
 \]
-That bound is already what we want. The Lean form glues
-\texttt{setIntegral\_mono\_on} on the pointwise bound to
-\texttt{gaussian\_tail\_bound\_rescaled\_Ioi}, with integrability of the
-quartic side from the seabed's \texttt{quartic\_integrable\_pow} and of
-the Gaussian comparator from Mathlib's \texttt{integrable\_exp\_neg\_mul\_sq}.
+That bound is already what we want. The Lean form glues a set-integral
+monotonicity lemma on the pointwise bound to the seabed's Gaussian tail
+bound,\footnote{\texttt{setIntegral\_mono\_on}, applied to
+\texttt{gaussian\_tail\_bound\_rescaled\_Ioi}.} with integrability of
+the quartic side from the seabed's \texttt{quartic\_integrable\_pow}
+and of the Gaussian comparator from Mathlib's
+\texttt{integrable\_exp\_neg\_mul\_sq}.
 
-The \emph{tail-symmetry lemma}
-\texttt{quartic\_integral\_Iio\_neg\_eq\_integral\_Ioi} mirrors the
-seabed's \texttt{integral\_Iio\_neg\_eq\_integral\_Ioi} for the
-Gaussian, using \texttt{integral\_comp\_neg\_Iic} together with the
+The \emph{tail-symmetry lemma} mirrors the seabed's Gaussian-side
+analogue, using Mathlib's negation-substitution lemma together with the
 evenness identity $(-w)^4 = w^4$.
 
-The \emph{splitting identity} \texttt{quartic\_partition\_split} writes
-$\mathbb{R}$ as $\text{Iic}\,a \cup \text{Ioi}\,a$
-(\texttt{intervalIntegral.integral\_Iic\_add\_Ioi}) and then
-$\text{Iic}\,a$ as $\text{Iio}\,(-a) \cup \text{Icc}\,(-a,a)$
-(\texttt{setIntegral\_union}, with a hand-written disjointness witness
-and a six-line \texttt{ext}/\texttt{rcases lt\_or\_ge} union proof).
+The \emph{splitting identity} writes $\mathbb{R}$ as
+$\text{Iic}\,a \cup \text{Ioi}\,a$ via Mathlib's
+\texttt{integral\_Iic\_add\_Ioi}, then $\text{Iic}\,a$ as
+$\text{Iio}\,(-a) \cup \text{Icc}\,(-a,a)$ via
+\texttt{setIntegral\_union} with a hand-written disjointness witness
+and a six-line \texttt{ext}/\texttt{rcases} union proof.\footnote{The
+new module exports this as \texttt{quartic\_partition\_split}.}
 Combined with the tail symmetry, this gives
 \[
   \int_\mathbb{R} e^{-t L} \;=\; \int_{[-a,a]} e^{-t L}
@@ -242,16 +248,17 @@ delimiter-like operators in Lean; in doubt, keep the inside terse.
 
 \paragraph{Concurrent-agent staging race (recurrence).}
 The repository hosting this Tide step had two other Tide branches
-running concurrently (\texttt{tide/2d-pure-quartic} and
-\texttt{tide/sextic-moments}). \texttt{Laplace.lean} was rewritten by
-the parallel agents twice during the run, each time stripping or
-reordering imports to match what was on \emph{their} branch's
-\texttt{HEAD}. The fix in this run was to (a) stash the working tree,
-(b) \texttt{git checkout main -- Laplace.lean} to a known baseline,
-(c) re-apply only the new \texttt{Laplace.OneD.QuarticBoundedPrior}
-import line and the \texttt{Laplace.TwoD.PureQuartic} import already
-landed on the chained-base, then (d) \texttt{git checkout -B} to retarget
-the branch label onto the prior tide's tip before committing.
+running concurrently (the 2D pure-quartic and sextic-moments
+excursions).\footnote{Branches: \texttt{tide/2d-pure-quartic} and
+\texttt{tide/sextic-moments}.} The top-level import file
+\texttt{Laplace.lean} was rewritten by the parallel agents twice during
+the run, each time stripping or reordering imports to match what was on
+\emph{their} branch's \texttt{HEAD}. The fix in this run was to
+(a) stash the working tree, (b) check out the import file from
+\texttt{main} to a known baseline, (c) re-apply only the imports
+relevant to this branch and the prior chained-base branch, then
+(d) force-retarget the branch label onto the prior tide's tip before
+committing.
 
 This is the same staging race called out in the 2D pure-quartic
 retrospective. The structural fix is independent of either tide:
@@ -264,32 +271,35 @@ typechecked clean within ten minutes once the strategy was pinned.
 \section{What was Mathlib, what was new}
 
 \paragraph{Mathlib provided.}
-\texttt{integrable\_exp\_neg\_mul\_sq} for the comparator Gaussian's
-integrability. \texttt{setIntegral\_mono\_on} for monotonicity of the
-set integral under a pointwise inequality.
-\texttt{intervalIntegral.integral\_Iic\_add\_Ioi} and
-\texttt{setIntegral\_union} for the splitting identity.
-\texttt{integral\_comp\_neg\_Iic} for the tail symmetry. \texttt{Real.exp\_le\_exp},
-\texttt{mul\_self\_le\_mul\_self}, \texttt{pow\_pos}, and the standard
-\texttt{ring}\,/\,\texttt{field\_simp}\,/\,\texttt{linarith} closers.
+The Gaussian integrability lemma for the comparator, the set-integral
+monotonicity lemma for pulling a pointwise inequality through, the two
+splitting lemmas (\texttt{Iic\,$\cup$\,Ioi} and the
+\texttt{setIntegral\_union} disjoint-set decomposition), the negation
+substitution \texttt{integral\_comp\_neg\_Iic} for the tail symmetry,
+plus the standard \texttt{Real.exp\_le\_exp},
+\texttt{mul\_self\_le\_mul\_self}, \texttt{pow\_pos}, and the
+\texttt{ring}\,/\,\texttt{field\_simp}\,/\,\texttt{linarith}
+closers.\footnote{Specifically: \texttt{integrable\_exp\_neg\_mul\_sq},
+\texttt{setIntegral\_mono\_on}, and
+\texttt{intervalIntegral.integral\_Iic\_add\_Ioi}.}
 
 \paragraph{The seabed provided.}
-The leading constant \emph{is} the existing
-\texttt{Laplace.OneD.quartic\_partition}\,---\,no new closed-form computation
-needed. The Gaussian tail \texttt{gaussian\_tail\_bound\_rescaled\_Ioi}
-in \texttt{Laplace.OneD.TailBound} is the input to which the quartic
-tail reduces; it was written for the harmonic case (used in
-\texttt{Localisation.lean}) and is reused here unchanged. Integrability
-of polynomials against the quartic Boltzmann factor came from
-\texttt{Laplace.OneD.quartic\_integrable\_pow} (also unchanged).
+The leading constant \emph{is} the existing 1D quartic partition
+function lemma\,---\,no new closed-form computation
+needed.\footnote{\texttt{Laplace.OneD.quartic\_partition} from
+\texttt{Quartic.lean}.} The Gaussian tail in
+\texttt{TailBound.lean}\footnote{\texttt{gaussian\_tail\_bound\_rescaled\_Ioi},
+originally written for the harmonic case and used in
+\texttt{Localisation.lean}.} is the input to which the quartic tail
+reduces; it is reused here unchanged. Integrability of polynomials
+against the quartic Boltzmann factor came from the existing
+\texttt{quartic\_integrable\_pow} (also unchanged).
 
 \paragraph{What was new in this tide.}
-The four theorems in
-\texttt{Laplace/OneD/QuarticBoundedPrior.lean}:
-\texttt{quartic\_tail\_Ioi},
-\texttt{quartic\_integral\_Iio\_neg\_eq\_integral\_Ioi},
-\texttt{quartic\_partition\_split},
-\texttt{quartic\_partition\_bounded\_prior}. None of the four theorems
+Four theorems in the new \texttt{QuarticBoundedPrior.lean} module:
+a quartic half-line tail bound, a tail-symmetry lemma, a
+partition-function splitting identity, and the headline bounded-prior
+bound. None of the four theorems
 introduces a new mathematical technique; they wire existing seabed and
 Mathlib pieces in a new arrangement. The honest line-count breakdown is
 roughly: 5 lines of new mathematics (the comparison
@@ -314,20 +324,22 @@ record this run as another data point that confirms it.
 \texttt{Laplace.lean} is again the contention point; the situation is
 identical to the one called out in the 2D pure-quartic retrospective.
 Until \texttt{git worktree} support lands in the Tide skill's preflight,
-expect to spend a few minutes per concurrent run on the
-\texttt{git checkout main -- Laplace.lean} \,$\to$\, re-add imports
-\,$\to$\, \texttt{git checkout -B} dance. Documenting the dance here
+expect to spend a few minutes per concurrent run on the recovery dance:
+checkout the import-list file from \texttt{main}, re-add only the
+imports relevant to this tide, and force-retarget the branch label onto
+the prior tide's tip before committing. Documenting the dance here
 should at least make the pattern recognisable on first hit in a future
 run.
 
 \item \emph{The substitution-and-Gaussian-tail template is reusable.}
-The exact same proof pattern \emph{(pointwise comparison
-$w^{2k} \ge a^{2k-2} \cdot w^2$, then \texttt{gaussian\_tail\_bound\_rescaled\_Ioi})}
-will give a one-line generalisation of \texttt{quartic\_tail\_Ioi} to
-\texttt{monomial\_tail\_Ioi} for $L = w^{2k}/(2k)!$. GPT-5.5 Pro flagged
-this in the deliberation step (``If you generalise, generalise the tail
-lemma first, not the full bounded-prior asymptotic theorem''); worth
-acting on the next time the grammar-precursor tide is taken further.
+The exact same proof pattern (pointwise comparison
+$w^{2k} \ge a^{2k-2} \cdot w^2$, then the seabed's rescaled-Gaussian
+tail bound) will give a one-line generalisation of the quartic tail
+lemma to a monomial-of-arbitrary-even-degree tail lemma for
+$L = w^{2k}/(2k)!$. GPT-5.5 Pro flagged this in the deliberation step
+(``If you generalise, generalise the tail lemma first, not the full
+bounded-prior asymptotic theorem''); worth acting on the next time the
+grammar-precursor tide is taken further.
 
 \item \emph{Lean parser is whitespace-sensitive on \texttt{|·|}.}
 For the seabed's \texttt{CLAUDE.md}: when writing absolute-value
@@ -353,7 +365,7 @@ The hard part is the \texttt{Real.rpow} bookkeeping that comes with the
 generalised exponent.
 
 \item \emph{Bounded-prior harmonic partition} (candidate~B). Now
-trivial given \texttt{partitionFunction\_harmonic} and the splitting
+trivial given the seabed's harmonic partition lemma and the splitting
 idiom from this tide. $\sim$\,50--100 lines if anyone wants the literal
 Gaussian version on the record.
 
@@ -372,11 +384,9 @@ duplicate once but it should not duplicate three times.
 
 GPT-5.5 Pro contributed the deliberation-stage advisory at Step~2 and
 the strategic move that became the final proof strategy: the
-\texttt{quartic\_tail\_Ioi} sublemma via the comparison
-$w^4 \ge a^2 w^2$. The full consult is preserved at
-\texttt{projects/grammar/tide-log/gpt55\_tide\_grammar\_v1.md}. The
-tide log itself, with candidate drafts, vote, numerical check, and
-result, is at
-\texttt{projects/grammar/tide-log/2026-05-02-tide-grammar-precursor.md}.
+quartic-tail sublemma via the comparison $w^4 \ge a^2 w^2$. The full
+consult and the tide log itself (with candidate drafts, vote, numerical
+check, and result) are preserved alongside one another in the grammar
+project's tide-log directory under the SRI repo.
 
 \end{document}
