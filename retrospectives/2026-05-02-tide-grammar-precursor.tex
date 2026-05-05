@@ -1,0 +1,392 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{≤}{\ensuremath{\le}}
+
+\setlength{\emergencystretch}{3em}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{Bounded-prior quartic partition function (grammar precursor)}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{2 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A single Tide-loop excursion in the \texttt{laplace} seabed, formalising
+the smallest possible step toward the grammar paper's
+$Z_n[\varphi] = \int \varphi(w) e^{-n K(w)} \pi(w)\,dw$ machinery: replace
+the integration domain $\mathbb{R}$ in the existing partition function
+by a bounded interval $[-a,a]$ and quantify the resulting boundary
+correction.\footnote{Headline theorem:
+\texttt{Laplace.OneD.quartic\_partition\_bounded\_prior}.} The proof
+adds 232 lines of Lean to the seabed. Zero \texttt{sorry}, zero
+\texttt{axiom}, zero \texttt{native\_decide}; clean diagnostics on first
+build after a parser fix on the absolute-value statement. The interesting
+moves were upstream: a deliberation step that took an over-ambitious
+direction (the full 2D $K = w_1^2 w_2^4$ resolution example, RLCT $3/4$
+with logarithm) and pushed it down to a 1D one-ingredient-at-a-time
+precursor, and a numerical sanity check that surfaced a loose exponent
+constant in the candidate statement before any Lean was written.
+\end{abstract}
+
+\section{Setting}
+
+This Tide step sits in the same \texttt{laplace} seabed used by five
+preceding tide steps (the quartic moments, 2D semi-degenerate, universal
+scaling, $f_1$ large-$t$, and 2D pure-quartic
+excursions),\footnote{Branches: \texttt{tide/quartic-moments},
+\texttt{tide/2d-semi-degenerate}, \texttt{tide/universal-scaling},
+\texttt{tide/f1-large-t}, \texttt{tide/2d-pure-quartic}.} but it is the
+first tide aimed not at the Susceptibility Primer's Section~4 but at the
+\emph{grammar paper} (Gerraty et al., \emph{Expectations and the
+Exceptional Divisor}). Per the cross-tide candidates
+survey,\footnote{\texttt{projects/automation/log/2026-05-02-tide-candidates-survey.md}}
+the grammar paper's \emph{simplest resolution example}\,---\,$K(w) =
+w_1^2 \cdot w_2^4$ on a 2D parameter space with bounded prior, leading
+asymptotic $Z_n[\varphi] \sim C_\varphi \cdot n^{-3/4} \log n$ with RLCT
+$\lambda = 3/4$ and multiplicity $m = 2$\,---\,is the natural next
+target, but the survey itself flagged the full 2D form as ``probably the
+wrong shape for a single excursion'' and asked Step~2 to pick a 1D
+precursor instead.
+
+The Step~2 deliberation drafted three candidates of varying ambition:
+(A) bounded-prior quartic partition function with explicit exponential
+remainder; (B) the same with a harmonic potential (essentially
+glue-of-existing-seabed-lemmas); (C) bounded-prior quartic with a
+continuous test function (the genuine 1D Watanabe asymptotic at a
+regular critical point). GPT-5.5 Pro and Claude both backed A, on
+matched grounds: B is too small to count as a step outward (the harmonic
+tail is already in the seabed and there is no new quartic-side analysis
+to do), C is too large because it bundles bounded-prior, test-function
+localisation, change-of-variables, and dominated convergence in one
+step. A introduces \emph{exactly one} ingredient (bounded prior, with
+the necessary new quartic tail bound) on the most-recently-finished
+tide step's potential. The full deliberation, with the GPT consult
+preserved verbatim alongside, lives in the grammar project's
+tide-log.\footnote{\texttt{projects/grammar/tide-log/2026-05-02-tide-grammar-precursor.md}
+and \texttt{gpt55\_tide\_grammar\_v1.md} alongside it.}
+
+The branch is chained on top of the prior 2D pure-quartic tide's
+tip\footnote{Branch \texttt{tide/grammar-precursor-bounded-prior} on top
+of \texttt{tide/2d-pure-quartic} at commit \texttt{efafbfa}.} per the
+linear-chain branch-hygiene rule, so a single SHA-pin covers all
+in-flight tides on the way to a squash-merge.
+
+\section{The thing formalised}
+
+For the centred quartic potential
+\[
+  L(w) = \frac{w^4}{24}
+\]
+and any $a > 0$, $t > 0$, the bounded-prior partition function differs
+from the existing full-line \texttt{quartic\_partition} by an
+exponentially small correction:
+
+\begin{quote}\itshape
+\[
+  \left| \int_{-a}^{a} e^{-t \cdot w^4/24}\, dw \;-\;
+        \tfrac{1}{2}\,(24/t)^{1/4}\,\Gamma(1/4) \right|
+  \;\le\; \frac{24}{t \cdot a^3}\,
+          \exp\!\left(-\tfrac{t \cdot a^4}{24}\right).
+\]
+\end{quote}
+
+\noindent The Lean signature:
+\begin{verbatim}
+theorem quartic_partition_bounded_prior {t a : ℝ} (ht : 0 < t) (ha : 0 < a) :
+    |(∫ w in Icc (-a) a, Real.exp (-(t * w ^ 4 / 24))) -
+        (1/2) * (24/t) ^ ((1 : ℝ) / 4) * Real.Gamma ((1 : ℝ) / 4)| ≤
+      (24 / (t * a ^ 3)) * Real.exp (-(t * a ^ 4 / 24))
+\end{verbatim}
+
+\noindent located at \texttt{Laplace/OneD/QuarticBoundedPrior.lean}, in
+namespace \texttt{Laplace.OneD}.
+
+This is the simplest possible step toward the grammar paper's
+$Z_n[\varphi]$ machinery. The grammar paper's partition function differs
+from the existing seabed in three ways: (i) bounded prior $\pi$ replacing
+the full real line, (ii) test function $\varphi$ inside the integrand,
+(iii) explicit asymptotic in $n$ with remainder. The present theorem
+adds \emph{only} (i), on the most degenerate 1D potential we already
+have, with a remainder that is not just asymptotic but \emph{exact} for
+all $t > 0$. Subsequent tide steps can layer (ii) and the monomial
+generalisation on top, with the bounded-prior tail-bound infrastructure
+already in place.
+
+Numerical sanity check: \texttt{scipy.integrate.quad} on $[-a,a]$ for
+$(a,t) \in \{1,2\} \times \{10, 100, 1000\}$ agreed with leading
+$+$ tail bound to machine precision (e.g.\ at $a=1, t=100$:
+numeric $1.2672$, leading $1.2688$, error $1.6\times 10^{-3}$, tail
+bound $3.7\times 10^{-3}$). The same script also validated candidate B
+(harmonic) and candidate C (cosine test function, ratio $\to 1$ slowly
+as $t\to\infty$); recorded in the tide log.
+
+\section{Proof strategy}
+
+The proof has three pieces: a tail sublemma, a tail-symmetry lemma, and a
+splitting identity that reduces the headline to combining them.
+
+The \emph{key sublemma} is \texttt{quartic\_tail\_Ioi}:
+\[
+  \int_a^\infty e^{-t \cdot w^4/24}\, dw
+  \;\le\; \frac{12}{t \cdot a^3}\,\exp\!\left(-\tfrac{t \cdot a^4}{24}\right).
+\]
+The proof reduces the quartic tail to the existing Gaussian tail. For
+$w \ge a$ we have $w^2 \ge a^2$, hence $w^4 = w^2 \cdot w^2 \ge a^2 \cdot
+w^2$, hence
+\[
+  e^{-(t/24) w^4} \le e^{-(t a^2/24) w^2}
+  = e^{-(b/2) w^2} \quad\text{with } b = t a^2/12.
+\]
+Apply the seabed's \texttt{Laplace.OneD.gaussian\_tail\_bound\_rescaled\_Ioi}
+at $M = a$, $b = t a^2/12$:
+\[
+  \int_a^\infty e^{-(b w^2)/2}\, dw \le \frac{e^{-b a^2 / 2}}{b \cdot a}
+  = \frac{12}{t a^3}\,\exp\!\big(-\tfrac{t a^4}{24}\big).
+\]
+That bound is already what we want. The Lean form glues a set-integral
+monotonicity lemma on the pointwise bound to the seabed's Gaussian tail
+bound,\footnote{\texttt{setIntegral\_mono\_on}, applied to
+\texttt{gaussian\_tail\_bound\_rescaled\_Ioi}.} with integrability of
+the quartic side from the seabed's \texttt{quartic\_integrable\_pow}
+and of the Gaussian comparator from Mathlib's
+\texttt{integrable\_exp\_neg\_mul\_sq}.
+
+The \emph{tail-symmetry lemma} mirrors the seabed's Gaussian-side
+analogue, using Mathlib's negation-substitution lemma together with the
+evenness identity $(-w)^4 = w^4$.
+
+The \emph{splitting identity} writes $\mathbb{R}$ as
+$\text{Iic}\,a \cup \text{Ioi}\,a$ via Mathlib's
+\texttt{integral\_Iic\_add\_Ioi}, then $\text{Iic}\,a$ as
+$\text{Iio}\,(-a) \cup \text{Icc}\,(-a,a)$ via
+\texttt{setIntegral\_union} with a hand-written disjointness witness
+and a six-line \texttt{ext}/\texttt{rcases} union proof.\footnote{The
+new module exports this as \texttt{quartic\_partition\_split}.}
+Combined with the tail symmetry, this gives
+\[
+  \int_\mathbb{R} e^{-t L} \;=\; \int_{[-a,a]} e^{-t L}
+                                \;+\; 2\int_{(a,\infty)} e^{-t L}.
+\]
+
+The \emph{headline} then unfolds in eight lines: the full-line integral
+equals \texttt{quartic\_partition} (via
+\texttt{quartic\_moment\_even} at $n = 0$, after a small
+\texttt{Nat.cast\_zero}\,/\,\texttt{mul\_zero}\,/\,\texttt{zero\_add} cleanup);
+the absolute-value bound on the difference equals $2 \cdot
+\int_{(a,\infty)}$, which by \texttt{quartic\_tail\_Ioi} doubled is
+$(24/(t a^3)) \cdot \exp(-t a^4/24)$.
+
+The total weight of the proof is concentrated in the
+\texttt{setIntegral\_mono\_on} step (where the integrability bookkeeping
+costs more than the mathematical bound itself) and the union-and-disjointness
+glue for \texttt{setIntegral\_union}. Both are mechanical once the
+strategy is right.
+
+\section{Roadblocks and resolutions}
+
+The deliberation surfaced two issues before any Lean was written, and
+the formalisation surfaced two more.
+
+\paragraph{Loose exponent in the original draft.}
+Claude's first version of candidate~A had the remainder bound
+$|r_a(t)| \le C_a \cdot \exp(-t a^4/48)$, derived from a
+square-completion comparison $w^4/24 - w^2 \ge -6/t$. The factor $48$ is
+correct but loose by a factor of $2$ in the exponent and folds the $t$
+into an unstructured constant $C_a$. The numerical sanity check
+immediately showed the bound was $\sim 100\times$ slack at $a=1, t=100$,
+and GPT-5.5 Pro independently flagged the cleaner alternative:
+
+\gptbox{A \emph{cleaner and sharper} bound is available:
+$|r_a(t)| = 2 \int_a^\infty e^{-t w^4 / 24}\,dw \le \frac{24}{t a^3} e^{-t a^4 / 24}$.
+This comes from the simple comparison $w^4 \ge a^2 w^2$ for $w \ge a$,
+reducing the quartic tail to the already-formalised Gaussian tail.}
+
+That same paragraph turned into the proof strategy. Calibration: the
+numerical check sanity-checked both the leading constant and the
+remainder shape, and the deliberation step caught the tightenable
+exponent before any Lean compilation. Two reviewer cycles saved.
+
+\paragraph{Disagreement on candidate scope.}
+Both parties backed A, but GPT also flagged a Lipschitz-near-zero
+middle-ground candidate (essentially candidate~C with weakened
+hypothesis on $\varphi$) as worth considering. We deferred: the rule
+``one ingredient at a time'' wins over ``cleanest single statement that
+combines two ingredients.'' A future tide can pick up the test-function
+side from this base.
+
+\paragraph{Lean parser strict on \texttt{|} placement.}
+The first version of the headline statement was written
+\verb!|((∫ ...) - leading) | ≤ ...! with a space before the closing
+\verb!|!. Lean's parser failed at column~67 with ``expected no space
+before''. The fix was to drop the redundant outer parens:
+\verb!|(∫ ...) - leading| ≤ ...!. The lesson is that the absolute-value
+notation is more sensitive to surrounding whitespace than other
+delimiter-like operators in Lean; in doubt, keep the inside terse.
+
+\paragraph{Concurrent-agent staging race (recurrence).}
+The repository hosting this Tide step had two other Tide branches
+running concurrently (the 2D pure-quartic and sextic-moments
+excursions).\footnote{Branches: \texttt{tide/2d-pure-quartic} and
+\texttt{tide/sextic-moments}.} The top-level import file
+\texttt{Laplace.lean} was rewritten by the parallel agents twice during
+the run, each time stripping or reordering imports to match what was on
+\emph{their} branch's \texttt{HEAD}. The fix in this run was to
+(a) stash the working tree, (b) check out the import file from
+\texttt{main} to a known baseline, (c) re-apply only the imports
+relevant to this branch and the prior chained-base branch, then
+(d) force-retarget the branch label onto the prior tide's tip before
+committing.
+
+This is the same staging race called out in the 2D pure-quartic
+retrospective. The structural fix is independent of either tide:
+concurrent agents need filesystem isolation via \texttt{git worktree}.
+That's repeated under \emph{Lessons} below.
+
+Beyond these four, no proof-side roadblocks. All four sub-theorems
+typechecked clean within ten minutes once the strategy was pinned.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+The Gaussian integrability lemma for the comparator, the set-integral
+monotonicity lemma for pulling a pointwise inequality through, the two
+splitting lemmas (\texttt{Iic\,$\cup$\,Ioi} and the
+\texttt{setIntegral\_union} disjoint-set decomposition), the negation
+substitution \texttt{integral\_comp\_neg\_Iic} for the tail symmetry,
+plus the standard \texttt{Real.exp\_le\_exp},
+\texttt{mul\_self\_le\_mul\_self}, \texttt{pow\_pos}, and the
+\texttt{ring}\,/\,\texttt{field\_simp}\,/\,\texttt{linarith}
+closers.\footnote{Specifically: \texttt{integrable\_exp\_neg\_mul\_sq},
+\texttt{setIntegral\_mono\_on}, and
+\texttt{intervalIntegral.integral\_Iic\_add\_Ioi}.}
+
+\paragraph{The seabed provided.}
+The leading constant \emph{is} the existing 1D quartic partition
+function lemma\,---\,no new closed-form computation
+needed.\footnote{\texttt{Laplace.OneD.quartic\_partition} from
+\texttt{Quartic.lean}.} The Gaussian tail in
+\texttt{TailBound.lean}\footnote{\texttt{gaussian\_tail\_bound\_rescaled\_Ioi},
+originally written for the harmonic case and used in
+\texttt{Localisation.lean}.} is the input to which the quartic tail
+reduces; it is reused here unchanged. Integrability of polynomials
+against the quartic Boltzmann factor came from the existing
+\texttt{quartic\_integrable\_pow} (also unchanged).
+
+\paragraph{What was new in this tide.}
+Four theorems in the new \texttt{QuarticBoundedPrior.lean} module:
+a quartic half-line tail bound, a tail-symmetry lemma, a
+partition-function splitting identity, and the headline bounded-prior
+bound. None of the four theorems
+introduces a new mathematical technique; they wire existing seabed and
+Mathlib pieces in a new arrangement. The honest line-count breakdown is
+roughly: 5 lines of new mathematics (the comparison
+$w^4 \ge a^2 w^2$ and its consequence), 30 lines of arithmetic
+manipulation (rewriting $b = t a^2/12$, computing
+$\frac{1}{b \cdot a} = 12/(t a^3)$, etc.), and 200 lines of integrability
+and measurability bookkeeping plus splitting/union proofs. That ratio
+is the dominant cost on a small bounded-prior tide step in this style.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{Numerical sanity check pays for itself before writing Lean.}
+The exponent-constant tightening in the present run came purely from the
+combination of \texttt{scipy.integrate.quad} numbers and a five-minute
+GPT consult; it cost nothing to find and cost a factor-of-two reduction
+in the final bound. Worth doing on every tide whose closed form is
+numerical-friendly. The discipline already lives in the Tide skill;
+record this run as another data point that confirms it.
+
+\item \emph{Concurrent Tide agents need filesystem isolation.}
+\texttt{Laplace.lean} is again the contention point; the situation is
+identical to the one called out in the 2D pure-quartic retrospective.
+Until \texttt{git worktree} support lands in the Tide skill's preflight,
+expect to spend a few minutes per concurrent run on the recovery dance:
+checkout the import-list file from \texttt{main}, re-add only the
+imports relevant to this tide, and force-retarget the branch label onto
+the prior tide's tip before committing. Documenting the dance here
+should at least make the pattern recognisable on first hit in a future
+run.
+
+\item \emph{The substitution-and-Gaussian-tail template is reusable.}
+The exact same proof pattern (pointwise comparison
+$w^{2k} \ge a^{2k-2} \cdot w^2$, then the seabed's rescaled-Gaussian
+tail bound) will give a one-line generalisation of the quartic tail
+lemma to a monomial-of-arbitrary-even-degree tail lemma for
+$L = w^{2k}/(2k)!$. GPT-5.5 Pro flagged this in the deliberation step
+(``If you generalise, generalise the tail lemma first, not the full
+bounded-prior asymptotic theorem''); worth acting on the next time the
+grammar-precursor tide is taken further.
+
+\item \emph{Lean parser is whitespace-sensitive on \texttt{|·|}.}
+For the seabed's \texttt{CLAUDE.md}: when writing absolute-value
+statements, prefer \verb!|expr| ≤ ...! with no extra outer parens
+between \verb!expr! and the closing \verb!|!. Lean's tokeniser treats
+\verb!) |! as ambiguous in some positions.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Bounded-prior quartic with continuous test function}
+(candidate~C from this deliberation). Now the next-step grammar
+precursor: bounded prior $+$ tail bound infrastructure is in place; what
+remains is the localisation argument for $\varphi$ near zero plus the
+\texttt{Asymptotics.IsLittleO} packaging. Estimated 400--600 lines.
+
+\item \emph{Bounded-prior monomial generalisation}
+$\big| \int_{-a}^{a} e^{-t w^{2k}/(2k)!}\,dw - \tfrac{1}{2}((2k)!/t)^{1/(2k)}
+\Gamma(1/(2k)) \big| \le C_k(a)\,\exp(-c_k\,t a^{2k})$. The tail-bound
+proof transfers verbatim, using $w^{2k} \ge a^{2k-2}\,w^2$ for $w \ge a$.
+The hard part is the \texttt{Real.rpow} bookkeeping that comes with the
+generalised exponent.
+
+\item \emph{Bounded-prior harmonic partition} (candidate~B). Now
+trivial given the seabed's harmonic partition lemma and the splitting
+idiom from this tide. $\sim$\,50--100 lines if anyone wants the literal
+Gaussian version on the record.
+
+\item \emph{Worktree-isolated Tide runs.} Repeated from the 2D
+pure-quartic retrospective. The recurrence here makes the case
+stronger.
+
+\item \emph{Promote the splitting/union idiom to \texttt{lean-common}.}
+The hand-written \texttt{Iio\,(-a) \(\cup\) Icc\,(-a,a) = Iic\,a}
+disjointness $+$ union proof is a self-contained, generic statement that
+will recur on every bounded-prior tide. Six lines is small enough to
+duplicate once but it should not duplicate three times.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro contributed the deliberation-stage advisory at Step~2 and
+the strategic move that became the final proof strategy: the
+quartic-tail sublemma via the comparison $w^4 \ge a^2 w^2$. The full
+consult and the tide log itself (with candidate drafts, vote, numerical
+check, and result) are preserved alongside one another in the grammar
+project's tide-log directory under the SRI repo.
+
+\end{document}
