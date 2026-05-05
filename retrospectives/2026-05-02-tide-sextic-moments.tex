@@ -1,0 +1,409 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{⁶}{\ensuremath{^6}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{√}{\ensuremath{\sqrt{\,}}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{Sextic 1D moments}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{2 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A single Tide-loop excursion in the \texttt{laplace} seabed, generalising
+the pure-quartic 1D file from $L(x) = x^4/24$ to $L(x) = x^6/720$. The
+headline theorem (\texttt{sextic\_cov\_affine}) gives the affine covariance
+of the 1D pure-sextic Gibbs measure as
+$\operatorname{Cov}_t[ax+c, bx+d] = ab \cdot (720/t)^{1/3} \cdot
+\Gamma(1/2)/\Gamma(1/6)$, a rate-$t^{-1/3}$ analogue of the quartic's
+$t^{-1/2}$. The new file (396 lines) parallels its quartic predecessor
+section by section. Zero \texttt{sorry}, zero \texttt{axiom}, zero
+\texttt{native\_decide}; clean Lean diagnostics on first pass. The
+interesting features of this run were two tactical refinements suggested by
+GPT-5.5 Pro at the deliberation step --- a \emph{B+ refinement} stating the
+half-line moment lemma for arbitrary natural power $m$ rather than just
+$2n$, and a piecewise (rather than discriminant-based) proof of the
+polynomial bound $x^2 \leq 1 + x^6$ used for Gaussian-comparison
+integrability --- both of which made the file genuinely cleaner than the
+quartic template it descended from. Like the concurrent 2D pure-quartic
+excursion, this run hit a working-tree race when another agent rewrote the
+top-level import file in the staging window; the fix was atomic re-staging
+plus a branch-ref re-pointing dance.
+\end{abstract}
+
+\section{Setting}
+
+This Tide step is the sixth excursion outward from the same seabed: the
+\texttt{laplace} repo, which originally formalised the 1D anharmonic
+asymptotic $\operatorname{Cov}_t[x^2,x] = -2\alpha/(\lambda^3 t^2) +
+o(t^{-2})$ (Susceptibility Primer, eq.~4.10) and has since been extended
+through five prior tide steps.\footnote{Branches
+\texttt{tide/quartic-moments}, \texttt{tide/2d-semi-degenerate},
+\texttt{tide/universal-scaling}, \texttt{tide/f1-large-t}, and the
+concurrent \texttt{tide/2d-pure-quartic}.}
+The first four merged into \texttt{main} on 1\,May (commit
+\texttt{44a6001}); this step shares its base with the parallel 2D
+pure-quartic run and was branched off the latter's tip per the Tide skill's
+branch-hygiene rule.
+
+The candidate was picked from a cross-tide candidate survey written
+earlier the same day.\footnote{\texttt{projects/automation/log/}\allowbreak\texttt{2026-05-02-tide-candidates-survey.md}.}
+Of the five candidates listed there, \emph{Sextic 1D moments} scored as the
+third choice, behind the threepoint $\kappa_3$ candidate (different seabed)
+and the 2D pure-quartic case (the parallel run). It is the cleanest test
+of whether the substitution-and-$\Gamma$ template established by the
+quartic file generalises beyond a single exponent class. The pattern
+$L = x^{2k}/(2k)!$ predicts a rate $t^{-1/(2k-1)}$, with $k=2$ giving the
+quartic's $t^{-1/2}$ and $k=3$ giving the sextic's $t^{-1/3}$; this tide is
+the second data point.
+
+The Step~2 deliberation (Claude $\leftrightarrow$ GPT-5.5 Pro) drafted three
+candidates: A, the full sextic package paralleling the quartic file; B,
+just the atomic half-line moment as a kernel; C, the general $p = 2k$
+family covering quartic and sextic uniformly. Both parties backed A, with
+GPT making two tactical refinements that were carried into Step~3. The full
+deliberation is in the tide log.\footnote{\texttt{projects/primer/tide-log/}\allowbreak\texttt{2026-05-02-tide-sextic-moments.md}.}
+
+\section{The thing formalised}
+
+For the centred sextic 1D potential
+\[
+  L(x) = \frac{x^6}{720}
+\]
+and affine observables $\varphi(x) = ax + c$, $\psi(x) = bx + d$, against the
+1D Gibbs measure $e^{-tL(x)}\,dx / Z(t)$:
+
+\begin{quote}\itshape
+For all $t > 0$,
+\[
+  \operatorname{Cov}_t[\varphi,\psi]
+  \;=\; ab \cdot \left(\frac{720}{t}\right)^{1/3} \cdot
+        \frac{\Gamma(1/2)}{\Gamma(1/6)}
+  \;=\; ab \cdot \frac{\sqrt{\pi}\,(720/t)^{1/3}}{\Gamma(1/6)}.
+\]
+\end{quote}
+
+\noindent The Lean signature:
+\begin{verbatim}
+theorem sextic_cov_affine {t : ℝ} (ht : 0 < t) (a b c d : ℝ) :
+    gibbsCov sexticPotential t (fun x => a * x + c) (fun x => b * x + d) =
+      a * b * (720 / t) ^ ((1 : ℝ) / 3) * Real.Gamma ((1 : ℝ) / 2) /
+        Real.Gamma ((1 : ℝ) / 6)
+\end{verbatim}
+
+\noindent located at \texttt{Laplace/OneD/Sextic.lean}, in namespace
+\texttt{Laplace.OneD}. The file commits twelve further lemmas in addition
+to the headline: the potential definition, two flavours of integrability,
+the atomic half-line moment for arbitrary natural power, even and odd
+full-line moments, the partition function and its positivity, even and odd
+expected values, and the $n=1$ specialisation
+$\langle x^2\rangle_t = (720/t)^{1/3}\Gamma(1/2)/\Gamma(1/6)$ which is the
+load-bearing input to \texttt{sextic\_cov\_affine}.
+
+The shape $L(x) = x^{2k}/(2k)!$ means that the unique critical point
+$x = 0$ has $L^{(j)}(0) = 0$ for $j = 0, \dots, 2k-1$ and
+$L^{(2k)}(0) = 1$: this is the rank-zero degenerate case,
+analogous to the quartic ($k=2$) but more degenerate. The Hessian-based
+Laplace machinery from the rest of the seabed does not apply; instead the
+substitution $u = (t/720)^{1/6} x$ reduces every moment integral exactly
+to a $\Gamma$-function value, and the rate $t^{-1/3}$ falls out of the
+$1/(2k-1)$ formula at $k=3$.
+
+Numerical sanity check before formalising: \texttt{scipy.integrate.quad}
+agreed with the closed forms to $\sim 10^{-12}$ relative error across
+$t \in \{0.1, 1.0, 10.0, 100.0\}$ and $n \in \{0,1,2,3\}$, for the half-line
+moments, the full-line even moments, the partition function, the expected
+values, and the affine covariance. The bonus integration-by-parts identity
+$\langle x^6\rangle_t = 120/t$ (independent of all the special-function
+constants) provides a Gibbs-side cross-check that is also clean.
+
+\section{Proof strategy}
+
+The atomic kernel of the file is the half-line moment
+\texttt{integral\_pow\_mul\_exp\_neg\_sextic\_Ioi}, stated for arbitrary
+natural power $m$:
+\[
+  \int_0^\infty x^m e^{-t x^6 / 720}\,dx
+  \;=\; \tfrac{1}{6} \left(\tfrac{720}{t}\right)^{(m+1)/6}
+        \Gamma\!\left(\tfrac{m+1}{6}\right).
+\]
+This is a direct application of Mathlib's master gamma-integral
+lemma\footnote{\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}.} with
+$p = 6$, $q = m$, $b = t/720$, plus a conversion between $\mathbb{N}$- and
+$\mathbb{R}$-powers via \texttt{rpow\_natCast} and a single
+$(t/720)^{-(m+1)/6} \to (720/t)^{(m+1)/6}$ inversion via \texttt{inv\_rpow}.
+Stating this for all $m$ (the \emph{B+ refinement}) costs nothing extra in
+the proof and makes the even and odd full-line cases share a single
+substitution argument.
+
+From the half-line lemma the rest of the file is mechanical. The full-line
+even moment doubles via \texttt{integral\_comp\_abs} after rewriting the
+integrand in $|x|$-form (this uses
+$x^{2n} = |x|^{2n}$ and $x^6 = |x|^6$, both via \texttt{sq\_abs}); the odd
+moment vanishes via the same parity argument the quartic file used,
+\texttt{Odd.neg\_pow $\langle n,\text{rfl}\rangle$} together with
+$(-x)^6 = x^6$ to flip the sign of the integrand. The partition function is
+the $n=0$ specialisation of the even moment, the expected value is the
+ratio of the moment by the partition function (with the cancellation
+$(720/t)^{(2n+1)/6 - 1/6} = (720/t)^{n/3}$), and the affine covariance
+expands $(ax+c)(bx+d)$, uses linearity of \texttt{gibbsExpectation} (which
+itself is unfolded against \texttt{integral\_add} and
+\texttt{integral\_const\_mul} after building integrability witnesses for
+$1, x, x^2$ against the Gibbs weight), and collapses via parity of the
+$\langle x\rangle$ terms to $ab \langle x^2\rangle_t$.
+
+The integrability of $x^n e^{-t x^6/720}$ against Lebesgue measure is
+the only place the proof has any choices. The quartic file used an exact
+completing-the-square identity
+$t \cdot x^4/24 - x^2 = (tx^2 - 12)^2/(24t) - 6/t$
+to dominate by a Gaussian with $b = 1$ and prefactor $e^{6/t}$. The sextic
+analogue would need to minimise a cubic $t \cdot x^6/720 - x^2$, which is
+messy in Lean. The route taken here, on GPT-5.5 Pro's tactical advice, is
+the slick polynomial bound
+\[
+  x^2 \;\leq\; 1 + x^6
+\]
+proved piecewise: on $|x| \leq 1$, $x^2 \leq 1 \leq 1 + x^6$; on
+$|x| \geq 1$, $x^4 \geq 1$ so $x^2 \leq x^2 \cdot x^4 = x^6 \leq 1 + x^6$.
+Multiplying through by $t/720 > 0$ gives
+$t \cdot x^6/720 \geq (t/720) x^2 - t/720$, hence
+$e^{-t x^6/720} \leq e^{t/720} \cdot e^{-(t/720) x^2}$, dominated by a
+Gaussian of width $t/720$. Mathlib's
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} handles the dominator
+directly with $b = t/720$; the rest is bookkeeping. The piecewise lemma is
+nine lines; its quartic counterpart was thirteen.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{None of mathematical substance.} The proof typechecked clean on
+the first compile after a one-line tactic fix
+(\texttt{rcases le\_or\_lt} $\to$ \texttt{rcases le\_total}; \texttt{le\_or\_lt}
+no longer exists in the version of Mathlib pinned by the seabed) and a
+one-line cleanup of an unused \texttt{push\_cast} that had been a vestige of
+copy-pasting from the quartic file. The candidate had been picked precisely
+so that the seabed's machinery would already cover the moves; the run paid
+the cost of that prediction.
+
+\paragraph{Concurrent-agent staging race.} Same root cause as the parallel
+2D pure-quartic Tide. Multiple times during this run, the working-tree copy
+of \texttt{Laplace.lean} was overwritten by the other agent who was also
+adding an import for their new file. The interesting variant, in this run,
+was that the \texttt{git commit} fired while the working tree was on the
+\emph{wrong branch}: at the moment of commit, the parallel agent had checked
+out their \texttt{tide/2d-pure-quartic} branch in the shared working tree, so
+my Sextic commit landed on \emph{their} branch rather than my own. The fix
+was
+
+\begin{verbatim}
+git branch -f tide/sextic-moments HEAD       # claim the commit
+git checkout tide/sextic-moments
+git branch -f tide/2d-pure-quartic HEAD~1    # restore their tip
+\end{verbatim}
+
+\noindent which by happy accident produced exactly the linear-stack
+arrangement the Tide skill's branch-hygiene rule requires (Sextic on top of
+PureQuartic on top of \texttt{main}), but it was a recovery move rather than
+a deliberate one. After the parallel run later added a trailing
+\texttt{Laplace.lean} import-list fix-up commit and a retrospective commit
+on top of their original tip, this branch was rebased onto the new tip via
+\texttt{git rebase tide/2d-pure-quartic}, which applied without conflict.
+
+The structural lesson is the same as the parallel retrospective concluded:
+concurrent Tide agents need filesystem isolation. \texttt{git worktree} per
+Tide branch is the right answer.
+
+\paragraph{Tactical advice from GPT-5.5 Pro that paid off.} Two pieces of
+GPT-5.5 Pro's deliberation-stage response were carried into the proof and
+each paid for itself.
+
+\begin{itemize}\itemsep0pt
+
+\item \emph{The B+ refinement.} GPT noted that on $\mathrm{Ioi}\,0$, parity is
+irrelevant, so stating the half-line moment for arbitrary natural power $m$
+costs nothing extra and makes the file's even/odd full-line story share a
+single substitution argument. This is the kind of strict-generalisation-for-free
+that Tide-loop deliberation is for; carrying it in saved a near-duplicate
+half-line argument for the odd case.
+
+\item \emph{Piecewise integrability.} GPT pre-empted the obvious sin (which
+I had drafted) of proving $x^2 \leq 1 + x^6$ via a cubic-discriminant
+argument:
+
+\gptbox{Your proposed bound $x^2 \leq 1 + x^6$ is excellent, but in Lean I
+would \textbf{not} prove it via discriminant/minimum. I would prove it
+piecewise: if $|x| \leq 1$, then $x^2 \leq 1 \leq 1 + x^6$; if
+$1 \leq |x|$, then $x^2 \leq x^6$, hence $x^2 \leq 1 + x^6$. That will be
+much friendlier than a cubic-minimum argument.}
+
+\noindent The piecewise version that landed is nine lines, three of which
+are \texttt{nlinarith}-with-hint closers; the discriminant version would
+have been a forty-line minimisation by hand. This was the highest-value
+tactical advice in the deliberation.
+\end{itemize}
+
+Beyond these two, no proof-side roadblocks: the file is essentially a
+substitute-and-rename of \texttt{Quartic.lean} with the integrability lemma
+swapped out and the half-line lemma generalised in $m$.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} for the master half-line
+gamma integral. \texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} for the
+Gaussian dominator. \texttt{integral\_comp\_abs} for the
+even-symmetric reduction to the half line. \texttt{integral\_neg\_eq\_self}
+for the odd parity argument. The standard
+\texttt{integral\_add\,/\,integral\_const\_mul\,/\,Integrable.const\_mul/add}
+lemmas for the affine-observable expansion. \texttt{rpow\_natCast},
+\texttt{inv\_rpow}, \texttt{rpow\_neg}, \texttt{Real.rpow\_add} for exponent
+algebra. \texttt{Real.Gamma\_pos\_of\_pos} for partition-function positivity.
+
+\paragraph{The seabed provided.}
+\texttt{Laplace.Gibbs} (\texttt{partitionFunction}, \texttt{gibbsExpectation},
+\texttt{gibbsCov} for the 1D Gibbs interface), and
+\texttt{Laplace/OneD/Quartic.lean} as the structural template. No new
+seabed-side infrastructure was needed.
+
+\paragraph{What was new in this tide.}
+The 1D pure-sextic potential, a Gaussian-comparison integrability lemma
+(with the piecewise polynomial bound $x^2 \leq 1 + x^6$ as a private
+helper), the half-line moment lemma in the B+ form for arbitrary natural
+power, the full-line even and odd moments, the partition function and its
+positivity, the four expected-value lemmas (even, odd, $n=1$, linear
+specialisation), and the headline affine
+covariance.\footnote{Lean names: \texttt{sexticPotential};
+\texttt{sextic\_integrable\_pow}; \texttt{sq\_le\_one\_add\_pow\_six} (private);
+\texttt{integral\_pow\_mul\_exp\_neg\_sextic\_Ioi};
+\texttt{sextic\_moment\_even}, \texttt{sextic\_moment\_odd};
+\texttt{sextic\_partition}, \texttt{sextic\_partition\_pos};
+\texttt{sextic\_expected\_value\_even}, \texttt{\_odd},
+\texttt{\_sq}, \texttt{\_lin};
+\texttt{sextic\_cov\_affine}.}
+There is no novel mathematical content; what is new is the
+substitution-into-the-template that confirms the substitution template
+ports cleanly to a second exponent class. As the parallel 2D pure-quartic
+retrospective predicted in its \emph{Lessons}: ``the next test is whether
+[the factorisation template] ports across the sextic side; if so, the
+abstraction is genuinely the right shape.'' It does, and it is.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{Specific tactical advice from GPT-5.5 Pro at the deliberation
+stage transfers cleanly into Step~3.} The B+ refinement and the piecewise
+integrability bound were both proposed at Step~2 and carried verbatim into
+the final proof. This is the right division of labour: the deliberation
+stage is where ``how you should phrase the lemma'' and ``how you should
+prove the polynomial inequality'' get decided, before any Lean is written.
+The cost was a single 5-minute consult; the value, fifty lines of avoided
+proof.
+
+\item \emph{The substitution-and-$\Gamma$ template is robust at $k=3$.} The
+$L = x^{2k}/(2k)!$ family produces, at each $k$, a rate $t^{-1/(2k-1)}$
+covariance with constants in $\Gamma((2n+1)/(2k))/\Gamma(1/(2k))$ and a
+proof that mirrors the previous $k$ section by section. With $k=2$ and
+$k=3$ both done in essentially the same shape, candidate C from the
+deliberation (the unifying \texttt{p = 2k} parameterisation) becomes
+substantially more attractive than it did at $k=2$ alone --- the case for
+``just refactor and parameterise'' has gone from one data point to two.
+
+\item \emph{Concurrent Tide agents in the same checkout fight over
+\texttt{Laplace.lean}.} Same lesson as the parallel retrospective draws.
+Filesystem isolation via \texttt{git worktree} is the right structural fix;
+ad-hoc atomic re-staging is at best a recovery move.
+
+\item \emph{Piecewise polynomial bounds beat discriminant-based ones in
+Lean.} The \texttt{nlinarith}-with-hint closers do not like cubic minima,
+but a case split on $|x| \leq 1$ vs $|x| \geq 1$ followed by a single
+\texttt{nlinarith} per branch is robust. Worth lifting to the seabed's
+\texttt{CLAUDE.md} as a tactic note.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{The \texttt{p = 2k} parameterisation, now plausible.} With
+\texttt{Quartic.lean} ($k=2$) and \texttt{Sextic.lean} ($k=3$) now both in
+place and structurally near-identical, the unifying lemma
+\[
+  \int_0^\infty x^m e^{-t x^{2k}/(2k)!}\,dx
+  \;=\; \tfrac{1}{2k} \left(\tfrac{(2k)!}{t}\right)^{(m+1)/(2k)}
+        \Gamma\!\left(\tfrac{m+1}{2k}\right)
+\]
+is now reachable in roughly the same proof body as the present file, just
+with $k$ generic. Best opened as a future Tide step: not a refactor of the
+existing files (they stay as worked examples), but a new
+\texttt{Laplace/OneD/PolyEven.lean} (or similar) that proves the parameterised
+identity once and recovers the quartic and sextic specialisations as
+corollaries. Candidate B and C from the present deliberation would land
+together as part of that step.
+
+\item \emph{Quartic--sextic mixed potential.} $L(x,y) = x^4/24 + y^6/720$,
+with rates $t^{-1/2}$ in $x$ and $t^{-1/3}$ in $y$. Mechanical given the
+present file plus \texttt{Laplace/TwoD/PureQuartic.lean} from the parallel
+Tide, particularly if the additively-separable factorisation refactor
+(deferred in that retrospective) lands first.
+
+\item \emph{Mathlib upstreaming for polynomial-times-Gibbs integrability.}
+\texttt{quartic\_integrable\_pow} and \texttt{sextic\_integrable\_pow} are
+the same shape: $\int x^n \exp(-b \cdot x^{2k})$ for $b > 0, k \geq 2,
+n \in \mathbb{N}$. With two concrete uses, the case for promoting a generic
+version to \texttt{lean-common} (or upstream into Mathlib alongside the
+existing \texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq}) is now stronger
+than at one use.
+
+\item \emph{\texttt{\textbackslash leanref} tagging.} If the primer gains a
+sextic-rate paragraph in its degenerate-case discussion, tag it with
+\texttt{\textbackslash leanref\{sextic\_cov\_affine\}}. Currently no such
+paragraph exists; the sextic case is implicit in the
+$L = x^{2k}/(2k)!$ generalisation that the primer alludes to but does not
+spell out. Worth a one-paragraph appendix addition the next time the
+primer's degenerate-case section is touched.
+
+\item \emph{Worktree-isolated Tide runs.} Same as the
+\texttt{tide/2d-pure-quartic} retrospective notes: a small wrapper that
+creates a \texttt{git worktree} per Tide branch and runs the agent against
+that worktree would prevent the staging race. Worth adding to the Tide
+skill as a preflight setup step.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro contributed the deliberation-stage advisory at Step~2,
+including the B+ refinement of the half-line moment lemma and the piecewise
+proof of the polynomial bound $x^2 \leq 1 + x^6$. Both were carried into
+the final proof, and both were the right call. The full consult and the
+tide log (with candidate drafts, vote, numerical check, and result) are
+both preserved in the primer project's tide-log
+directory.\footnote{\texttt{projects/primer/tide-log/}\allowbreak\texttt{gpt55\_tide\_sextic\_v1.md}
+and
+\texttt{projects/primer/tide-log/}\allowbreak\texttt{2026-05-02-tide-sextic-moments.md}.}
+The parallel 2D pure-quartic run shared the seabed and the
+integration race; its retrospective is the immediate predecessor to this
+one and recorded the same lessons from the other side.
+
+\end{document}
