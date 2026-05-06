@@ -20,6 +20,7 @@ import Laplace.Multi.GaussianIBP
 import Laplace.Multi.RescaledIntegrals
 import Laplace.Multi.Covariance
 import Laplace.TwoD.SemiDegenerate
+import Laplace.TwoD.AddSeparable
 import Laplace.TwoD.PureQuartic
 import Laplace.OneD.AnharmonicKappa3
 import Laplace.OneD.HarmonicGibbsRegularity
