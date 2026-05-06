@@ -27,3 +27,4 @@ import Laplace.OneD.HarmonicGibbsRegularity
 import Laplace.OneD.HarmonicCrossSuscDeriv
 import Laplace.OneD.QuarticBoundedPriorTestFn
 import Laplace.OneD.HarmonicGibbsObservableMonomials
+import Laplace.OneD.HarmonicCovGlobalConstancy
