@@ -1,0 +1,233 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+
+\title{Tide retrospective:\\third-moment asymptotic for the anharmonic Gibbs}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This retrospective records the smallest tide on the board: a $\sim$30-line
+strict-improvement of Tide 9. The third moment $\langle x^3 \rangle_t$ of
+the anharmonic Gibbs measure was internal to the proof of
+\texttt{cov\_anharmonic\_asymptotic} (Tide 9); this tide packages it as a
+separate user-facing theorem
+$t^2 \cdot \langle x^3 \rangle_t \to -5\alpha/(2\lambda^3)$ via the
+algebraic identity $\langle x^3 \rangle = \mathrm{Cov}[x^2, x] + \langle x^2 \rangle \langle x \rangle$
+combined with the existing asymptotics. Zero \texttt{sorry}, single
+session, no GPT-5.5~Pro consult needed (the deliberation already happened
+in Tide 9's retrospective).
+\end{abstract}
+
+\section{Setting}
+
+Tide 9 (anharmonic-$\kappa_3$, 6 May) proved
+$t^2 \cdot \kappa_3(x, x, x) \to -\alpha/\lambda^3$ for the 1D anharmonic
+Gibbs measure. The proof factored through three asymptotics already in
+the laplace seabed:\footnote{Specifically, in
+\texttt{Laplace/OneD/IntegralRemainder.lean}:
+\texttt{cov\_anharmonic\_asymptotic} (the covariance),
+\texttt{mean\_anharmonic\_asymptotic} ($\langle x \rangle$), and
+\texttt{cov\_self\_anharmonic\_asymptotic} (the variance).}
+the covariance, the mean, and the variance. Internal to the
+strategy was the third moment expansion
+$\langle x^3 \rangle_t = -5\alpha/(2\lambda^3 t^2) + o(t^{-2})$, which
+appeared as the corrected Wick coefficient (the famous "5/2 vs 3/2"
+correction caught by both the numerical sanity check and the GPT consult).
+
+That third moment was never packaged as a stand-alone user-facing
+theorem. Tide 9's retrospective explicitly named it as a deferred
+follow-up: \emph{``With Tide 9's moment expansions exposed,
+$t^2 \cdot \langle x^3 \rangle_t \to -5\alpha/(2\lambda^3)$ is a $\sim$5-line
+corollary of $\mathrm{Cov}[x^2, x] = \langle x^3 \rangle - \langle x^2 \rangle \langle x \rangle$
+plus existing asymptotics. Worth packaging as
+\texttt{thirdMoment\_anharmonic\_asymptotic} for downstream consistency.''}
+
+This tide closes that follow-up, exactly as Tide 9 anticipated.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the 1D anharmonic potential
+$L(x) = (\lambda/2) x^2 + (\alpha/6) x^3 + (\gamma/24) x^4$ with
+$\lambda > 0$, $\gamma > 0$, and the discriminant condition
+$\alpha^2 < 3\lambda\gamma$,
+\[
+  t^2 \cdot \langle x^3 \rangle_t
+  \;\longrightarrow\; -\frac{5\alpha}{2\lambda^3}
+  \quad \text{as } t \to \infty.
+\]
+\end{quote}
+
+The Lean signature, in
+\texttt{Laplace/OneD/AnharmonicKappa3.lean}\footnote{The new theorem
+sits at the bottom of that file; the existing $\kappa_3$ infrastructure
+remains unchanged. Permalink:
+the file at the merged commit on \texttt{main}.}:
+
+\begin{verbatim}
+theorem thirdMoment_anharmonic_asymptotic
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    Filter.Tendsto
+      (fun t : ℝ => t ^ 2 * Laplace.gibbsExpectation
+          (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x ^ 3))
+      Filter.atTop
+      (nhds (-(5 * alpha) / (2 * lam ^ 3)))
+\end{verbatim}
+
+The hypotheses are inherited verbatim from Tide 9.
+
+\section{Proof strategy}
+
+The proof is short enough to write out completely in prose:
+
+By the definition of \texttt{gibbsCov},
+\[
+  \mathrm{Cov}_t[x^2, x] = \langle x^3 \rangle_t - \langle x^2 \rangle_t \cdot \langle x \rangle_t,
+\]
+so
+\[
+  \langle x^3 \rangle_t = \mathrm{Cov}_t[x^2, x] + \langle x^2 \rangle_t \cdot \langle x \rangle_t.
+\]
+Multiplying by $t^2$:
+\[
+  t^2 \cdot \langle x^3 \rangle_t
+  = t^2 \cdot \mathrm{Cov}_t[x^2, x]
+    + (t \cdot \langle x^2 \rangle_t) \cdot (t \cdot \langle x \rangle_t).
+\]
+Each factor on the right has a known limit from Tide 9's bag of
+asymptotics: $-2\alpha/\lambda^3$ for the covariance, $1/\lambda$ for
+$t \cdot \langle x^2 \rangle$, and $-\alpha/(2\lambda^2)$ for
+$t \cdot \langle x \rangle$. By \texttt{Filter.Tendsto.add} +
+\texttt{Filter.Tendsto.mul}:
+\[
+  t^2 \cdot \langle x^3 \rangle_t
+  \;\longrightarrow\;
+  -\frac{2\alpha}{\lambda^3}
+  + \frac{1}{\lambda} \cdot \left(-\frac{\alpha}{2\lambda^2}\right)
+  = -\frac{5\alpha}{2\lambda^3}.
+\]
+The terminal arithmetic is one \texttt{field\_simp + ring}.
+
+The Lean structure follows the proof verbatim:
+1. Pull in the three asymptotic hypotheses
+(\texttt{hCov}, \texttt{hM2}, \texttt{hM1}).
+2. Build the sum-of-products via \texttt{hCov.add (hM2.mul hM1)} —
+this gives the limit value
+$-2\alpha/\lambda^3 + (1/\lambda) \cdot (-\alpha/(2\lambda^2))$.
+3. Rewrite the limit value to $-5\alpha/(2\lambda^3)$ via a
+\texttt{have h\_lim\_eq} + \texttt{field\_simp ; ring}.
+4. Bridge the function: the integrand on the LHS
+$t^2 \cdot \langle x^3 \rangle$ equals the integrand on the RHS
+$t^2 \cdot \mathrm{Cov}[x^2, x] + (t \cdot \langle x^2 \rangle)(t \cdot \langle x \rangle)$
+after unfolding \texttt{gibbsCov} and a small \texttt{x\^{}2 * x = x\^{}3}
+function-extensionality nudge.
+5. \texttt{Tendsto.congr'} closes the goal.
+
+\section{Roadblocks and resolutions}
+
+There were no roadblocks. The proof followed the deliberation plan
+verbatim, and the build was clean on first pass after one minor lint
+warning (\texttt{show} vs \texttt{change}, which the linter handles).
+
+The only technical detail worth recording: Tide 9's
+\texttt{cov\_anharmonic\_asymptotic} is stated with the derived limit
+value $-2\alpha/\lambda^3$ (not in the
+$-2\alpha/\lambda^3 + (1/\lambda)\cdot(-\alpha/(2\lambda^2))$ form),
+so the limit-value rewrite step had to combine the two sub-asymptotics'
+limits into the headline limit value via \texttt{ring} arithmetic. The
+\texttt{nhds (a + b)}-vs-\texttt{nhds c} pattern that recurred in Tides 9
+and 10 reappeared here: build the sum, name the equality, rewrite. Three
+minutes of plumbing.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.} The standard \texttt{Tendsto}-algebra
+glue (\texttt{add}, \texttt{mul}, \texttt{congr'},
+\texttt{filter\_upwards}). Nothing exotic.
+
+\paragraph{Laplace provided.} Three asymptotics from Tide 9 / the
+original anharmonic stack: covariance, second moment, and
+mean.\footnote{Concretely
+\texttt{cov\_anharmonic\_asymptotic},
+\texttt{secondMoment\_anharmonic\_asymptotic}, and
+\texttt{mean\_anharmonic\_asymptotic}.}
+
+\paragraph{What was new.} One theorem
+(\texttt{thirdMoment\_anharmonic\_asymptotic}, $\sim$30 lines) and one
+limit-value rewrite. No new helper lemmas were introduced. The
+mathematical content was already in the Tide 9 retrospective; this
+tide is pure packaging.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \textbf{Strict-improvement follow-ups left in retrospectives are
+load-bearing.} Tide 9's retrospective named exactly this corollary,
+with the closed-form value, with the proof outline, with the line-count
+estimate. Today's tide consumed that named follow-up directly. The
+\texttt{tide-pick} skill's emphasis on harvesting retrospectives'
+Follow-up sections paid off: this tide cost almost nothing because
+the deliberation had already happened.
+
+\item \textbf{Skip the GPT consult for genuine packaging tides.} For a
+follow-up that's already named in a prior retrospective with the
+explicit closed form and proof outline, a fresh GPT-5.5~Pro consult is
+overhead. The deliberation lives in the prior retrospective; the
+current tide's job is execution. Worth landing in the tide skill: \emph{a
+``packaging'' modifier where Step 2 is reduced to a single-candidate
+log entry and direct Step 3 hand-off, when the candidate is a named
+follow-up of a closed retrospective.}
+
+\item \textbf{The same plumbing pattern recurs.} The three Tides 9, 10,
+and now this G3 all share a structure: sum/product of two-three
+existing \texttt{Tendsto} facts plus a limit-value \texttt{ring}
+rewrite plus a \texttt{Tendsto.congr'} bridge. Worth abstracting once
+the pattern fires a fourth time (the \texttt{gibbsCov\_symm} +
+covariance-algebra refactor in I2 from the survey is exactly this).
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Affine-observable third moment.} Generalise to
+$t^2 \cdot \langle (a x + c)^3 \rangle_t \to \cdots$ via multilinearity
+and the existing $\langle x \rangle, \langle x^2 \rangle$ asymptotics.
+$\sim$30 extra lines. Pairs with G2 (affine-observable anharmonic
+$\kappa_3$).
+\item \emph{Higher-moment asymptotics.} The same template lifts to
+$\langle x^4 \rangle, \langle x^5 \rangle$ and beyond — but the
+sub-asymptotics for those moments are not yet exposed in laplace and
+the leading orders shift. Sequenced: would build atop a
+``\texttt{thirdMoment} via the rescaling identity'' refactor first.
+\item \emph{Update the survey.} Mark G3 closed.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+This tide skipped the deliberation step entirely. The deliberation
+was inherited verbatim from Tide 9's retrospective Follow-ups section,
+which named the closed form, the proof outline, and the line-count
+estimate. GPT-5.5~Pro contributed nothing to this tide directly —
+its load-bearing contribution was at Tide 9's deliberation, where it
+caught the Wick-coefficient error that exposed the correct
+$5\alpha/2$ term.
+
+\end{document}
