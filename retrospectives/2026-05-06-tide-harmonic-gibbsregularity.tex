@@ -1,0 +1,470 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\concrete \texttt{GibbsRegularity} for the harmonic Gibbs}
+\author{Daniel Murfet}
+\date{6 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This retrospective records Tide step 10, the second tide of the day,
+which provides a concrete \texttt{GibbsRegularity} instance for the
+1D harmonic potential $L(x) = (\lambda/2)x^2$ with the linear
+perturbation $A(x) = x$ on $\mathbb{R}$ ($\lambda, t > 0$). The
+instance unlocks threepoint's \emph{derivative} theorems --- the FDT,
+cross-susceptibility, and flow equation --- for the harmonic case,
+transforming them from parameterised lemmas (conditional on a
+hypothesis bundle) into theorems about the harmonic Gibbs measure
+proper. The formalisation took 265 lines of Lean in a new file
+\texttt{Laplace/OneD/HarmonicGibbsRegularity.lean}, with zero
+\texttt{sorry} / \texttt{axiom} / \texttt{native\_decide}, and landed
+in a single session. The single decisive contribution from the
+GPT-5.5~Pro deliberation was a strategic pivot away from the
+expected dominated-convergence approach
+(\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_*}) toward a
+\emph{closed-form} proof of the partition function for all $h$,
+which sidesteps the differentiation-under-the-integral machinery
+entirely and produces a stronger primitive theorem as a free side
+effect.
+\end{abstract}
+
+\section{Setting}
+
+The kappa3-harmonic tide (Tide 5) and the anharmonic-$\kappa_3$ tide
+(Tide 9) both deliberately avoided \texttt{GibbsRegularity}. The
+reason was given in Tide 5's GPT consult, quoted verbatim in that
+tide's retrospective: \emph{``\texttt{kappa3} is defined using
+\texttt{gibbsExp~...~0~...}, i.e.\ at $h = 0$. To show
+$\kappa_3(x,x,x) = 0$ you only need $\langle x \rangle = 0$,
+$\langle x^3 \rangle = 0$. You do not need the FDT differentiation
+machinery.''} Both tides therefore proved their cumulant statements
+without instantiating the regularity bundle.
+
+The cost of that decision was that threepoint's \emph{derivative}
+theorems --- the FDT
+($\partial_h \langle \varphi \rangle_h\!\restriction_{h=0}
+= -t \cdot \mathrm{Cov}(\varphi, A)$),
+the cross-susceptibility identity
+($\partial_h \mathrm{Cov}_h(\varphi, B)\!\restriction_{h=0}
+= -t \cdot \kappa_3(\varphi, A, B)$),
+and the flow equation --- remained \emph{parameterised} on the
+hypothesis bundle. They are theorems of the form ``if you give me a
+\texttt{GibbsRegularity} instance for $(L, A, t)$, here's the FDT''
+rather than ``here's the FDT for the harmonic Gibbs.''
+
+The 6~May candidates survey listed providing the harmonic instance
+as \textbf{C3}: ``the natural follow-up'' to Tide 5, with an estimated
+size of 150--250 lines. The expected approach was to apply
+Mathlib's \texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_lip}
+(or its derivative-bound variant) with a square-completion
+dominator on a neighbourhood of $h = 0$.
+
+\section{The thing formalised}
+
+The headline statement is:
+
+\begin{quote}\itshape
+For $\lambda > 0$ and $t > 0$, the triple
+$(\mu, L, A) = (\mathrm{volume},\, (\lambda/2)x^2,\, x)$ on $\mathbb{R}$
+satisfies the regularity bundle:
+\[
+  \mathtt{Threepoint.GibbsRegularity}\;
+    (\mathrm{volume})\; (\lambda/2 \cdot \square^2)\; (\mathrm{id})\; t.
+\]
+\end{quote}
+
+The Lean signature:\footnote{File:
+\texttt{Laplace/OneD/HarmonicGibbsRegularity.lean} on
+\texttt{tide/harmonic-gibbsregularity} at commit \texttt{3e95014}.}
+
+\begin{verbatim}
+theorem Threepoint.harmonic_id_gibbsRegularity
+    {lam t : R} (hlam : 0 < lam) (ht : 0 < t) :
+    Threepoint.GibbsRegularity (volume : Measure R)
+      (fun x : R => lam / 2 * x ^ 2)
+      (fun x : R => x) t
+\end{verbatim}
+
+(Writing \texttt{R} for the type of real numbers, which the Lean
+source spells \texttt{$\mathbb{R}$}.)
+
+The instance discharges three fields: strict positivity of the
+unperturbed partition, the $h = 0$ identity (a definitional
+simp-reduction), and differentiability of the partition under the
+integral at $h = 0$ with the explicit pointwise-derivative integral
+as the derivative value.
+
+The headline theorem is named in the \texttt{Threepoint} namespace
+(via the \texttt{\_root\_} prefix\footnote{Lean syntax:
+\texttt{\_root\_.Threepoint.harmonic\_id\_gibbsRegularity}.}) even
+though it lives in the laplace repo. This is consistent with the
+cross-repo architecture established by Tide~9 and recommended by GPT:
+laplace depends on threepoint, and the harmonic instance for
+threepoint's structure is naturally proven where laplace's
+asymptotic machinery is available, while remaining
+namespace-discoverable as a threepoint-side fact.
+
+\section{Proof strategy}
+
+The proof structure is shorter than the dominated-convergence
+approach would have been. The pivot to the closed-form route was
+the decisive Step~2 contribution.
+
+\paragraph{The closed form.} For any $h \in \mathbb{R}$ and
+$\lambda, t > 0$,
+\[
+  Z(h) := \int_{\mathbb{R}} e^{-t\,((\lambda/2)x^2 + h\,x)}\,dx
+  \;=\; e^{t h^2 / (2\lambda)} \sqrt{2\pi / (\lambda t)}.
+\]
+The proof is a four-step calculation:
+\begin{enumerate}
+\item \emph{Square completion}, as a pointwise identity:
+\[
+  (\lambda/2) x^2 + h\,x
+  = (\lambda/2) (x + h/\lambda)^2 - h^2 / (2\lambda).
+\]
+\item \emph{Boltzmann factor decomposition}:
+\[
+  e^{-t((\lambda/2)x^2 + h\,x)}
+  = e^{t h^2 / (2\lambda)} \cdot e^{-(t (\lambda/2)) (x + h/\lambda)^2}.
+\]
+\item \emph{Translation invariance} of Lebesgue measure
+(\texttt{integral\_add\_right\_eq\_self}, generated by
+\texttt{to\_additive} from \texttt{integral\_mul\_right\_eq\_self}):
+\[
+  \int e^{-(t (\lambda/2)) (x + h/\lambda)^2}\,dx
+  = \int e^{-(t (\lambda/2)) y^2}\,dy.
+\]
+\item \emph{Mathlib's} \texttt{integral\_gaussian} at $b = t\lambda/2$:
+\[
+  \int e^{-b y^2}\,dy = \sqrt{\pi/b}
+  \;=\; \sqrt{2\pi/(\lambda t)}.
+\]
+\end{enumerate}
+
+\paragraph{The three regularity fields, from the closed form.}
+\begin{itemize}
+\item \emph{Partition positivity.} $Z(0) = \sqrt{2\pi/(\lambda t)}$, and
+$\sqrt{\cdot}$ of a positive real is positive (\texttt{Real.sqrt\_pos}).
+
+\item \emph{The $h = 0$ identity.}
+$\int e^{-t((\lambda/2)x^2 + 0\cdot x)}\,dx
+= \int e^{-t(\lambda/2)x^2}\,dx$ by integrand congruence (the
+\texttt{0~*~x} simplifies to \texttt{0}, and \texttt{(...)~+~0~=~(...)}).
+
+\item \emph{Differentiability at $h = 0$.} The partition function in
+$h$ equals the closed-form expression
+$h \mapsto e^{t h^2/(2\lambda)} \cdot \sqrt{2\pi/(\lambda t)}$. The
+derivative of this expression at $h = 0$ is zero, since
+$\frac{d}{dh}[t h^2/(2\lambda)] = t h / \lambda$ vanishes at $h = 0$,
+and $\exp(0) \cdot 0 = 0$. The target derivative value
+$\int (-t \cdot x) e^{-(t \lambda/2) x^2}\,dx$ is also zero by
+parity. So both sides equal zero, and \texttt{HasDerivAt} closes by
+the closed-form differentiation.
+\end{itemize}
+
+The mathematical content is short. Most of the 265 lines are Lean
+plumbing: rewriting integrand lambdas, congruence lemmas, the
+\texttt{HasDerivAt.comp} chain for the closed-form derivative.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{The strategic pivot.} The pre-deliberation plan was to
+apply Mathlib's dominated-convergence theorem for differentiation
+under the integral, with a square-completion
+dominator.\footnote{The two relevant Mathlib lemmas live in
+\texttt{ParametricIntegral.lean}: one takes a Lipschitz bound, the
+other takes a derivative bound. Either suffices for the harmonic
+case.} GPT
+named this \emph{Candidate A} and replaced it with \emph{Candidate
+A$'$}: the closed-form route. The verbatim recommendation:
+
+\gptbox{Short version: I would \textbf{not} lead with dominated
+differentiation for this instance. For the concrete harmonic+linear
+case, the cleanest proof is usually: (1) prove the closed form
+$Z(h) = e^{t h^2/(2\lambda)} \sqrt{2\pi/(\lambda t)}$ by completing
+the square + translation invariance of \texttt{volume}; (2) deduce
+\texttt{partition\_pos} and \texttt{partition\_h\_zero}; (3) get
+\texttt{partition\_hasDerivAt} from the derivative of the closed
+form, and show the target integral is $0$ by oddness. \dots\ That is
+both stronger and likely shorter than the dominated proof.}
+
+The key insight is that for the harmonic Gibbs the partition
+function is computable in closed form, so there is no need to invoke
+the abstract differentiation theorem at all. The closed form is also
+a stronger primitive --- it gives the value of $Z(h)$ for all $h$,
+not just at $h = 0$ --- and is genuinely useful for downstream work
+(e.g.\ moment-generating function calculations) in a way the bare
+\texttt{GibbsRegularity} instance is not.
+
+\paragraph{The arithmetic correction.} GPT also caught a minor
+arithmetic error in the pre-deliberation Young bound: Claude wrote
+$(\lambda/2)x^2 + h\,x \ge (\lambda/4)x^2 - h^2/(2\lambda)$ when the
+correct bound is $\ge (\lambda/4)x^2 - h^2/\lambda$ (factor of two
+off in the second term). This bound becomes moot under the
+closed-form route, but is worth recording for any future tide that
+does \emph{do} dominated convergence on a non-Gaussian potential
+where the Young inequality doesn't dissolve into a closed form.
+
+\paragraph{The \texttt{conv\_lhs => ext x; rw [\dots]} non-tactic.}
+A first attempt at rewriting the integrand inside an integral via
+\texttt{conv\_lhs} failed: \texttt{ext x} doesn't dig into integral
+expressions, only into function-typed targets. The error was
+``\texttt{invalid 'ext' conv tactic, function or arrow expected:
+\(\int (x : \mathbb{R}), \dots : \mathbb{R}\)}''. The fix was to
+prove the integrand-equality at the lambda level
+($f = g$ as functions) and then \texttt{rw} the resulting integral
+equality. Roughly:
+
+\begin{verbatim}
+have h_integrand_eq : (fun x => ...) = (fun x => ...) := by
+  funext x; <ring/exp_add manipulation>
+rw [show (integral x, ...) = (integral x, ...)
+    from by rw [h_integrand_eq]]
+\end{verbatim}
+
+This is a recurring Lean idiom for ``rewrite the integrand of an
+integral'' and is worth landing in the laplace
+\texttt{CLAUDE.md}.\footnote{It is closely related to the
+``integrand-lambda gymnastics'' issue recorded in the
+anharmonic-$\kappa_3$ retrospective: when an integral's integrand is
+a complicated expression, lambda-form rewriting plus
+\texttt{integral\_congr} (or just substitution into the integral
+binding) is more robust than \texttt{conv\_lhs => ext x}.}
+
+\paragraph{\texttt{hasDerivAt\_pow} type ascription.} Mathlib's
+\texttt{hasDerivAt\_pow} is generic over the field: it takes a
+natural-number exponent and a base in any normed field $\mathbb{K}$.
+Calling it as \texttt{hasDerivAt\_pow 2 0} fails because Lean tries
+to infer $0 : \mathbb{N}$ first. The fix is to ascribe the base
+type: write \texttt{hasDerivAt\_pow 2 (0 : R)}, where \texttt{R} is
+the real-number type. Same pattern recurred several times in the
+closed-form derivative proof; documented in \texttt{CLAUDE.md} as a
+known type-ascription friction.
+
+\paragraph{\texttt{HasDerivAt.exp} for $\exp \circ g$.} The natural
+form of the chain rule for $\exp$ is \texttt{HasDerivAt.exp}, not
+\texttt{Real.hasDerivAt\_exp.comp}. The latter doesn't typecheck
+because \texttt{Real.hasDerivAt\_exp} is a $\forall x, \texttt{HasDerivAt}\dots$
+statement (a family of facts at each point), not a single
+\texttt{HasDerivAt} fact. The correct usage is
+$\texttt{h\_g.exp} : \texttt{HasDerivAt}\,(\exp \circ g)\, (\exp(g(0)) \cdot g'(0))\,0$
+when $\texttt{h\_g} : \texttt{HasDerivAt}\,g\,g'(0)\,0$. Two minutes
+of search-and-replace once located.
+
+\paragraph{Final \texttt{ring} closing a closed goal.} At the end of
+\texttt{harmonic\_linear\_partition\_eq}, the proof structure
+\texttt{congr 1; field\_simp; ring} produced ``No goals to be
+solved''. The \texttt{field\_simp} had already closed the goal, so
+the trailing \texttt{ring} was redundant. Removed it. (This is the
+``\texttt{field\_simp} sometimes closes the goal, sometimes leaves
+residue for \texttt{ring}'' inconsistency already documented in the
+laplace \texttt{CLAUDE.md}.)
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+\begin{itemize}
+\item \texttt{integral\_gaussian}: $\int_{\mathbb{R}} \exp(-b\,x^2)\,dx
+= \sqrt{\pi / b}$ for any $b \in \mathbb{R}$.
+\item Translation invariance of Lebesgue measure on
+$\mathbb{R}$.\footnote{The additive analogue (via
+\texttt{to\_additive}) of \texttt{integral\_mul\_right\_eq\_self} in
+\texttt{MeasureTheory.Group.Integral}.}
+\item \texttt{integral\_const\_mul} for pulling a constant out of an
+integral.
+\item \texttt{HasDerivAt.const\_mul}, \texttt{HasDerivAt.div\_const},
+\texttt{HasDerivAt.exp}, \texttt{HasDerivAt.mul\_const},
+\texttt{hasDerivAt\_pow}: standard \texttt{HasDerivAt}-algebra glue.
+\item \texttt{Real.sqrt\_pos}, \texttt{Real.exp\_zero},
+\texttt{Real.exp\_add}, \texttt{positivity}, \texttt{ring},
+\texttt{field\_simp}, \texttt{funext}.
+\end{itemize}
+
+\paragraph{Threepoint provided.}
+The \texttt{GibbsRegularity} structure itself.
+
+\paragraph{What was new.}
+\begin{itemize}
+\item \texttt{harmonic\_square\_completion} (private): pointwise
+identity. Three lines.
+\item \texttt{exp\_neg\_t\_harmonic\_linear\_eq} (private): pointwise
+factorisation of the Boltzmann factor. Six lines.
+\item \texttt{harmonic\_linear\_partition\_eq} (public, headline
+helper): the closed-form partition for all $h$. Twenty-five lines.
+\item \texttt{harmonic\_partition\_eq} (public): $h = 0$
+specialisation, $Z(0) = \sqrt{2\pi/(\lambda t)}$. Twenty lines.
+\item \texttt{harmonic\_partition\_pos} (public): the first
+\texttt{GibbsRegularity} field. Five lines.
+\item \texttt{integral\_eq\_zero\_of\_odd} (private): mirror of the
+helper from the harmonic-$\kappa_3$ tide. Eight lines. (Worth
+promoting to \texttt{lean-common} on this second use.)
+\item \texttt{harmonic\_integral\_neg\_t\_x\_exp\_neg\_eq\_zero}
+(public): the right-hand-side derivative integral, zero by parity.
+Six lines.
+\item \texttt{closed\_form\_hasDerivAt\_zero} (private): derivative
+of the closed-form partition at $h = 0$ is zero. Twenty-five lines
+including the chain-rule plumbing.
+\item the headline structure instance\footnote{Full name:
+\texttt{Threepoint.harmonic\_id\_gibbsRegularity}.} (public): twenty
+lines.
+\end{itemize}
+
+The mathematical content is the closed form (an elementary
+calculation) and the parity-vanishing (already proven for the same
+weighted integrand in Tide~5, but on a different exponent
+parameterisation, so re-derived). Everything else is plumbing.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \textbf{Look for closed forms before the abstract machinery.}
+The pre-deliberation plan was to apply Mathlib's
+dominated-convergence theorem; GPT's pivot to the closed-form route
+saved an estimated 80--150 lines of plumbing and produced a stronger
+primitive.
+This generalises beyond the harmonic case: \emph{whenever the
+partition or the moment integral is expressible in closed form, the
+closed form is the right primitive theorem to expose}, and the
+abstract regularity is a corollary. The dominated-convergence
+machinery is reserved for cases where no closed form is available.
+
+\item \textbf{The \texttt{conv => ext x} idiom does not work for
+integral integrands.} \texttt{conv\_lhs => ext x; rw [\dots]} fails
+inside integral expressions because \texttt{ext} expects a
+function-typed target. Workaround: prove the integrand-equality at
+the function level (via \texttt{funext}-and-manipulation) and
+\texttt{rw} the resulting integral-level equality. Worth landing in
+\texttt{CLAUDE.md} as a recurring idiom alongside the
+``Pi.add vs single-lambda'' note from earlier tides.
+
+\item \textbf{\texttt{HasDerivAt.exp}, not
+\texttt{Real.hasDerivAt\_exp.comp}.} The chain rule for $\exp \circ g$
+is \texttt{h\_g.exp}, with the value derivative
+$\exp(g(x_0)) \cdot g'(x_0)$. The pointwise
+\texttt{Real.hasDerivAt\_exp} is a $\forall x$ statement and does not
+compose directly. Document.
+
+\item \textbf{The closed-form route's stronger primitive is generic.}
+The route generalises to any potential of the form
+$L(x) = (\lambda/2) x^2 + Q(x)$ where $Q$ admits a closed-form
+$\int e^{-tQ(x)} g(x)\,dx$ in terms of standard integrals --- in
+particular to any potential whose Gibbs measure remains Gaussian after
+linear perturbation, or where the perturbation can be absorbed by
+substitution. For non-quadratic potentials (the anharmonic case from
+laplace, the bounded-prior cases, the sextic and pure-quartic from
+recent tides), no closed form for $Z(h)$ exists and the
+dominated-convergence route is the right one. Future tides that need
+\texttt{GibbsRegularity} for those cases will pay the dominated
+convergence cost.
+
+\item \textbf{Numerical sanity is sometimes not feasible, and that's
+fine.} This tide's target is structural (an instance of
+\texttt{GibbsRegularity}, a \texttt{Prop}-valued structure), not a
+numerical asymptotic. The skill's discipline says to record
+``\textsection Numerical check: not feasible: <reason>'' rather than
+fake one; that is the right call here. The closed-form derivation is
+self-verifying via \texttt{integral\_gaussian}, but it isn't a
+numerical sanity check in the same sense as the
+anharmonic-$\kappa_3$ tide's \texttt{scipy.integrate.quad}
+comparison.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Cross-susceptibility derivative theorems for the
+harmonic case.} With the regularity instance now in hand, the FDT
+and cross-susceptibility derivatives specialise concretely. The
+cross-susceptibility derivative is particularly satisfying: by Tide
+5, $\kappa_3(\varphi, x, B) = 0$ for the harmonic case, so
+\[
+  \partial_h \mathrm{Cov}_h(\varphi, B)\big|_{h=0}
+    = -t \cdot \kappa_3(\varphi, x, B) = 0
+\]
+for any $\varphi, B$ for which the relevant
+\texttt{GibbsObservable} hypotheses hold. A natural one-tide step
+would package this as a stand-alone theorem in laplace.
+
+\item \emph{\texttt{GibbsObservable} instances for monomials.} The
+companion structure \texttt{GibbsObservable} (the $\varphi$-specific
+analytic content) is also still parameterised. Concrete instances
+for $\varphi(x) = x^k$ at the harmonic potential would follow the
+same closed-form route: the perturbed numerator
+$\int x^k e^{-t((\lambda/2)x^2 + h\,x)}\,dx$ has a closed form (it's
+a derivative of $Z(h)$ in some other parameter, or a moment of the
+shifted Gaussian).
+
+\item \emph{Promotion to \texttt{lean-common}.}
+\texttt{integral\_eq\_zero\_of\_odd} has now appeared in two
+files\footnote{Once in \texttt{Threepoint/Harmonic.lean}, once
+here.} and is a self-contained generic statement. Worth promoting to
+\texttt{lean-common} as a small \texttt{Parity.lean} module on the
+next tide that needs it.
+
+\item \emph{Stronger primitive: the moment-generating function.} The
+closed form $Z(h) = e^{t h^2/(2\lambda)} \cdot \sqrt{2\pi/(\lambda
+t)}$ is, up to the $\sqrt{2\pi/(\lambda t)}$ normalisation, the
+\emph{moment-generating function} of the Gaussian with variance
+$1/(\lambda t)$. Future tides that need higher harmonic moments can
+read them off from $Z(h)$ via differentiation; this is the natural
+generic primitive to expose.
+
+\item \emph{Generalise to arbitrary at-most-linear $A$ (Candidate
+C).} The dominated-convergence route would handle this; the
+closed-form route does not, since the partition is no longer
+Gaussian for nonlinear $A$. A future tide could implement the
+dominated-convergence route for the harmonic + general $A$ case as
+a stepping-stone for non-Gaussian potentials.
+
+\item \emph{Add the new gotchas to \texttt{laplace/CLAUDE.md}.}
+Three items: the \texttt{conv\_lhs => ext x} non-applicability for
+integrals, the \texttt{HasDerivAt.exp}-not-\texttt{.comp} pattern,
+and the closed-form-first heuristic for \texttt{GibbsRegularity}
+instances.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro contributed the deliberation-stage advisory at Step~2,
+including the strategic pivot from dominated convergence to the
+closed-form route, the corrected Young bound, and the verified
+suggestion to look for \texttt{integral\_add\_right\_eq\_self} and
+\texttt{integral\_gaussian} as the load-bearing Mathlib calls. The
+full consult and the tide log itself are preserved in the patterning
+project's tide-log directory.\footnote{\texttt{sri/projects/patterning/tide-log/}\allowbreak\texttt{2026-05-06-tide-harmonic-gibbsregularity.md}
+and \texttt{gpt55\_tide\_harmonic\_gibbsregularity\_v1.md}.}
+
+The seabed for this tide spans threepoint's
+\texttt{GibbsRegularity} structure (Chris Elliott's earlier scaffold
+in \texttt{Threepoint/CrossSusceptibility.lean}), Mathlib's Gaussian
+integral and translation-invariance machinery, and the cross-repo
+dependency added by Tide~9 (laplace
+\texttt{[[require]]}-ing threepoint at commit \texttt{40398d8}).
+The present tide is the first to actually \emph{instantiate}
+threepoint's regularity bundle on a concrete potential, completing
+the loop that Tides 5 and 9 deliberately deferred.
+
+\end{document}
