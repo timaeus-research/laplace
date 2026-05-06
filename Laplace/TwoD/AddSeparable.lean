@@ -1,5 +1,5 @@
 import Laplace.Gibbs
-import Laplace.TwoD.SemiDegenerate
+import Laplace.TwoD.Basic
 
 /-!
 # Additively-separable 2D potentials
@@ -72,6 +72,28 @@ theorem partitionFunction_addSeparable_factor
     (f := fun x : ℝ => Real.exp (-(t * U x)))
     (g := fun y : ℝ => Real.exp (-(t * V y)))
 
+/-- **2D atom integrability for separable observables**: from two 1D
+weighted-integrability witnesses, build the 2D integrability of
+`f(z.1) · g(z.2) · exp(-(t · L(z)))`. Used as the generic replacement
+for the per-file `<name>_integrable_pow_pow` proofs. -/
+theorem integrable_separable_addSeparable
+    {U V : ℝ → ℝ} {t : ℝ} {f g : ℝ → ℝ}
+    (hf : Integrable (fun x : ℝ => f x * Real.exp (-(t * U x))))
+    (hg : Integrable (fun y : ℝ => g y * Real.exp (-(t * V y)))) :
+    Integrable (fun z : ℝ × ℝ =>
+      f z.1 * g z.2 * Real.exp (-(t * addSeparable U V z))) := by
+  have hprod := hf.mul_prod (g := fun y : ℝ =>
+      g y * Real.exp (-(t * V y))) hg
+  have heq : (fun z : ℝ × ℝ =>
+              (f z.1 * Real.exp (-(t * U z.1))) *
+              (g z.2 * Real.exp (-(t * V z.2)))) =
+             (fun z : ℝ × ℝ =>
+              f z.1 * g z.2 * Real.exp (-(t * addSeparable U V z))) := by
+    ext z
+    rw [exp_neg_t_addSeparable_eq_mul]
+    ring
+  rwa [heq] at hprod
+
 /-- **Separable-observable factorisation**: for an integrand `f(x) · g(y) · e^{-tL}`,
 the 2D integral factors as a product of 1D weighted integrals.
 Unconditional, for the same reason as `partitionFunction_addSeparable_factor`. -/
@@ -139,5 +161,16 @@ theorem gibbsCov_addSeparable_fst_snd_eq_zero
     rw [h, hf1, one_mul]
   rw [hExp_f, hExp_g]
   ring
+
+/-- **Mixed-power moment factorisation** (A4): for natural-number exponents,
+the 2D moment integral against an additively-separable Gibbs weight factors
+as a product of 1D moment integrals. One-line specialisation of
+`integral_separable_addSeparable` at `f = x ↦ x^m`, `g = y ↦ y^n`. -/
+theorem integral_pow_pow_addSeparable (U V : ℝ → ℝ) (t : ℝ) (m n : ℕ) :
+    (∫ z : ℝ × ℝ, z.1 ^ m * z.2 ^ n *
+        Real.exp (-(t * addSeparable U V z))) =
+      (∫ x : ℝ, x ^ m * Real.exp (-(t * U x))) *
+        (∫ y : ℝ, y ^ n * Real.exp (-(t * V y))) :=
+  integral_separable_addSeparable U V t (fun x => x ^ m) (fun y => y ^ n)
 
 end Laplace.TwoD

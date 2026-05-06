@@ -1,6 +1,7 @@
 import Laplace.Gibbs
 import Laplace.OneD.Quartic
-import Laplace.TwoD.SemiDegenerate
+import Laplace.TwoD.Basic
+import Laplace.TwoD.AddSeparable
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.MeasureTheory.Measure.Prod
 
@@ -251,27 +252,17 @@ theorem gibbsExpectation_snd_sq {t : ℝ} (ht : 0 < t) :
 /-! ## Integrability lemmas -/
 
 /-- 2D atom integrability: `z.1^m · z.2^n · exp(-(t · pureQuarticPotential z))`
-on `ℝ × ℝ`. -/
+on `ℝ × ℝ`. Application of `integrable_separable_addSeparable` via the bridge. -/
 private theorem pureQuartic_integrable_pow_pow (m n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable
       (fun z : ℝ × ℝ =>
         z.1 ^ m * z.2 ^ n *
         Real.exp (-(t * pureQuarticPotential z))) := by
-  have hq1 := Laplace.OneD.quartic_integrable_pow_pot m ht
-  have hq2 := Laplace.OneD.quartic_integrable_pow_pot n ht
-  -- Factor the integrand into (x part) * (y part) and apply Integrable.mul_prod.
-  have hprod := hq1.mul_prod (g := fun y : ℝ => y ^ n *
-      Real.exp (-(t * Laplace.OneD.quarticPotential y))) hq2
-  have heq : (fun z : ℝ × ℝ =>
-              (z.1 ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential z.1))) *
-              (z.2 ^ n * Real.exp (-(t * Laplace.OneD.quarticPotential z.2)))) =
-             (fun z : ℝ × ℝ =>
-              z.1 ^ m * z.2 ^ n *
-              Real.exp (-(t * pureQuarticPotential z))) := by
-    ext z
-    rw [exp_neg_t_pureQuartic_eq_mul]
-    ring
-  rwa [heq] at hprod
+  simp only [pureQuarticPotential_eq_addSeparable]
+  exact integrable_separable_addSeparable
+    (f := fun x => x ^ m) (g := fun y => y ^ n)
+    (Laplace.OneD.quartic_integrable_pow_pot m ht)
+    (Laplace.OneD.quartic_integrable_pow_pot n ht)
 
 /-! ## Headline theorem: affine covariance -/
 

@@ -1,6 +1,8 @@
 import Laplace.Gibbs
 import Laplace.OneD.Quartic
 import Laplace.OneD.Harmonic
+import Laplace.TwoD.Basic
+import Laplace.TwoD.AddSeparable
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.MeasureTheory.Measure.Prod
 
@@ -47,22 +49,6 @@ Tide step 2, formalised on `tide/2d-semi-degenerate` (branched off
 open Real MeasureTheory Set
 
 namespace Laplace.TwoD
-
-/-! ## Thin 2D Gibbs wrappers -/
-
-/-- Partition function of the 2D Gibbs measure `exp(-t · L(z)) dz` on `ℝ × ℝ`. -/
-noncomputable def partitionFunction (L : ℝ × ℝ → ℝ) (t : ℝ) : ℝ :=
-  ∫ z : ℝ × ℝ, Real.exp (-(t * L z))
-
-/-- Gibbs expectation `⟨φ⟩_t = (1/Z(t)) · ∫ φ(z) exp(-t L(z)) dz`. -/
-noncomputable def gibbsExpectation (L : ℝ × ℝ → ℝ) (t : ℝ) (φ : ℝ × ℝ → ℝ) : ℝ :=
-  (∫ z : ℝ × ℝ, φ z * Real.exp (-(t * L z))) / partitionFunction L t
-
-/-- Gibbs covariance `Cov_t[φ, ψ] = ⟨φψ⟩_t − ⟨φ⟩_t ⟨ψ⟩_t`. -/
-noncomputable def gibbsCov
-    (L : ℝ × ℝ → ℝ) (t : ℝ) (φ ψ : ℝ × ℝ → ℝ) : ℝ :=
-  gibbsExpectation L t (fun z => φ z * ψ z)
-    - gibbsExpectation L t φ * gibbsExpectation L t ψ
 
 /-! ## The semi-degenerate potential -/
 
@@ -284,28 +270,18 @@ private theorem harmonic_integrable_pow (n : ℕ) {lam t : ℝ} (hlam : 0 < lam)
   rwa [heq] at hraw
 
 /-- 2D atom integrability: `z.1^m · z.2^n · exp(-(t · semiDegeneratePotential lam z))`
-on `ℝ × ℝ`. -/
+on `ℝ × ℝ`. Application of `integrable_separable_addSeparable` via the bridge. -/
 private theorem semiDegenerate_integrable_pow_pow (m n : ℕ) {lam t : ℝ}
     (hlam : 0 < lam) (ht : 0 < t) :
     Integrable
       (fun z : ℝ × ℝ =>
         z.1 ^ m * z.2 ^ n *
         Real.exp (-(t * semiDegeneratePotential lam z))) := by
-  have hq := Laplace.OneD.quartic_integrable_pow_pot m ht
-  have hh := harmonic_integrable_pow n hlam ht
-  -- Factor the integrand into (x part) * (y part) and apply Integrable.mul_prod.
-  have hprod := hq.mul_prod (g := fun y : ℝ => y ^ n *
-      Real.exp (-(t * Laplace.OneD.harmonicPotential lam y))) hh
-  have heq : (fun z : ℝ × ℝ =>
-              (z.1 ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential z.1))) *
-              (z.2 ^ n * Real.exp (-(t * Laplace.OneD.harmonicPotential lam z.2)))) =
-             (fun z : ℝ × ℝ =>
-              z.1 ^ m * z.2 ^ n *
-              Real.exp (-(t * semiDegeneratePotential lam z))) := by
-    ext z
-    rw [exp_neg_t_semiDegenerate_eq_mul]
-    ring
-  rwa [heq] at hprod
+  simp only [semiDegeneratePotential_eq_addSeparable]
+  exact integrable_separable_addSeparable
+    (f := fun x => x ^ m) (g := fun y => y ^ n)
+    (Laplace.OneD.quartic_integrable_pow_pot m ht)
+    (harmonic_integrable_pow n hlam ht)
 
 /-! ## Headline theorem: affine covariance -/
 
