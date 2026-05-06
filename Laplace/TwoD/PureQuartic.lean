@@ -65,35 +65,38 @@ noncomputable def pureQuarticPotential : ℝ × ℝ → ℝ :=
 
 /-! ## Boltzmann factor decomposition -/
 
+/-! ## Bridge to the additively-separable abstraction -/
+
+/-- The pure-quartic 2D potential is an additively-separable potential
+with both marginals equal to the 1D quartic. -/
+@[simp] lemma pureQuarticPotential_eq_addSeparable :
+    pureQuarticPotential =
+      addSeparable Laplace.OneD.quarticPotential Laplace.OneD.quarticPotential := by
+  funext z
+  simp only [pureQuarticPotential_apply, addSeparable_apply,
+    Laplace.OneD.quarticPotential_apply]
+
 /-- The Boltzmann factor for `L(x,y) = x⁴/24 + y⁴/24` factorises as a product
-of quartic factors in `x` and `y`. -/
+of quartic factors in `x` and `y`. Corollary of `exp_neg_t_addSeparable_eq_mul`
+via the bridge above. -/
 lemma exp_neg_t_pureQuartic_eq_mul (t : ℝ) (z : ℝ × ℝ) :
     Real.exp (-(t * pureQuarticPotential z)) =
       Real.exp (-(t * Laplace.OneD.quarticPotential z.1)) *
       Real.exp (-(t * Laplace.OneD.quarticPotential z.2)) := by
-  rw [pureQuarticPotential_apply, Laplace.OneD.quarticPotential_apply,
-      Laplace.OneD.quarticPotential_apply]
-  rw [show -(t * (z.1 ^ 4 / 24 + z.2 ^ 4 / 24)) =
-        -(t * (z.1 ^ 4 / 24)) + -(t * (z.2 ^ 4 / 24)) from by ring]
-  exact Real.exp_add _ _
+  rw [pureQuarticPotential_eq_addSeparable]
+  exact exp_neg_t_addSeparable_eq_mul _ _ t z
 
 /-! ## Partition function factorisation -/
 
 /-- The 2D partition function factorises into the square of the 1D quartic
-partition function. -/
+partition function. Application of `partitionFunction_addSeparable_factor`
+via the bridge. -/
 theorem partitionFunction_factor (t : ℝ) :
     partitionFunction pureQuarticPotential t =
       Laplace.partitionFunction Laplace.OneD.quarticPotential t *
       Laplace.partitionFunction Laplace.OneD.quarticPotential t := by
-  unfold partitionFunction Laplace.partitionFunction
-  rw [show (fun z : ℝ × ℝ => Real.exp (-(t * pureQuarticPotential z))) =
-        (fun z : ℝ × ℝ =>
-          Real.exp (-(t * Laplace.OneD.quarticPotential z.1)) *
-          Real.exp (-(t * Laplace.OneD.quarticPotential z.2))) from by
-        funext z; exact exp_neg_t_pureQuartic_eq_mul t z]
-  exact MeasureTheory.integral_prod_mul
-    (f := fun x : ℝ => Real.exp (-(t * Laplace.OneD.quarticPotential x)))
-    (g := fun y : ℝ => Real.exp (-(t * Laplace.OneD.quarticPotential y)))
+  rw [pureQuarticPotential_eq_addSeparable]
+  exact partitionFunction_addSeparable_factor _ _ _
 
 /-- Closed form for the partition function:
 `Z_2D(t) = ((1/2) · (24/t)^{1/4} · Γ(1/4))²`. -/
@@ -114,23 +117,15 @@ theorem partitionFunction_pos {t : ℝ} (ht : 0 < t) :
 
 /-- The 2D moment integral of a separable monomial `z.1^m · z.2^n` against
 the pure-quartic Gibbs weight factorises into the product of 1D moment
-integrals. -/
+integrals. Application of `integral_separable_addSeparable` at
+`f = fun x ↦ x^m`, `g = fun y ↦ y^n` via the bridge. -/
 theorem integral_pow_pow_factor (t : ℝ) (m n : ℕ) :
     (∫ z : ℝ × ℝ, z.1 ^ m * z.2 ^ n *
         Real.exp (-(t * pureQuarticPotential z))) =
       (∫ x : ℝ, x ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential x))) *
       (∫ y : ℝ, y ^ n * Real.exp (-(t * Laplace.OneD.quarticPotential y))) := by
-  rw [show (fun z : ℝ × ℝ => z.1 ^ m * z.2 ^ n *
-            Real.exp (-(t * pureQuarticPotential z))) =
-        (fun z : ℝ × ℝ =>
-          (z.1 ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential z.1))) *
-          (z.2 ^ n * Real.exp (-(t * Laplace.OneD.quarticPotential z.2)))) from by
-        funext z
-        rw [exp_neg_t_pureQuartic_eq_mul t z]
-        ring]
-  exact MeasureTheory.integral_prod_mul
-    (f := fun x : ℝ => x ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential x)))
-    (g := fun y : ℝ => y ^ n * Real.exp (-(t * Laplace.OneD.quarticPotential y)))
+  simp only [pureQuarticPotential_eq_addSeparable]
+  exact integral_separable_addSeparable _ _ _ (fun x => x ^ m) (fun y => y ^ n)
 
 /-! ## Specialised moments needed for affine covariance -/
 
