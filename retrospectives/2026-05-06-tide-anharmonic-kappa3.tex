@@ -1,0 +1,499 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\$\kappa_3$ asymptotic for the anharmonic Gibbs}
+\author{Daniel Murfet}
+\date{6 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This retrospective records the first \emph{cross-repo} Tide-loop
+excursion: a single theorem stitching together the abstract $\kappa_3$
+framework from \texttt{timaeus-research/threepoint} and the concrete
+anharmonic asymptotic machinery from \texttt{timaeus-research/laplace},
+and proving that for the 1D anharmonic potential
+$L(x) = (\lambda/2)x^2 + (\alpha/6)x^3 + (\gamma/24)x^4$ with
+$\lambda, \gamma > 0$ and the discriminant condition $\alpha^2 < 3\lambda\gamma$,
+the third cumulant of the linear observable in all three slots admits
+the leading asymptotic
+$t^2 \kappa_3(x, x, x) \to -\alpha/\lambda^3$. The formalisation took
+325 lines of Lean in a new file \texttt{Laplace/OneD/AnharmonicKappa3.lean},
+with zero \texttt{sorry} / \texttt{axiom} / \texttt{native\_decide}, and
+landed in a single session. The decisive contributions of the
+deliberation step were a numerical sanity check that caught a
+miscomputed Wick coefficient (Claude wrote $\langle u^6 \rangle_0 \cdot \alpha/6 = 3\alpha/2$
+when it is in fact $5\alpha/2$), and an architectural recommendation
+from GPT-5.5~Pro to add \texttt{threepoint} as a Lake dependency of
+\texttt{laplace}, keeping the dependency direction
+generic-to-analytic. The headline result is the actual cross-susceptibility
+identity the threepoint paper was written for: the cumulant
+$\kappa_3$ at leading order is non-zero precisely because the cubic
+perturbation breaks the Gaussian parity that makes the harmonic case
+trivially zero.
+\end{abstract}
+
+\section{Setting}
+
+The threepoint repository, after Tide~5 (kappa3-harmonic), instantiated
+its abstract $\kappa_3$ framework on the harmonic Gibbs measure and
+proved the trivial vanishing
+$\kappa_3(x, x, x) = 0$ by parity. That tide deliberately avoided the
+\texttt{GibbsRegularity} hypothesis bundle\footnote{It bundles partition
+positivity, differentiability of the unperturbed partition at $h = 0$,
+and the integral-of-derivative identities. Required for the FDT and
+cross-susceptibility \emph{derivative} theorems but not for value-at-zero
+identities.} because $\kappa_3$ is defined at $h = 0$, and at the
+harmonic level every term in the cumulant expansion contains an odd-power
+Gaussian moment.
+
+The Tide~5 retrospective flagged the natural next step as
+``$\kappa_3$ for the anharmonic'': the cubic term $(\alpha/6)x^3$ in
+the anharmonic potential breaks parity, so $\kappa_3$ is genuinely
+non-zero, and the formalisation has to do an actual asymptotic
+calculation rather than read off Wick contractions. The candidates
+survey of 6~May 2026 listed this as \textbf{C2/F1}, a
+``substantively cross-repo bridge'' --- the formalisation lives at the
+boundary between the two seabeds.
+
+The laplace repository, by 6~May, had a long history of asymptotic
+expansions for the anharmonic Gibbs measure, headlined by
+\texttt{cov\_anharmonic\_asymptotic}\footnote{From
+\texttt{Laplace/OneD/IntegralRemainder.lean}; the original 27--29~April
+formalisation.}: the first-order asymptotic
+$\mathrm{Cov}_t[x^2, x] = -2\alpha/(\lambda^3 t^2) + o(t^{-2})$
+for the same anharmonic potential under the same discriminant condition.
+Underneath sat the rescaling identity, the J-function asymptotics, and a
+constellation of polynomial-times-Gaussian moment lemmas. The candidates
+survey noted that the moment expansions $\langle x \rangle_t,
+\langle x^2 \rangle_t, \langle x^3 \rangle_t$ ought to have leading-order
+forms that combine cleanly with $\mathrm{Cov}_t[x^2, x]$ to give the
+$\kappa_3$ asymptotic.
+
+\section{The thing formalised}
+
+The headline statement is:
+
+\begin{quote}\itshape
+For $\lambda > 0$, $\gamma > 0$, $\alpha^2 < 3\lambda\gamma$, the
+1D anharmonic potential $L(x) = (\lambda/2)x^2 + (\alpha/6)x^3 + (\gamma/24)x^4$
+on $\mathbb{R}$ against Lebesgue measure, and the linear observable
+$\varphi(x) = A(x) = B(x) = x$ in all three slots,
+\[
+  t^2 \cdot \kappa_3\!\big(\mathrm{vol}, L, x, t, x, x\big)
+  \;\longrightarrow\; -\frac{\alpha}{\lambda^3}
+  \qquad \text{as } t \to \infty.
+\]
+\end{quote}
+
+The Lean signature (in
+\texttt{Laplace/OneD/AnharmonicKappa3.lean}\footnote{Permalink:
+\texttt{Laplace/OneD/AnharmonicKappa3.lean} on
+\texttt{tide/anharmonic-kappa3} at commit \texttt{8a62893}.}):
+
+\begin{verbatim}
+theorem kappa3_anharmonic_id_id_id_asymptotic
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    Filter.Tendsto
+      (fun t : ℝ => t ^ 2 * Threepoint.kappa3 (volume : Measure ℝ)
+          (anharmonicPotential lam alpha gamma)
+          (fun x : ℝ => x) t (fun x : ℝ => x) (fun x : ℝ => x))
+      Filter.atTop
+      (nhds (-alpha / lam ^ 3))
+\end{verbatim}
+
+The discriminant condition $\alpha^2 < 3\lambda\gamma$ is the same one
+that governs the existing covariance
+asymptotic.\footnote{\texttt{cov\_anharmonic\_asymptotic} in
+\texttt{IntegralRemainder.lean}.} It ensures $L$ is globally coercive,
+so the Gibbs measure is well-defined and the Laplace asymptotic is
+dominated by $x = 0$. The hypothesis was the load-bearing correction
+from a much earlier GPT consult on the original anharmonic
+formalisation; here it is inherited unchanged.
+
+The instantiation $\varphi = A = B = x$ in all three slots of $\kappa_3$
+matches the harmonic statement from
+Tide~5:\footnote{\texttt{Threepoint.kappa3\_harmonic\_id\_id\_id\_eq\_zero}.}
+the ``id, id, id'' naming refers to all three observables, including
+the perturbation observable $A$, being the identity. (A subtle
+conceptual point caught mid-formalisation: the $A$ parameter does not
+drop out of the cumulant expansion at $h = 0$, because $A$ also appears
+as a normal observable inside terms like $\langle A \cdot B \rangle \cdot \langle \varphi \rangle$.
+See \S\ref{sec:roadblocks}.)
+
+\section{Proof strategy}\label{sec:strategy}
+
+The proof factors through a polynomial identity in the moments and
+three asymptotic theorems already proven in laplace. The chain of
+reasoning is short enough to write out:
+
+\paragraph{The algebraic identity.} For any measure and any potential,
+\[
+  \kappa_3(x, x, x)
+  \;=\; \mathrm{Cov}[x^2, x] - 2 \langle x^2 \rangle \langle x \rangle + 2 \langle x \rangle^3.
+\]
+Verification by expansion: $\mathrm{Cov}[x^2, x] = \langle x^3 \rangle - \langle x^2 \rangle \langle x \rangle$,
+so the right-hand side is
+$\langle x^3 \rangle - \langle x^2 \rangle \langle x \rangle - 2 \langle x^2 \rangle \langle x \rangle + 2 \langle x \rangle^3
+= \langle x^3 \rangle - 3 \langle x^2 \rangle \langle x \rangle + 2 \langle x \rangle^3 = \kappa_3(x, x, x)$.
+This is a pure ring identity in the three moments; in Lean it is one
+\texttt{ring} call after expanding \texttt{gibbsCov}.
+
+\paragraph{The three asymptotics.} All three exist as user-facing
+theorems in laplace's integral-remainder module.\footnote{Path:
+\texttt{Laplace/OneD/IntegralRemainder.lean}. See
+\texttt{retrospective.tex} (\textsection 6--7) for the originals.}
+\begin{itemize}
+\item \texttt{cov\_anharmonic\_asymptotic}: $t^2 \cdot \mathrm{Cov}_t[x^2, x] \to -2\alpha/\lambda^3$.
+\item \texttt{mean\_anharmonic\_asymptotic}: $t \cdot \langle x \rangle_t \to -\alpha/(2\lambda^2)$.
+\item \texttt{cov\_self\_anharmonic\_asymptotic}: $t \cdot \mathrm{Var}[x]_t \to 1/\lambda$
+(stated as $\mathrm{Cov}_t[x, x]$, i.e.\ the variance).
+\end{itemize}
+
+\paragraph{One small new asymptotic.} The bridge needs $t \cdot \langle x^2 \rangle_t \to 1/\lambda$,
+which is not directly stated in laplace but follows from the existing
+variance and mean asymptotics via $\langle x^2 \rangle = \mathrm{Var}[x] + \langle x \rangle^2$.
+The mean-square term $\langle x \rangle^2$ is $O(1/t^2)$ (since $t \cdot \langle x \rangle$
+is bounded), so $t \cdot \langle x \rangle^2$ is $O(1/t) \to 0$; combine
+with $t \cdot \mathrm{Var}[x] \to 1/\lambda$ via \texttt{Tendsto.add}.
+This is packaged as \texttt{secondMoment\_anharmonic\_asymptotic}, ~25
+lines, exposed at the top level for downstream reuse.
+
+\paragraph{Combining.} The headline theorem unfolds the seven
+\texttt{Threepoint.gibbsExp~...~0} terms inside $\kappa_3$ to
+\texttt{Laplace.gibbsExpectation} (one bridging lemma; see
+\S\ref{sec:roadblocks}), applies the algebraic identity, and combines
+the three asymptotics via \texttt{Tendsto.add}, \texttt{Tendsto.mul},
+and \texttt{Tendsto.const\_mul}. The terminal limit-value computation
+is one \texttt{field\_simp + ring}:
+\[
+  -\tfrac{2\alpha}{\lambda^3} - 2 \cdot \tfrac{1}{\lambda} \cdot \big(-\tfrac{\alpha}{2\lambda^2}\big) + 0
+  \;=\; -\tfrac{2\alpha}{\lambda^3} + \tfrac{\alpha}{\lambda^3}
+  \;=\; -\tfrac{\alpha}{\lambda^3}.
+\]
+The mathematical content is roughly 30~lines; the rest of the 325-line
+file is the four bridging lemmas and the \texttt{Tendsto}-algebra
+plumbing.
+
+\section{Roadblocks and resolutions}\label{sec:roadblocks}
+
+\paragraph{The miscomputed Wick coefficient.} Pre-deliberation Claude
+calculated
+\[
+  \langle x^3 \rangle_t \approx -\tfrac{3\alpha}{2 \lambda^3 t^2},
+\]
+which gives a $\kappa_3$ leading order of $0 \cdot t^{-2} + O(t^{-3})$
+--- a vanishing claim. The actual coefficient is
+$5\alpha/(2\lambda^3 t^2)$, because $\langle u^6 \rangle_0 = 5!! = 15$
+in the rescaled Gaussian, giving the prefactor $15/6 = 5/2$ rather than
+$3/2$. The leading-order $\kappa_3$ is then $-\alpha/\lambda^3 \cdot t^{-2}$,
+\emph{not} zero.
+
+The error was caught \emph{before} the GPT consult by running a small
+\texttt{scipy.integrate.quad} sanity check\footnote{Saved at
+\texttt{sri/projects/patterning/staging/anharmonic-kappa3-numerics.py}.}
+at $\lambda = 1, \alpha = 0.5, \gamma = 1$ and $t \in \{4, 8, \dots, 256\}$.
+The numerical $\kappa_3 \cdot t^2$ converges to $-0.495$, matching the
+corrected prediction $-\alpha/\lambda^3 = -0.5$ to four significant
+figures. GPT-5.5~Pro independently arrived at the same correction with
+the same $5/2$ vs.\ $3/2$ diagnosis, which gave a high-confidence
+double-check before any Lean was attempted.
+
+\gptbox{Candidate A is not correct. The leading $t^{-2}$ term of
+$\kappa_3(x,x,x)$ does not vanish. The correct leading asymptotic is
+$\kappa_3(x,x,x) \sim -\alpha/\lambda^3 \cdot t^{-2}$. \dots\
+You wrote $\langle x^3\rangle_t = -\frac{3\alpha}{2\lambda^3} t^{-2}
++ o(t^{-2})$, but the correct leading term is
+$\langle x^3\rangle_t = -\frac{5\alpha}{2\lambda^3} t^{-2} + o(t^{-2})$.}
+
+The lesson generalises: \emph{always run the numerical sanity check
+before the GPT consult, even when the Lean machinery is mostly already
+in place}. The skill's discipline anticipates this; the Wick coefficient
+trap is a concrete instance.
+
+\paragraph{The architectural question.} The candidates survey listed
+three options for where the new theorem should live: in threepoint
+(re-deriving the anharmonic asymptotics inline), in laplace (with a
+local copy of $\kappa_3$ to avoid the cross-repo dependency), or with
+laplace adding a \texttt{[[require]]} on threepoint. GPT-5.5~Pro
+recommended the third unambiguously:
+
+\gptbox{\textbf{Put the theorem in \texttt{laplace}, and make
+\texttt{laplace} depend on \texttt{threepoint} if feasible.} Reason:
+\texttt{threepoint} owns the generic cumulant notion. \texttt{laplace}
+owns the anharmonic asymptotic machinery. So the natural layering is
+generic $\to$ analytic application, i.e.\ \texttt{laplace} imports
+\texttt{threepoint}, not the other way around.}
+
+The dependency was added by editing the lakefile\footnote{Add a
+\texttt{[[require]]} block with \texttt{name = "Threepoint"},
+\texttt{git = "..."}, \texttt{rev = "40398d8"}, then run
+\texttt{lake update Threepoint}.} of laplace to point at threepoint at
+a fixed commit. The threepoint repository builds in $\sim$30~s on first
+import, $\sim$8~s incrementally, and shares laplace's Mathlib v4.29.0
+pin. Setup took about three minutes of wall-clock; the build took the
+rest.
+
+\paragraph{The $A$-parameter snag.} An early version of the unfolding
+lemma left the perturbation observable $A$ abstract\footnote{Concretely,
+\texttt{Threepoint.kappa3 volume L A t (fun x => x) (fun x => x)} with
+generic $A$.} and tried to prove that this equals
+$\langle x^3 \rangle - 3 \langle x^2 \rangle \langle x \rangle + 2 \langle x \rangle^3$.
+This is wrong: the $A$ parameter is not just the perturbation observable
+that drops out at $h = 0$; it also appears as a normal observable
+inside terms like $\langle A B \rangle \langle \varphi \rangle$ in the
+$\kappa_3$ expansion. The fix was to set $A = (\mathrm{fun}\ x \to x)$
+explicitly --- which is what the harmonic instantiation in
+threepoint\footnote{\texttt{Threepoint.kappa3\_harmonic\_id\_id\_id\_eq\_zero}.}
+does too; the ``id, id, id'' naming refers to all three slots,
+perturbation observable included. With $A = (\mathrm{fun}\ x \to x)$,
+the $A$ contributions in the expansion become further $\langle x \rangle$
+factors and the polynomial identity goes through.
+
+\paragraph{Rewriting under the integrand lambda.} The unfolding lemma
+converts seven perturbed-Gibbs-expectation
+terms\footnote{\texttt{Threepoint.gibbsExp~...~0} for each of the seven
+$\kappa_3$ summands.} to laplace's \texttt{gibbsExpectation}. After
+unfolding the cumulant, the integrand lambdas appear with a
+beta-redex,\footnote{Concretely:
+\texttt{(fun x => x) w * A w * (fun x => x) w} and similar.} not
+already canonicalised to $w$ form. Two failed approaches: rewriting
+via the bridge lemma directly\footnote{\texttt{rw} with the bridging
+lemma \texttt{threepoint\_gibbsExp\_volume\_zero\_eq}; failed because
+the goal had already been auto-converted into the ratio-of-integrals
+form.}; and rewriting the integrand shape via a function-extensionality
+lemma\footnote{\texttt{rw [h\_cube]} with
+\texttt{h\_cube : (fun w => w * w * w) = (fun w => w \^{} 3)}; failed
+because the integrand inside the integral was inlined, not in lambda
+form.}. The fix: keep the bridge lemma's RHS in
+\texttt{gibbsExpectation} form (don't unfold past it), and match the
+integrand-lambda shape including the beta-redex literally:
+
+\begin{verbatim}
+have h_cube : (fun w => (fun x => x) w * (fun x => x) w
+                * (fun x => x) w) = (fun w => w ^ 3) := by
+  funext w; ring
+\end{verbatim}
+
+This is the kind of friction the laplace \texttt{CLAUDE.md} should
+record; added to the followups.
+
+\paragraph{The \texttt{nhds (\ldots)} congruence shuffle.} Three places
+in the proof construct a \texttt{Tendsto} via \texttt{Tendsto.mul} or
+\texttt{Tendsto.add} and arrive at a limit value like
+\texttt{nhds (1/lam + 0)} or \texttt{nhds (2 * C * C * 0)}, which
+Lean does \emph{not} simplify to \texttt{nhds (1/lam)} or
+\texttt{nhds 0} automatically. The fix is a one-line
+\texttt{have h\_lim\_eq : \ldots = \ldots := by ring} followed by
+\texttt{rw [h\_lim\_eq] at h\_prod}. Three instances; documented.
+
+\paragraph{Mathlib name gotcha for $1/t \to 0$.} The expected name does
+not exist;\footnote{Searched-for: \texttt{tendsto\_one\_div\_atTop\_nhds\_zero}.
+Actual: \texttt{tendsto\_inv\_atTop\_zero} (uses $x^{-1}$ rather than
+$1/x$).} the bridge is
+\verb|by simp only [one_div]; exact tendsto_inv_atTop_zero|.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+\begin{itemize}
+\item \texttt{tendsto\_inv\_atTop\_zero}: $1/t \to 0$ as $t \to \infty$
+(after a \texttt{one\_div} rewrite).
+\item \texttt{Tendsto.mul}, \texttt{Tendsto.add}, \texttt{Tendsto.const\_mul},
+\texttt{Tendsto.congr'}, \texttt{tendsto\_const\_nhds}: standard
+\texttt{Tendsto}-algebra glue.
+\item \texttt{Filter.eventually\_gt\_atTop}: ``eventually $t > 0$''
+under \texttt{atTop}, used to safely \texttt{field\_simp} an
+$1/t \cdot t = 1$ equality.
+\item \texttt{ring}, \texttt{field\_simp}, \texttt{funext}: the usual.
+\end{itemize}
+
+\paragraph{Threepoint provided.}
+\begin{itemize}
+\item \texttt{Threepoint.kappa3}: the abstract third cumulant, defined
+generically over a measurable space $(W, \mu)$ and a perturbed Gibbs
+expectation $\mathtt{gibbsExp}~\mu~L~A~t~h~\varphi$.
+\item \texttt{Threepoint.gibbsExp}: the perturbed Gibbs expectation,
+specialised at $h = 0$ to the unperturbed ratio of integrals.
+\end{itemize}
+
+\paragraph{Laplace provided.}
+The three asymptotics named in \S\ref{sec:strategy}, plus the original
+\texttt{anharmonicPotential}, \texttt{gibbsExpectation}, and
+\texttt{gibbsCov} definitions.
+
+\paragraph{What was new.}
+\begin{itemize}
+\item \texttt{threepoint\_gibbsExp\_volume\_zero\_eq}: bridges
+$\mathtt{Threepoint.gibbsExp\ volume\ L\ A\ t\ 0\ \varphi}
+= \mathtt{Laplace.gibbsExpectation\ L\ t\ \varphi}$. Three lines:
+unfold both, simp on the perturbation factor.
+\item \texttt{kappa3\_id\_id\_id\_unfold}: unfolds
+$\mathtt{kappa3\ volume\ L\ x\ t\ x\ x}$ to
+$\langle x^3 \rangle - 3 \langle x^2 \rangle \langle x \rangle + 2 \langle x \rangle^3$
+in laplace-side moments. Twenty lines including the integrand-lambda
+gymnastics.
+\item \texttt{kappa3\_id\_id\_id\_eq\_cov\_form}: rewrites the
+three-moment expansion in covariance form,
+$\mathrm{Cov}[x^2, x] - 2 \langle x^2 \rangle \langle x \rangle + 2 \langle x \rangle^3$.
+Pure ring after expanding \texttt{gibbsCov}; eight lines.
+\item \texttt{secondMoment\_anharmonic\_asymptotic}: the
+$t \cdot \langle x^2 \rangle \to 1/\lambda$ corollary of the existing
+mean and variance asymptotics. Forty lines including the proof that
+$\langle x \rangle \to 0$.
+\item The headline theorem itself: $\sim$80~lines of \texttt{Tendsto}
+algebra.
+\end{itemize}
+
+The mathematical content is the algebraic identity (which is
+elementary) and the limit-value calculation
+$-2\alpha/\lambda^3 + \alpha/\lambda^3 = -\alpha/\lambda^3$ (which is
+\texttt{ring}). Everything else is plumbing.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \textbf{Numerical sanity check first, GPT consult second.} The
+Wick coefficient error would have wasted multiple hours of formalisation
+if it had survived to Step~3. The 30-line numpy script took two minutes
+to write and caught the error decisively. The skill's discipline says
+to do the numerical check; the lesson here is that ``before GPT'' is
+the right time, not after.
+
+\item \textbf{Cross-repo Tide loops are tractable when the dependency
+direction is clean.} Adding \texttt{threepoint} as a Lake dependency
+of \texttt{laplace} took three minutes; the build was $\sim$30~s on
+first import. The architectural question (where does the theorem live?)
+was the only non-trivial decision, and GPT-5.5~Pro resolved it cleanly
+by appealing to the generic-to-analytic dependency direction.
+
+\item \textbf{The $A$ parameter in \texttt{Threepoint.kappa3} does not
+drop out at $h = 0$.} It also appears as a normal observable inside the
+cumulant expansion. ``id, id, id'' includes the $A$ slot, paralleling
+\texttt{Threepoint.kappa3\_harmonic\_id\_id\_id\_eq\_zero}. Worth
+landing in \texttt{Threepoint/CLAUDE.md} as a recurring trap.
+
+\item \textbf{The integrand-lambda gymnastics are a recurring laplace
+friction.} Three of the four new lemmas in this file ended up doing
+\texttt{funext w; ring} rewrites of \texttt{(fun x => x) w * \ldots} to
+$w \cdot \ldots$ to canonicalise integrand shapes. Add to
+\texttt{laplace/CLAUDE.md}: \emph{when an unfolded
+\texttt{gibbsExpectation} has \texttt{(fun x => x) w} beta-redexes in
+its integrand, match them literally in the rewrite hypotheses; do not
+expect \texttt{ring} to see through them}.
+
+\item \textbf{\texttt{nhds (a + 0)} is not \texttt{nhds a} syntactically.}
+The clean idiom is to pre-compute the simplified limit-value as a
+\texttt{have h\_lim : a + 0 = a := by ring} and \texttt{rw [h\_lim] at hSum}
+before the \texttt{congr'}. Recurs three times in this file. Worth a
+generic helper or a tactic note in \texttt{laplace/CLAUDE.md}.
+
+\item \textbf{Numerical sanity scales: a 30-line scipy script doubles
+as the closed-form expectation in the tide log.} Recording
+$\kappa_3 \cdot t^2 \approx -0.495$ at $t = 256, \lambda = 1, \alpha = 0.5$
+in the tide log gives the closed-form expectation; running the same
+script at the same parameters during the formalisation gives the
+sanity check; the agreement to four significant figures is the
+post-formalisation cross-check. Three uses of one artefact.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Strict-improvement: the $\langle x^3 \rangle_t$ asymptotic
+as a corollary.} GPT noted that with the moment expansions exposed,
+$t^2 \langle x^3 \rangle_t \to -5\alpha/(2\lambda^3)$ is a $\sim$5-line
+corollary of $\mathrm{Cov}[x^2, x] = \langle x^3 \rangle - \langle x^2 \rangle \langle x \rangle$
+plus the existing asymptotics. Worth packaging as
+\texttt{thirdMoment\_anharmonic\_asymptotic} for downstream consistency
+and as a user-facing version of an asymptotic that currently exists
+only inside intermediate proofs.
+
+\item \emph{Strict-improvement: the same theorem for affine observables
+(scalar-multiple in each slot).} Generalise from $(\varphi, A, B) = (x, x, x)$
+to $(b\,x, a\,x, c\,x)$. Multilinearity of $\kappa_3$ extracts the
+factor $abc$, and the same parity / asymptotic arguments apply. About
+40~lines on top of the present file. Parallels \emph{Candidate A$'$}
+from the Tide~5 retrospective.
+
+\item \emph{Next-order asymptotic.} The $t^{-3}$ correction to
+$\kappa_3(x, x, x)$ has an explicit constant $C(\lambda, \alpha, \gamma)$
+that requires the moment expansions to one higher order. Substantially
+larger than the present tide; would benefit from first packaging the
+mean and second-moment expansions to one more order in
+\texttt{IntegralRemainder.lean}.
+
+\item \emph{Promote the algebraic identity to threepoint.} Currently
+\texttt{kappa3\_id\_id\_id\_eq\_cov\_form} is private to laplace. If a
+second use materialises (e.g.\ a $\kappa_3$ asymptotic on the
+quartic-with-cubic potential, or a different choice of three identical
+observables), promote it to a small \texttt{Threepoint/Algebra.lean}
+file. The eight-line proof transfers verbatim.
+
+\item \emph{The lean-common promotion candidate.} The
+``$\langle x^2 \rangle = \mathrm{Var}[x] + \langle x \rangle^2$ at the
+moment-asymptotic level'' construction inside the second-moment helper
+is generic --- it works for any potential where the variance and mean
+asymptotics are given. Worth a generic helper\footnote{Tentative name:
+\texttt{secondMoment\_eq\_var\_plus\_mean\_sq\_tendsto}.} in
+\texttt{lean-common} once a second use materialises.
+
+\item \emph{Tag the threepoint paper with \texttt{\textbackslash leanref}.}
+The threepoint paper currently has no \texttt{\textbackslash leanref}
+tags pointing at this result. Once the next non-trivial threepoint
+formalisation lands, do a one-pass tagging consistent with the laplace
+primer setup.
+
+\item \emph{Add the new gotchas to \texttt{laplace/CLAUDE.md}.} Three
+items: the \texttt{nhds (a + 0)} normalisation pattern, the
+integrand-lambda \texttt{(fun x => x) w} matching idiom, and the
+``$A$ does not drop out at $h = 0$'' note for cross-repo $\kappa_3$ work.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro contributed the deliberation-stage advisory at Step~2,
+including the independent rederivation of the corrected $5\alpha/2$
+Wick coefficient, the architectural recommendation to layer
+\texttt{laplace} on top of \texttt{threepoint}, and the cleanest
+algebraic-shortcut form of the proof. The full consult and the tide log
+itself (with candidate drafts, vote, numerical check, and
+result) are preserved in the patterning project's tide-log
+directory.\footnote{\texttt{sri/projects/patterning/tide-log/}\allowbreak\texttt{2026-05-06-tide-anharmonic-kappa3.md}
+and \texttt{gpt55\_tide\_anharmonic\_kappa3\_v1.md}.}
+
+The seabed for this tide spans the original few-day laplace
+formalisation (whose anharmonic covariance theorem and multivariate
+machinery were the load-bearing prior
+work\footnote{\texttt{cov\_anharmonic\_asymptotic} from
+\texttt{retrospective.tex} and the multivariate sharp track from
+\texttt{retrospective2.tex}.}) and the threepoint scaffold from Tide~5
+(whose harmonic-$\kappa_3$
+theorem\footnote{\texttt{kappa3\_harmonic\_id\_id\_id\_eq\_zero}.} gave
+the proof template and the ``id, id, id'' naming convention). The
+present tide is small only because so much was already in place.
+
+\end{document}

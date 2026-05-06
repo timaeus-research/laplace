@@ -14,5 +14,10 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.29.0"
 
+[[require]]
+name = "Threepoint"
+git = "https://github.com/timaeus-research/threepoint"
+rev = "40398d8"
+
 [[lean_lib]]
 name = "Laplace"
