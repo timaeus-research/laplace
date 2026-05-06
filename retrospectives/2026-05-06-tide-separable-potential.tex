@@ -1,0 +1,337 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{≠}{\ensuremath{\ne}}
+\newunicodechar{≤}{\ensuremath{\le}}
+
+\setlength{\emergencystretch}{3em}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{Separable-potential factorisation infrastructure}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{6 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A single Tide-loop excursion in the \texttt{laplace} seabed, exposing
+the additively-separable factorisation pattern that the existing
+\texttt{SemiDegenerate.lean} (harmonic + quartic) and
+\texttt{PureQuartic.lean} (quartic + quartic) both re-derive case by
+case. The new module\footnote{Module:
+\texttt{Laplace.TwoD.AddSeparable}.} adds 156 lines of Lean to the
+seabed, with five generic theorems: a definition, the Boltzmann
+decomposition, partition-function factorisation, separable-observable
+factorisation, separable-Gibbs-expectation factorisation, and the
+mixed-covariance vanishing $\mathrm{Cov}[f \otimes 1,\, 1 \otimes g] =
+0$. Zero \texttt{sorry}, zero \texttt{axiom}, zero
+\texttt{native\_decide}; clean diagnostics on first compile. The
+interesting moves were upstream: GPT-5.5 Pro flagged a wrong covariance
+formula in the candidate set (the cross-mean terms
+$(a_1 b_2 + a_2 b_1) \cdot \langle x \rangle_U \cdot \langle y \rangle_V$
+actually cancel under separable Gibbs, never appear in the final
+covariance), and recommended a tighter set of hypotheses on the
+partition-factorisation that the Bochner unconditional form would not
+have caught.
+\end{abstract}
+
+\section{Setting}
+
+This is the first ``infrastructure abstraction'' Tide step in the
+\texttt{laplace} seabed: it does not extend the formalised territory
+outward by adding a new headline theorem, but factors the existing
+shoreline by extracting a shared template from two parallel files. Both
+\texttt{SemiDegenerate.lean} (harmonic + quartic, 514 lines) and
+\texttt{PureQuartic.lean} (quartic + quartic, 478 lines) carry a
+structurally identical proof skeleton: define a 2D potential as a sum,
+prove the Boltzmann factor decomposes as a product, apply Mathlib's
+\texttt{integral\_prod\_mul} to factor the partition function, then
+expand to closed form via the 1D pieces.
+
+The Tide step abstracts that template once for any
+$L(x, y) = U(x) + V(y)$. Future 2D potentials (notably the
+quartic--sextic mixed and any subsequent monomial--monomial pair)
+specialise rather than copy-paste-rewrite. The deferred-but-cost-positive
+refactor was identified at the end of the 2D pure-quartic
+retrospective\footnote{\texttt{lean/laplace/retrospectives/2026-05-02-tide-2d-pure-quartic.tex},
+\textsection Lessons.} as the next abstraction worth lifting; the 6 May
+candidates survey lifted it to candidate A3 and recommended it as the
+high-yield refactor pick of the post-Tide-10 batch. The user picked
+A3 directly from the survey digest.
+
+The seabed was \texttt{main} at \texttt{1e3802a} (the merge of Tide 11,
+\texttt{harmonic-gibbsregularity}); the new branch is
+\texttt{tide/separable-potential}, off \texttt{main} (no chain needed
+this time --- all prior tides are merged).
+
+\section{The thing formalised}
+
+For any pair of potentials $U, V : \mathbb{R} \to \mathbb{R}$, the
+additively-separable 2D potential is $L(x, y) = U(x) + V(y)$. The
+module exposes five theorems, of which the headline two are:
+
+\begin{quote}\itshape
+Under integrability of each marginal Boltzmann weight,
+\[
+  Z_{2D}(t) \;=\; Z_U(t) \cdot Z_V(t)
+\]
+where $Z_{2D}(t) = \int e^{-tL(x,y)}\,dx\,dy$ and $Z_U(t) = \int
+e^{-tU(x)}\,dx$, $Z_V(t) = \int e^{-tV(y)}\,dy$. For separable
+observables $\varphi(x, y) = f(x)$, $\psi(x, y) = g(y)$, when both
+1D partition functions are nonzero,
+\[
+  \mathrm{Cov}_{2D, t}[\varphi, \psi] \;=\; 0.
+\]
+\end{quote}
+
+\noindent The Lean signatures (abbreviated; full file at
+\texttt{Laplace/TwoD/AddSeparable.lean}):
+
+\begin{verbatim}
+noncomputable def addSeparable (U V : ℝ → ℝ) : ℝ × ℝ → ℝ :=
+  fun z ↦ U z.1 + V z.2
+
+theorem partitionFunction_addSeparable_factor
+    {U V : ℝ → ℝ} {t : ℝ}
+    (hU : Integrable (fun x ↦ Real.exp (-(t * U x))))
+    (hV : Integrable (fun y ↦ Real.exp (-(t * V y)))) :
+    partitionFunction (addSeparable U V) t =
+      Laplace.partitionFunction U t * Laplace.partitionFunction V t
+
+theorem integral_separable_addSeparable
+    {U V : ℝ → ℝ} {t : ℝ} (f g : ℝ → ℝ)
+    (hf : Integrable (fun x ↦ f x * Real.exp (-(t * U x))))
+    (hg : Integrable (fun y ↦ g y * Real.exp (-(t * V y)))) :
+    (∫ z : ℝ × ℝ, f z.1 * g z.2 * Real.exp (-(t * addSeparable U V z))) =
+      (∫ x, f x * Real.exp (-(t * U x))) * (∫ y, g y * Real.exp (-(t * V y)))
+
+theorem gibbsCov_addSeparable_fst_snd_eq_zero
+    {U V : ℝ → ℝ} {t : ℝ} (f g : ℝ → ℝ)
+    (hZU_ne : Laplace.partitionFunction U t ≠ 0)
+    (hZV_ne : Laplace.partitionFunction V t ≠ 0)
+    (hU : Integrable ...)  (hV : Integrable ...)
+    (hf : Integrable ...)  (hg : Integrable ...) :
+    gibbsCov (addSeparable U V) t (fun z ↦ f z.1) (fun z ↦ g z.2) = 0
+\end{verbatim}
+
+The mixed-covariance vanishing is the structural payoff of separability:
+under a product Gibbs measure, the covariance between an observable
+that depends only on the first coordinate and one that depends only on
+the second is identically zero. This is the lemma that the existing
+\texttt{cov\_affine\_*} theorems implicitly use when they observe that
+the $a_1 b_2$ and $a_2 b_1$ cross terms drop out.
+
+Numerical sanity: not feasible (structural identities, not specific
+numerical values). The seabed's existing 2D files have already
+validated the concrete instances numerically.
+
+\section{Proof strategy}
+
+All four non-trivial theorems pivot on a single Mathlib lemma:
+
+\begin{quote}\itshape
+$\int_{\mathbb{R}^2} f(z_1)\, g(z_2)\, d(\mu \times \nu)
+\;=\; \big(\int f\, d\mu\big) \cdot \big(\int g\, d\nu\big)$.
+\end{quote}
+
+This is \texttt{MeasureTheory.integral\_prod\_mul} in Mathlib, and it
+is unconditional: when either factor is non-integrable the equation
+holds with both sides equal to $0$ by Bochner convention. After the
+Boltzmann decomposition $e^{-t(U(z_1) + V(z_2))} = e^{-t U(z_1)} \cdot
+e^{-t V(z_2)}$ via \texttt{Real.exp\_add}, all of partition,
+integral-of-separable-observable, and Gibbs-expectation factorisations
+are one application of \texttt{integral\_prod\_mul} away.
+
+The mixed-covariance corollary is the only real proof in the file:
+$\mathrm{Cov}[\varphi, \psi] = \langle \varphi \psi \rangle - \langle
+\varphi \rangle \langle \psi \rangle$. The first term factors via the
+expectation lemma at $(f, g)$. The second term factors as $\langle f
+\rangle_U \cdot 1 \cdot 1 \cdot \langle g \rangle_V$, after applying the
+expectation lemma to each of $\varphi = f \otimes 1$ and $\psi = 1
+\otimes g$ separately and using
+\texttt{Laplace.gibbsExpectation\_const} to collapse the constant
+factors. Then the two products are equal and \texttt{ring} closes.
+
+The proof of the constant-factor collapse is a four-line $\beta$-eta
+gymnastics: the helper expects an observable of the form $f(z) = h(z_1) \cdot
+k(z_2)$, and we want to apply it at $k = 1$ to get $\varphi = f \otimes 1
+= f(z_1) \cdot 1$, then rewrite $f(z_1) \cdot 1 = f(z_1)$. The
+\texttt{simpa using hV} pattern handles the integrability witness for
+$1 \cdot e^{-t V(y)}$ via \texttt{one\_mul}.
+
+\section{Roadblocks and resolutions}
+
+The deliberation surfaced two issues; the formalisation surfaced one.
+
+\paragraph{GPT correction on Candidate B's covariance formula.}
+My v1 statement of the affine-covariance template (Candidate B) had:
+\[
+  \mathrm{Cov}_t[a_1 x + a_2 y + c,\, b_1 x + b_2 y + d]
+  = a_1 b_1 \mathrm{Var}_U + a_2 b_2 \mathrm{Var}_V
+  + (a_1 b_2 + a_2 b_1) \langle x \rangle_U \langle y \rangle_V.
+\]
+GPT pointed out that under a separable Gibbs law, the cross terms
+$\langle x \rangle_U \langle y \rangle_V$ \emph{cancel} between the
+joint expectation $\langle (a_1 x + a_2 y + c)(b_1 x + b_2 y + d)
+\rangle$ and the product of marginals $\langle a_1 x + a_2 y + c
+\rangle \cdot \langle b_1 x + b_2 y + d \rangle$. The clean formula is
+just
+\[
+  \mathrm{Cov}_t[\varphi, \psi]
+  = a_1 b_1 \cdot \mathrm{Cov}_U[x, x] + a_2 b_2 \cdot \mathrm{Cov}_V[y, y].
+\]
+This wasn't load-bearing for the present tide (we deferred B), but it
+matters for the follow-up tide that picks up the affine template. The
+existing files' \texttt{cov\_affine\_*} theorems do the cancellation
+inline in their algebraic-manipulation step; the abstracted version
+states the clean formula directly.
+
+\paragraph{Hypothesis form on `partitionFunction_addSeparable_factor`.}
+My v1 had the partition factorisation \emph{unconditional}, relying on
+the Bochner convention that $\int = 0$ on non-integrable functions
+makes the equation true even without integrability. GPT recommended
+adding integrability hypotheses anyway, on the grounds that downstream
+files always have integrability witnesses available and the
+hypothesis-bearing form is the one the reader naturally chains
+through:
+
+\gptbox{For Bochner $\int$, unconditional factorisation statements
+are brittle because the theorem you will actually use is typically
+the integrable version. \ldots~Downstream files will naturally be
+able to apply [the hypothesis-bearing form], since for concrete
+potentials they already prove finiteness/integrability of the
+partition function.}
+
+The committed file takes the integrability hypotheses but doesn't use
+them in the proof body, since \texttt{integral\_prod\_mul} is
+unconditional. The hypotheses are documentation / API discipline rather
+than load-bearing. This is unusual but defensible: a future Mathlib
+refactor that adds integrability hypotheses to \texttt{integral\_prod\_mul}
+would not break our callers.
+
+\paragraph{Concurrent-agent branch race (recurrence).}
+A parallel session created its own tide branch off \texttt{main}
+while my work was in flight, and \texttt{git commit} fired against
+\emph{that} branch's checkout instead of the intended
+\texttt{tide/separable-potential}. The fix was a two-line
+cleanup\footnote{\texttt{git branch -f tide/separable-potential <SHA>}
+to relocate the commit, then \texttt{git branch -f <other-tide> main}
+to restore the parallel session's branch baseline.}. This is the
+third such recurrence (2D pure-quartic, sextic-moments, now
+separable-potential). The structural fix --- run each Tide agent in
+its own \texttt{git worktree} --- remains a recommended skill change
+rather than landed infrastructure. (After the cleanup, this Tide
+moved to a worktree at \texttt{lean/laplace-separable/} for the
+remainder of the run; the parallel-session contention disappeared
+immediately.)
+
+Beyond these three, no proof-side roadblocks. All five theorems
+typechecked clean on the first compile.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.} \texttt{MeasureTheory.integral\_prod\_mul}
+was the load-bearing lemma; the four non-trivial theorems all reduce to
+one application of it after a \texttt{Real.exp\_add} for the Boltzmann
+decomposition. The 1D Gibbs framework
+(\texttt{Laplace.partitionFunction}, \texttt{Laplace.gibbsExpectation},
+\texttt{Laplace.gibbsCov}, \texttt{Laplace.gibbsExpectation\_const})
+came from the seabed's own \texttt{Laplace.Gibbs} module. The 2D Gibbs
+framework (the \texttt{Laplace.TwoD.}-prefixed wrappers used in
+\texttt{SemiDegenerate.lean}) came from the same.
+
+\paragraph{What was new in this tide.} The five theorems in the new
+module: the additively-separable potential definition, its Boltzmann
+decomposition lemma, partition-function factorisation,
+separable-observable integral factorisation,
+Gibbs-expectation-of-separable factorisation, and the mixed-covariance
+vanishing. None of the five theorems introduces new mathematical
+content; the value is in stating the abstraction once with the right
+hypothesis package, where ``the right'' was determined by GPT-5.5 Pro's
+critique of the v1 hypotheses.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{The deliberation step pays for itself when the candidate
+is structural.} For algebraic / asymptotic Tides (kappa3-harmonic,
+anharmonic-kappa3) GPT's contribution is usually a strategic move
+inside the proof. For an abstraction Tide like this one, GPT's
+contribution is on the \emph{statement} --- specifically, the
+hypothesis package and the algebraic cancellation that hides in the
+naive form. Both interventions saved follow-up cycles in the
+formalisation.
+
+\item \emph{Unconditional factorisation theorems are an anti-pattern
+even when valid.} \texttt{integral\_prod\_mul} is unconditional in
+Mathlib, but stating our partition factorisation unconditionally
+would have invited downstream confusion. Take integrability
+hypotheses anyway, even if the proof body doesn't use them; they
+document the API and survive future Mathlib tightening.
+
+\item \emph{Concurrent Tide agents continue to need filesystem
+isolation.} Three tides have now been bitten by the
+shared-checkout branch race. This recurrence makes the case for
+landing \texttt{git worktree} support in the Tide skill's preflight
+check rather than continuing to hand-craft the recovery dance.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Refactor the existing 2D files to use the abstraction.}
+Both \texttt{SemiDegenerate.lean} and \texttt{PureQuartic.lean} carry
+\texttt{partitionFunction\_factor} and \texttt{integral\_pow\_pow\_factor}
+lemmas that are now corollaries of the new module's theorems at
+concrete $(U, V)$ choices. The follow-up tide replaces $\sim$30 lines
+per file with $\sim$5-line specialisations.
+
+\item \emph{Generic Gibbs-covariance algebra.} GPT recommended a small
+covariance API in the base Gibbs files: \texttt{gibbsCov\_symm},
+\texttt{gibbsCov\_add\_left/right}, \texttt{gibbsCov\_const\_left/right},
+\texttt{gibbsCov\_smul\_left/right}. Once those land, the affine
+covariance template is short and pleasant, and Candidate B from this
+deliberation becomes essentially trivial.
+
+\item \emph{Mixed-power 2D moments (A4 from the 6 May survey).} Now a
+one-line corollary of \texttt{integral\_separable\_addSeparable} at
+$f = x \mapsto x^m$, $g = y \mapsto y^n$. Pairs naturally with the
+``even-monomial template'' tide (A1).
+
+\item \emph{Quartic--sextic mixed potential (A2 from the 6 May survey).}
+Now a specialisation of the new abstraction with closed-form
+$U = $ quartic and $V = $ sextic. The deferred 2D Tide.
+
+\item \emph{Affine-covariance template (Candidate B / future tide).}
+Picking up the deferred piece, ideally after the generic Gibbs-covariance
+algebra lands. The clean statement (no surviving cross-mean terms) is
+in this retrospective for the future tide to consume.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro contributed both deliberation-stage corrections that
+shaped the final theorem statements: the Bochner-integrability
+hypothesis discipline and the algebraic cancellation in the affine
+covariance formula. The full consult and the tide log are preserved in
+the primer project's tide-log directory under the SRI repo.
+
+\end{document}
