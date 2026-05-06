@@ -320,6 +320,68 @@ theorem kappa3_anharmonic_id_id_id_asymptotic
     kappa3_id_id_id_eq_cov_form]
   ring
 
+/-! ## Third-moment asymptotic (corollary of Tide 9 +
+`secondMoment_anharmonic_asymptotic`)
+
+Packaging the third moment `⟨x³⟩_t` of the anharmonic Gibbs measure
+as a user-facing asymptotic, deferred from Tide 9. Identity:
+`⟨x³⟩ = Cov[x², x] + ⟨x²⟩·⟨x⟩` (from `gibbsCov` definition). Combined
+with the existing asymptotics, the third moment falls out:
+`t²·⟨x³⟩ = t²·Cov[x²,x] + (t·⟨x²⟩)·(t·⟨x⟩)
+       → -2α/λ³ + (1/λ)·(-α/(2λ²)) = -5α/(2λ³)`. -/
+
+/-- **Third-moment asymptotic of the anharmonic Gibbs measure.**
+
+For `L(x) = (λ/2)x² + (α/6)x³ + (γ/24)x⁴` with `0 < λ, γ` and
+discriminant condition `α² < 3λγ`,
+`t² · ⟨x³⟩_t → -5α/(2λ³)` as `t → ∞`.
+
+Strict-improvement strict-corollary of Tide 9: the third moment
+expansion was internal to the proof of `cov_anharmonic_asymptotic`
+but is here packaged as a user-facing theorem. -/
+theorem thirdMoment_anharmonic_asymptotic
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    Filter.Tendsto
+      (fun t : ℝ => t ^ 2 * Laplace.gibbsExpectation
+          (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x ^ 3))
+      Filter.atTop
+      (nhds (-(5 * alpha) / (2 * lam ^ 3))) := by
+  have hCov := cov_anharmonic_asymptotic hlam hgamma hdisc
+  have hM2 := secondMoment_anharmonic_asymptotic hlam hgamma hdisc
+  have hM1 := mean_anharmonic_asymptotic hlam hgamma hdisc
+  -- t² · ⟨x³⟩ = t² · Cov[x², x] + (t · ⟨x²⟩) · (t · ⟨x⟩).
+  -- Cov[x², x] = ⟨x²·x⟩ - ⟨x²⟩·⟨x⟩ = ⟨x³⟩ - ⟨x²⟩·⟨x⟩, so
+  -- ⟨x³⟩ = Cov[x², x] + ⟨x²⟩·⟨x⟩.
+  have h_sum :
+      Filter.Tendsto
+        (fun t : ℝ =>
+          t ^ 2 * Laplace.gibbsCov
+              (anharmonicPotential lam alpha gamma) t
+              (fun x : ℝ => x ^ 2) (fun x : ℝ => x)
+          + (t * Laplace.gibbsExpectation
+              (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x ^ 2))
+            * (t * Laplace.gibbsExpectation
+              (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x)))
+        Filter.atTop
+        (nhds (-2 * alpha / lam ^ 3 + (1 / lam) * (-alpha / (2 * lam ^ 2)))) :=
+    hCov.add (hM2.mul hM1)
+  -- The limit value simplifies: -2α/λ³ + (1/λ)·(-α/(2λ²)) = -5α/(2λ³).
+  have h_lim_eq : -2 * alpha / lam ^ 3 + (1 / lam) * (-alpha / (2 * lam ^ 2))
+      = -(5 * alpha) / (2 * lam ^ 3) := by
+    field_simp
+    ring
+  rw [h_lim_eq] at h_sum
+  -- Bridge the function: t² · ⟨x³⟩ matches t² · Cov[x², x] + (t·⟨x²⟩)·(t·⟨x⟩).
+  apply h_sum.congr'
+  filter_upwards with t
+  -- Cov[x², x] = ⟨x²·x⟩ - ⟨x²⟩·⟨x⟩ = ⟨x³⟩ - ⟨x²⟩·⟨x⟩
+  unfold Laplace.gibbsCov
+  have h_x2_x : (fun x : ℝ => x ^ 2 * x) = (fun x : ℝ => x ^ 3) := by
+    funext x; ring
+  rw [h_x2_x]
+  ring
+
 end OneD
 
 end Laplace
