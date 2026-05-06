@@ -142,7 +142,7 @@ lemma dominator_integrable_pow {c : ℝ} (hc : 0 < c) (k : ℕ) :
     rwa [heq] at h
   have h_norm := h_xk.norm
   refine h_norm.congr (Filter.Eventually.of_forall fun x => ?_)
-  show ‖x ^ k * Real.exp (-c * x ^ 2)‖ = |x| ^ k * Real.exp (-c * x ^ 2)
+  change ‖x ^ k * Real.exp (-c * x ^ 2)‖ = |x| ^ k * Real.exp (-c * x ^ 2)
   rw [Real.norm_eq_abs, abs_mul, abs_pow, Real.abs_exp]
 
 /-- Pointwise domination bound for the perturbed integrand. For `lam > 0`,
@@ -282,8 +282,7 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_pow
   · -- First conjunct: h = 0 numerator identity.
     -- Note: GibbsObservable uses `L w + 0 * A w` with our `L = (λ/2)·²` and `A = id`,
     -- which expands to `(λ/2)·x² + 0 · x = (λ/2)·x²`. Match against our primitive.
-    have := harmonic_perturbed_numerator_zero_eq_pow lam t k
-    simpa using this
+    exact harmonic_perturbed_numerator_zero_eq_pow lam t k
   · -- Second conjunct: HasDerivAt of the perturbed numerator at h = 0.
     -- Apply `hasDerivAt_integral_of_dominated_loc_of_deriv_le` with:
     --   - F h x = x^k · exp(-(t · ((lam/2)·x² + h·x)))
