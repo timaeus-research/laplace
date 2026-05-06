@@ -55,12 +55,12 @@ lemma exp_neg_t_addSeparable_eq_mul (U V : ℝ → ℝ) (t : ℝ) (z : ℝ × �
       show (-(t * (U z.1 + V z.2)) : ℝ) = -(t * U z.1) + -(t * V z.2) from by ring,
       Real.exp_add]
 
-/-- **Partition-function factorisation**: under integrability of each marginal
-Boltzmann weight, `Z_2D(t) = Z_U(t) · Z_V(t)`. -/
+/-- **Partition-function factorisation**: `Z_2D(t) = Z_U(t) · Z_V(t)`.
+Unconditional: `MeasureTheory.integral_prod_mul` is unconditional, so the
+factorisation holds even when the 1D weights are not Lebesgue-integrable
+(both sides are `0` by Bochner convention in that case). -/
 theorem partitionFunction_addSeparable_factor
-    {U V : ℝ → ℝ} {t : ℝ}
-    (_hU : Integrable (fun x : ℝ => Real.exp (-(t * U x))))
-    (_hV : Integrable (fun y : ℝ => Real.exp (-(t * V y)))) :
+    (U V : ℝ → ℝ) (t : ℝ) :
     partitionFunction (addSeparable U V) t =
       Laplace.partitionFunction U t * Laplace.partitionFunction V t := by
   unfold partitionFunction Laplace.partitionFunction
@@ -73,11 +73,10 @@ theorem partitionFunction_addSeparable_factor
     (g := fun y : ℝ => Real.exp (-(t * V y)))
 
 /-- **Separable-observable factorisation**: for an integrand `f(x) · g(y) · e^{-tL}`,
-the 2D integral factors as a product of 1D weighted integrals. -/
+the 2D integral factors as a product of 1D weighted integrals.
+Unconditional, for the same reason as `partitionFunction_addSeparable_factor`. -/
 theorem integral_separable_addSeparable
-    {U V : ℝ → ℝ} {t : ℝ} (f g : ℝ → ℝ)
-    (_hf : Integrable (fun x : ℝ => f x * Real.exp (-(t * U x))))
-    (_hg : Integrable (fun y : ℝ => g y * Real.exp (-(t * V y)))) :
+    (U V : ℝ → ℝ) (t : ℝ) (f g : ℝ → ℝ) :
     (∫ z : ℝ × ℝ, f z.1 * g z.2 * Real.exp (-(t * addSeparable U V z))) =
       (∫ x : ℝ, f x * Real.exp (-(t * U x))) *
         (∫ y : ℝ, g y * Real.exp (-(t * V y))) := by
@@ -97,17 +96,13 @@ nonzero, the 2D Gibbs expectation of a separable observable factors. -/
 theorem gibbsExpectation_separable_addSeparable
     {U V : ℝ → ℝ} {t : ℝ} (f g : ℝ → ℝ)
     (hZU_ne : Laplace.partitionFunction U t ≠ 0)
-    (hZV_ne : Laplace.partitionFunction V t ≠ 0)
-    (hU : Integrable (fun x : ℝ => Real.exp (-(t * U x))))
-    (hV : Integrable (fun y : ℝ => Real.exp (-(t * V y))))
-    (hf : Integrable (fun x : ℝ => f x * Real.exp (-(t * U x))))
-    (hg : Integrable (fun y : ℝ => g y * Real.exp (-(t * V y)))) :
+    (hZV_ne : Laplace.partitionFunction V t ≠ 0) :
     gibbsExpectation (addSeparable U V) t (fun z => f z.1 * g z.2) =
       Laplace.gibbsExpectation U t f *
         Laplace.gibbsExpectation V t g := by
   unfold gibbsExpectation Laplace.gibbsExpectation
-  rw [partitionFunction_addSeparable_factor hU hV]
-  rw [integral_separable_addSeparable f g hf hg]
+  rw [partitionFunction_addSeparable_factor]
+  rw [integral_separable_addSeparable]
   field_simp
 
 /-- **Mixed-covariance vanishing**: under a product/separable Gibbs measure,
@@ -116,24 +111,17 @@ observable is zero. The structural payoff of separability. -/
 theorem gibbsCov_addSeparable_fst_snd_eq_zero
     {U V : ℝ → ℝ} {t : ℝ} (f g : ℝ → ℝ)
     (hZU_ne : Laplace.partitionFunction U t ≠ 0)
-    (hZV_ne : Laplace.partitionFunction V t ≠ 0)
-    (hU : Integrable (fun x : ℝ => Real.exp (-(t * U x))))
-    (hV : Integrable (fun y : ℝ => Real.exp (-(t * V y))))
-    (hf : Integrable (fun x : ℝ => f x * Real.exp (-(t * U x))))
-    (hg : Integrable (fun y : ℝ => g y * Real.exp (-(t * V y)))) :
+    (hZV_ne : Laplace.partitionFunction V t ≠ 0) :
     gibbsCov (addSeparable U V) t
         (fun z => f z.1) (fun z => g z.2) = 0 := by
   unfold gibbsCov
   -- Step 1: ⟨f(z.1) · g(z.2)⟩ = ⟨f⟩_U · ⟨g⟩_V (separable-observable factorisation).
-  rw [show (fun z : ℝ × ℝ => f z.1 * g z.2) =
-        (fun z : ℝ × ℝ => f z.1 * g z.2) from rfl]
-  rw [gibbsExpectation_separable_addSeparable f g hZU_ne hZV_ne hU hV hf hg]
+  rw [gibbsExpectation_separable_addSeparable f g hZU_ne hZV_ne]
   -- Step 2: ⟨f(z.1)⟩_2D = ⟨f⟩_U (collapse with g = 1).
   have hExp_f : gibbsExpectation (addSeparable U V) t (fun z => f z.1) =
       Laplace.gibbsExpectation U t f := by
     have h := gibbsExpectation_separable_addSeparable f (fun _ => (1 : ℝ))
-      hZU_ne hZV_ne hU hV hf
-      (by simpa using hV)
+      hZU_ne hZV_ne
     have hg1 : Laplace.gibbsExpectation V t (fun _ => (1 : ℝ)) = 1 :=
       Laplace.gibbsExpectation_const V t 1 hZV_ne
     rw [show (fun z : ℝ × ℝ => f z.1 * (1 : ℝ)) = (fun z : ℝ × ℝ => f z.1) from by
@@ -143,8 +131,7 @@ theorem gibbsCov_addSeparable_fst_snd_eq_zero
   have hExp_g : gibbsExpectation (addSeparable U V) t (fun z => g z.2) =
       Laplace.gibbsExpectation V t g := by
     have h := gibbsExpectation_separable_addSeparable (fun _ => (1 : ℝ)) g
-      hZU_ne hZV_ne hU hV
-      (by simpa using hU) hg
+      hZU_ne hZV_ne
     have hf1 : Laplace.gibbsExpectation U t (fun _ => (1 : ℝ)) = 1 :=
       Laplace.gibbsExpectation_const U t 1 hZU_ne
     rw [show (fun z : ℝ × ℝ => (1 : ℝ) * g z.2) = (fun z : ℝ × ℝ => g z.2) from by

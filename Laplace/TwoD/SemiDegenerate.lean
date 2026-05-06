@@ -73,39 +73,43 @@ noncomputable def semiDegeneratePotential (lam : ℝ) : ℝ × ℝ → ℝ :=
 @[simp] lemma semiDegeneratePotential_apply (lam : ℝ) (z : ℝ × ℝ) :
     semiDegeneratePotential lam z = lam / 2 * z.2 ^ 2 + z.1 ^ 4 / 24 := rfl
 
+/-! ## Bridge to the additively-separable abstraction -/
+
+/-- The semi-degenerate potential is an additively-separable potential
+with `U = quartic` and `V = harmonic`. -/
+@[simp] lemma semiDegeneratePotential_eq_addSeparable (lam : ℝ) :
+    semiDegeneratePotential lam =
+      addSeparable Laplace.OneD.quarticPotential
+        (Laplace.OneD.harmonicPotential lam) := by
+  funext z
+  simp only [semiDegeneratePotential_apply, addSeparable_apply,
+    Laplace.OneD.quarticPotential_apply]
+  unfold Laplace.OneD.harmonicPotential
+  ring
+
 /-! ## Boltzmann factor decomposition -/
 
 /-- The Boltzmann factor for `L(x,y) = (λ/2)y² + x⁴/24` factorises as a
-product of a quartic factor in `x` and a harmonic factor in `y`. -/
+product of a quartic factor in `x` and a harmonic factor in `y`. Corollary
+of `exp_neg_t_addSeparable_eq_mul` via the bridge above. -/
 lemma exp_neg_t_semiDegenerate_eq_mul (lam t : ℝ) (z : ℝ × ℝ) :
     Real.exp (-(t * semiDegeneratePotential lam z)) =
       Real.exp (-(t * Laplace.OneD.quarticPotential z.1)) *
       Real.exp (-(t * Laplace.OneD.harmonicPotential lam z.2)) := by
-  rw [semiDegeneratePotential_apply, Laplace.OneD.quarticPotential_apply]
-  unfold Laplace.OneD.harmonicPotential
-  rw [show -(t * (lam / 2 * z.2 ^ 2 + z.1 ^ 4 / 24)) =
-        -(t * (z.1 ^ 4 / 24)) + -(t * (lam / 2 * z.2 ^ 2)) from by ring]
-  exact Real.exp_add _ _
+  rw [semiDegeneratePotential_eq_addSeparable]
+  exact exp_neg_t_addSeparable_eq_mul _ _ t z
 
 /-! ## Partition function factorisation -/
 
 /-- The 2D partition function factorises into the product of the 1D
-quartic and 1D harmonic partition functions. -/
+quartic and 1D harmonic partition functions. Application of
+`partitionFunction_addSeparable_factor` via the bridge. -/
 theorem partitionFunction_factor (lam t : ℝ) :
     partitionFunction (semiDegeneratePotential lam) t =
       Laplace.partitionFunction Laplace.OneD.quarticPotential t *
       Laplace.partitionFunction (Laplace.OneD.harmonicPotential lam) t := by
-  unfold partitionFunction Laplace.partitionFunction
-  -- Decompose the Boltzmann factor pointwise.
-  rw [show (fun z : ℝ × ℝ => Real.exp (-(t * semiDegeneratePotential lam z))) =
-        (fun z : ℝ × ℝ =>
-          Real.exp (-(t * Laplace.OneD.quarticPotential z.1)) *
-          Real.exp (-(t * Laplace.OneD.harmonicPotential lam z.2))) from by
-        funext z; exact exp_neg_t_semiDegenerate_eq_mul lam t z]
-  -- Apply Fubini-style factorisation for product integrals of separable functions.
-  exact MeasureTheory.integral_prod_mul
-    (f := fun x : ℝ => Real.exp (-(t * Laplace.OneD.quarticPotential x)))
-    (g := fun y : ℝ => Real.exp (-(t * Laplace.OneD.harmonicPotential lam y)))
+  rw [semiDegeneratePotential_eq_addSeparable]
+  exact partitionFunction_addSeparable_factor _ _ _
 
 /-- Closed form for the partition function: `Z_2D(t) = (1/2)·(24/t)^{1/4}·Γ(1/4)·√(2π/(λt))`. -/
 theorem partitionFunction_closed_form {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
@@ -126,23 +130,15 @@ theorem partitionFunction_pos {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
 
 /-- The 2D moment integral of a separable monomial `z.1^m · z.2^n` against
 the semi-degenerate Gibbs weight factorises into the product of 1D
-moment integrals. -/
+moment integrals. Application of `integral_separable_addSeparable` at
+`f = fun x ↦ x^m`, `g = fun y ↦ y^n` via the bridge. -/
 theorem integral_pow_pow_factor (lam t : ℝ) (m n : ℕ) :
     (∫ z : ℝ × ℝ, z.1 ^ m * z.2 ^ n *
         Real.exp (-(t * semiDegeneratePotential lam z))) =
       (∫ x : ℝ, x ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential x))) *
       (∫ y : ℝ, y ^ n * Real.exp (-(t * Laplace.OneD.harmonicPotential lam y))) := by
-  rw [show (fun z : ℝ × ℝ => z.1 ^ m * z.2 ^ n *
-            Real.exp (-(t * semiDegeneratePotential lam z))) =
-        (fun z : ℝ × ℝ =>
-          (z.1 ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential z.1))) *
-          (z.2 ^ n * Real.exp (-(t * Laplace.OneD.harmonicPotential lam z.2)))) from by
-        funext z
-        rw [exp_neg_t_semiDegenerate_eq_mul lam t z]
-        ring]
-  exact MeasureTheory.integral_prod_mul
-    (f := fun x : ℝ => x ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential x)))
-    (g := fun y : ℝ => y ^ n * Real.exp (-(t * Laplace.OneD.harmonicPotential lam y)))
+  simp only [semiDegeneratePotential_eq_addSeparable]
+  exact integral_separable_addSeparable _ _ _ (fun x => x ^ m) (fun y => y ^ n)
 
 /-! ## Specialised moments needed for affine covariance -/
 
