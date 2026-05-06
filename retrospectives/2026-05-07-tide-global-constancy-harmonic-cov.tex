@@ -1,0 +1,420 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{₀}{\ensuremath{_0}}
+\newunicodechar{‼}{\ensuremath{!!}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{global constancy of the harmonic Gibbs covariance}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{7 May 2026}
+
+\begin{document}
+
+\sloppy
+\maketitle
+
+\begin{abstract}
+A 428-line Tide-loop excursion in the \texttt{laplace} seabed
+strengthening Tide 13's local-at-$h{=}0$ constancy of the harmonic
+Gibbs covariance to a \emph{global} closed-form identity:
+$\mathrm{Cov}_h(x,x) = 1/(\lambda t)$ for all $h \in \mathbb{R}$. The
+proof avoids the \texttt{GibbsObservable} bundle entirely (Tide~13
+needed three such hypotheses) by direct closed-form evaluation of the
+three perturbed integrals $Z_h$, $\langle x \rangle_h$,
+$\langle x^2 \rangle_h$, each via square completion plus
+translation-invariance of Lebesgue
+(\texttt{MeasureTheory.integral\_add\_right\_eq\_self}). Lives at
+\texttt{Laplace/OneD/HarmonicCovGlobalConstancy.lean} on
+branch\footnote{Branch:
+\texttt{tide/global-constancy-harmonic-cov} in laplace, commit
+\texttt{4aca7a8}.} off \texttt{main} (commit \texttt{141997c}). Zero
+\texttt{sorry}, zero \texttt{axiom}, zero \texttt{native\_decide};
+build clean. Step 2 deliberation with GPT-5.5~Pro converged on
+\emph{Candidate B$'$} on the first round; Step 3 was mechanical Lean
+bookkeeping with three small idiom frictions and no thrashing-rescue
+consult.
+\end{abstract}
+
+\section{Setting}
+
+The Susceptibility Primer's Section 4 develops the harmonic case as
+the leading-order specialisation of the Laplace expansion. Tide 5
+proved $\kappa_3$ vanishes for the linear observable $(x,x,x)$ at the
+harmonic potential; Tide~10 supplied the \texttt{GibbsRegularity}
+instance for that setup; Tide~13 composed those into the
+cross-susceptibility derivative theorem
+$\partial_h \mathrm{Cov}_h(x,x)|_{h=0} = -t \cdot \kappa_3 = 0$,
+recording the global-constancy form as a future tide candidate in the
+retrospective Follow-ups:
+
+\gptbox{Global-constancy strengthening (the runner-up). Prove
+\texttt{Threepoint.gibbsCov\,(\mathrm{volume})\,((\lambda/2)\cdot^2)\,(\mathrm{id})\,t\,h\,(\mathrm{id})\,(\mathrm{id})\,=\,1/(\lambda t)}
+for all $h$, not just locally constant at $h = 0$. Direct via
+shifted-Gaussian translation invariance plus the closed-form
+partition already in Tide~10. Avoids \texttt{GibbsObservable}
+hypotheses entirely.}
+
+This Tide implements that runner-up. The candidate qualifies as a
+Tide step under the standard heuristic: closed-form scalar answer,
+single statement, reachable from existing seabed without new
+infrastructure. Tide-pick on 7~May ranked it the top recommendation.
+
+The Step~2 deliberation\footnote{Tide log:
+\texttt{projects/primer/tide-log/2026-05-07-tide-global-constancy-harmonic-cov.md}.
+GPT-5.5~Pro consult preserved at the sibling
+\texttt{gpt55\_tide\_global\_constancy\_harmonic\_cov\_v1.md}.}
+proposed three target shapes:
+
+\begin{description}
+\item[Candidate A.] One headline equation for $\mathrm{Cov}_h$.
+\item[Candidate B.] Two named perturbed-expectation lemmas
+  ($\langle x \rangle_h{=}-h/\lambda$ and $\langle x^2\rangle_h{=}1/(\lambda t)+h^2/\lambda^2$),
+  with $\mathrm{Cov}_h$ as a 5-line corollary.
+\item[Candidate C.] An abstract \emph{translation-of-gibbsExp} lemma
+  for arbitrary integrable observables.
+\end{description}
+
+GPT recommended a hybrid: Candidate~B promoted to \emph{Candidate~B$'$}
+by adding a standalone \texttt{partitionFunction\_h\_harmonic} lemma
+on top, since the closed form $Z_h = e^{th^2/(2\lambda)}\sqrt{2\pi/(\lambda t)}$
+makes the denominator non-vanishing immediate, packages the
+square-completion step cleanly, and is reusable for free-energy /
+log-partition arguments downstream. Both parties voted B$'$. The
+numerical sanity check (six $(\lambda,t,h)$ cases, agreement to
+$\sim 10^{-14}$ relative) confirmed the closed forms before the proof
+touched Lean.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the harmonic Gibbs measure
+$\mu_{t,h}(x) \propto \exp(-t((\lambda/2)x^2 + h\,x))$ on $\mathbb{R}$
+against Lebesgue, with $\lambda, t > 0$ and any $h \in \mathbb{R}$,
+\[
+  \mathrm{Cov}_h(x, x) \;=\; \frac{1}{\lambda t}.
+\]
+The covariance is independent of the perturbation $h$ outright; not
+just at the basepoint.
+\end{quote}
+
+\noindent The Lean signature, in namespace \texttt{Laplace.OneD}:
+\begin{verbatim}
+theorem gibbsCov_h_id_id_harmonic_eq
+    {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) (h : ℝ) :
+    Threepoint.gibbsCov (volume : Measure ℝ)
+        (fun x : ℝ => lam / 2 * x ^ 2)
+        (fun x : ℝ => x) t h
+        (fun x : ℝ => x) (fun x : ℝ => x)
+      = 1 / (lam * t)
+\end{verbatim}
+
+\noindent The hypothesis list is just $\lambda, t > 0$ — no
+\texttt{GibbsObservable} bundle. This is a strict strengthening of
+Tide~13: the latter required three \texttt{GibbsObservable} hypotheses
+for $x, x^2, x^3$ to discharge differentiation under the integral, and
+delivered only the value of the derivative. The square-completion
+route bypasses both.
+
+The headline theorem is a 5-line corollary of two named perturbed
+expectations, also exported:
+\begin{verbatim}
+theorem gibbsExp_h_id_harmonic_eq  ... = -h / lam
+theorem gibbsExp_h_sq_harmonic_eq  ... = 1 / (lam * t) + h ^ 2 / lam ^ 2
+\end{verbatim}
+together with the standalone
+\begin{verbatim}
+theorem partitionFunction_h_harmonic ... =
+    Real.exp (t * h^2 / (2 * lam)) * Real.sqrt (2 * Real.pi / (lam * t))
+\end{verbatim}
+
+\section{Proof strategy}
+
+The mathematical kernel is the pointwise square-completion identity
+\[
+  \frac{\lambda}{2} x^2 + h x \;=\;
+  \frac{\lambda}{2}\Big(x + \frac{h}{\lambda}\Big)^2
+   \;-\; \frac{h^2}{2\lambda},
+\]
+which makes the perturbed Boltzmann factor a translate of the
+unperturbed one, modulo the constant $e^{th^2/(2\lambda)}$ that
+cancels in every expectation ratio:
+\[
+  e^{-t L_h(x)}
+  \;=\; e^{th^2/(2\lambda)} \cdot e^{-t (\lambda/2)(x + h/\lambda)^2}.
+\]
+The substitution $y = x + h/\lambda$ then maps the perturbed integrand
+onto the unperturbed one. Lebesgue measure on $\mathbb{R}$ is
+translation-invariant, so by Mathlib's
+\texttt{MeasureTheory.integral\_add\_right\_eq\_self} the substitution
+preserves integrals over the whole line.
+
+This collapses the three perturbed numerators (and the partition
+function $Z_h$) to integrals against $e^{-t(\lambda/2)y^2}$ of
+polynomial expressions in $y - h/\lambda$. Linearity of integration
+plus parity (Tide~10's \texttt{harmonic\_int\_pow\_odd}) plus the
+explicit second moment (Tide~10's \texttt{harmonic\_int\_pow\_even} at
+$k=1$) closes the four integrals:
+\begin{align*}
+  Z_h &= e^K Z_0, \quad &
+  \int x\, e^{-t L_h} &= -\tfrac{h}{\lambda} \cdot e^K Z_0, \\
+  \int x^2\, e^{-t L_h} &= \big(\tfrac{1}{\lambda t} + \tfrac{h^2}{\lambda^2}\big)\cdot e^K Z_0,
+\end{align*}
+where $K := th^2/(2\lambda)$ and $Z_0 := \sqrt{2\pi/(\lambda t)}$.
+The $e^K$ factor cancels:
+$\langle x \rangle_h = -h/\lambda$,
+$\langle x^2 \rangle_h = 1/(\lambda t) + h^2/\lambda^2$, and
+$\mathrm{Cov}_h = \langle x^2\rangle_h - \langle x \rangle_h^2 = 1/(\lambda t)$.
+
+The Lean file factors this into an internal helper
+\texttt{integral\_with\_perturbation\_eq\_shifted}, which takes any
+$f : \mathbb{R} \to \mathbb{R}$ and rewrites
+$\int f(x)\, e^{-tL_h(x)}\,\mathrm{d}x =
+  e^K \int f(y - h/\lambda)\, e^{-tL_0(y)}\,\mathrm{d}y$.
+Each public theorem then specialises to $f \in \{1, x, x^2\}$. The
+final $\mathrm{Cov}_h$ theorem is a 5-line algebraic corollary of the
+two perturbed-expectation lemmas via \texttt{field\_simp; ring}.
+
+The integrability witnesses for $1$, $y$, $y \cdot y$ against the
+unperturbed Gaussian are routed through Mathlib's
+\texttt{integrable\_exp\_neg\_mul\_sq},
+\texttt{integrable\_mul\_exp\_neg\_mul\_sq}, and
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} (with $s = 2$), with
+small \texttt{convert} bridges to map $\exp(-(\lambda t/2)\cdot y^2)$
+to the seabed convention $\exp(-(t \cdot (\lambda/2) y^2))$.
+
+\section{Roadblocks and resolutions}
+
+The mathematical content matched the Step~2 plan exactly, so the
+frictions in Step~3 were all Lean idiom and all small. Three concrete
+items:
+
+\paragraph{Mathlib lemma name miscalls.} The first draft used
+\texttt{integrable\_id\_mul\_exp\_neg\_mul\_sq} and
+\texttt{integrable\_pow\_mul\_exp\_neg\_mul\_sq} as integrability
+witnesses for $y \cdot e^{-by^2}$ and $y^2 \cdot e^{-by^2}$. Neither
+exists. Mathlib has \texttt{integrable\_mul\_exp\_neg\_mul\_sq} for
+the first; for the second, the existing \texttt{laplace} pattern
+(used in \texttt{Laplace/OneD/Quartic.lean} and elsewhere) is to take
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} at $s = 2$ and
+convert via \texttt{Real.rpow\_natCast}. Recording in
+\texttt{CLAUDE.md} for the next session.
+
+\paragraph{Double-factorial cast normalisation.} Tide~10's
+\texttt{harmonic\_int\_pow\_even} returns the second moment in the
+form
+\[
+  ((2k - 1)\text{!!} : \mathbb{R}) \cdot \sqrt{2\pi}
+   \cdot (\lambda t)^{-(\lceil k\rceil + 1/2)}.
+\]
+For $k = 1$ this should reduce to $1 \cdot \sqrt{2\pi} \cdot (\lambda
+t)^{-3/2}$, but the factor $((1)\text{!!} : \mathbb{R})$ does not
+reduce by \texttt{rfl} alone — \texttt{Nat.doubleFactorial 1 = 1} is
+definitional, but the cast \texttt{((1 : ℕ) : ℝ) = (1 : ℝ)} is the
+\texttt{Nat.cast\_one} lemma, not \texttt{rfl}. The fix:
+\begin{verbatim}
+have hdf : (((2 * 1 - 1 : ℕ)‼ : ℝ)) = 1 := by
+  change (((1 : ℕ) : ℝ)) = 1
+  exact Nat.cast_one
+\end{verbatim}
+The two \texttt{change} steps are definitional ($2\cdot 1 - 1 = 1$ in
+$\mathbb{N}$, then $1\text{!!} = 1$ from the definition's case
+$\texttt{| 1 => 1}$), so \texttt{change} discharges them silently;
+only \texttt{Nat.cast\_one} is needed at the end. A common micro-pitfall
+on first encounter; worth promoting to \texttt{CLAUDE.md}.
+
+\paragraph{\texttt{Pi.add} vs single-lambda for \texttt{integral\_sub} +
+\texttt{integral\_add}.} The expanded second-moment integrand is
+$(y - c)^2 g(y) = y^2 g - 2c y g + c^2 g$, integrated as
+$(\int y^2 g) - (\int 2c y g) + (\int c^2 g)$. To recombine into a
+single integral for an \texttt{integral\_congr\_ae} step, both
+\texttt{integral\_sub} and \texttt{integral\_add} must fire in
+reverse. The trap is \emph{order}: applying \texttt{[← integral\_add,
+← integral\_sub]} fails because the outer $+$ has two \emph{integrals}
+on either side, not an integral on one side and a sum-integrand on
+the other. The correct order is \texttt{[← integral\_sub …, ←
+integral\_add …]}: the inner $-$ combines first
+(yielding the single integrand $y^2 g - 2c y g$), and then the outer
+$+$ combines that with the third term. The CLAUDE.md note about
+\texttt{Pi.add} vs single-lambda is adjacent — type-ascribing the
+integrability witness to a single lambda gives Lean the right shape
+for the rewrite to fire — but the order issue is one step earlier and
+has its own gotcha.
+
+There were no thrashing-rescue GPT consults. The Step~2 deliberation
+gave the right plan; Step~3 was three friction points each fixed with
+a single edit.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.} The integrability witnesses
+(\texttt{integrable\_exp\_neg\_mul\_sq},
+\texttt{integrable\_mul\_exp\_neg\_mul\_sq},
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq}); the
+translation-invariance lemma
+\texttt{MeasureTheory.integral\_add\_right\_eq\_self} (additive form
+of \texttt{integral\_mul\_right\_eq\_self} via \texttt{to\_additive},
+firing on Lebesgue \texttt{volume} as an additive Haar measure); the
+constant-multiplication \texttt{integral\_const\_mul}; the
+sub/add-decomposition \texttt{integral\_sub} / \texttt{integral\_add};
+the rpow algebra \texttt{Real.rpow\_neg\_one}, \texttt{Real.rpow\_add},
+\texttt{Real.rpow\_natCast}, \texttt{Real.sqrt\_eq\_rpow},
+\texttt{Real.sqrt\_mul}; and \texttt{integral\_congr\_ae} for the
+pointwise rewrite.
+
+\paragraph{Laplace/Threepoint provided.} Tide~10's
+\texttt{partitionFunction\_harmonic},
+\texttt{harmonic\_int\_pow\_even} (at $k=1$), and
+\texttt{harmonic\_int\_pow\_odd} (at $k=0$). \texttt{Threepoint}'s
+definitional \texttt{gibbsExp} and \texttt{gibbsCov}.
+
+\paragraph{What was new.} The square-completion identity packaged as
+\texttt{harmonic\_h\_square\_completion} and
+\texttt{harmonic\_h\_exp\_factor}; the generic shift-of-integrand
+helper \texttt{integral\_with\_perturbation\_eq\_shifted} (taking
+$f$ as a parameter, applying square completion + translation
+invariance once); three integrability bridges
+(\texttt{integrable\_harmonic\_gauss},
+\texttt{integrable\_harmonic\_gauss\_id},
+\texttt{integrable\_harmonic\_gauss\_sq}) converting between the
+Mathlib convention \texttt{exp(-b·y²)} and the seabed convention
+\texttt{exp(-(t·(λ/2)·y²))}; three closed-form bridges
+(\texttt{harmonic\_int\_zero/first/second\_pow…}) re-expressing
+Tide~10's integrals without the
+\texttt{harmonicPotential}\,/\,\texttt{Laplace.partitionFunction}
+wrappers; and the four public theorems on top.
+
+The novelty is in the \emph{packaging}, not the mathematics. The
+square-completion proof is textbook physics; what was new was finding
+the right Mathlib lemma surface to land it in $\sim 100$ lines of
+Lean rather than $\sim 400$.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{Avoiding \texttt{GibbsObservable} bundles is sometimes the
+  better route.} Tide~13 carried three \texttt{GibbsObservable}
+  hypotheses to differentiate the covariance under the integral; the
+  square-completion route here makes the same theorem stronger
+  (global, not just basepoint) \emph{and} hypothesis-free. The
+  generalisation: when a perturbed Gaussian admits a closed-form
+  reduction to the unperturbed one, prefer evaluating the integral
+  directly to differentiating it.
+
+\item \emph{Two-pass cast normalisation for double factorials.} The
+  pattern \texttt{change ((n : ℕ) : ℝ) = …; exact Nat.cast\_one} (or
+  \texttt{Nat.cast\_succ}, etc.) handles the
+  ``definitional-on-Nat-but-not-rfl-on-real'' case cleanly. Worth
+  promoting to the laplace \texttt{CLAUDE.md} alongside the existing
+  \texttt{Pi.add} note.
+
+\item \emph{For \texttt{integral\_add}/\texttt{integral\_sub} reverse
+  rewrite chains, order matters.} Combine inner operations before
+  outer ones. The CLAUDE.md \texttt{Pi.add}-vs-single-lambda note
+  covers the integrand-shape side; this run adds the
+  combine-order side.
+
+\item \emph{Tide-shape candidates with prior GPT-deliberation rarely
+  thrash.} GPT-5.5~Pro had already named this candidate at the
+  Tide~13 retrospective deliberation; the v1 consult here was largely
+  confirmation plus the B$\to$B$'$ refinement. Step~3 was
+  mechanical. This is a data point in favour of writing follow-up
+  candidates in retrospectives \emph{with their proof outline},
+  because that work doesn't have to happen again at Step~2 of the
+  next tide.
+
+\item \emph{The shift-of-integrand helper is a candidate for
+  promotion.} \texttt{integral\_with\_perturbation\_eq\_shifted}
+  generalises beyond the harmonic case: any $L$ admitting a
+  square-completion shift would benefit. Defer until a second use.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{$\langle x^k \rangle_h$ for general $k \in \mathbb{N}$.}
+  The same shift method gives
+  $\langle x^k \rangle_h = \mathbb{E}_0[(y - h/\lambda)^k]$, which
+  expands by the binomial formula into combinations of unperturbed
+  even moments. A natural follow-up tide ($\sim$300 lines together
+  for $k \in \{1,\ldots,4\}$). Pairs with G2 / G5 in the candidates
+  survey.
+
+\item \emph{Discharge Tide~13's \texttt{GibbsObservable} hypotheses.}
+  G4 (already landed) closed three of the six required hypotheses for
+  monomial observables; the remaining three are mixed-power products
+  $x \cdot x^2, x^2 \cdot x, x \cdot x \cdot x^2$ and similar. The
+  global-constancy theorem here makes Tide~13's conditional theorem
+  redundant if these are discharged: $\partial_h \mathrm{Cov} = 0$
+  follows from $\mathrm{Cov} = \text{const}$. Worth recording but not
+  prioritising.
+
+\item \emph{The structural measure-equality framing (Candidate~C).}
+  GPT noted: at the normalised probability-measure level,
+  $\mu_h = (x \mapsto x - h/\lambda)_* \mu_0$, no scalar factor. This
+  is the right framing for higher cumulants and would unify several
+  perturbed-Gaussian theorems. Defer until a second use materialises;
+  in Lean, building \texttt{Measure.map} + \texttt{withDensity}
+  infrastructure costs more than the shift identity it proves.
+
+\item \emph{\texttt{\textbackslash leanref}-tag the primer.} The
+  primer's §3 has the centroid-shift remark
+  $\langle x \rangle_h = -h/\lambda$ and the variance-invariance
+  remark $\mathrm{Var}_h = 1/(\lambda t)$. Pin
+  \texttt{\textbackslash laplaceCommit = 4aca7a8} and tag both with
+  \texttt{\textbackslash leanref}. Ten-minute edit on a paper-side
+  branch. Pairs with K2 in the survey.
+
+\item \emph{Promote \texttt{integral\_with\_perturbation\_eq\_shifted}
+  on second use.} Currently a private helper. Second use likely from
+  the $\langle x^k \rangle_h$ tide above; at that point lift to a
+  named public theorem, possibly to \texttt{lean-common} on third use.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro contributed the deliberation-stage advisory at Step~2,
+including the B$\to$B$'$ refinement (promoting
+\texttt{partitionFunction\_h\_harmonic} to a standalone export) and
+the API guidance toward \texttt{integral\_add\_right\_eq\_self} over
+\texttt{MeasurePreserving.integral\_comp}. The full consult is
+preserved at
+\texttt{projects/primer/tide-log/gpt55\_tide\_global\_constancy\_harmonic\_cov\_v1.md}.
+
+This Tide branched off the post-G4 \texttt{main} (commit
+\texttt{141997c}) without depending on G4 directly: G4 discharged the
+\texttt{GibbsObservable} hypotheses needed for Tide~13's
+$\kappa_3$-route, while this Tide bypasses those hypotheses
+entirely. The two routes are independent paths to the same
+neighbourhood of the harmonic Gibbs theory; landing both gives the
+primer's harmonic case both an unconditional cross-susceptibility
+result and a stronger global-constancy result.
+
+\end{document}
