@@ -1,0 +1,289 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{≠}{\ensuremath{\ne}}
+
+\setlength{\emergencystretch}{3em}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{2D cleanup --- refactor through AddSeparable}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{6 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A cleanup Tide chained on top of Tide 12 (separable-potential
+abstraction). The two existing 2D files
+(\texttt{SemiDegenerate.lean}, \texttt{PureQuartic.lean}) are refactored
+to apply the new \texttt{AddSeparable} lemmas via small
+\texttt{[simp]}-tagged bridge lemmas, instead of re-deriving
+\texttt{integral\_prod\_mul} plumbing case-by-case. Net delta is
+$-22$ lines across three files (the abstraction itself shed an unused
+hypothesis package). Public theorem statements unchanged on the
+headline \texttt{cov\_affine\_*} and moment lemmas; only internal proof
+structure changes. Build green on first compile, zero
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}. The interesting
+process moves were two: a deliberate API regression on
+\texttt{AddSeparable} (drop hypotheses that Tide 12 added as
+discipline; the concrete refactor demonstrated they blocked rather
+than helped downstream callers), and a worktree-isolated tide run that
+confirmed the structural fix to the recurring concurrent-agent branch
+race.
+\end{abstract}
+
+\section{Setting}
+
+This is a cleanup Tide rather than a step outward. Tide 12 landed the
+\texttt{Laplace.TwoD.AddSeparable} module, which exposes for any
+$L(x, y) = U(x) + V(y)$ the generic factorisations
+$Z_{2D}(t) = Z_U(t) \cdot Z_V(t)$ and $\langle f \otimes g \rangle =
+\langle f \rangle_U \cdot \langle g \rangle_V$. Two existing 2D files
+(\texttt{SemiDegenerate.lean}, $L = (\lambda/2) y^2 + x^4/24$, 514
+lines; \texttt{PureQuartic.lean}, $L = x^4/24 + y^4/24$, 478 lines)
+re-derived these as case-by-case proofs. The cleanup Tide refactors
+both files to apply the abstraction's lemmas through a small
+\texttt{[simp]} bridge lemma, leaving the public theorem statements
+intact.
+
+The Tide chains on top of \texttt{tide/separable-potential} per the
+linear-chain branch-hygiene rule; the new branch is
+\texttt{tide/twod-cleanup}, off Tide 12's tip
+\texttt{725c76b}. The Tide ran in a dedicated \texttt{git worktree} at
+\texttt{lean/laplace-cleanup/} --- the first concrete application of
+the worktree-isolation fix that three prior retrospectives have
+recommended in response to the recurring concurrent-agent branch race.
+
+\section{The thing formalised}
+
+Three pieces, in order:
+
+\paragraph{1. \texttt{AddSeparable.lean} API tightening.}
+The \texttt{partitionFunction\_addSeparable\_factor} and
+\texttt{integral\_separable\_addSeparable} lemmas drop their
+integrability hypotheses, becoming unconditional (matching Mathlib's
+\texttt{integral\_prod\_mul}, which is itself unconditional). The
+\texttt{gibbsExpectation\_separable\_addSeparable} and
+\texttt{gibbsCov\_addSeparable\_fst\_snd\_eq\_zero} lemmas drop the
+weight integrability hypotheses but keep the partition-function
+nonzero hypotheses (those are load-bearing --- needed to divide).
+
+\paragraph{2. \texttt{SemiDegenerate.lean} refactor.}
+A new \texttt{[simp]}-tagged bridge lemma:
+\begin{verbatim}
+lemma semiDegeneratePotential_eq_addSeparable (lam : ℝ) :
+    semiDegeneratePotential lam =
+      addSeparable Laplace.OneD.quarticPotential
+        (Laplace.OneD.harmonicPotential lam)
+\end{verbatim}
+Then \texttt{partitionFunction\_factor} and
+\texttt{integral\_pow\_pow\_factor} become two-line proofs each:
+\begin{verbatim}
+theorem partitionFunction_factor (lam t : ℝ) : ... := by
+  rw [semiDegeneratePotential_eq_addSeparable]
+  exact partitionFunction_addSeparable_factor _ _ _
+
+theorem integral_pow_pow_factor (lam t : ℝ) (m n : ℕ) : ... := by
+  simp only [semiDegeneratePotential_eq_addSeparable]
+  exact integral_separable_addSeparable _ _ _ (fun x => x ^ m) (fun y => y ^ n)
+\end{verbatim}
+The \texttt{exp\_neg\_t\_semiDegenerate\_eq\_mul} lemma becomes a
+similar two-line corollary of
+\texttt{exp\_neg\_t\_addSeparable\_eq\_mul}.
+
+\paragraph{3. \texttt{PureQuartic.lean} refactor.}
+Mirror of step 2 with \texttt{pureQuarticPotential\_eq\_addSeparable}
+as the bridge.
+
+\paragraph{Public statements unchanged.} The \texttt{cov\_affine\_*}
+theorems and the moment lemmas
+(\texttt{gibbsExpectation\_fst}/\texttt{snd}/\texttt{fst\_mul\_snd}/\texttt{fst\_sq}/\texttt{snd\_sq})
+are unchanged in statement and continue to typecheck through the
+refactored proofs. Net delta: $-22$ lines across the three files (64
+insertions, 86 deletions).
+
+\section{Proof strategy}
+
+The cleanup pivots on two simple observations:
+
+\begin{enumerate}
+\item \textbf{The bridge lemma is \texttt{[simp]}-tagged.}
+  The semi-degenerate potential and the corresponding
+  \texttt{addSeparable} are pointwise equal as functions $\mathbb{R}
+  \times \mathbb{R} \to \mathbb{R}$. Tagging the equation
+  \texttt{[simp]} lets a single \texttt{simp only} rewrite the
+  integrand of \texttt{integral\_pow\_pow\_factor} from the named
+  potential to the \texttt{addSeparable} form, after which the
+  AddSeparable lemma applies directly.
+\item \textbf{Beta-reduction handles the lambda shapes.}
+  \texttt{integral\_separable\_addSeparable U V t f g} expects $f, g :
+  \mathbb{R} \to \mathbb{R}$. To recover the existing
+  \texttt{integral\_pow\_pow\_factor} statement, we apply at $f = (x
+  \mapsto x^m)$, $g = (y \mapsto y^n)$. Lean beta-reduces \texttt{(fun
+  x => x ^ m) z.1} to \texttt{z.1 ^ m} automatically.
+\end{enumerate}
+
+The API regression on \texttt{AddSeparable.lean} (dropping the
+integrability hypotheses) is a separate move: the underlying proof
+bodies were already unconditional via Mathlib's
+\texttt{integral\_prod\_mul}; the hypotheses had been added in Tide 12
+as documentation discipline, not load-bearing. The cleanup Tide's
+concrete downstream demonstrates that the hypothesis-bearing form
+\emph{blocks} the bridge-rewrite, since the existing
+\texttt{partitionFunction\_factor} statements have no positivity
+hypotheses to source the integrability witnesses from. The simplest
+fix is to drop the discipline.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{The hypothesis package on \texttt{AddSeparable} blocks the
+refactor.}
+Tide 12 added \texttt{Integrable} hypotheses to
+\texttt{partitionFunction\_addSeparable\_factor} and friends, on
+GPT-5.5 Pro's recommendation:
+
+\gptbox{For Bochner $\int$, unconditional factorisation statements are
+brittle because the theorem you will actually use is typically the
+integrable version. \ldots~Downstream files will naturally be able to
+apply [the hypothesis-bearing form], since for concrete potentials
+they already prove finiteness/integrability of the partition function.}
+
+The cleanup Tide is exactly that downstream, and the prediction did
+not hold. The existing \texttt{partitionFunction\_factor} in both 2D
+files is \emph{unconditional} (no positivity hypotheses, just $\lambda$
+and $t$ as plain reals), so the wrapper has no integrability witnesses
+to supply. The choice was either to strengthen the wrapper statements
+with positivity (a public API change in two files), or to drop the
+hypotheses on the abstraction's lemmas (a public API regression in
+one file). Both Claude and GPT (in the deliberation for this Tide)
+agreed that dropping the abstraction's hypotheses is the smaller
+change; the discipline argument applies in principle, but in practice
+the unconditional form is what callers want.
+
+This is worth recording as a Tide-skill calibration: ``Bochner
+discipline'' arguments are theoretically right but pragmatically lose
+to ``match the existing caller's signature shape'', at least until
+Mathlib itself decides to tighten its unconditional integral-prod
+lemmas.
+
+\paragraph{Worktree isolation: structural fix lands and works.}
+This Tide is the first to run in a dedicated \texttt{git worktree}.
+\texttt{lean/laplace-cleanup/} was created from
+\texttt{tide/separable-potential}'s tip and held its own
+\texttt{HEAD}/index/working-tree throughout the run. The parallel
+sessions in \texttt{lean/laplace/} (which had branched onto
+\texttt{tide/bounded-prior-continuous-test} and back to \texttt{main}
+several times during this session) did not interfere. Three previous
+retrospectives recommended this fix; this is the first concrete
+confirmation. Worth lifting to a Tide-skill preflight step.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.} Nothing new. The cleanup adds no new
+Mathlib API consumption.
+
+\paragraph{The seabed (Tide 12) provided.}
+The five generic factorisation lemmas of the
+\texttt{AddSeparable} module --- the definition, the Boltzmann
+decomposition, partition factorisation, integral factorisation,
+expectation factorisation, and the mixed-covariance vanishing.
+
+\paragraph{What was new in this Tide.}
+The two \texttt{[simp]} bridge lemmas\footnote{Names:
+\texttt{semiDegeneratePotential\_eq\_addSeparable} and
+\texttt{pureQuarticPotential\_eq\_addSeparable}.} identifying the
+existing 2D potentials as instances of \texttt{addSeparable}.
+Everything else is either deletion or a syntactic re-targeting of
+existing proof bodies through the bridge.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{Worktree isolation is the right structural fix.} Three
+prior retrospectives recommended this; one Tide actually used it; it
+worked. Promote to a Tide-skill preflight (``run the Tide in a
+\texttt{git worktree} when concurrent sessions exist on the seabed
+repo'').
+
+\item \emph{The Bochner-discipline argument loses on first contact
+with downstream.} Tide 12 added \texttt{Integrable} hypotheses to
+factorisation lemmas as documentation discipline. Tide 13 (this one)
+removed them, because they blocked the cleanest refactor of two
+unconditional callers. The right convention for Mathlib-shaped
+factorisation lemmas with unconditional underlying API
+(\texttt{integral\_prod\_mul}) is: stay unconditional unless a
+specific caller's needs strengthen the case. ``Discipline'' alone is
+not enough; concrete usage is.
+
+\item \emph{Cleanup Tides have higher leverage than they look.}
+$-22$ lines is small. But the cleanup makes A2 (quartic--sextic mixed)
+and A4 (mixed even-power 2D moments) one-line specialisations rather
+than file-sized re-derivations. The next Tide that adds a 2D
+potential pays a constant cost, not a file cost.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Quartic--sextic mixed potential (A2 from the 6 May
+survey).} Now a clean specialisation: define
+\texttt{quarticSexticPotential = addSeparable quarticPotential
+sexticPotential}, supply a one-line bridge, and the partition + moment
+factorisations come for free.
+
+\item \emph{Mixed even-power 2D moments (A4).} One-line corollary of
+the integral-factorisation lemma at $f = x \mapsto x^m,\, g = y
+\mapsto y^n$, in either of the two refactored files (or generically
+over \texttt{addSeparable}).
+
+\item \emph{Promote 2D atom integrability to \texttt{AddSeparable.lean}.}
+Both files still carry private \texttt{<name>\_integrable\_pow\_pow}
+witnesses built via \texttt{Integrable.mul\_prod} from two 1D
+witnesses. A generic
+\texttt{integrable\_separable\_addSeparable} in
+\texttt{AddSeparable.lean} would shrink each downstream file by
+another $\sim$30 lines. GPT flagged this as a strong optional add-on;
+deferred to a follow-up Tide.
+
+\item \emph{Generic \texttt{gibbsCov} API (orthogonal future Tide).}
+Still the natural infrastructure Tide for the affine-covariance
+Candidate B from Tide 12's deliberation\footnote{Tentative names:
+\texttt{gibbsCov\_symm}, \texttt{gibbsCov\_add\_left},
+\texttt{gibbsCov\_const\_left}, \texttt{gibbsCov\_smul\_left} and
+right-hand variants.}. Independent of this cleanup but unblocked by it.
+
+\item \emph{Promote worktree isolation to the Tide skill's preflight.}
+The skill currently flags the concurrent-agent race as a recurring
+roadblock but does not prescribe a fix. Three retrospectives have
+named the same fix; one Tide has now shown it works. Worth landing.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro's deliberation contributed both the recommendation to
+keep public theorem statements unchanged (rejecting Candidate B's
+definitional refactor) and the architectural decision to drop the
+integrability hypotheses on the AddSeparable lemmas rather than
+strengthen the wrapper statements with positivity. The full consult is
+preserved in the primer project's tide-log directory under the SRI
+repo.
+
+\end{document}
