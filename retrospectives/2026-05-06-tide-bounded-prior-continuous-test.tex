@@ -1,0 +1,392 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{√}{\ensuremath{\sqrt{\,}}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{Bounded-prior quartic with continuous test function}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{6 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A single Tide-loop excursion in the \texttt{laplace} seabed, advancing the
+grammar paper precursor sequence by one step: where Tide~6 added the bounded
+prior to the pure-quartic partition function, this step adds a Lipschitz
+test function $\varphi$ inside the integrand. The
+headline\footnote{\texttt{quartic\_lipschitz\_unnormalised\_bounded\_prior}.}
+proves $\big|\int_{[-a,a]} \varphi(w)e^{-tw^4/24}\,dw - \varphi(0) Z_a(t)\big|
+\le K \cdot \tfrac{1}{2}\sqrt{24\pi/t}$ for $K$-Lipschitz $\varphi$. The new
+file adds 211 lines, zero
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}; clean Lean
+diagnostics on first pass after two small Pi-vs-lambda fixes. The proof
+structure follows GPT-5.5 Pro's deliberation-stage tactical advice
+(``prove the unnormalised estimate first, derive the normalised version as a
+corollary''), which sidesteps a denominator-conditioning subtlety that
+trapped my initial \emph{normalised} draft. Run executed in a dedicated
+\texttt{git worktree}\,---\,the discipline now mandated by the Tide
+skill\,---\,with no concurrent-agent races.
+\end{abstract}
+
+\section{Setting}
+
+This Tide step is the seventh excursion outward from the \texttt{laplace}
+seabed and the second toward the grammar paper. The earlier
+\texttt{tide/grammar-precursor-bounded-prior} excursion (2~May) established
+the bounded-prior quartic partition function with an exponentially small
+remainder.\footnote{Headline:
+$\big|\int_{[-a,a]} e^{-tw^4/24}\,dw - \tfrac{1}{2}(24/t)^{1/4}\Gamma(1/4)\big|
+\le \tfrac{24}{ta^3} e^{-ta^4/24}$, in
+\texttt{Laplace.OneD.QuarticBoundedPrior}.}
+That excursion's Follow-up section explicitly named the present candidate as
+its natural successor: continuous (or Lipschitz) test functions $\varphi$
+against the same bounded-prior quartic Gibbs measure.
+
+The Step~2 deliberation\,---\,which started by drafting three candidate
+scopings\,---\,landed on a sharpening that wasn't on Claude's initial draft:
+prove the \emph{unnormalised} Lipschitz estimate
+$|{\int \varphi g - \varphi(0)\!\int g}| \le K\,\tfrac{1}{2}\sqrt{24\pi/t}$
+first, then derive the normalised
+$|\langle\varphi\rangle_{t,a} - \varphi(0)| = O(t^{-1/4})$ as a corollary.
+This is GPT's contribution and was the right call (see \S\emph{Roadblocks}
+below for why). The full deliberation, with the GPT consult preserved
+verbatim, lives in the primer project's
+tide-log.\footnote{\texttt{projects/primer/tide-log/}\allowbreak\texttt{2026-05-06-tide-bounded-prior-continuous-test.md}.}
+
+The branch is chained on top of the \texttt{tide/separable-potential} tip,
+itself one of the two unmerged tides at the start of this excursion (the
+other was \texttt{tide/cross-susc-deriv-harmonic}, on a parallel and
+independent piece of laplace--threepoint cross-work). The linear-chain
+discipline\,---\,each new Tide branched off the previous one's tip rather
+than off \texttt{main}\,---\,keeps the squash-merge story straightforward.
+
+\section{The thing formalised}
+
+For the centred quartic potential $L(w) = w^4/24$, any $a, t > 0$, $K \ge 0$,
+and any continuous $\varphi : \mathbb{R} \to \mathbb{R}$ satisfying the
+Lipschitz-near-zero condition
+\[
+  |\varphi(w) - \varphi(0)| \le K \cdot |w|
+  \qquad \text{for all } w \in [-a, a],
+\]
+the bounded-prior unnormalised numerator differs from $\varphi(0) Z_a(t)$ by
+at most a closed-form constant times $t^{-1/2}$:
+
+\begin{quote}\itshape
+\[
+  \left|\int_{[-a,a]} \varphi(w)\,e^{-tw^4/24}\,dw
+        \;-\; \varphi(0) \int_{[-a,a]} e^{-tw^4/24}\,dw\right|
+  \;\le\; K \cdot \tfrac{1}{2} \cdot \sqrt{24\pi / t}.
+\]
+\end{quote}
+
+\noindent The Lean signature:
+\begin{verbatim}
+theorem quartic_lipschitz_unnormalised_bounded_prior
+    {t a K : ℝ} (ht : 0 < t) (ha : 0 < a) (hK : 0 ≤ K)
+    {φ : ℝ → ℝ} (hφ : Continuous φ)
+    (hLip : ∀ w ∈ Icc (-a) a, |φ w - φ 0| ≤ K * |w|) :
+    |(∫ w in Icc (-a) a, φ w * exp (-(t * w ^ 4 / 24))) -
+        φ 0 * (∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24)))| ≤
+      K * (1/2) * Real.sqrt (24 * Real.pi / t)
+\end{verbatim}
+
+\noindent located in \texttt{Laplace.OneD}.
+
+The grammar paper's $Z_n[\varphi]$ machinery wants three ingredients on top
+of the existing seabed: (i) bounded prior $\pi$, (ii) test function
+$\varphi$ inside the integrand, (iii) explicit asymptotic in $n$ with a
+remainder. Tide~6 added (i); the present tide adds (ii). What remains is
+the explicit $o(t^{-1/4})$ packaging of (iii), now reachable as a follow-up
+that combines this tide's bound with the existing
+\texttt{quartic\_partition\_bounded\_prior} (an exponentially small
+correction to $Z_a(t)$).
+
+The unnormalised rate is $t^{-1/2}$ in this statement; the normalised
+$|\langle\varphi\rangle_{t,a} - \varphi(0)|$ then gets the
+``substitution-driven'' rate $t^{-1/4}$ once one divides by
+$Z_a(t) \sim Z_{\text{full}}(t) = O(t^{-1/4})$. The closed-form rate
+constant for the normalised version is
+$C = 24^{1/4}\sqrt{\pi}/\Gamma(1/4) \approx 1.082$, but that is a corollary,
+not the headline.
+
+Numerical sanity check (run before formalisation):
+\texttt{scipy.integrate.quad} verified all three deliberation-stage
+candidates' closed forms to machine precision across five values of $t$
+ranging from $10$ to $10^5$, with several test
+functions.\footnote{$\varphi \in \{1, w, w^2, |w|, \cos w, \cos w +
+\tfrac{1}{2}\}$.} The $\beta$-rate constant $C$ matched the predicted
+value of $1.082048$ to machine precision for $\varphi = |w|$ at
+$t \ge 1000$.
+
+\section{Proof strategy}
+
+The unnormalised statement reduces, via the trivial identity
+\[
+  \int \varphi g - \varphi(0) \int g \;=\; \int (\varphi - \varphi(0)) g,
+\]
+to bounding $|\int (\varphi - \varphi(0)) g|$. Pointwise on $[-a, a]$,
+$|(\varphi - \varphi(0)) g| \le K \cdot |w| \cdot g$ by the Lipschitz
+hypothesis (the Boltzmann factor $g(w) = e^{-tw^4/24}$ is positive, so its
+absolute value is itself). The triangle-for-integrals lemma
+$|\int f| \le \int |f|$ then takes the absolute value inside, and the
+pointwise bound followed by monotonicity of the integral
+(\texttt{setIntegral\_mono\_on}) reduces the whole thing to bounding
+$\int_{[-a,a]} |w|\,g(w)\,dw$.
+
+The bounded-prior first absolute moment is bounded by its full-line
+counterpart by monotonicity over a subset (the integrand is
+non-negative). The full-line first absolute moment has a clean closed
+form:
+\[
+  \int_{\mathbb{R}} |w|\,e^{-tw^4/24}\,dw \;=\; \tfrac{1}{2}\sqrt{24\pi/t}.
+\]
+This is the substantive new computation in this tide. The proof goes
+through the half-line case
+$\int_{(0,\infty)} w\,e^{-tw^4/24}\,dw = \tfrac{1}{4}\sqrt{24\pi/t}$, which
+falls directly out of Mathlib's master gamma-integral
+lemma\footnote{\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}.} at
+$p = 4$, $q = 1$, $b = t/24$, with the closed-form value
+$(t/24)^{-1/2}\,\tfrac{1}{4}\,\Gamma(1/2)$, which simplifies to
+$\tfrac{1}{4}\sqrt{24\pi/t}$ (since $\Gamma(1/2) = \sqrt{\pi}$ and
+$(t/24)^{-1/2} = \sqrt{24/t}$). The full-line case is twice the half-line
+case by parity of the integrand, via Mathlib's
+\texttt{integral\_comp\_abs}\,---\,exactly the same routing established by
+the Quartic and Sextic moment files.
+
+So the chain is:
+
+\begin{enumerate}\itemsep0pt
+\item Half-line first moment, closed form (master lemma).
+\item Full-line first absolute moment, double of (1) by parity.
+\item Bounded-prior first absolute moment $\le$ full-line, by set monotonicity.
+\item Apply Lipschitz pointwise, triangle-inequality, set monotonicity, and (3).
+\end{enumerate}
+
+Each link is a single Mathlib invocation modulo bookkeeping; the file is
+211 lines because the bookkeeping (rpow-vs-npow casts, Pi.sub-vs-lambda
+mismatches, integrability witnesses) is unavoidable at present.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{The deliberation-stage pivot from normalised to unnormalised.}
+Claude's initial Step~2 draft proposed the normalised statement
+$|\langle\varphi\rangle_{t,a} - \varphi(0)| \le KC t^{-1/4}$ as the
+target. GPT-5.5 Pro pointed out that proving this directly trips on a
+subtle conditioning identity:
+
+\gptbox{The truncated Gibbs law on $[-a,a]$ is the full-line quartic law
+conditioned on $|W|\le a$, so its $|W|$-expectation is $\le$ the full-line
+$|W|$-expectation. That full-line expectation is exactly $C t^{-1/4}$.}
+
+That paragraph reads cleanly, but \emph{it is not quite right}: for a
+non-negative random variable $Y$ and an event $A$, the conditional
+expectation $E[Y \mid A] = E[Y \cdot \mathbf{1}_A]/P(A)$, which is bounded
+\emph{above} by $E[Y]/P(A)$, not by $E[Y]$. For our problem
+$P(|W| \le a) \to 1$ exponentially as $t \to \infty$, so
+$1/P(|W| \le a) = 1 + (\text{exp-small})$ and the normalised bound
+recovers an exp-small correction GPT's first-pass argument suppresses.
+
+The unnormalised statement, by contrast, dodges all conditioning: the
+inequality
+\[
+  \int_{[-a,a]} |w|\,g(w)\,dw \;\le\; \int_{\mathbb{R}} |w|\,g(w)\,dw
+\]
+follows from set monotonicity of the integral with no probability
+arithmetic at all. GPT's broader recommendation\,---\,``prove the
+unnormalised version first, then derive the normalised one as a
+corollary''\,---\,is exactly right, and it's the right architectural choice
+even if the specific justification needs a small correction. The
+unnormalised version landed cleanly here; the normalised corollary now
+becomes a separate, smaller follow-up tide that can carry the partition
+ratio analysis explicitly.
+
+\paragraph{Two Pi-vs-lambda mismatches.} Both familiar from the project's
+\texttt{CLAUDE.md} cookbook. The first appeared in the integrability of
+$|w|\cdot g(w)$: \texttt{Integrable.abs} returns the integrability of
+$|w \cdot g(w)|$, but the headline wants $|w| \cdot g(w)$, and converting
+between them needs $|w \cdot g| = |w| \cdot |g| = |w| \cdot g$ (since
+$g > 0$). The fix is the standard
+$\mathtt{abs\_mul} \to \mathtt{abs\_of\_pos\ (Real.exp\_pos\ \_)}$ rewrite
+inside a $\mathtt{funext}$. The second appeared in subtracting two
+integrable functions on $[-a,a]$: \texttt{IntegrableOn.sub} returns
+\texttt{IntegrableOn (f - g) ...} with $f - g$ as $\mathtt{Pi.sub}$, but
+the headline expects the single-lambda
+$\mathtt{fun\ w\ =>\ (\varphi\ w - \varphi\ 0)\cdot g\ w}$. The fix is to
+prove a $\mathtt{funext}$ equality and \texttt{rwa}; same recipe as the
+quartic-cov-affine and pure-quartic tides. Both fixes were one-shot.
+
+\paragraph{The rpow-to-sqrt conversion.} Going from $(t/24)^{-1/2}$ to
+$\sqrt{24/t}$ took a few attempts through different Mathlib idioms before
+landing on a four-step rewrite chain.\footnote{\texttt{Real.rpow\_neg}
+$\to$ \texttt{Real.sqrt\_eq\_rpow} $\to$ \texttt{Real.sqrt\_inv} $\to$
+\texttt{congr 1; field\_simp}.} This sequence is not in the project's
+\texttt{CLAUDE.md} yet; should be added.
+
+\paragraph{Worktree isolation worked as designed.} The Tide skill now
+mandates running each Tide in its own \texttt{git worktree}. This run was
+the first to use that discipline from the start: the worktree at
+\texttt{/tmp/laplace-bounded-test/} was created before any work began, and
+no concurrent-agent races materialised. Compare with the earlier
+2~May Tides where multiple concurrent agents racing on
+\texttt{Laplace.lean} cost an extra round-trip per Tide. The lesson is now
+load-bearing in the skill, not a footnote.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+The master half-line gamma integral; the even-symmetric reduction to the
+half line; the closed-form $\Gamma(1/2) = \sqrt{\pi}$; the triangle
+inequality $|\int f| \le \int |f|$; pointwise-bound monotonicity; set
+monotonicity (subset $\mathtt{Icc}$ into all of $\mathbb{R}$); the
+rpow-to-sqrt conversion lemmas; the integration-by-parts lemmas for linear
+combinations.\footnote{Specifically:
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow},
+\texttt{integral\_comp\_abs},
+\texttt{Real.Gamma\_one\_half\_eq},
+\texttt{MeasureTheory.abs\_integral\_le\_integral\_abs},
+\texttt{MeasureTheory.setIntegral\_mono\_on},
+\texttt{MeasureTheory.setIntegral\_le\_integral},
+\texttt{Real.rpow\_neg}, \texttt{Real.sqrt\_eq\_rpow},
+\texttt{Real.sqrt\_inv}.}
+
+\paragraph{The seabed provided.}
+\texttt{quartic\_integrable\_pow} from \texttt{Laplace.OneD.Quartic} (for
+the full-line integrability of $w^n e^{-tw^4/24}$). The tide's import is
+just \texttt{Laplace.OneD.QuarticBoundedPrior}; the partition function and
+\texttt{quartic\_integrable\_pow} chain transitively from there.
+
+\paragraph{What was new in this tide.}
+The half-line first moment, the full-line first absolute moment, the
+integrability witness, the bounded-prior comparison, and the headline
+unnormalised Lipschitz estimate.\footnote{Lean names:
+\texttt{quartic\_integral\_w\_exp\_Ioi},
+\texttt{quartic\_integral\_abs\_w\_exp\_full},
+\texttt{quartic\_integrable\_abs\_w},
+\texttt{quartic\_integral\_abs\_w\_bounded\_prior\_le},
+\texttt{quartic\_lipschitz\_unnormalised\_bounded\_prior}.}
+Five new theorems; the four sublemmas are general enough they could be
+promoted to \texttt{lean-common} on the next bounded-prior tide that needs
+them.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{Unnormalised before normalised.} The Step~2 deliberation taught
+the right architectural lesson for grammar-paper-style asymptotics: when
+the headline statement is a normalised ratio
+$\langle\varphi\rangle_{t,a} \to \varphi(0)$, the cleanest formalisation
+path goes through the unnormalised numerator difference first. The
+normalisation\,---\,dividing by the partition function\,---\,brings in
+denominator gymnastics (lower bound on $Z_a$, ratio of two limits) that
+are easier to handle once the unnormalised piece exists as a stand-alone
+theorem. Worth lifting to the Tide skill or to
+\texttt{lean-formalisation}'s playbook.
+
+\item \emph{Trust GPT's strategic recommendations even when the
+justification has a small flaw.} GPT's ``the truncated Gibbs is conditioned
+on $|W| \le a$, so its $|W|$-expectation is $\le$ the full-line one'' was
+not quite right (it's bounded by $E[|W|]/P(|W| \le a)$, with a $1/P$
+factor that is benign but not invisible). But the broader architectural
+recommendation\,---\,prove unnormalised first\,---\,was completely right,
+and the right mental move was to take the architectural advice and
+substitute the cleaner \emph{set-monotonicity} justification for the
+sketch GPT gave.
+
+\item \emph{The rpow-to-sqrt cast chain.} The four-step rewrite\footnote{Same
+sequence as above: \texttt{Real.rpow\_neg} $\to$ \texttt{Real.sqrt\_eq\_rpow}
+$\to$ \texttt{Real.sqrt\_inv} $\to$ \texttt{congr 1; field\_simp}.} recurs
+in any Tide that converts a half-line $\Gamma(1/2)$ result to its sqrt
+presentation. Worth a one-line entry in \texttt{laplace}'s
+\texttt{CLAUDE.md} so the next session doesn't re-derive it.
+
+\item \emph{Worktree isolation is now load-bearing.} The Tide skill's
+preflight rule (every Tide in its own \texttt{git worktree}) was followed
+from the start and the run was free of branch-toggle races. This is the
+first run that hit zero concurrent-agent friction. The discipline is paying
+for itself.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Normalised version: $|\langle\varphi\rangle_{t,a} - \varphi(0)|
+\le KC\,t^{-1/4} + (\text{exp-small})$.} Direct corollary combining the
+present unnormalised estimate with the existing
+\texttt{quartic\_partition\_bounded\_prior}: lower-bound $Z_a(t)$ by
+$(1/2)(24/t)^{1/4}\Gamma(1/4) - \tfrac{24}{ta^3}e^{-ta^4/24}$, divide. The
+explicit constant $C = 24^{1/4}\sqrt{\pi}/\Gamma(1/4)$ is the rate
+constant; numerically $C \approx 1.082048$. A quick follow-up tide
+($\sim$60--100 lines).
+
+\item \emph{$\mathtt{IsLittleO}$ packaging.} For continuous $\varphi$
+(weaker than Lipschitz), the limit
+$\langle\varphi\rangle_{t,a} \to \varphi(0)$ holds qualitatively\,---\,the
+rate $t^{-1/4}$ is special to Lipschitz $\varphi$\,---\,and Mathlib's
+asymptotic-equivalence API\footnote{\texttt{Asymptotics.IsLittleO}.} would
+be the form needed for the grammar paper's
+$Z_n[\varphi] \sim C_\varphi n^{-\lambda} (\log n)^{m-1}$. This is a
+separate, larger Tide.
+
+\item \emph{Bounded-prior monomial generalisation $L = w^{2k}/(2k)!$.}
+The full chain transfers verbatim to the sextic ($k=3$), octic ($k=4$),
+and so on. Pairs naturally with the morning survey's A1 candidate
+(``generic even-monomial 1D template''), which is now strict-improvement
+territory: with three $k$-instances completed (quartic, sextic, and now
+the bounded-prior version of the quartic), the case for a unifying
+parameterised file is overwhelming.
+
+\item \emph{Promote the splitting/union and abs-of-product idioms.}
+Several small lemmas in this file ($\mathtt{abs\_mul}$ +
+$\mathtt{abs\_of\_pos}$ for an exp-positive Boltzmann factor; the
+$|w \cdot g| = |w| \cdot g$ rewrite chain; the unnormalised-difference =
+$\int (\varphi - \varphi(0)) g$ identity) recur on every Tide that
+involves a Lipschitz observable against a Gibbs measure. Worth promoting
+to \texttt{lean-common} on the next use.
+
+\item \emph{Continuous (not Lipschitz) test function via
+modulus-of-continuity.} GPT's missed candidate (i): replace the
+Lipschitz-rate hypothesis with a modulus-of-continuity statement. The
+qualitative limit ($\alpha$) becomes a clean $\varepsilon/\delta$
+argument; smoothing parameter $\delta$ chosen via the tail bound. Cleaner
+formulation for ``continuous test functions'' than the Lipschitz cut, but
+larger formalisation.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro contributed the deliberation-stage advisory at Step~2,
+including the architectural recommendation to prove the unnormalised
+estimate first (the recommendation that landed) and the
+sharpened-but-slightly-imprecise justification for it (the conditioning
+argument that needed correcting on the way to the proof). The full consult
+and the tide log itself are preserved together in the primer project's
+tide-log directory.\footnote{\texttt{projects/primer/tide-log/}\allowbreak\texttt{gpt55\_tide\_bounded\_prior\_continuous\_test\_v1.md}
+and the markdown tide log alongside it.}
+
+\end{document}
