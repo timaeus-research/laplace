@@ -208,4 +208,83 @@ theorem quartic_lipschitz_unnormalised_bounded_prior
         mul_le_mul_of_nonneg_left (quartic_integral_abs_w_bounded_prior_le ht ha) hK
     _ = K * (1/2) * Real.sqrt (24 * Real.pi / t) := by ring
 
+/-! ## Positivity of the bounded-prior partition function -/
+
+/-- The bounded-prior partition function is strictly positive. The proof
+uses the constant lower bound `exp(-(t·w⁴/24)) ≥ exp(-(t·a⁴/24))` on
+`[-a, a]` to bound the integral below by `exp(-(t·a⁴/24)) · 2a`. -/
+theorem quartic_partition_bounded_prior_pos {t a : ℝ} (ht : 0 < t) (ha : 0 < a) :
+    0 < ∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24)) := by
+  -- Lower-bound the integrand by the constant exp(-(t·a⁴/24)) on Icc(-a, a).
+  have hbound : ∀ w ∈ Icc (-a) a,
+      Real.exp (-(t * a ^ 4 / 24)) ≤ exp (-(t * w ^ 4 / 24)) := by
+    intro w hw
+    apply Real.exp_le_exp.mpr
+    obtain ⟨hwl, hwu⟩ := hw
+    have hw_abs : |w| ≤ a := abs_le.mpr ⟨hwl, hwu⟩
+    have hw4 : w ^ 4 ≤ a ^ 4 := by
+      have h1 : w ^ 2 ≤ a ^ 2 := by nlinarith
+      have h2 : (0 : ℝ) ≤ w ^ 2 := sq_nonneg w
+      have h3 : (0 : ℝ) ≤ a ^ 2 := sq_nonneg a
+      nlinarith [mul_self_nonneg (w ^ 2), sq_nonneg (a ^ 2 - w ^ 2)]
+    have htw4 : t * w ^ 4 ≤ t * a ^ 4 := mul_le_mul_of_nonneg_left hw4 ht.le
+    linarith
+  -- Integrate the constant lower bound.
+  have hint_const : IntegrableOn (fun _ : ℝ => Real.exp (-(t * a ^ 4 / 24)))
+      (Icc (-a) a) volume := (continuous_const.integrableOn_Icc)
+  have hint_lhs : IntegrableOn (fun w : ℝ => exp (-(t * w ^ 4 / 24)))
+      (Icc (-a) a) volume :=
+    (Continuous.integrableOn_Icc (by fun_prop))
+  have hZa_ge : Real.exp (-(t * a ^ 4 / 24)) * (2 * a) ≤
+      ∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24)) := by
+    have hle := setIntegral_mono_on hint_const hint_lhs measurableSet_Icc hbound
+    rw [setIntegral_const] at hle
+    have hvol : volume.real (Icc (-a) a) = 2 * a := by
+      simp only [volume_real_Icc, sub_neg_eq_add]
+      have h2a : (0 : ℝ) ≤ a + a := by linarith
+      exact max_eq_left h2a |>.trans (by ring)
+    rw [hvol] at hle
+    -- hle : 2 * a • exp(-(t * a^4 / 24)) ≤ ∫ ...; convert smul to mul.
+    have hsmul : (2 * a) • Real.exp (-(t * a ^ 4 / 24)) =
+           Real.exp (-(t * a ^ 4 / 24)) * (2 * a) := by
+      rw [smul_eq_mul]; ring
+    linarith [hsmul ▸ hle]
+  have hexp_pos : 0 < Real.exp (-(t * a ^ 4 / 24)) := Real.exp_pos _
+  have h2a_pos : 0 < 2 * a := by linarith
+  linarith [mul_pos hexp_pos h2a_pos]
+
+/-! ## Headline: normalised Lipschitz estimate (ratio form) -/
+
+/-- **Bounded-prior normalised Lipschitz estimate, ratio form.** Direct
+corollary of `quartic_lipschitz_unnormalised_bounded_prior` and
+positivity of the bounded-prior partition function: for `t > 0`, `a > 0`,
+`K ≥ 0`, and `K`-Lipschitz `φ`,
+
+`| (∫_{[-a,a]} φ(w)·exp(-(t·w⁴/24)) dw) / Z_a(t)  −  φ(0) |
+   ≤ K · (1/2) · √(24π/t) / Z_a(t)`,
+
+where `Z_a(t) = ∫_{[-a,a]} exp(-(t·w⁴/24)) dw`. -/
+theorem quartic_lipschitz_normalised_bounded_prior
+    {t a K : ℝ} (ht : 0 < t) (ha : 0 < a) (hK : 0 ≤ K)
+    {φ : ℝ → ℝ} (hφ : Continuous φ)
+    (hLip : ∀ w ∈ Icc (-a) a, |φ w - φ 0| ≤ K * |w|) :
+    |((∫ w in Icc (-a) a, φ w * exp (-(t * w ^ 4 / 24))) /
+        (∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24)))) - φ 0| ≤
+      K * (1/2) * Real.sqrt (24 * Real.pi / t) /
+        (∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24))) := by
+  have hZa_pos := quartic_partition_bounded_prior_pos ht ha
+  have hZa_ne : ∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24)) ≠ 0 :=
+    ne_of_gt hZa_pos
+  have hunorm := quartic_lipschitz_unnormalised_bounded_prior ht ha hK hφ hLip
+  -- Rewrite (a/Z) - b = (a - b·Z)/Z, take absolute value, divide.
+  have hsplit :
+      ((∫ w in Icc (-a) a, φ w * exp (-(t * w ^ 4 / 24))) /
+          (∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24)))) - φ 0 =
+        ((∫ w in Icc (-a) a, φ w * exp (-(t * w ^ 4 / 24))) -
+          φ 0 * (∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24)))) /
+        (∫ w in Icc (-a) a, exp (-(t * w ^ 4 / 24))) := by
+    field_simp
+  rw [hsplit, abs_div, abs_of_pos hZa_pos]
+  exact div_le_div_of_nonneg_right hunorm hZa_pos.le
+
 end Laplace.OneD
