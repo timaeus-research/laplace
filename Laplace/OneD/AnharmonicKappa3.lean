@@ -382,6 +382,107 @@ theorem thirdMoment_anharmonic_asymptotic
   rw [h_x2_x]
   ring
 
+/-! ## Affine multilinearity (G2)
+
+Tide 9's `kappa3_anharmonic_id_id_id_asymptotic` lifts to affine
+observables `(b·x, a·x, c·x)` by trilinearity of `κ₃`: the scalars
+`a, b, c` pull through cleanly, giving an extra factor `a·b·c` on the
+asymptotic value.
+
+Two theorems:
+
+* `kappa3_affine_id_id_id_eq` — the static factorisation. No
+  hypotheses on `L` beyond what `Threepoint.kappa3`'s definition
+  consumes (i.e. none); built from `gibbsExpectation_smul` and
+  `kappa3_id_id_id_unfold`. Works for any potential, not just the
+  anharmonic one.
+
+* `kappa3_anharmonic_affine_asymptotic` — the asymptotic corollary
+  for the anharmonic potential. Direct `Tendsto.const_mul` on top of
+  Tide 9 plus the static factorisation. -/
+
+/-- **Affine multilinearity of κ₃ at `id`-multiples** (potential-agnostic).
+
+For any potential `L : ℝ → ℝ` and scalars `a, b, c : ℝ`, the third
+cumulant of `(b·x, a·x, c·x)` factors as the trilinear product of the
+scalars times the third cumulant of `(x, x, x)`.
+
+The proof unfolds both sides to the seven-Gibbs-expectation form via
+`kappa3_id_id_id_unfold`'s sibling expansion, peels each scalar via
+`gibbsExpectation_smul`, and closes by `ring`. -/
+theorem kappa3_affine_id_id_id_eq (L : ℝ → ℝ) (t : ℝ) (a b c : ℝ) :
+    Threepoint.kappa3 (volume : Measure ℝ) L
+        (fun x : ℝ => b * x) t (fun x : ℝ => a * x) (fun x : ℝ => c * x)
+      = (a * b * c) *
+          Threepoint.kappa3 (volume : Measure ℝ) L
+            (fun x : ℝ => x) t (fun x : ℝ => x) (fun x : ℝ => x) := by
+  -- Unfold `kappa3` on both sides; route every `Threepoint.gibbsExp ... 0`
+  -- through `threepoint_gibbsExp_volume_zero_eq` to `Laplace.gibbsExpectation`.
+  unfold Threepoint.kappa3
+  simp only [threepoint_gibbsExp_volume_zero_eq]
+  -- Collapse the seven LHS integrand lambdas to the canonical scaled forms
+  -- `(a*b*c) * x^3`, `(a*b) * x^2`, `(a*c) * x^2`, `(b*c) * x^2`,
+  -- `a*x`, `b*x`, `c*x`, then peel scalars via `gibbsExpectation_smul`.
+  have h_abc : (fun w : ℝ => (fun x : ℝ => a * x) w * (fun x : ℝ => b * x) w
+        * (fun x : ℝ => c * x) w) = (fun w : ℝ => (a * b * c) * w ^ 3) := by
+    funext w; ring
+  have h_ab : (fun w : ℝ => (fun x : ℝ => a * x) w * (fun x : ℝ => b * x) w)
+      = (fun w : ℝ => (a * b) * w ^ 2) := by
+    funext w; ring
+  have h_ac : (fun w : ℝ => (fun x : ℝ => a * x) w * (fun x : ℝ => c * x) w)
+      = (fun w : ℝ => (a * c) * w ^ 2) := by
+    funext w; ring
+  have h_bc : (fun w : ℝ => (fun x : ℝ => b * x) w * (fun x : ℝ => c * x) w)
+      = (fun w : ℝ => (b * c) * w ^ 2) := by
+    funext w; ring
+  -- Same simplifications for the RHS at `(id, id, id)`.
+  have h_x3 : (fun w : ℝ => (fun x : ℝ => x) w * (fun x : ℝ => x) w
+        * (fun x : ℝ => x) w) = (fun w : ℝ => w ^ 3) := by
+    funext w; ring
+  have h_x2 : (fun w : ℝ => (fun x : ℝ => x) w * (fun x : ℝ => x) w)
+      = (fun w : ℝ => w ^ 2) := by
+    funext w; ring
+  rw [h_abc, h_ab, h_ac, h_bc, h_x3, h_x2]
+  -- Peel scalars from each scaled `gibbsExpectation` via `gibbsExpectation_smul`.
+  rw [Laplace.gibbsExpectation_smul L t (a * b * c) (fun w : ℝ => w ^ 3),
+      Laplace.gibbsExpectation_smul L t (a * b)     (fun w : ℝ => w ^ 2),
+      Laplace.gibbsExpectation_smul L t (a * c)     (fun w : ℝ => w ^ 2),
+      Laplace.gibbsExpectation_smul L t (b * c)     (fun w : ℝ => w ^ 2),
+      Laplace.gibbsExpectation_smul L t a           (fun w : ℝ => w),
+      Laplace.gibbsExpectation_smul L t b           (fun w : ℝ => w),
+      Laplace.gibbsExpectation_smul L t c           (fun w : ℝ => w)]
+  ring
+
+/-- **Affine third-cumulant asymptotic for the anharmonic Gibbs.**
+
+For `L = (λ/2)x² + (α/6)x³ + (γ/24)x⁴` with `0 < λ`, `0 < γ`,
+`α² < 3λγ`, and any scalars `a, b, c : ℝ`,
+`t² · κ₃(volume, L, b·x, t, a·x, c·x) → -(a·b·c)·α/λ³` as `t → ∞`.
+
+Strict-improvement of Tide 9: that tide proved the case `(a, b, c) = (1, 1, 1)`;
+this multiplies by trilinearity of `κ₃` to handle arbitrary `id`-multiples. -/
+theorem kappa3_anharmonic_affine_asymptotic
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma)
+    (a b c : ℝ) :
+    Filter.Tendsto
+      (fun t : ℝ => t ^ 2 * Threepoint.kappa3 (volume : Measure ℝ)
+          (anharmonicPotential lam alpha gamma)
+          (fun x : ℝ => b * x) t (fun x : ℝ => a * x) (fun x : ℝ => c * x))
+      Filter.atTop
+      (nhds (-(a * b * c) * alpha / lam ^ 3)) := by
+  have hBase := kappa3_anharmonic_id_id_id_asymptotic hlam hgamma hdisc
+  -- Replace the limit constant by the trilinearly-scaled form: abc · (-α/λ³).
+  have h_lim_eq : -(a * b * c) * alpha / lam ^ 3 = (a * b * c) * (-alpha / lam ^ 3) := by
+    ring
+  rw [h_lim_eq]
+  -- t² · κ₃(b·x, a·x, c·x) = abc · (t² · κ₃(x, x, x)), so the limit is abc · (-α/λ³).
+  have h_const := hBase.const_mul (a * b * c)
+  apply h_const.congr'
+  filter_upwards with t
+  rw [kappa3_affine_id_id_id_eq (anharmonicPotential lam alpha gamma) t a b c]
+  ring
+
 end OneD
 
 end Laplace
