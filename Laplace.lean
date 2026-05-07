@@ -32,3 +32,4 @@ import Laplace.OneD.HarmonicAffineKappa3
 import Laplace.AffineBilinearCov
 import Laplace.OneD.HarmonicCovGlobalConstancy
 import Laplace.OneD.JFunctionSextic
+import Laplace.TwoD.QuarticSextic
