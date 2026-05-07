@@ -23,6 +23,7 @@ import Laplace.TwoD.SemiDegenerate
 import Laplace.TwoD.AddSeparable
 import Laplace.TwoD.PureQuartic
 import Laplace.OneD.AnharmonicKappa3
+import Laplace.OneD.AnharmonicKappa3Affine
 import Laplace.OneD.HarmonicGibbsRegularity
 import Laplace.OneD.HarmonicCrossSuscDeriv
 import Laplace.OneD.QuarticBoundedPriorTestFn

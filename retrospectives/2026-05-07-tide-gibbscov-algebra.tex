@@ -1,0 +1,321 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{ι}{\ensuremath{\iota}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+\title{Tide retrospective:\\generic algebra for \texttt{gibbsExpectation} and \texttt{gibbsCov}}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A short infrastructure tide. The 1D and multivariate base Gibbs files
+in \texttt{laplace} carried the definitions of $\langle\cdot\rangle_t$
+and $\mathrm{Cov}_t[\cdot,\cdot]$ but only the lone constant-collapse
+lemma $\langle c\rangle_t = c$. Every downstream consumer that wanted
+bilinearity, scalar pulling, or the constant case bashed through
+\texttt{unfold gibbsExpectation} and reproved the same algebraic
+identities by hand — most visibly in the affine-observable proofs in
+\texttt{OneD/Quartic.lean} (1D) and \texttt{TwoD/PureQuartic.lean} /
+\texttt{TwoD/SemiDegenerate.lean} (2D). This tide adds the missing
+algebra in parallel to both \texttt{Laplace/Gibbs.lean} and
+\texttt{Laplace/Multi/Basic.lean}: 11~lemmas each side, 245~lines
+total, single session, zero \texttt{sorry}, zero
+\texttt{native\_decide}, zero \texttt{axiom}. The deliberation step
+converged on Candidate~B (mirror across both base files) over A
+(1D-only) or C (B plus an affine corollary that belongs in I3).
+GPT-5.5~Pro flagged one strengthening worth taking — the constant-cov
+lemma is unconditional via a $Z=0$ case-split rather than carrying a
+\texttt{hZ} hypothesis. No numerical sanity check was feasible
+(structural identities), and none was faked.
+\end{abstract}
+
+\section{Setting}
+
+The cross-project survey of 7~May identified three classes of next
+moves on the laplace shoreline: strict improvements of recent tides,
+strategic refactors, and new-repo expansions. Item I2 sat in the
+strategic-refactor class: the GPT-5.5~Pro consult at Tide~12
+(separable-potential abstraction) had recommended introducing
+\texttt{gibbsCov\_symm}, \texttt{gibbsCov\_add\_left/right},
+\texttt{gibbsCov\_const\_left/right}, and
+\texttt{gibbsCov\_smul\_left/right} in the base Gibbs files, observing
+that ``once landed, the affine-covariance template becomes essentially
+trivial.'' The deferred I3 (an explicit affine-covariance theorem)
+and the strict-improvement candidates C1 (harmonic-side affine
+$\kappa_3$) and G2 (anharmonic-side affine $\kappa_3$) all wait on the
+same missing layer.
+
+The seabed was \texttt{laplace} at commit \texttt{141997c}
+(post-G4)\footnote{Tide G4: \texttt{harmonic-gibbsobservable-monomials},
+397~lines; the most recent landed tide on \texttt{main} before this
+one. See \texttt{retrospectives/2026-05-07-tide-harmonic-gibbsobservable-monomials.tex}.}.
+The two base files
+\texttt{Laplace/Gibbs.lean} (65~lines) and
+\texttt{Laplace/Multi/Basic.lean} (55~lines) defined
+\texttt{partitionFunction}, \texttt{gibbsExpectation},
+\texttt{gibbsCov} and only \texttt{gibbsExpectation\_const} (the 1D
+lone derived lemma; the multi side had no derived lemmas at all). A
+quick grep of consumer files confirmed the gap was load-bearing:
+the affine quartic covariance and its 2D pure-quartic
+analogue\footnote{Specifically, \texttt{gibbsCov\_first\_order\_rate\_sharp}
+in \texttt{Laplace/OneD/Quartic.lean} (lines 307--349) and the
+unnamed affine cov theorem in \texttt{Laplace/TwoD/PureQuartic.lean}
+(lines 297--475).}
+reproved bilinearity inline at roughly 30~and 180~lines respectively,
+almost all bookkeeping.
+
+The deliberation step\footnote{Recorded in
+\texttt{projects/primer/tide-log/2026-05-07-tide-gibbscov-algebra.md}
+with the verbatim GPT-5.5~Pro response in
+\texttt{gpt55\_tide\_gibbscov\_algebra\_v1.md}.} weighed three
+candidates: A~(1D only, $\sim$120 lines), B~(parallel both,
+$\sim$220), C~(B plus the affine-bilinear corollary $\sim$280).
+Both Claude and GPT voted B. A~is too small strategically (the heavy
+2D consumers live on the multi side); C~bundles a consumer-facing
+theorem that mixes in extra subtleties (Gibbs-weight integrability)
+and morally belongs in I3, not I2. B is one conceptual unit mirrored
+across the repo's two parallel foundations.
+
+\section{The thing formalised}
+
+The headline is not a single theorem but a small algebra package added
+in parallel to both base files. For the 1D file (the multi version is
+literal-substitution-equivalent), the eleven lemmas are:
+
+\begin{verbatim}
+namespace Laplace
+
+lemma gibbsExpectation_smul (L : ℝ → ℝ) (t : ℝ) (c : ℝ) (φ : ℝ → ℝ) :
+    gibbsExpectation L t (fun x => c * φ x) = c * gibbsExpectation L t φ
+
+lemma gibbsExpectation_zero (L : ℝ → ℝ) (t : ℝ) :
+    gibbsExpectation L t (fun _ => 0) = 0
+
+lemma gibbsExpectation_add (L : ℝ → ℝ) (t : ℝ) (φ₁ φ₂ : ℝ → ℝ)
+    (h₁ : Integrable (fun x => φ₁ x * Real.exp (-(t * L x))))
+    (h₂ : Integrable (fun x => φ₂ x * Real.exp (-(t * L x)))) :
+    gibbsExpectation L t (fun x => φ₁ x + φ₂ x)
+      = gibbsExpectation L t φ₁ + gibbsExpectation L t φ₂
+
+lemma gibbsCov_symm (L : ℝ → ℝ) (t : ℝ) (φ ψ : ℝ → ℝ) :
+    gibbsCov L t φ ψ = gibbsCov L t ψ φ
+
+lemma gibbsCov_smul_left  -- and _right by symm
+lemma gibbsCov_const_left -- and _right by symm; unconditional
+lemma gibbsCov_add_left   -- and _right by symm; needs four Integrable hyps
+lemma gibbsCov_zero_left  -- and _right; cheap simp corollaries
+\end{verbatim}
+
+\noindent The hypothesis economy is sharp:
+$\texttt{symm}$ and the four $\texttt{smul}$ lemmas need no hypotheses
+at all (only unconditional Bochner-integral linearity);
+$\texttt{const}$ is unconditional thanks to the $Z=0$ case-split (see
+\S3); only $\texttt{add\_left/right}$ require the four
+$\texttt{Integrable}$ hypotheses on the pre-divided weighted
+observables (each $\varphi_i \cdot e^{-tL}$ alone, plus each
+$\varphi_i \cdot \psi \cdot e^{-tL}$ for the cross-term inside the
+covariance). The same pattern is mirrored verbatim in
+\texttt{Laplace.Multi}, with $(\iota \to \mathbb{R})$ replacing
+$\mathbb{R}$.
+
+\section{Proof strategy}
+
+The covariance-level proofs all factor through the
+expectation-level primitives, which in turn route through three
+unconditional Mathlib lemmas:
+\texttt{MeasureTheory.integral\_const\_mul} (used by
+$\texttt{gibbsExpectation\_smul}$),
+\texttt{MeasureTheory.integral\_add} (used by
+$\texttt{gibbsExpectation\_add}$, the only place integrability
+is mathematically necessary), and field arithmetic
+(\texttt{mul\_div\_assoc}, \texttt{add\_div}, \texttt{ring}).
+The covariance lemmas then follow by unfolding
+$\mathrm{Cov}_t[\varphi, \psi] = \langle \varphi\psi\rangle_t - \langle\varphi\rangle_t \langle\psi\rangle_t$
+and rewriting with the expectation primitives plus a
+\texttt{ring}-style cleanup.
+
+The minor wrinkle is the constant-cov lemma. The natural proof routes
+through $\langle c\rangle_t = c$, which holds only when $Z(t) \neq 0$.
+We could keep $\texttt{hZ}$ as an explicit hypothesis, but as
+GPT-5.5~Pro pointed out, when $Z(t) = 0$ Lean's
+$\texttt{x / 0 = 0}$ convention collapses every Gibbs expectation to
+zero, so $\mathrm{Cov}_t[c, \psi] = 0 - 0 \cdot 0 = 0$ holds
+unconditionally. The proof case-splits:
+\begin{verbatim}
+  by_cases hZ : partitionFunction L t = 0
+  · simp [gibbsCov, gibbsExpectation, partitionFunction] at hZ ⊢
+    simp [hZ]
+  · simp only [gibbsCov]
+    rw [..., gibbsExpectation_smul, gibbsExpectation_const L t c hZ]
+    ring
+\end{verbatim}
+The first branch flattens both the covariance and the partition
+function into the underlying integral, observes that the integral is
+zero, and lets \texttt{simp} propagate. The second branch is the usual
+substitution of $\langle c\rangle = c$. Both cleanly close.
+
+The right-slot variants (\texttt{\_right}) reduce to the left-slot
+ones by $\texttt{gibbsCov\_symm}$. The right-slot integrability
+hypotheses for $\texttt{gibbsCov\_add\_right}$ are stated in the
+natural orientation (\texttt{$\varphi \cdot \psi_i \cdot e^{-tL}$})
+and reoriented by a one-line \texttt{simpa [mul\_comm]} before
+delegating to $\texttt{gibbsCov\_add\_left}$.
+
+\section{Roadblocks and resolutions}
+
+Two minor frictions, both resolved on the first or second pass.
+
+\paragraph{Argument-order on \texttt{gibbsCov\_symm}.} The first
+draft of \texttt{gibbsCov\_add\_right} used a bare
+\texttt{gibbsCov\_symm $\varphi$ $\psi_2$} as a rewrite, mistakenly
+omitting the $L$ and $t$ arguments. Lean reported a type mismatch on
+the second positional argument. The fix was to spell the rewrites
+fully: \texttt{rw [gibbsCov\_symm L t $\psi_1$ $\varphi$, gibbsCov\_symm L t $\psi_2$ $\varphi$]}.
+Two minutes lost; promoted to the lessons section as a reminder that
+positional-argument economy is fragile when a downstream rewrite
+needs to target exactly two of three structurally-similar subterms.
+
+\paragraph{Unconditional constant-cov.} The first instinct was to
+keep \texttt{hZ} in \texttt{gibbsCov\_const\_left} and let a future
+cleanup handle the strengthening. GPT-5.5~Pro flagged the unconditional
+form as a free win: ``if \texttt{partitionFunction L t = 0}, then
+every \texttt{gibbsExpectation $\ldots$ / 0} collapses to \texttt{0},
+so covariance with a constant is still \texttt{0}.'' The
+case-split proof above closed in one shot. Net cost: three lines
+beyond the natural-path proof; the value is one fewer hypothesis at
+every consumer site.
+
+There were no thrashing episodes, no architectural pivots, and no
+counterexample-driven plan changes. The lemmas are mechanical from
+the definitions; the deliberation step did the substantive work.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+\texttt{MeasureTheory.integral\_const\_mul} (real-valued, \texttt{RCLike}
+instance, unconditional) and
+\texttt{MeasureTheory.integral\_add} (the conditional additivity that
+forces the four \texttt{Integrable} hypotheses on the cov-add lemmas).
+Plus the usual algebraic background: \texttt{mul\_comm},
+\texttt{mul\_div\_assoc}, \texttt{add\_div}, \texttt{ring}.
+
+\paragraph{What was new.} The algebra layer itself: 11~lemmas per
+side, 245~lines total. No new Mathlib lemmas were upstreamed because
+nothing in this Tide is general enough to belong in Mathlib —
+\texttt{gibbsCov} is repo-specific. The shape of the layer might
+nonetheless be worth lifting, eventually: a generic
+\texttt{Lebesgue.expectation} / \texttt{Lebesgue.cov} pattern with
+parallel algebra lemmas for any $\sigma$-finite measure could replace
+both the 1D and multi versions in the laplace repo, plus possibly
+threepoint's \texttt{Threepoint.gibbsCov}. Not in scope here.
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=*]
+\item \emph{For the laplace \texttt{CLAUDE.md}:} the
+\texttt{x / 0 = 0} case-split idiom for unconditional algebra lemmas
+on quotient definitions like
+$\texttt{gibbsExpectation} = \texttt{integral} / \texttt{Z}$. The
+recipe \texttt{by\_cases hZ : Z = 0} followed by
+\texttt{simp [..., partitionFunction] at hZ $\vdash$; simp [hZ]} on
+the zero branch and the natural-path proof on the nonzero branch is
+short and idiomatic. Worth landing as a tactic note alongside the
+existing \texttt{Pi.add} and \texttt{rpow\_natCast} entries.
+
+\item \emph{For the lean-formalisation skill:} the parallel-mirror
+pattern. The two base files differ only by the underlying domain
+($\mathbb{R}$ versus $\iota \to \mathbb{R}$); the proofs are
+literal-substitution-equivalent because the underlying Mathlib
+integration lemmas are parametric in the measurable space. Writing
+the 1D version first, getting it to compile, and then doing a
+mechanical copy-paste-rename for the multi side cost roughly half
+again the time of doing only one side. This pattern recurs across
+the laplace repo (\texttt{Quartic.lean} versus \texttt{TwoD/PureQuartic.lean},
+\texttt{Harmonic.lean} versus \texttt{TwoD/AddSeparable.lean}); the
+duplication is real but predictable and worth the cost.
+
+\item \emph{For the tide skill:} the structural-identity case for
+``Numerical sanity check.'' This Tide produced no closed-form
+expectation (the lemmas \emph{are} structural identities, true by
+\texttt{rfl}/\texttt{ring} from the definitions). The skill's
+fallback ``not feasible: \emph{reason}'' was exactly the right move;
+the alternative — fabricating a numerical check — would have wasted
+time and produced a false signal. The tide-log entry records the
+reason explicitly, so the next survey can see why the section is
+short.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=*]
+\item \emph{I3 — affine-bilinear covariance.} Now a 5--10 line
+derivation:
+\[
+  \mathrm{Cov}_t[a\varphi + c, \, b\psi + d] = ab \cdot \mathrm{Cov}_t[\varphi, \psi]
+\]
+follows by two applications each of \texttt{gibbsCov\_add\_left},
+\texttt{gibbsCov\_const\_left}, \texttt{gibbsCov\_smul\_left}, and
+their right-slot symmetries. Worth a small dedicated tide that pins
+the integrability hypotheses cleanly and exports it as a derived
+theorem in \texttt{Laplace/Gibbs.lean} (and \texttt{Multi/Basic.lean}).
+
+\item \emph{C1 — harmonic-side affine $\kappa_3$.} Generalise from
+$\kappa_3(x, x, x)$ to $\kappa_3(b\cdot x, a\cdot x, c\cdot x)$ via
+multilinearity of $\kappa_3$. With the new
+\texttt{gibbsCov\_add/smul} algebra and the existing harmonic
+$\kappa_3$ identity, ${\sim}50$ lines on top of
+\texttt{Threepoint/Harmonic.lean}.
+
+\item \emph{G2 — anharmonic-side affine $\kappa_3$.} Same shape as
+C1 but for the anharmonic Gibbs measure. ${\sim}40$ lines on top of
+\texttt{Laplace/OneD/AnharmonicKappa3.lean}.
+
+\item \emph{Cleanup pass on existing affine-cov proofs.} The most
+satisfying use of this Tide will be the line-count reductions in
+the four files\footnote{\texttt{Laplace/OneD/Quartic.lean},
+\texttt{Laplace/TwoD/PureQuartic.lean},
+\texttt{Laplace/TwoD/SemiDegenerate.lean},
+\texttt{Laplace/TwoD/AddSeparable.lean}.} that currently unfold
+\texttt{gibbsExpectation} to reach the same algebraic identities now
+captured by the new lemmas. A focused refactor tide (or a sequence of
+small ones) would tighten ${\sim}300$ lines of bookkeeping into
+${\sim}50$. Not strictly necessary — the existing proofs work — but
+cost-positive once the algebra is in.
+
+\item \emph{Optional: bundle the hypotheses.} If the
+\texttt{Integrable}-quadruples on the cov-add lemmas turn out to be
+the dominant signature noise at consumer sites (likely after C1, G2,
+and I3 land), a plain-\texttt{Prop} alias
+\texttt{GibbsAddIntegrable L t $\varphi$ $\psi$} bundling the four
+hypotheses would compress signatures without committing to typeclass
+plumbing. Defer until the second downstream use shows it's worth it.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+The deliberation step's GPT-5.5~Pro consult (preserved at
+\texttt{projects/primer/tide-log/gpt55\_tide\_gibbscov\_algebra\_v1.md})
+contributed the unconditional-const strengthening, the
+direct-hypotheses-over-typeclass call, and the explicit reason to
+prefer Candidate~B over A or C. The Tide~12 deliberation
+(separable-potential abstraction, 6~May) is where the I2 candidate
+originated; this Tide closes a follow-up that has been on the board
+for less than a day.
+
+\end{document}
