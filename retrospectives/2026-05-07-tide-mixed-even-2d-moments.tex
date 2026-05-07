@@ -1,0 +1,255 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{→}{\ensuremath{\to}}
+
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{mixed even-power 2D moments
+(quartic-sextic potential)}}
+\author{Claude Opus 4.7 (1M ctx), with Daniel Murfet}
+\date{2026-05-07}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For the 2D separable potential $L(x, y) = x^4/24 + y^6/720$ at
+temperature $t > 0$ and any $j, k : \mathbb N$, the joint even-power
+moment $\langle x^{2j} \cdot y^{2k} \rangle_{2D, t}$ has the closed
+form
+$$
+  \left( (24/t)^{j/2} \cdot \tfrac{\Gamma((2j+1)/4)}{\Gamma(1/4)} \right)
+  \cdot
+  \left( (720/t)^{k/3} \cdot \tfrac{\Gamma((2k+1)/6)}{\Gamma(1/6)} \right).
+$$
+This is the obvious closed-form sequel to the just-merged A2 tide
+(quartic-sextic mixed potential infrastructure). New file
+\texttt{Laplace/TwoD/QuarticSexticMoments.lean}, 57~lines (proof body
+$\sim 8$ lines; the rest is doc-comment); zero \texttt{sorry}, zero
+\texttt{axiom}, zero \texttt{native\_decide}. Single-attempt clean
+build via two \texttt{rw} calls. Fourth tide today (after I4, N1, Q1)
+where the Step~2 advisory carried sufficient tactical detail to make
+Step~3 mechanical.
+\end{abstract}
+
+\section{Setting}
+
+A2 (\texttt{tide/quartic-sextic-mixed}, just landed) added the 2D
+separable-potential infrastructure for the quartic-sextic case. Its
+key public theorem reduces the 2D Gibbs expectation of a separable
+observable $f(x) g(y)$ to a product of the two 1D Gibbs expectations
+for the quartic and sextic potentials, given integrability of each
+piece against its 1D Boltzmann weight.
+
+The closed-form 1D even moments
+$\langle x^{2n} \rangle_{\text{quartic}, t}$ and
+$\langle x^{2n} \rangle_{\text{sextic}, t}$ have been formalised since
+the early Tide steps. So the joint even-moment closed form
+$\langle x^{2j} y^{2k} \rangle_{2D, t}$ is essentially a one-line
+algebraic combination of three already-formalised pieces. A2's
+retrospective explicitly named this as the natural sequel.
+
+The tide-pick v5 survey ranked it as the top recommendation. The
+Step~2 deliberation between Claude and GPT-5.5~Pro converged in a
+single round on Candidate~A (just the closed-form combined moment);
+GPT additionally flagged that the existing public factor theorem
+already exposes the product-structure form, so a separate
+\texttt{pow\_pow\_factor} intermediate would be redundant.
+
+The markdown tide log\footnote{In the SRI repo at
+\texttt{projects/primer/tide-log/}, file
+\texttt{2026-05-07-tide-mixed-even-2d-moments.md}.} carries the
+deliberation; the GPT consult is preserved at the sibling
+\texttt{gpt\_responses\_t1/t1\_v1.md}.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the 2D separable potential $L(x, y) = x^4/24 + y^6/720$, any
+$t > 0$, and any non-negative integers $j, k$,
+$$
+  \langle x^{2j} \cdot y^{2k} \rangle_{2D, t}
+  = \left( (24/t)^{j/2} \cdot \frac{\Gamma((2j+1)/4)}{\Gamma(1/4)} \right)
+    \cdot \left( (720/t)^{k/3} \cdot \frac{\Gamma((2k+1)/6)}{\Gamma(1/6)} \right).
+$$
+\end{quote}
+
+\noindent The Lean signature\footnote{\texttt{Laplace/TwoD/%
+QuarticSexticMoments.lean}, theorem
+\texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_eq}.}:
+
+\begin{verbatim}
+theorem gibbsExpectation_quarticSextic_pow_pow_eq
+    (j k : ℕ) {t : ℝ} (ht : 0 < t) :
+    gibbsExpectation
+        (addSeparable Laplace.OneD.quarticPotential
+                      Laplace.OneD.sexticPotential) t
+        (fun z : ℝ × ℝ => z.1 ^ (2 * j) * z.2 ^ (2 * k))
+      = ((24 / t) ^ ((j : ℝ) / 2)
+            * Real.Gamma ((2 * j + 1 : ℝ) / 4)
+            / Real.Gamma ((1 : ℝ) / 4))
+        * ((720 / t) ^ ((k : ℝ) / 3)
+            * Real.Gamma ((2 * k + 1 : ℝ) / 6)
+            / Real.Gamma ((1 : ℝ) / 6))
+\end{verbatim}
+
+\noindent The 2D space is $\mathbb{R} \times \mathbb{R}$ (per A2's
+convention), not $\mathrm{Fin}\,2 \to \mathbb R$; observables index
+into it via \texttt{z.1} and \texttt{z.2}. GPT specifically called
+this out at deliberation as a likely point of confusion otherwise.
+
+The closed-form RHS is kept as a literal product of the two 1D
+forms — no attempt to combine $(24/t)^{j/2}$ and $(720/t)^{k/3}$
+into a single $t$-power. GPT flagged that combining "creates
+gratuitous \texttt{rpow}/positivity/algebra overhead" with no
+mathematical or readability gain.
+
+\section{Proof strategy}
+
+The proof is two \texttt{rw} calls:
+
+\begin{enumerate}[leftmargin=1em,itemsep=0.2em]
+\item Apply A2's separable-observable factor theorem with
+  $f := x \mapsto x^{2j}$ and $g := y \mapsto y^{2k}$, using the
+  existing 1D integrability-of-monomial-against-Boltzmann-weight
+  witnesses for the quartic and sextic potentials. The 2D
+  expectation becomes a product of two 1D expectations.
+\item Substitute the 1D even-moment closed forms (one quartic, one
+  sextic) to obtain the Gamma-form RHS.
+\end{enumerate}
+
+\noindent The proof body is eight lines of Lean.
+
+\section{Roadblocks and resolutions}
+
+\emph{None}. Single-attempt clean build, zero warnings. This is the
+fourth tide today (after I4, N1, Q1) where a clean Step~2 advisory
+made Step~3 mechanical. The pattern is now reliable: when the Step~2
+deliberation correctly identifies the integrability bundle, the
+namespace conventions, and the verbatim form of the closed-form
+RHS, the proof writes itself.
+
+\gptbox{Big Lean caveat: copy the RHS verbatim from the 1D theorems.
+In particular, match exactly whether they use \texttt{\^{}} or
+\texttt{Real.rpow}, \texttt{((2 * j + 1 : ℝ) / 4)} vs extra casts,
+parenthesisation of \texttt{*} and \texttt{/}. If you match the 1D
+theorem statements exactly, the proof is basically two rewrites. If
+you "prettify" the RHS, you'll buy yourself avoidable algebra.}
+
+\noindent The implementation took this guidance literally — the RHS
+is character-for-character a product of the two 1D theorem RHSes.
+The proof is two rewrites.
+
+\paragraph{Numerical sanity pre-Step~3.} Eight cases at
+$t \in \{1, 2\}$, $(j, k) \in \{0, 1, 2\}^2$, all agree to
+${\sim}10^{-13}$ relative error against \texttt{scipy.integrate.dblquad}.
+The identity is exact (a structural separability fact for the 2D
+measure), not asymptotic.\footnote{Script preserved at
+\texttt{projects/primer/tide-log/gpt\_responses\_t1/t1\_numerics.py}.}
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.} Nothing directly — this tide is
+entirely above the Mathlib stack, composing already-formalised
+Laplace/laplace pieces.
+
+\paragraph{What was new.} A single public theorem
+(\texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_eq}) that
+combines three already-formalised pieces:
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item A2's separable-observable factor theorem (the 2D-to-1D
+  reduction);
+\item the existing 1D integrability witnesses for monomials against
+  the quartic and sextic Boltzmann weights;
+\item the 1D even-moment closed forms for the quartic and sextic
+  potentials.
+\end{itemize}
+
+\noindent The novelty is just the composition; no new lemma machinery.
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \emph{Sometimes the right Tide is the trivial composition.}
+  A2 just landed; the obvious sequel is a 30-line composition
+  theorem. There is no value-add in proving anything more elaborate
+  in this Tide step. Resist the impulse to bundle further
+  generalisations (odd-power vanishing, generic pure-monomial pairs,
+  etc.) — those are separate Tide steps.
+
+\item \emph{The "match RHS verbatim" rule.} Whenever a Tide composes
+  two existing theorems with literal product-of-RHS targets, write
+  the headline RHS character-for-character as the product of the
+  two 1D RHSes. This makes the proof a pure \texttt{rw} chain. Any
+  algebraic re-expression — even a \emph{semantically equivalent}
+  one — will introduce avoidable \texttt{rpow} and positivity steps.
+
+\item \emph{The "is the existing public theorem already enough?"
+  test.} GPT correctly noted that proposing a separate
+  \texttt{pow\_pow\_factor} public intermediate (Candidate~B) would
+  be redundant given A2's existing \texttt{*\_factor} theorem
+  already exposes the product structure for arbitrary $f, g$. When a
+  Tide proposes a sub-result that's already a special case of an
+  existing public theorem, the right answer is "the existing theorem
+  is enough; just show how to use it". Worth recording for future
+  Tide deliberations.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \emph{Mixed odd-power vanishing} (Candidate~C, deferred):
+  $\langle x^{2j+1} y^{2k} \rangle_{2D, t} = 0$ and the symmetric
+  variant. Each follows from the factor theorem plus the existing
+  1D odd-moment vanishing theorems. About ${\sim}30$ lines for the
+  parity-completion pair.
+
+\item \emph{Other 2D mixed pure-monomial pairs.} Quartic-quartic,
+  sextic-sextic, $x^{2j}/((2j)!)$ paired with $y^{2k}/((2k)!)$ for
+  arbitrary $(j, k)$. Each is a 30-line corollary of A3 once the
+  named 1D pure-monomial families exist; A2's retrospective named
+  this as a follow-up. Best deferred until A1 (the generic
+  even-monomial 1D template) lands.
+
+\item \emph{Generic-$k$ J-function-style 2D moment asymptotic.} The
+  natural \emph{asymptotic} sequel: as $t \to \infty$, the 2D
+  moment behaves as the product of the leading-order 1D scalings.
+  Quartic side scales as $t^{-(2j+1)/4}$, sextic side as
+  $t^{-(2k+1)/6}$, joint scaling $t^{-(2j+1)/4 - (2k+1)/6}$.
+  Tide-shaped; ${\sim}80$ lines combining
+  \texttt{kth\_jfunction\_asymptotic} machinery from N1.
+
+\item \emph{\texttt{\textbackslash leanref}-tag the primer's 2D
+  examples} once the primer has TeX statements for any of the 2D
+  moment formulas. Pin to this tide's commit. Process tide; pairs
+  with K2.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro contributed the deliberation-stage advisory at Step~2:
+the verdict for Candidate~A over B (B is redundant given A2's
+existing public factor theorem) and C (better as a separate
+parity-completion follow-up); the \texttt{z.1}/\texttt{z.2} naming
+guidance; and the verbatim-RHS rule that made the proof a pure
+two-line \texttt{rw} chain. The full consult is preserved alongside
+the markdown tide log.\footnote{In the SRI repo at
+\texttt{projects/primer/tide-log/gpt\_responses\_t1/}, file
+\texttt{t1\_v1.md}.} The proof landed single-attempt with no
+mid-proof thrashing-rescue consult needed.
+
+\end{document}
