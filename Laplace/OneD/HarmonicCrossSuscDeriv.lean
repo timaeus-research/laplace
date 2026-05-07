@@ -1,4 +1,5 @@
 import Laplace.OneD.HarmonicGibbsRegularity
+import Laplace.OneD.HarmonicGibbsObservableMonomials
 import Threepoint.Harmonic
 
 /-!
@@ -83,5 +84,30 @@ theorem cov_h_id_id_deriv_harmonic_eq_zero
   -- `kappa3 ... (id) (id) = 0` by Tide 5; `(-t) * 0 = 0`.
   rw [Threepoint.kappa3_harmonic_id_id_id_eq_zero hlam ht, mul_zero] at hderiv
   exact hderiv
+
+/-- **Unconditional cross-susceptibility derivative for the harmonic case.**
+
+The unconditional form of `cov_h_id_id_deriv_harmonic_eq_zero`: with
+the three `GibbsObservable` hypotheses for `x`, `x*x`, `x*x*x`
+discharged by G4's `harmonic_id_gibbsObservable_pow` plus the
+multiplicative-form wrappers in `HarmonicGibbsObservableMonomials.lean`,
+Tide 13's conditional theorem becomes unconditional.
+
+For the harmonic Gibbs measure with potential `L = (λ/2)x²` and
+perturbation `A = id`, the cross-susceptibility derivative
+`∂_h Cov_h(x, x)|_{h=0}` vanishes — and now this is provable
+without any caller-supplied analytic side conditions. -/
+theorem cov_h_id_id_deriv_harmonic_eq_zero_unconditional
+    {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
+    HasDerivAt
+        (fun h : ℝ => Threepoint.gibbsCov (volume : Measure ℝ)
+                        (fun x : ℝ => lam / 2 * x ^ 2)
+                        (fun x : ℝ => x) t h
+                        (fun x : ℝ => x) (fun x : ℝ => x))
+        0 0 :=
+  cov_h_id_id_deriv_harmonic_eq_zero hlam ht
+    (Threepoint.harmonic_id_gibbsObservable_id hlam ht)
+    (Threepoint.harmonic_id_gibbsObservable_mul_self hlam ht)
+    (Threepoint.harmonic_id_gibbsObservable_mul_mul_self hlam ht)
 
 end Laplace.OneD
