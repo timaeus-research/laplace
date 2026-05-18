@@ -67,82 +67,19 @@ lemma sexticPotential_eq_kthPotential :
 
 /-! ## Integrability -/
 
-/-- The polynomial bound `x^2 ≤ 1 + x^6`, proved piecewise. -/
-private lemma sq_le_one_add_pow_six (x : ℝ) : x ^ 2 ≤ 1 + x ^ 6 := by
-  rcases le_total (x ^ 2) 1 with hx | hx
-  · -- `|x| ≤ 1`: `x² ≤ 1 ≤ 1 + x^6`
-    have h6 : (0 : ℝ) ≤ x ^ 6 := by positivity
-    linarith
-  · -- `|x| ≥ 1`: `x^4 ≥ 1`, hence `x² ≤ x^6 ≤ 1 + x^6`
-    have h4 : (1 : ℝ) ≤ x ^ 4 := by nlinarith [sq_nonneg x]
-    have h26 : x ^ 2 ≤ x ^ 6 := by
-      have hsq : (0 : ℝ) ≤ x ^ 2 := sq_nonneg x
-      have h6eq : x ^ 6 = x ^ 2 * x ^ 4 := by ring
-      nlinarith
-    linarith
-
-/-- Polynomial-times-sextic-Gibbs integrability. For `n : ℕ` and `t > 0`,
-`x^n · exp(-(t · x^6 / 720))` is Lebesgue integrable on `ℝ`.
-
-Proof: Gaussian comparison via `x² ≤ 1 + x^6`, which gives
-`t·x^6/720 ≥ (t/720)·x² - t/720`, hence
-`exp(-t·x^6/720) ≤ exp(t/720)·exp(-(t/720)·x²)`. The dominator is integrable
-by Mathlib's `integrable_rpow_mul_exp_neg_mul_sq` with `b = t/720`. -/
+/-- Polynomial-times-sextic-Gibbs integrability.
+$k = 3$ specialisation of `kth_integrable_pow`. -/
 theorem sextic_integrable_pow (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) := by
-  have hmeas : AEStronglyMeasurable
-      (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) volume :=
-    (by fun_prop : Continuous _).aestronglyMeasurable
-  have ht720 : (0 : ℝ) < t / 720 := by positivity
-  have hns : (-1 : ℝ) < (n : ℝ) := by
-    have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith
-  have hdom_raw : Integrable
-      (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(t / 720) * x ^ 2)) volume :=
-    integrable_rpow_mul_exp_neg_mul_sq ht720 hns
-  have hdom : Integrable
-      (fun x : ℝ => x ^ n * Real.exp (-((t / 720) * x ^ 2))) volume := by
-    have heq : (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(t / 720) * x ^ 2)) =
-               (fun x : ℝ => x ^ n * Real.exp (-((t / 720) * x ^ 2))) := by
-      ext x
-      rw [Real.rpow_natCast]
-      congr 2
-      ring
-    rwa [heq] at hdom_raw
-  have hbound : ∀ x : ℝ,
-      Real.exp (-(t * x ^ 6 / 720)) ≤
-        Real.exp (t / 720) * Real.exp (-((t / 720) * x ^ 2)) := by
-    intro x
-    rw [← Real.exp_add]
-    apply Real.exp_le_exp.mpr
-    have hkey : x ^ 2 ≤ 1 + x ^ 6 := sq_le_one_add_pow_six x
-    have hprod : (0 : ℝ) ≤ (t / 720) * (1 + x ^ 6 - x ^ 2) :=
-      mul_nonneg ht720.le (by linarith)
-    nlinarith
-  have habs : ∀ x : ℝ,
-      ‖x ^ n * Real.exp (-(t * x ^ 6 / 720))‖ ≤
-        ‖Real.exp (t / 720) * (x ^ n * Real.exp (-((t / 720) * x ^ 2)))‖ := by
-    intro x
-    rw [Real.norm_eq_abs, Real.norm_eq_abs,
-        abs_mul, abs_mul, abs_mul,
-        abs_of_pos (Real.exp_pos _), abs_of_pos (Real.exp_pos _),
-        abs_of_pos (Real.exp_pos _), abs_pow]
-    have hxn : (0 : ℝ) ≤ |x| ^ n := pow_nonneg (abs_nonneg _) n
-    nlinarith [hbound x, Real.exp_pos (-((t / 720) * x ^ 2))]
-  exact (hdom.const_mul (Real.exp (t / 720))).mono hmeas
-    (Filter.Eventually.of_forall habs)
+  have h := kth_integrable_pow (k := 3) (by norm_num) n ht
+  convert h using 4 <;> norm_num
 
-/-- Polynomial-times-sextic-Gibbs integrability, in `sexticPotential` form. -/
+/-- Polynomial-times-sextic-Gibbs integrability, in `sexticPotential` form.
+$k = 3$ specialisation of `kth_integrable_pow_pot`. -/
 theorem sextic_integrable_pow_pot (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * sexticPotential x))) := by
-  have h := sextic_integrable_pow n ht
-  have heq : (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) =
-             (fun x : ℝ => x ^ n * Real.exp (-(t * sexticPotential x))) := by
-    ext x
-    rw [sexticPotential_apply]
-    congr 2
-    ring
-  rwa [heq] at h
+  rw [sexticPotential_eq_kthPotential]
+  exact kth_integrable_pow_pot (k := 3) (by norm_num) n ht
 
 /-! ## Half-line moment integrals -/
 

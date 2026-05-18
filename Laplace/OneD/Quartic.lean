@@ -61,68 +61,19 @@ lemma quarticPotential_eq_kthPotential :
 
 /-! ## Integrability -/
 
-/-- Polynomial-times-quartic-Gibbs integrability. For `n : ℕ` and `t > 0`,
-`x^n · exp(-(t · x^4 / 24))` is Lebesgue integrable on `ℝ`.
-
-Proof: Gaussian comparison via the square-completion identity
-`t·x^4/24 − x² = (t·x² − 12)²/(24t) − 6/t ≥ −6/t`, which gives
-`exp(−t·x^4/24) ≤ exp(6/t)·exp(−x²)`. The dominator is integrable by
-Mathlib's `integrable_rpow_mul_exp_neg_mul_sq`. -/
+/-- Polynomial-times-quartic-Gibbs integrability.
+$k = 2$ specialisation of `kth_integrable_pow`. -/
 theorem quartic_integrable_pow (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 4 / 24))) := by
-  have hmeas : AEStronglyMeasurable
-      (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 4 / 24))) volume :=
-    (by fun_prop : Continuous _).aestronglyMeasurable
-  have hns : (-1 : ℝ) < (n : ℝ) := by
-    have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith
-  have hdom_raw : Integrable
-      (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(1 : ℝ) * x ^ 2)) volume :=
-    integrable_rpow_mul_exp_neg_mul_sq (by norm_num) hns
-  have hdom : Integrable (fun x : ℝ => x ^ n * Real.exp (-(x ^ 2))) volume := by
-    have heq : (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(1 : ℝ) * x ^ 2)) =
-               (fun x : ℝ => x ^ n * Real.exp (-(x ^ 2))) := by
-      ext x
-      rw [Real.rpow_natCast]
-      congr 2
-      ring
-    rwa [heq] at hdom_raw
-  have hbound : ∀ x : ℝ,
-      Real.exp (-(t * x ^ 4 / 24)) ≤ Real.exp (6 / t) * Real.exp (-(x ^ 2)) := by
-    intro x
-    rw [← Real.exp_add]
-    apply Real.exp_le_exp.mpr
-    have hsq : (0 : ℝ) ≤ (t * x ^ 2 - 12) ^ 2 := sq_nonneg _
-    have h24t : (0 : ℝ) < 24 * t := by positivity
-    have key : t * x ^ 4 / 24 - x ^ 2 = (t * x ^ 2 - 12) ^ 2 / (24 * t) - 6 / t := by
-      field_simp
-      ring
-    have hdiv : (0 : ℝ) ≤ (t * x ^ 2 - 12) ^ 2 / (24 * t) := div_nonneg hsq h24t.le
-    linarith
-  have habs : ∀ x : ℝ,
-      ‖x ^ n * Real.exp (-(t * x ^ 4 / 24))‖ ≤
-        ‖Real.exp (6 / t) * (x ^ n * Real.exp (-(x ^ 2)))‖ := by
-    intro x
-    rw [Real.norm_eq_abs, Real.norm_eq_abs,
-        abs_mul, abs_mul, abs_mul,
-        abs_of_pos (Real.exp_pos _), abs_of_pos (Real.exp_pos _),
-        abs_of_pos (Real.exp_pos _), abs_pow]
-    have hxn : (0 : ℝ) ≤ |x| ^ n := pow_nonneg (abs_nonneg _) n
-    nlinarith [hbound x, Real.exp_pos (-(x ^ 2))]
-  exact (hdom.const_mul (Real.exp (6 / t))).mono hmeas
-    (Filter.Eventually.of_forall habs)
+  have h := kth_integrable_pow (k := 2) (by norm_num) n ht
+  convert h using 4 <;> norm_num
 
-/-- Polynomial-times-quartic-Gibbs integrability, in `quarticPotential` form. -/
+/-- Polynomial-times-quartic-Gibbs integrability, in `quarticPotential` form.
+$k = 2$ specialisation of `kth_integrable_pow_pot`. -/
 theorem quartic_integrable_pow_pot (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * quarticPotential x))) := by
-  have h := quartic_integrable_pow n ht
-  have heq : (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 4 / 24))) =
-             (fun x : ℝ => x ^ n * Real.exp (-(t * quarticPotential x))) := by
-    ext x
-    rw [quarticPotential_apply]
-    congr 2
-    ring
-  rwa [heq] at h
+  rw [quarticPotential_eq_kthPotential]
+  exact kth_integrable_pow_pot (k := 2) (by norm_num) n ht
 
 /-! ## Half-line moment integrals -/
 
