@@ -38,4 +38,5 @@ import Laplace.OneD.JFunctionSextic
 import Laplace.OneD.JFunctionAsymptoticEquivalence
 import Laplace.TwoD.QuarticSextic
 import Laplace.TwoD.QuarticSexticMoments
+import Laplace.TwoD.QuarticSexticOddMoments
 import Laplace.AffineKappa3
