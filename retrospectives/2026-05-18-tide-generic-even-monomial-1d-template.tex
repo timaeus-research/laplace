@@ -1,0 +1,207 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+
+\title{Tide retrospective:\\\emph{Generic even-monomial 1D template (A1)}}
+\author{Daniel Murfet}
+\date{18 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Programme-level lift of the 1D quartic / sextic template to arbitrary
+$k \ge 1$. For the centred even-monomial potential
+$L_k(x) = x^{2k}/(2k)!$, lands the exact closed forms for the
+partition function, even moments, and expected values, plus
+odd-moment vanishing. After A1, the quartic and sextic seabed
+specialisations are mathematically (though not yet syntactically)
+five-line corollaries. 310 lines, single session, three trailing
+\texttt{ring} / \texttt{field\_simp} cleanups needed. Zero
+\texttt{sorry}, zero \texttt{axiom}, zero \texttt{native\_decide}.
+Integrability witnesses (\texttt{kth\_integrable\_pow}) are
+deliberately deferred to a follow-up tide --- the Gaussian-domination
+argument needs case analysis on $k = 1$ vs $k \ge 2$ and is
+substantial enough to warrant its own deliberation.
+\end{abstract}
+
+\section{Setting}
+
+Today's V2 / Z1 / Z2 trio packaged exact 2D quartic-sextic
+asymptotics; A1 lifts the underlying 1D template to arbitrary $k$.
+N1 (the generic-$k$ J-function tide) had already established the
+\emph{partition function in raw-integral form}; A1 fills the rest of
+the template (moments, odd-vanishing, partition in
+\texttt{partitionFunction}-form, expected values), matching the shape
+of the quartic and sextic files structurally.
+
+The strategic value: after A1 lands, downstream programmes using
+pure-monomial potentials at arbitrary $k$ (or 2D separable
+combinations of such potentials) can build on a parametric template
+rather than ad-hoc quartic / sextic specialisations. The today's
+quartic-sextic 2D story has effectively prototyped what the template
+enables.
+
+\section{The thing formalised}
+
+For $k \ge 1$, $j \in \mathbb N$, and $t > 0$:
+
+\begin{itemize}[leftmargin=1.5em]
+\item \emph{Half-line moment}: $\int_0^\infty x^{2j}\,e^{-tx^{2k}/(2k)!}\,dx
+  = \tfrac{1}{2k}\cdot ((2k)!/t)^{(2j+1)/(2k)}\cdot \Gamma((2j+1)/(2k))$.
+\item \emph{Full-line moment} (\texttt{kth\_moment\_even}):
+  $\int_{\mathbb R} x^{2j}\,e^{-tx^{2k}/(2k)!}\,dx
+  = \tfrac{1}{k}\cdot ((2k)!/t)^{(2j+1)/(2k)}\cdot \Gamma((2j+1)/(2k))$.
+\item \emph{Odd-vanishing} (\texttt{kth\_moment\_odd}):
+  $\int x^{2j+1}\,e^{-tx^{2k}/(2k)!}\,dx = 0$.
+\item \emph{Partition in \texttt{partitionFunction}-form}:
+  $Z_{L_k}(t) = \tfrac{1}{k}\cdot ((2k)!/t)^{1/(2k)}\cdot \Gamma(1/(2k))$.
+\item \emph{Expected values} (even, odd): moments divided by the
+  partition; even case is $((2k)!/t)^{j/k}\cdot
+  \Gamma_{\rm num}/\Gamma_{\rm den}$, odd case vanishes.
+\end{itemize}
+
+Named definition \texttt{kthPotential} + \texttt{kthPotential\_apply}
+\texttt{@[simp]}. File: sibling to the quartic and sextic files in
+\texttt{Laplace/OneD/}.\footnote{Specifically
+\texttt{Laplace/OneD/MonomialPotential.lean}; per GPT's preference
+for descriptive over parametric naming.}
+
+\section{Proof strategy}
+
+The half-line moment is a direct call to Mathlib's
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} at $p = 2k$,
+$q = 2j$, $b = t/(2k)!$, with the standard cast-handling massage
+to convert Nat-power form to rpow form for the application. The
+full-line moment follows by \texttt{integral\_comp\_abs} on the
+even-symmetric integrand; the factor of 2 absorbs into $2/(2k) =
+1/k$. Odd-vanishing is via odd reflection symmetry against the
+even-symmetric measure, identical template to
+\texttt{quartic\_moment\_odd}. Partition is the $j = 0$
+specialisation. Expected values are the moment / partition ratio,
+with an \texttt{rpow\_add} step to combine
+$((2k)!/t)^{(2j+1)/(2k) - 1/(2k)} = ((2k)!/t)^{j/k}$.
+
+\section{Roadblocks and resolutions}
+
+Three trailing tactic mismatches at the bottom of the longer proofs:
+
+\begin{enumerate}[leftmargin=1.5em]
+\item In the half-line integral proof,\footnote{Theorem
+  \texttt{integral\_pow\_mul\_exp\_neg\_kth\_Ioi}.} an \texttt{hg}
+  sub-lemma used \texttt{push\_cast; ring}, but \texttt{push\_cast}
+  alone closed the goal so \texttt{ring} errored with ``No goals to
+  be solved''. The asymmetric \texttt{hgneg} needed \texttt{ring}
+  because \texttt{push\_cast} stopped one step short. Fix:
+  \texttt{push\_cast} alone for the positive case, \texttt{ring}
+  after \texttt{push\_cast} for the negative.
+\item Same pattern in two further proofs:\footnote{The full-line
+  \texttt{kth\_moment\_even} and the expected-value lemma both ended
+  with \texttt{field\_simp; ring}; in both, \texttt{field\_simp}
+  closed the goal alone.} \texttt{field\_simp} closed the goal
+  alone in each. Fix: drop the trailing \texttt{ring}.
+\item In the \texttt{partitionFunction\_kthPotential} bridge, an
+  \texttt{hexp} helper for the exponent reduction used the form
+  \texttt{(2 * 0 + 1 : ℝ) / ...} but the post-\texttt{kth\_moment\_even}
+  goal had Nat-cast \texttt{↑0} still visible. The \texttt{rw}
+  failed to match. Fix: replace the explicit \texttt{hexp} +
+  \texttt{rw} with a single \texttt{norm\_num}, which normalises
+  \texttt{↑0} and simplifies \texttt{2 * 0 + 1 = 1} in one pass.
+\end{enumerate}
+
+All four were local mid-proof cleanups, not architectural problems.
+No GPT mid-proof consult was needed; the deliberation at Step 2 set
+the scope and naming correctly.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{From Mathlib.} The master lemma
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow},
+\texttt{integral\_comp\_abs}, \texttt{integral\_neg\_eq\_self}, the
+\texttt{Real.rpow} algebra suite, \texttt{Real.Gamma\_pos\_of\_pos},
+and standard \texttt{ring} / \texttt{field\_simp} /
+\texttt{push\_cast} / \texttt{norm\_num}.
+
+\paragraph{From the seabed.} Only N1's \texttt{kth\_partition} for
+the raw integral identity is in the spirit; A1 inherits the same
+proof template (via Mathlib's master lemma at $q = 0$) and extends
+to general $q = 2j$. The quartic and sextic seabed lemmas are not
+load-bearing for A1 (A1 is generic enough to subsume both, even if
+the actual refactor of the quartic / sextic files is deferred to a
+follow-up tide).
+
+\paragraph{New here.} The named \texttt{kthPotential} definition,
+the full eight-theorem template at parametric $k$, and the bridge
+between raw-integral and \texttt{partitionFunction} /
+\texttt{gibbsExpectation} forms.
+
+\paragraph{Deferred.} Integrability witnesses
+(\texttt{kth\_integrable\_pow}, \texttt{kth\_integrable\_pow\_pot}).
+The quartic and sextic versions use a Gaussian-domination argument
+via square completion of $tx^{2k}/(2k)! - x^2$ for $k = 2, 3$
+specifically; a generic-$k$ version needs a uniform constant
+$C(k, t)$ that splits cleanly into the $k = 1$ (direct Gaussian)
+and $k \ge 2$ (square-completion with parametric constant) cases.
+That's substantial enough to warrant its own tide.
+
+\section{Lessons}
+
+\paragraph{Proceeding without GPT mid-proof works for mirror-shaped
+extensions.} GPT's pre-proof consult at Step~2 was load-bearing: it
+voted Candidate A, named the naming triplet, and explicitly
+recommended deferring the quartic / sextic refactor to a separate
+tide. Beyond that, A1's proof is mechanical mirror of the quartic /
+sextic templates with rpow/cast plumbing parametric in $k$. The
+deliberation-once + execute-deterministically pattern scales.
+
+\paragraph{\texttt{field\_simp} and \texttt{push\_cast} are
+``finishing'' tactics in this regime.} Four of the proof bodies in
+this file ended with what was meant to be \texttt{push\_cast; ring}
+or \texttt{field\_simp; ring}, but the closing \texttt{ring} was
+redundant in three of those four cases --- the prior tactic closed
+the goal. Worth recording: after explicit \texttt{rpow\_add /
+rpow\_neg} normalisations, \texttt{ring} is often unnecessary. If
+\texttt{ring} errors with ``No goals to be solved'', drop it.
+
+\paragraph{Defer integrability when it forks the proof.} The generic
+Gaussian-domination argument forces a case split on $k = 1$ vs
+$k \ge 2$ that the quartic / sextic specialisations don't need. By
+deferring the integrability layer, A1 stays as a clean uniform
+parametric lift; the integrability tide can then specialise as
+needed without contaminating the headline theorems.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1.5em]
+\item \emph{Integrability tide.} Land
+  \texttt{kth\_integrable\_pow} and \texttt{kth\_integrable\_pow\_pot}
+  via the Gaussian-domination argument, case-split on $k = 1$ vs
+  $k \ge 2$. ${\sim}80$ lines.
+\item \emph{Refactor quartic and sextic files as specialisations.}
+  After A1 and the integrability follow-up land, rewrite the quartic
+  and sextic files so that their headline theorems become $k = 2$
+  and $k = 3$ specialisations of the generic ones. Net deletion
+  ${\sim}300$ lines. Per GPT's guidance, this is a separate tide.
+\item \emph{2D analogues at arbitrary $k_1, k_2$.} The 2D
+  quartic-sextic story today proved closed for $(k_1, k_2) = (2, 3)$;
+  with A1 in hand, the same V2/Z1/Z2-style packaging extends to
+  arbitrary $(k_1, k_2)$ separable monomial potentials.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro's Step-2 consult contributed the vote for Candidate A
+(full template over skinnier variants), the naming triplet, the
+\texttt{MonomialPotential.lean} file name, and the explicit
+``defer the quartic / sextic refactor'' guidance. Full response
+preserved alongside the tide log in the primer project's
+\texttt{gpt\_responses\_a1/} folder.
+
+\end{document}
