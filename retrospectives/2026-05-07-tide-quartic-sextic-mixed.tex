@@ -1,0 +1,243 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+\title{Tide retrospective:\\mixed quartic-sextic 2D partition (A2)}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A trivial-mirror tide of A3 (separable-potential abstraction,
+Tide~12). For the 2D pure-monomial separable potential
+$L(x, y) = x^4/24 + y^6/720$, the partition function and moments
+factor as products of the corresponding 1D quartic and sextic
+quantities. Closed-form value of the 2D partition function:
+$$
+  Z_{\mathrm{2D}}(t) = \tfrac{1}{2}(24/t)^{1/4}\Gamma(1/4) \cdot
+                       \tfrac{1}{3}(720/t)^{1/6}\Gamma(1/6).
+$$
+Single session, 153~lines in one new file
+(\texttt{Laplace/TwoD/QuarticSextic.lean}), zero \texttt{sorry}, zero
+\texttt{axiom}, zero \texttt{native\_decide}. Five public theorems
+(partition factorisation, closed form, partition positivity, moment
+factorisation, mixed-coordinate covariance vanishing); all are
+\texttt{apply}-and-discharge chains over the existing A3 theorems
+plus integrability witnesses from the existing pure-monomial
+infrastructure. No GPT consult was needed: there is no
+candidate-design surface, since the target is the A3 theorem family
+instantiated.
+\end{abstract}
+
+\section{Setting}
+
+The A-category in the cross-project candidates survey carried three
+follow-ups after Tide~12 (the A3 separable-potential abstraction)
+landed: A1~(generic even-monomial 1D template), A2~(quartic-sextic
+mixed 2D), and A4~(generic mixed even-power 2D moments). A2 is the
+smallest and most concrete: a single 2D potential with two
+explicitly-named factors, both of which already have closed-form
+partition functions in the laplace repo
+(\texttt{Laplace.OneD.quartic\_partition} and
+\texttt{Laplace.OneD.sextic\_partition}). The candidates survey
+estimated $\sim$30~lines.
+
+The seabed at the start of the tide was \texttt{main} at
+commit~\texttt{b844d7a}\footnote{Commit prefixes truncated to seven
+characters throughout this retrospective; sufficient for uniqueness
+across the laplace history.}, with the I2 algebra (Tide
+\texttt{tide/gibbscov-algebra}) just merged in. All ingredients for
+A2 were on \texttt{main}: the pure-monomial potentials and their
+positivity / integrability lemmas in
+\texttt{OneD/Quartic.lean} and \texttt{OneD/Sextic.lean}, and the
+generic A3 theorem family in \texttt{TwoD/AddSeparable.lean}.
+
+\section{The thing formalised}
+
+Five theorems in the new file
+\texttt{Laplace/TwoD/QuarticSextic.lean}, all in the
+\texttt{Laplace.TwoD} namespace:
+
+\begin{itemize}[leftmargin=2em]
+\item \texttt{partitionFunction\_quarticSextic\_factor}:
+$Z_{\mathrm{2D}}(t) = Z_{\mathrm{quartic}}(t) \cdot Z_{\mathrm{sextic}}(t)$
+for $t > 0$.
+
+\item \texttt{partitionFunction\_quarticSextic\_eq}: the explicit
+closed-form value, obtained by substituting
+\texttt{quartic\_partition} and \texttt{sextic\_partition}.
+
+\item \texttt{partitionFunction\_quarticSextic\_pos}: strict
+positivity, by \texttt{mul\_pos} on the two pure-monomial positivity
+lemmas.
+
+\item \texttt{gibbsExpectation\_quarticSextic\_factor}: for any
+separable observable $f(x) \cdot g(y)$ with appropriate
+integrability,
+$\langle f(x) g(y) \rangle_{\mathrm{2D}, t}
+ = \langle f \rangle_{\mathrm{quartic}, t} \cdot
+   \langle g \rangle_{\mathrm{sextic}, t}$.
+
+\item \texttt{gibbsCov\_quarticSextic\_fst\_snd\_eq\_zero}: the
+covariance of any first-coordinate observable $f(x)$ and any
+second-coordinate observable $g(y)$ against the 2D quartic-sextic
+Gibbs measure is $0$. The structural statement of independence under
+the separable measure.
+\end{itemize}
+
+The informal content is exactly what the A3 abstraction says, applied
+to one specific pair of potentials. The added value is twofold: (a)
+the closed-form value of the 2D partition is now a one-rewrite
+substitution rather than a chain through generic infrastructure, and
+(b) the moment-factorisation and covariance-vanishing theorems take
+\emph{integrability hypotheses against the 1D potentials} directly,
+which is what every downstream consumer would need to phrase anyway.
+
+\section{Proof strategy}
+
+Each public theorem is a single \texttt{apply} of the corresponding
+A3 generic theorem, with the integrability hypotheses discharged from
+the existing pure-monomial infrastructure
+(\texttt{quartic\_integrable\_pow\_pot} at $n = 0$ for the quartic
+factor; \texttt{sextic\_integrable\_pow\_pot} at $n = 0$ for the
+sextic factor). The two integrability discharges are factored into
+private helpers
+(\texttt{integrable\_exp\_neg\_t\_quartic},
+\texttt{integrable\_exp\_neg\_t\_sextic}) so the public proofs are
+clean.
+
+For the closed-form theorem, after the factorisation rewrite the
+proof is a single \texttt{rw} chain combining the factorisation
+lemma with the two pure-monomial closed
+forms\footnote{\texttt{partitionFunction\_quarticSextic\_eq};
+the chain is \texttt{rw [partitionFunction\_quarticSextic\_factor
+ht, quartic\_partition ht, sextic\_partition ht]}.} -- nothing
+else needed, because the pure-monomial closed-form expressions are
+already exactly the form we want.
+
+\section{Roadblocks and resolutions}
+
+None. The proof rolled through in a single pass with no
+re-architecting, no thrashing, no Mathlib-search round. The most
+substantive design decision was whether to make the integrability
+helpers private to this file or promote them to the AddSeparable
+infrastructure file: kept them private here, since they're tied to
+the specific (quartic, sextic) instantiation and the
+\texttt{integrable\_pow\_pot 0 ht} pattern is generic enough that any
+future similar tide can reproduce it in two lines.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib lookups.} None new beyond \texttt{ne\_of\_gt} and
+\texttt{mul\_pos}.
+
+\paragraph{laplace-side existing material reused.}
+\begin{itemize}[leftmargin=2em]
+\item The three A3 generic theorems from \texttt{TwoD/AddSeparable.lean}
+(Tide~12): the partition factorisation, the moment factorisation
+for separable observables, and the mixed-coordinate covariance
+vanishing.\footnote{Names: \texttt{partitionFunction\_addSeparable\_factor},
+\texttt{gibbsExpectation\_separable\_addSeparable},
+\texttt{gibbsCov\_addSeparable\_fst\_snd\_eq\_zero}.}
+
+\item Pure-monomial closed forms and their positivity / integrability
+lemmas in \texttt{OneD/Quartic.lean} and
+\texttt{OneD/Sextic.lean}.\footnote{Six lemmas:
+\texttt{quartic\_partition},
+\texttt{quartic\_partition\_pos},
+\texttt{quartic\_integrable\_pow\_pot},
+\texttt{sextic\_partition},
+\texttt{sextic\_partition\_pos},
+\texttt{sextic\_integrable\_pow\_pot}.}
+\end{itemize}
+
+\paragraph{New material.} Two private integrability helpers and
+five public theorems (partition factorisation, partition closed
+form, partition positivity, moment factorisation, mixed-coordinate
+covariance vanishing). Total: 153~lines, of which $\sim$60 are
+docstrings and $\sim$90 are proof body.
+
+\section{Lessons}
+
+\paragraph{Trivial-mirror tides are valuable.}
+A2 is the second trivial-mirror tide of the day (after L1 sextic-J-function
+on 6~May; today's similar mirrors include G2/G2+ kappa3-affine-anharmonic).
+The pattern is: a generic theorem family lands; a strict-improvement
+tide instantiates it at specific names. The instantiation is a 50--150
+line file, no new mathematics, all proof-engineering value. These
+tides are \emph{worth doing} because they (a)~surface the closed-form
+values that downstream consumers will want, (b)~front-load the
+integrability bookkeeping at the named-instance level rather than
+forcing every consumer to repeat it, and (c)~provide a stable named
+target for paper-side \texttt{\textbackslash leanref} tags.
+
+\paragraph{No-deliberation tides skip GPT cleanly.}
+The skill's "trivial mirror" exemption was used here for the second
+time today (after L1 sextic-J-function and G2 anharmonic-affine
+mirrors). The criterion is honest: there must be \emph{no candidate
+choice} -- the target is forced by the abstraction, the proof is a
+single \texttt{apply}-chain, and the integrability hypotheses are
+already established. Deliberation overhead would not have surfaced
+anything useful. Worth being explicit: the exemption is for tides
+where the deliberation surface is genuinely zero, not for tides where
+we're \emph{lazy} about deliberation.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=2em]
+\item \emph{A4 -- mixed even-power 2D moments.} The natural sequel:
+the closed form of $\langle x^{2j} y^{2k} \rangle_{\mathrm{2D}, t}$
+under the same potential, by applying
+\texttt{gibbsExpectation\_quarticSextic\_factor} to
+$f = x^{2j}$, $g = y^{2k}$, then substituting
+\texttt{quartic\_expected\_value\_even} and
+\texttt{sextic\_expected\_value\_even}. Estimated $\sim$30~lines.
+
+\item \emph{A1 -- generic even-monomial 1D template
+$L = x^{2k}/(2k)!$.} The natural \emph{abstraction} step: unify the
+quartic, sextic, and (now) generic-$k$ J-function machinery under a
+single parametric family. Estimated $\sim$250--350~lines per the
+candidates survey.
+
+\item \emph{Other 2D mixed pure-monomial pairs.} Quartic-quartic,
+sextic-sextic, $x^{2j}/( (2j)!)$ paired with $y^{2k}/((2k)!)$ for
+various $(j, k)$. Each is a 30-line corollary of A3 once the named
+1D pure-monomial families exist. Best deferred until A1 lands and
+gives the parametric 1D pattern.
+
+\item \emph{$\backslash$leanref tag for the primer.} The
+2D mixed quartic-sextic example may appear in the susceptibility
+primer's exposition; if so, tag with
+\texttt{\textbackslash laplaceCommit} pinned to the merge commit.
+Process tide.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+This Tide consumed only material on \texttt{main} at the time of
+branching (commit~\texttt{b844d7a}, post-I2-merge). It is genuinely
+non-rivalrous with the half-dozen other tides running concurrently:
+A2 only writes a new file, doesn't touch any existing module, and
+its only dependency on today's earlier work is the I2 algebra
+(transitively, via \texttt{Laplace.gibbsExpectation\_const} inside
+the A3 theorems' proofs).
+
+GPT-5.5~Pro was not consulted: the trivial-mirror exemption applies,
+since there are no candidate-design choices and the proof is a
+direct \texttt{apply}-chain over the A3 theorem family. This is the
+second use of that exemption today (the first was the L1 sextic-J-function
+mirror tide on 6~May).
+
+\end{document}

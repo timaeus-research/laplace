@@ -33,3 +33,4 @@ import Laplace.AffineBilinearCov
 import Laplace.OneD.HarmonicCovGlobalConstancy
 import Laplace.OneD.HarmonicPerturbedMoments
 import Laplace.OneD.JFunctionSextic
+import Laplace.TwoD.QuarticSextic
