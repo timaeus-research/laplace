@@ -223,15 +223,24 @@ private lemma kth_dominator_integrable {k : ℕ} (hk : 1 ≤ k) (M : ℝ) :
 /-- **J-function centred DCT theorem (generic `k`).**
 
 For the single-monomial potential `K(w) = w^(2k)/(2k)!` with `k ≥ 1`
-and a continuous, globally bounded prior `prior`, the centred J-function
-vanishes faster than `t^(-1/(2k))`:
+and a globally bounded prior `prior` that is `AEMeasurable` and
+continuous at `0`, the centred J-function vanishes faster than
+`t^(-1/(2k))`:
 $$
   \lim_{t \to \infty} t^{1/(2k)} \cdot \int_{\mathbb R}
     e^{-t\,w^{2k}/(2k)!}\,(\pi(w) - \pi(0))\,dw \;=\; 0.
-$$ -/
+$$
+
+The hypothesis class is the mathematically-minimal one identified at
+the original E4 deliberation: AE measurability handles integrability
+and dominated convergence's strong-measurability requirement; pointwise
+continuity at `0` handles the DCT's pointwise limit; the global bound
+underwrites the dominator. -/
 theorem kth_jfunction_centered_tendsto_zero
     {k : ℕ} (hk : 1 ≤ k)
-    {prior : ℝ → ℝ} (hprior_cont : Continuous prior)
+    {prior : ℝ → ℝ}
+    (hprior_meas : AEMeasurable prior volume)
+    (hprior_cont0 : ContinuousAt prior 0)
     {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
     Tendsto (fun t : ℝ =>
         t ^ ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) *
@@ -256,11 +265,31 @@ theorem kth_jfunction_centered_tendsto_zero
     refine MeasureTheory.tendsto_integral_filter_of_dominated_convergence bound
       ?_ ?_ ?_ ?_
     · -- Eventually: AEStronglyMeasurable (F t).
-      filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t _ht
-      have hcomp : Continuous (fun u : ℝ => prior (u / t ^ α)) :=
-        hprior_cont.comp (by fun_prop)
+      filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
+      -- AE measurability of u ↦ prior(u / t^α) via comp_quasiMeasurePreserving:
+      -- u / t^α = (t^α)⁻¹ • u, scaling by a nonzero constant on volume.
+      have htα_pos : 0 < t ^ α := Real.rpow_pos_of_pos ht α
+      have htα_inv_ne : (t ^ α : ℝ)⁻¹ ≠ 0 := inv_ne_zero htα_pos.ne'
+      -- The scaling map u ↦ (t^α)⁻¹ • u is quasi-MP on volume.
+      have h_qmp : MeasureTheory.Measure.QuasiMeasurePreserving
+          (fun u : ℝ => (t ^ α)⁻¹ • u) (volume : Measure ℝ) volume :=
+        MeasureTheory.Measure.quasiMeasurePreserving_smul (volume : Measure ℝ) htα_inv_ne
+      -- Reshape u / t^α = (t^α)⁻¹ • u.
+      have hreshape : (fun u : ℝ => prior (u / t ^ α)) =
+          prior ∘ (fun u : ℝ => (t ^ α)⁻¹ • u) := by
+        funext u
+        show prior (u / t ^ α) = prior ((t ^ α)⁻¹ * u)
+        congr 1
+        rw [div_eq_mul_inv, mul_comm]
+      have h_aem : AEMeasurable (fun u : ℝ => prior (u / t ^ α)) volume := by
+        rw [hreshape]
+        exact hprior_meas.comp_quasiMeasurePreserving h_qmp
+      have h_aesm_prior : AEStronglyMeasurable
+          (fun u : ℝ => prior (u / t ^ α)) volume :=
+        h_aem.aestronglyMeasurable
       have h1 : Continuous (fun u : ℝ => Real.exp (-(u ^ p / fac))) := by fun_prop
-      exact (h1.mul (hcomp.sub continuous_const)).aestronglyMeasurable
+      exact (h1.aestronglyMeasurable.mul
+        (h_aesm_prior.sub aestronglyMeasurable_const))
     · -- Eventually: ‖F t u‖ ≤ bound u for a.e. u.
       filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t _ht
       filter_upwards with u
@@ -285,7 +314,7 @@ theorem kth_jfunction_centered_tendsto_zero
           tendsto_rpow_atTop hα_pos
         exact (tendsto_const_nhds (x := u)).div_atTop h_inf
       have h_prior_lim : Tendsto (fun t : ℝ => prior (u / t ^ α)) atTop (𝓝 (prior 0)) :=
-        (hprior_cont.tendsto 0).comp h_div_zero
+        hprior_cont0.tendsto.comp h_div_zero
       have h_diff_lim : Tendsto (fun t : ℝ => prior (u / t ^ α) - prior 0)
           atTop (𝓝 0) := by
         have : Tendsto (fun t : ℝ => prior (u / t ^ α) - prior 0)
@@ -397,7 +426,9 @@ $$
 as `t → ∞`. -/
 theorem kth_jfunction_asymptotic
     {k : ℕ} (hk : 1 ≤ k)
-    {prior : ℝ → ℝ} (hprior_cont : Continuous prior)
+    {prior : ℝ → ℝ}
+    (hprior_meas : AEMeasurable prior volume)
+    (hprior_cont0 : ContinuousAt prior 0)
     {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
     Tendsto (fun t : ℝ =>
         t ^ ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) *
@@ -427,7 +458,8 @@ theorem kth_jfunction_asymptotic
       have h_meas : AEStronglyMeasurable
           (fun w : ℝ => Real.exp (-(t * w ^ p / fac)) * (prior w - prior 0)) volume := by
         have h1 : Continuous (fun w : ℝ => Real.exp (-(t * w ^ p / fac))) := by fun_prop
-        exact (h1.mul (hprior_cont.sub continuous_const)).aestronglyMeasurable
+        exact h1.aestronglyMeasurable.mul
+          (hprior_meas.aestronglyMeasurable.sub aestronglyMeasurable_const)
       have h_bd : ∀ w, ‖Real.exp (-(t * w ^ p / fac)) * (prior w - prior 0)‖ ≤
                        Real.exp (-(t * w ^ p / fac)) * (2 * M) := by
         intro w
@@ -485,7 +517,7 @@ theorem kth_jfunction_asymptotic
   have h_centered : Tendsto (fun t : ℝ =>
         t ^ α * ∫ w : ℝ, Real.exp (-(t * w ^ p / fac)) * (prior w - prior 0))
       atTop (𝓝 0) :=
-    kth_jfunction_centered_tendsto_zero hk hprior_cont hprior_bd
+    kth_jfunction_centered_tendsto_zero hk hprior_meas hprior_cont0 hprior_bd
   have h_sum_C : Tendsto (fun t : ℝ =>
         (t ^ α * ∫ w : ℝ, Real.exp (-(t * w ^ p / fac)) * (prior w - prior 0)) + C)
       atTop (𝓝 C) := by
