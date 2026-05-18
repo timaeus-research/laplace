@@ -13,6 +13,7 @@ import Laplace.OneD.UniversalAsymptotics
 import Laplace.ScalarBound
 import Laplace.OneD.IntegralRemainder
 import Laplace.OneD.Rescaling
+import Laplace.OneD.MonomialPotential
 import Laplace.Multi.Basic
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox
