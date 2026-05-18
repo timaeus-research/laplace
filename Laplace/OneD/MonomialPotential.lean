@@ -1,5 +1,6 @@
 import Laplace.Gibbs
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.MeasureTheory.Integral.Gamma
 import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
 import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
@@ -59,6 +60,100 @@ noncomputable def kthPotential (k : ℕ) : ℝ → ℝ :=
 
 @[simp] lemma kthPotential_apply (k : ℕ) (x : ℝ) :
     kthPotential k x = x ^ (2 * k) / (Nat.factorial (2 * k) : ℝ) := rfl
+
+/-! ## Integrability -/
+
+/-- Key bound for the generic-$k$ Gaussian-domination argument:
+$x^2 \le 1 + x^{2k}$ for any $k \ge 1$. -/
+private lemma sq_le_one_add_pow_two_mul (k : ℕ) (hk : 1 ≤ k) (x : ℝ) :
+    x ^ 2 ≤ 1 + x ^ (2 * k) := by
+  rcases le_total (x ^ 2) 1 with hx | hx
+  · -- $|x| \le 1$: $x^2 \le 1 \le 1 + x^{2k}$ since $x^{2k} \ge 0$.
+    have h : (0 : ℝ) ≤ x ^ (2 * k) := by
+      rw [pow_mul]; exact pow_nonneg (sq_nonneg x) k
+    linarith
+  · -- $|x| \ge 1$: $x^{2k} = (x^2)^k \ge x^2$ since $1 \le x^2$ and $1 \le k$.
+    have hpow : x ^ (2 * k) = (x ^ 2) ^ k := by rw [pow_mul]
+    have hge : x ^ 2 ≤ (x ^ 2) ^ k :=
+      le_self_pow₀ hx (Nat.one_le_iff_ne_zero.mp hk)
+    rw [hpow]; linarith
+
+/-- Polynomial-times-monomial-Gibbs integrability. For $k \ge 1$,
+$n : \mathbb N$, and $t > 0$, $x^n \cdot \exp(-t \cdot x^{2k}/(2k)!)$ is
+Lebesgue integrable on $\mathbb R$.
+
+Proof: Gaussian comparison via $x^2 \le 1 + x^{2k}$, which gives
+$t \cdot x^{2k}/(2k)! \ge (t/(2k)!) \cdot x^2 - t/(2k)!$, hence
+$\exp(-t x^{2k}/(2k)!) \le \exp(t/(2k)!) \cdot \exp(-(t/(2k)!) x^2)$.
+The dominator is integrable by Mathlib's
+`integrable_rpow_mul_exp_neg_mul_sq` with $b = t/(2k)!$. -/
+theorem kth_integrable_pow
+    {k : ℕ} (hk : 1 ≤ k) (n : ℕ) {t : ℝ} (ht : 0 < t) :
+    Integrable (fun x : ℝ =>
+      x ^ n * Real.exp (-(t * x ^ (2 * k) / (Nat.factorial (2 * k) : ℝ)))) := by
+  set fac : ℝ := (Nat.factorial (2 * k) : ℝ) with hfac_def
+  have hfac_pos : (0 : ℝ) < fac := by
+    change (0 : ℝ) < (Nat.factorial (2 * k) : ℝ)
+    exact_mod_cast Nat.factorial_pos _
+  have ht_fac : (0 : ℝ) < t / fac := div_pos ht hfac_pos
+  have hmeas : AEStronglyMeasurable
+      (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ (2 * k) / fac))) volume :=
+    (by fun_prop : Continuous _).aestronglyMeasurable
+  have hns : (-1 : ℝ) < (n : ℝ) := by
+    have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    linarith
+  have hdom_raw : Integrable
+      (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(t / fac) * x ^ 2)) volume :=
+    integrable_rpow_mul_exp_neg_mul_sq ht_fac hns
+  have hdom : Integrable
+      (fun x : ℝ => x ^ n * Real.exp (-((t / fac) * x ^ 2))) volume := by
+    have heq : (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(t / fac) * x ^ 2)) =
+               (fun x : ℝ => x ^ n * Real.exp (-((t / fac) * x ^ 2))) := by
+      ext x
+      rw [Real.rpow_natCast]
+      congr 2
+      ring
+    rwa [heq] at hdom_raw
+  have hbound : ∀ x : ℝ,
+      Real.exp (-(t * x ^ (2 * k) / fac)) ≤
+        Real.exp (t / fac) * Real.exp (-((t / fac) * x ^ 2)) := by
+    intro x
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    have hkey : x ^ 2 ≤ 1 + x ^ (2 * k) := sq_le_one_add_pow_two_mul k hk x
+    have hfac_ne : fac ≠ 0 := ne_of_gt hfac_pos
+    have hrewrite : t * x ^ (2 * k) / fac = (t / fac) * x ^ (2 * k) := by
+      field_simp
+    rw [hrewrite]
+    have hprod : (0 : ℝ) ≤ (t / fac) * (1 + x ^ (2 * k) - x ^ 2) :=
+      mul_nonneg ht_fac.le (by linarith)
+    nlinarith
+  have habs : ∀ x : ℝ,
+      ‖x ^ n * Real.exp (-(t * x ^ (2 * k) / fac))‖ ≤
+        ‖Real.exp (t / fac) * (x ^ n * Real.exp (-((t / fac) * x ^ 2)))‖ := by
+    intro x
+    rw [Real.norm_eq_abs, Real.norm_eq_abs,
+        abs_mul, abs_mul, abs_mul,
+        abs_of_pos (Real.exp_pos _), abs_of_pos (Real.exp_pos _),
+        abs_of_pos (Real.exp_pos _), abs_pow]
+    have hxn : (0 : ℝ) ≤ |x| ^ n := pow_nonneg (abs_nonneg _) n
+    nlinarith [hbound x, Real.exp_pos (-((t / fac) * x ^ 2))]
+  exact (hdom.const_mul (Real.exp (t / fac))).mono hmeas
+    (Filter.Eventually.of_forall habs)
+
+/-- Polynomial-times-monomial-Gibbs integrability, in `kthPotential` form. -/
+theorem kth_integrable_pow_pot
+    {k : ℕ} (hk : 1 ≤ k) (n : ℕ) {t : ℝ} (ht : 0 < t) :
+    Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * kthPotential k x))) := by
+  have h := kth_integrable_pow hk n ht
+  have heq : (fun x : ℝ =>
+      x ^ n * Real.exp (-(t * x ^ (2 * k) / (Nat.factorial (2 * k) : ℝ)))) =
+             (fun x : ℝ => x ^ n * Real.exp (-(t * kthPotential k x))) := by
+    ext x
+    rw [kthPotential_apply]
+    congr 2
+    ring
+  rwa [heq] at h
 
 /-! ## Half-line moment integral -/
 
