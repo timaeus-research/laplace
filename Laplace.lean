@@ -30,6 +30,7 @@ import Laplace.OneD.QuarticBoundedPriorTestFn
 import Laplace.OneD.HarmonicGibbsObservableMonomials
 import Laplace.OneD.HarmonicAffineKappa3
 import Laplace.AffineBilinearCov
+import Laplace.Multi.AffineBilinearCov
 import Laplace.OneD.HarmonicCovGlobalConstancy
 import Laplace.OneD.HarmonicPerturbedMoments
 import Laplace.OneD.JFunctionMonomial
