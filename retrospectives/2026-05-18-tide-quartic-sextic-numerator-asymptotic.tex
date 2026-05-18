@@ -1,0 +1,240 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+
+\title{Tide retrospective:\\\emph{2D numerator asymptotic for the quartic-sextic potential (Z1)}}
+\author{Daniel Murfet}
+\date{18 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The cross-project tide-candidate survey labelled the V2 follow-up
+``numerator-side asymptotic''. This Tide discharges it: the missing
+literal interpretation of the original survey wording, about the
+unnormalised 2D integral $\int\!\int x^{2j} y^{2k}\,e^{-tL}\,dx\,dy$
+scaling as $t^{-(2j+1)/4 - (2k+1)/6}$. The packaging mirrors V2:
+an exact reformulation, a rescaled limit, and an asymptotic-
+equivalence form.\footnote{The latter two via \texttt{Tendsto}
+and \texttt{Asymptotics.IsEquivalent} respectively.} The proof is
+one factorisation through separability plus two 1D moment closed
+forms plus the same \texttt{rpow} algebra V2 used. 157 lines, single-attempt clean build,
+with zero \texttt{sorry}, axiom, or \texttt{native\_decide}. Mirror-
+shaped tide; GPT consult skipped per the tide skill's preflight, as
+the candidate is structurally identical to V2 and the closed form was
+verified numerically at ten test points to relative error
+${\sim}10^{-16}$.
+\end{abstract}
+
+\section{Setting}
+
+Z1 is the literal completion of the V2 story: V2 packaged T1's exact
+moment closed form into asymptotic form; Z1 does the same for the
+\emph{unnormalised numerator integral}. The two objects differ by the
+2D partition function $\int\!\int e^{-tL}\,dx\,dy$, which itself
+scales as $t^{-1/4 - 1/6} = t^{-5/12}$; the moment scaling
+$t^{-(j/2 + k/3)}$ and the numerator scaling $t^{-((2j+1)/4 +
+(2k+1)/6)}$ differ by exactly $t^{-5/12}$, as expected.
+
+Two retrospective-time observations made Z1 cheaper than the survey
+estimated:
+
+\begin{itemize}[leftmargin=1.5em]
+\item The 2D-numerator factor lemma already exists in the seabed.
+  The survey direction guessed ``likely needs to be proved
+  alongside, by direct factorisation of the 2D integral''. In fact,
+  for any \texttt{addSeparable} potential $U + V$ and any separable
+  observable, the 2D integral factors as
+  $\int\!\int f(x) g(y) e^{-t(U + V)} = (\int f\,e^{-tU})(\int g\,
+  e^{-tV})$.\footnote{In
+  \texttt{Laplace/TwoD/AddSeparable.lean} as
+  \texttt{integral\_separable\_addSeparable}.}
+\item The 1D exact moments are also already in the seabed:
+  \texttt{Laplace.OneD.quartic\_moment\_even} and
+  \texttt{Laplace.OneD.sextic\_moment\_even}. T1 used them; Z1 uses
+  them again, this time directly rather than via the
+  \texttt{gibbsExpectation} layer.
+\end{itemize}
+
+This Tide is therefore the cleanest possible mirror of V2: the same
+three-theorem packaging with different building blocks for the exact
+reformulation step.
+
+\section{The thing formalised}
+
+Three theorems in \texttt{Laplace.TwoD}:
+
+\begin{enumerate}[leftmargin=1.5em]
+\item \textbf{Exact reformulation.} For $t > 0$ and $j, k \in
+  \mathbb N$,
+  $$
+    \int\!\int x^{2j} y^{2k}\,e^{-tL(x, y)}\,dx\,dy
+    = C'(j, k)\cdot t^{-((2j+1)/4 + (2k+1)/6)}
+  $$
+  with
+  $$
+    C'(j, k) := \tfrac{1}{6}\cdot 24^{(2j+1)/4}\cdot 720^{(2k+1)/6}
+      \cdot \Gamma((2j+1)/4)\cdot \Gamma((2k+1)/6).
+  $$
+\item \textbf{Rescaled \texttt{Tendsto}.} As $t \to \infty$,
+  $$
+    t^{(2j+1)/4 + (2k+1)/6}\cdot \int\!\int x^{2j} y^{2k}\,e^{-tL}
+    \to C'(j, k).
+  $$
+\item \textbf{\texttt{IsEquivalent}.} At $\mathrm{atTop}$,
+  $$
+    \int\!\int x^{2j} y^{2k}\,e^{-tL}
+    \;\sim\; C'(j, k)\cdot t^{-((2j+1)/4 + (2k+1)/6)}.
+  $$
+\end{enumerate}
+
+Named constant: \texttt{quarticSexticNumeratorConst}. File:
+sibling to V2's moment-asymptotic file, in the same
+\texttt{Laplace/TwoD/} folder.\footnote{Specifically
+\texttt{Laplace/TwoD/QuarticSexticNumeratorAsymptotic.lean}, alongside
+\texttt{QuarticSexticMomentAsymptotic.lean} from V2.} Added to
+project root.
+
+\section{Proof strategy}
+
+The exact reformulation pipeline:
+\begin{enumerate}[leftmargin=1.5em]
+\item Apply \texttt{integral\_separable\_addSeparable} with
+  $f = x \mapsto x^{2j}$, $g = y \mapsto y^{2k}$, integrability
+  witnesses \texttt{quartic\_integrable\_pow\_pot} and
+  \texttt{sextic\_integrable\_pow\_pot}. This factors the 2D integral
+  into a product of two 1D integrals, but with the potentials still
+  in \texttt{quarticPotential} / \texttt{sexticPotential} form.
+\item Rewrite each 1D integrand from \texttt{quarticPotential x} to
+  the explicit \texttt{x\textasciicircum 4 / 24} form (and similarly
+  for sextic), via the \texttt{\_apply} \texttt{@[simp]} lemmas.
+  Each is a small \texttt{congr 1; ext; ...; ring} block; mirror of
+  T1's template.
+\item Apply \texttt{quartic\_moment\_even} and
+  \texttt{sextic\_moment\_even} to replace each 1D integral with its
+  $(\text{const} \times (24/t)^{\text{exp}} \times \Gamma)$ form.
+\item Unfold \texttt{quarticSexticNumeratorConst}, then standard
+  \texttt{Real.rpow} algebra: \texttt{Real.div\_rpow} splits
+  $(24/t)^a$ into $24^a / t^a$, \texttt{Real.rpow\_add} (valid for
+  $t > 0$) combines $t^{-a} \cdot t^{-b} = t^{-(a + b)}$, and
+  \texttt{Real.rpow\_neg} bridges negative exponents.
+  \texttt{ring} closes.
+\end{enumerate}
+
+The two asymptotic forms (\texttt{Tendsto} and
+\texttt{IsEquivalent}) follow from the exact reformulation by the
+same eventual-equality idiom V2 used. Both reduce to ``the rescaled
+function is eventually equal to a constant'' on the positive reals.
+
+\section{Roadblocks and resolutions}
+
+No roadblocks. The proof compiled green on first try. The lessons
+from V2 (no \texttt{field\_simp} after explicit \texttt{rpow\_add}
+normalisation; use \texttt{ring} at the bottom; \texttt{tendsto\_congr'}
++ eventual equality for the asymptotic packagings) carried directly.
+
+The structural insight made before writing any code --- that the
+seabed already provides the 2D-numerator factor lemma --- saved
+roughly a third of the expected work (the original Z1 estimate
+budgeted for proving a numerator factor lemma alongside,
+${\sim}30$ lines).
+
+\section{What was Mathlib, what was new}
+
+\paragraph{From Mathlib.} The standard \texttt{Real.rpow} algebra
+suite,\footnote{\texttt{Real.div\_rpow}, \texttt{Real.rpow\_add},
+\texttt{Real.rpow\_neg}, plus \texttt{ring}.} the
+\texttt{Tendsto}-to-constant idiom,\footnote{\texttt{tendsto\_const\_nhds}
+and \texttt{Tendsto.congr'}.} and the
+\texttt{Asymptotics.IsEquivalent} refl + congruence
+pair.\footnote{\texttt{Asymptotics.IsEquivalent.refl} and
+\texttt{IsEquivalent.congr\_left}.} Same Mathlib API V2 used.
+
+\paragraph{From the seabed.} Five seabed lemmas, all proved on prior
+tides: the 2D-numerator factor theorem from A2's
+\texttt{AddSeparable.lean}, two 1D integrability witnesses, two 1D
+\texttt{\_moment\_even} closed forms, and the two
+\texttt{\_Potential\_apply} \texttt{@[simp]}
+unfolds.\footnote{Specifically
+\texttt{integral\_separable\_addSeparable},
+\texttt{quartic\_integrable\_pow\_pot},
+\texttt{sextic\_integrable\_pow\_pot},
+\texttt{quartic\_moment\_even}, \texttt{sextic\_moment\_even},
+\texttt{quarticPotential\_apply}, and
+\texttt{sexticPotential\_apply}.} Nothing else from the laplace
+seabed was load-bearing.
+
+\paragraph{New here.} Three theorems plus the named constant
+\texttt{quarticSexticNumeratorConst}. Architecturally identical to
+V2; the value is in completing the numerator-vs-moment parity.
+
+\section{Lessons}
+
+\paragraph{Mirror-shaped tides are first-class.} A tide whose
+candidate is structurally identical to a just-landed predecessor
+\emph{should} skip the GPT consult --- the deliberation has already
+happened, and re-running it adds token cost without changing the
+output. The tide skill's preflight already names this path
+(``proceed-without-GPT''); Z1 is a clean exemplar. The discipline
+that justifies the skip is (a) a numerical sanity check covering at
+least 5--10 test points, and (b) explicit acknowledgement in the
+tide log that the candidate is mirror-shaped against the named
+predecessor.
+
+\paragraph{Seabed dig before deliberation pays off.} A 5-minute
+\texttt{grep} of \texttt{AddSeparable.lean} surfaced the existing
+2D-numerator factor lemma, which the survey direction had guessed
+needed to be proved alongside Z1. Knowing this before drafting
+candidates cut the Tide cost estimate by a third and made the
+``mirror of V2'' framing exact.
+
+\paragraph{Moment vs numerator scaling differ by the partition.}
+V2's moment scales as $t^{-(j/2 + k/3)}$; Z1's numerator scales as
+$t^{-((2j+1)/4 + (2k+1)/6)}$. The difference is exactly
+$t^{-5/12} = t^{-1/4 - 1/6}$, which is the partition-function
+scaling (quartic partition $\sim t^{-1/4}$, sextic
+$\sim t^{-1/6}$). Worth recording as a sanity-check identity for
+future asymptotic packagings.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1.5em]
+\item \emph{2D partition function asymptotic.} The natural completing
+  third object: the 2D partition function $\int\!\int e^{-tL}$ scales
+  as $C''\cdot t^{-1/4 - 1/6}$. Same three-theorem packaging, even
+  smaller proof (no polynomial weights, just the partition product).
+  ${\sim}50$ lines.
+\item \emph{Odd-numerator analogues.} For any odd index, the 2D
+  numerator with $x^{2j+1}$ or $y^{2k+1}$ weight is identically zero
+  by V1. The corresponding ``asymptotic packaging'' is the trivial
+  $0 \sim 0$; skip.
+\item \emph{Generic $k$-th-power potential 1D and 2D analogues.}
+  The same template (1D moment closed form + 2D separability) works
+  for $x^{2k}/(2k)!$ pure-monomial potentials in general. The 1D
+  generic-$k$ asymptotic is exactly N1; extending to 2D follows the
+  Z1 template. Out of scope for this tide.
+\item \emph{Promote \texttt{quarticSexticNumeratorConst} to
+  \texttt{lean-common}.} Only with a third consumer; currently the
+  named constant has one use site.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+No GPT consult was used for Z1 (mirror-shaped tide off V2 per the
+tide skill's preflight). The deliberation work was inherited from
+V2's GPT consult, which set the three-theorem packaging shape and
+the \texttt{tendsto\_congr'} idiom; both apply unchanged here. The
+numerical sanity check at ten $(j, k, t)$ values confirmed the
+$C'(j, k)$ formula to relative error ${\sim}10^{-16}$ before the
+proof was written, and is preserved in the primer's tide-log
+GPT-responses folder alongside this tide's markdown log.
+
+\end{document}
