@@ -1,0 +1,419 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{→}{\ensuremath{\to}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{factored $\kappa_3$ identity for
+affine observables (potential-agnostic)}}
+\author{Claude Opus 4.7 (1M ctx), with Daniel Murfet}
+\date{2026-05-07}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For any 1D Gibbs measure with potential $L$ at temperature $t$, with
+$Z(t) \neq 0$ and integrability of $x^n e^{-tL}$ for
+$n \in \{0,1,2,3\}$, the joint third cumulant of three shifted-affine
+observables factors as
+$$
+  \kappa_3(\mu_{\mathrm{vol}}, L,\;a_2 x + b_2,\;t,\;a_1 x + b_1,\;a_3 x + b_3)
+  = a_1 a_2 a_3 \cdot \kappa_3(\mu_{\mathrm{vol}}, L,\;x,\;t,\;x,\;x).
+$$
+This is the natural cumulant content GPT-5.5~Pro named at C1's
+deliberation: \emph{constants drop by translation invariance,
+scalings factor by trilinearity}. The C1 (harmonic-affine vanishing)
+and G2/G2+ (anharmonic-affine asymptotic) tides become 5-line
+specialisations of this identity. New file
+\texttt{Laplace/AffineKappa3.lean}, 310~lines, four public theorems
+plus one private cubic-polynomial helper; zero \texttt{sorry}, zero
+\texttt{axiom}, zero \texttt{native\_decide}; \emph{single-attempt
+clean build with no mid-proof thrashing-rescue consult}.
+\end{abstract}
+
+\section{Setting}
+
+The afternoon arc of 2026-05-07 has been dominated by the
+\emph{I2 algebra programme} — one infrastructure tide (I2,
+generic \texttt{gibbsCov} algebra) followed by a stack of cheap
+strict-improvements off it (I3 affine-bilinear cov, C1 harmonic-affine
+$\kappa_3$ vanishing, G2 anharmonic-affine $\kappa_3$ asymptotic, G2+
+shifted-affine extension). Each retrospective in the stack named the
+\emph{factored $\kappa_3$ identity} as the natural cumulant-content
+abstraction: GPT identified it during C1's Step~2 deliberation; both
+C1's Follow-ups and G2's "Candidate~C deferred" cited it; the v4
+survey ranked it the top recommendation as the trilogy's
+narrative-closer.
+
+This Tide closes that thread. The candidate is precisely the
+potential-agnostic version of the structural identity that C1
+and G2/G2+ formalise as potential-specific corollaries. Once it
+lands, C1 and G2/G2+ can be refactored as 5-line specialisations
+(combining this identity with the potential-specific value of
+$\kappa_3(x,x,x)$ on the right-hand side); the refactor is a
+separate follow-up tide once C1 and G2/G2+ both reach
+\texttt{main}.
+
+The Step~2 deliberation between Claude and GPT-5.5~Pro converged in a
+single round on a refined "B-lite" plan: lift two private bridge
+lemmas from C1 and G2 to public, add a specialised
+\texttt{gibbsExpectation\_affine} helper, then derive the headline
+by direct unfold + cubic expansion. Both models voted the same plan;
+GPT additionally trimmed the public API away from generic
+translation-invariance (whose hypothesis bundle "gets annoyingly
+large") toward an affine-specialised approach.
+
+The markdown tide log\footnote{In the SRI repo at
+\texttt{projects/primer/tide-log/}, file
+\texttt{2026-05-07-tide-factored-kappa3-affine.md}.} carries the full
+deliberation; the GPT consult is preserved at the sibling
+\texttt{gpt\_responses\_q1/q1\_v1.md}.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For any 1D Gibbs measure with potential $L : \mathbb R \to \mathbb R$
+at temperature $t > 0$, given $Z(t) := \int e^{-tL} \neq 0$ and
+integrability of $x^n e^{-tL}$ for $n \in \{0,1,2,3\}$, and any six
+constants $a_1, a_2, a_3, b_1, b_2, b_3 \in \mathbb R$,
+$$
+  \kappa_3(\mu_{\mathrm{vol}}, L,\;a_2 x + b_2,\;t,\;a_1 x + b_1,\;a_3 x + b_3)
+  = a_1 a_2 a_3 \cdot \kappa_3(\mu_{\mathrm{vol}}, L,\;x,\;t,\;x,\;x).
+$$
+\end{quote}
+
+\noindent The Lean signature\footnote{\texttt{Laplace/AffineKappa3.lean},
+\texttt{kappa3\_volume\_shifted\_affine\_eq\_smul}.}:
+
+\begin{verbatim}
+theorem kappa3_volume_shifted_affine_eq_smul
+    (L : ℝ → ℝ) {t : ℝ}
+    (hZ : partitionFunction L t ≠ 0)
+    (h_int_1 : Integrable (fun x => Real.exp (-(t * L x))))
+    (h_int_x : Integrable (fun x => x * Real.exp (-(t * L x))))
+    (h_int_x2 : Integrable (fun x => x^2 * Real.exp (-(t * L x))))
+    (h_int_x3 : Integrable (fun x => x^3 * Real.exp (-(t * L x))))
+    (a₁ a₂ a₃ b₁ b₂ b₃ : ℝ) :
+    Threepoint.kappa3 (volume : Measure ℝ) L
+        (fun x => a₂ * x + b₂) t
+        (fun x => a₁ * x + b₁) (fun x => a₃ * x + b₃)
+      = a₁ * a₂ * a₃ * Threepoint.kappa3 (volume : Measure ℝ) L
+          (fun x => x) t (fun x => x) (fun x => x)
+\end{verbatim}
+
+\noindent The argument-ordering convention follows G2/G2+ (\texttt{$a_2$
+in the A-slot}, the perturbation direction of \texttt{Threepoint.kappa3}'s
+6-argument signature). GPT explicitly recommended preserving this for
+consistency with the existing C1/G2/G2+ theorems; mathematically
+$\kappa_3$ is symmetric, but proving permutation lemmas at the formal
+level would be unnecessary cost.
+
+The hypothesis bundle is the minimal set: $Z \neq 0$ for the constants
+to evaluate as themselves (\texttt{gibbsExpectation\_const} returns~$0$
+when $Z = 0$), and the four integrability conditions for the three
+\texttt{gibbsExpectation\_add} splits in the cubic-polynomial helper.
+GPT confirmed at deliberation that no additional Gibbs-regularity
+hypothesis is needed beyond this; \texttt{Integrable} carries the
+measurability.
+
+Three additional public theorems are exported alongside the headline:
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \texttt{threepoint\_gibbsExp\_volume\_zero\_eq} — the bridge
+  from \texttt{Threepoint.gibbsExp} (perturbed Gibbs expectation, at
+  $h = 0$, on $\mathrm{volume}$) to \texttt{Laplace.gibbsExpectation}.
+  Identical statement to the private version in C1's and G2's files;
+  this lifts it to public.
+\item \texttt{kappa3\_volume\_unfold} — \texttt{Threepoint.kappa3} at
+  $\mathrm{volume}$ unfolded into the standard five-term cumulant
+  formula expressed in \texttt{Laplace.gibbsExpectation}. Lifted from
+  G2's private; G2's version was already potential-agnostic.
+\item \texttt{gibbsExpectation\_affine} — $\langle a x + b \rangle_t
+  = a \langle x \rangle_t + b$ given $Z \neq 0$ plus integrability.
+  GPT named this as the recommended affine-specialised helper over a
+  generic translation-invariance lemma.
+\end{itemize}
+
+\section{Proof strategy}
+
+The proof is direct: unfold both sides of the headline via
+\texttt{kappa3\_volume\_unfold}, then for each of the seven
+\texttt{gibbsExpectation} terms appearing in the unfold (the cubic
+$\varphi A B$ product, three quadratic pairwise products, and three
+linear single-affines), expand the integrand into a cubic polynomial
+in $x$ via \texttt{funext + ring} and reduce via the I2 algebra
+(\texttt{gibbsExpectation\_smul}, \texttt{\_add}, \texttt{\_const})
+to a linear combination of the four moments
+$m_0 = 1, m_1 = \langle x \rangle_t, m_2 = \langle x^2 \rangle_t,
+m_3 = \langle x^3 \rangle_t$.
+
+\paragraph{Cubic-polynomial reduction.} The cubic expansion is
+factored into a private helper for the moment-linear identity\footnote{The
+content is just linearity of $\langle \cdot \rangle_t$ over polynomial
+integrands, but each \texttt{gibbsExpectation\_add} call needs
+integrability of both summands, so the expansion is a sequence of
+three nested splits with cumulative-tail integrability witnesses
+built up from the four input monomial integrabilities.}:
+\begin{equation*}
+  \langle a_3 x^3 + a_2 x^2 + a_1 x + a_0 \rangle_t
+  = a_3 m_3 + a_2 m_2 + a_1 m_1 + a_0,
+\end{equation*}
+under the hypothesis bundle.
+
+\paragraph{Polynomial expansion of the seven integrands.} For each of
+the seven $\langle \cdot \rangle$ terms in the LHS unfold, an inline
+\texttt{have} block establishes the moment-linear form. For example,
+the cubic product expands as
+\begin{align*}
+  (a_1 x + b_1)&(a_2 x + b_2)(a_3 x + b_3) \\
+  &= (a_1 a_2 a_3) x^3 + (a_1 a_2 b_3 + a_1 b_2 a_3 + b_1 a_2 a_3) x^2 \\
+  &\quad + (a_1 b_2 b_3 + b_1 a_2 b_3 + b_1 b_2 a_3) x + b_1 b_2 b_3.
+\end{align*}
+\texttt{funext + ring} closes the pointwise equality, then the cubic
+helper replaces the expectation with the moment-linear form. The
+three quadratic products are packaged as cubics with leading
+coefficient~$0$ to reuse the same helper.
+
+\paragraph{Final collection.} After all seven integrand expansions,
+the LHS is a polynomial in the three $a_i$, three $b_i$, and three
+moments $m_1, m_2, m_3$. The RHS unfold gives
+$a_1 a_2 a_3 (m_3 - 3 m_2 m_1 + 2 m_1^3)$. \texttt{ring} closes the
+final equality.
+
+\section{Roadblocks and resolutions}
+
+\emph{There weren't any}, in the sense that the proof landed in a
+single attempt: the very first commit had zero errors, zero warnings,
+and zero \texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}. This
+is the third tide today (after I4 and N1) where the Step~2 advisory
+carried sufficient tactical detail to make Step~3 mechanical. The
+pattern is consolidating into a recipe.
+
+The closest thing to a roadblock was the architectural decision at
+Step~2 between three candidates of materially different shape:
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item Candidate~A: direct cubic-polynomial expansion (mirrors
+  G2/G2+'s structure verbatim, ${\sim}200$ lines).
+\item Candidate~B: bilinearity plus translation-invariance lemmas
+  (cleaner cumulant infrastructure but requires generic-observable
+  hypotheses, ${\sim}150$ lines).
+\item Candidate~C: pure multilinearity over arbitrary observables
+  (very clean but doesn't subsume Q1, $\sim$30 lines).
+\end{itemize}
+
+GPT's verdict was \emph{B-lite}: reuse I2's expectation algebra
+(already in \texttt{Laplace.Gibbs}), add the specialised
+\texttt{gibbsExpectation\_affine}, then derive the headline by
+direct unfold + cubic expansion (so in practice the proof body
+mirrors A's structure, but uses I2's algebra instead of a custom
+"polynomial-le-3 workhorse").
+
+\gptbox{I would not do full Candidate~A unless you want a quick
+one-off proof with minimal API design. I would not stop at C, because
+it does not close Q1. Best target: B-lite — promote to public
+\texttt{threepoint\_gibbsExp\_volume\_zero\_eq} and
+\texttt{kappa3\_volume\_unfold}, prove a small reusable expectation
+API including \texttt{gibbsExpectation\_affine}, then prove the
+specialized affine-id factorization theorem by one unfold +
+rewrites + \texttt{ring}.}
+
+\noindent The actual proof structure ended up closer to A than B-lite
+literally suggests — the headline does \emph{not} use slot-by-slot
+multilinearity / translation invariance lemmas; it uses direct cubic
+expansion. This is because the integrand products $(a_1 x + b_1)(a_2
+x + b_2)(a_3 x + b_3)$ etc.\ are not affine-of-id, so an
+affine-specialised helper applies only to the three single-affine
+slot terms; the four product terms still need cubic-poly reduction.
+The \texttt{gibbsExp\_cubic\_eq} private helper handles all seven
+uniformly.
+
+\paragraph{One small detail.} GPT's recommendation referenced
+\texttt{gibbsExpectation\_add\_const} as a possible alternative to
+\texttt{gibbsExpectation\_affine}. We chose the affine form because
+the seven integrand terms in the unfold all reduce to "polynomial
+$\le 3$ in $x$" form, and the affine helper covers exactly the three
+linear cases; the four cubic cases use the cubic helper directly.
+Adding a separate \texttt{\_add\_const} would not have shortened the
+proof.
+
+\paragraph{Numerical sanity check pre-Step~3.} Verified the identity
+at six anharmonic test cases (linear and shifted-affine, varying $t$
+and constants) against \texttt{scipy.integrate.quad}. All cases
+agreed to $\sim10^{-13}$ relative error (numerical-integration
+precision); the identity holds \emph{exactly}, not just
+asymptotically.\footnote{The script is preserved at
+\texttt{projects/primer/tide-log/gpt\_responses\_q1/q1\_numerics.py}.
+The case with $a_1 = a_2 = a_3 = 1$ and large constants $b_i$ is the
+\emph{translation-invariance smoke test}: it confirms that the
+identity holds when only the constants vary, hence that the
+constants-drop part of the cumulant content is correct.}
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+\texttt{MeasureTheory.Integrable.const\_mul} (for scalar
+multiplication of integrable functions),
+\texttt{MeasureTheory.Integrable.add} (for additive splits), and
+nothing else from Mathlib proper — the formalisation is entirely
+above the integrable-function/integral-linearity stack.
+
+\paragraph{What was new.} The Threepoint package and the I2 tide
+already provided the algebra; this tide adds the synthesis:
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \texttt{threepoint\_gibbsExp\_volume\_zero\_eq} — public
+  promotion of a lemma that existed identically as private in C1's
+  and G2's files. The promotion is the only structural delta;
+  the proof itself is one \texttt{simp}.
+\item \texttt{kappa3\_volume\_unfold} — public promotion of G2's
+  private. Unfolds the \texttt{Threepoint.kappa3} definition and
+  applies the bridge seven times. Already potential-agnostic in G2's
+  version; this just exposes it.
+\item \texttt{gibbsExpectation\_affine} — new lemma. Combines I2's
+  existing \texttt{\_add}, \texttt{\_smul}, and \texttt{\_const}.
+\item \texttt{gibbsExp\_cubic\_eq} (private) — new cubic-polynomial
+  workhorse. Three nested \texttt{\_add} splits with cumulative-tail
+  integrability bookkeeping. The potential-agnostic counterpart of
+  C1's harmonic-specific polynomial workhorse (which evaluated the
+  moments to harmonic-specific values; here we leave them as
+  $\langle x^k \rangle_t$).
+\item the headline factorisation theorem. The proof body is seven
+  inline integrand-expansion blocks plus a final \texttt{ring}.
+\end{itemize}
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \emph{The cumulative-tail integrability pattern.} The
+  \texttt{gibbsExp\_cubic\_eq} helper needs
+  $\sim 6$ \texttt{Integrable} witnesses (not just~4): the four input
+  monomial integrabilities, plus integrabilities of the cumulative
+  partial-sum tails for each \texttt{gibbsExpectation\_add} step.
+  Each tail is built one line via \texttt{funext + ring + .add} from
+  the previous; the bookkeeping is mechanical but unavoidable. Worth
+  recording as a template for future polynomial-Gibbs-expectation
+  helpers.
+
+\item \emph{The "package the integrand as a cubic with leading
+  coefficient~$0$" trick.} The four quadratic and three linear
+  integrands in the seven-term unfold are \emph{not} naturally cubic.
+  Casting them as cubics with leading coefficient~$0$ — i.e. expressing
+  $a_1 a_2 x^2 + (a_1 b_2 + a_2 b_1) x + b_1 b_2$ as
+  $0 \cdot x^3 + (a_1 a_2) x^2 + \ldots$ — lets a single cubic helper
+  handle all seven cases uniformly. The pattern is reused four times
+  in this proof.
+
+\item \emph{The Step~2 advisory continues to do all the work.} For
+  the third consecutive tide today (I4, N1, Q1), the Step~2 GPT
+  consult contained sufficient tactical detail that the proof landed
+  single-attempt with no thrashing-rescue consult needed. The
+  pattern is now: at Step~2, ask GPT specifically about
+  hypothesis-bundle minimality, idiom choice (\texttt{ring}-vs-\texttt{mul\_pow},
+  or here \texttt{gibbsExpectation\_affine}-vs-\texttt{\_add\_const}), and the
+  expected proof-skeleton structure. When the consult addresses all
+  three, Step~3 is mechanical.
+
+\item \emph{The "centered-product identity" is a future tide
+  candidate.} GPT named it as the shortest conceptual proof of Q1
+  ($\sim 45$ lines) but recommended B-lite for long-term reusability.
+  We took B-lite. The centered-product identity remains as a
+  follow-up: it would be a clean alternative formulation of $\kappa_3$
+  ($\kappa_3(X,Y,Z) = \mathbb E[(X - \mathbb E X)(Y - \mathbb E
+  Y)(Z - \mathbb E Z)]$) that could land separately and provide a
+  second, more elegant proof of the affine identity.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \emph{Refactor C1 and G2/G2+ to be 5-line specialisations of
+  this identity.} Once C1 and G2/G2+ both reach \texttt{main} (C1 is
+  already merged at \texttt{521acac}; G2/G2+ awaits a merge), each
+  existing potential-specific affine-$\kappa_3$ theorem becomes
+  $\kappa_3(\ldots) = a_1 a_2 a_3 \cdot \kappa_3(x,x,x)$ via this
+  identity, then specialised to the potential-specific value of
+  $\kappa_3(x,x,x)$ on the right-hand side. The harmonic case gives
+  $0$ (Tide~5's vanishing), the anharmonic case gives the
+  $-\alpha/\lambda^3$ asymptotic from Tide~9. Each refactor
+  $\sim 30$~lines.
+
+\item \emph{Centered-product identity for $\kappa_3$.} GPT's
+  Candidate~D, deferred from this tide. Statement:
+  $\kappa_3(\mu, L, A, t, \varphi, B) = \langle (\varphi - \langle
+  \varphi \rangle)(A - \langle A \rangle)(B - \langle B \rangle)
+  \rangle_t$. About $\sim 45$~lines. Would provide a second elegant
+  proof of the affine identity (the centered observables
+  $(a_i x + b_i) - \langle a_i x + b_i \rangle = a_i(x - \langle x
+  \rangle)$ pull through trilinearly).
+
+\item \emph{Generic multilinearity-of-$\kappa_3$ over arbitrary
+  observables.} G2's "Candidate~C" deferred. Statement:
+  $\kappa_3(\mu, L, c \cdot A_0, t, c \cdot \varphi_0, c \cdot B_0)
+  = c^3 \cdot \kappa_3(\mu, L, A_0, t, \varphi_0, B_0)$. About
+  $\sim 30$~lines. Strict-cleaner than the affine specialisation
+  but doesn't subsume Q1; a separate building block.
+
+\item \emph{Promote \texttt{gibbsExp\_cubic\_eq} (and the affine
+  version) to \texttt{lean-common}.} Once the C1/G2 refactors
+  demonstrate the third and fourth consumer sites (the same helpers
+  could land in the bounded-prior-monomial generalisation tide,
+  candidate~B2 in the survey), the cubic-polynomial workhorse is a
+  natural \texttt{lean-common} target.
+
+\item \emph{Threepoint-side analogue of I2's \texttt{gibbsCov}
+  algebra.} I3's retrospective flagged this. The threepoint
+  \texttt{gibbsCov} (perturbed-Gaussian, with $h \cdot A$ in the
+  potential) has no algebra of its own yet; an analogous port would
+  unblock $h$-dependent $\kappa_3$ tides off the Tide~13 thread.
+
+\item \emph{$\kappa_4$ analogue.} Once a \texttt{kappa4} definition
+  lands in Threepoint, the same argument should give $\kappa_4$ of
+  four shifted-affines factoring as
+  $a_1 a_2 a_3 a_4 \cdot \kappa_4(x,x,x,x)$. About ${\sim}120$
+  lines: a degree-4 polynomial helper plus the eight-term unfold.
+
+\item \emph{\texttt{\textbackslash leanref}-tag the threepoint paper
+  for this identity.} Once the next threepoint-paper tagging pass
+  runs (K2 in the survey), tag the multilinearity-of-cumulants
+  remark with \texttt{\textbackslash leanref} pinned to this tide's
+  commit.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro contributed the deliberation-stage advisory at Step~2:
+the verdict that B-lite (with the affine-specialised helper) is
+preferable to either full Candidate~A's degree-3 polynomial machinery
+or full Candidate~B's generic translation-invariance theorem; the
+unconditional vs.\ \texttt{hZ}-conditional distinction (scaling
+unconditional, translation-invariance needs $Z \neq 0$); and the
+cleaner Candidate~D centered-product alternative deferred as
+follow-up. The full consult is preserved at
+\texttt{projects/primer/tide-log/gpt\_responses\_q1/q1\_v1.md}. The
+proof landed single-attempt with no mid-proof thrashing-rescue
+consult needed.
+
+\end{document}
