@@ -77,7 +77,8 @@ theorem kth_jfunction_div_partition
       t ^ α *
       ∫ w : ℝ, Real.exp (-(t * w ^ (2 * k) / (Nat.factorial (2 * k) : ℝ))) * prior w)
       atTop (𝓝 (prior 0 * CONST)) := by
-    have h := kth_jfunction_asymptotic hk hprior_cont hprior_bd
+    have h := kth_jfunction_asymptotic hk hprior_cont.aemeasurable
+      hprior_cont.continuousAt hprior_bd
     -- The N1 limit reads `prior 0 * (1/k) * (2k)!^α * Γ(α)`, which is `prior 0 * CONST`.
     have heq : prior 0 * (1 / (k : ℝ))
                 * ((Nat.factorial (2 * k) : ℝ)) ^ ((1 : ℝ) / ((2 * k : ℕ) : ℝ))
