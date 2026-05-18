@@ -394,4 +394,58 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_pow
     rw [h_eq_deriv] at h_d
     exact h_d
 
+/-! ## Multiplicative-form wrappers
+
+`Threepoint.harmonic_id_gibbsObservable_pow` produces
+`GibbsObservable ... (fun x => x^k)` for any `k : ℕ`. Tide 13's
+`cov_h_id_id_deriv_harmonic_eq_zero` consumes the same content but
+in multiplicative form (`x`, `x*x`, `x*x*x`) at the slot pair
+`(φ, ψ) = (id, id)`. The functions are propositionally equal but
+not definitionally equal; we transport along function-extensional
+equality via `funext; ring`.
+
+These three wrappers, together with the headline
+`cov_h_id_id_deriv_harmonic_eq_zero_unconditional` in
+`HarmonicCrossSuscDeriv.lean`, complete the U2 discharge tide:
+Tide 13's conditional theorem becomes unconditional. -/
+
+/-- `GibbsObservable` for `fun x => x` (the linear monomial in
+multiplicative form). G4's `pow` instance at `k = 1` rewritten
+via `funext; ring`. -/
+theorem _root_.Threepoint.harmonic_id_gibbsObservable_id
+    {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
+    Threepoint.GibbsObservable (volume : Measure ℝ)
+      (fun x : ℝ => lam / 2 * x ^ 2)
+      (fun x : ℝ => x) t (fun x : ℝ => x) := by
+  have h := Threepoint.harmonic_id_gibbsObservable_pow hlam ht 1
+  have heq : (fun x : ℝ => x ^ 1) = (fun x : ℝ => x) := by
+    funext x; ring
+  rwa [heq] at h
+
+/-- `GibbsObservable` for `fun x => x * x` (the quadratic monomial in
+multiplicative form). G4's `pow` instance at `k = 2` rewritten via
+`funext; ring`. -/
+theorem _root_.Threepoint.harmonic_id_gibbsObservable_mul_self
+    {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
+    Threepoint.GibbsObservable (volume : Measure ℝ)
+      (fun x : ℝ => lam / 2 * x ^ 2)
+      (fun x : ℝ => x) t (fun x : ℝ => x * x) := by
+  have h := Threepoint.harmonic_id_gibbsObservable_pow hlam ht 2
+  have heq : (fun x : ℝ => x ^ 2) = (fun x : ℝ => x * x) := by
+    funext x; ring
+  rwa [heq] at h
+
+/-- `GibbsObservable` for `fun x => x * x * x` (the cubic monomial in
+multiplicative form). G4's `pow` instance at `k = 3` rewritten via
+`funext; ring`. -/
+theorem _root_.Threepoint.harmonic_id_gibbsObservable_mul_mul_self
+    {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
+    Threepoint.GibbsObservable (volume : Measure ℝ)
+      (fun x : ℝ => lam / 2 * x ^ 2)
+      (fun x : ℝ => x) t (fun x : ℝ => x * x * x) := by
+  have h := Threepoint.harmonic_id_gibbsObservable_pow hlam ht 3
+  have heq : (fun x : ℝ => x ^ 3) = (fun x : ℝ => x * x * x) := by
+    funext x; ring
+  rwa [heq] at h
+
 end Laplace.OneD

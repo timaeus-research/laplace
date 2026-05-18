@@ -1,0 +1,251 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+
+\title{Tide retrospective:\\unconditional Tide~13 via discharge of harmonic
+\texttt{GibbsObservable} hypotheses (U2)}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This retrospective records an 80-line discharge tide. Tide~13 had
+proved that for the harmonic Gibbs measure with potential
+$L = (\lambda/2)x^2$, the cross-susceptibility derivative
+$\partial_h \mathrm{Cov}_h(x, x)\big|_{h=0}$ vanishes --- but only
+conditionally on three caller-supplied analytic
+hypotheses for the observables
+$\varphi \in \{x,\; x \cdot x,\; x \cdot x \cdot x\}$. G4 had already
+proved a generic instance for the pow form $x^k$.
+This tide bridges the syntactic gap between
+the two forms via three function-extensional wrappers, and stitches
+them into Tide~13 to land an unconditional headline. The mathematical
+content is zero; the load-bearing observation is that the survey's
+size estimate (100--150~lines) was off by 2x because it papered over
+an unrecognised syntactic-form mismatch.
+\end{abstract}
+
+\section{Setting}
+
+Tide~13 (cross-susceptibility derivative for harmonic, 6~May) closed
+the headline
+\[
+  \partial_h\,\mathrm{Cov}_h(x, x)\big|_{h=0} \;=\; 0
+\]
+for the harmonic Gibbs measure
+$L_\lambda(x) = (\lambda/2) x^2$ with perturbation $A = \mathrm{id}$,
+\emph{conditionally on three \texttt{Threepoint.GibbsObservable}
+hypotheses}: one each for the observables
+$\varphi \in \{x, \;x \cdot x, \;x \cdot x \cdot x\}$. The Tide~13
+retrospective named the discharge of those three hypotheses as a
+follow-up tide; the May 7 surveys (v3, v4, v5) carried it as
+candidate~O2 / U2.
+
+G4 (harmonic-monomial GibbsObservable instances, 7~May,
+earlier in the day) had proved a generic theorem\footnote{The
+exported name is \texttt{Threepoint.harmonic\_id\_gibbsObservable\_pow}.}
+giving, for any $k : \mathbb{N}$, a \texttt{GibbsObservable}
+instance for the observable $w \mapsto w^k$ at the harmonic potential
+with $A = \mathrm{id}$.
+At the time of G4 we believed this would close Tide~13's three
+hypotheses directly; closer inspection revealed a hidden obstacle.
+The hypotheses Tide~13 actually requires are written in
+\emph{multiplicative} form $w \mapsto w \cdot w \cdot w$, not in
+\texttt{Pow.pow} form $w \mapsto w^k$. These are
+propositionally equal but not definitionally equal — Lean's $=$
+between \texttt{fun x \(\mapsto\) x\char`^{}2} and
+\texttt{fun x \(\mapsto\) x*x} requires \texttt{funext x; ring}.
+
+This tide bridges the gap and lands the unconditional version of
+Tide~13.
+
+\section{The thing formalised}
+
+Four new public theorems.
+
+\paragraph{Three syntactic-form wrappers}
+in the harmonic-monomial GibbsObservable file (extending G4's file).
+For each $k \in \{1, 2, 3\}$,
+\[
+  \texttt{Threepoint.harmonic\_id\_gibbsObservable\_*}\;:\quad
+  \texttt{GibbsObservable}\;\;
+  (\mathrm{volume})\;\;
+  L_\lambda\;\;
+  \mathrm{id}\;\;
+  t\;\;
+  \varphi_k
+\]
+where $(\varphi_1, \varphi_2, \varphi_3) = (\texttt{fun x \(\mapsto\) x},\;
+\texttt{fun x \(\mapsto\) x*x},\;
+\texttt{fun x \(\mapsto\) x*x*x})$. Suffixes
+\texttt{\_id}, \texttt{\_mul\_self}, \texttt{\_mul\_mul\_self}
+indicate the multiplicative form of the observable.
+
+\paragraph{Unconditional Tide~13 headline}\footnote{Exported as
+\texttt{cov\_h\_id\_id\_deriv\_harmonic\_eq\_zero\_unconditional}
+in the cross-susceptibility derivative file.} For all
+$\lambda, t > 0$,
+\[
+  \texttt{HasDerivAt}\;\;
+    (h \mapsto \mathrm{Cov}_h(x, x))\;\;
+    0\;\;
+    0.
+\]
+The hypothesis bundle of Tide~13 has been folded into the
+applicability conditions of G4's \texttt{pow} instance, which require
+only $0 < \lambda$ and $0 < t$.
+
+\section{Proof strategy}
+
+Each wrapper proof is three lines: apply G4 at the relevant $k$;
+prove the function-extensional equality
+$\texttt{fun}\;x \mapsto x^k = \texttt{fun}\;x \mapsto \cdots$ by
+\texttt{funext;\,ring}; rewrite-into and \texttt{exact}.
+
+\begin{quote}\small\ttfamily
+theorem harmonic\_id\_gibbsObservable\_mul\_self\\
+\hspace*{1em}(hlam : 0 < lam) (ht : 0 < t) :\\
+\hspace*{1em}GibbsObservable volume L\_lam id t (fun x \(\Rightarrow\) x * x) := by\\
+\hspace*{2em}have h := harmonic\_id\_gibbsObservable\_pow hlam ht 2\\
+\hspace*{2em}have heq : (fun x : ℝ \(\Rightarrow\) x \char`^{} 2) = (fun x \(\Rightarrow\) x * x) := by\\
+\hspace*{4em}funext x; ring\\
+\hspace*{2em}rwa [heq] at h
+\end{quote}
+
+The unconditional headline composes the three wrappers with Tide~13's
+conditional theorem in one line:
+\begin{quote}\small\ttfamily
+exact cov\_h\_id\_id\_deriv\_harmonic\_eq\_zero hlam ht\\
+\hspace*{1em}(harmonic\_id\_gibbsObservable\_id hlam ht)\\
+\hspace*{1em}(harmonic\_id\_gibbsObservable\_mul\_self hlam ht)\\
+\hspace*{1em}(harmonic\_id\_gibbsObservable\_mul\_mul\_self hlam ht)
+\end{quote}
+
+The deepest tactic in the entire tide is \texttt{ring}.
+
+\section{Roadblocks and resolutions}
+
+There were no roadblocks. The first attempt built clean modulo a
+missing import line in the cross-susceptibility file (fixed by
+importing the monomial-instances module).
+
+GPT-5.5~Pro's deliberation, returned in parallel with the
+formalisation, suggested an \emph{A-minus} variant: drop the named
+wrappers and inline the discharges as \texttt{by simpa [\dots] using \dots}
+arguments to the conditional theorem. The trade-off is line count
+(about 30 fewer) versus discoverable API. We landed Candidate~A ---
+three named wrappers --- on the bet that the discoverability cost is
+small and that future tides reaching for harmonic-id GibbsObservable
+instances at the $\{x,\;x \cdot x,\;x \cdot x \cdot x\}$ slot would
+prefer named references over a custom \texttt{simpa} incantation each
+time. If the second consumer turns out to want only the headline, the
+A-to-A-minus refactor is mechanical.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib.} \texttt{funext} (function extensionality
+introduction), \texttt{ring} (commutative-ring normalisation), and
+\texttt{rwa} (rewrite-then-exact). All three appear in dozens of
+laplace files; nothing new from Mathlib.
+
+\paragraph{Laplace seabed (existing).} G4's
+\texttt{Threepoint.harmonic\_id\_gibbsObservable\_pow} (the
+load-bearing analytic content) and Tide~13's
+\texttt{cov\_h\_id\_id\_deriv\_harmonic\_eq\_zero} (the conditional
+headline that the new theorem closes).
+
+\paragraph{New.} Three syntactic-form wrappers and one composition
+theorem. Total: four public theorems, 80~lines, of which the proof
+bodies are about 16~lines and the rest is documentation.
+
+\section{Lessons}
+
+\paragraph{Survey size estimates can be off by 2x when a
+syntactic-form mismatch is hidden inside the candidate description.}
+The v5 survey carried U2 as ``\textasciitilde 150~lines (possibly less
+post-O1-audit)''; the v4 and v3 surveys had similar estimates. The
+language used (``mixed-power'' \texttt{GibbsObservable}) suggested a
+genuinely new analytic content beyond G4 — the user's prompt
+explicitly described ``six remaining hypotheses out of the nine that
+Tide~13 left conditional, after G4 closed the three pure-monomial
+cases.'' Inspection of Tide~13's actual signature showed three
+hypotheses, not nine; and the obstacle was syntactic, not analytic.
+The lesson is procedural: when the tide picker is summarising a
+candidate from a retrospective Follow-ups section, surface the
+\emph{Lean-level signature mismatch} explicitly if there is one, even
+when it would be obvious to anyone who opens the file. Otherwise the
+narrative ``mixed-power'' description carries forward through three
+survey revisions and overestimates the cost.
+
+\paragraph{Inline \texttt{simpa} versus named wrappers is a small
+choice deferred to user style.} GPT's A-minus suggestion is genuinely
+shorter; landing the named wrappers (Candidate~A) is genuinely more
+discoverable for future consumers. Auto-mode picked A; the deletion
+back to A-minus is mechanical if needed. Worth recording as a
+decision-class rather than a single-call style.
+
+\paragraph{The \texttt{ring} tactic suffices for all
+$x^k = x \cdot x \cdot \dots \cdot x$ normalisations in this regime.}
+For small $k$ the conventional \texttt{ring} call closes the
+\texttt{funext}'d goal directly without needing simp hints. For
+larger $k$ (perhaps 5+, by the time \texttt{ring}'s normalisation cost
+becomes visible), an explicit \texttt{simp} chain may be more
+efficient.\footnote{Hints to consider: \texttt{pow\_one},
+\texttt{pow\_two}, \texttt{pow\_succ}.}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Anharmonic analogues.} The same syntactic-form bridge for
+  the anharmonic Gibbs measure would discharge Tide~9 / G2 /
+  G2$+$-style \texttt{GibbsObservable} hypotheses if they ever
+  surface in the multiplicative form. Currently the anharmonic
+  \texttt{kappa3}-asymptotic theorems don't expose
+  \texttt{GibbsObservable} hypotheses at the headline level (Tide~9
+  uses unconditional integrability witnesses instead), so this is
+  blocked on a use-case rather than a missing theorem.
+
+\item \emph{Higher-power discharges.} A \texttt{harmonic\_id\_gibbsObservable\_pow\_k}
+  for $k = 4, 5, 6$ multiplicative forms is a direct re-application
+  of the same template, $\sim$10~lines per case. Defer until a
+  consumer (e.g.\ a $\kappa_4$ tide) reaches for them.
+
+\item \emph{Generic \texttt{Threepoint.GibbsObservable.congr\_fun}
+  transport lemma.} If a second consumer (say, the anharmonic case
+  above) wants the same syntactic-form transport, lift to a single
+  generic transport lemma and rewrite the three wrappers as
+  one-line corollaries. GPT-5.5~Pro flagged this as a
+  ``add when 2nd consumer appears'' candidate; right call.
+
+\item \emph{Update primer / threepoint paper for the unconditional
+  headline.} The primer's discussion of cross-susceptibility
+  derivatives now has an unconditional Lean reference; pin
+  \texttt{\textbackslash leanref} for both papers in the next
+  process tide. Pairs with K2 in the survey.
+
+\item \emph{2D / multivariate analogues.} The same discharge pattern
+  would land in a multi-index harmonic file once a multi-index
+  \texttt{GibbsObservable} instance theorem exists. Currently no
+  such theorem; blocked.
+\end{itemize}
+
+\end{document}
