@@ -1,4 +1,5 @@
 import Laplace.Gibbs
+import Laplace.OneD.MonomialPotential
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.MeasureTheory.Integral.Gamma
@@ -51,6 +52,12 @@ noncomputable def quarticPotential : ℝ → ℝ := fun x => x ^ 4 / 24
 
 @[simp] lemma quarticPotential_apply (x : ℝ) :
     quarticPotential x = x ^ 4 / 24 := rfl
+
+/-- The quartic potential is the `k = 2` specialisation of the generic
+even-monomial template. -/
+lemma quarticPotential_eq_kthPotential :
+    quarticPotential = kthPotential 2 := by
+  funext x; simp [quarticPotential, kthPotential]; norm_num
 
 /-! ## Integrability -/
 
@@ -119,163 +126,65 @@ theorem quartic_integrable_pow_pot (n : ℕ) {t : ℝ} (ht : 0 < t) :
 
 /-! ## Half-line moment integrals -/
 
-/-- Half-line moment integral against the pure-quartic Gibbs weight. For `n : ℕ`
-and `t > 0`,
-`∫ x in Ioi 0, x^{2n} · exp(-(t · x^4 / 24)) dx
-  = (1/4) · (24/t)^{(2n+1)/4} · Γ((2n+1)/4)`.
-
-Direct application of Mathlib's `integral_rpow_mul_exp_neg_mul_rpow` with
-`p = 4`, `q = 2n`, `b = t/24`. -/
+/-- Half-line moment integral against the pure-quartic Gibbs weight.
+$k = 2$ specialisation of `integral_pow_mul_exp_neg_kth_Ioi`. -/
 theorem integral_pow_mul_exp_neg_quartic_Ioi (n : ℕ) {t : ℝ} (ht : 0 < t) :
     ∫ x in Ioi (0 : ℝ), x ^ (2 * n) * exp (-(t * x ^ 4 / 24)) =
       (1/4) * (24/t) ^ ((2 * n + 1 : ℝ) / 4) * Real.Gamma ((2 * n + 1 : ℝ) / 4) := by
-  have ht24 : (0 : ℝ) < t / 24 := by positivity
-  have hq : (-1 : ℝ) < 2 * (n : ℝ) := by
-    have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith
-  -- Master lemma: ∫ x^q * exp(-b * x^p) = b^(-(q+1)/p) * (1/p) * Γ((q+1)/p)
-  have key := integral_rpow_mul_exp_neg_mul_rpow
-    (p := 4) (q := 2 * (n : ℝ)) (b := t / 24)
-    (by norm_num) hq ht24
-  -- Massage our integrand to rpow form (matching the master lemma)
-  have hLHS : (∫ x in Ioi (0 : ℝ), x ^ (2 * n) * exp (-(t * x ^ 4 / 24))) =
-      ∫ x in Ioi (0 : ℝ), x ^ (2 * (n : ℝ)) * exp (-(t / 24) * x ^ (4 : ℝ)) := by
-    refine setIntegral_congr_fun measurableSet_Ioi (fun x hx => ?_)
-    rw [mem_Ioi] at hx
-    have h2n : x ^ (2 * (n : ℝ)) = x ^ (2 * n) := by
-      rw [show (2 * (n : ℝ) : ℝ) = ((2 * n : ℕ) : ℝ) by push_cast; ring,
-          rpow_natCast]
-    have h4 : x ^ (4 : ℝ) = x ^ (4 : ℕ) := by
-      rw [show ((4 : ℝ) : ℝ) = ((4 : ℕ) : ℝ) by norm_num, rpow_natCast]
-    rw [h2n, h4]
-    congr 2
-    ring
-  rw [hLHS, key]
-  -- Reduce exponent (2n+1)/4 to canonical form
-  have hg : (2 * (n : ℝ) + 1) / 4 = (2 * n + 1 : ℝ) / 4 := by ring
-  have hgneg : -(2 * (n : ℝ) + 1) / 4 = -((2 * n + 1 : ℝ) / 4) := by ring
-  rw [hg, hgneg]
-  -- Convert (t/24)^(-(2n+1)/4) to (24/t)^((2n+1)/4)
-  have hinv : (t / 24 : ℝ) ^ (-((2 * n + 1 : ℝ) / 4)) =
-      (24 / t : ℝ) ^ ((2 * n + 1 : ℝ) / 4) := by
-    rw [show (24 / t : ℝ) = (t / 24)⁻¹ by
-          field_simp]
-    rw [inv_rpow ht24.le, ← rpow_neg ht24.le]
-  rw [hinv]
-  ring
+  have h := integral_pow_mul_exp_neg_kth_Ioi (k := 2) (by norm_num) n ht
+  convert h using 3
 
 /-! ## Full-line moment integrals -/
 
 /-- Even moment of the pure-quartic Gibbs weight on the full real line.
-For `n : ℕ` and `t > 0`,
-`∫ x : ℝ, x^{2n} · exp(-(t · x^4 / 24)) dx
-  = (1/2) · (24/t)^{(2n+1)/4} · Γ((2n+1)/4)`. -/
+$k = 2$ specialisation of `kth_moment_even`. -/
 theorem quartic_moment_even (n : ℕ) {t : ℝ} (ht : 0 < t) :
     ∫ x : ℝ, x ^ (2 * n) * exp (-(t * x ^ 4 / 24)) =
       (1/2) * (24/t) ^ ((2 * n + 1 : ℝ) / 4) * Real.Gamma ((2 * n + 1 : ℝ) / 4) := by
-  -- Step 1: rewrite the integrand in `|x|`-form (integrand is even).
-  have heven : (∫ x : ℝ, x ^ (2 * n) * exp (-(t * x ^ 4 / 24))) =
-      ∫ x : ℝ, |x| ^ (2 * n) * exp (-(t * |x| ^ 4 / 24)) := by
-    congr 1
-    ext x
-    rw [show x ^ (2 * n) = |x| ^ (2 * n) from by
-          rw [pow_mul x 2 n, ← sq_abs x, ← pow_mul],
-        show x ^ 4 = |x| ^ 4 from by
-          rw [show (4 : ℕ) = 2 * 2 from rfl, pow_mul x 2 2, ← sq_abs x, ← pow_mul]]
-  rw [heven]
-  -- Step 2: `integral_comp_abs` gives 2 × half-line integral.
-  rw [integral_comp_abs (f := fun y => y ^ (2 * n) * exp (-(t * y ^ 4 / 24)))]
-  -- Step 3: substitute the half-line value.
-  rw [integral_pow_mul_exp_neg_quartic_Ioi n ht]
-  ring
+  have h := kth_moment_even (k := 2) (by norm_num) n ht
+  convert h using 3
 
 /-- Odd moment of the pure-quartic Gibbs weight on the full real line vanishes
-by symmetry. For `n : ℕ` and any `t : ℝ`,
-`∫ x : ℝ, x^{2n+1} · exp(-(t · x^4 / 24)) dx = 0`. -/
+by symmetry. $k = 2$ specialisation of `kth_moment_odd`. -/
 theorem quartic_moment_odd (n : ℕ) (t : ℝ) :
     ∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * x ^ 4 / 24)) = 0 := by
-  set f : ℝ → ℝ := fun x => x ^ (2 * n + 1) * exp (-(t * x ^ 4 / 24)) with hf
-  have hodd : ∀ x : ℝ, f (-x) = -(f x) := by
-    intro x
-    simp only [hf]
-    rw [Odd.neg_pow ⟨n, rfl⟩, show ((-x) : ℝ) ^ 4 = x ^ 4 from by ring]
-    ring
-  have heq : (∫ x, f x) = -(∫ x, f x) := by
-    conv_lhs => rw [← integral_neg_eq_self f volume]
-    rw [show (fun x => f (-x)) = (fun x => -(f x)) from funext hodd]
-    rw [integral_neg]
-  linarith
+  have h := kth_moment_odd 2 n t
+  convert h using 3
 
 /-- The partition function for the pure-quartic potential.
-For `t > 0`,
-`Z_t = ∫ exp(-(t · x^4 / 24)) dx = (1/2) · (24/t)^{1/4} · Γ(1/4)`. -/
+$k = 2$ specialisation of `partitionFunction_kthPotential` via the
+`quarticPotential = kthPotential 2` bridge. -/
 theorem quartic_partition {t : ℝ} (ht : 0 < t) :
     partitionFunction quarticPotential t =
       (1/2) * (24/t) ^ ((1 : ℝ) / 4) * Real.Gamma ((1 : ℝ) / 4) := by
-  unfold partitionFunction
-  have step : (∫ x : ℝ, exp (-(t * quarticPotential x))) =
-              (∫ x : ℝ, x ^ (2 * 0) * exp (-(t * x ^ 4 / 24))) := by
-    congr 1
-    ext x
-    rw [Nat.mul_zero, pow_zero, one_mul, quarticPotential_apply]
-    congr 1
-    ring
-  rw [step, quartic_moment_even 0 ht]
-  norm_num
+  rw [quarticPotential_eq_kthPotential]
+  have h := partitionFunction_kthPotential (k := 2) (by norm_num) ht
+  convert h using 3
 
-/-- The partition function for the pure-quartic potential is positive. -/
+/-- The partition function for the pure-quartic potential is positive.
+$k = 2$ specialisation of `partitionFunction_kthPotential_pos`. -/
 theorem quartic_partition_pos {t : ℝ} (ht : 0 < t) :
     0 < partitionFunction quarticPotential t := by
-  rw [quartic_partition ht]
-  have h24t : (0 : ℝ) < 24 / t := by positivity
-  have hpow : 0 < (24 / t : ℝ) ^ ((1 : ℝ) / 4) := Real.rpow_pos_of_pos h24t _
-  have hg : 0 < Real.Gamma ((1 : ℝ) / 4) := Real.Gamma_pos_of_pos (by norm_num)
-  positivity
+  rw [quarticPotential_eq_kthPotential]
+  exact partitionFunction_kthPotential_pos (k := 2) (by norm_num) ht
 
 /-! ## Expected values -/
 
 /-- Even-power expected value against the pure-quartic Gibbs measure.
-For `n : ℕ` and `t > 0`,
-`⟨x^{2n}⟩_t = (24/t)^{n/2} · Γ((2n+1)/4) / Γ(1/4)`. -/
+$k = 2$ specialisation of `gibbsExpectation_kthPotential_even`. -/
 theorem quartic_expected_value_even (n : ℕ) {t : ℝ} (ht : 0 < t) :
     gibbsExpectation quarticPotential t (fun x => x ^ (2 * n)) =
       (24/t) ^ ((n : ℝ) / 2) * Real.Gamma ((2 * n + 1 : ℝ) / 4) / Real.Gamma ((1 : ℝ) / 4) := by
-  unfold gibbsExpectation
-  have hnum : (∫ x : ℝ, x ^ (2 * n) * exp (-(t * quarticPotential x))) =
-              (∫ x : ℝ, x ^ (2 * n) * exp (-(t * x ^ 4 / 24))) := by
-    congr 1
-    ext x
-    rw [quarticPotential_apply]
-    congr 2
-    ring
-  rw [hnum, quartic_moment_even n ht, quartic_partition ht]
-  have h24 : (0 : ℝ) < 24 / t := by positivity
-  have hg : Real.Gamma ((1 : ℝ) / 4) ≠ 0 :=
-    ne_of_gt (Real.Gamma_pos_of_pos (by norm_num))
-  have h24pow : (24 / t : ℝ) ^ ((1 : ℝ) / 4) ≠ 0 :=
-    ne_of_gt (Real.rpow_pos_of_pos h24 _)
-  -- Split (2n+1)/4 = n/2 + 1/4 to expose the cancelling factor (24/t)^(1/4).
-  rw [show ((2 * n + 1 : ℝ) / 4) = ((n : ℝ) / 2) + ((1 : ℝ) / 4) from by ring,
-      Real.rpow_add h24 _ _]
-  field_simp
+  rw [quarticPotential_eq_kthPotential]
+  have h := gibbsExpectation_kthPotential_even (k := 2) (by norm_num) n ht
+  convert h using 3
 
 /-- Odd-power expected value against the pure-quartic Gibbs measure vanishes by
-symmetry. For any `n : ℕ` and any `t : ℝ`, `⟨x^{2n+1}⟩_t = 0`. (The hypothesis
-`0 < t` is unnecessary because the moment is zero by parity at the integral
-level — the partition function never enters.) -/
+symmetry. $k = 2$ specialisation of `gibbsExpectation_kthPotential_odd`. -/
 theorem quartic_expected_value_odd (n : ℕ) (t : ℝ) :
     gibbsExpectation quarticPotential t (fun x => x ^ (2 * n + 1)) = 0 := by
-  unfold gibbsExpectation
-  have hnum : (∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * quarticPotential x))) = 0 := by
-    have heq : (∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * quarticPotential x))) =
-               (∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * x ^ 4 / 24))) := by
-      congr 1
-      ext x
-      rw [quarticPotential_apply]
-      congr 2
-      ring
-    rw [heq, quartic_moment_odd n t]
-  rw [hnum, zero_div]
+  rw [quarticPotential_eq_kthPotential]
+  exact gibbsExpectation_kthPotential_odd 2 n t
 
 /-- Specialisation of `quartic_expected_value_even` to `n = 1`:
 `⟨x^2⟩_t = √(24/t) · Γ(3/4) / Γ(1/4)`. -/
