@@ -28,6 +28,7 @@ import Laplace.OneD.AnharmonicKappa3Affine
 import Laplace.OneD.HarmonicGibbsRegularity
 import Laplace.OneD.HarmonicCrossSuscDeriv
 import Laplace.OneD.QuarticBoundedPriorTestFn
+import Laplace.OneD.JFunctionQuartic
 import Laplace.OneD.HarmonicGibbsObservableMonomials
 import Laplace.OneD.HarmonicAffineKappa3
 import Laplace.AffineBilinearCov
