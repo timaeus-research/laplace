@@ -218,3 +218,59 @@ in `whnf`/`isDefEq`. Symptom: `(deterministic) timeout at whnf` on the
 calc step, not on any specific tactic. Workaround:
 `set_option maxHeartbeats 1600000 in` on the lemma. Add a comment
 explaining why (the linter requires it).
+
+## Architecture: the generic-(k₁,k₂) 2D lift pattern
+
+The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
+asymptotics are all instances of a single mirror-shape pattern that
+lifts a 1D closed-form result against `kthPotential k` to a 2D
+asymptotic on the separable potential `addSeparable (kthPotential k₁) (kthPotential k₂)`.
+
+The pattern has four packaged theorems per lift:
+
+1. **Factorisation step.** Use the 2D-separable machinery in
+   `Laplace/TwoD/AddSeparable.lean` to express the 2D quantity as a
+   product of two 1D ones:
+   - For the unnormalised numerator: `integral_separable_addSeparable`
+     (just needs `Integrable (fun x => f x * exp(-(t * U x)))` on each
+     factor, which is `Laplace.OneD.kth_integrable_pow_pot` for the
+     `x^(2j) · exp(-...)` family).
+   - For the Gibbs partition function: `partitionFunction_addSeparable_factor`
+     (just needs `Integrable (fun x => exp(-(t * U x)))`, which is the
+     `n = 0` specialisation of `kth_integrable_pow_pot`).
+   - For the Gibbs expectation of a separable observable:
+     `gibbsExpectation_separable_addSeparable` (needs both `Z` nonzero
+     and the four integrabilities).
+
+2. **`const × t^(-...)` step.** Substitute the 1D closed forms
+   (`kth_moment_even` for the numerator; `partitionFunction_kthPotential`
+   for the partition; `gibbsExpectation_kthPotential_even` for the
+   Gibbs moment), then peel off the `t`-dependence via
+   `Real.div_rpow` + `Real.rpow_add` + `Real.rpow_neg` and finish with
+   `ring`.
+
+3. **Rescaled `Tendsto`.** Multiply by the inverse power; the result
+   is `eventually equal to a constant function`, so
+   `tendsto_const_nhds.congr'` finishes after `Real.rpow_add` +
+   `add_neg_cancel` + `Real.rpow_zero`.
+
+4. **`IsEquivalent` packaging.** `Asymptotics.IsEquivalent.refl.congr_left`
+   plus `filter_upwards` over `Filter.eventually_gt_atTop (0 : ℝ)`
+   plus the exact reformulation of step 2.
+
+Each tide following this pattern lands in ~120-155 lines.
+
+### When to instantiate the pattern
+
+A new `Laplace/TwoD/<SomeKthKth>.lean` file is justified when:
+
+- A new 1D base lemma exists in `Laplace/OneD/`.
+- The 2D-separable machinery already covers the observable shape
+  (one of: pure exp, `f(x) · g(y) · exp`, `f(x) · exp`).
+- The asymptotic form is wanted in addition to the closed form.
+
+The first instance was `QuarticSexticPartitionAsymptotic` /
+`QuarticSexticMomentAsymptotic` / `QuarticSexticNumeratorAsymptotic`
+at the fixed `(k₁, k₂) = (2, 3)`; the generic-`(k₁, k₂)` trio
+(`KthKthPartitionAsymptotic`, `KthKthMomentAsymptotic`,
+`KthKthNumeratorAsymptotic`) lifted those on 2026-05-21.
