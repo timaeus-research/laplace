@@ -44,4 +44,5 @@ import Laplace.TwoD.QuarticSexticOddMoments
 import Laplace.TwoD.QuarticSexticMomentAsymptotic
 import Laplace.TwoD.QuarticSexticNumeratorAsymptotic
 import Laplace.TwoD.QuarticSexticPartitionAsymptotic
+import Laplace.TwoD.KthKthPartitionAsymptotic
 import Laplace.AffineKappa3
