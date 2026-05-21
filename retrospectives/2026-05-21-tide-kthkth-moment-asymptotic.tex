@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+
+\title{Tide retrospective: \\\emph{generic-$(k_1, k_2)$ 2D mixed-even moment asymptotic}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{21 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Mirror-shape follow-up to the kthkth-partition-asymptotic tide (also
+21 May), explicitly named in that tide's Follow-ups. Lifts the V2
+(2D moment) machinery from the
+$(k_1, k_2) = (2, 3)$ quartic-sextic case to parametric $(k_1, k_2)$
+with $k_1, k_2 \ge 1$. The four-step packaging
+(factorisation $\to$ const-mul-rpow $\to$ rescaled tendsto $\to$
+\texttt{IsEquivalent}) mirrors the partition-asymptotic tide
+line-for-line; the only material difference is the 2D
+factorisation step, which now uses
+$\texttt{gibbsExpectation\_separable\_addSeparable}$ to factor the
+mixed-even moment into a product of two 1D moments. Build clean
+first-try; 155 lines.
+\end{abstract}
+
+\section{Setting}
+
+The kthkth-partition tide (\texttt{tide/kthkth-partition-asymptotic},
+landed earlier in the same day) lifted the Z2 partition asymptotic
+from the quartic-sextic specialisation to parametric $(k_1, k_2)$.
+Its retrospective named two strict-improvement follow-ups: the
+generic numerator asymptotic and the generic moment asymptotic. This
+tide closes the latter. The numerator analogue is left for a future
+mechanical-extension session.
+
+\section{The thing formalised}
+
+For $k_1, k_2 \ge 1$, $j_1, j_2 : \mathbb{N}$, and $t > 0$, on the
+2D separable monomial potential with the standard
+even-monomial-potentials in each coordinate,
+the mixed even moment satisfies
+\[
+  \bigl\langle x^{2j_1}\, y^{2j_2}\bigr\rangle_{2D, t}
+    \;=\; C(k_1, k_2, j_1, j_2) \cdot t^{-j_1/k_1 - j_2/k_2}
+\]
+where $C(k_1, k_2, j_1, j_2)$ is the composite constant
+\[
+  (2k_1)!^{j_1/k_1} \cdot (2k_2)!^{j_2/k_2}
+    \cdot \frac{\Gamma((2j_1+1)/(2k_1))}{\Gamma(1/(2k_1))}
+    \cdot \frac{\Gamma((2j_2+1)/(2k_2))}{\Gamma(1/(2k_2))}.
+\]
+
+Plus the rescaled-\texttt{Tendsto} and
+$\texttt{Asymptotics.IsEquivalent}$ packagings on top.
+
+\section{Proof strategy}
+
+Step 1 (factorisation): the 2D mixed-even moment factors as a
+product of 1D moments via the separable-observable factorisation
+lemma.\footnote{\texttt{Laplace.TwoD.gibbsExpectation\_separable\_addSeparable}.}
+The four integrability premises specialise directly from
+$\texttt{kth\_integrable\_pow\_pot}$ (the Boltzmann weight is the
+$n = 0$ case).
+
+Steps 2-4 mirror the partition-asymptotic tide. Substitute the 1D
+moment closed form on each factor; peel off the
+$t$-dependence;\footnote{Mathlib chain: \texttt{Real.div\_rpow},
+\texttt{Real.rpow\_add}, \texttt{Real.rpow\_neg}.} lift to
+$\texttt{Tendsto}$ via $\texttt{tendsto\_const\_nhds.congr'}$; lift
+to $\texttt{IsEquivalent}$ via the standard
+$\texttt{IsEquivalent.refl.congr\_left}$ pattern.
+
+\section{Roadblocks and lessons}
+
+No roadblocks. Build clean first-try, 155 lines. The mirror-shape
+template from the partition-asymptotic tide carried over
+unchanged.
+
+\textbf{Lesson:} the partition $\to$ moment lift via
+$\texttt{gibbsExpectation\_separable\_addSeparable}$ is reusable.
+A future numerator-asymptotic tide will compose the same way
+(separable factorisation + 1D numerator closed form).
+
+\section{What was Mathlib, what was new}
+
+Mathlib supplied the analytical primitives,\footnote{Lemmas:
+\texttt{Real.div\_rpow}, \texttt{Real.rpow\_add},
+\texttt{Real.rpow\_neg}, \texttt{Asymptotics.IsEquivalent.refl},
+\texttt{tendsto\_const\_nhds.congr'},
+\texttt{Filter.eventually\_gt\_atTop}.} and the seabed's previously
+formalised facts supplied everything domain-specific.\footnote{1D
+moment closed form: \texttt{gibbsExpectation\_kthPotential\_even}.
+1D Boltzmann integrability: \texttt{kth\_integrable\_pow\_pot}.
+2D separable-observable factorisation:
+\texttt{gibbsExpectation\_separable\_addSeparable}.}
+
+What was new: the
+$\texttt{kthKthMomentConst}$ definition, the four packaged
+theorems, and the parametric Boltzmann-integrability assembly.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Generic numerator asymptotic.} The Z1 (numerator)
+      analogue of this tide. Same template; uses the 1D
+      $\texttt{kth\_moment\_even}$ integral directly. Estimated
+      $\sim$120 lines.
+\item \textbf{Cross-repo promotion of the 2D-factorisation pattern.}
+      The (partition factorisation, moment factorisation) pair on
+      $\texttt{addSeparable}$ potentials is now generic enough that
+      its core could move to $\texttt{lean-common}$. Deferred until
+      a second-repo consumer materialises.
+\end{itemize}
+
+\end{document}
