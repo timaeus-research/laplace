@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+
+\title{Tide retrospective:\\\emph{anharmonic-partition-deriv (partial: n=1 integrability witness added)}}
+\author{Claude (Opus 4.7, 1M context)}
+\date{2026-05-23}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Partial progress on closing the
+\texttt{partition\_hasDerivAt} sorry from
+\texttt{AnharmonicGibbsRegularity.lean}. Added the public
+\texttt{integrable\_x\_mul\_exp\_neg\_t\_anharmonic} lemma — the $n=1$
+mirror of \texttt{integrable\_exp\_neg\_t\_anharmonic}, providing
+integrability of $x \cdot \exp(-t \cdot L_{\rm anh}(x))$ on $\mathbb{R}$
+under the discriminant condition. This is the integrability witness for
+the RHS of \texttt{partition\_hasDerivAt}'s expected derivative
+($\int (-t \cdot x) \cdot \exp(-t \cdot L_{\rm anh}(x))\,dx$). The full
+\texttt{partition\_hasDerivAt} proof itself (via either MGF route or
+direct dominated convergence) remains as a \texttt{sorry}; this tide
+lands one of the required lemmas.
+\end{abstract}
+
+\section{What landed}
+
+One new theorem in \texttt{Laplace/OneD/AnharmonicGibbsRegularity.lean}:
+
+\begin{itemize}[noitemsep,leftmargin=*]
+\item \texttt{integrable\_x\_mul\_exp\_neg\_t\_anharmonic} ($\sim 35$
+  lines). Public witness for $x \cdot \exp(-t \cdot L_{\rm anh}(x))$
+  integrable on $\mathbb{R}$ under
+  $\alpha^2 < 3\lambda\gamma, \lambda > 0, \gamma > 0, t > 0$. Proof
+  by Gaussian domination via \texttt{anharmonic\_coercive} and
+  \texttt{integrable\_abs\_pow\_mul\_exp\_neg\_mul\_sq} at $n=1$.
+  Mirrors the existing $n=0$ case essentially line-for-line.
+\end{itemize}
+
+Build status: clean (only the existing \texttt{sorry} warning on
+\texttt{partition\_hasDerivAt}).
+
+\section{Why stop here}
+
+The \texttt{partition\_hasDerivAt} proof itself was attempted but
+abandoned mid-write per the laplace \texttt{CLAUDE.md} thrashing rule.
+The structure is clear:
+
+\begin{enumerate}[noitemsep,leftmargin=*]
+\item Apply \texttt{MeasureTheory.hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}.
+\item Need a bound function $\mathrm{bound}(x) := |t \cdot x| \cdot \exp(-t \cdot L_{\rm anh}(x)) \cdot \exp(t \cdot |x|)$.
+  Integrability follows from coercivity + AM-GM:
+  $|x| \leq (c/2) x^2 + 1/(2c)$ gives
+  $-tc \cdot x^2 + t |x| \leq -(tc/2) x^2 + t/(2c)$, so
+  $\mathrm{bound}(x) \leq |t \cdot x| \cdot \exp(t/(2c)) \cdot \exp(-(tc/2) x^2)$,
+  Gaussian-integrable via the $n=1$ Mathlib lemma.
+\item Pointwise derivative via chain rule of \texttt{HasDerivAt.exp},
+  \texttt{HasDerivAt.const\_add}, etc.
+\item Discharge AE-measurability conditions via continuity.
+\end{enumerate}
+
+Estimated $\sim 80$--$120$ lines of bounded but technically involved
+Lean. Without an MCP Lean LSP for iterative goal-state inspection,
+attempting this in one shot via \texttt{lake build} is high-risk
+thrashing. The partial commit here lands one of the four pieces;
+the remaining three are still pending.
+
+\section{Pipeline lessons}
+
+\begin{itemize}[noitemsep,leftmargin=*]
+\item \textbf{Partial-progress commits are valuable.} Even one
+  integrability lemma is reusable: the next session attempting the
+  full proof can call \texttt{integrable\_x\_mul\_exp\_neg\_t\_anharmonic}
+  directly without re-deriving.
+\item \textbf{Mirror the existing $n=0$ pattern when adding $n=k$.}
+  The integrability proofs in this file follow a strict template:
+  \texttt{anharmonic\_coercive} $\Rightarrow$ Gaussian dominator
+  $\Rightarrow$ \texttt{Integrable.mono} $\Rightarrow$ pointwise
+  inequality via \texttt{Real.exp\_le\_exp.mpr} + \texttt{linarith}.
+  Future $n=2, 3, \ldots$ instances should be ~30-line copy-edits.
+\end{itemize}
+
+\section{Follow-up tide}
+
+\textbf{Close \texttt{partition\_hasDerivAt}}: $\sim 80$--$120$ lines,
+sharply scoped, all prerequisite integrability lemmas now public.
+The next session can apply the MGF route (per addendum 3 of
+\texttt{projects/primer/tide-log/2026-05-23-tide-anharmonic-fdt-identity-proposal.md})
+or the direct DCT route — both are documented in the docstring at the
+sorry site.
+
+After that closes: 6 \texttt{GibbsObservable} instances (~30-50 lines
+each) and the headline corollary \texttt{cov\_h\_id\_id\_deriv\_anharmonic\_eq\_neg\_t\_kappa3}
+($\sim 20$ lines).
+
+\end{document}

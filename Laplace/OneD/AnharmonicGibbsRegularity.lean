@@ -80,6 +80,49 @@ theorem integrable_exp_neg_t_anharmonic
     mul_le_mul_of_nonneg_left h ht.le
   linarith
 
+/-- The integrand `x · exp(-t · L_anh(x))` is integrable.
+
+Public witness for the `n = 1` case (the RHS of `partition_hasDerivAt`
+is `∫ -t · x · exp(-t · L_anh(x)) dx`). Mirrors
+`integrable_exp_neg_t_anharmonic` (the `n = 0` case). -/
+theorem integrable_x_mul_exp_neg_t_anharmonic
+    {lam alpha gamma t : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) (ht : 0 < t) :
+    Integrable (fun x : ℝ => x *
+        Real.exp (-(t * anharmonicPotential lam alpha gamma x))) := by
+  -- Same Gaussian-domination argument as the `n = 0` case, with one
+  -- extra factor of `|x|`.
+  obtain ⟨c, hc_pos, hbound⟩ :=
+    anharmonic_coercive lam alpha gamma hlam hgamma hdisc
+  have htc_pos : 0 < t * c := mul_pos ht hc_pos
+  -- Dominator: `|x|¹ · exp(-tc · x²)`, integrable Gaussian-times-poly.
+  have h_dom : Integrable (fun x : ℝ => |x| ^ 1 *
+      Real.exp (-(t * c * x ^ 2))) :=
+    integrable_abs_pow_mul_exp_neg_mul_sq htc_pos 1
+  -- Continuity → AE strong measurability.
+  have h_meas : AEStronglyMeasurable
+      (fun x : ℝ => x *
+        Real.exp (-(t * anharmonicPotential lam alpha gamma x))) volume := by
+    apply Continuous.aestronglyMeasurable
+    apply Continuous.mul continuous_id
+    apply Real.continuous_exp.comp
+    apply Continuous.neg
+    apply Continuous.mul continuous_const
+    unfold anharmonicPotential
+    fun_prop
+  refine h_dom.mono h_meas ?_
+  refine Filter.Eventually.of_forall (fun x => ?_)
+  rw [Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
+  rw [Real.norm_eq_abs, abs_mul, abs_pow, abs_abs,
+      abs_of_pos (Real.exp_pos _), pow_one]
+  apply mul_le_mul_of_nonneg_left _ (abs_nonneg x)
+  apply Real.exp_le_exp.mpr
+  have h := hbound x
+  have ht_le : t * (c * x ^ 2) ≤ t * anharmonicPotential lam alpha gamma x :=
+    mul_le_mul_of_nonneg_left h ht.le
+  linarith
+
 /-- **Strict positivity of the unperturbed anharmonic partition.**
 
 The integrand `exp(-t · L_anh(x))` is everywhere strictly positive,
