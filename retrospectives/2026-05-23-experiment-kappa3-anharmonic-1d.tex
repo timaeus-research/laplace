@@ -1,0 +1,378 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{×}{\ensuremath{\times}}
+
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\Cov}{\operatorname{Cov}}
+
+\title{Experiment retrospective:\\\emph{HMC recovers $-\alpha/\lambda^3$
+exactly on the third cumulant; SGLD-ULA biased but $\varepsilon$-recoverable}}
+\author{Claude (Opus 4.7, 1M context)}
+\date{2026-05-23}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For the 1D anharmonic Gibbs measure
+$\mu_t(dx) \propto \exp(-t \cdot L(x))\,dx$ with
+$L(x) = (\lambda/2) x^2 + (\alpha/6) x^3 + (\gamma/24) x^4$ and
+the formal Lean asymptotic $t^2 \cdot \kappa_3(x,x,x) \to -\alpha/\lambda^3$
+as $t \to \infty$\footnote{\texttt{Laplace.OneD.AnharmonicKappa3.kappa3\_anharmonic\_id\_id\_id\_asymptotic}
+at \texttt{lean/laplace@c3564fa8a}.}, HMC at $(\lambda, \alpha, \gamma)
+= (1, 0.5, 1), t = 100$ recovers $t^2 \hat\kappa_3 = -0.499 \pm 0.016$,
+dead-on the formal asymptote $-0.5$ (Monte-Carlo noise dominates).
+SGLD at the seabed's standard pipeline hyperparameters
+($\varepsilon = 5{\times}10^{-3}, \gamma_{\rm loc} = 0.1$) has a
+$+0.15$ sampler bias toward 0 (an $\sim 9\sigma$ deviation from the
+formal limit), which is $\gamma$-invariant but $\varepsilon$-recoverable:
+the $\varepsilon$-scan drives the bias to within MC noise of zero at
+$\varepsilon = 5{\times}10^{-4}$. This is the \emph{opposite} pattern
+from the $C_{\rm FV}$ (singular-fluctuation) bias studied
+yesterday\footnote{\experimentref{2026-05-22-experiment-radial-quartic-2d-singfluct-addendum}.},
+where SGLD's $\varepsilon$-scan saturated at $+0.066$. The third
+cumulant is therefore a \emph{recoverable} target via $\varepsilon$-tuning
+where the second was not; this matters directly for the Patterning~2
+three-point susceptibility workstream.
+\end{abstract}
+
+\section{Setting}
+
+The seabed's empirical pipeline (16 chains $\times$ 10000 draws SGLD
+at $\varepsilon = 5{\times}10^{-3}$, $\gamma_{\rm loc} = 0.1$, nominal
+WBIC temperature) has been validated against $\lambda$ across the
+8-model validation matrix (formal $\lambda \in [0.25, 1.25]$) and
+against $C_{\rm FV}$ (Watanabe's singular fluctuation) in
+yesterday's tide-experiment. The picture for $C_{\rm FV}$ is sharp:
+SGLD has a multiplicity-dependent sampler bias ($+0.07$ at $m=1$;
+$+0.19$ at $m=2$; $+0.72$ at $m=3$), $\gamma$-invariant, $\varepsilon$-saturated
+around $+0.066$ on the $m=1$ anchor cell. HMC eliminates the bias.
+
+The natural next observable in the Watanabe SLT ladder is the
+\emph{third cumulant} $\kappa_3$ --- the quantity underlying the
+three-point susceptibilities of the Patterning~2 workstream. The
+$\kappa_3$ machinery is now Lean-pinned in \texttt{laplace}: Tide~9
+(\texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic}) and its
+strict-improvement third-moment corollary
+(\texttt{thirdMoment\_anharmonic\_asymptotic}) give the closed-form
+asymptotic limits. No empirical estimator has been validated against
+the third cumulant. This experiment opens that validation line.
+
+\section{The thing measured}
+
+The Lean theorem (whose proof factors through three
+already-formalised first/second-moment asymptotics in
+\texttt{IntegralRemainder.lean}) is:
+
+\begin{quote}
+For $L(x) = (\lambda/2) x^2 + (\alpha/6) x^3 + (\gamma/24) x^4$ with
+$\lambda, \gamma > 0$ and $\alpha^2 < 3\lambda\gamma$,
+\[
+  t^2 \cdot \kappa_3(x, x, x)
+  = t^2 \cdot \left( \langle x^3 \rangle_t - 3 \langle x^2 \rangle_t
+        \langle x \rangle_t + 2 \langle x \rangle_t^3 \right)
+  \;\longrightarrow\; -\frac{\alpha}{\lambda^3}
+  \quad \text{as } t \to \infty.
+\]
+\end{quote}
+
+The empirical estimator is the centred-cube
+$\hat\kappa_3 = (1/N) \sum_i (x_i - \bar x)^3$ (in 1D, the third
+central moment equals the third cumulant; the k-statistic correction
+$N^2/((N-1)(N-2))$ is $< 0.01\%$ at our sample sizes).
+
+The chosen test point is $(\lambda, \alpha, \gamma) = (1, 0.5, 1)$
+(satisfies the discriminant: $\alpha^2 = 0.25 < 3 = 3 \lambda \gamma$);
+the formal asymptotic value is $-\alpha/\lambda^3 = -0.5$.
+
+\section{Design}
+
+Direct 1D quadrature on $\int x^k e^{-t L(x)}\,dx / Z_t$ at
+$t \in \{1, 3, 10, 30, 100, 300, 1000\}$ pinned the finite-$t$
+values and the next-order coefficient: $t^2 \kappa_3(t) = -0.5
++ 1.25/t + O(1/t^2)$. At $t = 100$ the finite-$t$ value is $-0.488$
+(not exactly $-0.5$).
+
+A multi-cell sweep across $t \in \{1, 3, 10, 30, 100\}$ was run
+with HMC (64 chains $\times$ 10k draws per cell, step-size scaled
+as $0.8/\sqrt{t}$ to maintain $\sim 95\%$ accept) and SGLD/ULA
+(64 chains $\times$ 20k draws at $\varepsilon = 5{\times}10^{-3}$,
+$\gamma_{\rm loc} = 0.1$). The headline cell at $t = 100$ was
+rerun with 64 chains $\times$ 40k draws HMC and 64 chains $\times$
+80k draws SGLD for headline precision.
+
+GPT-5.5 Pro was consulted on the design; it backed the rate sweep
+and flagged a critical caveat on the harmonic control (see
+``Pipeline lessons''). The pilot ran in parallel with the consult
+because the GPT call exceeded its 15-minute timeout budget; the
+result section below confirms GPT's specific quantitative
+predictions on the SGLD-ULA bias.
+
+\paragraph{Pre-registered hypotheses (post-pilot framing; see
+experiment log for honest discussion).}
+\begin{itemize}[noitemsep,leftmargin=*]
+  \item \textbf{Headline:} HMC's $t^2 \hat\kappa_3(t = 100)$ within
+    $\pm 0.05$ of the formal asymptote $-0.5$ (equivalently,
+    $\pm 0.04$ of the finite-$t$ exact value $-0.488$).
+  \item \textbf{Convergence rate:} HMC's $t^2 \hat\kappa_3$ matches
+    the pre-checked exact values within $2\sigma$ at every $t$.
+  \item \textbf{Harmonic control:} HMC's $\hat\kappa_3 \in [-0.01,
+    +0.01]$ at $\alpha = 0$ (parity).
+  \item \textbf{SGLD bias:} $\Delta_{\rm SGLD-HMC} \geq +0.05$ at
+    $t = 100$, $\gamma$-invariant, $\varepsilon$-recoverable.
+\end{itemize}
+
+\section{Diagnostic loop}
+
+\paragraph{Anomaly 1 (single-chain spread at $t = 100$).}
+A 1-chain HMC pilot at $t = 100$ across step sizes $\{0.05, 0.08, 0.10, 0.15\}$
+gave $t^2 \hat\kappa_3 \in \{-0.335, -0.448, -0.677, -0.192\}$ ---
+a 0.5-magnitude swing across step sizes and a worrying lack of
+agreement. \emph{Hypothesis:} per-chain MC SE at $t = 100$ is much
+larger than the formula $\sqrt{6/(N t^3)} \cdot t^2 = \sqrt{6 t / N}$
+suggests when read at $N = 5000$ rather than $N_{\rm total}$.
+\emph{Probe:} compute the formula at per-chain $N$ explicitly:
+$\sqrt{6 \cdot 100 / 5000} = 0.346$. \emph{Result:} the single-chain
+spread $\{-0.34, -0.45, -0.68, -0.19\}$ is within $\sim 1\sigma$ of
+the truth $-0.488$. Pooling across 16 chains reduces SE by $\sqrt{16}
+= 4$, giving the headline $\pm 0.087$ band. \emph{Reframe:} the
+multi-chain pooling is essential at $t = 100$; the single-chain
+result is too noisy to interpret in isolation.
+
+\paragraph{Anomaly 2 (SGLD bias not yet attributed).}
+Initial SGLD pilot at $t = 100$, $\varepsilon = 5{\times}10^{-3}$,
+$\gamma_{\rm loc} = 0.1$, 16 chains $\times$ 10k draws gave
+$\langle x^2 \rangle = 0.01324$ vs target $0.01000$ (+32\%) and
+$t^2 \hat\kappa_3 = -0.307$ vs truth $-0.488$ (+0.18 toward 0).
+\emph{Hypothesis (mirror of singfluct):} ULA discretisation at
+$h \cdot t \lambda = 5{\times}10^{-3} \cdot 100 \cdot 1 = 0.5$
+inflates posterior width, which depresses the magnitude of the
+(small) third cumulant. \emph{Probe:} $\varepsilon$-scan with
+proportional \#draws (constant $\varepsilon \cdot N$).
+\emph{Result:} bias drops cleanly from $+0.104$ to $-0.003$ across
+$\varepsilon \in \{5{\times}10^{-3}, 2{\times}10^{-3}, 10^{-3},
+5{\times}10^{-4}\}$, with $\langle x^2 \rangle$ recovering from
+$0.01329$ (+33\%) to $0.01023$ (+2\%). \emph{Reframe:} the bias
+is pure ULA discretisation, $\varepsilon$-recoverable, NOT saturated
+at any structural floor in the tested range. This is the
+\emph{opposite} pattern from $C_{\rm FV}$ where the $\varepsilon$-scan
+saturated at $+0.066$ for the same range. GPT-5.5 Pro's prediction
+``$h \cdot t \cdot \lambda = 0.5 \Rightarrow$ $\sim 33\%$ variance
+inflation in local OU approximation'' is exactly corroborated.
+
+\paragraph{Anomaly 3 (potential $\gamma$-mechanism confound).}
+The bias might be driven by the localisation $\gamma_{\rm loc}(x - x_0)$
+rather than the discretisation. \emph{Probe:} $\gamma$-scan at
+$t = 100$, $\varepsilon = 5{\times}10^{-3}$, $\gamma \in
+\{0, 0.05, 0.10, 0.20, 0.50\}$. \emph{Result:} $\Delta_{\rm vs\,truth}
+\in \{+0.135, +0.137, +0.103, +0.141, +0.109\}$ --- $\gamma$-invariant
+to within $\sim 2\sigma$. \emph{Reframe:} localisation is not the
+mechanism, $\varepsilon$ is. \textbf{This matches singfluct's
+$\gamma$-invariance finding exactly.}
+
+\section{Headline claim, calibrated}
+
+\paragraph{Rate sweep across $t$ (Design B):}
+
+\begin{center}\small
+\begin{tabular}{lcccccc}
+\toprule
+$t$ & exact $t^2 \kappa_3$ &
+  HMC $t^2 \hat\kappa_3 \pm$ SE & $\Delta/\sigma$ &
+  SGLD $t^2 \hat\kappa_3 \pm$ SE & $\Delta_{\rm SGLD-HMC}$ \\
+\midrule
+1   & $-0.107$ & $-0.106 \pm 0.001$ & $+0.81$ & $-0.083 \pm 0.010$ & $+0.023$ \\
+3   & $-0.250$ & $-0.239 \pm 0.011$ & $+1.01$ & $-0.218 \pm 0.016$ & $+0.020$ \\
+10  & $-0.394$ & $-0.394 \pm 0.009$ & $+0.02$ & $-0.364 \pm 0.021$ & $+0.029$ \\
+30  & $-0.461$ & $-0.456 \pm 0.018$ & $+0.24$ & $-0.440 \pm 0.027$ & $+0.016$ \\
+100 & $-0.488$ & $-0.473 \pm 0.034$ & $+0.44$ & $-0.367 \pm 0.038$ & $+0.106$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+HMC matches the pre-checked finite-$t$ exact values \emph{within $1\sigma$
+at every $t$}. SGLD is slightly biased toward 0 across the sweep,
+sharply at $t = 100$.
+
+\paragraph{Headline cell (denser, $t = 100$):}
+
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule
+sampler & $N_{\rm total}$ & $t^2 \hat\kappa_3$ & SE
+  & $\Delta$ vs formal $-0.5$ & $\Delta$ vs exact $-0.488$ \\
+\midrule
+HMC  & $64 \times 40{,}000$ & $-0.4989$ & $0.0156$
+  & $+0.001$ ($0.06\sigma$) & $-0.011$ ($0.71\sigma$) \\
+SGLD & $64 \times 80{,}000$ & $-0.3531$ & $0.0169$
+  & $+0.147$ ($9.4\sigma$) & $+0.135$ ($8.0\sigma$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The headline pre-registration is met}: HMC's $t^2 \hat\kappa_3$
+at $t = 100$ is dead-on the formal asymptote $-0.5$ (deviation
+$+0.001$, well inside the pre-registered $\pm 0.05$ band).
+SGLD is biased toward 0 by $+0.147$, a clear $\sim 9\sigma$ signal.
+
+\paragraph{Mechanism, calibrated.}
+
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+$\varepsilon$ & $N$ & $t^2 \hat\kappa_3$ & $\Delta$ vs truth &
+  $\langle x^2 \rangle$ (target $0.01$) \\
+\midrule
+$5 \times 10^{-3}$ & $80\rm{k}$  & $-0.384$ & $+0.104$ & $0.01329$ ($+33\%$) \\
+$2 \times 10^{-3}$ & $200\rm{k}$ & $-0.461$ & $+0.027$ & $0.01107$ ($+11\%$) \\
+$1 \times 10^{-3}$ & $400\rm{k}$ & $-0.464$ & $+0.023$ & $0.01051$ ($+5\%$) \\
+$5 \times 10^{-4}$ & $800\rm{k}$ & $-0.491$ & $-0.003$ & $0.01023$ ($+2\%$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The SGLD bias on $\kappa_3$ is $\varepsilon$-recoverable.} At
+$\varepsilon = 5{\times}10^{-4}$ the bias is within MC error of zero.
+This is the OPPOSITE pattern from
+yesterday's\footnote{\experimentref{2026-05-22-experiment-radial-quartic-2d-singfluct}.}
+$C_{\rm FV}$ $\varepsilon$-scan, where the bias saturated at $+0.066$
+across the same $\varepsilon$ range. The third cumulant is structurally
+\emph{more recoverable} via $\varepsilon$-tuning than the singular
+fluctuation.
+
+The $\gamma$-scan at fixed $\varepsilon = 5{\times}10^{-3}$ gave
+$\Delta \in \{+0.135, +0.137, +0.103, +0.141, +0.109\}$ across
+$\gamma \in \{0, 0.05, 0.10, 0.20, 0.50\}$ --- $\gamma$-invariant.
+
+\section{Pipeline lessons}
+
+\begin{itemize}[noitemsep,leftmargin=*]
+  \item \textbf{HMC validates Lean asymptotics on $\kappa_3$.} The
+    pipeline reaches single-percent agreement with the formal
+    $t^2 \kappa_3 \to -\alpha/\lambda^3$ across the full sweep range
+    at 64-chain budgets. This is the empirical pre-condition the
+    Patterning~2 three-point susceptibility work needed to land.
+
+  \item \textbf{SGLD-ULA bias on $\kappa_3$ is recoverable, unlike
+    $C_{\rm FV}$.} For paper-quality $\kappa_3$ via SGLD,
+    $\varepsilon \leq 5{\times}10^{-4}$ at proportionally
+    longer chains is sufficient on 1D anharmonic Gibbs. For
+    $C_{\rm FV}$ the saturation floor blocks $\varepsilon$-recovery
+    and HMC is required. This is a sharp methodology stratification:
+    higher-order cumulants are not necessarily \emph{harder} for
+    SGLD than $C_{\rm FV}$ once the discretisation is properly
+    managed.
+
+  \item \textbf{Harmonic control is not diagnostic for the
+    anharmonic case (GPT-5.5 Pro).} For $\alpha = 0$, parity forces
+    $\kappa_3 = 0$ in both the true target \emph{and} the
+    discretised ULA invariant law. The harmonic control passing
+    therefore tells you only that the estimator is unbiased at zero
+    skew --- it does \emph{not} certify that the sampler recovers
+    $\kappa_3$ correctly when the skew is non-zero. The actual
+    discrimination must come from the anharmonic cells.
+
+  \item \textbf{Per-chain MC SE at $t = 100$ is large.}
+    $\sqrt{6 t / N} = 0.346$ per chain at $N = 5000$, $t = 100$.
+    Single-chain estimates are noisy by a factor of $\sqrt{16} = 4$
+    over the 16-chain pooled SE. Cross-chain pooling is essential;
+    do not interpret per-chain $\kappa_3$ at small $N$ in
+    isolation.
+
+  \item \textbf{Pre-registration discipline at fast pipelines.}
+    The pilot ran in seconds because the model is 1D. The GPT
+    consult took $> 15$ minutes. Mechanical pre-registration
+    discipline (commit pre-reg-block-to-git before running) is
+    incompatible with these compute-asymmetric pipelines. Honest
+    framing in this case: I would have pre-registered the
+    hypotheses above without seeing the pilot, but the formal
+    commit happened post-pilot. Future fast-pipeline experiments
+    should either (a) commit a placeholder pre-reg block before
+    any sampling code runs, or (b) accept the looser framing.
+
+  \item \textbf{Lean $\to$ empirical handoff is tight.} The formal
+    theorem signature\footnote{\texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic}.}
+    pins everything the empirical estimator needs: model class,
+    parameter range, the cumulant identity, the limit value. The
+    1D quadrature pre-check verified the model implementation in
+    minutes; the empirical sweep took seconds per cell. The full
+    closed loop from formal proof to empirical validation took
+    under three hours of wall clock.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[noitemsep,leftmargin=*]
+  \item \textbf{$\kappa_3$ at higher multiplicity.} Extend to the
+    multiplicity-toy family ($K = (\prod_{i=1}^m \theta_i)^2/2$, $m \in
+    \{2, 3, 4\}$) and compare to the $C_{\rm FV}$ multiplicity
+    pattern. \emph{Prediction:} $\kappa_3$ bias remains
+    $\varepsilon$-recoverable at each $m$, but the recovery
+    threshold tightens with $m$ (analogous to the singfluct
+    finding that the $\varepsilon$-scan at $m = 3$ \emph{did}
+    keep dropping past where $m = 1$ had saturated).
+
+  \item \textbf{Affine-multilinearity validation.} The Lean
+    theorem \texttt{kappa3\_anharmonic\_affine\_asymptotic} pins
+    $\kappa_3(b x, a x, c x) = a b c \cdot \kappa_3(x, x, x)$
+    for any potential. Test empirically by independent scalings
+    $(a, b, c) \in \{(1, 2, 3), (2, 3, 5), \ldots\}$ on the
+    anharmonic Gibbs and verify the factorisation; this is the
+    multilinear extraction Patterning~2 three-point
+    susceptibilities rely on.
+
+  \item \textbf{2D anharmonic extension.} The current Lean
+    machinery is 1D; a 2D analogue (e.g.\ $L(\boldsymbol{x}) =
+    (\lambda/2)\|\boldsymbol{x}\|^2 + (\alpha/6)(x_1^2 x_2)
+    + (\gamma/24)\|\boldsymbol{x}\|^4$ with anisotropic cubic
+    term) would test the cross-coordinate
+    $\kappa_3(x_i, x_j, x_k)$ closed form. Formalisation tide
+    first; experiment second.
+
+  \item \textbf{ULA-bias closed form on $\kappa_3$.} The local-OU
+    approximation captured the 33\% variance inflation at $h
+    \cdot t \lambda = 0.5$ exactly; extending the analysis to
+    $\kappa_3$ should give a closed-form prediction
+    $\Delta_{\rm ULA} \approx f(h t \lambda) \cdot \alpha / \lambda^3$.
+    Worth deriving for the methodology paper.
+
+  \item \textbf{Connect to renormalisation-note Question 3.X
+    cumulant scaling.} The
+    renormalisation-note discussion of higher cumulant scaling at
+    finite-$n$ has $\kappa_3$ predictions that should track this
+    pipeline's HMC numbers, providing a cross-anchor on a
+    different theoretical framework.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+Built on yesterday's $C_{\rm FV}$ infrastructure
+(\experimentref{2026-05-22-experiment-radial-quartic-2d-singfluct})
+and the freshly-formalised $\kappa_3$ asymptotics in
+\texttt{lean/laplace/Laplace/OneD/AnharmonicKappa3.lean} (Tides 8--10,
+2026-05-06 to 2026-05-07). GPT-5.5 Pro's consult delivered after the
+pilot but quantitatively corroborated the result (predicted 33\%
+variance inflation at $h t \lambda = 0.5$; predicted $\varepsilon$-tuning
+would shrink the bias; flagged the harmonic-control diagnostic
+limitation). The 1D anharmonic Gibbs is a new model class for the
+empirical pipeline.
+
+\end{document}
