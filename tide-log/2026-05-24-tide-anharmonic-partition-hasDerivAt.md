@@ -272,5 +272,7 @@ clean-up), matching the v2 estimate.
 
 ## Retrospective
 
-(To be written in Step 4.)
+`retrospectives/2026-05-24-tide-anharmonic-partition-hasDerivAt.tex`
+(compiled to PDF; ~250 lines of LaTeX).
+
 
