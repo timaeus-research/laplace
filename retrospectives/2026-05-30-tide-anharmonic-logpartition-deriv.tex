@@ -1,0 +1,123 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+\newcommand{\deriv}{\operatorname{deriv}}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{first derivative of the cumulant generating function}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The first rung of the connected-cumulant ladder for the anharmonic perturbed
+partition. With $Z(0)>0$ and the partition's first $h$-derivative in hand,
+\texttt{HasDerivAt.log} gives the cumulant generating function's first
+derivative
+\[
+  K'(0) = \frac{Z'(0)}{Z(0)} = \langle -(tx) \rangle_0,
+\]
+the unperturbed Gibbs mean of the perturbation observable $-(tx)$. The new
+file\footnote{\texttt{AnharmonicLogPartitionDeriv.lean}.} builds clean, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}; first try.
+\end{abstract}
+
+\section{Setting}
+
+This is the fifth tide of a single-day anharmonic arc on the laplace seabed
+(FDT capstone; the iterated-derivative step and its general-$h$ strengthening;
+moment-normalisation). Those gave the partition $Z=\texttt{weightedPartition}\,\dots\,0$,
+its derivatives $Z^{(n)}(0)=\int(-(tx))^n e^{-tL}$, and the reading
+$Z^{(n)}(0)/Z(0)=\langle(-(tx))^n\rangle_0$. The natural next object is the
+\emph{cumulant} generating function $K=\log Z$, whose derivatives at $0$ are
+the connected cumulants. This tide lands $K'(0)$ --- the lowest rung, and the
+foundation for $\kappa_2,\kappa_3,\kappa_4$. It was the lowest-risk way to open
+the cumulant direction at the end of a long session: a single
+\texttt{HasDerivAt.log} application.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the anharmonic potential, $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$,
+$t>0$:
+\[
+  \mathrm{HasDerivAt}\ \big(h \mapsto \log Z(h)\big)\ \Big(\tfrac{Z'(0)}{Z(0)}\Big)\ 0,
+  \qquad
+  \deriv\big(h \mapsto \log Z(h)\big)(0) = \langle -(tx) \rangle_0,
+\]
+the second equality identifying $K'(0)$ with the unperturbed Gibbs mean.
+\end{quote}
+
+\begin{verbatim}
+theorem logPartition_hasDerivAt ... :
+    HasDerivAt (fun h => Real.log (weightedPartition lam alpha gamma t 0 h))
+      (weightedPartition lam alpha gamma t 1 0
+        / weightedPartition lam alpha gamma t 0 0) 0
+\end{verbatim}
+
+\section{Proof strategy}
+
+Three short steps. (i) $Z(0)=\texttt{weightedPartition}\,\dots\,0\,0=\int e^{-tL}$
+by \texttt{pow\_zero}/\texttt{one\_mul} and a \texttt{ring} on the exponent,
+hence $>0$ by \texttt{anharmonic\_partition\_pos}. (ii) The previous tide's
+\texttt{weightedPartition\_hasDerivAt} at $n=0,\,h_0=0$ gives
+$\mathrm{HasDerivAt}\,Z\,(Z'(0))\,0$; feeding it and $Z(0)\neq0$ to
+\texttt{HasDerivAt.log} yields the CGF derivative $Z'(0)/Z(0)$. (iii) The
+identification with the Gibbs mean is moment-normalisation at $n=1$
+(rewriting $Z'(0)=\mathrm{iteratedDeriv}\,1\,Z\,0$) followed by \texttt{pow\_one}
+to turn $(-(tx))^1$ into $-(tx)$.
+
+\section{Roadblocks and resolutions}
+
+None --- it compiled on the first build. The one thing to note is the
+defeq $0+1=1$: \texttt{weightedPartition\_hasDerivAt 0} produces the derivative
+\texttt{weightedPartition \dots\ (0+1) 0}, which \texttt{exact} happily unifies
+with the stated \texttt{weightedPartition \dots\ 1 0}.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} \texttt{HasDerivAt.log}, \texttt{HasDerivAt.deriv},
+\texttt{pow\_zero}, \texttt{pow\_one}, \texttt{one\_mul}.
+\textbf{Seabed (reused).} \texttt{weightedPartition\_hasDerivAt},
+\texttt{anharmonic\_partition\_pos}, and the moment-normalisation and
+\texttt{iteratedDeriv} identities --- all from this session's arc.
+\textbf{New.} The $Z(0)$ positivity helper and the two CGF-derivative theorems.
+About 70 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Build the generating function one derivative at a time.}
+  \texttt{HasDerivAt.log} on the partition's first derivative is a clean,
+  low-risk way to open the cumulant ladder; the higher cumulants are then
+  iterated \texttt{HasDerivAt.div}/\texttt{HasDerivAt} compositions on top.
+\item \textbf{A foundation tide need not be large to be load-bearing.} $K'(0)$
+  is short, but every connected cumulant the arc will want is a derivative of
+  this object.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Second cumulant $\kappa_2=K''(0)$.} The connected variance
+  $\langle u^2\rangle_0-\langle u\rangle_0^2$, via \texttt{HasDerivAt.div} on
+  $Z'/Z$ (using the general-$h$ step so $Z'$ is differentiable on a
+  neighbourhood). Then $\kappa_3,\kappa_4$ --- the fourth-cumulant /
+  flow-equation identity (survey v4 \#2).
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.}
+\end{itemize}
+
+\end{document}
