@@ -109,3 +109,28 @@ no sorries, no lint warnings.
 ## Retrospective
 
 Retrospective: `retrospectives/2026-05-30-tide-anharmonic-partition-higher-deriv.tex`
+
+## GPT-5.5 Pro verdict (landed post-merge)
+
+Full response: `tide-log/gpt_responses/gpt55_higher-deriv_v1.md`. Summary:
+
+1. **Correctness confirmed.** The derivative form and signs are right:
+   `G_n'(0) = ∫(-(t·x))^(n+1)·exp(-t·L)`, so `Z''(0)=∫(t·x)²·exp(-t·L)`
+   (positive) and `Z'''(0)=∫-(t·x)³·exp(-t·L)` (minus the cubic moment).
+   Matches the formalised lemmas and the numerical check.
+2. **Indexing nuance.** The existing first-derivative field is the `n=0`
+   case (`Z=G_0`), so `Z''` is `G_1'(0)` (this tide's `n=1` corollary) and
+   `Z'''` is `G_2'(0)` (the `n=2` corollary) — consistent with what landed.
+3. **Recommended strengthening (→ next tide).** Prove the lemma for all
+   `h` with `|h|<1`, not just `h=0`. The local-in-`h` version yields
+   `deriv (G n) h = G (n+1) h` near 0, which genuinely chains
+   `deriv Z = G_1`, `deriv (deriv Z) = G_2`, … — i.e. *formally* identifies
+   the iterated derivatives of `Z` (the `h=0` version gives the
+   derivative of each `G_n` family member, mathematically equal but not
+   Lean-chained). GPT endorses the chained `G_n` family over `iteratedDeriv`.
+   This is the "general-h version" already listed in the retrospective's
+   Follow-ups; taken up as the immediate next tide.
+
+The proceed-without-GPT call (the proof was built + numerically validated
+before the consult returned, due to API latency) is vindicated: GPT confirms
+the substance and its one recommendation was already the planned follow-up.
