@@ -186,7 +186,7 @@ theorem anharmonic_perturbed_pointwise_hasDerivAt
 
 /-- AM-GM-style scalar inequality: for `t, c > 0` and any real `x`,
 `t · |x| ≤ (tc/2) · x² + t/(2c)`. -/
-private theorem amgm_t_abs_x (t c : ℝ) (ht : 0 < t) (hc : 0 < c) (x : ℝ) :
+theorem amgm_t_abs_x (t c : ℝ) (ht : 0 < t) (hc : 0 < c) (x : ℝ) :
     t * |x| ≤ t * c / 2 * x ^ 2 + t / (2 * c) := by
   have hc_ne : c ≠ 0 := hc.ne'
   have habs_sq : |x| ^ 2 = x ^ 2 := sq_abs x
