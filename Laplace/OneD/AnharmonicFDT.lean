@@ -1,4 +1,5 @@
 import Laplace.OneD.AnharmonicGibbsRegularity
+import Laplace.OneD.AnharmonicGibbsObservableMonomials
 import Laplace.OneD.AnharmonicKappa3
 import Laplace.OneD.IntegralRemainder
 import Threepoint.CrossSusceptibility
@@ -27,31 +28,34 @@ records the asymptotic capstones.
   Composes the identity with `kappa3_anharmonic_id_id_id_asymptotic`.
 
 The `GibbsObservable` hypotheses for the monomials `x, x², x³` against
-the anharmonic potential are *not* discharged here — that is a
-parallel multi-tide undertaking (analogue of the 441-line harmonic
-file). All four results are conditional on those witnesses; the
-"unconditional" form waits for the anharmonic-monomial-observable
-arc.
+the anharmonic potential are discharged in
+`Laplace/OneD/AnharmonicGibbsObservableMonomials.lean` (dominated
+differentiation under the integral sign, reusing the coercivity
+machinery of `AnharmonicGibbsRegularity`). The two headline identities
+below are therefore **unconditional**. The asymptotic capstones
+(`t → ∞` limits) remain a follow-up: they additionally require the
+`∀ t`-quantified observable witnesses composed with the moment
+asymptotics `cov_self_anharmonic_asymptotic` /
+`kappa3_anharmonic_id_id_id_asymptotic`.
 -/
 
 open MeasureTheory
 
 namespace Laplace.OneD
 
-/-! ## First-cumulant FDT for the anharmonic case (conditional)
+/-! ## First-cumulant FDT for the anharmonic case
 
 The instantiation of `Threepoint.gibbsExp_deriv_eq_neg_t_cov` for the
 anharmonic potential at `A = id`, observable `φ = id`. The two
-`GibbsObservable` hypotheses encode the differentiation-under-the-
-integral content for the two integrands the FDT proof consumes:
-`φ = id` (the bare numerator) and `φ · A = x · x` (its `h`-derivative
-integrand). -/
+`GibbsObservable` witnesses the FDT proof consumes — for `φ = id` (the
+bare numerator) and `φ · A = x · x` (its `h`-derivative integrand) —
+are now supplied by `Threepoint.anharmonic_id_gibbsObservable_id` and
+`Threepoint.anharmonic_id_gibbsObservable_mul_self`. -/
 
-/-- **First-cumulant FDT for the anharmonic Gibbs measure** (conditional).
+/-- **First-cumulant FDT for the anharmonic Gibbs measure.**
 
 For the anharmonic potential `L(x) = (λ/2)x² + (α/6)x³ + (γ/24)x⁴`
-with `λ, γ > 0` and `α² < 3λγ`, for `t > 0`, given
-`GibbsObservable` witnesses for `x` and `x · x`,
+with `λ, γ > 0` and `α² < 3λγ`, for `t > 0`,
 \[
   \frac{\partial \langle x \rangle_h}{\partial h} \bigg|_{h=0}
     \;=\; -t \cdot \mathrm{Cov}_0(x, x) \;=\; -t \cdot \mathrm{Var}_0(x).
@@ -61,13 +65,7 @@ specific anharmonic-plus-linear-perturbation setup. -/
 theorem gibbsExp_deriv_anharmonic_id_id_eq
     {lam alpha gamma t : ℝ}
     (hlam : 0 < lam) (hgamma : 0 < gamma)
-    (hdisc : alpha ^ 2 < 3 * lam * gamma) (ht : 0 < t)
-    (hx : Threepoint.GibbsObservable (volume : Measure ℝ)
-            (anharmonicPotential lam alpha gamma) (fun x : ℝ => x) t
-            (fun x : ℝ => x))
-    (hxx : Threepoint.GibbsObservable (volume : Measure ℝ)
-            (anharmonicPotential lam alpha gamma) (fun x : ℝ => x) t
-            (fun x : ℝ => x * x)) :
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) (ht : 0 < t) :
     HasDerivAt
         (fun h : ℝ => Threepoint.gibbsExp (volume : Measure ℝ)
                         (anharmonicPotential lam alpha gamma)
@@ -78,6 +76,8 @@ theorem gibbsExp_deriv_anharmonic_id_id_eq
                 (fun x : ℝ => x) (fun x : ℝ => x))
         0 := by
   have hreg := Threepoint.anharmonic_id_gibbsRegularity hlam hgamma hdisc ht
+  have hx := Threepoint.anharmonic_id_gibbsObservable_id hlam hgamma hdisc ht
+  have hxx := Threepoint.anharmonic_id_gibbsObservable_mul_self hlam hgamma hdisc ht
   exact Threepoint.gibbsExp_deriv_eq_neg_t_cov
     (volume : Measure ℝ)
     (anharmonicPotential lam alpha gamma)
@@ -96,7 +96,7 @@ slots of the abstract theorem:
 * `hxxx` — discharges the slot for `φ · B · A = x · x · x`. -/
 
 /-- **Cross-susceptibility / three-point identity for the anharmonic
-case** (conditional).
+case.**
 
 For the anharmonic potential, the derivative of the covariance
 `Cov_h(x, x)` in the perturbation parameter at `h = 0` equals
@@ -104,20 +104,12 @@ For the anharmonic potential, the derivative of the covariance
 `prop:cross_susc` applied to the anharmonic-plus-linear-perturbation
 setup. Unlike the harmonic case (where `κ₃ = 0` by parity), the cubic
 term in the anharmonic potential breaks the parity argument, so the
-right-hand side stays as `-t · κ₃` here. -/
+right-hand side stays as `-t · κ₃` here. The six `GibbsObservable`
+slots are filled by the monomial witnesses for `x, x², x³`. -/
 theorem gibbsCov_deriv_anharmonic_id_id_id_eq
     {lam alpha gamma t : ℝ}
     (hlam : 0 < lam) (hgamma : 0 < gamma)
-    (hdisc : alpha ^ 2 < 3 * lam * gamma) (ht : 0 < t)
-    (hx : Threepoint.GibbsObservable (volume : Measure ℝ)
-            (anharmonicPotential lam alpha gamma) (fun x : ℝ => x) t
-            (fun x : ℝ => x))
-    (hxx : Threepoint.GibbsObservable (volume : Measure ℝ)
-            (anharmonicPotential lam alpha gamma) (fun x : ℝ => x) t
-            (fun x : ℝ => x * x))
-    (hxxx : Threepoint.GibbsObservable (volume : Measure ℝ)
-            (anharmonicPotential lam alpha gamma) (fun x : ℝ => x) t
-            (fun x : ℝ => x * x * x)) :
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) (ht : 0 < t) :
     HasDerivAt
         (fun h : ℝ => Threepoint.gibbsCov (volume : Measure ℝ)
                         (anharmonicPotential lam alpha gamma)
@@ -128,6 +120,10 @@ theorem gibbsCov_deriv_anharmonic_id_id_id_eq
                 (fun x : ℝ => x) t (fun x : ℝ => x) (fun x : ℝ => x))
         0 := by
   have hreg := Threepoint.anharmonic_id_gibbsRegularity hlam hgamma hdisc ht
+  have hx := Threepoint.anharmonic_id_gibbsObservable_id hlam hgamma hdisc ht
+  have hxx := Threepoint.anharmonic_id_gibbsObservable_mul_self hlam hgamma hdisc ht
+  have hxxx :=
+    Threepoint.anharmonic_id_gibbsObservable_mul_mul_self hlam hgamma hdisc ht
   exact Threepoint.gibbsCov_deriv_eq_neg_t_kappa3
     (volume : Measure ℝ)
     (anharmonicPotential lam alpha gamma)

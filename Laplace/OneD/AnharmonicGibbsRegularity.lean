@@ -156,7 +156,7 @@ theorem anharmonic_partition_pos
 
 /-- Pointwise derivative in `h` of the perturbed Boltzmann factor at a
 fixed `x`. -/
-private theorem anharmonic_perturbed_pointwise_hasDerivAt
+theorem anharmonic_perturbed_pointwise_hasDerivAt
     (lam alpha gamma t : ℝ) (h₀ x : ℝ) :
     HasDerivAt
       (fun h : ℝ =>
@@ -206,7 +206,7 @@ private theorem amgm_t_abs_x (t c : ℝ) (ht : 0 < t) (hc : 0 < c) (x : ℝ) :
   exact le_of_mul_le_mul_left h_mul_le h2c_pos
 
 /-- Pointwise bound `|F'(h, x)| ≤ bound(x)` on `|h| < 1`. -/
-private theorem anharmonic_perturbed_pointwise_bound
+theorem anharmonic_perturbed_pointwise_bound
     {lam alpha gamma t c : ℝ} (ht : 0 < t) (hc_pos : 0 < c)
     (h_coerc : ∀ x : ℝ, c * x ^ 2 ≤ anharmonicPotential lam alpha gamma x)
     (h x : ℝ) (hh : |h| < 1) :
