@@ -61,3 +61,7 @@ Not needed beyond the previous tide: the closed-form values are identical
 (`G_n(0)` integrals), already confirmed to ~1e-6 in
 `2026-05-30-tide-anharmonic-partition-higher-deriv.md`. The new content is
 structural (general base point + `deriv` identification), not a new number.
+
+## Retrospective
+
+Retrospective: `retrospectives/2026-05-30-tide-anharmonic-partition-deriv-general-h.tex`
