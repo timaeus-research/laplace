@@ -1,0 +1,135 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{the susceptibility is the connected variance}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The second connected cumulant ($\kappa_2$) of the perturbation observable
+$u(x)=-(tx)$ for the anharmonic Gibbs measure, realised as a
+fluctuation--dissipation identity: the derivative at $h=0$ of the perturbed
+mean $\langle u\rangle_h = G_1(h)/G_0(h)$ equals the connected variance
+\[
+  \frac{\partial}{\partial h}\Big|_{h=0}\langle u\rangle_h
+    = \langle u^2\rangle_0 - \langle u\rangle_0^2 .
+\]
+A pointwise \texttt{HasDerivAt.div} on the arc's partition derivatives, plus a
+denominator-clearing \texttt{ring} identity tying the quotient form to the
+moments. New file \texttt{AnharmonicSecondCumulant.lean}; builds clean, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+This is the sixth tide of a single-day anharmonic arc on the laplace seabed,
+and the second rung of the cumulant ladder opened by the cumulant generating
+function's first derivative\footnote{\tideref{2026-05-30-tide-anharmonic-logpartition-deriv}.}.
+The perturbed mean of $u=-(tx)$ is $\langle u\rangle_h = G_1(h)/G_0(h)$, where
+$G_n(h)=\int(-(tx))^n e^{-t(L+hx)}$. Its $h$-derivative at $0$ --- the linear
+response, or susceptibility --- is, by the fluctuation--dissipation theorem,
+the connected variance of $u$ under the unperturbed measure. It was the
+lowest-risk next rung: unlike the higher cumulants it needs no general-$h$
+log machinery, only a \emph{pointwise} quotient rule at $h=0$ on derivatives
+the arc already provides.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the anharmonic potential, $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$,
+$t>0$:
+\[
+  \mathrm{HasDerivAt}\ \Big(h \mapsto \tfrac{G_1(h)}{G_0(h)}\Big)\
+    \Big(\tfrac{G_2(0)G_0(0)-G_1(0)^2}{G_0(0)^2}\Big)\ 0,
+\]
+and that derivative equals
+$\langle u^2\rangle_0 - \langle u\rangle_0^2$ (the \texttt{gibbsExp} of
+$(-(tx))^2$ minus the square of the \texttt{gibbsExp} of $(-(tx))$).
+\end{quote}
+
+Writing \texttt{G n h} for \texttt{weightedPartition lam alpha gamma t n h}:
+\begin{verbatim}
+theorem anharmonic_mean_hasDerivAt ... :
+    HasDerivAt (fun h => G 1 h / G 0 h)
+      ((G 2 0 * G 0 0 - G 1 0 * G 1 0) / G 0 0 ^ 2) 0
+\end{verbatim}
+
+\section{Proof strategy}
+
+The susceptibility is one application of \texttt{HasDerivAt.div} to the
+pointwise derivatives of $G_1$ (with value $G_2(0)$) and of $G_0$ (with
+value $G_1(0)$) at $h=0$ --- both instances of the arc's
+\texttt{weightedPartition\_hasDerivAt} --- using $G_0(0)=Z(0)\neq0$. The
+connected-variance form then rewrites each \texttt{gibbsExp} moment as
+$G_n(0)/G_0(0)$ (moment-normalisation $+$ the \texttt{iteratedDeriv}
+identity) and verifies the scalar identity
+$(ac-b^2)/c^2 = a/c-(b/c)^2$.
+
+\section{Roadblocks and resolutions}
+
+Two small ones. (i) The moment-normalisation helper takes the base point
+$h$ as an \emph{implicit} argument under a $\forall$; supplying the
+$|h|<1$ proof with \texttt{by norm\_num} left $h$ as a metavariable, so
+\texttt{norm\_num} faced $|?h|<1$ and stalled. Pinning \texttt{(h := 0)}
+fixed it. (ii) For the scalar identity I first wrote \texttt{field\_simp;
+ring}, but \texttt{field\_simp} closed the goal outright on this Mathlib
+build, leaving \texttt{ring} with no goals. Rather than depend on that
+(\texttt{field\_simp}'s closing behaviour drifts between cache versions),
+I cleared the $G_0(0)$ denominators explicitly with
+\texttt{div\_sub\_div}/\texttt{div\_eq\_div\_iff} so \texttt{ring} always
+has exactly the polynomial identity to finish.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} \texttt{HasDerivAt.div} and \texttt{.deriv}; the
+denominator-clearing division lemmas\footnote{\texttt{div\_pow},
+\texttt{div\_sub\_div}, \texttt{div\_eq\_div\_iff}, \texttt{pow\_ne\_zero},
+\texttt{mul\_ne\_zero}.}; and \texttt{ring}.
+\textbf{Seabed (reused).} \texttt{weightedPartition\_hasDerivAt},
+\texttt{weightedPartition\_zero\_zero\_pos}, moment-normalisation and the
+\texttt{iteratedDeriv} identity --- all from this session's arc.
+\textbf{New.} The susceptibility theorem and its connected-variance form.
+About 75 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{The susceptibility needs only a pointwise quotient rule.}
+  Reading $\kappa_2$ as $\partial_h\langle u\rangle_h$ rather than
+  $\partial_h^2\log Z$ avoids the general-$h$ log machinery entirely:
+  \texttt{HasDerivAt.div} at the single point $0$ suffices.
+\item \textbf{Pin implicit base points before discharging their side
+  conditions.} \texttt{by norm\_num} cannot prove $|?h|<1$ for a
+  metavariable; \texttt{(h := 0)} first.
+\item \textbf{Don't lean on \texttt{field\_simp} to \emph{close} a goal.}
+  Its closing behaviour drifts between Mathlib caches; clear denominators
+  explicitly and let \texttt{ring} finish, so the proof survives a cache bump.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Third and fourth cumulants $\kappa_3,\kappa_4$.} These do need
+  the general-$h$ derivatives (differentiating the variance/mean functions on
+  a neighbourhood), building toward the flow-equation identity (survey v4 \#2).
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.}
+\end{itemize}
+
+\end{document}
