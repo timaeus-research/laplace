@@ -1,0 +1,128 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+
+\newcommand{\deriv}{\operatorname{deriv}}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{the third connected cumulant}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The third connected cumulant of the perturbation observable $u=-(tx)$ for the
+anharmonic Gibbs measure, as the second derivative of the perturbed mean at
+$h=0$:
+\[
+  \kappa_3 = \frac{\partial^2}{\partial h^2}\Big|_0 \langle u\rangle_h
+    = \frac{G_3(0)G_0(0)^2 - 3G_1(0)G_2(0)G_0(0) + 2G_1(0)^3}{G_0(0)^3}.
+\]
+It is the second derivative of $M(h)=G_1(h)/G_0(h)$; the first derivative is the
+susceptibility $S(h)=(G_2 G_0-G_1^2)/G_0^2$ (so $\deriv M = S$ near $0$), and
+differentiating $S$ once more by a compound quotient rule gives $\kappa_3$. New
+file \texttt{AnharmonicThirdCumulant.lean}; builds clean first try, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+Eighth tide of a single-day anharmonic arc on the laplace seabed, and the third
+rung of the cumulant ladder (after the cumulant generating function's first
+derivative and $\kappa_2$). The whole arc was built so that this rung would be
+reachable: the mean $M=G_1/G_0$, its pointwise derivatives at every order, the
+general-$h$ susceptibility $S=\deriv M$. With those in place, $\kappa_3$ is
+$\deriv^2 M(0)=\deriv S(0)$ --- one more differentiation, of an explicit
+rational function of the partition values.
+
+\section{The thing formalised}
+
+Writing $G\,n$ for \texttt{weightedPartition lam alpha gamma t n}:
+\begin{quote}\itshape
+For the anharmonic potential, $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$,
+$t>0$,
+\[
+  \mathrm{iteratedDeriv}\ 2\ (h \mapsto G\,1\,h / G\,0\,h)\ 0
+    = \frac{G_3(0)G_0(0)^2 - 3G_1(0)G_2(0)G_0(0) + 2G_1(0)^3}{G_0(0)^3}.
+\]
+\end{quote}
+The right-hand side is the standard moments-to-cumulants combination
+$\langle u^3\rangle_0 - 3\langle u^2\rangle_0\langle u\rangle_0 + 2\langle u\rangle_0^3$
+after dividing each $G_n(0)$ by $G_0(0)$.
+
+\section{Proof strategy}
+
+Three moves. \emph{(i) Differentiate the susceptibility.} The pointwise
+partition derivatives ($\deriv(G\,n)=G(n{+}1)$ at $0$) feed a compound
+\texttt{HasDerivAt}: \texttt{.mul}/\texttt{.sub} build the numerator
+$G_2 G_0 - G_1^2$, \texttt{.pow} the denominator $G_0^2$, and \texttt{.div}
+their quotient $S$. The raw derivative value is \texttt{convert}ed to the clean
+$\kappa_3$ form by clearing $G_0(0)$ with \texttt{field\_simp} and finishing
+with \texttt{ring}. \emph{(ii) Identify $\deriv M$ with $S$.} The general-$h$
+susceptibility tide gives $\deriv M(h_0)=S(h_0)$ for every $|h_0|<1$; since
+$\mathrm{ball}\,0\,1$ is a neighbourhood of $0$, $\deriv M =_{\text{ev}} S$
+there. \emph{(iii) Chain.} $\mathrm{iteratedDeriv}\,2\,M = \deriv(\deriv M)$
+(\texttt{iteratedDeriv\_succ}, \texttt{\_one}); the eventual equality turns
+$\deriv(\deriv M)(0)$ into $\deriv S(0)$ via
+\texttt{Filter.EventuallyEq.deriv\_eq}, which is the $\kappa_3$ value by (i).
+
+\section{Roadblocks and resolutions}
+
+None --- it compiled on the first attempt, which is the real headline. The
+heaviest tide of the arc (a compound quotient-rule \texttt{HasDerivAt}, a
+degree-six \texttt{ring} identity in $G_0,\dots,G_3$, and an
+\texttt{iteratedDeriv} chaining) went through cleanly because every piece was a
+pattern the earlier tides had already exercised: the \texttt{convert}-then-%
+\texttt{ring} shape from $\kappa_2$, and the \texttt{EventuallyEq.deriv\_eq}
+chaining from the general-$h$ \texttt{iteratedDeriv} tide. The investment in the
+general-$h$ susceptibility two tides earlier is what made step (ii) a one-liner.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} The \texttt{HasDerivAt} combinators
+(\texttt{.mul}, \texttt{.sub}, \texttt{.pow}, \texttt{.div}, \texttt{.deriv});
+\texttt{iteratedDeriv\_succ} and \texttt{\_one};
+\texttt{Filter.EventuallyEq.deriv\_eq}; \texttt{field\_simp}, \texttt{ring}.
+
+\textbf{Seabed (reused).} The pointwise partition derivative, the general-$h$
+susceptibility, and the $G_0(0)>0$ positivity --- all from this session's arc.
+
+\textbf{New.} The third-cumulant theorem. About 70 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{A well-built arc makes its capstone cheap.} $\kappa_3$ looked like
+  the riskiest tide (compound differentiation $+$ big \texttt{ring} $+$
+  chaining), but every sub-step reused a pattern already paid for, so it landed
+  first try. The cost was front-loaded into the general-$h$ step and the
+  susceptibility, not the cumulant itself.
+\item \textbf{\texttt{convert ... using 1} then \texttt{field\_simp; ring} is the
+  reliable shape for ``messy \texttt{HasDerivAt} value $=$ clean closed form''.}
+  It isolates the algebra from the differentiation.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Fourth cumulant $\kappa_4$ / flow-equation identity} (survey v4
+  \#2): $\deriv^3 M(0)$, one more differentiation of the (now explicit)
+  susceptibility's derivative. The arc's final headline.
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.}
+\end{itemize}
+
+\end{document}
