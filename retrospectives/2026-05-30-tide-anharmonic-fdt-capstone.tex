@@ -1,0 +1,279 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{₀}{\ensuremath{_0}}
+\newunicodechar{₃}{\ensuremath{_3}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{ᵐ}{\ensuremath{^m}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{the anharmonic FDT identities become unconditional}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For the 1D anharmonic potential $L(x) = \tfrac{\lambda}{2}x^2 +
+\tfrac{\alpha}{6}x^3 + \tfrac{\gamma}{24}x^4$ (discriminant $\alpha^2 <
+3\lambda\gamma$) under a linear perturbation $A(x)=x$, the
+fluctuation--dissipation identity $\partial_h\langle x\rangle_h|_{h=0}
+= -t\,\mathrm{Var}_0(x)$ and the cross-susceptibility / three-point
+identity $\partial_h\mathrm{Cov}_h(x,x)|_{h=0} = -t\,\kappa_3(x,x,x)$
+are now \emph{unconditional} Lean theorems. A WIP branch from a prior
+session had proven both \emph{conditionally} on six
+\texttt{GibbsObservable} differentiation-under-the-integral witnesses
+for the monomials $x, x^2, x^3$, and a docstring estimated discharging
+them as a 441-line multi-tide undertaking. This tide discharged them
+in $\approx$210 lines by mirroring the already-merged harmonic
+construction and reusing the coercivity-domination machinery the
+anharmonic partition-function derivative had already built. New file
+\texttt{AnharmonicGibbsObservableMonomials.lean}; commit
+\texttt{c331ac2} on branch
+\texttt{tide/anharmonic-fdt-capstone}; full library builds (8304
+jobs), no \texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}, no
+lint warnings.
+\end{abstract}
+
+\section{Setting}
+
+This seabed (\texttt{lean/laplace}) formalises the routine Laplace /
+Gibbs calculations of the SLT Susceptibility Primer. An earlier arc
+built the abstract \texttt{Threepoint} machinery---a
+\texttt{GibbsRegularity} bundle (strict positivity of the partition,
+plus differentiability of the partition in the perturbation parameter)
+and per-observable \texttt{GibbsObservable} witnesses---and proved, in
+that abstract setting, the fluctuation--dissipation theorem
+$\partial_h\langle\phi\rangle_h|_{h=0} = -t\,\mathrm{Cov}(\phi,A)$ and
+its derivative, the three-point identity
+$\partial_h\mathrm{Cov}_h(\phi,A)|_{h=0} = -t\,\kappa_3$.
+
+The concrete payoff comes from instantiating that abstract machinery on
+a specific potential. The harmonic case was completed some weeks ago,
+including the discharge of its monomial \texttt{GibbsObservable}
+witnesses\footnote{In
+\texttt{Laplace/OneD/HarmonicGibbsObservableMonomials.lean}, via
+\texttt{harmonic\_id\_gibbsObservable\_pow} and three multiplicative
+wrappers.}. The anharmonic case is the harder, more interesting mirror:
+$\kappa_3 \neq 0$ because the cubic term breaks the parity argument that
+kills the harmonic three-point function. A recent tide closed the last
+\texttt{sorry} in the anharmonic \texttt{GibbsRegularity} instance (the
+\texttt{partition\_hasDerivAt} field), and a follow-up session wrote
+\texttt{AnharmonicFDT.lean}, instantiating both identities---but only
+\emph{conditionally}, leaving the six monomial \texttt{GibbsObservable}
+witnesses as hypotheses. That branch was never merged.
+
+Why this candidate now: it is the natural close-out of the most recent
+laplace narrative, on the quietest seabed in the portfolio, with the
+proof template already sitting in the harmonic mirror file. The tide
+log\footnote{\texttt{tide-log/2026-05-25-tide-anharmonic-fdt-capstone.md},
+whose numerical-check section already confirmed both identities to
+$\sim$$10^{-8}$ relative accuracy at $\lambda{=}1,\alpha{=}0.5,\gamma{=}1$
+across $t\in\{1,5,20,100\}$.} carried the deliberation; this session
+resumed it.
+
+\section{The thing formalised}
+
+The two headline theorems lost their \texttt{GibbsObservable}
+hypotheses. In mathematical terms:
+
+\begin{quote}\itshape
+For $\lambda,\gamma>0$, $\alpha^2 < 3\lambda\gamma$, and $t>0$, with the
+anharmonic potential $L$ and linear perturbation $A(x)=x$ against
+Lebesgue measure on $\mathbb{R}$:
+\[
+  \partial_h\langle x\rangle_h\big|_{h=0} = -t\,\mathrm{Cov}_0(x,x)
+    = -t\,\mathrm{Var}_0(x),
+  \qquad
+  \partial_h\mathrm{Cov}_h(x,x)\big|_{h=0} = -t\,\kappa_3(x,x,x).
+\]
+\end{quote}
+
+The Lean signature of the second, now hypothesis-free:
+
+\begin{verbatim}
+theorem gibbsCov_deriv_anharmonic_id_id_id_eq
+    {lam alpha gamma t : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) (ht : 0 < t) :
+    HasDerivAt
+        (fun h : ℝ => Threepoint.gibbsCov volume
+            (anharmonicPotential lam alpha gamma)
+            (fun x => x) t h (fun x => x) (fun x => x))
+        (-t * Threepoint.kappa3 volume
+            (anharmonicPotential lam alpha gamma)
+            (fun x => x) t (fun x => x) (fun x => x))
+        0
+\end{verbatim}
+
+The work happened in a new file, whose headline is the general monomial
+witness:
+
+\begin{verbatim}
+theorem Threepoint.anharmonic_id_gibbsObservable_pow
+    {lam alpha gamma t : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) (ht : 0 < t) (k : ℕ) :
+    Threepoint.GibbsObservable volume
+      (anharmonicPotential lam alpha gamma) (fun x => x) t (fun x => x ^ k)
+\end{verbatim}
+
+with three multiplicative wrappers ($x$, $x{\cdot}x$, $x{\cdot}x{\cdot}x$)
+filling the exact slots the FDT and three-point theorems consume.
+
+\section{Proof strategy}
+
+A \texttt{GibbsObservable} for observable $\varphi$ is a conjunction: a
+trivial $h{=}0$ numerator identity (which collapses under $0\cdot x =
+0$), and the substantive claim that
+\[
+  h \;\longmapsto\; \int \varphi(x)\,e^{-t(L(x)+h x)}\,dx
+\]
+is differentiable at $h=0$ with the expected
+differentiate-under-the-integral value. For $\varphi(x)=x^k$ this is
+dominated differentiation, via Mathlib's
+\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}. Three
+ingredients feed it:
+
+\begin{enumerate}[itemsep=2pt]
+\item \textbf{Pointwise derivative.} The $h$-derivative of the
+  perturbed Boltzmann factor was already proven for the $k{=}0$ partition
+  case; multiplying by the constant-in-$h$ factor $x^k$ via
+  \texttt{HasDerivAt.const\_mul} handles the monomial.
+\item \textbf{Dominator.} The $k{=}0$ derivative bound---$\|(-tx)\,
+  e^{-t(L+hx)}\| \le t\,e^{t/2c}\,|x|\,e^{-(t/2)L}$ for $|h|<1$, resting on
+  coercivity $c x^2 \le L(x)$ and an AM--GM step---scales by $|x|^k$ to a
+  dominator $t\,e^{t/2c}\,|x|^{k+1}\,e^{-(t/2)L}$.
+\item \textbf{Dominator integrability.} A general lemma\footnote{%
+  \texttt{integrable\_abs\_pow\_mul\_exp\_neg\_t\_anharmonic}, indexed
+  by the power $m$.}
+  proven here by the same Gaussian-domination argument the $m{=}0,1$
+  witnesses already used, gives integrability of $|x|^m e^{-tL}$ for all
+  $m$; the dominator is its $m{=}k{+}1$ instance at half temperature.
+\end{enumerate}
+
+The only edit to existing code was removing \texttt{private} from two
+helper lemmas in the regularity file\footnote{%
+\texttt{Laplace/OneD/AnharmonicGibbsRegularity.lean}.}
+(the pointwise derivative and the pointwise bound), so the new file
+could reuse them rather than re-derive the AM--GM/coercivity chain.
+
+\section{Roadblocks and resolutions}
+
+There were essentially none, and that is the interesting part. The v2
+WIP docstring read:
+
+\begin{quote}\small
+``The \texttt{GibbsObservable} hypotheses [\,\ldots\,] are \emph{not}
+discharged here---that is a parallel multi-tide undertaking (analogue of
+the 441-line harmonic file).''
+\end{quote}
+
+This estimate was a factor of two too pessimistic, for a structural
+reason worth recording. The harmonic monomials file is long partly
+because it re-derives its domination bound from scratch using an
+explicit Young's inequality. The anharmonic side did \emph{not} need to:
+the \texttt{partition\_hasDerivAt} tide had already paid for the entire
+coercivity-domination apparatus (the AM--GM lemma, the pointwise bound,
+the bound-integrability lemma) for the $k{=}0$ case. Discharging the
+monomial witnesses was then just ``multiply the existing bound by
+$|x|^k$ and integrate $|x|^{k+1}$ instead of $|x|^1$''. The general
+$m$-indexed Gaussian dominator \texttt{integrable\_abs\_pow\_mul\_exp\_neg\_mul\_sq}
+makes the integrability uniform in the power, so no per-$k$ work
+appears at all.
+
+The one micro-friction: after \texttt{Integrable.const\_mul}, the
+resulting integrand was \emph{syntactically identical} to the
+\texttt{set}-defined dominator, so \texttt{rw [hbound\_def]} closed the
+congruence goal by \texttt{rfl} on its own and a trailing \texttt{ring}
+reported ``no goals''. Deleting the \texttt{ring} was the entire fix.
+The file compiled on the second attempt.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.}
+\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le} (the
+dominated-differentiation engine);
+\texttt{HasDerivAt.const\_mul};
+\texttt{Integrable.const\_mul}, \texttt{Integrable.mono},
+\texttt{Integrable.mono'}, \texttt{Integrable.congr};
+\texttt{Continuous.aestronglyMeasurable} and \texttt{fun\_prop} for
+measurability.
+
+\textbf{Seabed (reused).} The general Gaussian-times-polynomial
+integrability lemma\footnote{%
+\texttt{integrable\_abs\_pow\_mul\_exp\_neg\_mul\_sq}.};
+the coercivity lemma \texttt{anharmonic\_coercive}; and the two
+un-privated pointwise helpers from the partition-derivative tide.
+
+\textbf{New.} The general $|x|^m$ integrability witness; the monomial
+witness instance and its three multiplicative wrappers; and the removal
+of the hypotheses from the two headline theorems. About 210 lines in
+all.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{A pessimistic ``multi-tide'' estimate left in a WIP
+  docstring is worth re-checking against the mirror.} The harmonic side
+  had already shown the shape was a single tide; the anharmonic estimate
+  did not account for the domination machinery its own
+  \texttt{partition\_hasDerivAt} tide had already built. When a deferred
+  follow-up cites a large line count, look for the analogous completed
+  construction before believing it.
+\item \textbf{Pay once for the domination apparatus, reuse it across all
+  moments.} Phrasing the $k{=}0$ pointwise bound and the integrability
+  dominator generically (in the power $m$) made every monomial witness
+  free. This is the same ``extract the separable factorisation''
+  lesson in a different guise: the per-observable cost should be a
+  multiplication, not a re-derivation.
+\item \textbf{Prefer un-privating a helper over duplicating its proof.}
+  Two \texttt{private} lemmas became public; the alternative was copying
+  $\sim$40 lines of AM--GM/coercivity reasoning into the new file.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Asymptotic capstones.} The $t\to\infty$ limits
+  $\partial_h\langle x\rangle_h|_{h=0}\to -1/\lambda$ and
+  $t\,\partial_h\mathrm{Cov}_h(x,x)|_{h=0}\to \alpha/\lambda^3$ are
+  already numerically confirmed in the tide log. Landing them needs the
+  $\forall t$-quantified observable witnesses composed with the existing
+  moment asymptotics (\texttt{cov\_self\_anharmonic\_asymptotic},
+  \texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic}). A clean next
+  tide, and the obvious one: it closes the loop with the empirical
+  validation\footnote{\experimentref[the 1D FDT-identity experiment]{2026-05-23-experiment-fdt-identity-1d}, HMC at $(\lambda,\alpha,\gamma,t)=(1,0.5,1,100)$, asymptote $0.005$ matched within $2.5\sigma$.}.
+\item \textbf{Promote the AM--GM lemma to \texttt{lean-common}.} The
+  scalar inequality $t|x| \le \tfrac{tc}{2}x^2 + \tfrac{t}{2c}$ used by
+  the bound is fully generic and has now been load-bearing across the
+  partition-derivative and observable tides.
+\item \textbf{Higher-derivative \texttt{partition\_hasDerivAt} ($n=2,3$).}
+  Independent of the FDT thread, needed for the flow-equation
+  (fourth-cumulant) identity.
+\end{itemize}
+
+\end{document}

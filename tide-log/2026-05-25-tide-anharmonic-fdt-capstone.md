@@ -232,3 +232,54 @@ t·(-t·κ₃) → α/λ³).
 
 Script: `/tmp/anharmonic_fdt_check.py`. Both identities and both asymptotes
 hold; ready for Step 3.
+
+---
+
+## Resume (2026-05-30)
+
+Resumed by a tide-pick auto-loop session. The 2026-05-25 WIP left the two
+identities proven *conditionally* on `GibbsObservable` witnesses for
+`x, x², x³`; the v2 docstring estimated discharging them as a "441-line"
+multi-tide undertaking. In fact the harmonic side already solved exactly
+this shape in `HarmonicGibbsObservableMonomials.lean`, and the anharmonic
+`partition_hasDerivAt` field already built the coercivity-domination
+machinery. The remaining work was a faithful mirror, ~210 lines.
+
+**Proceed-without-GPT.** This is a mirror-shaped resume: the candidate was
+already deliberated (the WIP), the target mirrors an already-merged proof
+(`HarmonicGibbsObservableMonomials`), and the underlying identities are
+numerically validated above (~1e-8) and in the FDT experiment-log. No fresh
+GPT consult was run; correctness is machine-checked by `lake build`.
+
+## Step 3 hand-off / Result
+
+New file `Laplace/OneD/AnharmonicGibbsObservableMonomials.lean`:
+
+- `integrable_abs_pow_mul_exp_neg_t_anharmonic (m : ℕ)` — general
+  integrability of `|x|^m · exp(-t·L_anh)`, generalising the `m=0,1`
+  witnesses already in `AnharmonicGibbsRegularity`.
+- `Threepoint.anharmonic_id_gibbsObservable_pow (k : ℕ)` — the
+  `GibbsObservable` instance for `x^k`, via
+  `hasDerivAt_integral_of_dominated_loc_of_deriv_le` with dominator
+  `t·exp(t/(2c))·|x|^(k+1)·exp(-(t/2)·L_anh)`.
+- Three multiplicative wrappers: `_id`, `_mul_self`, `_mul_mul_self`.
+
+Two helpers in `AnharmonicGibbsRegularity.lean` un-privated for reuse:
+`anharmonic_perturbed_pointwise_hasDerivAt`,
+`anharmonic_perturbed_pointwise_bound`.
+
+`AnharmonicFDT.lean`: both `gibbsExp_deriv_anharmonic_id_id_eq` and
+`gibbsCov_deriv_anharmonic_id_id_id_eq` are now **unconditional** (the
+`GibbsObservable` hypotheses removed, discharged via the wrappers).
+
+**Commit:** `c331ac2` on `tide/anharmonic-fdt-capstone`.
+Full library builds (8304 jobs), no sorries, no lint warnings.
+
+**Deferred follow-up:** the asymptotic capstones (`∂_h⟨x⟩|_{h=0} → -1/λ`
+and `t·∂_h Cov|_{h=0} → α/λ³`) — numerically confirmed above — still need
+the `∀ t`-quantified observable witnesses composed with the moment
+asymptotics. A clean next tide.
+
+## Retrospective
+
+Retrospective: `retrospectives/2026-05-30-tide-anharmonic-fdt-capstone.tex`
