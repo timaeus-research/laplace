@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{linear response at any perturbation strength}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The susceptibility of the anharmonic Gibbs measure --- the derivative of the
+perturbed mean $\langle u\rangle_h = G_1(h)/G_0(h)$ of $u=-(tx)$ --- lifted from
+the single point $h=0$ to an arbitrary base point $|h_0|<1$:
+\[
+  \frac{\partial}{\partial h}\Big|_{h_0}\langle u\rangle_h
+    = \frac{G_2(h_0)G_0(h_0)-G_1(h_0)^2}{G_0(h_0)^2}.
+\]
+This is the fluctuation--dissipation (linear-response) identity at any
+perturbation strength, and the foundation for the third cumulant (the second
+derivative of the mean). New file
+\texttt{AnharmonicSusceptibilityGeneralH.lean}; builds clean first try, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+Seventh tide of a single-day anharmonic arc on the laplace seabed. The
+previous tide\footnote{\tideref{2026-05-30-tide-anharmonic-second-cumulant}.}
+proved the susceptibility $\partial_h\langle u\rangle_h$ only at $h=0$ (the
+connected variance $\kappa_2$). The third cumulant is the \emph{second}
+derivative of the mean, so it needs the mean's derivative as a function of
+$h$ on a neighbourhood --- which in turn needs the susceptibility at a general
+base point. This tide provides exactly that, at minimal risk: the general-$h$
+partition derivatives already exist (from the general-$h$ step tide), so the
+only genuinely new pieces are positivity of the perturbed partition at $h_0\neq0$
+and a pointwise quotient rule.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the anharmonic potential and $|h_0|<1$, $\mathrm{HasDerivAt}$ of
+$h\mapsto G_1(h)/G_0(h)$ at $h_0$ with value
+$(G_2(h_0)G_0(h_0)-G_1(h_0)^2)/G_0(h_0)^2$; and $G_0(h)>0$ for $|h|<1$.
+\end{quote}
+
+\section{Proof strategy}
+
+\textbf{Positivity.} $G_0(h)=\int e^{-t(L+hx)}$ (after $(-(tx))^0=1$) is a
+strictly-positive integrand with full support and is integrable at any
+$|h|<1$ (the arc's centre-integrability lemma at $n=0$); so
+\texttt{integral\_pos\_iff\_support\_of\_nonneg\_ae} gives positivity --- a
+line-for-line analogue of \texttt{anharmonic\_partition\_pos} with the $+hx$
+carried through. \textbf{Susceptibility.} \texttt{HasDerivAt.div} on the two
+general-$h$ partition derivatives --- of $G_1$ (value $G_2(h_0)$) and of $G_0$
+(value $G_1(h_0)$) at $h_0$ --- with $G_0(h_0)\neq0$.
+
+\section{Roadblocks and resolutions}
+
+None --- it built on the first attempt. The general-$h$ machinery from the
+earlier tides (centre-integrability, the general-$h$ \texttt{HasDerivAt} step)
+is exactly the right interface; positivity reused the $h=0$ template verbatim
+modulo the perturbation term.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} \texttt{HasDerivAt.div}; the positivity-from-support
+lemma\footnote{\texttt{integral\_pos\_iff\_support\_of\_nonneg\_ae}.};
+\texttt{Real.exp\_ne\_zero}; \texttt{Real.volume\_univ}.
+
+\textbf{Seabed (reused).} The general-$h$ partition derivative and the
+centre-integrability lemma\footnote{\texttt{weightedPartition\_hasDerivAt}
+and \texttt{integrable\_weightedPartition\_integrand}.}, plus the $h=0$
+positivity template --- all from this session's arc.
+
+\textbf{New.} General-$h$ partition positivity and the general-$h$
+susceptibility. About 70 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Investing in the general-$h$ step pays compounding dividends.}
+  Because the partition derivatives were proved at an arbitrary centre two
+  tides ago, the general-$h$ susceptibility is just ``the $h=0$ proof with
+  $h_0$ in place of $0$'' --- no new analytic work, only the (reused)
+  positivity and a quotient rule.
+\item \textbf{Positivity templates transfer across perturbations.} The
+  $\int e^{-tL}>0$ argument carries the $+hx$ term unchanged: the integrand is
+  still everywhere positive with full support.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Third cumulant $\kappa_3$.} The second derivative of the mean:
+  differentiate the general-$h$ susceptibility's mean function once more (the
+  \texttt{iteratedDeriv} chaining pattern), then expand to
+  $\langle u^3\rangle_0-3\langle u^2\rangle_0\langle u\rangle_0+2\langle u\rangle_0^3$.
+  Then $\kappa_4$ --- the flow-equation identity (survey v4 \#2).
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.}
+\end{itemize}
+
+\end{document}
