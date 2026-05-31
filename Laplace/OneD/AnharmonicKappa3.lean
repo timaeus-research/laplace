@@ -131,6 +131,30 @@ private lemma kappa3_id_id_id_eq_cov_form (L : ℝ → ℝ) (t : ℝ) :
 `⟨x²⟩ = Var[x] + ⟨x⟩²` and the observation that `t · ⟨x⟩² → 0`
 (because `t · ⟨x⟩` is bounded and `⟨x⟩ → 0` follows). -/
 
+/-- `⟨x⟩_t → 0` for the anharmonic Gibbs: the mean vanishes as `t → ∞` because
+`t · ⟨x⟩` is bounded (`→ -α/(2λ²)`) so `⟨x⟩ = (1/t)·(t·⟨x⟩) → 0`. Shared by the
+second-moment and κ₃ asymptotics, both of which need it. -/
+private lemma mean_anharmonic_tendsto_zero
+    {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    Filter.Tendsto
+      (fun t : ℝ => Laplace.gibbsExpectation
+          (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x))
+      Filter.atTop (nhds 0) := by
+  have hMean := mean_anharmonic_asymptotic hlam hgamma hdisc
+  have h_inv_t : Filter.Tendsto (fun t : ℝ => 1 / t) Filter.atTop (nhds 0) := by
+    simp only [one_div]; exact tendsto_inv_atTop_zero
+  have h_prod : Filter.Tendsto
+      (fun t : ℝ => (1 / t) * (t * Laplace.gibbsExpectation
+          (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x)))
+      Filter.atTop (nhds (0 * (-alpha / (2 * lam ^ 2)))) :=
+    h_inv_t.mul hMean
+  have h_lim_zero : (0 : ℝ) * (-alpha / (2 * lam ^ 2)) = 0 := by ring
+  rw [h_lim_zero] at h_prod
+  apply h_prod.congr'
+  filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
+  field_simp
+
 /-- `t · ⟨x²⟩_t → 1/λ` for the anharmonic Gibbs. -/
 theorem secondMoment_anharmonic_asymptotic
     {lam alpha gamma : ℝ}
@@ -144,24 +168,8 @@ theorem secondMoment_anharmonic_asymptotic
   -- t·Var[x] → 1/λ (given). t·⟨x⟩² → 0 (since t·⟨x⟩ → C and ⟨x⟩ → 0).
   -- ⟨x⟩ = (1/t) · (t · ⟨x⟩) → 0 · (-α/(2λ²)) = 0 by Tendsto.mul
   -- (using 1/t → 0 as t → ∞).
-  have h_inv_t : Filter.Tendsto (fun t : ℝ => 1 / t) Filter.atTop (nhds 0) := by
-    simp only [one_div]; exact tendsto_inv_atTop_zero
-  -- Build ⟨x⟩ → 0 as (1/t) * (t·⟨x⟩) using Tendsto.mul:
-  have hMeanZero :
-      Filter.Tendsto
-        (fun t : ℝ => Laplace.gibbsExpectation
-            (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x))
-        Filter.atTop (nhds 0) := by
-    have h_prod : Filter.Tendsto
-        (fun t : ℝ => (1 / t) * (t * Laplace.gibbsExpectation
-            (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x)))
-        Filter.atTop (nhds (0 * (-alpha / (2 * lam ^ 2)))) :=
-      h_inv_t.mul hMean
-    have h_lim_zero : (0 : ℝ) * (-alpha / (2 * lam ^ 2)) = 0 := by ring
-    rw [h_lim_zero] at h_prod
-    apply h_prod.congr'
-    filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
-    field_simp
+  -- ⟨x⟩ → 0 (extracted helper, shared with the κ₃ asymptotic).
+  have hMeanZero := mean_anharmonic_tendsto_zero hlam hgamma hdisc
   -- Now t·⟨x⟩² = (t·⟨x⟩) · ⟨x⟩ → (-α/(2λ²)) · 0 = 0.
   have h_t_mean_sq :
       Filter.Tendsto
@@ -234,25 +242,8 @@ theorem kappa3_anharmonic_id_id_id_asymptotic
   -- t² · κ₃(x,x,x) = t² · Cov[x²,x] - 2 · (t·⟨x²⟩) · (t·⟨x⟩) + 2 · t² · ⟨x⟩³.
   -- The last term is t² · ⟨x⟩³ = (t·⟨x⟩)² · ⟨x⟩ / 1 ... actually
   --   t² · ⟨x⟩³ = (t·⟨x⟩) · (t·⟨x⟩) · ⟨x⟩ → C·C·0 = 0
-  -- where ⟨x⟩ → 0 (proven inside secondMoment helper). We re-derive it
-  -- here for clarity.
-  have h_inv_t : Filter.Tendsto (fun t : ℝ => 1 / t) Filter.atTop (nhds 0) := by
-    simp only [one_div]; exact tendsto_inv_atTop_zero
-  have hMeanZero :
-      Filter.Tendsto
-        (fun t : ℝ => Laplace.gibbsExpectation
-            (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x))
-        Filter.atTop (nhds 0) := by
-    have h_prod : Filter.Tendsto
-        (fun t : ℝ => (1 / t) * (t * Laplace.gibbsExpectation
-            (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x)))
-        Filter.atTop (nhds (0 * (-alpha / (2 * lam ^ 2)))) :=
-      h_inv_t.mul hM1
-    have h_lim_zero : (0 : ℝ) * (-alpha / (2 * lam ^ 2)) = 0 := by ring
-    rw [h_lim_zero] at h_prod
-    apply h_prod.congr'
-    filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
-    field_simp
+  -- where ⟨x⟩ → 0 (the extracted `mean_anharmonic_tendsto_zero` helper).
+  have hMeanZero := mean_anharmonic_tendsto_zero hlam hgamma hdisc
   -- Build the three components of the limit:
   -- (1) t² · Cov[x²,x] → -2α/λ³.
   -- (2) -2 · (t·⟨x²⟩) · (t·⟨x⟩) → -2 · (1/λ) · (-α/(2λ²)) = α/λ³.
