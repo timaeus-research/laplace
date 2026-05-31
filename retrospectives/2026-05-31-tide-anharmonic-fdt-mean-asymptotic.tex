@@ -1,0 +1,118 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+
+\newcommand{\deriv}{\operatorname{deriv}}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{the large-\(t\) asymptote of the first-cumulant FDT}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-31}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The companion to the cross-susceptibility asymptote, completing both $t\to\infty$
+limits the FDT-capstone tide deferred: the first-cumulant fluctuation--%
+dissipation limit
+\[
+  \frac{\partial}{\partial h}\Big|_0\langle x\rangle_h = -t\,\mathrm{Var}_0(x)
+    \;\longrightarrow\; -\frac{1}{\lambda}.
+\]
+The FDT identity is phrased with the abstract \texttt{Threepoint} covariance
+while the asymptotic input uses the concrete \texttt{Laplace} covariance; the
+tide also lands the small definitional bridge between them. New file
+\texttt{AnharmonicFDTMeanAsymptotic.lean}; builds clean first try, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+The cross-susceptibility asymptote tide\footnote{\tideref{2026-05-31-tide-anharmonic-fdt-asymptotic}.}
+closed one of the two limits deferred by the FDT capstone, the one that
+composed cleanly because both factors used \texttt{Threepoint.kappa3}. The
+\emph{mean} limit did not: the FDT identity gives
+$\partial_h\langle x\rangle_h|_0 = -t\cdot\texttt{Threepoint.gibbsCov}\cdots0$,
+but the available asymptotic, \texttt{cov\_self\_anharmonic\_asymptotic}, is
+stated for \texttt{Laplace.gibbsCov}. This tide supplies the missing
+definitional bridge and then closes the limit.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the anharmonic potential, $\deriv\big(h\mapsto\langle x\rangle_h\big)(0)\to
+-1/\lambda$ as $t\to\infty$; and, as reusable infrastructure, the abstract
+\texttt{Threepoint} Gibbs expectation/covariance at $h=0$ (with $A=\mathrm{id}$,
+against Lebesgue) equals the concrete \texttt{Laplace} one.
+\end{quote}
+
+\section{Proof strategy}
+
+\emph{Bridge.} \texttt{Threepoint.gibbsExp} at $h=0$ unfolds to
+$(\int\varphi\,e^{-t(L+0\cdot x)})/(\int e^{-t(L+0\cdot x)})$ and
+\texttt{Laplace.gibbsExpectation} to $(\int\varphi\,e^{-tL})/\texttt{partitionFunction}$;
+\texttt{simp [zero\_mul, add\_zero]} collapses the $0\cdot x$ and the two
+coincide. The covariance bridge is then three rewrites of the expectation
+bridge. \emph{Limit.} As in the cross-susceptibility tide:
+\texttt{cov\_self\_anharmonic\_asymptotic} gives $t\cdot\mathrm{Var}\to1/\lambda$,
+so its negation $-(t\cdot\mathrm{Var})\to-1/\lambda$; on $t>0$ the FDT identity
+(after the covariance bridge) rewrites $\deriv(\langle x\rangle_h)(0)$ to
+$-t\cdot\texttt{Laplace.gibbsCov}$, and \texttt{Tendsto.congr'} transfers the
+limit.
+
+\section{Roadblocks and resolutions}
+
+None --- first-try build. The only subtlety was anticipated: the FDT identity
+and the asymptotic live in different covariance namespaces, so the bridge had
+to be proved first. It is a pure \texttt{simp [zero\_mul, add\_zero]} after
+unfolding, because the two definitions agree once the perturbation term
+vanishes at $h=0$.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} The \texttt{Tendsto} combinators and atTop
+helper\footnote{\texttt{Filter.Tendsto.neg}, \texttt{Filter.Tendsto.congr'},
+\texttt{eventually\_gt\_atTop}.}, plus \texttt{HasDerivAt.deriv}, \texttt{simp},
+\texttt{ring}.
+
+\textbf{Seabed (reused).} The unconditional first-cumulant FDT identity and the
+covariance asymptotic.\footnote{\texttt{cov\_self\_anharmonic\_asymptotic}.}
+
+\textbf{New.} The \texttt{Threepoint}-to-\texttt{Laplace} expectation/covariance
+bridge (reusable) and the mean asymptote. About 50 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{A namespace bridge is often the whole tide.} Two formalisations of
+  ``the same'' object (here the unperturbed Gibbs covariance) can block a clean
+  composition; the bridge is a short \texttt{unfold} + \texttt{simp} once the
+  defining expressions are made to coincide.
+\item \textbf{The bridge is reusable.} Any future result that needs the abstract
+  \texttt{Threepoint} machinery's $h=0$ specialisation to meet the concrete
+  \texttt{Laplace} asymptotics can now cite it.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}} --- the
+  last remaining laplace-arc follow-up.
+\item \textbf{A fresh seabed.} The anharmonic 1D FDT / cumulant programme is now
+  complete (both asymptotes, all cumulants through $\kappa_4$ in three bases);
+  the next substantial step is a different research area.
+\end{itemize}
+
+\end{document}
