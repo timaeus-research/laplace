@@ -1,0 +1,207 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{₃}{\ensuremath{_3}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\newcommand{\Cov}{\operatorname{Cov}}
+\emergencystretch=3em
+
+\title{Review retrospective:\\\emph{anharmonic third-cumulant asymptotic}}
+\author{Daniel Murfet (with Claude Opus 4.8 and GPT-5.5 Pro)}
+\date{2026-05-31}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The second Tide-review, and the first selected automatically by
+\texttt{tide-review-pick}. The target was \texttt{Laplace/OneD/AnharmonicKappa3.lean}
+--- the cross-repo bridge that derives the leading-order third cumulant of the 1D
+anharmonic Gibbs measure, $t^2\,\kappa_3(x,x,x)\to-\alpha/\lambda^3$, from the
+abstract \texttt{Threepoint.kappa3} framework and the concrete Laplace asymptotics.
+GPT-5.5 Pro reviewed it against the Susceptibility Primer's $\backslash$leanref-tagged input
+asymptotics and the file's retrospective, and returned a \emph{clean fidelity pass}:
+it independently re-derived the historically error-prone limit constants
+($-\alpha/\lambda^3$ and $-5\alpha/2\lambda^3$, the $3/2$-vs-$5/2$ coefficient) and
+confirmed the cumulant identity, the trilinear $abc$ factor, and the signs. One
+signature-preserving simplification was implemented under the review discipline
+(extracting a duplicated $\langle x\rangle_t\to0$ derivation into a shared private
+helper), affirmed by a second GPT pass, and merged. One genuine
+\emph{terminology} finding --- the \texttt{*\_affine\_*} theorems handle scalar
+multiples $b\cdot x$, not affine maps $c\cdot x+d$ --- was escalated to the human as
+a future-tide rename rather than touched here.
+\end{abstract}
+
+\section{Setting}
+
+This review continues the inward-facing arc opened by the pure-quartic
+review.\footnote{\reviewref{2026-05-31-review-2d-pure-quartic}.} It is the first
+review whose \emph{target} was chosen by the new \texttt{tide-review-pick} skill,
+which surveys the seabeds for never-reviewed (or drifted-since-review) files and
+ranks them by the richness of their informal anchor --- the principle being that an
+independent fidelity check is most valuable where there is documented ground truth
+to check against. The top recommendation was this file, on the strength of its
+anchor: the Susceptibility Primer states its three input asymptotics with
+$\backslash$leanref tags, so the reviewer had the paper's own constants to compare the Lean
+against.
+
+The reviewed file sits at \texttt{laplace} commit \texttt{b7188f4}. It is a
+cross-repo bridge: it imports \texttt{Threepoint.kappa3} (the abstract third-cumulant
+framework) and the concrete anharmonic asymptotics from
+\texttt{IntegralRemainder.lean}, and assembles
+\[
+  t^2\,\kappa_3(x,x,x)\;\to\;-\frac{\alpha}{\lambda^3}
+\]
+for $L(x)=\tfrac\lambda2 x^2+\tfrac\alpha6 x^3+\tfrac\gamma{24}x^4$ with
+$\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$.
+
+\section{What was reviewed}
+
+The file's eight declarations (three private helpers, five public theorems) build to
+the headline κ₃ asymptotic and its corollaries (the third-moment asymptotic and the
+affine / scalar-multiple lift).\footnote{Public theorems:
+\texttt{secondMoment\_anharmonic\_asymptotic},
+\texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic},
+\texttt{thirdMoment\_anharmonic\_asymptotic}, \texttt{kappa3\_affine\_id\_id\_id\_eq},
+\texttt{kappa3\_anharmonic\_affine\_asymptotic}.} The
+informal corpus: the file's module docstring, the file's own
+retrospective,\footnote{\tideref{2026-05-06-tide-anharmonic-kappa3}.} and --- the
+load-bearing anchor --- three primer equations, each $\backslash$leanref-tagged to this seabed:
+$\langle x\rangle_t=-\alpha/(2\lambda^2 t)+O(t^{-2})$,
+$\Cov_t[x,x]=1/(\lambda t)+O(t^{-2})$, and
+$\Cov_t[x^2,x]=-2\alpha/(\lambda^3 t^2)+O(t^{-3})$. The file's potential and
+hypothesis triple match the primer verbatim.
+
+\section{Fidelity findings}
+
+\textbf{None --- a clean pass, with the arithmetic independently re-derived.} The
+review's highest value here was checking the \emph{limit constants}, which combine
+three input asymptotics through a cumulant identity and are exactly the kind of
+coefficient bookkeeping that is easy to get wrong. GPT-5.5 Pro verified each step
+from first principles:
+
+\begin{itemize}[nosep]
+\item the cumulant expansion $\kappa_3(x,x,x)=\langle x^3\rangle-3\langle x^2\rangle
+  \langle x\rangle+2\langle x\rangle^3$ (coefficients $1,-3,+2$);
+\item the headline $-\dfrac{2\alpha}{\lambda^3}-2\cdot\dfrac1\lambda\cdot
+  \Big(-\dfrac{\alpha}{2\lambda^2}\Big)+0=-\dfrac{\alpha}{\lambda^3}$;
+\item the third moment $-\dfrac{2\alpha}{\lambda^3}+\dfrac1\lambda\Big(-\dfrac{\alpha}
+  {2\lambda^2}\Big)=-\dfrac{5\alpha}{2\lambda^3}$ --- explicitly flagging and
+  confirming the historically error-prone $3/2$-vs-$5/2$ constant;
+\item the trilinear $abc$ factor and the sign on $-(abc)\alpha/\lambda^3$.
+\end{itemize}
+
+\gptbox{I do not see a mismatch in any of the public theorem statements or limit
+constants relative to the attached ground truth. The coefficient arithmetic that
+was historically error-prone ($3/2$ vs $5/2$) is consistent in the final public
+results here.}
+
+\paragraph{A terminology finding (escalated, not fixed).} The
+\texttt{*\_affine\_*} theorems --- and the docstrings calling them ``affine
+multilinearity'' --- actually handle \emph{scalar multiples} $b\cdot x$, not affine
+maps $c\cdot x+d$. No statement is wrong against its own target (the target was
+exactly $(b\cdot x,a\cdot x,c\cdot x)$), so this is not a fidelity defect; but the
+name and prose overclaim. Because renaming changes the public API, it is recorded as
+a future forward-tide item, not touched in this review. This is the review
+discipline working as intended: the reviewer surfaces a real imprecision, and the
+fix that would change a signature is escalated rather than slipped into a
+``simplification''.
+
+\section{Simplification applied}
+
+Of GPT's five proof-body suggestions, one was implemented; four were deferred to
+keep the run bounded.
+
+\paragraph{Landed.} Both the second-moment and the headline κ₃ asymptotic proofs
+contained a near-identical
+$\sim$20-line derivation of $\langle x\rangle_t\to0$ (as
+$(1/t)\cdot(t\langle x\rangle_t)$, with $1/t\to0$). This was hoisted into a single
+private \texttt{mean\_anharmonic\_tendsto\_zero} lemma that both proofs now call in
+one line, and the now-unused local \texttt{h\_inv\_t} witnesses were removed. The
+new lemma is \emph{private}: the file's five \emph{public} theorem signatures are
+byte-identical before and after, which is the review discipline's hard invariant.
+Full library build green, no \texttt{sorry}/\texttt{axiom}; the file drops from 488
+to 479 lines with the duplication gone.
+
+\paragraph{Deferred.} Replacing the square lambda-collapse \texttt{have}s with
+\texttt{simp [pow\_two]} (the mixed-product ones genuinely need \texttt{ring}); a few
+\texttt{.const\_mul} tidies; a \texttt{let L :=} local abbreviation. All
+signature-preserving, all lower-yield; left for a later pass.
+
+A second GPT-5.5 Pro pass on the diff affirmed the change (``a faithful realization
+\dots\ preserves the public surface \dots\ overall verdict: accept'') and agreed both
+the deferrals and the escalate-not-fix call on the naming.
+
+\section{Disagreements and open questions}
+
+None requiring adjudication: the fidelity pass was clean and the affirmation pass
+accepted the implemented change. The only item handed to the human is the
+\texttt{*\_affine\_*} naming, below.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{The arithmetic check is the point.} For a file whose headline is a
+  constant assembled from several asymptotics through an algebraic identity, the
+  single most valuable thing an independent reviewer does is re-derive that constant
+  from scratch. The clean pass here is real evidence, from a second model, that the
+  $-5\alpha/2\lambda^3$ did not pick up the classic off-by-a-half.
+\item \emph{Naming is a fidelity surface too.} ``Affine'' that is really
+  ``scalar-multiple'' is exactly the sort of informal/formal gap a review should
+  catch --- and exactly the sort whose fix (a rename) belongs in a forward tide, not
+  a review. The two-bucket discipline routed it correctly without prompting.
+\item \emph{Private-helper extraction is the safe simplification.} Hoisting shared
+  proof code into a \emph{private} lemma keeps the public surface byte-identical by
+  construction, so it sails through the statement-invariance gate. It is becoming the
+  workhorse review simplification (cf.\ the \texttt{num\_zero} helper in the
+  pure-quartic review).
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Forward tide (signature-changing):} rename the \texttt{*\_affine\_*}
+  theorems to \texttt{*\_smul\_*} / \texttt{*\_linear\_*}, or genuinely generalise
+  them to affine observables $c\cdot x+d$; promote the generic
+  ``$t\cdot f(t)\to c\Rightarrow f(t)\to0$'' shape (now embodied by
+  \texttt{mean\_anharmonic\_tendsto\_zero}) and
+  \texttt{threepoint\_gibbsExp\_volume\_zero\_eq} to \texttt{lean-common} once a
+  second consumer appears.
+\item \emph{Later review pass:} the four deferred proof-style simplifications (B2--B4).
+\item \emph{Coverage:} \texttt{tide-review-pick}'s survey still lists
+  \texttt{TwoD/SemiDegenerate} (same family as the pure-quartic review) and the
+  J-function / harmonic-observable files as never-reviewed; a first review in a
+  non-laplace seabed remains the coverage frontier.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro performed both the independent review and the affirmation pass; the
+target was selected by \texttt{tide-review-pick}. Full responses are in the review
+log.\footnote{\texttt{projects/primer/review-log/2026-05-31-review-anharmonic-kappa3.md}.}
+
+\end{document}
