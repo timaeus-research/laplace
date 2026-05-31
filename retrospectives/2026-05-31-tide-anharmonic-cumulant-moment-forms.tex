@@ -1,0 +1,114 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{the connected cumulants in moment form}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-31}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A polish tide closing the presentation of the anharmonic cumulant arc: the
+third and fourth connected cumulants of $u=-(tx)$, proved earlier as rational
+forms in the partition values $G_n(0)$, re-expressed in the physically
+transparent unperturbed-Gibbs moment form,
+\[
+  \kappa_3 = \langle u^3\rangle_0 - 3\langle u^2\rangle_0\langle u\rangle_0 + 2\langle u\rangle_0^3,
+\]
+\[
+  \kappa_4 = \langle u^4\rangle_0 - 4\langle u^3\rangle_0\langle u\rangle_0 - 3\langle u^2\rangle_0^2 + 12\langle u^2\rangle_0\langle u\rangle_0^2 - 6\langle u\rangle_0^4,
+\]
+with $\langle u^k\rangle_0 = \texttt{gibbsExp}\,\cdots\,(\cdot^k)$. New file
+\texttt{AnharmonicCumulantMomentForms.lean}; builds clean, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+The anharmonic cumulant arc proved $\kappa_2,\kappa_3,\kappa_4$ as derivatives of
+the perturbed mean and identified them with $\partial^n\log Z$. The cumulant
+\emph{values}, however, were stated as rational expressions in the bare
+partition integrals $G_n(0)$ --- correct but opaque. This tide re-states
+$\kappa_3,\kappa_4$ in the form a reader of the Susceptibility Primer expects:
+combinations of the raw moments $\langle u^k\rangle_0$ under the unperturbed
+Gibbs measure. ($\kappa_2$'s moment form,
+\texttt{anharmonic\_susceptibility\_eq\_connected\_variance}, already existed.)
+It was the lowest-risk available step: warm seabed, zero race, a definitional
+re-expression of already-proved theorems.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the anharmonic potential, $\kappa_3$ and $\kappa_4$ (as the second and third
+iterated derivatives of the mean $G_1/G_0$ at $0$) equal the moments-to-cumulants
+combinations displayed above, with
+$\langle u^k\rangle_0 = \texttt{gibbsExp}\,\mathrm{volume}\,L\,\mathrm{id}\,t\,0\,(x\mapsto(-(tx))^k)$.
+\end{quote}
+
+\section{Proof strategy}
+
+A single helper does the work: moment-normalisation gives
+$\langle u^k\rangle_0 = G_k(0)/G_0(0)$ for every $k$ (compose
+\texttt{iteratedDeriv\_partition\_div\_eq\_gibbsExp} with the
+\texttt{iteratedDeriv} identity). Rewriting every $\langle u^k\rangle_0$ on the
+right-hand side to $G_k(0)/G_0(0)$, and the cumulant on the left to its proved
+$G_n(0)$-rational form, leaves a pure scalar identity over the common
+denominator $G_0(0)$, which \texttt{field\_simp} (clearing $G_0(0)\neq0$) closes.
+
+\section{Roadblocks and resolutions}
+
+Only one, trivial: after \texttt{field\_simp} the goal was already closed, so the
+\texttt{ring} I had appended reported ``no goals''. \texttt{field\_simp} fully
+normalises and discharges these moment identities on its own; the \texttt{ring}
+was simply removed. (Contrast the $\kappa_4$ derivative tide, where
+\texttt{field\_simp} did \emph{not} close and \texttt{ring} was load-bearing ---
+the behaviour is identity-dependent.)
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} \texttt{field\_simp}.
+
+\textbf{Seabed (reused).} The third- and fourth-cumulant
+theorems\footnote{\texttt{anharmonic\_third\_cumulant},
+\texttt{anharmonic\_fourth\_cumulant}.}, moment-normalisation, and the
+\texttt{iteratedDeriv} partition identity --- all from this session's arc.
+
+\textbf{New.} The two moment-form theorems. About 90 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{State the headline in the reader's basis.} The $G_n(0)$-rational
+  forms are what the proofs produce; the $\langle u^k\rangle_0$ forms are what a
+  physicist reads. A one-helper moment-normalisation rewrite bridges them.
+\item \textbf{Probe whether \texttt{field\_simp} closes before appending
+  \texttt{ring}.} Its terminal behaviour is identity-dependent; a stray
+  \texttt{ring} on an already-closed goal is an error, not a no-op.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}} --- the
+  last open laplace-arc follow-up; load-bearing across the whole arc.
+\item \textbf{Higher cumulants / a fresh seabed.} The anharmonic 1D cumulant
+  programme is now complete through $\kappa_4$ in both bases and as
+  $\partial^n\log Z$; further laplace work is marginal, and the next substantial
+  step is a different seabed.
+\end{itemize}
+
+\end{document}
