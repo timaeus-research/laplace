@@ -1,0 +1,178 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\renewcommand{\_}{\textunderscore\allowbreak}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{ᴴ}{\ensuremath{^{\mathsf{H}}}}
+\newunicodechar{ᵀ}{\ensuremath{^{\mathsf{T}}}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{the first consumer rewired onto \texttt{lean-common}}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-06-04}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A process tide, not a mathematical one. This session promoted four reusable
+cores into the shared \texttt{lean-common} library; the promotions were
+deliberately \emph{additive} (new files nothing imported yet) so they could land
+without disturbing concurrently-worked consumer repos. This tide closes the loop
+for the first consumer. Laplace's scaled weighted AM--GM bound
+\(t\,|x| \le \tfrac{tc}{2}x^2 + \tfrac{t}{2c}\), \texttt{amgm\_t\_abs\_x}, was
+transplanted verbatim into \texttt{Common/AmGm.lean} a few tides ago; here we add
+\texttt{lean-common} as a git dependency, \texttt{import Common.AmGm}, delete the
+local copy, and qualify the two call sites. The point of the tide is the
+\emph{mechanism}: it validates the dependency-add path end-to-end (clean
+\texttt{lake update}, no transitive-Mathlib conflict, 8306-job build green) so
+that the remaining consumers --- modes-lean and threepoint --- follow a proven
+recipe. No \texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+The session's through-line was a linear-algebra arc --- real-matrix SVD, the
+Moore--Penrose pseudo-inverse, Eckart--Young--Mirsky --- traced across three Lean
+repos. Along the way three reusable cores proved themselves promotable: the
+Moore--Penrose-inverse predicate and its uniqueness API (used in both threepoint
+with the conjugate-transpose \(\mathsf{H}\) and modes-lean with the real
+transpose \(\mathsf{T}\)), the weighted ``top-\(k\)'' / water-filling
+majorization inequality (the combinatorial core of the Frobenius
+Eckart--Young), and the AM--GM domination bound from laplace's anharmonic
+regularity proof. The promotion test we settled on: \emph{a lemma belongs in
+\texttt{lean-common} iff its own statement and proof mention nothing
+paper-specific} --- not its home file's imports. \texttt{amgm\_t\_abs\_x} is the
+clean exemplar: it lived in a file that imports \texttt{Threepoint} and the rest
+of the Laplace stack, yet the lemma itself is a one-line scalar inequality with
+a four-line ``complete-the-square'' proof, portable verbatim.
+
+Promotions were kept additive on purpose. A new file in \texttt{lean-common}
+that no consumer imports yet cannot break a consumer mid-concurrency; the
+disruptive half --- adding the dependency and dropping the local copy --- was
+deferred to a deliberate rewiring step. This is that step, for the first
+consumer.
+
+\section{The thing done}
+
+\begin{quote}\itshape
+Point laplace at \texttt{lean-common}'s \texttt{Common.AmGm.amgm\_t\_abs\_x} and
+retire its local duplicate, leaving the build green and sorries-free.
+\end{quote}
+
+Concretely: \texttt{lakefile.toml} gains a \texttt{[[require]]} on
+\texttt{lean-common} pinned to commit \texttt{511ee60};
+\texttt{AnharmonicGibbsRegularity.lean} gains \texttt{import Common.AmGm} and
+loses its local \texttt{theorem amgm\_t\_abs\_x}; the two call sites (one in that
+file at line~229, one in \texttt{AnharmonicPartitionDerivGeneralH.lean} at
+line~66) are requalified from the bare name to
+\texttt{Common.AmGm.amgm\_t\_abs\_x}. The two theorems are textually identical
+--- one was transplanted from the other --- so the substitution is
+behaviour-preserving and the \texttt{lake build} \emph{is} the proof.
+
+\section{How it works (the dependency mechanics)}
+
+Lake resolves a git \texttt{[[require]]} by cloning the dependency at the pinned
+\texttt{rev}, reading \emph{its} \texttt{lake-manifest.json} to learn the
+transitive closure, and unifying that closure with the consumer's own. The one
+real hazard is a \emph{Mathlib pin mismatch}: if \texttt{lean-common} pinned a
+different Mathlib commit than laplace, the two would fight and the build would
+not resolve. Both are pinned at \texttt{8a178386} (the v4.29.0 tag), so
+\texttt{lake update lean-common} unified cleanly and no Mathlib was re-fetched.
+
+The second subtlety was invisible until the build: only \emph{one} of the two
+call sites lives in the file we edited. The other, in
+\texttt{AnharmonicPartitionDerivGeneralH.lean}, had been consuming the local
+\texttt{amgm\_t\_abs\_x} \emph{transitively} --- its import chain runs
+\begin{quote}
+  \ttfamily\small AnharmonicPartitionDerivGeneralH \(\to\)
+  AnharmonicPartitionHigherDeriv \(\to\)\\
+  AnharmonicGibbsObservableMonomials \(\to\) AnharmonicGibbsRegularity.
+\end{quote}
+Deleting the local theorem from the root of
+that chain would have orphaned the downstream call site; requalifying it to
+\texttt{Common.AmGm.amgm\_t\_abs\_x} fixes it, and because \texttt{Common.AmGm}
+now rides in transitively along the same chain, no extra \texttt{import} line is
+needed there. The build catches exactly this kind of transitive-consumer
+breakage that grepping a single file would miss.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{The manifest contamination, and the false start.} The first attempt
+at this rewire (an earlier, abandoned worktree) tripped over lean-common's
+\texttt{lake-manifest.json}: it carried a spurious \texttt{Threepoint} package
+entry left over from an earlier experiment. I initially read a laplace build
+failure as ``the stray entry contaminates the consumer'' and abandoned the
+worktree to fix the manifest first. The re-diagnosis matters: laplace
+\emph{legitimately} depends on Threepoint --- \texttt{AnharmonicGibbsRegularity}
+imports \texttt{Threepoint.CrossSusceptibility} --- so the stray entry was a
+\emph{confounded} test on this particular consumer. The manifest fix (lean-common
+commit \texttt{d6ea20e}, regenerated via \texttt{lake update} to drop the
+\texttt{Threepoint} entry and preserve the Mathlib pin) is still correct hygiene
+--- it matters for a consumer like modes-lean that does \emph{not} independently
+depend on Threepoint --- but it was not what was blocking laplace. With the fixed
+manifest on the remote at \texttt{511ee60}, the second attempt resolved and built
+without incident.
+
+\paragraph{The push ``rejection'' that wasn't.} Pushing lean-common reported
+``cannot lock ref: is at \texttt{511ee60} but expected \texttt{0c98b51}'' --- a
+benign artifact of a concurrent auto-sync having already advanced the remote to
+the same commit I was pushing. \texttt{git ls-remote} confirmed the remote main
+was already at \texttt{511ee60} with the fixed manifest and all modules. Nothing
+to do.
+
+\section{What was reuse, what was new}
+
+Nothing here is new mathematics. The lemma was written and proven in a prior
+tide; this tide is pure plumbing. The only ``new'' artifacts are the
+\texttt{[[require]]} stanza and the two-character-class edit (delete + qualify).
+The value is entirely in de-duplication and in proving the rewiring recipe
+works, so the next two consumers are mechanical.
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Additive-then-rewire is the right promotion cadence under
+    concurrency.} Land the shared module as a file nothing imports; defer the
+    dependency-add and local-copy-drop to a separate, deliberate tide. The first
+    half is unbreakable; the second half is where the build does its checking.
+  \item \textbf{Diagnose contamination against an \emph{unconfounded} consumer.}
+    A manifest defect that ``contaminates consumers'' must be tested on a
+    consumer that doesn't independently have the dep. Laplace's own Threepoint
+    dependency masked the real signal; the fix was still right, but for the
+    other consumers, not this one.
+  \item \textbf{Grep the file, but trust the build for transitive consumers.}
+    Call sites of a to-be-moved lemma can live downstream of the edited file
+    through the import graph. Requalifying them is enough \emph{if} the moved
+    module rides in along the same chain; the full build is what confirms it.
+  \item \textbf{Match Mathlib pins before adding a cross-repo git dependency.}
+    The single failure mode that makes \texttt{lake update} unresolvable is a
+    Mathlib commit mismatch between consumer and dependency. Check it first;
+    here both sat at \texttt{8a178386}.
+\end{itemize}
+
+\section{Follow-ups}
+
+\sloppy
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{modes-lean} \(\to\) \texttt{Common.Majorization} (drop local
+    \texttt{weighted\_sum\_le}) and \texttt{Common.MoorePenrose} (drop local,
+    bridge \(\mathsf{T}\leftrightarrow\mathsf{H}\)).
+  \item \textbf{threepoint} \(\to\) \texttt{Common.MoorePenrose} (drop local,
+    \(\mathsf{H}\) form).
+  \item Once all three land, the cross-repo Moore--Penrose / AM--GM /
+    majorization duplication is fully retired into \texttt{lean-common}, and the
+    consolidation arc the session opened is closed.
+\end{itemize}
+
+\end{document}
