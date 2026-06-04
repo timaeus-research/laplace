@@ -21,3 +21,8 @@ rev = "40398d8"
 
 [[lean_lib]]
 name = "Laplace"
+
+[[require]]
+name = "lean-common"
+git = "https://github.com/timaeus-research/lean-common.git"
+rev = "511ee60"

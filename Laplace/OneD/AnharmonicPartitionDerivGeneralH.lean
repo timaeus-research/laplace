@@ -63,7 +63,7 @@ theorem anharmonic_perturbed_exp_le
     have : t * |h * x| ≤ t * |x| := mul_le_mul_of_nonneg_left h_abs_hx_le ht.le
     linarith
   have h2 : t * |x| ≤ t * c / 2 * x ^ 2 + t / (2 * c) :=
-    amgm_t_abs_x t c ht hc_pos x
+    Common.AmGm.amgm_t_abs_x t c ht hc_pos x
   have h3 : t * c / 2 * x ^ 2 ≤ t / 2 * anharmonicPotential lam alpha gamma x := by
     have hcoerc := h_coerc x
     have ht2_nn : 0 ≤ t / 2 := by linarith

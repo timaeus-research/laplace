@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Laplace.OneD.Anharmonic
 import Laplace.OneD.AnharmonicKappa3Affine
 import Threepoint.CrossSusceptibility
+import Common.AmGm
 
 /-!
 # Anharmonic 1D `Threepoint.GibbsRegularity` instance
@@ -184,27 +185,6 @@ theorem anharmonic_perturbed_pointwise_hasDerivAt
   convert h_exp using 1
   ring
 
-/-- AM-GM-style scalar inequality: for `t, c > 0` and any real `x`,
-`t · |x| ≤ (tc/2) · x² + t/(2c)`. -/
-theorem amgm_t_abs_x (t c : ℝ) (ht : 0 < t) (hc : 0 < c) (x : ℝ) :
-    t * |x| ≤ t * c / 2 * x ^ 2 + t / (2 * c) := by
-  have hc_ne : c ≠ 0 := hc.ne'
-  have habs_sq : |x| ^ 2 = x ^ 2 := sq_abs x
-  have h_sq_nn : 0 ≤ t * (c * |x| - 1) ^ 2 := mul_nonneg ht.le (sq_nonneg _)
-  have h_expand : t * (c * |x| - 1) ^ 2
-      = t * c ^ 2 * x ^ 2 - 2 * t * c * |x| + t := by
-    have h_inner : (c * |x| - 1) ^ 2 = c ^ 2 * |x| ^ 2 - 2 * c * |x| + 1 := by ring
-    rw [h_inner, habs_sq]; ring
-  have h_poly_nn : 0 ≤ t * c ^ 2 * x ^ 2 - 2 * t * c * |x| + t := by linarith
-  have h2c_pos : 0 < 2 * c := by linarith
-  have h_eq_r : 2 * c * (t * c / 2 * x ^ 2 + t / (2 * c))
-      = t * c ^ 2 * x ^ 2 + t := by field_simp
-  have h_eq_l : 2 * c * (t * |x|) = 2 * t * c * |x| := by ring
-  have h_mul_le : 2 * c * (t * |x|)
-      ≤ 2 * c * (t * c / 2 * x ^ 2 + t / (2 * c)) := by
-    rw [h_eq_l, h_eq_r]; linarith
-  exact le_of_mul_le_mul_left h_mul_le h2c_pos
-
 /-- Pointwise bound `|F'(h, x)| ≤ bound(x)` on `|h| < 1`. -/
 theorem anharmonic_perturbed_pointwise_bound
     {lam alpha gamma t c : ℝ} (ht : 0 < t) (hc_pos : 0 < c)
@@ -246,7 +226,7 @@ theorem anharmonic_perturbed_pointwise_bound
       mul_le_mul_of_nonneg_left h_abs_hx_le ht.le
     linarith
   have h2 : t * |x| ≤ t * c / 2 * x ^ 2 + t / (2 * c) :=
-    amgm_t_abs_x t c ht hc_pos x
+    Common.AmGm.amgm_t_abs_x t c ht hc_pos x
   have h3 : t * c / 2 * x ^ 2 ≤ t / 2 * anharmonicPotential lam alpha gamma x := by
     have hcoerc := h_coerc x
     have ht2_nn : 0 ≤ t / 2 := by linarith
