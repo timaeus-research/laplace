@@ -65,7 +65,7 @@ private lemma integrable_exp_neg_t_sextic
 
 /-- **Partition-function factorisation (quartic × sextic).**
 The 2D partition function for the separable potential
-$x \mapsto x^4/24 + y^6/720$ factors as the product of the 1D
+$(x, y) \mapsto x^4/24 + y^6/720$ factors as the product of the 1D
 quartic and sextic partition functions. Direct corollary of
 `partitionFunction_addSeparable_factor` (Tide 12, A3). -/
 theorem partitionFunction_quarticSextic_factor
