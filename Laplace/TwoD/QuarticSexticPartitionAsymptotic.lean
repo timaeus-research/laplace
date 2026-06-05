@@ -39,7 +39,7 @@ Pure `Real.rpow` algebra collects the $t$-pieces into a single
 $t^{-1/4 - 1/6}$, identical to V2/Z1's template.
 -/
 
-open Real MeasureTheory Filter Asymptotics
+open Filter Asymptotics
 open scoped Topology
 
 namespace Laplace.TwoD
