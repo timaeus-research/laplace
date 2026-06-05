@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the anharmonic FDT identities, and a docstring written ahead of the code}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicFDT.lean}: the two conditional
+fluctuation--dissipation / three-point identities for the anharmonic Gibbs measure ---
+$\partial_h\langle x\rangle_h|_0=-t\,\mathrm{Var}_0(x)$ and
+$\partial_h\mathrm{Cov}_h(x,x)|_0=-t\,\kappa_3(x,x,x)$. Result: \textbf{a clean fidelity pass with
+five edits} --- two anticipatory dead imports and three docstring over-claims. The compositions are
+correct; the docstring had simply been written ahead of the code.
+\end{abstract}
+
+\section{Setting}
+The anharmonic analogue of the
+\reviewref[harmonic cross-susceptibility capstone]{2026-06-05-review-laplace-oned-harmoniccrosssuscderiv}:
+the same Threepoint abstract identities (\texttt{gibbsExp\_deriv\_eq\_neg\_t\_cov},
+\texttt{gibbsCov\_deriv\_eq\_neg\_t\_kappa3}), specialised at $A=B=\varphi=\mathrm{id}$ to the
+anharmonic potential and made unconditional in the observability side conditions by the anharmonic
+monomial witnesses. Where the harmonic $\kappa_3$ vanished by parity, here the cubic term keeps it.
+
+\section{What was reviewed}
+Two theorems: the first-cumulant FDT and the cross-susceptibility three-point identity.
+
+\section{Fidelity / soundness findings}
+\textbf{The compositions are sound.} The FDT specialises \texttt{gibbsExp\_deriv\_eq\_neg\_t\_cov}
+with the regularity witness and observable witnesses for $\varphi=x$ and $\varphi\cdot A=x^2$; the
+three-point identity fills the six \texttt{GibbsObservable} slots of
+\texttt{gibbsCov\_deriv\_eq\_neg\_t\_kappa3} as \texttt{hx hx hxx hxx hxx hxxx} (two $x$, three
+$x^2$, one $x^3$, all coinciding under $A=B=\varphi=\mathrm{id}$). The reviewer confirmed the
+multiplicities; no witness mismatch.
+
+\textbf{Three docstring over-claims, fixed.} (1) The \texttt{\#\# Headlines} section advertised
+four headlines, but only two exist as theorems --- the two \texttt{*\_asymptotic} capstones are an
+unwritten TODO. Split into ``present in this file'' and ``Planned (TODO)''. (2) ``the two headline
+identities are therefore \textbf{unconditional}'' was too strong: they discharge the
+\texttt{GibbsObservable} side conditions but still require $\lambda,\gamma>0$, $\alpha^2<3\lambda
+\gamma$, $t>0$. Qualified. (3) ``the cubic term breaks the parity argument'' over-claims, since the
+theorem does not assume $\alpha\ne0$ --- at $\alpha=0$ the potential is even and $\kappa_3$ may
+still vanish. Softened to ``no parity simplification is built in''.
+
+\section{Simplifications applied}
+\textbf{Two dead imports.} \texttt{Laplace.OneD.AnharmonicKappa3} and
+\texttt{Laplace.OneD.IntegralRemainder} are referenced by no symbol --- only named in the TODO
+prose for the unwritten asymptotic capstones. A full \texttt{lake build} ($8306$ jobs) stayed green
+with both removed, confirming they are not transitively load-bearing. \texttt{open MeasureTheory}
+(bare \texttt{Measure $\mathbb R$}/\texttt{volume}) and the three used imports stay. Signatures
+byte-identical, no warnings. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's trailing-\texttt{exact} removal was declined: the proofs are tactic blocks
+with preceding \texttt{have}s, so the closing \texttt{exact <application>} is not cleanly
+convertible to a term --- proof-golf, out of scope.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A ``Headlines'' list can run ahead of the declarations.} The module doc advertised
+    two \texttt{*\_asymptotic} theorems that are still a TODO --- a reader scanning the headlines
+    would expect them to exist. When a file documents planned work inline, keep the headline list to
+    what actually type-checks, and quarantine the rest under a ``Planned'' heading.
+  \item \textbf{Anticipatory imports are dead imports until the anticipated code lands.} The two
+    imports were placed for capstones not yet written; until then they are removable dead code (the
+    future tide re-imports as it needs). The build, not the intent, decides --- and here the build
+    confirmed them inert.
+  \item \textbf{``Unconditional'' needs a scope.} The identities are unconditional \emph{in the
+    observability side conditions}, not in the model parameters; an unqualified ``unconditional''
+    misleads about $\lambda,\gamma,t$ and the discriminant.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The asymptotic capstones the TODO describes (\texttt{gibbsExp\_deriv\_anharmonic\_asymptotic}
+    $\to-1/\lambda$, \texttt{gibbsCov\_deriv\_anharmonic\_asymptotic} $\to\alpha/\lambda^3$) --- a
+    forward tide that will re-add the two imports. This review supplies the ``GPT confirms the
+    conditional forms are correct'' precondition the TODO asked for.
+  \item Remaining \texttt{OneD/} \texttt{Anharmonic*} arc (\texttt{AnharmonicGibbsRegularity},
+    \texttt{AnharmonicKappa3Affine}, \texttt{AnharmonicFourthCumulant}, \dots) and
+    \texttt{IntegralRemainder} (2668L).
+\end{itemize}
+
+\end{document}
