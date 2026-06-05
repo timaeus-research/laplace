@@ -122,7 +122,8 @@ theorem gibbsExpectation_quarticSextic_pow_pow_rescaled_tendsto
 The moment is asymptotically equivalent at $\mathrm{atTop}$ to the
 pure power-law $C(j, k) \cdot t^{-(j/2 + k/3)}$. Direct consequence
 of the exact reformulation via
-`Asymptotics.IsEquivalent.refl` after `tendsto_congr'`. -/
+`Asymptotics.IsEquivalent.refl.congr_left` after establishing
+eventual equality on `atTop`. -/
 theorem gibbsExpectation_quarticSextic_pow_pow_isEquivalent_rpow
     (j k : ℕ) :
     (fun t : ℝ =>
