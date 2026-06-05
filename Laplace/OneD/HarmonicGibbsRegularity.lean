@@ -1,6 +1,5 @@
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.MeasureTheory.Group.Integral
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Threepoint.CrossSusceptibility
 
 /-!
@@ -9,7 +8,7 @@ import Threepoint.CrossSusceptibility
 For the 1D harmonic potential `L(x) = (λ/2)x²` with the linear
 perturbation `A(x) = x` on `ℝ` against Lebesgue measure (with `λ, t > 0`),
 this file proves
-  `Threepoint.GibbsRegularity (volume) ((λ/2)·) (id) t`.
+  `Threepoint.GibbsRegularity (volume) (fun x => (λ/2)·x²) (id) t`.
 
 The instance unlocks threepoint's *derivative* theorems --- the FDT
 (`Threepoint.gibbsExp_deriv_eq_neg_t_cov`), the cross-susceptibility
@@ -44,9 +43,9 @@ measure plus `integral_gaussian`, and from this all three
 
 * `harmonic_linear_partition_eq`: closed form of `Z(h)` for all `h`.
 * `harmonic_partition_pos`: `0 < Z(0)` for `λ, t > 0`.
-* `harmonic_integral_x_exp_neg_eq_zero`: `∫ x · exp(-(tλ/2)x²) dx = 0`
-  by parity. (The pointwise derivative of `Z` at `h = 0` equals
-  `∫ (-t·x) · exp(-(tλ/2)x²) dx = 0`.)
+* `harmonic_integral_neg_t_x_exp_neg_eq_zero`:
+  `∫ (-t·x) · exp(-(tλ/2)x²) dx = 0` by parity. (This is the pointwise
+  derivative of `Z` at `h = 0`.)
 
 ## Tide-step provenance
 
