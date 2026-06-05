@@ -66,9 +66,10 @@ theorem threepoint_gibbsExp_volume_zero_eq
 /-! ## Unfold `Threepoint.kappa3` into Laplace expectations -/
 
 /-- `Threepoint.kappa3` against the Lebesgue measure unfolds into a
-sum of five `Laplace.gibbsExpectation` terms (independent of the
-perturbation direction `A`, since at `h = 0` it doesn't enter the
-integrand). -/
+sum of five `Laplace.gibbsExpectation` terms. (`A` still appears as an
+*observable* in these terms; what drops at `h = 0` is its role in the
+Gibbs *weight* — the perturbation `h · A` leaves the integrand, so the
+unfold goes through the unperturbed `Laplace.gibbsExpectation`.) -/
 theorem kappa3_volume_unfold
     (L A φ B : ℝ → ℝ) (t : ℝ) :
     Threepoint.kappa3 (volume : Measure ℝ) L A t φ B
