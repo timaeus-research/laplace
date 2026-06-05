@@ -30,7 +30,7 @@ Tide step 4, formalised on `tide/f1-large-t` (branched off `main`). See
 `sri/projects/automation/log/2026-05-01-tide-fn-asymptotics.md`.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 
 namespace Laplace.OneD
 
