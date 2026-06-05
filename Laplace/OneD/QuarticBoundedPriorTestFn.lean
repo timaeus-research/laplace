@@ -19,7 +19,7 @@ deliverable is the `Asymptotics.IsLittleO`-packaged form
 This file currently provides the two foundational primitives needed for the
 bounded-prior localisation argument:
 
-- `quartic_bounded_prior_partition_pos`: `Z_a(t) > 0` for `0 < a, t : ℝ`.
+- `quartic_bounded_prior_partition_pos`: `Z_a(t) > 0` for `0 < a` (any `t : ℝ`).
 - `quartic_bounded_prior_partition_lower_bound_inner`: `Z_a(t) ≥ 2δ ·
   exp(-(t·δ⁴/24))` for `0 < δ ≤ a, 0 ≤ t` (by restriction to the inner
   shell `[-δ, δ]` and a uniform integrand bound).
