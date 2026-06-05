@@ -40,7 +40,7 @@ laplace, branched off `main` (commit `141997c`). See
 `sri/projects/primer/tide-log/2026-05-07-tide-global-constancy-harmonic-cov.md`.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 open scoped Nat
 
 namespace Laplace.OneD
