@@ -13,10 +13,10 @@ bilinear in `(φ, ψ)`; chaining the algebra in `Laplace/Multi/Basic.lean`
   `Cov_t[a₁·φ + b₁, a₂·ψ + b₂] = a₁·a₂ · Cov_t[φ, ψ]`
 
 is the closed form. This is the natural first consumer of the
-multi-index `gibbsCov` algebra and the 2D mirror of I3.
+multi-index `gibbsCov` algebra and the multi-index mirror of I3.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 
 namespace Laplace.Multi
 
