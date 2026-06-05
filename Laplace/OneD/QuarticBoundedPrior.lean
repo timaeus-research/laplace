@@ -44,8 +44,7 @@ remainder for follow-up tide steps. See
 for the deliberation log.
 -/
 
-open Real MeasureTheory Set
-open scoped Nat
+open MeasureTheory Set
 
 namespace Laplace.OneD
 
