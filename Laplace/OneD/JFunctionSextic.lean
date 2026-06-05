@@ -35,16 +35,14 @@ L1 (sextic-j-function), 2026-05-07. Refactored in L3
 `sri/projects/primer/tide-log/2026-05-07-tide-jfunction-hypothesis-weakening.md`.
 -/
 
-open MeasureTheory Filter Topology Real
+open MeasureTheory Filter Topology
 
 namespace Laplace.OneD
 
 /-! ## Constant-bridging lemmas -/
 
-private lemma sextic_kth_eq_const_six : (2 * 3 : ℕ) = 6 := rfl
-
 private lemma sextic_kth_factorial : (Nat.factorial (2 * 3) : ℝ) = 720 := by
-  show (Nat.factorial 6 : ℝ) = 720
+  change (Nat.factorial 6 : ℝ) = 720
   norm_num [Nat.factorial]
 
 private lemma sextic_kth_inv : ((1 : ℝ) / ((2 * 3 : ℕ) : ℝ)) = (1 : ℝ) / 6 := by
