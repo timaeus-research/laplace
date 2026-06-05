@@ -2,9 +2,9 @@ import Laplace.OneD.HarmonicGibbsRegularity
 import Threepoint.CrossSusceptibility
 
 /-!
-# `Threepoint.GibbsObservable` instances for harmonic monomials (in progress)
+# `Threepoint.GibbsObservable` instances for harmonic monomials
 
-Working towards concrete `Threepoint.GibbsObservable` instances for the
+Concrete `Threepoint.GibbsObservable` instances for the
 harmonic potential `L(x) = (λ/2) x²` with linear perturbation
 `A(x) = x` and monomial observables `(fun x => x^k)` for `k : ℕ`. This
 makes Tide 13's `cov_h_id_id_deriv_harmonic_eq_zero` unconditional on
@@ -25,32 +25,36 @@ a Gaussian-domination bound
 valid for `|h| ≤ 1` (Young's inequality:
 `|hx| ≤ (λ/4)x² + h²/λ` absorbs the linear perturbation into the
 quadratic decay). Integrability of the dominator falls out from
-`integrable_abs_pow_mul_exp_neg_mul_sq` already in the seabed
-(`Laplace/OneD/IntegralRemainder.lean`).
+Mathlib's `integrable_rpow_mul_exp_neg_mul_sq`
+(`Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral`).
 
 The dominated-differentiation route is cleaner than the closed-form
 route here because (i) it is generic in `k : ℕ` at no extra cost,
 (ii) it avoids needing a central-Gaussian-moment library (M₂, M₄, …)
 that Mathlib v4.29.0 doesn't ship in the form we need, and (iii) the
-integrability infrastructure is already in the seabed.
+integrability infrastructure is already in Mathlib.
 
 ## Status
 
-This file currently provides one foundational primitive needed by the
-upcoming `GibbsObservable` instances:
+This file is complete: it provides the headline generic-`k` instance
+and its `x, x², x³` specialisations, built on a small ladder of
+foundational lemmas.
 
-- `harmonic_perturbed_numerator_zero_eq`: the `h = 0` reduction of
-  the perturbed monomial numerator. Discharges the first conjunct of
-  `Threepoint.GibbsObservable` for any monomial observable.
-
-The headline `harmonic_id_gibbsObservable_pow` and the analytic core
-(domination bound, dominated-differentiation invocation, `HasDerivAt`
-conjunct of `GibbsObservable`) are sketched in the local handoff note
-`notes/gibbsobservable_monomials_handoff.md` and will land in a
-follow-up session. The h=0 identity primitive committed here is
-independently useful — it covers the first conjunct of every
-`GibbsObservable` instance for *any* observable that doesn't see the
-perturbation parameter, not just monomials.
+- `harmonic_perturbed_numerator_zero_eq` (and its `_pow` form): the
+  `h = 0` reduction of the perturbed monomial numerator. Discharges
+  the first conjunct of `Threepoint.GibbsObservable` for any monomial
+  observable.
+- The analytic core (`abs_mul_le_quarter_lambda_sq_add` Young bound,
+  `dominator_integrable_pow`, `harmonic_perturbed_integrand_pow_bound`,
+  `harmonic_perturbed_integrand_pow_hasDerivAt`) feeds the dominated
+  differentiation.
+- The headline `Threepoint.harmonic_id_gibbsObservable_pow` builds the
+  full `GibbsObservable` instance for every monomial observable
+  `x ↦ x^k`, and `Threepoint.harmonic_id_gibbsObservable_id`,
+  `_mul_self`, `_mul_mul_self` are the `k = 1, 2, 3` (`x, x², x³`)
+  specialisations that make Tide 13's
+  `cov_h_id_id_deriv_harmonic_eq_zero` unconditional on those
+  canonical observables.
 
 ## Tide-step provenance
 
