@@ -1,5 +1,3 @@
-import Laplace.Gibbs
-import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.MeasureTheory.Integral.Gamma
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
@@ -10,8 +8,8 @@ import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 # Generic-`k` J-function asymptotic for monomial potentials
 
 For the single-monomial potential `K(w) = w^(2k)/(2k)!` with `k ≥ 1`
-and a continuous, globally bounded prior `prior : ℝ → ℝ`, the
-J-function
+and a prior `prior : ℝ → ℝ` that is `AEMeasurable`, continuous at `0`,
+and globally bounded, the J-function
 $$J_k(t) := \int_{\mathbb R} e^{-t\,K(w)}\,\pi(w)\,dw$$
 satisfies
 $$\lim_{t \to \infty} t^{1/(2k)} \cdot J_k(t)
@@ -37,9 +35,9 @@ change of variables `u = a · w` reshapes the centred J-function into a
 theorem closes via the envelope `2M · exp(-u^(2k)/(2k)!)`.
 
 The Mathlib master theorem `integral_rpow_mul_exp_neg_mul_rpow` is
-used twice: once to evaluate the half-line partition integral (full
-line via `integral_comp_abs`), and indirectly via Gaussian comparison
-for full-line integrability. The Gaussian comparison uses
+used once, to evaluate the half-line partition integral (full line via
+`integral_comp_abs`). Full-line integrability is handled separately by
+Gaussian comparison (`integrable_exp_neg_mul_sq`), using
 $x^2 \le 1 + x^{2k}$ for $k \ge 1$, which holds via case-split on
 $|x| \le 1$ vs $|x| \ge 1$.
 -/
@@ -278,7 +276,7 @@ theorem kth_jfunction_centered_tendsto_zero
       have hreshape : (fun u : ℝ => prior (u / t ^ α)) =
           prior ∘ (fun u : ℝ => (t ^ α)⁻¹ • u) := by
         funext u
-        show prior (u / t ^ α) = prior ((t ^ α)⁻¹ * u)
+        change prior (u / t ^ α) = prior ((t ^ α)⁻¹ * u)
         congr 1
         rw [div_eq_mul_inv, mul_comm]
       have h_aem : AEMeasurable (fun u : ℝ => prior (u / t ^ α)) volume := by
