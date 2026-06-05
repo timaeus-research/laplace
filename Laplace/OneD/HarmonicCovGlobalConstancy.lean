@@ -272,8 +272,6 @@ theorem gibbsExp_h_id_harmonic_eq
         (fun x : ℝ => x)
       = -h / lam := by
   have hlam_ne : lam ≠ 0 := ne_of_gt hlam
-  have hZpos : 0 < Real.sqrt (2 * Real.pi / (lam * t)) := by
-    apply Real.sqrt_pos.mpr; positivity
   have hgauss := integrable_harmonic_gauss hlam ht
   have hgauss_y := integrable_harmonic_gauss_id hlam ht
   -- Numerator: ∫ x · exp(-(t·L_h(x))) dx via the shift lemma.
@@ -299,8 +297,6 @@ theorem gibbsExp_h_id_harmonic_eq
     ring
   -- Denominator: partitionFunction_h_harmonic.
   have hden := partitionFunction_h_harmonic hlam ht h
-  have hden_ne : (∫ x : ℝ, Real.exp (-(t * (lam / 2 * x ^ 2 + h * x)))) ≠ 0 := by
-    rw [hden]; positivity
   -- Combine into gibbsExp.
   unfold Threepoint.gibbsExp
   change (∫ w : ℝ, w * Real.exp (-(t * (lam / 2 * w ^ 2 + h * w)))) /
@@ -322,8 +318,6 @@ theorem gibbsExp_h_sq_harmonic_eq
         (fun x : ℝ => x * x)
       = 1 / (lam * t) + h ^ 2 / lam ^ 2 := by
   have hlam_ne : lam ≠ 0 := ne_of_gt hlam
-  have hZpos : 0 < Real.sqrt (2 * Real.pi / (lam * t)) := by
-    apply Real.sqrt_pos.mpr; positivity
   have hgauss := integrable_harmonic_gauss hlam ht
   have hgauss_y := integrable_harmonic_gauss_id hlam ht
   have hgauss_y2 := integrable_harmonic_gauss_sq hlam ht
@@ -373,8 +367,6 @@ theorem gibbsExp_h_sq_harmonic_eq
     ring
   -- Denominator.
   have hden := partitionFunction_h_harmonic hlam ht h
-  have hden_ne : (∫ x : ℝ, Real.exp (-(t * (lam / 2 * x ^ 2 + h * x)))) ≠ 0 := by
-    rw [hden]; positivity
   -- Combine.
   unfold Threepoint.gibbsExp
   change (∫ w : ℝ, w * w * Real.exp (-(t * (lam / 2 * w ^ 2 + h * w)))) /
