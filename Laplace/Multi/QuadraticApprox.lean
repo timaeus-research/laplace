@@ -1,5 +1,4 @@
 import Laplace.Multi.Basic
-import Mathlib.Topology.Algebra.Module.Basic
 
 /-!
 # Multivariate quadratic approximation
