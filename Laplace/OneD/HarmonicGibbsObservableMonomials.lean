@@ -1,5 +1,4 @@
 import Laplace.OneD.HarmonicGibbsRegularity
-import Laplace.OneD.IntegralRemainder
 import Threepoint.CrossSusceptibility
 
 /-!
@@ -61,7 +60,7 @@ at `f21a9cc`. Tide log:
 `sri/projects/patterning/tide-log/2026-05-07-tide-harmonic-gibbsobservable-monomials.md`.
 -/
 
-open MeasureTheory Set
+open MeasureTheory
 
 namespace Laplace.OneD
 
