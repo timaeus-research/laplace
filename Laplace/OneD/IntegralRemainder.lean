@@ -245,7 +245,7 @@ theorem perturbation_remainder_integral_bound
       |u| ^ n * (u ^ 6 + u ^ 8) * Real.exp (-(c₀ * u ^ 2))) :=
     integrable_pow_add_pow_mul_exp_neg_mul_sq hc₀_pos n
   -- Define M = ∫ |u|^n · (u⁶+u⁸) · e^{-c₀ u²} du. M ≥ 0 since integrand is nonneg.
-  set M := ∫ u : ℝ, |u| ^ n * (u ^ 6 + u ^ 8) * Real.exp (-(c₀ * u ^ 2)) with hM_def
+  set M := ∫ u : ℝ, |u| ^ n * (u ^ 6 + u ^ 8) * Real.exp (-(c₀ * u ^ 2))
   have hM_nn : 0 ≤ M := by
     apply integral_nonneg
     intro u
@@ -673,16 +673,6 @@ theorem J_0_asymptotic
   -- h : |J_0 - (√(2π) - 0 - (B/t) · 3√(2π))| ≤ K/t
   -- Rearranged: |J_0 - √(2π) + (B/t) · 3√(2π)| ≤ K/t
   -- So: |J_0 - √(2π)| ≤ K/t + |3B√(2π)/t| = (K + 3|B|√(2π))/t.
-  have habs : ∀ a b c : ℝ, |a - b| ≤ c → |a - (b - 0 - 3 * cubicScale lam alpha / Real.sqrt t * 0
-      - 3 * quarticScale lam gamma / t * 1 * Real.sqrt (2 * Real.pi))| = |a - b + 3 * quarticScale lam gamma / t * Real.sqrt (2 * Real.pi)| := by
-    intros; ring_nf
-  -- Just use triangle inequality directly.
-  have hpos_bound : (0 : ℝ) ≤ 3 * |quarticScale lam gamma| * Real.sqrt (2 * Real.pi) := by
-    positivity
-  have h_quartic_abs : |(quarticScale lam gamma / t * Real.sqrt (2 * Real.pi))| =
-      |quarticScale lam gamma| / t * Real.sqrt (2 * Real.pi) := by
-    rw [abs_mul, abs_div, abs_of_pos ht_pos,
-        abs_of_nonneg (Real.sqrt_nonneg _)]
   -- Use: |J_0 - √(2π)| = |J_0 - (√(2π) - (B/t)·3·√(2π)) - (B/t)·3·√(2π)|
   --                   ≤ |J_0 - (√(2π) - (B/t)·3·√(2π))| + |(B/t)·3·√(2π)|
   --                   ≤ K/t + 3|B|·√(2π)/t.
