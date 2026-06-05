@@ -1,9 +1,7 @@
 import Laplace.Gibbs
-import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.MeasureTheory.Integral.Gamma
 import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
-import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
 /-!
 # Pure even-monomial 1D Gibbs moments (generic $k$)
@@ -38,16 +36,15 @@ $q = 2j$, $b = t/(2k)!$ to get the half-line closed form; double via
 odd reflection symmetry. The partition is the specialisation
 $j = 0$. The expected values are numerator over partition.
 
-## Scope note (deferred)
+## Integrability
 
-Integrability witnesses (`kth_integrable_pow` /
-`kth_integrable_pow_pot`) are *deferred to a follow-up tide*. The
-generic Gaussian-domination argument used in the quartic / sextic
-files needs case analysis on $k = 1$ vs $k \ge 2$ (the square-
-completion constant depends on $k$ in a non-uniform way). Downstream
-consumers needing the integrability layer can specialise to a fixed
-$k$ via the existing `quartic_integrable_pow*` / `sextic_integrable_pow*`
-lemmas, or wait for the follow-up tide.
+The integrability witnesses (`kth_integrable_pow` /
+`kth_integrable_pow_pot`) are proved below, *uniformly for all* $k \ge 1$:
+the Gaussian-domination argument goes through the bound
+$x^2 \le 1 + x^{2k}$ (`sq_le_one_add_pow_two_mul`), which holds for every
+$k \ge 1$ without a $k = 1$ vs $k \ge 2$ case split. Downstream consumers
+can use these generic lemmas directly, or the fixed-$k$
+`quartic_integrable_pow*` / `sextic_integrable_pow*` specialisations.
 -/
 
 open Real MeasureTheory Set
