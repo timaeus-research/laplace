@@ -21,7 +21,7 @@ $(k_1, k_2) = (2, 3)$ to parametric $(k_1, k_2)$. Mirror-shape
 sibling of `KthKthMomentAsymptotic.lean`.
 -/
 
-open Real MeasureTheory Filter Asymptotics
+open MeasureTheory Filter Asymptotics
 open scoped Topology
 
 namespace Laplace.TwoD
