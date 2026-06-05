@@ -5,8 +5,9 @@ import Mathlib.Analysis.SpecialFunctions.Exp
 /-!
 # Gibbs measures, partition functions, and expectations
 
-For a smooth potential `L : ℝ → ℝ` and an inverse-temperature parameter `t > 0`,
-this file defines
+For a potential `L : ℝ → ℝ` and a parameter `t : ℝ` (in the primer's setting `L`
+is smooth and `t > 0`, but the definitions and algebraic lemmas below need
+neither), this file defines
 
 * `partitionFunction L t : ℝ := ∫ x, exp(-t · L x)`,
 * `gibbsExpectation L t φ : ℝ := (∫ x, φ x · exp(-t · L x)) / partitionFunction L t`,
