@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the affine-bilinear covariance specialisation --- a clean composition of the Gibbs algebra}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/AffineBilinearCov.lean}: the affine-bilinear specialisation of
+the Gibbs covariance, $\mathrm{Cov}_t[a_1\varphi+b_1,a_2\psi+b_2]=a_1a_2\,\mathrm{Cov}_t[\varphi,\psi]$,
+the first consumer of the covariance algebra from \texttt{Laplace.Gibbs}. Result: a clean fidelity
+pass with a single dead-\texttt{open} removal.
+\end{abstract}
+
+\section{Setting}
+The immediate downstream of \reviewref[the Gibbs foundation]{2026-06-05-review-laplace-gibbs}: it
+composes \texttt{gibbsCov\_add\_left/right}, \texttt{gibbsCov\_smul\_left/right}, and
+\texttt{gibbsCov\_const\_left/right} into the affine-input reduction --- additive constants drop
+(covariance with a constant is zero), scalars factor out.
+
+\section{What was reviewed}
+\texttt{gibbsCov\_affine\_left} ($\mathrm{Cov}[a\varphi+b,\psi]=a\,\mathrm{Cov}[\varphi,\psi]$),
+\texttt{gibbsCov\_affine\_right} (its symmetric twin), and the headline
+\texttt{gibbsCov\_affine\_affine} ($a_1a_2\,\mathrm{Cov}$), checked against the affine-bilinear law and
+for correct, minimal integrability hypotheses.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect.} The reviewer confirmed all three statements: the headline coefficient is the
+correct product $a_1a_2$, both additive constants disappear, and the four base integrability hypotheses
+($h_{\exp},h_\varphi,h_\psi,h_{\varphi\psi}$) are exactly the compositional ones needed to derive
+integrability of the scaled/offset observables before applying the base algebra --- all used, none
+spurious. ``No statement-level mismatches found.''
+
+\section{Simplifications applied}
+\textbf{One dead open.} \texttt{open Real} carried nothing (every \texttt{Real.exp} is qualified; the
+only bare \texttt{exp} is in the module docstring); \texttt{open MeasureTheory} stays (bare
+\texttt{Integrable} in every hypothesis), and \texttt{import Laplace.Gibbs} is the load-bearing source
+of the algebra. Build green, no warnings, signatures byte-identical; the reviewer affirmed. No dead
+locals and no droppable hypotheses --- a tight composition file.
+
+\section{Disagreements and open questions}
+None. The reviewer's proof-golf (inline the syntactic \texttt{eq}/\texttt{change} rewrites; prove
+\texttt{affine\_right} directly from the right-slot algebra to drop a derived local) was declined as
+proof-shape-only.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A pure composition file inherits its parent's cleanliness.} Having just reviewed the
+    Gibbs algebra it consumes, this file's review reduced to confirming the composition is faithful and
+    the hypotheses minimal --- exactly the cheap, high-confidence pass that reviewing a consumer right
+    after its foundation buys (the same economy seen lifting the TwoD trio right after their
+    \texttt{AddSeparable} root).
+  \item \textbf{The dead \texttt{open Real} recurs once more.} Across the laplace seabed the single most
+    common landable is a templated \texttt{open Real} that the file never uses unqualified; the
+    foundational and composition files (\texttt{Gibbs}, \texttt{AffineBilinearCov}) are no exception.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Remaining never-reviewed laplace files: the root \texttt{AffineKappa3} (310L) and the large
+    \texttt{Multi/} analytic files (\texttt{RescaledIntegrals} 1547L, and the
+    \texttt{Covariance}/\texttt{CovarianceSharp}/\texttt{CovarianceExplicit} trio up to 19.6k lines,
+    for sectioned review).
+\end{itemize}
+
+\end{document}
