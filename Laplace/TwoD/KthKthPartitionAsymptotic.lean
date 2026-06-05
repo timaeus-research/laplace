@@ -9,9 +9,8 @@ For the 2D separable potential $L(x, y) = L_{k_1}(x) + L_{k_2}(y)$
 with $L_k(z) = z^{2k}/(2k)!$ and $k_1, k_2 \ge 1$, this file
 establishes:
 
-* `partitionFunction_kthKth_eq` — exact closed form
-  $Z_{2D}(t) = Z_{L_{k_1}}(t) \cdot Z_{L_{k_2}}(t)$ specialised to a
-  scalar polynomial-in-$t$ form;
+* `partitionFunction_kthKth_eq` — exact factorisation
+  $Z_{2D}(t) = Z_{L_{k_1}}(t) \cdot Z_{L_{k_2}}(t)$ into the two 1D partitions;
 * `partitionFunction_kthKth_eq_const_mul_rpow` — pulling out the
   $t$-dependence as $C(k_1, k_2) \cdot t^{-1/(2k_1) - 1/(2k_2)}$;
 * `partitionFunction_kthKth_rescaled_tendsto` — multiplied by
