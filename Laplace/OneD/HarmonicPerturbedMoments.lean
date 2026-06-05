@@ -42,7 +42,7 @@ Tide step O1 (perturbed-moments-harmonic), formalised on
 `sri/projects/primer/tide-log/2026-05-07-tide-perturbed-moments-harmonic.md`.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 open scoped Nat
 
 namespace Laplace.OneD
