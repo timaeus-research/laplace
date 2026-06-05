@@ -160,10 +160,6 @@ private lemma gibbsExp_anharmonic_cubic_eq
             Real.exp (-(t * anharmonicPotential lam alpha gamma x))) := by
       funext x; ring
     rw [← this]; exact h3
-  -- Build sums step by step (left-associative `(((a + b) + c) + d)` matches the goal).
-  have h12 : Integrable (fun x : ℝ => c₁ * x *
-      Real.exp (-(t * anharmonicPotential lam alpha gamma x)) +
-      c₀ * Real.exp (-(t * anharmonicPotential lam alpha gamma x))) := h1'.add h0'
   -- First-stage split: pull off `c₀` (innermost).
   have step0 :
       Laplace.gibbsExpectation (anharmonicPotential lam alpha gamma) t
@@ -307,12 +303,6 @@ private theorem kappa3_anharmonic_shifted_affine_eq_smul
       = (fun x : ℝ => 0 * x ^ 3 + 0 * x ^ 2 + a₂ * x + b₂) := by funext x; ring
   have h_α3 : (fun x : ℝ => a₃ * x + b₃)
       = (fun x : ℝ => 0 * x ^ 3 + 0 * x ^ 2 + a₃ * x + b₃) := by funext x; ring
-  have h_id_id_id : (fun x : ℝ => x * x * x)
-      = (fun x : ℝ => 1 * x ^ 3 + 0 * x ^ 2 + 0 * x + 0) := by funext x; ring
-  have h_id_id : (fun x : ℝ => x * x)
-      = (fun x : ℝ => 0 * x ^ 3 + 1 * x ^ 2 + 0 * x + 0) := by funext x; ring
-  have h_id : (fun x : ℝ => x)
-      = (fun x : ℝ => 0 * x ^ 3 + 0 * x ^ 2 + 1 * x + 0) := by funext x; ring
   rw [h_α1α2α3, h_α1α2, h_α1α3, h_α2α3, h_α1, h_α2, h_α3]
   -- For the RHS unfolding, rewrite (fun x => x * x * x) etc. in cubic form.
   conv_rhs =>
