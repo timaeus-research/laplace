@@ -18,7 +18,7 @@ pure-quartic refactor) and is the first non-trivial consumer of the
 gibbsCov algebra landed in Tide I2.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 
 namespace Laplace
 
