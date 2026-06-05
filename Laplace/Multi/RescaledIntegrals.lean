@@ -66,8 +66,8 @@ section Dilation
 
 /-- **Dilation identity for ℝ-valued integrals on `ι → ℝ`**: for any
 `R : ℝ` and integrand `g : (ι → ℝ) → ℝ` (the statement carries no
-`R ≠ 0` hypothesis — at `R = 0` both sides are `0` via the totalised
-integral),
+`R ≠ 0` hypothesis; the `R = 0` case is covered by the totalised-integral
+convention),
 
   `∫ u, g (R • u) du = |R|⁻^d · ∫ w, g w dw`
 
