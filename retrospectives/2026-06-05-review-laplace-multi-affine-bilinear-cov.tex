@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the multi-index affine-bilinear covariance --- and a docstring that called itself 2D}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/Multi/AffineBilinearCov.lean}: the multi-index Gibbs covariance is
+affine-bilinear, $\mathrm{Cov}_t[a_1\varphi+b_1,\,a_2\psi+b_2]=a_1a_2\,\mathrm{Cov}_t[\varphi,\psi]$ on
+$w\in(\iota\to\mathbb R)$. Result: \textbf{a clean fidelity pass with two landed edits} --- a genuinely dead
+\texttt{open Real} and a docstring accuracy fix (the file is polymorphic in $[\mathrm{Fintype}\ \iota]$ but
+called itself ``the 2D mirror''). This is the first review into the laplace \texttt{Multi/} multivariate
+layer beyond the previously-audited \texttt{GaussianIBP}.
+\end{abstract}
+
+\section{Setting}
+The primer's Stage~3 is the multivariate covariance expansion. Its algebraic base is the multi-index
+\texttt{gibbsCov} bilinearity, assembled in \texttt{Multi/Basic.lean} (additivity, scalar-linearity,
+constant-vanishing, symmetry, each side). This file is its \emph{first consumer}: the affine-input reduction,
+the multi-index mirror of the one-dimensional ``Tide~I3'' affine-bilinear result. Reviewing it checks that
+the consumer composes the base algebra correctly, and incidentally exercises the \texttt{Multi/} layer for the
+first time since the \reviewref[GaussianIBP review]{2026-06-04-review-laplace-gaussianibp}.
+
+\section{What was reviewed}
+Three public theorems: \texttt{gibbsCov\_affine\_left} ($\mathrm{Cov}[a\varphi+b,\psi]=a\,\mathrm{Cov}$),
+\texttt{gibbsCov\_affine\_right} (the right-slot mirror via \texttt{gibbsCov\_symm}), and the headline
+\texttt{gibbsCov\_affine\_affine} ($a_1a_2\,\mathrm{Cov}$). Checked against the module docstring, the
+\texttt{Multi/Basic} algebra lemmas the proofs chain, the 1D sibling \texttt{Laplace/AffineBilinearCov.lean},
+and the tide retrospective.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.} The right-hand sides are exactly $a$, $a$, and $a_1a_2$ times the base
+covariance --- one factor of each linear scalar, with \emph{no} surviving $b_1/b_2$ constant terms (the
+constants drop because the covariance of anything with a constant is zero). The four integrability hypotheses
+$(h_{\exp},h_\varphi,h_\psi,h_{\varphi\psi})$ are exactly the base interface the chained algebra requires:
+none too few (the proofs derive the affine-transformed integrabilities internally, by
+\texttt{const\_mul}/\texttt{add}), and none redundant in the public signature --- all four are genuinely used.
+GPT's one proof-side note (that \texttt{affine\_right} invokes \texttt{gibbsCov\_symm} without separately
+deriving an affine-slot integrability) is consistent with how \texttt{symm} is stated and is explicitly
+\emph{not} a statement-level mismatch.
+
+\section{Simplifications applied}
+\textbf{Two landed.}
+\begin{itemize}[noitemsep]
+  \item \textbf{Dead \texttt{open Real}.} Every exponential is written fully qualified as \texttt{Real.exp};
+    the only bare ``\texttt{exp}'' is in a docstring comment, and no other \texttt{Real}-namespace name or
+    notation appears. \texttt{open MeasureTheory} stays --- \texttt{Integrable} is used unqualified throughout
+    the statements. Removed and rebuild-arbitrated.
+  \item \textbf{Docstring accuracy: ``2D mirror'' $\to$ ``multi-index mirror''.} The file is polymorphic in
+    \texttt{[Fintype $\iota$]} --- it covers every finite dimension, not just $\iota=\mathrm{Fin}\,2$ --- and
+    already calls itself ``the multi-index analogue'' in its opening sentence. The trailing ``the 2D mirror of
+    I3'' was an internal inconsistency, narrower than what is proved; corrected to match.
+\end{itemize}
+Both are comment/\texttt{open}-line only: zero proof-body, zero signature change. Baseline green
+($2544$ jobs) $\to$ both edits $\to$ rebuild green ($2544$), all three signatures byte-identical,
+GPT-affirmed, fast-forward-merged. GPT's other four proposals --- eliminate the \texttt{rfl} \texttt{eq}
+boilerplate, \texttt{simpa}-collapse the two \texttt{funext;ring} integrability blocks, compress
+\texttt{affine\_right}'s rewrite chain, and rename the local hypotheses --- are tactic-golf or cosmetic and
+were declined.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A docstring that contradicts itself is a reliable place to find an accuracy fix.} The opening
+    line (``multi-index analogue'') and the closing line (``2D mirror'') disagreed about the file's own
+    generality; the closing one was wrong. When two parts of one docstring describe the same object
+    differently, at least one is stale --- check which against the actual type signature ($[\mathrm{Fintype}\
+    \iota]$ here settles it).
+  \item \textbf{The dead-\texttt{open} grep is now a fast, two-confirmation routine.} Across the recent laplace
+    reviews the pattern is settled: grep the file for any bare name/notation the open provides
+    (\texttt{Integrable} for \texttt{MeasureTheory}, bare \texttt{exp}/$\pi$ for \texttt{Real}), and if the
+    static check and the independent reviewer agree the open is unused, the rebuild confirms it definitively.
+    Here \texttt{Real} was dead and \texttt{MeasureTheory} load-bearing, decided in one pass.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The sibling \texttt{Multi/QuadraticApprox.lean} (the other small \texttt{Multi/} foundation file) is
+    the natural next review; the large \texttt{Multi/Covariance*.lean} files (3998--19611 lines) each exceed a
+    single review-tide scope and would need a sectioned approach.
+\end{itemize}
+
+\end{document}
