@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{multivariate Gaussian integrability, and a redundant import the job-count exposed}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/Multi/GaussianDomination.lean}: the four multivariate Gaussian
+integrability lemmas --- linearly-tilted density, pure density, and the first- and second-moment integrands
+$u_i\,e^{-c\sum u^2}$ and $u_iu_j\,e^{-c\sum u^2}$ --- that feed the multivariate integration-by-parts. Result:
+\textbf{a clean fidelity pass with one landed edit}, a redundant \texttt{import Laplace.Multi.Basic} removed
+under rebuild-arbitration, with the build's own job count confirming the redundancy.
+\end{abstract}
+
+\section{Setting}
+This is the integrability layer for the primer's Stage~3: before one can compute
+$\int u_iu_j\,e^{-Q(u)}\,du = Z\,(H^{-1})_{ij}$ by parts, one needs that integrand (and its lower-moment
+relatives) to be integrable. The file proves exactly those four facts on $\iota\to\mathbb R$, and it is the
+last small \texttt{Multi/} file before the large \texttt{Covariance*} trio. Its only consumer is
+\texttt{GaussianIBP} (itself reviewed earlier).
+
+\section{What was reviewed}
+Four public theorems (linear-tilt, pure Gaussian, first moment, second moment) and three private helpers
+(\texttt{sum\_pi\_single\_mul}, the domination $|x|\le e^x+e^{-x}$, and continuity of the Gaussian). The
+strategy, documented as following a GPT-5.5-Pro Phase-2 consult: prove the linear-tilt lemma from Mathlib's
+\emph{complex} Gaussian \texttt{GaussianFourier.integrable\_cexp\_neg\_mul\_sum\_add} via
+\texttt{Integrable.norm}, then dominate the moment integrands by sums of linearly-tilted Gaussians (built with
+\texttt{Pi.single} tilts) using $|x|\le e^x+e^{-x}$.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; the theorem statements are faithful.} The complex-to-real norm bridge (the cast identity plus
+\texttt{Complex.ofReal\_exp}/\texttt{Complex.norm\_real}) is correct; the \texttt{Pi.single} tilt
+constructions realise all of $\pm u_i$ and $\pm u_i\pm u_j$ (including $i=j$); the dominations
+$|x|\le e^x+e^{-x}$ and $|u_iu_j|\le(e^{u_i}+e^{-u_i})(e^{u_j}+e^{-u_j})$ both hold as proved; and $c>0$ is
+correctly a hypothesis.
+
+One observation worth recording, though it is \emph{not} a file defect: for \emph{empty} $\iota$, the unique
+point gives $\sum u_k^2=0$, so the integrands collapse to the constant $1$ on a one-point space and are
+integrable for every $c$, not only $c>0$. So $c>0$ is sufficient-but-not-strictly-necessary in that
+degenerate case. The file claims only sufficiency (``for $c>0$, \dots\ is integrable'') and makes no necessity
+assertion, so nothing needs changing --- but it is a clean reminder that ``the hypothesis is necessary'' and
+``the hypothesis is sufficient'' are different claims, and only the latter is what an integrability lemma
+states.
+
+\section{Simplifications applied}
+\textbf{One landed: a redundant import.} The file imported \texttt{Laplace.Multi.Basic} but uses none of its
+definitions (no \texttt{partitionFunction}/\texttt{gibbsExpectation}/\texttt{gibbsCov}); the product-Lebesgue
+measure on $\iota\to\mathbb R$ and the \texttt{Integrable} infrastructure all arrive through
+\texttt{Mathlib.\dots Gaussian.FourierTransform}. Removed under rebuild-arbitration --- and here the rebuild
+gave an unusually crisp confirmation: the \texttt{lake build} job count dropped from $2734$ to $2726$, i.e.\
+eight modules left the build closure, modules that were present \emph{only} via the removed import and are not
+needed. A load-bearing import would instead have failed elaboration. All seven declarations stayed
+byte-identical; GPT-affirmed; fast-forward-merged. This is a leaf file (only \texttt{GaussianIBP} imports it,
+and that imports \texttt{Basic} directly), so the single-file rebuild was a sufficient test and downstream is
+untouched.
+
+GPT's other eight proposals were declined: shorten or eliminate \texttt{sum\_pi\_single\_mul} and
+\texttt{h\_sum\_pair}, replace the \texttt{apply h.congr; filter\_upwards} blocks with \texttt{simpa}, inline
+\texttt{continuous\_gaussian}, use a standard $\|\mathrm{Complex.exp}\|$ lemma, shrink the \texttt{hG} simp
+sets, factor the four sign-cases through a helper, and rename privates. All are proof-golf, helper-extraction,
+or renaming --- no dead code, no statement benefit --- and were left alone.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The build's job count is a free redundancy signal.} When removing an import drops modules from
+    the closure (here $2734\to2726$) and the build still passes, that is positive evidence the import was
+    pulling in genuinely-unused transitive dependencies --- a sharper confirmation than ``it still compiles''
+    alone. A load-bearing import cannot leave the closure without breaking the build.
+  \item \textbf{Sufficient $\ne$ necessary, and an integrability lemma only ever claims the former.} The
+    empty-index degeneracy is a tidy reminder to read a hypothesis as ``this suffices'', not ``this is
+    required'', when judging fidelity --- the file was right, and a reviewer asking ``is $c>0$ necessary?''
+    is asking a strictly stronger question than the file answers.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The small/medium \texttt{Multi/} files are now reviewed (Basic, AffineBilinearCov, QuadraticApprox,
+    GaussianDomination; GaussianIBP earlier). Remaining: \texttt{RescaledIntegrals.lean} (1547 lines, 47
+    lemmas --- large but perhaps reviewable in one pass) and the \texttt{Covariance*} trio (3998--19611
+    lines, needing a sectioned approach).
+\end{itemize}
+
+\end{document}
