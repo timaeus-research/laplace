@@ -33,7 +33,7 @@ for the deliberation log. The `gibbsExpectation_const` requirement
 polynomial-times-`exp(-tL)` integrability infrastructure below.
 -/
 
-open MeasureTheory Filter Topology
+open MeasureTheory
 
 namespace Laplace
 
