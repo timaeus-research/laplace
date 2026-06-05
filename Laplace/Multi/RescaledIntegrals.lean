@@ -31,7 +31,7 @@ up front, then never go back to the original variable in the proof.
 
 namespace Laplace.Multi
 
-open MeasureTheory Module
+open MeasureTheory
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -368,8 +368,6 @@ end ExpErrorBounds
 
 section PartitionDiffIntegral
 
-open MeasureTheory
-
 /-- **Partition difference as an integral**: under integrability of the
 Gaussian weight and of the rescaled-weight factorization,
 
@@ -396,8 +394,6 @@ lemma rescaledPartition_sub_gaussianZ_eq_integral
 end PartitionDiffIntegral
 
 section NumeratorSplit
-
-open MeasureTheory
 
 /-- **Rescaled numerator decomposition**: for any observable `φ` with
 gradient `a`, given integrability of the two pieces,
@@ -612,8 +608,6 @@ end CoerciveDomination
 
 section CoerciveIntegrability
 
-open MeasureTheory
-
 /-- Continuity of `quadForm H` as a function on `ι → ℝ`. -/
 lemma continuous_quadForm (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) :
     Continuous (fun u : ι → ℝ => quadForm H u) := by
@@ -823,8 +817,6 @@ lemma abs_gaussianWeight_mul_exp_sub_one_le_uniform
 end CoerciveIntegrability
 
 section PairSplit
-
-open MeasureTheory
 
 /-- **Pointwise pair-product expansion** for two observables φ, ψ with
 gradients a, b: writing `r_φ(w) := φ(w) - dot a w` and similarly `r_ψ`,
@@ -1082,8 +1074,6 @@ lemma pow_mul_exp_neg_sq_le_half_decay
 end PolynomialGaussianDecay
 
 section PolynomialMomentIntegrability
-
-open MeasureTheory
 
 /-- **Sup-norm² ≥ (1/|ι|) · ∑ u_i²**: derived directly from
 `sum_sq_le_card_mul_sq_norm`. -/
@@ -1376,8 +1366,6 @@ lemma abs_gaussianWeight_mul_exp_sub_one_le_tail
 end TailPartitionBound
 
 section NormPowExpIntegrability
-
-open MeasureTheory
 
 /-- **Integrability of `‖u‖^k · exp(-α ‖u‖²)`** for any `α > 0`, `k : ℕ`,
 under `Nonempty ι`. Dominated by `M_k · exp(-(α/(2|ι|)) · ∑ u_i²)`
