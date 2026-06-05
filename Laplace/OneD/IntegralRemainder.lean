@@ -22,7 +22,7 @@ This file is a straightforward consequence of the scalar bound; no new
 analytic content beyond the algebra.
 -/
 
-open Real Set MeasureTheory
+open MeasureTheory
 open scoped Nat
 
 namespace Laplace.OneD
