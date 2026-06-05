@@ -1,5 +1,4 @@
 import Laplace.OneD.Harmonic
-import Laplace.OneD.Localisation
 
 /-!
 # The 1D anharmonic potential
@@ -19,8 +18,6 @@ This file defines the potential and establishes its basic shape:
 
 The asymptotic theorem itself is left as future work.
 -/
-
-open Real
 
 namespace Laplace.OneD
 
@@ -134,7 +131,6 @@ theorem anharmonic_coercive (lam alpha gamma : ℝ)
   have hx : (0 : ℝ) ≤ x ^ 2 := sq_nonneg x
   rw [show (x ^ 2 * (gamma / 24 * x ^ 2 + alpha / 6 * x + lam / 2) : ℝ) =
         (gamma / 24 * x ^ 2 + alpha / 6 * x + lam / 2) * x ^ 2 by ring]
-  rw [show (c * x ^ 2 : ℝ) = c * x ^ 2 from rfl]
   exact mul_le_mul_of_nonneg_right (hQ x) hx
 
 end Laplace.OneD
