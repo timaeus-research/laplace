@@ -28,7 +28,9 @@ The instance unlocks the general FDT identity
 `Threepoint.gibbsCov_deriv_eq_neg_t_kappa3` for the anharmonic
 potential. Combined with `Laplace.OneD.AnharmonicKappa3.kappa3_anharmonic_id_id_id_asymptotic`
 (Tide 9), this yields the closed-form asymptotic
-`∂_h Cov_h(x, x)|_{h=0} → α/(λ³ t)` as `t → ∞`. The empirical
+`∂_h Cov_h(x, x)|_{h=0} ~ α/(λ³ t)` as `t → ∞` (i.e.
+`t · ∂_h Cov_h(x, x)|_{h=0} → α/λ³`; the RHS `α/(λ³ t)` is `t`-dependent,
+so this is an asymptotic equivalence, not a finite limit). The empirical
 validation of the asymptotic appears in
 `projects/primer/experiment-log/2026-05-23-experiment-fdt-identity-1d.md`
 (HMC at `(λ, α, γ, t) = (1, 0.5, 1, 100)`, formal asymptote $0.005$
