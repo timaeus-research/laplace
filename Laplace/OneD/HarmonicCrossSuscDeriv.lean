@@ -19,15 +19,17 @@ theorem neither delivers alone:
 Combined: at the harmonic + linear setup with `(φ, B) = (id, id)`,
 `∂_h Cov_h(x, x) |_{h=0} = -t · κ₃(x, x, x) = 0`. The three
 `GibbsObservable` hypotheses for the monomials `x`, `x*x`, `x*x*x`
-remain external; closing those is candidate G4 of the May 6 survey.
+are external to the conditional theorem; the `_unconditional` variant
+below discharges them (candidate G4 of the May 6 survey).
 
 The theorem is sharper than its statement suggests. By the closed form
 of the perturbed partition function (square completion: the perturbed
 Gibbs is a shifted Gaussian centred at `-h/λ` with variance `1/(λt)`),
 `Cov_h(x, x) = 1/(λt)` is in fact independent of `h` — *not just*
 locally constant at `h = 0`. The κ₃-route here delivers only the
-basepoint version of this fact; a stronger global-constancy theorem is
-recorded as a future tide candidate.
+basepoint version of this fact; the stronger global-constancy theorem
+(`gibbsCov_h(x, x) = 1/(λt)` for all `h`) is proved in
+`HarmonicCovGlobalConstancy.lean` (`gibbsCov_h_id_id_harmonic_eq`).
 
 ## Tide-step provenance
 
