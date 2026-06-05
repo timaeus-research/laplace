@@ -231,7 +231,7 @@ theorem kappa3_volume_shifted_affine_eq_smul
   -- For each of the 7 integrand terms, expand the polynomial product
   -- into `a₃ x³ + a₂ x² + a₁ x + a₀` form, then apply `gibbsExp_cubic_eq`.
   -- Define moment shorthands.
-  set m₁ : ℝ := gibbsExpectation L t (fun x : ℝ => x) with hm1
+  set m₁ : ℝ := gibbsExpectation L t (fun x : ℝ => x)
   set m₂ : ℝ := gibbsExpectation L t (fun x : ℝ => x ^ 2) with hm2
   set m₃ : ℝ := gibbsExpectation L t (fun x : ℝ => x ^ 3) with hm3
   -- Term: ⟨(a₁x+b₁)(a₂x+b₂)(a₃x+b₃)⟩.
