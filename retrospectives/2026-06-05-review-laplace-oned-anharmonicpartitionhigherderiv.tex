@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the differentiation-under-the-integral base, $G_n'=G_{n+1}$}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicPartitionHigherDeriv.lean}: the
+differentiation-under-the-integral step that powers the anharmonic cumulant ladder ---
+$\partial_h\!\int(-(tx))^n e^{-t(L+hx)}|_{0}=\int(-(tx))^{n+1}e^{-tL}$ --- plus its $n=1,2$
+specialisations. Result: \textbf{a clean fidelity pass with no edits.} The dominated-differentiation
+proof is correct end to end, and both \texttt{open}s are load-bearing.
+\end{abstract}
+
+\section{Setting}
+This is the analytic engine below the cumulant algebra reviewed in
+\reviewref[AnharmonicFourthCumulant]{2026-06-05-review-laplace-oned-anharmonicfourthcumulant}: where
+that file differentiates ratios $G_1/G_0$ symbolically, this one proves the underlying fact that
+each moment integral $G_n(h)=\int(-(tx))^n e^{-t(L+hx)}$ has $h$-derivative $G_{n+1}$, by
+differentiating under the integral sign. It is the integral-side counterpart to the pure-algebra
+cumulant files, and --- as expected --- it is the one that actually needs \texttt{MeasureTheory}.
+
+\section{What was reviewed}
+The general step \texttt{anharmonic\_partition\_deriv\_step} and its two specialisations
+\texttt{anharmonic\_partition\_secondDeriv} ($n=1$, giving $\int(tx)^2 e^{-tL}$) and
+\texttt{anharmonic\_partition\_thirdDeriv} ($n=2$, giving $-\!\int(tx)^3 e^{-tL}$).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; checked end to end.} The $h$-derivative of $(-(tx))^n e^{-t(L+hx)}$ is
+$(-(tx))^{n+1}e^{-t(L+hx)}$ (the constant-in-$h$ prefactor times the chain-rule factor $-tx$),
+matching the stated RHS at $h=0$. The dominator $t^{n+1}e^{t/(2c)}|x|^{n+1}e^{-(t/2)L}$ is the
+product of $(t|x|)^n$ and the imported single-factor perturbation bound, integrable via
+\texttt{integrable\_abs\_pow\_mul\_exp\_neg\_t\_anharmonic (n+1)} at $t/2$; it dominates
+$\|F'(h,x)\|$ for $|h|<1$. All seven data of
+\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le} are correctly supplied (the
+pointwise bound and pointwise \texttt{HasDerivAt} are in fact proved everywhere, then packaged AE).
+The $n=1,2$ instances correctly use $(-(tx))^2=(tx)^2$ and $(-(tx))^3=-(tx)^3$. The reviewer
+confirmed all of this.
+
+One report-only note: the corollary docstrings title themselves ``second/third $h$-derivative of
+$Z$'', while the theorems literally give the $h$-derivative-at-$0$ of the first/second-derivative
+\emph{integral expression}. This is accurate in context --- the body names ``the first-derivative
+integral'', and the $n=0$ step identifies that integral with $Z'$ --- so the title is shorthand for
+a true chain, not an overclaim; left as is.
+
+\section{Simplifications applied}
+\textbf{None --- the bucket was empty.} Both \texttt{open MeasureTheory} (eighteen bare $\int$, plus
+\texttt{AEStronglyMeasurable}/\texttt{Integrable}/\texttt{volume}) and \texttt{open Topology} (bare
+$\mathcal N$, $\forall^f$-in-$\mathcal N$) are load-bearing; there is no \texttt{open Real} (all
+\texttt{Real.*} qualified); the single import supplies the coercivity, integrability, and pointwise
+bound/derivative lemmas; and the dense DCT proof has no dead local or no-op step. No worktree.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The integral-side file is exactly where \texttt{MeasureTheory} earns its keep.} The
+    \reviewref[fourth-cumulant review]{2026-06-05-review-laplace-oned-anharmonicfourthcumulant}
+    predicted the higher cumulant files inherit a dead \texttt{open MeasureTheory}; that holds for
+    the \emph{algebra} files but is reversed here --- the differentiation-under-the-integral base
+    has eighteen bare $\int$. The measure-vs-algebra split is per-file, and the bare-$\int$ count
+    settles it instantly.
+  \item \textbf{Stronger-than-needed pointwise hypotheses are not dead code.} The proof establishes
+    the bound and the derivative pointwise everywhere and then packages them as AE statements for
+    the DCT lemma. That is not redundancy to trim --- it is the cleanest way to feed the AE-shaped
+    Mathlib API.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining anharmonic arc: \texttt{AnharmonicPartitionDerivGeneralH},
+    \texttt{AnharmonicGibbsRegularity}, \texttt{AnharmonicGibbsObservableMonomials},
+    \texttt{AnharmonicKappa3Affine}; and the harmonic regularity/observable files.
+\end{itemize}
+
+\end{document}
