@@ -26,7 +26,7 @@ Two public theorems:
   `Asymptotics.isEquivalent_iff_tendsto_one`.
 -/
 
-open Real MeasureTheory Filter Asymptotics
+open MeasureTheory Filter Asymptotics
 open scoped Topology
 
 namespace Laplace.OneD
@@ -63,7 +63,6 @@ theorem kth_jfunction_div_partition
     exact_mod_cast this
   have hα_pos : 0 < α := by
     rw [hα_def]; exact div_pos one_pos h2k_pos
-  have hα_ne : α ≠ 0 := ne_of_gt hα_pos
   have hfac_pos : (0 : ℝ) < (Nat.factorial (2 * k) : ℝ) := by
     exact_mod_cast Nat.factorial_pos _
   have hfac_rpow_pos : 0 < ((Nat.factorial (2 * k) : ℝ)) ^ α :=
