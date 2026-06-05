@@ -39,7 +39,7 @@ branched off `main` at commit `b844d7a`). Tide log:
 `projects/primer/tide-log/2026-05-07-tide-quartic-sextic-mixed.md`.
 -/
 
-open MeasureTheory Real
+open MeasureTheory
 
 namespace Laplace.TwoD
 
