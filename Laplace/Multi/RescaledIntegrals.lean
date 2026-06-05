@@ -65,7 +65,9 @@ noncomputable def rescaledCov
 section Dilation
 
 /-- **Dilation identity for ℝ-valued integrals on `ι → ℝ`**: for any
-nonzero `R : ℝ` and integrand `g : (ι → ℝ) → ℝ`,
+`R : ℝ` and integrand `g : (ι → ℝ) → ℝ` (the statement carries no
+`R ≠ 0` hypothesis — at `R = 0` both sides are `0` via the totalised
+integral),
 
   `∫ u, g (R • u) du = |R|⁻^d · ∫ w, g w dw`
 
@@ -783,9 +785,11 @@ lemma integrable_coord_mul_rescaled_weight
 
 /-- **Pointwise triangle-style bound** for the partition integrand:
 `|gW(u) · (exp(-s_t(u)) - 1)| ≤ gW(u) + exp(-(c·‖u‖²))`
-under coercivity. This is the simplest absolute pointwise bound that
-makes `gW · (exp(-s_t) - 1)` dominated by an integrable function
-uniformly in `t > 0`. -/
+under coercivity. The right-hand side is independent of `t`, so it is the
+`t`-uniform majorant used downstream. (Its *integrability* is a separate
+matter: the `exp(-(c·‖u‖²))` term is integrable, but `gW` requires
+positive-definiteness of `H`, established elsewhere — this lemma is only
+the pointwise bound.) -/
 lemma abs_gaussianWeight_mul_exp_sub_one_le_uniform
     (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
     {c : ℝ} (hc_pos : 0 < c)
@@ -871,7 +875,7 @@ lemma quadForm_lower_bound
       |V w - (1/2) * quadForm H w| ≤ C * ‖w‖ ^ 3) :
     ∀ u : ι → ℝ, (c/2) * ‖u‖ ^ 2 ≤ (1/2) * quadForm H u := by
   -- Choose r := min R (c / (2 * (C + 1))).
-  set r := min R (c / (2 * (C + 1))) with hr_def
+  set r := min R (c / (2 * (C + 1)))
   have hC1_pos : (0 : ℝ) < C + 1 := by linarith
   have hr_pos : 0 < r := lt_min hR_pos (by positivity)
   have hr_le_R : r ≤ R := min_le_left _ _
@@ -1107,7 +1111,7 @@ lemma integrable_pow_norm_mul_rescaled_weight
   have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
   have hc_half_card_pos : (0 : ℝ) < c / (2 * Fintype.card ι) := by positivity
   -- Dominating function: `M_k · exp(-(c/(2|ι|)) · ∑ u_i²)`.
-  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * c)) with hM_def
+  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * c))
   have hM_nn : 0 ≤ M_k := (Real.exp_pos _).le
   have h_dom_int :=
     (integrable_exp_neg_const_mul_sum_sq (ι := ι) hc_half_card_pos).const_mul M_k
@@ -1376,7 +1380,7 @@ lemma integrable_norm_pow_mul_exp_neg_const_sq
       ‖u‖ ^ k * Real.exp (-(α * ‖u‖ ^ 2))) := by
   have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
   have hα_card_pos : 0 < α / (2 * Fintype.card ι) := by positivity
-  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * α)) with hM_def
+  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * α))
   have hM_nn : 0 ≤ M_k := (Real.exp_pos _).le
   have h_dom_int :=
     (integrable_exp_neg_const_mul_sum_sq (ι := ι) hα_card_pos).const_mul M_k
