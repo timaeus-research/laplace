@@ -41,7 +41,7 @@ the main theorem are bundled into `LaplaceCovHypotheses` for clarity.
 
 namespace Laplace.Multi
 
-open MeasureTheory Module
+open MeasureTheory
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -128,7 +128,6 @@ end HypothesisPackage
 
 section GaussianMomentInfrastructure
 
-open MeasureTheory
 
 /-- **Sum-of-squares Gaussian moment integrability**: under
 `LaplaceCovHypotheses`, `(∑_i u_i²) · gaussianWeight H u` is integrable. -/
