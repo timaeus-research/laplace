@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the universal large-$T$ rate --- a sound estimate and five dead locals}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/UniversalAsymptotics.lean}: the rate-aware large-$T$
+asymptotic of the universal scaling function, $|T\langle y^2\rangle_{V,T}-1|\le K/T$ for the
+potential $V(y)=y^2/2+y^4/24$. Result: \textbf{a clean fidelity pass with six edits} --- a dead
+\texttt{open Real} and five dead proof-locals. The substantive estimate is correct and was checked
+on six independent points.
+\end{abstract}
+
+\section{Setting}
+This is the $T\gg1$ companion to the
+\reviewref[universal-scaling identity]{2026-06-05-review-laplace-oned-neardegenerate}: where that
+file gives the exact transport, this one supplies the large-$T$ rate $T f_1(T)\to1$ with explicit
+$O(1/T)$ bound, by bridging to the seabed's \texttt{I\_0\_asymptotic}/\texttt{I\_2\_asymptotic} at
+$(\lambda,\alpha,\gamma)=(1,0,1)$ (the discriminant $\alpha^2<3\lambda\gamma$ becoming $0<3$).
+
+\section{What was reviewed}
+Two public theorems (the rate bound and its \texttt{Tendsto} corollary) and a trivial private
+discriminant lemma.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; checked six ways.} (1) The leading constant $a=\sqrt{2\pi}$ is right
+($\sqrt T\,Z_V\to\int e^{-z^2/2}=\sqrt{2\pi}$ after $y=z/\sqrt T$). (2) The limit is $1$, not
+$1/2$ or $2$ ($T\,N/Z\to a/a=1$). (3) The rate is $O(1/T)$ with witness $K=2(K_0+K_2)/a$. (4) The
+denominator lower bound $a+\delta\ge a/2$ follows from the $T_0=\max(1,1+2K_0/a)$ choice. (5) The
+ratio identity $(a+\varepsilon)/(a+\delta)-1=(\varepsilon-\delta)/(a+\delta)$ and the final
+division direction (larger denominator $\Rightarrow$ smaller quotient) are correct. (6) Docstrings
+do not overclaim. The reviewer independently confirmed all six.
+
+\section{Simplifications applied}
+\textbf{Six: one dead \texttt{open}, five dead locals.} \texttt{open Real} is dead (every
+\texttt{Real.sqrt}/\texttt{Real.pi}/\texttt{Real.mul\_self\_sqrt}/\texttt{Real.sqrt\_pos}
+qualified); \texttt{open MeasureTheory} stays (bare $\int$ in the \texttt{set D}/\texttt{set N}).
+Then four unreferenced \texttt{set ... with h} equation names (\texttt{ha\_def},
+\texttt{hT0\_def}, \texttt{hD\_def}, \texttt{hN\_def} --- only the abbreviations are used) and the
+dead \texttt{have hsq} (the fact $\sqrt T\cdot\sqrt T=T$, never referenced). Build green at $8256$ jobs,
+warning set unchanged at zero, signatures byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's case-split eliminations (in \texttt{hK0T\_le} and the \texttt{Tendsto}
+proof), the \texttt{show}$\to$\texttt{change} suggestion on the
+$a+\delta = \sqrt T\,D$ rewrites, and the $T_0$ witness-weakening were declined as proof-golf
+--- and note \texttt{change} cannot replace that rewrite, since $a+(\sqrt T\,D-a)$ is only
+\emph{propositionally} (not definitionally) equal to $\sqrt T\,D$.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{Grep substring false-positives can hide a dead local --- and reveal one.} The dead
+    \texttt{hsq} appeared to have ``11 occurrences'' under a bare \texttt{grep hsq}, but ten were
+    substring hits inside \texttt{hsqrt\_T\_pos}/\texttt{hsqrtTD\_lb} etc.; only the definition line
+    was a real occurrence, confirming it dead. Read the grep hits, don't trust the count.
+  \item \textbf{The \texttt{unusedVariables} linter silently misses \texttt{set ... with h}
+    names and some \texttt{have}s.} As in the
+    \reviewref[TailBound review]{2026-06-05-review-laplace-oned-tailbound}, a silent linter is not
+    proof a local is used; the rebuild (here, with a before/after warning-count comparison against
+    \texttt{HEAD}) is the arbiter.
+  \item \textbf{A multi-step analytic estimate deserves a per-claim fidelity ledger.} The six checks
+    (constant, limit, rate, lower bound, ratio identity, division direction) are each a place the
+    proof could have silently gone wrong; enumerating them is the review's value over the green
+    build.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Remaining \texttt{OneD/} surface: \texttt{HarmonicCovGlobalConstancy},
+    \texttt{HarmonicPerturbedMoments}, the \texttt{Harmonic*} monomials; and the
+    \texttt{Multi/Covariance*} trio (sectioned).
+  \item Proof-golf forward tide: collapse the two $K=0$ / $K>0$ case splits (both branches go
+    through the general argument).
+\end{itemize}
+
+\end{document}
