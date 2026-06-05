@@ -46,7 +46,7 @@ The Tendsto and IsEquivalent forms follow by V2's standard
 required because the closed form is exact.
 -/
 
-open Real MeasureTheory Filter Asymptotics
+open MeasureTheory Filter Asymptotics
 open scoped Topology
 
 namespace Laplace.TwoD
