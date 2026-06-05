@@ -7,7 +7,8 @@ For a smooth potential `V : (ι → ℝ) → ℝ` with nondegenerate minimum at
 `0` (Hessian `H = ∇²V(0) > 0`, inverse `Σ = H⁻¹`) and observables `φ, ψ`
 vanishing at `0` with gradients `a = ∇φ(0)`, `b = ∇ψ(0)`,
 
-  `Cov_t[φ, ψ] = (1/t) · ⟨a, Σ b⟩ + O(t⁻²)`.
+  `Cov_t[φ, ψ] = (1/t) · ⟨a, Σ b⟩ + o(1/t)`  (lem:laplace_cov; the sharp
+`O(t⁻²)` rate is the CovarianceSharp track, see below).
 
 This file proves the **weak-rate** explicit form (headline
 `gibbsCov_first_order_rate_weak`)
