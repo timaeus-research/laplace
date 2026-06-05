@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the harmonic regularity instance --- three dead opens, a dead import, two doc fixes}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/HarmonicGibbsRegularity.lean}: the
+\texttt{Threepoint.GibbsRegularity} witness for the harmonic Gibbs measure (the harmonic analogue
+of the anharmonic regularity file, and the witness the harmonic cross-susceptibility capstone
+consumes). Result: \textbf{a clean fidelity pass with six edits} --- three dead \texttt{open}s, a
+dead import, and two docstring corrections.
+\end{abstract}
+
+\section{Setting}
+The harmonic counterpart of
+\reviewref[AnharmonicGibbsRegularity]{2026-06-05-review-laplace-oned-anharmonicgibbsregularity}: it
+proves the regularity data for $L=(\lambda/2)x^2$, $A=\mathrm{id}$ via the \emph{closed form} of the
+perturbed partition (square completion $+$ Lebesgue translation $+$ \texttt{integral\_gaussian})
+rather than dominated convergence, and is the substrate the
+\reviewref[harmonic cross-susc capstone]{2026-06-05-review-laplace-oned-harmoniccrosssuscderiv}
+builds on.
+
+\section{What was reviewed}
+The perturbed partition closed form $\int e^{-t((\lambda/2)x^2+hx)}=e^{th^2/2\lambda}\sqrt{2\pi/
+\lambda t}$, its $h=0$ specialisation, $Z>0$, the first-moment odd-symmetry vanishing
+$\int(-tx)e^{-(t\lambda/2)x^2}=0$, and the \texttt{harmonic\_id\_gibbsRegularity} assembly.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defects.} Square completion $(\lambda/2)x^2+hx=(\lambda/2)(x+h/\lambda)^2-h^2/2
+\lambda$ gives the closed form via translation invariance and \texttt{integral\_gaussian} at
+$b=t\lambda/2$; $Z>0$ via \texttt{Real.sqrt\_pos}; the first moment vanishes by odd symmetry
+($x\mapsto-x$ invariance); and the three \texttt{GibbsRegularity} fields assemble correctly. The
+reviewer confirmed all four (noting, harmlessly, that the odd-vanishing lemma is stated for all
+$\lambda,t$ because Lean totalises the Bochner integral --- true as written, used under
+$\lambda,t>0$).
+
+\textbf{Two docstring corrections.} The file header wrote the potential as ``$((\lambda/2)\cdot)$''
+--- linear scaling, not the quadratic $(\lambda/2)x^2$ (the \emph{headline} bullet already had it
+right); corrected to match. And the helpers bullet advertised
+\texttt{harmonic\_integral\_x\_exp\_neg\_eq\_zero} (wrong name, and its formula dropped the $-t$),
+while the actual theorem is \texttt{harmonic\_integral\_neg\_t\_x\_exp\_neg\_eq\_zero}; corrected
+name and formula.
+
+\section{Simplifications applied}
+\textbf{Three dead opens and a dead import.} \texttt{open Real} (all \texttt{Real.*} qualified,
+bare $\sqrt{}$/$\pi$ only in docstrings), \texttt{open Filter} (all \texttt{Filter.*} qualified, no
+\texttt{filter\_upwards}), and \texttt{open Topology} (uses root-level \texttt{nhds}, never $\mathcal
+N$) are all dead; \texttt{open MeasureTheory} stays. And \texttt{import
+\dots IntervalIntegral.Basic} is dead --- no interval-integral notation or lemmas are used
+(\texttt{integral\_gaussian} comes from \texttt{GaussianIntegral}); a full build confirmed it is not
+transitively load-bearing. Signatures byte-identical, no warnings. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's proof-golf (\texttt{show}$\to$\texttt{change}, a \texttt{simpa}-collapse of
+\texttt{harmonic\_partition\_eq}) was declined.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The headline bullet and the file header can disagree --- the header was the wrong
+    one.} The \texttt{\#\# Headline} section already wrote the potential as
+    a \texttt{fun x => \dots} mapping $x\mapsto(\lambda/2)x^2$; only the top-of-file summary had the
+    lossy ``$((\lambda/2)\cdot)$''.
+    When two docstring sites state the same object, cross-check them against each other (and the
+    actual signature), not just against intuition.
+  \item \textbf{A four-\texttt{open} header in a closed-form-Gaussian file is mostly dead.} Three of
+    the four opens (\texttt{Real}, \texttt{Filter}, \texttt{Topology}) carried nothing --- the
+    bare-name greps called each before the build confirmed. Headers accrete opens from the template;
+    only \texttt{MeasureTheory} (the bare $\int$) was load-bearing.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining harmonic files: \texttt{HarmonicGibbsObservableMonomials},
+    \texttt{HarmonicAffineKappa3}, \texttt{HarmonicPerturbedMoments}; plus
+    \texttt{QuarticBoundedPrior}/\texttt{QuarticBoundedPriorTestFn} and \texttt{IntegralRemainder}.
+\end{itemize}
+
+\end{document}
