@@ -36,7 +36,7 @@ analysis is required; the work is pure `Real.rpow` algebraic
 rearrangement.
 -/
 
-open Real MeasureTheory Filter Asymptotics
+open Filter Asymptotics
 open scoped Topology
 
 namespace Laplace.TwoD
@@ -109,7 +109,6 @@ theorem gibbsExpectation_quarticSextic_pow_pow_rescaled_tendsto
     =ᶠ[atTop] fun _ => quarticSexticMomentConst j k := by
     filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
     rw [gibbsExpectation_quarticSextic_pow_pow_eq_const_mul_rpow j k ht]
-    rw [show -((j : ℝ) / 2 + (k : ℝ) / 3) = -((j : ℝ) / 2 + (k : ℝ) / 3) from rfl]
     rw [show t ^ ((j : ℝ) / 2 + (k : ℝ) / 3) * (quarticSexticMomentConst j k *
             t ^ (-((j : ℝ) / 2 + (k : ℝ) / 3))) =
             quarticSexticMomentConst j k *
