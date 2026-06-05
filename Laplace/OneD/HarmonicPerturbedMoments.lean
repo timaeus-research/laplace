@@ -78,7 +78,7 @@ private lemma integral_shifted'
     funext x; rw [hkey]; ring
   rw [heq, integral_const_mul]
   congr 1
-  set c : ℝ := h / lam with hc
+  set c : ℝ := h / lam
   have hreshape : (fun x : ℝ => f x *
       Real.exp (-(t * (lam / 2 * (x + c) ^ 2)))) =
       (fun x : ℝ =>
@@ -304,8 +304,6 @@ theorem gibbsExp_h_cube_harmonic_eq
   -- where α := h / lam.
   set α : ℝ := h / lam with hα
   have hZ0 := int_pow_zero hlam ht
-  have hZ0_ne : (∫ y : ℝ, Real.exp (-(t * (lam / 2 * y ^ 2)))) ≠ 0 := by
-    rw [hZ0]; positivity
   have h0 := integrable_gauss_pow' hlam ht 0
   have h1 := integrable_gauss_pow' hlam ht 1
   have h2 := integrable_gauss_pow' hlam ht 2
@@ -418,8 +416,6 @@ theorem gibbsExp_h_quartic_harmonic_eq
   rw [gibbsExp_harmonic_h_eq_unperturbed_shift hlam ht h (fun x : ℝ => x ^ 4)]
   set α : ℝ := h / lam with hα
   have hZ0 := int_pow_zero hlam ht
-  have hZ0_ne : (∫ y : ℝ, Real.exp (-(t * (lam / 2 * y ^ 2)))) ≠ 0 := by
-    rw [hZ0]; positivity
   have h0 := integrable_gauss_pow' hlam ht 0
   have h1 := integrable_gauss_pow' hlam ht 1
   have h2 := integrable_gauss_pow' hlam ht 2
