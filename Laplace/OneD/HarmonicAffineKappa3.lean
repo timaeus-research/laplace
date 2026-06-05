@@ -55,7 +55,7 @@ I2's `Laplace.gibbsExpectation_smul/add/const` algebra). Tide log:
 `projects/primer/tide-log/2026-05-07-tide-kappa3-affine-harmonic.md`.
 -/
 
-open MeasureTheory Real
+open MeasureTheory
 
 namespace Laplace.OneD
 
