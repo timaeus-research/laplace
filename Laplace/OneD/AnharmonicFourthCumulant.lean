@@ -94,7 +94,6 @@ theorem anharmonic_fourth_cumulant
   have hG1 := weightedPartition_hasDerivAt 1 hlam hgamma hdisc ht (h₀ := 0) (by norm_num)
   have hG2 := weightedPartition_hasDerivAt 2 hlam hgamma hdisc ht (h₀ := 0) (by norm_num)
   have hG3 := weightedPartition_hasDerivAt 3 hlam hgamma hdisc ht (h₀ := 0) (by norm_num)
-  have hG4 := weightedPartition_hasDerivAt 4 hlam hgamma hdisc ht (h₀ := 0) (by norm_num)
   have hnum2 : HasDerivAt
       (fun h : ℝ => weightedPartition lam alpha gamma t 3 h
           * weightedPartition lam alpha gamma t 0 h ^ 2
