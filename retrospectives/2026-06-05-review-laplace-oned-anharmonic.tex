@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the anharmonic potential and its coercivity --- and a foundation-file import cleared by a full build}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/Anharmonic.lean}: the base potential
+$L(x)=(\lambda/2)x^2+(\alpha/6)x^3+(\gamma/24)x^4$, its decomposition into harmonic plus perturbation, and the
+coercivity result $c\,x^2\le L(x)$ under the discriminant condition $\alpha^2<3\lambda\gamma$ --- the fact the
+entire 1D anharmonic arc consumes. Result: \textbf{a clean fidelity pass with three dead-code removals}, the
+most interesting of which (a genuinely-unused import on a foundation file) was cleared by a full project
+build rather than a single-module rebuild.
+\end{abstract}
+
+\section{Setting}
+This is the base of the 1D anharmonic programme (primer Stage~2 / \texttt{lem:laplace\_cov2}). Everything
+downstream --- the partition derivatives, the cumulant ladder, the FDT asymptotics, and the
+\reviewref[rescaling file]{2026-06-05-review-laplace-oned-rescaling} reviewed just before --- ultimately rests
+on \texttt{anharmonic\_coercive}. Reviewing it after its consumers closes the 1D anharmonic foundation from
+the top down.
+
+\section{What was reviewed}
+Two definitions (the potential and the cubic+quartic perturbation) and seven lemmas/theorems: the
+harmonic+perturbation decomposition (pointwise and functional), the perturbation's vanishing and $x^3$
+factoring, the Boltzmann-factor split, the factored form $L=x^2Q$, the quadratic minimum, and the two
+coercivity statements (quadratic lower bound, then $c\,x^2\le L$).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; all the algebra checks out.} The coefficients match the primer; the factored form
+$L=x^2\big((\gamma/24)x^2+(\alpha/6)x+\lambda/2\big)$ is the correct regrouping; and the load-bearing
+square-completion is right: $Q(x)-\tfrac{3\lambda\gamma-\alpha^2}{6\gamma}=\tfrac{\gamma}{24}(x+2\alpha/\gamma)^2$,
+using $\tfrac{3\lambda\gamma-\alpha^2}{6\gamma}=\tfrac{\lambda}{2}-\tfrac{\alpha^2}{6\gamma}$, so the coercivity
+constant $c=\tfrac{3\lambda\gamma-\alpha^2}{6\gamma}$ is positive exactly under $\alpha^2<3\lambda\gamma$.
+
+Two benign notes, recorded but not escalated and not acted on, both of the ``the statement is sound and is the
+form the consumers want, the docstring prose just says a little more'' kind:
+\begin{itemize}[noitemsep]
+  \item \texttt{anharmonic\_quadratic\_min} proves the lower-bound half ($\tfrac{3\lambda\gamma-\alpha^2}{6\gamma}\le
+    Q(x)$), which is all coercivity needs; the docstring's ``attained at $x=-2\alpha/\gamma$'' is accurate but
+    not separately formalised.
+  \item \texttt{anharmonic\_coercive} is the existential $\exists c>0$, which is exactly what the downstream
+    consumes (the rescaling file does \texttt{obtain $\langle$c, \dots$\rangle$}); the explicit witness named
+    in the docstring is recoverable from the proof but not part of the statement.
+\end{itemize}
+
+\section{Simplifications applied}
+\textbf{Three dead-code removals.} A dead \texttt{open Real} (every \texttt{exp} in code is \texttt{Real.exp};
+the only bare \texttt{exp} is in comments), a semantically-inert \texttt{rw [show (c*x\^{}2) = c*x\^{}2 from rfl]}
+no-op in the coercivity proof, and --- the interesting one --- a genuinely-unused
+\texttt{import Laplace.OneD.Localisation} (this file references nothing from Localisation, which exports only
+\texttt{harmonic\_tail\_*} lemmas).
+
+The import is the point worth dwelling on. This is a \emph{foundation} file: the whole anharmonic arc imports
+it, and Localisation is \emph{not} re-provided by the other import (Harmonic), so removing it shrinks
+Anharmonic's import closure. A single-module \texttt{lake build Laplace.OneD.Anharmonic} would say nothing
+about whether some consumer was relying on obtaining Localisation \emph{transitively through} Anharmonic. So
+the removal was arbitrated by a \textbf{full project build}: \texttt{lake build} went green at $8306$ jobs
+(unchanged from baseline), with every consumer --- \texttt{AnharmonicGibbsRegularity},
+\texttt{HarmonicCrossSuscDeriv}, and the rest of the arc --- rebuilding successfully. That is the definitive
+evidence that no downstream file depended on the transitive import. All nine declarations stayed
+byte-identical; GPT-affirmed; fast-forward-merged.
+
+GPT's remaining suggestions were declined: the \texttt{\_hlam} parameter is already underscore-marked as
+intentionally unused (and is signature-frozen anyway), and the rest were tactic-golf (a \texttt{simpa} for the
+commutativity rewrite, compressing the \texttt{exp\_add} step, tightening the square-completion proof).
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{For a redundant import on a foundation file, the full build is the honest test --- and it is
+    worth running.} The single-module rebuild that suffices for a dead \texttt{open} (file-local) or a
+    leaf-file import is \emph{not} enough when the file has consumers and the import is not re-provided by a
+    sibling: a consumer could compile only because the import reached it transitively. A green full build
+    settles it conclusively, and clears the hazard that kept import-removal out of scope on the
+    \reviewref[Multi/Basic review]{2026-06-05-review-laplace-multi-basic}.
+  \item \textbf{Reviewing a foundation after its consumers is the right order for an arc.} By the time this
+    file was reviewed, its dependents were already audited; confirming the base is sound (and trimming its
+    cruft under a full build) closes the arc with confidence flowing both directions.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The 1D non-cumulant layer still has tractable never-reviewed files (\texttt{Harmonic.lean},
+    \texttt{Localisation.lean}, the J-function and \texttt{Quartic}/\texttt{Sextic}/\texttt{Monomial} families);
+    the \texttt{Multi/Covariance*} trio remains the large sectioned-approach target.
+\end{itemize}
+
+\end{document}
