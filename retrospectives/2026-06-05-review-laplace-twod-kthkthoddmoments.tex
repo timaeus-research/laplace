@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the mixed odd-moment vanishing --- a clean file, an empty bucket}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/KthKthOddMoments.lean}: the two parity-completion
+theorems stating that a mixed 2D moment $\langle x^a y^b\rangle_{2D}$ on the separable monomial
+potential vanishes whenever at least one of $a,b$ is odd. Result: \textbf{a clean fidelity pass with
+no edits} --- the file carries no dead \texttt{open}, no dead import, and no no-op tactic. The
+reliably-safe simplification bucket was empty, and that is the result.
+\end{abstract}
+
+\section{Setting}
+This is the odd-moment companion to the kthkth lift trio
+(\reviewref[partition]{2026-06-05-review-laplace-twod-kthkthpartition},
+\reviewref[numerator]{2026-06-05-review-laplace-twod-kthkthnumerator},
+\reviewref[moment]{2026-06-05-review-laplace-twod-kthkthmoment}): where the trio computes the
+\emph{even}-moment asymptotics, this file records that the \emph{odd} ones vanish identically. It
+sits on the same factorisation root
+(\reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable}) and 1D base
+(\reviewref[MonomialPotential]{2026-06-05-review-laplace-oned-monomialpotential}).
+
+\section{What was reviewed}
+Two theorems: \texttt{gibbsExpectation\_kthKth\_odd\_pow\_pow\_eq\_zero}
+($\langle x^{2j_1+1}y^n\rangle_{2D}=0$ for any $n$) and
+\texttt{gibbsExpectation\_kthKth\_pow\_odd\_pow\_eq\_zero}
+($\langle x^m y^{2j_2+1}\rangle_{2D}=0$ for any $m$). Each factorises the 2D expectation into a
+product of two 1D ones and kills the odd factor via
+\texttt{gibbsExpectation\_kthPotential\_odd}; the product is zero by \texttt{zero\_mul}/%
+\texttt{mul\_zero}.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The load-bearing check is that the \emph{non-odd} factor needs only
+\emph{integrability} --- supplied by \texttt{kth\_integrable\_pow\_pot} for \emph{every} natural
+exponent, not just even ones --- so each theorem genuinely holds for arbitrary $n$ (resp.\ $m$),
+and the two together cover every ``at least one odd'' case, including odd--odd (apply whichever
+side's exponent is odd; if both, either). The per-theorem docstrings' ``regardless of the parity of
+$n$/$m$, including odd--odd'' is exactly justified.
+
+One report-only prose nit: the module-level docstring states the vanishing without restating the
+$t>0$ hypothesis that the formal theorems carry (and the proofs use, via partition positivity). The
+$\langle\cdot\rangle_{2D,t}$ notation carries the $t$, and the result \emph{is} true for all $t>0$,
+so this is terse rather than wrong --- left as is, consistent with the line drawn on the
+\reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable} docstring-completeness notes.
+
+\section{Simplifications applied}
+\textbf{None --- the bucket was empty.} Unlike its three trio siblings, this file opens \emph{only}
+\texttt{MeasureTheory} (load-bearing for bare \texttt{Integrable}); there is no dead \texttt{open
+Real} to trim, both imports are used, the (correctly absent) Asymptotics import is not present to
+remove, and the final \texttt{simp} does real work (\texttt{zero\_mul}/\texttt{mul\_zero}). The
+reviewer's only suggestions were proof-golf (\texttt{simpa}-shorten the $n=0$ integrability blocks;
+compress the closing \texttt{rw}\,;\,\texttt{simp}), declined as out of the signature-preserving
+dead-code safe class. No worktree was created.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{An empty reliably-safe bucket is a valid --- and common --- outcome.} A file written
+    without the accreted dead \texttt{open Real} of its siblings yields a clean fidelity pass and
+    nothing to land; manufacturing a mutation to ``show work'' would violate the review's safety
+    contract. The result is the clean pass plus the report-only prose nit.
+  \item \textbf{The sibling-prediction cuts both ways.} The trio legs all carried a dead
+    \texttt{open Real}; this companion did not. A copy-paste family tends to share dead code, but
+    membership is not destiny --- the per-file check (here: the open line literally reads
+    \texttt{open MeasureTheory}) still governs.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The $(2,3)$ \texttt{QuarticSextic*} specialisations (Partition/Numerator/Moment/OddMoments
+    and the \texttt{QuarticSextic}/\texttt{QuarticSexticMoments} cores) remain --- some near-certain
+    dead-\texttt{open Real} repeats, some (like this one) possibly already clean.
+  \item Proof-golf forward tide (shared across the whole kthkth family): the \texttt{simpa}
+    integrability shortenings.
+\end{itemize}
+
+\end{document}
