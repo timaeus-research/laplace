@@ -19,7 +19,7 @@ so `κ_2, κ_3, κ_4` are the second, third and fourth derivatives of `log Z` at
 narrative loop with `logPartition_hasDerivAt` (the CGF's first derivative).
 -/
 
-open MeasureTheory Topology
+open Topology
 
 namespace Laplace.OneD
 
