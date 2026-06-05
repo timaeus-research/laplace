@@ -1,10 +1,5 @@
 import Laplace.Gibbs
 import Laplace.OneD.MonomialPotential
-import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
-import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
-import Mathlib.MeasureTheory.Integral.Gamma
-import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
-import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
 /-!
 # Pure sextic 1D Gibbs moments
@@ -72,7 +67,7 @@ $k = 3$ specialisation of `kth_integrable_pow`. -/
 theorem sextic_integrable_pow (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) := by
   have h := kth_integrable_pow (k := 3) (by norm_num) n ht
-  convert h using 4 <;> norm_num
+  convert h using 4
 
 /-- Polynomial-times-sextic-Gibbs integrability, in `sexticPotential` form.
 $k = 3$ specialisation of `kth_integrable_pow_pot`. -/
