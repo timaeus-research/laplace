@@ -56,7 +56,7 @@ formalised on `tide/harmonic-gibbsregularity` in laplace, branched off
 `sri/projects/patterning/tide-log/2026-05-06-tide-harmonic-gibbsregularity.md`.
 -/
 
-open MeasureTheory Real Filter Topology
+open MeasureTheory
 
 namespace Laplace.OneD
 
