@@ -20,8 +20,7 @@ Each bound has the form `≤ C(δ, λ, t) · exp(-(λ t) δ² / 2)`, with
 `C(δ, λ, t)` a polynomial in `1/(λ t)`. This is `o(t^{-N})` for every `N`.
 -/
 
-open Real MeasureTheory Set
-open scoped Nat
+open MeasureTheory Set
 
 namespace Laplace.OneD
 
