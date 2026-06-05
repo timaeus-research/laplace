@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the quartic--sextic numerator specialisation --- one dead open, MeasureTheory stays}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/QuarticSexticNumeratorAsymptotic.lean}: the
+$(k_1,k_2)=(2,3)$ specialisation of the unnormalised 2D numerator
+$\int\!\int x^{2j}y^{2k}e^{-tL}$. Result: \textbf{a clean fidelity pass with one dead-open removal}
+--- only \texttt{open Real}. Unlike the partition specialisation reviewed just before it, here
+\texttt{open MeasureTheory} stays load-bearing, because the numerator is stated as a bare
+$\int$.
+\end{abstract}
+
+\section{Setting}
+The numerator counterpart of the
+\reviewref[partition specialisation]{2026-06-05-review-laplace-twod-quarticsexticpartition}, and
+the $(2,3)$ instance of the
+\reviewref[generic numerator lift]{2026-06-05-review-laplace-twod-kthkthnumerator}. It uses
+\texttt{integral\_separable\_addSeparable} and the 1D \texttt{quartic\_moment\_even}/%
+\texttt{sextic\_moment\_even} to package the closed form, rescaled limit, and equivalence.
+
+\section{What was reviewed}
+Three public theorems plus the constant
+$C'(j,k)=\tfrac16\,24^{(2j+1)/4}\,720^{(2k+1)/6}\,\Gamma(\tfrac{2j+1}{4})\,\Gamma(\tfrac{2k+1}{6})$,
+the $(2,3)$ instance of the generic \texttt{kthKthNumeratorConst}, with exponent
+$-((2j+1)/4+(2k+1)/6)$.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no theorem-level mismatch.} Constant and exponent correct, the exact theorem carries
+\texttt{ht : 0 < t}, and the asymptotic theorems use eventual positivity at \texttt{atTop}. One
+report-only note, identical to the partition specialisation: the module docstring states the exact
+$t$-dependent identity without restating $t>0$. Terse-but-true narrative, left as is --- the
+recurring \texttt{TwoD/} module-prose pattern, best handled by a single batched hygiene tide.
+
+\section{Simplifications applied}
+\textbf{One dead \texttt{open}.} \texttt{open Real} is dead (all \texttt{Real.*} qualified, bare
+$t\,\hat{}\,(\text{real})$ is \texttt{rpow}). \textbf{And the contrast with the partition file:}
+here \texttt{open MeasureTheory} is \emph{kept} --- the numerator's statement contains a bare
+$\int z:\mathbb R\times\mathbb R,\dots$, so the notation needs the open. The per-file check (the
+partition file used the \texttt{partitionFunction} def, this one a bare integral) is exactly what
+distinguishes ``one dead open'' here from ``two'' there. Module green at $2702$ jobs, no warnings,
+signatures byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's \texttt{show}$\to$\texttt{change} suggestions were declined as proof-golf.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{Two adjacent specialisations, two different dead-open counts.} The partition file
+    (\texttt{partitionFunction} def, no bare $\int$) had \texttt{open MeasureTheory} dead; this
+    numerator file (bare $\int$) keeps it. The dead-open verdict tracks \emph{what notation the
+    statement actually uses}, not the file's family --- and a one-line grep for bare $\int$ settles
+    it before the build does.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Remaining \texttt{QuarticSextic*}: \texttt{MomentAsymptotic} (Gibbs moment --- likely bare
+    expectation, \texttt{open MeasureTheory} possibly dead like the partition file), and the
+    closed-form cores \texttt{QuarticSextic}/\texttt{QuarticSexticMoments}/%
+    \texttt{QuarticSexticOddMoments}.
+  \item Batched hygiene tide: the \texttt{t>0} module-docstring clauses across \texttt{TwoD/}, plus
+    the \texttt{show}$\to$\texttt{change} proof-golf.
+\end{itemize}
+
+\end{document}
