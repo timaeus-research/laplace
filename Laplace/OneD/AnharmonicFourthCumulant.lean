@@ -23,7 +23,7 @@ gives `κ_4`. The three layers are stitched together with
 `Filter.EventuallyEq.deriv`.
 -/
 
-open MeasureTheory Topology
+open Topology
 
 namespace Laplace.OneD
 
