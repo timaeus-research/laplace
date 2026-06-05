@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the mean FDT asymptote $\to-1/\lambda$, and a clean cross-library bridge}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicFDTMeanAsymptotic.lean}: the large-$t$ first-cumulant FDT
+asymptote $\partial_h\langle x\rangle_h|_0\to-1/\lambda$, plus two definitional bridges identifying the
+abstract \texttt{Threepoint} Gibbs expectation/covariance at $h=0$ with the concrete \texttt{Laplace} ones.
+Result: \textbf{a clean fidelity pass, no edits} --- the bridges, the sign chain, and the value all check out.
+\end{abstract}
+
+\section{Setting}
+The FDT capstone proved $\partial_h\langle x\rangle_h|_0=-t\,\mathrm{Cov}_0(x,x)$ for the anharmonic Gibbs
+measure. Its $t\to\infty$ asymptote needs the variance asymptotic $t\,\mathrm{Cov}_0(x,x)\to1/\lambda$ --- but
+that asymptotic is phrased with the concrete \texttt{Laplace.gibbsCov} while the FDT identity uses the
+abstract \texttt{Threepoint.gibbsCov}. This file supplies the bridge and lands the asymptote.
+
+\section{What was reviewed}
+Three public theorems: the expectation bridge, the covariance bridge, and the headline asymptote.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.}
+\begin{itemize}[noitemsep]
+  \item \textbf{Bridge (expectation)}: at $h=0$ with $A=\mathrm{id}$, the perturbation $h\!\cdot\!A=0$, so both
+    \texttt{Threepoint.gibbsExp} and \texttt{Laplace.gibbsExpectation} reduce to the same normalised Lebesgue
+    integral $\int\varphi\,e^{-tL}/\int e^{-tL}$ (\texttt{unfold} + \texttt{simp [zero\_mul, add\_zero]}).
+  \item \textbf{Bridge (covariance)}: $\mathrm{Cov}=E[\varphi\psi]-E[\varphi]E[\psi]$, so rewriting the three
+    \texttt{gibbsExp} occurrences by the expectation bridge reduces the \texttt{Threepoint} covariance at
+    $h=0$ to the \texttt{Laplace} one.
+  \item \textbf{Asymptote}: the sign chain $t\,\mathrm{Cov}\to1/\lambda\Rightarrow-(t\,\mathrm{Cov})\to-1/\lambda$
+    (\texttt{.neg} + $-(1/\lambda)=-1/\lambda$), composed with the FDT identity
+    ($\partial_h\langle x\rangle|_0=-t\,\mathrm{Cov}$, via \texttt{.deriv} and the covariance bridge), gives
+    $\partial_h\langle x\rangle|_0\to-1/\lambda$ --- the harmonic FDT slope.
+\end{itemize}
+
+\section{Simplifications applied}
+None. GPT's (B) findings are all proof golf (\texttt{simpa} for the two bridges, the \texttt{hlim} \texttt{heq},
+and the final congruence); declined. No redundant hypothesis, no confident dead import/open.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A cross-library bridge at the unperturbed point is a clean \texttt{unfold}+\texttt{simp}.}
+    Two formalisations of the same Gibbs object (an abstract perturbed \texttt{Threepoint.gibbsCov} and a
+    concrete \texttt{Laplace.gibbsCov}) coincide at $h=0$ because the perturbation term vanishes; the bridge is
+    a one-line definitional reduction, and it is exactly what lets an asymptotic phrased in one library be
+    composed with an identity phrased in the other. Such bridges are low-risk and high-leverage --- worth a
+    quick independent confirmation that the $h=0$ specialisation really collapses both sides identically.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The laplace OneD anharmonic arc has many never-reviewed siblings (the second/third cumulant, the
+    cumulants-from-log-partition, the general-$h$ susceptibility, and more) --- a fresh-context review arc.
+\end{itemize}
+
+\end{document}
