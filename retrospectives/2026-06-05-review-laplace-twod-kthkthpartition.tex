@@ -1,0 +1,99 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the generic-$(k_1,k_2)$ partition lift, and a doc bullet that named the wrong theorem}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/KthKthPartitionAsymptotic.lean}: the generic-%
+$(k_1,k_2)$ asymptotic of the 2D separable monomial partition function, the first leg of the
+``2D lift'' trio built on the just-reviewed \reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable}
+root. Result: \textbf{a sound formalisation with one dead-code removal and one docstring-accuracy
+fix} --- a dead \texttt{open Real}, and a module bullet that mislabelled which theorem produces the
+closed form (and called a fractional power-law a ``polynomial'').
+\end{abstract}
+
+\section{Setting}
+This file instantiates the four-step ``2D lift'' pattern documented in the seabed
+\texttt{CLAUDE.md}: factorise the 2D quantity into a product of two 1D ones (via
+\reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable}), substitute the 1D closed
+form, peel the $t$-dependence, and package as a rescaled \texttt{Tendsto} and an
+\texttt{IsEquivalent}. It lifts the fixed $(k_1,k_2)=(2,3)$ quartic--sextic partition file to
+parametric $(k_1,k_2)$. Reviewing it right after its factorisation root made the fidelity check
+fast --- the only genuinely new content is the composite constant and the exponent arithmetic.
+
+\section{What was reviewed}
+Five public declarations: the composite constant
+$C(k_1,k_2)=\tfrac1{k_1k_2}(2k_1)!^{1/(2k_1)}(2k_2)!^{1/(2k_2)}\Gamma(\tfrac1{2k_1})\Gamma(\tfrac1{2k_2})$,
+and the four packaged theorems --- the exact factorisation $Z_{2D}=Z_{L_{k_1}}Z_{L_{k_2}}$, the
+\texttt{const}$\cdot t^{-1/(2k_1)-1/(2k_2)}$ form, the rescaled limit $\to C$, and the asymptotic
+equivalence. The corpus was the file docstrings, the \texttt{CLAUDE.md} architecture section, the
+factorisation root, the 1D base (\reviewref[MonomialPotential]{2026-06-05-review-laplace-oned-monomialpotential}),
+and the $(2,3)$ sibling it lifts.
+
+\section{Fidelity / soundness findings}
+\textbf{The mathematics is sound.} The composite constant is exactly the product of the two 1D
+\texttt{partitionFunction\_kthPotential} constants; the exponent $-1/(2k_1)-1/(2k_2)$ is correct in
+both the exact and equivalence statements (and its positive mirror in the rescaling); the
+hypotheses sit where they should ($t>0$ for the exact equalities, only $k_i\ge1$ for the
+\texttt{atTop} statements).
+
+\textbf{One docstring inaccuracy, fixed.} The module ``Headline results'' bullet for
+\texttt{partitionFunction\_kthKth\_eq} read ``exact closed form $Z_{2D}=Z_{L_{k_1}}Z_{L_{k_2}}$
+\emph{specialised to a scalar polynomial-in-$t$ form}.'' Two errors: (i) that theorem proves
+\emph{only} the factorisation --- the scalar \texttt{const}$\cdot t^{(\dots)}$ form is the
+\emph{next} theorem (\texttt{partitionFunction\_kthKth\_eq\_const\_mul\_rpow}), which the bullet
+beneath it already describes; (ii) the closed form is a \emph{fractional} power-law
+$t^{-1/(2k_1)-1/(2k_2)}$, not a polynomial. Corrected to ``exact factorisation \dots\ into the two
+1D partitions.'' Comment-only, signatures byte-identical.
+
+\section{Simplifications applied}
+\textbf{One dead \texttt{open}.} Every \texttt{Real.exp}/\texttt{Real.div\_rpow}/%
+\texttt{Real.rpow\_*}/\texttt{Real.Gamma} is qualified, and the bare $t\,\hat{}\,(\text{real})$ is
+the \texttt{HPow}/\texttt{rpow} instance, which does not require \texttt{open Real}; the other four
+opens (\texttt{MeasureTheory} for bare \texttt{Integrable}, \texttt{Filter} for
+\texttt{Tendsto}/\texttt{atTop}, \texttt{Asymptotics} for $\sim[\mathrm{atTop}]$, scoped
+\texttt{Topology} for $\mathcal N$) are load-bearing. Removal: module green at $2700$ jobs, no
+warnings. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's remaining suggestions (\texttt{simpa}-shorten the $n=0$ integrability
+sub-proofs; replace the inline \texttt{show \dots\ by ring} equality-proofs inside \texttt{rw} with
+\texttt{change}) were declined as proof-style refactors: notably, \texttt{change} cannot replace an
+equality \emph{proof term} passed to \texttt{rw}, and a term-mode \texttt{show} inside \texttt{rw}
+is idiomatic and not what \texttt{linter.style.show} flags, so that one is not even
+warning-clearing.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A ``headline results'' bullet can name the wrong theorem.} When a file lists several
+    closely-related theorems (factorisation, then the closed form, then the limit), a summary bullet
+    can attach one theorem's description to its neighbour. Check each bullet against the declaration
+    it names, not against the file's overall thrust --- and watch loose words like ``polynomial''
+    for a quantity that is actually a fractional power.
+  \item \textbf{Reviewing a lift right after its root is cheap and high-confidence.} With
+    \reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable} just reviewed, this lift's
+    only new surface was the constant and the exponent algebra; the factorisation step was already
+    trusted. Dependency-ordered review keeps each fidelity check small.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining legs of the lift trio (\texttt{KthKthNumeratorAsymptotic},
+    \texttt{KthKthMomentAsymptotic}, \texttt{KthKthOddMoments}) and the $(2,3)$
+    \texttt{QuarticSextic*} specialisations are now reviewable with the same template --- and a
+    near-certain candidate for the same dead \texttt{open Real} (per the
+    \reviewref[Quartic$\to$Sextic prediction]{2026-06-05-review-laplace-oned-sextic} pattern).
+  \item Proof-golf forward tide: the \texttt{simpa} integrability shortenings the reviewer flagged.
+\end{itemize}
+
+\end{document}
