@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the first rung of the cumulant generating function}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicLogPartitionDeriv.lean}: the cumulant generating
+function $K(h)=\log Z(h)$ for the anharmonic 1D Gibbs measure, and its first derivative at the origin,
+$K'(0)=Z'(0)/Z(0)=\langle-(tx)\rangle_0$ --- the unperturbed Gibbs mean of the perturbation observable, i.e.\
+the first connected cumulant. Result: \textbf{a clean fidelity pass, no edits}. Every advertised result
+matches; the only simplification proposals were tactic-golf and were declined; the lone fidelity note is a
+benign forward-reference in the module docstring.
+\end{abstract}
+
+\section{Setting}
+The anharmonic partition-derivative arc built the perturbed partition $Z(h)=\int e^{-t(L+hx)}\,dx$ and its
+$h$-derivatives $G_n$ (with $G_0=Z$, $\frac{d}{dh}G_n=G_{n+1}$ on $|h|<1$). This file opens the
+\emph{connected-cumulant} direction proper: it forms $K(h)=\log Z(h)$, the cumulant generating function, and
+proves the first rung. It is the foundation the second/third-cumulant files
+(\reviewref[$\kappa_2$]{2026-06-05-review-laplace-anharmonic-second-cumulant},
+\reviewref[$\kappa_3$]{2026-06-05-review-laplace-anharmonic-third-cumulant}) and the FDT-mean asymptotic
+(\reviewref[mean asymptotic]{2026-06-05-review-laplace-anharmonic-fdt-mean-asymptotic}) sit on top of. It is
+the seventh consecutive file of the laplace one-dimensional anharmonic arc to be reviewed, and the seventh
+clean fidelity pass.
+
+\section{What was reviewed}
+Four public theorems:
+\begin{itemize}[noitemsep]
+  \item \texttt{weightedPartition\_zero\_zero\_eq}: $Z(0)=\int e^{-tL}$ (the $n=0,h=0$ specialisation).
+  \item \texttt{weightedPartition\_zero\_zero\_pos}: $Z(0)>0$.
+  \item \texttt{logPartition\_hasDerivAt}: $K'(0)=Z'(0)/Z(0)$, as a \texttt{HasDerivAt} with value
+    $G_1(0)/G_0(0)$.
+  \item \texttt{logPartition\_deriv\_eq\_gibbsExp\_mean}: $K'(0)=\langle-(tx)\rangle_0$, identifying the
+    derivative with the \texttt{Threepoint.gibbsExp} of the observable $u(x)=-(tx)$ at $h=0$.
+\end{itemize}
+Checked against the file docstring, the tide-log and retrospective that produced it, the partition-derivative
+dependencies ($G_n$, \texttt{weightedPartition\_hasDerivAt}, \texttt{iteratedDeriv\_weightedPartition\_zero},
+the moment-normalisation bridge \texttt{iteratedDeriv\_partition\_div\_eq\_gibbsExp} reviewed earlier in this
+sweep), and the cross-seabed \texttt{Threepoint.gibbsExp} definition.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch on any of the four results.}
+\begin{itemize}[noitemsep]
+  \item The first-rung chain composes cleanly: \texttt{HasDerivAt.log} applied to $G_0$'s derivative
+    ($=G_1(0)$) with the nonvanishing denominator $Z(0)>0$ gives $K'(0)=G_1(0)/G_0(0)$; the corollary then
+    rewrites $G_1(0)=\mathrm{iteratedDeriv}\,1\,G_0\,0$ and applies the moment-normalisation bridge at $n=1$,
+    so the quotient becomes $\mathrm{gibbsExp}$ of $(-(tx))^1$, and \texttt{pow\_one} closes it.
+  \item No sign error, no off-by-one in the index $n$, and no observable confusion: the RHS observable is
+    exactly $-(tx)$ (not $x$, not $(-(tx))^n$). Unfolding $\mathrm{gibbsExp}$ at $h=0$ gives
+    $(\int -(tx)e^{-tL})/(\int e^{-tL})$, matching $G_1(0)/G_0(0)$ literally.
+  \item \textbf{Correctly the \emph{first} cumulant.} The one place a CGF formalisation can go wrong is
+    conflating the first derivative (the raw mean) with a higher cumulant. GPT confirmed the statement is the
+    raw mean of $u$, which \emph{is} the first connected cumulant --- correctly stated.
+\end{itemize}
+
+The sole fidelity note is benign and was \textbf{not escalated}: the docstring frames the CGF's derivatives
+as ``the connected cumulants'' and calls the file ``the foundation for the higher connected cumulants
+$\kappa_2,\kappa_3,\kappa_4$''. GPT observed those higher cumulants are not proved \emph{here}. But the
+docstring does not claim they are --- it says ``This file lands the first rung'' and explicitly forward-refers
+to the higher cumulants as future work this is the \emph{foundation} for. The framing is accurate motivation
+(the derivatives of $\log Z$ genuinely are the connected cumulants), not drift. No edit warranted.
+
+\section{Simplifications applied}
+None. All four of GPT's proposals were tactic-golf --- collapse \texttt{weightedPartition\_zero\_zero\_eq} to
+\texttt{simp [weightedPartition]}; compress the positivity to a \texttt{simpa}; inline the \texttt{hZ}/\texttt{hne}
+locals in \texttt{logPartition\_hasDerivAt}; drop the one-use \texttt{hid} rewrite in the corollary. None
+removes dead code, subsumes a hand-rolled argument with a Mathlib lemma, or drops a redundant hypothesis: the
+named locals are all \emph{used} (just inline-able), and there is no dead import or open. Per this review
+programme's standing discipline these lateral, build-break-prone compressions are declined --- GPT's
+\texttt{simp}/\texttt{simpa} lemma sets routinely miss an associativity or namespace detail, and the payoff
+(a few saved lines, no change to any statement) does not justify mutating a landed, green proof. The file was
+left byte-identical.
+
+GPT also correctly affirmed, unprompted, that \texttt{open MeasureTheory} is load-bearing here (the public
+statements use unqualified \texttt{Measure} and \texttt{volume}). This is the right call --- and a useful
+contrast with the two preceding reviews, where the dead-open heuristic misfired in both directions.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A clean foundation under a reviewed superstructure is worth reviewing last, not first.} This
+    file is the dependency the $\kappa_2$, $\kappa_3$, and FDT-mean files all consume; reviewing it after them
+    confirms the base they were checked against is itself sound, closing the arc's review from the top down.
+  \item \textbf{When the reliably-safe simplification bucket is empty, an empty bucket is the result.} Seven
+    consecutive clean passes on this arc have produced zero landed simplifications --- because every proposal
+    was tactic-golf, and golf is not a simplification finding under the statement-invariance contract. The
+    discipline holds: report the clean pass, do not manufacture a mutation to look productive.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining unreviewed anharmonic-arc files --- \texttt{AnharmonicCumulantsLogPartition} (the genuine
+    higher-cumulant route via $(\log Z)^{(n)}$) and \texttt{AnharmonicCumulantMomentForms} --- would complete
+    the CGF-route review and are the natural next targets.
+\end{itemize}
+
+\end{document}
