@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the generic-$k$ J-function, and a docstring that out-claimed its own hypotheses}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/JFunctionMonomial.lean}: the generic-$k$ J-function asymptotic
+$t^{1/(2k)}J_k(t)\to\pi(0)\cdot\tfrac1k\cdot((2k)!)^{1/(2k)}\,\Gamma(1/(2k))$ that folds the quartic and sextic
+special cases into one parametric theorem. Result: \textbf{a clean fidelity pass with five cleanups} --- a
+\texttt{show}$\to$\texttt{change}, two redundant imports, and two docstring inaccuracies (a hypothesis the
+header over-stated, and a lemma-usage miscount).
+\end{abstract}
+
+\section{Setting}
+This is the abstraction the \reviewref[sextic J-function]{2026-06-05-review-laplace-oned-jfunction-sextic}
+specialises (and the quartic one should). Its design goal was the \emph{minimal} hypothesis class --- the prior
+need only be \texttt{AEMeasurable}, \texttt{ContinuousAt 0}, and globally bounded --- and the review's most
+interesting finding was that the module docstring did not reflect that achievement.
+
+\section{What was reviewed}
+Seven declarations: the universal inequality $x^2\le1+x^{2k}$, monomial-Gibbs integrability, the substitution
+lemma, the dominator integrability, the centred DCT theorem, the closed-form partition function, and the
+asymptotic corollary.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The partition closed form $(1/k)((2k)!/t)^{1/(2k)}\Gamma(1/(2k))$ is correct (the
+$2\cdot(1/p_R)=2/(2k)=1/k$ step), the substitution ($a^{2k}=t$, $|a^{-1}|=1/a$ cancelling the outer $a$) is
+right, and the limit constant matches. The load-bearing check was the DCT \emph{measurability} step: with only
+\texttt{AEMeasurable} on the prior, the file gets \texttt{AEStronglyMeasurable} of $u\mapsto\pi(u/t^\alpha)$ by
+composing with the quasi-measure-preserving scaling $u\mapsto(t^\alpha)^{-1}u$ --- so \emph{no} global
+continuity is needed, and only \texttt{ContinuousAt 0} is used later for the pointwise limit. GPT confirmed this
+works as claimed; it is exactly why the sextic specialisation could inherit the weak hypotheses.
+
+\section{Simplifications applied}
+\textbf{Five.}
+\begin{itemize}[noitemsep]
+  \item A \texttt{show}$\to$\texttt{change} on the reshaping goal in the measurability branch (cleared a
+    standing \texttt{linter.style.show} warning --- the same one flagged from the sextic review).
+  \item Two redundant imports: \texttt{Laplace.Gibbs} (the file references no \texttt{partitionFunction}/%
+    \texttt{gibbsExpectation}/\texttt{gibbsCov} --- \texttt{kth\_partition} is stated as a raw integral) and
+    \texttt{Gamma.Basic} (\texttt{Real.Gamma} arrives transitively via \texttt{Integral.Gamma}).
+  \item Two docstring accuracy fixes. The module header advertised a ``continuous, globally bounded prior'',
+    but the theorems take the weaker \texttt{AEMeasurable} $+$ \texttt{ContinuousAt 0} $+$ bound --- the
+    \emph{whole point} of the refactor that produced this file. (The per-theorem docstring was already precise;
+    only the module header lagged.) And the strategy prose claimed the master Gamma-integral lemma was ``used
+    twice'', when in fact it is used once (the partition) and integrability is a separate
+    \texttt{integrable\_exp\_neg\_mul\_sq} argument.
+\end{itemize}
+Foundation file (two consumers); arbitrated by a \textbf{full project build}, green at $8306$ jobs with both
+consumers rebuilt, three public signatures byte-identical, file now warning-free; GPT affirmed all five.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A module header can lag the very refactor that file embodies.} This file exists to provide the
+    minimal-hypothesis J-function, yet its top docstring still described the old ``continuous'' hypothesis ---
+    while the per-theorem docstrings, written later, were accurate. When a file's purpose is a hypothesis
+    weakening, the summary at the top is a prime spot for stale over-statement; check it against the actual
+    signatures.
+  \item \textbf{``Used twice'' is a checkable claim.} Prose that counts how often a lemma is invoked, or names
+    which lemma does the work, is verifiable by reading the proof --- and here it was wrong (the master rpow
+    lemma once, Gaussian comparison separately). Strategy prose that names mechanisms should be audited like a
+    theorem statement, not skimmed.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \textbf{Forward tide (carried from the sextic review):} migrate \texttt{JFunctionQuartic} to specialise
+    this generic file, weakening its hypothesis from global \texttt{Continuous} to
+    \texttt{AEMeasurable}~$+$~\texttt{ContinuousAt 0}.
+  \item \textbf{Next review:} \texttt{JFunctionAsymptoticEquivalence.lean} (the remaining J-function file, and
+    this file's other consumer).
+\end{itemize}
+
+\end{document}
