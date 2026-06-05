@@ -44,7 +44,7 @@ Tide step 3, formalised on `tide/universal-scaling` (branched off
 `sri/projects/automation/log/2026-05-01-tide-universal-scaling.md`.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 
 namespace Laplace.OneD
 
