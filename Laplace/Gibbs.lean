@@ -24,7 +24,7 @@ defines the objects and proves only basic algebraic identities.
 * The covariance has no special notation since it is rarely used in isolation.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 
 namespace Laplace
 
