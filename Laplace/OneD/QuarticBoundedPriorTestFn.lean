@@ -1,5 +1,4 @@
 import Laplace.OneD.QuarticBoundedPrior
-import Mathlib.Analysis.Asymptotics.Defs
 
 /-!
 # Bounded-prior expectation against a continuous test function (in progress)
@@ -38,7 +37,7 @@ commit `1e3802a`. Tide log:
 `sri/projects/grammar/tide-log/2026-05-06-tide-bounded-prior-test-function.md`.
 -/
 
-open MeasureTheory Filter Topology Set
+open MeasureTheory Set
 
 namespace Laplace.OneD
 
