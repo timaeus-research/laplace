@@ -9,10 +9,16 @@ vanishing at `0` with gradients `a = ∇φ(0)`, `b = ∇ψ(0)`,
 
   `Cov_t[φ, ψ] = (1/t) · ⟨a, Σ b⟩ + O(t⁻²)`.
 
-This file states and (eventually) proves the explicit-rate version
+This file proves the **weak-rate** explicit form (headline
+`gibbsCov_first_order_rate_weak`)
 
   `∃ K T₀, 1 ≤ T₀ ∧ ∀ t ≥ T₀,
-    |t · gibbsCov V t φ ψ - ⟨a, Hinv b⟩| ≤ K / t`.
+    |t · gibbsCov V t φ ψ - ⟨a, Hinv b⟩| ≤ K / √t`,
+
+i.e. `Cov_t = (1/t)⟨a,Σb⟩ + O(t⁻³ᐟ²)`. The **sharp** `O(t⁻²)` form
+(the `≤ K / t` bound above) is `gibbsCov_first_order_rate_sharp` in
+`Laplace.Multi.CovarianceSharp`, which kills the half-power correction
+terms by odd-Gaussian vanishing (step 4 below, sharp track only).
 
 ## Strategy (per GPT-5.5 Pro Phase 5 memo)
 
@@ -412,15 +418,15 @@ theorem rescaledPartition_ge_half_gaussianZ
   have habs_le := abs_le.mp hpart'
   linarith
 
-/-- **Linear-correction bound (in-progress, contains internal sorries)**:
+/-- **Linear-correction bound**:
 for the linear part `(1/√t) · ⟨a, u⟩` of the rescaled observable, the
 correction `∫ ⟨a, u⟩ · gW · (exp(-s_t) - 1) du` is `O(1/√t)`.
 
 The GPT-5.5 Pro "linear correction" bound from Q5. The proof structure
 mirrors the partition asymptote with an extra `|⟨a, u⟩| ≤ A · ‖u‖`
 factor; integrability of `dot a u · rescaledWeight` and `dot a u · gW`
-remain as internal sorries (each follows from `‖u‖ · rescaledWeight`
-integrability + the `abs_dot_le_l1_mul_norm` bound). -/
+follow from `‖u‖ · rescaledWeight` integrability plus the
+`abs_dot_le_l1_mul_norm` bound. -/
 private lemma abs_integral_dot_mul_rescaled_weight_correction_le
     (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a : ι → ℝ)
@@ -700,104 +706,6 @@ private lemma abs_integral_dot_mul_rescaled_weight_correction_le
               (by positivity : (0:ℝ) ≤ 2 * A)
           linarith
     _ = (A * Cs * M4 + 2 * A * M1) / Real.sqrt t := by field_simp
-
-/-- **Integrability companion** for the bilinear correction integrand:
-`dot a · dot b · gW · (exp(-s_t)-1)` is integrable. -/
-private lemma integrable_dot_dot_mul_rescaled_weight_correction
-    (V : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
-    (a b : ι → ℝ)
-    [Nonempty ι]
-    (hV : PotentialApprox V H)
-    (hGauss : LaplaceCovHypotheses H Hinv)
-    {t : ℝ} (ht_pos : 0 < t) :
-    MeasureTheory.Integrable (fun u : ι → ℝ =>
-      dot a u * dot b u * gaussianWeight H u *
-        (Real.exp (-(rescaledPerturbation V H t u)) - 1)) := by
-  set c := hV.coercive_const
-  have hc_pos : 0 < c := hV.coercive_const_pos
-  have h_coer := hV.coercive_bound
-  set A : ℝ := ∑ i, |a i| with hA_def
-  set B : ℝ := ∑ i, |b i| with hB_def
-  have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
-  have hB_nn : 0 ≤ B := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
-  have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
-    unfold dot
-    exact continuous_finset_sum _
-      (fun i _ => continuous_const.mul (continuous_apply i))
-  have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
-    unfold dot
-    exact continuous_finset_sum _
-      (fun i _ => continuous_const.mul (continuous_apply i))
-  have h_lin1 : MeasureTheory.Integrable (fun u : ι → ℝ =>
-      dot a u * dot b u * (gaussianWeight H u *
-        Real.exp (-(rescaledPerturbation V H t u)))) := by
-    have h_dom : MeasureTheory.Integrable (fun u : ι → ℝ =>
-        A * B * (‖u‖ ^ 2 *
-          (gaussianWeight H u *
-            Real.exp (-(rescaledPerturbation V H t u))))) :=
-      (integrable_pow_norm_mul_rescaled_weight V hV.V_continuous H
-        hc_pos h_coer 2 ht_pos).const_mul (A * B)
-    refine h_dom.mono' ?_ ?_
-    · exact ((h_dot_a_cont.mul h_dot_b_cont).mul
-        ((continuous_gaussianWeight H).mul (Real.continuous_exp.comp
-          (continuous_rescaledPerturbation hV.V_continuous H t).neg))).aestronglyMeasurable
-    · filter_upwards with u
-      have h_dot_a_le : |dot a u| ≤ A * ‖u‖ := by
-        rw [hA_def]; exact abs_dot_le_l1_mul_norm a u
-      have h_dot_b_le : |dot b u| ≤ B * ‖u‖ := by
-        rw [hB_def]; exact abs_dot_le_l1_mul_norm b u
-      have h_rw_nn : 0 ≤ gaussianWeight H u *
-          Real.exp (-(rescaledPerturbation V H t u)) :=
-        mul_nonneg (gaussianWeight_pos H u).le (Real.exp_pos _).le
-      rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg h_rw_nn]
-      calc |dot a u| * |dot b u| *
-              (gaussianWeight H u *
-                Real.exp (-(rescaledPerturbation V H t u)))
-          ≤ (A * ‖u‖) * (B * ‖u‖) *
-              (gaussianWeight H u *
-                Real.exp (-(rescaledPerturbation V H t u))) :=
-            mul_le_mul_of_nonneg_right
-              (mul_le_mul h_dot_a_le h_dot_b_le (abs_nonneg _)
-                (mul_nonneg hA_nn (norm_nonneg _))) h_rw_nn
-        _ = A * B * (‖u‖ ^ 2 *
-              (gaussianWeight H u *
-                Real.exp (-(rescaledPerturbation V H t u)))) := by
-            rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]; ring
-  have h_lin2 : MeasureTheory.Integrable (fun u : ι → ℝ =>
-      dot a u * dot b u * gaussianWeight H u) := by
-    have h_dom : MeasureTheory.Integrable (fun u : ι → ℝ =>
-        A * B * (‖u‖ ^ 2 * gaussianWeight H u)) :=
-      (integrable_sq_norm_mul_gaussianWeight hGauss).const_mul (A * B)
-    refine h_dom.mono' ?_ ?_
-    · exact ((h_dot_a_cont.mul h_dot_b_cont).mul
-        (continuous_gaussianWeight H)).aestronglyMeasurable
-    · filter_upwards with u
-      have h_dot_a_le : |dot a u| ≤ A * ‖u‖ := by
-        rw [hA_def]; exact abs_dot_le_l1_mul_norm a u
-      have h_dot_b_le : |dot b u| ≤ B * ‖u‖ := by
-        rw [hB_def]; exact abs_dot_le_l1_mul_norm b u
-      have h_gW_nn : 0 ≤ gaussianWeight H u := (gaussianWeight_pos H u).le
-      rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg h_gW_nn]
-      calc |dot a u| * |dot b u| * gaussianWeight H u
-          ≤ (A * ‖u‖) * (B * ‖u‖) * gaussianWeight H u :=
-            mul_le_mul_of_nonneg_right
-              (mul_le_mul h_dot_a_le h_dot_b_le (abs_nonneg _)
-                (mul_nonneg hA_nn (norm_nonneg _))) h_gW_nn
-        _ = A * B * (‖u‖ ^ 2 * gaussianWeight H u) := by
-            rw [show ‖u‖ ^ 2 = ‖u‖ * ‖u‖ from sq _]; ring
-  have h_diff : MeasureTheory.Integrable (fun u : ι → ℝ =>
-      dot a u * dot b u * (gaussianWeight H u *
-        Real.exp (-(rescaledPerturbation V H t u))) -
-      dot a u * dot b u * gaussianWeight H u) :=
-    h_lin1.sub h_lin2
-  apply h_diff.congr
-  filter_upwards with u
-  show dot a u * dot b u * (gaussianWeight H u *
-      Real.exp (-(rescaledPerturbation V H t u))) -
-    dot a u * dot b u * gaussianWeight H u =
-    dot a u * dot b u * gaussianWeight H u *
-      (Real.exp (-(rescaledPerturbation V H t u)) - 1)
-  ring
 
 /-- **Bilinear-correction bound**: for the bilinear factor
 `dot a u · dot b u`, the correction integral
@@ -3891,7 +3799,7 @@ end AsymptoticIntegrals
 
 section MainStatement
 
-/-- **`lem:laplace_cov` (weak-rate version, statement only)**.
+/-- **`lem:laplace_cov` (weak-rate version)**.
 
 For potential `V` with quadratic part `H`, observables `φ, ψ` with
 gradients `a, b`, and analytic hypotheses bundled in `LaplaceCovHypotheses`,
@@ -3901,10 +3809,8 @@ gradients `a, b`, and analytic hypotheses bundled in `LaplaceCovHypotheses`,
 
 This is the weak track per the GPT-5.5 Pro memo. The sharp `O(t⁻²)`
 track requires parity-resolved jets and odd-Gaussian vanishing, and is
-deferred to a follow-on file `Covariance.Sharp.lean`.
-
-The proof is in progress; statement is locked in here so that downstream
-work can rely on the hypothesis package. -/
+proved as `gibbsCov_first_order_rate_sharp` in
+`Laplace.Multi.CovarianceSharp`. -/
 theorem gibbsCov_first_order_rate_weak
     (V φ ψ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
