@@ -36,7 +36,7 @@ integrability infrastructure is already in Mathlib.
 
 ## Status
 
-This file is complete: it provides the headline generic-`k` instance
+This file provides the headline generic-`k` instance
 and its `x, x², x³` specialisations, built on a small ladder of
 foundational lemmas.
 
