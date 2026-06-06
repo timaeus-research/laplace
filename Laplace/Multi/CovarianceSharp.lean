@@ -3416,8 +3416,8 @@ This is essentially the weak helper 4 with `k = 3` indicator replaced by
 `k = 4`. The two key local pointwise bounds
 (`abs_remainder_mul_remainder_local_le` and
 `abs_remainder_mul_remainder_mul_rescaled_weight_local_le`) are
-formalized above; the remaining ~250-300 LOC Gtail+integration
-bookkeeping is deferred. -/
+formalized above; the remaining Gtail+integration bookkeeping is
+carried out in the proof below. -/
 private lemma abs_integral_remainder_remainder_sharp_le
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
@@ -3774,7 +3774,7 @@ Proof decomposes via `pair_product_expansion` into 4 pieces:
 - `t · ∫ remφ · remψ · gW · exp(-s_t)` (quadratic), bounded `K/t` via
   product of quadratic jets.
 
-Sub-helpers will be added in subsequent stages. -/
+The sub-helpers for each of these pieces are established above. -/
 private theorem rescaledNumerator_centered_pair_sharp
     (V φ ψ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
@@ -4052,7 +4052,7 @@ end CenteredNumerator
 
 section MainTheorem
 
-/-- **`lem:laplace_cov` (sharp-rate version, statement only)**.
+/-- **`lem:laplace_cov` (sharp-rate version)**.
 
 For potential `V` with odd cubic jet `cV` and quartic remainder, observables
 `φ, ψ` with even quadratic jets `qφ, qψ` and cubic remainders, and the
@@ -4068,9 +4068,7 @@ The proof composes:
    (Stage 3, exploits parity vanishing of the leading `1/√t` correction).
 2. The existing weak denominator lower bound `D_t ≥ Z/2`.
 3. The existing weak single-observable expectation bound `|E_t[φ]| ≤ K/t`,
-   so that `t · E_t[φ] · E_t[ψ] = O(1/t)` is absorbed.
-
-Statement is locked in here; proof is in progress. -/
+   so that `t · E_t[φ] · E_t[ψ] = O(1/t)` is absorbed. -/
 theorem gibbsCov_first_order_rate_sharp
     (V φ ψ : (ι → ℝ) → ℝ)
     (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
