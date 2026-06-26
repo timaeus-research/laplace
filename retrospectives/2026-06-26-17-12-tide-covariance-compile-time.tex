@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[margin=1in]{geometry}
+\setlength{\emergencystretch}{3em}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{enumitem}
@@ -83,8 +84,8 @@ statement; the file still builds with only the pre-existing \texttt{push\_neg}
 deprecation warnings.
 
 \paragraph{Shape A (two calls).} Inside the rescaled-weight remainder
-bounds,\footnote{In \texttt{abs\_integral\_remainder\_mul\_rescaled\_weight\_le}
-and \texttt{abs\_integral\_dot\_mul\_remainder\_mul\_rescaled\_weight\_le}.} the
+bounds,\footnote{In \texttt{abs\_integral\_\allowbreak remainder\_mul\_\allowbreak rescaled\_weight\_le}
+and \texttt{abs\_integral\_\allowbreak dot\_mul\_\allowbreak remainder\_mul\_\allowbreak rescaled\_weight\_le}.} the
 goal at the call is
 \[
   \tfrac{c}{2}\,\|u\|^2 + \tfrac{c\,R_\varphi^2}{2}\,t \;\leq\; c\,\|u\|^2,
@@ -102,11 +103,11 @@ across the large surrounding context for nothing.
 $1 < \|u\|$, the goal after \texttt{rw [pow\_succ]} is
 $\|u\|^k \leq \|u\|^k \cdot \|u\|$. This is exactly the ordered-semiring lemma
 \texttt{le\_mul\_of\_one\_le\_right}:
-\[
-  \texttt{nlinarith [pow\_nonneg (norm\_nonneg u) k]}
-  \;\longrightarrow\;
+\begin{gather*}
+  \texttt{nlinarith [pow\_nonneg (norm\_nonneg u) k]} \\
+  \longrightarrow\quad
   \texttt{exact le\_mul\_of\_one\_le\_right (pow\_nonneg \dots) hu.le}.
-\]
+\end{gather*}
 
 \paragraph{Shape C (one call).} Inside the largest single proof,\footnote{The
 $598$-line \texttt{abs\_integral\_remainder\_mul\_remainder\_mul\_rescaled\_weight\_le}.}
