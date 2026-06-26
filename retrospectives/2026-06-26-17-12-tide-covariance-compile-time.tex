@@ -1,0 +1,261 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{‖}{\ensuremath{\|}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{Cutting \texttt{Multi/Covariance.lean} compile time by removing \texttt{nlinarith}}}
+\author{Claude (Opus 4.8) with Adam Newgas}
+\date{2026-06-26}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This is a maintenance tide rather than a formalisation tide: the seabed
+gains no new theorem, but its slowest-compiling file gets faster. The
+multivariate Laplace-covariance file---the Stage~3 payoff that proves
+$\mathrm{Cov}_t[\varphi,\psi] = \tfrac1t\langle\nabla\varphi,\Sigma\nabla\psi\rangle + O(t^{-2})$
+through a stack of asymptotic integral bounds---was taking $36$\,s wall /
+$107$\,s CPU to elaborate. Profiling showed that \emph{five} \texttt{nlinarith}
+calls accounted for roughly $22$\,s of that CPU; all five proved goals that are
+either linear given a hint already in hand or are a single named Mathlib lemma.
+Replacing them (\texttt{nlinarith}~$\to$~\texttt{linarith},
+\texttt{le\_mul\_of\_one\_le\_right}, \texttt{le\_self\_pow$_0$}) dropped the
+file to $28.4$\,s wall / $82$\,s CPU---a $21\%$ wall and $23\%$ CPU
+reduction---with a five-line diff and no change to any proven statement.
+The headline lesson is mundane and reusable: in a heartbeat-heavy Lean file,
+\texttt{nlinarith} on a goal that is secretly linear is the first thing to grep
+for.
+\end{abstract}
+
+\section{Setting}
+
+The broader programme is the formalisation of the SLT Susceptibility Primer's
+``boring'' Laplace calculations in the \texttt{laplace} seabed. Its Stage~3
+deliverable is the multivariate covariance asymptotic
+$\mathrm{Cov}_t[\varphi,\psi] = \tfrac1t\langle\nabla\varphi,\Sigma\nabla\psi\rangle
++ O(t^{-2})$, and the file that carries the heavy lifting for it is
+\texttt{Laplace/Multi/Covariance.lean}: $3904$ lines, a single import, one
+$3600$-line section of asymptotic integral bounds, with
+\texttt{maxHeartbeats}~cranked to $800000$. It is the slowest file in the repo
+to elaborate, so it is the natural target when the direction is simply ``make
+this compile faster.''
+
+This tide deviates from the standard template in one structural way, noted here
+once: there is no ``thing formalised.'' The deliberation in Step~2 was not about
+choosing a minimal lemma but about confirming that a proposed performance
+refactor is sound and is the highest-impact available move. Accordingly the
+``thing formalised'' section below is repurposed as ``the change,'' and ``proof
+strategy'' as ``why the calls were slow.''
+
+The candidate was chosen by measurement, not taste. A single profiled build
+(\texttt{lean -Dprofiler=true}) makes the cost distribution unambiguous: the
+five \texttt{nlinarith} invocations dominate everything else by an order of
+magnitude, with the next tier (the $54$ \texttt{positivity} calls, $20$
+\texttt{field\_simp} calls) spread thinly at $0.1$--$1.4$\,s each. When one tactic
+family is $60\%$ of the CPU budget, that is the minimal good target.
+
+\section{The change}
+
+Five \texttt{nlinarith} calls were replaced, in three shapes. None alters a
+statement; the file still builds with only the pre-existing \texttt{push\_neg}
+deprecation warnings.
+
+\paragraph{Shape A (two calls).} Inside the rescaled-weight remainder
+bounds,\footnote{In \texttt{abs\_integral\_remainder\_mul\_rescaled\_weight\_le}
+and \texttt{abs\_integral\_dot\_mul\_remainder\_mul\_rescaled\_weight\_le}.} the
+goal at the call is
+\[
+  \tfrac{c}{2}\,\|u\|^2 + \tfrac{c\,R_\varphi^2}{2}\,t \;\leq\; c\,\|u\|^2,
+\]
+with a hypothesis \texttt{h\_half\_le}:
+$\tfrac{c}{2}(R_\varphi^2 t) \leq \tfrac{c}{2}\|u\|^2$ already in hand. Treating
+$c\|u\|^2$ and $c R_\varphi^2 t$ as atoms, the goal \emph{is} that hypothesis
+rearranged---purely linear. \texttt{nlinarith} was forming degree-2 products
+across the large surrounding context for nothing.
+\[
+  \texttt{nlinarith [h\_half\_le]} \;\longrightarrow\; \texttt{linarith [h\_half\_le]}.
+\]
+
+\paragraph{Shape B (two calls).} Inside a polynomial-growth helper, branch
+$1 < \|u\|$, the goal after \texttt{rw [pow\_succ]} is
+$\|u\|^k \leq \|u\|^k \cdot \|u\|$. This is exactly the ordered-semiring lemma
+\texttt{le\_mul\_of\_one\_le\_right}:
+\[
+  \texttt{nlinarith [pow\_nonneg (norm\_nonneg u) k]}
+  \;\longrightarrow\;
+  \texttt{exact le\_mul\_of\_one\_le\_right (pow\_nonneg \dots) hu.le}.
+\]
+
+\paragraph{Shape C (one call).} Inside the largest single proof,\footnote{The
+$598$-line \texttt{abs\_integral\_remainder\_mul\_remainder\_mul\_rescaled\_weight\_le}.}
+a nested goal $t \leq t^2$ proved \texttt{by nlinarith}, with
+\texttt{ht1}${}: 1 \leq t$ in scope, is exactly the named lemma
+\texttt{le\_self\_pow$_0$}. The fix replaces the tactic proof with the term
+\texttt{le\_self\_pow$_0$ ht1 (by norm\_num)} supplied directly to
+\texttt{Real.sqrt\_le\_sqrt}.
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Metric & Before & After & $\Delta$ \\
+\midrule
+Wall clock        & $36.1$\,s & $28.4$\,s & $-7.7$\,s\ ($-21\%$) \\
+CPU (user)        & $107$\,s  & $82$\,s   & $-25$\,s\ ($-23\%$) \\
+\texttt{nlinarith} calls & $5$ & $0$ & $-5$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent All measurements: \texttt{lake env lean Laplace/Multi/Covariance.lean}
+in the tide worktree, warm Mathlib cache, same machine; figures stable across
+repeated runs.
+
+\section{Why the calls were slow}
+
+\texttt{nlinarith} extends \texttt{linarith} with a Positivstellensatz
+pre-processing step: it forms pairwise products of the hypotheses (and their
+squares) to give the linear arithmetic backend access to degree-2 facts. That
+product set grows quadratically in the number of in-context hypotheses, and
+these goals live deep inside $300$--$600$-line proofs with dozens of
+\texttt{have}s in scope. So each call paid for a large product search to prove
+something that needed at most one product---or none. The four ``Shape A/B''
+calls cost $2.7$--$9.3$\,s each; ``Shape C'' cost $3.9$\,s.
+
+The interesting wrinkle is \emph{where} the savings show up. CPU dropped by
+$25$\,s but wall by only $7.7$\,s, because \texttt{lean} elaborates declarations
+across several cores ($\sim$3 here, from the $107/36$ CPU-to-wall ratio). The
+four Shape-A/B calls sit in \emph{distinct} lemmas that elaborate concurrently
+with other heavy work, so removing them cut total work far more than latency.
+Shape~C is the exception: it lives inside the single largest proof, which is
+itself the wall-clock critical path, so fixing that one call alone bought
+$\sim$$4.5$\,s of the $7.7$\,s wall reduction. The general lesson---profile for
+\emph{which declaration is on the critical path}, not just which tactic is
+expensive in aggregate---is recorded below.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{A false ``credentials missing'' preflight.} The GPT-5.5 Pro consult
+nearly did not happen. The preflight \texttt{test -f \dots/credentials.json}
+reported the file missing, and I almost proceeded down the
+``no-GPT'' path. Two compounding causes: first, an earlier \texttt{cd} into the
+Lean repo had persisted across \texttt{Bash} calls, so the relative-path test
+ran from the wrong directory; second---surfaced only when the consult itself
+failed---the \texttt{credentials.json} that \emph{does} exist had a trailing
+comma after the \texttt{api\_key}, making it invalid JSON, so the script's legacy
+fallback silently bailed. Adam caught the first error (``the legacy
+credentials.json is there''); the second was a one-character fix once the parse
+error was read. Lesson recorded: preflight existence checks should use absolute
+paths, and a malformed-but-present credential file is a distinct failure mode
+from a missing one.
+
+\paragraph{Mis-estimating the fifth call.} The first deliberation draft labelled
+the Shape-C call as the ``cheap, $\sim$$0.5$\,s one, left as-is'' and proposed
+touching only the other four. Re-profiling \emph{after} the first four edits
+showed a $3.9$\,s \texttt{nlinarith} still present---it had been mis-attributed.
+The fix is procedural: re-profile after each batch of edits rather than trusting
+the initial attribution of aggregate costs to specific lines. Catching it
+mattered: Shape~C was the one on the critical path.
+
+\paragraph{One refinement from GPT.} For this tide the GPT-5.5 Pro consult was
+an adversarial soundness review (``do these replacements close exactly these
+goals, and is \texttt{nlinarith} the right target?'') rather than a strategy
+generator. It confirmed all three shapes sound---in particular that
+\texttt{linarith} normalises the $c R_\varphi^2 t$ monomial without a
+\texttt{ring} bridge, and that \texttt{le\_mul\_of\_one\_le\_right} is the
+correct current name---and agreed \texttt{nlinarith} was the right target. Its
+one substantive addition was a guard worth recording:
+
+\gptbox{\texttt{linarith [h\_half\_le]} still scans and uses the whole local
+context; \texttt{only} is the important compile-time guard. For deep proofs with
+huge contexts, this often changes runtime by orders of magnitude.}
+
+\noindent So the two Shape-A calls became \texttt{linarith only [h\_half\_le]}.
+In this instance the measured time did not change (the goal's context after the
+\texttt{rw} is already small), but the principle---prefer \texttt{linarith only}
+and \texttt{nlinarith only} in large-context proofs---is the durable lesson, and
+the \texttt{only} form guards against context growth in future edits. GPT also
+flagged, and I deferred, the secondary observations that \texttt{maxHeartbeats}
+does not affect speed and that splitting the file aids incremental rebuilds but
+not a single slow tactic.
+
+\section{What was Mathlib, what was new}
+
+Entirely Mathlib lookup; nothing new was synthesised. The replacements lean on
+\texttt{linarith} (with the existing hint), \texttt{le\_mul\_of\_one\_le\_right},
+\texttt{le\_self\_pow$_0$}, \texttt{pow\_nonneg}, and \texttt{norm\_nonneg}---all
+standard ordered-algebra API. The only ``new'' artefact is negative: five fewer
+tactic invocations. Candidate replacements were pre-checked in a scratch file
+before editing, so the single full rebuild was confirmation rather than search.
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{For the seabed \texttt{CLAUDE.md}.} \texttt{nlinarith} on a goal
+    that is linear-given-a-hint, or that is a single named inequality lemma, is
+    a compile-time smell: it pays for a quadratic product search to prove
+    something cheap. Prefer \texttt{linarith only [hint]} or the named lemma
+    (\texttt{le\_mul\_of\_one\_le\_right}, \texttt{le\_self\_pow$_0$}, etc.).
+    In this file that one substitution was worth $\sim$$23\%$ of CPU. And when an
+    arithmetic tactic \emph{is} needed in a large-context proof, reach for the
+    \texttt{only} form (\texttt{linarith only [\dots]},
+    \texttt{nlinarith only [\dots]}): it proves from the listed facts plus the
+    negated goal instead of scanning the whole local context, which for deep
+    proofs can change runtime by orders of magnitude.
+  \item \textbf{For the \texttt{lean-formalisation} skill.} When optimising
+    compile time, profile for the critical-path \emph{declaration}, not just the
+    aggregate-expensive tactic. CPU savings and wall savings diverge under
+    \texttt{lean}'s parallel elaboration; only fixes on the longest single proof
+    move the wall clock. And re-profile after every edit batch---initial
+    attribution of aggregate costs to individual lines is unreliable.
+  \item \textbf{For the \texttt{tide} skill.} Preflight credential checks should
+    use absolute paths and should distinguish ``file absent'' from ``file
+    present but unparseable.'' A persisted shell \texttt{cd} silently invalidated
+    a relative-path check here.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{The next compile-time target} in this file is the $54$
+    \texttt{positivity} calls (\texttt{evalMul}), individually $0.1$--$1.4$\,s.
+    Worth a profiled pass to see whether any sit on the critical-path proof and
+    whether explicit \texttt{positivity} extensions or term-mode \texttt{mul\_pos}
+    chains are cheaper.
+  \item \textbf{Revisit \texttt{maxHeartbeats 800000}} once the heavy tactics are
+    trimmed: check whether the budget can drop back toward the default (a lower
+    cap does not speed compilation, but a tighter one documents the real
+    requirement and guards against future regressions).
+  \item \textbf{Sweep sibling files} (\texttt{Multi/RescaledIntegrals.lean},
+    \texttt{Multi/CovarianceSharp.lean}) for the same \texttt{nlinarith}-on-linear
+    pattern.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro provided the adversarial soundness review of the replacements (full
+transcript in the tide log). Adam Newgas set the direction and caught the
+false-negative credentials preflight.
+
+\end{document}

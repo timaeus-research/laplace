@@ -1343,7 +1343,7 @@ private lemma abs_integral_remainder_mul_rescaled_weight_le
         rw [hα_def, hβ_def]
         have h_half_le : c / 2 * (Rφ ^ 2 * t) ≤ c / 2 * ‖u‖ ^ 2 :=
           mul_le_mul_of_nonneg_left h_sq_lb.le (by linarith)
-        nlinarith [h_half_le]
+        linarith only [h_half_le]
       have h_split : Real.exp (-(c * ‖u‖ ^ 2))
           ≤ Real.exp (-(α * ‖u‖ ^ 2)) * Real.exp (-(β * t)) := by
         rw [← Real.exp_add]
@@ -1924,7 +1924,7 @@ private lemma abs_integral_dot_mul_remainder_mul_rescaled_weight_le
         show c / 2 * ‖u‖ ^ 2 + c * Rφ ^ 2 / 2 * t ≤ c * ‖u‖ ^ 2
         have h_half_le : c / 2 * (Rφ ^ 2 * t) ≤ c / 2 * ‖u‖ ^ 2 :=
           mul_le_mul_of_nonneg_left h_sq_lb.le (by linarith)
-        nlinarith [h_half_le]
+        linarith only [h_half_le]
       have h_split : Real.exp (-(c * ‖u‖ ^ 2))
           ≤ Real.exp (-(α * ‖u‖ ^ 2)) * Real.exp (-(β * t)) := by
         rw [← Real.exp_add]
@@ -2083,7 +2083,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
     · push_neg at hu
       have h_le : ‖u‖ ^ k ≤ ‖u‖ ^ (k + 1) := by
         rw [pow_succ]
-        nlinarith [pow_nonneg (norm_nonneg u) k]
+        exact le_mul_of_one_le_right (pow_nonneg (norm_nonneg u) k) hu.le
       linarith [pow_nonneg (norm_nonneg u) (k+1)]
   have h_rem_φ_global : ∀ u : ι → ℝ,
       |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
@@ -2418,7 +2418,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
     · push_neg at hu
       have h_le : ‖u‖ ^ k ≤ ‖u‖ ^ (k + 1) := by
         rw [pow_succ]
-        nlinarith [pow_nonneg (norm_nonneg u) k]
+        exact le_mul_of_one_le_right (pow_nonneg (norm_nonneg u) k) hu.le
       linarith [pow_nonneg (norm_nonneg u) (k+1)]
   have h_rem_φ_global : ∀ u : ι → ℝ,
       |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u|
@@ -2857,7 +2857,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
     have h_t_sq_ge : t * Real.sqrt t ≤ t ^ 2 := by
       rw [sq]
       have h_sqrt_le : Real.sqrt t ≤ t := by
-        have h := Real.sqrt_le_sqrt (show t ≤ t ^ 2 by nlinarith)
+        have h := Real.sqrt_le_sqrt (show t ≤ t ^ 2 from le_self_pow₀ ht1 (by norm_num))
         rwa [Real.sqrt_sq ht_pos.le] at h
       exact mul_le_mul_of_nonneg_left h_sqrt_le ht_pos.le
     have h_div_le : (1 : ℝ) / t ^ 2 ≤ 1 / (t * Real.sqrt t) :=
