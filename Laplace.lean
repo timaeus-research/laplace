@@ -15,6 +15,7 @@ import Laplace.OneD.IntegralRemainder
 import Laplace.OneD.Rescaling
 import Laplace.OneD.MonomialPotential
 import Laplace.Multi.Basic
+import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox
 import Laplace.Multi.GaussianIBP
@@ -50,3 +51,19 @@ import Laplace.TwoD.KthKthMomentAsymptotic
 import Laplace.TwoD.KthKthNumeratorAsymptotic
 import Laplace.TwoD.KthKthOddMoments
 import Laplace.AffineKappa3
+import Laplace.Multi.CovarianceSharp
+import Laplace.Multi.CovarianceExplicit
+import Laplace.OneD.AnharmonicCumulantMomentForms
+import Laplace.OneD.AnharmonicCumulantsLogPartition
+import Laplace.OneD.AnharmonicFDT
+import Laplace.OneD.AnharmonicFDTAsymptotic
+import Laplace.OneD.AnharmonicFDTMeanAsymptotic
+import Laplace.OneD.AnharmonicFourthCumulant
+import Laplace.OneD.AnharmonicGibbsObservableMonomials
+import Laplace.OneD.AnharmonicLogPartitionDeriv
+import Laplace.OneD.AnharmonicMomentNormalisation
+import Laplace.OneD.AnharmonicPartitionDerivGeneralH
+import Laplace.OneD.AnharmonicPartitionHigherDeriv
+import Laplace.OneD.AnharmonicSecondCumulant
+import Laplace.OneD.AnharmonicSusceptibilityGeneralH
+import Laplace.OneD.AnharmonicThirdCumulant

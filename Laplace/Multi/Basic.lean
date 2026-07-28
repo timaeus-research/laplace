@@ -1,3 +1,4 @@
+import Laplace.Multi.Defs
 import Mathlib.Analysis.InnerProductSpace.EuclideanDist
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
@@ -27,21 +28,6 @@ open MeasureTheory
 namespace Laplace.Multi
 
 variable {ι : Type*} [Fintype ι]
-
-/-- Partition function `Z(t) = ∫ exp(-t · L(w)) dw` over `ι → ℝ`. -/
-noncomputable def partitionFunction (L : (ι → ℝ) → ℝ) (t : ℝ) : ℝ :=
-  ∫ w : ι → ℝ, Real.exp (-(t * L w))
-
-/-- Gibbs expectation `⟨φ⟩_t = (1/Z(t)) · ∫ φ(w) exp(-t · L(w)) dw`. -/
-noncomputable def gibbsExpectation
-    (L : (ι → ℝ) → ℝ) (t : ℝ) (φ : (ι → ℝ) → ℝ) : ℝ :=
-  (∫ w : ι → ℝ, φ w * Real.exp (-(t * L w))) / partitionFunction L t
-
-/-- Gibbs covariance `Cov_t[φ, ψ] = ⟨φψ⟩_t - ⟨φ⟩_t ⟨ψ⟩_t`. -/
-noncomputable def gibbsCov
-    (L : (ι → ℝ) → ℝ) (t : ℝ) (φ ψ : (ι → ℝ) → ℝ) : ℝ :=
-  gibbsExpectation L t (fun w => φ w * ψ w)
-    - gibbsExpectation L t φ * gibbsExpectation L t ψ
 
 /-- Definitional unfolding for `partitionFunction`. -/
 lemma partitionFunction_def (L : (ι → ℝ) → ℝ) (t : ℝ) :
