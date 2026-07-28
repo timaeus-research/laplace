@@ -1,0 +1,15 @@
+{
+    "challenge_module": "Statements",
+    "solution_module": "Solutions",
+    "theorem_names": [
+        "Laplace.Statements.cov_anharmonic_asymptotic",
+        "Laplace.Statements.kappa3_anharmonic_asymptotic",
+        "Laplace.Statements.gibbsCov_deriv_anharmonic_asymptotic",
+        "Laplace.Statements.gibbsCov_first_order_rate_sharp",
+        "Laplace.Statements.gibbsExpectation_first_order_rate_explicit",
+        "Laplace.Statements.gibbsCov_first_order_rate_explicit",
+        "Laplace.Statements.gibbsExpectation_kthKth_isEquivalent_rpow"
+    ],
+    "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+    "enable_nanoda": false
+}
