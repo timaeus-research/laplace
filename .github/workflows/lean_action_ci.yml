@@ -17,5 +17,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
+      # The lean-common and threepoint dependencies are private repositories;
+      # rewrite their URLs to authenticate with the read token so `lake` can
+      # fetch them.
+      - name: Configure private-dependency access
+        run: |
+          git config --global \
+            url."https://x-access-token:${{ secrets.LEAN_COMMON_READ_TOKEN }}@github.com/timaeus-research/lean-common".insteadOf \
+            "https://github.com/timaeus-research/lean-common"
+          git config --global \
+            url."https://x-access-token:${{ secrets.LEAN_COMMON_READ_TOKEN }}@github.com/timaeus-research/threepoint".insteadOf \
+            "https://github.com/timaeus-research/threepoint"
+
       - uses: leanprover/lean-action@v1
       - uses: leanprover-community/docgen-action@v1
