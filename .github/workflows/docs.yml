@@ -1,18 +1,21 @@
-name: Lean Action CI
+# Full doc-gen4 documentation build. Split out of Lean Action CI: on a
+# standard runner it exceeds the 6-hour job limit (doc-gen4 renders the whole
+# Mathlib import closure), so it is manual-only. Seabed API docs are published
+# via the SRI's tide-docs pipeline (trimmed per-repo docs with Mathlib
+# references redirected to the hosted Mathlib docs) instead.
+
+name: Docs
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read # Read access to repository contents
-  pages: write # Write access to GitHub Pages
-  id-token: write # Write access to ID tokens
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build:
+  docs:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,3 +34,4 @@ jobs:
             "https://github.com/timaeus-research/threepoint"
 
       - uses: leanprover/lean-action@v1
+      - uses: leanprover-community/docgen-action@v1
