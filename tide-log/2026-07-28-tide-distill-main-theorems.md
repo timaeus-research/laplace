@@ -142,13 +142,36 @@ against the primer .tex + the ThreePointFunctions .tex. Verdicts:
   declaration equivalence, axiom check against the permitted triple, kernel
   replay accepted.
 
+## CI addendum (2026-07-29)
+
+Getting the two workflows green surfaced three independent issues, fixed in
+fc2242b / 81d5f69 / 8f53846:
+
+* `threepoint` is private too — the `LEAN_COMMON_READ_TOKEN` rewrite worked
+  for lean-common on the first CI run, and the next fetch died the same way;
+  Billy widened the token's scope to include threepoint, and the same URL
+  rewrite now covers both repos in both workflows.
+* **`enableArtifactCache = true` breaks comparator's sandboxed replay**: lake
+  stores artifacts in `~/.cache/lake`, which the landrun sandbox mounts
+  read-only → EACCES on every store → `build failed`. The local
+  fake-landrun pass cannot catch this (the shim does not sandbox). Fix: the
+  workflow flips the lakefile flag just before the verification step (the
+  env override `LAKE_ARTIFACT_CACHE` cannot reach the sandbox — comparator
+  forwards only `PATH`/`HOME`).
+* `docgen-action` in Lean Action CI exceeds the 6-hour runner limit
+  (doc-gen4 renders the whole Mathlib closure) — latent since May, masked by
+  the 30-second fetch failure. Split into a manual-only `Docs` workflow;
+  Lean Action CI is build-only and now green for the first time.
+
+**CI comparator verdict: PASSED** (run 30416796703, "Your solution is
+okay!", kernel replay accepted, 6m17s with the warm lake cache; confirmed
+again on the next push). This was a real-landrun run, upgrading the local
+dev-shim pass to the genuinely sandboxed check.
+
 ## Follow-ups
 
 * A rate-strengthening tide for `Cov_t[x², x]` (`O(t⁻¹)` on `t²·Cov`, closing
   the one disclosed deviation from `eq:cov_anharmonic_1d`).
 * Run comparator with real `landrun` on a Landlock-capable host.
-* Watch the first CI run of `comparator.yml` (the `lean-common` fetch now
-  authenticates via the `LEAN_COMMON_READ_TOKEN` secret; expected to pass,
-  previously guaranteed to fail).
 * `PROGRESS.md` is stale (predates `CovarianceExplicit.lean`); refresh it or
   fold it into the README.
