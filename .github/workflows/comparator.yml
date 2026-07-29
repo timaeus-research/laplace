@@ -109,6 +109,15 @@ jobs:
         working-directory: vendor/comparator
         run: lake build comparator
 
+      # The Lake artifact cache (`enableArtifactCache` in lakefile.toml) writes
+      # to ~/.cache/lake, which comparator's landrun sandbox mounts read-only —
+      # the sandboxed replay then dies with EACCES on every artifact store.
+      # The library is already fully built by this point, so disable the cache
+      # for the verification step. (The env override `LAKE_ARTIFACT_CACHE`
+      # cannot be used: comparator forwards only PATH/HOME into the sandbox.)
+      - name: Disable the Lake artifact cache for the sandboxed build
+        run: sed -i 's/^enableArtifactCache = true$/enableArtifactCache = false/' lakefile.toml
+
       - name: Run comparator
         run: |
           export PATH="$GITHUB_WORKSPACE/vendor/lean4export/.lake/build/bin:$GITHUB_WORKSPACE/vendor/landrun:$PATH"
