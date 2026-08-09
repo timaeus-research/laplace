@@ -243,4 +243,35 @@ theorem integral_coord_mul_coord_stdKernel {d : ℕ} (a b : Fin d) :
     have hodd := Laplace.OneD.integral_pow_mul_exp_neg_sq_odd 0
     simpa [hab] using hodd
 
+/-- Singly coordinate-weighted kernels are integrable. -/
+theorem stdKernel_integrable_coord {d : ℕ} (a : Fin d) :
+    Integrable (fun y : EuclidD d ↦ y a * stdKernel y) := by
+  have hca : Continuous fun y : EuclidD d ↦ y a :=
+    PiLp.continuous_apply 2 (fun _ : Fin d ↦ ℝ) a
+  refine (stdKernel_integrable_pow 1).mono'
+    ((hca.mul stdKernel_continuous).aestronglyMeasurable)
+    (Filter.Eventually.of_forall fun y ↦ ?_)
+  rw [Real.norm_eq_abs, abs_mul, abs_of_pos (stdKernel_pos y), pow_one]
+  exact mul_le_mul_of_nonneg_right
+    (by simpa using PiLp.norm_apply_le y a) (stdKernel_pos y).le
+
+/-- Doubly coordinate-weighted kernels are integrable. -/
+theorem stdKernel_integrable_coord_mul {d : ℕ} (a b : Fin d) :
+    Integrable (fun y : EuclidD d ↦ y a * y b * stdKernel y) := by
+  have hca : Continuous fun y : EuclidD d ↦ y a :=
+    PiLp.continuous_apply 2 (fun _ : Fin d ↦ ℝ) a
+  have hcb : Continuous fun y : EuclidD d ↦ y b :=
+    PiLp.continuous_apply 2 (fun _ : Fin d ↦ ℝ) b
+  refine (stdKernel_integrable_pow 2).mono'
+    (((hca.mul hcb).mul stdKernel_continuous).aestronglyMeasurable)
+    (Filter.Eventually.of_forall fun y ↦ ?_)
+  rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_pos (stdKernel_pos y)]
+  have h1 : |y a| ≤ ‖y‖ := by simpa using PiLp.norm_apply_le y a
+  have h2 : |y b| ≤ ‖y‖ := by simpa using PiLp.norm_apply_le y b
+  calc |y a| * |y b| * stdKernel y
+      ≤ ‖y‖ * ‖y‖ * stdKernel y := by
+        apply mul_le_mul_of_nonneg_right _ (stdKernel_pos y).le
+        exact mul_le_mul h1 h2 (abs_nonneg _) (norm_nonneg _)
+    _ = ‖y‖ ^ 2 * stdKernel y := by ring
+
 end Laplace.Multi
