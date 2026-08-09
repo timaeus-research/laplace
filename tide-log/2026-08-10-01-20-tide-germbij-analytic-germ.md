@@ -35,3 +35,27 @@ diagonal reconstruction:
 ## Numerical check
 
 Not feasible: structural (power-series manipulation).
+
+## Result
+
+Committed on tide/germbij-analytic-germ:
+`Laplace/Multi/AnalyticGermRecovery.lean` (~125 lines). Theorems:
+`hasFPowerSeries_diag_eq` (power-series diagonals from iterated
+derivatives: the permutation sum collapses to n! copies on a
+constant vector — iteratedFDeriv_eq_sum_of_completeSpace +
+Fintype.card_perm), `analytic_germ_eq_of_jet_eq` (equal positive-
+order jets + analyticity give equal germs modulo the constant, by
+the HasSum-difference argument: termwise difference vanishes above
+order zero, hasSum_single, uniqueness of sums), and the composition
+`analytic_germ_recovery_of_superPoly_moments` — germbij Corollary
+3.2's inverse direction in the note's own data language. Zero
+sorries, zero warnings. WITH THIS, THE INVERSE HALF OF THEOREM 3.1
+IS COMPLETE (audit items B + D + C): superpolynomially-equal
+localized moment families determine the location, the full
+positive-order jet, and (for analytic losses) the germ modulo the
+additive constant. The remaining substantive half is programme A
+(the forward direction).
+
+Iterations: two — the beta-reduced permutation sum needed the
+reduced statement form, and Fintype.card_perm leaves
+Fintype.card (Fin n) needing card_fin.
