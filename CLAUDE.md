@@ -384,3 +384,11 @@ scalar algebra. Also: squeeze arguments against a previously proven
 Tendsto must reuse its RAW statement — a `simpa using h.norm`
 renormalizes `-c * ‖x‖^2` to `-(c * ‖x‖^2)` inside binders and the
 squeeze's syntactic matching dies.
+
+**`grep` may be shadowed (rg-style) in the user shell: `-c` with zero
+matches prints NOTHING instead of `0`.** The retrospective compile
+gate `N=$(grep -cE '^!|Error|Overfull' file.log)` then sets `N` empty
+— `exit $N` succeeds vacuously and real errors (e.g. Unicode
+characters in `\code{}` spans) pass the gate silently. Always use
+`/usr/bin/grep` in gate expressions, and treat an empty `[$N]` echo as
+a broken gate, not a pass.
