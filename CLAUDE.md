@@ -348,3 +348,15 @@ this makes coordinate-moment computations on `EuclideanSpace`
 essentially free. The one-hot factor trick: integrate
 `fun i t ↦ if i = a then t else 1` and collapse the product with
 `Finset.prod_ite_eq'`.
+
+**Passing `HasFDerivWithinAt` hypotheses to
+`Convex.norm_image_sub_le_of_norm_fderiv_le` is a unification bomb.**
+That lemma wants `∀ x ∈ s, DifferentiableAt 𝕜 f x` and a bound on
+`fderiv 𝕜 f x`; feeding it explicit-derivative hypotheses makes the
+elaborator attempt a whnf-unfolding unification that survives even
+8M heartbeats (minutes of wall clock, then death). The
+explicit-derivative variant is
+`Convex.norm_image_sub_le_of_norm_hasFDerivWithin_le` (dot-notation
+on the `Convex` fact) — with it the same application elaborates
+instantly. Symptom to recognize: `(deterministic) timeout at whnf`
+pointing at the theorem's `:=` line while every `have` checks fine.
