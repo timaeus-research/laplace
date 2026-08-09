@@ -351,4 +351,244 @@ theorem stabilized_admissible {R' M : ℕ} (hM_even : Even M)
       rw [not_le] at hlt
       nlinarith [hP, hy2]
 
+/-- The jet difference between an admissible `C^D` loss and its
+stabilized Taylor jet, in the epsilon-radius form the comparison
+consumes: the Peano remainder supplies order `D`, and the stabilizer
+`d·x^M` with `M > D` is absorbed at radius `ε/(2(d+1))`. -/
+theorem smooth_stabilized_jet_epsilon
+    {L : ℝ → ℝ} {ρ κ δ : ℝ} {D M : ℕ} (hD : 2 ≤ D) (hDM : D < M)
+    (h : AdmissiblePotential L ρ κ δ) (hL : ContDiff ℝ D L)
+    {d : ℝ} (hd0 : 0 ≤ d) :
+    ∀ ε : ℝ, 0 < ε → ∃ δ' : ℝ, 0 < δ' ∧ ∀ x : ℝ, |x| ≤ δ' →
+      |L x - jetPotential 1 (M - 2) (taylorBase L) 1
+        (stabilizedCoeff (D - 2) M (taylorCoeff L D) d) x| ≤
+      ε * |x| ^ D := by
+  intro ε hε
+  obtain ⟨δ₁, hδ₁, hpeano⟩ := taylor_jet_epsilon hL (ε / 2)
+    (by positivity)
+  refine ⟨min δ₁ (min 1 (ε / (2 * (d + 1)))), by positivity,
+    fun x hx ↦ ?_⟩
+  have hx1 : |x| ≤ δ₁ := le_trans hx (min_le_left _ _)
+  have hx2 : |x| ≤ 1 :=
+    le_trans hx (le_trans (min_le_right _ _) (min_le_left _ _))
+  have hx3 : |x| ≤ ε / (2 * (d + 1)) :=
+    le_trans hx (le_trans (min_le_right _ _) (min_le_right _ _))
+  rw [stabilized_jet_eq (show D - 2 + 2 < M by omega),
+    ← taylorWithinEval_eq_jet hD h]
+  have hpe := hpeano x hx1
+  have hdM : d * |x| ^ M ≤ ε / 2 * |x| ^ D := by
+    have hsplit : |x| ^ M = |x| ^ D * |x| ^ (M - D) := by
+      rw [← pow_add]
+      congr 1
+      omega
+    have hlast : |x| ^ (M - D) ≤ |x| :=
+      calc |x| ^ (M - D) ≤ |x| ^ 1 :=
+            pow_le_pow_of_le_one (abs_nonneg _) hx2 (by omega)
+        _ = |x| := pow_one _
+    calc d * |x| ^ M = d * (|x| ^ D * |x| ^ (M - D)) := by
+          rw [hsplit]
+      _ ≤ d * (|x| ^ D * |x|) := by
+          apply mul_le_mul_of_nonneg_left _ hd0
+          exact mul_le_mul_of_nonneg_left hlast (by positivity)
+      _ ≤ d * (|x| ^ D * (ε / (2 * (d + 1)))) := by
+          apply mul_le_mul_of_nonneg_left _ hd0
+          exact mul_le_mul_of_nonneg_left hx3 (by positivity)
+      _ ≤ ε / 2 * |x| ^ D := by
+          have hcoef : d * (ε / (2 * (d + 1))) ≤ ε / 2 := by
+            rw [← mul_div_assoc, div_le_div_iff₀ (by positivity)
+              (by norm_num : (0:ℝ) < 2)]
+            nlinarith
+          calc d * (|x| ^ D * (ε / (2 * (d + 1)))) =
+                d * (ε / (2 * (d + 1))) * |x| ^ D := by ring
+            _ ≤ ε / 2 * |x| ^ D :=
+                mul_le_mul_of_nonneg_right hcoef (by positivity)
+  calc |L x - (taylorWithinEval L D Set.univ 0 x + d * x ^ M)|
+      = |(L x - taylorWithinEval L D Set.univ 0 x) - d * x ^ M| := by
+        congr 1
+        ring
+    _ ≤ |L x - taylorWithinEval L D Set.univ 0 x| + |d * x ^ M| :=
+        abs_sub _ _
+    _ ≤ ε / 2 * |x| ^ D + d * |x| ^ M := by
+        apply add_le_add hpe
+        rw [abs_mul, abs_of_nonneg hd0, abs_pow]
+    _ ≤ ε / 2 * |x| ^ D + ε / 2 * |x| ^ D :=
+        add_le_add le_rfl hdM
+    _ = ε * |x| ^ D := by ring
+
+/-- **Partial stable recovery**: the strong induction of the
+weighted-jet programme, truncated at rung `N` — data at rungs below
+`N` recovers the base and every coefficient below `N`. (The full jet
+of the stabilized polynomial is longer than the data reaches; only
+the Taylor part is claimed.) -/
+theorem jet_recovery_stable_partial
+    {k R' : ℕ} {a₁ a₂ ρc₁ ρc₂ : ℝ} {c₁ c₂ : Fin R' → ℝ} (hk : 1 ≤ k)
+    (h1 : HasPositiveJetProfile R' a₁ ρc₁ c₁)
+    (h2 : HasPositiveJetProfile R' a₂ ρc₂ c₂)
+    (hbase : Tendsto (fun q : ℝ ↦
+      normalizedJetMoment k R' 2 a₁ q c₁ -
+        normalizedJetMoment k R' 2 a₂ q c₂) (𝓝[>] 0) (𝓝 0))
+    {N : ℕ}
+    (hdata : ∀ i : Fin R', i.1 < N → Tendsto (fun q : ℝ ↦
+      (normalizedJetMoment k R' (2 * k + (i.1 + 1)) a₁ q c₁ -
+        normalizedJetMoment k R' (2 * k + (i.1 + 1)) a₂ q c₂) /
+        q ^ (i.1 + 1)) (𝓝[>] 0) (𝓝 0)) :
+    a₁ = a₂ ∧ ∀ i : Fin R', i.1 < N → c₁ i = c₂ i := by
+  have ha := base_recovery_of_tendsto hk h1 h2 hbase
+  subst ha
+  refine ⟨rfl, ?_⟩
+  have key : ∀ n : ℕ, ∀ i : Fin R', i.1 ≤ n → i.1 < N →
+      c₁ i = c₂ i := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | _ n ih =>
+      intro i _ hiN
+      refine jet_one_rung_recovery hk h1.base_pos i h1 h2 ?_
+        (hdata i hiN)
+      intro j hj
+      have hji : j.1 < i.1 := hj
+      rcases Nat.eq_zero_or_pos n with hn | hn
+      · omega
+      · exact ih j.1 (by omega) j le_rfl (by omega)
+  exact fun i hiN ↦ key i.1 i le_rfl hiN
+
+set_option maxHeartbeats 3200000 in
+-- The final composition threads five theorem families through one
+-- assembly; well past the default heartbeat budget (see CLAUDE.md).
+/-- **The finite-order smooth recovery** (germbij Theorem 3.1,
+polynomial-to-smooth bridge, stage C5): two admissible `C^(R+2)`
+losses whose normalized moments at `x^(2+r)` differ by `o(q^(2+2r))`
+for every `r ≤ R` have the same Taylor data through degree `R + 2` —
+the base `λ/2` and every higher coefficient. -/
+theorem smooth_jet_recovery
+    {L₁ L₂ : ℝ → ℝ} {ρ₁ κ₁ δ₁ ρ₂ κ₂ δ₂ : ℝ} {R : ℕ}
+    (h1 : AdmissiblePotential L₁ ρ₁ κ₁ δ₁)
+    (h2 : AdmissiblePotential L₂ ρ₂ κ₂ δ₂)
+    (hs1 : ContDiff ℝ (R + 2) L₁) (hs2 : ContDiff ℝ (R + 2) L₂)
+    (hdata : ∀ r : ℕ, r ≤ R → Tendsto (fun q : ℝ ↦
+      ((∫ x : ℝ, x ^ (2 + r) * Real.exp (-((q ^ 2)⁻¹ * L₁ x))) /
+          (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * L₁ x))) -
+        (∫ x : ℝ, x ^ (2 + r) * Real.exp (-((q ^ 2)⁻¹ * L₂ x))) /
+          (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * L₂ x)))) /
+        q ^ (2 + 2 * r)) (𝓝[>] 0) (𝓝 0)) :
+    taylorBase L₁ = taylorBase L₂ ∧
+      taylorCoeff L₁ (R + 2) = taylorCoeff L₂ (R + 2) := by
+  set D : ℕ := R + 2 with hD_def
+  have hD : 2 ≤ D := by omega
+  set M : ℕ := 2 * (D / 2 + 1) with hM_def
+  have hM_even : Even M := ⟨D / 2 + 1, by rw [hM_def]; ring⟩
+  have hDM : D < M := by omega
+  have hMR : D - 2 + 2 < M := by omega
+  have ha₁pos : 0 < taylorBase L₁ :=
+    lt_of_lt_of_le h1.rho_pos (h1.taylorBase_ge
+      (hs1.of_le (by exact_mod_cast (by omega : 2 ≤ R + 2))))
+  have ha₂pos : 0 < taylorBase L₂ :=
+    lt_of_lt_of_le h2.rho_pos (h2.taylorBase_ge
+      (hs2.of_le (by exact_mod_cast (by omega : 2 ≤ R + 2))))
+  obtain ⟨d₁, hd₁0, hadm₁, hprof₁⟩ := stabilized_admissible
+    hM_even hMR ha₁pos (taylorCoeff L₁ D)
+  obtain ⟨d₂, hd₂0, hadm₂, hprof₂⟩ := stabilized_admissible
+    hM_even hMR ha₂pos (taylorCoeff L₂ D)
+  set c₁ := stabilizedCoeff (D - 2) M (taylorCoeff L₁ D) d₁
+    with hc₁_def
+  set c₂ := stabilizedCoeff (D - 2) M (taylorCoeff L₂ D) d₂
+    with hc₂_def
+  have hjet₁ := smooth_stabilized_jet_epsilon hD hDM h1 hs1 hd₁0
+  have hjet₂ := smooth_stabilized_jet_epsilon hD hDM h2 hs2 hd₂0
+  -- C3 quotient comparisons, loss versus stabilized jet.
+  have hcomp₁ : ∀ s : ℕ, Tendsto (fun q : ℝ ↦
+      ((∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ * L₁ x))) /
+          (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * L₁ x))) -
+        (∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ *
+          jetPotential 1 (M - 2) (taylorBase L₁) 1 c₁ x))) /
+          (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ *
+            jetPotential 1 (M - 2) (taylorBase L₁) 1 c₁ x)))) /
+        q ^ (s + D - 2)) (𝓝[>] 0) (𝓝 0) :=
+    fun s ↦ admissible_normalized_difference_littleO hD h1 hadm₁
+      hjet₁ s
+  have hcomp₂ : ∀ s : ℕ, Tendsto (fun q : ℝ ↦
+      ((∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ * L₂ x))) /
+          (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * L₂ x))) -
+        (∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ *
+          jetPotential 1 (M - 2) (taylorBase L₂) 1 c₂ x))) /
+          (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ *
+            jetPotential 1 (M - 2) (taylorBase L₂) 1 c₂ x)))) /
+        q ^ (s + D - 2)) (𝓝[>] 0) (𝓝 0) :=
+    fun s ↦ admissible_normalized_difference_littleO hD h2 hadm₂
+      hjet₂ s
+  -- The scaling bridge: x-space normalized moments of the jets are
+  -- q^s times the u-space normalized jet moments.
+  have hbridge : ∀ (a : ℝ) (c : Fin (M - 2) → ℝ) (ρc : ℝ),
+      HasPositiveJetProfile (M - 2) a ρc c →
+      ∀ (s : ℕ) (q : ℝ), 0 < q →
+      (∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ *
+          jetPotential 1 (M - 2) a 1 c x))) /
+        (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ *
+          jetPotential 1 (M - 2) a 1 c x))) =
+      q ^ s * normalizedJetMoment 1 (M - 2) s a q c := by
+    intro a c ρc hprof s q hq
+    have hqt : ((q ^ 2)⁻¹ : ℝ) * q ^ (2 * 1) = 1 := by
+      rw [show (2 * 1 : ℕ) = 2 from rfl]
+      exact inv_mul_cancel₀ (by positivity)
+    exact normalized_polynomialJet_scale (t := (q ^ 2)⁻¹) s le_rfl
+      hprof hq hqt
+  -- The jet-level data at every rung r ≤ R, by the three-piece
+  -- decomposition.
+  have hqpow : ∀ n : ℕ, Tendsto (fun q : ℝ ↦ q ^ n) (𝓝[>] (0 : ℝ))
+      (𝓝 ((0 : ℝ) ^ n)) := fun n ↦
+    ((continuous_pow n).tendsto 0).mono_left nhdsWithin_le_nhds
+  have hjetdata : ∀ r : ℕ, r ≤ R → Tendsto (fun q : ℝ ↦
+      (normalizedJetMoment 1 (M - 2) (2 + r) (taylorBase L₁) q c₁ -
+        normalizedJetMoment 1 (M - 2) (2 + r) (taylorBase L₂) q c₂) /
+        q ^ r) (𝓝[>] 0) (𝓝 0) := by
+    intro r hr
+    have hlim := (((hcomp₁ (2 + r)).mul (hqpow (D - 2 - r))).neg).add
+      ((hdata r hr).add ((hcomp₂ (2 + r)).mul (hqpow (D - 2 - r))))
+    rw [show (-(0 * (0 : ℝ) ^ (D - 2 - r)) +
+        (0 + 0 * (0 : ℝ) ^ (D - 2 - r))) = 0 by ring] at hlim
+    refine hlim.congr' ?_
+    filter_upwards [self_mem_nhdsWithin] with q hq
+    have hq0 : (0 : ℝ) < q := hq
+    rw [hbridge _ _ _ hprof₁ (2 + r) q hq0,
+      hbridge _ _ _ hprof₂ (2 + r) q hq0]
+    have hpow_split : q ^ (2 + r + D - 2) =
+        q ^ (2 + 2 * r) * q ^ (D - 2 - r) := by
+      rw [← pow_add]
+      congr 1
+      omega
+    have h2r : (0 : ℝ) < q ^ (2 + 2 * r) := by positivity
+    have hDr : (0 : ℝ) < q ^ (D - 2 - r) := by positivity
+    have hs2 : (0 : ℝ) < q ^ (2 + r) := by positivity
+    have hr0 : (0 : ℝ) < q ^ r := by positivity
+    rw [hpow_split]
+    field_simp
+    ring
+  -- Apply the partial recovery.
+  have hbase_jet : Tendsto (fun q : ℝ ↦
+      normalizedJetMoment 1 (M - 2) 2 (taylorBase L₁) q c₁ -
+        normalizedJetMoment 1 (M - 2) 2 (taylorBase L₂) q c₂)
+      (𝓝[>] 0) (𝓝 0) := by
+    have h := hjetdata 0 (Nat.zero_le R)
+    refine h.congr fun q ↦ ?_
+    rw [pow_zero, div_one]
+  have hrung_jet : ∀ i : Fin (M - 2), i.1 < R → Tendsto (fun q : ℝ ↦
+      (normalizedJetMoment 1 (M - 2) (2 * 1 + (i.1 + 1))
+          (taylorBase L₁) q c₁ -
+        normalizedJetMoment 1 (M - 2) (2 * 1 + (i.1 + 1))
+          (taylorBase L₂) q c₂) / q ^ (i.1 + 1)) (𝓝[>] 0) (𝓝 0) := by
+    intro i hiR
+    have h := hjetdata (i.1 + 1) (by omega)
+    refine h.congr fun q ↦ ?_
+    rw [show 2 * 1 + (i.1 + 1) = 2 + (i.1 + 1) by omega]
+  obtain ⟨ha_eq, hc_eq⟩ := jet_recovery_stable_partial le_rfl
+    hprof₁ hprof₂ hbase_jet (N := R) hrung_jet
+  refine ⟨ha_eq, ?_⟩
+  funext i
+  have hiM : i.1 < M - 2 := by omega
+  have hiR : i.1 < R := by omega
+  have := hc_eq ⟨i.1, hiM⟩ hiR
+  rw [hc₁_def, hc₂_def, stabilizedCoeff, stabilizedCoeff] at this
+  have hiD : i.1 < D - 2 := by omega
+  rw [dif_pos hiD, dif_pos hiD] at this
+  convert this using 2
+
 end Laplace.OneD
