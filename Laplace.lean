@@ -28,6 +28,7 @@ import Laplace.OneD.MomentSecondOrder
 import Laplace.OneD.Kappa4Asymptotic
 import Laplace.OneD.RecoveryAnharmonicFull
 import Laplace.OneD.FlatInvisible
+import Laplace.OneD.FlatWitness
 import Laplace.Multi.Basic
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
