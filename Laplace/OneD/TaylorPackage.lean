@@ -147,4 +147,121 @@ theorem exists_stabilizer_envelope
             rw [← Finset.sum_mul, ← Finset.sum_div]
     nlinarith [hsum_lb, habsorb, sq_nonneg x, ha]
 
+/-- **Exact Gaussian scaling in `q`-space** (stage C2.3): with
+`t·q² = 1`, the absolute moment against `e^(-t·a·x²)` is exactly
+`q^(k+1)` times the reference moment. -/
+theorem abs_moment_scaling
+    {a t q : ℝ} (k : ℕ) (hq : 0 < q) (hqt : t * q ^ 2 = 1) :
+    (∫ x : ℝ, |x| ^ k * Real.exp (-(t * (a * x ^ 2)))) =
+      q ^ (k + 1) * ∫ y : ℝ, |y| ^ k * Real.exp (-(a * y ^ 2)) := by
+  have hsub := MeasureTheory.Measure.integral_comp_mul_right
+    (g := fun x : ℝ ↦ |x| ^ k * Real.exp (-(t * (a * x ^ 2)))) (a := q)
+  rw [smul_eq_mul, abs_of_pos (inv_pos.mpr hq)] at hsub
+  have hpt : ∀ y : ℝ,
+      |y * q| ^ k * Real.exp (-(t * (a * (y * q) ^ 2))) =
+      q ^ k * (|y| ^ k * Real.exp (-(a * y ^ 2))) := by
+    intro y
+    rw [abs_mul, abs_of_pos hq, mul_pow]
+    have harg : t * (a * (y * q) ^ 2) = a * y ^ 2 := by
+      have : t * (a * (y * q) ^ 2) = a * y ^ 2 * (t * q ^ 2) := by
+        ring
+      rw [this, hqt, mul_one]
+    rw [harg]
+    ring
+  calc (∫ x : ℝ, |x| ^ k * Real.exp (-(t * (a * x ^ 2))))
+      = q * ∫ y : ℝ, |y * q| ^ k *
+          Real.exp (-(t * (a * (y * q) ^ 2))) := by
+        rw [hsub]
+        field_simp
+    _ = q * ∫ y : ℝ, q ^ k * (|y| ^ k * Real.exp (-(a * y ^ 2))) := by
+        congr 1
+        exact integral_congr_ae (Filter.Eventually.of_forall hpt)
+    _ = q ^ (k + 1) * ∫ y : ℝ, |y| ^ k * Real.exp (-(a * y ^ 2)) := by
+        rw [integral_const_mul, pow_succ]
+        ring
+
+/-- **The envelope tail bound** (stage C2.5): outside radius `r`, the
+tail of any envelope-dominated Gibbs integral is controlled by the
+superpolynomial prefactor `e^(-(t/2)·ρ·r²)` times a full Gaussian
+moment at half scale. -/
+theorem tail_integral_le
+    {K : ℝ → ℝ} {ρK t r : ℝ} (hρ : 0 < ρK) (ht : 0 < t) (hr : 0 ≤ r)
+    (henv : ∀ x, ρK * x ^ 2 ≤ K x) (hK_cont : Continuous K) (s : ℕ) :
+    ∫ x in {x : ℝ | r ≤ |x|}, |x| ^ s * Real.exp (-(t * K x)) ≤
+      Real.exp (-(t / 2 * (ρK * r ^ 2))) *
+        ∫ x : ℝ, |x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2))) := by
+  have hset : MeasurableSet {x : ℝ | r ≤ |x|} :=
+    (isClosed_le continuous_const continuous_abs).measurableSet
+  have hmajor : Integrable (fun x : ℝ ↦
+      Real.exp (-(t / 2 * (ρK * r ^ 2))) *
+        (|x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2))))) := by
+    have h := integrable_abs_pow_mul_exp_neg_kth (k := 1)
+      le_rfl s (ρ := t / 2 * ρK) (by positivity)
+    refine (h.congr (Filter.Eventually.of_forall fun x ↦ ?_)).const_mul _
+    simp only [mul_assoc]
+  have hpt : ∀ x ∈ {x : ℝ | r ≤ |x|},
+      |x| ^ s * Real.exp (-(t * K x)) ≤
+      Real.exp (-(t / 2 * (ρK * r ^ 2))) *
+        (|x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2)))) := by
+    intro x hx
+    have habs : r ≤ |x| := hx
+    have hx2 : r ^ 2 ≤ x ^ 2 := by
+      have h1 : r ^ 2 ≤ |x| ^ 2 := by nlinarith [abs_nonneg x]
+      rw [← sq_abs x]
+      exact h1
+    have hsplit : Real.exp (-(t * (ρK * x ^ 2))) =
+        Real.exp (-(t / 2 * (ρK * x ^ 2))) *
+          Real.exp (-(t / 2 * (ρK * x ^ 2))) := by
+      rw [← Real.exp_add]
+      congr 1
+      ring
+    calc |x| ^ s * Real.exp (-(t * K x))
+        ≤ |x| ^ s * Real.exp (-(t * (ρK * x ^ 2))) := by
+          apply mul_le_mul_of_nonneg_left _ (by positivity)
+          apply Real.exp_le_exp.mpr
+          have h := mul_le_mul_of_nonneg_left (henv x) ht.le
+          linarith
+      _ = Real.exp (-(t / 2 * (ρK * x ^ 2))) *
+          (|x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2)))) := by
+          rw [hsplit]
+          ring
+      _ ≤ Real.exp (-(t / 2 * (ρK * r ^ 2))) *
+          (|x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2)))) := by
+          apply mul_le_mul_of_nonneg_right _ (by positivity)
+          apply Real.exp_le_exp.mpr
+          have h : t / 2 * (ρK * r ^ 2) ≤ t / 2 * (ρK * x ^ 2) := by
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
+            exact mul_le_mul_of_nonneg_left hx2 hρ.le
+          linarith
+  have hint_f : IntegrableOn (fun x : ℝ ↦
+      |x| ^ s * Real.exp (-(t * K x))) {x : ℝ | r ≤ |x|} := by
+    apply Integrable.integrableOn
+    have hdom := integrable_abs_pow_mul_exp_neg_kth (k := 1)
+      le_rfl s (ρ := t * ρK) (by positivity)
+    have hdom' : Integrable (fun x : ℝ ↦
+        |x| ^ s * Real.exp (-(t * ρK * x ^ 2))) := by
+      refine hdom.congr (Filter.Eventually.of_forall fun x ↦ ?_)
+      norm_num
+    refine hdom'.mono' ?_ (Filter.Eventually.of_forall fun x ↦ ?_)
+    · exact ((continuous_abs.pow s).mul (Real.continuous_exp.comp
+        (hK_cont.const_smul t).neg)).aestronglyMeasurable
+    · rw [Real.norm_eq_abs, abs_mul, abs_pow, abs_abs,
+        abs_of_pos (Real.exp_pos _)]
+      apply mul_le_mul_of_nonneg_left _ (by positivity)
+      apply Real.exp_le_exp.mpr
+      have h := mul_le_mul_of_nonneg_left (henv x) ht.le
+      linarith
+  calc ∫ x in {x : ℝ | r ≤ |x|}, |x| ^ s * Real.exp (-(t * K x))
+      ≤ ∫ x in {x : ℝ | r ≤ |x|},
+          Real.exp (-(t / 2 * (ρK * r ^ 2))) *
+            (|x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2)))) :=
+        setIntegral_mono_on hint_f hmajor.integrableOn hset hpt
+    _ ≤ ∫ x : ℝ, Real.exp (-(t / 2 * (ρK * r ^ 2))) *
+          (|x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2)))) :=
+        setIntegral_le_integral hmajor
+          (Filter.Eventually.of_forall fun x ↦ by positivity)
+    _ = Real.exp (-(t / 2 * (ρK * r ^ 2))) *
+          ∫ x : ℝ, |x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2))) :=
+        integral_const_mul _ _
+
 end Laplace.OneD

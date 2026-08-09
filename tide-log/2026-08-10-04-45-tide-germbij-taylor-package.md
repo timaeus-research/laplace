@@ -50,3 +50,32 @@ q^{-6}·tail at q = 0.1, 0.03) produced GROWING values (123 → 1541),
 which is the pre-asymptotic regime, not a counterexample; recorded
 here so the C3 tide knows the numerics cannot certify the tail rate
 directly.
+
+## Scope adjustment
+
+C2.4's partition LOWER bound (C₀·q ≤ Z_K) requires an upper envelope
+on K near 0 — an admissibility hypothesis that belongs with C3's
+SmoothAdmissible setup, where the hypothesis package for the smooth
+loss is fixed. Re-scoped to the C3 tide. C2.4's upper half (moment
+upper bounds) is subsumed by C2.3 + C2.5 (scaling + envelope
+domination), so nothing else is lost.
+
+## Result
+
+- Theorems (Laplace/OneD/TaylorPackage.lean, ~275 lines, zero
+  sorries, zero warnings; gate verified via import + .olean):
+  exists_stabilizer_envelope (C2.2: the coefficient-wise d with
+  global envelope (a/2)x² ≤ stabilized polynomial, case split at
+  |x| = ρ = min(1, a/(2(B+1))), no suprema), abs_moment_scaling
+  (C2.3: exact q^{k+1} scaling of absolute moments under t·q² = 1),
+  and tail_integral_le (C2.5: outside radius r the tail is bounded by
+  e^{-(t/2)ρr²} times a full half-scale Gaussian moment — the
+  superpolynomial prefactor for the moving split, via
+  setIntegral_mono_on + setIntegral_le_integral).
+- Surprises: (1) the two-region envelope proof formalized exactly per
+  the consult's recipe, with nlinarith closing both regional
+  assemblies once the per-term bounds were explicit; (2) monotone
+  chains under exp are more robust as explicit
+  mul_le_mul_of_nonneg_left haves + linarith than as nlinarith with
+  hint lists; (3) rw direction discipline: Finset.sum_mul/sum_div
+  needed ← forms since the sum lives on the LHS.
