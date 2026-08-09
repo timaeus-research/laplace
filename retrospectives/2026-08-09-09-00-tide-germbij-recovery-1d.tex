@@ -22,9 +22,9 @@ further and \emph{recovers} the germ constructively; in dimension one,
 the leading exponent of the partition function recovers the degree $2k$
 of an isolated minimum and the moments recover the coefficients. This
 tide formalises the smallest real instance of that claim, opening a
-constructive-recovery thread on the seabed whose closed forms
-(\texttt{partitionFunction\_kthPotential} and the
-\texttt{kth\_moment\_even} family) were laid down in the May tides.
+constructive-recovery thread on the seabed whose closed
+forms\footnote{\texttt{partitionFunction\_kthPotential} and the
+\texttt{kth\_moment\_even} family.} were laid down in the May tides.
 
 \section{The thing formalised}
 
@@ -64,14 +64,14 @@ and the base of a positive-exponent \texttt{rpow} on nonnegative reals.
 Three build iterations. Two fixes were routine (an \texttt{omega} for a
 doubled natural equation; replacing a \texttt{field\_simp} that mangled
 an \texttt{rpow} into a subtype projection by deterministic
-\texttt{mul\_left\_cancel₀}/\texttt{mul\_right\_cancel₀}). The
-instructive one: dropping the \emph{unused} hypothesis
-$0 < \alpha_2$ from the rigidity lemma strengthened the statement but
-left $\alpha_2, \beta_2$ unconstrained at the application site, and the
-elaborator unified them with the left-hand values before the proof body
-could pin them, producing a vacuous goal. The repair is to pass the
-right-hand data explicitly (\texttt{(α₂ := ...) (β₂ := ...)}) when the
-only anchor hypothesis mentions one side.
+cancellation of positive factors). The instructive one: dropping the
+\emph{unused} hypothesis $0 < \alpha_2$ from the rigidity lemma
+strengthened the statement but left $\alpha_2, \beta_2$ unconstrained at
+the application site, and the elaborator unified them with the left-hand
+values before the proof body could pin them, producing a vacuous goal.
+The repair is to pass the right-hand data explicitly as named arguments
+($\alpha_2 := \ldots$, $\beta_2 := \ldots$) when the only anchor
+hypothesis mentions one side.
 
 \section{What was Mathlib, what was new}
 
