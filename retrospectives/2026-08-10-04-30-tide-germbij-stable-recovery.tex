@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the stable recovery interface\\
+(smooth-germ programme, stage C1)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The smooth-germ programme's named trap is that replacing a smooth
+loss by its Taylor polynomial produces \emph{order-controlled}
+moment errors, never exact equality --- so the polynomial recovery
+theorems, whose public forms take eventually-equal data, cannot be
+invoked directly. The scoping consult prescribed stage C1: a theorem
+interface in which every data hypothesis is a vanishing limit at the
+coefficient-sensitive scale.
+
+\section{The thing formalised}
+
+Two theorems in \texttt{Laplace/OneD/StableRecovery.lean}, sorry-free
+with zero warnings on the first
+build\footnote{\texttt{jet\_recovery\_stable} and
+\texttt{nondegenerateJet\_recovery\_stable}.}: variable-base recovery
+from pure \texttt{Tendsto} data --- the second-moment difference
+tends to $0$, and each rung's scaled moment difference
+$q^{-r}(F^1_{2k+r} - F^2_{2k+r})$ tends to $0$ --- concluding
+$a_1 = a_2$ and $c^1 = c^2$; and its $k = 1$ form in the note's
+$\lambda/2$ normalisation.
+
+\section{Why it was nearly free}
+
+The consult predicted the existing proofs would ``adapt''; in fact no
+adaptation was needed at all. The programme's internal theorems were
+already limit-based --- the strong-induction recovery takes scaled
+\texttt{Tendsto} hypotheses, and the base recovery was built with an
+\texttt{\_of\_tendsto} variant precisely as the bridge --- so C1 is
+eleven lines of composition. Only the outermost public packaging had
+hardened its data to eventual equality (for the $t$-transfer, where
+exact equality is natural). The moral, worth keeping: maintaining the
+limit-based interface alongside the equality interface at every layer
+is what makes a stability programme cheap later.
+
+\section{Deliberation and check}
+
+Prior-deliberation path (C1 is specified verbatim in the archived
+scoping consult); no distinct numerical check is feasible or needed
+--- the statement is an interface weakening of theorems whose
+analytic content was checked in the two preceding tides, and it adds
+no closed form.
+
+\section{What the next tide inherits}
+
+Stages C2--C6 are the genuinely analytic remainder: two-sided
+quadratic control near the minimum and domain splitting (C2),
+rescaled Taylor-remainder bounds on the moving inner region (C3),
+normalized-quotient and cutoff transfer (C4), the finite-order smooth
+recovery (C5), and full-jet quantifier packaging (C6). These need a
+dedicated scoping consult with the note's ``Justification'' paragraph
+as the primary source; C2's outer estimate in particular must decide
+what global hypothesis stands in for the note's quadratic bound.
+
+\end{document}
