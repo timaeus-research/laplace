@@ -67,3 +67,4 @@ import Laplace.OneD.AnharmonicPartitionHigherDeriv
 import Laplace.OneD.AnharmonicSecondCumulant
 import Laplace.OneD.AnharmonicSusceptibilityGeneralH
 import Laplace.OneD.AnharmonicThirdCumulant
+import Laplace.Pencil

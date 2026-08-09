@@ -1,0 +1,181 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\lstdefinelanguage{lean}{
+  keywords={theorem,lemma,def,noncomputable,namespace,end,open,import,fun,by,have,calc,set,intro,exact,apply,rw,simp,simpa,ring,funext,rcases,rwa},
+  sensitive=true,
+  comment=[l]{--},
+  morecomment=[s]{/-}{-/},
+}
+\lstset{basicstyle=\ttfamily\small, breaklines=true, language=lean}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the pencil identity\\ for pairs of potentials}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-08}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+This tide opens a new direction for the laplace seabed: statements about
+\emph{pairs} of potentials, toward the identifiability theorem of the germbij
+note (``What expectation values know about the loss landscape'', SRI,
+August 2026). That note proves that for nonnegative real analytic losses
+$L_1, L_2$ with common compact zero locus, equality of the asymptotic
+expansions of $\int \phi\, e^{-tL_i}$ for every observable $\phi$ forces
+$L_1 = L_2$ near the locus. The proof has three elementary ingredients: an
+exact \emph{pencil identity} converting the difference of Boltzmann integrals
+into an average over the interpolating family $L_s = (1-s)L_1 + s L_2$; the
+choice of observable $\phi = g\psi$ with $g = L_2 - L_1$, which makes the
+integrand positive; and a sector lower bound producing a polynomial rate that
+contradicts $o(t^{-\infty})$. Everything in the seabed so far concerns a
+single potential; the pencil identity is the minimal first step outward, and
+it is the ingredient the other two compose with.
+
+\section{The thing formalised}
+
+The pencil identity, in pointwise and integrated form, together with the
+comparison inequality and the partition-function specialisation. For
+$L_1, L_2 \colon \mathbb{R} \to \mathbb{R}$, $g = L_2 - L_1$ and
+$L_s = L_1 + s\,g$:
+\[
+e^{-t L_1(w)} - e^{-t L_2(w)}
+ = t \int_0^1 g(w)\, e^{-t L_s(w)}\, ds ,
+\qquad
+\int_{\mathbb{R}} \phi\, \big( e^{-tL_1} - e^{-tL_2} \big)\, dw
+ = t \int_0^1 \!\! \int_{\mathbb{R}} \phi\, g\, e^{-t L_s}\, dw\, ds ,
+\]
+the second under an explicit product-integrability hypothesis; and for
+$0 \le s \le 1$, $t \ge 0$ and pointwise nonnegative potentials, the
+comparison $e^{-t(L_1 + L_2)(w)} \le e^{-t L_s(w)}$. The Lean signatures
+(file \texttt{Laplace/Pencil.lean}, all sorry-free):
+
+\begin{lstlisting}
+theorem exp_pencil_identity (L1 L2 : R -> R) (t w : R) :
+    exp (-(t * L1 w)) - exp (-(t * L2 w))
+      = t * intervalIntegral (fun s =>
+          (L2 w - L1 w) * exp (-(t * (L1 w + s * (L2 w - L1 w))))) 0 1
+
+theorem pencil_identity_integrated (L1 L2 phi : R -> R) (t : R)
+    (hint : Integrable (uncurry ...) ((volume.restrict (Ioc 0 1)).prod volume)) :
+    integral (fun w => phi w * (exp (-(t * L1 w)) - exp (-(t * L2 w))))
+      = t * intervalIntegral (fun s => integral (fun w =>
+          phi w * ((L2 w - L1 w) * exp (-(t * (L1 w + s * (L2 w - L1 w))))))) 0 1
+
+lemma exp_pencil_ge ... : exp (-(t * (L1 w + L2 w))) <= exp (-(t * (L1 w + s * (L2 w - L1 w))))
+
+theorem partitionFunction_pencil ... :
+    partitionFunction L1 t - partitionFunction L2 t = t * ...
+\end{lstlisting}
+
+(Signatures abridged; the source file has the precise forms, with the
+project's Boltzmann convention \texttt{exp (-(t * L x))} shared with
+\texttt{Laplace/Gibbs.lean}.)
+
+\section{Proof strategy}
+
+The pointwise identity is the fundamental theorem of calculus for
+$s \mapsto e^{-t(a + sg)}$ on $[0,1]$: the derivative is
+$-(tg)\,e^{-t(a+sg)}$ by the chain rule combinators on
+\texttt{HasDerivAt}, the integrand is continuous hence interval
+integrable (discharged by \texttt{fun\_prop}), and the
+\texttt{hasDerivAt} form of the interval FTC\footnote{%
+\texttt{intervalIntegral.integral\_eq\_sub\_of\_hasDerivAt}.} gives
+$\int_0^1 = F(1) - F(0)$; a \texttt{calc} block moves the sign and the
+constant $t$ through the interval integral.
+
+The integrated form is the pointwise identity under the outer integral
+(\texttt{simp only [key]} with the pointwise identity as a rewrite family),
+the constant $t$ pulled out, and one application of Fubini for a product
+with one interval factor,\footnote{%
+\texttt{MeasureTheory.intervalIntegral\_integral\_swap}.} whose hypothesis
+is exactly the product-integrability assumption of the theorem after
+rewriting $\mathrm{uIoc}\,0\,1 = \mathrm{Ioc}\,0\,1$
+(\texttt{Set.uIoc\_of\_le}).
+The comparison lemma is monotonicity of $\exp$ plus a
+\texttt{nlinarith} certificate for
+$s(L_2 - L_1) \le L_2$ given $0 \le s \le 1$ and nonnegativity, with the
+two product hints $s \cdot L_1 \ge 0$ and $(1-s) \cdot L_2 \ge 0$ supplied
+explicitly. The partition-function corollary is the $\phi = 1$ case plus
+\texttt{MeasureTheory.integral\_sub}.
+
+\section{Roadblocks and resolutions}
+
+This tide was unusually smooth; three small snags, all local.
+First, a \texttt{simpa}-normalisation mismatch in the chain-rule step: the
+term \texttt{(h.const\_mul t).neg} already has exactly the right type, and
+wrapping it in \texttt{simpa [mul\_add, neg\_add]} rewrote the function to a
+shape the goal did not have. Removing the \texttt{simpa} fixed it; the lesson
+(known from earlier tides) is to try \texttt{exact} before normalising.
+Second, the Mathlib style linter rejects \texttt{(0:R)} for
+\texttt{(0 : R)}; a one-shot \texttt{sed} conformed the file. Third, in the
+$\phi = 1$ specialisation the hypothesis transport under
+\texttt{Function.uncurry} does not follow from \texttt{simpa [one\_mul]}
+(simp will not rewrite under the uncurry without unfolding it); an explicit
+\texttt{funext} equality of the two uncurried functions, transported with
+\texttt{\(\blacktriangleright\)}, was needed.
+
+Operationally, the deliberation consult was the slowest step: the API call
+hung for several hours before returning (a known failure mode of the query
+helper), and the formalisation was completed while it ran. The response,
+when it arrived, endorsed the pencil identity as the minimal target and the
+exact architecture that had been built, and its one improvement (state the
+identity first in scalar form, derive the functional version as a one-line
+corollary) was adopted in a final refactor. The verdict and the vote are
+recorded in the tide log alongside this file.\footnote{Tide log:
+\texttt{tide-log/2026-08-08-19-11-tide-germbij-pencil.md}; GPT consult
+saved verbatim as \texttt{gpt55\_germbij-pencil\_v1.md} in the same
+directory.}
+
+\section{What was Mathlib, what was new}
+
+Everything load-bearing was Mathlib lookup: the interval FTC, the Fubini
+swap for a product with one interval factor, the \texttt{HasDerivAt}
+chain-rule combinators, and elementary rearrangements of integrals. New content is the
+four statements themselves and their composition; no new infrastructure,
+no new integration theory. That is as it should be for a first step
+outward: the mathematical novelty of the germbij chain is concentrated in
+the sector bound and the final contradiction, deliberately left for the
+next tides.
+
+\section{Lessons}
+
+The pencil identity confirms that pairs-of-potentials statements sit
+comfortably on the existing seabed: the Boltzmann convention of
+\texttt{Gibbs.lean} composes with interval integration over the pencil
+parameter without any impedance mismatch. Two workflow lessons, both
+reinforcing existing \texttt{CLAUDE.md} guidance: prefer \texttt{exact}
+over \texttt{simpa} when a combinator already has the target type; and
+hypothesis transport under \texttt{Function.uncurry} wants explicit
+\texttt{funext} rather than \texttt{simp} lemmas about the uncurried
+arguments.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \textbf{Sector lower bound (next tide).} The 1D version with factored
+hypotheses: $K \ge 0$, $K \le C_0 w^2$ and $|a| \ge c\,w^m$ on $[0, r_0]$
+give $\int_{t^{-1/2}}^{2t^{-1/2}} a^2 e^{-tK} \ge c^2 e^{-4C_0}
+t^{-m-1/2}$. Elementary, via the constant lower bound for set
+integrals;\footnote{\texttt{MeasureTheory.setIntegral\_ge\_of\_const\_le}.}
+the numerical check is already in the tide log.
+\item \textbf{The identifiability contradiction.} Composing the
+integrated pencil identity, the comparison lemma
+\texttt{exp\_pencil\_ge}, and the sector bound into the 1D version of
+germbij Theorem~7.3, with the analytic-germ input taken as the factored
+hypothesis $|g| \ge c\,w^m$.
+\item \textbf{Integrability bookkeeping.} A small API lemma producing the
+product-integrability hypothesis of \texttt{pencil\_identity\_integrated}
+from continuity plus compact support of $\phi$, to make the theorem easy
+to apply downstream.
+\end{itemize}
+
+\end{document}
