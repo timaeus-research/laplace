@@ -32,3 +32,23 @@ Pure composition of verified components; no new closed form.
 ## Vote
 
 - Claude: J6 as staged. - GPT-5.6 Sol: same (archived). Agreed.
+
+## Result
+
+One file (`Laplace/Multi/DegreeRecovery.lean`, ~165 lines, sorry-free,
+three-repair pass — one genuine near-miss caught by the checker):
+
+- `taylorHomogeneousTerm_continuous` / `_hasPolynomialGrowth` (CMM
+  continuity through the diagonal; le_opNorm with ∏‖x‖ = ‖x‖^k).
+- **`iteratedFDeriv_recovery_of_moment_rates`** (J6): the consult's
+  seven-step chain composed exactly — data at P := Q, IsLittleO →
+  divided Tendsto → 0, J5e → −Cov(Q,Q), uniqueness, J2 rigidity,
+  (k!)⁻¹ cancellation, J3 polarization.
+
+The near-miss: the polynomial-growth closure for a difference at
+mismatched exponents needs constant 2(C₁+C₂), not C₁+C₂ — the first
+draft's tighter constant made the claimed bound FALSE (each term
+costs a factor 2 when its exponent is bumped to the max), and
+linarith's refusal was the checker doing its job. Worth noting as
+the session's only instance of a wrong intermediate STATEMENT (as
+opposed to a wrong tactic) surviving to the checker.
