@@ -53,3 +53,29 @@ Delta_3(x) = 0.5632000000
 q=0.1: (L1-L2)(qx)/q^3 = 0.5754880000  diff = 1.23e-02
 q=0.01: (L1-L2)(qx)/q^3 = 0.5644288000  diff = 1.23e-03
 q=0.001: (L1-L2)(qx)/q^3 = 0.5633228800  diff = 1.23e-04
+
+## Result
+
+One file (`Laplace/Multi/RadialTaylor.lean`, ~160 lines, sorry-free,
+two-repair diagnostic pass — a dead trailing ring and an unused
+hypothesis):
+
+- `taylorHomogeneousTerm k L x = (k!)⁻¹·D^kL(0)[x,…,x]`.
+- `ray_iteratedDeriv`: the ray's m-th derivative at 0 equals the
+  m-th Fréchet diagonal, ALL orders at once, via
+  `ContinuousLinearMap.iteratedFDeriv_comp_right` +
+  `iteratedDeriv_eq_iteratedFDeriv` — one lemma where H3a needed
+  per-order chain-rule plumbing. (Retroactive note: H3a's
+  ray_hasDerivAt_two could now be derived from this.)
+- `pairwise_rescaled_loss_tendsto`: the consult's pairwise form; the
+  0 < k hypothesis turned out unnecessary (the k = 0 case is
+  continuity), so the statement is fully general.
+- `taylorHomogeneousTerm_smul`: degree-k homogeneity via
+  `MultilinearMap.map_smul_univ` — the certificate the J2 rigidity
+  engine consumes.
+
+J2 + J3 + J4 now cover every input of the recovery composition
+except the rate-sensitive integrated limit (J5, the flagged largest
+stage): rigidity takes Cov(Q,Q) = 0 to Q = 0, polarization takes
+diagonal equality to tensor equality, and this tide produces the
+diagonal differences as limits.
