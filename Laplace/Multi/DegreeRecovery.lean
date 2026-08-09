@@ -63,23 +63,59 @@ theorem taylorHomogeneousTerm_hasPolynomialGrowth (k : ℕ)
         nlinarith [pow_nonneg (norm_nonneg x) k,
           norm_nonneg (iteratedFDeriv ℝ k L 0)]
 
+/-- Polynomial growth is closed under differences (with the doubled
+constant `2(C₁ + C₂)` absorbing the mismatched exponents). -/
+theorem HasPolynomialGrowth.sub {f g : EuclidD d → ℝ}
+    (hf : HasPolynomialGrowth f) (hg : HasPolynomialGrowth g) :
+    HasPolynomialGrowth (fun x ↦ f x - g x) := by
+  obtain ⟨C₁, n₁, hC₁, h₁⟩ := hf
+  obtain ⟨C₂, n₂, hC₂, h₂⟩ := hg
+  refine ⟨2 * (C₁ + C₂), max n₁ n₂, by linarith, fun x ↦ ?_⟩
+  have hmax : ∀ n m : ℕ, n ≤ m →
+      (1 + ‖x‖ ^ n) ≤ 2 * (1 + ‖x‖ ^ m) := by
+    intro n m hnm
+    rcases le_total ‖x‖ 1 with hy | hy
+    · have := pow_le_one₀ (norm_nonneg x) hy (n := n)
+      have h2 : (0:ℝ) ≤ ‖x‖ ^ m := by positivity
+      linarith
+    · have := pow_le_pow_right₀ hy hnm
+      have h2 : (0:ℝ) ≤ ‖x‖ ^ n := by positivity
+      linarith
+  have hb₁ := h₁ x
+  have hb₂ := h₂ x
+  have hle₁ : (1 + ‖x‖ ^ n₁) ≤ 2 * (1 + ‖x‖ ^ max n₁ n₂) :=
+    hmax n₁ _ (le_max_left _ _)
+  have hle₂ : (1 + ‖x‖ ^ n₂) ≤ 2 * (1 + ‖x‖ ^ max n₁ n₂) :=
+    hmax n₂ _ (le_max_right _ _)
+  calc |f x - g x| ≤ |f x| + |g x| := abs_sub _ _
+    _ ≤ C₁ * (1 + ‖x‖ ^ n₁) + C₂ * (1 + ‖x‖ ^ n₂) := by
+        linarith
+    _ ≤ 2 * (C₁ + C₂) * (1 + ‖x‖ ^ max n₁ n₂) := by
+        nlinarith [mul_le_mul_of_nonneg_left hle₁ hC₁,
+          mul_le_mul_of_nonneg_left hle₂ hC₂]
+
 namespace HigherLaplaceDomain
 
 variable {k : ℕ} {L₁ L₂ : EuclidD d → ℝ}
   {H : Matrix (Fin d) (Fin d) ℝ}
 
-/-- **Single-degree tensor recovery** (J6): `o(q^(k-2))` rescaled
-moment data at every homogeneous degree-`k` test identifies the
-`k`-th derivative tensor. -/
-theorem iteratedFDeriv_recovery_of_moment_rates (hk : 2 < k)
+/-- **One-test tensor recovery** (J6-point): the `o(q^(k-2))` rate at
+the single adaptive test `Δₖ` (the diagonal difference of the two
+degree-`k` Taylor terms) already identifies the `k`-th derivative
+tensor. The analytic Laplace argument needs exactly one test;
+determining families (all homogeneous observables, or the finite
+monomial family) are mechanisms for deriving this test's rate. -/
+theorem iteratedFDeriv_recovery_of_taylorDifference_rate (hk : 2 < k)
     (A₁ : HigherLaplaceDomain k L₁ H) (A₂ : HigherLaplaceDomain k L₂ H)
     (hlower : ∀ j < k,
       iteratedFDeriv ℝ j L₁ 0 = iteratedFDeriv ℝ j L₂ 0)
     (hsymm₁ : (iteratedFDeriv ℝ k L₁ 0).IsSymm)
     (hsymm₂ : (iteratedFDeriv ℝ k L₂ 0).IsSymm)
-    (hdata : ∀ P : EuclidD d → ℝ, Continuous P →
-      HasPolynomialGrowth P → IsHomogeneousOfDegree k P →
-      (fun q : ℝ ↦ A₁.rescaledMoment P q - A₂.rescaledMoment P q)
+    (hdataQ : (fun q : ℝ ↦
+        A₁.rescaledMoment (fun x ↦ taylorHomogeneousTerm k L₁ x -
+          taylorHomogeneousTerm k L₂ x) q -
+        A₂.rescaledMoment (fun x ↦ taylorHomogeneousTerm k L₁ x -
+          taylorHomogeneousTerm k L₂ x) q)
         =o[𝓝[>] (0 : ℝ)] fun q : ℝ ↦ q ^ (k - 2)) :
     iteratedFDeriv ℝ k L₁ 0 = iteratedFDeriv ℝ k L₂ 0 := by
   set Q : EuclidD d → ℝ := fun x ↦
@@ -90,42 +126,17 @@ theorem iteratedFDeriv_recovery_of_moment_rates (hk : 2 < k)
     (taylorHomogeneousTerm_continuous k L₁).sub
       (taylorHomogeneousTerm_continuous k L₂)
   have hQ_growth : HasPolynomialGrowth Q := by
-    obtain ⟨C₁, n₁, hC₁, h₁⟩ :=
-      taylorHomogeneousTerm_hasPolynomialGrowth k L₁
-    obtain ⟨C₂, n₂, hC₂, h₂⟩ :=
-      taylorHomogeneousTerm_hasPolynomialGrowth k L₂
-    refine ⟨2 * (C₁ + C₂), max n₁ n₂, by linarith, fun x ↦ ?_⟩
-    have hmax : ∀ n m : ℕ, n ≤ m →
-        (1 + ‖x‖ ^ n) ≤ 2 * (1 + ‖x‖ ^ m) := by
-      intro n m hnm
-      rcases le_total ‖x‖ 1 with hy | hy
-      · have := pow_le_one₀ (norm_nonneg x) hy (n := n)
-        have h2 : (0:ℝ) ≤ ‖x‖ ^ m := by positivity
-        linarith
-      · have := pow_le_pow_right₀ hy hnm
-        have h2 : (0:ℝ) ≤ ‖x‖ ^ n := by positivity
-        linarith
-    have hb₁ := h₁ x
-    have hb₂ := h₂ x
-    have hle₁ : (1 + ‖x‖ ^ n₁) ≤ 2 * (1 + ‖x‖ ^ max n₁ n₂) :=
-      hmax n₁ _ (le_max_left _ _)
-    have hle₂ : (1 + ‖x‖ ^ n₂) ≤ 2 * (1 + ‖x‖ ^ max n₁ n₂) :=
-      hmax n₂ _ (le_max_right _ _)
-    calc |Q x| ≤ |taylorHomogeneousTerm k L₁ x| +
-          |taylorHomogeneousTerm k L₂ x| := abs_sub _ _
-      _ ≤ C₁ * (1 + ‖x‖ ^ n₁) + C₂ * (1 + ‖x‖ ^ n₂) := by
-          linarith
-      _ ≤ 2 * (C₁ + C₂) * (1 + ‖x‖ ^ max n₁ n₂) := by
-          nlinarith [mul_le_mul_of_nonneg_left hle₁ hC₁,
-            mul_le_mul_of_nonneg_left hle₂ hC₂]
+    rw [hQ_def]
+    exact (taylorHomogeneousTerm_hasPolynomialGrowth k L₁).sub
+      (taylorHomogeneousTerm_hasPolynomialGrowth k L₂)
   have hQ_hom : IsHomogeneousOfDegree k Q := by
     intro a x
     rw [hQ_def]
     simp only []
     rw [taylorHomogeneousTerm_smul, taylorHomogeneousTerm_smul]
     ring
-  -- instantiate the data at Q and identify the covariance
-  have hQdata := hdata Q hQ_cont hQ_growth hQ_hom
+  -- the data at Q and the identified covariance
+  have hQdata := hdataQ
   have hzero : Tendsto (fun q : ℝ ↦
       (A₁.rescaledMoment Q q - A₂.rescaledMoment Q q) / q ^ (k - 2))
       (𝓝[>] (0 : ℝ)) (𝓝 0) :=
@@ -160,6 +171,32 @@ theorem iteratedFDeriv_recovery_of_moment_rates (hk : 2 < k)
     exact mul_left_cancel₀ hfac hx'
   -- polarization upgrades to tensors
   exact iteratedFDeriv_eq_of_diag_eq hsymm₁ hsymm₂ hdiag
+
+/-- **Single-degree tensor recovery** (J6): `o(q^(k-2))` rescaled
+moment data at every homogeneous degree-`k` test identifies the
+`k`-th derivative tensor. Wrapper around the one-test core,
+instantiating the data at the diagonal difference itself. -/
+theorem iteratedFDeriv_recovery_of_moment_rates (hk : 2 < k)
+    (A₁ : HigherLaplaceDomain k L₁ H) (A₂ : HigherLaplaceDomain k L₂ H)
+    (hlower : ∀ j < k,
+      iteratedFDeriv ℝ j L₁ 0 = iteratedFDeriv ℝ j L₂ 0)
+    (hsymm₁ : (iteratedFDeriv ℝ k L₁ 0).IsSymm)
+    (hsymm₂ : (iteratedFDeriv ℝ k L₂ 0).IsSymm)
+    (hdata : ∀ P : EuclidD d → ℝ, Continuous P →
+      HasPolynomialGrowth P → IsHomogeneousOfDegree k P →
+      (fun q : ℝ ↦ A₁.rescaledMoment P q - A₂.rescaledMoment P q)
+        =o[𝓝[>] (0 : ℝ)] fun q : ℝ ↦ q ^ (k - 2)) :
+    iteratedFDeriv ℝ k L₁ 0 = iteratedFDeriv ℝ k L₂ 0 := by
+  refine iteratedFDeriv_recovery_of_taylorDifference_rate hk A₁ A₂
+    hlower hsymm₁ hsymm₂ (hdata _ ?_ ?_ ?_)
+  · exact (taylorHomogeneousTerm_continuous k L₁).sub
+      (taylorHomogeneousTerm_continuous k L₂)
+  · exact (taylorHomogeneousTerm_hasPolynomialGrowth k L₁).sub
+      (taylorHomogeneousTerm_hasPolynomialGrowth k L₂)
+  · intro a x
+    simp only []
+    rw [taylorHomogeneousTerm_smul, taylorHomogeneousTerm_smul]
+    ring
 
 end HigherLaplaceDomain
 
