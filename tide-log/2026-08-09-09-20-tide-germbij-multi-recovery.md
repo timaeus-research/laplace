@@ -33,3 +33,22 @@ not a closed form.
 - GPT-5.6 Sol: same (archived).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/HessianRecovery.lean`, ~100 lines,
+sorry-free, CLEAN ON THE FIRST DIAGNOSTIC PASS — the first
+zero-repair file of the arc):
+
+- `covariance` (the H5 covariance form named), `tendsto_covariance`.
+- `hessian_inv_entry_recovery`: o(q²)-agreeing covariance data give
+  H₁⁻¹ᵢⱼ = H₂⁻¹ᵢⱼ (IsLittleO.tendsto_div_nhds_zero + Tendsto.sub +
+  tendsto_nhds_unique).
+- `hessian_recovery`: H₁ = H₂ by Matrix.ext + double nonsingular
+  inversion from PosDef determinants.
+
+The multivariate H-recovery milestone (stages H0-H6 of the scoping
+consult) is COMPLETE: from C² losses with positive-definite Hessians
+at the minimum, posterior covariance data at scale q⁻² recover H,
+and matching data force equal Hessians — germbij's multivariate
+Hessian step, end to end, PRs #66-#72 + this.
