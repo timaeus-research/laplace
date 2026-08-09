@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: anchor cancellation\\
+\large the asymptotic core of one-point anchoring}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The germbij note's Proposition on one-point anchoring closes the gap
+between unnormalized and normalized identifiability: if the zero
+locus contains one point where the germ is recoverable from ratios,
+the common scalar gauge $C(t)$ relating two normalized expansion
+families is forced to one, and the unnormalized theorem applies.
+Formalising it seemed blocked on a data structure for asymptotic
+series. This tide dissolves the blocker: at the function level, the
+note's ``$\simeq$'' is equality up to superpolynomially small error
+--- the vocabulary already merged in \code{Laplace.Decay}, here named
+\code{SuperPoly} --- and the scalar series is an arbitrary function
+$C \colon \R \to \R$ with no regularity at all, since it is never
+integrated or differentiated. The tide lands the pure asymptotic
+algebra: dividing the gauge deviation by a polynomially-bounded-below
+anchor moment costs only a polynomial shift in decay order, and a
+superpolynomially small gauge deviation then disappears against every
+bounded reference moment. One anchored observable silences the gauge
+everywhere.
+\end{abstract}
+
+\section{Setting}
+
+With the degenerate constructive arc closed, the note's last
+substantive claim proved on paper but not yet in Lean was
+Proposition~7.6. Its
+proof is three sentences of asymptotics around a hypothesis
+(``recovery from ratios is available at $p$'') that is itself a
+pointer to the constructive classes. The formalisation question was
+never the mathematics but the modeling: what Lean object is ``the
+family of asymptotic expansions'', and what is a proportionality
+$\Phi_{L_2} \simeq C(t)\,\Phi_{L_1}$ between families? The shape
+consult confirmed the escape: the proof uses only the
+flat-equivalence \emph{consequence} of series proportionality, so no
+series object is needed --- with two provisos that are now hypotheses
+by design. The gauge must be one common $C$ across all observables
+($\exists C\, \forall \varphi$, not $\forall \varphi\, \exists C$,
+which the consult noted has ``almost no normalized-family content''),
+and the anchor's lower bound should carry an integer exponent, so the
+decay algebra never meets \code{rpow} arithmetic.
+
+\section{The thing formalised}
+
+Three results in \code{Laplace/Anchoring.lean}, measure-free.
+\code{superPoly\_of\_mul\_anchor}: if $(C - 1) \cdot A$ is beyond all
+orders and $\kappa\, t^{-n} \le A(t)$ eventually with $\kappa > 0$,
+then $C - 1$ is beyond all orders --- for the order-$N$ estimate,
+invoke the hypothesis at order $N + n$ and divide; the anchor's
+positivity makes the division safe and the polynomial factor is
+absorbed by the order shift. \code{superPoly\_sub\_of\_scalar\_gauge}:
+from $B - CJ$ beyond all orders, $C - 1$ beyond all orders, and
+$J = O(1)$, conclude $B - J$ beyond all orders, via the identity
+$B - J = (B - CJ) + (C-1)J$ and the product of little-$o$ with
+big-$O$. The packaged corollary
+\code{anchored\_proportionality\_remove\_scalar} composes them: one
+observable whose two moments agree exactly and whose reference
+moment is polynomially bounded below anchors the gauge, and the
+moment difference of every other observable with bounded reference
+moment is then beyond all orders --- exactly what the merged
+singular-identifiability contradiction consumes.
+
+\section{Where progress stalled}
+
+Nowhere: the file compiled on its first build with zero warnings,
+the session's third first-pass tide. The consult's two normalization
+decisions (integer anchor exponent; \code{IsBigO} against the
+constant function as the boundedness shape) are what kept the proofs
+to single calc chains; both were made before any Lean was written.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the \code{IsLittleO} API (\code{isLittleO\_iff},
+\code{mul\_isBigO}, \code{add}, \code{congr'}, \code{neg\_left}) and
+\code{rpow} basics. New: the modeling decision itself --- that
+Proposition~7.6's asymptotic content lives entirely at the function
+level --- plus the two lemma statements, which are reusable for any
+future normalized-family argument (the consult flagged this
+explicitly).
+
+\section{What the next tide inherits}
+
+The remaining half of Proposition~7.6 is Laplace-side plumbing with
+merged ingredients: the constant moment bound
+$|\int \varphi\, e^{-tL}| \le \int |\varphi|$ for $L \ge 0$
+(supplying \code{hbounded}), exact anchor equality from
+\code{Set.EqOn}~$L_1$~$L_2$~$V$ plus
+$\mathrm{tsupport}\,\varphi_0 \subseteq V$ (supplying
+\code{hanchor}), the sector machinery's lower bound (supplying
+\code{hlow}), and a thin wrapper: if $L_1 \ne L_2$ near $W_0$, the
+pencil--sector theorem produces an observable whose moment
+difference is \emph{not} superpolynomial, contradicting the
+corollary. The optional preface --- ratio recovery gives
+$L_2 = L_1 + c$ on $V$ and a common zero kills $c$ --- is a
+three-line lemma the consult recommended keeping separate.
+\end{document}
