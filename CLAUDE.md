@@ -292,3 +292,12 @@ The first instance was `QuarticSexticPartitionAsymptotic` /
 at the fixed `(k₁, k₂) = (2, 3)`; the generic-`(k₁, k₂)` trio
 (`KthKthPartitionAsymptotic`, `KthKthMomentAsymptotic`,
 `KthKthNumeratorAsymptotic`) lifted those on 2026-05-21.
+
+**`open scoped Nat` steals `φ` (and `!`).** The `Nat` scope defines `φ` as
+notation for `Nat.totient`, so after `open scoped Nat` a binder like
+`{f φ : ℝ → ℝ}` fails to parse (`unexpected token 'φ'; expected '}'`).
+Identifiers *containing* φ (`hφ_c`, `Mφ`) are fine — only the bare name
+breaks. If a file needs both a `φ` variable and double factorials, skip the
+scoped open and write `Nat.doubleFactorial (…)` explicitly; the closed-form
+lemmas stated with `‼` still apply, since `‼` is notation for the same
+constant.

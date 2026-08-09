@@ -1,0 +1,161 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: flat perturbations are invisible\\
+(germbij Proposition 4.1)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The germbij note's identifiability programme proved the positive half
+of its story: analytic potentials are pinned by their expectation
+values, because an analytic pencil difference obeys a sector lower
+bound $\kappa t^{\gamma}$ that contradicts superpolynomial decay. The
+note's Proposition~4.1 is the negative half, and the reason the
+analyticity hypothesis is not decoration: a \emph{flat} perturbation
+--- smooth, nonnegative, vanishing to infinite order at the minimum
+--- changes every observable integral by less than any power of $1/t$.
+Without it, the identifiability theorem reads as a technical
+convenience; with it, analyticity is exposed as the exact boundary of
+what expectation values can see.
+
+This was scoped as a candidate multi-tide programme, but scoping
+collapsed it to a single tide: no expansion machinery is needed at
+all. The pointwise identity
+\[
+e^{-tL} - e^{-t(L+f)} \;=\; e^{-tL}\,\bigl(1 - e^{-tf}\bigr),
+\qquad 0 \le 1 - e^{-s} \le s,
+\]
+together with a \emph{global} polynomial domination of $f$, reduces
+the whole difference to one closed-form Gaussian moment that the
+seabed already owns.
+
+\section{The thing formalised}
+
+Two declarations in \texttt{Laplace/OneD/FlatInvisible.lean},
+sorry-free with zero warnings. The main
+theorem\footnote{\texttt{flat\_perturbation\_invisible}.}: if
+$f$ is continuous with $0 \le f \le M$ and flat at $0$ (for every $n$
+there are $C \ge 0$, $\delta > 0$ with $f(x) \le C x^{2n}$ on
+$|x| \le \delta$), then for every continuous compactly supported
+$\varphi$ and every $N$ there are $K \ge 0$ and $T \ge 1$ with
+\[
+\Bigl|\,\int \varphi\, e^{-t x^2/2}\,dx
+ \;-\; \int \varphi\, e^{-t(x^2/2 + f)}\,dx \,\Bigr|
+ \;\le\; \frac{K}{t^N}
+\qquad (t \ge T).
+\]
+The corollary\footnote{\texttt{flat\_perturbation\_superpolynomial}.}
+packages this as $\mathrm{IsLittleO}$: the difference is
+$o(t^{-N})$ for every $N$ --- precisely the hypothesis shape that
+\texttt{lower\_bound\_not\_superpolynomial} in
+\texttt{Laplace/Decay.lean} refutes for analytic pencil differences.
+The two halves of the note's story now meet in the same vocabulary:
+analytic differences \emph{cannot} decay superpolynomially, flat ones
+\emph{do}.
+
+\section{Proof strategy}
+
+Three moves, none requiring new infrastructure. First, a sup bound
+$M_\varphi$ for $|\varphi|$ from compact support. Second, the global
+domination: near $0$ flatness gives $f \le C x^{2N+2}$; away from
+$0$ boundedness gives $f \le M \le (M/\delta^{2N+2})\,x^{2N+2}$, so
+$f \le (C + M/\delta^{2N+2})\,x^{2N+2}$ everywhere. Third, the
+pointwise bound
+\[
+\bigl|\varphi\,e^{-tx^2/2} - \varphi\,e^{-t(x^2/2+f)}\bigr|
+ \;\le\; M_\varphi\, e^{-tx^2/2}\, t f
+ \;\le\; M_\varphi (C{+}D)\, t\, x^{2N+2} e^{-tx^2/2},
+\]
+integrated by the seabed's closed-form moment
+(\texttt{integral\_pow\_mul\_exp\_neg\_t\_sq\_half}), which yields
+$c_N\, t \cdot t^{-(N+3/2)} \le c_N\, t^{-N}$ for $t \ge 1$. The
+numerical check (run \emph{before} the consult, per the honesty rule)
+confirmed superpolynomial decay for $f = e^{-1/x^2}$:
+$|\Delta(t)|$ at $t = 20, 80, 320$ is
+$8.4\times10^{-3}, 5.1\times10^{-5}, 4.2\times10^{-10}$, with
+$\Delta\cdot t^3 \to 0$ and $\Delta \cdot t^5$ collapsing after onset.
+
+\section{Roadblocks and resolutions}
+
+One genuinely new failure mode. The double-factorial notation
+$n\text{\textexclamdown\textexclamdown}$ needs \texttt{open scoped
+Nat}, but that scope also defines $\varphi$ as notation for
+\texttt{Nat.totient} --- so the theorem binder
+$\{f\;\varphi : \mathbb{R} \to \mathbb{R}\}$ stopped parsing
+(\emph{unexpected token, expected \}}) the moment the open was added.
+Identifiers merely containing $\varphi$ survive; only the bare binder
+dies. Resolution: skip the scoped open and write
+\texttt{Nat.doubleFactorial} explicitly; the moment lemmas stated with
+the notation still apply since it denotes the same constant. Promoted
+to the repository error catalogue.
+
+The only other friction was two known-catalogue items (the
+\texttt{le\_or\_lt} rename, and a guessed integrability lemma name ---
+the seabed's actual lemma is
+\texttt{integrable\_pow\_mul\_exp\_neg\_mul\_sq} at $c = t/2$, bridged
+by a one-line \texttt{ring} congruence). The $\mathrm{IsLittleO}$
+corollary, including its rpow/npow bookkeeping, built on the first
+attempt via \texttt{isLittleO\_iff\_tendsto'} and the ratio
+$t^{-(N+1)}/t^{-N} = t^{-1}$.
+
+\section{The deliberation}
+
+GPT-5.6 Sol endorsed the candidate exactly as drafted: the even-power
+flatness hypothesis (composes with the Gaussian moment lemmas without
+rpow leakage), $T = 1$, the file name, and the all-orders $K/t^N$ form
+as the quantitative core. Its one substantive addition was adopted:
+\begin{quote}
+The all-orders $O(t^{-N})$ statement faithfully captures ``no
+asymptotic expansion coefficient changes.'' [\dots] I would make this
+theorem the elementary quantitative result, and a short corollary
+translating it into \texttt{Laplace.Decay}'s superpolynomial
+vocabulary. That keeps the analytic proof independent of the
+packaging.
+\end{quote}
+Its suggested helper decomposition was declined (each helper is used
+once; the monolithic proof is $\sim$260 lines and readable), and its
+recommendation to defer the classic witness $f = e^{-1/x^2}$ to a
+separate declaration was accepted --- GPT supplied the flatness route
+($s^n/n! \le e^s$ gives $e^{-1/x^2} \le n!\,x^{2n}$ globally, so
+$C = n!$ and any $\delta$ works), which makes that follow-up tide
+well-scoped if commissioned.
+
+\section{Mathlib vs new}
+
+Everything analytic was Mathlib or seabed lookup: the compact-support
+sup bound, compact-support integrability, the inequality
+$1 + s \le e^s$, the seabed's Gaussian moment and integrability
+lemmas, and the tendsto characterisation of
+$\mathrm{IsLittleO}$.\footnote{Respectively
+\texttt{HasCompactSupport.}\allowbreak\texttt{exists\_bound\_of\_continuousOn},
+\texttt{Continuous.}\allowbreak\texttt{integrable\_of\_hasCompactSupport},
+\texttt{Real.add\_one\_le\_exp},
+\texttt{integral\_pow\_mul\_exp\_neg\_t\_sq\_half} and
+\texttt{integrable\_pow\_mul\_exp\_neg\_mul\_sq}, and
+\texttt{isLittleO\_iff\_tendsto'}.} New content: the statement itself,
+the global domination argument, and the assembly.
+
+\section{What the next tide inherits}
+
+The natural follow-up is the witness declaration: a concrete flat
+$f = e^{-1/x^2}$ instance satisfying every hypothesis of
+\texttt{flat\_perturbation\_invisible}, with flatness from the
+factorial bound above (Mathlib's \texttt{expNegInvGlue} is the
+reference point for continuity at $0$). With the witness in place the
+note's Proposition~4.1 is fully witnessed rather than conditionally
+quantified. Beyond that, the remaining germbij commissions are the
+higher cumulant rungs of Theorem~3.1 and the multivariate \S7.4
+programme.
+
+\end{document}
