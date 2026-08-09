@@ -79,3 +79,4 @@ import Laplace.Multi.LeadingPart
 import Laplace.Multi.LeadingIdentifiability
 import Laplace.Multi.Turnkey
 import Laplace.Multi.AnalyticBridge
+import Laplace.Decay
