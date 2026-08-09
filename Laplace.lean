@@ -131,3 +131,4 @@ import Laplace.Multi.Turnkey
 import Laplace.Multi.AnalyticBridge
 import Laplace.Decay
 import Laplace.Anchoring
+import Laplace.OnePointAnchoring
