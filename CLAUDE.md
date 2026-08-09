@@ -360,3 +360,14 @@ explicit-derivative variant is
 on the `Convex` fact) — with it the same application elaborates
 instantly. Symptom to recognize: `(deterministic) timeout at whnf`
 pointing at the theorem's `:=` line while every `have` checks fine.
+
+**`ω` (analytic grade) is scoped notation.** Without `open scoped
+ContDiff`, a bare `ω` in a theorem statement silently auto-binds as a
+free implicit variable; the symptom is an "expected `ContDiffAt ℝ ⊤`,
+got `ContDiffAt ℝ ω`" mismatch at use sites (Mathlib displays the
+analytic grade as ⊤ of `WithTop ℕ∞`). Higher-order symmetry of
+iterated derivatives (`ContDiffAt.iteratedFDeriv_comp_perm`) exists
+ONLY at ω regularity; for C^k, Mathlib has just order-2
+(`second_derivative_symmetric`). Polarization and any
+tensor-symmetry consumer should take an abstract `IsSymm` hypothesis
+and let callers discharge it (J3 pattern).
