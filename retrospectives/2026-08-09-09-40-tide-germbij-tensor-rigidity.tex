@@ -20,8 +20,9 @@
 \noindent The degree-$k$ tensor-recovery programme opens with its
 injectivity engine: a continuous homogeneous function of positive
 degree and polynomial growth whose self-covariance against the
-quadratic Gaussian vanishes is identically zero
-(\texttt{homogeneous\_eq\_zero\_of\_gaussianCovariance\_self\_eq\_zero}).
+quadratic Gaussian vanishes is identically
+zero.\footnote{\texttt{homogeneous\_eq\_zero\_of\_gaussianCovariance\_self\_eq\_zero}
+in \texttt{Laplace/Multi/GaussianCovariance.lean}.}
 This is the no-Isserlis idea from the original multivariate scoping
 consult, now in Lean: no Wick pairings, no moment matrices, no
 monomial enumeration --- full support of the Gaussian weight (a
@@ -81,8 +82,9 @@ No stalls; three quick passes, all catalogued classes (the
 \texttt{set}-folded hypothesis making a rewrite dead) plus one new
 niggle for the catalogue: this Mathlib pin deprecates
 \texttt{push\_neg} in favour of \texttt{push Not}. The consult's
-pre-flight warning to check whether \texttt{quadKernel\_integrable\_pow}
-really is the norm-moment form (it is) saved a potential wrong turn.
+pre-flight warning --- check that the existing kernel-moment theorem
+really is the norm-moment form, not powers of the kernel --- was
+verified (it is) and saved a potential wrong turn.
 
 \section{Mathlib lookup versus new mathematics}
 
