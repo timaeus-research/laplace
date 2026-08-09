@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{The smooth-germ programme: a synthesis\\
+(germbij Theorem 3.1's analytic bridge, five stages)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent Five stages (PRs \#60--\#63) carried the germbij note's
+Theorem~3.1 from its polynomial algebraic core to the smooth setting:
+two admissible $C^{R+2}$ losses whose normalized moments at
+$x^{2+r}$ differ by $o(q^{2+2r})$ for every $r \le R$ have the same
+Taylor data through degree $R+2$
+(\texttt{smooth\_jet\_recovery}), with nondegeneracy $\lambda > 0$
+derived from the admissibility envelope rather than assumed. The
+programme's central design constraint --- Taylor replacement produces
+order-controlled errors, never exact data --- shaped every interface:
+recovery theorems with pure \texttt{Tendsto} hypotheses, an
+epsilon-radius jet form, and a comparison theorem whose split radius
+$\sqrt{q}$ keeps \texttt{rpow} out of the entire development.
+\end{abstract}
+
+\section{What was proven}
+
+\begin{itemize}
+\item \textbf{StableRecovery} (PR \#60): the recovery interface with
+all data hypotheses as vanishing limits at the coefficient-sensitive
+scales --- eleven lines of composition, because the weighted-jet
+programme's internal theorems were already limit-based.
+\item \textbf{TaylorPackage} (PR \#61): the stabilizer envelope
+(coefficient-wise $d$, case split at $|x| = \rho$, no suprema), exact
+Gaussian scaling in $q$-space, and the envelope tail bound with the
+superpolynomial prefactor.
+\item \textbf{TaylorCompare} (PR \#62): the admissibility package
+(partition lower bound $2\delta e^{-\kappa\delta^2} q$, moment bound
+$C_s q^{s+1}$) and the programme's hardest step --- the local Taylor
+comparison, unnormalized at $o(q^{s+D-1})$ and normalized at
+$o(q^{s+D-2})$, by the $\sqrt{q}$ split, the exponential secant
+bound with the Taylor power kept inside the Gaussian, and a
+\texttt{Metric.tendsto\_nhds} epsilon-of-room assembly whose
+quantifier order matches the theorem's.
+\item \textbf{SmoothRecovery} (PR \#63): the Taylor adapter ---
+the Peano remainder from Mathlib, the derived minimum facts, the
+Taylor polynomial in jet shape, and the stabilized jet's joint
+certificate of admissibility and profile --- plus the headline
+composition.
+\end{itemize}
+
+\section{Design decisions that carried the programme}
+
+Three consult-driven choices did disproportionate work. The
+\emph{uniformly positive profile} envelope (from the weighted-jet
+programme) survived unchanged into the smooth setting: the stabilized
+Taylor polynomial inherits it by construction, with the stabilizer
+placed above the Taylor degree so its scaled contribution is
+invisible at every recovered rung. The \emph{$\sqrt{q}$ split} made
+the outer region's superpolynomial factor $e^{-c/q}$ elementary and
+banished \texttt{Real.rpow} from five files of asymptotics. And the
+\emph{limit-based interfaces} maintained at every layer meant the
+``asymptotically stable'' variants the smooth setting requires were
+compositions, not reproofs.
+
+\section{The composition-time discovery}
+
+The one structural surprise arrived exactly where the original
+scoping consult pointed (``full-jet quantifier management''): the
+recovery induction quantifies over every rung of its coefficient
+vector, but the stabilized jet is deliberately longer than the data
+reaches. The honest statement is the induction truncated at rung $R$
+(\texttt{jet\_recovery\_stable\_partial}); the full-length theorem is
+simply inapplicable, since the data genuinely says nothing about the
+stabilizer coefficient. Interface mismatches of this kind seem to be
+the characteristic failure mode of composition stages, worth
+budgeting for in future programme scoping.
+
+\section{Process}
+
+Five tides, each with the consult-or-prior-deliberation record,
+executed numerical checks (with one caught fabrication near-miss,
+documented in the C2 log, and the rule sharpened: the check runs in
+one command, the log text quotes its output in a later one), and the
+post-incident build gate (import line plus fresh \texttt{.olean})
+verified at every checkpoint. The composition plan for the final
+stage was written into the tide log \emph{before} the Lean, which let
+the assembly proceed mechanically across several hundred lines.
+
+\section{What remains}
+
+The germbij nondegenerate arc is now formalised end to end. The
+note's open commissions: the multivariate Theorem~3.1 (the
+Susceptibility Primer's missing Stage~3 --- Wick machinery on
+$\mathbb{R}^d$, a foundations programme), and the full-jet quantifier
+packaging (C6), which would upgrade the finite-order theorem to
+equality of whole Taylor series. Both need fresh scoping consults.
+
+\end{document}
