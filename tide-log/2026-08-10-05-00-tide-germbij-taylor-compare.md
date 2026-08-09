@@ -56,3 +56,30 @@ difference (A₂(K₁) − A₂(K₂))/q⁵ at q = 0.2, 0.1, 0.05:
 0.012645 → 0.001139 → 0.000078, decaying roughly like q² (the actual
 next order is x⁵ i.e. one extra q) — confirming o(q^{s+D−1}) with
 margin.
+
+## Result
+
+- Theorems (Laplace/OneD/TaylorCompare.lean, ~700 lines, zero
+  sorries, zero warnings; gate verified via import + .olean):
+  AdmissiblePotential (+ integrable_pow, partition_lower with the
+  explicit constant 2δe^{-κδ²}, moment_upper via envelope + exact
+  scaling), exp_neg_div_tendsto_zero (e^{-c/q}/q^n → 0 by u = 1/q),
+  admissible_moment_difference_littleO (C3 main: the √q split with
+  the secant bound and the Taylor power kept inside the Gaussian,
+  assembled by the Metric.tendsto_nhds epsilon-of-room skeleton), and
+  admissible_normalized_difference_littleO (C3 quotient: F_s
+  difference at o(q^{s+D-2}) by squeeze against the two unnormalized
+  limits with Z ≥ C₀q and |A| ≤ Cq^{s+1} — NOT the generic 3D
+  quotient lemma, which needs nonvanishing limits and does not apply
+  in x-space where Z → 0).
+- Surprises: (1) a new instance of the cascading-rewrite class:
+  `show s + D = (s+D-2)+2` rewrote the s + D INSIDE s + D - 2,
+  leaving unprovable residues — nth_rewrite on a named equation is
+  the fix (exponent-arithmetic analogue of the radical-atom rule);
+  (2) gcongr discharges monotone-denominator side goals from ambient
+  hypotheses entirely (a trailing exact is "No goals" even for the
+  substantive inequality); (3) positivity cannot use context
+  hypotheses like 0 ≤ C₂ — nonnegativity of set constants must be
+  passed explicitly; (4) the epsilon-of-room skeleton from the shape
+  consult worked as written, with the only structural addition being
+  the |·|-composed limits for the squeeze form of the quotient step.

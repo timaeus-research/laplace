@@ -497,4 +497,169 @@ theorem admissible_moment_difference_littleO
     _ < η * q ^ (s + D - 1) := by nlinarith [hqp, hb₁, hb₂, hεC,
         mul_le_mul_of_nonneg_right hεC hqp.le]
 
+set_option maxHeartbeats 1600000 in
+-- Quotient bookkeeping over four integral atoms exceeds the default
+-- heartbeat budget in `isDefEq` (see CLAUDE.md).
+/-- **The local Taylor comparison, normalized** (stage C3 quotient):
+under the same hypotheses, the difference of normalized moments is
+`o(q^(s+D-2))`. Decompose
+`F₁ - F₂ = (A₁ - A₂)/Z₁ + A₂(Z₂ - Z₁)/(Z₁Z₂)` and squeeze against
+the unnormalized limits using `Z ≥ C₀q` and `|A| ≤ Cq^(s+1)`. -/
+theorem admissible_normalized_difference_littleO
+    {K₁ K₂ : ℝ → ℝ} {ρ₁ κ₁ δ₁ ρ₂ κ₂ δ₂ : ℝ} {D : ℕ} (hD : 2 ≤ D)
+    (h1 : AdmissiblePotential K₁ ρ₁ κ₁ δ₁)
+    (h2 : AdmissiblePotential K₂ ρ₂ κ₂ δ₂)
+    (hjet : ∀ ε : ℝ, 0 < ε → ∃ δ' : ℝ, 0 < δ' ∧ ∀ x : ℝ, |x| ≤ δ' →
+      |K₁ x - K₂ x| ≤ ε * |x| ^ D)
+    (s : ℕ) :
+    Tendsto (fun q : ℝ ↦
+      ((∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ * K₁ x))) /
+          (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₁ x))) -
+        (∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ * K₂ x))) /
+          (∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₂ x)))) /
+        q ^ (s + D - 2))
+      (𝓝[>] 0) (𝓝 0) := by
+  set C₀₁ : ℝ := 2 * δ₁ * Real.exp (-(κ₁ * δ₁ ^ 2)) with hC₀₁_def
+  set C₀₂ : ℝ := 2 * δ₂ * Real.exp (-(κ₂ * δ₂ ^ 2)) with hC₀₂_def
+  have hC₀₁ : 0 < C₀₁ := by
+    have := h1.delta_pos
+    positivity
+  have hC₀₂ : 0 < C₀₂ := by
+    have := h2.delta_pos
+    positivity
+  set C₂ : ℝ := ∫ y : ℝ, |y| ^ s * Real.exp (-(ρ₂ * y ^ 2))
+    with hC₂_def
+  have hC₂0 : 0 ≤ C₂ := integral_nonneg fun y ↦ by positivity
+  -- The two unnormalized limits (s and 0), in |·| form.
+  have hmain_s := (admissible_moment_difference_littleO hD h1 h2
+    hjet s).abs
+  rw [abs_zero] at hmain_s
+  have hmain_0 : Tendsto (fun q : ℝ ↦
+      |((∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₁ x))) -
+        ∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₂ x))) / q ^ (D - 1)|)
+      (𝓝[>] 0) (𝓝 0) := by
+    have h := (admissible_moment_difference_littleO hD h1 h2
+      hjet 0).abs
+    rw [abs_zero] at h
+    have heq : (fun q : ℝ ↦
+        |((∫ x : ℝ, x ^ 0 * Real.exp (-((q ^ 2)⁻¹ * K₁ x))) -
+          ∫ x : ℝ, x ^ 0 * Real.exp (-((q ^ 2)⁻¹ * K₂ x))) /
+          q ^ (0 + D - 1)|) = fun q : ℝ ↦
+        |((∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₁ x))) -
+          ∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₂ x))) / q ^ (D - 1)| := by
+      funext q
+      have e₁ : (∫ x : ℝ, x ^ 0 * Real.exp (-((q ^ 2)⁻¹ * K₁ x))) =
+          ∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₁ x)) :=
+        integral_congr_ae (Filter.Eventually.of_forall fun x ↦ by simp)
+      have e₂ : (∫ x : ℝ, x ^ 0 * Real.exp (-((q ^ 2)⁻¹ * K₂ x))) =
+          ∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₂ x)) :=
+        integral_congr_ae (Filter.Eventually.of_forall fun x ↦ by simp)
+      rw [e₁, e₂, show (0 : ℕ) + D - 1 = D - 1 by omega]
+    rwa [heq] at h
+  -- The squeeze bound function.
+  have hbound : Tendsto (fun q : ℝ ↦
+      (1 / C₀₁) * |((∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ * K₁ x))) -
+          ∫ x : ℝ, x ^ s * Real.exp (-((q ^ 2)⁻¹ * K₂ x))) /
+          q ^ (s + D - 1)| +
+        (C₂ / (C₀₁ * C₀₂)) *
+          |((∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₁ x))) -
+            ∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₂ x))) / q ^ (D - 1)|)
+      (𝓝[>] 0) (𝓝 0) := by
+    have := (hmain_s.const_mul (1 / C₀₁)).add
+      (hmain_0.const_mul (C₂ / (C₀₁ * C₀₂)))
+    simpa using this
+  apply squeeze_zero_norm' _ hbound
+  filter_upwards [Ioc_mem_nhdsGT one_pos, self_mem_nhdsWithin]
+    with q hq _
+  obtain ⟨hq0, hq1⟩ := hq
+  set t : ℝ := (q ^ 2)⁻¹ with ht_def
+  have ht : 0 < t := by positivity
+  have hqt : t * q ^ 2 = 1 := inv_mul_cancel₀ (by positivity)
+  set A₁ : ℝ := ∫ x : ℝ, x ^ s * Real.exp (-(t * K₁ x)) with hA₁_def
+  set A₂ : ℝ := ∫ x : ℝ, x ^ s * Real.exp (-(t * K₂ x)) with hA₂_def
+  set Z₁ : ℝ := ∫ x : ℝ, Real.exp (-(t * K₁ x)) with hZ₁_def
+  set Z₂ : ℝ := ∫ x : ℝ, Real.exp (-(t * K₂ x)) with hZ₂_def
+  have hZ₁l : C₀₁ * q ≤ Z₁ := h1.partition_lower hq0 hq1 hqt
+  have hZ₂l : C₀₂ * q ≤ Z₂ := h2.partition_lower hq0 hq1 hqt
+  have hZ₁p : 0 < Z₁ := lt_of_lt_of_le (by positivity) hZ₁l
+  have hZ₂p : 0 < Z₂ := lt_of_lt_of_le (by positivity) hZ₂l
+  have hA₂u : |A₂| ≤ C₂ * q ^ (s + 1) := h2.moment_upper s hq0 hqt
+  -- The decomposition and the elementary bound.
+  have hdecomp : A₁ / Z₁ - A₂ / Z₂ =
+      (A₁ - A₂) / Z₁ + A₂ * (Z₂ - Z₁) / (Z₁ * Z₂) := by
+    field_simp
+    ring
+  have hqp : (0 : ℝ) < q ^ (s + D - 2) := by positivity
+  rw [Real.norm_eq_abs]
+  have habs_decomp : |A₁ / Z₁ - A₂ / Z₂| ≤
+      |A₁ - A₂| / Z₁ + |A₂| * |Z₂ - Z₁| / (Z₁ * Z₂) := by
+    rw [hdecomp]
+    calc |(A₁ - A₂) / Z₁ + A₂ * (Z₂ - Z₁) / (Z₁ * Z₂)|
+        ≤ |(A₁ - A₂) / Z₁| + |A₂ * (Z₂ - Z₁) / (Z₁ * Z₂)| :=
+          abs_add_le _ _
+      _ = |A₁ - A₂| / Z₁ + |A₂| * |Z₂ - Z₁| / (Z₁ * Z₂) := by
+          rw [abs_div, abs_of_pos hZ₁p, abs_div, abs_mul,
+            abs_of_pos (mul_pos hZ₁p hZ₂p)]
+  have hden₁ : C₀₁ * q ^ (s + D - 1) ≤ Z₁ * q ^ (s + D - 2) := by
+    calc C₀₁ * q ^ (s + D - 1) = C₀₁ * q * q ^ (s + D - 2) := by
+          rw [show s + D - 1 = (s + D - 2) + 1 by omega, pow_succ]
+          ring
+      _ ≤ Z₁ * q ^ (s + D - 2) :=
+          mul_le_mul_of_nonneg_right hZ₁l (by positivity)
+  have ht1 : |A₁ - A₂| / Z₁ / q ^ (s + D - 2) ≤
+      1 / C₀₁ * (|A₁ - A₂| / q ^ (s + D - 1)) := by
+    calc |A₁ - A₂| / Z₁ / q ^ (s + D - 2)
+        = |A₁ - A₂| / (Z₁ * q ^ (s + D - 2)) := by rw [div_div]
+      _ ≤ |A₁ - A₂| / (C₀₁ * q ^ (s + D - 1)) := by
+          gcongr
+      _ = 1 / C₀₁ * (|A₁ - A₂| / q ^ (s + D - 1)) := by
+          field_simp
+  have ht2 : |A₂| * |Z₂ - Z₁| / (Z₁ * Z₂) / q ^ (s + D - 2) ≤
+      C₂ / (C₀₁ * C₀₂) * (|Z₁ - Z₂| / q ^ (D - 1)) := by
+    rw [abs_sub_comm Z₂ Z₁, div_div]
+    have hnum : |A₂| * |Z₁ - Z₂| ≤
+        C₂ * q ^ (s + 1) * |Z₁ - Z₂| :=
+      mul_le_mul_of_nonneg_right hA₂u (abs_nonneg _)
+    have hden : C₀₁ * C₀₂ * q ^ (s + D) ≤
+        Z₁ * Z₂ * q ^ (s + D - 2) := by
+      have hexp2 : s + D = 2 + (s + D - 2) := by omega
+      have hq2 : C₀₁ * C₀₂ * q ^ (s + D) =
+          C₀₁ * q * (C₀₂ * q) * q ^ (s + D - 2) := by
+        nth_rewrite 1 [hexp2]
+        rw [pow_add]
+        ring
+      rw [hq2]
+      have hZZ : C₀₁ * q * (C₀₂ * q) ≤ Z₁ * Z₂ :=
+        mul_le_mul hZ₁l hZ₂l (by positivity) hZ₁p.le
+      exact mul_le_mul_of_nonneg_right hZZ (by positivity)
+    calc |A₂| * |Z₁ - Z₂| / (Z₁ * Z₂ * q ^ (s + D - 2))
+        ≤ C₂ * q ^ (s + 1) * |Z₁ - Z₂| /
+          (C₀₁ * C₀₂ * q ^ (s + D)) := by
+          apply div_le_div₀ (mul_nonneg (mul_nonneg hC₂0
+            (by positivity)) (abs_nonneg _)) hnum (by positivity) hden
+      _ = C₂ / (C₀₁ * C₀₂) * (|Z₁ - Z₂| / q ^ (D - 1)) := by
+          have hexp3 : s + D = (s + 1) + (D - 1) := by omega
+          nth_rewrite 1 [hexp3]
+          rw [pow_add, div_mul_div_comm,
+            div_eq_div_iff (by positivity) (by positivity)]
+          ring
+  calc |(A₁ / Z₁ - A₂ / Z₂) / q ^ (s + D - 2)|
+      = |A₁ / Z₁ - A₂ / Z₂| / q ^ (s + D - 2) := by
+        rw [abs_div, abs_of_pos hqp]
+    _ ≤ (|A₁ - A₂| / Z₁ + |A₂| * |Z₂ - Z₁| / (Z₁ * Z₂)) /
+        q ^ (s + D - 2) := by
+        apply div_le_div_of_nonneg_right habs_decomp hqp.le
+    _ = |A₁ - A₂| / Z₁ / q ^ (s + D - 2) +
+        |A₂| * |Z₂ - Z₁| / (Z₁ * Z₂) / q ^ (s + D - 2) := by
+        rw [add_div]
+    _ ≤ 1 / C₀₁ * (|A₁ - A₂| / q ^ (s + D - 1)) +
+        C₂ / (C₀₁ * C₀₂) * (|Z₁ - Z₂| / q ^ (D - 1)) :=
+        add_le_add ht1 ht2
+    _ = 1 / C₀₁ * |(A₁ - A₂) / q ^ (s + D - 1)| +
+        C₂ / (C₀₁ * C₀₂) * |(Z₁ - Z₂) / q ^ (D - 1)| := by
+        rw [abs_div, abs_of_pos
+            (by positivity : (0:ℝ) < q ^ (s + D - 1)),
+          abs_div, abs_of_pos
+            (by positivity : (0:ℝ) < q ^ (D - 1))]
+
 end Laplace.OneD
