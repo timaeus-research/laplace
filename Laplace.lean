@@ -15,6 +15,7 @@ import Laplace.OneD.IntegralRemainder
 import Laplace.OneD.Rescaling
 import Laplace.OneD.MonomialPotential
 import Laplace.OneD.MonomialVariance
+import Laplace.OneD.JetScaling
 import Laplace.OneD.Recovery
 import Laplace.OneD.RecoveryMonotone
 import Laplace.OneD.RecoveryExpansion

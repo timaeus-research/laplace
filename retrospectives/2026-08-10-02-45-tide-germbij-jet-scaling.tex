@@ -1,0 +1,122 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the jet potential and its exact scaling\\
+(weighted-jet programme, stage 2)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+Stage 2 of the weighted-jet programme: the finite-jet potential
+$L(x) = a\,x^{2k} + \sum_{r=1}^R c_r x^{2k+r}$, its integrability
+envelope, and the exact scaling identity that every later stage
+manipulates. The stage's design question --- which envelope --- was
+the scope trap the programme consult had flagged, and it was resolved
+by a dedicated consult \emph{before} any Lean was written.
+
+\section{The envelope decision}
+
+The consult rejected the drafted ``even positive top coefficient''
+envelope with a decisive counterexample. The factorization
+\[
+L_q(u) \;=\; u^{2k}\,P(qu),
+\qquad P(y) = a + \sum_{r=1}^R c_r y^r,
+\]
+shows that small $q$ never tames the perturbation: $qu$ ranges over
+all of $\mathbb{R}$ regardless. For $P(y) = 1 - 3y + y^2$ (positive
+even top!) one has $P(1) = -1$, so $L_q(1/q) = -q^{-2k}$ and the
+Gibbs weight carries a remote peak of size $e^{q^{-2k}}$: integrable
+at each fixed $q$, but nowhere near the reference measure as
+$q \to 0$. The correct envelope is a \emph{uniformly positive
+profile}: $\rho \le P(y)$ for all $y$, some $\rho > 0$. This yields
+the clean global inequality $\rho\,u^{2k} \le L_q(u)$ for every real
+$q$, hence a $q$-independent dominating function and, later,
+dominated differentiation at $q = 0$. Arbitrary target jets are
+recovered by an even stabilizer $d\,y^M$ with $M > R$, invisible to
+extraction through order $R$.
+
+\section{The thing formalised}
+
+Fifteen declarations in \texttt{Laplace/OneD/JetScaling.lean},
+sorry-free with zero warnings: the jet definitions and profile
+factorization; the envelope predicate
+\texttt{HasPositiveJetProfile} with its lower bound and
+$q$-independent domination; integrability and positivity of all
+polynomial moments of the jet Gibbs weight; and the exact scaling
+identity\footnote{\texttt{normalized\_polynomialJet\_scale},
+\texttt{gibbsExpectation\_polynomialJet\_scale}.}: for $q > 0$ with
+$t q^{2k} = 1$,
+\[
+\Big\langle x^s \Big\rangle_t
+ \;=\; q^s \cdot
+ \frac{\int u^s\, e^{-L_q(u)}\,du}{\int e^{-L_q(u)}\,du}.
+\]
+The $R = 2$ certificate\footnote{\texttt{hasPositiveJetProfile\_two}.}
+($c_2 > 0$, $c_1^2 < 4ac_2$, $\rho = a - c_1^2/(4c_2)$) is the
+quadratic-profile analogue of the anharmonic discriminant
+$\alpha^2 < 3\lambda\gamma$ and admits unrestricted odd $c_1$.
+
+A deliberate API choice: the core theorems take the algebraic
+hypotheses $q > 0$ and $t q^{2k} = 1$ rather than a let-bound
+$t^{-1/(2k)}$, keeping \texttt{rpow} plumbing out of the analytic
+layer entirely.
+
+\section{Roadblocks and resolutions}
+
+Build iteration surfaced one new catalogue entry: equality goals
+produced by \texttt{Integrable.congr} can arrive
+\emph{beta-unreduced}, so a targeted \texttt{rw [pow\_zero]} finds no
+pattern where a plain \texttt{simp} (which beta-reduces first)
+closes the goal. The rest were known classes: dead tactics after
+closing \texttt{field\_simp}/\texttt{norm\_num}, a redundant bridging
+\texttt{have} whose \texttt{rw} closed everything (signalled by the
+``unsolved goals + no goals'' error pair), and atom-matching for
+\texttt{linarith} handled by normalising exponents first. The
+per-term substitution algebra inside \texttt{Finset.sum\_congr}
+discharged cleanly by \texttt{linear\_combination} against
+$t q^{2k} = 1$.
+
+\section{The deliberation}
+
+Consult archived verbatim in the tide log.\footnote{%
+\texttt{tide-log/gpt56\_jet\_scaling\_envelope\_v1.md}.} Its central
+contribution was negative and mathematical, not tactical: the
+counterexample killing the drafted envelope before a single line
+depended on it. The numerical check confirmed both the counterexample
+($P(1) = -1$) and the certificate ($\min P = 0.75 = \rho$ exactly at
+$(1, -1, 1)$), and verified the scaling identity to machine precision
+($10^{-15}$ over $t \in \{5, 40\}$, $s \in \{1,2,3\}$), as befits an
+exact identity.
+
+\section{Mathlib vs new}
+
+Mathlib lookup: the linear-substitution integral identity, dominated
+integrability with a continuous majorant, and integral positivity via
+support.\footnote{These are
+\texttt{Measure.}\allowbreak\texttt{integral\_comp\_mul\_right},
+\texttt{Integrable.mono'}, and
+\texttt{integral\_pos\_iff\_support\_of\_nonneg}.} Seabed reuse: the
+\texttt{kth\_integrable\_pow} family as the dominating integrable.
+New: the profile viewpoint and everything downstream.
+
+\section{What the next tide inherits}
+
+Stage 3 of the programme: the weighted exponential polynomial ---
+expanding $\exp(-\sum_r c_r q^r u^{2k+r})$ in powers of $q$ with
+coefficient polynomials $P_n(u)$ and the triangular decomposition
+$P_n(u) = -c_n u^{2k+n} + \widetilde{P}_n(u; c_1, \dots, c_{n-1})$,
+where the new coefficient enters exactly once and linearly. The
+envelope's $q$-independent domination is what will upgrade the formal
+expansion to an integrated asymptotic one in stage 4.
+
+\end{document}
