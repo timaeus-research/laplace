@@ -39,3 +39,27 @@ the H2a-verified quantities combination. Structural.
 - GPT-5.6 Sol: same (archived consult, section J5e).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/NormalizedRate.lean`, ~230 lines, sorry-free,
+two-repair pass — dead rewrites after set-folding did its job):
+
+- `tendsto_integral_rescaled_poly`: H4's generic dominated
+  convergence at POLYNOMIAL growth (the gap the staging exposed —
+  H4's original was quadratic-growth only), dominator via the J5a
+  general-rate layer.
+- `rescaledMoment` (the consult's internally-preferred formulation).
+- The scalar quotient identity as a private lemma on opaque reals
+  (per the J5d catalogue rule: never field_simp an integral-bearing
+  quotient).
+- **`tendsto_pairwise_normalized_moment_difference`**: the J5 arc's
+  final form — (M₁(P,q) − M₂(P,q))/q^{k−2} → −Cov_γ(P, Q) — from
+  J5d at P and at 1, the polynomial-growth ordinary limits, eventual
+  denominator positivity, and the limit-value algebra with all four
+  Gaussian integrals folded to atoms.
+
+THE J5 ARC (a-e) IS COMPLETE: five sub-stages in four tides, exactly
+as the shape consult staged them, with its two predicted hard points
+(the rate-divided domination and the tail split) landing via the
+secant bound and the q^{-r} ≤ ρ^{-r}‖x‖^r trade respectively.
