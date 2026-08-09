@@ -24,6 +24,7 @@ import Laplace.OneD.StableRecovery
 import Laplace.OneD.TaylorPackage
 import Laplace.OneD.TaylorCompare
 import Laplace.OneD.SmoothRecovery
+import Laplace.OneD.FullJetRecovery
 import Laplace.OneD.Recovery
 import Laplace.OneD.RecoveryMonotone
 import Laplace.OneD.RecoveryExpansion
