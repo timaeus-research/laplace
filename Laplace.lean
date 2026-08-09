@@ -65,6 +65,7 @@ import Laplace.Multi.ExpansionBridge
 import Laplace.Multi.LocationRecovery
 import Laplace.Multi.GaussianMeso
 import Laplace.Multi.ForwardDomain
+import Laplace.Multi.ExpGraded
 import Laplace.Multi.AnalyticGermRecovery
 import Laplace.Multi.SeparableRecovery
 import Laplace.Multi.SeparableAffinity
