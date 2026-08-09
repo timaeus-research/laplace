@@ -161,4 +161,63 @@ theorem partitionFunction_pencil (L₁ L₂ : ℝ → ℝ) (t : ℝ)
   rw [partitionFunction, partitionFunction, ← MeasureTheory.integral_sub h₁ h₂]
   exact h
 
+/-- **Integrated pencil identity, general measure.** The statement of
+`pencil_identity_integrated` over an arbitrary s-finite measure; the proof is
+identical, the Fubini step being generic in the second measure, and the
+pointwise identity being the scalar `exp_sub_exp_pencil`. -/
+theorem pencil_identity_integrated_measure {α : Type*} [MeasurableSpace α]
+    (μ : Measure α) [SFinite μ] (L₁ L₂ φ : α → ℝ) (t : ℝ)
+    (hint : Integrable (Function.uncurry fun s w ↦
+        φ w * ((L₂ w - L₁ w) *
+          Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))))
+        ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod μ)) :
+    ∫ w, φ w * (Real.exp (-(t * L₁ w)) - Real.exp (-(t * L₂ w))) ∂μ
+      = t * ∫ s in (0 : ℝ)..1, (∫ w,
+          φ w * ((L₂ w - L₁ w) *
+            Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))) ∂μ) := by
+  have key : ∀ w, φ w * (Real.exp (-(t * L₁ w)) - Real.exp (-(t * L₂ w)))
+      = t * ∫ s in (0 : ℝ)..1,
+          φ w * ((L₂ w - L₁ w) *
+            Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))) := by
+    intro w
+    rw [exp_sub_exp_pencil t (L₁ w) (L₂ w)]
+    calc φ w * (t * ∫ s in (0 : ℝ)..1,
+            (L₂ w - L₁ w) * Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w)))))
+        = t * (φ w * ∫ s in (0 : ℝ)..1,
+            (L₂ w - L₁ w) * Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))) := by
+          ring
+      _ = t * ∫ s in (0 : ℝ)..1,
+            φ w * ((L₂ w - L₁ w) *
+              Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))) := by
+          rw [← intervalIntegral.integral_const_mul]
+  have hswap : Integrable (Function.uncurry fun s w ↦
+      φ w * ((L₂ w - L₁ w) *
+        Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))))
+      ((volume.restrict (Set.uIoc (0 : ℝ) 1)).prod μ) := by
+    rwa [Set.uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1)]
+  calc ∫ w, φ w * (Real.exp (-(t * L₁ w)) - Real.exp (-(t * L₂ w))) ∂μ
+      = ∫ w, t * (∫ s in (0 : ℝ)..1,
+          φ w * ((L₂ w - L₁ w) *
+            Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w)))))) ∂μ := by
+        simp only [key]
+    _ = t * ∫ w, (∫ s in (0 : ℝ)..1,
+          φ w * ((L₂ w - L₁ w) *
+            Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w)))))) ∂μ :=
+        MeasureTheory.integral_const_mul t _
+    _ = t * ∫ s in (0 : ℝ)..1, (∫ w,
+          φ w * ((L₂ w - L₁ w) *
+            Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))) ∂μ) := by
+        rw [MeasureTheory.intervalIntegral_integral_swap hswap]
+
+/-- Scalar form of the comparison along the pencil: for `s ∈ [0,1]`, `t ≥ 0`
+and nonnegative `x, y`, the pencil value `x + s (y - x)` is dominated by
+`x + y`, so its Boltzmann factor dominates. -/
+lemma exp_pencil_ge_scalar {t s x y : ℝ} (ht : 0 ≤ t) (hs0 : 0 ≤ s)
+    (hs1 : s ≤ 1) (hx : 0 ≤ x) (hy : 0 ≤ y) :
+    Real.exp (-(t * (x + y))) ≤ Real.exp (-(t * (x + s * (y - x)))) := by
+  apply Real.exp_le_exp.mpr
+  apply neg_le_neg
+  apply mul_le_mul_of_nonneg_left _ ht
+  nlinarith [mul_nonneg hs0 hx, mul_nonneg (sub_nonneg.mpr hs1) hy]
+
 end Laplace
