@@ -1,0 +1,171 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the jet induction\\
+\large closing the tensor-recovery programme (J7)}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The tensor-recovery programme on the germbij note asked what
+expectation values against the Gibbs posterior know about the loss
+landscape at a nondegenerate critical point. This tide closes it.
+The final theorem, \code{finite\_jet\_recovery}, assembles the
+single-degree recovery of the previous tide into a strong induction
+over the first unknown degree: two losses equipped with higher-order
+Laplace domain packages at each degree $2 < k \le N$, matched jets
+below three, permutation-symmetric derivative tensors, and rescaled
+moment data agreeing to $o(q^{k-2})$ at every continuous
+polynomial-growth homogeneous test of each degree, have equal
+derivative tensors at the origin through order $N$. A wrapper,
+\code{smooth\_jet\_recovery\_multi}, gives all orders at once. The
+proof is ninety lines and compiled on the first build: the rare tide
+that was pure assembly, which is itself the point --- seven stages of
+preparation made the capstone trivial.
+\end{abstract}
+
+\section{Setting}
+
+The germbij note (``What expectation values know about the loss
+landscape'') develops the idea that posterior moments at inverse
+temperature $q^{-2}$, read along the rescaling $q \to 0^+$, are
+measurements of the Taylor data of the loss at its minimum. The
+Hessian-recovery milestone formalised the degree-two case: the
+normalized posterior covariance converges to $H^{-1}$, and covariance
+data determine $H$. The tensor programme (stages J0--J7, scoped in a
+GPT-5.6 consult archived with the first tensor tide) extends this to
+every degree: J2 established Gaussian-covariance rigidity for
+homogeneous functions, J3 the polarization step from diagonal to
+tensor equality, J4 the radial Taylor calculus, J5 (four tides) the
+rate calculus culminating in the pairwise normalized moment limit,
+and J6 the single-degree recovery theorem
+\code{iteratedFDeriv\_recovery\_of\_moment\_rates}. What remained was
+the induction that turns per-degree recovery into full jet recovery.
+
+The candidate was minimal by construction: no new analysis, no new
+Mathlib surface, one strong induction consuming the J6 theorem as its
+step. The scoping consult had flagged this shape from the start
+(``prove finite-order recovery first; a structure parameterized by a
+natural $N$ is much easier than threading $C^\infty$ uniformly
+through the rate proofs''), and the prediction held.
+
+\section{The thing formalised}
+
+Fix a positive-definite $H$ and two losses $L_1, L_2 \colon \R^d \to
+\R$. For each degree $k$ with $2 < k \le N$, suppose both losses
+carry the \code{HigherLaplaceDomain}~$k$ package (the localized
+Laplace domain of the H-recovery milestone extended with $C^k$
+regularity and a quantitative Taylor remainder bound at order $k$).
+Write
+\[
+  m_j(P; q) \;=\; \frac{\int P(y)\, e^{-L_j(y)/q^2}\, dy}
+                      {\int e^{-L_j(y)/q^2}\, dy}
+\]
+for the rescaled posterior moment of a test function $P$ (after the
+$y = qx$ substitution packaged in \code{rescaledMoment}). The theorem:
+if
+\begin{itemize}
+\item (base) $\nabla^j L_1(0) = \nabla^j L_2(0)$ for $j < 3$,
+\item (symmetry) the $k$-th derivative tensors of both losses at $0$
+  are permutation-symmetric for each $2 < k \le N$,
+\item (data) for each $2 < k \le N$ and every continuous,
+  polynomial-growth, degree-$k$ homogeneous $P$,
+  \[
+    m_1(P; q) - m_2(P; q) \;=\; o\!\left(q^{k-2}\right)
+    \qquad (q \to 0^+),
+  \]
+\end{itemize}
+then $\nabla^j L_1(0) = \nabla^j L_2(0)$ for every $j \le N$; in
+Lean the derivative tensors are stated with \code{iteratedFDeriv}
+at each order.
+
+The base below degree three is a hypothesis, not a conclusion, for a
+principled reason: degree zero is observationally undetermined
+(adding a constant to the loss changes no posterior expectation), and
+degrees one and two are already settled by the shared package --- both
+losses satisfy a quadratic Peano expansion against the same $H$,
+which forces vanishing gradients and equal second derivatives, and
+the H-recovery theorem covers the case where $H$ itself must first be
+identified from covariance data. Re-deriving those facts inside J7
+would duplicate the earlier milestone; hypothesizing them keeps the
+statement honest and the composition visible.
+
+The all-orders wrapper \code{smooth\_jet\_recovery\_multi} takes
+packages and data at every degree $k > 2$ and concludes equality of
+every derivative tensor, by instantiating the finite theorem at
+$N := j$ for each $j$.
+
+\section{How the proof works}
+
+Strong induction (\code{Nat.strong\_induction\_on}) on the degree
+$j$. If $j < 3$, the base hypothesis answers directly. Otherwise the
+induction hypothesis supplies matched jets at all degrees below $j$,
+which is exactly the \code{hlower} input of the J6 theorem; the
+degree-$j$ package, symmetry, and data hypotheses supply the rest,
+and J6 concludes equality at degree $j$. There is no analytic content
+in this file at all --- every hard step (the diagonal difference as a
+test function, the rate limit identifying the Gaussian covariance,
+rigidity, polarization) lives in the earlier stages.
+
+One design decision is worth recording. The per-degree packages enter
+as a Pi-type family
+\[
+  \code{A} \;:\; \forall k,\; 2 < k \;\to\; k \le N \;\to\;
+  \code{HigherLaplaceDomain}\; k\; L_1\; H,
+\]
+not as a single order-$N$ package weakened to each lower order.
+Weakening looks tidier but is not free: the order-$k$ Taylor
+remainder bound does not follow syntactically from the order-$N$ one
+(the intermediate homogeneous terms must be absorbed into the
+$O(\|y\|^k)$ envelope on the localization ball, a forty-line lemma
+of no independent interest). The family shape costs the caller
+nothing in practice --- any construction that yields the order-$N$
+package yields the lower ones by the same means --- and keeps this
+file pure plumbing.
+
+\section{Where progress stalled}
+
+Nowhere. The file compiled on the first \code{lake build} with four
+unused-binder warnings as the only diagnostics. No GPT consult was
+needed beyond the programme-level scoping consult already on record;
+no numerical check was applicable (the statement is structural, an
+induction over verified components). This is the outcome the tide
+discipline is supposed to buy: the seven preceding stages each
+absorbed their own friction (the $\omega$-symmetry trap in J3, the
+rate-calculus filter bookkeeping in J5, the mismatched-exponent
+growth constant in J6), so the capstone had none left to find.
+
+\section{Mathlib lookup versus new mathematics}
+
+Everything in this tide was lookup or assembly.
+\code{Nat.strong\_induction\_on} drives the induction, with a
+hypothesis-carrying motive (introduce the degree, induct, then
+introduce $j \le N$
+so the induction hypothesis carries it), \code{omega} for the
+arithmetic side conditions, and the J6 theorem. The new
+mathematics (statements the paper glosses as obvious that needed
+real formal content) was spent in earlier tides; the induction
+itself is exactly as routine in Lean as on paper, which is worth
+saying out loud because it is not the default experience.
+
+\section{What the next tide inherits}
+
+The tensor programme is closed; the natural continuations recorded in
+the scoping consult are (a) finite monomial test families via
+\code{MvPolynomial} (replacing the ``every homogeneous $P$''
+quantifier with finitely many monomial tests per degree, closer to
+what an experimentalist measures), and (b) degenerate strata beyond
+the nondegenerate case, where the germbij note's \S7.4 discussion
+begins. Both are fresh-seabed excursions rather than extensions of
+this file.
+\end{document}
