@@ -1,0 +1,136 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{The quadratic Gaussian by whitening\\
+(multivariate germbij, stage H2b)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent For positive-definite $H$ on $\mathbb{R}^d$, the Gaussian
+kernel $K_H(x) = e^{-\langle x, Hx\rangle/2}$ has positive finite
+mass, vanishing first moments, and normalized second moments equal
+to $(H^{-1})_{ij}$ --- the quadratic Gaussian package that every later
+stage of the multivariate programme consumes. The proof whitens: with
+$B = \sqrt H$ (continuous functional calculus), the forward identity
+$\langle x, Hx\rangle = \|Bx\|^2$ turns $K_H$ into the standard
+kernel composed with $B$, one change of variables with a deliberately
+opaque Jacobian transports the standard package, and the Jacobian
+cancels in every normalized statement. Together with its companion
+tide (the standard package), this closes stage H2, which the scoping
+consult had flagged as the largest API spike of the programme.
+\end{abstract}
+
+\section{Setting}
+
+The germbij multivariate programme is staged H0--H6; H2 is the pure
+quadratic Gaussian package. A dedicated shape consult split it: H2a
+proved everything for the standard isotropic kernel (all Fubini and
+one-dimensional work), and ruled that H2b --- this tide --- should
+contain no Fubini at all: only linear algebra and measure transport.
+The consult fixed the representation ($\texttt{qform}\,H\,x =
+\langle x, H\cdot x\rangle$ via the matrix-to-operator equivalence),
+the direction of the whitening identity (forward, never inverting
+inside the form), and the treatment of the Jacobian (opaque
+nonzeroness, no transport to matrix determinants).
+
+\section{The thing formalised}
+
+For $H$ positive definite, with $Z_0 = (2\pi)^{d/2}$ and
+$\mathrm{jacInv}\,H = |\det B|^{-1} > 0$ kept opaque:
+\begin{gather*}
+\int K_H = \mathrm{jacInv}\,H \cdot Z_0 > 0, \qquad
+\int \|x\|^n K_H(x)\,dx < \infty \quad (\forall n),\\
+\int x_i\, K_H(x)\,dx = 0, \qquad
+\frac{\int x_i x_j\, K_H(x)\,dx}{\int K_H(x)\,dx} = (H^{-1})_{ij}.
+\end{gather*}
+
+\section{How the proof works}
+
+$B = \texttt{toEuclideanCLM}\,(\texttt{CFC.sqrt}\,H)$ is
+self-adjoint (the square root of a positive-definite matrix is
+Hermitian) and injective (if $Bx = 0$ then
+$\langle x, Bx\rangle = 0$, contradicting positive-definiteness), so
+its determinant is a unit. The forward identity
+\[
+\langle x, Hx\rangle
+= \langle x, B(Bx)\rangle
+= \langle Bx, Bx\rangle = \|Bx\|^2
+\]
+gives $K_H = k_0 \circ B$ pointwise. Mathlib's Haar-measure lemma
+for linear maps turns the pushforward of volume under $B$ into
+$\mathrm{jacInv}\,H$ times volume, packaged once as
+$\int \varphi(Bx)\,dx = \mathrm{jacInv}\,H \int \varphi$ for any
+almost-everywhere strongly measurable $\varphi$ (no integrability
+needed: both sides scale consistently even for junk values).
+Everything then transports from the standard package. For the
+moments, the observable is rewritten through the inverse map
+$C = (\sqrt H)^{-1}$ (matrix nonsingular inverse, $C \circ B =
+\mathrm{id}$), whose coordinates are finite sums
+$(Cy)_i = \sum_a C_{ia} y_a$; the H2a delta-form second moment
+contracts the double sum to
+$Z_0 \sum_a C_{ia} C_{ja} = Z_0 (CC^{\mathsf T})_{ij}$, and the Gram
+step $CC^{\mathsf T} = C^2 = (B^2)^{-1} = H^{-1}$ is three rewrites
+($C$ symmetric, product-inverse reversal, $\sqrt H \cdot \sqrt H =
+H$). In the normalized statement the opaque Jacobian and $Z_0$
+cancel by \texttt{field\_simp}, exactly as the consult predicted.
+
+\section{Where it stalled and how it moved}
+
+No stalls; two genuinely new error classes for the catalogue. First,
+the class-level \texttt{map\_star} lemma fails on
+\texttt{Matrix.toEuclideanCLM} --- instance synthesis cannot find a
+\texttt{StarHomClass} for its star-algebra-equivalence type --- but
+the structure's own field \texttt{.map\_star'} applies directly, and
+term-level definitional unfolding accepts it where tactic-level
+rewriting stumbles on the raw \texttt{toFun}. Second, a \texttt{rfl}
+bridging $(B \cdot B)\,x$ to the def-wrapped double application hit
+a deterministic whnf heartbeat timeout; folding the composition into
+a named equation (`$H$-operator equals \texttt{whitening} squared')
+and rewriting with \texttt{ContinuousLinearMap.mul\_apply} avoids
+whnf entirely. A recurring third: the matrix partial order behind
+\texttt{CFC.sqrt} is \emph{scoped} (\texttt{open scoped
+MatrixOrder}), and its absence surfaces as PartialOrder synthesis
+failures at every use site, not as a missing-import hint.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the matrix-to-operator star-algebra equivalence and its
+inner-product bridge, the square root from the continuous functional
+calculus with positive-definiteness transport, the unit-determinant
+equivalence, the Haar pushforward under linear maps, and the
+integral-under-map lemmas.\footnote{The pushforward lemma is
+\texttt{Measure.map\_linearMap\_addHaar\_eq\_smul\_addHaar}; the
+others are \texttt{Matrix.toEuclideanCLM} with
+\texttt{Matrix.inner\_toEuclideanCLM}, \texttt{CFC.sqrt} with
+\texttt{CFC.sqrt\_mul\_sqrt\_self} and
+\texttt{IsStrictlyPositive.sqrt},
+\texttt{LinearMap.isUnit\_iff\_isUnit\_det}, and
+\texttt{integral\_map} / \texttt{integrable\_map\_measure} /
+\texttt{integral\_smul\_measure}.} New (project-level): the forward
+whitening identity as the single bridge between the quadratic and
+standard kernels, the opaque-Jacobian change-of-variables interface,
+the coordinate contraction of the inverse map against the delta
+moments, and the Gram collapse to $H^{-1}$.
+
+\section{What this opens}
+
+Stage H3: local quadratic rescaling of a smooth loss
+($({L(qx) - L(0)})/{q^2} \to \tfrac12\langle x, Hx\rangle$ with a
+nondegenerate lower bound on the rescaled domain). Stage H4:
+dominated convergence on expanding domains against the
+$(1+\|x\|^2)e^{-c\|x\|^2}$ majorant this tide provides. Then H5
+(normalization and covariance) and H6 (pairwise Hessian recovery),
+the multivariate analogue of \texttt{base\_recovery}.
+
+\end{document}
