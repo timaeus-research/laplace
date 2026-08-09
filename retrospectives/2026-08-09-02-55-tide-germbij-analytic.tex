@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the analytic-germ instantiation}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+Sixth tide of the germbij arc. The five merged tides carry their analytic
+input as the factored hypothesis $c\,w^m \leq |a(w)|$ on $[0, r_0]$ (or its
+scaled-set analogue): honest, but one step removed from the note's actual
+hypothesis, real analyticity with nonzero germ. The germbij note says
+``analyticity enters only through finite vanishing order''; this tide makes
+that sentence a theorem, discharging the factored hypothesis from
+analyticity and thereby closing the gap between the Lean chain and the
+note's setting. It also begins the annotation phase: the note now carries
+formalisation markers (the primer's \texttt{leanref} convention, margin
+squares hyperlinked to the pinned source) on its Lemma~7.1, Lemma~7.2, and
+the proof of Theorem~7.3.
+
+\section{The thing formalised}
+
+One lemma, \texttt{analytic\_growth\_lower\_bound} in
+\texttt{Laplace/Analytic.lean}, sorry-free: if $a$ is real analytic at $0$
+with nonzero germ (finite \texttt{analyticOrderAt}), then there exist
+$m$ (the order of vanishing), $c > 0$ and $r_0 > 0$ with
+\[
+c\, w^m \;\leq\; |a(w)| \qquad \text{on } [0, r_0].
+\]
+The deliberation called this ``the missing reusable bridge from finite
+analytic order to the already-merged quantitative hypothesis''. Composed
+with the merged chain, the germbij identifiability bound now follows from
+analyticity of the potentials rather than from a growth hypothesis assumed
+outright; the explicit composition (the analytic identifiability corollary)
+is deferred to a follow-up per the vote.
+
+\section{Proof strategy}
+
+Mathlib's analytic-order API does the heavy lifting:
+\texttt{AnalyticAt.analyticOrderAt\_eq\_natCast} factors
+$a(w) = w^m\, g(w)$ eventually near $0$, with $g$ analytic and
+$g(0) \neq 0$. Continuity of $|g|$ gives $|g| > |g(0)|/2$ on a
+neighborhood (\texttt{eventually\_gt\_nhds} through
+\texttt{ContinuousAt.abs}); conjoining the two eventual facts and
+extracting one radius (\texttt{Metric.eventually\_nhds\_iff}), then halving
+it to clear the strict-inequality ball boundary, gives the interval; on it,
+$|a(w)| = w^m |g(w)| \geq (|g(0)|/2)\, w^m$.
+
+\section{Roadblocks and resolutions}
+
+None: the file compiled on the first attempt with zero warnings, while the
+deliberation consult was still in flight. When the consult returned it
+endorsed the candidate and flagged exactly two proof subtleties (halve the
+extracted radius; normalise the factorisation with \texttt{sub\_zero},
+\texttt{smul\_eq\_mul}, \texttt{abs\_mul}), both of which the
+implementation already handled. This is the arc's third first-attempt
+compile, evidence that the accumulated playbook (stage \texttt{nlinarith}
+hints, parenthesise nested integrals, \texttt{exact} before
+\texttt{simpa}) has converged on this corner of Mathlib.
+
+\section{What was Mathlib, what was new}
+
+Almost everything was Mathlib: the order and factorisation
+API,\footnote{\texttt{Mathlib.Analysis.Analytic.Order}.} and the
+continuity and filter idioms. New: only the statement's packaging, chosen so that its conclusion
+is verbatim the hypothesis of \texttt{sector\_lower\_bound}.
+
+\section{Lessons}
+
+When a paper phrase like ``analyticity enters only through finite vanishing
+order'' names a single mathematical mechanism, check whether Mathlib
+already owns that mechanism before planning any infrastructure: here the
+entire tide was one existing iff-lemma plus filter bookkeeping.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item The composed corollary (candidate B): the 1D identifiability bound
+under analytic hypotheses outright, quantifiers arranged as constants
+first, then all sufficiently large $t$.
+\item The multivariate analogue: from a nonzero leading homogeneous part in
+$d$ variables, produce the scaled set $S$ with its amplitude bound
+(the cap of directions where the leading part is bounded away from zero).
+\item Continue the note annotation: bump the pinned commit and tag the
+instantiation once merged.
+\end{itemize}
+
+\end{document}
