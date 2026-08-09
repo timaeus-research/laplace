@@ -49,3 +49,35 @@ retreating tail at r = 1 for a 1D Gaussian).
 - GPT-5.6 Sol: same staging (archived shape consult, section 4).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/RateCalculus.lean`, ~370 lines, sorry-free):
+
+- `hasPolynomialGrowth_norm_pow`,
+  `integrable_pow_mul_exp_neg_mul_sq` (general rate c > 0, the
+  H2a series-term trick with (2/c)^m·m!), and
+  `integrable_mul_exp_neg_mul_sq_of_polynomialGrowth` — the
+  general-rate Gaussian integrability layer J5c-J5e will consume.
+- J5a: `exp_neg_sub_exp_neg_eq` (the FTC secant identity, stated
+  with the b + t(a-b) exponent shape), `abs_exp_neg_sub_exp_neg_le`
+  (two-sided secant bound via norm_integral_le_of_norm_le_const and
+  the convex-combination min bound), and `tendsto_exp_neg_sub_div`
+  (the scalar rate limit; secant limit by the filter DCT on
+  volume.restrict (Ioc 0 1) with eventual [u-1,∞) confinement and a
+  constant dominator — required adding [l.IsCountablyGenerated]).
+- J5b: `tendsto_integral_retreating_tail_div_pow` — the q^{-r} ≤
+  ρ^{-r}‖x‖^r trade on the support ρ ≤ q‖x‖, filter DCT, pointwise
+  vanishing because the region retreats past every fixed x.
+
+Error classes: the ae-restricted bound obligation (of_forall
+over-quantifies for restrict-measure DCT — use
+ae_restrict_mem measurableSet_Ioc); the cascading-rewrite trap
+avoided by never stating 0 = ∫ 0 as a rewritable equation (it
+rewrites the filter's 0 too — restructure with a typed `have hmain`
+instead); AESM has `.mul_const` but NOT `.div_const` (division is
+defeq mul-inverse, exact accepts the mul_const form); this pin's
+`integrableOn_const` takes autoParam finiteness arguments (the
+`finiteness` tactic doesn't know Real.volume_Ioc — discharge with
+ofReal_ne_top explicitly); beta-unreduced FTC endpoints (rewrite the
+exponent identities b + 1·(a−b) = a instead of lambda applications).
