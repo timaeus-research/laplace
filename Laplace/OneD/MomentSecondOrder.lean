@@ -158,4 +158,174 @@ private lemma thirdMoment_J_form_exact
   rw [hL]
   field_simp
 
+/-! ## Deltas: `J_n` expansions with evaluated Gaussian constants -/
+
+/-- `J₀` delta: `|J₀ - c·(1 + (15A²/2 - 3B)/t)| ≤ K/(t√t)` with
+`c = √(2π)`. -/
+private lemma J0_delta_order2 {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ {t : ℝ}, 1 ≤ t →
+      |J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi) *
+        (1 + (15 * cubicScale lam alpha ^ 2 / 2 -
+          3 * quarticScale lam gamma) / t)| ≤ K / (t * Real.sqrt t) := by
+  obtain ⟨K, hK, hb⟩ := J_n_asymptotic_order2 hlam hgamma hdisc 0
+  refine ⟨K, hK, ?_⟩
+  intro t ht
+  have h := hb ht
+  have hm0 : (∫ u : ℝ, u ^ 0 * Real.exp (-(u ^ 2) / 2)) =
+      Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 0
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  have hm3 : (∫ u : ℝ, u ^ (0 + 3) * Real.exp (-(u ^ 2) / 2)) = 0 := by
+    have h' := integral_pow_mul_exp_neg_sq_odd 1
+    norm_num at h' ⊢
+    exact h'
+  have hm4 : (∫ u : ℝ, u ^ (0 + 4) * Real.exp (-(u ^ 2) / 2)) =
+      3 * Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 2
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  have hm6 : (∫ u : ℝ, u ^ (0 + 6) * Real.exp (-(u ^ 2) / 2)) =
+      15 * Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 3
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  rw [hm0, hm3, hm4, hm6] at h
+  have harg : Real.sqrt (2 * Real.pi) - cubicScale lam alpha /
+        Real.sqrt t * 0 - quarticScale lam gamma / t *
+        (3 * Real.sqrt (2 * Real.pi)) + cubicScale lam alpha ^ 2 /
+        (2 * t) * (15 * Real.sqrt (2 * Real.pi)) =
+      Real.sqrt (2 * Real.pi) * (1 + (15 * cubicScale lam alpha ^ 2 / 2 -
+        3 * quarticScale lam gamma) / t) := by
+    field_simp
+    ring
+  rw [harg] at h
+  have hJ : J_n lam alpha gamma 0 t = ∫ u : ℝ, u ^ 0 *
+      Real.exp (-(u ^ 2) / 2) *
+      Real.exp (-rescaledPerturbation lam alpha gamma t u) := rfl
+  rw [hJ]
+  exact h
+
+/-- `J₂` delta: `|J₂ - c·(1 + (105A²/2 - 15B)/t)| ≤ K/(t√t)`. -/
+private lemma J2_delta_order2 {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ {t : ℝ}, 1 ≤ t →
+      |J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi) *
+        (1 + (105 * cubicScale lam alpha ^ 2 / 2 -
+          15 * quarticScale lam gamma) / t)| ≤ K / (t * Real.sqrt t) := by
+  obtain ⟨K, hK, hb⟩ := J_n_asymptotic_order2 hlam hgamma hdisc 2
+  refine ⟨K, hK, ?_⟩
+  intro t ht
+  have h := hb ht
+  have hm2 : (∫ u : ℝ, u ^ 2 * Real.exp (-(u ^ 2) / 2)) =
+      Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 1
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  have hm5 : (∫ u : ℝ, u ^ (2 + 3) * Real.exp (-(u ^ 2) / 2)) = 0 := by
+    have h' := integral_pow_mul_exp_neg_sq_odd 2
+    norm_num at h' ⊢
+    exact h'
+  have hm6 : (∫ u : ℝ, u ^ (2 + 4) * Real.exp (-(u ^ 2) / 2)) =
+      15 * Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 3
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  have hm8 : (∫ u : ℝ, u ^ (2 + 6) * Real.exp (-(u ^ 2) / 2)) =
+      105 * Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 4
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  rw [hm2, hm5, hm6, hm8] at h
+  have harg : Real.sqrt (2 * Real.pi) - cubicScale lam alpha /
+        Real.sqrt t * 0 - quarticScale lam gamma / t *
+        (15 * Real.sqrt (2 * Real.pi)) + cubicScale lam alpha ^ 2 /
+        (2 * t) * (105 * Real.sqrt (2 * Real.pi)) =
+      Real.sqrt (2 * Real.pi) * (1 + (105 * cubicScale lam alpha ^ 2 / 2 -
+        15 * quarticScale lam gamma) / t) := by
+    field_simp
+    ring
+  rw [harg] at h
+  exact h
+
+/-- `J₄` delta: `|J₄ - c·(3 + (945A²/2 - 105B)/t)| ≤ K/(t√t)`. -/
+private lemma J4_delta_order2 {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ {t : ℝ}, 1 ≤ t →
+      |J_n lam alpha gamma 4 t - Real.sqrt (2 * Real.pi) *
+        (3 + (945 * cubicScale lam alpha ^ 2 / 2 -
+          105 * quarticScale lam gamma) / t)| ≤ K / (t * Real.sqrt t) := by
+  obtain ⟨K, hK, hb⟩ := J_n_asymptotic_order2 hlam hgamma hdisc 4
+  refine ⟨K, hK, ?_⟩
+  intro t ht
+  have h := hb ht
+  have hm4 : (∫ u : ℝ, u ^ 4 * Real.exp (-(u ^ 2) / 2)) =
+      3 * Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 2
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  have hm7 : (∫ u : ℝ, u ^ (4 + 3) * Real.exp (-(u ^ 2) / 2)) = 0 := by
+    have h' := integral_pow_mul_exp_neg_sq_odd 3
+    norm_num at h' ⊢
+    exact h'
+  have hm8 : (∫ u : ℝ, u ^ (4 + 4) * Real.exp (-(u ^ 2) / 2)) =
+      105 * Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 4
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  have hm10 : (∫ u : ℝ, u ^ (4 + 6) * Real.exp (-(u ^ 2) / 2)) =
+      945 * Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 5
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  rw [hm4, hm7, hm8, hm10] at h
+  have harg : 3 * Real.sqrt (2 * Real.pi) - cubicScale lam alpha /
+        Real.sqrt t * 0 - quarticScale lam gamma / t *
+        (105 * Real.sqrt (2 * Real.pi)) + cubicScale lam alpha ^ 2 /
+        (2 * t) * (945 * Real.sqrt (2 * Real.pi)) =
+      Real.sqrt (2 * Real.pi) * (3 + (945 * cubicScale lam alpha ^ 2 / 2 -
+        105 * quarticScale lam gamma) / t) := by
+    field_simp
+    ring
+  rw [harg] at h
+  exact h
+
+/-- `J₃` delta (first order suffices):
+`|J₃ + 15A·c/√t| ≤ K/t`. -/
+private lemma J3_delta {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ {t : ℝ}, 1 ≤ t →
+      |J_n lam alpha gamma 3 t + 15 * cubicScale lam alpha *
+        Real.sqrt (2 * Real.pi) / Real.sqrt t| ≤ K / t := by
+  obtain ⟨K, hK, hb⟩ := J_n_asymptotic hlam hgamma hdisc 3
+  refine ⟨K, hK, ?_⟩
+  intro t ht
+  have h := hb ht
+  have hm3 : (∫ u : ℝ, u ^ 3 * Real.exp (-(u ^ 2) / 2)) = 0 := by
+    have h' := integral_pow_mul_exp_neg_sq_odd 1
+    norm_num at h' ⊢
+    exact h'
+  have hm6 : (∫ u : ℝ, u ^ (3 + 3) * Real.exp (-(u ^ 2) / 2)) =
+      15 * Real.sqrt (2 * Real.pi) := by
+    have h' := integral_pow_mul_exp_neg_sq_half 3
+    norm_num [Nat.doubleFactorial] at h' ⊢
+    exact h'
+  have hm7 : (∫ u : ℝ, u ^ (3 + 4) * Real.exp (-(u ^ 2) / 2)) = 0 := by
+    have h' := integral_pow_mul_exp_neg_sq_odd 3
+    norm_num at h' ⊢
+    exact h'
+  rw [hm3, hm6, hm7] at h
+  have harg : (0 : ℝ) - cubicScale lam alpha / Real.sqrt t *
+        (15 * Real.sqrt (2 * Real.pi)) - quarticScale lam gamma / t * 0 =
+      -(15 * cubicScale lam alpha * Real.sqrt (2 * Real.pi) /
+        Real.sqrt t) := by
+    ring
+  rw [harg, sub_neg_eq_add] at h
+  exact h
+
 end Laplace.OneD
