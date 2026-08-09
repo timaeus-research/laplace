@@ -61,6 +61,7 @@ import Laplace.Multi.NormalizedRate
 import Laplace.Multi.DegreeRecovery
 import Laplace.Multi.JetInduction
 import Laplace.Multi.MonomialTests
+import Laplace.Multi.ExpansionBridge
 import Laplace.Multi.SeparableRecovery
 import Laplace.Multi.SeparableAffinity
 import Laplace.Multi.AnisotropicScaling
