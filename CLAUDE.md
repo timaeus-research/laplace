@@ -310,3 +310,41 @@ PR #55). After creating a file, verify BOTH the import line in
 `Laplace.lean` AND the presence of the new `.olean` under
 `.lake/build/lib/lean/` before reporting a build result. Job-count
 deltas are too noisy to serve as the check.
+
+**`CFC.sqrt` on matrices needs `open scoped MatrixOrder` in every
+file.** The matrix `PartialOrder` instance is scoped; without the
+open, every `CFC.sqrt`/`PosSemidef.nonneg` use site errors with a
+baffling `failed to synthesize PartialOrder (Matrix ...)` (no
+missing-import hint). Same for `CFC.sqrt_mul_sqrt_self H
+(ha := hH.posSemidef.nonneg)` — the nonneg argument is an autoParam,
+pass it named.
+
+**Class-level `map_star` fails on `Matrix.toEuclideanCLM`.** Instance
+synthesis cannot find `StarHomClass` for the star-algebra-equivalence
+type `Matrix n n ℝ ≃⋆ₐ[ℝ] (EuclideanSpace ℝ n →L[ℝ] ...)`. Use the
+structure field directly: `(Matrix.toEuclideanCLM (𝕜 := ℝ)).map_star'
+A : toEuclideanCLM (star A) = star (toEuclideanCLM A)` — accepted as
+a term (defeq through the raw `toFun`), though `rw` with it can
+stumble; bind it in a `have` with the coerced statement first.
+
+**`rfl` bridging `(CLM S * CLM S) x` to a def-wrapped composition
+times out at whnf.** Deterministic heartbeat timeout, not an error in
+the maths. Fold the composition into an equation (`have hcomp :
+toEuclideanCLM H = whitening H * whitening H`), then rewrite with
+`ContinuousLinearMap.mul_apply`; never ask `rfl` to unfold CLM
+multiplication applied to a point.
+
+**`PiLp.continuous_apply` takes `p` and `β` explicitly.** A bare
+coordinate index as first argument silently coerces into the `p` slot
+(`Fin d → ℝ≥0∞`!) and produces `Invalid field 'mul': ...
+Function.mul` at the use site. Call as `PiLp.continuous_apply 2
+(fun _ : Fin d ↦ ℝ) a`.
+
+**`integral_fintype_prod_volume_eq_prod` needs NO integrability.**
+Mathlib's finite-product Fubini for `∏ i, f i (x i)` on pi types is
+unconditional; combined with `PiLp.volume_preserving_toLp` +
+`MeasurePreserving.integral_comp` (the FourierTransform.lean idiom)
+this makes coordinate-moment computations on `EuclideanSpace`
+essentially free. The one-hot factor trick: integrate
+`fun i t ↦ if i = a then t else 1` and collapse the product with
+`Finset.prod_ite_eq'`.
