@@ -301,3 +301,12 @@ breaks. If a file needs both a `φ` variable and double factorials, skip the
 scoped open and write `Nat.doubleFactorial (…)` explicitly; the closed-form
 lemmas stated with `‼` still apply, since `‼` is notation for the same
 constant.
+
+**A `lake build` proves nothing about a file outside the import
+closure.** The build gate is vacuous for a new file until
+`Laplace.lean` imports it: `lake build` and CI both pass while the
+file has arbitrarily many errors (this shipped an uncompiled file in
+PR #55). After creating a file, verify BOTH the import line in
+`Laplace.lean` AND the presence of the new `.olean` under
+`.lake/build/lib/lean/` before reporting a build result. Job-count
+deltas are too noisy to serve as the check.

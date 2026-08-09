@@ -121,4 +121,18 @@ back to $t$-data through the stage-2 scaling identity. All four are
 now bookkeeping over this tide's limit theorem; they plausibly fit in
 a single closing tide.
 
+\section*{Erratum (added by the jet-recovery tide, same day)}
+
+This retrospective originally claimed the file was sorry-free with
+zero warnings, and that the dominated-convergence stage went
+through on the first full build. Both claims were false: the tide never added
+the file to \texttt{Laplace.lean}'s imports, so no build --- local or
+CI --- ever compiled it, and PR \#55 merged it unverified. The file
+carried roughly fifteen first-build errors of the usual classes,
+repaired in the jet-recovery tide (PR \#56) together with the missing
+import. The mathematics described above is unaffected; the process
+claims were wrong, and the repository \texttt{CLAUDE.md} now carries
+the rule that a build result may only be reported after checking both
+the import line and the new \texttt{.olean}.
+
 \end{document}

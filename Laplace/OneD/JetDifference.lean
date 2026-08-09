@@ -122,7 +122,7 @@ theorem integrable_abs_pow_mul_exp_neg_kth
       exact_mod_cast (Nat.factorial_pos _).ne'
     field_simp
   exact h'.abs.congr (Filter.Eventually.of_forall fun u ↦ by
-    rw [abs_mul, abs_pow, abs_of_pos (Real.exp_pos _)])
+    simp [abs_mul, abs_pow, abs_of_pos (Real.exp_pos _)])
 
 /-- The difference of two jet potentials agreeing below rung
 `i₀ + 1` factors as `q^(i₀+1)` times a `q`-polynomial whose value at
@@ -137,11 +137,12 @@ theorem jet_difference_factor
   rw [add_sub_add_left_eq_sub, ← Finset.sum_sub_distrib,
     Finset.mul_sum]
   refine Finset.sum_congr rfl fun j _ ↦ ?_
-  rcases lt_or_le j i₀ with hj | hj
+  by_cases hj : j < i₀
   · rw [hlow j hj]
     ring
-  · have hexp : (i₀.1 + 1) + (j.1 - i₀.1) = j.1 + 1 := by
-      have := Fin.le_iff_val_le_val.mp hj
+  · have hj' : i₀ ≤ j := not_lt.mp hj
+    have hexp : (i₀.1 + 1) + (j.1 - i₀.1) = j.1 + 1 := by
+      have := Fin.le_iff_val_le_val.mp hj'
       omega
     rw [show q ^ (j.1 + 1) = q ^ (i₀.1 + 1) * q ^ (j.1 - i₀.1) by
       rw [← pow_add, hexp]]
@@ -168,15 +169,16 @@ theorem jet_difference_pointwise
     exact continuous_finset_sum _ fun i _ ↦
       (continuous_const.mul (continuous_pow _)).mul continuous_const
   have hg0 : g 0 = (c₁ i₀ - c₂ i₀) * u ^ (2 * k + r) := by
-    rw [hg_def]
+    simp only [hg_def]
     rw [Finset.sum_eq_single i₀]
     · rw [Nat.sub_self, pow_zero]
       ring
     · intro j _ hj
-      rcases lt_or_le j i₀ with hlt | hle
+      by_cases hlt : j < i₀
       · rw [hlow j hlt]
         ring
-      · have hgt : i₀.1 < j.1 := by
+      · have hle : i₀ ≤ j := not_lt.mp hlt
+        have hgt : i₀.1 < j.1 := by
           rcases lt_or_eq_of_le (Fin.le_iff_val_le_val.mp hle)
             with h | h
           · exact h
@@ -192,10 +194,12 @@ theorem jet_difference_pointwise
     have hc : Continuous (fun q : ℝ ↦
         Real.exp (-jetPotential k R a q c₂ u)) :=
       Real.continuous_exp.comp (jetPotential_continuous_q k R a c₂ u).neg
-    have := (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+    have := (hc.tendsto 0).mono_left
+      (nhdsWithin_le_nhds (s := Set.Ioi (0 : ℝ)))
     rwa [jetPotential_zero] at this
   have hgT : Tendsto g (𝓝[>] 0) (𝓝 (g 0)) :=
-    (hg_cont.tendsto 0).mono_left nhdsWithin_le_nhds
+    (hg_cont.tendsto 0).mono_left
+      (nhdsWithin_le_nhds (s := Set.Ioi (0 : ℝ)))
   -- The remainder term tends to zero (squeeze).
   have hrem : Tendsto (fun q : ℝ ↦
       expRemainder 2 (q ^ r * g q) / q ^ r) (𝓝[>] 0) (𝓝 0) := by
@@ -227,7 +231,7 @@ theorem jet_difference_pointwise
           max 1 (Real.exp (-(q ^ r * g q))) := hbound
       _ = q ^ r * (|g q| ^ 2 / 2 *
             max 1 (Real.exp (-(q ^ r * g q)))) * q ^ r := by
-          rw [habs]
+          rw [habs, mul_pow, sq_abs]
           norm_num [Nat.factorial]
           ring
   -- The eventual identity on q > 0.
@@ -239,7 +243,8 @@ theorem jet_difference_pointwise
           (expRemainder 2 (q ^ r * g q) / q ^ r) := by
     filter_upwards [self_mem_nhdsWithin] with q hq
     have hq0 : (q : ℝ) ≠ 0 := ne_of_gt hq
-    have hD := jet_difference_factor (a := a) (q := q) i₀ hlow u
+    have hD := jet_difference_factor (k := k) (a := a) (q := q)
+      i₀ hlow u
     have hsplit : Real.exp (-jetPotential k R a q c₁ u) =
         Real.exp (-jetPotential k R a q c₂ u) *
           Real.exp (-(q ^ r * g q)) := by
@@ -254,7 +259,6 @@ theorem jet_difference_pointwise
         (Real.exp (-(q ^ r * g q)) - 1) by ring,
       exp_sub_one_eq (q ^ r * g q)]
     field_simp
-    ring
   -- Assemble.
   have hlim : Tendsto (fun q : ℝ ↦
       Real.exp (-jetPotential k R a q c₂ u) * (-(g q)) +
@@ -263,10 +267,23 @@ theorem jet_difference_pointwise
       (𝓝 (Real.exp (-(a * u ^ (2 * k))) * (-(g 0)) +
         Real.exp (-(a * u ^ (2 * k))) * 0)) :=
     (he2.mul hgT.neg).add (he2.mul hrem)
-  have := hlim.congr' hFeq.symm
-  rw [mul_zero, add_zero, hg0] at this
-  convert this using 2
-  ring
+  have hFeq2 : (fun q : ℝ ↦
+      Real.exp (-jetPotential k R a q c₂ u) * (-(g q)) +
+        Real.exp (-jetPotential k R a q c₂ u) *
+          (expRemainder 2 (q ^ r * g q) / q ^ r)) =ᶠ[𝓝[>] (0 : ℝ)]
+      (fun q : ℝ ↦
+      (Real.exp (-jetPotential k R a q c₁ u) -
+        Real.exp (-jetPotential k R a q c₂ u)) / q ^ r) := by
+    filter_upwards [hFeq] with q h
+    exact h.symm
+  have hres := hlim.congr' hFeq2
+  rw [mul_zero, add_zero, hg0] at hres
+  have hfinal : Real.exp (-(a * u ^ (2 * k))) *
+      -((c₁ i₀ - c₂ i₀) * u ^ (2 * k + r)) =
+      -((c₁ i₀ - c₂ i₀) * u ^ (2 * k + r) *
+        Real.exp (-(a * u ^ (2 * k)))) := by
+    ring
+  rwa [hfinal] at hres
 
 /-- **The unnormalized difference limit** (stage 3C, the programme's
 reusable core): for two enveloped jets agreeing below rung
@@ -346,8 +363,7 @@ theorem jet_difference_integral_limit
       ((continuous_pow s).mul (Real.continuous_exp.comp
         (jetPotential_continuous k R a q c₂).neg))
   · -- the bound on 0 < q ≤ 1
-    filter_upwards [Ioc_mem_nhdsWithin_Ioi
-      (Set.left_mem_Ico.mpr one_pos)] with q hq
+    filter_upwards [Ioc_mem_nhdsGT one_pos] with q hq
     refine Filter.Eventually.of_forall fun u ↦ ?_
     obtain ⟨hq0, hq1⟩ := hq
     have henv := jetPotential_lower_bound_min
@@ -357,7 +373,8 @@ theorem jet_difference_integral_limit
         Real.exp (-(ρ * u ^ (2 * k))) :=
       max_le (Real.exp_le_exp.mpr (by linarith [henv.1]))
         (Real.exp_le_exp.mpr (by linarith [henv.2]))
-    have hD := jet_difference_factor (a := a) (q := q) i₀ hlow u
+    have hD := jet_difference_factor (k := k) (a := a) (q := q)
+      i₀ hlow u
     have hsec := exp_secant_le (jetPotential k R a q c₁ u)
       (jetPotential k R a q c₂ u)
     have hgbound : |∑ j : Fin R, (c₁ j - c₂ j) *
@@ -400,7 +417,6 @@ theorem jet_difference_integral_limit
             Real.exp (-(ρ * u ^ (2 * k)))) := by
           have hqr : (q : ℝ) ^ r ≠ 0 := by positivity
           field_simp
-          ring
       _ = G u := by
           simp only [hG_def]
           rw [Finset.sum_mul, Finset.mul_sum]

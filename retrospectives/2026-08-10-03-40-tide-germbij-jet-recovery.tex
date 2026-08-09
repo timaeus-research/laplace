@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the weighted-jet recovery theorem\\
+(weighted-jet programme, stages 3D--3G)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The programme's closing tide. The pairwise difference limit of the
+previous stage reduces the germbij \S7.4 recovery to bookkeeping: a
+quotient rule, a variance-positivity bridge, a strong induction, and
+a change of variables. This tide executes those four stages ---
+and, in the process, discovered and repaired a serious process
+failure in the previous tide.
+
+\section{The incident}
+
+At this tide's first build, the previous tide's file failed with
+fifteen errors --- a file whose tide log and retrospective claimed a
+clean build with zero warnings. The claim was false: that tide never
+added its file to \texttt{Laplace.lean}'s imports, so its
+\texttt{lake build} succeeded vacuously (the file was outside the
+import closure), local audits saw nothing, and PR~\#55's CI passed
+for the same reason, merging an uncompiled file to \texttt{main}.
+The errors were all ordinary first-build classes (renames,
+beta-unreduced congruence goals, implicit-argument inference, dead
+tactics) and were repaired here; the mathematics was unaffected. The
+prior retrospective now carries an erratum, the tide log records the
+incident, and the repository \texttt{CLAUDE.md} carries the new rule:
+\emph{a build result may be reported only after verifying both the
+import line and the new \texttt{.olean}}. The deeper lesson is that
+the build gate silently weakens to a no-op exactly when a step is
+forgotten, so the gate itself must be checked, not just its exit
+code.
+
+\section{The thing formalised}
+
+Six declarations in \texttt{Laplace/OneD/JetRecovery.lean},
+sorry-free with zero warnings (verified via import and
+\texttt{.olean} this time). The chain: the base-point limit
+$J_s(q) \to A_s$; the generic quotient-difference lemma (limits of
+scaled numerator and denominator differences give the scaled limit
+of the quotient difference, over any filter, with Lean's
+division-by-zero convention handling the scale degenerately); the
+variance bridge $A_{2m}A_0 - A_m^2 > 0$ from stage 1 at
+$t = a\,(2k)!$; the one-rung recovery; the strong induction; and the
+headline\footnote{\texttt{polynomialJet\_recovery}.}:
+\begin{quote}
+For two finite jets $a\,x^{2k} + \sum_{r=1}^R c^\nu_r x^{2k+r}$ with
+uniformly positive profiles, if the Gibbs expectations of
+$x^{2k+r}$, $1 \le r \le R$, eventually agree as $t \to \infty$,
+then $c^1 = c^2$.
+\end{quote}
+With the pure-monomial recovery of $(k, a)$ from the earlier
+recovery thread, this completes the constructive dimension-one
+programme of germbij \S7.4(a) for finite jets: every coefficient of
+the potential is pinned by moment asymptotics, each at its own order,
+with the injectivity supplied by the variance of the matching
+observable.
+
+\section{Proof notes}
+
+At rung $r$ with $m = 2k + r$, the quotient-difference lemma applied
+to $J_m$ and $Z$ produces the limit
+$-\delta_r (A_{2m}A_0 - A_m^2)/A_0^2$; uniqueness of limits against
+the data hypothesis and the variance bridge force $\delta_r = 0$. The
+transfer to $t$-data composes the stage-2 exact scaling identity with
+the observation that $q \mapsto (q^{2k})^{-1}$ carries
+$\mathcal{N}[>]\,0$ to \texttt{atTop}, so eventual equality of
+$t$-moments becomes eventual vanishing of the scaled $q$-difference.
+Three tactical patterns recurred often enough to promote:
+\texttt{set} folds only occurrences existing at the time (hypotheses
+created later arrive unfolded --- refold with the definitional
+equation); \texttt{Tendsto.congr} produces beta-unreduced lambda
+applications (prove the function equality by \texttt{funext} and
+\texttt{rwa} instead); and \texttt{div\_eq\_zero\_iff} with
+\texttt{resolve\_right} cleanly clears a positive denominator from an
+equation to zero.
+
+\section{The deliberation}
+
+No fresh consult: stages 3D--3G were specified with proof sketches in
+the route consult, whose prediction (``once the unnormalized limit is
+available, the covariance quotient and strong induction should be
+comparatively routine'') held --- the mathematics went through
+essentially as sketched, with the incident being process rather than
+mathematics. The one addition was the base-point limit, implicit in
+the consult's quotient rule.
+
+\section{Mathlib vs new}
+
+Mathlib lookup: the filter dominated convergence theorem again,
+eventual nonvanishing along a limit, uniqueness of limits, the
+inverse map carrying $\mathcal{N}[>]\,0$ to \texttt{atTop}, and
+strong induction on naturals.\footnote{Respectively
+\texttt{Tendsto.eventually\_ne}, \texttt{tendsto\_nhds\_unique},
+\texttt{Filter.Tendsto.}\allowbreak\texttt{inv\_tendsto\_nhdsGT\_zero},
+and \texttt{Nat.strong\_induction\_on}.} Seabed reuse: everything
+from stages 1--3C. New: the assembly.
+
+\section{What the next tide inherits}
+
+The weighted-jet programme is complete: six tides from scoping to the
+recovery theorem, against the consult's original eight-stage plan,
+with the middle replaced by the pairwise-difference route at half the
+machinery. Natural next steps for the germbij commissions: the
+\texttt{leanref} markers for the programme on the note's \S7.4(a)
+(after this PR merges), and then either the general-order
+nondegenerate induction (now de-risked by this programme's
+normalized-series handling) or the multivariate first rung. Both need
+fresh scoping.
+
+\end{document}
