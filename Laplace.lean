@@ -25,6 +25,7 @@ import Laplace.OneD.ExpRemainderSigned
 import Laplace.OneD.IntegralRemainder2
 import Laplace.OneD.JnSecondOrder
 import Laplace.OneD.MomentSecondOrder
+import Laplace.OneD.Kappa4Asymptotic
 import Laplace.Multi.Basic
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
