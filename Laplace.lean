@@ -23,6 +23,7 @@ import Laplace.OneD.LambdaPackage
 import Laplace.OneD.StableRecovery
 import Laplace.OneD.TaylorPackage
 import Laplace.OneD.TaylorCompare
+import Laplace.OneD.SmoothRecovery
 import Laplace.OneD.Recovery
 import Laplace.OneD.RecoveryMonotone
 import Laplace.OneD.RecoveryExpansion
