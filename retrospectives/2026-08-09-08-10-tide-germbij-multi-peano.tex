@@ -1,0 +1,138 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{The uniform quadratic Peano remainder and the local lower bound\\
+(multivariate germbij, stage H3b)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent The step the H3/H4 shape consult flagged as the hardest of
+the multivariate programme: for a $C^2$ loss with vanishing gradient
+at the origin, $L(y) - L(0) - \tfrac12\langle y, Hy\rangle = o(\|y\|^2)$
+uniformly in direction, and positive-definiteness supplies a
+coercivity constant $\lambda\|x\|^2 \le \langle x, Hx\rangle$, giving
+the local nondegenerate lower bound
+$c\|x\|^2 \le (L(qx) - L(0))/q^2$ on a small ball. The
+\texttt{LocalQuadraticApprox} structure packages these fields exactly
+as the consult specified for stage H4's dominated convergence, with
+derived rescaling-limit and lower-bound theorems and a constructor
+from $C^2$ regularity. The predicted difficulty materialized as a
+single sharp discovery: Mathlib's mean value inequality has a
+`differentiability plus \texttt{fderiv} bound' variant whose
+unification against explicit-derivative hypotheses is catastrophic
+(a whnf timeout surviving forty times the default heartbeat budget),
+while its explicit-derivative sibling elaborates instantly.
+\end{abstract}
+
+\section{Setting}
+
+Stages H2 (the quadratic Gaussian package) and H3a (the fixed-ray
+rescaling limit) are on main. What separates them from stage H4's
+dominated convergence is uniformity: the ray limit controls each
+direction separately, but the integrable dominator needs a single
+lower bound $c\|x\|^2$ valid across the whole rescaled domain. The
+shape consult staged this as its own tide and predicted the two
+friction points precisely: Mathlib's accessible Taylor remainders are
+one-dimensional, and quantitative coercivity from
+\texttt{Matrix.PosDef} tempts one into spectral theory.
+
+\section{The thing formalised}
+
+For $L$ of class $C^2$ with $DL(0) = 0$ and $H$ the Hessian matrix at
+the origin:
+\[
+L(y) - L(0) - \tfrac12\langle y, Hy\rangle = o(\|y\|^2), \qquad
+\exists\, \lambda > 0:\ \lambda\|x\|^2 \le \langle x, Hx\rangle
+\ \ (H \succ 0),
+\]
+\[
+\exists\, \delta, c > 0:\quad 0 < q,\ \|qx\| \le \delta
+\ \Longrightarrow\
+c\|x\|^2 \le \frac{L(qx) - L(0)}{q^2},
+\]
+packaged with the rescaling limit in \texttt{LocalQuadraticApprox}.
+
+\section{How the proof works}
+
+\emph{Coercivity} avoids eigenvalues entirely, as the consult ruled:
+the quadratic form is continuous and positive on the compact unit
+sphere, so it attains a positive minimum $\lambda$, and degree-two
+homogeneity extends $\lambda\|x\|^2 \le \langle x, Hx\rangle$ to all
+of $\mathbb{R}^d$.
+
+\emph{The Peano remainder} is two applications of the mean value
+inequality. First, the gradient linearization: the map
+$w \mapsto DL(w) - Hw$ has derivative $D^2L(w) - H$, which continuity
+of the second derivative makes $\le \varepsilon$ in operator norm on
+a $\delta$-ball; since the map vanishes at the origin, the mean value
+inequality gives $\|DL(w) - Hw\| \le \varepsilon\|w\|$ there. Second,
+the function $w \mapsto L(w) - \tfrac12\langle w, Hw\rangle$ has
+exactly that expression as its derivative (here the symmetry of the
+second derivative enters, via Mathlib's
+\texttt{second\_derivative\_symmetric}), bounded by
+$\varepsilon\|y\|$ on the closed ball of radius $\|y\|$; a second
+mean value application gives the $\varepsilon\|y\|^2$ bound.
+
+\emph{The lower bound} takes $\varepsilon = \lambda/4$ of Peano room
+below the coercive quadratic, and the rescaling-limit theorem for
+package consumers is the same remainder divided by $q^2$, with the
+homogeneity identity $\langle qx, H(qx)\rangle = q^2\langle x,
+Hx\rangle$ cancelling the scale.
+
+\section{Where it stalled and how it moved}
+
+One genuine stall, resolved by bisection rather than consultation.
+The first mean-value application timed out at whnf --- and kept
+timing out at $8\times10^6$ heartbeats, minutes of wall clock, even
+with every argument made explicit and the space abstracted. Bisection
+isolated the bomb to the lemma choice itself:
+\texttt{Convex.norm\_image\_sub\_le\_of\_norm\_fderiv\_le} expects
+\emph{differentiability} hypotheses and a bound on the
+\emph{canonical} \texttt{fderiv}, so handing it
+\texttt{HasFDerivWithinAt} facts sends the unifier into an
+unbounded definitional unfolding. Its sibling
+\texttt{Convex.norm\_image\_sub\_le\_of\_norm\_hasFDerivWithin\_le}
+takes the explicit derivative and elaborates in milliseconds. The
+symptom (timeout at the theorem's \texttt{:=} line while every
+\texttt{have} checks fine) and the fix are now in the repo's error
+catalogue. The remaining repairs were routine one-pass items,
+including one instructive near-miss: a \texttt{sub\_zero} rewrite ate
+the harmless $\|y - 0\|$ occurrence instead of the intended one, the
+same positional-rewrite class the catalogue already warns about.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the compactness extremum, the mean value inequality (correct
+variant), second-derivative symmetry, and the bilinear-map derivative
+combinators.\footnote{\texttt{IsCompact.exists\_isMinOn},
+\texttt{Convex.norm\_image\_sub\_le\_of\_norm\_hasFDerivWithin\_le},
+\texttt{second\_derivative\_symmetric},
+\texttt{HasFDerivAt.clm\_apply}, \texttt{HasFDerivAt.const\_smul}.}
+New (project-level): the sphere-minimum coercivity lemma on
+\texttt{qform}, the two-step mean-value derivation of the
+multivariate Peano remainder, and the \texttt{LocalQuadraticApprox}
+interface with its derived limit and lower-bound theorems.
+
+\section{What this opens}
+
+Stage H4 closes the Hessian-recovery pipeline's analytic half: one
+generic dominated-convergence theorem for quadratic-growth
+observables against the rescaled Boltzmann factor, specialized to
+$1$, $x_i$, $x_i x_j$, with the $(1+\|x\|^2)e^{-c\|x\|^2}$ dominator
+supplied by this tide's lower bound and H2's integrability. Then H5
+(normalization and covariance bookkeeping) and H6 (pairwise Hessian
+recovery), completing the multivariate analogue of
+\texttt{base\_recovery}.
+
+\end{document}
