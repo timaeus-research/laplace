@@ -47,6 +47,7 @@ import Laplace.Multi.QuadForm
 import Laplace.Multi.QuadGaussian
 import Laplace.Multi.QuadMoments
 import Laplace.Multi.RayRescale
+import Laplace.Multi.RadialTaylor
 import Laplace.Multi.QuadLowerBound
 import Laplace.Multi.RescaledDCT
 import Laplace.Multi.HessianMoments
