@@ -36,3 +36,32 @@ unmerged at start).
 ## Numerical check
 
 Not feasible: exact algebraic split over verified components.
+
+## Result
+
+Commit 133ebfd (pre-rebase; rebased onto main at cf92cbb after PR #97
+merged). `Laplace/Multi/ForwardDomain.lean` (~250 lines):
+
+- `ForwardExpansionDomain N L H` — one-field Peano mixin over
+  `HigherLaplaceDomain (N+2)`.
+- `exponentTerm`, `taylorHomogeneousTerm_zero`,
+  `taylorHomogeneousTerm_zero_point`, `abs_taylorHomogeneousTerm_le`.
+- `taylorRem` / `scaledRem` / `taylorRem_zero`,
+  `tendsto_scaledRem` (pointwise vanishing from the Peano field),
+  `remConst` / `abs_scaledRem_le` (uniform window bound),
+  `exponent_split` (the exact identity, hypothesis
+  `taylorHomogeneousTerm 1 L = 0`).
+
+Surprises: the endgame helper for `R/q^(N+2) * q^N * q^2 = R` was
+unnecessary — with both nonzeroness facts in context, `field_simp; ring`
+closes the whole split (`ring` normalizes `q^(N+2) = q^N * q^2` with
+variable `N`). One unused-simp-arg warning caught by the zero-warnings
+gate; the `rw [hgrad]` beta-reduces on its own.
+
+### Suggested follow-ups
+
+- Stage 4 (ExpGraded): recursive `expCorrectionCoeff` P_j and the graded
+  exponential expansion on the mesoscopic window, consuming
+  `tendsto_scaledRem` + `abs_scaledRem_le`.
+- Bridge `taylorHomogeneousTerm 2 L = (1/2) qform H` where the domain's
+  Hessian data identifies them (deferred by design).
