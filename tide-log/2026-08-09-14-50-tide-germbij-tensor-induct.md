@@ -33,3 +33,25 @@ Pure induction over verified components; structural.
 
 - Claude: as staged. - GPT-5.6 Sol: same (archived consult J7,
   including the finite-first ruling). Agreed.
+
+## Result
+
+Committed on tide/germbij-tensor-induct: `Laplace/Multi/JetInduction.lean`
+(~90 lines), theorems `finite_jet_recovery` and
+`smooth_jet_recovery_multi`. Compiled on the first build with only
+unused-binder warnings (fixed); zero sorries. The tensor programme
+J0-J7 is closed: from H-recovery (degree 2) through single-degree
+tensor recovery (J6) to the full jet, moment data at rate o(q^(k-2))
+per degree identifies every derivative tensor of the loss at the
+origin (degrees >= 3 unconditionally given the packages; degrees < 3
+enter as the base hypothesis, with degree 0 observationally
+undetermined and degrees 1-2 recoverable for a common H from
+quadratic_peano / hessian_recovery).
+
+Surprise: none — the induction was pure plumbing over J6, the rare
+tide where the first draft compiled. The only design decision was
+packaging the per-degree domain packages as a Pi-type family
+`∀ k, 2 < k → k ≤ N → HigherLaplaceDomain k L H` rather than a single
+order-N package with weakening (deriving the order-k Taylor remainder
+bound from the order-N one is real work; the family shape is honest
+and free).
