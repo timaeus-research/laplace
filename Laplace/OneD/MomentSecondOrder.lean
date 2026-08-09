@@ -328,4 +328,144 @@ private lemma J3_delta {lam alpha gamma : ℝ}
   rw [harg, sub_neg_eq_add] at h
   exact h
 
+/-! ## Assemblies: the moment rates -/
+
+-- The division-heavy calc chains below exceed the default heartbeat
+-- budget in `whnf` (see CLAUDE.md).
+set_option maxHeartbeats 1600000 in
+/-- **Second-moment second-order rate**: with
+`C₂ = (45A² - 12B)/λ`,
+`|t·⟨x²⟩ - 1/λ - C₂/t| ≤ K/(t·√t)` eventually. The `1/t` term of
+`J₂ - (1 + λC₂/t)·J₀` cancels exactly. -/
+theorem secondMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) :
+    ∃ K T : ℝ, 0 ≤ K ∧ 1 ≤ T ∧ ∀ {t : ℝ}, T ≤ t →
+      |t * Laplace.gibbsExpectation
+        (anharmonicPotential lam alpha gamma) t (fun x ↦ x ^ 2) -
+        1 / lam - (45 * cubicScale lam alpha ^ 2 -
+          12 * quarticScale lam gamma) / (lam * t)| ≤
+      K / (t * Real.sqrt t) := by
+  obtain ⟨T, hT1, hJ0bd⟩ := J_0_eventually_bounded hlam hgamma hdisc
+  obtain ⟨K₀, hK₀, hd0⟩ := J0_delta_order2 hlam hgamma hdisc
+  obtain ⟨K₂, hK₂, hd2⟩ := J2_delta_order2 hlam hgamma hdisc
+  set c := Real.sqrt (2 * Real.pi) with hc_def
+  have hc_pos : 0 < c := Real.sqrt_pos.mpr (by positivity)
+  set A := cubicScale lam alpha with hA_def
+  set B := quarticScale lam gamma with hB_def
+  set c₂ : ℝ := 45 * A ^ 2 - 12 * B with hc₂_def
+  set q₀ : ℝ := 15 * A ^ 2 / 2 - 3 * B with hq₀_def
+  refine ⟨2 * (K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀|) / (lam * c), T,
+    by positivity, hT1, ?_⟩
+  intro t ht
+  have ht1 : (1 : ℝ) ≤ t := le_trans hT1 ht
+  have ht0 : (0 : ℝ) < t := by linarith
+  have hst : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht0
+  have hts : (0 : ℝ) < t * Real.sqrt t := by positivity
+  obtain ⟨hJ0_lo, _⟩ := hJ0bd ht
+  have hJ0_pos : 0 < J_n lam alpha gamma 0 t := by
+    calc (0 : ℝ) < c / 2 := by positivity
+      _ ≤ J_n lam alpha gamma 0 t := hJ0_lo
+  have hJ0_ne : J_n lam alpha gamma 0 t ≠ 0 := hJ0_pos.ne'
+  rw [secondMoment_J_form_exact hlam ht0 hJ0_ne]
+  -- Combine into a single fraction.
+  have hcomb : J_n lam alpha gamma 2 t /
+        (lam * J_n lam alpha gamma 0 t) - 1 / lam - c₂ / (lam * t) =
+      (J_n lam alpha gamma 2 t - (1 + c₂ / t) *
+        J_n lam alpha gamma 0 t) / (lam * J_n lam alpha gamma 0 t) := by
+    field_simp
+    ring
+  rw [hcomb]
+  -- Numerator bound via the exact 1/t cancellation.
+  set N : ℝ := J_n lam alpha gamma 2 t - (1 + c₂ / t) *
+    J_n lam alpha gamma 0 t with hN_def
+  have hNsplit : N =
+      (J_n lam alpha gamma 2 t - c * (1 + (105 * A ^ 2 / 2 - 15 * B) / t))
+      - (1 + c₂ / t) *
+        (J_n lam alpha gamma 0 t - c * (1 + q₀ / t))
+      + c * (-(c₂ * q₀) / t ^ 2) := by
+    rw [hN_def, hc₂_def, hq₀_def]
+    field_simp
+    ring
+  have hd0t := hd0 ht1
+  have hd2t := hd2 ht1
+  have h1c₂ : |1 + c₂ / t| ≤ 1 + |c₂| := by
+    calc |1 + c₂ / t| ≤ |(1 : ℝ)| + |c₂ / t| := abs_add_le _ _
+      _ = 1 + |c₂| / t := by
+          rw [abs_one, abs_div, abs_of_pos ht0]
+      _ ≤ 1 + |c₂| := by
+          have : |c₂| / t ≤ |c₂| := by
+            apply div_le_self (abs_nonneg _) ht1
+          linarith
+  have ht2 : t * Real.sqrt t ≤ t ^ 2 := by
+    have hst1 : 1 ≤ Real.sqrt t := by
+      rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
+      exact Real.sqrt_le_sqrt ht1
+    have hst_le : Real.sqrt t ≤ t := by
+      nlinarith [Real.mul_self_sqrt ht0.le]
+    nlinarith [mul_le_mul_of_nonneg_left hst_le ht0.le]
+  have hNbound : |N| ≤ (K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀|) /
+      (t * Real.sqrt t) := by
+    rw [hNsplit]
+    calc |(J_n lam alpha gamma 2 t -
+          c * (1 + (105 * A ^ 2 / 2 - 15 * B) / t))
+        - (1 + c₂ / t) * (J_n lam alpha gamma 0 t - c * (1 + q₀ / t))
+        + c * (-(c₂ * q₀) / t ^ 2)|
+        ≤ |(J_n lam alpha gamma 2 t -
+            c * (1 + (105 * A ^ 2 / 2 - 15 * B) / t))
+          - (1 + c₂ / t) * (J_n lam alpha gamma 0 t - c * (1 + q₀ / t))|
+          + |c * (-(c₂ * q₀) / t ^ 2)| := abs_add_le _ _
+      _ ≤ |J_n lam alpha gamma 2 t -
+            c * (1 + (105 * A ^ 2 / 2 - 15 * B) / t)|
+          + |1 + c₂ / t| * |J_n lam alpha gamma 0 t - c * (1 + q₀ / t)|
+          + |c * (-(c₂ * q₀) / t ^ 2)| := by
+          have htri := abs_sub
+            (J_n lam alpha gamma 2 t -
+              c * (1 + (105 * A ^ 2 / 2 - 15 * B) / t))
+            ((1 + c₂ / t) *
+              (J_n lam alpha gamma 0 t - c * (1 + q₀ / t)))
+          rw [abs_mul] at htri
+          linarith
+      _ ≤ K₂ / (t * Real.sqrt t)
+          + (1 + |c₂|) * (K₀ / (t * Real.sqrt t))
+          + c * |c₂ * q₀| / (t * Real.sqrt t) := by
+          have hterm3 : |c * (-(c₂ * q₀) / t ^ 2)| ≤
+              c * |c₂ * q₀| / (t * Real.sqrt t) := by
+            rw [abs_mul, abs_of_pos hc_pos, abs_div, abs_neg,
+              abs_of_pos (show (0 : ℝ) < t ^ 2 by positivity)]
+            calc c * (|c₂ * q₀| / t ^ 2)
+                ≤ c * (|c₂ * q₀| / (t * Real.sqrt t)) := by
+                  gcongr
+              _ = c * |c₂ * q₀| / (t * Real.sqrt t) :=
+                  (mul_div_assoc _ _ _).symm
+          have hterm2 : |1 + c₂ / t| *
+              |J_n lam alpha gamma 0 t - c * (1 + q₀ / t)| ≤
+              (1 + |c₂|) * (K₀ / (t * Real.sqrt t)) := by
+            apply mul_le_mul h1c₂ hd0t (abs_nonneg _)
+            positivity
+          linarith [hd2t]
+      _ = (K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀|) /
+            (t * Real.sqrt t) := by ring
+  -- Divide by the positive denominator.
+  have hden : lam * (c / 2) ≤ lam * J_n lam alpha gamma 0 t :=
+    mul_le_mul_of_nonneg_left hJ0_lo hlam.le
+  have hden_pos : 0 < lam * J_n lam alpha gamma 0 t := by positivity
+  rw [abs_div, abs_of_pos hden_pos]
+  rw [div_le_div_iff₀ hden_pos hts]
+  calc |N| * (t * Real.sqrt t)
+      ≤ ((K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀|) / (t * Real.sqrt t)) *
+        (t * Real.sqrt t) := by
+        gcongr
+    _ = K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀| := by
+        field_simp
+    _ ≤ (2 * (K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀|) / (lam * c)) *
+        (lam * (c / 2)) := by
+        rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
+        ring_nf
+        nlinarith [hK₂, hK₀, abs_nonneg c₂, abs_nonneg (c₂ * q₀),
+          hc_pos, hlam]
+    _ ≤ (2 * (K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀|) / (lam * c)) *
+        (lam * J_n lam alpha gamma 0 t) := by
+        gcongr
+
 end Laplace.OneD
