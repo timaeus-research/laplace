@@ -67,4 +67,95 @@ private lemma secondMoment_J_form_exact
   have ht_ne : t ≠ 0 := ht.ne'
   field_simp
 
+/-- Bridge: `t²·⟨x⁴⟩ = J₄/(λ²·J₀)`. -/
+private lemma fourthMoment_J_form_exact
+    {lam alpha gamma : ℝ} (hlam : 0 < lam)
+    {t : ℝ} (ht : 0 < t)
+    (hJ0_ne : J_n lam alpha gamma 0 t ≠ 0) :
+    t ^ 2 * Laplace.gibbsExpectation
+      (anharmonicPotential lam alpha gamma) t (fun x ↦ x ^ 4) =
+    J_n lam alpha gamma 4 t / (lam ^ 2 * J_n lam alpha gamma 0 t) := by
+  have hlamt : 0 < lam * t := mul_pos hlam ht
+  have hsqrt_lamt_ne : Real.sqrt (lam * t) ≠ 0 :=
+    (Real.sqrt_pos.mpr hlamt).ne'
+  unfold Laplace.gibbsExpectation Laplace.partitionFunction
+  set Z := ∫ x : ℝ, Real.exp (-(t * anharmonicPotential lam alpha gamma x))
+    with hZ_def
+  set I4 := ∫ x : ℝ, x ^ 4 *
+    Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hI4_def
+  have h0 := I_n_J_n_relation lam alpha gamma 0 hlam ht
+  have h4 := I_n_J_n_relation lam alpha gamma 4 hlam ht
+  rw [show (0 + 1 : ℕ) = 1 from rfl, pow_one] at h0
+  simp only [pow_zero, one_mul] at h0
+  have hZ_eq : Real.sqrt (lam * t) * Z = J_n lam alpha gamma 0 t := by
+    unfold J_n; simp only [pow_zero, one_mul]; exact h0
+  have hI4_eq : Real.sqrt (lam * t) ^ (4 + 1) * I4 =
+      J_n lam alpha gamma 4 t := by
+    unfold J_n; exact h4
+  have hsq : Real.sqrt (lam * t) ^ 2 = lam * t := Real.sq_sqrt hlamt.le
+  have hZ_sub : Z = J_n lam alpha gamma 0 t / Real.sqrt (lam * t) := by
+    rw [eq_div_iff hsqrt_lamt_ne, mul_comm]; exact hZ_eq
+  have hI4_sub : I4 = J_n lam alpha gamma 4 t /
+      (Real.sqrt (lam * t) ^ 5) := by
+    rw [eq_div_iff (by positivity : Real.sqrt (lam * t) ^ 5 ≠ 0), mul_comm]
+    exact hI4_eq
+  rw [hZ_sub, hI4_sub]
+  set slt : ℝ := Real.sqrt (lam * t) with hslt_def
+  have hslt2 : slt ^ 2 = lam * t := hsq
+  have hslt_ne : slt ≠ 0 := hsqrt_lamt_ne
+  rw [show slt ^ 5 = ((lam * t) * (lam * t)) * slt from by
+    rw [show ((lam * t) * (lam * t) : ℝ) = slt ^ 2 * slt ^ 2 from by
+      rw [hslt2]]
+    ring]
+  have hlam_ne : lam ≠ 0 := hlam.ne'
+  have ht_ne : t ≠ 0 := ht.ne'
+  field_simp
+
+/-- Bridge: `t²·⟨x³⟩ = √t·J₃/(√λ³·J₀)`. -/
+private lemma thirdMoment_J_form_exact
+    {lam alpha gamma : ℝ} (hlam : 0 < lam)
+    {t : ℝ} (ht : 0 < t)
+    (hJ0_ne : J_n lam alpha gamma 0 t ≠ 0) :
+    t ^ 2 * Laplace.gibbsExpectation
+      (anharmonicPotential lam alpha gamma) t (fun x ↦ x ^ 3) =
+    Real.sqrt t * J_n lam alpha gamma 3 t /
+      (Real.sqrt lam ^ 3 * J_n lam alpha gamma 0 t) := by
+  have hlamt : 0 < lam * t := mul_pos hlam ht
+  have hsqrt_lamt_ne : Real.sqrt (lam * t) ≠ 0 :=
+    (Real.sqrt_pos.mpr hlamt).ne'
+  have hsl_pos : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
+  have hst_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  unfold Laplace.gibbsExpectation Laplace.partitionFunction
+  set Z := ∫ x : ℝ, Real.exp (-(t * anharmonicPotential lam alpha gamma x))
+    with hZ_def
+  set I3 := ∫ x : ℝ, x ^ 3 *
+    Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hI3_def
+  have h0 := I_n_J_n_relation lam alpha gamma 0 hlam ht
+  have h3 := I_n_J_n_relation lam alpha gamma 3 hlam ht
+  rw [show (0 + 1 : ℕ) = 1 from rfl, pow_one] at h0
+  simp only [pow_zero, one_mul] at h0
+  have hZ_eq : Real.sqrt (lam * t) * Z = J_n lam alpha gamma 0 t := by
+    unfold J_n; simp only [pow_zero, one_mul]; exact h0
+  have hI3_eq : Real.sqrt (lam * t) ^ (3 + 1) * I3 =
+      J_n lam alpha gamma 3 t := by
+    unfold J_n; exact h3
+  have hZ_sub : Z = J_n lam alpha gamma 0 t / Real.sqrt (lam * t) := by
+    rw [eq_div_iff hsqrt_lamt_ne, mul_comm]; exact hZ_eq
+  have hI3_sub : I3 = J_n lam alpha gamma 3 t /
+      (Real.sqrt (lam * t) ^ 4) := by
+    rw [eq_div_iff (by positivity : Real.sqrt (lam * t) ^ 4 ≠ 0), mul_comm]
+    exact hI3_eq
+  rw [hZ_sub, hI3_sub, Real.sqrt_mul hlam.le t]
+  set sl : ℝ := Real.sqrt lam with hsl_def
+  set st : ℝ := Real.sqrt t with hst_def2
+  have hsl2 : sl ^ 2 = lam := Real.sq_sqrt hlam.le
+  have hst2 : st ^ 2 = t := Real.sq_sqrt ht.le
+  have hsl_ne : sl ≠ 0 := hsl_pos.ne'
+  have hst_ne : st ≠ 0 := hst_pos.ne'
+  have hT : t = st * st := by rw [← sq]; exact hst2.symm
+  rw [hT]
+  have hL : lam = sl * sl := by rw [← sq]; exact hsl2.symm
+  rw [hL]
+  field_simp
+
 end Laplace.OneD
