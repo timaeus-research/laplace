@@ -64,6 +64,7 @@ import Laplace.Multi.MonomialTests
 import Laplace.Multi.SeparableRecovery
 import Laplace.Multi.SeparableAffinity
 import Laplace.Multi.AnisotropicScaling
+import Laplace.Multi.DiagonalVolume
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox

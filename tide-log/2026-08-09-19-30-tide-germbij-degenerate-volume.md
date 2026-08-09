@@ -38,3 +38,24 @@ Per the deliberation of record:
 The parent tide's check already ran the law on the concrete
 mixed-quartic example (ten digits); this tide adds no new analytic
 formula (the determinant identity is algebraic).
+
+## Result
+
+Committed on tide/germbij-degenerate-volume:
+`Laplace/Multi/DiagonalVolume.lean` (~140 lines). Theorems:
+`diagonalMap` + `det_diagonalMap` (LinearMap.det_pi + det_smul at
+finrank R R = 1 — the predicted determinant plumbing came to five
+lines), `scalesMeasure_qhDilation_volume` (pi-volume satisfies the
+interface; map_linearMap_addHaar_pi_eq_smul_addHaar +
+rpow_sum_of_pos), `weights_eq_of_coordSq_moments_eq_volume`
+(unconditional recovery on Lebesgue measure), and the concrete
+capstone `mixedQuartic` + `mixedQuartic_quasiHomogeneous`: the
+note's non-separable example x^4 + x^2 y^2 + y^4 is
+quasi-homogeneous for q = (1/4, 1/4), so its weights are recoverable
+end to end. Zero sorries, zero warnings; compiled first pass modulo
+instance-hygiene warnings (over-included section variables,
+tightened per theorem).
+
+The consult's "most brittle piece" warning did not materialize: the
+det computation was LinearMap.det_pi + det_smul + finrank_self
+exactly, and the qhDilation/diagonalMap bridge is a rfl.
