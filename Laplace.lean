@@ -58,6 +58,7 @@ import Laplace.Multi.RateCalculus
 import Laplace.Multi.LocalRateDCT
 import Laplace.Multi.PairwiseRate
 import Laplace.Multi.NormalizedRate
+import Laplace.Multi.DegreeRecovery
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox
