@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the all-order expansion}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The previous tide formalised the first correction of the
+quartic-perturbed Gaussian partition function and recovered the
+coefficient from it. The natural completion of the germbij Section~7.4
+ladder for this potential is the \emph{whole} expansion: every
+coefficient explicit, an elementary remainder at every order. The
+deliberation settled the route (a fundamental-theorem induction for the
+exponential Taylor remainder, over both the Mathlib Taylor API and
+alternating-series arguments) and independently verified the coefficient
+bookkeeping before any Lean was written.
+
+\section{The thing formalised}
+
+Six declarations in \texttt{Laplace/OneD/RecoveryAllOrder.lean},
+sorry-free with zero warnings. The exponential Taylor remainder
+$E_n(s) = e^{-s} - \sum_{j<n} (-s)^j/j!$ with its
+bound\footnote{\texttt{abs\_expRemainder\_le}.}
+$|E_n(s)| \leq s^n/n!$ for all $n$ and all $s \geq 0$, and the
+expansion\footnote{\texttt{quartic\_partition\_expansion\_allOrder}.}:
+for $b \geq 0$, $t > 0$, and every order $n$,
+\[
+\Bigl| Z_b(t) - \sqrt{2\pi}\sum_{j=0}^{n}
+\frac{(-b)^j\,(4j-1)!!}{j!}\, t^{-(j+1/2)} \Bigr|
+\;\leq\;
+\sqrt{2\pi}\,\frac{b^{n+1}\,(4n+3)!!}{(n+1)!}\, t^{-(n+3/2)} .
+\]
+The $n = 1$ case subsumes the previous tide's bound with the sharp
+constant $105/2$. The numerical check at $n = 2$ (executed, archived in
+the tide log) shows the bound holding and nearly saturating at large
+$t$, as the alternating structure predicts.
+
+\section{Proof strategy}
+
+For the remainder: $E_0 = e^{-s} \in (0, 1]$; $E_{n+1}(0) = 0$ and
+$E_{n+1}' = -E_n$, so $E_{n+1}(s) = -\int_0^s E_n$, and the inductive
+bound integrates to $s^{n+1}/(n+1)!$. Interval integration, integral
+monotonicity, and the polynomial antiderivative are the only
+ingredients. For the expansion: split the integrand into the Gaussian
+factor times the expanded quartic exponential; each of the $n+1$ terms
+integrates exactly against the scale-$t$ moment
+$(4j-1)!!\sqrt{2\pi}\,t^{-(2j+1/2)}$, and the prefactor $(-tb)^j$
+converts the exponent to $t^{-(j+1/2)}$ through one isolated
+\texttt{rpow} helper; the remainder term is dominated by the
+$(n+1)$-st moment through the pointwise bound. As in the first-order
+tide, the cancellation is exact: the expansion error \emph{is} the
+integrated remainder.
+
+\section{Roadblocks and resolutions}
+
+Six build iterations, every one elaboration-level; the mathematics
+never moved. New entries for the gotcha catalogue: the
+\texttt{HasDerivAt.sub}/\texttt{sum} combinators produce \texttt{Pi}-form
+functions (a derivative-side sibling of the documented \texttt{Pi.add}
+integral gotcha), bridged by a \texttt{funext} identity; the
+interval-integral norm bound needs its measure passed explicitly when
+the \texttt{have} has no expected type; the double-factorial notation
+is scoped (\texttt{open scoped Nat}); and an equality \texttt{calc}
+against a $\leq$ goal belongs under \texttt{le\_of\_eq} from the start.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: the fundamental theorem of calculus for interval integrals,
+integral monotonicity, the polynomial
+antiderivative\footnote{\texttt{integral\_pow}.}, derivative
+combinators, and integral linearity over finite sums. Seabed: the scale-$t$ moments
+and monomial integrability, consumed now at every order
+simultaneously. New: the remainder recursion packaging and the
+observation that the whole ladder needs no analysis beyond it.
+
+\section{Lessons}
+
+The \texttt{Pi}-form mismatch family now has three members (integral
+\texttt{add}, ratio \texttt{div}, derivative \texttt{sub}/\texttt{sum});
+the uniform repair is a type-ascribed or \texttt{funext} bridge to
+single-lambda form, and it is worth reaching for immediately whenever a
+combinator-built hypothesis must match a goal syntactically. Isolating
+\texttt{rpow} algebra in one helper (the consult's advice) kept all six
+iterations away from the exponent arithmetic.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item The deferred coefficient-limit packaging (each coefficient as the
+limit of the rescaled remainder), now with a stable expansion API to
+build on.
+\item The same ladder for a general even-monomial perturbation
+$x^{2k} + b\,x^{2m}$: the proof is potential-generic except for the
+moment indices.
+\item Tag the note's Section 7.4 dimension-one item with the all-order
+theorem once merged.
+\end{itemize}
+
+\end{document}
