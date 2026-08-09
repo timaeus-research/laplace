@@ -1,0 +1,141 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{The weighted-jet programme: a synthesis\\
+(germbij \S7.4 inductive recovery, four tides)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent Four tides carried the germbij note's \S7.4(a) inductive
+recovery from scoping to a sorry-free comparison theorem: two finite
+jets $a\,x^{2k} + \sum_{r=1}^R c_r x^{2k+r}$ with uniformly positive
+profiles whose Gibbs moments at the matching observables
+$x^{2k+r}$ eventually agree have equal coefficients
+(\texttt{polynomialJet\_recovery}, PRs \#53--\#56). The programme was
+scoped against three alternatives, rerouted once mid-course --- the
+pairwise-difference argument replacing the planned multi-index
+expansion machinery at roughly half the formal cost --- and survived
+one process failure worth remembering: a merged PR whose build gate
+had been silently vacuous. This synthesis records the mathematics,
+the two consults that shaped it, and the incident.
+\end{abstract}
+
+\section{What was proven}
+
+The headline chain, all in \texttt{Laplace/OneD/}:
+
+\begin{itemize}
+\item \textbf{MonomialVariance} (PR \#53): Gamma closed forms and
+strict positivity of $\mathrm{Var}(x^n)$ against the reference weight
+$e^{-t\,x^{2k}/(2k)!}$ --- the injectivity input, formalising the
+note's own ``$\mathrm{Var}[Q] = 0$ forces $Q$ constant'' argument via
+the open nonempty support of the centered integrand.
+\item \textbf{JetScaling} (PR \#54): the jet potential factors
+through its profile, $L_q(u) = u^{2k} P(qu)$, so the correct
+integrability envelope is a uniformly positive profile
+($\rho \le P$ on all of $\mathbb{R}$), giving
+$\rho u^{2k} \le L_q(u)$ for \emph{every} real $q$; the exact scaling
+identity $\langle x^s \rangle_t = q^s \cdot$ (normalized jet moment)
+under $t q^{2k} = 1$; and the $R = 2$ discriminant certificate
+$c_1^2 < 4 a c_2$, admitting unrestricted odd $c_1$.
+\item \textbf{JetDifference} (PR \#55, repaired in \#56): for jets
+agreeing below rung $r$, the difference factors as
+$L^1_q - L^2_q = q^r g(q)$ with
+$g(0) = \delta_r u^{2k+r}$; the exponential secant bound and the
+$\min(\rho_1,\rho_2)$ shared envelope give a $q$-free majorant, and
+dominated convergence along $q \to 0^+$ yields
+$q^{-r}(J^1_s - J^2_s) \to -\delta_r \int u^{s+2k+r} e^{-a u^{2k}}$.
+\item \textbf{JetRecovery} (PR \#56): the quotient-difference lemma
+turns this into the normalized covariance limit; at $s = 2k+r$ the
+covariance is the stage-1 variance, forcing $\delta_r = 0$; strong
+induction and the scaling-identity transfer give
+\texttt{polynomialJet\_recovery}.
+\end{itemize}
+
+With the pure-monomial recovery of $(k, a)$ from the earlier recovery
+thread, every coefficient of a finite-jet potential is pinned by
+moment asymptotics, each at its own graded order --- the note's
+\S7.4(a), now marked at its covariance-pairing sentence.
+
+\section{The two consults}
+
+Both consults contributed mathematics, not just tactics, and both
+survived contact with the numerics executed before formalisation.
+
+The \emph{envelope consult} rejected the drafted
+``even-positive-top'' integrability condition with a counterexample:
+$P(y) = 1 - 3y + y^2$ has positive even top yet $P(1) = -1$, so the
+Gibbs weight keeps a remote peak $e^{q^{-2k}}$ at $u \sim 1/q$ ---
+integrable at every $q$, never close to the reference measure. Since
+$L_q(u) = u^{2k}P(qu)$ and $qu$ ranges over all of $\mathbb{R}$
+regardless of $q$, no smallness of $q$ can substitute for profile
+positivity. This reshaped the programme's foundations before a line
+of Lean depended on them.
+
+The \emph{route consult} replaced its own earlier plan. The original
+stages 3--5 built the full weighted exponential expansion
+(multi-index coefficient polynomials, triangular decomposition,
+quotient recurrences). The challenge observation --- recovery is a
+comparison statement, so each rung needs only the \emph{first-order
+difference} of two Gibbs weights --- was endorsed as ``the shortest
+route'', with two load-bearing corrections: the secant bound
+$|e^{-x} - e^{-y}| \le |x-y|\max(e^{-x}, e^{-y})$ in place of a
+Taylor bound whose $e^{|D|}$ factor no envelope controls, and the
+observation that $\min(\rho_1, \rho_2)$ envelopes the entire segment
+between the two potentials. The eliminated machinery would only be
+needed if explicit expansion coefficients were wanted for their own
+sake.
+
+\section{The incident}
+
+PR \#55 merged an uncompiled file. Its tide never added the file to
+\texttt{Laplace.lean}'s imports, so \texttt{lake build} succeeded
+vacuously, the audit script (which greps text) saw nothing, and CI
+passed for the same reason. The tide's log and retrospective claimed
+a clean build with zero warnings; the claim was false, discovered
+only when the next tide imported the file and hit fifteen ordinary
+first-build errors. All were repaired in PR \#56; the mathematics was
+untouched; the false retrospective now carries an erratum. Two
+durable outputs: the repository rule that a build result may be
+reported only after verifying the import line (and, for files
+compiled in the current worktree, the fresh \texttt{.olean}), and a
+transitive import-closure audit which confirmed no other file in the
+repository shares the exposure. The general lesson for the tide
+loop: gates fail open exactly when a step is forgotten, so the gate's
+own preconditions belong in the close-out checklist.
+
+\section{Process observations}
+
+Six tide-sized steps against the consult's original eight-stage plan,
+with the reroute cutting the middle three stages to two. The
+stacked-worktree chain (\#55's branch carrying \#56's tide) meant the
+incident was caught one tide after introduction rather than at some
+distant integration point --- linear chains double as an integration
+test of the previous link. The numerical checks continued to pay:
+the response-slope check validated the covariance structure before
+the route consult returned, and the machine-precision check of the
+exact scaling identity was effectively free.
+
+\section{What the next programme inherits}
+
+The normalized-series and quotient-difference handling here was named
+by the scoping consult as the de-risking prerequisite for the
+general-order nondegenerate induction (germbij Theorem~3.1 at all
+orders); the multivariate first rung remains the other open
+commission, strategically valuable as the Susceptibility Primer's
+missing Stage 3. Both need fresh scoping consults. The weighted-jet
+machinery itself is reusable: the profile envelope and the pairwise
+difference limit are stated for arbitrary finite jets, not just the
+recovery use case.
+
+\end{document}
