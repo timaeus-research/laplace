@@ -210,6 +210,15 @@ have h_12 : Integrable (fun u : ι → ℝ => T1 u + T2 u) volume := h1.add h2
 -- h_12.f IS a single lambda, so the pattern reduces under beta only.
 ```
 
+The same class occurs for **`Pi.div`**: `isEquivalent_iff_tendsto_one`
+produces a ratio `(f / g)` as `Pi.div` of lambdas, which `field_simp`
+will not see through. `simp only [Pi.div_apply]` first, then `field_simp`.
+Related: `tendsto_rpow_atTop` / `tendsto_rpow_neg_atTop` are top-level
+constants (not `Real.`-namespaced), and `tendsto_nhds_unique` against a
+constant function needs the `tendsto_const_nhds` witness type-ascribed
+(`have h : Tendsto (fun _ : ℝ ↦ c) atTop (nhds c) := tendsto_const_nhds`)
+or the elaborator unifies the function the wrong way.
+
 **Calc chains over multi-term sum integrands push past the default
 heartbeat budget.** A calc chain that combines `MeasureTheory.integral_congr_ae`
 + N×`MeasureTheory.integral_add` + N×`MeasureTheory.integral_const_mul`
