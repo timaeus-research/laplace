@@ -371,3 +371,16 @@ ONLY at ω regularity; for C^k, Mathlib has just order-2
 (`second_derivative_symmetric`). Polarization and any
 tensor-symmetry consumer should take an abstract `IsSymm` hypothesis
 and let callers discharge it (J3 pattern).
+
+**`field_simp`/`linarith` on equations between integrals: fold the
+integral values into scalar atoms first.** field_simp rewrites under
+integral binders, reassociating mul/div inside the integrand and
+silently desynchronizing what linarith needs to see as one atom
+(symptom: linarith failure where the hypothesis and goal print
+almost-identical integrals differing in integrand association).
+Fix: `set B := ∫ x, ... with hB` for each integral value (scalars
+are safe to fold — no lambda under them), then the equation is pure
+scalar algebra. Also: squeeze arguments against a previously proven
+Tendsto must reuse its RAW statement — a `simpa using h.norm`
+renormalizes `-c * ‖x‖^2` to `-(c * ‖x‖^2)` inside binders and the
+squeeze's syntactic matching dies.
