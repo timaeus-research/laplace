@@ -70,3 +70,4 @@ import Laplace.OneD.AnharmonicThirdCumulant
 import Laplace.Pencil
 import Laplace.Sector
 import Laplace.Identifiability
+import Laplace.Multi.Sector
