@@ -32,3 +32,27 @@ Per the audit consult section 4 (deliberation of record):
 ## Numerical check
 
 Not feasible: structural limit plumbing over merged components.
+
+## Result
+
+Committed on tide/germbij-location:
+`Laplace/Multi/LocationRecovery.lean` (~230 lines). Theorems:
+`integrable_integrand` (Local-level mirror of slice integrability,
+via measurable_L + coercivity), `integrand_add`,
+`tendsto_posteriorMoment_coord` (anchored coordinate moments vanish),
+`locatedMoment`/`locatedMomentT` (located moments as anchored moments
+of translated observables), `tendsto_locatedMoment_coord` (located
+coordinate moments recover the location; the split c_i + q-rescaled
+coordinate with spectator normalization),
+`tendsto_inv_sqrt_nhdsGT_zero`, and
+`location_eq_of_superPoly_first_moments`: superpolynomially matched
+located first-moment families force equal minima — the w* clause of
+Theorem 3.1. Zero sorries, zero warnings.
+
+Iterations: the honest translated-integral form via
+integral_add_left_eq_self hit an AddGroup (Fin d) instance-synthesis
+confusion on PiLp and was dropped as non-load-bearing (the located
+definition is itself the faithful object); the integral_add step
+needed the CATALOGUED type-ascribed single-lambda witnesses; the
+final quotient algebra used the catalogued fold-atoms discipline
+(deterministic mul_div_mul_left chain instead of field_simp).
