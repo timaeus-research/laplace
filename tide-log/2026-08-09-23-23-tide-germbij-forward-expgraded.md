@@ -52,3 +52,38 @@ Feasible and done before writing Lean: N=3, a=(0.7, -0.3, 0.2),
 ρ_q = q^0.5. Compare exp(-(Σ q^s a_s + q^3 ρ)) against
 Σ_{j≤3} q^j·coeff_j(gradedExpPoly) at q = 10^-1..10^-4 and check the
 difference scales below q^3. (Executed in the scratchpad; see Result.)
+
+## Result
+
+Commit ba6e22c (rebased onto main at 34417c2 after PR #98 merged).
+`Laplace/Multi/ExpGraded.lean` (~300 lines):
+
+- `exponentPoly`, `gradedExpPoly`, `expCorrectionCoeff` (+ eval lemmas,
+  `expCorrectionCoeff_zero = 1`).
+- `abs_exponent_sum_le` (linear bound on [0,1]),
+  `tendsto_exponent_sum`, `isLittleO_pow_succ_nhdsGT`.
+- `exp_graded_expansion`: the graded little-o expansion of the
+  exponential correction factor, for any ρ → 0 at 0⁺.
+
+Numerical check passed (coefficients match the hand recursion values;
+the remainder over q^N scales as √q = the injected ρ).
+
+Surprises: the Taylor-truncation collection mechanism worked exactly as
+planned — three elementary steps, no coefficient identities, no
+double-sum reindexing. Iteration errors were all catalogued classes:
+the norms-both-sides isLittleO_iff trap again (an abs_of_pos rewrite
+had already stripped the RHS norm, so the calc had to end at ε·q^N
+this time — check what earlier rewrites did to the target before
+picking the endpoint), a gcongr discharging its own side goal, and
+`rw [Finset.range_eq_Ico]` rewriting both differently-instantiated
+occurrences at once (use `simp only` deliberately instead).
+
+### Suggested follow-ups
+
+- Stage 5 (NumeratorExpansion): apply exp_graded_expansion pointwise
+  in z with a_s := exponentTerm s L z and ρ := scaledRem, integrate
+  over the mesoscopic window against the Gaussian, remove the outer
+  tail (stage 2), and dominate coefficients via Polynomial.coeff_mul
+  induction (continuity + polynomial growth of z ↦ expCorrectionCoeff).
+- Quantitative companion of exp_graded_expansion (window-uniform
+  version) if stage 5's DCT needs it in explicit form.
