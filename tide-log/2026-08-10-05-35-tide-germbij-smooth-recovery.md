@@ -75,3 +75,28 @@ per-rung scaled) produced this way. (6) jet_recovery_stable (k := 1)
 gives a₁ = a₂ ∧ ext₁ = ext₂; project to taylorBase/taylorCoeff
 (stabilizedCoeff agrees with c below R'); iteratedDeriv corollary by
 cases k = 2 / k ≥ 3 (i := k−3).
+
+## Result
+
+- Theorems (Laplace/OneD/SmoothRecovery.lean, ~600 lines, zero
+  sorries, zero warnings; gate verified via import + .olean):
+  taylorBase/taylorCoeff, taylor_jet_epsilon,
+  AdmissiblePotential.deriv_zero + taylorBase_ge (λ > 0 derived),
+  taylorWithinEval_eq_jet, stabilizedCoeff + stabilized_jet_eq,
+  jet_sum_inner_bound, stabilized_admissible (admissibility AND
+  profile in one certificate), smooth_stabilized_jet_epsilon,
+  jet_recovery_stable_partial (the truncated strong induction — the
+  full-length recovery would demand data at the stabilizer rungs the
+  hypotheses cannot reach), and the headline smooth_jet_recovery.
+- The composition assembled essentially per the recorded plan; the
+  one structural discovery was the NEED for the partial recovery
+  variant: jet_recovery_stable quantifies over every rung of its
+  coefficient vector, but the stabilized jet is deliberately longer
+  (M − 2 > R rungs) than the data (R rungs) — the truncated induction
+  is the honest statement.
+- Tactical: the big Tendsto sum's ascribed type could not match the
+  term-mode composite exactly (assoc/neg placement); dropping the
+  ascription and letting congr' carry the shape was the fix, with the
+  eventual identity closed by field_simp + ring after the
+  pow-splitting rewrites (q^{2+r+D-2} = q^{2+2r}·q^{D-2-r}) kept
+  ℕ-subtraction out of ring's sight.

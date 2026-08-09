@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the finite-order smooth recovery\\
+(smooth-germ programme, stages C4--C5)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The closing tide of the smooth-germ programme, and with it the
+germbij nondegenerate arc: the bridge from the polynomial recovery
+machinery to smooth losses, which is where Theorem~3.1 actually
+lives. The consult's staging held: with the local Taylor comparison
+in place, C4 was composition plus one genuinely new ingredient ---
+which turned out to be a Mathlib lookup
+(\texttt{taylor\_isLittleO}, the Peano remainder).
+
+\section{The thing formalised}
+
+The headline\footnote{\texttt{smooth\_jet\_recovery}.}:
+\begin{quote}
+Two admissible $C^{R+2}$ losses whose normalized moments at
+$x^{2+r}$ differ by $o(q^{2+2r})$ for every $r \le R$ have the same
+Taylor data through degree $R+2$: the quadratic coefficient
+$\lambda/2$ and every higher coefficient.
+\end{quote}
+Supporting cast, all in \texttt{Laplace/OneD/SmoothRecovery.lean}:
+the Peano remainder in epsilon-radius form; the derived minimum facts
+(the derivative vanishes at an admissible minimum, and
+$\rho \le \lambda/2$, so nondegeneracy costs no hypothesis); the
+Taylor polynomial rewritten in jet shape; the stabilizer extension
+and its identity; the stabilized jet's joint
+admissibility-and-profile certificate; the loss-versus-stabilized-jet
+epsilon bound (Peano plus stabilizer absorption at radius
+$\varepsilon/(2(d+1))$); and the truncated strong induction.
+
+\section{The one structural discovery}
+
+The recovery theorem of the weighted-jet programme quantifies over
+\emph{every} rung of its coefficient vector. The stabilized jet is
+deliberately longer than the data reaches --- $M - 2 > R$ rungs, the
+stabilizer living above the Taylor degree precisely so it cannot
+disturb the recovered coefficients --- so the full-length theorem is
+inapplicable, and honestly so: the data says nothing about the
+stabilizer coefficients. The fix is
+\texttt{jet\_recovery\_stable\_partial}, the same strong induction
+truncated at rung $R$. This is the kind of quantifier mismatch that
+only surfaces at composition time, and it is exactly the ``full-jet
+quantifier management'' the original scoping consult listed among
+C's obligations.
+
+\section{Proof notes}
+
+The per-rung assembly follows the recorded plan: the jet-moment
+difference at observable $x^{2+r}$, scaled by $q^{-r}$, decomposes
+through the scaling bridge into three pieces --- two
+loss-versus-polynomial comparisons (each a C3 limit times
+$q^{D-2-r}$, vanishing or bounded), and the data hypothesis verbatim
+in the middle. The pow-splitting rewrites
+($q^{2+r+D-2} = q^{2+2r} \cdot q^{D-2-r}$, proven by \texttt{omega}
+on the exponents) keep natural-number subtraction away from
+\texttt{ring}. One tactical lesson worth the catalogue: the ascribed
+type of a large composed \texttt{Tendsto} term cannot realistically
+match the term-mode composite's exact shape (associativity and
+negation placement); dropping the ascription and letting
+\texttt{congr'} carry the function shape --- with the eventual
+identity closed by \texttt{field\_simp} and \texttt{ring} --- is the
+robust pattern.
+
+\section{Deliberation and check}
+
+Prior-deliberation path: C4--C5 were specified in the scoping consult
+and the composition plan was recorded in the tide log before writing.
+No new closed form entered; the analytic content was checked at C3
+(statement-level) and across the weighted-jet programme's executed
+checks.
+
+\section{What this closes, and what remains}
+
+With this tide the germbij nondegenerate programme is formalised end
+to end: identifiability (Theorem~7.3, 1D and $\mathbb{R}^d$), the
+anharmonic and weighted-jet recovery ladders, Proposition~4.1 with
+its witness, the polynomial comparison core with unequal bases, and
+now the smooth finite-order recovery. The note's remaining
+commissions are the multivariate Theorem~3.1 (the Susceptibility
+Primer's missing Stage~3, needing Wick machinery on $\mathbb{R}^d$)
+and the full-jet quantifier packaging (C6), both needing fresh
+scoping. The natural next act after the merge is the note-side
+markers on Theorem~3.1 for \texttt{smooth\_jet\_recovery}.
+
+\end{document}
