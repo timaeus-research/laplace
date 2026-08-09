@@ -15,6 +15,7 @@ as an opaque positive constant `jacInv H`), and the partition value
 -/
 
 open Real MeasureTheory Matrix
+open scoped MatrixOrder
 
 namespace Laplace.Multi
 
@@ -82,6 +83,43 @@ theorem quadKernel_integrable {H : Matrix (Fin d) (Fin d) ℝ}
   refine (integrable_comp_whitening hH stdKernel_integrable).congr
     (Filter.Eventually.of_forall fun x ↦ ?_)
   exact (quadKernel_eq_stdKernel_whitening hH x).symm
+
+/-- **All polynomial weights are integrable** against the quadratic
+kernel, by operator-norm domination through the whitening map. -/
+theorem quadKernel_integrable_pow {H : Matrix (Fin d) (Fin d) ℝ}
+    (hH : H.PosDef) (n : ℕ) :
+    Integrable (fun x : EuclidD d ↦ ‖x‖ ^ n * quadKernel H x) := by
+  have hdom : Integrable (fun x : EuclidD d ↦
+      ‖(Matrix.toEuclideanCLM (𝕜 := ℝ) (CFC.sqrt H)⁻¹ :
+          EuclidD d →L[ℝ] EuclidD d)‖ ^ n *
+        (‖whitening H x‖ ^ n * stdKernel (whitening H x))) :=
+    (integrable_comp_whitening hH (stdKernel_integrable_pow n)).const_mul _
+  refine hdom.mono'
+    (((continuous_norm.pow n).mul
+      (quadKernel_continuous H)).aestronglyMeasurable)
+    (Filter.Eventually.of_forall fun x ↦ ?_)
+  set C : EuclidD d →L[ℝ] EuclidD d :=
+    Matrix.toEuclideanCLM (𝕜 := ℝ) (CFC.sqrt H)⁻¹ with hC_def
+  rw [Real.norm_eq_abs, abs_mul, abs_pow, abs_norm,
+    abs_of_pos (quadKernel_pos H x),
+    quadKernel_eq_stdKernel_whitening hH]
+  have hCx : C (whitening H x) = x := by
+    rw [hC_def]
+    unfold whitening
+    rw [← ContinuousLinearMap.mul_apply, ← map_mul,
+      Matrix.nonsing_inv_mul _
+        (isUnit_iff_ne_zero.mpr (sqrt_posDef hH).det_pos.ne'),
+      map_one, ContinuousLinearMap.one_apply]
+  have hx : ‖x‖ ≤ ‖C‖ * ‖whitening H x‖ := by
+    conv_lhs => rw [← hCx]
+    exact C.le_opNorm _
+  calc ‖x‖ ^ n * stdKernel (whitening H x)
+      ≤ (‖C‖ * ‖whitening H x‖) ^ n * stdKernel (whitening H x) := by
+        apply mul_le_mul_of_nonneg_right
+          (pow_le_pow_left₀ (norm_nonneg x) hx n)
+          (stdKernel_pos _).le
+    _ = ‖C‖ ^ n * (‖whitening H x‖ ^ n * stdKernel (whitening H x)) := by
+        ring
 
 /-- **The partition value**: `∫ K_H = jacInv H · (2π)^(d/2)`. -/
 theorem integral_quadKernel {H : Matrix (Fin d) (Fin d) ℝ}

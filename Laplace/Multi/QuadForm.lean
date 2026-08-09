@@ -39,6 +39,14 @@ theorem quadKernel_pos (H : Matrix (Fin d) (Fin d) ℝ) (x : EuclidD d) :
     0 < quadKernel H x :=
   Real.exp_pos _
 
+theorem qform_continuous (H : Matrix (Fin d) (Fin d) ℝ) :
+    Continuous (qform H) :=
+  continuous_id.inner (Matrix.toEuclideanCLM (𝕜 := ℝ) H).continuous
+
+theorem quadKernel_continuous (H : Matrix (Fin d) (Fin d) ℝ) :
+    Continuous (quadKernel H) :=
+  Real.continuous_exp.comp ((qform_continuous H).neg.div_const 2)
+
 /-- The coordinate bridge: `qform` as a matrix dot product. -/
 theorem qform_eq_dotProduct (H : Matrix (Fin d) (Fin d) ℝ)
     (x : EuclidD d) :
