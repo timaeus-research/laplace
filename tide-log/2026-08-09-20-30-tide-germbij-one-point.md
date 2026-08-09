@@ -63,3 +63,26 @@ the merged contradiction theorem.
 Not feasible: pure asymptotic-inequality algebra over the IsLittleO
 API, no closed form to evaluate. (The downstream Laplace content was
 numerically checked in the tides that produced it.)
+
+## Result
+
+Committed on tide/germbij-one-point: `Laplace/Anchoring.lean`
+(~130 lines), compiled on the first build with zero warnings.
+Theorems: `SuperPoly` (the Decay vocabulary, named),
+`superPoly_of_mul_anchor` (dividing by a polynomially-bounded-below
+anchor loses only a polynomial factor: the (N+n) -> N exponent
+shift), `superPoly_sub_of_scalar_gauge` (B - J = (B - CJ) + (C-1)J,
+with IsLittleO.mul_isBigO for the second term), and
+`anchored_proportionality_remove_scalar` (the packaged corollary:
+one anchored observable kills the common gauge for every
+boundedly-referenced observable). This is the asymptotic core of
+germbij Proposition 7.6, per the archived consult's staging; the
+next tide adds the Laplace-moment boundedness lemma, the local
+anchor instantiation (exact moment equality from Set.EqOn +
+tsupport), and the thin wrapper on the merged singular
+identifiability contradiction.
+
+Surprise: none — pure IsLittleO algebra, and the consult's
+integer-exponent normalization advice (avoid rpow arithmetic against
+the `forall N : Nat` definition) made the anchor-division proof a
+single calc chain.
