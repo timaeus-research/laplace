@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import Laplace.Multi.Dilation
+import Laplace.OneD.GaussianMoments
 
 /-!
 # The standard isotropic Gaussian package
@@ -148,5 +149,98 @@ theorem stdKernel_integrable_pow {d : ℕ} (n : ℕ) :
             nlinarith [sq_nonneg ‖y‖]
           nlinarith [Real.exp_pos (-(3 / 8) * ‖y‖ ^ 2),
             (by positivity : (0:ℝ) ≤ 8 ^ m * (Nat.factorial m : ℝ))]
+
+/-- The standard kernel factorizes over coordinates. -/
+theorem stdKernel_toLp {d : ℕ} (x : Fin d → ℝ) :
+    stdKernel (WithLp.toLp 2 x) = ∏ i, Real.exp (-x i ^ 2 / 2) := by
+  unfold stdKernel
+  rw [EuclideanSpace.norm_sq_eq, ← Real.exp_sum]
+  congr 1
+  simp only [Real.norm_eq_abs, sq_abs, neg_div,
+    Finset.sum_neg_distrib, ← Finset.sum_div]
+
+/-- **The Fubini workhorse**: the integral of a coordinate-factored
+observable against the standard kernel is the product of the
+one-dimensional Gaussian-weighted integrals. -/
+theorem integral_prod_mul_stdKernel {d : ℕ} (f : Fin d → ℝ → ℝ) :
+    ∫ y : EuclidD d, (∏ i, f i (y i)) * stdKernel y =
+      ∏ i, ∫ t : ℝ, f i t * Real.exp (-t ^ 2 / 2) := by
+  rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp
+    (MeasurableEquiv.toLp 2 _).measurableEmbedding
+    (fun y : EuclidD d ↦ (∏ i, f i (y i)) * stdKernel y)]
+  have hpt : ∀ x : Fin d → ℝ,
+      (∏ i, f i ((WithLp.toLp 2 x) i)) * stdKernel (WithLp.toLp 2 x) =
+        ∏ i, f i (x i) * Real.exp (-x i ^ 2 / 2) := by
+    intro x
+    rw [stdKernel_toLp, Finset.prod_mul_distrib]
+  calc ∫ x : Fin d → ℝ,
+        (∏ i, f i ((WithLp.toLp 2 x) i)) * stdKernel (WithLp.toLp 2 x)
+      = ∫ x : Fin d → ℝ, ∏ i, f i (x i) * Real.exp (-x i ^ 2 / 2) := by
+        exact integral_congr_ae (Filter.Eventually.of_forall hpt)
+    _ = ∏ i, ∫ t : ℝ, f i t * Real.exp (-t ^ 2 / 2) :=
+        integral_fintype_prod_volume_eq_prod
+          (f := fun i t ↦ f i t * Real.exp (-t ^ 2 / 2))
+
+/-- First coordinate moments of the standard Gaussian vanish. -/
+theorem integral_coord_mul_stdKernel {d : ℕ} (a : Fin d) :
+    ∫ y : EuclidD d, y a * stdKernel y = 0 := by
+  have h := integral_prod_mul_stdKernel (d := d)
+    (fun i t ↦ if i = a then t else 1)
+  simp only [Finset.prod_ite_eq', Finset.mem_univ, if_true] at h
+  rw [h]
+  refine Finset.prod_eq_zero (Finset.mem_univ a) ?_
+  have hodd := Laplace.OneD.integral_pow_mul_exp_neg_sq_odd 0
+  simpa using hodd
+
+/-- Second coordinate moments of the standard Gaussian:
+`∫ y_a·y_b·k₀ = δ_ab·(2π)^(d/2)`. -/
+theorem integral_coord_mul_coord_stdKernel {d : ℕ} (a b : Fin d) :
+    ∫ y : EuclidD d, y a * y b * stdKernel y =
+      if a = b then (2 * π) ^ ((d : ℝ) / 2) else 0 := by
+  by_cases hab : a = b
+  · subst hab
+    rw [if_pos rfl]
+    have h := integral_prod_mul_stdKernel (d := d)
+      (fun i t ↦ if i = a then t ^ 2 else 1)
+    simp only [Finset.prod_ite_eq', Finset.mem_univ, if_true] at h
+    have hsq : (fun y : EuclidD d ↦ y a * y a * stdKernel y) =
+        fun y : EuclidD d ↦ y a ^ 2 * stdKernel y := by
+      funext y
+      ring
+    rw [hsq, h]
+    have hfac : ∀ i : Fin d,
+        (∫ t : ℝ, (if i = a then t ^ 2 else 1) * Real.exp (-t ^ 2 / 2)) =
+          Real.sqrt (2 * π) := by
+      intro i
+      by_cases hia : i = a
+      · simp only [if_pos hia]
+        have h1 := Laplace.OneD.integral_pow_mul_exp_neg_sq_half 1
+        simpa using h1
+      · simp only [if_neg hia, one_mul]
+        have h0 := Laplace.OneD.integral_pow_mul_exp_neg_sq_half 0
+        simpa using h0
+    rw [Finset.prod_congr rfl fun i _ ↦ hfac i, Finset.prod_const,
+      Finset.card_univ, Fintype.card_fin]
+    rw [Real.sqrt_eq_rpow, ← Real.rpow_natCast ((2 * π) ^ ((1 : ℝ) / 2)) d,
+      ← Real.rpow_mul (by positivity)]
+    congr 1
+    ring
+  · rw [if_neg hab]
+    have h := integral_prod_mul_stdKernel (d := d)
+      (fun i t ↦ (if i = a then t else 1) * (if i = b then t else 1))
+    have hlhs : ∀ y : EuclidD d,
+        (∏ i, (if i = a then y i else 1) * (if i = b then y i else 1)) =
+          y a * y b := by
+      intro y
+      rw [Finset.prod_mul_distrib]
+      simp [Finset.prod_ite_eq']
+    rw [show (fun y : EuclidD d ↦
+        (∏ i, (if i = a then y i else 1) * (if i = b then y i else 1)) *
+          stdKernel y) = fun y : EuclidD d ↦ y a * y b * stdKernel y from
+      funext fun y ↦ by rw [hlhs y]] at h
+    rw [h]
+    refine Finset.prod_eq_zero (Finset.mem_univ a) ?_
+    have hodd := Laplace.OneD.integral_pow_mul_exp_neg_sq_odd 0
+    simpa [hab] using hodd
 
 end Laplace.Multi
