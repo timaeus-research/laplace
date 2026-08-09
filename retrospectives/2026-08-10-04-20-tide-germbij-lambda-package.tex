@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the nondegenerate $\lambda$-package\\
+(unequal-base programme, stages B3--B5)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The closing tide of programme B$'$. Base recovery (previous tide)
+removes the equal-base hypothesis; what remains is composition and
+packaging, which the scoping consult predicted would need ``no
+modification of the pairwise machinery''. It didn't.
+
+\section{The thing formalised}
+
+Five declarations in \texttt{Laplace/OneD/LambdaPackage.lean},
+sorry-free with zero warnings (gate verified via import and
+\texttt{.olean}). The $t$-to-$q$ data transfer, factored from the
+recovery theorem's proof into a reusable helper; the variable-base
+recovery\footnote{\texttt{polynomialJet\_recovery\_variableBase}.}
+(recover the base from second moments, substitute, apply the
+comparison theorem verbatim); the $k = 1$ package in the note's
+normalisation\footnote{\texttt{nondegenerateJet\_recovery}.}:
+\begin{quote}
+For two potentials $(\lambda_\nu/2)\,x^2 + \sum_{r=1}^R c^\nu_r
+x^{2+r}$ with uniformly positive profiles, eventually-equal Gibbs
+moments at $x^2$ and at each $x^{2+r}$ force $\lambda_1 = \lambda_2$
+and $c^1 = c^2$;
+\end{quote}
+and the opening move of germbij Theorem~3.1 in its native form,
+\[
+t\,\langle x^2\rangle_t \;\longrightarrow\; 1/\lambda
+\]
+(\texttt{gibbs\_secondMoment\_rate}), with the $k = 1$ constant
+$M_2(\lambda/2) = 1/\lambda$ evaluated through
+$\Gamma(3/2) = \tfrac12\Gamma(1/2)$.
+
+With this, programme B$'$ is complete, and so is the \emph{polynomial
+algebraic core} of Theorem~3.1: every coefficient of a finite
+nondegenerate jet is pinned by moment asymptotics. Per the scoping
+consult's explicit warning, this is not yet Theorem~3.1 itself ---
+the smooth-loss reduction (programme C: an asymptotically stable
+recovery interface, localisation, Taylor-remainder transfer) is the
+remaining, genuinely analytic gap.
+
+\section{Roadblocks and resolutions}
+
+Small and catalogued: \texttt{Real.sqrt\_mul\_self} is
+$\sqrt{a \cdot a} = a$ while the needed identity
+$\sqrt{a}\cdot\sqrt{a} = a$ is \texttt{Real.mul\_self\_sqrt}; the
+radical-atom \texttt{set} pattern applied verbatim twice; and
+unreduced literal exponents (\texttt{(st$^{-1}$)\^{}(2*1)}) block
+\texttt{field\_simp} until \texttt{pow\_mul}/\texttt{pow\_one}
+normalise them.
+
+A process near-miss worth recording: the first draft of this tide's
+numerical-check section was written in the same shell command as the
+check itself --- before the output existed --- and carried invented
+values. It was caught and corrected against the actual output before
+any commit. The rule is now sharpened in the tide log: the check runs
+in one command; the log text is written in a later command, quoting.
+
+\section{The deliberation and check}
+
+No fresh consult (the scoping consult specified B3--B5 with proof
+structures; carried votes recorded in the log). The numerical check:
+$t\,\mathbb{E}_t[x^2]$ for $\lambda = 1.7$ with cubic and quartic
+perturbations reaches $0.587314$ at $t = 800$ against
+$1/\lambda = 0.588235$, and $\Gamma(3/2)/\Gamma(1/2) = 0.5$.
+
+\section{What the next programme inherits}
+
+Programme C, scoped in the same consult: the asymptotically stable
+recovery theorem (the existing proofs' contradictions only need the
+observed differences to vanish at the coefficient-sensitive scale ---
+the \texttt{\_of\_tendsto} interfaces built along the way are exactly
+this shape), then quadratic control and domain splitting, rescaled
+Taylor remainders, cutoff transfer, and the full-jet quantifier
+packaging. That programme is the note's ``Justification'' paragraph
+made formal, and it is where the germbij Theorem~3.1 marker will
+eventually land.
+
+\end{document}

@@ -19,6 +19,7 @@ import Laplace.OneD.JetScaling
 import Laplace.OneD.JetDifference
 import Laplace.OneD.JetRecovery
 import Laplace.OneD.BaseRecovery
+import Laplace.OneD.LambdaPackage
 import Laplace.OneD.Recovery
 import Laplace.OneD.RecoveryMonotone
 import Laplace.OneD.RecoveryExpansion
