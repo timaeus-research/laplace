@@ -73,3 +73,4 @@ import Laplace.Identifiability
 import Laplace.Multi.Sector
 import Laplace.Multi.Identifiability
 import Laplace.Analytic
+import Laplace.AnalyticIdentifiability
