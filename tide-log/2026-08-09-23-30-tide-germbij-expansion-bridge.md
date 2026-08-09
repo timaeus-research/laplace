@@ -49,3 +49,28 @@ The SuperPoly data bridge, per the consult:
 
 Not feasible: structural (filter substitution + identity plumbing
 over numerically-verified components).
+
+## Result
+
+Committed on tide/germbij-expansion-bridge:
+`Laplace/Multi/ExpansionBridge.lean` (~215 lines). Theorems:
+`tendsto_inv_sq_atTop` (the t = q^-2 filter substitution),
+`isLittleO_pow_of_superPoly` (rate transport: SuperPoly in t +
+division by a fixed power of q gives every o(q^r) rate at 0+),
+`posteriorMoment` / `posteriorMomentT` (the normalized localized
+moment in scale and temperature parametrizations; dilation
+prefactors cancel), `integrand_const_mul`,
+`posteriorMoment_eq_pow_mul` + `rescaledMoment_eq_posteriorMoment_div`
+(the homogeneity identity: t-level moment = q^k times the rescaled
+moment), and the headline
+`smooth_jet_recovery_of_superPoly_moments`: monomial moment families
+agreeing beyond all orders (the note's "same asymptotics"
+convention, in the SuperPoly vocabulary) force equal derivative
+tensors at every order — the merged recovery restated in Theorem
+3.1's own data language. Zero sorries, zero warnings.
+
+Iterations: Ioi-membership vs 0 < q coercions for positivity; a
+cascading-rewrite trap (2*N rewritten inside the exponent
+2*N - m - r on the RHS — the catalogued class, fixed by calc with
+the reversed equation); Ioo_mem_nhdsGT is the current name for the
+one-sided interval membership.
