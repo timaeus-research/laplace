@@ -179,10 +179,10 @@ theorem exp_neg_div_tendsto_zero {c : ℝ} (hc : 0 < c) (n : ℕ) :
   rw [show -(c * q⁻¹) = -(c / q) by field_simp]
   ring
 
+set_option maxHeartbeats 3200000 in
 -- The assembled epsilon-of-room proof combines ~10 integral
 -- manipulations in one calc; this exceeds the default heartbeat
--- budget in `isDefEq`, so raise it (see CLAUDE.md).
-set_option maxHeartbeats 3200000 in
+-- budget in `isDefEq` (see CLAUDE.md).
 /-- **The local Taylor comparison, unnormalized** (stage C3 main):
 for admissible potentials whose difference is `o(|x|^D)` at `0` in
 epsilon-radius form, the moment difference is `o(q^(s+D-1))` along
