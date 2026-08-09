@@ -1,0 +1,104 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: turnkey identifiability}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+Eighth tide of the germbij arc, removing its last non-mathematical
+hypotheses. The analytic corollary of the previous
+tide\footnote{\tideref{2026-08-09-03-25-tide-germbij-analytic-corollary}.}
+still carried three per-$t$ integrability premises. For continuous
+potentials and a continuous compactly supported bump these are automatic,
+and this tide makes them so, yielding the arc's headline statement in its
+final form.
+
+\section{The thing formalised}
+
+Four declarations in \texttt{Laplace/Turnkey.lean}, all sorry-free with
+zero warnings. Three integrability lemmas: the minorant and each pencil
+slice are continuous with support inside $\mathrm{tsupp}\,\psi$, hence
+integrable; and the uncurried pencil integrand is integrable on
+$[0,1] \times \mathbb{R}$ with the restricted product measure, by a
+cylinder-indicator majorant. Then the turnkey theorem\footnote{%
+\texttt{analytic\_pencil\_difference\_lower\_bound'}.}: for $L_1, L_2 \geq 0$
+analytic at $0$ with differing germs, globally continuous, with
+$L_1 + L_2 \leq C_0 w^2$ on $[0, R]$, and $\psi$ continuous, compactly
+supported, nonnegative, $\equiv 1$ on $[0, R]$: there exist $m$ (the
+vanishing order of the difference), $c > 0$, $r_0 \in (0, R]$ with
+\[
+c \cdot t \cdot t^{-m-1/2}
+\;\leq\;
+\int (L_2 - L_1)\, \psi\, \bigl( e^{-t L_1} - e^{-t L_2} \bigr)\, dw
+\qquad \text{for all } t \geq 4 / r_0^2 .
+\]
+Every hypothesis is now a mathematical property of the potentials and the
+bump; nothing about integrals survives in the statement. This is the 1D
+germbij Theorem~7.3 chain in the cleanest form the note could cite.
+
+\section{Proof strategy}
+
+The two one-dimensional lemmas are
+\texttt{Continuous.integrable\_of\_hasCompactSupport} with the support
+transported from $\psi$ (\texttt{HasCompactSupport.intro} on
+$\mathrm{tsupp}\,\psi$; off the support the integrand vanishes because
+$\psi$ does). The product lemma follows the consult's blueprint exactly:
+joint continuity by \texttt{fun\_prop}; a uniform bound on the compact
+cylinder $[0,1] \times \mathrm{tsupp}\,\psi$; the indicator majorant on
+$\mathrm{univ} \times \mathrm{tsupp}\,\psi$, integrable because the
+restricted product measure of the cylinder is finite; the restricted
+product rewritten as a restriction of the full product to extract almost
+sure membership of the $s$-coordinate in $(0,1]$; and domination. The
+turnkey theorem is then the analytic corollary fed by the three lemmas.
+
+\section{Roadblocks and resolutions}
+
+Two elaboration-level snags. \texttt{isCompact\_Icc}'s implicit endpoints
+unified with an ambient variable named $t$ rather than $[0,1]$, producing a
+bound over the degenerate interval $[t,t]$; explicit
+\texttt{(a := 0) (b := 1)} fixed it. And an anonymous-constructor
+membership proof inside a \texttt{rw} argument could not determine its
+type; naming it in a \texttt{have} first resolved it. The consult was used
+tactically this time (idiom-level, before writing the product lemma) and
+its recipe compiled with only those two repairs.
+
+\section{What was Mathlib, what was new}
+
+All Mathlib: the compact-support integrability lemma, the compact-bound
+lemma, the product-restriction identity, indicator integrability, and
+domination. New: only the packaging. The arc's quantitative content was
+finished three tides ago; these last tides have been about making the Lean
+statement coincide with the note's.
+
+\section{Lessons}
+
+Beware implicit interval endpoints when an ambient variable could unify
+with them; instantiate \texttt{isCompact\_Icc} explicitly in any context
+with free real variables. Consults are cheapest when asked for idioms
+before writing, not diagnoses after.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item The multivariate leading-part instantiation (produce the scaled set
+$S$ from a nonzero homogeneous leading part), the one remaining ingredient
+for a turnkey multivariate statement.
+\item Note annotation: tag Theorem~7.3 with the turnkey theorem once
+merged; it certifies the note's hypothesis set most faithfully.
+\item Consider upstreaming \texttt{integrable\_pencil\_product}'s pattern
+(continuous kernel times compactly supported factor on a restricted
+product) to lean-common on second use.
+\end{itemize}
+
+\end{document}
