@@ -1,0 +1,116 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the classic flat witness $e^{-1/x^2}$}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The flat-invisibility tide proved that \emph{any} flat perturbation
+hides from all expansion orders, but the theorem quantifies over a
+hypothesis package: continuous, bounded, nonnegative, flat. The
+germbij note's Proposition~4.1 discussion is anchored on a specific
+function --- $e^{-1/x^2}$, the textbook example of flatness --- and
+until a concrete instance satisfies the package in Lean, the
+formalised counterexample is conditional. This tide closes that gap.
+It was deferred from the parent tide by joint vote, with the proof
+route already supplied in the parent consult, so it is the cheapest
+kind of tide: pure instantiation, stacked on the parent branch, with
+the deliberation inherited.
+
+\section{The thing formalised}
+
+Eight declarations in \texttt{Laplace/OneD/FlatWitness.lean},
+sorry-free with zero warnings. The definition extends $e^{-1/x^2}$ by
+$0$ at the origin; the load-bearing lemma is the \emph{global}
+factorial bound\footnote{\texttt{flatWitness\_le\_factorial\_mul\_pow}.}
+\[
+e^{-1/x^2} \;\le\; n!\,x^{2n}
+\qquad\text{for all } x \text{ and all } n,
+\]
+from which nonnegativity, the bound by $1$, continuity, and the
+flatness package all follow. The two instantiation
+corollaries\footnote{\texttt{flat\_witness\_invisible} and
+\texttt{flat\_witness\_superpolynomial}.} feed the witness to the
+parent theorems: perturbing the harmonic potential by $e^{-1/x^2}$
+shifts every compactly-supported-observable integral by $O(t^{-N})$
+for every $N$, i.e.\ superpolynomially. Proposition~4.1's
+counterexample is now witnessed, not just quantified.
+
+\section{Proof strategy}
+
+Everything reduces to one inequality. Setting $s = 1/x^2$, the single
+term of the exponential series gives $s^n/n! \le e^s$
+(\texttt{Real.sum\_le\_exp\_of\_nonneg} plus
+\texttt{Finset.single\_le\_sum}), and rearranging yields
+$e^{-s} \le n!/s^n = n!\,x^{2n}$; in Lean the rearrangement goes
+through the product identity $x^{2n} s^n = 1$ rather than nested
+divisions. Continuity at the origin is a squeeze against the $n = 1$
+case ($0 \le f \le x^2$); away from the origin it is composition. The
+numerical check (executed before formalisation) confirmed the bound
+on a grid, with the maximum ratio $0.3679$ at $n = 1$ matching the
+analytic supremum $e^{-n}n^n/n!$ exactly.
+
+\section{Roadblocks and resolutions}
+
+Minor, all known classes. The catalogued cascading-rewrite gotcha
+struck again: rewriting $1 = e^0$ to compare $e^{-1/x^2} \le 1$ also
+rewrote the $1$ inside $1/x^2$, leaving \texttt{linarith} facing an
+opaque $e^0/x^2$ atom; the fix is a \texttt{calc} through
+$e^0$ that never rewrites the goal. \texttt{continuousAt\_pow} takes
+its arguments as $(x, n)$, not $(n, x)$. One dead tactic after
+\texttt{field\_simp}. Three fix cycles total, all catalogue lookups.
+
+The genuine friction was infrastructure: \texttt{seed\_worktree}
+failed on this host because the macOS system bash (3.2) has no
+associative arrays, so every worktree this session was silently
+falling back to \texttt{lake exe cache get}. The worktree was seeded
+manually by hardlinking from the parent tide's tree
+(\texttt{rsync --link-dest}), and the script was fixed portably in
+SRI (an \texttt{awk} lookup over manifest lines) and smoke-tested:
+ten packages, Mathlib included, now hardlink correctly.
+
+\section{The deliberation}
+
+No fresh consult. The parent tide's consult recommended exactly this
+follow-up and supplied the route:
+\begin{quote}
+For $f(x) = e^{-1/x^2}$ (extended by $0$) one can in fact obtain the
+flat bound globally: $e^{-1/x^2} \le n!\,x^{2n}$. [\dots] Thus one may
+take $C = n!$ and any positive $\delta$.
+\end{quote}
+Its advice to verify \texttt{Real.sum\_le\_exp\_of\_nonneg} rather
+than trust a guessed name was followed and correct: the lemma exists,
+and the guessed direct form (\texttt{pow\_div\_factorial\_le\_exp})
+does not. This is the documented proceed-without-new-consult path:
+prior deliberation on this exact candidate plus an executed numerical
+check.
+
+\section{Mathlib vs new}
+
+Mathlib lookup: the exponential series bound, single-term extraction
+from a finite sum, the squeeze lemma, continuity combinators, and the
+eventually-nonzero neighborhood filter. New: only the assembly. Notably,
+Mathlib's own \texttt{expNegInvGlue} ($e^{-1/x}$ for $x > 0$) was not
+needed --- the even variant is self-contained in 140 lines.
+
+\section{What the next tide inherits}
+
+The germbij Proposition~4.1 story is complete in Lean: general
+theorem, \texttt{Decay}-vocabulary packaging, and concrete witness.
+The remaining germbij commissions are the higher cumulant rungs of
+Theorem~3.1 (fifth/sixth cumulants, or the general-order induction)
+and the multivariate \S7.4 recovery programme; both need fresh
+programme scoping before any tide starts.
+
+\end{document}
