@@ -44,3 +44,27 @@ integrated-limit assembly with no separate closed form. Structural.
 - GPT-5.6 Sol: same (archived).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/LocalRateDCT.lean`, ~320 lines, sorry-free,
+three-repair pass):
+
+- `HigherLaplaceDomain k L H extends LocalLaplaceDomain` with the
+  consult's engineering-choice fields (global ContDiff k, taylorRadius
+  ball inside U, direct remainder bound C·‖y‖^k).
+- `pairwise_difference_bound` (matched jets telescope the sum away,
+  |L₁ − L₂| ≤ (C₁+C₂)‖y‖^k on the common ball) and
+  `base_eq_of_lower` (j = 0 jets give L₁ 0 = L₂ 0).
+- **`tendsto_local_rate_integral`**: the ball-indicator integral of
+  P·(e^{-a₁} − e^{-a₂})/q^{k−2} converges to −∫ P·Q·quadKernel.
+  Pointwise: J5a's scalar limit fed by H3b's rescaled_tendsto (both
+  exponents → qform/2) and J4's pairwise limit re-expressed at the
+  q² · q^{k−2} = q^k split. Domination: the secant bound × the
+  min-coercivity Gaussian × the difference bound, with the q^{k−2}
+  factors cancelling exactly — integrable by the J5a layer.
+
+Error classes: all catalogued (calc-in-bullet indentation replaced
+by le_trans terms; context-blind positivity needing explicit
+mul_nonneg; the indicator membership cast; div_le_div_of_nonneg_right
+wanting ≤ not <; one dead ring).
