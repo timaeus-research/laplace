@@ -63,6 +63,7 @@ import Laplace.Multi.JetInduction
 import Laplace.Multi.MonomialTests
 import Laplace.Multi.ExpansionBridge
 import Laplace.Multi.LocationRecovery
+import Laplace.Multi.AnalyticGermRecovery
 import Laplace.Multi.SeparableRecovery
 import Laplace.Multi.SeparableAffinity
 import Laplace.Multi.AnisotropicScaling
