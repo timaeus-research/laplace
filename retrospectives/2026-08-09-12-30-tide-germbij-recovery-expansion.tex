@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the expansion pairing reads off the
+quartic coefficient}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The germbij note's Section~7.4 recovers the subleading coefficients of an
+analytic potential from the corrections of the Laplace expansion at their
+distinct orders. The recovery thread had so far certified the leading
+data (degree and scale, exactly and asymptotically) and a monotonicity
+shortcut for signed perturbations; the expansion \emph{mechanism} itself,
+the pairing the note actually describes, had no Lean instance. This tide
+provides the smallest one: the first correction of the quartic-perturbed
+Gaussian, with an explicit error bound, and the recovery of the quartic
+coefficient from it.
+
+\section{The thing formalised}
+
+Three declarations in \texttt{Laplace/OneD/RecoveryExpansion.lean},
+sorry-free with zero warnings. The elementary remainder
+bound\footnote{\texttt{exp\_neg\_sub\_one\_add\_bounds}.}: for $s \geq 0$,
+$0 \leq e^{-s} - 1 + s \leq s^2$, proved with two applications of
+$1 + x \leq e^x$ and no calculus. The
+expansion\footnote{\texttt{quartic\_partition\_expansion\_bounds}.}: for
+$b \geq 0$, $t > 0$,
+\[
+0 \;\leq\; Z_b(t) - \sqrt{2\pi}\, t^{-1/2} + 3b\sqrt{2\pi}\, t^{-3/2}
+\;\leq\; 105\, b^2 \sqrt{2\pi}\, t^{-5/2},
+\qquad Z_b(t) = \int e^{-t(x^2/2 + b x^4)}\, dx .
+\]
+And the recovery\footnote{\texttt{quartic\_coefficient\_recovery\_of\_eventuallyEq}.}:
+if $Z_{b_1}$ and $Z_{b_2}$ eventually agree ($b_i \geq 0$), then
+$b_1 = b_2$. The numerical check (executed, archived in the tide log)
+confirms both the limit $-3b\sqrt{2\pi}$ of the rescaled correction and
+the error constant with the expected factor-two slack from the
+elementary bound.
+
+\section{Proof strategy}
+
+Split $e^{-t(x^2/2+bx^4)} = q \cdot e^{-tbx^4}$ with $q$ the Gaussian
+factor, and expand $e^{-tbx^4} = 1 - tbx^4 + r$ with
+$0 \leq r \leq (tbx^4)^2$ pointwise. The seabed's scale-$t$ moments (the
+$k = 0, 2, 4$ cases of $\int x^{2k} q = (2k-1)!!\,\sqrt{2\pi}\,
+t^{-(k+1/2)}$, so $1$, $3$, $105$) do the rest: the $k = 0$ and $k = 2$
+terms cancel the main and correction terms of the expansion
+\emph{exactly}, so the error is literally $\int q\, r$, bounded two-sidedly
+by the $k = 4$ moment. No substitution, no dominated-convergence, no
+asymptotic machinery. For the recovery, the difference of the two
+expansion errors is exactly $3(b_1 - b_2)\sqrt{2\pi}\, t^{-3/2}$ when the
+partition functions agree, and the two error bounds squeeze it below
+order $t^{-5/2}$; one archimedean choice of $t$ closes the contradiction,
+with no limits taken.
+
+\section{Roadblocks and resolutions}
+
+Four build iterations, all elaboration-level, all of documented classes:
+a missing import for the seabed integrability family; the
+\texttt{Pi.add} gotcha in \texttt{integral\_add} (fixed by the
+CLAUDE.md's type-ascribed single-lambda witnesses); brittle
+\texttt{rw}-into-closed-form steps replaced by the robust pattern
+``\texttt{norm\_num [Nat.doubleFactorial]} at hypothesis and goal, then
+\texttt{linarith} with the integral as an atom''; and a \texttt{calc} of
+equalities against a $\leq$ goal needing \texttt{le\_of\_eq}.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: $1 + x \leq e^x$, integral linearity, \texttt{integral\_mono},
+domination. Seabed: the scale-$t$ Gaussian moments and the monomial
+integrability family, both from the May tides, doing exactly the work
+they were built for. New: the observation that the moment cancellation
+is exact (the expansion error \emph{is} the remainder integral), which
+makes the whole development bookkeeping-free.
+
+\section{Lessons}
+
+When a closed form is consumed, normalize both sides to a common normal
+form and finish with \texttt{linarith} treating opaque terms as atoms;
+chasing exact \texttt{rw} orientations against \texttt{norm\_num}
+output is the fragile alternative. The elementary $s^2$ remainder bound
+(constant twice the sharp $s^2/2$) is the right trade: it removes all
+calculus from the file at the cost of a factor the application never
+notices.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item The general inductive step (all subleading coefficients of an
+analytic perturbation, correction by correction) would need expansions
+to arbitrary order: the natural shape is a finite Taylor expansion of
+$e^{-s}$ with the same elementary remainder trick, and it would subsume
+this tide's $k = 1$ instance.
+\item Tag the note's Section 7.4 dimension-one item with the expansion
+recovery once merged; it certifies the pairing mechanism specifically.
+\end{itemize}
+
+\end{document}
