@@ -42,3 +42,50 @@ early). The measured statement matches the note's "the moments
 m_alpha(t)" phrasing (data indexed by multi-indices alpha), so 1+2 is
 also the faithful formalisation of what Theorem 3.1's proof actually
 consumes.
+
+## GPT-5.6 Sol v1
+
+Archived verbatim in `tide-log/gpt56_monomial_shape_v1.md`. Summary:
+candidates 1+2 correct; ordered-tuple indexing (m : Fin k -> Fin d)
+is the right Lean representation (multi-indices would add orbit/
+multinomial bookkeeping for no gain); d = 0 is vacuously fine. Key
+staging correction: monomial rates canNOT discharge J6's universal
+quantifier by linearity (monomials span homogeneous POLYNOMIALS, not
+all homogeneous functions) — extract the one-test core first:
+
+1. J6-point: recovery from the rate at Delta_k alone (the proof
+   already only uses hdata there).
+2. Existing J6 becomes a trivial wrapper.
+3. Algebraic coordinate expansion (diagonal = finite monomial sum).
+4. Finite-sum moment-rate closure (linearity + IsLittleO closure).
+5. J6-prime (monomial rates). 6. J7-prime.
+
+Consult also flags J6-point as itself the best minimal candidate: it
+isolates that the analytic Laplace argument needs ONE test, with
+determining families a mechanism for deriving that test's rate.
+
+## Vote
+
+- Claude: candidates 1+2 with the consult's staging (J6-point core,
+  then monomial closure, then the induction wrapper).
+- GPT-5.6 Sol: same (sequence 1-6 above; MvPolynomial rejected as
+  conversion infrastructure). Agreed.
+
+## Numerical check
+
+Not feasible in the closed-form sense: the statements are structural
+(a hypothesis-weakening refactor plus an algebraic expansion over
+verified components). The expansion identity itself is
+kernel-checked at the point of use (diag_eq_sum_monomialTest).
+
+## Progress
+
+- `Laplace/Multi/MonomialTests.lean` (consult-independent prep,
+  compiled clean before the consult returned): monomialTest,
+  certificates (continuity via PiLp.continuous_apply, growth via
+  coordinate-norm bound, homogeneity), euclid_eq_sum_single (via
+  OrthonormalBasis.sum_repr on EuclideanSpace.basisFun — the direct
+  Finset.sum_apply route hits .ofLp coercion friction), and
+  diag_eq_sum_monomialTest (MultilinearMap.map_sum with explicit g +
+  map_smul_univ; the consult's predicted coercion friction was real
+  and resolved by calc through toMultilinearMap with rfl bridges).
