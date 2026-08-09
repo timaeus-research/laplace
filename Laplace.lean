@@ -48,6 +48,7 @@ import Laplace.Multi.QuadGaussian
 import Laplace.Multi.QuadMoments
 import Laplace.Multi.RayRescale
 import Laplace.Multi.QuadLowerBound
+import Laplace.Multi.RescaledDCT
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox
