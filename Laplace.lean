@@ -44,6 +44,7 @@ import Laplace.Multi.Basic
 import Laplace.Multi.Dilation
 import Laplace.Multi.StdGaussian
 import Laplace.Multi.QuadForm
+import Laplace.Multi.QuadGaussian
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox
