@@ -14,6 +14,7 @@ import Laplace.ScalarBound
 import Laplace.OneD.IntegralRemainder
 import Laplace.OneD.Rescaling
 import Laplace.OneD.MonomialPotential
+import Laplace.OneD.Recovery
 import Laplace.Multi.Basic
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
