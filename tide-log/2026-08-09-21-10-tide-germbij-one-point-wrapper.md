@@ -38,3 +38,28 @@ Per the deliberation of record (the parent tide's consult):
 
 Not feasible: composition of verified components (the pencil-sector
 lower bound and the anchor algebra were checked in their own tides).
+
+## Result
+
+Committed on tide/germbij-one-point-wrapper:
+`Laplace/OnePointAnchoring.lean` (~170 lines). Theorems:
+`integrable_mul_exp_neg_of_compactSupport` (continuity + compact
+support make the damped observable integrable outright — no
+domination argument), `laplace_moment_bounded` (|int phi e^{-tL}| <=
+int |phi| for t >= 0, packaged as IsBigO), `anchor_moment_eq`
+(Set.EqOn + tsupport give exact moment equality), and
+`one_point_anchoring_contradiction`: the full germbij Proposition
+7.6 in contradiction form — under the pencil-sector analytic
+package, a common-gauge proportionality anchored at one observable
+supported where the losses agree (with a sector-shaped lower bound
+on its reference moment) is impossible. The moment difference IS the
+pencil quantity (integral linearity, eventually in t >= 0), so the
+composition with analytic_pencil_difference_not_superpolynomial is
+direct. Zero sorries, zero warnings.
+
+Iterations: three small ones — ℝ≥0∞ is scoped notation (open scoped
+ENNReal, like MatrixOrder and ContDiff before it); the catalogued
+beta-unreduced-goal trap in anchor_moment_eq; and a set-folded
+lambda desynchronizing rw patterns in the final composition
+(resolved by dropping `set` for the explicit observable and closing
+the orientation mismatch with linarith instead of rw).
