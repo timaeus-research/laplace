@@ -71,3 +71,33 @@ derivatives are polarization plus more differentiability API).
 - GPT-5.6 Sol: same (its own shape ruling, archived).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/MultilinearDiagonal.lean`, ~330 lines,
+sorry-free, five quick diagnostic passes):
+
+- `ContinuousMultilinearMap.IsSymm` (pointwise permutation symmetry,
+  per the consult's abstract-fork ruling).
+- `sum_powerset_neg_one` (the ℝ alternating powerset sum by finset
+  induction — Mathlib's `sum_powerset_neg_one_pow_card` turned out to
+  exist but over ℤ only, so the consult's advice to prove it locally
+  was right for the wrong reason) and `sum_neg_one_pow_supersets`
+  (reindex supersets of R as R ∪ T via `Finset.sum_nbij'`).
+- **`factorial_smul_eq_sum_diag`**: the subset-sum polarization
+  identity, by the consult's six-step skeleton (map_sum_finset
+  expansion, filter extension, sum_comm swap, coefficient collapse,
+  symmetry application via Equiv.ofBijective, k! count via
+  Fintype.card_perm).
+- `eq_zero_of_diag_eq_zero`, `eq_of_diag_eq` (smul_right_injective),
+  and the germbij wrappers `iteratedFDeriv_eq_of_diag_eq` +
+  the ω-regularity convenience form via
+  `ContDiffAt.iteratedFDeriv_comp_perm`.
+
+Error classes: `ω` is SCOPED notation (open scoped ContDiff) — a bare
+ω silently auto-binds as a free variable and produces baffling
+"expected ⊤" mismatches; beta-unreduced atoms defeating omega (the
+`(fun S ↦ S \ R) S` card treated as a fresh atom — simp only []
+first); this pin's `Finset.card_sdiff` is the intersection form
+(#(s\t) = #s − #(t∩s), no subset hypothesis); `Finset.filter_congr`
+takes iffs directly.
