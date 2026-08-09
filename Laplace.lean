@@ -50,6 +50,7 @@ import Laplace.Multi.RayRescale
 import Laplace.Multi.QuadLowerBound
 import Laplace.Multi.RescaledDCT
 import Laplace.Multi.HessianMoments
+import Laplace.Multi.HessianRecovery
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox
