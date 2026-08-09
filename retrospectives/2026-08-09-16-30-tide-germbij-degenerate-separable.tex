@@ -1,0 +1,146 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: separable degenerate recovery\\
+\large the first constructive multivariate degenerate germ}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Everything recovered from posterior moments so far lived at a
+nondegenerate minimum, or in dimension one. This tide opens the
+degenerate multivariate direction of the germbij note (\S 7.4(b))
+with its exact separable germ: for
+$L(w) = \sum_i a_i\, w_i^{2k_i}/(2k_i)!$ on a finite product of
+lines, the Gibbs measure factorizes, each normalized coordinate
+second moment is exactly its one-dimensional counterpart --- an exact
+power law $C(k_i, a_i)\, t^{-1/k_i}$ --- and matched coordinate
+second-moment data on a temperature ray recovers every degree $k_i$
+and every scale $a_i$. The degrees are the note's anisotropic
+weights $q_i = 1/(2k_i)$, read off exponents; the scales come from
+leading constants. All analytic content is merged one-dimensional
+material; the new work is the product bridge and the statement
+design, which is exactly why this class was the right first step.
+\end{abstract}
+
+\section{Setting}
+
+The germbij note's \S 7.4 asks when the recovery direction of the
+correspondence survives degeneracy: at a singular minimum there is no
+single scale, the expansion is graded by resolution data, and the
+nondegenerate proof's isotropic rescaling is unavailable. The note's
+constructive classes are dimension one (fully formalised), weighted
+quasi-homogeneous germs (weights recoverable from moment exponents),
+and Morse--Bott strata. The scoping consult for this tide confirmed
+the separable weighted-monomial class as the minimal genuine germ of
+the quasi-homogeneous story: assigning $q_i = 1/(2k_i)$ makes every
+term weighted-degree one, so the class is degenerate, genuinely
+multidimensional, anisotropic with unknown weights, and --- the
+decisive property --- fully reducible to the merged one-dimensional
+theory through the product structure. The consult explicitly rejected
+the tempting non-separable example $x^4 + x^2y^2 + y^4$ as a first
+step: its weights are common rather than anisotropic, its integrals
+do not factor, and it abandons the strongest available seabed.
+
+\section{The thing formalised}
+
+On $\iota \to \R$ ($\iota$ finite) define
+\code{separableMonomial}~$a$~$k$ as
+$L(w) = \sum_i a_i \cdot L_{k_i}(w_i)$ with
+$L_k(x) = x^{2k}/(2k)!$ the seabed's monomial potential, $a_i > 0$,
+$k_i \ge 1$. Three layers:
+
+\emph{Factorization.} The Boltzmann factor is a product of
+one-dimensional Boltzmann factors, so the partition function
+factorizes (\code{partitionFunction\_separableMonomial}), by the
+unconditional finite-product Fubini --- no integrability side
+conditions at all.
+
+\emph{Coordinate reduction.} The normalized coordinate second moment
+loses its spectator factors
+(\code{gibbsExpectation\_coordSq\_separableMonomial}): the numerator
+factorizes with a one-hot observable, the common factors cancel
+against the denominator (each one-dimensional partition function is
+strictly positive), and what remains is exactly the one-dimensional
+normalized moment at coordinate $i$. On the one-dimensional side the
+temperature absorbs the scale ($\langle x^2\rangle_{aL_k, t} =
+\langle x^2\rangle_{L_k, ta}$), giving the exact power law
+\[
+  \bigl\langle w_i^2 \bigr\rangle_t \;=\;
+  \left(\frac{(2k_i)!}{a_i}\right)^{1/k_i}
+  \frac{\Gamma\!\left(\tfrac{3}{2k_i}\right)}
+       {\Gamma\!\left(\tfrac{1}{2k_i}\right)}
+  \; t^{-1/k_i}.
+\]
+
+\emph{Recovery.} \code{separableMonomial\_recovery}: if two separable
+weighted-monomial potentials have equal normalized coordinate second
+moments for every coordinate and all $t$ beyond some threshold, then
+$k_1 = k_2$ and $a_1 = a_2$. Per coordinate, the seabed's power-law
+rigidity (\code{eventual\_power\_eq}) forces the exponents
+$-1/k_i$ equal, hence the degrees; cancelling the positive Gamma
+ratio and applying \code{rpow} injectivity forces the scales. The
+numerical check in the tide log confirms the closed form, the
+coordinate reduction, and the recovery exponent to ten digits.
+
+\section{Where progress stalled}
+
+One process failure worth its lesson: the tide's worktree was created
+while the canonical clone's \code{main} was stale (the previous
+tide's merges had not been pulled), so the new file's first build was
+\emph{vacuous} --- the import line had silently landed in a
+\code{Laplace.lean} predating the file's dependencies, and
+\code{lake build} reported success without compiling anything new.
+The repository's own gate (verify the import line \emph{and} the
+fresh \code{.olean}) caught it; the fix was a rebase onto
+\code{origin/main}. The lesson is now in the log:
+\code{tide-worktree create} bases on the canonical clone's local
+\code{main}, so pull the canonical clone before opening a tide meant
+to sit on the latest merges.
+
+Lean-side friction was minor and familiar: a replace-all that
+clobbered a theorem name of which the target was a prefix; a
+rewrite under an integral binder that had to become
+\code{congr}~+~\code{funext} first (the bound variable appears in
+the \code{ite}); and the usual \code{rpow} bookkeeping for
+$t^{-1/k}$, contained to one helper exactly as the consult
+predicted for the separable route.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{Real.exp\_sum}; the finite-product Fubini
+\code{integral\_fintype\_prod\_volume\_eq\_prod}; the one-hot
+collapse via \code{Finset.prod\_ite\_eq'} and
+\code{Finset.mul\_prod\_erase}; \code{rpow} algebra; and the
+seabed's one-dimensional closed forms and rigidity. New: the
+statement design --- in particular taking the data per coordinate
+(the entire large-$t$ moment function, exponents plus leading
+constants; a single scalar at one temperature cannot determine both
+the discrete $k_i$ and the continuous $a_i$) and phrasing the
+analytic core on the plain pi type, leaving Euclidean wrappers for a
+later layer, per the consult.
+
+\section{What the next tide inherits}
+
+The consult's roadmap continues: the full even multi-index
+factorization and the exact exponent-affinity statement (normalized
+$\ell(\alpha) = \sum_i \alpha_i q_i$, linear with zero intercept ---
+the note's $(\ell(2e_i) - \ell(0))/2$ formula is the unnormalized
+convention); then the genuinely non-separable step, an abstract
+anisotropic scaling lemma ($P(\delta_s x) = sP(x)$ gives
+$M_\alpha(t) = t^{-\sum \alpha_i q_i} M_\alpha(1)$ by diagonal change
+of variables), which recovers weights without separability and
+covers mixed examples like $x^4 + x^2y^2 + y^4$; and only then the
+mixed-coefficient/Gelfand--Leray identification. Each is one tide,
+in that order.
+\end{document}
