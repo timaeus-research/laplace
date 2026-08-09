@@ -52,3 +52,29 @@ variance identity itself is exact algebra verified in the proof.
 - GPT-5.6 Sol: same (archived).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/GaussianCovariance.lean`, ~230 lines,
+sorry-free, three quick diagnostic passes):
+
+- `HasPolynomialGrowth` + `.mul`/`.sub_const` closure (the
+  (1+aⁿ)(1+aᵐ) ≤ 3(1+aⁿ⁺ᵐ) bound), `IsHomogeneousOfDegree`.
+- J0 slice: `integrable_mul_quadKernel_of_polynomialGrowth`
+  (splits into the H2 kernel + norm-moment integrability, as the
+  consult predicted — quadKernel_integrable_pow was already the
+  needed ‖x‖ⁿ·K form).
+- J1 slice: `continuous_eq_zero_of_integral_mul_quadKernel_eq_zero`
+  by the direct ball argument (continuity of f·K at the witness
+  point, setIntegral_ge_of_const_le + measure_ball_pos vs
+  setIntegral_le_integral). PosDef turned out unnecessary here — the
+  kernel is positive for every H.
+- `gaussianExpectation`/`gaussianCovariance` (weighted integrals,
+  not the probability-variance API, per the consult's MemLp warning),
+  the variance identity ∫(Q−EQ)²K = Z·Cov(Q,Q), and the target
+  `homogeneous_eq_zero_of_gaussianCovariance_self_eq_zero`.
+
+Error classes: the catalogued Pi.sub single-lambda witness for
+integral_add, a set-folded hypothesis making a rw dead, and two
+deprecation lints (push Not replaces push_neg — NEW niggle worth
+noting: the deprecation landed in this Mathlib pin).
