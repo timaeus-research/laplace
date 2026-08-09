@@ -94,3 +94,16 @@ Surprises:
    instead of riesz linear-functional forms) cost ~60 lines of
    Finset contraction and needed nothing new — the fallback was
    never needed.
+
+## Process incident (wrong-cwd commit)
+
+While PR #68's CI ran, the CLAUDE.md error-catalogue commit was
+executed after a doc-surface read had changed the working directory
+to the SRI root: the append landed in sri/CLAUDE.md and was committed
+and pushed to SRI main (76cd5ddd). The commit touched only that file
+(verified with git show --stat; Daniel's unstaged aixi deletions were
+NOT swept). Reverted immediately on SRI main (a6148663) and the
+catalogue applied to the correct file (laplace CLAUDE.md, this
+branch). Lesson: pwd is part of the commit gate — verify the repo
+before any git commit, especially after compound commands ending in
+cd.
