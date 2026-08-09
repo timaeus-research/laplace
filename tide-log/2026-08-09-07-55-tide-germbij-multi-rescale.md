@@ -59,3 +59,29 @@ also verified.
 - GPT-5.6 Sol: same (its section 4 ruling, archived).
 
 Agreed.
+
+## Result
+
+One checkpoint, one file (`Laplace/Multi/RayRescale.lean`, ~190
+lines, sorry-free, single diagnostic pass with three trivial fixes):
+
+- `hess L` (second Fréchet derivative at 0, curried CLM form) and
+  `hessianMatrix L` (one-hot basis evaluation), per the consult.
+- `eq_sum_single`, `clm_bilinear_expand` (one-hot expansion of a
+  continuous bilinear map, calc over map_sum/map_smul), and the
+  bridge `hess_apply_self : hess L x x = qform (hessianMatrix L) x`.
+- Ray chain rule: `ray_hasDerivAt` (HasFDerivAt.comp_hasDerivAt),
+  `ray_hasDerivAt_two` (C¹ of fderiv via ContDiff.fderiv_right, then
+  HasDerivAt.clm_apply against a constant), `ray_iteratedDeriv_two`.
+- `ray_taylor_eval`: the order-2 Taylor polynomial collapses to
+  L 0 + q²·(hess/2) under vanishing gradient.
+- `rescaled_loss_tendsto`: the headline, from taylor_isLittleO via
+  IsLittleO.tendsto_div_nhds_zero + tendsto_sub_nhds_zero_iff.
+
+Surprises: none mathematical. The consult's prediction that the ray
+route is "relatively contained" was exact: the derivative plumbing it
+warned about is three short haves because `HasDerivAt.clm_apply`
+against `hasDerivAt_const` eats the evaluation step. New catalogue
+entry: `ContDiff.differentiable` now wants `1 ≠ 0`-shaped side goals
+discharged by norm_num rather than le_rfl when the regularity grade
+is a literal.
