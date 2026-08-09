@@ -29,3 +29,25 @@ consult (in the stage-1 tide log).
 ## Numerical check
 
 Not feasible: inequality/limit infrastructure.
+
+## Result
+
+Committed on tide/germbij-forward-meso:
+`Laplace/Multi/GaussianMeso.lean` (~290 lines). Theorems:
+`mesoscopicSet` + measurability, `eventually_mem_mesoscopicSet`,
+`smul_mem_ball_of_mesoscopic` (||q.z|| <= sqrt q on the window),
+`exp_neg_div_isLittleO_pow` (e^{-c/q} = o(q^M) at 0+ for every M,
+composing Mathlib's t^M e^{-t} -> 0 along q -> q^{-1}),
+`gaussian_meso_tail_isLittleO` (rate-halving outside the window:
+the tail <= e^{-(c/2)/q} times a fixed Gaussian moment), and
+`integrand_meso_tail_isLittleO` (coercivity transfer — the
+polynomial-weighted mesoscopic tail of the rescaled Boltzmann
+integrand is beyond all orders: the statement every later numerator
+stage consumes). Zero sorries, zero warnings.
+
+Iterations: several small — a mul_const dot-notation ambiguity
+(under open Set) resolved by Tendsto.mul with a const witness;
+eventually_le_const replacing an eventually/eventually_le_nhds
+mismatch; and the isLittleO_iff target keeps NORMS on both sides
+(the last calc step must end at eps * ||q^M||, not convert to
+eps * q^M — two rounds lost to that).
