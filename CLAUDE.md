@@ -392,3 +392,8 @@ gate `N=$(grep -cE '^!|Error|Overfull' file.log)` then sets `N` empty
 characters in `\code{}` spans) pass the gate silently. Always use
 `/usr/bin/grep` in gate expressions, and treat an empty `[$N]` echo as
 a broken gate, not a pass.
+
+**`Real.rpow_neg_one` does not exist.** Only the NNReal/ENNReal
+versions do. For a real base write
+`show t⁻¹ = t ^ (-1 : ℝ) from by rw [Real.rpow_neg ht.le, Real.rpow_one]`
+and then `← Real.rpow_mul` for `(t⁻¹)^r = t^(-r)` manipulations.
