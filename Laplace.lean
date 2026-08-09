@@ -68,3 +68,4 @@ import Laplace.OneD.AnharmonicSecondCumulant
 import Laplace.OneD.AnharmonicSusceptibilityGeneralH
 import Laplace.OneD.AnharmonicThirdCumulant
 import Laplace.Pencil
+import Laplace.Sector
