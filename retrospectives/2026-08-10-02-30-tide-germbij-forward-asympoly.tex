@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: asymptotic polynomials\\
+\large the forward programme opens}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+With the inverse half of the germbij nondegenerate theorem complete,
+what remains is the forward direction: the localized moments of a
+smooth loss at a nondegenerate minimum admit asymptotic expansions
+to every finite order, with coefficients determined by the finite
+jet. A dedicated design consult fixed the programme's architecture
+--- an existence-plus-comparison public API over a recursive internal
+coefficient object, a one-field Peano mixin over the existing domain
+packages, and mesoscopic localization at radius $q^{-1/2}$ before
+any exponential-remainder estimate --- and staged seven
+implementation layers. This tide lands the first: the expansion
+predicate \code{IsAsymptoticExpansionTo} and coefficient uniqueness
+through the expansion order, Laplace-independent facts that
+canonicalize every coefficient construction the later stages will
+produce.
+\end{abstract}
+
+\section{Setting}
+
+The forward direction is where the audit consult located the
+remaining substance of Theorem~3.1: without expansion existence, the
+inverse results say only that superpolynomially-equal moment
+families force equal jets, not that the moment families of a given
+loss actually carry a jet's worth of coefficients. The design
+consult (archived with the tide log) made three structural calls
+worth recording here. The public statements should be existential
+with a separate jet-comparison theorem, never an explicit multinomial
+Gaussian formula --- but the \emph{proof} should construct
+coefficients recursively ($P_0 = 1$,
+$P_j = -\tfrac1j \sum_{s=1}^{j} s V_s P_{j-s}$), which makes
+jet-dependence visible by induction. The domain package needs
+exactly one new field over the merged \code{HigherLaplaceDomain}:
+the Peano (little-$o$) Taylor remainder, since the existing
+$O(\|y\|^{N+2})$ bound identifies no coefficient. And the
+exponential-remainder estimate must wait for mesoscopic
+localization ($\|z\| \le q^{-1/2}$, where
+$q^s\|z\|^{s+2} \le \|z\|^2 q^{s/2}$), because the naive
+$e^{|R|}$ majorant is not integrable for higher-degree potentials.
+
+\section{The thing formalised}
+
+\code{IsAsymptoticExpansionTo}~$f$~$c$~$N$: the function $f$ of the
+scale agrees with $\sum_{j \le N} c_j q^j$ up to $o(q^N)$ at $0^+$.
+The content of the tide is uniqueness
+(\code{isAsymptoticExpansionTo\_coeff\_eq}): two coefficient systems
+expanding the same function agree through order $N$. The proof is
+the classical least-index argument by strong induction: with the
+gap coefficients vanishing below $j_0$, the divided polynomial
+$q^{-j_0} \sum_j (c_j - e_j) q^j$ tends to the $j_0$-th gap (an
+\code{ite}-masked finite sum evaluated by continuity,
+\code{tendsto\_poly\_div\_pow}), while the divided error is
+$o(q^{N - j_0})$, hence tends to zero; limits are unique. The edge
+case $j_0 = N$ is why the zero limit routes through
+\code{isLittleO\_one\_iff} rather than a vanishing bound: $q^0$
+tends to one, not zero, but $o(1)$ still means tending to zero.
+
+\section{Where progress stalled}
+
+Three one-line iterations: eventual equalities must be stated
+beta-reduced; the zero-avoiding power-subtraction lemma's right-hand side is already the
+mul-inverse form, so an \code{exact} with its symmetric form succeeds
+where \code{rw} hunts for a pattern that is not there; and
+\code{isLittleO\_one\_iff} takes its norm field explicitly.
+
+\section{Mathlib lookup versus new mathematics}
+
+All lookup at the tactic level (\code{tendsto\_finset\_sum},
+\code{Finset.sum\_eq\_single}, little-$o$ algebra); the uniqueness
+lemma itself is textbook material Mathlib does not appear to carry
+in this form. Like the analytic identity step of the previous tide,
+it is a candidate for upstreaming.
+
+\section{What the next tide inherits}
+
+Stage 2 of the archived implementation order: \code{GaussianMeso} —
+the mesoscopic cutoff set, Gaussian-polynomial superpolynomial tail
+bounds outside it, their transfer to the existing rescaled integrand
+through coercivity, and the two elementary cutoff facts (eventual
+containment in every Taylor ball; pointwise eventual membership).
+Stages 3--7 then follow the consult's order: the Peano mixin and
+exact exponent split, the recursive coefficient object and scalar
+graded expansion, the localized numerator expansion, finite
+asymptotic division, and the public existence and jet-comparison
+theorems.
+\end{document}
