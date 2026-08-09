@@ -1861,7 +1861,7 @@ general-purpose result for future strengthening.
 
 /-- `J_0(t)` eventually lives in `[√(2π)/2, 3√(2π)/2]` as `t → ∞`. Useful as
 a denominator bound in the explicit-rate proofs. -/
-private lemma J_0_eventually_bounded
+lemma J_0_eventually_bounded
     {lam alpha gamma : ℝ}
     (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
     ∃ T, 1 ≤ T ∧ ∀ {t : ℝ}, T ≤ t →
