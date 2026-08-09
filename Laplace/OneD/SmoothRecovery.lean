@@ -231,4 +231,124 @@ theorem stabilized_jet_eq {R' M : ℕ} (hM : R' + 2 < M)
   rw [hL, hR, hsplit, hlow, hhigh]
   ring
 
+/-- The inner-region bound for a jet tail (the stabilizer envelope's
+inner case, standalone): below the radius
+`ρ = min(1, a/(2(B+1)))` the cubic-and-higher sum is at most half the
+quadratic. -/
+theorem jet_sum_inner_bound {R' : ℕ} {a : ℝ} (ha : 0 < a)
+    (c : Fin R' → ℝ) (x : ℝ)
+    (hx : |x| ≤ min 1 (a / (2 * ((∑ i : Fin R', |c i|) + 1)))) :
+    |∑ i : Fin R', c i * x ^ (2 + (i.1 + 1))| ≤ a / 2 * x ^ 2 := by
+  set B : ℝ := ∑ i : Fin R', |c i| with hB_def
+  have hB0 : 0 ≤ B := Finset.sum_nonneg fun i _ ↦ abs_nonneg _
+  have hx1 : |x| ≤ 1 := le_trans hx (min_le_left _ _)
+  have hxρ : |x| ≤ a / (2 * (B + 1)) :=
+    le_trans hx (min_le_right _ _)
+  calc |∑ i : Fin R', c i * x ^ (2 + (i.1 + 1))|
+      ≤ ∑ i : Fin R', |c i * x ^ (2 + (i.1 + 1))| :=
+        Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ i : Fin R', |c i| * (|x| * x ^ 2) := by
+        refine Finset.sum_le_sum fun i _ ↦ ?_
+        rw [abs_mul, abs_pow]
+        apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+        calc |x| ^ (2 + (i.1 + 1)) ≤ |x| ^ 3 :=
+              pow_le_pow_of_le_one (abs_nonneg _) hx1 (by omega)
+          _ = |x| * x ^ 2 := by
+              rw [pow_succ, sq_abs]
+              ring
+    _ = B * (|x| * x ^ 2) := by
+        rw [hB_def, Finset.sum_mul]
+    _ ≤ B * (a / (2 * (B + 1)) * x ^ 2) := by
+        apply mul_le_mul_of_nonneg_left _ hB0
+        exact mul_le_mul_of_nonneg_right hxρ (sq_nonneg x)
+    _ ≤ a / 2 * x ^ 2 := by
+        have hcoef : B * (a / (2 * (B + 1))) ≤ a / 2 := by
+          rw [← mul_div_assoc,
+            div_le_div_iff₀ (by positivity) (by norm_num : (0:ℝ) < 2)]
+          nlinarith
+        calc B * (a / (2 * (B + 1)) * x ^ 2)
+            = B * (a / (2 * (B + 1))) * x ^ 2 := by ring
+          _ ≤ a / 2 * x ^ 2 :=
+              mul_le_mul_of_nonneg_right hcoef (sq_nonneg x)
+
+/-- **The stabilized Taylor jet is admissible with a positive
+profile**: there is `d ≥ 0` making the extension both an
+`AdmissiblePotential` (envelope `a/2`, explicit upper constants) and
+a `HasPositiveJetProfile` certificate — the two interfaces the
+comparison and the recovery theorem respectively consume. -/
+theorem stabilized_admissible {R' M : ℕ} (hM_even : Even M)
+    (hM : R' + 2 < M) {a : ℝ} (ha : 0 < a) (c : Fin R' → ℝ) :
+    ∃ d : ℝ, 0 ≤ d ∧
+      AdmissiblePotential
+        (fun x ↦ jetPotential 1 (M - 2) a 1
+          (stabilizedCoeff R' M c d) x)
+        (a / 2) (3 * a / 2 + d)
+        (min 1 (a / (2 * ((∑ i : Fin R', |c i|) + 1)))) ∧
+      HasPositiveJetProfile (M - 2) a (a / 2)
+        (stabilizedCoeff R' M c d) := by
+  obtain ⟨d, hd0, henv⟩ := exists_stabilizer_envelope ha c
+    hM_even hM
+  have henv' : ∀ x : ℝ, a / 2 * x ^ 2 ≤
+      jetPotential 1 (M - 2) a 1 (stabilizedCoeff R' M c d) x := by
+    intro x
+    rw [stabilized_jet_eq hM]
+    have h := henv x
+    unfold jetPotential
+    unfold jetPotential at h
+    simp only [one_pow, mul_one] at h ⊢
+    calc a / 2 * x ^ 2 ≤ a * x ^ 2 +
+          (∑ i : Fin R', c i * x ^ (2 + (i.1 + 1))) + d * x ^ M := h
+      _ = a * x ^ (2 * 1) +
+          (∑ i : Fin R', c i * x ^ (2 * 1 + (i.1 + 1))) +
+          d * x ^ M := by norm_num
+  refine ⟨d, hd0, ⟨?_, ?_, henv', ?_, by positivity, by positivity,
+    by positivity⟩, ⟨by positivity, ?_⟩⟩
+  · exact jetPotential_continuous 1 (M - 2) a 1 _
+  · unfold jetPotential
+    rw [Finset.sum_eq_zero fun i _ ↦ by
+      rw [zero_pow (by omega : 2 * 1 + (i.1 + 1) ≠ 0)]
+      ring]
+    ring
+  · -- The local upper envelope.
+    intro x hxδ
+    rw [stabilized_jet_eq hM]
+    have hx1 : |x| ≤ 1 := le_trans hxδ (min_le_left _ _)
+    have hsum := jet_sum_inner_bound ha c x hxδ
+    have hxM : d * x ^ M ≤ d * x ^ 2 := by
+      apply mul_le_mul_of_nonneg_left _ hd0
+      calc x ^ M = |x| ^ M := (hM_even.pow_abs x).symm
+        _ ≤ |x| ^ 2 :=
+            pow_le_pow_of_le_one (abs_nonneg _) hx1 (by omega)
+        _ = x ^ 2 := sq_abs x
+    have habs := abs_le.mp hsum
+    unfold jetPotential
+    simp only [one_pow, mul_one]
+    have hexp : ∀ i : Fin R', 2 * 1 + (i.1 + 1) = 2 + (i.1 + 1) :=
+      fun i ↦ by omega
+    have hsum_eq : (∑ i : Fin R', c i * x ^ (2 * 1 + (i.1 + 1))) =
+        ∑ i : Fin R', c i * x ^ (2 + (i.1 + 1)) :=
+      Finset.sum_congr rfl fun i _ ↦ by rw [hexp i]
+    rw [hsum_eq]
+    nlinarith [habs.2]
+  · -- The positive jet profile, through the factorization at q = 1.
+    intro y
+    rcases eq_or_ne y 0 with hy | hy
+    · subst hy
+      unfold jetProfile
+      rw [Finset.sum_eq_zero fun i _ ↦ by
+        rw [zero_pow (Nat.succ_ne_zero _)]
+        ring]
+      linarith
+    · have hfac := jetPotential_eq_pow_mul_profile 1 (M - 2) a 1
+        (stabilizedCoeff R' M c d) y
+      rw [one_mul] at hfac
+      have hP := henv' y
+      rw [hfac] at hP
+      have hyy : y ^ (2 * 1) = y ^ 2 := by norm_num
+      rw [hyy] at hP
+      have hy2 : (0 : ℝ) < y ^ 2 := by positivity
+      by_contra hlt
+      rw [not_le] at hlt
+      nlinarith [hP, hy2]
+
 end Laplace.OneD
