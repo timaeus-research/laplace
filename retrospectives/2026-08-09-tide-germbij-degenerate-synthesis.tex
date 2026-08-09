@@ -1,0 +1,116 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Arc synthesis: constructive recovery at degenerate minima\\
+\large the germbij \S 7.4(b) arc, four tides}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Four tides took the germbij note's constructive-recovery story from
+``formalised only in dimension one'' to a closed multivariate
+perimeter: separable weighted-monomial recovery (degrees and scales
+from coordinate moments), the exact exponent-affinity law (moment
+exponents linear in the multi-index, weights as slopes), the
+abstract anisotropic scaling theorem (the same laws for arbitrary
+mixed-term quasi-homogeneous potentials, from a one-line pushforward
+interface), and the Lebesgue instance with the note's benchmark
+$x^4 + x^2y^2 + y^4$ covered end to end. This synthesis records the
+arc's architecture and the two decisions that shaped it: starting
+separable, and abstracting the measure scaling instead of computing
+it first.
+\end{abstract}
+
+\section{The arc}
+
+The note's \S 7.4(b) mechanism for degenerate minima is: moment
+exponents are affine in the observable's multi-index, the
+anisotropic weights $q_i$ are the slopes, and the leading constants
+carry the remaining coefficient data. The nondegenerate machinery
+(one Gaussian scale, Taylor-graded corrections) is unavailable;
+what replaces it is dilation structure. The four tides formalised
+this in strictly increasing generality:
+
+\emph{Separable recovery} (\code{SeparableRecovery}, PR \#86). For
+$L(w) = \sum_i a_i w_i^{2k_i}/(2k_i)!$ the Gibbs measure is a
+product; each normalized coordinate second moment reduces to its 1D
+counterpart, an exact power law $C(k_i,a_i)\,t^{-1/k_i}$, and
+ray-matched coordinate moments force equal degrees and scales:
+the first constructive recovery at a degenerate minimum in dimension
+greater than one, built almost entirely from the merged 1D theory.
+
+\emph{Exponent affinity} (\code{SeparableAffinity}, PR \#87). All
+even multi-index moments at once:
+$\langle w^{2j}\rangle_t = C(k,a,j)\, t^{-\sum_i j_i/k_i}$, exact,
+with the normalized exponent linear in $j$ and zero intercept ---
+the note's affinity law, with the normalization subtlety (the
+$\ell(0)$ intercept belongs to the unnormalized convention) settled
+by consult before any Lean was written.
+
+\emph{Abstract scaling} (\code{AnisotropicScaling}, PR \#88). The
+non-separable step. \code{ScalesMeasure} packages the only
+geometric fact the Laplace argument uses --- the dilation family
+scales the reference measure by $s^{-Q}$ --- and quasi-homogeneity
+then forces $I(t) = t^{-(Q+r)} I(1)$ and $M(t) = t^{-r} M(1)$ with
+no integrability hypotheses at all, since an invertible substitution
+preserves non-integrability and the junk-value convention
+degenerates coherently. Weight recovery follows for arbitrary
+mixed-term quasi-homogeneous potentials.
+
+\emph{The volume instance} (\code{DiagonalVolume}, PR \#89). The
+diagonal map's determinant is $\prod_i c_i$, so pi-volume satisfies
+the interface; recovery becomes unconditional on Lebesgue measure,
+and $x^4 + x^2y^2 + y^4$ --- the example the scoping consult had
+rejected as a first step precisely because it does not factor ---
+is verified quasi-homogeneous and enters the recovery perimeter.
+
+\section{The two shaping decisions}
+
+Both came from consults, and both held. First, \emph{start
+separable}: the scoping consult ranked the separable class as the
+minimal genuine germ (degenerate, anisotropic, unknown weights, yet
+fully reducible to merged 1D theorems) and explicitly deferred the
+mixed example. This bought two tides of near-frictionless progress
+and, more importantly, isolated what the eventual non-separable
+argument would actually need. Second, \emph{abstract the scaling}:
+the shape consult chose a pushforward interface over both an
+integral-identity hypothesis (which says less) and an up-front
+determinant computation (which couples the theorem to the most
+fragile measure API). The instance then cost five lines --- the
+consult's own brittleness estimate was pessimistic, but the
+ordering it recommended was still right, because the abstract
+theorem was already merged and consumable while the instance was
+being written.
+
+\section{What the numbers checked}
+
+Every analytic claim was numerically verified before its Lean proof
+was attempted: the separable closed forms and the recovery exponent
+(ten digits), the mixed multi-index affinity instance
+($j = (2,1)$, exponent $2/2 + 1/3$), and the scaling law on the
+non-separable benchmark ($M(30)/M(1) = 30^{-1/2}$ to ten digits by
+2D quadrature). None found an error; all three made the statements
+cheap to trust while the proofs were under construction.
+
+\section{Where the arc stops}
+
+The perimeter is the consult's roadmap, completed. Beyond it lie
+the genuinely open items: identification of mixed coefficients from
+stratum-aggregated data (the Gelfand--Leray moment problem),
+Morse--Bott strata, and the note's Proposition on one-point
+anchoring of normalized identifiability, which needs a formal data
+structure for asymptotic-series proportionality before it is tide
+material. The degenerate story now matches the nondegenerate one in
+kind: everything the note proves constructively is formalised;
+what remains unformalised is what remains unproven.
+\end{document}
