@@ -56,3 +56,27 @@ H = [[2, 0.6], [0.6, 1.1]]: Z = 4.63202566 = (2π)/√(det H) to 8
 decimals; first moment 0.00e+00; E[x²] = 0.59782609 = H⁻¹₀₀ and
 E[xy] = −0.32608696 = H⁻¹₀₁, both to 8 decimals. All four target
 formulas confirmed.
+
+## Shape consult and re-staging
+
+Consult saved verbatim: `tide-log/gpt56_h2_shape_v1.md`. Rulings
+adopted: (1) public representation qform H x := ⟪x, toEuclideanCLM H
+x⟫ with K H x := exp(-qform H x / 2) — matrix bilinears only as
+internal bridges; (2) the forward quadratic identity qform H x =
+‖Bx‖² with B := toEuclideanCLM (CFC.sqrt H) (never invert inside the
+form); (3) LinearMap.det B kept OPAQUE (nonzero suffices; it cancels
+in M2, only positivity feeds Z) — never transported to Matrix.det;
+(4) the standard-Gaussian API in coordinate-free linear-functional
+form (∫ℓ(y)k₀ = 0; ∫ℓ(y)m(y)k₀ = Z₀⟪riesz ℓ, riesz m⟫) as the
+abstraction boundary; (5) lintegral-first for integrability
+transport; (6) TWO tides: H2a = the standard isotropic package (all
+Pi/Fubini and 1D work; the flagged hardest step is the
+EuclideanSpace/PiLp/product-measure identification), H2b = whitening
+(no Fubini at all). THIS tide is re-staged as H2a; H2b follows.
+
+## Vote (updated)
+
+- Claude: H2a/H2b split as ruled; this tide = H2a.
+- GPT-5.6 Sol: same (its own plan).
+
+Agreed.
