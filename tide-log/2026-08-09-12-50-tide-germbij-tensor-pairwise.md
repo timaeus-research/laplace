@@ -39,3 +39,30 @@ integrals); no new closed form.
 - GPT-5.6 Sol: same (archived on this branch's history).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/PairwiseRate.lean`, ~330 lines, sorry-free):
+
+- `integrable_indicator_slice` (any sub-domain slice of the posterior
+  integrand, dominated by the coercive Gaussian).
+- `tendsto_tail_slice`: the retreating domain tail at every rate, by
+  squeeze against J5b — importantly WITHOUT .norm/simpa massaging
+  (which renormalizes -c*‖x‖² to -(c*‖x‖²) inside binders and breaks
+  the squeeze's syntactic matching; feed J5b's raw statement).
+- **`tendsto_pairwise_integral_difference`** (the consult's
+  load-bearing checkpoint): (I₁(P,q) − I₂(P,q))/q^{k−2} →
+  −∫ P·Q·quadKernel. Three-term decomposition per q (ball slice +
+  domain tail for each loss, by membership cases), the ball-slice
+  difference re-expressed as q^{k−2} times J5c's integrand, and the
+  limits assembled by Tendsto.add/sub with the per-q identity proven
+  after folding the six integrals into SCALAR atoms with `set` — the
+  session's set-folding discipline inverted: fold scalars (safe,
+  binder-free) exactly where field_simp would otherwise rewrite
+  inside integrand binders and desynchronize atoms.
+
+New catalogue entry: field_simp inside goals containing integrals
+rewrites under the integral binders too, silently splitting what
+should be one atom into mismatched forms (mul/div reassociation);
+fold integral VALUES into scalars with `set` before any field_simp
+/ linarith on equations between integrals.
