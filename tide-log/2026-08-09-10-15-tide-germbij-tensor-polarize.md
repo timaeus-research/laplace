@@ -41,6 +41,33 @@ symmetrized tensor, random arguments). Output quoted verbatim:
 
 The subset-sum polarization identity holds to machine precision.
 
+## Shape consult
+
+Archived verbatim: `tide-log/gpt56_j3_shape_v1.md`. Rulings adopted:
+(1) the REGULARITY FORK resolves to option (c): polarization is
+algebraic — state it for `ContinuousMultilinearMap` with a pointwise
+`IsSymm` hypothesis (∀ σ v, A (v ∘ σ) = A v), and provide an
+ω-regularity convenience wrapper via
+`ContDiffAt.iteratedFDeriv_comp_perm`; proving C^k symmetry is a
+separate library project, not a J3 prerequisite. (Caveat noted:
+ContDiff ℝ ω is smoothness in Mathlib's grading here — analyticity
+implies it.) (2) Subset-sum proof skeleton: expand diagonals with
+`MultilinearMap.map_sum_finset` over `Fintype.piFinset (fun _ ↦ S)`,
+extend to all r with an ite, swap with `Finset.sum_comm`, compute the
+coefficient by a LOCAL alternating-supersets lemma (reindex supersets
+of R as R ∪ T with T ⊆ Rᶜ, reduce to Σ_{T⊆D}(-1)^|T| by finset
+induction — do NOT hunt for a one-shot Mathlib alternating-powerset
+theorem), keep bijective r via image = univ ↔ surjective ↔ bijective
+(`Finite.injective_iff_surjective`), convert with `Equiv.ofBijective`
+and count with `Fintype.card_perm`. (3) No slicker route exists in
+Mathlib (mkPiRing/divided powers cost more; mixed directional
+derivatives are polarization plus more differentiability API).
+(4) Public API: `IsSymm`, `eq_zero_of_diag_eq_zero`, `eq_of_diag_eq`,
+`iteratedFDeriv_eq_of_diag_eq` + the ω wrapper.
+
 ## Vote
 
-(pending the shape consult — appended below when it lands)
+- Claude: J3 as ruled (abstract polarization + ω wrapper).
+- GPT-5.6 Sol: same (its own shape ruling, archived).
+
+Agreed.
