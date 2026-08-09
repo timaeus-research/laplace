@@ -1,0 +1,102 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the signed exponential remainder\\
+(gamma-rung programme, stage 1 of 6)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+This tide opens the gamma-rung programme: completing the anharmonic jet
+recovery $(\lambda, \alpha, \gamma)$ of the germbij note's Theorem~3.1
+by proving $t^3 \kappa_4 \to -\gamma/\lambda^4 + 3\alpha^2/\lambda^5$
+and its recovery corollary. The programme was scoped in a dedicated
+consult before any Lean: the target was pinned numerically first
+(high-precision quadrature with a spike breakpoint, converging to the
+candidate at four digits), the full symbolic route was verified
+(second-order $J_n$ coefficients, moment ratios, and the
+fourth-cumulant cancellation table summing to
+$108A^2 - 24B = 3\alpha^2/\lambda^5 - \gamma/\lambda^4$), the staging
+fixed at six tides, and the named risks checked against the seabed
+(the coercivity risk is already discharged by the standing discriminant
+hypothesis). Stage~1 is the smallest self-contained rung: the rescaled
+anharmonic perturbation $s_t(u)$ is sign-indefinite, so the
+second-order expansions need the exponential Taylor remainder for
+\emph{signed} arguments.
+
+\section{The thing formalised}
+
+Two theorems in \texttt{Laplace/OneD/ExpRemainderSigned.lean},
+sorry-free with zero warnings. The sharp nonpositive-axis
+form\footnote{\texttt{abs\_expRemainder\_le\_of\_nonpos}.}: for
+$s \leq 0$, $|E_n(s)| \leq |s|^n/n! \cdot e^{-s}$. And the two-sided
+endpoint-maximum form\footnote{\texttt{abs\_expRemainder\_le\_max}.}:
+for every real $s$,
+\[
+\Bigl| e^{-s} - \sum_{j<n} \frac{(-s)^j}{j!} \Bigr|
+\;\leq\; \frac{|s|^n}{n!}\,\max\bigl(1, e^{-s}\bigr),
+\]
+the form the scoping consult specified as composing with the seabed's
+existing Gaussian-domination layer (whose first-order
+\texttt{ScalarBound} has exactly this two-branch shape).
+
+\section{Proof strategy}
+
+The same fundamental-theorem induction as the nonnegative case, run on
+$[s, 0]$: the previous remainder at $u \in [s, 0]$ carries the sharp
+bound with $e^{-u} \leq e^{-s}$, and the polynomial integral evaluates
+by reflection (\texttt{integral\_comp\_neg} then the power rule). The
+sharp $e^{-s}$ form is what makes the induction close --- the max only
+enters in the final packaging, where the nonnegative branch reuses the
+merged all-order bound against $\max \geq 1$.
+
+\section{Roadblocks and resolutions}
+
+Three build iterations, all familiar classes: an integral-orientation
+identity is stated as its own \texttt{have}
+(\texttt{integral\_symm} plus \texttt{abs\_neg}) rather than inlined in
+a rewrite chain; \texttt{positivity} cannot derive
+$(-u)^n \geq 0$ from a hypothesis $u \leq 0$ (explicit
+\texttt{pow\_nonneg}); \texttt{le\_or\_lt} no longer exists
+(\texttt{le\_total}); and a \texttt{field\_simp} closed a goal leaving
+a \texttt{ring} dangling.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: interval integration, the reflection substitution, and the
+power rule. Seabed: the exponential remainder recursion of the recovery
+thread,\footnote{\texttt{expRemainder} and its derivative and endpoint
+lemmas, reused without change.} which this file extends. New: the observation that the sharp $e^{-s}$ inductive form is
+the right strengthening for the signed axis.
+
+\section{Lessons}
+
+When an induction needs a factor that grows along the integration
+interval, put the endpoint value in the inductive statement (here
+$e^{-s}$), not the pointwise one; the packaging into the user-facing
+$\max$ form is then a two-line case split. Programme scoping with a
+numerically pinned target and a symbolic verification before stage~1
+meant this tide began with zero mathematical uncertainty.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item Stage 2: second-order $J_n$ asymptotics
+($J_n = m_n - A m_{n+3} t^{-1/2} + (A^2/2\, m_{n+6} - B m_{n+4})
+t^{-1} + O(t^{-3/2})$), consuming this tide's bound at $n = 3$ against
+the seabed's Gaussian domination.
+\item Stages 3--6 per the programme plan (moment ratios, $\kappa_4$
+assembly, the analytic limit, gamma recovery).
+\end{itemize}
+
+\end{document}
