@@ -1,0 +1,162 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: monomial test families\\
+\large finitely many measurements per degree}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The tensor-recovery theorems of the germbij programme took their
+moment data at \emph{every} continuous polynomial-growth homogeneous
+test function of each degree: an uncountable family, where an
+experimentalist measures finitely many observables. This tide closes
+the gap. The data hypothesis is weakened to the $d^k$ monomial tests
+$x \mapsto \prod_j x_{m(j)}$ per degree $k$ (indexed by coordinate
+words $m$), and the recovery conclusions are unchanged: single-degree
+tensor recovery, finite-jet recovery, and all-orders recovery from
+per-degree monomial moment rates. The route, fixed by a GPT-5.6
+consult, is not direct linearity (monomials span homogeneous
+polynomials, not all homogeneous functions) but a one-test core: the
+analytic Laplace argument needs the rate at exactly one adaptive test,
+the diagonal difference $\Delta_k$ of the two degree-$k$ Taylor terms,
+and determining families are mechanisms for deriving that single rate.
+\end{abstract}
+
+\section{Setting}
+
+The tensor programme (J0--J7) closed with full jet recovery from
+moment data: two losses whose rescaled posterior moments agree to
+$o(q^{k-2})$ at every continuous polynomial-growth homogeneous test
+of each degree $k$ have equal derivative tensors at all orders. The
+universal quantifier is analytically natural but observationally
+extravagant. The germbij note's own proof of Theorem~3.1 works with
+the moments $m_\alpha(t)$ indexed by multi-indices $\alpha$: finitely
+many per degree. The scoping consult had flagged this weakening as
+the first follow-on; this tide formalises it.
+
+\section{The thing formalised}
+
+Fix degree $k > 2$ and the usual pair of higher-order Laplace domain
+packages sharing a positive-definite $H$. For a coordinate word
+$m \colon \mathrm{Fin}\,k \to \mathrm{Fin}\,d$ let
+\[
+  P_m(x) \;=\; \prod_{j} x_{m(j)},
+\]
+the degree-$k$ monomial test (\code{monomialTest}). The main
+theorem is\\
+\code{iteratedFDeriv\_recovery\_of\_monomial\_rates}: if the two
+losses have matched jets below $k$, permutation-symmetric $k$-th
+tensors, and
+\[
+  m_1(P_m; q) - m_2(P_m; q) \;=\; o\!\left(q^{k-2}\right)
+  \qquad (q \to 0^+)
+\]
+for each of the $d^k$ words $m$, then the $k$-th derivative tensors
+agree. Two wrappers,\\
+\code{finite\_jet\_recovery\_of\_monomial\_rates} and\\
+\code{smooth\_jet\_recovery\_of\_monomial\_rates}, propagate this
+through the strong induction, so the full jet is recovered from
+finitely many monomial measurements per degree.
+
+The consult ruled on the index set: ordered words rather than
+multi-indices with multiplicity. The family is redundant under
+permutations of the slots, but redundancy is harmless (it still spans
+the diagonal polynomials), and genuine multi-indices would buy the
+smaller count $\binom{d+k-1}{k}$ at the price of orbit bookkeeping
+and multinomial coefficients. The coordinate expansion needs only
+multilinearity, not symmetry.
+
+\section{How the proof works}
+
+Three moves, staged by the consult and landed in order.
+
+\emph{One-test core.} The merged J6 proof instantiates its universal
+data hypothesis at a single test: the diagonal difference
+$\Delta_k(x) = \frac{1}{k!}\bigl(D^k L_1(0) - D^k L_2(0)\bigr)
+(x, \dots, x)$. The tide extracts this as\\
+\code{iteratedFDeriv\_recovery\_of\_taylorDifference\_rate}, whose
+data hypothesis is the rate at $\Delta_k$ alone, and
+reproves the universal J6 as a three-line wrapper. This is the
+sharpest statement of what the analytic argument consumes, and it
+is why direct linearity was the wrong route: monomial rates yield
+rates for homogeneous \emph{polynomials} only, which cannot
+discharge a hypothesis quantified over all homogeneous
+\emph{functions}, but they do reach $\Delta_k$, a polynomial.
+
+\emph{Coordinate expansion.} \code{diag\_eq\_sum\_monomialTest}:
+for any continuous multilinear map $T$ on Euclidean space,
+\[
+  T(x, \dots, x) \;=\; \sum_{m} P_m(x)\,
+  T\bigl(e_{m(1)}, \dots, e_{m(k)}\bigr),
+\]
+by writing $x$ as its sum of coordinate multiples of basis vectors
+(the orthonormal-basis expansion \code{sum\_repr} against
+\code{EuclideanSpace.basisFun}) and expanding with the multilinear
+\code{map\_sum} and \code{map\_smul\_univ}. Applied to both tensors
+and subtracted, this
+exhibits $\Delta_k$ as an explicit finite linear combination
+$\sum_m c_m P_m$ with basis-evaluation coefficients.
+
+\emph{Rate closure.} \code{rescaledMoment\_finset\_sum}: the
+normalized posterior moment is linear over weighted finite sums of
+tests, because the normalizing denominator is test-independent; the
+integrals split by the seabed's indicator-slice integrability at
+each positive scale. Little-$o$ is closed under finite combinations
+(\code{IsLittleO.sum} plus \code{const\_mul\_left}), so the monomial
+rates yield the $\Delta_k$ rate, and the one-test core concludes.
+
+\section{Where progress stalled}
+
+Nowhere serious: every stage after the preparatory file compiled on
+its first build, and the consult's staging predictions held exactly.
+Two pin-specific frictions are worth recording. The direct route to
+the sum-of-singles decomposition (evaluating both sides through
+\code{Finset.sum\_apply}) collides with the current Mathlib's
+\code{.ofLp} bundling of \code{PiLp}; routing through the
+orthonormal-basis \code{sum\_repr} avoids every coercion. And the J6
+wrapper's homogeneity certificate hit the catalogued
+beta-unreduced-goal trap (\code{rw} refusing to see through an
+unapplied lambda), fixed as always by a preliminary
+\code{simp only []}.
+
+Operationally the tide also surfaced a process bug outside Lean: the
+retrospective compile gate had been running against a shell-aliased
+\code{grep} whose \code{-c} prints nothing (rather than \code{0}) on
+zero matches, making the gate vacuously green. An audit with
+\code{/usr/bin/grep} found three merged retrospectives with genuine
+LaTeX errors; they were repaired in a separate PR and the gate now
+pins the binary path.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the orthonormal-basis expansion; \code{map\_sum} and
+\code{map\_smul\_univ} for the multilinear expansion;
+\code{IsLittleO.sum}; the seabed's integrability adapters. New:
+the statement design (the
+one-test core as the load-bearing refactor; ordered monomial words as
+the test family) and the observation, now explicit in the code, that
+the entire analytic content of degree-$k$ recovery is the rate at one
+polynomial test.
+
+\section{What the next tide inherits}
+
+The remaining consult-flagged follow-on is the degenerate direction:
+germbij \S 7.4 strata beyond dimension one, where there is no single
+scale and the expansion is graded by resolution data rather than
+Taylor degree. That is a fresh-seabed excursion, not an extension of
+this file. On the nondegenerate side, the moment-data interface is
+now finite per degree; a natural small step, if wanted, is a
+multi-index (symmetrised) restatement for presentation purposes,
+though the consult judged it cosmetic.
+\end{document}
