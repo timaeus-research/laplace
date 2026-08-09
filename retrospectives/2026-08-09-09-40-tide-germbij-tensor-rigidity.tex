@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{Gaussian covariance rigidity\\
+(germbij tensor programme, opening tide J2)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent The degree-$k$ tensor-recovery programme opens with its
+injectivity engine: a continuous homogeneous function of positive
+degree and polynomial growth whose self-covariance against the
+quadratic Gaussian vanishes is identically zero
+(\texttt{homogeneous\_eq\_zero\_of\_gaussianCovariance\_self\_eq\_zero}).
+This is the no-Isserlis idea from the original multivariate scoping
+consult, now in Lean: no Wick pairings, no moment matrices, no
+monomial enumeration --- full support of the Gaussian weight (a
+direct ball argument) plus the variance identity do all the work.
+The fresh scoping consult staged the whole programme J0--J7 and
+ruled this tide the minimal good opener; its J0/J1 slices
+(polynomial-growth integrability, continuous full-support rigidity)
+are proven inline and are reusable at every recovery rung.
+\end{abstract}
+
+\section{Setting}
+
+With the H-recovery milestone complete (PRs \#66--\#73), the germbij
+note's next multivariate commission is recovering the higher Taylor
+data $L_k$, $k \ge 3$, from higher normalized moments. The scoping
+consult staged this J0--J7: growth-integrability adapter, Gaussian
+full support, covariance rigidity, multilinear polarization, radial
+Taylor coefficients, the rate-sensitive pairwise DCT (flagged
+largest), single-degree recovery, and the induction. It ruled J2 the
+right first tide: central, self-contained, independent of the hard
+DCT, with an unambiguous acceptance criterion.
+
+\section{The thing formalised}
+
+With $\mathbb{E}_H[f] = \int f K_H / \int K_H$ and
+$\mathrm{Cov}_H(f,g) = \mathbb{E}_H[fg] - \mathbb{E}_H[f]\,
+\mathbb{E}_H[g]$: for $Q$ continuous, of polynomial growth, and
+homogeneous of degree $k > 0$,
+\[
+\mathrm{Cov}_H(Q, Q) = 0 \implies Q = 0,
+\]
+together with the supporting API: `HasPolynomialGrowth` with product
+and shift closure, integrability of every polynomial-growth
+observable against $K_H$, and the full-support rigidity lemma
+(continuous nonnegative, zero weighted integral $\Rightarrow$
+identically zero).
+
+\section{How the proof works}
+
+The variance identity
+$\int (Q - \mathbb{E}Q)^2 K_H = Z_H \cdot \mathrm{Cov}_H(Q,Q)$
+is an expand-and-divide computation whose integrability side
+conditions come from the growth closure. Vanishing self-covariance
+therefore kills the weighted integral of the squared deviation; the
+deviation is continuous and nonnegative, so full support forces
+$Q \equiv \mathbb{E}Q$. Full support itself is the consult's direct
+ball argument: at a point where the continuous integrand $f K_H$ is
+positive, continuity gives a ball where it exceeds half its value,
+and the ball has positive measure --- no normalized measure, no
+`Measure.support` API. Finally a constant homogeneous function of
+positive degree vanishes, since $Q(0) = 0^k Q(0) = 0$.
+
+\section{Where it stalled and how it moved}
+
+No stalls; three quick passes, all catalogued classes (the
+`Pi.sub` single-lambda witness for \texttt{integral\_add}, a
+\texttt{set}-folded hypothesis making a rewrite dead) plus one new
+niggle for the catalogue: this Mathlib pin deprecates
+\texttt{push\_neg} in favour of \texttt{push Not}. The consult's
+pre-flight warning to check whether \texttt{quadKernel\_integrable\_pow}
+really is the norm-moment form (it is) saved a potential wrong turn.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: ball positivity and set-integral comparisons
+(\texttt{measure\_ball\_pos}, \texttt{setIntegral\_ge\_of\_const\_le},
+\texttt{setIntegral\_le\_integral}) and the H2 integrability
+theorems. New (project-level): the growth certificate and its
+closure algebra, the weighted-integral expectation/covariance
+definitions (deliberately not the probability-theory variance API),
+the full-support rigidity lemma, and the homogeneous injectivity
+theorem that every later recovery rung will instantiate at
+$P = Q$.
+
+\section{What this opens}
+
+J3 (multilinear polarization: a symmetric $k$-linear form is
+determined by its diagonal --- the consult expects a local
+polarization lemma over subset sums), then J4 (radial Taylor
+coefficients at degree $k$, cubic first), J5 (the rate-sensitive
+pairwise DCT, the programme's flagged largest stage), and the
+recovery ladder J6--J7.
+
+\end{document}
