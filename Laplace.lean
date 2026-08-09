@@ -17,6 +17,7 @@ import Laplace.OneD.MonomialPotential
 import Laplace.OneD.Recovery
 import Laplace.OneD.RecoveryMonotone
 import Laplace.OneD.RecoveryExpansion
+import Laplace.OneD.RecoveryAllOrder
 import Laplace.Multi.Basic
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
