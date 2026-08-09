@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{Subset-sum polarization: symmetric multilinear maps\\
+are determined by their diagonals (tensor programme J3)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent The stage the tensor-recovery scoping consult called
+``genuinely new versus one dimension'': for a permutation-symmetric
+continuous multilinear map $A$ in $k$ arguments,
+\[
+k!\, A(v_1,\dots,v_k)
+= \sum_{S \subseteq \{1,\dots,k\}} (-1)^{k-|S|}
+A\Bigl(\sum_{i \in S} v_i, \dots, \sum_{i \in S} v_i\Bigr),
+\]
+so a symmetric map with vanishing diagonal is zero and two symmetric
+maps with equal diagonals are equal. Mathlib has no polarization
+theorem, and --- the tide's structural finding --- its higher-order
+symmetry of iterated derivatives exists only at analytic
+regularity, so per the shape consult the theorem takes an abstract
+pointwise symmetry hypothesis and an $\omega$-regularity wrapper
+supplies it for iterated derivatives. This is the bridge stage
+J6 needs: the J2 rigidity engine recovers diagonal functions, and
+polarization upgrades diagonal equality to tensor equality.
+\end{abstract}
+
+\section{Setting}
+
+The tensor programme (J0--J7) recovers the higher Taylor data of a
+loss from posterior moments. Its injectivity engine (J2, the
+previous tide) produces statements about the \emph{diagonal}
+$x \mapsto D^kL(0)[x,\dots,x]$; the recovery target is the tensor
+$D^kL(0)$ itself. The gap is precisely polarization, which the
+scoping consult flagged as easy to overlook and genuinely
+multivariate.
+
+\section{Where it stalled and how it moved}
+
+Two findings worth the log. First, the regularity fork: the Mathlib
+lemma giving symmetry of the $n$-th derivative under argument
+permutations\footnote{\texttt{ContDiffAt.iteratedFDeriv\_comp\_perm}.}
+requires the analytic grade $\omega$; for merely $C^k$ functions only order-two symmetry
+exists. The shape consult ruled the fork cleanly: polarization is
+algebra, so state it with an abstract \texttt{IsSymm} hypothesis and
+keep the regularity question in a thin wrapper --- proving $C^k$
+Schwarz symmetry is a separate library project, not a J3
+prerequisite. Second, a notation trap now in the catalogue: $\omega$
+is \emph{scoped} notation, and without \texttt{open scoped ContDiff}
+it silently auto-binds as a free variable, producing a baffling
+type mismatch at use sites.
+
+The proof itself followed the consult's six-step skeleton with
+catalogued-class repairs only (a beta-unreduced atom defeating
+\texttt{omega}, this pin's intersection-form
+\texttt{Finset.card\_sdiff}, and Mathlib's alternating powerset sum
+existing over $\mathbb{Z}$ only --- the local $\mathbb{R}$ induction
+the consult recommended was needed after all, for a different
+reason).
+
+\section{How the proof works}
+
+Each diagonal term $A(\sum_{i \in S} v_i, \dots)$ expands by
+multilinearity (\texttt{MultilinearMap.map\_sum\_finset}) into a sum
+over selector functions $r : [k] \to S$. Extending each inner sum to
+all endofunctions with an indicator and swapping the two sums, the
+coefficient of $A(v_{r(1)},\dots,v_{r(k)})$ becomes the alternating
+sum over supersets of the range of $r$, which collapses (reindexing
+supersets of $R$ as $R \cup T$, then a finset induction) to the
+indicator that $r$ is surjective --- hence bijective, this being an
+endofunction of a finite type. Symmetry converts each surviving term
+to $A(v)$, and the count is the number of permutations, $k!$.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the multilinear finite-sum expansion, the finset reindexing
+and induction apparatus, and the bijection
+census.\footnote{\texttt{MultilinearMap.map\_sum\_finset},
+\texttt{Finset.sum\_nbij'}, \texttt{Finset.sum\_powerset\_insert},
+\texttt{Finset.sum\_comm}, \texttt{Finite.injective\_iff\_surjective},
+\texttt{Equiv.ofBijective}, \texttt{Fintype.card\_perm}.}
+New (project-level, arguably Mathlib-worthy): the polarization
+identity and its rigidity corollaries for
+\texttt{ContinuousMultilinearMap}, plus the real alternating
+powerset sum.
+
+\section{What this opens}
+
+J4: the degree-$k$ radial Taylor coefficients (cubic first) by the
+established ray method, producing exactly the diagonal functions
+this tide's theorems consume. Then J5, the programme's flagged
+largest stage (the rate-sensitive pairwise dominated convergence),
+and the recovery ladder J6--J7 that composes J2 + J3 + J5.
+
+\end{document}
