@@ -1,0 +1,111 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: one-point anchoring completed\\
+\large germbij Proposition 7.6 in contradiction form}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The companion tide reduced the note's one-point anchoring result
+to pure asymptotic algebra around a hypothesis package; this tide
+supplies the package from Laplace theory and closes the
+composition. Three small facts do the work: a continuous compactly
+supported observable has moments bounded uniformly in the
+temperature (the integrand is dominated by $|\varphi|$ once
+$tL \ge 0$); an observable supported inside the region where the
+losses agree has \emph{exactly} equal moments; and the moment
+difference of the pencil observable $(L_2 - L_1)\psi$ is literally
+the pencil quantity of the merged singular-identifiability theorem,
+by integral linearity. Composing with the anchor-cancellation
+corollary yields \code{one\_point\_anchoring\_contradiction}: a
+common-gauge proportionality of the two normalized Laplace families,
+anchored at an observable supported where the losses agree, cannot
+coexist with the analytic package that makes the germs differ.
+This is Proposition~7.6: normalized identifiability follows from
+unnormalized identifiability wherever the zero locus admits one
+point of constructive recovery.
+\end{abstract}
+
+\section{Setting}
+
+The one-point programme's design consult split the proposition into
+an asymptotics half (merged as \code{Laplace.Anchoring}) and a
+Laplace half, and listed the latter's three ingredients exactly:
+moment boundedness, anchor instantiation, and a thin wrapper on the
+merged contradiction theorem. This tide is that list, executed on
+the deliberation of record.
+
+\section{The thing formalised}
+
+First, integrability
+(\code{integrable\_mul\_exp\_neg\_of\_compactSupport}): for
+continuous $\varphi$ with compact support and continuous $L$, the damped
+observable $\varphi\, e^{-tL}$ is continuous with compact support,
+hence integrable --- no domination argument at all.
+\code{laplace\_moment\_bounded}: for $L \ge 0$ and $t \ge 0$,
+$|\int \varphi\, e^{-tL}| \le \int |\varphi|$, giving the
+$O(1)$ bound the gauge-removal lemma consumes.
+\code{anchor\_moment\_eq}: if $L_1 = L_2$ on $V$ and
+$\mathrm{tsupport}\,\varphi_0 \subseteq V$, the two moments of
+$\varphi_0$ agree at every temperature (pointwise: either the
+supports see equal losses, or $\varphi_0$ vanishes). The wrapper
+then instantiates the anchored-cancellation corollary at the pencil
+observable $(L_2 - L_1)\psi$, converts its conclusion into the
+pencil quantity by $\int \varphi(e^{-tL_1} - e^{-tL_2}) =
+\int \varphi e^{-tL_1} - \int \varphi e^{-tL_2}$ (eventually, where
+$t \ge 0$ supplies integrability), and hands it to
+\code{analytic\_pencil\_difference\_not\_superpolynomial} for the
+contradiction.
+
+In the note's terms: the hypothesis ``recovery from ratios is
+available at $p$'' enters as its conclusion, local agreement of the
+losses; the sector-shaped lower bound on the anchor's reference
+moment enters as a hypothesis in the shape the sector machinery
+produces; and the conclusion is that the normalized families cannot
+be gauge-proportional while the germs differ.
+
+\section{Where progress stalled}
+
+Three one-line iterations, all catalogued classes: the extended nonnegative reals' notation is scoped, needing \code{open scoped ENNReal}
+(joining \code{MatrixOrder} and \code{ContDiff} in the catalogue's
+scoped-notation family); the beta-unreduced-goal trap under
+\code{integral\_congr\_ae}; and a \code{set}-folded lambda
+desynchronizing the final rewrite patterns --- resolved by dropping
+\code{set} for the explicit observable and closing the sign
+orientation with \code{linarith} rather than \code{rw}, the
+catalogued fold-into-atoms discipline in its contrapositive form.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{Continuous.integrable\_of\_hasCompactSupport},
+\code{integral\_mono}, \code{integral\_sub},
+\code{image\_eq\_zero\_of\_notMem\_tsupport}, and the merged seabed.
+New: nothing beyond the statements --- which is the point. The
+proposition that looked blocked on a formal theory of asymptotic
+series closed in two tides of ordinary lemmas once the modeling
+question was answered correctly.
+
+\section{What the next tide inherits}
+
+With Proposition~7.6 formalised, the germbij note's proved claims
+are formalised end to end: the nondegenerate jet recovery at all
+orders in all dimensions, the flat counterexample bracketing it, the
+singular identifiability theorem with its instantiation chains, the
+constructive degenerate perimeter, and now the normalized-to-
+unnormalized bridge. What remains in the note is conjecture,
+sketch, or open question (Question~7.6's general case, Morse--Bott
+bookkeeping, Gelfand--Leray identification) --- research, not
+formalisation debt. Any further germbij tides should come from new
+mathematics entering the note, not from this loop's backlog.
+\end{document}
