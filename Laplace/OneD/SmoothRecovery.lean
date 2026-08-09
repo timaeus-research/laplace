@@ -62,8 +62,8 @@ theorem taylor_jet_epsilon
 /-- The derivative of an admissible potential vanishes at the
 minimum. -/
 theorem AdmissiblePotential.deriv_zero
-    {L : ℝ → ℝ} {ρ κ δ : ℝ} (h : AdmissiblePotential L ρ κ δ)
-    (hdiff : DifferentiableAt ℝ L 0) : deriv L 0 = 0 := by
+    {L : ℝ → ℝ} {ρ κ δ : ℝ} (h : AdmissiblePotential L ρ κ δ) :
+    deriv L 0 = 0 := by
   have hmin : IsLocalMin L 0 := by
     apply Filter.Eventually.of_forall
     intro x
@@ -80,7 +80,7 @@ theorem AdmissiblePotential.taylorBase_ge
     {L : ℝ → ℝ} {ρ κ δ : ℝ} (h : AdmissiblePotential L ρ κ δ)
     (hL : ContDiff ℝ 2 L) : ρ ≤ taylorBase L := by
   by_contra hlt
-  push_neg at hlt
+  rw [not_le] at hlt
   set ε : ℝ := (ρ - taylorBase L) / 2 with hε_def
   have hε : 0 < ε := by
     rw [hε_def]
@@ -101,7 +101,6 @@ theorem AdmissiblePotential.taylorBase_ge
     have h1 : iteratedDerivWithin 1 L Set.univ 0 = 0 := by
       rw [iteratedDerivWithin_one, derivWithin_univ]
       exact h.deriv_zero
-        (hL.differentiable (by norm_num)).differentiableAt
     rw [Finset.sum_range_succ, Finset.sum_range_succ,
       Finset.sum_range_one, h0, h1]
     rw [iteratedDerivWithin_univ]
