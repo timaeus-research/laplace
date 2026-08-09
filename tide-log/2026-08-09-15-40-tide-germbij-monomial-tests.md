@@ -89,3 +89,24 @@ kernel-checked at the point of use (diag_eq_sum_monomialTest).
   diag_eq_sum_monomialTest (MultilinearMap.map_sum with explicit g +
   map_smul_univ; the consult's predicted coercion friction was real
   and resolved by calc through toMultilinearMap with rfl bridges).
+
+## Result
+
+Committed on tide/germbij-monomial-tests (PR #84):
+`Laplace/Multi/MonomialTests.lean` (~250 lines) plus the J6-point
+refactor of `DegreeRecovery.lean`. Theorems:
+`iteratedFDeriv_recovery_of_taylorDifference_rate` (one-test core),
+`HasPolynomialGrowth.sub`, `monomialTest` + certificates,
+`euclid_eq_sum_single`, `diag_eq_sum_monomialTest`,
+`rescaledMoment_finset_sum`,
+`iteratedFDeriv_recovery_of_monomial_rates`,
+`finite_jet_recovery_of_monomial_rates`,
+`smooth_jet_recovery_of_monomial_rates`. Zero sorries, zero warnings.
+
+Surprises: (1) every stage after the prep file compiled on the FIRST
+build — the consult's staging held exactly; (2) the direct
+`Finset.sum_apply` route to sum-of-singles hits `.ofLp` coercion
+friction in this Mathlib pin; `OrthonormalBasis.sum_repr` on
+`EuclideanSpace.basisFun` avoids it entirely (consult predicted
+this); (3) one beta-unreduced-goal trap in the J6 wrapper's
+homogeneity leg (catalogued class, `simp only []` fix).
