@@ -52,3 +52,26 @@ Classical.choose coefficient function.
 ## Numerical check
 
 Not feasible: pure asymptotic algebra.
+
+## Result
+
+Committed on tide/germbij-forward-asympoly:
+`Laplace/AsymptoticPolynomial.lean` (~145 lines). Theorems:
+`IsAsymptoticExpansionTo` (the programme's public expansion
+predicate), `tendsto_poly_div_pow` (a polynomial with vanishing
+coefficients below j0, divided by q^j0, tends to its j0-th
+coefficient — the ite-masked sum evaluated by continuity), and
+`isAsymptoticExpansionTo_coeff_eq` (coefficient uniqueness through
+order N by strong induction: the divided polynomial tends to the
+coefficient gap, the divided little-o tends to zero via
+pow_sub₀ + the eventually-bounded q^(N-j0), and limits are unique —
+the j0 = N edge case handled by transporting =o q^0 through
+isLittleO_one_iff rather than a vanishing bound). Zero sorries,
+zero warnings.
+
+Iterations: three small (the eventual-equality had to be stated in
+beta-reduced form; pow_sub₀'s RHS is already the mul-inv form, so
+exact .symm beats rw; isLittleO_one_iff takes the norm field
+explicitly). Next stage per the archived design consult:
+GaussianMeso (the mesoscopic cutoff ||z|| <= q^{-1/2},
+Gaussian-polynomial superpolynomial tails, coercivity transfer).
