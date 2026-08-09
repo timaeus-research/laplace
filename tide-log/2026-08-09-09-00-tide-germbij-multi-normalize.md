@@ -44,3 +44,27 @@ closed form.
 - GPT-5.6 Sol: same (archived).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/HessianMoments.lean`, ~200 lines,
+sorry-free, three quick diagnostic passes):
+
+- `posteriorIntegral` (the U-restricted Gibbs integral) and
+  `posteriorIntegral_eq`: the exact dilation identity via
+  `integral_dilation` + the indicator-preimage step + the exponent
+  split (a `simp only []` beta-reduction unlocked the pointwise
+  congruence — the rewrite-under-unapplied-lambda class again).
+- `integrand_comp_coord`/`_coord_mul`: the q-power extraction
+  through `Set.indicator_const_mul`.
+- `eventually_integrand_one_pos` from the H4 zeroth limit.
+- The three limits: `tendsto_normalized_first_moment` (q⁻¹E[wᵢ] → 0),
+  `tendsto_normalized_second_moment` (q⁻²E[wᵢwⱼ] → H⁻¹ᵢⱼ), and
+  `tendsto_normalized_covariance` — the germbij Hessian-step limit
+  q⁻²Cov_q(wᵢ,wⱼ) → (H⁻¹)ᵢⱼ. The prefactors q^d·e^{-L(0)/q²} cancel
+  exactly per q (field_simp with the positivity witnesses), not
+  asymptotically.
+
+Error classes: all catalogued (Pi.div from Tendsto.div needing
+simp only [Pi.div_apply]; field_simp needing the jacInv ≠ 0 witness
+in scope; three dead trailing rings; beta-unreduced congruence).
