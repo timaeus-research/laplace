@@ -39,3 +39,33 @@ a mixed multi-index (j = (2,1)) against 2D quadrature.
 - Claude: 1-3 as one tide. - GPT-5.6 Sol: staged exactly so in the
   archived scoping consult (roadmap item 4, with the
   product-of-closed-forms-first advice). Agreed on record.
+
+## Numerical check (executed)
+
+Mixed multi-index j = (2,1) against L = 1.3 x^4/4! + 0.6 y^6/6! at
+t = 40 (scipy quad):
+
+    product of 1D moments = 0.1141638843
+    closed power law      = 0.1141638843
+    exponent sum j_i/k_i  = 1.333333 (= 2/2 + 1/3)
+
+## Result
+
+Committed on tide/germbij-degenerate-affinity:
+`Laplace/Multi/SeparableAffinity.lean` (~190 lines). Theorems: 1D
+`evenMoment_smul_kthPotential` (general-j exact power law) and
+`evenMoment_coeff_pos`; multivariate `evenMonomial`,
+`evenMonomial_integral_separableMonomial` (multi-index
+factorization, no DecidableEq needed — the observable is already a
+product, unlike the one-hot case),
+`gibbsExpectation_evenMonomial_separableMonomial` (normalized
+product form via prod_div_distrib, pure field algebra),
+`gibbsExpectation_evenMonomial_powerLaw` (the exact exponent
+affinity: exponent -sum_i j_i/k_i = -sum_i (2 j_i) q_i, linear in
+the multi-index with zero intercept, weights q_i = 1/(2k_i)), and
+`evenMonomial_powerLaw_coeff_pos`. Zero sorries, zero warnings.
+
+One compile iteration (a neg_div orientation); otherwise first
+build. The consult's advice held: keeping the closed form as a
+product of 1D forms and collecting the t-exponent separately
+(Real.rpow_sum_of_pos) confined the rpow friction to six lines.
