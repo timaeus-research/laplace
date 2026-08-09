@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the mesoscopic cutoff\\
+\large localization for the forward expansion}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The forward-expansion programme's design consult made one analytic
+call that shapes everything downstream: the exponential-remainder
+estimate for the graded expansion must wait for localization,
+because the naive majorant $e^{|R_q|}$ is not integrable for
+higher-degree potentials. The prescribed window is mesoscopic ---
+$\sqrt q \cdot \|z\| \le 1$ in the rescaled variable --- chosen so
+that on it every correction term satisfies
+$q^s\|z\|^{s+2} \le \|z\|^2 q^{s/2}$, small relative to the
+quadratic for every finite order, while $q$-scaled points fall
+inside every fixed Taylor ball ($\|q \cdot z\| \le \sqrt q$). This
+tide builds the window and its tail calculus: outside it,
+rate-halving turns polynomial-Gaussian integrals into
+$e^{-(c/2)/q}$ times a fixed Gaussian moment, which is smaller than
+every power of $q$ at $0^+$; by coercivity the same holds for the
+rescaled Boltzmann integrand. That last statement is the outer-tail
+removal every later numerator stage will consume.
+\end{abstract}
+
+\section{Setting}
+
+Stage 2 of the archived implementation order, following the
+expansion predicate of stage 1. The window is stated in the
+inverse-free form $\sqrt q\,\|z\| \le 1$ per the consult, which
+spares every downstream proof an inverse side condition.
+
+\section{The thing formalised}
+
+Window facts: measurability (a closed sublevel set), eventual
+pointwise membership of every fixed point (since
+$\sqrt q\,\|z\| \to 0$), and \code{smul\_mem\_ball\_of\_mesoscopic}
+--- eventually in $q$, every window point lands in any fixed ball
+after $q$-scaling, because $\|q \cdot z\| = \sqrt q (\sqrt q \|z\|)
+\le \sqrt q$. The tail calculus:
+\code{exp\_neg\_div\_isLittleO\_pow} transports Mathlib's
+$t^M e^{-t} \to 0$ along $q \mapsto q^{-1}$ to give
+$e^{-c/q} = o(q^M)$ at $0^+$ for every $M$;
+\code{gaussian\_meso\_tail\_isLittleO} splits the Gaussian envelope
+outside the window at half rate ($\|z\|^2 \ge 1/q$ there), bounding
+the tail by $e^{-(c/2)/q}$ times the full-space moment at rate
+$c/2$; and \code{integrand\_meso\_tail\_isLittleO} transfers this to
+the rescaled Boltzmann integrand through the domain package's
+coercivity, with any polynomial weight $\|z\|^p$ --- which covers
+every monomial observable at once.
+
+\section{Where progress stalled}
+
+An instructive handful of small rounds. A dot-notation
+\code{mul\_const} became ambiguous under \code{open Set} and had to
+be replaced by a product of limits with a constant witness;
+\code{Tendsto.eventually\_le\_const} is the right way to turn a
+limit into an eventual bound (feeding \code{eventually\_le\_nhds}
+into \code{Tendsto.eventually} is a type error); and two rounds were
+lost to the shape of \code{isLittleO\_iff}'s target, which keeps
+norms on \emph{both} sides --- the final calc step must end at
+$\varepsilon\,\|q^M\|$, not convert it to $\varepsilon\,q^M$.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{tendsto\_pow\_mul\_exp\_neg\_atTop\_nhds\_zero}, the
+merged polynomial-Gaussian integrability, set-integral monotonicity,
+and coercivity. New: nothing mathematical --- the window and its
+constants are the consult's design, made checkable.
+
+\section{What the next tide inherits}
+
+Stage 3: the \code{ForwardExpansionDomain} mixin (one field --- the
+Peano little-$o$ Taylor remainder) and the exact exponent split
+\[
+  \frac{L(qz) - L(0)}{q^2} = \tfrac12 H[z,z]
+  + \sum_{s=1}^{N} q^s V_s(z) + q^N \rho_q(z),
+\]
+with the pointwise vanishing and window bounds on $\rho$. Then the
+recursive coefficient object (stage 4), the numerator expansion
+(stage 5, consuming this tide's tail removal), division (stage 6),
+and the public existence and jet-comparison theorems (stage 7).
+\end{document}
