@@ -168,4 +168,67 @@ theorem taylorWithinEval_eq_jet
     ring
   rw [htail, jetPotential]
 
+/-- Extension of a jet coefficient vector by zeros, with the
+stabilizer `d` at the top slot (index `M - 3`, carrying degree
+`M`). -/
+noncomputable def stabilizedCoeff (R' M : ℕ) (c : Fin R' → ℝ)
+    (d : ℝ) : Fin (M - 2) → ℝ :=
+  fun i ↦ if h : i.1 < R' then c ⟨i.1, h⟩
+    else if i.1 = M - 3 then d else 0
+
+/-- The stabilized jet potential is the original jet plus the top
+monomial. -/
+theorem stabilized_jet_eq {R' M : ℕ} (hM : R' + 2 < M)
+    (a : ℝ) (c : Fin R' → ℝ) (d : ℝ) (x : ℝ) :
+    jetPotential 1 (M - 2) a 1 (stabilizedCoeff R' M c d) x =
+      jetPotential 1 R' a 1 c x + d * x ^ M := by
+  unfold jetPotential
+  set g : ℕ → ℝ := fun k ↦
+    (if h : k < R' then c ⟨k, h⟩ else if k = M - 3 then d else 0) *
+      x ^ (2 * 1 + (k + 1)) with hg_def
+  set f : ℕ → ℝ := fun k ↦
+    (if h : k < R' then c ⟨k, h⟩ else 0) * x ^ (2 * 1 + (k + 1))
+    with hf_def
+  have hL : (∑ i : Fin (M - 2), stabilizedCoeff R' M c d i *
+      1 ^ (i.1 + 1) * x ^ (2 * 1 + (i.1 + 1))) =
+      ∑ k ∈ Finset.range (M - 2), g k := by
+    rw [← Fin.sum_univ_eq_sum_range g (M - 2)]
+    refine Finset.sum_congr rfl fun i _ ↦ ?_
+    simp only [hg_def, stabilizedCoeff, one_pow, mul_one]
+  have hR : (∑ i : Fin R', c i * 1 ^ (i.1 + 1) *
+      x ^ (2 * 1 + (i.1 + 1))) = ∑ k ∈ Finset.range R', f k := by
+    rw [← Fin.sum_univ_eq_sum_range f R']
+    refine Finset.sum_congr rfl fun i _ ↦ ?_
+    simp only [hf_def, one_pow, mul_one]
+    rw [dif_pos i.isLt]
+  have hsplit : (∑ k ∈ Finset.range (M - 2), g k) =
+      (∑ k ∈ Finset.Ico 0 R', g k) +
+        ∑ k ∈ Finset.Ico R' (M - 2), g k := by
+    rw [Finset.range_eq_Ico, Finset.sum_Ico_consecutive _
+      (by omega : 0 ≤ R') (by omega : R' ≤ M - 2)]
+  have hlow : (∑ k ∈ Finset.Ico 0 R', g k) =
+      ∑ k ∈ Finset.range R', f k := by
+    rw [Finset.range_eq_Ico]
+    refine Finset.sum_congr rfl fun k hk ↦ ?_
+    have hkR : k < R' := (Finset.mem_Ico.mp hk).2
+    rw [hg_def, hf_def]
+    simp only [dif_pos hkR]
+  have hhigh : (∑ k ∈ Finset.Ico R' (M - 2), g k) = d * x ^ M := by
+    have hstep : ∀ k ∈ Finset.Ico R' (M - 2),
+        g k = if k = M - 3 then d * x ^ (2 * 1 + (k + 1)) else 0 := by
+      intro k hk
+      have hkR : ¬ k < R' := by
+        have := (Finset.mem_Ico.mp hk).1
+        omega
+      rw [hg_def]
+      simp only [dif_neg hkR]
+      by_cases hk3 : k = M - 3
+      · simp [hk3]
+      · simp [hk3]
+    rw [Finset.sum_congr rfl hstep, Finset.sum_ite_eq' _ _ _]
+    rw [if_pos (Finset.mem_Ico.mpr ⟨by omega, by omega⟩),
+      show 2 * 1 + (M - 3 + 1) = M by omega]
+  rw [hL, hR, hsplit, hlow, hhigh]
+  ring
+
 end Laplace.OneD
