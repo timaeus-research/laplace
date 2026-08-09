@@ -83,3 +83,31 @@ File Laplace/OneD/MomentSecondOrder.lean, three layers:
      |N3| <= K_3/sqrt t + 15|A| K_0'/t <= K'/sqrt t.
 
 Numerical check: done (see above). Deliberation: programme-inherited.
+
+## Result
+
+- Branch tide/germbij-gamma-moments,
+  Laplace/OneD/MomentSecondOrder.lean (ten declarations): three private
+  J-form bridges (t<x^2> = J_2/(lam J_0) and the x^3/x^4 analogues, via
+  I_n_J_n_relation with radical-atom endgames); four private deltas
+  (J_0, J_2, J_4 at second order and J_3 at first, Gaussian constants
+  evaluated: 1, 3, 15, 105, 945 times sqrt(2pi), odd moments killed);
+  and the three public rates: secondMoment_anharmonic_order2_rate
+  (coefficient (45A^2-12B)/lam), fourthMoment_anharmonic_order2_rate
+  ((450A^2-96B)/lam^2), thirdMoment_anharmonic_rate (leading
+  -15A/sqrt(lam)^3 at K/sqrt(t)). Also de-privatised
+  J_0_eventually_bounded on second use.
+- Built across four checkpointed WIP commits (bridges / deltas / first
+  assembly / remaining two). The deltas built FIRST TRY. Iterations, all
+  catalogue classes: dead tactics after field_simp/gcongr; div_le_div_iff
+  and le_div_iff are now the ₀-variants; set_option must precede the
+  docstring, not sit between it and the theorem; and one instance of the
+  unsafe t-inside-radical rewrite (my own CLAUDE.md warning) caught by
+  the goal display and fixed with the radical-atom pattern.
+- The exact 1/t cancellations (q_2 - q_0 = c_2; p_4 - 3q_0 = c_4') were
+  verified by ring on explicit coefficients, as planned.
+
+## Vote
+
+Programme-inherited (scoping consult 1(b) minimal path); execution
+followed the logged handoff plan without deviation.
