@@ -26,9 +26,9 @@ corollary.\footnote{\tideref{2026-08-09-03-25-tide-germbij-analytic-corollary}.}
 
 \section{The thing formalised}
 
-One theorem, \texttt{leading\_part\_pencil\_difference\_lower\_bound} in
-\texttt{Laplace/Multi/LeadingIdentifiability.lean}, sorry-free with zero
-warnings. For $L_1, L_2 \geq 0$ on `$\iota \to \mathbb{R}$' whose
+One theorem in \texttt{Laplace/Multi/LeadingIdentifiability.lean}:\\
+\texttt{leading\_part\_pencil\_difference\_lower\_bound}, sorry-free
+with zero warnings. For $L_1, L_2 \geq 0$ on `$\iota \to \mathbb{R}$' whose
 difference has a continuous homogeneous leading part $P$ of degree $m$
 (nonzero at a direction of norm $3/2$, remainder $O(\|x\|^{m+1})$), with
 $L_1 + L_2 \leq C_0 \|w\|^2$ on the ball of radius $R$ and a bump $\psi$
@@ -40,9 +40,9 @@ per-$t$ integrability premises,
 \;\leq\;
 \int (L_2 - L_1)\, \psi\, \bigl( e^{-t L_1} - e^{-t L_2} \bigr)\, dw .
 \]
-The packaged constant is
+The packaged constant, positive by \texttt{ENNReal.toReal\_pos}, is
 $\kappa = \mathrm{vol}(S) \cdot c^2 e^{-4 C_0}$ with $S, c$ from the
-instantiation, positive by \texttt{ENNReal.toReal\_pos}.
+instantiation.
 
 \section{Proof strategy}
 
@@ -58,7 +58,8 @@ re-association of the packaged constant.
 
 One naming iteration: \texttt{inv\_le\_inv\_of\_le} no longer exists in
 current Mathlib; the stable idiom for ``$a^{-1} \leq b$ iff $b^{-1} \leq a$''
-is \texttt{inv\_le\_comm₀}. Otherwise the composition compiled directly.
+is \texttt{inv\_le\_comm}$_0$. Otherwise the composition compiled
+directly.
 Operationally this tide again ran concurrently with the parallel session's
 tides on the repo, without interference.
 
@@ -74,7 +75,7 @@ user-facing shape as the 1D one.
 
 Renamed order-of-operations lemmas (\texttt{inv\_le\_inv\_of\_le} and kin)
 are the most common single-error class in this arc; when one fails, look
-for the \texttt{\_comm₀} iff-form, which has been stable.
+for the \texttt{\_comm}$_0$ iff-form, which has been stable.
 
 \section{Follow-ups}
 
