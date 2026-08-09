@@ -30,3 +30,36 @@ function R -> R:
 
 Consult (in flight): faithfulness of the function-level modeling
 (question A), hypothesis shapes (B), minimal first tide (C).
+
+## GPT-5.6 Sol v1
+
+Archived verbatim in `tide-log/gpt56_onepoint_shape_v1.md`. Rulings:
+the function-level C(t) model is faithful AS the flat-equivalence
+consequence (present it so, not as a definition of series equality);
+the quantifier order `exists C, forall phi` is essential (the other
+order has almost no content); C needs NO regularity at all (never
+integrated or differentiated); normalize the anchor lower bound to
+an integer exponent (avoids rpow arithmetic against the `forall N :
+Nat` decay definition); the moment upper bound should be
+`IsBigO atTop (I phi) (fun _ => 1)` with `int |phi|` as the cheap
+witness; exact anchor equality can even be weakened to superpoly
+difference (local equality supplies exact, keep it). Minimal first
+tide = pure SuperPoly algebra: (1) anchor cancellation
+SuperPoly((C-1)A) + A >= kappa t^-n => SuperPoly(C-1); (2) gauge
+removal SuperPoly(C-1) + J = O(1) + SuperPoly(B - C J) =>
+SuperPoly(B - J); (3) packaged one-observable corollary. No measure
+theory, no analyticity, no support bookkeeping. Next tide: moment
+boundedness + local anchor instantiation + the thin final wrapper on
+the merged contradiction theorem.
+
+## Vote
+
+- Claude: the consult's minimal first tide (SuperPoly def + the two
+  cancellation lemmas + packaged corollary).
+- GPT-5.6 Sol: same (its own staging). Agreed.
+
+## Numerical check
+
+Not feasible: pure asymptotic-inequality algebra over the IsLittleO
+API, no closed form to evaluate. (The downstream Laplace content was
+numerically checked in the tides that produced it.)
