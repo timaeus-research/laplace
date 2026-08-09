@@ -405,7 +405,7 @@ the asymptotic of `J_n(t) = ∫ u^n · e^{-u²/2} · e^{-s_t(u)} du`. -/
 
 /-- Integrability of `u^n · e^{-u²/2} · e^{-s_t(u)}`. Under coercivity, the
 product is bounded by `|u|^n · e^{-c u²}`. -/
-private theorem integrable_J_n
+theorem integrable_J_n
     {lam alpha gamma : ℝ}
     (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma)
     (n : ℕ) {t : ℝ} (ht : 0 < t) :

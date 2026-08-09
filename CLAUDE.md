@@ -219,6 +219,15 @@ constant function needs the `tendsto_const_nhds` witness type-ascribed
 (`have h : Tendsto (fun _ : ℝ ↦ c) atTop (nhds c) := tendsto_const_nhds`)
 or the elaborator unifies the function the wrong way.
 
+**Identities mixing `t` and `Real.sqrt t`: fold the radical into an atom
+first.** `ring`/`field_simp` do not know `(√t)² = t`. The safe pattern:
+`set st := Real.sqrt t` (folds every `√t` in the goal into the opaque
+local `st`), then `rw [show t = st * st from (Real.mul_self_sqrt ht.le).symm]`
+— safe exactly because after the `set`, no goal occurrence of `t` sits
+inside a radical. The identity is then rational in `st` and closes with
+`field_simp; ring`. Used for the quadratised six-term decomposition
+(`Laplace/OneD/JnSecondOrder.lean`).
+
 **Calc chains over multi-term sum integrands push past the default
 heartbeat budget.** A calc chain that combines `MeasureTheory.integral_congr_ae`
 + N×`MeasureTheory.integral_add` + N×`MeasureTheory.integral_const_mul`

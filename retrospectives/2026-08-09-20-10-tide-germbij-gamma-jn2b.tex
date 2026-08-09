@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the second-order $J_n$ expansion\\
+(gamma-rung programme, stage 2b)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+Stage 2a built the cubic-order remainder layer; this tide completes
+stage 2 with the exact algebra and the headline. Together they upgrade
+the seabed's rescaled integral asymptotics to second order, which is
+the analytic heart of the gamma-rung programme: the $A^2/(2t)$
+coefficient made visible here is what survives into the fourth
+cumulant and carries $\alpha^2/\lambda^5$ against $\gamma/\lambda^4$.
+
+\section{The thing formalised}
+
+Three declarations in \texttt{Laplace/OneD/JnSecondOrder.lean},
+sorry-free with zero warnings, plus a one-word de-privatisation of the
+seabed's $J_n$-integrand integrability. The exact
+decomposition\footnote{\texttt{quadratised\_integral\_decomposition}.}:
+for $t > 0$, with $A, B$ the cubic and quartic scales and
+$m_k = \int u^k e^{-u^2/2}$,
+\[
+\int u^n e^{-u^2/2}\Bigl(1 - s_t + \tfrac{s_t^2}{2}\Bigr)
+= m_n - \frac{A}{\sqrt t} m_{n+3} - \frac{B}{t} m_{n+4}
++ \frac{A^2}{2t} m_{n+6}
++ \frac{AB}{t\sqrt t} m_{n+7} + \frac{B^2}{2t^2} m_{n+8},
+\]
+and the stage headline\footnote{\texttt{J\_n\_asymptotic\_order2}.}:
+\[
+J_n(t) = m_n - \frac{A}{\sqrt t} m_{n+3} - \frac{B}{t} m_{n+4}
++ \frac{A^2}{2t} m_{n+6} + O\Bigl(\frac{1}{t\sqrt t}\Bigr)
+\qquad (t \geq 1),
+\]
+with the $AB$ and $B^2$ cross-terms absorbed into the explicit error
+constant. The numerical check (executed, archived) confirms the error
+scale with room at $n = 2$.
+
+\section{Proof strategy}
+
+The pointwise six-term identity is where the new difficulty lived: the
+square $s_t^2$ mixes $1/\sqrt t$ and $1/t$ denominators, and
+\texttt{ring} does not know $(\sqrt t)^2 = t$. The resolution is the
+$\sqrt t$-\emph{atom substitution}: after \texttt{set st := Real.sqrt t}
+folds every $\sqrt t$ in the goal into the opaque local \texttt{st},
+the remaining bare $t$'s are rewritten by $t = \texttt{st} \cdot
+\texttt{st}$ --- safe precisely because the substitution target no
+longer contains $\sqrt t$ syntactically --- and the identity becomes
+rational in \texttt{st}, closed by \texttt{field\_simp} and
+\texttt{ring}. The integral split is a six-fold nested
+\texttt{integral\_add} with type-ascribed cumulative witnesses per the
+repo's \texttt{Pi.add} discipline; the headline then splits $J_n$ into
+the quadratised part plus the stage-2a remainder and routes the two
+cross-terms into the constant via $t^2 \geq t\sqrt t$.
+
+\section{Roadblocks and resolutions}
+
+Four build iterations. The one instructive failure: an
+\texttt{Integrable.congr} whose pointwise goal contained an unapplied
+\texttt{Pi.sub} --- the fourth member of the repo's \texttt{Pi}-form
+family (\texttt{add}, \texttt{div}, derivative \texttt{sub}/\texttt{sum},
+and now integrand \texttt{sub}), with the same one-line repair. Two
+further iterations removed tactics that \texttt{gcongr} had already
+made redundant.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: integral linearity, \texttt{gcongr}, the triangle inequality.
+Seabed: the linearised decomposition supplied the assembly pattern; the
+Gaussian-moment integrability family and stage 2a supplied every
+analytic input. New: the $\sqrt t$-atom substitution, promoted to the
+repo \texttt{CLAUDE.md} as the standard way to prove rescaled-time
+polynomial identities.
+
+\section{Lessons}
+
+When an algebraic identity mixes $t$ and $\sqrt t$, fold the radical
+into an atom \emph{first} and rewrite $t$ afterwards; the substitution
+is only unsafe while the radical is still spelled with $t$ inside.
+First-attempt success on both the identity and the six-fold split shows
+the catalogue disciplines have compounding value: this tide's genuinely
+new content compiled clean, and every failure was a known class.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item Stage 3: second-order moment-ratio lemmas (the Gibbs moments
+$\langle x^r \rangle = (\lambda t)^{-r/2} J_r/J_0$ expanded through
+order $1/t$ relative to leading).
+\item Stages 4--6 per the programme plan ($\kappa_4$ assembly, the
+analytic limit, gamma recovery).
+\end{itemize}
+
+\end{document}
