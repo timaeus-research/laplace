@@ -119,4 +119,53 @@ theorem AdmissiblePotential.taylorBase_ge
   have hx2 : 0 < x ^ 2 := by positivity
   nlinarith [hlow, hup]
 
+/-- **The Taylor polynomial in jet shape**: for an admissible `C^D`
+potential, the degree-`D` Taylor polynomial at the minimum is exactly
+the jet potential with base `taylorBase` and coefficients
+`taylorCoeff` (the `k = 0, 1` terms vanish at an admissible
+minimum). -/
+theorem taylorWithinEval_eq_jet
+    {L : ℝ → ℝ} {ρ κ δ : ℝ} {D : ℕ} (hD : 2 ≤ D)
+    (h : AdmissiblePotential L ρ κ δ) (x : ℝ) :
+    taylorWithinEval L D Set.univ 0 x =
+      jetPotential 1 (D - 2) (taylorBase L) 1 (taylorCoeff L D) x := by
+  rw [taylor_within_apply]
+  simp only [sub_zero, smul_eq_mul, iteratedDerivWithin_univ]
+  -- Split off the first three terms.
+  have hsplit : (∑ k ∈ Finset.range (D + 1),
+      ((Nat.factorial k : ℝ))⁻¹ * x ^ k * iteratedDeriv k L 0) =
+      (∑ k ∈ Finset.Ico 0 3,
+        ((Nat.factorial k : ℝ))⁻¹ * x ^ k * iteratedDeriv k L 0) +
+      ∑ k ∈ Finset.Ico 3 (D + 1),
+        ((Nat.factorial k : ℝ))⁻¹ * x ^ k * iteratedDeriv k L 0 := by
+    rw [Finset.range_eq_Ico,
+      Finset.sum_Ico_consecutive _ (by omega : 0 ≤ 3)
+        (by omega : 3 ≤ D + 1)]
+  rw [hsplit]
+  -- The head: k = 0, 1 vanish; k = 2 is the base term.
+  have hhead : (∑ k ∈ Finset.Ico 0 3,
+      ((Nat.factorial k : ℝ))⁻¹ * x ^ k * iteratedDeriv k L 0) =
+      taylorBase L * x ^ 2 := by
+    rw [Finset.sum_Ico_eq_sum_range]
+    norm_num [Finset.sum_range_succ, iteratedDeriv_zero, h.zero,
+      iteratedDeriv_one, h.deriv_zero, taylorBase, Nat.factorial]
+    ring
+  rw [hhead]
+  -- The tail: reindex to Fin (D - 2).
+  have htail : (∑ k ∈ Finset.Ico 3 (D + 1),
+      ((Nat.factorial k : ℝ))⁻¹ * x ^ k * iteratedDeriv k L 0) =
+      ∑ i : Fin (D - 2), taylorCoeff L D i * 1 ^ (i.1 + 1) *
+        x ^ (2 * 1 + (i.1 + 1)) := by
+    rw [Finset.sum_Ico_eq_sum_range]
+    rw [show D + 1 - 3 = D - 2 by omega]
+    rw [← Fin.sum_univ_eq_sum_range (fun i ↦
+      ((Nat.factorial (3 + i) : ℝ))⁻¹ * x ^ (3 + i) *
+        iteratedDeriv (3 + i) L 0) (D - 2)]
+    refine Finset.sum_congr rfl fun i _ ↦ ?_
+    rw [taylorCoeff]
+    rw [show 2 + (i.1 + 1) = 3 + i.1 by omega]
+    rw [one_pow]
+    ring
+  rw [htail, jetPotential]
+
 end Laplace.OneD
