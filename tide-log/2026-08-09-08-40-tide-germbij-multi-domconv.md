@@ -47,3 +47,31 @@ itself is structural (Tendsto). No new closed form.
 - GPT-5.6 Sol: same (archived).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/RescaledDCT.lean`, ~250 lines, sorry-free,
+two diagnostic passes):
+
+- `integrable_one_add_sq_mul_exp`: the (1+‖x‖²)e^{-c‖x‖²} dominator
+  for every c > 0, by t² ≤ (2/c)e^{ct²/2} from u + 1 ≤ e^u — no
+  dilation transport needed.
+- `LocalLaplaceDomain` extends `LocalQuadraticApprox` with the
+  integration domain (U measurable, ball δ ⊆ U, the H4-facing
+  rescaled_lower field, measurable_L) — the consult's "cleaner"
+  option adopted, closed-ball inclusion never exposed.
+- `tendsto_integral_rescaled`: THE generic theorem — one DCT via
+  tendsto_integral_filter_of_dominated_convergence, with pointwise
+  indicator convergence from q•x → 0 entering the δ-ball, exp
+  continuity composed with H3b's rescaled_tendsto, and the
+  lower-bound domination on the indicator support.
+- Corollaries at h = 1, x_i, x_i·x_j landing exactly on the H2
+  values (Z_H, 0, jacInv·Z₀·H⁻¹_{ij}); coordinate growth bounds fit
+  C = 1.
+
+Error classes: all catalogued types (positivity cannot see context
+hypotheses hC/delta_pos — pass mul_nonneg/div_pos explicitly;
+Set.indicator membership needs the `show x ∈ {x | q•x ∈ U}` cast or
+the unifier grabs the wrong set; fun_prop stops at exp∘measurable
+composites — compose Real.measurable_exp manually; a simp that
+closes the goal before its follow-up tactic). Nothing new.
