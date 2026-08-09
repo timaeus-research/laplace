@@ -36,3 +36,40 @@ Rationale: 1+2 are the mechanical extension; 3 is the grammar-facing
 payoff (bounded priors are asymptotically invisible in normalized
 observables) and the first consumer of SuperPoly outside its
 birthplace.
+
+## GPT-5.6 Sol v1
+
+Archived verbatim in `tide-log/gpt56_grammar_moments_v1.md`. All
+three candidates correct (with "grows like" corrected to "decays
+like" for the tail prefactor — 2 M_j(t/2) = (48/t)^alpha Gamma,
+decaying in t). Rulings: extract the generic even-split lemma
+(second use; Integrable + evenness + 0 <= a, real-valued, no
+continuity); land candidate 2 as the headline with 1 as its helper;
+candidate 3 is the better semantic endpoint but NOT the minimal
+addition — and when it comes, state it as an eventual exponential
+inequality / IsBigO against exp(-(a^4/48) t) (the relative-error
+argument preserves the rate; coarse polynomial denominator bounds
+would lose it), with SuperPoly as a corollary; the grammar-facing
+rescaled form t^{j/2} Q_j -> explicit Gamma constant is the
+recommended follow-up statement. Z_n[phi]-specific analytics
+deferred until the grammar-side object stabilizes: "the moment
+approximation is the reusable analytic kernel."
+
+## Vote
+
+- Claude: candidate 2 (+1 as helper, + generic even split), per the
+  consult's staging; candidate 3 deferred to the next tide in the
+  rescaled exponential form.
+- GPT-5.6 Sol: same. Agreed.
+
+## Numerical check (executed before this text)
+
+j = 1, t = 50, a = 1 (scipy quad):
+
+    tail = 1.372129e-02  <=  bound 2.096849e-01  : True
+    |Icc - M_j| = 2.744257e-02  <=  bound 4.193698e-01  : True
+    full-line numeric = 0.3533334288, closed form = 0.3533334288
+
+Normalized difference decay (candidate 3 preview): |Q - N| =
+9.3e-2 / 1.5e-2 / 1.2e-3 at t = 20/50/100, well inside the
+e^{-t/48} envelope.
