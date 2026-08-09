@@ -3,7 +3,7 @@
 **Direction (user):** standing auto-mode commission; the last
 consult-flagged germbij follow-on (degenerate strata beyond
 dimension one, note section 7.4).
-**Seabed:** laplace, main at 095c633 (post-monomial-tests).
+**Seabed:** laplace, main at a2103ef (post-monomial-tests).
 **Started:** 2026-08-09T16:30 local
 
 ## Candidates v1 (Claude)
