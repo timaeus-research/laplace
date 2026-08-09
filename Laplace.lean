@@ -21,6 +21,7 @@ import Laplace.OneD.RecoveryAllOrder
 import Laplace.OneD.RecoveryCoeffLimit
 import Laplace.OneD.RecoveryGeneric
 import Laplace.OneD.RecoveryAnharmonic
+import Laplace.OneD.ExpRemainderSigned
 import Laplace.Multi.Basic
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
