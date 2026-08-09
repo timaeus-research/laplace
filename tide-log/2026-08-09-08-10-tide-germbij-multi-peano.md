@@ -45,3 +45,39 @@ closed form appears in this tide.
 - GPT-5.6 Sol: same (archived).
 
 Agreed.
+
+## Result
+
+One file (`Laplace/Multi/QuadLowerBound.lean`, ~300 lines,
+sorry-free):
+
+- `qform_smul` (degree-2 homogeneity), `qform_zero`.
+- `qform_coercive`: sphere-compactness route exactly as the consult
+  ruled (min of qform on the unit sphere via IsCompact.exists_isMinOn,
+  positivity from PosDef, extension by homogeneity). No spectral
+  theory.
+- `hess_symm` (Mathlib's `second_derivative_symmetric`),
+  `hasFDerivAt_bilinear_diag` (via `HasFDerivAt.clm_apply` — NOT the
+  IsBoundedBilinearMap route, which fought the elaborator),
+  `hasFDerivAt_hess_diag_half`.
+- `quadratic_peano`: the multivariate Peano remainder by two
+  applications of the mean value inequality (gradient linearization
+  on the δ-ball; then the loss-minus-quadratic on the closed ball of
+  radius ‖y‖ with the ε‖y‖ derivative bound).
+- `LocalQuadraticApprox` structure + `ofContDiff` constructor +
+  derived `exists_local_lower_bound` (ε = λ/4 room) and
+  `rescaled_tendsto` (from the Peano remainder, epsilon plumbing on
+  𝓝[>] 0) — the exact interface the consult specified for H4.
+
+The flagged hardest step took ONE structural discovery: the mean
+value inequality has two variants, and
+`Convex.norm_image_sub_le_of_norm_fderiv_le` (DifferentiableAt +
+fderiv-bound shaped) is a unification bomb when handed
+explicit-derivative hypotheses — whnf timeout surviving 8M
+heartbeats, isolated by bisection to the lemma call with even fully
+abstract arguments. The explicit-derivative variant
+`norm_image_sub_le_of_norm_hasFDerivWithin_le` elaborates instantly.
+Catalogued in CLAUDE.md. Everything else was one diagnostic pass of
+routine repairs (Set.mem_setOf unfolding after IsMinOn application,
+a sub_zero that ate the wrong occurrence, Pi.smul vs lambda after
+const_smul, set_option-before-docstring ordering).
