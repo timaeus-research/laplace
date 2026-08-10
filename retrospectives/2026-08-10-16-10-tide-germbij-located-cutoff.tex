@@ -1,0 +1,111 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: located cutoff removal\\
+\large grand composition, part 2}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The second step of the grand composition toward a literal inverse
+Theorem 3.1. The centred cutoff-removal theorem upgrades
+compactly-supported test data to polynomial-growth observables, but
+takes one observable shared by both packages --- useless for the
+located comparison, where the coordinate observables differ per side
+after centring. \code{superPoly\_locatedMoment\_of\_ccData} is the
+located analogue: from superPoly agreement of the \emph{physical}
+moment families (the translated losses on their translated regions,
+in the literal $e^{-t\Lambda}$ form supplied by the translation
+bridge) over smooth compactly supported tests in a common actual
+region containing balls around \emph{both} centres, the located
+moment families of every smooth polynomial-growth observable agree
+beyond all orders. The deliberation's sharpest observation ---
+support in the intersection of the two localization regions is
+vacuous when they are disjoint --- becomes the ball hypotheses. The
+cutoff is a double bump $\chi = 1 - (1 - f_1)(1 - f_2)$, smooth,
+$[0,1]$-valued, equal to one near each centre, supported in the
+common region; each package's tail is the existing centred estimate
+in its own coordinates, and the telescope closes the argument.
+\end{abstract}
+
+\section{Setting}
+
+Part 1 (the translation bridge) made located moments the actual
+Gibbs moments of translated losses. This part removes the cutoff in
+actual coordinates, which is what lets a single $C_c^\infty(V)$ data
+premise serve two differently-located losses --- the step the
+grand-composition consult singled out as ``not mere gluing''.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+Two feeder lemmas: \code{SuperPoly.congr} (eventual equality at
+\code{atTop} transports superpolynomial smallness --- needed because
+the physical-to-located identities of the bridge hold for $0 < t$
+only), and \code{HasPolynomialGrowth.comp\_const\_add} (translation
+preserves polynomial growth, with the constant inflated through
+$(a+b)^n \le 2^n(a^n + b^n)$). The main theorem builds the double
+bump from two \code{ContDiffBump}s with inner radius $r_i/2$ and
+outer radius $3r_i/4$, so its support sits inside
+$B(p_1, r_1) \cup B(p_2, r_2) \subseteq V$; applies the data premise
+at $P\chi$; converts the physical middle term to located moments by
+the bridge, eventually in $t$; runs
+\code{posteriorMoment\_cutoff\_tail} once per package in that
+package's centred coordinates (the translated cutoff is one on a
+ball around the origin because the bump is one near the
+corresponding centre); and telescopes.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+Two short rounds. The genuinely instructive miss: the file imports
+the translation bridge, whose chain does \emph{not} include the
+cutoff-removal file, so the cutoff-tail theorem was an unknown
+identifier. In a repo of forty-plus files under one namespace, a
+sibling theorem's absence from the import closure presents exactly
+like a wrong name. The small ones:
+\begin{itemize}
+\item \code{push Not} refuses $\lnot(w \in s \cup t)$ until
+  \code{Set.mem\_union} is unfolded;
+\item \code{isCompact\_closedBall} is top-level, with explicit
+  arguments;
+\item the style linter rejected the goal-restating \code{show}
+  before the final \code{ring}; two \code{beta\_reduce} passes serve
+  better, the second catching the redex that unfolding
+  \code{locatedMomentT} creates \emph{inside} the observable
+  argument.
+\end{itemize}
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the \code{ContDiffBump} field lemmas,
+\code{closure\_minimal}, \code{dist\_self\_add\_left}, the
+compact-support-from-compact-superset constructor, and the
+left-monotone power bound. New mathematics: none --- the one design
+choice with content is the double-bump construction replacing the
+single bump of the centred theorem, and it is elementary.
+
+\section{What the next tide inherits}
+
+Tide 3, the located grand headline: instantiate this theorem at the
+coordinate observables to obtain located first-moment data; conclude
+$p_1 = p_2$ by the location-recovery theorem
+(\code{location\_eq\_of\_superPoly\_first\_moments});
+transport the data premise to centred form at the common point and
+feed the centred jet-recovery headline
+(\code{smooth\_positive\_jet\_recovery\_of\_ccData});
+and carry the derivatives and the germ back to the actual point.
+Then tide 4 discharges the symmetry hypotheses by analyticity and
+states the located analytic germ theorem.
+\end{document}

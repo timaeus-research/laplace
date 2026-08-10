@@ -67,6 +67,7 @@ import Laplace.Multi.ShiftNormalization
 import Laplace.Multi.CutoffRemoval
 import Laplace.Multi.LocationRecovery
 import Laplace.Multi.TranslationBridge
+import Laplace.Multi.LocatedCutoff
 import Laplace.Multi.GaussianMeso
 import Laplace.Multi.ForwardDomain
 import Laplace.Multi.ExpGraded
