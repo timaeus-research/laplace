@@ -20,7 +20,13 @@ recovery perimeter. The statements are exact identities, not
 asymptotics: for the global model
 `t^{⟨q,α⟩}·⟨x^α⟩_t = M_α/M_0` for every `t > 0`, and two models with
 the same weights whose normalized monomial moments agree at a single
-temperature have equal moment ratios.
+temperature have equal moment ratios. Two boundary notes: the
+identities are junk-value-consistent and take no integrability or
+positivity hypotheses — "recovery" is substantive only when the
+reference moments are finite with `M_0 > 0` (the note's `q_i > 0` and
+`P > 0` away from the origin supply this, but are not assumed here);
+and the note's LOCALIZED law with cutoff and `O(e^{-ct})` error is
+not formalised — these are the global-model exact forms.
 -/
 
 open Real MeasureTheory Filter Topology
