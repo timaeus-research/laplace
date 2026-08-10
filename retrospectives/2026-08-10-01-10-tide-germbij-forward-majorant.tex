@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the $q$-uniform window majorant\\
+\large the single interface of the dominated-convergence step}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The architecture consult called this theorem the numerator stage's
+``key hidden dependency'': everything the dominated-convergence step
+needs about the integrand, in one statement. On the mesoscopic
+window, eventually in $q$,
+\[
+  \Big| e^{-(L(qz)-L(0))/q^2}
+    - e^{-T_2(z)} \sum_{j=0}^{N} P_j(z)\, q^j \Big|
+  \;\le\;
+  C\,(1+\|z\|)^{(N+2)(N+1)}\; q^N\; e^{-(\lambda/4)\|z\|^2},
+\]
+with $C$ explicit: the domain's Taylor-window constant, plus
+$M^{N+1}/(N+1)!$ from the exponential remainder, plus the tail
+coefficient sum through degree $N^2$. The proof factors the true
+Boltzmann factor through the exponent split --- whose critical-point
+hypothesis is now the bridge theorem of the previous tide, not an
+assumption --- and telescopes the difference into the three scalar
+pieces prepared in 5b: the perturbation strip carrying
+$|q^N\rho_q(z)|$, the unrestricted exponential Taylor remainder at
+$-A(q,z)$ with the multinomial extraction
+$|A|^{N+1} \le q^{N+1}(\sum_s |V_s(z)|)^{N+1}$, and the graded
+polynomial tail carrying $q^{N+1}$. Every exponential factor absorbs
+into the weakened Gaussian of 5c-pre.
+\end{abstract}
+
+\section{Setting}
+
+Stage 5c-i of the forward-expansion programme. The four preceding
+tides were built so that this one would be assembly: 5a supplied the
+coefficient growth, 5b the three scalar estimates, 5c-pre the bridge
+and the absorption. The assembly is still the longest single proof of
+the programme (one theorem, $\sim$260 lines), but it compiled on the
+second build attempt with six local fixes and no restructuring ---
+the decomposition did its job.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{sum\_range\_shift\_eq\_sum\_Icc} aligns the exponent split's
+$\sum_{s \in \mathrm{range}\,N} q^{s+1} V_{s+1}$ with the graded
+expansion's $\sum_{s \in \mathrm{Icc}\,1\,N} V_s q^s$. The majorant
+\code{normalized\_window\_remainder\_bound} then: obtains the
+absorption, ball-landing, and $q \in (0,1)$ facts eventually;
+factors via \code{exponent\_split} discharged by
+\code{taylorHomogeneousTerm\_one\_eq\_zero}; sets $S$ (the
+homogeneous correction), $R$ (the scaled perturbation), and the
+graded polynomial $G$; and bounds the telescope
+$|e^{-(S+R)} - \Sigma| \le |e^{-(S+R)} - e^{-S}| +
+|e^{-S} - G(q)| + |G(q) - \Sigma|$ piece by piece. The pieces reuse,
+in order: \code{abs\_exp\_neg\_add\_sub\_exp\_neg\_le} with
+\code{abs\_scaledRem\_le}; \code{abs\_exp\_sub\_sum\_le} with
+\code{abs\_exponent\_sum\_le} and the growth bound $M(1+\|z\|)^{N+2}$
+on $\sum_s|V_s|$; and \code{gradedExpPoly\_tail\_bound} with the 5a
+coefficient growth. Absorption closes each piece at rate $\lambda/4$.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+\begin{sloppypar}
+Six small fixes on one round, all catalogued classes or new
+catalogue entries: \code{add\_le\_add\_right} adds on the left in
+this Mathlib (use \code{add\_le\_add h le\_rfl});
+\code{positivity} cannot see nonnegativity of opaque structure
+fields (derive a local fact for \code{remConst} once, thread it);
+\code{Metric.mem\_ball\_zero\_iff} does not exist on this pin
+(rewrite through \code{Metric.mem\_ball} and
+\code{dist\_zero\_right}); a \code{gcongr} discharged its own side
+goal; and --- the one genuinely structural point --- the
+\code{set ... with} folding of $R$ must happen \emph{after} the
+absorption instance is obtained, so the fold reaches into that
+hypothesis and \code{linarith}-style steps see one atom.
+\end{sloppypar}
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{Finset.sum\_Icc\_succ\_top}, \code{Metric.mem\_ball},
+\code{abs\_sub\_le}, and the mono/absolute-value toolkit. Everything
+else was this programme's own five preceding stages. New mathematics:
+none --- the theorem is the disciplined sum of its parts, which was
+the design.
+
+\section{What the next tide inherits}
+
+Stage 5c-ii, the final integration: pointwise convergence of the
+normalized window remainder (\code{exp\_graded\_expansion} at
+$a_s = V_s(z)$, $\rho = $ the scaled remainder, activated by
+\code{eventually\_mem\_mesoscopicSet}); the filter-indexed dominated
+convergence with the window indicator folded into the integrand and
+this tide's majorant as the dominator (integrable by
+\code{integrable\_one\_add\_norm\_pow\_mul\_gaussian}); the two
+outer-tail removals from stage 2; coefficient integrability; and the
+packaging of \code{numerator\_hasExpansion}.
+\end{document}
