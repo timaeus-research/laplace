@@ -440,3 +440,28 @@ by `simpa`, never rewrite the goal's zero.
 versions do. For a real base write
 `show t⁻¹ = t ^ (-1 : ℝ) from by rw [Real.rpow_neg ht.le, Real.rpow_one]`
 and then `← Real.rpow_mul` for `(t⁻¹)^r = t^(-r)` manipulations.
+
+**`have`-bound constructors are opaque: consume postconditions
+through structure fields.** `have A := someConstructor ...` erases
+the definition, so a later `(A k).field = <constructed value> := rfl`
+cannot reduce (symptom: "application type mismatch ... ?m = ?m"
+against the projection). Even with the application inlined, internal
+`Exists.choose` terms are Classical-opaque and cannot be re-derived
+by spelling them identically. The pattern: have the constructor set
+RELATED fields from the same local (e.g. `U := ball 0 ρ` and
+`delta := ρ`), then callers get `U = ball 0 delta` by `rfl` and
+positivity from `delta_pos` — postconditions read off fields, never
+reconstructed from choice chains.
+
+**A sibling theorem missing from the import closure presents as an
+unknown identifier.** With forty-plus files in one namespace,
+`Laplace.Multi.Foo.bar` failing to resolve usually means the FILE is
+not imported, not that the name is wrong. Check the import chain
+before renaming anything.
+
+**`have h := f a b ?_` + `case _ =>` does not defer the trailing
+explicit argument.** The elaborator inserts the metavariable eagerly
+and the `case` block finds no goal (symptom: `introN` failure then
+"unknown identifier h"). Pass the argument as an inline lambda (with
+a `by` block if tactics are needed), or restate it as a separate
+`have` with an explicit type.
