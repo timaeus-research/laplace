@@ -69,6 +69,7 @@ import Laplace.Multi.ExpGraded
 import Laplace.Multi.CoeffFn
 import Laplace.Multi.ScalarBounds
 import Laplace.Multi.GaussAbsorb
+import Laplace.Multi.WindowMajorant
 import Laplace.Multi.AnalyticGermRecovery
 import Laplace.Multi.SeparableRecovery
 import Laplace.Multi.SeparableAffinity
