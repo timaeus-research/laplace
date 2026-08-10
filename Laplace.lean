@@ -72,6 +72,7 @@ import Laplace.Multi.GaussAbsorb
 import Laplace.Multi.WindowMajorant
 import Laplace.Multi.NumeratorExpansion
 import Laplace.Multi.NumeratorTails
+import Laplace.Multi.AsymptoticDivision
 import Laplace.Multi.AnalyticGermRecovery
 import Laplace.Multi.SeparableRecovery
 import Laplace.Multi.SeparableAffinity
