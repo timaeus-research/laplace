@@ -62,6 +62,7 @@ import Laplace.Multi.DegreeRecovery
 import Laplace.Multi.JetInduction
 import Laplace.Multi.MonomialTests
 import Laplace.Multi.ExpansionBridge
+import Laplace.Multi.HessianBridge
 import Laplace.Multi.LocationRecovery
 import Laplace.Multi.GaussianMeso
 import Laplace.Multi.ForwardDomain
