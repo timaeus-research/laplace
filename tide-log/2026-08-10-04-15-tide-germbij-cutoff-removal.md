@@ -111,3 +111,22 @@ helpers, `HasPolynomialGrowth.comp_smul`, `posteriorMoment_eq_integrand_div`,
 `contDiff_monomialTest` + coordinate-pair observables, and the composed
 `smooth_positive_jet_recovery_of_ccData` /
 `analytic_germ_recovery_of_ccData`.
+
+## Result
+
+Committed on tide/germbij-cutoff-removal (083af66):
+`Laplace/Multi/CutoffRemoval.lean` — `Laplace.SuperPoly.add`/`.sub`,
+`superPoly_of_eventually_abs_le_exp`, `HasPolynomialGrowth.comp_smul`,
+`posteriorMoment_eq_integrand_div`, `posteriorMoment_cutoff_tail`,
+`superPoly_moment_of_ccData`, `contDiff_monomialTest`/`contDiff_coord_mul`/
+`hasPolynomialGrowth_coord_mul`, and the note-literal corollaries
+`smooth_positive_jet_recovery_of_ccData` and
+`analytic_germ_recovery_of_ccData`. Zero sorries, four build iterations
+(beta-reduction class ×2, set-opaque positivity, explicit K under refine,
+unsynthesizable middle radius in a chained ball inclusion). Surprise: the
+review finding's own one-line justification WAS the proof outline; the
+deliberation only pinned the split constant and the linearity altitude.
+
+## Retrospective
+
+Retrospective: laplace/retrospectives/2026-08-10-04-15-tide-germbij-cutoff-removal.tex
