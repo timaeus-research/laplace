@@ -147,6 +147,7 @@ import Laplace.Multi.LeadingIdentifiability
 import Laplace.Multi.Turnkey
 import Laplace.Multi.AnalyticBridge
 import Laplace.Decay
+import Laplace.Multi.SingularPrep
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
 import Laplace.OnePointAnchoring
