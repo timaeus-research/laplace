@@ -1,0 +1,104 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the one-grade difference limit\\
+\large pairwise comparison against an arbitrary reference density}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The reusable core of the semi-quasi-homogeneous recovery: two Gibbs
+families sharing a reference density $e^{-P}$ --- any $P$, no
+Gaussian structure --- and differing by corrections that vanish
+pointwise while their difference carries the rate $h^\rho$ toward
+$Q$, have normalized moments separating at exactly that rate,
+\[
+  \frac{M_2(h) - M_1(h)}{h^\rho}
+  \;\longrightarrow\; -\operatorname{Cov}_P(A, Q).
+\]
+The scoping consult's key structural point is preserved: in the
+\emph{pairwise} formulation, products of lower-grade corrections
+never appear --- once all lower grades agree they cancel in the
+difference --- so the weighted induction over grades will consume
+this theorem one grade at a time with no nonlinear bookkeeping. The
+pointwise engine avoids dividing by the correction: the second-order
+bound $|e^{-W} - 1 + W| \le W^2$ squeezes
+$(e^{-W}-1)/h^\rho + W/h^\rho$ against $|W/h^\rho|\cdot|W|$, so the
+$W = 0$ fibers need no case split.
+\end{abstract}
+
+\section{Setting}
+
+Stage B of the archived scoping consult's plan for class (c), after
+the moments tide settled piece (i). The consult's suggested
+\code{UniformIntegrableMajorant} abstraction was flattened into
+explicit hypotheses (an eventual integrable majorant for the
+normalized difference quotient, eventual integrability of the four
+family members, and convergence of the base family), keeping the
+theorem honest and its consumers responsible for domination --- the
+same division of labour as the forward programme's majorant/DCT
+split.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{expectationUnder} and \code{covarianceUnder} (the non-Gaussian
+covariance API); \code{tendsto\_exp\_neg\_sub\_one\_div\_pow} (the
+pointwise engine); \code{tendsto\_pointwise\_difference\_div\_pow}
+(the factored integrand limit, with the two-\code{exp\_add}
+factoring $e^{-(P+V_2)} - e^{-(P+V_1)} = e^{-P}e^{-V_1}(e^{-W}-1)$);
+\code{tendsto\_integral\_exp\_difference\_div\_pow} (dominated
+convergence, with the integral split transferred eventually); and
+\code{tendsto\_normalized\_difference\_div\_pow}, assembled through
+the quotient-rate identity
+$(n_2/z_2 - n_1/z_1)/s = ((n_2-n_1)/s)/z_2 -
+(n_1/z_1)\,((z_2-z_1)/s)/z_2$ under three eventual nonvanishing
+facts. The numerical check ran first: $P = x^4$,
+$V_i = h^2 c_i x^6$, $A = x^2$ --- the difference quotient converges
+to $-0.7\operatorname{Cov}_P(x^2, x^6) = -0.1588$.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+Three small rounds: two \code{exp\_add} rewrites suffice where three
+were written (the second instance rewrites both identical copies at
+once); \code{integral\_div} wanted the forward direction; and one
+unused section variable (\code{omit} it). The theorem-shape decision
+--- explicit hypotheses over a majorant predicate --- kept every
+proof step elementary.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{Real.abs\_exp\_sub\_one\_sub\_id\_le},
+\code{squeeze\_zero\_norm'},
+\code{tendsto\_integral\_filter\_of\_dominated\_convergence},
+\code{Tendsto.div}, \code{MeasureTheory.integral\_div}. New: nothing
+mathematical --- the covariance formula for the first variation of a
+Gibbs mean is classical; the value is the generality (arbitrary
+reference density) and the pairwise shape.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Stages C and D, the consult's designated endpoint for class (c):
+covariance injectivity for polynomial corrections against a positive
+full-support density (expand
+$\operatorname{Cov}_P(Q,Q) = 0$, conclude $Q$ constant, kill the
+constant by degree), and
+\code{weightedGrade\_eq\_of\_moment\_rates} with the finite
+induction over grades --- each grade's recovery consuming this
+tide's normalized limit at the anisotropic instantiation of the
+moments tide.
+\end{document}
