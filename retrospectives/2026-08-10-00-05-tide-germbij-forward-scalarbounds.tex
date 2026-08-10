@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: unrestricted exponential bounds\\
+\large the scalar layer of the numerator stage}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Mathlib's \code{Real.exp\_bound} requires $|x| \le 1$, and on the
+mesoscopic window the exponent correction reaches $\sim 1/\sqrt q$:
+it is small relative to the quadratic, never absolutely. The
+architecture consult confirmed that the right fix is a one-time
+unrestricted remainder --- for every real $x$,
+\[
+  \Big|e^x - \sum_{i=0}^{N} \frac{x^i}{i!}\Big|
+  \le \frac{|x|^{N+1}\, e^{|x|}}{(N+1)!},
+\]
+with the $q$-power later recovered from the multinomial fact
+$|A(q,z)| \le q \sum_s |V_s(z)|$ on $q \le 1$ rather than from
+absolute smallness --- and that a second, smaller localization window
+would cost more (its own tail theorems, annulus estimates) while
+still failing to bound the Peano remainder absolutely at $N = 0$.
+This tide delivers that remainder, the perturbation bound
+$|e^{-(A+\delta)} - e^{-A}| \le |\delta|\,e^{|A|+|\delta|}$ shaped
+for Gaussian absorption, and the graded polynomial tail bound with a
+$z$-uniform indexing bound through degree $N^2$.
+\end{abstract}
+
+\section{Setting}
+
+Stage 5b of the forward-expansion programme: the scalar/algebraic
+layer, kept free of domain and measure structure per the consult, so
+that the single $q$-uniform Gaussian majorant of the next tide is the
+only place where domain-specific uniformity concentrates. Numerical
+checks preceded the Lean: the remainder inequality at twelve
+$(x, N)$ pairs including $x = 5$, and the tail bound at the stage-4
+test coefficients.
+
+\section{The thing formalised}
+
+The remainder proof is the series argument made literal:
+\code{real\_exp\_eq\_tsum} identifies $e^x$ with its power series
+(through \code{NormedSpace.expSeries\_div\_hasSum\_exp}); the partial
+sum splits off by \code{Summable.sum\_add\_tsum\_nat\_add}; the
+shifted tail is compared termwise using
+$(N{+}1)!\,i! \le (N{+}1{+}i)!$ (from Mathlib's divisibility fact)
+and collapses to $\frac{|x|^{N+1}}{(N+1)!} e^{|x|}$ by
+\code{tsum\_mul\_left}. The perturbation bound reduces to
+$|e^y - 1| \le |y| e^{|y|}$, proven by two \code{nlinarith} calls
+from \code{Real.add\_one\_le\_exp} at $\pm y$. The tail bound
+mirrors stage 4's polynomial tail step, but with the indexing bound
+$N^2 + 1$ from \code{natDegree\_gradedExpPoly\_le} instead of the
+polynomial's own degree --- the consult's point being that after
+pointwise instantiation the degree would depend syntactically on the
+point, poisoning every later uniformity statement.
+
+\section{Where progress stalled}
+
+Two deterministic whnf heartbeat timeouts (a catalogued class): the
+\code{NormedSpace.exp} instance unification on $\R$, and the tsum
+comparison chain. Both cleared by the documented
+\code{maxHeartbeats} bump; the first also needed the
+\code{HasSum}-based route, because rewriting with
+\code{exp\_eq\_tsum\_div} dies in the same way at any budget tried.
+Two renames-and-shapes: \code{tsum\_le\_tsum} is now dot-notation on
+the left summability, and \code{simpa [Real.norm\_eq\_abs]}
+over-normalizes (it pushes the absolute value inside division and
+power, breaking the $\sum' |f_i|$ shape) --- on $\R$ the norm lemmas
+apply directly by definitional equality.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{NormedSpace.expSeries\_div\_hasSum\_exp},
+\code{Real.summable\_pow\_div\_factorial},
+\code{Summable.sum\_add\_tsum\_nat\_add},
+\code{summable\_nat\_add\_iff}, \code{norm\_tsum\_le\_tsum\_norm},
+\code{tsum\_mul\_left},
+\code{Nat.factorial\_mul\_factorial\_dvd\_factorial\_add},
+\code{Polynomial.natDegree\_sum\_le\_of\_forall\_le},
+\code{Polynomial.natDegree\_pow\_le},
+\code{Polynomial.natDegree\_C\_mul\_le}. New: nothing --- these are
+textbook estimates; the value is having them stated in the exact
+shapes the majorant proof will consume.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Stage 5c-pre, the domain absorption package (consult items 1--3):
+the $T_2/H$ bridge with a named positive Gaussian rate,
+arbitrary-small Peano control on the window
+(\code{eventually\_abs\_scaledRem\_le} from \code{taylorPeano} plus
+\code{smul\_mem\_ball\_of\_mesoscopic}), and the absorption of the
+absolute corrections into $e^{-\gamma\|z\|^2}$. Then the majorant,
+DCT, tail removals, and \code{numerator\_hasExpansion}.
+\end{document}
