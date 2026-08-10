@@ -1,0 +1,114 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: singular composition, part 3\\
+\large smooth observables, and the arc closes}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The composition arc opened by the adversarial audit of the note's
+unnormalized degenerate theorem closes. Part 2 proved the point and
+locus theorems with the decay premise over continuous compactly
+supported observables and recorded the honest gap: the note
+quantifies over $\phi \in C_c^\infty$, a weaker premise, so those
+theorems did not literally subsume the note's statement. This tide
+repairs exactly that. The observable $(L_2 - L_1)\cdot\psi(\cdot - p)$
+is rebuilt with a Mathlib \code{ContDiffBump} whose closed support
+sits inside the analyticity ball of $L_2 - L_1$ at $p$
+(radii $r_{\mathrm{in}} = \min(R, \rho/4)$,
+$r_{\mathrm{out}} = 2r_{\mathrm{in}} < \rho$), and glued to a
+globally smooth function by a short pointwise lemma: inside the ball
+the product rule, outside the support the function is locally zero.
+The resulting \code{pencil\_families\_force\_germ\_eq\_at\_smooth}
+and \code{pencil\_families\_force\_eq\_near\_smooth} carry the note's
+premise verbatim, and the twelve reduction steps the audit catalogued
+between the Lean corpus and \code{thm:singular} are now all inside
+Lean, sorry-free.
+\end{abstract}
+
+\section{Setting}
+
+Part 1 (PR \#120) manufactured the endpoint's hypotheses; part 2
+(PR \#121) composed them into point and locus theorems over the
+continuous observable class, which is the engine but not the note's
+statement. The only remaining daylight was the observable class, and
+the audit's step 9 (observable membership) named it in advance.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+The gluing lemma \code{contDiff\_mul\_of\_tsupport\_subset} takes $g$
+smooth at each point of a set $U$ and $\psi$ globally smooth with
+$\operatorname{tsupport}\psi \subseteq U$, and concludes $g\psi$ is
+globally smooth --- pointwise, with no openness hypothesis on $U$:
+at points of $U$ the product rule on \code{ContDiffAt}; at points
+outside $\operatorname{tsupport}\psi$ (whose complement is open) the
+product vanishes on a neighborhood, and
+\code{ContDiffAt.congr\_of\_eventuallyEq} against the constant zero
+finishes. The smooth point theorem then reruns the part-2
+composition with three new ingredients: an analyticity radius $\rho$
+at $p$ extracted from the power series of $L_2 - L_1$
+(\code{HasFPowerSeriesOnBall.analyticOnNhd} gives \code{AnalyticAt}
+at every point of the extended-metric ball, hence \code{ContDiffAt});
+the quadratic-bound radius shrunk to
+$r_{\mathrm{in}} = \min(R, \rho/4)$, so the bump's closed support
+$\overline{B}(p, 2r_{\mathrm{in}})$ sits strictly inside $B(p,\rho)$;
+and the \code{ContDiffBump} itself, whose fields
+(\code{one\_of\_mem\_closedBall}, \code{support\_eq},
+\code{hasCompactSupport}, \code{nonneg'}, \code{continuous}) supply
+the endpoint's entire bump interface. The
+\code{HasContDiffBump} instance for finite-dimensional real normed
+spaces covers the sup-normed $\iota \to \R$, so no inner-product
+detour is needed. The locus form assembles as in part 2.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+It did not. The file passed its first full check with one repair:
+the gluing lemma's \code{IsOpen U} hypothesis was unused (the
+style linter flagged it), because pointwise \code{ContDiffAt} on $U$
+never needs $U$ open --- the openness that matters is that of the
+support's complement. Three tides into this arc, the catalogued
+gotchas (beta redexes under \code{congr'} goals, the
+argument order of \code{integral\_add\_left\_eq\_self}, the
+\code{simpa}-typed restatement for \code{AnalyticAt.comp}) were
+avoided at writing time rather than debugged, which is the catalogue
+working as intended.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{ContDiffBump} and its field lemmas, the
+finite-dimensional \code{HasContDiffBump} instance,
+\code{HasFPowerSeriesOnBall.analyticOnNhd},
+\code{image\_eq\_zero\_of\_notMem\_tsupport},
+\code{ContDiffAt.congr\_of\_eventuallyEq}, \code{closure\_minimal},
+\code{Metric.closedBall\_subset\_ball}. New mathematics: none. The
+tide is bookkeeping in the best sense --- the class of observables in
+the premise now matches the paper statement exactly.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+The note-side close-out: rewrite the \code{thm:singular} coverage
+footnote (full machine-checking can now be claimed --- with the
+pleasant note that the Lean hypotheses are slightly weaker than the
+note's: pointwise analyticity on $W_0$ suffices and compactness of
+$W_0$ is not used), add the margin markers for the four composed
+theorems, and bump the pinned commit once the stack merges. An
+optional cleanup: the continuous-class theorems of part 2 are now
+corollaries of the smooth-class ones and could be rederived to avoid
+proof duplication.
+\end{document}
