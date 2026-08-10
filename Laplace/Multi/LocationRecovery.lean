@@ -12,10 +12,12 @@ The germbij note's Theorem 3.1 recovers the location of the minimum
 as well as the jet; everything merged so far anchors the minimum at
 the origin. This file removes the mismatch. The anchored coordinate
 moments tend to zero (`tendsto_posteriorMoment_coord`, from the
-merged first-moment rate); a loss located at `c` has moments equal
-to anchored moments of translated observables (`locatedMoment`, with
-the honest translated-integral form recorded via translation
-invariance of Lebesgue measure), and its coordinate moments tend to
+merged first-moment rate); `locatedMoment c` models the moments of a
+loss located at `c` as anchored moments of translated observables —
+a definition-level model: the identification with the posterior
+integral of the translated loss `w ↦ L (w - c)` on the translated
+domain is the usual change of variables but is not formalised here —
+and its coordinate moments tend to
 the location. Two losses whose located first-moment families agree
 beyond all orders in the temperature therefore have the same
 minimum (`location_eq_of_superPoly_first_moments`) — the note's
