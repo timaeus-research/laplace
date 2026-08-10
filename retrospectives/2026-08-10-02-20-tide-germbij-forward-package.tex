@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the numerator expansion lands\\
+\large outer tails and the packaging of stage 5}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The numerator stage of the forward-expansion programme is complete:
+for every continuous observable $P$ of polynomial growth,
+\[
+  \int P(z)\, e^{-(L(qz)-L(0))/q^2}\,
+    \mathbf 1_{\{qz \in U\}}\, dz
+  \;=\; \sum_{j=0}^{N} a_j\, q^j + o(q^N)
+  \qquad (q \to 0^+),
+\]
+with $a_j = \int P\, e^{-T_2} P_j$
+(\code{numerator\_hasExpansion}). This tide supplies what the window
+convergence of the previous tide left open: the two outer tails and
+the decomposition. The true integrand's tail needs no binomial
+gymnastics --- the growth certificate $|P| \le C_P(1+\|z\|^n)$ splits
+into exactly two power-weighted tails of the stage-2 coercivity
+transfer. The coefficient polynomial's tail collapses to a single
+polynomial-Gaussian bound and splits binomially into the stage-2
+Gaussian tails. The decomposition is four subidentities --- numerator
+split, $U$-indicator collapse on the window (where $q$-scaled points
+land inside the domain ball), coefficient-sum/integral exchange, and
+the window difference --- closed by linear arithmetic, with the
+window piece converted to $o(q^N)$ through
+\code{isLittleO\_iff\_tendsto'} and the dominated-convergence theorem
+of the previous tide.
+\end{abstract}
+
+\section{Setting}
+
+Stage 5c-ii-b, the consult's items 8--9, completing the numerator
+stage begun seven tides ago. Everything here is bookkeeping around
+already-proven analysis; the only judgement calls were where to put
+absolute values (inside the tail integrals, so the assembly needs
+just $|\int f| \le \int |f|$) and to keep the two-term growth form
+$C_P(\|z\|^0 + \|z\|^n)$ for the true tail rather than reflexively
+binomially expanding.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{abs\_integrand\_eq} (the integrand's absolute value factors
+through the observable), \code{observable\_integrand\_tail\_isLittleO}
+and \code{coeff\_polynomial\_tail\_isLittleO} (both beyond all
+orders), \code{integrable\_coeff\_polynomial}, and
+\code{numerator\_hasExpansion} as a
+\code{Laplace.IsAsymptoticExpansionTo} with coefficients
+\code{numeratorCoeff}. The tails follow one template: an
+\code{isBigO} comparison (constant one) against a bound function
+assembled from stage-2 tail lemmas, using
+\code{setIntegral\_mono\_on} with explicit integrabilities on the
+complement, then \code{IsBigO.trans\_isLittleO}.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+One recurring class, three sites: \code{integral\_congr\_ae} hands
+its pointwise goals as applied lambdas, and every \code{rw} inside
+dies on the beta redex --- \code{beta\_reduce} first, always. The
+style linter rejected two goal-changing \code{show}s (use
+\code{change}). A cross-worktree slip: a build command ran in the
+SRI root because the previous shell had died; the worktree path
+must be re-entered per command batch.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{MeasureTheory.integral\_add\_compl},
+\code{setIntegral\_congr\_fun}, \code{setIntegral\_mono\_on},
+\code{IntegrableOn.congr\_fun}, \code{integral\_indicator},
+\code{integral\_finset\_sum}, \code{norm\_integral\_le\_integral\_norm},
+\code{isLittleO\_iff\_tendsto'}. New mathematics: none; the stage's
+design concentrated all analysis in the majorant and the DCT, and
+this tide cashed the cheque.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Stage 6: the partition function is the $P = 1$ instance of
+\code{numerator\_hasExpansion}; its constant coefficient
+$a_0 = \int e^{-T_2} > 0$ (the coefficient functions at $j = 0$ are
+constantly one, and the Gaussian integral is positive); a generic
+finite asymptotic-division lemma (two order-$N$ expansions, the
+denominator's constant coefficient nonzero, yields the expansion of
+the quotient) then gives the \emph{moment} expansion. Stage 7 states
+the public theorems: existence of the moment expansion for the
+monomial observables and the jet-comparison corollary through stage
+A1's coefficient uniqueness --- the germbij forward direction.
+\end{document}
