@@ -149,6 +149,7 @@ import Laplace.Multi.AnalyticBridge
 import Laplace.Decay
 import Laplace.Multi.SingularPrep
 import Laplace.Multi.SingularPoint
+import Laplace.Multi.SingularSmooth
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
 import Laplace.OnePointAnchoring
