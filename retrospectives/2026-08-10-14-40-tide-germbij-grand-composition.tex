@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the translation bridge\\
+\large grand composition, part 1}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The located moments of \code{LocationRecovery} --- the ``$w^*$
+clause'' of the note's Theorem 3.1 --- were a definition-level model:
+\code{locatedMoment} was \emph{defined} as the anchored moment of a
+translated observable, with the identification against the posterior
+integral of the actual translated loss $w \mapsto L(w - p)$ on the
+translated region left as an unformalised change of variables. This
+tide closes that gap with a small generic layer: the unrescaled
+region integral and normalized moment of an arbitrary loss over an
+arbitrary region (of which the package moments are instances by
+\code{rfl}), the translated region $\{w : w - p \in U\}$, and the
+Lebesgue-substitution identities showing the located moment is
+exactly the physical Gibbs moment of the translated loss --- at every
+scale $q$ without any denominator control (numerator and denominator
+are individually equal), and at every positive temperature in the
+literal $e^{-t\Lambda}$ form. Constant-shift invariance of the
+normalized moment comes along for free, and a bonus theorem
+discharges the recovery headlines' symmetry hypotheses at analytic
+points: every iterated derivative of an analytic function is
+permutation-symmetric, by the $\omega$-regularity API. The file
+passed its first full check with zero fix rounds.
+\end{abstract}
+
+\section{Setting}
+
+The perimeter review identified the remaining distance between the
+merged inverse-direction corpus and a literal Theorem 3.1 statement:
+location recovery uncomposed, packages and symmetry assumed, the
+observable data centred. The deliberation (archived in the tide log)
+sharpened the plan into four tides; this is the first. The decisive
+simplification, surfaced by reading \code{HessianMoments} before
+consulting: \code{posteriorIntegral} is \emph{already} the unrescaled
+$U$-restricted integral $\int \mathbf{1}_U\, f\, e^{-L/q^2}$ --- the
+$q^d e^{-L(0)/q^2}$ prefactor form is a separate dilation identity
+--- so translation never interacts with the rescaling at all.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{regionIntegralQ}, \code{regionMomentQ}, \code{regionMomentT}:
+the $V$-restricted Gibbs integral and normalized moment of a loss
+$\Lambda$, at scale $q$ and in the physical temperature form. The
+package moments are these verbatim
+(\code{posteriorMoment\_eq\_regionMomentQ} is \code{rfl}).
+\code{regionIntegralQ\_translate} is one application of
+\code{integral\_add\_left\_eq\_self}: the indicator of the translated
+region evaluated at $p + y$ collapses to the indicator of $U$ at $y$,
+and $\Lambda((p+y)-p) = \Lambda(y)$. Both quotient identities follow
+componentwise, so they hold for \emph{every} $q$, junk cases
+included. The temperature bridge
+(\code{regionMomentT\_eq\_regionMomentQ}) holds for $0 < t$ --- below
+zero the corpus's $(\sqrt{t})^{-1}$ parametrization has junk
+semantics and the physical form genuinely differs, exactly as the
+consult warned. \code{regionMomentQ\_sub\_const} factors
+$e^{a/q^2}$ out of numerator and denominator and cancels it by
+\code{mul\_div\_mul\_left}. The bonus
+\code{AnalyticAt.iteratedFDeriv\_isSymm} is three lines:
+\code{AnalyticAt.contDiffAt} at grade $\omega$ feeds
+\code{ContDiffAt.iteratedFDeriv\_comp\_perm}, whose conclusion is the
+corpus's \code{IsSymm} definitionally.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+It did not --- zero fix rounds, a first for this programme. The
+gotcha catalogue accounts for it: \code{beta\_reduce} before
+indicator rewrites inside \code{integral\_congr\_ae}, the
+function-first argument order of \code{integral\_add\_left\_eq\_self}
+(caught at writing time; part 2 of the singular arc paid for that
+lesson), \code{open scoped ContDiff} before naming $\omega$, and the
+exponential-factor cancellation idiom. The consult's design
+corrections (raw loss in the definition, shift invariance as a
+separate lemma, translated region as a set-builder rather than
+\code{+\textsubscript{v}} notation) each preempted a class of
+friction.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{integral\_add\_left\_eq\_self},
+\code{Real.sq\_sqrt}/\code{Real.sqrt\_inv},
+\code{mul\_div\_mul\_left}, \code{AnalyticAt.contDiffAt},
+\code{ContDiffAt.iteratedFDeriv\_comp\_perm}. New mathematics: none,
+by design --- the tide converts a documented modeling caveat into
+theorems.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+The consult's tide 2: located cutoff removal
+(\code{superPoly\_locatedMoment\_of\_ccData}) with a common actual
+test region containing neighborhoods of \emph{both} candidate minima
+--- the consult's sharpest observation is that support in the
+intersection of the two translated regions is vacuous when they are
+disjoint, so the common-region hypothesis is load-bearing. Then the
+located grand headline (tide 3) and the analytic wrapper with the
+symmetry hypotheses discharged by this tide's bonus theorem (tide 4).
+\end{document}
