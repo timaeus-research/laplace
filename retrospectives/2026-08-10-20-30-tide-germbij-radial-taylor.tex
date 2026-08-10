@@ -1,0 +1,107 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the radial Taylor bound\\
+\large grand composition, final}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The last open Lean item of the inverse-direction programme. A
+globally $C^k$ loss satisfies, on every ball, the order-$k$
+fixed-ball Taylor remainder bound that the package structures carry
+as a field (\code{exists\_taylorRemainder\_bound}), by the radial
+route: the ray-derivative identity at arbitrary parameter values
+(generalizing the corpus's origin-only lemma, whose composition proof
+was already global in the point), the one-dimensional
+Taylor--Lagrange theorem along each ray, the compactness bound for
+the $k$-th Fr\'echet derivative on the closed ball, and the
+multilinear operator-norm estimate, giving $C = M/k!$. The corollary
+\code{higherLaplaceDomainFamily\_ofContDiff} discharges the
+package-derivation wrapper's remaining hypothesis, and with it the
+inverse Theorem 3.1 chain is hypothesis-complete from the note's
+prose data: smoothness, a vanishing gradient, and the
+diagonal-matched positive-definite matrix produce the certified
+family; analyticity at the minima and one compactly-supported
+physical data premise produce the location and the germ. The scoping
+consult rated this tide high-risk and API-sensitive; it compiled
+with zero fix rounds, because each flagged friction point had an
+exact Mathlib counterpart.
+\end{abstract}
+
+\section{Setting}
+
+The package-derivation wrapper assumed its Taylor bounds; the
+consult's Rank-2 plan --- a distinct engineering task, 70--160
+lines, ``High/API-sensitive'' --- was to derive them from
+smoothness. This tide executes that plan unchanged.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{ray\_iteratedDeriv\_at} adapts the corpus proof: the ray is
+the composition of $L$ with \code{toSpanSingleton}, the iterated
+Fr\'echet derivative of a composition with a continuous linear map
+evaluates by \code{compContinuousLinearMap}, and the singleton map
+sends $1$ to $x$ --- nothing in that chain cares that the base point
+is the origin. The main theorem fixes $y$ in the ball, restricts $L$
+to the ray $g(s) = L(s \cdot y)$, and runs Mathlib's
+\code{taylor\_mean\_remainder\_lagrange} on $[0,1]$ at order
+$k - 1$. The two bridging concerns the consult flagged dissolved on
+contact: \code{iteratedDerivWithin\_eq\_iteratedDeriv} takes a
+\code{ContDiffAt} hypothesis and holds at the interval's endpoint,
+and \code{taylor\_within\_apply} is already the range-sum with
+inverse-factorial coefficients, so the identification with
+\code{taylorHomogeneousTerm} is the ray identity at $0$ plus
+\code{ring}. The mean-point value is bounded by the closed-ball
+supremum of the $k$-th derivative norm --- compactness plus
+\code{ContDiff.continuous\_iteratedFDeriv} --- through the
+multilinear operator norm with a constant product.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+It did not: zero fix rounds on a tide the deliberation rated
+high-risk. The credit belongs half to the consult (whose friction
+list dictated exactly which bridging lemmas to look up before
+writing) and half to the accumulated gotcha catalogue (the final
+division monotonicity went to \code{gcongr} on the first attempt
+rather than a named-lemma hunt).
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup:
+\begin{itemize}
+\item \code{taylor\_mean\_remainder\_lagrange} and
+  \code{taylor\_within\_apply};
+\item \code{iteratedDerivWithin\_eq\_iteratedDeriv};
+\item the continuity and differentiability of iterated derivatives
+  from \code{ContDiff};
+\item \code{IsCompact.exists\_bound\_of\_continuousOn};
+\item the multilinear operator-norm bound (\code{le\_opNorm}) and
+  the composition rule
+  \code{iteratedFDeriv\_comp\_right}.
+\end{itemize}
+New mathematics: none. The tide is the textbook multivariate Taylor
+estimate, assembled from one-dimensional parts.
+
+\section{What the next tide inherits}
+
+Nothing mandatory --- the inverse-direction programme's Lean side is
+closed. Optional niceties recorded in the tide log: a single
+end-to-end convenience statement composing the family constructor
+with the located analytic capstone, the note-side markers for the
+new theorems (a gated TeX action), and the two review batches of
+recorded proof refactors for a simplification pass.
+\end{document}
