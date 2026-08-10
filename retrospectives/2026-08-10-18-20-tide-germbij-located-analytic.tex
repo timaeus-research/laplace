@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the located analytic capstone\\
+\large grand composition, part 4}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The grand-composition arc closes.
+\code{located\_analytic\_germ\_recovery\_of\_ccData} states the
+note's inverse Theorem 3.1 and Corollary 3.2 for the \emph{actual}
+losses: $\Lambda_1, \Lambda_2$ analytic at their unknown minima
+$p_1, p_2$, certified package families for the centred versions, and
+one physical data premise --- superPoly agreement of the raw losses'
+localized Gibbs moment families over smooth compactly supported tests
+in a common region containing balls around both minima. The
+conclusion: $p_1 = p_2$, and the germs agree modulo the additive
+constant on a neighborhood of the common minimum. No symmetry
+hypotheses remain --- analyticity discharges them through the
+$\omega$-regularity theorem of part 1 --- and the data premise
+mentions no translated losses: the identity
+$\Lambda(p + (w - p)) = \Lambda(w)$ collapses part 3's form to the
+raw one. What still separates this from the note's prose is exactly
+one item, already on the perimeter review's list: deriving the
+package family itself from a bare smooth-nondegenerate-minimum
+setup.
+\end{abstract}
+
+\section{Setting}
+
+Parts 1--3 built the translation bridge, the located cutoff removal,
+and the located jet headline. The capstone is transport: hypotheses
+and conclusions restated at the actual minimum, with the symmetry
+side conditions eliminated.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+Centred analyticity comes from composing with the affine shift (the
+idiom of the singular arc); the symmetry hypotheses of the located
+headline are supplied pointwise by
+\code{AnalyticAt.iteratedFDeriv\_isSymm}; the data premise converts
+to part 3's shape by rewriting the two pointwise identities
+$\Lambda_i(p_i + (w - p_i)) = \Lambda_i(w)$ under the moment
+functional; and after the headline yields $p_1 = p_2$ and the centred
+jets, \code{analytic\_germ\_eq\_of\_jet\_eq} gives the centred germ,
+which the continuous map $w \mapsto w - p_1$ transports to
+$\mathcal{N}(p_1)$.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+One structural miss: a \code{have} whose application leaves a
+trailing explicit argument as \code{?\_} cannot be discharged by a
+following anonymous \code{case} block --- the elaborator inserts the
+metavariable eagerly and \code{case} finds no goal. Passing the
+converted premise as an inline lambda (with a
+\code{by beta\_reduce; rw} block for the per-point congruence)
+resolved it immediately.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: nothing new --- every ingredient was built earlier in the
+arc or already merged. New mathematics: none. The capstone is pure
+composition, which is the point: the mathematical content was paid
+for in parts 1--3 and in the perimeter files, and the note-level
+statement assembles from them without residue.
+
+\section{What the next tide inherits}
+
+The package-derivation wrapper --- constructing
+$\forall k,\, 2 < k \to$ \code{HigherLaplaceDomain} from a bare
+smooth-nondegenerate-minimum setup (fixed-ball Taylor remainder
+bounds from continuity of iterated derivatives on a compact ball) ---
+the one remaining item between the formalized corpus and the note's
+prose hypotheses. On the note side, the located theorems deserve
+markers at the answer-(i) enumerate and Theorem 3.1 (a gated TeX
+action, to be surfaced for approval).
+\end{document}
