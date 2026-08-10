@@ -93,3 +93,17 @@ New file `Laplace/Multi/HessianBridge.lean`:
   `tendsto_normalized_first_moment` via `isLittleO_iff_tendsto'`),
 - `posteriorMoment_sub_isLittleO` (superPoly transport at m = 0),
 - `hessian_recovery_of_superPoly_moments` (headline).
+
+## Result
+
+Committed on tide/germbij-hessian-bridge (1882c1f):
+`Laplace/Multi/HessianBridge.lean` — `covariance_eq_posteriorMoment`,
+`posteriorMoment_coord_isLittleO`, `posteriorMoment_sub_isLittleO`,
+`posteriorMoment_coord_mul_isLittleO`, and the headline
+`hessian_recovery_of_superPoly_moments`. Zero sorries, compiled on the
+first build. Surprise: none — the m = 0 transport + per-package o(q)
+first moments made this pure plumbing, as deliberated.
+
+## Retrospective
+
+Retrospective: laplace/retrospectives/2026-08-10-02-25-tide-germbij-hessian-bridge.tex
