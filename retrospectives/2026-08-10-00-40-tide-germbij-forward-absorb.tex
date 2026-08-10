@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the quadratic bridge and Gaussian absorption\\
+\large the domain layer of the numerator stage}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The forward-expansion domain ties the matrix $H$ to the loss only
+through the quadratic Peano condition, and its exponent split speaks
+of diagonal Taylor terms, so the identification
+$T_2 = \tfrac12\,\mathrm{qform}\,H$ has to be \emph{proven}, not
+assumed. The proof is a pleasing self-consumption: compose both Peano
+statements along the ray $t \mapsto t \cdot z$, view each as an
+order-2 asymptotic polynomial for $t \mapsto L(tz)$, and apply the
+programme's own stage-1 coefficient uniqueness. At index one this
+yields the vanishing of the degree-one diagonal term --- the
+critical-point condition that the exponent split takes as a
+hypothesis, now discharged for every domain --- and at index two the
+bridge itself. With the bridge in hand, the domain's coercivity
+constant gives the named lower bound
+$\tfrac\lambda2\|z\|^2 \le T_2(z)$, and the mesoscopic scale
+arithmetic ($q^s\|z\|^{s+2} = \|z\|^2 (q\|z\|)^s \le \|z\|^2\sqrt q$)
+bounds every correction by $\varepsilon\|z\|^2$ on the window,
+absorbing the total absolute correction into a Gaussian at a quarter
+of the rate: on the window, eventually,
+\[
+  e^{-T_2(z)}\, e^{\sum_s q^s |V_s(z)| \;+\; |q^N \rho_q(z)|}
+  \;\le\; e^{-(\lambda/4)\|z\|^2}.
+\]
+\end{abstract}
+
+\section{Setting}
+
+Stage 5c-pre of the forward-expansion programme: items 1--3 of the
+archived architecture consult's implementation order, the layer where
+domain-specific uniformity concentrates before the single
+$q$-uniform majorant. The consult specifically recommended the
+sum-of-absolute-values form for the correction bound (the scalar
+estimates use $e^{|A| + |\delta|}$, so bounding the sum of absolute
+values avoids cancellation questions), and bridging $T_2$ to the
+quadratic form \emph{first} so the integration layer never rewrites
+between the two languages.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+The ray expansions \code{rayExpansion\_taylor} and
+\code{rayExpansion\_quad}: the loss along a ray is an order-2
+asymptotic polynomial with coefficients the diagonal Taylor terms
+(peel degrees $\ge 3$ as $o(t^2)$, the Peano remainder transported
+along the ray) or the quadratic-form coefficients (the domain's
+quadratic Peano along the same ray). Uniqueness
+(\code{isAsymptoticExpansionTo\_coeff\_eq}, stage A1) gives
+\code{taylorHomogeneousTerm\_one\_eq\_zero} and
+\code{taylorHomogeneousTerm\_two\_eq\_qform}; \code{t2\_lower} then
+carries the domain's $\lambda$. Window control:
+\code{eventually\_abs\_scaledRem\_le} extracts the little-$o$
+epsilon-delta from \code{taylorPeano} and routes window points into
+the $\delta$-ball via the stage-2 lemma;
+\code{eventually\_abs\_scaledPerturbation\_le\_quadratic} converts
+order $N{+}2$ to quadratic through $(q\|z\|)^N \le 1$;
+\code{eventually\_exponentCorrection\_le\_quadratic} runs the
+$\sqrt q$ scale arithmetic against the operator-norm bounds; and
+\code{gaussian\_absorb} combines them at $\varepsilon = \lambda/8$
+each. The reusable helper
+\code{integrable\_one\_add\_norm\_pow\_mul\_gaussian} closes the file
+(binomial expansion against the seabed's polynomial-Gaussian
+integrability).
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+Barely. \code{Real.sqrt\_le\_one} is an iff, not an implication;
+$\lambda$ cannot appear inside an identifier (\code{h}$\lambda$ fails
+to parse --- it is the anonymous-function token); and an unused
+domain binder tripped the zero-warnings gate, fixed by the underscore
+convention with dot-notation callers unaffected.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{Metric.eventually\_nhds\_iff},
+\code{Real.mul\_self\_sqrt}, \code{Real.sqrt\_le\_one},
+\code{pow\_le\_one}$_0$, \code{pow\_le\_pow\_left}$_0$,
+\code{add\_pow}, \code{integrable\_finset\_sum},
+\code{Asymptotics.IsLittleO.sum}. New: no new mathematics; the
+structural point is the self-consumption --- the programme's stage-1
+uniqueness closing the programme's own central identification ---
+and the observation that the critical-point condition is derivable
+rather than hypothesised.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Stage 5c proper: define the rescaled numerator, prove the normalized
+$q$-uniform Gaussian majorant on the window (this tide's absorption
+$\times$ 5b's three scalar bounds $\times$ 5a's coefficient growth),
+apply the filter-indexed dominated convergence theorem with the
+window indicator folded into the integrand, remove the two outer
+tails with the stage-2 calculus, and package
+\code{numerator\_hasExpansion}. The exponent split's hypothesis
+should now be discharged with
+\code{taylorHomogeneousTerm\_one\_eq\_zero} at every call site.
+\end{document}
