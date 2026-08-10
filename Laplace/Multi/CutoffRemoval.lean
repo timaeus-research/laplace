@@ -21,9 +21,19 @@ smaller than every power (`posteriorMoment_cutoff_tail`, via
 agreement of moment families over smooth compactly supported tests in
 the common localization region yields superPoly agreement for every
 smooth polynomial-growth observable (`superPoly_moment_of_ccData`),
-and the base-case-free recovery headlines compose to their
-note-literal forms `smooth_positive_jet_recovery_of_ccData` and
-`analytic_germ_recovery_of_ccData`.
+and the base-case-free recovery headlines compose to the
+compactly-supported-data forms `smooth_positive_jet_recovery_of_ccData`
+and `analytic_germ_recovery_of_ccData`.
+
+These are the CENTRED, PACKAGE-LEVEL forms of the note's inverse
+direction (2026-08-10 perimeter review): both losses are packaged
+around the common minimum `0` (location recovery is separate,
+`location_eq_of_superPoly_first_moments`); the certified package
+family `∀ k, 2 < k → HigherLaplaceDomain k L H` and the `IsSymm`
+hypotheses are assumed rather than derived from the note's
+smooth-nondegenerate setup; and the data premise quantifies per
+package order `k` over tests supported in that order's pair of
+localization regions, rather than over one fixed `U`.
 -/
 
 open Real MeasureTheory Filter Topology Asymptotics
@@ -443,11 +453,14 @@ theorem hasPolynomialGrowth_coord_mul (i j : Fin d) :
 
 open HigherLaplaceDomain in
 /-- **Positive-order jet recovery from compactly supported test data**
-(germbij Theorem 3.1, inverse direction, note-literal premise): two
-localized nondegenerate losses whose moment families agree beyond all
-orders on every smooth compactly supported test in the common
+(germbij Theorem 3.1, inverse direction, centred package-level form):
+two localized nondegenerate losses whose moment families agree beyond
+all orders on every smooth compactly supported test in the common
 localization region have equal derivative tensors at every positive
-order. -/
+order. Centred at the shared minimum `0`; the package family and the
+symmetry of the derivative tensors are hypotheses (see the module
+docstring for the remaining distance to the note's literal
+statement). -/
 theorem smooth_positive_jet_recovery_of_ccData
     {L₁ L₂ : EuclidD d → ℝ} {H₁ H₂ : Matrix (Fin d) (Fin d) ℝ}
     (A : ∀ k, 2 < k → HigherLaplaceDomain k L₁ H₁)
@@ -472,10 +485,11 @@ theorem smooth_positive_jet_recovery_of_ccData
       (contDiff_monomialTest m) (monomialTest_hasPolynomialGrowth m)
 
 /-- **The analytic germ corollary from compactly supported test data**
-(germbij Corollary 3.2, inverse direction, note-literal premise): for
-losses analytic at the minimum, moment agreement beyond all orders on
-smooth compactly supported tests determines the germ modulo the
-additive constant. -/
+(germbij Corollary 3.2, inverse direction, centred package-level
+form): for losses analytic at the minimum, moment agreement beyond
+all orders on smooth compactly supported tests determines the germ
+modulo the additive constant. Same caveats as
+`smooth_positive_jet_recovery_of_ccData`. -/
 theorem analytic_germ_recovery_of_ccData
     {L₁ L₂ : EuclidD d → ℝ} {H₁ H₂ : Matrix (Fin d) (Fin d) ℝ}
     (A : ∀ k, 2 < k → HigherLaplaceDomain k L₁ H₁)
