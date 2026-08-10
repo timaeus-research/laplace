@@ -36,3 +36,35 @@ Completes the numerator stage. `Laplace/Multi/NumeratorTails.lean`:
 Covered at the scalar level in stage 4 (the integrated coefficients
 are Gaussian integrals of the checked scalar coefficients; the
 statement is existence-form per the programme's API).
+
+## Result
+
+`Laplace/Multi/NumeratorTails.lean` (~560 lines), all gates green.
+**The numerator stage (stage 5) of the forward programme is
+complete.**
+
+- `abs_integrand_eq`, `observable_integrand_tail_isLittleO` (two-term
+  bound, no binomial needed), `coeff_polynomial_tail_isLittleO`
+  (collapsed polynomial-Gaussian bound + binomial split),
+  `integrable_coeff_polynomial`.
+- `numerator_hasExpansion`: for continuous observables of polynomial
+  growth, `∫ z, D.integrand P q z` is an order-N asymptotic
+  polynomial at 0⁺ with coefficients `∫ P·e^{-T₂}·P_j` — assembled
+  from the window DCT (via isLittleO_iff_tendsto'), the two tails,
+  and the eventual decomposition (integral_add_compl, the U-indicator
+  collapse on the window through delta, the coefficient-sum/integral
+  exchange), closed by linarith over the four subidentities.
+
+Surprises: integral_congr_ae hands per-point goals as applied
+lambdas — `beta_reduce` before any rw (three sites); the style linter
+rejects goal-changing `show` (use `change`).
+
+### Suggested follow-ups
+
+- Stage 6 (division): the partition function is the P = 1 instance;
+  its constant coefficient a_0 = ∫ e^{-T₂} > 0; a generic finite
+  asymptotic-division lemma gives the MOMENT expansion
+  (rescaledMoment = numerator/denominator).
+- Stage 7 (public theorems): existence of the moment expansion for
+  monomialTest observables + the jet-comparison corollary via stage
+  A1 uniqueness, closing the germbij forward direction.

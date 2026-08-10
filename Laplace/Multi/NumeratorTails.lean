@@ -296,6 +296,253 @@ theorem coeff_polynomial_tail_isLittleO
     abs_of_nonneg hB0, one_mul]
   exact le_trans hmono (le_of_eq hsplit)
 
+
+/-- Integrability of the coefficient polynomial against the Gaussian
+core. -/
+theorem integrable_coeff_polynomial (D : ForwardExpansionDomain N L H)
+    {P : EuclidD d → ℝ} (hP_cont : Continuous P)
+    (hP_growth : HasPolynomialGrowth P) (q : ℝ) :
+    Integrable (fun z : EuclidD d ↦
+      P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+        ∑ j ∈ Finset.range (N + 1),
+          correctionCoeffFn L N j z * q ^ j) := by
+  have h1 : Integrable (fun z : EuclidD d ↦
+      ∑ j ∈ Finset.range (N + 1),
+        P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+          correctionCoeffFn L N j z * q ^ j) :=
+    integrable_finset_sum _ fun j _ ↦
+      (D.integrable_coeff_integrand hP_cont hP_growth j).mul_const _
+  refine h1.congr (Filter.Eventually.of_forall fun z ↦ ?_)
+  change ∑ j ∈ Finset.range (N + 1),
+      P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+        correctionCoeffFn L N j z * q ^ j =
+    P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+      ∑ j ∈ Finset.range (N + 1), correctionCoeffFn L N j z * q ^ j
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun j _ ↦ ?_
+  ring
+
+/-- **The numerator expansion**: for continuous observables of
+polynomial growth, the rescaled numerator is an order-`N` asymptotic
+polynomial at `0⁺` with coefficients `∫ P·e^{-T₂}·P_j`. -/
+theorem numerator_hasExpansion (D : ForwardExpansionDomain N L H)
+    {P : EuclidD d → ℝ} (hP_cont : Continuous P)
+    (hP_growth : HasPolynomialGrowth P) :
+    Laplace.IsAsymptoticExpansionTo
+      (fun q : ℝ ↦ ∫ z : EuclidD d,
+        D.toLocalLaplaceDomain.integrand P q z)
+      (D.numeratorCoeff P) N := by
+  unfold Laplace.IsAsymptoticExpansionTo
+  -- the window piece is o(q^N) via the DCT
+  have hW : (fun q : ℝ ↦ ∫ z : EuclidD d,
+      (mesoscopicSet d q).indicator (fun z ↦
+        P z * (Real.exp (-((L (q • z) - L 0) / q ^ 2)) -
+          Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j)) z)
+      =o[𝓝[>] (0 : ℝ)] fun q : ℝ ↦ q ^ N := by
+    rw [Asymptotics.isLittleO_iff_tendsto']
+    · refine (D.tendsto_integral_window_remainder hP_cont
+        hP_growth).congr' ?_
+      filter_upwards [self_mem_nhdsWithin] with q hq0'
+      have hq0 : (0 : ℝ) < q := hq0'
+      rw [eq_comm, ← MeasureTheory.integral_div]
+      refine MeasureTheory.integral_congr_ae
+        (Filter.Eventually.of_forall fun z ↦ ?_)
+      beta_reduce
+      by_cases hm : z ∈ mesoscopicSet d q
+      · rw [Set.indicator_of_mem hm, Set.indicator_of_mem hm]
+      · rw [Set.indicator_of_notMem hm, Set.indicator_of_notMem hm,
+          zero_div]
+    · filter_upwards [self_mem_nhdsWithin] with q hq0' hcontra
+      exact absurd hcontra (pow_ne_zero N (ne_of_gt hq0'))
+  -- the true integrand's tail is o(q^N)
+  have hT3 : (fun q : ℝ ↦ ∫ z in (mesoscopicSet d q)ᶜ,
+      D.toLocalLaplaceDomain.integrand P q z)
+      =o[𝓝[>] (0 : ℝ)] fun q : ℝ ↦ q ^ N := by
+    refine (Asymptotics.isBigO_iff.mpr ⟨1, ?_⟩).trans_isLittleO
+      (D.observable_integrand_tail_isLittleO hP_cont hP_growth N)
+    refine Filter.Eventually.of_forall fun q ↦ ?_
+    rw [one_mul, Real.norm_eq_abs, Real.norm_eq_abs]
+    have h1 : |∫ z in (mesoscopicSet d q)ᶜ,
+        D.toLocalLaplaceDomain.integrand P q z| ≤
+        ∫ z in (mesoscopicSet d q)ᶜ,
+          |D.toLocalLaplaceDomain.integrand P q z| := by
+      have := norm_integral_le_integral_norm
+        (μ := volume.restrict (mesoscopicSet d q)ᶜ)
+        (f := fun z : EuclidD d ↦
+          D.toLocalLaplaceDomain.integrand P q z)
+      simpa [Real.norm_eq_abs] using this
+    have h2 : 0 ≤ ∫ z in (mesoscopicSet d q)ᶜ,
+        |D.toLocalLaplaceDomain.integrand P q z| :=
+      setIntegral_nonneg (measurableSet_mesoscopicSet q).compl
+        fun z _ ↦ abs_nonneg _
+    rw [abs_of_nonneg h2]
+    exact h1
+  -- the coefficient polynomial's tail is o(q^N)
+  have hT2 : (fun q : ℝ ↦ ∫ z in (mesoscopicSet d q)ᶜ,
+      P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+        ∑ j ∈ Finset.range (N + 1),
+          correctionCoeffFn L N j z * q ^ j)
+      =o[𝓝[>] (0 : ℝ)] fun q : ℝ ↦ q ^ N := by
+    refine (Asymptotics.isBigO_iff.mpr ⟨1, ?_⟩).trans_isLittleO
+      (D.coeff_polynomial_tail_isLittleO hP_cont hP_growth N)
+    refine Filter.Eventually.of_forall fun q ↦ ?_
+    rw [one_mul, Real.norm_eq_abs, Real.norm_eq_abs]
+    have h1 : |∫ z in (mesoscopicSet d q)ᶜ,
+        P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+          ∑ j ∈ Finset.range (N + 1),
+            correctionCoeffFn L N j z * q ^ j| ≤
+        ∫ z in (mesoscopicSet d q)ᶜ,
+          |P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j| := by
+      have := norm_integral_le_integral_norm
+        (μ := volume.restrict (mesoscopicSet d q)ᶜ)
+        (f := fun z : EuclidD d ↦
+          P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j)
+      simpa [Real.norm_eq_abs] using this
+    have h2 : 0 ≤ ∫ z in (mesoscopicSet d q)ᶜ,
+        |P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+          ∑ j ∈ Finset.range (N + 1),
+            correctionCoeffFn L N j z * q ^ j| :=
+      setIntegral_nonneg (measurableSet_mesoscopicSet q).compl
+        fun z _ ↦ abs_nonneg _
+    rw [abs_of_nonneg h2]
+    exact h1
+  -- the eventual decomposition
+  have hEq : (fun q : ℝ ↦
+      (∫ z : EuclidD d, D.toLocalLaplaceDomain.integrand P q z) -
+        ∑ j ∈ Finset.range (N + 1), D.numeratorCoeff P j * q ^ j)
+      =ᶠ[𝓝[>] (0 : ℝ)]
+      fun q : ℝ ↦
+        (∫ z : EuclidD d, (mesoscopicSet d q).indicator (fun z ↦
+          P z * (Real.exp (-((L (q • z) - L 0) / q ^ 2)) -
+            Real.exp (-taylorHomogeneousTerm 2 L z) *
+              ∑ j ∈ Finset.range (N + 1),
+                correctionCoeffFn L N j z * q ^ j)) z) +
+        ((∫ z in (mesoscopicSet d q)ᶜ,
+          D.toLocalLaplaceDomain.integrand P q z) -
+         ∫ z in (mesoscopicSet d q)ᶜ,
+          P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j) := by
+    filter_upwards [smul_mem_ball_of_mesoscopic D.delta_pos,
+      self_mem_nhdsWithin] with q hball hq0'
+    have hq0 : (0 : ℝ) < q := hq0'
+    have hIint : Integrable (fun z : EuclidD d ↦
+        D.toLocalLaplaceDomain.integrand P q z) :=
+      D.toLocalLaplaceDomain.integrable_integrand hP_cont
+        hP_growth hq0
+    have hIsum := D.integrable_coeff_polynomial hP_cont hP_growth q
+    have hEqOn : Set.EqOn
+        (fun z : EuclidD d ↦
+          D.toLocalLaplaceDomain.integrand P q z)
+        (fun z : EuclidD d ↦
+          P z * Real.exp (-((L (q • z) - L 0) / q ^ 2)))
+        (mesoscopicSet d q) := by
+      intro z hz
+      have hU : q • z ∈ D.U := by
+        refine D.ball_subset_U ?_
+        rw [Metric.mem_ball, dist_zero_right]
+        exact hball z hz
+      change D.toLocalLaplaceDomain.integrand P q z =
+        P z * Real.exp (-((L (q • z) - L 0) / q ^ 2))
+      unfold LocalLaplaceDomain.integrand
+      rw [Set.indicator_of_mem
+        (show z ∈ {x : EuclidD d | q • x ∈ D.U} from hU)]
+    -- (1) split the numerator
+    have h1 : (∫ z : EuclidD d,
+        D.toLocalLaplaceDomain.integrand P q z) =
+        (∫ z in mesoscopicSet d q,
+          D.toLocalLaplaceDomain.integrand P q z) +
+        ∫ z in (mesoscopicSet d q)ᶜ,
+          D.toLocalLaplaceDomain.integrand P q z :=
+      (MeasureTheory.integral_add_compl
+        (measurableSet_mesoscopicSet q) hIint).symm
+    -- (2) collapse the U-indicator on the window
+    have h2 : (∫ z in mesoscopicSet d q,
+        D.toLocalLaplaceDomain.integrand P q z) =
+        ∫ z in mesoscopicSet d q,
+          P z * Real.exp (-((L (q • z) - L 0) / q ^ 2)) :=
+      MeasureTheory.setIntegral_congr_fun
+        (measurableSet_mesoscopicSet q) hEqOn
+    -- (3) the coefficient sum as a split integral
+    have h3 : ∑ j ∈ Finset.range (N + 1),
+        D.numeratorCoeff P j * q ^ j =
+        (∫ z in mesoscopicSet d q,
+          P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j) +
+        ∫ z in (mesoscopicSet d q)ᶜ,
+          P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j := by
+      rw [MeasureTheory.integral_add_compl
+        (measurableSet_mesoscopicSet q) hIsum]
+      calc ∑ j ∈ Finset.range (N + 1),
+            D.numeratorCoeff P j * q ^ j
+          = ∑ j ∈ Finset.range (N + 1),
+            ∫ z : EuclidD d, q ^ j *
+              (P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+                correctionCoeffFn L N j z) := by
+            refine Finset.sum_congr rfl fun j _ ↦ ?_
+            rw [MeasureTheory.integral_const_mul]
+            unfold ForwardExpansionDomain.numeratorCoeff
+            ring
+        _ = ∫ z : EuclidD d, ∑ j ∈ Finset.range (N + 1),
+            q ^ j * (P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+              correctionCoeffFn L N j z) :=
+            (MeasureTheory.integral_finset_sum _ fun j _ ↦
+              ((D.integrable_coeff_integrand hP_cont hP_growth
+                j).const_mul _)).symm
+        _ = ∫ z : EuclidD d,
+            P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+              ∑ j ∈ Finset.range (N + 1),
+                correctionCoeffFn L N j z * q ^ j := by
+            refine MeasureTheory.integral_congr_ae
+              (Filter.Eventually.of_forall fun z ↦ ?_)
+            beta_reduce
+            rw [Finset.mul_sum]
+            refine Finset.sum_congr rfl fun j _ ↦ ?_
+            ring
+    -- (4) the window piece as a difference of set integrals
+    have hIOn1 : IntegrableOn (fun z : EuclidD d ↦
+        P z * Real.exp (-((L (q • z) - L 0) / q ^ 2)))
+        (mesoscopicSet d q) :=
+      (hIint.integrableOn).congr_fun hEqOn
+        (measurableSet_mesoscopicSet q)
+    have h4 : (∫ z : EuclidD d, (mesoscopicSet d q).indicator (fun z ↦
+        P z * (Real.exp (-((L (q • z) - L 0) / q ^ 2)) -
+          Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j)) z) =
+        (∫ z in mesoscopicSet d q,
+          P z * Real.exp (-((L (q • z) - L 0) / q ^ 2))) -
+        ∫ z in mesoscopicSet d q,
+          P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j := by
+      rw [MeasureTheory.integral_indicator
+        (measurableSet_mesoscopicSet q)]
+      rw [← MeasureTheory.integral_sub hIOn1 hIsum.integrableOn]
+      refine MeasureTheory.setIntegral_congr_fun
+        (measurableSet_mesoscopicSet q) fun z _ ↦ ?_
+      change P z * (Real.exp (-((L (q • z) - L 0) / q ^ 2)) -
+          Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j) =
+        P z * Real.exp (-((L (q • z) - L 0) / q ^ 2)) -
+          P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
+            ∑ j ∈ Finset.range (N + 1),
+              correctionCoeffFn L N j z * q ^ j
+      ring
+    linarith [h1, h2, h3, h4]
+  refine ((hW.add (hT3.sub hT2)).congr' hEq.symm
+    (Filter.EventuallyEq.refl _ _))
+
 end ForwardExpansionDomain
 
 end Laplace.Multi
