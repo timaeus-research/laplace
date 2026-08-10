@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: quasi-homogeneous moment ratios\\
+\large piece (i) of the semi-quasi-homogeneous debt, without
+distributions}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The germbij note recovers the moments $M_\alpha$ of a
+quasi-homogeneous model from expansion coefficients by a
+linear-independence argument over partial derivatives of delta
+distributions, with care at exponent collisions. The scoping consult
+found the argument dissolves under a change of observable: testing
+with the monomial $x^\alpha$ itself, anisotropic scaling gives
+\[
+  t^{\langle q, \alpha\rangle}\,
+  \big\langle x^\alpha \big\rangle_t
+  \;=\; \frac{M_\alpha}{M_0}
+  \qquad\text{exactly, for every } t > 0,
+\]
+and exponent collisions between different multi-indices never enter
+a single observable's coefficient --- so no distribution theory is
+needed, and the identity is exact rather than asymptotic. This tide
+formalises the identity for every multi-index (including odd ones,
+extending the even-coordinate recovery perimeter) and the comparison
+form: two quasi-homogeneous models with the same weights whose
+normalized monomial moments agree at a single temperature have equal
+moment ratios.
+\end{abstract}
+
+\section{Setting}
+
+After the forward-expansion programme closed the nondegenerate case
+of Theorem~3.1 in both directions, the remaining debt is constructive
+class (c). The scoping consult ranked its three pieces: the
+$M_\alpha$ recovery (this tide, smallest delta), the one-grade
+weighted comparison (medium), and the coarea/Gelfand--Leray layer
+(blocked on Mathlib geometric measure theory). It also fixed the
+sensible endpoint --- principal-model moment ratios plus conditional
+grade recovery --- short of the full analytic weighted induction,
+which is not tide-shaped. A parallel session holds the inverse-half
+perimeter; the ledger race-check confirmed no overlap.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{mvMonomial} with measurability; \code{rpow\_sum\_of\_pos};
+\code{mvMonomial\_qhDilation} (monomials are homogeneous along the
+quasi-homogeneous dilation with weight the pairing
+$\langle q, \alpha\rangle$);
+\code{qh\_monomial\_moment\_law} and
+\code{qh\_monomial\_normalized\_law} (exact, instantiating the
+abstract \code{ScalesMeasure} laws at
+\code{scalesMeasure\_qhDilation\_volume});
+\code{qh\_momentRatio\_recovery} (the headline identity); and
+\code{momentRatios\_eq\_of\_normalized\_moments\_eq} (the comparison
+form at a single temperature). The numerical check ran first:
+$P = x^4 + y^6$ with weights $(3,2)$, $\alpha = (2,2)$ --- the
+rescaled normalized moment equals $M_\alpha/M_0 = 0.107624$ exactly
+at $t \in \{10, 100, 1000\}$, confirming the identity (not merely
+limit) form.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+It did not: one build round for four unused binders. The abstract
+scaling laws from the degenerate-perimeter arc were built for exactly
+this instantiation.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{Finset.measurable\_prod}, \code{Real.rpow\_natCast},
+\code{Real.rpow\_mul}, \code{Real.rpow\_add},
+\code{Finset.prod\_mul\_distrib}. New: the observation is the
+consult's --- the right observable makes the collision problem
+disappear; the Lean is instantiation.
+
+\section{What the next tide inherits}
+
+The consult's ``best reusable recovery target'': the one-grade
+weighted comparison
+(\code{tendsto\_normalizedIntegral\_difference\_div\_pow},
+covariance injectivity for polynomial corrections against a positive
+full-support density, and \code{weightedGrade\_eq\_of\_moment\_rates}
+for finite polynomial corrections), whose staged plan is archived in
+the tide log. Per the consult, that theorem is the sensible endpoint
+for class (c): the coarea layer stays open until Mathlib's geometric
+measure theory thickens, and the full weighted-analytic induction is
+a programme, not a tide.
+\end{document}
