@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the package-derivation wrapper\\
+\large grand composition, coda}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The located recovery headlines consume certified package families;
+the perimeter review named their derivation from a bare setup as the
+one remaining distance to the note's prose hypotheses. This tide
+closes most of it. From global smoothness, a vanishing gradient, a
+positive-definite matrix matching the Hessian form on diagonals, and
+per-order fixed-ball Taylor remainder bounds, the family constructor
+assembles $\forall k,\, 2 < k \to$ \code{HigherLaplaceDomain}~$k$.
+The corpus
+turned out to hold nearly everything already: the quadratic-Peano
+theorem and the coercive small-ball lower bound existed with exactly
+the right shapes, so the wrapper is radius bookkeeping --- one shrunk
+radius serves as localization region, delta, and Taylor radius at
+once, making both inclusion fields reflexive. The scoping consult's
+main call, adopted verbatim, was to \emph{assume} the Taylor bounds
+as a single hypothesis in this tide and leave their derivation from
+smoothness (the radial Lagrange route, the genuinely API-fragile
+part) to a successor.
+\end{abstract}
+
+\section{Setting}
+
+The deliberation asked where to cut. The corpus reconnaissance found
+the quadratic-package constructor
+(\code{LocalQuadraticApprox.ofContDiff}) and the coercive small-ball
+bound (\code{exists\_local\_lower\_bound}) already merged, which
+reduced the open question to the Taylor remainder field; the consult
+ranked
+``assume it, derive the rest'' first, the radial $C^k$ theorem
+second (a distinct engineering task), and an analyticity route third
+(blocked on a coefficient bridge). One structural constraint
+surfaced: the structures store \emph{global} \code{ContDiff} and
+\code{Measurable}, so pointwise regularity cannot fill them --- the
+wrapper takes $\forall k,\,$\code{ContDiff}~$\R$~$k$~$L$.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{LocalQuadraticApprox.ofBareSetup} transfers the corpus
+quadratic-Peano statement from \code{hessianMatrix L} to the given
+$H$ through the diagonal equality, and takes the coercivity constant
+from \code{qform\_coercive}. The family constructor then, per order:
+extracts the lower-bound radius $\delta$ and constant $c$ once,
+chooses the Taylor data $(r, C)$, sets $\rho := \min(\delta, r)$,
+and assembles the package over $U = B(0,\rho)$ --- measurability of
+the ball, reflexive inclusions, the rescaled coercivity restricted
+through $\rho \le \delta$, the Taylor bound restricted through
+$\rho \le r$, and measurability of $L$ from continuity.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+One fix round: the Peano transfer's per-point \code{congr'} goal is
+an applied lambda, and the diagonal rewrite dies on the beta redex
+--- the most-fired gotcha of this programme, now caught in a minute.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{measurableSet\_ball}, \code{lt\_min},
+\code{dist\_zero\_right}. New mathematics: none --- and pleasingly,
+almost no new Lean either; the tide's content is the discovery that
+the corpus had already paid for the hard parts.
+
+\section{What the next tide inherits}
+
+The radial $C^k$ Taylor-bound theorem, discharging \code{htaylor}
+from smoothness alone: generalize the corpus ray-derivative identity
+from the origin to interior points (its composition proof is already
+global in the point), run the one-dimensional Taylor--Lagrange
+theorem along rays, bound the $k$-th derivative on a compact closed
+ball, and identify the scalar Taylor coefficients with
+\code{taylorHomogeneousTerm}. The consult estimates 70--160 lines
+and flags the coefficient identification and \code{Icc} bookkeeping
+as the friction points.
+\end{document}
