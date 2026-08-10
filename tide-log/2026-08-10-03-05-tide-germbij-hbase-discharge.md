@@ -129,3 +129,23 @@ New file `Laplace/Multi/ShiftNormalization.lean`: `iteratedFDeriv_shift`,
 `iteratedFDeriv_one_eq_zero`, `iteratedFDeriv_two_diag`, headline
 `smooth_positive_jet_recovery_of_superPoly_moments`, and
 `analytic_germ_recovery_of_superPoly_moments_free`.
+
+## Result
+
+Committed on tide/germbij-hbase-discharge (206286d):
+`Laplace/Multi/ShiftNormalization.lean` — `iteratedFDeriv_shift`, the three
+package `shift` transports, `posteriorIntegral_shift`/`posteriorMoment_shift`/
+`posteriorMomentT_shift` (exact, every scale), `LocalQuadraticApprox.rayExpansion_quad`,
+`HigherLaplaceDomain.rayExpansion_taylor` (fixed-ball remainder),
+`taylorHomogeneousTerm_one_eq_zero`/`_two_eq_qform` (higher-domain level),
+`iteratedFDeriv_one_eq_zero`, `iteratedFDeriv_two_diag`, headline
+`smooth_positive_jet_recovery_of_superPoly_moments`, and
+`analytic_germ_recovery_of_superPoly_moments_free`. Zero sorries, three
+mechanical iterations (un-beta-reduced integrand after integral_const_mul →
+`show`; ContDiff grades are WithTop ℕ∞ not ℕ∞; per-index ContDiffAt needed
+range membership). Surprise: the j = 0 discharge has literally zero analytic
+content once moment shift-invariance is an identity.
+
+## Retrospective
+
+Retrospective: laplace/retrospectives/2026-08-10-03-05-tide-germbij-hbase-discharge.tex
