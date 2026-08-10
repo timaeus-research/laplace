@@ -393,6 +393,49 @@ characters in `\code{}` spans) pass the gate silently. Always use
 `/usr/bin/grep` in gate expressions, and treat an empty `[$N]` echo as
 a broken gate, not a pass.
 
+**`integral_congr_ae` (and `Integrable.congr`) hand pointwise goals as
+applied lambdas.** Every `rw` inside then dies on the beta redex
+(`(fun w ↦ ...) x = ...`). Run `beta_reduce` (or a goal-changing
+`change` — the style linter rejects `show` for this) before any
+rewrite in such blocks. Same for the per-point goals of
+`setIntegral_congr_fun`.
+
+**`positivity` cannot see nonnegativity/positivity of opaque
+structure fields or `choose`-extracted constants.** `D.lambda / 4 > 0`
+or `0 ≤ D.remConst` fail even when provable: derive a local fact once
+(`by linarith [D.lambda_pos]`, or an explicit `mul_nonneg` chain) and
+thread it.
+
+**Argument-orientation renames on this pin.** `add_le_add_right h c`
+produces `c + a ≤ c + b` (adds on the LEFT) — use
+`add_le_add h le_rfl` for the right-hand form. `div_eq_iff` wants the
+division on the LEFT of the equation (`eq_div_iff` for the right).
+`MeasureTheory.integral_div` rewrites `∫ f x / c` forward; the `←`
+pattern `(∫ f)/c` is often not present. `Finset.sum_div` pushes a sum
+through division numerator-first; convert per-term with
+`mul_div_assoc` afterwards. `tsum_le_tsum` is now dot-notation
+`Summable.tsum_le_tsum` on the LHS summability. `Real.sqrt_le_one` is
+an iff. `IsLittleO.neg` is `IsLittleO.neg_left`. `push_neg` is
+deprecated for `push Not`.
+
+**`set ... with` must run AFTER obtaining the hypotheses it should
+fold.** Instances pulled from an `∀ᶠ`-fact after the `set` contain
+fresh unfolded copies, and `linarith`/`field_simp` then see two
+different atoms. Order: `filter_upwards`/`have` the instances first,
+then `set` (which folds every existing occurrence).
+
+**`rw [Real.exp_add]` with identical instantiations rewrites all
+copies at once.** A three-factor exponential split needs two
+`exp_add` rewrites, not three; the third fails with
+"did not find an occurrence".
+
+**λ cannot appear inside an identifier** (`hλ` fails to parse — it is
+the anonymous-function token). Use `hlam`.
+
+**`rw [show (0:ℝ) = ∫ 0 ...]` rewrites the zero inside the filter
+`𝓝[>] (0:ℝ)` too.** State the DCT conclusion with `∫ 0` and transfer
+by `simpa`, never rewrite the goal's zero.
+
 **`Real.rpow_neg_one` does not exist.** Only the NNReal/ENNReal
 versions do. For a real base write
 `show t⁻¹ = t ^ (-1 : ℝ) from by rw [Real.rpow_neg ht.le, Real.rpow_one]`
