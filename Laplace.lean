@@ -80,6 +80,7 @@ import Laplace.Multi.SeparableAffinity
 import Laplace.Multi.AnisotropicScaling
 import Laplace.Multi.DiagonalVolume
 import Laplace.Multi.QhMomentRecovery
+import Laplace.Multi.GradeComparison
 import Laplace.Multi.Defs
 import Laplace.Multi.GaussianDomination
 import Laplace.Multi.QuadraticApprox
