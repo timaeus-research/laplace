@@ -57,6 +57,7 @@ import Laplace.Multi.MultilinearDiagonal
 import Laplace.Multi.RateCalculus
 import Laplace.Multi.LocalRateDCT
 import Laplace.Multi.PackageConstructor
+import Laplace.Multi.RadialTaylorBound
 import Laplace.Multi.PairwiseRate
 import Laplace.Multi.NormalizedRate
 import Laplace.Multi.DegreeRecovery
