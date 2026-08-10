@@ -1,0 +1,130 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: singular composition, part 2\\
+\large the point and locus theorems}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The composition arc opened by the adversarial audit of the note's
+unnormalized degenerate theorem reaches its structural summit: the
+point theorem \code{pencil\_families\_force\_germ\_eq\_at} --- if two
+continuous nonnegative potentials, analytic at a common zero $p$,
+produce Laplace families that agree beyond all orders against every
+continuous compactly supported observable, then their germs at $p$
+coincide --- and the locus theorem
+\code{pencil\_families\_force\_eq\_near}, which assembles the
+per-point conclusions into equality on an open neighborhood of the
+whole zero set $W_0$. Two structural surprises. First, the assembly
+needs no compactness: the union of the per-point neighborhoods is
+already the required open set, so the audit's ``compactness point
+selection'' step belongs to the note's contrapositive phrasing, not
+to the mathematics, and what was planned as a third tide collapsed
+into thirty lines of this one. Second, a genuine gap surfaced in the
+other direction: the note quantifies its decay premise over
+$\phi \in C_c^\infty$, while the Lean hypothesis takes all continuous
+compactly supported $\phi$ --- a strictly stronger premise, since the
+constructed observable uses the min/max bump, which is not smooth.
+The theorems here are correct and are the engine; the smooth-class
+upgrade is the one remaining step before the note's statement is
+subsumed verbatim.
+\end{abstract}
+
+\section{Setting}
+
+Part 1 (PR \#120) manufactured the endpoint's hypotheses: the
+quadratic upper bound at a nonnegative $C^2$ zero, the least nonzero
+diagonal of a nonvanishing analytic function with a normalized
+direction witness, and a continuous bump. This tide composes them
+with \code{analytic\_pencil\_difference\_not\_superpolynomial} into
+statements a reader of the note can recognize.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+The point theorem takes $L_1, L_2$ continuous, nonnegative, analytic
+at $p$, vanishing at $p$, and the family premise: for every
+continuous compactly supported $\phi$ and every $N$,
+$t \mapsto \int \phi\,(e^{-tL_1} - e^{-tL_2})$ is $o(t^{-N})$. It
+concludes $L_1 = L_2$ eventually in $\mathcal{N}(p)$. The proof runs
+the audit's own reduction list: translate by $p$ (analyticity of the
+shift composes; the power series of $L_2(p+\cdot) - L_1(p+\cdot)$ at
+$0$ has a ball); by contradiction a witness where the germs differ
+lands inside that ball (frequently-nonzero against a ball
+neighborhood, with the $\varepsilon$-radius extracted from the
+extended-real ball radius); the part-1 lemmas produce the least
+diagonal $m$, the direction $x_0$ with $\|x_0\| = 3/2$, the quadratic
+bound on $L_1(p+\cdot) + L_2(p+\cdot)$, and the bump; the endpoint
+contradiction fires for the shifted pencil; and the Lebesgue
+substitution \code{integral\_add\_left\_eq\_self} identifies the
+endpoint's integral with the family integral at the observable
+$(L_2 - L_1)\cdot\psi(\cdot - p)$. The locus theorem is then
+\code{eventually\_nhds\_iff} + \code{choose} + a bi-union: no
+compactness, no point selection.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+Nowhere seriously --- the file passed its first full check after
+three small repairs, all instances of catalogued classes.
+\code{AnalyticAt.comp} wants the outer analyticity restated at the
+shift's value at zero, and the \code{\(\triangleright\)} transport
+produces a doubly-shifted point (write a \code{simpa}-typed
+\code{have} instead). \code{integral\_add\_left\_eq\_self} takes the
+function first and the translation second, mirroring its
+multiplicative original; passing the point first silently elaborates
+with the group set to the index type and dies asking for
+\code{MeasurableSpace} on it. And the per-point goals of
+\code{IsLittleO.congr'} arrive as applied lambdas, so
+\code{beta\_reduce} precedes the rewrite --- the catalogued gotcha,
+fired again.
+
+\section{The observable-class gap}
+
+The honest finding of the tide. The note's theorem premise is
+``for every $\phi \in C_c^\infty$''; the Lean premise is ``for every
+continuous compactly supported $\phi$''. A stronger premise makes a
+weaker theorem: a reader holding the note's hypotheses cannot
+instantiate the Lean one, because the observable built here is only
+continuous. The repair is scoped in the tide log: extract an
+analyticity radius at $p$, switch to a Mathlib \code{ContDiffBump}
+whose closed support sits inside it, and glue
+$(L_2 - L_1)\cdot\psi(\cdot - p)$ to a globally smooth function
+pointwise (product of smooth functions on the analyticity ball,
+locally zero off the support). The endpoint needs only continuity, so
+only the observable-membership step changes. Until that lands, the
+note's footnote must keep saying the reduction is partially outside
+Lean.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{AnalyticAt.comp}, \code{AnalyticAt.contDiffAt},
+\code{integral\_add\_left\_eq\_self},
+\code{HasCompactSupport.comp\_homeomorph} with
+\code{Homeomorph.subRight}, \code{eventually\_nhds\_iff},
+\code{ENNReal.ofReal\_lt\_ofReal\_iff}. New mathematics: none --- and
+the dissolution of the compactness step is a simplification the note
+itself could adopt.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+The smooth observable-class upgrade
+(\code{pencil\_families\_force\_germ\_eq\_at\_smooth} and its locus
+form), whose premise matches the note verbatim; then the TeX
+footnote rewrite, the \code{thm:singular} markers for the composed
+theorems, and the pin bump.
+\end{document}
