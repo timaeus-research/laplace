@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{The semi-quasi-homogeneous arc: a synthesis\\
+(germbij class (c), three tides to the consult endpoint)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Three tides (PRs \#113, \#114, \#116) formalized the recoverable
+fragments of the germbij note's constructive class (c) --- the
+semi-quasi-homogeneous isolated minima of \S7's one-point anchoring
+--- and stopped at a boundary drawn in advance by a scoping consult.
+The results: for a quasi-homogeneous principal part $P$, the
+normalized monomial moments recover every moment ratio
+\emph{exactly}, $t^{\langle q,\alpha\rangle}\langle x^\alpha\rangle_t
+= M_\alpha/M_0$ for all $t > 0$ and every multi-index including odd
+ones (\code{QhMomentRecovery}); for two Gibbs families over any
+common reference density whose corrections differ at rate $h^\rho$
+toward $Q$, the normalized moments separate at exactly that rate
+with coefficient $-\operatorname{Cov}_P(A,Q)$
+(\code{GradeComparison}); and matching moment rates therefore force
+each weighted correction grade to agree, by covariance injectivity
+(\code{GradeRecovery}). Together: principal-model moment ratios are
+recoverable, and conditional on a common recovered principal part,
+each finite weighted correction grade is recoverable from normalized
+moment rates --- the note's covariance argument for class (c), made
+checkable, minus the coarea layer.
+\end{abstract}
+
+\section{The consult's two findings}
+
+The scoping consult reshaped the work before it began. First, the
+note's recovery of the moments $M_\alpha$ proceeds through a
+linear-independence argument over partial derivatives of delta
+distributions, with care at exponent collisions; the consult observed
+that testing with the monomial observable itself dissolves the
+problem --- collisions between different multi-indices never enter a
+single observable's leading coefficient --- so the formalisation
+needs no distribution theory at all, and the recovery is an exact
+identity rather than an asymptotic. Second, it drew the endpoint: the
+one-grade comparison is the reusable core; the coarea/Gelfand--Leray
+identification of the principal part from its moments awaits real
+geometric measure theory in Mathlib, and the full weighted-analytic
+induction (truncations, anisotropic remainders, germ summation) is a
+programme, not a tide. Both findings held exactly.
+
+\section{What each tide contributed}
+
+\begin{itemize}
+\item \textbf{QhMomentRecovery} (\#113): \code{mvMonomial} and its
+homogeneity along the quasi-homogeneous dilation; the exact
+unnormalized and normalized monomial moment laws (instantiating the
+degenerate-perimeter arc's abstract \code{ScalesMeasure} laws at the
+diagonal-volume instance); the headline identity and the
+single-temperature comparison form. One build round.
+\item \textbf{GradeComparison} (\#114): the non-Gaussian covariance
+API (\code{expectationUnder}, \code{covarianceUnder}); the pointwise
+engine $(e^{-W}-1)/h^\rho \to -Q$ via the second-order bound, never
+dividing by the correction; the unnormalized dominated-convergence
+limit; the normalized limit through the quotient-rate identity.
+Numerically verified first.
+\item \textbf{GradeRecovery} (\#116): covariance bilinearity over
+monomial combinations; the $L^2$ variance rigidity
+(almost-everywhere-to-everywhere by continuity against the
+open-positive volume, constant killed at the origin); and the stage-D
+composition by uniqueness of limits, whose interface hypothesis is
+stage B's conclusion --- callers discharge the majorant package, this
+file stays free of domination bookkeeping.
+\end{itemize}
+
+\section{Relation to the note}
+
+The note's paragraph on semi-quasi-homogeneous recovery (\S7,
+constructive classes, item (c)) now carries four margin markers: the
+exponent-affinity/moment-ratio sentence points at
+\code{qh\_momentRatio\_recovery} and the comparison form; the
+covariance-and-variance sentence (``their difference $Q$ has
+$\operatorname{Var}_P[Q] = 0$, so $Q$ is constant, and positive
+weighted degree forces $Q = 0$'') points at
+\code{tendsto\_normalized\_difference\_div\_pow} and
+\code{grade\_eq\_of\_normalized\_rates}. The note's further steps ---
+identifying $P$ itself from the moment measure on $\{P = 1\}$
+(coarea), and summing the recovered weighted jet to the analytic germ
+--- are exactly the two items the consult placed beyond the endpoint.
+
+\section{What remains open, and why}
+
+Piece (ii), the coarea/Gelfand--Leray layer: a Mathlib prerequisite,
+not a proof-engineering gap. The full weighted-analytic induction: a
+programme of weighted truncation infrastructure that the commissioning
+direction ranked below its cost. Concrete anisotropic instantiations
+of stages B--D for named weighted families: available on demand, the
+abstract theorems were shaped for it. The class closes here by
+design; per the arc's tide logs, it should not be extended without
+new direction.
+\end{document}
