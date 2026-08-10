@@ -69,6 +69,7 @@ import Laplace.Multi.LocationRecovery
 import Laplace.Multi.TranslationBridge
 import Laplace.Multi.LocatedCutoff
 import Laplace.Multi.LocatedHeadline
+import Laplace.Multi.LocatedAnalytic
 import Laplace.Multi.GaussianMeso
 import Laplace.Multi.ForwardDomain
 import Laplace.Multi.ExpGraded
