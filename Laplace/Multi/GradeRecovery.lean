@@ -9,7 +9,11 @@ import Laplace.Multi.GradeComparison
 # Grade recovery
 
 Stages C and D of the semi-quasi-homogeneous recovery plan, reaching
-the scoping consult's designated endpoint for class (c). Stage C is
+the scoping consult's CONDITIONAL one-grade endpoint for class (c):
+the generic engine and injectivity, with the weighted-homogeneous
+instantiation (constructing the correction families, identifying the
+rate exponent with the cleared grade difference, and the finite grade
+induction) left to callers. Stage C is
 covariance injectivity: a continuous observable with vanishing
 self-covariance under a positive reference density is almost
 everywhere its mean, hence (by continuity against the open-positive

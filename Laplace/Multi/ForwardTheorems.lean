@@ -12,12 +12,16 @@ import Laplace.Multi.MonomialTests
 Stage 7 of the forward-expansion programme, the public face: on a
 `ForwardExpansionDomain` the rescaled posterior moment of any
 continuous observable of polynomial growth is an order-`N` asymptotic
-polynomial at `0⁺` (`rescaledMoment_hasExpansion`) — the germbij
-note's forward direction in the nondegenerate case. The coefficients
-are the division coefficients of the numerator expansion by the
-partition expansion, whose constant coefficient `∫ e^{-T₂}` is
-positive. Moment families agreeing to `o(q^N)` have equal expansion
-coefficients through order `N`
+polynomial at `0⁺` (`rescaledMoment_hasExpansion`) — the
+rescaled-moment core of the germbij note's forward direction in the
+nondegenerate case. The observable is fixed in the RESCALED variable;
+the Taylor expansion of a fixed original-scale observable, and the
+Wick evaluation of the coefficient integrals into explicit
+polynomials in `H⁻¹` and the higher derivatives, are not formalised
+here. The coefficients are the division coefficients of the numerator
+expansion by the partition expansion, whose constant coefficient
+`∫ e^{-T₂}` is positive. Moment families agreeing to `o(q^N)` have
+equal expansion coefficients through order `N`
 (`momentCoeff_eq_of_isLittleO`), the comparison face consumed
 together with the merged inverse-half recovery theorems.
 -/
@@ -93,7 +97,15 @@ theorem rescaledMoment_expansion_exists
   ⟨D.momentCoeff P, D.rescaledMoment_hasExpansion hP_cont hP_growth⟩
 
 /-- The monomial moment expansions: the instances the inverse-half
-recovery theorems consume. -/
+recovery theorems consume. The bridge to the note's original-scale
+observables: under `w = q • z` the cut monomial `φ_m(w) = w^m·χ(w)`
+becomes `q^k · monomialTest m z` on the region where the cutoff is
+one, so the rescaled monomial moment is the original monomial
+posterior moment with the `q^k` prefactor removed, up to a tail
+beyond all orders. A FIXED original-scale observable `φ(w)` would
+become the `q`-dependent `z ↦ φ(q • z)`; that observable-Taylor
+packaging is not formalised here — the monomial instances carry the
+content the recovery theorems need. -/
 theorem monomial_moment_hasExpansion (D : ForwardExpansionDomain N L H)
     {k : ℕ} (m : Fin k → Fin d) :
     Laplace.IsAsymptoticExpansionTo
