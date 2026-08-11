@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: asymptotic division\\
+\large quotients of order-$N$ expansions}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Stage 6 of the forward-expansion programme, the generic division
+lemma the design consult prescribed: if $f$ and $g$ admit order-$N$
+asymptotic polynomials at $0^+$ with coefficients $a$, $b$ and
+$b_0 \ne 0$, then $f/g$ admits the order-$N$ expansion with the
+division coefficients $c_0 = a_0/b_0$,
+$c_j = \big(a_j - \sum_{i=1}^{j} b_i c_{j-i}\big)/b_0$. The proof
+telescopes $f - g\,C$ into the two expansion errors plus the
+polynomial $A - B\cdot C$, whose coefficients vanish through degree
+$N$ by the convolution identity --- verified through the Cauchy
+product of coefficient polynomials, the same
+\code{Polynomial.coeff\_mul} mechanism as stages 4--5a --- so that it
+carries $q^{N+1}$; the quotient then divides by $g$, eventually
+bounded below by $|b_0|/2$ since $g \to b_0$.
+\end{abstract}
+
+\section{Setting}
+
+The moment expansion is the quotient of two instances of the
+numerator expansion (the partition function is the observable-one
+case), so this is the last infrastructure piece before the public
+theorems. The lemma is stated at the same generic level as stage
+A1's expansion predicate: no domain, no measure, just functions of
+the scale.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{divisionCoeff} by strong recursion (through
+\code{Finset.attach} with a \code{termination\_by} on the index; the
+unattached recursion equation recovered by \code{Finset.sum\_attach});
+the convolution identity \code{divisionCoeff\_conv}; the coefficient
+polynomial \code{coeffPoly} with evaluation, coefficient, and degree
+lemmas; the Cauchy product through degree $N$
+(\code{coeffPoly\_mul\_coeff}, via
+\code{Finset.Nat.sum\_antidiagonal\_eq\_sum\_range\_succ\_mk});
+the vanishing-tail bound; and
+\code{isAsymptoticExpansionTo\_div}. The eventual lower bound on the
+denominator comes from transporting the expansion error to a limit
+(\code{isLittleO\_one\_iff} after comparing $q^N$ with the constant
+function) and \code{Tendsto.eventually\_const\_le} at $|b_0|/2$.
+A numerical check of both the convolution identity and the $o(q^N)$
+decay preceded the Lean.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+Two small rounds: \code{div\_eq\_iff} pattern-matches division on the
+left of the equation, so an equation with the quotient on the right
+wants \code{eq\_div\_iff}; and an untyped
+\code{have := (h.tendsto 0).mono\_left nhdsWithin\_le\_nhds} cannot
+synthesize the within-set --- the identical term elaborates against
+an explicitly typed \code{have}.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{Finset.sum\_attach},
+\code{Finset.Nat.sum\_antidiagonal\_eq\_sum\_range\_succ\_mk},
+\code{IsLittleO.mul\_isBigO}, \code{Tendsto.isBigO\_one},
+\code{isLittleO\_one\_iff}, \code{eq\_div\_iff},
+\code{Tendsto.eventually\_const\_le}. New: nothing --- formal power
+series division specialized to a finite order, with the collection
+mechanism this programme has now used three times.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Stage 7, the last: positivity of the partition function's constant
+coefficient ($a_0(\mathbf 1) = \int e^{-T_2} > 0$, from
+\code{correctionCoeffFn\_zero} and the positivity of Gaussian
+integrals), the moment expansion
+(\code{rescaledMoment} $=$ numerator $/$ partition through this
+tide's division), and the public existence and jet-comparison
+theorems of the germbij forward direction.
+\end{document}

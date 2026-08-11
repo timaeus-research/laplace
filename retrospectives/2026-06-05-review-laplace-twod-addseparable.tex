@@ -1,0 +1,122 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the additively-separable 2D factorisation root, and an import that earns its keep transitively}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/AddSeparable.lean}: the generic factorisation
+infrastructure for additively-separable potentials $L(x,y)=U(x)+V(y)$ --- partition-function
+and separable-observable factorisation, Gibbs-expectation factorisation, and the
+mixed-covariance vanishing --- that the ten \texttt{KthKth*}/\texttt{QuarticSextic*} asymptotic
+files factor through. Result: \textbf{a clean fidelity pass with two dead-code removals} (a dead
+\texttt{open Real} and a literal no-op rewrite). The instructive moment was a \emph{rejection}:
+both the reviewer and the reviewer-of-the-reviewer flagged the \texttt{SemiDegenerate} import as
+unused, and the full build refuted both --- it is the transitive source of Mathlib's product
+integral.
+\end{abstract}
+
+\section{Setting}
+This file is the root of the 2D ``separable-lift'' pattern documented in the seabed
+\texttt{CLAUDE.md}: every \texttt{Laplace/TwoD/KthKth*} and \texttt{QuarticSextic*} asymptotic
+expresses a 2D quantity (partition function, numerator, Gibbs moment) as a product of two 1D ones
+via the three factorisation theorems proved here. It was selected as a never-reviewed foundation
+sitting below ten consumers --- the same ``review the root'' logic that took the modes-lean
+\texttt{SingularPair} and laplace \texttt{TailBound} reviews down their dependency chains.
+
+\section{What was reviewed}
+Seven public declarations: the potential \texttt{addSeparable U V z = U z.1 + V z.2}; its
+\texttt{simp} unfolding and the Boltzmann decomposition $e^{-t(U+V)}=e^{-tU}e^{-tV}$; and the four
+headlines --- \texttt{partitionFunction\_addSeparable\_factor} ($Z_{2D}=Z_U Z_V$),
+\texttt{integral\_separable\_addSeparable} ($\int f\!\otimes\! g\,e^{-tL}=(\int f e^{-tU})(\int g
+e^{-tV})$), \texttt{gibbsExpectation\_separable\_addSeparable}
+($\langle f\!\otimes\! g\rangle=\langle f\rangle_U\langle g\rangle_V$ when both $Z\ne0$), and
+\texttt{gibbsCov\_addSeparable\_fst\_snd\_eq\_zero} (mixed covariance vanishes). The corpus was the
+file docstrings, the \texttt{CLAUDE.md} architecture section, the deliberation tide-log, and
+\texttt{Laplace.Gibbs}.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no formula-level mismatch.} The three factorisations are the expected ones (all
+three reduce to Mathlib's \texttt{integral\_prod\_mul} after the Boltzmann split), and the
+covariance proof follows the advertised pattern: $\langle fg\rangle=\langle f\rangle_U\langle
+g\rangle_V$, then the two 2D marginal expectations collapse to the 1D ones (instantiate $g=1$,
+resp.\ $f=1$, and use \texttt{gibbsExpectation\_const}), so the covariance is
+$\langle f\rangle_U\langle g\rangle_V-\langle f\rangle_U\langle g\rangle_V=0$.
+
+The reviewer raised three \emph{docstring-completeness} notes: the headlines for the
+Gibbs-expectation and covariance theorems state only the salient hypothesis ($Z_U,Z_V\ne0$) and
+elide the integrability hypotheses the Lean statements also carry. These are recorded
+\textbf{report-only}: the docstrings are accurate-but-terse, the integrability is standard
+regularity fully visible in the signature, and enumerating every side-condition into a headline is
+the author's stylistic call --- distinct from an \emph{inaccurate} docstring, which a review does
+fix. Relatedly, the underscore-prefixed hypotheses \texttt{\_hU},\texttt{\_hV},\texttt{\_hf},%
+\texttt{\_hg} are genuinely inert (Mathlib's \texttt{integral\_prod\_mul} is unconditional) but are
+part of the documented API the ten consumers pass; removing them is a signature change, out of
+scope.
+
+\section{Simplifications applied}
+\textbf{Two dead-code removals.} A dead \texttt{open Real} (every \texttt{Real.exp}/%
+\texttt{Real.exp\_add} is qualified; \texttt{open MeasureTheory} stays --- bare \texttt{Integrable}
+and \texttt{$\int$} need it), and a literal no-op rewrite at the head of the covariance proof,
+\texttt{rw [show (fun z => f z.1 * g z.2) = (\dots same \dots) from rfl]}, which rewrites an
+expression to itself and does nothing (the subsequent factorisation \texttt{rw} matches without
+it). Module green at $2699$ jobs, no warnings (baseline had none either), public signatures
+byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+The reviewer's top simplification --- ``drop the dead \texttt{import Laplace.TwoD.SemiDegenerate}''
+--- was \textbf{rejected by the full build}. Removing it makes \texttt{integral\_prod\_mul} an
+unknown identifier, with a cascade of application-mismatch and ``invalid projection: index 2''
+errors: \texttt{SemiDegenerate} is the (indirect) source of Mathlib's product-integral API and the
+$\mathbb R\times\mathbb R$ product-measure structure, neither of which \texttt{Laplace.Gibbs}
+pulls in. The ``no \texttt{SemiDegenerate} symbol is referenced'' check --- true at the
+symbol level --- missed the \emph{transitive Mathlib} dependency. There is a real architectural
+oddity underneath, though: depending on a 514-line case-by-case sibling for a Mathlib lemma is
+backwards (the docstring itself says the dependency should eventually point the other way). The
+clean fix is to import the Mathlib product-integral file directly --- but that is a structural
+import-swap, a forward tide, not a review edit.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{``References no symbol from $X$'' does not imply ``$X$ is a dead import''.} An
+    import can be load-bearing purely \emph{transitively} --- here \texttt{SemiDegenerate} is the
+    only path to Mathlib's \texttt{integral\_prod\_mul}. The symbol-grep is a hypothesis; the
+    \emph{build} is the verdict. This is the import-side analogue of the per-file dead-\texttt{open}
+    rule, and it caught a finding that two independent models (the reviewer, and my own pre-read)
+    both got wrong.
+  \item \textbf{A literal \texttt{rw [show A = A from rfl]} is a clean, silent dead-code class.} It
+    rewrites to itself, so removal is statement-preserving by construction; unlike an
+    \texttt{unusedTactic}-flagged no-op it raises no warning either way, so the rebuild is the only
+    check needed.
+  \item \textbf{Accurate-but-terse $\ne$ inaccurate.} The line between a landable docstring fix and a
+    report-only note is whether the prose is \emph{wrong} (fix it) or merely \emph{incomplete on
+    plumbing} (report it); a headline stating the salient hypothesis and eliding standard
+    regularity is the latter.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \textbf{Forward tide (architectural):} replace \texttt{import Laplace.TwoD.SemiDegenerate}
+    with a direct import of the Mathlib product-integral file
+    (\texttt{Mathlib.MeasureTheory.Constructions.Prod.Integral} or wherever
+    \texttt{integral\_prod\_mul} lands), removing the backwards dependency on the 514-line
+    case-by-case file. Confirm the ten consumers still build.
+  \item \textbf{Forward tide (proof golf):} the reviewer's \texttt{simpa \dots using
+    integral\_prod\_mul} collapses and the \texttt{simpa [mul\_one]}/\texttt{[one\_mul]}
+    rewrites for the marginal-collapse subproofs would shorten the file; declined here as
+    risk-bearing restructuring outside the review's safe class.
+  \item Next review surface: the \texttt{TwoD/KthKth*} and \texttt{QuarticSextic*} consumers
+    (now reviewable with confidence in their factorisation root), \texttt{OneD/NearDegenerate},
+    \texttt{OneD/UniversalAsymptotics}, and the large \texttt{Multi/Covariance*} trio.
+\end{itemize}
+
+\end{document}

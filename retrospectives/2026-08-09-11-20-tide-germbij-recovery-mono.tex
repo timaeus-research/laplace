@@ -1,0 +1,99 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: one temperature determines the quartic
+coefficient}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The recovery thread so far identifies the leading data of a pure
+even-monomial potential from partition-function asymptotics. The germbij
+note's full Section~7.4 recovers subleading coefficients too, by an
+inductive expansion pairing; formalising that induction is a
+multi-tide programme. Deliberation identified a minimal step that is not
+a fragment of the induction but a complementary mechanism: for a
+\emph{nonnegative} perturbation, the partition function is strictly
+monotone in the coefficient, so the subleading coefficient is already
+determined by $Z$ at a \emph{single} temperature, no asymptotics needed.
+
+\section{The thing formalised}
+
+Four declarations in \texttt{Laplace/OneD/RecoveryMonotone.lean},
+sorry-free with zero warnings, organized as the consult's ladder. The
+measure-theoretic core\footnote{\texttt{partitionFunction\_lt\_of\_le\_of\_measure\_lt\_pos}.}:
+if $L_1 \leq L_2$ pointwise, $e^{-tL_1}$ is integrable, and
+$\{L_1 < L_2\}$ has positive measure, then $Z_{L_2}(t) < Z_{L_1}(t)$ for
+$t > 0$. The topological corollary\footnote{\texttt{partitionFunction\_lt\_of\_le\_of\_lt}.}:
+continuity plus a single point with $L_1(x_0) < L_2(x_0)$ suffices.
+Strict antitonicity\footnote{\texttt{partitionFunction\_perturb\_strictAntiOn}.}:
+for continuous $V$ and continuous $g \geq 0$ positive somewhere,
+$b \mapsto Z_{V + bg}(t)$ is strictly decreasing on $b \geq 0$. And the
+recovery statement\footnote{\texttt{quartic\_coefficient\_recovery}.}:
+for $x^2/2 + b\,x^4$ with $b \geq 0$, equality of partition functions at
+one temperature forces equality of the coefficients.
+
+\section{Proof strategy}
+
+The core is three Mathlib moves: domination transfers integrability from
+$e^{-tL_1}$ to $e^{-tL_2}$; the difference of exponentials is nonnegative
+with support containing $\{L_1 < L_2\}$, so the support-positivity
+lemma\footnote{\texttt{integral\_pos\_iff\_support\_of\_nonneg}.}
+converts positive measure of the strict locus into strict positivity of
+the integral; and
+\texttt{integral\_sub} turns that into the strict inequality of partition
+functions. The corollary produces the positive-measure locus from
+\texttt{isOpen\_lt} and \texttt{IsOpen.measure\_pos}; antitonicity is the
+corollary applied to $V + b_1 g \leq V + b_2 g$; recovery is
+\texttt{StrictAntiOn.injOn} against the seabed's monomial integrability.
+
+\section{Roadblocks and resolutions}
+
+Three build iterations. An \texttt{AEStronglyMeasurable} witness built by
+composing continuity lemmas elaborates as \texttt{rexp} composed with a
+lambda, which the rewrite inside \texttt{Integrable.mono'} cannot match
+against the beta-reduced integrand; stating the witness as an
+explicitly-typed \texttt{have} discharged by \texttt{fun\_prop} fixes it
+(the same anchor discipline as the previous tide's constant-limit
+witness). And \texttt{nlinarith} needed its product hints
+($0 \leq t\,b_1\,g(x)$ and kin) spelled out at three sites.
+
+\section{Process note}
+
+A first draft of the tide log's numerical check quoted plausible
+invented values before the script had been run; the actual run gave
+different numbers. The corrected log records both. This is the third
+occurrence of this failure mode in the arc's history and the reason the
+check is required to be executed, not narrated.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: everything in the core (domination, support positivity, integral
+subtraction, open-set positivity). Seabed: monomial integrability. New:
+the observation that order-theoretic recovery complements the note's
+expansion pairing, giving a stronger conclusion (one temperature) under a
+stronger hypothesis (signed perturbation).
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item The genuine expansion-based induction (recovering $a_j$ of a
+general analytic potential from correction orders) remains the long-term
+recovery item; its first Lean step needs an expansion of $Z$ for a
+perturbed monomial, which is anharmonic-programme machinery rather than
+a small tide.
+\item Tag the note's Section 7.4 with the recovery theorem once merged,
+with a remark that the Lean statement uses the monotonicity mechanism.
+\end{itemize}
+
+\end{document}

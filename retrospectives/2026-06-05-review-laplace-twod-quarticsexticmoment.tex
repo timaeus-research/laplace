@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the quartic--sextic moment specialisation --- two dead opens, a no-op, and a mislabelled proof step}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/QuarticSexticMomentAsymptotic.lean}: the
+$(k_1,k_2)=(2,3)$ specialisation of the 2D separable mixed-even Gibbs moment
+$\langle x^{2j}y^{2k}\rangle_{2D}$. Result: \textbf{a clean fidelity pass with four edits} --- dead
+\texttt{open Real} \emph{and} \texttt{open MeasureTheory}, a literal no-op rewrite, and a docstring
+that named the wrong proof step. The richest cleanup of the \texttt{QuarticSextic*} batch.
+\end{abstract}
+
+\section{Setting}
+The moment counterpart of the partition and numerator specialisations, and the $(2,3)$ instance of
+the \reviewref[generic moment lift]{2026-06-05-review-laplace-twod-kthkthmoment}. It repackages the
+factorisation theorem (T1, \texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_eq}) as the closed
+form, rescaled limit, and equivalence.
+
+\section{What was reviewed}
+Three public theorems plus the constant
+$C(j,k)=24^{j/2}\,720^{k/3}\,\frac{\Gamma((2j+1)/4)}{\Gamma(1/4)}\frac{\Gamma((2k+1)/6)}{\Gamma(1/6)}$,
+the $(2,3)$ instance of the generic \texttt{kthKthMomentConst}, exponent $-(j/2+k/3)$.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no theorem-level mismatch.} Constant and exponent correct, \texttt{ht : 0 < t}
+present, eventual positivity used for the \texttt{atTop} statements. \textbf{One docstring
+inaccuracy, fixed.} The \texttt{isEquivalent\_rpow} docstring claimed the proof goes ``via
+\texttt{Asymptotics.IsEquivalent.refl} after \texttt{tendsto\_congr'}'', but the proof actually uses
+\texttt{IsEquivalent.refl.congr\_left} after a \texttt{filter\_upwards} eventual-equality --- a wrong
+lemma named in proof-strategy prose. Corrected to match the proof (comment-only). This is the same
+``prose that names a mechanism is a checkable claim'' lesson as the
+\reviewref[generic monomial]{2026-06-05-review-laplace-oned-jfunction-monomial} ``used twice''
+miscount.
+
+\section{Simplifications applied}
+\textbf{Three.} Both \texttt{open Real} (all \texttt{Real.*} qualified) \emph{and}
+\texttt{open MeasureTheory} are dead --- like the partition specialisation, this file states the
+moment via the \texttt{gibbsExpectation} \emph{def}, with no bare $\int$, so the measure-theory
+notation is never used. And a literal no-op
+\texttt{rw [show -(j/2+k/3) = -(j/2+k/3) from rfl]} (an $X\to X$ rewrite) was removed. Module green
+at $2703$ jobs, no warnings, signatures byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The def-vs-bare-$\int$ distinction predicts the second dead open precisely.} The
+    partition and moment specialisations (\texttt{partitionFunction}/\texttt{gibbsExpectation} defs,
+    no bare $\int$) shed \emph{both} opens; the numerator (bare $\int$) keeps
+    \texttt{MeasureTheory}. A one-line \texttt{grep} for bare $\int$ on a \texttt{TwoD/} file calls
+    the dead-open count before the build does.
+  \item \textbf{Proof-strategy prose drifts from the proof.} A docstring naming
+    \texttt{tendsto\_congr'} for a proof that uses \texttt{congr\_left} is a small but real fidelity
+    miss --- the kind that only an actual read of the proof body catches, and worth fixing because
+    it misleads the next reader about which API does the work.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The \texttt{QuarticSextic*} closed-form cores remain: \texttt{QuarticSextic} (the seabed
+    closed form the asymptotic files consume), \texttt{QuarticSexticMoments},
+    \texttt{QuarticSexticOddMoments}.
+  \item Batched hygiene tide: the \texttt{t>0} module-docstring clauses across \texttt{TwoD/}, plus
+    the \texttt{show}$\to$\texttt{change} proof-golf the reviewer keeps flagging.
+\end{itemize}
+
+\end{document}

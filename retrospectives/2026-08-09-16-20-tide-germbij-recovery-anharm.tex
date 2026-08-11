@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: susceptibilities recover the anharmonic
+coefficients}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+Every recovery tide so far certified Section~7.4 of the germbij note
+(the singular, constructive side). The note's \emph{regular}-case
+statement, Theorem~3.1, says the expansions over all observables
+determine the Taylor coefficients of the loss at a nondegenerate
+minimum by a triangular induction pairing coefficients against
+susceptibilities. The seabed's Stage-2 anharmonic programme (from the
+primer work in May) already carries the two limits that drive the
+induction's first two rungs; this tide reads them backwards.
+
+\section{The thing formalised}
+
+One theorem in
+\texttt{Laplace/OneD/RecoveryAnharmonic.lean}\footnote{\texttt{anharmonic\_susceptibility\_recovery}.},
+sorry-free with zero warnings. For the anharmonic potential
+$\tfrac{\lambda}{2}x^2 + \tfrac{\alpha}{6}x^3 + \tfrac{\gamma}{24}x^4$
+(positive $\lambda, \gamma$, discriminant $\alpha^2 < 3\lambda\gamma$),
+the seabed knows that the mean susceptibility
+$\partial_h \langle x \rangle_h|_{h=0}$ tends to $-1/\lambda$ and the
+rescaled covariance susceptibility to $\alpha/\lambda^3$. The theorem:
+if these two observable data streams agree eventually for two parameter
+triples, then $\lambda_1 = \lambda_2$ and $\alpha_1 = \alpha_2$. This is
+the note's Theorem~3.1 recovery, certified at orders two and three: the
+data of the expansions pins the jet, coefficient by coefficient. The
+quartic coefficient $\gamma$ is the next rung and needs the
+fourth-cumulant asymptotic, which the seabed does not yet carry.
+
+\section{Proof strategy}
+
+Entirely the uniqueness-of-limits pattern the thread has now used three
+times: transport each limit along the eventual equality
+(\texttt{Tendsto.congr'}), identify the limits
+(\texttt{tendsto\_nhds\_unique}), and extract the parameters by field
+arithmetic ($-1/\lambda$ is injective on positives; then
+$\alpha/\lambda^3$ with $\lambda$ pinned). The susceptibility data are
+treated as opaque functions of $t$ throughout; nothing about the
+underlying Gibbs derivatives is unfolded.
+
+\section{Roadblocks and resolutions}
+
+None: the first first-attempt-clean build of the recovery thread (and
+the second of the germbij programme). The consult confirmed the
+statement packaging (two separate eventual-equality hypotheses rather
+than a pair) before the build.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: uniqueness of limits and filter congruence. Seabed: the
+Stage-2 anharmonic asymptotics, consumed for the first time by the
+recovery thread; the discriminant hypothesis and the
+Threepoint-to-Laplace bridges arrive with them. New: only the reading
+direction.
+
+\section{Lessons}
+
+When a thread's pattern stabilizes (this is the third
+uniqueness-of-limits recovery), the marginal tide is nearly free: the
+whole cost was locating the right seabed limits. The productive act was
+the survey, not the proof.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item The $\gamma$ rung: a fourth-cumulant asymptotic
+($t^3 \kappa_4 \to$ explicit value) in the Stage-2 style, which would
+extend both the primer programme and this recovery.
+\item Tag the note's Theorem 3.1 with the recovery theorem once merged
+(the note's regular case now has its first certified instance).
+\end{itemize}
+
+\end{document}

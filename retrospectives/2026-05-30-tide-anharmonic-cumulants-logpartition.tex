@@ -1,0 +1,125 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+
+\newcommand{\deriv}{\operatorname{deriv}}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{cumulants as derivatives of the log-partition}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The synthesis that closes the anharmonic cumulant arc: the connected cumulants
+$\kappa_2,\kappa_3,\kappa_4$ --- proved across the arc as derivatives of the
+perturbed \emph{mean} $M=G_1/G_0$ --- are identified as derivatives of the
+genuine cumulant generating function $K=\log Z$ (with $Z=G_0$):
+\begin{align*}
+  &\mathrm{iteratedDeriv}\,(n{+}1)\,K\,0 = \mathrm{iteratedDeriv}\,n\,M\,0, \\
+  &\quad\text{so}\quad
+  \kappa_2 = \partial^2 K|_0,\quad \kappa_3 = \partial^3 K|_0,\quad
+  \kappa_4 = \partial^4 K|_0 .
+\end{align*}
+The new file\footnote{\texttt{AnharmonicCumulantsLogPartition.lean}.} builds
+clean first try, no \texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+The tenth and final tide of a single-day anharmonic arc on the laplace seabed.
+Across the arc the cumulants were computed as derivatives of the mean
+$M(h)=\langle u\rangle_h=G_1(h)/G_0(h)$ (because $K'=M$, the
+fluctuation--dissipation route is the most direct). This tide records the
+``why'': $K=\log Z$ is the cumulant \emph{generating} function, so its
+derivatives at $0$ \emph{are} the connected cumulants. Closing this loop --- by
+relating $\partial^{n+1}\log Z$ to $\partial^n M$ --- restores the textbook
+definition and ties the whole arc back to its first rung,
+\texttt{logPartition\_hasDerivAt}.
+
+\section{The thing formalised}
+
+Writing $K(h)=\log Z(h)=\log G_0(h)$ and $M(h)=G_1(h)/G_0(h)$:
+\begin{quote}\itshape
+For the anharmonic potential, $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$,
+$t>0$: $\ \mathrm{iteratedDeriv}\,(n{+}1)\,K\,0 = \mathrm{iteratedDeriv}\,n\,M\,0$
+for all $n$; and the named corollaries
+$\partial^2 K|_0=\kappa_2$, $\partial^3 K|_0=\kappa_3$,
+$\partial^4 K|_0=\kappa_4$ (each in the explicit $G_0,\dots,G_4$ closed form of
+the corresponding cumulant tide).
+\end{quote}
+
+\section{Proof strategy}
+
+Three short steps. \emph{(i)} The general-$h$ first derivative of $K$ is the
+mean: \texttt{HasDerivAt.log} on the partition derivative
+$\mathrm{HasDerivAt}\,G_0\,(G_1(h_0))\,h_0$ with $G_0(h_0)>0$ gives
+$K'(h_0)=G_1(h_0)/G_0(h_0)$, hence $\deriv K =_{\text{ev}} M$ on
+$\mathrm{ball}\,0\,1$. \emph{(ii)} The ladder lemma: by \texttt{iteratedDeriv\_succ'},
+$\mathrm{iteratedDeriv}\,(n{+}1)\,K = \mathrm{iteratedDeriv}\,n\,(\deriv K)$, and
+\texttt{Filter.EventuallyEq.iteratedDeriv\_eq} rewrites $\deriv K$ to $M$, giving
+$\mathrm{iteratedDeriv}\,(n{+}1)\,K\,0 = \mathrm{iteratedDeriv}\,n\,M\,0$.
+\emph{(iii)} The three corollaries are \texttt{rw [ladder]} then \texttt{exact}
+the existing cumulant theorems ($\kappa_2$ at $n=1$ via \texttt{iteratedDeriv\_one},
+$\kappa_3$ at $n=2$, $\kappa_4$ at $n=3$).
+
+\section{Roadblocks and resolutions}
+
+None --- first-try build. The synthesis is pure chaining of established
+lemmas, and crucially \texttt{Filter.EventuallyEq.iteratedDeriv\_eq} already
+exists in Mathlib, so the ``derivatives respect germs'' step needed no bespoke
+induction. Because the corollaries discharge by \texttt{exact}-ing the cumulant
+theorems, Lean checks that the stated closed forms match the proved ones ---
+no risk of a silently mistyped $\kappa_4$.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} \texttt{HasDerivAt.log}, \texttt{HasDerivAt.deriv};
+\texttt{iteratedDeriv\_succ'}, \texttt{iteratedDeriv\_one};
+\texttt{Filter.EventuallyEq.iteratedDeriv\_eq}.
+
+\textbf{Seabed (reused).} The partition derivative and positivity, and the
+three cumulant theorems --- all from this session's arc.
+
+\textbf{New.} The general-$h$ log-partition derivative, the ladder lemma, and
+the three $\partial^n\log Z$ corollaries. About 130 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Two routes to the cumulants, one cheap bridge.} Computing
+  $\kappa_n$ as $\partial^{n-1} M$ (fluctuation--dissipation) sidesteps the
+  $\log$ entirely and was the right call for the heavy rungs; a single ladder
+  lemma then relabels them as $\partial^n\log Z$ for the textbook statement.
+\item \textbf{\texttt{EventuallyEq.iteratedDeriv\_eq} is the clean tool for
+  ``germ-local'' iterated derivatives.} It turns one eventual equality
+  ($\deriv K =_{\text{ev}} M$) into equality of all iterated derivatives at the
+  point, no induction required.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Moment-form corollaries.} Express each $\kappa_n$ in the
+  $\langle u^k\rangle_0$ (\texttt{gibbsExp}) form via moment-normalisation
+  ($\kappa_2$ already done in the second-cumulant tide).
+\item \textbf{Higher cumulants $\kappa_5,\dots$} if wanted: each is one more
+  identical differentiation layer.
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.}
+\end{itemize}
+
+\end{document}

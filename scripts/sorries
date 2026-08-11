@@ -24,6 +24,11 @@ PATTERN = re.compile(
 # (No allowlist for this project — we want to know about every native_decide.)
 NATIVE_DECIDE_ALLOWED_PREFIX = "__no_match__/"
 
+# Files whose `sorry`s are sanctioned by design: Statements.lean states the
+# main theorems with deliberate `sorry` bodies; each is proved in
+# Solutions.lean (see the README's "Main theorems" section).
+SORRY_ALLOWED_FILES = {"Statements.lean"}
+
 
 def block_comment_depth_at(lines: list[str], lineno: int, col: int) -> int:
     """Track /- -/ nesting depth at a specific (lineno, col) position."""
@@ -80,8 +85,9 @@ def main() -> None:
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # Collect all .lean files under Laplace/ plus the top-level Laplace.lean
-    lean_files = sorted(f for pat in ["Laplace/**/*.lean", "Laplace.lean"]
+    # Collect all .lean files under Laplace/ plus the top-level modules.
+    lean_files = sorted(f for pat in ["Laplace/**/*.lean", "Laplace.lean",
+                                      "Statements.lean", "Solutions.lean"]
                         for f in glob.glob(f"{root}/{pat}", recursive=True))
 
     counts = {m: 0 for m in MARKERS}
@@ -99,6 +105,8 @@ def main() -> None:
                 if is_in_comment(lines, i, line, marker, m.start()):
                     continue
                 if marker == "native_decide" and relpath.startswith(NATIVE_DECIDE_ALLOWED_PREFIX):
+                    continue
+                if marker == "sorry" and relpath in SORRY_ALLOWED_FILES:
                     continue
                 file_hits.append((i, marker))
                 counts[marker] += 1

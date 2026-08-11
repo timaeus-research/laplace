@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the cubic-order remainder layer\\
+(gamma-rung programme, stage 2a)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+Stage 2 of the gamma-rung programme upgrades the seabed's rescaled
+integral asymptotics from first to second order: quadratising
+$e^{-s} \approx 1 - s + s^2/2$ instead of linearising improves the
+integrated remainder from $O(1/t)$ to $O(1/(t\sqrt t))$, which is what
+lets the $A^2$ coefficient at order $1/t$ become visible in the $J_n$
+expansions. The stage split at its natural seam during execution: this
+tide (2a) builds the remainder layer; the next (2b) assembles the
+decomposition and the second-order $J_n$ headline.
+
+\section{The thing formalised}
+
+Six declarations in \texttt{Laplace/OneD/IntegralRemainder2.lean},
+sorry-free with zero warnings, mirroring the first-order remainder layer
+declaration by declaration. The pointwise
+bound\footnote{\texttt{perturbation\_remainder3\_pointwise}.} feeds the
+signed exponential remainder of stage 1 at order three; the cube of the
+rescaled perturbation is dominated at scale $1/(t\sqrt t)$ by even
+powers\footnote{\texttt{rescaled\_cube\_bound}, with
+\texttt{abs\_pow\_nine\_le} absorbing $|u|^9 \leq u^8 + u^{10}$.}; the
+combined bound\footnote{\texttt{perturbation\_remainder3\_combined}.}
+routes through the existing two-branch Gaussian decay
+(\texttt{rescaled\_max\_decay}, reused verbatim); and the integrated
+form\footnote{\texttt{perturbation\_remainder3\_integral\_bound}.} gives
+\[
+\Bigl| \int u^n e^{-u^2/2}
+\bigl( e^{-s_t(u)} - (1 - s_t(u) + s_t(u)^2/2) \bigr)\, du \Bigr|
+\;\leq\; \frac{K}{t\sqrt t}
+\qquad (t \geq 1),
+\]
+the master estimate that stage 2b will consume. The error scale is kept
+\texttt{rpow}-free as $K/(t\sqrt t)$, consistent with the seabed's
+$1/\sqrt t$ style.
+
+\section{Proof strategy}
+
+Layer by layer as in the first-order file: Taylor bound times Gaussian
+weight, then the decay lemma replaces
+$e^{-u^2/2}\max(1, e^{-s})$ by $e^{-c_0 u^2}$, then the cube bound
+$(x+y)^3 \leq 4(x^3 + y^3)$ with $(\sqrt t)^3 = t\sqrt t$ on the cubic
+branch and $t^3 \geq t\sqrt t$ on the quartic one, and finally the
+integral bound by domination against the integrable even-power family.
+The monotonicity cascade runs on \texttt{gcongr} throughout.
+
+\section{Roadblocks and resolutions}
+
+Six build iterations, the programme's heaviest so far, all at the
+elaboration level: \texttt{abs\_add} is now \texttt{abs\_add\_le};
+\texttt{gcongr} discharges its side conditions from the context, so
+trailing \texttt{exact}s die; \texttt{positivity} needs even powers in
+$(x^k)^2$ shape and an atom's positivity in context before it will sign
+a cube; a conclusion-only implicit parameter needed explicit passing
+(the recurring anchor lesson); and one edit misfired into a stray
+untracked \texttt{Laplace.lean} at the repository root (junk from an
+earlier session, now deleted) rather than the worktree --- caught
+immediately by the failed build, with the canonical clone verified
+clean.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: \texttt{gcongr}, the integrable Gaussian-power family,
+integral monotonicity. Seabed: the entire architecture --- the
+first-order layer supplied the proof skeleton, and
+\texttt{rescaled\_max\_decay} the analytic content. Stage 1 supplied
+the pointwise input. New: the even-power absorption and the
+bookkeeping.
+
+\section{Lessons}
+
+\texttt{gcongr} is the right engine for monotonicity cascades over
+products and quotients of nonnegative quantities: five of the six
+lemmas' inequality steps reduced to it once stated in factored form.
+When it can see the hypothesis it needs, it uses it --- do not follow
+it with an \texttt{exact}.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item Stage 2b: the quadratised six-term decomposition (the
+$\sqrt t$-atom identity for $s_t^2$) and the second-order $J_n$
+headline consuming this tide's integral bound.
+\item Stages 3--6 per the programme plan.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,141 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Arc synthesis: constructive recovery in dimension one}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Eight tides formalised the constructive side of the germbij note: not
+merely that Laplace expansion data \emph{determines} the loss (the
+identifiability arc), but how the data \emph{yields} it. For
+even-monomial potentials in dimension one the thread certifies four
+distinct recovery mechanisms --- rigidity of power laws, strict
+monotonicity, the expansion pairing, and uniqueness of limits --- and
+builds the complete expansion ladder behind them: every coefficient of
+the quartic-perturbed Gaussian partition function, then of the general
+even-monomial family, explicit with elementary remainders at every
+order. The final tide crosses to the note's regular case, reading the
+seabed's anharmonic susceptibility limits backwards to certify
+Theorem~3.1's triangular induction at its first two rungs. This
+document synthesises the arc for a reader who will not read eight
+per-tide retrospectives.
+\end{abstract}
+
+\section{The mathematics}
+
+The germbij note's Section~7.4 claims that in dimension one the
+expansion data of $\int e^{-tL}$ recovers an even-monomial minimum
+constructively: the leading exponent gives the degree $2k$, the leading
+coefficient the scale, and the corrections at the graded orders
+$t^{-(j(m-k)/k + 1/(2k))}$ give the subleading coefficients one by one.
+Its Theorem~3.1 makes the regular-case analogue precise: at a
+nondegenerate minimum the susceptibilities pair triangularly with the
+Taylor coefficients. The thread certifies these claims in four
+mechanisms, ordered by the strength of the data they consume:
+
+\emph{Rigidity} (exact or asymptotic power-law data): two power
+functions agreeing on a ray, or asymptotically equivalent at infinity,
+share exponent and coefficient; hence partition-function data pins the
+degree $k$ and scale $a$ of a pure even-monomial potential
+(\texttt{Laplace.OneD.Recovery}).
+
+\emph{Monotonicity} (one temperature): the partition function strictly
+decreases under pointwise enlargement of the potential strict on
+positive measure, so for a nonnegative perturbation the coefficient is
+determined by $Z$ at a \emph{single} $t$
+(\texttt{Laplace.OneD.RecoveryMonotone}).
+
+\emph{The expansion pairing} (the note's mechanism): for
+$x^2/2 + b\,x^4$, the $k = 0, 2$ Gaussian moments cancel the main and
+correction terms exactly, so
+$Z_b(t) = \sqrt{2\pi}(t^{-1/2} - 3b\,t^{-3/2}) + O(t^{-5/2})$ with an
+explicit constant, and $b$ is read off the $t^{-3/2}$ correction by an
+archimedean argument with no limits
+(\texttt{Laplace.OneD.RecoveryExpansion}).
+
+\emph{Uniqueness of limits} (susceptibility data): the seabed's Stage-2
+anharmonic limits ($\partial_h\langle x\rangle|_0 \to -1/\lambda$,
+$t\,\partial_h\mathrm{Cov}|_0 \to \alpha/\lambda^3$) read backwards pin
+$\lambda$ then $\alpha$: Theorem~3.1's induction at orders two and
+three (\texttt{Laplace.OneD.RecoveryAnharmonic}).
+
+Behind the pairing sits the ladder: the exponential Taylor remainder
+$|e^{-s} - \sum_{j<n}(-s)^j/j!| \leq s^n/n!$ for all $s \geq 0$ (an FTC
+induction, no other calculus), the all-order quartic expansion with
+coefficients $\sqrt{2\pi}\,(-b)^j(4j-1)!!/j!$ at $t^{-(j+1/2)}$, the
+coefficient-limit packaging (each coefficient is the limit of the
+rescaled truncation error), and the potential-generic version for
+$x^{2k}/(2k)! + b\,x^{2m}$ with Gamma-form coefficients at exactly the
+note's graded orders.\footnote{\texttt{Laplace.OneD.RecoveryAllOrder},
+\texttt{RecoveryCoeffLimit}, \texttt{RecoveryGeneric}.}
+
+\section{What made it work}
+
+\emph{The seabed carried the analysis.} Every closed form the thread
+consumed --- the scale-$t$ Gaussian moments, the Gamma-form monomial
+moments, the monomial integrability family, the Stage-2 anharmonic
+limits --- was built in the May tides for the primer programme. The
+thread's own analytic content is one FTC induction and one elementary
+exponential estimate; everything else is reading existing results in
+the inverse direction. The productive act in the later tides was the
+seabed survey, not the proof.
+
+\emph{Exact cancellation over approximate bookkeeping.} At every order
+of every ladder, the moment closed forms cancel the expansion terms
+exactly, so the truncation error \emph{is} the integrated remainder.
+No estimate is ever made of a quantity that has a closed form.
+
+\emph{Elementary bounds over sharp ones.} The $s^2$ remainder constant
+(double the sharp $s^2/2$) removed all calculus from the first-order
+tide; the alternating-series route and the Taylor API were both
+rejected in deliberation for the FTC induction, which uses only stable
+ingredients. Numerical checks confirmed each constant with the expected
+slack before any Lean was written --- and one check caught invented
+values that had been written before the script ran, the arc's one
+process failure, now documented in the offending tide's log.
+
+\emph{Deliberation amortises.} Eight tides used five consult rounds:
+two candidates were executed on inherited deliberations (the deferred
+coefficient-limit packaging; the mirror-shaped generic ladder), and the
+final tide was a first-attempt-clean build because the
+uniqueness-of-limits pattern had stabilised three tides earlier.
+
+\section{Recurring friction}
+
+All build iterations in the arc were elaboration-level; the mathematics
+never moved after deliberation. The catalogue grew three entries, all
+of one family: combinator-built hypotheses (\texttt{Pi.add} integrals,
+\texttt{Pi.div} ratios, \texttt{Pi}-form derivative sums) and
+mixed-cast spellings ($\uparrow\!(n{+}1)$ versus $\uparrow\!n + 1$)
+fail to match goals syntactically, and the uniform repair is an
+explicitly-typed or \texttt{funext} bridge to the single-lambda,
+single-cast normal form. \texttt{positivity} needs $(x^2)^m$ rather
+than $x^{2m}$ for symbolic even powers; \texttt{rpow} exponent
+arithmetic wants explicit \texttt{show ... by ring} chains, never bare
+\texttt{simp}. The retrospective compile gate (zero errors, zero
+overfull boxes, checked \emph{before} commit) caught defects in four of
+the eight tides.
+
+\section{What remains}
+
+The thread closed its recorded follow-ups. The natural continuations
+are commissions rather than continuations: the $\gamma$ rung of
+Theorem~3.1 needs second-order anharmonic moment expansions (a Stage-2
+extension); the full triangular induction needs them at every order;
+the multivariate Section~7.4 (quasi-homogeneous weight recovery) needs
+a multivariate moment layer; and the note's Proposition~4.1 (the flat
+counterexample) needs expansion theory for smooth non-analytic
+perturbations. Each is a programme; none is a tide.
+
+\end{document}

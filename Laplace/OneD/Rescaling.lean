@@ -17,8 +17,6 @@ This file:
 * Proves the rescaling identity `anharmonic_rescaling_identity`.
 -/
 
-open Real
-
 namespace Laplace.OneD
 
 /-- The cubic coefficient `A = α / (6 λ^{3/2})` of the rescaled perturbation
@@ -44,7 +42,6 @@ theorem anharmonic_rescaling_identity {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t
   have hlamt : 0 < lam * t := mul_pos hlam ht
   have hsqrt_lam_pos : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
   have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
-  have hsqrt_lamt_pos : 0 < Real.sqrt (lam * t) := Real.sqrt_pos.mpr hlamt
   -- Compute powers of (u / √(λt)).
   have hd2 : (u / Real.sqrt (lam * t)) ^ 2 = u ^ 2 / (lam * t) := by
     rw [div_pow, Real.sq_sqrt hlamt.le]
@@ -190,8 +187,6 @@ theorem rescaledPerturbation_sq_le (lam alpha gamma : ℝ)
   set B := quarticScale lam gamma
   have ht_pos : 0 < t := by linarith
   have ht_ne : t ≠ 0 := ht_pos.ne'
-  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
-  have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
   have hsqrt_t_sq : Real.sqrt t ^ 2 = t := Real.sq_sqrt ht_pos.le
   -- (s_t(u))² ≤ 2·(A·u³/√t)² + 2·(B·u⁴/t)² = 2A²u⁶/t + 2B²u⁸/t².
   have hs_sq_le : rescaledPerturbation lam alpha gamma t u ^ 2 ≤

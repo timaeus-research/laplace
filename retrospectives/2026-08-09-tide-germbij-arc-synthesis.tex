@@ -1,0 +1,172 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Arc synthesis: identifiability of the loss germ\\
+from Laplace expansion data}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Twelve tides over two days formalised the quantitative core of the
+germbij note's singular identifiability theorem: if two nonnegative
+potentials with a common compact zero locus produce Laplace integrals
+agreeing beyond all orders against every test function, they agree near
+the zero locus. The Lean chain runs from analytic input (a power series,
+or a finite vanishing order) to an explicit $t^{1-m-d/2}$ lower bound on
+the pencil difference, in one dimension and in $\mathbb{R}^d$, ending in
+turnkey statements whose every hypothesis is a mathematical property of
+the potentials and the bump. This document synthesises the arc for a
+reader who will not read twelve per-tide retrospectives.
+\end{abstract}
+
+\section{The mathematics}
+
+The germbij note asks what the asymptotics of Gibbs expectations
+$\langle \phi \rangle_t = \frac{1}{Z(t)}\int \phi\, e^{-tL}\,dw$
+determine about the loss $L$ near its minima. At singular minima the key
+step is an identifiability theorem for the unnormalised data: if
+\[
+\int \phi\, e^{-tL_1}\,dw - \int \phi\, e^{-tL_2}\,dw = o(t^{-\infty})
+\qquad \text{for every } \phi \in C_c^\infty,
+\]
+then $L_1 = L_2$ near the common zero locus. The proof has three moving
+parts. The \emph{pencil identity} writes the difference of exponentials
+as an integral over the segment $L_s = (1-s)L_1 + sL_2$:
+\[
+e^{-tL_1} - e^{-tL_2} = t \int_0^1 g\, e^{-tL_s}\, ds,
+\qquad g = L_2 - L_1 .
+\]
+Testing against the observable $\phi = g\psi$ (a bump $\psi$ localising
+near a point where the germ of $g$ is nonzero) makes the integrand
+$g^2 \psi \geq 0$, and $L_s \leq L_1 + L_2$ gives a comparison to a
+single fixed weight. The \emph{sector bound} then says: if $|g|$ is
+bounded below by $c\,\|x\|^m$ on a sector (finite vanishing order $m$)
+and $L_1 + L_2 \leq C_0 \|x\|^2$, the integral over the shell at scale
+$t^{-1/2}$ is at least a constant times $t^{-m-d/2}$. Together:
+\[
+\kappa\, t^{\,1-m-d/2} \;\leq\;
+\int (L_2 - L_1)\, \psi\, \bigl(e^{-tL_1} - e^{-tL_2}\bigr)\, dw ,
+\]
+which contradicts $o(t^{-\infty})$. Analyticity enters only through the
+finite vanishing order; the flatness counterexample in the note shows
+this is exactly where the smooth category fails.
+
+The Lean chain proves the quantitative statement (the displayed lower
+bound), which is the entire content of the theorem except for the choice
+of the point and bump; the $o(t^{-\infty})$ contradiction is a one-line
+consequence a reader can take from the note.
+
+\section{The arc in outline}
+
+Twelve tides, PRs \#21--\#32, all sorry-free at every merge.
+
+\emph{Phase 1, the 1D quantitative chain.} The pencil identity in
+scalar, integrated, and measure-general forms; the shell bound at scale
+$t^{-1/2}$; and their composite, the 1D lower
+bound.\footnote{\texttt{Laplace.Pencil}, \texttt{Laplace.Sector},
+\texttt{Laplace.Identifiability}
+(\texttt{pencil\_difference\_lower\_bound}).}
+
+\emph{Phase 2, arbitrary finite dimension.} The spherical sector was
+replaced by a \emph{scaled set}: a closed ball $S$ away from the origin,
+shrunk by $u = t^{-1/2}$, with $\mathrm{vol}(u \cdot S) = u^d\,
+\mathrm{vol}(S)$ by the Haar scaling law. No polar coordinates, no
+surface measure. The multivariate sector and identifiability files
+mirror the 1D ones.\footnote{\texttt{Laplace.Multi.Sector},
+\texttt{Laplace.Multi.Identifiability}.}
+
+\emph{Phase 3, the instantiation program.} The chains above take the
+lower bound $c\|x\|^m \leq |g|$ as a hypothesis. Seven tides replaced it
+by analytic input and removed the remaining non-mathematical premises:
+in 1D, analyticity plus finite vanishing order produce the growth bound;
+in $\mathbb{R}^d$, a nonzero homogeneous leading part plus a Taylor
+remainder produce the scaled set; composed corollaries and turnkey forms
+(per-$t$ integrability discharged from continuity and compact support)
+package each chain; and finally the analytic bridge: a power series
+whose diagonal terms vanish below degree $m$ yields the Taylor
+hypotheses via Mathlib's uniform geometric approximation, so both chains
+now run from analytic data to the lower
+bound.\footnote{\texttt{Laplace.Analytic},
+\texttt{Laplace.Multi.LeadingPart},
+\texttt{Laplace.AnalyticIdentifiability},
+\texttt{Laplace.Multi.LeadingIdentifiability}, \texttt{Laplace.Turnkey},
+\texttt{Laplace.Multi.Turnkey}, \texttt{Laplace.Multi.AnalyticBridge}.}
+
+The germbij note carries fourteen \texttt{\textbackslash leanref} margin
+markers pinning its Lemma~7.1, Lemma~7.2, Theorem~7.3, and two remarks to
+these declarations at a fixed commit.
+
+\section{What made it work}
+
+\emph{Factoring the analytic input.} The single most consequential
+architecture decision, made in the first deliberation round: state the
+sector and identifiability theorems against the hypothesis
+$c\|x\|^m \leq |g|$ rather than against analyticity. This kept resolution
+of singularities, germs, and quasianalyticity entirely out of the
+quantitative chain, and let the instantiation program proceed as
+independent small tides.
+
+\emph{Scaled sets over polar coordinates.} The obvious multivariate
+sector is a spherical cap, and the obvious proof uses polar coordinates
+and surface measure, neither pleasant in Mathlib. Scaling a fixed ball by
+$u$ and using the Haar scaling law gave the same $t^{-d/2}$ volume factor
+in four lines.
+
+\emph{Mirror-shaped tides.} Six of the twelve tides were structural
+mirrors of an earlier tide (multivariate of 1D, turnkey of turnkey,
+corollary of corollary). Copying the proven file and specialising beat
+re-deriving from first principles every time; the eleventh tide compiled
+on its first build. The second author of a mirror tide is the previous
+tide, not Mathlib.
+
+\emph{Consults as idiom requests.} The productive GPT-5.6 Sol consults
+asked ``which Mathlib lemmas, in what order'' before writing, not ``what
+is wrong'' after. The bridge tide added the complementary lesson: after
+the consult sketches a classical multi-step argument, spend five minutes
+searching Mathlib for the \emph{conclusion shape} --- the packaged lemma
+(\texttt{uniform\_geometric\_approx'}) absorbed the coefficient bound,
+the HasSum manipulation, and the geometric tail in one call.
+
+\section{Recurring friction}
+
+By frequency: (1) \emph{Mathlib renames} --- \texttt{abs\_sub},
+\texttt{inv\_le\_inv\_of\_le}, \texttt{push\_neg} deprecations; the fix
+is mechanical once the current name is found, and the repo
+\texttt{CLAUDE.md} now records the replacements. (2) \emph{Elaboration
+snags} --- implicit interval endpoints unifying with ambient variables
+(\texttt{isCompact\_Icc} with a free $t$ in scope), anonymous
+constructors inside \texttt{rw} arguments, nested integral notation
+swallowing $\partial\mu$; each cost one iteration. (3) \emph{Scoped
+notation} --- $\mathbb{R}_{\geq 0}^\infty$ and pointwise scalar action
+need their \texttt{open scoped} lines. (4) \emph{Process} --- one
+stale-base worktree (branched before the parent tide merged) caused an
+unmergeable PR and was fixed by rebasing; the lesson (verify the base
+commit at worktree creation, refresh the canonical clone first) held for
+the rest of the arc, with one deliberate rebase when a tide was opened
+concurrently with its parent's CI. Auto-merge being disabled mid-arc was
+absorbed by merge-on-green watchers.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item An \texttt{iteratedFDeriv} interface for the diagonal-vanishing
+hypothesis, for smooth-category consumers.
+\item Upstream the cylinder-indicator majorant pattern (continuous kernel
+times compactly supported factor on a restricted product) to lean-common;
+it now has two uses.
+\item An \texttt{IsLittleO} packaging of the final contradiction, if the
+note's Theorem~7.3 is ever wanted as a single Lean statement rather than
+a quantitative chain plus a one-line argument.
+\end{itemize}
+
+\end{document}

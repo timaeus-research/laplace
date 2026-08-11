@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the harmonic monomial \texttt{GibbsObservable} witnesses --- a clean pass, a dead open, a dead import, and a docstring that lied about its own file}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/HarmonicGibbsObservableMonomials.lean}: the
+\texttt{Threepoint.GibbsObservable} witnesses for the harmonic Gibbs measure with monomial
+observables $x\mapsto x^k$ --- the harmonic analogue of the anharmonic observable file, and the
+substrate that makes the harmonic cross-susceptibility capstone unconditional on the
+$x,x^2,x^3$ observables. Result: \textbf{a clean fidelity pass with four edits} --- a dead
+\texttt{open}, a dead import, and a stale module docstring that described a file two-thirds
+smaller than the one it sat atop.
+\end{abstract}
+
+\section{Setting}
+The harmonic counterpart of
+\reviewref[AnharmonicGibbsObservableMonomials]{2026-06-05-review-laplace-oned-anharmonicgibbsobservablemonomials}:
+it builds the \texttt{Threepoint.GibbsObservable} data for $L=(\lambda/2)x^2$, perturbation
+$A=\mathrm{id}$, and every monomial observable $x\mapsto x^k$, by \emph{dominated differentiation
+under the integral sign}. Its $k=1,2,3$ specialisations are exactly the witnesses the
+\reviewref[harmonic cross-susc derivative capstone]{2026-06-05-review-laplace-oned-harmoniccrosssuscderiv}
+consumes to discharge the \texttt{GibbsObservable} hypotheses for $x,x^2,x^3$.
+
+\section{What was reviewed}
+The public surface: the $h=0$ numerator reduction \texttt{harmonic\_perturbed\_numerator\_zero\_eq}
+(and its monomial form \texttt{\dots\_pow}); the analytic ladder
+(\texttt{abs\_mul\_le\_quarter\_lambda\_sq\_add}, a Young-type absorption bound;
+\texttt{dominator\_integrable\_pow}; \texttt{harmonic\_perturbed\_integrand\_pow\_bound};
+\texttt{harmonic\_perturbed\_integrand\_pow\_hasDerivAt}); the headline
+\texttt{Threepoint.harmonic\_id\_gibbsObservable\_pow}; and the
+\texttt{\dots\_id} / \texttt{\dots\_mul\_self} / \texttt{\dots\_mul\_mul\_self} wrappers for
+$x,x^2,x^3$. The informal corpus was the file's own docstrings plus the sibling anharmonic file and
+the cross-susc consumer.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect in the mathematics.} The reviewer confirmed each layer: the $h=0$
+identity is an extensional simplification of the integrand; the Young bound
+$|hx|\le(\lambda/4)x^2+h^2/\lambda$ correctly absorbs the linear perturbation into the quadratic
+decay $e^{-(t\lambda/4)x^2}$; the base bound is correctly reused at index $k+1$ and scaled by $t$ to
+dominate the \emph{derivative} integrand fed to
+\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}; and the $x,x^2,x^3$ wrappers are
+clean transports of the generic-$k$ theorem along function equalities. ``I found no proof-fidelity
+problem in the mathematics/proof structure of the theorems themselves.''
+
+\textbf{One real fidelity issue --- the docstring described the wrong file.} The module header read
+``(in progress)''; the Status section claimed only the $h=0$ primitive was provided and that the
+headline \texttt{harmonic\_id\_gibbsObservable\_pow} ``will land in a follow-up session.'' All false:
+the file already contained the full dominated-differentiation theorem and all three wrappers. The
+docstring was a snapshot of an \emph{earlier} tide session, never refreshed when the headline landed.
+The fix rewrites the Status section to record what is actually present, and drops the ``in progress''
+header. Two further doc drifts were corrected in the same edit: the strategy text named
+\texttt{integrable\_abs\_pow\_mul\_exp\_neg\_mul\_sq} ``already in the seabed
+(\texttt{Laplace/OneD/IntegralRemainder.lean})'', whereas the code uses Mathlib's
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} from \texttt{GaussianIntegral} --- both the
+\emph{name} and the \emph{home} were wrong.
+
+\section{Simplifications applied}
+\textbf{A dead open and a dead import.} \texttt{open Set} carried nothing (no bare
+\texttt{Ioi}/\texttt{Iio}/\texttt{Icc}/\texttt{univ}); \texttt{open MeasureTheory} stays (bare $\int$,
+\texttt{Integrable}, \texttt{volume}). And \texttt{import Laplace.OneD.IntegralRemainder} is dead: a
+full \texttt{lake build} (all consumers, 8306 jobs) is green without it. Signatures byte-identical,
+no warnings. The reviewer affirmed all four edits.
+
+\section{Disagreements and open questions}
+None substantive. The reviewer initially cautioned against marking the \texttt{IntegralRemainder}
+import dead ``from source inspection,'' since the proofs textually reference
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} --- but explicitly allowed that ``if a build later
+shows that theorem is re-exported transitively, removal may compile.'' It did: the lemma is a
+\emph{Mathlib} lemma (\texttt{GaussianIntegral}, line 109), reachable through the retained
+\texttt{HarmonicGibbsRegularity} chain, not a denizen of \texttt{IntegralRemainder} at all. The
+reviewer's proof-golf suggestions (collapse the affine-derivative mini-block, inline two one-use
+\texttt{rfl} aliases) were declined as internal-shape-only.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A textually-referenced lemma can still make its import dead --- because the lemma
+    lives upstream in Mathlib.} The proofs name \texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq}, and
+    the docstring even pointed at \texttt{IntegralRemainder.lean} as its home; but the lemma is
+    Mathlib's, reachable via another retained import. ``This symbol is used'' does not imply ``this
+    import is load-bearing.'' The full build is the only arbiter --- exactly mirroring the
+    \texttt{WeightedBridge}/\texttt{GaussianIntegral} lesson on the qd seabed (a lemma's \emph{name}
+    need not match the file that exports it).
+  \item \textbf{A module docstring is the doc site most prone to silent staleness.} It is written at
+    the \emph{start} of a tide, before the headline exists, and nothing forces a refresh when the
+    headline lands. Here it underclaimed the file by two-thirds. When a file's header says ``in
+    progress'' / ``will land in a follow-up,'' check it against the actual declaration list before
+    trusting it --- and when fixing, prefer ``provides \dots'' over ``is complete'' so it does not
+    re-stale on the next addition.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining never-reviewed laplace \texttt{OneD} files:
+    \texttt{HarmonicAffineKappa3}, \texttt{HarmonicPerturbedMoments},
+    \texttt{QuarticBoundedPrior}, \texttt{QuarticBoundedPriorTestFn}, and the large
+    \texttt{IntegralRemainder} itself.
+\end{itemize}
+
+\end{document}

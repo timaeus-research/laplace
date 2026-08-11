@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: bare-setup recovery\\
+\large grand composition, convenience capstone}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The inverse-direction programme's one-theorem form. From the note's
+prose data --- two globally smooth losses, analytic at their unknown
+minima, vanishing recentred gradients, diagonal-matched
+positive-definite matrices, and one physical data premise (superPoly
+agreement of the localized Gibbs moment families, over every pair of
+ball localizations, on smooth compactly supported tests in a common
+region containing balls around both minima) --- the theorem concludes
+that the minima coincide and the germs agree there modulo the
+additive constant. Every package hypothesis of the located capstone
+is discharged internally by the constructors of the two preceding
+tides. The single fix round taught a lesson worth keeping: a
+\code{have}-bound constructor is opaque, so its postconditions
+cannot be recovered by \code{rfl} --- consume them through the
+structure's own fields (here, the region \emph{is} the ball of
+radius \code{delta} by construction, and positivity is the
+\code{delta\_pos} field), not by re-deriving the internal choice
+terms.
+\end{abstract}
+
+\section{Setting}
+
+With the radial Taylor bound merged, the chain from prose to
+conclusion existed but took two compositions at every call site.
+This tide packages it, choosing the radius-quantified form of the
+data premise --- ``for every pair of ball localizations'' --- which
+is the ball specialization of the common-region option the
+grand-composition consult recommended, and which instantiates
+cleanly at the constructed packages' radii.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{located\_analytic\_germ\_recovery\_of\_bare\_setup}. The proof
+is eleven lines of composition: transport smoothness to the
+recentred losses, build both package families with
+\code{higherLaplaceDomainFamily\_ofContDiff}, hand them to
+\code{located\_analytic\_germ\_recovery\_of\_ccData}, and discharge
+its data premise by rewriting each package's region as the ball of
+its own \code{delta} (a \code{rfl}, because the constructor sets
+both fields to the same radius) and instantiating the
+radius-quantified hypothesis at the two \code{delta\_pos} fields.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+One round. Binding the families with \code{have} made them opaque,
+and the planned \code{rfl} extraction of the region failed with
+metavariable noise; re-deriving the constructor's internal
+\code{choose} chains by hand would have been both fragile and
+futile (classical choice terms are opaque to definitional
+reduction even when spelled identically). The repair --- inline
+applications plus field access --- is the general pattern:
+constructor postconditions that callers need should be read off
+structure fields.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: nothing new. New mathematics: none. This is the programme's
+punctuation mark, not a theorem.
+
+\section{What the next tide inherits}
+
+Nothing mandatory. The note-side markers for the three new theorems
+are queued behind the TeX approval gate; the two review batches of
+proof refactors remain available for a simplification pass; and the
+\code{have}-versus-fields lesson belongs in the repo's gotcha
+catalogue at the next hygiene PR.
+\end{document}

@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the quartic--sextic partition specialisation --- two dead opens, not one}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/QuarticSexticPartitionAsymptotic.lean}: the
+$(k_1,k_2)=(2,3)$ specialisation of the 2D separable partition asymptotic, $Z_{2D}(t)=C''\cdot
+t^{-1/4-1/6}$ for $L(x,y)=x^4/24+y^6/720$. Result: \textbf{a clean fidelity pass with two dead-open
+removals} --- both \texttt{open Real} \emph{and} \texttt{open MeasureTheory}, the latter dead here
+(unlike its generic sibling) because the specialisation consumes the closed form directly and
+carries no integrability blocks.
+\end{abstract}
+
+\section{Setting}
+This is the concrete $(2,3)$ instance --- the ``first instance'' per the seabed \texttt{CLAUDE.md}
+--- of the partition leg whose generic-$(k_1,k_2)$ form was reviewed at
+\reviewref[KthKthPartitionAsymptotic]{2026-06-05-review-laplace-twod-kthkthpartition}. It does not
+re-run the lift machinery: it takes the seabed closed form
+\texttt{partitionFunction\_quarticSextic\_eq} (from \texttt{TwoD/QuarticSextic.lean}) and repackages
+it as a \texttt{const}$\cdot t^{(\dots)}$ identity, a rescaled \texttt{Tendsto}, and an
+\texttt{IsEquivalent}.
+
+\section{What was reviewed}
+Three public theorems plus the constant
+$C''=\tfrac16\,24^{1/4}\,720^{1/6}\,\Gamma(1/4)\,\Gamma(1/6)$. The constant is exactly the $(2,3)$
+instance of the generic \texttt{kthKthPartitionConst} ($4!=24$, $6!=720$, $\tfrac12\cdot\tfrac13
+=\tfrac16$), and the exponent $-1/4-1/6$ matches $-1/(2k_1)-1/(2k_2)$.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no theorem-level mismatch.} The constant and exponent are correct, the closed-form
+combination $(1/2)(1/3)=1/6$ is right, and the exact theorem carries \texttt{ht : 0 < t} where
+needed. One report-only prose note: the module docstring states the closed-form identity without
+restating $t>0$ --- terse-but-true narrative (the $t$-power superscript carries the parameter, and
+the theorems require it), the same recurring elision seen across the \texttt{TwoD/} module
+docstrings; left as is, consistent with the
+\reviewref[KthKthOddMoments]{2026-06-05-review-laplace-twod-kthkthoddmoments} and
+\reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable} reviews.
+
+\section{Simplifications applied}
+\textbf{Two dead opens.} \texttt{open Real} is dead (all \texttt{Real.*} qualified, bare
+$t\,\hat{}\,(\text{real})$ is \texttt{rpow}). And --- the distinguishing feature of this file ---
+\texttt{open MeasureTheory} is \emph{also} dead: unlike the generic sibling (and the
+numerator/moment legs), this specialisation has no \texttt{have hU/hV : Integrable \dots} blocks, so
+there is no bare \texttt{Integrable} or \texttt{$\int$}; \texttt{partitionFunction}/%
+\texttt{addSeparable} are used as project defs. With the open line reduced to
+\texttt{open Filter Asymptotics} (plus scoped \texttt{Topology}), the module is green at $2702$
+jobs, no warnings, signatures byte-identical. GPT affirmed (and had flagged the
+\texttt{MeasureTheory} removal as ``if the build confirms'' --- it did).
+
+\section{Disagreements and open questions}
+None. The reviewer's other suggestions (\texttt{show \dots\ by ring} $\to$ named-\texttt{have};
+dropping the terminal \texttt{exact} wrappers) were declined as proof-golf.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A specialisation can be \emph{more} trimmable than the generic it instantiates.} The
+    generic legs keep \texttt{open MeasureTheory} load-bearing through their inline integrability
+    proofs; this $(2,3)$ file delegates the closed form to a seabed lemma and never touches
+    \texttt{Integrable}/\texttt{$\int$}, so a second open dies. The dead-open verdict is per-file
+    even within a copy-paste family --- the build is the arbiter, and ``if the build confirms'' is
+    the honest way to flag a second open.
+  \item \textbf{The \texttt{t>0} module-prose elision is a family-wide pattern, not a per-file
+    drift.} Several \texttt{TwoD/} module docstrings state the $t$-dependent identity without
+    restating $t>0$. Fixing them one at a time is noise; a single batched hygiene tide is the right
+    granularity.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining \texttt{QuarticSextic*} files (\texttt{Numerator}/\texttt{Moment}%
+    \texttt{Asymptotic}, \texttt{QuarticSextic}, \texttt{QuarticSexticMoments},
+    \texttt{QuarticSexticOddMoments}) --- check each for the \emph{second} dead open
+    (\texttt{MeasureTheory}) as well as the first, since the asymptotic-packaging ones likely share
+    this file's no-integrability shape.
+  \item Batched hygiene tide: add ``for $t>0$'' to the \texttt{TwoD/} module docstrings that state
+    a $t$-dependent closed form; plus the \texttt{show}$\to$\texttt{have} proof-golf.
+\end{itemize}
+
+\end{document}

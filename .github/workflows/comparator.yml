@@ -1,0 +1,124 @@
+# Verify the main theorem statements with leanprover/comparator:
+# builds the library, then checks — in landrun sandboxes, via lean4export
+# statement comparison, an axiom check, and kernel replay — that Solutions
+# proves exactly the statements in Statements.lean using no axioms beyond
+# comparator.json's permitted triple. Assembly mirrors comparator's own CI
+# (leanprover/comparator .github/workflows/lean_action_ci.yml).
+#
+# Notes:
+# * lean4export is pinned to the tag matching this repo's lean-toolchain;
+#   bump the `ref` below together with the toolchain.
+# * comparator's README additionally wraps the invocation in systemd-run to
+#   guard a landrun sandbox-escape (fixed in Linux 7.1). CI runs it directly,
+#   as upstream's own CI does: this job is a drift check, not an adversarial
+#   audit — for the latter, run comparator per the README on a trusted host.
+
+name: Solutions.lean
+
+on:
+  push:
+    # Doc-only pushes don't need verification. Ignore-listing (rather than
+    # allow-listing Lean paths) is deliberate: any library file can affect
+    # whether Solutions still proves Statements.
+    paths-ignore:
+      - '**.md'
+      - 'tide-log/**'
+      - 'retrospectives/**'
+      - 'notes/**'
+      - 'gpt_responses/**'
+      - 'docbuild/**'
+  workflow_dispatch:
+
+# One run per ref; a newer push supersedes an in-flight run.
+concurrency:
+  group: comparator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      # Standard runners have ~14 GB free — not enough for a Mathlib project
+      # build plus two Lean toolchains (ours + comparator's). Reclaim ~25 GB
+      # by removing preinstalled bundles this job never uses, and log the
+      # machine specs while we're here.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force > /dev/null
+          echo "cores: $(nproc)"; free -h | head -2; df -h / | tail -1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: leanprover/comparator
+          path: vendor/comparator
+
+      - uses: actions/checkout@v4
+        with:
+          repository: leanprover/lean4export
+          ref: v4.29.0 # must match lean-toolchain, e.g. v4.29.0
+          path: vendor/lean4export
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Zouuup/landrun
+          path: vendor/landrun
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Build landrun
+        working-directory: vendor/landrun
+        run: go build -o landrun cmd/landrun/main.go
+
+      # The lean-common and threepoint dependencies are private repositories;
+      # rewrite their URLs to authenticate with the read token so `lake` can
+      # fetch them.
+      - name: Configure private-dependency access
+        run: |
+          git config --global \
+            url."https://x-access-token:${{ secrets.LEAN_COMMON_READ_TOKEN }}@github.com/timaeus-research/lean-common".insteadOf \
+            "https://github.com/timaeus-research/lean-common"
+          git config --global \
+            url."https://x-access-token:${{ secrets.LEAN_COMMON_READ_TOKEN }}@github.com/timaeus-research/threepoint".insteadOf \
+            "https://github.com/timaeus-research/threepoint"
+
+      # Build the library (installs elan; fetches the Mathlib cache; caches
+      # .lake via the GitHub cache, so incremental runs only rebuild changes).
+      - uses: leanprover/lean-action@v1
+
+      - name: Build lean4export
+        working-directory: vendor/lean4export
+        run: lake build
+
+      # Comparator omits the `--` flag terminator when invoking landrun, so
+      # landrun's CLI swallows the inner `--` of `lean4export <module> -- <decls>`
+      # and lean4export misreads the theorem names as modules. Insert the
+      # terminator at the source until it is fixed upstream.
+      - name: Patch comparator's landrun invocation
+        run: |
+          sed -i 's/args ++ #\[spawnArgs.cmd\] ++ spawnArgs.args/args ++ #["--", spawnArgs.cmd] ++ spawnArgs.args/' vendor/comparator/Main.lean
+          grep -q '#\["--", spawnArgs.cmd\]' vendor/comparator/Main.lean
+
+      - name: Build comparator
+        working-directory: vendor/comparator
+        run: lake build comparator
+
+      # The Lake artifact cache (`enableArtifactCache` in lakefile.toml) writes
+      # to ~/.cache/lake, which comparator's landrun sandbox mounts read-only —
+      # the sandboxed replay then dies with EACCES on every artifact store.
+      # The library is already fully built by this point, so disable the cache
+      # for the verification step. (The env override `LAKE_ARTIFACT_CACHE`
+      # cannot be used: comparator forwards only PATH/HOME into the sandbox.)
+      - name: Disable the Lake artifact cache for the sandboxed build
+        run: sed -i 's/^enableArtifactCache = true$/enableArtifactCache = false/' lakefile.toml
+
+      - name: Run comparator
+        run: |
+          export PATH="$GITHUB_WORKSPACE/vendor/lean4export/.lake/build/bin:$GITHUB_WORKSPACE/vendor/landrun:$PATH"
+          lake env vendor/comparator/.lake/build/bin/comparator comparator.json

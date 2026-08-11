@@ -16,7 +16,7 @@ We also provide the elementary lower bound `1 - z ≤ exp(-z)` (a restatement of
 Mathlib's `Real.add_one_le_exp`).
 -/
 
-open Real Set
+open Set
 
 namespace Laplace
 

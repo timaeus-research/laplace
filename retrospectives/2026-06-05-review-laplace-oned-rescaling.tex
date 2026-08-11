@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the 1D anharmonic rescaling identity, and four pieces of dead code}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/Rescaling.lean}: the rescaling identity
+$t\,L(u/\sqrt{\lambda t})=u^2/2+s_t(u)$ for the anharmonic potential, with
+$s_t(u)=\tfrac{\alpha}{6\lambda^{3/2}}\tfrac{u^3}{\sqrt t}+\tfrac{\gamma}{24\lambda^2}\tfrac{u^4}{t}$, plus the
+coercivity-driven Gaussian-decay bounds and the polynomial bound $s_t(u)^2\le 2(A^2+B^2)(u^6+u^8)/t$. Result:
+\textbf{a clean fidelity pass with four dead-code removals} --- a dead \texttt{open Real} and three unused
+local hypotheses, all rebuild-arbitrated with the \texttt{unusedVariables} linter as final witness.
+\end{abstract}
+
+\section{Setting}
+This is the rescaling layer of the 1D anharmonic Laplace expansion (primer Stage~2): the substitution
+$x=u/\sqrt{\lambda t}$ normalises the harmonic part of $t\,L$ to $u^2/2$ and packages the rest as the
+remainder $s_t(u)$, with cubic and quartic coefficients $A=\alpha/(6\lambda^{3/2})$, $B=\gamma/(24\lambda^2)$.
+It is the 1D original that the \reviewref[multivariate QuadraticApprox]{2026-06-05-review-laplace-multi-quadratic-approx}
+mirrors, and the first review into the non-cumulant 1D layer.
+
+\section{What was reviewed}
+Three definitions (\texttt{cubicScale}, \texttt{quarticScale}, \texttt{rescaledPerturbation}), the rescaling
+identity and its \texttt{symm} rephrasing, two Gaussian-decay theorems (\texttt{rescaled\_boltzmann\_decay}
+and \texttt{rescaled\_max\_decay}), and the polynomial bound \texttt{rescaledPerturbation\_sq\_le} (plus one
+private $(a+b)^2\le 2a^2+2b^2$ helper).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; the mathematics is faithful.} The load-bearing check was the rescaling algebra, and it is
+correct: with $L=(\lambda/2)x^2+(\alpha/6)x^3+(\gamma/24)x^4$ and $x=u/\sqrt{\lambda t}$, the cubic term gives
+$t\cdot\tfrac{\alpha}{6}x^3=\tfrac{\alpha}{6}u^3\tfrac{t}{(\lambda t)^{3/2}}=\tfrac{\alpha}{6\lambda^{3/2}}\tfrac{u^3}{\sqrt t}$
+(the key step $t/(\lambda t)^{3/2}=1/(\lambda^{3/2}\sqrt t)$), and the quartic term gives
+$\tfrac{\gamma}{24\lambda^2}\tfrac{u^4}{t}$ --- exactly the stated coefficients. The decay bounds correctly
+thread coercivity through the rescaling ($c_0=c/\lambda$, then $\min(1/2,c)$), and the polynomial bound has
+the right exponents $u^6+u^8$ and the right $t\ge1$ usage $1/t^2\le1/t$.
+
+One benign note, recorded but \textbf{not} escalated and \textbf{not} acted on: the two decay theorems carry a
+hypothesis $\gamma>0$ that is already forced by $\lambda>0$ and the discriminant $\alpha^2<3\lambda\gamma$, so
+the Lean statements are very slightly stronger than the minimal claim. Removing it is out of a review tide's
+scope --- dropping a public hypothesis changes the signature, and besides, the proof genuinely \emph{uses}
+$\gamma>0$ to invoke \texttt{anharmonic\_coercive} (whose own signature demands it), so weakening here would
+cascade an API change through the dependency. Harmless and left as-is.
+
+\section{Simplifications applied}
+\textbf{Four dead-code removals.} A dead \texttt{open Real} (every \texttt{Real.sqrt}/\texttt{Real.exp}/%
+\texttt{Real.sq\_sqrt} is fully qualified; the only $\sqrt{}$ symbols are in comments), and three unused local
+hypotheses: \texttt{hsqrt\_lamt\_pos} in the rescaling identity (the power computations use
+\texttt{Real.sq\_sqrt hlamt.le} directly), and \texttt{hsqrt\_t\_pos}/\texttt{hsqrt\_t\_ne} in the polynomial
+bound (\texttt{hsqrt\_t\_sq} comes straight from \texttt{ht\_pos.le}; the surviving \texttt{ht\_ne} is what
+\texttt{field\_simp} actually consumes). All four removed in one worktree and \textbf{rebuild-arbitrated}: the
+file rebuilt green ($2699$ jobs) with \emph{no} remaining \texttt{unusedVariables} warning and all nine
+declarations byte-identical. This last point is the discipline that matters --- the seabed's standing gotcha is
+that ``dead'' locals sometimes feed a later tactic implicitly, so a reviewer's unused-flag is only a candidate;
+the build plus the linter are the arbiter, and here all four were confirmed genuinely dead.
+
+GPT's six other proposals --- inline the \texttt{field\_simp} nonzero facts, trim the \texttt{nlinarith} hint
+list, inline the one-use private helper, inline \texttt{ht\_ne} (which is in fact used), shorten the
+\texttt{hLHS} rewrite, and collapse the \texttt{hkey}/\texttt{hgoal} staging --- are tactic-golf or inlining and
+were declined.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A reviewer's ``unused local'' is a candidate, not a verdict.} Three of the four removals here
+    were local hypotheses GPT called unused; the honest confirmation was the rebuild with the
+    \texttt{unusedVariables} linter clean afterwards, not the reviewer's say-so. (The seabed has a documented
+    case where a ``dead'' local was load-bearing for a downstream \texttt{linarith}.) Remove the candidates,
+    rebuild, and let the linter's silence be the proof.
+  \item \textbf{A redundant hypothesis that the proof actually uses is not removable as a simplification.} The
+    $\gamma>0$ on the decay theorems is mathematically implied by the other hypotheses, but it is passed to
+    \texttt{anharmonic\_coercive}, so removing it is an API change cascading through a dependency --- a forward
+    tide at most, never a review-tide signature-preserving edit.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The 1D non-cumulant layer is large and now barely opened. Tractable never-reviewed neighbours include
+    \texttt{GaussianMoments.lean}, \texttt{Localisation.lean}, \texttt{Harmonic.lean}, and the J-function
+    files; the \texttt{Multi/Covariance*} trio (3998--19611 lines) still awaits a sectioned approach.
+\end{itemize}
+
+\end{document}

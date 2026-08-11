@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the bounded-prior test-function primitives --- an honestly-in-progress file, two sound lemmas, three anticipatory deps removed}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/QuarticBoundedPriorTestFn.lean}: the two foundational
+primitives (partition positivity and an inner-shell lower bound) for the still-pending bounded-prior
+localisation $\int_{-a}^a\varphi\,e^{-tw^4/24}\sim\varphi(0)Z_a(t)$. Result: \textbf{a clean fidelity
+pass}, three anticipatory dependencies removed (a dead import and two dead opens), and one docstring
+hypothesis disambiguated --- with the key judgement being that the file's ``(in progress)'' status is
+\emph{accurate} and must not be ``fixed.''
+\end{abstract}
+
+\section{Setting}
+The $\varphi$-weighted companion to
+\reviewref[QuarticBoundedPrior]{2026-06-05-review-laplace-oned-quarticboundedprior}, and the last
+small never-reviewed laplace \texttt{OneD} file. Its eventual headline is the localisation
+$\int_{-a}^a\varphi(w)e^{-tw^4/24}\,dw\sim\varphi(0)\,Z_a(t)$ ($t\to\infty$), packaged as an
+\texttt{IsLittleO} at \texttt{atTop} --- but that has not been formalised yet. The file currently
+holds only the two building blocks.
+
+\section{What was reviewed}
+\texttt{quartic\_bounded\_prior\_partition\_pos} ($Z_a(t)>0$ for $a>0$, any $t$) and
+\texttt{quartic\_bounded\_prior\_partition\_lower\_bound\_inner}
+($2\delta\,e^{-t\delta^4/24}\le Z_a(t)$ for $0<\delta\le a$, $0\le t$). The informal ground truth was
+the file's docstrings and the elementary Gaussian-type estimates they describe.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect in either statement.} Positivity is the strictly-positive integrand on a
+nonempty interval (support is all of $\mathbb R$, $\mathrm{vol}([-a,a])>0$). The lower bound restricts
+to the inner shell $[-\delta,\delta]$, where $w^4\le\delta^4$ and $t\ge0$ give
+$e^{-tw^4/24}\ge e^{-t\delta^4/24}$; \texttt{setIntegral\_const} contributes the length $2\delta$, and
+subset monotonicity lifts $\int_{[-\delta,\delta]}\le\int_{[-a,a]}$. The reviewer confirmed both
+statements --- constant $2\delta$, exponent $t\delta^4/24$, hypotheses $0<\delta\le a$, $0\le t$,
+inequality direction.
+
+\textbf{The crucial non-finding: the ``in progress'' status is true.} The module docstring says the
+file is in progress and the headline ``will land in a follow-up session.'' The immediately-preceding
+\reviewref[HarmonicGibbsObservableMonomials review]{2026-06-05-review-laplace-oned-harmonicgibbsobservablemonomials}
+caught exactly this phrasing being \emph{stale} (the headline had in fact landed in-file). So this one
+was checked the same way --- and came out the other way: a seabed grep confirmed nothing imports this
+file, nothing consumes its two lemmas, and the localisation headline exists nowhere (the seabed's
+\texttt{Localisation.lean} is the \emph{harmonic} localisation, a different result). The status is
+faithful and was left untouched. Only one genuinely imprecise docstring bullet was fixed: the Status
+line wrote ``$Z_a(t)>0$ for $0<a,t:\mathbb R$,'' which misreads as requiring $0<t$, whereas the
+theorem needs only $0<a$ (the per-theorem docstring already said so) --- disambiguated to ``$0<a$
+(any $t$).''
+
+\section{Simplifications applied}
+\textbf{Three anticipatory dependencies, all dead now.} The import
+\texttt{Mathlib.Analysis.Asymptotics.Defs} was added for the future \texttt{IsLittleO} headline but is
+unused by the two primitives (the only \texttt{=o[atTop]} is in the docstring); \texttt{open Filter}
+and \texttt{open Topology} were likewise anticipatory (all \texttt{Filter.*} names are qualified, no
+$\mathcal N$/\texttt{nhds} appears). The one trap checked carefully --- whether the
+$\le^{\mathrm m}[\mu]$ a.e.\ notation needs \texttt{open Filter} --- resolved against it: the notation
+is available without it. \texttt{open MeasureTheory} and \texttt{open Set} stay. Build green, no
+in-file warnings, signatures byte-identical; the reviewer affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer noted the routine caveat that removing an import narrows the transitive surface for
+any external downstream relying on it indirectly --- moot here, since nothing imports this file.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{``In progress'' is a claim to verify, not a reflex to fix.} Two consecutive reviews hit
+    the identical ``will land in a follow-up'' phrasing; one was stale (fix it), the other accurate
+    (leave it). The discriminator is a thirty-second seabed grep --- does the headline exist anywhere?
+    --- not the phrasing itself. Treating ``in progress'' as automatically-stale would have introduced
+    a false docstring here.
+  \item \textbf{Anticipatory imports/opens accrete on in-progress files and are safe to shed.} A file
+    written headline-first often opens \texttt{Filter}/\texttt{Topology} and imports
+    \texttt{Asymptotics} for a theorem that has not arrived; until it does, they are pure dead weight,
+    and the build confirms their removal. (They can always be re-added with the headline.)
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The genuine forward tide this file is waiting on: the bounded-prior localisation headline
+    $\int_{-a}^a\varphi\,e^{-tw^4/24}\sim\varphi(0)Z_a(t)$ (\texttt{IsLittleO} form), for which these
+    two primitives are the building blocks.
+  \item The last never-reviewed laplace \texttt{OneD} file is the large \texttt{IntegralRemainder}.
+\end{itemize}
+
+\end{document}

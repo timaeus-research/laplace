@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the local Taylor comparison\\
+(smooth-germ programme, stage C3)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The stage the scoping consult designated the programme's hardest: the
+normalized local Taylor comparison, where the smooth-versus-polynomial
+analysis actually lives. A dedicated shape consult settled three
+design choices before any Lean: the moving radius $r(q) = \sqrt{q}$
+in place of $t^{-2/5}$ (outer factor $e^{-c/q}$, no \texttt{rpow}
+anywhere in the proof), the global side condition $2 \le D$ defusing
+natural-number subtraction in every exponent, and a direct
+\texttt{Metric.tendsto\_nhds} epsilon-of-room ending whose quantifier
+order --- jet-$\varepsilon$ chosen from the target $\eta$ first, the
+$q$-window shrunk second --- matches the statement being proved.
+
+\section{The thing formalised}
+
+Six declarations in \texttt{Laplace/OneD/TaylorCompare.lean}. The
+admissibility package (continuity, normalized minimum, global lower
+and local upper quadratic envelopes) with its order bounds: the
+partition lower bound $Z \ge 2\delta e^{-\kappa\delta^2}\,q$ ---
+restrict to $|x| \le q\delta$, where the scaling relation makes the
+exponent at most $\kappa\delta^2$ --- and the signed moment bound
+$|A_s| \le C_s q^{s+1}$. Then the two comparison theorems: for
+admissible $K_1, K_2$ with $K_1 - K_2 = o(|x|^D)$ at $0$ in
+epsilon-radius form,
+\[
+A_s(K_1, q) - A_s(K_2, q) = o(q^{s+D-1}),
+\qquad
+F_s(K_1, q) - F_s(K_2, q) = o(q^{s+D-2}),
+\]
+along $q \to 0^+$. The unnormalized proof splits at
+$|x| = \sqrt{q}$: inside, the exponential secant bound and the jet
+hypothesis give the majorant
+$\varepsilon_j\, t\, |x|^{s+D} e^{-t\rho x^2}$ --- the Taylor power
+kept \emph{inside} the Gaussian integral, per the scoping consult's
+warning that sup-ing it loses powers as $R$ grows --- integrating to
+$\varepsilon_j C q^{s+D-1}$; outside, two envelope tail bounds with
+$e^{-\rho_\nu/(2q)}$ prefactors, each vanishing against any power.
+
+\section{The quotient step is not the generic lemma}
+
+The weighted-jet programme's quotient-difference lemma requires
+nonvanishing denominator limits, which holds in rescaled $u$-space
+but fails here: in $x$-space both partition functions tend to $0$
+like $q$. The normalized comparison instead uses the bespoke
+decomposition
+$F_1 - F_2 = (A_1 - A_2)/Z_1 + A_2(Z_2 - Z_1)/(Z_1 Z_2)$ squeezed
+against the two unnormalized limits via $Z \ge C_0 q$ and
+$|A| \le C q^{s+1}$ --- an instructive case of a reusable lemma
+almost, but not quite, fitting.
+
+\section{Roadblocks and resolutions}
+
+The substantive proofs went through close to the consult's script;
+the friction was tactical and two items are new catalogue entries.
+A new instance of the cascading-rewrite class:
+\texttt{show s + D = (s+D-2)+2} rewrote the \texttt{s + D}
+\emph{inside} \texttt{s + D - 2}, leaving unprovable residues ---
+\texttt{nth\_rewrite} on a named equation is the fix, the
+exponent-arithmetic analogue of the radical-atom rule. And
+\texttt{gcongr} discharges monotone-denominator side goals from
+ambient hypotheses entirely, so trailing \texttt{exact}s die with
+``no goals'' even when they carry the substantive inequality.
+Familiar classes: \texttt{positivity} cannot consume context
+nonnegativity of \texttt{set} constants; beta-unreduced congruence
+goals; dead tactics after closing \texttt{field\_simp}; the
+heartbeat budget on the assembled calc.
+
+\section{Deliberation and check}
+
+The shape consult is archived in the tide log with the votes. The
+statement-level numerical check ran before formalisation: for
+$K_1 = x^2 + 0.3x^5 e^{-x^2}$, $K_2 = x^2$, $D = 4$, the scaled
+difference $(A_2(K_1) - A_2(K_2))/q^5$ decayed
+$0.0126 \to 0.0011 \to 0.00008$ over $q = 0.2, 0.1, 0.05$ ---
+$o(q^{s+D-1})$ with margin (the true next order is one further power
+of $q$).
+
+\section{What the next tide inherits}
+
+Stage C4: the Taylor/stabilizer adapter --- construct the degree-$D$
+Taylor polynomial of a smooth admissible loss, verify the Peano
+remainder supplies exactly this tide's epsilon-radius jet hypothesis
+against the stabilized polynomial, and expose the C1-compatible
+scaled data; then C5 assembles the finite-order smooth recovery. The
+comparison machinery here is stated for arbitrary admissible
+potentials, so C4 is composition plus one genuinely new ingredient:
+the Peano remainder from \texttt{iteratedDeriv} data.
+
+\end{document}

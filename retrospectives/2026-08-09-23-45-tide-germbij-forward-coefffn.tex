@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the correction coefficient functions\\
+\large continuity and polynomial growth for the numerator stage}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The integrated numerator expansion's coefficients are
+$a_j = \int z^\alpha e^{-T_2(z)} P_j(z)\,dz$, where $P_j(z)$ is the
+graded correction coefficient of the previous stage instantiated at
+the exponent data $a_s = V_s(z)$ of the exponent split. For those
+integrals to exist, and for the dominated-convergence step that
+integrates the pointwise expansion, the coefficient functions
+$z \mapsto P_j(z)$ need exactly two properties: continuity and
+polynomial growth. Both are inductions on the power through
+\code{Polynomial.coeff\_mul} --- the coefficient of a product is the
+antidiagonal convolution --- seeded by the if-then-else description
+of the exponent polynomial's coefficients and the operator-norm
+bound on diagonal Taylor terms. The growth exponent bookkeeping is
+the mathematical content: a coefficient of the $i$-th power at
+degree $k$ grows at most like $(1+\|z\|)^{k+2i}$, because each
+exponent-polynomial coefficient at degree $u$ carries $\|z\|^{u+2}$
+and the antidiagonal constraint sums the degrees to $k$.
+\end{abstract}
+
+\section{Setting}
+
+Stage 5a of the forward-expansion programme, the consult-independent
+half of the numerator stage: whatever the final integration
+architecture, these functions and bounds are needed. A parallel
+architecture consult on the rest of stage 5 ran during this tide and
+is archived in the tide log; it confirmed the decomposition, with
+the requirement (already satisfied here) that the coefficient
+theorems cover arbitrary degree $j$, not only $j \le N$, because the
+polynomial tail estimate consumes coefficients up to degree $N^2$.
+It also confirmed the unrestricted-$x$ exponential remainder route
+over a second, smaller localization window: the smaller window would
+need its own tail theorems and annulus estimates, and at $N = 0$ the
+Peano remainder admits no absolute bound on it anyway.
+
+\section{The thing formalised}
+
+Coefficient descriptions: \code{exponentPoly\_coeff} (the exponent
+polynomial's coefficient at $u$ is $a_u$ on $1 \le u \le N$ and zero
+otherwise, by collapsing the \code{coeff\_X\_pow} indicator sum) and
+\code{gradedExpPoly\_coeff} (a finite sum over coefficients of
+powers). The functions: \code{correctionCoeffFn} with
+\code{correctionCoeffFn\_zero} $= 1$. Continuity:
+for the exponent polynomial's coefficients the if-condition is
+$z$-independent, so \code{split\_ifs} reduces to the seabed's
+\code{taylorHomogeneousTerm\_continuous}; for powers, induction with
+the antidiagonal convolution; for the correction coefficients, a
+finite sum of the above. Growth: \code{abs\_exponentPoly\_coeff\_le}
+($C_u (1+\|z\|)^{u+2}$ from the operator-norm bound),
+\code{abs\_exponentPoly\_pow\_coeff\_le}
+($C_{i,k}(1+\|z\|)^{k+2i}$, the induction using
+\code{choose} to extract per-degree constants and the antidiagonal
+membership $x_1 + x_2 = k$ to match exponents), and
+\code{abs\_correctionCoeffFn\_le}
+($C_j (1+\|z\|)^{j+2N}$, absorbing each $i \le N$ into the maximal
+exponent since the base exceeds one).
+
+\section{Where progress stalled}
+
+Only small rounds. \code{positivity} cannot see the nonnegativity of
+constants extracted by \code{choose} (they are opaque local
+functions), so product nonnegativity must be assembled by hand with
+\code{mul\_nonneg}. A $\leftarrow$\code{pow\_add} rewrite found no
+adjacent power factors until \code{mul\_mul\_mul\_comm} reassociated
+the product. A \code{gcongr} emitted its side goals in an unexpected
+order; explicit monotonicity lemmas
+(\code{pow\_le\_pow\_right}$_0$ twice composed with
+\code{mul\_le\_mul\_of\_nonneg\_left}) were more predictable.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{Polynomial.coeff\_mul},
+\code{Polynomial.finset\_sum\_coeff}, \code{Polynomial.coeff\_C\_mul},
+\code{Polynomial.coeff\_X\_pow}, \code{Finset.sum\_ite\_eq},
+\code{Finset.mem\_antidiagonal}, \code{pow\_le\_pow\_right}$_0$,
+\code{one\_le\_pow}$_0$. New: only the growth-exponent bookkeeping.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+The architecture consult's implementation order for the rest of
+stage 5: (1) the $T_2/H$ bridge and a named positive Gaussian rate;
+(2) arbitrary-small Peano control on the mesoscopic window;
+(3) absorption of the absolute corrections into a weakened Gaussian;
+(5) the unrestricted exponential remainder
+$|e^x - \sum_{i \le N} x^i/i!| \le |x|^{N+1} e^{|x|}/(N{+}1)!$ and
+the perturbation bound $|e^{-(A+\delta)} - e^{-A}| \le |\delta|\,
+e^{|A|+|\delta|}$; (6) the normalized $q$-uniform Gaussian majorant
+(the single interface the dominated-convergence step consumes);
+(7) filter-indexed DCT with the window indicator folded into the
+integrand; (8) the two outer-tail removals via stage 2;
+(9) \code{numerator\_hasExpansion}.
+\end{document}

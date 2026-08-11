@@ -255,16 +255,6 @@ section Definitions
 
 open MeasureTheory
 
-/-- The Gaussian weight `exp(-(1/2) · quadForm H u)`. -/
-noncomputable def gaussianWeight
-    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (u : ι → ℝ) : ℝ :=
-  Real.exp (-(1/2) * quadForm H u)
-
-/-- The Gaussian normalising constant `Z := ∫ exp(-(1/2) quadForm H u) du`. -/
-noncomputable def gaussianZ
-    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) : ℝ :=
-  ∫ u : ι → ℝ, gaussianWeight H u
-
 /-- The `j`-th column of the Gaussian second-moment matrix:
 `(momentColumn H j) k = ∫ uₖ uⱼ · exp(-(1/2) quadForm H u) du`. -/
 noncomputable def momentColumn
@@ -413,29 +403,6 @@ structure SliceHypotheses
   slice_bot : ∀ u₀ : ι → ℝ,
     Filter.Tendsto (sliceIntegrand H i j u₀) Filter.atBot (nhds 0)
   slice_int : ∀ u₀ : ι → ℝ, Integrable (sliceDeriv H i j u₀)
-
-/-- **Fubini-IBP hypothesis** for the global integral:
-
-For each `(i, j)`, the global integral of `sliceDeriv H i j u₀` over the
-basepoint and `s` reduces, by Fubini on the product measure
-`(ι → ℝ) ≃ᵐ ((ι\{i}) → ℝ) × ℝ`, to a slice-by-slice integral that vanishes
-by `integral_sliceDeriv_eq_zero` (Step 4b).
-
-Concretely, the hypothesis `h_fubini` asserts:
-
-  `∫ u : ι → ℝ, sliceDeriv H i j u s_at_u_i evaluated at s = u_i = 0`
-
-stated more directly as: the global integral of the *natural* expression
-
-  `(if i = j then 1 else 0) · gW(u) - u_j · (H u)_i · gW(u)`
-
-equals `0`. This is the Fubini-mediated content of the IBP identity,
-which we state as a hypothesis (Option A from the GPT-5.5 Pro Phase 4
-memo). -/
-def FubiniIBPHypothesis
-    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (i j : ι) : Prop :=
-  ∫ u : ι → ℝ, ((if i = j then (1 : ℝ) else 0) * gaussianWeight H u
-      - u j * (H u) i * gaussianWeight H u) = 0
 
 /-- **Core IBP identity** (`gaussian_ibp_coord`):
 
@@ -627,9 +594,6 @@ end InverseEntry
 section BilinearMoment
 
 open MeasureTheory
-
-/-- The standard inner product on `ι → ℝ`: `dot a b = ∑ i, a i * b i`. -/
-noncomputable def dot (a b : ι → ℝ) : ℝ := ∑ i, a i * b i
 
 omit [DecidableEq ι] in
 /-- Definitional unfolding of `dot`. -/

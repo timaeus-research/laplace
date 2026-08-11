@@ -1,0 +1,107 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{perturbed harmonic-Gibbs moments $\langle x^3\rangle_h,\langle x^4\rangle_h$ --- a clean Gaussian-shift pass, and an import swap the build vetoed}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/HarmonicPerturbedMoments.lean}: the cubic and quartic
+moments of the perturbed harmonic Gibbs measure, computed through a transport lemma that identifies
+the normalised perturbed law as $N(-h/\lambda,1/(\lambda t))$. Result: \textbf{a clean fidelity pass
+with four landed simplifications} (a dead \texttt{open} and three dead locals), and one instructive
+near-miss --- a reviewer-endorsed import swap that the build flatly rejected.
+\end{abstract}
+
+\section{Setting}
+The fourth review in the harmonic 1D stack swept by this loop, after
+\reviewref[the regularity witness]{2026-06-05-review-laplace-oned-harmonicgibbsregularity},
+\reviewref[the observable monomials]{2026-06-05-review-laplace-oned-harmonicgibbsobservablemonomials},
+and \reviewref[the affine $\kappa_3$]{2026-06-05-review-laplace-oned-harmonicaffinekappa3}. The file
+extends the I4 layer's $k=1,2$ perturbed-moment closed forms to $k=3,4$:
+\[
+  \langle x^3\rangle_h = -\frac{3h}{\lambda^2 t}-\frac{h^3}{\lambda^3},\qquad
+  \langle x^4\rangle_h = \frac{3}{\lambda^2 t^2}+\frac{6h^2}{\lambda^3 t}+\frac{h^4}{\lambda^4}.
+\]
+
+\section{What was reviewed}
+The two public theorems \texttt{gibbsExp\_h\_cube\_harmonic\_eq} and
+\texttt{gibbsExp\_h\_quartic\_harmonic\_eq}; the public transport lemma
+\texttt{gibbsExp\_harmonic\_h\_eq\_unperturbed\_shift} ($\langle f(x)\rangle_h=\langle
+f(y-h/\lambda)\rangle_0$); and the private scaffolding (the square-completion shift
+\texttt{integral\_shifted'}, the Gaussian integrability witnesses, and the unperturbed integral
+closed forms \texttt{int\_pow\_}$k$ for $k=0,\dots,4$). The informal ground truth was the file's
+docstrings together with the Gaussian-moment formulas $E[X^3]=\mu^3+3\mu\sigma^2$,
+$E[X^4]=\mu^4+6\mu^2\sigma^2+3\sigma^4$ at $\mu=-h/\lambda$, $\sigma^2=1/(\lambda t)$.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect.} The mathematics is the Gaussian-shift identity: completing the square,
+$\tfrac{\lambda}{2}x^2+hx=\tfrac{\lambda}{2}(x+h/\lambda)^2-\tfrac{h^2}{2\lambda}$, so the perturbed
+weight is the unperturbed weight translated by $-h/\lambda$ times the constant
+$e^{th^2/(2\lambda)}$, which cancels in the normalised ratio. Every moment is then a raw Gaussian
+moment of $N(-h/\lambda,1/(\lambda t))$. The reviewer independently checked each high-risk point ---
+the square-completion \emph{direction} (so the shifted observable is $f(y-h/\lambda)$, not
+$f(y+h/\lambda)$); the sign $-h/\lambda$ in the transport lemma; the five unperturbed integrals
+($Z=\sqrt{2\pi/(\lambda t)}$, $\int y^2=\sigma^2 Z$, $\int y^4=3\sigma^4 Z$, odd $=0$), including the
+$(\lambda t)^{-(k+1/2)}$ exponent algebra and the $(2k-1)!!$ double factorials; and both headline
+constants against the Gaussian moments. ``No fidelity mismatches found.''
+
+\section{Simplifications applied}
+\textbf{A dead open and three dead locals.} \texttt{open Real} carried nothing (every
+\texttt{Real}-name is qualified; bare $\exp$/$\sqrt{}$/$\pi$ live only in comments); \texttt{open
+scoped Nat} (the $!!$ notation) and \texttt{open MeasureTheory} (bare \texttt{integral\_*},
+\texttt{volume}, \texttt{Integrable}) stay. Three locals were genuinely dead: the unused equation
+name \texttt{hc} on \texttt{set c := h/lam with hc} in \texttt{integral\_shifted'}, and the local
+$\int e^{-t(\lambda/2)y^2}\ne 0$ in \emph{both} moment proofs --- after the denominator is rewritten
+to $\sqrt{2\pi/(\lambda t)}$ the closing \texttt{field\_simp} consumes the $\sqrt{}\ne 0$ fact, not
+the $\int\ne 0$ one, so the latter's subject is rewritten away before it could ever be fuel. Build
+green at $8258$, no in-file warnings, public signatures byte-identical; the reviewer affirmed all
+four.
+
+\section{Disagreements and open questions}
+\textbf{The build vetoed a reviewer-endorsed import swap.} The import
+\texttt{Laplace.OneD.HarmonicCovGlobalConstancy} contributes \emph{nothing} used directly in this file
+--- its sole mention (\texttt{integral\_with\_perturbation\_eq\_shifted}) is in the module docstring,
+and the file re-derives that shift locally as \texttt{integral\_shifted'}. The four harmonic symbols
+it actually uses all live in \texttt{Laplace.OneD.Harmonic}. So both Claude's grep and the reviewer
+concluded the import could be swapped to the lighter \texttt{Harmonic}. \emph{The build rejected it:}
+\texttt{Unknown identifier Threepoint.gibbsExp}. That symbol, too, arrives only transitively through
+\texttt{HarmonicCovGlobalConstancy} (which pulls in Threepoint), and \texttt{Harmonic} does not import
+Threepoint. The aggregator is transitively load-bearing for \emph{two} dependency chains at once; a
+precise swap would need two imports and is a refactor beyond review scope. The swap was reverted, and
+the reviewer retracted on affirmation (``my earlier suggestion was too aggressive as stated''). Left
+as a report-only forward-tide.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A ``nothing-from-it-is-used'' import can still be load-bearing for a \emph{second}
+    transitive chain.} The usual dead-import tell --- no symbol of the imported module appears --- was
+    satisfied here, and an independent reviewer agreed; yet the import was the only path to a symbol
+    from a \emph{different} package (\texttt{Threepoint.gibbsExp}). Only the full build sees the whole
+    transitive closure. This is the same ``rebuild arbitrates the dead-import verdict both ways''
+    rule, now in its sharpest form: the reviewer was confident and wrong, and so was the source grep.
+  \item \textbf{A $\ne 0$ local stops being \texttt{field\_simp} fuel the moment its subject is
+    rewritten.} The two dead \texttt{hZ0\_ne} facts looked load-bearing (a denominator non-vanishing
+    hypothesis is exactly what \texttt{field\_simp} wants) --- but the proof first rewrites the
+    denominator into $\sqrt{2\pi/(\lambda t)}$, after which only the $\sqrt{}\ne 0$ fact matches. The
+    arbiter is the rebuild, not the apparent role.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Report-only forward-tide: refactor the \texttt{HarmonicCovGlobalConstancy} aggregator import
+    into the two precise dependencies (\texttt{Laplace.OneD.Harmonic} $+$ the Threepoint
+    \texttt{gibbsExp} module).
+  \item Remaining never-reviewed laplace \texttt{OneD} files: \texttt{QuarticBoundedPrior},
+    \texttt{QuarticBoundedPriorTestFn}, and the large \texttt{IntegralRemainder}.
+\end{itemize}
+
+\end{document}

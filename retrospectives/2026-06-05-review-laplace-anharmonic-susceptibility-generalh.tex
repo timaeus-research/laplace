@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the general-$h$ susceptibility, and a dead-open flag that was wrong the
+other way}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicSusceptibilityGeneralH.lean}: the susceptibility
+$\partial_h\langle u\rangle_h|_{h_0}=(G_2(h_0)G_0(h_0)-G_1(h_0)^2)/G_0(h_0)^2$ at a general base point
+$|h_0|<1$ (the FDT/linear-response at any perturbation strength), plus the positivity of the perturbed
+partition there. Result: \textbf{a clean fidelity pass, no edits} --- with a rejected dead-open flag that,
+unlike the previous review, was wrong in the \emph{opposite} direction.
+\end{abstract}
+
+\section{Setting}
+This file lifts the $h=0$ susceptibility (the $\kappa_2$ rung) to an arbitrary $|h_0|<1$, the form the
+\reviewref[third cumulant]{2026-06-05-review-laplace-anharmonic-third-cumulant} needs (the mean's derivative
+\emph{as a function of $h$}). It is the dependency \#140's proof consumed.
+
+\section{What was reviewed}
+Three public theorems: the perturbed-partition positivity, the $n=0$ partition positivity, and the general-$h$
+susceptibility.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.}
+\begin{itemize}[noitemsep]
+  \item \texttt{partition\_perturbed\_pos}: positivity of $\int e^{-t(L+hx)}$ via
+    \texttt{integral\_pos\_iff\_support\_of\_nonneg\_ae} --- nonnegative a.e.\ ($e^{\cdot}\ge0$), support
+    $=\mathrm{univ}$ ($e^{\cdot}\ne0$), $\mathrm{vol}(\mathrm{univ})=\infty>0$, and integrability from
+    $|h|<1$.
+  \item \texttt{weightedPartition\_zero\_pos}: the $n=0$ specialisation, $G_0(h)=\int e^{-t(L+hx)}>0$.
+  \item \texttt{anharmonic\_mean\_hasDerivAt\_general}: the quotient rule at $h_0$, with $f'=G_2$, $g'=G_1$
+    (general-$h$ partition derivatives) and $G_0(h_0)\ne0$ from the positivity --- giving the expected
+    general-$h$ FDT identity.
+\end{itemize}
+
+\section{Simplifications applied}
+None. GPT's golf findings (inline \texttt{heq}/\texttt{hint}/\texttt{h\_support}/\texttt{hc}/\texttt{hd}) were
+declined. Its dead-open flag --- ``\texttt{open MeasureTheory} unused'' --- was \textbf{rejected}: this file
+uses the bare integral notation $\int x,\ldots$ (e.g.\ in \texttt{partition\_perturbed\_pos}), which requires
+\texttt{open MeasureTheory}, so the open is \emph{load-bearing}. File left byte-identical.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A reviewer's dead-open flag is unreliable in \emph{both} directions --- two consecutive
+    reviews demonstrate it.} In the \reviewref[third-cumulant review]{2026-06-05-review-laplace-anharmonic-third-cumulant}
+    GPT \emph{over}-flagged a load-bearing \texttt{open Topology} (it supplies $\mathcal N$); here it
+    \emph{under}-recognised a load-bearing \texttt{open MeasureTheory} (it supplies the $\int$ integral
+    notation), calling it dead. The discriminator is whether any notation or bare name the open provides is
+    actually used --- a per-open grep (and ultimately the build) settles it. ``All names are qualified'' is
+    not the same as ``no notation is used''; integral and neighbourhood notations come from these opens even
+    when every identifier is written long-form.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The cumulants-from-log-partition and the cumulant--moment-forms files complete this arc's review.
+\end{itemize}
+
+\end{document}

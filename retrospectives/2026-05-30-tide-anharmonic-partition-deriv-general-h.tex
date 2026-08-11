@@ -1,0 +1,175 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{₀}{\ensuremath{_0}}
+
+\newcommand{\deriv}{\operatorname{deriv}}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{general-\(h\) partition derivatives and the formal \(Z''(0), Z'''(0)\)}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The previous tide proved the iterated-derivative \emph{step} for the
+anharmonic perturbed partition family $G_n(h)=\int (-(tx))^n e^{-t(L+hx)}$
+only at $h=0$, which gives the derivative of each family member but does not
+formally identify the higher derivatives of $Z=G_0$. Following GPT-5.5 Pro's
+recommendation, this tide proves the \textbf{local-in-$h$} step --- for every
+$n$ and $|h|<1$, $\frac{d}{dh}G_n(h)=G_{n+1}(h)$ --- and chains it through
+\texttt{iteratedDeriv} to land the genuine identities
+\[
+  Z''(0)=\int (tx)^2 e^{-tL},\qquad Z'''(0)=\int -(tx)^3 e^{-tL}.
+\]
+New file \texttt{AnharmonicPartitionDerivGeneralH.lean}; commit \texttt{a7886cd}
+on branch \texttt{tide/anharmonic-partition-deriv-general-h}; full library
+builds (8304 jobs), no \texttt{sorry}/\texttt{axiom}/\texttt{native\_decide},
+no lint warnings.
+\end{abstract}
+
+\section{Setting}
+
+The laplace seabed formalises the Laplace/Gibbs calculations of the SLT
+Susceptibility Primer. The prior tide\footnote{\tideref[the higher-derivative
+step tide]{2026-05-30-tide-anharmonic-partition-higher-deriv}.} introduced the
+weighted-partition family $G_n(h)=\int(-(tx))^n e^{-t(L+hx)}$ and proved
+$G_n'(0)=G_{n+1}(0)$. In its post-merge consult, GPT-5.5 Pro flagged the gap:
+proving the step only at $h=0$ shows that each $G_n$ has $G_{n+1}(0)$ as its
+derivative at $0$, but to call $G_2(0)$ ``$Z''(0)$'' one must know that
+$\deriv Z = G_1$ \emph{on a neighbourhood of $0$} so the second derivative
+can be taken. The fix it recommended --- prove the local-in-$h$ step, then
+chain --- is this tide.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$, $t>0$, every $n\in\mathbb{N}$
+and every $h$ with $|h|<1$: $\ \mathrm{HasDerivAt}\ G_n\ \big(G_{n+1}(h)\big)\ h$.
+Consequently $\deriv(G_n)(h)=G_{n+1}(h)$ for $|h|<1$,
+$\ \mathrm{iteratedDeriv}\ k\ G_0\ h = G_k(h)$, and in particular
+$Z''(0)=\int (tx)^2 e^{-tL}$, $Z'''(0)=\int -(tx)^3 e^{-tL}$.
+\end{quote}
+
+The headline Lean signatures:
+
+\begin{verbatim}
+theorem weightedPartition_hasDerivAt (n : ℕ) ... {h₀ : ℝ} (hh₀ : |h₀| < 1) :
+    HasDerivAt (weightedPartition lam alpha gamma t n)
+      (weightedPartition lam alpha gamma t (n + 1) h₀) h₀
+
+theorem iteratedDeriv_two_partition_zero ... :
+    iteratedDeriv 2 (weightedPartition lam alpha gamma t 0) 0
+      = ∫ x, (t * x) ^ 2 *
+          Real.exp (-(t * anharmonicPotential lam alpha gamma x))
+\end{verbatim}
+
+\section{Proof strategy}
+
+\textbf{The step.} The dominated-differentiation argument is the prior tide's,
+with the centre moved from $0$ to an arbitrary $h_0$ with $|h_0|<1$. Two
+things change. First, the neighbourhood: $\mathrm{ball}\,0\,1$ is open and
+contains $h_0$, hence is a neighbourhood of $h_0$, so the same ball and the
+same $|h|<1$ bound serve at any interior centre. Second, the
+dominated-differentiation lemma needs integrability of the family
+\emph{at the centre} $h_0$; with $h_0\neq0$ the $+0\cdot x$ simplification of
+the $h=0$ case is gone, so this needs the bare-exponential bound
+$e^{-t(L+h_0x)}\le e^{t/2c}e^{-(t/2)L}$ ($|h_0|<1$), which I extracted as
+\texttt{anharmonic\_perturbed\_exp\_le} (the exponent half of the existing
+weighted pointwise bound; \texttt{amgm\_t\_abs\_x} un-privated to support it).
+
+\textbf{The chaining.} With $\deriv(G_n)(h)=G_{n+1}(h)$ on $\mathrm{ball}\,0\,1$
+in hand, an induction on $k$ gives $\mathrm{iteratedDeriv}\,k\,G_0\,h=G_k(h)$
+for $|h|<1$: at the successor, the inductive hypothesis holds on the whole
+open ball, hence $\mathrm{iteratedDeriv}\,k\,G_0$ agrees with $G_k$ on a
+neighbourhood of $h$, so \texttt{Filter.EventuallyEq.deriv\_eq} turns
+$\mathrm{iteratedDeriv}(k{+}1)\,G_0\,h=\deriv(\mathrm{iteratedDeriv}\,k\,G_0)\,h$
+into $\deriv(G_k)(h)=G_{k+1}(h)$. The $k=2,3$ specialisations at $h=0$,
+with the integrand simplified by \texttt{ring} (treating the exponential as an
+atom), are the headline $Z''(0)$, $Z'''(0)$.
+
+\section{Roadblocks and resolutions}
+
+The chaining went in cleanly once phrased as ``agree on the open ball'' rather
+than ``agree at a point'': it is the open-ball membership that supplies the
+\texttt{EventuallyEq} the derivative-rewrite needs, and stating the induction
+hypothesis as $\forall h,\ |h|<1\to\dots$ rather than a single
+\texttt{EventuallyEq} made the successor step's neighbourhood argument a
+two-line \texttt{Filter.eventuallyEq\_of\_mem}.
+
+The one build failure was cosmetic: the final integrand-matching used
+\texttt{congr 1; ring} on $(-(tx))^k = \pm(tx)^k$, but \texttt{congr} tries to
+peel the power and strands an impossible base equality. Rewriting the
+exponential factor first and then closing with a single \texttt{ring} (the
+exponential is an opaque atom, the rest is a polynomial identity) fixed both
+the $k=2$ and $k=3$ cases.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} The dominated-differentiation
+lemma\footnote{\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}.};
+\texttt{HasDerivAt.deriv}; \texttt{iteratedDeriv\_zero},
+\texttt{iteratedDeriv\_succ}; \texttt{Filter.EventuallyEq.deriv\_eq},
+\texttt{Filter.eventuallyEq\_of\_mem}; \texttt{Metric.isOpen\_ball.mem\_nhds}.
+
+\textbf{Seabed (reused).} The general $|x|^m$ integrability witness, the two
+public pointwise helpers, and \texttt{anharmonic\_coercive} --- all from the
+two earlier anharmonic tides this day; \texttt{amgm\_t\_abs\_x} (un-privated).
+
+\textbf{New.} The bare-exp domination bound; integrability at a nonzero
+centre; the general-$h$ step; the \texttt{iteratedDeriv} induction; and the
+two genuine partition-derivative identities. About 250 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{A post-merge consult is still worth acting on.} GPT's
+  ``prove the local-in-$h$ version'' arrived after the $h=0$ tide had merged;
+  treating it as the next tide rather than ignoring it turned a
+  derivative-of-a-family-member into the genuinely useful $Z''(0)$, $Z'''(0)$.
+\item \textbf{For \texttt{iteratedDeriv} chaining, carry the hypothesis on an
+  open set, not a point.} The neighbourhood agreement that
+  \texttt{EventuallyEq.deriv\_eq} consumes falls straight out of open-ball
+  membership; phrasing the induction over $|h|<1$ avoids any bespoke
+  \texttt{EventuallyEq} bookkeeping.
+\item \textbf{\texttt{ring} with an opaque \texttt{exp} atom beats \texttt{congr}
+  for integrand matching.} \texttt{congr} peels powers and strands false base
+  goals; rewriting the exponential then \texttt{ring} closes signed-power
+  identities in one step.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Fourth-cumulant / flow-equation identity.} With $Z(0)>0$ and
+  $Z',Z'',Z''',Z^{(4)}$ at $0$ all available (the last is the $k=4$
+  specialisation), assemble the connected fourth cumulant
+  $\kappa_4=\partial_h^4\log Z|_0$. This is the motivating application and is
+  now fully unblocked.
+\item \textbf{Moment normalisation.} $Z^{(n)}(0)/Z(0)=\langle(-tx)^n\rangle_0$
+  packages the derivatives as raw moments under the unperturbed Gibbs measure.
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.} Now
+  load-bearing across three anharmonic tides and genuinely generic.
+\end{itemize}
+
+\end{document}

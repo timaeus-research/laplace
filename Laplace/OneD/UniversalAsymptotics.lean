@@ -30,7 +30,7 @@ Tide step 4, formalised on `tide/f1-large-t` (branched off `main`). See
 `sri/projects/automation/log/2026-05-01-tide-fn-asymptotics.md`.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 
 namespace Laplace.OneD
 
@@ -52,9 +52,9 @@ theorem gibbsExpectation_universal_sq_large_t_rate :
   obtain ⟨K₂, hK₂_nn, hI2⟩ :=
     I_2_asymptotic (lam := 1) (alpha := 0) (gamma := 1)
       (by norm_num) (by norm_num) universal_disc
-  set a : ℝ := Real.sqrt (2 * Real.pi) with ha_def
+  set a : ℝ := Real.sqrt (2 * Real.pi)
   have ha_pos : 0 < a := by positivity
-  set T₀ : ℝ := max 1 (1 + 2 * K₀ / a) with hT₀_def
+  set T₀ : ℝ := max 1 (1 + 2 * K₀ / a)
   have hT₀_ge_one : (1 : ℝ) ≤ T₀ := le_max_left _ _
   have hT₀_ge_other : 1 + 2 * K₀ / a ≤ T₀ := le_max_right _ _
   refine ⟨2 * (K₀ + K₂) / a, T₀, by positivity, hT₀_ge_one, ?_⟩
@@ -64,12 +64,11 @@ theorem gibbsExpectation_universal_sq_large_t_rate :
   have hT_ne : T ≠ 0 := hT_pos.ne'
   have hsqrt_T_pos : (0 : ℝ) < Real.sqrt T := Real.sqrt_pos.mpr hT_pos
   have hsqrt_T_ne : Real.sqrt T ≠ 0 := hsqrt_T_pos.ne'
-  have hsq : Real.sqrt T * Real.sqrt T = T := Real.mul_self_sqrt hT_pos.le
   have hI0_T := hI0 hT_ge_one
   have hI2_T := hI2 hT_ge_one
   simp only [one_mul] at hI0_T hI2_T
-  set D : ℝ := ∫ x : ℝ, Real.exp (-(T * anharmonicPotential 1 0 1 x)) with hD_def
-  set N : ℝ := ∫ x : ℝ, x ^ 2 * Real.exp (-(T * anharmonicPotential 1 0 1 x)) with hN_def
+  set D : ℝ := ∫ x : ℝ, Real.exp (-(T * anharmonicPotential 1 0 1 x))
+  set N : ℝ := ∫ x : ℝ, x ^ 2 * Real.exp (-(T * anharmonicPotential 1 0 1 x))
   -- Rescaled bounds: |√T · D - a| ≤ K₀/T and |T√T · N - a| ≤ K₂/T.
   have hδ : |Real.sqrt T * D - a| ≤ K₀ / T := by
     have hkey : Real.sqrt T * D - a = Real.sqrt T * (D - a / Real.sqrt T) := by

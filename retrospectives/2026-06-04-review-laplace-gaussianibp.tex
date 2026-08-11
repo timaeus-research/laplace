@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the multivariate Gaussian IBP --- formulas clean, but the headline
+``proof by IBP'' rests on an assumed IBP identity}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-04}
+\begin{document}
+\sloppy
+\maketitle
+\begin{abstract}
+A review of \texttt{Laplace/Multi/GaussianIBP.lean}, the multivariate Gaussian second-moment identity
+$\int u_i u_j\,e^{-\frac12 u^\top H u} = Z\,\Sigma_{ij}$ (covariance $=H^{-1}$). The formula-level
+mathematics is \textbf{clean} --- GPT-5.5 Pro found no sign, index, or coefficient error in the IBP, the
+second-moment/inverse-entry identity, the bilinear form, or the odd-moment vanishing, and the
+right-inverse-plus-injective $\Rightarrow$ two-sided-inverse step is sound. But the review surfaces a
+\textbf{report-only escalation}: the docstring says the file \emph{proves} the identity ``by
+coordinatewise integration by parts'', whereas the load-bearing IBP step is an \emph{undischarged assumed
+hypothesis} (\texttt{FubiniIBPHypothesis}, which is literally the integrated IBP identity), never derived
+from the symmetric/coercive structure or the present-but-unconnected slice machinery --- consistent with
+the file being in-progress Phase-4/5 scaffolding.
+\end{abstract}
+
+\section{Setting}
+A breadth pivot into \texttt{laplace} (the original SRI Lean seabed, the Susceptibility Primer's covariance
+program), only two files previously reviewed. \texttt{Multi/GaussianIBP} is the analytic core --- the
+multivariate Gaussian moment identity underlying \texttt{lem:laplace\_cov} --- chosen as a high
+fidelity-stakes target (IBP is exactly where sign/coefficient errors hide), and clear of the in-flight
+\texttt{anharmonic-*}/\texttt{partition-deriv} tides. It vets as $0$ \texttt{sorry} and not
+skeleton-keyworded; the catch (below) is that $0$ \texttt{sorry} did not mean complete.
+
+\section{What was reviewed}
+The headline theorems: \texttt{gaussian\_ibp\_coord} ($\int u_j(Hu)_i\,gW=\delta_{ij}Z$),
+\texttt{gaussian\_ibp\_column}, \texttt{gaussian\_second\_moment\_eq\_inverse\_entry\{,\_scalar\}}
+($\int u_k u_j\,gW = Z\,\Sigma_{kj}$, $\Sigma=H^{-1}$), \texttt{gaussian\_dot\_mul\_dot} (bilinear), and
+the odd-moment vanishing lemmas. Checked against the standard Gaussian moments
+($\mathbb E[u_iu_j]=(H^{-1})_{ij}$, IBP from $\partial_{u_i}e^{-Q/2}=-(Hu)_ie^{-Q/2}$) and the Primer's
+covariance-$=$-inverse-Hessian anchor.
+
+\section{Fidelity findings}
+\textbf{Formula-level: clean.} Every moment identity is mathematically correct, with the right Kronecker
+delta, sign, and column/entry orientation; the two-sided-inverse derivation (from $H\circ\Sigma=\mathrm{id}$
+plus injectivity of $H$) is sound; the odd-moment vanishing is the usual $u\mapsto-u$ argument. The
+theorem \emph{signatures} are honest --- each takes the assumed hypotheses explicitly.
+
+\textbf{Escalation (report-only): the docstring overstates the proof architecture.} The module docstring
+states the file \emph{proves} the second-moment identity ``by coordinatewise integration by parts'', but:
+\begin{itemize}[nosep]
+  \item \texttt{FubiniIBPHypothesis}~$H\,i\,j$ is \emph{defined} as the integrated IBP identity itself,
+    $\int(\delta_{ij}\,gW - u_j(Hu)_i\,gW)=0$, and is \emph{only ever assumed} (as \texttt{h\_fubini} in
+    every moment theorem) and consumed by \texttt{unfold}. I verified there is \emph{no} theorem with
+    conclusion \texttt{: FubiniIBPHypothesis} --- it is never discharged.
+  \item So \texttt{gaussian\_ibp\_coord} is an \emph{algebraic rearrangement} of the assumed identity,
+    not a derivation from symmetry/coercivity/FTC/Fubini. The slice machinery
+    (\texttt{integral\_sliceDeriv\_eq\_zero}) that would discharge it is present but \emph{not connected}.
+  \item The symmetric/coercive hypotheses named in the docstring do not appear in the main moment-theorem
+    statements (only in local lemmas). The main theorems are therefore \emph{conditional}: given the
+    assumed IBP identity and integrability, the moments follow.
+\end{itemize}
+\emph{In fairness:} the signatures make the assumption explicit (not a hidden gap), and the commit history
+(``Phase 4'', ``Phase 5.4k'') and the sibling \texttt{CovarianceExplicit} ``(skeleton, in progress)''
+indicate an active multi-phase construction --- \texttt{FubiniIBPHypothesis} is plausibly the known current
+frontier. So the docstring describes the \emph{target} while the IBP step is, for now, a hypothesis. The
+user adjudicates: qualify the docstring (``modulo the assumed Fubini-IBP identity''), or complete the
+slice$\to$Fubini discharge. Minor sub-notes: the theorems give \emph{unnormalised} raw moments
+($\int u_iu_j\,gW=Z\Sigma_{ij}$), not the normalised covariance $\tfrac1Z\int=\Sigma$; and the docstring's
+``$\Sigma$ inverse witness ($H\circ\Sigma=\mathrm{id}$)'' is only a right inverse (the theorem correctly
+adds injectivity).
+
+\section{Simplifications applied}
+\textbf{None.} Two unused \texttt{set \dots with} binding names (\texttt{hQ0}/\texttt{hA}/\texttt{hB};
+\texttt{he\_def}) are the established rebuild-arbitrated dead-binding class, but they were \emph{held}, not
+landed: with an open escalation about the file's status (in-progress scaffolding?), churning it with
+cosmetic edits would pre-empt the user's decision --- the same discipline as not golfing a contested file.
+They are recorded for whoever resolves the architecture question.
+
+\section{Disagreements and open questions}
+The escalation is the open question, for the user (above).
+
+\section{Lessons}
+\begin{itemize}[nosep]
+  \item \textbf{\texttt{sorry}-free $\ne$ complete.} This file has $0$ \texttt{sorry} yet leaves its hardest
+    step --- the multivariate Fubini/IBP identity --- as an \emph{assumed \texttt{Prop} hypothesis}
+    (\texttt{FubiniIBPHypothesis}) that is essentially the conclusion. Review-vetting that screens only on
+    \texttt{sorry}/skeleton keywords will admit such files; the sharper screen is ``is any load-bearing
+    hypothesis an assumed \texttt{Prop} that encodes the conclusion?''. This is the laplace-Multi analogue
+    of the qd \texttt{Definition1} framework gaps.
+  \item \textbf{Honest signatures, overstated prose.} The contrast with a genuine defect: here the formal
+    statements are faithful (the assumption is explicit), and only the docstring narrative oversells. The
+    review's value is naming precisely where ``proves by IBP'' becomes ``assumes the IBP identity''.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[nosep]
+  \item \textbf{User decision:} qualify the \texttt{GaussianIBP} docstring to note the IBP identity is a
+    current hypothesis, or complete the slice$\to$\texttt{FubiniIBPHypothesis} discharge (the machinery is
+    present). Then the two held dead-binding cleanups can land.
+  \item This joins the qd \texttt{Definition1} gaps and the sustm
+    \reviewref[\texttt{M1ChiCellVerbatim}]{2026-06-03-review-m1chicell-verbatim} escalation as the
+    sweep's report-only fidelity cluster.
+\end{itemize}
+\end{document}

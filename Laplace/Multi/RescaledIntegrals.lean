@@ -31,7 +31,7 @@ up front, then never go back to the original variable in the proof.
 
 namespace Laplace.Multi
 
-open MeasureTheory Module
+open MeasureTheory
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -65,7 +65,9 @@ noncomputable def rescaledCov
 section Dilation
 
 /-- **Dilation identity for ℝ-valued integrals on `ι → ℝ`**: for any
-nonzero `R : ℝ` and integrand `g : (ι → ℝ) → ℝ`,
+`R : ℝ` and integrand `g : (ι → ℝ) → ℝ` (the statement carries no
+`R ≠ 0` hypothesis; the `R = 0` case is covered by the totalised-integral
+convention),
 
   `∫ u, g (R • u) du = |R|⁻^d · ∫ w, g w dw`
 
@@ -368,8 +370,6 @@ end ExpErrorBounds
 
 section PartitionDiffIntegral
 
-open MeasureTheory
-
 /-- **Partition difference as an integral**: under integrability of the
 Gaussian weight and of the rescaled-weight factorization,
 
@@ -396,8 +396,6 @@ lemma rescaledPartition_sub_gaussianZ_eq_integral
 end PartitionDiffIntegral
 
 section NumeratorSplit
-
-open MeasureTheory
 
 /-- **Rescaled numerator decomposition**: for any observable `φ` with
 gradient `a`, given integrability of the two pieces,
@@ -612,8 +610,6 @@ end CoerciveDomination
 
 section CoerciveIntegrability
 
-open MeasureTheory
-
 /-- Continuity of `quadForm H` as a function on `ι → ℝ`. -/
 lemma continuous_quadForm (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) :
     Continuous (fun u : ι → ℝ => quadForm H u) := by
@@ -789,9 +785,11 @@ lemma integrable_coord_mul_rescaled_weight
 
 /-- **Pointwise triangle-style bound** for the partition integrand:
 `|gW(u) · (exp(-s_t(u)) - 1)| ≤ gW(u) + exp(-(c·‖u‖²))`
-under coercivity. This is the simplest absolute pointwise bound that
-makes `gW · (exp(-s_t) - 1)` dominated by an integrable function
-uniformly in `t > 0`. -/
+under coercivity. The right-hand side is independent of `t`, so it is the
+`t`-uniform majorant used downstream. (Its *integrability* is a separate
+matter: the `exp(-(c·‖u‖²))` term is integrable, but `gW` requires
+positive-definiteness of `H`, established elsewhere — this lemma is only
+the pointwise bound.) -/
 lemma abs_gaussianWeight_mul_exp_sub_one_le_uniform
     (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
     {c : ℝ} (hc_pos : 0 < c)
@@ -823,8 +821,6 @@ lemma abs_gaussianWeight_mul_exp_sub_one_le_uniform
 end CoerciveIntegrability
 
 section PairSplit
-
-open MeasureTheory
 
 /-- **Pointwise pair-product expansion** for two observables φ, ψ with
 gradients a, b: writing `r_φ(w) := φ(w) - dot a w` and similarly `r_ψ`,
@@ -879,7 +875,7 @@ lemma quadForm_lower_bound
       |V w - (1/2) * quadForm H w| ≤ C * ‖w‖ ^ 3) :
     ∀ u : ι → ℝ, (c/2) * ‖u‖ ^ 2 ≤ (1/2) * quadForm H u := by
   -- Choose r := min R (c / (2 * (C + 1))).
-  set r := min R (c / (2 * (C + 1))) with hr_def
+  set r := min R (c / (2 * (C + 1)))
   have hC1_pos : (0 : ℝ) < C + 1 := by linarith
   have hr_pos : 0 < r := lt_min hR_pos (by positivity)
   have hr_le_R : r ≤ R := min_le_left _ _
@@ -1083,8 +1079,6 @@ end PolynomialGaussianDecay
 
 section PolynomialMomentIntegrability
 
-open MeasureTheory
-
 /-- **Sup-norm² ≥ (1/|ι|) · ∑ u_i²**: derived directly from
 `sum_sq_le_card_mul_sq_norm`. -/
 lemma sq_norm_ge_sum_sq_div_card [hne : Nonempty ι] (u : ι → ℝ) :
@@ -1117,7 +1111,7 @@ lemma integrable_pow_norm_mul_rescaled_weight
   have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
   have hc_half_card_pos : (0 : ℝ) < c / (2 * Fintype.card ι) := by positivity
   -- Dominating function: `M_k · exp(-(c/(2|ι|)) · ∑ u_i²)`.
-  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * c)) with hM_def
+  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * c))
   have hM_nn : 0 ≤ M_k := (Real.exp_pos _).le
   have h_dom_int :=
     (integrable_exp_neg_const_mul_sum_sq (ι := ι) hc_half_card_pos).const_mul M_k
@@ -1377,8 +1371,6 @@ end TailPartitionBound
 
 section NormPowExpIntegrability
 
-open MeasureTheory
-
 /-- **Integrability of `‖u‖^k · exp(-α ‖u‖²)`** for any `α > 0`, `k : ℕ`,
 under `Nonempty ι`. Dominated by `M_k · exp(-(α/(2|ι|)) · ∑ u_i²)`
 from Phase 2's `integrable_exp_neg_const_mul_sum_sq`. -/
@@ -1388,7 +1380,7 @@ lemma integrable_norm_pow_mul_exp_neg_const_sq
       ‖u‖ ^ k * Real.exp (-(α * ‖u‖ ^ 2))) := by
   have hcard : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
   have hα_card_pos : 0 < α / (2 * Fintype.card ι) := by positivity
-  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * α)) with hM_def
+  set M_k : ℝ := Real.exp ((k:ℝ) ^ 2 / (2 * α))
   have hM_nn : 0 ≤ M_k := (Real.exp_pos _).le
   have h_dom_int :=
     (integrable_exp_neg_const_mul_sum_sq (ι := ι) hα_card_pos).const_mul M_k

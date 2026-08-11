@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the multivariate Gibbs-covariance algebra foundation}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/Multi/Basic.lean}: the multivariate Gibbs-measure algebra ---
+\texttt{partitionFunction}, \texttt{gibbsExpectation}, \texttt{gibbsCov}, and the twelve algebra lemmas
+(constant, scalar, zero, additivity; covariance symmetry, bilinearity, constant- and zero-slot vanishing)
+that the multi-index covariance programme is built on. Result: \textbf{a clean fidelity pass, no edits}. The
+load-bearing check was the hypothesis structure --- which lemmas are unconditional, which need $Z\ne0$, which
+need integrability --- and it is exactly right.
+\end{abstract}
+
+\section{Setting}
+This is the algebraic base of the primer's Stage~3: the multivariate analogue of the 1D
+\texttt{Laplace.Gibbs}, on $w\in(\iota\to\mathbb R)$ with the product Lebesgue measure. The two small
+\texttt{Multi/} consumers reviewed just before --- \reviewref[AffineBilinearCov]{2026-06-05-review-laplace-multi-affine-bilinear-cov}
+and \reviewref[QuadraticApprox]{2026-06-05-review-laplace-multi-quadratic-approx} --- both chain these
+lemmas, so reviewing the base after them closes the small-\texttt{Multi/} cluster from the top down: the
+consumers were checked, and now the foundation they assume is checked too.
+
+\section{What was reviewed}
+Three definitions and twelve lemmas. The definitions are the standard $Z=\int e^{-tL}$,
+$\langle\varphi\rangle=\int\varphi e^{-tL}/Z$, $\mathrm{Cov}[\varphi,\psi]=\langle\varphi\psi\rangle
+-\langle\varphi\rangle\langle\psi\rangle$. The lemmas are the bilinear-algebra toolkit: constant/scalar/zero
+expectation, additivity, and the covariance's symmetry, scalar pull-out, constant- and zero-slot vanishing,
+and slot-wise additivity.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.} The three things most likely to be subtly wrong in a Gibbs-algebra file
+are the hypothesis annotations, and all three are correct:
+\begin{itemize}[noitemsep]
+  \item \textbf{Unconditional lemmas really are unconditional.} \texttt{gibbsExpectation\_smul},
+    \texttt{gibbsCov\_smul\_left}, \texttt{gibbsCov\_const\_left} carry no $Z\ne0$ hypothesis --- and they hold
+    even at $Z=0$, because Lean's $x/0=0$ convention makes \emph{every} expectation collapse to $0$ there, so
+    both sides agree. (\texttt{gibbsCov\_const\_left} handles this with an explicit \texttt{by\_cases} on $Z$.)
+  \item \textbf{The one conditional lemma needs its condition.} \texttt{gibbsExpectation\_const} requires
+    $Z\ne0$, and rightly so: at $Z=0$ it would claim $0=c$, false for $c\ne0$.
+  \item \textbf{The integrability hypotheses are tight.} \texttt{gibbsCov\_add\_left} takes exactly four
+    integrabilities --- the weighted $\varphi_1,\varphi_2$ and the weighted $\varphi_1\psi,\varphi_2\psi$ ---
+    which is what the two invocations of integral-additivity require. No spurious $Z\ne0$ or $\psi$-alone
+    assumption.
+\end{itemize}
+The right-slot lemmas (\texttt{smul\_right}, \texttt{const\_right}, \texttt{add\_right}) are derived from their
+left counterparts through \texttt{gibbsCov\_symm}, with the commuted integrabilities supplied where needed ---
+faithful and economical.
+
+\section{Simplifications applied}
+None. GPT returned eight proposals and every one was tactic-golf or proof-restructuring: \texttt{field\_simp}
+$\to$ an explicit $(cZ)/Z=c$ cancellation, collapsing \texttt{gibbsCov\_symm} to a one-line \texttt{simpa},
+merging two \texttt{simp}s in a branch, dropping a harmless \texttt{rfl} \texttt{show}-block, re-deriving the
+right-slot lemmas by \texttt{simpa} rather than \texttt{rw}-through-\texttt{symm}, inlining the two used
+\texttt{add\_right} integrability locals, and replacing the \texttt{funext; ring} pointwise blocks with
+\texttt{simpa}. None removes dead code, subsumes a hand-rolled step with a Mathlib lemma, or drops a
+hypothesis. Import removal was held out of scope from the start: this is a foundation file, and its
+\texttt{InnerProductSpace.EuclideanDist} import is load-bearing for downstream consumers that obtain the
+$\to_L[\mathbb R]$ notation transitively through it (the \reviewref[QuadraticApprox review]{2026-06-05-review-laplace-multi-quadratic-approx}
+made exactly that dependency explicit), so a removal that passes \texttt{lake build} on this file alone could
+still break consumers. The file was left byte-identical.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{On a Gibbs-algebra file, audit the hypothesis annotations first.} The definitions are
+    mechanical; where such a file earns or loses its keep is in correctly distinguishing the unconditional
+    identities (true even at $Z=0$ under $x/0=0$) from the ones that genuinely need $Z\ne0$ or integrability.
+    Here the three-way split was exactly right --- that is the result, more than the algebra itself.
+  \item \textbf{Import removal is per-consumer, not per-file, on a foundation.} A widely-imported base file's
+    \texttt{import} can be unused \emph{in that file} yet load-bearing for a consumer that relies on
+    transitive availability. The honest test is a full-project build, not \texttt{lake build} on the base ---
+    so on a foundation file, import findings are out of single-review scope unless that full build is run.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The small \texttt{Multi/} cluster (Basic + the two consumers) is now reviewed. The large
+    \texttt{Multi/Covariance.lean} (3998 lines), \texttt{CovarianceSharp.lean} (4179), and
+    \texttt{CovarianceExplicit.lean} (19611) are the remaining surface; each exceeds a single review-tide and
+    would need a sectioned, theorem-by-theorem approach.
+\end{itemize}
+
+\end{document}

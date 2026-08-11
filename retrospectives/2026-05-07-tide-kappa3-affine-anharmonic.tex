@@ -1,0 +1,313 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+
+\title{Tide retrospective:\\affine-observable $\kappa_3$ for the anharmonic Gibbs (G2)}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This retrospective records a 100-line trilinear strict-improvement of
+Tide 9. Tide 9 proved
+$t^2 \cdot \kappa_3(x, x, x) \to -\alpha/\lambda^3$ for the 1D anharmonic
+Gibbs measure with potential $L = (\lambda/2)x^2 + (\alpha/6)x^3 + (\gamma/24)x^4$.
+This tide upgrades the result to arbitrary $\mathrm{id}$-multiples
+$(b\,x, a\,x, c\,x)$, giving
+$t^2 \cdot \kappa_3(b\,x, a\,x, c\,x) \to -(abc)\,\alpha/\lambda^3$,
+via the static factorisation
+$\kappa_3(b\,x, a\,x, c\,x) = (abc)\cdot\kappa_3(x, x, x)$.
+The factorisation is hypothesis-free — it follows by trilinearity of
+$\kappa_3$ once each of the seven Gibbs expectations in
+$\mathtt{Threepoint.kappa3}$'s definition has its scalar factor peeled
+off via I2's just-landed
+\texttt{gibbsExpectation\_smul}.\footnote{I2 (gibbsCov-algebra) landed
+2026-05-07. Branch: \texttt{tide/gibbscov-algebra}.}
+The asymptotic is then $\mathtt{Tendsto.const\_mul}\,(abc)$ on top of
+Tide 9. Zero \texttt{sorry}, single session, build green on the first
+attempt; the GPT-5.5~Pro deliberation agreed with the Claude draft and
+flagged a deferred shifted-affine extension.
+\end{abstract}
+
+\section{Setting}
+
+Tide 9 (anharmonic-$\kappa_3$, 6 May) proved
+\[
+  t^2 \cdot \kappa_3(\mathrm{volume}, L_{\lambda\alpha\gamma}, x, t, x, x)
+  \;\to\; -\alpha/\lambda^3
+  \quad\text{as } t \to \infty
+\]
+for $L_{\lambda\alpha\gamma}(x) = (\lambda/2)x^2 + (\alpha/6)x^3 + (\gamma/24)x^4$,
+under the discriminant condition $\alpha^2 < 3\lambda\gamma$.\footnote{Discriminant
+condition guarantees the sextic Wick contractions in $\langle x^4\rangle_t$ stay
+positive, so the asymptotic of the covariance $\langle x^2, x\rangle$ has the
+sign Tide 9 records.} The slot tuple $(\mathrm{id}, \mathrm{id}, \mathrm{id})$
+specialises $\kappa_3$'s general $(A, \varphi, B)$ signature to all-identity
+observables. Tide 9 was the first cross-repo bridge between the abstract
+\texttt{kappa3} machinery in \texttt{threepoint} and the concrete anharmonic
+asymptotics in \texttt{laplace}; its retrospective named the affine-observable
+form as the natural multilinear strict-improvement and estimated $\sim$40
+lines.
+
+I2 (gibbsCov-algebra, 7 May) landed an unconditional Gibbs-expectation /
+Gibbs-covariance algebra:\footnote{Eleven lemmas mirrored across
+\texttt{Laplace/Gibbs.lean} and \texttt{Laplace/Multi/Basic.lean}:
+\texttt{gibbsExpectation\_\{smul,add,zero,const\}} and
+\texttt{gibbsCov\_\{symm,smul,const,add,zero\}}.} Of these, the only
+load-bearing one for this tide is
+$\texttt{gibbsExpectation\_smul} : \langle c\,\varphi\rangle_t = c \cdot \langle \varphi\rangle_t$,
+which holds unconditionally (when the partition is zero, both sides are
+zero). The trilinearity factorisation reduces to seven applications of
+this identity plus a \texttt{ring} step to collect the scalar factor
+$abc$; no \texttt{gibbsCov} algebra is needed.
+
+This tide was picked at 2026-05-07T20:55Z from candidate G2 in the v3
+candidates survey,\footnote{\texttt{projects/automation/log/2026-05-07-v3-tide-candidates-survey.md}.}
+after a parallel session claimed C1 (the harmonic-side twin) at 20:54Z.
+Together with the in-progress C1, the two land complete affine-observable
+$\kappa_3$ instances across both harmonic and anharmonic sides on the
+same day.
+
+\section{The thing formalised}
+
+Two new public theorems in \texttt{Laplace/OneD/AnharmonicKappa3.lean}.
+
+\paragraph{Theorem 1 (potential-agnostic factorisation).} For any
+$L : \mathbb{R} \to \mathbb{R}$, $t \in \mathbb{R}$, and scalars
+$a, b, c \in \mathbb{R}$,
+\[
+  \kappa_3(\mathrm{volume}, L,\; b \cdot x,\; t,\; a \cdot x,\; c \cdot x)
+  \;=\;
+  (a \cdot b \cdot c) \cdot \kappa_3(\mathrm{volume}, L,\; x,\; t,\; x,\; x).
+\]
+Lean signature:
+\begin{quote}\small\ttfamily
+theorem kappa3\_affine\_id\_id\_id\_eq\\
+\hspace*{1em}(L : ℝ → ℝ) (t : ℝ) (a b c : ℝ) :\\
+\hspace*{1em}Threepoint.kappa3 (volume) L\\
+\hspace*{3em}(fun x => b * x) t (fun x => a * x) (fun x => c * x)\\
+\hspace*{1em}= (a * b * c) * Threepoint.kappa3 (volume) L\\
+\hspace*{6em}(fun x => x) t (fun x => x) (fun x => x)
+\end{quote}
+The factorisation has no analytic preconditions: $\kappa_3$'s seven
+ratio-of-integrals reduce, at $h = 0$, to seven
+\texttt{Laplace.gibbsExpectation} ratios via the existing
+\texttt{threepoint\_gibbsExp\_volume\_zero\_eq} bridge, and
+\texttt{gibbsExpectation\_smul} is unconditional.
+
+\paragraph{Theorem 2 (anharmonic asymptotic).} For
+$L_{\lambda\alpha\gamma}$ with $0 < \lambda$, $0 < \gamma$,
+$\alpha^2 < 3\lambda\gamma$, and any $a, b, c \in \mathbb{R}$,
+\[
+  t^2 \cdot \kappa_3(\mathrm{volume}, L_{\lambda\alpha\gamma},\;
+    b \cdot x,\; t,\; a \cdot x,\; c \cdot x)
+  \;\to\; -(a \cdot b \cdot c) \cdot \alpha/\lambda^3
+  \quad \text{as } t \to \infty.
+\]
+Lean signature:
+\begin{quote}\small\ttfamily
+theorem kappa3\_anharmonic\_affine\_asymptotic\\
+\hspace*{1em}\{lam alpha gamma : ℝ\}\\
+\hspace*{1em}(hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha\^{}2 < 3 * lam * gamma)\\
+\hspace*{1em}(a b c : ℝ) :\\
+\hspace*{1em}Filter.Tendsto\\
+\hspace*{2em}(fun t : ℝ => t\^{}2 * Threepoint.kappa3 (volume)\\
+\hspace*{4em}(anharmonicPotential lam alpha gamma)\\
+\hspace*{4em}(fun x => b * x) t (fun x => a * x) (fun x => c * x))\\
+\hspace*{2em}Filter.atTop\\
+\hspace*{2em}(nhds (-(a * b * c) * alpha / lam\^{}3))
+\end{quote}
+The hypotheses are exactly those of Tide 9: trilinearity of $\kappa_3$ in
+the three observable slots costs nothing analytically.
+
+\section{Proof strategy}
+
+\paragraph{Theorem 1.} The key observation is that
+$\mathtt{Threepoint.kappa3}$ unfolds to seven $\mathtt{gibbsExp}$
+terms,\footnote{Specifically: $\langle\varphi A B\rangle$,
+$\langle\varphi A\rangle\langle B\rangle$,
+$\langle\varphi B\rangle\langle A\rangle$,
+$\langle A B\rangle\langle\varphi\rangle$, and
+$\langle\varphi\rangle\langle A\rangle\langle B\rangle$ — a polynomial
+of total degree at most three in the seven scalar values.} all
+evaluated at $h = 0$. The bridging lemma
+\texttt{threepoint\_gibbsExp\_volume\_zero\_eq} (already in laplace,
+from Tide 9) routes each one through to
+\texttt{Laplace.gibbsExpectation}, after which the seven integrand
+$\lambda$-binders carry products like
+$(\mathtt{fun}\;x \mapsto a\,x)\,w \cdot (\mathtt{fun}\;x \mapsto b\,x)\,w$
+that are not yet syntactically in the canonical scaled-monomial form.
+A \texttt{funext;\,ring} cleanup\footnote{Seven such
+\texttt{have h\_X : (fun w => ...) = (fun w => K * w\^{}n)} steps:
+$abc \cdot w^3$, $ab \cdot w^2$, $ac \cdot w^2$, $bc \cdot w^2$, plus
+the three $a w$, $b w$, $c w$ singletons, and the four RHS-side
+identity-only forms $w^3$ and $w^2$.} forces them into the canonical
+shapes. \texttt{gibbsExpectation\_smul} then peels each scalar factor
+out of its Gibbs expectation, leaving a pure ring identity in
+$(a, b, c) \in \mathbb{R}^3$ and the four scalar values
+$\langle w^3 \rangle$, $\langle w^2 \rangle$, $\langle w \rangle$, $\langle w \rangle^3$
+(which appear cubically in the standard polarisation
+$\langle w^3 \rangle - 3\langle w^2\rangle\langle w\rangle + 2\langle w\rangle^3$).
+\texttt{ring} closes.
+
+\paragraph{Theorem 2.} The new \texttt{Tendsto} is just $abc$ times
+Tide 9's: $t^2 \cdot \kappa_3(b\,x, a\,x, c\,x) = abc \cdot t^2 \cdot \kappa_3(x, x, x)$
+pointwise. So the proof is
+$\mathtt{Tendsto.const\_mul}\,(abc)$ applied to the Tide 9 conclusion,
+combined with $\mathtt{Tendsto.congr'}$ rewriting the function under
+the integral via Theorem 1. The constant
+$-(a b c)\,\alpha/\lambda^3$ is normalised against
+$abc \cdot (-\alpha/\lambda^3)$ by a one-line \texttt{ring}.
+
+\section{Roadblocks and resolutions}
+
+There were no roadblocks. The proof landed green on the first
+\texttt{lake build}, in 4.7\,s after a warm Mathlib cache. This is
+unusual but reasonable for a tide whose math is pure trilinearity over
+a closed-form cumulant; the load-bearing analytic content is fully
+imported from Tide 9.
+
+The deliberation step ran in parallel with the formalisation in this
+session, on the assumption (correct, as it turned out) that the
+candidate was uncontroversial. GPT-5.5~Pro's response, when it
+returned 4 minutes after the proof had already landed, confirmed
+Candidate~A as the right patch-sized theorem and noted three small
+points worth recording:
+
+\begin{enumerate}
+\item \emph{The asymptotic constant.} GPT confirmed the sign
+  $-(abc)\,\alpha/\lambda^3$ (no factor or sign error). Suggested
+  stating the limit as \texttt{((a * b * c) * (-α / λ\^{}3))} for
+  Lean ergonomics; the proof uses
+  \texttt{(-(a * b * c) * alpha / lam\^{}3)} and bridges the two
+  forms by a single \texttt{ring} step. Both work; one wonders if
+  Mathlib will eventually grow a normal-form simp set for these.
+\item \emph{Algebra path.} ``You likely don't need \texttt{gibbsCov}
+  for this patch; direct \texttt{gibbsExpectation\_smul} +
+  \texttt{gibbsExpectation\_const} is enough.'' Exactly the route
+  taken; the I2 \texttt{gibbsCov} algebra is not used here. (It is
+  used in C1, the harmonic-side twin.)
+\item \emph{Missed candidate (deferred).} ``The affine
+  strengthening is also true:
+  $\kappa_3(b\,x + d, a\,x + e, c\,x + f) = abc \cdot \kappa_3(x, x, x)$,
+  because \texttt{kappa3} kills constants in each slot
+  ($\mathbb{E}[1] = 1$ makes the cancellations exact). But I would
+  defer it unless you need shifted observables now.'' Recorded as a
+  follow-up; not picked up here.
+\end{enumerate}
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib.} \texttt{Tendsto.const\_mul} (constant multiple of
+a limit), \texttt{Tendsto.congr'} (rewriting the function under a
+limit), and \texttt{filter\_upwards} (eventual quantification). All
+appear in dozens of laplace files; nothing new from Mathlib.
+
+\paragraph{Laplace seabed (existing).} Three load-bearing
+imports:\footnote{Tide 9's
+\texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic} (the headline),
+its private bridge \texttt{threepoint\_gibbsExp\_volume\_zero\_eq},
+and I2's \texttt{Laplace.gibbsExpectation\_smul}.}
+Tide 9's headline asymptotic, Tide 9's $h = 0$ bridge to
+\texttt{Laplace.gibbsExpectation}, and I2's unconditional
+scalar-out-of-Gibbs-expectation lemma.
+
+\paragraph{New.} Two public theorems and seven
+\texttt{funext;\,ring}-style integrand-cleanup \texttt{have}-blocks
+inside the proof of Theorem 1. Nothing new at the lemma library level.
+The seven \texttt{funext}s are mechanical bookkeeping; a future tide
+could fold them into a small simp set
+``\texttt{push\_smul\_under\_lambda}'' but at one use it's not yet
+cost-positive.
+
+\section{Lessons}
+
+\paragraph{Trilinearity tides land in one shot when the algebra is
+already there.} I2 paid for itself the moment a strict-improvement of
+this shape was on the board. The factorisation theorem is essentially
+the I2 \texttt{gibbsExpectation\_smul} lemma applied seven times under a
+\texttt{ring}-closure; if I2 hadn't been merged we'd have unfolded each
+expectation manually. The lesson generalises to C1 (harmonic-side
+twin) and is implicit in the I2 retrospective's follow-up list, which
+flagged C1 and G2 specifically.
+
+\paragraph{Parallel deliberation + formalisation is fine when the
+deliberation outcome is predictable.} Auto mode here meant launching
+the GPT consult in the background and writing the Lean code in the
+foreground, without waiting. The risk is wasted work if GPT had named
+a different candidate; the actual outcome (GPT's vote agreed with
+Claude's) suggests this risk is acceptable for trilinearity-shaped
+tides where the candidate is essentially forced. Less acceptable for
+hypothesis-class deliberations or when the proof technique is
+genuinely contested. Don't generalise this to all tides.
+
+\paragraph{The ``\texttt{funext;\,ring} cleanup'' pattern is the
+hidden cost of the seven-term \texttt{kappa3} unfolding.} Both Tide 9's
+\texttt{kappa3\_id\_id\_id\_unfold} and this tide's
+\texttt{kappa3\_affine\_id\_id\_id\_eq} carry the same boilerplate:
+the seven Gibbs-expectation integrands need their lambdas reduced to
+canonical scaled-monomial form before \texttt{gibbsExpectation\_smul}
+can fire on them. A second use isn't yet a refactor trigger, but if a
+third \texttt{kappa3} unfolding tide lands (e.g.\ for $\langle x^k \rangle$
+slots, or for the cross-cumulant $\kappa_3(\varphi, A, B)$ of the
+patterning paper), the pattern is well-developed enough to extract.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Shifted-affine strengthening} (GPT's missed candidate).
+  $\kappa_3(b\,x + d, a\,x + e, c\,x + f) = abc \cdot \kappa_3(x, x, x)$
+  via \texttt{gibbsExpectation\_const}-style cancellations
+  ($\mathbb{E}[1] = 1$). $\sim$50 extra lines on top of this tide.
+  Defer until a second consumer for shifted observables materialises.
+
+\item \emph{C1 (harmonic-side twin), in flight.} The harmonic case
+  $\kappa_3(b\,x, a\,x, c\,x) = abc \cdot \kappa_3(x, x, x) = 0$
+  follows by the same trilinearity argument, on top of Tide 5's
+  harmonic-vanishing theorem.\footnote{\texttt{Threepoint.kappa3\_harmonic\_id\_id\_id\_eq\_zero}.}
+  Claimed by a parallel session at 20:54Z; should land within hours
+  of this retrospective. Together the two tides close the
+  affine-observable $\kappa_3$ pair for the 1D potentials currently
+  in laplace.
+
+\item \emph{Generic multilinear factorisation (Candidate~C, deferred).}
+  $\kappa_3(\mu, L, a A_0, t, b \varphi_0, c B_0) = abc \cdot \kappa_3(\mu, L, A_0, t, \varphi_0, B_0)$
+  for arbitrary $A_0, \varphi_0, B_0$. Subsumes Theorem~1 as the
+  $(\mathrm{id}, \mathrm{id}, \mathrm{id})$ instance. GPT noted ``only
+  worth exporting if it is essentially free after the $h=0$ rewrite'';
+  worth checking against C1's proof to see whether a unified C-shaped
+  helper would shorten both files. If yes, a small refactor tide.
+
+\item \emph{Promote ``\texttt{push\_smul\_under\_lambda} simp set''
+  on third use.} The seven-\texttt{funext} pattern (this tide and
+  Tide 9) is a candidate for automation but not yet cost-positive.
+  Third use triggers.
+
+\item \emph{\texttt{\textbackslash leanref}-tag the threepoint paper, pass 3.}
+  This tide is a corollary of the threepoint paper's multilinearity-of-$\kappa_3$
+  remark.\footnote{Roughly the slot-by-slot linearity of cumulants
+  used implicitly in the patterning subtractions.} Once the next
+  process-tide tagging pass is run (currently candidate K2), tag the
+  multilinearity claim with \texttt{\textbackslash leanref} pinned to
+  this commit.
+\end{itemize}
+
+\end{document}

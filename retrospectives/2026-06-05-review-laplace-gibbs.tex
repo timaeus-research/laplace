@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the Gibbs foundation --- the definitions every laplace file rests on, reviewed clean}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/Gibbs.lean}: the seabed's foundational definitions ---
+\texttt{partitionFunction}, \texttt{gibbsExpectation}, \texttt{gibbsCov} --- and the bilinearity /
+scalar-pull / constant-collapse algebra that every downstream file uses to manipulate Gibbs
+expectations without unfolding. Result: a \textbf{clean fidelity pass with two edits} (a dead
+\texttt{open} and one over-specified header sentence). For a file this central, the value of the
+review is the confirmation itself: the objects the whole programme is built on say exactly what the
+primer means.
+\end{abstract}
+
+\section{Setting}
+This is the root of the laplace dependency graph: $Z(t)$, $\langle\cdot\rangle_t$, and
+$\mathrm{Cov}_t[\cdot,\cdot]$ (with prior $\pi\equiv 1$), plus the algebraic lemmas
+(\texttt{gibbsExpectation\_\{const,smul,zero,add\}}, \texttt{gibbsCov\_\{symm,smul,const,add,zero\}}
+in both slots) that the affine- and multilinear-observable covariance results across the seabed call.
+Every other laplace file imports it. It had never been independently reviewed.
+
+\section{What was reviewed}
+The three definitions against the primer's $Z/\langle\cdot\rangle/\mathrm{Cov}$ with $\pi\equiv 1$;
+and each algebraic lemma's \emph{hypotheses} --- the crux for a definitions file, since the interest
+is precisely which facts need $Z(t)\ne 0$, which need integrability, and which are unconditional.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect.} The reviewer confirmed all three definitions faithful (including the
+implicit Lebesgue measure realising $\pi\equiv 1$) and \emph{no sign error} in the covariance
+$\langle\varphi\psi\rangle-\langle\varphi\rangle\langle\psi\rangle$. The hypothesis placement is
+exactly right: \texttt{gibbsExpectation\_const} genuinely needs $Z\ne 0$ (else Lean's totalised
+$\,/\,0=0$ gives $\langle c\rangle=0\ne c$); the \texttt{\_smul}/\texttt{\_zero} and all the
+\texttt{gibbsCov} constant/scalar/zero lemmas are correctly \emph{unconditional}, their docstrings
+correctly noting that at $Z=0$ both sides collapse to $0$; and the additivity lemmas carry exactly the
+integrability hypotheses \texttt{integral\_add} requires, with no spurious $Z\ne 0$. The lone textual
+mismatch: the module header described the setting as a ``smooth potential $L$'' with ``$t>0$,'' while
+the definitions and lemmas are stated for arbitrary $L:\mathbb R\to\mathbb R$ and arbitrary
+$t:\mathbb R$ --- the code is strictly more general than its own prose.
+
+\section{Simplifications and documentation fixes applied}
+\textbf{One dead open, one prose correction.} \texttt{open Real} carried nothing (every
+\texttt{Real.exp} is qualified; the only bare \texttt{exp} tokens are in the docstring);
+\texttt{open MeasureTheory} stays (bare \texttt{Integrable}, \texttt{integral\_const\_mul},
+\texttt{integral\_add}). And the header was relaxed to state that smoothness of $L$ and positivity of
+$t$ belong to the primer's setting, not to the generality of the file's definitions. Build green, no
+warnings, signatures byte-identical; the reviewer affirmed both. No dead locals, no unnecessary
+hypotheses, no unused imports were found --- a tight foundational file.
+
+\section{Disagreements and open questions}
+None. (One terseness note left report-only: \texttt{gibbsCov\_add\_right}'s docstring, unlike
+\texttt{\_add\_left}'s, does not restate the integrability hypotheses --- accurate as written, since
+the hypotheses are in the signature.)
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{For a definitions file, the review \emph{is} the hypothesis audit.} There is no
+    asymptotic constant to re-derive; the entire fidelity question is ``does each lemma demand exactly
+    the hypotheses it needs --- $Z\ne 0$ where a division must be inverted, integrability where
+    \texttt{integral\_add} fires, nothing where the totalised $/0=0$ makes the statement unconditional
+    --- and does the docstring's $Z=0$ reasoning hold up?'' Confirming that for the root objects is
+    high-value precisely because everything downstream inherits it.
+  \item \textbf{Header prose over-specifies more often than it under-specifies, on foundational
+    files.} A definitions file is written to serve a motivating application (here: smooth $L$,
+    $t>0$), and the header tends to inherit that framing even though the Lean objects are deliberately
+    general. Worth a glance: do the stated ambient hypotheses actually appear in any signature?
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Remaining never-reviewed laplace files are the large \texttt{Multi/} analytic files
+    (\texttt{RescaledIntegrals} 1547L, and the \texttt{Covariance}/\texttt{CovarianceSharp}/
+    \texttt{CovarianceExplicit} trio, up to 19.6k lines --- candidates for sectioned reviews), plus
+    the small root files \texttt{AffineKappa3}, \texttt{AffineBilinearCov}, \texttt{ScalarBound}.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the located grand headline\\
+\large grand composition, part 3}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The composition arc reaches the note's inverse Theorem 3.1 in located
+form: two localized nondegenerate losses at \emph{unknown} centres,
+one physical data premise --- superPoly agreement of the actual
+translated-loss moment families over smooth compactly supported tests
+in a common region containing balls around both centres --- and the
+conclusion that the centres coincide and every positive-order
+derivative tensor agrees
+(\code{located\_positive\_jet\_recovery\_of\_ccData}). The proof is
+one page: the located cutoff removal of part 2 turns the single test
+premise into located-moment data for every smooth polynomial-growth
+observable; the coordinate observables recover the location; and one
+reparametrization identity --- once located at $p$, the located
+moment of $Q(\cdot - p)$ \emph{is} the centred moment of $Q$ --- turns
+the same data into centred data for every observable the
+base-case-free jet headline wants. The deliberation had routed this
+step through the centred compactly-supported headline, which would
+have required the common region to contain that theorem's own cutoff
+supports; reparametrizing into the superPoly-form headline dissolves
+the second support condition entirely. Zero fix rounds.
+\end{abstract}
+
+\section{Setting}
+
+Parts 1--2 built the translation bridge and the located cutoff
+removal. What remained for a located headline was glue --- but glue
+with one genuine choice in it, namely how to hand the actual-region
+data to a centred recovery theorem whose own hypotheses mention
+centred supports.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{located\_positive\_jet\_recovery\_of\_ccData} takes the package
+families of both centred losses, the symmetry hypotheses of the
+centred headline, the common-region data premise (per package order,
+as in the perimeter corpus), and concludes $p_1 = p_2$ together with
+positive-order jet equality. Location: part 2 at the coordinate
+observables (smooth by \code{EuclideanSpace.proj}, linear growth),
+then \code{location\_eq\_of\_superPoly\_first\_moments}. Jets: after
+\code{subst}, for any smooth polynomial-growth $Q$ the actual
+observable $Q(\cdot - p)$ is smooth and of polynomial growth
+(translation preserves both), and
+\code{locatedMomentT\_sub\_observable} collapses its located moment
+to the centred moment of $Q$; instantiating $Q$ at coordinate
+products and monomial tests feeds
+\code{smooth\_positive\_jet\_recovery\_of\_superPoly\_moments}
+directly.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+Nowhere --- zero fix rounds, the second such tide in this arc. The
+catalogued disciplines that used to be fix rounds are now defaults:
+\code{beta\_reduce} before rewriting inside \code{SuperPoly.congr}
+per-point goals, \code{sub\_eq\_neg\_add} to align translated
+observables with the \code{comp\_const\_add} growth lemma, and
+checking the import closure before naming sibling theorems.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{EuclideanSpace.proj} smoothness, \code{subst}-driven
+filter bookkeeping, nothing else new. New mathematics: none. The one
+idea --- reparametrize the observable class rather than re-localize
+the tests --- is elementary but load-bearing: it is what makes the
+located headline need \emph{no} hypotheses beyond part 2's.
+
+\section{What the next tide inherits}
+
+The arc capstone (tide 4): transport the centred conclusions to the
+actual losses $\Lambda_i = L_i(\cdot - p)$ --- iterated derivatives
+at $p$, and for analytic losses the germ at $\mathcal{N}(p)$ with the
+symmetry hypotheses discharged by
+\code{AnalyticAt.iteratedFDeriv\_isSymm}. After that, the note-side
+markers for the located theorems (gated, as all TeX actions are).
+\end{document}

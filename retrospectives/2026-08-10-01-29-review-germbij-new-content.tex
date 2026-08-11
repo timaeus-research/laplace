@@ -1,0 +1,267 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{‖}{\ensuremath{\|}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.6 Sol:}} #1\end{quote}\medskip}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\newcommand{\Cov}{\operatorname{Cov}}
+\emergencystretch=3em
+
+\title{Review retrospective:\\\emph{the new germbij content --- the inverse half and the forward programme}}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A fidelity-focused Tide-review of the eleven files that landed in the germbij
+arc of the \texttt{laplace} seabed on 2026-08-09/10 (PRs \#93--\#103): the
+three-file completion of the inverse half of the note's Theorem~3.1 in the
+note's own ``same asymptotics'' data language, and the eight landed stages of
+the forward-expansion programme~A. The reviewer (GPT-5.6 Sol, two consults)
+was given the note's TeX, the upstream Lean definitions, and the files. The
+\emph{forward arc came back clean}: all eight targeted checks --- exponent-split
+indexing, the graded-exponential truncation, the growth exponents $j+2N$ and
+$(N{+}2)(N{+}1)$, the unrestricted exponential remainder, the $\lambda/4$
+Gaussian budget, the $T_2$/qform bridge, and the two truncation conventions ---
+verified consistent, independently agreeing with the session's own hand
+checks. The \emph{inverse arc} produced four fidelity findings, none a false
+statement, all of the form ``the Lean statement is weaker than, or the
+docstring broader than, the note's claim'': the headline assumes the matched
+$0$--$2$ jet (and a shared Hessian matrix) that the note derives; equality of
+the additive constant the note declares lost is assumed at $j=0$; the
+$C_c^\infty$-observable premise is bridged to bare-monomial data only
+semantically, not by a lemma; and one module docstring claims a
+translated-integral identity that was dropped during its tide. All four are
+escalated to the human; per the review discipline (and two forward tides in
+flight on these files) nothing was changed --- the sixteen proof-maintenance
+simplifications GPT suggested are recorded as follow-ups.
+\end{abstract}
+
+\section{Setting}
+
+The germbij note asks when the map $\Phi_L$, sending a loss to the asymptotic
+expansions of its localized posterior expectations $\langle\phi\rangle_t$ over
+all observables, is injective, and its Theorem~3.1 answers the nondegenerate
+case: $\Phi_L$ determines, and is determined by, the pair $(w^*, \{D^k
+L(w^*)\}_{k\ge2})$. On 2026-08-09 a full audit of the merged corpus against
+the note found the recovery theorems consuming $o(q^{k-2})$ moment-\emph{rate}
+hypotheses where the note's premise is equality of expansion \emph{families}
+(differences $o(t^{-\infty})$), and identified the missing pieces; the
+resulting programme landed as PRs \#93--\#95 (items B, D, C: the expansion
+bridge, location recovery, the analytic germ corollary --- ``the inverse half
+of Theorem 3.1 is complete'') and opened the six-stage forward programme~A,
+of which stages 1 through 5c-i (PRs \#96--\#103) had landed by the time of
+this review. The user asked for a review of exactly this new content,
+focusing on fidelity of the formalised statements to the text. Eleven files
+at \texttt{laplace} commit \texttt{b7566bb}; this is the widest-scoped review
+tide so far, run as one review with the independent consult split per arc.
+
+\section{What was reviewed}
+
+\textbf{Inverse arc.} \texttt{Multi/ExpansionBridge.lean}: the $t=q^{-2}$
+filter bridge, rate transport from superpolynomial temperature-level
+agreement, the homogeneity identity $\langle P\rangle_{t=q^{-2}} = q^k\cdot
+\text{rescaledMoment}$, and the headline theorem
+\texttt{smooth\_jet\_recovery\_of\_\allowbreak superPoly\_moments}.
+\texttt{Multi/LocationRecovery.lean}: anchored coordinate moments vanish,
+located moments recover the location, and the two-loss statement
+\texttt{location\_eq\_of\_\allowbreak superPoly\_first\_moments}.
+\texttt{Multi/AnalyticGermRecovery.lean}: power-series diagonals, the
+identity-theorem step \texttt{analytic\_germ\_eq\_of\_jet\_eq}, and the
+composed corollary
+\texttt{analytic\_germ\_recovery\_of\_\allowbreak superPoly\_moments}. These three carry
+the \verb|\leanref| anchors on the note's answer~(i).
+
+\textbf{Forward arc.} \texttt{AsymptoticPolynomial.lean} (the expansion
+predicate and coefficient uniqueness), \texttt{Multi/GaussianMeso.lean} (the
+mesoscopic window $\sqrt q\,\|z\|\le1$ and beyond-all-orders outer tails),
+\texttt{Multi/ForwardDomain.lean} (the Peano mixin and the exact exponent
+split), \texttt{Multi/ExpGraded.lean} (the graded expansion of the
+exponential correction factor), \texttt{Multi/CoeffFn.lean} (continuity and
+polynomial growth of the coefficient functions),
+\texttt{Multi/ScalarBounds.lean} (the unrestricted exponential Taylor
+remainder and tail bounds), \texttt{Multi/GaussAbsorb.lean} (the $T_2$/qform
+bridge and Gaussian absorption), \texttt{Multi/WindowMajorant.lean} (the
+$q$-uniform window majorant).
+
+\textbf{Informal corpus.} The note's \S\S1--3 (the chain, the setup defining
+$\Phi_L$ and the $o(t^{-\infty})$ convention, Theorem~3.1 with its proof and
+Corollary~3.2), the flatness proposition, the asymptotic-notation appendix;
+the seabed \texttt{CLAUDE.md}; the tide logs of all eleven tides; and the two
+archived design consults (the nondegenerate audit whose B$>$D$>$A$>$C$>$E
+ranking scoped the arc, and the forward-programme architecture consult). The
+upstream definitions (\texttt{SuperPoly}, \texttt{LocalLaplaceDomain},
+\texttt{HigherLaplaceDomain}, \texttt{taylorHomogeneousTerm},
+\texttt{rescaledMoment}, \texttt{monomialTest}) were extracted and supplied
+to the reviewer alongside the files.
+
+\section{Fidelity findings}
+
+The forward arc returned \textbf{no fidelity findings}: every targeted check
+came back consistent, with the reviewer re-deriving the indexing ($V_{s+1} =
+T_{s+3}$ carrying weight $q^{s+1} = q^{k-2}$, degrees $3,\dots,N{+}2$
+exactly), the truncation argument (the exponent polynomial has zero constant
+term, so outer-exponential terms $i\ge N{+}1$ touch only coefficients beyond
+$N$), the budget arithmetic ($-T_2 + |S| + |R| \le -(\lambda/2 - \lambda/8 -
+\lambda/8)\|z\|^2 = -(\lambda/4)\|z\|^2$), and the reconciliation of the two
+Taylor-truncation conventions through \texttt{remConst}. The session's
+independent hand checks, done before the consult returned, agreed on every
+point --- a genuinely convergent double verification.
+
+The inverse arc produced four findings. None says a proved statement is
+false; all four say the formalisation is \emph{narrower} than the prose
+around it.
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{The matched base case (largest).} The headline
+theorem\footnote{\texttt{smooth\_jet\_recovery\_of\_superPoly\_moments},
+\texttt{ExpansionBridge.lean:192}.} takes both losses in
+\texttt{HigherLaplaceDomain} packages sharing the \emph{same} matrix $H$, and
+assumes \texttt{hbase}: equality of iterated derivatives at orders $0,1,2$.
+The note's Theorem~3.1 \emph{derives} the Hessian from the data ($t\,
+\Cov_t[w_i,w_j] \to (H^{-1})_{ij}$). That Hessian step exists in the merged
+corpus in rate language (\texttt{hessian\_recovery}, via the covariance
+limit \texttt{tendsto\_normalized\_\allowbreak covariance}) but is not
+composed into the superPoly-language
+headline: there is no $k=2$ analogue of the expansion bridge for covariance
+data. So the theorem formalises the higher-order induction \emph{conditional
+on} an already-matched $2$-jet, and the ``inverse half complete'' gloss (and
+the note's answer-(i) \verb|\leanref|) reads broader than this one statement
+warrants without its uncomposed companions.
+\item \textbf{The assumed constant.} \texttt{hbase} at $j=0$ assumes
+$L_1(0)=L_2(0)$ --- exactly the additive constant the note proves is
+\emph{lost} ($\Phi_{L+c}=\Phi_L$). A pair $L_2 = L_1 + c$ has identical
+normalized moment data yet is excluded by hypothesis, so the composed
+corollary is strictly weaker than Corollary~3.2's inverse direction. The
+analytic step's \emph{conclusion} ($L_1 y - L_1 0 = L_2 y - L_2 0$ near $0$)
+is correctly phrased modulo constants; the overreach is confined to the
+hypotheses, and a shift-normalization wrapper would remove it.
+\item \textbf{The observable class.} The note's premise quantifies over
+$\phi \in C_c^\infty(U)$; the Lean data is bare monomials and coordinates
+against the $U$-restricted Gibbs measure. Semantically a faithful weakening:
+the difference to any admissible $w^\alpha\chi(w)$ is supported away from the
+minimum and is $O(e^{-\delta t})$ by the loss gap, hence invisible beyond all
+orders. But that cutoff-removal implication is \emph{not formalised}, so the
+headline cannot yet be applied to the note's literal premise without an
+additional lemma.
+\item \textbf{A docstring overclaim.} \texttt{LocationRecovery.lean}'s module
+docstring says the located-moment/translated-loss identity is ``recorded via
+translation invariance of Lebesgue measure''. No such lemma is in the file;
+the tide log records it was dropped mid-tide (a \texttt{PiLp}
+instance-synthesis failure) as non-load-bearing. \texttt{locatedMoment} is a
+faithful \emph{model} by construction --- the reviewer confirmed the
+change-of-variables reading --- but the docstring describes a theorem that
+does not exist.
+\end{enumerate}
+
+Worth recording as explicit non-findings: \texttt{SuperPoly} is equivalent to
+the note's $o(t^{-\infty})$ convention; the junk values of
+\texttt{posteriorMomentT} at $t\le0$ are harmless under \texttt{atTop}
+filters; monomial-only test data is justified by the upstream polarization
+theorems; the \texttt{IsSymm} hypotheses are implied by the packages' own
+\texttt{ContDiff} fields (formalization debt, not a wrong assumption); and
+\texttt{AnalyticAt} at the minimum is correctly weaker than ``analytic on
+$U$''.
+
+\gptbox{They do not yet constitute the full inverse half of Theorem 3.1 and
+Corollary 3.2 from the note's literal premises, principally because: Hessian
+equality is assumed rather than recovered; equality of the lost additive
+constant is assumed; compactly supported $\Phi_L$-data have not formally been
+bridged to bare monomial/coordinate moments; translated physical posterior
+integrals have not formally been identified with \texttt{locatedMoment}.}
+
+\section{Simplifications applied}
+
+\textbf{None --- deliberately.} The user scoped this review to fidelity, and
+two forward tides (the 5c-ii numerator and packaging stages) were in flight
+importing these files at review time; proof-body churn would have invited
+rebuild and merge races for zero statement-level gain. The sixteen
+suggestions from the two consults --- all proof-maintenance: dead code,
+duplicated ray-path and mesoscopic-scale derivations, a posterior-linearity
+helper kit, a \texttt{SuperPoly}$\to$\texttt{Tendsto} helper, internal
+derivation of the symmetry hypotheses, splitting the window-majorant
+telescope into private lemmas --- are recorded in the review log for a
+dedicated simplification pass once programme~A lands. The signature
+fingerprint of all eleven files is unchanged (no edits), and the build was
+not touched.
+
+\section{Disagreements and open questions}
+
+No Claude/GPT disagreements: the consult's four findings coincide with the
+four candidate findings recorded in the review log \emph{before} the response
+arrived, and its clean forward verdict matched the hand checks. What is
+escalated to the human is the findings themselves, with a suggested reading:
+
+\begin{itemize}[nosep]
+\item Findings 1--3 are most naturally read not as errors but as the
+\emph{remaining perimeter} of the inverse half: a $k=2$ superPoly bridge for
+covariance data (composing \texttt{hessian\_recovery} into the headline), a
+shift-normalization wrapper discharging the $j=0$ assumption, and a
+cutoff-removal lemma connecting $C_c^\infty$ data to the monomial data. Each
+looks like one small forward tide; together they would let the three
+\verb|\leanref| anchors on answer~(i) carry their weight literally.
+\item Finding 4 is a one-line docstring fix (or the dropped lemma, if the
+\texttt{PiLp} instance issue is worth revisiting).
+\item Until then, the honest gloss of the landed inverse half is: \emph{given
+two localized nondegenerate losses with matched value, gradient and Hessian
+at the minimum, superpolynomially-equal monomial moment families force equal
+jets at all orders, and equal germs modulo the constant in the analytic
+case} --- with location recovery as a separate, unconditional statement.
+\end{itemize}
+
+\section{Lessons}
+
+The audit consult that scoped PRs \#93--\#95 flagged its own caveat honestly
+(``B+C alone would NOT justify claiming Theorem 3.1 formalised''), and the
+per-tide logs preserved it --- but the caveat eroded between artefact layers:
+by the time the claim reached the completion banner in the tide log, the
+seabed description, and the \verb|\leanref| tags, the conditional nature of
+the base case had dropped out. Reviews of ``completion'' tides should
+routinely diff the headline theorem's \emph{hypothesis list} against the
+prose claim, which is where this class of drift lives; the statement itself
+compiled, was proved, and is true. Second lesson: a docstring narrating a
+lemma that was dropped during iteration (the translated-integral form) is a
+specific, checkable failure mode --- when a tide drops a planned lemma, the
+module docstring needs the same edit.
+
+\section{Follow-ups}
+
+\begin{itemize}[nosep]
+\item Three candidate forward tides closing the inverse-half perimeter: the
+$k=2$ superPoly covariance bridge; the shift-normalization wrapper; the
+cutoff-removal lemma ($C_c^\infty$ data $\Rightarrow$ monomial data, via the
+loss gap).
+\item The \texttt{LocationRecovery} docstring fix (or the dropped
+translated-integral lemma).
+\item The sixteen recorded proof-maintenance simplifications, as a
+dedicated review pass once the forward programme's 5c-ii/packaging stages
+land.
+\item Review the forward programme's remaining stages when they merge; this
+review's forward-arc corpus (and its clean checklist) is the baseline.
+\end{itemize}
+
+\end{document}

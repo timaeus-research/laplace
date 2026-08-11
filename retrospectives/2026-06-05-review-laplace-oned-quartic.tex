@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the pure quartic moments, a dead tactic, and a copy-pasted import block}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/Quartic.lean}: the pure quartic ($L(x)=x^4/24$) Gibbs moments as
+the $k=2$ specialisation of the generic even-monomial template, culminating in the degenerate affine
+covariance $\mathrm{Cov}_t[ax+c,bx+d]=ab\sqrt{24/t}\,\Gamma(3/4)/\Gamma(1/4)$. Result: \textbf{a clean
+fidelity pass with two cleanups landed} --- a dead, warning-producing tactic and a five-import block made
+redundant by the file's own \texttt{MonomialPotential} import.
+\end{abstract}
+
+\section{Setting}
+The pure quartic is the first genuinely degenerate posterior in the programme ($L''(0)=0$, so Hessian-based
+Laplace does not apply); its moments are read off the generic $k$-monomial closed forms reviewed in
+\reviewref[MonomialPotential]{2026-06-05-review-laplace-oned-monomial-potential} at $k=2$. The headline is the
+covariance of affine observables, which decays as $t^{-1/2}$ rather than the nondegenerate $t^{-1}$.
+
+\section{What was reviewed}
+Thirteen declarations: the potential and its bridge $\texttt{quarticPotential}=\texttt{kthPotential}\,2$; the
+$k=2$ specialisations of integrability, the half/full-line moments, the partition function, and the
+expectations; the $\langle x^2\rangle$ and $\langle x\rangle$ specialisations; and the affine covariance.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The bridge is correct ($x^{2\cdot2}/(2\cdot2)!=x^4/24$); every $k=2$ constant
+checks out (base $24/t$, prefactors $1/2$, exponents $(2n+1)/4$ and $n/2$, $\Gamma$ arguments); and the
+covariance reduction is faithful: expanding $\langle(ax+c)(bx+d)\rangle=ab\langle x^2\rangle+(ad+bc)\langle
+x\rangle+cd$ and using $\langle x\rangle=0$ gives $\mathrm{Cov}=ab\langle x^2\rangle=ab\sqrt{24/t}\,
+\Gamma(3/4)/\Gamma(1/4)$, the stated degenerate law. (As in the monomial base, the odd-moment theorems are
+stated for all $t$ rather than $t>0$ --- a benign, correct generalisation, recorded not escalated.)
+
+\section{Simplifications applied}
+\textbf{Two cleanups landed.}
+\begin{itemize}[noitemsep]
+  \item \textbf{A dead, warning-producing tactic.} In \texttt{quartic\_integrable\_pow} the proof read
+    \texttt{convert h using 4 <;> norm\_num}, but \texttt{convert h using 4} already closes every goal --- so
+    the \texttt{norm\_num} was unreachable, and Lean's \texttt{unreachableTactic} linter was emitting a
+    standing warning (``this tactic is never executed''). Removing \texttt{<;> norm\_num} clears the warning.
+    This is the rare proof-body edit that is unambiguously safe: the linter itself certifies the tactic dead,
+    and (unlike the \reviewref[Harmonic file's]{2026-06-05-review-laplace-oned-harmonic} reverted block)
+    removing it \emph{eliminates} a warning rather than creating one.
+  \item \textbf{A five-import block, redundant by transitivity.} The file carried the same seven-line import
+    block as \texttt{MonomialPotential} --- but it \emph{imports} \texttt{MonomialPotential} (and
+    \texttt{Gibbs}), so all five Mathlib imports (\texttt{Gamma.Basic}, \texttt{GaussianIntegral},
+    \texttt{Integral.Gamma}, \texttt{Lebesgue.Integral}, \texttt{Haar.NormedSpace}) arrive transitively.
+    Removed; only the two project imports remain.
+\end{itemize}
+This is a foundation file (six consumers --- the J-function quartic, the bounded-prior files, and three 2D
+files), so the import removal was arbitrated by a \textbf{full project build}: green at $8306$ jobs (unchanged
+from baseline), all consumers rebuilt, declarations byte-identical, and the file now warning-free.
+GPT-affirmed both.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{An \texttt{unreachableTactic} warning is a free, safe dead-code flag.} When the linter says a
+    tactic ``is never executed'', removing it is statement-preserving by construction and \emph{improves} the
+    build (one fewer warning) --- the opposite risk profile from the \texttt{unusedVariables} case, where
+    removing a block can \emph{create} a warning on a frozen hypothesis. Both are caught by ``rebuild with no
+    new warnings''; here the warning count goes down.
+  \item \textbf{Specialisation files inherit their parent's import block by copy-paste --- and usually don't
+    need it.} A file that \texttt{import}s the generic template it specialises gets the template's Mathlib
+    dependencies for free; the explicit re-imports are cruft. Worth checking on every ``\,$X$ is the $k=c$ case
+    of $Y$\,'' file, and the full build is the clean arbiter when the file has consumers.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The sibling \texttt{Sextic.lean} ($k=3$) almost certainly carries the same copy-pasted import block and
+    likely the same dead \texttt{<;> norm\_num} pattern --- a natural next review. The J-function files and the
+    \texttt{Multi/Covariance*} trio remain.
+\end{itemize}
+
+\end{document}

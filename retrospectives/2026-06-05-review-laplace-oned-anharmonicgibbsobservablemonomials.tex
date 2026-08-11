@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the anharmonic \texttt{GibbsObservable} witnesses, and an import the build called}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicGibbsObservableMonomials.lean}: the file that
+discharges the \texttt{Threepoint.GibbsObservable} side conditions for the anharmonic monomial
+observables $x,x^2,x^3$ (the witnesses the anharmonic FDT review consumed), plus the
+$|x|^k e^{-tL}$ integrability lemma the partition-derivative base uses. Result: \textbf{a clean
+fidelity pass with one dead-import removal} --- a redundant \texttt{IntegralRemainder} import that a
+full build confirmed inert.
+\end{abstract}
+
+\section{Setting}
+This is the witness factory below the anharmonic FDT/cumulant files: it proves, by dominated
+differentiation under the integral sign, that the monomial observables satisfy the abstract
+\texttt{GibbsObservable} predicate, so that the
+\reviewref[FDT identities]{2026-06-05-review-laplace-oned-anharmonicfdt} become unconditional in
+those side conditions. It also proves the $|x|^k e^{-tL}$ integrability lemma reused by the
+\reviewref[partition-derivative base]{2026-06-05-review-laplace-oned-anharmonicpartitionhigherderiv}.
+
+\section{What was reviewed}
+\texttt{integrable\_\allowbreak abs\_\allowbreak pow\_\allowbreak mul\_\allowbreak exp\_\allowbreak neg\_\allowbreak t\_\allowbreak anharmonic}, the general
+\texttt{Threepoint.\allowbreak anharmonic\_\allowbreak id\_\allowbreak gibbsObservable\_\allowbreak pow}, and the $k=1,2,3$ specialisations
+(\texttt{\_id}, \texttt{\_mul\_self}, \texttt{\_mul\_mul\_self}).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defects.} The integrability lemma is the standard coercivity-to-Gaussian
+domination: $c x^2\le L$ gives $e^{-tL}\le e^{-tcx^2}$, times $|x|^m$, integrable by the
+Gaussian-times-polynomial lemma. The general \texttt{gibbsObservable\_pow} supplies the full
+dominated-differentiation package --- $h=0$ numerator identity and integrability (reduced to the
+integrability lemma), AE measurability by continuity, the dominator
+$t\,e^{t/(2c)}|x|^{k+1}e^{-(t/2)L}$ (the $k=0$ pointwise bound times $|x|^k$), its integrability
+(the lemma at exponent $k+1$, temperature $t/2$), the pointwise \texttt{HasDerivAt}, and the
+\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le} finish. The three specialisations
+are function-extensional transports along $x^1=x$, $x^2=x\,x$, $x^3=x\,x\,x$. The reviewer confirmed
+all four.
+
+\section{Simplifications applied}
+\textbf{One dead import.} \texttt{import Laplace.OneD.IntegralRemainder} is referenced by no
+symbol --- \texttt{integrable\_abs\_pow\_mul\_exp\_neg\_t\_anharmonic} is \emph{defined} here, not
+imported from it. The reviewer flagged this as ``build-arbitrated only'', worrying that the Mathlib
+lemma \texttt{integrable\_abs\_pow\_mul\_exp\_neg\_mul\_sq} used in the integrability proof might
+come \emph{through} \texttt{IntegralRemainder}. A full \texttt{lake build} ($8306$ jobs) stayed green
+with the import removed, settling it: that lemma is in scope via the kept imports, and no consumer
+relies on the transitive dependency. \texttt{open MeasureTheory} and the other two imports are
+load-bearing. Signatures byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's optional \texttt{simpa} compressions were declined as proof-golf.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The reviewer's ``maybe this lemma comes from that import'' is exactly the
+    transitive-load-bearing question --- and the full build answers it.} GPT correctly refused to
+    call \texttt{IntegralRemainder} dead from the text alone, since
+    \texttt{integrable\_abs\_pow\_mul\_exp\_neg\_mul\_sq} \emph{could} have lived there. The green
+    full build is the adjudication: it does not. This is the same discipline as the
+    \reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable} case (where the build went
+    the \emph{other} way and kept a symbol-less import) --- ``no symbol referenced'' is a hypothesis
+    the build tests, in both directions.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining anharmonic arc (\texttt{AnharmonicGibbsRegularity},
+    \texttt{AnharmonicKappa3Affine}) and the harmonic regularity/observable/perturbed files.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{Fixed-ray quadratic rescaling\\
+(multivariate germbij, stage H3a)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent For a $C^2$ loss on $\mathbb{R}^d$ with vanishing gradient
+at the origin, the rescaled quotient $(L(qx) - L(0))/q^2$ converges
+along every ray $q \to 0^+$ to $\tfrac12\langle x, Hx\rangle$, with
+$H$ the Hessian matrix at the origin
+(\texttt{rescaled\_loss\_tendsto}). The proof restricts $L$ to the
+ray $q \mapsto qx$, computes the ray's first and second derivatives
+by the chain rule, and applies Mathlib's one-dimensional Peano
+remainder --- the same \texttt{taylor\_isLittleO} pattern the
+smooth-germ programme used in one dimension. The tide also delivers
+the Hessian bridge: the second Fr\'echet derivative's diagonal equals
+the quadratic form of the matrix of its one-hot basis evaluations,
+connecting the analytic Hessian to the H2 Gaussian package's
+\texttt{qform}.
+\end{abstract}
+
+\section{Setting}
+
+Stage H2 (the quadratic Gaussian package) closed with the whitening
+tide; the H3/H4 shape consult staged the remaining approach to
+multivariate Hessian recovery as three tides: H3a (this one, flagged
+``relatively contained''), H3b (the multivariate quadratic Peano
+remainder with a coercivity lower bound, flagged hardest), and H4
+(one generic dominated-convergence theorem). H3a's job is the
+pointwise limit that H4's dominated convergence will integrate, plus
+the representation bridge between the second Fr\'echet derivative
+and the matrix quadratic form that every later stage speaks.
+
+\section{The thing formalised}
+
+For $L : \mathbb{R}^d \to \mathbb{R}$ of class $C^2$ with
+$DL(0) = 0$, let $B = D^2L(0)$ (curried continuous bilinear form,
+\texttt{hess}) and $H_{ij} = B[e_i, e_j]$
+(\texttt{hessianMatrix}). Then
+\[
+B[x,x] = \langle x, Hx\rangle
+\quad\text{and}\quad
+\frac{L(qx) - L(0)}{q^2}
+\;\xrightarrow[q \to 0^+]{}\;
+\tfrac12 \langle x, Hx\rangle
+\quad \text{for every fixed } x.
+\]
+
+\section{How the proof works}
+
+The ray $g_x(q) = L(qx)$ is $C^2$ by composition with the continuous
+linear map $q \mapsto qx$. Its derivatives at the origin come from
+the chain rule in three short steps: $g_x'(q) = DL(qx)[x]$ (Fr\'echet
+derivative composed with the ray's velocity), and
+$g_x''(0) = D^2L(0)[x,x]$, where the second step differentiates the
+map $q \mapsto DL(qx)$ (the $C^1$ regularity of $DL$ comes from
+\texttt{ContDiff.fderiv\_right}) and evaluates against the constant
+$x$ via \texttt{HasDerivAt.clm\_apply}. The order-two Taylor
+polynomial of the ray then collapses to
+$L(0) + q^2\,g_x''(0)/2$ under the vanishing gradient, Mathlib's
+\texttt{taylor\_isLittleO} gives the Peano remainder
+$g_x(q) - L(0) - q^2\,g_x''(0)/2 = o(q^2)$, and division by $q^2$
+(with \texttt{IsLittleO.tendsto\_div\_nhds\_zero} and an
+epsilon-free rearrangement through
+\texttt{tendsto\_sub\_nhds\_zero\_iff}) is the theorem. The
+$\mathbb{N}[>]$ filter keeps $q \neq 0$ automatic on the relevant
+neighborhood.
+
+The Hessian bridge is pure bilinearity: expanding both slots of
+$B[x,x]$ over $x = \sum_i x_i e_i$ (a calc chain of
+\texttt{map\_sum}/\texttt{map\_smul}) matches the
+\texttt{dotProduct}/\texttt{mulVec} expansion of
+$\langle x, Hx\rangle$ term by term.
+
+\section{Where it stalled and how it moved}
+
+Nowhere: the file passed its first diagnostic check with three
+trivial repairs (a deprecated simp lemma, a regularity side goal now
+shaped $1 \neq 0$ that \texttt{norm\_num} discharges where
+\texttt{le\_rfl} used to, and one \texttt{field\_simp} that closed a
+goal a trailing \texttt{ring} expected to see). The consult's
+staging call --- rays are contained, the uniform bound is the hard
+part --- looks exactly right so far; the real test is H3b.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the one-dimensional Taylor apparatus, the chain-rule
+combinators, and the little-o-to-limit
+conversions.\footnote{\texttt{taylor\_isLittleO},
+\texttt{taylor\_within\_apply};
+\texttt{HasFDerivAt.comp\_hasDerivAt},
+\texttt{HasDerivAt.clm\_apply}, \texttt{ContDiff.fderiv\_right};
+\texttt{IsLittleO.tendsto\_div\_nhds\_zero},
+\texttt{tendsto\_sub\_nhds\_zero\_iff}.} New (project-level): the
+one-hot bilinear expansion, the Hessian-matrix bridge to
+\texttt{qform}, and the packaged ray-rescaling limit. Nothing here
+is deep; the value is that the multivariate programme's analytic
+side now speaks the same \texttt{qform} language as its Gaussian
+side.
+
+\section{What this opens}
+
+H3b: the uniform quadratic Peano remainder
+$L(y) - L(0) - \tfrac12\langle y, Hy\rangle = o(\|y\|^2)$ and the
+coercivity constant $\lambda \|x\|^2 \le \langle x, Hx\rangle$ from
+positive-definiteness, combining to the local lower bound
+$(L(qx) - L(0))/q^2 \ge c\|x\|^2$ that H4's dominated convergence
+needs. The consult flags this as the hardest remaining step (Mathlib's
+accessible Taylor remainders are one-dimensional; the conclusion must
+be uniform over directions) and explicitly authorizes H4 to take the
+lower bound as a hypothesis if H3b drags.
+
+\end{document}

@@ -1,9 +1,5 @@
 import Laplace.Gibbs
-import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
-import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
-import Mathlib.MeasureTheory.Integral.Gamma
-import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
-import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
+import Laplace.OneD.MonomialPotential
 
 /-!
 # Pure sextic 1D Gibbs moments
@@ -58,84 +54,27 @@ noncomputable def sexticPotential : ℝ → ℝ := fun x => x ^ 6 / 720
 @[simp] lemma sexticPotential_apply (x : ℝ) :
     sexticPotential x = x ^ 6 / 720 := rfl
 
+/-- The sextic potential is the `k = 3` specialisation of the generic
+even-monomial template. -/
+lemma sexticPotential_eq_kthPotential :
+    sexticPotential = kthPotential 3 := by
+  funext x; simp [sexticPotential, kthPotential]; norm_num
+
 /-! ## Integrability -/
 
-/-- The polynomial bound `x^2 ≤ 1 + x^6`, proved piecewise. -/
-private lemma sq_le_one_add_pow_six (x : ℝ) : x ^ 2 ≤ 1 + x ^ 6 := by
-  rcases le_total (x ^ 2) 1 with hx | hx
-  · -- `|x| ≤ 1`: `x² ≤ 1 ≤ 1 + x^6`
-    have h6 : (0 : ℝ) ≤ x ^ 6 := by positivity
-    linarith
-  · -- `|x| ≥ 1`: `x^4 ≥ 1`, hence `x² ≤ x^6 ≤ 1 + x^6`
-    have h4 : (1 : ℝ) ≤ x ^ 4 := by nlinarith [sq_nonneg x]
-    have h26 : x ^ 2 ≤ x ^ 6 := by
-      have hsq : (0 : ℝ) ≤ x ^ 2 := sq_nonneg x
-      have h6eq : x ^ 6 = x ^ 2 * x ^ 4 := by ring
-      nlinarith
-    linarith
-
-/-- Polynomial-times-sextic-Gibbs integrability. For `n : ℕ` and `t > 0`,
-`x^n · exp(-(t · x^6 / 720))` is Lebesgue integrable on `ℝ`.
-
-Proof: Gaussian comparison via `x² ≤ 1 + x^6`, which gives
-`t·x^6/720 ≥ (t/720)·x² - t/720`, hence
-`exp(-t·x^6/720) ≤ exp(t/720)·exp(-(t/720)·x²)`. The dominator is integrable
-by Mathlib's `integrable_rpow_mul_exp_neg_mul_sq` with `b = t/720`. -/
+/-- Polynomial-times-sextic-Gibbs integrability.
+$k = 3$ specialisation of `kth_integrable_pow`. -/
 theorem sextic_integrable_pow (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) := by
-  have hmeas : AEStronglyMeasurable
-      (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) volume :=
-    (by fun_prop : Continuous _).aestronglyMeasurable
-  have ht720 : (0 : ℝ) < t / 720 := by positivity
-  have hns : (-1 : ℝ) < (n : ℝ) := by
-    have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith
-  have hdom_raw : Integrable
-      (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(t / 720) * x ^ 2)) volume :=
-    integrable_rpow_mul_exp_neg_mul_sq ht720 hns
-  have hdom : Integrable
-      (fun x : ℝ => x ^ n * Real.exp (-((t / 720) * x ^ 2))) volume := by
-    have heq : (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(t / 720) * x ^ 2)) =
-               (fun x : ℝ => x ^ n * Real.exp (-((t / 720) * x ^ 2))) := by
-      ext x
-      rw [Real.rpow_natCast]
-      congr 2
-      ring
-    rwa [heq] at hdom_raw
-  have hbound : ∀ x : ℝ,
-      Real.exp (-(t * x ^ 6 / 720)) ≤
-        Real.exp (t / 720) * Real.exp (-((t / 720) * x ^ 2)) := by
-    intro x
-    rw [← Real.exp_add]
-    apply Real.exp_le_exp.mpr
-    have hkey : x ^ 2 ≤ 1 + x ^ 6 := sq_le_one_add_pow_six x
-    have hprod : (0 : ℝ) ≤ (t / 720) * (1 + x ^ 6 - x ^ 2) :=
-      mul_nonneg ht720.le (by linarith)
-    nlinarith
-  have habs : ∀ x : ℝ,
-      ‖x ^ n * Real.exp (-(t * x ^ 6 / 720))‖ ≤
-        ‖Real.exp (t / 720) * (x ^ n * Real.exp (-((t / 720) * x ^ 2)))‖ := by
-    intro x
-    rw [Real.norm_eq_abs, Real.norm_eq_abs,
-        abs_mul, abs_mul, abs_mul,
-        abs_of_pos (Real.exp_pos _), abs_of_pos (Real.exp_pos _),
-        abs_of_pos (Real.exp_pos _), abs_pow]
-    have hxn : (0 : ℝ) ≤ |x| ^ n := pow_nonneg (abs_nonneg _) n
-    nlinarith [hbound x, Real.exp_pos (-((t / 720) * x ^ 2))]
-  exact (hdom.const_mul (Real.exp (t / 720))).mono hmeas
-    (Filter.Eventually.of_forall habs)
+  have h := kth_integrable_pow (k := 3) (by norm_num) n ht
+  convert h using 4
 
-/-- Polynomial-times-sextic-Gibbs integrability, in `sexticPotential` form. -/
+/-- Polynomial-times-sextic-Gibbs integrability, in `sexticPotential` form.
+$k = 3$ specialisation of `kth_integrable_pow_pot`. -/
 theorem sextic_integrable_pow_pot (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * sexticPotential x))) := by
-  have h := sextic_integrable_pow n ht
-  have heq : (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) =
-             (fun x : ℝ => x ^ n * Real.exp (-(t * sexticPotential x))) := by
-    ext x
-    rw [sexticPotential_apply]
-    congr 2
-    ring
-  rwa [heq] at h
+  rw [sexticPotential_eq_kthPotential]
+  exact kth_integrable_pow_pot (k := 3) (by norm_num) n ht
 
 /-! ## Half-line moment integrals -/
 
@@ -184,116 +123,53 @@ theorem integral_pow_mul_exp_neg_sextic_Ioi (m : ℕ) {t : ℝ} (ht : 0 < t) :
 /-! ## Full-line moment integrals -/
 
 /-- Even moment of the pure-sextic Gibbs weight on the full real line.
-For `n : ℕ` and `t > 0`,
-`∫ x : ℝ, x^{2n} · exp(-(t · x^6 / 720)) dx
-  = (1/3) · (720/t)^{(2n+1)/6} · Γ((2n+1)/6)`. -/
+$k = 3$ specialisation of `kth_moment_even`. -/
 theorem sextic_moment_even (n : ℕ) {t : ℝ} (ht : 0 < t) :
     ∫ x : ℝ, x ^ (2 * n) * exp (-(t * x ^ 6 / 720)) =
       (1/3) * (720/t) ^ ((2 * n + 1 : ℝ) / 6) * Real.Gamma ((2 * n + 1 : ℝ) / 6) := by
-  -- Step 1: rewrite the integrand in `|x|`-form (integrand is even).
-  have heven : (∫ x : ℝ, x ^ (2 * n) * exp (-(t * x ^ 6 / 720))) =
-      ∫ x : ℝ, |x| ^ (2 * n) * exp (-(t * |x| ^ 6 / 720)) := by
-    congr 1
-    ext x
-    rw [show x ^ (2 * n) = |x| ^ (2 * n) from by
-          rw [pow_mul x 2 n, ← sq_abs x, ← pow_mul],
-        show x ^ 6 = |x| ^ 6 from by
-          rw [show (6 : ℕ) = 2 * 3 from rfl, pow_mul x 2 3, ← sq_abs x, ← pow_mul]]
-  rw [heven]
-  -- Step 2: `integral_comp_abs` gives 2 × half-line integral.
-  rw [integral_comp_abs (f := fun y => y ^ (2 * n) * exp (-(t * y ^ 6 / 720)))]
-  -- Step 3: substitute the half-line value (B+ form, instantiated at m := 2*n).
-  rw [integral_pow_mul_exp_neg_sextic_Ioi (2 * n) ht]
-  -- Reconcile (2n + 1) cast and 2 · (1/6) = 1/3.
-  have hcast : (((2 * n : ℕ) : ℝ) + 1) / 6 = (2 * n + 1 : ℝ) / 6 := by push_cast; ring
-  rw [hcast]
-  ring
+  have h := kth_moment_even (k := 3) (by norm_num) n ht
+  convert h using 3
 
 /-- Odd moment of the pure-sextic Gibbs weight on the full real line vanishes
-by symmetry. For `n : ℕ` and any `t : ℝ`,
-`∫ x : ℝ, x^{2n+1} · exp(-(t · x^6 / 720)) dx = 0`. -/
+by symmetry. $k = 3$ specialisation of `kth_moment_odd`. -/
 theorem sextic_moment_odd (n : ℕ) (t : ℝ) :
     ∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * x ^ 6 / 720)) = 0 := by
-  set f : ℝ → ℝ := fun x => x ^ (2 * n + 1) * exp (-(t * x ^ 6 / 720)) with hf
-  have hodd : ∀ x : ℝ, f (-x) = -(f x) := by
-    intro x
-    simp only [hf]
-    rw [Odd.neg_pow ⟨n, rfl⟩, show ((-x) : ℝ) ^ 6 = x ^ 6 from by ring]
-    ring
-  have heq : (∫ x, f x) = -(∫ x, f x) := by
-    conv_lhs => rw [← integral_neg_eq_self f volume]
-    rw [show (fun x => f (-x)) = (fun x => -(f x)) from funext hodd]
-    rw [integral_neg]
-  linarith
+  have h := kth_moment_odd 3 n t
+  convert h using 3
 
 /-- The partition function for the pure-sextic potential.
-For `t > 0`,
-`Z_t = ∫ exp(-(t · x^6 / 720)) dx = (1/3) · (720/t)^{1/6} · Γ(1/6)`. -/
+$k = 3$ specialisation of `partitionFunction_kthPotential`. -/
 theorem sextic_partition {t : ℝ} (ht : 0 < t) :
     partitionFunction sexticPotential t =
       (1/3) * (720/t) ^ ((1 : ℝ) / 6) * Real.Gamma ((1 : ℝ) / 6) := by
-  unfold partitionFunction
-  have step : (∫ x : ℝ, exp (-(t * sexticPotential x))) =
-              (∫ x : ℝ, x ^ (2 * 0) * exp (-(t * x ^ 6 / 720))) := by
-    congr 1
-    ext x
-    rw [Nat.mul_zero, pow_zero, one_mul, sexticPotential_apply]
-    congr 1
-    ring
-  rw [step, sextic_moment_even 0 ht]
-  norm_num
+  rw [sexticPotential_eq_kthPotential]
+  have h := partitionFunction_kthPotential (k := 3) (by norm_num) ht
+  convert h using 3
 
-/-- The partition function for the pure-sextic potential is positive. -/
+/-- The partition function for the pure-sextic potential is positive.
+$k = 3$ specialisation of `partitionFunction_kthPotential_pos`. -/
 theorem sextic_partition_pos {t : ℝ} (ht : 0 < t) :
     0 < partitionFunction sexticPotential t := by
-  rw [sextic_partition ht]
-  have h720t : (0 : ℝ) < 720 / t := by positivity
-  have hpow : 0 < (720 / t : ℝ) ^ ((1 : ℝ) / 6) := Real.rpow_pos_of_pos h720t _
-  have hg : 0 < Real.Gamma ((1 : ℝ) / 6) := Real.Gamma_pos_of_pos (by norm_num)
-  positivity
+  rw [sexticPotential_eq_kthPotential]
+  exact partitionFunction_kthPotential_pos (k := 3) (by norm_num) ht
 
 /-! ## Expected values -/
 
 /-- Even-power expected value against the pure-sextic Gibbs measure.
-For `n : ℕ` and `t > 0`,
-`⟨x^{2n}⟩_t = (720/t)^{n/3} · Γ((2n+1)/6) / Γ(1/6)`. -/
+$k = 3$ specialisation of `gibbsExpectation_kthPotential_even`. -/
 theorem sextic_expected_value_even (n : ℕ) {t : ℝ} (ht : 0 < t) :
     gibbsExpectation sexticPotential t (fun x => x ^ (2 * n)) =
       (720/t) ^ ((n : ℝ) / 3) * Real.Gamma ((2 * n + 1 : ℝ) / 6) / Real.Gamma ((1 : ℝ) / 6) := by
-  unfold gibbsExpectation
-  have hnum : (∫ x : ℝ, x ^ (2 * n) * exp (-(t * sexticPotential x))) =
-              (∫ x : ℝ, x ^ (2 * n) * exp (-(t * x ^ 6 / 720))) := by
-    congr 1
-    ext x
-    rw [sexticPotential_apply]
-    congr 2
-    ring
-  rw [hnum, sextic_moment_even n ht, sextic_partition ht]
-  have h720 : (0 : ℝ) < 720 / t := by positivity
-  have hg : Real.Gamma ((1 : ℝ) / 6) ≠ 0 :=
-    ne_of_gt (Real.Gamma_pos_of_pos (by norm_num))
-  have h720pow : (720 / t : ℝ) ^ ((1 : ℝ) / 6) ≠ 0 :=
-    ne_of_gt (Real.rpow_pos_of_pos h720 _)
-  -- Split (2n+1)/6 = n/3 + 1/6 to expose the cancelling factor (720/t)^(1/6).
-  rw [show ((2 * n + 1 : ℝ) / 6) = ((n : ℝ) / 3) + ((1 : ℝ) / 6) from by ring,
-      Real.rpow_add h720 _ _]
-  field_simp
+  rw [sexticPotential_eq_kthPotential]
+  have h := gibbsExpectation_kthPotential_even (k := 3) (by norm_num) n ht
+  convert h using 3
 
 /-- Odd-power expected value against the pure-sextic Gibbs measure vanishes by
-symmetry. For any `n : ℕ` and any `t : ℝ`, `⟨x^{2n+1}⟩_t = 0`. -/
+symmetry. $k = 3$ specialisation of `gibbsExpectation_kthPotential_odd`. -/
 theorem sextic_expected_value_odd (n : ℕ) (t : ℝ) :
     gibbsExpectation sexticPotential t (fun x => x ^ (2 * n + 1)) = 0 := by
-  unfold gibbsExpectation
-  have hnum : (∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * sexticPotential x))) = 0 := by
-    have heq : (∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * sexticPotential x))) =
-               (∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * x ^ 6 / 720))) := by
-      congr 1
-      ext x
-      rw [sexticPotential_apply]
-      congr 2
-      ring
-    rw [heq, sextic_moment_odd n t]
-  rw [hnum, zero_div]
+  rw [sexticPotential_eq_kthPotential]
+  exact gibbsExpectation_kthPotential_odd 3 n t
 
 /-- Specialisation of `sextic_expected_value_even` to `n = 1`:
 `⟨x^2⟩_t = (720/t)^{1/3} · Γ(1/2) / Γ(1/6) = √π · (720/t)^{1/3} / Γ(1/6)`. -/

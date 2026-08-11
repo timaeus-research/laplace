@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{The local rate-sensitive dominated convergence\\
+(tensor programme J5c)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent The analytic heart of the J5 stage: on a fixed ball inside
+both integration domains,
+\[
+\int \mathbf{1}_{B_\rho}(qx)\, P(x)\,
+\frac{e^{-a_1(q,x)} - e^{-a_2(q,x)}}{q^{k-2}}\, dx
+\;\longrightarrow\;
+-\int P\, Q\, K_H,
+\]
+where $a_j$ are the rescaled losses and $Q$ is the degree-$k$
+diagonal difference. The `HigherLaplaceDomain` structure extends the
+H4 package with the shape consult's engineering choice --- a direct
+order-$k$ Taylor remainder bound on a fixed ball --- and the matched
+lower jets telescope the pairwise difference down to the two
+remainders, giving the exact $q^{k-2}$ cancellation in the
+dominator. The pointwise input composes three earlier tides: H3b's
+rescaling limit for the exponents, J4's pairwise limit for the rate,
+and J5a's scalar secant limit for the exponential difference.
+\end{abstract}
+
+\section{How the proof works}
+
+The dominator is the chain
+\[
+\Bigl|P\,\tfrac{e^{-a_1}-e^{-a_2}}{q^{k-2}}\Bigr|
+\le |P|\,\tfrac{|a_1-a_2|}{q^{k-2}}\max(e^{-a_1},e^{-a_2})
+\le (C_1{+}C_2)\,|P|\,\|x\|^k e^{-c\|x\|^2},
+\]
+with the middle step J5a's secant bound, the difference bound from
+the telescoped Taylor remainders (the $q^k$ from $\|qx\|^k$ splits
+as $q^2 \cdot q^{k-2}$, feeding the rescaling denominator and the
+rate exactly), and the Gaussian factor from both packages' rescaled
+lower bounds at the minimum coercivity constant. Integrability is
+the J5a general-rate layer. The pointwise limit is one application
+of J5a's scalar theorem with exponents converging by H3b and the
+rate converging by J4.
+
+\section{Where it stalled and how it moved}
+
+Three-repair pass, all catalogued classes (a calc-inside-bullet
+indentation knot replaced by \texttt{le\_trans} terms, context-blind
+\texttt{positivity} on a sum of structure fields, the indicator
+membership cast). The structure design absorbed the consult's advice
+without friction: storing the remainder bound directly avoided any
+contact with Mathlib's multivariate Taylor API.
+
+\section{What this opens}
+
+J5d assembles this local theorem with two J5b retreating tails into
+the unnormalized pairwise integral theorem --- the consult's
+load-bearing checkpoint --- and J5e normalizes. Then J6 composes
+rigidity (J2), polarization (J3), and the J5 limit into
+single-degree recovery, and J7 runs the induction.
+
+\end{document}

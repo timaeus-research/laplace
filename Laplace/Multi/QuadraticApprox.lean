@@ -1,5 +1,4 @@
 import Laplace.Multi.Basic
-import Mathlib.Topology.Algebra.Module.Basic
 
 /-!
 # Multivariate quadratic approximation
@@ -35,12 +34,6 @@ estimates per the GPT-5.5 Pro Phase 1 strategy, not derived from
 namespace Laplace.Multi
 
 variable {ι : Type*} [Fintype ι]
-
-/-- Quadratic form `⟨z, H z⟩ = ∑ i, z i * (H z) i` on `ι → ℝ` for a
-continuous linear operator `H`. -/
-noncomputable def quadForm
-    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (z : ι → ℝ) : ℝ :=
-  ∑ i, z i * (H z) i
 
 /-- The multivariate rescaled perturbation
 `s_t(u) := t · L(u/√t) - (1/2) · ⟨u, H u⟩`.

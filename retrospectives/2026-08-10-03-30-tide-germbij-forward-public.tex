@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the forward theorems\\
+\large the germbij forward direction closes}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The public face of the forward-expansion programme, and its close:
+on a \code{ForwardExpansionDomain} --- a nondegenerate local minimum
+with $C^{N+2}$ regularity and the Peano remainder --- the rescaled
+posterior moment of every continuous observable of polynomial growth
+is an order-$N$ asymptotic polynomial at $0^+$
+(\code{rescaledMoment\_hasExpansion}). The coefficients are the
+division of the numerator expansion by the partition expansion, whose
+constant coefficient $\int e^{-T_2}$ is positive; the monomial
+instances are exactly the moment families that the merged
+inverse-half theorems consume; and moment families agreeing to
+$o(q^N)$ have equal coefficients through order $N$. Together with the
+inverse half --- superpolynomially-close localized moment families
+determine the location, the full positive-order jet, and for analytic
+losses the germ --- this completes the germbij note's Theorem~3.1 in
+the nondegenerate case: expansion data and Taylor data determine each
+other, in both directions, in Lean.
+\end{abstract}
+
+\section{Setting}
+
+Stage 7 of the seven-stage design consult, which ran start to finish
+as a single stacked arc: the expansion predicate and coefficient
+uniqueness; the mesoscopic window and its tail calculus; the
+one-field Peano mixin and the exact exponent split; the graded
+exponential; the coefficient functions; the scalar bounds; the
+quadratic bridge and Gaussian absorption; the $q$-uniform majorant;
+the window dominated convergence; the outer tails and the numerator
+packaging; asymptotic division; and now the public statements. Each
+stage's interface was consumed by the next with essentially no
+rework --- the two architecture consults (the programme design and
+the stage-5 shape) did what they were commissioned to do.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{numeratorCoeff\_one\_zero\_pos}: the partition constant
+coefficient is $\int e^{-T_2} > 0$, from the zeroth coefficient
+function being constantly one, the support of a positive integrand
+being everything, and the volume measure being nonzero.
+\code{momentCoeff} and \code{rescaledMoment\_hasExpansion}: the
+division of the two numerator expansions, applied at the seabed's
+\code{rescaledMoment}. \code{rescaledMoment\_expansion\_exists} (the
+existence form), \code{monomial\_moment\_hasExpansion} (the
+\code{monomialTest} instances), and
+\code{momentCoeff\_eq\_of\_isLittleO} (the comparison face, through
+stage A1's uniqueness).
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+\begin{sloppypar}
+One rename: \code{IsLittleO.neg} is spelled
+\code{IsLittleO.neg\_left}. The tide compiled on the first fix
+round --- fitting for a stage that was designed to be pure
+composition.
+\end{sloppypar}
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: the support characterization of positive integrals
+(\code{integral\_pos\_iff\_support\_of\_nonneg}),
+\code{Set.eq\_univ\_of\_forall}, \code{Function.mem\_support},
+\code{Measure.measure\_univ\_pos}, \code{NeZero.ne}. New: none. The
+mathematics of this tide is the programme it closes.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Process work first: the blue-dot \code{\textbackslash leanref} marker
+pass on the germbij note for the forward theorems, the SRI docs sync,
+and the commit-pin bump. Mathematically, what remains of the germbij
+note beyond the user's stated core: the semi-quasi-homogeneous
+constructive class, and --- if explicit coefficient values are ever
+wanted rather than existence --- the connection of
+\code{momentCoeff} to Wick/Isserlis data through the Gaussian moment
+integrals already in the seabed.
+\end{document}

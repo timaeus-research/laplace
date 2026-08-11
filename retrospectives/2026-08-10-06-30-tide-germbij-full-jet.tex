@@ -1,0 +1,66 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: full-jet packaging (stage C6)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The quantifier stage the smooth-germ scoping consult listed last and
+the C5 tide deliberately deferred: upgrade the finite-order recovery
+to the note's Theorem~3.1 statement shape --- \emph{every} partial
+derivative of positive order.
+
+\section{The thing formalised}
+
+Two corollaries in
+\texttt{Laplace/OneD/FullJetRecovery.lean}\footnote{%
+\texttt{smooth\_jet\_recovery\_iteratedDeriv} and
+\texttt{smooth\_full\_jet\_recovery}.}: the finite theorem's
+coefficient conclusion converted to iterated derivatives
+($\lambda = $ twice the base; higher coefficients cleared of their
+factorials), and the all-orders form --- for smooth admissible losses
+whose normalized moment data vanishes at every coefficient-sensitive
+rate, $\partial^k L_1(0) = \partial^k L_2(0)$ for every $k \ge 2$,
+each order obtained by instantiating the finite theorem at
+$R = k - 2$. With this, the one-dimensional Theorem~3.1 is
+formalised in the note's own vocabulary: moment asymptotics determine
+the full Taylor jet at a nondegenerate minimum, modulo the constant
+and the vanishing gradient.
+
+\section{One catalogue entry}
+
+The only friction was the $C^\infty$ grade bookkeeping in current
+Mathlib: the smoothness exponent lives in
+$\mathrm{WithTop}\;\mathbb{N}_\infty$, where the coercion of
+$(\top : \mathbb{N}_\infty)$ is the $C^\infty$ grade and the actual
+$\top$ is the analytic grade $\omega$; \texttt{exact\_mod\_cast}
+cannot bridge $\uparrow\! n \le \uparrow\!\top$, and the $\infty$
+notation is scoped. The working idiom is \texttt{contDiff\_infty.mp},
+which converts the $C^\infty$ hypothesis to
+$\forall n, \mathrm{ContDiff}\ \mathbb{R}\ n\ f$ once and for all.
+
+\section{Deliberation and check}
+
+Prior-deliberation path (C6 is the scoping consult's last listed
+stage); definitional conversions only, so no numerical check is
+feasible --- noted per protocol.
+
+\section{What remains}
+
+The germbij note's one-dimensional story is now complete in Lean at
+every order. The open commissions are the multivariate Theorem~3.1
+(scoping consult in flight as this tide closes) and, further out, the
+degenerate \S7.4 classes beyond dimension one.
+
+\end{document}

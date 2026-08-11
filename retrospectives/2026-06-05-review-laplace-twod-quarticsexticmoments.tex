@@ -1,0 +1,66 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the quartic--sextic moment closed form --- one theorem, nothing to trim}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/QuarticSexticMoments.lean}: the single closed-form
+theorem $\langle x^{2j}y^{2k}\rangle_{2D}=\big((24/t)^{j/2}\Gamma(\tfrac{2j+1}{4})/\Gamma(\tfrac14)\big)
+\big((720/t)^{k/3}\Gamma(\tfrac{2k+1}{6})/\Gamma(\tfrac16)\big)$ --- the ``T1'' factorisation that
+the moment-asymptotic file consumes. Result: \textbf{a clean fidelity pass with no edits.} The file
+has no \texttt{open} statements and no dead code; the reliably-safe bucket was empty.
+\end{abstract}
+
+\section{Setting}
+This is the closed-form moment companion to the
+\reviewref[QuarticSextic core]{2026-06-05-review-laplace-twod-quarticsextic}: it instantiates the
+core's \texttt{gibbsExpectation\_quarticSextic\_factor} at $f=x^{2j}$, $g=y^{2k}$ and substitutes
+the 1D quartic/sextic even-moment closed forms. Its single theorem is exactly the
+\texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_eq} (T1) consumed by the
+\reviewref[moment-asymptotic specialisation]{2026-06-05-review-laplace-twod-quarticsexticmoment}.
+
+\section{What was reviewed}
+One public theorem, \texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_eq}.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The product closed form is exactly the two 1D even-moment closed forms
+(\texttt{quartic\_expected\_value\_even}: $(24/t)^{j/2}\Gamma(\tfrac{2j+1}{4})/\Gamma(\tfrac14)$;
+\texttt{sextic\_expected\_value\_even}: $(720/t)^{k/3}\Gamma(\tfrac{2k+1}{6})/\Gamma(\tfrac16)$),
+the $t>0$ hypothesis is present, and the docstring is appropriately scoped --- it states the closed
+form for $t>0$, attributes it to factorisation plus the 1D forms, and does not overclaim.
+
+\section{Simplifications applied}
+\textbf{None --- the bucket was empty.} The file carries no \texttt{open} statements (so no dead
+open to trim), its single import is load-bearing, and the proof is two genuinely-working
+\texttt{rw} steps. The reviewer's one suggestion --- merging the two consecutive \texttt{rw} calls
+into a single \texttt{rw [\dots]} block --- is cosmetic proof-golf, not a dead-code or
+warning-clearing change, and was declined. No worktree was created.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A two-\texttt{rw} closed-form file is the minimal clean-pass shape.} With no opens,
+    one load-bearing import, and a proof that is exactly ``apply the factorisation, substitute the
+    two 1D forms'', there is nothing safe to land --- and the cosmetic \texttt{rw}-merge is not it.
+    The empty bucket is the result, recorded as such.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The last \texttt{QuarticSextic*} file, \texttt{QuarticSexticOddMoments} (the odd-moment
+    vanishing companion).
+\end{itemize}
+
+\end{document}

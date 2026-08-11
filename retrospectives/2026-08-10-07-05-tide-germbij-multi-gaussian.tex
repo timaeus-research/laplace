@@ -1,0 +1,161 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{The standard Gaussian package on $\mathbb{R}^d$\\
+(multivariate germbij, stage H2a)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent The multivariate programme's Gaussian foundation: the
+standard isotropic kernel $k_0(y) = e^{-\|y\|^2/2}$ on
+$\mathbb{R}^d$, its partition value $Z_0 = (2\pi)^{d/2}$,
+integrability of every polynomial weight $\|y\|^n k_0$, and the
+coordinate moments $\int y_a k_0 = 0$ and
+$\int y_a y_b\, k_0 = \delta_{ab} Z_0$. The moments go through a
+single Fubini workhorse
+($\int (\prod_i f_i(y_i))\,k_0 = \prod_i \int f_i(t)e^{-t^2/2}dt$)
+whose one-dimensional factors land on the repo's original Stage-1
+Gaussian moments: the newest file in the multivariate programme
+consumes the oldest file in the repo. The step the scoping consult
+flagged as hardest (the Euclidean-space/product-measure
+identification) fell in one iteration, because Mathlib's
+finite-product Fubini needs no integrability hypotheses.
+\end{abstract}
+
+\section{Setting}
+
+The one-dimensional arc of the germbij note (``What expectation
+values know about the loss landscape'') is formalised end to end:
+Theorem~3.1 at every order, with 35 marker-linked theorems. The
+multivariate arc opened with the dilation wrapper
+(\texttt{integral\_dilation}, stage H1); the staging consult laid out
+H2--H6 with H2, the pure quadratic Gaussian package (the partition
+value $Z_H$ and the first and second moments against
+$e^{-\langle x, Hx\rangle/2}$, with $H^{-1}$ as the normalized
+covariance), flagged as ``the largest API spike.'' A dedicated shape
+consult then split H2 itself in two: H2a
+proves everything for the \emph{standard} isotropic kernel (all
+Fubini and one-dimensional work lives here), H2b reduces general
+positive-definite $H$ to H2a by whitening ($B = \sqrt{H}$ via
+\texttt{CFC.sqrt}, one linear change of variables, no Fubini at
+all). This tide is H2a.
+
+\section{The thing formalised}
+
+For $y \in \mathbb{R}^d$, represented as \texttt{EuclideanSpace}
+$\mathbb{R}$ \texttt{(Fin d)}, let $k_0(y) = e^{-\|y\|^2/2}$. The
+package:\footnote{All in \texttt{Laplace/Multi/StdGaussian.lean}.}
+\begin{align*}
+\int k_0 &= (2\pi)^{d/2} > 0,
+&\int \|y\|^n k_0(y)\,dy &< \infty \quad (\forall n),\\
+\int y_a\, k_0(y)\,dy &= 0,
+&\int y_a y_b\, k_0(y)\,dy &= \delta_{ab}\,(2\pi)^{d/2},
+\end{align*}
+together with integrability of the coordinate-weighted integrands
+themselves. The delta-form second moment is exactly what H2b's
+whitening consumes: with $C = B^{-1}$ symmetric, expanding the
+finite double sum against $\delta_{ab}$ gives
+\[
+\int (Cy)_i (Cy)_j\,k_0(y)\,dy
+= Z_0\,(CC^{\mathsf T})_{ij} = Z_0\,(H^{-1})_{ij}.
+\]
+
+\section{How the proof works}
+
+Three layers, each independent of the next.
+
+\emph{Partition value.} Mathlib's inner-product-space Gaussian
+integral\footnote{\texttt{GaussianFourier.integral\_rexp\_neg\_mul\_sq\_norm}.}
+evaluates $\int e^{-b\|v\|^2}$ on any finite-dimensional real inner
+product space; at $b = 1/2$ and
+$\mathrm{finrank} = d$ this is $Z_0 = (2\pi)^{d/2}$ directly. No
+coordinates appear.
+
+\emph{Polynomial integrability without Fubini.} The elementary series
+bound $t^{2m} \le 8^m m!\, e^{t^2/8}$ (one term of the exponential
+series, the same trick as the flat-witness tide) dominates
+$\|y\|^n k_0(y)$ by a constant multiple of $e^{-3\|y\|^2/8}$, which
+is integrable by the same norm-Gaussian lemma at $b = 3/8$. All
+polynomial moments at every $n$, in $\sim$40 lines, with no product
+structure used.
+
+\emph{Coordinate moments by one Fubini workhorse.} The kernel
+factorizes through the isometry with the product space:
+$k_0(\mathrm{toLp}\,x) = \prod_i e^{-x_i^2/2}$. The workhorse
+\[
+\int_{\mathbb{R}^d} \Bigl(\prod_i f_i(y_i)\Bigr) k_0(y)\,dy
+= \prod_i \int_{\mathbb{R}} f_i(t)\,e^{-t^2/2}\,dt
+\]
+is then the measure-preserving transport
+(\texttt{PiLp.volume\_preserving\_toLp}) followed by Mathlib's
+finite-product Fubini
+(\texttt{integral\_fintype\_prod\_volume\_eq\_prod}). Both moment
+theorems are instantiations with indicator-style factors
+($f_i(t) = t$ if $i = a$ else $1$, and the two-index variant): the
+product of integrals has every factor equal to $\sqrt{2\pi}$ except
+the tested coordinates, where the seabed's original Stage-1 lemmas
+(\texttt{integral\_pow\_mul\_exp\_neg\_sq\_half/odd}) close the
+factor. Odd factor $\Rightarrow$ zero; squared factor
+$\Rightarrow \sqrt{2\pi}$, so the diagonal gives
+$(\sqrt{2\pi})^d = Z_0$.
+
+\section{Where it stalled and how it moved}
+
+It did not stall. The consult had flagged the identification between
+Euclidean volume, PiLp volume, and the product of one-dimensional
+Lebesgue measures as the hardest step; in the pinned Mathlib the
+identification is packaged (the transport lemma plus a Fubini with
+\emph{no} integrability hypotheses), and the whole moments layer
+compiled on the second diagnostic pass. The friction that did occur
+was all in the catalogued error classes: two beta-unreduced rewrite
+failures (fixed with \texttt{simp only}), a \texttt{congr} that died
+because the preceding rewrite already closed the goal by
+reflexivity, and one new entry for the catalogue:
+\texttt{PiLp.continuous\_apply} takes $p$ and $\beta$
+\emph{explicitly}, so passing a bare coordinate index silently
+coerces it into the $p$ slot and produces a baffling
+``\texttt{Function.mul} does not exist'' error.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the norm-Gaussian integral, the complex-to-real integrability
+bridge, the PiLp measure transport, the finite-product Fubini, the
+one-hot product collapse, and the coordinate-norm
+bound.\footnote{Respectively
+\texttt{GaussianFourier.integral\_rexp\_neg\_mul\_sq\_norm},
+\texttt{integrable\_cexp\_neg\_mul\_sq\_norm\_add} (via \texttt{.re}),
+\texttt{PiLp.volume\_preserving\_toLp} with
+\texttt{MeasurePreserving.integral\_comp},
+\texttt{integral\_fintype\_prod\_volume\_eq\_prod},
+\texttt{Finset.prod\_ite\_eq'}, and \texttt{PiLp.norm\_apply\_le}.}
+New (project-level): the series-bound
+domination route to all-$n$ polynomial integrability, the factored
+workhorse as the single Fubini interface, and the delta-form second
+moment. A deliberate deviation from the shape consult: the
+coordinate-free linear-functional forms (Riesz pairings) were not
+built; the workhorse plus delta-moments is a smaller interface, and
+H2b can expand $(Cy)_i$ as a finite sum. If that expansion turns out
+painful, the Riesz forms are the fallback.
+
+\section{What this opens}
+
+H2b (whitening): $B = \texttt{CFC.sqrt}\,H$, the forward identity
+$\langle x, Hx\rangle = \|Bx\|^2$, the opaque-Jacobian change of
+variables, and the transport of $Z$, integrability, and both moments
+from this package, yielding
+$\frac{1}{Z_H}\int x_i x_j e^{-\langle x,Hx\rangle/2} = (H^{-1})_{ij}$.
+Then H3--H6 (local quadratic rescaling, expanding-domain dominated
+convergence, normalization, pairwise Hessian recovery) per the
+staging consult.
+
+\end{document}

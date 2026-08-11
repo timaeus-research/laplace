@@ -1,0 +1,205 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{anharmonic\_id\_gibbsRegularity skeleton (2/3 fields proven)}}
+\author{Claude (Opus 4.7, 1M context)}
+\date{2026-05-23}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A skeleton tide producing the file
+\texttt{Laplace/OneD/AnharmonicGibbsRegularity.lean} that supplies the
+2/3 easy fields of the \texttt{Threepoint.GibbsRegularity} instance
+for the 1D anharmonic potential at the linear perturbation $A(x) = x$.
+\texttt{partition\_pos} is proven via
+\texttt{integral\_pos\_iff\_support\_of\_nonneg\_ae} + the (newly public)
+\texttt{integrable\_exp\_neg\_t\_anharmonic} lemma. \texttt{partition\_h\_zero}
+closes by \texttt{congr; funext; ring\_nf}. \texttt{partition\_hasDerivAt}
+is left as a \texttt{sorry} with a detailed proof sketch in the
+docstring; the follow-up analytic-regularity tide picks it up via
+the dominated-convergence + Gaussian-decay machinery in
+\texttt{Laplace.OneD.IntegralRemainder}.
+\end{abstract}
+
+\section{Setting}
+
+This tide is the direct handoff from the 2026-05-23 fdt-identity-1d
+tide-experiment\footnote{\experimentref{2026-05-23-experiment-fdt-identity-1d}.},
+which empirically validated the FDT identity
+$\partial_h \mathrm{Cov}_h(x, x)|_{h=0} = -t \cdot \kappa_3(x, x, x)$
+on the 1D anharmonic Gibbs. The general FDT identity is already
+formalised as \texttt{Threepoint.gibbsCov\_deriv\_eq\_neg\_t\_kappa3}
+in the \texttt{Threepoint} package; the remaining work to apply it to
+the anharmonic case is the \texttt{GibbsRegularity} instance for the
+anharmonic potential.
+
+The harmonic mirror \texttt{Threepoint.harmonic\_id\_gibbsRegularity}
+(in \texttt{HarmonicGibbsRegularity.lean}, Tide 13/14) routes through
+the closed-form Gaussian partition function. The anharmonic case has
+no elementary closed form for $Z(h)$, so the
+\texttt{partition\_hasDerivAt} field is genuinely harder and needs
+dominated convergence with explicit Gaussian-decay bounds. This
+skeleton tide lands the easy 2/3 fields; the hard third is deferred.
+
+\section{What landed}
+
+\paragraph{New file:} \texttt{Laplace/OneD/AnharmonicGibbsRegularity.lean}
+(~155 lines), exporting:
+
+\begin{itemize}[noitemsep,leftmargin=*]
+\item \texttt{integrable\_exp\_neg\_t\_anharmonic} — public witness for
+  $\exp(-t \cdot L_{\rm anh}) \in L^1(\mathbb{R})$ under the
+  discriminant condition. Proven via the
+  $\exp(-t \cdot L_{\rm anh}) \leq \exp(-t \cdot c \cdot x^2)$
+  domination (using \texttt{anharmonic\_coercive}). Mirrors the $n=0$
+  case of the private
+  \texttt{AnharmonicKappa3Affine.integrable\_pow\_mul\_exp\_neg\_anharmonic}
+  but exposed publicly so the regularity instance can cite it.
+
+\item \texttt{anharmonic\_partition\_pos} — strict positivity of the
+  unperturbed anharmonic partition. Routes through
+  \texttt{MeasureTheory.integral\_pos\_iff\_support\_of\_nonneg\_ae}:
+  the integrand is positive everywhere (\texttt{Real.exp\_ne\_zero}),
+  so its support is all of $\mathbb{R}$, which has infinite Lebesgue
+  measure.
+
+\item \texttt{Threepoint.anharmonic\_id\_gibbsRegularity} — the
+  \texttt{GibbsRegularity} instance with:
+  \begin{itemize}[noitemsep]
+  \item \texttt{partition\_pos := anharmonic\_partition\_pos hlam hgamma hdisc ht}
+  \item \texttt{partition\_h\_zero := by congr 1; funext x; ring\_nf}
+  \item \texttt{partition\_hasDerivAt := sorry} (with detailed proof
+    sketch in the docstring; ~100--200 lines estimated for the
+    follow-up tide).
+  \end{itemize}
+\end{itemize}
+
+Build status: clean (\texttt{lake build Laplace.OneD.AnharmonicGibbsRegularity}
+succeeds in $\sim 5$s; one \texttt{sorry} warning, no errors).
+
+\section{Why a skeleton, not the full instance}
+
+Per the laplace \texttt{CLAUDE.md} proof-estimate rule: probability of
+direct one-shot proof on \texttt{partition\_hasDerivAt} estimated at
+$\sim 30\%$, well below the 50\% threshold for ``factor into
+intermediate lemmas first''. The hard field needs:
+
+\begin{itemize}[noitemsep,leftmargin=*]
+\item A dominator on the perturbed integrand
+  $\exp(-t(L_{\rm anh}(x) + h \cdot x))$ for $|h| \leq 1$, valid for the
+  $h$-derivative-under-integral lemma. The dominator is
+  $\exp(-t \cdot L_{\rm anh}(x)) \cdot \exp(t |x|) \cdot (|t x| + 1)$,
+  Gaussian-decaying after completing the square via
+  \texttt{anharmonic\_coercive}.
+\item An invocation of
+  \texttt{MeasureTheory.hasDerivAt\_integral\_of\_dominated\_loc\_of\_lip}
+  or its newer Mathlib variant.
+\item Final pointwise computation of the $h = 0$ derivative inside the
+  integral.
+\end{itemize}
+
+Estimated 100--200 lines. Left as a focused follow-up tide.
+
+\section{Why this still matters}
+
+With the skeleton in place:
+
+\begin{itemize}[noitemsep,leftmargin=*]
+\item The instance type-checks and is callable from any downstream
+  module (modulo the \texttt{sorry}). This means dependent tides
+  can be drafted against the instance signature \emph{now}, not
+  blocked on the full proof.
+\item The two easy fields are real proofs (not sorries): they
+  exercise the \texttt{integral\_pos\_iff\_support\_of\_nonneg\_ae}
+  + coercivity pattern, which the next tide will need to extend
+  to the $h$-perturbed case.
+\item The follow-up tide has a sharp scope: only
+  \texttt{partition\_hasDerivAt}, with all the imports, namespace
+  setup, and the surrounding lemmas already in place.
+\end{itemize}
+
+\section{Pipeline lessons}
+
+\begin{itemize}[noitemsep,leftmargin=*]
+\item \textbf{Sanity-check Mathlib API before relying on names.} My
+  first attempt cited \texttt{volume\_univ\_eq\_top}, a name that
+  doesn't exist. The correct Mathlib name is \texttt{Real.volume\_univ}
+  (in the \texttt{Real} namespace, defined in
+  \texttt{Mathlib.MeasureTheory.Measure.Lebesgue.Basic}). A
+  \texttt{grep -rn} on the actual Mathlib source resolved it in
+  $\sim 30$ seconds.
+
+\item \textbf{Build the skeleton before attempting the full proof.}
+  The 2/3 easy fields built in one shot; the hard third was left
+  as a documented \texttt{sorry}. This pattern is preferable to
+  trying the full instance and risking thrashing on the hard part.
+
+\item \textbf{Public-ify private lemmas at the boundary.} The
+  \texttt{integrable\_pow\_mul\_exp\_neg\_anharmonic} lemma in
+  \texttt{AnharmonicKappa3Affine.lean} was \texttt{private}; the
+  $n=0$ case is needed by this file, so it was re-derived
+  (essentially copy-paste) as the public
+  \texttt{integrable\_exp\_neg\_t\_anharmonic}. A future cleanup
+  tide could promote the original to public and remove the
+  redundancy; for now, the two coexist.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[noitemsep,leftmargin=*]
+\item \textbf{\texttt{partition\_hasDerivAt} follow-up tide.}
+  $\sim 100$--$200$ lines. Dominated convergence + Gaussian-decay
+  domination via \texttt{anharmonic\_coercive}. The full proof
+  sketch is in the docstring of the \texttt{sorry} site.
+\item \textbf{\texttt{GibbsObservable} instances at $\phi \in
+  \{x, x^2, x^3, x \cdot x, x^2 \cdot x, x \cdot x \cdot x\}$.}
+  Six instances, each $\sim 30$--$50$ lines after the
+  \texttt{partition\_hasDerivAt} pattern is in place. These
+  discharge the per-observable hypotheses of
+  \texttt{gibbsCov\_deriv\_eq\_neg\_t\_kappa3}. Total $\sim 200$
+  lines.
+\item \textbf{Headline corollary} (once both above land):
+  \texttt{cov\_h\_id\_id\_deriv\_anharmonic\_eq\_neg\_t\_kappa3},
+  $\sim 20$--$30$ lines, by direct application of the general
+  Threepoint theorem.
+\item \textbf{Closed-form asymptotic corollary:} compose the
+  headline with Tide 9
+  (\texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic}) to get
+  $\lim_{t \to \infty} t \cdot \partial_h \mathrm{Cov}_h|_{h=0} = \alpha/\lambda^3$.
+  $\sim 30$ lines.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+Direct handoff from the same-day
+\experimentref{2026-05-23-experiment-fdt-identity-1d} tide-experiment
+which surfaced the formalisation gap. The original tide proposal
+in \texttt{projects/primer/tide-log/2026-05-23-tide-anharmonic-fdt-identity-proposal.md}
+mis-identified the gap as ``general FDT identity''; the revised
+proposal (after discovering
+\texttt{Threepoint.gibbsCov\_deriv\_eq\_neg\_t\_kappa3} is already
+proven) correctly identified the gap as ``anharmonic regularity
+instance''. This tide takes the first ($\sim 30\%$) bite of that
+revised target.
+
+\end{document}

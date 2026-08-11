@@ -1,0 +1,239 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+
+\title{Tide retrospective:\\\emph{Rescaled 2D moment asymptotic (V2)}}
+\author{Daniel Murfet}
+\date{18 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+T1 (mixed even-power 2D moments) landed an \emph{exact} closed form
+for $\langle x^{2j} y^{2k}\rangle_{2D, t}$ under the quartic--sextic
+potential. The candidate V1 paired with T1 left a follow-up labelled
+``generic-$k$ J-function-style 2D moment asymptotic''; this Tide
+discharges it by packaging T1's exact identity into three downstream-
+friendly forms: an algebraic reformulation isolating the $t$-power,
+a rescaled \texttt{Tendsto}, and an
+\texttt{Asymptotics.IsEquivalent}. No new analysis was required;
+T1 already supplied an exact identity, so the ``asymptotic''
+packaging reduced to ``a function eventually equal to a constant
+tends to that constant'', closed by \texttt{tendsto\_congr'} +
+\texttt{tendsto\_const\_nhds}. 143 lines, single session, one
+spurious-\texttt{field\_simp} fix needed for the exact lemma. Zero
+\texttt{sorry}, zero \texttt{axiom}, zero \texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+Two related framings circulated around V2 before Step~2. The survey
+direction said ``joint scaling $t^{-(2j+1)/4 - (2k+1)/6}$ as $t \to
+\infty$'', which describes the unnormalised numerator integral. The
+underlying moment, however, scales as $t^{-(j/2 + k/3)}$ --- T1
+already gives this scaling \emph{exactly}, not asymptotically, since
+T1's RHS factors as $(24/t)^{j/2}\cdot \Gamma_1\cdot(720/t)^{k/3}\cdot
+\Gamma_2$. So V2 is not a fresh asymptotic theorem; it's the
+algebraic and asymptotic packaging of T1.
+
+This matters: the survey wording inherited some confusion from T1's
+follow-up section. Naming the unnormalised numerator and the moment
+got telescoped together, and the suggestion ``combines
+\texttt{kth\_jfunction\_asymptotic} with T1's factor theorem'' is
+also misleading --- N1's J-function asymptotic requires a globally
+bounded prior, and a polynomial prior $\pi(x) = x^{2j}$ is unbounded,
+so N1 doesn't apply directly to the numerator integrand. The correct
+route is via T1 (or via 1D \texttt{quartic\_moment\_even} +
+\texttt{sextic\_moment\_even} for the numerator separately), in
+either case producing an exact identity rather than an asymptotic.
+
+\section{The thing formalised}
+
+Three theorems in \texttt{Laplace.TwoD}:
+
+\begin{enumerate}[leftmargin=1.5em]
+\item \textbf{Exact reformulation.}
+  For $t > 0$ and $j, k \in \mathbb N$,
+  $$
+    \langle x^{2j} y^{2k}\rangle_{2D, t}
+    = C(j, k) \cdot t^{-(j/2 + k/3)}
+  $$
+  where
+  $$
+    C(j, k) = 24^{j/2}\,720^{k/3}\,
+    \frac{\Gamma((2j+1)/4)}{\Gamma(1/4)}\,
+    \frac{\Gamma((2k+1)/6)}{\Gamma(1/6)}.
+  $$
+  Named \texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_eq\_const\_mul\_rpow}.
+  The constant prefactor is recorded as a named definition
+  \texttt{quarticSexticMomentConst j k}.
+
+\item \textbf{Rescaled \texttt{Tendsto}.} As $t \to \infty$,
+  $$
+    t^{j/2 + k/3}\,\langle x^{2j} y^{2k}\rangle_{2D, t}
+    \to C(j, k).
+  $$
+  Named \texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_rescaled\_tendsto}.
+
+\item \textbf{\texttt{IsEquivalent}.} At $\mathrm{atTop}$,
+  $$
+    \langle x^{2j} y^{2k}\rangle_{2D, t}
+    \sim C(j, k) \cdot t^{-(j/2 + k/3)}.
+  $$
+  Named \texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_isEquivalent\_rpow}.
+\end{enumerate}
+
+\section{Proof strategy}
+
+The exact reformulation is pure \texttt{Real.rpow} algebra. T1's
+RHS contains $(24/t)^{j/2}$ and $(720/t)^{k/3}$; using
+\texttt{Real.div\_rpow} (for $a/b)^x = a^x / b^x$ with $a, b \ge 0$)
+splits each into a base power and an inverse-$t$ power. Combining
+the two inverse-$t$ pieces uses \texttt{Real.rpow\_add} (valid for
+$t > 0$) to write
+$t^{-(j/2 + k/3)} = t^{-j/2} \cdot t^{-k/3}$, then
+\texttt{Real.rpow\_neg} converts negative-exponent rpow to the
+reciprocal form. After those rewrites, \texttt{ring} closes the
+goal --- both sides are the same polynomial in the named
+$24^{j/2}, 720^{k/3}, \Gamma$-ratios, $t^{j/2}$, $t^{k/3}$.
+
+The rescaled \texttt{Tendsto} is the clean GPT idiom: the rescaled
+function is \emph{eventually equal} (on $\{t > 0\}$) to a constant
+function. Concretely, $t^{j/2 + k/3}$ times the moment equals
+$C(j, k) \cdot t^{j/2 + k/3} \cdot t^{-(j/2 + k/3)}$, and the
+$t$-factors annihilate via \texttt{Real.rpow\_add}, leaving
+$C(j, k)$. The \texttt{Tendsto} then follows from
+\texttt{tendsto\_const\_nhds} via \texttt{tendsto\_congr'}.
+
+The \texttt{IsEquivalent} is the cleanest of all: refl modulo
+eventual-equality. The two functions differ only by
+``$\langle\dots\rangle$ versus $C(j, k) \cdot t^{-(j/2+k/3)}$''; the
+exact reformulation says these are pointwise equal on $\{t > 0\}$
+and so eventually equal at $\mathrm{atTop}$.
+
+\section{Roadblocks and resolutions}
+
+One roadblock: my first draft of the exact reformulation closed with
+a \texttt{field\_simp} followed by \texttt{ring}, and the build
+errored with ``No goals to be solved'' at the \texttt{ring}.
+\texttt{field\_simp} had already closed the goal after the
+\texttt{rpow\_add} + \texttt{rpow\_neg} normalisations. Removing the
+\texttt{field\_simp} left \texttt{ring} to do the work directly, and
+the build went green. Pattern worth recording: after explicit
+\texttt{rpow\_add}/\texttt{rpow\_neg} rewrites that already normalise
+the $t$-structure of the goal, \texttt{ring} alone tends to close;
+\texttt{field\_simp} pre-processing is redundant and can produce a
+goalless state that breaks the subsequent tactic.
+
+No GPT mid-proof consult was needed. The pre-proof consult was the
+load-bearing one; once the choice of three-theorem packaging and the
+eventual-equality idiom were set, the implementation was mechanical.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{From Mathlib.}
+\texttt{Real.div\_rpow} (for splitting $(a/b)^x$),
+\texttt{Real.rpow\_add} (for combining $t^a \cdot t^b = t^{a+b}$ when
+$t > 0$), \texttt{Real.rpow\_neg} (for converting $t^{-x}$ to
+$(t^x)^{-1}$ when $t \ge 0$),
+\texttt{tendsto\_const\_nhds} and \texttt{Tendsto.congr'},
+\texttt{Asymptotics.IsEquivalent.refl} and
+\texttt{IsEquivalent.congr\_left}, plus standard \texttt{ring}.
+
+\paragraph{From the seabed.} Only T1's exact closed form
+\texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_eq}. Nothing else
+from the laplace seabed was load-bearing.
+
+\paragraph{New here.} Three theorems + the named constant
+\texttt{quarticSexticMomentConst}. The architectural contribution is
+the realisation, surfaced during Step~2 deliberation, that V2's
+``asymptotic'' framing was conceptually redundant against T1's
+exact identity --- and the corresponding decision to ship the
+\emph{exact reformulation} as a keystone with the two asymptotic
+packagings as five-line corollaries of it.
+
+\section{Lessons}
+
+\paragraph{Exact identities expose asymptotics for free.}
+Whenever a seabed lemma already gives a closed-form equality (rather
+than an asymptotic estimate), every downstream ``asymptotic'' theorem
+about it is just a packaging of the same exact identity in a
+different filter-theoretic shape. Don't reach for
+\texttt{isEquivalent\_iff\_tendsto\_one}-style ratio arguments;
+the cleanest proof is via \texttt{tendsto\_congr'} on the eventually-
+constant rescaled function. GPT-5.5~Pro flagged this idiom at
+Step~2; worth recording as the standard shape for ``$\langle\dots
+\rangle = C \cdot t^{-\alpha}$''-style packagings.
+
+\paragraph{Inherit the keystone-plus-corollary structure when in
+doubt.} L2 (J-function asymptotic equivalence) is the closest
+exemplar: it shipped the ratio convergence and the
+\texttt{IsEquivalent} together. V2 inherited this dual-form pattern,
+adding the algebraic-reformulation lemma as a third keystone. The
+result is three theorems for the price of one proof's work: once the
+exact reformulation is in place, the other two are
+\texttt{tendsto\_congr'} away.
+
+\paragraph{\texttt{field\_simp} can close goals already normalised
+by \texttt{rpow} rewrites.} A spurious \texttt{field\_simp} after
+\texttt{Real.rpow\_add}/\texttt{rpow\_neg} normalisations can succeed
+silently, leaving a subsequent \texttt{ring} with no goals. Drop the
+\texttt{field\_simp} if \texttt{ring} fails with ``No goals to be
+solved''.
+
+\paragraph{Question survey-wording before deliberation.} The V2
+survey direction had two layers of conceptual drift inherited from
+T1's follow-up: ``J-function-style asymptotic'' was actually
+unreachable from N1's machinery (polynomial prior unbounded), and
+``joint scaling $t^{-(2j+1)/4 - (2k+1)/6}$'' described the
+unnormalised numerator, not the moment. Surfacing both layers in the
+tide-log's seabed-snapshot section let Step~2 deliberate cleanly on
+the right object.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1.5em]
+\item \emph{Numerator-side asymptotic} (the survey's actual literal
+  statement). Build the analogous packaging for
+  $\int\!\int x^{2j} y^{2k}\,e^{-tL(x, y)}\,dx\,dy$ scaling as
+  $t^{-(2j+1)/4 - (2k+1)/6}$. Requires factoring the 2D numerator
+  via separability (analogous to A2's partition-factor theorem but
+  for the numerator) and applying the 1D
+  \texttt{quartic\_moment\_even} / \texttt{sextic\_moment\_even}
+  closed forms. ${\sim}40$ lines. Standalone follow-up tide.
+\item \emph{Odd-side ``asymptotic''.} V1 proves the odd-moment 2D
+  vanishing as an exact identity. The asymptotic packaging would be
+  the trivial $\langle\dots\rangle = 0 \sim 0$, presumably useless.
+  Skip.
+\item \emph{Promote \texttt{quarticSexticMomentConst} to
+  \texttt{lean-common}.} Only if a third consumer materialises;
+  currently the named constant has one use site (this file). Below
+  the refactor threshold.
+\item \emph{\texttt{\textbackslash leanref}-tag the primer/grammar}
+  paper. Pairs with K2/U3 paper-tagging backlog once the primer's
+  2D-moment-asymptotic statements have a TeX home.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro's deliberation contributed: the vote for Candidate~C
+(both the \texttt{Tendsto} and the \texttt{IsEquivalent}, with the
+exact reformulation as a stepping stone) over the user's simpler
+Candidate~A; the \texttt{tendsto\_congr'} / eventual-equality idiom
+as the right proof shape for the asymptotic packagings; the explicit
+rejection of Candidate~D (the unnormalised numerator) as a different
+object; and the naming triplet
+(\texttt{\_eq\_const\_mul\_rpow}, \texttt{\_rescaled\_tendsto},
+\texttt{\_isEquivalent\_rpow}). Full consult preserved in the
+primer's tide-log GPT-responses folder.
+
+\end{document}

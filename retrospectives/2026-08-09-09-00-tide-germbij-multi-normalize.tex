@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{Normalized posterior moments: $q^{-2}\,\mathrm{Cov}_q \to H^{-1}$\\
+(multivariate germbij, stage H5)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent The germbij note's multivariate Hessian step, as stated:
+for a loss carrying the H4 domain package, the $U$-restricted
+posterior at inverse temperature $q^{-2}$ satisfies
+$q^{-1}\,\mathbb{E}_q[w_i] \to 0$ and
+$q^{-2}\,\mathbb{E}_q[w_i w_j] \to (H^{-1})_{ij}$, hence
+\[
+q^{-2}\,\mathrm{Cov}_q(w_i, w_j) \;\longrightarrow\; (H^{-1})_{ij}.
+\]
+The tide is pure bookkeeping, exactly as staged: one dilation
+identity factors every posterior integral into
+$q^d e^{-L(0)/q^2}$ times an H4 rescaled integrand --- an exact
+identity at each $q$, so the prefactors cancel in the normalized
+ratios algebraically, not asymptotically --- and the H4 limits then
+divide. The scoping consult's warning that the first-moment limit is
+load-bearing (covariance is not the raw second moment merely because
+the minimum sits at the origin) is visible in the final proof shape:
+the covariance limit is `second minus first-times-first', with the
+vanishing first moments doing real work.
+\end{abstract}
+
+\section{Setting}
+
+Stages H2--H4 built the quadratic Gaussian package, the local
+quadratic approximation, and the generic dominated convergence. What
+remained between those theorems and the germbij sentence ``$t\,
+\mathrm{Cov}_t[w_i, w_j] \to (H^{-1})_{ij}$, recovering $H$'' was the
+change of variables between the posterior's own integrals and the
+rescaled integrands, and the division bookkeeping.
+
+\section{The thing formalised}
+
+For \texttt{posteriorIntegral}$(f, q) = \int \mathbf{1}_U(w) f(w)
+e^{-L(w)/q^2} dw$: the dilation identity
+\[
+\mathrm{posteriorIntegral}(f, q)
+= q^d\, e^{-L(0)/q^2} \int \mathbf{1}_U(qx)\, f(qx)\,
+e^{-(L(qx) - L(0))/q^2}\, dx
+\qquad (q > 0),
+\]
+the $q$-power extraction for coordinate observables, and the three
+limits above, ending in \texttt{tendsto\_normalized\_covariance}.
+
+\section{How the proof works}
+
+The dilation wrapper from the programme's opening tide gives the
+substitution $w = qx$; the indicator transports to the preimage set,
+and the Boltzmann factor splits off $e^{-L(0)/q^2}$ by one
+exponential identity that \texttt{ring} proves formally in
+$(q^2)^{-1}$ (valid without any $q \neq 0$ hypothesis). Coordinate
+observables pull their $q$-powers through the indicator by constant
+multiplication. Because the identity is exact at every $q$, the
+normalized moments equal ratios of H4 integrand integrals on the
+eventual set where the zeroth integral is positive (guaranteed by
+its limit $\mathrm{jacInv}\,H \cdot Z_0 > 0$), and
+\texttt{Tendsto.div} with a nonzero limiting denominator finishes
+each moment. The covariance limit is then
+$H^{-1}_{ij} - 0 \cdot 0$.
+
+\section{Where it stalled and how it moved}
+
+No stalls; three quick diagnostic passes, every repair from the
+catalogue: \texttt{Tendsto.div} produces a \texttt{Pi.div} of
+lambdas that \texttt{field\_simp} cannot see through
+(\texttt{simp only [Pi.div\_apply]} first); \texttt{field\_simp}
+needs the \texttt{jacInv} nonzeroness in scope by name; a rewrite
+under an unapplied lambda needed a \texttt{simp only []}
+beta-reduction; and three trailing \texttt{ring}s died after
+\texttt{field\_simp} closed their goals. One repository hygiene find:
+a \texttt{texput.log} accidentally committed in April surfaced when a
+stray \texttt{pdflatex} touched it; removed on this branch.
+
+\section{Mathlib lookup versus new mathematics}
+
+Essentially no new Mathlib surface: the tide consumes the
+programme's own interfaces (the dilation wrapper, the H4 integrand
+and its three limits) plus \texttt{Set.indicator\_const\_mul} and
+the filter algebra of \texttt{Tendsto}. New (project-level): the
+posterior-to-rescaled dictionary and the three normalized limits in
+posterior language.
+
+\section{What this opens}
+
+Stage H6 --- the last of the commissioned milestone --- is now a
+handful of lines: two losses whose covariance data differ by
+$o(q^2)$ have $H_1^{-1} = H_2^{-1}$ by uniqueness of limits, hence
+$H_1 = H_2$ by invertibility. After it: the germbij note's
+multivariate margin markers, and the further multivariate
+commissions (degree-$k$ tensor recovery, degenerate strata) as
+future scoping consults.
+
+\end{document}

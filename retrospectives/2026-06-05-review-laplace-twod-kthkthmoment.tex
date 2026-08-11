@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the generic-$(k_1,k_2)$ moment lift --- the 2D trio reviewed end-to-end}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/KthKthMomentAsymptotic.lean}: the generic-$(k_1,k_2)$
+asymptotic of the 2D separable mixed-even Gibbs moment
+$\langle x^{2j_1}y^{2j_2}\rangle_{2D}$, the third and final leg of the ``2D lift'' trio. Result:
+\textbf{a clean fidelity pass with one dead-code removal} (the dead \texttt{open Real}). With this,
+the trio --- partition, numerator, moment --- and their factorisation root are all reviewed.
+\end{abstract}
+
+\section{Setting}
+This is the Gibbs-moment leg of the lift pattern: it factorises the 2D mixed moment as a product of
+two 1D even moments (via
+\reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable}'s
+\texttt{gibbsExpectation\_separable\_addSeparable}), substitutes the 1D closed form
+\texttt{gibbsExpectation\_kthPotential\_even}, and packages the limit. It is the moment quotient
+of the two legs reviewed just before it
+(\reviewref[partition]{2026-06-05-review-laplace-twod-kthkthpartition},
+\reviewref[numerator]{2026-06-05-review-laplace-twod-kthkthnumerator}).
+
+\section{What was reviewed}
+Four public theorems and the composite constant
+$C(k_1,k_2,j_1,j_2)=(2k_1)!^{j_1/k_1}(2k_2)!^{j_2/k_2}\,
+\frac{\Gamma((2j_1+1)/(2k_1))}{\Gamma(1/(2k_1))}\frac{\Gamma((2j_2+1)/(2k_2))}{\Gamma(1/(2k_2))}$:
+the factorisation $\langle\cdot\rangle_{2D}=\langle\cdot\rangle_U\langle\cdot\rangle_V$, the closed
+form $C\cdot t^{-j_1/k_1-j_2/k_2}$, the rescaled limit $\to C$, and the asymptotic equivalence.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The constant is the product of the two 1D
+\texttt{gibbsExpectation\_kthPotential\_even} constants, and the per-coordinate exponent $-j/k$ is
+exactly the moment relation: numerator exponent $-(2j+1)/(2k)$ minus partition exponent $-1/(2k)$.
+The factorisation discharges the four integrability obligations and both $Z\ne0$ conditions from the
+1D infrastructure. Hypotheses sit correctly ($t>0$ exact, $k_i\ge1$ for the limit). Docstrings match
+the statements --- like the numerator leg, and unlike the partition leg whose summary bullet had
+mislabelled a theorem.
+
+\section{Simplifications applied}
+\textbf{One dead \texttt{open}.} \texttt{open Real} is dead (all \texttt{Real.*} qualified, bare
+$t\,\hat{}\,(\text{real})$ is \texttt{rpow}); \texttt{MeasureTheory} (bare \texttt{Integrable}),
+\texttt{Filter}, \texttt{Asymptotics}, scoped \texttt{Topology} stay. Module green at $2700$ jobs,
+no warnings, signatures byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's other suggestions (collapse the $n=0$ integrability sub-proofs to
+\texttt{simpa}; replace the inline \texttt{show \dots\ by ring} equality proofs inside \texttt{rw})
+were declined as proof-style refactors, consistent with the two sibling legs.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{An end-to-end family review converges fast.} Reviewing the four files
+    --- factorisation root, then partition, numerator, moment legs --- in dependency order made
+    each fidelity check incremental: only the per-file constant and exponent were new, and the dead
+    \texttt{open Real} was found in three of the three legs (the root used \texttt{open Real
+    MeasureTheory} too, also trimmed). One genuine docstring drift surfaced across the four
+    (the partition bullet), and the rebuild settled the one wrong simplification (the root's
+    transitively-load-bearing \texttt{SemiDegenerate} import).
+  \item \textbf{The moment exponent is a checkable arithmetic relation.} $-j/k =
+    \big(-(2j+1)/(2k)\big)-\big(-1/(2k)\big)$ ties the moment leg's exponent to the numerator and
+    partition legs already reviewed --- a free cross-check that the three constants are mutually
+    consistent.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \texttt{KthKthOddMoments} (the odd-moment vanishing) and the $(2,3)$ \texttt{QuarticSextic*}
+    specialisations remain --- the latter near-certain repeats of the dead \texttt{open Real}.
+  \item Proof-golf forward tide (shared across the trio): the \texttt{simpa} integrability
+    shortenings and the \texttt{h\_k1}/\texttt{h\_k2}-style dedup helper.
+\end{itemize}
+
+\end{document}

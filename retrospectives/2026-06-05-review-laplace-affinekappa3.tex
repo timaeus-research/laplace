@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the potential-agnostic affine $\kappa_3$ identity --- the abstraction its harmonic and anharmonic specialisations rest on}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/AffineKappa3.lean}: the potential-agnostic factored third-cumulant
+identity $\kappa_3(L,a_2x+b_2,t,a_1x+b_1,a_3x+b_3)=a_1a_2a_3\,\kappa_3(L,x,t,x,x)$ --- the general
+result the harmonic-vanishing and anharmonic-asymptotic $\kappa_3$ files specialise. Result: a clean
+fidelity pass with two small edits (a dead equation name and a misleading-docstring clarification).
+\end{abstract}
+
+\section{Setting}
+This is the abstraction beneath
+\reviewref[HarmonicAffineKappa3]{2026-06-05-review-laplace-oned-harmonicaffinekappa3} and
+\reviewref[AnharmonicKappa3Affine]{2026-05-31-review-laplace-oned-anharmonickappa3affine}: rather than
+re-derive the affine factoring per potential, it proves once, for an arbitrary potential $L$ (given
+$Z\ne0$ and the degree-$\le3$ moment integrabilities), that shifting and scaling the three observables
+of $\kappa_3$ multiplies the all-identity cumulant by $a_1a_2a_3$ and drops the additive constants.
+
+\section{What was reviewed}
+The Threepoint$\to$Laplace bridge \texttt{threepoint\_gibbsExp\_volume\_zero\_eq}; the five-term unfold
+\texttt{kappa3\_volume\_unfold}; the affine and cubic expectation reductions
+\texttt{gibbsExpectation\_affine} and \texttt{gibbsExp\_cubic\_eq}; and the headline
+\texttt{kappa3\_volume\_shifted\_affine\_eq\_smul} --- checked for correct cumulant signs, polynomial
+coefficients, and the genuine cancellation of the $b$-constants.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect.} The reviewer confirmed the five-term unfold's signs ($+\,-\,-\,-\,+$), every
+coefficient in the seven product-term expansions, and the headline $a_1a_2a_3$, and then verified the
+\emph{cancellation} directly: after substituting the moments the left side collapses to
+$a_1a_2a_3\,(m_3-3m_2m_1+2m_1^3)=a_1a_2a_3\,\kappa_3(x,x,x)$, with every $b$-dependent contribution ---
+the one-$b$ $m_2$ terms, the two-$b$ $m_1$ terms, the one-$b$ $m_1^2$ terms, and the pure constant
+$b_1b_2b_3$ (whose coefficients sum $+1-1-1-1+2=0$) --- summing to zero. ``No mathematical/algebraic
+fidelity defects.''
+
+\section{Simplifications and documentation fixes applied}
+\textbf{A dead equation name and a misleading docstring.} The first-moment
+\texttt{set \dots with hm1} carried an equation name \texttt{hm1} that --- unlike \texttt{hm2}/
+\texttt{hm3}, which are rewritten with by name --- is never used; dropped (the abbreviation it names
+stays). And \texttt{kappa3\_volume\_unfold}'s
+docstring claimed the unfolded expression is ``independent of the perturbation direction $A$,'' which
+reads false: $A$ is plainly all over the right-hand side as an \emph{observable} ($\varphi A B$, $AB$,
+$A$). The accurate point --- which the fix now states --- is that $A$ drops only from the Gibbs
+\emph{weight} at $h=0$ (the perturbation $h\cdot A$ leaves the integrand), which is what lets the unfold
+go through the \emph{unperturbed} \texttt{gibbsExpectation}; $A$ survives as an observable. Build green,
+no warnings, signatures byte-identical; the reviewer affirmed both.
+
+\section{Disagreements and open questions}
+None. The file opens only \texttt{MeasureTheory} (no dead \texttt{open Real} to shed --- already
+minimal). The \texttt{import \dots Bochner.Basic} is redundant (\texttt{Laplace.Gibbs} supplies it
+transitively) but its symbols \texttt{Integrable}/\texttt{Measure}/\texttt{volume} are used directly, so
+it was kept --- redundant-but-used is not dead code (the same call made for the redundant
+\texttt{Anharmonic} import in the
+\reviewref[IntegralRemainder review]{2026-06-05-review-laplace-oned-integralremainder}).
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{An ``independent of $X$'' docstring is worth a second look when $X$ is visibly in the
+    statement.} The claim was true of the Gibbs \emph{weight} but false of the \emph{expression}; the
+    fix is to name which object is actually $X$-independent. A reader who took the docstring literally
+    would have been misled about what the unfold says.
+  \item \textbf{A potential-agnostic lemma is the right place to verify the cancellation once.} Because
+    this file proves the affine factoring for arbitrary $L$, confirming the $b$-drop here certifies it
+    for every specialisation (harmonic, anharmonic, \dots) at once --- the review analogue of the
+    abstraction the file itself provides.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item With this, the only never-reviewed laplace files left are the large \texttt{Multi/} analytic
+    files: \texttt{RescaledIntegrals} (1547L) and the \texttt{Covariance}/\texttt{CovarianceSharp}/
+    \texttt{CovarianceExplicit} trio (up to 19.6k lines), which want sectioned reviews.
+\end{itemize}
+
+\end{document}

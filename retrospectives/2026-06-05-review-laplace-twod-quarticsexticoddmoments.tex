@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the quartic--sextic odd-moment vanishing --- closing the 2D lift family}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/QuarticSexticOddMoments.lean}: the two
+parity-completion theorems stating that a mixed quartic--sextic 2D moment vanishes when at least one
+exponent is odd. Result: \textbf{a clean fidelity pass with no edits.} With this file, the entire 2D
+separable-lift family --- the \texttt{AddSeparable} root, the generic kthkth trio and odd companion,
+and the $(2,3)$ \texttt{QuarticSextic*} specialisations and cores --- is reviewed end-to-end.
+\end{abstract}
+
+\section{Setting}
+The $(2,3)$ analogue of the generic
+\reviewref[KthKthOddMoments]{2026-06-05-review-laplace-twod-kthkthoddmoments}, and the odd-moment
+companion to the \reviewref[QuarticSextic core]{2026-06-05-review-laplace-twod-quarticsextic}. It is
+the last unreviewed file of the \texttt{TwoD/} lift family.
+
+\section{What was reviewed}
+Two theorems: \texttt{gibbsExpectation\_quarticSextic\_odd\_pow\_pow\_eq\_zero}
+($\langle x^{2j+1}y^n\rangle=0$ for any $n$) and
+\texttt{gibbsExpectation\_quarticSextic\_pow\_odd\_pow\_eq\_zero}
+($\langle x^m y^{2k+1}\rangle=0$ for any $m$). Each factorises via the core's
+\texttt{gibbsExpectation\_quarticSextic\_factor} and kills the odd 1D factor with
+\texttt{quartic\_expected\_value\_odd} (resp.\ \texttt{sextic\_expected\_value\_odd}); the product
+is zero by \texttt{zero\_mul}/\texttt{mul\_zero}.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} As in the generic companion, the non-odd factor needs only
+integrability --- supplied by \texttt{quartic\_integrable\_pow\_pot}/%
+\texttt{sextic\_integrable\_pow\_pot} for every natural exponent --- so each theorem holds for
+arbitrary $n$ (resp.\ $m$), and the two cover every ``at least one odd'' case including odd--odd.
+The docstrings are accurate.
+
+\section{Simplifications applied}
+\textbf{None --- the bucket was empty.} The file has no \texttt{open} statements, its single import
+is load-bearing, and the closing \texttt{simp} does real work (\texttt{zero\_mul}/\texttt{mul\_zero}).
+The reviewer's only suggestion --- merging the \texttt{rw} and \texttt{simp} into one \texttt{simpa}
+--- is cosmetic proof-golf, declined. No worktree was created.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The 2D lift family is internally consistent end-to-end.} Reviewing the root, the
+    generic trio$+$odd companion, and the $(2,3)$ specialisations and cores in dependency order
+    surfaced exactly one genuine fidelity drift (the partition-asymptotic doc bullet naming the
+    wrong theorem), a scatter of dead \texttt{open}s (Real always, MeasureTheory only in the
+    def-stated files), two ill-typed/mislabelled docstrings, and three clean empty-bucket passes ---
+    and no mathematical error anywhere. The closed-form constants all trace back to the 1D
+    \texttt{quartic\_partition}/\texttt{sextic\_partition} and \texttt{*\_expected\_value\_*} lemmas.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The \texttt{TwoD/} lift family is now fully reviewed. Remaining laplace surface: the larger
+    \texttt{OneD/} files not yet covered (\texttt{NearDegenerate}, \texttt{UniversalAsymptotics},
+    \texttt{HarmonicCovGlobalConstancy}, \texttt{HarmonicPerturbedMoments}, the \texttt{Harmonic*}
+    monomials) and the \texttt{Multi/Covariance*} trio (sectioned).
+  \item The accumulated forward tides: \texttt{AddSeparable}'s direct-Mathlib product-integral
+    import; the batched \texttt{TwoD/} \texttt{t>0} module-docstring hygiene; the \texttt{simpa}/%
+    single-use-\texttt{have} proof-golf the reviewer flagged across the family.
+\end{itemize}
+
+\end{document}

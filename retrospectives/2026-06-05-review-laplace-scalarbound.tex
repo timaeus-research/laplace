@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the scalar Taylor bound --- a clean first order, and a second-order constant the file under-delivers}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/ScalarBound.lean}: the elementary scalar Taylor-remainder
+bounds on $e^{-z}$ that feed the integral-remainder machinery. The first-order bound is clean. The
+second-order bound is the \textbf{first genuine statement-versus-claim mismatch of the laplace review
+marathon}: the exported headline proves a constant $1/2$ where its own section intro --- and the true
+Taylor remainder --- give the sharp $1/6$. Per the review-tide rule this is reported, not rewritten,
+and escalated to the user. One dead \texttt{open} was landed alongside.
+\end{abstract}
+
+\section{Setting}
+The scalar substrate beneath \reviewref[IntegralRemainder]{2026-06-05-review-laplace-oned-integralremainder}:
+it proves $|e^{-z}-(1-z)|\le(z^2/2)\max(1,e^{-z})$ (first order) and the second-order analogue, the
+former consumed directly by the perturbative-remainder integrand estimate. A pure file of elementary
+calculus inequalities --- no integrals.
+
+\section{What was reviewed}
+The first-order chain ($1-z\le e^{-z}$; nonnegativity; the $z\ge0$ and $z\le0$ case bounds; the
+absolute headline \texttt{abs\_exp\_neg\_sub\_one\_add\_le}) and the second-order chain
+(the $z\ge0$ and $z\le0$ branches and the absolute headline
+\texttt{abs\_exp\_neg\_sub\_one\_add\_sub\_half\_sq\_le}), checked constant-by-constant against the
+Taylor remainders.
+
+\section{Fidelity / soundness findings}
+\textbf{First order: clean.} Every constant and case bound matches: $z\ge0$ gives $z^2/2$, $z\le0$
+gives $(z^2/2)e^{-z}$, and the headline assembles them with the $\max(1,e^{-z})$ factor and the
+correct $1/2$.
+
+\textbf{Second order: the exported constant is loose by a factor of three.} The $z\le0$ branch
+\texttt{exp\_neg\_sub\_one\_add\_sub\_half\_sq\_le\_half\_cube\_mul\_exp\_neg\_of\_nonpos} proves
+$e^{-z}-(1-z+z^2/2)\le(-z)^3/2\cdot e^{-z}$, and the exported headline
+\texttt{abs\_exp\_neg\_sub\_one\_add\_sub\_half\_sq\_le} proves $\le|z|^3/2\cdot\max(1,e^{-z})$ --- but
+the section intro advertises, and the $z\ge0$ branch correctly proves, the sharp $1/6$. And $1/6$ is
+genuinely achievable on $z\le0$: with $w=-z\ge0$, the Lagrange remainder gives
+$e^{w}-(1+w+w^2/2)=e^{\xi}w^3/6\le e^{w}w^3/6=(|z|^3/6)e^{-z}$. So the Lean settles for a bound three
+times looser than both the mathematics and its own documentation. (A companion docstring also
+cross-references a non-existent declaration name in the same section.)
+
+This is a \emph{fidelity} finding, not a math error: the $1/2$ bound is true. But it does not match the
+claimed/intended $1/6$. The review-tide rule is unambiguous here --- \textbf{do not silently rewrite
+the mathematics, and do not quietly correct the docstring down to $1/2$} (which would erase the very
+signal that the Lean under-delivers). It is recorded, surfaced to the user, and left for them to
+resolve: either strengthen the $z\le0$ branch and the headline to the sharp $1/6$ (a re-proof --- a
+forward tide), or consciously accept $1/2$ and correct the section intro/docstrings accordingly. After
+$\sim 50$ clean laplace reviews this is the first such escalation.
+
+\section{Simplifications applied}
+\textbf{One dead open --- and a triage the build corrected both ways.} \texttt{open Real} is dead
+(every \texttt{Real} name is qualified, including the lemma names \texttt{Real.add\_one\_le\_exp},
+\texttt{Real.hasDerivAt\_exp}, \texttt{Real.exp\_pos}); removed, build green. Instructively, my
+pre-build triage had \emph{both} opens wrong: I guessed \texttt{open Set} was dead (it is live --- bare
+\texttt{Ici} in the half-line case splits, which my interval grep had simply not listed) and hedged
+that \texttt{open Real} might be live (it is dead). Removing \texttt{open Set} broke the build with
+\texttt{Unknown identifier Ici}; removing \texttt{open Real} did not. The build is the arbiter, for the
+reviewer's grep and the author's intuition alike.
+
+\section{Disagreements and open questions}
+The second-order constant (above) is the open question for the user. GPT also listed several
+\texttt{*\_nonneg} locals as ``syntactically unreferenced'' but hedged that automation may consume
+them implicitly; on this \texttt{positivity}/\texttt{nlinarith}-heavy file that risk is real (the same
+implicit-consumption trap as the \reviewref[QuarticBoundedPrior review]{2026-06-05-review-laplace-oned-quarticboundedprior}'s
+\texttt{ha}/\texttt{htail\_nn}), so they were left report-only for a build-arbitrated hygiene pass
+rather than removed speculatively.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A true-but-loose constant is a fidelity finding, not a free docstring fix.} When a
+    theorem proves $1/2$ and its docstring claims $1/6$, the green build proves only that $1/2$ holds
+    --- it says nothing about which number was \emph{intended}. Correcting the docstring down to $1/2$
+    would silently ratify the weaker theorem; strengthening the theorem to $1/6$ is new mathematics.
+    Either way it is the user's call, and the reviewer's job is to surface the gap, not close it.
+  \item \textbf{An interval grep is only as good as its list of interval names.} \texttt{Ici} was live
+    and unlisted; the ``\texttt{open Set} is dead'' guess was wrong because the grep never looked for
+    it. The build caught it instantly --- which is exactly why the open-removal verdict is always
+    build-arbitrated, never grep-final.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \textbf{User decision required:} the second-order $1/6$-vs-$1/2$ constant. If $1/6$ is wanted,
+    a forward tide re-proves the $z\le0$ branch (Lagrange remainder $e^{\xi}w^3/6$) and propagates to
+    the headline; the cross-reference and section intro then become consistent.
+  \item Batched-hygiene tide: build-arbitrate the \texttt{*\_nonneg} dead-local candidates; narrow
+    \texttt{import Mathlib}; extract the duplicated $z\le0$ nonnegativity proof.
+\end{itemize}
+
+\end{document}

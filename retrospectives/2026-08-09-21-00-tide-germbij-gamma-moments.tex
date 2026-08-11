@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: second-order moment rates\\
+(gamma-rung programme, stage 3)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+Stage 2 gave the second-order $J_n$ expansions; this stage converts them
+into rates for the Gibbs moments themselves, the direct inputs of the
+fourth-cumulant assembly. The scoping consult's worked expansions fixed
+every target coefficient in advance, and all three were confirmed
+numerically before any Lean was written.
+
+\section{The thing formalised}
+
+Ten declarations in \texttt{Laplace/OneD/MomentSecondOrder.lean},
+sorry-free with zero warnings: three bridge identities
+($t\langle x^2\rangle = J_2/(\lambda J_0)$ and the $x^3$, $x^4$
+analogues, from the seabed's substitution relation), four $J$-deltas
+with the Gaussian constants evaluated, and the three public rates. With
+$A, B$ the cubic and quartic scales, eventually in $t$:
+\[
+\Bigl| t\langle x^2\rangle - \frac{1}{\lambda}
+- \frac{45A^2 - 12B}{\lambda\,t} \Bigr| \leq \frac{K}{t\sqrt t},
+\qquad
+\Bigl| t^2\langle x^4\rangle - \frac{3}{\lambda^2}
+- \frac{450A^2 - 96B}{\lambda^2\,t} \Bigr| \leq \frac{K}{t\sqrt t},
+\]
+\[
+\Bigl| t^2\langle x^3\rangle + \frac{15A}{\sqrt\lambda^{\,3}} \Bigr|
+\leq \frac{K}{\sqrt t}.
+\]
+Together with the seabed's existing mean rate, these are exactly the
+inputs the $\kappa_4$ cancellation table consumes.
+
+\section{Proof strategy}
+
+Each rate is a fraction analysis over the $J$-form bridge: combine the
+difference into a single fraction with numerator
+$N = J_r - (\text{leading} + \text{coeff}/t)\,J_0$; split $N$ against
+the two deltas, where the $1/t$ terms cancel \emph{exactly}
+($q_2 - q_0 = c_2$ and $p_4 - 3q_0 = c_4'$, verified by \texttt{ring} on
+explicit coefficients); bound the three pieces by the triangle
+inequality; and control the denominator by the $J_0$ lower bound. The
+third moment is the same shape one order earlier, with odd Gaussian
+moments annihilating everything but the single $A$-term.
+
+\section{Roadblocks and resolutions}
+
+Built across four checkpointed commits (bridges, deltas, first
+assembly, remaining two); the deltas layer compiled on the first
+attempt. Every iteration was a documented catalogue class ---
+including, satisfyingly, one instance of the unsafe
+$t$-inside-radical rewrite that this programme's own stage-2b
+\texttt{CLAUDE.md} entry warns about, caught immediately from the goal
+display ($\sqrt{\sqrt t^2}$) and repaired with the radical-atom
+pattern. New micro-entries: \texttt{div\_le\_div\_iff} and
+\texttt{le\_div\_iff} are now the $_0$-suffixed variants, and
+\texttt{set\_option} must precede a declaration's docstring.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: field and absolute-value algebra, \texttt{gcongr}. Seabed: the
+substitution relation, the $J_0$ bounds, and the whole stage-2 layer.
+New: the exact-cancellation fraction pattern, now used three times and
+likely the template for any future order-deepening.
+
+\section{Lessons}
+
+Checkpointed WIP commits (each building, sorry-free) made a
+four-hundred-line file safe to build across session boundaries; the
+per-layer validation (bridges, then deltas, then assemblies) meant no
+error ever implicated more than the newest layer. When a catalogue
+entry exists, the failure it describes costs one iteration; the only
+multi-iteration fights in this stage were in the first assembly, whose
+structure the other two then reused verbatim.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item Stage 4--5: the $\kappa_4$ assembly over these rates and the
+existing mean rate, and the limit
+$t^3\kappa_4 \to -\gamma/\lambda^4 + 3\alpha^2/\lambda^5$.
+\item Stage 6: the gamma recovery corollary (uniqueness of limits),
+completing the anharmonic jet $(\lambda, \alpha, \gamma)$ and earning
+the germbij note's Theorem~3.1 its second marker.
+\end{itemize}
+
+\end{document}

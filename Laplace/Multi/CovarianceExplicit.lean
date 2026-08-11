@@ -79,141 +79,9 @@ variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 section TensorJetStructures
 
-/-- **Exact-tensor potential package**.
-
-Extends `PotentialJetApprox` with an *exact* symmetric trilinear cubic
-tensor `T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => (ι → ℝ)) ℝ` such
-that the cubic-scale jet `cV` is its diagonal up to a `1/6` factor:
-`cV w = (1/6) · T (fun _ => w)` (cubic *homogeneity*, the strict
-strengthening of the parity-only `cV_odd` hypothesis used by the sharp
-track). The local quartic remainder upgrades to the *exact*
-$V - \tfrac12 H w \cdot w - \tfrac16 T(w,w,w) = O(\|w\|^4)$ form. -/
-structure PotentialTensorApprox
-    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
-    extends PotentialJetApprox V H where
-  /-- Symmetric trilinear cubic tensor `T = ∇³V(0)`. -/
-  T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ
-  /-- Symmetry of `T` under permutations of arguments. -/
-  T_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
-    T (fun i => v (σ i)) = T v
-  /-- Cubic homogeneity: the scalar cubic jet `cV` is the diagonal of `T`. -/
-  cV_eq_T_diag : ∀ w : ι → ℝ, cV w = (1 / 6 : ℝ) * T (fun _ => w)
-  /-- Local quartic remainder, upgraded from `jet_bound` to use the
-  exact `T`-tensor form: on `‖w‖ ≤ jet_radius`,
-  `|V w - ((1/2) · quadForm H w + (1/6) · T(w,w,w))| ≤ jet_const · ‖w‖^4`. -/
-  T_jet_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
-    |V w - ((1 / 2 : ℝ) * quadForm H w + (1 / 6 : ℝ) * T (fun _ => w))|
-      ≤ jet_const * ‖w‖ ^ 4
-
-/-- **Quintic-remainder strengthening** of `PotentialTensorApprox`.
-
-Adds a sharper bound on the *odd* part of `V`'s Taylor remainder, needed
-specifically for `expNumErr_3_bound` (J₃) where the parity symmetrization
-reduces to bounding `s_t(u) - s_t(-u) - 2·C_t(u)`.
-
-The bound `|V w - V(-w) - (1/3) · T(w,w,w)| ≤ Q_const · ‖w‖^5` says the
-odd part of `V`'s Taylor expansion is captured by `(1/6)·T(w,w,w)` modulo
-a quintic remainder. Equivalently, `V w + (1/6)·T(w,w,w) = V(-w) + (1/6)·T(-w,-w,-w) - (1/3)·T(w,w,w)`,
-i.e. the symmetric (even) part of `V` is captured by quartic-or-higher terms.
-
-Holds when `V` is `C^5` near 0 (the explicit Taylor coefficient at order 5
-gives the bound). Independent from `T_jet_bound` (quartic bound) since the
-odd part has its own structure. -/
-structure PotentialQuinticApprox
-    (V : (ι → ℝ) → ℝ) (H : (ι → ℝ) →L[ℝ] (ι → ℝ))
-    extends PotentialTensorApprox V H where
-  /-- Constant for the odd-quintic remainder. -/
-  Q_const : ℝ
-  Q_const_nn : 0 ≤ Q_const
-  /-- Odd-part quintic remainder: on `‖w‖ ≤ jet_radius`,
-  `|V w - V(-w) - (1/3)·T(w,w,w)| ≤ Q_const · ‖w‖^5`. -/
-  V_odd_quintic_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
-    |V w - V (-w) - (1 / 3 : ℝ) * T (fun _ => w)|
-      ≤ Q_const * ‖w‖ ^ 5
-
-/-- **Exact-tensor observable package**.
-
-Extends `ObservableJetApprox` with an *exact* symmetric bilinear quadratic
-form `A : (ι → ℝ) →L[ℝ] (ι → ℝ)` (so the Hessian quadratic part is
-`(1/2) · quadForm A w`) and an *exact* symmetric trilinear cubic tensor
-`Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => (ι → ℝ)) ℝ`. The local
-remainder is now *quartic* against `dot a w + (1/2) quadForm A w + (1/6) Φ(w,w,w)`.
-
-For `lem:laplace_exp` we only need the `A` data (and the existing `qφ`
-linkage `qφ w = (1/2) quadForm A w`); `Φ` is needed for `lem:laplace_cov2`'s
-$\langle \phi_3 \psi_1\rangle$ term when $\phi$ vanishes to second order. -/
-structure ObservableTensorApprox
-    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
-    extends ObservableJetApprox φ a where
-  /-- Symmetric bilinear quadratic Hessian, as a continuous linear map
-  `(ι → ℝ) →L[ℝ] (ι → ℝ)`. The bilinear form is `quadForm A`. -/
-  A : (ι → ℝ) →L[ℝ] (ι → ℝ)
-  /-- Symmetry of `A`: `dot u (A v) = dot v (A u)`. -/
-  A_symm : ∀ u v : ι → ℝ, dot u (A v) = dot v (A u)
-  /-- Quadratic-jet linkage: `qφ w = (1/2) · quadForm A w`. -/
-  qφ_eq_A_diag : ∀ w : ι → ℝ, qφ w = (1 / 2 : ℝ) * quadForm A w
-  /-- Symmetric trilinear cubic tensor `Φ = ∇³φ(0)`. -/
-  Φ : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ
-  /-- Symmetry of `Φ` under permutations of arguments. -/
-  Φ_symm : ∀ σ : Equiv.Perm (Fin 3), ∀ v : Fin 3 → (ι → ℝ),
-    Φ (fun i => v (σ i)) = Φ v
-  /-- Local quartic remainder (exact-tensor form): on `‖w‖ ≤ jet_radius`,
-  `|φ w - (dot a w + (1/2) quadForm A w + (1/6) Φ(w,w,w))| ≤ jet_const · ‖w‖^4`. -/
-  Φ_jet_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
-    |φ w - (dot a w + (1 / 2 : ℝ) * quadForm A w
-            + (1 / 6 : ℝ) * Φ (fun _ => w))| ≤ jet_const * ‖w‖ ^ 4
-
-/-- **Quintic-remainder strengthening for observables**.
-
-Adds a sharper bound on the *odd* part of `φ`'s Taylor remainder, needed
-specifically for Lemma A's bulk-block bound (`abs_integral_bulkErrA_le`).
-Without this stronger control, Lemma A is genuinely false: one can
-construct a φ satisfying `ObservableTensorApprox` (with a = 0, A = 0,
-Φ = 0) for which `|φ(w)| ≤ ‖w‖^4` but with non-trivial odd quartic
-remainder, giving a Θ(t⁻¹/²) bulk contribution rather than O(t⁻¹). See
-`gpt_responses/strategy_stage5_bulk_O1t.md` for the counterexample.
-
-The bound `|φ w - φ(-w) - 2·a·w - (1/3)·Φ(w,w,w)| ≤ Q_const · ‖w‖^5` says
-the odd part of `φ`'s Taylor expansion is captured by `a·w + (1/6)·Φ(w³)`
-modulo a quintic remainder. Holds when `φ` is `C^5` near 0 (the explicit
-Taylor coefficient at order 5 gives the bound). Independent from
-`Φ_jet_bound` (quartic bound) since the odd part has its own structure.
-
-Mirrors the analogous V-side `PotentialQuinticApprox` from `CovarianceSharp.lean`. -/
-structure ObservableQuinticApprox
-    (φ : (ι → ℝ) → ℝ) (a : ι → ℝ)
-    extends ObservableTensorApprox φ a where
-  /-- Constant for the odd-quintic remainder. -/
-  Q_const : ℝ
-  Q_const_nn : 0 ≤ Q_const
-  /-- Odd-part quintic remainder: on `‖w‖ ≤ jet_radius`,
-  `|φ w - φ(-w) - 2·dot a w - (1/3)·Φ(w,w,w)| ≤ Q_const · ‖w‖^5`. -/
-  φ_odd_quintic_bound : ∀ w : ι → ℝ, ‖w‖ ≤ jet_radius →
-    |φ w - φ (-w) - 2 * dot a w - (1 / 3 : ℝ) * Φ (fun _ => w)|
-      ≤ Q_const * ‖w‖ ^ 5
-
 end TensorJetStructures
 
 section TensorContractions
-
-/-- Contraction `(T : Sig)_i := ∑_{jk} T_ijk Sig_jk`, where `T` is a symmetric
-trilinear form (read as `T_ijk = T(eᵢ, eⱼ, e_k)` for the standard basis)
-and `Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)` represents `Sig_jk = Sig(e_k)_j`. The result
-is a vector in `(ι → ℝ)`. -/
-noncomputable def tensorContractMatrix
-    (T : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => ι → ℝ) ℝ)
-    (Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)) : ι → ℝ :=
-  fun i => ∑ j, T (fun k =>
-    match k with
-    | 0 => Pi.single i (1 : ℝ)
-    | 1 => Pi.single j (1 : ℝ)
-    | 2 => Sig (Pi.single j (1 : ℝ)))
-
-/-- Trace `tr(A Sig) := ∑_i (A (Sig eᵢ))_i`, for a symmetric bilinear form `A` and
-its conjugate against `Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)`. -/
-noncomputable def trASig
-    (A Sig : (ι → ℝ) →L[ℝ] (ι → ℝ)) : ℝ :=
-  ∑ i, (A (Sig (Pi.single i (1 : ℝ)))) i
 
 /-- Standard basis vector `e i := Pi.single i 1`. Local abbreviation for use
 in tensor contraction proofs (per `gpt_responses/tactics_contraction_lemmas.md`). -/
@@ -400,89 +268,6 @@ lemma T_apply_diag_eq_sum
 end TensorContractions
 
 section FourthMomentInfrastructure
-
-/-- **Cubic Fubini-IBP hypothesis**: the multivariate analog of
-`FubiniIBPHypothesis` for cubic test functions `f(u) = u_a u_b u_c`. The
-content is that the boundary terms in the integration-by-parts identity
-$\int (\partial_l f) \cdot gW = \int f \cdot (Hu)_l \cdot gW$
-vanish; concretely,
-$$
-  \int \big[(\delta_{la} u_b u_c + \delta_{lb} u_a u_c + \delta_{lc} u_a u_b)
-  \,gW - u_a u_b u_c (Hu)_l \, gW\big] = 0.
-$$
-This is provable under coercivity hypotheses on `H` via Fubini + 1D-FTC
-slice-by-slice, as in the existing `FubiniIBPHypothesis`. We expose it as
-a hypothesis here, packaged into `LaplaceCov4MomentHypotheses` below. -/
-def FubiniIBPHypothesisCubic
-    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (a b c l : ι) : Prop :=
-  ∫ u : ι → ℝ,
-    (((if l = a then u b * u c else 0) +
-      (if l = b then u a * u c else 0) +
-      (if l = c then u a * u b else 0)) * gaussianWeight H u
-      - u a * u b * u c * (H u) l * gaussianWeight H u) = 0
-
-/-- **4th-moment hypothesis package**: extends `LaplaceCovHypotheses` with
-the integrability and Fubini-IBP fields needed to prove the 4th-moment
-Wick formula `gaussian_fourth_moment_formula`. -/
-structure LaplaceCov4MomentHypotheses
-    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
-    extends LaplaceCovHypotheses H Hinv where
-  /-- 4th-moment integrability. -/
-  int_4moment : ∀ a b c d : ι,
-    Integrable (fun u : ι → ℝ => u a * u b * u c * u d * gaussianWeight H u)
-  /-- Cubic-IBP integrand integrability: `u_a · u_b · u_c · (Hu)_l · gW`
-  is integrable. -/
-  int_3_Hl : ∀ a b c l : ι,
-    Integrable (fun u : ι → ℝ => u a * u b * u c * (H u) l * gaussianWeight H u)
-  /-- Cubic Fubini-IBP. -/
-  fubini_ibp_cubic : ∀ a b c l : ι, FubiniIBPHypothesisCubic H a b c l
-
-/-- **Quintic Fubini-IBP hypothesis**: the multivariate analog of
-`FubiniIBPHypothesisCubic` for quintic test functions
-`f(u) = u_a u_b u_c u_d u_e`. The content is that the boundary terms in
-the integration-by-parts identity
-$\int (\partial_l f) \cdot gW = \int f \cdot (Hu)_l \cdot gW$
-vanish; concretely (writing `δ_xy` for Kronecker `δ`):
-$$
-  \int \big[(\delta_{la} u_b u_c u_d u_e + \delta_{lb} u_a u_c u_d u_e
-            + \delta_{lc} u_a u_b u_d u_e + \delta_{ld} u_a u_b u_c u_e
-            + \delta_{le} u_a u_b u_c u_d) \, gW
-  - u_a u_b u_c u_d u_e \cdot (Hu)_l \, gW\big] = 0.
-$$
-This is provable under coercivity hypotheses on `H` via Fubini + 1D-FTC
-slice-by-slice, as in the existing cubic version. We expose it as a
-hypothesis here, packaged into `LaplaceCov6MomentHypotheses` below.
-
-Used in `gaussian_sixth_moment_formula` (which reduces 6-moment to 4-moment
-via Stein's identity) → `gaussian_quad_linear_cubic_explicit` → Lemma A. -/
-def FubiniIBPHypothesisQuintic
-    (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (a b c d e l : ι) : Prop :=
-  ∫ u : ι → ℝ,
-    (((if l = a then u b * u c * u d * u e else 0) +
-      (if l = b then u a * u c * u d * u e else 0) +
-      (if l = c then u a * u b * u d * u e else 0) +
-      (if l = d then u a * u b * u c * u e else 0) +
-      (if l = e then u a * u b * u c * u d else 0)) * gaussianWeight H u
-      - u a * u b * u c * u d * u e * (H u) l * gaussianWeight H u) = 0
-
-/-- **6th-moment hypothesis package** (Stage 3 prerequisite for `lem:laplace_cov2`):
-extends `LaplaceCov4MomentHypotheses` with 6th-moment integrability and the
-quintic Fubini-IBP needed for `gaussian_quad_linear_cubic`. -/
-structure LaplaceCov6MomentHypotheses
-    (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
-    extends LaplaceCov4MomentHypotheses H Hinv where
-  /-- 6th-moment integrability. -/
-  int_6moment : ∀ a b c d e f : ι,
-    Integrable (fun u : ι → ℝ =>
-      u a * u b * u c * u d * u e * u f * gaussianWeight H u)
-  /-- Quintic-IBP integrand integrability:
-  `u_a · u_b · u_c · u_d · u_e · (Hu)_l · gW` is integrable. -/
-  int_5_Hl : ∀ a b c d e l : ι,
-    Integrable (fun u : ι → ℝ =>
-      u a * u b * u c * u d * u e * (H u) l * gaussianWeight H u)
-  /-- Quintic Fubini-IBP. -/
-  fubini_ibp_quintic : ∀ a b c d e l : ι,
-    FubiniIBPHypothesisQuintic H a b c d e l
 
 end FourthMomentInfrastructure
 
@@ -1654,9 +1439,11 @@ private lemma gaussian_linear_cubic
       rw [h_update_eq]
       show cov j k • Tcoord T l j k = cov j k * Tcoord T l j k
       simp [smul_eq_mul]
-    rw [h_slot2]
-    refine Finset.sum_congr rfl ?_
-    intro k _; ring
+    -- `h_slot2`'s match-lambda and the goal's (from `tensorContractMatrix` in
+    -- `Defs`) compile to distinct-but-defeq matcher constants, so close by
+    -- `exact` (defeq) rather than `rw` (syntactic).
+    exact (Finset.sum_congr rfl fun k _ =>
+      mul_comm (Tcoord T l j k) (cov j k)).trans h_slot2.symm
   -- hterm: 4-moment per (i,j,k,l) via cubic IBP + 2nd moment.
   have hterm : ∀ i j k l : ι,
       ∫ u : ι → ℝ, u i * u j * u k * (H u) l * gaussianWeight H u
@@ -2876,6 +2663,9 @@ private lemma cubicPartialOp_trASig
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun k _ => ?_
   rw [Finset.mul_sum]
+  -- The remaining sides differ only in defeq matcher constants (the goal's
+  -- match-lambda comes from `tensorContractMatrix` in `Defs`).
+  rfl
 
 /-- **Second trace identity for `cubicPartialOp`**:
 `trASig (A.comp Σ) ((cubicPartialOp T c).comp Σ)

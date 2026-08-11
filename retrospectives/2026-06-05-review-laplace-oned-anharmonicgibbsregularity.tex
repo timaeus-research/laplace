@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the anharmonic regularity instance, and an import the build kept}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicGibbsRegularity.lean}: the
+\texttt{Threepoint.GibbsRegularity} witness for the anharmonic Gibbs measure (the regularity data
+the FDT review consumes), with its integrability, positivity, and the perturbed pointwise
+bound/derivative lemmas. Result: \textbf{a clean fidelity pass with one docstring fix} --- a
+limit-vs-asymptotic notation correction. A candidate dead import was \emph{rejected} by the build,
+and a suspected stale cross-reference turned out correct.
+\end{abstract}
+
+\section{Setting}
+This is the regularity factory at the base of the anharmonic FDT/cumulant stack: it proves
+$\int e^{-tL}<\infty$, $Z>0$, the perturbed pointwise bound (via AM--GM and coercivity), the
+pointwise \texttt{HasDerivAt}, and assembles them into the
+\reviewref[FDT review]{2026-06-05-review-laplace-oned-anharmonicfdt}'s
+\texttt{anharmonic\_id\_gibbsRegularity}.
+
+\section{What was reviewed}
+Six theorems plus the \texttt{GibbsRegularity} witness: integrability of $e^{-tL}$ and $x\,e^{-tL}$,
+$Z>0$, the perturbed pointwise \texttt{HasDerivAt} and bound, the private bound-integrability, and
+the headline instance.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defects.} The integrability and positivity are the standard coercive-domination
+arguments; the perturbed pointwise bound is correct, with the $e^{t/(2c)}$ factor arising from
+$-thx\le t|x|\le \tfrac{tc}{2}x^2+\tfrac{t}{2c}\le\tfrac t2 L+\tfrac t{2c}$ (AM--GM plus coercivity
+$cx^2\le L$, $|h|<1$); the pointwise \texttt{HasDerivAt} is the chain rule; and the
+\texttt{GibbsRegularity} assembly feeds the dominated-differentiation theorem the right package. The
+reviewer confirmed all of this.
+
+\textbf{One docstring fix.} The module doc wrote ``$\partial_h\mathrm{Cov}_h(x,x)|_0\to
+\alpha/(\lambda^3 t)$ as $t\to\infty$'' --- but the right-hand side is $t$-dependent (it tends to
+$0$), so ``$\to$'' (a finite limit) is the wrong relation. Corrected to the asymptotic
+``$\sim\alpha/(\lambda^3 t)$'' (equivalently $t\,\partial_h\mathrm{Cov}\to\alpha/\lambda^3$); the
+value is right (the cited empirical asymptote $0.005$ is $\alpha/(\lambda^3 t)$ at
+$(\lambda,\alpha,\gamma,t)=(1,0.5,1,100)$).
+
+\section{Simplifications applied}
+\textbf{Only the docstring fix --- the candidate import removal was rejected.}
+\texttt{import Laplace.OneD.AnharmonicKappa3Affine} is referenced by no symbol (only in comments,
+which note a kappa3 lemma is ``private there and re-derived here''), so it looked dead. But removing
+it makes \texttt{integrable\_abs\_pow\_mul\_exp\_neg\_mul\_sq} an unknown identifier --- that import
+is the \emph{only} transitive path to the Mathlib Gaussian lemma here. Kept. \texttt{open
+MeasureTheory}/\texttt{Topology} and the other three imports are load-bearing.
+
+\section{Disagreements and open questions}
+None standing. Two reviewer items were resolved against the reviewer by checking: the import is
+load-bearing (build), and the ``\texttt{AnharmonicKappa3}-vs-\texttt{AnharmonicKappa3Affine}''
+cross-reference the reviewer thought stale is in fact correct ---
+\texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic} genuinely lives in \texttt{AnharmonicKappa3.lean}
+(a distinct file from the imported \texttt{Affine} one, which serves the integrability lemma).
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The same transitive lemma, opposite verdicts in adjacent files.}
+    \texttt{integrable\_abs\_pow\_mul\_exp\_neg\_mul\_sq} was the symbol behind a removable import in
+    the \reviewref[observable-monomials review]{2026-06-05-review-laplace-oned-anharmonicgibbsobservablemonomials}
+    (reachable elsewhere) but behind a \emph{kept} one here (the sole path). ``Is this import dead?''
+    is a per-file build question even for the identical underlying lemma --- never carry the verdict
+    across files.
+  \item \textbf{Check a ``stale cross-reference'' before fixing it.} The docstring named
+    \texttt{AnharmonicKappa3} while the file imports \texttt{AnharmonicKappa3Affine}; the reviewer
+    read that as drift, but the named lemma really is in the non-\texttt{Affine} file. A one-line
+    grep distinguished a correct cross-file pointer from a typo.
+  \item \textbf{``$\to$'' demands a constant right-hand side.} An asymptote with a surviving $t$ is
+    an equivalence ($\sim$) or an $o(\cdot)$ statement, not a limit; the docstring's ``$\to
+    \alpha/(\lambda^3 t)$'' silently asserted a limit that is really $0$.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining anharmonic file \texttt{AnharmonicKappa3Affine} and the harmonic
+    regularity/observable/perturbed/affine-$\kappa_3$ files; and \texttt{IntegralRemainder} (2668L).
+  \item Proof-golf forward tide: the \texttt{simp}/\texttt{simpa}/\texttt{change} shortenings the
+    reviewer flagged in the \texttt{GibbsRegularity} assembly and the perturbed bound.
+\end{itemize}
+
+\end{document}

@@ -4,7 +4,12 @@ import Laplace.OneD.Anharmonic
 import Laplace.OneD.Rescaling
 
 /-!
-# Pointwise integrand bound for the perturbative remainder
+# Integral-remainder asymptotics and the 1D anharmonic covariance (primer eq. 4.10)
+
+The file opens with a pointwise integrand bound for the perturbative remainder,
+then builds on it through the `J_n`/`I_n` integral asymptotics to the primer's
+Stage-2 headline `Cov_t[w², w] = -2α/(λ³t²) + o(t⁻²)` and companions (mean,
+variance, self-covariance, and explicit `O(t⁻²)` rates). The opening section:
 
 We combine the scalar Taylor bound from `Laplace.ScalarBound` with Gaussian
 weight factors to get pointwise estimates of the form
@@ -18,11 +23,13 @@ on the anharmonic coefficients. Under the coercivity hypothesis from
 `u` and has explicit decay in `t`, giving the global `O(1/t)` integral
 remainder estimate (next piece).
 
-This file is a straightforward consequence of the scalar bound; no new
-analytic content beyond the algebra.
+This opening section is a straightforward consequence of the scalar bound. The
+substantial analytic content — the `J_n`/`I_n` first-order expansions, the
+substitution identity, and the covariance/mean/variance asymptotics with their
+`O(t⁻²)` rates — is developed in the sections below.
 -/
 
-open Real Set MeasureTheory
+open MeasureTheory
 open scoped Nat
 
 namespace Laplace.OneD
@@ -238,7 +245,7 @@ theorem perturbation_remainder_integral_bound
       |u| ^ n * (u ^ 6 + u ^ 8) * Real.exp (-(c₀ * u ^ 2))) :=
     integrable_pow_add_pow_mul_exp_neg_mul_sq hc₀_pos n
   -- Define M = ∫ |u|^n · (u⁶+u⁸) · e^{-c₀ u²} du. M ≥ 0 since integrand is nonneg.
-  set M := ∫ u : ℝ, |u| ^ n * (u ^ 6 + u ^ 8) * Real.exp (-(c₀ * u ^ 2)) with hM_def
+  set M := ∫ u : ℝ, |u| ^ n * (u ^ 6 + u ^ 8) * Real.exp (-(c₀ * u ^ 2))
   have hM_nn : 0 ≤ M := by
     apply integral_nonneg
     intro u
@@ -398,7 +405,7 @@ the asymptotic of `J_n(t) = ∫ u^n · e^{-u²/2} · e^{-s_t(u)} du`. -/
 
 /-- Integrability of `u^n · e^{-u²/2} · e^{-s_t(u)}`. Under coercivity, the
 product is bounded by `|u|^n · e^{-c u²}`. -/
-private theorem integrable_J_n
+theorem integrable_J_n
     {lam alpha gamma : ℝ}
     (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma)
     (n : ℕ) {t : ℝ} (ht : 0 < t) :
@@ -532,10 +539,12 @@ theorem J_n_asymptotic
                (1 - rescaledPerturbation lam alpha gamma t u))| := by rw [hkey]
       _ ≤ K / t := hbound ht
 
-/-! ## Specialised asymptotics for n = 1 (per GPT-5.5-Pro recommendation)
+/-! ## Specialised low-order asymptotics `J_0`–`J_3` (per GPT-5.5-Pro recommendation)
 
 Demonstrates the full chain: `J_n_asymptotic` + moment values from Stage 1
-gives an explicit asymptotic with closed-form prefactors. -/
+gives an explicit asymptotic with closed-form prefactors. (The headline `n = 1`
+case `J_1_asymptotic` motivated the section; the `J_0`/`J_2`/`J_3` companions
+needed downstream are proved here too.) -/
 
 /-- `M_1 = ∫ u · e^{-u²/2} du = 0` (odd moment vanishes). -/
 private lemma M_1_eq_zero :
@@ -664,16 +673,6 @@ theorem J_0_asymptotic
   -- h : |J_0 - (√(2π) - 0 - (B/t) · 3√(2π))| ≤ K/t
   -- Rearranged: |J_0 - √(2π) + (B/t) · 3√(2π)| ≤ K/t
   -- So: |J_0 - √(2π)| ≤ K/t + |3B√(2π)/t| = (K + 3|B|√(2π))/t.
-  have habs : ∀ a b c : ℝ, |a - b| ≤ c → |a - (b - 0 - 3 * cubicScale lam alpha / Real.sqrt t * 0
-      - 3 * quarticScale lam gamma / t * 1 * Real.sqrt (2 * Real.pi))| = |a - b + 3 * quarticScale lam gamma / t * Real.sqrt (2 * Real.pi)| := by
-    intros; ring_nf
-  -- Just use triangle inequality directly.
-  have hpos_bound : (0 : ℝ) ≤ 3 * |quarticScale lam gamma| * Real.sqrt (2 * Real.pi) := by
-    positivity
-  have h_quartic_abs : |(quarticScale lam gamma / t * Real.sqrt (2 * Real.pi))| =
-      |quarticScale lam gamma| / t * Real.sqrt (2 * Real.pi) := by
-    rw [abs_mul, abs_div, abs_of_pos ht_pos,
-        abs_of_nonneg (Real.sqrt_nonneg _)]
   -- Use: |J_0 - √(2π)| = |J_0 - (√(2π) - (B/t)·3·√(2π)) - (B/t)·3·√(2π)|
   --                   ≤ |J_0 - (√(2π) - (B/t)·3·√(2π))| + |(B/t)·3·√(2π)|
   --                   ≤ K/t + 3|B|·√(2π)/t.
@@ -1075,8 +1074,8 @@ Hence the primer's covariance formula:
 
 The full assembly involves dividing the `I_n` asymptotics, multiplying expansions
 to compute `⟨x²⟩_t·⟨x⟩_t`, and an `IsLittleO`-level argument for the cancellation.
-That bookkeeping is tangential to the mathematical content (which is captured by
-the `I_n` asymptotics above) and is left as a follow-up.
+That bookkeeping is carried out below, culminating in
+`cov_anharmonic_J_form_asymptotic` and `cov_anharmonic_asymptotic`.
 
 The coefficient cancellation is `-5α + α = -4α` divided by `2λ³ t²` to give
 `-4α/(2λ³ t²) = -2α/(λ³ t²)`, matching the primer's `lem:laplace_cov2`
@@ -1395,9 +1394,10 @@ private lemma tendsto_main_quotient
 
 equivalently `Cov_t[x², x] = -2α/(λ³ t²) + o(t⁻²)`.
 
-This is the rescaled-coordinate form expressed via `J_n`. To bridge to the
-original `gibbsCov` formulation, multiply by the substitution-identity factor
-`λ^{3/2}`: the result `tendsto_main_quotient` gives `→ -12 A`, and dividing by
+This is the rescaled-coordinate form expressed via `J_n` (the theorem statement
+itself is the `J_n`-quotient limit, equal to the covariance limit after the
+substitution bridge). The bridge divides by the substitution-identity factor
+`λ^{3/2}`: `tendsto_main_quotient` gives `→ -12 A`, and dividing by
 `λ^{3/2}` (using `A = cubicScale lam alpha = α/(6 λ^{3/2})`) yields `-2α/λ³`. -/
 theorem cov_anharmonic_J_form_asymptotic
     {lam alpha gamma : ℝ}
@@ -1861,7 +1861,7 @@ general-purpose result for future strengthening.
 
 /-- `J_0(t)` eventually lives in `[√(2π)/2, 3√(2π)/2]` as `t → ∞`. Useful as
 a denominator bound in the explicit-rate proofs. -/
-private lemma J_0_eventually_bounded
+lemma J_0_eventually_bounded
     {lam alpha gamma : ℝ}
     (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
     ∃ T, 1 ≤ T ∧ ∀ {t : ℝ}, T ≤ t →

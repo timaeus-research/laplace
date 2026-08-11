@@ -36,7 +36,7 @@ See `projects/primer/tide-log/2026-05-06-tide-separable-potential.md` in the
 SRI repo for the deliberation log.
 -/
 
-open Real MeasureTheory
+open MeasureTheory
 
 namespace Laplace.TwoD
 
@@ -125,8 +125,6 @@ theorem gibbsCov_addSeparable_fst_snd_eq_zero
         (fun z => f z.1) (fun z => g z.2) = 0 := by
   unfold gibbsCov
   -- Step 1: ⟨f(z.1) · g(z.2)⟩ = ⟨f⟩_U · ⟨g⟩_V (separable-observable factorisation).
-  rw [show (fun z : ℝ × ℝ => f z.1 * g z.2) =
-        (fun z : ℝ × ℝ => f z.1 * g z.2) from rfl]
   rw [gibbsExpectation_separable_addSeparable f g hZU_ne hZV_ne hU hV hf hg]
   -- Step 2: ⟨f(z.1)⟩_2D = ⟨f⟩_U (collapse with g = 1).
   have hExp_f : gibbsExpectation (addSeparable U V) t (fun z => f z.1) =

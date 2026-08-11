@@ -1,0 +1,160 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+
+\title{Tide retrospective:\\\emph{Quartic and sextic as $k$-th specialisations (A1 follow-up refactor)}}
+\author{Daniel Murfet}
+\date{18 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Follow-up refactor to A1 (generic even-monomial 1D template):
+replaces 13 explicit-proof theorems across the quartic and sextic
+files with thin specialisations of A1's generic theorems. Net
+deletion 162 lines (quartic $386 \to 287$, sextic $403 \to 340$).
+Single session, no roadblocks, single-attempt clean build (8298
+jobs), zero \texttt{sorry} / \texttt{axiom} / \texttt{native\_decide}.
+Marked as a refactor rather than a tide: no deliberation needed
+(A1's deliberation handled the question of whether this refactor was
+worth doing), and the work is mechanical (one bridge lemma + a
+pattern of \texttt{convert ... using 3} per theorem).
+\end{abstract}
+
+\section{Setting}
+
+A1 landed earlier today: the generic-$k$ template for
+$L_k(x) = x^{2k}/(2k)!$, with nine theorems. GPT's A1 consult
+recommended deferring the quartic / sextic refactor to a separate
+follow-up tide, on the grounds that mixing abstraction with
+downstream rewrites makes review noisier. This Tide is that
+follow-up.
+
+The value: makes A1's abstraction visible. Before, the quartic and
+sextic files each carried ${\sim}25$-line proofs of theorems that
+A1 now subsumes; after, those theorems are 3--5 line specialisations.
+The integrability lemmas
+(\texttt{quartic\_integrable\_pow*} and
+\texttt{sextic\_integrable\_pow*}) are kept since A1 deferred them.
+
+\section{The thing formalised}
+
+Two bridge lemmas:
+
+\begin{itemize}[leftmargin=1.5em]
+\item \texttt{quarticPotential\_eq\_kthPotential : quarticPotential = kthPotential 2}
+\item \texttt{sexticPotential\_eq\_kthPotential : sexticPotential = kthPotential 3}
+\end{itemize}
+
+Each proves by \texttt{funext; simp; norm\_num} (definitional up to
+Nat reduction of $(2 \cdot 2)! = 24$ and $(2 \cdot 3)! = 720$).
+
+Then 13 thin specialisations replacing the explicit proofs:
+
+\begin{itemize}[leftmargin=1.5em]
+\item Quartic ($k = 2$, 7 theorems): the half-line integral, the
+  even and odd moments, the partition function (+ positivity), and
+  the even / odd expected values.
+\item Sextic ($k = 3$, 6 theorems): same minus the half-line
+  integral, which carries an arbitrary-$m$ signature that's strictly
+  more general than A1's `2j`-keyed version, so it stays as-is.
+\end{itemize}
+
+Each specialisation follows the pattern
+\begin{verbatim}
+rw [_Potential_eq_kthPotential]   -- when partitionFunction or
+                                   -- gibbsExpectation is involved
+have h := kth_* (k := 2 or 3) (by norm_num) ... ht
+convert h using 3
+\end{verbatim}
+where \texttt{convert ... using 3} handles the Nat-cast plumbing
+between the specific form ($24$, $4$ in the exponents) and the
+generic form ($(2 \cdot 2)!$, $((2 \cdot 2 : \mathbb N) : \mathbb R)$).
+
+\section{Proof strategy}
+
+Mechanical. The bridge lemma carries the work: once
+$\texttt{quarticPotential} = \texttt{kthPotential}\ 2$ is in scope,
+the partitionFunction and gibbsExpectation versions specialise
+directly. The moment integrals don't need the bridge because they
+already use raw $\exp(-tx^4/24)$ form, which is definitionally equal
+to $\exp(-tx^{2 \cdot 2}/((2 \cdot 2)!:\mathbb R))$ after Nat
+reduction --- \texttt{convert} handles this transparently.
+
+\section{Roadblocks and resolutions}
+
+None. Each of the 13 theorems went green on first attempt with the
+same \texttt{convert ... using 3} pattern.
+
+A small mid-test diagnostic: the bridge proof initially used
+\texttt{funext; simp} alone, which left
+$x^4 / 24 = x^4 / \uparrow\!(\textrm{Nat.factorial}\ 4)$
+unsolved. Adding \texttt{norm\_num} closes the residual Nat-cast.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{From Mathlib.} \texttt{norm\_num}, \texttt{convert},
+\texttt{funext}, \texttt{simp}.
+
+\paragraph{From the seabed.} A1's nine theorems (consumed verbatim).
+
+\paragraph{New here.} Two bridge lemmas (5 lines each); 13
+specialisation proofs (3--5 lines each) replacing the original
+${\sim}25$-line proofs.
+
+\section{Lessons}
+
+\paragraph{The \texttt{convert ... using 3} pattern handles
+Nat-reduction noise transparently.} The specialised theorems'
+statements are in the ``human'' form ($24$, $4$); the generic
+theorem's RHS is in the ``Nat-cast'' form ($(2 \cdot 2)!$,
+$((2 \cdot 2 : \mathbb N) : \mathbb R)$). The two are equal by Nat
+computation but not syntactically. \texttt{convert ... using 3} walks
+the goal three levels deep and emits the cast-equality side goals,
+all of which close by definitional Nat reduction. Worth recording as
+the standard specialisation idiom.
+
+\paragraph{Bridge lemmas should be definitional whenever possible.}
+The bridge identities are true by definitional unfold plus Nat
+reduction; each bridge proof is one line. The alternative ---
+redefining the specific potentials directly as the generic one ---
+would break unfolds elsewhere in downstream files, so the
+bridge-as-lemma approach is strictly less disruptive.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1.5em]
+\item \emph{Integrability tide.} Still pending. A1 deferred
+  \texttt{kth\_integrable\_pow*} and the quartic / sextic versions
+  remain self-contained. Once the integrability tide lands, the
+  quartic / sextic files can shrink another ${\sim}100$ lines.
+\item \emph{Refactor downstream specific lemmas.} The $n = 1$
+  expected-value, $n = 0$ linear case, and the affine covariance are
+  kept verbatim --- they already consume the even/odd theorems
+  internally, so no further gain.\footnote{Specifically
+  \texttt{quartic\_expected\_value\_sq},
+  \texttt{quartic\_expected\_value\_lin}, and
+  \texttt{quartic\_cov\_affine}.} Skip.
+\item \emph{Sextic half-line integral.} The sextic's half-line
+  integral takes an arbitrary $m : \mathbb N$ (not just $2 \cdot n$).
+  A1's analogue is
+  keyed on $2 \cdot j$ and is therefore weaker. The sextic version
+  was kept verbatim. A genuinely-arbitrary-$m$ generic version in A1
+  would supersede it; deferred until needed.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro's A1 consult set the structural decision to do the
+refactor as a separate tide, which is what made this clean. No
+fresh GPT consult was needed.
+
+\end{document}

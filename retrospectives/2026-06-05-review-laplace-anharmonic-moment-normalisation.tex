@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{moment-normalisation --- partition derivatives are Gibbs moments, and two
+loose glosses}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicMomentNormalisation.lean}, which divides the
+partition-derivative result $Z^{(n)}(0)=\int(-(t x))^n e^{-tL}$ by $Z(0)=\int e^{-tL}$ to identify it with the
+unperturbed Gibbs expectation $\langle(-(t x))^n\rangle_0=\texttt{gibbsExp}$ --- tying the laplace
+partition-derivative arc to \texttt{Threepoint.gibbsExp}. Result: \textbf{a clean theorem (statement and proof
+sound), no edits}, plus two report-only prose imprecisions in the closing docstring gloss.
+\end{abstract}
+
+\section{Setting}
+The laplace anharmonic arc computes iterated $h$-derivatives of the perturbed partition $Z(h)$. This file is
+the normalisation step: $Z^{(n)}(0)/Z(0)$ is the $n$-th raw Gibbs moment of the derivative-insertion observable,
+expressed through the cross-seabed \texttt{Threepoint.gibbsExp} used by the FDT capstone.
+
+\section{What was reviewed}
+The single public theorem \texttt{iteratedDeriv\_partition\_div\_eq\_gibbsExp}.
+
+\section{Fidelity / soundness findings}
+\textbf{Theorem and proof sound; GPT found no theorem-level mismatch.} After
+\texttt{rw [iteratedDeriv\_weightedPartition\_zero \ldots]} the numerator is $\int(-(t x))^n e^{-tL}$; at $h=0$,
+\texttt{gibbsExp (volume) L id t 0 ($x\mapsto(-(t x))^n$)} is the same quotient with denominator $\int e^{-tL}$,
+and \texttt{unfold} + \texttt{simp [pow\_zero, one\_mul]} reduces \texttt{gibbsExp}'s denominator
+($\int(-(t x))^0 e^{-tL}$) to $\int e^{-tL}$, matching $Z(0)$. The hypotheses ($\lambda,\gamma>0$,
+$\alpha^2<3\lambda\gamma$, $t>0$) are the anharmonic well-definedness regime, consumed by the cited derivative
+theorem.
+
+\paragraph{Two report-only prose imprecisions (closing gloss).}
+\begin{itemize}[noitemsep]
+  \item The closing sentence calls this ``the $n$-th derivative of the \emph{log-partition's} first integral''.
+    The theorem is $Z^{(n)}/Z$ (raw moments); $(\log Z)^{(n)}$ for $n\ge2$ are \emph{cumulants}, not raw
+    moments. ``The log-partition's first integral'' defensibly means the integral $Z$ \emph{inside} $\log Z$
+    (whose normalised derivative is the raw moment), but it is mis-readable.
+  \item ``the $n$-th raw moment of the \emph{perturbation observable}'': the formal observable is
+    $(-(t x))^n=(-tA)^n$ --- moments of the derivative-insertion $-tA$, not the unscaled $A^n=x^n$.
+\end{itemize}
+Both are \emph{report-only}: the docstring's \emph{explicit formulas} two lines above are correct and present
+($Z^{(n)}(0)/Z(0)=\langle(-(t x))^n\rangle_0$, with the observable written as $(-(t x))^n$), so the body
+self-corrects the loose closing prose. This is the defensible-gloss class (cf.\ the
+\reviewref[patterning naming]{2026-06-05-review-threepoint-patterning-coordinate} and
+\reviewref[stale-title]{2026-06-05-review-threepoint-moorepenrose-unique} notes), not the objective
+wrong-value class of the landed $\kappa_3=2$ / $Z=s\!\int e^{-sK}$ fixes; the precise reword is the author's
+call. (A third item GPT raised --- a missing $\gamma$ in the potential --- was an artefact of the reviewer's
+prompt summary, not the file, which correctly uses the 3-parameter \texttt{anharmonicPotential}.)
+
+\section{Simplifications applied}
+None. GPT's (B) findings (collapse \texttt{unfold;simp} to one \texttt{simp}; drop the in-proof comment) are
+golf, declined; \texttt{open MeasureTheory} is load-bearing (\texttt{Measure}/\texttt{volume} in the
+statement), and the $\gamma$/discriminant/$t$ hypotheses are consumed by the cited derivative theorem (not
+redundant).
+
+\section{Disagreements and open questions}
+None; GPT and I agree the core is sound and the glosses are prose-only.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{When an explicit formula and a prose gloss sit side by side, the gloss's looseness is
+    report-only.} The docstring states the exact identity $Z^{(n)}/Z=\langle(-(t x))^n\rangle$ explicitly, then
+    paraphrases it as ``the log-partition\ldots raw moment of the perturbation observable''. The paraphrase
+    drops the $-t$ scaling and risks a $\log Z$/cumulant misreading, but the adjacent exact formula prevents
+    any actual confusion --- so it is a clarity nit for the author, not a correctness fix. The reviewer's job
+    is to \emph{flag} the paraphrase, not to rewrite a self-clarified docstring.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Author (optional): reword the closing gloss --- ``the partition $Z$ (the integral inside $\log Z$)''
+    and ``the $n$-th raw moment of the derivative-insertion $-tA$'' --- for precision.
+  \item The laplace OneD anharmonic arc has many never-reviewed siblings (\texttt{Anharmonic\{FDT,SecondCumulant,
+    ThirdCumulant,CumulantsLogPartition,\ldots\}}) --- a fresh-context review arc for the next session.
+\end{itemize}
+
+\end{document}

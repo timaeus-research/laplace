@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the large-$t$ FDT asymptote --- a clean sign-tracking composition}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicFDTAsymptotic.lean}: the large-$t$ asymptote
+$t\cdot\partial_h\mathrm{Cov}_h(x,x)|_0\to\alpha/\lambda^3$, obtained by composing the FDT identity
+$\partial_h\mathrm{Cov}=-t\,\kappa_3$ with the third-cumulant asymptotic $t^2\kappa_3\to-\alpha/\lambda^3$.
+Result: \textbf{a clean fidelity pass, no edits} --- the sign chain and limit value check out, matching the
+HMC-validated $\partial_h\mathrm{Cov}\sim\alpha/(\lambda^3 t)$.
+\end{abstract}
+
+\section{Setting}
+The FDT capstone proved the unconditional identity $\partial_h\mathrm{Cov}_h(x,x)|_0=-t\,\kappa_3(x,x,x)$ for
+the anharmonic Gibbs measure and deferred its $t\to\infty$ asymptote. This file lands it by composing with the
+reviewed third-cumulant asymptotic, recovering the closed-form value validated empirically (HMC) in the 1D
+FDT-identity experiment.
+
+\section{What was reviewed}
+The single public theorem \texttt{gibbsCov\_deriv\_anharmonic\_asymptotic}.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.} The proof is a two-fact composition with careful sign-tracking:
+\begin{itemize}[noitemsep]
+  \item \textbf{Sign chain}: $t^2\kappa_3\to-\alpha/\lambda^3$ (\texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic});
+    \texttt{.neg} gives $-(t^2\kappa_3)\to-(-\alpha/\lambda^3)$, and the local
+    \texttt{heq}$:-(-\alpha/\lambda^3)=\alpha/\lambda^3$ delivers the limit $\alpha/\lambda^3$ (not
+    $-\alpha/\lambda^3$).
+  \item \textbf{Composition}: on $t>0$, the FDT identity's \texttt{.deriv} rewrites
+    $\partial_h\mathrm{Cov}|_0=-t\,\kappa_3$, so $t\cdot\partial_h\mathrm{Cov}=t(-t\kappa_3)=-(t^2\kappa_3)$ ---
+    exactly the function in the limit, so \texttt{.congr'} closes it.
+  \item \textbf{Value and power}: $\alpha/\lambda^3$, the rescaled FDT asymptote $\partial_h\mathrm{Cov}\sim\alpha/(\lambda^3 t)$.
+\end{itemize}
+The only filter fact is eventual $t>0$; the $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$ hypotheses are
+consumed by the two reviewed dependencies.
+
+\section{Simplifications applied}
+None. GPT's (B) finding (compress the single-use \texttt{hlim}/\texttt{heq} to a one-line \texttt{simpa} from
+the negated cumulant asymptotic) is golf, declined; no confident dead hypothesis/import, and \texttt{open
+Topology} was left (``not confidently dead from this file alone'' --- uncertain, so kept per the
+build-arbitration discipline).
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{For an asymptote-composition file, the fidelity surface is the sign and the rescaling power.}
+    The mathematical content is one \texttt{.neg} (does $-(-\alpha/\lambda^3)=\alpha/\lambda^3$?) and one
+    multiplication ($t\cdot(-t\kappa_3)=-(t^2\kappa_3)$, matching the rescaled $t^2$ in the cumulant
+    asymptotic). Both are one-line checks; the limit's \emph{sign} (here, the asymptote is $+\alpha/\lambda^3$
+    because $\kappa_3$ itself $\to-\alpha/\lambda^3$) is the single thing most worth an independent eye.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The laplace OneD anharmonic arc has many never-reviewed siblings --- the second/third cumulant, the
+    cumulants-from-log-partition, the FDT mean asymptotic, the general-$h$ susceptibility, and more --- a
+    fresh-context review arc.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,121 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+
+\newcommand{\deriv}{\operatorname{deriv}}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{the large-\(t\) asymptote of the cross-susceptibility}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-31}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The asymptotic capstone deferred by the FDT-capstone tide: the $t\to\infty$
+limit of the anharmonic cross-susceptibility,
+\[
+  t\cdot\frac{\partial}{\partial h}\Big|_0\mathrm{Cov}_h(x,x)
+    = -t^2\kappa_3 \;\longrightarrow\; \frac{\alpha}{\lambda^3}.
+\]
+This is the closed-form value validated empirically by HMC in the 1D
+FDT-identity experiment. Proof: compose the unconditional three-point identity
+$\partial_h\mathrm{Cov}_h|_0 = -t\kappa_3$ with the third-cumulant asymptotic
+$t^2\kappa_3\to-\alpha/\lambda^3$ via \texttt{Tendsto.congr'}. New file
+\texttt{AnharmonicFDTAsymptotic.lean}; builds clean first try, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+The FDT-capstone tide\footnote{\tideref{2026-05-30-tide-anharmonic-fdt-capstone}.}
+made the anharmonic three-point identity $\partial_h\mathrm{Cov}_h(x,x)|_0 =
+-t\,\kappa_3(x,x,x)$ unconditional but left its $t\to\infty$ asymptote as an
+explicit TODO --- the closed-form $\alpha/\lambda^3$ that the 1D FDT-identity
+experiment had measured\footnote{\experimentref{2026-05-23-experiment-fdt-identity-1d}:
+HMC at $(\lambda,\alpha,\gamma,t)=(1,0.5,1,100)$, asymptote $0.005$ matched
+within $2.5\sigma$.}. The seabed already carried the third-cumulant asymptotic
+$t^2\kappa_3\to-\alpha/\lambda^3$; both it and the FDT identity are stated in
+terms of \texttt{Threepoint.kappa3}, so they compose with no
+namespace bridge. (The companion \emph{mean} asymptote
+$\partial_h\langle x\rangle|_0\to-1/\lambda$ would need a
+\texttt{Threepoint}-to-\texttt{Laplace} covariance bridge and is left as a
+follow-up.)
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the anharmonic potential ($\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$),
+$\ t\cdot\deriv\big(h\mapsto\mathrm{Cov}_h(x,x)\big)(0)\to\alpha/\lambda^3$ as
+$t\to\infty$ (a \texttt{Filter.Tendsto} at \texttt{atTop}).
+\end{quote}
+
+\section{Proof strategy}
+
+Two lines of real content. First, $-(t^2\kappa_3)\to\alpha/\lambda^3$: negate
+the third-cumulant asymptotic ($t^2\kappa_3\to-\alpha/\lambda^3$) and simplify
+$-(-\alpha/\lambda^3)=\alpha/\lambda^3$ with \texttt{ring}. Second, on $t>0$
+(\texttt{eventually\_gt\_atTop}) the FDT identity gives
+$\deriv(\mathrm{Cov}_h)(0)=-t\kappa_3$, so $t\cdot\deriv(\mathrm{Cov}_h)(0)=
+-(t^2\kappa_3)$ by \texttt{ring}; \texttt{Tendsto.congr'} transfers the limit
+across this eventual equality.
+
+\section{Roadblocks and resolutions}
+
+None --- first-try build. The two ingredients were designed to compose: the
+shared \texttt{Threepoint.kappa3} phrasing means no definitional bridge, and
+\texttt{Tendsto.congr'} over \texttt{eventually\_gt\_atTop} is the standard way
+to discharge the ``identity only holds for $t>0$'' caveat against an
+\texttt{atTop} limit.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} The \texttt{Tendsto} combinators and atTop
+helper\footnote{\texttt{Filter.Tendsto.neg}, \texttt{Filter.Tendsto.congr'},
+\texttt{eventually\_gt\_atTop}.}, plus \texttt{HasDerivAt.deriv} and
+\texttt{ring}.
+
+\textbf{Seabed (reused).} The unconditional FDT three-point identity and the
+third-cumulant asymptotic --- both from this session / the prior anharmonic
+work.
+
+\textbf{New.} The cross-susceptibility asymptote theorem. About 30 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{A deferred ``asymptotic TODO'' is cheap once both factors exist in
+  the same namespace.} The whole tide is a \texttt{Tendsto.congr'} between a
+  negated existing limit and a \texttt{ring}-rewritten existing identity; the
+  hard analysis was paid for upstream.
+\item \textbf{\texttt{eventually\_gt\_atTop} bridges a $t>0$ identity to an
+  \texttt{atTop} limit.} The pointwise identity need only hold eventually.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Mean asymptote $\partial_h\langle x\rangle|_0\to-1/\lambda$.}
+  Needs a small definitional bridge identifying the \texttt{Threepoint}
+  covariance at $h=0$ with the \texttt{Laplace} one,\footnote{To consume
+  \texttt{cov\_self\_anharmonic\_asymptotic}, stated for \texttt{Laplace.gibbsCov}.}
+  then the same \texttt{Tendsto.congr'} shape.
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.}
+\end{itemize}
+
+\end{document}

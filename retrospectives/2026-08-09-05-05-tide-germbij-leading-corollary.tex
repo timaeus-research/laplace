@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: identifiability from leading-part structure}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+Tenth tide of the germbij arc, making its two chains structurally parallel.
+The 1D chain runs analyticity $\to$ growth bound $\to$ sector bound $\to$
+composite $\to$ composed corollary; the multivariate chain had every link
+except the last. This tide composes the leading-part
+instantiation\footnote{\tideref{2026-08-09-04-35-tide-germbij-leading-part}.}
+with the multivariate composite, mirroring the 1D analytic
+corollary.\footnote{\tideref{2026-08-09-03-25-tide-germbij-analytic-corollary}.}
+
+\section{The thing formalised}
+
+One theorem in \texttt{Laplace/Multi/LeadingIdentifiability.lean}:\\
+\texttt{leading\_part\_pencil\_difference\_lower\_bound}, sorry-free
+with zero warnings. For $L_1, L_2 \geq 0$ on `$\iota \to \mathbb{R}$' whose
+difference has a continuous homogeneous leading part $P$ of degree $m$
+(nonzero at a direction of norm $3/2$, remainder $O(\|x\|^{m+1})$), with
+$L_1 + L_2 \leq C_0 \|w\|^2$ on the ball of radius $R$ and a bump $\psi$
+equal to $1$ there: there exist $\kappa > 0$ and
+$T_0 = \max(4/R^2,\, u_0^{-2})$ such that for all $t \geq T_0$, under the
+per-$t$ integrability premises,
+\[
+\kappa \cdot t \cdot t^{-m - d/2}
+\;\leq\;
+\int (L_2 - L_1)\, \psi\, \bigl( e^{-t L_1} - e^{-t L_2} \bigr)\, dw .
+\]
+The packaged constant, positive by \texttt{ENNReal.toReal\_pos}, is
+$\kappa = \mathrm{vol}(S) \cdot c^2 e^{-4 C_0}$ with $S, c$ from the
+instantiation.
+
+\section{Proof strategy}
+
+Pure composition plus one scale calculation: the threshold $T_0$ makes both
+the window condition $4 \leq R^2 t$ and the instantiation's scale condition
+$(\sqrt t)^{-1} \leq u_0$ hold simultaneously; the latter converts through
+$u_0^{-1} \leq \sqrt t$ via \texttt{Real.sqrt\_sq},
+\texttt{Real.sqrt\_le\_sqrt}, and the inverse-comparison lemma. The final
+step is the multivariate composite applied verbatim, with one \texttt{ring}
+re-association of the packaged constant.
+
+\section{Roadblocks and resolutions}
+
+One naming iteration: \texttt{inv\_le\_inv\_of\_le} no longer exists in
+current Mathlib; the stable idiom for ``$a^{-1} \leq b$ iff $b^{-1} \leq a$''
+is \texttt{inv\_le\_comm}$_0$. Otherwise the composition compiled
+directly.
+Operationally this tide again ran concurrently with the parallel session's
+tides on the repo, without interference.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: square-root and inverse comparison lemmas,
+\texttt{ENNReal.toReal\_pos}. New: the threshold bookkeeping and the
+packaging. As with the 1D corollary, the mathematical content was already
+merged; the value is that the multivariate chain now has the same
+user-facing shape as the 1D one.
+
+\section{Lessons}
+
+Renamed order-of-operations lemmas (\texttt{inv\_le\_inv\_of\_le} and kin)
+are the most common single-error class in this arc; when one fails, look
+for the \texttt{\_comm}$_0$ iff-form, which has been stable.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item The multivariate turnkey: discharge the per-$t$ premises from
+continuity and compact support, as in the 1D turnkey tide (the three
+integrability lemmas generalise with `$\iota \to \mathbb{R}$' in place of
+$\mathbb{R}$ almost verbatim).
+\item A \texttt{ContDiff}-to-remainder bridge for concrete callers.
+\item Note annotation: bump the pin and tag the multivariate discussion
+with the leading-part corollary once merged.
+\end{itemize}
+
+\end{document}

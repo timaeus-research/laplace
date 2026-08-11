@@ -1,0 +1,59 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the multivariate opener\\
+(H-recovery programme, stages H0--H1)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+With the one-dimensional Theorem~3.1 complete at every order, the
+note's remaining commission is the multivariate statement --- also
+the Susceptibility Primer's missing Stage~3. The scoping consult
+(archived in the tide log, with the note attached) made four rulings
+that shape the whole programme: recover the Hessian first, before any
+jet package, since $H$-recovery alone forces every new foundation;
+represent the ambient space as
+$\mathrm{EuclideanSpace}\ \mathbb{R}\ (\mathrm{Fin}\ d)$; build
+\emph{one} project-local dilation wrapper so downstream proofs never
+touch Mathlib's change-of-variables surface; and --- the structural
+prize --- handle the eventual degree-$k$ tensor injectivity by
+covariance-Gram positive-definiteness from the Gaussian's full
+support, the same open-support argument as one dimension, avoiding
+Wick/Isserlis entirely.
+
+\section{The thing formalised}
+
+Three declarations in
+\texttt{Laplace/Multi/Dilation.lean}\footnote{\texttt{EuclidD},
+\texttt{integral\_dilation}, \texttt{setIntegral\_dilation}.}: the
+ambient abbreviation, the dilation wrapper
+$\int f = q^d \int f(q \cdot x)$ for $q > 0$, and its indicator form
+for the expanding domains of the later dominated-convergence stage.
+The consult's named trap --- the pushforward carries $q^{-d}$ while
+the substitution carries $q^d$ --- is fixed here once, and the
+orientation was checked numerically first (the $d = 2$
+Gaussian-with-cubic integral and a box indicator, both matching to
+the printed precision).
+
+\section{Notes}
+
+The only friction was the catalogued \texttt{Measure.}-namespace
+gotcha, striking for \texttt{integral\_comp\_smul} exactly as the
+catalogue predicts for its 1D sibling. Stages H2--H6 follow: the
+Gaussian package via whitening (the flagged API spike --- Mathlib's
+multivariate Gaussian infrastructure should be surveyed first), the
+local quadratic rescaling, the expanding-domain dominated
+convergence, normalization, and the pairwise Hessian recovery.
+
+\end{document}

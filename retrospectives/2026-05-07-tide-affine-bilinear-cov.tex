@@ -1,0 +1,290 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{₃}{\ensuremath{_3}}
+\newunicodechar{₄}{\ensuremath{_4}}
+
+\title{Tide retrospective:\\affine-bilinear specialisation of the Gibbs covariance}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This is a 100-line tide that lands the deferred Candidate~B of Tide~12
+(the 2D pure-quartic refactor): the affine-bilinear specialisation of
+\texttt{gibbsCov}. With the algebra introduced in Tide~I2 (\texttt{gibbsCov\_add}, \texttt{gibbsCov\_smul},
+\texttt{gibbsCov\_const}; eleven lemmas) freshly available, the headline
+identity
+\[
+  \mathrm{Cov}_t[a_1\varphi + b_1,\; a_2\psi + b_2]
+  \;=\; a_1 \cdot a_2 \cdot \mathrm{Cov}_t[\varphi, \psi]
+\]
+collapses to a thin composition of one-sided affine reductions. The tide
+exists primarily as the first non-trivial \emph{consumer} of the I2
+algebra, validating that the algebra is at the right level of abstraction
+for downstream multilinearity work. Single session, GPT-5.5~Pro and
+Claude voted Candidate~A on the first round, zero-friction proof, 0
+\texttt{sorry}.
+\end{abstract}
+
+\section{Setting}
+
+The 2D pure-quartic tide (1~May 2026) deferred a "Candidate~B": an
+affine-bilinear template for the unperturbed Gibbs covariance. Tide~12's
+deliberation log records the reasoning: at that point in time, every
+covariance bash on $\mathrm{Cov}_t[a_1 x + b_1, a_2 x + b_2]$-shaped
+expressions had to unfold \texttt{gibbsExpectation} and rewrite by hand,
+because \texttt{gibbsCov} carried no algebra of its own. The right move
+was to land the algebra first --- and only \emph{then} land a thin
+affine-bilinear corollary as the demonstration that the algebra worked.
+
+The two halves played out as separate tides on 7~May. Tide~I2 added the
+eleven \texttt{gibbsCov} algebra lemmas to \texttt{Laplace/Gibbs.lean}
+and \texttt{Laplace/Multi/Basic.lean}: symmetry, scalar pulling on each
+slot (unconditional), constant-collapse on each slot (unconditional), and
+additivity on each slot (conditional on integrability of the four cross
+products). With that fresh in cache, the present tide closes Candidate~B
+in a single 100-line file that does almost nothing except chain the
+algebra together.
+
+The tide is therefore a \emph{narrative-closer} in the strictest sense:
+it does not prove a new mathematical fact (the affine-bilinear identity
+is content-free given bilinearity); it proves that the I2 abstraction is
+load-bearing.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For a 1D Gibbs measure $\exp(-t \cdot L(x))\,\mathrm{d}x$ on $\mathbb{R}$
+and any pair of observables $\varphi, \psi : \mathbb{R} \to \mathbb{R}$
+satisfying the four base integrability conditions on $\exp(-tL)$,
+$\varphi\cdot\exp(-tL)$, $\psi\cdot\exp(-tL)$, and
+$\varphi\psi\cdot\exp(-tL)$, the Gibbs covariance
+$\mathrm{Cov}_t[\varphi, \psi]
+   = \langle\varphi\psi\rangle_t - \langle\varphi\rangle_t \langle\psi\rangle_t$
+satisfies the affine-bilinear identity
+\[
+  \mathrm{Cov}_t[a_1 \varphi + b_1,\; a_2 \psi + b_2]
+  \;=\; a_1 \cdot a_2 \cdot \mathrm{Cov}_t[\varphi, \psi]
+  \qquad (a_1, b_1, a_2, b_2 \in \mathbb{R}).
+\]
+The constant offsets drop out; the linear scalars factor.
+\end{quote}
+
+The Lean signature of the headline\footnote{In
+\texttt{Laplace/AffineBilinearCov.lean}.}:
+
+\begin{verbatim}
+theorem gibbsCov_affine_affine
+    (L : ℝ → ℝ) (t : ℝ) (a₁ b₁ a₂ b₂ : ℝ) (φ ψ : ℝ → ℝ)
+    (h_exp : Integrable (fun x => Real.exp (-(t * L x))))
+    (h_φ   : Integrable (fun x => φ x * Real.exp (-(t * L x))))
+    (h_ψ   : Integrable (fun x => ψ x * Real.exp (-(t * L x))))
+    (h_φψ  : Integrable (fun x => φ x * ψ x * Real.exp (-(t * L x)))) :
+    gibbsCov L t (fun x => a₁ * φ x + b₁) (fun x => a₂ * ψ x + b₂)
+      = a₁ * a₂ * gibbsCov L t φ ψ
+\end{verbatim}
+
+Two one-sided helper theorems
+(\texttt{gibbsCov\_affine\_left}, \texttt{gibbsCov\_affine\_right}) take
+the same four hypotheses and reduce a single affine slot to a scalar
+multiple; the headline is a two-rewrite composition.
+
+\section{Proof strategy}
+
+The whole proof fits in three rewrite chains, one per theorem.
+
+\paragraph{One-sided affine reduction.} For
+$\mathrm{Cov}_t[a\varphi + b, \psi]$, split via
+\texttt{gibbsCov\_add\_left} into
+$\mathrm{Cov}_t[a\varphi, \psi] + \mathrm{Cov}_t[b, \psi]$;
+the second summand is zero by \texttt{gibbsCov\_const\_left}; the first
+factors as $a \cdot \mathrm{Cov}_t[\varphi, \psi]$ by
+\texttt{gibbsCov\_smul\_left}. The four integrability hypotheses
+\texttt{gibbsCov\_add\_left} requires (on $a\varphi\cdot\exp$,
+$b\cdot\exp$, $a\varphi\psi\cdot\exp$, $b\psi\cdot\exp$) all derive
+from the four base hypotheses by \texttt{Integrable.const\_mul} and a
+\texttt{simpa [mul\_assoc]} cleanup.
+
+The right-mirror is three lines: \texttt{gibbsCov\_symm} flips the
+slots, \texttt{gibbsCov\_affine\_left} on the swapped pair runs the same
+reduction, \texttt{gibbsCov\_symm} flips back. The only new hypothesis
+needed is $\mathrm{Integrable}(\psi\varphi\cdot\exp)$, derived from
+$\mathrm{Integrable}(\varphi\psi\cdot\exp)$ by
+\texttt{simpa [mul\_comm]}.
+
+\paragraph{Headline.} For the headline,
+$\mathrm{Cov}_t[a_1\varphi + b_1, a_2\psi + b_2]$ is reduced by
+\texttt{gibbsCov\_affine\_left} (with $\psi$ instantiated to the affine
+combination $a_2\psi + b_2$) to $a_1 \cdot \mathrm{Cov}_t[\varphi, a_2\psi + b_2]$.
+The right slot still carries an affine combination, but
+\texttt{gibbsCov\_affine\_right} reduces this directly:
+$a_2 \cdot \mathrm{Cov}_t[\varphi, \psi]$. Combine with
+\texttt{$\leftarrow$ mul\_assoc} to fold $a_1 \cdot (a_2 \cdot \cdot) = a_1 a_2 \cdot \cdot$.
+
+The substantive friction in the headline proof is constructing the
+\emph{mixed} integrability witnesses for the first
+\texttt{gibbsCov\_affine\_left} application, which requires
+$\mathrm{Integrable}((a_2\psi + b_2)\cdot\exp)$ and
+$\mathrm{Integrable}(\varphi\cdot(a_2\psi + b_2)\cdot\exp)$. Each
+expands to a sum of two \texttt{const\_mul} witnesses; this is where
+GPT-5.5~Pro's deliberation flag landed (see below).
+
+\section{Roadblocks and resolutions}
+
+Only one substantive friction, and it was anticipated by
+GPT-5.5~Pro at deliberation time.
+
+\paragraph{The \texttt{Pi.add}-vs-single-lambda mismatch.}
+\texttt{Integrable.add} produces \texttt{Integrable (f + g)} where
+\texttt{f + g} is \texttt{Pi.add} (a sum of two functions, not a single
+lambda). The first naive attempt to construct
+$\mathrm{Integrable}(\varphi\cdot(a_2\psi + b_2)\cdot\exp)$ was
+
+\begin{verbatim}
+have := (h_φψ.const_mul a₂).add (h_φ.const_mul b₂)
+simpa [add_mul, mul_assoc, mul_add, mul_comm] using this
+\end{verbatim}
+
+whose target is the canonical single-lambda integrability of
+$\varphi \cdot (a_2 \psi + b_2) \cdot \exp(-tL)$. But
+\texttt{simpa} cannot close the gap because the underlying
+\texttt{Pi.add} structure of the hypothesis is opaque to the simp set
+unless we explicitly normalise the lambda first. This is the failure
+mode flagged in the laplace \texttt{CLAUDE.md} from prior tides.
+
+The fix was structural rather than tactical:
+
+\begin{verbatim}
+have eq : (fun x => φ x * (a₂ * ψ x + b₂) * exp(-tL)) =
+          (fun x => a₂ * (φ x * ψ x * exp(-tL)) + b₂ * (φ x * exp(-tL))) := by
+  funext x; ring
+rw [eq]
+exact (h_φψ.const_mul a₂).add (h_φ.const_mul b₂)
+\end{verbatim}
+
+By writing the equality in single-lambda form on both sides
+(\texttt{funext + ring}), the goal after \texttt{rw [eq]} is the
+canonical \texttt{Pi.add} that
+\texttt{(h\_φψ.const\_mul a₂).add (h\_φ.const\_mul b₂)} delivers
+verbatim. No \texttt{simpa} cleanup needed.
+
+\paragraph{Deliberation flag.} GPT-5.5~Pro's response identified
+exactly this issue at deliberation time: \emph{``if you split an affine
+side while the other side is still affine, \texttt{const\_mul} alone is
+not quite enough for the first mixed witnesses; you also need
+\texttt{Integrable.add} after expanding $(a_1\varphi)(a_2\psi + b_2)\exp$
+and $b_1(a_2\psi + b_2)\exp$. After that, the remaining witnesses are
+just \texttt{const\_mul} + simp/ring.''} The deliberation also explicitly
+recommended exposing one-sided affine helpers \emph{``as reusable building
+blocks''}, which is the structure the implementation took.
+
+The voting converged on the first round: both Claude and GPT-5.5~Pro
+backed Candidate~A (single affine-bilinear theorem with the four base
+integrability hypotheses); Candidate~B (no constants) was deemed
+redundant with \texttt{smul\_*}, and Candidate~C (full bilinearity, four
+cross terms, sixteen integrability hypotheses) was over-scoped for a
+narrative-closer tide.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib.} \texttt{Integrable.const\_mul},
+\texttt{Integrable.add}, the underlying \texttt{Pi.add} ordering. Standard
+ring tactics. No new Mathlib search needed.
+
+\paragraph{New.} Three theorems and zero infrastructure
+(\texttt{gibbsCov\_affine\_left}, \texttt{gibbsCov\_affine\_right},
+\texttt{gibbsCov\_affine\_affine}). Everything else --- the algebra
+itself, the integrability lemmas, the Gibbs definitions --- was already
+present from Tide~I2 and the earlier seabed.
+
+The tide stays exactly as small as it should be: 101 lines, three
+theorems, no helpers exported beyond what each theorem visibly needs.
+
+\section{Lessons}
+
+\begin{enumerate}[leftmargin=*]
+
+\item \textbf{The \texttt{Pi.add}-vs-single-lambda fix is structural,
+not tactical.} A \texttt{funext + ring} equality is more reliable than
+chained \texttt{simpa} normalisations for bridging the
+\texttt{Integrable.add} output to a single-lambda target. Worth promoting
+to the laplace \texttt{CLAUDE.md} as the canonical workaround pattern;
+the existing entry there flags the symptom but not the cleanest fix.
+
+\item \textbf{One-sided helpers are nearly free when the proof
+composes.} The two one-sided affine reductions cost nothing extra
+beyond what the headline would have needed inline;
+exposing them widens the public surface area without widening the
+implementation. GPT-5.5~Pro's deliberation flag here turned out to be
+the right architectural call.
+
+\item \textbf{The right time to land a thin consumer is right after the
+infrastructure tide.} Tide I2 landed the algebra; this tide consumed it
+on a problem that had been deferred specifically for this purpose.
+Without I2 the present tide would have been a $\sim$200-line bash;
+\emph{with} I2 freshly cache-warm, it was 100 lines and one round of
+deliberation. Re-doing the same work \emph{without} the algebra in
+place would have meant unfolding \texttt{gibbsExpectation}, rewriting
+the products by \texttt{integral\_add} and \texttt{integral\_const\_mul}
+hand-rolled, and re-proving constants drop out from scratch --- the
+exact pattern that has appeared in three consumer files
+(\texttt{OneD/Quartic.lean}, \texttt{TwoD/PureQuartic.lean},
+\texttt{TwoD/SemiDegenerate.lean}). The strategic-refactor cleanup on
+those files (Candidate~P1 in the v3 survey) is the natural next
+narrative beat.
+
+\end{enumerate}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=*]
+
+\item \textbf{Cleanup of the older affine-cov consumer files.} Three
+files in the laplace seabed manually unfold \texttt{gibbsExpectation}
+for affine-cov computations that the new \texttt{gibbsCov\_affine\_*}
+family makes one-line.\footnote{The 1D quartic and the 2D pure-quartic
+and semi-degenerate consumer-site bashes; pointers in the v3 survey.}
+Estimated $\sim$150 line net deletion, $\sim$200 lines if the cleanup
+spans the 2D add-separable file too. Process-flavoured but cost-positive.
+
+\item \textbf{The 2D analogue.} The 2D \texttt{gibbsCov} on
+$(\iota \to \mathbb{R})$ has a parallel-mirror algebra in the
+multi-index Gibbs file; a multi-index analogue of the affine-bilinear
+theorem would take $\sim$30 lines and unblock a parallel cleanup of
+the 2D pure-quartic affine-cov bash. Best done in the same tide as
+the cleanup if and when that tide is taken.
+
+\item \textbf{Threepoint-side analogue.} The threepoint
+\texttt{gibbsCov} (perturbed-Gaussian, with $h \cdot A$ in the
+potential) has no algebra of its own yet; an analogous port (call it
+``N1'' in the v3 survey) of the I2 algebra would make the C1 / G2
+parallel sessions' kappa-3 strict-improvements collapse from
+$\sim$50-line bashes to $\sim$5-line specialisations. The two parallel
+sessions on C1 / G2 currently in flight will surface whether the port
+is needed.
+
+\item \textbf{Promote \texttt{gibbsCov\_affine\_*} to the lemmas section
+of \texttt{Laplace/Gibbs.lean}.} If the cleanup tide above lands, the
+helpers earn enough consumer sites that they belong with the
+\texttt{gibbsCov\_*} algebra rather than in their own file.
+
+\end{itemize}
+
+\end{document}

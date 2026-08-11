@@ -1,0 +1,174 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{∫}{\ensuremath{\int}}
+
+\title{Tide retrospective:\\\emph{generic-$(k_1, k_2)$ 2D separable monomial partition asymptotic}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{2026-05-21}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+First sub-tide of v27's generic-$(k_1, k_2)$ 2D programme. Lifts the
+quartic-sextic 2D partition asymptotic (Z2, 2026-05-18) from
+$(k_1, k_2) = (2, 3)$ to arbitrary $k_1, k_2 \ge 1$. Four headlines
+in a new file: exact factorisation through the 1D partitions, exact
+$\mathrm{const}\cdot t^{-1/(2k_1) - 1/(2k_2)}$ form, rescaled
+\texttt{Tendsto}, and \texttt{IsEquivalent}. Build clean (8300 jobs);
+zero \texttt{sorry} / \texttt{axiom} / \texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+This session's seventh tide, and the first pivot to the laplace
+seabed after a long modes-lean arc. The 1D generic-monomial template
+landed on 2026-05-18 with a parametric closed-form 1D partition
+function.\footnote{\texttt{partitionFunction\_kthPotential} in
+\texttt{Laplace/OneD/MonomialPotential.lean}.} The 2D
+\texttt{addSeparable} infrastructure provides a
+factorisation-through-axes lemma.\footnote{\texttt{partitionFunction\_addSeparable\_factor}
+in \texttt{Laplace/TwoD/AddSeparable.lean}: $Z_{2D}(t) = Z_U(t) \cdot
+Z_V(t)$ for $L(x,y) = U(x) + V(y)$.}
+
+The Z2
+tide\footnote{\texttt{Laplace/TwoD/QuarticSexticPartitionAsymptotic.lean},
+2026-05-18.} packaged this product as an asymptotic at the
+specific $(k_1, k_2) = (2, 3)$ case. v27's candidate D named the
+generic-$(k_1, k_2)$ programme as a multi-tide arc; this sub-tide
+lifts Z2 to parametric $k_1, k_2$.
+
+\section{The thing formalised}
+
+Four theorems in a new
+\texttt{Laplace/TwoD/KthKthPartitionAsymptotic.lean}:
+
+\paragraph{Factorisation.}
+\begin{verbatim}
+theorem partitionFunction_kthKth_eq
+    {k₁ k₂ : ℕ} (hk₁ : 1 ≤ k₁) (hk₂ : 1 ≤ k₂) {t : ℝ} (ht : 0 < t) :
+    partitionFunction (addSeparable
+      (kthPotential k₁) (kthPotential k₂)) t =
+      partitionFunction (kthPotential k₁) t *
+      partitionFunction (kthPotential k₂) t
+\end{verbatim}
+
+\paragraph{Exact closed form.}
+\begin{verbatim}
+theorem partitionFunction_kthKth_eq_const_mul_rpow ... :
+    partitionFunction (addSeparable ...) t =
+      kthKthPartitionConst k₁ k₂ *
+        t ^ (-(1/(2k₁) + 1/(2k₂)))
+\end{verbatim}
+
+\paragraph{Rescaled \texttt{Tendsto}.} Multiplied by
+$t^{1/(2k_1) + 1/(2k_2)}$, tends to $C(k_1, k_2)$ at $\mathrm{atTop}$.
+
+\paragraph{\texttt{IsEquivalent}.} Asymptotically equivalent to the
+pure power-law $C(k_1, k_2)\cdot t^{-1/(2k_1) - 1/(2k_2)}$.
+
+The composite constant:
+$$
+  C(k_1, k_2) := \frac{1}{k_1 k_2}\cdot (2k_1)!^{1/(2k_1)}\cdot
+    (2k_2)!^{1/(2k_2)}\cdot \Gamma(1/(2k_1))\cdot \Gamma(1/(2k_2)).
+$$
+
+\section{Proof strategy}
+
+The structure tracks Z2 exactly with parametric replacement:
+
+\begin{enumerate}[leftmargin=2em]
+\item \emph{Factorisation.} The $n = 0$ specialisation of the 1D
+polynomial-times-monomial-Gibbs integrability lemma\footnote{\texttt{kth\_integrable\_pow\_pot}.}
+provides the 1D Boltzmann-weight integrability on each axis. The
+\texttt{addSeparable} factor lemma\footnote{\texttt{partitionFunction\_addSeparable\_factor}.}
+then collapses to the product. A small \texttt{ext; simp} strips
+the $x^0$ on each axis.
+\item \emph{Closed form.} Substitute the 1D closed
+form\footnote{\texttt{partitionFunction\_kthPotential}.} on each
+factor, factor out \texttt{Real.div\_rpow}, combine the two
+negative-exponent factors via \texttt{Real.rpow\_add} and
+\texttt{Real.rpow\_neg}, then \texttt{ring}.
+\item \emph{Tendsto.} The rescaled function is eventually equal to
+the constant by \texttt{add\_neg\_cancel} + \texttt{Real.rpow\_zero};
+the \texttt{tendsto\_const\_nhds.congr'} pattern from Z2 carries
+through.
+\item \emph{IsEquivalent.} A \texttt{filter\_upwards} from the
+closed form, identical structure to Z2.
+\end{enumerate}
+
+\section{Roadblocks and resolutions}
+
+\emph{Nothing.} The proof landed on the first build (full Laplace
+8300 jobs, zero overfull boxes in the retrospective). The parametric
+$(k_1, k_2)$ algebra parallels the $(2, 3)$ case exactly once the
+integrability witnesses are threaded through. The seabed's
+\texttt{push\_cast}-and-\texttt{Real.rpow\_*} tactic vocabulary
+covered every $t$-exponent manipulation needed.
+
+\section{What was Mathlib, what was new}
+
+\emph{Mathlib provided} the asymptotic API (\texttt{Tendsto},
+\texttt{IsEquivalent}, \texttt{filter\_upwards}), the
+\texttt{Real.rpow} laws (\texttt{div\_rpow}, \texttt{rpow\_add},
+\texttt{rpow\_neg}, \texttt{rpow\_zero}), and the
+\texttt{tendsto\_const\_nhds.congr'} pattern. Everything else is
+laplace-internal.
+
+\emph{What was new} is four headline theorems plus the composite
+constant definition, all in a new 149-line file.
+
+\section{Lessons}
+
+\emph{Parametric tides off cache-warm specialisations are cheap.}
+Z2 was the (2, 3) specialisation; this tide is the parametric
+generalisation. The cache made the mirror-rewrite straightforward;
+no GPT consult was needed.
+
+\emph{First-time pivot to a different seabed in this session takes
+no incremental setup.} The laplace seabed's documentation
+(\texttt{CLAUDE.md} with the Mathlib API table and tactic gotcha
+catalogue) is excellent --- a single read sufficed to write the
+proofs without iteration. The pattern of building per-seabed
+\texttt{CLAUDE.md} files as living documentation pays back here.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=2em]
+\item \emph{Generic-$(k_1, k_2)$ 2D numerator asymptotic.} The Z1
+analogue at parametric $(k_1, k_2)$. Same template (1D moment
+closed form combined with the partition factorisation). Estimated
+$\sim$150 lines.
+\item \emph{Generic-$(k_1, k_2)$ 2D moment asymptotic.} The V2
+analogue. The 1D \texttt{kth\_moment\_even} times factorisation
+gives the exact form; asymptotic packagings follow. Estimated
+$\sim$150 lines.
+\item \emph{Promote the partition factor to \texttt{lean-common}.}
+With a parametric form now landed, the (1D partition $\times$ 1D
+partition $=$ 2D partition) structural identity is no longer
+quartic-sextic-specific; deferred until a second-repo consumer.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+Mirror-shape exemption applied; no GPT-5.5~Pro consult. Z2
+(2026-05-18) is the parametric mirror.
+
+Branch \texttt{tide/kthkth-partition-asymptotic}, commit
+\texttt{efe5e38} (fast-forwarded into \texttt{main}; no separate
+merge commit).
+
+\end{document}

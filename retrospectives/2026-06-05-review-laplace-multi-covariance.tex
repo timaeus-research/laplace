@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the multivariate covariance theorem --- a clean weak-track pass, a header that advertised the sharp result, and a docstring claiming sorries that weren't there}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=6em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/Multi/Covariance.lean} (3998 lines): the Stage-3 multivariate
+Laplace covariance theorem \texttt{lem:laplace\_cov}, whose headline
+\texttt{gibbsCov\_first\_order\_rate\_weak} establishes
+$\mathrm{Cov}_t[\varphi,\psi]=\tfrac1t\langle a,\Sigma b\rangle+o(1/t)$ (weak track, $\Sigma=H^{-1}$).
+Result: a clean fidelity pass at the statement level; the landables were two dead opens, three stale
+docstrings, and one dead private lemma. Two of the docstring fixes are the interesting part --- a
+header that advertised the \emph{sharp} rate this file does not prove, and a lemma docstring that
+claimed ``internal sorries'' in a proof that has none.
+\end{abstract}
+
+\section{Setting}
+The second of the large \texttt{Multi/} analytic files, built on
+\reviewref[RescaledIntegrals]{2026-06-05-review-laplace-multi-rescaledintegrals}, and the weak-track
+half of the multivariate covariance result (the sharp-track half is
+\texttt{gibbsCov\_first\_order\_rate\_sharp} in \texttt{CovarianceSharp.lean}). Roughly 2600 of its
+3998 lines are private asymptotic-integral infrastructure between the public headlines.
+
+\section{What was reviewed}
+The five public headlines --- the partition asymptotic
+\texttt{rescaledPartition\_eq\_gaussianZ\_add\_O\_inv\_sqrt} and its lower bound, the single-observable
+bound, the pair expectation \texttt{rescaledExpectation\_pair\_eq\_main\_add\_O\_inv\_sqrt}, and
+\texttt{gibbsCov\_first\_order\_rate\_weak} --- checked for the $1/t$ rate, the $\langle
+a,H^{-1}b\rangle$ main contraction, the Gaussian sign, and the error orders.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound at the statement level.} The reviewer confirmed every headline: the main term contracts
+through $H^{-1}$ (not $H$), the Gaussian pair term has the right sign, and the scaled errors are
+$O(t^{-1/2})$ (so $\mathrm{Cov}_t=\text{main}/t+O(t^{-3/2})=o(1/t)$). ``No headline-level $H$ vs
+$H^{-1}$ mistake, no sign error.''
+
+\textbf{Three stale/over-claiming docstrings, two of them notable.}
+\begin{itemize}[noitemsep]
+  \item \emph{The header advertised the sharp result.} The module header stated
+    $\mathrm{Cov}_t=\tfrac1t\langle a,\Sigma b\rangle+O(t^{-2})$ and said the file ``(eventually)
+    proves'' the explicit $\le K/t$ bound --- but the public theorem is named
+    \texttt{\_weak} and proves $\le K/\sqrt t$. The sharp $O(t^{-2})$ result is a \emph{different,
+    deliberately separate} theorem (\texttt{gibbsCov\_first\_order\_rate\_sharp} in
+    \texttt{CovarianceSharp}, whose own header cross-references back here). So this is not an
+    under-proven theorem to escalate --- it is a header describing the wrong file's result. Fixed to
+    state the weak form and cross-reference the sharp track. (The first attempt fixed the body
+    paragraph but left the opening line still reading $O(t^{-2})$; the affirmation pass caught that, and
+    a second pass corrected the opening line to $o(1/t)$.)
+  \item \emph{A docstring claimed sorries that do not exist.} The private
+    \texttt{abs\_integral\_dot\_mul\_rescaled\_weight\_correction\_le} was titled ``(in-progress,
+    contains internal sorries)'' and said two integrability facts ``remain as internal sorries'' --- but
+    a grep, a green build, and \texttt{scripts/sorries} all confirm the file has \emph{zero} sorries.
+    The proof was completed and the docstring never updated; a reader would wrongly think the result
+    unsound. Corrected to state the (completed) derivation.
+  \item The headline's own docstring still said ``statement only / proof in progress'' (it is proved)
+    and pointed at a non-existent filename \texttt{Covariance.Sharp.lean}; both corrected.
+\end{itemize}
+
+\section{Simplifications applied}
+\textbf{Two dead opens and a dead private lemma.} \texttt{open Module} was fully dead (no
+\texttt{Module.*}/\texttt{finrank} anywhere); the section-local \texttt{open MeasureTheory} was
+redundant under the namespace-level open (the same pattern as RescaledIntegrals). And the private
+\texttt{integrable\_dot\_dot\_mul\_rescaled\_weight\_correction} had no call sites --- the bilinear
+correction re-proves its integrability inline --- so it was removed (private, so the public surface is
+untouched). Build green, public signatures byte-identical.
+
+\section{Disagreements and open questions}
+None left open. The affirmation pass rejected the first header fix as incomplete (the opening line
+still advertised $O(t^{-2})$); the second pass resolved it. Several further cleanups are report-only
+for a hygiene tide: the \texttt{*\_def} dead equation-names and dead-local constant blocks (on this
+\texttt{positivity}/\texttt{field\_simp}-heavy file they carry the implicit-consumption risk, so they
+want individual build-arbitration), and a few unused \texttt{hGauss} parameters on private lemmas
+(a signature change of private decls, multi-site, low value).
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A header can advertise a sibling file's result.} When a result is split into a
+    weak-track and a sharp-track file, the weak file's header is prone to stating the \emph{sharp}
+    theorem as its own headline. The tell: the public theorem is named \texttt{\_weak} but the prose
+    claims the sharp rate. The fix is to scope the header to what the file proves and cross-reference
+    the other track --- not to escalate (the theorem is complete, just mislabelled).
+  \item \textbf{``Contains internal sorries'' is a verifiable claim --- verify it.} A docstring
+    advertising sorries in a file that has none is worse than a mere staleness nit: it impugns a sound
+    result. \texttt{grep} $+$ green build $+$ \texttt{scripts/sorries} settle it in seconds; here all
+    three agreed the lemma is complete.
+  \item \textbf{The affirmation pass catches half-done doc fixes.} My header fix corrected the body but
+    left the opening line over-claiming; sending the diff back caught the residue. A docstring fix is
+    not done until \emph{every} line of the docstring matches the theorem.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Hygiene tide: build-arbitrate the \texttt{*\_def} / dead-local-block candidates and the unused
+    private \texttt{hGauss} parameters.
+  \item The last never-reviewed laplace files are \texttt{CovarianceSharp} (4179L) and
+    \texttt{CovarianceExplicit} (19611L) --- the latter genuinely sectioned-review territory.
+\end{itemize}
+
+\end{document}

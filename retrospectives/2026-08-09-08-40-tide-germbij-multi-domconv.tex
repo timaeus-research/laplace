@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{Dominated convergence for the rescaled Boltzmann integrand\\
+(multivariate germbij, stage H4)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent The analytic half of multivariate Hessian recovery closes:
+for a loss carrying the H3 quadratic-approximation package and an
+integration domain with a ball around the minimum, every continuous
+observable of quadratic growth satisfies
+\[
+\int \mathbf{1}_U(qx)\, h(x)\, e^{-(L(qx) - L(0))/q^2}\, dx
+\;\xrightarrow[q \to 0^+]{}\;
+\int h(x)\, e^{-\langle x, Hx\rangle/2}\, dx,
+\]
+by one dominated-convergence argument against the
+$C(1+\|x\|^2)e^{-c\|x\|^2}$ majorant, exactly as the shape consult
+staged it: one generic theorem, not three. The corollaries at
+$h = 1, x_i, x_i x_j$ land on the H2 Gaussian values, so the rescaled
+partition, first, and second moments of any admissible loss now
+converge to the quantities whose normalized ratio is $(H^{-1})_{ij}$.
+\end{abstract}
+
+\section{Setting}
+
+Stages H2 (the quadratic Gaussian package), H3a (fixed-ray
+rescaling), and H3b (the uniform Peano remainder with the local lower
+bound) are on main. H4 is the integration step the whole staging was
+built around: the consult's early warning was that the domain expands
+with $q$, and writing it as an indicator on the fixed space --- rather
+than integrating over the moving set $q^{-1}U$ --- is what keeps the
+dominated-convergence argument one theorem.
+
+\section{The thing formalised}
+
+The `LocalLaplaceDomain` package extends the H3 structure with the
+domain data ($U$ measurable, a $\delta$-ball inside it, the
+support-wide rescaled lower bound, measurability of $L$). Against it:
+the generic limit above for any continuous $h$ with
+$|h(x)| \le C(1 + \|x\|^2)$, and its three specializations, whose
+limits are the H2 closed forms
+$Z_H = \mathrm{jacInv}\,H \cdot (2\pi)^{d/2}$, $0$, and
+$\mathrm{jacInv}\,H \cdot (2\pi)^{d/2} \cdot (H^{-1})_{ij}$.
+
+\section{How the proof works}
+
+Dominated convergence at the filter $q \to 0^+$ (the filter-indexed
+theorem named in the footnote below) needs three inputs. \emph{Measurability} of each rescaled integrand
+is composition bookkeeping (the indicator set is a preimage of $U$
+under scalar multiplication). \emph{Domination}: on the indicator's
+support $qx \in U$, the H3b lower bound turns the Boltzmann factor
+into $e^{-c\|x\|^2}$, and the quadratic growth of $h$ completes the
+majorant; its integrability reduces to the H2a norm-Gaussian lemma
+through the elementary bound $t^2 \le (2/c)e^{ct^2/2}$ --- the same
+single-series-term trick that has now carried three tides.
+\emph{Pointwise convergence}: for fixed $x$, eventually
+$qx$ enters the $\delta$-ball inside $U$, so the indicator is
+eventually the full integrand, and H3b's rescaling limit composed
+with the continuity of $e^{-(\cdot)}$ gives the Gaussian limit. The
+corollaries instantiate $h$ with the coordinate observables, whose
+growth bounds are the `PiLp` coordinate-norm inequality.
+
+\section{Where it stalled and how it moved}
+
+No stalls: two diagnostic passes, all repairs from catalogued error
+classes (context-blind \texttt{positivity} needing explicit
+\texttt{mul\_nonneg}/\texttt{div\_pos} witnesses; `Set.indicator`
+membership casts so the unifier does not grab the wrong set; manual
+composition where \texttt{fun\_prop} stops at
+$\exp \circ$ measurable; a \texttt{simp} closing a goal its follow-up
+expected to see). The consult's prediction held on both counts: H4
+was conceptually routine once the support-wide lower bound existed
+in H3b's interface, and the friction was measurability-and-DCT
+plumbing rather than mathematics.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the filter-indexed dominated convergence theorem, the
+indicator lemmas, and the exponential inequality
+$u + 1 \le e^u$.\footnote{\texttt{tendsto\_integral\_filter\_of\_dominated\_convergence},
+\texttt{Set.indicator\_of\_mem}/\texttt{of\_notMem},
+\texttt{Real.add\_one\_le\_exp},
+\texttt{eventually\_nhdsWithin\_of\_eventually\_nhds}.}
+New (project-level): the all-rate Gaussian-polynomial dominator, the
+`LocalLaplaceDomain` interface, and the generic quadratic-growth
+convergence theorem with its three moment corollaries.
+
+\section{What this opens}
+
+Stage H5 is bookkeeping: cancel the common $q^d e^{-L(0)/q^2}$
+factors between the rescaled moments (the dilation wrapper from the
+opening tide), divide by the zeroth moment, and form the covariance;
+the normalized limits are then $q^{-2}\,\mathrm{Cov}_q(w_i, w_j) \to
+(H^{-1})_{ij}$. Stage H6 is the pairwise identifiability corollary
+(equal covariance data forces $H_1 = H_2$ via matrix inversion), the
+multivariate analogue of \texttt{base\_recovery} and the last step
+of the commissioned Hessian-recovery milestone.
+
+\end{document}
