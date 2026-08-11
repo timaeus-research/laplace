@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{generic even-monomial Gibbs moments, a scope note overtaken by its own file}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/MonomialPotential.lean}: the generic pure even-monomial Gibbs
+moments for $L_k(x)=x^{2k}/(2k)!$ --- the closed forms $\int_{\mathbb R}x^{2j}e^{-tL_k}=(1/k)((2k)!/t)^{(2j+1)/(2k)}
+\Gamma((2j+1)/(2k))$, the partition function, the even/odd expectations, and the polynomial-times-Gibbs
+integrability. Result: \textbf{a clean fidelity pass with three landed edits} --- a stale scope-note docstring
+and two redundant imports, the imports cleared by a full project build.
+\end{abstract}
+
+\section{Setting}
+This is the generic-$k$ foundation of the monomial / J-function family: the quartic ($k=2$), sextic ($k=3$),
+and the \texttt{TwoD/KthKth*} separable-potential asymptotics all specialise from it. Six files import it, so
+it is a genuine foundation, reviewed (like \reviewref[Anharmonic]{2026-06-05-review-laplace-oned-anharmonic})
+to validate the base its consumers stand on.
+
+\section{What was reviewed}
+Eleven declarations: the potential and its \texttt{simp} lemma; a private bound $x^2\le1+x^{2k}$; two
+integrability theorems; the half-line and full-line moment closed forms; the odd-moment vanishing; the
+partition function and its positivity; and the even/odd Gibbs expectations.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; every closed form checks out.} The half-line constant $1/(2k)$ doubles (via
+\texttt{integral\_comp\_abs}) to the full-line $1/k$; the expectation exponent simplifies as
+$(2j+1)/(2k)-1/(2k)=2j/(2k)=j/k$; the Gamma arguments and the $((2k)!/t)$ bases are right; and the
+integrability rests on the Gaussian domination $x^2\le1+x^{2k}$, which --- importantly --- holds
+\emph{uniformly for all $k\ge1$} ($x^2\le1$ on the unit interval; $x^{2k}=(x^2)^k\ge x^2$ outside it). GPT
+re-derived each and found no mismatch.
+
+Two benign notes, recorded but not escalated: \texttt{kth\_moment\_odd} and
+\texttt{gibbsExpectation\_kthPotential\_odd} omit the $k\ge1$ and $t>0$ hypotheses. This is a correct
+\emph{generalisation}, not a defect: odd-moment vanishing follows from reflection symmetry alone (plus
+Mathlib's convention that the integral of a non-integrable function is $0$), so it holds for every $k,t$. The
+statement is cleaner than the Gibbs-regime motivation, and adding the hypotheses would only narrow it (and
+change the signature).
+
+\section{Simplifications applied}
+\textbf{Three landed.}
+\begin{itemize}[noitemsep]
+  \item \textbf{A stale scope note.} The docstring's ``Scope note (deferred)'' announced that the
+    integrability witnesses \texttt{kth\_integrable\_pow}/\texttt{\_pot} were ``deferred to a follow-up tide''
+    and warned that the generic Gaussian domination ``needs case analysis on $k=1$ vs $k\ge2$''. Both claims
+    are contradicted by the file itself: the lemmas are proved right there, and \emph{uniformly} for $k\ge1$
+    via $x^2\le1+x^{2k}$ --- the feared case split never materialised. Rewritten to describe what the file
+    actually does. (A comment-only fix.)
+  \item \textbf{Two redundant imports.} \texttt{Gamma.Basic} (the \texttt{Real.Gamma} API arrives via
+    \texttt{GaussianIntegral}/\texttt{Integral.Gamma}) and \texttt{Haar.NormedSpace} (its
+    \texttt{integral\_comp\_mul\_right} is unused here; \texttt{integral\_comp\_abs} comes from
+    \texttt{Lebesgue.Integral}), both removed.
+\end{itemize}
+Because this is a foundation file, the import removals were arbitrated by a \textbf{full project build}, not a
+single-module one: \texttt{lake build} went green at $8306$ jobs (unchanged from baseline) with all six
+consumers rebuilding. The reviewer had flagged \texttt{Haar.NormedSpace} as the weaker candidate --- it might
+have supplied \texttt{integral\_comp\_abs}/\texttt{integral\_neg\_eq\_self} transitively --- and the full
+build is precisely what settled that doubt: the lemmas still resolve, so the import was redundant. Eleven
+declarations byte-identical; GPT affirmed all three changes, noting (correctly) that the whole-project rebuild,
+not the unchanged job count alone, is the load-bearing evidence.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A ``deferred'' scope note is worth checking against the file it sits in.} Documentation written
+    while a result was still future can survive into the commit that delivers it. Here the note even preserved
+    a difficulty (the $k=1$ vs $k\ge2$ split) that the eventual uniform proof sidestepped --- so the note
+    mis-described both the \emph{status} and the \emph{shape} of the work. Grepping the file for the very
+    lemma names the note calls ``deferred'' is the one-line check.
+  \item \textbf{The full build dissolves a reviewer's transitive-import doubt.} When the reviewer cannot tell
+    from text whether an import is load-bearing transitively, do not argue it --- remove it and rebuild the
+    whole project. A green whole-project build is a stronger and simpler answer than tracing the dependency
+    graph by hand, and it is the right tool whenever the file has consumers.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The generic-monomial base is now reviewed; its specialisations (\texttt{Quartic}, \texttt{Sextic}) and
+    the \texttt{TwoD/KthKth*} lifts are natural next targets, as are the J-function files. The
+    \texttt{Multi/Covariance*} trio remains the large sectioned-approach target.
+\end{itemize}
+
+\end{document}

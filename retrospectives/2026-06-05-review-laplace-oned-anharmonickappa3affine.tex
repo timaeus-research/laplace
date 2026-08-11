@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the affine-$\kappa_3$ asymptotic --- closing the anharmonic arc}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicKappa3Affine.lean}: the affine generalisation
+of the anharmonic third-cumulant asymptotic --- for affine observables $(a_i x+b_i)$,
+$t^2\kappa_3\to a_1a_2a_3\cdot(-\alpha/\lambda^3)$. Result: \textbf{a clean fidelity pass with six
+dead-code removals} --- two dead \texttt{open}s (\texttt{Filter}, \texttt{Topology}) and four dead
+proof-locals. This is the last anharmonic file; the arc is now reviewed end-to-end.
+\end{abstract}
+
+\section{Setting}
+The affine lift of \texttt{kappa3\_anharmonic\_id\_id\_id\_asymptotic}: it shows the joint third
+cumulant on affine observables reduces to the scalar $\mathrm{id},\mathrm{id},\mathrm{id}$ case times
+$a_1a_2a_3$ (the constants $b_i$ vanish on constant cumulant slots, the multipliers pull through by
+trilinearity), then composes with the base $t^2\kappa_3[\mathrm{id}]\to-\alpha/\lambda^3$. It is the
+final unreviewed file of the anharmonic stack.
+
+\section{What was reviewed}
+The headline \texttt{kappa3\_anharmonic\_shifted\_affine\_asymptotic} and its supporting private
+infrastructure (the affine-to-scalar identity, the cubic-moment expansion
+\texttt{gibbsExp\_anharmonic\_cubic\_eq}, and the polynomial$\times\exp$ integrability lemmas).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defects.} The affine-to-scalar reduction is proved concretely (not by an abstract
+trilinearity lemma): \texttt{kappa3\_volume\_unfold} expands $\kappa_3$ into the five-term cumulant
+formula, \texttt{gibbsExp\_anharmonic\_cubic\_eq} expands each affine/product integrand into moments
+of $1,x,x^2,x^3$, and the closing \texttt{ring} cancels every $b_i$ term, leaving $a_1a_2a_3$. The
+limit value $a_1a_2a_3(-\alpha/\lambda^3)$ follows by scaling the base asymptotic and a
+\texttt{congr'} along eventual-$t>0$ equality. The reviewer confirmed all of this; the value matches
+the empirical $-\alpha/\lambda^3$ (e.g.\ $-0.5$ at $(\lambda,\alpha)=(1,0.5)$). One report-only note:
+the private \texttt{kappa3\_volume\_unfold} docstring says the expansion is ``independent of the
+perturbation direction $A$'', which is strong as written ($A$ survives in the observables); the
+operative meaning (the $h=0$ weight/partition is $A$-independent) is defensible, so it was left.
+
+\section{Simplifications applied}
+\textbf{Six dead-code removals.} \texttt{open Filter} is dead --- every filter name
+(\texttt{Filter.Tendsto}, \texttt{Filter.atTop}, \texttt{Filter.eventually\_gt\_atTop},
+\texttt{Filter.Eventually.of\_forall}) is written qualified, and \texttt{filter\_upwards} is a
+tactic. \texttt{open Topology} is dead too: the file uses root-level \texttt{nhds}, never the bare
+$\mathcal N$ notation. \texttt{open MeasureTheory} stays (25 bare $\int$/\texttt{Integrable}/%
+\texttt{volume}). And four dead locals: \texttt{h12} (an integrability \texttt{have} the later
+step-by-step construction never uses) and the three cubic-form rewrites \texttt{h\_id\_id\_id},
+\texttt{h\_id\_id}, \texttt{h\_id} (which the \texttt{conv\_rhs} re-proves inline instead of using).
+Build green at $8258$ jobs, warning count $0$, signatures byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{An asymptotics file can be \texttt{Filter}/\texttt{Topology}-open-free.} Even a
+    \texttt{Tendsto \dots atTop (nhds \dots)} statement needs neither open when every filter name is
+    written qualified and the limit point is \texttt{nhds} (not the $\mathcal N$ notation). The
+    bare-name greps (no bare \texttt{atTop}/\texttt{Tendsto}, no bare $\mathcal N$) called both opens
+    dead before the build confirmed it.
+  \item \textbf{Inline-reproved rewrites strand their named \texttt{have}s.} The three
+    \texttt{h\_id\dots} cubic-form equalities were prepared as named \texttt{have}s, then the
+    \texttt{conv\_rhs} re-derived the same rewrites with inline \texttt{show \dots\ from by ring} ---
+    leaving the named versions dead. When a proof both names a fact and re-proves it inline
+    downstream, the named one is the dead one.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The anharmonic arc is now fully reviewed. Remaining laplace \texttt{OneD/}: the harmonic
+    regularity/observable/perturbed/affine-$\kappa_3$ files and \texttt{IntegralRemainder} (2668L);
+    plus \texttt{QuarticBoundedPrior}/\texttt{QuarticBoundedPriorTestFn}.
+  \item Forward-tide / report-only: tighten the \texttt{kappa3\_volume\_unfold} ``independent of
+    $A$'' private docstring to ``the $h=0$ weight is $A$-independent''.
+\end{itemize}
+
+\end{document}

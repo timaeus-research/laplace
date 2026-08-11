@@ -1,0 +1,155 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{×}{\ensuremath{\times}}
+
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide-experiment addendum:\\\emph{SGLD bias on $\kappa_3$ is linear in $\alpha$ with slope $\approx 0.22$
+(non-monotonicity in the main run was MC noise)}}
+\author{Claude (Opus 4.7, 1M context)}
+\date{2026-05-23}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The main retrospective\footnote{\experimentref{2026-05-23-experiment-kappa3-anharmonic-1d}.} reported a non-monotonic
+SGLD bias $\Delta_{\rm SGLD-HMC} \in \{+0.092, +0.060, +0.277\}$ across
+$\alpha \in \{0.25, 0.5, 1.0\}$, drawn from a coarse 64-chain
+$\times$ 20k-draw HMC and 64-chain $\times$ 40k-draw SGLD α-scan as a
+mechanism probe. At higher precision (64 chains $\times$ 40k draws HMC,
+64 chains $\times$ 80k draws SGLD) the non-monotonicity disappears:
+$\Delta_{\rm SGLD-HMC}$ scales \emph{monotonically and approximately
+linearly} with $\alpha$, slope $\approx 0.22$ at $\alpha \geq 0.5$.
+The original non-monotonicity is identified as MC noise.
+
+For Patterning~2 three-point susceptibilities --- which use a third-order
+cumulant on a model with intrinsic asymmetry $\alpha$ --- this gives a
+practical rule of thumb: \emph{SGLD's pipeline-default ($\varepsilon =
+5{\times}10^{-3}$) bias on $\kappa_3$ at WBIC temperature is
+$\approx 0.22 \alpha$}.
+\end{abstract}
+
+\section{The denser α-scan}
+
+Same model ($L(x) = (\lambda/2) x^2 + (\alpha/6) x^3 + (\gamma/24) x^4$
+with $\lambda = 1, \gamma = 1$) and same headline cell $t = 100$ as the
+main retrospective. Six $\alpha$ values, all satisfying the
+$\alpha^2 < 3 \lambda \gamma$ discriminant condition. Chains:
+64 $\times$ 40k draws HMC, 64 $\times$ 80k draws SGLD.
+
+\begin{center}\small
+\begin{tabular}{ccccccc}
+\toprule
+$\alpha$ & formal $-\alpha/\lambda^3$ &
+  HMC $t^2 \hat\kappa_3 \pm$ SE & HMC $\Delta$ vs formal &
+  SGLD $t^2 \hat\kappa_3 \pm$ SE & $\Delta_{\rm SGLD-HMC} \pm$ SE &
+  $\Delta / \alpha$ \\
+\midrule
+0.10 & $-0.10$ & $-0.1016 \pm 0.0144$ & $+0.002$ ($0.1\sigma$) &
+       $-0.0703 \pm 0.0216$ & $+0.031 \pm 0.026$ ($1.2\sigma$) & $0.31$ \\
+0.25 & $-0.25$ & $-0.2303 \pm 0.0134$ & $+0.020$ ($1.5\sigma$) &
+       $-0.2148 \pm 0.0163$ & $+0.016 \pm 0.021$ ($0.7\sigma$) & $0.06$ \\
+0.50 & $-0.50$ & $-0.5003 \pm 0.0154$ & $-0.000$ ($0.0\sigma$) &
+       $-0.3929 \pm 0.0191$ & $+0.107 \pm 0.025$ ($4.4\sigma$) & $0.21$ \\
+0.75 & $-0.75$ & $-0.7359 \pm 0.0166$ & $+0.014$ ($0.8\sigma$) &
+       $-0.5726 \pm 0.0198$ & $+0.163 \pm 0.026$ ($6.3\sigma$) & $0.22$ \\
+1.00 & $-1.00$ & $-0.9847 \pm 0.0137$ & $+0.015$ ($1.1\sigma$) &
+       $-0.7613 \pm 0.0176$ & $+0.223 \pm 0.022$ ($10.0\sigma$) & $0.22$ \\
+1.40 & $-1.40$ & $-1.4602 \pm 0.0157$ & $-0.060$ ($3.8\sigma$) &
+       $-1.1358 \pm 0.0226$ & $+0.324 \pm 0.028$ ($11.7\sigma$) & $0.23$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{The linearity, in plain prose}
+
+For $\alpha \geq 0.5$, the ratio $\Delta_{\rm SGLD-HMC} / \alpha$ is
+flat at $\approx 0.22$ across four cells. For $\alpha \leq 0.25$ the
+absolute bias is small relative to MC SE (the bias-to-SE ratio is
+$\leq 1.2$), and the apparent $\Delta / \alpha$ value (0.31 and 0.06)
+is dominated by noise --- the bias is below the precision floor at
+those $\alpha$ values.
+
+\textbf{Conclusion: $\Delta_{\rm SGLD-HMC}(\alpha; t = 100, \varepsilon = 5{\times}10^{-3})
+\approx 0.22 \alpha$} at moderate-to-large $\alpha$.
+
+The main run's apparent $\Delta_{\rm SGLD-HMC} = +0.060$ at $\alpha = 0.5$
+was 1.5 SE below the trendline ($0.22 \cdot 0.5 = 0.11$); this addendum's
+denser run gives $+0.107$, right on the trend. Similarly the main run's
+$+0.277$ at $\alpha = 1.0$ was 1.6 SE above; this run gives $+0.223$.
+\emph{The "non-monotonic" pattern was MC noise.}
+
+\section{Why this matters}
+
+The Patterning~2 three-point susceptibility framework uses
+$\kappa_3$ on a model with intrinsic cubic-asymmetry strength $\alpha$
+(the cubic susceptibility of the network's loss landscape). At the
+seabed's SGLD pipeline defaults this addendum predicts:
+\[
+  \hat\kappa_3^{\rm SGLD} \approx \kappa_3^{\rm true} + 0.22 \alpha
+  \quad \text{(at $t = 100$, $\varepsilon = 5{\times}10^{-3}$).}
+\]
+For Patterning~2 to use $\kappa_3$ as a quantitative susceptibility,
+either (a) the experiment runs in a regime where $0.22\alpha \ll \kappa_3$
+(weak intrinsic skew); (b) the SGLD is run at $\varepsilon \leq 5{\times}10^{-4}$
+where the main retrospective's $\varepsilon$-scan showed the bias
+vanishing; (c) HMC is used instead.
+
+\section{HMC vs formal at large $\alpha$}
+
+A second observation worth noting: HMC's $t^2 \hat\kappa_3(\alpha = 1.4)
+= -1.460$ vs formal asymptote $-1.40$ is $-0.06$ off, a $3.8\sigma$
+deviation. At $\alpha = 1.0$ HMC is $+0.015$ above formal ($1.1\sigma$),
+also non-trivial. At $\alpha \leq 0.75$ HMC matches within $1\sigma$.
+
+This is consistent with the \emph{finite-$t$ correction} predicted by
+the next-order Laplace expansion. The main retrospective's
+pre-check showed the correction $+1.25/t$ at $\alpha = 0.5$; the
+coefficient scales with $\alpha$ (and possibly higher powers). At
+$\alpha = 1.4$, the expected next-order shift is roughly $+1.25 \cdot
+(1.4/0.5) / t = +0.035$ if linear-in-α, putting the finite-$t$ value
+at $-1.365$ --- but observed is $-1.46$. The deviation is $-0.10$,
+suggesting the next-order coefficient grows \emph{super}-linearly in
+$\alpha$, or that a higher-order term ($O(\alpha^3 / t)$?) becomes
+visible.
+
+This is a candidate for a formalisation tide: extend Tide~9 in
+laplace to compute the next-order coefficient
+$c_1(\alpha, \lambda, \gamma)$ in $t^2 \kappa_3(t) = -\alpha/\lambda^3
++ c_1 / t + O(1/t^2)$ and check the empirical $\alpha$-scaling.
+
+\section{Data}
+
+JSONL output: \texttt{local/kappa3-anharmonic-1d/data/alpha\_scan\_tight.jsonl}.
+Each row records HMC and SGLD $\hat\kappa_3$, SE, and the
+$\Delta_{\rm SGLD-HMC}$ at the given $\alpha$. Compute: 6 cells
+$\times$ (15.7s HMC + smaller SGLD) $\approx$ 1.5 minutes total.
+
+\section*{Acknowledgements}
+
+Continuation of the same-day \experimentref{2026-05-23-experiment-kappa3-anharmonic-1d}
+$\kappa_3$ tide-experiment. The non-monotonicity in the main run
+turned out to be MC noise, illustrating the importance of the
+cherry-pick guard the tide-experiment skill prescribes (report SE
+alongside any "best of $n$ cells" claim and re-run dense to confirm).
+
+\end{document}

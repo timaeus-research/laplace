@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+
+\title{Tide retrospective: \\\emph{generic-$(k_1, k_2)$ 2D unnormalised numerator}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{21 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Companion to the just-landed kthkth-moment-asymptotic tide; closes
+the second of the two strict-improvement follow-ups named in the
+kthkth-partition-asymptotic retrospective. Lifts the V1 (2D
+unnormalised numerator) machinery from $(k_1, k_2) = (2, 3)$ to
+parametric $(k_1, k_2)$ with $k_1, k_2 \ge 1$. Build clean first-try;
+${\sim}135$ lines. Mirror-shape exemption applied (no GPT
+consultation).
+\end{abstract}
+
+\section{Setting}
+
+This tide is the natural pair to the kthkth-moment-asymptotic tide.
+The kthkth-partition retrospective (this morning) named two
+follow-ups: the moment analogue (Z2 generic) and the numerator
+analogue (Z1 generic). The moment tide landed earlier in this
+session; the numerator tide closes the pair.
+
+\section{The thing formalised}
+
+For $k_1, k_2 \ge 1$, $j_1, j_2 : \mathbb{N}$, and $t > 0$:
+\[
+  \int\!\!\!\int x^{2j_1} y^{2j_2}\,e^{-t\,L(x,y)}\,dx\,dy
+    \;=\; C'(k_1, k_2, j_1, j_2)\,
+            t^{-(2j_1+1)/(2k_1) - (2j_2+1)/(2k_2)}
+\]
+on the 2D separable monomial potential, where $C'$ is the natural
+generalisation of the
+quartic-sextic numerator prefactor.
+
+Plus the rescaled-\texttt{Tendsto} and
+$\texttt{Asymptotics.IsEquivalent}$ packagings.
+
+\section{Proof strategy}
+
+Identical to the kthkth-moment tide's, with one difference: the 2D
+integral here is the unnormalised numerator, so
+$\texttt{integral\_separable\_addSeparable}$ supplies the
+factorisation directly (no Gibbs normalisation). The 1D building
+block is then $\texttt{kth\_moment\_even}$ (not the Gibbs-normalised
+$\texttt{gibbsExpectation\_kthPotential\_even}$), and the rest is
+$\texttt{Real.rpow}$ algebraic rearrangement.
+
+\section{Roadblocks and lessons}
+
+No roadblocks. Build clean first-try.
+
+\textbf{Lesson:} the moment / numerator pair of mirror-shape lifts
+land symmetrically when both have a corresponding 1D base case in
+the seabed.\footnote{The moment tide uses
+\texttt{gibbsExpectation\_kthPotential\_even}; this tide uses the
+1D unnormalised numerator \texttt{kth\_moment\_even}.} Both lift
+cleanly to 2D via the separable factorisation machinery from
+\texttt{TwoD/AddSeparable.lean}.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \textbf{Cross-repo promotion candidate.} The trio of
+      (partition, numerator, moment) lifts on separable monomial
+      potentials is now a closed pattern, ready for promotion to
+      $\texttt{lean-common}$ once a second-repo consumer materialises.
+\item \textbf{The kthkth arc is now complete} (modulo the
+      odd-moment analogue, which trivially vanishes by parity in
+      either coordinate).
+\end{itemize}
+
+\end{document}

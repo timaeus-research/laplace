@@ -1,7 +1,8 @@
 name = "laplace"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["Laplace"]
+defaultTargets = ["Laplace", "Statements", "Solutions"]
+enableArtifactCache = true
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -21,3 +22,16 @@ rev = "40398d8"
 
 [[lean_lib]]
 name = "Laplace"
+
+# The main theorem statements and their proofs-by-delegation; see the README's
+# "Main theorems" section.
+[[lean_lib]]
+name = "Statements"
+
+[[lean_lib]]
+name = "Solutions"
+
+[[require]]
+name = "lean-common"
+git = "https://github.com/timaeus-research/lean-common.git"
+rev = "511ee60"

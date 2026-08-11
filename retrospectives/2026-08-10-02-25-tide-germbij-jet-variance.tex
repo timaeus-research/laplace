@@ -1,0 +1,129 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: monomial variance positivity\\
+(weighted-jet programme, stage 1)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+This tide opens the weighted-jet programme: the germbij note's
+\S7.4 inductive recovery, in which each coefficient $c_r$ of a
+degenerate one-dimensional potential
+$L = a\,x^{2k} + \sum_r c_r x^{2k+r}$ is read off the graded
+correction at $t^{-r/(2k)}$ by a covariance pairing. The programme
+was scoped against three alternatives (the quintic cumulant rung, the
+general-order nondegenerate induction, and the multivariate first
+rung); the consult ranked the weighted jet first --- smallest
+infrastructure delta per stage, closed forms at every rung, and its
+normalized-series machinery de-risks the general-order induction
+later. The named scope trap: the bare finite jet need not be globally
+integrable (the top term may be odd or negative), so the analytic
+envelope must be fixed before the combinatorics.
+
+The seabed survey collapsed the consult's stage 1: the
+generalized-Gaussian moment API (partition function, even and odd
+moments, Gibbs expectations, integrability) already exists in
+\texttt{MonomialPotential.lean} from the recovery thread. What was
+missing is exactly the injectivity input every recovery rung will
+consume: strict positivity of the variance of a monomial observable
+against the reference weight.
+
+\section{The thing formalised}
+
+Three theorems in \texttt{Laplace/OneD/MonomialVariance.lean},
+sorry-free with zero warnings, for the reference weight
+$e^{-t\,x^{2k}/(2k)!}$ with $k \ge 1$, $t > 0$: the Gamma closed
+forms of $\mathrm{Var}(x^n)$ for odd $n$ (the mean vanishes by
+symmetry, so the variance is the even
+moment)\footnote{\texttt{monomial\_variance\_odd}.} and even
+$n$ (a difference of Gamma ratios under the common power of
+$(2k)!/t$)\footnote{\texttt{monomial\_variance\_even}.}, and the
+programme's load-bearing
+fact\footnote{\texttt{monomial\_variance\_pos}.}:
+\[
+\mathrm{Var}_{\mu_{t,k}}(x^n) \;>\; 0
+\qquad (n \ge 1).
+\]
+
+\section{Proof strategy}
+
+The positivity proof formalises the note's own injectivity argument
+--- $\mathrm{Var}[Q] = 0$ would force $Q$ constant against a measure
+of full support. Concretely: with $M = \langle x^n \rangle$ and $Z$
+the partition function,
+\[
+\mathrm{Var}(x^n) = \frac{1}{Z}\int (x^n - M)^2\, e^{-t L_k}\,dx,
+\]
+and the centered integrand is continuous, nonnegative, and not
+identically zero, so its support is open and nonempty
+(witness $x = 1$ when $M = 0$, else $x = 0$), hence of positive
+Lebesgue measure, and Mathlib's
+\texttt{integral\_pos\_iff\_support\_of\_nonneg} gives positivity;
+dividing by $Z > 0$ finishes. The variance identity itself is the
+usual expansion $\int (x^n - M)^2 w = \int x^{2n} w - 2M \int x^n w +
+M^2 Z$ with the middle term collapsed by $\int x^n w = MZ$.
+
+The numerical check (executed first) validated both the tide and the
+programme: the Gamma-form variances match quadrature to six decimals
+($k \in \{1,2\}$, $n \le 4$), and --- the consult's prescribed
+programme-level check --- the $q^r$ coefficient of
+$\mathbb{E}_q[u^{2k+r}]$ responds to $c_r$ with slope
+$-\mathrm{Var}(u^{2k+r})$ independent of the lower coefficients
+(measured/predicted ratios $1.001$--$1.006$ at $q = 0.05$, both
+parities of $2k+r$ included).
+
+\section{Roadblocks and resolutions}
+
+Three small ones, two of them new catalogue entries. First,
+\texttt{ring} \emph{does} normalise symbolic exponent arithmetic:
+$x^{2n}$ versus $(x^n)^2$ with $n$ a free natural closes by plain
+\texttt{ring}, and the pre-planned \texttt{two\_mul}/\texttt{pow\_add}
+rewrites were actively harmful (\texttt{two\_mul} matched the
+constant $2M$ first). Second, \texttt{simp only [defName]} does not
+unfold a definition --- \texttt{unfold} does, after which
+\texttt{fun\_prop} dispatches continuity of the monomial potential.
+Third, \texttt{positivity} cannot conclude $\ne 0$ through $(-M)^2$
+without $M \ne 0$ in a form it consumes; explicit
+\texttt{mul\_ne\_zero} chains are cleaner for support witnesses.
+
+\section{The deliberation}
+
+The programme-level consult is archived verbatim in the tide
+log.\footnote{\texttt{tide-log/gpt56\_weighted\_jet\_scoping\_v1.md}.}
+Both parties voted for the weighted-jet programme. Its stage list assigns this tide the
+reference moment API; the seabed survey showed most of that stage
+already merged, so the tide contracted to the variance layer --- the
+kind of adjustment the survey step exists to catch. The consult's
+warning that partition data alone would lose odd perturbations at
+linear order (symmetry) is precisely why the variance against the
+\emph{matching moment observable} $u^{2k+r}$ is the right injectivity
+quantity, and why this tide is stage 1 rather than an afterthought.
+
+\section{Mathlib vs new}
+
+Mathlib lookup: \texttt{integral\_pos\_iff\_support\_of\_nonneg},
+open-set measure positivity, preimage openness of the support of a
+continuous function. Seabed reuse: the entire moment API. New: the
+variance identity assembly and the support witnesses.
+
+\section{What the next tide inherits}
+
+Stage 2 of the programme: the exact scaling identity
+$t^{s/(2k)}\langle x^s \rangle_t$ as a normalized perturbation of the
+reference measure for the finite jet, with the analytic envelope
+chosen explicitly (the consult's trap warning). The variance layer
+here is consumed at stage 6--7, where the triangular covariance lemma
+pins each $c_r$ with denominator $\mathrm{Var}_{\mu}(u^{2k+r}) > 0$.
+
+\end{document}

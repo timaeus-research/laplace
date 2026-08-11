@@ -1,0 +1,323 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∀}{\ensuremath{\forall}}
+\newunicodechar{∃}{\ensuremath{\exists}}
+\newunicodechar{ᶠ}{\ensuremath{{}^{f}}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{𝓝}{\ensuremath{\mathcal{N}}}
+
+\title{Tide retrospective:\\\emph{Sextic J-function asymptotic\\(grammar precursor, Step 3)}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{2026-05-07}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For the sextic potential $K(w) = w^6/720$ and a continuous, globally
+bounded prior $\pi : \mathbb{R} \to \mathbb{R}$, the J-function
+$J(t) := \int_{\mathbb R} e^{-tK(w)}\,\pi(w)\,dw$ satisfies
+$t^{1/6}\cdot J(t) \to \pi(0)\cdot \tfrac13\cdot 720^{1/6}\cdot \Gamma(1/6)$
+as $t\to\infty$. This is the $k=3$ mirror of the $k=2$ quartic theorem
+landed earlier today (E4 / \texttt{tide/grammar-j-function}) and the
+third step of the grammar-paper precursor sequence. Two theorems in a
+new file \texttt{Laplace/OneD/JFunctionSextic.lean}: the centred DCT
+core \texttt{sextic\_jfunction\_centered\_tendsto\_zero} and the
+user-facing asymptotic \texttt{sextic\_jfunction\_asymptotic} as a
+two-line corollary via \texttt{sextic\_partition}. 280 lines of
+Lean, $0$ \texttt{sorry}, $0$ \texttt{axiom}, $0$ \texttt{native\_decide}.
+Single-session run; \texttt{lake build} green on first compile; no
+GPT-5.5 Pro consult (the credentials file was missing in this
+session, and Candidate~A was a direct mirror of E4 with the closed
+form numerically verified to machine precision).
+\end{abstract}
+
+\section{Setting}
+
+The grammar paper (Murfet \& Lehalleur, in preparation) needs a
+catalogue of single-component blow-up J-function asymptotics. Step~1
+of the precursor sequence (Tide~7) closed the quartic bounded-prior
+partition. Step~2 (Tide~11+ / E4, today) closed the J-function
+asymptotic for the quartic potential $K(w) = w^4/24$ at the full-line
+scale, with a continuous-at-zero bounded prior. Step~3 — this Tide —
+mirrors Step~2 to $K(w) = w^6/720$, the next monomial in the
+sequence.
+
+The seabed was \texttt{laplace} at \texttt{main} (commit
+\texttt{141997c}), which already carried \texttt{Sextic.lean}'s
+closed-form partition, integrability, and moment lemmas:
+\[
+  \int_{\mathbb R} e^{-t\cdot x^6/720}\, dx
+    = \tfrac13 \cdot \big(\tfrac{720}{t}\big)^{1/6} \cdot \Gamma\!\big(\tfrac16\big),
+\]
+plus \texttt{sextic\_integrable\_pow} (polynomial-times-Gibbs
+integrability for any $n\in\mathbb N$). E4's
+\texttt{JFunctionQuartic.lean} was on the unmerged sibling branch
+\texttt{tide/grammar-j-function} but visible via \texttt{git show};
+its proof template — substitute, then DCT — was the natural mirror
+target. The tide deliberation (\texttt{tide-pick}'s v2 survey of
+2026-05-07) ranked Candidate~L1 as the obvious top pick: cache-fresh
+after E4, single specific potential, single specific normalisation,
+and the only friction is constants ($4 \to 6$, $24 \to 720$,
+$1/4\to 1/6$, $1/2\to 1/3$).
+
+The constant ratio is worth a sentence. The quartic case yielded
+$\tfrac12\cdot 24^{1/4}\cdot \Gamma(1/4)$; the sextic yields
+$\tfrac13\cdot 720^{1/6}\cdot \Gamma(1/6)$. The leading
+$\tfrac1p$-vs-$\tfrac1{p}$ shift comes from Mathlib's
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}, which gives the
+half-line integral with a factor $1/p$ for $K = b\, x^p$; the
+full-line partition then doubles to $2/p$ ($\tfrac12$ for $p=4$,
+$\tfrac13$ for $p=6$). Numerical sanity at $\pi=1$ matched the
+closed form to $\sim 10^{-15}$ at every $t$ in the
+$0.1$--$1000$ range.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For a continuous prior $\pi : \mathbb R \to \mathbb R$ with global
+bound $|\pi(w)| \le M$,
+\[
+  \lim_{t \to \infty}\, t^{1/6} \cdot \int_{\mathbb R} e^{-t\, w^6/720}\,\pi(w)\,dw
+    \;=\;
+  \pi(0) \cdot \tfrac13 \cdot 720^{1/6} \cdot \Gamma\!\big(\tfrac16\big).
+\]
+\end{quote}
+
+\noindent The Lean signature
+(\texttt{Laplace.OneD.sextic\_jfunction\_asymptotic}):
+\begin{verbatim}
+theorem sextic_jfunction_asymptotic
+    {prior : ℝ → ℝ} (hprior_cont : Continuous prior)
+    {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
+    Tendsto (fun t : ℝ =>
+        t ^ ((1:ℝ)/6) * ∫ w : ℝ, Real.exp (-(t * w^6 / 720)) * prior w)
+      atTop (𝓝 (prior 0 * (1/3) * (720:ℝ) ^ ((1:ℝ)/6) * Real.Gamma (1/6)))
+\end{verbatim}
+
+The load-bearing theorem is the centred form
+\texttt{sextic\_jfunction\_centered\_tendsto\_zero}, which states that
+$t^{1/6}\cdot \int e^{-tw^6/720}\,(\pi(w)-\pi(0))\,dw \to 0$. This is
+the form the grammar paper will cite in its J-function asymptotic
+identity: the prior perturbation $\pi(w) - \pi(0)$ is asymptotically
+negligible against the concentrating Gibbs weight, and so the
+J-function is determined to leading order by $\pi(0)$ alone. The
+asymptotic-form corollary above is a two-line wrapper that splits
+$\pi(w) = (\pi(w) - \pi(0)) + \pi(0)$, applies the centred theorem to
+the perturbation, and applies \texttt{sextic\_partition} (closed-form)
+to the constant piece, with the cancellation
+$t^{1/6}\cdot (720/t)^{1/6} = 720^{1/6}$ tying it together.
+
+The hypotheses match E4: \texttt{Continuous prior} plus a global
+$L^\infty$ bound. The mathematically minimal class is
+\texttt{AEMeasurable + ContinuousAt prior 0 + global bound}; we
+deliberately did \emph{not} weaken in this tide, so the sextic and
+quartic files share an API surface. The hypothesis-weakening is E4
+follow-up~L3 and should be done as a single refactor across both
+files (and a \texttt{lean-common} substitution lemma) — landing it
+asymmetrically here would have created an awkward sextic-stronger
+quartic-weaker mismatch.
+
+\section{Proof strategy}
+
+The proof is substitute-then-DCT, identical in structure to E4 with
+the obvious constant rewrites.
+
+\paragraph{The substitution.} Set $a := t^{1/6}$, so $a^6 = t$. The
+change of variables $u = a\cdot w$ via Mathlib's
+\texttt{Measure.integral\_comp\_mul\_right} reshapes
+\[
+  t^{1/6} \int_{\mathbb R} e^{-t w^6/720}\,(\pi(w) - \pi(0))\,dw
+\]
+into
+\[
+  \int_{\mathbb R} e^{-u^6/720}\,(\pi(u/a) - \pi(0))\,du.
+\]
+The Jacobian bookkeeping ($a > 0$, $|a^{-1}| = 1/a$,
+$(w\cdot a)^6 = t\, w^6$, $(w\cdot a)/a = w$) is the load-bearing
+piece — about $50$ of the file's $280$ lines. The cast
+$a^{(6:\mathbb N)} = a^{(6:\mathbb N : \mathbb R)}$ uses
+\texttt{Real.rpow\_natCast}; the exponent identity
+$a^6 = (t^{1/6})^6 = t^{(1/6)\cdot 6} = t^1 = t$ uses
+\texttt{Real.rpow\_mul} and \texttt{Real.rpow\_one}.
+
+\paragraph{The DCT.} The substituted integrand
+$F(t,u) := e^{-u^6/720}\cdot (\pi(u/a) - \pi(0))$ has a
+$t$-independent envelope $\mathrm{bound}(u) := 2M\cdot e^{-u^6/720}$,
+integrable from \texttt{sextic\_integrable\_pow}~$0$ at~$t=1$. The
+pointwise limit is zero: as $t \to \infty$,
+$u/t^{1/6} \to 0$ (from \texttt{tendsto\_rpow\_atTop} at exponent
+$1/6 > 0$), and continuity of $\pi$ at~$0$ gives
+$\pi(u/t^{1/6}) - \pi(0) \to 0$. Mathlib's
+\texttt{tendsto\_integral\_filter\_of\_dominated\_convergence}
+closes.
+
+\paragraph{The asymptotic corollary.} Split
+$\pi(w) = (\pi(w) - \pi(0)) + \pi(0)$ inside the integrand. The
+centred piece tends to zero by the headline theorem. The constant
+piece equals $\pi(0)\cdot \int e^{-tw^6/720}\,dw$, which by
+\texttt{sextic\_partition} is $\pi(0)\cdot \tfrac13 \cdot
+(720/t)^{1/6}\cdot\Gamma(1/6)$. Multiplying by $t^{1/6}$, the
+$(720/t)^{1/6}$ factor combines with $t^{1/6}$ via
+$t^{1/6}\cdot (720/t)^{1/6} = 720^{1/6}$ (one
+\texttt{Real.mul\_rpow} step plus \texttt{field\_simp}).
+
+The whole proof is therefore a two-step move: a $50$-line substitution
+identity, then a four-clause invocation of DCT, then an integration-
+splitting corollary. No mathematical novelty over E4; the whole tide
+is a constants-substitution exercise, exactly as a Step-3-of-the-
+sequence tide should be.
+
+\section{Roadblocks and resolutions}
+
+There were no serious roadblocks. The file compiled green on first
+compile after the \texttt{lake exe cache get} step. The substitution
+identity, which absorbed most of E4's effort, was a direct port —
+swap $\tfrac14$ for $\tfrac16$ throughout, swap $a^4$ for $a^6$, swap
+\texttt{quarticPotential} for \texttt{sexticPotential}, and the
+\texttt{ring} / \texttt{field\_simp} closures all fire identically.
+
+The only friction was infrastructural: the worktree was created via
+the K1 worktree wrapper but did not inherit the canonical clone's
+\texttt{.lake/build/} directory, so the first \texttt{lake build}
+attempt started compiling Mathlib from source. Killed and re-ran with
+\texttt{lake exe cache get} first, which restored the prebuilt oleans
+in $\sim$15 seconds; the subsequent build took $\sim$2 minutes
+(target file alone in $3.1$~s). This is a one-line addition to the
+worktree wrapper: every fresh worktree should run
+\texttt{lake exe cache get} as part of \texttt{tide-worktree create}.
+
+A second infrastructural friction: the GPT-5.5 Pro credentials file
+at \texttt{.agents/skills/timaeus-research/credentials.json} was
+missing from the session. Earlier today's tides had access; somehow
+the file was removed or never copied locally. The deliberation
+proceeded on Claude judgment alone, justified by the fact that the
+candidate was a direct mirror of an already-deliberated proof and
+the closed-form constant was numerically verified at machine
+precision. This is acceptable for mirror-shaped tides; for any tide
+with substantive mathematical novelty, the credentials wall would
+need to be unblocked first.
+
+\section{What was Mathlib, what was new}
+
+Mathlib provided the entire infrastructure. Specifically:
+\texttt{MeasureTheory.Measure.integral\_comp\_mul\_right} for the
+substitution; \texttt{Real.rpow\_natCast},
+\texttt{Real.rpow\_mul}, and \texttt{Real.rpow\_one} for the exponent
+arithmetic; \texttt{Real.mul\_rpow} for the
+$t^{1/6}\cdot(720/t)^{1/6} = 720^{1/6}$ cancellation;
+\texttt{tendsto\_rpow\_atTop} for $t^{1/6} \to \infty$;
+\texttt{MeasureTheory.tendsto\_integral\_filter\_of\_dominated\_convergence}
+for the DCT; \texttt{MeasureTheory.integral\_add},
+\texttt{MeasureTheory.integral\_mul\_const}, and
+\texttt{Integrable.const\_mul} / \texttt{Integrable.mul\_const} for
+the linearity bookkeeping.
+
+What was new was, modulo constants, identical to what was new in
+E4: the substitution lemma
+\texttt{sextic\_jfunction\_centered\_subst}, the bounded-dominator
+wrapper \texttt{sextic\_dominator\_integrable}, the DCT theorem, the
+asymptotic corollary. No genuinely new \emph{mathematical} content
+appeared; the tide's contribution is to extend the closed-form
+J-function template from $k=2$ to $k=3$ inside the same Lean
+infrastructure, which is the small step the grammar-precursor
+sequence needs to demonstrate the template generalises.
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \emph{Worktree wrapper should run \texttt{lake exe cache get}.}
+The K1 wrapper creates a worktree from \texttt{git worktree add}
+but does not seed \texttt{.lake/build/}. The fresh worktree has
+\texttt{.lake/packages/mathlib/.lake/build/} only partially
+populated (whatever was synced as part of clone), and a naive
+\texttt{lake build} re-compiles ${\sim}$2700 Mathlib files. The
+fix is one line: append \texttt{lake exe cache get} to
+\texttt{tide-worktree create}'s tail. (Promote to the
+\texttt{tide} skill's branch hygiene preflight too.)
+
+\item \emph{Credentials hygiene.} The
+\texttt{.agents/skills/timaeus-research/credentials.json} file
+should be a session-startup invariant for any tide that may
+need GPT. Worth adding a one-line preflight check to the
+\texttt{tide} skill: if the credentials are missing, surface to
+the user before Step~2.
+
+\item \emph{Mirror tides are cheap.} A direct constants-mirror of an
+already-deliberated tide can land in a single short session with no
+GPT consult, provided the closed form is numerically verified at
+the destination constants. Cost ratio for this tide vs E4
+(both single-session, similar friction): roughly $1{:}3$ in
+agent-time, attributable entirely to the absence of
+deliberation overhead and the inherited proof template.
+
+\item \emph{The $1/p$-vs-$2/p$ partition prefactor needs flagging.}
+The constant differs between $p=4$ and $p=6$ ($\tfrac12$
+vs.~$\tfrac13$), and a copy-paste agent that mirrors E4
+mechanically without checking \texttt{sextic\_partition}'s actual
+right-hand side will land the wrong constant. The v2 survey did
+exactly this in its L1 entry (it copied $\tfrac12$ from E4); the
+tide-log corrected the survey before formalising. Worth a flag
+in the \texttt{tide-pick} skill: when proposing a mirror
+candidate, surface the destination's closed-form partition
+explicitly so the survey doesn't carry a copy-paste constant.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \emph{Generic-$k$ abstraction (E4 follow-up L1, now ripe).} With
+both $k=2$ and $k=3$ in the file and identical proof structure,
+the abstraction over $K(w) = w^{2k}/(2k)!$ is the natural next
+step. Closed-form constant
+$\tfrac{1}{k}\cdot ((2k)!)^{1/(2k)}\cdot \Gamma(1/(2k))$, modulo
+factors. Estimated ${\sim}$300 lines for the parametric form.
+
+\item \emph{Asymptotic-equivalence wrapper $J(t) \sim \pi(0)\cdot Z(t)$
+(E4 follow-up L2).} Now applies to two files (quartic, sextic).
+Probably worth a single shared $\sim$15-line corollary that takes
+the \texttt{Tendsto (t\textsuperscript{1/p}\cdot J)} form and
+divides through by the partition function.
+
+\item \emph{Hypothesis weakening (E4 follow-up L3).} Defer until both
+quartic and sextic land on \texttt{main}; then refactor both
+files together to use \texttt{AEMeasurable + ContinuousAt 0 +
+global bound}, with a shared substitution lemma in
+\texttt{lean-common}.
+
+\item \emph{Promote \texttt{jfunction\_centered\_subst} to
+\texttt{lean-common} (E4 follow-up L4).} Would shrink both
+quartic and sextic files by ${\sim}50$ lines each. Best done
+together with the L3 hypothesis-weakening so both files are
+visited once.
+
+\item \emph{Adopt the worktree-cache-seeding fix (this tide's lesson).}
+One-line addition to \texttt{tide-worktree create}; expect to
+land as a process tide.
+
+\item \emph{\textbackslash leanref-tag the grammar paper (E4 follow-up
+L5).} Once the grammar paper has TeX statements pinning the
+quartic and sextic J-function asymptotics, tag both with
+\texttt{\textbackslash leanref} pinned to commit
+\texttt{be4608f} (this tide).
+\end{itemize}
+
+\end{document}

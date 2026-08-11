@@ -1,0 +1,418 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{₃}{\ensuremath{_3}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+\title{Tide retrospective:\\$\kappa_3$ vanishing for affine observables (harmonic Gibbs)}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A small \emph{strict-improvement} tide of Tide~5
+(\texttt{kappa3\_harmonic\_id\_id\_id\_eq\_zero}): generalise from the
+identity-observable case to an arbitrary triple of affine
+observables. For the 1D harmonic potential
+$L(x) = (\lambda/2) x^2$ with $\lambda, t > 0$,
+\[
+  \kappa_3\bigl(b_1 x + c_1,\; b_2 x + c_2,\; b_3 x + c_3\bigr) = 0
+\]
+under the harmonic Gibbs measure on $\mathbb{R}$. The proof goes by
+\emph{moment expansion} (per the GPT-5.5~Pro consult): each of the
+seven Gibbs expectations in the cumulant formula reduces, after
+polynomial expansion of the affine integrands, to an instance of a
+workhorse polynomial-degree-3 lemma whose closed form is
+$a_2/(\lambda t) + a_0$ (the odd-power moments
+$m_1, m_3$ vanish by parity, and $m_2 = 1/(\lambda t)$). The
+constant and $m_2$-coefficient terms in $\kappa_3$ then cancel
+\emph{algebraically} by \texttt{ring}. Single session, 323~lines in
+one new file (\texttt{Laplace/OneD/HarmonicAffineKappa3.lean}), zero
+\texttt{sorry}, zero \texttt{axiom}, zero \texttt{native\_decide}.
+
+The deliberation step converged on Candidate~B (direct moment
+expansion, harmonic-specific) over Candidate~A or~C (both of which
+would have required factoring $\kappa_3$ multilinearity through a
+\emph{Threepoint}-side perturbation-direction-independence lemma we
+don't yet have). GPT-5.5~Pro's flag of that API gap was the decisive
+input.
+\end{abstract}
+
+\section{Setting}
+
+Tide~13 (cross-susceptibility derivative) and Tide~5
+($\kappa_3 = 0$ for the identity observable) closed a tight
+neighbourhood of the harmonic case in
+\texttt{Threepoint/Harmonic.lean}. Today's I2 tide
+(\texttt{tide/gibbscov-algebra}) added the generic algebra for
+\texttt{Laplace.gibbsExpectation} and \texttt{Laplace.gibbsCov}
+(scalar pulling, additivity, constant collapse), explicitly named
+``C1 — affine $\kappa_3$ for harmonic'' as one of three
+strict-improvement follow-ups it unblocks. This tide closes that
+follow-up.
+
+The seabed at the start of the tide was the I2 branch
+tip\footnote{Branch \texttt{tide/gibbscov-algebra}, commit
+\texttt{b844d7a}; commit prefixes truncated to seven characters
+throughout this retrospective. The branch is itself off post-G4
+\texttt{main} at \texttt{141997c}.}, with this Tide's worktree
+branched directly off that tip so the I2 algebra is available
+without an intermediate merge.
+
+\section{The thing formalised}
+
+The headline theorem is
+\begin{quote}
+\texttt{Laplace.OneD.kappa3\_harmonic\_affine\_eq\_zero}\,:
+\end{quote}
+% NOTE: the verbatim block below produces an unavoidable overfull-hbox
+% warning. The theorem signature is the load-bearing artefact of this
+% retrospective; abbreviating it would defeat the purpose. Recorded
+% explicitly here so a future reader knows it was considered.
+\begin{verbatim}
+theorem kappa3_harmonic_affine_eq_zero
+    {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t)
+    (b₁ c₁ b₂ c₂ b₃ c₃ : ℝ) :
+    Threepoint.kappa3 (volume : Measure ℝ)
+      (harmonicPotential lam)
+      (fun x : ℝ => b₂ * x + c₂)
+      t
+      (fun x : ℝ => b₁ * x + c₁)
+      (fun x : ℝ => b₃ * x + c₃) = 0
+\end{verbatim}
+
+\noindent
+\texttt{Threepoint.kappa3} is the third cumulant under a
+$(L, A, t, h)$-perturbed Gibbs measure, evaluated at $h = 0$
+(\texttt{CrossSusceptibility.lean:49}); its argument order
+$(\mu, L, A, t, \varphi, B)$ is the convention from the threepoint
+paper, with $A$ in the second observable position because $A$ is also
+the \emph{perturbation direction} of \texttt{gibbsExp}. At $h = 0$
+that perturbation collapses, so mathematically
+$\kappa_3$ is fully symmetric in the three observable slots; in the
+Lean API only the swap $(\varphi \leftrightarrow B)$ is free
+(\texttt{kappa3\_swap\_$\varphi$B}).
+
+The \emph{informal} statement is the multilinearity strict-improvement
+of Tide~5: $\kappa_3$ vanishes on any triple of affine observables,
+not just on the three identities. This is the cumulant-level
+expression of the fact that all Gaussians are determined by their
+first two moments (so cumulants of order three or higher vanish), and
+moreover that affine maps of a Gaussian are still Gaussian.
+
+\section{Proof strategy}
+
+The deliberation step considered three approaches:
+\begin{description}[leftmargin=2em]
+\item[Candidate~A (multilinearity reduction).] Introduce
+$\kappa_3$-multilinearity lemmas in each slot, then specialise to
+$b_1 b_2 b_3 \cdot \kappa_3(\mathrm{id}, \mathrm{id}, \mathrm{id}) = 0$
+via Tide~5. Reusable infrastructure but $\sim$150--250 lines.
+
+\item[Candidate~B (direct moment expansion).] Unfold $\kappa_3$,
+bridge to \texttt{Laplace.gibbsExpectation} (taking advantage of I2's
+algebra), expand each affine product as a degree-3 polynomial in
+$x$, substitute the harmonic moments, finish by \texttt{ring}.
+
+\item[Candidate~C (private multilinearity).] Same as A but the
+multilinearity helpers are kept private to the new file. Same line
+count as A.
+\end{description}
+
+\noindent
+GPT-5.5~Pro voted Candidate~B and flagged a structural reason: in
+\texttt{Threepoint.kappa3}, slot $A$ is also the perturbation
+direction of \texttt{gibbsExp}, so a true ``$\kappa_3$ is symmetric
+across all three slots'' lemma in Lean would require an
+\texttt{h=0}-perturbation-independence step that doesn't yet exist
+in the \texttt{Threepoint} repo. Candidates A/C
+\emph{appear} cheaper than they are because that hidden API
+obligation was not folded into their estimates. Candidate B sidesteps
+the issue entirely: it works at the integrand level, where the
+permutation symmetry is mathematical (factoring through the
+\texttt{Threepoint}--\texttt{Laplace} bridge) rather than API-level.
+
+The agreed proof is the moment-expansion route, with three layers of
+helpers in the same file:
+
+\begin{description}[leftmargin=2em]
+\item[Bridge.] \texttt{threepoint\_gibbsExp\_volume\_zero\_eq}
+(private): for $\mu = \texttt{volume}$ on $\mathbb{R}$,
+$\texttt{gibbsExp}\,L\,A\,t\,0\,\varphi$ reduces to
+$\texttt{Laplace.gibbsExpectation}\,L\,t\,\varphi$. Same private
+helper as in \texttt{AnharmonicKappa3.lean}; restated here to keep
+the file self-contained.
+
+\item[Moment closed forms.] Three private wrapper lemmas computing
+$\langle x \rangle_t = 0$, $\langle x^2 \rangle_t = 1/(\lambda t)$,
+$\langle x^3 \rangle_t = 0$ from the existing
+\texttt{gibbsExpectation\_harmonic\_pow\_*} lemmas in
+\texttt{OneD/Harmonic.lean}.
+
+\item[Polynomial-expectation workhorse.]
+\texttt{gibbsExp\_poly\_le3\_harmonic} (private): for any degree-3
+polynomial coefficients $(a_3, a_2, a_1, a_0)$, the harmonic Gibbs
+expectation of $a_3 x^3 + a_2 x^2 + a_1 x + a_0$ equals
+$a_2 / (\lambda t) + a_0$. Path: \texttt{gibbsExpectation\_add} three
+times (with type-ascribed integrability witnesses for each tail
+sum), \texttt{gibbsExpectation\_smul} three times,
+\texttt{gibbsExpectation\_const} once, then substitute the three
+moments.
+\end{description}
+
+\noindent
+The headline theorem is then a direct application of the workhorse
+to each affine product in the $\kappa_3$ expansion:
+\begin{itemize}[leftmargin=2em]
+\item For each pair-product $(b_i x + c_i)(b_j x + c_j)$, rewrite
+as $0 \cdot x^3 + b_i b_j \cdot x^2 + (b_i c_j + c_i b_j) \cdot x +
+c_i c_j$ via \texttt{funext}, then apply the workhorse to get
+$b_i b_j / (\lambda t) + c_i c_j$.
+
+\item For the triple-product
+$(b_1 x + c_1)(b_2 x + c_2)(b_3 x + c_3)$, rewrite as
+$b_1 b_2 b_3 \cdot x^3 + (\sum_{\mathrm{sym}} b_i b_j c_k) \cdot x^2 +
+(\sum_{\mathrm{sym}} b_i c_j c_k) \cdot x + c_1 c_2 c_3$ and apply
+the workhorse to get
+$(\sum_{\mathrm{sym}} b_i b_j c_k) / (\lambda t) + c_1 c_2 c_3$.
+
+\item For the three single-affine expectations, apply
+\texttt{gibbsExp\_affine\_harmonic} to get the value $c_i$ (since
+$\langle x \rangle = 0$).
+\end{itemize}
+
+\noindent
+The seven closed forms then plug into the cumulant formula, and
+\texttt{ring} closes the equality. The cancellation pattern is the
+one identified in the numerical sanity check:
+the $1/(\lambda t)$-coefficient
+$(b_1 b_2 c_3 + b_1 c_2 b_3 + c_1 b_2 b_3)
+- b_1 b_2 c_3 - b_1 b_3 c_2 - b_2 b_3 c_1$
+is identically zero by symmetry of multiplication, and the
+constant-coefficient
+$c_1 c_2 c_3 - 3 c_1 c_2 c_3 + 2 c_1 c_2 c_3$
+also vanishes.
+
+\section{Roadblocks and resolutions}
+
+Two minor frictions, both anticipated by the laplace
+\texttt{CLAUDE.md}'s ``Mathlib gotchas'' section.
+
+\paragraph{Pi.add vs single-lambda mismatch.}
+\texttt{Integrable.add} returns its conclusion as
+$f + g$ in the \texttt{Pi.add} encoding, not as a single lambda
+$x \mapsto f(x) + g(x)$. Subsequent \texttt{Integrable.congr} matches
+fail because the goal sees \texttt{Pi.add} not the lambda. The fix
+is the standard idiom from \texttt{CLAUDE.md}:
+\begin{verbatim}
+filter_upwards with x
+simp only [Pi.add_apply]; ring
+\end{verbatim}
+i.e., unfold the \texttt{Pi.add} explicitly via
+\texttt{simp only [Pi.add\_apply]} before \texttt{ring}.
+The first attempt (without the \texttt{simp}) hit
+\emph{`typeclass instance problem is stuck} and \emph{`show` tactic
+failed to match} — typical signatures of this issue.
+
+\paragraph{\texttt{convert ... using 1; ring} on a closed goal.}
+A `\texttt{convert}' that lands a perfectly-aligned goal (because
+\texttt{simp} had already done the alignment) leaves the
+\texttt{ring} call with no goals. Replaced with \texttt{exact h}.
+Tiny but worth recording: when the simp normal form already matches,
+\texttt{convert} is wrong; \texttt{exact} is right.
+
+No GPT consult was needed during Step~3: the deliberation in
+Step~2 was load-bearing enough that the proof skeleton was clear
+from the start. The implementation rolled through in a single pass
+once the integrability discipline (\texttt{Pi.add\_apply}
+unfolding) was in place.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib lookups (load-bearing).}
+\begin{itemize}[leftmargin=2em]
+\item \texttt{Integrable.const\_mul}: scaling preserves integrability.
+\item \texttt{Integrable.add}: sum of integrables (used through
+\texttt{Pi.add\_apply}-folded integrability witnesses).
+\item \texttt{Pi.add\_apply}: the simp lemma that unfolds
+\texttt{Pi.add} to pointwise sum.
+\item \texttt{filter\_upwards} for almost-everywhere equality
+witnesses passed to \texttt{Integrable.congr}.
+\end{itemize}
+
+\paragraph{laplace-side existing material reused.}
+\begin{itemize}[leftmargin=2em]
+\item I2's algebra: \texttt{Laplace.gibbsExpectation\_smul},
+\texttt{\_add}, \texttt{\_const} (\texttt{Laplace/Gibbs.lean},
+post-\texttt{41a7b41}). Without I2, this proof would have had to
+unfold \texttt{gibbsExpectation} manually to ratios of integrals
+and re-do the linearity by hand.
+\item Partition-function positivity for the harmonic
+case\footnote{\texttt{Laplace.OneD.harmonic\_partition\_pos} in
+\texttt{Laplace/OneD/HarmonicGibbsRegularity.lean}.}, used to
+discharge the $Z \neq 0$ hypothesis on
+\texttt{gibbsExpectation\_const}.
+\item Harmonic moment closed forms\footnote{\texttt{Laplace.OneD.gibbsExpectation\_harmonic\_pow\_even}
+and \texttt{\_pow\_odd} in \texttt{Laplace/OneD/Harmonic.lean}.}:
+direct $m_1 = m_3 = 0$ and $m_2 = 1/(\lambda t)$.
+\item Polynomial-times-Gaussian integrability\footnote{\texttt{Laplace.OneD.integrable\_pow\_mul\_exp\_neg\_mul\_sq}
+in \texttt{Laplace/OneD/IntegralRemainder.lean}, combined with the
+\texttt{harmonic\_integrand\_eq} alignment.}, giving integrability of
+$x^n \cdot \exp(-(t \cdot L(x)))$ for any $n \in \mathbb{N}$.
+\end{itemize}
+
+\paragraph{New material in this tide.}
+Three single-purpose moment lemmas, two integrability convenience
+wrappers, the
+\texttt{Threepoint}-to-\texttt{Laplace} bridge restated from
+\texttt{AnharmonicKappa3.lean}, the
+polynomial-expectation workhorse
+(\texttt{gibbsExp\_poly\_le3\_harmonic}), and the
+headline.\footnote{Full
+list: \texttt{gibbsExp\_x\_harmonic},
+\texttt{gibbsExp\_x\_sq\_harmonic},
+\texttt{gibbsExp\_x\_cube\_harmonic},
+\texttt{integrable\_smul\_x},
+\texttt{integrable\_const\_harmonic},
+\texttt{threepoint\_gibbsExp\_volume\_zero\_eq},
+\texttt{gibbsExp\_affine\_harmonic},
+\texttt{gibbsExp\_poly\_le3\_harmonic}, and
+the public theorem
+\texttt{kappa3\_harmonic\_affine\_eq\_zero}.} Total: 323~lines, of
+which $\sim$110 are docstrings and $\sim$210 are proof body. Nine
+named lemmas, one of them public (the headline).
+
+\paragraph{Threepoint API deltas.}
+None. The proof works inside the \texttt{Laplace} namespace using
+the bridge lemma; \texttt{Threepoint.kappa3} and
+\texttt{Threepoint.gibbsExp} appear only in the headline statement
+(by construction) and in a single \texttt{simp only} call at the top
+of the proof.
+
+\section{Lessons}
+
+\paragraph{The ``API symmetry vs.\ mathematical symmetry'' distinction.}
+GPT-5.5~Pro's flag on Candidates~A/C was \emph{the} decisive
+deliberation input. Both candidates' line-count estimates
+($\sim$150--250) were predicated on $\kappa_3$ being fully symmetric
+in $(\varphi, A, B)$ at the API level — which it is mathematically,
+but \emph{not} at the Lean signature level, because slot $A$ is
+load-bearing for the \texttt{gibbsExp} perturbation direction. Adding
+the missing \texttt{h=0}-perturbation-independence lemma is genuinely
+useful future infrastructure, but it would have been an unbudgeted
+sub-tide. Worth carrying forward into other deliberation
+checklists: \emph{when a candidate's proof sketch quietly invokes a
+mathematical symmetry, check whether the corresponding API symmetry
+is already formalised}.
+
+\paragraph{Moment expansion plus I2 algebra is a clean pattern.}
+The seven Gibbs expectations in the $\kappa_3$ expansion all reduce
+to instances of a single polynomial-in-$x$ workhorse lemma. The path
+\texttt{gibbsExpectation\_add} ($\times 3$) +
+\texttt{gibbsExpectation\_smul} ($\times 3$) +
+\texttt{gibbsExpectation\_const} ($\times 1$) +
+\texttt{ring} is mechanical once the integrability bookkeeping is
+discharged. Subsequent strict-improvements of harmonic-Gibbs
+identities (e.g.\ G2 anharmonic affine $\kappa_3$, future affine
+$\kappa_4$) can lift the workhorse pattern wholesale, replacing
+only the per-potential moment lemmas. Worth promoting the
+polynomial-degree-$n$ workhorse to a \texttt{lean-common} (or
+laplace-side) helper once the \emph{second} consumer materialises
+(G2 is the natural candidate).
+
+\paragraph{Build-cache sharing across worktrees.}
+A practical infrastructure note: the new worktree's
+\texttt{.lake/packages} pointed initially at the canonical
+\texttt{lean/laplace/} clone, which had unbuilt Mathlib /
+Threepoint dependencies (because \texttt{lake exe cache get} had
+failed offline at \texttt{tide-worktree create} time). Redirecting
+the symlink to a sibling worktree's \texttt{.lake/packages} (in this
+case the \texttt{tide/gibbscov-algebra} worktree, which had a clean
+build) gave instant green builds. This is safe so long as the two
+worktrees agree on Mathlib / Threepoint pin (\texttt{lakefile.toml}
+and \texttt{lake-manifest.json}); a sibling worktree branched off
+the same \texttt{main} should always agree. Worth adding to the
+\texttt{tide-worktree create} script as a fallback when
+\texttt{cache get} fails.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=2em]
+\item \emph{G2 — anharmonic affine $\kappa_3$.} The
+mirror tide for the anharmonic potential
+$L(x) = (\lambda/2)x^2 + (\alpha/6)x^3$. Same proof skeleton with
+the harmonic moment lemmas swapped for their anharmonic
+counterparts; the workhorse polynomial-expectation lemma generalises
+cleanly. Estimated $\sim$80 lines after the workhorse promotion.
+
+\item \emph{Promote the polynomial-degree-$n$ workhorse to
+\texttt{lean-common}.} Once G2 lands and demonstrates the second
+consumer, lift \texttt{gibbsExp\_poly\_le3\_harmonic} to a generic
+\texttt{gibbsExp\_poly\_le3} (or \texttt{\_le\_n}) parameterised by
+the moment closed forms. Reusable for any 1D Gibbs measure with
+explicit moments. $\sim$80 lines.
+
+\item \emph{The factored-identity formulation
+\texttt{kappa3\_affine\_eq\_factored}.} GPT noted in the
+deliberation that the factored statement
+$\kappa_3(b_i x + c_i)_{i=1,2,3}
+= b_1 b_2 b_3 \cdot \kappa_3(x, x, x)$
+is the natural \emph{cumulant content} (constants drop, scalings
+factor) and is valid for any 1D Gibbs measure with appropriate
+integrability — not just the harmonic case. Promoting it to a
+standalone theorem in \texttt{Laplace.Gibbs} (or in a new
+\texttt{Threepoint}-side helper file) would be the natural setup for
+G2 and any future affine-$\kappa_3$ tides.
+
+\item \emph{Affine $\kappa_4$ for the harmonic Gibbs.} Once a
+\texttt{kappa4} definition lands in \texttt{Threepoint}, the
+mirror affine-vanishing theorem follows the same workhorse pattern
+with the polynomial-expectation lemma extended to degree~4
+(closed-form moments $m_4 = 3/(\lambda t)^2$ from the existing
+even-power harmonic lemma).
+
+\item \emph{$h=0$-perturbation-independence for
+\texttt{Threepoint.gibbsExp}.} The lemma flagged by GPT as missing
+during deliberation. Statement: \texttt{gibbsExp $\mu$ L $A_1$ t 0
+$\varphi$ = gibbsExp $\mu$ L $A_2$ t 0 $\varphi$} for any two
+perturbation directions $A_1, A_2$. Mathematically a one-liner
+(the perturbation factor collapses at $h=0$), but in Lean would
+require an \texttt{integrand\_eq}-style argument since the integrand
+literally contains $A$. Defer until a downstream tide actually
+needs the symmetry that the existing \texttt{kappa3\_swap\_$\varphi$B}
+doesn't cover.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro contributed the deliberation-stage advisory at Step~2,
+including the API-incompleteness flag for Candidates~A/C (the
+$\kappa_3$-symmetry vs.\ \texttt{Threepoint.gibbsExp}-perturbation-direction
+issue) and the recommended moment-expansion implementation style.
+The full consult is preserved at
+\texttt{projects/primer/tide-log/gpt55\_tide\_kappa3\_affine\_harmonic\_v1.md}.
+
+This Tide branched off the \texttt{tide/gibbscov-algebra}
+tip~(\texttt{b844d7a}), so it consumes I2's algebra directly without
+an intermediate merge. When both branches eventually land in
+\texttt{main}, the linear chain
+\texttt{main} $\to$ \texttt{tide/gibbscov-algebra} $\to$
+\texttt{tide/kappa3-affine-harmonic} merges cleanly in that order.
+
+\end{document}

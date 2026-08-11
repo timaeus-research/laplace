@@ -1,0 +1,347 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{₀}{\ensuremath{_0}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{cross-susceptibility derivative vanishes for the harmonic Gibbs}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{6 May 2026}
+
+\begin{document}
+
+\sloppy
+\maketitle
+
+\begin{abstract}
+A six-line Tide-loop excursion in the \texttt{laplace} seabed,
+composing two prior tides into a downstream theorem neither delivers
+alone:
+$\partial_h \mathrm{Cov}_h(x, x)|_{h=0} = -t\cdot\kappa_3(x,x,x) = 0$
+for the harmonic Gibbs $L = (\lambda/2) x^2$ with linear perturbation
+$A = x$. Lives in \texttt{Laplace/OneD/HarmonicCrossSuscDeriv.lean}
+(87 lines, including header docs); the proof body is six lines on top
+of \texttt{harmonic\_id\_gibbsRegularity} (Tide 10),
+\texttt{kappa3\_harmonic\_id\_id\_id\_eq\_zero} (Tide 5), and
+threepoint's generic cross-susceptibility identity (Tide 6). Zero
+\texttt{sorry}, zero \texttt{axiom}, zero \texttt{native\_decide}.
+The interesting friction in this run was operational, not
+mathematical: two other Tide agents (separable-potential and
+bounded-prior-test-function) were operating concurrently in the same
+checkout, and the \texttt{Laplace.lean} import line and the new file
+itself were churned by branch-switching and staging interleavings,
+including a commit that landed my file content under another agent's
+draft commit message. Resolution: amend the bad message; carry the
+\emph{per-Tide \texttt{git worktree}} recommendation forward (it had
+already been raised by the 2D pure-quartic retrospective on 2~May).
+\end{abstract}
+
+\section{Setting}
+
+The threepoint paper develops the susceptibility framework around
+three load-bearing identities: the FDT
+($\partial_h \langle\varphi\rangle_h = -t\,\mathrm{Cov}(\varphi, A)$),
+the cross-susceptibility identity
+($\partial_h \mathrm{Cov}_h(\varphi, B) = -t\,\kappa_3(\varphi, A, B)$),
+and the four-point flow equation. The threepoint repo (Tide 6 + earlier)
+proves these in the generic-Gibbs setting, parameterised by a
+\texttt{GibbsRegularity} structure and per-observable \texttt{GibbsObservable}
+hypotheses.
+
+For the framework to deliver concrete theorems on a specific
+potential, a project needs (i) the \texttt{GibbsRegularity} instance
+for that potential, and (ii) \texttt{GibbsObservable} instances for the
+observables of interest. Tide~10 supplied (i) for the harmonic +
+linear case (\texttt{Threepoint.harmonic\_id\_gibbsRegularity}), and
+the Tide~10 retrospective named the natural one-tide capstone:
+
+\gptbox{Cross-susceptibility derivative theorems for the harmonic case.
+With the regularity instance now in hand, the FDT and cross-susceptibility
+derivatives specialise concretely. The cross-susceptibility derivative is
+particularly satisfying: by Tide~5,
+$\kappa_3(\varphi, x, B) = 0$ for the harmonic case, so
+$\partial_h \mathrm{Cov}_h(\varphi, B)|_{h=0} = -t \cdot \kappa_3(\varphi, x, B) = 0$
+for any $\varphi, B$ for which the relevant \texttt{GibbsObservable}
+hypotheses hold. A natural one-tide step would package this as a stand-alone
+theorem in laplace.}
+
+The candidate (G1 in the May~6 survey) is that capstone. The Tide-pick
+auto-proceed timer fired on G1; this Tide implements it.
+
+The Step~2 deliberation\footnote{See \texttt{projects/patterning/tide-log/2026-05-06-tide-cross-susc-deriv-harmonic.md}.}
+caught two issues with the survey's wording and an alternative route
+worth recording.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the harmonic Gibbs measure
+$\mu_{t,h}(x) \propto \exp(-t((\lambda/2)x^2 + h\,x))$ on $\mathbb{R}$
+against Lebesgue, with $\lambda, t > 0$, and given
+\texttt{GibbsObservable} hypotheses for the monomials $x$, $x^2$, and
+$x^3$ at the harmonic + linear setup,
+\[
+  \frac{\partial}{\partial h} \mathrm{Cov}_h(x, x)\bigg|_{h=0} \;=\; 0.
+\]
+\end{quote}
+
+\noindent The Lean signature, in namespace \texttt{Laplace.OneD}:
+\begin{verbatim}
+theorem cov_h_id_id_deriv_harmonic_eq_zero
+    {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t)
+    (hx  : Threepoint.GibbsObservable (volume : Measure ℝ)
+            ((λ/2)·²) (id) t (id))
+    (hx2 : Threepoint.GibbsObservable (volume : Measure ℝ)
+            ((λ/2)·²) (id) t (id*id))
+    (hx3 : Threepoint.GibbsObservable (volume : Measure ℝ)
+            ((λ/2)·²) (id) t (id*id*id)) :
+    HasDerivAt
+        (fun h => Threepoint.gibbsCov (volume) ((λ/2)·²) (id) t h
+                                       (id) (id))
+        0 0
+\end{verbatim}
+
+\noindent (using \texttt{(λ/2)·²} as shorthand for \texttt{fun x : ℝ
+=> lam / 2 * x ^ 2} and \texttt{id} for \texttt{fun x : ℝ => x}; the
+file source spells these out).
+
+The hypothesis pattern is that the three external \texttt{GibbsObservable}s
+encode the differentiation-under-the-integral content for the three
+monomials. Closing them is candidate G4 of the May~6 survey, deferred
+here on grounds of scope.
+
+The conclusion is in fact weaker than what holds. By square completion,
+the perturbed Gibbs measure factors as
+$\exp(t h^2/(2\lambda)) \cdot (\text{Gaussian centred at }-h/\lambda
+\text{ with variance } 1/(\lambda t))$, so $\mathrm{Cov}_h(x, x) = 1/(\lambda
+t)$ is \emph{globally} constant in $h$. The $\kappa_3$-route delivers
+only the basepoint version of this fact; the global-constancy form is
+recorded as a future tide.
+
+\section{Proof strategy}
+
+The proof is a structural composition of three prior results, with
+\texttt{ring}-level arithmetic at the joins. Five lines of Lean tactics:
+
+\begin{enumerate}[leftmargin=*]
+\item Discharge \texttt{GibbsRegularity}\,via Tide 10's instance.
+\item Apply threepoint's \texttt{gibbsCov\_deriv\_eq\_neg\_t\_kappa3}
+with $(\varphi, A, B) = (\mathrm{id}, \mathrm{id}, \mathrm{id})$. The six
+\texttt{GibbsObservable} slots ($\varphi$, $B$, $\varphi B$, $\varphi A$, $BA$,
+$\varphi BA$) collapse to three distinct hypotheses (\texttt{hx} fills
+$\varphi$ and $B$; \texttt{hx2} fills the three pairwise products; \texttt{hx3}
+fills the triple). The conclusion is\linebreak
+\texttt{HasDerivAt} of the covariance, with target derivative
+$-t \cdot \kappa_3(\mathrm{id}, \mathrm{id}, \mathrm{id})$.
+\item Rewrite the $\kappa_3$ term using Tide 5
+(\texttt{Threepoint.kappa3\_harmonic\_id\_id\_id\_eq\_zero}) to get
+$-t \cdot 0$.
+\item \texttt{mul\_zero} reduces to $0$.
+\item \texttt{exact} the resulting hypothesis.
+\end{enumerate}
+
+The interesting structural feature is what does \emph{not} appear: no
+calculus done by hand, no integration, no differentiation under the
+integral, no parity argument carried out in this file. Tide 5 is
+where the parity argument lives; Tide 10 is where the analytic
+content of the partition function lives; this tide is just the gate
+that admits both.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{The retrospective's claim about Tide 5 was loose.} The
+Tide 10 retrospective (which this Tide is the capstone of) says
+``by Tide 5, $\kappa_3(\varphi, x, B) = 0$ for the harmonic case'',
+suggesting Tide 5 covers general $(\varphi, x, B)$. It does not. Tide 5
+covers only $(\mathrm{id}, \mathrm{id}, \mathrm{id})$. GPT-5.5 Pro
+caught this immediately at the deliberation step and supplied a
+concrete Gaussian counterexample for the general claim:
+
+\gptbox{For a centred Gaussian with variance $\sigma^2$,
+$\kappa_3(x^2, x, x) = \mathbb{E}[x^4] - \mathbb{E}[x^2]\mathbb{E}[x^2]
+= 3\sigma^4 - \sigma^4 = 2\sigma^4 \neq 0$. So the honest G1 really is
+the restricted $(\varphi, B) = (\mathrm{id}, \mathrm{id})$ version.}
+
+The deliberation log records this counterexample so the next tide
+that wants the general $(\varphi, x, B)$ statement starts from the
+right premise.
+
+\paragraph{No proof-side roadblocks beyond a whitespace warning.} The
+six-line proof landed first try modulo a single linter warning (an
+extra space before a colon in a hypothesis declaration). Lean's
+elaborator handled the integrand unification at the
+\texttt{GibbsObservable} slots automatically: the
+$\beta$-equivalence between $(\mathrm{fun}\,w \mapsto (\mathrm{fun}\,x
+\mapsto x)\,w \cdot (\mathrm{fun}\,x \mapsto x)\,w)$ and $(\mathrm{fun}\,x
+\mapsto x \cdot x)$ went through without a \texttt{simpa} or
+\texttt{show}; GPT had warned about possible
+parenthesisation friction, which did not materialise.
+
+\paragraph{Concurrent-Tide-agent collisions.} The dominant friction
+in this run was operational, not mathematical. Two other Tide branches
+were running in the same checkout
+during the same window. Concrete symptoms observed:
+
+\begin{itemize}
+\item \emph{Import-line clobber.} My one-line addition to
+\texttt{Laplace.lean} (the import for the new file) was overwritten
+within the staging window: by the time the build started, another
+agent had replaced my line with their own \texttt{QuarticBoundedPriorTestFn}
+import. Re-add fixed it.
+\item \emph{File disappearance on branch-switch.} The new
+file\footnote{\texttt{HarmonicCrossSuscDeriv.lean}.} was untracked at
+the moment when the working tree was switched between branches by
+another agent; after the switch, the file was gone from disk.
+Switching back to my branch restored it (because the file was
+actually re-tracked on it under a stray commit).
+\item \emph{Stray commit with wrong message.} A commit landed on
+this Tide's branch\footnote{\texttt{tide/cross-susc-deriv-harmonic}.}
+containing exactly my work (the new file plus a one-line
+\texttt{Laplace.lean} addition, 88 lines total) but with the
+bounded-prior agent's commit message. Resolution:
+\texttt{git commit --amend} to fix the message; the content was
+already correct. Reflog has the original.
+\end{itemize}
+
+The 2D pure-quartic retrospective (Tide step 5 in the laplace chain,
+2~May) had already raised exactly this category of failure and named
+the structural fix:
+
+\gptbox{Concurrent Tide agents need filesystem isolation. The
+\texttt{Laplace.lean} import-list is a contention point because every
+new top-level file edits it. Two agents in the same checkout will
+race; it is not a question of careful sequencing. The structural fix
+is to run each Tide agent in its own \texttt{git worktree} attached
+to its own branch.}
+
+Today's run is one more data point. The fix is overdue.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.} Nothing except \texttt{mul\_zero}. The
+proof body is purely \texttt{ring}-level / \texttt{rw}-level
+manipulation of an existing \texttt{HasDerivAt} hypothesis.
+
+\paragraph{Threepoint and laplace provided.} All the infrastructure.
+The three load-bearing prior tides:
+\texttt{Threepoint.harmonic\_id\_gibbsRegularity} (Tide 10),
+\texttt{Threepoint.kappa3\_harmonic\_id\_id\_id\_eq\_zero} (Tide 5),
+\texttt{Threepoint.gibbsCov\_deriv\_eq\_neg\_t\_kappa3}
+(Tide 6, the generic cross-susceptibility identity).
+
+\paragraph{What was new.} The \emph{composition.} A theorem that
+combines three pre-existing pieces and unconditionally produces a
+named harmonic-case fact, with the three remaining
+\texttt{GibbsObservable} hypotheses left as parameters. Not novel
+mathematical content; novel \emph{packaging} that turns a
+parameterised lemma into a theorem about a specific Gibbs measure.
+This is exactly the bridge step the Tide loop is good at producing.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{Concurrent Tide agents in the same checkout
+remain a structural failure mode.} The 2~May retrospective named the
+fix (\texttt{git worktree} per Tide branch); today's run is an
+overdue reminder. Worth lifting into the Tide skill as a preflight
+step that automatically creates a worktree, not just as advice.
+
+\item \emph{Retrospectives leak loose claims.} The Tide 10
+retrospective overstated Tide 5's content (``\,$\kappa_3(\varphi, x, B)=0$\,''
+for general $(\varphi, B)$). A future tide that read the retrospective
+and not the source might have wasted time on a false target. Discipline:
+when a retrospective references a prior tide's theorem, copy the
+\emph{Lean signature verbatim}, not a paraphrase. The deliberation
+step caught this here, but only because GPT supplied a
+counterexample; without the multi-model loop the loose claim might
+have propagated.
+
+\item \emph{Composition tides are honest tide steps.} A six-line
+proof is a perfectly valid Tide outcome, provided the deliberation
+step does the work of identifying the precise composition shape and
+the right premises. The package-of-three-premises design here makes
+the theorem's place in the ecosystem unambiguous: anyone who later
+discharges the three \texttt{GibbsObservable} hypotheses
+(candidate G4) gets the unconditional version in one extra line.
+
+\item \emph{The numerical sanity check still earned its keep.} For a
+``structural'' identity ($\partial_h \mathrm{Cov} = 0$) it would have
+been tempting to skip the check. Doing it surfaced the stronger fact
+that $\mathrm{Cov}_h$ is \emph{globally} constant ($1/(\lambda t)$),
+not just locally constant at the basepoint. That observation
+became the runner-up alternative GPT named, recorded as a future
+tide candidate. A skipped check would have left it unnoticed.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{G4: discharge the three \texttt{GibbsObservable} hypotheses.}
+For each $k \in \{1, 2, 3\}$, prove
+$\mathrm{Threepoint.GibbsObservable}\,(\mathrm{volume})\,((\lambda/2)\cdot^2)\,(\mathrm{id})\,t\,(\mathrm{fun}\,x \mapsto x^k)$.
+Closed-form route via square completion + Gaussian moments
+(per GPT's recommended derivation). Estimated $\sim$300--400 lines for
+the three cases together; makes today's theorem unconditional.
+
+\item \emph{Global-constancy strengthening (the runner-up).} Prove
+$\mathrm{Threepoint.gibbsCov}\,(\mathrm{volume})\,((\lambda/2)\cdot^2)\,(\mathrm{id})\,t\,h\,(\mathrm{id})\,(\mathrm{id})\, =\, 1/(\lambda t)$
+for all $h$, not just locally constant at $h = 0$. Direct via
+shifted-Gaussian translation invariance plus the closed-form partition
+already in Tide 10. Avoids \texttt{GibbsObservable} hypotheses
+entirely. GPT's runner-up suggestion at deliberation; not chosen for
+this Tide because the package shape was different.
+
+\item \emph{Structural fix for concurrent-Tide-agents.} A wrapper
+that runs \texttt{git worktree add} per Tide branch and points the
+agent at the worktree. Doing this once removes the entire class of
+collisions documented above. Not a Lean tide; a process tide for the
+Tide skill itself.
+
+\item \emph{Update the May 6 candidates survey.} Mark G1 as ✓ Closed.
+The skill's Step 4 close-out section requires this.
+
+\item \emph{\texttt{\textbackslash leanref}-tag the threepoint paper.}
+The harmonic case now has three formalised theorems
+(\texttt{kappa3\_harmonic\_id\_id\_id\_eq\_zero}, the
+\texttt{GibbsRegularity} instance, and today's
+\texttt{cov\_h\_id\_id\_deriv\_harmonic\_eq\_zero}), enough for a
+one-pass tagging consistent with the laplace primer setup. This is
+candidate H4 in the May 6 survey.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro contributed the deliberation-stage advisory at Step 2,
+including the explicit Gaussian counterexample to the general
+$\kappa_3(\varphi, x, B) = 0$ claim and the runner-up
+shifted-Gaussian alternative. The full consult is preserved at
+\texttt{projects/patterning/tide-log/gpt55\_tide\_cross\_susc\_deriv\_harmonic\_v1.md}.
+
+\end{document}

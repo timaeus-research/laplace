@@ -1,0 +1,368 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{₀}{\ensuremath{_0}}
+\newunicodechar{𝓝}{\ensuremath{\mathcal{N}}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{full-line J-function asymptotic for the quartic potential}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{7 May 2026}
+
+\begin{document}
+
+\sloppy
+\maketitle
+
+\begin{abstract}
+A single-session Tide-loop excursion in the \texttt{laplace} seabed,
+formalising Step 2 of the grammar paper's precursor sequence: the
+full-line J-function asymptotic for the single-component blow-up
+$K(w) = w^4/24$. Two theorems committed: a centred DCT theorem
+$t^{1/4} \int e^{-t w^4/24}(\pi(w) - \pi(0))\,dw \to 0$ (Candidate X
+from the deliberation), and the user-facing form $t^{1/4} J(t) \to
+\pi(0) \cdot \tfrac12 \cdot 24^{1/4} \cdot \Gamma(1/4)$ as a 2-line
+corollary using \texttt{quartic\_partition}. 280 lines of Lean over
+the existing seabed, zero \texttt{sorry}, single-session
+formalisation. The deliberation reshaped the target from the direct
+form (Candidate~A) to the centred form (X)\,---\,less algebra in the
+statement, the user-facing form falls out\,---\,which Claude initially
+preferred but GPT correctly pushed harder for. The K1 worktree
+discipline (landed earlier today) gave clean filesystem isolation;
+no collisions with the four other concurrent Tide branches.
+\end{abstract}
+
+\section{Setting}
+
+The grammar paper precursor sequence is a multi-tide programme aimed
+at building enough infrastructure in the \texttt{laplace} seabed to
+formalise the resolution-of-singularities argument that drives the
+grammar paper's main theorem. The sequence's published steps so far:
+
+\begin{itemize}[leftmargin=*]
+\item \emph{Step 1} (Tide 7): bounded-prior partition function for
+the quartic\,---\,$Z_a(t) := \int_{[-a,a]} e^{-tw^4/24}\,dw$, with
+positivity, tail bound, and the splitting infrastructure that
+subsequent precursor steps reuse.
+\item \emph{Step 2-prime} (Tide 11+): bounded-prior with continuous
+test function. Branch-side closure has primitives plus a Lipschitz
+unnormalised estimate; the main-branch merge has only the primitives.
+\end{itemize}
+
+This Tide is the next link in that chain: drop the bounded-prior
+restriction and prove the \emph{full-line} J-function asymptotic.
+Concretely, for the single-monomial potential $K(w) = w^4/24$ and a
+continuous bounded prior $\pi : \mathbb{R} \to \mathbb{R}$, prove
+\[
+  t^{1/4} \cdot J(t) \;:=\; t^{1/4} \int_\mathbb{R} e^{-t\,w^4/24}\,\pi(w)\,dw
+  \;\longrightarrow\; \pi(0) \cdot \tfrac12 \cdot 24^{1/4} \cdot \Gamma(1/4)
+  \quad\text{as } t \to \infty.
+\]
+
+The Step-2 deliberation\footnote{See \texttt{projects/primer/tide-log/2026-05-07-tide-grammar-j-function.md}
+in the SRI repo for the full deliberation transcript and Candidates v1.}
+drafted three candidates spanning scope (k=2 only / generic k /
+bounded-support variant) and converged on a fourth, GPT-proposed
+reshape: the \emph{centred} form
+$t^{1/4}\int e^{-tw^4/24}(\pi(w)-\pi(0))\,dw \to 0$, with the
+user-facing direct form derived as a 2-line corollary using
+\texttt{quartic\_partition} (Tide 7's closed form for the no-prior
+partition).
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For $K(w) = w^4/24$ and $\pi : \mathbb R \to \mathbb R$ continuous with
+$|\pi(w)| \le M$ for some $M$,
+\[
+  \lim_{t \to \infty} t^{1/4} \int_{\mathbb R} e^{-t\,w^4/24}\,(\pi(w) - \pi(0))\,dw \;=\; 0,
+\]
+and consequently
+\[
+  \lim_{t \to \infty} t^{1/4} \int_{\mathbb R} e^{-t\,w^4/24}\,\pi(w)\,dw
+  \;=\; \pi(0) \cdot \tfrac12 \cdot 24^{1/4} \cdot \Gamma(1/4).
+\]
+\end{quote}
+
+\noindent The Lean signatures, in namespace \texttt{Laplace.OneD}:
+\begin{verbatim}
+theorem quartic_jfunction_centered_tendsto_zero
+    {prior : ℝ → ℝ} (hprior_cont : Continuous prior)
+    {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
+    Tendsto (fun t : ℝ =>
+        t ^ ((1:ℝ)/4) *
+          ∫ w : ℝ, Real.exp (-(t * w^4 / 24)) * (prior w - prior 0))
+      atTop (𝓝 0)
+
+theorem quartic_jfunction_asymptotic
+    {prior : ℝ → ℝ} (hprior_cont : Continuous prior)
+    {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
+    Tendsto (fun t : ℝ =>
+        t ^ ((1:ℝ)/4) *
+          ∫ w : ℝ, Real.exp (-(t * w^4 / 24)) * prior w)
+      atTop (𝓝 (prior 0 * (1/2) * (24:ℝ) ^ ((1:ℝ)/4) *
+                Real.Gamma (1/4)))
+\end{verbatim}
+
+\noindent located at \texttt{Laplace/OneD/JFunctionQuartic.lean}.
+
+The hypothesis `Continuous prior` is slightly stronger than the
+deliberation's `AEMeasurable + ContinuousAt 0 + bounded`. The Lean
+saving (~50 lines of \texttt{AEMeasurable.comp\_quasiMeasurePreserving}
+plumbing) was worth it for a Tide step; the weakening is recorded as
+a follow-up. All paper applications use continuous priors anyway.
+
+\section{Proof strategy}
+
+The proof is substitute-then-DCT. With $a := t^{1/4}$ (so $a^4 = t$),
+the change of variables $u = a \cdot w$ converts
+\[
+  t^{1/4} \int_\mathbb{R} e^{-t\,w^4/24}\,(\pi(w) - \pi(0))\,dw
+\]
+into the $t$-independent-integrand form
+\[
+  \int_\mathbb{R} e^{-u^4/24}\,(\pi(u/a) - \pi(0))\,du.
+\]
+
+The change of variables is implemented by Mathlib's
+\texttt{MeasureTheory.Measure.integral\_comp\_mul\_right}, which says
+$\int g(w \cdot a)\,dw = |a^{-1}| \cdot \int g(u)\,du$. Setting
+$g(u) := e^{-u^4/24}\,(\pi(u/a) - \pi(0))$, we have
+$g(w \cdot a) = e^{-t\,w^4/24}\,(\pi(w) - \pi(0))$ (using
+$a^4 = t$ and $(w \cdot a)/a = w$), so the original integral equals
+$|a^{-1}| \cdot \int g(u)\,du = (1/a) \int g(u)\,du$. Multiplying by
+$a = t^{1/4}$ gives the substituted form.
+
+The DCT step uses
+\texttt{MeasureTheory.tendsto\_integral\_filter\_of\_dominated\_convergence}
+with envelope $2M\,e^{-u^4/24}$ (integrable by Tide 7's
+\texttt{quartic\_integrable\_pow\,0}) and pointwise limit $0$
+(from $u/a \to 0$ as $a \to \infty$ plus continuity of $\pi$ at the
+origin, then multiplication by the bounded $e^{-u^4/24}$).
+
+The user-facing corollary follows by splitting
+$\pi(w) = (\pi(w) - \pi(0)) + \pi(0)$ inside the integral. The
+centred piece is the headline; the constant piece is
+$\pi(0) \cdot t^{1/4} \cdot \int e^{-t w^4/24}\,dw$, evaluated by
+Tide 7's \texttt{quartic\_partition} closed form. Multiplying out
+$t^{1/4} \cdot (24/t)^{1/4} = 24^{1/4}$ yields the constant
+$\pi(0) \cdot \tfrac12 \cdot 24^{1/4} \cdot \Gamma(1/4)$.
+
+The proof body is structured as: a private substitution lemma
+\texttt{jfunction\_centered\_subst} (~55 lines, the most
+arithmetically dense step\,---\,handles the
+\texttt{Real.rpow} Jacobian bookkeeping) and a small dominator-
+integrability helper, followed by the headline theorem (~50 lines,
+DCT plus the substitution rewrite) and the corollary (~70 lines,
+integral split + closed-form substitution).
+
+\section{Roadblocks and resolutions}
+
+\paragraph{`π` clashes with Lean 4.29's namespace.} The first
+skeleton bound the prior as `\{π : ℝ → ℝ\}`. Lean rejected: \texttt{unexpected token 'π'; expected '\_' or
+identifier}. The Greek letter `π` is somehow treated as an operator
+or reserved-ish in this Lean version. Rename to \texttt{prior}; the
+rebuild went through. Worth landing in \texttt{laplace/CLAUDE.md} as
+a v4.29 quirk.
+
+\paragraph{\texttt{Real.tendsto\_rpow\_atTop} is at root namespace.}
+First attempt at the pointwise limit step used
+\texttt{Real.tendsto\_rpow\_atTop}. Build error: \texttt{Unknown
+constant `Real.tendsto\_rpow\_atTop`}. The lemma lives at the root
+namespace as \texttt{tendsto\_rpow\_atTop} (in
+\texttt{Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics}). This is
+the same gotcha pattern as
+\texttt{MeasureTheory.Measure.integral\_comp\_mul\_right}\,---\,namespace
+inconsistency between morally-related lemmas. Worth a one-liner in
+\texttt{CLAUDE.md}.
+
+\paragraph{`.symm` on `\texttt{∀ᶠ}` doesn't dot-resolve to `Filter.EventuallyEq.symm`.}
+The combine-via-Tendsto.congr' step originally wrote
+\texttt{Tendsto.congr' h\_decomp.symm h\_sum\_C}. Lean reported
+\texttt{Invalid field notation: ... `Filter.Eventually` is not a
+type that has a `symm` projection}. The fix is
+\texttt{h\_decomp.mono fun \_ h => h.symm} (use
+\texttt{Filter.Eventually.mono} to symmetrise the inner equality
+pointwise) or explicit
+\texttt{Filter.EventuallyEq.symm h\_decomp}. Subtle because in prose
+\texttt{∀ᶠ t in atTop, f t = g t} \emph{is} \texttt{f =ᶠ[atTop] g}\,---\,but
+the \texttt{def} unfolding doesn't propagate to \texttt{.symm} dot
+resolution. Worth a CLAUDE.md note.
+
+\paragraph{Hypothesis weakening: \texttt{AEMeasurable} → \texttt{Continuous}.}
+The deliberation chose \texttt{AEMeasurable + ContinuousAt 0 + global bound}
+as the mathematically-minimal hypothesis; the formalisation
+strengthened to \texttt{Continuous}. Reason: the AEMeasurable case
+needs \texttt{AEMeasurable.comp\_quasiMeasurePreserving} for the
+composition $\pi \circ (\cdot/a)$, plus \texttt{AEStronglyMeasurable}
+follow-through, plus a similar argument inside the DCT bound step\,---\,collectively
+~50 lines of MeasureTheory plumbing. The strengthened hypothesis
+captures all paper applications and saves a Tide-substantial chunk
+of proof. The weakening is recorded as a follow-up tide; nothing in
+the existing proof obstructs the substitution.
+
+\paragraph{No proof-side roadblocks beyond the above.} The
+substitution lemma typechecked first try once the \texttt{a^4 = t}
+identity was set up correctly (the trick: convert to
+\texttt{Real.rpow} via \texttt{Real.rpow\_natCast} then use
+\texttt{Real.rpow\_mul}). The DCT and corollary went through with
+modest tactic adjustments\,---\,no thrashing.
+
+\paragraph{Worktree isolation worked as intended.} This Tide ran in
+a dedicated \texttt{git worktree} created via
+\texttt{tide-worktree create laplace grammar-j-function} (the K1
+helper landed earlier today). Four other Tide branches
+were active concurrently in their own worktrees; no
+\texttt{Laplace.lean} import-line clobber, no stray-message commits,
+no branch-toggle file disappearances. The worktree discipline
+demonstrably solves the failure class the 6 May
+cross-susc-deriv-harmonic retrospective (Tide 13) flagged as
+``overdue.''
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+\texttt{MeasureTheory.tendsto\_integral\_filter\_of\_dominated\_convergence}
+for the DCT step\footnote{The \texttt{atTop : Filter ℝ} is countably
+generated, so the IsCountablyGenerated typeclass slot is filled
+automatically.}.
+\texttt{MeasureTheory.Measure.integral\_comp\_mul\_right} for the
+change of variables (with the Jacobian factor $|a^{-1}|$).
+\texttt{tendsto\_rpow\_atTop} (with the Real-namespace gotcha
+above), \texttt{Tendsto.div\_atTop}, \texttt{Tendsto.const\_mul},
+\texttt{Tendsto.sub\_const} for the pointwise-limit chain.
+\texttt{Real.rpow\_natCast}, \texttt{Real.rpow\_mul},
+\texttt{Real.mul\_rpow} for the
+$t^{1/4}$ bookkeeping. \texttt{MeasureTheory.integral\_add},
+\texttt{integral\_mul\_const} for the corollary's split.
+
+\paragraph{Tide 7 (laplace seabed) provided.}
+\texttt{quartic\_partition} (the closed form
+$\int e^{-t\,w^4/24}\,dw = \tfrac12 (24/t)^{1/4} \Gamma(1/4)$) and
+\texttt{quartic\_integrable\_pow} (envelope integrability for the
+DCT bound) are the only seabed pieces used.
+
+\paragraph{What was new.} The substitution lemma
+\texttt{jfunction\_centered\_subst}\,---\,a $t^{1/4}$-prefixed change
+of variables that turns the original integrand into a
+$t$-independent shape. The dominator-integrability helper. The two
+headline theorems. ~280 lines total.
+
+\paragraph{Out of scope.} The generic-$k$ version (for
+$K = w^{2k}/(2k)!$ at $k = 1, 2, 3, \ldots$). The hypothesis
+weakening to \texttt{AEMeasurable + ContinuousAt 0}. The
+asymptotic-equivalence form $J(t) \sim \pi(0) Z(t)$ (rather than the
+\texttt{Tendsto} form), which is one
+\texttt{Tendsto.div}-style step from what we have.
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=*]
+\item \emph{Reshape the target if GPT proposes a smaller one.}
+The deliberation's headline reshape\,---\,from the direct form
+(\texttt{Candidate A}) to the centred form (X)\,---\,was load-bearing.
+A direct-form proof would have had the
+\texttt{(1/2)\,$\cdot\,$24$^{1/4}\,\cdot\,\Gamma$(1/4)} constant
+threading through the DCT step; the centred form puts ``zero on the
+right'' in the headline and lets the constant fall out by
+\texttt{quartic\_partition} in a clean corollary. Cleaner statement,
+cleaner proof, smaller line count. GPT correctly identified this as
+a reshape worth the rename.
+
+\item \emph{The K1 worktree discipline pays off immediately.}
+Today this Tide ran with four other concurrent Tide branches active.
+Zero collisions, zero file disappearances, zero stray-message
+commits. The K1 wrapper is a structural fix to the failure class
+documented in two prior retrospectives; this is the first Tide that
+ran fully under it. Worth promoting in the Tide skill text from
+``recommended'' to ``mandatory'' (already done).
+
+\item \emph{Use \texttt{Continuous} when \texttt{AEMeasurable}
+costs a Tide-substantial detour.} The deliberation correctly
+identified the mathematically-minimal hypothesis class. The
+formalisation correctly identified that the weakening is a
+follow-up, not a Tide blocker. Both are right; the discipline is
+to write \emph{both} into the tide log so the deliberation's intent
+isn't lost.
+
+\item \emph{Three new \texttt{CLAUDE.md} entries.} The `π`-as-binder
+issue, the namespace inconsistency on \texttt{tendsto\_rpow\_atTop},
+and the \texttt{∀ᶠ.symm} dot-notation gotcha are all small but
+recurrent friction points. Worth landing.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=*]
+\item \emph{Hypothesis weakening to \texttt{AEMeasurable + ContinuousAt 0}.}
+The deliberation's chosen minimum. Requires \texttt{AEMeasurable.comp\_quasiMeasurePreserving}
+for the composition $\pi \circ (\cdot/a)$ plus a parallel argument
+inside the DCT bound step. ~50 lines.
+
+\item \emph{Generic-$k$ J-function for $K(w) = w^{2k}/(2k)!$.}
+Mirror today's proof for $k=3$ (sextic, using \texttt{Sextic.lean}'s
+\texttt{sextic\_partition}) and abstract a generic-$k$ template.
+The \texttt{Real.rpow} exponent bookkeeping for $t^{1/(2k)}$ is the
+main friction. Estimated ~250 lines as a follow-on Tide. Pairs with
+the pending A1 (generic even-monomial 1D template) on the May 7
+candidates survey.
+
+\item \emph{Asymptotic-equivalence form $J(t) \sim \pi(0)\, Z(t)$.}
+The grammar paper's actual statement is in equivalence form, not
+\texttt{Tendsto}-times-power form. Conversion is one
+\texttt{Tendsto.div}-style step away (\texttt{Tendsto (J(t)/Z(t)) atTop (𝓝 (\pi 0))})
+once \texttt{Z(t)} is wrapped as a continuous nonzero function of
+$t$. ~10 lines.
+
+\item \emph{Promote the substitution lemma to \texttt{lean-common}.}
+The pattern \emph{$t^{1/(2k)} \cdot \int f(t \cdot w^{2k}/(2k)!)\,dw =
+\int f(u^{2k}/(2k)!)\,du$ for any locally bounded $f$} is generic to
+single-monomial Laplace-method computations. Worth lifting to
+\texttt{lean-common} once a second Laplace-method tide uses it.
+
+\item \emph{\texttt{\textbackslash leanref}-tag the grammar paper.}
+Once the grammar paper has a clear blueprint pointing at this
+identity, tag with \texttt{\textbackslash leanref} pinned to commit
+\texttt{5d2ae2c}. Process tide.
+
+\item \emph{Mark E4 ✓ Closed in the May 7 candidates survey.}
+SRI-side close-out per the Tide skill's Step-4 discipline.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5 Pro contributed the deliberation-stage advisory at Step~2,
+including the load-bearing reshape from Candidate~A (direct form)
+to Candidate~X (centred form), the warning about the constant in
+the generic-$k$ version (\texttt{1/k}, not \texttt{1/(2k)}), and the
+recommendation against an \texttt{IsLittleO} reformulation. The full
+consult is preserved at
+\texttt{projects/primer/tide-log/gpt55\_tide\_grammar\_j\_function\_v1.md}.
+
+\end{document}

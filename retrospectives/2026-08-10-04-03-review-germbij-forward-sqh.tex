@@ -1,0 +1,215 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{ν}{\ensuremath{\nu}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{₀}{\ensuremath{_0}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{⁻}{\ensuremath{^{-}}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.6 Sol:}} #1\end{quote}\medskip}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\Var}{\operatorname{Var}}
+\emergencystretch=3em
+
+\title{Review retrospective:\\\emph{the germbij forward completion and the class-(c) arc}}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The second review of the germbij formalisation
+arc\footnote{\reviewref[The first]{2026-08-10-01-29-review-germbij-new-content}
+covered PRs \#93--\#103.} covers the seven files that landed after it:
+the forward-programme completion (PRs \#104--\#110 --- the numerator
+integration, the outer tails, the generic asymptotic division, and the
+public \texttt{rescaledMoment\_hasExpansion}) and the class-(c)
+semi-quasi-homogeneous arc (PRs \#113--\#116 --- the exact
+quasi-homogeneous moment laws, the one-grade covariance engine, and
+grade recovery). The independent reviewer found \emph{no mathematical
+fidelity defects in either arc}: the division recursion, the tail
+estimates, the exponent conventions ($-\langle q, \alpha +
+\mathbf{1}\rangle$ against the note's $\ell(\alpha)$), the sign of the
+covariance limit, and the constant-killing equivalence all verified,
+independently agreeing with the session's own hand checks. What it
+found instead were three boundary-honesty findings --- places where a
+docstring or a natural reading claims slightly more than the theorems
+deliver --- each with a documentation-level fix that the review
+implemented under the statement-invariance gates (fingerprint
+byte-identical, build green). Twenty-one proof-refactor suggestions are
+recorded for a dedicated simplification pass.
+\end{abstract}
+
+\section{Setting}
+
+The germbij fidelity-review arc resumed at the user's direction after
+the perimeter tides closed the first review's findings. Since that
+review's baseline, two programmes had landed on \texttt{main}: the
+forward-expansion programme's completion --- stages 5c-ii through 7,
+proving that rescaled posterior moments of continuous polynomial-growth
+observables are order-$N$ asymptotic polynomials at $0^+$ --- and the
+scoping-consulted fragment of the note's \S7.4 item (c). Neither had
+been independently reviewed. The review ran as one pass with the
+consult split per arc, against the note's \S3 (forward direction),
+\S7.4(c) (quasi-homogeneous recovery), the two archived architecture
+consults, and the upstream definition corpus. The note's two
+\verb|\leanref| anchors into \texttt{QhMomentRecovery} were verified to
+point at the correct lines before the consult.
+
+\section{What was reviewed}
+
+\textbf{Forward completion.} \texttt{Multi/NumeratorExpansion.lean}
+(the DCT window piece with coefficients $a_j = \int P\, e^{-T_2}\,
+P_j$), \texttt{Multi/NumeratorTails.lean} (both outer tails beyond all
+orders; the packaging \texttt{numerator\_hasExpansion}),
+\texttt{Multi/AsymptoticDivision.lean} (the generic division lemma with
+the recursion $c_j = (a_j - \sum_{i=1}^{j} b_i c_{j-i})/b_0$), and
+\texttt{Multi/ForwardTheorems.lean} (the public face:
+\texttt{rescaledMoment\_hasExpansion}, its existence form, the monomial
+instances, and the comparison face
+\texttt{momentCoeff\_eq\_of\_isLittleO}).
+
+\textbf{Class (c).} \texttt{Multi/QhMomentRecovery.lean} (exact
+unnormalized and normalized monomial moment laws for a
+quasi-homogeneous potential; the moment-ratio recovery
+$t^{\langle q,\alpha\rangle}\langle x^\alpha\rangle_t = M_\alpha/M_0$,
+all multi-indices including odd; and the single-temperature
+comparison form), the one-grade file
+\texttt{Multi/GradeComparison.lean} (the pointwise engine
+$|e^{-W}-1+W| \leq W^2$ and the one-grade difference limit
+$(M_2(h)-M_1(h))/h^\rho \to -\Cov_P(A,Q)$), and
+\texttt{Multi/GradeRecovery.lean} (covariance injectivity and
+\texttt{grade\_eq\_of\_normalized\_rates}).
+
+\section{Fidelity findings}
+
+\textbf{No mathematical defects in either arc.} The reviewer
+re-derived the historically error-prone pieces: the division
+recursion's indexing and its handling of negative $b_0$ (through
+$|g| \geq |b_0|/2$ eventually), the eventual decomposition of the
+numerator into window plus tails with the domain indicator collapsing
+on the window, the integrability supplied to the positivity route for
+$a_0(1) = \int e^{-T_2} > 0$, the exponent bookkeeping
+$-(\sum_i q_i + \sum_i q_i\alpha_i) = -\ell(\alpha)$ with the volume
+factor cancelling in the normalized law, the sign of the covariance
+limit under $V_2 - V_1 \to Q$, and the equivalence of the Lean's
+$Q(0) = 0$ constant-killing with the note's positive-weighted-degree
+argument. All checks converged with the session's independent
+pre-triage, recorded in the review log before the responses arrived.
+
+Three boundary-honesty findings, all of the ``narrower than the
+prose'' genre:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Fixed rescaled observables (forward).} The expansion
+theorems hold for a fixed observable of the \emph{rescaled} variable.
+The note's fixed original-scale $\varphi(w)$ becomes the $q$-dependent
+$z \mapsto \varphi(qz)$ after rescaling, and the final
+observable-Taylor packaging is not in these files; the monomial
+instances (where $\varphi_m(qz) = q^k\cdot\texttt{monomialTest}$)
+carry the content the recovery theorems consume. The top docstring's
+``the germbij note's forward direction'' read broader than that.
+\item \textbf{Global exact laws vs the localized cutoff law (SQH).}
+The note states $\int x^\alpha e^{-tP}\chi = t^{-\ell(\alpha)}M_\alpha
++ O(e^{-ct})$; the Lean proves the \emph{global} model exactly, with
+no cutoff and no error term --- a faithful strengthening for that
+model, but the localized bridge is unformalised. Moreover the exact
+identities are junk-value-consistent, taking no integrability or
+positivity hypotheses, so ``recovery'' is substantive only when the
+reference moments are finite with $M_0 > 0$ (the note's standing
+assumptions, not taken in the file).
+\item \textbf{The generic engine vs the SQH specialization.}
+\texttt{GradeComparison} is the correct one-grade engine, but nothing
+yet constructs the correction families from weighted-homogeneous
+pieces, identifies the rate exponent $\rho \in \mathbb{N}$ with the
+cleared grade difference, or runs the finite grade induction ---
+so \texttt{GradeRecovery}'s ``reaching the designated endpoint'' was
+optimistic; ``the conditional one-grade endpoint'' is accurate.
+\end{enumerate}
+
+\section{Simplifications applied}
+
+The three documentation-level fixes the reviewer itself recommended
+for the findings above --- and nothing else. The
+\texttt{ForwardTheorems} module docstring now says ``the
+rescaled-moment core of the germbij forward direction'' and names the
+two non-goals (observable-Taylor packaging, Wick evaluation of the
+coefficient integrals); the monomial-instance docstring states the
+original-scale bridge $\varphi_m(qz) = q^k\cdot\texttt{monomialTest}$
+explicitly; \texttt{QhMomentRecovery} carries the two boundary notes
+(junk-value consistency and the unformalised localized law); and
+\texttt{GradeRecovery}'s endpoint claim is qualified. Statement
+invariance was checked mechanically (the public-signature fingerprint
+of all seven files is byte-identical before and after) and the build
+is green. The affirmation pass endorsed all three changes. The 21
+proof-refactor suggestions (growth-normalization and Gaussian
+domination helpers, integrand abbreviations, the reusable
+eventual-denominator lemma, finite-sum linearity helpers, and the
+rest) are recorded verbatim in the review log as a batch for a
+dedicated simplification pass.
+
+\section{Disagreements and open questions}
+
+No Claude/GPT disagreements; the consults' findings coincide with the
+pre-triage. Escalated to the human, as candidate future work rather
+than defects:
+\begin{itemize}[nosep]
+\item the localized cutoff law (the $O(e^{-ct})$ bridge from the
+global model to the note's $\chi$-cut statement) --- one tide, the
+same loss-gap mechanism as the inverse-side cutoff removal;
+\item the SQH instantiation of the one-grade engine
+(weighted-homogeneous corrections, $\rho$ = cleared grade difference,
+finite induction) --- the consult-designated continuation if class (c)
+is ever re-prioritised;
+\item the observable-Taylor packaging for fixed original-scale
+observables, if the note's forward statement is wanted verbatim.
+\end{itemize}
+
+\section{Lessons}
+
+The pattern from the first review repeats cleanly: on this seabed the
+failure mode is never a wrong statement --- it is prose (docstrings,
+completion banners) claiming the neighbourhood of what was proved
+rather than exactly what was proved. Fidelity reviews should diff the
+hypothesis list and the quantifier structure against the claim
+sentence by default; both consults were most valuable exactly there.
+Also worth keeping: verifying the note's \verb|\leanref| line numbers
+against the files takes seconds and closes a whole class of
+anchor-drift findings before the consult runs.
+
+\section{Follow-ups}
+
+\begin{itemize}[nosep]
+\item The recorded 21-item simplification batch (review log,
+``Triaged findings'').
+\item The three candidate tides above, at the user's discretion.
+\item Review the perimeter files (HessianBridge, ShiftNormalization,
+CutoffRemoval) once PRs \#109/\#112/\#115 merge — they are unmerged
+and were deliberately out of scope here.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,83 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the moment-ladder base --- $\mathrm{iteratedDeriv}\,k\,Z = G_k$}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicPartitionDerivGeneralH.lean}: the file that
+defines the weighted partition family $G_n(h)=\int(-(tx))^n e^{-t(L+hx)}$ and proves the
+moment-ladder identity $\mathrm{iteratedDeriv}\,k\,(G_0)=G_k$ on $|h|<1$, with the $Z''(0),Z'''(0)$
+corollaries. Result: \textbf{a clean fidelity pass with no edits.} The general-$h$
+dominated-differentiation step and the induction are correct, and both \texttt{open}s are
+load-bearing.
+\end{abstract}
+
+\section{Setting}
+This is the keystone of the anharmonic cumulant machinery: it upgrades the $h=0$ derivative step of
+\reviewref[AnharmonicPartitionHigherDeriv]{2026-06-05-review-laplace-oned-anharmonicpartitionhigherderiv}
+to a general-$h$ statement, then promotes the single derivative to the full iterated-derivative
+identity $\mathrm{iteratedDeriv}\,k\,Z=G_k$ --- which is what makes the cumulant files
+(\reviewref[AnharmonicFourthCumulant]{2026-06-05-review-laplace-oned-anharmonicfourthcumulant})
+genuinely about derivatives of $Z$, not just of integral expressions that happen to coincide.
+
+\section{What was reviewed}
+The definition \texttt{weightedPartition} and eight declarations: the bare-exponential domination,
+integrand integrability, \texttt{weightedPartition\_hasDerivAt} ($G_n'=G_{n+1}$ at general
+$|h|<1$), \texttt{weightedPartition\_deriv}, the induction
+\texttt{iteratedDeriv\_weightedPartition\_zero} ($\mathrm{iteratedDeriv}\,k\,(G_0)=G_k$), and the
+$Z''(0)=\int(tx)^2 e^{-tL}$, $Z'''(0)=-\!\int(tx)^3 e^{-tL}$ corollaries.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; checked end to end.} The definition is $G_n$. The general-$h$ step is the right
+neighbourhood upgrade of the $h=0$ argument: coercivity data, \texttt{ball 0 1}$\in\mathcal N\,h_0$,
+AE-measurability of the family and the derivative, an integrable majorant, the uniform derivative
+bound on the ball, pointwise \texttt{HasDerivAt}, and
+\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}. The induction is the standard
+germ-locality move: $\mathrm{iteratedDeriv}(k+1)(G_0)=\mathrm{deriv}(\mathrm{iteratedDeriv}\,k\,(G_0))
+=\mathrm{deriv}(G_k)=G_{k+1}$, the middle step via $=_{\!\!\mathfrak n}[\mathcal N h]$ from the
+induction hypothesis on the ball. $Z''(0)=G_2(0)=\int(tx)^2$, $Z'''(0)=G_3(0)=-\!\int(tx)^3$.
+The reviewer confirmed all five points. Crucially, because the file proves
+$\mathrm{iteratedDeriv}\,k\,Z=G_k$, the corollary titles ``second/third $h$-derivative of $Z$'' are
+fully warranted here --- closing the report-only caveat noted on the $h=0$ sibling.
+
+\section{Simplifications applied}
+\textbf{None --- the bucket was empty.} \texttt{open MeasureTheory} (bare $\int$ and measure API)
+and \texttt{open Topology} (bare $\mathcal N$ and $=_{\!\!\mathfrak n}$) are both load-bearing;
+there is no \texttt{open Real}; the single import is used; and the dense
+\texttt{weightedPartition\_hasDerivAt} proof has no dead local or no-op step. No worktree.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{Proving the iterated-derivative identity is what licenses the ``$Z^{(k)}$'' prose.}
+    The $h=0$ sibling proved derivatives of integral \emph{expressions} and had to hedge its
+    ``$Z''$'' wording; this file proves $\mathrm{iteratedDeriv}\,k\,Z=G_k$ outright, so the same
+    wording is exact. When a docstring says ``the $k$-th derivative of $Z$'', the licensing fact is
+    precisely an in-scope \texttt{iteratedDeriv} identity --- check for it before flagging the prose
+    either way.
+  \item \textbf{Two integral-side files in a row, both \texttt{MeasureTheory}-load-bearing.} The
+    measure-vs-algebra split continues to hold per-file: the differentiation-under-the-integral base
+    and this general-$h$/iterated promotion both carry bare $\int$, in contrast to the pure cumulant
+    algebra above them.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining anharmonic arc (\texttt{AnharmonicGibbsRegularity},
+    \texttt{AnharmonicGibbsObservableMonomials}, \texttt{AnharmonicKappa3Affine}) and the harmonic
+    regularity/observable/perturbed-moment files.
+\end{itemize}
+
+\end{document}

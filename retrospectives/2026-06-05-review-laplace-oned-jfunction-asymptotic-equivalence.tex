@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the J-function asymptotic-equivalence wrapper --- closing the arc}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/JFunctionAsymptoticEquivalence.lean}: the user-facing
+asymptotic-equivalence form $J_k(t)\sim\pi(0)\cdot Z_k(t)$, built from an unconditional ratio limit
+$J_k/Z_k\to\pi(0)$ and the \texttt{IsEquivalent} packaging. Result: \textbf{a clean fidelity pass with two
+small dead-code removals} --- a dead \texttt{open Real} and a linter-confirmed dead local. This is the last
+file of the J-function arc.
+\end{abstract}
+
+\section{Setting}
+This wrapper turns the generic-$k$ J-function asymptotic (from
+\reviewref[JFunctionMonomial]{2026-06-05-review-laplace-oned-jfunction-monomial}) into the form the grammar
+paper uses: an asymptotic equivalence $J_k\sim\pi(0)Z_k$. It is the fourth and final file of the J-function
+arc (quartic, sextic, generic, and this equivalence wrapper).
+
+\section{What was reviewed}
+Two public theorems: \texttt{kth\_jfunction\_div\_partition} (the unconditional ratio limit
+$J_k(t)/Z_k(t)\to\pi(0)$, the building block) and \texttt{kth\_jfunction\_isEquivalent} (the
+$\sim[\mathrm{atTop}]$ form, valid for $\pi(0)\ne0$, via \texttt{isEquivalent\_iff\_tendsto\_one}).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The ratio limit is correct: writing $\alpha=1/(2k)$ and
+$C=(1/k)((2k)!)^\alpha\Gamma(\alpha)$, the proof uses $t^\alpha J_k\to\pi(0)C$ (the N1 asymptotic) and
+$t^\alpha Z_k=C$ (the partition closed form) to get $J_k/Z_k=(t^\alpha J_k)/C\to(\pi(0)C)/C=\pi(0)$, with $C$
+shown positive before cancellation. The unconditional claim genuinely is unconditional (no $\pi(0)\ne0$ is
+smuggled in --- the ratio tends to $0$ when $\pi(0)=0$). The \texttt{IsEquivalent} theorem has the right
+orientation and comparator, supplies the eventual non-vanishing of $\pi(0)Z_k$ (from $Z_k>0$ via the positive
+closed form, plus $\pi(0)\ne0$), and reduces correctly to the ratio-to-one statement.
+
+One report-only note: both theorems take a global \texttt{Continuous prior} hypothesis, then derive
+\texttt{.aemeasurable}/\texttt{.continuousAt} to call the minimal-hypothesis generic --- the same non-minimal
+hypothesis carried by \reviewref[JFunctionQuartic]{2026-06-05-review-laplace-oned-jfunction-quartic}. Weakening
+it to \texttt{AEMeasurable}~$+$~\texttt{ContinuousAt 0} is a forward tide (signature change), not a review
+edit.
+
+\section{Simplifications applied}
+\textbf{Two dead-code removals.} A dead \texttt{open Real} (every \texttt{Real.exp}/\texttt{Real.Gamma}/%
+\texttt{Real.rpow\_*}/\texttt{Real.div\_rpow} is qualified; \texttt{MeasureTheory}/\texttt{Filter}/%
+\texttt{Asymptotics}/\texttt{Topology} carry the load), and a dead local hypothesis \texttt{h$\alpha$\_ne :
+$\alpha\ne0$} in the ratio theorem (no denominator is $\alpha$; the \texttt{field\_simp}s use $t^\alpha\ne0$
+and $C\ne0$). The local is a derived \texttt{have}, not a public binder, so its removal carries no
+unused-public-hypothesis cascade (the hazard from the
+\reviewref[Harmonic review]{2026-06-05-review-laplace-oned-harmonic}); the \texttt{unusedVariables} linter
+confirmed it dead. Rebuild green, both public signatures byte-identical, GPT-affirmed.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{Dead local \texttt{have} vs dead public binder --- different risk classes.} Removing the
+    derived local \texttt{h$\alpha$\_ne} is safe in a way that removing a dead \emph{proof block} which
+    consumes a public hypothesis (the Harmonic case) is not: a local \texttt{have} has no signature
+    consequence, so the only failure mode is an implicit tactic dependence, caught by the rebuild. The
+    \texttt{unusedVariables} linter's silence after removal is the clean confirmation.
+  \item \textbf{The J-function arc carried a consistent non-minimal-hypothesis seam.} Three of the four files
+    (quartic, this wrapper) take global \texttt{Continuous}, while the generic and the sextic use the minimal
+    class. Reviewing the arc end-to-end made the seam legible as a single forward-tide cleanup rather than four
+    unrelated notes.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \textbf{Forward tide (arc-wide):} migrate \texttt{JFunctionQuartic} and this wrapper to the minimal
+    hypothesis class \texttt{AEMeasurable}~$+$~\texttt{ContinuousAt 0} that the generic already supports.
+  \item The J-function arc is now fully reviewed. Remaining laplace surface: the \texttt{TwoD/} families
+    (\texttt{KthKth*}, \texttt{QuarticSextic}, \texttt{AddSeparable}, \texttt{SemiDegenerate}), assorted
+    \texttt{OneD/} files (\texttt{NearDegenerate}, \texttt{UniversalAsymptotics}, \texttt{TailBound}, \dots),
+    and the large \texttt{Multi/Covariance*} trio (sectioned approach).
+\end{itemize}
+
+\end{document}

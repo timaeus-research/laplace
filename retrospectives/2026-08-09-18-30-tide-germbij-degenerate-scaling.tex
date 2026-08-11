@@ -1,0 +1,127 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: abstract anisotropic scaling\\
+\large weight recovery without separability}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The separable tides recovered anisotropic weights coordinate by
+coordinate, but leaned on factorization at every step. This tide
+removes the crutch. The geometric input is packaged as an interface,
+\code{ScalesMeasure}: a one-parameter family of maps
+$\delta_s$ scales the reference measure by $s^{-Q}$. Together with
+quasi-homogeneity of the potential ($P(\delta_s w) = s\,P(w)$) and
+homogeneity of the observable ($\varphi(\delta_s w) = s^r \varphi(w)$),
+this forces the exact moment laws
+$I_\varphi(t) = t^{-(Q+r)} I_\varphi(1)$ and
+$M_\varphi(t) = t^{-r} M_\varphi(1)$ --- with \emph{no} integrability
+hypotheses, since an invertible substitution preserves
+non-integrability and Mathlib's junk-value convention degenerates
+coherently on both sides. On pi types, coordinate squares along the
+diagonal dilation have $r = 2q_i$, so matched coordinate moment data
+recover the full anisotropic weight vector of an arbitrary
+quasi-homogeneous potential, mixed terms included: the mechanism of
+germbij \S 7.4(b), freed from the separable class where it was first
+formalised. The numerical check runs the law on
+$x^4 + x^2y^2 + y^4$, whose integrals do not factor, and matches to
+ten digits.
+\end{abstract}
+
+\section{Setting}
+
+The degenerate programme's first two tides worked in the exact
+separable class, where every moment is a product of one-dimensional
+closed forms. The scoping consult had already identified what the
+genuinely non-separable step should be: not a harder example, but a
+change of \emph{input} --- replace factorization by the one fact the
+Laplace argument actually uses, the scaling of the reference measure
+under the anisotropic dilation. A dedicated shape consult settled
+the Lean form in advance: state the pushforward law as a hypothesis
+(an interface, not an integral identity and not a determinant
+computation), prove the moment laws abstractly over any measure
+space, and defer the concrete fact that Lebesgue pi-volume satisfies
+the interface --- ``the most brittle piece of Mathlib determinant
+plumbing'' --- to a separate infrastructure result. This tide is
+that plan, executed.
+
+\section{The thing formalised}
+
+\code{ScalesMeasure}~$\delta$~$Q$~$\mu$ says that
+$\mathrm{map}\,(\delta_s)\,\mu = s^{-Q}\,\mu$ holds for every
+$s > 0$. The unnormalized law
+(\code{scalesMeasure\_moment\_law}): under the interface,
+measurability of $P$ and $\varphi$, quasi-homogeneity of $P$, and
+$r$-homogeneity of $\varphi$ along $\delta$,
+\[
+  \int \varphi\, e^{-tP}\, d\mu
+  \;=\; t^{-(Q + r)} \int \varphi\, e^{-P}\, d\mu
+  \qquad (t > 0),
+\]
+by substituting $s = t^{-1}$ through \code{integral\_map} and the
+smul-measure integral. The normalized law
+(\code{scalesMeasure\_normalized\_law}) divides out the $\varphi = 1$
+case: the partition exponent $Q$ cancels, leaving $t^{-r}$, with no
+positivity hypothesis (if the normalizing integral vanishes, both
+sides are zero). The consumer
+(\code{weights\_eq\_of\_coordSq\_moments\_eq}): on $\iota \to \R$
+with the diagonal dilation $(\delta_s w)_i = s^{q_i} w_i$, coordinate
+squares are homogeneous with $r = 2q_i$, so two quasi-homogeneous
+potentials with scaling dilations, ray-matched normalized coordinate
+second moments, and positive moments at temperature one on one side,
+have equal weights. Nothing about $P$ beyond measurability and
+quasi-homogeneity is used; the potentials may contain arbitrary
+mixed terms, which is exactly what the separable tides could not
+reach.
+
+\section{Where progress stalled}
+
+Nothing structural; two frictions worth recording. First, the
+statement came out \emph{stronger} than drafted: the linter flagged
+the weight-positivity hypotheses, the second potential's moment
+positivity, and the threshold positivity as unused --- exponent
+rigidity needs only one positive leading coefficient, and the ray
+lemma manufactures its own threshold --- so they were deleted rather
+than silenced. The merged theorem is the honest minimal statement,
+found by the zero-warnings discipline rather than by design. Second,
+\code{Real.rpow\_neg\_one} does not exist for a real base (only the
+\code{NNReal}/\code{ENNReal} versions do); this bit twice in one
+session and is now in the repository's error catalogue with the
+working idiom.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{integral\_map}, \code{integral\_smul\_measure},
+\code{rpow} algebra, and the merged ray-rigidity lemma. New: the
+interface design. The consult's argument for it is worth preserving:
+an integral-identity hypothesis says less than the pushforward law
+(which covers every integrand at once), while the concrete
+determinant computation would couple the first non-separable theorem
+to the most fragile part of the measure library. The interface also
+makes visible that separability was never the mechanism --- only the
+measure scaling was.
+
+\section{What the next tide inherits}
+
+Two continuations. The infrastructure tide: prove that pi-volume
+satisfies \code{ScalesMeasure} for the diagonal dilation, via the
+linear-map Haar theorem and the determinant of a diagonal map
+(\code{LinearMap.det\_pi} exists in the pin; the elaboration is the
+predicted friction), which instantly upgrades every theorem here to
+unconditional statements on Lebesgue measure and, with the weighted
+Euler identity, covers $x^4 + x^2y^2 + y^4$ concretely. And the
+frontier: mixed-coefficient identification beyond the weights
+(Gelfand--Leray), where the note's constructive story ends and open
+research begins.
+\end{document}

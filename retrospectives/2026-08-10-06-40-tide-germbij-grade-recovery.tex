@@ -1,0 +1,107 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: grade recovery\\
+\large the semi-quasi-homogeneous endpoint}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The last two stages of the scoping consult's plan for the germbij
+note's constructive class (c), and its designated endpoint. Stage C
+is covariance injectivity: a continuous observable with vanishing
+self-covariance under a positive reference density is almost
+everywhere its mean --- the $L^2$ argument
+$\int (Q - m)^2 e^{-P} = Z \cdot \operatorname{Cov}_P(Q,Q) = 0$ ---
+hence constant by continuity against the open-positive volume, and a
+vanishing value at the origin kills the constant; finite combinations
+of nonconstant monomials need only the covariances against their own
+support. Stage D composes this with the one-grade difference limit:
+when the normalized moment differences of two families vanish at the
+grade rate for every support monomial while the difference limits
+equal the negative covariances, uniqueness of limits forces the grade
+difference to vanish identically. With the exact moment-ratio
+recovery for principal quasi-homogeneous models, the consult's
+endpoint is realized: principal-model moment ratios are recoverable,
+and conditional on a common recovered principal part, each finite
+weighted correction grade is recoverable from normalized moment
+rates.
+\end{abstract}
+
+\section{Setting}
+
+The three-tide arc for class (c) — moment ratios, the difference
+limit, and this recovery — follows the archived scoping consult,
+which also fixed what deliberately stays open: the
+coarea/Gelfand--Leray identification of the principal part awaits a
+thicker geometric measure theory in Mathlib, and the full
+weighted-analytic induction is a programme rather than a tide. The
+note's class (c) argument is thereby formalised in its recoverable
+fragments, with the boundary drawn where the consult drew it.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{mvMonomial\_continuous} and \code{mvMonomial\_zero\_eq\_zero};
+expectation and covariance bilinearity over finite monomial
+combinations (\code{expectationUnder\_combo\_mul},
+\code{covarianceUnder\_combo\_left}), with the combo integrabilities
+derived from per-pair hypotheses by factoring through
+$m_\alpha \cdot Q_c \cdot e^{-P}$ rather than double sums;
+\code{eq\_zero\_of\_covariance\_self\_zero} (the stage C core:
+variance expansion under three integrabilities,
+\code{integral\_eq\_zero\_iff\_of\_nonneg}, the
+almost-everywhere-to-everywhere step by
+\code{Continuous.ae\_eq\_iff\_eq}, and the origin evaluation);
+\code{monomialCombo\_eq\_zero\_of\_covariance\_monomials\_zero}; and
+\code{grade\_eq\_of\_normalized\_rates} (stage D), whose interface
+hypothesis is stage B's conclusion --- callers discharge it under
+that theorem's explicit majorant package, keeping this file free of
+domination bookkeeping.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+Two rounds, all catalogued or newly catalogued:
+\code{Finset.sum\_div} wants the numerator-sum orientation (push the
+sum through the division first, then convert per-term with
+\code{mul\_div\_assoc}); the Pi.sub single-lambda trap fired on
+\code{integral\_add} (the type-ascribed witness fixes it, as the
+repo playbook says); and \code{push\_neg} is deprecated for
+\code{push Not} on this toolchain.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{integral\_eq\_zero\_iff\_of\_nonneg},
+\code{Continuous.ae\_eq\_iff\_eq}, \code{pow\_eq\_zero\_iff},
+\code{tendsto\_nhds\_unique}, \code{Finset.prod\_eq\_zero},
+\code{integral\_finset\_sum}. New: none --- variance rigidity and
+first-variation covariance formulas are classical; the value is the
+composition against an arbitrary reference density in the note's own
+pairwise shape.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Class (c) closes here by design. What remains of the germbij note
+across all classes: the coarea/Gelfand--Leray layer (a Mathlib
+geometric-measure-theory prerequisite, not a tide); the concrete
+anisotropic instantiation of stages B--D for specific weighted
+families, should an application want named examples; and the two
+deferred nondegenerate extras (explicit Wick values for the forward
+coefficients; the \S5 global-mixture audit). The inverse-half
+perimeter is closed by the parallel session's stack (PRs \#107,
+\#109, \#112, \#115), awaiting merge at the user's discretion.
+\end{document}

@@ -1,0 +1,209 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{higher \(h\)-derivatives of the anharmonic partition function}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For the 1D anharmonic potential $L(x) = \tfrac{\lambda}{2}x^2 +
+\tfrac{\alpha}{6}x^3 + \tfrac{\gamma}{24}x^4$ ($\alpha^2 < 3\lambda\gamma$)
+under the linear perturbation $A(x)=x$, the perturbed partition function
+is $Z(h) = \int e^{-t(L(x)+hx)}\,dx$. The existing regularity instance
+proved its first $h$-derivative at $h=0$. This tide proves the general
+iterated-derivative \emph{step}: for every $n\in\mathbb{N}$,
+\[
+  \frac{d}{dh}\Big|_{h=0}\!\int (-(tx))^n e^{-t(L(x)+hx)}\,dx
+    = \int (-(tx))^{n+1} e^{-t L(x)}\,dx,
+\]
+whose $n=1,2$ instances are the second and third $h$-derivatives of $Z$ at
+$h=0$ ($\int (tx)^2 e^{-tL}$ and $\int -(tx)^3 e^{-tL}$). New file
+\texttt{AnharmonicPartitionHigherDeriv.lean} ($\approx$200 lines), commit on
+branch \texttt{tide/anharmonic-partition-higher-deriv}; builds clean, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}, no lint warnings;
+both derivative forms numerically confirmed to $\sim$$10^{-6}$. Directly
+reuses the general $|x|^m$ integrability witness and the two public pointwise
+helpers landed in the FDT-capstone tide earlier the same day.
+\end{abstract}
+
+\section{Setting}
+
+The laplace seabed formalises the Laplace/Gibbs calculations of the SLT
+Susceptibility Primer. A recent tide closed the last \texttt{sorry} in the
+anharmonic \texttt{GibbsRegularity} instance, whose third field,
+\texttt{partition\_hasDerivAt}, gives the \emph{first} $h$-derivative at
+$h=0$ of the perturbed partition $Z(h) = \int e^{-t(L(x)+hx)}\,dx$, namely
+$\int (-tx)\,e^{-tL}$, proved by Mathlib's dominated-differentiation lemma
+\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}. Earlier
+this same day the FDT-capstone tide\footnote{\tideref[the anharmonic FDT
+capstone]{2026-05-30-tide-anharmonic-fdt-capstone}.} added a general
+integrability witness $\int |x|^m e^{-tL}<\infty$ for all $m$ and made two
+pointwise helpers public.
+
+The minimal good target outward from there: the higher $h$-derivatives. The
+flow-equation / fourth-cumulant identity needs the second and third
+derivatives of $Z$ at the unperturbed point $h=0$. Rather than prove $n=2$
+and $n=3$ as two separate lemmas, a single general-$n$ step lemma covers
+both (and all higher orders) at no extra cost, because the new $|x|^m$
+witness is already uniform in the power.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$, $t>0$, and every
+$n\in\mathbb{N}$,
+\[
+  \frac{d}{dh}\Big|_{h=0}\!\int_{\mathbb{R}} (-(tx))^n\,
+      e^{-t(L(x)+hx)}\,dx
+    \;=\; \int_{\mathbb{R}} (-(tx))^{n+1}\,e^{-t L(x)}\,dx .
+\]
+\end{quote}
+
+The Lean signature:
+
+\begin{verbatim}
+theorem anharmonic_partition_deriv_step
+    {lam alpha gamma t : ℝ} (n : ℕ)
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma) (ht : 0 < t) :
+    HasDerivAt
+      (fun h => ∫ x, (-(t * x)) ^ n *
+        Real.exp (-(t * (anharmonicPotential lam alpha gamma x + h * x))))
+      (∫ x, (-(t * x)) ^ (n + 1) *
+        Real.exp (-(t * anharmonicPotential lam alpha gamma x)))
+      0
+\end{verbatim}
+
+The two named corollaries \texttt{anharmonic\_partition\_secondDeriv}
+($n=1$, right-hand side $\int (tx)^2 e^{-tL}$) and
+\texttt{anharmonic\_partition\_thirdDeriv} ($n=2$, right-hand side
+$\int -(tx)^3 e^{-tL}$) are the literal second and third derivatives the
+direction asked for. They are the function being differentiated read as the
+$(n)$-th derivative integrand: differentiating $\int(-(tx))^1 e^{-t(L+hx)}$
+at $0$ yields $Z''(0)$, and differentiating $\int(-(tx))^2 e^{-t(L+hx)}$
+yields $Z'''(0)$.
+
+\section{Proof strategy}
+
+The proof is the $n=1$ \texttt{partition\_hasDerivAt} field with one extra
+constant-in-$h$ factor $(-(tx))^n$ carried through. Feed
+\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le} the family
+$F(h,x)=(-(tx))^n e^{-t(L(x)+hx)}$ on the unit ball around $0$:
+
+\begin{itemize}[itemsep=2pt]
+\item \textbf{Pointwise derivative.} The public
+  \texttt{anharmonic\_perturbed\_pointwise\_hasDerivAt} differentiates the
+  Boltzmann factor; \texttt{HasDerivAt.const\_mul $(-(tx))^n$} multiplies in
+  the monomial, and \texttt{ring} (with the exponential as an opaque atom)
+  collapses $(-(tx))^n\cdot(-(tx))$ to $(-(tx))^{n+1}$ via \texttt{pow\_succ}.
+\item \textbf{Dominator.} Writing $F'(h,x)=(-(tx))^n\cdot[(-tx)\,e^{-t(L+hx)}]$
+  and reusing the $n=0$ pointwise bound
+  \texttt{anharmonic\_perturbed\_pointwise\_bound} on the bracket, the
+  dominator is $t^{n+1} e^{t/2c} |x|^{n+1} e^{-(t/2)L}$, integrable by the
+  general $|x|^{n+1}$ witness at half temperature.
+\item \textbf{Endgame.} The lemma returns the derivative as
+  $\int F'(0,x)$, whose integrand still carries a $+0\cdot x$; an
+  \texttt{integral\_congr\_ae} with \texttt{ring} under the integral drops it.
+\end{itemize}
+
+\section{Roadblocks and resolutions}
+
+One real bug, caught by the build, then by re-reading the magnitude. The
+first draft tried to dominate $F(0,x)$ — needed for the \emph{integrability
+of $F$ at $0$} hypothesis — by the bare witness $|x|^n e^{-tL}$. But
+$\|(-(tx))^n e^{-tL}\| = t^n |x|^n e^{-tL}$ carries a $t^n$ the bare witness
+lacks, so the domination inequality was simply false for $t>1$ (and the
+\texttt{rw} chain that was supposed to massage it failed to match, which is
+how Lean flagged it). The fix was to scale the dominating function by $t^n$
+(\texttt{Integrable.const\_mul}) and finish the now-genuine equality with
+\texttt{le\_of\_eq (by ring)}. A good reminder that ``mirror the $n=0$
+proof'' still has to track the constants the monomial introduces.
+
+Everything else followed the FDT-capstone template mechanically: the same
+continuity-to-measurability discharges\footnote{%
+\texttt{Continuous.aestronglyMeasurable} composed with \texttt{fun\_prop}.},
+the same \texttt{set}-bound idiom then a \texttt{rw} closing the
+integrability congruence by \texttt{rfl}.
+
+GPT-5.5 Pro was consulted on the statement form (general-$n$ step vs.\ two
+explicit derivatives, and the $(-(tx))^{n+1}$ sign). Because the proof is a
+constant-factor generalisation of an already-merged result and the closed
+forms were numerically confirmed against finite differences before the
+build, this proceeded as a mirror-shaped tide without blocking on the
+consult; the build is the correctness witness.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} The dominated-differentiation
+lemma\footnote{\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}.};
+\texttt{HasDerivAt.const\_mul}; the \texttt{Integrable} combinators
+(\texttt{const\_mul}, \texttt{mono'}, \texttt{congr});
+\texttt{integral\_congr\_ae}; and continuity-to-measurability via
+\texttt{fun\_prop}.
+
+\textbf{Seabed (reused).} The general $|x|^m$ integrability witness and the
+two public pointwise helpers (pointwise derivative, pointwise bound), all
+from the FDT-capstone tide; \texttt{anharmonic\_coercive}.
+
+\textbf{New.} The general iterated-derivative step lemma and the two named
+derivative corollaries. About 200 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Generalise the index when the supporting witness already is.}
+  Because the $|x|^m$ integrability lemma is uniform in $m$, the single
+  general-$n$ step lemma cost no more than $n=2$ alone and gives every
+  higher derivative for free. The same observation made the FDT capstone
+  cheap; it is becoming the defining move of this anharmonic arc.
+\item \textbf{``Mirror the $n=0$ proof'' is not ``copy it''.} The monomial
+  factor introduces a $t^n$ that the dominator must carry. The build caught
+  it, but the magnitude computation should have caught it first.
+\item \textbf{A constant-factor generalisation plus a numerical check is a
+  legitimate proceed-without-GPT case.} The deliberation overhead is best
+  spent where the statement form is genuinely uncertain, not where the proof
+  is a verified template with confirmed closed forms.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Moment normalisation.} $Z^{(n)}(0)/Z(0) = \langle(-tx)^n\rangle_0$
+  ties these derivatives to the raw moments under the unperturbed Gibbs
+  measure; a short corollary once divided through by $Z(0)>0$.
+\item \textbf{Flow-equation / fourth-cumulant identity.} The motivating
+  application: assemble $Z''(0), Z'''(0)$ (and $Z^{(4)}(0)$, a further $n=3$
+  instance) into the connected fourth cumulant. Now unblocked.
+\item \textbf{General-$h$ version.} Centring the dominated-differentiation
+  ball at an arbitrary $h_0$ rather than $0$ would upgrade the step lemma to
+  a genuine ``$Z$ is smooth in $h$'' statement and allow true iterated
+  \texttt{iteratedDeriv} chaining; deferred as the $h=0$ form is what the
+  cumulant application needs.
+\end{itemize}
+
+\end{document}

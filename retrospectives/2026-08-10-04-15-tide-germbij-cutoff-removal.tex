@@ -1,0 +1,193 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{∀}{\ensuremath{\forall}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.6 Sol:}} #1\end{quote}\medskip}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\newcommand{\Cov}{\operatorname{Cov}}
+\emergencystretch=3em
+
+\title{Tide retrospective:\\\emph{cutoff removal --- the note-literal premise reaches the Lean}}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The third and final perimeter tide from the germbij fidelity
+review\footnote{\reviewref{2026-08-10-01-29-review-germbij-new-content};
+predecessors: \tideref[the $k=2$
+bridge]{2026-08-10-02-25-tide-germbij-hessian-bridge} and \tideref[the
+base-case discharge]{2026-08-10-03-05-tide-germbij-hbase-discharge}.} closes
+finding F3: the note's Theorem~3.1 premise quantifies over observables
+$\varphi \in C_c^\infty(U)$, while the merged recovery machinery consumed
+bare monomial moment families, and the implication between the two was only
+semantic. It is now a theorem. The mechanism is the loss gap: with $\chi$ a
+smooth bump equal to $1$ near the minimum, the un-cut part of any
+polynomial-growth moment sits where $L - L(0) \geq c r^2$, so it is
+$O(e^{-\delta t})$ relative to the partition function --- smaller than every
+power of the temperature. Consequently superPoly agreement on smooth
+compactly supported tests in the common localization region implies
+superPoly agreement for every smooth polynomial-growth observable
+(\texttt{superPoly\_moment\_of\_ccData}), and composing with the previous
+tide's base-case-free headline yields
+\texttt{smooth\_positive\_jet\_recovery\_of\_ccData} and
+\texttt{analytic\_germ\_recovery\_of\_ccData}: germbij Theorem~3.1 and
+Corollary~3.2, inverse directions, from the note's own kind of data. With
+this, all three review findings are closed.
+\end{abstract}
+
+\section{Setting}
+
+The fidelity review's finding F3 was the quiet one: not a wrong statement,
+but a missing lemma. The note's $\Phi_L$ is defined on $C_c^\infty(U)$; the
+Lean data lived on bare monomials against the $U$-restricted Gibbs measure.
+The gap ``the difference is exponentially small by the loss gap'' was
+asserted in the review and believed by everyone --- and was exactly the kind
+of believed-but-unformalised step this perimeter arc exists to eliminate.
+The deliberation settled three design points: the tail estimate splits the
+rescaled exponent as $G \geq \tfrac12 c\|x\|^2 + \tfrac12 c r^2/q^2$ (both
+lower bounds hold on the tail support, so their average does); linearity
+happens at the \emph{rescaled} level, where the merged integrability
+certificates already live; and the data premise quantifies over tests
+supported in the \emph{common} localization region of the two packages ---
+faithful to the note (which has one $U$) without pretending the two Lean
+packages share theirs.
+
+\section{The thing formalised}
+
+Three layers. First, a small missing vocabulary item: an eventual bound
+$|f(t)| \leq K e^{-\delta t}$ with $\delta > 0$ makes $f$ superpolynomially
+small (\texttt{superPoly\_of\_eventually\_abs\_le\_exp}) --- the
+quantitative form of the note's ``exponentially small terms lie below every
+element of the scale''. Second, the tail lemma
+(\texttt{posteriorMoment\_cutoff\_tail}): for continuous polynomial-growth
+$P$ and continuous $0 \leq \chi \leq 1$ with $\chi \equiv 1$ on a ball of
+radius $r$ around the minimum,
+\[
+t \;\longmapsto\; \langle P \rangle_t - \langle P\chi \rangle_t
+\quad\text{is smaller than every power of } t^{-1}.
+\]
+Third, the bridge and the composed corollaries: if the moment families of
+two localized losses agree beyond all orders on every smooth compactly
+supported test in the common localization region, then they agree on every
+smooth polynomial-growth observable; feeding the second-moment and monomial
+instances into the base-case-free headline gives positive-order jet equality
+and, for analytic losses, germ equality modulo the additive constant --- the
+note-literal inverse of Theorem~3.1, with no base-case assumptions, no
+shared package matrix, and the note's own observable class.
+
+\section{Proof strategy}
+
+The tail estimate works at the rescaled level, where the seabed keeps its
+integrability. At scale $q$ the moment difference is a quotient of rescaled
+integrals with the dilation prefactors cancelled exactly
+(\texttt{posteriorMoment\_eq\_integrand\_div}). The numerator's integrand is
+supported where $q \cdot x \in U$ and $\|q \cdot x\| \geq r$ (inside the
+bump's plateau it vanishes); there the coercivity field gives both
+$G \geq c\|x\|^2$ and $G \geq c r^2/q^2$ for the rescaled exponent $G$, so
+\[
+e^{-G} \;\leq\; e^{-\frac{c r^2}{2q^2}}\, e^{-\frac{c}{2}\|x\|^2},
+\]
+and with $|P(q \cdot x)| \leq C(1 + \|x\|^n)$ for $q \leq 1$ the whole
+numerator is dominated by $C M e^{-\frac{c r^2}{2q^2}}$ with $M$ a fixed
+polynomial-Gaussian integral. The denominator tends to the positive Gaussian
+mass (the merged \texttt{tendsto\_integral\_rescaled\_one}), so it is
+eventually at least half of it, and the quotient bound survives the
+$t = q^{-2}$ substitution as $K e^{-\delta t}$. The bridge picks a
+\texttt{ContDiffBump} with plateau $\rho/2$ and support $3\rho/4$ inside
+both packages' balls ($\rho$ the smaller of the two radii), splits
+$m_A(P) - m_B(P)$ into two tails and one data term at $\varphi = P\chi$
+(smooth times smooth, compactly supported, supported in both $U$'s), and
+closes with superPoly additivity. The corollaries instantiate at
+$w_iw_j$ and \texttt{monomialTest} --- coordinate projections are continuous
+linear maps, so smoothness is \texttt{contDiff\_prod} over them.
+
+\section{Roadblocks and resolutions}
+
+All Lean-mechanical, in three families. The catalogued un-beta-reduced-lambda
+class struck twice more (after \texttt{integral\_const\_mul} and inside the
+indicator case split); \texttt{beta\_reduce} and \texttt{show} dispatch it.
+\texttt{set}-bound locals are opaque to \texttt{positivity} (the bump
+constructor's side conditions needed \texttt{linarith} against the recorded
+positivity fact instead). And two elaboration-order items: the exponential
+constant $K$ of the superPoly source must be passed explicitly at
+\texttt{refine} time (it is not determined until the eventual bound is
+supplied), and a chained
+$\mathrm{closedBall} \subseteq \mathrm{ball} \subseteq \mathrm{ball}$
+inclusion left its middle radius unsynthesizable --- one direct
+\texttt{closedBall\_subset\_ball} step with the end radius was both simpler
+and elaborable. Four build iterations to green.
+
+\section{What was Mathlib, what was new}
+
+Mathlib lookup: the \texttt{ContDiffBump} API (plateau, support, compact
+support, smoothness; the inner-product-space existence instance),
+\texttt{tendsto\_pow\_mul\_exp\_neg\_atTop\_nhds\_zero},
+\texttt{norm\_integral\_le\_of\_norm\_le}, \texttt{contDiff\_prod},
+\texttt{EuclideanSpace.proj}, \texttt{tsupport}/\texttt{support} plumbing.
+Seabed reuse: the coercivity field at $q = 1$, the dilation identity, the
+rescaled integrability certificate, the rescaled partition limit, and the
+previous tides' freed headline. New: the exponential-to-superPoly packaging,
+the tail estimate, the cutoff bridge, and the note-literal corollaries. The
+superPoly \texttt{add}/\texttt{sub} helpers and
+\texttt{HasPolynomialGrowth.comp\_smul} are small general-purpose additions
+the seabed had been implicitly re-deriving.
+
+\section{Lessons}
+
+The review-to-tide pipeline closed a full loop here: a fidelity finding of
+the form ``this implication is believed but not formalised'' converts
+directly into a tide whose statement is the finding. Worth keeping: the
+finding's own phrasing (``the difference is $O(e^{-\delta t})$ by the loss
+gap, hence superPoly-invisible'') was already the correct proof outline, and
+the deliberation only had to pin the split constant and the linearity
+altitude. Also catalogued for \texttt{CLAUDE.md}: \texttt{positivity} does
+not see through \texttt{set}, and implicit constants of eventual-bound
+lemmas need explicit instantiation under \texttt{refine}.
+
+\section{Follow-ups}
+
+\begin{itemize}[nosep]
+\item The located first-moment analogue: compose location recovery with the
+CC-data premise (the deliberation's candidate C), giving the full
+note-literal Theorem~3.1 package --- location, jet, and germ from one data
+premise.
+\item A single ``grand corollary'' bundling location + jet + germ, worth
+considering once the located CC form exists.
+\item Deriving \texttt{IsSymm} at order 2 from \texttt{ContDiff} remains the
+last hypothesis-list debt of the freed headlines.
+\item The tail lemma's $0 \leq \chi \leq 1$ hypotheses could weaken to
+boundedness; not needed by any current caller.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,323 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{𝓝}{\ensuremath{\mathcal{N}}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{∀}{\ensuremath{\forall}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+
+\title{Tide retrospective:\\J-function asymptotic-equivalence wrapper}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This is a 200-line tide that closes the J-function programme's
+narrative: with the parametric form $t^{1/(2k)} \cdot J_k(t) \to \pi(0)
+\cdot \mathrm{CONST}_k$ already established by the generic-$k$ tide
+(N1) and the matching partition $Z_k(t)$ available in closed form,
+the asymptotic-equivalence statement actually used in the grammar
+paper,
+\[
+  J_k(t) \;\sim\; \pi(0) \cdot Z_k(t) \quad (t \to \infty),
+\]
+collapses to a thin \texttt{Tendsto.div\_const} corollary plus a
+Mathlib idiom-bridge.\footnote{Specifically
+\texttt{Asymptotics.isEquivalent\_iff\_tendsto\_one}.} The
+unconditional ratio form $J_k/Z_k \to \pi(0)$ is the cleaner
+statement and the building block; the \emph{IsEquivalent} form is the
+named user-facing corollary under $\pi(0) \neq 0$. Single session,
+GPT-5.5~Pro and Claude voted Candidate~B (both theorems) on the first
+round, zero-friction proof, 0 \texttt{sorry}.
+\end{abstract}
+
+\section{Setting}
+
+The grammar-paper precursor sequence has three landings on 7 May:
+quartic ($k=2$, the E4 tide), sextic ($k=3$, the L1 tide), and
+generic-$k$ (the N1 tide). Each established the same shape of
+asymptotic in a $t^{1/(2k)}$-rescaled form:
+\[
+  t^{1/(2k)} \cdot J_k(t) \;\longrightarrow\; \pi(0) \cdot
+  \tfrac{1}{k} \cdot ((2k)!)^{1/(2k)} \cdot \Gamma(1/(2k)),
+\]
+which is mathematically equivalent to (but typographically distinct
+from) the form the grammar paper actually uses:
+\[
+  J_k(t) \;\sim\; \pi(0) \cdot Z_k(t),
+\]
+where $Z_k(t) = \int e^{-tw^{2k}/(2k)!}\,dw$ is the matching
+partition. The L1 tide explicitly named this conversion as a
+follow-up: \emph{``The grammar paper's natural statement is $J(t) \sim
+\pi(0) \cdot Z(t)$ \ldots\ Conversion is \texttt{Tendsto.div} against
+\texttt{quartic\_partition}'s positive-and-tending-to-zero $Z(t)$.
+$\sim$10 lines on top of \texttt{JFunctionQuartic.lean}.''}
+
+The L1 estimate of $\sim$10 lines was for the $k=2$ specialisation.
+After N1, the right place to land the wrapper is at the
+\emph{parametric} level — once on
+\texttt{JFunctionMonomial.lean}, valid for all $k \geq 1$, with the
+$k=2$ and $k=3$ specialisations as zero-line corollaries (instantiate
+$k$). The actual implementation took $\sim$200 lines, an overrun
+driven by closed-form-positivity bookkeeping rather than by any
+mathematical surprise.
+
+This tide is therefore another \emph{narrative-closer}: it does not
+prove a new asymptotic content; it packages the existing asymptotic
+into the named idiom the paper uses.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the single-monomial potential $K(w) = w^{2k}/(2k)!$ with $k \geq
+1$ and a continuous, globally bounded prior $\pi$, the J-function
+\[
+  J_k(t) := \int_{\mathbb{R}} e^{-t\,w^{2k}/(2k)!}\,\pi(w)\,dw
+\]
+and the matching partition
+\[
+  Z_k(t) := \int_{\mathbb{R}} e^{-t\,w^{2k}/(2k)!}\,dw
+\]
+satisfy two convergence statements as $t \to \infty$:
+\begin{enumerate}[leftmargin=*]
+\item (Unconditional ratio.) $\displaystyle \frac{J_k(t)}{Z_k(t)} \;\longrightarrow\; \pi(0)$.
+\item (Asymptotic-equivalence.) Under $\pi(0) \neq 0$,
+$J_k \sim \pi(0) \cdot Z_k$ in the sense that $J_k - \pi(0)\,Z_k = o(\pi(0)\,Z_k)$.
+\end{enumerate}
+\end{quote}
+
+The Lean signatures, in
+\texttt{Laplace/OneD/JFunctionAsymptoticEquivalence.lean}\footnote{The
+file extends \texttt{JFunctionMonomial.lean} (the N1 seabed); it
+imports \texttt{Mathlib.Analysis.Asymptotics.AsymptoticEquivalent} for
+the named idiom \texttt{IsEquivalent}. Permalink: the file at the new
+commit on the tide branch.}:
+
+\begin{verbatim}
+theorem kth_jfunction_div_partition
+    {k : ℕ} (hk : 1 ≤ k)
+    {prior : ℝ → ℝ} (hprior_cont : Continuous prior)
+    {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
+    Tendsto (fun t : ℝ =>
+        (∫ w, exp(-(t * w^(2k) / (2k)!)) * prior w) /
+        (∫ w, exp(-(t * w^(2k) / (2k)!))))
+      atTop (𝓝 (prior 0))
+
+theorem kth_jfunction_isEquivalent
+    {k : ℕ} (hk : 1 ≤ k)
+    {prior : ℝ → ℝ} (hprior_cont : Continuous prior)
+    {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M)
+    (hprior0 : prior 0 ≠ 0) :
+    (fun t : ℝ => ∫ w, exp(-(t * w^(2k) / (2k)!)) * prior w)
+      ~[atTop]
+    (fun t : ℝ => prior 0 * ∫ w, exp(-(t * w^(2k) / (2k)!)))
+\end{verbatim}
+
+The first is the building block; the second is the user-facing form.
+
+\section{Proof strategy}
+
+The core observation is short: the partition $Z_k(t)$ has an
+\emph{exact} closed form, not just an asymptotic. From N1's
+\texttt{kth\_partition} we get
+\[
+  Z_k(t) \;=\; \frac{1}{k}\,((2k)!/t)^{1/(2k)}\,\Gamma(1/(2k))
+  \quad\text{for } t > 0,
+\]
+which, with $\alpha := 1/(2k)$ and $\mathrm{CONST}_k := (1/k) \cdot
+((2k)!)^\alpha \cdot \Gamma(\alpha)$, rearranges to
+\[
+  t^\alpha \cdot Z_k(t) \;=\; \mathrm{CONST}_k \qquad \text{(exact, for all } t > 0\text{)}.
+\]
+Combined with N1's \texttt{kth\_jfunction\_asymptotic}, which gives
+$t^\alpha \cdot J_k(t) \to \pi(0) \cdot \mathrm{CONST}_k$, the ratio is
+\[
+  \frac{J_k(t)}{Z_k(t)} \;=\; \frac{t^\alpha \cdot J_k(t)}{t^\alpha \cdot Z_k(t)}
+  \;=\; \frac{t^\alpha \cdot J_k(t)}{\mathrm{CONST}_k}
+  \;\longrightarrow\; \frac{\pi(0) \cdot \mathrm{CONST}_k}{\mathrm{CONST}_k}
+  \;=\; \pi(0).
+\]
+Implementation in Lean: \texttt{Tendsto.div\_const} on the existing
+N1 limit, plus a \texttt{Tendsto.congr'} to swap the form.
+
+The \emph{IsEquivalent} corollary then uses Mathlib's
+\texttt{isEquivalent\_iff\_tendsto\_one}: under eventual non-vanishing of
+the target $\pi(0) \cdot Z_k(t)$, $f \sim g$ is equivalent to $f/g \to
+1$. The eventual-nonvanishing condition reduces to $\pi(0) \neq 0$
+(since $Z_k(t) > 0$ for all $t > 0$ by the closed form, which is a
+positive product of positive factors). The ratio convergence
+$f/g \to 1$ is then $(J_k/Z_k)/\pi(0) \to \pi(0)/\pi(0) = 1$, which
+follows from the unconditional ratio theorem by a single
+\texttt{Tendsto.div\_const}, modulo a \texttt{Pi.div} reshape.
+
+The mathematical narrative is unsurprising; the Lean encoding is
+mechanical. The 200-line file size comes from the closed-form
+positivity bookkeeping (positivity of the constant, of the rpow, of
+the Gamma function, of $(2k)!/t$ for $t > 0$) and from the
+constant-massaging \texttt{set} block at the top of the unconditional
+theorem, not from any clever proof.
+
+\section{Roadblocks and resolutions}
+
+Three small Lean-level frictions, all anticipated by the laplace
+\texttt{CLAUDE.md}.
+
+\paragraph{One transient ``no goals'' from over-eager
+\texttt{field\_simp}.} The closed-form-rearrangement
+$t^\alpha \cdot Z_k(t) = \mathrm{CONST}_k$ chains
+\texttt{rw [kth\_partition hk ht]} with
+\texttt{rw [Real.div\_rpow hfacnn htnn]} and finishes with
+\texttt{field\_simp}. The first draft included a trailing \texttt{ring}
+out of habit; \texttt{field\_simp} had already closed the goal,
+producing the error ``\texttt{No goals to be solved}.''  Fix: drop the
+\texttt{ring}. The lesson is the laplace \texttt{CLAUDE.md} entry on
+``\texttt{field\_simp} sometimes finishes a proof, sometimes leaves a
+ring residue'' — knowing which it does for a given goal is a matter
+of experience, but the fix when it surprises you is one line.
+
+\paragraph{Extracting $Z_k(t) = \mathrm{CONST}_k / t^\alpha$ from
+$t^\alpha \cdot Z_k(t) = \mathrm{CONST}_k$.} The naive
+\texttt{field\_simp at this; linarith} did not close the goal
+\texttt{... = CONST / t\^{}α} because \texttt{linarith} could not unify
+the resulting forms. Cleaner: \texttt{rw [eq\_div\_iff
+ht\_rpow\_ne, mul\_comm]; exact hZt}. The \texttt{eq\_div\_iff} lemma
+is the canonical Mathlib idiom for ``\texttt{A = B / C} iff
+\texttt{A * C = B}''; combined with a \texttt{mul\_comm} to align with
+the existing $t^\alpha \cdot Z_k(t)$ form, the proof is two rewrites.
+
+\paragraph{\texttt{Filter.Eventually} has no \texttt{.symm}.} The
+\texttt{Tendsto.congr'} step at the end of the unconditional theorem
+takes an \texttt{EventuallyEq} and a \texttt{Tendsto}; my
+\texttt{heq\_ratio} was stated in the direction
+``\texttt{LHS = RHS}'', but \texttt{Tendsto.congr'} wanted the symmetric
+direction. The reflex \texttt{heq\_ratio.symm} produces a type error
+because \texttt{Filter.Eventually} doesn't have a field projection
+\texttt{.symm} — \texttt{EventuallyEq} is a \texttt{def}, not a
+structure. The canonical idiom is
+\texttt{(heq\_ratio.mono fun \_ h => h.symm)}, which lifts the per-element
+symmetry through the filter. Worth promoting to the laplace
+\texttt{CLAUDE.md}.
+
+\paragraph{Deliberation flag.} GPT-5.5~Pro's deliberation correctly
+identified the structural risk in the unconditional form: \emph{``This
+does \textbf{not} mean $J_k \sim 0$ in Mathlib's \texttt{IsEquivalent}
+sense. The correct zero-case translation is $J_k = o[atTop]\,Z_k$.''}
+That zero-case corollary is naturally a $\sim$5-line follow-up if any
+downstream consumer needs it; deferred from this tide. The voting
+converged on the first round.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib.} Standard tendsto chasing on the constant: the
+two \texttt{Tendsto} combinators \texttt{div\_const} and
+\texttt{congr'}, the rpow / Gamma / div\_rpow positivity lemmas, the
+\texttt{eq\_div\_iff} idiom, and the \texttt{IsEquivalent}-to-ratio
+bridge.\footnote{Specifically
+\texttt{Real.rpow\_pos\_of\_pos}, \texttt{Real.Gamma\_pos\_of\_pos},
+\texttt{Real.div\_rpow}, \texttt{eq\_div\_iff}, and
+\texttt{Asymptotics.isEquivalent\_iff\_tendsto\_one}.}
+
+\paragraph{New.} Two theorems and zero infrastructure. Everything
+else --- the J-function asymptotic itself, the closed-form partition,
+the positivity facts --- was already present from N1 and the broader
+seabed.
+
+The tide stays well-bounded in scope. The 200-line size is structural
+overhead (positivity, constant-massaging, \texttt{Pi.div} cleanup) rather
+than proof difficulty.
+
+\section{Lessons}
+
+\begin{enumerate}[leftmargin=*]
+
+\item \textbf{Closed-form denominators turn ``asymptotic-equivalence''
+into ``\texttt{Tendsto.div\_const}''.} When the denominator has an exact
+closed form (as opposed to merely an asymptotic), the ratio of two
+$t$-dependent quantities becomes a one-step \texttt{Tendsto} on the
+numerator divided by a constant. This is much cleaner than chasing
+two simultaneous asymptotics. Worth flagging for future tides where
+the denominator is a partition function: don't reach for \texttt{Tendsto.div}
+when \texttt{Tendsto.div\_const} suffices.
+
+\item \textbf{The \texttt{IsEquivalent} idiom requires eventual
+non-vanishing of the target.} Mathlib's bridge to ratio convergence is
+\texttt{isEquivalent\_iff\_tendsto\_one}, which assumes
+$g$ is eventually nonzero. For paper-style statements
+$f \sim c \cdot g$ with $c$ a parameter that might be zero, the
+\texttt{IsEquivalent} form requires $c \neq 0$ as a hypothesis;
+the unconditional ratio form does not. So the natural
+public API is the pair: unconditional ratio + IsEquivalent corollary
+under non-vanishing of the leading coefficient. Both are useful for
+different downstream contexts.
+
+\item \textbf{\texttt{Filter.Eventually} symmetry needs
+\texttt{.mono}, not \texttt{.symm}.} The reflex
+\texttt{heq.symm} fails on \texttt{EventuallyEq} (it's a \texttt{def},
+not a structure). The canonical idiom is
+\texttt{(heq.mono fun \_ h => h.symm)} — lift the per-element symmetry
+through the filter. Worth promoting to the laplace \texttt{CLAUDE.md}
+under the existing ``\texttt{Pi.add} vs single-lambda'' entry; both
+are filter-level vs. point-level mismatches.
+
+\end{enumerate}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=*]
+
+\item \textbf{The $\pi(0) = 0$ corollary $J_k =o[atTop] Z_k$.} GPT
+flagged this as the correct \emph{little-o} form for the zero-case.
+$\sim$5 lines on top of the unconditional ratio theorem
+(\texttt{Tendsto.div\_const} of $J_k/Z_k \to 0$ via \texttt{IsLittleO}'s
+\texttt{Tendsto}-characterisation). Defer until a downstream consumer
+asks; cheap to add then.
+
+\item \textbf{The $k=2$ and $k=3$ specialisations.} The grammar
+paper, the primer, and the L1 retrospective all reference the
+quartic and sextic $\sim$-forms specifically. With the parametric
+form in hand these are zero-line corollaries; named wrappers under
+\texttt{quartic\_jfunction\_isEquivalent} and the obvious sextic
+analogue would make the \texttt{\textbackslash leanref} story for those
+papers clean. $\sim$10 lines each. Best landed once the relevant
+paper-side has TeX statements to tag.
+
+\item \textbf{Hypothesis weakening (L3 in the v3 survey).} The
+present tide inherits N1's \texttt{Continuous prior + globally
+bounded} hypothesis class. The minimal hypothesis class for the
+underlying DCT step is
+\texttt{AEMeasurable + ContinuousAt 0 + global bound}, per the L3
+follow-up. Refactoring the parametric $J_k$ asymptotic to the weaker
+class would automatically propagate to the
+\texttt{\_isEquivalent} wrapper here. Bigger tide.
+
+\item \textbf{Promote the partition closed form to a named
+\texttt{kth\_partition\_smul\_pow} or analogous.} The rearrangement
+$t^\alpha \cdot Z_k(t) = \mathrm{CONST}_k$ is a useful canonical form
+for any tide that wants to reason about ratios of $J$-like
+integrals. Pulling it out as a named one-line corollary of
+\texttt{kth\_partition} would shave $\sim$15 lines off the present
+file's \texttt{set} + algebra block, and become reusable. Cheap;
+defer until a second consumer materialises.
+
+\end{itemize}
+
+\end{document}

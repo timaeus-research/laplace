@@ -1,0 +1,99 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the analytic germ corollary\\
+\large the inverse half of the nondegenerate theorem completes}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For analytic losses the jet is the germ, and the germbij
+Corollary~3.2 upgrades jet recovery to germ recovery. Mathlib's
+uniqueness theory for analytic functions works from eventual
+equality, not derivative equality, so the missing step is the
+derivative-based identity theorem: two functions analytic at a point
+whose iterated derivatives agree at every positive order agree
+modulo an additive constant on a neighborhood. The proof
+reconstructs power-series diagonals from iterated derivatives (on a
+constant vector the symmetrization sum collapses to $n!$ equal
+terms) and compares the two power series through a single
+\code{HasSum} difference, which vanishes termwise above order zero.
+Composed with the expansion bridge and location recovery of the two
+preceding tides, this completes the \emph{inverse half} of the
+note's Theorem~3.1: localized moment families agreeing beyond all
+orders in the temperature determine the location, the full
+positive-order jet, and --- for analytic losses --- the germ modulo
+the additive constant the normalization must lose.
+\end{abstract}
+
+\section{Setting}
+
+The nondegenerate-core audit's checklist stood at B (expansion
+bridge) and D (location recovery) merged, with C the remaining
+inverse-half item. Its content is a single reusable analysis lemma
+plus composition; the only question was the route, since the
+uniqueness file (\code{AnalyticOnNhd.eqOn\_of\_preconnected\_of\_%
+eventuallyEq}) consumes eventual equality rather than jets.
+
+\section{The thing formalised}
+
+\code{hasFPowerSeries\_diag\_eq}: for $f$ with power series $p$ on a
+ball at $0$,
+\[
+  p_n(y, \dots, y) \;=\; \frac{1}{n!}\,
+  D^n f(0)[y, \dots, y],
+\]
+because the symmetrization formula for iterated derivatives sums
+over all permutations,\footnote{%
+\code{HasFPowerSeriesOnBall.iteratedFDeriv\_eq\_sum\_of\_completeSpace}.}
+which act trivially on a constant vector. Next,
+\code{analytic\_germ\_eq\_of\_jet\_eq}: with series $p, q$ for
+$f, g$ on a common ball, the termwise difference of the two
+\code{HasSum} representations vanishes at every positive order by
+the diagonal formula and the jet hypothesis, so it sums to its
+order-zero term (\code{hasSum\_single}); uniqueness of sums gives
+$f(y) - g(y) = f(0) - g(0)$ on the ball. The composition\\
+\code{analytic\_germ\_recovery\_of\_superPoly\_moments} plugs the
+expansion bridge's jet recovery into this step: Corollary~3.2's
+inverse direction, from data stated as the note states it.
+
+\section{Where progress stalled}
+
+Two one-line iterations: the permutation sum arrives beta-reduced,
+so the collapse lemma must be stated in reduced form; and the
+permutation-count rewrite leaves a \code{Fintype.card (Fin n)}
+inside the factorial, needing \code{Fintype.card\_fin}. Nothing
+structural ---
+the third first-pass-shaped tide of the inverse-half arc.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the symmetrization formula; the \code{HasSum} algebra of
+differences, uniqueness, and \code{hasSum\_single};
+\code{coeff\_zero}; and ball plumbing. New: nothing --- the lemma is
+presumably folklore and arguably belongs upstream in Mathlib's
+analytic library; it is a candidate for \code{lean-common} or a
+Mathlib PR if a second consumer appears.
+
+\section{What the next tide inherits}
+
+The inverse half of Theorem~3.1 is complete. What remains of the
+nondegenerate core is programme A --- the forward direction:
+existence of the arbitrary-finite-order expansion of localized
+moments with coefficients depending only on the finite jet, staged
+by the audit consult as six tides (rescale/localize; exponent Taylor
+packaging; numerator expansion; quotient division; coefficient/jet
+packaging; return to the temperature and the bijection-onto-image
+statement). That programme is where the remaining mathematical
+substance of the note's main nondegenerate theorem lives.
+\end{document}

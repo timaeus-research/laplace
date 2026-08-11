@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{harmonic Laplace localisation, two dead opens, and an orphaned file}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/Localisation.lean}: the harmonic-tail localisation lemmas --- for
+$L_\lambda(x)=(\lambda/2)x^2$, the contribution to $\int x^n e^{-tL_\lambda}$ from outside $(-\delta,\delta)$
+is bounded by $C(\delta,\lambda,t)\,e^{-(\lambda t)\delta^2/2}$, which is $o(t^{-N})$ for every $N$. Result:
+\textbf{a clean fidelity pass, two dead opens removed}, plus a report-only observation that the file is now an
+orphan.
+\end{abstract}
+
+\section{Setting}
+This file packages the \texttt{TailBound} Gaussian-tail estimates into harmonic-Gibbs localisation lemmas ---
+the ingredients for controlling the away-from-origin part of the Stage-2 anharmonic covariance integrals. It is
+the last file of the deepest 1D foundation layer, reviewed after its dependency
+\reviewref[Harmonic]{2026-06-05-review-laplace-oned-harmonic} and its (former) consumer
+\reviewref[Anharmonic]{2026-06-05-review-laplace-oned-anharmonic}.
+
+\section{What was reviewed}
+Five public theorems (zeroth/first/second-moment half-line tails and the zeroth/second two-sided tails) and a
+private even-symmetry helper. The half-line tails rewrite the integrand to rescaled-Gaussian form and delegate
+to \texttt{TailBound} ($b=\lambda t$); the two-sided tails double the half-line bound via the even-symmetry
+helper.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The integrand rewrite $e^{-t(\lambda/2)x^2}=e^{-(\lambda t)x^2/2}$ is correct;
+the second-moment by-parts form $\delta e^{-(\lambda t)\delta^2/2}/(\lambda t)+(1/\lambda t)\int_{x>\delta}
+e^{-(\lambda t)x^2/2}$ is bounded by the zeroth tail to give the stated two-term bound; the even-symmetry
+helper correctly maps $\mathrm{Iio}(-M)\to\mathrm{Ioi}\,M$ for the even integrand $x^{2n}e^{-tL_\lambda}$, and is
+used only for the zeroth ($n=0$) and second ($n=1$) tails --- consistent with the odd first-moment tail not
+getting a two-sided version. The two-sided factors of $2$ are right.
+
+One report-only, project-level observation (not a fidelity defect, not acted on): \textbf{this file is now an
+orphan.} Nothing imports it --- the \reviewref[Anharmonic review]{2026-06-05-review-laplace-oned-anharmonic}
+removed the (genuinely unused) \texttt{import Laplace.OneD.Localisation}, and no other file imports it. The
+\texttt{harmonic\_tail\_*} lemmas are therefore landed-but-unconsumed; they were written ``for the integrals we
+need in Stage 2'', so either the Stage-2 covariance proof will consume them or they become dead-file
+candidates. Flagged for the user; the lemmas themselves are correct and worth keeping until Stage 2 lands.
+
+\section{Simplifications applied}
+\textbf{Two dead opens removed.} \texttt{open Real} is dead (every \texttt{exp} in code is \texttt{Real.exp};
+there is no $\pi$/\texttt{sqrt}/$\sqrt{}$ --- these are tail bounds, no $\sqrt{2\pi}$; the only bare
+\texttt{exp} is in comments), and \texttt{open scoped Nat} is dead (no \texttt{‼} double-factorial; the
+\texttt{Nat.mul\_zero}/\texttt{Nat.mul\_one} uses are qualified). \texttt{open MeasureTheory} (bare $\int$) and
+\texttt{open Set} (bare \texttt{Ioi}/\texttt{Iio}/\texttt{Iic}) stay. Rebuild-arbitrated green, no warnings,
+six declarations byte-identical, GPT-affirmed.
+
+Unlike the \reviewref[Harmonic review's]{2026-06-05-review-laplace-oned-harmonic} reverted block, removing
+\emph{opens} carries no unused-binder cascade risk: an open is pure name resolution, so the only failure mode
+is an ``unknown identifier'' the rebuild catches immediately. GPT's other suggestions (factor the three
+duplicated integrand-rewrite \texttt{have}s into a helper, golf the \texttt{\_compl} ring rewrites, compress
+the second-moment inequality transport, rename locals) were declined as helper-extraction / tactic-golf.
+
+\section{Disagreements and open questions}
+None on the mathematics. The orphan status is surfaced for the user (follow-up, not a defect).
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{Dead-open removal is the lowest-risk dead-code class.} An \texttt{open} binds no variables and
+    contributes no proof term --- it only affects name resolution. So removing a truly-dead open cannot
+    trigger the unused-binder lint cascade that made the Harmonic file's dead proof-block unsafe; the rebuild
+    either errors (open was needed) or is clean (it was dead). Two dead opens here, both clean.
+  \item \textbf{A review can surface a file becoming an orphan as a side effect of a sibling review.} Removing
+    a foundation file's unused import (Anharmonic $\to$ Localisation) can leave the imported file with no
+    consumers. That is worth recording --- not as a fidelity problem, but as a coverage/architecture signal
+    that the file is either pending a future consumer or is itself dead weight.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \textbf{Orphan resolution (user decision):} either the Stage-2 anharmonic covariance proof should
+    consume \texttt{Localisation}'s \texttt{harmonic\_tail\_*} lemmas, or --- if Stage 2 takes a different
+    route --- the file is a dead-file candidate. Not a review-tide call.
+  \item This completes the deepest 1D foundation layer (Harmonic, Localisation, Anharmonic, Rescaling,
+    GaussianMoments all reviewed). Remaining tractable 1D files: the J-function and
+    \texttt{Quartic}/\texttt{Sextic}/\texttt{Monomial} families; the \texttt{Multi/Covariance*} trio remains
+    the large sectioned-approach target.
+\end{itemize}
+
+\end{document}

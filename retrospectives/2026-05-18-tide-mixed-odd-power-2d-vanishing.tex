@@ -1,0 +1,221 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+
+\title{Tide retrospective:\\\emph{Mixed odd-power 2D moment vanishing (V1)}}
+\author{Daniel Murfet}
+\date{18 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This retrospective records a small parity-completion pair on top of
+the quartic--sextic 2D potential machinery established by Tide~A2
+and used by Tide~T1. For $L(x, y) = x^4/24 + y^6/720$ at $t > 0$,
+the two theorems state that any joint moment
+$\langle x^a y^b \rangle_{2D, t}$ vanishes when at least one of
+$a, b$ is odd, with no case-split: by leaving the non-odd index as a
+free natural number rather than forcing it to $2k$, the pair of
+theorems together covers the odd-odd case as well. Each proof is a
+single \texttt{rw} block (factor theorem + 1D odd-vanishing) closed
+by \texttt{simp}; the file is 80 lines including docstrings. Single
+session, build green on first compile after the integrability and
+1D lemmas were located. Zero \texttt{sorry}, zero \texttt{axiom},
+zero \texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+The grammar-paper precursor sequence and the 2D quartic--sextic
+sub-thread of Tide~A2 left T1 as the first joint-moment theorem on
+the new 2D potential: the even-power closed form
+$\langle x^{2j} y^{2k} \rangle_{2D, t}$. T1's retrospective
+explicitly flagged the parity-completion pair as a deferred
+follow-up (T1's ``Candidate~C''): the mirror odd-vanishing theorems
+needed to give a full picture of mixed-monomial moments under the
+separable measure. The 1D building blocks\footnote{Specifically
+\texttt{Laplace.OneD.quartic\_expected\_value\_odd} and
+\texttt{Laplace.OneD.sextic\_expected\_value\_odd}.} were already
+in the seabed, both proven unconditionally in $t$ via odd-symmetry
+of the integrand against the even-symmetric exponential factor.
+A2's factor theorem\footnote{\texttt{Laplace.TwoD.gibbsExpectation\_quarticSextic\_factor},
+in \texttt{Laplace/TwoD/QuarticSextic.lean}.} provides the
+2D-to-1D reduction. With all three pieces in place, V1 is the
+minimal step that finishes the parity story.
+
+\section{The thing formalised}
+
+For the 2D potential $L(x, y) = x^4/24 + y^6/720$ at temperature
+$t > 0$:
+
+\begin{itemize}[leftmargin=1.5em]
+\item For all $j, n \in \mathbb N$,
+  $\langle x^{2j+1} y^n \rangle_{2D, t} = 0$.
+\item For all $m, k \in \mathbb N$,
+  $\langle x^m y^{2k+1} \rangle_{2D, t} = 0$.
+\end{itemize}
+
+The two theorems together cover every $\langle x^a y^b \rangle_{2D, t}$
+with at least one of $a, b$ odd, including the odd-odd case. Lean
+signatures:
+
+\begin{verbatim}
+theorem gibbsExpectation_quarticSextic_odd_pow_pow_eq_zero
+    (j n : ℕ) {t : ℝ} (ht : 0 < t) :
+    gibbsExpectation
+        (addSeparable Laplace.OneD.quarticPotential
+                      Laplace.OneD.sexticPotential) t
+        (fun z : ℝ × ℝ => z.1 ^ (2 * j + 1) * z.2 ^ n) = 0
+
+theorem gibbsExpectation_quarticSextic_pow_odd_pow_eq_zero
+    (m k : ℕ) {t : ℝ} (ht : 0 < t) :
+    gibbsExpectation
+        (addSeparable Laplace.OneD.quarticPotential
+                      Laplace.OneD.sexticPotential) t
+        (fun z : ℝ × ℝ => z.1 ^ m * z.2 ^ (2 * k + 1)) = 0
+\end{verbatim}
+
+Both live in the \texttt{Laplace.TwoD} namespace, conforming to
+T1's even-case naming.\footnote{T1's headline theorem is
+\texttt{gibbsExpectation\_quarticSextic\_pow\_pow\_eq}; the new pair
+mirrors that name with an \texttt{odd}-infix and \texttt{\_eq\_zero}
+suffix.} The new file is
+\texttt{Laplace/TwoD/QuarticSexticOddMoments.lean}, sibling to T1's
+\texttt{QuarticSexticMoments.lean}, and is added to the project root
+\texttt{Laplace.lean}.
+
+\section{Proof strategy}
+
+For the odd-$x$ side: apply the factor theorem with
+$f = x \mapsto x^{2j+1}$ and $g = y \mapsto y^n$. The 2D expectation
+factors as a product of the 1D quartic expectation and the 1D sextic
+expectation. The first factor is zero by
+\texttt{quartic\_expected\_value\_odd}. The product is zero, and
+\texttt{simp} closes the residual \texttt{0 * \_} via
+\texttt{zero\_mul}. The odd-$y$ side is the mirror image: the
+\emph{second} factor is zero by \texttt{sextic\_expected\_value\_odd},
+\texttt{simp} closes via \texttt{mul\_zero}.
+
+The integrability hypotheses fed to the factor theorem are the
+canonical \texttt{\_integrable\_pow\_pot} witnesses\footnote{Namely
+\texttt{Laplace.OneD.quartic\_integrable\_pow\_pot} and
+\texttt{Laplace.OneD.sextic\_integrable\_pow\_pot}.}, the same shape
+T1 used. They unify with the factor theorem's expected form
+definitionally; no \texttt{change}-tactic bridging needed.
+
+\section{Roadblocks and resolutions}
+
+There were no roadblocks. The proof template was correct on first
+write; \texttt{lake build} returned green on the first compile. The
+deliberation surfaced one strict-improvement over the user's draft
+(see \S\ref{sec:gpt}), so the implementation step ran on the
+deliberation's revised plan rather than the user's initial sketch.
+
+\section{What was Mathlib, what was new}\label{sec:gpt}
+
+\paragraph{From Mathlib.} Nothing direct in this tide. The factor
+theorem and the 1D odd-vanishing theorems are Laplace-side; the
+only Mathlib-side dependency is \texttt{zero\_mul} / \texttt{mul\_zero}
+inside \texttt{simp}.
+
+\paragraph{From the seabed.} Three pieces did the work: A2's
+factorisation engine, the 1D quartic and sextic odd-vanishing
+theorems (both unconditional in $t$), and the canonical
+integrability lemmas. Names recorded in the footnotes of the
+\S\emph{Setting} and \S\emph{Proof strategy} sections above.
+
+\paragraph{New here.} Two parity-completion theorems, ~80 lines total
+(including docstrings). The architectural contribution is the choice
+to leave the non-odd index as a free $n$ (resp.\ $m$) rather than
+forcing it to $2k$ (resp.\ $2j$): this is what makes the pair cover
+the odd-odd case without a case split or an \texttt{Odd}-witness
+predicate. The contribution came from GPT-5.5~Pro at Step~2; see the
+Lessons section.
+
+\section{Lessons}
+
+\paragraph{Free-the-other-index is a strict improvement on
+forced-even.} The user's initial draft had the two theorems keyed on
+$(2j+1, 2k)$ and $(2j, 2k+1)$, mirroring T1's even-case
+$(2j, 2k)$ structure. GPT-5.5~Pro pointed out this misses the
+odd-odd case and recommended $(2j+1, n)$ and $(m, 2k+1)$: same proof
+size, no case split, total coverage. The pattern generalises:
+\emph{when proving a vanishing identity that factors through a single
+factor's vanishing, leave the other factor's parameter free rather
+than mirror the parametrisation of the matching positive identity.}
+The matching positive identity (T1) needs both factors to have
+closed forms, hence the symmetric $(2j, 2k)$; the vanishing identity
+(V1) only needs one factor to vanish, so the symmetry breaks and the
+freer parametrisation costs nothing.
+
+\paragraph{\texttt{simp} over \texttt{ring} for residual
+\texttt{0 \(*\) \_} goals.} GPT also suggested \texttt{simp} in
+place of the draft's \texttt{ring} at the bottom of each proof.
+After the two rewrites, the goal is literally \texttt{0 * \_ = 0}
+or \texttt{\_ * 0 = 0}; \texttt{simp} handles this via
+\texttt{zero\_mul} / \texttt{mul\_zero} (and \texttt{simp} is at this
+point cheaper than \texttt{ring}, which would also work but would
+go through a normalisation pass). Worth noting as a tactic
+preference for this class of small wrap-up goal.
+
+\paragraph{The single-round consensus.} Both Claude and GPT-5.5~Pro
+agreed on Candidate~A$'$ in one round. The vote, the integrability
+unification, the bottom-tactic choice, and the rejection of the
+generic \texttt{addSeparable} abstraction (``one tide too far'')
+all landed in the same consult. Pattern: small tides off a recent
+retrospective's flagged Candidate often have one canonically-right
+shape that a single GPT round nails. The cost of the consult was
+recouped by the strict improvement on the user's draft.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1.5em]
+\item \emph{Generic \texttt{addSeparable} odd-vanishing abstraction.}
+  For an arbitrary additively separable 2D potential
+  $V(x, y) = V_1(x) + V_2(y)$ where $V_1$ is even-symmetric, any
+  monomial moment with an odd $x$-exponent vanishes. The 1D abstract
+  prerequisite is ``$\int x^{2j+1} e^{-tV(x)}\,dx = 0$ for $V$
+  even-symmetric'' --- which the seabed does not yet have as a
+  generic lemma (only the quartic and sextic specialisations). When a
+  third or fourth even-symmetric 1D potential lands (e.g.\ a pure
+  $k$-th-power potential beyond $k = 4, 6$), promote the generic
+  abstraction and rewrite the quartic and sextic odd-vanishings as
+  specialisations.
+\item \emph{Higher-power named consumers.} If a downstream consumer
+  ever wants a specific named family
+  $\langle x^{2j+1} y^{2k}\rangle_{2D, t} = 0$ (rather than the
+  generic $(2j+1, n)$ form), it is a one-line corollary of V1's
+  first theorem at the call site; no follow-up tide needed.
+\item \emph{\texttt{\textbackslash leanref}-tag the primer's 2D
+  examples} once the primer's TeX has statements for the 2D
+  parity-completion identities. Pin to this tide's commit. Pairs with
+  the existing K2 / U3 / L5 paper-tagging backlog.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro's deliberation contributed three load-bearing pieces of
+guidance in a single round: the parametrisation strengthening from
+$(2j+1, 2k)$ to $(2j+1, n)$ that closes the odd-odd hole the draft
+missed; \texttt{simp} as the bottom tactic in place of \texttt{ring};
+and the \texttt{\_eq\_zero} naming suffix. The proof landed
+single-attempt with no thrashing-rescue consult; the full GPT
+response is preserved alongside the tide log in the primer project's
+tide-log folder.
+
+This Tide branched off the post-L3-merge \texttt{main}, the same
+\texttt{main} that gathered the seven-tide backlog merged earlier on
+2026-05-18 (the day's bookkeeping cleanup). The fresh \texttt{main}
+contains A2, T1, U2, R1, Q1, L2, L3 inline rather than as detached
+tide branches.
+
+\end{document}

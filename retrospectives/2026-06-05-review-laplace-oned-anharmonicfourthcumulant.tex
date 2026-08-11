@@ -1,0 +1,83 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the anharmonic fourth cumulant --- $\kappa_4$ via three nested derivatives}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicFourthCumulant.lean}: the connected fourth
+cumulant $\kappa_4$ of $u=-(tx)$ obtained as the third $h$-derivative of the perturbed mean
+$G_1(h)/G_0(h)$ at $0$, plus the general-$h_0$ third-cumulant derivative. Result: \textbf{a clean
+fidelity pass with two dead-code removals} --- a dead \texttt{open MeasureTheory} and a dead local
+\texttt{hG4}. The two cumulant combinations are exactly the standard ones.
+\end{abstract}
+
+\section{Setting}
+This continues the anharmonic cumulant ladder: the second cumulant (susceptibility) $S=(G_2G_0-
+G_1^2)/G_0^2$, its derivative the third cumulant, and one more derivative the fourth. Here
+$G_k(h)$ is the $h$-weighted moment integral (\texttt{weightedPartition}, with $G_k'=G_{k+1}$),
+imported from \texttt{AnharmonicThirdCumulant}.
+
+\section{What was reviewed}
+Two theorems: \texttt{anharmonic\_susceptibility\_deriv\_general} (the general-$h_0$ third cumulant,
+$S'(h_0)=(G_3G_0^2-3G_1G_2G_0+2G_1^3)/G_0^3$ for $|h_0|<1$) and \texttt{anharmonic\_fourth\_cumulant}
+(the $h_0=0$ third derivative of $G_1/G_0$).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; both combinations are standard.} The third-cumulant numerator follows from the
+quotient rule on $S$ with $G_k'=G_{k+1}$. The fourth cumulant is
+\[
+  \kappa_4=\frac{G_4G_0^3-4G_3G_1G_0^2-3G_2^2G_0^2+12G_2G_1^2G_0-6G_1^4}{G_0^4},
+\]
+i.e.\ $m_4-4m_3m_1-3m_2^2+12m_2m_1^2-6m_1^4$ in normalised moments $m_k=G_k/G_0$ --- exactly the
+classical connected-cumulant coefficients $(-4,-3,+12,-6)$, which the reviewer independently
+confirmed. The \texttt{iteratedDeriv 3} is unfolded to $\mathrm{deriv}^3$ and identified by germ
+locality: $\mathrm{deriv}\,M=_{\!\!\mathfrak n}S$, $\mathrm{deriv}\,S=_{\!\!\mathfrak n}S_2$ on the
+unit ball, composed by \texttt{.deriv.trans} and \texttt{.deriv\_eq}. Hypotheses ($|h_0|<1$, the
+unit-ball neighbourhood, $G_0\ne0$) are adequate. Docstrings accurate.
+
+\section{Simplifications applied}
+\textbf{Two dead-code removals.} \texttt{open MeasureTheory} is dead --- the file is pure
+\texttt{HasDerivAt}/\texttt{iteratedDeriv}/filter algebra with no bare $\int$/\texttt{Integrable}/%
+\texttt{Measure}/\texttt{volume} (\texttt{weightedPartition} is used by name); \texttt{open
+Topology} stays for $\mathcal N$ and $=_{\!\!\mathfrak n}$. And the local \texttt{hG4 :=
+weightedPartition\_hasDerivAt 4 \dots} is never referenced --- the $\kappa_4$ numerator derivative
+\texttt{hnum2} is built from $G_0,\dots,G_3$, with $G_3'=G_4$ already carried inside \texttt{hG3}.
+Build green at $8270$ jobs, no warnings, signatures byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's \texttt{hball} and \texttt{hh}-extraction shortenings were declined as
+proof-golf.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A cumulant-ladder file is \texttt{MeasureTheory}-free above the base.} The moment
+    integrals $G_k$ are defined (with the measure) upstream; the cumulant \emph{algebra} that
+    differentiates ratios of them is pure calculus/filter glue, so the \texttt{open MeasureTheory}
+    inherited from the template is dead. The pattern (measure work at the base, derivative algebra
+    above) predicts a dead \texttt{MeasureTheory} open in the higher-cumulant files.
+  \item \textbf{An unused ``one derivative too many'' local is a natural dead local.} \texttt{hG4}
+    was prepared (the $G_4$ derivative) but not needed --- $\kappa_4$'s numerator only differentiates
+    down to $G_3$ inside \texttt{hnum2}. Files that compute a ladder of derivatives tend to
+    over-prepare the top rung; grep the top-index derivative-witness for use.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The rest of the anharmonic cumulant/partition arc
+    (\texttt{AnharmonicPartitionHigherDeriv}, \texttt{AnharmonicPartitionDerivGeneralH},
+    \texttt{AnharmonicGibbsRegularity}, \texttt{AnharmonicKappa3Affine}) --- likely the same dead
+    \texttt{MeasureTheory} open in the derivative-algebra ones.
+  \item Proof-golf forward tide: the \texttt{hball}/\texttt{hh} neighbourhood shortenings.
+\end{itemize}
+
+\end{document}

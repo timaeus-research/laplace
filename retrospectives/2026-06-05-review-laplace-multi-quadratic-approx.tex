@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the multivariate quadratic-approximation setup, and a redundant import}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/Multi/QuadraticApprox.lean}: the setup for the multivariate Laplace
+quadratic approximation --- the quadratic form $\mathrm{quadForm}\,H\,z=\langle z,Hz\rangle$, the rescaled
+perturbation $s_t(u)=t\,L(u/\sqrt t)-\tfrac12\langle u,Hu\rangle$, and the definitional rescaling identity
+$t\,L(u/\sqrt t)=\tfrac12\langle u,Hu\rangle+s_t(u)$. Result: \textbf{a clean fidelity pass with one landed
+edit} --- a redundant Mathlib import, removed under rebuild-arbitration.
+\end{abstract}
+
+\section{Setting}
+This is the foundational setup file for the primer's Stage~3 multivariate covariance theorem
+(\texttt{lem:laplace\_cov}): it names the quadratic form, the rescaled remainder, and the algebraic identity
+that splits $t\,L(u/\sqrt t)$ into its Gaussian part plus the remainder, all of which the downstream
+\texttt{GaussianIBP} and \texttt{Covariance} files consume. It is the multivariate analogue of the
+one-dimensional \texttt{Laplace.OneD.Rescaling} setup, and the second small \texttt{Multi/} file reviewed in
+succession after \reviewref[AffineBilinearCov]{2026-06-05-review-laplace-multi-affine-bilinear-cov}.
+
+\section{What was reviewed}
+Two definitions (\texttt{quadForm}, \texttt{rescaledPerturbation}), the \texttt{rescaling\_identity} theorem,
+and two \texttt{rfl} unfolding lemmas. The fidelity surface is minimal by design --- these are definitions and
+one definitional identity --- which is exactly why it is worth confirming the definitions say what the
+downstream proofs assume they say.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.}
+\begin{itemize}[noitemsep]
+  \item \texttt{quadForm H z = $\sum_i$ z i * (H z) i} is the standard quadratic form $\langle z,Hz\rangle$ on
+    $\iota\to\mathbb R$.
+  \item \texttt{rescaledPerturbation} has the correct sign and factor,
+    $t\,L((\sqrt t)^{-1}\bullet u)-\tfrac12\,\mathrm{quadForm}\,H\,u$, and $(\sqrt t)^{-1}\bullet u$ is the
+    right Lean encoding of the vector $u/\sqrt t$ (scalar multiplication).
+  \item \texttt{rescaling\_identity} carries \emph{no} hypotheses and states exactly the rearrangement
+    $a=b+(a-b)$; \texttt{unfold; ring} is honest for it.
+  \item The cubic remainder bound $|s_t(u)|\le C\|u\|^3/\sqrt t$ is named only in the documentation as a
+    later-assumed estimate; the file contains no theorem claiming to prove it, matching the informal
+    description (the primer's GPT-5.5-Pro Phase-1 strategy takes such bounds as explicit hypotheses).
+\end{itemize}
+
+\section{Simplifications applied}
+\textbf{One landed: a redundant import.} The file imported \texttt{Mathlib.Topology.Algebra.Module.Basic}
+explicitly, but \texttt{Laplace.Multi.Basic} already imports
+\texttt{Mathlib.Analysis.InnerProductSpace.EuclideanDist}, which transitively supplies the
+\texttt{ContinuousLinearMap} ($\to_L[\mathbb R]$) notation and instances the file uses. Removed under
+\textbf{rebuild-arbitration}: this is the dead-import class, and --- per the standing caution that a
+symbol-grep is \emph{not} a valid dead-import test --- the rebuild is the only honest arbiter. A
+load-bearing import, removed, would fail elaboration immediately; instead the file rebuilt green ($2544$
+jobs) with all five declarations byte-identical. GPT-affirmed and fast-forward-merged.
+
+GPT's two other proposals were declined. One was tactic-golf (replace the identity's \texttt{unfold; ring}
+with a \texttt{sub\_add\_cancel}-based \texttt{simpa}). The other was a docstring rewording --- ``definitional''
+$\to$ ``immediate algebraic rearrangement'', and softening the cubic bound to ``later assumed''. Unlike the
+\reviewref[``2D mirror'' fix]{2026-06-05-review-laplace-multi-affine-bilinear-cov} in the sibling file, this
+was \emph{not} correcting an inaccuracy: the identity genuinely is a definitional rearrangement, and the file
+already labels the cubic bound a downstream hypothesis in its own setup paragraph. Churning accurate prose is
+not a simplification, so it was left as written.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A redundant import is the dead-open's cousin --- same rebuild-arbitration, same caution.} The
+    transitive-availability argument (here, $\to_L[\mathbb R]$ via \texttt{EuclideanDist}) is a strong
+    \emph{prior}, not a proof; the rebuild is what settles it, because a removed load-bearing import fails
+    instantly and unmistakably. Both the static reasoning and the independent reviewer agreed before the build
+    confirmed.
+  \item \textbf{Not every reviewer docstring suggestion is a fix.} The discriminator that landed the
+    sibling's ``2D mirror'' edit but declined this file's rewording is whether the existing prose is
+    \emph{inaccurate} (objective, landable) versus merely \emph{rephraseable} (stylistic, decline). ``The
+    identity is definitional'' is true; leave it.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The two small \texttt{Multi/} foundation files are now reviewed. The remaining \texttt{Multi/}
+    surface --- \texttt{Basic.lean} (179 lines, the \texttt{gibbsCov} algebra itself) and the large
+    \texttt{Covariance*.lean} files (3998--19611 lines) --- is the next coverage, with the big files needing
+    a sectioned, multi-review approach.
+\end{itemize}
+
+\end{document}

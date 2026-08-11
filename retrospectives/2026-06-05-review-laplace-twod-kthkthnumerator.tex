@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the generic-$(k_1,k_2)$ numerator lift --- the prediction holds}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/TwoD/KthKthNumeratorAsymptotic.lean}: the generic-%
+$(k_1,k_2)$ asymptotic of the unnormalised 2D separable monomial numerator
+$\int x^{2j_1}y^{2j_2}e^{-tL}$, the second leg of the ``2D lift'' trio. Result: \textbf{a clean
+fidelity pass with one dead-code removal} --- the dead \texttt{open Real} predicted by the
+\reviewref[partition-leg review]{2026-06-05-review-laplace-twod-kthkthpartition}, confirmed.
+\end{abstract}
+
+\section{Setting}
+This is the numerator analogue of the partition leg reviewed immediately before it: same
+four-step lift pattern, same factorisation root
+(\reviewref[AddSeparable]{2026-06-05-review-laplace-twod-addseparable}, here via
+\texttt{integral\_separable\_addSeparable}), same 1D base
+(\reviewref[MonomialPotential]{2026-06-05-review-laplace-oned-monomialpotential}, here via
+\texttt{kth\_moment\_even}). The partition-leg retrospective predicted the same dead
+\texttt{open Real} would recur in the sibling files; this review confirms it.
+
+\section{What was reviewed}
+Three public theorems and the composite constant
+$C'(k_1,k_2,j_1,j_2)=\tfrac1{k_1k_2}(2k_1)!^{(2j_1+1)/(2k_1)}(2k_2)!^{(2j_2+1)/(2k_2)}%
+\Gamma(\tfrac{2j_1+1}{2k_1})\Gamma(\tfrac{2j_2+1}{2k_2})$: the exact closed form
+$C'\cdot t^{-(2j_1+1)/(2k_1)-(2j_2+1)/(2k_2)}$, the rescaled limit $\to C'$, and the asymptotic
+equivalence.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The composite constant is exactly the product of the two 1D
+\texttt{kth\_moment\_even} constants, and the exponent $-(2j_1+1)/(2k_1)-(2j_2+1)/(2k_2)$ is correct
+throughout (with the positive mirror in the rescaling). The hypotheses sit where they should
+($t>0$ for the exact form, only $k_i\ge1$ for the \texttt{atTop} statements). Unlike the partition
+leg --- whose module bullet had conflated two theorems and called a fractional power-law a
+``polynomial'' --- this file's docstrings match their statements exactly; the reviewer found no
+over- or under-claim.
+
+\section{Simplifications applied}
+\textbf{One dead \texttt{open}.} Every \texttt{Real.exp}/\texttt{Real.Gamma}/%
+\texttt{Real.div\_rpow}/\texttt{Real.rpow\_*} is qualified and the bare $t\,\hat{}\,(\text{real})$
+is the \texttt{rpow} instance, so \texttt{open Real} is dead; \texttt{MeasureTheory} (bare
+$\int$), \texttt{Filter}, \texttt{Asymptotics}, and scoped \texttt{Topology} stay. Module green at
+$2700$ jobs, no warnings, signatures byte-identical. GPT affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's other suggestions (replace the inline \texttt{show \dots\ by ring} equality
+proofs inside \texttt{rw} with \texttt{change}/named haves; factor the twin \texttt{h\_k1}/%
+\texttt{h\_k2} rewrites into a local helper) were declined as proof-style/structural refactors ---
+and, as in the partition leg, \texttt{change} cannot replace an equality \emph{proof term} passed to
+\texttt{rw}, so that one is not even warning-clearing.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The sibling-prediction pattern holds again.} A dead-code finding in one instance of
+    a copy-paste lift family is a near-certain finding in the rest --- the dead \texttt{open Real}
+    crossed cleanly from the partition leg to the numerator leg, as the
+    \reviewref[Quartic$\to$Sextic]{2026-06-05-review-laplace-oned-sextic} prediction first
+    established. The cheap confirmation is one rebuild.
+  \item \textbf{A clean docstring is the more common case.} The partition leg's mislabelled bullet
+    was the exception, not the rule; this sibling's terse bullets were accurate. Catching the one
+    drift does not mean the family is riddled with it.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The third leg, \texttt{KthKthMomentAsymptotic} (the Gibbs-moment lift, $=$ numerator$/$Z),
+    and \texttt{KthKthOddMoments}, plus the $(2,3)$ \texttt{QuarticSextic*} specialisations --- all
+    near-certain repeats of the same dead \texttt{open Real}.
+  \item Proof-golf forward tide: the \texttt{h\_k1}/\texttt{h\_k2} dedup helper, shared across the
+    lift family.
+\end{itemize}
+
+\end{document}

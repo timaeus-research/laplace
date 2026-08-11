@@ -404,7 +404,7 @@ The proof rescales `u = x √b` and applies the standard formula. -/
 theorem integral_Ioi_id_mul_exp_neg_b_sq_half {b : ℝ} (hb : 0 < b) (M : ℝ) :
     ∫ x in Ioi M, x * Real.exp (-(b * x ^ 2) / 2) =
       Real.exp (-(b * M ^ 2) / 2) / b := by
-  set s := Real.sqrt b with hs_def
+  set s := Real.sqrt b
   have hs_pos : 0 < s := Real.sqrt_pos.mpr hb
   have hs_ne : s ≠ 0 := hs_pos.ne'
   have hsq : s ^ 2 = b := Real.sq_sqrt hb.le
@@ -446,7 +446,7 @@ theorem integral_Ioi_sq_mul_exp_neg_b_sq_half {b : ℝ} (hb : 0 < b) (M : ℝ) :
     ∫ x in Ioi M, x ^ 2 * Real.exp (-(b * x ^ 2) / 2) =
       M * Real.exp (-(b * M ^ 2) / 2) / b
         + (1 / b) * ∫ x in Ioi M, Real.exp (-(b * x ^ 2) / 2) := by
-  set s := Real.sqrt b with hs_def
+  set s := Real.sqrt b
   have hs_pos : 0 < s := Real.sqrt_pos.mpr hb
   have hs_ne : s ≠ 0 := hs_pos.ne'
   have hsq : s ^ 2 = b := Real.sq_sqrt hb.le
@@ -498,9 +498,8 @@ theorem gaussian_tail_bound_rescaled_Ioi {M b : ℝ} (hM : 0 < M) (hb : 0 < b) :
       Real.exp (-(b * M ^ 2) / 2) / (b * M) := by
   -- Substitute `u = x · √b`. Then `Ioi M` maps to `Ioi (M √b)` and the integrand
   -- becomes `exp(-u²/2) / √b · du`.
-  set s := Real.sqrt b with hs_def
+  set s := Real.sqrt b
   have hs_pos : 0 < s := Real.sqrt_pos.mpr hb
-  have hs_ne : s ≠ 0 := hs_pos.ne'
   have hsq : s ^ 2 = b := Real.sq_sqrt hb.le
   -- Integral comp_mul_right gives `∫ x in ℝ, f(x · s) = (1/|s|) · ∫ y, f y`.
   -- For setIntegral over Ioi M, use the half-line version `integral_comp_mul_right_Ioi`.

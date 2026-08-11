@@ -65,38 +65,35 @@ noncomputable def pureQuarticPotential : ℝ × ℝ → ℝ :=
 
 /-! ## Boltzmann factor decomposition -/
 
-/-! ## Bridge to the additively-separable abstraction -/
-
-/-- The pure-quartic 2D potential is an additively-separable potential
-with both marginals equal to the 1D quartic. -/
-@[simp] lemma pureQuarticPotential_eq_addSeparable :
-    pureQuarticPotential =
-      addSeparable Laplace.OneD.quarticPotential Laplace.OneD.quarticPotential := by
-  funext z
-  simp only [pureQuarticPotential_apply, addSeparable_apply,
-    Laplace.OneD.quarticPotential_apply]
-
 /-- The Boltzmann factor for `L(x,y) = x⁴/24 + y⁴/24` factorises as a product
-of quartic factors in `x` and `y`. Corollary of `exp_neg_t_addSeparable_eq_mul`
-via the bridge above. -/
+of quartic factors in `x` and `y`. -/
 lemma exp_neg_t_pureQuartic_eq_mul (t : ℝ) (z : ℝ × ℝ) :
     Real.exp (-(t * pureQuarticPotential z)) =
       Real.exp (-(t * Laplace.OneD.quarticPotential z.1)) *
       Real.exp (-(t * Laplace.OneD.quarticPotential z.2)) := by
-  rw [pureQuarticPotential_eq_addSeparable]
-  exact exp_neg_t_addSeparable_eq_mul _ _ t z
+  rw [pureQuarticPotential_apply, Laplace.OneD.quarticPotential_apply,
+      Laplace.OneD.quarticPotential_apply]
+  rw [show -(t * (z.1 ^ 4 / 24 + z.2 ^ 4 / 24)) =
+        -(t * (z.1 ^ 4 / 24)) + -(t * (z.2 ^ 4 / 24)) from by ring]
+  exact Real.exp_add _ _
 
 /-! ## Partition function factorisation -/
 
 /-- The 2D partition function factorises into the square of the 1D quartic
-partition function. Application of `partitionFunction_addSeparable_factor`
-via the bridge. -/
+partition function. -/
 theorem partitionFunction_factor (t : ℝ) :
     partitionFunction pureQuarticPotential t =
       Laplace.partitionFunction Laplace.OneD.quarticPotential t *
       Laplace.partitionFunction Laplace.OneD.quarticPotential t := by
-  rw [pureQuarticPotential_eq_addSeparable]
-  exact partitionFunction_addSeparable_factor _ _ _
+  unfold partitionFunction Laplace.partitionFunction
+  rw [show (fun z : ℝ × ℝ => Real.exp (-(t * pureQuarticPotential z))) =
+        (fun z : ℝ × ℝ =>
+          Real.exp (-(t * Laplace.OneD.quarticPotential z.1)) *
+          Real.exp (-(t * Laplace.OneD.quarticPotential z.2))) from by
+        funext z; exact exp_neg_t_pureQuartic_eq_mul t z]
+  exact MeasureTheory.integral_prod_mul
+    (f := fun x : ℝ => Real.exp (-(t * Laplace.OneD.quarticPotential x)))
+    (g := fun y : ℝ => Real.exp (-(t * Laplace.OneD.quarticPotential y)))
 
 /-- Closed form for the partition function:
 `Z_2D(t) = ((1/2) · (24/t)^{1/4} · Γ(1/4))²`. -/
@@ -117,15 +114,23 @@ theorem partitionFunction_pos {t : ℝ} (ht : 0 < t) :
 
 /-- The 2D moment integral of a separable monomial `z.1^m · z.2^n` against
 the pure-quartic Gibbs weight factorises into the product of 1D moment
-integrals. Application of `integral_separable_addSeparable` at
-`f = fun x ↦ x^m`, `g = fun y ↦ y^n` via the bridge. -/
+integrals. -/
 theorem integral_pow_pow_factor (t : ℝ) (m n : ℕ) :
     (∫ z : ℝ × ℝ, z.1 ^ m * z.2 ^ n *
         Real.exp (-(t * pureQuarticPotential z))) =
       (∫ x : ℝ, x ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential x))) *
       (∫ y : ℝ, y ^ n * Real.exp (-(t * Laplace.OneD.quarticPotential y))) := by
-  simp only [pureQuarticPotential_eq_addSeparable]
-  exact integral_separable_addSeparable _ _ _ (fun x => x ^ m) (fun y => y ^ n)
+  rw [show (fun z : ℝ × ℝ => z.1 ^ m * z.2 ^ n *
+            Real.exp (-(t * pureQuarticPotential z))) =
+        (fun z : ℝ × ℝ =>
+          (z.1 ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential z.1))) *
+          (z.2 ^ n * Real.exp (-(t * Laplace.OneD.quarticPotential z.2)))) from by
+        funext z
+        rw [exp_neg_t_pureQuartic_eq_mul t z]
+        ring]
+  exact MeasureTheory.integral_prod_mul
+    (f := fun x : ℝ => x ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential x)))
+    (g := fun y : ℝ => y ^ n * Real.exp (-(t * Laplace.OneD.quarticPotential y)))
 
 /-! ## Specialised moments needed for affine covariance -/
 
@@ -151,14 +156,7 @@ theorem gibbsExpectation_fst {t : ℝ} (_ht : 0 < t) :
     rw [h]
     have hquartic_zero :
         (∫ x : ℝ, x * Real.exp (-(t * Laplace.OneD.quarticPotential x))) = 0 := by
-      have heq : (fun x : ℝ => x * Real.exp (-(t * Laplace.OneD.quarticPotential x))) =
-                 (fun x : ℝ => x ^ (2 * 0 + 1) * Real.exp (-(t * x ^ 4 / 24))) := by
-        ext x
-        rw [Laplace.OneD.quarticPotential_apply,
-            show (2 * 0 + 1 : ℕ) = 1 from rfl, pow_one]
-        congr 2
-        ring
-      rw [heq, Laplace.OneD.quartic_moment_odd 0 t]
+      simpa [mul_div_assoc] using Laplace.OneD.quartic_moment_odd 0 t
     rw [hquartic_zero, zero_mul]
   rw [hnum, zero_div]
 
@@ -173,14 +171,7 @@ theorem gibbsExpectation_snd {t : ℝ} (_ht : 0 < t) :
     rw [h]
     have hquartic_zero :
         (∫ y : ℝ, y * Real.exp (-(t * Laplace.OneD.quarticPotential y))) = 0 := by
-      have heq : (fun y : ℝ => y * Real.exp (-(t * Laplace.OneD.quarticPotential y))) =
-                 (fun y : ℝ => y ^ (2 * 0 + 1) * Real.exp (-(t * y ^ 4 / 24))) := by
-        ext y
-        rw [Laplace.OneD.quarticPotential_apply,
-            show (2 * 0 + 1 : ℕ) = 1 from rfl, pow_one]
-        congr 2
-        ring
-      rw [heq, Laplace.OneD.quartic_moment_odd 0 t]
+      simpa [mul_div_assoc] using Laplace.OneD.quartic_moment_odd 0 t
     rw [hquartic_zero, mul_zero]
   rw [hnum, zero_div]
 
@@ -198,14 +189,7 @@ theorem gibbsExpectation_fst_mul_snd {t : ℝ} (_ht : 0 < t) :
     -- Either factor vanishes by parity; pick the y-side.
     have hquartic_zero :
         (∫ y : ℝ, y * Real.exp (-(t * Laplace.OneD.quarticPotential y))) = 0 := by
-      have heq : (fun y : ℝ => y * Real.exp (-(t * Laplace.OneD.quarticPotential y))) =
-                 (fun y : ℝ => y ^ (2 * 0 + 1) * Real.exp (-(t * y ^ 4 / 24))) := by
-        ext y
-        rw [Laplace.OneD.quarticPotential_apply,
-            show (2 * 0 + 1 : ℕ) = 1 from rfl, pow_one]
-        congr 2
-        ring
-      rw [heq, Laplace.OneD.quartic_moment_odd 0 t]
+      simpa [mul_div_assoc] using Laplace.OneD.quartic_moment_odd 0 t
     rw [hquartic_zero, mul_zero]
   rw [hnum, zero_div]
 
@@ -296,6 +280,13 @@ theorem cov_affine_pureQuartic {t : ℝ} (ht : 0 < t)
         Real.Gamma ((3 : ℝ) / 4) / Real.Gamma ((1 : ℝ) / 4) := by
   have hZpos := partitionFunction_pos ht
   have hZne : partitionFunction pureQuarticPotential t ≠ 0 := ne_of_gt hZpos
+  -- A vanishing Gibbs expectation means the numerator integral vanishes (Z ≠ 0).
+  have num_zero : ∀ f : ℝ × ℝ → ℝ,
+      gibbsExpectation pureQuarticPotential t f = 0 →
+      (∫ z : ℝ × ℝ, f z * Real.exp (-(t * pureQuarticPotential z))) = 0 := by
+    intro f hf
+    unfold gibbsExpectation at hf
+    exact (div_eq_zero_iff.mp hf).resolve_right hZne
   -- 2D atom integrabilities
   have hI00 := pureQuartic_integrable_pow_pow 0 0 ht
   have hI10 := pureQuartic_integrable_pow_pow 1 0 ht
@@ -368,14 +359,10 @@ theorem cov_affine_pureQuartic {t : ℝ} (ht : 0 < t)
     rw [MeasureTheory.integral_add (hI10'.const_mul p₁) (hI01'.const_mul p₂)]
     rw [MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul,
         MeasureTheory.integral_const_mul]
-    have hMx : (∫ z : ℝ × ℝ, z.1 * Real.exp (-(t * pureQuarticPotential z))) = 0 := by
-      have := gibbsExpectation_fst (t := t) ht
-      unfold gibbsExpectation at this
-      exact (div_eq_zero_iff.mp this).resolve_right hZne
-    have hMy : (∫ z : ℝ × ℝ, z.2 * Real.exp (-(t * pureQuarticPotential z))) = 0 := by
-      have := gibbsExpectation_snd (t := t) ht
-      unfold gibbsExpectation at this
-      exact (div_eq_zero_iff.mp this).resolve_right hZne
+    have hMx : (∫ z : ℝ × ℝ, z.1 * Real.exp (-(t * pureQuarticPotential z))) = 0 :=
+      num_zero _ (gibbsExpectation_fst (t := t) ht)
+    have hMy : (∫ z : ℝ × ℝ, z.2 * Real.exp (-(t * pureQuarticPotential z))) = 0 :=
+      num_zero _ (gibbsExpectation_snd (t := t) ht)
     rw [hMx, hMy,
         show (∫ z : ℝ × ℝ, Real.exp (-(t * pureQuarticPotential z))) =
           partitionFunction pureQuarticPotential t from rfl]
@@ -445,19 +432,13 @@ theorem cov_affine_pureQuartic {t : ℝ} (ht : 0 < t)
         MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
     -- Now everything is in terms of M_xx, M_xy, M_yy, M_x, M_y, Z.
     -- M_x = M_y = M_xy = 0 (extract from gibbsExpectation_fst, _snd, _fst_mul_snd).
-    have hMx : (∫ z : ℝ × ℝ, z.1 * Real.exp (-(t * pureQuarticPotential z))) = 0 := by
-      have := gibbsExpectation_fst (t := t) ht
-      unfold gibbsExpectation at this
-      exact (div_eq_zero_iff.mp this).resolve_right hZne
-    have hMy : (∫ z : ℝ × ℝ, z.2 * Real.exp (-(t * pureQuarticPotential z))) = 0 := by
-      have := gibbsExpectation_snd (t := t) ht
-      unfold gibbsExpectation at this
-      exact (div_eq_zero_iff.mp this).resolve_right hZne
+    have hMx : (∫ z : ℝ × ℝ, z.1 * Real.exp (-(t * pureQuarticPotential z))) = 0 :=
+      num_zero _ (gibbsExpectation_fst (t := t) ht)
+    have hMy : (∫ z : ℝ × ℝ, z.2 * Real.exp (-(t * pureQuarticPotential z))) = 0 :=
+      num_zero _ (gibbsExpectation_snd (t := t) ht)
     have hMxy : (∫ z : ℝ × ℝ, z.1 * z.2 *
-                  Real.exp (-(t * pureQuarticPotential z))) = 0 := by
-      have := gibbsExpectation_fst_mul_snd (t := t) ht
-      unfold gibbsExpectation at this
-      exact (div_eq_zero_iff.mp this).resolve_right hZne
+                  Real.exp (-(t * pureQuarticPotential z))) = 0 :=
+      num_zero _ (gibbsExpectation_fst_mul_snd (t := t) ht)
     rw [hMx, hMy, hMxy]
     rw [show (∫ z : ℝ × ℝ, Real.exp (-(t * pureQuarticPotential z))) =
           partitionFunction pureQuarticPotential t from rfl]

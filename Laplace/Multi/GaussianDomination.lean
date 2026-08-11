@@ -1,4 +1,3 @@
-import Laplace.Multi.Basic
 import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 
 /-!

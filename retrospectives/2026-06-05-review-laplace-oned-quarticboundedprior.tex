@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the bounded-prior quartic partition --- a clean tail-bound pass, two dead opens, and two locals the build keeps}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/QuarticBoundedPrior.lean}: the bounded-interval quartic
+partition function, with its boundary correction quantified by a Gaussian-comparison tail bound.
+This is the grammar paper's $Z_n[\varphi]$ precursor with only the bounded-prior ingredient added.
+Result: \textbf{a clean fidelity pass with two dead \texttt{open}s removed} --- and two textually-idle
+locals deliberately left in place because the build (and an independent reviewer) flag them as
+implicitly consumed.
+\end{abstract}
+
+\section{Setting}
+The first review of the bounded-prior / grammar-precursor strand (a sibling to the harmonic 1D stack
+swept earlier in this loop). The file refines the pure-quartic partition
+$\int_{\mathbb R}e^{-tw^4/24}\,dw$ by restricting to $[-a,a]$ and bounding the error:
+\[
+  \Bigl|\int_{[-a,a]}e^{-tw^4/24}\,dw-\tfrac12\Bigl(\tfrac{24}{t}\Bigr)^{1/4}\Gamma(\tfrac14)\Bigr|
+  \le \frac{24}{t\,a^3}\,e^{-t a^4/24}.
+\]
+It leans on the Gaussian tail \reviewref[TailBound]{2026-06-05-review-laplace-oned-tailbound}
+(\texttt{gaussian\_tail\_bound\_rescaled\_Ioi}, reviewed earlier in the loop).
+
+\section{What was reviewed}
+The half-line tail \texttt{quartic\_tail\_Ioi}; the even-symmetry tail equality
+\texttt{quartic\_integral\_Iio\_neg\_eq\_integral\_Ioi}; the three-piece split
+\texttt{quartic\_partition\_split} ($\int_{\mathbb R}=\int_{[-a,a]}+2\int_{(a,\infty)}$); and the
+headline \texttt{quartic\_partition\_bounded\_prior}. The informal ground truth was the file's
+docstrings plus the closed form $\int e^{-cw^4}=\tfrac12 c^{-1/4}\Gamma(\tfrac14)$ ($c=t/24$).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect.} The tail argument is the clean comparison $w^4\ge a^2w^2$ for $w\ge a$, so
+$e^{-tw^4/24}\le e^{-(b w^2)/2}$ with $b=ta^2/12$ (since $b/2=ta^2/24$); Mill's ratio on the Gaussian
+then gives $\int_{(a,\infty)}e^{-(b/2)w^2}\le e^{-(ba^2)/2}/(ba)=e^{-ta^4/24}\cdot 12/(ta^3)$. Evenness
+equates the two tails, the split assembles $\int_{\mathbb R}$, and the headline doubles the tail
+($12\to24$). The reviewer tabulated every constant --- the comparator rate $b=ta^2/12$, the Mill's
+constant $12/(ta^3)$, the doubling to $24/(ta^3)$, the leading $\tfrac12(24/t)^{1/4}\Gamma(\tfrac14)$,
+and the exponent argument $ta^4/24$ --- and found ``no fidelity mismatches.'' The symmetry lemma is
+stated without positivity hypotheses (faithful on the intended $t,a>0$ regime).
+
+\section{Simplifications applied}
+\textbf{Two dead opens.} \texttt{open Real} carried nothing (every \texttt{Real}-name is qualified;
+bare $\exp$/$\Gamma$ live only in comments) and \texttt{open scoped Nat} carried nothing (no $!!$
+notation; the only \texttt{Nat} names, \texttt{Nat.cast\_zero} and \texttt{Nat.mul\_zero}, are
+qualified). \texttt{open MeasureTheory} (bare \texttt{IntegrableOn}, \texttt{setIntegral\_*},
+\texttt{measurableSet\_*}, \texttt{volume}) and \texttt{open Set} (bare \texttt{Ioi}/\texttt{Iio}/
+\texttt{Icc}/\texttt{Iic}) stay. Build green, no in-file warnings, signatures byte-identical; the
+reviewer affirmed.
+
+\section{Disagreements and open questions}
+None. Two locals look textually unused but were correctly \emph{not} removed: \texttt{ha} in
+\texttt{quartic\_partition\_split} is consumed implicitly by a \texttt{linarith} inside the
+\texttt{hunion} set-equality proof, and \texttt{htail\_nn} in the headline is consumed implicitly by
+the \texttt{positivity} call discharging the side goal $0\le 2\cdot(\dots)$ inside
+\texttt{abs\_of\_nonneg}. The
+\texttt{unusedVariables} linter is silent on both, consistent with genuine (implicit) use; the
+reviewer independently flagged both as ``not a safe dead-local deletion.'' An optional refactor making
+the nonnegativity explicit (\texttt{mul\_nonneg (by norm\_num) htail\_nn}) was declined as
+shape-only.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A local consumed by \texttt{linarith}/\texttt{positivity} is invisible to a textual
+    scan but is not dead.} \texttt{linarith} pulls every in-scope inequality hypothesis, and
+    \texttt{positivity} can discharge a goal using a context fact it never names. The
+    \texttt{unusedVariables} linter staying silent (no warning at baseline) is the positive signal
+    that such a local is load-bearing --- the absence of a warning is evidence, not just the absence of
+    evidence. Removing on a textual ``looks unused'' alone would have broken the proof.
+  \item \textbf{Pure-tail-bound files concentrate all their risk in the constants.} For a
+    one-headline tail-estimate file the only place an error can hide is an arithmetic constant or an
+    inequality direction; the reviewer's value was re-deriving the comparator rate and the Mill's
+    constant, not re-checking the (obvious) comparison structure.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The sibling \texttt{QuarticBoundedPriorTestFn} (the $\varphi$-weighted extension), and the
+    large \texttt{IntegralRemainder}, remain the last never-reviewed laplace \texttt{OneD} files.
+\end{itemize}
+
+\end{document}

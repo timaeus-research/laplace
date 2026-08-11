@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the harmonic Gibbs moments --- and a dead block that was load-bearing for the linter}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/Harmonic.lean}: the harmonic Gibbs measure --- partition function
+$Z_\lambda(t)=\sqrt{2\pi/(\lambda t)}$, the moments $\langle x^{2k}\rangle_t=(2k-1)!!/(\lambda t)^k$ and
+$\langle x^{2k+1}\rangle_t=0$, and $\mathrm{Cov}_t[x^2,x]=0$. Result: \textbf{a clean fidelity pass with one
+landed edit (a dead \texttt{open Set}) and one instructive non-edit} --- a mathematically-dead proof block
+that turned out to be load-bearing for the \texttt{unusedVariables} linter, reverted once the rebuild exposed
+it.
+\end{abstract}
+
+\section{Setting}
+The harmonic case is the leading-order Laplace computation and the base the anharmonic programme perturbs
+around (\texttt{harmonicPotential} is what the \reviewref[anharmonic base]{2026-06-05-review-laplace-oned-anharmonic}
+decomposes against). Its moments reduce directly to the
+\reviewref[Gaussian-moment lemmas]{2026-06-05-review-laplace-oned-gaussian-moments} by setting the inverse
+covariance to $\lambda t$.
+
+\section{What was reviewed}
+A definition, a private integrand-rewrite helper, and six theorems: the even/odd numerator integrals, the
+partition function, the even/odd Gibbs expectations, and the harmonic covariance $\mathrm{Cov}_t[x^2,x]=0$.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; all six theorems check out.} $Z=\sqrt{2\pi/(\lambda t)}$ is the $k=0$ even-moment value
+($(2\cdot0-1)!!=0!!=1$, $(\lambda t)^{-1/2}$); the even expectation is the quotient
+$(\lambda t)^{-(k+1/2)}/(\lambda t)^{-1/2}=(\lambda t)^{-k}$; the odd expectations vanish by symmetry; and
+$\mathrm{Cov}_t[x^2,x]=0$ because $x^2\cdot x=x^3$ and $x$ are both odd powers --- the $\alpha=0$ specialisation
+of the primer's $\mathrm{Cov}_t[x^2,x]=-2\alpha/(\lambda^3t^2)+o(t^{-2})$.
+
+\section{Simplifications applied --- and one revealing revert}
+\textbf{Landed: a dead \texttt{open Set}.} The file opened \texttt{Real MeasureTheory Set}, but no \texttt{Set}
+name is used (the integrals are over all of $\mathbb R$ with \texttt{volume}; there is no \texttt{Ioi} or
+interval). Removed; \texttt{Real} (bare $\pi$), \texttt{MeasureTheory} ($\int$/\texttt{volume}), and
+\texttt{open scoped Nat} ($!!$) all stay. Rebuild green, no warnings, eight declarations byte-identical.
+
+\textbf{Reverted: a linter-load-bearing dead block.} GPT also flagged --- correctly, in the mathematical sense
+--- that \texttt{harmonic\_int\_pow\_odd} contains a change-of-variables detour (\texttt{have this : \dots :=
+\dots; clear this}) that is computed and then immediately \texttt{clear}ed, the actual proof going through the
+odd-function symmetry \texttt{integral\_neg\_eq\_self}. The block is dead. But removing it made the
+\texttt{unusedVariables} linter fire on the theorem's \emph{public} hypotheses \texttt{hlam : 0 < lam} and
+\texttt{ht : 0 < t}: the only thing consuming them in that proof was the detour's
+\texttt{have hbpos := mul\_pos hlam ht}; the symmetry argument needs no positivity. Because \texttt{hlam} and
+\texttt{ht} are part of the frozen public signature (they mirror the even-moment theorem's interface), they
+cannot be renamed to \texttt{\_hlam}/\texttt{\_ht} or dropped, and leaving them produces new warnings. So the
+``dead'' block is the mechanism that keeps the public hypotheses syntactically used --- it is load-bearing for
+the linter. The rebuild caught it (green build, but two new \texttt{unusedVariables} warnings), and the
+removal was reverted.
+
+GPT's remaining suggestions (the $x^{2\cdot0}$ rewrite, the \texttt{gibbsCov} function-equality \texttt{show}s,
+factoring the duplicated $\sqrt{}/\mathrm{rpow}$ algebra, the universal $(a b c)/(b d)$ rewrite) were declined
+as tactic-golf.
+
+\section{Disagreements and open questions}
+None. GPT affirmed both the landed removal and the revert.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A mathematically-dead block can be load-bearing for the \texttt{unusedVariables} linter under
+    a frozen signature.} When a proof carries public hypotheses it does not truly need (here, positivity that
+    a symmetry argument ignores), a ``dead'' detour may be the only thing consuming them. Remove it and the
+    linter flags the public hypotheses --- which a review tide cannot rename or drop. This is the seabed's
+    ``dead code feeds automation'' gotcha in a sharper form: it is not a local that feeds a later tactic, but
+    a block that feeds the \emph{linter} on behalf of the interface. The rebuild-plus-linter gate is exactly
+    what catches it; ``the build is green'' is necessary but not sufficient --- ``no new warnings'' is the
+    real bar.
+  \item \textbf{Two dead-code flags in one file can have opposite verdicts.} The dead \texttt{open} was real
+    and safe; the dead block was real but unsafe to remove. Triage each against the rebuild independently;
+    never batch dead-code removals on the assumption they are all equally safe.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item If the redundant positivity hypotheses on \texttt{harmonic\_int\_pow\_odd}/\texttt{\_pow\_odd}
+    expectations are ever to be cleaned up, that is a forward tide (a deliberate signature change weakening
+    the interface), not a review-tide edit.
+  \item Remaining tractable 1D never-reviewed files: \texttt{Localisation.lean}, the J-function and
+    \texttt{Quartic}/\texttt{Sextic}/\texttt{Monomial} families.
+\end{itemize}
+
+\end{document}

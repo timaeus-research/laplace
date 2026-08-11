@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the second cumulant --- susceptibility equals connected variance}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicSecondCumulant.lean}: the susceptibility (the
+$h$-derivative at $0$ of the perturbed mean $\langle u\rangle_h=G_1(h)/G_0(h)$, $u=-(t x)$) equals the
+connected second cumulant $\langle u^2\rangle_0-\langle u\rangle_0^2$ --- the FDT-at-the-mean / $\kappa_2$
+rung. Result: \textbf{a clean fidelity pass, no edits}.
+\end{abstract}
+
+\section{Setting}
+The anharmonic arc computes the perturbed moments $G_n(h)=\int(-(t x))^n e^{-t(L+hx)}$. This file differentiates
+the mean $G_1/G_0$ at $h=0$ (the susceptibility) and identifies it with the unperturbed variance of
+$u=-(t x)$, building on the moment-normalisation
+\reviewref[reviewed earlier this session]{2026-06-05-review-laplace-anharmonic-moment-normalisation}
+($\texttt{gibbsExp}((-(t x))^n)=G_n(0)/G_0(0)$).
+
+\section{What was reviewed}
+Two public theorems: \texttt{anharmonic\_mean\_hasDerivAt} (the quotient-rule derivative) and
+\texttt{anharmonic\_susceptibility\_eq\_connected\_variance} (its identification with $\langle u^2\rangle-\langle u\rangle^2$).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.}
+\begin{itemize}[noitemsep]
+  \item \textbf{Quotient rule}: with $f=G_1$, $g=G_0$ and the partition derivatives $f'=G_2$, $g'=G_1$ (each
+    $\partial_h$ brings a $-(t x)$ factor), \texttt{HasDerivAt.div} gives
+    $\partial_h[G_1/G_0]|_0=(G_2 G_0-G_1^2)/G_0^2$ --- the correct $(f'g-fg')/g^2$.
+  \item \textbf{Variance form}: substituting $\texttt{gibbsExp}((-(t x))^n)=G_n(0)/G_0(0)$ ($n=1,2$) turns the
+    RHS $\langle u^2\rangle-\langle u\rangle^2$ into $G_2/G_0-(G_1/G_0)^2$, and the denominator-clearing
+    algebra ($\texttt{div\_pow}$/$\texttt{div\_sub\_div}$/$\texttt{div\_eq\_div\_iff}$/$\texttt{ring}$, $G_0\ne0$)
+    matches $(G_2 G_0-G_1^2)/G_0^2$.
+  \item \textbf{Observable/sign}: the moments $(-(t x))^2$, $(-(t x))^1$ are exactly $\langle u^2\rangle$,
+    $\langle u\rangle$ for $u=-(t x)$; the cumulant $\langle u^2\rangle-\langle u\rangle^2$ has no sign slip.
+\end{itemize}
+
+\section{Simplifications applied}
+None. GPT's (B) findings are all golf/refactor (inline \texttt{hc}/\texttt{hd}; a \texttt{calc} for the four
+rewrites; \texttt{field\_simp [hne]; ring} for the final algebra; a shared \texttt{hne} helper) --- declined
+(golf not reliably-safe; helper-extraction out of single-file scope). No dead import/open, and all four
+hypotheses are consumed via the cited derivative/positivity lemmas.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The $\kappa_2$/susceptibility review is the quotient rule plus the moment-normalisation bridge.}
+    Two checks carry it: the quotient-rule numerator $(G_2 G_0-G_1^2)$ (needing $\partial_h G_n=G_{n+1}$), and
+    the algebraic identity $(G_2 G_0-G_1^2)/G_0^2=G_2/G_0-(G_1/G_0)^2$ that ties the quotient form to the
+    variance form via the previously-reviewed moment-normalisation. Both are mechanical once the cumulant
+    ladder's partition-derivative and normalisation lemmas are trusted.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The $\kappa_3$ rung (\texttt{AnharmonicThirdCumulant}) and the cumulants-from-log-partition file are
+    the natural next reviews in this arc.
+\end{itemize}
+
+\end{document}

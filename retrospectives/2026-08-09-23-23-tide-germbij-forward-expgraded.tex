@@ -1,0 +1,115 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the graded exponential expansion\\
+\large a Taylor-truncation collection mechanism}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The numerator stage of the forward-expansion programme must expand
+$\exp(-(\sum_{s=1}^N q^s a_s + q^N \rho_q))$ to order $N$ in $q$.
+The design consult prescribed the log-derivative recursion
+$P_j = -\tfrac1j \sum_{s=1}^j s\,a_s P_{j-s}$ as the internal
+collection mechanism, while noting that the proof itself may use
+exp's ordinary Taylor remainder. This tide substitutes a cheaper
+mechanism with the same interface: the \emph{graded exp polynomial}
+$Q(X) = \sum_{i=0}^{N} \frac{(-1)^i}{i!} A(X)^i$ with
+$A(X) = \sum_{s=1}^N a_s X^s$ --- exp's Taylor truncation composed
+with the exponent polynomial --- whose coefficients are the expansion
+coefficients. With that choice the expansion theorem needs no
+coefficient identities at all. Three elementary steps close it:
+strip $\rho$ by the first-order exponential bound
+$|e^x - 1| \le 2|x|$; apply exp's Taylor remainder at $x = -A(q)$,
+where $|A(q)| \le q \sum_s |a_s|$ on $(0,1]$; and observe that the
+polynomial tail of $Q$ above degree $N$ carries $q^{N+1}$. Each step
+is $O(q^{N+1})$ against the target $o(q^N)$.
+\end{abstract}
+
+\section{Setting}
+
+Stage 4 of the archived implementation order, after the exponent
+split (stage 3) produced exactly the input shape this lemma consumes:
+coefficients $a_s = V_s(z)$ and a perturbation $\rho_q$ vanishing at
+$0^+$ pointwise in $z$. The statement here is scalar --- the
+$z$-dependence is a family of instantiations, and the function-valued
+mesoscopic form belongs to the numerator stage, per the consult's own
+remark. A numerical check preceded the Lean: the polynomial's
+coefficients at $N = 3$ match the recursion's values
+($c_1 = -a_1$, $c_2 = -a_2 + a_1^2/2$,
+$c_3 = -a_3 + a_1 a_2 - a_1^3/6$), and the remainder over $q^N$
+scales as the injected $\rho = \sqrt q$.
+
+\section{The thing formalised}
+
+Definitions: \code{exponentPoly} ($A$), \code{gradedExpPoly} ($Q$),
+and \code{expCorrectionCoeff} ($c_j = Q_{[j]}$), with evaluation
+lemmas and $c_0 = 1$ (the correction factor tends to one). Helpers:
+the linear bound $|A(q)| \le (\sum_s |a_s|)\,q$ on $[0,1]$ (each
+$q^s \le q$), the vanishing of $A$ at $0^+$, and
+$q^{N+1} = o(q^N)$ transported from Mathlib's two-power comparison
+at $\mathcal N(0)$. The main theorem \code{exp\_graded\_expansion}:
+for any $\rho \to 0$ at $0^+$,
+\[
+  \exp\Big(-\Big(\sum_{s=1}^N q^s a_s + q^N \rho_q\Big)\Big)
+  - \sum_{j=0}^{N} c_j\, q^j = o(q^N) \quad (q \to 0^+),
+\]
+assembled as a three-term telescope, each term big-O of $q^{N+1}$ or
+of $q^N \rho_q$.
+
+\section{Where progress stalled}
+
+Three small rounds, all catalogued classes. The
+norms-both-sides trap in \code{isLittleO\_iff} fired in a new
+variant: an earlier \code{abs\_of\_pos} rewrite had already stripped
+the norm from the \emph{target's} right side, so the calc had to end
+at $\varepsilon\,q^N$ rather than $\varepsilon\,|q^N|$ --- the rule
+is to look at what previous rewrites did to the target before picking
+the calc endpoint, not to apply the remembered fix blindly. A
+\code{gcongr} discharged its own nonnegativity side goal, leaving a
+stray \code{exact} with no goals. And
+\code{rw [Finset.range\_eq\_Ico]} rewrote both differently-instantiated
+occurrences at once, so the second copy of the rewrite found nothing;
+\code{simp only} expresses the intent (rewrite everywhere)
+deliberately.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{Real.exp\_bound} (the Taylor remainder with explicit
+constant), \code{Real.abs\_exp\_sub\_one\_le},
+\code{Polynomial.eval\_eq\_sum\_range'},
+\code{Finset.sum\_Ico\_consecutive},
+\code{Asymptotics.isLittleO\_pow\_pow}, and
+\code{pow\_le\_pow\_of\_le\_one}.
+\end{sloppypar}
+New: nothing mathematical; the
+observation that the Taylor-truncation composition eliminates the
+coefficient-identity work is proof engineering, not mathematics ---
+the numbers produced are the same as the consult's recursion.
+
+\section{What the next tide inherits}
+
+Stage 5 (the numerator expansion): instantiate
+\code{exp\_graded\_expansion} pointwise in $z$ with
+$a_s = V_s(z)$ and $\rho = $ the scaled remainder of stage 3,
+integrate over the mesoscopic window against the Gaussian, remove
+the outer tail with stage 2's calculus, and dominate the coefficient
+functions $z \mapsto c_j(z)$ (continuity and polynomial growth by
+induction on the power through \code{Polynomial.coeff\_mul}). If the
+dominated-convergence step needs the remainder bound in explicit
+window-uniform form, the quantitative companion of this tide's
+theorem is the first thing to add --- its three pieces are already
+explicit in the proof.
+\end{document}

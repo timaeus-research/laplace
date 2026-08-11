@@ -1,0 +1,115 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: singular composition, part 1\\
+\large the critique's prep lemmas}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+An adversarial GPT-5.6 Sol audit of the note's unnormalized
+degenerate theorem (\code{thm:singular}) --- commissioned to find
+holes in the informal and formal proofs, and archived verbatim in the
+tide log --- found no mathematical flaw in either, but two moderate
+coverage findings: the Lean corpus verifies the quantitative core
+(pencil, sector, lower bound, contradiction) rather than the
+note-level statement, with twelve routine reduction steps left
+semantic; and the note's footnote overclaimed the machine-checked
+fragment. On user approval, the footnote and the two integer-exponent
+phrasings were fixed in the TeX, and this tide begins closing the
+composition gap with the three hypothesis-manufacturing lemmas: the
+quadratic upper bound $K \le C_0\|w\|^2$ at a nonnegative $C^2$ zero
+(gradient by the local-minimum rule, second order by the Lipschitz
+derivative and the mean value inequality); the least nonzero diagonal
+of a nonvanishing analytic function, with a witness rescaled to the
+endpoint's $\|x_0\| = 3/2$ normalization --- and here the critique's
+own plan simplified, since the power-series sum evaluates only
+diagonals, so no symmetric-multilinear polarization is needed; and a
+hand-rolled continuous bump equal to one on a prescribed ball.
+\end{abstract}
+
+\section{Setting}
+
+The critique's section B4 enumerates precisely what stands between
+the corpus and Theorem \code{thm:singular}: point selection,
+translation, power-series extraction, least degree and direction,
+the quadratic bound, the bump, the local-to-global reduction, the
+expansion-family bridge, the integral rewriting, and the neighborhood
+assembly. This tide delivers the middle block (steps 4--7); the
+composed point theorem and the locus assembly follow as parts 2--3.
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{quadratic\_upper\_bound\_of\_nonneg}:
+\code{IsLocalMin.fderiv\_eq\_zero} kills the gradient;
+\code{ContDiffAt.fderiv\_right} plus
+\code{exists\_lipschitzOnWith} make the derivative $M$-Lipschitz
+near the zero; the \code{hasFDerivWithin} mean-value bound on the
+$\|w\|$-ball then gives $K(w) \le M\|w\|^2$ --- the catalogued
+unification-bomb warning steered the proof to the
+explicit-derivative form from the start.
+\code{exists\_least\_nonzero\_diagonal}: the constant diagonal is
+killed first (\code{hasSum\_single} at the center plus
+\code{map\_coord\_zero}), so \code{Nat.find} lands at degree at
+least one without any dependent-index transport; homogeneity
+(\code{map\_smul\_univ}) rescales the witness.
+\code{exists\_bump\_one\_on\_ball}: $\min(1, \max(0, R+1-\|w\|))$ ---
+continuous, supported in the $(R{+}1)$-ball, one on the $R$-ball;
+the endpoint requires only continuity, so smooth-bump instances
+(which would drag in norm-smoothness questions on the sup-normed
+pi space) are avoided entirely.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+\begin{sloppypar}
+Three rounds. \code{ContDiffAt.differentiableAt} now takes
+$n \ne 0$; an \code{interval\_cases} on a \code{set}-bound
+\code{Nat.find} index tangles with the dependent \code{Fin} type in
+the multilinear argument (the restructure --- prove the degenerate
+case's fact generally first, then rewrite inside the \code{find}
+spec --- is the reusable move); and \code{EMetric.ball} is deprecated
+for \code{Metric.eball} on this pin.
+\end{sloppypar}
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: the local-minimum derivative rule
+(\code{IsLocalMin.fderiv\_eq\_zero}), the local Lipschitz bound
+(\code{exists\_lipschitzOnWith}), the convex mean-value inequality
+(\code{norm\_image\_sub\_le\_of\_norm\_hasFDerivWithin\_le}), the
+power-series sum (\code{HasFPowerSeriesOnBall.hasSum}),
+\code{hasSum\_single}, \code{map\_coord\_zero},
+\code{map\_smul\_univ}, and \code{Nat.find\_min}. New: only the
+observation that diagonal-only summation makes polarization
+unnecessary --- a simplification over both the note's argument and
+the critique's own reconstruction.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Part 2: the composed point theorem. Translation of the pencil
+integrals to an arbitrary center (Lebesgue substitution), the
+expansion-family bridge (equality of families at the observable
+$g\psi$ yields the $o(t^{-N})$-for-every-$N$ premise) and the
+integral rewriting (critique steps 10--11), then
+\code{pencil\_families\_force\_germ\_eq\_at} by composing this
+tide's three lemmas with
+\code{analytic\_pencil\_difference\_not\_superpolynomial}. Part 3
+assembles the locus statement by compactness. The TeX footnote will
+be updated once more when the composition lands, to say what is then
+true: the theorem is machine-checked end to end.
+\end{document}

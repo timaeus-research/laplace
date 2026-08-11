@@ -1,0 +1,118 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the integral-remainder foundation --- a clean pass on the primer's covariance formula, and a 2668-line file that had outgrown its own header}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/IntegralRemainder.lean} --- at 2668 lines the largest
+file in the laplace seabed, and the analytic foundation on which the whole 1D anharmonic programme
+rests: the $I_n/J_n$ integral-remainder asymptotics culminating in the SLT primer's Stage-2
+covariance formula $\mathrm{Cov}_t[w^2,w]=-2\alpha/(\lambda^3t^2)+o(t^{-2})$ (eq.\ 4.10). Result: a
+\textbf{clean fidelity pass on every headline}, with ten landed edits --- two dead opens, four
+docstring corrections, and four dead locals --- and several larger refactors deliberately left as
+forward tides. Reviewing it completes independent coverage of the laplace \texttt{OneD} directory.
+\end{abstract}
+
+\section{Setting}
+The capstone of a session-long sweep of the laplace \texttt{OneD} directory. Almost every other
+\texttt{OneD} file --- the anharmonic cumulant arc, the harmonic stack, the bounded-prior pair ---
+ultimately consumes the asymptotics proved here. The file is the bridge from the elementary Gaussian
+moments of Stage~1 to the first genuine payoff of Stage~2.
+
+\section{What was reviewed}
+The headline chain: a pointwise Taylor-remainder bound for $e^{-s}-(1-s)$ against the Gaussian weight;
+polynomial$\times$Gaussian integrability; the linearised integrand decomposition; the $J_n$
+first-order expansions $J_n=M_n-(A/\sqrt t)M_{n+3}-(B/t)M_{n+4}+O(1/t)$ with Gaussian moments
+$M_{2k}=(2k-1)!!\sqrt{2\pi}$; the $I_n\!\leftrightarrow\!J_n$ substitution identity
+$\sqrt{\lambda t}^{\,n+1}I_n=J_n$; the $I_n$ asymptotics; \texttt{cov\_coefficient\_identity}; and the
+assembled \texttt{cov\_anharmonic\_asymptotic}, \texttt{mean\_anharmonic\_asymptotic},
+\texttt{var\_anharmonic\_J\_form\_asymptotic}, \texttt{cov\_self\_anharmonic\_asymptotic}, and the
+explicit $O(t^{-2})$ rate theorems. Ground truth: the primer's eq.\ 4.10 and the file's own
+docstrings, plus internal consistency of the moment/substitution algebra.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect in any headline.} The reviewer verified, item by item: the covariance
+coefficient $-2\alpha/\lambda^3$ (sign and power $t^2$ correct); the mean $-\alpha/(2\lambda^2)$; the
+variance and self-covariance $1/\lambda$; both explicit $O(t^{-2})$ rate statements; the Gaussian
+normalisations $\sqrt{2\pi},3\sqrt{2\pi},15\sqrt{2\pi}$ and the vanishing odd moments; the $J_1,J_3$
+constants $-3A\sqrt{2\pi},-15A\sqrt{2\pi}$; and the substitution identity's Jacobian/power. ``No
+defect found'' anywhere in the constants, signs, exponents, or the Jacobian.
+
+\textbf{One honest under-statement (report-only).} The specialised \texttt{J\_0}/\texttt{J\_2} and
+\texttt{I\_0}/\texttt{I\_2} theorems state only the leading term plus $O(1/t)$, absorbing the
+explicit quartic first-correction coefficient that \texttt{J\_n\_asymptotic} could expose. These are
+true as written; \emph{strengthening} them to surface the coefficient is a stronger statement --- an
+API change, hence a forward tide, not a review edit.
+
+\section{Simplifications and documentation fixes applied}
+\textbf{Two dead opens.} \texttt{open Real} and \texttt{open Set} both carried nothing --- every
+\texttt{Real.*} and every interval (\texttt{Set.Ioi}/\texttt{Set.Iic}) is qualified; the bare
+$\exp$/$\sqrt{}$/$\pi$ tokens live only in comments. \texttt{open MeasureTheory} (166 bare $\int$) and
+\texttt{open scoped Nat} (the $!!$) stay.
+
+\textbf{Four docstring corrections --- the file had outgrown its own header.} The module docstring
+still described only the opening pointwise bound and asserted ``no new analytic content beyond the
+algebra,'' for a file that in fact proves the entire covariance result; it was retitled and the false
+claim corrected. A section header ``\texttt{Specialised asymptotics for n = 1}'' actually covers
+$J_0$--$J_3$. A summary block claimed the covariance assembly was ``left as a follow-up'' --- it is
+proved later in the very same file. And the \texttt{cov\_anharmonic\_J\_form\_asymptotic} docstring
+self-contradicted (``multiply by $\lambda^{3/2}$'' then ``dividing by $\lambda^{3/2}$''); the proof
+divides (\texttt{div\_const}), so the prose was fixed to ``divides'' and clarified that the theorem
+states the $J_n$-quotient limit.
+
+\textbf{Four dead locals.} Three unused \texttt{have}s in \texttt{J\_0\_asymptotic}
+(\texttt{habs}, \texttt{hpos\_bound}, \texttt{h\_quartic\_abs} --- each defined then never referenced;
+the calc that follows uses none) and one unused \texttt{with hM\_def} equation name on a \texttt{set}.
+All ten edits build green ($8254$ jobs), no new in-file warnings, exported signatures byte-identical;
+the reviewer affirmed each.
+
+\section{Disagreements and open questions}
+None substantive. The \texttt{import Laplace.OneD.Anharmonic} is transitively redundant (its
+\texttt{anharmonicPotential} is re-exported via \texttt{Rescaling}, which imports \texttt{Anharmonic}
+directly), but it was \emph{kept}: \texttt{anharmonicPotential} is used directly and pervasively here,
+so the import is a heavily-used \emph{direct} dependency that merely happens to be reachable two ways
+--- removing it would make a real dependency implicit (a clarity-reducing refactor), not delete dead
+code. The reviewer agreed it was ``not clearly dead.''
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The largest files drift the most in their headers, and the module docstring drifts
+    first.} A file that grows section-by-section over many tides keeps the docstring it was born with:
+    here a 2668-line covariance proof still announced itself as a pointwise-bound lemma with ``no new
+    analytic content.'' On a big mature file, budget the fidelity check to (i) the handful of headline
+    \emph{statements} and (ii) the \emph{navigational} docstrings (module header, section headers,
+    summary blocks) --- those, not the routine integrability lemmas, are where the drift hides.
+  \item \textbf{``Redundant import'' $\ne$ ``dead import'' when the module's symbols are used
+    directly.} The dead-import test is ``is any symbol of this module used here?'', not ``is this
+    module reachable another way?''. \texttt{Anharmonic} fails the second but passes the first
+    emphatically --- keep it. (Contrast a genuinely symbol-less import, which the build lets you
+    drop.)
+  \item \textbf{A self-contradicting docstring is an unambiguous fix.} ``Multiply by $\lambda^{3/2}$''
+    and ``divide by $\lambda^{3/2}$'' cannot both be right; the proof term (\texttt{div\_const})
+    breaks the tie. Internal contradiction is the easiest docstring defect to adjudicate --- no
+    external ground truth needed.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Forward tide: strengthen \texttt{J\_0}/\texttt{J\_2}/\texttt{I\_0}/\texttt{I\_2} to expose the
+    explicit quartic first-correction coefficient (currently absorbed into $O(1/t)$).
+  \item Batched-hygiene tide: the pre-existing style-linter warnings (\texttt{show}-for-readability
+    $\times5$, flexible \texttt{simp} $\times2$, one over-long line), the remaining unused
+    \texttt{with hX\_def} equation names, and the proof-dedup (\texttt{mean}/\texttt{cov\_self} redo
+    the \texttt{*\_J\_form\_exact} algebra; the repeated $\sqrt{}$-substitution block).
+  \item With this review, every substantive file in laplace \texttt{OneD} has been independently
+    reviewed.
+\end{itemize}
+
+\end{document}

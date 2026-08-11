@@ -210,6 +210,24 @@ have h_12 : Integrable (fun u : ι → ℝ => T1 u + T2 u) volume := h1.add h2
 -- h_12.f IS a single lambda, so the pattern reduces under beta only.
 ```
 
+The same class occurs for **`Pi.div`**: `isEquivalent_iff_tendsto_one`
+produces a ratio `(f / g)` as `Pi.div` of lambdas, which `field_simp`
+will not see through. `simp only [Pi.div_apply]` first, then `field_simp`.
+Related: `tendsto_rpow_atTop` / `tendsto_rpow_neg_atTop` are top-level
+constants (not `Real.`-namespaced), and `tendsto_nhds_unique` against a
+constant function needs the `tendsto_const_nhds` witness type-ascribed
+(`have h : Tendsto (fun _ : ℝ ↦ c) atTop (nhds c) := tendsto_const_nhds`)
+or the elaborator unifies the function the wrong way.
+
+**Identities mixing `t` and `Real.sqrt t`: fold the radical into an atom
+first.** `ring`/`field_simp` do not know `(√t)² = t`. The safe pattern:
+`set st := Real.sqrt t` (folds every `√t` in the goal into the opaque
+local `st`), then `rw [show t = st * st from (Real.mul_self_sqrt ht.le).symm]`
+— safe exactly because after the `set`, no goal occurrence of `t` sits
+inside a radical. The identity is then rational in `st` and closes with
+`field_simp; ring`. Used for the quadratised six-term decomposition
+(`Laplace/OneD/JnSecondOrder.lean`).
+
 **Calc chains over multi-term sum integrands push past the default
 heartbeat budget.** A calc chain that combines `MeasureTheory.integral_congr_ae`
 + N×`MeasureTheory.integral_add` + N×`MeasureTheory.integral_const_mul`
@@ -218,3 +236,232 @@ in `whnf`/`isDefEq`. Symptom: `(deterministic) timeout at whnf` on the
 calc step, not on any specific tactic. Workaround:
 `set_option maxHeartbeats 1600000 in` on the lemma. Add a comment
 explaining why (the linter requires it).
+
+## Architecture: the generic-(k₁,k₂) 2D lift pattern
+
+The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
+asymptotics are all instances of a single mirror-shape pattern that
+lifts a 1D closed-form result against `kthPotential k` to a 2D
+asymptotic on the separable potential `addSeparable (kthPotential k₁) (kthPotential k₂)`.
+
+The pattern has four packaged theorems per lift:
+
+1. **Factorisation step.** Use the 2D-separable machinery in
+   `Laplace/TwoD/AddSeparable.lean` to express the 2D quantity as a
+   product of two 1D ones:
+   - For the unnormalised numerator: `integral_separable_addSeparable`
+     (just needs `Integrable (fun x => f x * exp(-(t * U x)))` on each
+     factor, which is `Laplace.OneD.kth_integrable_pow_pot` for the
+     `x^(2j) · exp(-...)` family).
+   - For the Gibbs partition function: `partitionFunction_addSeparable_factor`
+     (just needs `Integrable (fun x => exp(-(t * U x)))`, which is the
+     `n = 0` specialisation of `kth_integrable_pow_pot`).
+   - For the Gibbs expectation of a separable observable:
+     `gibbsExpectation_separable_addSeparable` (needs both `Z` nonzero
+     and the four integrabilities).
+
+2. **`const × t^(-...)` step.** Substitute the 1D closed forms
+   (`kth_moment_even` for the numerator; `partitionFunction_kthPotential`
+   for the partition; `gibbsExpectation_kthPotential_even` for the
+   Gibbs moment), then peel off the `t`-dependence via
+   `Real.div_rpow` + `Real.rpow_add` + `Real.rpow_neg` and finish with
+   `ring`.
+
+3. **Rescaled `Tendsto`.** Multiply by the inverse power; the result
+   is `eventually equal to a constant function`, so
+   `tendsto_const_nhds.congr'` finishes after `Real.rpow_add` +
+   `add_neg_cancel` + `Real.rpow_zero`.
+
+4. **`IsEquivalent` packaging.** `Asymptotics.IsEquivalent.refl.congr_left`
+   plus `filter_upwards` over `Filter.eventually_gt_atTop (0 : ℝ)`
+   plus the exact reformulation of step 2.
+
+Each tide following this pattern lands in ~120-155 lines.
+
+### When to instantiate the pattern
+
+A new `Laplace/TwoD/<SomeKthKth>.lean` file is justified when:
+
+- A new 1D base lemma exists in `Laplace/OneD/`.
+- The 2D-separable machinery already covers the observable shape
+  (one of: pure exp, `f(x) · g(y) · exp`, `f(x) · exp`).
+- The asymptotic form is wanted in addition to the closed form.
+
+The first instance was `QuarticSexticPartitionAsymptotic` /
+`QuarticSexticMomentAsymptotic` / `QuarticSexticNumeratorAsymptotic`
+at the fixed `(k₁, k₂) = (2, 3)`; the generic-`(k₁, k₂)` trio
+(`KthKthPartitionAsymptotic`, `KthKthMomentAsymptotic`,
+`KthKthNumeratorAsymptotic`) lifted those on 2026-05-21.
+
+**`open scoped Nat` steals `φ` (and `!`).** The `Nat` scope defines `φ` as
+notation for `Nat.totient`, so after `open scoped Nat` a binder like
+`{f φ : ℝ → ℝ}` fails to parse (`unexpected token 'φ'; expected '}'`).
+Identifiers *containing* φ (`hφ_c`, `Mφ`) are fine — only the bare name
+breaks. If a file needs both a `φ` variable and double factorials, skip the
+scoped open and write `Nat.doubleFactorial (…)` explicitly; the closed-form
+lemmas stated with `‼` still apply, since `‼` is notation for the same
+constant.
+
+**A `lake build` proves nothing about a file outside the import
+closure.** The build gate is vacuous for a new file until
+`Laplace.lean` imports it: `lake build` and CI both pass while the
+file has arbitrarily many errors (this shipped an uncompiled file in
+PR #55). After creating a file, verify BOTH the import line in
+`Laplace.lean` AND the presence of the new `.olean` under
+`.lake/build/lib/lean/` before reporting a build result. Job-count
+deltas are too noisy to serve as the check.
+
+**`CFC.sqrt` on matrices needs `open scoped MatrixOrder` in every
+file.** The matrix `PartialOrder` instance is scoped; without the
+open, every `CFC.sqrt`/`PosSemidef.nonneg` use site errors with a
+baffling `failed to synthesize PartialOrder (Matrix ...)` (no
+missing-import hint). Same for `CFC.sqrt_mul_sqrt_self H
+(ha := hH.posSemidef.nonneg)` — the nonneg argument is an autoParam,
+pass it named.
+
+**Class-level `map_star` fails on `Matrix.toEuclideanCLM`.** Instance
+synthesis cannot find `StarHomClass` for the star-algebra-equivalence
+type `Matrix n n ℝ ≃⋆ₐ[ℝ] (EuclideanSpace ℝ n →L[ℝ] ...)`. Use the
+structure field directly: `(Matrix.toEuclideanCLM (𝕜 := ℝ)).map_star'
+A : toEuclideanCLM (star A) = star (toEuclideanCLM A)` — accepted as
+a term (defeq through the raw `toFun`), though `rw` with it can
+stumble; bind it in a `have` with the coerced statement first.
+
+**`rfl` bridging `(CLM S * CLM S) x` to a def-wrapped composition
+times out at whnf.** Deterministic heartbeat timeout, not an error in
+the maths. Fold the composition into an equation (`have hcomp :
+toEuclideanCLM H = whitening H * whitening H`), then rewrite with
+`ContinuousLinearMap.mul_apply`; never ask `rfl` to unfold CLM
+multiplication applied to a point.
+
+**`PiLp.continuous_apply` takes `p` and `β` explicitly.** A bare
+coordinate index as first argument silently coerces into the `p` slot
+(`Fin d → ℝ≥0∞`!) and produces `Invalid field 'mul': ...
+Function.mul` at the use site. Call as `PiLp.continuous_apply 2
+(fun _ : Fin d ↦ ℝ) a`.
+
+**`integral_fintype_prod_volume_eq_prod` needs NO integrability.**
+Mathlib's finite-product Fubini for `∏ i, f i (x i)` on pi types is
+unconditional; combined with `PiLp.volume_preserving_toLp` +
+`MeasurePreserving.integral_comp` (the FourierTransform.lean idiom)
+this makes coordinate-moment computations on `EuclideanSpace`
+essentially free. The one-hot factor trick: integrate
+`fun i t ↦ if i = a then t else 1` and collapse the product with
+`Finset.prod_ite_eq'`.
+
+**Passing `HasFDerivWithinAt` hypotheses to
+`Convex.norm_image_sub_le_of_norm_fderiv_le` is a unification bomb.**
+That lemma wants `∀ x ∈ s, DifferentiableAt 𝕜 f x` and a bound on
+`fderiv 𝕜 f x`; feeding it explicit-derivative hypotheses makes the
+elaborator attempt a whnf-unfolding unification that survives even
+8M heartbeats (minutes of wall clock, then death). The
+explicit-derivative variant is
+`Convex.norm_image_sub_le_of_norm_hasFDerivWithin_le` (dot-notation
+on the `Convex` fact) — with it the same application elaborates
+instantly. Symptom to recognize: `(deterministic) timeout at whnf`
+pointing at the theorem's `:=` line while every `have` checks fine.
+
+**`ω` (analytic grade) is scoped notation.** Without `open scoped
+ContDiff`, a bare `ω` in a theorem statement silently auto-binds as a
+free implicit variable; the symptom is an "expected `ContDiffAt ℝ ⊤`,
+got `ContDiffAt ℝ ω`" mismatch at use sites (Mathlib displays the
+analytic grade as ⊤ of `WithTop ℕ∞`). Higher-order symmetry of
+iterated derivatives (`ContDiffAt.iteratedFDeriv_comp_perm`) exists
+ONLY at ω regularity; for C^k, Mathlib has just order-2
+(`second_derivative_symmetric`). Polarization and any
+tensor-symmetry consumer should take an abstract `IsSymm` hypothesis
+and let callers discharge it (J3 pattern).
+
+**`field_simp`/`linarith` on equations between integrals: fold the
+integral values into scalar atoms first.** field_simp rewrites under
+integral binders, reassociating mul/div inside the integrand and
+silently desynchronizing what linarith needs to see as one atom
+(symptom: linarith failure where the hypothesis and goal print
+almost-identical integrals differing in integrand association).
+Fix: `set B := ∫ x, ... with hB` for each integral value (scalars
+are safe to fold — no lambda under them), then the equation is pure
+scalar algebra. Also: squeeze arguments against a previously proven
+Tendsto must reuse its RAW statement — a `simpa using h.norm`
+renormalizes `-c * ‖x‖^2` to `-(c * ‖x‖^2)` inside binders and the
+squeeze's syntactic matching dies.
+
+**`grep` may be shadowed (rg-style) in the user shell: `-c` with zero
+matches prints NOTHING instead of `0`.** The retrospective compile
+gate `N=$(grep -cE '^!|Error|Overfull' file.log)` then sets `N` empty
+— `exit $N` succeeds vacuously and real errors (e.g. Unicode
+characters in `\code{}` spans) pass the gate silently. Always use
+`/usr/bin/grep` in gate expressions, and treat an empty `[$N]` echo as
+a broken gate, not a pass.
+
+**`integral_congr_ae` (and `Integrable.congr`) hand pointwise goals as
+applied lambdas.** Every `rw` inside then dies on the beta redex
+(`(fun w ↦ ...) x = ...`). Run `beta_reduce` (or a goal-changing
+`change` — the style linter rejects `show` for this) before any
+rewrite in such blocks. Same for the per-point goals of
+`setIntegral_congr_fun`.
+
+**`positivity` cannot see nonnegativity/positivity of opaque
+structure fields or `choose`-extracted constants.** `D.lambda / 4 > 0`
+or `0 ≤ D.remConst` fail even when provable: derive a local fact once
+(`by linarith [D.lambda_pos]`, or an explicit `mul_nonneg` chain) and
+thread it.
+
+**Argument-orientation renames on this pin.** `add_le_add_right h c`
+produces `c + a ≤ c + b` (adds on the LEFT) — use
+`add_le_add h le_rfl` for the right-hand form. `div_eq_iff` wants the
+division on the LEFT of the equation (`eq_div_iff` for the right).
+`MeasureTheory.integral_div` rewrites `∫ f x / c` forward; the `←`
+pattern `(∫ f)/c` is often not present. `Finset.sum_div` pushes a sum
+through division numerator-first; convert per-term with
+`mul_div_assoc` afterwards. `tsum_le_tsum` is now dot-notation
+`Summable.tsum_le_tsum` on the LHS summability. `Real.sqrt_le_one` is
+an iff. `IsLittleO.neg` is `IsLittleO.neg_left`. `push_neg` is
+deprecated for `push Not`.
+
+**`set ... with` must run AFTER obtaining the hypotheses it should
+fold.** Instances pulled from an `∀ᶠ`-fact after the `set` contain
+fresh unfolded copies, and `linarith`/`field_simp` then see two
+different atoms. Order: `filter_upwards`/`have` the instances first,
+then `set` (which folds every existing occurrence).
+
+**`rw [Real.exp_add]` with identical instantiations rewrites all
+copies at once.** A three-factor exponential split needs two
+`exp_add` rewrites, not three; the third fails with
+"did not find an occurrence".
+
+**λ cannot appear inside an identifier** (`hλ` fails to parse — it is
+the anonymous-function token). Use `hlam`.
+
+**`rw [show (0:ℝ) = ∫ 0 ...]` rewrites the zero inside the filter
+`𝓝[>] (0:ℝ)` too.** State the DCT conclusion with `∫ 0` and transfer
+by `simpa`, never rewrite the goal's zero.
+
+**`Real.rpow_neg_one` does not exist.** Only the NNReal/ENNReal
+versions do. For a real base write
+`show t⁻¹ = t ^ (-1 : ℝ) from by rw [Real.rpow_neg ht.le, Real.rpow_one]`
+and then `← Real.rpow_mul` for `(t⁻¹)^r = t^(-r)` manipulations.
+
+**`have`-bound constructors are opaque: consume postconditions
+through structure fields.** `have A := someConstructor ...` erases
+the definition, so a later `(A k).field = <constructed value> := rfl`
+cannot reduce (symptom: "application type mismatch ... ?m = ?m"
+against the projection). Even with the application inlined, internal
+`Exists.choose` terms are Classical-opaque and cannot be re-derived
+by spelling them identically. The pattern: have the constructor set
+RELATED fields from the same local (e.g. `U := ball 0 ρ` and
+`delta := ρ`), then callers get `U = ball 0 delta` by `rfl` and
+positivity from `delta_pos` — postconditions read off fields, never
+reconstructed from choice chains.
+
+**A sibling theorem missing from the import closure presents as an
+unknown identifier.** With forty-plus files in one namespace,
+`Laplace.Multi.Foo.bar` failing to resolve usually means the FILE is
+not imported, not that the name is wrong. Check the import chain
+before renaming anything.
+
+**`have h := f a b ?_` + `case _ =>` does not defer the trailing
+explicit argument.** The elaborator inserts the metavariable eagerly
+and the `case` block finds no goal (symptom: `introN` failure then
+"unknown identifier h"). Pass the argument as an inline lambda (with
+a `by` block if tactics are needed), or restate it as a separate
+`have` with an explicit type.

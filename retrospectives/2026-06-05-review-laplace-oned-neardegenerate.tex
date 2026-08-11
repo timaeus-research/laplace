@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the universal-scaling identity --- an exact transport, checked four ways}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/NearDegenerate.lean}: the exact universal-scaling
+identity $\langle x^{2n}\rangle_{L^{nd}_\varepsilon,t}=\varepsilon^n\langle y^{2n}\rangle_{V,\varepsilon^2t}$
+relating the near-degenerate potential $L^{nd}_\varepsilon(x)=\tfrac\varepsilon2 x^2+\tfrac{x^4}{24}$
+to the universal $V(y)=\tfrac{y^2}2+\tfrac{y^4}{24}$ via $x=\sqrt\varepsilon\,y$. Result:
+\textbf{a clean fidelity pass with one dead-open removal} --- the substantive math (an exact
+change-of-variables transport) checked out on all four load-bearing steps.
+\end{abstract}
+
+\section{Setting}
+Unlike the templated \texttt{TwoD/} lift files, this is a genuine change-of-variables result: the
+substitution $x=\sqrt\varepsilon\,y$ sends $t\,L^{nd}_\varepsilon$ to $\varepsilon^2 t\,V$
+\emph{exactly}, so every near-degenerate Gibbs moment factors through the universal posterior at
+effective inverse temperature $T=\varepsilon^2 t$. It is the formal core of the
+near-degenerate-crossover note.
+
+\section{What was reviewed}
+Two potential abbreviations, an algebraic core lemma, and four theorems: the integral substitution
+($\int f\,e^{-tL^{nd}}=\sqrt\varepsilon\int f(\sqrt\varepsilon\,\cdot)\,e^{-\varepsilon^2tV}$), the
+partition scaling ($Z_{L^{nd}_\varepsilon}=\sqrt\varepsilon\,Z_V(\varepsilon^2t)$), the
+Gibbs-expectation transport, and the headline monomial scaling.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; checked four ways.} (1) The algebraic core
+$L^{nd}_\varepsilon(\sqrt\varepsilon\,y)=\varepsilon^2V(y)$ expands correctly
+($\tfrac\varepsilon2(\varepsilon y^2)+\tfrac{\varepsilon^2y^4}{24}=\varepsilon^2(\tfrac{y^2}2+\tfrac{y^4}{24})$).
+(2) The Jacobian is in the right direction: $x=\sqrt\varepsilon\,y\Rightarrow dx=\sqrt\varepsilon\,dy$,
+matching the $\sqrt\varepsilon$ prefactor (the proof rearranges Mathlib's
+\texttt{integral\_comp\_mul\_right} output). (3) The $\sqrt\varepsilon$ prefactors of numerator and
+partition cancel in the expectation transport. (4) The headline factor is
+$(\sqrt\varepsilon)^{2n}=\varepsilon^n$. The reviewer independently confirmed all four.
+
+One report-only scope note: the module docstring's prose about the $T\ll1$ and $T\gg1$ regimes
+(``governed by the pure-quartic core'', ``tracks the standard Laplace asymptotics'') is
+\emph{contextual} --- this file proves the exact transport/scaling identity, not those asymptotic
+regime statements. Left intact as expository scope-setting, not gutted (the same treatment as other
+research-context framing).
+
+\section{Simplifications applied}
+\textbf{One dead \texttt{open}.} \texttt{open Real} is dead (\texttt{Real.sqrt}/\texttt{Real.exp}/%
+\texttt{Real.sq\_sqrt}/\texttt{Real.sqrt\_pos} all qualified); \texttt{open MeasureTheory} stays
+(bare $\int$ throughout). Module green at $2697$ jobs, no warnings, signatures byte-identical. GPT
+affirmed.
+
+\section{Disagreements and open questions}
+None. The reviewer's several \texttt{show}$\to$\texttt{change} and \texttt{simpa}-compression
+suggestions were declined as proof-golf.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A genuine change-of-variables result rewards a four-point fidelity check.} Unlike a
+    templated repackaging, this file's correctness hinges on four independently-falsifiable facts
+    (algebraic identity, Jacobian direction, prefactor cancellation, exponent count). Enumerating
+    them --- rather than trusting the build --- is what a fidelity review adds over a green
+    \texttt{lake build}.
+  \item \textbf{Contextual regime prose is expository, not a proof obligation.} A docstring that
+    situates an exact identity within a $T\ll1$/$T\gg1$ crossover story is scope-setting; reviewing
+    it means confirming the file does not \emph{claim} to prove the regimes, not flagging their
+    absence.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Remaining \texttt{OneD/} surface: \texttt{UniversalAsymptotics} (the natural companion ---
+    the $T\gg1$/$T\ll1$ regime statements this file's docstring gestures at),
+    \texttt{HarmonicCovGlobalConstancy}, \texttt{HarmonicPerturbedMoments}, the \texttt{Harmonic*}
+    monomials; and the \texttt{Multi/Covariance*} trio.
+  \item Proof-golf forward tide: the \texttt{show}$\to$\texttt{change} and \texttt{simpa}
+    compressions across this file.
+\end{itemize}
+
+\end{document}

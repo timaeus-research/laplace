@@ -1,0 +1,183 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{⁻}{\ensuremath{^-}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{𝓝}{\ensuremath{\mathcal{N}}}
+\newunicodechar{∀}{\ensuremath{\forall}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{→}{\ensuremath{\to}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.6 Sol:}} #1\end{quote}\medskip}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\newcommand{\Cov}{\operatorname{Cov}}
+\emergencystretch=3em
+
+\title{Tide retrospective:\\\emph{the $k=2$ superPoly covariance bridge}}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The largest finding of the germbij fidelity
+review\footnote{\reviewref{2026-08-10-01-29-review-germbij-new-content}.} was
+that the superPoly-language recovery headline \emph{assumes} the Hessian
+equality that the note's Theorem~3.1 derives from the data: the merged
+Hessian step existed only in rate language (\texttt{hessian\_recovery},
+consuming covariance differences $o(q^2)$), with no bridge from the note's
+``same asymptotics'' premise. This tide supplies that bridge. The new
+theorem\footnote{\texttt{hessian\_recovery\_of\_superPoly\_moments},
+\texttt{Laplace/Multi/HessianBridge.lean}.} states: two localized losses
+whose second-moment families $t \mapsto \langle w_i w_j\rangle_t$ agree
+beyond all orders in the temperature have equal package matrices
+$H_1 = H_2$. The deliberation improved the candidate: no first-moment
+agreement is needed, because each package's first moments are $o(q)$ on
+their own, so the product terms in the covariance difference are $o(q^2)$
+per package --- only the second-moment difference consumes data. The proof
+is pure asymptotics plumbing over merged components and compiled on the
+first build.
+\end{abstract}
+
+\section{Setting}
+
+The inverse half of germbij Theorem~3.1 was restated in the note's own data
+language by the expansion-bridge arc (PRs \#93--\#95), but its headline
+carries \texttt{hbase}: equality of derivatives of order $0$--$2$, with both
+losses' domain packages sharing one matrix $H$. The fidelity review flagged
+this as the principal gap between the formalisation and the note's claim ---
+the note \emph{recovers} $H$ from $t\,\Cov_t[w_i,w_j] \to (H^{-1})_{ij}$,
+and that step was formalised only against $o(q^2)$ \emph{rate} hypotheses
+(stage H6's \texttt{hessian\_recovery}), not against superpolynomial
+agreement of moment \emph{families}. This tide is the first of three
+perimeter-closing steps (this bridge; the shift-normalization wrapper for
+the $j=0$ constant; the cutoff-removal lemma), and is the minimal one: a
+single theorem, no new analysis, exactly the $k=2$ analogue of the rate
+transport the expansion bridge already performs at $k>2$.
+
+\section{The thing formalised}
+
+For localized losses $L_1, L_2$ carrying \texttt{LocalLaplaceDomain}
+packages with matrices $H_1, H_2$: if for every pair of coordinates $i,j$
+the difference of normalized localized second moments
+\[
+t \;\longmapsto\;
+\langle w_i w_j \rangle^{L_1}_t - \langle w_i w_j \rangle^{L_2}_t
+\]
+is smaller than every power of $t^{-1}$ (the \texttt{SuperPoly} predicate,
+the note's $o(t^{-\infty})$), then $H_1 = H_2$. The Lean signature:
+
+{\small
+\begin{verbatim}
+theorem hessian_recovery_of_superPoly_moments
+    (A : LocalLaplaceDomain L₁ H₁) (B : LocalLaplaceDomain L₂ H₂)
+    (hdata : ∀ i j : Fin d, Laplace.SuperPoly (fun t : ℝ ↦
+      A.posteriorMomentT (fun w ↦ w i * w j) t -
+        B.posteriorMomentT (fun w ↦ w i * w j) t)) :
+    H₁ = H₂
+\end{verbatim}
+}
+
+Notably there is \emph{no} first-moment hypothesis: the deliberation's
+strengthening (below). Combined with the merged
+\texttt{location\_eq\_of\_superPoly\_first\_moments} and the $k>2$
+expansion bridge, all three moment layers of the note's Theorem~3.1 inverse
+now consume data in the same superPoly vocabulary; composing them into a
+single \texttt{hbase}-free headline is the next tide's job.
+
+\section{Proof strategy}
+
+Write $m^A(f)(q)$ for the normalized localized moment at scale $q$
+(temperature $t = q^{-2}$). The covariance form that
+\texttt{hessian\_recovery} consumes is definitionally
+$m(w_iw_j) - m(w_i)\,m(w_j)$ --- recorded as an \texttt{rfl} lemma
+(\texttt{covariance\_eq\_posteriorMoment}), since the merged file phrases it
+in raw \texttt{posteriorIntegral} quotients. The covariance difference then
+splits as
+\[
+\bigl[m^A(w_iw_j) - m^B(w_iw_j)\bigr]
+\;-\;
+\bigl[m^A(w_i)m^A(w_j) - m^B(w_i)m^B(w_j)\bigr].
+\]
+The first bracket is $o(q^2)$ by rate transport: the $m = 0$ case of the
+expansion bridge's \texttt{isLittleO\_pow\_of\_superPoly} composed with the
+$t = q^{-2}$ substitution identity. For the second bracket no data is
+needed at all: the merged first-moment rate\footnote{%
+\texttt{tendsto\_normalized\_first\_moment}, \texttt{HessianMoments.lean}.}
+($m(w_i)/q \to 0$) converts to
+$m(w_i) =o(q)$ via \texttt{isLittleO\_iff\_tendsto'} (the $q \neq 0$ side
+condition holds eventually on $\mathcal{N}[>]0$), and
+\texttt{IsLittleO.mul} gives $m(w_i)m(w_j) = o(q\cdot q) = o(q^2)$ for each
+package separately. Assembling with \texttt{IsLittleO.sub} and a pointwise
+\texttt{ring} rearrangement feeds \texttt{hessian\_recovery}, whose
+uniqueness-of-limits and positive-definite inversion argument does the
+rest.
+
+\section{Roadblocks and resolutions}
+
+None worth the name --- the file compiled on the first \texttt{lake build}.
+The only design moment was the deliberation's strengthening:
+
+\gptbox{A can be strengthened and simplified: first-moment
+\emph{agreement} is unnecessary. For each package independently, every
+first moment is $o(q)$, hence each product of first moments is $o(q^2)$.
+Therefore superpolynomial agreement of only the second moments already
+makes the covariance difference $o(q^2)$.}
+
+This is strictly less hypothesis for the same conclusion and was adopted as
+the agreed candidate A$'$. It also has a pleasant reading: at the Hessian
+layer, the first moments are pure gauge --- their information content
+($o(q)$ smallness) is a consequence of localization, not of the data.
+
+\section{What was Mathlib, what was new}
+
+Mathlib lookup: \texttt{isLittleO\_iff\_tendsto'},
+\texttt{IsLittleO.mul}/\texttt{sub}/\texttt{congr'}, \texttt{sq}. Seabed
+reuse: \texttt{hessian\_recovery} (H6), \texttt{tendsto\_normalized\_first\_moment}
+(H5), \texttt{isLittleO\_pow\_of\_superPoly} and
+\texttt{posteriorMomentT\_inv\_sq} (expansion bridge). New: only the four
+declarations of the file --- the \texttt{rfl} vocabulary bridge, the two
+little-o packagings, and the headline composition. This is the intended
+shape for a perimeter tide: zero new analysis, one new composed statement.
+
+\section{Lessons}
+
+The $m = 0$ case of \texttt{isLittleO\_pow\_of\_superPoly} (transport with
+no power division) is the workhorse for restating \emph{any} rate-language
+recovery theorem in superPoly data language; tides 2 and 3 of this
+perimeter should reach for it first. And the review pipeline worked as
+designed: finding F1's ``no $k=2$ analogue of the expansion bridge exists''
+was a precise, one-tide-sized gap statement.
+
+\section{Follow-ups}
+
+\begin{itemize}[nosep]
+\item Tide 2 (next): the shift-normalization wrapper discharging
+\texttt{hbase} at $j = 0$, plus the recomposition: an \texttt{hbase}-free
+headline concluding positive-order jet equality from superPoly data alone,
+using this tide's $H_1 = H_2$ to instantiate the shared-$H$ machinery, a
+\texttt{HigherLaplaceDomain}-level $T_2 = \mathrm{qform}/2$ tie for the
+$j=2$ tensor form, and the $j=1$ vanishing from the quadratic Peano field.
+\item Tide 3: the cutoff-removal lemma ($C_c^\infty$ data implies monomial
+data), completing the note-literal premise.
+\end{itemize}
+
+\end{document}

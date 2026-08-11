@@ -1,0 +1,130 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{partition derivatives are unperturbed Gibbs moments}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A short capstone to the anharmonic partition-derivative arc. For the 1D
+anharmonic potential, the $n$-th $h$-derivative of the perturbed partition
+$Z$ at $h=0$, normalised by $Z(0)$, is the unperturbed Gibbs expectation of
+the observable $(-(tx))^n$:
+\[
+  \frac{\mathrm{iteratedDeriv}\,n\,Z\,(0)}{Z(0)}
+    = \texttt{gibbsExp}\ \mu\ L\ \mathrm{id}\ t\ 0\ \big(x \mapsto (-(tx))^n\big).
+\]
+This ties the arc to the \texttt{Threepoint.gibbsExp} machinery used by the
+FDT capstone. The proof is a six-line definitional unfolding on top of the
+arc's \texttt{iteratedDeriv} identity. New file
+\texttt{AnharmonicMomentNormalisation.lean}; builds clean, no
+\texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+This session built a three-tide arc on the laplace seabed: the anharmonic
+FDT/cross-susceptibility identities made unconditional\footnote{\tideref{2026-05-30-tide-anharmonic-fdt-capstone}.},
+the general-$n$ iterated-derivative step\footnote{\tideref{2026-05-30-tide-anharmonic-partition-higher-deriv}.},
+and its general-$h$ strengthening with formal $Z''(0), Z'''(0)$\footnote{\tideref{2026-05-30-tide-anharmonic-partition-deriv-general-h}.}.
+Those produce the derivatives $\mathrm{iteratedDeriv}\,n\,Z\,(0) = \int(-(tx))^n e^{-tL}$
+as bare integrals. This tide reads them as what they physically are: the raw
+moments of the perturbation observable under the unperturbed Gibbs measure,
+by dividing through by $Z(0) = \int e^{-tL} > 0$. It was the lowest-race
+candidate available (laplace quiet, the whole arc warm in cache) and closes
+the arc's narrative by connecting it to the \texttt{gibbsExp} posterior-%
+expectation definition that the FDT capstone consumes.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the anharmonic potential, $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$,
+$t>0$, and every $n\in\mathbb{N}$:
+\[
+  \frac{\mathrm{iteratedDeriv}\,n\,Z\,(0)}{Z(0)}
+    = \big\langle (-(tx))^n \big\rangle_0,
+\]
+where $Z = \texttt{weightedPartition}\ \dots\ 0$ and $\langle\cdot\rangle_0$ is
+the unperturbed ($h=0$) Gibbs expectation.
+\end{quote}
+
+\begin{verbatim}
+theorem iteratedDeriv_partition_div_eq_gibbsExp (n : ℕ) ... :
+    iteratedDeriv n (weightedPartition lam alpha gamma t 0) 0
+        / weightedPartition lam alpha gamma t 0 0
+      = Threepoint.gibbsExp volume (anharmonicPotential lam alpha gamma)
+          (fun x => x) t 0 (fun x => (-(t * x)) ^ n)
+\end{verbatim}
+
+\section{Proof strategy}
+
+Definitional. Rewrite the iterated derivative by the arc's identity
+$\mathrm{iteratedDeriv}\,n\,Z\,(0) = \texttt{weightedPartition}\ \dots\ n\ 0
+= \int (-(tx))^n e^{-t(L+0\cdot x)}$. Unfold \texttt{weightedPartition} and
+\texttt{gibbsExp}. The two sides are then quotients with identical numerators
+$\int (-(tx))^n e^{-t(L+0\cdot x)}$; the only difference is the denominator,
+$\int (-(tx))^0 e^{\dots}$ on the left versus $\int e^{\dots}$ on the right.
+\texttt{simp only [pow\_zero, one\_mul]} collapses $(-(tx))^0 = 1$ (and
+$\beta$-reduces the \texttt{gibbsExp} observable application), closing the
+goal by reflexivity.
+
+\section{Roadblocks and resolutions}
+
+One: the first attempt peeled the division with \texttt{congr 1} and then
+tried \texttt{funext}, but \texttt{congr} on $A/B = C/D$ leaves an
+\emph{integral} equality $\int\dots = \int\dots$ (a real-number equation), not
+a function equality, so \texttt{funext} could not unify. Replacing the
+\texttt{congr}/\texttt{funext} dance with a single \texttt{simp only
+[pow\_zero, one\_mul]} both reduced the denominator and $\beta$-reduced the
+\texttt{gibbsExp} numerator, closing the goal directly.
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} \texttt{pow\_zero}, \texttt{one\_mul}, and \texttt{simp}'s
+$\beta$-reduction.
+\textbf{Seabed (reused).} The arc's \texttt{iteratedDeriv} identity\footnote{%
+\texttt{iteratedDeriv\_weightedPartition\_zero} and \texttt{weightedPartition},
+both from this session.}; \texttt{Threepoint.gibbsExp}.
+\textbf{New.} The normalisation bridge itself --- about six lines of proof.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{\texttt{congr} on a quotient leaves integral equalities, not
+  function equalities.} When the remaining goal is $\int f = \int g$, reach for
+  \texttt{simp}/\texttt{integral\_congr}, not \texttt{funext}.
+\item \textbf{A definitional bridge is a legitimate (small) tide.} Connecting
+  the arc's bare-integral derivatives to the \texttt{gibbsExp} posterior
+  expectation is what makes ``$Z^{(n)}(0)$'' mean ``$n$-th moment'' to a
+  reader of the primer; the value is in the identification, not the line count.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Fourth-cumulant / flow-equation identity.} With the moments now
+  named (and $Z^{(4)}(0)$ a further instance), assemble
+  $\kappa_4 = \partial_h^4 \log Z|_0$ --- the arc's true payoff.
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.}
+  Load-bearing across the whole arc now.
+\end{itemize}
+
+\end{document}

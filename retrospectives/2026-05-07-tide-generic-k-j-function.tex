@@ -1,0 +1,471 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{→}{\ensuremath{\to}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\title{Tide retrospective:\\\emph{generic-$k$ J-function asymptotic
+for monomial potentials}}
+\author{Claude Opus 4.7 (1M ctx), with Daniel Murfet}
+\date{2026-05-07}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For the single-monomial potential $K(w) = w^{2k}/(2k)!$ with
+$k \in \mathbb N$, $k \ge 1$, and a continuous, globally bounded prior
+$\pi$, we formalise the leading-order asymptotic of the J-function
+$J_k(t) = \int e^{-tK(w)}\pi(w)\,dw$ as $t \to \infty$. The headline
+constant is
+$\pi(0)\cdot \tfrac{1}{k}\cdot ((2k)!)^{1/(2k)}\cdot \Gamma(1/(2k))$.
+This is Step~4 of the grammar paper precursor sequence: it folds the
+$k=2$ quartic case (Tide~E4) and the $k=3$ sextic case (Tide~L1) into
+a single parametric theorem. New file
+\texttt{Laplace/OneD/JFunctionMonomial.lean}, 497~lines, three public
+theorems plus four private helpers; zero \texttt{sorry}, zero
+\texttt{axiom}, zero \texttt{native\_decide}; single-session
+formalisation. The Step~2 deliberation with GPT-5.5~Pro converged in
+one round: both votes for the headline (full-form) candidate, with
+GPT contributing a small public-API trim (keep the integrability
+helper private) and a critical tactical note that \texttt{ring} cannot
+unify under generic exponents like \texttt{2*k}, forcing the use of
+\texttt{mul\_pow} in the substitution lemma's load-bearing step.
+\end{abstract}
+
+\section{Setting}
+
+The grammar paper precursor sequence is a chain of formalised
+asymptotic-method results that ground the grammar paper's Sections
+on resolution of singularities. Three earlier tides have laid the
+seabed:
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item Tide~7 (the original \emph{grammar precursor} tide, 2~May)
+  established the substitute-then-DCT skeleton.
+\item Tide~E4 (this morning) instantiated the J-function asymptotic
+  at $k=2$ in the quartic file,\footnote{\texttt{Laplace/OneD/JFunctionQuartic.lean}.}
+  with closed-form constant $\tfrac12 \cdot 24^{1/4}\cdot \Gamma(1/4)$
+  and proof template \emph{substitute-then-DCT}.
+\item Tide~L1 (immediately after E4) mirrored the proof at $k=3$
+  in the sextic file,\footnote{\texttt{Laplace/OneD/JFunctionSextic.lean}.}
+  with constant $\tfrac13\cdot 720^{1/6}\cdot \Gamma(1/6)$.
+\end{itemize}
+
+\noindent The L1 retrospective explicitly named the generic-$k$
+abstraction as \emph{``now ripe''}: with both $k=2$ and $k=3$ in the
+same shape, the abstraction over $K(w) = w^{2k}/(2k)!$ becomes the
+natural next step. The constant generalises cleanly to
+$\tfrac{1}{k}\cdot ((2k)!)^{1/(2k)}\cdot \Gamma(1/(2k))$, and the
+proof template generalises modulo cast bookkeeping.
+
+The Step~2 deliberation between Claude and GPT-5.5~Pro picked the
+headline candidate (full asymptotic plus closed-form partition, three
+public theorems) over a thinner alternative that would have postponed
+the asymptotic corollary as a follow-up. Both models voted the same
+target in a single round; GPT additionally trimmed the public API
+(\texttt{kth\_integrable\_pow} kept private, since only $n=0$ is
+needed inside this file) and reshaped the proof tactics to use
+\texttt{mul\_pow} rather than the \texttt{ring} idiom from L1
+(\texttt{ring} cannot unify under a parametric \texttt{2*k}).
+
+The markdown tide log\footnote{In the SRI repo at
+\texttt{projects/primer/tide-log/}, file
+\texttt{2026-05-07-tide-generic-k-j-function.md}.}
+records the full deliberation; the GPT consult is preserved at the
+sibling \texttt{gpt\_responses\_n1/n1\_v1.md}.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For $k \in \mathbb N$ with $k \ge 1$ and a continuous, globally
+bounded prior $\pi : \mathbb R \to \mathbb R$ (with global bound $M$),
+$$
+  \lim_{t \to \infty} t^{1/(2k)} \cdot
+    \int_{\mathbb R} e^{-t\,w^{2k}/(2k)!}\,\pi(w)\,dw
+  \;=\; \pi(0) \cdot \tfrac{1}{k} \cdot ((2k)!)^{1/(2k)}
+        \cdot \Gamma\!\left(\tfrac{1}{2k}\right).
+$$
+\end{quote}
+
+\noindent The Lean signature\footnote{\texttt{Laplace/OneD/JFunctionMonomial.lean},
+\texttt{kth\_jfunction\_asymptotic}.}:
+
+\begin{verbatim}
+theorem kth_jfunction_asymptotic
+    {k : ℕ} (hk : 1 ≤ k)
+    {prior : ℝ → ℝ} (hprior_cont : Continuous prior)
+    {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
+    Tendsto (fun t : ℝ =>
+        t ^ ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) *
+        ∫ w : ℝ, Real.exp (-(t * w ^ (2 * k) /
+                              (Nat.factorial (2 * k) : ℝ)))
+                  * prior w)
+      atTop
+      (𝓝 (prior 0 * (1 / (k : ℝ))
+            * ((Nat.factorial (2 * k) : ℝ))
+                ^ ((1 : ℝ) / ((2 * k : ℕ) : ℝ))
+            * Real.Gamma ((1 : ℝ) / ((2 * k : ℕ) : ℝ))))
+```
+
+\noindent The two existing files (\texttt{JFunctionQuartic.lean} for
+$k=2$, \texttt{JFunctionSextic.lean} for $k=3$) are not yet refactored
+as 5-line specialisations of this theorem, since both are on unmerged
+branches at the base time; that is a follow-up tide once all three
+land on \texttt{main}.
+
+The closed-form partition is also exported:
+
+\begin{verbatim}
+theorem kth_partition {k : ℕ} (hk : 1 ≤ k) {t : ℝ} (ht : 0 < t) :
+    ∫ x : ℝ, Real.exp (-(t * x ^ (2 * k) /
+                            (Nat.factorial (2 * k) : ℝ)))
+      = (1 / (k : ℝ))
+          * ((Nat.factorial (2 * k) : ℝ) / t)
+              ^ ((1 : ℝ) / ((2 * k : ℕ) : ℝ))
+          * Real.Gamma ((1 : ℝ) / ((2 * k : ℕ) : ℝ))
+\end{verbatim}
+
+\noindent and the centred DCT core
+\texttt{kth\_jfunction\_centered\_tendsto\_zero}, which is the
+load-bearing intermediate.
+
+The hypothesis $k \ge 1$ is mathematically essential: at $k=0$ the
+``potential'' $w^{0}/0! = 1$ is constant, making
+$e^{-t}\,\pi(w)$ have no concentration behaviour and the asymptotic
+trivial in the wrong way. Continuous-and-bounded on the prior is the
+slightly stronger form taken in E4/L1 over the deliberation's
+\texttt{AEMeasurable + ContinuousAt 0}; weakening across all three
+files is a separate follow-up (E4 follow-up~L3, now ripe across two
+files).
+
+\section{Proof strategy}
+
+The proof is substitute-then-DCT, identical in structure to E4/L1
+modulo cast bookkeeping. There are four pieces.
+
+\paragraph{The substitution.} Set $a := t^{1/(2k)}$, so $a^{2k} = t$.
+The change of variables $u = a\cdot w$ via Mathlib's
+\texttt{Measure.integral\_comp\_mul\_right} reshapes
+\[
+  t^{1/(2k)} \int_{\mathbb R} e^{-t w^{2k}/(2k)!}\,(\pi(w) - \pi(0))\,dw
+\]
+into
+\[
+  \int_{\mathbb R} e^{-u^{2k}/(2k)!}\,(\pi(u/a) - \pi(0))\,du.
+\]
+The Jacobian bookkeeping is where most of the proof's lines go.
+Concretely: $a^{2k} = t$ is proved by routing through
+\texttt{Real.rpow\_natCast}, then \texttt{Real.rpow\_mul}, then
+\texttt{Real.rpow\_one}, with the intermediate identity
+$\alpha \cdot p_{\mathbb R} = 1$ (where $\alpha := 1/p_{\mathbb R}$
+and $p_{\mathbb R} := ((2k)_{\mathbb N})_{\mathbb R}$) factored out
+as a named \texttt{have} so the calc chain stays linear.
+
+The load-bearing line is the pointwise identity
+$(w \cdot a)^{p} = t \cdot w^{p}$. In E4 and L1, this was closed by
+\texttt{ring} after specialising to fixed $p \in \{4, 6\}$. For
+generic $p = 2k$, \texttt{ring} cannot unify the exponents and
+fails. The fix is \texttt{mul\_pow}: $(w\cdot a)^p = w^p \cdot a^p$
+unconditionally, then $a^p = t$ via \texttt{ha\_p}, then
+\texttt{ring} to commute the multiplication. This was the single
+most important tactical correction GPT named at deliberation; without
+it the substitution lemma does not close.
+
+\paragraph{The dominator's integrability.} The DCT envelope is
+$2M \cdot e^{-u^{2k}/(2k)!}$, which is $t$-independent (the
+substitution moved the $t$-dependence into the prior factor). For
+generic $k \ge 1$, integrability is established by Gaussian
+comparison via the universal pointwise inequality
+\[
+  x^2 \;\le\; 1 + x^{2k} \qquad (k \ge 1),
+\]
+proved by case-split on $|x| \le 1$ (where $x^2 \le 1$ and
+$x^{2k} \ge 0$) versus $|x| > 1$ (where $x^{2k} \ge x^2$ since
+$2k \ge 2$). This gives
+$\tfrac{t}{(2k)!} \cdot x^2 - \tfrac{t}{(2k)!} \le \tfrac{t \cdot x^{2k}}{(2k)!}$,
+hence $e^{-tx^{2k}/(2k)!} \le e^{t/(2k)!}\cdot e^{-(t/(2k)!) \cdot x^2}$,
+the dominator being a Gaussian integrable by Mathlib's
+\texttt{integrable\_exp\_neg\_mul\_sq} at $b = t/(2k)!$.
+
+\paragraph{The centred DCT.} The substituted integrand
+$F(t,u) := e^{-u^{2k}/(2k)!}\cdot (\pi(u/t^{1/(2k)}) - \pi(0))$ has a
+$t$-independent envelope $2M\cdot e^{-u^{2k}/(2k)!}$ (integrable from
+the previous step), and its pointwise limit is zero: as $t \to \infty$,
+$u/t^{1/(2k)} \to 0$ (the
+\texttt{tendsto\_rpow\_atTop} step at exponent $1/(2k) > 0$), and
+continuity of $\pi$ at $0$ gives
+$\pi(u/t^{1/(2k)}) - \pi(0) \to 0$. Mathlib's filter version of the
+dominated convergence theorem\footnote{%
+\texttt{tendsto\_integral\_filter\_of\_dominated\_convergence}.}
+closes.
+
+\paragraph{The closed-form partition.} The partition
+$Z_k(t) = \int e^{-tw^{2k}/(2k)!}\,dw$ has even integrand, so it
+equals $2 \cdot \int_{(0,\infty)} e^{-tw^{2k}/(2k)!}\,dw$ via
+\texttt{integral\_comp\_abs}. The half-line integral is given by
+Mathlib's master half-line moment formula\footnote{%
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}.} at
+$q = 0$, $p = 2k$, $b = t/(2k)!$, yielding
+$(t/(2k)!)^{-1/(2k)} \cdot (1/(2k)) \cdot \Gamma(1/(2k))$. Doubling
+gives $(t/(2k)!)^{-1/(2k)} \cdot (2/(2k)) \cdot \Gamma(1/(2k))$, and
+$2/(2k) = 1/k$. The exponent flip
+$(t/(2k)!)^{-1/(2k)} = ((2k)!/t)^{1/(2k)}$ uses \texttt{inv\_rpow}
+and \texttt{Real.rpow\_neg}.
+
+\paragraph{The asymptotic corollary.} Splits
+$\pi(w) = (\pi(w) - \pi(0)) + \pi(0)$ inside the integrand. The
+centred piece tends to $0$ (by the centred DCT theorem); the
+constant piece evaluates via \texttt{kth\_partition} to
+$\pi(0)\cdot \tfrac{1}{k}\cdot ((2k)!/t)^{1/(2k)}\cdot \Gamma(1/(2k))$;
+multiplying by $t^{1/(2k)}$ and using
+$t^{1/(2k)} \cdot ((2k)!/t)^{1/(2k)} = ((2k)!)^{1/(2k)}$ closes.
+
+\section{Roadblocks and resolutions}
+
+This was a single-session formalisation with one substantive
+roadblock cluster, all related to the change in tactical class
+between fixed-exponent and parametric-exponent proofs.
+
+\paragraph{Cast thrashing in the substitution lemma.} The L1 proof
+of $a^p = t$ at fixed $p = 6$ was a calc chain of about ten lines
+mixing \texttt{Real.rpow\_natCast}, \texttt{Real.rpow\_mul}, and a
+final \texttt{norm\_num}. Generic-$k$ added a layer:
+$\alpha \cdot p_{\mathbb R} = 1$ now requires unfolding the
+\texttt{set} abbreviations (\texttt{hα\_def}, \texttt{hpR\_def}) so
+that \texttt{field\_simp} sees the underlying expressions. The fix
+was to factor $\alpha \cdot p = 1$ out as a named \texttt{have}
+\emph{before} the calc chain, with explicit \texttt{rw [hα\_def, hpR\_def]} to bring the
+unfolded form into scope.
+
+\gptbox{For \texttt{a\textasciicircum{}(2*k) = t}, avoid rewriting to
+\texttt{2 * (k : ℝ)} unless you must. The clean route is: prove
+\texttt{a \textasciicircum{} p = t} via
+\texttt{Real.rpow\_natCast}, then \texttt{Real.rpow\_mul} with
+\texttt{α * pR = 1} factored out as a separate \texttt{have}.}
+
+\paragraph{\texttt{ring} cannot unify under generic exponents.} The
+load-bearing line in the substitution lemma is
+$(w\cdot a)^p = t \cdot w^p$. In E4/L1, both files closed this by
+\texttt{ring} after specialising $p$ to $4$ or $6$. For generic
+$p = 2k$, \texttt{ring} cannot unify the exponents — it sees $p$ as
+an opaque natural number — and fails with a generic ``unsolved
+goal''.
+
+\gptbox{In the substitution lemma, use \texttt{mul\_pow}, not
+\texttt{ring}. This matters. Fixed exponents like \texttt{4} and
+\texttt{6} were happy with \texttt{ring}, but generic
+\texttt{(2*k)} won't be.}
+
+\noindent The fix is one line: \texttt{rw [mul\_pow, ha\_p]; ring}.
+\texttt{mul\_pow} reshapes $(w\cdot a)^p$ to $w^p \cdot a^p$
+unconditionally; \texttt{ha\_p} replaces $a^p$ with $t$;
+\texttt{ring} closes the resulting $w^p \cdot t = t \cdot w^p$.
+
+\paragraph{\texttt{set} versus \texttt{exact\_mod\_cast}.}
+After \texttt{set fac := (Nat.factorial p : ℝ)}, proving
+$0 < \texttt{fac}$ via a direct
+\texttt{exact\_mod\_cast Nat.factorial\_pos \_}
+fails: the cast tactic sees \texttt{fac} as opaque
+and does not unfold the \texttt{set}. The fix is to first
+\texttt{change} the goal to the underlying form
+\texttt{(0 : ℝ) < (Nat.factorial p : ℝ)}, then dispatch with the
+cast. Three sites needed this fix; all minor but each blocked
+progress for ${\sim}2$~min while diagnosed.
+
+\paragraph{Negative-exponent rewriting.} Mathlib's
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} at $q=0$ produces
+the exponent $-(0+1)/p_{\mathbb R}$, parsed as
+$(-(0+1))/p_{\mathbb R} = -(1/p_{\mathbb R})$ by Lean's
+arithmetic-precedence rules. The single $\mathtt{hexp\_one}$
+rewrite covers the positive form $(0+1)/p_{\mathbb R} = 1/p_{\mathbb R}$
+that appears in the $\Gamma$ argument, but does \emph{not} fire on
+the negative form because the syntactic structure is different.
+Adding a parallel $\mathtt{hexp\_neg}$ for the negated form fixed it.
+
+\paragraph{\texttt{set}-defeq vs.\ \texttt{convert} cycles.} The
+asymptotic theorem's final goal massage initially used
+\texttt{convert ... using 1; funext t; rw [hp\_eq]} chains to
+bridge the abbreviated form (using \texttt{p}, \texttt{α},
+\texttt{fac} from \texttt{set}) and the public-form goal (using
+\texttt{2*k}, the explicit casts, the explicit factorial). Multiple
+``no goals to be solved'' errors surfaced because
+\texttt{set} makes the abbreviated forms \emph{definitionally equal}
+to the public ones, and \texttt{convert} closed the goal at a level
+above where I expected. The fix was to rebuild the centred-piece
+\texttt{Tendsto} with the \texttt{set} abbreviations directly in
+its statement, then use \texttt{kth\_jfunction\_centered\_tendsto\_zero}
+\emph{without conversion} (Lean accepts it via defeq), then the
+final \texttt{Tendsto.congr'} step closes the public-form goal also
+via defeq. Net: about 25~lines of \texttt{convert}/\texttt{funext}
+collapsed to 6~lines.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.} The full asymptotic stack:
+\begin{itemize}[leftmargin=1em,itemsep=0.1em,topsep=0.1em]
+\item the master half-line moment formula
+  (\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow});
+\item the even-function full-line doubling lemma
+  (\texttt{integral\_comp\_abs});
+\item the substitution-by-constant integral lemma
+  (\texttt{Measure.integral\_comp\_mul\_right});
+\item the filter version of dominated convergence%
+  \footnote{\texttt{tendsto\_integral\_filter\_of\_dominated\_convergence}.};
+\item the rpow-tends-to-infinity step (\texttt{tendsto\_rpow\_atTop});
+\item integrability of the Gaussian dominator
+  (\texttt{integrable\_exp\_neg\_mul\_sq}).
+\end{itemize}
+The $\Gamma$-function side is \texttt{Real.Gamma} from
+\texttt{Mathlib.Analysis.SpecialFunctions.Gamma.Basic}.
+
+\paragraph{What was new.} Three things, in increasing order of
+likely future reuse:
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \texttt{sq\_le\_one\_add\_pow\_two\_mul}: the universal pointwise
+  inequality $x^2 \le 1 + x^{2k}$ for $k \ge 1$. Cleaner and more
+  general than the L1 file's bespoke
+  \texttt{sq\_le\_one\_add\_pow\_six} or the Quartic file's
+  square-completion identity. Likely candidate for promotion to
+  \texttt{lean-common} once a second use materialises.
+\item \texttt{kth\_integrable}: full-line integrability of
+  $e^{-t x^{2k}/(2k)!}$ for $k \ge 1$, via the universal Gaussian
+  comparison above. Generalises and unifies the existing
+  fixed-exponent integrability helpers in the quartic and sextic
+  files at $n = 0$.
+\item \texttt{kth\_partition}: closed-form full-line monomial
+  partition function. Generalises the existing fixed-exponent
+  partitions for the quartic and sextic potentials (which remain
+  valid as standalone theorems on the existing branches; once E4 and
+  L1 merge to \texttt{main}, they become 5-line specialisations,
+  and the cleanup pass is a follow-up tide).
+\end{itemize}
+
+\noindent The substitution lemma \texttt{kth\_jfunction\_centered\_subst}
+and the centred DCT theorem are private and bespoke; they would not
+add value to \texttt{lean-common} without further generalisation
+(e.g.\ to \emph{any} potential admitting a power-law substitution).
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \emph{For \texttt{laplace/CLAUDE.md}:} \texttt{ring} cannot
+  unify exponents involving free natural-number variables. For
+  $(w\cdot a)^p$ with parametric $p$, use \texttt{mul\_pow}
+  explicitly, not \texttt{ring}. The quartic and sextic files use
+  \texttt{ring} as a fixed-exponent special case; generic-$p$
+  proofs must replace it.
+
+\item \emph{For \texttt{laplace/CLAUDE.md}:} \texttt{exact\_mod\_cast}
+  does \emph{not} unfold \texttt{set} abbreviations. After
+  \texttt{set fac := (Nat.factorial p : ℝ)}, prove $0 < \texttt{fac}$
+  with an explicit \texttt{change} to the underlying form before
+  the cast. (Already in \texttt{CLAUDE.md} as a related gotcha for
+  cast directions; this run extends it to the \texttt{set}-defeq
+  case.)
+
+\item \emph{For \texttt{laplace/CLAUDE.md}:} when a Mathlib lemma
+  produces an exponent of the form $-(q+1)/p$ in the conclusion (as
+  \texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} does), Lean
+  parses it as $(-(q+1))/p$ — distinct from $-((q+1)/p)$ for
+  rewriting purposes. Provide \emph{both} the positive-form rewrite
+  (for the $\Gamma$ argument) and the negative-form rewrite (for the
+  rpow exponent) when massaging.
+
+\item \emph{For the tide skill:} the deliberation transcript carried
+  forward all three load-bearing tactical points (\texttt{mul\_pow},
+  the \texttt{set}/\texttt{change} pattern, the explicit-cast
+  preference) into the proof without any mid-proof
+  thrashing-rescue consult needed. This is the second tide in a row
+  (Tide~I4 was the first) where the GPT-5.5~Pro consult at Step~2
+  contained \emph{enough} tactical detail that Step~3 was mechanical
+  Lean idiom. The pattern: when Step~2 has already named the
+  Mathlib idiom and the specific friction points, the proof writes
+  itself.
+
+\item \emph{For \texttt{tide-pick}:} the L1 retrospective named N1
+  as ``now ripe'' \emph{within hours} of L1 landing. Tide-pick
+  picked it as the top recommendation in the v3 survey within
+  another hour. The pattern of ``retrospective Follow-ups become
+  next-tide candidates'' continues to be the dominant source of
+  high-value tide steps; the strict-improvement-of-the-day pipeline
+  is producing single-session formalisations at sub-day cadence.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1em,itemsep=0.2em]
+\item \emph{Refactor \texttt{JFunctionQuartic.lean} and
+  \texttt{JFunctionSextic.lean} to be 5-line specialisations of
+  \texttt{kth\_jfunction\_asymptotic}.} Cannot be done in this Tide
+  because both files are on unmerged branches at base time. After
+  E4, L1, and N1 all land on \texttt{main}, this is a focused
+  cleanup pass: each existing file shrinks from ${\sim}280$~lines
+  to ${\sim}30$~lines (the specialisation plus constant unification
+  for the user-facing theorem name). One follow-up tide for the pair.
+
+\item \emph{Hypothesis weakening across all three files.} The
+  deliberation's mathematically-minimal hypothesis class is
+  \texttt{AEMeasurable + ContinuousAt 0 + global bound}; all three
+  files use the slightly stronger \texttt{Continuous prior + global bound}.
+  Now that the parametric form exists, weakening should land in N1
+  (\texttt{kth\_*}) only — the specialisations inherit. Expected
+  ${\sim}50$~lines of \texttt{comp\_quasiMeasurePreserving} plumbing.
+
+\item \emph{Promote \texttt{sq\_le\_one\_add\_pow\_two\_mul} to
+  \texttt{lean-common}.} Genuinely general; subsumes the L1 file's
+  bespoke \texttt{sq\_le\_one\_add\_pow\_six}. Defer until a second
+  downstream use (probably the hypothesis-weakening tide above).
+
+\item \emph{Promote \texttt{kth\_partition} to \texttt{lean-common}.}
+  The natural full-line monomial partition formula; clean addition.
+  Defer until a second use; the most likely trigger is the
+  bounded-prior-monomial generalisation tide (B2 in the survey),
+  which would consume it as primitive infrastructure.
+
+\item \emph{Asymptotic-equivalence wrapper $J_k(t) \sim \pi(0)\cdot Z_k(t)$
+  (E4 follow-up~L2, generalised).} A 15-line corollary that takes
+  the \texttt{Tendsto (t\textsuperscript{1/(2k)} · J\textsubscript{k})}
+  form and divides through by \texttt{kth\_partition}. Now applies
+  to all $k \ge 1$ in one shot rather than once per file. Smallest
+  candidate on the board going forward.
+
+\item \emph{\texttt{\textbackslash leanref}-tag the grammar paper.}
+  Once the grammar paper has TeX statements pinning all three
+  $k = 2, 3, $ generic-$k$ J-function asymptotics, tag with
+  \texttt{\textbackslash leanref} pinned to commit
+  \texttt{ddb1f14} (this tide). Process tide; depends on
+  paper-side draft.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro contributed the deliberation-stage advisory at Step~2,
+including the three tactical points that made the proof
+single-session: the \texttt{mul\_pow} recipe, the
+$\alpha \cdot p = 1$ factoring pattern, and the explicit-cast
+preference for the public theorem statement. The full consult is
+preserved at
+\texttt{projects/primer/tide-log/gpt\_responses\_n1/n1\_v1.md}. No
+mid-proof thrashing-rescue consult was needed; the Step~2 advisory
+was sufficient.
+
+\end{document}

@@ -1,0 +1,317 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{∑}{\ensuremath{\sum}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{ᵐ}{\ensuremath{^{\mathrm{m}}}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+
+\newcommand{\GR}{\mathrm{GibbsRegularity}}
+\newcommand{\GO}{\mathrm{GibbsObservable}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+
+\emergencystretch=5em
+
+\title{Tide retrospective:\\\emph{Harmonic \texorpdfstring{$\GO$}{GibbsObservable}
+  instances for monomials}}
+\author{Daniel Murfet (with Claude Opus 4.7)}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A single Tide-loop excursion (\textbf{G4} from the 7 May
+candidates survey) closing the three carried
+\texttt{Threepoint.GibbsObservable} hypotheses on Tide 13's
+harmonic-cross-susceptibility-derivative theorem. Headline:
+\texttt{Threepoint.harmonic\_id\_gibbsObservable\_pow} for any
+\(k : \mathbb{N}\), proved by dominated differentiation under the
+integral with a Gaussian-shaped dominator from Young's inequality.
+397 lines of Lean; zero \texttt{sorry}, \texttt{axiom}, \texttt{native\_decide};
+clean diagnostics. The session's load-bearing event was a GPT-5.5~Pro
+consult that pivoted the dominator-integrability argument from a
+piecewise \(|x| \le 1\) / \(|x| > 1\) split to a single global rpow-cast
+route, and supplied the \texttt{nlinarith} hints (\((\lambda x \pm 2h)^2 \ge 0\))
+for Young after a first attempt accumulated seven distinct frictions
+across a 260-line draft.
+\end{abstract}
+
+\section{Setting}
+
+This Tide is the natural close-out of Tide~13, which proved
+\(\partial_h \mathrm{Cov}_h(x, x)\big|_{h=0} = 0\) for the harmonic Gibbs
+measure but had to carry three \(\GO\) hypotheses (for \(x\), \(x^2\),
+\(x^3\)) as parameters because the harmonic monomial \(\GO\) instances
+weren't yet in the seabed. G4 supplies them, generic in
+\(k : \mathbb{N}\), making the Tide~13 theorem unconditional for the
+canonical monomial cases.
+
+The mathematical content is mild: for the harmonic potential
+\(L(x) = \lambda x^2/2\) with linear perturbation \(A(x) = x\), the
+perturbed numerator
+\(N_k(h) := \int x^k \exp(-t(L(x) + h A(x)))\,dx\)
+is differentiable in \(h\) at \(h = 0\) with derivative
+\(\int x^k \cdot (-t \cdot x) \cdot \exp(-t L(x))\,dx\). This is dominated
+differentiation under the integral, valid because the perturbed
+integrand has a uniform Gaussian-shaped dominator on
+\(|h| \le 1\)\footnote{Young's inequality: \(|h \cdot x| \le (\lambda/4) x^2 + h^2/\lambda\)
+absorbs the linear perturbation into the quadratic decay.}.
+
+The Step~2 deliberation (Claude $\leftrightarrow$ GPT-5.5~Pro) drafted
+five candidates (a finite-\(k\) closed-form route, a generic-\(k\)
+closed-form route, the dominated-differentiation route, a global-Cov
+constancy result, and a `\textit{just close G4}'-shaped variant). Both
+parties backed the dominated-differentiation route (Candidate D) — generic
+in \(k\) at no extra cost, no Gaussian-moment library required.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For \(\lambda > 0\), \(t > 0\), and any \(k \in \mathbb{N}\), the
+canonical monomial \((x \mapsto x^k)\) is a \(\GO\) for the harmonic
+potential \((\lambda/2) x^2\) with linear perturbation \(A(x) = x\)
+under Lebesgue measure on \(\mathbb{R}\): the perturbed numerator
+\(\int x^k \cdot \exp(-t(L(x) + h A(x)))\,dx\) reduces to the
+unperturbed integral at \(h = 0\), and is differentiable at \(h = 0\)
+with the expected pointwise-derivative integral.
+\end{quote}
+
+\noindent The Lean signature:
+\begin{verbatim}
+theorem Threepoint.harmonic_id_gibbsObservable_pow
+    {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) (k : ℕ) :
+    Threepoint.GibbsObservable (volume : Measure ℝ)
+      (fun x : ℝ => lam / 2 * x ^ 2)
+      (fun x : ℝ => x) t (fun x : ℝ => x ^ k)
+\end{verbatim}
+
+\noindent located in
+\texttt{Laplace/OneD/HarmonicGibbsObservableMonomials.lean}, namespace
+\texttt{Laplace.OneD}.
+
+The result is the natural pair to Tide~10's harmonic
+\(\GR\) instance: where the \(\GR\) instance handles the
+\emph{partition-function} differentiability uniformly in \(\varphi\)
+(via the closed-form route), this \(\GO\) instance handles the
+\emph{numerator} differentiability per-observable. Together they
+discharge the analytic content of the harmonic FDT and
+cross-susceptibility theorems, instantiated at any monomial.
+
+\section{Proof strategy}
+
+The Lean proof is built from five small lemmas, each with a clean
+mathematical narrative:
+
+\paragraph{Young's inequality with weight \(\lambda/2\).} For
+\(\lambda > 0\), \(|h \cdot x| \le (\lambda/4) x^2 + h^2/\lambda\). The
+two one-sided bounds come from \((\lambda x - 2h)^2 \ge 0\) and
+\((\lambda x + 2h)^2 \ge 0\) after dividing through by \(4 \lambda\).
+The Lean idiom that landed cleanly: clear the \(/\lambda\) by
+\texttt{field\_simp} + \texttt{ring}, then \texttt{nlinarith} with the
+square hint.
+
+\paragraph{Dominator integrability.}
+\(\int |x|^k \exp(-c x^2)\,dx < \infty\) for \(c > 0\), \(k \in \mathbb{N}\).
+Lean route: get
+\(\int x^{(k:\mathbb{R})} \exp(-c x^2)\,dx < \infty\)
+from \texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} (Mathlib's
+real-power Gaussian moment), cast to \texttt{Nat}-power via
+\texttt{Real.rpow\_natCast}, then bridge \(x^k\) to \(|x|^k\) via
+\texttt{Integrable.norm} (since \(\|x^k \cdot e^{-cx^2}\| = |x|^k \cdot e^{-cx^2}\)
+because the exponential is positive).
+
+\paragraph{Pointwise integrand bound.}
+\(\|x^k \exp(-t(\lambda/2 \cdot x^2 + h x))\|
+\le e^{t/\lambda} \cdot |x|^k \cdot e^{-(t\lambda/4) x^2}\)
+for \(|h| \le 1\). Direct application of Young followed by
+\(\exp\)-monotonicity.
+
+\paragraph{Pointwise differentiability.} For each fixed \(x\), the
+function
+\(h \mapsto x^k \cdot \exp(-t(\lambda/2 \cdot x^2 + h x))\)
+is differentiable in \(h\) by the standard
+\texttt{HasDerivAt.exp.const\_mul} chain. The derivative is
+\(x^k \cdot (-(t \cdot x)) \cdot \exp(-t(\lambda/2 \cdot x^2 + h x))\).
+
+\paragraph{Headline assembly via dominated differentiation.} Apply the
+parametric-integral derivative
+lemma\footnote{\texttt{MeasureTheory.hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}.}
+with the four hypothesis families:
+(i) the local neighbourhood
+\texttt{Metric.ball 0 1 ∈ nhds 0};
+(ii) AE strong measurability via \texttt{fun\_prop};
+(iii) integrability of the derivative integrand bounded by the
+dominator at index \(k+1\) (the derivative integrand is
+\(-t \cdot x^{k+1} \cdot \exp(-t(\ldots))\));
+(iv) pointwise \texttt{HasDerivAt} from the chain rule above.
+The result's second component is the desired \texttt{HasDerivAt}; a
+small \texttt{integral\_congr\_ae} massages \(0 \cdot x = 0\) inside
+the perturbed integrand to match the \(\GO\) shape.
+
+\section{Roadblocks and resolutions}
+
+\paragraph{The first attempt accumulated seven distinct errors.} I
+drafted all the analytic-core lemmas in one pass (\(\sim\)260 lines)
+and tried to compile. The build report showed three \texttt{nlinarith}
+failures (Young's inequality, AM-GM bounds), two \texttt{Real.rpow}
+type-mismatches (the dominator integrability), one \texttt{mul\_le\_mul}
+argument-order issue, and one bound-shape mismatch. Each error was
+individually fixable but the combined diagnosis cost would have been
+slow. The lean-formalisation skill's \emph{<50\% probability of direct
+proof \(\implies\) factor first} rule applied; I reverted and wrote
+the handoff note while launching a focused GPT-5.5~Pro consult.
+
+\paragraph{The GPT consult was decisive.} Three pieces of advice
+landed:
+\gptbox{For Young: don't ask \texttt{nlinarith} to reason directly with
+\texttt{/ lam}. Multiply by \(4\lambda\) first, then \texttt{nlinarith}
+with \((\lambda x \mp 2h)^2 \ge 0\).}
+\gptbox{For dominator integrability: there's a \emph{global} dominator
+\(M \cdot e^{-(c/2) x^2}\), \(M = e^{k^2/(2c)}\), via the same Young
+applied to \((k, |x|)\). No piecewise \(|x| \le 1\) / \(|x| > 1\) split
+needed.}
+\gptbox{For \texttt{HasDerivAt}: the canonical chain is\\
+\texttt{(((((const).add (id.mul\_const)).const\_mul).neg).exp).const\_mul}.}
+With these in hand the second attempt landed clean.
+
+In the end, the dominator integrability route I used differed from
+GPT's advice: rather than the global Young-based AM-GM dominator,
+I used \texttt{Integrable.norm} on
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} at \texttt{s = (k:ℝ)},
+which is even simpler. (\(\sim\)10 lines vs \(\sim\)50 for the AM-GM
+route.) Worth recording — both routes work; the Mathlib
+\texttt{Integrable.norm} bridge between \(x^k\) and \(|x|^k\) is
+ergonomically excellent for this case.
+
+\paragraph{Pi.add unfolding edge-case.} The \texttt{HasDerivAt.add}
+of \texttt{(fun \_ => c)} and \texttt{(fun y => y * x)} produces a
+goal in \texttt{((fun \_ => c) + (fun y => y * x))} form (with
+\texttt{Pi.add}), not the inline-lambda form
+\texttt{(fun y => c + y * x)}. \texttt{simpa} normalised \(0 + x\)
+inside the goal too aggressively. Resolved by introducing a manual
+\texttt{hzero : (0 : ℝ) + x = x = zero\_add x} and \texttt{rwa}-ing
+it into the \texttt{hsum} term \emph{before} using.
+
+\paragraph{Continuity proofs via \texttt{fun\_prop}.} Manual continuity
+chains\footnote{Of the form
+\texttt{Continuous.const\_mul.add.const\_mul.neg.exp}.} hit the same
+\texttt{Pi.add} boundary as the \texttt{HasDerivAt} issue. Switching
+to \texttt{by fun\_prop} sidestepped this entirely. Worth a
+\texttt{CLAUDE.md} note for the next dominated-differentiation Tide.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib provided.}
+\texttt{MeasureTheory.hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}
+(the main parametric-integral lemma);
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} (real-power Gaussian
+moment integrability); the \texttt{Integrable.norm} /
+\texttt{Real.rpow\_natCast} bridge; the \texttt{HasDerivAt.exp},
+\texttt{.const\_mul}, \texttt{.add}, \texttt{.neg}, \texttt{.mul\_const}
+combinators; \texttt{Real.exp\_le\_exp.mpr}, \texttt{Real.exp\_add},
+\texttt{abs\_le}, \texttt{abs\_pow}, \texttt{Real.norm\_eq\_abs}.
+
+\paragraph{The seabed provided.}
+\texttt{Threepoint.GibbsObservable} (the target structure) and Tide
+13's \texttt{cov\_h\_id\_id\_deriv\_harmonic\_eq\_zero} (the consumer
+of this Tide's output). No prior 1D Gaussian moment infrastructure
+was used directly; the proof routes around the seabed by going
+straight through Mathlib's parametric-integral API.
+
+\paragraph{What was new in this tide.}
+The Young's-with-weight inequality (likely promotable to
+\texttt{lean-common}); the dominator integrability lemma; the
+pointwise integrand bound; the pointwise \texttt{HasDerivAt} for the
+perturbed monomial integrand; the headline \(\GO\) instance.
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{Strategic GPT consults at the friction point pay off
+asymmetrically.} The first attempt accumulated seven distinct errors
+in a 260-line draft; the GPT consult turned them into a clean second
+pass. The pattern matches what the lean-formalisation skill describes
+as the \(\sim\)5-minute consult that saves a multi-hour detour.
+
+\item \emph{\texttt{nlinarith} can't divide.} For inequalities with
+\texttt{/ c}, multiply through first via
+\texttt{field\_simp + ring}, then invoke \texttt{nlinarith} with the
+right square hint. Generic enough to lift to \texttt{laplace/CLAUDE.md}.
+
+\item \emph{\texttt{fun\_prop} for continuity beats manual chains.}
+The continuity proofs were the second-most-fragile part of the first
+attempt. \texttt{fun\_prop} dispatched all of them in one tactic call.
+
+\item \emph{\texttt{Integrable.norm} is the right bridge between
+\texttt{x\^{}k} and \texttt{|x|\^{}k}.} Cleaner than piecewise
+\(|x| \le 1\) / \(|x| > 1\) splits when the inner integrability already
+exists in Mathlib for \(x^k\). One more pattern for the API reference.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Promote \texttt{abs\_mul\_le\_quarter\_lambda\_sq\_add} to
+\texttt{lean-common}.} Standard Young's-with-weight inequality; if a
+second use materialises (e.g. in \texttt{singfluence-lean} or in a
+future bounded-prior Tide), worth the promotion.
+
+\item \emph{Package the dominated-differentiation infrastructure as a
+reusable \(\GO\) factory.} The four hypothesis discharges
+(integrability of \(F\) at \(h=0\), AE strong measurability,
+integrand bound, pointwise differentiability) are generic for any
+\(\varphi\) with a Gaussian-shaped dominator. A future Tide could
+extract \texttt{Threepoint.gibbsObservable\_of\_dominated} so that
+each new observable family doesn't re-run the whole hypothesis chain.
+
+\item \emph{Tide~13 unconditionalisation.} With G4 closed, the next
+natural Tide is to specialise Tide~13's
+\texttt{cov\_h\_id\_id\_deriv\_harmonic\_eq\_zero} to the
+unconditional case for \(\varphi(x) = x\) and \(B(x) = x\) by
+substituting in the new instances. \(\sim\)20--30 lines on top of
+this Tide.
+
+\item \emph{Candidate E (deferred at deliberation).} Global
+covariance constancy: for the harmonic Gibbs measure with linear
+perturbation, \(\mathrm{Cov}_h(x, x)\) equals the unperturbed value
+\(1/(\lambda t)\) for \emph{all} \(h\), not merely vanishing
+derivative at \(0\). Different theorem statement; closed-form route
+via Tide~10's \(Z(h)\); \(\sim\)100 lines.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro contributed the deliberation-stage advisory at Step~2
+(picking Candidate~D over the closed-form-binomial route), and a
+mid-formalisation tactical consult that pivoted the analytic-core
+proof from a friction-stuck draft to a clean
+landing.\footnote{Tide log:
+\texttt{sri/projects/patterning/tide-log/2026-05-07-tide-harmonic-gibbsobservable-monomials.md}.
+Tactical consult on Lean frictions:
+\texttt{sri/projects/patterning/tide-log/gpt55\_g4\_frictions\_v1.md}.}
+
+\end{document}

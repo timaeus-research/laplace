@@ -1,0 +1,314 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{π}{\ensuremath{\pi}}
+
+\title{Tide retrospective:\\\emph{J-function hypothesis weakening (L3)}}
+\author{Daniel Murfet}
+\date{7 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This retrospective records a 152-line net deletion plus an
+architectural unification of the J-function family. The N1 tide
+(generic-$k$ J-function abstraction, merged earlier today) carried a
+\texttt{Continuous prior} hypothesis stronger than the
+mathematically-minimal one identified at the original E4
+deliberation. This tide weakens the hypothesis to
+\texttt{AEMeasurable prior volume + ContinuousAt prior 0 + global
+bound} and, while the seabed is fresh, also refactors the sextic
+specialisation\footnote{In \texttt{Laplace/OneD/JFunctionSextic.lean}
+(L1, 2026-05-07).} to invoke the parametric form rather than carry
+its own independent proof. The result: the parametric file gains
+$\sim$32 lines of \texttt{quasiMeasurePreserving} plumbing; the
+sextic file shrinks from 280 to 96 lines as its proofs become
+five-line specialisations. Both Claude and GPT-5.5~Pro voted
+Candidate B (weaken + refactor) on architectural grounds. Single
+session, build green after one Mathlib-API-name correction
+(\texttt{Measure.quasiMeasurePreserving\_smul} takes the measure as
+an explicit argument, not implicit). Zero \texttt{sorry}, zero
+\texttt{axiom}, zero \texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+The grammar-paper precursor sequence has three closed Lean tides:
+E4 (quartic J-function), L1 (sextic J-function), and N1 (generic-$k$
+parametric form). All three statements take a continuous, bounded
+prior $\pi : \mathbb R \to \mathbb R$. But the deliberation behind
+E4 had GPT-5.5~Pro identify the mathematically-minimal hypothesis
+class as
+$$
+  \pi \in \texttt{AEMeasurable} \;\wedge\;
+  \pi \in \texttt{ContinuousAt}\,0 \;\wedge\;
+  \exists M.\, \forall x.\, |\pi(x)| \le M.
+$$
+The stronger \texttt{Continuous prior} was taken in E4 / L1 / N1
+because it was easier in Lean: composition with the scaling map
+$u \mapsto u/t^\alpha$ at the AE-strong-measurability site is
+trivial when $\pi$ is continuous.
+
+L1's retrospective explicitly flagged the weakening as a follow-up,
+estimating $\sim$50 lines of \texttt{comp\_quasiMeasurePreserving}
+plumbing. N1's retrospective re-flagged it: \emph{``weakening should
+land in N1 (\texttt{kth\_*}) only --- the specialisations inherit.''}
+
+This tide takes both halves:
+
+\begin{enumerate}
+\item Weaken the parametric form's hypothesis class.
+\item Refactor the sextic specialisation to invoke the parametric
+  form (so it inherits the weaker hypothesis).
+\end{enumerate}
+
+(The quartic specialisation from E4 was never merged to \texttt{main}
+--- it lived on the unmerged sibling branch and was superseded by N1
+--- so the refactor scope is just sextic.)
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the single-monomial potential $K(w) = w^{2k}/(2k)!$ with $k \ge 1$
+and a globally bounded prior $\pi : \mathbb R \to \mathbb R$ that is
+\texttt{AEMeasurable} and \texttt{ContinuousAt} 0,
+\[
+  \lim_{t \to \infty} t^{1/(2k)} \int_{\mathbb R}
+    e^{-t\,w^{2k}/(2k)!}\,(\pi(w) - \pi(0))\,dw \;=\; 0,
+\]
+\[
+  \lim_{t \to \infty} t^{1/(2k)} \int_{\mathbb R}
+    e^{-t\,w^{2k}/(2k)!}\,\pi(w)\,dw \;=\;
+    \pi(0) \cdot \tfrac{1}{k} \cdot ((2k)!)^{1/(2k)} \cdot \Gamma(1/(2k)).
+\]
+\end{quote}
+
+\noindent The two parametric Lean signatures (now with the weakened
+hypothesis class):
+\begin{verbatim}
+theorem kth_jfunction_centered_tendsto_zero
+    {k : ℕ} (hk : 1 ≤ k)
+    {prior : ℝ → ℝ}
+    (hprior_meas : AEMeasurable prior volume)
+    (hprior_cont0 : ContinuousAt prior 0)
+    {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
+    Tendsto ... atTop (𝓝 0)
+
+theorem kth_jfunction_asymptotic
+    {k : ℕ} (hk : 1 ≤ k)
+    {prior : ℝ → ℝ}
+    (hprior_meas : AEMeasurable prior volume)
+    (hprior_cont0 : ContinuousAt prior 0)
+    {M : ℝ} (hprior_bd : ∀ x, |prior x| ≤ M) :
+    Tendsto ... atTop (𝓝 (prior 0 * ...))
+\end{verbatim}
+
+The two sextic theorems shrink from $\sim$80 lines each to $\sim$10
+lines each, becoming thin specialisations at $k = 3$ with three
+constant-bridging private lemmas
+($(2 \cdot 3 : \mathbb N) = 6$ definitionally,
+$(6! : \mathbb R) = 720$ via \texttt{decide} and
+$1/((2 \cdot 3 : \mathbb N) : \mathbb R) = 1/6$ via \texttt{norm\_num}).
+
+\section{Proof strategy}
+
+The structural argument is unchanged from N1: substitute-then-DCT
+with envelope $2M \cdot e^{-u^{2k}/(2k)!}$ and pointwise limit zero.
+Only two sites in the proof use the old \texttt{Continuous prior}
+hypothesis, both inside the centred theorem:
+
+\paragraph{Site 1: AE strong measurability.} The DCT requires
+strong AE measurability of the integrand
+$F(t, u) := e^{-u^{2k}/(2k)!} \cdot (\pi(u/t^\alpha) - \pi(0))$
+with respect to $t$. The old proof used the continuous-composition
+upgrade. The weakened version routes through Mathlib's
+quasi-measure-preserving composition for the scaling map
+$u \mapsto (t^\alpha)^{-1} \cdot u$, which is canned for Haar-measure
+spaces (and $\texttt{volume}$ on $\mathbb R$ qualifies).\footnote{Named
+\texttt{AEMeasurable.comp\_quasiMeasurePreserving} with
+\texttt{Measure.quasiMeasurePreserving\_smul}.} The reshape
+$u / t^\alpha = (t^\alpha)^{-1} \cdot u$ takes the division into a
+scalar action, making the canned scaling lemma applicable. Then
+\texttt{AEMeasurable.aestronglyMeasurable} upgrades.
+
+The eventual positivity of $t$ matters here:
+$\texttt{Real.rpow}$ on a negative base does not give the expected
+$t^\alpha \ne 0$ from $t \ne 0$, so the scaling factor's
+nonzero-ness needs $0 < t$. The proof was already inside an
+$\texttt{eventually\_gt\_atTop}$ filter; the fix is local.
+
+\paragraph{Site 2: pointwise limit at $u$.} The DCT requires
+$F(t, u) \to 0$ as $t \to \infty$ for a.e.\ $u$. The argument
+$\pi(u/t^\alpha) \to \pi(0)$ comes from
+$u/t^\alpha \to 0$ (\texttt{Tendsto.div\_atTop}) composed with
+\texttt{Continuous.tendsto 0} (old) or
+\texttt{ContinuousAt.tendsto} (new). One-line replacement.
+
+\paragraph{The asymptotic theorem.} Inherits the new hypothesis bundle
+without further proof changes (it's a corollary of the centred
+theorem).
+
+\paragraph{The sextic specialisation.} Each theorem reduces to a
+five-line call: instantiate \texttt{kth\_*} at $k = 3$, then bridge
+$(2 \cdot 3 : \mathbb N)$, $(2 \cdot 3)!$, and $1/((2 \cdot 3 : \mathbb N) : \mathbb R)$
+to their numeric forms via three \texttt{simp\_rw}-firing lemmas.
+
+\section{Roadblocks and resolutions}
+
+One Mathlib-API-name correction during the build, two tactical
+adjustments, and the standard \texttt{simp\_rw} pattern for the
+specialisation bridges.
+
+\paragraph{Mathlib lemma signature.}
+The canned scaling-quasi-MP lemma takes the measure $\mu$ as an
+\emph{explicit} positional argument (it lives inside a section with
+an explicit \texttt{variable (\mu : Measure E)}), not implicit.
+First-attempt call without passing $\mu$ gave the diagnostic
+\emph{``argument has type \texttt{$\dots$ \neq 0} but is expected to
+have type \texttt{Measure ?m}''} --- the type mismatch was the
+clue. Fix: pass $\mu = \texttt{volume}$ as the first argument.
+Five-second adjustment.
+
+\paragraph{Sextic specialisation: \texttt{convert} versus
+\texttt{simp\_rw}.} First attempt at the sextic refactor used
+\texttt{convert h using 2} to align the parametric form's
+\texttt{Tendsto} statement with the sextic-specific form. This
+left several minor goals that needed independent constant-bridging
+proofs, ending in \emph{``No goals to be solved''} as the convert
+closed cleanly but the trailing tactics fired anyway. Cleaner
+approach: do all constant-bridging via \texttt{simp\_rw at h} on the
+parametric hypothesis, then close with \texttt{exact h}. Three
+\texttt{simp\_rw}-shaped private lemmas
+(for the $\mathbb N$-power, the factorial, and the rational inverse)
+suffice; the underlying integrand and limit forms align by
+$\texttt{rfl}$ once all three are bridged.
+
+\paragraph{No GPT thrashing-rescue.} The deliberation at Step~2 named
+the right Mathlib lemma (\texttt{quasiMeasurePreserving\_smul}) and
+the right shape; the Step~3 frictions were name-and-form bookkeeping,
+not strategy errors.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{Mathlib.} The scaling quasi-MP fact for Haar measure on
+finite-dim $\mathbb R$ vector spaces, the AE-measurability transport
+under quasi-MP composition, the upgrade from AE measurability to AE
+strong measurability for $\mathbb R$-valued functions, and the
+standard \texttt{ContinuousAt.tendsto} fact. All familiar; no new
+Mathlib API surfaced.
+
+\paragraph{Laplace seabed (existing).} N1's parametric \texttt{kth\_*}
+theorems (now weakened in this tide) and the supporting private
+helpers (\texttt{kth\_jfunction\_centered\_subst},
+\texttt{kth\_dominator\_integrable}, etc.) --- unchanged. L1's
+sextic-specific helpers
+(\texttt{sextic\_jfunction\_centered\_subst},
+\texttt{sextic\_dominator\_integrable}) ---
+\emph{deleted} as part of the refactor; the parametric versions
+subsume them.
+
+\paragraph{New.} Three constant-bridging private lemmas in the
+refactored sextic file (numeric specialisations of $k = 3$). The
+parametric file gains $\sim$32 lines of inline
+quasi-MP plumbing inside
+\texttt{kth\_jfunction\_centered\_tendsto\_zero} (helper not factored
+out, since only one use site; if a third $k$-specialisation tide
+materialises, extracting an
+\texttt{aemeasurable\_comp\_div\_const} helper would pay off).
+
+\section{Lessons}
+
+\begin{itemize}
+\item \emph{The minimal-hypothesis-class deliberation pays off late,
+  not early.} GPT-5.5~Pro identified the
+  \texttt{AEMeasurable + ContinuousAt 0 + bound} class at E4's
+  Step~2 deliberation; E4, L1, and N1 all chose the stronger
+  \texttt{Continuous prior} for Lean ergonomics. This tide redeemed
+  the deferred work; the cost was small ($\sim$32 lines of
+  parametric-side plumbing) but the architectural payoff
+  ($-184$ lines on the sextic side, sextic now inherits future
+  parametric improvements automatically) was much larger.
+  Lesson: the minimal hypothesis class is worth landing as a
+  follow-up tide once the seabed is fresh, even when the original
+  tide takes the easier-in-Lean form. Don't make a religion of it
+  during the original tide.
+\item \emph{\texttt{simp\_rw at h} beats \texttt{convert} for
+  specialisation bridging.} The sextic specialisation has the same
+  underlying mathematical content as $k = 3$ in the parametric form;
+  the difference is purely numeric ($(2 \cdot 3 : \mathbb N) = 6$ etc.).
+  Several rounds of \texttt{simp\_rw at h} followed by
+  \texttt{exact h} is more robust than \texttt{convert} for this
+  pattern, because \texttt{convert} leaves goals at depth-mismatch
+  and forces extra work; \texttt{simp\_rw at h} drives the rewrites
+  in the right direction without leaving leftovers.
+\item \emph{Mathlib lemma signatures vary in implicit/explicit
+  bindings.} \texttt{Measure.quasiMeasurePreserving\_smul} takes the
+  measure as an explicit positional argument; many other
+  \texttt{quasiMeasurePreserving\_*} lemmas take it implicit.
+  This is normal Mathlib --- the explicit-binding pattern reflects
+  the section's \texttt{variable} declarations --- but it's a
+  one-attempt-then-fix cost. Worth a CLAUDE.md note for future
+  tides.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Promote \texttt{aemeasurable\_comp\_div\_const}.} If a
+  third hypothesis-weakening tide arrives (e.g., for a tide outside
+  the J-function family that uses the same $u/c$ scaling pattern),
+  factor the inline plumbing of this tide into a public helper. Two
+  use sites is currently below the refactor threshold; three would
+  be over.
+\item \emph{Weaken further to AE bound.} The current
+  \texttt{$\forall$ x.~|prior x| $\le$ M} could be relaxed to
+  \texttt{$\forall^\mu$ x.~|prior x| $\le$ M} (essentially bounded)
+  with minor proof changes. GPT explicitly said \emph{``not this
+  tide''}; mark as a refinement candidate for a future
+  hypothesis-weakening tide.
+\item \emph{\texttt{\textbackslash leanref}-tag the grammar paper
+  with the weaker hypothesis class.} Once the grammar paper has TeX
+  statements, both the centred and asymptotic theorems should be
+  pinned to this commit and tagged with the weakened-hypothesis
+  form.
+\item \emph{Promote \texttt{kth\_jfunction\_centered\_subst} and
+  \texttt{kth\_dominator\_integrable} to \texttt{lean-common}.}
+  Now that the sextic file no longer has its own copies, these are
+  the only Laplace-specific J-function helpers; they're potentially
+  useful for any monomial-Gibbs Laplace-method tide. Defer until a
+  consumer outside laplace materialises.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-5.5~Pro's deliberation contributed three load-bearing pieces of
+guidance. First, the recommendation to use \texttt{AEMeasurable}
+rather than \texttt{AEStronglyMeasurable} as the public hypothesis
+(\emph{``\texttt{AEStronglyMeasurable} is proof-shaped rather than
+theorem-shaped; recover it internally via
+\texttt{aestronglyMeasurable}''}). Second, the architectural vote for
+Candidate B (refactor sextic), with the practical suggestion of
+two-commits-one-PR packaging (collapsed here for git simplicity).
+Third, the Mathlib-API-name candidates and the eventual-positivity
+caveat for \texttt{Real.rpow}. Full consult preserved at the GPT v1
+file.\footnote{Preserved at
+\texttt{projects/primer/tide-log/gpt55\_tide\_jfunction\_hypothesis\_weakening\_v1.md}.}
+
+This Tide branched off the post-O1-merge \texttt{main} (commit
+\texttt{dc9d260}). No in-flight tides interact with this work; the
+parametric file's only consumer is the sextic file, which is also
+modified here.
+
+\end{document}

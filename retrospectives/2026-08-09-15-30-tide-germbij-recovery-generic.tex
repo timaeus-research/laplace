@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the ladder for every even monomial}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The quartic ladder (first correction, all orders, coefficient limits)
+was built on the Gaussian base $x^2/2$. The germbij note's Section~7.4
+grading is stated for a general even-monomial minimum: perturbing a
+degree-$2k$ minimum in degree $2m$ corrects the expansion at the orders
+$t^{-(j(m-k)/k + 1/(2k))}$. This tide, the recovery thread's
+last recorded follow-up, generalises the all-order expansion to that
+setting, using the seabed's Gamma-form monomial moments in place of the
+Gaussian ones.
+
+\section{The thing formalised}
+
+Three declarations in \texttt{Laplace/OneD/RecoveryGeneric.lean},
+sorry-free with zero warnings: two \texttt{rpow} helpers and the
+theorem\footnote{\texttt{generic\_partition\_expansion\_allOrder}.}: for
+$k \geq 1$, any $m$, $b \geq 0$, $t > 0$, and every order $n$, with
+$\alpha_j = (2mj+1)/(2k)$,
+\[
+\Bigl| Z_{k,m,b}(t) - \sum_{j=0}^{n}
+\frac{(-b)^j}{j!\,k}\,\bigl((2k)!\bigr)^{\alpha_j}\,
+\Gamma(\alpha_j)\, t^{\,j - \alpha_j} \Bigr|
+\;\leq\;
+\frac{b^{n+1}}{(n+1)!\,k}\,\bigl((2k)!\bigr)^{\alpha_{n+1}}
+\Gamma(\alpha_{n+1})\, t^{\,(n+1) - \alpha_{n+1}}
+\]
+for $Z_{k,m,b}(t) = \int e^{-t(x^{2k}/(2k)! + b\,x^{2m})}dx$. The
+exponents $j - \alpha_j$ are the note's graded orders; the inequality
+holds for every $m$ and is an asymptotic expansion exactly when
+$m > k$. The quartic ladder is the $k=1$, $m=2$ instance (the double
+factorials are the Gamma values by duplication). The numerical check at
+$(k, m) = (2, 3)$ was executed before the consult and archived.
+
+\section{Proof strategy}
+
+A mirror of the all-order quartic proof: the base factor
+$q = e^{-t x^{2k}/(2k)!}$ replaces the Gaussian, the seabed's
+\texttt{kth\_moment\_even} (a Gamma closed form) replaces the
+double-factorial moments, and one extra helper splits
+$\bigl((2k)!/t\bigr)^{\alpha}$ into $\bigl((2k)!\bigr)^{\alpha}
+t^{-\alpha}$. The exponential split, the \texttt{expRemainder} bound,
+the term-by-term integration, and the dominated remainder are unchanged;
+the integrability family (\texttt{kth\_integrable\_pow}) even matches
+the integrand exactly, with no congruence step at all.
+
+\section{Roadblocks and resolutions}
+
+Three build iterations. \texttt{positivity} cannot see
+$x^{2m} \geq 0$ for symbolic $m$ (bridge through $(x^2)^m$);
+\texttt{mul\_pow} needs explicit arguments when the product is nested;
+and, the instructive one: the theorem statement's $(n+1)$ occurrences
+inside the $\alpha$ expressions elaborate as $\uparrow\!n + 1$ unless
+written with an explicit natural cast, and then \texttt{set} fails to
+abstract them --- a cast-shape sibling of the repo's \texttt{Pi}-form
+gotcha family. Writing $\uparrow\!(n+1)$ uniformly in the statement
+fixed the final rewrite.
+
+\section{What was Mathlib, what was new}
+
+Mathlib: \texttt{div\_rpow}, \texttt{rpow\_neg}, and the machinery
+already exercised by the quartic ladder. Seabed: the Gamma-form moments
+and monomial integrability from the May tides, now consumed by the
+generalisation they were originally built to serve. New: only the
+observation that the ladder is potential-generic, now verified.
+
+\section{Lessons}
+
+When a statement will be consumed by \texttt{set}-abstraction inside its
+own proof, write every occurrence of a compound index with the same
+explicit cast; mixed $\uparrow\!(n+1)$ / $\uparrow\!n + 1$ spellings are
+invisible in the pretty-printer's default output and cost a build
+iteration each. Mirror tides continue to price at two to three
+elaboration fixes and zero mathematical ones.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item The recovery thread has no recorded follow-ups left. Natural
+extensions if the thread reopens: coefficient limits and recovery
+corollaries at the generic potential (mirrors of the quartic ones), and
+the Gamma-duplication bridge identifying the $k = 1$ instance with the
+quartic ladder.
+\item Tag the note's Section 7.4 with the generic theorem once merged
+(it certifies the graded-order claim as stated).
+\end{itemize}
+
+\end{document}

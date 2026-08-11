@@ -1,0 +1,59 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+\emergencystretch=1.5em
+
+\title{Single-degree tensor recovery\\
+(tensor programme J6)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent The tensor programme's recovery composition: two losses
+carrying the higher-order domain packages, with matched derivative
+tensors below order $k$, permutation-symmetric $k$-th tensors, and
+rescaled moment data agreeing to $o(q^{k-2})$ at every continuous
+polynomial-growth homogeneous degree-$k$ test, have equal $k$-th
+derivative tensors at the
+origin.\footnote{\texttt{iteratedFDeriv\_recovery\_of\_moment\_rates}
+in \texttt{Laplace/Multi/DegreeRecovery.lean}.} The proof is
+the scoping consult's seven-step chain, executed as pure
+composition: instantiate the data at the diagonal difference $Q$
+itself, let the J5 limit identify the rate with
+$-\mathrm{Cov}_\gamma(Q,Q)$, kill the covariance by uniqueness of
+limits, kill $Q$ by the J2 rigidity engine, cancel the factorial to
+equal diagonals, and polarize (J3) up to the tensors.
+\end{abstract}
+
+\section{Where it stalled and how it moved}
+
+Three repairs, one of them the session's only wrong intermediate
+\emph{statement} (as opposed to tactic) to reach the checker: the
+polynomial-growth closure for a difference at mismatched exponents
+was first claimed with constant $C_1 + C_2$, which is false --- each
+term costs a factor of two when its exponent is raised to the
+maximum --- and \texttt{linarith}'s refusal flagged it. The corrected
+constant is $2(C_1 + C_2)$. A useful reminder that the discipline's
+``skeleton correctness over tactic fixing'' cuts at every scale.
+
+\section{What this opens}
+
+J7, the last stage of the programme: strong induction over the first
+unknown degree, combining the H-recovery milestone's
+\texttt{hessian\_recovery} (degree two) with this theorem (each
+degree $k > 2$), to conclude that full moment data at every rate
+identifies the entire finite jet — and, for smooth losses, all
+derivatives. After J7 the germbij tensor commissions reduce to
+representation work (finite monomial test families via
+\texttt{MvPolynomial}) flagged by the consult as deliberately
+postponed.
+
+\end{document}

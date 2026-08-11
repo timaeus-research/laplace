@@ -1,0 +1,152 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{The forward-expansion programme: a synthesis\\
+(germbij Theorem 3.1's forward direction, twelve stages)}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Twelve stacked tides (PRs \#96--\#110) carried the germbij note's
+Theorem~3.1 from its inverse half --- superpolynomially-close
+localized moment families determine the location, the positive-order
+jet, and for analytic losses the germ --- to the full nondegenerate
+statement: on a \code{ForwardExpansionDomain} (a nondegenerate
+minimum with $C^{N+2}$ regularity and a Peano remainder), the
+rescaled posterior moment of every continuous observable of
+polynomial growth \emph{is} an order-$N$ asymptotic polynomial at
+$0^+$ (\code{rescaledMoment\_hasExpansion}), with monomial instances
+matching the data consumed by the inverse half and a jet-comparison
+corollary. Expansion data and Taylor data now determine each other in
+both directions, in Lean. The programme followed a single up-front
+design consult almost to the letter; its one architectural deviation
+--- replacing the prescribed log-derivative coefficient recursion by
+exp's Taylor truncation composed with the exponent polynomial ---
+removed every coefficient identity from the analytic spine, and its
+one analytic correction --- an unrestricted exponential remainder in
+place of Mathlib's $|x| \le 1$ bound, with the $q$-power recovered
+multinomially --- was forced by the geometry of the mesoscopic
+window, where corrections are small only relative to the quadratic.
+\end{abstract}
+
+\section{What was proven}
+
+\begin{itemize}
+\item \textbf{AsymptoticPolynomial} (\#96): the expansion predicate
+\code{IsAsymptoticExpansionTo} at $0^+$ and coefficient uniqueness ---
+the tool that later closed both the quadratic bridge and the
+jet-comparison corollary.
+\item \textbf{GaussianMeso} (\#97): the mesoscopic window
+$\sqrt q\,\|z\| \le 1$ and its tail calculus --- outside the window,
+polynomial-Gaussian and rescaled-Boltzmann integrals are beyond all
+orders.
+\item \textbf{ForwardDomain} (\#98): the one-field Peano mixin over
+the merged higher-order package, and the exact exponent split
+$(L(qz)-L(0))/q^2 = T_2(z) + \sum_{s=1}^N q^s V_s(z) + q^N\rho_q(z)$
+with pointwise vanishing and window bounds on $\rho$.
+\item \textbf{ExpGraded} (\#99): the graded expansion of
+$\exp(-(\sum_s q^s a_s + q^N \rho_q))$ with coefficients from the
+Taylor-truncation polynomial --- three elementary steps, no
+coefficient identities.
+\item \textbf{CoeffFn} (\#100): continuity and polynomial growth of
+the coefficient functions $z \mapsto P_j(z)$ at arbitrary degree, by
+induction through the coefficient convolution.
+\item \textbf{ScalarBounds} (\#101): the unrestricted exponential
+Taylor remainder $|e^x - S_N(x)| \le |x|^{N+1}e^{|x|}/(N{+}1)!$, the
+perturbation bound, and the graded polynomial tail with a
+$z$-uniform indexing bound.
+\item \textbf{GaussAbsorb} (\#102): $T_1 = 0$ and
+$T_2 = \tfrac12\,\mathrm{qform}\,H$ as \emph{theorems} (ray
+coefficient uniqueness), $\varepsilon$-Peano window control, and the
+absorption of all corrections into $e^{-(\lambda/4)\|z\|^2}$.
+\item \textbf{WindowMajorant} (\#103): the single $q$-uniform
+majorant the dominated-convergence step consumes.
+\item \textbf{NumeratorExpansion} (\#104) and \textbf{NumeratorTails}
+(\#106): the window convergence by filter-indexed dominated
+convergence with the indicator folded in; the two outer tails; and
+\code{numerator\_hasExpansion} with coefficients
+$\int P\, e^{-T_2} P_j$.
+\item \textbf{AsymptoticDivision} (\#108): quotients of order-$N$
+expansions with nonzero constant denominator coefficient.
+\item \textbf{ForwardTheorems} (\#110): partition positivity, the
+moment expansion, the monomial instances, and jet comparison.
+\end{itemize}
+
+\section{Design decisions that carried the programme}
+
+\textbf{Existence-plus-comparison as the public API.} The programme
+never needed explicit coefficient values: the note's theorem asserts
+that expansions exist and determine the jet, and stage A1's
+uniqueness converts any two expansion claims into coefficient
+equality. Every collection mechanism stayed internal.
+
+\textbf{The Taylor-truncation collection mechanism.} The design
+consult prescribed the log-derivative recursion
+$P_j = -\tfrac1j\sum s\,V_s P_{j-s}$ but noted the proof may use
+exp's ordinary Taylor remainder. Defining the coefficients as the
+coefficients of $\sum_{i\le N} (-A)^i/i!$ made the scalar expansion
+theorem three elementary $O(q^{N+1})$ steps and moved all
+combinatorics into a measurability-and-growth induction through
+\code{Polynomial.coeff\_mul} --- the same mechanism then reused for
+the division stage's Cauchy product.
+
+\textbf{The unrestricted remainder over a second window.} On the
+mesoscopic window the exponent correction reaches $\sim 1/\sqrt q$;
+Mathlib's \code{Real.exp\_bound} ($|x| \le 1$) cannot see it. The
+stage-5 consult confirmed the fix: prove
+$|e^x - S_N(x)| \le |x|^{N+1}e^{|x|}/(N{+}1)!$ once, and recover the
+$q$-power from $|A| \le q\sum_s|V_s|$ on $q \le 1$ rather than from
+absolute smallness. A smaller window would have needed its own tail
+theorems and still failed at $N = 0$.
+
+\textbf{The quadratic bridge by self-consumption.} The domain ties
+$H$ to $L$ only through the quadratic Peano condition, so
+$T_2 = \tfrac12\,\mathrm{qform}\,H$ was proven by composing both
+Peano statements along rays and applying the programme's own stage-1
+uniqueness --- which also yielded the critical-point condition
+$T_1 = 0$, converting the exponent split's hypothesis into a theorem.
+
+\textbf{One majorant, one DCT.} All domain-specific uniformity
+concentrated in a single theorem
+(\code{normalized\_window\_remainder\_bound}); the dominated
+convergence then ran with the window indicator folded into the
+integrand, per the consult, and the final packaging was four
+subidentities closed by linear arithmetic.
+
+\section{Process notes}
+
+Two architecture consults (the seven-stage programme design; the
+stage-5 shape with its nine-step implementation order) were followed
+essentially verbatim, and both are archived in the tide log. Every
+stage's interface was consumed by the next without rework; the
+majorant --- the longest single proof --- compiled on its second
+build attempt. Recurring Lean friction was almost entirely
+catalogued classes: beta-redex goals from \code{integral\_congr\_ae}
+(now: \code{beta\_reduce} first), norms on both sides of
+\code{isLittleO\_iff}, \code{positivity} blind to opaque structure
+fields, and two deterministic whnf heartbeat timeouts. New catalogue
+entries from this arc are recorded in the per-tide retrospectives.
+
+\section{What remains}
+
+Of the germbij note: the semi-quasi-homogeneous constructive class
+(the $M_\alpha$ recovery, Gelfand--Leray, and the weighted triangular
+induction), ranked less crucial in the commissioning direction; and,
+if ever wanted, the connection of the abstract \code{momentCoeff} to
+explicit Wick/Isserlis values through the Gaussian moment integrals
+already in the seabed. A parallel fidelity review (PR \#105) flags
+the inverse-half headline as conditional on a matched $0$--$2$ jet;
+its perimeter debt list is the right starting point for any
+tightening pass.
+\end{document}

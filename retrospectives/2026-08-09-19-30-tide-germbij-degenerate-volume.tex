@@ -1,0 +1,105 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the diagonal volume instance\\
+\large unconditional weight recovery on Lebesgue measure}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The anisotropic-scaling tide proved its moment laws over any measure
+satisfying a one-parameter pushforward interface, deferring the fact
+that Lebesgue measure actually satisfies it. This tide discharges
+the deferral: the diagonal map $w \mapsto (c_i w_i)_i$ has
+determinant $\prod_i c_i$, so pi-volume scales under the
+quasi-homogeneous dilation $\delta_s$ by $s^{-\sum_i q_i}$, and the
+weight-recovery theorem becomes unconditional on $\R^{\,\iota}$. The
+capstone instantiates the note's own non-separable example:
+$x^4 + x^2y^2 + y^4$ is quasi-homogeneous for weights
+$(1/4, 1/4)$, so its anisotropic weights are recoverable from
+coordinate moment data, end to end on Lebesgue measure. The shape
+consult had flagged the determinant step as ``the most brittle piece
+of Mathlib determinant plumbing''; it came to five lines
+(\code{LinearMap.det\_pi}, \code{det\_smul}, \code{finrank\_self}),
+a rare case of the friction estimate being pessimistic.
+\end{abstract}
+
+\section{Setting}
+
+Interfaces earn their keep when instances are cheap. The scaling
+tide's \code{ScalesMeasure} was designed (by its shape consult) so
+that the analytically substantive theorems would not wait on measure
+plumbing; the risk of that design is an interface nobody ever
+instantiates. This tide closes the loop within the same session: the
+concrete instance for the motivating measure, plus the concrete
+example the programme had used as its non-separable benchmark since
+the degenerate scoping consult rejected it as a \emph{first} step.
+
+\section{The thing formalised}
+
+\code{diagonalMap}~$c$ is the linear map $w \mapsto (c_i w_i)_i$ on
+$\iota \to \R$, packaged through \code{LinearMap.pi};
+\code{det\_diagonalMap} computes its determinant as $\prod_i c_i$ by
+\code{LinearMap.det\_pi} with the one-dimensional factors
+$\det(c_i \cdot \mathrm{id}) = c_i$. Since the quasi-homogeneous
+dilation is definitionally the diagonal map with entries $s^{q_i}$,
+the linear-map Haar theorem\\
+(\code{map\_linearMap\_addHaar\_pi\_eq\_smul\_addHaar}) gives\\
+\code{scalesMeasure\_qhDilation\_volume}: pi-volume satisfies the
+interface with total homogeneity $Q = \sum_i q_i$, the determinant
+collapsing to $s^{\sum q_i}$ by \code{rpow\_sum\_of\_pos}. The
+recovery corollary
+(\code{weights\_eq\_of\_coordSq\_moments\_eq\_volume}) then needs no
+scaling hypotheses at all: measurable quasi-homogeneous potentials
+on Lebesgue measure, ray-matched coordinate second moments, one
+side's moment positivity --- equal weights. Finally\\
+\code{mixedQuartic\_quasiHomogeneous} verifies term by term (the
+\code{rpow}--\code{npow} bridge per monomial) that
+$x^4 + x^2y^2 + y^4$ scales by $s$ under $\delta_s$ with common
+weights $1/4$: the example whose integrals do not factor, now inside
+the formalised recovery perimeter.
+
+\section{Where progress stalled}
+
+Nowhere. The predicted brittleness of the determinant step did not
+materialize: the pin's \code{LinearMap.det\_pi} matches the diagonal
+map's packaging exactly, and the bridge from the dilation to the
+linear map is a \code{rfl}. The only iteration was instance hygiene
+(over-included section variables, flagged by the linter and
+tightened per theorem). It is worth recording the pattern: of the
+session's consult predictions, the staging calls have all held,
+while the friction estimates have erred in both directions --- the
+\code{.ofLp} coercion friction was real, the determinant plumbing
+was not. Staging advice is the load-bearing part of a consult.
+
+\section{Mathlib lookup versus new mathematics}
+
+All lookup: \code{LinearMap.det\_pi}, \code{det\_smul},
+\code{finrank\_self}, the linear-map Haar theorem, and
+\code{rpow} algebra. New: nothing mathematical --- this is
+infrastructure in the strict sense, the discharge of an interface
+obligation. The value is in what it makes unconditional.
+
+\section{What the next tide inherits}
+
+The degenerate programme's formalisable perimeter, per its scoping
+consult, is now complete: separable recovery, exact exponent
+affinity, abstract scaling, the volume instance, and the concrete
+mixed example. What remains beyond --- identification of mixed
+coefficients from stratum-aggregated data, the Gelfand--Leray moment
+problem, Morse--Bott strata --- is the note's open research
+frontier, not tide material. The natural next excursions for the
+loop lie elsewhere: the EuclidD transport wrappers if a consumer
+wants them, or a fresh direction from the note's remaining
+unformalised claims.
+\end{document}

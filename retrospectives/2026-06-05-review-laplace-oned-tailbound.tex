@@ -1,0 +1,115 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the Gaussian tail-bound foundation, and a third ``\texttt{open Topology} is dead'' over-flag}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/TailBound.lean}: the elementary 1D Gaussian
+(Mill's-ratio) tail bounds and the FTC-2 first/second-moment closed forms that feed Laplace
+localisation. Result: \textbf{a clean fidelity pass with one dead-code removal} --- four unused
+proof-locals. The review's most instructive moments were two \emph{rejections}: the independent
+reviewer's recommendation to drop \texttt{open Topology} (rebuild-refuted --- \texttt{$\mathcal N$}
+is Topology-scoped, the third time this exact over-flag has appeared), and a linter-flagged
+``\texttt{congr 1} does nothing'' that the seabed's own \texttt{ring}-under-\texttt{exp} caveat
+marks as plausibly load-bearing.
+\end{abstract}
+
+\section{Setting}
+This file is the technical engine behind localisation: away from the minimiser, the Gibbs
+integrand $\exp(-tL)$ is exponentially suppressed, and the quantitative form of that suppression
+is a Gaussian tail bound. Its headline consumers are
+\reviewref[Localisation]{2026-06-05-review-laplace-oned-localisation} (which uses
+\texttt{gaussian\_tail\_bound\_rescaled\_Ioi} and the rescaled second-moment closed form with
+$b=\lambda t$) and \texttt{QuarticBoundedPrior}. It carries no named primer theorem, so the
+fidelity ground truth is the file's own (rich) docstrings checked against its statements, plus
+the downstream contract. It was selected as a never-reviewed foundation directly below an
+already-reviewed consumer.
+
+\section{What was reviewed}
+Nine public theorems and three private lemmas. The public surface:
+\begin{itemize}[noitemsep]
+  \item $\int_{(M,\infty)} x\,e^{-x^2/2} = e^{-M^2/2}$ and the Mill's ratio
+    $\int_{(M,\infty)} e^{-x^2/2} \le e^{-M^2/2}/M$ ($M>0$);
+  \item lower-tail $=$ upper-tail by even symmetry, and the two-sided $\le 2e^{-M^2/2}/M$;
+  \item $\int_{(M,\infty)} (x^2-1)e^{-x^2/2} = M e^{-M^2/2}$ and the second-moment decomposition
+    $\int_{(M,\infty)} x^2 e^{-x^2/2} = M e^{-M^2/2} + \int_{(M,\infty)} e^{-x^2/2}$;
+  \item the three $b>0$ rescaled variants (first moment $e^{-bM^2/2}/b$; second moment;
+    rescaled Mill's ratio $\le e^{-bM^2/2}/(bM)$), obtained by the substitution $u=x\sqrt b$.
+\end{itemize}
+The informal corpus was the file's docstrings, the Localisation review, the seabed
+\texttt{CLAUDE.md}, and a pre-check confirming the Mathlib homes of the imported Gaussian lemmas.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} Each closed form was checked against its FTC-2 antiderivative
+($-e^{-x^2/2}$ for the first moment, $-x e^{-x^2/2}$ for the $(x^2-1)$ identity) and the
+$u=x\sqrt b$ rescaling; the constants, signs, the strictness of the $M>0$ / $b>0$ hypotheses, and
+the factor $2$ in the two-sided bound all match. The reviewer independently reported no fidelity
+problems. A clean pass is itself the result here: the file that localisation rests on says exactly
+what it claims.
+
+\section{Simplifications applied}
+\textbf{One: four dead proof-locals removed.} Each rescaled theorem opens with
+\texttt{set s := Real.sqrt b with hs\_def}, but the named defining equation \texttt{hs\_def} is
+referenced nowhere --- the \texttt{set} substitution does all the work. And in
+\texttt{gaussian\_tail\_bound\_rescaled\_Ioi} the local \texttt{hs\_ne : s $\ne$ 0} is unused
+(unlike the other two rescaled theorems, where it feeds \texttt{mul\_div\_cancel\_right\textsubscript{0}});
+it was removed \emph{only} there. Pure dead-code: rebuild green at $2694$ jobs, the full-linter
+warning set byte-identical to baseline, and all twelve signatures byte-identical (the diff touches
+only intra-proof \texttt{set}/\texttt{have} lines). GPT affirmed.
+
+\section{Disagreements and open questions}
+The reviewer's recommendation to remove \texttt{open Topology} was \textbf{rejected by rebuild
+arbitration}: deleting it makes \texttt{$\mathcal N$} an unknown identifier (five sites). The
+reviewer had attributed \texttt{$\mathcal N$} to \texttt{Filter}, but the \texttt{nhds} notation is
+\texttt{Topology}-scoped. This is the \emph{third} time the same ``\texttt{open Topology} is dead''
+over-flag has been raised on a J-function/tail file and refuted the same way --- the build, not the
+reviewer, is the arbiter of a load-bearing open. No open question; the open stays.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A recurring reviewer blind spot is itself a datum.} ``\texttt{open Topology} is
+    dead'' has now been wrong three times for the same reason (\texttt{$\mathcal N$} is
+    Topology-scoped, and a model reading proofs lumps it with \texttt{Filter}). The cheap guard is
+    permanent: a one-line rebuild without the open. The reviewer's value is the fidelity pass and
+    the dead-local catch, not its namespace bookkeeping.
+  \item \textbf{Not every linter warning is a review edit.} The \texttt{unusedTactic} linter flags
+    \texttt{congr 1; congr 1} at one site, but the seabed \texttt{CLAUDE.md} records that
+    \texttt{ring} cannot unify under \texttt{exp} --- and the goal there equates two \texttt{exp}
+    atoms with arithmetically-equal but syntactically-distinct arguments. The \texttt{congr} chain
+    is plausibly what lets the final \texttt{ring} see matching atoms; the reviewer did not flag it;
+    touching a pre-existing warning outside the independent findings invites a thrash for no
+    coverage gain. Left as a report-only observation.
+  \item \textbf{``Dead local'' generalises cleanly.} As with the \texttt{h$\alpha$\_ne} removal in
+    the \reviewref[asymptotic-equivalence wrapper]{2026-06-05-review-laplace-oned-jfunction-asymptotic-equivalence},
+    a derived \texttt{have}/\texttt{set}-\texttt{with} binding has no signature consequence, so the
+    only failure mode is an implicit tactic dependence --- caught by the rebuild, confirmed by the
+    \texttt{unusedVariables} linter's silence.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \textbf{Forward tide (structural):} extract two private helpers the reviewer correctly
+    identified --- (i) ``from \texttt{IntegrableOn f (Ioi 0)} and \texttt{ContinuousOn f (Icc M 0)}
+    conclude \texttt{IntegrableOn f (Ioi M)}'', which collapses the $\sim$5 copies of the
+    \texttt{by\_cases hM} $\cup$-split, and (ii) the shared $\sqrt b$ algebra
+    (\texttt{set s}, \texttt{hsq}, $(xs)^2=bx^2$) across the rescaled family. Both add a declaration,
+    so they are forward tides, not review edits.
+  \item \textbf{Hygiene tide:} migrate the five \texttt{push\_neg} occurrences to \texttt{push Not}
+    (deprecated), and re-examine the line-300 \texttt{congr} chain with the LSP to settle whether
+    \texttt{ring} alone closes it.
+  \item The localisation sub-arc (\texttt{TailBound} $\to$ \texttt{Localisation}) is now reviewed
+    end-to-end. Remaining laplace surface: the \texttt{TwoD/} families, \texttt{OneD/NearDegenerate},
+    \texttt{OneD/UniversalAsymptotics}, and the large \texttt{Multi/Covariance*} trio.
+\end{itemize}
+
+\end{document}

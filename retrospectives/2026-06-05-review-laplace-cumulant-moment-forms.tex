@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{cumulants in moment form, and the close of the anharmonic-arc sweep}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicCumulantMomentForms.lean}: the third and fourth
+connected cumulants of $u=-(tx)$ re-expressed in physically transparent moment form,
+$\kappa_3=\langle u^3\rangle_0-3\langle u^2\rangle_0\langle u\rangle_0+2\langle u\rangle_0^3$ and the
+analogous five-term $\kappa_4$, with $\langle u^k\rangle_0$ the unperturbed Gibbs expectation. Result: \textbf{a
+clean fidelity pass, no edits}. This is the last unreviewed file of the one-dimensional anharmonic arc, so it
+closes a nine-file review sweep.
+\end{abstract}
+
+\section{Setting}
+The arc proved $\kappa_3,\kappa_4$ first as rational closed forms in the partition values $G_n(0)$ (the form
+the asymptotic analysis needs), and then --- in the file reviewed here --- in the moment form a physicist
+reads off directly, $\kappa_n=$ (raw-moment expansion of $\langle u^k\rangle_0$). The two forms are the same
+object dressed differently; this file is the bridge, and the $\kappa_2$ moment form lives in its sibling
+\texttt{anharmonic\_susceptibility\_eq\_connected\_variance}
+(\reviewref[$\kappa_2$ review]{2026-06-05-review-laplace-anharmonic-second-cumulant}).
+
+\section{What was reviewed}
+Two public theorems: \texttt{anharmonic\_third\_cumulant\_moment\_form} and
+\texttt{anharmonic\_fourth\_cumulant\_moment\_form}, each equating $\mathrm{iteratedDeriv}\,(n{-}1)$ of the
+mean $M=G_1/G_0$ at $0$ (the same LHS object as the rational cumulant theorems) with the raw-moment expansion
+in $\langle u^k\rangle_0=\mathrm{gibbsExp}\dots(\lambda x.\,(-(tx))^k)$.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.} The coefficients were the focus and are the standard raw-moment
+cumulant expansions:
+\begin{itemize}[noitemsep]
+  \item $\kappa_3$: $m_3-3m_2m_1+2m_1^3$, coefficients $(1,-3,+2)$.
+  \item $\kappa_4$: $m_4-4m_3m_1-3m_2^2+12m_2m_1^2-6m_1^4$, coefficients $(1,-4,-3,+12,-6)$.
+\end{itemize}
+Both close the same way: the helper $\langle u^k\rangle_0=G_k(0)/G_0(0)$ (moment-normalisation composed with
+$\mathrm{iteratedDeriv}\,k\,(G_0)\,0=G_k(0)$) rewrites every Gibbs expectation to a partition ratio, the
+rational cumulant theorem rewrites the LHS, and \texttt{field\_simp} clears the $G_0(0)$ denominators ---
+recovering, for $\kappa_3$, $G_3G_0^2-3G_2G_1G_0+2G_1^3$ over $G_0^3$, byte-identical to the reviewed
+rational form, and analogously for $\kappa_4$. The observable is written uniformly as $(-(tx))^k$ (including
+the $k=1$ case as $(-(tx))^1$ rather than $-(tx)$) --- a presentation choice, faithful.
+
+\section{Simplifications applied}
+None. GPT's six proposals were all proof-refactoring or golf --- factor the duplicated \texttt{hmom} and
+\texttt{hne} locals into private helpers, \texttt{simp\_rw [hmom]} instead of the explicit \texttt{hmom 4 \dots
+hmom 1} list, \texttt{norm\_num}$\to$\texttt{simp} on a trivial side goal, \texttt{field\_simp}$\to$\texttt{field\_simp
+[hne]}, and a descriptive rename of \texttt{hmom}. None removes dead code, subsumes a hand-rolled argument
+with a Mathlib lemma, or drops a hypothesis; helper-extraction and golf are the declined classes. The file was
+left byte-identical.
+
+Two of GPT's \emph{non}-findings are worth recording, because they are the right calls: \texttt{open
+MeasureTheory} is \textbf{load-bearing} here (the statements write \texttt{(volume : Measure $\mathbb R$)}
+with unqualified \texttt{Measure}/\texttt{volume}, thirteen times) and \texttt{hne} is \textbf{not dead} (it is
+the $G_0(0)\ne0$ side condition \texttt{field\_simp} consumes from context). The contrast with the immediately
+preceding review is sharp: there \texttt{open MeasureTheory} was genuinely dead and removed; here the same open
+is essential. The discriminator is, as always, whether any name or notation the open provides is actually
+used --- and here \texttt{Measure}/\texttt{volume} are right there in the statements.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{Two adjacent files, same open, opposite verdict --- and that is fine.} A dead-open finding is
+    per-file, never per-name-globally: \texttt{open MeasureTheory} was dead in
+    \reviewref[the cumulants-from-log-partition file]{2026-06-05-review-laplace-cumulants-logpartition} (no
+    \texttt{Measure}/\texttt{volume}/\texttt{$\int$} anywhere) and load-bearing here (both names in the
+    statements). The grep is the test, and it must be run against \emph{this} file's text, not a habit carried
+    from the last one.
+  \item \textbf{Closing an arc-level sweep is itself a result.} With this file the entire one-dimensional
+    anharmonic arc --- nine files, from the moment-normalisation foundation through the FDT asymptotics, the
+    $\kappa_2/\kappa_3/\kappa_4$ ladder, the cumulant generating function, and now the moment forms --- has
+    been independently reviewed end-to-end. Eight clean-no-edit passes and one dead-open removal; zero
+    mathematical errors found across the arc. That uniformity is the headline, not any single file.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The OneD anharmonic arc review is complete. Natural next coverage: the \texttt{Multi/} multivariate
+    files (\texttt{AffineBilinearCov}, \texttt{QuadraticApprox}) and the remaining \texttt{TwoD/} asymptotic
+    families, none yet reviewed.
+\end{itemize}
+
+\end{document}

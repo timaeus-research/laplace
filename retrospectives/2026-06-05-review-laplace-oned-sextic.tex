@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the pure sextic moments, and a prediction that held exactly}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/Sextic.lean}: the pure sextic ($L(x)=x^6/720$) Gibbs moments as the
+$k=3$ specialisation of the generic even-monomial template, with the degenerate affine covariance
+$\mathrm{Cov}_t[ax+c,bx+d]=ab\,(720/t)^{1/3}\,\Gamma(1/2)/\Gamma(1/6)$ (decay $t^{-1/3}$). Result: \textbf{a
+clean fidelity pass with the same two cleanups as its quartic sibling} --- a dead, warning-producing tactic
+and a copy-pasted five-import block --- confirming, exactly, the prediction made in the
+\reviewref[quartic review]{2026-06-05-review-laplace-oned-quartic}.
+\end{abstract}
+
+\section{Setting}
+Sextic is the $k=3$ twin of the \reviewref[quartic file]{2026-06-05-review-laplace-oned-quartic}: same
+structure, same reliance on the \reviewref[generic monomial template]{2026-06-05-review-laplace-oned-monomial-potential},
+one step deeper into the degenerate-posterior hierarchy ($t^{-1/3}$ decay, against the quartic's $t^{-1/2}$ and
+the harmonic's $t^{-1}$). Reviewing it back-to-back with the quartic was a deliberate test of a prediction.
+
+\section{What was reviewed}
+Thirteen declarations: the potential and the bridge $\texttt{sexticPotential}=\texttt{kthPotential}\,3$; an
+arbitrary-$m$ half-line lemma (a direct master-lemma application, $\tfrac16(720/t)^{(m+1)/6}\Gamma((m+1)/6)$);
+the $k=3$ specialisations of the moments, partition function, and expectations; and the affine covariance.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no mismatch.} The bridge is correct ($x^{2\cdot3}/(2\cdot3)!=x^6/720$, $6!=720$); the $k=3$
+constants all check out ($1/3$ prefactor, $720/t$ base, $(2n+1)/6$ and $n/3$ exponents, the $\Gamma$
+arguments); $\langle x^2\rangle=(720/t)^{1/3}\Gamma(1/2)/\Gamma(1/6)$ is the $n=1$ even case (using
+$(2\cdot1+1)/6=1/2$); and the covariance reduces, via $\langle x\rangle=0$, to $ab\langle x^2\rangle$, the
+stated $t^{-1/3}$ law. (As with the monomial base and the quartic, the odd-moment theorems are stated for all
+$t$ --- a benign, correct generalisation, recorded not escalated.)
+
+\section{Simplifications applied}
+\textbf{Two cleanups, identical to the quartic's.}
+\begin{itemize}[noitemsep]
+  \item A dead \texttt{<;> norm\_num} on line 75 of \texttt{sextic\_integrable\_pow} --- \texttt{convert h
+    using 4} already closes the goals, so the linter was flagging the tactic unreachable; removing it clears
+    the warning.
+  \item The same copy-pasted five-import Mathlib block (\texttt{Gamma.Basic}, \texttt{GaussianIntegral},
+    \texttt{Integral.Gamma}, \texttt{Lebesgue.Integral}, \texttt{Haar.NormedSpace}), all redundant once the
+    file's own \texttt{MonomialPotential} (and \texttt{Gibbs}) imports are kept.
+\end{itemize}
+Foundation file (consumer \texttt{TwoD/QuarticSextic}); arbitrated by a \textbf{full project build}, green at
+$8306$ jobs (unchanged from baseline), consumer rebuilt, declarations byte-identical, file now warning-free;
+GPT-affirmed.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A retrospective prediction is a cheap, sharp review accelerator --- when the files are
+    siblings.} The quartic review explicitly predicted that the sextic file ``almost certainly carries the
+    same copy-pasted import block and likely the same dead \texttt{<;> norm\_num}''. Both held exactly. For a
+    parallel family ($X$ is the $k=c$ case of $Y$), a finding in one sibling is a near-certain finding in the
+    rest --- a reviewer can go in already knowing where to grep, and the build still does the arbitration.
+  \item \textbf{Copy-paste cruft propagates across a specialisation family.} The dead tactic and the redundant
+    import block were not one-offs; they were duplicated quartic$\to$sextic (and the same pattern likely
+    recurs in any further $k$-specialisations or the 2D \texttt{KthKth*} lifts). Worth a batched sweep if more
+    such files exist.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item If further fixed-$k$ specialisations or the \texttt{TwoD/KthKth*} lift files carry the same
+    import-block / dead-tactic cruft, they are quick batched cleanups. The J-function files and the
+    \texttt{Multi/Covariance*} trio remain the substantive un-reviewed targets.
+\end{itemize}
+
+\end{document}

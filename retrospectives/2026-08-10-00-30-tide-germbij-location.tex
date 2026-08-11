@@ -1,0 +1,99 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: location recovery\\
+\large the $w^*$ clause of the nondegenerate theorem}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The germbij note's Theorem~3.1 says the expansions determine the
+location of the minimum as well as the jet, but every merged
+recovery theorem anchored the minimum at the origin --- a mismatch
+the nondegenerate-core audit listed as its item D. This tide removes
+it. The anchored coordinate moments vanish (an immediate consequence
+of the merged first-moment rate $q^{-1}E_q[w_i] \to 0$); the moments
+of a loss located at $c$ are, by change of variables, the anchored
+moments of translated observables, and their coordinate values tend
+to $c_i$; and two losses whose located first-moment families agree
+beyond all orders in the temperature have the same minimum. With the
+expansion bridge of the previous tide, the inverse half of
+Theorem~3.1 now recovers both the location and the jet from data
+stated in the note's own language.
+\end{abstract}
+
+\section{Setting}
+
+The audit consult's ranking put this immediately after the expansion
+bridge: cheap, and logically necessary, since ``the expansions
+determine $w^*$'' is an explicit clause of the theorem and the
+recovery machinery otherwise silently assumes the two losses share
+a minimum at the origin. Its warning about circularity fixed the
+statement design: the data must contain \emph{uncentered} coordinate
+observables --- moments centered at an already-known minimum cannot
+recover it.
+
+\section{The thing formalised}
+
+Anchored: the theorem\\
+\code{tendsto\_posteriorMoment\_coord} --- the normalized
+localized first moment tends to zero, obtained from the merged
+$q^{-1} E_q[w_i] \to 0$ by multiplying the rate back. Located:
+the moment \code{locatedMoment}~$A$~$c$~$f$ is the anchored one of
+$y \mapsto f(c + y)$ (the located loss $w \mapsto L(w - c)$ has
+exactly these moments), and
+\code{tendsto\_locatedMoment\_coord} shows its coordinate values
+tend to $c_i$: the observable splits as $c_i + y_i$, the constant
+passes through the normalized quotient (spectator cancellation
+against the eventually-positive denominator), and the remainder
+vanishes by the anchored limit. The two-loss statement is\\
+\code{location\_eq\_of\_superPoly\_first\_moments}: if for every
+coordinate the located first-moment functions of the temperature
+differ superpolynomially, the minima coincide --- each moment
+function converges to its own location along $t \to \infty$
+(through $q = (\sqrt t)^{-1}$), the difference tends to zero by the
+\code{SuperPoly} hypothesis at any single order, and limits are
+unique.
+
+\section{Where progress stalled}
+
+Two catalogued classes and one genuine retreat. The
+\code{integral\_add} step needed the catalogue's type-ascribed
+single-lambda integrability witnesses, and the final quotient
+algebra used the fold-into-atoms discipline in deterministic form (a
+\code{mul\_div\_mul\_left} chain rather than \code{field\_simp}).
+The retreat: a planned ``honest form'' lemma expressing the located
+integral by translation invariance of Lebesgue measure hit an
+instance-synthesis confusion (\code{AddGroup (Fin d)} requested on a
+\code{PiLp} translation) and was dropped as non-load-bearing --- the
+located definition is itself the faithful object, and the
+translation-invariance packaging can return as infrastructure if a
+consumer ever needs the untranslated-integral form.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: the merged first-moment rate and dilation identity; the
+temperature substitution, composing the inverse limit at infinity
+with the square-root limit (\code{tendsto\_inv\_atTop\_zero},
+\code{Real.tendsto\_sqrt\_atTop}); and elementary filter algebra.
+New: statement design only --- located moments as translated
+observables, and the uncentered-coordinate data requirement.
+
+\section{What the next tide inherits}
+
+Item C --- the analytic germ corollary (equal jets plus analyticity
+give equal germs near the minimum, modulo the constant, by the
+identity theorem) --- completes the inverse half of Theorem~3.1.
+After it, the remaining substantive half is programme A, the forward
+direction, staged by the audit consult in six tides.
+\end{document}

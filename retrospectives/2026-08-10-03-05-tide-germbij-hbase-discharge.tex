@@ -1,0 +1,206 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{∀}{\ensuremath{\forall}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{ᶠ}{\ensuremath{^{f}}}
+\newunicodechar{𝓝}{\ensuremath{\mathcal{N}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{∈}{\ensuremath{\in}}
+
+\newcommand{\userbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{blue!60}{DM:}} #1\end{quote}\medskip}
+\newcommand{\claudebox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{orange!60!black}{Claude:}} #1\end{quote}\medskip}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.6 Sol:}} #1\end{quote}\medskip}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\newcommand{\Cov}{\operatorname{Cov}}
+\emergencystretch=3em
+
+\title{Tide retrospective:\\\emph{the base-case discharge --- recovery with nothing assumed at orders $0$--$2$}}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The second perimeter tide from the germbij fidelity
+review\footnote{\reviewref{2026-08-10-01-29-review-germbij-new-content};
+the first was \tideref[the $k=2$ covariance
+bridge]{2026-08-10-02-25-tide-germbij-hessian-bridge}.} removes every
+base-case assumption from the superPoly-language recovery headline. The
+merged theorem assumed \texttt{hbase} --- equal values (which the note
+proves are \emph{lost}), equal gradients, equal Hessians --- and a shared
+package matrix $H$. The new
+theorem\footnote{\texttt{smooth\_positive\_jet\_recovery\_of\_superPoly\_moments},
+\texttt{Laplace/Multi/ShiftNormalization.lean}.} assumes none of these:
+superPoly-matched second-moment and monomial moment families alone force
+equality of every positive-order derivative tensor, and the analytic
+corollary (germbij Corollary~3.2, inverse direction) follows in the same
+freed form. Three mechanisms do the work: exact shift invariance of
+normalized posterior moments (the constant the note says is invisible
+really is invisible, as a theorem); ray coefficient uniqueness at the
+\texttt{HigherLaplaceDomain} level, forcing $T_1 = 0$ and
+$T_2 = \mathrm{qform}\,H/2$ from the fixed-ball Taylor remainder; and the
+parent tide's $H_1 = H_2$. With this, review findings F1 and F2 are
+closed.
+\end{abstract}
+
+\section{Setting}
+
+The fidelity review's two deepest findings about the inverse half of
+germbij Theorem~3.1 were: (F1) the headline derives higher-order tensors
+only \emph{conditional on} a matched $0$--$2$ jet, with the Hessian
+recovery uncomposed; and (F2) the $j=0$ case of that assumption --- equal
+loss values at the minimum --- excludes exactly the pairs $L_2 = L_1 + c$
+the note's normalization argument is about. The parent tide supplied
+$H_1 = H_2$ from second-moment data. This tide discharges the rest and
+recomposes the headline. The candidate was deliberated as one tide (shift
+machinery has no standalone value; the parent deliberation had already
+assigned the tensor tie to the recomposition), with GPT contributing two
+statement-level refinements: the shift invariance holds \emph{exactly at
+every scale}, junk-consistently where the denominator vanishes; and the
+second-moment data hypothesis must name specific local packages (the
+$k=3$ projections), since the higher-domain family may carry different
+localization regions at different orders.
+
+\section{The thing formalised}
+
+For localized nondegenerate losses $L_1, L_2$ carrying
+\texttt{HigherLaplaceDomain} families at every order $k > 2$ (with
+matrices $H_1, H_2$ and symmetric derivative tensors): if the
+second-moment families $t \mapsto \langle w_i w_j\rangle_t$ and the
+monomial families $t \mapsto \langle w^{m}\rangle_t$ (degree $> 2$,
+rescaled) of the two losses agree beyond all orders in the temperature,
+then
+\[
+\forall j > 0:\quad D^j L_1(0) = D^j L_2(0),
+\]
+and, for losses analytic at the minimum, the germs agree modulo an
+additive constant. The Lean signatures conclude
+\texttt{iteratedFDeriv ℝ j L₁ 0 = iteratedFDeriv ℝ j L₂ 0} for
+\texttt{0 < j}, and
+\texttt{∀ᶠ y in 𝓝 0, L₁ y - L₁ 0 = L₂ y - L₂ 0}. Compared to the merged
+headline, the hypotheses \texttt{hbase} and the shared \texttt{H} are
+gone; the symmetry debt widens by one order (\texttt{IsSymm} now demanded
+at $k = 2$ as well, still mathematically implied by smoothness).
+
+\section{Proof strategy}
+
+Three layers.
+
+\emph{Shift transport.} A constant shift $L \mapsto L + a$ changes
+nothing the packages measure: the quadratic Peano field and the coercivity
+field see only $L\,\cdot - L\,0$, and in the degree-$(n{+}1)$ Taylor
+remainder the constant is absorbed by the degree-0 diagonal term
+(positive-order \texttt{iteratedFDeriv} ignores constants ---
+\texttt{fun\_iteratedFDeriv\_add\_apply} plus
+\texttt{iteratedFDeriv\_const\_of\_ne}). For the moments,
+\[
+\int_U f\, e^{-(L + a)/q^2}
+= e^{-a/q^2} \int_U f\, e^{-L/q^2},
+\]
+so the normalized moment is \emph{exactly} invariant
+(\texttt{posteriorMoment\_shift}): the nonzero exponential cancels by
+\texttt{mul\_div\_mul\_left}, which is junk-consistent even where the
+denominator vanishes --- no positivity side conditions anywhere.
+
+\emph{Ray uniqueness.} Along a ray $t \mapsto tz$, the loss admits two
+order-2 asymptotic polynomials: the diagonal Taylor coefficients (the
+fixed-ball remainder bound gives an $O(t^k)$ tail once $tz$ eventually
+enters the ball, and $O(t^k) \subseteq o(t^2)$ for $k > 2$), and the
+quadratic-Peano coefficients $(L\,0,\, 0,\, \mathrm{qform}\,H\,z/2)$.
+Stage-1 coefficient uniqueness at orders 1 and 2 forces $T_1 = 0$ and
+$T_2 = \mathrm{qform}\,H\,z/2$. A 1-multilinear map vanishing on
+diagonals vanishes (every \texttt{Fin 1} input is constant), giving
+$D^1L(0) = 0$ for both losses; the order-2 diagonals are both
+$\mathrm{qform}\,H$, and polarization
+(\texttt{iteratedFDeriv\_eq\_of\_diag\_eq}) identifies the tensors.
+
+\emph{Recomposition.} $H_1 = H_2$ from the parent bridge; substitute.
+Shift $L_2$ by $a = L_1 0 - L_2 0$; the three base cases now hold by
+construction, by ray uniqueness, and by the diagonal argument
+respectively; the data and symmetry hypotheses transport verbatim through
+the shift lemmas; the merged headline applies; and un-shifting the
+conclusion at positive orders is one rewrite.
+
+\section{Roadblocks and resolutions}
+
+Three small ones, all Lean-mechanical. The pointwise integrand identity
+behind the shift factorization arrives un-beta-reduced from
+\texttt{integral\_const\_mul} (both a stray \texttt{(fun a\_1 ↦ ...) w}
+and the structure-index loss \texttt{(fun w ↦ L w + a) w}), and
+\texttt{rw} refuses; a \texttt{show} with the beta-reduced statement
+fixes it --- the same class as the catalogued Pi.add/Pi.div traps.
+Second, \texttt{ContDiff}'s smoothness grade now lives in
+\texttt{WithTop ℕ∞}, so a cast typed at \texttt{ℕ∞} produces a baffling
+mismatch between two \texttt{Nat.cast}s; annotate the inequality at
+\texttt{WithTop ℕ∞}. Third, the first draft's cast chain for the
+per-index \texttt{ContDiffAt} was nonsense; restructuring to quantify
+over \texttt{i ∈ Finset.range n} made the bound available where needed.
+Everything else compiled as deliberated, second build green.
+
+\section{What was Mathlib, what was new}
+
+Mathlib lookup: \texttt{fun\_iteratedFDeriv\_add\_apply},
+\texttt{iteratedFDeriv\_const\_of\_ne}, \texttt{ContDiff.add},
+\texttt{Measurable.add\_const}, \texttt{mul\_div\_mul\_left},
+\texttt{Finset.sum\_range\_succ'}/\texttt{sum\_Ico\_consecutive},
+\texttt{isLittleO\_pow\_pow}. Seabed reuse: the stage-1 coefficient
+uniqueness, the GaussAbsorb ray-argument pattern (mirrored from the
+Peano field to the fixed-ball remainder), the J3 polarization wrapper,
+the parent tide's bridge, and the merged headline. New: the three shift
+transports, the exact moment invariance, the higher-domain ray pair, the
+two tensor extractions, and the two freed headlines. The mirroring of
+\texttt{rayExpansion\_quad} from GaussAbsorb (whose proof needed only the
+quadratic Peano field it inherited) into \texttt{LocalQuadraticApprox}
+where it belongs is a small altitude correction the simplification pass
+had already hinted at.
+
+\section{Lessons}
+
+The note's ``the additive constant is genuinely lost'' has a precise
+formal dual: \emph{exact} shift invariance of the normalized moments, at
+every scale, with no eventuality or positivity qualifiers. Proving the
+invisibility as an identity (rather than asymptotically) is what let the
+shift wrapper discharge $j=0$ with zero analytic content. Also carried
+forward: \texttt{ContDiff} grades are \texttt{WithTop ℕ∞} now --- casts
+into \texttt{ℕ∞} are the wrong target and the error message does not say
+so (catalogued for \texttt{CLAUDE.md}).
+
+\section{Follow-ups}
+
+\begin{itemize}[nosep]
+\item Tide 3 (next): the cutoff-removal lemma --- $C_c^\infty$ observable
+data implies the monomial data, via the loss gap --- completing the
+note-literal premise, plus its composition with this tide's freed
+headline.
+\item Deriving \texttt{IsSymm} at order 2 from \texttt{ContDiff} (Mathlib
+second-derivative symmetry) would remove the last formalization debt in
+the hypothesis list; deliberated as avoidable API work, left as debt.
+\item The GaussAbsorb ray pair should eventually delegate to the
+versions this file states at the natural altitude\footnote{On
+\texttt{LocalQuadraticApprox} and \texttt{HigherLaplaceDomain}
+respectively.} (dedup for the simplification pass).
+\end{itemize}
+
+\end{document}

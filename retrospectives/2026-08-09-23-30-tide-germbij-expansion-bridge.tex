@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the expansion bridge\\
+\large jet recovery in the note's own data language}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+An audit of the nondegenerate half of the germbij note against what
+is actually merged found a language gap: the recovery theorems
+consume internal rate hypotheses --- pairwise rescaled moments
+matching to $o(q^{k-2})$ --- while the note's Theorem~3.1 speaks of
+equal asymptotic expansion families, moment functions of the
+temperature agreeing beyond all orders. The audit consult ranked
+closing this gap as the highest-value immediate target, ahead of
+location recovery, the analytic germ corollary, and the (still
+missing) forward direction. This tide closes it. The normalized
+localized moment at temperature $t = q^{-2}$ equals $q^k$ times the
+machinery's rescaled moment for a degree-$k$ homogeneous observable
+(the dilation prefactors cancel in the quotient), and a
+superpolynomially small difference of temperature-level moment
+functions transports through the substitution and a fixed-power
+division to every $o(q^r)$ rate. The headline theorem then reads
+exactly like the note: monomial moment families with the same
+asymptotics force equal derivative tensors at every order.
+\end{abstract}
+
+\section{Setting}
+
+The user's direction fixed the priority: the core is recovery of all
+coefficients and the main theorem in the nondegenerate case. The
+audit (consult archived with the tide log) found four gaps between
+the merged corpus and the literal Theorem~3.1: this data-language
+bridge (B), recovery of the location $w^*$ (D), the analytic germ
+corollary (C), and the forward direction --- existence of the
+arbitrary-order expansion with jet-determined coefficients (A), the
+remaining substantive half. Its explicit caveat is worth repeating:
+B together with C would \emph{not} justify claiming Theorem~3.1
+formalised; B+D+C completes the inverse half only. The strategic
+order is B, D, A, C, E, and this tide is B.
+
+\section{The thing formalised}
+
+Three layers. The temperature-level object:
+\code{posteriorMoment}~$A$~$f$~$q$ is the quotient of localized
+posterior integrals at scale $q$, and \code{posteriorMomentT} is its
+reparametrization by $t$ through $q = (\sqrt t)^{-1}$; the merged
+dilation identity cancels the prefactors $q^d e^{-L(0)/q^2}$ in the
+quotient, and a degree-$k$ homogeneous observable satisfies
+\[
+  \langle P \rangle_{t = q^{-2}}
+  \;=\; q^{k} \cdot \mathrm{rescaledMoment}(P, q).
+\]
+The rate transport (\code{isLittleO\_pow\_of\_superPoly}): if $f$ is
+beyond all orders in $t$, then for every $m$ and $r$
+\[
+  q \;\longmapsto\; \frac{f(q^{-2})}{q^m}
+  \quad\text{is}\quad o(q^r) \text{ at } 0^+
+\]
+--- compose the little-$o$ along $t = q^{-2}$
+(\code{tendsto\_inv\_sq\_atTop}), convert the power through
+\code{rpow} algebra, and absorb the division by choosing the
+order $N$ with $2N \geq m + r$. The headline is\\
+\code{smooth\_jet\_recovery\_of\_superPoly\_moments}: if for every
+degree $k > 2$ and every monomial word the two losses' localized
+moment functions differ by a \code{SuperPoly} function of $t$ ---
+the note's own convention for ``the same asymptotics'' --- then,
+with the usual packages and base matching, every derivative
+tensor agrees. The proof is the transport at $(m, r) = (k, k-2)$
+composed with the merged monomial recovery theorem.
+
+\section{Where progress stalled}
+
+Nothing structural; three catalogued-class iterations. The notable
+one: rewriting with $2N = r + (2N - m - r) + m$ cascaded into the
+occurrence of $2N$ \emph{inside} the exponent $2N - m - r$ on the
+other side of the equation --- the catalogue's cascading-rewrite
+trap in a fresh costume --- fixed by a calc step against the
+reversed equation, which rewrites the composite exponent as a whole.
+The others: \code{Set.Ioi} membership needing explicit conversion to
+$0 < q$ before \code{pow\_pos}, and the current Mathlib name
+\code{Ioo\_mem\_nhdsGT} for one-sided interval membership.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: little-$o$ composition along a map
+(\code{IsLittleO.comp\_tendsto}), the one-sided inverse limit
+\code{tendsto\_inv\_nhdsGT\_zero}, \code{rpow} algebra, and the
+merged dilation identity. New: only the two definitions and the
+observation that they make the merged machinery speak the note's
+language --- which is the point of the tide. The mathematics was
+finished in the recovery programmes; this is the statement finally
+matching the paper.
+
+\section{What the next tide inherits}
+
+The audit's remaining inverse-half items: (D) location recovery ---
+$\langle w_i \rangle_t \to w_i^*$, nearly free from the merged
+first-moment limit, plus superpolynomially matched first moments
+forcing $w_1^* = w_2^*$; then (C) the analytic germ corollary via
+the identity theorem. After those, the substantive remaining half of
+Theorem~3.1 is (A), the forward direction, staged by the audit
+consult as a six-stage programme (rescale/localize, exponent Taylor
+packaging, numerator expansion, quotient division, coefficient/jet
+packaging, return to $t$).
+\end{document}

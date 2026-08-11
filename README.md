@@ -1,62 +1,53 @@
 # laplace
 
-A Lean 4 + Mathlib formalisation of the anharmonic Laplace asymptotic from
-the SLT Susceptibility Primer (Elliott & Murfet, 2026).
+A Lean 4 + Mathlib formalisation of the Laplace asymptotics of Gibbs
+expectations, covariances and susceptibilities from the SLT Susceptibility
+Primer (Elliott & Murfet, 2026).
 
-## Headline theorem
+## Main theorems
 
-For the anharmonic potential
-`L(x) = (λ/2)x² + (α/6)x³ + (γ/24)x⁴` with `λ > 0`, `γ > 0`,
-and the discriminant condition `α² < 3λγ`,
+[![Solutions.lean](https://github.com/timaeus-research/laplace/actions/workflows/comparator.yml/badge.svg?branch=main)](https://github.com/timaeus-research/laplace/actions/workflows/comparator.yml)
 
-```lean
-theorem cov_anharmonic_asymptotic
-    {lam alpha gamma : ℝ}
-    (hlam : 0 < lam) (hgamma : 0 < gamma) (hdisc : alpha ^ 2 < 3 * lam * gamma) :
-    Filter.Tendsto
-      (fun t : ℝ =>
-        t ^ 2 *
-          Laplace.gibbsCov (anharmonicPotential lam alpha gamma) t
-            (fun x => x ^ 2) (fun x => x))
-      Filter.atTop
-      (nhds (-2 * alpha / lam ^ 3))
+Theorems are stated in [Statements.lean](Statements.lean) and fulfilled in
+[Solutions.lean](Solutions.lean), checked with
+[leanprover/comparator](https://github.com/leanprover/comparator)
+([config](comparator.json)).
+
+| Citation | Statement | Solution |
+|---|---|---|
+| Primer, `eq:cov_anharmonic_1d` (eq. (4.10) compiled); limit only — the primer's `O(t⁻³)` rate is not pinned | `t²·Cov_t[x², x] → -2α/λ³` for the 1D anharmonic potential `(λ/2)x² + (α/6)x³ + (γ/24)x⁴` ([statement](Statements.lean#L179)) | [solution](Solutions.lean#L172) |
+| new; the `κ₃` of *Clusters to Circuits*, Cor. `prop:cross_susc` | `t²·κ₃(x, x, x) → -α/λ³` — the anharmonic three-point function ([statement](Statements.lean#L201)) | [solution](Solutions.lean#L194) |
+| new; identity from *Clusters to Circuits*, Cor. `prop:cross_susc` | `t·∂ₕCov_h(x,x)\|₀ → α/λ³` — the anharmonic cross-susceptibility (FDT) asymptote ([statement](Statements.lean#L227)) | [solution](Solutions.lean#L220) |
+| Primer, Lemma `lem:laplace_cov` | `Cov_t[φ, ψ] = (1/t)·⟨∇φ, Σ∇ψ⟩ + O(t⁻²)`, multivariate, sharp rate ([statement](Statements.lean#L259)) | [solution](Solutions.lean#L252) |
+| Primer, Lemma `lem:laplace_exp` | `⟨φ⟩_t = (1/2t)·[tr(AΣ) - (Σ∇φ)·(T:Σ)] + O(t⁻²)`, explicit coefficient ([statement](Statements.lean#L293)) | [solution](Solutions.lean#L286) |
+| Primer, Lemma `lem:laplace_cov2` | `t²·Cov_t[φ, ψ]` → the explicit four-term tensor coefficient `½tr(AΣBΣ) + ½(Σb)·(Φ:Σ) - ½b^⊤ΣAΣ(T:Σ) - ½(Σb)·(T:(ΣAΣ))`, at rate `O(1/t)` ([statement](Statements.lean#L327)) | [solution](Solutions.lean#L320) |
+| new (degenerate/singular regime) | `⟨x^(2j₁) y^(2j₂)⟩_t ~ C·t^(-j₁/k₁ - j₂/k₂)` for the separable potential `x^(2k₁)/(2k₁)! + y^(2k₂)/(2k₂)!` ([statement](Statements.lean#L358)) | [solution](Solutions.lean#L351) |
+
+To verify that `Solutions.lean` fulfills `Statements.lean` in a sandboxed
+build, ensure `go` and `elan` are installed (Linux, Landlock ≥ 5.13), then
+from the repo root:
+
+```bash
+git clone --depth 1 https://github.com/Zouuup/landrun && (cd landrun && go build -o landrun ./cmd/landrun)
+git clone --depth 1 --branch "$(sed 's|leanprover/lean4:||' lean-toolchain)" https://github.com/leanprover/lean4export && (cd lean4export && lake build)
+git clone --depth 1 https://github.com/leanprover/comparator
+sed -i 's/args ++ #\[spawnArgs.cmd\] ++ spawnArgs.args/args ++ #["--", spawnArgs.cmd] ++ spawnArgs.args/' comparator/Main.lean  # missing flag terminator, pending upstream fix
+(cd comparator && lake build comparator)
+
+export PATH="$PWD/landrun:$PWD/lean4export/.lake/build/bin:$PATH"
+lake exe cache get
+lake env comparator/.lake/build/bin/comparator comparator.json  # expect: Your solution is okay!
 ```
-
-i.e. `Cov_t[x², x] = -2α/(λ³ t²) + o(t⁻²)` as `t → ∞`. This is equation
-(4.10) in the primer.
-
-The full theorem lives at the end of
-[`Laplace/OneD/IntegralRemainder.lean`](Laplace/OneD/IntegralRemainder.lean).
 
 ## Status
 
-- ~15.8k lines of Lean 4 + Mathlib across the 1D and multi-D tracks.
-- 100+ proved theorems.
-- **0 sorries, 0 axioms, 0 `native_decide`.**
+- ~46k lines of Lean 4 + Mathlib across the 1D, 2D and multi-D tracks.
+- **0 sorries, 0 axioms, 0 `native_decide`** (the deliberate `sorry` bodies
+  of `Statements.lean` are exempt by design; each is proved in
+  `Solutions.lean`).
 - `lake build` succeeds (warm cache).
 
 Audit with `scripts/sorries`.
-
-In addition to the headline 1D theorem, the repo now also contains an
-unconditional multivariate counterpart in `Laplace/Multi/`:
-
-```lean
-theorem gibbsCov_first_order_rate_sharp
-    (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
-    (a b : ι → ℝ) [Nonempty ι]
-    (hV : PotentialJetApprox V H)
-    (hφ : ObservableJetApprox φ a) (hψ : ObservableJetApprox ψ b)
-    (hGauss : LaplaceCovHypotheses H Hinv) :
-    ∃ K T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
-      |t * gibbsCov V t φ ψ - dot a (Hinv b)| ≤ K / t
-```
-
-i.e. `Cov_t[φ, ψ] = (1/t)·⟨a, H⁻¹b⟩ + O(t⁻²)` as `t → ∞`, where
-`a := ∇φ(0)`, `b := ∇ψ(0)`, `H` is the Hessian of `V` at `0`. This is
-`lem:laplace_cov` of the primer at the sharp $O(t^{-2})$ rate.
-
-The full theorem is at the end of
-[`Laplace/Multi/CovarianceSharp.lean`](Laplace/Multi/CovarianceSharp.lean).
 
 ## Build
 
@@ -101,6 +92,8 @@ Pulling the Mathlib cache is essential. Building Mathlib from source takes
 | [`Laplace/Multi/GaussianIBP.lean`](Laplace/Multi/GaussianIBP.lean) | Multivariate IBP / parity for Gaussian against odd integrands |
 | [`Laplace/Multi/Covariance.lean`](Laplace/Multi/Covariance.lean) | Weak-track `gibbsCov_first_order_rate_weak` (`O(t^{-3/2})`) |
 | [`Laplace/Multi/CovarianceSharp.lean`](Laplace/Multi/CovarianceSharp.lean) | Sharp-track `gibbsCov_first_order_rate_sharp` (`O(t^{-2})`) |
+| [`Laplace/Multi/CovarianceExplicit.lean`](Laplace/Multi/CovarianceExplicit.lean) | Explicit-coefficient `gibbsExpectation_first_order_rate_explicit` (`lem:laplace_exp`) and `gibbsCov_first_order_rate_explicit` (`lem:laplace_cov2`) |
+| [`Laplace/Multi/Defs.lean`](Laplace/Multi/Defs.lean) | Statement vocabulary of the multi-D track (Mathlib-only import closure; shared with [Statements.lean](Statements.lean)) |
 
 ## Proof strategy
 

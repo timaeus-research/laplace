@@ -17,7 +17,7 @@ Gaussian moment lemmas in `OneD.GaussianMoments` by setting the inverse
 covariance to `λ t`.
 -/
 
-open Real MeasureTheory Set
+open Real MeasureTheory
 open scoped Nat
 
 namespace Laplace.OneD

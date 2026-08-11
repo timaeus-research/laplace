@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{cumulants as derivatives of $\log Z$, and the arc's first landed dead-open}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicCumulantsLogPartition.lean}: the cumulant-generating
+function route, identifying the connected cumulants $\kappa_2,\kappa_3,\kappa_4$ with the second, third and
+fourth derivatives of $\log Z$ at the origin, through the ladder identity
+$\mathrm{iteratedDeriv}(n{+}1)\,K\,0=\mathrm{iteratedDeriv}(n)\,M\,0$ (since $K'=M$, the mean, near $0$).
+Result: \textbf{a clean fidelity pass with one landed simplification} --- a genuinely dead
+\texttt{open MeasureTheory}, removed under rebuild-arbitration. The fourth-cumulant coefficients
+$(-4,-3,+12,-6)$ and the ladder index shift were the focus of the fidelity check and are correct.
+\end{abstract}
+
+\section{Setting}
+The anharmonic arc proved the connected cumulants $\kappa_n$ of $u=-(tx)$ first as derivatives of the
+perturbed \emph{mean} $M(h)=G_1(h)/G_0(h)$ (the FDT/susceptibility route). This file closes the narrative
+loop by tying them to the genuine cumulant generating function $K(h)=\log Z(h)$, $Z=G_0$: it is the
+superstructure whose foundation, \texttt{logPartition\_hasDerivAt} (the first rung $K'(0)=Z'(0)/Z(0)$), was
+reviewed immediately before this in the \reviewref[log-partition-deriv review]{2026-06-05-review-laplace-logpartition-deriv}.
+Reviewing the two together checks the full CGF route top-to-bottom.
+
+\section{What was reviewed}
+Six public theorems: the general-$h$ first derivative $K'(h_0)=G_1(h_0)/G_0(h_0)$ ($|h_0|<1$); the eventual
+equality $\mathrm{deriv}\,K =_{\mathcal N 0} M$; the ladder $\mathrm{iteratedDeriv}(n{+}1)\,K\,0
+=\mathrm{iteratedDeriv}(n)\,M\,0$; and the three cumulant identities $\kappa_2=\partial^2\log Z$,
+$\kappa_3=\partial^3\log Z$, $\kappa_4=\partial^4\log Z$, each delegating its closed form to the
+already-reviewed per-order theorems (\reviewref[$\kappa_2$]{2026-06-05-review-laplace-anharmonic-second-cumulant},
+\reviewref[$\kappa_3$]{2026-06-05-review-laplace-anharmonic-third-cumulant}, and the fourth-cumulant file).
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch on any of the six results.} The two places a CGF formalisation can go
+wrong were the focus:
+\begin{itemize}[noitemsep]
+  \item \textbf{The ladder index shift.} $\mathrm{iteratedDeriv}(n{+}1)\,K\,0=\mathrm{iteratedDeriv}(n)\,M\,0$
+    is correct: \texttt{iteratedDeriv\_succ'} peels the \emph{outer} derivative to leave
+    $\mathrm{iteratedDeriv}\,n\,(\mathrm{deriv}\,K)\,0$, and \texttt{Filter.EventuallyEq.iteratedDeriv\_eq}
+    swaps $\mathrm{deriv}\,K$ for $M$ using the neighbourhood equality. No off-by-one --- $\kappa_2,\kappa_3,
+    \kappa_4$ land at derivative orders $2,3,4$ exactly.
+  \item \textbf{The fourth-cumulant coefficients.} The numerator
+    $G_4G_0^3-4G_3G_1G_0^2-3G_2^2G_0^2+12G_2G_1^2G_0-6G_1^4$, over $G_0^4$, is exactly the standard
+    fourth-cumulant-in-raw-moments expansion $m_4-4m_3m_1-3m_2^2+12m_2m_1^2-6m_1^4$ cleared of denominators
+    ($m_k=G_k/G_0$). Coefficients $(-4,-3,+12,-6)$ verified against the standard formula and against the
+    delegated \texttt{anharmonic\_fourth\_cumulant}, whose numerator is byte-identical.
+\end{itemize}
+The docstring is accurate: the file genuinely proves $\kappa_2,\kappa_3,\kappa_4=\partial^n\log Z$ --- which
+is precisely the forward-reference the first-rung file pointed at, now fulfilled --- and ``the standard
+definition of the connected cumulants'' is the right characterisation.
+
+\section{Simplifications applied}
+\textbf{One landed: a dead \texttt{open MeasureTheory}.} The file declared \texttt{open MeasureTheory
+Topology}, but nothing in its statements or proofs uses any unqualified \texttt{MeasureTheory} name --- there
+is no bare $\int$ notation and no unqualified \texttt{Measure}/\texttt{volume}; all integration is hidden
+behind the already-defined \texttt{weightedPartition}. \texttt{Topology}, by contrast, is load-bearing (the
+$\mathcal N 0$ neighbourhood filter in \texttt{deriv\_logPartition\_eventuallyEq}). Removed in a worktree,
+\textbf{rebuild-arbitrated} (baseline green $8273$ jobs $\to$ edit $\to$ rebuild green $8273$, no new
+warnings, all six signatures byte-identical), GPT-affirmed, and fast-forward-merged to \texttt{main}.
+
+GPT's other six findings were declined: inlining the used \texttt{hZ}/\texttt{hne} locals, a
+\texttt{Metric.ball\_mem\_nhds} shortcut, \texttt{simpa} compressions of the ladder and the three
+$\kappa$-wrappers, and proof-local $Z/G$ abbreviations. All are tactic-golf or readability-only --- they
+remove no dead code, subsume no hand-rolled argument with a Mathlib lemma, and drop no hypothesis. Under the
+review programme's standing discipline these lateral, build-break-prone compressions are not landed.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A dead open is a real simplification; tactic-golf is not.} This review and the preceding one
+    drew the line cleanly: seven of GPT's eight total simplification proposals across the two files were
+    proof-golf and declined, while the single genuine dead-\texttt{open} was landed. The discriminator is
+    whether the change removes something the file does not use (dead code/import/open --- a real, lint-visible
+    improvement) versus merely rewriting a working proof more tersely (no statement benefit, real
+    build-break risk).
+  \item \textbf{The build is the only reliable dead-open arbiter --- but it is reliable.} Two earlier reviews
+    in this arc saw the dead-open heuristic misfire in both directions; here Claude's grep and GPT agreed the
+    \texttt{MeasureTheory} open was dead, and the rebuild settled it definitively. When both the static check
+    and the independent reviewer concur \emph{and} the rebuild stays green with byte-identical signatures, a
+    dead-open removal is safe to land.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \texttt{AnharmonicCumulantMomentForms} is the last unreviewed file of the one-dimensional anharmonic
+    arc; reviewing it completes the sweep.
+\end{itemize}
+
+\end{document}

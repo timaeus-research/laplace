@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{$\kappa_3=0$ for affine observables on the harmonic Gibbs --- a clean Gaussian-cumulant pass with one dead open}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/HarmonicAffineKappa3.lean}: the theorem that the third
+cumulant of any triple of \emph{affine} observables vanishes under the 1D harmonic Gibbs measure ---
+the multilinearity strict-improvement of the identity-observable case. Result: \textbf{a clean
+fidelity pass with a single edit}, the removal of a dead \texttt{open Real}. The independent reviewer
+re-derived every moment value and polynomial coefficient and found no discrepancy.
+\end{abstract}
+
+\section{Setting}
+This continues the harmonic 1D stack reviewed across the same loop --- the regularity witness
+(\reviewref[HarmonicGibbsRegularity]{2026-06-05-review-laplace-oned-harmonicgibbsregularity}) and the
+monomial observable witnesses
+(\reviewref[HarmonicGibbsObservableMonomials]{2026-06-05-review-laplace-oned-harmonicgibbsobservablemonomials}).
+The file under review proves a cumulant identity rather than a regularity datum: for the harmonic
+potential $L(x)=(\lambda/2)x^2$ with $\lambda,t>0$, the third cumulant
+\[
+  \kappa_3\bigl(b_1x+c_1,\;b_2x+c_2,\;b_3x+c_3\bigr)=0
+\]
+for arbitrary affine coefficients. It is the multilinearity lift of Threepoint's
+\texttt{kappa3\_harmonic\_id\_id\_id\_eq\_zero} (the $(x,x,x)$ case).
+
+\section{What was reviewed}
+The headline \texttt{kappa3\_harmonic\_affine\_eq\_zero}; the private bridge
+\texttt{threepoint\_gibbsExp\_volume\_zero\_eq} ($h=0$ unperturbed
+\texttt{Threepoint.gibbsExp}$\,\to\,$\texttt{Laplace.gibbsExpectation}); the harmonic moment wrappers
+($m_1=0$, $m_2=1/(\lambda t)$, $m_3=0$); the integrability helpers; and the degree-$\le 3$ linearity
+lemma \texttt{gibbsExp\_poly\_le3\_harmonic} giving
+$\langle a_3x^3+a_2x^2+a_1x+a_0\rangle = a_2/(\lambda t)+a_0$. The informal corpus was the file's
+docstrings, the \texttt{Threepoint.kappa3} definition
+($\kappa_3=\langle\varphi AB\rangle-\langle\varphi A\rangle\langle B\rangle-\langle\varphi B\rangle
+\langle A\rangle-\langle AB\rangle\langle\varphi\rangle+2\langle\varphi\rangle\langle A\rangle
+\langle B\rangle$, at $h=0$), and the identity-case headline it improves.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no defect.} The mathematics is the Gaussian cumulant fact: the harmonic Gibbs weight
+$e^{-t(\lambda/2)x^2}=e^{-(\lambda t/2)x^2}$ is a centred Gaussian of variance $1/(\lambda t)$, whose
+cumulants of order $\ge 3$ all vanish; $\kappa_3$ is multilinear in $(\varphi,A,B)$ and invariant
+under adding constants, so affine observables give $0$. The Lean proof realises this concretely:
+unfold the five-term $\kappa_3$ through the $h=0$ bridge, expand each affine product into a degree-$3$
+polynomial, substitute $m_1=m_3=0$ and $m_2=1/(\lambda t)$, and \texttt{ring}. The reviewer
+independently re-derived and confirmed: the moment formula $a_2/(\lambda t)+a_0$; each moment value;
+\emph{every} affine-product coefficient (the cubic $b_1b_2b_3$, the quadratic
+$b_1b_2c_3+b_1c_2b_3+c_1b_2b_3$, the linear $b_1c_2c_3+c_1b_2c_3+c_1c_2b_3$, and the three pairwise
+expansions); and that the call's slot mapping $(\varphi,A,B)=(b_1x+c_1,\,b_2x+c_2,\,b_3x+c_3)$ matches
+the definition. ``No fidelity discrepancies found.''
+
+\section{Simplifications applied}
+\textbf{One dead open.} \texttt{open Real} carried nothing: every \texttt{Real}-namespace identifier is
+qualified (\texttt{Real.exp} throughout), and the bare \texttt{exp}/$\sqrt{}$/$\pi$ tokens a grep
+turns up live only inside comments and docstrings. \texttt{open MeasureTheory} stays (bare
+\texttt{volume}, \texttt{Integrable}, \texttt{Measure}). Build green, no in-file warnings, public
+signatures byte-identical; the reviewer affirmed. All five imports are load-bearing and were kept ---
+notably \texttt{integrable\_pow\_mul\_exp\_neg\_mul\_sq} genuinely lives in the seabed's
+\texttt{IntegralRemainder.lean} (the \emph{\texttt{pow}} variant, not Mathlib's \texttt{rpow} one), so
+unlike the previous review's import this one is not dead.
+
+\section{Disagreements and open questions}
+None. The reviewer offered a sheaf of proof-golf and refactor ideas --- one-line \texttt{simpa}
+rewrites of the moment and integrability wrappers, inlining \texttt{harmonic\_Z\_ne\_zero}, dropping
+\texttt{gibbsExp\_affine\_harmonic} as a special case of the degree-$3$ lemma, and the
+\texttt{show\dots funext;ring} verbosity --- all declined as either internal-shape-only (and
+\texttt{simpa}-set golf has a high break rate) or invasive structural refactors that erase
+proof-documenting structure. One genuine name-clarity nit is recorded report-only: the private
+\texttt{gibbsExp\_*} lemmas state facts about \texttt{Laplace.gibbsExpectation}, not
+\texttt{Threepoint.gibbsExp}, so a \texttt{laplaceGibbsExp\_*} prefix would read truer --- but a
+multi-call-site rename is a nicety, not a defect (the same call the
+\reviewref[AnharmonicKappa3 review]{2026-05-31-review-laplace-oned-anharmonickappa3} made on its
+\texttt{*\_affine\_*}$\to$\texttt{*\_linear\_*} rename).
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{The \texttt{pow} vs \texttt{rpow} integrability lemmas have different homes, and that
+    flips the dead-import verdict.} The immediately-preceding review found
+    \texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} to be Mathlib's (making its
+    \texttt{IntegralRemainder} import dead); here \texttt{integrable\_pow\_mul\_exp\_neg\_mul\_sq} is
+    the \emph{seabed's} own lemma in \texttt{IntegralRemainder.lean}, so the same-named import is
+    load-bearing. The one-letter difference in the lemma name is the whole story --- grep the
+    \emph{definition site}, do not pattern-match on the import line.
+  \item \textbf{A whole-Gaussian fidelity check reduces to checking the moments and the coefficients.}
+    For a cumulant-vanishing theorem the only places a real error could hide are a wrong moment value
+    ($m_2\ne1/(\lambda t)$, or a non-zero odd moment) or a slipped polynomial coefficient; the
+    reviewer's value-add was re-deriving exactly those, not the (manifestly correct) Gaussian story.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The remaining never-reviewed laplace \texttt{OneD} files:
+    \texttt{HarmonicPerturbedMoments}, \texttt{QuarticBoundedPrior},
+    \texttt{QuarticBoundedPriorTestFn}, and the large \texttt{IntegralRemainder}.
+  \item Optional (report-only): the \texttt{gibbsExp\_*}$\to$\texttt{laplaceGibbsExp\_*} private rename.
+\end{itemize}
+
+\end{document}

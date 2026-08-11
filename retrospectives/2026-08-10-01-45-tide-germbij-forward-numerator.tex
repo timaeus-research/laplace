@@ -1,0 +1,114 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the window convergence\\
+\large dominated convergence for the numerator remainder}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The analytic heart of the numerator expansion: on the mesoscopic
+window, the normalized remainder integral tends to zero,
+\[
+  \int_{W_q} P(z)\,
+  \frac{e^{-(L(qz)-L(0))/q^2}
+    - e^{-T_2(z)}\sum_{j\le N} P_j(z)\,q^j}{q^N}\,dz
+  \;\longrightarrow\; 0 \qquad (q \to 0^+),
+\]
+by the filter-indexed dominated convergence theorem with the window
+indicator folded into the integrand, exactly as the architecture
+consult prescribed. The dominator is the previous tide's $q$-uniform
+majorant times the observable's growth; the pointwise limit at fixed
+$z$ is the scalar graded expansion, activated by the vanishing scaled
+remainder and switched on by eventual window membership. The tide
+also defines the expansion's coefficient integrals
+$a_j = \int P\, e^{-T_2} P_j$ and proves them integrable. The two
+outer tails and the final packaging were deliberately cut to the next
+tide: they are a full tide of set-integral comparisons, and a clean
+cut beats a half-done state.
+\end{abstract}
+
+\section{Setting}
+
+\begin{sloppypar}
+Stage 5c-ii-a of the forward-expansion programme (the consult's item
+7, with items 8--9 deferred). The consult's DCT guidance was followed
+literally: integral over all of $\R^d$ with the varying window as an
+indicator (set integrals with a varying set leave one unfolding
+restrictions manually), dominated convergence via the filter-indexed
+theorem, and measurability in $z$ for each fixed $q$ only.
+\end{sloppypar}
+
+\section{The thing formalised}
+
+\begin{sloppypar}
+\code{boltzmann\_factor\_eq} extracts the majorant tide's factoring
+of the true Boltzmann factor through the exponent split as a
+standalone lemma (used by both the majorant and the pointwise limit
+here). \code{numeratorCoeff} and
+\code{integrable\_coeff\_integrand} give the coefficient integrals,
+dominated by $(1+\|z\|)^{n+j+2N} e^{-(\lambda/2)\|z\|^2}$ through the
+quadratic lower bound and the 5a growth.
+\code{tendsto\_integral\_window\_remainder} is the dominated
+convergence: eventual measurability mirrors the seabed's rescaled-DCT
+block (the loss is only measurable, everything else continuous);
+eventual domination is the 5c-i majorant times the observable bound
+$|P| \le 2C_P(1+\|z\|)^n$, with the $q^N$ cancelling the
+normalization; the dominator integrates by the binomial-Gaussian
+helper; and the pointwise limit composes
+\code{exp\_graded\_expansion} (at $a_s = V_s(z)$, $\rho$ the scaled
+remainder) with \code{IsLittleO.tendsto\_div\_nhds\_zero}, a constant
+multiplication, and an eventual-equality transfer through
+\code{boltzmann\_factor\_eq} and eventual window membership.
+\end{sloppypar}
+
+\section{Where progress stalled}
+
+Two rounds. Rewriting the target with $0 = \int 0$ also rewrote the
+zero inside the filter $\mathcal N[>](0)$ --- state the DCT
+conclusion with $\int 0$ and transfer by \code{simpa} instead of
+rewriting the goal. And \code{positivity} cannot see
+$0 < \lambda/4$ for an opaque domain field (pass
+\code{linarith [D.lambda\_pos]}). A third, self-inflicted round: a
+scripted re-indentation of the four DCT bullets mangled the nested
+case split; rewriting the block wholesale was faster than repairing
+it.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{tendsto\_integral\_filter\_of\_dominated\_convergence},
+\code{AEStronglyMeasurable.indicator}, \code{Set.indicator\_of\_mem}
+/ \code{notMem}, \code{Integrable.mono'},
+\code{IsLittleO.tendsto\_div\_nhds\_zero},
+\code{Tendsto.congr'}. New: none --- the stage was built so that
+this proof would be composition, and it was (one build iteration of
+substance).
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Stage 5c-ii-b, the last piece of the numerator stage: the
+observable-weighted outer tail of the true integrand
+(binomial split into \code{integrand\_meso\_tail\_isLittleO}), the
+coefficient-polynomial outer tail
+(\code{gaussian\_meso\_tail\_isLittleO} with the 5a growth), the
+eventual decomposition identity splitting the numerator into window
+piece plus tails, and the packaging of
+\code{numerator\_hasExpansion} as a
+\code{Laplace.IsAsymptoticExpansionTo}. After that: stage 6
+(asymptotic division by the partition function, whose constant
+coefficient $a_0 = \int e^{-T_2} > 0$) and stage 7 (the public
+forward existence and jet-comparison theorems).
+\end{document}

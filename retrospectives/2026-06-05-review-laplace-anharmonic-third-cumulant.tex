@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the third cumulant --- a compound quotient rule, and a half-wrong
+dead-open flag}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/AnharmonicThirdCumulant.lean}: the third connected cumulant
+$\kappa_3=\partial_h^2\langle u\rangle_h|_0=(G_3G_0^2-3G_1G_2G_0+2G_1^3)/G_0^3=\langle u^3\rangle_0-3\langle u^2\rangle_0\langle u\rangle_0+2\langle u\rangle_0^3$
+($u=-(t x)$). Result: \textbf{a clean fidelity pass, no edits}, plus one precise report-only note --- a
+dead \texttt{open MeasureTheory}, which the reviewer flagged \emph{together with} a load-bearing
+\texttt{open Topology} ($\mathcal N$ notation), so ``both unused'' would have broken the build.
+\end{abstract}
+
+\section{Setting}
+The $\kappa_3$ rung of the anharmonic cumulant ladder: the second $h$-derivative of the perturbed mean
+$M(h)=G_1(h)/G_0(h)$, sibling of the \reviewref[$\kappa_2$ susceptibility]{2026-06-05-review-laplace-anharmonic-second-cumulant}.
+
+\section{What was reviewed}
+The single public theorem \texttt{anharmonic\_third\_cumulant}.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; GPT found no mismatch.} The proof differentiates the susceptibility $S=(G_2G_0-G_1^2)/G_0^2$
+once more (a compound quotient rule on the partition derivatives). With $N=G_2G_0-G_1^2$, $D=G_0^2$,
+$N'=G_3G_0-G_1G_2$ (using $\partial_h G_n=G_{n+1}$), $D'=2G_0G_1$:
+\[
+  \frac{N'D-ND'}{D^2}
+  =\frac{(G_3G_0-G_1G_2)G_0^2-(G_2G_0-G_1^2)\,2G_0G_1}{G_0^4}
+  =\frac{G_3G_0^2-3G_1G_2G_0+2G_1^3}{G_0^3},
+\]
+so the $-3$ and $+2$ coefficients are right. The first derivative of the mean is the susceptibility
+(\texttt{anharmonic\_mean\_hasDerivAt\_general}, eventually on \texttt{ball 0 1}); the
+\texttt{iteratedDeriv\_succ}/\texttt{iteratedDeriv\_one}/\texttt{hev.deriv\_eq}/\texttt{hS.deriv} chain takes
+$\mathtt{iteratedDeriv}\,2\,M\,0$ to $\kappa_3$; and the docstring's $\langle u^3\rangle-3\langle u^2\rangle\langle u\rangle+2\langle u\rangle^3$
+is the standard third cumulant, equal to the $G_n$ form by moment-normalisation $\langle u^n\rangle=G_n/G_0$.
+
+\section{Simplifications applied}
+None. GPT's (B) findings were proof golf (the \texttt{hball}/\texttt{hh} ball-is-a-neighbourhood boilerplate,
+an inlinable \texttt{hden\_ne}, a $G_n$ abbreviation, a tighter \texttt{hS} algebra) --- declined --- plus one
+dead-open flag that was \emph{half wrong}: GPT reported ``\texttt{open MeasureTheory Topology} unused'', but a
+grep shows \texttt{Topology} is load-bearing ($\mathcal N$ appears in \texttt{hev}'s $=^f[\mathcal N\,0]$). Only
+\texttt{open MeasureTheory} is genuinely dead. The safe edit is \texttt{open MeasureTheory Topology}
+$\to$ \texttt{open Topology}, not removing both. This single cosmetic one-off dead-open was \emph{not landed}
+(a worktree + affirmation is not worth one dead word; cf.\ the qd dead-opens deferred to a batch) --- it is a
+precise report-only note for a hygiene pass. File left byte-identical.
+
+\section{Disagreements and open questions}
+None on the mathematics. The dead-open is report-only.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A multi-name \texttt{open} line needs per-name grep verification --- a reviewer's ``these
+    opens are unused'' can be half right.} GPT lumped a load-bearing \texttt{open Topology} (it supplies the
+    $\mathcal N$ neighbourhood notation used in the eventual-equality step) with a genuinely-dead
+    \texttt{open MeasureTheory} on the same line. Acting on ``both unused'' would have removed $\mathcal N$ and
+    broken the build. This is the \texttt{GaussianIntegral} symbol-grep lesson generalised to a shared
+    \texttt{open} line: confirm each name's usage independently (and the build is the final arbiter) before
+    trimming.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Hygiene (optional): trim \texttt{open MeasureTheory Topology} to \texttt{open Topology}.
+  \item The cumulants-from-log-partition and general-$h$ susceptibility files complete this arc's review.
+\end{itemize}
+
+\end{document}

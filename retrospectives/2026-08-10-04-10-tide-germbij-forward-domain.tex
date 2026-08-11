@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the forward expansion domain\\
+\large the Peano mixin and the exact exponent split}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-10}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The order-$N$ forward moment expansion needs exactly one hypothesis
+beyond the merged higher-order Laplace package: the Peano form of the
+Taylor remainder. The quantitative $O(\|y\|^{N+2})$ bound already in
+\code{HigherLaplaceDomain} pins no coefficient at the top order;
+the little-$o$ refinement does. This tide adds
+\code{ForwardExpansionDomain N} as a one-field mixin carrying that
+refinement, and proves the exact exponent split it exists to feed:
+for $q > 0$ at a critical point,
+\[
+  \frac{L(qz) - L(0)}{q^2} = T_2(z)
+  + \sum_{s=1}^{N} q^s\, V_s(z) + q^N \rho_q(z),
+\]
+where $V_s = T_{s+2}$ is the degree-$(s{+}2)$ diagonal Taylor term
+and the scaled remainder $\rho_q(z) = R(qz)/q^{N+2}$ satisfies the
+two estimates the graded exponential stage consumes: pointwise
+vanishing $\rho_q(z) \to 0$ as $q \to 0^+$ (from the Peano field
+alone), and the uniform window bound
+$|\rho_q(z)| \le C\,\|z\|^{N+2}$ wherever $q$-scaling lands in the
+Taylor ball (from the quantitative field plus an operator-norm bound
+on the top term).
+\end{abstract}
+
+\section{Setting}
+
+Stage 3 of the archived implementation order, between the mesoscopic
+window (stage 2) and the graded exponential (stage 4). The design
+consult was explicit that the mixin should be a single Peano field
+over \code{HigherLaplaceDomain (N+2)} rather than a fresh hypothesis
+package, and that the split must be an exact algebraic identity in
+$q$, not an asymptotic statement: all the analysis lives in
+$\rho_q$, and the two lemmas about $\rho_q$ are the entire analytic
+content of the stage. The identification of $T_2$ with the quadratic
+form of $H$ is deliberately not consumed here; it is bridged
+separately, so the split stays a statement about diagonal Taylor
+terms only.
+
+\section{The thing formalised}
+
+The mixin \code{ForwardExpansionDomain N L H} extends
+\code{HigherLaplaceDomain (N+2)} by the field \code{taylorPeano}:
+the degree-$(N{+}2)$ Taylor remainder is $o(\|y\|^{N+2})$ at the
+origin. Small general facts: $T_0 = L(0)$
+(\code{taylorHomogeneousTerm\_zero}), positive-degree terms vanish
+at the origin (via homogeneity at scalar $0$), and the pointwise
+operator-norm bound (\code{abs\_taylorHomogeneousTerm\_le})
+\[
+  |T_k(z)| \le (k!)^{-1}\,\|D^k L(0)\|\,\|z\|^k.
+\]
+On the mixin:
+\code{taylorRem}/\code{scaledRem}, the pointwise vanishing
+\code{tendsto\_scaledRem} (compose the Peano little-$o$ along
+$q \mapsto qz$, rewrite $\|qz\|^{N+2} = \|z\|^{N+2} q^{N+2}$ on
+$q > 0$, absorb the constant, and apply
+\code{IsLittleO.tendsto\_div\_nhds\_zero}; the $z = 0$ case is the
+remainder vanishing at the origin), the window bound
+\code{abs\_scaledRem\_le} with constant
+$C = C_{\mathrm{Taylor}} + ((N{+}2)!)^{-1}\|D^{N+2}L(0)\|$
+(split the range-$(N{+}3)$ remainder as the domain's range-$(N{+}2)$
+remainder minus the top term), and the split
+\code{exponent\_split} itself, whose hypothesis is the vanishing of
+the degree-one diagonal term --- the critical-point condition in the
+language the file already speaks.
+
+\section{Where progress stalled}
+
+Once. The endgame of the split originally routed through a bespoke
+helper equating $R/q^{N+2} \cdot q^N \cdot q^2 = R$ by a rewrite
+chain, feeding \code{linarith}; the chain broke on association and
+\code{linarith} failed on atom mismatch. The fix was to delete the
+helper entirely: with $q^2 \ne 0$ and $q^{N+2} \ne 0$ in context,
+\code{field\_simp} plus \code{ring} closes the split directly,
+because \code{ring} normalizes $q^{N+2} = q^N q^2$ with a variable
+$N$. The triple bottom-peel of the sum
+(\code{Finset.sum\_range\_succ'} three times) worked first try.
+
+\section{Mathlib lookup versus new mathematics}
+
+\begin{sloppypar}
+Lookup: \code{iteratedFDeriv\_zero\_apply}, the multilinear
+\code{le\_opNorm}, \code{Finset.sum\_range\_succ'}, and
+\code{IsLittleO.comp\_tendsto} with
+\code{tendsto\_div\_nhds\_zero}.
+New: nothing mathematical --- the split is the note's equation (the
+germ of the expansion in the nondegenerate case), stated exactly.
+\end{sloppypar}
+
+\section{What the next tide inherits}
+
+Stage 4: the recursive correction coefficients
+$P_0 = 1$, $P_j = -\tfrac1j \sum_{s=1}^{j} s\,V_s P_{j-s}$, and the
+graded expansion of $\exp(-\sum_s q^s V_s - q^N \rho_q)$ with a
+quantitative companion on the mesoscopic window, consuming this
+tide's \code{tendsto\_scaledRem} and \code{abs\_scaledRem\_le}
+together with stage 2's window geometry. Then the numerator
+expansion (stage 5), division (stage 6), and the public existence
+and jet-comparison theorems (stage 7).
+\end{document}

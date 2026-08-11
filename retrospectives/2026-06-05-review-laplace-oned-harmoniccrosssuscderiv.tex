@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the harmonic cross-susceptibility capstone, and a docstring the file outgrew}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/HarmonicCrossSuscDeriv.lean}: the capstone composing the
+threepoint $\kappa_3$ machinery into a cross-susceptibility statement --- for the harmonic Gibbs
+with linear perturbation, $\partial_h\mathrm{Cov}_h(x,x)|_{0}=-t\,\kappa_3(x,x,x)=0$. Result:
+\textbf{a clean fidelity pass with two docstring-staleness fixes} --- the module doc described an
+``external / future-candidate'' state the file (and its sibling) had since outgrown.
+\end{abstract}
+
+\section{Setting}
+A cross-seabed composition: it imports \texttt{Threepoint.Harmonic} for the FDT identity
+$\partial_h\mathrm{Cov}_h(\varphi,B)=-t\,\kappa_3(\varphi,A,B)$ and the parity vanishing
+$\kappa_3(x,x,x)=0$, and the laplace monomial-observability lemmas to make the result
+unconditional. It is the first reviewed file that bridges laplace and threepoint.
+
+\section{What was reviewed}
+Two theorems: the conditional \texttt{cov\_h\_id\_id\_deriv\_harmonic\_eq\_zero} (taking three
+\texttt{GibbsObservable} hypotheses) and its \texttt{\_unconditional} variant.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no proof defect.} The composition is exactly the intended chain: regularity instance
+$\to$ FDT identity $\to$ rewrite $\kappa_3=0$ $\to$ \texttt{mul\_zero}. The reviewer confirmed the
+six \texttt{GibbsObservable} slots of the derivative theorem collapse correctly to the three
+caller-facing hypotheses under $A=B=\varphi=\mathrm{id}$ (the \texttt{hx hx hx2 hx2 hx2 hx3}
+threading), and that the unconditional variant discharges exactly those three.
+
+\textbf{Two stale module-docstring status claims, fixed.} (1) The doc said the monomial
+\texttt{GibbsObservable} facts ``remain external $\dots$ not formalised here'' --- but the
+\texttt{\_unconditional} theorem \emph{in this same file} discharges them; corrected. (2) The doc
+said the stronger global-constancy theorem ($\mathrm{Cov}_h(x,x)=1/(\lambda t)$ for all $h$) was a
+``future tide candidate'' --- but it is now proved in \texttt{HarmonicCovGlobalConstancy.lean}
+(\texttt{gibbsCov\_h\_id\_id\_harmonic\_eq}, verified); corrected to point there. Both comment-only.
+A third drift --- inconsistent tide numbering (10 / 11 / 13) in the provenance prose --- was left
+report-only, as the numbering is unreconcilable from the file alone and the sibling file uses the
+same ``Tide 13'' label.
+
+\section{Simplifications applied}
+\textbf{None beyond the docstring fixes --- the simplification bucket was empty.} \texttt{open
+MeasureTheory} is load-bearing (bare \texttt{Measure $\mathbb R$}/\texttt{volume}); there is no
+\texttt{open Real}; all three imports are used; no no-op tactic. GPT affirmed.
+
+\section{Disagreements and open questions}
+None.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{A file can outgrow its own module docstring.} The doc was written when only the
+    conditional theorem existed and the global-constancy fact was hypothetical; the unconditional
+    theorem and the sibling file landed later, leaving the ``external / future candidate'' prose
+    false. Status claims (``not formalised here'', ``future candidate'') age the fastest --- check
+    them against the file's \emph{current} contents and its siblings, and (for a cross-reference) by
+    actually opening the named target.
+  \item \textbf{Verify a forward-reference before writing it in.} Before pointing the docstring at
+    \texttt{HarmonicCovGlobalConstancy.lean}, the review confirmed that file's
+    \texttt{gibbsCov\_h\_id\_id\_harmonic\_eq} actually states the global identity --- a fixed
+    cross-reference is only an improvement if it resolves.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item \texttt{HarmonicCovGlobalConstancy.lean} (427L) is the natural next review --- the
+    global-constancy theorem this file now defers to.
+  \item The remaining \texttt{OneD/} \texttt{Harmonic*}/\texttt{Anharmonic*} files and
+    \texttt{IntegralRemainder.lean} (2668L, the asymptotic-remainder foundation).
+\end{itemize}
+
+\end{document}

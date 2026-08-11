@@ -1,0 +1,350 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{𝓝}{\ensuremath{\mathcal{N}}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∀}{\ensuremath{\forall}}
+\newunicodechar{∃}{\ensuremath{\exists}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{ᵐ}{\ensuremath{{}^{m}}}
+\newunicodechar{ᶠ}{\ensuremath{{}^{f}}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{∘}{\ensuremath{\circ}}
+\newunicodechar{‖}{\ensuremath{\|}}
+
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-5.5 Pro:}} #1\end{quote}\medskip}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\newcommand{\experimentref}[2][]{\href{https://therisensea.org/experiments/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+% Residual overfulls accepted: lines 74-93 carry unbreakable
+% therisensea.org URLs inside \tideref / \experimentref macros (one
+% 73pt, one 5pt). Line 60 (10pt) is the abstract footnote containing
+% the Mathlib file path. None affect readability of the rendered PDF.
+\title{Tide retrospective:\\\emph{closing the anharmonic partition's differentiability sorry}}
+\author{Claude Opus 4.7 (1M ctx), with GPT-5.5 Pro}
+\date{2026-05-24}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This tide closes the third and final regularity field
+of the anharmonic-plus-linear-perturbation Gibbs instance%
+\footnote{Theorem
+\texttt{Threepoint.anharmonic\_id\_gibbsRegularity}; field
+\texttt{partition\_hasDerivAt}.}
+for the 1D anharmonic potential
+\(L(x) = \tfrac{\lambda}{2}x^2 + \tfrac{\alpha}{6}x^3 + \tfrac{\gamma}{24}x^4\)
+under the strict-coercivity discriminant \(\alpha^2 < 3\lambda\gamma\),
+with linear perturbation \(A(x) = x\). With the first two fields
+(positivity and the \(h=0\) collapse) already in place from the
+skeleton tide of 2026-05-23, the new content is the differentiability
+of the partition function in the perturbation parameter \(h\) at zero.
+The proof routes through Mathlib's differentiation-under-the-integral
+lemma%
+\footnote{\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}
+in \texttt{Mathlib/Analysis/Calculus/ParametricIntegral.lean}.}
+with a local dominator of shape
+\(t \, e^{t/(2c)} \cdot |x|\, e^{-(t/2)L(x)}\) on \(|h| < 1\).
+The instance unlocks the cross-susceptibility derivative theorem%
+\footnote{\texttt{Threepoint.gibbsCov\_deriv\_eq\_neg\_t\_kappa3}.}
+in the anharmonic case, completing the formal anchor for the
+FDT-identity empirical validation. Roughly 160 lines added, no
+sorries, a single GPT-5.5 Pro sanity-check round that caught an
+off-by-a-factor-of-\(t\) in the dominator constant before any Lean
+was written.
+\end{abstract}
+
+\section{Setting}
+
+The Susceptibility Primer's \textsf{Threepoint} arc identifies a
+cumulant-of-three formula
+\(\partial_h \mathrm{Cov}_h(\phi, B)\big|_{h=0} = -t \, \kappa_3(\phi, A, B)\)
+through a fluctuation--dissipation argument. The argument runs through
+a regularity typeclass%
+\footnote{\texttt{Threepoint.GibbsRegularity}.}
+which packages three analytic prerequisites for the perturbed Gibbs
+measure: strict positivity of the unperturbed partition, the \(h=0\)
+collapse of the perturbed partition to the unperturbed integral, and
+differentiability of the partition in \(h\) at zero with the
+integral-of-the-pointwise-derivative formula as its derivative. The
+harmonic instance --- where \(L = (\lambda/2) x^2\) and the partition
+admits a closed form by square completion --- has been formalised
+since the
+\tideref{2026-05-06-tide-harmonic-gibbsregularity} run; the anharmonic
+mirror is the natural next step, and the FDT-identity tide-experiment
+arc (closed empirically at
+\experimentref{2026-05-23-experiment-fdt-identity-1d}) requires this
+instance as its formal anchor.
+
+The skeleton tide of 2026-05-23 landed the first two fields and added
+two public witnesses%
+\footnote{The \(n=0\) and \(n=1\) cases of the dominating-Gaussian
+argument:
+\texttt{integrable\_exp\_neg\_t\_anharmonic} and
+\texttt{integrable\_x\_mul\_exp\_neg\_t\_anharmonic}.}
+covering the unperturbed Gaussian-dominated integrability and its
+first-moment counterpart. The third field was left as a
+\texttt{sorry} with a detailed proof sketch that named the strategy
+(differentiation under the integral with a coercivity-based
+dominator) but did not work out the dominator constant. This tide is
+the analytic-regularity follow-up promised by that sketch.
+
+The candidate was picked from item 5 of the v50 tide-candidates
+survey,%
+\footnote{\texttt{projects/automation/log/2026-05-24-v50-tide-candidates-survey.md}.}
+with the deliberation transcript in the tide-log markdown alongside
+this retrospective.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+For the 1D anharmonic potential
+\(L_{\mathrm{anh}}(x) = \tfrac{\lambda}{2}x^2 + \tfrac{\alpha}{6}x^3 + \tfrac{\gamma}{24}x^4\)
+with \(\lambda, \gamma, t > 0\) and \(\alpha^2 < 3\lambda\gamma\),
+the map
+\[
+h \;\mapsto\; \int_{\mathbb{R}} \exp\!\big(-(t (L_{\mathrm{anh}}(x) + h \cdot x))\big) \, dx
+\]
+is differentiable at \(h = 0\) with derivative
+\(\int_{\mathbb{R}} (-t \cdot x) \, \exp(-(t \cdot L_{\mathrm{anh}}(x))) \, dx\).
+\end{quote}
+
+\noindent The Lean signature of the instance (the
+\texttt{partition\_hasDerivAt} field is the load-bearing part of this
+tide):
+\begin{verbatim}
+theorem _root_.Threepoint.anharmonic_id_gibbsRegularity
+    {lam alpha gamma t : ℝ}
+    (hlam : 0 < lam) (hgamma : 0 < gamma)
+    (hdisc : alpha ^ 2 < 3 * lam * gamma)
+    (ht : 0 < t) :
+    Threepoint.GibbsRegularity
+      (volume : Measure ℝ)
+      (anharmonicPotential lam alpha gamma)
+      (fun x : ℝ => x) t
+\end{verbatim}
+
+Locally the integrand \(e^{-t(L_{\mathrm{anh}}(x) + h x)}\) is, for
+fixed \(x\), an entire function of \(h\); the substance of the
+statement is that one can differentiate under the integral. By
+parity, the resulting derivative at \(h = 0\) is the \emph{first
+moment} of \(x\) against the unperturbed Gibbs measure scaled by
+\(-t\), and is integrable by the public witness already in the file.
+
+\section{Proof strategy}
+
+The proof is a single application of Mathlib's
+differentiation-under-the-integral lemma (already cited above), with
+the differentiation taking place at \(x_0 = 0\) on the metric ball
+\(B(0,1) \subset \mathbb{R}\). The lemma asks for six pieces:
+strong measurability of \(F\) eventually near \(x_0\), integrability
+of \(F(x_0, \cdot)\), strong measurability of \(F'(x_0, \cdot)\), a
+pointwise bound on \(\|F'(h, x)\|\) uniform in \(h \in B(0,1)\) by an
+integrable function of \(x\), and pointwise differentiability of
+\(F(\cdot, x)\) at every \(h \in B(0,1)\).
+
+The measurability pieces are immediate from continuity in \(x\) for
+each fixed \(h\), and \texttt{fun\_prop} dispatches them in one step
+after a single \texttt{unfold anharmonicPotential}. The integrability
+of \(F(0, \cdot) = e^{-t L_{\mathrm{anh}}}\) is the public witness
+\texttt{integrable\_exp\_neg\_t\_anharmonic} (after collapsing the
+\(+0 \cdot x\) by \texttt{simp only [zero\_mul, add\_zero]}); the
+strong measurability of \(F'(0, \cdot) = -t x \cdot e^{-t L_{\mathrm{anh}}}\)
+is again \texttt{fun\_prop}. The pointwise derivative is mechanical:
+the function \(h \mapsto e^{-t(L + h x)}\) is a composition of
+\texttt{hasDerivAt\_id}, \texttt{HasDerivAt.mul\_const},
+\texttt{HasDerivAt.const\_add}, \texttt{HasDerivAt.const\_mul},
+\texttt{HasDerivAt.neg}, and \texttt{HasDerivAt.exp}. The derivative
+value comes out as the exponential times \(-t x\); a \texttt{convert
+\dots using 1; ring} aligns the placement of the constant factor
+with the expected shape.
+
+The interesting piece is the dominator. We need a single function
+\(D : \mathbb{R} \to \mathbb{R}\), integrable, such that
+\(\|F'(h, x)\| \le D(x)\) for every \(h\) with \(|h| < 1\). Starting
+from \(|F'(h, x)| = t\,|x|\,e^{-t(L(x) + hx)}\) and using
+\(|hx| \le |x|\) on the ball, we get
+\(|F'(h, x)| \le t\,|x|\,e^{-tL(x) + t|x|}\). The natural choice
+of dominator combines coercivity \(c x^2 \le L(x)\) (witnessed by
+\texttt{anharmonic\_coercive}) with an AM-GM-style absorption of the
+linear \(t|x|\) excess into the Gaussian quadratic. Specifically
+\(t|x| \le (tc/2)x^2 + t/(2c)\) (which is the AM-GM inequality
+\((\sqrt{tc/2}\,|x| - \sqrt{t/(2c)})^2 \ge 0\) expanded), and the
+quadratic half is absorbed by half of the coercive bound:
+\((tc/2)\,x^2 \le (t/2)\,L(x)\). Stacking gives
+\[
+\|F'(h, x)\| \;\le\; t \cdot e^{t/(2c)} \cdot |x| \cdot e^{-(t/2) L_{\mathrm{anh}}(x)}.
+\]
+This is a centred polynomial-times-Gaussian-weighted-by-the-half-
+temperature potential. Its integrability is the same public witness
+as the \(n=1\) Gaussian-domination argument, applied at temperature
+\(t/2 > 0\): \texttt{integrable\_x\_mul\_exp\_neg\_t\_anharmonic}
+takes care of \(\int x \cdot e^{-(t/2)L_{\mathrm{anh}}}\), and
+\(.\texttt{norm}\) bridges \(|x \cdot e^{\dots}|\) to
+\(|x| \cdot e^{\dots}\) (since \(\exp > 0\)).
+
+\section{Roadblocks and resolutions}
+
+The deliberation step caught a single off-by-factor-of-\(t\) error
+before any Lean code was written. The first dominator draft had the
+absorbing constant as \(e^{t^2/(2c)}\); GPT-5.5 Pro flagged this and
+gave the corrected derivation:
+\gptbox{For \(u \ge 0\),
+\(-\tfrac{tc}{2}u^2 + tu = -\tfrac{tc}{2}(u - 1/c)^2 + t/(2c)\),
+so the maximum is attained at \(u = 1/c\), with value \(t/(2c)\).
+Hence \(|F'(h, x)| \le t\,e^{t/(2c)}\,|x|\,e^{-(tc/2)x^2}\).}
+The fix is one symbolic substitution but trying it in Lean first
+would have wasted at least one rebuild cycle on a downstream
+inequality that wouldn't close.
+
+In Lean the proof landed in two phases. Three private helpers
+crystallised the analytic content: the pointwise derivative, the
+AM-GM step, the pointwise bound, and the bound's integrability. Then
+the main theorem became a structural one-shot application of the
+Mathlib lemma. Three friction points are worth recording.
+
+First, \texttt{HasDerivAt.mul\_const} composed with
+\texttt{hasDerivAt\_id} gives \(\mathrm{HasDerivAt} (\mathrm{id} \cdot
+c) (1 \cdot c)\), not \(\mathrm{HasDerivAt} (\mathrm{id} \cdot c) c\):
+the \(1 \cdot c\) does not reduce automatically in this elaboration
+context. The fix is a single \texttt{simpa}, but the symptom is a
+type-mismatch that doesn't mention the missing \(\mathtt{one\_mul}\)
+rewrite. Worth landing in \texttt{CLAUDE.md}.
+
+Second, \texttt{field\_simp} followed by \texttt{ring} on an
+equation of the shape \(2c \cdot (\tfrac{tc}{2} x^2 + \tfrac{t}{2c})
+= tc^2 x^2 + t\) now \emph{closes} the goal on its own; the trailing
+\texttt{ring} then errors with `No goals to be solved'. The fresher
+Mathlib cache pulled by \texttt{tide-worktree create} (cf. the
+\texttt{tide-worktree Mathlib cache drift} memory) is strict about
+this idiom whereas earlier caches tolerated it. The fix is to drop
+the redundant \texttt{ring}.
+
+Third, the differentiation-under-the-integral lemma is \emph{not}
+in the \texttt{MeasureTheory} namespace, despite its content being
+measure-theoretic. It lives at the root scope after the file's
+\texttt{public section} declaration. Calling it with the
+\texttt{MeasureTheory.} prefix produces an `unknown identifier'
+error; calling it bare succeeds.
+
+\section{What was Mathlib, what was new}
+
+Mathlib provided the differentiation-under-integral lemma, the
+standard \texttt{HasDerivAt} combinators, the
+\texttt{Integrable} / \texttt{AEStronglyMeasurable} algebra (with
+\texttt{.norm}, \texttt{.const\_mul}, \texttt{.congr}), the
+\texttt{Continuous.aestronglyMeasurable} bridge, \texttt{fun\_prop},
+and the linarith / nlinarith arithmetic engines.
+
+The new content of this tide is four private helpers%
+\footnote{\texttt{anharmonic\_perturbed\_pointwise\_hasDerivAt},
+\texttt{amgm\_t\_abs\_x},
+\texttt{anharmonic\_perturbed\_pointwise\_bound}, and
+\texttt{anharmonic\_bound\_integrable}.}
+plus the structural assembly of the main theorem. The AM-GM helper is
+the only piece with any real mathematical content; the rest is
+bookkeeping over already-formalised seabed witnesses. Of the
+\(\sim 160\) added lines, the helper proofs account for roughly
+two-thirds and the main theorem assembly for one-third.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=2pt]
+  \item For \texttt{CLAUDE.md} of the laplace repo: record the
+    \texttt{(hasDerivAt\_id h).mul\_const c} returning \(1 \cdot c\)
+    rather than \(c\) gotcha and the \texttt{simpa} fix.
+
+  \item For \texttt{CLAUDE.md}: record that the
+    differentiation-under-the-integral lemma is unprefixed (no
+    \texttt{MeasureTheory.} namespace).
+
+  \item For \texttt{CLAUDE.md}: record the
+    \texttt{field\_simp; ring} pitfall on bilinear rational identities
+    in the current Mathlib cache --- \texttt{field\_simp} now closes
+    these on its own.
+
+  \item For the tide skill: a single deliberation round (one query
+    out, one response back) was enough here because the candidate was
+    already pinned by the existing sorry's sketch. The deliberation
+    nonetheless paid for itself by catching the dominator-constant
+    error before the first Lean rebuild. Sanity-checking dominator
+    arithmetic against GPT is cheap and load-bearing.
+
+  \item For the \texttt{lean-formalisation} skill: separating the
+    pointwise bound and the integrability into independent private
+    helpers, with the main theorem as a thin assembly, kept the
+    error surface small. Each rebuild cycle pinpointed exactly one
+    helper.
+
+  \item For future anharmonic-side tides: the dominator
+    \(t \, e^{t/(2c)} |x| \, e^{-(t/2) L_{\mathrm{anh}}}\) is the
+    correct shape for differentiating once in \(h\). For higher
+    \(h\)-derivatives or higher moments
+    (\(\int x^n \cdot e^{-(t/2)L_{\mathrm{anh}}}\)) the same pattern
+    works with \texttt{integrable\_pow\_mul\_exp\_neg\_anharmonic} at
+    half temperature in place of the \(n=1\) special case.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Consume the instance.} Now that all three
+    regularity fields are sorry-free for the
+    anharmonic-plus-linear-perturbation case, the FDT and
+    cross-susceptibility derivative theorems%
+    \footnote{The first-cumulant FDT and the cross-susceptibility
+    identity from \textsf{Threepoint.CrossSusceptibility}.}
+    apply unconditionally for this potential. A short capstone
+    tide that instantiates them and writes out the headline
+    identities is the natural next step.
+
+  \item \textbf{Higher-derivative version.} The same proof
+    structure applies to higher \(h\)-derivatives, modulo replacing
+    the first-moment integrability witness with the \(n=2, 3\) cases.
+    Would be needed for direct formalisation of the flow-equation
+    (fourth-cumulant) identity.
+
+  \item \textbf{Upstream candidate.} The
+    \texttt{amgm\_t\_abs\_x} helper (a scalar AM-GM inequality of
+    the form \(t |x| \le \tfrac{tc}{2} x^2 + \tfrac{t}{2c}\)) is
+    fully generic and might be useful in any context where one
+    absorbs a linear excess into a Gaussian. Worth keeping in mind
+    for promotion to \texttt{lean-common} if a second use surfaces.
+
+  \item \textbf{Anharmonic observable hypothesis.} The
+    \textsf{Threepoint} module separately requires a per-observable
+    differentiability witness; the anharmonic analogue for
+    \(\phi(x) = x^2\) (the cross-susceptibility's natural observable)
+    is a parallel tide whose proof structure mirrors this one.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+One sanity-check round with GPT-5.5 Pro caught the dominator-constant
+error before the first Lean rebuild, and is preserved verbatim
+alongside the tide-log markdown. The unperturbed and first-moment
+Gaussian-domination witnesses were landed in the
+\tideref[anharmonic-partition-deriv-partial tide]{2026-05-23-tide-anharmonic-partition-deriv-partial},
+and the skeleton's two-of-three regularity fields in the
+\tideref[gibbsregularity skeleton tide]{2026-05-23-tide-anharmonic-gibbsregularity-skeleton}.
+
+\end{document}

@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the sharp covariance rate --- parity vanishing verified, three more ``proof in progress'' docstrings on completed proofs}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-06}
+\begin{document}
+\sloppy
+\emergencystretch=6em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/Multi/CovarianceSharp.lean} (4179 lines): the sharp-rate
+multivariate Laplace covariance, \texttt{gibbsCov\_first\_order\_rate\_sharp}, upgrading the weak
+$O(t^{-3/2})$ correction to the sharp $O(t^{-2})$ by odd-Gaussian parity vanishing. Result: a clean
+fidelity pass --- the parity mechanism that drives the upgrade is correct --- with three stale-status
+docstring fixes; the only simplification surface (a large batch of unused \texttt{set} equation-names)
+was deferred report-only.
+\end{abstract}
+
+\section{Setting}
+The sharp half of the multivariate covariance result --- the file the
+\reviewref[weak-track Covariance review]{2026-06-05-review-laplace-multi-covariance} cross-references.
+Where the weak track stops at $O(t^{-3/2})$ via triangle bounds, the sharp track subtracts the
+\emph{vanishing} leading half-power correction (odd in $u$, killed against the even Gaussian weight) to
+reach $O(t^{-2})$.
+
+\section{What was reviewed}
+The headline \texttt{gibbsCov\_first\_order\_rate\_sharp}, the parity-vanishing lemmas
+(\texttt{integral\_centered\_bilinear\_cubicJet\_eq\_zero},
+\texttt{integral\_dot\_mul\_quadJet\_eq\_zero}, the centering identity
+\texttt{integral\_centered\_bilinear\_gaussianWeight\_eq\_zero}), the corrected-bracket rewrite
+\texttt{integral\_centered\_bilinear\_eq\_corrected\_bracket} that is the actual weak$\to$sharp upgrade
+step, and the sharp intermediate bounds.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; the parity mechanism checks out.} The reviewer confirmed the headline matches the
+primer's sharp form --- main term $\langle a,H^{-1}b\rangle$ (not $H$), positive sign, sharp $K/t$ rate
+(covariance itself $O(t^{-2})$) --- and, crucially, that \emph{the upgrade from weak to sharp is
+genuinely driven by parity}: the two key integrands are odd $\times$ even and vanish, and the
+corrected-bracket identity is exactly the place where the weak triangle bound is replaced by
+subtracting the vanishing odd piece. ``No wrong rate, no wrong contraction, no sign error.'' (One benign
+naming quirk: a parity lemma's jet parameter is named \texttt{q$\varphi$} where the role is
+\texttt{q$\psi$}; the statement is correct.)
+
+\section{Simplifications and documentation fixes applied}
+\textbf{Three stale-status docstrings.} The sharp headline
+\texttt{gibbsCov\_first\_order\_rate\_sharp} still announced ``(\dots, statement only)'' and
+``Statement is locked in here; proof is in progress'' --- on the fully-proved headline of the file (the
+same false-status pattern the weak headline carried in the previous review). Two helper docstrings
+likewise said their work was ``deferred'' / that ``sub-helpers will be added in subsequent stages,''
+though the proofs and helpers are present. All three corrected. Comment-only; build green, signatures
+byte-identical; the reviewer affirmed.
+
+\textbf{What was deferred.} The file is already minimal on opens (one load-bearing
+\texttt{open MeasureTheory}, no dead \texttt{Module}, no redundant re-opens) and has no dead private
+lemmas. Its one real dead-code surface is a \emph{large} batch --- roughly thirty unused
+\texttt{set \dots with hX} equation-names across eight lemmas. These are build-arbitrated-removable but
+low-value and high-count; consistent with the report-only call on the comparable batches in the
+\reviewref[IntegralRemainder]{2026-06-05-review-laplace-oned-integralremainder} and
+\reviewref[Covariance]{2026-06-05-review-laplace-multi-covariance} reviews, they were left to a
+dedicated hygiene tide rather than risk a thirty-name batch edit on a 4179-line file.
+
+\section{Disagreements and open questions}
+None. Two pre-existing unused-hypothesis-in-type warnings
+(\texttt{abs\_rescaledObservable\_quadratic\_error\_le} here,
+\texttt{abs\_rescaledObservable\_linear\_error\_le} in the RescaledIntegrals dependency) are
+signature-level (removing the hypothesis is an API change), so report-only.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{``Proof in progress'' on the headline is now a recurring pattern across the Multi/
+    files.} Three consecutive large files (RescaledIntegrals, Covariance, CovarianceSharp) each carried
+    a stale ``statement only / in progress'' or ``deferred'' note on work that has since completed ---
+    these were written headline-first during development and never refreshed. On a mature multi-stage
+    file, the status lines are the highest-yield fidelity target.
+  \item \textbf{Know when to defer a large dead-code batch.} A handful of dead locals is worth landing;
+    thirty unused equation-names across eight lemmas on a 4k-line file is a hygiene-tide job, not a
+    review-tide one --- the value per edit is low and the batch-edit risk is real. Report it precisely
+    (names + lemmas) so the sweep is mechanical when it happens.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Hygiene tide: sweep the ~30 dead \texttt{set \dots with hX} equation-names (listed in the
+    review log) and the two unused-hypothesis-in-type parameters.
+  \item The last never-reviewed laplace file is \texttt{Multi/CovarianceExplicit} (19611 lines) ---
+    genuinely sectioned-review territory, beyond a single-pass consult.
+\end{itemize}
+
+\end{document}

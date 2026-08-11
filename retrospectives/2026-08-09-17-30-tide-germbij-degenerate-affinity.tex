@@ -1,0 +1,119 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Tide retrospective: the exponent-affinity law\\
+\large even multi-index moments of separable potentials}
+\author{Claude (Anthropic), with GPT-5.6 Sol consults}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The germbij note's quasi-homogeneous recovery mechanism reads
+anisotropic weights off the exponents of moment asymptotics: the
+exponent $\ell(\alpha)$ of the moment at the monomial $w^\alpha$ is
+affine in the multi-index $\alpha$, and the weights are its slopes.
+This tide formalises that law exactly for the separable
+weighted-monomial class, extending the previous tide's coordinate
+marginals to all even multi-indices: the normalized moment of
+$\prod_i w_i^{2j_i}$ against $L(w) = \sum_i a_i w_i^{2k_i}/(2k_i)!$
+equals $C(k,a,j)\, t^{-\sum_i j_i/k_i}$ with an explicit positive
+constant, so the normalized exponent is $\sum_i (2j_i)\, q_i$ with
+weights $q_i = 1/(2k_i)$: linear in the multi-index with zero
+intercept, exact rather than asymptotic. The proof is a product of
+one-dimensional closed forms; the single interesting Lean choice,
+made by the scoping consult in advance, was to keep it that way.
+\end{abstract}
+
+\section{Setting}
+
+The previous tide opened the degenerate multivariate direction with
+coordinate second moments: enough for recovery, silent about the
+structure that makes recovery possible. That structure is the
+note's \S 7.4(b) affinity: moment exponents are affine in the
+multi-index, so finitely many exponents determine the weights. The
+scoping consult (archived with the previous tide) staged this as
+roadmap item four and settled its two normalization subtleties in
+advance: the \emph{normalized} exponent is linear with zero
+intercept (the note's $(\ell(2e_i) - \ell(0))/2$ formula is the
+unnormalized convention, where the partition-function exponent
+$\sum_i q_i$ survives), and the statement should quantify over
+\emph{even} monomials only, since odd moments vanish and carry no
+readable exponent. This tide proceeded on that deliberation of
+record.
+
+\section{The thing formalised}
+
+Four layers in \code{Laplace/Multi/SeparableAffinity.lean}, all on
+the plain pi type. The one-dimensional general even moment
+(\code{evenMoment\_smul\_kthPotential}):
+\[
+  \bigl\langle x^{2j} \bigr\rangle_{a L_k,\, t}
+  \;=\; \left(\frac{(2k)!}{a}\right)^{j/k}
+  \frac{\Gamma\!\left(\tfrac{2j+1}{2k}\right)}
+       {\Gamma\!\left(\tfrac{1}{2k}\right)}\; t^{-j/k},
+\]
+by absorbing the scale into the temperature and splitting the
+seabed's Gamma closed form. The multi-index factorization
+(\code{evenMonomial\_integral\_separableMonomial}): the unnormalized
+moment of $\prod_i w_i^{2j_i}$ is the product of one-dimensional
+even moments --- simpler than the previous tide's one-hot argument,
+because the observable is already a product (no \code{ite}, no
+\code{DecidableEq}). The normalized product form\\
+(\code{gibbsExpectation\_evenMonomial\_separableMonomial}): dividing
+two factorized integrals is \code{Finset.prod\_div\_distrib}, pure
+field algebra with no positivity hypotheses at all. And the affinity
+law (\code{gibbsExpectation\_evenMonomial\_powerLaw}): substituting
+the one-dimensional closed forms and collecting the temperature
+exponents through \code{Real.rpow\_sum\_of\_pos} gives
+\[
+  \bigl\langle w^{2j} \bigr\rangle_t \;=\;
+  \Bigl(\,\prod_i C(k_i, a_i, j_i)\Bigr)\,
+  t^{-\sum_i j_i/k_i},
+\]
+with the coefficient positive
+(\code{evenMonomial\_powerLaw\_coeff\_pos}), so the exponent is
+observable. The numerical check (mixed index $j = (2,1)$ against
+$1.3\,x^4/4! + 0.6\,y^6/6!$) agrees to ten digits, with exponent
+$2/2 + 1/3$ on the nose.
+
+\section{Where progress stalled}
+
+Nowhere: one compile iteration (a \code{neg\_div} orientation flip),
+otherwise the file built first pass. The consult's implementation
+advice is what kept it flat: state the closed form as a product of
+one-dimensional forms and make the single-\code{rpow} exponent a
+separate theorem, so the finite-product \code{rpow} algebra --- the
+predicted friction --- is confined to six lines
+(\code{rpow\_sum\_of\_pos} plus a sign-of-division congruence)
+instead of leaking into every statement.
+
+\section{Mathlib lookup versus new mathematics}
+
+Lookup: \code{Real.rpow\_sum\_of\_pos},
+\code{Finset.prod\_div\_distrib}, \code{prod\_mul\_distrib}, and the
+seabed's Gamma closed forms and product Fubini. New: only statement
+design --- the even-multi-index restriction, the zero-intercept
+normalized convention, and the separation of the product form from
+the exponent form. The mathematics is the note's, made exact.
+
+\section{What the next tide inherits}
+
+The remaining roadmap: the thin Euclidean-space transport wrapper
+through the measure-preserving \code{toLp} bridge, and then the
+genuinely non-separable step, the abstract anisotropic scaling
+lemma: $P(\delta_s x) = s P(x)$ forces
+$M_\alpha(t) = t^{-\sum_i \alpha_i q_i} M_\alpha(1)$ by a diagonal
+change of variables, recovering weights without separability and
+reaching mixed examples like $x^4 + x^2 y^2 + y^4$. After that,
+mixed-coefficient identification (Gelfand--Leray) is the research
+frontier proper.
+\end{document}

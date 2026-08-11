@@ -1,0 +1,105 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the multivariate change-of-variables bridge --- a clean 1547-line pass, redundant opens, and an affirmation that caught my own corner case}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=6em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/Multi/RescaledIntegrals.lean} (1547 lines, $\sim$60 lemmas):
+the multivariate change-of-variables bridge that relates the Gibbs partition / numerator /
+expectation / covariance to their \emph{rescaled} forms under the dilation $x\mapsto R\cdot x$, together
+with the coercivity, integrability, and Gaussian-domination infrastructure the multivariate covariance
+asymptotics consume. Result: a clean fidelity pass; the landables were a dead \texttt{open}, six
+\emph{redundant} per-section \texttt{open}s, three dead equation-names, and two docstring over-claim
+fixes --- one of which the affirmation pass corrected a corner case in.
+\end{abstract}
+
+\section{Setting}
+The first of the large \texttt{Multi/} analytic files (after the smaller \texttt{Multi/} pieces were
+reviewed earlier in the marathon), and the substrate beneath the
+\texttt{Multi/Covariance\{,Sharp,Explicit\}} trio. It carries the Stage-3 machinery: rescale to a
+unit-variance Gaussian, dominate the perturbation uniformly in $t$, and integrate.
+
+\section{What was reviewed}
+The dilation bridge --- \texttt{integral\_comp\_smul\_pi}, \texttt{rescaledNumerator\_eq\_smul},
+\texttt{rescaledPartition\_eq\_smul}, and the headline cancellations
+\texttt{gibbsExpectation\_eq\_rescaledExpectation} / \texttt{gibbsCov\_eq\_rescaledCov} --- plus the
+coercivity bounds (\texttt{quadForm\_lower\_bound}, \texttt{rescaled\_weight\_le\_*coercive}), the
+integrability lemmas (rescaled weight, polynomial$\times$Gaussian decay, coordinate/norm moments), and
+the elementary norm/sum-of-squares helpers. Priority on the Jacobian power and the
+coercivity/domination constants; the routine integrability lemmas were spot-checked.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; no substantive statement bug.} The reviewer confirmed the Jacobian exponent
+$|R|^{-d}=|R^{d}|^{-1}$ with $d=\mathrm{card}\,\iota$, becoming $(\sqrt t)^{d}$ at $R=(\sqrt t)^{-1}$,
+and its clean cancellation in the expectation/covariance ratios; the coercivity constants
+($\tfrac{c}{2}\|u\|^2$ globally, $\tfrac{c}{\mathrm{card}\,\iota}\sum_i u_i^2$ when passing from the sup
+norm to the coordinate sum); and the elementary helpers. Two docstrings \emph{over-claimed}:
+\texttt{integral\_comp\_smul\_pi} advertised ``for any nonzero $R$'' though the theorem carries no
+$R\ne0$ hypothesis, and \texttt{abs\_gaussianWeight\_mul\_exp\_sub\_one\_le\_uniform} claimed it makes
+the integrand ``dominated by an \emph{integrable} function'' when it only states the pointwise bound
+(integrability of the $\mathrm{gW}$ summand needs positive-definiteness of $H$, supplied elsewhere).
+Both were corrected to match what the theorems actually deliver.
+
+\section{Simplifications applied}
+\textbf{A dead open, six redundant opens, three dead equation-names.} \texttt{open Module} was dead
+(its sole use \texttt{Module.finrank\_pi} is qualified). More interestingly, the namespace-level
+\texttt{open MeasureTheory} persists through every \texttt{section} in the namespace, so the six
+per-section \texttt{open MeasureTheory} re-opens were \emph{redundant} --- each removable with the
+section still building. And three \texttt{set \dots with hX} equation names (\texttt{hr\_def}, two
+\texttt{hM\_def}) were unused. All build green, signatures byte-identical.
+
+\textbf{What was \emph{not} removed.} Two non-vanishing locals (the $2\alpha\ne0$ and $4\alpha\ne0$
+\texttt{have}s) sit immediately before a \texttt{field\_simp} and supply exactly what it needs to
+clear denominators --- field-simp fuel, consumed implicitly (the same trap as the
+\reviewref[QuarticBoundedPrior review]{2026-06-05-review-laplace-oned-quarticboundedprior}'s
+positivity-consumed locals); kept. And several \emph{exported} helpers that are unused \emph{within
+this file} (\texttt{gaussianWeight\_le\_exp\_neg\_const\_sq} and friends) are report-only: removing a
+public lemma changes the signature surface, which is out of a review tide's scope (and they may be
+intended downstream API --- a forward tide should check references first).
+
+\section{Disagreements and open questions}
+None left open --- but the affirmation pass earned its keep. My first
+\texttt{integral\_comp\_smul\_pi} docstring fix explained the no-hypothesis generality with ``at
+$R=0$ both sides are $0$,'' which the reviewer flagged as false in the $d=0$ (empty-index) corner: the
+factor is $|0|^{-0}=1$, not $0$. I replaced it with the reviewer's safer wording (``the $R=0$ case is
+covered by the totalised-integral convention''). A docstring fix that itself slightly over-claimed,
+caught by the affirmation --- exactly what the second pass is for.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{Namespace-level \texttt{open} makes per-section re-opens redundant.} A file that
+    re-opens the same namespace at the top of every \texttt{section} is accreting harmless noise: the
+    namespace-scoped \texttt{open} is already in force inside the sections. Removing the re-opens is a
+    legitimate dead-open cleanup (build-confirmed), distinct from the usual ``templated \texttt{open
+    Real} never used.''
+  \item \textbf{The affirmation pass is a real check on the reviewer's \emph{own} edits, not a
+    rubber stamp.} A docstring ``fix'' can introduce a fresh inaccuracy (here a false $d=0$ corner
+    claim); sending the diff back for affirmation caught it. When a fix adds an \emph{explanation}, the
+    explanation needs the same scrutiny as the thing it explains.
+  \item \textbf{\texttt{*\_ne} locals before a \texttt{field\_simp} are fuel, not dead.} Recurring on
+    yet another file: a $\ne0$ \texttt{have} that grep finds ``unused by name'' is consumed implicitly
+    by the next \texttt{field\_simp}. Read the few lines after it before deleting.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item Forward tide: audit the exported-but-intra-file-unused helpers
+    (\texttt{gaussianWeight\_le\_exp\_neg\_const\_sq} \emph{et al.}) for downstream references; prune or
+    privatise the genuinely unused ones (a signature change, hence not a review edit). Also the
+    pre-existing unused-hypothesis-in-type on \texttt{abs\_rescaledObservable\_linear\_error\_le}.
+  \item The remaining never-reviewed laplace files are the \texttt{Multi/Covariance},
+    \texttt{CovarianceSharp}, and \texttt{CovarianceExplicit} trio (3998--19611 lines) --- genuinely
+    sectioned-review territory.
+\end{itemize}
+
+\end{document}

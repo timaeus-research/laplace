@@ -1,0 +1,142 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\emergencystretch=3em
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+
+\newcommand{\deriv}{\operatorname{deriv}}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{the fourth connected cumulant (flow-equation identity)}}
+\author{Claude Opus 4.8 (1M ctx), with Daniel Murfet}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The capstone of the anharmonic cumulant arc: the fourth connected cumulant of
+$u=-(tx)$ as the third derivative of the perturbed mean at $h=0$,
+\[
+  \kappa_4 = \partial_h^3\big|_0 \langle u\rangle_h
+    = \langle u^4\rangle_0 - 4\langle u^3\rangle_0\langle u\rangle_0
+      - 3\langle u^2\rangle_0^2 + 12\langle u^2\rangle_0\langle u\rangle_0^2
+      - 6\langle u\rangle_0^4,
+\]
+in closed $(G_0,\dots,G_4)$ form. Three derivative layers --- mean
+$M=G_1/G_0$, susceptibility $S=\deriv M$, third cumulant $S_2=\deriv S$ ---
+stitched with \texttt{Filter.EventuallyEq.deriv}. New file
+\texttt{AnharmonicFourthCumulant.lean}; builds within the default heartbeat
+budget, no \texttt{sorry}/\texttt{axiom}/\texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+The closing tide of a single-day anharmonic arc on the laplace seabed, and the
+flow-equation / fourth-cumulant identity flagged as the headline target of the
+day's candidate survey. The cumulant ladder was built rung by rung: the mean
+($K'$), the susceptibility $\kappa_2$ ($\partial_h$ of the mean), its general-$h$
+version, and $\kappa_3$ ($\partial_h^2$ of the mean). $\kappa_4$ is
+$\partial_h^3$ of the mean --- one differentiation layer beyond $\kappa_3$,
+which is what made it the heaviest single tide.
+
+\section{The thing formalised}
+
+Writing $G\,n$ for \texttt{weightedPartition lam alpha gamma t n}:
+\begin{quote}\itshape
+For the anharmonic potential, $\lambda,\gamma>0$, $\alpha^2<3\lambda\gamma$,
+$t>0$,
+\begin{align*}
+  &\mathrm{iteratedDeriv}\ 3\ (h\mapsto G\,1\,h/G\,0\,h)\ 0 \\
+  &\qquad = \frac{G_4 G_0^3 - 4G_3 G_1 G_0^2 - 3G_2^2 G_0^2 + 12 G_2 G_1^2 G_0 - 6G_1^4}{G_0^4},
+\end{align*}
+all $G_n$ at $0$ --- the standard moments-to-cumulants combination after
+dividing each $G_n(0)$ by $G_0(0)$.
+\end{quote}
+A companion theorem, \texttt{anharmonic\_susceptibility\_deriv\_general}, gives
+the third cumulant at \emph{any} $|h_0|<1$ (the general-$h$ $\deriv S$), which
+is what the chaining consumes.
+
+\section{Proof strategy}
+
+Three layers. The mean's derivative is the susceptibility $S$ (general-$h$
+susceptibility tide); $S$'s derivative is $S_2=(G_3G_0^2-3G_1G_2G_0+2G_1^3)/G_0^3$
+(proved here at general $h_0$ by a compound quotient rule); and $S_2$'s
+derivative at $0$ is $\kappa_4$ (a second compound quotient rule, the numerator
+built from \texttt{.mul}/\texttt{.pow}/\texttt{.const\_mul}/\texttt{.sub}/\texttt{.add}).
+The three are joined: $\deriv M =_{\text{ev}} S$ and $\deriv S =_{\text{ev}} S_2$
+on $\mathrm{ball}\,0\,1$, so by \texttt{Filter.EventuallyEq.deriv} the second
+derivatives agree eventually too, and
+$\mathrm{iteratedDeriv}\,3\,M\,0 = \deriv(\deriv(\deriv M))\,0 = \deriv S_2\,0
+= \kappa_4$.
+
+\section{Roadblocks and resolutions}
+
+Two, both mechanical. \emph{(i) \texttt{set\_option} placement.} The
+\texttt{maxHeartbeats} bumps I added pre-emptively sat between docstring and
+theorem, which is a parse error (the docstring must abut the declaration); they
+turned out to be unnecessary anyway --- the degree-eight \texttt{ring} closes
+within the default budget --- so they were simply removed. \emph{(ii) Pi-vs-%
+pointwise.} Building the numerator's \texttt{HasDerivAt} from sub-terms like
+\texttt{hG0.pow 2} leaves \texttt{Pi.pow}/\texttt{Pi.mul} \emph{applications}
+($\,(G_0^2)\,0\,$ rather than $\,(G_0\,0)^2\,$) inside the derivative value, which
+\texttt{ring} treats as opaque atoms distinct from their pointwise forms. An
+ascription of the top-level function fixes that function but not the value;
+a \texttt{simp only [Pi.pow\_apply, Pi.mul\_apply]} before \texttt{field\_simp}
+pushes the applications inward and lets \texttt{ring} finish. (The third-%
+cumulant tide avoided this only because its sub-terms happened to stay
+pointwise.)
+
+\section{What was Mathlib, what was new}
+
+\textbf{Mathlib.} The \texttt{HasDerivAt} combinators (\texttt{.mul},
+\texttt{.sub}, \texttt{.add}, \texttt{.pow}, \texttt{.const\_mul}, \texttt{.div},
+\texttt{.deriv}); \texttt{iteratedDeriv\_succ}/\texttt{\_one};
+\texttt{Filter.EventuallyEq.deriv}; the \texttt{Pi.\_apply} simp lemmas;
+\texttt{field\_simp}, \texttt{ring}.
+
+\textbf{Seabed (reused).} The pointwise partition derivatives, the general-$h$
+susceptibility, and the $G_0(0)>0$ positivity --- all from this session's arc.
+
+\textbf{New.} The general-$h$ third cumulant and the fourth-cumulant theorem.
+About 160 lines.
+
+\section{Lessons}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Ascribe the \emph{sub-terms}, not just the outer function.} A
+  function ascription on a compound \texttt{HasDerivAt} does not stop
+  \texttt{Pi.pow}/\texttt{Pi.mul} from appearing in the inferred derivative
+  \emph{value}; a \texttt{simp only [Pi.\_apply]} before \texttt{ring} is the
+  reliable cleanup for nested quotient/product rules.
+\item \textbf{Try the default heartbeat budget before bumping it.} Even the
+  degree-eight cumulant \texttt{ring} fit the default; the pre-emptive
+  \texttt{maxHeartbeats} was dead weight (and triggers a style linter).
+\item \textbf{The cumulant ladder is uniform.} $\kappa_2,\kappa_3,\kappa_4$ are
+  the same recipe at increasing order: differentiate the previous cumulant
+  function (needing its general-$h$ form) and chain. $\kappa_5$ would be one
+  more identical layer.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[itemsep=3pt]
+\item \textbf{Connect to $\log Z$ explicitly.} Package $\kappa_2,\dots,\kappa_4$
+  as $\partial_h^n \log Z|_0$ via the cumulant generating function, closing the
+  loop with \texttt{logPartition\_hasDerivAt}.
+\item \textbf{Moment-form corollaries.} State each $\kappa_n$ in the
+  $\langle u^k\rangle_0$ (\texttt{gibbsExp}) form via moment-normalisation.
+\item \textbf{Promote \texttt{amgm\_t\_abs\_x} to \texttt{lean-common}.}
+\end{itemize}
+
+\end{document}

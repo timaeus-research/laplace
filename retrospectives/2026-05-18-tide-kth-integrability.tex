@@ -1,0 +1,170 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+
+\title{Tide retrospective:\\\emph{Integrability for the generic-$k$ monomial template (A1 follow-up)}}
+\author{Daniel Murfet}
+\date{18 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A1's retrospective deferred the integrability layer
+(\texttt{kth\_integrable\_pow*}) on the grounds that the Gaussian-
+domination argument needed case analysis on $k = 1$ vs $k \ge 2$.
+This Tide closes the layer with a uniform argument that avoids the
+case split: the key bound $x^2 \le 1 + x^{2k}$ for $k \ge 1$ is
+immediate (case-split on $|x| \le 1$ vs $|x| \ge 1$, the latter via
+\texttt{le\_self\_pow$_0$}). Then refactors the quartic and sextic
+integrability lemmas as $k = 2$ / $k = 3$ specialisations. Net
+$-17$ lines across the three files; build clean (8298 jobs),
+zero \texttt{sorry} / \texttt{axiom} / \texttt{native\_decide}.
+\end{abstract}
+
+\section{Setting}
+
+A1 (generic even-monomial 1D template) landed nine theorems
+parametrised by $k \ge 1$: the moments, the partition function, and
+the expected values. The integrability witnesses\footnote{Named
+\texttt{kth\_integrable\_pow} and
+\texttt{kth\_integrable\_pow\_pot}.} were deferred to a follow-up
+tide. A1's retrospective worried that the seabed's Gaussian-
+domination argument relied on $k$-specific square-completion
+identities ($k = 2$: $-6/t$; $k = 3$: $-\sqrt{240/t} \cdot 2/3$); a
+uniform formula at generic $k$ would require a case-split or a
+parametric \texttt{Real.rpow} constant.
+
+In fact a simpler approach exists, recorded here.
+
+\section{The thing formalised}
+
+A private bound:
+\begin{itemize}[leftmargin=1.5em]
+\item \texttt{sq\_le\_one\_add\_pow\_two\_mul} (private):
+  for $k \ge 1$ and $x : \mathbb R$, $x^2 \le 1 + x^{2k}$.
+\end{itemize}
+
+Two public theorems:
+\begin{itemize}[leftmargin=1.5em]
+\item \texttt{kth\_integrable\_pow}: for $k \ge 1$, $n : \mathbb N$,
+  $t > 0$, the function $x^n \cdot \exp(-tx^{2k}/(2k)!)$ is Lebesgue
+  integrable on $\mathbb R$.
+\item \texttt{kth\_integrable\_pow\_pot}: same in
+  \texttt{kthPotential} form.
+\end{itemize}
+
+Plus four refactors in the quartic and sextic files: the four
+\texttt{\_integrable\_pow*} theorems become thin specialisations.
+
+\section{Proof strategy}
+
+The bound $x^2 \le 1 + x^{2k}$ for $k \ge 1$ uses an unconditional
+case split on $|x|$:
+
+\begin{itemize}[leftmargin=1.5em]
+\item \emph{$|x| \le 1$}: $x^2 \le 1 \le 1 + x^{2k}$ since
+  $x^{2k} = (x^2)^k \ge 0$.
+\item \emph{$|x| \ge 1$}: $x^{2k} = (x^2)^k \ge x^2$ by
+  \texttt{le\_self\_pow$_0$} applied to $x^2 \ge 1$ and $k \ge 1$.
+  Then $1 + x^{2k} \ge x^2$.
+\end{itemize}
+
+From the bound, $t x^{2k}/(2k)! - (t/(2k)!) x^2 \ge -t/(2k)!$, hence
+$\exp(-tx^{2k}/(2k)!) \le \exp(t/(2k)!) \cdot \exp(-(t/(2k)!) x^2)$.
+The dominator $|x|^n \cdot \exp(-(t/(2k)!) x^2)$ is Gaussian-times-
+poly, integrable by Mathlib's
+\texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq} with parameter
+$b = t/(2k)!$. \texttt{Integrable.mono} closes.
+
+\section{Roadblocks and resolutions}
+
+Three small fixes during the proof:
+
+\begin{enumerate}[leftmargin=1.5em]
+\item Missing import: the Mathlib Gaussian-integral file was needed
+  for the dominator's integrability.\footnote{Specifically
+  \texttt{Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral}
+  for \texttt{integrable\_rpow\_mul\_exp\_neg\_mul\_sq}.}
+\item \texttt{le\_self\_pow} renamed to
+  \texttt{le\_self\_pow$_0$} in the current Mathlib snapshot.
+\item \texttt{nlinarith} couldn't close the bound directly because of
+  the implicit identity $t x^{2k} / \mathrm{fac} = (t/\mathrm{fac})
+  \cdot x^{2k}$; added an explicit \texttt{field\_simp}-based
+  rewrite.
+\end{enumerate}
+
+Each was a small local fix; none required deliberation.
+
+\section{What was Mathlib, what was new}
+
+\paragraph{From Mathlib.} The Gaussian-times-poly dominator,
+\texttt{le\_self\_pow$_0$} for the $(x^2)^k \ge x^2$ step,
+\texttt{Integrable.mono} and \texttt{.const\_mul}, plus the
+standard \texttt{Real.exp} and absolute-value bookkeeping.
+
+\paragraph{From the seabed.} A1's \texttt{kthPotential} definition.
+The quartic and sextic integrability lemmas use the new generic
+theorems as specialisations.
+
+\paragraph{New here.} The private bound
+$x^2 \le 1 + x^{2k}$ and the two integrability theorems, plus the
+four specialisations in quartic / sextic.
+
+\section{Lessons}
+
+\paragraph{Case-split on $k$ is not always necessary for $k$-parametric
+arguments.} A1's retrospective expected the integrability proof to
+require a case-split on $k = 1$ vs $k \ge 2$ because the seabed's
+quartic and sextic proofs use $k$-specific square-completion
+identities. In fact the simpler bound $x^2 \le 1 + x^{2k}$ works
+uniformly --- it just needed to be found. The lesson: when a follow-
+up tide looks blocked by a case-split, search for a coarser uniform
+bound that avoids the case-split entirely.
+
+\paragraph{\texttt{nlinarith} sees Real.rpow-style arithmetic
+better than \texttt{Real.rpow}-styled goals.} The first build attempt
+had \texttt{nlinarith} fail to close a step that turned on the
+identity $t x^{2k}/fac = (t/fac) \cdot x^{2k}$. An explicit
+\texttt{field\_simp}-rewrite to put the goal in the latter form made
+the rest of \texttt{nlinarith} routine. Worth recording.
+
+\paragraph{Mathlib renaming.} \texttt{le\_self\_pow} is now
+\texttt{le\_self\_pow$_0$} in the current Mathlib snapshot. Other
+\texttt{$_0$}-suffixed renames exist (\texttt{pow\_le\_pow\_right$_0$},
+etc.) for the \texttt{GroupWithZero}-class versions. Use the
+\texttt{$_0$} variants when working with \texttt{ℝ}-valued bounds.
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=1.5em]
+\item \emph{Optional: tighten the bound.} The bound
+  $x^2 \le 1 + x^{2k}$ is coarse; for $k \ge 2$, tighter bounds
+  with $k$-dependent constants are available (e.g.\ the
+  $((k-1)/k) \cdot ((2k)!/(kt))^{1/(k-1)}$ minimum). For downstream
+  consumers that need a tight asymptotic constant, the present bound
+  is enough; for purely integrability use, the coarse bound suffices.
+\item \emph{Promote to \texttt{lean-common}.} If a third consumer of
+  the bound $x^2 \le 1 + x^{2k}$ materialises outside the laplace
+  repo, factor it up. Currently one use site.
+\item \emph{Multi-index analogues.} 2D / multi-index generalisations
+  of the integrability bound would follow the same template; deferred
+  until a downstream consumer asks.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+No GPT consult was used (A1-integrability is a focused follow-up of
+A1, and A1's pre-consult had set the relevant scope decisions). The
+uniform Gaussian-domination bound was found by inspection of the
+seabed's sextic argument and noting that
+$x^2 \le 1 + x^6 \Rightarrow x^2 \le 1 + x^{2k}$ for any $k \ge 1$.
+
+\end{document}

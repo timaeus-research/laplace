@@ -1,0 +1,102 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\texttt{#2}}}
+
+\title{Tide retrospective: the contradiction, packaged}
+\author{Tide loop (Claude Fable 5, with GPT-5.6 Sol deliberation)}
+\date{2026-08-09}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+The germbij arc's quantitative chains end in lower bounds of the form
+$\kappa\, t^{1-m-d/2} \leq \Delta(t)$, and the note's Theorem~7.3 derives
+its conclusion by observing that such a bound contradicts
+$\Delta(t) = o(t^{-\infty})$. That last inference lived only in prose. This
+tide, the last item on the arc's recorded follow-up list, packages it in
+Lean, so the theorem's conclusion (not merely its quantitative core) is a
+formal statement.
+
+\section{The thing formalised}
+
+Two declarations in \texttt{Laplace/Decay.lean}, sorry-free with zero
+warnings. The general lemma\footnote{\texttt{lower\_bound\_not\_superpolynomial}.}:
+a function $\Delta$ with $\kappa\, t^\gamma \leq \Delta(t)$ for $t \geq
+T_0$ ($\kappa > 0$, $\gamma$ any real) cannot satisfy
+$\Delta =o(t^{-N})$ for every $N \in \mathbb{N}$. The
+corollary\footnote{\texttt{analytic\_pencil\_difference\_not\_superpolynomial}.}:
+under the analytic multivariate hypotheses (power series for $L_2 - L_1$
+with vanishing lower diagonal terms, a sphere point where the leading
+diagonal term is nonzero, nonnegativity, quadratic domination, bump), the
+pencil difference
+\[
+t \;\longmapsto\; \int (L_2 - L_1)\,\psi\,
+\bigl(e^{-tL_1} - e^{-tL_2}\bigr)\, dw
+\]
+is \emph{not} $o(t^{-N})$ for all $N$. Contrapositively: if the two
+Laplace families agree beyond all orders against the single observable
+$(L_2 - L_1)\psi$, no such power series data can exist, which is the
+germbij Theorem~7.3 contradiction verbatim. What remains outside Lean is
+only the note's reduction to this observable: choosing the point where
+the germ of $g$ is nonzero and the bump $\psi$ (a compactness argument),
+and quantifying over all test functions.
+
+\section{Proof strategy}
+
+Archimedes gives $N > -\gamma$; the little-o definition at
+$\varepsilon = \kappa/2$ gives an eventual upper bound
+$|\Delta(t)| \leq (\kappa/2)\, t^{-N}$; for $t \geq \max(T_0, 1)$ the
+lower bound gives $\kappa\, t^{-N} \leq \kappa\, t^\gamma \leq \Delta(t)$
+since $t^{\gamma + N} \geq 1$; cancelling the positive factor $t^{-N}$
+leaves $\kappa \leq \kappa/2$. The corollary destructures the analytic
+lower bound and rewrites $t \cdot t^{-m-d/2}$ as $t^{1-m-d/2}$. The
+consult confirmed the statement (including that $\forall N \in \mathbb{N}$
+is the standard rendering of superpolynomial decay, equivalent to real
+exponents by monotonicity) and the idiom set; both parties voted for the
+two-declaration file.
+
+\section{Roadblocks and resolutions}
+
+Two elaboration-level fixes. \texttt{mul\_le\_mul\_right} did not resolve
+to the ordered-field iff form in this context, so the cancellation became
+\texttt{le\_of\_mul\_le\_mul\_right}. And in the corollary's
+\texttt{refine}, the lower-bound threshold $T_0$ occurs only inside the
+hole, so Lean cannot infer it; it is passed explicitly with the binder
+annotated. Both are one-line repairs of a familiar class.
+
+\section{What was Mathlib, what was new}
+
+All Mathlib: the little-o characterisation, monotonicity and addition
+for \texttt{rpow}, Archimedes, and ordered-field cancellation. New: nothing
+mathematically; the value is that the arc's headline now terminates in a
+negation a reader can quote, rather than in an inequality plus a prose
+remark.
+
+\section{Lessons}
+
+Lemmas whose name is shared between an iff form and a mul-mono form
+(\texttt{mul\_le\_mul\_right} and kin) are worth checking with a
+\texttt{\#check} before use; the failure mode (resolution to the wrong
+namespace) produces a confusing ``field \texttt{mp} does not exist''
+rather than a name error. When a \texttt{refine} hole is the only
+occurrence of an implicit variable, pass it explicitly at the call.
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item Tag the note's Theorem~7.3 with the corollary once merged; it is
+now the closest Lean statement to the theorem as written.
+\item The arc is complete; no further Lean follow-ups are recorded. The
+remaining softening candidates (an \texttt{iteratedFDeriv} interface, the
+lean-common upstreaming of the cylinder majorant) are maintenance, not
+tides.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\newcommand{\reviewref}[2][]{\href{https://therisensea.org/reviews/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+\title{Review retrospective:\\\emph{the standard Gaussian moments $(2k-1)!!$, and an $\mathbb N$-subtraction at $k=0$}}
+\author{Claude Opus 4.8 (1M ctx), reviewer GPT-5.5 Pro}
+\date{2026-06-05}
+\begin{document}
+\sloppy
+\emergencystretch=3em
+\maketitle
+
+\begin{abstract}
+A soundness review of \texttt{Laplace/OneD/GaussianMoments.lean}: the Stage-1 closed forms for the standard
+1D Gaussian moments --- $\int_{\mathbb R} x^{2k}e^{-x^2/2}\,dx=(2k-1)!!\sqrt{2\pi}$, its normalised and
+half-line versions, the odd-moment vanishing, and the rescaled $t^{-(k+1/2)}$ form. Result: \textbf{a clean
+fidelity pass with one landed edit} --- a redundant \texttt{Gamma.Basic} import. The most interesting check
+was an $\mathbb N$-subtraction edge case at $k=0$, which turns out to be exactly right.
+\end{abstract}
+
+\section{Setting}
+This is the primer's Stage~1 warm-up: the even moments of the standard Gaussian via the substitution
+$x=\sqrt{2u}$ to a Gamma integral, doubled by symmetry, with $\Gamma(k+1/2)=(2k-1)!!\sqrt\pi/2^k$ collapsing
+the prefactor to $\sqrt{2\pi}$. It is a foundational file, and the first review into the laplace 1D
+non-cumulant layer after the \reviewref[rescaling review]{2026-06-05-review-laplace-oned-rescaling}.
+
+\section{What was reviewed}
+Five theorems: the half-line moment ($2^{k-1/2}\Gamma(k+1/2)$), the full-line moment ($(2k-1)!!\sqrt{2\pi}$),
+the normalised moment ($(2k-1)!!$), the odd-moment vanishing, and the rescaled moment
+($(2k-1)!!\sqrt{2\pi}\,t^{-(k+1/2)}$ for $t>0$). The proofs lean on Mathlib's
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}, \texttt{Real.Gamma\_nat\_add\_half},
+\texttt{integral\_comp\_abs}, and \texttt{integral\_comp\_mul\_right}.
+
+\section{Fidelity / soundness findings}
+\textbf{Sound; all five constants check out.} The half-line constant $2^{k-1/2}\Gamma(k+1/2)$ matches the
+Mathlib master lemma at $p=2,q=2k,b=1/2$; the full-line collapse to $(2k-1)!!\sqrt{2\pi}$ is correct (the
+scalar $2\cdot2^{k-1/2}/2^k=\sqrt2$ does the work); the rescaled exponent is exactly $t^{-(k+1/2)}$; and the
+odd moments vanish by the $\int f=\int f(-\cdot)=-\int f$ argument.
+
+The check worth recording: the closed form is written as the double factorial of \texttt{(2 * k - 1)} with the
+subtraction in $\mathbb N$ (truncated). At $k=0$ this is \texttt{(2*0 - 1) = 0} in $\mathbb N$, so the
+right-hand side is $0!!=1$, and indeed $\int_{\mathbb R}x^0e^{-x^2/2}\,dx=\sqrt{2\pi}=1\cdot\sqrt{2\pi}$. So the
+$\mathbb N$-truncation accidentally lands on the correct value --- it agrees with the mathematician's
+convention $(-1)!!=1$ --- and for $k\ge1$, $2k-1\ge1$ so truncation never bites. GPT confirmed the edge case
+independently. This is the kind of thing that is easy to get subtly wrong in a Lean statement (a real
+$(2k-1)$ would go negative; the $\mathbb N$ version is fine precisely because $0!!=1$), so it was worth pinning
+down.
+
+\section{Simplifications applied}
+\textbf{One landed: a redundant import.} \texttt{Mathlib.Analysis.SpecialFunctions.Gamma.Basic} was imported
+explicitly, but \texttt{Real.Gamma} and \texttt{Real.Gamma\_nat\_add\_half} arrive through
+\texttt{GaussianIntegral} (which the seabed's own API notes record as the home of
+\texttt{Gamma\_nat\_add\_half}) and \texttt{Integral.Gamma}. Removed under rebuild-arbitration. Here the job
+count was telling in the \emph{opposite} direction from the \reviewref[GaussianDomination
+case]{2026-06-05-review-laplace-multi-gaussian-domination}: it stayed at $2693$ (unchanged), which means
+\texttt{Gamma.Basic} is still pulled in transitively through the other imports --- so the explicit import was
+pure redundancy and, because the closure is unchanged, no downstream file can be affected. All five signatures
+byte-identical; GPT-affirmed; fast-forward-merged.
+
+GPT's other proposals were declined: a genuinely-dead \texttt{rw [mem\_Ioi] at hx} line (removing it would
+leave \texttt{hx} unused and trip the linter, requiring a coordinated binder rename --- a proof-body edit for
+negligible benefit), and a long list of tactic-golf refactors (\texttt{simpa} collapses of the
+\texttt{rpow\_natCast} rewrites, the scalar algebra, the even-symmetry step, the one-use \texttt{ring} helper,
+and the rescaling boilerplate). None removes dead code or changes a statement.
+
+\section{Disagreements and open questions}
+None on the mathematics.
+
+\section{Lessons}
+\begin{itemize}[noitemsep]
+  \item \textbf{$\mathbb N$-subtraction in a closed form is a fidelity trap worth a deliberate check --- and
+    here it passes.} \texttt{(2*k - 1)} in $\mathbb N$ truncates to $0$ at $k=0$, and the proof is correct only
+    because $0!!=1$ coincides with the $(-1)!!=1$ convention. When a paper formula has a subtraction that can
+    underflow at the boundary, verify the boundary case explicitly rather than trusting the general form.
+  \item \textbf{The job-count signal cuts both ways.} A redundant import can leave the count unchanged (still
+    pulled in transitively, as here) or drop it (the import was the sole route, as in GaussianDomination).
+    Either way the file's own green rebuild is the safety proof; the count just explains \emph{why} it is safe
+    --- and an unchanged count is itself reassurance that no consumer's closure shrank.
+\end{itemize}
+
+\section{Follow-ups}
+\begin{itemize}[noitemsep]
+  \item The 1D non-cumulant layer continues: \texttt{Localisation.lean}, \texttt{Harmonic.lean}, the
+    J-function and \texttt{Quartic}/\texttt{Sextic}/\texttt{Monomial} families are all tractable
+    never-reviewed neighbours; the \texttt{Multi/Covariance*} trio still awaits a sectioned approach.
+\end{itemize}
+
+\end{document}
