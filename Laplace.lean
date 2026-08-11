@@ -163,3 +163,4 @@ import Laplace.Multi.SingularSmooth
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
 import Laplace.OnePointAnchoring
+import Laplace.OneD.QuarticBoundedTest
