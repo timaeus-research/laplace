@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Laplace.OneD.Anharmonic
 import Laplace.OneD.AnharmonicKappa3Affine
 import Threepoint.CrossSusceptibility
-import Common.AmGm
+import ResolutionCommon.Analysis.AmGm
 
 /-!
 # Anharmonic 1D `Threepoint.GibbsRegularity` instance
@@ -228,7 +228,7 @@ theorem anharmonic_perturbed_pointwise_bound
       mul_le_mul_of_nonneg_left h_abs_hx_le ht.le
     linarith
   have h2 : t * |x| ≤ t * c / 2 * x ^ 2 + t / (2 * c) :=
-    Common.AmGm.amgm_t_abs_x t c ht hc_pos x
+    ResolutionCommon.amgm_t_abs_x t c ht hc_pos x
   have h3 : t * c / 2 * x ^ 2 ≤ t / 2 * anharmonicPotential lam alpha gamma x := by
     have hcoerc := h_coerc x
     have ht2_nn : 0 ≤ t / 2 := by linarith

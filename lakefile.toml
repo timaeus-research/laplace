@@ -18,7 +18,7 @@ rev = "v4.29.0"
 [[require]]
 name = "Threepoint"
 git = "https://github.com/timaeus-research/threepoint"
-rev = "40398d8"
+rev = "9eba560"
 
 [[lean_lib]]
 name = "Laplace"
@@ -32,6 +32,6 @@ name = "Statements"
 name = "Solutions"
 
 [[require]]
-name = "lean-common"
+name = "resolution-common"
 git = "https://github.com/timaeus-research/lean-common.git"
-rev = "511ee60"
+rev = "v0.5.0"
