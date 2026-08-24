@@ -1,0 +1,20 @@
+{
+ "ignore": {
+  "Laplace.Gibbs": [
+   "Mathlib.MeasureTheory.Integral.Bochner.Basic"
+  ],
+  "Laplace.Multi.RadialTaylor": [
+   "Mathlib"
+  ]
+ },
+ "ignoreAll": [
+  "Laplace.Multi.AsymptoticDivision",
+  "Laplace.Multi.SeparableRecovery",
+  "Laplace.Multi.SingularSmooth",
+  "Laplace.OneD.AnharmonicFourthCumulant",
+  "Laplace.Multi.LocalRateDCT",
+  "Laplace.Multi.ScalarBounds",
+  "Laplace.OneD.AnharmonicCumulantsLogPartition",
+  "Laplace.Multi.GaussAbsorb"
+ ]
+}

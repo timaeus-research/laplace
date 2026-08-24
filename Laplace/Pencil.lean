@@ -1,9 +1,7 @@
-/-
-Copyright (c) 2026 Timaeus. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
--/
-import Mathlib
 import Laplace.Gibbs
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 
 /-!
 # The pencil identity for pairs of potentials

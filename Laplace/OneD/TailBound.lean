@@ -1,4 +1,4 @@
-import Laplace.OneD.GaussianMoments
+import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 /-!
 # Gaussian tail bounds (Mill's ratio)

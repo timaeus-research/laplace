@@ -1,4 +1,6 @@
 import Laplace.Multi.RescaledIntegrals
+import Mathlib.Data.Int.Star
+import Mathlib.Algebra.Order.Ring.Star
 
 /-!
 # Multivariate Laplace covariance theorem (`lem:laplace_cov`)

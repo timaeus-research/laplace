@@ -1,9 +1,9 @@
-/-
-Copyright (c) 2026 Timaeus. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
--/
-import Mathlib
-import Laplace.Decay
+import Mathlib.Order.BourbakiWitt
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Topology.UniformSpace.Uniformizable
+import Mathlib.Analysis.Calculus.ContDiff.Comp
+import Mathlib.Analysis.Calculus.ContDiff.RCLike
+import Mathlib.Analysis.Calculus.LocalExtr.Basic
 
 /-!
 # Preparation for the composed singular theorem

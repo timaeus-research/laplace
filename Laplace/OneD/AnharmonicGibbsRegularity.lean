@@ -1,11 +1,6 @@
-/-
-Copyright (c) 2026 Timaeus AI. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
--/
-import Laplace.OneD.Anharmonic
-import Laplace.OneD.AnharmonicKappa3Affine
 import Threepoint.CrossSusceptibility
 import ResolutionCommon.Analysis.AmGm
+import Laplace.OneD.IntegralRemainder
 
 /-!
 # Anharmonic 1D `Threepoint.GibbsRegularity` instance

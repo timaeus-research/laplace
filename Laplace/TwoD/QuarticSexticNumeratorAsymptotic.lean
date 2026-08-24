@@ -1,6 +1,6 @@
-import Laplace.TwoD.QuarticSextic
 import Laplace.TwoD.AddSeparable
 import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
+import Laplace.OneD.Sextic
 
 /-!
 # Unnormalised numerator asymptotic for the quartic-sextic potential

@@ -1,8 +1,7 @@
-/-
-Copyright (c) 2026 Timaeus. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
--/
-import Mathlib
+import Mathlib.Algebra.BigOperators.Field
+import Mathlib.Analysis.Asymptotics.Lemmas
+import Mathlib.Analysis.RCLike.Basic
+import Mathlib.Analysis.Normed.Order.Lattice
 
 /-!
 # Asymptotic polynomials at the origin

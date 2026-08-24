@@ -1,6 +1,5 @@
-import Laplace.Multi.QuadraticApprox
-import Laplace.Multi.GaussianDomination
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+import Laplace.Multi.Defs
 
 /-!
 # Multivariate Gaussian integration by parts

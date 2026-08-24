@@ -1,9 +1,5 @@
-/-
-Copyright (c) 2026 Timaeus. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
--/
-import Mathlib
-import Laplace.Multi.ForwardDomain
+import Mathlib.Analysis.SpecialFunctions.Exp
+import Mathlib.Algebra.Order.Ring.Star
 
 /-!
 # The graded expansion of the exponential correction factor

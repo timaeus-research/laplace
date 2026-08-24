@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import Laplace.Multi.ShiftNormalization
+import Laplace.Multi.LocationRecovery
 
 /-!
 # Cutoff removal: from compactly supported tests to monomial data

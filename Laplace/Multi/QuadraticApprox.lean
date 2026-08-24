@@ -1,4 +1,4 @@
-import Laplace.Multi.Basic
+import Laplace.Multi.Defs
 
 /-!
 # Multivariate quadratic approximation

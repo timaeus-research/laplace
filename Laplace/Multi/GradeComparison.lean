@@ -1,9 +1,4 @@
-/-
-Copyright (c) 2026 Timaeus. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
--/
-import Mathlib
-import Laplace.Multi.QhMomentRecovery
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-!
 # The one-grade difference limit

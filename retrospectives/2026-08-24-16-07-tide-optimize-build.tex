@@ -1,0 +1,221 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{‖}{\ensuremath{\Vert}}
+\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{₄}{\ensuremath{{}_4}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{a $3\times$ faster laplace build: \texttt{nlinarith only} and import narrowing}}
+\author{Claude (Fable 5), directed by Adam Newgas}
+\date{2026-08-24}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+An optimization tide on the laplace seabed: no new mathematics, only
+faster compilation of what is already proven. A forced rebuild of the
+repo's own modules took 402\,s of wall time on a 96-core machine, 98\%
+of it on a single serial module chain ending in the 19\,400-line
+\texttt{Multi/CovarianceExplicit} (299\,s alone). Two acts. First,
+profiling attributed the bulk of that file to one pathology:
+\texttt{nlinarith} calls with small explicit hint lists, sitting in
+proofs whose local contexts hold dozens of polynomial hypotheses.
+Because \texttt{nlinarith} preprocesses the \emph{entire} context and
+forms pairwise products, goals as trivial as $\surd t \cdot t \le t^2$
+cost 65\,s each; converting 36 \texttt{nlinarith} and 20
+\texttt{linarith} sites to their \texttt{only [\dots]} forms took the
+module from 299\,s to 54\,s and the rebuild to 177\,s. Second, with the
+covariance chain tamed, the critical path became a 24-hop chain of
+small modules, each paying the $\sim$4.6\,s cost of loading the full
+\texttt{import Mathlib} closure; a \texttt{shake}-driven import
+narrowing (30 umbrella imports replaced, several chain edges cut, 8
+false positives repaired and pinned in \texttt{noshake.json}) brought
+the rebuild to 137\,s. Total: $402 \to 137$\,s wall ($-66\%$), CPU
+$1215 \to 905$\,s, with the public signature fingerprint
+byte-identical, 0 sorry/axiom, and
+\texttt{\#print axioms} on the headline theorem unchanged.
+\end{abstract}
+
+\noindent\emph{Template note: this is an optimization tide --- the
+``thing formalised'' and ``Mathlib vs.\ new'' sections are replaced by
+``what changed'' and before/after measurements, per the tide-optimize
+skill.}
+
+\section{Setting}
+
+The laplace seabed (commit \texttt{0224a74}) carries the Susceptibility
+Primer's Laplace-asymptotics formalisation; its heaviest module,
+\texttt{Laplace/Multi/CovarianceExplicit.lean}, proves the
+explicit-coefficient covariance expansion
+\texttt{gibbsCov\_first\_order\_rate\_explicit} through roughly 180
+private bounding lemmas. A closing-tactic squeeze earlier the same day
+(a gated \texttt{tryAtEachStep} sweep) had already established that
+mechanical tactic replacement buys only $\sim$1\% here, and that the
+module's cost is elaboration of a handful of monster proofs. This tide
+went after those monsters directly, gated on statement invariance: the
+sorted fingerprint of all non-\texttt{private} declaration signatures
+must be byte-identical before and after, alongside the usual
+0-sorry/0-axiom audit.
+
+\section{Where the time went}
+
+Baseline, measured with \texttt{lakeprof} on a forced rebuild of the
+repo's own modules (dependency packages cached, Lake's artifact cache
+disabled, page cache warmed by a discarded first build): 402\,s wall,
+1215\,s CPU, and \emph{flat} simulated build times beyond 16 cores ---
+the wall is one serial import chain,
+\begin{gather*}
+\texttt{Defs} \to \texttt{Basic} \to \texttt{QuadraticApprox} \to
+\texttt{GaussianIBP} \to \texttt{RescaledIntegrals} \to {}\\
+\texttt{Covariance} \to \texttt{CovarianceSharp} \to
+\texttt{CovarianceExplicit},
+\end{gather*}
+with the last hop worth 299\,s (74\% of the total).
+
+Inside that module, \texttt{-Dtrace.profiler} attribution showed Lean's
+asynchronous proof elaboration already active, so the module wall is
+(serial frontend) $+$ (longest proof tails). The frontend --- parsing
+plus statement elaboration, measured directly with
+\texttt{-Ddebug.byAsSorry=true} --- is only 15\,s. The tails were the
+story: \texttt{abs\_bulkErr\_local\_le} at $\sim$323\,s CPU,
+\texttt{abs\_bulkErr\_tail\_le} at 133\,s, \texttt{expNumErr₄\_bound} at
+91\,s, then a dozen lemmas in the 20--40\,s band.
+
+Drilling into the 323\,s proof found five sequential \texttt{h\_piece}
+blocks, each dominated by a single \texttt{nlinarith} on a trivial
+goal: $\surd t \cdot t \le t^2 \cdot 1$ given $\surd t \le t$, or $1
+\cdot t \le t^2 \cdot 1$ given $1 \le t$, each costing $\sim$65\,s.
+The hint lists were fine; the context was the problem. Default
+\texttt{nlinarith} preprocesses every hypothesis in scope and forms
+pairwise products before calling \texttt{linarith}, and these proofs
+carry 40--60 polynomial hypotheses (\texttt{set} constants, Taylor
+bounds, norm bounds), so each call paid a quadratic context tax
+unrelated to its goal. This is triage case 1 of the skill's
+\texttt{nlinarith} reference (``context-choke''), at five sites in one
+proof.
+
+\section{What changed}
+
+All edits are in \texttt{Laplace/Multi/CovarianceExplicit.lean}; no
+statement, name, or visibility changed anywhere.
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{All 34 hinted \texttt{nlinarith [\dots]} became
+\texttt{nlinarith only [\dots]}.} The \texttt{only} form restricts
+preprocessing to the listed terms. A blanket conversion compiled with
+just two failures, each fixed by naming one context fact the original
+call had used silently (\texttt{hsqrt\_inv\_le},
+\texttt{h\_norm\_pow}). Effect: \texttt{abs\_bulkErr\_local\_le}
+$323 \to 55$\,s; the module $299 \to 88$\,s.
+\item \textbf{The two hot \emph{bare} \texttt{nlinarith} in
+\texttt{expNumErr₄\_bound}} (19.8\,s and 10\,s) got explicit
+\texttt{only} hint sets read off their goals ($D$-monotonicity and an
+$8bD \le 8b(D + 1/\delta^2)$ padding step). Effect: $55 \to 33$\,s.
+\item \textbf{Twenty \texttt{linarith} sites inside
+\texttt{abs\_bulkErr\_local\_le} became \texttt{linarith only
+[\dots]}.} \texttt{linarith} pays the same (linear) context tax; twelve
+calls above 1\,s summed to 14\,s. The per-site hypothesis lists were
+formulaic --- each piece closes from its own \texttt{h\_step},
+\texttt{h\_eq}, \texttt{h\_final} --- so all twenty landed in one
+compile. Effect: $55 \to 36$\,s.
+\item \textbf{Import narrowing with Mathlib's \texttt{shake}} (after
+the above landed, the critical path had shifted to a 24-hop chain of
+4--16\,s modules --- mostly the forward/recovery arc --- where each hop
+pays the full-Mathlib olean load before doing a few seconds of work).
+\texttt{lake exe shake --fix} rewrote 55 files: 30 \texttt{import
+Mathlib} umbrellas became targeted import lists, and several intra-repo
+chain edges were cut with compensating direct imports downstream
+(\texttt{ExpGraded} no longer waits for \texttt{ForwardDomain};
+\texttt{Dilation} no longer waits for \texttt{Basic}; and so on).
+Shake's analysis misses notation and names used only via transitivity:
+8 files came out broken and were repaired --- one by re-adding the
+notation-bearing import (\texttt{Gibbs} needs
+\texttt{Integral.Bochner.Basic} for `$\int$'), the rest by restoring
+their original imports --- and all are pinned in
+\texttt{scripts/noshake.json} so future shake runs leave them alone.
+\end{enumerate}
+
+\section{Before/after}
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+ & before & after act 1 & after act 2 \\
+\midrule
+full forced rebuild, wall (96 cores) & 402\,s & 177\,s & 137\,s \\
+full forced rebuild, total CPU & 1215\,s & 982\,s & 905\,s \\
+simulated 8-core wall & 422\,s & 192\,s & 161\,s \\
+\texttt{CovarianceExplicit}, standalone wall & 299\,s & 54\,s & --- \\
+\texttt{abs\_bulkErr\_local\_le} (one proof, CPU) & 323\,s & 36\,s & --- \\
+public signature fingerprint (1096 entries) & \multicolumn{3}{c}{byte-identical} \\
+sorry / axiom / \texttt{native\_decide} & \multicolumn{3}{c}{0 / 0 / 0} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \texttt{CovarianceExplicit} is now frontend-plus-plateau:
+15\,s of serial frontend and five diffuse $\sim$34\,s tails
+(\texttt{local\_le}, \texttt{tail\_le}, the two
+\texttt{corrected\_bracket} integrals, \texttt{expNumErr₄}) whose
+remaining cost is large \texttt{calc}/\texttt{have} chains with no
+single hot tactic. The final critical path (132 of the 137\,s) runs
+through the forward/recovery arc
+(\texttt{QuadLowerBound} \dots\ \texttt{ScalarBounds} 16\,s,
+\texttt{WindowMajorant} 12\,s, \dots\ \texttt{Solutions}); the
+covariance chain sits just below it. Memory was never the issue here
+--- the waste was search time, not term size, so peak RSS is unchanged
+($\sim$9.3\,GB for the big module).
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=2em]
+\item \texttt{nlinarith [hints]} in a fat context is an invisible
+$40\times$ tax: the hints being small says nothing about the cost,
+because the context is preprocessed regardless. \texttt{only} is a
+three-character fix, and a blanket file-wide conversion is safe to
+attempt --- the failures are loud, few, and each names exactly the
+missing fact.
+\item Attribute before restructuring. The obvious structural plays
+(splitting the 19k-line file, per-piece private lemmas) were all
+inferior to the tactic-flag fix, and some are blocked by the
+statement-invariance gate (moving \texttt{private} helpers across
+files would change the public surface).
+\item \texttt{-Ddebug.byAsSorry=true} cleanly separates serial frontend
+from proof tails; with async elaboration on, ``module wall $=$ frontend
+$+$ longest tail from its spawn point'' predicted every measurement
+here within a few seconds.
+\item Measurement traps re-confirmed: warm the page cache before the
+baseline recording, and remember \texttt{enableArtifactCache = true} in
+the lakefile overrides \texttt{LAKE\_ARTIFACT\_CACHE=false}.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=2em]
+\item The next $\sim$25\,s of module wall sits in the five diffuse
+tails; the mechanical option is hoisting their \texttt{have hpt}
+pointwise-bound sub-proofs into \texttt{private} lemmas so they
+elaborate in parallel. Estimated gain 10--15\,s, moderately invasive.
+\item \texttt{Covariance} (32\,s) and \texttt{CovarianceSharp} (35\,s)
+each carry one diffuse monster (27\,s / 30\,s) with the same hoisting
+option.
+\item Every module in the chain pays $\sim$4.6\,s to load the full
+\texttt{import Mathlib} closure; targeted imports across the eight
+chain files would recover an estimated 12--16\,s of critical path.
+\item The \texttt{nlinarith only} pattern almost certainly recurs in
+other seabeds' bound-heavy files; the blanket-convert-then-repair
+recipe transfers directly.
+\end{itemize}
+
+\end{document}

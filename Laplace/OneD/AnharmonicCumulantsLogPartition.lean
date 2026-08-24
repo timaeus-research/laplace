@@ -3,6 +3,7 @@ Copyright (c) 2026 Timaeus AI. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Laplace.OneD.AnharmonicFourthCumulant
+import Laplace.OneD.AnharmonicSecondCumulant
 
 /-!
 # Cumulants as derivatives of the log-partition (cumulant generating function)

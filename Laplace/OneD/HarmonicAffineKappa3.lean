@@ -1,4 +1,3 @@
-import Threepoint.Harmonic
 import Laplace.Gibbs
 import Laplace.OneD.Harmonic
 import Laplace.OneD.HarmonicGibbsRegularity
