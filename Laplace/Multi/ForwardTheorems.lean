@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import Laplace.Multi.AsymptoticDivision
 import Laplace.Multi.MonomialTests
+import Laplace.Multi.NumeratorTails
 
 /-!
 # The forward theorems

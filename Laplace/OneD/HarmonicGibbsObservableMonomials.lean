@@ -1,4 +1,3 @@
-import Laplace.OneD.HarmonicGibbsRegularity
 import Threepoint.CrossSusceptibility
 
 /-!

@@ -4,6 +4,8 @@ import Laplace.Multi.GaussianIBP
 import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.LinearAlgebra.Dimension.Constructions
+import Laplace.Multi.GaussianDomination
+import Mathlib.Data.Real.StarOrdered
 
 /-!
 # Rescaled integrals and the change-of-variables bridge

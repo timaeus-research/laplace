@@ -2,7 +2,7 @@
 Copyright (c) 2026 Timaeus AI. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Laplace.OneD.AnharmonicPartitionHigherDeriv
+import Laplace.OneD.AnharmonicGibbsObservableMonomials
 
 /-!
 # General-`h` iterated derivatives of the anharmonic perturbed partition

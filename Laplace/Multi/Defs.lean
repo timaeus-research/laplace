@@ -2,7 +2,8 @@
 Copyright (c) 2026 Timaeus AI. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Mathlib
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 
 /-!
 # Core definitions of the multivariate Laplace–Gibbs track

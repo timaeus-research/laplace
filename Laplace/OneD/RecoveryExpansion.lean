@@ -2,10 +2,10 @@
 Copyright (c) 2026 Timaeus. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Mathlib
 import Laplace.OneD.GaussianMoments
 import Laplace.OneD.MonomialPotential
 import Laplace.Gibbs
+import Mathlib.Data.Real.StarOrdered
 
 /-!
 # Expansion-based recovery of a subleading coefficient

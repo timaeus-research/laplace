@@ -1,4 +1,11 @@
-import Mathlib
+import Mathlib.Algebra.EuclideanDomain.Basic
+import Mathlib.Algebra.EuclideanDomain.Field
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import Mathlib.Analysis.Calculus.Deriv.Pow
+import Mathlib.Topology.Algebra.Module.ModuleTopology
 
 /-!
 # Scalar bound on `exp(-z) - (1 - z)`

@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import Laplace.Multi.GaussAbsorb
+import Laplace.Multi.ScalarBounds
 
 /-!
 # The q-uniform window majorant
@@ -239,7 +240,7 @@ theorem normalized_window_remainder_bound
       have hj2 : j + 2 * N ≤ K := by
         have hjm : j < N * N + 1 := (Finset.mem_Ico.mp hj).2
         rw [hK_def]
-        nlinarith
+        nlinarith only [hjm]
       calc |correctionCoeffFn L N j z|
           ≤ Cc j * (1 + ‖z‖) ^ (j + 2 * N) := hCc j z
         _ ≤ Cc j * (1 + ‖z‖) ^ K := by
@@ -249,7 +250,7 @@ theorem normalized_window_remainder_bound
       rw [hE_def]
       apply Real.exp_le_exp.mpr
       have h1 := D.t2_lower z
-      nlinarith [mul_nonneg D.lambda_pos.le (sq_nonneg ‖z‖)]
+      nlinarith only [h1, mul_nonneg D.lambda_pos.le (sq_nonneg ‖z‖)]
     have hq1' : q ^ (N + 1) ≤ q ^ N :=
       pow_le_pow_of_le_one hq0.le hq1.le (by omega)
     calc Real.exp (-taylorHomogeneousTerm 2 L z) *

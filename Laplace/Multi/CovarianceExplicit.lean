@@ -5289,7 +5289,7 @@ private lemma abs_expNumObsRem_global_le
   have h_norm_sm_le : ‖(Real.sqrt t)⁻¹ • u‖ ≤ ‖u‖ := by
     rw [norm_smul, Real.norm_eq_abs,
         abs_of_pos (by positivity : 0 < (Real.sqrt t)⁻¹)]
-    nlinarith [norm_nonneg u]
+    nlinarith only [norm_nonneg u, hsqrt_inv_le]
   -- |φ((√t)⁻¹·u)| ≤ Kφ · (1 + ‖u‖^p)
   have h_phi : |φ ((Real.sqrt t)⁻¹ • u)| ≤ Kφ * (1 + ‖u‖ ^ p) := by
     have h := hpoly ((Real.sqrt t)⁻¹ • u)
@@ -7320,7 +7320,7 @@ private lemma J3_local_pointwise_le
       ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
     have h2 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
         ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
-      apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hc_pos]
+      apply Real.exp_le_exp.mpr; nlinarith only [sq_nonneg ‖u‖, hc_pos]
     linarith
   have h_gW_combine : gaussianWeight H u *
         Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)
@@ -7469,7 +7469,7 @@ private lemma J3_local_pointwise_le
     -- La·D·(‖u‖^6+‖u‖^8+‖u‖^10) - La·(Q·‖u‖^6 + 2·jet·Cs·‖u‖^8 + Cs³·‖u‖^10) ≥ 0
     -- because LHS includes Q·‖u‖^8, Q·‖u‖^10, 2·jet·Cs·‖u‖^6, 2·jet·Cs·‖u‖^10,
     -- Cs³·‖u‖^6, Cs³·‖u‖^8 as extra terms.
-    nlinarith [mul_nonneg hLa_nn hQ_nn, mul_nonneg hLa_nn h_jc_nn,
+    nlinarith only [mul_nonneg hLa_nn hQ_nn, mul_nonneg hLa_nn h_jc_nn,
                mul_nonneg hLa_nn h_cs3_nn,
                mul_nonneg (mul_nonneg hLa_nn hQ_nn) h_u6_nn,
                mul_nonneg (mul_nonneg hLa_nn hQ_nn) h_u8_nn,
@@ -7567,11 +7567,11 @@ private lemma J3_tail_pointwise_le
     have h1 := gaussianWeight_le_exp_neg_coercive V H hV.toPotentialTensorApprox u
     have h2 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
         ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
-      apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hV.coercive_const_pos]
+      apply Real.exp_le_exp.mpr; nlinarith only [sq_nonneg ‖u‖, hV.coercive_const_pos]
     linarith
   have h_exp_c_quart : Real.exp (-(c * ‖u‖ ^ 2))
       ≤ Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
-    apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hc_pos]
+    apply Real.exp_le_exp.mpr; nlinarith only [sq_nonneg ‖u‖, hc_pos]
   -- Simpler form: |gW·bracket| ≤ 4·exp(-(c/4)) + 2·(‖T‖/6·‖u‖³/√t)·exp(-(c/4)).
   have h_unif_simpler : |gaussianWeight H u *
         ((Real.exp (-(rescaledPerturbation V H t u)) - 1
@@ -8058,7 +8058,7 @@ private lemma expNumErr₄_bound
         _ ≤ b * (1 + ‖u‖ ^ 2) / t := by
             apply div_le_div_of_nonneg_right _ ht_pos.le
             rw [hb_def]
-            nlinarith [sq_nonneg ‖u‖, h_card_nn, hCμ_nn]
+            nlinarith only [sq_nonneg ‖u‖, h_card_nn, hCμ_nn]
     have h_B_nn : 0 ≤ b * (1 + ‖u‖ ^ 2) / t := by
       apply div_nonneg _ ht_pos.le
       apply mul_nonneg hb_nn (by linarith [sq_nonneg ‖u‖])
@@ -8098,7 +8098,7 @@ private lemma expNumErr₄_bound
       have h_exp_c2_le_c4 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
           ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
         apply Real.exp_le_exp.mpr
-        nlinarith [sq_nonneg ‖u‖, hc_pos]
+        nlinarith only [sq_nonneg ‖u‖, hc_pos]
       -- gW · |bracket| ≤ 2·D·(‖u‖^4 + ‖u‖^6)·exp(-(c/4)‖u‖²)/t.
       have h_gWbr_local :
           gaussianWeight H u *
@@ -8144,7 +8144,7 @@ private lemma expNumErr₄_bound
               have h_u4_nn : 0 ≤ ‖u‖ ^ 4 := pow_nonneg (norm_nonneg _) _
               have h_u6_nn : 0 ≤ ‖u‖ ^ 6 := pow_nonneg (norm_nonneg _) _
               have h_Cs_sq_nn : 0 ≤ hV.local_const ^ 2 := sq_nonneg _
-              nlinarith
+              nlinarith only [h_u4_nn, h_u6_nn, h_Cs_sq_nn, hjet_C_nn]
       have h_gWbr_nn : 0 ≤ gaussianWeight H u *
             |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
               (Real.exp (-(rescaledPerturbation V H t (-u))) - 1))| :=
@@ -8183,7 +8183,7 @@ private lemma expNumErr₄_bound
             apply div_le_div_of_nonneg_right _ ht_sq_pos.le
             -- 8bD ≤ 8b(D + 1/δ²).
             have h_inv_nn : 0 ≤ 1 / δ ^ 2 := by positivity
-            nlinarith
+            nlinarith only [h_inv_nn, hb_nn, hD_nn]
         _ = G u := by rw [hG_def]
     · -- TAIL CASE: ‖u‖ > δ·√t.
       push_neg at hu
@@ -8202,11 +8202,11 @@ private lemma expNumErr₄_bound
       have h_exp_c2_le_c4 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
           ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
         apply Real.exp_le_exp.mpr
-        nlinarith [sq_nonneg ‖u‖, hc_pos]
+        nlinarith only [sq_nonneg ‖u‖, hc_pos]
       have h_exp_c_le_c4 : Real.exp (-(hV.coercive_const * ‖u‖ ^ 2))
           ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
         apply Real.exp_le_exp.mpr
-        nlinarith [sq_nonneg ‖u‖, hc_pos]
+        nlinarith only [sq_nonneg ‖u‖, hc_pos]
       have h_gWbr_4 :
           gaussianWeight H u *
               |((Real.exp (-(rescaledPerturbation V H t u)) - 1) +
@@ -8754,14 +8754,14 @@ private lemma abs_fqqKernel_le
   have h_one_le : (1 : ℝ) ≤ 1 + ‖u‖ ^ 4 := by linarith
   have h_u4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 4 := by linarith
   have h_u2_le_one_plus_u4 : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ 4 := by
-    nlinarith [sq_nonneg (‖u‖ ^ 2 - 1)]
+    nlinarith only [sq_nonneg (‖u‖ ^ 2 - 1)]
   -- Bound `1/4 (N‖A‖ ‖u‖² + tA)(N‖B‖ ‖u‖²)` by expanding.
   have h_expand_QcQ :
       (1 / 4 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) * (N * ‖B‖ * ‖u‖ ^ 2)
         = (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * ‖u‖ ^ 4
         + (1 / 4 : ℝ) * tA * (N * ‖B‖) * ‖u‖ ^ 2 := by
     have h_uu : ‖u‖ ^ 2 * ‖u‖ ^ 2 = ‖u‖ ^ 4 := by ring
-    nlinarith [h_uu, sq_nonneg (‖u‖ ^ 2)]
+    nlinarith only [h_uu, sq_nonneg (‖u‖ ^ 2)]
   -- Three-piece bound: each scalar coefficient is nonneg, pieces are
   -- monotonic in (1 + ‖u‖^4).
   have h_NANB_nn : (0 : ℝ) ≤ (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) := by positivity
@@ -10913,7 +10913,7 @@ private lemma abs_odd5Kernel_le
           apply mul_nonneg _ hΦφ_nn
           apply mul_nonneg _ hAψ_nn
           apply mul_nonneg (by norm_num : (0:ℝ) ≤ 1/12) hN_nn
-        nlinarith [h_extra1, h_extra2, h_extra3, h_pow_5, h_u3_nn, h_u5_nn]
+        nlinarith only [h_extra1, h_extra2, h_extra3, h_pow_5, h_u3_nn, h_u5_nn]
 
 /-- **Connected part of `φ((√t)⁻¹u)`** when `a = 0`: subtracts off the
 Stage-4 expectation coefficient `μ_φ/t = (1/(2t)) · tr(A_φ Σ)`, leaving
@@ -11410,7 +11410,7 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
                 (1 + ‖v‖ ^ N)
             + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * (1 + ‖v‖ ^ N) := by gcongr
       _ ≤ R_const * (1 + ‖v‖ ^ N) := by
-          rw [hR_const_def]; nlinarith [hKφ_nn, h_normN_nn]
+          rw [hR_const_def]; nlinarith only [hKφ_nn, h_normN_nn]
   -- |dot b u| ≤ bL1·‖u‖.
   have h_dot : |dot b u| ≤ bL1 * ‖u‖ := by
     rw [hbL1_def]; exact abs_dot_le_l1_mul_norm b u
@@ -11460,7 +11460,7 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
           Real.exp (-((c * δ ^ 2 / 4) * t)) := by
     rw [← Real.exp_add]
     apply Real.exp_le_exp.mpr
-    nlinarith [h_norm_sq_lt, hc_pos]
+    nlinarith only [h_norm_sq_lt, hc_pos]
   -- Combine: |Sym(u)| ≤ t·√t · |dot b u| · |r(u)-r(-u)| · gW
   --       ≤ t·√t · bL1·‖u‖ · 2R·(1+‖u‖^N) · gW
   --       ≤ t·√t · bL1·‖u‖ · 2R·(1+‖u‖^N) · exp(-c/2·‖u‖²)
@@ -11864,7 +11864,7 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le
             + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * (1 + ‖v‖ ^ N) := by gcongr
       _ ≤ R_const * (1 + ‖v‖ ^ N) := by
           rw [hR_const_def]
-          nlinarith [hKφ_nn, h_normN_nn]
+          nlinarith only [hKφ_nn, h_normN_nn]
   -- |dot b u| ≤ bL1 · ‖u‖.
   have h_dot_b : |dot b u| ≤ bL1 * ‖u‖ := by
     rw [hbL1_def]; exact abs_dot_le_l1_mul_norm b u
@@ -12368,7 +12368,7 @@ private lemma integrable_bulkErrA_mul_gaussianWeight
                 (1 + ‖v‖ ^ N)
             + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * (1 + ‖v‖ ^ N) := by gcongr
       _ ≤ R_const * (1 + ‖v‖ ^ N) := by
-          rw [hR_const_def]; nlinarith [hKφ_nn, h_normN_nn]
+          rw [hR_const_def]; nlinarith only [hKφ_nn, h_normN_nn]
   -- Continuity of B_t · gW.
   have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
     continuous_const.smul continuous_id
@@ -12865,7 +12865,7 @@ private lemma integrable_bulkErrA_mul_rescaled_weight
                 (1 + ‖v‖ ^ N)
             + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * (1 + ‖v‖ ^ N) := by gcongr
       _ ≤ R_const * (1 + ‖v‖ ^ N) := by
-          rw [hR_const_def]; nlinarith [hKφ_nn, h_normN_nn]
+          rw [hR_const_def]; nlinarith only [hKφ_nn, h_normN_nn]
   -- Continuity of integrand.
   have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
     continuous_const.smul continuous_id
@@ -13127,7 +13127,7 @@ private lemma abs_crossEvenKernelCentered_le
         have := h_split
         rw [hc_def] at *
         linarith
-    _ ≤ (C₁ + c) * (1 + ‖u‖ ^ 4) := by nlinarith [hC₁_nn, hc_nn]
+    _ ≤ (C₁ + c) * (1 + ‖u‖ ^ 4) := by nlinarith only [hC₁_nn, hc_nn, h_norm_pow]
 
 /-- **Polynomial bound on `crossOddKernel`**: `|(b·u)·((1/2)Q_A - μ)|
 ≤ C · (‖u‖^3 + ‖u‖)`. The `(b·u)` factor gives ‖u‖, the Q_A part gives
@@ -13604,7 +13604,7 @@ private lemma rescaledPartition_rate_one_over_t
         intro u
         rw [abs_one]
         have h_nn : (0 : ℝ) ≤ ‖u‖ ^ 4 := by positivity
-        nlinarith [h_nn])
+        nlinarith only [h_nn])
       h_int_F_gW @h_int_F_cV @h_int_F_exp
   refine ⟨K, T₀, hT₀, ?_⟩
   intro t ht
@@ -14230,7 +14230,7 @@ private lemma abs_crossOdd_J3_diff_local_le
       ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
     have h2 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
         ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
-      apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hc_pos]
+      apply Real.exp_le_exp.mpr; nlinarith only [sq_nonneg ‖u‖, hc_pos]
     linarith
   have h_gW_combine : gaussianWeight H u *
         Real.exp ((hV.coercive_const / 4) * ‖u‖ ^ 2)
@@ -14522,12 +14522,12 @@ private lemma abs_crossOdd_J3_diff_tail_le
     have h2 : Real.exp (-((hV.coercive_const / 2) * ‖u‖ ^ 2))
         ≤ Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
       apply Real.exp_le_exp.mpr
-      nlinarith [sq_nonneg ‖u‖, hV.coercive_const_pos]
+      nlinarith only [sq_nonneg ‖u‖, hV.coercive_const_pos]
     rw [hc_eq]
     linarith
   have h_exp_c_quart : Real.exp (-(c * ‖u‖ ^ 2))
       ≤ Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by
-    apply Real.exp_le_exp.mpr; nlinarith [sq_nonneg ‖u‖, hc_pos]
+    apply Real.exp_le_exp.mpr; nlinarith only [sq_nonneg ‖u‖, hc_pos]
   -- Simplify uniform: |gW·bracket| ≤ 4·exp(-(c/4)) + 2·(‖T‖/6·‖u‖³/√t)·exp(-(c/4)).
   have h_unif_simpler : |gaussianWeight H u *
         ((Real.exp (-(rescaledPerturbation V H t u)) - 1
@@ -15855,9 +15855,10 @@ private lemma abs_bulkErr_local_le
   have hK4_nn : 0 ≤ K4 := by rw [hK4_def]; positivity
   have hK5_nn : 0 ≤ K5 := by rw [hK5_def]; positivity
   have hK6_nn : 0 ≤ K6 := by rw [hK6_def]; positivity
-  have hK_loc_nn : 0 ≤ K_loc := by rw [hK_loc_def]; linarith
+  have hK_loc_nn : 0 ≤ K_loc := by
+    rw [hK_loc_def]; linarith only [hK1_nn, hK2_nn, hK3_nn, hK4_nn, hK5_nn, hK6_nn]
   refine ⟨K_loc, hK_loc_nn, fun t ht_one u hu => ?_⟩
-  have ht_pos : 0 < t := by linarith
+  have ht_pos : 0 < t := by linarith only [ht_one]
   have ht_sq_pos : 0 < t ^ 2 := by positivity
   set sqt : ℝ := Real.sqrt t with hsqt_def
   have hsqt_pos : 0 < sqt := Real.sqrt_pos.mpr ht_pos
@@ -15942,15 +15943,15 @@ private lemma abs_bulkErr_local_le
     intro k hk
     by_cases hcase : ‖u‖ ≤ 1
     · have h1 : ‖u‖ ^ k ≤ 1 := pow_le_one₀ h_norm_nn hcase
-      linarith [pow_nonneg h_norm_nn 8]
+      linarith only [h1, pow_nonneg h_norm_nn 8]
     · push_neg at hcase
       have h1 : 1 ≤ ‖u‖ := hcase.le
       have hk_pow : ‖u‖ ^ k ≤ ‖u‖ ^ 8 := pow_le_pow_right₀ h1 hk
-      linarith
+      linarith only [hk_pow]
   have h_u4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 8 := h_pow_le 4 (by norm_num)
   have h_u6_le : ‖u‖ ^ 6 ≤ 1 + ‖u‖ ^ 8 := h_pow_le 6 (by norm_num)
   have h_u7_le : ‖u‖ ^ 7 ≤ 1 + ‖u‖ ^ 8 := h_pow_le 7 (by norm_num)
-  have h_u8_le : ‖u‖ ^ 8 ≤ 1 + ‖u‖ ^ 8 := by linarith [pow_nonneg h_norm_nn 8]
+  have h_u8_le : ‖u‖ ^ 8 ≤ 1 + ‖u‖ ^ 8 := by linarith only [pow_nonneg h_norm_nn 8]
   -- Establish algebraic identity for bulkErr.
   -- expCovPhiConn V φ H Hinv 0 hV hφ t u = φ((√t)⁻¹u) - (1/(2t))·trASig hφ.A Hinv.
   have h_phi_conn_eq : expCovPhiConn V φ H Hinv 0 hV hφ t u
@@ -16010,7 +16011,7 @@ private lemma abs_bulkErr_local_le
               abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2), htA_def]
       _ ≤ (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2) + (1 / 2 : ℝ) * tA := by
           have := mul_le_mul_of_nonneg_left h_qf_φ (by norm_num : (0:ℝ) ≤ 1/2)
-          linarith
+          linarith only [this]
       _ = (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA) := by ring
   -- Bound on |Q_ψ| := |(1/2)·quadForm A_ψ u|
   have h_Q_le : |(1 / 2 : ℝ) * quadForm hψ.A u|
@@ -16079,7 +16080,7 @@ private lemma abs_bulkErr_local_le
       ((1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
             * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u)))
       (t * ((1 / 2 : ℝ) * quadForm hφ.A u - (1 / 2 : ℝ) * trASig hφ.A Hinv) * R_ψ)
-    linarith
+    linarith only [h1, h2, h3, h4, h5]
   -- Bound piece 1: |(1/t)·Cφ·Cψ| ≤ K1·‖u‖^6/t.
   have h_piece1 : |(1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
         * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))| ≤ K1 * ‖u‖ ^ 6 / t := by
@@ -16106,7 +16107,7 @@ private lemma abs_bulkErr_local_le
       have h_pow : ‖u‖ ^ 3 * ‖u‖ ^ 3 = ‖u‖ ^ 6 := by ring
       field_simp
       ring
-    linarith
+    linarith only [h_step, h_eq]
   -- Bound piece 2: |t·q_c·R_ψ| ≤ K2·(‖u‖^4 + ‖u‖^6)/(2t).
   -- Use |q_c·R_ψ| ≤ (1/2)(N·‖A_φ‖·‖u‖² + tA)·jψ·‖u‖^4/t².
   -- So |t·q_c·R_ψ| ≤ (1/2)(N·‖A_φ‖·‖u‖² + tA)·jψ·‖u‖^4/t.
@@ -16135,7 +16136,7 @@ private lemma abs_bulkErr_local_le
       field_simp
     have h_le : hψ.jet_const * (N * ‖hφ.A‖ * ‖u‖ ^ 6 + tA * ‖u‖ ^ 4) / (2 * t)
         ≤ K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) / (2 * t) := by
-      apply div_le_div_of_nonneg_right _ (by linarith)
+      apply div_le_div_of_nonneg_right _ (by linarith only [ht_pos])
       rw [hK2_def]
       have h_lhs : hψ.jet_const * (N * ‖hφ.A‖ * ‖u‖ ^ 6 + tA * ‖u‖ ^ 4)
           ≤ hψ.jet_const * ((N * ‖hφ.A‖ + tA) * (‖u‖ ^ 6 + ‖u‖ ^ 4)) := by
@@ -16147,9 +16148,9 @@ private lemma abs_bulkErr_local_le
         -- We want N·A·u^6 + tA·u^4 ≤ this, i.e., 0 ≤ N·A·u^4 + tA·u^6.
         have h_extra1 : (0 : ℝ) ≤ N * ‖hφ.A‖ * ‖u‖ ^ 4 := mul_nonneg h_NA_nn h_u4_nn
         have h_extra2 : (0 : ℝ) ≤ tA * ‖u‖ ^ 6 := mul_nonneg htA_nn h_u6_nn
-        nlinarith [h_extra1, h_extra2]
-      linarith
-    linarith
+        nlinarith only [h_extra1, h_extra2]
+      linarith only [h_lhs]
+    linarith only [h_step, h_eq, h_le]
   -- Bound piece 3: |t·R_φ·Q_ψ| ≤ K3·‖u‖^6/t.
   have h_piece3 : |t * R_φ * ((1 / 2 : ℝ) * quadForm hψ.A u)|
       ≤ K3 * ‖u‖ ^ 6 / t := by
@@ -16170,7 +16171,7 @@ private lemma abs_bulkErr_local_le
         = K3 * ‖u‖ ^ 6 / t := by
       rw [hK3_def]
       field_simp
-    linarith
+    linarith only [h_step, h_eq]
   -- Bound piece 4: |√t·Cφ·R_ψ| ≤ K4·‖u‖^7/t (since t ≥ 1).
   have h_piece4 : |Real.sqrt t * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u)) * R_ψ|
       ≤ K4 * ‖u‖ ^ 7 / t := by
@@ -16200,7 +16201,7 @@ private lemma abs_bulkErr_local_le
           _ ≤ Real.sqrt t * Real.sqrt t :=
               mul_le_mul_of_nonneg_left hsqt_one_le hsqt_pos.le
           _ = t := h_sq
-      nlinarith [h_sqrt_le_t, ht_pos]
+      nlinarith only [h_sqrt_le_t, ht_pos]
     have h_K4_nn := hK4_nn
     have h_u7_nn : 0 ≤ ‖u‖ ^ 7 := pow_nonneg h_norm_nn _
     have h_K4_u7_nn : 0 ≤ K4 * ‖u‖ ^ 7 := mul_nonneg h_K4_nn h_u7_nn
@@ -16209,7 +16210,7 @@ private lemma abs_bulkErr_local_le
             = (K4 * ‖u‖ ^ 7) * (Real.sqrt t / t ^ 2) from by ring,
           show K4 * ‖u‖ ^ 7 / t = (K4 * ‖u‖ ^ 7) * (1 / t) from by ring]
       exact mul_le_mul_of_nonneg_left h_sqt_t2_le h_K4_u7_nn
-    linarith
+    linarith only [h_step, h_eq, h_final]
   -- Bound piece 5: |√t·R_φ·Cψ| ≤ K5·‖u‖^7/t.
   have h_piece5 : |Real.sqrt t * R_φ * ((1 / 6 : ℝ) * hψ.Φ (fun _ => u))|
       ≤ K5 * ‖u‖ ^ 7 / t := by
@@ -16238,7 +16239,7 @@ private lemma abs_bulkErr_local_le
           _ ≤ Real.sqrt t * Real.sqrt t :=
               mul_le_mul_of_nonneg_left hsqt_one_le hsqt_pos.le
           _ = t := h_sq
-      nlinarith [h_sqrt_le_t, ht_pos]
+      nlinarith only [h_sqrt_le_t, ht_pos]
     have h_K5_nn := hK5_nn
     have h_u7_nn : 0 ≤ ‖u‖ ^ 7 := pow_nonneg h_norm_nn _
     have h_K5_u7_nn : 0 ≤ K5 * ‖u‖ ^ 7 := mul_nonneg h_K5_nn h_u7_nn
@@ -16247,7 +16248,7 @@ private lemma abs_bulkErr_local_le
             = (K5 * ‖u‖ ^ 7) * (Real.sqrt t / t ^ 2) from by ring,
           show K5 * ‖u‖ ^ 7 / t = (K5 * ‖u‖ ^ 7) * (1 / t) from by ring]
       exact mul_le_mul_of_nonneg_left h_sqt_t2_le h_K5_u7_nn
-    linarith
+    linarith only [h_step, h_eq, h_final]
   -- Bound piece 6: |t²·R_φ·R_ψ| ≤ K6·‖u‖^8/t (since t ≥ 1).
   have h_piece6 : |t ^ 2 * R_φ * R_ψ| ≤ K6 * ‖u‖ ^ 8 / t := by
     rw [show t ^ 2 * R_φ * R_ψ = t ^ 2 * (R_φ * R_ψ) from by ring,
@@ -16267,7 +16268,7 @@ private lemma abs_bulkErr_local_le
       field_simp
     have h_t2_t : (1 : ℝ) / t ^ 2 ≤ 1 / t := by
       rw [div_le_div_iff₀ ht_sq_pos ht_pos]
-      nlinarith [ht_pos.le, ht_one]
+      nlinarith only [ht_pos.le, ht_one]
     have h_K6_nn := hK6_nn
     have h_u8_nn : 0 ≤ ‖u‖ ^ 8 := pow_nonneg h_norm_nn _
     have h_K6_u8_nn : 0 ≤ K6 * ‖u‖ ^ 8 := mul_nonneg h_K6_nn h_u8_nn
@@ -16275,7 +16276,7 @@ private lemma abs_bulkErr_local_le
       rw [show K6 * ‖u‖ ^ 8 / t ^ 2 = (K6 * ‖u‖ ^ 8) * (1 / t ^ 2) from by ring,
           show K6 * ‖u‖ ^ 8 / t = (K6 * ‖u‖ ^ 8) * (1 / t) from by ring]
       exact mul_le_mul_of_nonneg_left h_t2_t h_K6_u8_nn
-    linarith
+    linarith only [h_step, h_eq, h_final]
   -- Combine piece bounds with h_pieces_abs and conclude.
   have h_total :
       |(1 / t) * ((1 / 6 : ℝ) * hφ.Φ (fun _ => u))
@@ -16289,20 +16290,20 @@ private lemma abs_bulkErr_local_le
       ≤ K1 * ‖u‖ ^ 6 / t + K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) / (2 * t)
           + K3 * ‖u‖ ^ 6 / t + K4 * ‖u‖ ^ 7 / t + K5 * ‖u‖ ^ 7 / t
           + K6 * ‖u‖ ^ 8 / t := by
-    linarith
+    linarith only [h_pieces_abs, h_piece1, h_piece2, h_piece3, h_piece4, h_piece5, h_piece6]
   -- Now bound each per-piece term by the corresponding K_i·(1+‖u‖^8)/t fraction.
   have h_K1_bound : K1 * ‖u‖ ^ 6 / t ≤ K1 * (1 + ‖u‖ ^ 8) / t := by
     apply div_le_div_of_nonneg_right _ ht_pos.le
     exact mul_le_mul_of_nonneg_left h_u6_le hK1_nn
   have h_K2_bound : K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) / (2 * t) ≤ K2 * (1 + ‖u‖ ^ 8) / t := by
-    have h_u_sum_le : ‖u‖ ^ 6 + ‖u‖ ^ 4 ≤ 2 * (1 + ‖u‖ ^ 8) := by linarith
-    have ht_pos2 : 0 < 2 * t := by linarith
+    have h_u_sum_le : ‖u‖ ^ 6 + ‖u‖ ^ 4 ≤ 2 * (1 + ‖u‖ ^ 8) := by linarith only [h_u4_le, h_u6_le]
+    have ht_pos2 : 0 < 2 * t := by linarith only [ht_pos]
     rw [div_le_div_iff₀ ht_pos2 ht_pos]
     have hK2_u : K2 * (‖u‖ ^ 6 + ‖u‖ ^ 4) * t
         ≤ K2 * (2 * (1 + ‖u‖ ^ 8)) * t := by
       apply mul_le_mul_of_nonneg_right _ ht_pos.le
       apply mul_le_mul_of_nonneg_left h_u_sum_le hK2_nn
-    linarith
+    linarith only [hK2_u]
   have h_K3_bound : K3 * ‖u‖ ^ 6 / t ≤ K3 * (1 + ‖u‖ ^ 8) / t := by
     apply div_le_div_of_nonneg_right _ ht_pos.le
     exact mul_le_mul_of_nonneg_left h_u6_le hK3_nn
@@ -16325,7 +16326,7 @@ private lemma abs_bulkErr_local_le
   have h_swap : K_loc / t * (1 + ‖u‖ ^ 8) = K_loc * (1 + ‖u‖ ^ 8) / t := by
     field_simp
   rw [h_swap]
-  linarith [h_pieces_abs, h_total, h_K1_bound, h_K2_bound, h_K3_bound,
+  linarith only [h_pieces_abs, h_total, h_K1_bound, h_K2_bound, h_K3_bound,
             h_K4_bound, h_K5_bound, h_K6_bound, h_K_sum]
 
 set_option maxHeartbeats 4000000 in
@@ -16427,7 +16428,7 @@ private lemma abs_bulkErr_tail_le
     rw [norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hsqt_pos)]
     rw [show (Real.sqrt t)⁻¹ * ‖u‖ = ‖u‖ / Real.sqrt t from by field_simp]
     rw [div_le_iff₀ hsqt_pos]
-    nlinarith [hsqt_one_le, h_norm_nn]
+    nlinarith only [hsqt_one_le, h_norm_nn]
   have h_pow_inv_le : ∀ k : ℕ,
       ‖(Real.sqrt t)⁻¹ • u‖ ^ k ≤ ‖u‖ ^ k :=
     fun k => pow_le_pow_left₀ (norm_nonneg _) h_inv_norm k
@@ -16476,7 +16477,7 @@ private lemma abs_bulkErr_tail_le
       linarith
     have h_pow_p_nn : (0 : ℝ) ≤ ‖u‖ ^ p_φ := pow_nonneg h_norm_nn _
     -- Want: (K_φ + tA) * (1 + ‖u‖^p_φ) ≥ K_φ·(1+‖u‖^p_φ) + tA.
-    nlinarith [h_φ_at, h_μ_at, h_tri, h_pow_p_nn, htA_nn, hKφ_nn]
+    nlinarith only [h_φ_at, h_μ_at, h_tri, h_pow_p_nn, htA_nn, hKφ_nn]
   -- Bound for |expCovPsiRem|.
   have h_psi_rem :
       |expCovPsiRem ψ b t u|
@@ -16492,7 +16493,7 @@ private lemma abs_bulkErr_tail_le
         mul_le_mul_of_nonneg_right h_inv_le (abs_nonneg _)
       linarith [h_dot_b_le]
     have h_pow_p_nn : (0 : ℝ) ≤ ‖u‖ ^ p_ψ := pow_nonneg h_norm_nn _
-    nlinarith [h_ψ_at, h_dot_at, h_tri, h_pow_p_nn, h_norm_nn, hKψ_nn, hbL1_nn]
+    nlinarith only [h_ψ_at, h_dot_at, h_tri, h_pow_p_nn, h_norm_nn, hKψ_nn, hbL1_nn]
   -- Bound for |t² · expCovPhiConn · expCovPsiRem|.
   have hKpφ_sum_nn : 0 ≤ K_φ + tA := by linarith
   have hKpψ_sum_nn : 0 ≤ K_ψ + bL1 := by linarith
@@ -16637,9 +16638,9 @@ private lemma abs_bulkErr_tail_le
   have h_NA_nn : 0 ≤ N * ‖hφ.A‖ := mul_nonneg hN_nn hAφ_nn
   have h_NAψ_nn : 0 ≤ N * ‖hψ.A‖ := mul_nonneg hN_nn hAψ_nn
   have h_coef1_le : (1 / 4 : ℝ) * (N * ‖hφ.A‖) * (N * ‖hψ.A‖) ≤ CP2 := by
-    rw [hCP2_def]; nlinarith [h_NA_nn, h_NAψ_nn, htA_nn]
+    rw [hCP2_def]; nlinarith only [h_NA_nn, h_NAψ_nn, htA_nn]
   have h_coef2_le : (1 / 4 : ℝ) * tA * (N * ‖hψ.A‖) ≤ CP2 := by
-    rw [hCP2_def]; nlinarith [h_NA_nn, h_NAψ_nn, htA_nn]
+    rw [hCP2_def]; nlinarith only [h_NA_nn, h_NAψ_nn, htA_nn]
   have h_2_le : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ M := h_pow_le 2 (by rw [hM_def]; omega)
   have h_P2_le : |((1 / 2 : ℝ) * quadForm hφ.A u
         - (1 / 2 : ℝ) * trASig hφ.A Hinv) * ((1 / 2 : ℝ) * quadForm hψ.A u)|
@@ -17674,7 +17675,7 @@ private lemma abs_integral_bulkErrA_le
             + ‖hφ.toObservableTensorApprox.Φ‖ / 6 * (1 + ‖v‖ ^ N) := by gcongr
       _ ≤ R_const * (1 + ‖v‖ ^ N) := by
           rw [hR_const_def]
-          nlinarith [hKφ_nn, h_normN_nn]
+          nlinarith only [hKφ_nn, h_normN_nn]
   -- Continuity setup.
   have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
     continuous_const.smul continuous_id
@@ -19368,7 +19369,7 @@ theorem gibbsCov_first_order_rate_explicit
         rw [hK_def]
         have ht_ge_1 : 1 ≤ t := le_trans hT_N ht_N
         have h_inv_t_ge : (1 : ℝ) / t ^ 2 ≤ 1 / t := by
-          have : t ≤ t ^ 2 := by nlinarith [ht_ge_1]
+          have : t ≤ t ^ 2 := by nlinarith only [ht_ge_1]
           have ht_pos2 : 0 < t ^ 2 := by positivity
           rw [div_le_div_iff₀ ht_pos2 ht_pos]
           linarith
@@ -19386,7 +19387,7 @@ theorem gibbsCov_first_order_rate_explicit
         have h_K_φψ_nn : 0 ≤ K_φ * K_ψ := mul_nonneg hK_φ_nn hK_ψ_nn
         have h_t2_le : K_φ * K_ψ / (4 * t ^ 2) ≤ K_φ * K_ψ / (4 * t) := by
           apply div_le_div_of_nonneg_left h_K_φψ_nn (by linarith)
-          have : t ≤ t ^ 2 := by nlinarith [ht_ge_1]
+          have : t ≤ t ^ 2 := by nlinarith only [ht_ge_1]
           linarith
         have h_terms_eq : 2 * K_N / gaussianZ H / t
             + (K_φ * |μ_ψ| + |μ_φ| * K_ψ) / (2 * t)

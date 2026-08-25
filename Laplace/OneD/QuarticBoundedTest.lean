@@ -1,4 +1,4 @@
-import Laplace.OneD.QuarticBoundedPrior
+import Laplace.OneD.Quartic
 
 /-!
 # Bounded-prior quartic Gibbs measure with a continuous test function

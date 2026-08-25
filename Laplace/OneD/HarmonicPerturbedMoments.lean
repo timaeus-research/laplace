@@ -1,5 +1,5 @@
-import Laplace.OneD.HarmonicCovGlobalConstancy
 import Laplace.OneD.IntegralRemainder
+import Threepoint.CrossSusceptibility
 
 /-!
 # Perturbed harmonic-Gibbs moments `⟨xᵏ⟩_h` for k = 3, 4

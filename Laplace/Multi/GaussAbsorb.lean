@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import Laplace.AsymptoticPolynomial
 import Laplace.Multi.ScalarBounds
+import Laplace.Multi.GaussianMeso
 
 /-!
 # Gaussian absorption of the exponent corrections

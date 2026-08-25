@@ -1,4 +1,6 @@
 import Laplace.Multi.RescaledIntegrals
+import Mathlib.Data.Int.Star
+import Mathlib.Algebra.Order.Ring.Star
 
 /-!
 # Multivariate Laplace covariance theorem (`lem:laplace_cov`)
@@ -2293,6 +2295,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
   have hMN_nn : 0 ≤ MN := by
     rw [hMN_def]; exact MeasureTheory.integral_nonneg fun u =>
       mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  clear_value M4 M0 MN Kφ' Kψ'
   refine ⟨Cφ * Cψ * M4 + 3 * Kφ' * Kψ' * (M0 + MN),
     max 1 (9 / β ^ 2), le_max_left _ _, ?_⟩
   intro t ht

@@ -1,4 +1,5 @@
-import Laplace.OneD.QuarticBoundedPrior
+import Mathlib.MeasureTheory.Integral.Bochner.Set
+import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
 /-!
 # Bounded-prior expectation against a continuous test function (in progress)

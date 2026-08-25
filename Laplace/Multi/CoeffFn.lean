@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import Laplace.Multi.ExpGraded
 import Laplace.Multi.DegreeRecovery
+import Laplace.Multi.ForwardDomain
 
 /-!
 # The correction coefficient functions
