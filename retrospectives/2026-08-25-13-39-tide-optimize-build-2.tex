@@ -1,0 +1,166 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{‖}{\ensuremath{\Vert}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective:\\\emph{laplace build, round two: unification stalls, positivity's context scan, and the import floor}}
+\author{Claude (Fable 5), directed by Adam Newgas}
+\date{2026-08-25}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A second optimization pass on the laplace seabed, stacked on the first
+(\tideref[the first round]{2026-08-24-16-07-tide-optimize-build}), which had taken the
+forced rebuild from 402\,s to 137\,s and left the critical path on a
+22-hop chain of small modules. Three findings, each a few lines of edit:
+a 16\,s module (\texttt{ScalarBounds}) whose entire cost was one
+higher-order unification --- \texttt{summable\_nat\_add\_iff} inventing
+its function argument --- cured by naming the function explicitly; six
+\texttt{positivity} calls at 1.4\,s each in a 25\,s proof, slow because
+their atoms were \texttt{set}-bound constants that positivity looks up by
+scanning a 60-hypothesis context, replaced by explicit
+\texttt{mul\_nonneg} terms; and the discovery that 15 of the chain's 20
+remaining \texttt{import Mathlib} umbrellas were fully redundant (their
+Laplace imports already cover every constant used), plus two cuttable
+chain edges. Full rebuild $137.9 \to 126.5$\,s ($402 \to 126.5$\,s
+cumulative, $-69\%$); CPU $910 \to 882$\,s; fingerprint byte-identical,
+0 sorry/axiom. The path is now the three covariance monoliths
+($21 + 29 + 52$\,s of a 122\,s path), which need proof restructuring
+rather than tactic flags.
+\end{abstract}
+
+\noindent\emph{Template note: optimization tide; ``what changed'' and
+before/after measurements replace the formalisation sections.}
+
+\section{Setting}
+
+Round one left a forced rebuild at 137\,s with the critical path on the
+forward/recovery arc: 21 hops of 4--16\,s each, most barely above the
+$\sim$4.4\,s it costs to load the full \texttt{import Mathlib} closure.
+Two hops were fat (\texttt{ScalarBounds} 16\,s, \texttt{WindowMajorant}
+13\,s); six files had been reverted to umbrella imports after
+\texttt{shake} false positives. This round worked in a worktree stacked
+on that branch, under the same statement-invariance gate, and --- per
+feedback on round one --- used the \texttt{lean-state} LSP daemon for
+goal inspection and per-edit checks, reserving real compiles for timing.
+
+\section{What changed}
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{A unification stall.} \texttt{-Dtrace.profiler} put all
+16.8\,s of \texttt{ScalarBounds} on a single \texttt{have}:
+\texttt{(summable\_nat\_add\_iff (N + 1)).mpr hsum}. The lemma
+relates \texttt{Summable (fun n ↦ f (n + k))} to \texttt{Summable f},
+and matching the concrete summand $x^{i+(N+1)}/(i+(N+1))!$ against the
+pattern \texttt{f (n + k)} is a higher-order problem Lean solves by
+brute unfolding. Supplying \texttt{(f := fun n ↦ x\^{}n / n!)} makes it
+first-order: module $16.8 \to 4.9$\,s, essentially the import load. The
+\texttt{maxHeartbeats 1600000} budget on that theorem was the tell.
+\item \textbf{positivity's context scan.} The 25\,s
+remainder$\times$remainder bound in \texttt{Covariance} spent 8\,s in
+six \texttt{positivity} calls. Each goal's atoms were \texttt{set}-bound
+constants ($K_\varphi', K_\psi', C_\varphi, C_\psi, M_0, M_N$), for
+which positivity has no structural rule and falls back to scanning every
+hypothesis in a 60-hypothesis context. Explicit terms
+(\texttt{mul\_nonneg (mul\_nonneg hKφ'\_nn …) …}) built from the
+already-present nonnegativity facts: module $26 \to 17.6$\,s. Two more
+context-taxed \texttt{nlinarith} in \texttt{WindowMajorant} got
+\texttt{only} lists ($13 \to 9.4$\,s).
+\item \textbf{Two chain edges.} Name-usage checks showed
+\texttt{ScalarBounds} uses nothing from \texttt{CoeffFn} (it needs
+\texttt{ExpGraded}) and \texttt{LocalRateDCT} nothing from
+\texttt{HessianMoments} (it needs \texttt{RescaledDCT}) --- the very
+edges \texttt{shake} had proposed in round one before its other
+suggestions for those files broke them. Cut by hand, with
+\texttt{WindowMajorant} and \texttt{GaussAbsorb} taking the direct
+imports they had been getting transitively.
+\item \textbf{The import floor.} A targeted import set loads in
+$\sim$2.5\,s against 4.4\,s for the umbrella. \texttt{\#min\_imports},
+run through \texttt{lean-state check} on a temporary trailing command,
+reported that 15 of the 20 umbrella imports on the chain were redundant
+outright and gave 1--4 targeted modules for the other five. Applied in
+chain order and validated by a per-module \texttt{lake build --no-cache}
+walk (which re-derives imports against the freshly narrowed upstream on
+failure) --- all 20 built first time.
+\end{enumerate}
+
+\section{Before/after}
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+ & round-1 start & round-2 start & round-2 end \\
+\midrule
+full forced rebuild, wall (96 cores) & 402\,s & 137.9\,s & 126.5\,s \\
+full forced rebuild, total CPU & 1215\,s & 910\,s & 882\,s \\
+simulated 8-core wall & 422\,s & 162\,s & 155\,s \\
+\texttt{ScalarBounds} standalone & --- & 16.8\,s & 4.9\,s \\
+\texttt{Covariance} standalone & --- & 26\,s & 17.6\,s \\
+critical path & covariance & forward (133\,s) & covariance (122\,s) \\
+fingerprint / sorry / axiom & \multicolumn{3}{c}{byte-identical / 0 / 0} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The two chains now sit within a few seconds of each other,
+which is the natural stopping point for edge and flag work: any further
+wall gain must come from all three covariance monoliths at once
+(Covariance 21\,s, CovarianceSharp 29\,s, CovarianceExplicit 52\,s ---
+the last being 15\,s of frontend plus five diffuse $\sim$33\,s proof
+tails).
+
+\section{Lessons}
+
+\begin{itemize}[leftmargin=2em]
+\item A \texttt{maxHeartbeats} bump on a short theorem is a profiling
+lead, not a fix: here it hid a 16\,s unification that one named argument
+removes.
+\item \texttt{positivity} is not context-free: atoms it cannot decompose
+are resolved by scanning hypotheses, so in fat contexts it pays the same
+kind of tax as \texttt{linarith}. Bound constants introduced with
+\texttt{set} are the typical trigger; hand it the nonnegativity facts.
+\item \texttt{\#min\_imports} through the LSP daemon is a cheap, precise
+complement to \texttt{shake}: it answers per file in seconds, and
+``redundant umbrella'' is by far its most common verdict in this repo.
+Validate against freshly built upstream, not stale oleans --- a green
+\texttt{check} of a narrowed file proves nothing about what its
+dependents will see after rebuild.
+\item Text-replacing a tactic line is unsafe in files with repeated
+proof skeletons (one edit landed in a sibling lemma with an identical
+\texttt{have} line); edit by line number, bottom-up.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}[leftmargin=2em]
+\item Hoist the \texttt{have hpt} pointwise-bound sub-proofs of the
+Covariance and CovarianceSharp monoliths into \texttt{private} lemmas
+(parallel elaboration; est.\ 10--15\,s off the path together).
+\item CovarianceExplicit's five $\sim$33\,s tails: 87 plain
+\texttt{linarith} sites (context tax $\sim$8\,s per tail) and the
+\texttt{field\_simp} chains in \texttt{abs\_bulkErr\_local\_le}
+(10.7\,s); or, if the invariance gate is relaxed to allow additive
+public helpers, split the file's Gaussian-contraction sections off.
+\item Five files still carry the umbrella after the round-one
+reverts\footnote{\texttt{SeparableRecovery}, \texttt{SingularSmooth},
+\texttt{AnharmonicFourthCumulant}, \texttt{LocalRateDCT},
+\texttt{ScalarBounds}; \texttt{AsymptoticDivision} was narrowed this
+round.} --- none on the current path, so left alone.
+\end{itemize}
+
+\end{document}

@@ -2,7 +2,9 @@
 Copyright (c) 2026 Timaeus. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Mathlib
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
+import Mathlib.Data.Real.StarOrdered
 import Laplace.Multi.Dilation
 import Laplace.OneD.GaussianMoments
 

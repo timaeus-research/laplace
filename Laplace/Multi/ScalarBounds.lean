@@ -3,7 +3,7 @@ Copyright (c) 2026 Timaeus. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
-import Laplace.Multi.CoeffFn
+import Laplace.Multi.ExpGraded
 
 /-!
 # Scalar quantitative bounds for the numerator expansion
@@ -57,7 +57,7 @@ theorem abs_exp_sub_sum_le (N : ℕ) (x : ℝ) :
     Real.summable_pow_div_factorial x
   have hshift : Summable
       (fun i : ℕ ↦ x ^ (i + (N + 1)) / ((i + (N + 1)).factorial : ℝ)) :=
-    (summable_nat_add_iff (N + 1)).mpr hsum
+    (summable_nat_add_iff (f := fun n : ℕ ↦ x ^ n / (n.factorial : ℝ)) (N + 1)).mpr hsum
   have habs_sum : Summable (fun n : ℕ ↦ |x| ^ n / (n.factorial : ℝ)) :=
     Real.summable_pow_div_factorial |x|
   have hrem : Real.exp x -

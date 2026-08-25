@@ -2,10 +2,9 @@
 Copyright (c) 2026 Timaeus. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Mathlib
 import Laplace.Multi.RateCalculus
 import Laplace.Multi.RadialTaylor
-import Laplace.Multi.HessianMoments
+import Laplace.Multi.RescaledDCT
 
 /-!
 # The local rate-sensitive dominated convergence
