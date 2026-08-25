@@ -2295,6 +2295,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
   have hMN_nn : 0 ≤ MN := by
     rw [hMN_def]; exact MeasureTheory.integral_nonneg fun u =>
       mul_nonneg (pow_nonneg (norm_nonneg _) _) (Real.exp_pos _).le
+  clear_value M4 M0 MN Kφ' Kψ'
   refine ⟨Cφ * Cψ * M4 + 3 * Kφ' * Kψ' * (M0 + MN),
     max 1 (9 / β ^ 2), le_max_left _ _, ?_⟩
   intro t ht
@@ -2553,7 +2554,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
               Real.exp (-(rescaledPerturbation V H t u))) from by ring]
       rw [abs_mul, abs_of_nonneg h_rw_nn, abs_mul]
       have h_prod_nn : 0 ≤ Kφ' * (1 + ‖u‖ ^ (p+1)) * (Kψ' * (1 + ‖u‖ ^ (q+1))) := by
-        exact mul_nonneg (mul_nonneg hKφ'_nn (by positivity)) (mul_nonneg hKψ'_nn (by positivity))
+        positivity
       calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u| *
               |ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u| *
               (gaussianWeight H u *
@@ -2659,8 +2660,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
                 Real.exp (-(rescaledPerturbation V H t u))) from by ring]
         rw [abs_mul, abs_of_nonneg h_rw_nn, abs_mul]
         have h_loc_prod_nn : 0 ≤ (Cφ * ‖u‖ ^ 2 / t) * (Cψ * ‖u‖ ^ 2 / t) := by
-          exact mul_nonneg (div_nonneg (mul_nonneg hCφ_nn (sq_nonneg _)) ht_pos.le)
-            (div_nonneg (mul_nonneg hCψ_nn (sq_nonneg _)) ht_pos.le)
+          positivity
         calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u| *
                 |ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u| *
                 (gaussianWeight H u *
@@ -2681,12 +2681,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
         rw [show ‖u‖ ^ 4 = ‖u‖ ^ 2 * ‖u‖ ^ 2 from by ring]
         field_simp
       rw [h_match] at h_F_local
-      have h_tail_nn : 0 ≤ Gtail u := by
-        rw [hGtail_def]
-        have hKK : 0 ≤ 3 * Kφ' * Kψ' := mul_nonneg (mul_nonneg (by norm_num) hKφ'_nn) hKψ'_nn
-        exact mul_nonneg (Real.exp_pos _).le
-          (add_nonneg (mul_nonneg hKK (Real.exp_pos _).le)
-            (mul_nonneg hKK (mul_nonneg (by positivity) (Real.exp_pos _).le)))
+      have h_tail_nn : 0 ≤ Gtail u := by rw [hGtail_def]; positivity
       linarith
     · -- Tail
       push_neg at hu
@@ -2742,8 +2737,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
               (gaussianWeight H u *
                 Real.exp (-(rescaledPerturbation V H t u))) from by ring]
         rw [abs_mul, abs_of_nonneg h_rw_nn, abs_mul]
-        have hKK_nn : 0 ≤ 3 * Kφ' * Kψ' * (1 + ‖u‖ ^ N) :=
-          mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hKφ'_nn) hKψ'_nn) (by positivity)
+        have hKK_nn : 0 ≤ 3 * Kφ' * Kψ' * (1 + ‖u‖ ^ N) := by positivity
         calc |φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u| *
                 |ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u| *
                 (gaussianWeight H u *
@@ -2778,10 +2772,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
                 3 * Kφ' * Kψ' * (‖u‖ ^ N * Real.exp (-(α * ‖u‖ ^ 2))))
         ring
       rw [h_match] at h_F_tail
-      have h_loc_nn : 0 ≤ Glocal u := by
-        rw [hGlocal_def]
-        exact mul_nonneg (div_nonneg (mul_nonneg hCφ_nn hCψ_nn) (by positivity))
-          (mul_nonneg (by positivity) (Real.exp_pos _).le)
+      have h_loc_nn : 0 ≤ Glocal u := by rw [hGlocal_def]; positivity
       linarith
   -- Final calc.
   have h_exp_le_inv_t_sqrt : Real.exp (-(β * t)) ≤ 1 / (t * Real.sqrt t) :=
@@ -2807,7 +2798,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
   have h_KK_nn : 0 ≤ 3 * Kφ' * Kψ' * (M0 + MN) := by
     have := mul_nonneg hKφ'_nn hKψ'_nn
     have hM0N : 0 ≤ M0 + MN := by linarith
-    exact mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hKφ'_nn) hKψ'_nn) hM0N
+    positivity
   calc |∫ u : ι → ℝ,
         (φ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot a u) *
         (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *

@@ -33,11 +33,11 @@ higher-order unification --- \texttt{summable\_nat\_add\_iff} inventing
 its function argument --- cured by naming the function explicitly; six
 \texttt{positivity} calls at 1.4\,s each in a 25\,s proof, slow because
 their atoms were \texttt{set}-bound constants that positivity looks up by
-scanning a 60-hypothesis context, replaced by explicit
-\texttt{mul\_nonneg} terms; and the discovery that 15 of the chain's 20
+scanning a 60-hypothesis context, fixed by a one-line
+\texttt{clear\_value} on those constants; and the discovery that 15 of the chain's 20
 remaining \texttt{import Mathlib} umbrellas were fully redundant (their
 Laplace imports already cover every constant used), plus two cuttable
-chain edges. Full rebuild $137.9 \to 126.5$\,s ($402 \to 126.5$\,s
+chain edges. Full rebuild $137.9 \to 127.6$\,s ($402 \to 127.6$\,s
 cumulative, $-69\%$); CPU $910 \to 882$\,s; fingerprint byte-identical,
 0 sorry/axiom. The path is now the three covariance monoliths
 ($21 + 29 + 52$\,s of a 122\,s path), which need proof restructuring
@@ -74,13 +74,20 @@ first-order: module $16.8 \to 4.9$\,s, essentially the import load. The
 \item \textbf{positivity's context scan.} The 25\,s
 remainder$\times$remainder bound in \texttt{Covariance} spent 8\,s in
 six \texttt{positivity} calls. Each goal's atoms were \texttt{set}-bound
-constants ($K_\varphi', K_\psi', C_\varphi, C_\psi, M_0, M_N$), for
-which positivity has no structural rule and falls back to scanning every
-hypothesis in a 60-hypothesis context. Explicit terms
-(\texttt{mul\_nonneg (mul\_nonneg hKφ'\_nn …) …}) built from the
-already-present nonnegativity facts: module $26 \to 17.6$\,s. Two more
-context-taxed \texttt{nlinarith} in \texttt{WindowMajorant} got
-\texttt{only} lists ($13 \to 9.4$\,s).
+constants ($K_\varphi', K_\psi', M_0, M_N, \dots$) for which positivity
+has no structural rule; it falls back to comparing every hypothesis in a
+60-hypothesis context against the atom, and each comparison is an
+\texttt{isDefEq} that unfolds the \texttt{set} bodies --- integrals, for
+$M_0, M_N$. There is no \texttt{positivity only} (the bracket form
+\texttt{positivity [h]} only \emph{adds} hypotheses), and replacing the
+six calls with explicit \texttt{mul\_nonneg} terms worked ($26 \to
+17.6$\,s) but read badly. The cleaner fix is one line: \texttt{clear\_value
+M4 M0 MN Kφ' Kψ'} right after their nonnegativity facts, which forgets
+the bodies so the comparisons are cheap and the original
+\texttt{positivity} calls stay ($22.9 \to 19.0$\,s standalone; the last
+second was not worth six opaque terms). Two more context-taxed
+\texttt{nlinarith} in \texttt{WindowMajorant} got \texttt{only} lists
+($13 \to 9.4$\,s).
 \item \textbf{Two chain edges.} Name-usage checks showed
 \texttt{ScalarBounds} uses nothing from \texttt{CoeffFn} (it needs
 \texttt{ExpGraded}) and \texttt{LocalRateDCT} nothing from
@@ -106,11 +113,11 @@ failure) --- all 20 built first time.
 \toprule
  & round-1 start & round-2 start & round-2 end \\
 \midrule
-full forced rebuild, wall (96 cores) & 402\,s & 137.9\,s & 126.5\,s \\
+full forced rebuild, wall (96 cores) & 402\,s & 137.9\,s & 127.6\,s \\
 full forced rebuild, total CPU & 1215\,s & 910\,s & 882\,s \\
 simulated 8-core wall & 422\,s & 162\,s & 155\,s \\
 \texttt{ScalarBounds} standalone & --- & 16.8\,s & 4.9\,s \\
-\texttt{Covariance} standalone & --- & 26\,s & 17.6\,s \\
+\texttt{Covariance} standalone & --- & 22.9\,s & 19.0\,s \\
 critical path & covariance & forward (133\,s) & covariance (122\,s) \\
 fingerprint / sorry / axiom & \multicolumn{3}{c}{byte-identical / 0 / 0} \\
 \bottomrule
@@ -133,7 +140,8 @@ removes.
 \item \texttt{positivity} is not context-free: atoms it cannot decompose
 are resolved by scanning hypotheses, so in fat contexts it pays the same
 kind of tax as \texttt{linarith}. Bound constants introduced with
-\texttt{set} are the typical trigger; hand it the nonnegativity facts.
+\texttt{set} are the typical trigger, because each comparison unfolds
+their bodies; \texttt{clear\_value} them once their facts are in scope.
 \item \texttt{\#min\_imports} through the LSP daemon is a cheap, precise
 complement to \texttt{shake}: it answers per file in seconds, and
 ``redundant umbrella'' is by far its most common verdict in this repo.

@@ -27,7 +27,7 @@ Round 1 (`2026-08-24-16-07-tide-optimize-build`) took the forced rebuild 402 →
 
 **Edge cuts** (verified by name-usage grep + build): ScalarBounds imports ExpGraded instead of CoeffFn (uses nothing from CoeffFn); LocalRateDCT imports RescaledDCT instead of HessianMoments; GaussAbsorb imports ForwardDomain instead of ScalarBounds; WindowMajorant gains a direct CoeffFn import (uses `correctionCoeffFn`). Recorded rebuild → **131.1 s**; the critical path flipped back to the covariance chain (Covariance 26 → Sharp 28 → Explicit 52 = 126 s), whose head also shrank from round-1 import narrowing (Defs→GaussianIBP→RescaledIntegrals 27.8 → 12.3 s).
 
-**Covariance monster** (`abs_integral_remainder_mul_remainder_mul_rescaled_weight_le`, 24.7 s): six `positivity` calls at ~1.4 s each — all on goals whose atoms are `set`-bound constants (Kφ', Kψ', Cφ, Cψ, M0, MN), so positivity scans the 60-hypothesis context per atom. Replaced with explicit `mul_nonneg`/`div_nonneg`/`Real.exp_pos` terms (goals via lean-state; hypotheses names from the goal view). Module 26 → 17.6 s standalone. Recorded rebuild → **126.5 s**, path = forward chain again at 122.6 s.
+**Covariance monster** (`abs_integral_remainder_mul_remainder_mul_rescaled_weight_le`, 24.7 s): six `positivity` calls at ~1.4 s each — all on goals whose atoms are `set`-bound constants (Kφ', Kψ', Cφ, Cψ, M0, MN), so positivity scans the 60-hypothesis context per atom. First replaced with explicit `mul_nonneg`/`div_nonneg` terms (26 → 17.6 s) — then, on review ("fairly ugly"), swapped for a single `clear_value M4 M0 MN Kφ' Kψ'` after their `_nn` facts with the original `positivity` calls kept: 22.9 → 19.0 s standalone, full rebuild 127.6 s (vs 126.5 with the terms). No `positivity only` exists; `positivity [h]` only adds hypotheses. Recorded rebuild → **126.5 s**, path = forward chain again at 122.6 s.
 
 **Import-floor pass**: 20 of the forward chain's modules still had `import Mathlib` (load 4.4 s vs ~2.5 s for a targeted set). `#min_imports` (via lean-state `check` on a temporary trailing `#min_imports`) showed that for 15 of them the umbrella is fully redundant given their Laplace imports, and gave 1–4 targeted modules for the other 5. Applied in chain order; validating with a per-module `lake build --no-cache` walk that re-derives imports against the freshly narrowed upstream on failure (falling back to restoring the umbrella).
 
@@ -37,7 +37,7 @@ Process note (per feedback after round 1): goals and per-edit checks via `lean-s
 
 Import-floor pass verified: all 20 chain modules built with narrowed imports on the first try (15 umbrellas dropped outright, 5 replaced by 1–4 targeted modules); full rebuild green. The path flipped back to the covariance chain: Defs 3.5 → GaussianIBP 3.4 → RescaledIntegrals 5.3 → Covariance 21 → CovarianceSharp 29 → CovarianceExplicit 52 → Laplace → Solutions = 122.3 s; the forward chain is now below it.
 
-**Round 2: 137.9 → 126.5 s wall** (−8%); CPU 910 → 882 s; simulated 8-core 162 → 155 s, 16-core 131 → 125 s. Cumulative over both rounds: 402 → 126.5 s (−69%).
+**Round 2: 137.9 → 127.6 s wall** (−7.5%; 126.5 with the explicit positivity terms); CPU 910 → 882 s; simulated 8-core 162 → 155 s, 16-core 131 → 125 s. Cumulative over both rounds: 402 → 127.6 s (−68%).
 
 ## Result
 
