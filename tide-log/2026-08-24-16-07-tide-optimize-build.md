@@ -59,3 +59,7 @@ Gates at final state: fingerprint byte-identical (1096 public signatures); `scri
 ## Retrospective
 
 Retrospective: laplace/retrospectives/2026-08-24-16-07-tide-optimize-build.tex
+
+## Addendum (2026-08-25)
+
+Two small edits ported from a second-round pass (whose other changes were dropped): in `Multi/WindowMajorant.lean` two context-taxed `nlinarith` → `nlinarith only [...]` (module 13 → 9.3 s); in `Multi/Covariance.lean` one `clear_value M4 M0 MN Kφ' Kψ'` after their nonnegativity facts, so the six `positivity` calls in `abs_integral_remainder_mul_remainder_mul_rescaled_weight_le` stop `isDefEq`-unfolding integral bodies while scanning the context (module 26 → ~21 s). There is no `positivity only`; `positivity [h]` only adds hypotheses.
