@@ -152,8 +152,8 @@ theorem kth_secondMoment_recovery
   have hbase : (Nat.factorial (2 * k₁) : ℝ) / a₁ =
       (Nat.factorial (2 * k₁) : ℝ) / a₂ :=
     Real.rpow_left_injOn hexp
-      (Set.mem_setOf_eq ▸ div_nonneg (Nat.cast_nonneg _) ha₁.le)
-      (Set.mem_setOf_eq ▸ div_nonneg (Nat.cast_nonneg _) ha₂.le)
+      (Set.mem_ofPred_eq ▸ div_nonneg (Nat.cast_nonneg _) ha₁.le)
+      (Set.mem_ofPred_eq ▸ div_nonneg (Nat.cast_nonneg _) ha₂.le)
       hrpow_eq
   have hfac : (0 : ℝ) < (Nat.factorial (2 * k₁) : ℝ) := by
     exact_mod_cast Nat.factorial_pos _

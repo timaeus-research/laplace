@@ -67,10 +67,10 @@ theorem pencil_families_force_germ_eq_at_smooth
     analyticAt_const.add analyticAt_id
   have hA1' : AnalyticAt ℝ (fun w ↦ L₁ (p + w)) 0 := by
     have hg : AnalyticAt ℝ L₁ ((fun w : ι → ℝ ↦ p + w) 0) := by simpa using hA1
-    simpa [Function.comp] using hg.comp hshift
+    simpa [Function.comp_def] using hg.comp hshift
   have hA2' : AnalyticAt ℝ (fun w ↦ L₂ (p + w)) 0 := by
     have hg : AnalyticAt ℝ L₂ ((fun w : ι → ℝ ↦ p + w) 0) := by simpa using hA2
-    simpa [Function.comp] using hg.comp hshift
+    simpa [Function.comp_def] using hg.comp hshift
   obtain ⟨q, hq⟩ := hA2'.sub hA1'
   obtain ⟨r, hqr⟩ := hq
   -- The analyticity radius of the unshifted difference at `p`

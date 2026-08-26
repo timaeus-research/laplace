@@ -13,12 +13,12 @@ maxSynthPendingDepth = 3
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
-rev = "v4.29.0"
+rev = "v4.33.0"
 
 [[require]]
 name = "Threepoint"
 git = "https://github.com/timaeus-research/threepoint"
-rev = "9eba560"
+rev = "d50ba79f36d923da253e57a1f723f8e28b3d22fc"
 
 [[lean_lib]]
 name = "Laplace"
@@ -34,4 +34,4 @@ name = "Solutions"
 [[require]]
 name = "resolution-common"
 git = "https://github.com/timaeus-research/lean-common.git"
-rev = "v0.5.0"
+rev = "7180a7e99f3d3f8bd5b70947c3b8ee5068d37401"

@@ -2,7 +2,7 @@ import Mathlib.Algebra.EuclideanDomain.Basic
 import Mathlib.Algebra.EuclideanDomain.Field
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-import Mathlib.Data.Real.StarOrdered
+import Mathlib.Algebra.Order.Star.Real
 import Mathlib.Analysis.Calculus.Deriv.MeanValue
 import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Topology.Algebra.Module.ModuleTopology
@@ -49,10 +49,9 @@ lemma exp_neg_sub_one_add_le_half_sq_of_nonneg (z : ℝ) (hz : 0 ≤ z) :
           have := (hasDerivAt_id y).pow 2
           simpa using this.div_const 2
         have h2 : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-          have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-          simpa using this
+          exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
         have h3 := ((h1.add_const 1).sub (hasDerivAt_id y)).sub h2
-        convert h3 using 1; ring
+        exact h3.congr_deriv (by ring)
       rw [h.deriv]
       have := Real.add_one_le_exp (-y); linarith
   have h0 : (fun y : ℝ => y ^ 2 / 2 + 1 - y - Real.exp (-y)) 0 ≤
@@ -91,12 +90,12 @@ lemma exp_neg_sub_one_add_le_half_sq_mul_exp_neg_of_nonpos (z : ℝ) (hz : z ≤
           simpa using this.div_const 2
         have hpoly : HasDerivAt (fun y : ℝ => y ^ 2 / 2 + y - 1) (y + 1) y := by
           have := (hsq.add (hasDerivAt_id y)).sub_const 1
-          convert this using 1
+          exact this.congr_deriv (by ring)
         have hmul : HasDerivAt (fun y : ℝ => Real.exp y * (y ^ 2 / 2 + y - 1))
             (Real.exp y * (y ^ 2 / 2 + y - 1) + Real.exp y * (y + 1)) y :=
           hexp.mul hpoly
         have := hmul.add_const 1
-        convert this using 1; ring
+        exact this.congr_deriv (by ring)
       rw [h.deriv]
       have hexp_pos : 0 ≤ Real.exp y := (Real.exp_pos y).le
       have hpoly_nonneg : 0 ≤ y ^ 2 / 2 + 2 * y := by positivity
@@ -132,7 +131,7 @@ lemma exp_neg_sub_one_add_le_half_sq_mul_exp_neg_of_nonpos (z : ℝ) (hz : z ≤
             (y * Real.exp y + y ^ 2 / 2 * Real.exp y) y := hsq.mul hexp
         have h1 := (hmul.sub hexp).add_const 1
         have h2 := h1.add (hasDerivAt_id y)
-        convert h2 using 1; ring
+        exact h2.congr_deriv (by ring)
       rw [h.deriv]
       -- 0 ≤ Kp(y) by hKp_mono
       have := hKp_mono (Set.self_mem_Ici) hy_pos hy_pos
@@ -210,10 +209,9 @@ lemma exp_neg_le_one_sub_add_half_sq_of_nonneg (z : ℝ) (hz : 0 ≤ z) :
       have hy_nn : 0 ≤ y := interior_subset hy
       have h : HasDerivAt (fun y : ℝ => -1 + y + Real.exp (-y)) (1 - Real.exp (-y)) y := by
         have h1 : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-          have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-          simpa using this
+          exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
         have h2 := ((hasDerivAt_const y (-1 : ℝ)).add (hasDerivAt_id y)).add h1
-        convert h2 using 1; ring
+        exact h2.congr_deriv (by ring)
       rw [h.deriv]
       have : Real.exp (-y) ≤ 1 := by
         rw [show (1 : ℝ) = Real.exp 0 from (Real.exp_zero).symm]
@@ -240,10 +238,9 @@ lemma exp_neg_le_one_sub_add_half_sq_of_nonneg (z : ℝ) (hz : 0 ≤ z) :
           have := (hasDerivAt_id y).pow 2
           simpa using this.div_const 2
         have h2 : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-          have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-          simpa using this
+          exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
         have h3 := (((hasDerivAt_const y (1 : ℝ)).sub (hasDerivAt_id y)).add h1).sub h2
-        convert h3 using 1; ring
+        exact h3.congr_deriv (by ring)
       rw [h.deriv]
       have := hG'_mono Set.self_mem_Ici hy_nn hy_nn
       simp at this; linarith
@@ -270,10 +267,9 @@ lemma one_sub_add_half_sq_sub_exp_neg_le_sixth_cube_of_nonneg
         have hu_nn : 0 ≤ u := interior_subset hu
         have h : HasDerivAt (fun u : ℝ => -1 + u + Real.exp (-u)) (1 - Real.exp (-u)) u := by
           have h1 : HasDerivAt (fun u : ℝ => Real.exp (-u)) (-Real.exp (-u)) u := by
-            have := (Real.hasDerivAt_exp (-u)).comp u ((hasDerivAt_id u).neg)
-            simpa using this
+            exact (hasDerivAt_neg u).exp.congr_deriv (by ring)
           have h2 := ((hasDerivAt_const u (-1 : ℝ)).add (hasDerivAt_id u)).add h1
-          convert h2 using 1 <;> ring
+          exact h2.congr_deriv (by ring)
         rw [h.deriv]
         have : Real.exp (-u) ≤ 1 := by
           rw [show (1 : ℝ) = Real.exp 0 from (Real.exp_zero).symm]
@@ -303,10 +299,9 @@ lemma one_sub_add_half_sq_sub_exp_neg_le_sixth_cube_of_nonneg
         have h1 : HasDerivAt (fun y : ℝ => y ^ 2 / 2) y y := by
           have := (hasDerivAt_id y).pow 2; simpa using this.div_const 2
         have h2 : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-          have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-          simpa using this
+          exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
         have h3 := ((h1.add_const 1).sub (hasDerivAt_id y)).sub h2
-        convert h3 using 1; ring
+        exact h3.congr_deriv (by ring)
       rw [h.deriv]
       have := hGpp_nonneg hy_nn
       linarith
@@ -326,17 +321,15 @@ lemma one_sub_add_half_sq_sub_exp_neg_le_sixth_cube_of_nonneg
           (y ^ 2 / 2 + 1 - y - Real.exp (-y)) y := by
         have h_cube : HasDerivAt (fun y : ℝ => y ^ 3 / 6) (y ^ 2 / 2) y := by
           have hy3 : HasDerivAt (fun y : ℝ => y ^ 3) (3 * y ^ 2) y := by
-            have := (hasDerivAt_id y).pow 3
-            simpa [Nat.cast_succ, mul_comm] using this
+            simpa using hasDerivAt_pow 3 y
           have := hy3.div_const 6
-          convert this using 1 <;> ring
+          exact this.congr_deriv (by ring)
         have h_sq : HasDerivAt (fun y : ℝ => y ^ 2 / 2) y y := by
           have := (hasDerivAt_id y).pow 2; simpa using this.div_const 2
         have h_exp : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-          have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-          simpa using this
+          exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
         have h3 := ((((h_cube.sub_const 1).add (hasDerivAt_id y)).sub h_sq).add h_exp)
-        convert h3 using 1
+        exact h3.congr_deriv (by ring)
       rw [h.deriv]
       have hGp := hG'_mono Set.self_mem_Ici hy_nn hy_nn
       rw [hG'_zero] at hGp; exact hGp
@@ -375,25 +368,24 @@ lemma exp_neg_sub_one_add_sub_half_sq_le_half_cube_mul_exp_neg_of_nonpos
           Real.hasDerivAt_exp y
         have hcube : HasDerivAt (fun y : ℝ => y ^ 3 / 2) (3 * y ^ 2 / 2) y := by
           have h1 : HasDerivAt (fun y : ℝ => y ^ 3) (3 * y ^ 2) y := by
-            have := (hasDerivAt_id y).pow 3
-            simpa using this
+            simpa using hasDerivAt_pow 3 y
           have := h1.div_const 2
-          convert this using 1 <;> ring
+          exact this.congr_deriv (by ring)
         have hsq : HasDerivAt (fun y : ℝ => 3 * y ^ 2) (6 * y) y := by
           have h1 : HasDerivAt (fun y : ℝ => y ^ 2) (2 * y) y := by
-            have := (hasDerivAt_id y).pow 2; simpa using this
+            simpa using hasDerivAt_pow 2 y
           have h2 := h1.const_mul 3
-          convert h2 using 1 <;> ring
+          exact h2.congr_deriv (by ring)
         have hpoly : HasDerivAt (fun y : ℝ => y ^ 3 / 2 + 3 * y ^ 2 + 3 * y - 1)
             (3 * y ^ 2 / 2 + 6 * y + 3) y := by
           have h1 := ((hcube.add hsq).add ((hasDerivAt_id y).const_mul 3)).sub_const 1
-          convert h1 using 1 <;> ring
+          exact h1.congr_deriv (by ring)
         have hmul : HasDerivAt
             (fun y : ℝ => Real.exp y * (y ^ 3 / 2 + 3 * y ^ 2 + 3 * y - 1))
             (Real.exp y * (y ^ 3 / 2 + 3 * y ^ 2 + 3 * y - 1) +
              Real.exp y * (3 * y ^ 2 / 2 + 6 * y + 3)) y := hexp.mul hpoly
         have h := hmul.add_const 1
-        convert h using 1 <;> ring
+        exact h.congr_deriv (by ring)
       rw [h.deriv]
       have hexp_pos : 0 < Real.exp y := Real.exp_pos y
       have hpoly_nonneg : 0 ≤ y ^ 3 / 2 + 9 * y ^ 2 / 2 + 9 * y + 2 := by positivity
@@ -419,26 +411,25 @@ lemma exp_neg_sub_one_add_sub_half_sq_le_half_cube_mul_exp_neg_of_nonpos
           Real.hasDerivAt_exp y
         have hcube : HasDerivAt (fun y : ℝ => y ^ 3 / 2) (3 * y ^ 2 / 2) y := by
           have hy3 : HasDerivAt (fun y : ℝ => y ^ 3) (3 * y ^ 2) y := by
-            have := (hasDerivAt_id y).pow 3
-            simpa [Nat.cast_succ, mul_comm] using this
+            simpa using hasDerivAt_pow 3 y
           have := hy3.div_const 2
-          convert this using 1 <;> ring
+          exact this.congr_deriv (by ring)
         have hsq32 : HasDerivAt (fun y : ℝ => 3 * y ^ 2 / 2) (3 * y) y := by
           have h1 : HasDerivAt (fun y : ℝ => y ^ 2) (2 * y) y := by
-            have := (hasDerivAt_id y).pow 2; simpa using this
+            simpa using hasDerivAt_pow 2 y
           have h2 := h1.const_mul 3
           have h3 := h2.div_const 2
-          convert h3 using 1 <;> ring
+          exact h3.congr_deriv (by ring)
         have hpoly : HasDerivAt (fun y : ℝ => y ^ 3 / 2 + 3 * y ^ 2 / 2 - 1)
             (3 * y ^ 2 / 2 + 3 * y) y := by
           have h1 := (hcube.add hsq32).sub_const 1
-          convert h1 using 1 <;> ring
+          exact h1.congr_deriv (by ring)
         have hmul : HasDerivAt
             (fun y : ℝ => Real.exp y * (y ^ 3 / 2 + 3 * y ^ 2 / 2 - 1))
             (Real.exp y * (y ^ 3 / 2 + 3 * y ^ 2 / 2 - 1) +
              Real.exp y * (3 * y ^ 2 / 2 + 3 * y)) y := hexp.mul hpoly
         have h := (hmul.add_const 1).add (hasDerivAt_id y)
-        convert h using 1 <;> ring
+        exact h.congr_deriv (by ring)
       rw [h.deriv]
       have := hKpp_mono Set.self_mem_Ici hy_nn hy_nn
       rw [hKpp_zero] at this; exact this
@@ -463,16 +454,15 @@ lemma exp_neg_sub_one_add_sub_half_sq_le_half_cube_mul_exp_neg_of_nonpos
           Real.hasDerivAt_exp y
         have hcube : HasDerivAt (fun y : ℝ => y ^ 3 / 2) (3 * y ^ 2 / 2) y := by
           have hy3 : HasDerivAt (fun y : ℝ => y ^ 3) (3 * y ^ 2) y := by
-            have := (hasDerivAt_id y).pow 3
-            simpa [Nat.cast_succ, mul_comm] using this
+            simpa using hasDerivAt_pow 3 y
           have := hy3.div_const 2
-          convert this using 1 <;> ring
+          exact this.congr_deriv (by ring)
         have hcube_exp : HasDerivAt (fun y : ℝ => y ^ 3 / 2 * Real.exp y)
             (3 * y ^ 2 / 2 * Real.exp y + y ^ 3 / 2 * Real.exp y) y := hcube.mul hexp
         have hsq : HasDerivAt (fun y : ℝ => y ^ 2 / 2) y y := by
           have := (hasDerivAt_id y).pow 2; simpa using this.div_const 2
         have h1 := (((hcube_exp.sub hexp).add_const 1).add (hasDerivAt_id y)).add hsq
-        convert h1 using 1; ring
+        exact h1.congr_deriv (by ring)
       rw [h.deriv]
       have := hKp_mono Set.self_mem_Ici hy_nn hy_nn
       rw [hKp_zero] at this; exact this
@@ -532,10 +522,9 @@ theorem one_sub_add_half_sq_sub_exp_neg_le (z : ℝ) :
           have hy_np : y ≤ 0 := Set.mem_Iic.mp (interior_subset hy)
           have h : HasDerivAt (fun y : ℝ => -Real.exp (-y) + 1 - y) (Real.exp (-y) - 1) y := by
             have h1 : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-              have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-              simpa using this
+              exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
             have h2 := ((h1.neg.add_const 1).sub (hasDerivAt_id y))
-            convert h2 using 1 <;> ring
+            exact h2.congr_deriv (by ring)
           rw [h.deriv]
           have : Real.exp (-y) ≥ 1 := by
             rw [show (1 : ℝ) = Real.exp 0 from (Real.exp_zero).symm]
@@ -545,7 +534,7 @@ theorem one_sub_add_half_sq_sub_exp_neg_le (z : ℝ) :
       have hG'_zero : (fun y : ℝ => -Real.exp (-y) + 1 - y) 0 = 0 := by simp
       -- For z ≤ 0: G'(z) ≤ G'(0) = 0
       have hG'_z_le : -Real.exp (-z) + 1 - z ≤ 0 := by
-        have := hG'_mono hz' Set.right_mem_Iic hz'
+        have := hG'_mono hz' Set.self_mem_Iic hz'
         rw [hG'_zero] at this; exact this
       -- Now G(z) is decreasing in z on (-∞, 0] (since G' ≤ 0): so G(z) ≥ G(0) = 0 for z ≤ 0.
       have hG_anti : AntitoneOn (fun y : ℝ => Real.exp (-y) - (1 - y + y ^ 2 / 2))
@@ -558,23 +547,22 @@ theorem one_sub_add_half_sq_sub_exp_neg_le (z : ℝ) :
           have h : HasDerivAt (fun y : ℝ => Real.exp (-y) - (1 - y + y ^ 2 / 2))
               (-Real.exp (-y) + 1 - y) y := by
             have h1 : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-              have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-              simpa using this
+              exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
             have h2 : HasDerivAt (fun y : ℝ => y ^ 2 / 2) y y := by
               have := (hasDerivAt_id y).pow 2; simpa using this.div_const 2
             have h3 : HasDerivAt (fun y : ℝ => 1 - y + y ^ 2 / 2) (-1 + y) y := by
               have h4 := (((hasDerivAt_const y (1 : ℝ)).sub (hasDerivAt_id y)).add h2)
-              convert h4 using 1; ring
+              exact h4.congr_deriv (by ring)
             have h5 := h1.sub h3
-            convert h5 using 1; ring
+            exact h5.congr_deriv (by ring)
           rw [h.deriv]
           -- G'(y) = -exp(-y) + 1 - y ≤ 0 for y ≤ 0 by hG'_mono.
           have hG'y_le : -Real.exp (-y) + 1 - y ≤ 0 := by
-            have := hG'_mono hy_np Set.right_mem_Iic hy_np
+            have := hG'_mono hy_np Set.self_mem_Iic hy_np
             rw [hG'_zero] at this; exact this
           exact hG'y_le
       have hG_zero : (fun y : ℝ => Real.exp (-y) - (1 - y + y ^ 2 / 2)) 0 = 0 := by simp
-      have := hG_anti hz' Set.right_mem_Iic hz'
+      have := hG_anti hz' Set.self_mem_Iic hz'
       rw [hG_zero] at this; linarith
     -- So 1 - z + z²/2 - exp(-z) ≤ 0 ≤ |z|^3/6 · max(...)
     have hRHS_nn : 0 ≤ |z| ^ 3 / 6 * max 1 (Real.exp (-z)) := by positivity
@@ -622,10 +610,9 @@ theorem abs_exp_neg_sub_one_add_sub_half_sq_le (z : ℝ) :
           have hy_np : y ≤ 0 := Set.mem_Iic.mp (interior_subset hy)
           have h : HasDerivAt (fun y : ℝ => -Real.exp (-y) + 1 - y) (Real.exp (-y) - 1) y := by
             have h1 : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-              have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-              simpa using this
+              exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
             have h2 := ((h1.neg.add_const 1).sub (hasDerivAt_id y))
-            convert h2 using 1 <;> ring
+            exact h2.congr_deriv (by ring)
           rw [h.deriv]
           have : Real.exp (-y) ≥ 1 := by
             rw [show (1 : ℝ) = Real.exp 0 from (Real.exp_zero).symm]
@@ -642,22 +629,21 @@ theorem abs_exp_neg_sub_one_add_sub_half_sq_le (z : ℝ) :
           have h : HasDerivAt (fun y : ℝ => Real.exp (-y) - (1 - y + y ^ 2 / 2))
               (-Real.exp (-y) + 1 - y) y := by
             have h1 : HasDerivAt (fun y : ℝ => Real.exp (-y)) (-Real.exp (-y)) y := by
-              have := (Real.hasDerivAt_exp (-y)).comp y ((hasDerivAt_id y).neg)
-              simpa using this
+              exact (hasDerivAt_neg y).exp.congr_deriv (by ring)
             have h2 : HasDerivAt (fun y : ℝ => y ^ 2 / 2) y y := by
               have := (hasDerivAt_id y).pow 2; simpa using this.div_const 2
             have h3 : HasDerivAt (fun y : ℝ => 1 - y + y ^ 2 / 2) (-1 + y) y := by
               have h4 := (((hasDerivAt_const y (1 : ℝ)).sub (hasDerivAt_id y)).add h2)
-              convert h4 using 1; ring
+              exact h4.congr_deriv (by ring)
             have h5 := h1.sub h3
-            convert h5 using 1; ring
+            exact h5.congr_deriv (by ring)
           rw [h.deriv]
           have hG'y_le : -Real.exp (-y) + 1 - y ≤ 0 := by
-            have := hG'_mono hy_np Set.right_mem_Iic hy_np
+            have := hG'_mono hy_np Set.self_mem_Iic hy_np
             rw [hG'_zero] at this; exact this
           exact hG'y_le
       have hG_zero : (fun y : ℝ => Real.exp (-y) - (1 - y + y ^ 2 / 2)) 0 = 0 := by simp
-      have := hG_anti hz' Set.right_mem_Iic hz'
+      have := hG_anti hz' Set.self_mem_Iic hz'
       rw [hG_zero] at this; linarith
     rw [abs_of_nonneg h_nn]
     -- exp(-z) - (1-z+z²/2) ≤ ((-z)³/2)·exp(-z).

@@ -80,7 +80,7 @@ lemma integrable_sum_sq_mul_gaussianWeight
     ring
   have h_sum : Integrable
       (fun u : ι → ℝ => ∑ i, (u i) ^ 2 * gaussianWeight H u) :=
-    integrable_finset_sum Finset.univ (fun i _ => h_each i)
+    integrable_finsetSum Finset.univ (fun i _ => h_each i)
   apply h_sum.congr
   filter_upwards with u
   show ∑ i, u i ^ 2 * gaussianWeight H u = (∑ i, u i ^ 2) * gaussianWeight H u
@@ -102,7 +102,7 @@ lemma integrable_sq_norm_mul_gaussianWeight
   · -- AE strongly measurable: ‖·‖² · gaussianWeight is continuous.
     have h_quad : Continuous (fun u : ι → ℝ => quadForm H u) := by
       unfold quadForm
-      apply continuous_finset_sum
+      apply continuous_finsetSum
       intro i _
       exact (continuous_apply i).mul ((continuous_apply i).comp H.continuous)
     have h_gW : Continuous (fun u : ι → ℝ => gaussianWeight H u) := by
@@ -257,7 +257,7 @@ theorem rescaledPartition_eq_gaussianZ_add_O_inv_sqrt
           (Real.exp_pos _).le
       linarith
     · -- Tail case
-      push_neg at hu
+      push Not at hu
       have h_tail_bound :=
         abs_gaussianWeight_mul_exp_sub_one_le_tail V H hc_pos hR_pos hCs_nn
           h_coer h_local hδ_pos ht_pos u hu
@@ -440,7 +440,7 @@ private lemma abs_integral_dot_mul_rescaled_weight_correction_le
         · -- AE strongly measurable.
           have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
             unfold dot
-            apply continuous_finset_sum
+            apply continuous_finsetSum
             intro i _
             exact continuous_const.mul (continuous_apply i)
           have h_rw_cont :
@@ -483,7 +483,7 @@ private lemma abs_integral_dot_mul_rescaled_weight_correction_le
         refine h_dom.mono' ?_ ?_
         · have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
             unfold dot
-            apply continuous_finset_sum
+            apply continuous_finsetSum
             intro i _
             exact continuous_const.mul (continuous_apply i)
           exact (h_dot_cont.mul (continuous_gaussianWeight H)).aestronglyMeasurable
@@ -503,7 +503,7 @@ private lemma abs_integral_dot_mul_rescaled_weight_correction_le
                 -- ‖u‖ ≤ 1 + ‖u‖²: split on ‖u‖ ≤ 1 vs > 1.
                 by_cases h1 : ‖u‖ ≤ 1
                 · linarith [sq_nonneg ‖u‖]
-                · push_neg at h1
+                · push Not at h1
                   have h_sq_le : ‖u‖ ≤ ‖u‖ ^ 2 := by
                     have := mul_le_mul_of_nonneg_left h1.le h_norm_nn
                     rw [mul_one] at this
@@ -570,7 +570,7 @@ private lemma abs_integral_dot_mul_rescaled_weight_correction_le
         positivity
       linarith
     · -- Tail
-      push_neg at hu
+      push Not at hu
       have h_tail_part :=
         abs_gaussianWeight_mul_exp_sub_one_le_tail V H hc_pos hR_pos hCs_nn
           h_coer h_local hδ_pos ht_pos u hu
@@ -702,11 +702,11 @@ private lemma abs_integral_dot_dot_mul_rescaled_weight_correction_le
   -- Continuity helper.
   have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_rw_cont :
       Continuous (fun u : ι → ℝ =>
@@ -852,7 +852,7 @@ private lemma abs_integral_dot_dot_mul_rescaled_weight_correction_le
       have h_tail_nn : 0 ≤ Gtail u := by rw [hGtail_def]; positivity
       linarith
     · -- Tail
-      push_neg at hu
+      push Not at hu
       have h_tail_part :=
         abs_gaussianWeight_mul_exp_sub_one_le_tail V H hc_pos hR_pos hCs_nn
           h_coer h_local hδ_pos ht_pos u hu
@@ -993,12 +993,12 @@ private lemma abs_integral_remainder_mul_rescaled_weight_le
     rw [inv_le_one_iff₀]; right; exact hsqrt_ge_one
   -- Continuity helpers.
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul_cont
   have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_rw_cont :
       Continuous (fun u : ι → ℝ =>
@@ -1213,7 +1213,7 @@ private lemma abs_integral_remainder_mul_rescaled_weight_le
         positivity
       linarith
     · -- Tail: ‖u‖ > Rφ · √t. Use polynomial growth + half-coercive split.
-      push_neg at hu
+      push Not at hu
       have h_loc_nn : 0 ≤ Glocal u := by rw [hGlocal_def]; positivity
       -- |φ((√t)⁻¹•u)| ≤ Kφ · (1 + ‖u‖^p).
       have h_phi_le : |φ ((Real.sqrt t)⁻¹ • u)|
@@ -1381,16 +1381,16 @@ lemma integrable_dot_mul_remainder_mul_rescaled_weight
   have hinv_sqrt_le_one : (Real.sqrt t)⁻¹ ≤ 1 := by
     rw [inv_le_one_iff₀]; right; exact hsqrt_ge_one
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul_cont
   have h_dotC_cont : Continuous (fun u : ι → ℝ => dot dotCoef u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dotG_cont : Continuous (fun u : ι → ℝ => dot phiGrad u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   -- Bound: |dot dotCoef u · rem · gW · exp(-s_t)| ≤ DC · ‖u‖ · (Kφ + Kφ·‖u‖^p + PG·‖u‖) · exp(-c·‖u‖²).
   have h_int0 := integrable_exp_neg_const_norm_sq (ι := ι) hc_pos
@@ -1569,16 +1569,16 @@ private lemma abs_integral_dot_mul_remainder_mul_rescaled_weight_le
     rw [inv_le_one_iff₀]; right; exact hsqrt_ge_one
   -- Continuity helpers.
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul_cont
   have h_dotC_cont : Continuous (fun u : ι → ℝ => dot dotCoef u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dotG_cont : Continuous (fun u : ι → ℝ => dot phiGrad u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_rw_cont :
       Continuous (fun u : ι → ℝ =>
@@ -1830,7 +1830,7 @@ private lemma abs_integral_dot_mul_remainder_mul_rescaled_weight_le
       have h_tail_nn : 0 ≤ Gtail u := by rw [hGtail_def]; positivity
       linarith
     · -- Tail
-      push_neg at hu
+      push Not at hu
       have h_rem_g := h_rem_global u
       have h_norm_lb : Rφ * Real.sqrt t < ‖u‖ := hu
       have h_sq_lb : Rφ ^ 2 * t < ‖u‖ ^ 2 := by
@@ -1985,18 +1985,18 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
   have hinv_sqrt_le_one : (Real.sqrt t)⁻¹ ≤ 1 := by
     rw [inv_le_one_iff₀]; right; exact hsqrt_ge_one
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul_cont
   have h_psi_cont : Continuous (fun u : ι → ℝ => ψ ((Real.sqrt t)⁻¹ • u)) :=
     hψ_cont.comp h_smul_cont
   have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   -- Polynomial-growth global bounds for each remainder.
   have h_norm_pow_le : ∀ u : ι → ℝ, ∀ k : ℕ, ‖u‖ ^ k ≤ 1 + ‖u‖ ^ (k + 1) := by
@@ -2005,7 +2005,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
     · have h_pow_le_one : ‖u‖ ^ k ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
       have h_pow_pos : 0 ≤ ‖u‖ ^ (k + 1) := pow_nonneg (norm_nonneg _) _
       linarith
-    · push_neg at hu
+    · push Not at hu
       have h_le : ‖u‖ ^ k ≤ ‖u‖ ^ (k + 1) := by
         rw [pow_succ]
         exact le_mul_of_one_le_right (pow_nonneg (norm_nonneg u) k) hu.le
@@ -2047,7 +2047,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
     have h_norm_le_pow : ‖u‖ ≤ 1 + ‖u‖ ^ (p + 1) := by
       by_cases h1 : ‖u‖ ≤ 1
       · linarith [pow_nonneg (norm_nonneg u) (p+1)]
-      · push_neg at h1
+      · push Not at h1
         have h_one_le : (1 : ℕ) ≤ p + 1 := Nat.le_add_left 1 p
         have h_pow_le' : ‖u‖ ^ 1 ≤ ‖u‖ ^ (p + 1) :=
           pow_le_pow_right₀ h1.le h_one_le
@@ -2108,7 +2108,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
     have h_norm_le_pow : ‖u‖ ≤ 1 + ‖u‖ ^ (q + 1) := by
       by_cases h1 : ‖u‖ ≤ 1
       · linarith [pow_nonneg (norm_nonneg u) (q+1)]
-      · push_neg at h1
+      · push Not at h1
         have h_one_le : (1 : ℕ) ≤ q + 1 := Nat.le_add_left 1 q
         have h_pow_le' : ‖u‖ ^ 1 ≤ ‖u‖ ^ (q + 1) :=
           pow_le_pow_right₀ h1.le h_one_le
@@ -2142,7 +2142,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
       · have h_pow_le_one : ‖u‖ ^ (p+1) ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
         have h_pow_pos : 0 ≤ ‖u‖ ^ ((p+1) + (q+1)) := pow_nonneg (norm_nonneg _) _
         linarith
-      · push_neg at hu
+      · push Not at hu
         have h_le : ‖u‖ ^ (p+1) ≤ ‖u‖ ^ ((p+1) + (q+1)) := by
           apply pow_le_pow_right₀ hu.le; linarith
         linarith [pow_nonneg (norm_nonneg u) ((p+1) + (q+1))]
@@ -2151,7 +2151,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
       · have h_pow_le_one : ‖u‖ ^ (q+1) ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
         have h_pow_pos : 0 ≤ ‖u‖ ^ ((p+1) + (q+1)) := pow_nonneg (norm_nonneg _) _
         linarith
-      · push_neg at hu
+      · push Not at hu
         have h_le : ‖u‖ ^ (q+1) ≤ ‖u‖ ^ ((p+1) + (q+1)) := by
           apply pow_le_pow_right₀ hu.le; linarith
         linarith [pow_nonneg (norm_nonneg u) ((p+1) + (q+1))]
@@ -2310,18 +2310,18 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
   have htsqrt_pos : 0 < t * Real.sqrt t := mul_pos ht_pos hsqrt_pos
   -- Continuity helpers.
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul_cont
   have h_psi_cont : Continuous (fun u : ι → ℝ => ψ ((Real.sqrt t)⁻¹ • u)) :=
     hψ_cont.comp h_smul_cont
   have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   -- Pointwise bounds for rem factors.
   have h_rem_φ_local : ∀ u : ι → ℝ, ‖u‖ ≤ Rφ * Real.sqrt t →
@@ -2341,7 +2341,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
     · have h_pow_le_one : ‖u‖ ^ k ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
       have h_pow_pos : 0 ≤ ‖u‖ ^ (k + 1) := pow_nonneg (norm_nonneg _) _
       linarith
-    · push_neg at hu
+    · push Not at hu
       have h_le : ‖u‖ ^ k ≤ ‖u‖ ^ (k + 1) := by
         rw [pow_succ]
         exact le_mul_of_one_le_right (pow_nonneg (norm_nonneg u) k) hu.le
@@ -2384,7 +2384,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
     have h_norm_le_pow : ‖u‖ ≤ 1 + ‖u‖ ^ (p + 1) := by
       by_cases h1 : ‖u‖ ≤ 1
       · linarith [pow_nonneg (norm_nonneg u) (p+1)]
-      · push_neg at h1
+      · push Not at h1
         have h_one_le : (1 : ℕ) ≤ p + 1 := Nat.le_add_left 1 p
         have h_pow_le : ‖u‖ ^ 1 ≤ ‖u‖ ^ (p + 1) :=
           pow_le_pow_right₀ h1.le h_one_le
@@ -2445,7 +2445,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
     have h_norm_le_pow : ‖u‖ ≤ 1 + ‖u‖ ^ (q + 1) := by
       by_cases h1 : ‖u‖ ≤ 1
       · linarith [pow_nonneg (norm_nonneg u) (q+1)]
-      · push_neg at h1
+      · push Not at h1
         have h_one_le : (1 : ℕ) ≤ q + 1 := Nat.le_add_left 1 q
         have h_pow_le' : ‖u‖ ^ 1 ≤ ‖u‖ ^ (q + 1) :=
           pow_le_pow_right₀ h1.le h_one_le
@@ -2481,7 +2481,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
       · have h_pow_le_one : ‖u‖ ^ (p+1) ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
         have h_pow_pos : 0 ≤ ‖u‖ ^ ((p+1) + (q+1)) := pow_nonneg (norm_nonneg _) _
         linarith
-      · push_neg at hu
+      · push Not at hu
         have h_le : ‖u‖ ^ (p+1) ≤ ‖u‖ ^ ((p+1) + (q+1)) := by
           apply pow_le_pow_right₀ hu.le
           linarith
@@ -2491,7 +2491,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
       · have h_pow_le_one : ‖u‖ ^ (q+1) ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
         have h_pow_pos : 0 ≤ ‖u‖ ^ ((p+1) + (q+1)) := pow_nonneg (norm_nonneg _) _
         linarith
-      · push_neg at hu
+      · push Not at hu
         have h_le : ‖u‖ ^ (q+1) ≤ ‖u‖ ^ ((p+1) + (q+1)) := by
           apply pow_le_pow_right₀ hu.le
           linarith
@@ -2684,7 +2684,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
       have h_tail_nn : 0 ≤ Gtail u := by rw [hGtail_def]; positivity
       linarith
     · -- Tail
-      push_neg at hu
+      push Not at hu
       have h_rφ_g := h_rem_φ_global u
       have h_rψ_g := h_rem_ψ_global u
       have h_prod_g := h_prod_bound u
@@ -2923,12 +2923,12 @@ theorem rescaledExpectation_observable_bound_inv
   have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun i _ => abs_nonneg _)
   -- Continuity helpers.
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul_cont
   have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_rw_cont :
       Continuous (fun u : ι → ℝ =>
@@ -3080,7 +3080,7 @@ theorem rescaledExpectation_observable_bound_inv
             -- ‖u‖ ≤ 1 + ‖u‖²
             by_cases h1 : ‖u‖ ≤ 1
             · linarith [sq_nonneg ‖u‖]
-            · push_neg at h1
+            · push Not at h1
               have h_sq_le : ‖u‖ ≤ ‖u‖ ^ 2 := by
                 have h_mul : ‖u‖ * 1 ≤ ‖u‖ * ‖u‖ :=
                   mul_le_mul_of_nonneg_left h1.le h_norm_nn
@@ -3317,18 +3317,18 @@ theorem rescaledExpectation_pair_eq_main_add_O_inv_sqrt
   have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
   have hB_nn : 0 ≤ B := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul_cont
   have h_psi_cont : Continuous (fun u : ι → ℝ => ψ ((Real.sqrt t)⁻¹ • u)) :=
     hψ_cont.comp h_smul_cont
   have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   -- Notation.
   let remφ : (ι → ℝ) → ℝ := fun u =>

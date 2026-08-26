@@ -89,7 +89,7 @@ theorem jetPotential_continuous_q
     (k R : ℕ) (a : ℝ) (c : Fin R → ℝ) (u : ℝ) :
     Continuous (fun q : ℝ ↦ jetPotential k R a q c u) := by
   unfold jetPotential
-  exact continuous_const.add (continuous_finset_sum _ fun i _ ↦
+  exact continuous_const.add (continuous_finsetSum _ fun i _ ↦
     (continuous_const.mul (continuous_pow _)).mul continuous_const)
 
 /-- The shared envelope (stage 3A): both jets, hence the whole
@@ -166,7 +166,7 @@ theorem jet_difference_pointwise
     q ^ (j.1 - i₀.1) * u ^ (2 * k + (j.1 + 1)) with hg_def
   have hg_cont : Continuous g := by
     rw [hg_def]
-    exact continuous_finset_sum _ fun i _ ↦
+    exact continuous_finsetSum _ fun i _ ↦
       (continuous_const.mul (continuous_pow _)).mul continuous_const
   have hg0 : g 0 = (c₁ i₀ - c₂ i₀) * u ^ (2 * k + r) := by
     simp only [hg_def]
@@ -324,7 +324,7 @@ theorem jet_difference_integral_limit
       Real.exp (-(ρ * u ^ (2 * k)))) with hG_def
   have hG_int : Integrable G := by
     rw [hG_def]
-    exact integrable_finset_sum _ fun j _ ↦
+    exact integrable_finsetSum _ fun j _ ↦
       ((integrable_abs_pow_mul_exp_neg_kth hk
         (s + (2 * k + (j.1 + 1))) hρ).const_mul _)
   -- The DCT.

@@ -3,7 +3,7 @@ Copyright (c) 2026 Timaeus. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Laplace.OneD.MonomialPotential
-import Mathlib.Data.Real.StarOrdered
+import Mathlib.Algebra.Order.Star.Real
 
 /-!
 # The finite jet potential and its exact scaling identity
@@ -89,7 +89,7 @@ theorem jetPotential_continuous
     Continuous (fun u : ℝ ↦ jetPotential k R a q c u) := by
   unfold jetPotential
   exact ((continuous_const.mul (continuous_pow _)).add
-    (continuous_finset_sum _ fun i _ ↦
+    (continuous_finsetSum _ fun i _ ↦
       continuous_const.mul (continuous_pow _)))
 
 /-- The `q`-independent dominating estimate for polynomial moments. -/

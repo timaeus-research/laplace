@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Laplace.OneD.GaussianMoments
 import Laplace.OneD.MonomialPotential
 import Laplace.Gibbs
-import Mathlib.Data.Real.StarOrdered
+import Mathlib.Algebra.Order.Star.Real
 
 /-!
 # The all-order expansion of the quartic-perturbed Gaussian
@@ -48,8 +48,8 @@ at order `n`. -/
 lemma hasDerivAt_expRemainder (n : ℕ) (u : ℝ) :
     HasDerivAt (expRemainder (n + 1)) (-(expRemainder n u)) u := by
   have hneg : HasDerivAt (fun v : ℝ ↦ -v) (-1 : ℝ) u := (hasDerivAt_id u).neg
-  have hexp : HasDerivAt (fun v : ℝ ↦ Real.exp (-v)) (-Real.exp (-u)) u := by
-    simpa using (Real.hasDerivAt_exp (-u)).comp u hneg
+  have hexp : HasDerivAt (fun v : ℝ ↦ Real.exp (-v)) (-Real.exp (-u)) u :=
+    ((Real.hasDerivAt_exp (-u)).comp u hneg).congr_deriv (by ring)
   have hterm : ∀ j ∈ Finset.range (n + 1),
       HasDerivAt (fun v : ℝ ↦ (-v) ^ j / (Nat.factorial j : ℝ))
         ((j : ℝ) * (-u) ^ (j - 1) * (-1) / (Nat.factorial j : ℝ)) u := by
@@ -211,7 +211,7 @@ theorem quartic_partition_expansion_allOrder {b t : ℝ} (hb : 0 ≤ b)
     fun j ↦ (hint_pow (4 * j)).const_mul _
   have hint_sum : Integrable (fun x : ℝ ↦ ∑ j ∈ Finset.range (n + 1),
       (-(t * b)) ^ j / (Nat.factorial j : ℝ) * (x ^ (4 * j) * q x)) :=
-    integrable_finset_sum _ fun j _ ↦ hint_term j
+    integrable_finsetSum _ fun j _ ↦ hint_term j
   have hrem_bound : ∀ x : ℝ,
       |q x * expRemainder (n + 1) (t * b * x ^ 4)| ≤
       (t * b) ^ (n + 1) / (Nat.factorial (n + 1) : ℝ) *
@@ -260,7 +260,7 @@ theorem quartic_partition_expansion_allOrder {b t : ℝ} (hb : 0 ≤ b)
       funext x
       exact hsplit x
     rw [hfun, MeasureTheory.integral_add hint_sum hint_rem,
-      MeasureTheory.integral_finset_sum _ fun j _ ↦ hint_term j]
+      MeasureTheory.integral_finsetSum _ fun j _ ↦ hint_term j]
     congr 1
     exact Finset.sum_congr rfl fun j _ ↦
       MeasureTheory.integral_const_mul _ _

@@ -89,7 +89,7 @@ theorem qform_eq_norm_sq_whitening {H : Matrix (Fin d) (Fin d) ℝ}
     unfold whitening
     rw [← map_mul, sqrt_mul_sqrt hH]
   unfold qform
-  rw [hcomp, ContinuousLinearMap.mul_apply,
+  rw [hcomp, mul_apply_eq_comp,
     ← ContinuousLinearMap.adjoint_inner_left (whitening H),
     whitening_adjoint hH, real_inner_self_eq_norm_sq]
 

@@ -110,7 +110,7 @@ theorem tendsto_tail_slice (A : HigherLaplaceDomain k L₁ H)
         {x : EuclidD d | q • x ∈ Metric.ball (0 : EuclidD d) ρ})
     · have htl : x ∈ {x : EuclidD d | ρ ≤ q * ‖x‖} := by
         have hnb := hmem.2
-        simp only [Set.mem_setOf_eq, Metric.mem_ball,
+        simp only [Set.mem_ofPred_eq, Metric.mem_ball,
           dist_eq_norm, sub_zero, not_lt] at hnb
         rw [norm_smul, Real.norm_eq_abs, abs_of_pos hq0] at hnb
         exact hnb
@@ -182,9 +182,9 @@ theorem tendsto_pairwise_integral_difference (hk : 2 < k)
   have hloc_int₂ := A₂.integrable_indicator_slice hP_cont hP_growth hq0
     (hball_meas q) (hball_sub₂ q)
   have htail_int₁ := A₁.integrable_indicator_slice hP_cont hP_growth hq0
-    ((hU₁_meas q).diff (hball_meas q)) Set.diff_subset
+    ((hU₁_meas q).diff (hball_meas q)) Set.sdiff_subset
   have htail_int₂ := A₂.integrable_indicator_slice hP_cont hP_growth hq0
-    ((hU₂_meas q).diff (hball_meas q)) Set.diff_subset
+    ((hU₂_meas q).diff (hball_meas q)) Set.sdiff_subset
   have hsplit₁ : ∀ x : EuclidD d,
       A₁.toLocalLaplaceDomain.integrand P q x =
         Set.indicator {x : EuclidD d | q • x ∈ Metric.ball (0 : EuclidD d) ρ}

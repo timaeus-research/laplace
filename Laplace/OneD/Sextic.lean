@@ -67,7 +67,7 @@ $k = 3$ specialisation of `kth_integrable_pow`. -/
 theorem sextic_integrable_pow (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) := by
   have h := kth_integrable_pow (k := 3) (by norm_num) n ht
-  convert h using 4
+  convert h using 4; norm_num [Nat.factorial]
 
 /-- Polynomial-times-sextic-Gibbs integrability, in `sexticPotential` form.
 $k = 3$ specialisation of `kth_integrable_pow_pot`. -/
@@ -128,14 +128,14 @@ theorem sextic_moment_even (n : ℕ) {t : ℝ} (ht : 0 < t) :
     ∫ x : ℝ, x ^ (2 * n) * exp (-(t * x ^ 6 / 720)) =
       (1/3) * (720/t) ^ ((2 * n + 1 : ℝ) / 6) * Real.Gamma ((2 * n + 1 : ℝ) / 6) := by
   have h := kth_moment_even (k := 3) (by norm_num) n ht
-  convert h using 3
+  convert h using 3 <;> norm_num [Nat.factorial]
 
 /-- Odd moment of the pure-sextic Gibbs weight on the full real line vanishes
 by symmetry. $k = 3$ specialisation of `kth_moment_odd`. -/
 theorem sextic_moment_odd (n : ℕ) (t : ℝ) :
     ∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * x ^ 6 / 720)) = 0 := by
   have h := kth_moment_odd 3 n t
-  convert h using 3
+  convert h using 3; norm_num [Nat.factorial]
 
 /-- The partition function for the pure-sextic potential.
 $k = 3$ specialisation of `partitionFunction_kthPotential`. -/
@@ -144,7 +144,7 @@ theorem sextic_partition {t : ℝ} (ht : 0 < t) :
       (1/3) * (720/t) ^ ((1 : ℝ) / 6) * Real.Gamma ((1 : ℝ) / 6) := by
   rw [sexticPotential_eq_kthPotential]
   have h := partitionFunction_kthPotential (k := 3) (by norm_num) ht
-  convert h using 3
+  convert h using 3 <;> norm_num [Nat.factorial]
 
 /-- The partition function for the pure-sextic potential is positive.
 $k = 3$ specialisation of `partitionFunction_kthPotential_pos`. -/
@@ -162,7 +162,7 @@ theorem sextic_expected_value_even (n : ℕ) {t : ℝ} (ht : 0 < t) :
       (720/t) ^ ((n : ℝ) / 3) * Real.Gamma ((2 * n + 1 : ℝ) / 6) / Real.Gamma ((1 : ℝ) / 6) := by
   rw [sexticPotential_eq_kthPotential]
   have h := gibbsExpectation_kthPotential_even (k := 3) (by norm_num) n ht
-  convert h using 3
+  convert h using 3 <;> norm_num [Nat.factorial]
 
 /-- Odd-power expected value against the pure-sextic Gibbs measure vanishes by
 symmetry. $k = 3$ specialisation of `gibbsExpectation_kthPotential_odd`. -/

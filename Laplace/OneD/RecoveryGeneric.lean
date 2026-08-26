@@ -115,7 +115,7 @@ theorem generic_partition_expansion_allOrder
   have hint_sum : Integrable (fun x : ℝ ↦ ∑ j ∈ Finset.range (n + 1),
       (-(t * b)) ^ j / (Nat.factorial j : ℝ) *
         (x ^ (2 * (m * j)) * q x)) :=
-    integrable_finset_sum _ fun j _ ↦ hint_term j
+    integrable_finsetSum _ fun j _ ↦ hint_term j
   have hrem_bound : ∀ x : ℝ,
       |q x * expRemainder (n + 1) (t * b * x ^ (2 * m))| ≤
       (t * b) ^ (n + 1) / (Nat.factorial (n + 1) : ℝ) *
@@ -175,7 +175,7 @@ theorem generic_partition_expansion_allOrder
       funext x
       exact hsplit x
     rw [hfun, MeasureTheory.integral_add hint_sum hint_rem,
-      MeasureTheory.integral_finset_sum _ fun j _ ↦ hint_term j]
+      MeasureTheory.integral_finsetSum _ fun j _ ↦ hint_term j]
     congr 1
     exact Finset.sum_congr rfl fun j _ ↦
       MeasureTheory.integral_const_mul _ _

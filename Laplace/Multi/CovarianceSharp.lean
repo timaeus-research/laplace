@@ -294,11 +294,11 @@ private lemma integrable_dot_mul_dot_mul_rescaled_weight
   have hB_nn : 0 ≤ B := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
   have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dom : MeasureTheory.Integrable (fun u : ι → ℝ =>
       A * B * (‖u‖ ^ 2 *
@@ -353,11 +353,11 @@ private lemma integrable_dot_mul_dot_mul_gaussianWeight
   have hB_nn : 0 ≤ B := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
   have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dom : Integrable (fun u : ι → ℝ =>
       A * B * (‖u‖ ^ 2 * gaussianWeight H u)) :=
@@ -405,7 +405,7 @@ private lemma integrable_dot_mul_quadJet_mul_gaussianWeight
   have hsqrt_t_inv_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_t_pos
   have h_dot_cont : Continuous (fun u : ι → ℝ => dot dotCoef u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
     continuous_const_smul _
@@ -475,7 +475,7 @@ private lemma integrable_dot_mul_quadJet_mul_rescaled_weight
   have hsqrt_t_inv_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_t_pos
   have h_dot_cont : Continuous (fun u : ι → ℝ => dot dotCoef u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
     continuous_const_smul _
@@ -568,11 +568,11 @@ private lemma integrable_centered_bilinear_mul_gaussianWeight_mul_scaledCubic
     Real.mul_self_sqrt ht_pos.le
   have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dot_b_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
     continuous_const_smul _
@@ -1196,7 +1196,7 @@ private lemma abs_rescaledObservable_global_le
     · have h_pow_le_one : ‖u‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
       have h_pow_pos : 0 ≤ ‖u‖ ^ (p + 1) := pow_nonneg (norm_nonneg _) _
       linarith
-    · push_neg at hu
+    · push Not at hu
       have h_le : ‖u‖ ^ p ≤ ‖u‖ ^ (p + 1) := by
         rw [pow_succ]
         nlinarith [pow_nonneg (norm_nonneg u) p]
@@ -1204,7 +1204,7 @@ private lemma abs_rescaledObservable_global_le
   have h_norm_le_pow : ‖u‖ ≤ 1 + ‖u‖ ^ (p + 1) := by
     by_cases h1 : ‖u‖ ≤ 1
     · linarith [pow_nonneg (norm_nonneg u) (p+1)]
-    · push_neg at h1
+    · push Not at h1
       have h_one_le : (1 : ℕ) ≤ p + 1 := Nat.le_add_left 1 p
       have h_pow_le' : ‖u‖ ^ 1 ≤ ‖u‖ ^ (p + 1) :=
         pow_le_pow_right₀ h1.le h_one_le
@@ -1315,7 +1315,7 @@ private lemma poly_pair_le_single
     · have : ‖u‖ ^ (p + 1) ≤ 1 := pow_le_one₀ h_norm_nn hu
       have : 0 ≤ ‖u‖ ^ (p + q + 2) := pow_nonneg h_norm_nn _
       linarith
-    · push_neg at hu
+    · push Not at hu
       have h_le : ‖u‖ ^ (p + 1) ≤ ‖u‖ ^ (p + q + 2) := by
         apply pow_le_pow_right₀ hu.le
         omega
@@ -1325,7 +1325,7 @@ private lemma poly_pair_le_single
     · have : ‖u‖ ^ (q + 1) ≤ 1 := pow_le_one₀ h_norm_nn hu
       have : 0 ≤ ‖u‖ ^ (p + q + 2) := pow_nonneg h_norm_nn _
       linarith
-    · push_neg at hu
+    · push Not at hu
       have h_le : ‖u‖ ^ (q + 1) ≤ ‖u‖ ^ (p + q + 2) := by
         apply pow_le_pow_right₀ hu.le
         omega
@@ -1716,7 +1716,7 @@ private lemma abs_cubic_remainder_global_le
     by_cases hu : ‖u‖ ≤ 1
     · have : ‖u‖ ^ (p + 1) ≤ 1 := pow_le_one₀ h_norm_nn hu
       linarith
-    · push_neg at hu
+    · push Not at hu
       have h_le : ‖u‖ ^ (p + 1) ≤ ‖u‖ ^ (p + 2) := by
         apply pow_le_pow_right₀ hu.le
         omega
@@ -1726,7 +1726,7 @@ private lemma abs_cubic_remainder_global_le
     by_cases hu : ‖u‖ ≤ 1
     · have : ‖u‖ ^ 2 ≤ 1 := pow_le_one₀ h_norm_nn hu
       linarith
-    · push_neg at hu
+    · push Not at hu
       have h_le : ‖u‖ ^ 2 ≤ ‖u‖ ^ (p + 2) := by
         apply pow_le_pow_right₀ hu.le
         omega
@@ -2151,7 +2151,7 @@ private lemma abs_integral_corrected_bracket_centered_bilinear_le
           _ = Glocal u := by rw [hGlocal_def]; ring
       linarith [hGtail_nn u]
     · -- Tail case.
-      push_neg at hu
+      push Not at hu
       have h_indicator : 1 ≤ ‖u‖ ^ 2 / (ρ ^ 2 * t) := by
         have h_pos : 0 < ρ * Real.sqrt t := mul_pos hρ_pos hsqrt_pos
         have h_pow_le : (ρ * Real.sqrt t) ^ 2 ≤ ‖u‖ ^ 2 :=
@@ -3010,7 +3010,7 @@ private lemma abs_integral_dot_mul_jet_remainder_sharp_le
         exact h_local
       linarith [hGtail_q_nn u]
     · -- Tail case.
-      push_neg at hu
+      push Not at hu
       have h_tail := abs_dot_mul_quadJet_mul_gaussianWeight_mul_exp_sub_one_tail_le
         V H hc_pos hR_pot_pos hCs_nn hCq_nn h_coer h_V_local hφ.qφ
         h_qψ_bound dotCoef hδ_pos ht_pos u hu
@@ -3074,7 +3074,7 @@ private lemma abs_integral_dot_mul_jet_remainder_sharp_le
       rw [h_eq] at h_local
       linarith [hGtail_r_nn u]
     · -- Tail case.
-      push_neg at hu
+      push Not at hu
       have h_tail := abs_dot_mul_cubic_remainder_mul_rescaled_weight_tail_le
         V φ H hc_pos h_coer hKφ_nn hpoly_φ hφ.qφ hCq_nn h_qψ_bound
         dotCoef phiGrad hδ_pos ht1 u hu
@@ -3442,7 +3442,7 @@ private lemma abs_integral_remainder_remainder_sharp_le
       rw [h_glocal_eq] at h_local
       linarith [hGtail_nn u]
     · -- Tail case.
-      push_neg at hu
+      push Not at hu
       have h_tail_indicator : 1 ≤ ‖u‖ ^ 4 / (R * Real.sqrt t) ^ 4 := by
         have h_pos : 0 < R * Real.sqrt t := mul_pos hR_pos hsqrt_pos
         have h_pow_le : (R * Real.sqrt t) ^ 4 ≤ ‖u‖ ^ 4 :=

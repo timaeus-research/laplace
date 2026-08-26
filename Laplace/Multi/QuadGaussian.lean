@@ -106,10 +106,10 @@ theorem quadKernel_integrable_pow {H : Matrix (Fin d) (Fin d) ℝ}
   have hCx : C (whitening H x) = x := by
     rw [hC_def]
     unfold whitening
-    rw [← ContinuousLinearMap.mul_apply, ← map_mul,
+    rw [← mul_apply_eq_comp, ← map_mul,
       Matrix.nonsing_inv_mul _
         (isUnit_iff_ne_zero.mpr (sqrt_posDef hH).det_pos.ne'),
-      map_one, ContinuousLinearMap.one_apply]
+      map_one, one_apply_eq_self]
   have hx : ‖x‖ ≤ ‖C‖ * ‖whitening H x‖ := by
     conv_lhs => rw [← hCx]
     exact C.le_opNorm _

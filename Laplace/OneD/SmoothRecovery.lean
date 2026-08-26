@@ -295,7 +295,6 @@ theorem stabilized_admissible {R' M : ℕ} (hM_even : Even M)
     rw [stabilized_jet_eq hM]
     have h := henv x
     unfold jetPotential
-    unfold jetPotential at h
     simp only [one_pow, mul_one] at h ⊢
     calc a / 2 * x ^ 2 ≤ a * x ^ 2 +
           (∑ i : Fin R', c i * x ^ (2 + (i.1 + 1))) + d * x ^ M := h

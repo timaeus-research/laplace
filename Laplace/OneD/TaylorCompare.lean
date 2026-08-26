@@ -384,7 +384,7 @@ theorem admissible_moment_difference_littleO
       intro x hx
       have hxr : |x| < Real.sqrt q := by
         have := hx
-        simp only [hS_def, Set.mem_compl_iff, Set.mem_setOf_eq,
+        simp only [hS_def, Set.mem_compl_iff, Set.mem_ofPred_eq,
           not_le] at this
         exact this
       have hxδ : |x| ≤ δ' := le_trans hxr.le hrδ

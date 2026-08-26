@@ -111,7 +111,7 @@ private lemma gibbsExp_x_sq_harmonic
       = 1 / (lam * t) := by
   have h := gibbsExpectation_harmonic_pow_even hlam ht 1
   -- h : gibbsExp L t (fun x => x ^ (2*1)) = (2*1-1)‼ / (λt)^1
-  simp only [Nat.mul_one, Nat.doubleFactorial, Nat.cast_one, pow_one] at h
+  simp only [Nat.mul_one, Nat.reduceSub, Nat.doubleFactorial, Nat.cast_one, pow_one] at h
   exact h
 
 /-- `⟨x³⟩_t = 0` under the harmonic Gibbs (parity). -/

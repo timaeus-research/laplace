@@ -102,7 +102,6 @@ theorem sum_neg_one_pow_supersets {ι : Type*} [Fintype ι]
       exact (Finset.mem_compl.mp (hT haT)) haR
     · intro S hS
       rw [Finset.mem_filter, Finset.mem_powerset] at hS
-      simp only []
       congr 1
       have hsd : (S \ R).card = S.card - R.card := by
         rw [Finset.card_sdiff, Finset.inter_eq_left.mpr hS.2]
@@ -270,7 +269,7 @@ theorem eq_zero_of_diag_eq_zero
   have hk : (k.factorial : ℝ) ≠ 0 := by
     exact_mod_cast (Nat.factorial_ne_zero k)
   have hAv : A v = 0 := (smul_eq_zero.mp hpol).resolve_left hk
-  rw [hAv, ContinuousMultilinearMap.zero_apply]
+  rw [hAv, zero_apply]
 
 /-- Two symmetric maps with equal diagonals are equal. -/
 theorem eq_of_diag_eq

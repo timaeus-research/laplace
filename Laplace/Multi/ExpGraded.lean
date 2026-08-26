@@ -45,7 +45,7 @@ noncomputable def expCorrectionCoeff (a : ℕ → ℝ) (N : ℕ) (j : ℕ) : ℝ
 theorem exponentPoly_eval (a : ℕ → ℝ) (N : ℕ) (q : ℝ) :
     (exponentPoly a N).eval q = ∑ s ∈ Finset.Icc 1 N, a s * q ^ s := by
   unfold exponentPoly
-  rw [Polynomial.eval_finset_sum]
+  rw [Polynomial.eval_finsetSum]
   refine Finset.sum_congr rfl fun s _ ↦ ?_
   rw [Polynomial.eval_mul, Polynomial.eval_C, Polynomial.eval_pow,
     Polynomial.eval_X]
@@ -55,7 +55,7 @@ theorem gradedExpPoly_eval (a : ℕ → ℝ) (N : ℕ) (q : ℝ) :
       ∑ i ∈ Finset.range (N + 1),
         (-(∑ s ∈ Finset.Icc 1 N, a s * q ^ s)) ^ i / (i.factorial : ℝ) := by
   unfold gradedExpPoly
-  rw [Polynomial.eval_finset_sum]
+  rw [Polynomial.eval_finsetSum]
   refine Finset.sum_congr rfl fun i _ ↦ ?_
   rw [Polynomial.eval_mul, Polynomial.eval_C, Polynomial.eval_pow,
     exponentPoly_eval, neg_pow]
@@ -105,7 +105,7 @@ theorem tendsto_exponent_sum (a : ℕ → ℝ) (N : ℕ) :
     Tendsto (fun q : ℝ ↦ ∑ s ∈ Finset.Icc 1 N, a s * q ^ s)
       (𝓝[>] (0 : ℝ)) (𝓝 0) := by
   have hc : Continuous fun q : ℝ ↦ ∑ s ∈ Finset.Icc 1 N, a s * q ^ s :=
-    continuous_finset_sum _ fun s _ ↦
+    continuous_finsetSum _ fun s _ ↦
       continuous_const.mul (continuous_pow s)
   have := hc.tendsto (0 : ℝ)
   rw [exponent_sum_zero] at this
@@ -157,7 +157,7 @@ theorem exp_graded_expansion (a : ℕ → ℝ) (N : ℕ) {ρ : ℝ → ℝ}
             (fun q : ℝ ↦ Real.exp (-(∑ s ∈ Finset.Icc 1 N, a s * q ^ s)))
             (𝓝[>] (0 : ℝ)) (𝓝 1) := by
           have := (Real.continuous_exp.tendsto (0 : ℝ)).comp hAneg
-          simpa using this
+          simpa [Function.comp_def] using this
         exact hcomp.eventually_le_const one_lt_two
       have hsmall : ∀ᶠ q in 𝓝[>] (0 : ℝ), |q ^ N * ρ q| ≤ 1 := by
         have := hpert.abs

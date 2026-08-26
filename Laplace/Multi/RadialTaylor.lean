@@ -86,12 +86,12 @@ theorem pairwise_rescaled_loss_tendsto {k : ℕ}
     have hcast : ((j : ℕ) : WithTop ℕ∞) ≤ (k : WithTop ℕ∞) := by
       exact_mod_cast hj.le
     rw [hg_def, ray_iteratedDeriv hD hcast, hDsub j hj.le,
-      ContinuousMultilinearMap.sub_apply, hlower j hj, sub_self]
+      sub_apply, hlower j hj, sub_self]
   have hray_top : iteratedDeriv k g 0 =
       (k.factorial : ℝ) * (taylorHomogeneousTerm k L₁ x -
         taylorHomogeneousTerm k L₂ x) := by
     rw [hg_def, ray_iteratedDeriv hD le_rfl, hDsub k le_rfl,
-      ContinuousMultilinearMap.sub_apply]
+      sub_apply]
     unfold taylorHomogeneousTerm
     have hfac : (k.factorial : ℝ) ≠ 0 := by
       exact_mod_cast (Nat.factorial_ne_zero k)

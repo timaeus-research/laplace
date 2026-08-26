@@ -62,9 +62,7 @@ theorem anharmonic_susceptibility_deriv_general
   have hden : HasDerivAt
       (fun h : ℝ => weightedPartition lam alpha gamma t 0 h ^ 2) _ h₀ :=
     hG0.pow 2
-  convert hnum.div hden (pow_ne_zero 2 hne) using 1
-  field_simp
-  ring
+  exact (hnum.div hden (pow_ne_zero 2 hne)).congr_deriv (by field_simp; ring)
 
 /-- **Fourth connected cumulant** of `u = -(t x)`: the third `h`-derivative of
 the perturbed mean `G_1(h)/G_0(h)` at `0`. -/
@@ -127,10 +125,8 @@ theorem anharmonic_fourth_cumulant
               * weightedPartition lam alpha gamma t 0 0
             - 6 * weightedPartition lam alpha gamma t 1 0 ^ 4)
           / weightedPartition lam alpha gamma t 0 0 ^ 4) 0 := by
-    convert hnum2.div hden2 (pow_ne_zero 3 hne) using 1
-    simp only [Pi.pow_apply, Pi.mul_apply]
-    field_simp
-    ring
+    exact (hnum2.div hden2 (pow_ne_zero 3 hne)).congr_deriv (by
+      simp only [Pi.pow_apply, Pi.mul_apply]; field_simp; ring)
   -- Chaining: deriv M = S, deriv S = S₂, on a neighbourhood of 0.
   have hball : Metric.ball (0 : ℝ) 1 ∈ 𝓝 (0 : ℝ) :=
     Metric.isOpen_ball.mem_nhds (by rw [Metric.mem_ball, dist_self]; exact one_pos)

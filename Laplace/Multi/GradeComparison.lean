@@ -101,7 +101,7 @@ theorem tendsto_pointwise_difference_div_pow (A P : X → ℝ)
       have := hV₁.neg
       rwa [neg_zero] at this
     have := (Real.continuous_exp.tendsto (0 : ℝ)).comp hneg
-    simpa using this
+    simpa [Function.comp_def] using this
   have hprod := (hcore.mul hexpV₁).const_mul
     (A x * Real.exp (-P x))
   rw [mul_one, show A x * Real.exp (-P x) * -Q x =

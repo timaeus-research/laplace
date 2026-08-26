@@ -91,7 +91,7 @@ private lemma continuous_gaussian (c : ℝ) :
     Continuous (fun u : ι → ℝ => Real.exp (-(c * ∑ k, (u k) ^ 2))) := by
   refine Real.continuous_exp.comp ?_
   refine (continuous_const.mul ?_).neg
-  exact continuous_finset_sum _ (fun k _ => (continuous_apply k).pow 2)
+  exact continuous_finsetSum _ (fun k _ => (continuous_apply k).pow 2)
 
 /-- **First-moment integrand is integrable.** -/
 theorem integrable_coord_mul_exp_neg_const_mul_sum_sq
@@ -117,9 +117,9 @@ theorem integrable_coord_mul_exp_neg_const_mul_sum_sq
     filter_upwards with u
     rw [sum_pi_single_mul i (-1) u]; ring_nf
   have hG : Integrable G := by
-    simpa [G, Real.exp_add, sub_eq_add_neg, add_mul,
-      add_assoc, add_left_comm, add_comm,
-      mul_assoc, mul_left_comm, mul_comm] using hplus.add hminus
+    refine (hplus.add hminus).congr (Filter.Eventually.of_forall fun u => ?_)
+    simp only [Pi.add_apply, G, Real.exp_add, sub_eq_add_neg]
+    ring
   refine hG.mono' ?_ ?_
   · exact ((continuous_apply i).mul (continuous_gaussian (ι := ι) c)).aestronglyMeasurable
   · filter_upwards with u
@@ -184,10 +184,10 @@ theorem integrable_coord_mul_coord_mul_exp_neg_const_mul_sum_sq
     simp_rw [Pi.add_apply]
     rw [h_sum_pair (-1) (-1) u]; ring_nf
   have hG : Integrable G := by
-    simpa [G, Real.exp_add, sub_eq_add_neg, add_mul, mul_add,
-      add_assoc, add_left_comm, add_comm,
-      mul_assoc, mul_left_comm, mul_comm] using
-      (((hpp.add hpm).add hmp).add hmm)
+    refine (((hpp.add hpm).add hmp).add hmm).congr
+      (Filter.Eventually.of_forall fun u => ?_)
+    simp only [Pi.add_apply, G, Real.exp_add, sub_eq_add_neg]
+    ring
   refine hG.mono' ?_ ?_
   · exact (((continuous_apply i).mul (continuous_apply j)).mul
       (continuous_gaussian (ι := ι) c)).aestronglyMeasurable

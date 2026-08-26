@@ -185,7 +185,7 @@ lemma T_apply_diag_eq_sum
         funext n
         by_cases h : n = s
         · subst h
-          simpa [hs] using (eq_sum_stdBasis u)
+          simpa [hs, stdBasisVec] using (eq_sum_stdBasis u)
         · simp [Function.update, h]
       _ = ∑ a : ι, T (Function.update m s (u a • stdBasisVec a)) := by
         simpa using
@@ -619,7 +619,7 @@ theorem gaussian_fourth_moment_formula
         fun u => ∑ l, (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) l *
               (u a * u b * u c * (H u) l * gaussianWeight H u)
         from funext h_integrand_eq]
-  rw [integral_finset_sum Finset.univ
+  rw [integral_finsetSum Finset.univ
         (fun l _ => (hGauss.int_3_Hl a b c l).const_mul _)]
   -- Step 3: per l, pull constant out and apply cubic IBP.
   conv_lhs =>
@@ -856,7 +856,7 @@ theorem gaussian_sixth_moment_formula
               (u a * u b * u c * u d * u e * (H u) l *
                 gaussianWeight H u)
         from funext h_integrand_eq]
-  rw [integral_finset_sum Finset.univ
+  rw [integral_finsetSum Finset.univ
         (fun l _ => (hGauss.int_5_Hl a b c d e l).const_mul _)]
   -- Step 3: per l, pull constant out and apply quintic IBP.
   conv_lhs =>
@@ -1200,13 +1200,13 @@ private lemma gaussian_quad_expectation
         (hGauss.int_uk_uj_gW · j) (hGauss.int_uj_Hi_gW j)
         (hGauss.fubini_ibp · j)]
   -- Step 4: swap inner sum / integral.
-  rw [integral_finset_sum Finset.univ
+  rw [integral_finsetSum Finset.univ
         (fun i _ =>
-          (integrable_finset_sum Finset.univ
+          (integrable_finsetSum Finset.univ
             (fun j _ => (hGauss.int_uk_uj_gW i j).const_mul _)))]
   conv_lhs =>
     enter [2, i]
-    rw [integral_finset_sum Finset.univ
+    rw [integral_finsetSum Finset.univ
           (fun j _ => (hGauss.int_uk_uj_gW i j).const_mul _)]
     enter [2, j]
     rw [h_inner i j]
@@ -1654,12 +1654,12 @@ private lemma gaussian_linear_cubic
         Integrable (fun u : ι → ℝ =>
           ∑ k, Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u)) := by
       intros i j
-      exact integrable_finset_sum _ (fun k _ => hInt_ijk i j k)
+      exact integrable_finsetSum _ (fun k _ => hInt_ijk i j k)
     have hInt_i : ∀ i : ι,
         Integrable (fun u : ι → ℝ =>
           ∑ j, ∑ k, Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u)) := by
       intro i
-      exact integrable_finset_sum _ (fun j _ => hInt_ij i j)
+      exact integrable_finsetSum _ (fun j _ => hInt_ij i j)
     -- Calc chain:
     have h_step1 : ∫ u : ι → ℝ, (H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u
         = ∫ u : ι → ℝ, ∑ i, ∑ j, ∑ k,
@@ -1668,12 +1668,12 @@ private lemma gaussian_linear_cubic
       exact Filter.Eventually.of_forall (hExpandHuT l)
     rw [h_step1]
     -- Swap quadruple sum / integral.
-    rw [integral_finset_sum _ (fun i _ => hInt_i i)]
+    rw [integral_finsetSum _ (fun i _ => hInt_i i)]
     conv_lhs =>
       enter [2, i]
-      rw [integral_finset_sum _ (fun j _ => hInt_ij i j)]
+      rw [integral_finsetSum _ (fun j _ => hInt_ij i j)]
       enter [2, j]
-      rw [integral_finset_sum _ (fun k _ => hInt_ijk i j k)]
+      rw [integral_finsetSum _ (fun k _ => hInt_ijk i j k)]
       enter [2, k]
       rw [integral_const_mul]
       rw [hterm i j k l]
@@ -1730,9 +1730,9 @@ private lemma gaussian_linear_cubic
     have hRHS_int : Integrable (fun u : ι → ℝ =>
         ∑ i, ∑ j, ∑ k,
           Tcoord T i j k * (u i * u j * u k * (H u) l * gaussianWeight H u)) := by
-      refine integrable_finset_sum _ (fun i _ => ?_)
-      refine integrable_finset_sum _ (fun j _ => ?_)
-      refine integrable_finset_sum _ (fun k _ => ?_)
+      refine integrable_finsetSum _ (fun i _ => ?_)
+      refine integrable_finsetSum _ (fun j _ => ?_)
+      refine integrable_finsetSum _ (fun k _ => ?_)
       exact (hGauss.int_3_Hl i j k l).const_mul _
     exact hRHS_int.congr <|
       Filter.Eventually.of_forall (fun u => (hExpandHuT l u).symm)
@@ -1747,7 +1747,7 @@ private lemma gaussian_linear_cubic
         exact Filter.Eventually.of_forall hExpandMain
     _ = ∑ l, ∫ u : ι → ℝ,
           (Hinv a) l * ((H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u) := by
-        rw [integral_finset_sum _ (fun l _ => hIntMain l)]
+        rw [integral_finsetSum _ (fun l _ => hIntMain l)]
     _ = ∑ l, (Hinv a) l *
           ∫ u : ι → ℝ, (H u) l * T (fun _ : Fin 3 => u) * gaussianWeight H u := by
         simp_rw [integral_const_mul]
@@ -1862,23 +1862,23 @@ private lemma gaussian_quad_quad
     rw [integral_const_mul]
     rw [gaussian_fourth_moment_formula hGauss i j k l]
   -- Swap quadruple sum/integral. Sum order is (i, k, j, l) per h_pt.
-  rw [integral_finset_sum Finset.univ
-        (fun i _ => integrable_finset_sum Finset.univ
-          (fun k _ => integrable_finset_sum Finset.univ
-            (fun j _ => integrable_finset_sum Finset.univ
+  rw [integral_finsetSum Finset.univ
+        (fun i _ => integrable_finsetSum Finset.univ
+          (fun k _ => integrable_finsetSum Finset.univ
+            (fun j _ => integrable_finsetSum Finset.univ
               (fun l _ => (hGauss.int_4moment i j k l).const_mul _))))]
   conv_lhs =>
     enter [2, i]
-    rw [integral_finset_sum Finset.univ
-        (fun k _ => integrable_finset_sum Finset.univ
-          (fun j _ => integrable_finset_sum Finset.univ
+    rw [integral_finsetSum Finset.univ
+        (fun k _ => integrable_finsetSum Finset.univ
+          (fun j _ => integrable_finsetSum Finset.univ
             (fun l _ => (hGauss.int_4moment i j k l).const_mul _)))]
     enter [2, k]
-    rw [integral_finset_sum Finset.univ
-        (fun j _ => integrable_finset_sum Finset.univ
+    rw [integral_finsetSum Finset.univ
+        (fun j _ => integrable_finsetSum Finset.univ
           (fun l _ => (hGauss.int_4moment i j k l).const_mul _))]
     enter [2, j]
-    rw [integral_finset_sum Finset.univ
+    rw [integral_finsetSum Finset.univ
         (fun l _ => (hGauss.int_4moment i j k l).const_mul _)]
     enter [2, l]
     rw [h_inner i j k l]
@@ -2157,7 +2157,7 @@ private lemma gaussian_quad_quad
 
 /-- **`quadForm B · gW` integrability** under `LaplaceCov4MomentHypotheses`.
 Decompose `quadForm B u = ∑_{i,j} (B e_j)_i · u_i · u_j` and use
-`int_uk_uj_gW` per term + `integrable_finset_sum`. -/
+`int_uk_uj_gW` per term + `integrable_finsetSum`. -/
 private lemma integrable_quadForm_mul_gaussianWeight
     {H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ)}
     (B : (ι → ℝ) →L[ℝ] (ι → ℝ))
@@ -2181,9 +2181,9 @@ private lemma integrable_quadForm_mul_gaussianWeight
         = fun u => ∑ i, ∑ j,
             (B (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
               (u i * u j * gaussianWeight H u) from funext h_eq]
-  apply integrable_finset_sum
+  apply integrable_finsetSum
   intros i _
-  apply integrable_finset_sum
+  apply integrable_finsetSum
   intros j _
   exact (hGauss.toLaplaceCovHypotheses.int_uk_uj_gW i j).const_mul _
 
@@ -2244,10 +2244,10 @@ private lemma integrable_quadForm_mul_quadForm_mul_gaussianWeight
             ((A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
               (B (Pi.single (M := fun _ : ι => ℝ) l (1 : ℝ))) k) *
             (u i * u j * u k * u l * gaussianWeight H u) from funext h_eq]
-  apply integrable_finset_sum; intros i _
-  apply integrable_finset_sum; intros k _
-  apply integrable_finset_sum; intros j _
-  apply integrable_finset_sum; intros l _
+  apply integrable_finsetSum; intros i _
+  apply integrable_finsetSum; intros k _
+  apply integrable_finsetSum; intros j _
+  apply integrable_finsetSum; intros l _
   exact (hGauss.int_4moment i j k l).const_mul _
 
 /-- **Centered 4th-moment contraction** (Step 1 of Lemma B in
@@ -2938,7 +2938,7 @@ private lemma gaussian_dot_quintic_stein
         fun u => ∑ l, b l * (u l * u i * u j * u p * u q * u r *
             gaussianWeight H u) from funext h_pt]
   -- Swap finite sum with integral.
-  rw [integral_finset_sum Finset.univ
+  rw [integral_finsetSum Finset.univ
       (fun l _ => (hGauss.int_6moment l i j p q r).const_mul _)]
   -- Pull const out of each integral; apply quintic-coord-Stein.
   conv_lhs =>
@@ -3386,34 +3386,34 @@ private lemma gaussian_quad_linear_cubic_explicit
                   Tcoord T p q r * c i *
                   (u j * u p * u q * u r * gaussianWeight H u) from
         funext h_pt_piece1]
-      rw [integral_finset_sum Finset.univ
-          (fun p _ => integrable_finset_sum Finset.univ
-            (fun q _ => integrable_finset_sum Finset.univ
-              (fun r _ => integrable_finset_sum Finset.univ
-                (fun i _ => integrable_finset_sum Finset.univ
+      rw [integral_finsetSum Finset.univ
+          (fun p _ => integrable_finsetSum Finset.univ
+            (fun q _ => integrable_finsetSum Finset.univ
+              (fun r _ => integrable_finsetSum Finset.univ
+                (fun i _ => integrable_finsetSum Finset.univ
                   (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
                       j p q r).const_mul _)))))]
       conv_lhs =>
         enter [2, 2, p]
-        rw [integral_finset_sum Finset.univ
-          (fun q _ => integrable_finset_sum Finset.univ
-            (fun r _ => integrable_finset_sum Finset.univ
-              (fun i _ => integrable_finset_sum Finset.univ
+        rw [integral_finsetSum Finset.univ
+          (fun q _ => integrable_finsetSum Finset.univ
+            (fun r _ => integrable_finsetSum Finset.univ
+              (fun i _ => integrable_finsetSum Finset.univ
                 (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
                     j p q r).const_mul _))))]
         enter [2, q]
-        rw [integral_finset_sum Finset.univ
-          (fun r _ => integrable_finset_sum Finset.univ
-            (fun i _ => integrable_finset_sum Finset.univ
+        rw [integral_finsetSum Finset.univ
+          (fun r _ => integrable_finsetSum Finset.univ
+            (fun i _ => integrable_finsetSum Finset.univ
               (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
                   j p q r).const_mul _)))]
         enter [2, r]
-        rw [integral_finset_sum Finset.univ
-          (fun i _ => integrable_finset_sum Finset.univ
+        rw [integral_finsetSum Finset.univ
+          (fun i _ => integrable_finsetSum Finset.univ
             (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
                 j p q r).const_mul _))]
         enter [2, i]
-        rw [integral_finset_sum Finset.univ
+        rw [integral_finsetSum Finset.univ
           (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
               j p q r).const_mul _)]
       rw [Finset.mul_sum]
@@ -3540,34 +3540,34 @@ private lemma gaussian_quad_linear_cubic_explicit
                   Tcoord T p q r * c r *
                   (u i * u j * u p * u q * gaussianWeight H u) from
         funext h_pt_piece2]
-      rw [integral_finset_sum Finset.univ
-          (fun p _ => integrable_finset_sum Finset.univ
-            (fun q _ => integrable_finset_sum Finset.univ
-              (fun r _ => integrable_finset_sum Finset.univ
-                (fun i _ => integrable_finset_sum Finset.univ
+      rw [integral_finsetSum Finset.univ
+          (fun p _ => integrable_finsetSum Finset.univ
+            (fun q _ => integrable_finsetSum Finset.univ
+              (fun r _ => integrable_finsetSum Finset.univ
+                (fun i _ => integrable_finsetSum Finset.univ
                   (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
                       i j p q).const_mul _)))))]
       conv_lhs =>
         enter [2, p]
-        rw [integral_finset_sum Finset.univ
-          (fun q _ => integrable_finset_sum Finset.univ
-            (fun r _ => integrable_finset_sum Finset.univ
-              (fun i _ => integrable_finset_sum Finset.univ
+        rw [integral_finsetSum Finset.univ
+          (fun q _ => integrable_finsetSum Finset.univ
+            (fun r _ => integrable_finsetSum Finset.univ
+              (fun i _ => integrable_finsetSum Finset.univ
                 (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
                     i j p q).const_mul _))))]
         enter [2, q]
-        rw [integral_finset_sum Finset.univ
-          (fun r _ => integrable_finset_sum Finset.univ
-            (fun i _ => integrable_finset_sum Finset.univ
+        rw [integral_finsetSum Finset.univ
+          (fun r _ => integrable_finsetSum Finset.univ
+            (fun i _ => integrable_finsetSum Finset.univ
               (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
                   i j p q).const_mul _)))]
         enter [2, r]
-        rw [integral_finset_sum Finset.univ
-          (fun i _ => integrable_finset_sum Finset.univ
+        rw [integral_finsetSum Finset.univ
+          (fun i _ => integrable_finsetSum Finset.univ
             (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
                 i j p q).const_mul _))]
         enter [2, i]
-        rw [integral_finset_sum Finset.univ
+        rw [integral_finsetSum Finset.univ
           (fun j _ => (hGauss.toLaplaceCov4MomentHypotheses.int_4moment
               i j p q).const_mul _)]
       simp_rw [integral_const_mul]
@@ -3635,7 +3635,7 @@ private lemma gaussian_quad_linear_cubic_explicit
             fun u => ∑ l, b l *
               (u l * u i * u j * u p * u q * u r * gaussianWeight H u)
           from funext h_pt]
-      exact integrable_finset_sum _
+      exact integrable_finsetSum _
         (fun l _ => (hGauss.int_6moment l i j p q r).const_mul _)
     have h_int_term : ∀ p q r i j : ι, Integrable (fun u : ι → ℝ =>
         ((1 / 12 : ℝ) * (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
@@ -3647,25 +3647,25 @@ private lemma gaussian_quad_linear_cubic_explicit
             (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
             Tcoord T p q r) *
           (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
-      fun p q r i => integrable_finset_sum _ (fun j _ => h_int_term p q r i j)
+      fun p q r i => integrable_finsetSum _ (fun j _ => h_int_term p q r i j)
     have h_int_i : ∀ p q r, Integrable (fun u : ι → ℝ =>
         ∑ i, ∑ j, ((1 / 12 : ℝ) *
             (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
             Tcoord T p q r) *
           (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
-      fun p q r => integrable_finset_sum _ (fun i _ => h_int_j p q r i)
+      fun p q r => integrable_finsetSum _ (fun i _ => h_int_j p q r i)
     have h_int_r : ∀ p q, Integrable (fun u : ι → ℝ =>
         ∑ r, ∑ i, ∑ j, ((1 / 12 : ℝ) *
             (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
             Tcoord T p q r) *
           (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
-      fun p q => integrable_finset_sum _ (fun r _ => h_int_i p q r)
+      fun p q => integrable_finsetSum _ (fun r _ => h_int_i p q r)
     have h_int_q : ∀ p, Integrable (fun u : ι → ℝ =>
         ∑ q, ∑ r, ∑ i, ∑ j, ((1 / 12 : ℝ) *
             (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i *
             Tcoord T p q r) *
           (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)) :=
-      fun p => integrable_finset_sum _ (fun q _ => h_int_r p q)
+      fun p => integrable_finsetSum _ (fun q _ => h_int_r p q)
     -- Compute LHS: integrate, swap sums/integral, apply Stein, distribute.
     rw [show (fun u : ι → ℝ =>
             ((1 / 2 : ℝ) * quadForm A u) * dot b u *
@@ -3676,16 +3676,16 @@ private lemma gaussian_quad_linear_cubic_explicit
                 Tcoord T p q r) *
               (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)
         from funext h_lhs_pt]
-    rw [integral_finset_sum _ (fun p _ => h_int_q p)]
+    rw [integral_finsetSum _ (fun p _ => h_int_q p)]
     conv_lhs =>
       enter [2, p]
-      rw [integral_finset_sum _ (fun q _ => h_int_r p q)]
+      rw [integral_finsetSum _ (fun q _ => h_int_r p q)]
       enter [2, q]
-      rw [integral_finset_sum _ (fun r _ => h_int_i p q r)]
+      rw [integral_finsetSum _ (fun r _ => h_int_i p q r)]
       enter [2, r]
-      rw [integral_finset_sum _ (fun i _ => h_int_j p q r i)]
+      rw [integral_finsetSum _ (fun i _ => h_int_j p q r i)]
       enter [2, i]
-      rw [integral_finset_sum _ (fun j _ => h_int_term p q r i j)]
+      rw [integral_finsetSum _ (fun j _ => h_int_term p q r i j)]
       enter [2, j]
       rw [integral_const_mul]
       rw [gaussian_dot_quintic_stein hGauss b i j p q r]
@@ -3818,11 +3818,11 @@ private lemma gaussian_centeredQuad_linear_cubic_explicit
                 Tcoord T p q r) *
               (dot b u * u i * u j * u p * u q * u r * gaussianWeight H u)
         from funext h_pt]
-    refine integrable_finset_sum _ (fun p _ => ?_)
-    refine integrable_finset_sum _ (fun q _ => ?_)
-    refine integrable_finset_sum _ (fun r _ => ?_)
-    refine integrable_finset_sum _ (fun i _ => ?_)
-    refine integrable_finset_sum _ (fun j _ => ?_)
+    refine integrable_finsetSum _ (fun p _ => ?_)
+    refine integrable_finsetSum _ (fun q _ => ?_)
+    refine integrable_finsetSum _ (fun r _ => ?_)
+    refine integrable_finsetSum _ (fun i _ => ?_)
+    refine integrable_finsetSum _ (fun j _ => ?_)
     -- Need integrability of `dot b u * u_i u_j u_p u_q u_r * gW`.
     have h_pt' : ∀ u : ι → ℝ,
         dot b u * u i * u j * u p * u q * u r * gaussianWeight H u =
@@ -3840,7 +3840,7 @@ private lemma gaussian_centeredQuad_linear_cubic_explicit
             fun u => ∑ l, b l *
               (u l * u i * u j * u p * u q * u r * gaussianWeight H u)
           from funext h_pt']
-      exact integrable_finset_sum _
+      exact integrable_finsetSum _
         (fun l _ => (hGauss.int_6moment l i j p q r).const_mul _)
     exact h_int_5.const_mul _
   have h_int_lin_cub : Integrable (fun u : ι → ℝ =>
@@ -3864,9 +3864,9 @@ private lemma gaussian_centeredQuad_linear_cubic_explicit
             ((1 / 6 : ℝ) * Tcoord T p q r) *
               (dot b u * u p * u q * u r * gaussianWeight H u)
         from funext h_pt]
-    refine integrable_finset_sum _ (fun p _ => ?_)
-    refine integrable_finset_sum _ (fun q _ => ?_)
-    refine integrable_finset_sum _ (fun r _ => ?_)
+    refine integrable_finsetSum _ (fun p _ => ?_)
+    refine integrable_finsetSum _ (fun q _ => ?_)
+    refine integrable_finsetSum _ (fun r _ => ?_)
     have h_pt' : ∀ u : ι → ℝ,
         dot b u * u p * u q * u r * gaussianWeight H u =
           ∑ l, b l * (u l * u p * u q * u r * gaussianWeight H u) := by
@@ -3880,7 +3880,7 @@ private lemma gaussian_centeredQuad_linear_cubic_explicit
               dot b u * u p * u q * u r * gaussianWeight H u) =
             fun u => ∑ l, b l * (u l * u p * u q * u r * gaussianWeight H u)
           from funext h_pt']
-      refine integrable_finset_sum _ (fun l _ => ?_)
+      refine integrable_finsetSum _ (fun l _ => ?_)
       -- Need integrable u_l u_p u_q u_r * gW. Use int_4moment.
       exact (hGauss.toLaplaceCov4MomentHypotheses.int_4moment l p q r).const_mul _
     exact h_int_4.const_mul _
@@ -5438,7 +5438,7 @@ private lemma integrable_expNumLin_mul_gaussianWeight
   · -- Strongly measurable.
     have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
       unfold dot
-      exact continuous_finset_sum _
+      exact continuous_finsetSum _
         (fun i _ => continuous_const.mul (continuous_apply i))
     exact ((continuous_const.mul h_dot_cont).mul
       (continuous_gaussianWeight H)).aestronglyMeasurable
@@ -5476,7 +5476,7 @@ private lemma integrable_expNumQuad_mul_gaussianWeight
   apply h_dom_int.mono'
   · have h_qf_cont : Continuous (fun u : ι → ℝ => quadForm hφ.A u) := by
       show Continuous (fun u : ι → ℝ => ∑ i, u i * (hφ.A u) i)
-      refine continuous_finset_sum _ (fun i _ => ?_)
+      refine continuous_finsetSum _ (fun i _ => ?_)
       exact (continuous_apply i).mul ((continuous_apply i).comp hφ.A.continuous)
     have h_eN_cont : Continuous (fun u : ι → ℝ => expNumQuad φ a hφ t u) := by
       unfold expNumQuad
@@ -5585,7 +5585,7 @@ private lemma integrable_expNumLin_mul_expPotCubic_mul_gaussianWeight
   apply h_dom_int.mono'
   · have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
       unfold dot
-      exact continuous_finset_sum _
+      exact continuous_finsetSum _
         (fun i _ => continuous_const.mul (continuous_apply i))
     have h_T_cont : Continuous (fun u : ι → ℝ => hV.T (fun _ : Fin 3 => u)) := by
       have h_diag : Continuous (fun u : ι → ℝ => fun _ : Fin 3 => u) :=
@@ -5724,7 +5724,7 @@ private lemma integrable_expNumLin_mul_gW_mul_rescaled_weight
   apply h_dom_int.mono'
   · have h_dot_cont : Continuous (fun u : ι → ℝ => dot a u) := by
       unfold dot
-      exact continuous_finset_sum _
+      exact continuous_finsetSum _
         (fun i _ => continuous_const.mul (continuous_apply i))
     have h_lin_cont : Continuous (fun u : ι → ℝ => expNumLin a t u) := by
       unfold expNumLin
@@ -5783,7 +5783,7 @@ private lemma integrable_expNumQuad_mul_gW_mul_rescaled_weight
   apply h_dom_int.mono'
   · have h_qf_cont : Continuous (fun u : ι → ℝ => quadForm hφ.A u) := by
       show Continuous (fun u : ι → ℝ => ∑ i, u i * (hφ.A u) i)
-      refine continuous_finset_sum _ (fun i _ => ?_)
+      refine continuous_finsetSum _ (fun i _ => ?_)
       exact (continuous_apply i).mul ((continuous_apply i).comp hφ.A.continuous)
     have h_quad_cont : Continuous (fun u : ι → ℝ => expNumQuad φ a hφ t u) := by
       unfold expNumQuad
@@ -5878,7 +5878,7 @@ private lemma integrable_J3_integrand
       - expNumLin a t u * gaussianWeight H u
       + expNumLin a t u * expPotCubic V H hV t u * gaussianWeight H u) := by
     have := (h_piece1.sub h_piece2).add h_piece3
-    convert this using 1
+    exact this
   apply h_combine.congr
   filter_upwards with u
   ring
@@ -5931,7 +5931,7 @@ private lemma integrable_J4_integrand
           (gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u)))
       + (expNumeratorCoeff V φ H Hinv a hV hφ / t) * gaussianWeight H u) := by
     have := ((h_piece1.sub h_piece2).sub h_piece3).add h_piece4
-    convert this using 1
+    exact this
   apply h_combine.congr
   filter_upwards with u
   ring
@@ -6004,7 +6004,7 @@ private lemma integrable_J3_integrand_sym
             + expPotCubic V H hV t (-u)) *
         gaussianWeight H u) := by
     have := h_int_orig.sub h_int_neg
-    convert this using 1
+    exact this
   apply h_combine.congr
   filter_upwards with u
   ring
@@ -6033,7 +6033,7 @@ private lemma integrable_J4_integrand_sym
           (Real.exp (-(rescaledPerturbation V H t (-u))) - 1) *
           gaussianWeight H u) := by
     have := h_int_orig.add h_int_neg
-    convert this using 1
+    exact this
   apply h_sum.congr
   filter_upwards with u
   ring
@@ -6422,7 +6422,7 @@ private lemma expNumerator_centered_decomp
   obtain ⟨Kφ, p, hKφ_nn, hpoly⟩ := hφ.toObservableApprox.poly_growth
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ.toObservableApprox.phi_continuous.comp
-      (continuous_const.smul continuous_id)
+      (continuous_const_smul _)
   have h_rw_cont : Continuous (fun u : ι → ℝ =>
       gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) :=
     (continuous_gaussianWeight H).mul (Real.continuous_exp.comp
@@ -6775,14 +6775,11 @@ private lemma expNumErr₁_bound
     have h4 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos 4
     have h4N := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc_pos (4 + N)
     have h_sum := h4.add h4N
-    convert h_sum using 1
-    funext u
-    rw [show ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2))
-          = ‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2))
-            + ‖u‖ ^ (4 + N) * Real.exp (-(c * ‖u‖ ^ 2)) from by
-        rw [show ‖u‖ ^ (4 + N) = ‖u‖ ^ 4 * ‖u‖ ^ N from by rw [pow_add]]
-        ring]
-    rfl
+    refine h_sum.congr (Filter.Eventually.of_forall fun u => ?_)
+    change ‖u‖ ^ 4 * Real.exp (-(c * ‖u‖ ^ 2)) + ‖u‖ ^ (4 + N) * Real.exp (-(c * ‖u‖ ^ 2))
+      = ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) * Real.exp (-(c * ‖u‖ ^ 2))
+    rw [show ‖u‖ ^ (4 + N) = ‖u‖ ^ 4 * ‖u‖ ^ N from by rw [pow_add]]
+    ring
   have hM_nn : 0 ≤ M := by
     rw [hM_def]
     apply MeasureTheory.integral_nonneg
@@ -6856,7 +6853,7 @@ private lemma expNumErr₁_bound
               gcongr
               linarith
       · -- Tail: use global bound, absorb `1` into `‖u‖⁴/(jet_R⁴·t²)`.
-        push_neg at hu
+        push Not at hu
         have h_glob :=
           abs_expNumObsRem_global_le (φ := φ) (a := a) hφ hKφ_nn hpoly ht1 u
         have h_norm_sq_lb : jet_R ^ 2 * t < ‖u‖ ^ 2 := by
@@ -6887,7 +6884,7 @@ private lemma expNumErr₁_bound
           · have : ‖u‖ ^ p ≤ 1 := pow_le_one₀ h_norm_nn h1u
             have : 0 ≤ ‖u‖ ^ N := pow_nonneg h_norm_nn _
             linarith
-          · push_neg at h1u
+          · push Not at h1u
             have h_p_le : ‖u‖ ^ p ≤ ‖u‖ ^ N := by
               apply pow_le_pow_right₀ h1u.le
               rw [hN_def]; exact le_max_left _ _
@@ -6897,7 +6894,7 @@ private lemma expNumErr₁_bound
         have h_norm_le_N : ‖u‖ ≤ 1 + ‖u‖ ^ N := by
           by_cases h1u : ‖u‖ ≤ 1
           · linarith [pow_nonneg (norm_nonneg u) N]
-          · push_neg at h1u
+          · push Not at h1u
             have h_le : ‖u‖ ≤ ‖u‖ ^ N := by
               calc ‖u‖ = ‖u‖ ^ 1 := by ring
                 _ ≤ ‖u‖ ^ N := by
@@ -6908,7 +6905,7 @@ private lemma expNumErr₁_bound
           by_cases h1u : ‖u‖ ≤ 1
           · have : ‖u‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) h1u
             linarith [pow_nonneg (norm_nonneg u) N]
-          · push_neg at h1u
+          · push Not at h1u
             have h_le : ‖u‖ ^ 2 ≤ ‖u‖ ^ N := by
               apply pow_le_pow_right₀ h1u.le
               rw [hN_def]; have := le_max_right p 3; omega
@@ -6917,7 +6914,7 @@ private lemma expNumErr₁_bound
           by_cases h1u : ‖u‖ ≤ 1
           · have : ‖u‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) h1u
             linarith [pow_nonneg (norm_nonneg u) N]
-          · push_neg at h1u
+          · push Not at h1u
             have h_le : ‖u‖ ^ 3 ≤ ‖u‖ ^ N := by
               apply pow_le_pow_right₀ h1u.le
               rw [hN_def]; exact le_max_right _ _
@@ -7118,7 +7115,7 @@ private lemma expNumErr₂_bound
         _ = Glocal u := by rw [hGlocal_def]
         _ ≤ Glocal u + Gtail u := by linarith [hGtail_nn u]
     · -- Tail: bound by Gtail, Glocal nonneg.
-      push_neg at hu
+      push Not at hu
       have h_tail :
           |expNumCubic φ a hφ t u * gaussianWeight H u
               * (Real.exp (-(rescaledPerturbation V H t u)) - 1)|
@@ -7864,7 +7861,7 @@ private lemma expNumErr₃_bound
           Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
         rw [hG_loc_def, hC_loc_def]
       linarith [h_loc, h_tail_nn, h_loc_eq.le, h_loc_eq.ge]
-    · push_neg at hu
+    · push Not at hu
       have h_tail := J3_tail_pointwise_le V H a hV hδ_pos hc_pos rfl h_coer ht_pos u hu
       have h_loc_nn : 0 ≤ G_loc u := hG_loc_nn u
       have h_tail_eq : G_tail u = (La * (4 / δ ^ 3 + ‖hV.T‖ / (3 * δ ^ 2)) / t ^ 2) *
@@ -8080,7 +8077,7 @@ private lemma expNumErr₄_bound
       · have : ‖u‖ ^ k ≤ 1 := pow_le_one₀ h_norm_nn h1u
         have h8 : 0 ≤ ‖u‖ ^ 8 := pow_nonneg h_norm_nn _
         linarith
-      · push_neg at h1u
+      · push Not at h1u
         have : ‖u‖ ^ k ≤ ‖u‖ ^ 8 := pow_le_pow_right₀ h1u.le hk
         linarith
     have h_u2 : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 2 (by omega)
@@ -8186,7 +8183,7 @@ private lemma expNumErr₄_bound
             nlinarith only [h_inv_nn, hb_nn, hD_nn]
         _ = G u := by rw [hG_def]
     · -- TAIL CASE: ‖u‖ > δ·√t.
-      push_neg at hu
+      push Not at hu
       have h_uniform := abs_gW_J4_bracket_le_uniform V H hc_pos h_coer ht_pos u
       -- Switch from `|gW · bracket| ≤ ...` (bound on |...|) to `gW · |bracket| ≤ ...`.
       -- Note h_uniform: |gW · bracket| ≤ 2·gW + 2·exp(-c·‖u‖²).
@@ -8894,7 +8891,7 @@ private lemma integrable_pow_norm_mul_gaussianWeight_mul_cV
   have h_continuous : Continuous (fun u : ι → ℝ =>
       ‖u‖ ^ k * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) :=
     ((continuous_norm.pow k).mul (continuous_gaussianWeight H)).mul
-      (hV.cV_continuous.comp (continuous_const.smul continuous_id))
+      (hV.cV_continuous.comp (continuous_const_smul _))
   -- Use `integrable_pow_norm_mul_gaussianWeight` to get
   -- `Integrable (‖u‖^(k+3) · gW)` and bound by const.
   have h_dom : Integrable (fun u : ι → ℝ =>
@@ -9302,7 +9299,7 @@ private lemma integrable_fqqKernel_mul_gaussianWeight_mul_cV
       fqqKernel A B Hinv u * gaussianWeight H u *
         hV.cV ((Real.sqrt t)⁻¹ • u)) :=
     ((fqqKernel_continuous A B Hinv).mul (continuous_gaussianWeight H)).mul
-      (hV.cV_continuous.comp (continuous_const.smul continuous_id))
+      (hV.cV_continuous.comp (continuous_const_smul _))
   refine h_dom_int.mono h_continuous.aestronglyMeasurable ?_
   filter_upwards with u
   -- Goal: ‖FQQ · gW · cV‖ ≤ ‖C(1+‖u‖^4) · gW · cV‖.
@@ -9507,7 +9504,7 @@ private lemma abs_integral_corrected_bracket_FQQ_le
         rw [hGlocal_def, ← hCs_def, ← hjet_C_def, ← hc'_def]; ring
       rw [h_eq] at h_step
       linarith [hGtail_nn u]
-    · push_neg at hu
+    · push Not at hu
       have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_pos
       have hsqrt_inv_le_one : (Real.sqrt t)⁻¹ ≤ 1 := by
         rw [inv_le_one_iff₀]; right; exact Real.one_le_sqrt.mpr ht1
@@ -10064,7 +10061,7 @@ private lemma abs_integral_corrected_bracket_poly4_le
         rw [hGlocal_def, ← hCs_def, ← hjet_C_def, ← hc'_def]; ring
       rw [h_eq] at h_step
       linarith [hGtail_nn u]
-    · push_neg at hu
+    · push Not at hu
       have hsqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_pos
       have hsqrt_inv_le_one : (Real.sqrt t)⁻¹ ≤ 1 := by
         rw [inv_le_one_iff₀]; right; exact Real.one_le_sqrt.mpr ht1
@@ -11107,10 +11104,10 @@ private lemma integral_crossEvenKernelCentered_mul_gaussianWeight_eq_zero
             ((1 / 6 : ℝ) * b l * Tcoord Φ p q r) *
               (u l * u p * u q * u r * gaussianWeight H u)
         from funext h_pt]
-    refine integrable_finset_sum _ (fun p _ => ?_)
-    refine integrable_finset_sum _ (fun q _ => ?_)
-    refine integrable_finset_sum _ (fun r _ => ?_)
-    refine integrable_finset_sum _ (fun l _ => ?_)
+    refine integrable_finsetSum _ (fun p _ => ?_)
+    refine integrable_finsetSum _ (fun q _ => ?_)
+    refine integrable_finsetSum _ (fun r _ => ?_)
+    refine integrable_finsetSum _ (fun l _ => ?_)
     exact (hGauss.int_4moment l p q r).const_mul _
   unfold crossEvenKernelCentered
   rw [show (fun u : ι → ℝ =>
@@ -11382,14 +11379,14 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ p ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_p_le_N
         linarith
     have h_v_2_le : ‖v‖ ^ 2 ≤ 1 + ‖v‖ ^ N := by
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
           pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
         linarith
@@ -11397,7 +11394,7 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 3 ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_3_le_N
         linarith
     calc |expNumObsRem φ 0 hφ.toObservableTensorApprox t v|
@@ -11521,7 +11518,7 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
       by_cases hu1 : ‖u‖ ≤ 1
       · have : ‖u‖ ^ 4 ≤ 1 := pow_le_one₀ (norm_nonneg _) hu1
         linarith [pow_nonneg (norm_nonneg u) (N + 4)]
-      · push_neg at hu1
+      · push Not at hu1
         have h1 : ‖u‖ ^ 4 ≤ ‖u‖ ^ (N + 4) :=
           pow_le_pow_right₀ hu1.le (by linarith)
         linarith
@@ -11835,14 +11832,14 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ p ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_p_le_N
         linarith
     have h_v_2_le : ‖v‖ ^ 2 ≤ 1 + ‖v‖ ^ N := by
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
           pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
         linarith
@@ -11850,7 +11847,7 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 3 ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_3_le_N
         linarith
     calc |expNumObsRem φ 0 hφ.toObservableTensorApprox t v|
@@ -11953,7 +11950,7 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le
       by_cases hu1 : ‖u‖ ≤ 1
       · have : ‖u‖ ^ 4 ≤ 1 := pow_le_one₀ (norm_nonneg _) hu1
         linarith [pow_nonneg (norm_nonneg u) (N + 4)]
-      · push_neg at hu1
+      · push Not at hu1
         have h1 : ‖u‖ ^ 4 ≤ ‖u‖ ^ (N + 4) :=
           pow_le_pow_right₀ hu1.le (by linarith)
         linarith
@@ -12112,7 +12109,7 @@ private lemma bulkErrA_exp_sub_one_asymptotic
           ≤ Hlocal u := by
         rw [hHlocal_def, hK_loc_def]; exact h
       linarith [hHtail_nn u]
-    · push_neg at hu
+    · push Not at hu
       have h := h_tail t ht_one u hu
       have h_le : |bulkErrA φ b hφ.toObservableTensorApprox t u *
           gaussianWeight H u *
@@ -12147,12 +12144,12 @@ private lemma bulkErrA_exp_sub_one_asymptotic
   have hV_cont : Continuous V := hV.toPotentialApprox.V_continuous
   have hφ_cont : Continuous φ := hφ.toObservableApprox.phi_continuous
   have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_smul : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul
   have h_dot_b : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_quadφ : Continuous (fun u : ι → ℝ =>
       quadForm hφ.toObservableTensorApprox.A u) :=
@@ -12340,14 +12337,14 @@ private lemma integrable_bulkErrA_mul_gaussianWeight
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ p ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_p_le_N
         linarith
     have h_v_2_le : ‖v‖ ^ 2 ≤ 1 + ‖v‖ ^ N := by
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
           pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
         linarith
@@ -12355,7 +12352,7 @@ private lemma integrable_bulkErrA_mul_gaussianWeight
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 3 ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_3_le_N
         linarith
     calc |expNumObsRem φ 0 hφ.toObservableTensorApprox t v|
@@ -12371,12 +12368,12 @@ private lemma integrable_bulkErrA_mul_gaussianWeight
           rw [hR_const_def]; nlinarith only [hKφ_nn, h_normN_nn]
   -- Continuity of B_t · gW.
   have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_smul : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul
   have h_dot_b : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_quadφ : Continuous (fun u : ι → ℝ =>
       quadForm hφ.toObservableTensorApprox.A u) :=
@@ -12569,7 +12566,7 @@ private lemma bulkErrA_gaussian_asymptotic
           ≤ Hlocal u := by
         rw [hHlocal_def, hK_loc_def]; exact h
       linarith [hHtail_nn u]
-    · push_neg at hu
+    · push Not at hu
       have h := h_tail t ht_one u hu
       have h_le : |t * Real.sqrt t * dot b u *
           (expNumObsRem φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
@@ -12602,12 +12599,12 @@ private lemma bulkErrA_gaussian_asymptotic
   -- Continuity of the symmetric integrand.
   have hφ_cont : Continuous φ := hφ.toObservableApprox.phi_continuous
   have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_smul : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul
   have h_dot_b : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_quadφ : Continuous (fun u : ι → ℝ =>
       quadForm hφ.toObservableTensorApprox.A u) :=
@@ -12835,7 +12832,7 @@ private lemma integrable_bulkErrA_mul_rescaled_weight
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ p ≤ ‖v‖ ^ N :=
           pow_le_pow_right₀ hv.le h_p_le_N
         linarith
@@ -12843,7 +12840,7 @@ private lemma integrable_bulkErrA_mul_rescaled_weight
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
           pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
         linarith
@@ -12851,7 +12848,7 @@ private lemma integrable_bulkErrA_mul_rescaled_weight
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 3 ≤ ‖v‖ ^ N :=
           pow_le_pow_right₀ hv.le h_3_le_N
         linarith
@@ -12868,12 +12865,12 @@ private lemma integrable_bulkErrA_mul_rescaled_weight
           rw [hR_const_def]; nlinarith only [hKφ_nn, h_normN_nn]
   -- Continuity of integrand.
   have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_smul : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul
   have h_dot_b : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_quadφ : Continuous (fun u : ι → ℝ =>
       quadForm hφ.toObservableTensorApprox.A u) :=
@@ -13009,10 +13006,10 @@ private lemma integrable_crossEvenKernel_mul_gaussianWeight
           ((1 / 6 : ℝ) * b l * Tcoord Φ p q r) *
             (u l * u p * u q * u r * gaussianWeight H u)
       from funext h_pt]
-  refine integrable_finset_sum _ (fun p _ => ?_)
-  refine integrable_finset_sum _ (fun q _ => ?_)
-  refine integrable_finset_sum _ (fun r _ => ?_)
-  refine integrable_finset_sum _ (fun l _ => ?_)
+  refine integrable_finsetSum _ (fun p _ => ?_)
+  refine integrable_finsetSum _ (fun q _ => ?_)
+  refine integrable_finsetSum _ (fun r _ => ?_)
+  refine integrable_finsetSum _ (fun l _ => ?_)
   exact (hGauss.int_4moment l p q r).const_mul _
 
 /-- **`crossEvenKernelCentered · gW` integrability**: difference of two
@@ -13251,7 +13248,7 @@ private lemma crossEvenKernel_continuous
   unfold crossEvenKernel
   have h_dot_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_diag_cont :
       Continuous (fun u : ι → ℝ => (fun _ : Fin 3 => u)) := by
@@ -13350,7 +13347,7 @@ private lemma integrable_crossEvenKernel_mul_gaussianWeight_mul_cV
       crossEvenKernel b Φ u * gaussianWeight H u *
         hV.cV ((Real.sqrt t)⁻¹ • u)) :=
     ((crossEvenKernel_continuous b Φ).mul (continuous_gaussianWeight H)).mul
-      (hV.cV_continuous.comp (continuous_const.smul continuous_id))
+      (hV.cV_continuous.comp (continuous_const_smul _))
   refine h_dom_int.mono h_continuous.aestronglyMeasurable ?_
   filter_upwards with u
   have h_F_le := hF_bound u
@@ -13808,7 +13805,7 @@ private lemma crossOddKernel_continuous
   unfold crossOddKernel
   have h_dot_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_qA_cont : Continuous (fun u : ι → ℝ => quadForm A u) :=
     continuous_quadForm A
@@ -14897,7 +14894,7 @@ private lemma abs_integral_crossOdd_corrected_diff_le
               Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
         rw [hK_loc_const_def]
       linarith [h_loc, h_tail_nn, h_loc_eq.le, h_loc_eq.ge, h_loc_form.le, h_loc_form.ge]
-    · push_neg at hu
+    · push Not at hu
       have h_tail := abs_crossOdd_J3_diff_tail_le V H Hinv A b hV.toPotentialTensorApprox
         hδ_pos hc_pos rfl h_coer ht_pos u hu
       have h_loc_nn : 0 ≤ G_loc u := hG_loc_nn u
@@ -15429,7 +15426,7 @@ private lemma abs_integral_inv_sqrt_t_mul_odd5Kernel_le
       rw [h_eq_glocal] at h_step
       linarith [hGtail_nn u]
     · -- Tail case.
-      push_neg at hu
+      push Not at hu
       have h_tail_bound :=
         abs_gaussianWeight_mul_exp_sub_one_le_tail V H hc_pos hR_pos hCs_nn
           h_coer h_local hδ_pos ht_pos u hu
@@ -15944,7 +15941,7 @@ private lemma abs_bulkErr_local_le
     by_cases hcase : ‖u‖ ≤ 1
     · have h1 : ‖u‖ ^ k ≤ 1 := pow_le_one₀ h_norm_nn hcase
       linarith only [h1, pow_nonneg h_norm_nn 8]
-    · push_neg at hcase
+    · push Not at hcase
       have h1 : 1 ≤ ‖u‖ := hcase.le
       have hk_pow : ‖u‖ ^ k ≤ ‖u‖ ^ 8 := pow_le_pow_right₀ h1 hk
       linarith only [hk_pow]
@@ -16450,7 +16447,7 @@ private lemma abs_bulkErr_tail_le
     · have h1 : ‖u‖ ^ k ≤ 1 := pow_le_one₀ h_norm_nn hcase
       have hMpow : 0 ≤ ‖u‖ ^ M := pow_nonneg h_norm_nn _
       linarith
-    · push_neg at hcase
+    · push Not at hcase
       have h1 : 1 ≤ ‖u‖ := hcase.le
       have hk_pow : ‖u‖ ^ k ≤ ‖u‖ ^ M := pow_le_pow_right₀ h1 hk
       linarith
@@ -16812,7 +16809,7 @@ private lemma abs_integral_bulkErr_le
       have h_le := le_trans h_step1 h_step2
       linarith [hGtail_nn u]
     · -- Tail region.
-      push_neg at hu
+      push Not at hu
       have h_bulk := h_tail_bound t ht1 u hu
       have h_indicator : 1 ≤ ‖u‖ ^ 2 / (R ^ 2 * t) := by
         have hRsqrt_pos : 0 < R * Real.sqrt t := mul_pos hR_pos hsqrt_pos
@@ -16926,7 +16923,7 @@ private lemma abs_integral_bulkErr_le
   have h_φ_cont : Continuous φ := hφ.toObservableApprox.phi_continuous
   have h_ψ_cont : Continuous ψ := hψ.toObservableApprox.phi_continuous
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_φ_smul : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     h_φ_cont.comp h_smul_cont
   have h_ψ_smul : Continuous (fun u : ι → ℝ => ψ ((Real.sqrt t)⁻¹ • u)) :=
@@ -16937,7 +16934,7 @@ private lemma abs_integral_bulkErr_le
     exact h_φ_smul.sub continuous_const
   have h_dot_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_psirem_cont : Continuous (fun u : ι → ℝ =>
       expCovPsiRem ψ b t u) := by
@@ -17195,7 +17192,7 @@ private lemma integrable_dot_mul_rescaled_weight
   have hA_nn : 0 ≤ A := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
   have h_dot_a_cont : Continuous (fun u : ι → ℝ => dot a u) := by
     unfold dot
-    exact continuous_finset_sum _
+    exact continuous_finsetSum _
       (fun i _ => continuous_const.mul (continuous_apply i))
   have h_dom : Integrable (fun u : ι → ℝ =>
       A * (‖u‖ ^ 1 *
@@ -17240,7 +17237,7 @@ private lemma integrable_obs_mul_rescaled_weight
   have hinv_sqrt_pos : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hsqrt_pos
   obtain ⟨Kφ, p, hKφ_nn, hpoly⟩ := hφ.poly_growth
   have h_phi_cont : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
-    hφ.phi_continuous.comp (continuous_const.smul continuous_id)
+    hφ.phi_continuous.comp (continuous_const_smul _)
   have h_rw_cont : Continuous (fun u : ι → ℝ =>
       gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) :=
     (continuous_gaussianWeight H).mul (Real.continuous_exp.comp
@@ -17646,14 +17643,14 @@ private lemma abs_integral_bulkErrA_le
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ p ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ p ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_p_le_N
         linarith
     have h_v_2_le : ‖v‖ ^ 2 ≤ 1 + ‖v‖ ^ N := by
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
           pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
         linarith
@@ -17661,7 +17658,7 @@ private lemma abs_integral_bulkErrA_le
       by_cases hv : ‖v‖ ≤ 1
       · have : ‖v‖ ^ 3 ≤ 1 := pow_le_one₀ (norm_nonneg _) hv
         linarith
-      · push_neg at hv
+      · push Not at hv
         have h1 : ‖v‖ ^ 3 ≤ ‖v‖ ^ N := pow_le_pow_right₀ hv.le h_3_le_N
         linarith
     calc |expNumObsRem φ 0 hφ.toObservableTensorApprox t v|
@@ -17678,12 +17675,12 @@ private lemma abs_integral_bulkErrA_le
           nlinarith only [hKφ_nn, h_normN_nn]
   -- Continuity setup.
   have h_smul : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phi_smul : Continuous (fun u : ι → ℝ => φ ((Real.sqrt t)⁻¹ • u)) :=
     hφ_cont.comp h_smul
   have h_dot_b : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_quadφ : Continuous (fun u : ι → ℝ =>
       quadForm hφ.toObservableTensorApprox.A u) :=
@@ -18368,7 +18365,7 @@ private theorem rescaledIntegral_rr_connected_asymptotic
             (1 : (ι → ℝ) →L[ℝ] (ι → ℝ)) := by
     unfold trASig
     refine Finset.sum_congr rfl (fun i _ => ?_)
-    simp [ContinuousLinearMap.comp_apply, ContinuousLinearMap.one_apply]
+    simp [ContinuousLinearMap.comp_apply, one_apply_eq_self]
   set c_QQ : ℝ := (1 / 2 : ℝ) *
       trASig (hφ.A.comp (Hinv.comp (hψ.A.comp Hinv)))
         (1 : (ι → ℝ) →L[ℝ] (ι → ℝ)) with hc_QQ_def
@@ -18529,14 +18526,14 @@ private theorem rescaledIntegral_rr_connected_asymptotic
   have h_φ_cont : Continuous φ := hφ.toObservableApprox.phi_continuous
   have h_ψ_cont : Continuous ψ := hψ.toObservableApprox.phi_continuous
   have h_smul_cont : Continuous (fun u : ι → ℝ => (Real.sqrt t)⁻¹ • u) :=
-    continuous_const.smul continuous_id
+    continuous_const_smul _
   have h_phiconn_cont : Continuous (fun u : ι → ℝ =>
       expCovPhiConn V φ H Hinv (0 : ι → ℝ) hV.toPotentialTensorApprox hφ t u) := by
     unfold expCovPhiConn
     exact (h_φ_cont.comp h_smul_cont).sub continuous_const
   have h_dot_cont : Continuous (fun u : ι → ℝ => dot b u) := by
     unfold dot
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       continuous_const.mul (continuous_apply i))
   have h_psirem_cont : Continuous (fun u : ι → ℝ =>
       expCovPsiRem ψ b t u) := by
@@ -18651,7 +18648,7 @@ private theorem rescaledIntegral_rr_connected_asymptotic
       simp only [Pi.add_apply]
       linarith
     · -- Tail.
-      push_neg at hu
+      push Not at hu
       have h_bb := h_tail_bound t ht1 u hu
       have hRsqrt_pos : 0 < R_jet * Real.sqrt t :=
         mul_pos hR_jet_pos hsqrt_pos

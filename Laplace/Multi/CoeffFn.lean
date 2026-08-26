@@ -33,7 +33,7 @@ theorem exponentPoly_coeff (a : ℕ → ℝ) (N u : ℕ) :
     (exponentPoly a N).coeff u =
       if u ∈ Finset.Icc 1 N then a u else 0 := by
   unfold exponentPoly
-  rw [Polynomial.finset_sum_coeff]
+  rw [Polynomial.finsetSum_coeff]
   simp only [Polynomial.coeff_C_mul, Polynomial.coeff_X_pow, mul_ite,
     mul_one, mul_zero]
   exact Finset.sum_ite_eq _ u a
@@ -46,7 +46,7 @@ theorem gradedExpPoly_coeff (a : ℕ → ℝ) (N j : ℕ) :
         (-1 : ℝ) ^ i / (i.factorial : ℝ) *
           (exponentPoly a N ^ i).coeff j := by
   unfold gradedExpPoly
-  rw [Polynomial.finset_sum_coeff]
+  rw [Polynomial.finsetSum_coeff]
   refine Finset.sum_congr rfl fun i _ ↦ ?_
   rw [Polynomial.coeff_C_mul]
 
@@ -86,12 +86,12 @@ theorem continuous_exponentPoly_pow_coeff (L : EuclidD d → ℝ)
     intro k
     have hcm : ∀ z : EuclidD d,
         (exponentPoly (fun s ↦ exponentTerm s L z) N ^ (i + 1)).coeff k =
-        ∑ x ∈ Finset.antidiagonal k,
+        ∑ x ∈ Finset.HasAntidiagonal.antidiagonal k,
           (exponentPoly (fun s ↦ exponentTerm s L z) N).coeff x.1 *
             (exponentPoly (fun s ↦ exponentTerm s L z) N ^ i).coeff x.2 :=
       fun z ↦ by rw [pow_succ', Polynomial.coeff_mul]
     simp only [hcm]
-    exact continuous_finset_sum _ fun x _ ↦
+    exact continuous_finsetSum _ fun x _ ↦
       (continuous_exponentPoly_coeff L N x.1).mul (ih x.2)
 
 /-- Continuity of the correction coefficient functions. -/
@@ -99,7 +99,7 @@ theorem continuous_correctionCoeffFn (L : EuclidD d → ℝ) (N j : ℕ) :
     Continuous (correctionCoeffFn L N j) := by
   unfold correctionCoeffFn expCorrectionCoeff
   simp only [gradedExpPoly_coeff]
-  exact continuous_finset_sum _ fun i _ ↦
+  exact continuous_finsetSum _ fun i _ ↦
     continuous_const.mul (continuous_exponentPoly_pow_coeff L N i j)
 
 /-- Growth bound for the exponent polynomial's coefficient
@@ -146,26 +146,26 @@ theorem abs_exponentPoly_pow_coeff_le (L : EuclidD d → ℝ) (N : ℕ) :
     intro k
     choose C1 hC10 hC1 using abs_exponentPoly_coeff_le L N
     choose C2 hC20 hC2 using ih
-    refine ⟨∑ x ∈ Finset.antidiagonal k, C1 x.1 * C2 x.2,
+    refine ⟨∑ x ∈ Finset.HasAntidiagonal.antidiagonal k, C1 x.1 * C2 x.2,
       Finset.sum_nonneg fun x _ ↦ mul_nonneg (hC10 _) (hC20 _),
       fun z ↦ ?_⟩
     have hcm : (exponentPoly (fun s ↦ exponentTerm s L z) N ^ (i + 1)).coeff k =
-        ∑ x ∈ Finset.antidiagonal k,
+        ∑ x ∈ Finset.HasAntidiagonal.antidiagonal k,
           (exponentPoly (fun s ↦ exponentTerm s L z) N).coeff x.1 *
             (exponentPoly (fun s ↦ exponentTerm s L z) N ^ i).coeff x.2 := by
       rw [pow_succ', Polynomial.coeff_mul]
     rw [hcm]
-    calc |∑ x ∈ Finset.antidiagonal k,
+    calc |∑ x ∈ Finset.HasAntidiagonal.antidiagonal k,
           (exponentPoly (fun s ↦ exponentTerm s L z) N).coeff x.1 *
             (exponentPoly (fun s ↦ exponentTerm s L z) N ^ i).coeff x.2|
-        ≤ ∑ x ∈ Finset.antidiagonal k,
+        ≤ ∑ x ∈ Finset.HasAntidiagonal.antidiagonal k,
           |(exponentPoly (fun s ↦ exponentTerm s L z) N).coeff x.1 *
             (exponentPoly (fun s ↦ exponentTerm s L z) N ^ i).coeff x.2| :=
           Finset.abs_sum_le_sum_abs _ _
-      _ ≤ ∑ x ∈ Finset.antidiagonal k,
+      _ ≤ ∑ x ∈ Finset.HasAntidiagonal.antidiagonal k,
           C1 x.1 * C2 x.2 * (1 + ‖z‖) ^ (k + 2 * (i + 1)) := by
           refine Finset.sum_le_sum fun x hx ↦ ?_
-          have hxk : x.1 + x.2 = k := Finset.mem_antidiagonal.mp hx
+          have hxk : x.1 + x.2 = k := Finset.HasAntidiagonal.mem_antidiagonal.mp hx
           rw [abs_mul]
           calc |(exponentPoly (fun s ↦ exponentTerm s L z) N).coeff x.1| *
                 |(exponentPoly (fun s ↦ exponentTerm s L z) N ^ i).coeff x.2|
@@ -179,7 +179,7 @@ theorem abs_exponentPoly_pow_coeff_le (L : EuclidD d → ℝ) (N : ℕ) :
             _ = C1 x.1 * C2 x.2 * (1 + ‖z‖) ^ (k + 2 * (i + 1)) := by
                 rw [← pow_add,
                   show x.1 + 2 + (x.2 + 2 * i) = k + 2 * (i + 1) from by omega]
-      _ = (∑ x ∈ Finset.antidiagonal k, C1 x.1 * C2 x.2) *
+      _ = (∑ x ∈ Finset.HasAntidiagonal.antidiagonal k, C1 x.1 * C2 x.2) *
           (1 + ‖z‖) ^ (k + 2 * (i + 1)) := by
           rw [Finset.sum_mul]
   -- the `omega` above uses `hxk : x.1 + x.2 = k`
