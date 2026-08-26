@@ -28,15 +28,11 @@ private lemma hasDerivAt_neg_exp_neg_sq_half (x : ℝ) :
   have h1 : HasDerivAt (fun y : ℝ => -(y ^ 2) / 2) (-x) x := by
     have hp : HasDerivAt (fun y : ℝ => y ^ 2) (2 * x) x := by
       simpa using hasDerivAt_pow 2 x
-    have := (hp.neg).div_const 2
-    convert this using 1
-    ring
+    exact ((hp.neg).div_const 2).congr_deriv (by ring)
   have h2 : HasDerivAt (fun y : ℝ => Real.exp (-(y ^ 2) / 2))
-      (-x * Real.exp (-(x ^ 2) / 2)) x := by
-    have := (Real.hasDerivAt_exp (-(x ^ 2) / 2)).comp x h1
-    simpa [mul_comm] using this
-  convert h2.neg using 1
-  ring
+      (-x * Real.exp (-(x ^ 2) / 2)) x :=
+    h1.exp.congr_deriv (by ring)
+  exact h2.neg.congr_deriv (by ring)
 
 /-- `exp(-x²/2) → 0` as `x → ∞`. -/
 private lemma tendsto_exp_neg_sq_half_atTop :
@@ -72,7 +68,7 @@ theorem integral_Ioi_id_mul_exp_neg_sq_half (M : ℝ) :
   have hint : IntegrableOn f' (Ioi M) := by
     by_cases hM : 0 ≤ M
     · exact hint_pos.mono_set (fun x hx => lt_of_le_of_lt hM hx)
-    · push_neg at hM
+    · push Not at hM
       have hcont_Icc : ContinuousOn f' (Set.Icc M 0) := by
         intro x _
         refine ContinuousAt.continuousWithinAt ?_
@@ -191,18 +187,13 @@ private lemma hasDerivAt_neg_id_mul_exp_neg_sq_half (x : ℝ) :
     have hp : HasDerivAt (fun y : ℝ => -(y ^ 2) / 2) (-x) x := by
       have hq : HasDerivAt (fun y : ℝ => y ^ 2) (2 * x) x := by
         simpa using hasDerivAt_pow 2 x
-      have := (hq.neg).div_const 2
-      convert this using 1
-      ring
-    have := (Real.hasDerivAt_exp (-(x ^ 2) / 2)).comp x hp
-    simpa [mul_comm] using this
+      exact ((hq.neg).div_const 2).congr_deriv (by ring)
+    exact hp.exp.congr_deriv (by ring)
   have hid : HasDerivAt (fun y : ℝ => -y) (-1) x :=
     (hasDerivAt_id x).neg
   -- Product rule: (u · v)' = u' v + u v'
-  have := hid.mul hg
-  -- this : HasDerivAt (fun y ↦ -y · exp(-y²/2)) (-1 · exp(-x²/2) + (-x) · (-x · exp(-x²/2))) x
-  convert this using 1
-  ring
+  -- hid.mul hg : HasDerivAt (fun y ↦ -y · exp(-y²/2)) (-1 · exp(-x²/2) + (-x) · (-x · exp(-x²/2))) x
+  exact (hid.mul hg).congr_deriv (by ring)
 
 /-- The improper integral `∫_{Ioi M} (x² - 1) · exp(-x²/2) dx` equals `M · exp(-M²/2)`. -/
 theorem integral_Ioi_sq_sub_one_mul_exp_neg_sq_half (M : ℝ) :
@@ -224,7 +215,7 @@ theorem integral_Ioi_sq_sub_one_mul_exp_neg_sq_half (M : ℝ) :
     -- Need integrability on `Ioi M`, but we only have it on `Ioi 0`.
     by_cases hM : 0 ≤ M
     · exact this.mono_set (fun x hx => lt_of_le_of_lt hM hx)
-    · push_neg at hM
+    · push Not at hM
       have hcont_Icc : ContinuousOn (fun x : ℝ => x ^ 2 * Real.exp (-(x ^ 2) / 2))
           (Set.Icc M 0) := by
         intro x _
@@ -257,7 +248,7 @@ theorem integral_Ioi_sq_sub_one_mul_exp_neg_sq_half (M : ℝ) :
     rw [heq] at this
     by_cases hM : 0 ≤ M
     · exact this.mono_set (fun x hx => lt_of_le_of_lt hM hx)
-    · push_neg at hM
+    · push Not at hM
       have hcont_Icc : ContinuousOn (fun x : ℝ => Real.exp (-(x ^ 2) / 2)) (Set.Icc M 0) := by
         intro x _
         refine ContinuousAt.continuousWithinAt ?_
@@ -297,7 +288,7 @@ theorem integral_Ioi_sq_sub_one_mul_exp_neg_sq_half (M : ℝ) :
         (fun x : ℝ => -(x ^ (1 : ℝ) * Real.exp (-(1/2) * x ^ 2))) := by
       ext x
       rw [Real.rpow_one]
-      congr 1; congr 1; ring
+      ring
     rw [hf, heq]
     simpa using h3.neg
   -- Apply FTC-2.
@@ -324,7 +315,7 @@ theorem integral_Ioi_sq_mul_exp_neg_sq_half (M : ℝ) :
     rw [heq] at this
     by_cases hM : 0 ≤ M
     · exact this.mono_set (fun x hx => lt_of_le_of_lt hM hx)
-    · push_neg at hM
+    · push Not at hM
       have hcont_Icc : ContinuousOn (fun x : ℝ => x ^ 2 * Real.exp (-(x ^ 2) / 2))
           (Set.Icc M 0) := by
         intro x _
@@ -355,7 +346,7 @@ theorem integral_Ioi_sq_mul_exp_neg_sq_half (M : ℝ) :
     rw [heq] at this
     by_cases hM : 0 ≤ M
     · exact this.mono_set (fun x hx => lt_of_le_of_lt hM hx)
-    · push_neg at hM
+    · push Not at hM
       have hcont_Icc : ContinuousOn (fun x : ℝ => Real.exp (-(x ^ 2) / 2)) (Set.Icc M 0) := by
         intro x _
         refine ContinuousAt.continuousWithinAt ?_

@@ -68,7 +68,7 @@ theorem tendsto_poly_div_pow {N : ℕ} (e : ℕ → ℝ) {j₀ : ℕ}
         (𝓝 (0 : ℝ))
         (𝓝 (∑ j ∈ Finset.range (N + 1), e j * (0:ℝ) ^ (j - j₀) *
           (if j < j₀ then (0:ℝ) else 1))) := by
-      refine tendsto_finset_sum _ fun j hj ↦ ?_
+      refine tendsto_finsetSum _ fun j hj ↦ ?_
       exact (((continuous_pow (j - j₀)).tendsto (0:ℝ)).const_mul
         (e j)).mul_const _
     have hval : ∑ j ∈ Finset.range (N + 1),

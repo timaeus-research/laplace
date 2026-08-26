@@ -170,7 +170,7 @@ theorem tendsto_integral_window_remainder
               correctionCoeffFn L N j z * q ^ j :=
         (Real.continuous_exp.comp
           (taylorHomogeneousTerm_continuous 2 L).neg).mul
-          (continuous_finset_sum _ fun j _ ↦
+          (continuous_finsetSum _ fun j _ ↦
             (continuous_correctionCoeffFn L N j).mul continuous_const)
       exact (((hP_cont.measurable.mul
         (hm1.sub hm2.measurable)).div_const _)).aestronglyMeasurable

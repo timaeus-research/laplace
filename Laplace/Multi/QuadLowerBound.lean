@@ -74,7 +74,7 @@ theorem qform_coercive {H : Matrix (Fin d) (Fin d) ℝ}
       have hxs : (‖x‖⁻¹ • x) ∈ Metric.sphere (0 : EuclidD d) 1 := by
         simp [norm_smul, inv_mul_cancel₀ hnorm]
       have hmin := hx₀min hxs
-      simp only [Set.mem_setOf_eq] at hmin
+      simp only [Set.mem_ofPred_eq] at hmin
       rw [qform_smul] at hmin
       have hn2 : (0 : ℝ) < ‖x‖ ^ 2 := by positivity
       have hinv : (‖x‖⁻¹) ^ 2 * ‖x‖ ^ 2 = 1 := by
@@ -118,8 +118,7 @@ theorem hasFDerivAt_hess_diag_half {L : EuclidD d → ℝ}
   rw [hfun] at h2
   have hflip : (2⁻¹ : ℝ) • ((hess L) x + (hess L).flip x) = hess L x := by
     ext v
-    simp only [ContinuousLinearMap.smul_apply,
-      ContinuousLinearMap.add_apply, ContinuousLinearMap.flip_apply,
+    simp only [_root_.smul_apply, _root_.add_apply, ContinuousLinearMap.flip_apply,
       smul_eq_mul]
     rw [hess_symm hL v x]
     ring
@@ -136,10 +135,8 @@ theorem quadratic_peano {L : EuclidD d → ℝ} (hL : ContDiff ℝ 2 L)
   have hC1 : ContDiff ℝ 1 (fderiv ℝ L) := hL.fderiv_right (by norm_num)
   rw [Asymptotics.isLittleO_iff]
   intro ε hε
-  have hcont : ContinuousAt (fderiv ℝ (fderiv ℝ L)) 0 :=
-    ((hC1.fderiv_right (by norm_num)).continuous (n := 0)).continuousAt
-  rw [Metric.continuousAt_iff] at hcont
-  obtain ⟨δ, hδ, hball⟩ := hcont ε hε
+  have hcont := ((hC1.fderiv_right (by norm_num)).continuous (n := 0)).continuousAt (x := 0)
+  obtain ⟨δ, hδ, hball⟩ := Metric.continuousAt_iff.mp hcont ε hε
   rw [Metric.eventually_nhds_iff]
   refine ⟨δ, hδ, fun y hy ↦ ?_⟩
   rw [dist_eq_norm, sub_zero] at hy

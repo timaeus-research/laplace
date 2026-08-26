@@ -53,9 +53,9 @@ theorem clm_bilinear_expand (B : EuclidD d →L[ℝ] EuclidD d →L[ℝ] ℝ)
       = B (∑ i, x i • EuclideanSpace.single i (1 : ℝ)) y := by
         rw [← eq_sum_single]
     _ = ∑ i, x i * B (EuclideanSpace.single i 1) y := by
-        rw [map_sum, ContinuousLinearMap.sum_apply]
+        rw [map_sum, _root_.sum_apply]
         exact Finset.sum_congr rfl fun i _ ↦ by
-          rw [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
+          rw [map_smul, _root_.smul_apply, smul_eq_mul]
     _ = ∑ i, x i * ∑ j, y j *
           B (EuclideanSpace.single i 1) (EuclideanSpace.single j 1) := by
         refine Finset.sum_congr rfl fun i _ ↦ ?_
@@ -93,7 +93,7 @@ theorem ray_hasDerivAt {L : EuclidD d → ℝ} (hL : ContDiff ℝ 2 L)
     (hL.differentiable (by norm_num)).differentiableAt.hasFDerivAt
   have h2 : HasDerivAt (fun t : ℝ ↦ t • x) x q := by
     simpa using (hasDerivAt_id q).smul_const x
-  simpa using h1.comp_hasDerivAt q h2
+  exact h1.comp_hasDerivAt q h2
 
 /-- The ray derivative as a function. -/
 theorem ray_deriv {L : EuclidD d → ℝ} (hL : ContDiff ℝ 2 L)

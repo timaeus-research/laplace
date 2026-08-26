@@ -153,7 +153,7 @@ theorem exp_neg_sub_exp_neg_eq (a b : ℝ) :
         simpa using ((hasDerivAt_id t).mul_const (a - b)).const_add b
       exact hb.neg
     have h2 := (Real.hasDerivAt_exp (-(b + t * (a - b)))).comp t h1
-    simpa [mul_comm] using h2
+    exact h2.congr_deriv (by ring)
   have hint : IntervalIntegrable
       (fun t : ℝ ↦ -(a - b) * Real.exp (-(b + t * (a - b))))
       volume 0 1 := by

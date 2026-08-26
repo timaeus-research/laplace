@@ -143,7 +143,7 @@ theorem coeff_polynomial_tail_isLittleO
           Real.exp (-(D.lambda / 2) * ‖z‖ ^ 2))
       =o[𝓝[>] (0 : ℝ)] fun q : ℝ ↦ q ^ M := by
     refine IsLittleO.const_mul_left ?_ CW
-    exact Asymptotics.IsLittleO.sum fun i _ ↦
+    exact Asymptotics.IsLittleO.fun_sum fun i _ ↦
       (gaussian_meso_tail_isLittleO i M hlam2).const_mul_left _
   refine (Asymptotics.isBigO_iff.mpr ⟨1, ?_⟩).trans_isLittleO hB
   filter_upwards [Ioo_mem_nhdsGT (by norm_num : (0 : ℝ) < 1)]
@@ -226,7 +226,7 @@ theorem coeff_polynomial_tail_isLittleO
         ∑ j ∈ Finset.range (N + 1),
           P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
             correctionCoeffFn L N j z * q ^ j) := by
-      refine integrable_finset_sum _ fun j _ ↦ ?_
+      refine integrable_finsetSum _ fun j _ ↦ ?_
       exact (D.integrable_coeff_integrand hP_cont
         ⟨CP, n, hCP0, hCP⟩ j).mul_const _
     refine h1.congr (Filter.Eventually.of_forall fun z ↦ ?_)
@@ -272,7 +272,7 @@ theorem coeff_polynomial_tail_isLittleO
       ring
     rw [MeasureTheory.integral_congr_ae
       (Filter.Eventually.of_forall hbinom)]
-    rw [MeasureTheory.integral_finset_sum]
+    rw [MeasureTheory.integral_finsetSum]
     · refine Finset.sum_congr rfl fun i _ ↦ ?_
       rw [MeasureTheory.integral_const_mul]
     · intro i _
@@ -310,7 +310,7 @@ theorem integrable_coeff_polynomial (D : ForwardExpansionDomain N L H)
       ∑ j ∈ Finset.range (N + 1),
         P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
           correctionCoeffFn L N j z * q ^ j) :=
-    integrable_finset_sum _ fun j _ ↦
+    integrable_finsetSum _ fun j _ ↦
       (D.integrable_coeff_integrand hP_cont hP_growth j).mul_const _
   refine h1.congr (Filter.Eventually.of_forall fun z ↦ ?_)
   change ∑ j ∈ Finset.range (N + 1),
@@ -495,7 +495,7 @@ theorem numerator_hasExpansion (D : ForwardExpansionDomain N L H)
         _ = ∫ z : EuclidD d, ∑ j ∈ Finset.range (N + 1),
             q ^ j * (P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
               correctionCoeffFn L N j z) :=
-            (MeasureTheory.integral_finset_sum _ fun j _ ↦
+            (MeasureTheory.integral_finsetSum _ fun j _ ↦
               ((D.integrable_coeff_integrand hP_cont hP_growth
                 j).const_mul _)).symm
         _ = ∫ z : EuclidD d,

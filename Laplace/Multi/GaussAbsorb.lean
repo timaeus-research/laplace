@@ -76,7 +76,7 @@ theorem rayExpansion_taylor (D : ForwardExpansionDomain N L H)
   have hpoly : (fun t : ℝ ↦ ∑ m ∈ Finset.Ico 3 (N + 3),
       taylorHomogeneousTerm m L z * t ^ m) =o[𝓝[>] (0 : ℝ)]
       fun t : ℝ ↦ t ^ 2 := by
-    refine Asymptotics.IsLittleO.sum fun m hm ↦ ?_
+    refine Asymptotics.IsLittleO.fun_sum fun m hm ↦ ?_
     have hm3 : 2 < m := by
       have := (Finset.mem_Ico.mp hm).1
       omega
@@ -345,7 +345,7 @@ theorem integrable_one_add_norm_pow_mul_gaussian (K : ℕ) {γ : ℝ}
       fun z ↦ ∑ i ∈ Finset.range (K + 1),
         (K.choose i : ℝ) * (‖z‖ ^ i * Real.exp (-γ * ‖z‖ ^ 2))
     from funext hpt]
-  exact integrable_finset_sum _ fun i _ ↦
+  exact integrable_finsetSum _ fun i _ ↦
     (integrable_pow_mul_exp_neg_mul_sq hγ i).const_mul _
 
 end Laplace.Multi

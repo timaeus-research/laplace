@@ -96,7 +96,11 @@ theorem exists_taylorRemainder_bound {k : ℕ} (hk : 0 < k)
       exact hbridge n (by exact_mod_cast Nat.le_succ n) t
         (Ioo_subset_Icc_self ht)
   obtain ⟨ξ, hξ, hlag⟩ := taylor_mean_remainder_lagrange
-    (f := g) (x₀ := 0) (x := 1) one_pos hfIcc hf'
+    (f := g) (x₀ := 0) (x := 1) one_pos.ne
+    (by rwa [Set.uIcc_of_le zero_le_one]) (by rwa [Set.uIcc_of_le zero_le_one,
+      Set.uIoo_of_le zero_le_one])
+  rw [Set.uIoo_of_le zero_le_one] at hξ
+  rw [Set.uIcc_of_le zero_le_one] at hlag
   -- identify the Taylor polynomial with the homogeneous terms
   have hpoly : taylorWithinEval g n (Icc (0 : ℝ) 1) 0 1 =
       ∑ j ∈ Finset.range (n + 1), taylorHomogeneousTerm j L y := by

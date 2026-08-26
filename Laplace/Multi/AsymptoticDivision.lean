@@ -76,7 +76,7 @@ theorem coeffPoly_eval (a : ℕ → ℝ) (N : ℕ) (q : ℝ) :
     (coeffPoly a N).eval q =
       ∑ j ∈ Finset.range (N + 1), a j * q ^ j := by
   unfold coeffPoly
-  rw [Polynomial.eval_finset_sum]
+  rw [Polynomial.eval_finsetSum]
   refine Finset.sum_congr rfl fun j _ ↦ ?_
   rw [Polynomial.eval_mul, Polynomial.eval_C, Polynomial.eval_pow,
     Polynomial.eval_X]
@@ -85,7 +85,7 @@ theorem coeffPoly_coeff (a : ℕ → ℝ) (N m : ℕ) :
     (coeffPoly a N).coeff m =
       if m ∈ Finset.range (N + 1) then a m else 0 := by
   unfold coeffPoly
-  rw [Polynomial.finset_sum_coeff]
+  rw [Polynomial.finsetSum_coeff]
   simp only [Polynomial.coeff_C_mul, Polynomial.coeff_X_pow, mul_ite,
     mul_one, mul_zero]
   exact Finset.sum_ite_eq _ m a
@@ -178,7 +178,7 @@ theorem isAsymptoticExpansionTo_div {f g : ℝ → ℝ} {a b : ℕ → ℝ}
       (𝓝 (∑ j ∈ Finset.range (N + 1), c j * (0 : ℝ) ^ j)) := by
     have hcont : Continuous fun q : ℝ ↦
         ∑ j ∈ Finset.range (N + 1), c j * q ^ j :=
-      continuous_finset_sum _ fun j _ ↦
+      continuous_finsetSum _ fun j _ ↦
         continuous_const.mul (continuous_pow j)
     exact (hcont.tendsto 0).mono_left nhdsWithin_le_nhds
   have hCbig : (fun q : ℝ ↦
@@ -191,7 +191,7 @@ theorem isAsymptoticExpansionTo_div {f g : ℝ → ℝ} {a b : ℕ → ℝ}
       (𝓝 (b 0)) := by
     have hcont : Continuous fun q : ℝ ↦
         ∑ j ∈ Finset.range (N + 1), b j * q ^ j :=
-      continuous_finset_sum _ fun j _ ↦
+      continuous_finsetSum _ fun j _ ↦
         continuous_const.mul (continuous_pow j)
     have h0 : ∑ j ∈ Finset.range (N + 1), b j * (0 : ℝ) ^ j = b 0 := by
       rw [Finset.sum_eq_single 0]

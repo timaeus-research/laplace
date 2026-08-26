@@ -42,7 +42,7 @@ lemma euclid_abs_coord_le_norm (x : EuclidD d) (i : Fin d) :
 theorem monomialTest_continuous (m : Fin k → Fin d) :
     Continuous (monomialTest m) := by
   unfold monomialTest
-  exact continuous_finset_prod _ fun j _ ↦
+  exact continuous_finsetProd _ fun j _ ↦
     PiLp.continuous_apply 2 (fun _ : Fin d ↦ ℝ) (m j)
 
 theorem monomialTest_hasPolynomialGrowth (m : Fin k → Fin d) :
@@ -157,7 +157,7 @@ theorem rescaledMoment_finset_sum {k : ℕ}
         refine Finset.sum_eq_zero fun i _ ↦ ?_
         rw [Set.indicator_of_notMem hmem, mul_zero]
     rw [hpt]
-    rw [MeasureTheory.integral_finset_sum s
+    rw [MeasureTheory.integral_finsetSum s
       (fun i hi ↦ (hint i hi).const_mul (c i))]
     exact Finset.sum_congr rfl fun i _ ↦
       MeasureTheory.integral_const_mul _ _
@@ -204,8 +204,9 @@ theorem iteratedFDeriv_recovery_of_monomial_rates {k : ℕ}
   have hsum : (fun q : ℝ ↦ ∑ m : Fin k → Fin d, c m *
       (A₁.rescaledMoment (monomialTest m) q -
         A₂.rescaledMoment (monomialTest m) q))
-      =o[𝓝[>] (0 : ℝ)] fun q : ℝ ↦ q ^ (k - 2) :=
-    Asymptotics.IsLittleO.sum fun m _ ↦
+      =o[𝓝[>] (0 : ℝ)] fun q : ℝ ↦ q ^ (k - 2) := by
+    rw [← Finset.sum_fn]
+    exact Asymptotics.IsLittleO.sum fun m _ ↦
       (hdata m).const_mul_left (c m)
   refine hsum.congr' ?_ (Filter.EventuallyEq.refl _ _)
   filter_upwards [self_mem_nhdsWithin] with q hq

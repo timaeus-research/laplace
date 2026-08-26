@@ -87,7 +87,8 @@ theorem partitionFunction_harmonic {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
   rw [harmonic_int_pow_even hlam ht 0]
   -- Goal: `(2*0-1)‼ * √(2π) * (λt)^(-(0 + 1/2)) = √(2π/(λt))`.
   -- `(2*0-1)‼ = 0‼ = 1`.
-  simp only [Nat.doubleFactorial, Nat.cast_one, one_mul, Nat.cast_zero, zero_add]
+  simp only [Nat.mul_zero, Nat.zero_sub, Nat.doubleFactorial, Nat.cast_one, one_mul, Nat.cast_zero,
+    zero_add]
   -- Goal: `√(2π) * (λt)^(-(1/2)) = √(2π/(λt))`.
   rw [show (2 * π / (lam * t) : ℝ) = (2 * π) * (lam * t)⁻¹ by ring,
       Real.sqrt_mul (by positivity : (0 : ℝ) ≤ 2 * π)]

@@ -286,7 +286,7 @@ theorem rayExpansion_taylor (D : HigherLaplaceDomain k L H)
   have hpoly : (fun t : ℝ ↦ ∑ j ∈ Finset.Ico 3 k,
       taylorHomogeneousTerm j L z * t ^ j)
       =o[𝓝[>] (0 : ℝ)] fun t : ℝ ↦ t ^ 2 := by
-    refine Asymptotics.IsLittleO.sum fun j hj ↦ ?_
+    refine Asymptotics.IsLittleO.fun_sum fun j hj ↦ ?_
     have h3 : 2 < j := by
       have := (Finset.mem_Ico.mp hj).1
       omega
@@ -336,7 +336,7 @@ theorem iteratedFDeriv_one_eq_zero (D : HigherLaplaceDomain k L H)
   rw [Nat.factorial_one, Nat.cast_one, inv_one, one_mul] at hz
   have hv : v = fun _ : Fin 1 ↦ v 0 :=
     funext fun i ↦ by rw [Subsingleton.elim i 0]
-  rw [hv, ContinuousMultilinearMap.zero_apply]
+  rw [hv, zero_apply]
   exact hz
 
 /-- **The order-2 diagonal is the quadratic form.** -/

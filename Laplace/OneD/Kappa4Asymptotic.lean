@@ -49,7 +49,7 @@ private lemma tendsto_of_order2_rate {f : ℝ → ℝ} {L C K T : ℝ}
     have hCt : Tendsto (fun t : ℝ ↦ K / Real.sqrt t) atTop (nhds 0) := by
       have h1 : Tendsto (fun t : ℝ ↦ Real.sqrt t) atTop atTop :=
         Real.tendsto_sqrt_atTop
-      simpa using h1.inv_tendsto_atTop.const_mul K
+      simpa [div_eq_mul_inv] using h1.inv_tendsto_atTop.const_mul K
     exact squeeze_zero_norm' hbound hCt
   have := hzero.add_const C
   simpa using this
@@ -68,7 +68,7 @@ private lemma tendsto_of_sqrt_rate {f : ℝ → ℝ} {L K T : ℝ}
     have hCt : Tendsto (fun t : ℝ ↦ K / Real.sqrt t) atTop (nhds 0) := by
       have h1 : Tendsto (fun t : ℝ ↦ Real.sqrt t) atTop atTop :=
         Real.tendsto_sqrt_atTop
-      simpa using h1.inv_tendsto_atTop.const_mul K
+      simpa [div_eq_mul_inv] using h1.inv_tendsto_atTop.const_mul K
     exact squeeze_zero_norm' hbound hCt
   have := hzero.add_const L
   simpa using this

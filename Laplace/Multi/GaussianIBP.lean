@@ -196,8 +196,7 @@ lemma hasDerivAt_quadForm_along_basis
     have h3 : HasDerivAt (fun s : ℝ => s ^ 2 * B) (2 * t * B) t := by
       have h := (hasDerivAt_pow 2 t).mul_const B
       simpa [pow_one] using h
-    have := (h1.add h2).add h3
-    simpa using this
+    exact ((h1.add h2).add h3).congr_deriv (by ring)
   -- Express the derivative in terms of (H (u + t•e)) i.
   have h_deriv_eq :
       2 * A + 2 * t * B = 2 * (H (u + t • e)) i := by
@@ -239,9 +238,8 @@ lemma hasDerivAt_exp_neg_half_quadForm_along_basis
   have h_inner : HasDerivAt
       (fun s : ℝ => -(1/2) * quadForm H (u + s • e))
       (-((H (u + t • e)) i)) t := by
-    have h := (hasDerivAt_quadForm_along_basis H hSymm u i t).const_mul (-(1/2))
-    convert h using 1
-    ring
+    exact ((hasDerivAt_quadForm_along_basis H hSymm u i t).const_mul (-(1/2))).congr_deriv
+      (by ring)
   -- Step 2: chain with exp.
   have h_exp := h_inner.exp
   -- Reorder factors: `exp(...) * (-(H ...) i)` ↔ `(-(H ...) i) * exp(...)`.
@@ -333,8 +331,7 @@ lemma hasDerivAt_sliceIntegrand
   have h_prod := h_uj_deriv.mul h_gW_deriv
   -- Adjust the form.
   unfold sliceIntegrand
-  convert h_prod using 1
-  ring
+  exact h_prod.congr_deriv (by ring)
 
 /-- The derivative of the slice integrand, expressed as a function of `s`.
 
@@ -492,7 +489,7 @@ theorem gaussian_ibp_column
           ∑ k, (H (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))) i *
             (u k * u j * gaussianWeight H u)) from funext h_pt]
     -- Swap sum and integral.
-    rw [integral_finset_sum Finset.univ (fun k _ =>
+    rw [integral_finsetSum Finset.univ (fun k _ =>
       (h_int_uk_uj_gW k).const_mul _)]
     -- Pull out constants from each integral.
     apply Finset.sum_congr rfl
@@ -651,9 +648,9 @@ theorem gaussian_dot_mul_dot
     rw [gaussian_second_moment_eq_inverse_entry_scalar H Hinv hHinv hH_inj i j
         h_int_gW (h_int_uk_uj_gW · j) (h_int_uj_Hi_gW j) (h_fubini · j)]
   -- Step C: Swap outer sum and integral.
-  rw [integral_finset_sum Finset.univ
+  rw [integral_finsetSum Finset.univ
         (fun i _ =>
-          (integrable_finset_sum Finset.univ
+          (integrable_finsetSum Finset.univ
             (fun j _ => (h_int_uk_uj_gW i j).const_mul _)))]
   -- Step D: Algebraic rearrangement of RHS.
   -- Use H_apply_eq_sum on Hinv to expand (Hinv b) i = ∑ j, b j * (Hinv e_j) i.
@@ -662,7 +659,7 @@ theorem gaussian_dot_mul_dot
   apply Finset.sum_congr rfl
   intro i _
   -- Inner: ∫ ∑ j, ... = ∑ j, ∫ ... and apply h_inner.
-  rw [integral_finset_sum Finset.univ
+  rw [integral_finsetSum Finset.univ
         (fun j _ => (h_int_uk_uj_gW i j).const_mul _)]
   rw [Finset.sum_congr rfl (fun j _ => h_inner i j)]
   -- Goal: ∑ j, a i * b j * (Z * (Hinv e_j) i) = Z * (a i * (Hinv b) i)

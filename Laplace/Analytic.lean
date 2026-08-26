@@ -34,7 +34,7 @@ theorem analytic_growth_lower_bound (a : ℝ → ℝ) (ha : AnalyticAt ℝ a 0)
       analyticOrderAt a 0 = m ∧
       ∀ w ∈ Set.Icc (0 : ℝ) r0, c * w ^ m ≤ |a w| := by
   set m : ℕ := analyticOrderNatAt a 0 with hm_def
-  have hord : analyticOrderAt a 0 = m := (ENat.coe_toNat hne).symm
+  have hord : analyticOrderAt a 0 = m := (ENat.natCast_toNat hne).symm
   obtain ⟨g, hg, hg0, heq⟩ := (ha.analyticOrderAt_eq_natCast).mp hord
   -- `|g|` stays above `|g 0| / 2` near `0`, by continuity.
   have hgpos : 0 < |g 0| := abs_pos.mpr hg0

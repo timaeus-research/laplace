@@ -2202,21 +2202,19 @@ private lemma rescaledPerturbation_hasDerivAt
   have hsqrt_t_ne : Real.sqrt t ≠ 0 := (Real.sqrt_pos.mpr ht).ne'
   have ht_ne : t ≠ 0 := ht.ne'
   have h_cube : HasDerivAt (fun u : ℝ => u ^ 3) (3 * u ^ 2) u := by
-    have := (hasDerivAt_id u).pow 3
-    simpa using this
+    simpa using hasDerivAt_pow 3 u
   have h_quart : HasDerivAt (fun u : ℝ => u ^ 4) (4 * u ^ 3) u := by
-    have := (hasDerivAt_id u).pow 4
-    simpa using this
+    simpa using hasDerivAt_pow 4 u
   have h_term1 : HasDerivAt
       (fun u => cubicScale lam alpha * u ^ 3 / Real.sqrt t)
       (3 * cubicScale lam alpha * u ^ 2 / Real.sqrt t) u := by
     have h1 := (h_cube.const_mul (cubicScale lam alpha)).div_const (Real.sqrt t)
-    convert h1 using 1; ring
+    exact h1.congr_deriv (by ring)
   have h_term2 : HasDerivAt
       (fun u => quarticScale lam gamma * u ^ 4 / t)
       (4 * quarticScale lam gamma * u ^ 3 / t) u := by
     have h2 := (h_quart.const_mul (quarticScale lam gamma)).div_const t
-    convert h2 using 1; ring
+    exact h2.congr_deriv (by ring)
   exact h_term1.add h_term2
 
 /-- `f_t(u) = exp(-u²/2)·exp(-s_t(u))` has derivative `-S_t(u)·f_t(u)`. -/
@@ -2226,14 +2224,13 @@ private lemma fGauss_hasDerivAt
       (-(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) u := by
   unfold fGauss scoreFun
   have h_neg_half_sq : HasDerivAt (fun u : ℝ => -(u ^ 2) / 2) (-u) u := by
-    have := (hasDerivAt_id u).pow 2
-    have h1 : HasDerivAt (fun u : ℝ => u ^ 2) (2 * u) u := by simpa using this
+    have h1 : HasDerivAt (fun u : ℝ => u ^ 2) (2 * u) u := by simpa using hasDerivAt_pow 2 u
     have h2 := h1.neg.div_const 2
-    convert h2 using 1; ring
+    exact h2.congr_deriv (by ring)
   have h_exp1 : HasDerivAt (fun u : ℝ => Real.exp (-(u ^ 2) / 2))
       (-u * Real.exp (-(u ^ 2) / 2)) u := by
     have := (Real.hasDerivAt_exp (-(u ^ 2) / 2)).comp u h_neg_half_sq
-    convert this using 1; ring
+    exact this.congr_deriv (by ring)
   have h_neg_sp : HasDerivAt (fun u => -rescaledPerturbation lam alpha gamma t u)
       (-(3 * cubicScale lam alpha * u ^ 2 / Real.sqrt t +
         4 * quarticScale lam gamma * u ^ 3 / t)) u :=
@@ -2243,9 +2240,9 @@ private lemma fGauss_hasDerivAt
         4 * quarticScale lam gamma * u ^ 3 / t) *
        Real.exp (-rescaledPerturbation lam alpha gamma t u)) u := by
     have := (Real.hasDerivAt_exp _).comp u h_neg_sp
-    convert this using 1; ring
+    exact this.congr_deriv (by ring)
   have h_prod := h_exp1.mul h_exp2
-  convert h_prod using 1; ring
+  exact h_prod.congr_deriv (by ring)
 
 /-- `exp(-c·u²) → 0` as `|u| → ∞` (for `c > 0`). Helper for `fGauss` decay. -/
 private lemma exp_neg_const_mul_sq_tendsto_atTop_zero {c : ℝ} (hc : 0 < c) :

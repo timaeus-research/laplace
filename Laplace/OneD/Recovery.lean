@@ -184,8 +184,8 @@ lemma kth_recovery_of_data {k₁ k₂ : ℕ} (hk₁ : 1 ≤ k₁) (hk₂ : 1 ≤
       (Nat.factorial (2 * k₁) : ℝ) / a₂ := by
     have hexp : ((1 : ℝ) / ((2 * k₁ : ℕ) : ℝ)) ≠ 0 := by positivity
     exact Real.rpow_left_injOn hexp
-      (Set.mem_setOf_eq ▸ div_nonneg (Nat.cast_nonneg _) ha₁.le)
-      (Set.mem_setOf_eq ▸ div_nonneg (Nat.cast_nonneg _) ha₂.le) hrpow_eq
+      (Set.mem_ofPred_eq ▸ div_nonneg (Nat.cast_nonneg _) ha₁.le)
+      (Set.mem_ofPred_eq ▸ div_nonneg (Nat.cast_nonneg _) ha₂.le) hrpow_eq
   have hfac : (0 : ℝ) < (Nat.factorial (2 * k₁) : ℝ) := by
     exact_mod_cast Nat.factorial_pos _
   have hmul := (div_eq_div_iff ha₁.ne' ha₂.ne').mp hbase

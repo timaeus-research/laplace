@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Laplace.OneD.GaussianMoments
 import Laplace.OneD.MonomialPotential
 import Laplace.Gibbs
-import Mathlib.Data.Real.StarOrdered
+import Mathlib.Algebra.Order.Star.Real
 
 /-!
 # Expansion-based recovery of a subleading coefficient

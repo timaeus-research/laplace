@@ -156,8 +156,7 @@ theorem anharmonic_partition_deriv_step
     have hpw :=
       (anharmonic_perturbed_pointwise_hasDerivAt lam alpha gamma t h x).const_mul
         ((-(t * x)) ^ n)
-    convert hpw using 1
-    rw [pow_succ]; ring
+    exact hpw.congr_deriv (by rw [pow_succ]; ring)
   -- Apply the dominated-differentiation theorem.
   have key :=
     hasDerivAt_integral_of_dominated_loc_of_deriv_le

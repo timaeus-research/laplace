@@ -254,8 +254,7 @@ lemma harmonic_perturbed_integrand_pow_hasDerivAt
   -- h_exp : HasDerivAt (fun h => exp(-(t·...))) (exp(-(t·...)) · (-(t·x))) h.
   have h_total := h_exp.const_mul (x ^ k)
   -- h_total has derivative `x^k · (exp(-(t·...)) · (-(t·x)))`; reshape to match.
-  convert h_total using 1
-  ring
+  exact h_total.congr_deriv (by ring)
 
 /-! ## The `GibbsObservable` instance for monomial observables -/
 

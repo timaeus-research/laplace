@@ -75,9 +75,7 @@ theorem anharmonic_third_cumulant
               * weightedPartition lam alpha gamma t 0 0
             + 2 * weightedPartition lam alpha gamma t 1 0 ^ 3)
           / weightedPartition lam alpha gamma t 0 0 ^ 3) 0 := by
-    convert hnum.div hden hden_ne using 1
-    field_simp
-    ring
+    exact (hnum.div hden hden_ne).congr_deriv (by field_simp; ring)
   -- `deriv M = S` on `ball 0 1`, hence eventually at 0.
   have hev :
       deriv (fun h : ℝ => weightedPartition lam alpha gamma t 1 h

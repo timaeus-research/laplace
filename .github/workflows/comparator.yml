@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: leanprover/lean4export
-          ref: v4.29.0 # must match lean-toolchain, e.g. v4.29.0
+          ref: v4.33.0 # must match lean-toolchain, e.g. v4.29.0
           path: vendor/lean4export
 
       - uses: actions/checkout@v4

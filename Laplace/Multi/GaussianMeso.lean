@@ -137,7 +137,7 @@ theorem gaussian_meso_tail_isLittleO (p M : ℕ) {c : ℝ}
           (‖z‖ ^ p * Real.exp (-(c/2) * ‖z‖ ^ 2)) := by
       intro z hz
       have hgt : 1 < Real.sqrt q * ‖z‖ := by
-        rw [Set.mem_compl_iff, mesoscopicSet, Set.mem_setOf_eq] at hz
+        rw [Set.mem_compl_iff, mesoscopicSet, Set.mem_ofPred_eq] at hz
         linarith [lt_of_not_ge hz]
       have hz2 : 1 / q ≤ ‖z‖ ^ 2 := by
         have h1 : 1 < (Real.sqrt q * ‖z‖) * (Real.sqrt q * ‖z‖) := by

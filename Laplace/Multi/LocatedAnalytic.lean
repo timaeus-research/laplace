@@ -62,11 +62,11 @@ theorem located_analytic_germ_recovery_of_ccData
   have hA₁' : AnalyticAt ℝ (fun y ↦ Λ₁ (p₁ + y)) 0 := by
     have hg : AnalyticAt ℝ Λ₁ ((fun w : EuclidD d ↦ p₁ + w) 0) := by
       simpa using hA₁
-    simpa [Function.comp] using hg.comp hshift₁
+    exact hg.comp hshift₁
   have hA₂' : AnalyticAt ℝ (fun y ↦ Λ₂ (p₂ + y)) 0 := by
     have hg : AnalyticAt ℝ Λ₂ ((fun w : EuclidD d ↦ p₂ + w) 0) := by
       simpa using hA₂
-    simpa [Function.comp] using hg.comp hshift₂
+    exact hg.comp hshift₂
   -- the translated centred losses are the raw losses
   have hraw₁ : (fun w ↦ (fun y ↦ Λ₁ (p₁ + y)) (w - p₁)) = Λ₁ := by
     funext w

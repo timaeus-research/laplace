@@ -36,7 +36,7 @@ variable {ι : Type*} [Fintype ι]
 
 theorem mvMonomial_continuous (α : ι → ℕ) :
     Continuous (mvMonomial (ι := ι) α) :=
-  continuous_finset_prod _ fun i _ ↦ (continuous_apply i).pow _
+  continuous_finsetProd _ fun i _ ↦ (continuous_apply i).pow _
 
 /-- A nonzero multi-index's monomial vanishes at the origin. -/
 theorem mvMonomial_zero_eq_zero {α : ι → ℕ} (hα : α ≠ 0) :
@@ -77,7 +77,7 @@ theorem expectationUnder_combo_mul
           ring
       _ = ∑ α ∈ S, c α * ∫ w : ι → ℝ,
             mvMonomial α w * B w * Real.exp (-P w) := by
-          rw [MeasureTheory.integral_finset_sum _ fun α hα ↦
+          rw [MeasureTheory.integral_finsetSum _ fun α hα ↦
             (hint α hα).const_mul (c α)]
           refine Finset.sum_congr rfl fun α _ ↦ ?_
           rw [MeasureTheory.integral_const_mul]
@@ -207,12 +207,12 @@ theorem monomialCombo_eq_zero_of_covariance_monomials_zero
   set Qc : (ι → ℝ) → ℝ := fun w ↦ ∑ β ∈ S, c β * mvMonomial β w
     with hQc_def
   have hQcont : Continuous Qc :=
-    continuous_finset_sum _ fun β _ ↦
+    continuous_finsetSum _ fun β _ ↦
       continuous_const.mul (mvMonomial_continuous β)
   have hQe : Integrable (fun w : ι → ℝ ↦ Qc w * Real.exp (-P w)) := by
     have h1 : Integrable (fun w : ι → ℝ ↦ ∑ β ∈ S,
         c β * (mvMonomial β w * Real.exp (-P w))) :=
-      integrable_finset_sum _ fun β hβ ↦
+      integrable_finsetSum _ fun β hβ ↦
         (hint_m β hβ).const_mul (c β)
     refine h1.congr (Filter.Eventually.of_forall fun w ↦ ?_)
     beta_reduce
@@ -223,7 +223,7 @@ theorem monomialCombo_eq_zero_of_covariance_monomials_zero
       Qc w * Qc w * Real.exp (-P w)) := by
     have h1 : Integrable (fun w : ι → ℝ ↦ ∑ α ∈ S,
         c α * (mvMonomial α w * Qc w * Real.exp (-P w))) :=
-      integrable_finset_sum _ fun α hα ↦
+      integrable_finsetSum _ fun α hα ↦
         (hint_pair α hα).const_mul (c α)
     refine h1.congr (Filter.Eventually.of_forall fun w ↦ ?_)
     beta_reduce

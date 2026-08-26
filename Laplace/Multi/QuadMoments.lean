@@ -40,9 +40,9 @@ theorem whiteningInv_whitening {H : Matrix (Fin d) (Fin d) ℝ}
     (hH : H.PosDef) (x : EuclidD d) :
     whiteningInv H (whitening H x) = x := by
   unfold whiteningInv whitening
-  rw [← ContinuousLinearMap.mul_apply, ← map_mul,
+  rw [← mul_apply_eq_comp, ← map_mul,
     Matrix.nonsing_inv_mul _ (sqrt_det_isUnit hH), map_one,
-    ContinuousLinearMap.one_apply]
+    one_apply_eq_self]
 
 /-- Coordinates of the inverse whitening map as finite sums. -/
 theorem whiteningInv_coord (H : Matrix (Fin d) (Fin d) ℝ)
@@ -62,7 +62,7 @@ theorem integral_coordFn_mul_stdKernel (c : Fin d → ℝ) :
     rw [Finset.sum_mul]
     exact Finset.sum_congr rfl fun a _ ↦ by ring
   rw [integral_congr_ae (Filter.Eventually.of_forall hpt),
-    integral_finset_sum _
+    integral_finsetSum _
       (fun a _ ↦ (stdKernel_integrable_coord a).const_mul (c a))]
   simp [integral_const_mul, integral_coord_mul_stdKernel]
 
@@ -81,7 +81,7 @@ theorem integral_coordFn_mul_coordFn_stdKernel (c e : Fin d → ℝ) :
     rw [Finset.sum_mul]
     exact Finset.sum_congr rfl fun b _ ↦ by ring
   rw [integral_congr_ae (Filter.Eventually.of_forall hpt),
-    integral_finset_sum _ (fun a _ ↦ integrable_finset_sum _
+    integral_finsetSum _ (fun a _ ↦ integrable_finsetSum _
       (fun b _ ↦ (stdKernel_integrable_coord_mul a b).const_mul _))]
   have hinner : ∀ a : Fin d,
       (∑ b, ∫ y : EuclidD d,
@@ -109,7 +109,7 @@ theorem integral_coordFn_mul_coordFn_stdKernel (c e : Fin d → ℝ) :
           c a * e b * (y a * y b * stdKernel y))
       = ∑ a, c a * e a * (2 * π) ^ ((d : ℝ) / 2) := by
         refine Finset.sum_congr rfl fun a _ ↦ ?_
-        rw [integral_finset_sum _ (fun b _ ↦
+        rw [integral_finsetSum _ (fun b _ ↦
           (stdKernel_integrable_coord_mul a b).const_mul _)]
         exact hinner a
     _ = (2 * π) ^ ((d : ℝ) / 2) * ∑ a, c a * e a := by

@@ -5,7 +5,7 @@ import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Laplace.Multi.GaussianDomination
-import Mathlib.Data.Real.StarOrdered
+import Mathlib.Algebra.Order.Star.Real
 
 /-!
 # Rescaled integrals and the change-of-variables bridge
@@ -616,7 +616,7 @@ section CoerciveIntegrability
 lemma continuous_quadForm (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) :
     Continuous (fun u : ι → ℝ => quadForm H u) := by
   unfold quadForm
-  apply continuous_finset_sum
+  apply continuous_finsetSum
   intro i _
   exact (continuous_apply i).mul ((continuous_apply i).comp H.continuous)
 
@@ -633,7 +633,7 @@ lemma continuous_rescaledPerturbation
   unfold rescaledPerturbation
   refine (continuous_const.mul (hV.comp ?_)).sub
     (continuous_const.mul (continuous_quadForm H))
-  exact continuous_const.smul continuous_id
+  exact continuous_const_smul _
 
 /-- **Integrability of the rescaled weight under coercivity**: for any
 `t > 0`, `gW · exp(-rescaledPerturbation)` is integrable, dominated by
@@ -687,7 +687,7 @@ lemma integrable_sum_sq_mul_exp_neg_const_mul_sum_sq
   have h_sum :
       Integrable (fun u : ι → ℝ =>
         ∑ i, (u i) ^ 2 * Real.exp (-(c * ∑ k, (u k) ^ 2))) :=
-    integrable_finset_sum Finset.univ (fun i _ => h_each i)
+    integrable_finsetSum Finset.univ (fun i _ => h_each i)
   apply h_sum.congr
   filter_upwards with u
   show ∑ i, (u i) ^ 2 * Real.exp (-(c * ∑ k, u k ^ 2))
