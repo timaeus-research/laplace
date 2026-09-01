@@ -59,11 +59,11 @@ theorem tendsto_exp_neg_sub_one_div_pow {W : ℝ → ℝ} {ρ : ℕ} {Qx : ℝ}
     have hh0 : (0 : ℝ) < h := hh0'
     have hnum : |Real.exp (-W h) - 1 + W h| ≤ W h ^ 2 := by
       have heq : Real.exp (-W h) - 1 + W h =
-          Real.exp (-W h) - 1 - -W h := by ring
+          Real.exp (-W h) - 1 - -W h := Eq.symm (sub_neg_eq_add (rexp (-W h) - 1) (W h))
       rw [heq]
       calc |Real.exp (-W h) - 1 - -W h| ≤ (-W h) ^ 2 :=
             Real.abs_exp_sub_one_sub_id_le (by rwa [abs_neg])
-        _ = W h ^ 2 := by ring
+        _ = W h ^ 2 := neg_pow_two (W h)
     rw [Real.norm_eq_abs, abs_div, abs_of_pos (pow_pos hh0 ρ)]
     calc |Real.exp (-W h) - 1 + W h| / h ^ ρ
         ≤ W h ^ 2 / h ^ ρ := by
@@ -71,7 +71,7 @@ theorem tendsto_exp_neg_sub_one_div_pow {W : ℝ → ℝ} {ρ : ℕ} {Qx : ℝ}
           exact mul_le_mul_of_nonneg_right hnum (by positivity)
       _ = |W h / h ^ ρ| * |W h| := by
           rw [abs_div, abs_of_pos (pow_pos hh0 ρ), ← sq_abs (W h), sq]
-          ring
+          exact mul_div_right_comm |W h| |W h| (h ^ ρ)
   have hsum := hWq.neg.add hrem
   rw [add_zero] at hsum
   refine hsum.congr fun h ↦ ?_
@@ -283,7 +283,7 @@ theorem tendsto_normalized_difference_div_pow
   filter_upwards [hZ₁low, hZ₂low, self_mem_nhdsWithin]
     with h h1 h2 hh0'
   have hh0 : (0 : ℝ) < h := hh0'
-  have hZ0half : (0 : ℝ) < Z0 / 2 := by linarith
+  have hZ0half : (0 : ℝ) < Z0 / 2 := half_pos hZpos
   have hZ₁ne : (∫ x, Real.exp (-(P x + V₁ h x)) ∂μ) ≠ 0 :=
     (lt_of_lt_of_le hZ0half h1).ne'
   have hZ₂ne : (∫ x, Real.exp (-(P x + V₂ h x)) ∂μ) ≠ 0 :=

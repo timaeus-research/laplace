@@ -54,7 +54,7 @@ private theorem sum_powerset_neg_one {ι : Type*} [DecidableEq ι]
     (∑ T ∈ D.powerset, (-1 : ℝ) ^ T.card) = if D = ∅ then 1 else 0 := by
   classical
   induction D using Finset.induction_on with
-  | empty => simp
+  | empty => simp only [powerset_empty, sum_singleton, card_empty, pow_zero, ↓reduceIte]
   | @insert a D ha ih =>
       have h2 : (∑ t ∈ D.powerset, (-1 : ℝ) ^ (insert a t).card) =
           ∑ t ∈ D.powerset, (-1) * (-1 : ℝ) ^ t.card := by
@@ -62,7 +62,7 @@ private theorem sum_powerset_neg_one {ι : Type*} [DecidableEq ι]
         rw [Finset.mem_powerset] at ht
         rw [Finset.card_insert_of_notMem (fun hat ↦ ha (ht hat)),
           pow_succ]
-        ring
+        exact pow_mul_comm' (-1) #t
       rw [Finset.sum_powerset_insert ha, h2, ← Finset.mul_sum, ih,
         if_neg (Finset.insert_ne_empty a D)]
       by_cases hD : D = ∅ <;> simp [hD]
@@ -108,7 +108,6 @@ theorem sum_neg_one_pow_supersets {ι : Type*} [Fintype ι]
       have hcompl : Rᶜ.card = Fintype.card ι - R.card :=
         Finset.card_compl R
       have hRS : R.card ≤ S.card := Finset.card_le_card hS.2
-      have hSle : S.card ≤ Fintype.card ι := S.card_le_univ
       omega
   rw [hreindex]
   have hfactor : (∑ T ∈ Rᶜ.powerset, (-1 : ℝ) ^ (Rᶜ.card - T.card)) =
@@ -123,12 +122,11 @@ theorem sum_neg_one_pow_supersets {ι : Type*} [Fintype ι]
   · have hcompl : Rᶜ = (∅ : Finset ι) := by
       rw [hR, Finset.compl_univ]
     rw [if_pos hR, hcompl, if_pos rfl]
-    simp
+    exact MulOneClass.mul_one ((-1) ^ #∅)
   · have hcompl : Rᶜ ≠ (∅ : Finset ι) := by
       intro h
       apply hR
-      have := congrArg (·ᶜ) h
-      simpa using this
+      exact (compl_eq_empty_iff R).mp h
     rw [if_neg hR, if_neg hcompl, mul_zero]
 
 /-- **The subset-sum polarization identity**: a symmetric continuous
@@ -148,8 +146,7 @@ theorem factorial_smul_eq_sum_diag
     intro S _
     rw [← Finset.smul_sum]
     congr 1
-    exact A.toMultilinearMap.map_sum_finset
-      (fun (_ : Fin k) (j : Fin k) ↦ v j) (fun _ : Fin k ↦ S)
+    exact map_sum_finset A (fun i => v) fun i => S
   rw [Finset.sum_congr rfl hexpand]
   -- Step 2: the selector finset is a filter over all endofunctions.
   have hset : ∀ S : Finset (Fin k),
@@ -169,9 +166,7 @@ theorem factorial_smul_eq_sum_diag
     intro S _
     rw [hset S, Finset.sum_filter]
     refine Finset.sum_congr rfl fun r _ ↦ ?_
-    by_cases hr : Finset.image r Finset.univ ⊆ S
-    · rw [if_pos hr, if_pos hr]
-    · rw [if_neg hr, if_neg hr, zero_smul]
+    exact Eq.symm (ite_zero_smul (image r univ ⊆ S) ((-1) ^ (k - #S)) (A fun i => v (r i)))
   rw [Finset.sum_congr rfl hextend, Finset.sum_comm]
   -- Step 3: collapse the coefficient for each endofunction.
   have hcoeff : ∀ r : Fin k → Fin k,
@@ -198,9 +193,7 @@ theorem factorial_smul_eq_sum_diag
         A (fun i ↦ v (r i)) := by
     rw [Finset.sum_filter]
     refine Finset.sum_congr rfl fun r _ ↦ ?_
-    by_cases hr : Finset.image r Finset.univ = Finset.univ
-    · rw [if_pos hr, if_pos hr, one_smul]
-    · rw [if_neg hr, if_neg hr, zero_smul]
+    exact boole_smul (image r univ = univ) (A fun i => v (r i))
   rw [hsimp]
   -- Step 5: each remaining term equals `A v` by symmetry.
   have hbij : ∀ r : Fin k → Fin k,
@@ -214,7 +207,7 @@ theorem factorial_smul_eq_sum_diag
         exact Finset.mem_univ y
       obtain ⟨x, _, hx⟩ := Finset.mem_image.mp hy
       exact ⟨x, hx⟩
-    exact ⟨Finite.injective_iff_surjective.mpr hsurj, hsurj⟩
+    exact Function.Surjective.bijective_of_finite hsurj
   have hterm : ∀ r ∈ (Finset.univ : Finset (Fin k → Fin k)).filter
       (fun r ↦ Finset.image r Finset.univ = Finset.univ),
       A (fun i ↦ v (r i)) = A v := by
@@ -249,7 +242,6 @@ theorem factorial_smul_eq_sum_diag
       { toFun := fun r ↦ Equiv.ofBijective r.1 r.2
         invFun := fun σ ↦ ⟨σ, σ.bijective⟩
         left_inv := fun r ↦ by
-          ext i
           rfl
         right_inv := fun σ ↦ by
           ext i

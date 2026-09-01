@@ -38,17 +38,17 @@ theorem quartic_integral_w_exp_Ioi {t : ℝ} (ht : 0 < t) :
     ∫ w in Ioi (0 : ℝ), w * exp (-(t * w ^ 4 / 24)) =
       (1/4) * Real.sqrt (24 * Real.pi / t) := by
   have ht24 : (0 : ℝ) < t / 24 := by positivity
-  have hq : (-1 : ℝ) < (1 : ℝ) := by norm_num
+  have hq : (-1 : ℝ) < (1 : ℝ) := by simp only [neg_lt_self_iff, zero_lt_one]
   have key := integral_rpow_mul_exp_neg_mul_rpow
     (p := 4) (q := 1) (b := t / 24)
-    (by norm_num) hq ht24
+    (by exact four_pos) hq ht24
   have hLHS : (∫ w in Ioi (0 : ℝ), w * exp (-(t * w ^ 4 / 24))) =
       ∫ w in Ioi (0 : ℝ), w ^ (1 : ℝ) * exp (-(t / 24) * w ^ (4 : ℝ)) := by
     refine setIntegral_congr_fun measurableSet_Ioi (fun w hw => ?_)
     rw [mem_Ioi] at hw
-    have h1 : w ^ (1 : ℝ) = w := by rw [Real.rpow_one]
+    have h1 : w ^ (1 : ℝ) = w := rpow_one w
     have h4 : w ^ (4 : ℝ) = w ^ (4 : ℕ) := by
-      rw [show ((4 : ℝ) : ℝ) = ((4 : ℕ) : ℝ) by norm_num, rpow_natCast]
+      rw [show ((4 : ℝ) : ℝ) = ((4 : ℕ) : ℝ) by rfl, rpow_natCast]
     rw [h1, h4]
     congr 2
     ring
@@ -59,10 +59,10 @@ theorem quartic_integral_w_exp_Ioi {t : ℝ} (ht : 0 < t) :
   have hinv : (t / 24 : ℝ) ^ (-((1 : ℝ) / 2)) = Real.sqrt (24 / t) := by
     rw [Real.rpow_neg ht24.le, ← Real.sqrt_eq_rpow, ← Real.sqrt_inv]
     congr 1
-    field_simp
+    exact inv_div t 24
   rw [hinv]
   have h24t : (0 : ℝ) ≤ 24 / t := le_of_lt (by positivity)
-  rw [show (24 * Real.pi / t : ℝ) = (24/t) * Real.pi from by ring]
+  rw [show (24 * Real.pi / t : ℝ) = (24/t) * Real.pi from mul_div_right_comm 24 π t]
   rw [Real.sqrt_mul h24t]
   ring
 
@@ -223,7 +223,7 @@ theorem quartic_partition_bounded_prior_pos {t a : ℝ} (ht : 0 < t) (ha : 0 < a
     obtain ⟨hwl, hwu⟩ := hw
     have hw_abs : |w| ≤ a := abs_le.mpr ⟨hwl, hwu⟩
     have hw4 : w ^ 4 ≤ a ^ 4 := by
-      have h1 : w ^ 2 ≤ a ^ 2 := by nlinarith
+      have h1 : w ^ 2 ≤ a ^ 2 := sq_le_sq' hwl hwu
       have h2 : (0 : ℝ) ≤ w ^ 2 := sq_nonneg w
       have h3 : (0 : ℝ) ≤ a ^ 2 := sq_nonneg a
       nlinarith [mul_self_nonneg (w ^ 2), sq_nonneg (a ^ 2 - w ^ 2)]
@@ -241,14 +241,14 @@ theorem quartic_partition_bounded_prior_pos {t a : ℝ} (ht : 0 < t) (ha : 0 < a
     rw [setIntegral_const] at hle
     have hvol : volume.real (Icc (-a) a) = 2 * a := by
       simp only [volume_real_Icc, sub_neg_eq_add]
-      have h2a : (0 : ℝ) ≤ a + a := by linarith
-      exact max_eq_left h2a |>.trans (by ring)
+      have h2a : (0 : ℝ) ≤ a + a := by linarith only [ha]
+      exact max_eq_left h2a |>.trans (Eq.symm (two_mul a))
     rw [hvol] at hle
     -- hle : 2 * a • exp(-(t * a^4 / 24)) ≤ ∫ ...; convert smul to mul.
     have hsmul : (2 * a) • Real.exp (-(t * a ^ 4 / 24)) =
            Real.exp (-(t * a ^ 4 / 24)) * (2 * a) := by
-      rw [smul_eq_mul]; ring
-    linarith [hsmul ▸ hle]
+      rw [smul_eq_mul]; exact Eq.symm (CommMonoid.mul_comm (rexp (-(t * a ^ 4 / 24))) (2 * a))
+    exact le_of_eq_of_le (id (Eq.symm hsmul)) hle
   have hexp_pos : 0 < Real.exp (-(t * a ^ 4 / 24)) := Real.exp_pos _
   have h2a_pos : 0 < 2 * a := by linarith
   linarith [mul_pos hexp_pos h2a_pos]

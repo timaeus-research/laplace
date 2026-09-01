@@ -41,7 +41,9 @@ lemma expRemainder_continuous (n : ℕ) : Continuous (expRemainder n) := by
 lemma expRemainder_succ_zero (n : ℕ) : expRemainder (n + 1) 0 = 0 := by
   unfold expRemainder
   rw [Finset.sum_range_succ']
-  simp
+  simp only [neg_zero, exp_zero, ne_eq, Nat.add_eq_zero_iff, one_ne_zero, and_false,
+    not_false_eq_true, zero_pow, zero_div, Finset.sum_const_zero, pow_zero, Nat.factorial_zero,
+    Nat.cast_one, div_self, zero_add, sub_self]
 
 /-- The remainder at order `n+1` differentiates to minus the remainder
 at order `n`. -/
@@ -168,7 +170,7 @@ theorem quartic_partition_expansion_allOrder {b t : ℝ} (hb : 0 ≤ b)
     simp only [hq_def]
     congr 2
     rw [show ((Nat.factorial (2 * 1) : ℕ) : ℝ) = 2 by
-      norm_num [Nat.factorial]]
+      rfl]
     ring
   -- Scale-t moments in the form needed here.
   have hmom : ∀ j : ℕ, (∫ x, x ^ (4 * j) * q x) =
@@ -181,7 +183,7 @@ theorem quartic_partition_expansion_allOrder {b t : ℝ} (hb : 0 ≤ b)
     rw [h]
     congr 2
     push_cast
-    ring
+    rfl
   -- Pointwise expansion of the quartic exponential factor.
   have hsplit : ∀ x : ℝ,
       Real.exp (-(t * (x ^ 2 / 2 + b * x ^ 4))) =
@@ -243,9 +245,7 @@ theorem quartic_partition_expansion_allOrder {b t : ℝ} (hb : 0 ≤ b)
           (x ^ (4 * (n + 1)) * q x)) :=
       (hint_pow (4 * (n + 1))).const_mul _
     apply hg.mono' hcont_rem.aestronglyMeasurable
-    filter_upwards with x
-    rw [Real.norm_eq_abs]
-    exact hrem_bound x
+    exact ae_of_all volume hrem_bound
   -- Assemble the integral.
   have hZ : partitionFunction (fun x ↦ x ^ 2 / 2 + b * x ^ 4) t =
       (∑ j ∈ Finset.range (n + 1),
@@ -270,7 +270,7 @@ theorem quartic_partition_expansion_allOrder {b t : ℝ} (hb : 0 ≤ b)
       Real.sqrt (2 * π) * ((-b) ^ j * ((4 * j - 1)‼ : ℝ) /
         (Nat.factorial j : ℝ) * t ^ (-((j : ℝ) + 1 / 2))) := by
     intro j _
-    rw [hmom j, show (-(t * b)) = t * (-b) by ring, mul_pow]
+    rw [hmom j, show (-(t * b)) = t * (-b) by exact neg_mul_eq_mul_neg t b, mul_pow]
     calc t ^ j * (-b) ^ j / (Nat.factorial j : ℝ) *
           (((4 * j - 1)‼ : ℝ) * Real.sqrt (2 * π) *
             t ^ (-(2 * (j : ℝ) + 1 / 2)))
@@ -288,7 +288,7 @@ theorem quartic_partition_expansion_allOrder {b t : ℝ} (hb : 0 ≤ b)
             t ^ (-((j : ℝ) + 1 / 2)) =
       ∫ x, q x * expRemainder (n + 1) (t * b * x ^ 4) := by
     rw [hZ, Finset.sum_congr rfl hcoeff, ← Finset.mul_sum]
-    ring
+    simp only [Nat.ofNat_nonneg, sqrt_mul, one_div, neg_add_rev, add_sub_cancel_left]
   rw [hE]
   -- Bound the remainder integral by the (n+1)-st moment.
   have hg : Integrable (fun x : ℝ ↦
@@ -303,7 +303,7 @@ theorem quartic_partition_expansion_allOrder {b t : ℝ} (hb : 0 ≤ b)
           have := MeasureTheory.norm_integral_le_integral_norm
             (f := fun x ↦ q x * expRemainder (n + 1) (t * b * x ^ 4))
             (μ := volume)
-          simpa [Real.norm_eq_abs] using this
+          exact this
       _ ≤ ∫ x, (t * b) ^ (n + 1) / (Nat.factorial (n + 1) : ℝ) *
             (x ^ (4 * (n + 1)) * q x) :=
           MeasureTheory.integral_mono hint_rem.abs hg fun x ↦ hrem_bound x

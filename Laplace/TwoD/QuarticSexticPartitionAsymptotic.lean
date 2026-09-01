@@ -102,9 +102,11 @@ theorem partitionFunction_quarticSextic_rescaled_tendsto :
              t ^ (-((1 : ℝ) / 4 + (1 : ℝ) / 6)))
           = quarticSexticPartitionConst *
             (t ^ ((1 : ℝ) / 4 + (1 : ℝ) / 6) *
-             t ^ (-((1 : ℝ) / 4 + (1 : ℝ) / 6))) by ring]
+             t ^ (-((1 : ℝ) / 4 + (1 : ℝ) / 6))) by exact mul_left_comm (t ^ (1 / 4 + 1 / 6))
+                                                      quarticSexticPartitionConst (t ^ (-(1 / 4 + 1
+                                                      / 6)))]
     rw [← Real.rpow_add ht, add_neg_cancel, Real.rpow_zero, mul_one]
-  exact (tendsto_const_nhds.congr' hEq.symm)
+  exact tendsto_nhds_of_eventually_eq hEq
 
 /-- **Asymptotic equivalence for the 2D quartic-sextic partition
 function.**

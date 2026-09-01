@@ -69,15 +69,15 @@ theorem pencil_difference_lower_bound_multi
     have hb : (0 : ℝ) ≤ r0 * Real.sqrt t := by positivity
     nlinarith [Real.sq_sqrt ht.le, sq_nonneg (r0 * Real.sqrt t - 2)]
   have hur : 2 * u ≤ r0 := by
-    have heq : 2 * u = 2 / Real.sqrt t := by rw [hu_def]; ring
+    have heq : 2 * u = 2 / Real.sqrt t := rfl
     rw [heq, div_le_iff₀ hst]
-    linarith
+    exact h2
   have hwnorm : ∀ x ∈ S, ‖u • x‖ ≤ r0 := by
     intro x hxS
     rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hu.le]
     calc u * ‖x‖ ≤ u * 2 :=
           mul_le_mul_of_nonneg_left (hSnorm x hxS) hu.le
-      _ = 2 * u := by ring
+      _ = 2 * u := CommMonoid.mul_comm u 2
       _ ≤ r0 := hur
   -- Step 1: the pencil identity with observable `φ = g ψ`.
   have hpencil := pencil_identity_integrated_measure volume L₁ L₂
@@ -105,12 +105,12 @@ theorem pencil_difference_lower_bound_multi
   have hFint : IntervalIntegrable (fun s ↦
       ∫ w, ((L₂ w - L₁ w) * ψ w) * ((L₂ w - L₁ w) *
         Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w)))))) volume 0 1 := by
-    rw [intervalIntegrable_iff, Set.uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1)]
+    rw [intervalIntegrable_iff, Set.uIoc_of_le (by exact zero_le_one' ℝ : (0 : ℝ) ≤ 1)]
     exact hint.integral_prod_left
   have hIB : (∫ w, (L₂ w - L₁ w) ^ 2 * ψ w * Real.exp (-(t * (L₁ w + L₂ w))))
       ≤ ∫ s in (0 : ℝ)..1, ∫ w, ((L₂ w - L₁ w) * ψ w) * ((L₂ w - L₁ w) *
           Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))) := by
-    have h := intervalIntegral.integral_mono_on (by norm_num : (0 : ℝ) ≤ 1)
+    have h := intervalIntegral.integral_mono_on (by exact zero_le_one' ℝ : (0 : ℝ) ≤ 1)
       intervalIntegrable_const hFint hFB
     simpa using h
   -- Step 4: the window, where `ψ = 1`.

@@ -48,9 +48,9 @@ theorem exists_stabilizer_envelope
       mul_le_mul_of_nonneg_left h1 hB0
     have h3 : B * (a / (2 * (B + 1))) ≤ a / 2 := by
       rw [← mul_div_assoc,
-        div_le_div_iff₀ (by positivity) (by norm_num : (0:ℝ) < 2)]
-      nlinarith
-    linarith
+        div_le_div_iff₀ (by positivity) (by exact zero_lt_two : (0:ℝ) < 2)]
+      linarith only [ha]
+    exact mul_le_of_mul_le_of_nonneg_left h3 h1 hB0
   refine ⟨(∑ i : Fin R', |c i| * ρ ^ (2 + (i.1 + 1))) / ρ ^ M,
     by positivity, fun x ↦ ?_⟩
   have hxM : (0 : ℝ) ≤ x ^ M := hM_even.pow_nonneg x
@@ -78,7 +78,7 @@ theorem exists_stabilizer_envelope
       calc |x| ^ (2 + (i.1 + 1)) ≤ |x| ^ 3 := h3
         _ = |x| * x ^ 2 := by
             rw [pow_succ, sq_abs]
-            ring
+            exact CommMonoid.mul_comm (x ^ 2) |x|
     have hsum_ub : (∑ i : Fin R', |c i| * |x| ^ (2 + (i.1 + 1))) ≤
         B * ρ * x ^ 2 := by
       calc (∑ i : Fin R', |c i| * |x| ^ (2 + (i.1 + 1)))
@@ -89,7 +89,7 @@ theorem exists_stabilizer_envelope
         _ ≤ B * (ρ * x ^ 2) := by
             apply mul_le_mul_of_nonneg_left _ hB0
             apply mul_le_mul_of_nonneg_right hx (sq_nonneg x)
-        _ = B * ρ * x ^ 2 := by ring
+        _ = B * ρ * x ^ 2 := Eq.symm (mul_assoc B ρ (x ^ 2))
     have hd : (0 : ℝ) ≤ (∑ i : Fin R', |c i| * ρ ^ (2 + (i.1 + 1))) /
         ρ ^ M * x ^ M := by
       apply mul_nonneg _ hxM
@@ -106,14 +106,10 @@ theorem exists_stabilizer_envelope
           ρ ^ (2 + (i.1 + 1)) * |x| ^ M := by
         have h1 : ρ ^ M = ρ ^ (2 + (i.1 + 1)) *
             ρ ^ (M - (2 + (i.1 + 1))) := by
-          rw [← pow_add]
-          congr 1
-          omega
+          exact Eq.symm (pow_mul_pow_sub ρ hj)
         have h2 : |x| ^ M = |x| ^ (2 + (i.1 + 1)) *
             |x| ^ (M - (2 + (i.1 + 1))) := by
-          rw [← pow_add]
-          congr 1
-          omega
+          exact Eq.symm (pow_mul_pow_sub |x| hj)
         rw [h1, h2]
         have h3 : ρ ^ (M - (2 + (i.1 + 1))) ≤
             |x| ^ (M - (2 + (i.1 + 1))) :=
@@ -127,7 +123,7 @@ theorem exists_stabilizer_envelope
           _ = ρ ^ (2 + (i.1 + 1)) *
               (|x| ^ (2 + (i.1 + 1)) * |x| ^ (M - (2 + (i.1 + 1)))) := by
               ring
-      have hρM : (0 : ℝ) < ρ ^ M := by positivity
+      have hρM : (0 : ℝ) < ρ ^ M := pow_pos hρ0 M
       rw [div_mul_eq_mul_div, le_div_iff₀ hρM]
       calc |c i| * |x| ^ (2 + (i.1 + 1)) * ρ ^ M
           = |c i| * (|x| ^ (2 + (i.1 + 1)) * ρ ^ M) := by ring
@@ -205,7 +201,7 @@ theorem tail_integral_le
     intro x hx
     have habs : r ≤ |x| := hx
     have hx2 : r ^ 2 ≤ x ^ 2 := by
-      have h1 : r ^ 2 ≤ |x| ^ 2 := by nlinarith [abs_nonneg x]
+      have h1 : r ^ 2 ≤ |x| ^ 2 := pow_le_pow_left₀ hr hx 2
       rw [← sq_abs x]
       exact h1
     have hsplit : Real.exp (-(t * (ρK * x ^ 2))) =
@@ -219,11 +215,12 @@ theorem tail_integral_le
           apply mul_le_mul_of_nonneg_left _ (by positivity)
           apply Real.exp_le_exp.mpr
           have h := mul_le_mul_of_nonneg_left (henv x) ht.le
-          linarith
+          exact neg_le_neg_iff.mpr h
       _ = Real.exp (-(t / 2 * (ρK * x ^ 2))) *
           (|x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2)))) := by
           rw [hsplit]
-          ring
+          exact Eq.symm (mul_rotate' (rexp (-(t / 2 * (ρK * x ^ 2)))) (|x| ^ s) (rexp (-(t / 2 *
+            (ρK * x ^ 2)))))
       _ ≤ Real.exp (-(t / 2 * (ρK * r ^ 2))) *
           (|x| ^ s * Real.exp (-(t / 2 * (ρK * x ^ 2)))) := by
           apply mul_le_mul_of_nonneg_right _ (by positivity)
@@ -231,7 +228,7 @@ theorem tail_integral_le
           have h : t / 2 * (ρK * r ^ 2) ≤ t / 2 * (ρK * x ^ 2) := by
             apply mul_le_mul_of_nonneg_left _ (by positivity)
             exact mul_le_mul_of_nonneg_left hx2 hρ.le
-          linarith
+          exact neg_le_neg_iff.mpr h
   have hint_f : IntegrableOn (fun x : ℝ ↦
       |x| ^ s * Real.exp (-(t * K x))) {x : ℝ | r ≤ |x|} := by
     apply Integrable.integrableOn
@@ -240,7 +237,7 @@ theorem tail_integral_le
     have hdom' : Integrable (fun x : ℝ ↦
         |x| ^ s * Real.exp (-(t * ρK * x ^ 2))) := by
       refine hdom.congr (Filter.Eventually.of_forall fun x ↦ ?_)
-      norm_num
+      rfl
     refine hdom'.mono' ?_ (Filter.Eventually.of_forall fun x ↦ ?_)
     · exact ((continuous_abs.pow s).mul (Real.continuous_exp.comp
         (hK_cont.const_smul t).neg)).aestronglyMeasurable

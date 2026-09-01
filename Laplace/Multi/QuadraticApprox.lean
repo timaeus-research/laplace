@@ -56,7 +56,7 @@ theorem rescaling_identity
     t * L ((Real.sqrt t)⁻¹ • u) =
       (1/2) * quadForm H u + rescaledPerturbation L H t u := by
   unfold rescaledPerturbation
-  ring
+  simp only [one_div, add_sub_cancel]
 
 /-- Definitional unfolding for `quadForm`. -/
 lemma quadForm_def (H : (ι → ℝ) →L[ℝ] (ι → ℝ)) (z : ι → ℝ) :

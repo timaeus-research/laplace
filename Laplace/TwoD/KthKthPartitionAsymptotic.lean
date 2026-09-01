@@ -57,7 +57,7 @@ theorem partitionFunction_kthKth_eq
     have heq : (fun x : ℝ =>
         x ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) =
                (fun x : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) := by
-      ext; simp
+      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
     rwa [heq] at h
   have hV :
       Integrable (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
@@ -65,7 +65,7 @@ theorem partitionFunction_kthKth_eq
     have heq : (fun y : ℝ =>
         y ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) =
                (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
-      ext; simp
+      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
     rwa [heq] at h
   exact partitionFunction_addSeparable_factor hU hV
 

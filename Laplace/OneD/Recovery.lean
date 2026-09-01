@@ -76,8 +76,7 @@ theorem power_asymptote_unique {α₁ α₂ β₁ β₂ : ℝ}
     filter_upwards [hev] with t ht
     simp only [Pi.div_apply]
     rw [Real.rpow_sub ht]
-    have hne₁ : t ^ β₂ ≠ 0 := (Real.rpow_pos_of_pos ht _).ne'
-    field_simp
+    exact mul_div_mul_comm α₁ (t ^ β₁) α₂ (t ^ β₂)
   have hδ : β₁ - β₂ = 0 := by
     rcases lt_trichotomy (β₁ - β₂) 0 with hlt | heq | hgt
     · have h3 : Tendsto (fun t : ℝ ↦ (α₁ / α₂) * t ^ (β₁ - β₂))
@@ -166,7 +165,7 @@ lemma kth_recovery_of_data {k₁ k₂ : ℕ} (hk₁ : 1 ≤ k₁) (hk₂ : 1 ≤
       have h' : (1 : ℝ) / ((2 * k₁ : ℕ) : ℝ) = 1 / ((2 * k₂ : ℕ) : ℝ) :=
         neg_injective hβ
       field_simp at h'
-      linarith
+      linarith only [h']
     have h2 : 2 * k₁ = 2 * k₂ := by exact_mod_cast hcast
     omega
   refine ⟨hk, ?_⟩

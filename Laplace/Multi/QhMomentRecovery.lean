@@ -48,7 +48,7 @@ theorem rpow_sum_of_pos {s : ℝ} (hs : 0 < s) (c : ι → ℝ) :
     s ^ (∑ i : ι, c i) = ∏ i : ι, s ^ (c i) := by
   classical
   induction (Finset.univ : Finset ι) using Finset.induction_on with
-  | empty => simp
+  | empty => simp only [Finset.sum_empty, rpow_zero, Finset.prod_empty]
   | insert a t ha ih =>
     rw [Finset.sum_insert ha, Finset.prod_insert ha,
       Real.rpow_add hs, ih]
@@ -110,8 +110,7 @@ theorem qh_momentRatio_recovery (q : ι → ℝ) {P : (ι → ℝ) → ℝ}
         ∫ w : ι → ℝ, Real.exp (-(P w)) := by
   rw [qh_monomial_normalized_law q hP hPqh α ht, ← mul_assoc,
     ← Real.rpow_add ht]
-  rw [show (∑ i : ι, q i * α i) + -(∑ i : ι, q i * α i) = 0 from by
-    ring, Real.rpow_zero, one_mul]
+  simp only [add_neg_cancel, rpow_zero, one_mul]
 
 /-- **Comparison form**: two quasi-homogeneous models with the same
 weights whose normalized monomial moments agree at a single

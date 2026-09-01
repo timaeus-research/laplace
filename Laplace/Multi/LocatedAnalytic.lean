@@ -69,11 +69,9 @@ theorem located_analytic_germ_recovery_of_ccData
     exact hg.comp hshift₂
   -- the translated centred losses are the raw losses
   have hraw₁ : (fun w ↦ (fun y ↦ Λ₁ (p₁ + y)) (w - p₁)) = Λ₁ := by
-    funext w
-    simp
+    simp only [add_sub_cancel]
   have hraw₂ : (fun w ↦ (fun y ↦ Λ₂ (p₂ + y)) (w - p₂)) = Λ₂ := by
-    funext w
-    simp
+    simp only [add_sub_cancel]
   -- the located headline
   have hmain := located_positive_jet_recovery_of_ccData A B
     (fun k _ ↦ hA₁'.iteratedFDeriv_isSymm k)
@@ -91,10 +89,7 @@ theorem located_analytic_germ_recovery_of_ccData
   have hgerm := analytic_germ_eq_of_jet_eq hA₁' hA₂' hjets
   have htend : Tendsto (fun w : EuclidD d ↦ w - p₁) (𝓝 p₁)
       (𝓝 (0 : EuclidD d)) := by
-    have hc : Continuous fun w : EuclidD d ↦ w - p₁ :=
-      continuous_id.sub continuous_const
-    have := hc.tendsto p₁
-    simpa using this
+    exact tendsto_sub_nhds_zero_iff.mpr fun ⦃U⦄ a => a
   filter_upwards [htend.eventually hgerm] with w hw
   simpa using hw
 

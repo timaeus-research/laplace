@@ -146,7 +146,7 @@ theorem anharmonic_partition_pos
         (fun x : ℝ =>
           Real.exp (-(t * anharmonicPotential lam alpha gamma x))) = Set.univ := by
       ext x
-      simp [Function.mem_support, Real.exp_ne_zero]
+      simp only [Function.mem_support, ne_eq, Real.exp_ne_zero, not_false_eq_true, Set.mem_univ]
     rw [h_support, Real.volume_univ]
     exact ENNReal.zero_lt_top
   · -- Nonneg a.e.: `exp ≥ 0` is pointwise.
@@ -168,7 +168,7 @@ theorem anharmonic_perturbed_pointwise_hasDerivAt
           (anharmonicPotential lam alpha gamma x + h₀ * x))))
       h₀ := by
   have h_lin : HasDerivAt (fun h : ℝ => h * x) x h₀ := by
-    simpa using (hasDerivAt_id h₀).mul_const x
+    exact hasDerivAt_mul_const x
   have h_add :
       HasDerivAt
         (fun h : ℝ =>
@@ -204,7 +204,10 @@ theorem anharmonic_perturbed_pointwise_bound
               anharmonicPotential lam alpha gamma x)))
         = t * |x| * (Real.exp (t / (2 * c)) *
             Real.exp (-((t / 2) *
-              anharmonicPotential lam alpha gamma x))) by ring]
+              anharmonicPotential lam alpha gamma x))) by exact mul_mul_mul_comm t (Real.exp (t /
+                                                            (2 * c))) |x| (Real.exp (-(t / 2 *
+                                                            anharmonicPotential lam alpha gamma
+                                                            x)))]
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   rw [← Real.exp_add]
   apply Real.exp_le_exp.mpr
@@ -225,7 +228,7 @@ theorem anharmonic_perturbed_pointwise_bound
     rw [abs_mul, abs_of_pos ht] at h_neg_le_abs
     have : t * |h * x| ≤ t * |x| :=
       mul_le_mul_of_nonneg_left h_abs_hx_le ht.le
-    linarith
+    exact Std.IsPreorder.le_trans (-(t * (h * x))) (t * |h * x|) (t * |x|) h_neg_le_abs this
   have h2 : t * |x| ≤ t * c / 2 * x ^ 2 + t / (2 * c) :=
     ResolutionCommon.amgm_t_abs_x t c ht hc_pos x
   have h3 : t * c / 2 * x ^ 2 ≤ t / 2 * anharmonicPotential lam alpha gamma x := by
@@ -243,7 +246,7 @@ private theorem anharmonic_bound_integrable
       t * Real.exp (t / (2 * c)) *
         (|x| * Real.exp (-((t / 2) *
           anharmonicPotential lam alpha gamma x)))) volume := by
-  have ht_half : 0 < t / 2 := by linarith
+  have ht_half : 0 < t / 2 := half_pos ht
   have h_base : Integrable (fun x : ℝ =>
         x * Real.exp (-((t / 2) *
           anharmonicPotential lam alpha gamma x))) volume :=
@@ -254,7 +257,7 @@ private theorem anharmonic_bound_integrable
           |x| * Real.exp (-((t / 2) *
             anharmonicPotential lam alpha gamma x))) volume := by
     refine h_norm.congr (Filter.Eventually.of_forall (fun x => ?_))
-    simp only [Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
+    simp only [norm_mul, Real.norm_eq_abs, Real.abs_exp]
   exact h_abs.const_mul (t * Real.exp (t / (2 * c)))
 
 /-! ## The `GibbsRegularity` instance -/
@@ -287,9 +290,7 @@ theorem _root_.Threepoint.anharmonic_id_gibbsRegularity
   partition_h_zero := by
     -- ∫ exp(-(t · (L_anh(x) + 0 · x))) = ∫ exp(-(t · L_anh(x))).
     -- The integrand is pointwise-equal after `ring_nf`.
-    congr 1
-    funext x
-    ring_nf
+    simp only [zero_mul, add_zero]
   partition_hasDerivAt := by
     -- Extract the coercivity constant.
     obtain ⟨c, hc_pos, h_coerc⟩ :=
@@ -362,7 +363,7 @@ theorem _root_.Threepoint.anharmonic_id_gibbsRegularity
               (anharmonicPotential lam alpha gamma x + 0 * x))))
           = ∫ x : ℝ, (-t * x) *
               Real.exp (-(t * anharmonicPotential lam alpha gamma x)) := by
-      congr 1; funext x; ring_nf
+      simp only [neg_mul, zero_mul, add_zero]
     rw [← h_rhs_eq]
     exact key.2
 

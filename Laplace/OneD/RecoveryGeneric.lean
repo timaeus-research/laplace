@@ -102,8 +102,9 @@ theorem generic_partition_expansion_allOrder
           (x ^ (2 * (m * j)) *
             Real.exp (-(t * x ^ (2 * k) / (Nat.factorial (2 * k) : ℝ)))) := by
       intro j _
-      rw [show -(t * b * x ^ (2 * m)) = -(t * b) * x ^ (2 * m) by ring,
-        mul_pow, ← pow_mul, show 2 * m * j = 2 * (m * j) by ring]
+      rw [show -(t * b * x ^ (2 * m)) = -(t * b) * x ^ (2 * m) by exact neg_mul_eq_neg_mul (t * b)
+                                                                    (x ^ (2 * m)),
+        mul_pow, ← pow_mul, show 2 * m * j = 2 * (m * j) by exact Nat.mul_assoc 2 m j]
       ring
     rw [Finset.sum_congr rfl hterm]
     ring
@@ -137,7 +138,7 @@ theorem generic_partition_expansion_allOrder
           rw [mul_pow (t * b) (x ^ (2 * m)), mul_pow t b,
             show (x ^ (2 * m)) ^ (n + 1) = x ^ (2 * (m * (n + 1))) by
               rw [← pow_mul, show 2 * m * (n + 1) = 2 * (m * (n + 1))
-                by ring]]
+                by exact Nat.mul_assoc 2 m (n + 1)]]
           ring
   have hcont_rem : Continuous
       (fun x : ℝ ↦ q x * expRemainder (n + 1) (t * b * x ^ (2 * m))) := by
@@ -154,9 +155,7 @@ theorem generic_partition_expansion_allOrder
           (x ^ (2 * (m * (n + 1))) * q x)) :=
       (hint_pow (2 * (m * (n + 1)))).const_mul _
     apply hg.mono' hcont_rem.aestronglyMeasurable
-    filter_upwards with x
-    rw [Real.norm_eq_abs]
-    exact hrem_bound x
+    exact ae_of_all volume hrem_bound
   -- Assemble.
   have hZ : partitionFunction (fun x ↦
       x ^ (2 * k) / (Nat.factorial (2 * k) : ℝ) + b * x ^ (2 * m)) t =
@@ -187,7 +186,7 @@ theorem generic_partition_expansion_allOrder
         (Nat.factorial (2 * k) : ℝ) ^ (A j) * Real.Gamma (A j) *
         t ^ ((j : ℝ) - A j) := by
     intro j _
-    rw [hmom j, show (-(t * b)) = t * (-b) by ring, mul_pow,
+    rw [hmom j, show (-(t * b)) = t * (-b) by exact neg_mul_eq_mul_neg t b, mul_pow,
       ← rpow_nat_sub ht j (A j)]
     have hk0 : ((k : ℝ)) ≠ 0 := by
       have : (0 : ℝ) < (k : ℝ) := by exact_mod_cast hk
@@ -218,7 +217,7 @@ theorem generic_partition_expansion_allOrder
             (f := fun x ↦ q x *
               expRemainder (n + 1) (t * b * x ^ (2 * m)))
             (μ := volume)
-          simpa [Real.norm_eq_abs] using this
+          exact this
       _ ≤ ∫ x, (t * b) ^ (n + 1) / (Nat.factorial (n + 1) : ℝ) *
             (x ^ (2 * (m * (n + 1))) * q x) :=
           MeasureTheory.integral_mono hint_rem.abs hg fun x ↦
@@ -230,6 +229,6 @@ theorem generic_partition_expansion_allOrder
     have : (0 : ℝ) < (k : ℝ) := by exact_mod_cast hk
     exact this.ne'
   field_simp
-  ring
+  rfl
 
 end Laplace.OneD

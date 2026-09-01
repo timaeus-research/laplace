@@ -36,7 +36,7 @@ theorem isBigO_pow_pow_nhdsGT {m n : ℕ} (h : m ≤ n) :
     (fun t : ℝ ↦ t ^ n) =O[𝓝[>] (0 : ℝ)] fun t : ℝ ↦ t ^ m := by
   rw [Asymptotics.isBigO_iff]
   refine ⟨1, ?_⟩
-  filter_upwards [Ioo_mem_nhdsGT (by norm_num : (0 : ℝ) < 1)] with t ht
+  filter_upwards [Ioo_mem_nhdsGT (by exact Real.zero_lt_one : (0 : ℝ) < 1)] with t ht
   obtain ⟨ht0, ht1⟩ := ht
   rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos (pow_pos ht0 n),
     abs_of_pos (pow_pos ht0 m), one_mul]
@@ -66,20 +66,20 @@ theorem rayExpansion_taylor (D : ForwardExpansionDomain N L H)
       filter_upwards [self_mem_nhdsWithin] with t ht
       rw [norm_smul, Real.norm_eq_abs, abs_of_pos (Set.mem_Ioi.mp ht),
         mul_pow]
-      ring
+      exact CommMonoid.mul_comm (t ^ (N + 2)) (‖z‖ ^ (N + 2))
     have h1 := hcomp.congr' (Filter.EventuallyEq.refl _ _) hev
     have h2 : (fun t : ℝ ↦ D.taylorRem (t • z)) =o[𝓝[>] (0 : ℝ)]
         fun t : ℝ ↦ t ^ (N + 2) :=
       h1.trans_isBigO ((isBigO_refl (fun t : ℝ ↦ (t : ℝ) ^ (N + 2))
         _).const_mul_left (‖z‖ ^ (N + 2)))
-    exact h2.trans_isBigO (isBigO_pow_pow_nhdsGT (by omega))
+    exact h2.trans_isBigO (isBigO_pow_pow_nhdsGT (Nat.le_add_left 2 N))
   have hpoly : (fun t : ℝ ↦ ∑ m ∈ Finset.Ico 3 (N + 3),
       taylorHomogeneousTerm m L z * t ^ m) =o[𝓝[>] (0 : ℝ)]
       fun t : ℝ ↦ t ^ 2 := by
     refine Asymptotics.IsLittleO.fun_sum fun m hm ↦ ?_
     have hm3 : 2 < m := by
       have := (Finset.mem_Ico.mp hm).1
-      omega
+      exact this
     exact ((Asymptotics.isLittleO_pow_pow hm3).mono
       nhdsWithin_le_nhds).const_mul_left _
   refine ((hpoly.add hrem).congr' ?_ (Filter.EventuallyEq.refl _ _))
@@ -87,18 +87,18 @@ theorem rayExpansion_taylor (D : ForwardExpansionDomain N L H)
   have hL : L (t • z) = (∑ m ∈ Finset.range (N + 3),
       taylorHomogeneousTerm m L (t • z)) + D.taylorRem (t • z) := by
     unfold ForwardExpansionDomain.taylorRem
-    ring
+    simp only [add_sub_cancel]
   have hsm : ∀ m : ℕ, taylorHomogeneousTerm m L (t • z) =
       taylorHomogeneousTerm m L z * t ^ m := fun m ↦ by
     rw [taylorHomogeneousTerm_smul]
-    ring
+    exact CommMonoid.mul_comm (t ^ m) (taylorHomogeneousTerm m L z)
   have hsp : ∑ m ∈ Finset.range (N + 3),
       taylorHomogeneousTerm m L z * t ^ m =
       (∑ m ∈ Finset.range 3, taylorHomogeneousTerm m L z * t ^ m) +
         ∑ m ∈ Finset.Ico 3 (N + 3),
           taylorHomogeneousTerm m L z * t ^ m := by
     simp only [Finset.range_eq_Ico]
-    rw [Finset.sum_Ico_consecutive _ (Nat.zero_le _) (by omega)]
+    rw [Finset.sum_Ico_consecutive _ (Nat.zero_le _) (Nat.le_add_left 3 N)]
   rw [hL, Finset.sum_congr rfl fun m _ ↦ hsm m, hsp]
   ring
 
@@ -144,8 +144,8 @@ theorem taylorHomogeneousTerm_one_eq_zero
     taylorHomogeneousTerm 1 L = fun _ : EuclidD d ↦ (0 : ℝ) := by
   funext z
   have h := Laplace.isAsymptoticExpansionTo_coeff_eq
-    (D.rayExpansion_taylor z) (D.rayExpansion_quad z) 1 (by omega)
-  simpa using h
+    (D.rayExpansion_taylor z) (D.rayExpansion_quad z) 1 (NeZero.one_le)
+  exact h
 
 /-- **The `T₂`/`qform` bridge**: coefficient uniqueness at order 2. -/
 theorem taylorHomogeneousTerm_two_eq_qform
@@ -153,7 +153,7 @@ theorem taylorHomogeneousTerm_two_eq_qform
     taylorHomogeneousTerm 2 L z = qform H z / 2 := by
   have h := Laplace.isAsymptoticExpansionTo_coeff_eq
     (D.rayExpansion_taylor z) (D.rayExpansion_quad z) 2 le_rfl
-  simpa using h
+  exact h
 
 /-- The named Gaussian lower bound for the quadratic term. -/
 theorem t2_lower (D : ForwardExpansionDomain N L H) (z : EuclidD d) :
@@ -197,7 +197,7 @@ theorem eventually_abs_scaledPerturbation_le_quadratic
     ∀ᶠ q in 𝓝[>] (0 : ℝ), ∀ z ∈ mesoscopicSet d q,
       |q ^ N * D.scaledRem q z| ≤ ε * ‖z‖ ^ 2 := by
   filter_upwards [D.eventually_abs_scaledRem_le hε,
-    Ioo_mem_nhdsGT (by norm_num : (0 : ℝ) < 1)] with q h1 hq z hz
+    Ioo_mem_nhdsGT (by exact Real.zero_lt_one : (0 : ℝ) < 1)] with q h1 hq z hz
   obtain ⟨hq0, hq1⟩ := hq
   have hrem := h1 z hz
   have hw : Real.sqrt q * ‖z‖ ≤ 1 := hz
@@ -224,7 +224,7 @@ theorem eventually_abs_scaledPerturbation_le_quadratic
         refine mul_le_mul_of_nonneg_right ?_ (by positivity)
         exact pow_le_one₀
           (mul_nonneg hq0.le (norm_nonneg z)) hqz
-    _ = ε * ‖z‖ ^ 2 := by ring
+    _ = ε * ‖z‖ ^ 2 := by simp only [one_mul]
 
 /-- The homogeneous corrections are `≤ ε‖z‖²` on the window, in
 sum-of-absolute-values form: `q^s‖z‖^(s+2) = ‖z‖²(q‖z‖)^s ≤ ‖z‖²√q`
@@ -249,7 +249,7 @@ theorem eventually_exponentCorrection_le_quadratic
     have := hsqrt.mul_const (M + 1)
     rwa [zero_mul] at this
   filter_upwards [hlim.eventually_le_const hε,
-    Ioo_mem_nhdsGT (by norm_num : (0 : ℝ) < 1)] with q hqε hq z hz
+    Ioo_mem_nhdsGT (by exact Real.zero_lt_one : (0 : ℝ) < 1)] with q hqε hq z hz
   obtain ⟨hq0, hq1⟩ := hq
   have hw : Real.sqrt q * ‖z‖ ≤ 1 := hz
   have hsq1 : Real.sqrt q ≤ 1 := Real.sqrt_le_one.mpr hq1.le
@@ -298,7 +298,7 @@ theorem eventually_exponentCorrection_le_quadratic
     _ ≤ ε * ‖z‖ ^ 2 := by
         refine mul_le_mul_of_nonneg_right ?_ (by positivity)
         calc Real.sqrt q * M ≤ Real.sqrt q * (M + 1) := by
-              refine mul_le_mul_of_nonneg_left (by linarith)
+              refine mul_le_mul_of_nonneg_left (by simp only [le_add_iff_nonneg_right, zero_le_one])
                 (Real.sqrt_nonneg q)
           _ ≤ ε := hqε
 

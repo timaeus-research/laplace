@@ -282,6 +282,6 @@ theorem grade_eq_of_normalized_rates
   refine monomialCombo_eq_zero_of_covariance_monomials_zero P S c
     hS0 he hint_m hint_pair hZpos fun α hα ↦ ?_
   have huniq := tendsto_nhds_unique (hlim α hα) (hrate α hα)
-  linarith [huniq]
+  exact neg_eq_zero.mp huniq
 
 end Laplace.Multi

@@ -31,7 +31,7 @@ noncomputable def divisionCoeff (a b : ℕ → ℝ) : ℕ → ℝ
   decreasing_by
     have h1 := (Finset.mem_Icc.mp i.2).1
     have h2 := (Finset.mem_Icc.mp i.2).2
-    omega
+    exact Nat.sub_lt_self h1 h2
 
 /-- The recursion, in unattached form. -/
 theorem divisionCoeff_eq (a b : ℕ → ℝ) (j : ℕ) :
@@ -45,10 +45,7 @@ theorem divisionCoeff_eq (a b : ℕ → ℝ) (j : ℕ) :
 
 private theorem sum_range_shift_eq_sum_Icc' (f : ℕ → ℝ) (N : ℕ) :
     ∑ s ∈ Finset.range N, f (s + 1) = ∑ s ∈ Finset.Icc 1 N, f s := by
-  induction N with
-  | zero => simp
-  | succ n ih =>
-    rw [Finset.sum_range_succ, ih, Finset.sum_Icc_succ_top (by omega)]
+  exact sum_range_shift_eq_sum_Icc f N
 
 /-- **The convolution identity**: the division coefficients invert
 the Cauchy product. -/
@@ -64,7 +61,7 @@ theorem divisionCoeff_conv (a b : ℕ → ℝ) (hb0 : b 0 ≠ 0) (j : ℕ) :
     rw [Finset.sum_range_succ' (fun i ↦ b i * divisionCoeff a b (j - i)) j]
     rw [sum_range_shift_eq_sum_Icc'
       (fun i ↦ b i * divisionCoeff a b (j - i)) j]
-    simp
+    rfl
   rw [hpeel]
   linarith [h]
 
@@ -99,8 +96,7 @@ theorem natDegree_coeffPoly_le (a : ℕ → ℝ) (N : ℕ) :
         Polynomial.natDegree_C_mul_le _ _
     _ = j := Polynomial.natDegree_X_pow j
     _ ≤ N := by
-        have := Finset.mem_range.mp hj
-        omega
+        exact Finset.mem_range_succ_iff.mp hj
 
 /-- The Cauchy product of the polynomials realizes the convolution
 through degree `N`. -/
@@ -116,8 +112,8 @@ theorem coeffPoly_mul_coeff (b c : ℕ → ℝ) (N : ℕ) {m : ℕ}
     omega
   have hmiN : m - i ≤ N := by omega
   rw [coeffPoly_coeff, coeffPoly_coeff,
-    if_pos (Finset.mem_range.mpr (by omega)),
-    if_pos (Finset.mem_range.mpr (by omega))]
+    if_pos (Finset.mem_range.mpr (Order.lt_add_one_iff.mpr hiN)),
+    if_pos (Finset.mem_range.mpr (Order.lt_add_one_iff.mpr hmiN))]
 
 /-- The tail bound for a polynomial with vanishing low coefficients. -/
 theorem poly_vanishing_tail_bound {p : Polynomial ℝ} {N : ℕ}
@@ -135,13 +131,11 @@ theorem poly_vanishing_tail_bound {p : Polynomial ℝ} {N : ℕ}
       (∑ m ∈ Finset.range (N + 1), p.coeff m * q ^ m) +
         ∑ m ∈ Finset.Ico (N + 1) (max (p.natDegree + 1) (N + 1)),
           p.coeff m * q ^ m := by
-    simp only [Finset.range_eq_Ico]
-    rw [Finset.sum_Ico_consecutive _ (Nat.zero_le _) hNn]
+    exact Eq.symm (Finset.sum_range_add_sum_Ico (fun k => p.coeff k * q ^ k) hNn)
   have hlow : ∑ m ∈ Finset.range (N + 1), p.coeff m * q ^ m = 0 :=
     Finset.sum_eq_zero fun m hm ↦ by
       rw [hcoeff m (by
-        have := Finset.mem_range.mp hm
-        omega), zero_mul]
+        exact Finset.mem_range_succ_iff.mp hm), zero_mul]
   rw [hsplit, hlow, zero_add]
   calc |∑ m ∈ Finset.Ico (N + 1) (max (p.natDegree + 1) (N + 1)),
         p.coeff m * q ^ m|
@@ -158,7 +152,8 @@ theorem poly_vanishing_tail_bound {p : Polynomial ℝ} {N : ℕ}
           ∑ m ∈ Finset.Ico (N + 1) (max (p.natDegree + 1) (N + 1)),
             |p.coeff m| := by
         rw [← Finset.sum_mul]
-        ring
+        exact CommMonoid.mul_comm (∑ i ∈ Finset.Ico (N + 1) (max (p.natDegree + 1) (N + 1)),
+          |p.coeff i|) (q ^ (N + 1))
 
 /-- **Asymptotic division**: the quotient of order-`N` expansions,
 when the denominator's constant coefficient is nonzero, admits the
@@ -195,11 +190,11 @@ theorem isAsymptoticExpansionTo_div {f g : ℝ → ℝ} {a b : ℕ → ℝ}
         continuous_const.mul (continuous_pow j)
     have h0 : ∑ j ∈ Finset.range (N + 1), b j * (0 : ℝ) ^ j = b 0 := by
       rw [Finset.sum_eq_single 0]
-      · norm_num
+      · simp only [pow_zero, mul_one]
       · intro j _ hj
         rw [zero_pow hj, mul_zero]
       · intro h
-        exact absurd (Finset.mem_range.mpr (by omega)) h
+        exact absurd (Finset.mem_range.mpr (by exact Nat.zero_lt_succ N)) h
     have h2 : Tendsto (fun q : ℝ ↦
         ∑ j ∈ Finset.range (N + 1), b j * q ^ j) (𝓝[>] (0 : ℝ))
         (𝓝 (∑ j ∈ Finset.range (N + 1), b j * (0 : ℝ) ^ j)) :=
@@ -209,7 +204,7 @@ theorem isAsymptoticExpansionTo_div {f g : ℝ → ℝ} {a b : ℕ → ℝ}
       (fun _ : ℝ ↦ (1 : ℝ)) := by
     rw [Asymptotics.isBigO_iff]
     refine ⟨1, ?_⟩
-    filter_upwards [Ioo_mem_nhdsGT (by norm_num : (0 : ℝ) < 1)]
+    filter_upwards [Ioo_mem_nhdsGT (by exact Real.zero_lt_one : (0 : ℝ) < 1)]
       with q hq
     obtain ⟨hq0, hq1⟩ := hq
     rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_one, mul_one,
@@ -223,7 +218,7 @@ theorem isAsymptoticExpansionTo_div {f g : ℝ → ℝ} {a b : ℕ → ℝ}
     have hsum := hgerr.add hBlim
     rw [zero_add] at hsum
     refine hsum.congr fun q ↦ ?_
-    ring
+    simp only [sub_add_cancel]
   have hglow : ∀ᶠ q in 𝓝[>] (0 : ℝ), |b 0| / 2 ≤ |g q| := by
     have habs : Tendsto (fun q : ℝ ↦ |g q|) (𝓝[>] (0 : ℝ))
         (𝓝 |b 0|) := hglim.abs
@@ -234,7 +229,7 @@ theorem isAsymptoticExpansionTo_div {f g : ℝ → ℝ} {a b : ℕ → ℝ}
   have hpcoeff : ∀ m ≤ N, pdiff.coeff m = 0 := by
     intro m hm
     rw [hp_def, Polynomial.coeff_sub, coeffPoly_coeff,
-      if_pos (Finset.mem_range.mpr (by omega)),
+      if_pos (Finset.mem_range.mpr (Order.lt_add_one_iff.mpr hm)),
       coeffPoly_mul_coeff b c N hm, divisionCoeff_conv a b hb0 m,
       sub_self]
   have hpoly : (fun q : ℝ ↦
@@ -250,7 +245,7 @@ theorem isAsymptoticExpansionTo_div {f g : ℝ → ℝ} {a b : ℕ → ℝ}
       rw [Asymptotics.isBigO_iff]
       refine ⟨∑ m ∈ Finset.Ico (N + 1)
         (max (pdiff.natDegree + 1) (N + 1)), |pdiff.coeff m|, ?_⟩
-      filter_upwards [Ioo_mem_nhdsGT (by norm_num : (0 : ℝ) < 1)]
+      filter_upwards [Ioo_mem_nhdsGT (by exact Real.zero_lt_one : (0 : ℝ) < 1)]
         with q hq
       obtain ⟨hq0, hq1⟩ := hq
       have heval : pdiff.eval q =
@@ -294,13 +289,13 @@ theorem isAsymptoticExpansionTo_div {f g : ℝ → ℝ} {a b : ℕ → ℝ}
   have hquot : f q / g q -
       ∑ j ∈ Finset.range (N + 1), c j * q ^ j =
       (f q - g q * ∑ j ∈ Finset.range (N + 1), c j * q ^ j) / g q := by
-    field_simp
+    exact div_sub' hgne
   rw [Real.norm_eq_abs, Real.norm_eq_abs] at h1 ⊢
   rw [hquot, abs_div]
   rw [div_le_iff₀ (lt_of_lt_of_le (by positivity) h2)]
   calc |f q - g q * ∑ j ∈ Finset.range (N + 1), c j * q ^ j|
       ≤ ε * (|b 0| / 2) * |q ^ N| := h1
-    _ = ε * |q ^ N| * (|b 0| / 2) := by ring
+    _ = ε * |q ^ N| * (|b 0| / 2) := mul_right_comm ε (|b 0| / 2) |q ^ N|
     _ ≤ ε * |q ^ N| * |g q| :=
         mul_le_mul_of_nonneg_left h2 (by positivity)
 

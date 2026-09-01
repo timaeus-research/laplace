@@ -87,7 +87,7 @@ theorem integral_separable_addSeparable
           (g z.2 * Real.exp (-(t * V z.2)))) from by
         funext z
         rw [exp_neg_t_addSeparable_eq_mul U V t z]
-        ring]
+        exact mul_mul_mul_comm (f z.1) (g z.2) (Real.exp (-(t * U z.1))) (Real.exp (-(t * V z.2)))]
   exact MeasureTheory.integral_prod_mul
     (f := fun x : ℝ => f x * Real.exp (-(t * U x)))
     (g := fun y : ℝ => g y * Real.exp (-(t * V y)))
@@ -108,7 +108,8 @@ theorem gibbsExpectation_separable_addSeparable
   unfold gibbsExpectation Laplace.gibbsExpectation
   rw [partitionFunction_addSeparable_factor hU hV]
   rw [integral_separable_addSeparable f g hf hg]
-  field_simp
+  exact mul_div_mul_comm (∫ (x : ℝ), f x * Real.exp (-(t * U x))) (∫ (y : ℝ),
+    g y * Real.exp (-(t * V y))) (Laplace.partitionFunction U t) (Laplace.partitionFunction V t)
 
 /-- **Mixed-covariance vanishing**: under a product/separable Gibbs measure,
 the covariance between an `f`-of-first observable and a `g`-of-second
@@ -131,24 +132,24 @@ theorem gibbsCov_addSeparable_fst_snd_eq_zero
       Laplace.gibbsExpectation U t f := by
     have h := gibbsExpectation_separable_addSeparable f (fun _ => (1 : ℝ))
       hZU_ne hZV_ne hU hV hf
-      (by simpa using hV)
+      (Integrable.const_mul hV 1)
     have hg1 : Laplace.gibbsExpectation V t (fun _ => (1 : ℝ)) = 1 :=
       Laplace.gibbsExpectation_const V t 1 hZV_ne
     rw [show (fun z : ℝ × ℝ => f z.1 * (1 : ℝ)) = (fun z : ℝ × ℝ => f z.1) from by
-          funext z; ring] at h
+          funext z; exact MulOneClass.mul_one (f z.1)] at h
     rw [h, hg1, mul_one]
   -- Step 3: ⟨g(z.2)⟩_2D = ⟨g⟩_V (collapse with f = 1).
   have hExp_g : gibbsExpectation (addSeparable U V) t (fun z => g z.2) =
       Laplace.gibbsExpectation V t g := by
     have h := gibbsExpectation_separable_addSeparable (fun _ => (1 : ℝ)) g
       hZU_ne hZV_ne hU hV
-      (by simpa using hU) hg
+      (by exact Integrable.const_mul hU 1) hg
     have hf1 : Laplace.gibbsExpectation U t (fun _ => (1 : ℝ)) = 1 :=
       Laplace.gibbsExpectation_const U t 1 hZU_ne
     rw [show (fun z : ℝ × ℝ => (1 : ℝ) * g z.2) = (fun z : ℝ × ℝ => g z.2) from by
-          funext z; ring] at h
+          funext z; exact one_mul (g z.2)] at h
     rw [h, hf1, one_mul]
   rw [hExp_f, hExp_g]
-  ring
+  exact sub_self (⟨f⟩[U, t] * ⟨g⟩[V, t])
 
 end Laplace.TwoD

@@ -52,7 +52,7 @@ noncomputable def quarticPotential : ℝ → ℝ := fun x => x ^ 4 / 24
 even-monomial template. -/
 lemma quarticPotential_eq_kthPotential :
     quarticPotential = kthPotential 2 := by
-  funext x; simp [quarticPotential, kthPotential]; norm_num
+  rfl
 
 /-! ## Integrability -/
 
@@ -68,7 +68,7 @@ $k = 2$ specialisation of `kth_integrable_pow_pot`. -/
 theorem quartic_integrable_pow_pot (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * quarticPotential x))) := by
   rw [quarticPotential_eq_kthPotential]
-  exact kth_integrable_pow_pot (k := 2) (by norm_num) n ht
+  exact kth_integrable_pow_pot (k := 2) (by exact NeZero.one_le) n ht
 
 /-! ## Half-line moment integrals -/
 
@@ -112,7 +112,7 @@ $k = 2$ specialisation of `partitionFunction_kthPotential_pos`. -/
 theorem quartic_partition_pos {t : ℝ} (ht : 0 < t) :
     0 < partitionFunction quarticPotential t := by
   rw [quarticPotential_eq_kthPotential]
-  exact partitionFunction_kthPotential_pos (k := 2) (by norm_num) ht
+  exact partitionFunction_kthPotential_pos (k := 2) (by exact NeZero.one_le) ht
 
 /-! ## Expected values -/
 

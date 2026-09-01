@@ -65,7 +65,7 @@ theorem abs_exp_sub_sum_le (N : ℕ) (x : ℝ) :
       ∑' i : ℕ, x ^ (i + (N + 1)) / ((i + (N + 1)).factorial : ℝ) := by
     have hadd := hsum.sum_add_tsum_nat_add (N + 1)
     rw [real_exp_eq_tsum]
-    linarith
+    exact sub_eq_of_eq_add' (id (Eq.symm hadd))
   rw [hrem]
   have hterm : ∀ i : ℕ,
       |x ^ (i + (N + 1)) / ((i + (N + 1)).factorial : ℝ)| ≤
@@ -73,7 +73,7 @@ theorem abs_exp_sub_sum_le (N : ℕ) (x : ℝ) :
         (|x| ^ i / (i.factorial : ℝ)) := by
     intro i
     rw [abs_div, abs_pow, Nat.abs_cast, div_mul_div_comm, ← pow_add]
-    have hexp : N + 1 + i = i + (N + 1) := by omega
+    have hexp : N + 1 + i = i + (N + 1) := Eq.symm (Nat.add_comm i (N + 1))
     rw [hexp]
     have hfac : ((N + 1).factorial : ℝ) * (i.factorial : ℝ) ≤
         ((i + (N + 1)).factorial : ℝ) := by
@@ -94,7 +94,7 @@ theorem abs_exp_sub_sum_le (N : ℕ) (x : ℝ) :
           ∑' i : ℕ, |x| ^ i / (i.factorial : ℝ) := tsum_mul_left
     _ = |x| ^ (N + 1) * Real.exp |x| / ((N + 1).factorial : ℝ) := by
         rw [← real_exp_eq_tsum]
-        ring
+        exact div_mul_eq_mul_div (|x| ^ (N + 1)) (↑(N + 1).factorial) (rexp |x|)
 
 /-- Unrestricted first-order exponential bound:
 `|e^y - 1| ≤ |y| e^|y|`. -/
@@ -130,7 +130,7 @@ theorem abs_exp_neg_add_sub_exp_neg_le (A δ : ℝ) :
   have hsplit : Real.exp (-(A + δ)) - Real.exp (-A) =
       Real.exp (-A) * (Real.exp (-δ) - 1) := by
     rw [neg_add, Real.exp_add]
-    ring
+    exact Eq.symm (mul_sub_one (rexp (-A)) (rexp (-δ)))
   rw [hsplit, abs_mul, abs_of_pos (Real.exp_pos _)]
   have h1 : |Real.exp (-δ) - 1| ≤ |δ| * Real.exp |δ| := by
     have := abs_exp_sub_one_le' (-δ)
@@ -142,7 +142,7 @@ theorem abs_exp_neg_add_sub_exp_neg_le (A δ : ℝ) :
         mul_le_mul h2 h1 (abs_nonneg _) (Real.exp_pos _).le
     _ = |δ| * Real.exp (|A| + |δ|) := by
         rw [Real.exp_add]
-        ring
+        exact mul_left_comm (rexp |A|) |δ| (rexp |δ|)
 
 /-- Degree bound for the exponent polynomial. -/
 theorem natDegree_exponentPoly_le (a : ℕ → ℝ) (N : ℕ) :
@@ -168,8 +168,7 @@ theorem natDegree_gradedExpPoly_le (a : ℕ → ℝ) (N : ℕ) :
     _ ≤ i * N := Nat.mul_le_mul_left i (natDegree_exponentPoly_le a N)
     _ ≤ N * N := by
         have hi' : i ≤ N := by
-          have := Finset.mem_range.mp hi
-          omega
+          exact Finset.mem_range_succ_iff.mp hi
         exact Nat.mul_le_mul_right N hi'
 
 /-- **The polynomial tail bound**, with the uniform indexing bound
@@ -187,9 +186,9 @@ theorem gradedExpPoly_tail_bound (a : ℕ → ℝ) (N : ℕ) {q : ℝ}
   have hNn : N + 1 ≤ N * N + 1 := by
     have hNsq : N ≤ N * N := by
       cases N with
-      | zero => exact le_rfl
+      | zero => rfl
       | succ n => exact Nat.le_mul_of_pos_left _ (Nat.succ_pos n)
-    omega
+    exact Nat.add_le_add_right hNsq 1
   rw [Polynomial.eval_eq_sum_range' hdeg]
   have hsplit : ∑ j ∈ Finset.range (N * N + 1),
       (gradedExpPoly a N).coeff j * q ^ j =
@@ -197,8 +196,7 @@ theorem gradedExpPoly_tail_bound (a : ℕ → ℝ) (N : ℕ) {q : ℝ}
         (gradedExpPoly a N).coeff j * q ^ j) +
         ∑ j ∈ Finset.Ico (N + 1) (N * N + 1),
           (gradedExpPoly a N).coeff j * q ^ j := by
-    simp only [Finset.range_eq_Ico]
-    rw [Finset.sum_Ico_consecutive _ (Nat.zero_le _) hNn]
+    exact Eq.symm (Finset.sum_range_add_sum_Ico (fun k => (gradedExpPoly a N).coeff k * q ^ k) hNn)
   have hc : ∀ j, expCorrectionCoeff a N j = (gradedExpPoly a N).coeff j :=
     fun _ ↦ rfl
   simp only [hc]
@@ -219,6 +217,7 @@ theorem gradedExpPoly_tail_bound (a : ℕ → ℝ) (N : ℕ) {q : ℝ}
           ∑ j ∈ Finset.Ico (N + 1) (N * N + 1),
             |(gradedExpPoly a N).coeff j| := by
         rw [← Finset.sum_mul]
-        ring
+        exact CommMonoid.mul_comm (∑ i ∈ Finset.Ico (N + 1) (N * N + 1),
+          |(gradedExpPoly a N).coeff i|) (q ^ (N + 1))
 
 end Laplace.Multi

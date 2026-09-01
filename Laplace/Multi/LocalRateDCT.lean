@@ -87,7 +87,7 @@ theorem base_eq_of_lower (hk : 0 < k)
     L₁ 0 = L₂ 0 := by
   have h0 := hlower 0 hk
   have h1 := congrFun (congrArg (fun A ↦ A.toFun) h0) (fun _ ↦ 0)
-  simpa [iteratedFDeriv_zero_apply] using h1
+  exact h1
 
 /-- **The local rate-sensitive dominated convergence** (J5c): on a
 common ball inside both domains, the rate-divided exponential
@@ -117,7 +117,7 @@ theorem tendsto_local_rate_integral (hk : 2 < k)
     with hC_def
   set c : ℝ := min A₁.c A₂.c with hc_def
   have hc : 0 < c := lt_min A₁.c_pos A₂.c_pos
-  have hbase := base_eq_of_lower (by omega) hlower
+  have hbase := base_eq_of_lower (by exact Nat.zero_lt_of_lt hk) hlower
   -- target as an integral of the pointwise limit
   have htarget : (-∫ x : EuclidD d, P x * Q x * quadKernel H x) =
       ∫ x : EuclidD d, P x * (-(quadKernel H x) * Q x) := by
@@ -173,8 +173,8 @@ theorem tendsto_local_rate_integral (hk : 2 < k)
       have hmax : max (Real.exp (-a₁)) (Real.exp (-a₂)) ≤
           Real.exp (-(c * ‖x‖ ^ 2)) := by
         rw [max_le_iff]
-        exact ⟨Real.exp_le_exp.mpr (by linarith),
-          Real.exp_le_exp.mpr (by linarith)⟩
+        exact ⟨Real.exp_le_exp.mpr (neg_le_neg_iff.mpr hcx₁),
+          Real.exp_le_exp.mpr (by exact neg_le_neg_iff.mpr hcx₂)⟩
       have hdiff : |a₁ - a₂| ≤ C * q ^ (k - 2) * ‖x‖ ^ k := by
         have hdL : |L₁ (q • x) - L₂ (q • x)| ≤ C * ‖q • x‖ ^ k :=
           pairwise_difference_bound A₁ A₂ hlower hin₁ hin₂
@@ -188,7 +188,7 @@ theorem tendsto_local_rate_integral (hk : 2 < k)
         calc |L₁ (q • x) - L₂ (q • x)| ≤ C * ‖q • x‖ ^ k := hdL
           _ = C * q ^ k * ‖x‖ ^ k := by
               rw [hnorm, mul_pow]
-              ring
+              exact Eq.symm (mul_assoc C (q ^ k) (‖x‖ ^ k))
           _ = C * q ^ (k - 2) * ‖x‖ ^ k * q ^ 2 := by
               have hkk : k - 2 + 2 = k := by omega
               rw [show q ^ k = q ^ (k - 2) * q ^ 2 by
@@ -212,8 +212,7 @@ theorem tendsto_local_rate_integral (hk : 2 < k)
                   have h₁ := A₁.taylorRemainderConst_nonneg
                   have h₂ := A₂.taylorRemainderConst_nonneg
                   have hC0 : (0:ℝ) ≤ C := by
-                    rw [hC_def]
-                    linarith
+                    exact Left.add_nonneg h₁ h₂
                   exact mul_nonneg (mul_nonneg hC0 (by positivity))
                     (by positivity)
         _ = C * (|P x| * ‖x‖ ^ k * Real.exp (-c * ‖x‖ ^ 2)) := by
@@ -250,7 +249,7 @@ theorem tendsto_local_rate_integral (hk : 2 < k)
         Real.norm_eq_abs, abs_of_pos hq0]
       calc q * ‖x‖ ≤ q * (‖x‖ + 1) := by
             apply mul_le_mul_of_nonneg_left _ hq0.le
-            linarith
+            simp only [le_add_iff_nonneg_right, zero_le_one]
         _ < ρ / (‖x‖ + 1) * (‖x‖ + 1) :=
             mul_lt_mul_of_pos_right hqρ (by positivity)
         _ = ρ := by field_simp
@@ -274,7 +273,7 @@ theorem tendsto_local_rate_integral (hk : 2 < k)
       rw [show q ^ k = q ^ 2 * q ^ (k - 2) by
         rw [← pow_add, hkk]]
       field_simp
-      ring
+      exact Eq.symm (sub_sub_sub_cancel_right (L₁ (q • x)) (L₂ (q • x)) (L₂ 0))
     have hexp := tendsto_exp_neg_sub_div ha₁lim ha₂lim hdlim
     have hqk : quadKernel H x = Real.exp (-(qform H x / 2)) := by
       unfold quadKernel

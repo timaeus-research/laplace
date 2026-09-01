@@ -42,7 +42,7 @@ theorem lower_bound_not_superpolynomial {Δ : ℝ → ℝ} {κ T₀ γ : ℝ}
     calc t ^ (-(N : ℝ)) = t ^ (-(N : ℝ)) * 1 := (mul_one _).symm
       _ ≤ t ^ (-(N : ℝ)) * t ^ (γ + N) :=
           mul_le_mul_of_nonneg_left (Real.one_le_rpow h1t hγN) hXpos.le
-      _ = t ^ γ := by rw [← Real.rpow_add ht0]; congr 1; ring
+      _ = t ^ γ := by rw [← Real.rpow_add ht0]; simp only [neg_add_cancel_comm_assoc]
   have hchain : κ * t ^ (-(N : ℝ)) ≤ κ / 2 * t ^ (-(N : ℝ)) :=
     calc κ * t ^ (-(N : ℝ)) ≤ κ * t ^ γ :=
           mul_le_mul_of_nonneg_left hkey hκ.le

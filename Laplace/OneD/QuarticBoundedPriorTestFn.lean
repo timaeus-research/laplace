@@ -60,7 +60,7 @@ theorem quartic_bounded_prior_partition_pos {a t : ℝ} (ha : 0 < a) :
   have h_supp : Function.support (fun w : ℝ => Real.exp (-(t * w ^ 4 / 24)))
       = Set.univ := by
     ext w
-    simp [Function.mem_support, (Real.exp_pos _).ne']
+    simp only [Function.mem_support, ne_eq, Real.exp_ne_zero, not_false_eq_true, mem_univ]
   rw [h_supp, Set.univ_inter, Real.volume_Icc]
   exact ENNReal.ofReal_pos.mpr (by linarith)
 
@@ -104,7 +104,7 @@ theorem quartic_bounded_prior_partition_lower_bound_inner
       have h_abs_pow : |w| ^ 4 ≤ δ ^ 4 := pow_le_pow_left₀ (abs_nonneg w) habs 4
       have h_abs_eq : |w| ^ 4 = w ^ 4 := by
         rw [show (4 : ℕ) = 2 * 2 from rfl, pow_mul, sq_abs, ← pow_mul]
-      linarith
+      exact le_of_eq_of_le (id (Eq.symm h_abs_eq)) h_abs_pow
     nlinarith [hw4, ht, sq_nonneg w, sq_nonneg δ]
   -- Step 3: Use setIntegral_mono_on with the pointwise lower bound.
   have h_lower :

@@ -38,7 +38,7 @@ theorem analytic_growth_lower_bound (a : ℝ → ℝ) (ha : AnalyticAt ℝ a 0)
   obtain ⟨g, hg, hg0, heq⟩ := (ha.analyticOrderAt_eq_natCast).mp hord
   -- `|g|` stays above `|g 0| / 2` near `0`, by continuity.
   have hgpos : 0 < |g 0| := abs_pos.mpr hg0
-  have hlt : |g 0| / 2 < |g 0| := by linarith
+  have hlt : |g 0| / 2 < |g 0| := div_two_lt_of_pos hgpos
   have habs : ContinuousAt (fun w ↦ |g w|) 0 := hg.continuousAt.abs
   have hgev : ∀ᶠ w in nhds (0 : ℝ), |g 0| / 2 < |g w| :=
     habs.eventually (eventually_gt_nhds hlt)
@@ -53,7 +53,7 @@ theorem analytic_growth_lower_bound (a : ℝ → ℝ) (ha : AnalyticAt ℝ a 0)
     linarith [hw.2, hr]
   obtain ⟨hfac, hglb⟩ := hball hwball
   rw [hfac, sub_zero, smul_eq_mul, abs_mul, abs_pow, abs_of_nonneg hw.1]
-  calc |g 0| / 2 * w ^ m = w ^ m * (|g 0| / 2) := by ring
+  calc |g 0| / 2 * w ^ m = w ^ m * (|g 0| / 2) := Eq.symm (CommMonoid.mul_comm (w ^ m) (|g 0| / 2))
     _ ≤ w ^ m * |g w| :=
         mul_le_mul_of_nonneg_left hglb.le (pow_nonneg hw.1 m)
 

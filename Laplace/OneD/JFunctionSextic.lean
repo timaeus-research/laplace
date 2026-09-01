@@ -42,11 +42,10 @@ namespace Laplace.OneD
 /-! ## Constant-bridging lemmas -/
 
 private lemma sextic_kth_factorial : (Nat.factorial (2 * 3) : ℝ) = 720 := by
-  change (Nat.factorial 6 : ℝ) = 720
-  norm_num [Nat.factorial]
+  rfl
 
 private lemma sextic_kth_inv : ((1 : ℝ) / ((2 * 3 : ℕ) : ℝ)) = (1 : ℝ) / 6 := by
-  norm_num
+  rfl
 
 /-! ## The two sextic theorems as specialisations of `kth_*` -/
 
@@ -62,12 +61,8 @@ theorem sextic_jfunction_centered_tendsto_zero
         t ^ ((1:ℝ)/6) * ∫ w : ℝ, Real.exp (-(t * w^6 / 720)) * (prior w - prior 0))
       atTop (𝓝 0) := by
   have h := kth_jfunction_centered_tendsto_zero
-    (k := 3) (by norm_num) hprior_meas hprior_cont0 hprior_bd
+    (k := 3) (by exact NeZero.one_le) hprior_meas hprior_cont0 hprior_bd
   -- Bridge constants: 1/((2*3:ℕ):ℝ) = 1/6 and (Nat.factorial (2*3):ℝ) = 720.
-  rw [sextic_kth_inv] at h
-  -- After the inv rewrite the only remaining gap is the factorial; rewrite under
-  -- the integrand via `simp_rw`.
-  simp_rw [sextic_kth_factorial] at h
   exact h
 
 /-- **J-function asymptotic (sextic).**
@@ -86,9 +81,6 @@ theorem sextic_jfunction_asymptotic
   have h := kth_jfunction_asymptotic
     (k := 3) (by norm_num) hprior_meas hprior_cont0 hprior_bd
   -- Bridge constants: 1/((2*3:ℕ):ℝ) = 1/6, ((3:ℕ):ℝ) = 3, (Nat.factorial (2*3):ℝ) = 720.
-  rw [sextic_kth_inv] at h
-  rw [show ((3 : ℕ) : ℝ) = (3 : ℝ) from by norm_num] at h
-  simp_rw [sextic_kth_factorial] at h
   exact h
 
 end Laplace.OneD

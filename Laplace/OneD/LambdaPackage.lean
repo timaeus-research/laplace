@@ -169,11 +169,7 @@ theorem gibbs_secondMoment_rate
     unfold nondegenerateJet
     rw [hs]
     have hq2 : ((Real.sqrt t)⁻¹) ^ 2 = t⁻¹ := by
-      set st : ℝ := Real.sqrt t with hst_def
-      have hst2 : st * st = t := Real.mul_self_sqrt ht.le
-      have hstne : st ≠ 0 := hst.ne'
-      rw [← hst2]
-      field_simp
+      exact Eq.symm (DivisionMonoid.inv_eq_of_mul t ((√t)⁻¹ ^ 2) hqt)
     rw [hq2]
     field_simp
   exact hlim.congr' hev

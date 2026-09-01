@@ -118,7 +118,7 @@ theorem abs_exponentPoly_coeff_le (L : EuclidD d → ℝ) (N u : ℕ) :
       _ ≤ ((u + 2).factorial : ℝ)⁻¹ * ‖iteratedFDeriv ℝ (u + 2) L 0‖ *
           (1 + ‖z‖) ^ (u + 2) := by
           gcongr
-          linarith [norm_nonneg z]
+          linarith only []
   · rw [abs_zero]
     positivity
 

@@ -100,9 +100,7 @@ theorem _root_.Threepoint.anharmonic_id_gibbsObservable_pow
     anharmonic_coercive lam alpha gamma hlam hgamma hdisc
   refine ⟨?_, ?_⟩
   · -- First conjunct: h = 0 numerator identity.
-    congr 1
-    funext x
-    ring_nf
+    simp only [zero_mul, add_zero]
   · -- Second conjunct: HasDerivAt of the perturbed numerator at h = 0.
     have hball : Metric.ball (0 : ℝ) 1 ∈ nhds (0 : ℝ) :=
       Metric.ball_mem_nhds _ one_pos
@@ -120,12 +118,8 @@ theorem _root_.Threepoint.anharmonic_id_gibbsObservable_pow
         apply Continuous.mul continuous_const
         unfold anharmonicPotential
         fun_prop
-      · rw [Real.norm_eq_abs, abs_mul, abs_pow,
-          abs_of_pos (Real.exp_pos _)]
-        have hexp : Real.exp (-(t * (anharmonicPotential lam alpha gamma x + 0 * x)))
-            = Real.exp (-(t * anharmonicPotential lam alpha gamma x)) := by
-          congr 1; ring
-        rw [hexp]
+      · simp only [zero_mul, add_zero, norm_mul, norm_pow, Real.norm_eq_abs, Real.abs_exp,
+          Std.le_refl]
     -- AE strong measurability of `F` for `h` near 0.
     have hF_meas : ∀ᶠ h in nhds (0 : ℝ),
         AEStronglyMeasurable
@@ -160,12 +154,12 @@ theorem _root_.Threepoint.anharmonic_id_gibbsObservable_pow
         (|x| ^ (k + 1) * Real.exp (-((t / 2) *
           anharmonicPotential lam alpha gamma x))) with hbound_def
     have h_bound_int : Integrable bound := by
-      have ht_half : 0 < t / 2 := by linarith
+      have ht_half : 0 < t / 2 := half_pos ht
       have h_abs :=
         integrable_abs_pow_mul_exp_neg_t_anharmonic (k + 1) hlam hgamma hdisc ht_half
       have h_total := h_abs.const_mul (t * Real.exp (t / (2 * c)))
       refine h_total.congr (Filter.Eventually.of_forall fun x => ?_)
-      rw [hbound_def]
+      rfl
     -- Pointwise bound `‖F' h x‖ ≤ bound x` for `|h| < 1`.
     have h_F'_bound : ∀ᵐ x : ℝ ∂volume, ∀ h ∈ Metric.ball (0 : ℝ) 1,
         ‖x ^ k *
@@ -218,9 +212,7 @@ theorem _root_.Threepoint.anharmonic_id_gibbsObservable_pow
               ((-t * w) *
                 Real.exp (-(t * anharmonicPotential lam alpha gamma w)))
                 ∂(volume : Measure ℝ)) := by
-      apply MeasureTheory.integral_congr_ae
-      filter_upwards with a
-      ring_nf
+      simp only [neg_mul, zero_mul, add_zero, mul_neg]
     rw [h_eq_deriv] at h_d
     exact h_d
 
@@ -239,7 +231,7 @@ theorem _root_.Threepoint.anharmonic_id_gibbsObservable_id
       (anharmonicPotential lam alpha gamma)
       (fun x : ℝ => x) t (fun x : ℝ => x) := by
   have h := Threepoint.anharmonic_id_gibbsObservable_pow hlam hgamma hdisc ht 1
-  have heq : (fun x : ℝ => x ^ 1) = (fun x : ℝ => x) := by funext x; ring
+  have heq : (fun x : ℝ => x ^ 1) = (fun x : ℝ => x) := by funext x; exact pow_one x
   rwa [heq] at h
 
 /-- `GibbsObservable` for `fun x => x * x`. -/
@@ -251,7 +243,7 @@ theorem _root_.Threepoint.anharmonic_id_gibbsObservable_mul_self
       (anharmonicPotential lam alpha gamma)
       (fun x : ℝ => x) t (fun x : ℝ => x * x) := by
   have h := Threepoint.anharmonic_id_gibbsObservable_pow hlam hgamma hdisc ht 2
-  have heq : (fun x : ℝ => x ^ 2) = (fun x : ℝ => x * x) := by funext x; ring
+  have heq : (fun x : ℝ => x ^ 2) = (fun x : ℝ => x * x) := by funext x; exact pow_two x
   rwa [heq] at h
 
 /-- `GibbsObservable` for `fun x => x * x * x`. -/
@@ -263,7 +255,7 @@ theorem _root_.Threepoint.anharmonic_id_gibbsObservable_mul_mul_self
       (anharmonicPotential lam alpha gamma)
       (fun x : ℝ => x) t (fun x : ℝ => x * x * x) := by
   have h := Threepoint.anharmonic_id_gibbsObservable_pow hlam hgamma hdisc ht 3
-  have heq : (fun x : ℝ => x ^ 3) = (fun x : ℝ => x * x * x) := by funext x; ring
+  have heq : (fun x : ℝ => x ^ 3) = (fun x : ℝ => x * x * x) := by funext x; exact pow_three' x
   rwa [heq] at h
 
 end Laplace.OneD

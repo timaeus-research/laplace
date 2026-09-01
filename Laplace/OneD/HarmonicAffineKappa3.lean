@@ -120,7 +120,7 @@ private lemma gibbsExp_x_cube_harmonic
     Laplace.gibbsExpectation (harmonicPotential lam) t (fun x : ℝ => x ^ 3) = 0 := by
   have h := gibbsExpectation_harmonic_pow_odd hlam ht 1
   -- h : gibbsExp L t (fun x => x ^ (2*1+1)) = 0
-  simpa using h
+  exact h
 
 /-! ## Affine moment expansions
 
@@ -159,8 +159,7 @@ private lemma integrable_const_harmonic
   have h' : Integrable (fun x : ℝ => c * (x ^ 0 *
       Real.exp (-(t * harmonicPotential lam x)))) := h.const_mul c
   apply h'.congr
-  filter_upwards with x
-  simp [pow_zero]
+  simp only [pow_zero, one_mul, Filter.EventuallyEq.refl]
 
 /-- `⟨b·x + c⟩_t = c` under the harmonic Gibbs (since `⟨x⟩_t = 0`). -/
 private lemma gibbsExp_affine_harmonic
@@ -177,7 +176,7 @@ private lemma gibbsExp_affine_harmonic
       Laplace.gibbsExpectation_smul (harmonicPotential lam) t b (fun x => x),
       Laplace.gibbsExpectation_const (harmonicPotential lam) t c hZ,
       gibbsExp_x_harmonic hlam ht]
-  ring
+  simp only [mul_zero, zero_add]
 
 /-- Polynomial gibbsExpectation under the harmonic Gibbs at degree ≤ 3:
 `⟨a₃·x³ + a₂·x² + a₁·x + a₀⟩_t = a₂/(λt) + a₀` (since `m₁ = m₃ = 0`).
@@ -204,11 +203,13 @@ private lemma gibbsExp_poly_le3_harmonic
   have h_a₃ : Integrable (fun x : ℝ => a₃ * x ^ 3 *
       Real.exp (-(t * harmonicPotential lam x))) := by
     have := (h_pow 3).const_mul a₃
-    apply this.congr; filter_upwards with x; ring
+    apply this.congr; filter_upwards with x; exact Eq.symm (mul_assoc a₃ (x ^ 3) (Real.exp (-(t *
+                                               harmonicPotential lam x))))
   have h_a₂ : Integrable (fun x : ℝ => a₂ * x ^ 2 *
       Real.exp (-(t * harmonicPotential lam x))) := by
     have := (h_pow 2).const_mul a₂
-    apply this.congr; filter_upwards with x; ring
+    apply this.congr; filter_upwards with x; exact Eq.symm (mul_assoc a₂ (x ^ 2) (Real.exp (-(t *
+                                               harmonicPotential lam x))))
   have h_a₁ : Integrable (fun x : ℝ => a₁ * x *
       Real.exp (-(t * harmonicPotential lam x))) := integrable_smul_x hlam ht a₁
   have h_a₀ : Integrable (fun x : ℝ => a₀ *
@@ -224,7 +225,8 @@ private lemma gibbsExp_poly_le3_harmonic
       Real.exp (-(t * harmonicPotential lam x))) := by
     have := h_a₁.add h_a₀
     apply this.congr; filter_upwards with x
-    simp only [Pi.add_apply]; ring
+    simp only [Pi.add_apply]; exact Eq.symm (RightDistribClass.right_distrib (a₁ * x) a₀ (Real.exp
+                                (-(t * harmonicPotential lam x))))
   -- Step 1a: factor `a₃·x³ + (a₂·x² + a₁·x + a₀)`.
   rw [show (fun x : ℝ => a₃ * x ^ 3 + a₂ * x ^ 2 + a₁ * x + a₀)
         = (fun x : ℝ => (fun y => a₃ * y ^ 3) x +
@@ -235,7 +237,7 @@ private lemma gibbsExp_poly_le3_harmonic
   -- Step 1b: factor the tail `(a₂·x² + a₁·x + a₀)` = `a₂·x² + (a₁·x + a₀)`.
   rw [show (fun y : ℝ => a₂ * y ^ 2 + a₁ * y + a₀)
         = (fun y : ℝ => (fun z => a₂ * z ^ 2) y + (fun z : ℝ => a₁ * z + a₀) y) from by
-        funext y; ring]
+        funext y; exact add_assoc (a₂ * y ^ 2) (a₁ * y) a₀]
   rw [Laplace.gibbsExpectation_add (harmonicPotential lam) t
         (fun z => a₂ * z ^ 2) (fun z => a₁ * z + a₀) h_a₂ h_a₁a₀]
   -- Step 1c: factor the tail `(a₁·x + a₀)` = `a₁·x + a₀`.
@@ -252,7 +254,7 @@ private lemma gibbsExp_poly_le3_harmonic
   rw [gibbsExp_x_cube_harmonic hlam ht,
       gibbsExp_x_sq_harmonic hlam ht,
       gibbsExp_x_harmonic hlam ht]
-  ring
+  simp only [mul_zero, one_div, mul_inv_rev, zero_add]
 
 /-! ## The headline -/
 

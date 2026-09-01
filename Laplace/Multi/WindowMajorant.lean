@@ -33,9 +33,9 @@ variable {d N : ℕ} {L : EuclidD d → ℝ} {H : Matrix (Fin d) (Fin d) ℝ}
 theorem sum_range_shift_eq_sum_Icc (f : ℕ → ℝ) (N : ℕ) :
     ∑ s ∈ Finset.range N, f (s + 1) = ∑ s ∈ Finset.Icc 1 N, f s := by
   induction N with
-  | zero => simp
+  | zero => rfl
   | succ n ih =>
-    rw [Finset.sum_range_succ, ih, Finset.sum_Icc_succ_top (by omega)]
+    rw [Finset.sum_range_succ, ih, Finset.sum_Icc_succ_top (Nat.le_add_left 1 n)]
 
 namespace ForwardExpansionDomain
 
@@ -66,7 +66,7 @@ theorem normalized_window_remainder_bound
     add_nonneg (add_nonneg hrem0 (by positivity)) hCtail0, ?_⟩
   filter_upwards [smul_mem_ball_of_mesoscopic D.taylorRadius_pos,
     D.gaussian_absorb,
-    Ioo_mem_nhdsGT (by norm_num : (0 : ℝ) < 1)] with q hball habs hq z hz
+    Ioo_mem_nhdsGT (by exact Real.zero_lt_one : (0 : ℝ) < 1)] with q hball habs hq z hz
   obtain ⟨hq0, hq1⟩ := hq
   have hgabs := habs z hz
   set R : ℝ := q ^ N * D.scaledRem q z with hR_def
@@ -150,7 +150,7 @@ theorem normalized_window_remainder_bound
     have hzK : ‖z‖ ^ (N + 2) ≤ (1 + ‖z‖) ^ K := by
       calc ‖z‖ ^ (N + 2) ≤ (1 + ‖z‖) ^ (N + 2) := by
             gcongr
-            linarith [norm_nonneg z]
+            simp only [le_add_iff_nonneg_left, zero_le_one]
         _ ≤ (1 + ‖z‖) ^ K := by
             refine pow_le_pow_right₀ hbase ?_
             rw [hK_def]
@@ -161,7 +161,8 @@ theorem normalized_window_remainder_bound
           (|R| * Real.exp (|S| + |R|)) :=
           mul_le_mul_of_nonneg_left h1 (Real.exp_pos _).le
       _ = |R| * (Real.exp (-taylorHomogeneousTerm 2 L z) *
-          Real.exp (|S| + |R|)) := by ring
+          Real.exp (|S| + |R|)) := mul_left_comm (rexp (-taylorHomogeneousTerm 2 L z)) |R| (rexp
+                                        (|S| + |R|))
       _ ≤ (q ^ N * (D.remConst * ‖z‖ ^ (N + 2))) * E :=
           mul_le_mul hRbound habsorb (by positivity)
             (mul_nonneg (pow_pos hq0 N).le
@@ -205,7 +206,7 @@ theorem normalized_window_remainder_bound
             rw [← pow_mul, hK_def]
         _ ≤ M ^ (N + 1) * (1 + ‖z‖) ^ K * q ^ N := by
             refine mul_le_mul_of_nonneg_left ?_ (by positivity)
-            exact pow_le_pow_of_le_one hq0.le hq1.le (by omega)
+            exact pow_le_pow_of_le_one hq0.le hq1.le (Nat.le_add_right N 1)
     calc Real.exp (-taylorHomogeneousTerm 2 L z) *
           |Real.exp (-S) - G.eval q|
         ≤ Real.exp (-taylorHomogeneousTerm 2 L z) *
@@ -252,7 +253,7 @@ theorem normalized_window_remainder_bound
       have h1 := D.t2_lower z
       nlinarith only [h1, mul_nonneg D.lambda_pos.le (sq_nonneg ‖z‖)]
     have hq1' : q ^ (N + 1) ≤ q ^ N :=
-      pow_le_pow_of_le_one hq0.le hq1.le (by omega)
+      pow_le_pow_of_le_one hq0.le hq1.le (Nat.le_add_right N 1)
     calc Real.exp (-taylorHomogeneousTerm 2 L z) *
           |G.eval q - ∑ j ∈ Finset.range (N + 1),
             correctionCoeffFn L N j z * q ^ j|

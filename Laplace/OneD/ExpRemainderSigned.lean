@@ -75,8 +75,8 @@ theorem abs_expRemainder_le_of_nonpos :
         _ ≤ (-u) ^ n / (Nat.factorial n : ℝ) * Real.exp (-s) := by
             rw [abs_of_nonpos hu0]
             apply mul_le_mul_of_nonneg_left
-              (Real.exp_le_exp.mpr (by linarith))
-            exact div_nonneg (pow_nonneg (by linarith) n)
+              (Real.exp_le_exp.mpr (neg_le_neg_iff.mpr hus))
+            exact div_nonneg (pow_nonneg (by exact neg_nonneg.mpr hu0) n)
               (Nat.cast_nonneg _)
     have hval : (∫ u in s..(0 : ℝ),
         (-u) ^ n / (Nat.factorial n : ℝ) * Real.exp (-s)) =
@@ -84,7 +84,7 @@ theorem abs_expRemainder_le_of_nonpos :
       rw [show (fun u : ℝ ↦ (-u) ^ n / (Nat.factorial n : ℝ) *
           Real.exp (-s)) = fun u : ℝ ↦
           (Real.exp (-s) / (Nat.factorial n : ℝ)) * (-u) ^ n by
-        funext u; ring]
+        funext u; exact div_mul_comm ((-u) ^ n) (↑n.factorial) (rexp (-s))]
       rw [intervalIntegral.integral_const_mul]
       have hpoly : (∫ u in s..(0 : ℝ), (-u) ^ n) =
           (-s) ^ (n + 1) / ((n : ℝ) + 1) := by

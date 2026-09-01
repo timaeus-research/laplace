@@ -38,10 +38,10 @@ private lemma hasDerivAt_neg_exp_neg_sq_half (x : ℝ) :
 private lemma tendsto_exp_neg_sq_half_atTop :
     Tendsto (fun x : ℝ => Real.exp (-(x ^ 2) / 2)) atTop (𝓝 0) := by
   have hsq : Tendsto (fun x : ℝ => x ^ 2) atTop atTop :=
-    tendsto_pow_atTop (n := 2) (by norm_num : 2 ≠ 0)
+    tendsto_pow_atTop (n := 2) (by exact Ne.symm (Nat.zero_ne_add_one 1) : 2 ≠ 0)
   have hneg : Tendsto (fun x : ℝ => -(x ^ 2)) atTop atBot := tendsto_neg_atTop_atBot.comp hsq
   have h1 : Tendsto (fun x : ℝ => -(x ^ 2) / 2) atTop atBot :=
-    (hneg.atBot_div_const (by norm_num : (0 : ℝ) < 2)).congr (fun x => by ring)
+    (hneg.atBot_div_const (by exact zero_lt_two : (0 : ℝ) < 2)).congr (fun x => by rfl)
   exact Real.tendsto_exp_atBot.comp h1
 
 /-- The improper integral `∫_{Ioi M} x · exp(-x²/2) dx` equals `exp(-M²/2)`. -/
@@ -409,9 +409,10 @@ theorem integral_Ioi_id_mul_exp_neg_b_sq_half {b : ℝ} (hb : 0 < b) (M : ℝ) :
     rw [show (fun x : ℝ => x * Real.exp (-(b * x ^ 2) / 2)) =
           (fun x : ℝ => ((x * s) / s) * Real.exp (-((x * s) ^ 2) / 2)) by
           ext x
-          rw [show (x * s) ^ 2 = b * x ^ 2 by rw [mul_pow, hsq]; ring,
+          rw [show (x * s) ^ 2 = b * x ^ 2 by rw [mul_pow, hsq]; exact CommMonoid.mul_comm (x ^ 2)
+                                                                   b,
               mul_div_cancel_right₀ x hs_ne]]
-    rw [h, smul_eq_mul]
+    exact h
   rw [hkey]
   -- Pull out `1/s`: `∫ (u/s) · exp(-u²/2) = (1/s) · ∫ u · exp(-u²/2)`.
   rw [show (fun u : ℝ => u / s * Real.exp (-(u ^ 2) / 2)) =
@@ -419,12 +420,13 @@ theorem integral_Ioi_id_mul_exp_neg_b_sq_half {b : ℝ} (hb : 0 < b) (M : ℝ) :
         ext u; rw [div_eq_mul_inv]; ring]
   rw [integral_const_mul, integral_Ioi_id_mul_exp_neg_sq_half]
   -- Goal: s⁻¹ * (s⁻¹ * exp(-(M*s)²/2)) = exp(-(b*M²)/2) / b.
-  rw [show (M * s) ^ 2 = b * M ^ 2 by rw [mul_pow, hsq]; ring]
+  rw [show (M * s) ^ 2 = b * M ^ 2 by rw [mul_pow, hsq]; exact CommMonoid.mul_comm (M ^ 2) b]
   rw [show (s⁻¹ * (s⁻¹ * Real.exp (-(b * M ^ 2) / 2)) : ℝ) =
-        Real.exp (-(b * M ^ 2) / 2) * (s⁻¹ * s⁻¹) by ring]
+        Real.exp (-(b * M ^ 2) / 2) * (s⁻¹ * s⁻¹) by exact Eq.symm (mul_rotate' (rexp (-(b * M ^ 2)
+                                                       / 2)) s⁻¹ s⁻¹)]
   rw [show (s⁻¹ * s⁻¹ : ℝ) = (s * s)⁻¹ by rw [mul_inv]]
   rw [show (s * s : ℝ) = b from by rw [← sq]; exact hsq]
-  field_simp
+  rfl
 
 /-- **Rescaled second-moment closed form**: for `b > 0` and any `M`,
 
@@ -450,9 +452,10 @@ theorem integral_Ioi_sq_mul_exp_neg_b_sq_half {b : ℝ} (hb : 0 < b) (M : ℝ) :
     rw [show (fun x : ℝ => x ^ 2 * Real.exp (-(b * x ^ 2) / 2)) =
           (fun x : ℝ => ((x * s) / s) ^ 2 * Real.exp (-((x * s) ^ 2) / 2)) by
           ext x
-          rw [show (x * s) ^ 2 = b * x ^ 2 by rw [mul_pow, hsq]; ring,
+          rw [show (x * s) ^ 2 = b * x ^ 2 by rw [mul_pow, hsq]; exact CommMonoid.mul_comm (x ^ 2)
+                                                                   b,
               mul_div_cancel_right₀ x hs_ne]]
-    rw [h, smul_eq_mul]
+    exact h
   rw [hLHS]
   -- Simplify (u/s)² = u² / s² = u² / b.
   rw [show (fun u : ℝ => (u / s) ^ 2 * Real.exp (-(u ^ 2) / 2)) =
@@ -462,7 +465,7 @@ theorem integral_Ioi_sq_mul_exp_neg_b_sq_half {b : ℝ} (hb : 0 < b) (M : ℝ) :
   rw [integral_const_mul, integral_Ioi_sq_mul_exp_neg_sq_half]
   -- Goal: s⁻¹ * (b⁻¹ * (M·s · exp(-(M·s)²/2) + ∫ exp(-u²/2))) = M · exp(-(b M²)/2)/b + (1/b)·∫ ...
   -- Convert the inner Gaussian-tail integral back to b-form via substitution.
-  rw [show (M * s) ^ 2 = b * M ^ 2 by rw [mul_pow, hsq]; ring]
+  rw [show (M * s) ^ 2 = b * M ^ 2 by rw [mul_pow, hsq]; exact CommMonoid.mul_comm (M ^ 2) b]
   -- Rewrite ∫_{Ioi (M·s)} exp(-u²/2) du in terms of the rescaled form.
   have htail : ∫ u in Ioi (M * s), Real.exp (-(u ^ 2) / 2) =
       s * ∫ x in Ioi M, Real.exp (-(b * x ^ 2) / 2) := by
@@ -471,9 +474,11 @@ theorem integral_Ioi_sq_mul_exp_neg_b_sq_half {b : ℝ} (hb : 0 < b) (M : ℝ) :
     rw [show (fun x : ℝ => Real.exp (-(b * x ^ 2) / 2)) =
           (fun x : ℝ => Real.exp (-((x * s) ^ 2) / 2)) by
           ext x
-          rw [show (x * s) ^ 2 = b * x ^ 2 by rw [mul_pow, hsq]; ring]]
+          rw [show (x * s) ^ 2 = b * x ^ 2 by rw [mul_pow, hsq]; exact CommMonoid.mul_comm (x ^ 2)
+                                                                   b]]
     rw [h, smul_eq_mul]
-    field_simp
+    exact Eq.symm (mul_inv_cancel_left₀ hs_ne (∫ (x : ℝ) in Ioi (M * s),
+      (fun u => rexp (-u ^ 2 / 2)) x))
   rw [htail]
   -- Now the goal is a pure arithmetic identity in s, b, and the integrals.
   field_simp
@@ -501,8 +506,9 @@ theorem gaussian_tail_bound_rescaled_Ioi {M b : ℝ} (hM : 0 < M) (hb : 0 < b) :
     -- h : ∫ x in Ioi M, exp(-((x*s)^2)/2) = |s|⁻¹ • ∫ u in Ioi (M * s), exp(-u²/2)
     rw [show (fun x : ℝ => Real.exp (-(b * x ^ 2) / 2)) =
           (fun x : ℝ => Real.exp (-((x * s) ^ 2) / 2)) by
-          ext x; rw [show (x * s) ^ 2 = b * x ^ 2 by rw [mul_pow, hsq]; ring]]
-    rw [h, smul_eq_mul]
+          ext x; rw [show (x * s) ^ 2 = b * x ^ 2 by rw [mul_pow, hsq]; exact CommMonoid.mul_comm
+                                                                          (x ^ 2) b]]
+    exact h
   rw [hkey]
   -- Apply standard Mill's ratio: ∫_{Ioi (M*s)} exp(-u²/2) ≤ exp(-(M*s)²/2) / (M*s).
   have hMs_pos : 0 < M * s := mul_pos hM hs_pos
@@ -511,12 +517,12 @@ theorem gaussian_tail_bound_rescaled_Ioi {M b : ℝ} (hM : 0 < M) (hb : 0 < b) :
       ≤ s⁻¹ * (Real.exp (-((M * s) ^ 2) / 2) / (M * s)) := by
         apply mul_le_mul_of_nonneg_left htail (le_of_lt (inv_pos.mpr hs_pos))
     _ = Real.exp (-(b * M ^ 2) / 2) / (b * M) := by
-        rw [show (M * s) ^ 2 = b * M ^ 2 by rw [mul_pow, hsq]; ring]
+        rw [show (M * s) ^ 2 = b * M ^ 2 by rw [mul_pow, hsq]; exact CommMonoid.mul_comm (M ^ 2) b]
         rw [show s⁻¹ * (Real.exp (-(b * M ^ 2) / 2) / (M * s)) =
               Real.exp (-(b * M ^ 2) / 2) / (s * (M * s)) by
               field_simp]
-        rw [show s * (M * s) = M * (s * s) from by ring,
+        rw [show s * (M * s) = M * (s * s) from mul_rotate' s M s,
             show s * s = b by rw [← sq]; exact hsq]
-        rw [show M * b = b * M by ring]
+        rw [show M * b = b * M by exact CommMonoid.mul_comm M b]
 
 end Laplace.OneD

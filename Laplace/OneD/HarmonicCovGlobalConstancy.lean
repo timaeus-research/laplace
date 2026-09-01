@@ -101,10 +101,7 @@ private lemma integral_with_perturbation_eq_shifted
       (fun x : ℝ =>
         (fun y : ℝ => f (y - c) *
           Real.exp (-(t * (lam / 2 * y ^ 2)))) (x + c)) := by
-    funext x
-    have hxc : x + c - c = x := by ring
-    change f x * _ = f (x + c - c) * _
-    rw [hxc]
+    simp only [add_sub_cancel_right]
   rw [hreshape]
   exact integral_add_right_eq_self
     (fun y : ℝ => f (y - c) * Real.exp (-(t * (lam / 2 * y ^ 2)))) c
@@ -158,7 +155,7 @@ private lemma integrable_harmonic_gauss_sq
   have heq : (fun x : ℝ => x ^ (2 : ℝ) * Real.exp (-(lam * t / 2) * x ^ 2))
       = (fun y : ℝ => y * y * Real.exp (-(t * (lam / 2 * y ^ 2)))) := by
     funext y
-    rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) from by norm_cast, Real.rpow_natCast]
+    rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) from by exact Eq.symm Nat.cast_two, Real.rpow_natCast]
     rw [show y ^ (2 : ℕ) = y * y from sq y]
     congr 1
     congr 1
@@ -209,25 +206,24 @@ private lemma harmonic_int_second_pow_simplified
   rw [hr] at h
   -- Reduce `((2*1-1 : ℕ)‼ : ℝ) = 1` and `((1 : ℕ) : ℝ) = (1 : ℝ)`.
   have hdf : (((2 * 1 - 1 : ℕ)‼ : ℝ)) = 1 := by
-    change (((1 : ℕ) : ℝ)) = 1   -- 2*1-1 = 1, then 1‼ = 1, both definitional.
-    exact Nat.cast_one
+    exact Nat.cast_eq_one.mpr rfl
   rw [hdf, Nat.cast_one] at h
   rw [h]
   -- Goal: 1 * √(2π) * (λt)^(-(1+1/2)) = (1/(λt)) * √(2π/(λt)).
   have hlamt : 0 < lam * t := mul_pos hlam ht
-  rw [show (2 * Real.pi / (lam * t) : ℝ) = (2 * Real.pi) * (lam * t)⁻¹ by ring,
+  rw [show (2 * Real.pi / (lam * t) : ℝ) = (2 * Real.pi) * (lam * t)⁻¹ by rfl,
       Real.sqrt_mul (by positivity : (0 : ℝ) ≤ 2 * Real.pi),
       show Real.sqrt ((lam * t : ℝ)⁻¹) = (lam * t : ℝ) ^ (-(1 / 2 : ℝ)) by
         rw [Real.sqrt_eq_rpow,
             show ((lam * t : ℝ)⁻¹ : ℝ) = (lam * t : ℝ) ^ (-1 : ℝ) from
               (Real.rpow_neg_one _).symm,
             ← Real.rpow_mul hlamt.le]
-        congr 1; ring]
+        congr 1; exact neg_one_mul (1 / 2)]
   rw [show (1 / (lam * t) : ℝ) = (lam * t : ℝ) ^ (-1 : ℝ) by
-        rw [Real.rpow_neg_one]; ring]
+        rw [Real.rpow_neg_one]; exact one_div (lam * t)]
   rw [show (lam * t : ℝ) ^ (-((1 : ℝ) + 1 / 2)) =
         (lam * t : ℝ) ^ ((-1 : ℝ) + (-(1 / 2 : ℝ))) from by
-        congr 1; ring]
+        congr 1; exact neg_add 1 (1 / 2)]
   rw [Real.rpow_add hlamt]
   ring
 
@@ -251,7 +247,7 @@ theorem partitionFunction_h_harmonic
       = (fun x : ℝ =>
           (fun (_ : ℝ) => (1 : ℝ)) x *
           Real.exp (-(t * (lam / 2 * x ^ 2 + h * x)))) := by
-    funext x; ring
+    simp only [one_mul]
   rw [hrewrite,
       integral_with_perturbation_eq_shifted hlam h
         (fun (_ : ℝ) => (1 : ℝ))]
@@ -375,7 +371,7 @@ theorem gibbsExp_h_sq_harmonic_eq
   rw [hnum, hden]
   have hcommon_ne : Real.exp (t * h ^ 2 / (2 * lam)) *
       Real.sqrt (2 * Real.pi / (lam * t)) ≠ 0 := by positivity
-  field_simp
+  exact mul_div_cancel_right₀ (1 / (lam * t) + h ^ 2 / lam ^ 2) hcommon_ne
 
 /-- **Global constancy of the harmonic Gibbs covariance.**
 
@@ -414,6 +410,6 @@ theorem gibbsCov_h_id_id_harmonic_eq
        = 1 / (lam * t)
   rw [gibbsExp_h_sq_harmonic_eq hlam ht h, gibbsExp_h_id_harmonic_eq hlam ht h]
   field_simp
-  ring
+  exact add_sub_cancel_right lam (t * h ^ 2)
 
 end Laplace.OneD

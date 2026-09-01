@@ -133,16 +133,14 @@ theorem harmonic_partition_eq
   -- LHS of h has `(lam/2) * x^2 + 0 * x`; rewrite by integrand congruence.
   have h_lhs : (∫ x : ℝ, Real.exp (-(t * ((lam / 2) * x ^ 2 + 0 * x))))
       = (∫ x : ℝ, Real.exp (-(t * ((lam / 2) * x ^ 2)))) := by
-    congr 1
-    funext x
-    ring_nf
+    simp only [zero_mul, add_zero]
   rw [h_lhs] at h
   -- RHS of h has `Real.exp (t * 0^2 / (2 * lam)) * √(...)`; simplify.
   have h_rhs : Real.exp (t * (0 : ℝ) ^ 2 / (2 * lam))
       * Real.sqrt (2 * Real.pi / (lam * t))
       = Real.sqrt (2 * Real.pi / (lam * t)) := by
     rw [show t * (0 : ℝ) ^ 2 / (2 * lam) = 0 from by ring, Real.exp_zero]
-    ring
+    exact one_mul √(2 * Real.pi / (lam * t))
   rw [h_rhs] at h
   exact h
 
@@ -175,10 +173,7 @@ theorem harmonic_integral_neg_t_x_exp_neg_eq_zero
     (lam t : ℝ) :
     (∫ x : ℝ, (-t * x) * Real.exp (-(t * ((lam / 2) * x ^ 2)))) = 0 := by
   apply integral_eq_zero_of_odd
-  intro x
-  have hsq : (-x) ^ 2 = x ^ 2 := by ring
-  rw [hsq]
-  ring
+  simp only [mul_neg, neg_mul, neg_neg, even_two, Even.neg_pow, implies_true]
 
 /-! ## Differentiability of `Z(h)` at `h = 0` -/
 
@@ -234,9 +229,7 @@ theorem _root_.Threepoint.harmonic_id_gibbsRegularity
   partition_pos := harmonic_partition_pos hlam ht
   partition_h_zero := by
     -- ∫ exp(-(t·((λ/2)x² + 0·x))) = ∫ exp(-(t·(λ/2)x²)).
-    congr 1
-    funext x
-    ring_nf
+    simp only [zero_mul, add_zero]
   partition_hasDerivAt := by
     -- Goal: HasDerivAt (fun h => ∫ exp(-(t·((λ/2)x² + h·x)))) (target) 0
     -- target := ∫ (-t · x) · exp(-(t·(λ/2)x²)) = 0 (by parity).

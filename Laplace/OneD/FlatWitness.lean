@@ -30,16 +30,15 @@ noncomputable def flatWitness (x : ℝ) : ℝ :=
 theorem flatWitness_nonneg (x : ℝ) : 0 ≤ flatWitness x := by
   unfold flatWitness
   split_ifs
-  · exact le_refl 0
+  · rfl
   · exact (Real.exp_pos _).le
 
 theorem flatWitness_le_one (x : ℝ) : flatWitness x ≤ 1 := by
   unfold flatWitness
   split_ifs with hx
-  · norm_num
+  · exact zero_le_one' ℝ
   · have h : -(1 / x ^ 2) ≤ 0 := neg_nonpos.mpr (by positivity)
-    calc Real.exp (-(1 / x ^ 2)) ≤ Real.exp 0 := Real.exp_le_exp.mpr h
-      _ = 1 := Real.exp_zero
+    exact exp_le_one_iff.mpr h
 
 /-- The global factorial bound: `e^(-1/x²) ≤ n! · x^(2n)` for every
 `x` and every `n`. From the single term of the exponential series,
@@ -79,7 +78,7 @@ theorem flatWitness_le_factorial_mul_pow (n : ℕ) (x : ℝ) :
               mul_le_mul_of_nonneg_left hterm
                 (mul_nonneg hfact.le hpow)
     rw [Real.exp_neg, ← one_div, div_le_iff₀ (Real.exp_pos s)]
-    linarith
+    exact hkey
 
 theorem flatWitness_continuous : Continuous flatWitness := by
   rw [continuous_iff_continuousAt]
@@ -93,7 +92,7 @@ theorem flatWitness_continuous : Continuous flatWitness := by
       calc flatWitness x
           ≤ ((Nat.factorial 1 : ℕ) : ℝ) * x ^ (2 * 1) :=
             flatWitness_le_factorial_mul_pow 1 x
-        _ = x ^ 2 := by norm_num
+        _ = x ^ 2 := by simp only [Nat.factorial_one, Nat.cast_one, mul_one, one_mul]
     · simpa using (continuous_pow 2).tendsto (0 : ℝ)
   · have hc : ContinuousAt (fun x : ℝ ↦ Real.exp (-(1 / x ^ 2))) x₀ := by
       apply Real.continuous_exp.continuousAt.comp

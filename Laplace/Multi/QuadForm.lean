@@ -111,15 +111,12 @@ theorem whitening_injective {H : Matrix (Fin d) (Fin d) ℝ}
     have hpos : 0 < WithLp.ofLp x ⬝ᵥ CFC.sqrt H *ᵥ WithLp.ofLp x := by
       have hnz : WithLp.ofLp x ≠ 0 := by simpa using hx0
       have := (sqrt_posDef hH).re_dotProduct_pos hnz
-      simpa using this
+      exact this
     rw [show inner ℝ x (whitening H x) =
         WithLp.ofLp x ⬝ᵥ CFC.sqrt H *ᵥ WithLp.ofLp x from
       Matrix.inner_toEuclideanCLM _ x x] at hq
     exact absurd hq hpos.ne'
-  intro a b hab
-  have : whitening H (a - b) = 0 := by
-    rw [map_sub, hab, sub_self]
-  simpa [sub_eq_zero] using hker _ this
+  exact (injective_iff_map_eq_zero (whitening H)).mpr hker
 
 /-- **The whitening Jacobian is nonvanishing** (kept opaque: only
 this fact, never the determinant's value, enters the programme). -/

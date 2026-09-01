@@ -58,7 +58,7 @@ noncomputable def sexticPotential : ℝ → ℝ := fun x => x ^ 6 / 720
 even-monomial template. -/
 lemma sexticPotential_eq_kthPotential :
     sexticPotential = kthPotential 3 := by
-  funext x; simp [sexticPotential, kthPotential]; norm_num
+  rfl
 
 /-! ## Integrability -/
 
@@ -74,7 +74,7 @@ $k = 3$ specialisation of `kth_integrable_pow_pot`. -/
 theorem sextic_integrable_pow_pot (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * sexticPotential x))) := by
   rw [sexticPotential_eq_kthPotential]
-  exact kth_integrable_pow_pot (k := 3) (by norm_num) n ht
+  exact kth_integrable_pow_pot (k := 3) (by exact NeZero.one_le) n ht
 
 /-! ## Half-line moment integrals -/
 
@@ -96,7 +96,7 @@ theorem integral_pow_mul_exp_neg_sextic_Ioi (m : ℕ) {t : ℝ} (ht : 0 < t) :
   -- Master lemma: ∫ x^q * exp(-b * x^p) = b^(-(q+1)/p) * (1/p) * Γ((q+1)/p)
   have key := integral_rpow_mul_exp_neg_mul_rpow
     (p := 6) (q := (m : ℝ)) (b := t / 720)
-    (by norm_num) hq ht720
+    (by simp only [Nat.ofNat_pos]) hq ht720
   -- Massage our integrand to rpow form (matching the master lemma)
   have hLHS : (∫ x in Ioi (0 : ℝ), x ^ m * exp (-(t * x ^ 6 / 720))) =
       ∫ x in Ioi (0 : ℝ), x ^ ((m : ℝ)) * exp (-(t / 720) * x ^ (6 : ℝ)) := by
@@ -104,18 +104,18 @@ theorem integral_pow_mul_exp_neg_sextic_Ioi (m : ℕ) {t : ℝ} (ht : 0 < t) :
     rw [mem_Ioi] at hx
     have hm : x ^ ((m : ℝ)) = x ^ m := by rw [rpow_natCast]
     have h6 : x ^ (6 : ℝ) = x ^ (6 : ℕ) := by
-      rw [show ((6 : ℝ) : ℝ) = ((6 : ℕ) : ℝ) by norm_num, rpow_natCast]
+      exact rpow_ofNat x 6
     rw [hm, h6]
     congr 2
     ring
   rw [hLHS, key]
   -- Convert (t/720)^(-(m+1)/6) to (720/t)^((m+1)/6)
-  have hg : ((m : ℝ) + 1) / 6 = ((m + 1 : ℝ)) / 6 := by ring
+  have hg : ((m : ℝ) + 1) / 6 = ((m + 1 : ℝ)) / 6 := by simp only
   have hgneg : -((m : ℝ) + 1) / 6 = -(((m + 1 : ℝ)) / 6) := by ring
   rw [hg, hgneg]
   have hinv : (t / 720 : ℝ) ^ (-(((m + 1 : ℝ)) / 6)) =
       (720 / t : ℝ) ^ (((m + 1 : ℝ)) / 6) := by
-    rw [show (720 / t : ℝ) = (t / 720)⁻¹ by field_simp]
+    rw [show (720 / t : ℝ) = (t / 720)⁻¹ by simp only [inv_div]]
     rw [inv_rpow ht720.le, ← rpow_neg ht720.le]
   rw [hinv]
   ring
@@ -151,7 +151,7 @@ $k = 3$ specialisation of `partitionFunction_kthPotential_pos`. -/
 theorem sextic_partition_pos {t : ℝ} (ht : 0 < t) :
     0 < partitionFunction sexticPotential t := by
   rw [sexticPotential_eq_kthPotential]
-  exact partitionFunction_kthPotential_pos (k := 3) (by norm_num) ht
+  exact partitionFunction_kthPotential_pos (k := 3) (by exact NeZero.one_le) ht
 
 /-! ## Expected values -/
 

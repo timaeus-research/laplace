@@ -60,14 +60,16 @@ theorem exp_sub_exp_pencil (t x y : ℝ) :
   rw [h0, h1] at hftc
   calc Real.exp (-(t * x)) - Real.exp (-(t * y))
       = -(∫ s in (0 : ℝ)..1, -(t * g) * Real.exp (-(t * (a + s * g)))) := by
-        rw [hftc]; ring
+        rw [hftc]; exact Eq.symm (neg_sub (rexp (-(t * y))) (rexp (-(t * x))))
     _ = ∫ s in (0 : ℝ)..1, (t * g) * Real.exp (-(t * (a + s * g))) := by
-        rw [← intervalIntegral.integral_neg]; congr 1; ext s; ring
+        simp only [neg_mul, intervalIntegral.integral_neg, intervalIntegral.integral_const_mul,
+          neg_neg]
     _ = t * ∫ s in (0 : ℝ)..1, g * Real.exp (-(t * (a + s * g))) := by
-        rw [← intervalIntegral.integral_const_mul]; congr 1; ext s; ring
+        rw [← intervalIntegral.integral_const_mul]; congr 1; ext s; exact mul_assoc t g (rexp (-(t
+                                                                      * (a + s * g))))
     _ = t * ∫ s in (0 : ℝ)..1,
           (y - x) * Real.exp (-(t * (x + s * (y - x)))) := by
-        rw [ha, hg]
+        rfl
 
 /-- **Pointwise pencil identity.** The scalar identity evaluated along a pair
 of potentials: for any `L₁ L₂ : ℝ → ℝ`, `t w : ℝ`, the difference of Boltzmann

@@ -67,12 +67,12 @@ theorem harmonic_int_pow_odd
     intro x
     simp only [hf]
     rw [Odd.neg_pow ⟨k, rfl⟩, neg_sq]
-    ring
+    exact HasDistribNeg.neg_mul (x ^ (2 * k + 1)) (rexp (-(b * x ^ 2) / 2))
   have heq : (∫ x, f x) = -(∫ x, f x) := by
     conv_lhs => rw [← integral_neg_eq_self f volume]
     rw [show (fun x => f (-x)) = (fun x => -(f x)) from funext hodd]
     rw [integral_neg]
-  linarith
+  exact self_eq_neg.mp heq
 
 /-- For `λ, t > 0`, the partition function of the harmonic Gibbs measure is
 `Z_λ(t) = √(2π / (λ t))`. -/
@@ -83,14 +83,14 @@ theorem partitionFunction_harmonic {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
   unfold Laplace.partitionFunction
   rw [show (fun x : ℝ => Real.exp (-(t * harmonicPotential lam x))) =
         (fun x : ℝ => x ^ (2 * 0) * Real.exp (-(t * harmonicPotential lam x))) from by
-        ext x; simp]
+        simp only [mul_zero, pow_zero, one_mul]]
   rw [harmonic_int_pow_even hlam ht 0]
   -- Goal: `(2*0-1)‼ * √(2π) * (λt)^(-(0 + 1/2)) = √(2π/(λt))`.
   -- `(2*0-1)‼ = 0‼ = 1`.
   simp only [Nat.mul_zero, Nat.zero_sub, Nat.doubleFactorial, Nat.cast_one, one_mul, Nat.cast_zero,
     zero_add]
   -- Goal: `√(2π) * (λt)^(-(1/2)) = √(2π/(λt))`.
-  rw [show (2 * π / (lam * t) : ℝ) = (2 * π) * (lam * t)⁻¹ by ring,
+  rw [show (2 * π / (lam * t) : ℝ) = (2 * π) * (lam * t)⁻¹ by rfl,
       Real.sqrt_mul (by positivity : (0 : ℝ) ≤ 2 * π)]
   -- Goal: `√(2π) * (λt)^(-(1/2)) = √(2π) * √((λt)⁻¹)`.
   congr 1
@@ -100,7 +100,7 @@ theorem partitionFunction_harmonic {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
         (Real.rpow_neg_one (lam * t)).symm,
       ← Real.rpow_mul (mul_pos hlam ht).le]
   congr 1
-  ring
+  exact neg_eq_neg_one_mul (1 / 2)
 
 /-- For `λ, t > 0`, the harmonic Gibbs expectation of `x^(2k)` is
 `⟨x^(2k)⟩_t = (2k-1)‼ / (λ t)^k`. -/
@@ -113,14 +113,14 @@ theorem gibbsExpectation_harmonic_pow_even
   rw [harmonic_int_pow_even hlam ht k, partitionFunction_harmonic hlam ht]
   -- Goal: `((2k-1)‼ * √(2π) * (λt)^(-(↑k + 1/2))) / √(2π/(λt)) = (2k-1)‼ / (λt)^k`.
   -- Rewrite √(2π/(λt)) = √(2π) * (λt)^(-1/2):
-  rw [show (2 * π / (lam * t) : ℝ) = (2 * π) * (lam * t)⁻¹ by ring,
+  rw [show (2 * π / (lam * t) : ℝ) = (2 * π) * (lam * t)⁻¹ by rfl,
       Real.sqrt_mul (by positivity : (0 : ℝ) ≤ 2 * π),
       show Real.sqrt ((lam * t : ℝ)⁻¹) = (lam * t : ℝ) ^ (-(1/2 : ℝ)) by
         rw [Real.sqrt_eq_rpow,
             show ((lam * t : ℝ)⁻¹ : ℝ) = (lam * t : ℝ) ^ (-1 : ℝ) from
               (Real.rpow_neg_one _).symm,
             ← Real.rpow_mul hlamt.le]
-        congr 1; ring]
+        congr 1; exact neg_one_mul (1 / 2)]
   -- Cancel √(2π) and combine powers of (λt).
   have h2pi_ne : Real.sqrt (2 * π) ≠ 0 := by positivity
   rw [show ∀ a b c d : ℝ, (a * b * c) / (b * d) = a * c * (b / b) / d by intros; ring,
@@ -128,10 +128,11 @@ theorem gibbsExpectation_harmonic_pow_even
   -- Goal: `((2k-1)‼ * (λt)^(-(↑k + 1/2))) / (λt)^(-(1/2)) = (2k-1)‼ / (λt)^k`.
   -- Regroup with `mul_div_assoc`, then combine the two rpow factors.
   rw [mul_div_assoc, ← Real.rpow_sub hlamt,
-      show -((k : ℝ) + 1/2) - -(1/2 : ℝ) = -((k : ℝ)) by ring,
+      show -((k : ℝ) + 1/2) - -(1/2 : ℝ) = -((k : ℝ)) by simp only [one_div, neg_add_rev,
+                                                           sub_neg_eq_add, neg_add_cancel_comm],
       Real.rpow_neg hlamt.le,
       show ((lam * t : ℝ) ^ ((k : ℝ))) = (lam * t : ℝ) ^ k from rpow_natCast _ k]
-  ring
+  rfl
 
 /-- For `λ, t > 0`, the harmonic Gibbs expectation of any odd power vanishes. -/
 theorem gibbsExpectation_harmonic_pow_odd
@@ -155,12 +156,12 @@ theorem gibbsCov_harmonic_sq_id_zero
   -- ⟨x²·x⟩_t - ⟨x²⟩_t · ⟨x⟩_t.
   -- The first term: x²·x = x³ = x^(2·1+1), so the expectation vanishes.
   rw [show (fun x : ℝ => x ^ 2 * x) = (fun x : ℝ => x ^ (2 * 1 + 1)) from by
-        ext x; ring]
+        rfl]
   rw [gibbsExpectation_harmonic_pow_odd hlam ht 1]
   -- The second term: ⟨x⟩_t = ⟨x^(2·0+1)⟩_t = 0.
   rw [show (fun x : ℝ => x) = (fun x : ℝ => x ^ (2 * 0 + 1)) from by
-        ext x; ring]
+        simp only [mul_zero, zero_add, pow_one]]
   rw [gibbsExpectation_harmonic_pow_odd hlam ht 0]
-  ring
+  simp only [mul_zero, sub_self]
 
 end Laplace.OneD

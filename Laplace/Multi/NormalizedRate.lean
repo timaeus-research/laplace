@@ -62,10 +62,10 @@ theorem tendsto_integral_rescaled_poly (A : LocalLaplaceDomain L H)
           ≤ (C * (1 + ‖x‖ ^ n)) * Real.exp (-(A.c * ‖x‖ ^ 2)) := by
             apply mul_le_mul (hg x) _ (Real.exp_pos _).le
               (mul_nonneg hC (by positivity))
-            exact Real.exp_le_exp.mpr (by linarith)
+            exact Real.exp_le_exp.mpr (neg_le_neg_iff.mpr hlow)
         _ = C * ((1 + ‖x‖ ^ n) * Real.exp (-A.c * ‖x‖ ^ 2)) := by
             rw [neg_mul]
-            ring
+            exact mul_assoc C (1 + ‖x‖ ^ n) (rexp (-(A.c * ‖x‖ ^ 2)))
     · rw [Set.indicator_of_notMem hmem, norm_zero]
       have hx2 : (0:ℝ) ≤ (1 + ‖x‖ ^ n) * Real.exp (-A.c * ‖x‖ ^ 2) := by
         positivity
@@ -90,7 +90,7 @@ theorem tendsto_integral_rescaled_poly (A : LocalLaplaceDomain L H)
         Real.norm_eq_abs, abs_of_pos hq0]
       calc q * ‖x‖ ≤ q * (‖x‖ + 1) := by
             apply mul_le_mul_of_nonneg_left _ hq0.le
-            linarith
+            simp only [le_add_iff_nonneg_right, zero_le_one]
         _ < A.delta / (‖x‖ + 1) * (‖x‖ + 1) :=
             mul_lt_mul_of_pos_right hq (by positivity)
         _ = A.delta := by field_simp

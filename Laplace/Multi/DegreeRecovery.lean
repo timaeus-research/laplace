@@ -89,7 +89,7 @@ theorem HasPolynomialGrowth.sub {f g : EuclidD d → ℝ}
     hmax n₂ _ (le_max_right _ _)
   calc |f x - g x| ≤ |f x| + |g x| := abs_sub _ _
     _ ≤ C₁ * (1 + ‖x‖ ^ n₁) + C₂ * (1 + ‖x‖ ^ n₂) := by
-        linarith
+        exact add_le_add (h₁ x) (h₂ x)
     _ ≤ 2 * (C₁ + C₂) * (1 + ‖x‖ ^ max n₁ n₂) := by
         nlinarith [mul_le_mul_of_nonneg_left hle₁ hC₁,
           mul_le_mul_of_nonneg_left hle₂ hC₂]
@@ -134,7 +134,8 @@ theorem iteratedFDeriv_recovery_of_taylorDifference_rate (hk : 2 < k)
     rw [hQ_def]
     simp only []
     rw [taylorHomogeneousTerm_smul, taylorHomogeneousTerm_smul]
-    ring
+    exact Eq.symm (mul_sub_left_distrib (a ^ k) (taylorHomogeneousTerm k L₁ x)
+      (taylorHomogeneousTerm k L₂ x))
   -- the data at Q and the identified covariance
   have hQdata := hdataQ
   have hzero : Tendsto (fun q : ℝ ↦
@@ -145,11 +146,11 @@ theorem iteratedFDeriv_recovery_of_taylorDifference_rate (hk : 2 < k)
     A₁ A₂ hlower hQ_cont hQ_growth
   have hcov : -gaussianCovariance H Q Q = 0 :=
     tendsto_nhds_unique hlim hzero
-  have hcov' : gaussianCovariance H Q Q = 0 := by linarith
+  have hcov' : gaussianCovariance H Q Q = 0 := neg_eq_zero.mp hcov
   -- rigidity kills Q
   have hQ0 : Q = 0 :=
     homogeneous_eq_zero_of_gaussianCovariance_self_eq_zero
-      A₁.hH_posDef (by omega) hQ_cont hQ_growth hQ_hom hcov'
+      A₁.hH_posDef (by exact Nat.zero_lt_of_lt hk) hQ_cont hQ_growth hQ_hom hcov'
   -- equal diagonals
   have hdiag : ∀ x : EuclidD d,
       iteratedFDeriv ℝ k L₁ 0 (fun _ ↦ x) =
@@ -196,7 +197,8 @@ theorem iteratedFDeriv_recovery_of_moment_rates (hk : 2 < k)
   · intro a x
     simp only []
     rw [taylorHomogeneousTerm_smul, taylorHomogeneousTerm_smul]
-    ring
+    exact Eq.symm (mul_sub_left_distrib (a ^ k) (taylorHomogeneousTerm k L₁ x)
+      (taylorHomogeneousTerm k L₂ x))
 
 end HigherLaplaceDomain
 

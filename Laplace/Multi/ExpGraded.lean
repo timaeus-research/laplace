@@ -66,7 +66,7 @@ theorem exponent_sum_zero (a : ℕ → ℝ) (N : ℕ) :
     ∑ s ∈ Finset.Icc 1 N, a s * (0 : ℝ) ^ s = 0 := by
   refine Finset.sum_eq_zero fun s hs ↦ ?_
   have hs1 : 1 ≤ s := (Finset.mem_Icc.mp hs).1
-  rw [zero_pow (by omega), mul_zero]
+  rw [zero_pow (by exact Nat.ne_zero_of_lt hs1), mul_zero]
 
 /-- The zeroth coefficient is `1`: the correction factor tends to
 one. -/

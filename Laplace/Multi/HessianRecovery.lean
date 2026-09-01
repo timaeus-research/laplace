@@ -83,11 +83,7 @@ theorem hessian_recovery {L₁ L₂ : EuclidD d → ℝ}
     exact hessian_inv_entry_recovery A₁ A₂ i j (hdata i j)
   have h1 : IsUnit H₁.det :=
     isUnit_iff_ne_zero.mpr A₁.hH_posDef.det_pos.ne'
-  have h2 : IsUnit H₂.det :=
-    isUnit_iff_ne_zero.mpr A₂.hH_posDef.det_pos.ne'
-  calc H₁ = H₁⁻¹⁻¹ := (Matrix.nonsing_inv_nonsing_inv H₁ h1).symm
-    _ = H₂⁻¹⁻¹ := by rw [hinv]
-    _ = H₂ := Matrix.nonsing_inv_nonsing_inv H₂ h2
+  exact Matrix.inv_inj hinv h1
 
 end LocalLaplaceDomain
 

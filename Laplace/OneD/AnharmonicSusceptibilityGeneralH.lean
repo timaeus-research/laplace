@@ -40,7 +40,7 @@ theorem partition_perturbed_pos
           Real.exp (-(t * (anharmonicPotential lam alpha gamma x + h * x))))
           = Set.univ := by
       ext x
-      simp [Function.mem_support, Real.exp_ne_zero]
+      simp only [Function.mem_support, ne_eq, Real.exp_ne_zero, not_false_eq_true, Set.mem_univ]
     rw [h_support, Real.volume_univ]
     exact ENNReal.zero_lt_top
   · exact Filter.Eventually.of_forall (fun x => (Real.exp_pos _).le)

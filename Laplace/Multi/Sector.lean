@@ -123,9 +123,9 @@ theorem sector_lower_bound_multi
     have hb : (0 : ℝ) ≤ r0 * Real.sqrt t := by positivity
     nlinarith [Real.sq_sqrt ht.le, sq_nonneg (r0 * Real.sqrt t - 2)]
   have hur : 2 * u ≤ r0 := by
-    have heq : 2 * u = 2 / Real.sqrt t := by rw [hu_def]; ring
+    have heq : 2 * u = 2 / Real.sqrt t := rfl
     rw [heq, div_le_iff₀ hst]
-    linarith
+    exact h2
   -- The window bound of `K` on `u • S`.
   have hKwin : ∀ x ∈ S, K (u • x) ≤ 4 * (C0 * u ^ 2) := by
     intro x hxS
@@ -133,7 +133,7 @@ theorem sector_lower_bound_multi
       rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hu.le]
       calc u * ‖x‖ ≤ u * 2 := by
             exact mul_le_mul_of_nonneg_left (hSnorm x hxS) hu.le
-        _ = 2 * u := by ring
+        _ = 2 * u := CommMonoid.mul_comm u 2
         _ ≤ r0 := hur
     calc K (u • x) ≤ C0 * ‖u • x‖ ^ 2 := hK _ hxn
       _ ≤ 4 * (C0 * u ^ 2) := by
@@ -153,7 +153,7 @@ theorem sector_lower_bound_multi
   have hrpow : t ^ (-(m : ℝ) - (Fintype.card ι : ℝ) / 2)
       = (t ^ m)⁻¹ * (Real.sqrt t ^ (Fintype.card ι))⁻¹ := by
     rw [show -(m : ℝ) - (Fintype.card ι : ℝ) / 2
-        = -(m : ℝ) + -((Fintype.card ι : ℝ) / 2) by ring,
+        = -(m : ℝ) + -((Fintype.card ι : ℝ) / 2) by rfl,
       Real.rpow_add ht, Real.rpow_neg ht.le, Real.rpow_neg ht.le,
       Real.rpow_natCast]
     congr 2

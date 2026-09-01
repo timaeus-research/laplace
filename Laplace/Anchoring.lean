@@ -115,8 +115,7 @@ theorem anchored_proportionality_remove_scalar
       (Filter.EventuallyEq.refl _ _)
     have := hneg.neg_left
     refine this.congr' ?_ (Filter.EventuallyEq.refl _ _)
-    filter_upwards with t
-    ring
+    simp only [neg_neg, EventuallyEq.refl]
   exact superPoly_sub_of_scalar_gauge
     (superPoly_of_mul_anchor hκ hlow hflat) hbounded hprop
 

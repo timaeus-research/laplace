@@ -57,9 +57,7 @@ theorem LocalLaplaceDomain.locatedMomentT_sub_observable
     A.locatedMomentT p (fun w ↦ Q (w - p)) t =
       A.posteriorMomentT Q t := by
   unfold locatedMomentT
-  congr 1
-  funext y
-  simp
+  simp only [add_sub_cancel_left]
 
 open LocalLaplaceDomain in
 /-- **The located grand headline** (germbij Theorem 3.1, inverse
@@ -98,9 +96,9 @@ theorem located_positive_jet_recovery_of_ccData
   -- location recovery from the coordinate observables
   have hp : p₁ = p₂ := by
     refine location_eq_of_superPoly_first_moments
-      (A 3 (by norm_num)).toLocalLaplaceDomain
-      (B 3 (by norm_num)).toLocalLaplaceDomain p₁ p₂ fun i ↦ ?_
-    exact hloc 3 (by norm_num) (fun w ↦ w i)
+      (A 3 (by exact Nat.lt_add_one 2)).toLocalLaplaceDomain
+      (B 3 (by exact Nat.lt_add_one 2)).toLocalLaplaceDomain p₁ p₂ fun i ↦ ?_
+    exact hloc 3 (by exact Nat.lt_add_one 2) (fun w ↦ w i)
       (contDiff_coord i) (hasPolynomialGrowth_coord i)
   subst hp
   refine ⟨rfl, ?_⟩
@@ -123,7 +121,7 @@ theorem located_positive_jet_recovery_of_ccData
   refine smooth_positive_jet_recovery_of_superPoly_moments A B
     hsymm₁ hsymm₂ ?_ ?_
   · intro i j
-    exact hcentred 3 (by norm_num) (fun w ↦ w i * w j)
+    exact hcentred 3 (by exact Nat.lt_add_one 2) (fun w ↦ w i * w j)
       (contDiff_coord_mul i j) (hasPolynomialGrowth_coord_mul i j)
   · intro k h2 m
     exact hcentred k h2 (monomialTest m)

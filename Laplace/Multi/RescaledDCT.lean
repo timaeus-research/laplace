@@ -44,19 +44,19 @@ theorem integrable_one_add_sq_mul_exp {c : ℝ} (hc : 0 < c) :
   · rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     have hsq : ‖x‖ ^ 2 ≤ (2 / c) * Real.exp ((c / 2) * ‖x‖ ^ 2) := by
       have hu := Real.add_one_le_exp ((c / 2) * ‖x‖ ^ 2)
-      have hc2 : (0 : ℝ) < c / 2 := by positivity
+      have hc2 : (0 : ℝ) < c / 2 := half_pos hc
       calc ‖x‖ ^ 2 = (2 / c) * ((c / 2) * ‖x‖ ^ 2) := by
             field_simp
         _ ≤ (2 / c) * ((c / 2) * ‖x‖ ^ 2 + 1) := by
             apply mul_le_mul_of_nonneg_left (by linarith) (by positivity)
         _ ≤ (2 / c) * Real.exp ((c / 2) * ‖x‖ ^ 2) := by
             apply mul_le_mul_of_nonneg_left _ (by positivity)
-            linarith [hu]
+            exact hu
     calc (1 + ‖x‖ ^ 2) * Real.exp (-c * ‖x‖ ^ 2)
         ≤ (1 + (2 / c) * Real.exp ((c / 2) * ‖x‖ ^ 2)) *
             Real.exp (-c * ‖x‖ ^ 2) := by
           apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
-          linarith [hsq]
+          exact (add_le_add_iff_left 1).mpr hsq
       _ = Real.exp (-c * ‖x‖ ^ 2) +
             (2 / c) * Real.exp (-(c / 2) * ‖x‖ ^ 2) := by
           rw [add_mul, one_mul, mul_assoc, ← Real.exp_add]
@@ -131,10 +131,10 @@ theorem tendsto_integral_rescaled (A : LocalLaplaceDomain L H)
               Real.exp (-(A.c * ‖x‖ ^ 2)) := by
             apply mul_le_mul (h_growth x) _ (Real.exp_pos _).le
               (mul_nonneg hC (by positivity))
-            exact Real.exp_le_exp.mpr (by linarith [hlow])
+            exact Real.exp_le_exp.mpr (neg_le_neg_iff.mpr hlow)
         _ = C * ((1 + ‖x‖ ^ 2) * Real.exp (-A.c * ‖x‖ ^ 2)) := by
             rw [neg_mul]
-            ring
+            exact mul_assoc C (1 + ‖x‖ ^ 2) (rexp (-(A.c * ‖x‖ ^ 2)))
     · rw [Set.indicator_of_notMem
         (show x ∉ {x : EuclidD d | q • x ∈ A.U} from hmem)]
       simp only [norm_zero]
@@ -158,7 +158,7 @@ theorem tendsto_integral_rescaled (A : LocalLaplaceDomain L H)
         Real.norm_eq_abs, abs_of_pos hq0]
       calc q * ‖x‖ ≤ q * (‖x‖ + 1) := by
             apply mul_le_mul_of_nonneg_left _ hq0.le
-            linarith
+            simp only [le_add_iff_nonneg_right, zero_le_one]
         _ < A.delta / (‖x‖ + 1) * (‖x‖ + 1) := by
             apply mul_lt_mul_of_pos_right hq (by positivity)
         _ = A.delta := by
@@ -190,7 +190,7 @@ theorem tendsto_integral_rescaled_one (A : LocalLaplaceDomain L H) :
       (𝓝 (jacInv H * (2 * π) ^ ((d : ℝ) / 2))) := by
   have h := A.tendsto_integral_rescaled (h := fun _ ↦ 1)
     continuous_const (C := 1) one_pos.le
-    (fun x ↦ by rw [abs_one, one_mul]; linarith [sq_nonneg ‖x‖])
+    (fun x ↦ by simp only [abs_one, one_mul, le_add_iff_nonneg_right, norm_nonneg, pow_succ_nonneg])
   have hval : (∫ x : EuclidD d, (1 : ℝ) * quadKernel H x) =
       jacInv H * (2 * π) ^ ((d : ℝ) / 2) := by
     simp only [one_mul]
@@ -236,8 +236,8 @@ theorem tendsto_integral_rescaled_coord_mul
     have h2 : |x j| ≤ ‖x‖ := by simpa using PiLp.norm_apply_le x j
     calc |x i| * |x j| ≤ ‖x‖ * ‖x‖ :=
           mul_le_mul h1 h2 (abs_nonneg _) (norm_nonneg _)
-      _ = ‖x‖ ^ 2 := by ring
-      _ ≤ 1 + ‖x‖ ^ 2 := by linarith [sq_nonneg ‖x‖]
+      _ = ‖x‖ ^ 2 := Eq.symm (pow_two ‖x‖)
+      _ ≤ 1 + ‖x‖ ^ 2 := by simp only [le_add_iff_nonneg_left, zero_le_one]
 
 end LocalLaplaceDomain
 

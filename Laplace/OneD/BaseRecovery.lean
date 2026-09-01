@@ -35,7 +35,7 @@ theorem HasPositiveJetProfile.base_pos
   unfold jetProfile at h0
   rw [Finset.sum_eq_zero fun i _ ↦ by
     rw [zero_pow (Nat.succ_ne_zero _)]
-    ring] at h0
+    exact CommMonoidWithZero.mul_zero (c i)] at h0
   linarith [h.1]
 
 /-- **B1, limit half**: the normalized second moment of the jet Gibbs
@@ -50,19 +50,19 @@ theorem jet_secondMoment_tendsto
   have hint0 : Integrable (fun u : ℝ ↦
       Real.exp (-(a * u ^ (2 * k)))) := by
     have := integrable_abs_pow_mul_exp_neg_kth hk 0 ha
-    exact this.congr (Filter.Eventually.of_forall fun u ↦ by simp)
+    exact this.congr (Filter.Eventually.of_forall fun u ↦ by simp only [pow_zero, one_mul])
   have hA0pos : 0 < ∫ u : ℝ, Real.exp (-(a * u ^ (2 * k))) := by
     rw [integral_pos_iff_support_of_nonneg
       (fun u ↦ (Real.exp_pos _).le) hint0]
     have hs : Function.support (fun u : ℝ ↦
         Real.exp (-(a * u ^ (2 * k)))) = Set.univ := by
       ext u
-      simp [(Real.exp_pos _).ne']
+      simp only [Function.mem_support, ne_eq, exp_ne_zero, not_false_eq_true, Set.mem_univ]
     rw [hs]
-    simp
+    simp only [measure_univ_of_isAddLeftInvariant, ENNReal.zero_lt_top]
   have hzero_ref : (∫ u : ℝ, Real.exp (-(a * u ^ (2 * k)))) =
       ∫ u : ℝ, u ^ 0 * Real.exp (-(a * u ^ (2 * k))) :=
-    integral_congr_ae (Filter.Eventually.of_forall fun u ↦ by simp)
+    integral_congr_ae (Filter.Eventually.of_forall fun u ↦ by simp only [pow_zero, one_mul])
   have hden : Tendsto (fun q : ℝ ↦
       ∫ u : ℝ, Real.exp (-jetPotential k R a q c u)) (𝓝[>] 0)
       (𝓝 (∫ u : ℝ, Real.exp (-(a * u ^ (2 * k))))) := by
@@ -71,13 +71,11 @@ theorem jet_secondMoment_tendsto
     have heq : (fun q : ℝ ↦ ∫ u : ℝ, u ^ 0 *
         Real.exp (-jetPotential k R a q c u)) = fun q : ℝ ↦
         ∫ u : ℝ, Real.exp (-jetPotential k R a q c u) := by
-      funext q
-      exact (integral_congr_ae
-        (Filter.Eventually.of_forall fun u ↦ by simp)).symm
+      simp only [pow_zero, one_mul]
     rwa [heq] at hlim
   have hnum := jet_integral_tendsto hk 2 h
   have := hnum.div hden hA0pos.ne'
-  exact this.congr fun q ↦ rfl
+  exact this
 
 /-- **B1, closed-form half**: the reference second-moment ratio in
 Gamma form, `(1/a)^(1/k)·Γ(3/(2k))/Γ(1/(2k))`, via the
@@ -105,14 +103,14 @@ theorem reference_secondMoment_gamma
   have h21 : (∫ x : ℝ, x ^ (2 * 1) * Real.exp (-(a * x ^ (2 * k)))) =
       ∫ u : ℝ, u ^ 2 * Real.exp (-(a * u ^ (2 * k))) :=
     integral_congr_ae (Filter.Eventually.of_forall fun x ↦ by
-      norm_num)
+      rfl)
   rw [h21] at hmom
   rw [hmom]
   have hbase : (Nat.factorial (2 * k) : ℝ) /
       (a * (Nat.factorial (2 * k) : ℝ)) = 1 / a := by
     field_simp
   rw [hbase]
-  norm_num
+  simp only [one_div, Nat.cast_one, mul_one, Nat.cast_mul, Nat.cast_ofNat, mul_inv_rev]
 
 /-- **B2, injectivity**: the reference second-moment ratio is
 injective in the base coefficient (strict monotonicity of
@@ -127,7 +125,7 @@ theorem reference_secondMoment_injective
   rw [reference_secondMoment_gamma hk ha₁,
     reference_secondMoment_gamma hk ha₂] at heq
   have h2k_pos : 0 < ((2 * k : ℕ) : ℝ) := by
-    have : (0 : ℕ) < 2 * k := by omega
+    have : (0 : ℕ) < 2 * k := Nat.succ_mul_pos 1 hk
     exact_mod_cast this
   have hΓ3 : 0 < Real.Gamma ((2 * 1 + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) :=
     Real.Gamma_pos_of_pos (by positivity)
@@ -155,7 +153,7 @@ theorem reference_secondMoment_injective
               Real.Gamma ((1 : ℝ) / ((2 * k : ℕ) : ℝ))) := by
           ring
   have hk_pos : (0 : ℝ) < (k : ℝ) := by
-    exact_mod_cast Nat.lt_of_lt_of_le Nat.zero_lt_one hk
+    exact Nat.cast_pos'.mpr hk
   have hinv : (1 : ℝ) / a₁ = 1 / a₂ := by
     by_contra hne
     rcases lt_or_gt_of_ne hne with hlt | hgt
@@ -166,7 +164,7 @@ theorem reference_secondMoment_injective
         (by positivity : (0 : ℝ) < 1 / (k : ℝ))
       linarith [hpow_eq]
   field_simp at hinv
-  linarith [hinv]
+  linarith only [hinv]
 
 /-- **B2, limit-based form** (the bridge interface for the later
 smooth-germ programme): if the difference of normalized second

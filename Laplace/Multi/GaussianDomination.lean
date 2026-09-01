@@ -42,13 +42,14 @@ theorem integrable_exp_neg_const_mul_sum_sq_add_linear
     Integrable (fun u : ι → ℝ =>
       Real.exp (-(c * ∑ k, (u k) ^ 2) + ∑ k, ℓ k * u k)) := by
   have h := (GaussianFourier.integrable_cexp_neg_mul_sum_add (ι := ι) (b := (c : ℂ))
-    (by simpa using hc) (fun k => (ℓ k : ℂ))).norm
+    (by exact hc) (fun k => (ℓ k : ℂ))).norm
   apply h.congr
   filter_upwards with u
   -- Rewrite the complex exp argument as a coerced real, then unwind.
   have h_arg : (-(↑c : ℂ) * ∑ k, ((u k : ℂ)) ^ 2 + ∑ k, (↑(ℓ k) : ℂ) * (↑(u k) : ℂ)) =
       ↑(-(c * ∑ k, (u k) ^ 2) + ∑ k, ℓ k * u k) := by
-    push_cast; ring
+    simp only [neg_mul, Complex.ofReal_add, Complex.ofReal_neg, Complex.ofReal_mul,
+      Complex.ofReal_sum, Complex.ofReal_pow]
   rw [h_arg, ← Complex.ofReal_exp, Complex.norm_real]
   exact (abs_of_pos (Real.exp_pos _))
 
@@ -67,10 +68,9 @@ private lemma sum_pi_single_mul [DecidableEq ι]
         (fun k => if k = i then a * u i else 0) from by
       ext k
       by_cases hk : k = i
-      · subst hk; simp [Pi.single]
+      · subst hk; simp only [Pi.single_eq_same, ↓reduceIte]
       · simp [Pi.single, Function.update, hk]]
-  rw [Finset.sum_ite_eq' Finset.univ i (fun _ => a * u i)]
-  exact if_pos (Finset.mem_univ i)
+  exact Fintype.sum_ite_eq' i fun j => a * u i
 
 /-- Helper: `|x| ≤ exp(x) + exp(-x)`. -/
 private lemma abs_le_exp_add_exp_neg (x : ℝ) :
@@ -107,7 +107,7 @@ theorem integrable_coord_mul_exp_neg_const_mul_sum_sq
       (Pi.single i (1 : ℝ))
     apply h.congr
     filter_upwards with u
-    rw [sum_pi_single_mul i 1 u]; ring_nf
+    rw [sum_pi_single_mul i 1 u]; simp only [one_mul]
   have hminus :
       Integrable (fun u : ι → ℝ =>
         Real.exp (-(c * ∑ k, (u k) ^ 2) - u i)) := by
@@ -209,9 +209,7 @@ theorem integrable_coord_mul_coord_mul_exp_neg_const_mul_sum_sq
     calc
       ‖(u i) * (u j) * Real.exp (-(c * ∑ k, (u k) ^ 2))‖
           = |u i * u j| * Real.exp (-(c * ∑ k, (u k) ^ 2)) := by
-              rw [show (u i) * (u j) * Real.exp (-(c * ∑ k, (u k) ^ 2))
-                    = ((u i) * (u j)) * Real.exp (-(c * ∑ k, (u k) ^ 2)) by ring,
-                  Real.norm_eq_abs, abs_mul, abs_of_nonneg h0]
+              simp only [norm_mul, Real.norm_eq_abs, Real.abs_exp, abs_mul]
       _ ≤ ((Real.exp (u i) + Real.exp (-u i)) *
             (Real.exp (u j) + Real.exp (-u j))) *
             Real.exp (-(c * ∑ k, (u k) ^ 2)) := by

@@ -65,10 +65,10 @@ theorem analytic_germ_eq_of_jet_eq {f g : E → ℝ}
   have hyq : y ∈ Metric.eball (0 : E) rq :=
     Metric.eball_subset_eball (min_le_right _ _) hy
   have hsf : HasSum (fun n : ℕ ↦ p n fun _ ↦ y) (f y) := by
-    have := hp.hasSum_sub (y := y) (by simpa using hyp)
+    have := hp.hasSum_sub (y := y) (hyp)
     simpa using this
   have hsg : HasSum (fun n : ℕ ↦ q n fun _ ↦ y) (g y) := by
-    have := hq.hasSum_sub (y := y) (by simpa using hyq)
+    have := hq.hasSum_sub (y := y) (hyq)
     simpa using this
   have hdiff := hsf.sub hsg
   have hterm : ∀ n : ℕ, n ≠ 0 →
@@ -76,7 +76,7 @@ theorem analytic_germ_eq_of_jet_eq {f g : E → ℝ}
     intro n hn
     rw [hasFPowerSeries_diag_eq hp, hasFPowerSeries_diag_eq hq,
       hjet n (Nat.pos_of_ne_zero hn)]
-    ring
+    exact sub_self ((↑n.factorial)⁻¹ * (iteratedFDeriv ℝ n g 0) fun x => y)
   have hsingle : HasSum
       (fun n : ℕ ↦ (p n fun _ ↦ y) - (q n fun _ ↦ y))
       ((p 0 fun _ ↦ y) - (q 0 fun _ ↦ y)) :=
@@ -85,7 +85,7 @@ theorem analytic_germ_eq_of_jet_eq {f g : E → ℝ}
   have hp0 : (p 0 fun _ ↦ y) = f 0 := hp.coeff_zero _
   have hq0 : (q 0 fun _ ↦ y) = g 0 := hq.coeff_zero _
   rw [hp0, hq0] at huniq
-  linarith
+  exact sub_eq_sub_iff_sub_eq_sub.mp huniq
 
 end General
 

@@ -42,13 +42,13 @@ theorem HasPolynomialGrowth.mul {f g : EuclidD d → ℝ}
   have h1 : ‖x‖ ^ n₁ ≤ 1 + ‖x‖ ^ (n₁ + n₂) := by
     rcases le_total ‖x‖ 1 with h | h
     · have := pow_le_one₀ (norm_nonneg x) h (n := n₁)
-      linarith
+      exact le_add_of_le_of_nonneg this hxn
     · have := pow_le_pow_right₀ h (Nat.le_add_right n₁ n₂)
       linarith
   have h2 : ‖x‖ ^ n₂ ≤ 1 + ‖x‖ ^ (n₁ + n₂) := by
     rcases le_total ‖x‖ 1 with h | h
     · have := pow_le_one₀ (norm_nonneg x) h (n := n₂)
-      linarith
+      exact le_add_of_le_of_nonneg this hxn
     · have := pow_le_pow_right₀ h (Nat.le_add_left n₂ n₁)
       linarith
   have h3 : ‖x‖ ^ n₁ * ‖x‖ ^ n₂ = ‖x‖ ^ (n₁ + n₂) := (pow_add _ _ _).symm
@@ -58,7 +58,8 @@ theorem HasPolynomialGrowth.mul {f g : EuclidD d → ℝ}
   calc |f x * g x| = |f x| * |g x| := abs_mul _ _
     _ ≤ C₁ * (1 + ‖x‖ ^ n₁) * (C₂ * (1 + ‖x‖ ^ n₂)) :=
         mul_le_mul (h₁ x) (h₂ x) (abs_nonneg _) (by positivity)
-    _ = C₁ * C₂ * ((1 + ‖x‖ ^ n₁) * (1 + ‖x‖ ^ n₂)) := by ring
+    _ = C₁ * C₂ * ((1 + ‖x‖ ^ n₁) * (1 + ‖x‖ ^ n₂)) := mul_mul_mul_comm C₁ (1 + ‖x‖ ^ n₁) C₂ (1 +
+                                                            ‖x‖ ^ n₂)
     _ ≤ C₁ * C₂ * (3 * (1 + ‖x‖ ^ (n₁ + n₂))) := by
         apply mul_le_mul_of_nonneg_left hb (by positivity)
     _ = 3 * (C₁ * C₂) * (1 + ‖x‖ ^ (n₁ + n₂)) := by ring
@@ -70,7 +71,7 @@ theorem HasPolynomialGrowth.sub_const {f : EuclidD d → ℝ}
   refine ⟨C + |c|, n, by positivity, fun x ↦ ?_⟩
   have hxn : (0 : ℝ) ≤ ‖x‖ ^ n := by positivity
   calc |f x - c| ≤ |f x| + |c| := abs_sub _ _
-    _ ≤ C * (1 + ‖x‖ ^ n) + |c| := by linarith [h x]
+    _ ≤ C * (1 + ‖x‖ ^ n) + |c| := add_le_add_left (h x) |c|
     _ ≤ (C + |c|) * (1 + ‖x‖ ^ n) := by nlinarith [abs_nonneg c]
 
 /-- **J0 slice**: polynomial-growth observables are integrable
@@ -129,7 +130,7 @@ theorem continuous_eq_zero_of_integral_mul_quadKernel_eq_zero
     have := MeasureTheory.setIntegral_ge_of_const_le
       (measurableSet_ball) (measure_ball_lt_top.ne)
       hball (hf_int.integrableOn)
-    simpa [measureReal_def] using this
+    exact this
   have hvol : 0 < (volume (Metric.ball x₀ r)).toReal :=
     ENNReal.toReal_pos (Metric.measure_ball_pos volume x₀ hr).ne'
       measure_ball_lt_top.ne

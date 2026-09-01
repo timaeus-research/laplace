@@ -50,14 +50,14 @@ theorem tendsto_poly_div_pow {N : ℕ} (e : ℕ → ℝ) {j₀ : ℕ}
     refine Finset.sum_congr rfl fun j hj ↦ ?_
     by_cases hlt : j < j₀
     · rw [if_pos hlt, hlow j hlt]
-      ring
+      simp only [zero_mul, mul_zero, zero_div]
     · rw [if_neg hlt, mul_one]
       push Not at hlt
       rw [mul_div_assoc]
       congr 1
       rw [eq_div_iff (pow_ne_zero j₀ hq0), ← pow_add]
       congr 1
-      omega
+      exact Nat.sub_add_cancel hlt
   have hterm : Tendsto (fun q : ℝ ↦
       ∑ j ∈ Finset.range (N + 1), e j * q ^ (j - j₀) *
         (if j < j₀ then (0:ℝ) else 1))
@@ -80,10 +80,10 @@ theorem tendsto_poly_div_pow {N : ℕ} (e : ℕ → ℝ) {j₀ : ℕ}
       · intro j hj hne
         rcases lt_or_gt_of_ne hne with hlt | hgt
         · rw [if_pos hlt, mul_zero]
-        · rw [zero_pow (by omega : j - j₀ ≠ 0)]
-          ring
+        · rw [zero_pow (by exact Nat.sub_ne_zero_iff_lt.mpr hgt : j - j₀ ≠ 0)]
+          simp only [mul_zero, mul_ite, mul_one, ite_self]
       · intro hj
-        exact absurd (Finset.mem_range.mpr (by omega)) hj
+        exact absurd (Finset.mem_range.mpr (by exact Order.lt_add_one_iff.mpr hj₀)) hj
     rw [hval] at hsum
     exact hsum.mono_left nhdsWithin_le_nhds
   exact hterm.congr' hev
@@ -106,15 +106,14 @@ theorem isAsymptoticExpansionTo_coeff_eq {f : ℝ → ℝ} {c e : ℕ → ℝ}
         (∑ j ∈ Finset.range (N + 1), c j * q ^ j) -
         ∑ j ∈ Finset.range (N + 1), e j * q ^ j := by ring
     rw [hswap, ← Finset.sum_sub_distrib]
-    exact Finset.sum_congr rfl fun j _ ↦ by ring
+    exact Finset.sum_congr rfl fun j _ ↦ by exact Eq.symm (sub_mul (c j) (e j) (q ^ j))
   intro j₀ hj₀
   induction j₀ using Nat.strong_induction_on with
   | _ j₀ ih =>
     have hlow : ∀ i < j₀, (fun j ↦ c j - e j) i = 0 := by
       intro i hi
       have := ih i hi (by omega)
-      simp only []
-      linarith
+      exact sub_eq_zero_of_eq this
     have hpoly := tendsto_poly_div_pow (fun j ↦ c j - e j) hj₀ hlow
     have hzero : Tendsto (fun q : ℝ ↦
         (∑ j ∈ Finset.range (N + 1), (c j - e j) * q ^ j) / q ^ j₀)
@@ -125,8 +124,7 @@ theorem isAsymptoticExpansionTo_coeff_eq {f : ℝ → ℝ} {c e : ℕ → ℝ}
         have := hdiff.mul_isBigO
           (isBigO_refl (fun q : ℝ ↦ ((q ^ j₀)⁻¹ : ℝ)) (𝓝[>] (0:ℝ)))
         refine this.congr' ?_ ?_
-        · filter_upwards with q
-          rw [div_eq_mul_inv]
+        · rfl
         · filter_upwards [self_mem_nhdsWithin] with q hq
           have hq0 : (q : ℝ) ≠ 0 := ne_of_gt hq
           exact (pow_sub₀ q hq0 hj₀).symm

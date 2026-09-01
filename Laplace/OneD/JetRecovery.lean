@@ -121,16 +121,16 @@ theorem jet_reference_variance_pos
   have hint0 : Integrable (fun u : ℝ ↦
       Real.exp (-(a * u ^ (2 * k)))) := by
     have := integrable_abs_pow_mul_exp_neg_kth hk 0 ha
-    exact this.congr (Filter.Eventually.of_forall fun u ↦ by simp)
+    exact this.congr (Filter.Eventually.of_forall fun u ↦ by simp only [pow_zero, one_mul])
   have hZpos : 0 < ∫ u : ℝ, Real.exp (-(a * u ^ (2 * k))) := by
     rw [integral_pos_iff_support_of_nonneg
       (fun u ↦ (Real.exp_pos _).le) hint0]
     have hs : Function.support (fun u : ℝ ↦
         Real.exp (-(a * u ^ (2 * k)))) = Set.univ := by
       ext u
-      simp [(Real.exp_pos _).ne']
+      simp only [Function.mem_support, ne_eq, exp_ne_zero, not_false_eq_true, Set.mem_univ]
     rw [hs]
-    simp
+    simp only [measure_univ_of_isAddLeftInvariant, ENNReal.zero_lt_top]
   have hexpand : (∫ u : ℝ, u ^ (2 * m) *
         Real.exp (-(a * u ^ (2 * k)))) *
         (∫ u : ℝ, Real.exp (-(a * u ^ (2 * k)))) -
@@ -168,27 +168,26 @@ theorem jet_one_rung_recovery
   have hint0 : Integrable (fun u : ℝ ↦
       Real.exp (-(a * u ^ (2 * k)))) := by
     have := integrable_abs_pow_mul_exp_neg_kth hk 0 ha
-    exact this.congr (Filter.Eventually.of_forall fun u ↦ by simp)
+    exact this.congr (Filter.Eventually.of_forall fun u ↦ by simp only [pow_zero, one_mul])
   have hA0pos : 0 < A0 := by
     rw [hA0_def, integral_pos_iff_support_of_nonneg
       (fun u ↦ (Real.exp_pos _).le) hint0]
     have hs : Function.support (fun u : ℝ ↦
         Real.exp (-(a * u ^ (2 * k)))) = Set.univ := by
       ext u
-      simp [(Real.exp_pos _).ne']
+      simp only [Function.mem_support, ne_eq, exp_ne_zero, not_false_eq_true, Set.mem_univ]
     rw [hs]
-    simp
+    simp only [measure_univ_of_isAddLeftInvariant, ENNReal.zero_lt_top]
   -- Denominators in u^0 form, to match the s = 0 instances.
   have hzero_form : ∀ (c : Fin R → ℝ) (q : ℝ),
       (∫ u : ℝ, Real.exp (-jetPotential k R a q c u)) =
       ∫ u : ℝ, u ^ 0 * Real.exp (-jetPotential k R a q c u) :=
     fun c q ↦ integral_congr_ae
-      (Filter.Eventually.of_forall fun u ↦ by simp)
+      (Filter.Eventually.of_forall fun u ↦ by simp only [pow_zero, one_mul])
   have hzero_ref : A0 = ∫ u : ℝ, u ^ 0 *
       Real.exp (-(a * u ^ (2 * k))) := by
     rw [hA0_def]
-    exact integral_congr_ae
-      (Filter.Eventually.of_forall fun u ↦ by simp)
+    simp only [pow_zero, one_mul]
   -- Assemble the 3D quotient limit.
   have hquot := quotient_difference_tendsto
     (l := 𝓝[>] (0 : ℝ)) (σ := fun q ↦ q ^ (i₀.1 + 1))
@@ -221,11 +220,11 @@ theorem jet_one_rung_recovery
     (by
       have := jet_difference_integral_limit hk m i₀ h1 h2 hlow
       rwa [show m + (2 * k + (i₀.1 + 1)) = m + m by
-        rw [hm_def]] at this)
+        rfl] at this)
     (by
       have := jet_difference_integral_limit hk 0 i₀ h1 h2 hlow
       rw [show 0 + (2 * k + (i₀.1 + 1)) = m by
-        rw [hm_def]; ring] at this
+        exact Nat.add_comm 0 (2 * k + (↑i₀ + 1))] at this
       have heq : (fun q : ℝ ↦
           ((∫ u : ℝ, u ^ 0 * Real.exp (-jetPotential k R a q c₁ u)) -
             ∫ u : ℝ, u ^ 0 * Real.exp (-jetPotential k R a q c₂ u)) /
@@ -246,15 +245,14 @@ theorem jet_one_rung_recovery
         (∫ u : ℝ, u ^ m * Real.exp (-jetPotential k R a q c₂ u)) /
           (∫ u : ℝ, Real.exp (-jetPotential k R a q c₂ u))) /
         q ^ (i₀.1 + 1) := by
-    funext q
-    rw [normalizedJetMoment, normalizedJetMoment]
+    rfl
   rw [hFq] at hdata
   have huniq := tendsto_nhds_unique hquot hdata
   -- Extract δ = 0 from the vanishing limit.
   have hvar := jet_reference_variance_pos hk ha
-    (m := m) (by omega : 1 ≤ m)
+    (m := m) (by exact Nat.le_add_left 1 ((2 * k).add ↑i₀) : 1 ≤ m)
   have hbracket : 0 < A2m * A0 - Am ^ 2 := by
-    rw [hA2m_def, hAm_def, hA0_def, show m + m = 2 * m by ring]
+    rw [hA2m_def, hAm_def, hA0_def, show m + m = 2 * m by exact Eq.symm (Nat.two_mul m)]
     exact hvar
   have hδ : (c₁ i₀ - c₂ i₀) * (A2m * A0 - Am ^ 2) = 0 := by
     have hnum := (div_eq_zero_iff.mp huniq).resolve_right

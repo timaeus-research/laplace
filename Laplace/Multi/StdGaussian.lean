@@ -40,7 +40,7 @@ theorem stdKernel_continuous {d : ℕ} :
 theorem integrable_exp_neg_mul_sq_norm {d : ℕ} {b : ℝ} (hb : 0 < b) :
     Integrable (fun y : EuclidD d ↦ Real.exp (-b * ‖y‖ ^ 2)) := by
   have h := GaussianFourier.integrable_cexp_neg_mul_sq_norm_add
-    (V := EuclidD d) (b := (b : ℂ)) (by simpa using hb) 0 (0 : EuclidD d)
+    (V := EuclidD d) (b := (b : ℂ)) (by exact hb) 0 (0 : EuclidD d)
   have h2 := h.re
   refine h2.congr (Filter.Eventually.of_forall fun y ↦ ?_)
   simp [Complex.exp_re, ← Complex.ofReal_pow, neg_mul]
@@ -123,9 +123,9 @@ theorem stdKernel_integrable_pow {d : ℕ} (n : ℕ) :
       rcases le_total ‖y‖ 1 with hy | hy
       · have : ‖y‖ ^ n ≤ 1 := pow_le_one₀ (norm_nonneg y) hy
         have h2 : (0 : ℝ) ≤ ‖y‖ ^ (2 * m) := by positivity
-        linarith
+        exact le_add_of_le_of_nonneg this h2
       · have : ‖y‖ ^ n ≤ ‖y‖ ^ (2 * m) :=
-          pow_le_pow_right₀ hy (by omega)
+          pow_le_pow_right₀ hy (Nat.le_of_succ_le hn2m)
         linarith
     have hbound := pow_le_exp_sq_bound m ‖y‖
     calc ‖y‖ ^ n * Real.exp (-‖y‖ ^ 2 / 2)
@@ -134,7 +134,7 @@ theorem stdKernel_integrable_pow {d : ℕ} (n : ℕ) :
       _ ≤ (1 + 8 ^ m * (Nat.factorial m : ℝ) *
             Real.exp (‖y‖ ^ 2 / 8)) * Real.exp (-‖y‖ ^ 2 / 2) := by
           apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
-          linarith
+          exact (add_le_add_iff_left 1).mpr hbound
       _ = Real.exp (-‖y‖ ^ 2 / 2) + 8 ^ m * (Nat.factorial m : ℝ) *
             Real.exp (-(3 / 8) * ‖y‖ ^ 2) := by
           rw [add_mul, one_mul, mul_assoc, ← Real.exp_add]
@@ -233,7 +233,7 @@ theorem integral_coord_mul_coord_stdKernel {d : ℕ} (a b : Fin d) :
           y a * y b := by
       intro y
       rw [Finset.prod_mul_distrib]
-      simp [Finset.prod_ite_eq']
+      simp only [Finset.prod_ite_eq', Finset.mem_univ, ↓reduceIte]
     rw [show (fun y : EuclidD d ↦
         (∏ i, (if i = a then y i else 1) * (if i = b then y i else 1)) *
           stdKernel y) = fun y : EuclidD d ↦ y a * y b * stdKernel y from

@@ -34,12 +34,11 @@ theorem perturbation_remainder3_pointwise (n : ℕ) (u s : ℝ) :
   have hexp_pos : 0 < Real.exp (-(u ^ 2) / 2) := Real.exp_pos _
   have hE3 : Real.exp (-s) - (1 - s + s ^ 2 / 2) = expRemainder 3 s := by
     simp [expRemainder, Finset.sum_range_succ, Nat.factorial]
-    ring
+    rfl
   have hbound : |Real.exp (-s) - (1 - s + s ^ 2 / 2)| ≤
       |s| ^ 3 / 6 * max 1 (Real.exp (-s)) := by
     rw [hE3]
     have h := abs_expRemainder_le_max 3 s
-    norm_num [Nat.factorial] at h
     exact h
   rw [abs_mul, abs_mul, abs_pow, abs_of_pos hexp_pos]
   rw [show (|s| ^ 3 / 6 * |u| ^ n * Real.exp (-(u ^ 2) / 2) *

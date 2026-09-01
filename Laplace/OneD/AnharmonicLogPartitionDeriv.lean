@@ -30,11 +30,7 @@ theorem weightedPartition_zero_zero_eq
     weightedPartition lam alpha gamma t 0 0
       = ∫ x : ℝ, Real.exp (-(t * anharmonicPotential lam alpha gamma x)) := by
   unfold weightedPartition
-  congr 1
-  funext x
-  rw [pow_zero, one_mul]
-  congr 1
-  ring
+  simp only [pow_zero, zero_mul, add_zero, one_mul]
 
 /-- The unperturbed partition `Z(0)` is strictly positive. -/
 theorem weightedPartition_zero_zero_pos

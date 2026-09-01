@@ -53,13 +53,12 @@ theorem leading_part_scaled_set (a P : (ι → ℝ) → ℝ) (m : ℕ)
     have habs : ContinuousAt (fun x ↦ |P x|) x₀ := hPc.continuousAt.abs
     have hlt : c₁ < |P x₀| := by
       have : 0 < |P x₀| := abs_pos.mpr hx₀
-      rw [hc₁_def]
-      linarith
+      exact div_two_lt_of_pos this
     exact habs.eventually (eventually_gt_nhds hlt)
   rw [Metric.eventually_nhds_iff] at hgev
   obtain ⟨δ', hδ', hball⟩ := hgev
   set δ : ℝ := min (δ' / 2) (1 / 2) with hδ_def
-  have hδ : 0 < δ := lt_min (by positivity) (by norm_num)
+  have hδ : 0 < δ := lt_min (by positivity) (one_half_pos)
   set S : Set (ι → ℝ) := Metric.closedBall x₀ δ with hS_def
   -- The scale threshold: small enough to kill the remainder.
   set u₀ : ℝ := min u₁ (c₁ / (2 * (C * 2 ^ (m + 1) + 1))) with hu₀_def
@@ -73,7 +72,7 @@ theorem leading_part_scaled_set (a P : (ι → ℝ) → ℝ) (m : ℕ)
   · -- `S` sits inside the annulus `‖x‖ ≤ 2`.
     intro x hx
     have hd : dist x x₀ ≤ δ := Metric.mem_closedBall.mp hx
-    calc ‖x‖ = ‖x₀ + (x - x₀)‖ := by ring_nf
+    calc ‖x‖ = ‖x₀ + (x - x₀)‖ := by simp only [add_sub_cancel]
       _ ≤ ‖x₀‖ + ‖x - x₀‖ := norm_add_le _ _
       _ ≤ 3 / 2 + 1 / 2 := by
           rw [hx₀n]
@@ -88,12 +87,12 @@ theorem leading_part_scaled_set (a P : (ι → ℝ) → ℝ) (m : ℕ)
       apply hball
       calc dist x x₀ ≤ δ := Metric.mem_closedBall.mp hx
         _ ≤ δ' / 2 := min_le_left _ _
-        _ < δ' := by linarith
+        _ < δ' := div_two_lt_of_pos hδ'
     have hxn : ‖x‖ ≤ 2 := by
       have hd : dist x x₀ ≤ δ := Metric.mem_closedBall.mp hx
       have h1 : ‖x - x₀‖ = dist x x₀ := (dist_eq_norm x x₀).symm
       have hδhalf : δ ≤ 1 / 2 := min_le_right _ _
-      calc ‖x‖ = ‖x₀ + (x - x₀)‖ := by ring_nf
+      calc ‖x‖ = ‖x₀ + (x - x₀)‖ := by simp only [add_sub_cancel]
         _ ≤ ‖x₀‖ + ‖x - x₀‖ := norm_add_le _ _
         _ ≤ 2 := by rw [hx₀n]; linarith [h1 ▸ hd]
     have huxn : ‖u • x‖ ≤ 2 * u := by
@@ -104,7 +103,7 @@ theorem leading_part_scaled_set (a P : (ι → ℝ) → ℝ) (m : ℕ)
       have h1 : |P (u • x)| - |a (u • x)| ≤ |P (u • x) - a (u • x)| :=
         abs_sub_abs_le_abs_sub _ _
       rw [abs_sub_comm] at h1
-      linarith
+      exact tsub_le_iff_tsub_le.mp h1
     have hPux : |P (u • x)| = u ^ m * |P x| := by
       rw [hPh u x hu0.le, abs_mul, abs_of_nonneg (by positivity : (0:ℝ) ≤ u ^ m)]
     have hR : |a (u • x) - P (u • x)| ≤ C * 2 ^ (m + 1) * u ^ (m + 1) := by
@@ -120,7 +119,7 @@ theorem leading_part_scaled_set (a P : (ι → ℝ) → ℝ) (m : ℕ)
         le_trans hu.2 (min_le_right _ _)
       have hpos : (0:ℝ) < 2 * (C * 2 ^ (m + 1) + 1) := by positivity
       rw [le_div_iff₀ hpos] at hu₀2
-      nlinarith [pow_nonneg (by norm_num : (0:ℝ) ≤ 2) (m + 1)]
+      nlinarith [pow_nonneg (by exact zero_le_two : (0:ℝ) ≤ 2) (m + 1)]
     calc c₁ / 2 * u ^ m
         = u ^ m * c₁ - u ^ m * (c₁ / 2) := by ring
       _ ≤ u ^ m * |P x| - C * 2 ^ (m + 1) * u ^ (m + 1) := by
@@ -131,10 +130,10 @@ theorem leading_part_scaled_set (a P : (ι → ℝ) → ℝ) (m : ℕ)
                 = (C * 2 ^ (m + 1) * u) * u ^ m := by ring
               _ ≤ (c₁ / 2) * u ^ m :=
                   mul_le_mul_of_nonneg_right hsmall (by positivity)
-              _ = u ^ m * (c₁ / 2) := by ring
-          linarith
+              _ = u ^ m * (c₁ / 2) := Eq.symm (CommMonoid.mul_comm (u ^ m) (c₁ / 2))
+          exact tsub_le_tsub h1 h2
       _ = |P (u • x)| - C * 2 ^ (m + 1) * u ^ (m + 1) := by rw [hPux]
-      _ ≤ |P (u • x)| - |a (u • x) - P (u • x)| := by linarith [hR]
+      _ ≤ |P (u • x)| - |a (u • x) - P (u • x)| := tsub_le_tsub_left hR |P (u • x)|
       _ ≤ |a (u • x)| := htri
 
 end Laplace

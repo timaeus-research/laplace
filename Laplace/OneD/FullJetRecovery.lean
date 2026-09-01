@@ -44,14 +44,14 @@ theorem smooth_jet_recovery_iteratedDeriv
   intro k hk2 hkR
   rcases Nat.lt_or_ge k 3 with hk3 | hk3
   · -- k = 2: from the base coefficient.
-    have hk : k = 2 := by omega
+    have hk : k = 2 := Nat.eq_of_le_of_lt_succ hk2 hk3
     subst hk
     have h := hbase
     rw [taylorBase, taylorBase] at h
     linarith [h]
   · -- k ≥ 3: from the higher coefficients.
     have hiR : k - 3 < R := by omega
-    have := congrFun hcoeff ⟨k - 3, by omega⟩
+    have := congrFun hcoeff ⟨k - 3, by exact hiR⟩
     rw [taylorCoeff, taylorCoeff] at this
     have hfac : ((Nat.factorial (2 + (k - 3 + 1)) : ℝ)) ≠ 0 := by
       exact_mod_cast (Nat.factorial_pos _).ne'
@@ -83,6 +83,6 @@ theorem smooth_full_jet_recovery
   refine smooth_jet_recovery_iteratedDeriv (R := k - 2) h1 h2
     (contDiff_infty.mp hs1 (k - 2 + 2))
     (contDiff_infty.mp hs2 (k - 2 + 2))
-    (fun r _ ↦ hdata r) k hk2 (by omega)
+    (fun r _ ↦ hdata r) k hk2 (le_tsub_add)
 
 end Laplace.OneD
