@@ -94,10 +94,10 @@ private lemma kappa3_id_id_id_unfold (L : ℝ → ℝ) (t : ℝ) :
   -- arguments using function extensionality.
   have h_cube : (fun w : ℝ => (fun x : ℝ => x) w * (fun x : ℝ => x) w
         * (fun x : ℝ => x) w) = (fun w : ℝ => w ^ 3) := by
-    funext w; ring
+    funext w; exact Eq.symm (pow_three' w)
   have h_sq : (fun w : ℝ => (fun x : ℝ => x) w * (fun x : ℝ => x) w)
       = (fun w : ℝ => w ^ 2) := by
-    funext w; ring
+    funext w; exact Eq.symm (pow_two w)
   rw [h_cube, h_sq]
   ring
 
@@ -119,7 +119,7 @@ private lemma kappa3_id_id_id_eq_cov_form (L : ℝ → ℝ) (t : ℝ) :
         + 2 * Laplace.gibbsExpectation L t (fun x : ℝ => x) ^ 3 := by
   unfold Laplace.gibbsCov
   have h_x2_x : (fun x : ℝ => x ^ 2 * x) = (fun x : ℝ => x ^ 3) := by
-    funext x; ring
+    rfl
   rw [h_x2_x]
   ring
 
@@ -149,7 +149,7 @@ private lemma mean_anharmonic_tendsto_zero
           (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x)))
       Filter.atTop (nhds (0 * (-alpha / (2 * lam ^ 2)))) :=
     h_inv_t.mul hMean
-  have h_lim_zero : (0 : ℝ) * (-alpha / (2 * lam ^ 2)) = 0 := by ring
+  have h_lim_zero : (0 : ℝ) * (-alpha / (2 * lam ^ 2)) = 0 := zero_mul (-alpha / (2 * lam ^ 2))
   rw [h_lim_zero] at h_prod
   apply h_prod.congr'
   filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
@@ -183,7 +183,8 @@ theorem secondMoment_anharmonic_asymptotic
             (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x))
         Filter.atTop (nhds ((-alpha / (2 * lam ^ 2)) * 0)) :=
       hMean.mul hMeanZero
-    have h_lim_zero : (-alpha / (2 * lam ^ 2)) * (0 : ℝ) = 0 := by ring
+    have h_lim_zero : (-alpha / (2 * lam ^ 2)) * (0 : ℝ) = 0 := CommMonoidWithZero.mul_zero (-alpha
+                                                                     / (2 * lam ^ 2))
     rw [h_lim_zero] at h_prod
     apply h_prod.congr'
     filter_upwards with t
@@ -198,14 +199,14 @@ theorem secondMoment_anharmonic_asymptotic
             (anharmonicPotential lam alpha gamma) t (fun x : ℝ => x) ^ 2)
         Filter.atTop (nhds (1 / lam + 0)) :=
     hVar.add h_t_mean_sq
-  have h_lim_eq : (1 / lam : ℝ) + 0 = 1 / lam := by ring
+  have h_lim_eq : (1 / lam : ℝ) + 0 = 1 / lam := AddMonoid.add_zero (1 / lam)
   rw [h_lim_eq] at h_sum
   apply h_sum.congr'
   filter_upwards with t
   -- t · ⟨x²⟩ = t · (gibbsCov L t x x + ⟨x⟩²) since gibbsCov L t x x = ⟨x²⟩ - ⟨x⟩².
   unfold Laplace.gibbsCov
   have h_x_x : (fun x : ℝ => x * x) = (fun x : ℝ => x ^ 2) := by
-    funext x; ring
+    funext x; exact Eq.symm (pow_two x)
   rw [h_x_x]
   ring
 
@@ -274,7 +275,7 @@ theorem kappa3_anharmonic_id_id_id_asymptotic
         (nhds (2 * ((-alpha / (2 * lam ^ 2)) * (-alpha / (2 * lam ^ 2)) * 0))) :=
       tendsto_const_nhds.mul ((hM1.mul hM1).mul hMeanZero)
     have h_lim_zero :
-        2 * ((-alpha / (2 * lam ^ 2)) * (-alpha / (2 * lam ^ 2)) * 0) = 0 := by ring
+        2 * ((-alpha / (2 * lam ^ 2)) * (-alpha / (2 * lam ^ 2)) * 0) = 0 := by simp only [mul_zero]
     rw [h_lim_zero] at h_prod
     apply h_prod.congr'
     filter_upwards with t
@@ -369,7 +370,7 @@ theorem thirdMoment_anharmonic_asymptotic
   -- Cov[x², x] = ⟨x²·x⟩ - ⟨x²⟩·⟨x⟩ = ⟨x³⟩ - ⟨x²⟩·⟨x⟩
   unfold Laplace.gibbsCov
   have h_x2_x : (fun x : ℝ => x ^ 2 * x) = (fun x : ℝ => x ^ 3) := by
-    funext x; ring
+    rfl
   rw [h_x2_x]
   ring
 

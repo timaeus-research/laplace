@@ -49,7 +49,7 @@ theorem AdmissiblePotential.integrable_pow
   have hdom' : Integrable (fun x : ℝ ↦
       |x| ^ s * Real.exp (-(t * ρ * x ^ 2))) := by
     refine hdom.congr (Filter.Eventually.of_forall fun x ↦ ?_)
-    norm_num
+    rfl
   refine hdom'.mono' ?_ (Filter.Eventually.of_forall fun x ↦ ?_)
   · exact ((continuous_pow s).mul (Real.continuous_exp.comp
       (h.cont.const_smul t).neg)).aestronglyMeasurable
@@ -176,7 +176,7 @@ theorem exp_neg_div_tendsto_zero {c : ℝ} (hc : 0 < c) (n : ℕ) :
   have hq0 : (0 : ℝ) < q := hq
   simp only [Function.comp_apply]
   rw [div_eq_mul_inv (Real.exp _), inv_pow, ← inv_pow]
-  rw [show -(c * q⁻¹) = -(c / q) by field_simp]
+  rw [show -(c * q⁻¹) = -(c / q) by rfl]
   ring
 
 set_option maxHeartbeats 3200000 in
@@ -277,7 +277,7 @@ theorem admissible_moment_difference_littleO
         Real.exp (-(t / 2 * (ρ₁ * x ^ 2))) from funext fun x ↦ by
       rw [show t * (ρ₁ / 2 * x ^ 2) = t / 2 * (ρ₁ * x ^ 2) by ring]]
       at hs
-    rw [hs, hCT₁_def]
+    exact hs
   have hhalf₂ : (∫ x : ℝ, |x| ^ s *
       Real.exp (-(t / 2 * (ρ₂ * x ^ 2)))) = q ^ (s + 1) * CT₂ := by
     have hs := abs_moment_scaling (a := ρ₂ / 2) (t := t) (q := q)
@@ -287,7 +287,7 @@ theorem admissible_moment_difference_littleO
         Real.exp (-(t / 2 * (ρ₂ * x ^ 2))) from funext fun x ↦ by
       rw [show t * (ρ₂ / 2 * x ^ 2) = t / 2 * (ρ₂ * x ^ 2) by ring]]
       at hs
-    rw [hs, hCT₂_def]
+    exact hs
   have hpref₁ : Real.exp (-(t / 2 * (ρ₁ * Real.sqrt q ^ 2))) =
       Real.exp (-(ρ₁ / 2 / q)) := by
     congr 1
@@ -336,11 +336,11 @@ theorem admissible_moment_difference_littleO
   have habs₁ : Integrable (fun x : ℝ ↦
       |x| ^ s * Real.exp (-(t * K₁ x))) :=
     hint₁.abs.congr (Filter.Eventually.of_forall fun x ↦ by
-      simp [abs_mul, abs_pow, Real.abs_exp])
+      simp only [abs_mul, abs_pow, abs_exp])
   have habs₂ : Integrable (fun x : ℝ ↦
       |x| ^ s * Real.exp (-(t * K₂ x))) :=
     hint₂.abs.congr (Filter.Eventually.of_forall fun x ↦ by
-      simp [abs_mul, abs_pow, Real.abs_exp])
+      simp only [abs_mul, abs_pow, abs_exp])
   -- Tail part of the difference.
   have htail_abs : |∫ x in S, (x ^ s * Real.exp (-(t * K₁ x)) -
       x ^ s * Real.exp (-(t * K₂ x)))| ≤
@@ -411,7 +411,8 @@ theorem admissible_moment_difference_littleO
             rw [show x ^ s * Real.exp (-(t * K₁ x)) -
                 x ^ s * Real.exp (-(t * K₂ x)) =
                 x ^ s * (Real.exp (-(t * K₁ x)) -
-                  Real.exp (-(t * K₂ x))) by ring,
+                  Real.exp (-(t * K₂ x))) by exact Eq.symm (mul_sub_left_distrib (x ^ s) (rexp (-(t
+                                               * K₁ x))) (rexp (-(t * K₂ x)))),
               abs_mul, abs_pow]
         _ ≤ |x| ^ s * (|t * K₁ x - t * K₂ x| *
               max (Real.exp (-(t * K₁ x)))
@@ -423,7 +424,8 @@ theorem admissible_moment_difference_littleO
             apply mul_le_mul _ hmax
               (le_trans (Real.exp_pos _).le (le_max_left _ _))
               (by positivity)
-            rw [show t * K₁ x - t * K₂ x = t * (K₁ x - K₂ x) by ring,
+            rw [show t * K₁ x - t * K₂ x = t * (K₁ x - K₂ x) by exact Eq.symm (mul_sub_left_distrib
+                                                                  t (K₁ x) (K₂ x)),
               abs_mul, abs_of_pos ht]
             exact mul_le_mul_of_nonneg_left hjetx ht.le
         _ = εj * t * (|x| ^ (s + D) *
@@ -471,7 +473,7 @@ theorem admissible_moment_difference_littleO
   have hεC : εj * C ≤ η / 4 := by
     rw [hεj_def]
     rw [div_mul_eq_mul_div, div_le_div_iff₀ (by positivity)
-      (by norm_num : (0:ℝ) < 4)]
+      (by exact four_pos : (0:ℝ) < 4)]
     have hCM : C ≤ M := le_max_left _ _
     nlinarith
   calc |(∫ x : ℝ, x ^ s * Real.exp (-(t * K₁ x))) -
@@ -493,7 +495,7 @@ theorem admissible_moment_difference_littleO
           q ^ (s + D - 1)) +
         εj * C * q ^ (s + D - 1) := by
         have := add_le_add htail₁' htail₂'
-        linarith
+        exact add_le_add_left this (εj * C * q ^ (s + D - 1))
     _ < η * q ^ (s + D - 1) := by nlinarith [hqp, hb₁, hb₂, hεC,
         mul_le_mul_of_nonneg_right hεC hqp.le]
 

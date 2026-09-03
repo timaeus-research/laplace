@@ -208,7 +208,9 @@ theorem quartic_partition_bounded_prior {t a : ℝ} (ht : 0 < t) (ha : 0 < a) :
   have hdiff : (∫ w in Icc (-a) a, Real.exp (-(t * w ^ 4 / 24))) -
         ((1/2) * (24/t) ^ ((1 : ℝ) / 4) * Real.Gamma ((1 : ℝ) / 4)) =
       -(2 * ∫ w in Ioi a, Real.exp (-(t * w ^ 4 / 24))) := by
-    rw [← hpart_int, hsplit]; ring
+    rw [← hpart_int, hsplit]; exact sub_add_cancel_left (∫ (w : ℝ) in Icc (-a) a,
+                                Real.exp (-(t * w ^ 4 / 24))) (2 * ∫ (w : ℝ) in Ioi a,
+                                Real.exp (-(t * w ^ 4 / 24)))
   rw [hdiff, abs_neg]
   -- Tail is nonneg, so |2·∫| = 2·∫.
   have htail_nn : 0 ≤ ∫ w in Ioi a, Real.exp (-(t * w ^ 4 / 24)) :=
@@ -219,13 +221,13 @@ theorem quartic_partition_bounded_prior {t a : ℝ} (ht : 0 < t) (ha : 0 < a) :
   have htail := quartic_tail_Ioi ht ha
   have h2 : 2 * ∫ w in Ioi a, Real.exp (-(t * w ^ 4 / 24)) ≤
       2 * ((12 / (t * a ^ 3)) * Real.exp (-(t * a ^ 4 / 24))) :=
-    mul_le_mul_of_nonneg_left htail (by norm_num)
+    mul_le_mul_of_nonneg_left htail (zero_le_two)
   have heq2 : (2 : ℝ) * ((12 / (t * a ^ 3)) * Real.exp (-(t * a ^ 4 / 24))) =
       (24 / (t * a ^ 3)) * Real.exp (-(t * a ^ 4 / 24)) := by
     have ha_ne : (a : ℝ) ≠ 0 := ne_of_gt ha
     have ht_ne : (t : ℝ) ≠ 0 := ne_of_gt ht
     field_simp
     ring
-  linarith
+  exact le_of_le_of_eq h2 heq2
 
 end Laplace.OneD

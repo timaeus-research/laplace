@@ -83,7 +83,7 @@ theorem tendsto_tail_slice (A : HigherLaplaceDomain k L₁ H)
   refine squeeze_zero_norm' ?_ hJ5b
   filter_upwards [self_mem_nhdsWithin] with q hq
   have hq0 : (0 : ℝ) < q := hq
-  have hqk : (0 : ℝ) < q ^ r := by positivity
+  have hqk : (0 : ℝ) < q ^ r := pow_pos hq r
   have hRHS_int : Integrable (fun x : EuclidD d ↦
       Set.indicator {x : EuclidD d | ρ ≤ q * ‖x‖}
         (fun x ↦ |P x| * Real.exp (-A.c * ‖x‖ ^ 2)) x) := by

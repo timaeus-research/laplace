@@ -30,7 +30,7 @@ theorem hasPolynomialGrowth_norm_pow (r : ℕ) :
     HasPolynomialGrowth (fun x : EuclidD d ↦ ‖x‖ ^ r) := by
   refine ⟨1, r, zero_le_one, fun x ↦ ?_⟩
   rw [abs_of_nonneg (by positivity), one_mul]
-  nlinarith [pow_nonneg (norm_nonneg x) r]
+  linarith only []
 
 /-- General-rate polynomial Gaussian integrability: `‖x‖ⁿ·e^{-c‖x‖²}`
 is integrable for every `c > 0`. -/
@@ -79,14 +79,14 @@ theorem integrable_pow_mul_exp_neg_mul_sq {c : ℝ} (hc : 0 < c)
               congr 1
               field_simp
       rw [← hex]
-      exact mul_le_mul_of_nonneg_left hterm (by positivity)
+      exact (mul_le_mul_iff_of_pos_left hK).mpr hterm
     have hcases : ‖x‖ ^ n ≤ 1 + ‖x‖ ^ (2 * m) := by
       rcases le_total ‖x‖ 1 with hy | hy
       · have h1 : ‖x‖ ^ n ≤ 1 := pow_le_one₀ (norm_nonneg x) hy
         have h2 : (0 : ℝ) ≤ ‖x‖ ^ (2 * m) := by positivity
-        linarith
+        exact le_add_of_le_of_nonneg h1 h2
       · have h1 : ‖x‖ ^ n ≤ ‖x‖ ^ (2 * m) :=
-          pow_le_pow_right₀ hy (by omega)
+          pow_le_pow_right₀ hy (Nat.le_of_succ_le hn2m)
         linarith
     calc ‖x‖ ^ n * Real.exp (-c * ‖x‖ ^ 2)
         ≤ (1 + ‖x‖ ^ (2 * m)) * Real.exp (-c * ‖x‖ ^ 2) :=
@@ -94,7 +94,7 @@ theorem integrable_pow_mul_exp_neg_mul_sq {c : ℝ} (hc : 0 < c)
       _ ≤ (1 + (2 / c) ^ m * (Nat.factorial m : ℝ) *
             Real.exp (c / 2 * ‖x‖ ^ 2)) * Real.exp (-c * ‖x‖ ^ 2) := by
           apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
-          linarith [hpow]
+          exact (add_le_add_iff_left 1).mpr hpow
       _ = Real.exp (-c * ‖x‖ ^ 2) + (2 / c) ^ m *
             (Nat.factorial m : ℝ) *
             Real.exp (-(c / 2) * ‖x‖ ^ 2) := by
@@ -189,13 +189,13 @@ theorem abs_exp_neg_sub_exp_neg_le (a b : ℝ) :
       · have h1 : min a b = b := min_eq_right hab
         nlinarith [ht.1, ht.2]
     calc Real.exp (-(b + t * (a - b))) ≤ Real.exp (-(min a b)) :=
-          Real.exp_le_exp.mpr (by linarith)
+          Real.exp_le_exp.mpr (neg_le_neg_iff.mpr hmin)
       _ = max (Real.exp (-a)) (Real.exp (-b)) := by
           rcases le_total a b with hab | hab
           · rw [min_eq_left hab,
-              max_eq_left (Real.exp_le_exp.mpr (by linarith))]
+              max_eq_left (Real.exp_le_exp.mpr (neg_le_neg_iff.mpr hab))]
           · rw [min_eq_right hab,
-              max_eq_right (Real.exp_le_exp.mpr (by linarith))]
+              max_eq_right (Real.exp_le_exp.mpr (neg_le_neg_iff.mpr hab))]
 
 /-- **The scalar rate limit** (J5a): if both exponents converge to a
 common value and their difference has a rate limit, the divided
@@ -218,8 +218,8 @@ theorem tendsto_exp_neg_sub_div {α : Type*} {l : Filter α}
       intervalIntegral.integral_of_le zero_le_one
     have htarget : Real.exp (-u) = ∫ _ in Set.Ioc (0 : ℝ) 1,
         Real.exp (-u) := by
-      rw [setIntegral_const]
-      simp
+      simp only [integral_const, MeasurableSet.univ, measureReal_restrict_apply, Set.univ_inter,
+        volume_real_Ioc, sub_zero, zero_le_one, sup_of_le_left, smul_eq_mul, one_mul]
     rw [htarget]
     refine Tendsto.congr (fun q ↦ (hIoc q).symm) ?_
     refine tendsto_integral_filter_of_dominated_convergence
@@ -227,9 +227,9 @@ theorem tendsto_exp_neg_sub_div {α : Type*} {l : Filter α}
     · filter_upwards with q
       exact (Real.continuous_exp.comp (by fun_prop)).aestronglyMeasurable
     · have hev₁ : ∀ᶠ q in l, u - 1 < a₁ q :=
-        ha₁ (eventually_gt_nhds (by linarith))
+        ha₁ (eventually_gt_nhds (sub_one_lt u))
       have hev₂ : ∀ᶠ q in l, u - 1 < a₂ q :=
-        ha₂ (eventually_gt_nhds (by linarith))
+        ha₂ (eventually_gt_nhds (sub_one_lt u))
       filter_upwards [hev₁, hev₂] with q h1 h2
       filter_upwards [ae_restrict_mem measurableSet_Ioc] with t hmem
       rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
@@ -239,8 +239,7 @@ theorem tendsto_exp_neg_sub_div {α : Type*} {l : Filter α}
         · nlinarith [hmem.1, hmem.2]
         · nlinarith [hmem.1, hmem.2]
       linarith
-    · exact integrableOn_const
-        (by rw [Real.volume_Ioc]; exact ENNReal.ofReal_ne_top)
+    · exact integrable_const (rexp (-u + 1))
     · refine Filter.Eventually.of_forall fun t ↦ ?_
       have harg : Tendsto (fun q ↦ a₂ q + t * (a₁ q - a₂ q)) l
           (𝓝 u) := by

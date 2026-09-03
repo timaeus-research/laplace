@@ -51,7 +51,7 @@ theorem taylorHomogeneousTerm_zero (L : EuclidD d → ℝ)
     taylorHomogeneousTerm 0 L z = L 0 := by
   unfold taylorHomogeneousTerm
   rw [Nat.factorial_zero, Nat.cast_one, inv_one, one_mul]
-  exact iteratedFDeriv_zero_apply _
+  rfl
 
 /-- Positive-degree diagonal Taylor terms vanish at the origin. -/
 theorem taylorHomogeneousTerm_zero_point {m : ℕ} (hm : m ≠ 0)
@@ -74,7 +74,7 @@ theorem abs_taylorHomogeneousTerm_le (k : ℕ) (L : EuclidD d → ℝ)
   calc |(iteratedFDeriv ℝ k L 0) fun _ ↦ z|
       ≤ ‖iteratedFDeriv ℝ k L 0‖ * ∏ _i : Fin k, ‖z‖ := by
         have h := (iteratedFDeriv ℝ k L 0).le_opNorm (fun _ ↦ z)
-        rwa [Real.norm_eq_abs] at h
+        exact h
     _ = ‖iteratedFDeriv ℝ k L 0‖ * ‖z‖ ^ k := by
         rw [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
 
@@ -102,7 +102,7 @@ theorem taylorRem_zero (D : ForwardExpansionDomain N L H) :
   · intro m _ hm
     exact taylorHomogeneousTerm_zero_point hm L
   · intro h
-    exact absurd (Finset.mem_range.mpr (by omega)) h
+    exact absurd (Finset.mem_range.mpr (by exact Nat.zero_lt_succ (N + 2))) h
 
 /-- **Pointwise vanishing of the scaled remainder**, from the Peano
 field. -/
@@ -131,15 +131,13 @@ theorem tendsto_scaledRem (D : ForwardExpansionDomain N L H)
       filter_upwards [self_mem_nhdsWithin] with q hq
       rw [norm_smul, Real.norm_eq_abs,
         abs_of_pos (Set.mem_Ioi.mp hq), mul_pow]
-      ring
+      exact CommMonoid.mul_comm (q ^ (N + 2)) (‖z‖ ^ (N + 2))
     have h1 : (fun q : ℝ ↦ D.taylorRem (q • z)) =o[𝓝[>] (0 : ℝ)]
         fun q : ℝ ↦ ‖z‖ ^ (N + 2) * q ^ (N + 2) :=
       hcomp.congr' (Filter.EventuallyEq.refl _ _) hev
     have h2 : (fun q : ℝ ↦ D.taylorRem (q • z)) =o[𝓝[>] (0 : ℝ)]
         fun q : ℝ ↦ q ^ (N + 2) := by
-      refine h1.trans_isBigO ?_
-      exact (isBigO_refl (fun q : ℝ ↦ (q : ℝ) ^ (N + 2))
-        _).const_mul_left (‖z‖ ^ (N + 2))
+      exact IsLittleO.of_const_mul_right h1
     exact h2.tendsto_div_nhds_zero
 
 /-- The window constant for the scaled remainder. -/
@@ -202,7 +200,7 @@ theorem exponent_split (D : ForwardExpansionDomain N L H)
   have hL : L (q • z) = (∑ m ∈ Finset.range (N + 3),
       taylorHomogeneousTerm m L (q • z)) + D.taylorRem (q • z) := by
     unfold taylorRem
-    ring
+    simp only [add_sub_cancel]
   have hsum : ∑ m ∈ Finset.range (N + 3),
       taylorHomogeneousTerm m L (q • z) =
       L 0 + q ^ 2 * taylorHomogeneousTerm 2 L z +
@@ -219,13 +217,12 @@ theorem exponent_split (D : ForwardExpansionDomain N L H)
     rw [show taylorHomogeneousTerm (0 + 1) L z =
       taylorHomogeneousTerm 1 L z from rfl]
     rw [hgrad]
-    have hidx : ∀ s : ℕ, s + 1 + 1 + 1 = s + 3 := fun s ↦ by omega
+    have hidx : ∀ s : ℕ, s + 1 + 1 + 1 = s + 3 := fun s ↦ by rfl
     have hcongr : ∑ s ∈ Finset.range N,
         q ^ (s + 1 + 1 + 1) * taylorHomogeneousTerm (s + 1 + 1 + 1) L z =
         ∑ s ∈ Finset.range N,
           q ^ (s + 3) * taylorHomogeneousTerm (s + 3) L z := by
-      refine Finset.sum_congr rfl fun s _ ↦ ?_
-      rw [hidx s]
+      rfl
     rw [hcongr]
     ring
   rw [hL, hsum]
@@ -234,15 +231,15 @@ theorem exponent_split (D : ForwardExpansionDomain N L H)
   have hpow : ∀ s : ℕ, q ^ (s + 3) = q ^ 2 * q ^ (s + 1) := fun s ↦ by
     rw [← pow_add]
     congr 1
-    omega
+    exact Eq.symm (Nat.add_comm 2 (s + 1))
   have hsum2 : ∑ s ∈ Finset.range N,
       q ^ (s + 3) * taylorHomogeneousTerm (s + 3) L z =
       q ^ 2 * ∑ s ∈ Finset.range N,
         q ^ (s + 1) * taylorHomogeneousTerm (s + 1 + 2) L z := by
     rw [Finset.mul_sum]
     refine Finset.sum_congr rfl fun s _ ↦ ?_
-    rw [hpow s, show s + 1 + 2 = s + 3 from by omega]
-    ring
+    rw [hpow s, show s + 1 + 2 = s + 3 from rfl]
+    exact mul_assoc (q ^ 2) (q ^ (s + 1)) (taylorHomogeneousTerm (s + 3) L z)
   rw [hsum2]
   have hq2 : (q : ℝ) ^ 2 ≠ 0 := pow_ne_zero 2 hqne
   have hqN2 : (q : ℝ) ^ (N + 2) ≠ 0 := pow_ne_zero (N + 2) hqne

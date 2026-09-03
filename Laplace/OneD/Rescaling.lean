@@ -67,11 +67,7 @@ theorem anharmonic_rescaling_identity {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t
   field_simp
   -- After field_simp, only `√lam · √lam = lam` and `√t · √t = t` remain.
   -- Use `linear_combination` to close.
-  have hsl_sq : Real.sqrt lam ^ 2 = lam := Real.sq_sqrt hlam.le
-  have hst_sq : Real.sqrt t ^ 2 = t := Real.sq_sqrt ht.le
-  nlinarith [hsl_sq, hst_sq, sq_nonneg (Real.sqrt lam),
-             sq_nonneg (Real.sqrt t), mul_self_nonneg (Real.sqrt lam),
-             mul_self_nonneg (Real.sqrt t), hlam, ht]
+  linarith only []
 
 /-! ## Coercivity in rescaled coordinates
 
@@ -115,7 +111,7 @@ theorem rescaled_boltzmann_decay {lam alpha gamma : ℝ}
         (u / Real.sqrt (lam * t)) := by
     rw [hkey]
     exact mul_le_mul_of_nonneg_left hL ht.le
-  linarith
+  exact neg_le_neg_iff.mpr hgoal
 
 /-- Under coercivity, the integrand factor `e^{-u²/2} · max(1, e^{-s_t(u)})`
 is bounded by `e^{-c₀ u²}` for some `c₀ > 0`. This is the key uniform
@@ -128,7 +124,7 @@ theorem rescaled_max_decay {lam alpha gamma : ℝ}
         Real.exp (-(c₀ * u ^ 2)) := by
   obtain ⟨c, hc_pos, hboltz⟩ :=
     rescaled_boltzmann_decay hlam hgamma hdisc
-  refine ⟨min (1 / 2) c, lt_min (by norm_num) hc_pos, ?_⟩
+  refine ⟨min (1 / 2) c, lt_min (by exact one_half_pos) hc_pos, ?_⟩
   intro t ht u
   -- LHS = max(exp(-u²/2), exp(-u²/2 - s_t(u))) by `mul_max_eq_max_mul`-style algebra.
   have hLHS : Real.exp (-(u ^ 2) / 2) *
@@ -137,7 +133,7 @@ theorem rescaled_max_decay {lam alpha gamma : ℝ}
           (Real.exp (-(u ^ 2 / 2 + rescaledPerturbation lam alpha gamma t u))) := by
     rw [mul_max_of_nonneg _ _ (Real.exp_pos _).le]
     congr 1
-    · ring_nf
+    · exact MulOneClass.mul_one (Real.exp (-u ^ 2 / 2))
     · rw [show (-(u ^ 2 / 2 + rescaledPerturbation lam alpha gamma t u) : ℝ) =
             -(u ^ 2) / 2 + (-rescaledPerturbation lam alpha gamma t u) by ring]
       rw [Real.exp_add]
@@ -159,7 +155,7 @@ theorem rescaled_max_decay {lam alpha gamma : ℝ}
     have hmin_le : min (1 / 2) c ≤ c := min_le_right _ _
     have : min (1 / 2) c * u ^ 2 ≤ c * u ^ 2 :=
       mul_le_mul_of_nonneg_right hmin_le hu2
-    linarith
+    exact neg_le_neg_iff.mpr this
 
 /-! ## Polynomial bound on the squared perturbation
 

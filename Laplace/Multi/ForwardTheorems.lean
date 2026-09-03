@@ -36,7 +36,8 @@ variable {d N : ℕ} {L : EuclidD d → ℝ} {H : Matrix (Fin d) (Fin d) ℝ}
 /-- The constant-one observable has polynomial growth. -/
 theorem hasPolynomialGrowth_one :
     HasPolynomialGrowth (fun _ : EuclidD d ↦ (1 : ℝ)) :=
-  ⟨1, 0, zero_le_one, fun z ↦ by norm_num⟩
+  ⟨1, 0, zero_le_one, fun z ↦ by simp only [abs_one, pow_zero, one_mul, le_add_iff_nonneg_right,
+                                   zero_le_one]⟩
 
 namespace ForwardExpansionDomain
 
@@ -139,8 +140,7 @@ theorem momentCoeff_eq_of_isLittleO {d N : ℕ}
     unfold Laplace.IsAsymptoticExpansionTo at h1 ⊢
     have hcomb := hagree.neg_left.add h1
     refine hcomb.congr' ?_ (Filter.EventuallyEq.refl _ _)
-    filter_upwards with q
-    ring
+    simp only [neg_sub, sub_add_sub_cancel, EventuallyEq.refl]
   exact Laplace.isAsymptoticExpansionTo_coeff_eq h2' h2
 
 end Laplace.Multi

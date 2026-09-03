@@ -106,7 +106,7 @@ theorem gibbsExpectation_affine
   have h_int_a_x : Integrable (fun x : ℝ => (a * x) * Real.exp (-(t * L x))) := by
     have heq : (fun x : ℝ => (a * x) * Real.exp (-(t * L x)))
         = fun x : ℝ => a * (x * Real.exp (-(t * L x))) := by
-      funext x; ring
+      funext x; exact mul_assoc a x (Real.exp (-(t * L x)))
     rw [heq]; exact h_int_x.const_mul a
   have h_int_b : Integrable (fun x : ℝ => b * Real.exp (-(t * L x))) :=
     h_int_1.const_mul b
@@ -138,19 +138,19 @@ private theorem gibbsExp_cubic_eq
       (fun x : ℝ => (a₃ * x ^ 3) * Real.exp (-(t * L x))) := by
     have heq : (fun x : ℝ => (a₃ * x ^ 3) * Real.exp (-(t * L x)))
         = fun x : ℝ => a₃ * (x ^ 3 * Real.exp (-(t * L x))) := by
-      funext x; ring
+      funext x; exact mul_assoc a₃ (x ^ 3) (Real.exp (-(t * L x)))
     rw [heq]; exact h_int_x3.const_mul a₃
   have h_int_a2x2 : Integrable
       (fun x : ℝ => (a₂ * x ^ 2) * Real.exp (-(t * L x))) := by
     have heq : (fun x : ℝ => (a₂ * x ^ 2) * Real.exp (-(t * L x)))
         = fun x : ℝ => a₂ * (x ^ 2 * Real.exp (-(t * L x))) := by
-      funext x; ring
+      funext x; exact mul_assoc a₂ (x ^ 2) (Real.exp (-(t * L x)))
     rw [heq]; exact h_int_x2.const_mul a₂
   have h_int_a1x : Integrable
       (fun x : ℝ => (a₁ * x) * Real.exp (-(t * L x))) := by
     have heq : (fun x : ℝ => (a₁ * x) * Real.exp (-(t * L x)))
         = fun x : ℝ => a₁ * (x * Real.exp (-(t * L x))) := by
-      funext x; ring
+      funext x; exact mul_assoc a₁ x (Real.exp (-(t * L x)))
     rw [heq]; exact h_int_x.const_mul a₁
   have h_int_a0 : Integrable (fun x : ℝ => a₀ * Real.exp (-(t * L x))) :=
     h_int_1.const_mul a₀
@@ -160,7 +160,8 @@ private theorem gibbsExp_cubic_eq
     have heq : (fun x : ℝ => ((a₃ * x ^ 3) + (a₂ * x ^ 2)) * Real.exp (-(t * L x)))
         = fun x : ℝ => (a₃ * x ^ 3) * Real.exp (-(t * L x))
                        + (a₂ * x ^ 2) * Real.exp (-(t * L x)) := by
-      funext x; ring
+      funext x; exact RightDistribClass.right_distrib (a₃ * x ^ 3) (a₂ * x ^ 2) (Real.exp (-(t * L
+                  x)))
     rw [heq]; exact h_int_a3x3.add h_int_a2x2
   have h_int_a3a2a1 : Integrable
       (fun x : ℝ => ((a₃ * x ^ 3) + (a₂ * x ^ 2) + (a₁ * x)) * Real.exp (-(t * L x))) := by
@@ -168,7 +169,8 @@ private theorem gibbsExp_cubic_eq
                   * Real.exp (-(t * L x)))
         = fun x : ℝ => ((a₃ * x ^ 3) + (a₂ * x ^ 2)) * Real.exp (-(t * L x))
                        + (a₁ * x) * Real.exp (-(t * L x)) := by
-      funext x; ring
+      funext x; exact RightDistribClass.right_distrib (a₃ * x ^ 3 + a₂ * x ^ 2) (a₁ * x) (Real.exp
+                  (-(t * L x)))
     rw [heq]; exact h_int_a3a2.add h_int_a1x
   -- Split via gibbsExpectation_add three times.
   rw [show (fun x : ℝ => a₃ * x ^ 3 + a₂ * x ^ 2 + a₁ * x + a₀)

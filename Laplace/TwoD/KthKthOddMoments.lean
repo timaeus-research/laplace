@@ -52,14 +52,14 @@ theorem gibbsExpectation_kthKth_odd_pow_pow_eq_zero
     have heq : (fun x : ℝ =>
         x ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) =
                (fun x : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) := by
-      ext; simp
+      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
     rwa [heq] at h
   have hV : Integrable (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
     have h := Laplace.OneD.kth_integrable_pow_pot (k := k₂) hk₂ 0 ht
     have heq : (fun y : ℝ =>
         y ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) =
                (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
-      ext; simp
+      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
     rwa [heq] at h
   have hf : Integrable (fun x : ℝ => x ^ (2 * j₁ + 1) *
       Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) :=
@@ -71,7 +71,7 @@ theorem gibbsExpectation_kthKth_odd_pow_pow_eq_zero
         (fun x : ℝ => x ^ (2 * j₁ + 1)) (fun y : ℝ => y ^ n)
         hZU_ne hZV_ne hU hV hf hg,
       Laplace.OneD.gibbsExpectation_kthPotential_odd k₁ j₁ t]
-  simp
+  exact zero_mul ⟨fun y => y ^ n⟩[OneD.kthPotential k₂, t]
 
 /-- **Mixed odd-power 2D moment vanishes (odd-$y$ side).**
 
@@ -94,14 +94,14 @@ theorem gibbsExpectation_kthKth_pow_odd_pow_eq_zero
     have heq : (fun x : ℝ =>
         x ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) =
                (fun x : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) := by
-      ext; simp
+      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
     rwa [heq] at h
   have hV : Integrable (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
     have h := Laplace.OneD.kth_integrable_pow_pot (k := k₂) hk₂ 0 ht
     have heq : (fun y : ℝ =>
         y ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) =
                (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
-      ext; simp
+      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
     rwa [heq] at h
   have hf : Integrable (fun x : ℝ => x ^ m *
       Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) :=
@@ -113,6 +113,6 @@ theorem gibbsExpectation_kthKth_pow_odd_pow_eq_zero
         (fun x : ℝ => x ^ m) (fun y : ℝ => y ^ (2 * j₂ + 1))
         hZU_ne hZV_ne hU hV hf hg,
       Laplace.OneD.gibbsExpectation_kthPotential_odd k₂ j₂ t]
-  simp
+  exact CommMonoidWithZero.mul_zero ⟨fun x => x ^ m⟩[OneD.kthPotential k₁, t]
 
 end Laplace.TwoD

@@ -68,13 +68,14 @@ private lemma jfunction_centered_subst (prior : ℝ → ℝ) {t : ℝ} (ht : 0 <
   have ha_ne : a ≠ 0 := ne_of_gt ha_pos
   -- Compute a^4 = t.
   have ha4 : a ^ (4 : ℕ) = t := by
-    have hcast : ((4 : ℕ) : ℝ) = 4 := by norm_num
+    have hcast : ((4 : ℕ) : ℝ) = 4 := rfl
     calc a ^ (4 : ℕ)
         = a ^ ((4 : ℕ) : ℝ) := by rw [Real.rpow_natCast]
-      _ = (t ^ ((1:ℝ)/4)) ^ ((4 : ℕ) : ℝ) := by rw [ha_def]
+      _ = (t ^ ((1:ℝ)/4)) ^ ((4 : ℕ) : ℝ) := rfl
       _ = t ^ (((1:ℝ)/4) * ((4 : ℕ) : ℝ)) := by
             rw [← Real.rpow_mul (le_of_lt ht)]
-      _ = t ^ ((1:ℝ)) := by rw [hcast]; norm_num
+      _ = t ^ ((1:ℝ)) := by simp only [one_div, Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero,
+                              not_false_eq_true, inv_mul_cancel₀, rpow_one]
       _ = t := Real.rpow_one t
   -- Define g(u) := exp(-u^4/24) · (prior(u/a) - prior(0)).
   set g : ℝ → ℝ := fun u => Real.exp (-(u^4 / 24)) * (prior (u / a) - prior 0)
@@ -86,15 +87,15 @@ private lemma jfunction_centered_subst (prior : ℝ → ℝ) {t : ℝ} (ht : 0 <
     change Real.exp (-((w * a)^4 / 24)) * (prior ((w * a) / a) - prior 0)
         = Real.exp (-(t * w^4 / 24)) * (prior w - prior 0)
     have hwa : (w * a) / a = w := by
-      field_simp
+      exact mul_div_cancel_right₀ w ha_ne
     have hpow : (w * a)^4 = t * w^4 := by
-      have : (w * a)^4 = w^4 * a^4 := by ring
-      rw [this, ha4]; ring
+      have : (w * a)^4 = w^4 * a^4 := mul_pow w a 4
+      rw [this, ha4]; exact CommMonoid.mul_comm (w ^ 4) t
     rw [hwa, hpow]
   -- Apply Measure.integral_comp_mul_right: ∫ w, g(w · a) dw = |a⁻¹| · ∫ y, g(y) dy.
   have h_change : (∫ w : ℝ, g (w * a)) = |a⁻¹| * ∫ y : ℝ, g y := by
     have := MeasureTheory.Measure.integral_comp_mul_right g a
-    simpa [smul_eq_mul] using this
+    exact this
   -- |a⁻¹| = 1/a since a > 0.
   have habs : |a⁻¹| = 1 / a := by
     rw [abs_of_pos (inv_pos.mpr ha_pos), inv_eq_one_div]
@@ -109,11 +110,10 @@ private lemma jfunction_centered_subst (prior : ℝ → ℝ) {t : ℝ} (ht : 0 <
 private lemma quartic_dominator_integrable (M : ℝ) :
     Integrable (fun u : ℝ => 2 * M * Real.exp (-(u^4 / 24))) := by
   -- `quartic_integrable_pow 0` (with t = 1) gives `Integrable (fun x => x^0 * exp(-(x^4/24)))`.
-  have h := quartic_integrable_pow 0 (by norm_num : (0:ℝ) < 1)
+  have h := quartic_integrable_pow 0 (by exact Real.zero_lt_one : (0:ℝ) < 1)
   have heq : (fun x : ℝ => x ^ 0 * Real.exp (-(1 * x ^ 4 / 24)))
               = (fun x : ℝ => Real.exp (-(x^4 / 24))) := by
-    funext x
-    simp
+    simp only [pow_zero, one_mul]
   rw [heq] at h
   exact h.const_mul (2 * M)
 

@@ -47,7 +47,7 @@ theorem pencil_families_force_germ_eq_at
   by_contra h
   have hshift : AnalyticAt ℝ (fun w : ι → ℝ ↦ p + w) 0 :=
     analyticAt_const.add analyticAt_id
-  have hshift0 : (fun w : ι → ℝ ↦ p + w) 0 = p := by simp
+  have hshift0 : (fun w : ι → ℝ ↦ p + w) 0 = p := AddMonoid.add_zero p
   have hA1' : AnalyticAt ℝ (fun w ↦ L₁ (p + w)) 0 := by
     have hg : AnalyticAt ℝ L₁ ((fun w : ι → ℝ ↦ p + w) 0) := by simpa using hA1
     exact hg.comp hshift
@@ -59,7 +59,8 @@ theorem pencil_families_force_germ_eq_at
   -- A point near `p` where the germs differ, inside the series ball
   obtain ⟨ε, hε0, hεr⟩ : ∃ ε : ℝ, 0 < ε ∧ ENNReal.ofReal ε ≤ r := by
     rcases eq_or_ne r ⊤ with hr | hr
-    · exact ⟨1, one_pos, by simp [hr]⟩
+    · exact ⟨1, one_pos, by exact StrictMono.maximal_preimage_top (fun ⦃a b⦄ a_1 => a_1) hr
+                              (ENNReal.ofReal 1)⟩
     · exact ⟨r.toReal, ENNReal.toReal_pos hqr.r_pos.ne' hr,
         (ENNReal.ofReal_toReal hr).le⟩
   have hfreq : ∃ᶠ w in 𝓝 p, L₁ w ≠ L₂ w := Filter.not_eventually.mp h
@@ -75,9 +76,9 @@ theorem pencil_families_force_germ_eq_at
         rw [dist_zero_right, dist_eq_norm]
       have hlt : edist (u - p) (0 : ι → ℝ) < ENNReal.ofReal ε := by
         rw [edist_dist, hd]
-        exact ENNReal.ofReal_lt_ofReal_iff hε0 |>.mpr (Metric.mem_ball.mp hu_mem)
+        exact (ENNReal.ofReal_lt_ofReal_iff hε0).mpr hu_mem
       exact Metric.mem_eball.mpr (lt_of_lt_of_le hlt hεr)
-    · have hu : p + (u - p) = u := by abel
+    · have hu : p + (u - p) = u := add_sub_cancel p u
       simpa [hu] using sub_ne_zero_of_ne (Ne.symm hu_ne)
   obtain ⟨m, hlow, x₀, hx₀, hx₀n⟩ := Multi.exists_least_nonzero_diagonal hqr hG0 hne
   -- The quadratic bound on the shifted sum

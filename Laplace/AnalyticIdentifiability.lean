@@ -61,10 +61,10 @@ theorem analytic_pencil_difference_lower_bound
   rw [Metric.eventually_nhds_iff] at hev
   obtain ⟨ρ, hρ, hball⟩ := hev
   set r0 : ℝ := min (min r₁ R) (ρ / 2) with hr0_def
-  have hr0 : 0 < r0 := lt_min (lt_min hr₁ hR) (by positivity)
+  have hr0 : 0 < r0 := lt_min (lt_min hr₁ hR) (half_pos hρ)
   have hr0R : r0 ≤ R := le_trans (min_le_left _ _) (min_le_right _ _)
   have hr0r₁ : r0 ≤ r₁ := le_trans (min_le_left _ _) (min_le_left _ _)
-  have hr0ρ : r0 < ρ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+  have hr0ρ : r0 < ρ := lt_of_le_of_lt (min_le_right _ _) (div_two_lt_of_pos hρ)
   refine ⟨m, c₀ ^ 2 * Real.exp (-(4 * C0)), r0, by positivity, hr0, hr0R, ?_⟩
   intro t hrt hmin hint hslice
   -- The Laplace window sits inside `[0, r0] ⊆ ball 0 ρ`, where the
@@ -78,9 +78,9 @@ theorem analytic_pencil_difference_lower_bound
     have hb : (0 : ℝ) ≤ r0 * Real.sqrt t := by positivity
     nlinarith [Real.sq_sqrt ht.le, sq_nonneg (r0 * Real.sqrt t - 2)]
   have hur : 2 * (Real.sqrt t)⁻¹ ≤ r0 := by
-    have heq : 2 * (Real.sqrt t)⁻¹ = 2 / Real.sqrt t := by ring
+    have heq : 2 * (Real.sqrt t)⁻¹ = 2 / Real.sqrt t := rfl
     rw [heq, div_le_iff₀ hst]
-    linarith
+    exact h2
   have hcontW : ContinuousOn
       (fun w ↦ (L₂ w - L₁ w) ^ 2 * Real.exp (-(t * (L₁ w + L₂ w))))
       (Set.Icc ((Real.sqrt t)⁻¹) (2 * (Real.sqrt t)⁻¹)) := by

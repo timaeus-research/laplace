@@ -61,7 +61,7 @@ theorem anharmonic_perturbed_exp_le
     have h_neg_le_abs : -(t * (h * x)) ≤ |t * (h * x)| := neg_le_abs _
     rw [abs_mul, abs_of_pos ht] at h_neg_le_abs
     have : t * |h * x| ≤ t * |x| := mul_le_mul_of_nonneg_left h_abs_hx_le ht.le
-    linarith
+    exact Std.IsPreorder.le_trans (-(t * (h * x))) (t * |h * x|) (t * |x|) h_neg_le_abs this
   have h2 : t * |x| ≤ t * c / 2 * x ^ 2 + t / (2 * c) :=
     ResolutionCommon.amgm_t_abs_x t c ht hc_pos x
   have h3 : t * c / 2 * x ^ 2 ≤ t / 2 * anharmonicPotential lam alpha gamma x := by
@@ -81,7 +81,7 @@ theorem integrable_weightedPartition_integrand
       Real.exp (-(t * (anharmonicPotential lam alpha gamma x + h₀ * x)))) := by
   obtain ⟨c, hc_pos, h_coerc⟩ :=
     anharmonic_coercive lam alpha gamma hlam hgamma hdisc
-  have ht_half : 0 < t / 2 := by linarith
+  have ht_half : 0 < t / 2 := half_pos ht
   have hdom :=
     ((integrable_abs_pow_mul_exp_neg_t_anharmonic n hlam hgamma hdisc ht_half).const_mul
       (t ^ n * Real.exp (t / (2 * c))))
@@ -105,7 +105,8 @@ theorem integrable_weightedPartition_integrand
       _ = t ^ n * Real.exp (t / (2 * c)) *
             (|x| ^ n *
               Real.exp (-((t / 2) * anharmonicPotential lam alpha gamma x))) := by
-            rw [mul_pow]; ring
+            rw [mul_pow]; exact mul_mul_mul_comm (t ^ n) (|x| ^ n) (Real.exp (t / (2 * c)))
+                            (Real.exp (-(t / 2 * anharmonicPotential lam alpha gamma x)))
 
 /-- **General-`h` iterated-derivative step.** For every `n : ℕ` and every
 `h₀` with `|h₀| < 1`,
@@ -122,7 +123,7 @@ theorem weightedPartition_hasDerivAt
     anharmonic_coercive lam alpha gamma hlam hgamma hdisc
   -- `ball 0 1` is a neighbourhood of the interior point `h₀`.
   have hh₀_mem : h₀ ∈ Metric.ball (0 : ℝ) 1 := by
-    rw [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs]; exact hh₀
+    exact mem_ball_zero_iff.mpr hh₀
   have hs : Metric.ball (0 : ℝ) 1 ∈ 𝓝 h₀ := Metric.isOpen_ball.mem_nhds hh₀_mem
   -- AE strong measurability of `F h` for all `h`.
   have hF_meas : ∀ᶠ h in 𝓝 h₀, AEStronglyMeasurable
@@ -157,12 +158,12 @@ theorem weightedPartition_hasDerivAt
       (|x| ^ (n + 1) * Real.exp (-((t / 2) *
         anharmonicPotential lam alpha gamma x))) with hbound_def
   have h_bound_int : Integrable bound := by
-    have ht_half : 0 < t / 2 := by linarith
+    have ht_half : 0 < t / 2 := half_pos ht
     have h_abs :=
       integrable_abs_pow_mul_exp_neg_t_anharmonic (n + 1) hlam hgamma hdisc ht_half
     have h_total := h_abs.const_mul (t ^ (n + 1) * Real.exp (t / (2 * c)))
     refine h_total.congr (Filter.Eventually.of_forall fun x => ?_)
-    rw [hbound_def]
+    rfl
   -- Pointwise bound `‖F'(h, x)‖ ≤ bound x` for `h ∈ ball 0 1`.
   have h_F'_bound : ∀ᵐ x : ℝ ∂volume, ∀ h ∈ Metric.ball (0 : ℝ) 1,
       ‖(-(t * x)) ^ (n + 1) *

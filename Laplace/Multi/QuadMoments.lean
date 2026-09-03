@@ -48,8 +48,7 @@ theorem whiteningInv_whitening {H : Matrix (Fin d) (Fin d) ℝ}
 theorem whiteningInv_coord (H : Matrix (Fin d) (Fin d) ℝ)
     (y : EuclidD d) (i : Fin d) :
     whiteningInv H y i = ∑ a, (CFC.sqrt H)⁻¹ i a * y a := by
-  unfold whiteningInv
-  simp [Matrix.mulVec, dotProduct]
+  rfl
 
 /-- Linear observables integrate to zero against the standard
 kernel. -/
@@ -60,7 +59,7 @@ theorem integral_coordFn_mul_stdKernel (c : Fin d → ℝ) :
         ∑ a, c a * (y a * stdKernel y) := by
     intro y
     rw [Finset.sum_mul]
-    exact Finset.sum_congr rfl fun a _ ↦ by ring
+    exact Finset.sum_congr rfl fun a _ ↦ by exact mul_assoc (c a) (y.ofLp a) (stdKernel y)
   rw [integral_congr_ae (Filter.Eventually.of_forall hpt),
     integral_finsetSum _
       (fun a _ ↦ (stdKernel_integrable_coord a).const_mul (c a))]
@@ -103,8 +102,7 @@ theorem integral_coordFn_mul_coordFn_stdKernel (c e : Fin d → ℝ) :
             c a * e b * (2 * π) ^ ((d : ℝ) / 2) else 0 :=
           Finset.sum_congr rfl fun b _ ↦ hterm b
       _ = c a * e a * (2 * π) ^ ((d : ℝ) / 2) := by
-          rw [Finset.sum_ite_eq]
-          simp
+          simp only [Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte]
   calc (∑ a, ∫ y : EuclidD d, ∑ b,
           c a * e b * (y a * y b * stdKernel y))
       = ∑ a, c a * e a * (2 * π) ^ ((d : ℝ) / 2) := by
@@ -139,8 +137,7 @@ theorem integral_coord_mul_quadKernel {H : Matrix (Fin d) (Fin d) ℝ}
   have hexp : (fun y : EuclidD d ↦ whiteningInv H y i * stdKernel y) =
       fun y : EuclidD d ↦
         (∑ a, (CFC.sqrt H)⁻¹ i a * y a) * stdKernel y := by
-    funext y
-    rw [whiteningInv_coord]
+    rfl
   rw [hexp, integral_coordFn_mul_stdKernel, mul_zero]
 
 /-- **Second moments of the quadratic Gaussian**: the unnormalized
@@ -175,8 +172,7 @@ theorem integral_coord_mul_coord_quadKernel
       fun y : EuclidD d ↦
         (∑ a, (CFC.sqrt H)⁻¹ i a * y a) *
           (∑ b, (CFC.sqrt H)⁻¹ j b * y b) * stdKernel y := by
-    funext y
-    rw [whiteningInv_coord, whiteningInv_coord]
+    rfl
   rw [hexp, integral_coordFn_mul_coordFn_stdKernel]
   have hgram : (∑ a, (CFC.sqrt H)⁻¹ i a * (CFC.sqrt H)⁻¹ j a) =
       H⁻¹ i j := by
@@ -187,9 +183,7 @@ theorem integral_coord_mul_coord_quadKernel
       exact (sqrt_posDef hH).isHermitian
     calc (∑ a, (CFC.sqrt H)⁻¹ i a * (CFC.sqrt H)⁻¹ j a)
         = ((CFC.sqrt H)⁻¹ * ((CFC.sqrt H)⁻¹)ᵀ) i j := by
-          rw [Matrix.mul_apply]
-          exact Finset.sum_congr rfl fun a _ ↦ by
-            rw [Matrix.transpose_apply]
+          rfl
       _ = ((CFC.sqrt H)⁻¹ * (CFC.sqrt H)⁻¹) i j := by rw [hsymm]
       _ = (CFC.sqrt H * CFC.sqrt H)⁻¹ i j := by
           rw [Matrix.mul_inv_rev]

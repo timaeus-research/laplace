@@ -68,12 +68,12 @@ private lemma sq_le_one_add_pow_two_mul (k : ℕ) (hk : 1 ≤ k) (x : ℝ) :
   · -- $|x| \le 1$: $x^2 \le 1 \le 1 + x^{2k}$ since $x^{2k} \ge 0$.
     have h : (0 : ℝ) ≤ x ^ (2 * k) := by
       rw [pow_mul]; exact pow_nonneg (sq_nonneg x) k
-    linarith
+    exact le_add_of_le_of_nonneg hx h
   · -- $|x| \ge 1$: $x^{2k} = (x^2)^k \ge x^2$ since $1 \le x^2$ and $1 \le k$.
-    have hpow : x ^ (2 * k) = (x ^ 2) ^ k := by rw [pow_mul]
+    have hpow : x ^ (2 * k) = (x ^ 2) ^ k := pow_mul x 2 k
     have hge : x ^ 2 ≤ (x ^ 2) ^ k :=
       le_self_pow₀ hx (Nat.one_le_iff_ne_zero.mp hk)
-    rw [hpow]; linarith
+    linarith only [hge, hpow]
 
 /-- Polynomial-times-monomial-Gibbs integrability. For $k \ge 1$,
 $n : \mathbb N$, and $t > 0$, $x^n \cdot \exp(-t \cdot x^{2k}/(2k)!)$ is
@@ -97,8 +97,7 @@ theorem kth_integrable_pow
       (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ (2 * k) / fac))) volume :=
     (by fun_prop : Continuous _).aestronglyMeasurable
   have hns : (-1 : ℝ) < (n : ℝ) := by
-    have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith
+    linarith only []
   have hdom_raw : Integrable
       (fun x : ℝ => x ^ ((n : ℕ) : ℝ) * Real.exp (-(t / fac) * x ^ 2)) volume :=
     integrable_rpow_mul_exp_neg_mul_sq ht_fac hns
@@ -109,7 +108,7 @@ theorem kth_integrable_pow
       ext x
       rw [Real.rpow_natCast]
       congr 2
-      ring
+      exact HasDistribNeg.neg_mul (t / fac) (x ^ 2)
     rwa [heq] at hdom_raw
   have hbound : ∀ x : ℝ,
       Real.exp (-(t * x ^ (2 * k) / fac)) ≤
@@ -120,10 +119,10 @@ theorem kth_integrable_pow
     have hkey : x ^ 2 ≤ 1 + x ^ (2 * k) := sq_le_one_add_pow_two_mul k hk x
     have hfac_ne : fac ≠ 0 := ne_of_gt hfac_pos
     have hrewrite : t * x ^ (2 * k) / fac = (t / fac) * x ^ (2 * k) := by
-      field_simp
+      exact mul_div_right_comm t (x ^ (2 * k)) fac
     rw [hrewrite]
     have hprod : (0 : ℝ) ≤ (t / fac) * (1 + x ^ (2 * k) - x ^ 2) :=
-      mul_nonneg ht_fac.le (by linarith)
+      mul_nonneg ht_fac.le (sub_nonneg_of_le hkey)
     nlinarith
   have habs : ∀ x : ℝ,
       ‖x ^ n * Real.exp (-(t * x ^ (2 * k) / fac))‖ ≤
@@ -172,7 +171,7 @@ theorem integral_pow_mul_exp_neg_kth_Ioi
           ((2 * j + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) *
         Real.Gamma ((2 * j + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) := by
   set p : ℕ := 2 * k with hp_def
-  have hp_pos : 0 < p := by change 0 < 2 * k; omega
+  have hp_pos : 0 < p := by omega
   set pR : ℝ := (p : ℝ) with hpR_def
   have hpR_pos : (0 : ℝ) < pR := by
     change (0 : ℝ) < (p : ℝ); exact_mod_cast hp_pos
@@ -197,7 +196,9 @@ theorem integral_pow_mul_exp_neg_kth_Ioi
     rw [mem_Ioi] at hx
     have hxnn : (0 : ℝ) ≤ x := le_of_lt hx
     have h2j : x ^ (2 * (j : ℝ)) = x ^ (2 * j) := by
-      rw [show (2 * (j : ℝ) : ℝ) = ((2 * j : ℕ) : ℝ) by push_cast; ring,
+      rw [show (2 * (j : ℝ) : ℝ) = ((2 * j : ℕ) : ℝ) by push_cast; exact
+                                                                     (mul_right_inj_of_invertible
+                                                                     2).mpr rfl,
           rpow_natCast]
     have hpRpow : x ^ pR = x ^ p := by rw [hpR_def, Real.rpow_natCast]
     rw [h2j, hpRpow]
@@ -214,7 +215,7 @@ theorem integral_pow_mul_exp_neg_kth_Ioi
   -- Convert (t/fac)^(-(2j+1)/(2k)) to (fac/t)^((2j+1)/(2k)).
   have hinv : (t / fac : ℝ) ^ (-((2 * j + 1 : ℝ) / ((2 * k : ℕ) : ℝ))) =
       (fac / t : ℝ) ^ ((2 * j + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) := by
-    rw [show (fac / t : ℝ) = (t / fac)⁻¹ by field_simp]
+    rw [show (fac / t : ℝ) = (t / fac)⁻¹ by simp only [inv_div]]
     rw [inv_rpow ht_fac.le, ← Real.rpow_neg ht_fac.le]
   rw [hinv]
   -- Final goal: (fac/t)^... * (1/pR) * Γ(...) = (1/(2k:ℕ:ℝ)) * (fac/t)^... * Γ(...)
@@ -258,9 +259,9 @@ theorem kth_moment_even
   rw [integral_pow_mul_exp_neg_kth_Ioi hk j ht]
   -- Step 4: combine the factor of 2 with 1/(2k) to get 1/k.
   have hk_pos : (0 : ℝ) < k := by
-    exact_mod_cast (Nat.lt_of_lt_of_le (by norm_num : 0 < 1) hk)
+    exact Nat.cast_pos'.mpr hk
   have hk_ne : (k : ℝ) ≠ 0 := ne_of_gt hk_pos
-  have h2k_eq : ((2 * k : ℕ) : ℝ) = 2 * (k : ℝ) := by push_cast; ring
+  have h2k_eq : ((2 * k : ℕ) : ℝ) = 2 * (k : ℝ) := by push_cast; exact (mul_left_inj' hk_ne).mpr rfl
   rw [h2k_eq]
   field_simp
 
@@ -278,12 +279,12 @@ theorem kth_moment_odd (k j : ℕ) (t : ℝ) :
     rw [Odd.neg_pow ⟨j, rfl⟩,
         show ((-x) : ℝ) ^ (2 * k) = x ^ (2 * k) from by
           rw [pow_mul (-x) 2 k, neg_sq, ← pow_mul]]
-    ring
+    exact HasDistribNeg.neg_mul (x ^ (2 * j + 1)) (rexp (-(t * x ^ (2 * k) / ↑(2 * k).factorial)))
   have heq : (∫ x, f x) = -(∫ x, f x) := by
     conv_lhs => rw [← integral_neg_eq_self f volume]
     rw [show (fun x => f (-x)) = (fun x => -(f x)) from funext hodd]
     rw [integral_neg]
-  linarith
+  exact self_eq_neg.mp heq
 
 /-! ## Partition function in `partitionFunction (kthPotential k) t` form -/
 
@@ -311,7 +312,8 @@ theorem partitionFunction_kthPotential
     congr 1; ring
   rw [step, kth_moment_even hk 0 ht]
   -- (2 * ↑0 + 1) = 1 (as ℝ); normalise the rpow exponent and Gamma argument.
-  norm_num
+  simp only [one_div, CharP.cast_eq_zero, mul_zero, zero_add, Nat.cast_mul, Nat.cast_ofNat,
+    mul_inv_rev]
 
 /-- The partition function for the pure even-monomial potential is positive. -/
 theorem partitionFunction_kthPotential_pos
@@ -319,9 +321,9 @@ theorem partitionFunction_kthPotential_pos
     0 < partitionFunction (kthPotential k) t := by
   rw [partitionFunction_kthPotential hk ht]
   have hk_pos : (0 : ℝ) < k := by
-    exact_mod_cast (Nat.lt_of_lt_of_le (by norm_num : 0 < 1) hk)
+    exact_mod_cast (Nat.lt_of_lt_of_le (by simp only [Order.lt_one_iff] : 0 < 1) hk)
   have h2k_pos : 0 < ((2 * k : ℕ) : ℝ) := by
-    have : (0 : ℕ) < 2 * k := by omega
+    have : (0 : ℕ) < 2 * k := Nat.succ_mul_pos 1 hk
     exact_mod_cast this
   have hα_pos : 0 < (1 : ℝ) / ((2 * k : ℕ) : ℝ) := div_pos one_pos h2k_pos
   have hfac_pos : (0 : ℝ) < (Nat.factorial (2 * k) : ℝ) := by
@@ -364,10 +366,10 @@ theorem gibbsExpectation_kthPotential_even
   --                   = (fac/t)^(2j/(2k)) * Γ_num / Γ_den
   --                   = (fac/t)^(j/k) * Γ_num / Γ_den
   have hk_pos : (0 : ℝ) < k := by
-    exact_mod_cast (Nat.lt_of_lt_of_le (by norm_num : 0 < 1) hk)
+    exact_mod_cast (Nat.lt_of_lt_of_le (by simp only [Order.lt_one_iff] : 0 < 1) hk)
   have hk_ne : (k : ℝ) ≠ 0 := ne_of_gt hk_pos
   have h2k_pos : 0 < ((2 * k : ℕ) : ℝ) := by
-    have : (0 : ℕ) < 2 * k := by omega
+    have : (0 : ℕ) < 2 * k := Nat.succ_mul_pos 1 hk
     exact_mod_cast this
   have h2k_ne : ((2 * k : ℕ) : ℝ) ≠ 0 := ne_of_gt h2k_pos
   have hfac_pos : (0 : ℝ) < (Nat.factorial (2 * k) : ℝ) := by
@@ -376,7 +378,7 @@ theorem gibbsExpectation_kthPotential_even
   -- Split the rpow: (fac/t)^((2j+1)/(2k)) = (fac/t)^(1/(2k)) * (fac/t)^(j/k).
   have hexp_split : ((2 * j + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) =
                     ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) + ((j : ℝ) / (k : ℝ)) := by
-    have h2k_eq : ((2 * k : ℕ) : ℝ) = 2 * (k : ℝ) := by push_cast; ring
+    have h2k_eq : ((2 * k : ℕ) : ℝ) = 2 * (k : ℝ) := by push_cast; rfl
     rw [h2k_eq]; field_simp; ring
   rw [hexp_split, Real.rpow_add hfac_t_pos]
   have hΓ_pos : 0 < Real.Gamma ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) :=

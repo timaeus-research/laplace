@@ -79,21 +79,22 @@ theorem pencil_families_force_germ_eq_at_smooth
   obtain ⟨r0, hq0r⟩ := hq0
   obtain ⟨ρ, hρ0, hρr⟩ : ∃ ρ : ℝ, 0 < ρ ∧ ENNReal.ofReal ρ ≤ r0 := by
     rcases eq_or_ne r0 ⊤ with hr | hr
-    · exact ⟨1, one_pos, by simp [hr]⟩
+    · exact ⟨1, one_pos, by exact StrictMono.maximal_preimage_top (fun ⦃a b⦄ a_1 => a_1) hr
+                              (ENNReal.ofReal 1)⟩
     · exact ⟨r0.toReal, ENNReal.toReal_pos hq0r.r_pos.ne' hr,
         (ENNReal.ofReal_toReal hr).le⟩
   have hGsmooth : ∀ u ∈ Metric.ball p ρ, ContDiffAt ℝ ∞ (fun w ↦ L₂ w - L₁ w) u := by
     intro u hu
     have hmem : u ∈ Metric.eball p r0 := by
       have : edist u p < ENNReal.ofReal ρ := by
-        rw [edist_dist]
-        exact (ENNReal.ofReal_lt_ofReal_iff hρ0).mpr (Metric.mem_ball.mp hu)
+        exact edist_lt_ofReal.mpr hu
       exact Metric.mem_eball.mpr (lt_of_lt_of_le this hρr)
     exact (hq0r.analyticOnNhd u hmem).contDiffAt
   -- A point near `p` where the germs differ, inside the series ball
   obtain ⟨ε, hε0, hεr⟩ : ∃ ε : ℝ, 0 < ε ∧ ENNReal.ofReal ε ≤ r := by
     rcases eq_or_ne r ⊤ with hr | hr
-    · exact ⟨1, one_pos, by simp [hr]⟩
+    · exact ⟨1, one_pos, by exact StrictMono.maximal_preimage_top (fun ⦃a b⦄ a_1 => a_1) hr
+                              (ENNReal.ofReal 1)⟩
     · exact ⟨r.toReal, ENNReal.toReal_pos hqr.r_pos.ne' hr,
         (ENNReal.ofReal_toReal hr).le⟩
   have hfreq : ∃ᶠ w in 𝓝 p, L₁ w ≠ L₂ w := Filter.not_eventually.mp h
@@ -109,9 +110,9 @@ theorem pencil_families_force_germ_eq_at_smooth
         rw [dist_zero_right, dist_eq_norm]
       have hlt : edist (u - p) (0 : ι → ℝ) < ENNReal.ofReal ε := by
         rw [edist_dist, hd]
-        exact ENNReal.ofReal_lt_ofReal_iff hε0 |>.mpr (Metric.mem_ball.mp hu_mem)
+        exact (ENNReal.ofReal_lt_ofReal_iff hε0).mpr hu_mem
       exact Metric.mem_eball.mpr (lt_of_lt_of_le hlt hεr)
-    · have hu : p + (u - p) = u := by abel
+    · have hu : p + (u - p) = u := add_sub_cancel p u
       simpa [hu] using sub_ne_zero_of_ne (Ne.symm hu_ne)
   obtain ⟨m, hlow, x₀, hx₀, hx₀n⟩ := Multi.exists_least_nonzero_diagonal hqr hG0 hne
   -- The quadratic bound on the shifted sum, then shrink to fit the
@@ -133,9 +134,9 @@ theorem pencil_families_force_germ_eq_at_smooth
   -- The smooth bump
   set f : ContDiffBump (0 : ι → ℝ) :=
     { rIn := rIn, rOut := 2 * rIn, rIn_pos := hrIn0,
-      rIn_lt_rOut := by linarith } with hf_def
+      rIn_lt_rOut := by exact lt_two_mul_self hrIn0 } with hf_def
   have hψ1 : ∀ w : ι → ℝ, ‖w‖ ≤ rIn → f w = 1 := fun w hw ↦
-    f.one_of_mem_closedBall (by simpa [Metric.mem_closedBall, dist_zero_right] using hw)
+    f.one_of_mem_closedBall (mem_closedBall_zero_iff.mpr hw)
   -- The smooth observable
   have hψshift : ContDiff ℝ ∞ (fun u : ι → ℝ ↦ f (u - p)) :=
     f.contDiff.comp (contDiff_id.sub contDiff_const)
@@ -146,8 +147,8 @@ theorem pencil_families_force_germ_eq_at_smooth
       have : u - p ∈ Function.support f := hu
       rw [f.support_eq] at this
       have hn : ‖u - p‖ < 2 * rIn := by
-        simpa [Metric.mem_ball, dist_zero_right] using this
-      exact Metric.mem_closedBall.mpr (by rw [dist_eq_norm]; exact hn.le)
+        exact mem_ball_zero_iff.mp this
+      exact Metric.mem_closedBall.mpr (Std.le_of_lt hn)
     exact (closure_minimal h1 Metric.isClosed_closedBall).trans
       (Metric.closedBall_subset_ball hrInρ)
   have hφ_smooth : ContDiff ℝ ∞ fun u ↦ (L₂ u - L₁ u) * f (u - p) :=
@@ -171,8 +172,6 @@ theorem pencil_families_force_germ_eq_at_smooth
   rw [← integral_add_left_eq_self
     (fun u ↦ ((L₂ u - L₁ u) * f (u - p)) *
       (Real.exp (-(t * L₁ u)) - Real.exp (-(t * L₂ u)))) p]
-  congr 1
-  funext w
   simp only [add_sub_cancel_left]
 
 /-- **The germbij singular theorem, locus form, smooth observables**

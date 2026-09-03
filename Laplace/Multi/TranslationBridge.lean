@@ -105,7 +105,7 @@ theorem regionIntegralQ_translate (Λ : EuclidD d → ℝ) (p : EuclidD d)
   · rw [Set.indicator_of_mem
       (show p + y ∈ translatedRegion p V by simp [hy]),
       Set.indicator_of_mem hy]
-    simp
+    simp only [add_sub_cancel_left]
   · rw [Set.indicator_of_notMem
       (show p + y ∉ translatedRegion p V by simp [hy]),
       Set.indicator_of_notMem hy]

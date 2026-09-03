@@ -83,12 +83,12 @@ theorem pencil_difference_lower_bound
   have hFint : IntervalIntegrable (fun s ↦
       ∫ w, ((L₂ w - L₁ w) * ψ w) * ((L₂ w - L₁ w) *
         Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w)))))) volume 0 1 := by
-    rw [intervalIntegrable_iff, Set.uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1)]
+    rw [intervalIntegrable_iff, Set.uIoc_of_le (by exact zero_le_one' ℝ : (0 : ℝ) ≤ 1)]
     exact hint.integral_prod_left
   have hIB : (∫ w, (L₂ w - L₁ w) ^ 2 * ψ w * Real.exp (-(t * (L₁ w + L₂ w))))
       ≤ ∫ s in (0 : ℝ)..1, ∫ w, ((L₂ w - L₁ w) * ψ w) * ((L₂ w - L₁ w) *
           Real.exp (-(t * (L₁ w + s * (L₂ w - L₁ w))))) := by
-    have h := intervalIntegral.integral_mono_on (by norm_num : (0 : ℝ) ≤ 1)
+    have h := intervalIntegral.integral_mono_on (by exact zero_le_one' ℝ : (0 : ℝ) ≤ 1)
       intervalIntegrable_const hFint hFB
     simpa using h
   -- Step 4: the window `[u, 2u]` at `u = (√t)⁻¹` sits inside `[0, r0]`.
@@ -98,9 +98,9 @@ theorem pencil_difference_lower_bound
     have hb : (0 : ℝ) ≤ r0 * Real.sqrt t := by positivity
     nlinarith [Real.sq_sqrt ht.le, sq_nonneg (r0 * Real.sqrt t - 2)]
   have hur : 2 * (Real.sqrt t)⁻¹ ≤ r0 := by
-    have heq : 2 * (Real.sqrt t)⁻¹ = 2 / Real.sqrt t := by ring
+    have heq : 2 * (Real.sqrt t)⁻¹ = 2 / Real.sqrt t := rfl
     rw [heq, div_le_iff₀ hst]
-    linarith
+    exact h2
   have hwin_sub : Set.Icc ((Real.sqrt t)⁻¹) (2 * (Real.sqrt t)⁻¹)
       ⊆ Set.Icc (0 : ℝ) r0 := fun w hw ↦
     ⟨le_trans hu.le hw.1, le_trans hw.2 hur⟩

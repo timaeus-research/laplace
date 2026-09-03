@@ -162,7 +162,7 @@ theorem posteriorMoment_eq_pow_mul (A : LocalLaplaceDomain L H)
   rw [show q ^ d * Real.exp (-(L 0 / q ^ 2)) *
         (q ^ k * ∫ x : EuclidD d, A.integrand P q x) =
       (q ^ d * Real.exp (-(L 0 / q ^ 2))) *
-        (q ^ k * ∫ x : EuclidD d, A.integrand P q x) from by ring]
+        (q ^ k * ∫ x : EuclidD d, A.integrand P q x) from rfl]
   rw [mul_div_mul_left _ _ hpref.ne', mul_div_assoc]
 
 end LocalLaplaceDomain

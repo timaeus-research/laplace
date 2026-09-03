@@ -35,7 +35,7 @@ lemma integrable_minorant_multi (hL1c : Continuous L₁) (hL2c : Continuous L₂
   apply HasCompactSupport.intro hψs
   intro w hw
   rw [image_eq_zero_of_notMem_tsupport hw]
-  ring
+  simp only [mul_zero, zero_mul]
 
 /-- Each pencil slice is integrable (multivariate). -/
 lemma integrable_slice_multi (hL1c : Continuous L₁) (hL2c : Continuous L₂)
@@ -47,7 +47,7 @@ lemma integrable_slice_multi (hL1c : Continuous L₁) (hL2c : Continuous L₂)
   apply HasCompactSupport.intro hψs
   intro w hw
   rw [image_eq_zero_of_notMem_tsupport hw]
-  ring
+  simp only [mul_zero, zero_mul]
 
 /-- The uncurried pencil integrand is integrable on the restricted product
 (multivariate). -/
@@ -77,9 +77,7 @@ lemma integrable_pencil_product_multi (hL1c : Continuous L₁)
       (Set.univ ×ˢ tsupport ψ) < ⊤ := by
     rw [Measure.prod_prod]
     apply ENNReal.mul_lt_top
-    · rw [Measure.restrict_apply_univ]
-      exact lt_of_le_of_lt (measure_mono Set.Ioc_subset_Icc_self)
-        isCompact_Icc.measure_lt_top
+    · exact IsFiniteMeasure.measure_univ_lt_top
     · exact hTc.measure_lt_top
   have hmaj : Integrable
       ((Set.univ ×ˢ tsupport ψ : Set (ℝ × (ι → ℝ))).indicator fun _ ↦ B')

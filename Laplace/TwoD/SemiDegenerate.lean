@@ -139,7 +139,8 @@ theorem integral_pow_pow_factor (lam t : ℝ) (m n : ℕ) :
           (z.2 ^ n * Real.exp (-(t * Laplace.OneD.harmonicPotential lam z.2)))) from by
         funext z
         rw [exp_neg_t_semiDegenerate_eq_mul lam t z]
-        ring]
+        exact mul_mul_mul_comm (z.1 ^ m) (z.2 ^ n) (rexp (-(t * OneD.quarticPotential z.1))) (rexp
+          (-(t * OneD.harmonicPotential lam z.2)))]
   exact MeasureTheory.integral_prod_mul
     (f := fun x : ℝ => x ^ m * Real.exp (-(t * Laplace.OneD.quarticPotential x)))
     (g := fun y : ℝ => y ^ n * Real.exp (-(t * Laplace.OneD.harmonicPotential lam y)))
@@ -273,7 +274,7 @@ private theorem harmonic_integrable_pow (n : ℕ) {lam t : ℝ} (hlam : 0 < lam)
     Integrable
       (fun y : ℝ => y ^ n * Real.exp (-(t * Laplace.OneD.harmonicPotential lam y))) := by
   have hns : (-1 : ℝ) < (n : ℝ) := by
-    have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n; linarith
+    linarith only []
   have hb : 0 < t * lam / 2 := by positivity
   have hraw : Integrable
       (fun y : ℝ => y ^ ((n : ℕ) : ℝ) * Real.exp (-(t * lam / 2) * y ^ 2)) volume :=
@@ -308,7 +309,8 @@ private theorem semiDegenerate_integrable_pow_pow (m n : ℕ) {lam t : ℝ}
               Real.exp (-(t * semiDegeneratePotential lam z))) := by
     ext z
     rw [exp_neg_t_semiDegenerate_eq_mul]
-    ring
+    exact mul_mul_mul_comm (z.1 ^ m) (rexp (-(t * OneD.quarticPotential z.1))) (z.2 ^ n) (rexp (-(t
+      * OneD.harmonicPotential lam z.2)))
   rwa [heq] at hprod
 
 /-! ## Headline theorem: affine covariance -/
@@ -345,42 +347,42 @@ theorem cov_affine_semiDegenerate {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t)
     have heq : (fun z : ℝ × ℝ =>
                 z.1 ^ 0 * z.2 ^ 0 * Real.exp (-(t * semiDegeneratePotential lam z))) =
                (fun z : ℝ × ℝ => Real.exp (-(t * semiDegeneratePotential lam z))) := by
-      ext; simp
+      simp only [pow_zero, mul_one, semiDegeneratePotential_apply, one_mul]
     rwa [heq] at hI00
   have hI10' : Integrable
       (fun z : ℝ × ℝ => z.1 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
     have heq : (fun z : ℝ × ℝ =>
                 z.1 ^ 1 * z.2 ^ 0 * Real.exp (-(t * semiDegeneratePotential lam z))) =
                (fun z : ℝ × ℝ => z.1 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
-      ext; simp
+      simp only [pow_one, pow_zero, mul_one, semiDegeneratePotential_apply]
     rwa [heq] at hI10
   have hI01' : Integrable
       (fun z : ℝ × ℝ => z.2 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
     have heq : (fun z : ℝ × ℝ =>
                 z.1 ^ 0 * z.2 ^ 1 * Real.exp (-(t * semiDegeneratePotential lam z))) =
                (fun z : ℝ × ℝ => z.2 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
-      ext; simp
+      simp only [pow_zero, pow_one, one_mul, semiDegeneratePotential_apply]
     rwa [heq] at hI01
   have hI20' : Integrable
       (fun z : ℝ × ℝ => z.1 ^ 2 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
     have heq : (fun z : ℝ × ℝ =>
                 z.1 ^ 2 * z.2 ^ 0 * Real.exp (-(t * semiDegeneratePotential lam z))) =
                (fun z : ℝ × ℝ => z.1 ^ 2 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
-      ext; simp
+      simp only [pow_zero, mul_one, semiDegeneratePotential_apply]
     rwa [heq] at hI20
   have hI02' : Integrable
       (fun z : ℝ × ℝ => z.2 ^ 2 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
     have heq : (fun z : ℝ × ℝ =>
                 z.1 ^ 0 * z.2 ^ 2 * Real.exp (-(t * semiDegeneratePotential lam z))) =
                (fun z : ℝ × ℝ => z.2 ^ 2 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
-      ext; simp
+      simp only [pow_zero, one_mul, semiDegeneratePotential_apply]
     rwa [heq] at hI02
   have hI11' : Integrable
       (fun z : ℝ × ℝ => z.1 * z.2 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
     have heq : (fun z : ℝ × ℝ =>
                 z.1 ^ 1 * z.2 ^ 1 * Real.exp (-(t * semiDegeneratePotential lam z))) =
                (fun z : ℝ × ℝ => z.1 * z.2 * Real.exp (-(t * semiDegeneratePotential lam z))) := by
-      ext; simp
+      simp only [pow_one, semiDegeneratePotential_apply]
     rwa [heq] at hI11
   -- Linearity for affine observables: ⟨p₁ z.1 + p₂ z.2 + q⟩ = q (since means vanish).
   have hphi_aff : ∀ p₁ p₂ q : ℝ,
@@ -417,7 +419,7 @@ theorem cov_affine_semiDegenerate {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t)
         show (∫ z : ℝ × ℝ, Real.exp (-(t * semiDegeneratePotential lam z))) =
           partitionFunction (semiDegeneratePotential lam) t from rfl]
     field_simp
-    ring
+    simp only [zero_mul, zero_add]
   -- ⟨φ⟩ = c, ⟨ψ⟩ = d
   have hphi : gibbsExpectation (semiDegeneratePotential lam) t
       (fun z => a₁ * z.1 + a₂ * z.2 + c) = c := hphi_aff a₁ a₂ c
@@ -503,7 +505,7 @@ theorem cov_affine_semiDegenerate {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t)
     -- RHS: a₁b₁ ⟨z.1²⟩ + a₂b₂ ⟨z.2²⟩ + cd
     -- ⟨z.j²⟩ = M_jj / Z.
     field_simp
-    ring
+    simp only [semiDegeneratePotential_apply, mul_zero, add_zero, zero_mul]
   -- Combine: Cov = ⟨φψ⟩ - ⟨φ⟩⟨ψ⟩ = (a₁b₁⟨z.1²⟩ + a₂b₂⟨z.2²⟩ + cd) - cd
   unfold gibbsCov
   rw [hphipsi, hphi, hpsi,

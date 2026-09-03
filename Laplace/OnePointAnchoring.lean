@@ -68,7 +68,7 @@ theorem laplace_moment_bounded {φ L : (ι → ℝ) → ℝ}
                 refine mul_le_mul_of_nonneg_left ?_ (abs_nonneg _)
                 rw [Real.exp_le_one_iff]
                 have := mul_nonneg ht (hL w)
-                linarith
+                exact Right.neg_nonpos_iff.mpr this
             _ = |φ w| := mul_one _
 
 /-- **The anchor**: an observable supported where the two losses

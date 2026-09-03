@@ -82,7 +82,7 @@ theorem jetPotential_zero (k R : ℕ) (a : ℝ) (c : Fin R → ℝ) (u : ℝ) :
   rw [Finset.sum_eq_zero fun i _ ↦ by
     rw [zero_pow (Nat.succ_ne_zero _)]
     ring]
-  ring
+  exact AddMonoid.add_zero (a * u ^ (2 * k))
 
 /-- Continuity of the jet potential in the scale variable `q`. -/
 theorem jetPotential_continuous_q
@@ -122,7 +122,7 @@ theorem integrable_abs_pow_mul_exp_neg_kth
       exact_mod_cast (Nat.factorial_pos _).ne'
     field_simp
   exact h'.abs.congr (Filter.Eventually.of_forall fun u ↦ by
-    simp [abs_mul, abs_pow, abs_of_pos (Real.exp_pos _)])
+    simp only [abs_mul, abs_pow, abs_exp])
 
 /-- The difference of two jet potentials agreeing below rung
 `i₀ + 1` factors as `q^(i₀+1)` times a `q`-polynomial whose value at
@@ -139,10 +139,9 @@ theorem jet_difference_factor
   refine Finset.sum_congr rfl fun j _ ↦ ?_
   by_cases hj : j < i₀
   · rw [hlow j hj]
-    ring
+    simp only [sub_self, zero_mul, mul_zero]
   · have hj' : i₀ ≤ j := not_lt.mp hj
     have hexp : (i₀.1 + 1) + (j.1 - i₀.1) = j.1 + 1 := by
-      have := Fin.le_iff_val_le_val.mp hj'
       omega
     rw [show q ^ (j.1 + 1) = q ^ (i₀.1 + 1) * q ^ (j.1 - i₀.1) by
       rw [← pow_add, hexp]]
@@ -176,15 +175,15 @@ theorem jet_difference_pointwise
     · intro j _ hj
       by_cases hlt : j < i₀
       · rw [hlow j hlt]
-        ring
+        simp only [sub_self, zero_mul]
       · have hle : i₀ ≤ j := not_lt.mp hlt
         have hgt : i₀.1 < j.1 := by
           rcases lt_or_eq_of_le (Fin.le_iff_val_le_val.mp hle)
             with h | h
           · exact h
           · exact absurd (Fin.ext h.symm) hj
-        rw [zero_pow (by omega : j.1 - i₀.1 ≠ 0)]
-        ring
+        rw [zero_pow (by exact Nat.sub_ne_zero_iff_lt.mpr hgt : j.1 - i₀.1 ≠ 0)]
+        simp only [mul_zero, zero_mul]
     · intro h
       exact absurd (Finset.mem_univ i₀) h
   -- The continuous ingredients.
@@ -256,7 +255,8 @@ theorem jet_difference_pointwise
         Real.exp (-(q ^ r * g q)) -
         Real.exp (-jetPotential k R a q c₂ u) =
       Real.exp (-jetPotential k R a q c₂ u) *
-        (Real.exp (-(q ^ r * g q)) - 1) by ring,
+        (Real.exp (-(q ^ r * g q)) - 1) by exact Eq.symm (mul_sub_one (rexp (-jetPotential k R a q
+                                             c₂ u)) (rexp (-(q ^ r * g q)))),
       exp_sub_one_eq (q ^ r * g q)]
     field_simp
   -- Assemble.

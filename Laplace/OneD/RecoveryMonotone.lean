@@ -54,11 +54,10 @@ theorem partitionFunction_lt_of_le_of_measure_lt_pos {L₁ L₂ : ℝ → ℝ}
       have hlt : Real.exp (-(t * L₂ x)) < Real.exp (-(t * L₁ x)) :=
         Real.exp_lt_exp.mpr (neg_lt_neg (mul_lt_mul_of_pos_left hx ht))
       exact (sub_pos.mpr hlt).ne'
-    exact lt_of_lt_of_le hstrict (measure_mono hsub)
+    exact pos_mono hsub hstrict
   have hsplit := MeasureTheory.integral_sub h₁ h₂
   rw [hsplit] at hpos
-  unfold partitionFunction
-  linarith
+  exact lt_add_neg_iff_lt.mp hpos
 
 /-- The partition function strictly decreases under pointwise enlargement
 of the potential (strict somewhere, by continuity). -/

@@ -57,12 +57,12 @@ theorem kth_jfunction_div_partition
     (1 / (k : ℝ)) * ((Nat.factorial (2 * k) : ℝ)) ^ α * Real.Gamma α with hCONST_def
   -- Positivity of the closed-form constant.
   have hk_pos : 0 < (k : ℝ) := by
-    exact_mod_cast (Nat.lt_of_lt_of_le (by norm_num : 0 < 1) hk)
+    exact_mod_cast (Nat.lt_of_lt_of_le (by simp only [Order.lt_one_iff] : 0 < 1) hk)
   have h2k_pos : 0 < ((2 * k : ℕ) : ℝ) := by
-    have : (0 : ℕ) < 2 * k := by omega
+    have : (0 : ℕ) < 2 * k := Nat.succ_mul_pos 1 hk
     exact_mod_cast this
   have hα_pos : 0 < α := by
-    rw [hα_def]; exact div_pos one_pos h2k_pos
+    exact one_div_pos.mpr h2k_pos
   have hfac_pos : (0 : ℝ) < (Nat.factorial (2 * k) : ℝ) := by
     exact_mod_cast Nat.factorial_pos _
   have hfac_rpow_pos : 0 < ((Nat.factorial (2 * k) : ℝ)) ^ α :=
@@ -128,7 +128,7 @@ theorem kth_jfunction_div_partition
     have := hJ.div_const CONST
     -- this : Tendsto (fun t => (t^α · J_k(t)) / CONST) atTop (𝓝 ((prior 0 · CONST) / CONST))
     have hsimp : prior 0 * CONST / CONST = prior 0 := by
-      field_simp
+      exact mul_div_cancel_right₀ (prior 0) hCONST_ne
     rw [hsimp] at this
     exact this
   exact (Tendsto.congr' (heq_ratio.mono fun _ h => h.symm) hRHS)

@@ -42,11 +42,11 @@ theorem monomial_variance_odd
     ext x
     rw [← pow_add]
     congr 1
-    ring
+    exact Eq.symm (Nat.two_mul (2 * m + 1))
   rw [hsq, gibbsExpectation_kthPotential_even hk (2 * m + 1) ht,
     gibbsExpectation_kthPotential_odd k m t]
-  push_cast
-  ring
+  simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_one, one_div, mul_inv_rev,
+    mul_zero, sub_zero]
 
 /-- Variance of an even monomial against the pure even-monomial Gibbs
 weight, as a difference of Gamma ratios scaled by the common power of
@@ -66,7 +66,7 @@ theorem monomial_variance_even
     ext x
     rw [← pow_add]
     congr 1
-    ring
+    exact Eq.symm (Nat.two_mul (2 * m))
   rw [hsq, gibbsExpectation_kthPotential_even hk (2 * m) ht,
     gibbsExpectation_kthPotential_even hk m ht]
   have hfac_t_pos : (0 : ℝ) < (Nat.factorial (2 * k) : ℝ) / t :=
@@ -79,7 +79,7 @@ theorem monomial_variance_even
     ring
   have hcast : (((2 * m : ℕ) : ℝ) / (k : ℝ)) = (2 * (m : ℝ)) / (k : ℝ) := by
     push_cast
-    ring
+    rfl
   rw [hcast, hpow]
   push_cast
   ring

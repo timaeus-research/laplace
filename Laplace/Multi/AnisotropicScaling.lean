@@ -74,9 +74,9 @@ theorem scalesMeasure_moment_law
       t ^ Q := by
     rw [ENNReal.toReal_ofReal (by positivity)]
     rw [show t⁻¹ = t ^ (-1 : ℝ) from by
-      rw [Real.rpow_neg ht.le, Real.rpow_one]]
+      exact Eq.symm (rpow_neg_one t)]
     rw [← Real.rpow_mul ht.le]
-    norm_num
+    simp only [mul_neg, neg_mul, one_mul, neg_neg]
   rw [htoReal] at hintmap
   have hsub : ∀ w, f (δ t⁻¹ w) =
       t⁻¹ ^ r * (φ w * Real.exp (-(P w))) := by
@@ -87,14 +87,14 @@ theorem scalesMeasure_moment_law
     have harg : t * (t⁻¹ * P w) = P w := by
       field_simp
     rw [harg]
-    ring
+    exact mul_assoc (t⁻¹ ^ r) (φ w) (rexp (-P w))
   rw [integral_congr_ae (Filter.Eventually.of_forall hsub),
     integral_const_mul] at hintmap
   have hpow : t⁻¹ ^ r = t ^ (-r) := by
     rw [show t⁻¹ = t ^ (-1 : ℝ) from by
       rw [Real.rpow_neg ht.le, Real.rpow_one]]
     rw [← Real.rpow_mul ht.le]
-    rw [show (-1 : ℝ) * r = -r by ring]
+    simp only [neg_mul, one_mul]
   rw [hpow] at hintmap
   rw [smul_eq_mul] at hintmap
   have hQpos : (0 : ℝ) < t ^ Q := Real.rpow_pos_of_pos ht _
@@ -106,8 +106,8 @@ theorem scalesMeasure_moment_law
   rw [show t ^ (-r) * (∫ w, φ w * Real.exp (-(P w)) ∂μ) *
       t ^ (-Q) =
     t ^ (-r) * t ^ (-Q) * ∫ w, φ w * Real.exp (-(P w)) ∂μ from by
-      ring]
-  rw [← Real.rpow_add ht, show -r + -Q = -(Q + r) from by ring]
+      exact mul_right_comm (t ^ (-r)) (∫ (w : X), φ w * rexp (-P w) ∂μ) (t ^ (-Q))]
+  rw [← Real.rpow_add ht, show -r + -Q = -(Q + r) from Eq.symm (SubtractionMonoid.neg_add_rev Q r)]
 
 /-- **The exact normalized moment law**: the partition-function
 exponent cancels, leaving `M_φ(t) = t^(-r) M_φ(1)`. Pure field
@@ -129,7 +129,7 @@ theorem scalesMeasure_normalized_law
   have hden := scalesMeasure_moment_law hscale hδ hP
     (measurable_const : Measurable fun _ : X ↦ (1 : ℝ))
     hPqh (r := 0)
-    (fun s hs w ↦ by rw [Real.rpow_zero]; ring) ht
+    (fun s hs w ↦ by rw [Real.rpow_zero]; exact Eq.symm (one_mul 1)) ht
   simp only [one_mul] at hden
   rw [hnum, hden]
   have hQr : (0 : ℝ) < t ^ (-(Q + r)) := Real.rpow_pos_of_pos ht _
@@ -137,8 +137,7 @@ theorem scalesMeasure_normalized_law
   rw [mul_div_mul_comm]
   congr 1
   rw [← Real.rpow_sub ht]
-  congr 1
-  ring
+  simp only [neg_add_rev, add_zero, sub_neg_eq_add, neg_add_cancel_right]
 
 end Abstract
 
@@ -166,7 +165,7 @@ theorem coordSq_qhDilation (q : ι → ℝ) {s : ℝ} (hs : 0 < s)
   rw [mul_pow, ← Real.rpow_natCast (s ^ (q i)) 2,
     ← Real.rpow_mul hs.le]
   push_cast
-  rw [show q i * (2 : ℝ) = 2 * q i from by ring]
+  rw [show q i * (2 : ℝ) = 2 * q i from CommMonoid.mul_comm (q i) 2]
 
 /-- **Weight recovery without separability** (germbij §7.4(b)): two
 quasi-homogeneous potentials whose dilation families scale the

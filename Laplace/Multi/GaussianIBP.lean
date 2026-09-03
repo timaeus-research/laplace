@@ -47,18 +47,7 @@ section LinearAlgebraHelpers
 `u = ∑ k, u k • Pi.single k 1`. -/
 lemma eq_sum_stdBasis (u : ι → ℝ) :
     u = ∑ k, u k • (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) := by
-  ext i
-  simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
-  -- Bridge `u k * Pi.single k 1 i = Pi.single k (u k) i`, then `Fintype.sum_pi_single`.
-  have heq : ∀ k, u k * (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ)) i =
-      (Pi.single (M := fun _ : ι => ℝ) k (u k)) i := by
-    intro k
-    by_cases hk : k = i
-    · subst hk; simp
-    · rw [Pi.single_eq_of_ne (Ne.symm hk), Pi.single_eq_of_ne (Ne.symm hk),
-          mul_zero]
-  simp only [heq]
-  exact (Fintype.sum_pi_single (M := fun _ : ι => ℝ) i (fun k => u k)).symm
+  exact pi_eq_sum_univ' u
 
 /-- Expansion of `(H u)ᵢ` as a sum over standard-basis matrix entries:
 `(H u) i = ∑ k, u k * (H (Pi.single k 1)) i`. -/
@@ -158,7 +147,7 @@ lemma integral_full_line_deriv_eq_zero
   have h_split : ∫ x : ℝ, f' x =
       (∫ x in Set.Iic (0 : ℝ), f' x) + (∫ x in Set.Ioi (0 : ℝ), f' x) := by
     rw [← intervalIntegral.integral_Iic_add_Ioi hf'_Iic hf'_Ioi]
-  rw [h_split, h_Iic, h_Ioi]; ring
+  rw [h_split, h_Iic, h_Ioi]; simp only [sub_zero, zero_sub, add_neg_cancel]
 
 end FullLineFTC
 
@@ -204,7 +193,7 @@ lemma hasDerivAt_quadForm_along_basis
       rw [map_add, ContinuousLinearMap.map_smul]
     have h_apply : (H (u + t • e)) i = (H u) i + t * (H e) i := by
       rw [hH_lin]
-      simp [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+      rfl
     rw [h_apply]
     simp [A, B]
     ring
@@ -213,8 +202,7 @@ lemma hasDerivAt_quadForm_along_basis
       (2 * A + 2 * t * B) t := by
     apply HasDerivAt.congr_of_eventuallyEq h_at
     apply Filter.Eventually.of_forall
-    intro s
-    exact h_poly s
+    exact h_poly
   rw [h_deriv_eq] at h_final
   exact h_final
 
@@ -311,11 +299,11 @@ lemma hasDerivAt_sliceIntegrand
   -- Inner derivative of u(s) j: it's e_j = δ_{ij} as constant in s.
   have h_ej : e j = if i = j then (1 : ℝ) else 0 := by
     by_cases hij : i = j
-    · subst hij; simp [he_def]
+    · subst hij; exact Pi.single_apply i 1 i
     · rw [if_neg hij, he_def]
       exact Pi.single_eq_of_ne (Ne.symm hij) 1
   have h_func_eq : (fun s : ℝ => (u₀ + s • e) j) = fun s => u₀ j + s * e j := by
-    funext s; simp [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+    exact List.map_inj.mp rfl
   have h_uj_deriv : HasDerivAt (fun s : ℝ => (u₀ + s • e) j)
       (if i = j then (1 : ℝ) else 0) t := by
     rw [h_func_eq, ← h_ej]
@@ -543,7 +531,6 @@ theorem gaussian_second_moment_eq_inverse_entry
   have h_apply : ∀ x, H (Hinv x) = x := by
     intro x
     have := congrArg (fun (T : (ι → ℝ) →L[ℝ] (ι → ℝ)) => T x) hHinv
-    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply] at this
     exact this
   -- Step B: derive `Hinv (H x) = x` from injectivity.
   have h_left : ∀ x, Hinv (H x) = x := by
@@ -720,21 +707,18 @@ theorem integral_odd_mul_gaussian_eq_zero
     exact h.integral_comp h_emb (fun u => f u * gaussianWeight H u)
   -- After substitution: f(-u) · gW(-u) = (-f u) · gW u = -(f u · gW u).
   have h_eq : ∀ u : ι → ℝ, f (-u) * gaussianWeight H (-u) = -(f u * gaussianWeight H u) := by
-    intro u; rw [hf_odd, gaussianWeight_neg]; ring
+    intro u; rw [hf_odd, gaussianWeight_neg]; exact HasDistribNeg.neg_mul (f u) (gaussianWeight H u)
   rw [show (fun u : ι → ℝ => f (-u) * gaussianWeight H (-u)) =
         (fun u => -(f u * gaussianWeight H u)) from funext h_eq] at h_sub
   rw [integral_neg] at h_sub
   -- h_sub : -∫ ... = ∫ ..., so ∫ ... = 0.
-  linarith
+  exact self_eq_neg.mp (id (Eq.symm h_sub))
 
 omit [DecidableEq ι] in
 /-- **`dot a` is odd in its second argument**: `dot a (-u) = -dot a u`. -/
 lemma dot_neg (a u : ι → ℝ) : dot a (-u) = -(dot a u) := by
   unfold dot
-  rw [← Finset.sum_neg_distrib]
-  apply Finset.sum_congr rfl
-  intro i _
-  simp [Pi.neg_apply]
+  simp only [Pi.neg_apply, mul_neg, Finset.sum_neg_distrib]
 
 omit [DecidableEq ι] in
 /-- **Linear-functional Gaussian integral vanishes**: for any `a : ι → ℝ`,

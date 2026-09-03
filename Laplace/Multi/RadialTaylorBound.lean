@@ -39,8 +39,7 @@ theorem ray_iteratedDeriv_at {n : WithTop ℕ∞}
       iteratedFDeriv ℝ m L (t • x) (fun _ ↦ x) := by
   have hcomp : (fun s : ℝ ↦ L (s • x)) =
       L ∘ (ContinuousLinearMap.toSpanSingleton ℝ x) := by
-    funext s
-    simp [ContinuousLinearMap.toSpanSingleton_apply]
+    rfl
   rw [hcomp, iteratedDeriv_eq_iteratedFDeriv,
     ContinuousLinearMap.iteratedFDeriv_comp_right _ hL _ hm,
     ContinuousMultilinearMap.compContinuousLinearMap_apply]
@@ -66,8 +65,7 @@ theorem exists_taylorRemainder_bound {k : ℕ} (hk : 0 < k)
     le_trans (norm_nonneg _) (hM 0 (Metric.mem_closedBall_self hR.le))
   refine ⟨M / k.factorial, by positivity, fun y hy ↦ ?_⟩
   have hyR : ‖y‖ < R := by
-    have := Metric.mem_ball.mp hy
-    rwa [dist_zero_right] at this
+    exact mem_ball_zero_iff.mp hy
   -- the ray restriction
   set g : ℝ → ℝ := fun s ↦ L (s • y) with hg_def
   have hg : ContDiff ℝ k g :=
@@ -90,8 +88,7 @@ theorem exists_taylorRemainder_bound {k : ℕ} (hk : 0 < k)
     refine DifferentiableOn.congr
       (f := fun t ↦ iteratedDeriv n g t) ?_ ?_
     · refine (Differentiable.differentiableOn ?_)
-      exact hg.differentiable_iteratedDeriv n
-        (by exact_mod_cast Nat.lt_succ_self n)
+      exact ContDiff.differentiable_iteratedDeriv' n hg
     · intro t ht
       exact hbridge n (by exact_mod_cast Nat.le_succ n) t
         (Ioo_subset_Icc_self ht)
@@ -112,8 +109,7 @@ theorem exists_taylorRemainder_bound {k : ℕ} (hk : 0 < k)
     rw [hbridge j hjk 0 (Set.left_mem_Icc.mpr one_pos.le),
       ray_iteratedDeriv_at hL hjk y 0, zero_smul]
     unfold taylorHomogeneousTerm
-    rw [smul_eq_mul]
-    ring
+    simp only [sub_zero, one_pow, mul_one, smul_eq_mul]
   -- the remainder value at ξ
   have hξIcc : ξ ∈ Icc (0 : ℝ) 1 := Ioo_subset_Icc_self hξ
   have hrem : iteratedDerivWithin (n + 1) g (Icc (0 : ℝ) 1) ξ =
@@ -132,25 +128,26 @@ theorem exists_taylorRemainder_bound {k : ℕ} (hk : 0 < k)
     have hop := (iteratedFDeriv ℝ (n + 1) L (ξ • y)).le_opNorm
       (fun _ ↦ y)
     have hprod : (∏ _i : Fin (n + 1), ‖y‖) = ‖y‖ ^ (n + 1) := by
-      rw [Finset.prod_const, Finset.card_fin]
+      exact Fin.prod_const (n + 1) ‖y‖
     rw [hprod] at hop
     calc |iteratedFDeriv ℝ (n + 1) L (ξ • y) (fun _ ↦ y)|
         ≤ ‖iteratedFDeriv ℝ (n + 1) L (ξ • y)‖ * ‖y‖ ^ (n + 1) := by
-          simpa [Real.norm_eq_abs] using hop
+          exact hop
       _ ≤ M * ‖y‖ ^ (n + 1) := by
           refine mul_le_mul_of_nonneg_right (hM _ hξball) (by positivity)
   -- assemble
-  have hg1 : g 1 = L y := by rw [hg_def]; simp
+  have hg1 : g 1 = L y := by rw [hg_def]; simp only [one_smul]
   rw [hg1, hpoly] at hlag
   rw [hlag, hrem]
-  have h10 : ((1 : ℝ) - 0) ^ (n + 1) = 1 := by norm_num
+  have h10 : ((1 : ℝ) - 0) ^ (n + 1) = 1 := by simp only [sub_zero, one_pow]
   rw [h10, mul_one, abs_div, Nat.abs_cast]
   have hfac : (0 : ℝ) < ((n + 1).factorial : ℝ) := by positivity
   calc |iteratedFDeriv ℝ (n + 1) L (ξ • y) (fun _ ↦ y)| /
         ((n + 1).factorial : ℝ)
       ≤ M * ‖y‖ ^ (n + 1) / ((n + 1).factorial : ℝ) := by
         gcongr
-    _ = M / ((n + 1).factorial : ℝ) * ‖y‖ ^ (n + 1) := by ring
+    _ = M / ((n + 1).factorial : ℝ) * ‖y‖ ^ (n + 1) := mul_div_right_comm M (‖y‖ ^ (n + 1)) ↑(n +
+                                                            1).factorial
 
 /-- **The package family from smoothness alone**: the certified
 family the located recovery headlines consume, with the Taylor
@@ -165,7 +162,7 @@ noncomputable def higherLaplaceDomainFamily_ofContDiff
   higherLaplaceDomainFamily_ofTaylorBounds hcont hgrad hdiag hH
     (fun k h2 ↦ by
       obtain ⟨C, hC, hb⟩ := exists_taylorRemainder_bound
-        (by omega : 0 < k) (hcont k) (one_pos : (0:ℝ) < 1)
+        (by exact Nat.zero_lt_of_lt h2 : 0 < k) (hcont k) (one_pos : (0:ℝ) < 1)
       exact ⟨1, C, one_pos, hC, hb⟩)
 
 end Laplace.Multi

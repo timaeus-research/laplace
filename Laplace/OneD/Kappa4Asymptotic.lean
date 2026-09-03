@@ -43,7 +43,7 @@ private lemma tendsto_of_order2_rate {f : ℝ → ℝ} {L C K T : ℝ}
         field_simp
       rw [Real.norm_eq_abs, heq, abs_mul, abs_of_pos ht0]
       calc t * |f t - L - C / t| ≤ t * (K / (t * Real.sqrt t)) := by
-            gcongr
+            exact (mul_le_mul_iff_of_pos_left ht0).mpr (h htT)
         _ = K / Real.sqrt t := by
             field_simp
     have hCt : Tendsto (fun t : ℝ ↦ K / Real.sqrt t) atTop (nhds 0) := by
@@ -70,8 +70,7 @@ private lemma tendsto_of_sqrt_rate {f : ℝ → ℝ} {L K T : ℝ}
         Real.tendsto_sqrt_atTop
       simpa [div_eq_mul_inv] using h1.inv_tendsto_atTop.const_mul K
     exact squeeze_zero_norm' hbound hCt
-  have := hzero.add_const L
-  simpa using this
+  exact tendsto_sub_nhds_zero_iff.mp hzero
 
 /-- **The fourth-cumulant limit** (gamma-rung stages 4-5): writing
 `μ_r` for the Gibbs expectation of `x^r` under the anharmonic potential,

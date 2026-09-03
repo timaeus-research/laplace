@@ -83,14 +83,15 @@ theorem harmonic_tail_second_Ioi {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t)
   have h1 : (1 / (lam * t)) * ∫ x in Ioi delta, Real.exp (-((lam * t) * x ^ 2) / 2) ≤
       (1 / (lam * t)) * (Real.exp (-((lam * t) * delta ^ 2) / 2) / ((lam * t) * delta)) := by
     apply mul_le_mul_of_nonneg_left htail
-    apply div_nonneg (by norm_num) hlamt.le
+    apply div_nonneg (by exact zero_le_one' ℝ) hlamt.le
   -- Now bound the right side and clean up the algebra.
   calc delta * Real.exp (-((lam * t) * delta ^ 2) / 2) / (lam * t)
         + 1 / (lam * t) * ∫ x in Ioi delta, Real.exp (-((lam * t) * x ^ 2) / 2)
       ≤ delta * Real.exp (-((lam * t) * delta ^ 2) / 2) / (lam * t)
           + (1 / (lam * t))
             * (Real.exp (-((lam * t) * delta ^ 2) / 2) / ((lam * t) * delta)) := by
-          linarith
+          exact (add_le_add_iff_left (delta * Real.exp (-(lam * t * delta ^ 2) / 2) / (lam *
+            t))).mpr h1
     _ = delta * Real.exp (-((lam * t) * delta ^ 2) / 2) / (lam * t)
           + Real.exp (-((lam * t) * delta ^ 2) / 2) / (delta * (lam * t) ^ 2) := by
           have hδ_ne : delta ≠ 0 := hδ.ne'
@@ -115,7 +116,7 @@ private lemma harmonic_integrand_even (lam t : ℝ) (n : ℕ) (M : ℝ) :
         ext x
         congr 1
         · rw [show (-x) ^ (2 * n) = ((-1) ^ (2 * n)) * x ^ (2 * n) from by
-                rw [neg_eq_neg_one_mul, mul_pow]]
+                exact neg_pow x (2 * n)]
           rw [pow_mul, neg_one_sq]; ring
         · congr 1; congr 1
           unfold harmonicPotential

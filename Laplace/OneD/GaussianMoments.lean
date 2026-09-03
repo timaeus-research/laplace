@@ -59,10 +59,10 @@ theorem integral_pow_mul_exp_neg_sq_half_Ioi (k : ℕ) :
     refine setIntegral_congr_fun measurableSet_Ioi (fun x hx => ?_)
     rw [mem_Ioi] at hx
     have h2k : x ^ (2 * (k : ℝ)) = x ^ (2 * k) := by
-      rw [show (2 * (k : ℝ) : ℝ) = ((2 * k : ℕ) : ℝ) by push_cast; ring,
+      rw [show (2 * (k : ℝ) : ℝ) = ((2 * k : ℕ) : ℝ) by simp only [Nat.cast_mul, Nat.cast_ofNat],
           rpow_natCast]
     have h2 : x ^ (2 : ℝ) = x ^ (2 : ℕ) := by
-      rw [show ((2 : ℝ) : ℝ) = ((2 : ℕ) : ℝ) by norm_num, rpow_natCast]
+      simp only [rpow_ofNat]
     rw [h2k, h2]
     -- LHS and RHS now have the same `x ^ (2*k)` factor; differ only inside `exp`.
     congr 2
@@ -161,13 +161,13 @@ theorem integral_pow_mul_exp_neg_sq_odd (k : ℕ) :
     intro x
     simp only [hf]
     rw [Odd.neg_pow ⟨k, rfl⟩, neg_sq]
-    ring
+    exact HasDistribNeg.neg_mul (x ^ (2 * k + 1)) (rexp (-x ^ 2 / 2))
   -- Hence `∫ f = ∫ f(-·) = ∫ (-f) = -∫ f`, so `∫ f = 0`.
   have heq : (∫ x, f x) = -(∫ x, f x) := by
     conv_lhs => rw [← integral_neg_eq_self f volume]
     rw [show (fun x => f (-x)) = (fun x => -(f x)) from funext hodd]
     rw [integral_neg]
-  linarith
+  exact self_eq_neg.mp heq
 
 /-- Even moments of a rescaled Gaussian: for `t > 0`,
 
@@ -200,7 +200,7 @@ theorem integral_pow_mul_exp_neg_t_sq_half (k : ℕ) {t : ℝ} (ht : 0 < t) :
           rw [mul_pow, show (sqrt t) ^ (2 * k) = t ^ k by
                 rw [pow_mul, Real.sq_sqrt ht.le]]]
     rw [show (x * sqrt t) ^ 2 = t * x ^ 2 by
-          rw [mul_pow, Real.sq_sqrt ht.le]; ring]
+          rw [mul_pow, Real.sq_sqrt ht.le]; exact CommMonoid.mul_comm (x ^ 2) t]
     ring
   -- Combine `hLHS = hkey-LHS` and `hkey-RHS = (1/√t) · standard moment`.
   have hstd := integral_pow_mul_exp_neg_sq_half k
@@ -214,11 +214,14 @@ theorem integral_pow_mul_exp_neg_t_sq_half (k : ℕ) {t : ℝ} (ht : 0 < t) :
       (t ^ k)⁻¹ * ((sqrt t)⁻¹ * (((2 * k - 1)‼ : ℝ) * sqrt (2 * π))) := by
     have := hkey
     field_simp at this ⊢
-    linarith
+    exact this
   rw [this]
   -- Simplify the prefactor: (t^k)⁻¹ * (√t)⁻¹ = t^(-(k + 1/2)).
   rw [show ((t : ℝ) ^ k)⁻¹ * ((sqrt t)⁻¹ * (((2 * k - 1)‼ : ℝ) * sqrt (2 * π))) =
-        (((2 * k - 1)‼ : ℝ) * sqrt (2 * π)) * ((t ^ k)⁻¹ * (sqrt t)⁻¹) by ring]
+        (((2 * k - 1)‼ : ℝ) * sqrt (2 * π)) * ((t ^ k)⁻¹ * (sqrt t)⁻¹) by exact Eq.symm
+                                                                            (mul_rotate' (↑(2 * k -
+                                                                            1)‼ * √(2 * π)) (t ^
+                                                                            k)⁻¹ (√t)⁻¹)]
   congr 1
   -- Goal: (t^k)⁻¹ * (√t)⁻¹ = t^(-(↑k + 1/2)).
   rw [show ((t : ℝ) ^ k : ℝ) = (t : ℝ) ^ ((k : ℝ)) from (rpow_natCast t k).symm,

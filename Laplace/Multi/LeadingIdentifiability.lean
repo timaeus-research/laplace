@@ -75,22 +75,19 @@ theorem leading_part_pencil_difference_lower_bound
   have ht4 : 4 ≤ R ^ 2 * t := by
     have h1 : 4 / R ^ 2 ≤ t := le_trans (le_max_left _ _) ht
     have hR2 : (0 : ℝ) < R ^ 2 := by positivity
-    calc (4 : ℝ) = R ^ 2 * (4 / R ^ 2) := by field_simp
-      _ ≤ R ^ 2 * t := mul_le_mul_of_nonneg_left h1 hR2.le
+    exact (div_le_iff₀' hR2).mp h1
   -- The leading-part scale condition.
   have hinvle : (Real.sqrt t)⁻¹ ≤ u₀ := by
     have h2 : u₀⁻¹ ^ 2 ≤ t := le_trans (le_max_right _ _) ht
     have h3 : u₀⁻¹ ≤ Real.sqrt t := by
-      rw [show u₀⁻¹ = Real.sqrt (u₀⁻¹ ^ 2) from
-        (Real.sqrt_sq (by positivity)).symm]
-      exact Real.sqrt_le_sqrt h2
+      exact Real.le_sqrt_of_sq_le h2
     rw [inv_le_comm₀ hst hu₀]
     exact h3
   have hgrow : ∀ x ∈ S, c * ((Real.sqrt t)⁻¹) ^ m
       ≤ |L₂ ((Real.sqrt t)⁻¹ • x) - L₁ ((Real.sqrt t)⁻¹ • x)| := by
     intro x hx
     have h := hbound ((Real.sqrt t)⁻¹) ⟨inv_pos.mpr hst, hinvle⟩ x hx
-    simpa using h
+    exact h
   have h := pencil_difference_lower_bound_multi L₁ L₂ ψ m hS hSfin hc.le hC0
     hR ht4 hL1 hL2 hSnorm hsum hgrow hψ0 hψ1 hmin hint hslice
   calc (volume S).toReal * (c ^ 2 * Real.exp (-(4 * C0))) *

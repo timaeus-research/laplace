@@ -98,8 +98,8 @@ theorem tendsto_posteriorMoment_coord (A : LocalLaplaceDomain L H)
   refine hmul.congr' ?_
   filter_upwards [self_mem_nhdsWithin] with q hq
   have hqne : (q : ℝ) ≠ 0 := ne_of_gt hq
-  unfold posteriorMoment
-  field_simp
+  exact div_mul_cancel₀ (A.posteriorIntegral (fun w => w.ofLp i) q / A.posteriorIntegral (fun x =>
+    1) q) hqne
 
 /-! ## Located moments -/
 
@@ -133,8 +133,7 @@ theorem tendsto_locatedMoment_coord (A : LocalLaplaceDomain L H)
     unfold locatedMoment posteriorMoment
     have hsplit : (fun y : EuclidD d ↦ (c + y) i) =
         fun y : EuclidD d ↦ c i + y i := by
-      funext y
-      simp [PiLp.add_apply]
+      rfl
     rw [hsplit]
     rw [A.posteriorIntegral_eq _ hq, A.posteriorIntegral_eq _ hq,
       A.posteriorIntegral_eq _ hq]
@@ -159,12 +158,13 @@ theorem tendsto_locatedMoment_coord (A : LocalLaplaceDomain L H)
       funext x
       rw [show (fun y : EuclidD d ↦ (q • y) i) =
         fun y : EuclidD d ↦ q * y i from
-        funext fun y ↦ by simp [PiLp.smul_apply]]
+        funext fun y ↦ by rfl]
       exact A.integrand_const_mul q _ q x
     have hint1 : Integrable (fun x : EuclidD d ↦
         A.integrand (fun _ ↦ 1) q x) :=
       A.integrable_integrand continuous_const
-        ⟨1, 0, zero_le_one, fun x ↦ by norm_num⟩ hq
+        ⟨1, 0, zero_le_one, fun x ↦ by simp only [abs_one, pow_zero, one_mul,
+                                         le_add_iff_nonneg_right, zero_le_one]⟩ hq
     have hinti : Integrable (fun x : EuclidD d ↦
         A.integrand (fun y ↦ y i) q x) := by
       refine A.integrable_integrand
@@ -241,8 +241,8 @@ theorem location_eq_of_superPoly_first_moments
       atTop (𝓝 0) := by
     refine ((hdata i) 1).isBigO.trans_tendsto ?_
     have := tendsto_rpow_neg_atTop (y := ((1 : ℕ) : ℝ))
-      (by norm_num)
-    simpa using this
+      (by simp only [Nat.cast_one, zero_lt_one])
+    exact this
   have huniq := tendsto_nhds_unique (h₁.sub h₂) hdiff
   linarith [huniq]
 

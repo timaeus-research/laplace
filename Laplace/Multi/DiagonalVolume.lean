@@ -37,15 +37,13 @@ entries. -/
 theorem det_diagonalMap [Fintype ι] (c : ι → ℝ) :
     LinearMap.det (diagonalMap c) = ∏ i, c i := by
   rw [diagonalMap, LinearMap.det_pi]
-  refine Finset.prod_congr rfl fun i _ ↦ ?_
-  rw [LinearMap.det_smul, LinearMap.det_id, Module.finrank_self]
-  simp
+  simp only [LinearMap.det_ring, LinearMap.smul_apply, LinearMap.id_coe, id_eq, smul_eq_mul,
+    mul_one]
 
 /-- The diagonal dilation is the diagonal map with entries
 `s ^ q i`. -/
 theorem qhDilation_eq_diagonalMap (q : ι → ℝ) (s : ℝ) :
     qhDilation q s = diagonalMap (fun i ↦ s ^ q i) := by
-  funext w
   rfl
 
 /-- **Pi-volume satisfies the scaling interface**: Lebesgue measure

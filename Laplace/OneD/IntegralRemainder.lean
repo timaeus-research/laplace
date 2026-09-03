@@ -46,7 +46,7 @@ theorem perturbation_remainder_pointwise (n : ℕ) (u s : ℝ) :
       (s ^ 2 / 2) * |u| ^ n * Real.exp (-(u ^ 2) / 2) * max 1 (Real.exp (-s)) := by
   have hexp_pos : 0 < Real.exp (-(u ^ 2) / 2) := Real.exp_pos _
   have hmax_pos : 0 < max 1 (Real.exp (-s)) :=
-    lt_max_of_lt_left (by norm_num : (0 : ℝ) < 1)
+    lt_max_of_lt_left (by exact Real.zero_lt_one : (0 : ℝ) < 1)
   -- Split absolute value across the product.
   rw [abs_mul, abs_mul, abs_pow, abs_of_pos hexp_pos]
   -- Goal: |u|^n · e^{-u²/2} · |exp(-s) - (1 - s)| ≤ (s²/2) · |u|^n · e^{-u²/2} · max(1, e^{-s}).
@@ -157,15 +157,14 @@ on ℝ. Direct corollary of Mathlib's `integrable_rpow_mul_exp_neg_mul_sq`. -/
 theorem integrable_pow_mul_exp_neg_mul_sq {c : ℝ} (hc : 0 < c) (n : ℕ) :
     Integrable (fun u : ℝ => u ^ n * Real.exp (-(c * u ^ 2))) := by
   have hs : (-1 : ℝ) < (n : ℝ) := by
-    have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith
+    linarith only []
   have h := integrable_rpow_mul_exp_neg_mul_sq hc hs
   -- h : Integrable (fun x => x^(n:ℝ) * exp(-c · x²))
   convert h using 1
   ext u
   congr 1
   · exact (Real.rpow_natCast u n).symm
-  · congr 1; ring
+  · congr 1; exact neg_mul_eq_neg_mul c (u ^ 2)
 
 /-- For `c > 0` and `n : ℕ`, the function `u ↦ |u|^n · exp(-c·u²)` is
 integrable on ℝ. -/
@@ -204,7 +203,7 @@ private theorem integrable_pow_add_pow_mul_exp_neg_mul_sq {c : ℝ} (hc : 0 < c)
       rw [show |u| ^ (n + 6) = |u| ^ n * |u| ^ 6 from pow_add _ _ _]
       rw [show |u| ^ 6 = u ^ 6 from by
             rw [show (6 : ℕ) = 2 * 3 from rfl, pow_mul, sq_abs]
-            ring]
+            exact Eq.symm (pow_mul u 2 3)]
     rw [h_eq]
     exact integrable_abs_pow_mul_exp_neg_mul_sq hc (n + 6)
   · -- |u|^n · u^8 = |u|^(n+8).
@@ -214,7 +213,7 @@ private theorem integrable_pow_add_pow_mul_exp_neg_mul_sq {c : ℝ} (hc : 0 < c)
       rw [show |u| ^ (n + 8) = |u| ^ n * |u| ^ 8 from pow_add _ _ _]
       rw [show |u| ^ 8 = u ^ 8 from by
             rw [show (8 : ℕ) = 2 * 4 from rfl, pow_mul, sq_abs]
-            ring]
+            exact Eq.symm (pow_mul u 2 4)]
     rw [h_eq]
     exact integrable_abs_pow_mul_exp_neg_mul_sq hc (n + 8)
 
@@ -514,30 +513,13 @@ theorem J_n_asymptotic
               Real.exp (-rescaledPerturbation lam alpha gamma t u))
           - (fun u : ℝ => u ^ n * Real.exp (-(u ^ 2) / 2) *
               (1 - rescaledPerturbation lam alpha gamma t u)) by
-        ext u; simp only [Pi.sub_apply]; ring]
-    rw [show (∫ u : ℝ, u ^ n * Real.exp (-(u ^ 2) / 2) *
-              Real.exp (-rescaledPerturbation lam alpha gamma t u))
-              - (∫ u : ℝ, u ^ n * Real.exp (-(u ^ 2) / 2) *
-                  (1 - rescaledPerturbation lam alpha gamma t u)) =
-            ∫ u : ℝ, ((fun u : ℝ => u ^ n * Real.exp (-(u ^ 2) / 2) *
-              Real.exp (-rescaledPerturbation lam alpha gamma t u)) -
-              (fun u : ℝ => u ^ n * Real.exp (-(u ^ 2) / 2) *
-                  (1 - rescaledPerturbation lam alpha gamma t u))) u from by
-      simp only [Pi.sub_apply]
-      exact (integral_sub hint_J hint_lin).symm]
+        ext u; simp only [Pi.sub_apply]; exact mul_sub_left_distrib (u ^ n * Real.exp (-u ^ 2 / 2))
+                                           (Real.exp (-rescaledPerturbation lam alpha gamma t u))
+                                           (1 - rescaledPerturbation lam alpha gamma t u)]
+    exact Eq.symm (integral_sub' hint_J hint_lin)
   -- Apply the linearisation decomposition + integral remainder bound.
   rw [linearised_integral_decomposition lam alpha gamma n ht_pos] at hkey
-  calc |(∫ u : ℝ, u ^ n * Real.exp (-(u ^ 2) / 2) *
-              Real.exp (-rescaledPerturbation lam alpha gamma t u))
-            - ((∫ u : ℝ, u ^ n * Real.exp (-(u ^ 2) / 2))
-                - cubicScale lam alpha / Real.sqrt t *
-                    (∫ u : ℝ, u ^ (n + 3) * Real.exp (-(u ^ 2) / 2))
-                - quarticScale lam gamma / t *
-                    (∫ u : ℝ, u ^ (n + 4) * Real.exp (-(u ^ 2) / 2)))|
-        = |∫ u : ℝ, u ^ n * Real.exp (-(u ^ 2) / 2) *
-              (Real.exp (-rescaledPerturbation lam alpha gamma t u) -
-               (1 - rescaledPerturbation lam alpha gamma t u))| := by rw [hkey]
-      _ ≤ K / t := hbound ht
+  exact le_of_eq_of_le (congrArg abs hkey) (hbound ht)
 
 /-! ## Specialised low-order asymptotics `J_0`–`J_3` (per GPT-5.5-Pro recommendation)
 
@@ -550,7 +532,7 @@ needed downstream are proved here too.) -/
 private lemma M_1_eq_zero :
     ∫ u : ℝ, u ^ 1 * Real.exp (-(u ^ 2) / 2) = 0 := by
   have h := integral_pow_mul_exp_neg_sq_odd 0
-  simpa using h
+  exact h
 
 /-- `M_4 = ∫ u^4 · e^{-u²/2} du = 3 √(2π)`. -/
 private lemma M_4_eq :
@@ -558,8 +540,7 @@ private lemma M_4_eq :
   have h := integral_pow_mul_exp_neg_sq_half 2
   -- h : ∫ x, x^(2*2) * exp(-x²/2) = (2·2 - 1)‼ · √(2π) = 3 · √(2π)
   have hd : ((2 * 2 - 1)‼ : ℝ) = 3 := by
-    show ((3 : ℕ)‼ : ℝ) = 3
-    rw [show (3 : ℕ)‼ = 3 by decide]; norm_num
+    rfl
   simp only [show (2 * 2 : ℕ) = 4 from rfl] at h
   rw [hd] at h
   exact h
@@ -568,7 +549,7 @@ private lemma M_4_eq :
 private lemma M_5_eq_zero :
     ∫ u : ℝ, u ^ 5 * Real.exp (-(u ^ 2) / 2) = 0 := by
   have h := integral_pow_mul_exp_neg_sq_odd 2
-  simpa using h
+  exact h
 
 /-- **`J_1` asymptotic**: under coercivity,
 
@@ -631,7 +612,7 @@ private lemma M_2_eq :
 private lemma M_3_eq_zero :
     ∫ u : ℝ, u ^ 3 * Real.exp (-(u ^ 2) / 2) = 0 := by
   have h := integral_pow_mul_exp_neg_sq_odd 1
-  simpa using h
+  exact h
 
 /-- `M_6 = ∫ u^6 · e^{-u²/2} du = 15 √(2π)`. -/
 private lemma M_6_eq :
@@ -639,8 +620,7 @@ private lemma M_6_eq :
   have h := integral_pow_mul_exp_neg_sq_half 3
   -- h : ∫ x, x^(2*3) * exp(-x²/2) = 5‼ · √(2π) = 15·√(2π).
   have hd : ((2 * 3 - 1)‼ : ℝ) = 15 := by
-    show ((5 : ℕ)‼ : ℝ) = 15
-    rw [show (5 : ℕ)‼ = 15 by decide]; norm_num
+    rfl
   simp only [show (2 * 3 : ℕ) = 6 from rfl] at h
   rw [hd] at h
   exact h
@@ -649,7 +629,7 @@ private lemma M_6_eq :
 private lemma M_7_eq_zero :
     ∫ u : ℝ, u ^ 7 * Real.exp (-(u ^ 2) / 2) = 0 := by
   have h := integral_pow_mul_exp_neg_sq_odd 3
-  simpa using h
+  exact h
 
 /-- **`J_0` asymptotic**: `J_0(t) = √(2π) + O(1/t)`. -/
 theorem J_0_asymptotic
@@ -698,11 +678,11 @@ theorem J_0_asymptotic
           gcongr
     _ = K / t + 3 * |quarticScale lam gamma| * Real.sqrt (2 * Real.pi) / t := by
           rw [abs_neg, abs_mul, abs_div, abs_mul, abs_of_pos ht_pos,
-              show |(3 : ℝ)| = 3 from by norm_num,
+              show |(3 : ℝ)| = 3 from Nat.abs_ofNat 3,
               abs_of_nonneg (Real.sqrt_nonneg _)]
           ring
     _ = (K + 3 * |quarticScale lam gamma| * Real.sqrt (2 * Real.pi)) / t := by
-          field_simp
+          exact Eq.symm (add_div K (3 * |quarticScale lam gamma| * √(2 * Real.pi)) t)
 
 /-- **`J_2` asymptotic**: `J_2(t) = √(2π) + O(1/t)`. Mirrors `J_0`. -/
 theorem J_2_asymptotic
@@ -744,11 +724,11 @@ theorem J_2_asymptotic
           gcongr
     _ = K / t + 15 * |quarticScale lam gamma| * Real.sqrt (2 * Real.pi) / t := by
           rw [abs_neg, abs_mul, abs_div, abs_mul, abs_of_pos ht_pos,
-              show |(15 : ℝ)| = 15 from by norm_num,
+              show |(15 : ℝ)| = 15 from Nat.abs_ofNat 15,
               abs_of_nonneg (Real.sqrt_nonneg _)]
           ring
     _ = (K + 15 * |quarticScale lam gamma| * Real.sqrt (2 * Real.pi)) / t := by
-          field_simp
+          exact Eq.symm (add_div K (15 * |quarticScale lam gamma| * √(2 * Real.pi)) t)
 
 /-- **`J_3` asymptotic**: `J_3(t) = -15 A √(2π) / √t + O(1/t)`. Mirrors `J_1`. -/
 theorem J_3_asymptotic
@@ -866,7 +846,8 @@ theorem I_n_J_n_relation
             Real.exp (-(t * anharmonicPotential lam alpha gamma x))) := by
     rw [pow_succ]; ring
   rw [this, hcomp]
-  field_simp
+  exact mul_inv_cancel_left₀ hsqrt_ne (∫ (y : ℝ),
+    y ^ n * Real.exp (-y ^ 2 / 2) * Real.exp (-rescaledPerturbation lam alpha gamma t y))
 
 /-! ## I_n asymptotics via the substitution identity
 
@@ -917,7 +898,7 @@ theorem I_0_asymptotic
     field_simp
   rw [hgoal_eq, abs_div, abs_of_pos hsqrt_pos]
   rw [show (K / (t * Real.sqrt (lam * t)) : ℝ) =
-        (K / t) / Real.sqrt (lam * t) by field_simp]
+        (K / t) / Real.sqrt (lam * t) by exact div_mul_eq_div_div K t √(lam * t)]
   exact div_le_div_of_nonneg_right hbnd hsqrt_pos.le
 
 /-- **`I_1` asymptotic**: `I_1(t) = -3A√(2π) / ((λt)·√t) + O(1/((λt)·t))`. -/
@@ -961,7 +942,7 @@ theorem I_1_asymptotic
     field_simp
   rw [hgoal_eq, abs_div, abs_of_pos hlamt]
   rw [show (K / (lam * t * t) : ℝ) = (K / t) / (lam * t) by
-        field_simp]
+        exact div_mul_eq_div_div_swap K (lam * t) t]
   exact div_le_div_of_nonneg_right hbnd hlamt.le
 
 /-- **`I_2` asymptotic**: `I_2(t) = √(2π)/((λt)·√(λt)) + O(1/((λt)·√(λt)·t))`. -/
@@ -1002,7 +983,8 @@ theorem I_2_asymptotic
     field_simp
   rw [hgoal_eq, abs_div, abs_of_pos hcoeff_pos]
   rw [show (K / (lam * t * Real.sqrt (lam * t) * t) : ℝ) =
-        (K / t) / (lam * t * Real.sqrt (lam * t)) by field_simp]
+        (K / t) / (lam * t * Real.sqrt (lam * t)) by exact div_mul_eq_div_div_swap K (lam * t *
+                                                       √(lam * t)) t]
   exact div_le_div_of_nonneg_right hbnd hcoeff_pos.le
 
 /-- **`I_3` asymptotic**: `I_3(t) = -15A√(2π) / ((λt)²·√t) + O(1/((λt)²·t))`. -/
@@ -1043,7 +1025,7 @@ theorem I_3_asymptotic
     field_simp
   rw [hgoal_eq, abs_div, abs_of_pos hlamt_sq_pos]
   rw [show (K / ((lam * t) ^ 2 * t) : ℝ) = (K / t) / (lam * t) ^ 2 by
-        field_simp]
+        exact div_mul_eq_div_div_swap K ((lam * t) ^ 2) t]
   exact div_le_div_of_nonneg_right hbnd hlamt_sq_pos.le
 
 /-! ## Summary: from `I_n` asymptotics to the primer's covariance formula
@@ -1185,11 +1167,11 @@ private lemma div_sqrt_lt_eventually {K ε : ℝ} (hK : 0 ≤ K) (hε : 0 < ε) 
             (Real.sqrt_sq hKε.le).symm]
       apply Real.sqrt_lt_sqrt
       · exact sq_nonneg _
-      · linarith
+      · linarith only [hn_sq]
     have : K < ε * Real.sqrt n := by
       rw [show (K : ℝ) = ε * (K / ε) from by field_simp]
       exact mul_lt_mul_of_pos_left hsqrt_n_gt hε
-    linarith
+    exact this
 
 /-- `√t · J_1(t) → -3A · √(2π)` as `t → ∞`. -/
 theorem tendsto_sqrt_t_mul_J_1
@@ -1384,7 +1366,7 @@ private lemma tendsto_main_quotient
   --   -12 A · 2π / (2π) = -12 A.
   have hval : -12 * cubicScale lam alpha * (2 * Real.pi) / (2 * Real.pi)
         = -12 * cubicScale lam alpha := by
-    field_simp
+    exact mul_div_cancel_right₀ (-12 * cubicScale lam alpha) h2pi_ne
   rw [hval] at hquot
   exact hquot
 
@@ -1424,7 +1406,8 @@ theorem cov_anharmonic_J_form_asymptotic
   -- Goal: same form with /(λ·√λ·J_0²). Match by congr.
   convert hdivide using 1
   ext t
-  field_simp
+  exact div_mul_eq_div_div_swap (√t * (J_n lam alpha gamma 0 t * J_n lam alpha gamma 3 t - J_n lam
+    alpha gamma 2 t * J_n lam alpha gamma 1 t)) (lam * √lam) (J_n lam alpha gamma 0 t ^ 2)
 
 /-! ## Bridge to `gibbsCov` and the primer's formula -/
 
@@ -1438,9 +1421,10 @@ private lemma gibbsCov_x_sq_x_eq_I_form
             (∫ x : ℝ, x * Real.exp (-(t * L x)))) /
       (∫ x : ℝ, Real.exp (-(t * L x))) ^ 2 := by
   unfold Laplace.gibbsCov Laplace.gibbsExpectation Laplace.partitionFunction
-  rw [show (fun x : ℝ => x ^ 2 * x) = (fun x : ℝ => x ^ 3) from by ext; ring]
+  rw [show (fun x : ℝ => x ^ 2 * x) = (fun x : ℝ => x ^ 3) from rfl]
   by_cases hZ : (∫ x : ℝ, Real.exp (-(t * L x))) = 0
-  · rw [hZ]; simp
+  · rw [hZ]; simp only [EuclideanDomain.div_zero, mul_zero, sub_self, zero_mul, zero_sub, ne_eq,
+               OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]
   · field_simp
 
 /-- **The primer's anharmonic covariance formula** in `gibbsCov` form.
@@ -1661,48 +1645,7 @@ theorem mean_anharmonic_asymptotic
       Filter.Tendsto.eventually_const_lt sqrt_two_pi_pos hJ0
     filter_upwards [h_pos_J0] with t ht; exact ht.ne'
   filter_upwards [Filter.eventually_gt_atTop (0 : ℝ), hJ0_ev] with t ht hJ0_ne
-  have hlamt : 0 < lam * t := mul_pos hlam ht
-  have hsqrt_lamt_pos : 0 < Real.sqrt (lam * t) := Real.sqrt_pos.mpr hlamt
-  have hsqrt_lamt_ne : Real.sqrt (lam * t) ≠ 0 := hsqrt_lamt_pos.ne'
-  have hsqrt_lam_pos : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
-  have hsqrt_lam_ne : Real.sqrt lam ≠ 0 := hsqrt_lam_pos.ne'
-  have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
-  have hsqrt_t_ne : Real.sqrt t ≠ 0 := hsqrt_t_pos.ne'
-  have hlam_ne : lam ≠ 0 := hlam.ne'
-  have ht_ne : t ≠ 0 := ht.ne'
-  unfold Laplace.gibbsExpectation Laplace.partitionFunction
-  set Z := ∫ x : ℝ, Real.exp (-(t * anharmonicPotential lam alpha gamma x)) with hZ_def
-  set IL1 := ∫ x : ℝ, x * Real.exp (-(t * anharmonicPotential lam alpha gamma x))
-    with hIL1_def
-  -- Substitution identities.
-  have h0 := I_n_J_n_relation lam alpha gamma 0 hlam ht
-  have h1 := I_n_J_n_relation lam alpha gamma 1 hlam ht
-  rw [pow_one] at h0
-  rw [show (1 + 1 : ℕ) = 2 from rfl] at h1
-  simp only [pow_zero, one_mul] at h0
-  simp only [pow_one] at h1
-  have hZ_eq : Real.sqrt (lam * t) * Z = J_n lam alpha gamma 0 t := by
-    unfold J_n; simp only [pow_zero, one_mul]; exact h0
-  have hIL1_eq : Real.sqrt (lam * t) ^ 2 * IL1 = J_n lam alpha gamma 1 t := by
-    unfold J_n; simp only [pow_one]; exact h1
-  have hsqrt_lamt_sq : Real.sqrt (lam * t) ^ 2 = lam * t := Real.sq_sqrt hlamt.le
-  have hsqrt_lamt_split : Real.sqrt (lam * t) = Real.sqrt lam * Real.sqrt t :=
-    Real.sqrt_mul hlam.le t
-  have hZ_sub : Z = J_n lam alpha gamma 0 t / Real.sqrt (lam * t) := by
-    rw [eq_div_iff hsqrt_lamt_ne, mul_comm]; exact hZ_eq
-  have hIL1_sub : IL1 = J_n lam alpha gamma 1 t / (lam * t) := by
-    rw [eq_div_iff hlamt.ne', mul_comm, ← hsqrt_lamt_sq]; exact hIL1_eq
-  have hZ_ne : Z ≠ 0 := fun hZ => hJ0_ne (by rw [← hZ_eq, hZ, mul_zero])
-  rw [hZ_sub, hIL1_sub, hsqrt_lamt_split]
-  -- GPT-5.5-Pro recipe: substitute fresh symbols for the square roots.
-  set sl : ℝ := Real.sqrt lam with hsl_def
-  set st : ℝ := Real.sqrt t with hst_def
-  have hsl2 : sl ^ 2 = lam := Real.sq_sqrt hlam.le
-  have hst2 : st ^ 2 = t := Real.sq_sqrt ht.le
-  have hsl_ne : sl ≠ 0 := hsqrt_lam_ne
-  have hst_ne : st ≠ 0 := hsqrt_t_ne
-  rw [← hsl2, ← hst2]
-  field_simp
+  exact Eq.symm (mean_J_form_exact hlam ht hJ0_ne)
 
 /-- (b) **Self-covariance asymptotic, J-form**: `(J_2·J_0 - J_1²) / (λ·J_0²) → 1/λ`.
 
@@ -1727,7 +1670,7 @@ theorem var_anharmonic_J_form_asymptotic
     apply h.congr'
     filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
     have hsqrt_ne : Real.sqrt t ≠ 0 := (Real.sqrt_pos.mpr ht).ne'
-    field_simp
+    exact mul_div_cancel_left₀ (J_n lam alpha gamma 1 t) hsqrt_ne
   -- Numerator: J_2·J_0 - J_1² → √(2π)·√(2π) - 0 = 2π.
   have hnum : Filter.Tendsto (fun t : ℝ =>
         J_n lam alpha gamma 2 t * J_n lam alpha gamma 0 t
@@ -1752,7 +1695,7 @@ theorem var_anharmonic_J_form_asymptotic
     have hlam_ne : lam ≠ 0 := hlam.ne'
     have h2pi_ne : (2 * Real.pi : ℝ) ≠ 0 := h2pi_pos.ne'
     field_simp
-    ring
+    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_zero]
   rw [hval] at hquot
   exact hquot
 
@@ -1765,9 +1708,10 @@ private lemma gibbsCov_x_x_eq_I_form
         - (∫ x : ℝ, x * Real.exp (-(t * L x))) ^ 2) /
       (∫ x : ℝ, Real.exp (-(t * L x))) ^ 2 := by
   unfold Laplace.gibbsCov Laplace.gibbsExpectation Laplace.partitionFunction
-  rw [show (fun x : ℝ => x * x) = (fun x : ℝ => x ^ 2) from by ext x; ring]
+  rw [show (fun x : ℝ => x * x) = (fun x : ℝ => x ^ 2) from by ext x; exact Eq.symm (pow_two x)]
   by_cases hZ : (∫ x : ℝ, Real.exp (-(t * L x))) = 0
-  · rw [hZ]; simp
+  · rw [hZ]; simp only [EuclideanDomain.div_zero, mul_zero, sub_self, zero_mul, zero_sub, ne_eq,
+               OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]
   · field_simp
 
 /-- (b) **Self-covariance asymptotic** in `gibbsCov` form: `t · Cov_t[x,x] → 1/λ`.
@@ -1871,7 +1815,7 @@ lemma J_0_eventually_bounded
   rw [Metric.tendsto_atTop] at hJ0
   set c := Real.sqrt (2 * Real.pi) with hc_def
   have hc_pos : 0 < c := sqrt_two_pi_pos
-  obtain ⟨T, hT⟩ := hJ0 (c / 2) (by linarith)
+  obtain ⟨T, hT⟩ := hJ0 (c / 2) (half_pos hc_pos)
   refine ⟨max 1 T, le_max_left _ _, ?_⟩
   intro t ht
   have ht_T : T ≤ t := le_trans (le_max_right _ _) ht
@@ -1951,17 +1895,16 @@ private lemma div_t_le_div_sqrt_t {K t : ℝ} (hK : 0 ≤ K) (ht : 1 ≤ t) :
   have ht_pos : 0 < t := by linarith
   have hsqrt_t_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht_pos
   have hsqrt_ge_one : 1 ≤ Real.sqrt t := by
-    rw [show (1 : ℝ) = Real.sqrt 1 from (Real.sqrt_one).symm]
-    exact Real.sqrt_le_sqrt ht
+    exact Real.one_le_sqrt.mpr ht
   rcases eq_or_lt_of_le hK with heq | hpos
-  · rw [← heq]; simp
+  · rw [← heq]; simp only [zero_div, Std.le_refl]
   · rw [div_le_div_iff₀ ht_pos hsqrt_t_pos]
     have h_st_le_t : Real.sqrt t ≤ t :=
-      calc Real.sqrt t = Real.sqrt t * 1 := by ring
+      calc Real.sqrt t = Real.sqrt t * 1 := Eq.symm (MulOneClass.mul_one √t)
         _ ≤ Real.sqrt t * Real.sqrt t := by
               exact mul_le_mul_of_nonneg_left hsqrt_ge_one hsqrt_t_pos.le
         _ = t := Real.mul_self_sqrt ht_pos.le
-    nlinarith [hpos]
+    exact PosMulMono.mul_le_mul_of_nonneg_left hK h_st_le_t
 
 /-- `|J_1(t)| ≤ K/√t` for some `K ≥ 0`, for all `t ≥ 1`. -/
 private lemma J_1_abs_bound
@@ -1981,9 +1924,11 @@ private lemma J_1_abs_bound
   have h_abs_L : |L| = 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) / Real.sqrt t := by
     rw [hL_def, abs_div, abs_of_pos hsqrt_t_pos]
     have h_eq : -3 * cubicScale lam alpha * Real.sqrt (2 * Real.pi) =
-        -(3 * cubicScale lam alpha * Real.sqrt (2 * Real.pi)) := by ring
+        -(3 * cubicScale lam alpha * Real.sqrt (2 * Real.pi)) := by simp only [neg_mul,
+                                                                      Nat.ofNat_nonneg,
+                                                                      Real.sqrt_mul]
     rw [h_eq, abs_neg, abs_mul, abs_mul, abs_of_pos sqrt_two_pi_pos]
-    have h3 : |(3 : ℝ)| = 3 := abs_of_pos (by norm_num)
+    have h3 : |(3 : ℝ)| = 3 := abs_of_pos (three_pos)
     rw [h3]
   -- |J_1| ≤ |J_1 - L| + |L| ≤ K/t + 3|A|√(2π)/√t.
   have h_tri : |J_n lam alpha gamma 1 t| ≤ |J_n lam alpha gamma 1 t - L| + |L| := by
@@ -1994,9 +1939,10 @@ private lemma J_1_abs_bound
   calc |J_n lam alpha gamma 1 t|
       ≤ |J_n lam alpha gamma 1 t - L| + |L| := h_tri
     _ ≤ K / t + 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) / Real.sqrt t := by
-          rw [h_abs_L] at *; linarith
+          rw [h_abs_L] at *; exact add_le_add_left (hbound ht1) (3 * |cubicScale lam alpha| * √(2 *
+                               Real.pi) / √t)
     _ ≤ K / Real.sqrt t + 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) /
-          Real.sqrt t := by linarith
+          Real.sqrt t := add_le_add_left hKt_le (3 * |cubicScale lam alpha| * √(2 * Real.pi) / √t)
     _ = (K + 3 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi)) / Real.sqrt t := by
           rw [← add_div]
 
@@ -2018,9 +1964,11 @@ private lemma J_3_abs_bound
       15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) / Real.sqrt t := by
     rw [hL_def, abs_div, abs_of_pos hsqrt_t_pos]
     have h_eq : -15 * cubicScale lam alpha * Real.sqrt (2 * Real.pi) =
-        -(15 * cubicScale lam alpha * Real.sqrt (2 * Real.pi)) := by ring
+        -(15 * cubicScale lam alpha * Real.sqrt (2 * Real.pi)) := by simp only [neg_mul,
+                                                                       Nat.ofNat_nonneg,
+                                                                       Real.sqrt_mul]
     rw [h_eq, abs_neg, abs_mul, abs_mul, abs_of_pos sqrt_two_pi_pos]
-    have h15 : |(15 : ℝ)| = 15 := abs_of_pos (by norm_num)
+    have h15 : |(15 : ℝ)| = 15 := abs_of_pos (Nat.ofNat_pos')
     rw [h15]
   have h_tri : |J_n lam alpha gamma 3 t| ≤ |J_n lam alpha gamma 3 t - L| + |L| := by
     have := abs_add_le (J_n lam alpha gamma 3 t - L) L
@@ -2030,9 +1978,10 @@ private lemma J_3_abs_bound
   calc |J_n lam alpha gamma 3 t|
       ≤ |J_n lam alpha gamma 3 t - L| + |L| := h_tri
     _ ≤ K / t + 15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) / Real.sqrt t := by
-          rw [h_abs_L] at *; linarith
+          rw [h_abs_L] at *; exact add_le_add_left (hbound ht1) (15 * |cubicScale lam alpha| * √(2
+                               * Real.pi) / √t)
     _ ≤ K / Real.sqrt t + 15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi) /
-          Real.sqrt t := by linarith
+          Real.sqrt t := add_le_add_left hKt_le (15 * |cubicScale lam alpha| * √(2 * Real.pi) / √t)
     _ = (K + 15 * |cubicScale lam alpha| * Real.sqrt (2 * Real.pi)) / Real.sqrt t := by
           rw [← add_div]
 
@@ -2045,7 +1994,7 @@ private lemma J_2_sub_J_0_bound
       |J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t| ≤ K / t := by
   obtain ⟨K_0, hK_0_nn, hbound_0⟩ := J_0_asymptotic hlam hgamma hdisc
   obtain ⟨K_2, hK_2_nn, hbound_2⟩ := J_2_asymptotic hlam hgamma hdisc
-  refine ⟨K_0 + K_2, by linarith, ?_⟩
+  refine ⟨K_0 + K_2, by exact Left.add_nonneg hK_0_nn hK_2_nn, ?_⟩
   intro t ht1
   have ht_pos : 0 < t := by linarith
   have h0 := hbound_0 ht1
@@ -2053,21 +2002,23 @@ private lemma J_2_sub_J_0_bound
   -- h0 : |J_0 t - √(2π)| ≤ K_0/t (after spelling J_n in u^0 form)
   -- h2 : |J_2 t - √(2π)| ≤ K_2/t (after spelling J_n in u^2 form)
   have h_J0 : |J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)| ≤ K_0 / t := by
-    unfold J_n; exact h0
+    exact h0
   have h_J2 : |J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi)| ≤ K_2 / t := by
-    unfold J_n; exact h2
+    exact h2
   -- |J_2 - J_0| ≤ |J_2 - c| + |c - J_0| ≤ K_2/t + K_0/t.
   have h_decomp :
       J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t =
       (J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi)) +
-        -(J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)) := by ring
+        -(J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)) := by simp only [Nat.ofNat_nonneg,
+                                                                     Real.sqrt_mul, neg_sub,
+                                                                     sub_add_sub_cancel]
   rw [h_decomp]
   have h_tri := abs_add_le (J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi))
       (-(J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)))
   rw [abs_neg] at h_tri
   calc _ ≤ |J_n lam alpha gamma 2 t - Real.sqrt (2 * Real.pi)|
           + |J_n lam alpha gamma 0 t - Real.sqrt (2 * Real.pi)| := h_tri
-    _ ≤ K_2 / t + K_0 / t := by linarith
+    _ ≤ K_2 / t + K_0 / t := add_le_add (hbound_2 ht1) (hbound_0 ht1)
     _ = (K_0 + K_2) / t := by ring
 
 /-- (b) **Self-covariance, explicit `O(t⁻²)` rate**:
@@ -2129,7 +2080,7 @@ theorem cov_self_anharmonic_O2_rate
           K_1 ^ 2 / (Real.sqrt t) ^ 2 from by rw [div_mul_div_comm]; ring]
       rw [Real.sq_sqrt ht_pos.le]
     rw [show |J_n lam alpha gamma 1 t| ^ 2 = |J_n lam alpha gamma 1 t| *
-        |J_n lam alpha gamma 1 t| from by ring, ← h_K_sq]
+        |J_n lam alpha gamma 1 t| from by exact pow_two |J_n lam alpha gamma 1 t|, ← h_K_sq]
     exact mul_self_le_mul_self (abs_nonneg _) h_J1
   -- |numerator| ≤ |J_0|·|J_2 - J_0| + J_1² ≤ (3c/2)·K_d/t + K_1²/t.
   have h_num_bound :
@@ -2140,7 +2091,7 @@ theorem cov_self_anharmonic_O2_rate
     set Y := J_n lam alpha gamma 1 t ^ 2
     have h_tri : |X - Y| ≤ |X| + |Y| := by
       have := abs_add_le X (-Y)
-      rw [show X + (-Y) = X - Y from by ring] at this
+      rw [show X + (-Y) = X - Y from by rfl] at this
       rw [abs_neg] at this
       exact this
     have h_abs_X : |X| ≤ (3 * c / 2) * (K_d / t) := by
@@ -2163,7 +2114,7 @@ theorem cov_self_anharmonic_O2_rate
     have h1 : 0 ≤ (3 * c / 2) * (K_d / t) :=
       mul_nonneg (by linarith) (div_nonneg hK_d_nn ht_pos.le)
     have h2 : 0 ≤ K_1 ^ 2 / t := div_nonneg (sq_nonneg _) ht_pos.le
-    linarith
+    exact Left.add_nonneg h1 h2
   have h_lc_pos : 0 < lam * c ^ 2 / 4 := by positivity
   calc |J_n lam alpha gamma 0 t * (J_n lam alpha gamma 2 t - J_n lam alpha gamma 0 t)
         - J_n lam alpha gamma 1 t ^ 2| / (lam * J_n lam alpha gamma 0 t ^ 2)
@@ -2260,11 +2211,11 @@ private lemma exp_neg_const_mul_sq_tendsto_atBot_zero {c : ℝ} (hc : 0 < c) :
   have h_neg_id : Filter.Tendsto (fun u : ℝ => -u) Filter.atBot Filter.atTop :=
     Filter.tendsto_neg_atBot_atTop
   have h_pow : Filter.Tendsto (fun u : ℝ => u ^ 2) Filter.atTop Filter.atTop :=
-    Filter.tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)
+    Filter.tendsto_pow_atTop (by exact Ne.symm (Nat.zero_ne_add_one 1) : (2 : ℕ) ≠ 0)
   have h_sq : Filter.Tendsto (fun u : ℝ => u ^ 2) Filter.atBot Filter.atTop := by
     have h := h_pow.comp h_neg_id
     convert h using 1
-    ext u; simp [Function.comp]
+    ext u; simp only [Function.comp_apply, even_two, Even.neg_pow]
   have h_cmul : Filter.Tendsto (fun u : ℝ => c * u ^ 2) Filter.atBot Filter.atTop :=
     h_sq.const_mul_atTop hc
   have h_neg : Filter.Tendsto (fun u : ℝ => -(c * u ^ 2)) Filter.atBot Filter.atBot :=
@@ -2319,7 +2270,7 @@ private lemma fGauss_le_exp_neg_const_mul_sq
   rw [← Real.exp_add]
   apply le_trans _ (hbound ht u)
   apply Real.exp_le_exp.mpr
-  linarith
+  linarith only []
 
 /-- `u^n · f_t(u)` is integrable (over all of `ℝ`). -/
 private lemma integrable_pow_mul_fGauss
@@ -2386,7 +2337,7 @@ private lemma J_score_identity
     apply hneg.congr
     apply Filter.Eventually.of_forall; intro u
     simp only [Pi.neg_apply]
-    ring
+    exact neg_mul_eq_neg_mul (scoreFun lam alpha gamma t u) (fGauss lam alpha gamma t u)
   have h_fp_int_Ioi : IntegrableOn (fun u : ℝ =>
       -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) (Set.Ioi 0) :=
     h_fp_int.integrableOn
@@ -2415,17 +2366,17 @@ private lemma J_score_identity
     rw [← intervalIntegral.integral_Iic_add_Ioi h_fp_int_Iic h_fp_int_Ioi]
   have h_int_zero : ∫ u : ℝ,
       -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u = 0 := by
-    rw [h_split, h_Iic, h_Ioi]; ring
+    rw [h_split, h_Iic, h_Ioi]; simp only [sub_zero, zero_sub, add_neg_cancel]
   -- ∫ -score·f = 0 ⇒ ∫ score·f = 0.
   have h_score_int : ∫ u : ℝ,
       scoreFun lam alpha gamma t u * fGauss lam alpha gamma t u = 0 := by
     have h_eq : (fun u : ℝ =>
         -(scoreFun lam alpha gamma t u) * fGauss lam alpha gamma t u) =
         (fun u : ℝ => -(scoreFun lam alpha gamma t u * fGauss lam alpha gamma t u)) := by
-      ext u; ring
+      ext u; exact HasDistribNeg.neg_mul (scoreFun lam alpha gamma t u) (fGauss lam alpha gamma t u)
     rw [h_eq] at h_int_zero
     rw [MeasureTheory.integral_neg] at h_int_zero
-    linarith
+    exact neg_eq_zero.mp h_int_zero
   -- Identify J_n with the corresponding integrals.
   have hi1 : Integrable (fun u : ℝ => u * fGauss lam alpha gamma t u) := by
     have h := integrable_pow_mul_fGauss hlam hgamma hdisc ht 1
@@ -2438,19 +2389,22 @@ private lemma J_score_identity
     unfold J_n fGauss
     apply MeasureTheory.integral_congr_ae
     apply Filter.Eventually.of_forall; intro u
-    simp only [pow_one]; ring
+    simp only [pow_one]; exact Eq.symm (mul_assoc u (Real.exp (-u ^ 2 / 2)) (Real.exp
+                           (-rescaledPerturbation lam alpha gamma t u)))
   have hJ2_eq : ∫ u : ℝ, u ^ 2 * fGauss lam alpha gamma t u =
       J_n lam alpha gamma 2 t := by
     unfold J_n fGauss
     apply MeasureTheory.integral_congr_ae
-    apply Filter.Eventually.of_forall; intro u
-    simp only []; ring
+    apply Filter.Eventually.of_forall; exact fun x => Eq.symm (mul_assoc (x ^ 2) (Real.exp (-x ^ 2
+                                         / 2)) (Real.exp (-rescaledPerturbation lam alpha gamma t
+                                         x)))
   have hJ3_eq : ∫ u : ℝ, u ^ 3 * fGauss lam alpha gamma t u =
       J_n lam alpha gamma 3 t := by
     unfold J_n fGauss
     apply MeasureTheory.integral_congr_ae
-    apply Filter.Eventually.of_forall; intro u
-    simp only []; ring
+    apply Filter.Eventually.of_forall; exact fun x => Eq.symm (mul_assoc (x ^ 3) (Real.exp (-x ^ 2
+                                         / 2)) (Real.exp (-rescaledPerturbation lam alpha gamma t
+                                         x)))
   -- Combine: ∫ score·f = ∫ u·f + (3A/√t)·∫ u²·f + (4B/t)·∫ u³·f.
   -- Rewrite the integrand pointwise to a clean associated form, then split.
   have hi23 : Integrable (fun u : ℝ =>
@@ -2459,7 +2413,7 @@ private lemma J_score_identity
     have := (hi2.const_mul (3 * cubicScale lam alpha / Real.sqrt t)).add
       (hi3.const_mul (4 * quarticScale lam gamma / t))
     apply this.congr
-    apply Filter.Eventually.of_forall; intro u; simp [Pi.add_apply]
+    apply Filter.Eventually.of_forall; simp only [Pi.add_apply, implies_true]
   have h_LHS_eq :
       ∫ u : ℝ, scoreFun lam alpha gamma t u * fGauss lam alpha gamma t u =
       J_n lam alpha gamma 1 t +
@@ -2494,7 +2448,8 @@ private lemma J_score_identity
             (hi3.const_mul (4 * quarticScale lam gamma / t))]
       rw [MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
     rw [h_inner, hJ1_eq, hJ2_eq, hJ3_eq]
-    ring
+    exact Eq.symm (add_assoc (J_n lam alpha gamma 1 t) (3 * cubicScale lam alpha / √t * J_n lam
+      alpha gamma 2 t) (4 * quarticScale lam gamma / t * J_n lam alpha gamma 3 t))
   linarith [h_LHS_eq, h_score_int]
 
 /-- (a) **Mean asymptotic, explicit `O(t⁻²)` rate**:
@@ -2538,7 +2493,7 @@ theorem mean_anharmonic_O2_rate
     unfold cubicScale
     set sl : ℝ := Real.sqrt lam with hsl_def
     have hsl2 : sl ^ 2 = lam := by rw [hsl_def]; exact Real.sq_sqrt hlam.le
-    have hsl_ne : sl ≠ 0 := by rw [hsl_def]; exact (Real.sqrt_pos.mpr hlam).ne'
+    have hsl_ne : sl ≠ 0 := hsqrt_lam_ne
     rw [← hsl2]
     field_simp [hsl_ne]
     ring
@@ -2552,7 +2507,8 @@ theorem mean_anharmonic_O2_rate
       (Real.sqrt t * J_n lam alpha gamma 1 t +
         3 * A * J_n lam alpha gamma 0 t) /
         (Real.sqrt lam * J_n lam alpha gamma 0 t) := by
-    field_simp; ring
+    field_simp; exact sub_neg_eq_add (√t * J_n lam alpha gamma 1 t) (J_n lam alpha gamma 0 t * 3 *
+                  A)
   rw [h_combine]
   -- Key Stein-derived identity:
   -- √t·J_1 + 3A·J_0 = 3A·(J_0 - J_2) - (4B/√t)·J_3.
@@ -2603,7 +2559,7 @@ theorem mean_anharmonic_O2_rate
     rw [show (3 * A * (J_n lam alpha gamma 0 t - J_n lam alpha gamma 2 t)) +
         (-(4 * B / Real.sqrt t * J_n lam alpha gamma 3 t)) =
         3 * A * (J_n lam alpha gamma 0 t - J_n lam alpha gamma 2 t) -
-        4 * B / Real.sqrt t * J_n lam alpha gamma 3 t from by ring] at h_tri
+        4 * B / Real.sqrt t * J_n lam alpha gamma 3 t from by rfl] at h_tri
     rw [abs_neg] at h_tri
     -- Now bound each.
     have h_first : |3 * A * (J_n lam alpha gamma 0 t - J_n lam alpha gamma 2 t)| ≤
@@ -2612,7 +2568,7 @@ theorem mean_anharmonic_O2_rate
           |3 * A * (J_n lam alpha gamma 0 t - J_n lam alpha gamma 2 t)| =
           3 * |A| * |J_n lam alpha gamma 0 t - J_n lam alpha gamma 2 t| := by
         rw [abs_mul, abs_mul]
-        rw [show |(3 : ℝ)| = 3 from abs_of_pos (by norm_num)]
+        rw [show |(3 : ℝ)| = 3 from abs_of_pos (three_pos)]
       rw [h_abs_eq, abs_sub_comm]
       exact mul_le_mul_of_nonneg_left h_d (by positivity)
     have h_second : |4 * B / Real.sqrt t * J_n lam alpha gamma 3 t| ≤
@@ -2621,9 +2577,9 @@ theorem mean_anharmonic_O2_rate
           |4 * B / Real.sqrt t * J_n lam alpha gamma 3 t| =
           4 * |B| * |J_n lam alpha gamma 3 t| / Real.sqrt t := by
         rw [abs_mul, abs_div, abs_mul]
-        rw [show |(4 : ℝ)| = 4 from abs_of_pos (by norm_num)]
+        rw [show |(4 : ℝ)| = 4 from abs_of_pos (four_pos)]
         rw [abs_of_pos hsqrt_t_pos]
-        ring
+        exact div_mul_eq_mul_div (4 * |B|) √t |J_n lam alpha gamma 3 t|
       rw [h_abs_eq]
       have h_step1 : 4 * |B| * |J_n lam alpha gamma 3 t| / Real.sqrt t ≤
           4 * |B| * (K_3 / Real.sqrt t) / Real.sqrt t := by
@@ -2635,7 +2591,7 @@ theorem mean_anharmonic_O2_rate
               4 * |B| * K_3 / (Real.sqrt t * Real.sqrt t) by
               field_simp]
         rw [Real.mul_self_sqrt ht_pos.le]
-      linarith
+      exact le_of_le_of_eq h_step1 h_step2
     have h_combine : 3 * |A| * (K_d / t) + 4 * |B| * K_3 / t =
         (3 * |A| * K_d + 4 * |B| * K_3) / t := by field_simp
     linarith

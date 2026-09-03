@@ -60,7 +60,7 @@ theorem jetPotential_eq_pow_mul_profile
   unfold jetPotential jetProfile
   rw [mul_add, Finset.mul_sum]
   congr 1
-  · ring
+  · exact Eq.symm (CommMonoid.mul_comm (u ^ (2 * k)) a)
   · refine Finset.sum_congr rfl fun i _ ↦ ?_
     rw [mul_pow, pow_add]
     ring
@@ -79,7 +79,7 @@ theorem jetPotential_lower_bound
   have hu : (0 : ℝ) ≤ u ^ (2 * k) := by
     rw [pow_mul]
     positivity
-  calc ρ * u ^ (2 * k) = u ^ (2 * k) * ρ := by ring
+  calc ρ * u ^ (2 * k) = u ^ (2 * k) * ρ := Eq.symm (CommMonoid.mul_comm (u ^ (2 * k)) ρ)
     _ ≤ u ^ (2 * k) * jetProfile R a c (q * u) :=
         mul_le_mul_of_nonneg_left (hprof.2 (q * u)) hu
 
@@ -103,7 +103,7 @@ theorem norm_pow_mul_exp_neg_jetPotential_le
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   apply Real.exp_le_exp.mpr
   have := jetPotential_lower_bound (q := q) (k := k) hprof u
-  linarith
+  exact neg_le_neg_iff.mpr this
 
 /-- Every polynomial moment of the jet Gibbs weight is integrable,
 uniformly in `q` (the dominating function does not involve `q`). -/
@@ -145,7 +145,7 @@ theorem integrable_exp_neg_jetPotential
     Integrable (fun u : ℝ ↦
       Real.exp (-jetPotential k R a q c u)) := by
   have h := integrable_pow_mul_exp_neg_jetPotential (q := q) hk 0 hprof
-  exact h.congr (Filter.Eventually.of_forall fun u ↦ by simp)
+  exact h.congr (Filter.Eventually.of_forall fun u ↦ by simp only [pow_zero, one_mul])
 
 /-- The jet partition function is positive. -/
 theorem integral_exp_neg_jetPotential_pos
@@ -158,9 +158,9 @@ theorem integral_exp_neg_jetPotential_pos
   have : Function.support (fun u : ℝ ↦
       Real.exp (-jetPotential k R a q c u)) = Set.univ := by
     ext u
-    simp [Function.mem_support, (Real.exp_pos _).ne']
+    simp only [Function.mem_support, ne_eq, exp_ne_zero, not_false_eq_true, Set.mem_univ]
   rw [this]
-  simp
+  exact NeZero.pos (volume Set.univ)
 
 /-- The normalized moment of the reference jet measure. -/
 noncomputable def normalizedJetMoment

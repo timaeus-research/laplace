@@ -97,7 +97,6 @@ theorem AdmissiblePotential.taylorBase_ge
       taylorBase L * x ^ 2 := by
     rw [taylor_within_apply]
     have h0 : iteratedDerivWithin 0 L Set.univ 0 = 0 := by
-      rw [iteratedDerivWithin_zero]
       exact h.zero
     have h1 : iteratedDerivWithin 1 L Set.univ 0 = 0 := by
       rw [iteratedDerivWithin_one, derivWithin_univ]
@@ -140,8 +139,8 @@ theorem taylorWithinEval_eq_jet
       ∑ k ∈ Finset.Ico 3 (D + 1),
         ((Nat.factorial k : ℝ))⁻¹ * x ^ k * iteratedDeriv k L 0 := by
     rw [Finset.range_eq_Ico,
-      Finset.sum_Ico_consecutive _ (by omega : 0 ≤ 3)
-        (by omega : 3 ≤ D + 1)]
+      Finset.sum_Ico_consecutive _ (by exact Nat.zero_le 3 : 0 ≤ 3)
+        (by exact Nat.le_add_of_sub_le hD : 3 ≤ D + 1)]
   rw [hsplit]
   -- The head: k = 0, 1 vanish; k = 2 is the base term.
   have hhead : (∑ k ∈ Finset.Ico 0 3,
@@ -158,13 +157,13 @@ theorem taylorWithinEval_eq_jet
       ∑ i : Fin (D - 2), taylorCoeff L D i * 1 ^ (i.1 + 1) *
         x ^ (2 * 1 + (i.1 + 1)) := by
     rw [Finset.sum_Ico_eq_sum_range]
-    rw [show D + 1 - 3 = D - 2 by omega]
+    rw [show D + 1 - 3 = D - 2 by rfl]
     rw [← Fin.sum_univ_eq_sum_range (fun i ↦
       ((Nat.factorial (3 + i) : ℝ))⁻¹ * x ^ (3 + i) *
         iteratedDeriv (3 + i) L 0) (D - 2)]
     refine Finset.sum_congr rfl fun i _ ↦ ?_
     rw [taylorCoeff]
-    rw [show 2 + (i.1 + 1) = 3 + i.1 by omega]
+    rw [show 2 + (i.1 + 1) = 3 + i.1 by exact Eq.symm (Nat.succ_add_eq_add_succ 2 ↑i)]
     rw [one_pow]
     ring
   rw [htail, jetPotential]
@@ -206,7 +205,7 @@ theorem stabilized_jet_eq {R' M : ℕ} (hM : R' + 2 < M)
       (∑ k ∈ Finset.Ico 0 R', g k) +
         ∑ k ∈ Finset.Ico R' (M - 2), g k := by
     rw [Finset.range_eq_Ico, Finset.sum_Ico_consecutive _
-      (by omega : 0 ≤ R') (by omega : R' ≤ M - 2)]
+      (by exact Nat.zero_le R' : 0 ≤ R') (by omega : R' ≤ M - 2)]
   have hlow : (∑ k ∈ Finset.Ico 0 R', g k) =
       ∑ k ∈ Finset.range R', f k := by
     rw [Finset.range_eq_Ico]
@@ -220,17 +219,15 @@ theorem stabilized_jet_eq {R' M : ℕ} (hM : R' + 2 < M)
       intro k hk
       have hkR : ¬ k < R' := by
         have := (Finset.mem_Ico.mp hk).1
-        omega
+        exact Nat.not_lt.mpr this
       rw [hg_def]
       simp only [dif_neg hkR]
-      by_cases hk3 : k = M - 3
-      · simp [hk3]
-      · simp [hk3]
+      exact ite_zero_mul (k = M - 3) d (x ^ (2 * 1 + (k + 1)))
     rw [Finset.sum_congr rfl hstep, Finset.sum_ite_eq' _ _ _]
-    rw [if_pos (Finset.mem_Ico.mpr ⟨by omega, by omega⟩),
+    rw [if_pos (Finset.mem_Ico.mpr ⟨by exact Nat.le_sub_of_add_le hM, by omega⟩),
       show 2 * 1 + (M - 3 + 1) = M by omega]
   rw [hL, hR, hsplit, hlow, hhigh]
-  ring
+  exact Eq.symm (add_assoc (a * x ^ (2 * 1)) (∑ k ∈ Finset.range R', f k) (d * x ^ M))
 
 /-- The inner-region bound for a jet tail (the stabilizer envelope's
 inner case, standalone): below the radius
@@ -300,15 +297,13 @@ theorem stabilized_admissible {R' M : ℕ} (hM_even : Even M)
           (∑ i : Fin R', c i * x ^ (2 + (i.1 + 1))) + d * x ^ M := h
       _ = a * x ^ (2 * 1) +
           (∑ i : Fin R', c i * x ^ (2 * 1 + (i.1 + 1))) +
-          d * x ^ M := by norm_num
+          d * x ^ M := rfl
   refine ⟨d, hd0, ⟨?_, ?_, henv', ?_, by positivity, by positivity,
     by positivity⟩, ⟨by positivity, ?_⟩⟩
   · exact jetPotential_continuous 1 (M - 2) a 1 _
   · unfold jetPotential
-    rw [Finset.sum_eq_zero fun i _ ↦ by
-      rw [zero_pow (by omega : 2 * 1 + (i.1 + 1) ≠ 0)]
-      ring]
-    ring
+    simp only [mul_one, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, mul_zero, one_pow,
+      Nat.add_eq_zero_iff, one_ne_zero, and_false, and_self, Finset.sum_const_zero, add_zero]
   · -- The local upper envelope.
     intro x hxδ
     rw [stabilized_jet_eq hM]
@@ -318,16 +313,16 @@ theorem stabilized_admissible {R' M : ℕ} (hM_even : Even M)
       apply mul_le_mul_of_nonneg_left _ hd0
       calc x ^ M = |x| ^ M := (hM_even.pow_abs x).symm
         _ ≤ |x| ^ 2 :=
-            pow_le_pow_of_le_one (abs_nonneg _) hx1 (by omega)
+            pow_le_pow_of_le_one (abs_nonneg _) hx1 (Nat.le_of_add_left_le hM)
         _ = x ^ 2 := sq_abs x
     have habs := abs_le.mp hsum
     unfold jetPotential
     simp only [one_pow, mul_one]
     have hexp : ∀ i : Fin R', 2 * 1 + (i.1 + 1) = 2 + (i.1 + 1) :=
-      fun i ↦ by omega
+      fun i ↦ by rfl
     have hsum_eq : (∑ i : Fin R', c i * x ^ (2 * 1 + (i.1 + 1))) =
         ∑ i : Fin R', c i * x ^ (2 + (i.1 + 1)) :=
-      Finset.sum_congr rfl fun i _ ↦ by rw [hexp i]
+      Finset.sum_congr rfl fun i _ ↦ by rfl
     rw [hsum_eq]
     nlinarith [habs.2]
   · -- The positive jet profile, through the factorization at q = 1.
@@ -337,14 +332,14 @@ theorem stabilized_admissible {R' M : ℕ} (hM_even : Even M)
       unfold jetProfile
       rw [Finset.sum_eq_zero fun i _ ↦ by
         rw [zero_pow (Nat.succ_ne_zero _)]
-        ring]
-      linarith
+        exact CommMonoidWithZero.mul_zero (stabilizedCoeff R' M c d i)]
+      linarith only [ha]
     · have hfac := jetPotential_eq_pow_mul_profile 1 (M - 2) a 1
         (stabilizedCoeff R' M c d) y
       rw [one_mul] at hfac
       have hP := henv' y
       rw [hfac] at hP
-      have hyy : y ^ (2 * 1) = y ^ 2 := by norm_num
+      have hyy : y ^ (2 * 1) = y ^ 2 := rfl
       rw [hyy] at hP
       have hy2 : (0 : ℝ) < y ^ 2 := by positivity
       by_contra hlt
@@ -365,7 +360,7 @@ theorem smooth_stabilized_jet_epsilon
       ε * |x| ^ D := by
   intro ε hε
   obtain ⟨δ₁, hδ₁, hpeano⟩ := taylor_jet_epsilon hL (ε / 2)
-    (by positivity)
+    (half_pos hε)
   refine ⟨min δ₁ (min 1 (ε / (2 * (d + 1)))), by positivity,
     fun x hx ↦ ?_⟩
   have hx1 : |x| ≤ δ₁ := le_trans hx (min_le_left _ _)
@@ -383,7 +378,7 @@ theorem smooth_stabilized_jet_epsilon
       omega
     have hlast : |x| ^ (M - D) ≤ |x| :=
       calc |x| ^ (M - D) ≤ |x| ^ 1 :=
-            pow_le_pow_of_le_one (abs_nonneg _) hx2 (by omega)
+            pow_le_pow_of_le_one (abs_nonneg _) hx2 (Nat.le_sub_of_add_le' hDM)
         _ = |x| := pow_one _
     calc d * |x| ^ M = d * (|x| ^ D * |x| ^ (M - D)) := by
           rw [hsplit]
@@ -396,7 +391,7 @@ theorem smooth_stabilized_jet_epsilon
       _ ≤ ε / 2 * |x| ^ D := by
           have hcoef : d * (ε / (2 * (d + 1))) ≤ ε / 2 := by
             rw [← mul_div_assoc, div_le_div_iff₀ (by positivity)
-              (by norm_num : (0:ℝ) < 2)]
+              (by exact zero_lt_two : (0:ℝ) < 2)]
             nlinarith
           calc d * (|x| ^ D * (ε / (2 * (d + 1)))) =
                 d * (ε / (2 * (d + 1))) * |x| ^ D := by ring
@@ -405,7 +400,7 @@ theorem smooth_stabilized_jet_epsilon
   calc |L x - (taylorWithinEval L D Set.univ 0 x + d * x ^ M)|
       = |(L x - taylorWithinEval L D Set.univ 0 x) - d * x ^ M| := by
         congr 1
-        ring
+        exact sub_add_eq_sub_sub (L x) (taylorWithinEval L D Set.univ 0 x) (d * x ^ M)
     _ ≤ |L x - taylorWithinEval L D Set.univ 0 x| + |d * x ^ M| :=
         abs_sub _ _
     _ ≤ ε / 2 * |x| ^ D + d * |x| ^ M := by
@@ -448,7 +443,7 @@ theorem jet_recovery_stable_partial
       have hji : j.1 < i.1 := hj
       rcases Nat.eq_zero_or_pos n with hn | hn
       · omega
-      · exact ih j.1 (by omega) j le_rfl (by omega)
+      · exact ih j.1 (by omega) j le_rfl (Nat.lt_trans hj hiN)
   exact fun i hiN ↦ key i.1 i le_rfl hiN
 
 set_option maxHeartbeats 3200000 in
@@ -473,17 +468,17 @@ theorem smooth_jet_recovery
     taylorBase L₁ = taylorBase L₂ ∧
       taylorCoeff L₁ (R + 2) = taylorCoeff L₂ (R + 2) := by
   set D : ℕ := R + 2 with hD_def
-  have hD : 2 ≤ D := by omega
+  have hD : 2 ≤ D := Nat.le_add_left 2 R
   set M : ℕ := 2 * (D / 2 + 1) with hM_def
-  have hM_even : Even M := ⟨D / 2 + 1, by rw [hM_def]; ring⟩
+  have hM_even : Even M := ⟨D / 2 + 1, by exact Nat.two_mul (D / 2 + 1)⟩
   have hDM : D < M := by omega
-  have hMR : D - 2 + 2 < M := by omega
+  have hMR : D - 2 + 2 < M := hDM
   have ha₁pos : 0 < taylorBase L₁ :=
     lt_of_lt_of_le h1.rho_pos (h1.taylorBase_ge
-      (hs1.of_le (by exact_mod_cast (by omega : 2 ≤ R + 2))))
+      (hs1.of_le (by exact_mod_cast (by exact Nat.le_add_left 2 R : 2 ≤ R + 2))))
   have ha₂pos : 0 < taylorBase L₂ :=
     lt_of_lt_of_le h2.rho_pos (h2.taylorBase_ge
-      (hs2.of_le (by exact_mod_cast (by omega : 2 ≤ R + 2))))
+      (hs2.of_le (by exact_mod_cast (by exact Nat.le_add_left 2 R : 2 ≤ R + 2))))
   obtain ⟨d₁, hd₁0, hadm₁, hprof₁⟩ := stabilized_admissible
     hM_even hMR ha₁pos (taylorCoeff L₁ D)
   obtain ⟨d₂, hd₂0, hadm₂, hprof₂⟩ := stabilized_admissible
@@ -544,7 +539,8 @@ theorem smooth_jet_recovery
     have hlim := (((hcomp₁ (2 + r)).mul (hqpow (D - 2 - r))).neg).add
       ((hdata r hr).add ((hcomp₂ (2 + r)).mul (hqpow (D - 2 - r))))
     rw [show (-(0 * (0 : ℝ) ^ (D - 2 - r)) +
-        (0 + 0 * (0 : ℝ) ^ (D - 2 - r))) = 0 by ring] at hlim
+        (0 + 0 * (0 : ℝ) ^ (D - 2 - r))) = 0 by exact neg_add_cancel_comm_assoc (0 * 0 ^ (D - 2 -
+                                                  r)) 0] at hlim
     refine hlim.congr' ?_
     filter_upwards [self_mem_nhdsWithin] with q hq
     have hq0 : (0 : ℝ) < q := hq
@@ -558,7 +554,7 @@ theorem smooth_jet_recovery
     have h2r : (0 : ℝ) < q ^ (2 + 2 * r) := by positivity
     have hDr : (0 : ℝ) < q ^ (D - 2 - r) := by positivity
     have hs2 : (0 : ℝ) < q ^ (2 + r) := by positivity
-    have hr0 : (0 : ℝ) < q ^ r := by positivity
+    have hr0 : (0 : ℝ) < q ^ r := pow_pos hq r
     rw [hpow_split]
     field_simp
     ring
@@ -576,19 +572,19 @@ theorem smooth_jet_recovery
         normalizedJetMoment 1 (M - 2) (2 * 1 + (i.1 + 1))
           (taylorBase L₂) q c₂) / q ^ (i.1 + 1)) (𝓝[>] 0) (𝓝 0) := by
     intro i hiR
-    have h := hjetdata (i.1 + 1) (by omega)
+    have h := hjetdata (i.1 + 1) (hiR)
     refine h.congr fun q ↦ ?_
-    rw [show 2 * 1 + (i.1 + 1) = 2 + (i.1 + 1) by omega]
+    rw [show 2 * 1 + (i.1 + 1) = 2 + (i.1 + 1) by exact Nat.add_left_inj.mpr rfl]
   obtain ⟨ha_eq, hc_eq⟩ := jet_recovery_stable_partial le_rfl
     hprof₁ hprof₂ hbase_jet (N := R) hrung_jet
   refine ⟨ha_eq, ?_⟩
   funext i
   have hiM : i.1 < M - 2 := by omega
-  have hiR : i.1 < R := by omega
+  have hiR : i.1 < R := i.isLt
   have := hc_eq ⟨i.1, hiM⟩ hiR
   rw [hc₁_def, hc₂_def, stabilizedCoeff, stabilizedCoeff] at this
-  have hiD : i.1 < D - 2 := by omega
+  have hiD : i.1 < D - 2 := hiR
   rw [dif_pos hiD, dif_pos hiD] at this
-  convert this using 2
+  exact this
 
 end Laplace.OneD

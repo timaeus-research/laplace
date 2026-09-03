@@ -50,7 +50,7 @@ private lemma secondMoment_J_form_exact
     unfold J_n; simp only [pow_zero, one_mul]; exact h0
   have hI2_eq : Real.sqrt (lam * t) ^ (2 + 1) * I2 =
       J_n lam alpha gamma 2 t := by
-    unfold J_n; exact h2
+    exact h2
   have hsq : Real.sqrt (lam * t) ^ 2 = lam * t := Real.sq_sqrt hlamt.le
   have hZ_sub : Z = J_n lam alpha gamma 0 t / Real.sqrt (lam * t) := by
     rw [eq_div_iff hsqrt_lamt_ne, mul_comm]; exact hZ_eq
@@ -62,7 +62,7 @@ private lemma secondMoment_J_form_exact
   set slt : ℝ := Real.sqrt (lam * t) with hslt_def
   have hslt2 : slt ^ 2 = lam * t := hsq
   have hslt_ne : slt ≠ 0 := hsqrt_lamt_ne
-  rw [show slt ^ 3 = (lam * t) * slt from by rw [← hslt2]; ring]
+  rw [show slt ^ 3 = (lam * t) * slt from by rw [← hslt2]; rfl]
   have hlam_ne : lam ≠ 0 := hlam.ne'
   have ht_ne : t ≠ 0 := ht.ne'
   field_simp
@@ -180,17 +180,14 @@ private lemma J0_delta_order2 {lam alpha gamma : ℝ}
     exact h'
   have hm3 : (∫ u : ℝ, u ^ (0 + 3) * Real.exp (-(u ^ 2) / 2)) = 0 := by
     have h' := integral_pow_mul_exp_neg_sq_odd 1
-    norm_num at h' ⊢
     exact h'
   have hm4 : (∫ u : ℝ, u ^ (0 + 4) * Real.exp (-(u ^ 2) / 2)) =
       3 * Real.sqrt (2 * Real.pi) := by
     have h' := integral_pow_mul_exp_neg_sq_half 2
-    norm_num [Nat.doubleFactorial] at h' ⊢
     exact h'
   have hm6 : (∫ u : ℝ, u ^ (0 + 6) * Real.exp (-(u ^ 2) / 2)) =
       15 * Real.sqrt (2 * Real.pi) := by
     have h' := integral_pow_mul_exp_neg_sq_half 3
-    norm_num [Nat.doubleFactorial] at h' ⊢
     exact h'
   rw [hm0, hm3, hm4, hm6] at h
   have harg : Real.sqrt (2 * Real.pi) - cubicScale lam alpha /
@@ -202,10 +199,6 @@ private lemma J0_delta_order2 {lam alpha gamma : ℝ}
     field_simp
     ring
   rw [harg] at h
-  have hJ : J_n lam alpha gamma 0 t = ∫ u : ℝ, u ^ 0 *
-      Real.exp (-(u ^ 2) / 2) *
-      Real.exp (-rescaledPerturbation lam alpha gamma t u) := rfl
-  rw [hJ]
   exact h
 
 /-- `J₂` delta: `|J₂ - c·(1 + (105A²/2 - 15B)/t)| ≤ K/(t√t)`. -/
@@ -227,17 +220,14 @@ private lemma J2_delta_order2 {lam alpha gamma : ℝ}
     exact h'
   have hm5 : (∫ u : ℝ, u ^ (2 + 3) * Real.exp (-(u ^ 2) / 2)) = 0 := by
     have h' := integral_pow_mul_exp_neg_sq_odd 2
-    norm_num at h' ⊢
     exact h'
   have hm6 : (∫ u : ℝ, u ^ (2 + 4) * Real.exp (-(u ^ 2) / 2)) =
       15 * Real.sqrt (2 * Real.pi) := by
     have h' := integral_pow_mul_exp_neg_sq_half 3
-    norm_num [Nat.doubleFactorial] at h' ⊢
     exact h'
   have hm8 : (∫ u : ℝ, u ^ (2 + 6) * Real.exp (-(u ^ 2) / 2)) =
       105 * Real.sqrt (2 * Real.pi) := by
     have h' := integral_pow_mul_exp_neg_sq_half 4
-    norm_num [Nat.doubleFactorial] at h' ⊢
     exact h'
   rw [hm2, hm5, hm6, hm8] at h
   have harg : Real.sqrt (2 * Real.pi) - cubicScale lam alpha /
@@ -266,21 +256,17 @@ private lemma J4_delta_order2 {lam alpha gamma : ℝ}
   have hm4 : (∫ u : ℝ, u ^ 4 * Real.exp (-(u ^ 2) / 2)) =
       3 * Real.sqrt (2 * Real.pi) := by
     have h' := integral_pow_mul_exp_neg_sq_half 2
-    norm_num [Nat.doubleFactorial] at h' ⊢
     exact h'
   have hm7 : (∫ u : ℝ, u ^ (4 + 3) * Real.exp (-(u ^ 2) / 2)) = 0 := by
     have h' := integral_pow_mul_exp_neg_sq_odd 3
-    norm_num at h' ⊢
     exact h'
   have hm8 : (∫ u : ℝ, u ^ (4 + 4) * Real.exp (-(u ^ 2) / 2)) =
       105 * Real.sqrt (2 * Real.pi) := by
     have h' := integral_pow_mul_exp_neg_sq_half 4
-    norm_num [Nat.doubleFactorial] at h' ⊢
     exact h'
   have hm10 : (∫ u : ℝ, u ^ (4 + 6) * Real.exp (-(u ^ 2) / 2)) =
       945 * Real.sqrt (2 * Real.pi) := by
     have h' := integral_pow_mul_exp_neg_sq_half 5
-    norm_num [Nat.doubleFactorial] at h' ⊢
     exact h'
   rw [hm4, hm7, hm8, hm10] at h
   have harg : 3 * Real.sqrt (2 * Real.pi) - cubicScale lam alpha /
@@ -308,16 +294,13 @@ private lemma J3_delta {lam alpha gamma : ℝ}
   have h := hb ht
   have hm3 : (∫ u : ℝ, u ^ 3 * Real.exp (-(u ^ 2) / 2)) = 0 := by
     have h' := integral_pow_mul_exp_neg_sq_odd 1
-    norm_num at h' ⊢
     exact h'
   have hm6 : (∫ u : ℝ, u ^ (3 + 3) * Real.exp (-(u ^ 2) / 2)) =
       15 * Real.sqrt (2 * Real.pi) := by
     have h' := integral_pow_mul_exp_neg_sq_half 3
-    norm_num [Nat.doubleFactorial] at h' ⊢
     exact h'
   have hm7 : (∫ u : ℝ, u ^ (3 + 4) * Real.exp (-(u ^ 2) / 2)) = 0 := by
     have h' := integral_pow_mul_exp_neg_sq_odd 3
-    norm_num at h' ⊢
     exact h'
   rw [hm3, hm6, hm7] at h
   have harg : (0 : ℝ) - cubicScale lam alpha / Real.sqrt t *
@@ -350,7 +333,7 @@ theorem secondMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
   obtain ⟨K₀, hK₀, hd0⟩ := J0_delta_order2 hlam hgamma hdisc
   obtain ⟨K₂, hK₂, hd2⟩ := J2_delta_order2 hlam hgamma hdisc
   set c := Real.sqrt (2 * Real.pi) with hc_def
-  have hc_pos : 0 < c := Real.sqrt_pos.mpr (by positivity)
+  have hc_pos : 0 < c := Real.sqrt_pos.mpr (two_pi_pos)
   set A := cubicScale lam alpha with hA_def
   set B := quarticScale lam gamma with hB_def
   set c₂ : ℝ := 45 * A ^ 2 - 12 * B with hc₂_def
@@ -396,11 +379,10 @@ theorem secondMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
       _ ≤ 1 + |c₂| := by
           have : |c₂| / t ≤ |c₂| := by
             apply div_le_self (abs_nonneg _) ht1
-          linarith
+          exact (add_le_add_iff_left 1).mpr this
   have ht2 : t * Real.sqrt t ≤ t ^ 2 := by
     have hst1 : 1 ≤ Real.sqrt t := by
-      rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
-      exact Real.sqrt_le_sqrt ht1
+      exact one_le_sqrt.mpr ht1
     have hst_le : Real.sqrt t ≤ t := by
       nlinarith [Real.mul_self_sqrt ht0.le]
     nlinarith [mul_le_mul_of_nonneg_left hst_le ht0.le]
@@ -425,7 +407,7 @@ theorem secondMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
             ((1 + c₂ / t) *
               (J_n lam alpha gamma 0 t - c * (1 + q₀ / t)))
           rw [abs_mul] at htri
-          linarith
+          exact add_le_add_left htri |c * (-(c₂ * q₀) / t ^ 2)|
       _ ≤ K₂ / (t * Real.sqrt t)
           + (1 + |c₂|) * (K₀ / (t * Real.sqrt t))
           + c * |c₂ * q₀| / (t * Real.sqrt t) := by
@@ -443,7 +425,7 @@ theorem secondMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
               (1 + |c₂|) * (K₀ / (t * Real.sqrt t)) := by
             apply mul_le_mul h1c₂ hd0t (abs_nonneg _)
             positivity
-          linarith [hd2t]
+          exact add_le_add_three (hd2 ht1) hterm2 hterm3
       _ = (K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀|) /
             (t * Real.sqrt t) := by ring
   -- Divide by the positive denominator.
@@ -462,8 +444,7 @@ theorem secondMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
         (lam * (c / 2)) := by
         rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
         ring_nf
-        nlinarith [hK₂, hK₀, abs_nonneg c₂, abs_nonneg (c₂ * q₀),
-          hc_pos, hlam]
+        rfl
     _ ≤ (2 * (K₂ + (1 + |c₂|) * K₀ + c * |c₂ * q₀|) / (lam * c)) *
         (lam * J_n lam alpha gamma 0 t) := by
         gcongr
@@ -487,7 +468,7 @@ theorem fourthMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
   obtain ⟨K₀, hK₀, hd0⟩ := J0_delta_order2 hlam hgamma hdisc
   obtain ⟨K₄, hK₄, hd4⟩ := J4_delta_order2 hlam hgamma hdisc
   set c := Real.sqrt (2 * Real.pi) with hc_def
-  have hc_pos : 0 < c := Real.sqrt_pos.mpr (by positivity)
+  have hc_pos : 0 < c := Real.sqrt_pos.mpr (two_pi_pos)
   set A := cubicScale lam alpha with hA_def
   set B := quarticScale lam gamma with hB_def
   set c₄ : ℝ := 450 * A ^ 2 - 96 * B with hc₄_def
@@ -528,15 +509,14 @@ theorem fourthMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
   have h3c₄ : |3 + c₄ / t| ≤ 3 + |c₄| := by
     calc |3 + c₄ / t| ≤ |(3 : ℝ)| + |c₄ / t| := abs_add_le _ _
       _ = 3 + |c₄| / t := by
-          rw [show |(3 : ℝ)| = 3 from abs_of_nonneg (by norm_num),
+          rw [show |(3 : ℝ)| = 3 from abs_of_nonneg (zero_le_three),
             abs_div, abs_of_pos ht0]
       _ ≤ 3 + |c₄| := by
           have : |c₄| / t ≤ |c₄| := div_le_self (abs_nonneg _) ht1
-          linarith
+          exact (add_le_add_iff_left 3).mpr this
   have ht2 : t * Real.sqrt t ≤ t ^ 2 := by
     have hst1 : 1 ≤ Real.sqrt t := by
-      rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
-      exact Real.sqrt_le_sqrt ht1
+      exact one_le_sqrt.mpr ht1
     have hst_le : Real.sqrt t ≤ t := by
       nlinarith [Real.mul_self_sqrt ht0.le]
     nlinarith [mul_le_mul_of_nonneg_left hst_le ht0.le]
@@ -561,7 +541,7 @@ theorem fourthMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
             ((3 + c₄ / t) *
               (J_n lam alpha gamma 0 t - c * (1 + q₀ / t)))
           rw [abs_mul] at htri
-          linarith
+          exact add_le_add_left htri |c * (-(c₄ * q₀) / t ^ 2)|
       _ ≤ K₄ / (t * Real.sqrt t)
           + (3 + |c₄|) * (K₀ / (t * Real.sqrt t))
           + c * |c₄ * q₀| / (t * Real.sqrt t) := by
@@ -579,7 +559,7 @@ theorem fourthMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
               (3 + |c₄|) * (K₀ / (t * Real.sqrt t)) := by
             apply mul_le_mul h3c₄ hd0t (abs_nonneg _)
             positivity
-          linarith [hd4t]
+          exact add_le_add_three (hd4 ht1) hterm2 hterm3
       _ = (K₄ + (3 + |c₄|) * K₀ + c * |c₄ * q₀|) /
             (t * Real.sqrt t) := by ring
   have hden_pos : 0 < lam ^ 2 * J_n lam alpha gamma 0 t := by positivity
@@ -595,8 +575,7 @@ theorem fourthMoment_anharmonic_order2_rate {lam alpha gamma : ℝ}
         (lam ^ 2 * (c / 2)) := by
         rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
         ring_nf
-        nlinarith [hK₄, hK₀, abs_nonneg c₄, abs_nonneg (c₄ * q₀),
-          hc_pos, hlam]
+        rfl
     _ ≤ (2 * (K₄ + (3 + |c₄|) * K₀ + c * |c₄ * q₀|) / (lam ^ 2 * c)) *
         (lam ^ 2 * J_n lam alpha gamma 0 t) := by
         gcongr
@@ -616,7 +595,7 @@ theorem thirdMoment_anharmonic_rate {lam alpha gamma : ℝ}
   obtain ⟨K₀, hK₀, hd0⟩ := J0_delta_order2 hlam hgamma hdisc
   obtain ⟨K₃, hK₃, hd3⟩ := J3_delta hlam hgamma hdisc
   set c := Real.sqrt (2 * Real.pi) with hc_def
-  have hc_pos : 0 < c := Real.sqrt_pos.mpr (by positivity)
+  have hc_pos : 0 < c := Real.sqrt_pos.mpr (two_pi_pos)
   set A := cubicScale lam alpha with hA_def
   set q₀ : ℝ := 15 * cubicScale lam alpha ^ 2 / 2 -
     3 * quarticScale lam gamma with hq₀_def
@@ -628,8 +607,7 @@ theorem thirdMoment_anharmonic_rate {lam alpha gamma : ℝ}
   have ht0 : (0 : ℝ) < t := by linarith
   have hst : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht0
   have hst1 : 1 ≤ Real.sqrt t := by
-    rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
-    exact Real.sqrt_le_sqrt ht1
+    exact one_le_sqrt.mpr ht1
   obtain ⟨hJ0_lo, _⟩ := hJ0bd ht
   have hJ0_pos : 0 < J_n lam alpha gamma 0 t := by
     calc (0 : ℝ) < c / 2 := by positivity
@@ -675,7 +653,7 @@ theorem thirdMoment_anharmonic_rate {lam alpha gamma : ℝ}
               15 * A * c / Real.sqrt t))
             (15 * A * (J_n lam alpha gamma 0 t - c * (1 + q₀ / t)))
           rw [abs_mul, abs_mul] at htri
-          linarith
+          exact add_le_add_left htri |15 * A * c * (q₀ / t)|
       _ ≤ Real.sqrt t * (K₃ / t)
           + 15 * |A| * (K₀ / (t * Real.sqrt t))
           + 15 * |A| * c * (|q₀| / t) := by
@@ -686,14 +664,14 @@ theorem thirdMoment_anharmonic_rate {lam alpha gamma : ℝ}
           have h2 : |15 * A| * |J_n lam alpha gamma 0 t -
               c * (1 + q₀ / t)| ≤ 15 * |A| * (K₀ / (t * Real.sqrt t)) := by
             rw [show |15 * A| = 15 * |A| from by
-              rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 15)]]
+              rw [abs_mul, abs_of_nonneg (by exact Nat.ofNat_nonneg' 15 : (0:ℝ) ≤ 15)]]
             apply mul_le_mul_of_nonneg_left hd0t
             positivity
           have h3 : |15 * A * c * (q₀ / t)| =
               15 * |A| * c * (|q₀| / t) := by
             rw [abs_mul, abs_mul, abs_mul, abs_div, abs_of_pos ht0,
               abs_of_pos hc_pos,
-              abs_of_nonneg (by norm_num : (0:ℝ) ≤ 15)]
+              abs_of_nonneg (by exact Nat.ofNat_nonneg' 15 : (0:ℝ) ≤ 15)]
           linarith [h3.le, h3.ge]
       _ ≤ (K₃ + 15 * |A| * K₀ + 15 * |A| * c * |q₀|) /
             Real.sqrt t := by
@@ -704,7 +682,7 @@ theorem thirdMoment_anharmonic_rate {lam alpha gamma : ℝ}
             field_simp
           have e2 : K₀ / (t * Real.sqrt t) ≤ K₀ / Real.sqrt t := by
             gcongr
-            · nlinarith [hst, hst1]
+            · exact (le_mul_iff_one_le_left hst).mpr ht1
           have e3 : |q₀| / t ≤ |q₀| / Real.sqrt t := by
             gcongr
             · nlinarith [Real.mul_self_sqrt ht0.le, hst1]
@@ -735,7 +713,7 @@ theorem thirdMoment_anharmonic_rate {lam alpha gamma : ℝ}
           (Real.sqrt lam ^ 3 * c)) * (Real.sqrt lam ^ 3 * (c / 2)) := by
         rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
         ring_nf
-        nlinarith [hK₃, hK₀, abs_nonneg A, abs_nonneg q₀, hc_pos, hsl]
+        rfl
     _ ≤ (2 * (K₃ + 15 * |A| * K₀ + 15 * |A| * c * |q₀|) /
           (Real.sqrt lam ^ 3 * c)) *
         (Real.sqrt lam ^ 3 * J_n lam alpha gamma 0 t) := by

@@ -121,7 +121,7 @@ theorem gaussian_meso_tail_isLittleO (p M : ℕ) {c : ℝ}
     (fun q : ℝ ↦ ∫ z in (mesoscopicSet d q)ᶜ,
       ‖z‖ ^ p * Real.exp (-c * ‖z‖ ^ 2)) =o[𝓝[>] (0 : ℝ)]
       fun q : ℝ ↦ q ^ M := by
-  have hc2 : (0 : ℝ) < c / 2 := by positivity
+  have hc2 : (0 : ℝ) < c / 2 := half_pos hc
   have hK : (0 : ℝ) ≤ ∫ z : EuclidD d,
       ‖z‖ ^ p * Real.exp (-(c/2) * ‖z‖ ^ 2) :=
     integral_nonneg fun z ↦ by positivity
@@ -145,11 +145,11 @@ theorem gaussian_meso_tail_isLittleO (p M : ℕ) {c : ℝ}
         have hexp : (Real.sqrt q * ‖z‖) * (Real.sqrt q * ‖z‖) =
             q * ‖z‖ ^ 2 := by
           rw [show (Real.sqrt q * ‖z‖) * (Real.sqrt q * ‖z‖) =
-            (Real.sqrt q * Real.sqrt q) * (‖z‖ * ‖z‖) from by ring,
+            (Real.sqrt q * Real.sqrt q) * (‖z‖ * ‖z‖) from mul_mul_mul_comm √q ‖z‖ √q ‖z‖,
             Real.mul_self_sqrt hq0.le, sq]
         rw [hexp] at h1
         rw [div_le_iff₀ hq0, mul_comm]
-        linarith
+        exact Std.le_of_lt h1
       have hsplit : Real.exp (-c * ‖z‖ ^ 2) =
           Real.exp (-(c/2) * ‖z‖ ^ 2) *
             Real.exp (-(c/2) * ‖z‖ ^ 2) := by
@@ -165,7 +165,8 @@ theorem gaussian_meso_tail_isLittleO (p M : ℕ) {c : ℝ}
       calc ‖z‖ ^ p * Real.exp (-c * ‖z‖ ^ 2)
           = Real.exp (-(c/2) * ‖z‖ ^ 2) *
               (‖z‖ ^ p * Real.exp (-(c/2) * ‖z‖ ^ 2)) := by
-            rw [hsplit]; ring
+            rw [hsplit]; exact Eq.symm (mul_rotate' (rexp (-(c / 2) * ‖z‖ ^ 2)) (‖z‖ ^ p) (rexp
+                           (-(c / 2) * ‖z‖ ^ 2)))
         _ ≤ Real.exp (-((c/2) / q)) *
               (‖z‖ ^ p * Real.exp (-(c/2) * ‖z‖ ^ 2)) := by
             refine mul_le_mul_of_nonneg_right hfac ?_
@@ -204,9 +205,7 @@ theorem gaussian_meso_tail_isLittleO (p M : ℕ) {c : ℝ}
   have hq1' : (∫ z : EuclidD d,
       ‖z‖ ^ p * Real.exp (-(c/2) * ‖z‖ ^ 2)) *
       Real.exp (-((c/2) / q)) ≤ ε * ‖q ^ M‖ := by
-    refine le_trans ?_ hq1
-    rw [Real.norm_eq_abs]
-    exact le_abs_self _
+    exact le_of_max_le_left hq1
   calc ∫ z in (mesoscopicSet d q)ᶜ,
       ‖z‖ ^ p * Real.exp (-c * ‖z‖ ^ 2)
       ≤ Real.exp (-((c/2) / q)) * ∫ z : EuclidD d,

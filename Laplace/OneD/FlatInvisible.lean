@@ -52,9 +52,7 @@ theorem flat_perturbation_invisible
   have hMφ : ∀ x, |φ x| ≤ Mφ := by
     intro x
     by_cases hx : x ∈ tsupport φ
-    · calc |φ x| = ‖φ x‖ := (Real.norm_eq_abs _).symm
-        _ ≤ B := hB x hx
-        _ ≤ Mφ := le_max_left _ _
+    · exact le_sup_of_le_left (hB x hx)
     · rw [image_eq_zero_of_notMem_tsupport hx, abs_zero]
       exact le_max_right _ _
   have hMφ0 : 0 ≤ Mφ := le_max_right _ _
@@ -77,7 +75,7 @@ theorem flat_perturbation_invisible
         exact pow_le_pow_left₀ hδ.le hx _
       have h2 : M ≤ D * x ^ (2 * (N + 1)) := by
         rw [hD_def, div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
-        nlinarith [mul_le_mul_of_nonneg_left h1 hM0]
+        exact PosMulMono.mul_le_mul_of_nonneg_left hM0 h1
       calc f x ≤ M := hf_bdd x
         _ ≤ D * x ^ (2 * (N + 1)) := h2
         _ ≤ (C + D) * x ^ (2 * (N + 1)) := by nlinarith
@@ -129,7 +127,7 @@ theorem flat_perturbation_invisible
           apply Real.exp_le_exp.mpr
           have := hf0 x
           nlinarith
-        linarith
+        exact sub_nonneg_of_le this
       · have h := Real.add_one_le_exp (-(t * f x))
         linarith
     calc |φ x * Real.exp (-(t * (x ^ 2 / 2))) -
@@ -190,7 +188,8 @@ theorem flat_perturbation_invisible
             ring
           have h2 : t ^ (-((N : ℝ)) - 1 / 2) ≤ t ^ (-((N : ℝ))) := by
             apply Real.rpow_le_rpow_of_exponent_le ht
-            linarith
+            simp only [one_div, tsub_le_iff_right, le_add_iff_nonneg_right, inv_nonneg,
+              Nat.ofNat_nonneg]
           have h3 : t ^ (-((N : ℝ))) = (t ^ N)⁻¹ := by
             rw [Real.rpow_neg ht0.le, Real.rpow_natCast]
           rw [h1, ← h3]
@@ -207,7 +206,7 @@ theorem flat_perturbation_invisible
               apply mul_le_mul_of_nonneg_left hbridge hK0
           _ = Mφ * (C + D) * (Nat.doubleFactorial (2 * (N + 1) - 1) : ℝ) *
                 Real.sqrt (2 * π) / t ^ N := by
-              rw [div_eq_mul_inv]
+              rfl
 
 /-- The flat-perturbation difference decays superpolynomially, in the
 `IsLittleO` vocabulary of `Laplace.Decay`: the exact hypothesis shape
@@ -237,12 +236,9 @@ theorem flat_perturbation_superpolynomial
     have hrw : K / t ^ (N + 1) = K * ‖t ^ (-((N : ℝ) + 1))‖ := by
       rw [Real.norm_of_nonneg (Real.rpow_nonneg ht0.le _),
         Real.rpow_neg ht0.le,
-        show ((N : ℝ) + 1) = (((N + 1 : ℕ) : ℕ) : ℝ) by push_cast; ring,
+        show ((N : ℝ) + 1) = (((N + 1 : ℕ) : ℕ) : ℝ) by push_cast; rfl,
         Real.rpow_natCast, div_eq_mul_inv]
-    calc ‖(∫ x : ℝ, φ x * Real.exp (-(t * (x ^ 2 / 2)))) -
-          ∫ x : ℝ, φ x * Real.exp (-(t * (x ^ 2 / 2 + f x)))‖
-        ≤ K / t ^ (N + 1) := hbound t htT
-      _ = K * ‖t ^ (-((N : ℝ) + 1))‖ := hrw
+    exact le_of_le_of_eq (hbound t htT) hrw
   have h2 : (fun t : ℝ ↦ t ^ (-((N : ℝ) + 1))) =o[Filter.atTop]
       fun t : ℝ ↦ t ^ (-(N : ℝ)) := by
     refine (Asymptotics.isLittleO_iff_tendsto' ?_).mpr ?_
@@ -251,7 +247,9 @@ theorem flat_perturbation_superpolynomial
     · have hratio : ∀ᶠ t : ℝ in Filter.atTop,
           t ^ (-((N : ℝ) + 1)) / t ^ (-(N : ℝ)) = t⁻¹ := by
         filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
-        rw [← Real.rpow_sub ht, show -((N : ℝ) + 1) - -(N : ℝ) = -1 by ring,
+        rw [← Real.rpow_sub ht, show -((N : ℝ) + 1) - -(N : ℝ) = -1 by simp only [neg_add_rev,
+                                                                         sub_neg_eq_add,
+                                                                         neg_add_cancel_right],
           Real.rpow_neg_one]
       rw [Filter.tendsto_congr' hratio]
       exact tendsto_inv_atTop_zero

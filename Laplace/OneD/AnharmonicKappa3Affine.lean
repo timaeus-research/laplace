@@ -367,7 +367,8 @@ theorem kappa3_anharmonic_shifted_affine_asymptotic
   filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
   -- For `t > 0`, the affine kappa3 equals `a₁ a₂ a₃ · κ₃[id, id, id]`.
   rw [kappa3_anharmonic_shifted_affine_eq_smul hlam hgamma hdisc ht a₁ a₂ a₃ b₁ b₂ b₃]
-  ring
+  exact Eq.symm (mul_left_comm (t ^ 2) (a₁ * a₂ * a₃) (Threepoint.kappa3 volume
+    (anharmonicPotential lam alpha gamma) (fun x => x) t (fun x => x) fun x => x))
 
 end OneD
 

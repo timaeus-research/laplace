@@ -63,12 +63,13 @@ theorem gibbsExp_deriv_anharmonic_asymptotic
           t (fun x : ℝ => x) (fun x : ℝ => x)))
         Filter.atTop (nhds (-1 / lam)) := by
     have h := (cov_self_anharmonic_asymptotic hlam hgamma hdisc).neg
-    have heq : -(1 / lam) = -1 / lam := by ring
+    have heq : -(1 / lam) = -1 / lam := neg_div' lam 1
     rwa [heq] at h
   refine hlim.congr' ?_
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht
   rw [(gibbsExp_deriv_anharmonic_id_id_eq hlam hgamma hdisc ht).deriv,
     threepoint_gibbsCov_zero_eq_laplace]
-  ring
+  exact neg_mul_eq_neg_mul t (gibbsCov (anharmonicPotential lam alpha gamma) t (fun x => x) fun x
+    => x)
 
 end Laplace.OneD

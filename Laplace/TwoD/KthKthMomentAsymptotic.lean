@@ -69,14 +69,14 @@ theorem gibbsExpectation_kthKth_pow_pow_eq
     have heq : (fun x : ℝ =>
         x ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) =
                (fun x : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) := by
-      ext; simp
+      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
     rwa [heq] at h
   have hV : Integrable (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
     have h := Laplace.OneD.kth_integrable_pow_pot (k := k₂) hk₂ 0 ht
     have heq : (fun y : ℝ =>
         y ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) =
                (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
-      ext; simp
+      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
     rwa [heq] at h
   have hf : Integrable (fun x : ℝ => x ^ (2 * j₁) *
       Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) :=

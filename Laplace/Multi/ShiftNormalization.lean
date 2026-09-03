@@ -258,7 +258,7 @@ theorem rayExpansion_taylor (D : HigherLaplaceDomain k L H)
           Real.norm_eq_abs, abs_of_pos ht0]
         calc t * ‖z‖ ≤ t * (‖z‖ + 1) := by
               refine mul_le_mul_of_nonneg_left ?_ ht0.le
-              linarith
+              simp only [le_add_iff_nonneg_right, zero_le_one]
           _ < D.taylorRadius := by
               rw [← lt_div_iff₀ (by positivity : (0:ℝ) < ‖z‖ + 1)]
               exact htlt
@@ -269,18 +269,18 @@ theorem rayExpansion_taylor (D : HigherLaplaceDomain k L H)
             taylorHomogeneousTerm j L z * t ^ j := by
         refine Finset.sum_congr rfl fun j _ ↦ ?_
         rw [taylorHomogeneousTerm_smul]
-        ring
+        exact CommMonoid.mul_comm (t ^ j) (taylorHomogeneousTerm j L z)
       rw [hsum] at hb
       have hnorm : ‖t • z‖ ^ k = ‖z‖ ^ k * t ^ k := by
         rw [norm_smul, Real.norm_eq_abs, abs_of_pos ht0, mul_pow]
-        ring
+        exact CommMonoid.mul_comm (t ^ k) (‖z‖ ^ k)
       rw [Real.norm_eq_abs, Real.norm_eq_abs,
         abs_of_pos (pow_pos ht0 k)]
       calc |L (t • z) - ∑ j ∈ Finset.range k,
             taylorHomogeneousTerm j L z * t ^ j|
           ≤ D.taylorRemainderConst * ‖t • z‖ ^ k := hb
         _ = D.taylorRemainderConst * ‖z‖ ^ k * t ^ k := by
-            rw [hnorm]; ring
+            rw [hnorm]; exact Eq.symm (mul_assoc D.taylorRemainderConst (‖z‖ ^ k) (t ^ k))
     exact hbig.trans_isLittleO
       ((Asymptotics.isLittleO_pow_pow hk).mono nhdsWithin_le_nhds)
   have hpoly : (fun t : ℝ ↦ ∑ j ∈ Finset.Ico 3 k,
@@ -289,7 +289,7 @@ theorem rayExpansion_taylor (D : HigherLaplaceDomain k L H)
     refine Asymptotics.IsLittleO.fun_sum fun j hj ↦ ?_
     have h3 : 2 < j := by
       have := (Finset.mem_Ico.mp hj).1
-      omega
+      exact this
     exact ((Asymptotics.isLittleO_pow_pow h3).mono
       nhdsWithin_le_nhds).const_mul_left _
   refine (hpoly.add hrem).congr' ?_ (Filter.EventuallyEq.refl _ _)
@@ -299,7 +299,7 @@ theorem rayExpansion_taylor (D : HigherLaplaceDomain k L H)
       (∑ j ∈ Finset.range 3, taylorHomogeneousTerm j L z * t ^ j) +
         ∑ j ∈ Finset.Ico 3 k, taylorHomogeneousTerm j L z * t ^ j := by
     simp only [Finset.range_eq_Ico]
-    rw [Finset.sum_Ico_consecutive _ (Nat.zero_le _) (by omega)]
+    rw [Finset.sum_Ico_consecutive _ (Nat.zero_le _) (hk)]
   rw [hsplit]
   ring
 
@@ -312,8 +312,8 @@ theorem taylorHomogeneousTerm_one_eq_zero
   funext z
   have h := Laplace.isAsymptoticExpansionTo_coeff_eq
     (D.rayExpansion_taylor hk z)
-    (D.toLocalQuadraticApprox.rayExpansion_quad z) 1 (by omega)
-  simpa using h
+    (D.toLocalQuadraticApprox.rayExpansion_quad z) 1 (NeZero.one_le)
+  exact h
 
 /-- **The `T₂`/qform tie** at the higher-domain level: coefficient
 uniqueness at order 2. -/
@@ -323,7 +323,7 @@ theorem taylorHomogeneousTerm_two_eq_qform
   have h := Laplace.isAsymptoticExpansionTo_coeff_eq
     (D.rayExpansion_taylor hk z)
     (D.toLocalQuadraticApprox.rayExpansion_quad z) 2 le_rfl
-  simpa using h
+  exact h
 
 /-- **The gradient tensor vanishes**: a 1-multilinear map vanishing on
 diagonals vanishes. -/
@@ -345,7 +345,7 @@ theorem iteratedFDeriv_two_diag (D : HigherLaplaceDomain k L H)
     iteratedFDeriv ℝ 2 L 0 (fun _ ↦ z) = qform H z := by
   have h2 := D.taylorHomogeneousTerm_two_eq_qform hk z
   unfold taylorHomogeneousTerm at h2
-  have hfac : ((Nat.factorial 2 : ℝ))⁻¹ = 2⁻¹ := by norm_num
+  have hfac : ((Nat.factorial 2 : ℝ))⁻¹ = 2⁻¹ := rfl
   rw [hfac] at h2
   linarith
 
@@ -368,9 +368,9 @@ theorem smooth_positive_jet_recovery_of_superPoly_moments
     (hsymm₁ : ∀ k, 1 < k → (iteratedFDeriv ℝ k L₁ 0).IsSymm)
     (hsymm₂ : ∀ k, 1 < k → (iteratedFDeriv ℝ k L₂ 0).IsSymm)
     (hdata₂ : ∀ i j : Fin d, Laplace.SuperPoly (fun t : ℝ ↦
-      (A 3 (by norm_num)).toLocalLaplaceDomain.posteriorMomentT
+      (A 3 (by exact Nat.lt_add_one 2)).toLocalLaplaceDomain.posteriorMomentT
         (fun w ↦ w i * w j) t -
-      (B 3 (by norm_num)).toLocalLaplaceDomain.posteriorMomentT
+      (B 3 (by exact Nat.lt_add_one 2)).toLocalLaplaceDomain.posteriorMomentT
         (fun w ↦ w i * w j) t))
     (hdatak : ∀ k (h2 : 2 < k), ∀ m : Fin k → Fin d,
       Laplace.SuperPoly (fun t : ℝ ↦
@@ -380,13 +380,13 @@ theorem smooth_positive_jet_recovery_of_superPoly_moments
           (monomialTest m) t)) :
     ∀ j, 0 < j → iteratedFDeriv ℝ j L₁ 0 = iteratedFDeriv ℝ j L₂ 0 := by
   have hH : H₁ = H₂ := hessian_recovery_of_superPoly_moments
-    (A 3 (by norm_num)).toLocalLaplaceDomain
-    (B 3 (by norm_num)).toLocalLaplaceDomain hdata₂
+    (A 3 (by exact Nat.lt_add_one 2)).toLocalLaplaceDomain
+    (B 3 (by exact Nat.lt_add_one 2)).toLocalLaplaceDomain hdata₂
   subst hH
   set a : ℝ := L₁ 0 - L₂ 0 with ha
   have hCD : ∀ n : ℕ, ContDiffAt ℝ n L₂ 0 := by
     intro n
-    exact ((B (n + 3) (by omega)).contDiff_k.of_le
+    exact ((B (n + 3) (by exact Nat.lt_of_sub_eq_succ rfl)).contDiff_k.of_le
       (by exact_mod_cast Nat.le_add_right n 3)).contDiffAt
   have hbase : ∀ j < 3, iteratedFDeriv ℝ j L₁ 0 =
       iteratedFDeriv ℝ j (fun w ↦ L₂ w + a) 0 := by
@@ -395,31 +395,31 @@ theorem smooth_positive_jet_recovery_of_superPoly_moments
     · ext v
       rw [iteratedFDeriv_zero_apply, iteratedFDeriv_zero_apply]
       rw [ha]
-      ring
+      simp only [add_sub_cancel]
     · rw [iteratedFDeriv_shift one_ne_zero (hCD 1) a,
-        (A 3 (by norm_num)).iteratedFDeriv_one_eq_zero (by norm_num),
-        (B 3 (by norm_num)).iteratedFDeriv_one_eq_zero (by norm_num)]
+        (A 3 (by exact Nat.lt_add_one 2)).iteratedFDeriv_one_eq_zero (Nat.lt_add_one 2),
+        (B 3 (by exact Nat.lt_add_one 2)).iteratedFDeriv_one_eq_zero (Nat.lt_add_one 2)]
     · rw [iteratedFDeriv_shift two_ne_zero (hCD 2) a]
       refine iteratedFDeriv_eq_of_diag_eq
         (hsymm₁ 2 one_lt_two) (hsymm₂ 2 one_lt_two) fun z ↦ ?_
-      rw [(A 3 (by norm_num)).iteratedFDeriv_two_diag (by norm_num) z,
-        (B 3 (by norm_num)).iteratedFDeriv_two_diag (by norm_num) z]
+      rw [(A 3 (by exact hj)).iteratedFDeriv_two_diag (by exact hj) z,
+        (B 3 (by exact hj)).iteratedFDeriv_two_diag (by exact hj) z]
   have hsymm₂' : ∀ k, 2 < k →
       (iteratedFDeriv ℝ k (fun w ↦ L₂ w + a) 0).IsSymm := by
     intro k hk2
-    rw [iteratedFDeriv_shift (by omega) (hCD k) a]
-    exact hsymm₂ k (by omega)
+    rw [iteratedFDeriv_shift (by exact Nat.ne_zero_of_lt hk2) (hCD k) a]
+    exact hsymm₂ k (Nat.lt_of_add_left_lt hk2)
   have hdatak' : ∀ k (h2 : 2 < k), ∀ m : Fin k → Fin d,
       Laplace.SuperPoly (fun t : ℝ ↦
         (A k h2).toLocalLaplaceDomain.posteriorMomentT
           (monomialTest m) t -
-        ((B k h2).shift (by omega) a).toLocalLaplaceDomain.posteriorMomentT
+        ((B k h2).shift (by exact Nat.ne_zero_of_lt h2) a).toLocalLaplaceDomain.posteriorMomentT
           (monomialTest m) t) := by
     intro k h2 m
     have heq : (fun t : ℝ ↦
         (A k h2).toLocalLaplaceDomain.posteriorMomentT
           (monomialTest m) t -
-        ((B k h2).shift (by omega) a).toLocalLaplaceDomain.posteriorMomentT
+        ((B k h2).shift (by exact Nat.ne_zero_of_lt h2) a).toLocalLaplaceDomain.posteriorMomentT
           (monomialTest m) t) =
         fun t : ℝ ↦
         (A k h2).toLocalLaplaceDomain.posteriorMomentT
@@ -432,8 +432,8 @@ theorem smooth_positive_jet_recovery_of_superPoly_moments
     rw [heq]
     exact hdatak k h2 m
   have hmain := HigherLaplaceDomain.smooth_jet_recovery_of_superPoly_moments
-    A (fun k h2 ↦ (B k h2).shift (by omega) a) hbase
-    (fun k hk2 ↦ hsymm₁ k (by omega)) hsymm₂' hdatak'
+    A (fun k h2 ↦ (B k h2).shift (by exact Nat.ne_zero_of_lt h2) a) hbase
+    (fun k hk2 ↦ hsymm₁ k (by exact Nat.lt_of_add_left_lt hk2)) hsymm₂' hdatak'
   intro j hj
   have h := hmain j
   rwa [iteratedFDeriv_shift hj.ne' (hCD j) a] at h
@@ -450,9 +450,9 @@ theorem analytic_germ_recovery_of_superPoly_moments_free
     (hsymm₁ : ∀ k, 1 < k → (iteratedFDeriv ℝ k L₁ 0).IsSymm)
     (hsymm₂ : ∀ k, 1 < k → (iteratedFDeriv ℝ k L₂ 0).IsSymm)
     (hdata₂ : ∀ i j : Fin d, Laplace.SuperPoly (fun t : ℝ ↦
-      (A 3 (by norm_num)).toLocalLaplaceDomain.posteriorMomentT
+      (A 3 (by exact Nat.lt_add_one 2)).toLocalLaplaceDomain.posteriorMomentT
         (fun w ↦ w i * w j) t -
-      (B 3 (by norm_num)).toLocalLaplaceDomain.posteriorMomentT
+      (B 3 (by exact Nat.lt_add_one 2)).toLocalLaplaceDomain.posteriorMomentT
         (fun w ↦ w i * w j) t))
     (hdatak : ∀ k (h2 : 2 < k), ∀ m : Fin k → Fin d,
       Laplace.SuperPoly (fun t : ℝ ↦

@@ -84,9 +84,10 @@ theorem anharmonic_partition_deriv_step
       have hexp :
           Real.exp (-(t * (anharmonicPotential lam alpha gamma x + 0 * x)))
             = Real.exp (-(t * anharmonicPotential lam alpha gamma x)) := by
-        congr 1; ring
+        simp only [zero_mul, add_zero]
       rw [hexp, abs_mul, abs_of_pos ht, mul_pow]
-      exact le_of_eq (by ring)
+      exact le_of_eq (mul_assoc (t ^ n) (|x| ^ n) (Real.exp (-(t * anharmonicPotential lam alpha
+                           gamma x))))
   -- AE strong measurability of `F' 0`.
   have hF'_meas : AEStronglyMeasurable
       (fun x : ℝ => (-(t * x)) ^ (n + 1) *
@@ -105,13 +106,13 @@ theorem anharmonic_partition_deriv_step
       (|x| ^ (n + 1) * Real.exp (-((t / 2) *
         anharmonicPotential lam alpha gamma x))) with hbound_def
   have h_bound_int : Integrable bound := by
-    have ht_half : 0 < t / 2 := by linarith
+    have ht_half : 0 < t / 2 := half_pos ht
     have h_abs :=
       integrable_abs_pow_mul_exp_neg_t_anharmonic (n + 1) hlam hgamma hdisc ht_half
     have h_total :=
       h_abs.const_mul (t ^ (n + 1) * Real.exp (t / (2 * c)))
     refine h_total.congr (Filter.Eventually.of_forall fun x => ?_)
-    rw [hbound_def]
+    rfl
   -- Pointwise bound `‖F'(h, x)‖ ≤ bound x` for `|h| < 1`.
   have h_F'_bound : ∀ᵐ x : ℝ ∂volume, ∀ h ∈ Metric.ball (0 : ℝ) 1,
       ‖(-(t * x)) ^ (n + 1) *
@@ -168,9 +169,7 @@ theorem anharmonic_partition_deriv_step
           Real.exp (-(t * (anharmonicPotential lam alpha gamma x + 0 * x))))
         = ∫ x : ℝ, (-(t * x)) ^ (n + 1) *
             Real.exp (-(t * anharmonicPotential lam alpha gamma x)) := by
-    apply MeasureTheory.integral_congr_ae
-    filter_upwards with x
-    congr 2; ring
+    simp only [zero_mul, add_zero]
   rw [← h_rhs_eq]
   exact key.2
 
@@ -193,7 +192,7 @@ theorem anharmonic_partition_secondDeriv
         Real.exp (-(t * anharmonicPotential lam alpha gamma x)))
       = ∫ x : ℝ, (t * x) ^ 2 *
         Real.exp (-(t * anharmonicPotential lam alpha gamma x)) := by
-    congr 1; funext x; congr 1; ring
+    simp only [Nat.reduceAdd, even_two, Even.neg_pow]
   rwa [heq] at h
 
 /-- **Third `h`-derivative of `Z` at `h = 0`.** The `h`-derivative at

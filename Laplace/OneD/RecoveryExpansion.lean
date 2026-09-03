@@ -80,7 +80,7 @@ theorem quartic_partition_expansion_bounds {b t : ℝ} (hb : 0 ≤ b)
     refine h.congr (Filter.Eventually.of_forall fun x ↦ ?_)
     simp only [hq_def]
     congr 2
-    rw [show ((Nat.factorial (2 * 1) : ℕ) : ℝ) = 2 by norm_num [Nat.factorial]]
+    rw [show ((Nat.factorial (2 * 1) : ℕ) : ℝ) = 2 by rfl]
     ring
   have hint_q : Integrable q := by
     have := hint_pow 0
@@ -102,7 +102,7 @@ theorem quartic_partition_expansion_bounds {b t : ℝ} (hb : 0 ≤ b)
       rw [Real.norm_of_nonneg (mul_nonneg (hq_pos x).le h0)]
       calc q x * r x ≤ q x * ((t * b) ^ 2 * x ^ 8) :=
             mul_le_mul_of_nonneg_left h1 (hq_pos x).le
-        _ = (t * b) ^ 2 * (x ^ 8 * q x) := by ring
+        _ = (t * b) ^ 2 * (x ^ 8 * q x) := mul_rotate' (q x) ((t * b) ^ 2) (x ^ 8)
   -- The partition function in split form.
   have hZ : partitionFunction (fun x ↦ x ^ 2 / 2 + b * x ^ 4) t =
       ∫ x, (q x - t * b * (x ^ 4 * q x) + q x * r x) := by
@@ -125,13 +125,13 @@ theorem quartic_partition_expansion_bounds {b t : ℝ} (hb : 0 ≤ b)
     have h := integral_pow_mul_exp_neg_t_sq_half 0 ht
     simp only [hq_def]
     norm_num [Nat.doubleFactorial] at h ⊢
-    linarith [h]
+    exact h
   have hm2 : (∫ x, x ^ 4 * q x) =
       3 * Real.sqrt (2 * π) * t ^ (-(5 : ℝ) / 2) := by
     have h := integral_pow_mul_exp_neg_t_sq_half 2 ht
     simp only [hq_def]
     norm_num [Nat.doubleFactorial] at h ⊢
-    linarith [h]
+    exact h
   -- rpow product identity.
   have hpow : t * t ^ (-(5 : ℝ) / 2) = t ^ (-(3 : ℝ) / 2) := by
     nth_rewrite 1 [← Real.rpow_one t]
@@ -156,14 +156,14 @@ theorem quartic_partition_expansion_bounds {b t : ℝ} (hb : 0 ≤ b)
       obtain ⟨h0, h1⟩ := hr_bounds x
       calc q x * r x ≤ q x * ((t * b) ^ 2 * x ^ 8) :=
             mul_le_mul_of_nonneg_left h1 (hq_pos x).le
-        _ = (t * b) ^ 2 * (x ^ 8 * q x) := by ring
+        _ = (t * b) ^ 2 * (x ^ 8 * q x) := mul_rotate' (q x) ((t * b) ^ 2) (x ^ 8)
     refine hle.trans ?_
     have hm4 : (∫ x, x ^ 8 * q x) =
         105 * Real.sqrt (2 * π) * t ^ (-(9 : ℝ) / 2) := by
       have h := integral_pow_mul_exp_neg_t_sq_half 4 ht
       simp only [hq_def]
       norm_num [Nat.doubleFactorial] at h ⊢
-      linarith [h]
+      exact h
     rw [MeasureTheory.integral_const_mul, hm4]
     have hpow2 : t ^ 2 * t ^ (-(9 : ℝ) / 2) = t ^ (-(5 : ℝ) / 2) := by
       rw [← Real.rpow_natCast t 2, ← Real.rpow_add ht]
@@ -206,7 +206,7 @@ theorem quartic_coefficient_recovery_of_eventuallyEq {b₁ b₂ : ℝ}
   have heq := hT t htT
   simp only at heq
   have hsqrt : (0 : ℝ) < Real.sqrt (2 * π) :=
-    Real.sqrt_pos.mpr (by positivity)
+    Real.sqrt_pos.mpr (two_pi_pos)
   have htpow : (0 : ℝ) < t ^ (-(5 : ℝ) / 2) := Real.rpow_pos_of_pos ht0 _
   have hnn₁ : 0 ≤ 105 * b₁ ^ 2 * Real.sqrt (2 * π) * t ^ (-(5 : ℝ) / 2) :=
     by positivity
@@ -227,14 +227,14 @@ theorem quartic_coefficient_recovery_of_eventuallyEq {b₁ b₂ : ℝ}
       3 * D * t * (Real.sqrt (2 * π) * t ^ (-(5 : ℝ) / 2)) := by
     rw [abs_mul, abs_mul, abs_mul]
     rw [abs_of_nonneg hsqrt.le, abs_of_nonneg (mul_pos ht0 htpow).le]
-    rw [show |(3 : ℝ)| = 3 from abs_of_nonneg (by norm_num)]
-    rw [hD_def]
-    ring
+    rw [show |(3 : ℝ)| = 3 from abs_of_nonneg (zero_le_three)]
+    exact mul_mul_mul_comm (3 * |b₁ - b₂|) (√(2 * π)) t (t ^ (-5 / 2))
   rw [hpow, habs] at hgap
   have hkey : 3 * D * t ≤ 105 * S := by
     have h' := hgap.trans_eq
       (show 105 * S * Real.sqrt (2 * π) * t ^ (-(5 : ℝ) / 2) =
-        105 * S * (Real.sqrt (2 * π) * t ^ (-(5 : ℝ) / 2)) by ring)
+        105 * S * (Real.sqrt (2 * π) * t ^ (-(5 : ℝ) / 2)) by exact mul_assoc (105 * S) (√(2 * π))
+                                                                (t ^ (-5 / 2)))
     exact le_of_mul_le_mul_right h' (mul_pos hsqrt htpow)
   -- But t was chosen large enough to contradict this.
   have hmax : (1 : ℝ) ≤ max T 1 := le_max_right _ _

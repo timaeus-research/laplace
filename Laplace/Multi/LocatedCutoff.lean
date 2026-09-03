@@ -112,9 +112,9 @@ theorem superPoly_locatedMoment_of_ccData
       A.locatedMomentT p₁ P t - B.locatedMomentT p₂ P t) := by
   -- the double bump
   set f₁ : ContDiffBump p₁ :=
-    ⟨r₁ / 2, 3 * r₁ / 4, by linarith, by linarith⟩ with hf₁_def
+    ⟨r₁ / 2, 3 * r₁ / 4, by exact half_pos hr₁, by linarith⟩ with hf₁_def
   set f₂ : ContDiffBump p₂ :=
-    ⟨r₂ / 2, 3 * r₂ / 4, by linarith, by linarith⟩ with hf₂_def
+    ⟨r₂ / 2, 3 * r₂ / 4, by exact half_pos hr₂, by linarith⟩ with hf₂_def
   set χ : EuclidD d → ℝ :=
     fun w ↦ 1 - (1 - f₁ w) * (1 - f₂ w) with hχ_def
   have hχ_smooth : ContDiff ℝ ∞ χ :=
@@ -134,8 +134,7 @@ theorem superPoly_locatedMoment_of_ccData
     have h1 : 0 ≤ (1 - f₁ w) * (1 - f₂ w) :=
       mul_nonneg (by linarith [f₁.le_one (x := w)])
         (by linarith [f₂.le_one (x := w)])
-    simp only [hχ_def]
-    linarith
+    exact sub_le_self 1 h1
   have hχ_one₁ : ∀ w ∈ Metric.ball p₁ (r₁ / 2), χ w = 1 := by
     intro w hw
     have h1 : f₁ w = 1 :=
@@ -157,12 +156,12 @@ theorem superPoly_locatedMoment_of_ccData
       have hns : w ∉ Function.support f₁ := by
         rw [f₁.support_eq]
         exact fun hmem ↦ h1 (Metric.ball_subset_closedBall hmem)
-      simpa [Function.mem_support, not_not] using hns
+      exact Function.notMem_support.mp hns
     have hf2 : f₂ w = 0 := by
       have hns : w ∉ Function.support f₂ := by
         rw [f₂.support_eq]
         exact fun hmem ↦ h2 (Metric.ball_subset_closedBall hmem)
-      simpa [Function.mem_support, not_not] using hns
+      exact Function.notMem_support.mp hns
     exact hw (by simp [hχ_def, hf1, hf2])
   have hcb_closed : IsClosed
       (Metric.closedBall p₁ (3 * r₁ / 4) ∪
@@ -186,8 +185,7 @@ theorem superPoly_locatedMoment_of_ccData
     refine (closure_minimal ?_ (isClosed_tsupport χ)).trans hχ_supp
     intro w hw
     have : χ w ≠ 0 := by
-      intro h0
-      exact (Function.mem_support.mp hw) (by rw [h0, mul_zero])
+      exact right_ne_zero_of_mul hw
     exact subset_closure (Function.mem_support.mpr this)
   have hT2phys := hdata (fun w ↦ P w * χ w) hφ_smooth hφ_cs hφ_supp
   -- convert the physical middle term to located moments
@@ -208,11 +206,11 @@ theorem superPoly_locatedMoment_of_ccData
       (hP_growth.comp_const_add p₁)
       (hχ_smooth.continuous.comp (continuous_const.add continuous_id))
       (fun y ↦ hχ0 _) (fun y ↦ hχ1 _)
-      (show (0:ℝ) < r₁ / 2 by linarith) ?_
+      (show (0:ℝ) < r₁ / 2 by exact half_pos hr₁) ?_
     intro y hy
     refine hχ_one₁ (p₁ + y) ?_
     rw [Metric.mem_ball, dist_self_add_left] at *
-    simpa using hy
+    exact mem_ball_zero_iff.mp hy
   have hT3 : Laplace.SuperPoly (fun t : ℝ ↦
       B.posteriorMomentT (fun y ↦ P (p₂ + y)) t -
         B.posteriorMomentT
@@ -222,17 +220,16 @@ theorem superPoly_locatedMoment_of_ccData
       (hP_growth.comp_const_add p₂)
       (hχ_smooth.continuous.comp (continuous_const.add continuous_id))
       (fun y ↦ hχ0 _) (fun y ↦ hχ1 _)
-      (show (0:ℝ) < r₂ / 2 by linarith) ?_
+      (show (0:ℝ) < r₂ / 2 by exact half_pos hr₂) ?_
     intro y hy
     refine hχ_one₂ (p₂ + y) ?_
     rw [Metric.mem_ball, dist_self_add_left] at *
-    simpa using hy
+    exact mem_ball_zero_iff.mp hy
   -- telescope
   have hcomb := (hT1.add hT2).sub hT3
   refine hcomb.congr (Filter.Eventually.of_forall fun t ↦ ?_)
   beta_reduce
   unfold LocalLaplaceDomain.locatedMomentT
-  beta_reduce
-  ring
+  simp only [sub_add_sub_cancel, sub_sub_sub_cancel_right]
 
 end Laplace.Multi

@@ -42,7 +42,8 @@ theorem eq_sum_single (x : EuclidD d) :
     x = ∑ i, x i • EuclideanSpace.single i (1 : ℝ) := by
   ext j
   rw [WithLp.ofLp_sum, Finset.sum_apply]
-  simp
+  simp only [PiLp.smul_apply, PiLp.single_apply, smul_eq_mul, mul_ite, mul_one, mul_zero,
+    Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte]
 
 /-- Continuous bilinear maps expand over the one-hot basis. -/
 theorem clm_bilinear_expand (B : EuclidD d →L[ℝ] EuclidD d →L[ℝ] ℝ)
@@ -105,7 +106,7 @@ theorem ray_deriv {L : EuclidD d → ℝ} (hL : ContDiff ℝ 2 L)
 theorem ray_hasDerivAt_two {L : EuclidD d → ℝ} (hL : ContDiff ℝ 2 L)
     (x : EuclidD d) :
     HasDerivAt (fun q : ℝ ↦ fderiv ℝ L (q • x) x) (hess L x x) 0 := by
-  have hC1 : ContDiff ℝ 1 (fderiv ℝ L) := hL.fderiv_right (by norm_num)
+  have hC1 : ContDiff ℝ 1 (fderiv ℝ L) := hL.fderiv_right (Std.IsPreorder.le_refl (1 + 1))
   have h1 : HasFDerivAt (fderiv ℝ L) (fderiv ℝ (fderiv ℝ L) 0)
       ((0 : ℝ) • x) := by
     rw [zero_smul]
@@ -139,8 +140,7 @@ theorem ray_taylor_eval {L : EuclidD d → ℝ} (hL : ContDiff ℝ 2 L)
     Finset.sum_range_one]
   simp only [iteratedDerivWithin_univ]
   have h0 : iteratedDeriv 0 (fun t : ℝ ↦ L (t • x)) 0 = L 0 := by
-    rw [iteratedDeriv_zero]
-    simp
+    simp only [iteratedDeriv_zero, zero_smul]
   have h1 : iteratedDeriv 1 (fun t : ℝ ↦ L (t • x)) 0 = 0 := by
     rw [iteratedDeriv_one, ray_deriv hL x]
     simp [hgrad]

@@ -132,25 +132,24 @@ private lemma int_pow_two {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
   unfold harmonicPotential at h
   -- (2 * 1 - 1)‼ = 1‼ = 1; cast normalisation.
   have hdf : (((2 * 1 - 1 : ℕ)‼ : ℝ)) = 1 := by
-    change (((1 : ℕ) : ℝ)) = 1
-    exact Nat.cast_one
+    exact Nat.cast_eq_one.mpr rfl
   rw [hdf, Nat.cast_one, show (2 * 1 : ℕ) = 2 from rfl] at h
   rw [h]
   -- Goal: 1 * √(2π) * (λt)^(-(1+1/2)) = (1/(λt)) * √(2π/(λt)).
   have hlamt : 0 < lam * t := mul_pos hlam ht
-  rw [show (2 * Real.pi / (lam * t) : ℝ) = (2 * Real.pi) * (lam * t)⁻¹ by ring,
+  rw [show (2 * Real.pi / (lam * t) : ℝ) = (2 * Real.pi) * (lam * t)⁻¹ by rfl,
       Real.sqrt_mul (by positivity : (0 : ℝ) ≤ 2 * Real.pi),
       show Real.sqrt ((lam * t : ℝ)⁻¹) = (lam * t : ℝ) ^ (-(1 / 2 : ℝ)) by
         rw [Real.sqrt_eq_rpow,
             show ((lam * t : ℝ)⁻¹ : ℝ) = (lam * t : ℝ) ^ (-1 : ℝ) from
               (Real.rpow_neg_one _).symm,
             ← Real.rpow_mul hlamt.le]
-        congr 1; ring]
+        congr 1; exact neg_one_mul (1 / 2)]
   rw [show (1 / (lam * t) : ℝ) = (lam * t : ℝ) ^ (-1 : ℝ) by
-        rw [Real.rpow_neg_one]; ring]
+        rw [Real.rpow_neg_one]; exact one_div (lam * t)]
   rw [show (lam * t : ℝ) ^ (-((1 : ℝ) + 1 / 2)) =
         (lam * t : ℝ) ^ ((-1 : ℝ) + (-(1 / 2 : ℝ))) from by
-        congr 1; ring]
+        congr 1; exact neg_add 1 (1 / 2)]
   rw [Real.rpow_add hlamt]
   ring
 
@@ -158,9 +157,6 @@ private lemma int_pow_two {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
 private lemma int_pow_three {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
     (∫ y : ℝ, y ^ 3 * Real.exp (-(t * (lam / 2 * y ^ 2)))) = 0 := by
   have h := harmonic_int_pow_odd hlam ht 1
-  unfold harmonicPotential at h
-  -- 2*1+1 = 3.
-  rw [show (2 * 1 + 1 : ℕ) = 3 from rfl] at h
   exact h
 
 /-- `∫ y⁴ · exp(-(t·(λ/2)·y²)) dy = 3/(λt)² · √(2π/(λt))`.
@@ -174,34 +170,33 @@ private lemma int_pow_four {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
   unfold harmonicPotential at h
   -- (2 * 2 - 1)‼ = 3‼ = 3; cast normalisation `((2 : ℕ) : ℝ) = 2`.
   have hdf : (((2 * 2 - 1 : ℕ)‼ : ℝ)) = 3 := by
-    change (((3 : ℕ)‼ : ℝ)) = 3
-    have : (3 : ℕ)‼ = 3 := by decide
-    rw [this]; norm_num
-  have hcast2 : ((2 : ℕ) : ℝ) = 2 := by norm_cast
+    rfl
+  have hcast2 : ((2 : ℕ) : ℝ) = 2 := rfl
   rw [hdf, hcast2, show (2 * 2 : ℕ) = 4 from rfl] at h
   rw [h]
   -- Goal: 3 * √(2π) * (λt)^(-(2 + 1/2)) = 3/(λt)² · √(2π/(λt))
   have hlamt : 0 < lam * t := mul_pos hlam ht
-  rw [show (2 * Real.pi / (lam * t) : ℝ) = (2 * Real.pi) * (lam * t)⁻¹ by ring,
+  rw [show (2 * Real.pi / (lam * t) : ℝ) = (2 * Real.pi) * (lam * t)⁻¹ by rfl,
       Real.sqrt_mul (by positivity : (0 : ℝ) ≤ 2 * Real.pi),
       show Real.sqrt ((lam * t : ℝ)⁻¹) = (lam * t : ℝ) ^ (-(1 / 2 : ℝ)) by
         rw [Real.sqrt_eq_rpow,
             show ((lam * t : ℝ)⁻¹ : ℝ) = (lam * t : ℝ) ^ (-1 : ℝ) from
               (Real.rpow_neg_one _).symm,
             ← Real.rpow_mul hlamt.le]
-        congr 1; ring]
+        congr 1; exact neg_one_mul (1 / 2)]
   -- Now: 3 * √(2π) * (λt)^(-(2+1/2)) = 3/(λt)² · √(2π) · (λt)^(-1/2)
   -- Convert (λt)² to (λt)^(2:ℝ).
   rw [show ((lam * t) ^ 2 : ℝ) = (lam * t : ℝ) ^ (2 : ℝ) by
-        rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) from by norm_cast, Real.rpow_natCast]]
+        rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) from by rfl, Real.rpow_natCast]]
   -- Combine RHS: 3/(λt)^(2:ℝ) · √(2π) · (λt)^(-1/2) = 3 * √(2π) * (λt)^(-2) * (λt)^(-1/2)
   rw [show (3 / (lam * t : ℝ) ^ (2 : ℝ)) = 3 * (lam * t : ℝ) ^ (-(2 : ℝ)) by
-        rw [Real.rpow_neg hlamt.le 2]; field_simp]
+        rw [Real.rpow_neg hlamt.le 2]; rfl]
   -- Combine exponents: (λt)^(-2) · (λt)^(-1/2) = (λt)^(-(2+1/2)).
   have hcombine : (lam * t : ℝ) ^ (-((2 : ℝ) + 1 / 2))
       = (lam * t : ℝ) ^ (-(2 : ℝ)) * (lam * t : ℝ) ^ (-(1 / 2 : ℝ)) := by
-    rw [← Real.rpow_add hlamt]; congr 1; ring
-  rw [hcombine]; ring
+    rw [← Real.rpow_add hlamt]; congr 1; exact neg_add 2 (1 / 2)
+  rw [hcombine]; exact mul_mul_mul_comm 3 (√(2 * Real.pi)) ((lam * t) ^ (-2)) ((lam * t) ^ (-(1 /
+                   2)))
 
 /-! ## Public Gibbs-expectation transport lemma
 
@@ -243,7 +238,7 @@ theorem gibbsExp_harmonic_h_eq_unperturbed_shift
     have h1 : (fun x : ℝ => Real.exp (-(t * (lam / 2 * x ^ 2 + h * x))))
         = (fun x : ℝ => (fun (_ : ℝ) => (1 : ℝ)) x *
             Real.exp (-(t * (lam / 2 * x ^ 2 + h * x)))) := by
-      funext x; ring
+      funext x; exact Eq.symm (one_mul (Real.exp (-(t * (lam / 2 * x ^ 2 + h * x)))))
     rw [h1, integral_shifted' hlam h (fun (_ : ℝ) => (1 : ℝ))]
     simp only [one_mul]
   -- Reduce LHS numerator.
@@ -257,18 +252,14 @@ theorem gibbsExp_harmonic_h_eq_unperturbed_shift
   have hRHS_den :
       (∫ w : ℝ, Real.exp (-(t * (lam / 2 * w ^ 2 + 0 * w))))
         = (∫ y : ℝ, Real.exp (-(t * (lam / 2 * y ^ 2)))) := by
-    apply integral_congr_ae
-    filter_upwards with y
-    congr 2; ring
+    simp only [zero_mul, add_zero]
   -- Reduce RHS numerator.
   have hRHS_num :
       (∫ w : ℝ, f (w - h / lam) *
             Real.exp (-(t * (lam / 2 * w ^ 2 + 0 * w))))
         = (∫ y : ℝ, f (y - h / lam) *
             Real.exp (-(t * (lam / 2 * y ^ 2)))) := by
-    apply integral_congr_ae
-    filter_upwards with y
-    congr 2; congr 2; ring
+    simp only [zero_mul, add_zero]
   change (∫ w : ℝ, f w * Real.exp (-(t * (lam / 2 * w ^ 2 + h * w)))) /
        (∫ w : ℝ, Real.exp (-(t * (lam / 2 * w ^ 2 + h * w))))
        = (∫ w : ℝ, f (w - h / lam) *
@@ -276,7 +267,9 @@ theorem gibbsExp_harmonic_h_eq_unperturbed_shift
          (∫ w : ℝ, Real.exp (-(t * (lam / 2 * w ^ 2 + 0 * w))))
   rw [hLHS_num, hLHS_den, hRHS_num, hRHS_den]
   -- Now: (E · A) / (E · Z₀) = A / Z₀ where E = exp(t h²/(2λ)).
-  field_simp
+  exact mul_div_mul_left (∫ (y : ℝ),
+    f (y - h / lam) * Real.exp (-(t * (lam / 2 * y ^ 2)))) (∫ (y : ℝ),
+    Real.exp (-(t * (lam / 2 * y ^ 2)))) hexp_ne
 
 /-! ## The cubic moment -/
 
@@ -497,7 +490,7 @@ theorem gibbsExp_h_quartic_harmonic_eq
         int_pow_four hlam ht, int_pow_three hlam ht,
         int_pow_two hlam ht, int_pow_one hlam ht,
         int_pow_zero hlam ht]
-    ring
+    simp only [mul_zero, sub_zero, one_div, mul_inv_rev]
   -- Combine with denominator.
   unfold Threepoint.gibbsExp
   change (∫ y : ℝ, (y - α) ^ 4 *
@@ -509,11 +502,11 @@ theorem gibbsExp_h_quartic_harmonic_eq
         Real.exp (-(t * (lam / 2 * y ^ 2 + 0 * y)))) =
       (fun y : ℝ => (y - α) ^ 4 *
         Real.exp (-(t * (lam / 2 * y ^ 2)))) := by
-    funext y; congr 2; ring
+    simp only [zero_mul, add_zero]
   have hreduce_den : (fun y : ℝ =>
       Real.exp (-(t * (lam / 2 * y ^ 2 + 0 * y)))) =
       (fun y : ℝ => Real.exp (-(t * (lam / 2 * y ^ 2)))) := by
-    funext y; congr 2; ring
+    simp only [zero_mul, add_zero]
   rw [hreduce_num, hreduce_den, hnum, hZ0]
   have hsqrt_pos : 0 < Real.sqrt (2 * Real.pi / (lam * t)) := by
     apply Real.sqrt_pos.mpr; positivity

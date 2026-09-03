@@ -73,7 +73,7 @@ theorem sector_window_lower_bound
   -- Integrate the constant lower bound over the window.
   have hmeas : MeasurableSet (Set.Icc u (2 * u)) := measurableSet_Icc
   have hvol : volume (Set.Icc u (2 * u)) ≠ ⊤ := by
-    simp [Real.volume_Icc]
+    simp only [volume_Icc, ne_eq, ENNReal.ofReal_ne_top, not_false_eq_true]
   have hintOn : IntegrableOn (fun w ↦ (a w) ^ 2 * Real.exp (-(t * K w)))
       (Set.Icc u (2 * u)) volume :=
     hcont.integrableOn_compact isCompact_Icc
@@ -82,11 +82,8 @@ theorem sector_window_lower_bound
   have hlen : volume.real (Set.Icc u (2 * u)) = u := by
     rw [Real.volume_real_Icc_of_le (by linarith)]
     ring
-  calc u * (c ^ 2 * u ^ (2 * m) * Real.exp (-(4 * (C0 * (t * u ^ 2)))))
-      = volume.real (Set.Icc u (2 * u))
-          • (c ^ 2 * u ^ (2 * m) * Real.exp (-(4 * (C0 * (t * u ^ 2))))) := by
-        rw [hlen, smul_eq_mul]
-    _ ≤ ∫ w in Set.Icc u (2 * u), (a w) ^ 2 * Real.exp (-(t * K w)) := hbound
+  exact le_of_eq_of_le (congrFun (congrArg HMul.hMul (id (Eq.symm hlen))) (c ^ 2 * u ^ (2 * m) *
+    rexp (-(4 * (C0 * (t * u ^ 2)))))) hbound
 
 /-- **Sector lower bound at the Laplace scale** (germbij Lemma 7.2, 1D).
 Substituting `u = (√t)⁻¹` in the window bound, under `4 ≤ r0^2 * t`, gives
@@ -113,9 +110,9 @@ theorem sector_lower_bound
     have hb : (0 : ℝ) ≤ r0 * Real.sqrt t := by positivity
     nlinarith [Real.sq_sqrt ht.le, sq_nonneg (r0 * Real.sqrt t - 2)]
   have hur : 2 * u ≤ r0 := by
-    have : 2 * u = 2 / Real.sqrt t := by rw [hu_def]; ring
+    have : 2 * u = 2 / Real.sqrt t := rfl
     rw [this, div_le_iff₀ hst]
-    linarith
+    exact h2
   -- Algebra of the substitution `u = (√t)⁻¹`.
   have htu : t * u ^ 2 = 1 := by
     rw [hu_def, inv_pow, Real.sq_sqrt ht.le]
@@ -124,7 +121,7 @@ theorem sector_lower_bound
     rw [hu_def, inv_pow, pow_mul, Real.sq_sqrt ht.le]
   have hrpow : t ^ (-(m : ℝ) - 1 / 2) = (t ^ m)⁻¹ * u := by
     rw [hu_def,
-      show -(m : ℝ) - 1 / 2 = -(m : ℝ) + -(1 / 2) by ring,
+      show -(m : ℝ) - 1 / 2 = -(m : ℝ) + -(1 / 2) by rfl,
       Real.rpow_add ht, Real.rpow_neg ht.le, Real.rpow_neg ht.le,
       Real.rpow_natCast, ← Real.sqrt_eq_rpow]
   have hwin := sector_window_lower_bound K a m hc hC0 ht.le hu hur hK2 ha hcont

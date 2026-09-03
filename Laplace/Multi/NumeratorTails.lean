@@ -146,11 +146,11 @@ theorem coeff_polynomial_tail_isLittleO
     exact Asymptotics.IsLittleO.fun_sum fun i _ ↦
       (gaussian_meso_tail_isLittleO i M hlam2).const_mul_left _
   refine (Asymptotics.isBigO_iff.mpr ⟨1, ?_⟩).trans_isLittleO hB
-  filter_upwards [Ioo_mem_nhdsGT (by norm_num : (0 : ℝ) < 1)]
+  filter_upwards [Ioo_mem_nhdsGT (by exact Real.zero_lt_one : (0 : ℝ) < 1)]
     with q hq
   obtain ⟨hq0, hq1⟩ := hq
   have hbase : ∀ z : EuclidD d, (1 : ℝ) ≤ 1 + ‖z‖ :=
-    fun z ↦ by linarith [norm_nonneg z]
+    fun z ↦ by simp only [le_add_iff_nonneg_right, norm_nonneg]
   -- pointwise bound by the collapsed polynomial Gaussian
   have hpt : ∀ z : EuclidD d,
       |P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
@@ -165,7 +165,7 @@ theorem coeff_polynomial_tail_isLittleO
             refine mul_le_mul_of_nonneg_left ?_ hCP0
             have h1 : ‖z‖ ^ n ≤ (1 + ‖z‖) ^ n := by
               gcongr
-              linarith [norm_nonneg z]
+              simp only [le_add_iff_nonneg_left, zero_le_one]
             have h2 : (1 : ℝ) ≤ (1 + ‖z‖) ^ n := one_le_pow₀ (hbase z)
             linarith
         _ = 2 * CP * (1 + ‖z‖) ^ n := by ring
@@ -186,8 +186,7 @@ theorem coeff_polynomial_tail_isLittleO
             Cc j * (1 + ‖z‖) ^ (N + 2 * N) := by
             refine Finset.sum_le_sum fun j hj ↦ ?_
             have hjN : j ≤ N := by
-              have := Finset.mem_range.mp hj
-              omega
+              exact Finset.mem_range_succ_iff.mp hj
             rw [abs_mul, abs_of_pos (pow_pos hq0 j)]
             calc |correctionCoeffFn L N j z| * q ^ j
                 ≤ |correctionCoeffFn L N j z| * 1 :=
@@ -197,7 +196,7 @@ theorem coeff_polynomial_tail_isLittleO
               _ ≤ Cc j * (1 + ‖z‖) ^ (j + 2 * N) := hCc j z
               _ ≤ Cc j * (1 + ‖z‖) ^ (N + 2 * N) := by
                   refine mul_le_mul_of_nonneg_left ?_ (hCc0 j)
-                  exact pow_le_pow_right₀ (hbase z) (by omega)
+                  exact pow_le_pow_right₀ (hbase z) (Nat.add_le_add_right hjN (2 * N))
         _ = (∑ j ∈ Finset.range (N + 1), Cc j) *
             (1 + ‖z‖) ^ (N + 2 * N) := by
             rw [Finset.sum_mul]
@@ -238,7 +237,7 @@ theorem coeff_polynomial_tail_isLittleO
           correctionCoeffFn L N j z * q ^ j
     rw [Finset.mul_sum]
     refine Finset.sum_congr rfl fun j _ ↦ ?_
-    ring
+    exact mul_assoc (P z * rexp (-taylorHomogeneousTerm 2 L z)) (correctionCoeffFn L N j z) (q ^ j)
   have hIW : Integrable (fun z : EuclidD d ↦
       CW * ((1 + ‖z‖) ^ KW *
         Real.exp (-(D.lambda / 2) * ‖z‖ ^ 2))) :=
@@ -294,7 +293,7 @@ theorem coeff_polynomial_tail_isLittleO
       fun z _ ↦ mul_nonneg (by positivity) (Real.exp_pos _).le
   rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg hL0,
     abs_of_nonneg hB0, one_mul]
-  exact le_trans hmono (le_of_eq hsplit)
+  exact le_of_le_of_eq hmono hsplit
 
 
 /-- Integrability of the coefficient polynomial against the Gaussian
@@ -320,7 +319,7 @@ theorem integrable_coeff_polynomial (D : ForwardExpansionDomain N L H)
       ∑ j ∈ Finset.range (N + 1), correctionCoeffFn L N j z * q ^ j
   rw [Finset.mul_sum]
   refine Finset.sum_congr rfl fun j _ ↦ ?_
-  ring
+  exact mul_assoc (P z * rexp (-taylorHomogeneousTerm 2 L z)) (correctionCoeffFn L N j z) (q ^ j)
 
 /-- **The numerator expansion**: for continuous observables of
 polynomial growth, the rescaled numerator is an order-`N` asymptotic
@@ -372,7 +371,7 @@ theorem numerator_hasExpansion (D : ForwardExpansionDomain N L H)
         (μ := volume.restrict (mesoscopicSet d q)ᶜ)
         (f := fun z : EuclidD d ↦
           D.toLocalLaplaceDomain.integrand P q z)
-      simpa [Real.norm_eq_abs] using this
+      exact this
     have h2 : 0 ≤ ∫ z in (mesoscopicSet d q)ᶜ,
         |D.toLocalLaplaceDomain.integrand P q z| :=
       setIntegral_nonneg (measurableSet_mesoscopicSet q).compl
@@ -403,7 +402,7 @@ theorem numerator_hasExpansion (D : ForwardExpansionDomain N L H)
           P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
             ∑ j ∈ Finset.range (N + 1),
               correctionCoeffFn L N j z * q ^ j)
-      simpa [Real.norm_eq_abs] using this
+      exact this
     have h2 : 0 ≤ ∫ z in (mesoscopicSet d q)ᶜ,
         |P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
           ∑ j ∈ Finset.range (N + 1),
@@ -490,8 +489,8 @@ theorem numerator_hasExpansion (D : ForwardExpansionDomain N L H)
                 correctionCoeffFn L N j z) := by
             refine Finset.sum_congr rfl fun j _ ↦ ?_
             rw [MeasureTheory.integral_const_mul]
-            unfold ForwardExpansionDomain.numeratorCoeff
-            ring
+            exact Eq.symm (CommMonoid.mul_comm (q ^ j) (∫ (a : EuclidD d),
+              P a * rexp (-taylorHomogeneousTerm 2 L a) * correctionCoeffFn L N j a))
         _ = ∫ z : EuclidD d, ∑ j ∈ Finset.range (N + 1),
             q ^ j * (P z * Real.exp (-taylorHomogeneousTerm 2 L z) *
               correctionCoeffFn L N j z) :=
@@ -507,7 +506,8 @@ theorem numerator_hasExpansion (D : ForwardExpansionDomain N L H)
             beta_reduce
             rw [Finset.mul_sum]
             refine Finset.sum_congr rfl fun j _ ↦ ?_
-            ring
+            exact mul_rotate' (q ^ j) (P z * rexp (-taylorHomogeneousTerm 2 L z))
+              (correctionCoeffFn L N j z)
     -- (4) the window piece as a difference of set integrals
     have hIOn1 : IntegrableOn (fun z : EuclidD d ↦
         P z * Real.exp (-((L (q • z) - L 0) / q ^ 2)))

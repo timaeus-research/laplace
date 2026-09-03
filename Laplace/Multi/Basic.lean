@@ -52,7 +52,7 @@ lemma gibbsExpectation_const (L : (ι → ℝ) → ℝ) (t : ℝ) (c : ℝ)
   have hZ' : (∫ w : ι → ℝ, Real.exp (-(t * L w))) ≠ 0 := hZ
   simp only [gibbsExpectation, partitionFunction]
   rw [integral_const_mul c (fun w => Real.exp (-(t * L w)))]
-  field_simp
+  exact mul_div_cancel_right₀ c hZ
 
 /-- Scalar-multiplication pulls out of the Gibbs expectation. No hypotheses:
 when `Z(t) = 0` both sides are zero. -/
@@ -60,7 +60,8 @@ lemma gibbsExpectation_smul (L : (ι → ℝ) → ℝ) (t : ℝ) (c : ℝ) (φ :
     gibbsExpectation L t (fun w => c * φ w) = c * gibbsExpectation L t φ := by
   simp only [gibbsExpectation]
   rw [show (fun w => c * φ w * Real.exp (-(t * L w)))
-        = (fun w => c * (φ w * Real.exp (-(t * L w)))) from by funext w; ring,
+        = (fun w => c * (φ w * Real.exp (-(t * L w)))) from by funext w; exact mul_assoc c (φ w)
+                                                                           (Real.exp (-(t * L w))),
       integral_const_mul c (fun w => φ w * Real.exp (-(t * L w))),
       mul_div_assoc]
 
@@ -86,7 +87,8 @@ lemma gibbsExpectation_add (L : (ι → ℝ) → ℝ) (t : ℝ) (φ₁ φ₂ : (
 lemma gibbsCov_symm (L : (ι → ℝ) → ℝ) (t : ℝ) (φ ψ : (ι → ℝ) → ℝ) :
     gibbsCov L t φ ψ = gibbsCov L t ψ φ := by
   simp only [gibbsCov]
-  rw [show (fun w => φ w * ψ w) = (fun w => ψ w * φ w) from by funext w; ring,
+  rw [show (fun w => φ w * ψ w) = (fun w => ψ w * φ w) from by funext w; exact CommMonoid.mul_comm
+                                                                           (φ w) (ψ w),
       mul_comm (gibbsExpectation L t φ)]
 
 /-- Scalar pulls out of the left slot. No hypotheses. -/
@@ -94,7 +96,7 @@ lemma gibbsCov_smul_left (L : (ι → ℝ) → ℝ) (t : ℝ) (c : ℝ) (φ ψ :
     gibbsCov L t (fun w => c * φ w) ψ = c * gibbsCov L t φ ψ := by
   simp only [gibbsCov]
   rw [show (fun w => c * φ w * ψ w) = (fun w => c * (φ w * ψ w)) from
-        by funext w; ring,
+        by funext w; exact mul_assoc c (φ w) (ψ w),
       gibbsExpectation_smul, gibbsExpectation_smul]
   ring
 
@@ -113,7 +115,7 @@ lemma gibbsCov_const_left (L : (ι → ℝ) → ℝ) (t : ℝ) (c : ℝ) (ψ : (
   · simp only [gibbsCov]
     rw [show (fun w => (fun _ => c) w * ψ w) = (fun w => c * ψ w) from rfl,
         gibbsExpectation_smul, gibbsExpectation_const L t c hZ]
-    ring
+    exact sub_self (c * gibbsExpectation L t ψ)
 
 /-- Constants in the right slot give zero covariance. -/
 lemma gibbsCov_const_right (L : (ι → ℝ) → ℝ) (t : ℝ) (φ : (ι → ℝ) → ℝ) (c : ℝ) :

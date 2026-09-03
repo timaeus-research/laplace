@@ -56,7 +56,7 @@ theorem monomialTest_hasPolynomialGrowth (m : Fin k → Fin d) :
           (fun j _ ↦ euclid_abs_coord_le_norm x (m j))
     _ = ‖x‖ ^ k := by
         rw [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
-    _ ≤ 1 + ‖x‖ ^ k := by linarith [pow_nonneg (norm_nonneg x) k]
+    _ ≤ 1 + ‖x‖ ^ k := by linarith only []
 
 theorem monomialTest_isHomogeneous (m : Fin k → Fin d) :
     IsHomogeneousOfDegree k (monomialTest m) := by
@@ -69,10 +69,7 @@ theorem monomialTest_isHomogeneous (m : Fin k → Fin d) :
 /-- Sum-of-singles decomposition of a Euclidean vector. -/
 theorem euclid_eq_sum_single (x : EuclidD d) :
     x = ∑ i : Fin d, x i • EuclideanSpace.single i (1 : ℝ) := by
-  have h := (EuclideanSpace.basisFun (Fin d) ℝ).sum_repr x
-  simp only [EuclideanSpace.basisFun_repr,
-    EuclideanSpace.basisFun_apply] at h
-  exact h.symm
+  exact eq_sum_single x
 
 /-- **Diagonal expansion**: the diagonal of a continuous multilinear
 map on `EuclidD d` is the finite linear combination of monomial tests
@@ -95,7 +92,6 @@ theorem diag_eq_sum_monomialTest
     rw [T.toMultilinearMap.map_smul_univ
       (fun j ↦ x (m j))
       (fun j ↦ EuclideanSpace.single (m j) (1 : ℝ))]
-    simp only [ContinuousMultilinearMap.coe_coe, smul_eq_mul]
     rfl
   calc T (fun _ ↦ x)
       = T.toMultilinearMap (fun _ : Fin k ↦
@@ -218,7 +214,9 @@ theorem iteratedFDeriv_recovery_of_monomial_rates {k : ℕ}
       (fun m ↦ monomialTest_continuous m)
       (fun m ↦ monomialTest_hasPolynomialGrowth m) hq,
     ← Finset.sum_sub_distrib]
-  exact Finset.sum_congr rfl fun m _ ↦ by ring
+  exact Finset.sum_congr rfl fun m _ ↦ by exact mul_sub_left_distrib (c m) (A₁.rescaledMoment
+                                            (monomialTest m) q) (A₂.rescaledMoment (monomialTest m)
+                                            q)
 
 /-- **Finite-jet recovery from monomial data** (J7-prime): moment
 data at the finitely many monomial tests of each degree up to `N`

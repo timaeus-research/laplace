@@ -85,9 +85,7 @@ theorem harmonic_perturbed_numerator_zero_eq
     (lam t : ℝ) (φ : ℝ → ℝ) :
     (∫ w : ℝ, φ w * Real.exp (-(t * ((lam / 2) * w ^ 2 + 0 * w))))
       = (∫ w : ℝ, φ w * Real.exp (-(t * ((lam / 2) * w ^ 2)))) := by
-  congr 1
-  funext w
-  ring_nf
+  simp only [zero_mul, add_zero]
 
 /-- Specialisation to monomial observables. Matches the first conjunct
 of `Threepoint.GibbsObservable` for `(volume, harmonic, id)` at
@@ -105,7 +103,7 @@ theorem harmonic_perturbed_numerator_zero_eq_pow
 lemma abs_mul_le_quarter_lambda_sq_add (lam : ℝ) (hlam : 0 < lam)
     (h x : ℝ) :
     |h * x| ≤ (lam / 4) * x ^ 2 + h ^ 2 / lam := by
-  have h4lam : (0 : ℝ) < 4 * lam := by linarith
+  have h4lam : (0 : ℝ) < 4 * lam := by linarith only [hlam]
   refine abs_le.mpr ⟨?_, ?_⟩
   · -- -((lam/4) · x² + h²/lam) ≤ h · x.
     -- Equivalent (×4·lam) to (lam·x + 2·h)² ≥ 0.
@@ -126,7 +124,7 @@ lemma abs_mul_le_quarter_lambda_sq_add (lam : ℝ) (hlam : 0 < lam)
       field_simp; ring
     have hge : 0 ≤ ((lam / 4) * x ^ 2 + h ^ 2 / lam) - (h * x) := by
       rw [step]; exact div_nonneg hsq h4lam.le
-    linarith
+    exact sub_nonneg.mp hge
 
 /-- Integrability of the dominator `|x|^k · exp(-c · x²)` for `c > 0`,
 `k : ℕ`. Routed through `integrable_rpow_mul_exp_neg_mul_sq` after
@@ -136,7 +134,7 @@ lemma dominator_integrable_pow {c : ℝ} (hc : 0 < c) (k : ℕ) :
     Integrable (fun x : ℝ => |x| ^ k * Real.exp (-c * x ^ 2)) := by
   have h_xk : Integrable (fun x : ℝ => x ^ k * Real.exp (-c * x ^ 2)) := by
     have hk : (-1 : ℝ) < (k : ℝ) := by
-      have : (0 : ℝ) ≤ (k : ℝ) := Nat.cast_nonneg k; linarith
+      linarith only []
     have h := integrable_rpow_mul_exp_neg_mul_sq hc (s := (k : ℝ)) hk
     have heq : (fun x : ℝ => x ^ ((k : ℕ) : ℝ) * Real.exp (-c * x ^ 2))
         = (fun x : ℝ => x ^ k * Real.exp (-c * x ^ 2)) := by
@@ -164,8 +162,7 @@ lemma harmonic_perturbed_integrand_pow_bound
   --     ≤ exp(t · h² / lam) · exp(-(t·lam/4) · x²).
   have h_young : -(h * x) ≤ (lam / 4) * x ^ 2 + h ^ 2 / lam := by
     have := abs_mul_le_quarter_lambda_sq_add lam hlam h x
-    have h_neg : -(h * x) ≤ |h * x| := neg_le_abs _
-    linarith
+    exact le_of_max_le_right this
   have h_lower : (lam / 4) * x ^ 2 - h ^ 2 / lam
                   ≤ (lam / 2) * x ^ 2 + h * x := by linarith
   have h_exp_arg :
@@ -184,13 +181,11 @@ lemma harmonic_perturbed_integrand_pow_bound
     Real.exp_le_exp.mpr h_exp_arg
   -- Step 2: For |h| ≤ 1, t·h²/lam ≤ t/lam.
   have h_sq_le : h ^ 2 ≤ 1 := by
-    have hh' := sq_abs h
-    have := pow_le_pow_left₀ (abs_nonneg h) hh 2
-    nlinarith
+    exact (sq_le_one_iff_abs_le_one h).mpr hh
   have h_coef_le : t * h ^ 2 / lam ≤ t / lam := by
     have h_num : t * h ^ 2 ≤ t * 1 :=
       mul_le_mul_of_nonneg_left h_sq_le ht.le
-    have h_num' : t * h ^ 2 ≤ t := by linarith
+    have h_num' : t * h ^ 2 ≤ t := (mul_le_iff_le_one_right ht).mpr h_sq_le
     exact (div_le_div_iff_of_pos_right hlam).mpr h_num'
   -- Step 3: Combine the two bounds.
   have h_exp_split :
@@ -235,8 +230,7 @@ lemma harmonic_perturbed_integrand_pow_hasDerivAt
         Real.exp (-(t * ((lam / 2) * x ^ 2 + h * x))))) h := by
   -- Build via the chain: affine in h ↦ const_mul t ↦ neg ↦ exp ↦ const_mul x^k.
   have h_id : HasDerivAt (fun h : ℝ => h * x) x h := by
-    have := (hasDerivAt_id h).mul_const x
-    simpa using this
+    exact hasDerivAt_mul_const x
   have h_aff : HasDerivAt (fun h : ℝ => (lam / 2) * x ^ 2 + h * x) x h := by
     have h_const : HasDerivAt (fun _ : ℝ => (lam / 2) * x ^ 2) 0 h :=
       hasDerivAt_const h ((lam / 2) * x ^ 2)
@@ -296,12 +290,12 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_pow
         (fun x : ℝ => x ^ k * Real.exp (-(t * ((lam / 2) * x ^ 2 + 0 * x)))) := by
       have : (fun x : ℝ => x ^ k * Real.exp (-(t * ((lam / 2) * x ^ 2 + 0 * x))))
            = (fun x : ℝ => x ^ k * Real.exp (-(t * ((lam / 2) * x ^ 2)))) := by
-        funext x; ring_nf
+        simp only [zero_mul, add_zero]
       rw [this]
       -- Reduce to integrability of `x^k · exp(-(c · x²))` for `c = t · lam / 2`.
       have htl : 0 < t * lam / 2 := by positivity
       have hk : (-1 : ℝ) < (k : ℝ) := by
-        have : (0 : ℝ) ≤ (k : ℝ) := Nat.cast_nonneg k; linarith
+        linarith only []
       have h_rpow := integrable_rpow_mul_exp_neg_mul_sq htl (s := (k : ℝ)) hk
       have heq : (fun x : ℝ => x ^ ((k : ℕ) : ℝ) * Real.exp (-(t * lam / 2) * x ^ 2))
           = (fun x : ℝ => x ^ k * Real.exp (-(t * ((lam / 2) * x ^ 2)))) := by
@@ -346,7 +340,7 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_pow
       refine Filter.Eventually.of_forall fun x h hx => ?_
       have hh_lt : |h| < 1 := by
         rw [Metric.mem_ball, dist_zero_right] at hx
-        simpa using hx
+        exact hx
       have hh_le : |h| ≤ 1 := hh_lt.le
       -- Rewrite x^k · (-(t·x)) · exp(...) as (-t) · x^(k+1) · exp(...).
       have h_rewrite :
@@ -359,11 +353,7 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_pow
       have h_inner :=
         harmonic_perturbed_integrand_pow_bound hlam ht (k + 1) hh_le x
       -- h_inner : ‖x^(k+1) · exp(-(t·...))‖ ≤ exp(t/lam) · |x|^(k+1) · exp(-(t·lam/4)·x²).
-      have hbound_x :
-          bound x = t * (Real.exp (t / lam) * |x| ^ (k + 1) *
-            Real.exp (-(t * lam / 4) * x ^ 2)) := rfl
-      rw [hbound_x]
-      exact mul_le_mul_of_nonneg_left h_inner ht.le
+      exact (mul_le_mul_iff_of_pos_left ht).mpr h_inner
     -- Pointwise HasDerivAt for each x and each h ∈ ball 0 1.
     have h_diff : ∀ᵐ x : ℝ ∂volume, ∀ h ∈ Metric.ball (0 : ℝ) 1,
         HasDerivAt (fun h : ℝ =>
@@ -389,9 +379,7 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_pow
           = (∫ w : ℝ, w ^ k *
               ((-t * w) * Real.exp (-(t * ((lam / 2) * w ^ 2))))
                 ∂(volume : Measure ℝ)) := by
-      apply MeasureTheory.integral_congr_ae
-      filter_upwards with a
-      ring_nf
+      simp only [zero_mul, add_zero, neg_mul, mul_neg]
     rw [h_eq_deriv] at h_d
     exact h_d
 
@@ -420,7 +408,7 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_id
       (fun x : ℝ => x) t (fun x : ℝ => x) := by
   have h := Threepoint.harmonic_id_gibbsObservable_pow hlam ht 1
   have heq : (fun x : ℝ => x ^ 1) = (fun x : ℝ => x) := by
-    funext x; ring
+    simp only [pow_one]
   rwa [heq] at h
 
 /-- `GibbsObservable` for `fun x => x * x` (the quadratic monomial in

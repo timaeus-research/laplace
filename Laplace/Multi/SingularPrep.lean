@@ -60,7 +60,8 @@ theorem quadratic_upper_bound_of_nonneg {K : (ι → ℝ) → ℝ}
   obtain ⟨M, s, hs, hLip⟩ := hf1.exists_lipschitzOnWith
   -- differentiability on a neighborhood
   obtain ⟨u, hu, hKu⟩ : ∃ u ∈ 𝓝 (0 : ι → ℝ), ContDiffOn ℝ 1 K u :=
-    hK.contDiffOn (m := 1) (by norm_num) (by norm_num)
+    hK.contDiffOn (m := 1) (by exact one_le_two) (by simp only [WithTop.one_eq_coe, ENat.top_ne_one,
+                                               WithTop.ofNat_ne_top, imp_self])
   -- a radius inside both neighborhoods
   obtain ⟨R, hR0, hRsub⟩ : ∃ R : ℝ, 0 < R ∧
       Metric.closedBall (0 : ι → ℝ) R ⊆ s ∩ interior u := by
@@ -68,7 +69,7 @@ theorem quadratic_upper_bound_of_nonneg {K : (ι → ℝ) → ℝ}
       Filter.inter_mem hs (interior_mem_nhds.mpr hu)
     obtain ⟨ε, hε0, hεsub⟩ := Metric.mem_nhds_iff.mp hmem
     exact ⟨ε / 2, by positivity,
-      (Metric.closedBall_subset_ball (by linarith)).trans hεsub⟩
+      (Metric.closedBall_subset_ball (by exact div_two_lt_of_pos hε0)).trans hεsub⟩
   refine ⟨(M : ℝ), R, M.coe_nonneg, hR0, fun w hw ↦ ?_⟩
   -- mean value on the ‖w‖-ball with the Lipschitz gradient bound
   have hball_sub : Metric.closedBall (0 : ι → ℝ) ‖w‖ ⊆
@@ -89,8 +90,7 @@ theorem quadratic_upper_bound_of_nonneg {K : (ι → ℝ) → ℝ}
     intro v hv
     have hvs : v ∈ s := (hRsub (hball_sub hv)).1
     have h0s : (0 : ι → ℝ) ∈ s := by
-      refine (hRsub ?_).1
-      simp [hR0.le]
+      exact mem_of_mem_nhds hs
     have hd := hLip.dist_le_mul v hvs 0 h0s
     rw [hgrad] at hd
     calc ‖fderiv ℝ K v‖ = dist (fderiv ℝ K v) 0 := by
@@ -99,11 +99,11 @@ theorem quadratic_upper_bound_of_nonneg {K : (ι → ℝ) → ℝ}
       _ ≤ (M : ℝ) * ‖w‖ := by
           rw [dist_zero_right]
           refine mul_le_mul_of_nonneg_left ?_ M.coe_nonneg
-          simpa [dist_zero_right] using hv
+          exact mem_closedBall_zero_iff.mp hv
   have h0mem : (0 : ι → ℝ) ∈ Metric.closedBall (0 : ι → ℝ) ‖w‖ := by
-    simp [norm_nonneg]
+    simp only [Metric.mem_closedBall, dist_self, norm_nonneg]
   have hwmem : w ∈ Metric.closedBall (0 : ι → ℝ) ‖w‖ := by
-    simp
+    simp only [Metric.mem_closedBall, dist_zero_right, Std.le_refl]
   have hmvt := Convex.norm_image_sub_le_of_norm_hasFDerivWithin_le
     hdiff hbound (convex_closedBall _ _) h0mem hwmem
   rw [hK0, sub_zero, sub_zero] at hmvt
