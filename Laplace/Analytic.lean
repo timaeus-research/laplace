@@ -46,7 +46,7 @@ theorem analytic_growth_lower_bound (a : ℝ → ℝ) (ha : AnalyticAt ℝ a 0)
   have hboth := heq.and hgev
   rw [Metric.eventually_nhds_iff] at hboth
   obtain ⟨r, hr, hball⟩ := hboth
-  refine ⟨m, |g 0| / 2, r / 2, by positivity, by positivity, hord, ?_⟩
+  refine ⟨m, |g 0| / 2, r / 2, by exact half_pos hgpos, by exact half_pos hr, hord, ?_⟩
   intro w hw
   have hwball : dist w 0 < r := by
     rw [Real.dist_eq, sub_zero, abs_of_nonneg hw.1]

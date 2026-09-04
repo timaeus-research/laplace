@@ -57,9 +57,7 @@ theorem weightedPartition_zero_pos
       = ∫ x : ℝ,
           Real.exp (-(t * (anharmonicPotential lam alpha gamma x + h * x))) := by
     unfold weightedPartition
-    congr 1
-    funext x
-    rw [pow_zero, one_mul]
+    simp only [pow_zero, one_mul]
   rw [heq]
   exact partition_perturbed_pos hlam hgamma hdisc ht hh
 

@@ -42,7 +42,7 @@ theorem map_whitening_volume {H : Matrix (Fin d) (Fin d) ℝ}
   rw [ContinuousLinearMap.coe_coe] at h
   rw [h]
   unfold jacInv
-  rw [← abs_inv]
+  simp only [abs_inv]
 
 /-- **Change of variables through the whitening map.** Holds for any
 almost-everywhere strongly measurable observable. -/

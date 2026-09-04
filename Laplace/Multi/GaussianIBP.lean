@@ -566,11 +566,7 @@ theorem gaussian_second_moment_eq_inverse_entry_scalar
       (gaussianZ H • Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
     rw [h_col]
   -- Unfold momentColumn at coordinate i.
-  change ∫ u : ι → ℝ, u i * u j * gaussianWeight H u =
-      gaussianZ H * (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i
-  have h_lhs : (momentColumn H j) i =
-      ∫ u : ι → ℝ, u i * u j * gaussianWeight H u := rfl
-  rw [← h_lhs, h_apply, Pi.smul_apply, smul_eq_mul]
+  exact h_apply
 
 end InverseEntry
 

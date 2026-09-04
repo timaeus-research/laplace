@@ -79,9 +79,7 @@ theorem continuous_exponentPoly_pow_coeff (L : EuclidD d → ℝ)
   intro i
   induction i with
   | zero =>
-    intro k
-    simp only [pow_zero, Polynomial.coeff_one]
-    exact continuous_const
+    exact fun k => continuous_const
   | succ i ih =>
     intro k
     have hcm : ∀ z : EuclidD d,

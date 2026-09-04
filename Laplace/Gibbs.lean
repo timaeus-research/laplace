@@ -102,7 +102,9 @@ lemma gibbsExpectation_add (L : ℝ → ℝ) (t : ℝ) (φ₁ φ₂ : ℝ → �
   simp only [gibbsExpectation]
   rw [show (fun x => (φ₁ x + φ₂ x) * Real.exp (-(t * L x)))
         = (fun x => φ₁ x * Real.exp (-(t * L x))
-                  + φ₂ x * Real.exp (-(t * L x))) from by funext x; ring,
+                  + φ₂ x * Real.exp (-(t * L x))) from by funext x; exact Semiring.right_distrib
+                                                                      (φ₁ x) (φ₂ x) (Real.exp (-(t
+                                                                      * L x))),
       integral_add h₁ h₂, add_div]
 
 /-- Symmetry: `Cov_t[φ, ψ] = Cov_t[ψ, φ]`. -/

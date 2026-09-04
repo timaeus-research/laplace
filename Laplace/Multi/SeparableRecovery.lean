@@ -85,7 +85,7 @@ theorem secondMoment_coeff_pos {k : ℕ} (hk : 1 ≤ k) {a : ℝ}
   have hfac : (0 : ℝ) < (Nat.factorial (2 * k) : ℝ) := by
     exact_mod_cast Nat.factorial_pos _
   have h2k : (0 : ℝ) < ((2 * k : ℕ) : ℝ) := by
-    have : (0 : ℕ) < 2 * k := by omega
+    have : (0 : ℕ) < 2 * k := Nat.succ_mul_pos 1 hk
     exact_mod_cast this
   have hΓ₁ : 0 < Real.Gamma ((2 * 1 + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) :=
     Real.Gamma_pos_of_pos (by positivity)
