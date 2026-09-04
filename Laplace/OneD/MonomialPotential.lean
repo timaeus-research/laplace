@@ -248,9 +248,9 @@ theorem kth_moment_even
     congr 1
     ext x
     rw [show x ^ (2 * j) = |x| ^ (2 * j) from by
-          rw [pow_mul x 2 j, ← sq_abs x, ← pow_mul],
+          exact Eq.symm (pow_abs_two_mul x),
         show x ^ (2 * k) = |x| ^ (2 * k) from by
-          rw [pow_mul x 2 k, ← sq_abs x, ← pow_mul]]
+          exact Eq.symm (pow_abs_two_mul x)]
   rw [heven]
   -- Step 2: integral_comp_abs gives 2 × half-line integral.
   rw [integral_comp_abs (f := fun y => y ^ (2 * j) *
@@ -261,7 +261,7 @@ theorem kth_moment_even
   have hk_pos : (0 : ℝ) < k := by
     exact Nat.cast_pos'.mpr hk
   have hk_ne : (k : ℝ) ≠ 0 := ne_of_gt hk_pos
-  have h2k_eq : ((2 * k : ℕ) : ℝ) = 2 * (k : ℝ) := by push_cast; exact (mul_left_inj' hk_ne).mpr rfl
+  have h2k_eq : ((2 * k : ℕ) : ℝ) = 2 * (k : ℝ) := by push_cast; rfl
   rw [h2k_eq]
   field_simp
 
@@ -321,7 +321,7 @@ theorem partitionFunction_kthPotential_pos
     0 < partitionFunction (kthPotential k) t := by
   rw [partitionFunction_kthPotential hk ht]
   have hk_pos : (0 : ℝ) < k := by
-    exact_mod_cast (Nat.lt_of_lt_of_le (by simp only [Order.lt_one_iff] : 0 < 1) hk)
+    exact Nat.cast_pos'.mpr hk
   have h2k_pos : 0 < ((2 * k : ℕ) : ℝ) := by
     have : (0 : ℕ) < 2 * k := Nat.succ_mul_pos 1 hk
     exact_mod_cast this

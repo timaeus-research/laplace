@@ -35,7 +35,7 @@ lemma anharmonicPotential_eq_harmonic_add_perturbation
     anharmonicPotential lam alpha gamma x =
       harmonicPotential lam x + anharmonicPerturbation alpha gamma x := by
   unfold anharmonicPotential harmonicPotential anharmonicPerturbation
-  ring
+  exact add_assoc (lam / 2 * x ^ 2) (alpha / 6 * x ^ 3) (gamma / 24 * x ^ 4)
 
 /-- Functional form of the decomposition. -/
 lemma anharmonicPotential_eq_add (lam alpha gamma : ℝ) :
@@ -114,7 +114,7 @@ lemma anharmonic_quadratic_lower_bound (lam alpha gamma : ℝ)
   refine ⟨(3 * lam * gamma - alpha ^ 2) / (6 * gamma), ?_, ?_⟩
   · -- c > 0 since numerator > 0 (by hdisc) and denominator > 0.
     apply div_pos
-    · linarith
+    · exact sub_pos.mpr hdisc
     · linarith
   · intro x
     exact anharmonic_quadratic_min lam alpha gamma x hgamma

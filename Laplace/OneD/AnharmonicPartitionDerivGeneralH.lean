@@ -261,12 +261,10 @@ theorem iteratedDeriv_two_partition_zero
     iteratedDeriv 2 (weightedPartition lam alpha gamma t 0) 0
       = ∫ x : ℝ, (t * x) ^ 2 *
           Real.exp (-(t * anharmonicPotential lam alpha gamma x)) := by
-  rw [iteratedDeriv_weightedPartition_zero hlam hgamma hdisc ht 2 (by norm_num)]
+  rw [iteratedDeriv_weightedPartition_zero hlam hgamma hdisc ht 2 (by simp only [abs_zero,
+                                                                        zero_lt_one])]
   unfold weightedPartition
-  congr 1; funext x
-  have hexp : Real.exp (-(t * (anharmonicPotential lam alpha gamma x + 0 * x)))
-      = Real.exp (-(t * anharmonicPotential lam alpha gamma x)) := by congr 1; ring
-  rw [hexp]; ring
+  simp only [even_two, Even.neg_pow, zero_mul, add_zero]
 
 /-- **Third `h`-derivative of the partition `Z = G 0` at `h = 0`**, as a
 genuine `iteratedDeriv`: `Z'''(0) = ∫ -(t x)³ e^{-tL}`. -/

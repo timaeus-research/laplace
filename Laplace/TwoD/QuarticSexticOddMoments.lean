@@ -74,6 +74,6 @@ theorem gibbsExpectation_quarticSextic_pow_odd_pow_eq_zero
         (Laplace.OneD.quartic_integrable_pow_pot m ht)
         (Laplace.OneD.sextic_integrable_pow_pot (2 * k + 1) ht),
       Laplace.OneD.sextic_expected_value_odd k t]
-  simp
+  exact CommMonoidWithZero.mul_zero ⟨fun x => x ^ m⟩[OneD.quarticPotential, t]
 
 end Laplace.TwoD

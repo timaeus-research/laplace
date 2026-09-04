@@ -53,7 +53,7 @@ theorem secondMoment_smul_kthPotential
   have hta : 0 < t * a := mul_pos ht ha
   have h := gibbsExpectation_kthPotential_even hk 1 (t := t * a) hta
   have hφ : (fun x : ℝ ↦ x ^ (2 * 1)) = fun x : ℝ ↦ x ^ 2 := by
-    funext x; norm_num
+    simp only [mul_one]
   rw [hφ] at h
   rw [h]
   have hk0 : (0 : ℝ) < (k : ℝ) := by
@@ -85,7 +85,7 @@ theorem secondMoment_coeff_pos {k : ℕ} (hk : 1 ≤ k) {a : ℝ}
   have hfac : (0 : ℝ) < (Nat.factorial (2 * k) : ℝ) := by
     exact_mod_cast Nat.factorial_pos _
   have h2k : (0 : ℝ) < ((2 * k : ℕ) : ℝ) := by
-    have : (0 : ℕ) < 2 * k := by omega
+    have : (0 : ℕ) < 2 * k := Nat.succ_mul_pos 1 hk
     exact_mod_cast this
   have hΓ₁ : 0 < Real.Gamma ((2 * 1 + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) :=
     Real.Gamma_pos_of_pos (by positivity)
@@ -137,7 +137,7 @@ theorem kth_secondMoment_recovery
       Real.Gamma ((2 * 1 + 1 : ℝ) / ((2 * k₁ : ℕ) : ℝ)) /
         Real.Gamma ((1 : ℝ) / ((2 * k₁ : ℕ) : ℝ)) := by
     have h2k : (0 : ℝ) < ((2 * k₁ : ℕ) : ℝ) := by
-      have : (0 : ℕ) < 2 * k₁ := by omega
+      have : (0 : ℕ) < 2 * k₁ := Nat.succ_mul_pos 1 hk₁
       exact_mod_cast this
     have hΓ₁ : 0 < Real.Gamma ((2 * 1 + 1 : ℝ) / ((2 * k₁ : ℕ) : ℝ)) :=
       Real.Gamma_pos_of_pos (by positivity)

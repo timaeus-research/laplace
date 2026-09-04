@@ -200,7 +200,7 @@ theorem integral_pow_mul_exp_neg_t_sq_half (k : ℕ) {t : ℝ} (ht : 0 < t) :
           rw [mul_pow, show (sqrt t) ^ (2 * k) = t ^ k by
                 rw [pow_mul, Real.sq_sqrt ht.le]]]
     rw [show (x * sqrt t) ^ 2 = t * x ^ 2 by
-          rw [mul_pow, Real.sq_sqrt ht.le]; exact CommMonoid.mul_comm (x ^ 2) t]
+          rw [mul_pow, Real.sq_sqrt ht.le]; exact mul_comm' (x ^ 2) t]
     ring
   -- Combine `hLHS = hkey-LHS` and `hkey-RHS = (1/√t) · standard moment`.
   have hstd := integral_pow_mul_exp_neg_sq_half k
@@ -212,9 +212,7 @@ theorem integral_pow_mul_exp_neg_t_sq_half (k : ℕ) {t : ℝ} (ht : 0 < t) :
   have htk : (t : ℝ) ^ k ≠ 0 := pow_ne_zero k ht.ne'
   have : ∫ x : ℝ, x ^ (2 * k) * exp (-(t * x ^ 2) / 2) =
       (t ^ k)⁻¹ * ((sqrt t)⁻¹ * (((2 * k - 1)‼ : ℝ) * sqrt (2 * π))) := by
-    have := hkey
-    field_simp at this ⊢
-    exact this
+    exact (eq_inv_mul_iff_mul_eq₀ htk).mpr hkey
   rw [this]
   -- Simplify the prefactor: (t^k)⁻¹ * (√t)⁻¹ = t^(-(k + 1/2)).
   rw [show ((t : ℝ) ^ k)⁻¹ * ((sqrt t)⁻¹ * (((2 * k - 1)‼ : ℝ) * sqrt (2 * π))) =

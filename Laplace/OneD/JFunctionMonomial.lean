@@ -54,14 +54,14 @@ vs `|x| ≥ 1` (where `x^(2k) ≥ x^2`). -/
 private lemma sq_le_one_add_pow_two_mul {k : ℕ} (hk : 1 ≤ k) (x : ℝ) :
     x ^ 2 ≤ 1 + x ^ (2 * k) := by
   have hxsq : (0 : ℝ) ≤ x ^ 2 := sq_nonneg x
-  have hpow_eq : x ^ (2 * k) = (x ^ 2) ^ k := by rw [pow_mul]
+  have hpow_eq : x ^ (2 * k) = (x ^ 2) ^ k := pow_mul x 2 k
   rw [hpow_eq]
   set y : ℝ := x ^ 2 with hy_def
   -- Goal: y ≤ 1 + y^k, given 0 ≤ y, 1 ≤ k.
   rcases le_or_gt y 1 with h | h
   · -- y ≤ 1: y^k ≥ 0, so 1 + y^k ≥ 1 ≥ y.
     have hyk : (0 : ℝ) ≤ y ^ k := pow_nonneg hxsq k
-    linarith
+    exact le_add_of_le_of_nonneg h hyk
   · -- y > 1: y^k ≥ y, so 1 + y^k ≥ 1 + y ≥ y.
     have hyk : y ≤ y ^ k := by
       calc y = y ^ 1 := (pow_one y).symm
@@ -144,12 +144,10 @@ private lemma kth_jfunction_centered_subst {k : ℕ} (hk : 1 ≤ k)
                     * (prior (u / t ^ ((1 : ℝ) / ((2 * k : ℕ) : ℝ))) - prior 0) := by
   set p : ℕ := 2 * k with hp_def
   have hp_pos : 0 < p := by
-    have : 0 < 2 * k := by omega
-    exact this
+    exact Nat.succ_mul_pos 1 hk
   set pR : ℝ := (p : ℝ) with hpR_def
   have hpR_pos : (0 : ℝ) < pR := by
-    change (0 : ℝ) < (p : ℝ)
-    exact_mod_cast hp_pos
+    exact Nat.cast_pos'.mpr hp_pos
   have hpR_ne : pR ≠ 0 := ne_of_gt hpR_pos
   set α : ℝ := 1 / pR with hα_def
   set a : ℝ := t ^ α with ha_def
@@ -161,13 +159,12 @@ private lemma kth_jfunction_centered_subst {k : ℕ} (hk : 1 ≤ k)
     exact_mod_cast Nat.factorial_pos _
   -- α * p = 1 (used twice: in ha_p and elsewhere).
   have hα_p : α * (p : ℝ) = 1 := by
-    rw [hα_def, hpR_def]
-    field_simp
+    exact one_div_mul_cancel hpR_ne
   -- Compute a^p = t.
   have ha_p : a ^ p = t := by
     calc a ^ p
         = a ^ (p : ℝ) := by rw [Real.rpow_natCast]
-      _ = (t ^ α) ^ (p : ℝ) := by rw [ha_def]
+      _ = (t ^ α) ^ (p : ℝ) := rfl
       _ = t ^ (α * (p : ℝ)) := by rw [← Real.rpow_mul (le_of_lt ht)]
       _ = t ^ (1 : ℝ) := by rw [hα_p]
       _ = t := Real.rpow_one t
@@ -180,16 +177,16 @@ private lemma kth_jfunction_centered_subst {k : ℕ} (hk : 1 ≤ k)
     funext w
     change Real.exp (-((w * a) ^ p / fac)) * (prior ((w * a) / a) - prior 0)
         = Real.exp (-(t * w ^ p / fac)) * (prior w - prior 0)
-    have hwa : (w * a) / a = w := by field_simp
+    have hwa : (w * a) / a = w := mul_div_cancel_right₀ w ha_ne
     -- Crucial: use mul_pow for (w·a)^p = w^p · a^p (NOT ring; generic p won't unify).
     have hpow : (w * a) ^ p = t * w ^ p := by
       rw [mul_pow, ha_p]
-      ring
+      exact mul_comm' (w ^ p) t
     rw [hwa, hpow]
   -- Apply Measure.integral_comp_mul_right: ∫ w, g(w · a) dw = |a⁻¹| · ∫ y, g(y) dy.
   have h_change : (∫ w : ℝ, g (w * a)) = |a⁻¹| * ∫ y : ℝ, g y := by
     have := MeasureTheory.Measure.integral_comp_mul_right g a
-    simpa [smul_eq_mul] using this
+    exact this
   have habs : |a⁻¹| = 1 / a := by
     rw [abs_of_pos (inv_pos.mpr ha_pos), inv_eq_one_div]
   -- Combine.
@@ -207,12 +204,10 @@ private lemma kth_dominator_integrable {k : ℕ} (hk : 1 ≤ k) (M : ℝ) :
     Integrable
       (fun u : ℝ => 2 * M * Real.exp (-(u ^ (2 * k) / (Nat.factorial (2 * k) : ℝ)))) := by
   -- `kth_integrable` at `t = 1` gives `Integrable (fun x => exp(-(1·x^(2k)/(2k)!)))`.
-  have h := kth_integrable hk (by norm_num : (0 : ℝ) < 1)
+  have h := kth_integrable hk (by exact Real.zero_lt_one : (0 : ℝ) < 1)
   have heq : (fun x : ℝ => Real.exp (-(1 * x ^ (2 * k) / (Nat.factorial (2 * k) : ℝ))))
               = (fun x : ℝ => Real.exp (-(x ^ (2 * k) / (Nat.factorial (2 * k) : ℝ)))) := by
-    funext x
-    congr 1
-    ring
+    simp only [one_mul]
   rw [heq] at h
   exact h.const_mul (2 * M)
 
@@ -341,11 +336,10 @@ theorem kth_partition {k : ℕ} (hk : 1 ≤ k) {t : ℝ} (ht : 0 < t) :
         * ((Nat.factorial (2 * k) : ℝ) / t) ^ ((1 : ℝ) / ((2 * k : ℕ) : ℝ))
         * Real.Gamma ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) := by
   set p : ℕ := 2 * k with hp_def
-  have hp_pos : 0 < p := by change 0 < 2 * k; omega
+  have hp_pos : 0 < p := Nat.succ_mul_pos 1 hk
   set pR : ℝ := (p : ℝ) with hpR_def
   have hpR_pos : (0 : ℝ) < pR := by
-    change (0 : ℝ) < (p : ℝ)
-    exact_mod_cast hp_pos
+    exact Nat.cast_pos'.mpr hp_pos
   have hpR_ne : pR ≠ 0 := ne_of_gt hpR_pos
   set fac : ℝ := (Nat.factorial p : ℝ) with hfac_def
   have hfac_pos : (0 : ℝ) < fac := by
@@ -358,12 +352,12 @@ theorem kth_partition {k : ℕ} (hk : 1 ≤ k) {t : ℝ} (ht : 0 < t) :
                 = (fun x : ℝ => Real.exp (-(t * |x| ^ p / fac))) := by
     funext x
     have hpow_abs : |x| ^ p = x ^ p := by
-      rw [show p = 2 * k from rfl, pow_mul, pow_mul, sq_abs]
+      exact pow_abs_two_mul x
     rw [hpow_abs]
   rw [heven]
   rw [integral_comp_abs (f := fun y => Real.exp (-(t * y ^ p / fac)))]
   -- Step 2: the half-line integral via `integral_rpow_mul_exp_neg_mul_rpow` at q = 0.
-  have hq : (-1 : ℝ) < (0 : ℝ) := by norm_num
+  have hq : (-1 : ℝ) < (0 : ℝ) := neg_one_lt_zero
   have key := integral_rpow_mul_exp_neg_mul_rpow
     (p := pR) (q := (0 : ℝ)) (b := t / fac)
     hpR_pos hq ht_fac
@@ -375,33 +369,33 @@ theorem kth_partition {k : ℕ} (hk : 1 ≤ k) {t : ℝ} (ht : 0 < t) :
     rw [mem_Ioi] at hx
     have hxnn : (0 : ℝ) ≤ x := le_of_lt hx
     have hxR : x ^ pR = x ^ p := by
-      rw [hpR_def, Real.rpow_natCast]
+      exact rpow_natCast x p
     rw [hxR, Real.rpow_zero, one_mul]
     congr 1
     field_simp
   rw [hhalf, key]
   -- key gives: (t/fac)^(-(0+1)/pR) * (1/pR) * Γ((0+1)/pR)
   -- Simplify exponent (0+1)/pR = 1/pR (also covers the negated form -(0+1)/pR = -(1/pR)).
-  have hexp_pos : ((0 : ℝ) + 1) / pR = 1 / pR := by ring
+  have hexp_pos : ((0 : ℝ) + 1) / pR = 1 / pR := by simp only [zero_add, one_div]
   have hexp_neg : -((0 : ℝ) + 1) / pR = -(1 / pR) := by ring
   rw [hexp_pos, hexp_neg]
   -- Convert (t/fac)^(-(1/pR)) to (fac/t)^(1/pR).
   have hinv : (t / fac : ℝ) ^ (-(1 / pR)) = (fac / t : ℝ) ^ (1 / pR) := by
-    rw [show (fac / t : ℝ) = (t / fac)⁻¹ by field_simp]
-    rw [inv_rpow ht_fac.le, ← Real.rpow_neg ht_fac.le]
+    rw [show (fac / t : ℝ) = (t / fac)⁻¹ by exact Eq.symm (inv_div t fac)]
+    exact rpow_neg_eq_inv_rpow (t / fac) (1 / pR)
   -- Goal at this point:
   --   2 * ((t/fac)^(-(1/pR)) * (1/pR) * Γ(1/pR))
   --   = (1/k) * (fac/t)^(1/pR) * Γ(1/pR)
   rw [hinv]
   -- Show 2 * (1/pR) = 1/k. Since pR = (2*k:ℕ:ℝ) = 2*k (as real), 2/pR = 2/(2k) = 1/k.
-  have hk_pos : (0 : ℝ) < k := by exact_mod_cast (Nat.lt_of_lt_of_le (by norm_num : 0 < 1) hk)
+  have hk_pos : (0 : ℝ) < k := Nat.cast_pos'.mpr hk
   have hk_ne : (k : ℝ) ≠ 0 := ne_of_gt hk_pos
   have h_two_over_pR : (2 : ℝ) / pR = 1 / (k : ℝ) := by
     rw [hpR_def, hp_def]
     push_cast
     field_simp
   -- Final algebraic massage.
-  rw [show ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) = 1 / pR from by rw [hpR_def, hp_def]]
+  rw [show ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) = 1 / pR from rfl]
   -- Now goal: 2 * ((fac/t)^(1/pR) * (1/pR) * Γ(1/pR))
   --        = (1/k) * (fac/t)^(1/pR) * Γ(1/pR)
   have : (2 : ℝ) * ((fac / t) ^ (1 / pR) * (1 / pR) * Real.Gamma (1 / pR))

@@ -91,7 +91,7 @@ theorem ray_hasDerivAt {L : EuclidD d → ℝ} (hL : ContDiff ℝ 2 L)
     (x : EuclidD d) (q : ℝ) :
     HasDerivAt (fun t : ℝ ↦ L (t • x)) (fderiv ℝ L (q • x) x) q := by
   have h1 : HasFDerivAt L (fderiv ℝ L (q • x)) (q • x) :=
-    (hL.differentiable (by norm_num)).differentiableAt.hasFDerivAt
+    (hL.differentiable (by exact Ne.symm (NeZero.ne' 2))).differentiableAt.hasFDerivAt
   have h2 : HasDerivAt (fun t : ℝ ↦ t • x) x q := by
     simpa using (hasDerivAt_id q).smul_const x
   exact h1.comp_hasDerivAt q h2

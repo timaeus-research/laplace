@@ -236,7 +236,7 @@ theorem flat_perturbation_superpolynomial
     have hrw : K / t ^ (N + 1) = K * ‖t ^ (-((N : ℝ) + 1))‖ := by
       rw [Real.norm_of_nonneg (Real.rpow_nonneg ht0.le _),
         Real.rpow_neg ht0.le,
-        show ((N : ℝ) + 1) = (((N + 1 : ℕ) : ℕ) : ℝ) by push_cast; rfl,
+        show ((N : ℝ) + 1) = (((N + 1 : ℕ) : ℕ) : ℝ) by exact Eq.symm (Nat.cast_add_one N),
         Real.rpow_natCast, div_eq_mul_inv]
     exact le_of_le_of_eq (hbound t htT) hrw
   have h2 : (fun t : ℝ ↦ t ^ (-((N : ℝ) + 1))) =o[Filter.atTop]

@@ -115,8 +115,8 @@ theorem abs_exp_sub_one_le' (y : ℝ) :
       rw [← Real.exp_zero]
       exact Real.exp_lt_exp.mpr hy
     have habs : |Real.exp y - 1| = 1 - Real.exp y := by
-      rw [abs_of_neg (by linarith)]
-      ring
+      rw [abs_of_neg (by linarith only [h2])]
+      simp only [neg_sub]
     rw [habs, abs_of_neg hy]
     have hexp1 : (1 : ℝ) ≤ Real.exp (-y) :=
       Real.one_le_exp (by linarith)

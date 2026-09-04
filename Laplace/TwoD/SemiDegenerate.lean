@@ -261,7 +261,7 @@ theorem gibbsExpectation_snd_sq {lam t : ℝ} (hlam : 0 < lam) (ht : 0 < t) :
   -- h2 : (∫ y^(2*1) · exp(-tQ_harm)) / Z_harm = ((2*1-1)!! : ℝ) / (λt)^1
   -- (2*1 = 2 by reduction; (2-1)!! = 1!! = 1; (λt)^1 = λt.)
   convert h2 using 2
-  · simp [Nat.doubleFactorial]
+  · simp only [mul_one, Nat.add_one_sub_one, Nat.doubleFactorial.eq_2, Nat.cast_one]
   · exact (pow_one _).symm
 
 /-! ## Integrability lemmas (1D and 2D atoms) -/

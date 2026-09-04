@@ -394,8 +394,7 @@ theorem smooth_positive_jet_recovery_of_superPoly_moments
     interval_cases j
     · ext v
       rw [iteratedFDeriv_zero_apply, iteratedFDeriv_zero_apply]
-      rw [ha]
-      simp only [add_sub_cancel]
+      exact Eq.symm (add_sub_cancel (L₂ 0) (L₁ 0))
     · rw [iteratedFDeriv_shift one_ne_zero (hCD 1) a,
         (A 3 (by exact Nat.lt_add_one 2)).iteratedFDeriv_one_eq_zero (Nat.lt_add_one 2),
         (B 3 (by exact Nat.lt_add_one 2)).iteratedFDeriv_one_eq_zero (Nat.lt_add_one 2)]

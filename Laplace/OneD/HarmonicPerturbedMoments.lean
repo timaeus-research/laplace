@@ -84,10 +84,7 @@ private lemma integral_shifted'
       (fun x : ℝ =>
         (fun y : ℝ => f (y - c) *
           Real.exp (-(t * (lam / 2 * y ^ 2)))) (x + c)) := by
-    funext x
-    have hxc : x + c - c = x := by ring
-    change f x * _ = f (x + c - c) * _
-    rw [hxc]
+    simp only [add_sub_cancel_right]
   rw [hreshape]
   exact integral_add_right_eq_self
     (fun y : ℝ => f (y - c) * Real.exp (-(t * (lam / 2 * y ^ 2)))) c

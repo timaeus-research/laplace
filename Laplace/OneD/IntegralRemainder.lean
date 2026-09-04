@@ -539,10 +539,6 @@ private lemma M_4_eq :
     ∫ u : ℝ, u ^ 4 * Real.exp (-(u ^ 2) / 2) = 3 * Real.sqrt (2 * Real.pi) := by
   have h := integral_pow_mul_exp_neg_sq_half 2
   -- h : ∫ x, x^(2*2) * exp(-x²/2) = (2·2 - 1)‼ · √(2π) = 3 · √(2π)
-  have hd : ((2 * 2 - 1)‼ : ℝ) = 3 := by
-    rfl
-  simp only [show (2 * 2 : ℕ) = 4 from rfl] at h
-  rw [hd] at h
   exact h
 
 /-- `M_5 = ∫ u^5 · e^{-u²/2} du = 0`. -/
@@ -602,8 +598,7 @@ private lemma M_2_eq :
     ∫ u : ℝ, u ^ 2 * Real.exp (-(u ^ 2) / 2) = Real.sqrt (2 * Real.pi) := by
   have h := integral_pow_mul_exp_neg_sq_half 1
   have hd : ((2 * 1 - 1)‼ : ℝ) = 1 := by
-    show ((1 : ℕ)‼ : ℝ) = 1
-    rw [show (1 : ℕ)‼ = 1 from rfl]; norm_num
+    simp only [mul_one, Nat.add_one_sub_one, Nat.doubleFactorial.eq_2, Nat.cast_one]
   simp only [show (2 * 1 : ℕ) = 2 from rfl] at h
   rw [hd, one_mul] at h
   exact h
@@ -619,10 +614,6 @@ private lemma M_6_eq :
     ∫ u : ℝ, u ^ 6 * Real.exp (-(u ^ 2) / 2) = 15 * Real.sqrt (2 * Real.pi) := by
   have h := integral_pow_mul_exp_neg_sq_half 3
   -- h : ∫ x, x^(2*3) * exp(-x²/2) = 5‼ · √(2π) = 15·√(2π).
-  have hd : ((2 * 3 - 1)‼ : ℝ) = 15 := by
-    rfl
-  simp only [show (2 * 3 : ℕ) = 6 from rfl] at h
-  rw [hd] at h
   exact h
 
 /-- `M_7 = ∫ u^7 · e^{-u²/2} du = 0`. -/
@@ -1168,10 +1159,7 @@ private lemma div_sqrt_lt_eventually {K ε : ℝ} (hK : 0 ≤ K) (hε : 0 < ε) 
       apply Real.sqrt_lt_sqrt
       · exact sq_nonneg _
       · linarith only [hn_sq]
-    have : K < ε * Real.sqrt n := by
-      rw [show (K : ℝ) = ε * (K / ε) from by field_simp]
-      exact mul_lt_mul_of_pos_left hsqrt_n_gt hε
-    exact this
+    exact (div_lt_iff₀' hε).mp hsqrt_n_gt
 
 /-- `√t · J_1(t) → -3A · √(2π)` as `t → ∞`. -/
 theorem tendsto_sqrt_t_mul_J_1
@@ -1643,7 +1631,7 @@ theorem mean_anharmonic_asymptotic
     have hJ0 := tendsto_J_0 hlam hgamma hdisc
     have h_pos_J0 : ∀ᶠ t in Filter.atTop, 0 < J_n lam alpha gamma 0 t :=
       Filter.Tendsto.eventually_const_lt sqrt_two_pi_pos hJ0
-    filter_upwards [h_pos_J0] with t ht; exact ht.ne'
+    exact Filter.Eventually.ne_of_gt h_pos_J0
   filter_upwards [Filter.eventually_gt_atTop (0 : ℝ), hJ0_ev] with t ht hJ0_ne
   exact Eq.symm (mean_J_form_exact hlam ht hJ0_ne)
 

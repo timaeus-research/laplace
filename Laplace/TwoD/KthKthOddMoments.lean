@@ -48,19 +48,9 @@ theorem gibbsExpectation_kthKth_odd_pow_pow_eq_zero
   have hZV_ne : Laplace.partitionFunction (Laplace.OneD.kthPotential k₂) t ≠ 0 :=
     ne_of_gt (Laplace.OneD.partitionFunction_kthPotential_pos hk₂ ht)
   have hU : Integrable (fun x : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) := by
-    have h := Laplace.OneD.kth_integrable_pow_pot (k := k₁) hk₁ 0 ht
-    have heq : (fun x : ℝ =>
-        x ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) =
-               (fun x : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) := by
-      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
-    rwa [heq] at h
+    exact Integrable.of_integral_ne_zero hZU_ne
   have hV : Integrable (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
-    have h := Laplace.OneD.kth_integrable_pow_pot (k := k₂) hk₂ 0 ht
-    have heq : (fun y : ℝ =>
-        y ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) =
-               (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
-      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
-    rwa [heq] at h
+    exact Integrable.of_integral_ne_zero hZV_ne
   have hf : Integrable (fun x : ℝ => x ^ (2 * j₁ + 1) *
       Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) :=
     Laplace.OneD.kth_integrable_pow_pot (k := k₁) hk₁ (2 * j₁ + 1) ht
@@ -90,19 +80,9 @@ theorem gibbsExpectation_kthKth_pow_odd_pow_eq_zero
   have hZV_ne : Laplace.partitionFunction (Laplace.OneD.kthPotential k₂) t ≠ 0 :=
     ne_of_gt (Laplace.OneD.partitionFunction_kthPotential_pos hk₂ ht)
   have hU : Integrable (fun x : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) := by
-    have h := Laplace.OneD.kth_integrable_pow_pot (k := k₁) hk₁ 0 ht
-    have heq : (fun x : ℝ =>
-        x ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) =
-               (fun x : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) := by
-      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
-    rwa [heq] at h
+    exact Integrable.of_integral_ne_zero hZU_ne
   have hV : Integrable (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
-    have h := Laplace.OneD.kth_integrable_pow_pot (k := k₂) hk₂ 0 ht
-    have heq : (fun y : ℝ =>
-        y ^ 0 * Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) =
-               (fun y : ℝ => Real.exp (-(t * Laplace.OneD.kthPotential k₂ y))) := by
-      simp only [pow_zero, OneD.kthPotential_apply, one_mul]
-    rwa [heq] at h
+    exact Integrable.of_integral_ne_zero hZV_ne
   have hf : Integrable (fun x : ℝ => x ^ m *
       Real.exp (-(t * Laplace.OneD.kthPotential k₁ x))) :=
     Laplace.OneD.kth_integrable_pow_pot (k := k₁) hk₁ m ht

@@ -123,14 +123,7 @@ theorem jet_reference_variance_pos
     have := integrable_abs_pow_mul_exp_neg_kth hk 0 ha
     exact this.congr (Filter.Eventually.of_forall fun u ↦ by simp only [pow_zero, one_mul])
   have hZpos : 0 < ∫ u : ℝ, Real.exp (-(a * u ^ (2 * k))) := by
-    rw [integral_pos_iff_support_of_nonneg
-      (fun u ↦ (Real.exp_pos _).le) hint0]
-    have hs : Function.support (fun u : ℝ ↦
-        Real.exp (-(a * u ^ (2 * k)))) = Set.univ := by
-      ext u
-      simp only [Function.mem_support, ne_eq, exp_ne_zero, not_false_eq_true, Set.mem_univ]
-    rw [hs]
-    simp only [measure_univ_of_isAddLeftInvariant, ENNReal.zero_lt_top]
+    exact integral_exp_pos hint0
   have hexpand : (∫ u : ℝ, u ^ (2 * m) *
         Real.exp (-(a * u ^ (2 * k)))) *
         (∫ u : ℝ, Real.exp (-(a * u ^ (2 * k)))) -

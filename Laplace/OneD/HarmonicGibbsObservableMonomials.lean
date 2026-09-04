@@ -421,7 +421,7 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_mul_self
       (fun x : ℝ => x) t (fun x : ℝ => x * x) := by
   have h := Threepoint.harmonic_id_gibbsObservable_pow hlam ht 2
   have heq : (fun x : ℝ => x ^ 2) = (fun x : ℝ => x * x) := by
-    funext x; ring
+    funext x; exact pow_two x
   rwa [heq] at h
 
 /-- `GibbsObservable` for `fun x => x * x * x` (the cubic monomial in
@@ -434,7 +434,7 @@ theorem _root_.Threepoint.harmonic_id_gibbsObservable_mul_mul_self
       (fun x : ℝ => x) t (fun x : ℝ => x * x * x) := by
   have h := Threepoint.harmonic_id_gibbsObservable_pow hlam ht 3
   have heq : (fun x : ℝ => x ^ 3) = (fun x : ℝ => x * x * x) := by
-    funext x; ring
+    funext x; exact pow_three' x
   rwa [heq] at h
 
 end Laplace.OneD

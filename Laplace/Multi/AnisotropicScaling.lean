@@ -91,10 +91,7 @@ theorem scalesMeasure_moment_law
   rw [integral_congr_ae (Filter.Eventually.of_forall hsub),
     integral_const_mul] at hintmap
   have hpow : t⁻¹ ^ r = t ^ (-r) := by
-    rw [show t⁻¹ = t ^ (-1 : ℝ) from by
-      rw [Real.rpow_neg ht.le, Real.rpow_one]]
-    rw [← Real.rpow_mul ht.le]
-    simp only [neg_mul, one_mul]
+    exact Eq.symm (rpow_neg_eq_inv_rpow t r)
   rw [hpow] at hintmap
   rw [smul_eq_mul] at hintmap
   have hQpos : (0 : ℝ) < t ^ Q := Real.rpow_pos_of_pos ht _

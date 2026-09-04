@@ -42,9 +42,7 @@ theorem mvMonomial_continuous (α : ι → ℕ) :
 theorem mvMonomial_zero_eq_zero {α : ι → ℕ} (hα : α ≠ 0) :
     mvMonomial (ι := ι) α 0 = 0 := by
   obtain ⟨i, hi⟩ : ∃ i, α i ≠ 0 := by
-    by_contra hall
-    push Not at hall
-    exact hα (funext hall)
+    exact Function.ne_iff.mp hα
   unfold mvMonomial
   refine Finset.prod_eq_zero (Finset.mem_univ i) ?_
   rw [Pi.zero_apply, zero_pow hi]

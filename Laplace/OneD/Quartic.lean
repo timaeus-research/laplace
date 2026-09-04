@@ -60,8 +60,8 @@ lemma quarticPotential_eq_kthPotential :
 $k = 2$ specialisation of `kth_integrable_pow`. -/
 theorem quartic_integrable_pow (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 4 / 24))) := by
-  have h := kth_integrable_pow (k := 2) (by norm_num) n ht
-  convert h using 4; norm_num [Nat.factorial]
+  have h := kth_integrable_pow (k := 2) (by exact NeZero.one_le) n ht
+  convert h using 4; rfl
 
 /-- Polynomial-times-quartic-Gibbs integrability, in `quarticPotential` form.
 $k = 2$ specialisation of `kth_integrable_pow_pot`. -/
@@ -77,8 +77,8 @@ $k = 2$ specialisation of `integral_pow_mul_exp_neg_kth_Ioi`. -/
 theorem integral_pow_mul_exp_neg_quartic_Ioi (n : ℕ) {t : ℝ} (ht : 0 < t) :
     ∫ x in Ioi (0 : ℝ), x ^ (2 * n) * exp (-(t * x ^ 4 / 24)) =
       (1/4) * (24/t) ^ ((2 * n + 1 : ℝ) / 4) * Real.Gamma ((2 * n + 1 : ℝ) / 4) := by
-  have h := integral_pow_mul_exp_neg_kth_Ioi (k := 2) (by norm_num) n ht
-  convert h using 3 <;> norm_num [Nat.factorial]
+  have h := integral_pow_mul_exp_neg_kth_Ioi (k := 2) (by exact NeZero.one_le) n ht
+  exact h
 
 /-! ## Full-line moment integrals -/
 
@@ -87,15 +87,15 @@ $k = 2$ specialisation of `kth_moment_even`. -/
 theorem quartic_moment_even (n : ℕ) {t : ℝ} (ht : 0 < t) :
     ∫ x : ℝ, x ^ (2 * n) * exp (-(t * x ^ 4 / 24)) =
       (1/2) * (24/t) ^ ((2 * n + 1 : ℝ) / 4) * Real.Gamma ((2 * n + 1 : ℝ) / 4) := by
-  have h := kth_moment_even (k := 2) (by norm_num) n ht
-  convert h using 3 <;> norm_num [Nat.factorial]
+  have h := kth_moment_even (k := 2) (by exact NeZero.one_le) n ht
+  exact h
 
 /-- Odd moment of the pure-quartic Gibbs weight on the full real line vanishes
 by symmetry. $k = 2$ specialisation of `kth_moment_odd`. -/
 theorem quartic_moment_odd (n : ℕ) (t : ℝ) :
     ∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * x ^ 4 / 24)) = 0 := by
   have h := kth_moment_odd 2 n t
-  convert h using 3; norm_num [Nat.factorial]
+  convert h using 3; rfl
 
 /-- The partition function for the pure-quartic potential.
 $k = 2$ specialisation of `partitionFunction_kthPotential` via the
@@ -104,8 +104,8 @@ theorem quartic_partition {t : ℝ} (ht : 0 < t) :
     partitionFunction quarticPotential t =
       (1/2) * (24/t) ^ ((1 : ℝ) / 4) * Real.Gamma ((1 : ℝ) / 4) := by
   rw [quarticPotential_eq_kthPotential]
-  have h := partitionFunction_kthPotential (k := 2) (by norm_num) ht
-  convert h using 3 <;> norm_num [Nat.factorial]
+  have h := partitionFunction_kthPotential (k := 2) (by exact NeZero.one_le) ht
+  exact h
 
 /-- The partition function for the pure-quartic potential is positive.
 $k = 2$ specialisation of `partitionFunction_kthPotential_pos`. -/
@@ -122,8 +122,8 @@ theorem quartic_expected_value_even (n : ℕ) {t : ℝ} (ht : 0 < t) :
     gibbsExpectation quarticPotential t (fun x => x ^ (2 * n)) =
       (24/t) ^ ((n : ℝ) / 2) * Real.Gamma ((2 * n + 1 : ℝ) / 4) / Real.Gamma ((1 : ℝ) / 4) := by
   rw [quarticPotential_eq_kthPotential]
-  have h := gibbsExpectation_kthPotential_even (k := 2) (by norm_num) n ht
-  convert h using 3 <;> norm_num [Nat.factorial]
+  have h := gibbsExpectation_kthPotential_even (k := 2) (by exact NeZero.one_le) n ht
+  exact h
 
 /-- Odd-power expected value against the pure-quartic Gibbs measure vanishes by
 symmetry. $k = 2$ specialisation of `gibbsExpectation_kthPotential_odd`. -/

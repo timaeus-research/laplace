@@ -101,10 +101,7 @@ lemma integrable_sq_norm_mul_gaussianWeight
   refine h_dom.mono' ?_ ?_
   · -- AE strongly measurable: ‖·‖² · gaussianWeight is continuous.
     have h_quad : Continuous (fun u : ι → ℝ => quadForm H u) := by
-      unfold quadForm
-      apply continuous_finsetSum
-      intro i _
-      exact (continuous_apply i).mul ((continuous_apply i).comp H.continuous)
+      exact continuous_quadForm H
     have h_gW : Continuous (fun u : ι → ℝ => gaussianWeight H u) := by
       exact continuous_gaussianWeight H
     exact ((continuous_norm.pow 2).mul h_gW).aestronglyMeasurable
@@ -2026,7 +2023,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
     by_cases hu : ‖u‖ ≤ 1
     · have h_pow_le_one : ‖u‖ ^ k ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
       have h_pow_pos : 0 ≤ ‖u‖ ^ (k + 1) := pow_nonneg (norm_nonneg _) _
-      linarith
+      exact le_add_of_le_of_nonneg h_pow_le_one h_pow_pos
     · push Not at hu
       have h_le : ‖u‖ ^ k ≤ ‖u‖ ^ (k + 1) := by
         rw [pow_succ]
@@ -2163,7 +2160,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
       by_cases hu : ‖u‖ ≤ 1
       · have h_pow_le_one : ‖u‖ ^ (p+1) ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
         have h_pow_pos : 0 ≤ ‖u‖ ^ ((p+1) + (q+1)) := pow_nonneg (norm_nonneg _) _
-        linarith
+        exact le_add_of_le_of_nonneg h_pow_le_one h_pow_pos
       · push Not at hu
         have h_le : ‖u‖ ^ (p+1) ≤ ‖u‖ ^ ((p+1) + (q+1)) := by
           apply pow_le_pow_right₀ hu.le; exact Nat.le_add_right (p + 1) (q + 1)
@@ -2172,7 +2169,7 @@ lemma integrable_remainder_mul_remainder_mul_rescaled_weight
       by_cases hu : ‖u‖ ≤ 1
       · have h_pow_le_one : ‖u‖ ^ (q+1) ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
         have h_pow_pos : 0 ≤ ‖u‖ ^ ((p+1) + (q+1)) := pow_nonneg (norm_nonneg _) _
-        linarith
+        exact le_add_of_le_of_nonneg h_pow_le_one h_pow_pos
       · push Not at hu
         have h_le : ‖u‖ ^ (q+1) ≤ ‖u‖ ^ ((p+1) + (q+1)) := by
           apply pow_le_pow_right₀ hu.le; exact Nat.le_add_left (q + 1) (p + 1)
@@ -2366,7 +2363,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
     by_cases hu : ‖u‖ ≤ 1
     · have h_pow_le_one : ‖u‖ ^ k ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
       have h_pow_pos : 0 ≤ ‖u‖ ^ (k + 1) := pow_nonneg (norm_nonneg _) _
-      linarith
+      exact le_add_of_le_of_nonneg h_pow_le_one h_pow_pos
     · push Not at hu
       have h_le : ‖u‖ ^ k ≤ ‖u‖ ^ (k + 1) := by
         rw [pow_succ]
@@ -2506,7 +2503,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
       by_cases hu : ‖u‖ ≤ 1
       · have h_pow_le_one : ‖u‖ ^ (p+1) ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
         have h_pow_pos : 0 ≤ ‖u‖ ^ ((p+1) + (q+1)) := pow_nonneg (norm_nonneg _) _
-        linarith
+        exact le_add_of_le_of_nonneg h_pow_le_one h_pow_pos
       · push Not at hu
         have h_le : ‖u‖ ^ (p+1) ≤ ‖u‖ ^ ((p+1) + (q+1)) := by
           apply pow_le_pow_right₀ hu.le
@@ -2516,7 +2513,7 @@ private lemma abs_integral_remainder_mul_remainder_mul_rescaled_weight_le
       by_cases hu : ‖u‖ ≤ 1
       · have h_pow_le_one : ‖u‖ ^ (q+1) ≤ 1 := pow_le_one₀ (norm_nonneg _) hu
         have h_pow_pos : 0 ≤ ‖u‖ ^ ((p+1) + (q+1)) := pow_nonneg (norm_nonneg _) _
-        linarith
+        exact le_add_of_le_of_nonneg h_pow_le_one h_pow_pos
       · push Not at hu
         have h_le : ‖u‖ ^ (q+1) ≤ ‖u‖ ^ ((p+1) + (q+1)) := by
           apply pow_le_pow_right₀ hu.le

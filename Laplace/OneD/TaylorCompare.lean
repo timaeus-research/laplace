@@ -48,8 +48,7 @@ theorem AdmissiblePotential.integrable_pow
     le_rfl s (ρ := t * ρ) (mul_pos ht h.rho_pos)
   have hdom' : Integrable (fun x : ℝ ↦
       |x| ^ s * Real.exp (-(t * ρ * x ^ 2))) := by
-    refine hdom.congr (Filter.Eventually.of_forall fun x ↦ ?_)
-    rfl
+    exact hdom
   refine hdom'.mono' ?_ (Filter.Eventually.of_forall fun x ↦ ?_)
   · exact ((continuous_pow s).mul (Real.continuous_exp.comp
       (h.cont.const_smul t).neg)).aestronglyMeasurable
@@ -176,8 +175,7 @@ theorem exp_neg_div_tendsto_zero {c : ℝ} (hc : 0 < c) (n : ℕ) :
   have hq0 : (0 : ℝ) < q := hq
   simp only [Function.comp_apply]
   rw [div_eq_mul_inv (Real.exp _), inv_pow, ← inv_pow]
-  rw [show -(c * q⁻¹) = -(c / q) by rfl]
-  ring
+  exact mul_comm' (q⁻¹ ^ n) (rexp (-(c * q⁻¹)))
 
 set_option maxHeartbeats 3200000 in
 -- The assembled epsilon-of-room proof combines ~10 integral

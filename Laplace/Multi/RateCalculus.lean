@@ -29,8 +29,7 @@ variable {d : ℕ}
 theorem hasPolynomialGrowth_norm_pow (r : ℕ) :
     HasPolynomialGrowth (fun x : EuclidD d ↦ ‖x‖ ^ r) := by
   refine ⟨1, r, zero_le_one, fun x ↦ ?_⟩
-  rw [abs_of_nonneg (by positivity), one_mul]
-  linarith only []
+  simp only [abs_pow, abs_norm, one_mul, le_add_iff_nonneg_left, zero_le_one]
 
 /-- General-rate polynomial Gaussian integrability: `‖x‖ⁿ·e^{-c‖x‖²}`
 is integrable for every `c > 0`. -/

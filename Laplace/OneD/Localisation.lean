@@ -115,9 +115,7 @@ private lemma harmonic_integrand_even (lam t : ℝ) (n : ℕ) (M : ℝ) :
         x ^ (2 * n) * Real.exp (-(t * harmonicPotential lam x))) from by
         ext x
         congr 1
-        · rw [show (-x) ^ (2 * n) = ((-1) ^ (2 * n)) * x ^ (2 * n) from by
-                exact neg_pow x (2 * n)]
-          rw [pow_mul, neg_one_sq]; ring
+        · simp only [even_two, Even.mul_right, Even.neg_pow]
         · congr 1; congr 1
           unfold harmonicPotential
           rw [show (-x : ℝ) ^ 2 = x ^ 2 from neg_pow_two x]] at hsub

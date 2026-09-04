@@ -78,8 +78,7 @@ theorem monomial_variance_even
     congr 1
     ring
   have hcast : (((2 * m : ℕ) : ℝ) / (k : ℝ)) = (2 * (m : ℝ)) / (k : ℝ) := by
-    push_cast
-    rfl
+    simp only [Nat.cast_mul, Nat.cast_ofNat]
   rw [hcast, hpow]
   push_cast
   ring

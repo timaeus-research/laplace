@@ -139,8 +139,8 @@ theorem harmonic_partition_eq
   have h_rhs : Real.exp (t * (0 : ℝ) ^ 2 / (2 * lam))
       * Real.sqrt (2 * Real.pi / (lam * t))
       = Real.sqrt (2 * Real.pi / (lam * t)) := by
-    rw [show t * (0 : ℝ) ^ 2 / (2 * lam) = 0 from by ring, Real.exp_zero]
-    exact one_mul √(2 * Real.pi / (lam * t))
+    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, mul_zero, zero_div,
+      Real.exp_zero, one_mul]
   rw [h_rhs] at h
   exact h
 
@@ -163,8 +163,8 @@ private lemma integral_eq_zero_of_odd
   have heq : (∫ x : ℝ, f x) = -(∫ x : ℝ, f x) := by
     conv_lhs => rw [← MeasureTheory.integral_neg_eq_self f volume]
     rw [show (fun x : ℝ => f (-x)) = (fun x : ℝ => -(f x)) from funext hodd]
-    rw [MeasureTheory.integral_neg]
-  linarith
+    exact integral_neg f
+  exact self_eq_neg.mp heq
 
 /-- The first Gaussian moment vanishes:
 `∫ (-t · x) · exp(-(tλ/2) x²) dx = 0`. This is the right-hand side of

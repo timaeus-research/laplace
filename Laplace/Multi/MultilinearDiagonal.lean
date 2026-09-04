@@ -261,7 +261,7 @@ theorem eq_zero_of_diag_eq_zero
   have hk : (k.factorial : ℝ) ≠ 0 := by
     exact_mod_cast (Nat.factorial_ne_zero k)
   have hAv : A v = 0 := (smul_eq_zero.mp hpol).resolve_left hk
-  rw [hAv, zero_apply]
+  exact hAv
 
 /-- Two symmetric maps with equal diagonals are equal. -/
 theorem eq_of_diag_eq

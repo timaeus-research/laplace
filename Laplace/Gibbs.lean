@@ -102,15 +102,17 @@ lemma gibbsExpectation_add (L : ℝ → ℝ) (t : ℝ) (φ₁ φ₂ : ℝ → �
   simp only [gibbsExpectation]
   rw [show (fun x => (φ₁ x + φ₂ x) * Real.exp (-(t * L x)))
         = (fun x => φ₁ x * Real.exp (-(t * L x))
-                  + φ₂ x * Real.exp (-(t * L x))) from by funext x; ring,
+                  + φ₂ x * Real.exp (-(t * L x))) from by funext x; exact Semiring.right_distrib
+                                                                      (φ₁ x) (φ₂ x) (Real.exp (-(t
+                                                                      * L x))),
       integral_add h₁ h₂, add_div]
 
 /-- Symmetry: `Cov_t[φ, ψ] = Cov_t[ψ, φ]`. -/
 lemma gibbsCov_symm (L : ℝ → ℝ) (t : ℝ) (φ ψ : ℝ → ℝ) :
     gibbsCov L t φ ψ = gibbsCov L t ψ φ := by
   simp only [gibbsCov]
-  rw [show (fun x => φ x * ψ x) = (fun x => ψ x * φ x) from by funext x; exact CommMonoid.mul_comm
-                                                                           (φ x) (ψ x),
+  rw [show (fun x => φ x * ψ x) = (fun x => ψ x * φ x) from by funext x; exact mul_comm' (φ x) (ψ
+                                                                           x),
       mul_comm (gibbsExpectation L t φ)]
 
 /-- Scalar pulls out of the left slot. No hypotheses. -/
