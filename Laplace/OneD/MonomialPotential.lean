@@ -366,7 +366,7 @@ theorem gibbsExpectation_kthPotential_even
   --                   = (fac/t)^(2j/(2k)) * Γ_num / Γ_den
   --                   = (fac/t)^(j/k) * Γ_num / Γ_den
   have hk_pos : (0 : ℝ) < k := by
-    exact_mod_cast (Nat.lt_of_lt_of_le (by simp only [Order.lt_one_iff] : 0 < 1) hk)
+    exact Nat.cast_pos'.mpr hk
   have hk_ne : (k : ℝ) ≠ 0 := ne_of_gt hk_pos
   have h2k_pos : 0 < ((2 * k : ℕ) : ℝ) := by
     have : (0 : ℕ) < 2 * k := Nat.succ_mul_pos 1 hk
@@ -378,7 +378,7 @@ theorem gibbsExpectation_kthPotential_even
   -- Split the rpow: (fac/t)^((2j+1)/(2k)) = (fac/t)^(1/(2k)) * (fac/t)^(j/k).
   have hexp_split : ((2 * j + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) =
                     ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) + ((j : ℝ) / (k : ℝ)) := by
-    have h2k_eq : ((2 * k : ℕ) : ℝ) = 2 * (k : ℝ) := by push_cast; rfl
+    have h2k_eq : ((2 * k : ℕ) : ℝ) = 2 * (k : ℝ) := by simp only [Nat.cast_mul, Nat.cast_ofNat]
     rw [h2k_eq]; field_simp; ring
   rw [hexp_split, Real.rpow_add hfac_t_pos]
   have hΓ_pos : 0 < Real.Gamma ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) :=

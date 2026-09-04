@@ -61,7 +61,7 @@ $k = 2$ specialisation of `kth_integrable_pow`. -/
 theorem quartic_integrable_pow (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 4 / 24))) := by
   have h := kth_integrable_pow (k := 2) (by exact NeZero.one_le) n ht
-  convert h using 4; rfl
+  exact h
 
 /-- Polynomial-times-quartic-Gibbs integrability, in `quarticPotential` form.
 $k = 2$ specialisation of `kth_integrable_pow_pot`. -/
@@ -95,7 +95,7 @@ by symmetry. $k = 2$ specialisation of `kth_moment_odd`. -/
 theorem quartic_moment_odd (n : ℕ) (t : ℝ) :
     ∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * x ^ 4 / 24)) = 0 := by
   have h := kth_moment_odd 2 n t
-  convert h using 3; rfl
+  exact h
 
 /-- The partition function for the pure-quartic potential.
 $k = 2$ specialisation of `partitionFunction_kthPotential` via the
@@ -169,10 +169,7 @@ theorem quartic_cov_affine {t : ℝ} (ht : 0 < t) (a b c d : ℝ) :
   have hZne : partitionFunction quarticPotential t ≠ 0 := ne_of_gt hZpos
   -- Integrability of `1, x, x²` against the Gibbs weight.
   have hI0 : Integrable (fun x : ℝ => Real.exp (-(t * quarticPotential x))) := by
-    have h := quartic_integrable_pow_pot 0 ht
-    have heq : (fun x : ℝ => x ^ 0 * Real.exp (-(t * quarticPotential x))) =
-               (fun x : ℝ => Real.exp (-(t * quarticPotential x))) := by ext; simp
-    rwa [heq] at h
+    exact Integrable.of_integral_ne_zero hZne
   have hI1 : Integrable (fun x : ℝ => x * Real.exp (-(t * quarticPotential x))) := by
     have h := quartic_integrable_pow_pot 1 ht
     have heq : (fun x : ℝ => x ^ 1 * Real.exp (-(t * quarticPotential x))) =

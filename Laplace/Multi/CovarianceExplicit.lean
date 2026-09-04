@@ -123,7 +123,7 @@ lemma integral_even_mul_cmm_diag_mul_gaussianWeight_eq_zero
   apply integral_odd_mul_gaussian_eq_zero
   intro u
   rw [hF_even u, cmm_diag_odd T u]
-  ring
+  simp only [mul_neg]
 
 /-- Coordinate-form tensor: `Tcoord T i j k := T(e_i, e_j, e_k)` for the
 standard basis. The fundamental object for index-based reasoning about T. -/
@@ -193,23 +193,19 @@ lemma T_apply_diag_eq_sum
             (t := Finset.univ) (i := s)
             (g := fun a : ι => u a • stdBasisVec a) (m := m))
       _ = ∑ a : ι, u a * T (Function.update m s (stdBasisVec a)) := by
-        refine Finset.sum_congr rfl ?_
-        intro a _
-        simpa [smul_eq_mul] using
-          (T.toMultilinearMap.map_update_smul
-            (m := m) (i := s) (c := u a) (x := stdBasisVec a))
+        simp only [ContinuousMultilinearMap.map_update_smul, smul_eq_mul]
   -- Apply expand_slot at each of the three slots.
   have h0 := expand_slot (m := fun _ : Fin 3 => u) (s := (0 : Fin 3)) rfl
   have h1 (i : ι) :=
     expand_slot
       (m := Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i))
-      (s := (1 : Fin 3)) (by simp [Function.update])
+      (s := (1 : Fin 3)) (rfl)
   have h2 (i j : ι) :=
     expand_slot
       (m := Function.update
         (Function.update (fun _ : Fin 3 => u) (0 : Fin 3) (stdBasisVec i))
         (1 : Fin 3) (stdBasisVec j))
-      (s := (2 : Fin 3)) (by simp [Function.update])
+      (s := (2 : Fin 3)) (rfl)
   -- Identify the fully-expanded slot configuration with Tcoord.
   have hcoord (i j k : ι) :
       T (Function.update
@@ -288,10 +284,10 @@ lemma Hinv_symm
   -- Use H ∘ Hinv = id: (H (Hinv x)) = x, (H (Hinv y)) = y.
   have h1 : H (Hinv x) = x := by
     have := congrArg (fun f => f x) hGauss.H_inv_right
-    simpa using this
+    exact this
   have h2 : H (Hinv y) = y := by
     have := congrArg (fun f => f y) hGauss.H_inv_right
-    simpa using this
+    exact this
   have h_apply := hGauss.H_symm (Hinv y) (Hinv x)
   rw [h1, h2] at h_apply
   -- h_apply : ∑ (Hinv y)_k * x k = ∑ (Hinv x)_k * y k
@@ -337,21 +333,21 @@ lemma trASig_eq_double_sum
         (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) k
         = (Hinv (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j := by
       rw [Finset.sum_eq_single j]
-      · rw [Pi.single_eq_same]; ring
+      · simp only [Pi.single_eq_same, one_mul]
       · intros k _ hk
         have h_zero : Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ) k = 0 := by
           simp [Pi.single_apply, hk.symm]
-        rw [h_zero]; ring
+        rw [h_zero]; simp only [zero_mul]
       · intro h; exact absurd (Finset.mem_univ j) h
     have h_rhs : ∑ k, (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)) k *
         (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) k
         = (Hinv (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
       rw [Finset.sum_eq_single i]
-      · rw [Pi.single_eq_same]; ring
+      · simp only [Pi.single_eq_same, one_mul]
       · intros k _ hk
         have h_zero : Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ) k = 0 := by
           simp [Pi.single_apply, hk.symm]
-        rw [h_zero]; ring
+        rw [h_zero]; simp only [zero_mul]
       · intro h; exact absurd (Finset.mem_univ i) h
     rw [h_lhs, h_rhs] at h
     exact h
@@ -367,7 +363,7 @@ lemma dot_eq_sum_Hinv_mul_H
     dot a u = ∑ l, (Hinv a) l * (H u) l := by
   have h_h_inv : H (Hinv a) = a := by
     have := congrArg (fun f => f a) hGauss.H_inv_right
-    simpa using this
+    exact this
   -- H_symm gives: ∑ k, u k * (H (Hinv a)) k = ∑ k, (Hinv a) k * (H u) k.
   have h_sym := hGauss.H_symm u (Hinv a)
   rw [h_h_inv] at h_sym
@@ -580,7 +576,7 @@ theorem gaussian_fourth_moment_formula
       Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ) := by
     have := congrArg (fun f => f (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ)))
       hGauss.H_inv_right
-    simpa using this
+    exact this
   have h_contract : ∀ u : ι → ℝ,
       u d = ∑ l, (Hinv (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ))) l * (H u) l := by
     intro u
@@ -589,11 +585,11 @@ theorem gaussian_fourth_moment_formula
     rw [h_h_inv] at h_sym
     have h_lhs : ∑ k, u k * (Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ)) k = u d := by
       rw [Finset.sum_eq_single d]
-      · rw [Pi.single_eq_same]; ring
+      · simp only [Pi.single_eq_same, mul_one]
       · intros k _ hk
         have h_zero : Pi.single (M := fun _ : ι => ℝ) d (1 : ℝ) k = 0 := by
           simp [Pi.single_apply, hk.symm]
-        rw [h_zero]; ring
+        rw [h_zero]; simp only [mul_zero]
       · intro h; exact absurd (Finset.mem_univ d) h
     rw [h_lhs] at h_sym
     exact h_sym
@@ -673,11 +669,7 @@ theorem gaussian_fourth_moment_formula
       h1.add h2
     rw [integral_add h12 h3, integral_add h1 h2,
         integral_const_mul, integral_const_mul, integral_const_mul]
-    congr 1
-    · congr 1
-      · split_ifs <;> ring
-      · split_ifs <;> ring
-    · split_ifs <;> ring
+    simp only [ite_mul, one_mul, zero_mul]
   conv_lhs =>
     enter [2, l]
     rw [h_int_each_eq l]
@@ -813,7 +805,7 @@ theorem gaussian_sixth_moment_formula
       Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ) := by
     have := congrArg (fun g => g (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ)))
       hGauss.H_inv_right
-    simpa using this
+    exact this
   have h_contract : ∀ u : ι → ℝ,
       u f = ∑ l, (Hinv (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ))) l *
         (H u) l := by
@@ -824,11 +816,11 @@ theorem gaussian_sixth_moment_formula
     have h_lhs : ∑ k, u k *
         (Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ)) k = u f := by
       rw [Finset.sum_eq_single f]
-      · rw [Pi.single_eq_same]; ring
+      · simp only [Pi.single_eq_same, mul_one]
       · intros k _ hk
         have h_zero : Pi.single (M := fun _ : ι => ℝ) f (1 : ℝ) k = 0 := by
           simp [Pi.single_apply, hk.symm]
-        rw [h_zero]; ring
+        rw [h_zero]; simp only [mul_zero]
       · intro h; exact absurd (Finset.mem_univ f) h
     rw [h_lhs] at h_sym
     exact h_sym
@@ -966,15 +958,7 @@ theorem gaussian_sixth_moment_formula
         integral_add h12 h3, integral_add h1 h2,
         integral_const_mul, integral_const_mul,
         integral_const_mul, integral_const_mul, integral_const_mul]
-    congr 1
-    · congr 1
-      · congr 1
-        · congr 1
-          · split_ifs <;> ring
-          · split_ifs <;> ring
-        · split_ifs <;> ring
-      · split_ifs <;> ring
-    · split_ifs <;> ring
+    simp only [ite_mul, one_mul, zero_mul]
   conv_lhs =>
     enter [2, l]
     rw [h_int_each_eq l]
@@ -1379,7 +1363,7 @@ private lemma gaussian_linear_cubic
     · intros k _ hk
       have : Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ) m = 0 := by
         simp [Pi.single_apply, hk]
-      rw [this]; ring
+      rw [this]; simp only [mul_zero]
     · intro h; exact absurd (Finset.mem_univ m) h
   -- hcontract: ∑_{j,k} Tcoord T l j k · cov j k = tensorContractMatrix T Hinv l.
   -- Expand the slot-2 Hinv via multilinearity.
@@ -1438,7 +1422,7 @@ private lemma gaussian_linear_cubic
         fin_cases n <;> simp [Function.update, hm_def]
       rw [h_update_eq]
       show cov j k • Tcoord T l j k = cov j k * Tcoord T l j k
-      simp [smul_eq_mul]
+      simp only [smul_eq_mul]
     -- `h_slot2`'s match-lambda and the goal's (from `tensorContractMatrix` in
     -- `Defs`) compile to distinct-but-defeq matcher constants, so close by
     -- `exact` (defeq) rather than `rw` (syntactic).
@@ -1537,7 +1521,7 @@ private lemma gaussian_linear_cubic
         refine Finset.sum_congr rfl ?_
         intros k _; ring
       · simp only [if_neg hli, mul_zero]
-        simp
+        simp only [Finset.sum_const_zero]
     rw [show (∑ i, ∑ j, ∑ k, Tcoord T i j k *
             (gaussianZ H * (if l = i then cov j k else 0))) =
           ∑ i, (if l = i then gaussianZ H * (∑ j, ∑ k, Tcoord T i j k * cov j k) else 0)
@@ -1569,7 +1553,7 @@ private lemma gaussian_linear_cubic
         refine Finset.sum_congr rfl ?_
         intros k _; ring
       · simp only [if_neg hlj, mul_zero]
-        simp
+        simp only [Finset.sum_const_zero]
     rw [show (∑ j, ∑ i, ∑ k, Tcoord T i j k *
             (gaussianZ H * (if l = j then cov i k else 0))) =
           ∑ j, (if l = j then gaussianZ H * (∑ i, ∑ k, Tcoord T i j k * cov i k) else 0)
@@ -1619,7 +1603,7 @@ private lemma gaussian_linear_cubic
         refine Finset.sum_congr rfl ?_
         intros j _; ring
       · simp only [if_neg hlk, mul_zero]
-        simp
+        simp only [Finset.sum_const_zero]
     rw [show (∑ k, ∑ i, ∑ j, Tcoord T i j k *
             (gaussianZ H * (if l = k then cov i j else 0))) =
           ∑ k, (if l = k then gaussianZ H * (∑ i, ∑ j, Tcoord T i j k * cov i j) else 0)
@@ -2016,7 +2000,7 @@ private lemma gaussian_quad_quad
     suffices hs :
         (∑ i, ∑ k, ∑ j, ∑ l, f i k j l) =
           ∑ i, ∑ k, ∑ j, ∑ l, g i k j l by
-      simpa [f, g] using hs
+      exact hs
     have hfg : ∀ i k j l, f j k i l = g i k j l := by
       intro i k j l
       dsimp [f, g]
@@ -2727,8 +2711,7 @@ private lemma cubicPartialOp_trASig_compSig
       rw [map_smul]
     rw [h_AS_v]
     rw [Finset.sum_apply]
-    refine Finset.sum_congr rfl fun j _ => ?_
-    rw [Pi.smul_apply, h_v_def j, smul_eq_mul]
+    rfl
   conv_lhs => enter [2, i]; rw [h_unfold i]
   rw [Finset.sum_comm]
   -- Push `i`-sum inside T via slot-1 multilinearity, with `w := A(Σ e_j)`.
@@ -2795,7 +2778,6 @@ private lemma cubicPartialOp_trASig_compSig
     refine Finset.sum_congr rfl fun i _ => ?_
     rw [T.toMultilinearMap.map_update_smul m_base 1 (w i)
         (Sig (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))]
-    change w i * _ = w i • _
     rfl
   conv_lhs => enter [2, j]; rw [h_slot1 j]
   -- T-symmetry: rotate c into slot 0 (same cyclic perm as cubicPartialOp_trASig).
@@ -2883,13 +2865,11 @@ private lemma cubicPartialOp_trASig_compSig
     refine Finset.sum_congr rfl fun k _ => ?_
     rw [T.toMultilinearMap.map_update_smul m_base 0 (c k)
         (Pi.single (M := fun _ : ι => ℝ) k (1 : ℝ))]
-    change c k • _ = c k * _
     rfl
   conv_lhs => enter [2, j]; rw [h_expand j]
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun k _ => ?_
   rw [Finset.mul_sum]
-  refine Finset.sum_congr rfl fun j _ => ?_
   rfl
 
 /-! ### Helper lemmas for `gaussian_quad_linear_cubic_explicit`
@@ -3060,8 +3040,6 @@ private lemma cubicPartialOp_basis_coord
   -- Now goal: c k • T (Function.update m_base 2 (Pi.single k 1))
   --         = c k * Tcoord T p q k.
   rw [← h_match_e k]
-  show c k • T _ = c k * Tcoord T p q k
-  unfold Tcoord stdBasisVec
   rfl
 
 set_option maxHeartbeats 1600000 in
@@ -3126,22 +3104,22 @@ private lemma gaussian_quad_linear_cubic_explicit
         = (A (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))) i := by
       unfold dot
       rw [Finset.sum_eq_single i]
-      · rw [Pi.single_eq_same]; ring
+      · simp only [Pi.single_eq_same, one_mul]
       · intros k _ hk
         have h_zero : Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ) k = 0 := by
           simp [Pi.single_apply, hk.symm]
-        rw [h_zero]; ring
+        rw [h_zero]; simp only [zero_mul]
       · intro h; exact absurd (Finset.mem_univ i) h
     have h_rhs_simp : dot (Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ))
           (A (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ)))
         = (A (Pi.single (M := fun _ : ι => ℝ) i (1 : ℝ))) j := by
       unfold dot
       rw [Finset.sum_eq_single j]
-      · rw [Pi.single_eq_same]; ring
+      · simp only [Pi.single_eq_same, one_mul]
       · intros k _ hk
         have h_zero : Pi.single (M := fun _ : ι => ℝ) j (1 : ℝ) k = 0 := by
           simp [Pi.single_apply, hk.symm]
-        rw [h_zero]; ring
+        rw [h_zero]; simp only [zero_mul]
       · intro h; exact absurd (Finset.mem_univ j) h
     rw [h_lhs_simp, h_rhs_simp] at h
     exact h
@@ -3221,7 +3199,7 @@ private lemma gaussian_quad_linear_cubic_explicit
         | 2 => r
       have h := Tcoord_perm T hT_symm
         (Equiv.swap (1 : Fin 3) 2 * Equiv.swap (0 : Fin 3) 1) ρ
-      simpa [ρ, Equiv.swap_apply_def] using h
+      exact h
     have hperm_prq : ∀ p q r : ι, Tcoord T p r q = Tcoord T p q r := by
       intro p q r
       let ρ : Fin 3 → ι := fun n =>
@@ -3230,7 +3208,7 @@ private lemma gaussian_quad_linear_cubic_explicit
         | 1 => q
         | 2 => r
       have h := Tcoord_perm T hT_symm (Equiv.swap (1 : Fin 3) 2) ρ
-      simpa [ρ, Equiv.swap_apply_def] using h
+      exact h
     -- T2 = T1 via inner i↔j swap + hAcoord_symm.
     have hT2_eq_T1 : T2 = T1 := by
       show (∑ p, ∑ q, ∑ r, ∑ i, ∑ j, _) = _
@@ -4039,7 +4017,7 @@ private lemma expNumLin_neg (a : ι → ℝ) (t : ℝ) (u : ι → ℝ) :
   unfold expNumLin
   have h_dot_neg : dot a (-u) = -(dot a u) := dot_neg a u
   rw [h_dot_neg]
-  ring
+  simp only [mul_neg]
 
 /-- The quadratic obs jet is even: `Q_t(-u) = Q_t(u)`. -/
 private lemma expNumQuad_neg
@@ -4048,14 +4026,7 @@ private lemma expNumQuad_neg
     (t : ℝ) (u : ι → ℝ) :
     expNumQuad φ a hφ t (-u) = expNumQuad φ a hφ t u := by
   unfold expNumQuad quadForm
-  show (1 / t) * ((1 / 2 : ℝ) * ∑ i, (-u) i * (hφ.A (-u)) i)
-      = (1 / t) * ((1 / 2 : ℝ) * ∑ i, u i * (hφ.A u) i)
-  have h_eq : ∀ i, (-u) i * (hφ.A (-u)) i = u i * (hφ.A u) i := by
-    intro i
-    have h1 : (-u) i = -(u i) := by simp [Pi.neg_apply]
-    have h2 : hφ.A (-u) = -(hφ.A u) := by rw [map_neg]
-    rw [h1, h2]; simp [Pi.neg_apply]
-  congr 1; congr 1; exact Finset.sum_congr rfl (fun i _ => h_eq i)
+  simp only [one_div, Pi.neg_apply, map_neg, mul_neg, neg_mul, neg_neg]
 
 /-- The cubic potential jet is odd: `C_t(-u) = -C_t(u)`. -/
 private lemma expPotCubic_neg
@@ -4066,7 +4037,7 @@ private lemma expPotCubic_neg
     expPotCubic V H hV t (-u) = - expPotCubic V H hV t u := by
   unfold expPotCubic
   rw [cmm_diag_odd hV.T u]
-  ring
+  simp only [one_div, mul_neg]
 
 /-- The cubic obs jet is odd: `P_t(-u) = -P_t(u)`. -/
 private lemma expNumCubic_neg
@@ -4076,7 +4047,7 @@ private lemma expNumCubic_neg
     expNumCubic φ a hφ t (-u) = - expNumCubic φ a hφ t u := by
   unfold expNumCubic
   rw [cmm_diag_odd hφ.Φ u]
-  ring
+  simp only [one_div, mul_neg]
 
 /-! ### Quintic remainder rescaling (for J₃) -/
 
@@ -4358,7 +4329,7 @@ private lemma abs_expNumQuad_sub_coeff_le
       calc ∑ i, |u i * (hφ.A u) i|
           ≤ ∑ _ : ι, ‖u‖ * ‖hφ.A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
         _ = Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := by
-              rw [Finset.sum_const, Finset.card_univ]; ring
+              simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
     have h_Au : ‖hφ.A u‖ ≤ ‖hφ.A‖ * ‖u‖ := hφ.A.le_opNorm u
     calc |∑ i, u i * (hφ.A u) i|
         ≤ Fintype.card ι * (‖u‖ * ‖hφ.A u‖) := le_trans h_sum_le h_sum_le2
@@ -4381,7 +4352,7 @@ private lemma abs_expNumQuad_sub_coeff_le
           |expNumeratorCoeff V φ H Hinv a hV hφ / t| := by
         have := abs_sub (expNumQuad φ a hφ t u)
           (expNumeratorCoeff V φ H Hinv a hV hφ / t)
-        linarith
+        exact this
     _ ≤ (Fintype.card ι * ‖hφ.A‖ / (2 * t)) * ‖u‖ ^ 2 +
           |expNumeratorCoeff V φ H Hinv a hV hφ / t| := by
         gcongr
@@ -4434,7 +4405,7 @@ private lemma abs_J4_bracket_local_le
     exact h
   -- Quadratic bound: |s_t| ≤ (c/4)·‖u‖² locally.
   have h_cube_to_sq : ‖u‖ ^ 3 / Real.sqrt t ≤ δ * ‖u‖ ^ 2 := by
-    rw [show ‖u‖ ^ 3 = ‖u‖ ^ 2 * ‖u‖ from by ring,
+    rw [show ‖u‖ ^ 3 = ‖u‖ ^ 2 * ‖u‖ from rfl,
         div_le_iff₀ hsqrt_pos]
     calc ‖u‖ ^ 2 * ‖u‖ ≤ ‖u‖ ^ 2 * (δ * Real.sqrt t) :=
           mul_le_mul_of_nonneg_left hu (sq_nonneg _)
@@ -4532,7 +4503,7 @@ private lemma abs_J4_bracket_local_le
   rw [h_eq]
   have h_tri : ∀ a b c : ℝ, |a + b + c| ≤ |a| + |b| + |c| := by
     intro a b c
-    calc |a + b + c| = |(a + b) + c| := by ring_nf
+    calc |a + b + c| = |(a + b) + c| := rfl
       _ ≤ |a + b| + |c| := abs_add_le _ _
       _ ≤ (|a| + |b|) + |c| := by gcongr; exact abs_add_le _ _
   calc |-(rescaledPerturbation V H t u + rescaledPerturbation V H t (-u))
@@ -4710,7 +4681,7 @@ private lemma abs_J3_bracket_local_le
     exact h
   -- Quadratic upper bounds on |s_t(±u)| via local condition.
   have h_cube_to_sq : ‖u‖ ^ 3 / Real.sqrt t ≤ δ * ‖u‖ ^ 2 := by
-    rw [show ‖u‖ ^ 3 = ‖u‖ ^ 2 * ‖u‖ from by ring,
+    rw [show ‖u‖ ^ 3 = ‖u‖ ^ 2 * ‖u‖ from rfl,
         div_le_iff₀ hsqrt_pos]
     calc ‖u‖ ^ 2 * ‖u‖ ≤ ‖u‖ ^ 2 * (δ * Real.sqrt t) :=
           mul_le_mul_of_nonneg_left hu (sq_nonneg _)
@@ -4766,11 +4737,11 @@ private lemma abs_J3_bracket_local_le
           * |rescaledPerturbation V H t u - rescaledPerturbation V H t (-u)| / 2
         ≤ (2 * hV.jet_const * ‖u‖ ^ 4 / t)
           * (2 * hV.local_const * ‖u‖ ^ 3 / Real.sqrt t) / 2 := by
-          apply div_le_div_of_nonneg_right _ (by norm_num : (0 : ℝ) < 2).le
+          apply div_le_div_of_nonneg_right _ (by simp only [Nat.ofNat_pos] : (0 : ℝ) < 2).le
           have h_jet_C_nn : 0 ≤ hV.jet_const := hV.jet_const_nonneg
           have h_b_nn : 0 ≤ 2 * hV.jet_const * ‖u‖ ^ 4 / t := by
             apply div_nonneg _ ht.le
-            apply mul_nonneg (mul_nonneg (by norm_num) h_jet_C_nn)
+            apply mul_nonneg (mul_nonneg (by simp only [Nat.ofNat_nonneg]) h_jet_C_nn)
               (pow_nonneg (norm_nonneg _) _)
           exact mul_le_mul h_sum h_st_diff h_diff_nn h_b_nn
       _ = 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t) := by
@@ -4790,7 +4761,7 @@ private lemma abs_J3_bracket_local_le
       have h_c_nn : 0 ≤ hV.coercive_const := hV.coercive_const_pos.le
       have : 0 ≤ hV.coercive_const / 4 * ‖u‖ ^ 2 :=
         mul_nonneg (by linarith) (sq_nonneg _)
-      linarith
+      exact this
     · apply Real.exp_le_exp.mpr
       calc -r ≤ |r| := neg_le_abs r
         _ ≤ (hV.coercive_const / 4) * ‖u‖ ^ 2 := hr
@@ -4801,7 +4772,7 @@ private lemma abs_J3_bracket_local_le
     rw [show (hV.local_const * ‖u‖ ^ 3 / Real.sqrt t) ^ 3
           = hV.local_const ^ 3 * ‖u‖ ^ 9 / (Real.sqrt t) ^ 3 from by
         rw [div_pow]; ring] at h_pow
-    rw [show (Real.sqrt t) ^ 3 = (Real.sqrt t) ^ 2 * Real.sqrt t from by ring,
+    rw [show (Real.sqrt t) ^ 3 = (Real.sqrt t) ^ 2 * Real.sqrt t from rfl,
         hsqrt_t_sq] at h_pow
     exact h_pow
   have h_st_cube_neg_u : |rescaledPerturbation V H t (-u)| ^ 3
@@ -4810,7 +4781,7 @@ private lemma abs_J3_bracket_local_le
     rw [show (hV.local_const * ‖u‖ ^ 3 / Real.sqrt t) ^ 3
           = hV.local_const ^ 3 * ‖u‖ ^ 9 / (Real.sqrt t) ^ 3 from by
         rw [div_pow]; ring] at h_pow
-    rw [show (Real.sqrt t) ^ 3 = (Real.sqrt t) ^ 2 * Real.sqrt t from by ring,
+    rw [show (Real.sqrt t) ^ 3 = (Real.sqrt t) ^ 2 * Real.sqrt t from rfl,
         hsqrt_t_sq] at h_pow
     exact h_pow
   -- |R₃(±u)| ≤ Cs³·‖u‖^9·exp((c/4)‖u‖²)/(2·(t·√t)).
@@ -4908,7 +4879,7 @@ private lemma abs_J3_bracket_local_le
         + |Real.exp (-(rescaledPerturbation V H t (-u)))
             - (1 - rescaledPerturbation V H t (-u)
                 + rescaledPerturbation V H t (-u) ^ 2 / 2)| := by
-          rw [abs_neg, abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
+          rw [abs_neg, abs_div, abs_of_pos (by simp only [Nat.ofNat_pos] : (0 : ℝ) < 2)]
     _ ≤ hV.Q_const * ‖u‖ ^ 5 / (t * Real.sqrt t)
         + 2 * hV.jet_const * hV.local_const * ‖u‖ ^ 7 / (t * Real.sqrt t)
         + hV.local_const ^ 3 * ‖u‖ ^ 9 *
@@ -4939,10 +4910,10 @@ private lemma abs_expNumCubic_le
   have hsqrt_pos : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
   have h_norm : ‖(fun _ : Fin 3 => u)‖ ≤ ‖u‖ := by
     rw [pi_norm_le_iff_of_nonneg (norm_nonneg _)]
-    intro i; exact le_refl _
+    intro i; rfl
   have h_Φ : |hφ.Φ (fun _ => u)| ≤ ‖hφ.Φ‖ * ‖u‖ ^ 3 := by
     have := hφ.Φ.le_opNorm_mul_pow_of_le h_norm
-    simpa [Real.norm_eq_abs] using this
+    exact this
   have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 3 := pow_nonneg (norm_nonneg _) _
   have h_sqrt_inv_pos : 0 < (Real.sqrt t)⁻¹ := by positivity
   have h_factor_nn : 0 ≤ (Real.sqrt t)⁻¹ / t * (1 / 6) := by positivity
@@ -5191,7 +5162,8 @@ private lemma abs_expNumObsRem_sub_neg_quintic_le
   have h_quintic := hφ.φ_odd_quintic_bound ((Real.sqrt t)⁻¹ • u) h_norm_le
   -- Simplify: 2 · dot 0 ((√t)⁻¹ • u) = 0.
   have h_dot_zero_w : (2 : ℝ) * dot (0 : ι → ℝ) ((Real.sqrt t)⁻¹ • u) = 0 := by
-    unfold dot; simp
+    unfold dot; simp only [Pi.zero_apply, Pi.smul_apply, smul_eq_mul, zero_mul,
+                  Finset.sum_const_zero, mul_zero]
   rw [h_dot_zero_w, sub_zero] at h_quintic
   -- ‖(√t)⁻¹ • u‖^5 = ‖u‖^5 / (t² · √t).
   have h_norm5 : ‖(Real.sqrt t)⁻¹ • u‖ ^ 5 = ‖u‖ ^ 5 / (t ^ 2 * Real.sqrt t) := by
@@ -5201,7 +5173,7 @@ private lemma abs_expNumObsRem_sub_neg_quintic_le
       have h_sqrt2 : (Real.sqrt t) ^ 2 = t := Real.sq_sqrt ht.le
       have h_sqrt4 : (Real.sqrt t) ^ 4 = t ^ 2 := by
         rw [show (Real.sqrt t) ^ 4 = ((Real.sqrt t) ^ 2) ^ 2 from by ring, h_sqrt2]
-      rw [show (Real.sqrt t) ^ 5 = (Real.sqrt t) ^ 4 * Real.sqrt t from by ring,
+      rw [show (Real.sqrt t) ^ 5 = (Real.sqrt t) ^ 4 * Real.sqrt t from rfl,
           h_sqrt4]
     have h_inv5 : ((Real.sqrt t)⁻¹) ^ 5 = ((Real.sqrt t) ^ 5)⁻¹ := by
       rw [← inv_pow]
@@ -5210,12 +5182,13 @@ private lemma abs_expNumObsRem_sub_neg_quintic_le
   rw [h_norm5] at h_quintic
   -- Reduce expNumObsRem(u) - expNumObsRem(-u) to quintic-bound LHS form.
   have h_smul_neg : (Real.sqrt t)⁻¹ • (-u : ι → ℝ) = -((Real.sqrt t)⁻¹ • u) := by
-    simp [smul_neg]
+    simp only [smul_neg]
   -- expNumLin (a=0): both are 0.
   have h_lin_zero : expNumLin (0 : ι → ℝ) t u = 0 := by
-    unfold expNumLin dot; simp
+    unfold expNumLin dot; simp only [Pi.zero_apply, zero_mul, Finset.sum_const_zero, mul_zero]
   have h_lin_zero_neg : expNumLin (0 : ι → ℝ) t (-u) = 0 := by
-    unfold expNumLin dot; simp
+    unfold expNumLin dot; simp only [Pi.zero_apply, Pi.neg_apply, mul_neg, zero_mul, neg_zero,
+                            Finset.sum_const_zero, mul_zero]
   -- expNumQuad(u) = expNumQuad(-u).
   have h_Q_neg := expNumQuad_neg φ (0 : ι → ℝ) hφ.toObservableTensorApprox t u
   -- expNumCubic(-u) = -expNumCubic(u).
@@ -6126,7 +6099,7 @@ private lemma expNumErr₃_symmetric
     apply MeasureTheory.integral_congr_ae
     filter_upwards with u
     rw [expNumLin_neg, gaussianWeight_neg]
-    ring
+    simp only [neg_mul]
   -- Step 2: 2·J₃ = J₃ + J₃ = ∫ f - (-∫ f) wait no...
   -- 2·J₃ = J₃ + J₃ = ∫f + ∫f = ∫f - (-∫f). And -∫f = ∫(-f(-u) under sub) = ∫(-(...))
   -- Actually: 2J₃ = J₃ + J₃ = J₃ - (-J₃). And from step 1, -J₃ = ∫(-(...))... hmm.
@@ -6151,7 +6124,7 @@ private lemma expNumErr₃_symmetric
     apply h_neg_int.congr
     filter_upwards with u
     rw [expNumLin_neg, expPotCubic_neg, gaussianWeight_neg]
-    ring
+    simp only [neg_mul, neg_neg]
   -- 2·J₃ = J₃ + J₃ = ∫ f - ∫ f_neg' where f_neg'(u) = -L_t(u)·R(-u)·gW(u) (from h_neg).
   have h_two_mul : (2 : ℝ) * (∫ u : ι → ℝ,
         expNumLin a t u *
@@ -6181,9 +6154,7 @@ private lemma expNumErr₃_symmetric
                 gaussianWeight H u) from by
         conv_rhs => rw [h_neg]
         rw [← MeasureTheory.integral_neg]
-        apply MeasureTheory.integral_congr_ae
-        filter_upwards with u
-        ring]
+        simp only [neg_neg]]
     ring
   rw [h_two_mul, ← MeasureTheory.integral_sub h_int_orig h_int_neg]
   apply MeasureTheory.integral_congr_ae
@@ -6838,7 +6809,7 @@ private lemma expNumErr₁_bound
             show ‖u‖ ≤ hφ.jet_radius * Real.sqrt t
             exact hu)
         have h_loc' : |expNumObsRem φ a hφ t u| ≤ jet_C * ‖u‖ ^ 4 / t ^ 2 := by
-          rw [hjet_C_def]; exact h_loc
+          exact h_loc
         have h_pow_N_nn : 0 ≤ ‖u‖ ^ N := pow_nonneg (norm_nonneg _) _
         have h_C_tail_nn : 0 ≤ C_tail_factor := hC_tail_factor_nn
         have h_jet_C_nn : 0 ≤ jet_C := hjet_C_nn
@@ -6848,7 +6819,7 @@ private lemma expNumErr₁_bound
           _ = (jet_C / t ^ 2) * ‖u‖ ^ 4 * 1 := by ring
           _ ≤ (jet_C / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) := by
               apply mul_le_mul_of_nonneg_left _ (by positivity)
-              linarith [h_pow_N_nn]
+              simp only [le_add_iff_nonneg_right, norm_nonneg, pow_nonneg]
           _ ≤ ((jet_C + C_tail_factor) / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) := by
               gcongr
               linarith
@@ -6890,16 +6861,16 @@ private lemma expNumErr₁_bound
               rw [hN_def]; exact le_max_left _ _
             linarith [pow_nonneg h_norm_nn N]
         have h_1_le_N : (1 : ℝ) ≤ 1 + ‖u‖ ^ N := by
-          linarith [pow_nonneg (norm_nonneg u) N]
+          simp only [le_add_iff_nonneg_right, norm_nonneg, pow_nonneg]
         have h_norm_le_N : ‖u‖ ≤ 1 + ‖u‖ ^ N := by
           by_cases h1u : ‖u‖ ≤ 1
           · linarith [pow_nonneg (norm_nonneg u) N]
           · push Not at h1u
             have h_le : ‖u‖ ≤ ‖u‖ ^ N := by
-              calc ‖u‖ = ‖u‖ ^ 1 := by ring
+              calc ‖u‖ = ‖u‖ ^ 1 := by simp only [pow_one]
                 _ ≤ ‖u‖ ^ N := by
                     apply pow_le_pow_right₀ h1u.le
-                    rw [hN_def]; have := le_max_right p 3; omega
+                    rw [hN_def]; simp only [le_sup_iff, Nat.one_le_ofNat, or_true]
             linarith [pow_nonneg (norm_nonneg u) N]
         have h_norm_sq_le_N : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ N := by
           by_cases h1u : ‖u‖ ≤ 1
@@ -6908,7 +6879,7 @@ private lemma expNumErr₁_bound
           · push Not at h1u
             have h_le : ‖u‖ ^ 2 ≤ ‖u‖ ^ N := by
               apply pow_le_pow_right₀ h1u.le
-              rw [hN_def]; have := le_max_right p 3; omega
+              rw [hN_def]; simp only [le_sup_iff, Nat.reduceLeDiff, or_true]
             linarith [pow_nonneg (norm_nonneg u) N]
         have h_norm_cube_le_N : ‖u‖ ^ 3 ≤ 1 + ‖u‖ ^ N := by
           by_cases h1u : ‖u‖ ≤ 1
@@ -6953,7 +6924,7 @@ private lemma expNumErr₁_bound
         -- Now absorb: C_glob · (1 + ‖u‖^N) ≤ C_tail_factor · (‖u‖⁴/t²) · (1 + ‖u‖^N).
         calc |expNumObsRem φ a hφ t u|
             ≤ C_glob * (1 + ‖u‖ ^ N) := h_glob_simp
-          _ = C_glob * 1 * (1 + ‖u‖ ^ N) := by ring
+          _ = C_glob * 1 * (1 + ‖u‖ ^ N) := by simp only [mul_one]
           _ ≤ C_glob * (‖u‖ ^ 4 / (jet_R ^ 4 * t ^ 2)) * (1 + ‖u‖ ^ N) := by
               apply mul_le_mul_of_nonneg_right _ (by linarith [pow_nonneg (norm_nonneg u) N])
               apply mul_le_mul_of_nonneg_left h_one_le hC_glob_nn
@@ -6970,7 +6941,7 @@ private lemma expNumErr₁_bound
         ≤ ((jet_C + C_tail_factor) / t ^ 2) * ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) *
             Real.exp (-(c * ‖u‖ ^ 2)) := by
           apply mul_le_mul h_R_ptw h_gibbs_le h_gibbs_nn (by positivity)
-      _ = G u := by rw [hG_def]
+      _ = G u := rfl
   -- Conclude.
   have h_main :=
     norm_integral_le_of_norm_le hG_int (Filter.Eventually.of_forall h_pointwise)
@@ -6987,7 +6958,7 @@ private lemma expNumErr₁_bound
   calc |expNumErr₁ V φ a H hφ t|
       = ‖∫ u : ι → ℝ, expNumObsRem φ a hφ t u
           * Real.exp (-(rescaledPerturbation V H t u))
-          * gaussianWeight H u‖ := by rw [Real.norm_eq_abs]; rfl
+          * gaussianWeight H u‖ := rfl
     _ ≤ ∫ u : ι → ℝ, G u := h_main
     _ = K / t ^ 2 := h_intG
 
@@ -7694,14 +7665,14 @@ private lemma J3_tail_pointwise_le
               = La * (4 / δ ^ 3) * (‖u‖ ^ 4 / t ^ 2) from rfl]
         apply mul_le_mul_of_nonneg_left _ h_4_nn
         apply div_le_div_of_nonneg_right _ ht_sq_pos.le
-        linarith
+        simp only [le_add_iff_nonneg_right, norm_nonneg, pow_succ_nonneg]
       have h_split_b : La * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 6 / t ^ 2)
           ≤ La * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2 := by
         rw [show La * ‖hV.T‖ / (3 * δ ^ 2) * (‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2
               = La * ‖hV.T‖ / (3 * δ ^ 2) * ((‖u‖ ^ 4 + ‖u‖ ^ 6) / t ^ 2) from by ring]
         apply mul_le_mul_of_nonneg_left _ h_T_nn'
         apply div_le_div_of_nonneg_right _ ht_sq_pos.le
-        linarith
+        simp only [le_add_iff_nonneg_left, norm_nonneg, pow_succ_nonneg]
       linarith
     linarith [h_a, h_b, h_bound]
   -- Combine.
@@ -7975,11 +7946,11 @@ private lemma expNumErr₄_bound
           field_simp
       _ ≤ 1 * (hV.coercive_const / 4) := by
           apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ hV.coercive_const / 4)
-          rw [div_le_one hCs1_pos]; linarith
+          rw [div_le_one hCs1_pos]; simp only [le_add_iff_nonneg_right, zero_le_one]
       _ = hV.coercive_const / 4 := one_mul _
   have hδ_sq_pos : 0 < δ ^ 2 := by positivity
   -- Gaussian moment dominator: ∫ (1 + ‖u‖^8) · exp(-(c/4)‖u‖²).
-  have hc4_pos : 0 < hV.coercive_const / 4 := by linarith
+  have hc4_pos : 0 < hV.coercive_const / 4 := by linarith only [hc_pos]
   set M : ℝ := ∫ u : ι → ℝ,
       (1 + ‖u‖ ^ 8) * Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) with hM_def
   have hM_int : Integrable (fun u : ι → ℝ =>
@@ -8080,10 +8051,10 @@ private lemma expNumErr₄_bound
       · push Not at h1u
         have : ‖u‖ ^ k ≤ ‖u‖ ^ 8 := pow_le_pow_right₀ h1u.le hk
         linarith
-    have h_u2 : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 2 (by omega)
-    have h_u4 : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 4 (by omega)
-    have h_u6 : ‖u‖ ^ 6 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 6 (by omega)
-    have h_u8 : ‖u‖ ^ 8 ≤ 1 + ‖u‖ ^ 8 := by linarith [pow_nonneg (norm_nonneg u) 8]
+    have h_u2 : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 2 (by simp only [Nat.reduceLeDiff])
+    have h_u4 : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 4 (by simp only [Nat.reduceLeDiff])
+    have h_u6 : ‖u‖ ^ 6 ≤ 1 + ‖u‖ ^ 8 := h_pow_le_8 6 (by simp only [Nat.reduceLeDiff])
+    have h_u8 : ‖u‖ ^ 8 ≤ 1 + ‖u‖ ^ 8 := by simp only [le_add_iff_nonneg_left, zero_le_one]
     by_cases hu : ‖u‖ ≤ δ * Real.sqrt t
     · -- LOCAL CASE: ‖u‖ ≤ δ·√t.
       have h_bracket_loc :=
@@ -8181,7 +8152,7 @@ private lemma expNumErr₄_bound
             -- 8bD ≤ 8b(D + 1/δ²).
             have h_inv_nn : 0 ≤ 1 / δ ^ 2 := by positivity
             nlinarith only [h_inv_nn, hb_nn, hD_nn]
-        _ = G u := by rw [hG_def]
+        _ = G u := rfl
     · -- TAIL CASE: ‖u‖ > δ·√t.
       push Not at hu
       have h_uniform := abs_gW_J4_bracket_le_uniform V H hc_pos h_coer ht_pos u
@@ -8256,7 +8227,7 @@ private lemma expNumErr₄_bound
               Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
             apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
             apply mul_le_mul_of_nonneg_left h_t_inv
-            apply mul_nonneg (mul_nonneg (by norm_num) hb_nn)
+            apply mul_nonneg (mul_nonneg (by simp only [Nat.ofNat_nonneg]) hb_nn)
             linarith [sq_nonneg ‖u‖]
         _ = (4 * b / δ ^ 2 / t ^ 2) * ((1 + ‖u‖ ^ 2) * ‖u‖ ^ 2) *
               Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
@@ -8282,11 +8253,11 @@ private lemma expNumErr₄_bound
             rw [show (8 * b * (D + 1 / δ ^ 2) : ℝ) / t ^ 2
                   = (8 * b * D + 8 * b / δ ^ 2) / t ^ 2 from by ring,
                 show (8 * b / δ ^ 2 / t ^ 2 : ℝ)
-                  = (0 + 8 * b / δ ^ 2) / t ^ 2 from by ring]
+                  = (0 + 8 * b / δ ^ 2) / t ^ 2 from by simp only [zero_add]]
             apply div_le_div_of_nonneg_right _ ht_sq_pos.le
             have h_8bD_nn : 0 ≤ 8 * b * D := by positivity
             linarith
-        _ = G u := by rw [hG_def]
+        _ = G u := rfl
   -- Apply norm_integral_le_of_norm_le to bound |∫ ...| by ∫ G.
   have h_main : ‖∫ u : ι → ℝ,
         (expNumQuad φ a hφ t u - expNumeratorCoeff V φ H Hinv a hV hφ / t) *
@@ -8323,7 +8294,7 @@ private lemma expNumErr₄_bound
       _ = K_unified * M / t ^ 2 := h_intG
   have h_abs_2 : |2 * expNumErr₄ V φ a H Hinv hV hφ t|
       = 2 * |expNumErr₄ V φ a H Hinv hV hφ t| := by
-    rw [abs_mul, abs_of_pos (by norm_num : (0:ℝ) < 2)]
+    simp only [abs_mul, Nat.abs_ofNat]
   rw [h_abs_2] at h_2J4_le
   -- 2·|J₄| ≤ K_unified·M/t², so |J₄| ≤ K_unified·M/(2t²) = K/t².
   rw [hK_def, show K_unified * M / 2 / t ^ 2 = K_unified * M / t ^ 2 / 2 from by ring]
@@ -8403,7 +8374,7 @@ private theorem rescaledNumerator_first_order_centered_explicit
                   + |expNumErr₃ V H hV.toPotentialTensorApprox a t|)
                 + |expNumErr₄ V φ a H Hinv hV.toPotentialTensorApprox hφ t| := by
                   gcongr; exact abs_add_le _ _
-            _ = _ := by ring
+            _ = _ := rfl
       _ ≤ K₁ / t ^ 2 + K₂ / t ^ 2 + K₃ / t ^ 2 + K₄ / t ^ 2 := by
           gcongr
       _ = (K₁ + K₂ + K₃ + K₄) / t ^ 2 := by ring
@@ -8687,7 +8658,7 @@ private lemma abs_fqqKernel_le
           ≤ ∑ _ : ι, ‖u‖ * ‖A u‖ := Finset.sum_le_sum (fun i _ => h_each i)
         _ = N * (‖u‖ * ‖A u‖) := by
               rw [Finset.sum_const, Finset.card_univ]
-              rw [hN_def]; push_cast; ring
+              rw [hN_def]; push_cast; simp only [nsmul_eq_mul]
     have h_Au : ‖A u‖ ≤ ‖A‖ * ‖u‖ := A.le_opNorm u
     calc |∑ i, u i * (A u) i|
         ≤ N * (‖u‖ * ‖A u‖) := le_trans h_sum_le h_sum_le2
@@ -8709,7 +8680,7 @@ private lemma abs_fqqKernel_le
           ≤ ∑ _ : ι, ‖u‖ * ‖B u‖ := Finset.sum_le_sum (fun i _ => h_each i)
         _ = N * (‖u‖ * ‖B u‖) := by
               rw [Finset.sum_const, Finset.card_univ]
-              rw [hN_def]; push_cast; ring
+              rw [hN_def]; push_cast; simp only [nsmul_eq_mul]
     have h_Bu : ‖B u‖ ≤ ‖B‖ * ‖u‖ := B.le_opNorm u
     calc |∑ i, u i * (B u) i|
         ≤ N * (‖u‖ * ‖B u‖) := le_trans h_sum_le h_sum_le2
@@ -8720,7 +8691,7 @@ private lemma abs_fqqKernel_le
   have h_norm_pow_nn : 0 ≤ ‖u‖ ^ 2 := sq_nonneg _
   have h_norm_pow4_nn : 0 ≤ ‖u‖ ^ 4 := by positivity
   -- Bound `(1/2 Q_A - 1/2 trASig A Hinv) · (1/2 Q_B)`.
-  have h_h2_pos : (0 : ℝ) ≤ 1 / 2 := by norm_num
+  have h_h2_pos : (0 : ℝ) ≤ 1 / 2 := by simp only [one_div, inv_nonneg, Nat.ofNat_nonneg]
   have h_QcQ : |((1 / 2 : ℝ) * quadForm A u - (1 / 2 : ℝ) * trASig A Hinv) *
         ((1 / 2 : ℝ) * quadForm B u)|
       ≤ (1 / 4 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) * (N * ‖B‖ * ‖u‖ ^ 2) := by
@@ -8748,8 +8719,9 @@ private lemma abs_fqqKernel_le
       mul_le_mul h1 h2 (abs_nonneg _) (by positivity)
     linarith [h_step1]
   -- Polynomial monotonicity facts.
-  have h_one_le : (1 : ℝ) ≤ 1 + ‖u‖ ^ 4 := by linarith
-  have h_u4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 4 := by linarith
+  have h_one_le : (1 : ℝ) ≤ 1 + ‖u‖ ^ 4 := by simp only [le_add_iff_nonneg_right, norm_nonneg,
+                                                pow_succ_nonneg]
+  have h_u4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ 4 := by simp only [le_add_iff_nonneg_left, zero_le_one]
   have h_u2_le_one_plus_u4 : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ 4 := by
     nlinarith only [sq_nonneg (‖u‖ ^ 2 - 1)]
   -- Bound `1/4 (N‖A‖ ‖u‖² + tA)(N‖B‖ ‖u‖²)` by expanding.
@@ -8757,8 +8729,7 @@ private lemma abs_fqqKernel_le
       (1 / 4 : ℝ) * (N * ‖A‖ * ‖u‖ ^ 2 + tA) * (N * ‖B‖ * ‖u‖ ^ 2)
         = (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * ‖u‖ ^ 4
         + (1 / 4 : ℝ) * tA * (N * ‖B‖) * ‖u‖ ^ 2 := by
-    have h_uu : ‖u‖ ^ 2 * ‖u‖ ^ 2 = ‖u‖ ^ 4 := by ring
-    nlinarith only [h_uu, sq_nonneg (‖u‖ ^ 2)]
+    linarith only []
   -- Three-piece bound: each scalar coefficient is nonneg, pieces are
   -- monotonic in (1 + ‖u‖^4).
   have h_NANB_nn : (0 : ℝ) ≤ (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) := by positivity
@@ -8788,7 +8759,7 @@ private lemma abs_fqqKernel_le
         linarith [h_QcQ, h_tAB_eq.le]
     _ = (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * ‖u‖ ^ 4
         + (1 / 4 : ℝ) * tA * (N * ‖B‖) * ‖u‖ ^ 2
-        + (1 / 2 : ℝ) * tAB := by linarith [h_expand_QcQ]
+        + (1 / 2 : ℝ) * tAB := by linarith only []
     _ ≤ (1 / 4 : ℝ) * (N * ‖A‖) * (N * ‖B‖) * (1 + ‖u‖ ^ 4)
         + (1 / 4 : ℝ) * tA * (N * ‖B‖) * (1 + ‖u‖ ^ 4)
         + (1 / 2 : ℝ) * tAB * (1 + ‖u‖ ^ 4) := by
@@ -10982,7 +10953,7 @@ private lemma crossEvenKernel_even
     cmm_diag_odd Φ u
   show dot b (-u) * ((1 / 6 : ℝ) * Φ (fun _ : Fin 3 => -u))
       = dot b u * ((1 / 6 : ℝ) * Φ (fun _ : Fin 3 => u))
-  rw [h_dot, h_Φ]; ring
+  rw [h_dot, h_Φ]; simp only [one_div, mul_neg, neg_mul, neg_neg]
 
 /-- **`crossOddKernel` is odd**: `(b·u)` is odd, `quadForm A u` is even,
 the constant `trASig A Σ` is even, so the difference times the linear
@@ -10996,10 +10967,10 @@ private lemma crossOddKernel_odd
   have h_qf : quadForm A (-u) = quadForm A u := by
     unfold quadForm
     refine Finset.sum_congr rfl ?_; intro i _
-    have h1 : (-u) i = -(u i) := by simp [Pi.neg_apply]
+    have h1 : (-u) i = -(u i) := rfl
     have h2 : A (-u) = -(A u) := by rw [map_neg]
     rw [h1, h2]; simp [Pi.neg_apply]
-  rw [h_qf]; ring
+  rw [h_qf]; simp only [one_div, neg_mul]
 
 /-- **`crossOddKernel` integrates to zero**: parity vanishing against the
 even Gaussian. -/
@@ -11151,8 +11122,9 @@ private lemma cross_linear_connected_pointwise
   unfold expNumLin expNumQuad expNumCubic
   rw [show Hinv (0 : ι → ℝ) = 0 from map_zero Hinv]
   rw [show dot (0 : ι → ℝ) (tensorContractMatrix hV.T Hinv) = 0 from by
-    unfold dot; simp]
-  rw [show dot (0 : ι → ℝ) u = 0 from by unfold dot; simp]
+    unfold dot; simp only [Pi.zero_apply, zero_mul, Finset.sum_const_zero]]
+  rw [show dot (0 : ι → ℝ) u = 0 from by unfold dot; simp only [Pi.zero_apply, zero_mul,
+                                                       Finset.sum_const_zero]]
   field_simp
   ring
 
@@ -11195,7 +11167,7 @@ private lemma exp_neg_mul_le_inv {β t : ℝ} (hβ : 0 < β) (ht : 0 < t) :
     have h := Real.add_one_le_exp (β * t)
     linarith
   rw [show Real.exp (-(β * t)) = 1 / Real.exp (β * t)
-      from by rw [Real.exp_neg]; ring]
+      from by rw [Real.exp_neg]; simp only [one_div]]
   exact one_div_le_one_div_of_le hβt haux
 
 /-- **Local pointwise bound on the Gaussian-symmetric integrand**
@@ -11305,7 +11277,7 @@ private lemma abs_bulkErrA_gaussian_symm_local_le
               (t * Real.sqrt t * (1 / (t ^ 2 * Real.sqrt t))) from by ring,
         show t * Real.sqrt t * (1 / (t ^ 2 * Real.sqrt t)) = 1 / t from by
           have := t_sqrt_mul_div_tsq_sqrt ht (1 : ℝ)
-          linarith [this.le, this.ge]]
+          exact this]
     ring
   linarith [h_step1, h_step2, h_eq_loc.le, h_eq_loc.ge]
 
@@ -11370,7 +11342,8 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
     intro v
     have h := abs_expNumObsRem_global_le (φ := φ) (a := (0 : ι → ℝ))
       (hφ := hφ.toObservableTensorApprox) hKφ_nn h_poly_φ ht_one v
-    have h_dot_zero : ∑ i : ι, |((0 : ι → ℝ)) i| = 0 := by simp
+    have h_dot_zero : ∑ i : ι, |((0 : ι → ℝ)) i| = 0 := by simp only [Pi.zero_apply, abs_zero,
+                                                             Finset.sum_const_zero]
     rw [h_dot_zero, zero_mul, add_zero] at h
     have h_normN_nn : 0 ≤ ‖v‖ ^ N := pow_nonneg (norm_nonneg _) _
     have h_p_le_N : p ≤ N := le_max_left _ _
@@ -11388,7 +11361,7 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
         linarith
       · push Not at hv
         have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
-          pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
+          pow_le_pow_right₀ hv.le (le_trans (by simp only [Nat.reduceLeDiff]) h_3_le_N)
         linarith
     have h_v_3_le : ‖v‖ ^ 3 ≤ 1 + ‖v‖ ^ N := by
       by_cases hv : ‖v‖ ≤ 1
@@ -11447,7 +11420,8 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
   have h_norm_sq_lt : δ ^ 2 * t < ‖u‖ ^ 2 := by
     have h1 : (δ * Real.sqrt t) ^ 2 < ‖u‖ ^ 2 := by
       have hRsqrt_pos : 0 < δ * Real.sqrt t := mul_pos hδ_pos hsqrt_pos
-      exact pow_lt_pow_left₀ hu_tail hRsqrt_pos.le (by norm_num)
+      exact pow_lt_pow_left₀ hu_tail hRsqrt_pos.le (by simp only [ne_eq, OfNat.ofNat_ne_zero,
+                                                         not_false_eq_true])
     have h_eq : (δ * Real.sqrt t) ^ 2 = δ ^ 2 * t := by
       rw [mul_pow, Real.sq_sqrt ht_pos.le]
     rw [h_eq] at h1; exact h1
@@ -11512,7 +11486,7 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
     calc t * Real.sqrt t * ‖u‖ * δ ^ 3
         = (t * Real.sqrt t * δ ^ 3) * ‖u‖ := by ring
       _ ≤ ‖u‖ ^ 3 * ‖u‖ := mul_le_mul_of_nonneg_right h_t_sqt h_norm_nn
-      _ = ‖u‖ ^ 4 := by ring
+      _ = ‖u‖ ^ 4 := rfl
   have h_pow_combine : ‖u‖ ^ 4 * (1 + ‖u‖ ^ N) ≤ 2 * (1 + ‖u‖ ^ (N + 4)) := by
     have h_pow4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ (N + 4) := by
       by_cases hu1 : ‖u‖ ≤ 1
@@ -11520,7 +11494,7 @@ private lemma abs_bulkErrA_gaussian_symm_tail_le
         linarith [pow_nonneg (norm_nonneg u) (N + 4)]
       · push Not at hu1
         have h1 : ‖u‖ ^ 4 ≤ ‖u‖ ^ (N + 4) :=
-          pow_le_pow_right₀ hu1.le (by linarith)
+          pow_le_pow_right₀ hu1.le (by simp only [le_add_iff_nonneg_left, zero_le])
         linarith
     have h_pow_eq : ‖u‖ ^ 4 * ‖u‖ ^ N = ‖u‖ ^ (N + 4) := by
       rw [show (N + 4 : ℕ) = 4 + N from by ring, pow_add]
@@ -11823,7 +11797,8 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le
     intro v
     have h := abs_expNumObsRem_global_le (φ := φ) (a := (0 : ι → ℝ))
       (hφ := hφ.toObservableTensorApprox) hKφ_nn h_poly_φ ht_one v
-    have h_dot_zero : ∑ i : ι, |((0 : ι → ℝ)) i| = 0 := by simp
+    have h_dot_zero : ∑ i : ι, |((0 : ι → ℝ)) i| = 0 := by simp only [Pi.zero_apply, abs_zero,
+                                                             Finset.sum_const_zero]
     rw [h_dot_zero, zero_mul, add_zero] at h
     have h_normN_nn : 0 ≤ ‖v‖ ^ N := pow_nonneg (norm_nonneg _) _
     have h_p_le_N : p ≤ N := le_max_left _ _
@@ -11841,7 +11816,7 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le
         linarith
       · push Not at hv
         have h1 : ‖v‖ ^ 2 ≤ ‖v‖ ^ N :=
-          pow_le_pow_right₀ hv.le (le_trans (by norm_num) h_3_le_N)
+          pow_le_pow_right₀ hv.le (le_trans (by simp only [Nat.reduceLeDiff]) h_3_le_N)
         linarith
     have h_v_3_le : ‖v‖ ^ 3 ≤ 1 + ‖v‖ ^ N := by
       by_cases hv : ‖v‖ ≤ 1
@@ -11923,7 +11898,7 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le
       rw [show ‖u‖ ^ 3 / δ ^ 3 * (bL1 * ‖u‖) * (R_const * (1 + ‖u‖ ^ N))
           = (bL1 * R_const / δ ^ 3) * ((‖u‖ ^ 3 * ‖u‖) * (1 + ‖u‖ ^ N))
           from by ring]
-      rw [show ‖u‖ ^ 3 * ‖u‖ = ‖u‖ ^ 4 from by ring]
+      rfl
     linarith [h_B_t_global, h_mul_step, h_simp.le, h_simp.ge]
   -- Combine: |B_t · gW · (exp - 1)| ≤ |B_t| · |gW · (exp - 1)|
   have h_eq_abs :
@@ -11952,9 +11927,10 @@ private lemma abs_bulkErrA_mul_gW_mul_exp_sub_one_tail_le
         linarith [pow_nonneg (norm_nonneg u) (N + 4)]
       · push Not at hu1
         have h1 : ‖u‖ ^ 4 ≤ ‖u‖ ^ (N + 4) :=
-          pow_le_pow_right₀ hu1.le (by linarith)
+          pow_le_pow_right₀ hu1.le (by simp only [le_add_iff_nonneg_left, zero_le])
         linarith
-    have h_pow_N4_le : ‖u‖ ^ (N + 4) ≤ 1 + ‖u‖ ^ (N + 4) := by linarith
+    have h_pow_N4_le : ‖u‖ ^ (N + 4) ≤ 1 + ‖u‖ ^ (N + 4) := by simp only [le_add_iff_nonneg_left,
+                                                                 zero_le_one]
     linarith
   -- Final algebra.
   have h_K_eq : K_tail = 2 * (bL1 * R_const / δ ^ 3) * 2 := by
@@ -13577,13 +13553,13 @@ private lemma rescaledPartition_rate_one_over_t
   have h_int_F_gW : Integrable (fun u : ι → ℝ =>
       (1 : ℝ) * gaussianWeight H u) := by
     apply (hV.int_norm_pow_gW 0).congr
-    filter_upwards with u; simp
+    rfl
   have h_int_F_cV : ∀ {t : ℝ}, 0 < t →
       Integrable (fun u : ι → ℝ =>
         (1 : ℝ) * gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
     intro t ht
     have h := integrable_pow_norm_mul_gaussianWeight_mul_cV V H hV 0 ht
-    apply h.congr; filter_upwards with u; simp
+    apply h.congr; rfl
   have h_int_F_exp : ∀ {t : ℝ}, 0 < t →
       Integrable (fun u : ι → ℝ =>
         (1 : ℝ) * gaussianWeight H u *
@@ -13593,33 +13569,31 @@ private lemma rescaledPartition_rate_one_over_t
       hV.toPotentialApprox.V_continuous H
       hV.toPotentialApprox.coercive_const_pos
       hV.toPotentialApprox.coercive_bound 0 ht
-    apply h.congr; filter_upwards with u; simp
+    apply h.congr; simp only [pow_zero, one_mul, Filter.EventuallyEq.refl]
   obtain ⟨K, T₀, hT₀, hK⟩ :=
     abs_integral_corrected_bracket_poly4_le V H hV
-      (fun _ => (1 : ℝ)) (by norm_num : (0 : ℝ) ≤ 1)
+      (fun _ => (1 : ℝ)) (by simp only [zero_le_one] : (0 : ℝ) ≤ 1)
       (by
-        intro u
-        rw [abs_one]
-        have h_nn : (0 : ℝ) ≤ ‖u‖ ^ 4 := by positivity
-        nlinarith only [h_nn])
+        simp only [abs_one, one_mul, le_add_iff_nonneg_right, norm_nonneg, pow_succ_nonneg,
+          implies_true])
       h_int_F_gW @h_int_F_cV @h_int_F_exp
   refine ⟨K, T₀, hT₀, ?_⟩
   intro t ht
   have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_trans hT₀ ht)
   -- Reduce `D_t - Z = ∫ gW · (exp(-s_t) - 1 + t·cV)`.
   have h_int_gW : Integrable (fun u : ι → ℝ => gaussianWeight H u) :=
-    hV.int_norm_pow_gW 0 |>.congr (by filter_upwards with u; simp [pow_zero])
+    hV.int_norm_pow_gW 0 |>.congr (by simp only [pow_zero, one_mul, Filter.EventuallyEq.refl])
   have h_int_rw : Integrable (fun u : ι → ℝ =>
       gaussianWeight H u * Real.exp (-(rescaledPerturbation V H t u))) := by
     have h := integrable_pow_norm_mul_rescaled_weight V
       hV.toPotentialApprox.V_continuous H
       hV.toPotentialApprox.coercive_const_pos
       hV.toPotentialApprox.coercive_bound 0 ht_pos
-    apply h.congr; filter_upwards with u; simp [pow_zero]
+    apply h.congr; simp only [pow_zero, one_mul, Filter.EventuallyEq.refl]
   have h_int_cV : Integrable (fun u : ι → ℝ =>
       gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u)) := by
     have h := integrable_pow_norm_mul_gaussianWeight_mul_cV V H hV 0 ht_pos
-    apply h.congr; filter_upwards with u; simp [pow_zero]
+    apply h.congr; simp only [pow_zero, one_mul, Filter.EventuallyEq.refl]
   have h_parity : ∫ u : ι → ℝ,
       gaussianWeight H u * hV.cV ((Real.sqrt t)⁻¹ • u) = 0 := by
     rw [show (fun u : ι → ℝ =>
@@ -13629,7 +13603,7 @@ private lemma rescaledPartition_rate_one_over_t
     apply integral_odd_mul_gaussian_eq_zero
     intro u
     have hsm : (Real.sqrt t)⁻¹ • (-u) = -((Real.sqrt t)⁻¹ • u) := by
-      simp [smul_neg]
+      simp only [smul_neg]
     rw [hsm, hV.cV_odd]
   -- Reduce: D_t - Z = ∫ gW · (exp - 1 + t · cV).
   have h_eq : rescaledPartition V t - gaussianZ H
@@ -13666,7 +13640,7 @@ private lemma rescaledPartition_rate_one_over_t
     rw [MeasureTheory.integral_add h_int_diff h_int_cV_t]
     rw [MeasureTheory.integral_sub h_int_rw h_int_gW]
     rw [MeasureTheory.integral_const_mul, h_parity]
-    ring
+    simp only [mul_zero, add_zero]
   rw [h_eq]
   exact hK t ht
 
@@ -14107,8 +14081,7 @@ private lemma oddCross_split
               + expPotCubic V H hV t u)
           + crossOddKernel A Hinv b u * gaussianWeight H u) := by
       have := h_int_corr.add h_int_gW
-      apply this.congr; filter_upwards with u
-      simp only [Pi.add_apply]
+      apply this.congr; rfl
     rw [show (fun u : ι → ℝ => crossOddKernel A Hinv b u * gaussianWeight H u *
               Real.exp (-(rescaledPerturbation V H t u)))
           = fun u => (crossOddKernel A Hinv b u * gaussianWeight H u *
@@ -14117,7 +14090,7 @@ private lemma oddCross_split
             + crossOddKernel A Hinv b u * gaussianWeight H u)
             - crossOddKernel A Hinv b u * gaussianWeight H u *
                 expPotCubic V H hV t u from by
-        funext u; have := h_pt u; linarith]
+        funext u; have := h_pt u; exact this]
     rw [MeasureTheory.integral_sub h_int_corr_plus_gW h_int_epot,
         MeasureTheory.integral_add h_int_corr h_int_gW]
   -- Multiply by √t and use h_zero, h_cubic_id.
@@ -14602,7 +14575,7 @@ private lemma abs_crossOdd_J3_diff_tail_le
       apply mul_le_mul h_norm_sq_lb.le hu.le (by positivity)
         (by positivity)
     rw [h_sq_sqrt] at h_mul
-    rw [show ‖u‖ ^ 2 * ‖u‖ = ‖u‖ ^ 3 from by ring] at h_mul
+    rw [show ‖u‖ ^ 2 * ‖u‖ = ‖u‖ ^ 3 from by rfl] at h_mul
     linarith
   have h_const_to_t_sqrt : 4 * C_K * (‖u‖ + ‖u‖ ^ 3)
       ≤ 4 * C_K / δ ^ 3 * (‖u‖ ^ 4 + ‖u‖ ^ 6) / (t * Real.sqrt t) := by
@@ -14610,7 +14583,7 @@ private lemma abs_crossOdd_J3_diff_tail_le
         ≤ 4 * C_K * (‖u‖ + ‖u‖ ^ 3) *
             (‖u‖ ^ 3 / (δ ^ 3 * (t * Real.sqrt t))) := by
       have h_lhs_nn : 0 ≤ 4 * C_K * (‖u‖ + ‖u‖ ^ 3) := by
-        apply mul_nonneg (mul_nonneg (by norm_num) hC_K_nn) (by positivity)
+        apply mul_nonneg (mul_nonneg (by simp only [Nat.ofNat_nonneg]) hC_K_nn) (by positivity)
       have := mul_le_mul_of_nonneg_left h_norm_to_t_sqrt h_lhs_nn
       simpa using this
     have h_eq : 4 * C_K * (‖u‖ + ‖u‖ ^ 3) *
@@ -14653,12 +14626,10 @@ private lemma abs_crossOdd_J3_diff_tail_le
   set polyTail : ℝ := ‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8 with hpolyTail_def
   have h_46 : ‖u‖ ^ 4 + ‖u‖ ^ 6 ≤ polyTail := by
     rw [hpolyTail_def]
-    have : (0 : ℝ) ≤ ‖u‖ ^ 8 := by positivity
-    linarith
+    simp only [le_add_iff_nonneg_right, norm_nonneg, pow_succ_nonneg]
   have h_68 : ‖u‖ ^ 6 + ‖u‖ ^ 8 ≤ polyTail := by
     rw [hpolyTail_def]
-    have : (0 : ℝ) ≤ ‖u‖ ^ 4 := by positivity
-    linarith
+    simp only [add_le_add_iff_right, le_add_iff_nonneg_left, norm_nonneg, pow_succ_nonneg]
   have h_4Cδ_nn : 0 ≤ 4 * C_K / δ ^ 3 := by positivity
   have h_TC_nn : 0 ≤ C_K * ‖hV.T‖ / (3 * δ ^ 2) := by positivity
   have h_t_sqrt_pos : 0 < t * Real.sqrt t := by positivity
@@ -14708,7 +14679,7 @@ private lemma abs_crossOdd_J3_diff_tail_le
         Real.exp (-((c / 4) * ‖u‖ ^ 2)) :=
       mul_le_mul_of_nonneg_right h_combined h_exp_pos.le
     _ = K_tail / (t * Real.sqrt t) * (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
-        Real.exp (-((c / 4) * ‖u‖ ^ 2)) := by rw [hpolyTail_def]
+        Real.exp (-((c / 4) * ‖u‖ ^ 2)) := rfl
 
 /-- **Integration assembly: K/(t·√t) bound on the symmetrized
 corrected-bracket integral**.
@@ -14756,11 +14727,11 @@ private lemma abs_integral_crossOdd_corrected_diff_le
       _ = (hV.local_const / (hV.local_const + 1)) * (hV.coercive_const / 4) := by field_simp
       _ ≤ 1 * (hV.coercive_const / 4) := by
           apply mul_le_mul_of_nonneg_right _ (by linarith : (0:ℝ) ≤ hV.coercive_const / 4)
-          rw [div_le_one hCs1_pos]; linarith
+          rw [div_le_one hCs1_pos]; simp only [le_add_iff_nonneg_right, zero_le_one]
       _ = hV.coercive_const / 4 := one_mul _
   have hδ_sq_pos : 0 < δ ^ 2 := by positivity
   have hδ_cube_pos : 0 < δ ^ 3 := by positivity
-  have hc4_pos : 0 < hV.coercive_const / 4 := by linarith
+  have hc4_pos : 0 < hV.coercive_const / 4 := by linarith only [hc_pos]
   -- Polynomial moments.
   have hM4 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 4
   have hM6 := integrable_norm_pow_mul_exp_neg_const_sq (ι := ι) hc4_pos 6
@@ -14805,7 +14776,7 @@ private lemma abs_integral_crossOdd_corrected_diff_le
   have hQ_nn : 0 ≤ hV.Q_const := hV.Q_const_nn
   have hD_nn : 0 ≤ hV.Q_const + 2 * hV.jet_const * hV.local_const + hV.local_const ^ 3 := by
     have h2 : 0 ≤ 2 * hV.jet_const * hV.local_const :=
-      mul_nonneg (mul_nonneg (by norm_num) hjet_C_nn) hCs_nn
+      mul_nonneg (mul_nonneg (by simp only [Nat.ofNat_nonneg]) hjet_C_nn) hCs_nn
     have h3 : 0 ≤ hV.local_const ^ 3 := pow_nonneg hCs_nn 3
     linarith
   have hK_loc_const_nn : 0 ≤ K_loc_const := by
@@ -14883,7 +14854,7 @@ private lemma abs_integral_crossOdd_corrected_diff_le
       have h_tail_nn : 0 ≤ G_tail u := hG_tail_nn u
       have h_loc_eq : G_loc u = K_loc_const / (t * Real.sqrt t) *
           (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
-          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by rw [hG_loc_def]
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := rfl
       have h_loc_form : K_loc_const / (t * Real.sqrt t) *
           (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
           Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
@@ -14892,7 +14863,7 @@ private lemma abs_integral_crossOdd_corrected_diff_le
                 (t * Real.sqrt t) *
               (‖u‖ ^ 6 + ‖u‖ ^ 8 + ‖u‖ ^ 10 + ‖u‖ ^ 12) *
               Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
-        rw [hK_loc_const_def]
+        rfl
       linarith [h_loc, h_tail_nn, h_loc_eq.le, h_loc_eq.ge, h_loc_form.le, h_loc_form.ge]
     · push Not at hu
       have h_tail := abs_crossOdd_J3_diff_tail_le V H Hinv A b hV.toPotentialTensorApprox
@@ -14900,7 +14871,7 @@ private lemma abs_integral_crossOdd_corrected_diff_le
       have h_loc_nn : 0 ≤ G_loc u := hG_loc_nn u
       have h_tail_eq : G_tail u = K_tail_const / (t * Real.sqrt t) *
           (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
-          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by rw [hG_tail_def]
+          Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := rfl
       have h_tail_form : K_tail_const / (t * Real.sqrt t) *
           (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
           Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2))
@@ -14909,7 +14880,7 @@ private lemma abs_integral_crossOdd_corrected_diff_le
                 (t * Real.sqrt t) *
               (‖u‖ ^ 4 + ‖u‖ ^ 6 + ‖u‖ ^ 8) *
               Real.exp (-((hV.coercive_const / 4) * ‖u‖ ^ 2)) := by
-        rw [hK_tail_const_def]
+        rfl
       linarith [h_tail, h_loc_nn, h_tail_eq.le, h_tail_eq.ge,
                 h_tail_form.le, h_tail_form.ge]
   -- Main bound.
@@ -15022,7 +14993,7 @@ private lemma rescaledIntegral_oddCross_asymptotic
       ((1 / 6 : ℝ) * T (fun _ => u)) * gaussianWeight H u
       = gaussianZ H * Codd := by
     have := oddCross_main_gaussian (H := H) (Hinv := Hinv) A b T hA_symm hT_symm hGauss
-    rw [hCodd_def]; exact this
+    exact this
   -- 5. Symmetrize the corrected-bracket integral.
   have h_int_corr := integrable_crossOddKernel_mul_rescaled_corrected V H Hinv A b
     hV.toPotentialTensorApprox ht_pos
@@ -15040,8 +15011,7 @@ private lemma rescaledIntegral_oddCross_asymptotic
       have h := h_int_corr.neg
       apply h.congr
       filter_upwards with u
-      simp only [Pi.neg_apply]
-      ring
+      simp only [Pi.neg_apply, neg_mul]
     have h_subst :=
       MeasureTheory.Integrable.comp_neg (μ := (volume : MeasureTheory.Measure (ι → ℝ)))
         (f := fun u : ι → ℝ =>
@@ -15053,7 +15023,7 @@ private lemma rescaledIntegral_oddCross_asymptotic
     have h_cross_neg : crossOddKernel A Hinv b (-u) = -crossOddKernel A Hinv b u :=
       crossOddKernel_odd A Hinv b u
     have h_gW_neg : gaussianWeight H (-u) = gaussianWeight H u := gaussianWeight_neg H u
-    rw [h_cross_neg, h_gW_neg]; ring
+    rw [h_cross_neg, h_gW_neg]; simp only [neg_neg]
   have h_symm := integral_odd_mul_eq_half_integral_sub_neg H
     (crossOddKernel A Hinv b)
     (fun u => Real.exp (-(rescaledPerturbation V H t u)) - 1
@@ -15069,7 +15039,7 @@ private lemma rescaledIntegral_oddCross_asymptotic
               + expPotCubic V H hV.toPotentialTensorApprox t u)) := by
     rw [h_split, h_main_gauss]
   have h_part_form : rescaledPartition V t = gaussianZ H +
-      (rescaledPartition V t - gaussianZ H) := by ring
+      (rescaledPartition V t - gaussianZ H) := by simp only [add_sub_cancel]
   have h_combine : Real.sqrt t *
         (∫ u : ι → ℝ, crossOddKernel A Hinv b u * gaussianWeight H u *
           Real.exp (-(rescaledPerturbation V H t u)))
@@ -15644,9 +15614,9 @@ private lemma abs_phi_taylor_remainder_le
     have h_inv_sq : ((Real.sqrt t)⁻¹) ^ 2 = 1 / t := by
       rw [show ((Real.sqrt t)⁻¹) ^ 2 = ((Real.sqrt t) ^ 2)⁻¹ from inv_pow _ _]
       rw [show (Real.sqrt t) ^ 2 = t from by rw [sq, h_sq]]
-      field_simp
+      simp only [one_div]
     calc ((Real.sqrt t)⁻¹) ^ 3
-        = ((Real.sqrt t)⁻¹) ^ 2 * (Real.sqrt t)⁻¹ := by ring
+        = ((Real.sqrt t)⁻¹) ^ 2 * (Real.sqrt t)⁻¹ := rfl
       _ = (1 / t) * (Real.sqrt t)⁻¹ := by rw [h_inv_sq]
       _ = (Real.sqrt t)⁻¹ / t := by field_simp
   -- ‖(√t)⁻¹•u‖^4 = ‖u‖^4 / t².
@@ -15662,7 +15632,7 @@ private lemma abs_phi_taylor_remainder_le
   -- h_jet: |φ((√t)⁻¹u) - (0·((√t)⁻¹•u) + (1/2)·quadForm A (...) + (1/6)·Φ(...))| ≤ ...
   have h_dot_zero : dot (0 : ι → ℝ) ((Real.sqrt t)⁻¹ • u) = 0 := by
     unfold dot
-    simp
+    simp only [Pi.zero_apply, Pi.smul_apply, smul_eq_mul, zero_mul, Finset.sum_const_zero]
   rw [h_dot_zero, zero_add] at h_jet
   rw [h_qf, h_Φ, h_inv_cube] at h_jet
   rw [h_norm_pow] at h_jet
@@ -16459,7 +16429,7 @@ private lemma abs_bulkErr_tail_le
     unfold expCovPhiConn expNumeratorCoeff
     rw [show Hinv (0 : ι → ℝ) = 0 from map_zero Hinv]
     rw [show dot (0 : ι → ℝ) (tensorContractMatrix hV.T Hinv) = 0 from by
-      unfold dot; simp]
+      unfold dot; simp only [Pi.zero_apply, zero_mul, Finset.sum_const_zero]]
     rw [sub_zero]
     have h_tri : |φ ((Real.sqrt t)⁻¹ • u) - trASig hφ.A Hinv / 2 / t|
         ≤ |φ ((Real.sqrt t)⁻¹ • u)| + |trASig hφ.A Hinv / 2 / t| := abs_sub _ _
@@ -16485,7 +16455,7 @@ private lemma abs_bulkErr_tail_le
     have h_dot_at : |(Real.sqrt t)⁻¹ * dot b u| ≤ bL1 * ‖u‖ := by
       rw [abs_mul, abs_of_pos (inv_pos.mpr hsqt_pos)]
       have h_inv_le : (Real.sqrt t)⁻¹ ≤ 1 := by
-        rw [inv_le_one₀ hsqt_pos]; linarith
+        rw [inv_le_one₀ hsqt_pos]; exact hsqt_one_le
       have h_step : (Real.sqrt t)⁻¹ * |dot b u| ≤ 1 * |dot b u| :=
         mul_le_mul_of_nonneg_right h_inv_le (abs_nonneg _)
       linarith [h_dot_b_le]
@@ -16540,16 +16510,16 @@ private lemma abs_bulkErr_tail_le
         + ‖u‖ ^ (4 + p_φ) + ‖u‖ ^ (4 + p_φ + p_ψ) + ‖u‖ ^ (5 + p_φ) := by
     simp only [pow_add]; ring
   -- Each ‖u‖^k for k ∈ {4, 4+p_ψ, 5, 4+p_φ, 4+p_φ+p_ψ, 5+p_φ} ≤ 1 + ‖u‖^M.
-  have h_4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ M := h_pow_le 4 (by rw [hM_def]; omega)
+  have h_4_le : ‖u‖ ^ 4 ≤ 1 + ‖u‖ ^ M := h_pow_le 4 (by omega)
   have h_4pψ_le : ‖u‖ ^ (4 + p_ψ) ≤ 1 + ‖u‖ ^ M := by
-    apply h_pow_le; rw [hM_def]; omega
-  have h_5_le : ‖u‖ ^ 5 ≤ 1 + ‖u‖ ^ M := h_pow_le 5 (by rw [hM_def]; omega)
+    apply h_pow_le; omega
+  have h_5_le : ‖u‖ ^ 5 ≤ 1 + ‖u‖ ^ M := h_pow_le 5 (by omega)
   have h_4pφ_le : ‖u‖ ^ (4 + p_φ) ≤ 1 + ‖u‖ ^ M := by
-    apply h_pow_le; rw [hM_def]; omega
+    apply h_pow_le; omega
   have h_4pp_le : ‖u‖ ^ (4 + p_φ + p_ψ) ≤ 1 + ‖u‖ ^ M := by
-    apply h_pow_le; rw [hM_def]; omega
+    apply h_pow_le; omega
   have h_5pφ_le : ‖u‖ ^ (5 + p_φ) ≤ 1 + ‖u‖ ^ M := by
-    apply h_pow_le; rw [hM_def]; omega
+    apply h_pow_le; omega
   have h_poly_le : ‖u‖ ^ 4 * (1 + ‖u‖ ^ p_φ) * (1 + ‖u‖ ^ p_ψ + ‖u‖)
       ≤ 6 * (1 + ‖u‖ ^ M) := by
     rw [h_poly_expand]; linarith
@@ -16613,12 +16583,13 @@ private lemma abs_bulkErr_tail_le
       _ ≤ (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2) + (1 / 2 : ℝ) * tA := by
           rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2),
               abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2), htA_def]
-          have h1 := mul_le_mul_of_nonneg_left h_qf_φ (by norm_num : (0:ℝ) ≤ 1/2)
+          have h1 := mul_le_mul_of_nonneg_left h_qf_φ (by simp only [one_div, inv_nonneg,
+                                                            Nat.ofNat_nonneg] : (0:ℝ) ≤ 1/2)
           linarith
       _ = (1 / 2 : ℝ) * (N * ‖hφ.A‖ * ‖u‖ ^ 2 + tA) := by ring
   have h_Qψ_le : |(1 / 2 : ℝ) * quadForm hψ.A u|
       ≤ (1 / 2 : ℝ) * (N * ‖hψ.A‖ * ‖u‖ ^ 2) := by
-    rw [abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2)]
+    rw [abs_mul, abs_of_nonneg (by simp only [one_div, inv_nonneg, Nat.ofNat_nonneg] : (0:ℝ) ≤ 1/2)]
     exact mul_le_mul_of_nonneg_left h_qf_ψ (by norm_num : (0:ℝ) ≤ 1/2)
   have h_P2_step : |((1 / 2 : ℝ) * quadForm hφ.A u
         - (1 / 2 : ℝ) * trASig hφ.A Hinv) * ((1 / 2 : ℝ) * quadForm hψ.A u)|
@@ -16638,7 +16609,7 @@ private lemma abs_bulkErr_tail_le
     rw [hCP2_def]; nlinarith only [h_NA_nn, h_NAψ_nn, htA_nn]
   have h_coef2_le : (1 / 4 : ℝ) * tA * (N * ‖hψ.A‖) ≤ CP2 := by
     rw [hCP2_def]; nlinarith only [h_NA_nn, h_NAψ_nn, htA_nn]
-  have h_2_le : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ M := h_pow_le 2 (by rw [hM_def]; omega)
+  have h_2_le : ‖u‖ ^ 2 ≤ 1 + ‖u‖ ^ M := h_pow_le 2 (by omega)
   have h_P2_le : |((1 / 2 : ℝ) * quadForm hφ.A u
         - (1 / 2 : ℝ) * trASig hφ.A Hinv) * ((1 / 2 : ℝ) * quadForm hψ.A u)|
       ≤ 2 * CP2 * (1 + ‖u‖ ^ M) := by
@@ -16654,7 +16625,7 @@ private lemma abs_bulkErr_tail_le
       mul_le_mul_of_nonneg_left h_2_le hCP2_nn
     linarith [h_P2_step, h_P2_eq, h_term1_aux, h_term1, h_term2_aux, h_term2]
   -- Bound for |(1/√t) · odd5K|.
-  have h_3_le : ‖u‖ ^ 3 ≤ 1 + ‖u‖ ^ M := h_pow_le 3 (by rw [hM_def]; omega)
+  have h_3_le : ‖u‖ ^ 3 ≤ 1 + ‖u‖ ^ M := h_pow_le 3 (by omega)
   have h_P3_le : |(1 / Real.sqrt t) * odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u|
       ≤ 2 * CP3 * (1 + ‖u‖ ^ M) := by
     rw [abs_mul, abs_of_pos (by positivity : (0 : ℝ) < 1 / Real.sqrt t)]
@@ -16662,7 +16633,7 @@ private lemma abs_bulkErr_tail_le
       rw [div_le_iff₀ hsqt_pos]; linarith
     have h_step : (1 / Real.sqrt t) * |odd5Kernel hφ.A hψ.A Hinv hφ.Φ hψ.Φ u|
         ≤ 1 * (M_odd * (‖u‖ ^ 3 + ‖u‖ ^ 5)) := by
-      apply mul_le_mul h_inv_le (h_odd_bound u) (abs_nonneg _) (by linarith)
+      apply mul_le_mul h_inv_le (h_odd_bound u) (abs_nonneg _) (by simp only [zero_le_one])
     have h_eq : 1 * (M_odd * (‖u‖ ^ 3 + ‖u‖ ^ 5)) = CP3 * ‖u‖ ^ 3 + CP3 * ‖u‖ ^ 5 := by
       rw [hCP3_def]; ring
     have h_term3 : CP3 * ‖u‖ ^ 3 ≤ CP3 * (1 + ‖u‖ ^ M) :=
@@ -17025,11 +16996,9 @@ private lemma pair_product_expansion_a_zero
   -- with `dot 0 u = 0`, the first two pieces vanish and `φ - 0 = φ`.
   have h_dot0 : dot (0 : ι → ℝ) u = 0 := by
     unfold dot
-    apply Finset.sum_eq_zero
-    intros i _
-    simp [Pi.zero_apply]
+    simp only [Pi.zero_apply, zero_mul, Finset.sum_const_zero]
   rw [h_pp, h_dot0]
-  ring
+  simp only [one_div, zero_mul, mul_zero, add_zero, sub_zero, zero_add]
 
 /-- **Integrated pair-product decomposition when `a = 0`**: integrating the
 pointwise identity `pair_product_expansion_a_zero` against `gW · exp(-s_t)`
@@ -17145,8 +17114,8 @@ private lemma rescaledNumerator_pair_decompose_a_zero
     apply h.congr
     filter_upwards with u
     have h_dot0 : dot (0 : ι → ℝ) u = 0 := by
-      unfold dot; apply Finset.sum_eq_zero; intros i _; simp [Pi.zero_apply]
-    rw [h_dot0]; ring
+      unfold dot; simp only [Pi.zero_apply, zero_mul, Finset.sum_const_zero]
+    rw [h_dot0]; simp only [mul_zero, sub_zero]
   have h_remrem_int : Integrable (fun u : ι → ℝ =>
       φ ((Real.sqrt t)⁻¹ • u) *
         (ψ ((Real.sqrt t)⁻¹ • u) - (Real.sqrt t)⁻¹ * dot b u) *
@@ -17158,8 +17127,8 @@ private lemma rescaledNumerator_pair_decompose_a_zero
     apply h.congr
     filter_upwards with u
     have h_dot0 : dot (0 : ι → ℝ) u = 0 := by
-      unfold dot; apply Finset.sum_eq_zero; intros i _; simp [Pi.zero_apply]
-    rw [h_dot0]; ring
+      unfold dot; simp only [Pi.zero_apply, zero_mul, Finset.sum_const_zero]
+    rw [h_dot0]; simp only [mul_zero, sub_zero]
   have h_cross_smul : Integrable (fun u : ι → ℝ =>
       t * Real.sqrt t *
         (dot b u * φ ((Real.sqrt t)⁻¹ • u) *
@@ -18107,7 +18076,7 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
           Real.exp (-(rescaledPerturbation V H t u)))) := by
       refine (h_int_E.add h_int_O_sqrt).congr
         (Filter.Eventually.of_forall fun u => ?_)
-      simp only [Pi.add_apply]
+      rfl
     rw [MeasureTheory.integral_add h_int_E_O h_int_B]
     rw [MeasureTheory.integral_add h_int_E h_int_O_sqrt]
     rw [MeasureTheory.integral_const_mul]
@@ -18136,7 +18105,7 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
         + (1 / 2 : ℝ) * dot (Hinv b)
             (tensorContractMatrix hV.T
               (Hinv.comp (hφ.toObservableTensorApprox.A.comp Hinv))) := by
-    rw [hC_O_def]; unfold oddCrossMainConst; rfl
+    rfl
   set D : ℝ := rescaledPartition V t with hD_def
   -- Rewrite target.
   have h_target_eq : Cmain = C_E - C_O := by
@@ -18146,13 +18115,13 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
             gaussianWeight H u *
             Real.exp (-(rescaledPerturbation V H t u)))
         - C_E * D| ≤ K_E / t := by
-    rw [hC_E_def, hD_def]; exact hE
+    exact hE
   have hO' : |Real.sqrt t *
             (∫ u, crossOddKernel hφ.toObservableTensorApprox.A Hinv b u *
               gaussianWeight H u *
               Real.exp (-(rescaledPerturbation V H t u)))
         + C_O * D| ≤ K_O / t := by
-    rw [hC_O_def, hD_def]; exact hO
+    exact hO
   have hB' : |∫ u, bulkErrA φ b hφ.toObservableTensorApprox t u *
             gaussianWeight H u *
             Real.exp (-(rescaledPerturbation V H t u))| ≤ K_B / t := hB
@@ -18177,7 +18146,7 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
             (tensorContractMatrix hV.T
               (Hinv.comp (hφ.toObservableTensorApprox.A.comp Hinv)))) *
             rescaledPartition V t)
-      = Cmain * D from by rw [hCmain_def, hD_def]]
+      = Cmain * D from rfl]
   rw [h_target_eq]
   -- IE + √t·IO + IB - (C_E - C_O)·D = (IE - C_E·D) + (√t·IO + C_O·D) + IB.
   have h_split :
@@ -18193,15 +18162,15 @@ private theorem rescaledIntegral_cross_linear_connected_asymptotic
             + (∫ u, bulkErrA φ b hφ.toObservableTensorApprox t u *
                 gaussianWeight H u *
                 Real.exp (-(rescaledPerturbation V H t u)))
-          = IE + Real.sqrt t * IO + IB from by rw [hIE_def, hIO_def, hIB_def]]
+          = IE + Real.sqrt t * IO + IB from rfl]
   rw [h_split]
   -- Triangle.
   have h_tri := abs_add_le ((IE - C_E * D) + (Real.sqrt t * IO + C_O * D)) IB
   have h_tri2 := abs_add_le (IE - C_E * D) (Real.sqrt t * IO + C_O * D)
   -- |IE - C_E·D| ≤ K_E/t, etc.
-  have hE'' : |IE - C_E * D| ≤ K_E / t := by rw [hIE_def]; exact hE'
-  have hO'' : |Real.sqrt t * IO + C_O * D| ≤ K_O / t := by rw [hIO_def]; exact hO'
-  have hB'' : |IB| ≤ K_B / t := by rw [hIB_def]; exact hB'
+  have hE'' : |IE - C_E * D| ≤ K_E / t := hE'
+  have hO'' : |Real.sqrt t * IO + C_O * D| ≤ K_O / t := hO'
+  have hB'' : |IB| ≤ K_B / t := hB'
   have h_sum : K_E / t + K_O / t + K_B / t = (K_E + K_O + K_B) / t := by
     field_simp
   linarith [h_tri, h_tri2, hE'', hO'', hB'', h_sum.le, h_sum.ge]

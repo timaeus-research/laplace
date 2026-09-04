@@ -163,14 +163,7 @@ theorem jet_one_rung_recovery
     have := integrable_abs_pow_mul_exp_neg_kth hk 0 ha
     exact this.congr (Filter.Eventually.of_forall fun u ↦ by simp only [pow_zero, one_mul])
   have hA0pos : 0 < A0 := by
-    rw [hA0_def, integral_pos_iff_support_of_nonneg
-      (fun u ↦ (Real.exp_pos _).le) hint0]
-    have hs : Function.support (fun u : ℝ ↦
-        Real.exp (-(a * u ^ (2 * k)))) = Set.univ := by
-      ext u
-      simp only [Function.mem_support, ne_eq, exp_ne_zero, not_false_eq_true, Set.mem_univ]
-    rw [hs]
-    simp only [measure_univ_of_isAddLeftInvariant, ENNReal.zero_lt_top]
+    exact integral_exp_pos hint0
   -- Denominators in u^0 form, to match the s = 0 instances.
   have hzero_form : ∀ (c : Fin R → ℝ) (q : ℝ),
       (∫ u : ℝ, Real.exp (-jetPotential k R a q c u)) =

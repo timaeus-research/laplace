@@ -67,7 +67,7 @@ $k = 3$ specialisation of `kth_integrable_pow`. -/
 theorem sextic_integrable_pow (n : ℕ) {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ n * Real.exp (-(t * x ^ 6 / 720))) := by
   have h := kth_integrable_pow (k := 3) (by exact NeZero.one_le) n ht
-  convert h using 4; rfl
+  exact h
 
 /-- Polynomial-times-sextic-Gibbs integrability, in `sexticPotential` form.
 $k = 3$ specialisation of `kth_integrable_pow_pot`. -/
@@ -135,7 +135,7 @@ by symmetry. $k = 3$ specialisation of `kth_moment_odd`. -/
 theorem sextic_moment_odd (n : ℕ) (t : ℝ) :
     ∫ x : ℝ, x ^ (2 * n + 1) * exp (-(t * x ^ 6 / 720)) = 0 := by
   have h := kth_moment_odd 3 n t
-  convert h using 3; rfl
+  exact h
 
 /-- The partition function for the pure-sextic potential.
 $k = 3$ specialisation of `partitionFunction_kthPotential`. -/
