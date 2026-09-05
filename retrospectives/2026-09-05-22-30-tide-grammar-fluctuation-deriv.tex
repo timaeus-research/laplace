@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The fluctuation derivative ladder: $S'_\lambda=\beta S_{\lambda+1/2}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-05}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 2 of the grammar-paper \S4 autoformalisation. We prove
+\texttt{lem:fluctuation\_properties} (i)~$S'_\lambda(a)=\beta\,S_{\lambda+1/2}(a)$ and
+(ii)~$S''_\lambda(a)=\beta^2\,S_{\lambda+1}(a)$ for Watanabe's fluctuation function, by
+differentiation under the integral sign. Chains off unit~1; zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~1 defined $S_\lambda(a)=\int_0^\infty t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\,dt$, proved it
+integrable for every $a$, and evaluated $S_\lambda(0)=\beta^{-\lambda}\Gamma(\lambda)$. The paper's
+\S4 next needs the \emph{derivative ladder}: differentiating in $a$ shifts $\lambda$ by $\tfrac12$.
+These identities (with the integration-by-parts recurrence, a later unit) are what make the
+fluctuation function a parabolic-cylinder function; they are the minimal next step.
+
+\section{The thing formalised}
+\begin{align*}
+\frac{d}{da}S_\lambda(a) &= \beta\,S_{\lambda+1/2}(a), &
+\frac{d^2}{da^2}S_\lambda(a) &= \beta^2\,S_{\lambda+1}(a).
+\end{align*}
+Lean signatures (namespace \texttt{Laplace.Grammar}):
+{\small
+\begin{verbatim}
+theorem hasDerivAt_fluctuation (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) (a : ℝ) :
+    HasDerivAt (fun a => fluctuation β lam a) (β * fluctuation β (lam + 1/2) a) a
+
+theorem hasDerivAt_deriv_fluctuation (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) (a : ℝ) :
+    HasDerivAt (fun a => β * fluctuation β (lam + 1/2) a)
+      (β ^ 2 * fluctuation β (lam + 1) a) a
+\end{verbatim}
+}
+plus a \texttt{deriv}-form corollary. Property (ii) is (i) applied at $\lambda$ and again at
+$\lambda+\tfrac12$: \texttt{(hasDerivAt\_fluctuation \_ (lam+1/2) \ldots).const\_mul β}, reconciling
+$(\lambda+\tfrac12)+\tfrac12=\lambda+1$ and $\beta\cdot\beta=\beta^2$.
+
+\section{Proof strategy}
+Property (i) is Mathlib's parametric-integral theorem for differentiation under the integral
+sign.\footnote{\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}.} The parameter-derivative of the
+integrand is $\partial_a\big[t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\big]
+=t^{\lambda-1}\!\cdot\!\beta\sqrt t\cdot e^{\cdots}=\beta\,t^{(\lambda+1/2)-1}e^{\cdots}$ (using
+$t^{\lambda-1}\sqrt t=t^{(\lambda+1/2)-1}$, an \texttt{rpow\_add} on $t>0$), so its integral is
+$\beta\,S_{\lambda+1/2}$ by \texttt{integral\_const\_mul}. The base-point integrability is unit~1's
+theorem; the parameter-differentiability is a four-step chain rule
+(\texttt{const\_mul}/\texttt{mul\_const}/\texttt{const\_add}, then \texttt{HasDerivAt.exp}).
+
+The one non-obvious ingredient is the \emph{uniform dominating function}. The clean choice
+(GPT-6 Astra): the derivative integrand is monotone increasing in the parameter $b$ (the phase
+$-\beta t+\beta b\sqrt t$ increases with $b$ for $t>0$), so on the ball $\{|b-a|<1\}$ it is dominated
+by its own value at $b=a+1$ --- which is integrable \emph{directly} as unit~1's
+\texttt{fluctuation\_integrableOn} at $(\lambda+\tfrac12,\,a+1)$, scaled by $\beta$. No
+completing-the-square / AM--GM estimate and no second Gamma-integrability lemma are needed; unit~1
+supplies every integrability and measurability obligation.
+
+\section{Roadblocks and resolutions}
+GPT-6 Astra (fast, unlike the earlier timed-out model) gave a near-complete skeleton; three v4.33
+deviations surfaced on compilation. The parametric lemma takes a neighbourhood \emph{set}
+hypothesis $(s\in\mathcal N(x_0))$, not a radius $0<\varepsilon$ --- passing $s:=\text{ball }a\,1$ with
+\texttt{Metric.ball\_mem\_nhds} fixed an ``unsolved \texttt{ball a 1 $\in$ nhds a}'' goal.
+\texttt{add\_le\_add\_left} has a swapped argument orientation on this pin (a known repo gotcha), so
+the phase monotonicity went through \texttt{linarith} instead. And the style linter requires
+\texttt{change} rather than \texttt{show} for defeq goal restatements (unfolding the local
+\texttt{let} for the shifted integrand).
+
+\section{What was Mathlib, what was new}
+Almost entirely a Mathlib assembly: the parametric-integral theorem is the engine, and the
+domination is a one-line monotonicity bound reusing unit~1. The ``new'' content is the normalisation
+$t^{\lambda-1}\sqrt t=t^{(\lambda+1/2)-1}$ that identifies the derivative integral as $\beta
+S_{\lambda+1/2}$, and the monotone-in-parameter domination trick.
+
+\section{Lessons}
+For a family $S_\lambda$ built as a single parametric integral, the whole derivative ladder reduces
+to one parametric-integral theorem plus the observation that the parameter-derivative is again a
+member of the family (at a shifted index) --- so the base-point integrability proved once (unit~1)
+discharges every hypothesis at every rung. The monotone-in-parameter dominating function is the
+idiom to reuse for the recurrence and any later $\partial_a$ identities.
+
+\section{Follow-ups}
+Next unit: the integration-by-parts recurrence \texttt{eq:fluctuation\_recurrence}
+$S_{\lambda+1}(a)=\tfrac{a}{2}S_{\lambda+1/2}(a)+\tfrac{\lambda}{\beta}S_\lambda(a)$ and property
+(iii) the second-order ODE $S''_\lambda=\tfrac{a\beta}{2}S'_\lambda+\lambda\beta S_\lambda$, then
+(iv) $S_1(a)=\tfrac{a}{2}S_{1/2}(a)+1/\beta$; after that \texttt{prop:fluctuation\_weber} (the
+parabolic-cylinder identification). A \texttt{\textbackslash leanref} update for the derivative
+identities is staged, not inserted.
+\end{document}
