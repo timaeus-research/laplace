@@ -142,8 +142,7 @@ lemma dominator_integrable_pow {c : ℝ} (hc : 0 < c) (k : ℕ) :
     rwa [heq] at h
   have h_norm := h_xk.norm
   refine h_norm.congr (Filter.Eventually.of_forall fun x => ?_)
-  change ‖x ^ k * Real.exp (-c * x ^ 2)‖ = |x| ^ k * Real.exp (-c * x ^ 2)
-  rw [Real.norm_eq_abs, abs_mul, abs_pow, Real.abs_exp]
+  simp only [neg_mul, norm_mul, norm_pow, Real.norm_eq_abs, Real.abs_exp]
 
 /-- Pointwise domination bound for the perturbed integrand. For `lam > 0`,
 `t > 0`, `|h| ≤ 1`, and any `k : ℕ`,

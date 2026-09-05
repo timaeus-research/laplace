@@ -72,8 +72,6 @@ theorem logPartition_deriv_eq_gibbsExp_mean
     (iteratedDeriv_weightedPartition_zero hlam hgamma hdisc ht 1 (by norm_num)).symm
   rw [hid, iteratedDeriv_partition_div_eq_gibbsExp 1 hlam hgamma hdisc ht]
   -- `(fun x => (-(t·x))^1) = (fun x => -(t·x))`.
-  congr 1
-  funext x
-  rw [pow_one]
+  simp only [pow_one]
 
 end Laplace.OneD

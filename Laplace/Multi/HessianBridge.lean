@@ -84,7 +84,7 @@ theorem posteriorMoment_coord_mul_isLittleO {L : EuclidD d → ℝ}
     (A.posteriorMoment_coord_isLittleO j)
   refine h.congr' (Filter.EventuallyEq.refl _ _) ?_
   filter_upwards with q
-  rw [sq]
+  exact Eq.symm (pow_two q)
 
 end LocalLaplaceDomain
 

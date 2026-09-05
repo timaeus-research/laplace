@@ -118,7 +118,7 @@ private lemma harmonic_integrand_even (lam t : ℝ) (n : ℕ) (M : ℝ) :
         · simp only [even_two, Even.mul_right, Even.neg_pow]
         · congr 1; congr 1
           unfold harmonicPotential
-          rw [show (-x : ℝ) ^ 2 = x ^ 2 from neg_pow_two x]] at hsub
+          simp only [even_two, Even.neg_pow]] at hsub
   exact hsub
 
 /-- **Zeroth-moment two-sided tail** under the harmonic Gibbs measure: for `λ, t, δ > 0`,

@@ -48,7 +48,7 @@ theorem deriv_logPartition_eventuallyEq
       (fun h : ℝ => weightedPartition lam alpha gamma t 1 h
         / weightedPartition lam alpha gamma t 0 h) := by
   have hball : Metric.ball (0 : ℝ) 1 ∈ 𝓝 (0 : ℝ) :=
-    Metric.isOpen_ball.mem_nhds (by rw [Metric.mem_ball, dist_self]; exact one_pos)
+    Metric.isOpen_ball.mem_nhds (by rw [Metric.mem_ball, dist_self]; exact Real.zero_lt_one)
   filter_upwards [hball] with h₀ hmem
   have hh : |h₀| < 1 := by
     rw [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs] at hmem; exact hmem

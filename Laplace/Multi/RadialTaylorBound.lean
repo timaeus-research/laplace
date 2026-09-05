@@ -134,7 +134,8 @@ theorem exists_taylorRemainder_bound {k : ℕ} (hk : 0 < k)
         ≤ ‖iteratedFDeriv ℝ (n + 1) L (ξ • y)‖ * ‖y‖ ^ (n + 1) := by
           exact hop
       _ ≤ M * ‖y‖ ^ (n + 1) := by
-          refine mul_le_mul_of_nonneg_right (hM _ hξball) (by positivity)
+          refine mul_le_mul_of_nonneg_right (hM _ hξball) (by simp only [norm_nonneg,
+                                                                pow_succ_nonneg])
   -- assemble
   have hg1 : g 1 = L y := by rw [hg_def]; simp only [one_smul]
   rw [hg1, hpoly] at hlag

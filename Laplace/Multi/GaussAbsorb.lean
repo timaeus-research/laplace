@@ -281,7 +281,7 @@ theorem eventually_exponentCorrection_le_quadratic
       _ ≤ ((s + 2).factorial : ℝ)⁻¹ * ‖iteratedFDeriv ℝ (s + 2) L 0‖ *
             (Real.sqrt q * ‖z‖ ^ 2) := by
           refine mul_le_mul_of_nonneg_left ?_ (by positivity)
-          refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+          refine mul_le_mul_of_nonneg_right ?_ (by simp only [norm_nonneg, pow_succ_nonneg])
           calc (q * ‖z‖) ^ s ≤ Real.sqrt q ^ s :=
                 pow_le_pow_left₀
                   (mul_nonneg hq0.le (norm_nonneg z)) hqz s
@@ -296,7 +296,7 @@ theorem eventually_exponentCorrection_le_quadratic
         rw [← Finset.sum_mul, hM_def]
         ring
     _ ≤ ε * ‖z‖ ^ 2 := by
-        refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+        refine mul_le_mul_of_nonneg_right ?_ (by simp only [norm_nonneg, pow_succ_nonneg])
         calc Real.sqrt q * M ≤ Real.sqrt q * (M + 1) := by
               refine mul_le_mul_of_nonneg_left (by simp only [le_add_iff_nonneg_right, zero_le_one])
                 (Real.sqrt_nonneg q)

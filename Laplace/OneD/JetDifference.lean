@@ -79,10 +79,8 @@ theorem exp_sub_one_eq (s : ℝ) :
 theorem jetPotential_zero (k R : ℕ) (a : ℝ) (c : Fin R → ℝ) (u : ℝ) :
     jetPotential k R a 0 c u = a * u ^ (2 * k) := by
   unfold jetPotential
-  rw [Finset.sum_eq_zero fun i _ ↦ by
-    rw [zero_pow (Nat.succ_ne_zero _)]
-    ring]
-  exact AddMonoid.add_zero (a * u ^ (2 * k))
+  simp only [ne_eq, Nat.add_eq_zero_iff, one_ne_zero, and_false, not_false_eq_true, zero_pow,
+    mul_zero, zero_mul, Finset.sum_const_zero, add_zero]
 
 /-- Continuity of the jet potential in the scale variable `q`. -/
 theorem jetPotential_continuous_q

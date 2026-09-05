@@ -270,7 +270,7 @@ theorem jet_recovery
       have hji : j.1 < i.1 := hj
       rcases Nat.eq_zero_or_pos n with hn | hn
       · omega
-      · exact ih j.1 (by omega) j le_rfl
+      · exact ih j.1 (by (expose_names; exact Nat.lt_of_lt_of_le hj h)) j le_rfl
   funext i
   exact key i.1 i le_rfl
 
