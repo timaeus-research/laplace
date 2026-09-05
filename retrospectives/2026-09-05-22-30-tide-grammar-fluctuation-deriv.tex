@@ -48,8 +48,8 @@ $\lambda+\tfrac12$: \texttt{(hasDerivAt\_fluctuation \_ (lam+1/2) \ldots).const\
 $(\lambda+\tfrac12)+\tfrac12=\lambda+1$ and $\beta\cdot\beta=\beta^2$.
 
 \section{Proof strategy}
-Property (i) is Mathlib's parametric-integral theorem
-\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}. The parameter-derivative of the
+Property (i) is Mathlib's parametric-integral theorem for differentiation under the integral
+sign.\footnote{\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}.} The parameter-derivative of the
 integrand is $\partial_a\big[t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\big]
 =t^{\lambda-1}\!\cdot\!\beta\sqrt t\cdot e^{\cdots}=\beta\,t^{(\lambda+1/2)-1}e^{\cdots}$ (using
 $t^{\lambda-1}\sqrt t=t^{(\lambda+1/2)-1}$, an \texttt{rpow\_add} on $t>0$), so its integral is
