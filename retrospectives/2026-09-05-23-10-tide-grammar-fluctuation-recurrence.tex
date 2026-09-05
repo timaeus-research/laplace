@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The fluctuation recurrence: an improper FTC on $(0,\infty)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-05}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 3 of the grammar-paper \S4 autoformalisation. We prove the integration-by-parts recurrence
+$S_{\lambda+1}(a)=\tfrac{a}{2}S_{\lambda+1/2}(a)+\tfrac{\lambda}{\beta}S_\lambda(a)$ for Watanabe's
+fluctuation function, and property (iii), the second-order ODE
+$S''_\lambda=\tfrac{a\beta}{2}S'_\lambda+\lambda\beta S_\lambda$, as its $\beta^2$-multiple. The
+recurrence comes from $\int_0^\infty \tfrac{d}{dt}\!\bigl[t^\lambda e^{-\beta t+\beta a\sqrt t}\bigr]dt=0$
+via Mathlib's improper fundamental theorem of calculus on $(0,\infty)$. Chains off units 1--2; zero
+\texttt{sorry}/\texttt{axiom}. The campaign's hardest proof so far.
+\end{abstract}
+
+\section{Setting}
+Units 1--2 gave the fluctuation function $S_\lambda(a)=\int_0^\infty t^{\lambda-1}e^{-\beta t+\beta
+a\sqrt t}\,dt$, its integrability, base value, and the derivative ladder
+$S'_\lambda=\beta S_{\lambda+1/2}$. The recurrence is the other structural identity of \S4: with the
+ladder it turns $S_\lambda$ into a parabolic-cylinder function. Property (iv), the $\lambda=0$
+boundary case $S_1(a)=\tfrac{a}{2}S_{1/2}(a)+1/\beta$, is deferred to a short unit~4 that reuses the
+same FTC machinery.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_recurrence (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) (a : ℝ) :
+    fluctuation β (lam + 1) a
+      = (a / 2) * fluctuation β (lam + 1/2) a + (lam / β) * fluctuation β lam a
+
+theorem fluctuation_ode (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) (a : ℝ) :
+    β ^ 2 * fluctuation β (lam + 1) a
+      = (a * β / 2) * (β * fluctuation β (lam + 1/2) a) + lam * β * fluctuation β lam a
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Let $g(t)=t^\lambda e^{-\beta t+\beta a\sqrt t}$. Its $t$-derivative is
+\[
+g'(t)=\lambda\,t^{\lambda-1}e^{\cdots}-\beta\,t^{\lambda}e^{\cdots}+\tfrac{\beta a}{2}\,t^{\lambda-1/2}e^{\cdots},
+\]
+whose three terms are exactly the integrands of $\lambda S_\lambda$, $-\beta S_{\lambda+1}$, and
+$\tfrac{\beta a}{2}S_{\lambda+1/2}$ (matching the $t^{p-1}$ exponent of each \texttt{fluctuation}
+value). The improper FTC on $(0,\infty)$\footnote{\texttt{integral\_Ioi\_of\_hasDerivAt\_of\_tendsto}:
+continuity of $g$ at the endpoint $0$, $\mathrm{HasDerivAt}$ on $\mathrm{Ioi}\,0$, $g'$ integrable,
+and an $\mathrm{atTop}$ limit, concluding $\int_{\mathrm{Ioi}\,0}g'=m-g(0)$.} gives
+$\int_0^\infty g'=\lim_{t\to\infty}g-g(0)=0-0=0$ (both boundary values vanish for $\lambda>0$), so
+$\lambda S_\lambda-\beta S_{\lambda+1}+\tfrac{\beta a}{2}S_{\lambda+1/2}=0$, i.e.\ the recurrence.
+
+Three ingredients feed the FTC: (a) $\mathrm{HasDerivAt}\,g\,(g'(t))\,t$ on $t>0$ --- a product rule
+with $\tfrac{d}{dt}t^\lambda=\lambda t^{\lambda-1}$ and the $\sqrt{}$-derivative, reconciled to the
+shifted-exponent form via $t^\lambda(\sqrt t)^{-1}=t^{\lambda-1/2}$
+(\texttt{rpow\_neg}\,/\,\texttt{rpow\_add}); (b) integrability of $g'$, three copies of unit~1's
+\texttt{fluctuation\_integrableOn} at exponents $\lambda,\lambda+1,\lambda+\tfrac12$; (c) the two
+boundary limits --- continuity at $0$ (value $0$ since $0^\lambda=0$), and $\mathrm{atTop}$ decay by
+squeezing $g$ under $e^{\beta a^2/2}t^\lambda e^{-(\beta/2)t}\to0$ (AM--GM on the phase,
+\texttt{tendsto\_rpow\_mul\_exp\_neg\_mul\_atTop\_nhds\_zero}). Property (iii) is then $\beta^2$ times
+the recurrence (\texttt{field\_simp}).
+
+\section{Roadblocks and resolutions}
+GPT-6 Astra's decisive steer: the improper-FTC lemma requires \emph{continuity} at the finite
+endpoint, not differentiability --- which is exactly why the open-endpoint variant is the right one
+($g$ is continuous but not differentiable at $0$ for $0<\lambda<1$). The remaining friction was all
+Lean bookkeeping, each a known repo gotcha: \texttt{HasDerivAt.add} of two functions built by
+\texttt{const\_mul} produces a \texttt{Pi.add} that must be assembled from separately-stated single
+lambdas; the derivative value was matched to the decomposed form by \texttt{hval\,{\textbackslash}triangleright\,hg}
+rather than \texttt{convert} (which spawned a spurious function-equality goal); the integral-linearity
+step needed type-ascribed single-lambda \texttt{IntegrableOn} witnesses plus \texttt{hDe : D = \ldots := rfl}
+to unfold the \texttt{let}-bound derivative; \texttt{continuousAt\_rpow\_const} is top-level, not
+\texttt{Real.}-namespaced; and \texttt{field\_simp} closed the ODE outright (a trailing \texttt{ring}
+errored with ``no goals'').
+
+\section{What was Mathlib, what was new}
+The engine is entirely Mathlib: the improper FTC, the rpow/sqrt derivatives, the atTop-decay lemma,
+and unit~1's integrability. The new content is the identification of $g'$'s three terms with the
+shifted-exponent \texttt{fluctuation} integrands (so the integral decomposition is definitional) and
+the boundary-limit package.
+
+\section{Lessons}
+Defining the derivative's terms with the paper's exact $t^{p-1}$ exponents --- rather than a
+simplified $t^\lambda$, $t^{\lambda-1/2}$ --- is what makes the final integral decomposition close by
+\texttt{rfl} against the \texttt{fluctuation} values; the price is a short rpow reconciliation inside
+the pointwise-derivative proof, which is much cheaper than an a.e.\ integrand rewrite under the
+integral. This ``match the target's exponents up front'' discipline should carry to unit~4 and any
+later Mellin-type integral identity.
+
+\section{Follow-ups}
+Unit 4: property (iv) $S_1(a)=\tfrac{a}{2}S_{1/2}(a)+1/\beta$ --- the same FTC with $g(t)=e^{-\beta
+t+\beta a\sqrt t}$ (no $t^\lambda$ factor), whose endpoint value is $g(0)=1$, giving boundary
+$0-1=-1$; only two derivative terms survive. Then \texttt{prop:fluctuation\_weber}: the substitution
+$S_\lambda(a)=e^{\beta a^2/8}f(a\sqrt{\beta/2})$ turning the ODE into Weber's equation, and the
+parabolic-cylinder closed form. A \texttt{\textbackslash leanref} update is staged, not inserted.
+\end{document}
