@@ -11,6 +11,7 @@
 
 \begin{document}
 \maketitle
+\sloppy
 
 \begin{abstract}
 Unit 2 of the grammar-paper \S4 autoformalisation. We prove
@@ -32,6 +33,7 @@ fluctuation function a parabolic-cylinder function; they are the minimal next st
 \frac{d^2}{da^2}S_\lambda(a) &= \beta^2\,S_{\lambda+1}(a).
 \end{align*}
 Lean signatures (namespace \texttt{Laplace.Grammar}):
+{\small
 \begin{verbatim}
 theorem hasDerivAt_fluctuation (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) (a : ℝ) :
     HasDerivAt (fun a => fluctuation β lam a) (β * fluctuation β (lam + 1/2) a) a
@@ -40,6 +42,7 @@ theorem hasDerivAt_deriv_fluctuation (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < l
     HasDerivAt (fun a => β * fluctuation β (lam + 1/2) a)
       (β ^ 2 * fluctuation β (lam + 1) a) a
 \end{verbatim}
+}
 plus a \texttt{deriv}-form corollary. Property (ii) is (i) applied at $\lambda$ and again at
 $\lambda+\tfrac12$: \texttt{(hasDerivAt\_fluctuation \_ (lam+1/2) \ldots).const\_mul β}, reconciling
 $(\lambda+\tfrac12)+\tfrac12=\lambda+1$ and $\beta\cdot\beta=\beta^2$.
