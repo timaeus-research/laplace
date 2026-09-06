@@ -208,3 +208,4 @@ import Laplace.Grammar.WeightedPrimitive
 import Laplace.Grammar.WeightedMass
 import Laplace.Grammar.TwoDGeneralLog
 import Laplace.Grammar.TwoDGeneralNoLog
+import Laplace.Grammar.TwoDGeneralSwap
