@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The polylog-bounded class and its closure under power steps}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+To analyse the general tower of unit~55 when the exponents are sorted in non-increasing order, its
+levels must be tracked through a class closed under the two kinds of power step that occur. This unit
+introduces \texttt{PolyLogBounded G C₀ δ C₁ j} (measurable, $0\le G\le C_0y^\delta$ on $(0,1]$,
+$G\le C_1(1+\log y)^j$ on $[1,\infty)$) and proves: the base level $F_{q-1}$ is in the class with
+$j=0$; the logarithmic step $\int_0^yG(x)/x\,dx$ raises $j$ by one; a convergent step
+$\int_0^yx^tG(x)\,dx$ with $t<-1$ is bounded by its limit and is a \texttt{LogBase} with tail rate
+$(-t-1)/2$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The only obstacle to treating polylog-bounded functions like bounded ones is the logarithm in the
+growth bound. It is absorbed by $(1+\log x)^j\le(1+1/\varepsilon)^jx^{j\varepsilon}$ for $x\ge1$
+(from $\log x\le x^\varepsilon/\varepsilon$), with $\varepsilon=(-t-1)/(2(j+1))$ chosen so that
+$x^t(1+\log x)^j\le Cx^{(t-1)/2}$, still integrable at infinity with exponent $(t-1)/2<-1$ and tail
+$\int_y^\infty x^{(t-1)/2}=\tfrac{2}{-t-1}y^{-(-t-1)/2}$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+structure PolyLogBounded (G : ℝ → ℝ) (C₀ δ C₁ : ℝ) (j : ℕ) : Prop where
+  measurable : Measurable G
+  nonneg : ∀ y, 0 ≤ G y
+  δ_pos : 0 < δ
+  le_pow : ∀ y, 0 < y → y ≤ 1 → G y ≤ C₀ * y ^ δ
+  le_log : ∀ y, 1 ≤ y → G y ≤ C₁ * (1 + Real.log y) ^ j
+theorem one_add_log_pow_le_rpow (j : ℕ) (ε x : ℝ) (hε : 0 < ε) (hx : 1 ≤ x) :
+    (1 + Real.log x) ^ j ≤ (1 + 1 / ε) ^ j * x ^ ((j : ℝ) * ε)
+theorem PolyLogBounded.powStep_neg_one (hG : PolyLogBounded G C₀ δ C₁ j) :
+    PolyLogBounded (powStep (-1) G) (C₀ / δ) δ (C₀ / δ + C₁ / ((j : ℝ) + 1)) (j + 1)
+theorem PolyLogBounded.powStep_of_lt (hG) (t : ℝ) (ht : t < -1) (ht' : -1 < t + δ) :
+    PolyLogBounded (powStep t G) (C₀ / (t + δ + 1)) (t + δ + 1) (powLimit t G) 0
+theorem PolyLogBounded.logBase_powStep_of_lt (hG) (t : ℝ) (ht : t < -1) (ht' : -1 < t + δ) :
+    LogBase (powStep t G) (powLimit t G) (C₁ * (1 + 1 / absorbEps t j) ^ j * (2 / (-t - 1)))
+      (C₀ / (t + δ + 1)) (t + δ + 1) ((-t - 1) / 2)
+theorem weightedPrimitive_polyLog (β a q : ℝ) (hβ : 0 < β) (hq : 0 < q) :
+    PolyLogBounded (weightedPrimitive β a (q - 1)) (Real.exp (β * a ^ 2 / 2) / q) q
+      (weightedMass β a (q - 1)) 0
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Integrability of $x^tG(x)$ on $(0,L]$ for $t+\delta>-1$ splits at $1$: the near-$0$ bound
+$C_0x^{t+\delta}$ and, on $(1,L]$, the constant $(L^t+1)C_1(1+\log L)^j$ (using $x^t\le L^t+1$ in
+both signs of $t$). Monotonicity of \texttt{powStep} (nonnegative integrand over a growing set) gives
+measurability. The near-$0$ bound propagates via $\int_0^yx^{t+\delta}=y^{t+\delta+1}/(t+\delta+1)$.
+The logarithmic step uses unit~39's closed form $\int_1^y(1+\log x)^j/x=((1+\log y)^{j+1}-1)/(j+1)$
+and $(1+\log y)^{j+1}\ge1$ to absorb the $(0,1]$ piece. The convergent step uses the absorption
+inequality, \texttt{integrableOn\_Ioi\_rpow\_of\_lt} and \texttt{integral\_Ioi\_rpow\_of\_lt}; positivity
+of the limit comes from positivity of the integrand on $(0,1]$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{div\_le\_div\_iff\_of\_pos} does not exist here; \texttt{div\_le\_div\_iff₀} does.
+\item \texttt{gcongr} closed a goal entirely (including the side condition) so trailing bullets
+errored; replaced by an explicit \texttt{mul\_le\_mul\_of\_nonneg\_left}.
+\item \texttt{positivity} cannot see $0<\varepsilon$ for the defined \texttt{absorbEps}; bring the
+positivity lemma into context first.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Real.log\_le\_rpow\_div}, \texttt{Real.one\_le\_rpow}, \texttt{Real.rpow\_le\_rpow},
+\texttt{Real.rpow\_le\_one\_of\_one\_le\_of\_nonpos}, \texttt{Real.rpow\_le\_rpow\_of\_exponent\_le},
+\texttt{div\_le\_div\_iff₀}. New: the class, both closure theorems, the \texttt{LogBase} certificate for
+convergent steps, and the base instance.
+
+\section{Lessons}
+Designing the class around exactly the two operations that will be applied (logarithmic and convergent
+steps) kept the invariant small; the third kind of step (divergent, $t>-1$) is avoided by sorting the
+coordinates, which is cheaper than tracking polynomial growth.
+
+\section{Outcome}
+All ingredients for the sorted-exponent tower are in place: the base is in the class, noncritical
+steps stay in the class, the first minimal step produces an admissible base, and the remaining minimal
+steps are \texttt{iterDivPrim}. The next unit assembles them into the general ``only minimal exponents
+count'' theorem for sorted exponent vectors.
+\end{document}
