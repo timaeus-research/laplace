@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\title{Marginal expectation and free-energy additivity for separable Gibbs measures}
+\author{Tide retrospective, laplace seabed}
+\date{2026-09-06}
+\begin{document}
+\sloppy
+\maketitle
+
+\section{Setting}
+The laplace seabed's separable-potential module \texttt{TwoD/AddSeparable.lean} establishes the
+factorisation facts for a product potential $L(x,y) = U(x)+V(y)$: the partition function factors,
+$Z_{2D} = Z_U\cdot Z_V$; separable observables factor in expectation; and the mixed covariance
+vanishes. A recent companion, \texttt{SeparableSameCoordCov}, added the same-coordinate covariance
+inheritance at the second-cumulant level. This tide fills in the two remaining elementary facts of
+the separable picture --- one at the mean level, one at the free-energy (CGF) level --- both of which
+follow directly from the factorisation already in hand. It is a deliberate consolidation step rather
+than a new frontier: the monomial cumulant ladder and the block-diagonal covariance structure being
+complete, this rounds out the separable module's basic API.
+
+\section{The thing formalised}
+For a separable potential and both marginal partition functions nonzero, a single-coordinate
+observable marginalises to its one-dimensional Gibbs expectation,
+\[
+  \langle f\circ\mathrm{fst}\rangle_{2D,t} = \langle f\rangle_{U,t},\qquad
+  \langle g\circ\mathrm{snd}\rangle_{2D,t} = \langle g\rangle_{V,t},
+\]
+the mean-level companion of the covariance-level \texttt{SeparableSameCoordCov}. And the free energy
+is additive,
+\[
+  \log Z_{2D}(t) = \log Z_U(t) + \log Z_V(t),
+\]
+the log-partition (cumulant-generating-function) reading of the partition-function factorisation. The
+Lean names are \texttt{gibbsExpectation\_addSeparable\_fst} / \texttt{\_snd} and
+\texttt{logPartition\_addSeparable}, in a new leaf file \texttt{TwoD/SeparableMarginal.lean}.
+
+\section{Proof strategy}
+The marginal expectation is the separable-observable factorisation
+\texttt{gibbsExpectation\_separable\_addSeparable} run with the constant $1$ in the free coordinate:
+$\langle f(z_1)\rangle_{2D} = \langle f\rangle_U\cdot\langle 1\rangle_V = \langle f\rangle_U$, since
+the Gibbs expectation of the constant $1$ is $1$ (\texttt{gibbsExpectation\_const}). This is exactly
+the collapse that was previously \emph{inlined} inside the cross-covariance-vanishing proof; the tide
+lifts it to a named, reusable lemma. The free-energy additivity is one rewrite: the partition-function
+factorisation followed by $\log(ab) = \log a + \log b$ (\texttt{Real.log\_mul}, whose two nonzero-base
+side conditions are discharged by the positivity of each marginal partition function).
+
+\section{Roadblocks and resolutions}
+None --- both results compiled on the first attempt, and the full library rebuilt clean. As with the
+sibling covariance tide, the only process choice was to place the additions in a new leaf file
+importing \texttt{AddSeparable} rather than editing the core hub, so that no downstream file
+re-elaborates and no latent missing-header warnings cascade. The build is warning-clean and
+axiom-clean (the three standard axioms only).
+
+\section{What was Mathlib, what was new}
+The only Mathlib input is \texttt{Real.log\_mul}. Everything else is the seabed's own separable-%
+factorisation API. What is new is the exposure of the marginal expectation as a first-class lemma
+(previously reachable only by re-deriving the inlined step) and the CGF-level statement of free-energy
+additivity, completing the elementary separable-potential toolkit at the mean and free-energy levels
+alongside the existing partition, expectation, and covariance facts. No GPT consult was needed.
+\end{document}
