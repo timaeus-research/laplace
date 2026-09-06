@@ -223,3 +223,4 @@ import Laplace.Grammar.BoxGeneral
 import Laplace.Grammar.TreeTerm
 import Laplace.Grammar.FreeEnergy
 import Laplace.Grammar.TreeSeries
+import Laplace.Grammar.MonomialTreeD
