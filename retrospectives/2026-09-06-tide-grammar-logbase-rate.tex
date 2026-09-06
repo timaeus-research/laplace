@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{\texttt{LogBase} with a general tail rate:\\
+$|G(L)-A|\le ML^{-\varepsilon}\ \Longrightarrow\ |H_m(L)-\textstyle\sum c_{m,i}\log^iL|\le (M/\varepsilon^m)L^{-\varepsilon}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit~49's base predicate required the tail $|G(L)-A|\le M/L$. The mixed-multiplicity case needs bases
+whose tail decays only like $L^{-(q-p)}$, where $q>p$ are the non-minimal and minimal candidate
+exponents. This unit generalises \texttt{LogBase} by a rate $\varepsilon>0$ and shows that the
+transfer step preserves the rate at the cost of a factor $1/\varepsilon$ per level:
+$|\theta_m(L)|\le(M/\varepsilon^m)L^{-\varepsilon}$. The weighted primitives are the case
+$\varepsilon=1$, and every downstream statement is unchanged. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+With $|\theta_m(x)|\le M'x^{-\varepsilon}$ the tail integrand satisfies $|\theta_m(x)/x|\le
+M'x^{-\varepsilon-1}$, integrable on $[1,\infty)$ for any $\varepsilon>0$, and
+$\int_L^\infty M'x^{-\varepsilon-1}=M'L^{-\varepsilon}/\varepsilon$. So the recursion
+$\theta_{m+1}(L)=-\int_L^\infty\theta_m/x$ yields $|\theta_{m+1}(L)|\le(M'/\varepsilon)L^{-\varepsilon}$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+structure LogBase (G : ℝ → ℝ) (A M C δ ε : ℝ) : Prop where
+  ...
+  ε_pos : 0 < ε
+  tail : ∀ L, 1 ≤ L → |G L - A| ≤ M * L ^ (-ε)
+theorem divRem_tail_abs_le (G : ℝ → ℝ) (A M ε : ℝ) (hε : 0 < ε) (m : ℕ) (L : ℝ) (hL : 1 ≤ L)
+    (hb : ∀ L, 1 ≤ L → |divRem G A m L| ≤ M * L ^ (-ε)) :
+    |∫ x in Ioi L, divRem G A m x / x| ≤ M / ε * L ^ (-ε)
+theorem divRem_abs_le (hG : LogBase G A M C δ ε) (m : ℕ) :
+    ∀ L, 1 ≤ L → |divRem G A m L| ≤ M / ε ^ m * L ^ (-ε)
+theorem iterDivPrim_expansion (hG : LogBase G A M C δ ε) (m : ℕ) (L : ℝ) (hL : 1 ≤ L) :
+    |iterDivPrim G m L - ∑ i ∈ Finset.range (m + 1), divCoeff G A m i * Real.log L ^ i|
+      ≤ M / ε ^ m * L ^ (-ε)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+A mechanical generalisation: the exponent $-2$ becomes $-\varepsilon-1$ in the domination and in
+\texttt{integral\_Ioi\_rpow\_of\_lt}, the pointwise bound uses \texttt{Real.rpow\_sub\_one}, and the
+induction carries $M/\varepsilon^m$ via \texttt{pow\_succ} and \texttt{div\_div}. In the asymptotic of
+unit~50 the remainder is bounded by $M/\varepsilon^m$ on $L\ge1$ using
+\texttt{Real.rpow\_le\_one\_of\_one\_le\_of\_nonpos}. The $F_\gamma$ instance sets $\varepsilon=1$ and
+rewrites $L^{-1}$ as $1/L$ so the previously stated corollary keeps its form.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item None: both files compiled on the first pass after the edit. The only care was to thread the
+level-dependent constant $M'$ through the lemmas that take the remainder bound as a hypothesis.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Real.rpow\_sub\_one}, \texttt{integral\_Ioi\_rpow\_of\_lt}, and the bound
+\texttt{Real.rpow\_le\_one\_of\_one\_le\_of\_nonpos} for $L^{-\varepsilon}\le1$. New: the rate
+parameter and its propagation.
+
+\section{Lessons}
+When an abstraction is introduced (unit~49), the first consumer beyond the motivating instance usually
+exposes a hypothesis that was accidentally too strong; here the fix was a five-minute generalisation
+because the abstraction had isolated it.
+
+\section{Outcome}
+The iterated expansion is available for bases with any polynomial tail rate. Next: the mixed case
+with one noncritical coordinate innermost, whose base $G_1(y)=\int_0^yx^{p-q-1}F_{q-1}$ is a
+\texttt{LogBase} with $A=C(p,q)$, $\varepsilon=q-p$, giving $Z\sim c\,n^{-p/2}(\log n)^{m-1}$ with
+$m$ the number of minimal coordinates.
+\end{document}
