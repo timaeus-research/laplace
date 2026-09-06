@@ -236,3 +236,4 @@ import Laplace.Grammar.StateDensityBox
 import Laplace.Grammar.LogWeightedPrim
 import Laplace.Grammar.BlockScale
 import Laplace.Grammar.FrozenBlock
+import Laplace.Grammar.MixedBlockEnvelope
