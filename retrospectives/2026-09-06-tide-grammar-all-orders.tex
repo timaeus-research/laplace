@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The one-dimensional Taylor tree to all orders, monomial perturbation}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The general-order version of units~28--29: for $\xi(u)=\xi_0+cu^m$ and every truncation order $N$,
+\[
+\begin{aligned}
+&\Bigl|Z_{\rm chart}-\sum_{p<N}\tfrac{(\beta c)^p}{p!}\tfrac1{2k}n^{-\mu_p}S_{\mu_p+p/2}(\xi_0)\Bigr|\\
+&\qquad\le\tfrac{(\beta|c|)^N}{N!}\tfrac1{2k}n^{-\mu_N}S_{\mu_N+N/2}(\xi_0+|c|b^m)
++\sum_{p<N}\tfrac{(\beta|c|)^p}{p!}\,\text{tail}_p,\qquad \mu_p=\tfrac{h+mp+1}{2k},
+\end{aligned}
+\]
+with the tails exponentially small. This is \texttt{thm:TaylorTree}/\texttt{cor:standardintegralexp}
+to every order in one dimension: the exponents $\mu_p$ run along the arithmetic progression
+$(h{+}1)/(2k)+(m/2k)\mathbb N\subseteq\Lambda(h,k)$ and every coefficient is an explicit fluctuation
+function. The analytic input is a global remainder bound $|e^x-\sum_{p<N}x^p/p!|\le\frac{|x|^N}{N!}e^{|x|}$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~28 handled $N=2$ by hand. The same decomposition $e^x=\sum_{p<N}x^p/p!+R_N(x)$ with
+$x=\beta\sqrt nu^kcu^m$ works at every order: the finite Taylor part is a sum of insertion integrals
+(each known exactly up to a tail by units~22/24/25), and the remainder is dominated pointwise by
+$\frac{|x|^N}{N!}e^{|x|}$, which on the chart is $\frac{(\beta|c|)^N}{N!}$ times the $N$-th insertion
+integrand at the shifted argument $\xi_0+|c|b^m$ --- so the remainder integral is again an insertion
+value, at order $\mu_N+N/2$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_exp_sub_sum_range_le (x : ℝ) (N : ℕ) :
+    |Real.exp x - ∑ p ∈ Finset.range N, x ^ p / p.factorial|
+      ≤ |x| ^ N / N.factorial * Real.exp |x|
+
+theorem standardIntegral1D_taylor_tree (β n ξ₀ c b : ℝ) (h k m N : ℕ)
+    (hβ : 0 < β) (hn : 1 ≤ n) (hb : 0 < b) (hk : 0 < k) :
+    |Z_chart - ∑ p ∈ range N, (β c)^p/p! * ((1/(2k)) n^(-μ_p) S_{μ_p+p/2}(ξ₀))|
+      ≤ (β|c|)^N/N! * ((1/(2k)) n^(-μ_N) S_{μ_N+N/2}(ξ₀ + |c| b^m))
+        + ∑ p ∈ range N, (β|c|)^p/p! * tail_p
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The exponential bound is the unit-28 series argument with the shift $2$ replaced by $N$; the only new
+ingredient is $N!\,p!\le(p+N)!$, from \texttt{Nat.factorial\_mul\_factorial\_dvd\_factorial\_add}. The
+main theorem decomposes the integrand pointwise as $\sum_{p<N}G_p+g_R$ with
+$G_p(u)=\frac{(\beta c)^p}{p!}u^{h+mp}(\sqrt nu^k)^p e^{\rm pop}(u)$ (the identity
+$G_p(u)=u^he^{\rm pop}(u)\,x^p/p!$ plus \texttt{Finset.mul\_sum}), integrates term by term
+(\texttt{integral\_finsetSum}, \texttt{integral\_add}; all pieces continuous on the chart), rewrites each
+$\int G_p$ as insertion value minus tail exactly as in unit~26, bounds $|\int g_R|$ through the
+dominating $N$-th insertion at $\xi_0+|c|b^m$, and closes with $|\sum|\le\sum|\cdot|$ on the tails.
+
+\section{Roadblocks and resolutions}
+Essentially none --- the file compiled at the first attempt apart from a deprecated name
+(\texttt{continuous\_finset\_sum} $\to$ \texttt{continuous\_finsetSum}). The design choices that made this
+smooth were all inherited from units~26 and~28: opaque local definitions via
+\texttt{obtain ⟨g, hg⟩ : ∃ g, g = \dots}, a universally quantified algebraic
+\texttt{key : ∀ SA ST IR, SA - ST + IR - SA = IR - ST} for the final rearrangement (robust to the goal's
+exact parenthesisation), and stating the remainder through the insertion lemma rather than by hand
+(no \texttt{rpow} merge needed).
+
+\section{What was Mathlib, what was new}
+Mathlib: the exponential series, \texttt{hasSum\_nat\_add\_iff'}, \texttt{hasSum\_le},
+\texttt{Nat.factorial\_mul\_factorial\_dvd\_factorial\_add}, \texttt{integral\_finsetSum},
+\texttt{continuous\_finsetSum}, \texttt{Finset.abs\_sum\_le\_sum\_abs}. New: the global exponential
+Taylor remainder bound (a lean-common candidate alongside its $N=2$ case) and the all-orders
+one-dimensional Taylor tree with explicit coefficients and remainder.
+
+\section{Lessons}
+Once the $N=2$ case is written with opaque local definitions and the insertion identity as the only
+evaluator, the general-$N$ proof is a near-verbatim generalisation; do the small case first only if it
+teaches the idioms, then generalise immediately rather than stacking special cases.
+
+\section{Follow-ups}
+The $O(n^{-\mu_N})$ packaging (absorbing the $N$ tails, each $n^{p/2}e^{-\varepsilon n}$) is the same
+routine as unit~29; the multivariate tree and analytic (non-monomial) $\xi$ remain.
+\end{document}
