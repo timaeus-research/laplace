@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Partially coinciding exponents: $d=3$, $h=(0,0,1)$\\
+$Z(n)\sim\dfrac{b\,S_{1/2}(a)}{4}\,n^{-1/2}\log n$ (multiplicity two, not three)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The multiplicity in \texttt{thm:TaylorTree} counts the coordinates attaining the \emph{minimal}
+candidate exponent. Units~37 and~39 covered the two extremes (all exponents distinct: no logarithm;
+all equal: $(\log n)^{d-1}$). This unit does the first mixed case, $k=(1,1,1)$, $h=(0,0,1)$ with
+exponents $(\tfrac12,\tfrac12,1)$: the exact chart formula
+$Z(n)=(b/\sqrt n)\,(H(L)-K(L))$, $L=\sqrt n\,b^3$, with $H$ the logarithmic primitive and
+$K(L)=\int_0^Lx^{-2}F_1=F_0(L)-F_1(L)/L$ bounded by $A$, hence
+$Z(n)\sim(b\,S_{1/2}(a)/4)\,n^{-1/2}\log n$. The non-minimal coordinate contributes only the bounded
+$K$ and the factor $b$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Integrating the innermost weighted coordinate gives $(\sqrt n\,uv)^{-2}F_1(\sqrt n\,uvb)$
+(unit~37's inner identity). The $v$-integral is the noncritical substitution
+$\int_0^bv^{-2}F_1(cv)\,dv=c\,K(cb)$, and the outer $u$-integral is the critical one,
+$\int_0^bK(cu)/u\,du=\int_0^{cb}K(x)/x\,dx$. The last integral is evaluated in closed form:
+since $K(x)/x=F_0(x)/x-x^{-2}F_1(x)$ on $x>0$, it equals $H(L)-K(L)$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_quadMomentPrimitive_le (β a t : ℝ) (hβ : 0 < β) :
+    |quadMomentPrimitive β a t| ≤ Real.exp (β * a ^ 2 / 2) * t ^ 2
+theorem quadPowerPrimitive_continuous (β a : ℝ) (hβ : 0 < β) :
+    Continuous (quadPowerPrimitive β a)
+theorem quadPowerPrimitive_le_mass ... : quadPowerPrimitive β a L ≤ quadMass β a
+theorem integral_quadMomentPrimitive_div_sq_eq (β a c b : ℝ) (hc : 0 < c) (hb : 0 < b) :
+    (∫ v in Ioc 0 b, (v ^ 2)⁻¹ * quadMomentPrimitive β a (c * v))
+      = c * quadPowerPrimitive β a (c * b)
+theorem integral_quadPowerPrimitive_div ... :
+    (∫ x in Ioc 0 L, quadPowerPrimitive β a x / x)
+      = logPrimitive β a L - quadPowerPrimitive β a L
+theorem threeDIntegralH001_eq ... : threeDIntegralH001 β a b n
+      = b / Real.sqrt n * (logPrimitive β a (Real.sqrt n * b ^ 3)
+        - quadPowerPrimitive β a (Real.sqrt n * b ^ 3))
+theorem threeDIntegralH001_isEquivalent (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) :
+    (fun n => threeDIntegralH001 β a b n) ~[atTop]
+      fun n => b * fluctuation β (1 / 2) a / 4 * (n ^ (-(1 / 2 : ℝ)) * Real.log n)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The exact formula was first checked numerically (relative error $10^{-16}$; the ratio
+$\sqrt n\,Z/(b\log n)$ tends to $A/2=S_{1/2}(a)/4$). The reduction is three applications of
+\texttt{setIntegral\_congr\_fun} with the substitution lemmas, each in the divide-and-substitute form of
+units~35--39 (valid at $u=0$ because the primitives vanish there). The asymptotic follows from the
+$L$-uniform bounds: \texttt{logPrimitive\_bounds} gives $H(L)=A\log L+O(1)$ with
+$\log L=\tfrac12\log n+3\log b$, and $0\le K\le A$, so
+$|Z-(bA/2)\log n/\sqrt n|\le(b/\sqrt n)(E+M+3A|\log b|+A)$, which is $o(\log n/\sqrt n)$ by
+\texttt{isLittleO\_inv\_sqrt\_log}. The new global bound $|F_1(t)|\le Et^2$ (all real $t$) makes the
+$K$-integrand bounded on $\mathbb R$, giving continuity of $K$ via \texttt{continuous\_primitive} and
+hence integrability of $K(x)/x$ on $(0,L]$ (bounded by $E/2$).
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{inv\_mul\_le\_iff₀} produces $t^2\cdot E$, not $E\cdot t^2$; a trailing
+\texttt{mul\_comm} in the rewrite chain aligns it with the bound lemma. This was the only compile error.
+\item A docstring over 100 columns tripped the line-length gate after a clean build; the gate must
+run before committing, not after.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{norm\_integral\_le\_of\_norm\_le\_const}, \texttt{continuous\_primitive},
+\texttt{integral\_comp\_mul\_left}, \texttt{Integrable.mono'}, \texttt{IsBigO.of\_bound},
+\texttt{IsLittleO.isEquivalent}. New: the closed form $\int_0^LK/x=H-K$, the noncritical substitution
+$\int_0^bx^{-2}F_1(cx)=cK(cb)$, and the first mixed-multiplicity instance of \texttt{thm:TaylorTree}.
+
+\section{Lessons}
+In the mixed case the non-minimal coordinates do not need their own primitive hierarchy: after one
+noncritical substitution they enter as a bounded function subtracted from the critical primitive, and the
+critical coordinates alone determine the logarithmic power. This suggests the general $(k,h)$ case will
+reduce to the all-equal machinery of unit~39 applied to a modified kernel.
+
+\section{Outcome}
+Units~35--40 now exhibit all three regimes of the multiplicity count in the simplest chart geometry:
+no logarithm (distinct), $(\log n)^{d-1}$ (all equal), and $\log n$ with a bounded correction (two of
+three equal). Next candidates: the weighted primitives $F_\gamma$ for general $(k,h)$, or the
+next-order term $-B\,n^{-1/2}$ in the logarithmic case.
+\end{document}
