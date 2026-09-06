@@ -179,3 +179,4 @@ import Laplace.Grammar.LogGenerating
 import Laplace.Grammar.Extended
 import Laplace.Grammar.Smooth
 import Laplace.Grammar.ExtendedRaising
+import Laplace.Grammar.StandardIntegral
