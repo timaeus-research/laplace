@@ -1,0 +1,97 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The complete expansion for every dimension:\\
+$H_m(L)=\sum_{i\le m}c_{m,i}\log^iL+O(1/L)$ and $Z_d(n)=n^{-1/2}P_d(\log n)+O(n^{-1})$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units~41 and~42 identified the constant terms below $\log n$ and $(\log n)^2$ by hand. This unit
+proves the underlying transfer step once, for the iterated logarithmic primitives
+$H_m=\texttt{iterLogPrim}\,m$ of unit~39: with explicit recursively defined coefficients
+$c_{0,0}=A$, $c_{m+1,i+1}=c_{m,i}/(i+1)$, $c_{m+1,0}=\int_0^1H_m/x+\int_1^\infty\theta_m/x$,
+\[
+H_m(L)=\sum_{i=0}^mc_{m,i}\log^iL+\theta_m(L),\qquad|\theta_m(L)|\le\frac ML\quad(L\ge1),
+\qquad\theta_{m+1}(L)=-\int_L^\infty\frac{\theta_m(x)}{x}\,dx,
+\]
+and $c_{m,m}=A/m!$. Hence every all-equal chart integral has a complete expansion
+$Z_{k+2}(n)=n^{-1/2}\sum_{i\le k+1}c_{k+1,i}(\tfrac12\log n+(k+2)\log b)^i+O(n^{-1})$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The recursion $H_{m+1}(L)=\int_0^LH_m(x)/x\,dx$ preserves the shape ``polynomial in $\log x$ plus a
+remainder $O(1/x)$'': over $[1,L]$ the polynomial integrates termwise via
+$\int_1^L\log^ix/x=\log^{i+1}L/(i+1)$, the remainder over $[1,\infty)$ converges to a constant that
+becomes the new $c_{m+1,0}$, and the tail over $[L,\infty)$ is the new remainder. The remainder bound
+$M/L$ is preserved exactly because $\int_L^\infty Mx^{-2}=M/L$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def iterLogCoeff (β a : ℝ) : ℕ → ℕ → ℝ
+  | 0, 0 => quadMass β a
+  | 0, _ + 1 => 0
+  | m + 1, 0 => (∫ x in Ioc 0 1, iterLogPrim β a m x / x)
+      + ∫ x in Ioi 1, (iterLogPrim β a m x
+          - ∑ i ∈ Finset.range (m + 1), iterLogCoeff β a m i * Real.log x ^ i) / x
+  | m + 1, i + 1 => iterLogCoeff β a m i / ((i : ℝ) + 1)
+theorem iterLogCoeff_top ... : iterLogCoeff β a m m = quadMass β a / (m.factorial : ℝ)
+theorem iterLogRem_succ_eq ... (hL : 1 ≤ L) (hb : ∀ L, 1 ≤ L → |iterLogRem β a m L| ≤ M / L) :
+    iterLogRem β a (m + 1) L = -∫ x in Ioi L, iterLogRem β a m x / x
+theorem iterLogPrim_expansion (β a : ℝ) (hβ : 0 < β) (m : ℕ) (L : ℝ) (hL : 1 ≤ L) :
+    |iterLogPrim β a m L - ∑ i ∈ Finset.range (m + 1), iterLogCoeff β a m i * Real.log L ^ i|
+      ≤ quadMoment β a / L
+theorem iterChart_expansion_isBigO (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) (k : ℕ) :
+    (fun n => iterChart β a b (k + 2) (Real.sqrt n)
+        - n ^ (-(1/2 : ℝ)) * iterChartCoeff β a b k n) =O[atTop] fun n => n⁻¹
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The coefficients are defined by structural recursion on $m$ with the index $i$ as a varying second
+argument, so all three equation lemmas are \texttt{rfl}. The remainder bound is proved by induction
+on $m$; the inductive step is the exact identity $\theta_{m+1}(L)=-\int_L^\infty\theta_m/x$, which
+takes the current bound as a hypothesis (it is needed for integrability of $\theta_m/x$ on
+$[1,\infty)$) and is proved by the same three-way split as at $d=3$: $(0,1]$, $(1,L]$ with the
+pointwise decomposition $H_m/x=\sum c_{m,i}\log^ix/x+\theta_m/x$, and $\int_1^\infty=\int_1^L+
+\int_L^\infty$. The re-indexing $\sum_{j\le m+1}c_{m+1,j}\log^jL=c_{m+1,0}+\sum_{i\le m}
+c_{m,i}\log^{i+1}L/(i+1)$ is \texttt{Finset.sum\_range\_succ'} plus the coefficient equation.
+The base case is $|F(L)-A|=A-F(L)\le M/L$ from unit~35. The chart statement is unit~39's reduction
+$Z_{k+2}=n^{-1/2}H_{k+1}(\sqrt nb^{k+2})$ with $\log(\sqrt nb^{k+2})=\tfrac12\log n+(k+2)\log b$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The file compiled without errors on the first pass; the only fixes were deprecation renames
+(\texttt{continuousOn\_finsetSum}, \texttt{integrable\_finsetSum}, \texttt{integral\_finsetSum}), an
+unused hypothesis, and three over-long lines.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integral\_finsetSum}, \texttt{integrable\_finsetSum},
+\texttt{continuousOn\_finsetSum}, \texttt{Finset.sum\_range\_succ'}, \texttt{norm\_integral\_le\_of\_norm\_le},
+\texttt{intervalIntegrable\_iff\_integrableOn\_Ioc\_of\_le}. New: the recursive coefficient scheme,
+the exact remainder recursion, and the uniform $M/L$ bound for every $m$.
+
+\section{Lessons}
+Two hand-worked instances (units~41, 42) were enough to see the induction; formalising the third
+level as a general step cost less than either instance because the statement had already stabilised.
+The remainder bound being \emph{exactly} preserved ($M/L\mapsto M/L$) is what makes the induction
+hypothesis clean; a bound that degraded with $m$ would have needed the \texttt{iterConst} bookkeeping
+of unit~39.
+
+\section{Outcome}
+For every dimension $d\ge2$ the all-equal chart integral has a complete polynomial-in-$\log n$
+expansion with explicit recursive constants and $O(n^{-1})$ remainder, subsuming units~41--42. Next
+candidates: the weighted primitives $F_\gamma$ for general $(k,h)$, or the mixed-multiplicity case in
+general dimension (several minimal coordinates plus several non-minimal ones).
+\end{document}
