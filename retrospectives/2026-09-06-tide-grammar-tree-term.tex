@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Tree terms have candidate exponents:\\
+every term of the Taylor tree is $\sim C\,n^{-\mu}(\log n)^j$ with $\mu\in\Lambda(h,k)$, $j\le d-1$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The proof of \texttt{thm:TaylorTree} expands the standard integral into tree terms
+$\int_{(0,b]^d}u^{h+s}(\sqrt n\,u^k)^pe^{-\beta nu^{2k}+\beta\sqrt n\,u^k\xi(0)}\,du$, indexed by a
+shift $s=\mathbf m+\mathbf n\in\mathbb N^d$ and an insertion order $p$. Each is $n^{p/2}$ times a box
+integral with exponents $h+s+pk$, so unit~59 gives $\sim C\,n^{-\mu}(\log n)^j$ with
+$\mu=\min_i(h_i+s_i+1)/(2k_i)\in\Lambda(h,k)=\bigcup_i\big((h_i+1)/(2k_i)+\mathbb N/(2k_i)\big)$ and
+$j\le d-1$: the exponent set and the log-degree bound of the theorem, term by term. The insertion
+order does not move the leading exponent. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The insertion $(\sqrt n\,u^k)^p$ is $n^{p/2}\prod_iu_i^{pk_i}$, which raises every candidate exponent
+by $p/2$ and is exactly compensated by the prefactor $n^{p/2}$; the shift $s$ moves the exponents
+along the arithmetic progressions of $\Lambda(h,k)$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def candidateSet {d : ℕ} (k h : Fin d → ℕ) : Set ℝ :=
+  {μ | ∃ (i : Fin d) (s : ℕ), μ = ((h i : ℝ) + s + 1) / (2 * k i)}
+noncomputable def treeTerm (β a b c : ℝ) {d : ℕ} (k h s : Fin d → ℕ) (p : ℕ) : ℝ :=
+  ∫ u : Fin d → ℝ, (∏ i, u i ^ (h i + s i)) * (c * ∏ i, u i ^ k i) ^ p
+    * quadKernel β a (c * ∏ i, u i ^ k i) ∂(boxMeasure b d)
+theorem treeTerm_eq ... :
+    treeTerm β a b c k h s p
+      = c ^ p * boxIntegralFin β a b c k (fun i => h i + s i + k i * p)
+theorem treeTerm_isEquivalent (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) (D : ℕ)
+    (k h s : Fin (D + 2) → ℕ) (hk : ∀ i, 0 < k i) (p : ℕ) :
+    ∃ (μ : ℝ) (j : ℕ) (C : ℝ), μ ∈ candidateSet k h ∧ j ≤ D + 1 ∧ 0 < C ∧
+      (fun n => treeTerm β a b (Real.sqrt n) k h s p) ~[atTop]
+        fun n => C * (n ^ (-μ) * Real.log n ^ j)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The insertion identity is pointwise algebra (\texttt{pow\_add}, \texttt{pow\_mul},
+\texttt{Finset.prod\_mul\_distrib}, \texttt{Finset.prod\_pow}). For the asymptotic, unit~59 applied to the
+shifted exponents provides $p'$, $m$, $C$; an index $i_0$ attaining the minimum exists because the
+attaining set has cardinality $m+1>0$, and $p'=(h_{i_0}+s_{i_0}+1)/k_{i_0}+p$ by definition of the
+shifted exponent. Multiplying by $(\sqrt n)^p=n^{p/2}$ and combining powers gives
+$n^{-\mu}$ with $\mu=(h_{i_0}+s_{i_0}+1)/(2k_{i_0})$; $j=m\le D+1$ since $m+1\le\#\mathrm{Fin}(D+2)$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Finset.prod\_pow} rewrites $\prod f^p$ to $(\prod f)^p$; stating the shifted exponent as
+$k_i\cdot p$ (not $p\cdot k_i$) makes \texttt{pow\_mul} produce the matching shape.
+\item Precedence of unary minus: the goal had $-(x/2)$ while the rewrite was stated as $(-x)/2$.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Finset.prod\_pow}, \texttt{Finset.card\_pos}, \texttt{Finset.card\_filter\_le},
+\texttt{Real.rpow\_sub}. New: the candidate set, tree terms, the insertion identity, and the term-wise
+exponent theorem.
+
+\section{Lessons}
+Once the box theory is hypothesis-free, the combinatorial statements of the paper about which
+exponents can occur become one-line consequences; this is the right level at which to connect to the
+tree expansion, before the analytic questions about summing over $s$ and $p$.
+
+\section{Outcome}
+Term by term, the Taylor tree expansion has exponents in $\Lambda(h,k)$ and logarithmic degree at most
+$d-1$, with each leading coefficient positive. Summing the tree (absolute convergence, the
+$O(e^{-\varepsilon n})$ remainder, and the coefficients $C_{\mu,m}$ as series) is the remaining
+analytic content of \texttt{thm:TaylorTree}.
+\end{document}
