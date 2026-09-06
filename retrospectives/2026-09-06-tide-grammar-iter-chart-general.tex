@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The multiplicity theorem with arbitrary $(k,h)$, all exponents equal:\\
+$Z_d(n)\sim\Big(\prod_ik_i^{-1}\Big)\dfrac{A_{p-1}}{2^{d-1}(d-1)!}\,n^{-p/2}(\log n)^{d-1}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The $d$-fold chart standard integral with exponent vectors $k,h:\mathbb N\to\mathbb N$ is defined
+recursively, $Z_0(c)=f(c)$, $Z_{d+1}(c)=\int_0^bu^{h_d}Z_d(cu^{k_d})\,du$. When all candidate
+exponents $p_i=(h_i+1)/k_i$ coincide at $p$, it reduces exactly to the iterated weighted primitives
+of unit~49, $Z_{d+1}(c)=(\prod_{i\le d}k_i^{-1})\,c^{-p}H_d(cb^{\sum k_i})$ with
+$H=\texttt{iterDivPrim}(F_{p-1})$, and hence
+$Z_{d+2}(\sqrt n)\sim(\prod k_i^{-1})\,\tfrac{A_{p-1}}{2^{d+1}(d+1)!}\,n^{-p/2}(\log n)^{d+1}$:
+the multiplicity-$(d+2)$ statement of \texttt{thm:TaylorTree} for arbitrary $(k,h)$. Unit~39 is the
+case $k=h+1=1$. The exact reduction was verified by three-dimensional quadrature at $k=(1,2,1)$,
+$h=(0,1,0)$ to $2\cdot10^{-16}$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Each coordinate contributes one chart power substitution (unit~44) turning $u^{h}\,(\cdot)(cu^{k})$
+into $\tfrac1k\int_0^{b^k}s^{p-1}(\cdot)(cs)\,ds$, and one weighted scaling. At the innermost level
+the kernel becomes $F_{p-1}$; at every further level the factor $(cs)^{-p}$ from the previous level
+combines with $s^{p-1}$ to $s^{-1}$, which is exactly the ``divide and integrate'' step of
+\texttt{iterDivPrim}, with the scale absorbed into $b^{\sum k_i}$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def iterChartGen (β a b : ℝ) (k h : ℕ → ℕ) : ℕ → ℝ → ℝ
+  | 0 => fun c => quadKernel β a c
+  | d + 1 => fun c => ∫ u in Ioc 0 b, u ^ (h d) * iterChartGen β a b k h d (c * u ^ (k d))
+theorem iterChartGen_succ_eq ...
+    (hp : ∀ i, i ≤ d → ((h i : ℝ) + 1) / k i = p) (hc : 0 < c) :
+    iterChartGen β a b k h (d + 1) c
+      = (∏ i ∈ Finset.range (d + 1), (1 : ℝ) / k i) * c ^ (-p)
+        * iterDivPrim (weightedPrimitive β a (p - 1)) d
+            (c * b ^ (∑ i ∈ Finset.range (d + 1), k i))
+theorem iterDivPrim_isEquivalent (hG : LogBase G A M C δ) (hA : 0 < A)
+    (m : ℕ) (hm : 0 < m) :
+    (fun L => iterDivPrim G m L) ~[atTop] fun L => A / (m.factorial : ℝ) * Real.log L ^ m
+theorem iterChartGen_isEquivalent ... (hp : ∀ i, i ≤ d + 1 → ((h i : ℝ) + 1) / k i = p) :
+    (fun n => iterChartGen β a b k h (d + 2) (Real.sqrt n)) ~[atTop]
+      fun n => (∏ i ∈ Finset.range (d + 2), (1 : ℝ) / k i)
+        * (weightedMass β a (p - 1) / (2 ^ (d + 1) * ((d + 1).factorial : ℝ)))
+        * (n ^ (-(p / 2)) * Real.log n ^ (d + 1))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The reduction is an induction on $d$ generalising the scale $c$. The base case is unit~44's inner
+computation; the step rewrites the inner integral by the induction hypothesis at scale $cu^{k_d}$,
+factors $(cu^{k})^{-p}=c^{-p}(u^k)^{-p}$, applies the chart power substitution to
+$u^{h}\,g(u^{k})$ with $g(s)=s^{-p}H_d(cb^Ss)$, simplifies $s^{p-1}s^{-p}=s^{-1}$, and applies the
+scaling lemma with $\gamma=-1$, whose prefactor $(cb^S)^{-(-1+1)}$ is $1$; the result is
+\texttt{iterDivPrim\_succ} at the point $cb^{S+k_d}$. The asymptotic of the iterated primitives of
+any admissible base follows from unit~49's expansion: the lower-order terms $\sum_{i<m}c_{m,i}\log^iL$
+are $o(\log^mL)$ (\texttt{isLittleO\_pow\_pow\_atTop\_of\_lt} composed with $\log$, summed with
+\texttt{IsLittleO.sum}) and the remainder is $O(1)=o(\log^mL)$. The final assembly is unit~39's
+template with $(\sqrt n)^{-p}=n^{-p/2}$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The scaling lemma at $\gamma=-1$ leaves the exponent $-(-1+1)$, not $-1+1$; the
+\texttt{show} rewrite must match the negated form before \texttt{Real.rpow\_zero}.
+\item \texttt{isLittleO\_pow\_pow\_atTop\_of\_lt} lives in \texttt{SpecificAsymptotics}, which was not
+in the import closure; import it explicitly.
+\item \texttt{IsLittleO.sum} produces a \texttt{Finset}-sum of functions; convert with
+\texttt{Finset.sum\_apply} in a \texttt{congr\_left}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{isLittleO\_pow\_pow\_atTop\_of\_lt}, \texttt{IsLittleO.sum}, \texttt{tendsto\_pow\_atTop},
+\texttt{Finset.prod\_range\_succ}, \texttt{Finset.sum\_range\_succ}, \texttt{Real.mul\_rpow}. New: the
+general-$(k,h)$ chart recursion, its exact reduction, and the multiplicity theorem in the all-equal case
+with arbitrary exponents.
+
+\section{Lessons}
+The abstraction of unit~49 paid off immediately: nothing about the base $F_{p-1}$ had to be reproved,
+and the general-$(k,h)$ recursion is the same three-line pointwise identity at every level. Verifying
+the exact reduction numerically in three dimensions before writing the induction gave confidence in
+the bookkeeping of $\prod k_i^{-1}$ and $b^{\sum k_i}$.
+
+\section{Outcome}
+Units~44--50 lift the whole leading-term theory of \texttt{thm:TaylorTree} from $k=h+1=1$ to arbitrary
+$(k,h)$: two dimensions in all three regimes, and $d$ dimensions when all exponents coincide. What
+remains at this level of the paper is the mixed case in general dimension (some coordinates at the
+minimal exponent, others above), whose two-dimensional and $d=3$ instances (units~37, 40, 46) suggest
+the answer: the minimal coordinates alone determine the logarithmic power, the others contribute
+bounded factors.
+\end{document}
