@@ -1,0 +1,99 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The log-insertion ODE:
+$g_k''-\tfrac{\beta a}{2}g_k'-\nu\beta g_k=k\beta\,g_{k-1}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 15 of the grammar-paper \S4 autoformalisation, and the hardest of the log-insertion family:
+\texttt{prop:LogODE}. Writing $g_k(a)=\partial_\lambda^k S_\lambda(a)=\int_0^\infty(\log t)^k
+t^{\nu-1}e^{-\beta t+\beta a\sqrt t}\,dt$, the Weber ODE differentiated $k$ times in the order gives
+$g_k''(a)-\tfrac{\beta a}{2}g_k'(a)-\nu\beta g_k(a)=k\beta\,g_{k-1}(a)$. Proved directly for the
+integral, from an $a$-derivative ladder and a log-weighted integration-by-parts recurrence. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The general-$k$ order-derivative (unit~13) identified $\partial_\lambda^k S$ with the log-weighted
+integral $g_k=\texttt{gLog}$. This proposition is the ODE that family satisfies --- the order-analogue
+of the plain Weber ODE (property~iii), with an inhomogeneous $k\beta g_{k-1}$ term. It is the last
+log-insertion item that is achievable without a real-analyticity theory, and the most involved single
+proof of the whole \S4 arc.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem hasDerivAt_gLog (β ν : ℝ) (k : ℕ) (hβ : 0 < β) (hν : 0 < ν) (a : ℝ) :
+    HasDerivAt (fun a => gLog β a ν k) (β * gLog β a (ν + 1 / 2) k) a
+
+theorem gLog_recurrence (β a ν : ℝ) (k : ℕ) (hβ : 0 < β) (hν : 0 < ν) :
+    β * gLog β a (ν + 1) k = (β * a / 2) * gLog β a (ν + 1 / 2) k
+      + ν * gLog β a ν k + (k : ℝ) * gLog β a ν (k - 1)
+
+theorem gLog_ode (β a ν : ℝ) (k : ℕ) (hβ : 0 < β) (hν : 0 < ν) :
+    deriv (deriv (fun a => gLog β a ν k)) a - (β * a / 2) * deriv (fun a => gLog β a ν k) a
+      - ν * β * gLog β a ν k = (k : ℝ) * β * gLog β a ν (k - 1)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Two ingredients, assembled by the plain-Weber logic.
+\begin{itemize}
+\item \textbf{$a$-derivative ladder.} $\partial_a e^{-\beta t+\beta a\sqrt t}=\beta\sqrt t\,e^{\cdots}$,
+so differentiating $\texttt{gLog}$ under the integral in $a$ multiplies the integrand by $\beta\sqrt t=
+\beta t^{1/2}$, i.e. shifts the order by $\tfrac12$: $\partial_a\texttt{gLog}(\nu,k)=\beta\,
+\texttt{gLog}(\nu+\tfrac12,k)$. This is \texttt{hasDerivAt\_fluctuation} with the $(\log t)^k$ weight
+carried along; two applications give $g_k''=\beta^2\texttt{gLog}(\nu+1,k)$.
+\item \textbf{Log-weighted recurrence.} From $\int_0^\infty\partial_t[t^\nu(\log t)^k e^{\cdots}]\,dt=0$
+(improper FTC). The $t$-derivative has \emph{four} terms: the usual $\nu$, $-\beta$, $\tfrac{\beta a}2$
+pieces plus $k\,t^{\nu-1}(\log t)^{k-1}e^{\cdots}$ from differentiating the log weight. Matching the four
+to $\texttt{gLog}$ integrands gives $\beta\,\texttt{gLog}(\nu+1,k)=\tfrac{\beta a}2\texttt{gLog}
+(\nu+\tfrac12,k)+\nu\,\texttt{gLog}(\nu,k)+k\,\texttt{gLog}(\nu,k-1)$.
+\end{itemize}
+Substituting the ladder into the ODE reduces it, after dividing by $\beta$, to exactly the recurrence.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \textbf{Boundary limits with a logarithm.} The improper FTC needs $t^\nu(\log t)^k e^{\cdots}\to0$
+at both $0^+$ and $\infty$, but $(\log t)^k$ is unbounded at each end. The clean squeeze is
+$|t^\nu(\log t)^k|\le(k/\delta)^k(t^{\nu+\delta}+t^{\nu-\delta})$ (\texttt{abs\_log\_pow\_le}) with
+$\delta=\nu/2$, giving exponents $\tfrac{3\nu}2,\tfrac\nu2$ --- both \emph{strictly positive}, so the
+majorant $\to0$ at $0^+$ (continuity, value $0$) and at $\infty$ (Gaussian decay,
+\texttt{tendsto\_rpow\_mul\_exp\_neg\_mul\_atTop\_nhds\_zero}). Note $\delta=c/2$ (fine for
+\emph{integrability}) fails here for $\nu<1$: the boundary needs the exponent $>0$, not just $>-1$.
+\item The four-term integral decomposition triggers the \texttt{Pi.add} pattern-match gotcha under
+\texttt{integral\_add}; fixed with type-ascribed single-lambda \texttt{IntegrableOn} witnesses.
+\item Small \texttt{rpow} identities ($t^\nu t^{-1}=t^{\nu-1}$, $t^\nu(2\sqrt t)^{-1}=\tfrac12
+t^{\nu-1/2}$) and the final constant algebra ($(t^{\nu/2}+t^{-\nu/2})t^\nu=t^{3\nu/2}+t^{\nu/2}$) go
+through \texttt{Real.rpow\_add} plus a \texttt{linear\_combination} over the two exponent identities.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied the parametric-FTC and improper-FTC lemmas, \texttt{Real.hasDerivAt\_log},
+\texttt{HasDerivAt.pow}, the rpow/sqrt derivatives, and \texttt{tendsto\_rpow\_mul\_exp\_neg\_mul}. New:
+the $a$-derivative ladder for the log-weighted integral, the log-weighted IBP recurrence with its extra
+$k g_{k-1}$ term, the two-sided log-power boundary squeeze, and the assembled ODE --- the order-analogue
+of the Weber equation.
+
+\section{Lessons}
+The log weight changes two things versus the plain recurrence: it adds one term to the pointwise
+$t$-derivative (giving the inhomogeneous $k g_{k-1}$), and it makes the boundary limits nontrivial. The
+key is to bound the \emph{whole} boundary integrand $t^\nu|\log t|^k$ (not the $t^{\nu-1}$ integrand) by
+a symmetric power sandwich with $\delta<\nu$, so both exponents stay positive and vanish at $0^+$ ---
+the same lemma used at $\delta=c/2$ for integrability serves at $\delta=\nu/2$ for the limits.
+
+\section{Follow-ups}
+Of the remaining \S4 items, \texttt{lem:log\_generating} ($\sum\frac{z^p}{p!}(c-\partial_\nu)^p S_\nu=
+e^{zc}S_{\nu-z}$) is Taylor's theorem in the order and needs real-analyticity of $S_\nu$ in $\nu$; the
+ladder-operator commutator $[b,b^\dagger]=1$ and number operator want a Weyl-algebra framework.
+\end{document}
