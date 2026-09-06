@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Two-term expansion for a polynomial perturbation: how the monomials of $\xi$ populate $\Lambda(h,k)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The first step beyond a single monomial: for $\xi(u)=\xi_0+\sum_{j<D}c_ju^{j+1}$ (any $\xi$ analytic at
+$0$, truncated) the first-order term of the one-dimensional Taylor tree is a \emph{sum over the
+monomials of $\xi$}, each contributing its own exponent $(h+j+2)/(2k)$ with coefficient
+$\beta c_j\,\tfrac1{2k}S_{(h+j+2)/(2k)+1/2}(\xi_0)$, and the remainder is bounded by an explicit multiple
+of $n^{-(h+3)/(2k)}$ plus boundary tails. This exhibits the union structure of the candidate exponent set:
+distinct monomials of the perturbation land on distinct points of $\Lambda(h,k)$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Units~28--31 treat $\xi-\xi_0=cu^m$. The paper's $\xi$ is analytic with $\xi(0)=\xi_0$, so
+$J(u)=\xi(u)-\xi_0$ is a power series with no constant term; its truncation is a polynomial
+$\sum_{j<D}c_ju^{j+1}$. The second-order machinery of unit~28 goes through verbatim with
+$x=\beta\sqrt nu^kJ(u)$ once one bound is available: on the chart $|J(u)|\le Cu$ with
+$C=\sum_{j<D}|c_j|b^j$, which controls both $x^2$ (giving $u^2$, hence the exponent shift $2/(2k)$) and
+$e^{|x|}$ (a population kernel at $\xi_0+Cb$).
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem standardIntegral1D_polynomial_second_order (β n ξ₀ b : ℝ) (c : ℕ → ℝ)
+    (h k D : ℕ) (hβ : 0 < β) (hn : 1 ≤ n) (hb : 0 < b) (hk : 0 < k) :
+    |Z_chart(ξ₀ + ∑_{j<D} c j u^(j+1)) - (1/(2k)) n^(-(h+1)/(2k)) S_{(h+1)/(2k)}(ξ₀)
+        - ∑ j ∈ range D, β c_j ((1/(2k)) n^(-(h+j+2)/(2k)) S_{(h+j+2)/(2k)+1/2}(ξ₀))|
+      ≤ (β C)^2/2 ((1/(2k)) n^(-(h+3)/(2k)) S_{(h+3)/(2k)+1}(ξ₀ + C b))
+        + tail₀ + ∑ j ∈ range D, |β c_j| tail_{1,j}
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The pointwise decomposition $e^{x}=1+x+R(x)$ splits the integrand into $g_0+g_1+g_2$ exactly as in
+unit~28; the new element is $g_1=u^he^{\rm pop}\cdot\beta\sqrt nu^k\sum_jc_ju^{j+1}$, which
+\texttt{Finset.mul\_sum} turns into a finite sum of first-order insertion integrands, integrated by
+\texttt{integral\_finsetSum} and evaluated termwise by the $p=1$ insertion identity (half-line minus tail).
+For the remainder, $|J(u)|\le Cu$ follows from \texttt{Finset.abs\_sum\_le\_sum\_abs} and
+$|c_j|u^{j+1}=|c_j|u^j\cdot u\le|c_j|b^j\cdot u$; then $x^2\le(\beta\sqrt nu^kCu)^2$ and
+$e^{|x|}\le e^{\beta\sqrt nu^kCb}$, the latter merging with the population kernel into the kernel at
+$\xi_0+Cb$. The remainder integral is the $p=2$ insertion at $h+2$, so its $n$-power is
+$n^{-(h+3)/(2k)}$ with no manual \texttt{rpow} arithmetic. The final rearrangement is again a
+universally quantified \texttt{key} identity with five real slots.
+
+\section{Roadblocks and resolutions}
+One: the remainder bound \texttt{hI₂} was stated with the opaque constants $a'$ and $C$ while the goal
+carries them unfolded; \texttt{rw [ha', hC] at hI₂} aligns them. The insertion identity at $p=2$ returns
+the order shift as $\uparrow 2/2$, normalised by \texttt{show ((2:ℕ):ℝ)/2 = 1 by norm\_num} inside the
+value computation rather than by a global \texttt{norm\_num} (which would also rewrite the
+natural-number casts in the statement).
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Finset.mul\_sum}, \texttt{integral\_finsetSum}, \texttt{Finset.abs\_sum\_le\_sum\_abs},
+\texttt{Finset.sum\_le\_sum}, \texttt{continuous\_finsetSum}. New: the polynomial-perturbation two-term
+expansion and the chart bound $|J(u)|\le Cu$ for a polynomial without constant term.
+
+\section{Lessons}
+The step from one monomial to a polynomial costs one inequality ($|J(u)|\le Cu$) and one
+\texttt{Finset.mul\_sum}; everything else is reuse. The same pattern should carry the all-orders
+theorem to polynomial $\xi$ once the tree coefficients $\xi_{\mathbf n,p}$ (multinomial expansion of
+$J^p$) are named.
+
+\section{Follow-ups}
+Higher orders for polynomial $\xi$ (the one-dimensional \texttt{eq:flucttreeterms}), the $O$-packaging
+of this unit, and the multivariate tree.
+\end{document}
