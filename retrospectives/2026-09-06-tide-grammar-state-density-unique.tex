@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{State density II: the leading coefficient for a unique minimal coordinate\\
+$n^{p/2}Z(n)\to\dfrac1{k_0}\int_{(0,b]^d}v^{h'}(v^{k'})^{-p}A_{p-1}(\xi(0,v))\,\eta(0,v)\,dv$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The first formalised ``state density'' coefficient. With coordinates $(u,v)$, $u\in(0,b]$ the unique
+coordinate attaining the minimal candidate exponent $p=(h_0+1)/k_0$ and $v\in(0,b]^d$ the
+noncritical ones ($q_i>p$), for $\xi,\eta$ jointly continuous and Lipschitz at $u=0$ uniformly in $v$,
+\begin{align*}
+&n^{p/2}\int_v v^{h'}\!\int_0^b u^{h_0}\eta(u,v)e^{-\beta n(u^{k_0}v^{k'})^2+\beta\sqrt n\,u^{k_0}v^{k'}\xi(u,v)}\,du\,dv\\
+&\qquad\longrightarrow\frac1{k_0}\int_v v^{h'}(v^{k'})^{-p}A_{p-1}(\xi(0,v))\,\eta(0,v)\,dv .
+\end{align*}
+The leading coefficient is the fluctuation mass $A_{p-1}(\xi(0,v))$, weighted by $\eta(0,v)$,
+integrated along the exceptional divisor $\{u=0\}$ against the density $v^{h'-k'p}$, integrable
+exactly because the other candidate exponents are strictly larger. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+For fixed $v$ the inner integral is the one-dimensional standard integral at scale
+$c=\sqrt n\,v^{k'}$ with data $\xi(\cdot,v),\eta(\cdot,v)$; unit~69 gives
+$c^pI_v(c)\to\frac1{k_0}A_{p-1}(\xi(0,v))\eta(0,v)$ and a bound uniform in $c$. Since
+$n^{p/2}=c^p(v^{k'})^{-p}$, dominated convergence in $v$ with the dominating function
+$Kv^{h'}(v^{k'})^{-p}$ finishes.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def stateIntegral (β b n : ℝ) (h₀ k₀ : ℕ) {d : ℕ} (k' h' : Fin d → ℕ)
+    (ξ η : ℝ → (Fin d → ℝ) → ℝ) : ℝ :=
+  ∫ v, ((∏ i, v i ^ h' i) * ∫ u in Ioc 0 b, u ^ h₀ * η u v
+      * Real.exp (-β * n * (u ^ k₀ * ∏ i, v i ^ k' i) ^ 2
+        + β * Real.sqrt n * (u ^ k₀ * ∏ i, v i ^ k' i) * ξ u v)) ∂(boxMeasure b d)
+noncomputable def divisorDensity ... (v : Fin d → ℝ) : ℝ :=
+  (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-(((h₀ : ℝ) + 1) / k₀))
+    * (1 / (k₀ : ℝ) * weightedMass β (ξ 0 v) (((h₀ : ℝ) + 1) / k₀ - 1) * η 0 v)
+theorem stateIntegral_tendsto ...
+    (hq : ∀ i, ((h₀ : ℝ) + 1) / k₀ < ((h' i : ℝ) + 1) / k' i) ...
+    (hξ : ∀ u ∈ Ioc 0 b, ∀ v, |ξ u v - ξ 0 v| ≤ C * u)
+    (hη : ∀ u ∈ Ioc 0 b, ∀ v, |η u v - η 0 v| ≤ C' * u) :
+    Tendsto (fun n => n ^ (((h₀ : ℝ) + 1) / k₀ / 2) * stateIntegral β b n h₀ k₀ k' h' ξ η)
+      atTop (𝓝 (∫ v, divisorDensity β h₀ k₀ k' h' ξ η v ∂(boxMeasure b d)))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\texttt{tendsto\_integral\_filter\_of\_dominated\_convergence} over the box measure with
+$F_n(v)=n^{p/2}v^{h'}I_v(\sqrt n\,v^{k'})$. Measurability of $F_n$ is Fubini's
+\texttt{StronglyMeasurable.integral\_prod\_right'} applied to the jointly continuous integrand. The
+bound uses unit~69's uniform estimate together with $n^{p/2}=c^p(v^{k'})^{-p}$ and the factorisation
+$v^{h'}(v^{k'})^{-p}=\prod_iv_i^{h'_i}(v_i^{k'_i})^{-p}$ (\texttt{Real.finsetProd\_rpow}); the
+dominating product is integrable by \texttt{Integrable.fintype\_prod}, each factor being
+$v_i^{h'_i-k'_ip}$ with exponent $>-1$ (\texttt{intervalIntegrable\_rpow'}). The pointwise limit is
+unit~69's theorem composed with $c=\sqrt n\,v^{k'}\to\infty$. Bounds $L,M$ for $\xi,\eta$ come from
+continuity on the compact closed box.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item In a nested integral the trailing \texttt{∂μ} attaches to the innermost \texttt{∫}; parenthesise
+the inner integral.
+\item A binder \texttt{∏ i, f i * g} swallows \texttt{g}; parenthesise the product before multiplying.
+\item \texttt{Integrable.fintype\_prod} lives in \texttt{Mathlib.MeasureTheory.Integral.Pi}, outside the
+import closure; \texttt{Real.finset\_prod\_rpow} is deprecated for \texttt{Real.finsetProd\_rpow},
+stated in the opposite direction.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{tendsto\_integral\_filter\_of\_dominated\_convergence},
+\texttt{StronglyMeasurable.integral\_prod\_right'}, \texttt{Integrable.fintype\_prod},
+\texttt{Real.finsetProd\_rpow}, \texttt{IsCompact.exists\_bound\_of\_continuousOn}. New: the state
+integral, the divisor density, and the leading coefficient theorem.
+
+\section{Lessons}
+The state-density coefficient is reached without any Mellin transform: once the one-dimensional theory
+is available at a general scale with a uniform bound, dominated convergence along the divisor does
+the rest. The integrability of the divisor density is exactly the ``strictly larger exponents''
+condition.
+
+\section{Outcome}
+For a unique minimal coordinate the leading coefficient of \texttt{thm:TaylorTree} is formalised for
+general (Lipschitz) $\xi,\eta$: $C=\frac1{k_0}\int v^{h'-k'p}A_{p-1}(\xi(0,v))\eta(0,v)\,dv$. Next:
+positivity and the asymptotic-equivalence form, the Fubini bridge to the $(d+1)$-dimensional box, and
+then several minimal coordinates (the logarithmic case).
+\end{document}
