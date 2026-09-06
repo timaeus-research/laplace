@@ -171,3 +171,4 @@ import Laplace.Grammar.Hermite
 import Laplace.Grammar.RegularCase
 import Laplace.Grammar.OrderDerivative
 import Laplace.Grammar.ParabolicCylinderZero
+import Laplace.Grammar.LogInsertions

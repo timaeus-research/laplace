@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Order-derivatives of all degrees: $\partial_\lambda^k S_\lambda(a)=\int_0^\infty (\log t)^k
+t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\,dt$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 13 of the grammar-paper \S4 autoformalisation: the general-$k$ form of
+\texttt{eq:log\_lambda\_derivative}, $\partial_\lambda^k S_\lambda(a)=\int_0^\infty(\log t)^k
+t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\,dt$. The $k$-th derivative in the order parameter inserts
+$(\log t)^k$ under the integral; this is the analytic backbone of the paper's log-insertion identities
+(\texttt{lem:log\_shift}, \texttt{prop:LogODE}, \texttt{lem:log\_generating}), which tie SLT pole
+multiplicities to order-derivatives. Proved by induction on $k$ on top of the $k=1$ machinery. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~11 established $k=1$ ($\partial_\lambda S_\lambda=\int(\log t)t^{\lambda-1}e^{\cdots}$). Iterating
+requires two things at every degree: the $|\log t|^k$-weighted integrand must be integrable (the
+dominating function grows one $\log$ per differentiation), and each differentiation step must be
+justified under the integral sign.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_log_pow_le (t δ : ℝ) (m : ℕ) (ht : 0 < t) (hδ : 0 < δ) :
+    |Real.log t| ^ m ≤ (m / δ) ^ m * (t ^ δ + t ^ (-δ))
+
+theorem log_pow_fluctuation_integrableOn (β c a : ℝ) (m : ℕ) (hβ : 0 < β) (hc : 0 < c) :
+    IntegrableOn (fun t => |Real.log t|^m * t^(c-1) * Real.exp (-β*t + β*a*Real.sqrt t)) (Set.Ioi 0)
+
+theorem hasDerivAt_logpow_integral (β lam a : ℝ) (k : ℕ) (hβ : 0 < β) (hlam : 0 < lam) :
+    HasDerivAt (fun l => ∫ t in Set.Ioi 0, (Real.log t)^k * t^(l-1) * Real.exp (...))
+      (∫ t in Set.Ioi 0, (Real.log t)^(k+1) * t^(lam-1) * Real.exp (...)) lam
+
+theorem iteratedDeriv_fluctuation_order (β a : ℝ) (hβ : 0 < β) (k : ℕ) :
+    ∀ lam, 0 < lam → iteratedDeriv k (fun l => fluctuation β l a) lam
+      = ∫ t in Set.Ioi 0, (Real.log t)^k * t^(lam-1) * Real.exp (...)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\textbf{Power bound.} Raising the $k=1$ bound $|\log t|\le(t^{\varepsilon}+t^{-\varepsilon})/\varepsilon$
+to the $m$-th power is done per regime: for $t\ge1$, $\log t\le(m/\delta)t^{\delta/m}$ so
+$(\log t)^m\le(m/\delta)^m t^{\delta}$ (\texttt{pow\_le\_pow\_left₀} then
+$(t^{\delta/m})^m=t^\delta$); symmetrically for $t<1$ via $t^{-1}$. This keeps the exponent at $\pm\delta$
+(rather than a binomial spread) and reduces to two $t^q e^{-bt}$ integrals with $q=c-1\pm c/2>-1$.
+
+\textbf{Generic step.} \texttt{hasDerivAt\_logpow\_integral} differentiates the $(\log t)^k$ integral in
+$\lambda$ exactly as the $k=1$ case, with the pointwise derivative $(\log t)^k\cdot(t^{l-1}\log t)=
+(\log t)^{k+1}t^{l-1}$ (\texttt{pow\_succ}) and the dominating function the $|\log t|^{k+1}$-weighted
+two-power bound.
+
+\textbf{Induction.} \texttt{iteratedDeriv\_succ} peels one derivative; the integral representation and the
+$k$-th iterated derivative agree on the \emph{open} set $(0,\infty)$ (induction hypothesis), so they are
+eventually equal near any $\lambda>0$, and \texttt{Filter.EventuallyEq.deriv\_eq} transfers the derivative
+to $g_k$, which \texttt{hasDerivAt\_logpow\_integral} evaluates. The base case is $(\log t)^0=1$.
+
+\section{Roadblocks and resolutions}
+The whole file compiled on the first build --- the $k=1$ unit's playbook transferred cleanly. The three
+points of care:
+\begin{itemize}
+\item The integrand's norm factorises as $|\log t|^k\cdot t^{l-1}\cdot e^{\cdots}$ via
+\texttt{abs\_mul}$+$\texttt{abs\_pow}$+$\texttt{abs\_of\_pos} (the polynomial and exponential factors are
+positive), never \texttt{abs\_of\_nonneg} on the whole (signed) product.
+\item The induction needs a \emph{neighbourhood} equality, not a pointwise one, to differentiate; since
+the two functions agree on all of $(0,\infty)$ --- an open set containing $\lambda$ --- \texttt{Filter.eventuallyEq\_of\_mem
+(Ioi\_mem\_nhds hlam)} supplies it.
+\item Keeping the two dominating exponents in the form $\pm(c/2)+(c-1)$ (as \texttt{Real.rpow\_add}
+produces them) avoids any exponent-normalisation rewrite.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied \texttt{Real.log\_le\_rpow\_div}, \texttt{pow\_le\_pow\_left₀}, the parametric-FTC lemma,
+\texttt{iteratedDeriv\_succ}/\texttt{\_zero}, and \texttt{Filter.EventuallyEq.deriv\_eq}. New: the
+$|\log t|^m$ power bound, the $|\log t|^m$-weighted fluctuation integrability (all $m$), the generic
+order-differentiation step, and the general-$k$ log-insertion identity itself.
+
+\section{Lessons}
+An iterated parameter-derivative identity is cleanest as a \emph{generic single step}
+($\int(\log)^k\to\int(\log)^{k+1}$) plus an \texttt{iteratedDeriv} induction, with the step's dominating
+function carrying one extra $\log$; the induction's differentiation is licensed by open-set (hence
+neighbourhood) agreement of the closed form with the iterated derivative, transferred by
+\texttt{EventuallyEq.deriv\_eq}.
+
+\section{Follow-ups}
+With $\partial_\lambda^k S$ available as log insertions, \texttt{lem:log\_shift}
+($\int t^{\nu-1}(c-\log t)^p e^{\cdots}=(c-\partial_\nu)^p S_\nu$, binomial theorem),
+\texttt{prop:LogODE} (differentiate the Weber ODE $k$ times in $\lambda$), and \texttt{lem:log\_generating}
+($\sum \tfrac{z^p}{p!}(c-\partial_\nu)^p S_\nu=e^{zc}S_{\nu-z}$, Taylor's theorem in the order) are the
+natural next targets. The ladder-operator commutator $[b,b^\dagger]=1$ still wants a Weyl-algebra
+framework.
+\end{document}
