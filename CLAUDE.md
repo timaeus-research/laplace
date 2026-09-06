@@ -315,6 +315,19 @@ scoped open and write `Nat.doubleFactorial (…)` explicitly; the closed-form
 lemmas stated with `‼` still apply, since `‼` is notation for the same
 constant.
 
+**New-file header: include `Authors:` or the header linter warns.** The Mathlib
+`linter.style.header` emits `Copyright too short!` on fresh elaboration when the copyright
+block lacks an `Authors:` line. Most existing seabed files predate the linter and carry the
+warning latently (cached, so it only surfaces when the file is rebuilt). For a warning-clean
+build, give new files the full Mathlib header form:
+```
+/-
+Copyright (c) 2026 Timaeus. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Timaeus
+-/
+```
+
 **A `lake build` proves nothing about a file outside the import
 closure.** The build gate is vacuous for a new file until
 `Laplace.lean` imports it: `lake build` and CI both pass while the

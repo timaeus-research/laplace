@@ -1,0 +1,56 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{∼}{\ensuremath{\sim}}
+\title{The excess-kurtosis power law}
+\author{Tide retrospective, laplace seabed}
+\date{2026-09-06}
+\begin{document}
+\sloppy
+\maketitle
+\section{Setting}
+Two earlier tides on the laplace monomial track gave the excess kurtosis
+$\langle x^4\rangle - 3\langle x^2\rangle^2$ of the symmetric weight $\exp(-t\,x^{2k}/(2k)!)$ in
+closed form, and packaged the even moment $\langle x^{2j}\rangle_t$ as an asymptotic power law. This
+tide closes the small remaining gap: the asymptotic form of the excess kurtosis itself.
+\section{The thing formalised}
+For $k\ge 1$ and every $t>0$,
+\[
+  \langle x^4\rangle - 3\langle x^2\rangle^2 = K(k)\cdot t^{-2/k},\qquad
+  K(k) := (2k)!^{\,2/k}\Big(\tfrac{\Gamma(5/(2k))}{\Gamma(1/(2k))} - 3\big(\tfrac{\Gamma(3/(2k))}{\Gamma(1/(2k))}\big)^2\Big),
+\]
+hence $\sim K(k)\,t^{-2/k}$ at $\mathrm{atTop}$. The Lean additions are \texttt{kurtosisConst} and
+the three rungs \texttt{\_eq\_const\_mul\_rpow}, \texttt{\_rescaled\_tendsto},
+\texttt{\_isEquivalent\_rpow}. At $k=1$ the constant $K(1)=0$: a Gaussian's excess kurtosis, and its
+scaling, are trivially zero.
+\section{Proof strategy}
+The key observation is that the excess kurtosis, though a difference of two moments, involves two
+even moments whose $t$-powers coincide --- both scale as $((2k)!/t)^{2/k}$ --- so the difference is
+still a single pure power $K(k)\,t^{-2/k}$, not a genuine two-term asymptotic. The closed form from
+the earlier tide already exposes that common factor; \texttt{Real.div\_rpow} peels
+$((2k)!/t)^{2/k}$ into $(2k)!^{2/k}\,t^{-2/k}$ and \texttt{ring} finishes. The rescaled
+\texttt{Tendsto} and the \texttt{IsEquivalent} rungs are the constant-sequence and reflexivity
+arguments used verbatim for the moment asymptotic.
+\section{Roadblocks and resolutions}
+The mathematics compiled on the first attempt. The only friction was a Mathlib \texttt{style.header}
+linter warning (``Copyright too short!'') that surfaces on fresh elaboration when the copyright block
+omits an \texttt{Authors:} line; adding one (the Mathlib-standard header form) silenced it. Most
+existing seabed files predate this linter and carry the warning latently.
+\section{What was Mathlib, what was new}
+Only the \texttt{Real.rpow} algebra and the \texttt{IsEquivalent}/\texttt{Tendsto} API came from
+Mathlib. The excess-kurtosis power law and its constant are new, completing the asymptotic form of
+the connected four-point function on the monomial track. No GPT consult was needed.
+\end{document}
