@@ -1,0 +1,66 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{State density I: the one-dimensional standard integral at a general scale}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+First unit of the state-density programme (the leading coefficient of \texttt{thm:TaylorTree} for
+general $\xi,\eta$ as an integral of the fluctuation mass along the exceptional divisor). The
+one-dimensional standard integral $I(c)=\int_0^bu^h\eta(u)e^{-\beta(cu^k)^2+\beta cu^k\xi(u)}\,du$ is
+studied as a function of an arbitrary scale $c\to\infty$: $c^pI(c)\to\tfrac1kA_{p-1}(\xi(0))\eta(0)$
+for data Lipschitz at $0$ and without any sign condition on $\eta(0)$, and
+$c^p|I(c)|\le Me^{\beta L^2/2}\tfrac1k\int_0^\infty s^{p-1}e^{-(\beta/2)s^2}ds$ uniformly in $c>0$
+when $|\xi|\le L$, $|\eta|\le M$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Along the divisor the inner one-dimensional integral has scale $c=\sqrt n\prod_jv_j^{k_j}$ depending
+on the outer coordinates; the limit theorem is therefore needed in the scale variable, and dominated
+convergence in the outer coordinates needs a bound uniform in the scale.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def oneDScale (β b c : ℝ) (h k : ℕ) (ξ η : ℝ → ℝ) : ℝ :=
+  ∫ u in Ioc 0 b, u ^ h * η u * Real.exp (-β * (c * u ^ k) ^ 2 + β * (c * u ^ k) * ξ u)
+theorem oneDScale_tendsto ... :
+    Tendsto (fun c => c ^ (((h : ℝ) + 1) / k) * oneDScale β b c h k ξ η) atTop
+      (𝓝 (1 / (k : ℝ) * weightedMass β ξ₀ (((h : ℝ) + 1) / k - 1) * η₀))
+theorem oneDScale_abs_le ... (hξL : ∀ u ∈ Ioc 0 b, |ξ u| ≤ L)
+    (hηM : ∀ u ∈ Ioc 0 b, |η u| ≤ M) :
+    c ^ (((h : ℝ) + 1) / k) * |oneDScale β b c h k ξ η|
+      ≤ M * Real.exp (β * L ^ 2 / 2) * (1 / (k : ℝ))
+        * weightedMass (β / 2) 0 (((h : ℝ) + 1) / k - 1)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The limit is unit~34's big-$O$ statement (which needs no $\eta(0)\ne0$) turned into a limit of
+$n^{p/2}F(n)$ and composed with $n=c^2$; $\sqrt{c^2}=c$ and $(c^2)^{p/2}=c^p$ for $c>0$. The bound
+dominates the integrand pointwise by $u^hMe^{\beta L^2/2}e^{-(\beta/2)(cu^k)^2}$ (unit~23's Gaussian
+inequality with $t=(cu^k)^2$), then applies the chart power substitution and the scaling lemma of
+unit~44 to reduce to the Gaussian moment $\int_0^\infty s^{p-1}e^{-(\beta/2)s^2}$, a
+\texttt{weightedMass} at temperature $\beta/2$ and $a=0$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The Gaussian inequality is stated with $\beta L\sqrt t$; matching $\beta sL$ needed a
+\texttt{calc} step with \texttt{ring\_nf} rather than \texttt{rwa}.
+\item \texttt{gcongr} on the final product left the inner inequality open; supply
+\texttt{mul\_le\_mul\_of\_nonneg\_left} explicitly.
+\end{itemize}
+
+\section{Outcome}
+Both inputs for integrating the one-dimensional theory along the divisor are in place; the next unit
+assembles them by Fubini and dominated convergence for a unique minimal coordinate.
+\end{document}
