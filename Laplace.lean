@@ -196,3 +196,4 @@ import Laplace.Grammar.QuadraticKernel
 import Laplace.Grammar.LogTwoD
 import Laplace.Grammar.LogTwoDProduct
 import Laplace.Grammar.TwoDNoLog
+import Laplace.Grammar.LogSquaredThreeD
