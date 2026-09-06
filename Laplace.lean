@@ -177,3 +177,4 @@ import Laplace.Grammar.LogODE
 import Laplace.Grammar.Ladder
 import Laplace.Grammar.LogGenerating
 import Laplace.Grammar.Extended
+import Laplace.Grammar.Smooth
