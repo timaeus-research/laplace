@@ -203,3 +203,4 @@ import Laplace.Grammar.LogPowerGeneralD
 import Laplace.Grammar.MixedThreeD
 import Laplace.Grammar.LogTwoDSecondOrder
 import Laplace.Grammar.LogSquaredSecondOrder
+import Laplace.Grammar.IteratedLogExpansion
