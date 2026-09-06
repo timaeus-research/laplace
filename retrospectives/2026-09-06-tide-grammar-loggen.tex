@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The log-insertion generating function:
+$\sum_p\tfrac{z^p}{p!}(c-\partial_\nu)^p S_\nu=e^{zc}S_{\nu-z}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 18 of the grammar-paper \S4 autoformalisation: the generating function \texttt{lem:log\_generating}.
+Summing the log-shift operator against $z^p/p!$ gives $\sum_p\frac{z^p}{p!}\int_0^\infty
+t^{\nu-1}(c-\log t)^p e^{-\beta t+\beta a\sqrt t}\,dt=e^{zc}S_{\nu-z}(a)$ for $|z|<\nu$ --- Taylor's
+theorem in the order, $e^{-z\partial_\nu}S_\nu=S_{\nu-z}$. Proved by interchanging the exponential
+series with the integral. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+This is the last of the log-insertion family (\texttt{eq:log\_lambda\_derivative} $\to$
+\texttt{lem:log\_shift} $\to$ this). Where log-shift packaged \emph{one} shifted logarithm as a finite
+differential operator $(c-\partial_\nu)^p$, the generating function sums them: the whole translation
+$e^{-z\partial_\nu}$ acts as $\nu\mapsto\nu-z$, and the closed sum is $e^{zc}S_{\nu-z}$.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_log_generating (β a c z ν : ℝ) (hβ : 0 < β) (hz : |z| < ν) :
+    HasSum (fun p : ℕ => (z ^ p / p.factorial)
+        * ∫ t in Set.Ioi 0, (c - Real.log t)^p * t^(ν-1) * Real.exp (-β*t + β*a*Real.sqrt t))
+      (Real.exp (z * c) * fluctuation β (ν - z) a)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The engine is \texttt{hasSum\_integral\_of\_dominated\_convergence}: from a family $F_p$ with each $F_p$
+integrable, a summable pointwise-dominating bound, and a pointwise \texttt{HasSum} to $f$, it concludes
+$\mathrm{HasSum}\,(\int F_p)\,(\int f)$.
+\begin{itemize}
+\item $F_p(t)=\frac{z^p}{p!}(c-\log t)^p t^{\nu-1}e^{\cdots}$; the pointwise limit is
+$f(t)=e^{z(c-\log t)}t^{\nu-1}e^{\cdots}$ (real exponential series
+\texttt{NormedSpace.expSeries\_div\_hasSum\_exp} through \texttt{Real.exp\_eq\_exp\_$\mathbb R$},
+times the constant $t^{\nu-1}e^{\cdots}$).
+\item The bound $\frac{(|z||c-\log t|)^p}{p!}t^{\nu-1}e^{\cdots}$ is summable
+(\texttt{Real.summable\_pow\_div\_factorial}) with sum $e^{|z||c-\log t|}t^{\nu-1}e^{\cdots}$
+(\texttt{tsum\_mul\_right} $+$ the exp series); this dominating function is integrable for $|z|<\nu$,
+via $|c-\log t|\le|c|+|\log t|$ and $e^{|z||\log t|}\le t^{|z|}+t^{-|z|}$, reducing to two fluctuation
+integrands at orders $\nu\pm|z|>0$.
+\item Finally $\int F_p=\frac{z^p}{p!}\int(c-\log t)^p t^{\nu-1}e^{\cdots}$ (the log-shift integral) and
+$\int f=e^{zc}\int t^{\nu-z-1}e^{\cdots}=e^{zc}S_{\nu-z}$, using
+$e^{z(c-\log t)}=e^{zc}t^{-z}$ ($t^{-z}=e^{-z\log t}$, \texttt{Real.rpow\_def\_of\_pos}) and
+$t^{-z}t^{\nu-1}=t^{\nu-z-1}$.
+\end{itemize}
+
+\section{Roadblocks and resolutions}
+Almost every friction was let-binding / beta bookkeeping around the dominated-convergence scaffold:
+\begin{itemize}
+\item The condition $|z|<\nu$ is exactly what keeps $\nu-|z|>0$, so both dominating fluctuation
+integrands exist --- the same integrability that fails for $\nu\le|z|$.
+\item \texttt{ring\_nf} cannot close an equality of \texttt{rpow}s with equal-but-unnormalised exponents
+($t^{-z}t^{\nu-1}=t^{\nu-z-1}$); \texttt{rw [$\leftarrow$ Real.rpow\_add]; congr 1; ring} is the reliable
+pattern (peel the base, prove the exponent by \texttt{ring}).
+\item \texttt{setIntegral\_congr\_fun} presents its pointwise goal with the target integrand as an
+\emph{un-beta-reduced} applied lambda, hiding $t^{\nu-z-1}$; writing the \texttt{show} with the explicit
+right-hand side (and \texttt{simp only []} to beta-reduce after unfolding the exponential) exposes it.
+\item Transferring integrability of $\sum'_p\mathrm{bound}$ to the closed form uses
+\texttt{Integrable.congr} over the pointwise \texttt{htsum}, not a \texttt{rw} (the tsum pattern does not
+match syntactically). \texttt{abs\_add} is now \texttt{abs\_add\_le}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied the dominated-convergence \texttt{HasSum} lemma, the real exponential series and its
+summability, \texttt{tsum\_mul\_right}, and \texttt{Real.rpow\_def\_of\_pos}. New: the $t^{|z|}+t^{-|z|}$
+log-exp bound, the integrability of the exponential-of-$|\log|$ dominating function, and the
+series-integral interchange yielding the closed generating function.
+
+\section{Lessons}
+For a series of integrals converging to an integral, \texttt{hasSum\_integral\_of\_dominated\_convergence}
+is far cleaner than \texttt{integral\_tsum} plus a moment-bound summability argument: the summable bound
+and its integrable sum are packaged by \texttt{tsum\_mul\_right} $+$ the exp series, and the whole
+$p!/\nu^p$ moment estimate is avoided --- only the single dominating function's integrability (for
+$|z|<\nu$) is needed.
+
+\section{Follow-ups}
+This completes the entire log-insertion subsection of \S4. The sole remaining \S4 item is
+\texttt{defn:S\_negative}/\texttt{lem:extended\_ladder}: extending $S_\lambda$ to $\lambda\le0$ by the
+recursion $S_\lambda=\frac{\sqrt\beta}{2\lambda}b\,S_{\lambda+1/2}$ and lifting the ladder there --- a
+recursive definition plus analyticity in $\lambda$, on which the general-$Q$ number operator rests.
+\end{document}
