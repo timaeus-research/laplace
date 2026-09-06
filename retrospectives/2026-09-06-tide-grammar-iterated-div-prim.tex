@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The iterated expansion for a general base:\\
+\texttt{LogBase} and the weighted primitives $F_\gamma$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit~43's complete polynomial-in-$\log$ expansion of the iterated primitives
+$H_{m+1}(x)=\int_0^xH_m(t)/t\,dt$ used only four properties of the base $H_0$. This unit isolates them
+as a predicate \texttt{LogBase G A M C δ} (measurable, $0\le G\le A$, $G(x)\le Cx^\delta$ on $(0,1]$
+with $\delta>0$, $|G(L)-A|\le M/L$ for $L\ge1$), redoes the construction with all integrals over
+$(0,x]$, and proves $|H^G_m(L)-\sum_{i\le m}c_{m,i}\log^iL|\le M/L$ with the same recursive
+coefficients and $c_{m,m}=A/m!$. The weighted primitive $F_\gamma$ ($\gamma>-1$) is an admissible base
+with $(A,M,C,\delta)=(A_\gamma,A_{\gamma+1},E/(\gamma+1),\gamma+1)$, which is what the $d$-fold
+general-$(k,h)$ theory needs. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The transfer step $\theta_{m+1}(L)=-\int_L^\infty\theta_m/x$ requires, at each level, that $H_m/t$ be
+integrable on $(0,L]$ and that $H_m$ be measurable. With no continuity available for a general base,
+both are obtained structurally: $H_{m+1}$ is monotone (integral of a nonnegative function over a
+growing set), hence measurable and bounded on $(1,L]$ by $H_{m+1}(L)$, while near $0$ the bound
+$H_m\le(C/\delta^m)x^\delta$ propagates because $\int_0^xt^{\delta-1}=x^\delta/\delta$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def iterDivPrim (G : ℝ → ℝ) : ℕ → ℝ → ℝ
+  | 0 => G
+  | m + 1 => fun x => ∫ t in Ioc 0 x, iterDivPrim G m t / t
+structure LogBase (G : ℝ → ℝ) (A M C δ : ℝ) : Prop where
+  measurable : Measurable G
+  nonneg : ∀ x, 0 ≤ G x
+  le_mass : ∀ x, G x ≤ A
+  le_pow : ∀ x, 0 < x → x ≤ 1 → G x ≤ C * x ^ δ
+  δ_pos : 0 < δ
+  tail : ∀ L, 1 ≤ L → |G L - A| ≤ M / L
+theorem iterDivPrim_props (hG : LogBase G A M C δ) (m : ℕ) :
+    Measurable (iterDivPrim G m) ∧ (∀ x, 0 ≤ iterDivPrim G m x)
+      ∧ (∀ x, 0 < x → x ≤ 1 → iterDivPrim G m x ≤ C / δ ^ m * x ^ δ)
+      ∧ (∀ L, IntegrableOn (fun t => iterDivPrim G m t / t) (Ioc 0 L))
+theorem iterDivPrim_expansion (hG : LogBase G A M C δ) (m : ℕ) (L : ℝ) (hL : 1 ≤ L) :
+    |iterDivPrim G m L - ∑ i ∈ Finset.range (m + 1), divCoeff G A m i * Real.log L ^ i|
+      ≤ M / L
+theorem weightedPrimitive_logBase (β a γ : ℝ) (hβ : 0 < β) (hγ : -1 < γ) :
+    LogBase (weightedPrimitive β a γ) (weightedMass β a γ) (weightedMass β a (γ + 1))
+      (Real.exp (β * a ^ 2 / 2) / (γ + 1)) (γ + 1)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+A single helper, \texttt{div\_integrableOn\_of\_bounds}, turns ``measurable, nonnegative, $\le C't^\delta$
+near $0$, bounded on $(1,L]$'' into integrability of $H/t$ on $(0,L]$. The per-level induction
+\texttt{iterDivPrim\_props} threads exactly these four facts, using monotonicity for measurability and
+for the bound on $(1,L]$. The coefficient recursion, remainder recursion and uniform bound are then
+unit~43's proofs with \texttt{iterLogPrim} replaced by \texttt{iterDivPrim} (no interval-integral
+conversion is needed since the definition is already over \texttt{Ioc}) and with continuity replaced by
+the measurability from the props. The base instance for $F_\gamma$ collects unit~45's bounds; for
+$x<0$ the primitive is the integral over an empty set.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{le\_or\_lt} no longer exists on this pin; use \texttt{le\_or\_gt}.
+\item \texttt{simpa} could not see through \texttt{iterDivPrim G 0}; rewrite with the definitional
+lemma first.
+\item An unused \texttt{LogBase} hypothesis in the tail bound was flagged by the linter; the lemma is
+stated for arbitrary $G,A,M$.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Monotone.measurable}, \texttt{setIntegral\_mono\_set}, \texttt{div\_le\_self},
+\texttt{Real.rpow\_add\_one}, \texttt{integral\_rpow}, \texttt{Finset.measurable\_sum},
+\texttt{Real.measurable\_log}. New: the \texttt{LogBase} abstraction, the per-level invariant, and the
+base-independent expansion.
+
+\section{Lessons}
+Abstracting after two concrete instances (units~43 and~45) is the right moment: the hypotheses were
+already known to be sufficient, so the abstraction cost one file and no new mathematics. Monotonicity is
+again the key to measurability and boundedness without continuity.
+
+\section{Outcome}
+The complete expansion of the iterated primitives is available for every admissible base, in particular
+for every weighted primitive $F_\gamma$. Next: the $d$-fold chart recursion with general $(k,h)$ and all
+candidate exponents equal, reducing to \texttt{iterDivPrim (weightedPrimitive β a (p-1))} and giving
+$Z_d(n)\sim\big(\prod_ik_i^{-1}\big)\frac{A_{p-1}}{2^{d-1}(d-1)!}\,n^{-p/2}(\log n)^{d-1}$.
+\end{document}
