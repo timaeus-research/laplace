@@ -40,12 +40,16 @@ one more substitution and one more scaling.
 \section{The things formalised}
 {\small
 \begin{verbatim}
-theorem integral_Ioc_pow_mul_comp_pow (h k : ℕ) (b : ℝ) (g : ℝ → ℝ) (hk : 0 < k) (hb : 0 < b) :
+theorem integral_Ioc_pow_mul_comp_pow (h k : ℕ) (b : ℝ) (g : ℝ → ℝ)
+    (hk : 0 < k) (hb : 0 < b) :
     (∫ u in Ioc 0 b, u ^ h * g (u ^ k))
       = 1 / (k : ℝ) * ∫ s in Ioc 0 (b ^ k), s ^ (((h : ℝ) + 1) / k - 1) * g s
-theorem integral_Ioc_rpow_mul_comp_mul_left (γ d L : ℝ) (G : ℝ → ℝ) (hd : 0 < d) (hL : 0 ≤ L) :
-    (∫ s in Ioc 0 L, s ^ γ * G (d * s)) = d ^ (-(γ + 1)) * ∫ x in Ioc 0 (d * L), x ^ γ * G x
-noncomputable def weightedPrimitive (β a γ x : ℝ) : ℝ := ∫ t in Ioc 0 x, t ^ γ * quadKernel β a t
+theorem integral_Ioc_rpow_mul_comp_mul_left (γ d L : ℝ) (G : ℝ → ℝ)
+    (hd : 0 < d) (hL : 0 ≤ L) :
+    (∫ s in Ioc 0 L, s ^ γ * G (d * s))
+      = d ^ (-(γ + 1)) * ∫ x in Ioc 0 (d * L), x ^ γ * G x
+noncomputable def weightedPrimitive (β a γ x : ℝ) : ℝ :=
+  ∫ t in Ioc 0 x, t ^ γ * quadKernel β a t
 theorem twoDGeneral_eq ... (hn : 0 < n) (hb : 0 < b) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) :
     twoDGeneral β a b n h₁ h₂ k₁ k₂
       = 1 / ((k₁ : ℝ) * k₂)
