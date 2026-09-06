@@ -1,0 +1,71 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Free energy of the population chart integral:\\
+$-\log Z(n)=\tfrac p2\log n-m\log\log n+F_0+o(1)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Taking logarithms in the multiplicity theorem of unit~59 gives the free-energy form familiar from
+singular learning theory. Generically, $Z\sim C\,n^{-\lambda}(\log n)^m$ with $C>0$ implies
+$\log Z+\lambda\log n-m\log\log n\to\log C$; applied to the box integral this yields
+$-\log\int_{(0,b]^{D+2}}u^hf(\sqrt n\,u^k)\,du=\tfrac p2\log n-m\log\log n+F_0+o(1)$ with $p/2$ half
+the minimal candidate exponent and $m+1$ its multiplicity, for any exponent vector. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+An asymptotic equivalence $Z\sim v$ with $v$ eventually nonzero is the statement $Z/v\to1$; since
+$\log$ is continuous at $1$, $\log(Z/v)\to0$, and $\log v$ is computed exactly for
+$v=Cn^{-\lambda}(\log n)^m$ when $n>1$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem tendsto_log_of_isEquivalent_powLog {Z : ℝ → ℝ} {C lam : ℝ} {m : ℕ} (hC : 0 < C)
+    (hZ : Z ~[atTop] fun n => C * (n ^ (-lam) * Real.log n ^ m)) :
+    Tendsto (fun n => Real.log (Z n) + lam * Real.log n - m * Real.log (Real.log n))
+      atTop (𝓝 (Real.log C))
+theorem boxIntegralFin_freeEnergy (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) (D : ℕ)
+    (k h : Fin (D + 2) → ℕ) (hk : ∀ i, 0 < k i) :
+    ∃ (p : ℝ) (m : ℕ) (F₀ : ℝ), (∀ i, p ≤ finExp k h i) ∧
+      m + 1 = (Finset.univ.filter fun i => finExp k h i = p).card ∧
+      Tendsto (fun n => -Real.log (boxIntegralFin β a b (Real.sqrt n) k h)
+        - (p / 2 * Real.log n - m * Real.log (Real.log n))) atTop (𝓝 F₀)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\texttt{isEquivalent\_iff\_tendsto\_one} gives $Z/v\to1$; \texttt{Filter.Tendsto.log} gives
+$\log(Z/v)\to0$; eventually $Z\ne0$ (as $Z/v>0$), so $\log(Z/v)=\log Z-\log v$ with
+$\log v=\log C-\lambda\log n+m\log\log n$ by \texttt{Real.log\_mul}, \texttt{Real.log\_rpow},
+\texttt{Real.log\_pow}. The free-energy statement negates and rearranges.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item None: first-pass compile.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{isEquivalent\_iff\_tendsto\_one}, \texttt{Filter.Tendsto.log}, \texttt{lt\_mem\_nhds},
+\texttt{Real.log\_div}, \texttt{Real.log\_rpow}. New: the generic logarithm lemma and the chart free
+energy.
+
+\section{Lessons}
+The free-energy form is one lemma away from the asymptotic equivalence; stating it makes the
+connection between the chart integrals and the SLT quantities $\lambda\log n-(m-1)\log\log n$ explicit.
+
+\section{Outcome}
+The population chart free energy has the Watanabe form with the exponent and multiplicity read off
+from $(k,h)$ by the candidate-exponent rule, in every dimension. This closes the constant-$\xi$
+programme (units~44--61) on the free-energy side as well.
+\end{document}
