@@ -215,3 +215,4 @@ import Laplace.Grammar.IterChartGeneral
 import Laplace.Grammar.IterChartMixed
 import Laplace.Grammar.IterChartExpansion
 import Laplace.Grammar.BoxIntegral
+import Laplace.Grammar.GeneralTower
