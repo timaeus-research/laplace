@@ -220,3 +220,4 @@ import Laplace.Grammar.PolyLogClass
 import Laplace.Grammar.SortedTower
 import Laplace.Grammar.BoxPerm
 import Laplace.Grammar.BoxGeneral
+import Laplace.Grammar.TreeTerm
