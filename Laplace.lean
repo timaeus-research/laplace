@@ -186,3 +186,4 @@ import Laplace.Grammar.Tail
 import Laplace.Grammar.MonomialTree
 import Laplace.Grammar.Asymptotic
 import Laplace.Grammar.SecondOrder
+import Laplace.Grammar.SecondOrderAsymptotic
