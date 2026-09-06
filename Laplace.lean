@@ -209,3 +209,4 @@ import Laplace.Grammar.WeightedMass
 import Laplace.Grammar.TwoDGeneralLog
 import Laplace.Grammar.TwoDGeneralNoLog
 import Laplace.Grammar.TwoDGeneralSwap
+import Laplace.Grammar.TwoDGeneralSecondOrder
