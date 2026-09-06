@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Divisible perturbations of the weight:\\
+$Z(a+u^k\tilde J,\ \eta_0+u^k\tilde\eta)\sim\eta_0\,C\,n^{-p/2}(\log n)^m$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The mechanism of unit~65 extends to the weight. For $\eta=\eta_0+u^k\tilde\eta$ and
+$\xi=a+u^k\tilde J$ with $\tilde\eta,\tilde J$ continuous on the box, the weight perturbation carries
+the extra factor $u^k=t/\sqrt n$, and $te^{-(\beta/4)t^2}\le4/\beta+1$ gives
+$|Z(\xi,\eta)-\eta_0Z(\xi,1)|\le\frac{L_\eta(4/\beta+1)}{\sqrt n}Z_{\beta/2,2a}(n)$ for $n\ge16L^2$.
+Combined with unit~65, $Z(\xi,\eta)-\eta_0Z(a,1)=O(n^{-1/2}Z_{\beta/2,2a})$, so for $\eta_0\ne0$ the
+standard integral is $\sim\eta_0Cn^{-p/2}(\log n)^m$ with the constant-$\xi$ exponent, multiplicity and
+constant: the leading coefficient is $\eta(0)$ times the population constant, as the paper's remark on
+the sign of $\eta$ anticipates. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Both perturbations vanish on the exceptional divisor to order $u^k$, which is exactly what makes them
+lower order: after the substitution $t=\sqrt n\,u^k$ each contributes a factor $t/\sqrt n$ or
+$t^2/\sqrt n$, absorbed by comparing with the kernel at the halved temperature.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def boxIntegralXiEta (β a b c : ℝ) {d : ℕ} (k h : Fin d → ℕ)
+    (J η : (Fin d → ℝ) → ℝ) : ℝ := ∫ u, (∏ i, u i ^ h i) * η u
+    * Real.exp (-β * (c * ∏ i, u i ^ k i) ^ 2 + β * (c * ∏ i, u i ^ k i) * (a + J u))
+    ∂(boxMeasure b d)
+theorem mul_exp_neg_quarter_le (β t : ℝ) (hβ : 0 < β) :
+    t * Real.exp (-(β / 4) * t ^ 2) ≤ 4 / β + 1
+theorem boxIntegralXiEta_sub_le ... (hnL : 16 * L ^ 2 ≤ n) :
+    |boxIntegralXiEta β a b (Real.sqrt n) k h (fun u => (∏ i, u i ^ k i) * J u)
+          (fun u => η₀ + (∏ i, u i ^ k i) * η u)
+        - η₀ * boxIntegralXi β a b (Real.sqrt n) k h (fun u => (∏ i, u i ^ k i) * J u)|
+      ≤ Lη * (4 / β + 1) / Real.sqrt n * boxIntegralFin (β / 2) (2 * a) b (Real.sqrt n) k h
+theorem boxIntegralXiEta_isEquivalent ... (hη₀ : η₀ ≠ 0) :
+    ∃ (p : ℝ) (m : ℕ) (C : ℝ), 0 < C ∧ (∀ i, p ≤ finExp k h i) ∧
+      m + 1 = (Finset.univ.filter fun i => finExp k h i = p).card ∧
+      (fun n => boxIntegralXiEta β a b (Real.sqrt n) k h (fun u => (∏ i, u i ^ k i) * J u)
+          (fun u => η₀ + (∏ i, u i ^ k i) * η u))
+        ~[atTop] fun n => η₀ * C * (n ^ (-(p / 2)) * Real.log n ^ m)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Pointwise, the weight-perturbation integrand is $u^h\,(t/\sqrt n)\tilde\eta\,e^{-\beta t^2+\beta t(a+t\tilde J/\sqrt n)}$;
+the exponential is at most $e^{-(\beta/4)t^2}e^{-(\beta/2)t^2+\beta ta}$ when $L/\sqrt n\le1/4$, and
+$te^{-(\beta/4)t^2}\le4/\beta+1$ follows from $t\le t^2+1$ and $t^2\le\frac4\beta e^{(\beta/4)t^2}$
+(\texttt{Real.add\_one\_le\_exp}). Integration as in unit~65. For the asymptotic the two differences
+are combined by the triangle inequality into an $O(n^{-1/2}Z_{\beta/2,2a})$ bound, which is
+$o(\eta_0Z(a))$; \texttt{IsEquivalent.add\_isLittleO} concludes after multiplying unit~59's
+equivalence by the constant $\eta_0$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item Rewriting $t^2$ as $\frac4\beta(\frac\beta4t^2)$ with \texttt{rw} also rewrote inside the
+exponential; a \texttt{calc} step instead.
+\item Dot notation on an \texttt{IsEquivalent} fact fell through to \texttt{IsLittleO.const\_mul\_left}
+(the definition unfolds); multiply by a constant via \texttt{IsEquivalent.refl.mul} and \texttt{congr}.
+\item \texttt{rw [one\_div]} hit the exponent $1/2$ before the intended $1/\sqrt n$; use
+\texttt{(one\_div \_).symm} as a term.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Real.add\_one\_le\_exp}, \texttt{Real.one\_le\_exp}, \texttt{abs\_add\_le},
+\texttt{IsEquivalent.add\_isLittleO}, \texttt{IsLittleO.mul\_isBigO}. New: the weight-perturbation bound
+and the joint theorem for divisible $\xi$ and $\eta$ perturbations.
+
+\section{Lessons}
+Once one perturbation is handled by comparison with a halved-temperature kernel, further perturbations
+of the same divisibility type follow the same template; the triangle inequality assembles them.
+
+\section{Outcome}
+The multiplicity theorem now covers weights and fluctuation functions of the form
+$\eta_0+u^k\tilde\eta$, $a+u^k\tilde J$, with leading coefficient $\eta_0$ times the population
+constant. What remains for general analytic $\xi,\eta$ is the genuine leading-coefficient dependence
+on their restrictions to the minimal divisor components.
+\end{document}
