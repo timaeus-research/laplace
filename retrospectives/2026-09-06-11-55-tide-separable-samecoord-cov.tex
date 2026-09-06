@@ -1,0 +1,59 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{∇}{\ensuremath{\nabla}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\title{Same-coordinate covariance under a separable Gibbs measure}
+\author{Tide retrospective, laplace seabed}
+\date{2026-09-06}
+\begin{document}
+\sloppy
+\maketitle
+\section{Setting}
+The laplace seabed's separable-potential module already proves that, under a product Gibbs measure
+$L(x,y) = U(x)+V(y)$, the covariance between a function of the first coordinate and a function of the
+second vanishes. This tide adds the diagonal companion: the covariance of two observables of the
+\emph{same} coordinate is inherited unchanged from the corresponding one-dimensional marginal. The two
+facts together say the covariance matrix is block-diagonal for separable potentials --- exactly the
+structural input the project's Stage-3 multivariate law $\mathrm{Cov}_t[\varphi,\psi] = (1/t)\langle
+\nabla\varphi, \Sigma\nabla\psi\rangle$ needs when $\Sigma$ is itself separable. It is a deliberate
+step off the (now-complete) monomial cumulant ladder toward a different kind of result.
+\section{The thing formalised}
+For a separable potential and both marginal partition functions nonzero,
+\[
+  \mathrm{Cov}_{2D}(f\circ\mathrm{fst}, g\circ\mathrm{fst}) = \mathrm{Cov}_U(f,g),\qquad
+  \mathrm{Cov}_{2D}(f\circ\mathrm{snd}, g\circ\mathrm{snd}) = \mathrm{Cov}_V(f,g).
+\]
+The Lean names are \texttt{gibbsCov\_addSeparable\_fst\_fst\_eq} and its second-coordinate twin, in a
+new leaf file \texttt{SeparableSameCoordCov.lean}.
+\section{Proof strategy}
+The covariance unfolds to $\langle fg\rangle - \langle f\rangle\langle g\rangle$. Each Gibbs
+expectation of a same-coordinate observable is computed by the existing separable-observable
+factorisation, pairing the observable with the constant $1$ in the free coordinate: $\langle
+(fg)(z_1)\rangle_{2D} = \langle fg\rangle_U\cdot\langle 1\rangle_V = \langle fg\rangle_U$, since the
+Gibbs expectation of the constant $1$ is $1$. Three such collapses (for $fg$, $f$, $g$) rewrite the
+2D covariance into the 1D one; the identity then closes definitionally. This is the same collapse
+idiom the cross-covariance-vanishing proof already used, run three times on one coordinate.
+\section{Roadblocks and resolutions}
+The mathematics compiled on the first attempt. The one process lesson was about \emph{where} to put
+the theorems. I first appended them to the core \texttt{AddSeparable.lean}; the proofs checked, but
+editing a widely-imported file forces a rebuild of every dependent, and those dependents surfaced
+their own pre-existing missing-header linter warnings --- a cascade of noise unrelated to this tide.
+Relocating the additions to a new leaf file that imports \texttt{AddSeparable} leaves the core file
+untouched, so nothing downstream rebuilds and the tide's build is warning-clean.
+\section{What was Mathlib, what was new}
+No new Mathlib input --- the entire proof rests on the seabed's own separable-observable factorisation
+and the constant-observable expectation. New here is the same-coordinate inheritance, which completes
+the block-diagonal covariance picture for separable potentials. No GPT consult was needed.
+\end{document}

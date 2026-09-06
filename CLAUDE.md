@@ -338,6 +338,15 @@ PR #55). After creating a file, verify BOTH the import line in
 `.lake/build/lib/lean/` before reporting a build result. Job-count
 deltas are too noisy to serve as the check.
 
+**Additions to a widely-imported file rebuild ALL dependents, surfacing their
+pre-existing lint.** Appending a theorem to a core file (e.g. `TwoD/AddSeparable.lean`)
+forces every downstream file to re-elaborate, and any of them lacking an `Authors:` header
+then emits `Copyright too short!` — a cascade of warnings unrelated to your change (and not
+worth fixing across dozens of files). Prefer a NEW LEAF file that imports the core one for
+additive results; the core file stays untouched, nothing downstream rebuilds, and the tide's
+build is warning-clean. (Also why `scripts/sorries`/full-build warning counts spike when you
+touch a hub file — it is latent debt, not your diff.)
+
 **`CFC.sqrt` on matrices needs `open scoped MatrixOrder` in every
 file.** The matrix `PartialOrder` instance is scoped; without the
 open, every `CFC.sqrt`/`PosSemidef.nonneg` use site errors with a
