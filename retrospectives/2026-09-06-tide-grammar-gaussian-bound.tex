@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Gaussian domination of the fluctuation function:
+$S_\lambda(a)\le e^{\beta a^2/2}(\beta/2)^{-\lambda}\Gamma(\lambda)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The analytic backbone of grammar \S4.2's tail and convergence estimates, exposed as reusable lemmas:
+the complete-the-square domination $e^{-\beta t+\beta a\sqrt t}\le e^{-(\beta/2)t+\beta a^2/2}$ and the
+closed-form Gaussian upper bound $S_\lambda(a)\le e^{\beta a^2/2}(\beta/2)^{-\lambda}\Gamma(\lambda)$
+for $\lambda>0$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Every boundary-remainder and convergence bound in \S4.2 (culminating in \texttt{eq:Deltaupper}
+$|\Delta|\le Ce^{-\varepsilon n}$) begins with one pointwise inequality: the fluctuation exponent is
+sub-Gaussian in $\sqrt t$. Completing the square,
+\[
+    -\beta t+\beta a\sqrt t = -\tfrac{\beta}{2}t-\tfrac{\beta}{2}(\sqrt t-a)^2+\tfrac{\beta}{2}a^2
+      \le -\tfrac{\beta}{2}t+\tfrac{\beta}{2}a^2 ,
+\]
+so the integrand of $S_\lambda(a)=\int_0^\infty t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\,dt$ is
+dominated by $e^{\beta a^2/2}\,t^{\lambda-1}e^{-(\beta/2)t}$, whose integral is an elementary Gamma
+integral. This domination was already buried inside \texttt{fluctuation\_integrableOn}'s proof; here it
+is factored out and turned into a quotable bound.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_integrand_le (β a t : ℝ) (hβ : 0 < β) (ht : 0 ≤ t) :
+    Real.exp (-β*t + β*a*Real.sqrt t) ≤ Real.exp (-(β/2)*t + β*a^2/2)
+
+theorem fluctuation_le_gaussian (β a lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) :
+    fluctuation β lam a ≤ Real.exp (β*a^2/2) * (β/2)^(-lam) * Real.Gamma lam
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The pointwise lemma is \texttt{Real.exp\_le\_exp} composed with \texttt{nlinarith}, fed the two facts
+$(\sqrt t)^2=t$ (\texttt{Real.sq\_sqrt}) and $\beta(\sqrt t-a)^2\ge0$ (\texttt{mul\_nonneg} of
+\texttt{hβ.le} and \texttt{sq\_nonneg}); \texttt{nlinarith} finds the square completion. The bound then
+follows by \texttt{setIntegral\_mono\_on} against the majorant
+$e^{\beta a^2/2}\,t^{\lambda-1}e^{-(\beta/2)t^{1}}$ --- integrable by
+\texttt{integrableOn\_rpow\_mul\_exp\_neg\_mul\_rpow} at $p=1$ --- and evaluating the majorant integral
+by \texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}, which gives
+$(\beta/2)^{-\lambda}\Gamma(\lambda)$ at $p=1$, $q=\lambda-1$, $b=\beta/2$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The Gamma-integral lemmas are stated with the \texttt{rpow} form $t^{1}$ in the exponential; align
+the majorant integrand with $t^{(1:\mathbb R)}$ and peel it with \texttt{Real.rpow\_one} inside the
+pointwise comparison only.
+\item The lemma output carries $/1$ divisions and the exponent $(\lambda-1)+1$; \texttt{simp only
+[div\_one]} clears the former and \texttt{rw [show lam - 1 + 1 = lam by ring]} rewrites the exponent in
+both the \texttt{rpow} power and the $\Gamma$ argument at once (a bare \texttt{ring} cannot reach under
+\texttt{rpow}/$\Gamma$).
+\item Splitting $e^{-(\beta/2)t+\beta a^2/2}=e^{\beta a^2/2}e^{-(\beta/2)t}$ needs \texttt{Real.exp\_add}
+then \texttt{ring} to reassociate the constant to the front, matching the majorant's shape.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied the Gamma-integral pair
+\texttt{integrableOn\_rpow\_\allowbreak mul\_exp\_\allowbreak neg\_mul\_\allowbreak rpow} and
+\texttt{integral\_rpow\_\allowbreak mul\_exp\_\allowbreak neg\_mul\_\allowbreak rpow}, together with
+\texttt{setIntegral\_mono\_on}, \texttt{Real.sq\_sqrt}, \texttt{Real.exp\_le\_exp}. New is the exposure of
+the domination as a standalone
+lemma and the closed-form fluctuation bound --- neither was previously stated, though the majorant
+recurred inside the integrability proof.
+
+\section{Lessons}
+When an integrability proof already constructs a majorant, its pointwise domination and the value of the
+majorant integral are two quotable lemmas waiting to be factored out; do so when downstream estimates
+(here the \S4.2 remainder) will lean on the bound repeatedly.
+
+\section{Follow-ups}
+The bound is the first ingredient of the boundary-tail remainder $\Delta$ (\texttt{eq:Deltaupper}); the
+remainder itself additionally needs the Taylor-tree coefficient bounds (\texttt{prop:CoefficientBound})
+and is multivariate.
+\end{document}
