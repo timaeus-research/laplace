@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Mixed multiplicity in general dimension:\\
+$Z_{m+2}(n)\sim\Big(\prod k_i^{-1}\Big)\,b^{k_0(q-p)}\,\dfrac{C(p,q)}{2^m\,m!}\,n^{-p/2}(\log n)^m$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The first mixed case in arbitrary dimension: the innermost coordinate carries a candidate exponent
+$q$ strictly larger than the common exponent $p$ of the remaining $m+1$ coordinates. The chart
+integral reduces exactly to $(\prod k_i^{-1})\,c^{-p}\,b^{k_0(q-p)}\,H_m(cb^{\sum k_i})$, where $H$ is
+the divide-and-integrate tower of unit~49 built on the \emph{noncritical base}
+$G_1(y)=\int_0^yx^{p-q-1}F_{q-1}(x)\,dx$. That base is admissible with mass $C(p,q)$ (unit~46's
+constant), tail rate $\varepsilon=q-p$ (which is why unit~51 was needed) and $\delta=p$, so the
+expansion machinery applies verbatim and yields the asymptotic in the title: multiplicity $m+1$, the
+noncritical coordinate contributing only the constant $b^{k_0(q-p)}C(p,q)$. Unit~40 is the case
+$k=(1,1,1)$, $h=(1,0,0)$ up to the order of integration. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+After the innermost coordinate, $Z_1(c)=k_0^{-1}c^{-q}F_{q-1}(cb^{k_0})$ (unit~50's reduction with
+$p:=q$). The first minimal coordinate turns $c^{-q}$ into $c^{-p}$ through the substitution
+$\int_0^{b^{k_1}}s^{p-1}(cs)^{-q}F_{q-1}(\dots)\,ds$, whose kernel $s^{p-q-1}F_{q-1}$ is exactly the
+integrand of $C(p,q)$; the scaling lemma produces $G_1$ and the factor $(cb^{k_0})^{q-p}$. Every
+further minimal coordinate is one divide-and-integrate step, identical to the all-equal case.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem iterChartGen_step ... (hpd : ((h d : ℝ) + 1) / k d = p)
+    (hZ : ∀ c, 0 < c →
+      iterChartGen β a b k h d c = K * c ^ (-p) * D * iterDivPrim G j (c * B))
+    (c : ℝ) (hc : 0 < c) :
+    iterChartGen β a b k h (d + 1) c
+      = K * (1 / (k d : ℝ)) * c ^ (-p) * D * iterDivPrim G (j + 1) (c * (B * b ^ (k d)))
+noncomputable def noLogBase (β a p q y : ℝ) : ℝ :=
+  ∫ x in Ioc 0 y, x ^ (p - q - 1) * weightedPrimitive β a (q - 1) x
+theorem noLogBase_logBase (β a p q : ℝ) (hβ : 0 < β) (hp : 0 < p) (hlt : p < q) :
+    LogBase (noLogBase β a p q) (noLogConst β a p q) (weightedMass β a (q - 1) / (q - p))
+      (Real.exp (β * a ^ 2 / 2) / (p * q)) p (q - p)
+theorem iterChartGen_mixed_eq ... :
+    iterChartGen β a b k h (m + 2) c
+      = (∏ i ∈ Finset.range (m + 2), (1 : ℝ) / k i) * c ^ (-p) * b ^ ((k 0 : ℝ) * (q - p))
+        * iterDivPrim (noLogBase β a p q) m (c * b ^ (∑ i ∈ Finset.range (m + 2), k i))
+theorem iterChartGen_mixed_isEquivalent ... (hm : 0 < m) ... (hlt : p < q) :
+    (fun n => iterChartGen β a b k h (m + 2) (Real.sqrt n)) ~[atTop]
+      fun n => (∏ i ∈ Finset.range (m + 2), (1 : ℝ) / k i) * b ^ ((k 0 : ℝ) * (q - p))
+        * (noLogConst β a p q / (2 ^ m * (m.factorial : ℝ)))
+        * (n ^ (-(p / 2)) * Real.log n ^ m)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The recursion step at a minimal coordinate is factored out (\texttt{iterChartGen\_step}) for an
+arbitrary tower $H=\texttt{iterDivPrim}\,G$ and arbitrary constants $K,D,B$; it is unit~50's inductive
+step with the base abstracted. The mixed reduction is an induction on $m$ whose base case does the
+two innermost coordinates by hand and whose step is one application of the step lemma. The base
+$G_1$ is monotone (hence measurable), bounded by $C(p,q)$ (its tail is a nonnegative integral),
+bounded near $0$ by $(E/(pq))y^p$ via $F_{q-1}\le Ex^q/q$, and has tail
+$\int_L^\infty x^{p-q-1}F_{q-1}\le A_{q-1}L^{-(q-p)}/(q-p)$. With these, the asymptotic is unit~50's
+assembly with $A:=C(p,q)$ and the extra constant $b^{k_0(q-p)}$. The reduction was checked by
+three-dimensional quadrature in two configurations before formalising.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{← Real.rpow\_natCast b (k 0)} rewrote every $b^{k_0}$, including the one inside the
+integration bound, so a later rewrite failed to match; state the single needed identity
+$(b^{k_0})^{q-p}=b^{k_0(q-p)}$ as a \texttt{have} and rewrite with it.
+\item \texttt{Finset.prod\_range\_succ} without arguments fired on the wrong product (the
+left-hand side's \texttt{range (m+2)} rather than the right-hand side's \texttt{range (m+2+1)});
+pass the function and index explicitly.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integral\_Ioi\_rpow\_of\_lt}, \texttt{integrableOn\_Ioi\_rpow\_of\_lt},
+\texttt{setIntegral\_mono\_set}, \texttt{Monotone.measurable}. New: the generic recursion step,
+the noncritical base and its \texttt{LogBase} certificate, and the mixed multiplicity theorem.
+
+\section{Lessons}
+Two abstractions from earlier units (\texttt{LogBase} with a rate, and the step lemma) made the mixed
+case a matter of exhibiting one new base function and verifying four bounds. The pattern
+``noncritical coordinates produce a bounded base; minimal coordinates produce logarithms'' is now
+visible as a theorem rather than as three worked examples.
+
+\section{Outcome}
+The leading-term theory of \texttt{thm:TaylorTree} in the chart geometry now covers: all exponents
+equal in any dimension with arbitrary $(k,h)$ (unit~50), one noncritical inner coordinate plus any
+number of minimal ones (this unit), and all three regimes in two dimensions (units~44--48). Remaining
+at this level: several noncritical coordinates (whose iterated bases have polynomial growth, not
+bounded), and the paper-form product-set statements.
+\end{document}
