@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Extending $S_\lambda$ below zero: the recursion $S_\lambda=\tfrac{\sqrt\beta}{2\lambda}bS_{\lambda+1/2}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 19 of the grammar-paper \S4 autoformalisation: the extension of the fluctuation function to
+non-positive order (\texttt{defn:S\_negative}). For $\lambda\le0$ (away from the poles
+$\{0,-\tfrac12,-1,\dots\}$) the paper defines $S_\lambda=\tfrac{\sqrt\beta}{2\lambda}\,bS_{\lambda+1/2}$,
+lowering the order until the integral regime is reached. We formalise this recursion and prove the
+\emph{lowering} ladder relation of \texttt{lem:extended\_ladder}, which is definitional. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The closed form $S_\lambda=2^{1-\lambda}\beta^{-\lambda}\Gamma(2\lambda)e^{\beta a^2/8}D_{-2\lambda}
+(-a\sqrt{\beta/2})$ continues meromorphically in $\lambda$, but our \texttt{parCylNeg} is the
+positive-order integral representation only. The paper's own extension is instead recursive, via the
+lowering operator $b$ from the ladder algebra (unit~16). This is the final structural piece of \S4.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def Sneg (β μ : ℝ) : ℕ → ℝ → ℝ
+  | 0       => fun a => fluctuation β μ a
+  | (k + 1) => fun a =>
+      β ^ ((1:ℝ)/2) / (2 * (μ - (↑(k+1))/2)) * lowerOp β (Sneg β μ k) a
+
+theorem Sneg_lowering (β μ : ℝ) (hβ : 0 < β) (k : ℕ) (hlam : μ - (↑(k+1))/2 ≠ 0) (a : ℝ) :
+    lowerOp β (fun a => Sneg β μ k a) a
+      = (2 * (μ - ↑k/2) - 1) * β ^ (-(1:ℝ)/2) * Sneg β μ (k + 1) a
+\end{verbatim}
+}
+`Sneg β μ k` represents $S_{\mu - k/2}$, indexing the extension by the number of half-steps taken below
+a base order $\mu>0$.
+
+\section{Proof strategy}
+The recursion is structural on $k$ (Lean accepts it directly; \texttt{lowerOp} uses \texttt{deriv}, which
+is total, so no differentiability obligation enters the definition). The lowering relation is the
+definition rearranged: $S_{\rho-1/2}=\tfrac{\sqrt\beta}{2\rho'}bS_\rho$ with $\rho'=\rho-\tfrac12$, so
+$bS_\rho=\tfrac{2\rho'}{\sqrt\beta}S_{\rho-1/2}=(2\rho-1)\beta^{-1/2}S_{\rho-1/2}$. In Lean: rewrite
+$S_{k+1}$ by its defining equation, group the scalar prefactor as
+$\tfrac{2\rho-1}{2\rho'}\cdot\beta^{-1/2}\beta^{1/2}$, and collapse it with
+$\beta^{-1/2}\beta^{1/2}=1$ and $2\rho-1=2\rho'$ (\texttt{div\_self}, needing $\rho'\ne0$ --- the
+non-pole hypothesis).
+
+\section{Roadblocks and resolutions}
+Almost none: a small scalar-cancellation. Two points of care --- the numeric identity
+$2(\mu-\tfrac k2)-1=2(\mu-\tfrac{k+1}2)$ is by \texttt{push\_cast; ring} (the $\uparrow(k+1)$ cast), and
+the non-pole hypothesis $\mu-\tfrac{k+1}2\ne0$ is exactly what makes the prefactor invertible
+(\texttt{div\_self}). (Recall \texttt{h$\lambda$} does not parse --- \texttt{$\lambda$} is the
+anonymous-function token; use \texttt{hlam}.)
+
+\section{What was Mathlib, what was new}
+Only \texttt{Real.rpow\_add}/\texttt{div\_self} and \texttt{push\_cast} from Mathlib. New is the recursive
+extension itself and the observation that the extended lowering relation is definitional --- no analysis
+needed once the ladder operator \texttt{lowerOp} (unit~16) is in hand.
+
+\section{Lessons}
+When a special function is extended by an operator recursion, the ladder relation \emph{in the direction
+of the recursion} is free (rearrange the defining equation); it is the \emph{opposite} direction (raising)
+that carries the analytic content, requiring smoothness of the extension and the Weyl commutator.
+
+\section{Follow-ups}
+The remaining half of \texttt{lem:extended\_ladder} --- the raising relation
+$b^\dagger S_\lambda=\beta^{1/2}S_{\lambda+1/2}$ for the extension --- and the general-$Q$ number operator
+$N_\lambda S_{\lambda+Q/2}=QS_{\lambda+Q/2}$ both require the $C^\infty$-smoothness of \texttt{Sneg} (to
+apply $b,b^\dagger$ and \texttt{ladder\_commutator}), proved by induction from the smoothness of the
+integral $S_\mu$ and smoothness-preservation under \texttt{lowerOp}. With this, the entire ladder/log
+structure of grammar \S4 is formalised.
+\end{document}
