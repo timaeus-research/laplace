@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Distinct exponents give no logarithm for every $(k,h)$:\\
+$Z(n)\sim\dfrac{b^{k_2(p_2-p_1)}C(p_1,p_2)}{k_1k_2}\,n^{-p_1/2}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The third regime of the general two-dimensional reduction (unit~44). For $p_1<p_2$ the noncritical
+integral $C(p_1,p_2)=\int_0^\infty x^{p_1-p_2-1}F_{p_2-1}(x)\,dx$ converges to a positive constant, and
+\[
+Z(n)\sim\frac{1}{k_1k_2}\,b^{k_2(p_2-p_1)}\,C(p_1,p_2)\,n^{-p_1/2},
+\]
+the multiplicity-one prediction of \texttt{thm:TaylorTree} with sharp exponent $p_1/2$. At $k=(1,1)$,
+$h=(0,1)$ this is unit~37 (there $C=A$). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Convergence of $C$ needs two dominations from unit~45: near $0$,
+$F_{p_2-1}(x)\le Ex^{p_2}/p_2$ makes the integrand $\le(E/p_2)x^{p_1-1}$, integrable because $p_1>0$;
+near $\infty$, $F_{p_2-1}\le A_{p_2-1}$ makes it $\le A_{p_2-1}x^{p_1-p_2-1}$, integrable because
+$p_1-p_2-1<-1$. Positivity of $C$ is positivity of the integrand on $(0,\infty)$, which in turn needs
+$F_\gamma(x)>0$ for $x>0$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem weightedPrimitive_pos ... (hx : 0 < x) : 0 < weightedPrimitive β a γ x
+theorem noLog_integrand_integrableOn (β a p₁ p₂ : ℝ) (hβ : 0 < β) (hp₁ : 0 < p₁)
+    (hlt : p₁ < p₂) :
+    IntegrableOn (fun x => x ^ (p₁ - p₂ - 1) * weightedPrimitive β a (p₂ - 1) x) (Ioi 0)
+noncomputable def noLogConst (β a p₁ p₂ : ℝ) : ℝ :=
+  ∫ x in Ioi 0, x ^ (p₁ - p₂ - 1) * weightedPrimitive β a (p₂ - 1) x
+theorem noLogConst_pos ... : 0 < noLogConst β a p₁ p₂
+theorem twoDGeneral_isEquivalent_of_lt ...
+    (hlt : ((h₁ : ℝ) + 1) / k₁ < ((h₂ : ℝ) + 1) / k₂) :
+    (fun n => twoDGeneral β a b n h₁ h₂ k₁ k₂) ~[atTop]
+      fun n => 1 / ((k₁ : ℝ) * k₂)
+        * b ^ ((k₂ : ℝ) * (((h₂ : ℝ) + 1) / k₂ - ((h₁ : ℝ) + 1) / k₁))
+        * noLogConst β a (((h₁ : ℝ) + 1) / k₁) (((h₂ : ℝ) + 1) / k₂)
+        * n ^ (-(((h₁ : ℝ) + 1) / k₁ / 2))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Integrability on $(0,\infty)$ is assembled from $(0,1]$ and $(1,\infty)$ with the two dominations
+and \texttt{IntegrableOn.union}. The truncated integral converges to $C$ by Mathlib's
+\texttt{intervalIntegral\_tendsto\_integral\_Ioi} along $L_n=\sqrt n\,b^{k_1+k_2}\to\infty$. The
+asymptotic then follows without any explicit remainder bound: the truncated integral is
+\texttt{IsEquivalent} to the constant $C$ (\texttt{isEquivalent\_const\_iff\_tendsto}, valid because
+$C\ne0$), and multiplying by the exact prefactor $\tfrac1{k_1k_2}b^{k_2(p_2-p_1)}n^{-p_1/2}$ via
+\texttt{IsEquivalent.mul} gives the result after two pointwise \texttt{congr} steps. The
+exponents are again introduced as opaque variables to keep \texttt{ring} honest. Numerically the
+convergence is slow when $p_2-p_1$ is small (the tail decays like $L^{-(p_2-p_1)}$): at $k=(2,3)$,
+$h=(0,1)$ the ratio reaches $1$ only around $n\approx10^9$, which the one-dimensional integral
+confirms exactly.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item None in Lean: the file compiled on the first pass. The only care needed was on the numerics,
+where a two-dimensional quadrature at moderate $n$ suggested a discrepancy that was in fact the
+slow $L^{-1/6}$ tail; checking the one-dimensional truncated integral at $n=10^9$ resolved it.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{intervalIntegral\_tendsto\_integral\_Ioi}, \texttt{isEquivalent\_const\_iff\_tendsto},
+\texttt{IsEquivalent.mul}, \texttt{setIntegral\_pos\_iff\_support\_of\_nonneg\_ae},
+\texttt{integrableOn\_Ioi\_rpow\_of\_lt}, \texttt{IntegrableOn.union}. New: the noncritical constant
+$C(p_1,p_2)$ and the general no-logarithm asymptotic.
+
+\section{Lessons}
+When the limit is an honest convergent integral rather than a closed form, the
+\texttt{IsEquivalent}-to-a-constant route is far shorter than an explicit tail bound. And a slow
+numerical drift toward the predicted constant is not evidence against the theorem: check the rate
+the analysis predicts before suspecting the formula.
+
+\section{Outcome}
+All three regimes of the general two-dimensional standard integral are now formalised: equal exponents
+(unit~45, one logarithm), $p_1<p_2$ (this unit, no logarithm, exponent $p_1/2$) and, by symmetry of
+the roles of the coordinates, $p_1>p_2$. Together with the exact reduction of unit~44 this closes the
+two-dimensional theory of \texttt{thm:TaylorTree}'s leading term for arbitrary $(k,h)$. Next
+candidates: the $p_1>p_2$ case stated directly, the mixed-multiplicity case in general dimension, or
+the next-order term in the general equal case.
+\end{document}
