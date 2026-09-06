@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Minimal block IV: the mixed-block envelope and the freezing inequalities}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Two inputs for the continuity freezing argument. If one coordinate of a $(d_0+2)$-block carries an
+exponent above $p$ while the other $d_0+1$ carry exactly $p$, then $c^pZ(c)\le K(1+\log_+(cB))^{d_0}$
+at every scale: one logarithm is lost. In box form, inserting a factor $u_i$ into an equal-exponent
+block produces such a mixed block after relabelling by the transposition $(0\,i)$ (the
+H\"older-insertion estimate). The mean-value bound
+$|\eta_1f_{\xi_1}(s)-\eta_2f_{\xi_2}(s)|\le(|\eta_1-\eta_2|+Me^{\beta/2}|\xi_1-\xi_2|)e^{-(\beta/2)s^2+\beta Ls}$
+and the corner/strip split $D\le\omega+(D_{\max}/\delta)\sum_iu_i$ complete the toolkit.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem iterChartGen_mixed_le ... (hp : ∀ l, 1 ≤ l → l ≤ d₀ + 1 → chartExp k h l = p)
+    (hlt : p < chartExp k h 0) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ c, 0 < c → c ^ p * iterChartGen β a b k h (d₀ + 2) c
+      ≤ K * (1 + logPlus (c * b ^ (∑ i ∈ Finset.range (d₀ + 2), k i))) ^ d₀
+def shiftExp {m : ℕ} (h : Fin m → ℕ) (i : Fin m) : Fin m → ℕ :=
+  fun j => h j + if j = i then 1 else 0
+theorem boxIntegralFin_shift_le ... (hp : ∀ j, finExp k h j = p) (i : Fin (d₀ + 2)) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ c, 0 < c → c ^ p * boxIntegralFin β a b c k (shiftExp h i)
+      ≤ K * (1 + logPlus (c * b ^ (∑ j, k j))) ^ d₀
+theorem weighted_quadKernel_sub_le (β L M ξ₁ ξ₂ η₁ η₂ s : ℝ) (hβ : 0 < β) (hs : 0 ≤ s)
+    (hξ₁ : |ξ₁| ≤ L) (hξ₂ : |ξ₂| ≤ L) (hη₂ : |η₂| ≤ M) :
+    |η₁ * quadKernel β ξ₁ s - η₂ * quadKernel β ξ₂ s|
+      ≤ (|η₁ - η₂| + M * Real.exp (β / 2) * |ξ₁ - ξ₂|) * quadKernel (β / 2) (2 * L) s
+theorem corner_strip_le {m : ℕ} (u : Fin m → ℝ) (hu : ∀ i, 0 < u i) (D ω δ Dmax : ℝ)
+    (hδ : 0 < δ) (hω : 0 ≤ ω) (hDmax : 0 ≤ Dmax) (hcorner : (∀ i, u i ≤ δ) → D ≤ ω)
+    (hmax : D ≤ Dmax) : D ≤ ω + Dmax / δ * ∑ i, u i
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The mixed block is the exact tower $Z_{d_0+2}(c)=(\prod k_i^{-1})D\,c^{-p}G_{d_0+2}(cB)$ with
+$G_{d_0+2}=\mathrm{iterDivPrim}\,G_2\,d_0$ and $G_2$ an admissible base (unit~57); the polynomial-log
+envelope of unit~74 bounds the tower at every argument. For the insertion estimate the transposition
+$\sigma=(0\,i)$ moves the shifted coordinate to index~$0$; the relabelled exponents are read off
+through \texttt{chartExp\_toNatFun\_eq\_finExp}, and $\sum k$ is invariant by
+\texttt{Equiv.sum\_comp}. The mean-value bound splits
+$\eta_1e^{x_1}-\eta_2e^{x_2}=(\eta_1-\eta_2)e^{x_1}+\eta_2(e^{x_1}-e^{x_2})$, uses
+$|e^{x}-e^{y}|\le|x-y|e^{\max(x,y)}$ (from $1+t\le e^t$), and absorbs the factor $\beta s$ by
+$\beta s\,e^{-(\beta/2)s^2}\le e^{\beta/2}$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The \texttt{wlog} symmetric case needs the two \texttt{abs\_sub\_comm} rewrites targeted
+(\texttt{abs\_sub\_comm (Real.exp y)}); the bare form rewrites the wrong occurrence.
+\item \texttt{push\_neg} is deprecated on this pin: use \texttt{push Not}.
+\item Corner/strip: the nonnegativity of $\omega$ and $D_{\max}$ must be hypotheses; without them the
+strip case cannot absorb $\omega$.
+\end{itemize}
+
+\section{Outcome}
+Astra target~3 (strip and H\"older-insertion estimates) is done in the form needed for the freezing
+argument. Next: the freezing theorem $Z-Z_0=o(N^{-p}\log^dN)$ and the multiplicity-$m$ leading
+theorem for general continuous $\xi,\eta$.
+\end{document}
