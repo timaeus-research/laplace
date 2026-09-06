@@ -1,0 +1,67 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The monomial Taylor tree in $d$ dimensions}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For a single monomial perturbation $\xi=a+c_0u^\gamma$ each layer of the exponential tree (unit~62)
+is one tree term (unit~60) with shift $\gamma p$ and insertion order $p$, so the chart standard
+integral is the exact convergent series
+$\sum_{p\ge0}\frac{(\beta c_0c)^p}{p!}\int_{(0,b]^d}u^{h+\gamma p+kp}f(cu^k)\,du$ of box integrals with
+shifted exponents. This is the $d$-dimensional analogue of unit~26; by unit~60 every term has leading
+exponent in $\Lambda(h,k)$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The $p$-th layer integrand is $u^h(cu^k\cdot c_0u^\gamma)^pf(cu^k)=c_0^p\,u^{h+\gamma p}(cu^k)^pf(cu^k)$;
+the only work is the algebra of products of powers over $\mathrm{Fin}\,d$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem treeLayer_monomial (β a b c c₀ : ℝ) {d : ℕ} (k h γ : Fin d → ℕ) (p : ℕ) :
+    treeLayer β a b c k h (fun u => c₀ * ∏ i, u i ^ γ i) p
+      = (β * c₀) ^ p / p.factorial * treeTerm β a b c k h (fun i => γ i * p) p
+theorem boxIntegralXi_monomial_hasSum' (β a b c c₀ : ℝ) (hβ : 0 < β) (hb : 0 < b)
+    (hc : 0 ≤ c) {d : ℕ} (k h γ : Fin d → ℕ) :
+    HasSum (fun p => (β * c₀ * c) ^ p / p.factorial
+        * boxIntegralFin β a b c k (fun i => h i + γ i * p + k i * p))
+      (boxIntegralXi β a b c k h (fun u => c₀ * ∏ i, u i ^ γ i))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+A pointwise identity of integrands (\texttt{pow\_add}, \texttt{pow\_mul},
+\texttt{Finset.prod\_mul\_distrib}, \texttt{Finset.prod\_pow}, \texttt{ring}) followed by pulling the
+constant $c_0^p$ out of the integral; the series statements are \texttt{HasSum.congr\_fun} of unit~62's
+theorem and unit~60's insertion identity.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{pow\_mul} rewrites $u^{p\gamma}$ as $(u^p)^\gamma$, which \texttt{Finset.prod\_pow} cannot
+fold into $(\prod u^\gamma)^p$; writing the shift as $\gamma_i\cdot p$ makes the shapes agree.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Finset.prod\_pow}, \texttt{HasSum.congr\_fun}. New: the monomial tree in $d$
+dimensions.
+
+\section{Lessons}
+Choosing the syntactic form of a natural-number exponent ($\gamma p$ versus $p\gamma$) to match the
+direction of the rewrite lemmas avoids a whole class of failed \texttt{simp} calls.
+
+\section{Outcome}
+The exponential tree, the tree terms and their exponents, and now their assembly for monomial
+perturbations are all formalised in $d$ dimensions; the general polynomial case is a finite multinomial
+expansion of each layer into such tree terms.
+\end{document}
