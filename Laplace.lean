@@ -165,3 +165,4 @@ import Laplace.AsymptoticPolynomial
 import Laplace.OnePointAnchoring
 import Laplace.OneD.QuarticBoundedTest
 import Laplace.Grammar.Fluctuation
+import Laplace.Grammar.ParabolicCylinder
