@@ -1,0 +1,57 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Exponent and multiplicity are robust for every bounded $\xi$:\\
+$Z(a+J)=\Theta\big(n^{-p/2}(\log n)^m\big)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For an arbitrary continuous $J$ on the box, with no divisibility assumption, the standard integral with
+$\xi=a+J$ is sandwiched between the constant-$\xi$ integrals at $a\pm L$, $L=\sup|J|$, because
+$e^{\beta t\xi}$ is monotone in $\xi$ for $t\ge0$. Both bounds are $\sim C_\pm n^{-p/2}(\log n)^m$ by
+unit~59, so $Z(a+J)=\Theta(n^{-p/2}(\log n)^m)$: the exponent and the logarithmic degree of
+\texttt{thm:TaylorTree} are determined by $(h,k)$ alone for every bounded $\xi$, and only the constant
+depends on $\xi$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem boxIntegralXi_sandwich ... (hJL : ∀ u, (∀ i, 0 ≤ u i ∧ u i ≤ b) → |J u| ≤ L) :
+    boxIntegralFin β (a - L) b c k h ≤ boxIntegralXi β a b c k h J ∧
+      boxIntegralXi β a b c k h J ≤ boxIntegralFin β (a + L) b c k h
+theorem boxIntegralXi_isTheta (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) (D : ℕ)
+    (k h : Fin (D + 2) → ℕ) (hk : ∀ i, 0 < k i) (J : (Fin (D + 2) → ℝ) → ℝ)
+    (hJ : Continuous J) :
+    ∃ (p : ℝ) (m : ℕ), (∀ i, p ≤ finExp k h i) ∧
+      m + 1 = (Finset.univ.filter fun i => finExp k h i = p).card ∧
+      (fun n => boxIntegralXi β a b (Real.sqrt n) k h J)
+        =Θ[atTop] fun n => n ^ (-(p / 2)) * Real.log n ^ m
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Pointwise monotonicity of the exponential, integrated with \texttt{integral\_mono\_ae} on the box;
+then \texttt{IsBigO.antisymm} from $Z(\xi)=O(Z(a+L))=O(g)$ and $g=O(Z(a-L))=O(Z(\xi))$, the
+constant-$\xi$ equivalences supplying the two $O$-relations with $g$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item Subscript $\pm$ signs are not identifier characters in Lean~4.
+\item \texttt{isBigO\_self\_const\_mul} takes the nonvanishing proof first.
+\end{itemize}
+
+\section{Outcome}
+Together with units~59, 65 and~66: the leading exponent and multiplicity are universal in $\xi$ and
+$\eta>0$ (as $\Theta$-statements), and are sharp asymptotic equivalences with explicit constants for
+constant $\xi$ and for perturbations divisible by $u^k$.
+\end{document}
