@@ -1,0 +1,102 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Leading asymptotic of the standard integral for polynomial data:
+only $\xi(0)$ and $\eta(0)$ survive}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The capstone of the one-dimensional programme: for polynomial data
+$\xi(u)=\xi_0+\sum_{j<D}c_ju^{j+1}$ and $\eta(u)=\sum_{i\le E}e_iu^i$ with $\eta(0)\ne0$,
+\[
+\int_0^b u^h\eta(u)\,e^{-\beta nu^{2k}+\beta\sqrt n u^k\xi(u)}\,du
+\;\sim\;\eta(0)\,\tfrac1{2k}\,S_{(h+1)/(2k)}(\xi(0))\,n^{-(h+1)/(2k)}\qquad(n\to\infty),
+\]
+a genuine \texttt{Asymptotics.IsEquivalent}. This is the leading term of
+\texttt{cor:standardintegralexp} in one dimension for general (polynomial) data: the leading exponent
+is the first element of $\Lambda(h,k)$ and only the chart-origin values $\xi(0),\eta(0)$ enter the
+coefficient. En route, the polynomial-$\xi$ two-term bound of unit~32 is packaged as
+$Z-\tfrac1{2k}n^{-(h+1)/(2k)}S(\xi_0)=O(n^{-(h+2)/(2k)})$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Units~27--32 establish the expansion for $\eta\equiv1$ and for monomial or polynomial $\xi$. The
+paper's standard integral carries a weight $\eta$ (Jacobian and observable factors); by linearity a
+polynomial $\eta$ redistributes the problem over shifted powers $u^{h+i}$, each contributing at order
+$n^{-(h+i+1)/(2k)}$. So the $i=0$ term dominates and the rest is $O(n^{-(h+2)/(2k)})$, and the
+polynomial-$\xi$ correction is of the same order.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem isLittleO_rpow_neg_rpow_neg {a b : ℝ} (hab : b < a) :
+    (fun n : ℝ => n ^ (-a)) =o[atTop] fun n : ℝ => n ^ (-b)
+theorem isBigO_rpow_neg_rpow_neg {a b : ℝ} (hab : b ≤ a) :
+    (fun n : ℝ => n ^ (-a)) =O[atTop] fun n : ℝ => n ^ (-b)
+
+theorem standardIntegral1D_polynomial_leading_isBigO ... :
+    (fun n => Z_chart(ξ) n - (1/(2k)) n^(-(h+1)/(2k)) S_{(h+1)/(2k)}(ξ₀))
+      =O[atTop] fun n => n ^ (-((h:ℝ)+2)/(2k))
+
+theorem standardIntegral1D_weighted_leading_isEquivalent ... (he0 : e 0 ≠ 0) :
+    (fun n => ∫ u in Ioc 0 b, u^h * (∑ i ∈ range (E+1), e i * u^i) * exp(...ξ(u)))
+      ~[atTop] fun n => e 0 * ((1/(2k)) * S_{(h+1)/(2k)}(ξ₀)) * n^(-(h+1)/(2k))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The power helpers are \texttt{isLittleO\_of\_tendsto'} with \texttt{tendsto\_rpow\_neg\_atTop} (ratio
+$n^{-(a-b)}\to0$) and \texttt{IsBigO.of\_bound 1} with \texttt{rpow\_le\_rpow\_of\_exponent\_le}. The
+polynomial-$\xi$ big-$O$ is unit~29's packaging applied to unit~32: the $D$ first-order terms and the
+remainder are each dominated by $n^{-(h+2)/(2k)}$ for $n\ge1$ (exponent comparison), the tails by the
+exponential scales. The capstone splits $\eta$ by \texttt{Finset.sum\_range\_succ'} into $e_0$ and the
+rest, rewrites the weighted integral by linearity (\texttt{Finset.mul\_sum}, \texttt{integral\_finsetSum}),
+and shows the difference from $e_0A_0n^{-\mu_1}$ is $O(n^{-\nu})$ with $\nu=(h{+}2)/(2k)$: the $e_0$ part
+by the big-$O$ at $h$, each $i\ge1$ part by the big-$O$ at $h+i$ plus its own leading term, all pulled down
+to $n^{-\nu}$ by the power helper and summed with \texttt{IsBigO.sum}. Then $n^{-\nu}=o(n^{-\mu_1})$
+and \texttt{IsLittleO.const\_mul\_right} with the nonzero coefficient $e_0A_0$ give \texttt{IsEquivalent}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{gcongr} on $\tfrac{h+2}{2k}\le\tfrac{h+2+1}{2k}$ paired the summands as $2$ against $1$
+and left `$2\le1$'; for exponent comparisons use \texttt{div\_le\_div\_iff\_of\_pos\_right} then
+\texttt{linarith}. Likewise \texttt{gcongr} on $n^{-X}\le n^{-\mu}$ reduces to the \emph{exponent}
+inequality, not the power inequality one has in hand --- pass explicit \texttt{mul\_le\_mul} chains.
+\item A \texttt{calc} step with `\_ + \_' placeholders in the middle expression was unified against the
+wrong subterms; spell the intermediate expression out (or name the bound as a separate \texttt{have}).
+\item \texttt{(IsBigO.add ?\_ ?\_).congr\_left \dots} left a typeclass problem stuck because the two
+functions were undetermined; name both big-$O$ facts first. \texttt{IsBigO.sum} produces a Pi-type
+\texttt{Finset.sum} of functions, converted to a pointwise sum by \texttt{Finset.sum\_apply} inside
+\texttt{congr\_left}.
+\item The final \texttt{congr'} with \texttt{EventuallyEq.rfl} also got stuck; \texttt{IsLittleO.congr\_left}
+with the linearity identity is the robust route.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{tendsto\_rpow\_neg\_atTop}, \texttt{isLittleO\_of\_tendsto'},
+\texttt{rpow\_le\_rpow\_of\_exponent\_le}, \texttt{IsBigO.sum}, \texttt{IsBigO.const\_mul\_left},
+\texttt{IsLittleO.const\_mul\_right}, \texttt{Finset.sum\_range\_succ'}, \texttt{Finset.sum\_apply}. New:
+the two power-comparison helpers and the leading asymptotic for polynomial $(\xi,\eta)$.
+
+\section{Lessons}
+\texttt{gcongr} is excellent when the shapes on both sides match term-for-term and treacherous
+otherwise --- with sums of different lengths or when a monotone function (here \texttt{rpow} in the
+exponent) rewrites the goal into a form different from the hypothesis one holds. In asymptotic
+bookkeeping, name every big-$O$ fact with its function written out before combining.
+
+\section{Outcome}
+The one-dimensional analytic content of grammar \S4.2 is now formalised for polynomial data: exact
+expansions, explicit remainders, and asymptotic statements at leading, second and all orders (units
+22--33). The remaining gaps are structural rather than analytic: general analytic $\xi,\eta$ (limits of
+the polynomial statements), the multivariate tree with its $\log n$ powers, and \S4.3's stochastic
+layer.
+\end{document}
