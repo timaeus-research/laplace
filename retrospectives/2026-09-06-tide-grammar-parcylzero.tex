@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The origin value $D_{-\nu}(0)=\sqrt\pi/(2^{\nu/2}\Gamma(\tfrac{\nu+1}{2}))$ via Legendre duplication}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 12 of the grammar-paper \S4 autoformalisation: the value of the parabolic cylinder function at the
+origin, $D_{-\nu}(0)=\sqrt\pi/(2^{\nu/2}\Gamma(\tfrac{\nu+1}{2}))$, as displayed in the proof of
+\texttt{cor:fluctuation\_closed\_form}. A short reconciliation of the already-proven
+\texttt{parCylNeg\_zero} ($=2^{\nu/2-1}\Gamma(\nu/2)/\Gamma(\nu)$, from the $\Gamma$-integral) with the
+paper's form, using Legendre's duplication formula. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The \texttt{ParabolicCylinder} module (unit~6) evaluated $D_{-\nu}(0)$ directly from the DLMF integral as
+$2^{\nu/2-1}\Gamma(\nu/2)/\Gamma(\nu)$. The paper states the equivalent Legendre-normalised form
+$\sqrt\pi/(2^{\nu/2}\Gamma(\tfrac{\nu+1}{2}))$; this unit records that the two agree.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem parCylNeg_zero_paper (ν : ℝ) (hν : 0 < ν) :
+    parCylNeg ν 0 = Real.sqrt π / (2 ^ (ν / 2) * Real.Gamma ((ν + 1) / 2))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Legendre duplication at $s=\nu/2$ (\texttt{Real.Gamma\_mul\_Gamma\_add\_half}) gives
+$\Gamma(\nu/2)\Gamma(\tfrac{\nu+1}{2})=\Gamma(\nu)\,2^{1-\nu}\sqrt\pi$. Cross-multiplying the goal
+(\texttt{div\_eq\_div\_iff}, with $\Gamma(\nu),\Gamma(\tfrac{\nu+1}{2})>0$) reduces it to
+$(2^{\nu/2-1}2^{\nu/2})\bigl(\Gamma(\nu/2)\Gamma(\tfrac{\nu+1}{2})\bigr)=\sqrt\pi\,\Gamma(\nu)$;
+substituting the duplication identity and collapsing the powers $2^{\nu/2-1}2^{\nu/2}=2^{\nu-1}$ and
+$2^{\nu-1}2^{1-\nu}=1$ (\texttt{Real.rpow\_add}) closes it by \texttt{ring}.
+
+\section{Roadblocks and resolutions}
+None of substance --- a short algebraic reconciliation. The only care is grouping the $2^{\bullet}$
+factors before \texttt{Real.rpow\_add} (which does not combine powers buried in a larger product) and
+supplying the positivity side conditions for \texttt{div\_eq\_div\_iff}.
+
+\section{What was Mathlib, what was new}
+Mathlib supplied Legendre duplication (\texttt{Real.Gamma\_mul\_Gamma\_add\_half}) and the $\Gamma$
+positivity/rpow lemmas. New is only the identification of the two closed forms for $D_{-\nu}(0)$.
+
+\section{Lessons}
+When two closed forms of a special-function value differ by a $\Gamma$-duplication, the reconciliation
+is a cross-multiplication plus one duplication rewrite; group the power factors explicitly so
+\texttt{Real.rpow\_add} can fire.
+
+\section{Follow-ups}
+The remaining \S4 items (general-$k$ order-derivative and the log-insertion identities
+\texttt{prop:LogODE}/\texttt{lem:log\_shift}/\texttt{lem:log\_generating}; the ladder-operator commutator
+$[b,b^\dagger]=1$) each need substantial new infrastructure --- iterated parametric differentiation or a
+Weyl-algebra framework.
+\end{document}
