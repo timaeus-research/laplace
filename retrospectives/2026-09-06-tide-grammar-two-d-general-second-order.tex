@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The constant below the logarithm, general equal case:\\
+$Z(n)=\dfrac{n^{-p/2}}{k_1k_2}\Big(A_{p-1}\big(\tfrac12\log n+(k_1+k_2)\log b\big)+C_0(p-1)\Big)+O(n^{-(p+1)/2})$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit~41's identification of the constant below $\log n$ is carried over to the general equal-exponent
+case of unit~45. The weighted logarithmic primitive obeys the exact identity
+$\int_0^LF_\gamma/x-A_\gamma\log L-C_0(\gamma)=\int_L^\infty(A_\gamma-F_\gamma)/x\in[0,A_{\gamma+1}/L]$ with
+$C_0(\gamma)=\int_0^1F_\gamma/x-\int_1^\infty(A_\gamma-F_\gamma)/x$, giving the two-term expansion in the
+title with an explicit remainder and the limit
+$n^{p/2}Z(n)-\tfrac{A_{p-1}}{2k_1k_2}\log n\to\tfrac1{k_1k_2}\big(A_{p-1}(k_1+k_2)\log b+C_0(p-1)\big)$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The tail integrand $(A_\gamma-F_\gamma(x))/x$ is nonnegative and at most $A_{\gamma+1}x^{-2}$ by
+unit~45's tail bound, hence integrable on $[1,\infty)$ with $\int_L^\infty\le A_{\gamma+1}/L$. The split
+of unit~45 (\texttt{weightedLogPrimitive\_split}) then makes the constant term and its one-sided rate
+immediate, exactly as at $\gamma=0$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def weightedLogConst (β a γ : ℝ) : ℝ :=
+  (∫ x in Ioc 0 1, weightedPrimitive β a γ x / x)
+    - ∫ x in Ioi 1, (weightedMass β a γ - weightedPrimitive β a γ x) / x
+theorem weightedLogPrimitive_sub_log_sub_const ... (hL : 1 ≤ L) :
+    weightedLogPrimitive β a γ L - weightedMass β a γ * Real.log L - weightedLogConst β a γ
+      = ∫ x in Ioi L, (weightedMass β a γ - weightedPrimitive β a γ x) / x
+theorem twoDGeneral_second_order_isBigO ...
+    (hp : ((h₁ : ℝ) + 1) / k₁ = ((h₂ : ℝ) + 1) / k₂) :
+    (fun n => twoDGeneral β a b n h₁ h₂ k₁ k₂
+        - n ^ (-(p / 2)) * twoDGeneralSecondOrderCoeff β a b p k₁ k₂ n)
+      =O[atTop] fun n => n ^ (-(p / 2) - 1 / 2)          -- p = (h₁+1)/k₁
+theorem twoDGeneral_second_order_tendsto ... :
+    Tendsto (fun n => n ^ (p / 2) * twoDGeneral β a b n h₁ h₂ k₁ k₂
+        - weightedMass β a (p - 1) / (2 * ((k₁ : ℝ) * k₂)) * Real.log n)
+      atTop (𝓝 (1 / ((k₁ : ℝ) * k₂) * (weightedMass β a (p - 1)
+        * (((k₁ : ℝ) + k₂) * Real.log b) + weightedLogConst β a (p - 1))))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Identical in structure to unit~41 with $F,A,M$ replaced by $F_\gamma,A_\gamma,A_{\gamma+1}$: the
+$(1,L]\cup(L,\infty)$ split of the tail integral, comparison with $A_{\gamma+1}\int_L^\infty x^{-2}$,
+and the two-sided bound $0\le n^{p/2}Z-\mathrm{coeff}(n)\le\tfrac{A_p}{k_1k_2b^{k_1+k_2}}n^{-1/2}$ for
+$n\ge\max(1,b^{-2(k_1+k_2)})$. The big-$O$ uses $n^{-p/2}n^{-1/2}=n^{-p/2-1/2}$ via
+\texttt{Real.rpow\_sub}; the limit is \texttt{squeeze\_zero'}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item Rewriting \texttt{p - 1 + 1 = p} at two hypotheses fails when one of them has no such
+subterm; rewrite each hypothesis separately.
+\item \texttt{rw [one\_div]} picked the instance $1/2$ inside an exponent instead of $1/\sqrt n$;
+after \texttt{div\_eq\_mul\_inv}, use \texttt{← one\_div} to turn the unique inverse into $1/\sqrt n$.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integral\_Ioi\_rpow\_of\_lt}, \texttt{integrableOn\_Ioi\_rpow\_of\_lt},
+\texttt{setIntegral\_union}, \texttt{Real.rpow\_sub}, \texttt{squeeze\_zero'}. New: the weighted constant
+term and the two-term expansion of the general equal case.
+
+\section{Lessons}
+A parametrised lemma family (unit~45) pays off immediately: the second-order theory that took a
+dedicated unit at $\gamma=0$ transfers in one pass once the weighted bounds exist.
+
+\section{Outcome}
+The general two-dimensional equal-exponent integral now has a two-term expansion with explicit
+constant and $O(n^{-(p+1)/2})$ remainder, completing the two-dimensional programme of units~44--48
+(exact reduction, three regimes, trichotomy, next-order term). Remaining directions: mixed multiplicity
+in general dimension, and the general-$(k,h)$ extension of the $d$-fold iterated primitives.
+\end{document}
