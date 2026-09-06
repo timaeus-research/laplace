@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Leading asymptotic of the standard integral for general continuous data}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The one-dimensional leading term of \texttt{cor:standardintegralexp} in its natural generality: for any
+continuous $\xi,\eta$ on the chart with $|\xi(u)-\xi_0|\le Cu$ and $|\eta(u)-\eta_0|\le C'u$ (any $C^1$
+or analytic function at the origin), and $\eta_0\ne0$,
+\[
+\int_0^b u^h\eta(u)\,e^{-\beta nu^{2k}+\beta\sqrt n u^k\xi(u)}\,du
+\;\sim\;\eta_0\,\tfrac1{2k}\,S_{(h+1)/(2k)}(\xi_0)\,n^{-(h+1)/(2k)},
+\]
+with difference $O(n^{-(h+2)/(2k)})$. No series expansion of $\xi$ is required; this supersedes the
+polynomial special cases (units~27, 33) for the leading order. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~33 obtained the leading term for polynomial data by expanding $\xi$ and $\eta$ and bounding every
+non-leading monomial. Looking back at that proof, only one property of the expansion was used at
+leading order: $|\xi(u)-\xi_0|\le Cu$ (and likewise for $\eta$). Making that the hypothesis gives a
+cleaner and far more general theorem, with the first-order remainder $e^{x}-1$, $x=\beta\sqrt nu^k(\xi(u)-\xi_0)$,
+controlled by $|e^{x}-1|\le|x|e^{|x|}$ --- the $N=1$ case of the global exponential remainder bound of
+unit~30.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_exp_sub_one_le_abs_mul_exp (x : ℝ) : |Real.exp x - 1| ≤ |x| * Real.exp |x|
+
+theorem standardIntegral1D_leading_isBigO_of_lipschitz (β ξ₀ η₀ b C C' : ℝ) (ξ η : ℝ → ℝ)
+    (h k : ℕ) (hβ : 0 < β) (hb : 0 < b) (hk : 0 < k) (hC : 0 ≤ C)
+    (hξc : Continuous ξ) (hηc : Continuous η)
+    (hξ : ∀ u ∈ Ioc 0 b, |ξ u - ξ₀| ≤ C * u) (hη : ∀ u ∈ Ioc 0 b, |η u - η₀| ≤ C' * u) :
+    (fun n => Z_chart(ξ,η) n - η₀ * ((1/(2k)) * S_{(h+1)/(2k)}(ξ₀)) * n^(-(h+1)/(2k)))
+      =O[atTop] fun n => n ^ (-((h:ℝ)+2)/(2k))
+
+theorem standardIntegral1D_leading_isEquivalent_of_lipschitz ... (hη₀ : η₀ ≠ 0) ... :
+    (fun n => Z_chart(ξ,η) n) ~[atTop] fun n => η₀ * ((1/(2k)) * S_{(h+1)/(2k)}(ξ₀)) * n^(-(h+1)/(2k))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Pointwise, $u^h\eta e^{\rm pop}e^{x}=\eta_0u^he^{\rm pop}+\eta_0u^he^{\rm pop}(e^x-1)+u^h(\eta-\eta_0)e^{\rm pop}e^{x}$.
+The first piece is $\eta_0$ times the half-line value minus its exponentially small tail (units~22, 25).
+For the second, $|e^x-1|\le|x|e^{|x|}$ with $|x|\le\beta\sqrt nu^kCu$ and
+$e^{\rm pop}e^{|x|}\le e^{\rm pop}$ at the shifted argument $\xi_0+Cb$ gives the majorant
+$|\eta_0|\beta C\,u^{h+1}(\sqrt nu^k)e^{{\rm pop}'}$, a $p=1$ insertion at $h+1$: order $n^{-(h+2)/(2k)}$.
+For the third, $|\eta-\eta_0|\le C'u$ and $e^{x}\le e^{|x|}$ give $C'u^{h+1}e^{{\rm pop}'}$, the kernel
+identity at $h+1$: again $n^{-(h+2)/(2k)}$. \texttt{IsBigO.of\_bound} with the sum of the three constants,
+then the power little-$o$ and \texttt{IsLittleO.const\_mul\_right} for the equivalence.
+
+\section{Roadblocks and resolutions}
+None: first-try compile, using the idioms accumulated over units~28--33 (opaque local definitions,
+explicit \texttt{mul\_le\_mul} chains instead of \texttt{gcongr} on \texttt{rpow}, a universally
+quantified \texttt{key} identity for the final rearrangement, the insertion identity as the sole
+evaluator). A small point: $0\le C'$ is not assumed but derived from the hypothesis at $u=b$.
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Finset.sum\_range\_one}, \texttt{abs\_integral\_le\_integral\_abs},
+\texttt{setIntegral\_mono\_on}/\texttt{mono\_set}, \texttt{isLittleO\_exp\_neg\_mul\_rpow\_atTop}. New: the
+leading asymptotic under a Lipschitz-at-the-origin hypothesis, and the global $|e^x-1|\le|x|e^{|x|}$.
+
+\section{Lessons}
+After proving a result for polynomials, ask which property of the polynomial the proof actually used;
+here it was a single linear bound at the origin, and stating that as the hypothesis both generalised
+the theorem and shortened the proof.
+
+\section{Outcome}
+The one-dimensional leading-order theory of grammar \S4.2 is complete in natural generality; the
+higher-order expansions are available for monomial and (to second order) polynomial perturbations. The
+remaining gaps are the higher-order terms for general analytic $\xi$ (the tree combinatorics) and the
+multivariate theory.
+\end{document}
