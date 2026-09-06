@@ -228,3 +228,4 @@ import Laplace.Grammar.PolynomialTreeD
 import Laplace.Grammar.DivisiblePerturbation
 import Laplace.Grammar.DivisibleWeight
 import Laplace.Grammar.FreeEnergyPerturbed
+import Laplace.Grammar.BoundedXi
