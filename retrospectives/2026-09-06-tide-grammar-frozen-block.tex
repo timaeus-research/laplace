@@ -1,0 +1,65 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Minimal block III: the frozen coefficient theorem with noncritical coordinates}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Freezing $\xi,\eta$ on a minimal block of multiplicity $m=d+1$ (they depend only on the noncritical
+coordinates $v$, whose exponents exceed the common block exponent $p$), the frozen state integral
+$Z_0(N)=\int_v v^{h'}e(v)\,Z^{a(v)}_{d+1}(Nv^{k'})\,dv$ satisfies
+$N^pZ_0(N)/\log^dN\to(\prod k_i^{-1})\frac1{d!}\int_v v^{h'}(v^{k'})^{-p}A_{p-1}(a(v))e(v)\,dv$.
+This is the multiplicity-$m$ analogue of unit~70: dominated convergence over $v$ with the uniform
+block envelope of unit~74 and the scale limit at $\gamma=v^{k'}$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def frozenStateIntegral (β b N : ℝ) (k h : ℕ → ℕ) (d : ℕ) {d' : ℕ}
+    (k' h' : Fin d' → ℕ) (a e : (Fin d' → ℝ) → ℝ) : ℝ :=
+  ∫ v : Fin d' → ℝ, (∏ i, v i ^ h' i) * e v
+    * iterChartGen β (a v) b k h (d + 1) (N * ∏ i, v i ^ k' i) ∂(boxMeasure b d')
+noncomputable def blockDivisorDensity (β p : ℝ) (k : ℕ → ℕ) (d : ℕ) {d' : ℕ}
+    (k' h' : Fin d' → ℕ) (a e : (Fin d' → ℝ) → ℝ) (v : Fin d' → ℝ) : ℝ :=
+  (∏ i, v i ^ h' i) * e v * ((∏ i ∈ Finset.range (d + 1), (1 : ℝ) / k i)
+    * (1 / (d.factorial : ℝ)) * (∏ i, v i ^ k' i) ^ (-p) * weightedMass β (a v) (p - 1))
+theorem frozenStateIntegral_tendsto ... (hp : ∀ i, i ≤ d → ((h i : ℝ) + 1) / k i = p)
+    (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i) (hac : Continuous a) (hec : Continuous e) :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ d
+        * frozenStateIntegral β b N k h d k' h' a e) atTop
+      (𝓝 (∫ v, blockDivisorDensity β p k d k' h' a e v ∂(boxMeasure b d')))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+For $\log N\ge1$ and $v$ in the open box, the envelope gives
+$Z^{a(v)}_{d+1}(Nv^{k'})\le P\,E\,(1+\log_+(Nv^{k'}B))^d(Nv^{k'})^{-p}$ and
+$\log_+(Nv^{k'}B)\le\log N+\log_+(B'B)$, so the normalised integrand is dominated by
+$K\,v^{h'}(v^{k'})^{-p}$, integrable on the box because $q'_i>p$ (unit~71). The pointwise limit is the
+scale limit of unit~74 at $\gamma=v^{k'}$, multiplied by $v^{h'}e(v)$. Measurability in $v$ comes from
+writing the block as a box integral over $(0,b]^{d+1}$ of a function jointly continuous in $(v,u)$ and
+applying \texttt{StronglyMeasurable.integral\_prod\_right'}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{StronglyMeasurable} has no \texttt{congr} field (it unfolds to an existential); rewrite
+the function by \texttt{funext} first.
+\item Dot notation across a line break after a parenthesised term (\texttt{(foo …)\textbackslash n
+.const\_mul}) parses wrongly; write \texttt{Tendsto.const\_mul c (foo …)}.
+\end{itemize}
+
+\section{Outcome}
+Astra target~4 (frozen minimal-face coefficient) is done for a block of any multiplicity together with
+arbitrary noncritical coordinates. Remaining for the genuine leading theorem: the strip estimate for a
+block with one non-minimal coordinate, and the continuity freezing argument $Z-Z_0=o(N^{-p}\log^dN)$.
+\end{document}
