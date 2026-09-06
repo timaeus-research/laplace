@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Minimal block I: the log-weighted primitive and the exact product-density formula}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The divide-and-integrate tower on a primitive $G(x)=\int_0^x g$ is the log-weighted integral
+$H_j(y)=\frac1{j!}\int_0^y\log^j(y/t)\,g(t)\,dt$ (Fubini on the triangle $0<s\le t\le y$). For the
+weighted kernel $g(t)=t^{p-1}e^{-\beta t^2+\beta at}$ this turns the exact tower reduction of unit~50
+into the product-density formula for an equal-exponent chart block,
+$Z_{d+1}(c)=\big(\prod_{i\le d}k_i^{-1}\big)c^{-p}\frac1{d!}\int_0^{cB}\log^d(cB/t)\,t^{p-1}
+e^{-\beta t^2+\beta at}\,dt$, valid at every scale $c>0$. Integrability of $|\log t|^it^\gamma
+e^{-\beta t^2+\beta at}$ on $(0,\infty)$ is recorded for the domination arguments to come.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integral_Icc_log_pow_div (j : ℕ) (s y : ℝ) (hs : 0 < s) (hsy : s ≤ y) :
+    ∫ t in Icc s y, (Real.log t - Real.log s) ^ j / t
+      = (Real.log y - Real.log s) ^ (j + 1) / (j + 1)
+noncomputable def logWeightedPrim (g : ℝ → ℝ) (j : ℕ) (y : ℝ) : ℝ :=
+  1 / (j.factorial : ℝ) * ∫ t in Ioc (0 : ℝ) y, (Real.log y - Real.log t) ^ j * g t
+theorem iterDivPrim_primitive (g) (hg : Measurable g) (hint : ...) (j : ℕ) (y : ℝ)
+    (hy : 0 < y) :
+    iterDivPrim (fun x => ∫ t in Ioc (0 : ℝ) x, g t) j y = logWeightedPrim g j y
+theorem logPow_weightedKernel_integrableOn (β a γ : ℝ) (hβ : 0 < β) (hγ : -1 < γ) (i : ℕ) :
+    IntegrableOn (fun t => |Real.log t| ^ i * (t ^ γ * quadKernel β a t)) (Ioi 0)
+theorem iterChartGen_eq_logWeighted ...
+    (hp : ∀ i, i ≤ d → ((h i : ℝ) + 1) / k i = p) (hc : 0 < c) :
+    iterChartGen β a b k h (d + 1) c
+      = (∏ i ∈ Finset.range (d + 1), (1 : ℝ) / k i) * c ^ (-p)
+        * logWeightedPrim (fun t => t ^ (p - 1) * quadKernel β a t) d
+            (c * b ^ (∑ i ∈ Finset.range (d + 1), k i))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The triangle integrand $f(t,s)=\mathbf 1_{s\le t}(\log t-\log s)^jg(s)/t$ is measurable
+(\texttt{Measurable.ite} on $\{s\le t\}$). Its $s$-section over $(0,y]$ is the inner integral over
+$(0,t]$ (\texttt{setIntegral\_indicator} with $\mathrm{Iic}\,t$); its $t$-section is
+$g(s)\int_s^y(\log t-\log s)^j/t\,dt=g(s)\log^{j+1}(y/s)/(j+1)$ by the fundamental theorem of calculus.
+\texttt{integrable\_prod\_iff'} reduces integrability on the square to that of
+$\log^{j+1}(y/s)|g(s)|$, and \texttt{integral\_integral\_swap} finishes the induction.
+For the kernel, $|\log t|\le t^{-\varepsilon}/\varepsilon$ on $(0,1]$ and $|\log t|\le t$ on $[1,\infty)$
+dominate $|\log t|^i t^\gamma$ by integrable weighted kernels; the binomial expansion of
+$(|\log y|+|\log t|)^j$ gives the $(0,y]$ version.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{positivity} cannot see $0\le t^\gamma\,\mathrm{quadKernel}$ (opaque definition): derive
+the fact once from \texttt{quadKernel\_pos} and thread it.
+\item \texttt{add\_pow} expands $(x+y)^n$ as $\sum x^m y^{n-m}\binom nm$; the dominating sum has to be
+written in that orientation.
+\item After \texttt{congr 1} on set integrals the goal may be a measure equality; rewrite the set
+identity before, not after.
+\item \texttt{Integrable.congr} hands the pointwise goal as a beta redex; use \texttt{simp only}
+rather than \texttt{rw}.
+\end{itemize}
+
+\section{Outcome}
+Astra target~1 (product-density identity) is done in the form best adapted to the existing tower.
+Next: the frozen block at general scale (pointwise limit $N^pI(N\gamma)/\log^{m-1}N\to
+\gamma^{-p}A_{p-1}(a)/((m-1)!\prod k_i)$ and the uniform envelope), then the noncritical
+integration and the freezing argument.
+\end{document}
