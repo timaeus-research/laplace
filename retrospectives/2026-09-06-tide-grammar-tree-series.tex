@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The exponential tree series in $d$ dimensions}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The proof of \texttt{thm:TaylorTree} begins by writing $\xi=\xi(0)+J$ and expanding
+$e^{\beta\sqrt n\,u^kJ(u)}$ in its exponential series. For any continuous $J$ on the box the series
+may be integrated term by term:
+$\int u^he^{-\beta nu^{2k}+\beta\sqrt n\,u^k(a+J)}\,du=\sum_{p\ge0}\frac{\beta^p}{p!}\int u^h(\sqrt n\,u^kJ)^pf(\sqrt n\,u^k)\,du$
+as a convergent series (\texttt{boxIntegralXi\_hasSum}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+On the compact box every factor is bounded: $u^h\le\prod b^{h_i}$, $\sqrt n\,u^k\le\sqrt n\prod b^{k_i}$,
+$|J|\le C_J$ (continuous on the closed box), $f\le E$. The $p$-th layer is therefore dominated by the
+constant $H_bE\,(\beta K_bC_J)^p/p!$, whose sum is $H_bE\,e^{\beta K_bC_J}$, integrable against the
+finite box measure; dominated convergence for series does the rest.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def boxIntegralXi (β a b c : ℝ) {d : ℕ} (k h : Fin d → ℕ)
+    (J : (Fin d → ℝ) → ℝ) : ℝ :=
+  ∫ u, (∏ i, u i ^ h i)
+    * Real.exp (-β * (c * ∏ i, u i ^ k i) ^ 2
+        + β * (c * ∏ i, u i ^ k i) * (a + J u)) ∂(boxMeasure b d)
+noncomputable def treeLayer (β a b c : ℝ) {d : ℕ} (k h : Fin d → ℕ)
+    (J : (Fin d → ℝ) → ℝ) (p : ℕ) : ℝ :=
+  β ^ p / p.factorial * ∫ u, (∏ i, u i ^ h i) * ((c * ∏ i, u i ^ k i) * J u) ^ p
+    * quadKernel β a (c * ∏ i, u i ^ k i) ∂(boxMeasure b d)
+theorem boxIntegralXi_hasSum (β a b c : ℝ) (hβ : 0 < β) (hb : 0 < b) (hc : 0 ≤ c)
+    {d : ℕ} (k h : Fin d → ℕ) (J : (Fin d → ℝ) → ℝ) (hJ : Continuous J) :
+    HasSum (treeLayer β a b c k h J) (boxIntegralXi β a b c k h J)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Unit~26's one-dimensional idiom (\texttt{hasSum\_integral\_of\_dominated\_convergence}) transferred
+verbatim: measurability from continuity; the almost-everywhere bound from
+\texttt{ae\_restrict\_mem} on the box (the box measure is a restriction, unit~54) and the compact bound
+\texttt{IsCompact.exists\_bound\_of\_continuousOn}; summability and integrability of the constant
+bound; and the pointwise exponential series \texttt{NormedSpace.expSeries\_div\_hasSum\_exp} with
+$e^{-\beta s^2+\beta s(a+J)}=f(s)e^{\beta sJ}$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{simp} rewrote membership of the constant point in the closed box into a pointwise
+inequality of functions; \texttt{Set.mem\_univ\_pi} and an explicit witness instead.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied the series interchange (\texttt{hasSum\_integral\_of\_dominated\_convergence}), the
+compact bound (\texttt{IsCompact.exists\_bound\_of\_continuousOn} with \texttt{isCompact\_univ\_pi}),
+the summable majorant (\texttt{Real.summable\_pow\_div\_factorial}), the exponential series
+(\texttt{NormedSpace.expSeries\_div\_hasSum\_exp}) and \texttt{Finset.prod\_le\_prod}. New: the
+$d$-dimensional tree series.
+
+\section{Lessons}
+The compactness of the chart box makes the analytic step of the Taylor tree trivial for any continuous
+$J$; the difficulty of the theorem lies entirely in the combinatorics of expanding $J^p$ and in
+summing the resulting tree, not in the interchange of sum and integral.
+
+\section{Outcome}
+The Taylor tree's outer expansion is formalised in $d$ dimensions. Each layer is, for polynomial $J$,
+a finite combination of the tree terms of unit~60, all of whose leading exponents lie in $\Lambda(h,k)$.
+\end{document}
