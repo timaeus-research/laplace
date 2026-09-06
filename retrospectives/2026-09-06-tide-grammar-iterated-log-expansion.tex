@@ -46,10 +46,12 @@ noncomputable def iterLogCoeff (β a : ℝ) : ℕ → ℕ → ℝ
           - ∑ i ∈ Finset.range (m + 1), iterLogCoeff β a m i * Real.log x ^ i) / x
   | m + 1, i + 1 => iterLogCoeff β a m i / ((i : ℝ) + 1)
 theorem iterLogCoeff_top ... : iterLogCoeff β a m m = quadMass β a / (m.factorial : ℝ)
-theorem iterLogRem_succ_eq ... (hL : 1 ≤ L) (hb : ∀ L, 1 ≤ L → |iterLogRem β a m L| ≤ M / L) :
+theorem iterLogRem_succ_eq ... (hL : 1 ≤ L)
+    (hb : ∀ L, 1 ≤ L → |iterLogRem β a m L| ≤ M / L) :
     iterLogRem β a (m + 1) L = -∫ x in Ioi L, iterLogRem β a m x / x
 theorem iterLogPrim_expansion (β a : ℝ) (hβ : 0 < β) (m : ℕ) (L : ℝ) (hL : 1 ≤ L) :
-    |iterLogPrim β a m L - ∑ i ∈ Finset.range (m + 1), iterLogCoeff β a m i * Real.log L ^ i|
+    |iterLogPrim β a m L
+        - ∑ i ∈ Finset.range (m + 1), iterLogCoeff β a m i * Real.log L ^ i|
       ≤ quadMoment β a / L
 theorem iterChart_expansion_isBigO (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) (k : ℕ) :
     (fun n => iterChart β a b (k + 2) (Real.sqrt n)
@@ -78,7 +80,8 @@ unused hypothesis, and three over-long lines.
 
 \section{What was Mathlib, what was new}
 Mathlib: \texttt{integral\_finsetSum}, \texttt{integrable\_finsetSum},
-\texttt{continuousOn\_finsetSum}, \texttt{Finset.sum\_range\_succ'}, \texttt{norm\_integral\_le\_of\_norm\_le},
+\texttt{continuousOn\_finsetSum}, \texttt{Finset.sum\_range\_succ'},
+\texttt{norm\_integral\_le\_of\_norm\_le}, and the interval-to-set integrability bridge
 \texttt{intervalIntegrable\_iff\_integrableOn\_Ioc\_of\_le}. New: the recursive coefficient scheme,
 the exact remainder recursion, and the uniform $M/L$ bound for every $m$.
 
