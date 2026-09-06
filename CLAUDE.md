@@ -153,6 +153,19 @@ contractions before formalising — formalisation needs every term named.
 - `Nat.doubleFactorial_add_two : (n+2)‼ = (n+2) * n‼`
 - `Nat.doubleFactorial_pos : 0 < n‼`
 
+
+## Monomial cumulant ladder (OneD)
+
+The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`) now has
+the first two even cumulants of `x` against `exp(-t·x^(2k)/(2k)!)` in Gamma closed form:
+`monomial_variance_even` (2nd cumulant `⟨x²⟩` cov) and `monomial_excess_kurtosis` (4th cumulant
+`⟨x⁴⟩ - 3⟨x²⟩²`). RECIPE for the next rung: mirror `monomial_variance_even` verbatim — rewrite the
+observable powers into `x^(2·j)` form (`rfl`, since `2*j` reduces), substitute
+`gibbsExpectation_kthPotential_even` at the needed `j`s, fold the common power via
+`((2k)!/t)^(a/k) = (((2k)!/t)^(1/k))^a` (`Real.rpow_add`), then `push_cast; rw [hpow]; ring` (the
+Gamma ratios ride as opaque atoms; push_cast MUST precede the power rewrite so the ℕ-cast exponent
+matches the ℝ-literal in the `rpow` lemma). Gaussian sanity check `k=1`: excess kurtosis `= 0`.
+
 ## Proof tactics (build out as we go)
 
 **`(2 * k : ℕ)` vs `2 * (k : ℝ)`.** Mathlib's `integral_rpow_mul_exp_neg_*` lemmas use real
