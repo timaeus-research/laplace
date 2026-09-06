@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The regular case: $S_{1/2}$'s Gaussian form and the half-integer ladder}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 10 of the grammar-paper \S4 autoformalisation, formalising Example \texttt{ex:fluctuation\_half}
+--- the regular-model case $\lambda=1/2$. Two facts: (a) the \emph{half-integer ladder}
+$\partial_a^n S_{1/2}(a)=\beta^n S_{(n+1)/2}(a)$, so every half-integer fluctuation function is an
+$a$-derivative of the single function $S_{1/2}$; and (b) the \emph{Gaussian form}
+$S_{1/2}(a)=\sqrt{2/\beta}\,e^{\beta a^2/4}\int_0^\infty e^{-(u-a\sqrt{\beta/2})^2/2}\,du$ from
+completing the square. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+For regular statistical models the resolution is trivial and the RLCT is $\lambda=1/2$ on every chart,
+so the whole fluctuation family collapses onto $S_{1/2}$. The paper records this in
+\texttt{ex:fluctuation\_half}: $S_{1/2}$ has an error-function closed form, and all higher
+$S_{(n+1)/2}$ are its $a$-derivatives. Both facts sit directly on the derivative ladder (unit~2) and
+the kernel form (unit~7), needing no new machinery.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_half_iteratedDeriv (β : ℝ) (hβ : 0 < β) (n : ℕ) :
+    iteratedDeriv n (fun a => fluctuation β (1 / 2) a)
+      = fun a => β ^ n * fluctuation β (((n : ℝ) + 1) / 2) a
+
+theorem fluctuation_half_gaussian (β a : ℝ) (hβ : 0 < β) :
+    fluctuation β (1 / 2) a
+      = Real.sqrt (2 / β) * Real.exp (β * a ^ 2 / 4)
+        * ∫ u in Set.Ioi 0, Real.exp (-(u - a * Real.sqrt (β / 2)) ^ 2 / 2)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\textbf{Half-integer ladder.} Induction on $n$. \texttt{iteratedDeriv\_succ} peels one derivative;
+the induction hypothesis turns the inner iterated derivative into $\beta^n S_{(n+1)/2}$, and
+\texttt{deriv\_const\_mul} then \texttt{deriv\_fluctuation} (the ladder $S'_\lambda=\beta
+S_{\lambda+1/2}$, valid since $(n+1)/2>0$) advance it to $\beta^{n+1}S_{(n+2)/2}$; index arithmetic
+$(n+1)/2+1/2=(n+2)/2$ and $\beta^n\beta=\beta^{n+1}$ close it.
+
+\textbf{Gaussian form.} Start from the kernel identity of unit~7 at $\lambda=1/2$:
+$S_{1/2}(a)=2^{1/2}\beta^{-1/2}\int_0^\infty u^{0}\,e^{-u^2/2+a\sqrt{\beta/2}\,u}\,du$. The constant is
+$\sqrt{2/\beta}$ (\texttt{Real.sqrt\_div'} plus $2^{1/2}=\sqrt2$, $\beta^{-1/2}=(\sqrt\beta)^{-1}$).
+Pull the constant $e^{\beta a^2/4}$ out of the integral (\texttt{integral\_const\_mul} backwards) and
+match integrands pointwise: $u^{0}=1$, and completing the square
+$-u^2/2+a\sqrt{\beta/2}\,u=\beta a^2/4-(u-a\sqrt{\beta/2})^2/2$ using $(\sqrt{\beta/2})^2=\beta/2$.
+
+\section{Roadblocks and resolutions}
+Almost none:
+\begin{itemize}
+\item The completed-square identity is an equality with a $\sqrt{}$ that must be squared away.
+\texttt{nlinarith} does not prove equalities; \texttt{linear\_combination (a\^{}2/2) * hs} (with
+\texttt{hs :} $\sqrt{\beta/2}^2=\beta/2$) is the right tool --- the difference of the two sides is
+exactly $\tfrac{a^2}{2}(\sqrt{\beta/2}^2-\beta/2)$.
+\item \texttt{setIntegral\_congr\_fun} hands an applied-lambda goal; \texttt{beta\_reduce} before the
+rewrites.
+\item Mathlib has no \texttt{erf}, so the Gaussian \emph{tail} $\int_0^\infty e^{-(u-c)^2/2}\,du$ is
+left un-evaluated; the statement is faithful to \texttt{ex:fluctuation\_half} up to that final
+notation.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied \texttt{iteratedDeriv\_succ}, \texttt{deriv\_const\_mul}, \texttt{integral\_const\_mul},
+\texttt{Real.sqrt\_div'}/\texttt{sq\_sqrt}, and \texttt{linear\_combination}. New is the pairing of
+unit~2's ladder and unit~7's kernel form into the two regular-case statements --- in particular the
+observation that the $\lambda=1/2$ kernel integrand, after $u^{0}=1$ and one completed square, is a
+shifted Gaussian.
+
+\section{Lessons}
+\texttt{linear\_combination} is the clean way to discharge a polynomial equality that holds only after a
+square-root identity: name $\sqrt{c}^2=c$ and give the coefficient, rather than reaching for
+\texttt{nlinarith} (which targets inequalities). And a specialised value of a general closed form (here
+$S_{1/2}$ from the kernel form) is often cheaper to reshape directly than to re-derive from the integral
+definition.
+
+\section{Follow-ups}
+The remaining \S4 items are operator-algebraic --- the ladder operators $b,b^\dagger$ with
+$[b,b^\dagger]=1$, the number operator, and the log-insertion generating function --- which want a
+Weyl-algebra framework, plus the order-derivative identity
+$\partial_\lambda^k S_\lambda=\int(\log t)^k t^{\lambda-1}e^{\cdots}$ (differentiation under the
+integral in the order parameter) that underlies \texttt{lem:log\_shift}/\texttt{prop:LogODE}.
+\end{document}
