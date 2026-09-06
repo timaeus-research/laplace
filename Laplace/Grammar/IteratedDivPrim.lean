@@ -10,11 +10,11 @@ import Laplace.Grammar.TwoDGeneralSecondOrder
 Unit 43 proved the complete polynomial-in-`log` expansion of the iterated primitives
 `H_{m+1}(x) = ∫₀^x H_m(t)/t dt` of the quadratic primitive `F₀`. The mechanism only uses four facts
 about the base `G = H₀`: measurability, `0 ≤ G ≤ A`, `G(x) ≤ C x^δ` near `0` (`δ > 0`), and the tail
-`|G(L) − A| ≤ M/L` for `L ≥ 1`. Here the construction is carried out for an arbitrary base
-satisfying these (`LogBase`), with all integrals over `Ioc`, and instantiated for the weighted
+`|G(L) − A| ≤ M L^{-ε}` for `L ≥ 1` (`ε > 0`). Here the construction is carried out for an arbitrary
+base satisfying these (`LogBase`), with all integrals over `Ioc`, and instantiated for the weighted
 primitives `F_γ` (`γ > −1`): `A = A_γ`, `M = A_{γ+1}`, `C = E/(γ+1)`, `δ = γ+1`. The result is
 
-  `|H^G_m(L) − ∑_{i ≤ m} c_{m,i} log^i L| ≤ M/L`  (`L ≥ 1`),  `c_{m,m} = A/m!`,
+  `|H^G_m(L) − ∑_{i ≤ m} c_{m,i} log^i L| ≤ (M/ε^m) L^{-ε}`  (`L ≥ 1`),  `c_{m,m} = A/m!`,
 
 with the same recursive coefficients as unit 43. Zero `sorry`/`axiom`.
 -/
@@ -34,13 +34,14 @@ theorem iterDivPrim_succ (G : ℝ → ℝ) (m : ℕ) (x : ℝ) :
     iterDivPrim G (m + 1) x = ∫ t in Ioc (0 : ℝ) x, iterDivPrim G m t / t := rfl
 
 /-- Hypotheses on a base function under which the iterated expansion goes through. -/
-structure LogBase (G : ℝ → ℝ) (A M C δ : ℝ) : Prop where
+structure LogBase (G : ℝ → ℝ) (A M C δ ε : ℝ) : Prop where
   measurable : Measurable G
   nonneg : ∀ x, 0 ≤ G x
   le_mass : ∀ x, G x ≤ A
   le_pow : ∀ x, 0 < x → x ≤ 1 → G x ≤ C * x ^ δ
   δ_pos : 0 < δ
-  tail : ∀ L, 1 ≤ L → |G L - A| ≤ M / L
+  ε_pos : 0 < ε
+  tail : ∀ L, 1 ≤ L → |G L - A| ≤ M * L ^ (-ε)
 
 theorem integrableOn_rpow_sub_one_Ioc (δ : ℝ) (hδ : 0 < δ) :
     IntegrableOn (fun t : ℝ => t ^ (δ - 1)) (Ioc 0 1) :=
@@ -82,7 +83,7 @@ theorem div_integrableOn_of_bounds {H : ℝ → ℝ} {C' δ K L : ℝ} (hδ : 0 
 
 /-- Per-level properties of the iterated primitives: measurable, nonnegative, `≤ (C/δ^m) x^δ` near
 `0`, and `H_m/t` integrable on every `(0, L]`. -/
-theorem iterDivPrim_props {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C δ) (m : ℕ) :
+theorem iterDivPrim_props {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε) (m : ℕ) :
     Measurable (iterDivPrim G m) ∧ (∀ x, 0 ≤ iterDivPrim G m x)
       ∧ (∀ x, 0 < x → x ≤ 1 → iterDivPrim G m x ≤ C / δ ^ m * x ^ δ)
       ∧ (∀ L, IntegrableOn (fun t => iterDivPrim G m t / t) (Ioc 0 L)) := by
@@ -162,54 +163,55 @@ theorem divCoeff_top (G : ℝ → ℝ) (A : ℝ) (m : ℕ) :
 theorem divRem_zero (G : ℝ → ℝ) (A x : ℝ) : divRem G A 0 x = G x - A := by
   simp [divRem, divCoeff_zero_zero, iterDivPrim_zero]
 
-theorem divRem_div_measurable {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C δ) (m : ℕ) :
+theorem divRem_div_measurable {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε) (m : ℕ) :
     Measurable (fun x => divRem G A m x / x) := by
   refine Measurable.div ?_ measurable_id
   refine (iterDivPrim_props hG m).1.sub ?_
   refine Finset.measurable_sum _ fun i _ => ?_
   exact measurable_const.mul (Real.measurable_log.pow_const i)
 
-theorem divRem_div_bounds (G : ℝ → ℝ) (A M : ℝ) (m : ℕ) (x : ℝ) (hx : 1 ≤ x)
-    (hb : |divRem G A m x| ≤ M / x) :
-    |divRem G A m x / x| ≤ M * x ^ (-2 : ℝ) := by
+theorem divRem_div_bounds (G : ℝ → ℝ) (A M ε : ℝ) (m : ℕ) (x : ℝ) (hx : 1 ≤ x)
+    (hb : |divRem G A m x| ≤ M * x ^ (-ε)) :
+    |divRem G A m x / x| ≤ M * x ^ (-ε - 1) := by
   have hx0 : (0 : ℝ) < x := one_pos.trans_le hx
-  rw [abs_div, abs_of_pos hx0, Real.rpow_neg hx0.le, Real.rpow_two, div_le_iff₀ hx0]
-  calc |divRem G A m x| ≤ M / x := hb
-    _ = M * (x ^ 2)⁻¹ * x := by field_simp
+  rw [abs_div, abs_of_pos hx0, div_le_iff₀ hx0, Real.rpow_sub_one hx0.ne']
+  calc |divRem G A m x| ≤ M * x ^ (-ε) := hb
+    _ = M * (x ^ (-ε) / x) * x := by field_simp
 
-theorem divRem_div_integrableOn {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C δ) (m : ℕ)
-    (c : ℝ) (hc : 1 ≤ c) (hb : ∀ L, 1 ≤ L → |divRem G A m L| ≤ M / L) :
+theorem divRem_div_integrableOn {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε) (m : ℕ)
+    (M' c : ℝ) (hc : 1 ≤ c) (hb : ∀ L, 1 ≤ L → |divRem G A m L| ≤ M' * L ^ (-ε)) :
     IntegrableOn (fun x => divRem G A m x / x) (Ioi c) := by
   have hc0 : (0 : ℝ) < c := one_pos.trans_le hc
-  refine Integrable.mono' (g := fun x => M * x ^ (-2 : ℝ))
-    ((integrableOn_Ioi_rpow_of_lt (by norm_num) hc0).const_mul _)
+  have hε := hG.ε_pos
+  refine Integrable.mono' (g := fun x => M' * x ^ (-ε - 1))
+    ((integrableOn_Ioi_rpow_of_lt (by linarith) hc0).const_mul _)
     (divRem_div_measurable hG m).aestronglyMeasurable ?_
   rw [ae_restrict_iff' measurableSet_Ioi]
   refine Filter.Eventually.of_forall fun x hx => ?_
   have hx1 : (1 : ℝ) ≤ x := hc.trans (le_of_lt hx)
   rw [Real.norm_eq_abs]
-  exact divRem_div_bounds G A M m x hx1 (hb x hx1)
+  exact divRem_div_bounds G A M' ε m x hx1 (hb x hx1)
 
-theorem divRem_tail_abs_le (G : ℝ → ℝ) (A M : ℝ) (m : ℕ) (L : ℝ) (hL : 1 ≤ L)
-    (hb : ∀ L, 1 ≤ L → |divRem G A m L| ≤ M / L) :
-    |∫ x in Ioi L, divRem G A m x / x| ≤ M / L := by
+theorem divRem_tail_abs_le (G : ℝ → ℝ) (A M ε : ℝ) (hε : 0 < ε) (m : ℕ) (L : ℝ) (hL : 1 ≤ L)
+    (hb : ∀ L, 1 ≤ L → |divRem G A m L| ≤ M * L ^ (-ε)) :
+    |∫ x in Ioi L, divRem G A m x / x| ≤ M / ε * L ^ (-ε) := by
   have hL0 : (0 : ℝ) < L := one_pos.trans_le hL
-  have hint : (∫ x in Ioi L, M * x ^ (-2 : ℝ)) = M / L := by
-    rw [MeasureTheory.integral_const_mul, integral_Ioi_rpow_of_lt (by norm_num) hL0]
-    rw [show (-2 : ℝ) + 1 = -1 by norm_num, Real.rpow_neg hL0.le, Real.rpow_one]
+  have hint : (∫ x in Ioi L, M * x ^ (-ε - 1)) = M / ε * L ^ (-ε) := by
+    rw [MeasureTheory.integral_const_mul, integral_Ioi_rpow_of_lt (by linarith) hL0,
+      show -ε - 1 + 1 = -ε by ring]
     field_simp
   rw [← hint, ← Real.norm_eq_abs]
-  refine norm_integral_le_of_norm_le ((integrableOn_Ioi_rpow_of_lt (by norm_num) hL0).const_mul _)
+  refine norm_integral_le_of_norm_le ((integrableOn_Ioi_rpow_of_lt (by linarith) hL0).const_mul _)
     ?_
   rw [ae_restrict_iff' measurableSet_Ioi]
   refine Filter.Eventually.of_forall fun x hx => ?_
   have hx1 : (1 : ℝ) ≤ x := hL.trans (le_of_lt hx)
   rw [Real.norm_eq_abs]
-  exact divRem_div_bounds G A M m x hx1 (hb x hx1)
+  exact divRem_div_bounds G A M ε m x hx1 (hb x hx1)
 
 /-- **The transfer step**: for `L ≥ 1`, `θ_{m+1}(L) = −∫_L^∞ θ_m(x)/x dx`. -/
-theorem divRem_succ_eq {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C δ) (m : ℕ) (L : ℝ)
-    (hL : 1 ≤ L) (hb : ∀ L, 1 ≤ L → |divRem G A m L| ≤ M / L) :
+theorem divRem_succ_eq {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε) (m : ℕ) (M' : ℝ)
+    (L : ℝ) (hL : 1 ≤ L) (hb : ∀ L, 1 ≤ L → |divRem G A m L| ≤ M' * L ^ (-ε)) :
     divRem G A (m + 1) L = -∫ x in Ioi L, divRem G A m x / x := by
   have hint : IntegrableOn (fun x => iterDivPrim G m x / x) (Ioc 0 L) :=
     (iterDivPrim_props hG m).2.2.2 L
@@ -219,7 +221,7 @@ theorem divRem_succ_eq {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C 
     (hint.mono_set (Ioc_subset_Ioc_left zero_le_one))
     (f := fun x => iterDivPrim G m x / x)
   rw [Ioc_union_Ioc_eq_Ioc zero_le_one hL] at hsplit
-  have hθint := divRem_div_integrableOn hG m 1 le_rfl hb
+  have hθint := divRem_div_integrableOn hG m M' 1 le_rfl hb
   have hθsplit := setIntegral_union (Ioc_disjoint_Ioi (le_refl L)) measurableSet_Ioi
     (hθint.mono_set Ioc_subset_Ioi_self) (hθint.mono_set (Ioi_subset_Ioi hL))
     (f := fun x => divRem G A m x / x)
@@ -262,31 +264,33 @@ theorem divRem_succ_eq {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C 
   rw [divRem, iterDivPrim_succ, hsplit, hmid, hsum, divCoeff_succ_zero, hθsplit]
   ring
 
-/-- **Uniform remainder bound**: `|θ_m(L)| ≤ M/L` for all `m` and `L ≥ 1`. -/
-theorem divRem_abs_le {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C δ) (m : ℕ) :
-    ∀ L, 1 ≤ L → |divRem G A m L| ≤ M / L := by
+/-- **Uniform remainder bound**: `|θ_m(L)| ≤ (M/ε^m) L^{-ε}` for all `m` and `L ≥ 1`. -/
+theorem divRem_abs_le {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε) (m : ℕ) :
+    ∀ L, 1 ≤ L → |divRem G A m L| ≤ M / ε ^ m * L ^ (-ε) := by
+  have hε := hG.ε_pos
   induction m with
   | zero =>
     intro L hL
-    rw [divRem_zero]
+    rw [divRem_zero, pow_zero, div_one]
     exact hG.tail L hL
   | succ m ih =>
     intro L hL
-    rw [divRem_succ_eq hG m L hL ih, abs_neg]
-    exact divRem_tail_abs_le G A M m L hL ih
+    rw [divRem_succ_eq hG m _ L hL ih, abs_neg, pow_succ, ← div_div]
+    exact divRem_tail_abs_le G A (M / ε ^ m) ε hε m L hL ih
 
 /-- **Complete expansion for a general base**:
-`|H_m(L) − ∑_{i ≤ m} c_{m,i} log^i L| ≤ M/L` for `L ≥ 1`. -/
-theorem iterDivPrim_expansion {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C δ) (m : ℕ) (L : ℝ)
-    (hL : 1 ≤ L) :
-    |iterDivPrim G m L - ∑ i ∈ Finset.range (m + 1), divCoeff G A m i * Real.log L ^ i| ≤ M / L :=
+`|H_m(L) − ∑_{i ≤ m} c_{m,i} log^i L| ≤ (M/ε^m) L^{-ε}` for `L ≥ 1`. -/
+theorem iterDivPrim_expansion {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε) (m : ℕ)
+    (L : ℝ) (hL : 1 ≤ L) :
+    |iterDivPrim G m L - ∑ i ∈ Finset.range (m + 1), divCoeff G A m i * Real.log L ^ i|
+      ≤ M / ε ^ m * L ^ (-ε) :=
   divRem_abs_le hG m L hL
 
 /-- The weighted primitive `F_γ` is an admissible base with `A = A_γ`, `M = A_{γ+1}`,
-`C = E/(γ+1)`, `δ = γ+1`. -/
+`C = E/(γ+1)`, `δ = γ+1`, `ε = 1`. -/
 theorem weightedPrimitive_logBase (β a γ : ℝ) (hβ : 0 < β) (hγ : -1 < γ) :
     LogBase (weightedPrimitive β a γ) (weightedMass β a γ) (weightedMass β a (γ + 1))
-      (Real.exp (β * a ^ 2 / 2) / (γ + 1)) (γ + 1) where
+      (Real.exp (β * a ^ 2 / 2) / (γ + 1)) (γ + 1) 1 where
   measurable := weightedPrimitive_measurable β a γ hβ hγ
   nonneg := weightedPrimitive_nonneg β a γ
   le_mass := by
@@ -302,10 +306,12 @@ theorem weightedPrimitive_logBase (β a γ : ℝ) (hβ : 0 < β) (hγ : -1 < γ)
           weightedPrimitive_le β a γ x hβ hγ hx.le
       _ = Real.exp (β * a ^ 2 / 2) / (γ + 1) * x ^ (γ + 1) := by ring
   δ_pos := by linarith
+  ε_pos := one_pos
   tail := by
     intro L hL
     have hL0 : (0 : ℝ) < L := one_pos.trans_le hL
-    rw [abs_sub_comm, abs_of_nonneg (weightedMass_sub_primitive_nonneg β a γ L hβ hγ hL0.le)]
+    rw [abs_sub_comm, abs_of_nonneg (weightedMass_sub_primitive_nonneg β a γ L hβ hγ hL0.le),
+      Real.rpow_neg hL0.le, Real.rpow_one, ← div_eq_mul_inv]
     exact weightedMass_sub_primitive_le β a γ L hβ hγ hL0
 
 /-- **Complete expansion of the iterated weighted primitives**. -/
@@ -314,7 +320,9 @@ theorem iterWeightedPrim_expansion (β a γ : ℝ) (hβ : 0 < β) (hγ : -1 < γ
     |iterDivPrim (weightedPrimitive β a γ) m L
         - ∑ i ∈ Finset.range (m + 1),
             divCoeff (weightedPrimitive β a γ) (weightedMass β a γ) m i * Real.log L ^ i|
-      ≤ weightedMass β a (γ + 1) / L :=
-  iterDivPrim_expansion (weightedPrimitive_logBase β a γ hβ hγ) m L hL
+      ≤ weightedMass β a (γ + 1) / L := by
+  have h := iterDivPrim_expansion (weightedPrimitive_logBase β a γ hβ hγ) m L hL
+  have hL0 : (0 : ℝ) < L := one_pos.trans_le hL
+  rwa [one_pow, div_one, Real.rpow_neg hL0.le, Real.rpow_one, ← div_eq_mul_inv] at h
 
 end Laplace.Grammar

@@ -109,14 +109,16 @@ theorem isLittleO_log_pow_log_pow {i m : ℕ} (him : i < m) :
 
 /-- **Leading asymptotic of the iterated primitives of a general base**:
 `H_m(L) ~ (A/m!) log^m L` for `m ≥ 1`. -/
-theorem iterDivPrim_isEquivalent {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBase G A M C δ) (hA : 0 < A)
+theorem iterDivPrim_isEquivalent {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε) (hA : 0 < A)
     (m : ℕ) (hm : 0 < m) :
     (fun L : ℝ => iterDivPrim G m L) ~[atTop]
       fun L : ℝ => A / (m.factorial : ℝ) * Real.log L ^ m := by
+  have hε := hG.ε_pos
   have hM : 0 ≤ M := by
     have := hG.tail 1 le_rfl
-    rw [div_one] at this
+    rw [Real.one_rpow, mul_one] at this
     exact (abs_nonneg _).trans this
+  have hMε : 0 ≤ M / ε ^ m := by positivity
   apply IsLittleO.isEquivalent
   have hdecomp : ∀ L : ℝ, iterDivPrim G m L - A / (m.factorial : ℝ) * Real.log L ^ m
       = (∑ i ∈ Finset.range m, divCoeff G A m i * Real.log L ^ i) + divRem G A m L := by
@@ -133,10 +135,14 @@ theorem iterDivPrim_isEquivalent {G : ℝ → ℝ} {A M C δ : ℝ} (hG : LogBas
     simp [Finset.sum_apply]
   have hθ : (fun L : ℝ => divRem G A m L) =o[atTop] fun L : ℝ => Real.log L ^ m := by
     have h1 : (fun L : ℝ => divRem G A m L) =O[atTop] fun _ : ℝ => (1 : ℝ) := by
-      apply IsBigO.of_bound M
+      apply IsBigO.of_bound (M / ε ^ m)
       filter_upwards [eventually_ge_atTop (1 : ℝ)] with L hL
       rw [Real.norm_eq_abs, norm_one, mul_one]
-      exact (divRem_abs_le hG m L hL).trans (div_le_self hM hL)
+      refine (divRem_abs_le hG m L hL).trans ?_
+      calc M / ε ^ m * L ^ (-ε) ≤ M / ε ^ m * 1 :=
+            mul_le_mul_of_nonneg_left
+              (Real.rpow_le_one_of_one_le_of_nonpos hL (by linarith)) hMε
+        _ = M / ε ^ m := mul_one _
     have h2 : (fun _ : ℝ => (1 : ℝ)) =o[atTop] fun L : ℝ => Real.log L ^ m := by
       refine isLittleO_const_left.2 (Or.inr ?_)
       have : Tendsto (fun L : ℝ => Real.log L ^ m) atTop atTop :=
