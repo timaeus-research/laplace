@@ -226,3 +226,4 @@ import Laplace.Grammar.TreeSeries
 import Laplace.Grammar.MonomialTreeD
 import Laplace.Grammar.PolynomialTreeD
 import Laplace.Grammar.DivisiblePerturbation
+import Laplace.Grammar.DivisibleWeight
