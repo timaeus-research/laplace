@@ -1,0 +1,75 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The one-dimensional Taylor tree as an asymptotic expansion to all orders}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The $O$-form of unit~30, closing the one-dimensional monomial Taylor-tree programme: for
+$\xi(u)=\xi_0+cu^m$ and every $N$,
+\[
+Z_{\rm chart}(n)=\sum_{p<N}\frac{(\beta c)^p}{p!}\,\frac1{2k}\,S_{\mu_p+p/2}(\xi_0)\,n^{-\mu_p}
++O\bigl(n^{-\mu_N}\bigr),\qquad \mu_p=\frac{h+mp+1}{2k},
+\]
+as $n\to\infty$. This is exactly \texttt{cor:standardintegralexp} in one dimension: the exponent set is
+$\Lambda^*=(h{+}1)/(2k)+(m/2k)\mathbb N\subseteq\Lambda(h,k)$, and each $P_\mu$ is a constant (no
+$\log n$, since $d=1$) given by a fluctuation function. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~30 gives the $N$-term inequality with remainder $C_Nn^{-\mu_N}+\sum_{p<N}\frac{(\beta|c|)^p}{p!}\text{tail}_p$.
+Each tail is $(\sqrt n)^p$ times a plain boundary tail, hence at most $K_p\,n^{p/2}e^{-\varepsilon n}$
+by unit~25, and $n^{p/2}e^{-\varepsilon n}=o(n^{-\mu_N})$. Collecting the finitely many eventual bounds
+gives the asymptotic statement.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem standardIntegral1D_taylor_tree_isBigO (β ξ₀ c b : ℝ) (h k m N : ℕ)
+    (hβ : 0 < β) (hb : 0 < b) (hk : 0 < k) :
+    (fun n : ℝ => Z_chart n
+        - ∑ p ∈ range N, (β c)^p/p! * ((1/(2k)) n^(-μ_p) S_{μ_p+p/2}(ξ₀)))
+      =O[atTop] fun n : ℝ => n ^ (-μ_N)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+As in unit~29 but uniformly in $p$: the little-$o$ scale $n^{p/2}e^{-\varepsilon n}=o(n^{-\mu_N})$ is
+\texttt{IsBigO.mul\_isLittleO} of $n^{p/2}=O(n^{p/2})$ with
+\texttt{isLittleO\_exp\_neg\_mul\_rpow\_atTop} at $-\mu_N-p/2$, then \texttt{IsLittleO.congr'} via
+\texttt{rpow\_add}. The $N$ eventual bounds are gathered by \texttt{Filter.eventually\_all\_finset} into
+one \texttt{filter\_upwards} together with $n\ge1$. Each tail is rewritten as $(\sqrt n)^p\int_b^\infty
+u^{h+mp+kp}e^{\rm pop}$ (\texttt{mul\_pow}, \texttt{pow\_mul}, \texttt{pow\_add}, \texttt{integral\_const\_mul}),
+bounded by \texttt{standardIntegral1D\_tail\_le}, and $(\sqrt n)^p=n^{p/2}$ by
+\texttt{sqrt\_eq\_rpow}/\texttt{rpow\_natCast}/\texttt{rpow\_mul}. The final sum is handled by
+\texttt{gcongr with p hp} termwise and \texttt{Finset.sum\_mul}, producing the constant
+$C_N+\sum_{p<N}\frac{(\beta|c|)^p}{p!}K_p$ for \texttt{IsBigO.of\_bound}.
+
+\section{Roadblocks and resolutions}
+None: first-try compile. The one idiom new relative to unit~29 is
+\texttt{Filter.eventually\_all\_finset}, which turns ``for each $p<N$, eventually \dots'' into a single
+eventual statement usable inside \texttt{filter\_upwards}.
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Filter.eventually\_all\_finset}, \texttt{IsBigO.mul\_isLittleO},
+\texttt{IsLittleO.congr'}, \texttt{IsBigO.of\_bound}, \texttt{Finset.sum\_mul},
+\texttt{Real.Gamma\_pos\_of\_pos}. New: the complete one-dimensional Taylor-tree asymptotic expansion for
+a monomial perturbation, at every order, with explicit fluctuation-function coefficients.
+
+\section{Outcome}
+With this unit the one-dimensional, monomial-perturbation instance of grammar \S4.2 is fully formalised:
+kernel identity (22), insertions (24), Gaussian domination (23), boundary tail (25), exact series (26),
+leading asymptotic (27), two-term and all-orders expansions with explicit remainders (28, 30) and their
+$O$-packagings (29, 31). What remains of \S4.2 is genuinely multivariate: analytic (non-monomial) $\xi$
+via the tree combinatorics, $\log n$ powers from repeated poles when $d>1$, and the state-density Mellin
+formulation.
+\end{document}
