@@ -324,4 +324,19 @@ theorem fluctuation_one (β : ℝ) (hβ : 0 < β) (a : ℝ) :
   field_simp at hsplit ⊢
   linarith [hsplit]
 
+/-- Ladder lowering (grammar §4 `lem:oscillator_algebra`): for `λ > 1/2`,
+`2·S'_λ(a) − βa·S_λ(a) = (2λ−1)·S_{λ−1/2}(a)` — the `β`-power-free form of
+`b·S_λ = (2λ−1)β^{-1/2}S_{λ−1/2}`. The raising relation `S'_λ = β·S_{λ+1/2}` is
+`deriv_fluctuation`. Combines property (i) with the recurrence at `λ − 1/2`. -/
+theorem fluctuation_lowering (β lam : ℝ) (hβ : 0 < β) (hlam : 1 / 2 < lam) (a : ℝ) :
+    2 * deriv (fun a => fluctuation β lam a) a - β * a * fluctuation β lam a
+      = (2 * lam - 1) * fluctuation β (lam - 1 / 2) a := by
+  have hlam' : 0 < lam - 1 / 2 := by linarith
+  rw [deriv_fluctuation β lam hβ (by linarith) a]
+  have hrec := fluctuation_recurrence β (lam - 1 / 2) hβ hlam' a
+  rw [show lam - 1 / 2 + 1 = lam + 1 / 2 by ring, show lam - 1 / 2 + 1 / 2 = lam by ring] at hrec
+  rw [hrec]
+  field_simp
+  ring
+
 end Laplace.Grammar
