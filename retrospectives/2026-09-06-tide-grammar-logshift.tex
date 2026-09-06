@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The log-shift operator:
+$\int_0^\infty t^{\nu-1}(c-\log t)^p e^{-\beta t+\beta a\sqrt t}\,dt=(c-\partial_\nu)^p S_\nu(a)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 14 of the grammar-paper \S4 autoformalisation: the log-shift operator identity
+\texttt{lem:log\_shift}, $\int_0^\infty t^{\nu-1}(c-\log t)^p e^{-\beta t+\beta a\sqrt t}\,dt
+=\sum_{m=0}^p\binom{p}{m}c^{p-m}(-1)^m\partial_\nu^m S_\nu(a)$, i.e. $(c-\partial_\nu)^p S_\nu$ written
+out. A short binomial argument on top of the general-$k$ order-derivative identity (unit~13). Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~13 gave $\partial_\nu^m S_\nu(a)=\int_0^\infty(\log t)^m t^{\nu-1}e^{\cdots}\,dt$. The log-shift
+lemma packages a whole \emph{shifted} logarithm $(c-\log t)^p$ under the integral as the polynomial
+$(c-\partial_\nu)^p$ in the order-derivative --- the operator notation the paper uses to compactly write
+integrals with log factors.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_log_shift (β a c ν : ℝ) (p : ℕ) (hβ : 0 < β) (hν : 0 < ν) :
+    (∫ t in Set.Ioi 0, t^(ν-1) * (c - Real.log t)^p * Real.exp (-β*t + β*a*Real.sqrt t))
+      = ∑ m ∈ Finset.range (p+1), (p.choose m : ℝ) * c^(p-m) * (-1)^m
+          * iteratedDeriv m (fun l => fluctuation β l a) ν
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Expand $(c-\log t)^p=(-\log t+c)^p=\sum_m(-\log t)^m c^{p-m}\binom{p}{m}$ (\texttt{add\_pow}) pointwise,
+distribute the $t^{\nu-1}e^{\cdots}$ factor through the finite sum, and turn $\int\sum$ into $\sum\int$
+(\texttt{integral\_finsetSum}, each summand integrable via unit~13's
+\texttt{log\_pow\_fluctuation\_integrableOn}). Then \texttt{integral\_const\_mul} pulls the binomial
+constants out and \texttt{iteratedDeriv\_fluctuation\_order} identifies each
+$\int(\log t)^m t^{\nu-1}e^{\cdots}$ with $\partial_\nu^m S_\nu$.
+
+\section{Roadblocks and resolutions}
+None of substance. \texttt{setIntegral\_congr\_fun} again hands an applied-lambda pointwise goal, so
+\texttt{beta\_reduce} precedes the binomial rewrite; \texttt{neg\_pow} turns $(-\log t)^m$ into
+$(-1)^m(\log t)^m$ and \texttt{ring} matches the per-term factors.
+
+\section{What was Mathlib, what was new}
+Mathlib supplied \texttt{add\_pow} (binomial), \texttt{integral\_finsetSum}, \texttt{integral\_const\_mul},
+\texttt{neg\_pow}. New is the assembly on top of unit~13: the signed-summand integrability (norm
+factorised through \texttt{abs\_pow}) and the finite-sum reorganisation identifying the shifted-log
+integral with the order-derivative polynomial.
+
+\section{Lessons}
+Once $\partial_\nu^k S=\int(\log)^k\cdots$ is available, any polynomial-in-$\log$ insertion is a
+binomial expansion plus \texttt{integral\_finsetSum} --- the only care is proving each signed summand
+integrable (bound its norm by the $|\log|^m$-weighted integrand) so the sum/integral swap is licensed.
+
+\section{Follow-ups}
+\texttt{lem:log\_generating} ($\sum_p\frac{z^p}{p!}(c-\partial_\nu)^p S_\nu=e^{zc}S_{\nu-z}$) is Taylor's
+theorem in the order and needs real-analyticity of $S_\nu$ in $\nu$; \texttt{prop:LogODE} differentiates
+the Weber ODE $k$ times in $\lambda$ and needs $\partial_\lambda$/$\partial_a$ commutation. The
+ladder-operator commutator $[b,b^\dagger]=1$ still wants a Weyl-algebra framework.
+\end{document}
