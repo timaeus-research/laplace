@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{State density IV: the box form of the divisor-coefficient theorem}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The chart standard integral over $(0,b]^{d+1}$ with general continuous $\xi,\eta$ is identified,
+by Fubini at the last coordinate, with the state integral of unit~70. Consequently, when the last
+coordinate carries the strictly smallest candidate exponent and $\xi,\eta$ are Lipschitz in it at
+$0$ with $\eta>0$ on the divisor,
+$\int_{(0,b]^{d+1}} w^h\eta(w)e^{-\beta n w^{2k}+\beta\sqrt n\,w^k\xi(w)}\,dw
+\sim C(\xi,\eta)\,n^{-p/2}$ with the divisor coefficient of unit~71. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def boxIntegralGen (β b c : ℝ) {m : ℕ} (k h : Fin m → ℕ)
+    (ξ η : (Fin m → ℝ) → ℝ) : ℝ :=
+  ∫ w : Fin m → ℝ, (∏ i, w i ^ h i) * η w
+    * Real.exp (-β * (c * ∏ i, w i ^ k i) ^ 2
+        + β * (c * ∏ i, w i ^ k i) * ξ w) ∂(boxMeasure b m)
+theorem continuous_snoc_prod (d : ℕ) :
+    Continuous fun x : ℝ × (Fin d → ℝ) => (Fin.snoc x.2 x.1 : Fin (d + 1) → ℝ)
+theorem boxIntegralGen_eq_stateIntegral (β b n : ℝ) (hn : 0 ≤ n) ... :
+    boxIntegralGen β b (Real.sqrt n) k h ξ η
+      = stateIntegral β b n (h (Fin.last d)) (k (Fin.last d))
+          (fun i => k (Fin.castSucc i)) (fun i => h (Fin.castSucc i))
+          (fun u v => ξ (Fin.snoc v u)) (fun u v => η (Fin.snoc v u))
+theorem boxIntegralGen_isEquivalent ... (hq : last exponent strictly minimal)
+    (hξ hη : Lipschitz in the last coordinate at 0) (hηpos : η > 0 on the divisor) :
+    (fun n => boxIntegralGen β b (Real.sqrt n) k h ξ η) ~[atTop]
+      fun n => (∫ v, divisorDensity ... v ∂(boxMeasure b d))
+        * n ^ (-(((h (Fin.last d) : ℝ) + 1) / k (Fin.last d) / 2))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The bridge is the unit-54 idiom: \texttt{measurePreserving\_piFinSuccAbove} at \texttt{Fin.last}
+turns the pi measure on $\mathbb R^{d+1}$ into the product of the last-coordinate measure with the
+pi measure on $\mathbb R^d$; \texttt{integral\_prod\_symm} then iterates with the last coordinate
+innermost. The pointwise identity $F(w)=g(e\,w)$ uses \texttt{Fin.snoc\_init\_self},
+\texttt{Fin.prod\_univ\_castSucc} and $(\sqrt n)^2=n$. Integrability of the transported integrand is
+\texttt{integrable\_comp\_emb} plus continuity of the box integrand.
+The corollary composes \texttt{stateIntegral\_isEquivalent} with the bridge, eventually in $n\ge0$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The coordinate identity $(e\,w).2\,j = w(j.\mathrm{castSucc})$ is
+\texttt{congrArg w (Fin.succAbove\_last\_apply j)}; rewriting fails because the goal already shows
+the unfolded form.
+\item A trailing $\partial\mu$ after a nested integral binds the inner integral: parenthesise the
+inner integral (same gotcha as unit~70).
+\item Instead of a case split on the sign of $n$ inside \texttt{congr\_left}, use
+\texttt{filter\_upwards [eventually\_ge\_atTop 0]}: eventual equality suffices.
+\end{itemize}
+
+\section{Outcome}
+Programme~A (unique minimal coordinate, general $\xi,\eta$) is complete in the genuine box form.
+A GPT-6 Astra consult (\texttt{tide-log/gpt6\_bigpicture\_v1.md}) fixes the plan for multiplicity
+$m\ge2$: exact product-density identity for the minimal block, fixed-strip freezing, and
+$C=\frac{1}{2^{m-1}(m-1)!\prod k_i}\int v^{h'-pk'}\eta_0A_{p-1}(\xi_0)\,dv$ with $\log^{m-1}n$.
+\end{document}
