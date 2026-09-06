@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The fluctuation closed form: $S_\lambda(a)=2^{1-\lambda}\beta^{-\lambda}\Gamma(2\lambda)
+e^{\beta a^2/8}D_{-2\lambda}(-a\sqrt{\beta/2})$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 7 of the grammar-paper \S4 autoformalisation, and the payoff of the option-B parabolic-cylinder
+detour: the corollary \texttt{cor:fluctuation\_closed\_form}, which had been the arc's standing blocker.
+The change of variables $t=u^2/(2\beta)$ carries Watanabe's fluctuation function onto the
+$D_{-2\lambda}$ integral kernel; the $\Gamma$ and Gaussian prefactors then cancel. Proved via an
+intermediate $\Gamma$-free ``kernel'' lemma, so that all substitution bookkeeping stays disentangled
+from the special-function definition. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~6 built the negative-order parabolic cylinder function \texttt{parCylNeg}
+$=D_{-\nu}(x)=e^{-x^2/4}/\Gamma(\nu)\int_0^\infty u^{\nu-1}e^{-u^2/2-xu}\,du$ and its integrability.
+This unit is the reason it was built: the paper's closed form for $S_\lambda$. With it, the entire
+analytic core of \S4 that does not require an operator/commutator framework is formalised --- the
+ladder, the recurrence, the ODE, and now the parabolic-cylinder identification.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_eq_kernel (β lam a : ℝ) (hβ : 0 < β) :
+    fluctuation β lam a
+      = (2 ^ (1 - lam) * β ^ (-lam))
+        * ∫ u in Set.Ioi 0,
+            u ^ (2*lam - 1) * Real.exp (-u^2/2 + a * Real.sqrt (β/2) * u)
+
+theorem fluctuation_closed_form (β lam a : ℝ) (hβ : 0 < β) (hlam : 0 < lam) :
+    fluctuation β lam a
+      = 2 ^ (1 - lam) * β ^ (-lam) * Real.Gamma (2*lam) * Real.exp (β*a^2/8)
+        * parCylNeg (2*lam) (-a * Real.sqrt (β/2))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The substitution $t=u^2/(2\beta)$ is done in two library steps rather than one square-root change of
+variables, following GPT-6 Astra's steer. First scale $t\mapsto r/(2\beta)$ with
+\texttt{integral\_comp\_mul\_left\_Ioi} (Jacobian $(2\beta)^{-1}$); then apply
+\texttt{integral\_comp\_rpow\_Ioi\_of\_pos} \emph{backwards} at $p=2$ (Jacobian $2u$). Their product,
+$(2\beta)^{-1}\cdot 2u=u/\beta$, is exactly $dt/du$. A single pointwise identity on $(0,\infty)$ then
+matches the transported integrand
+$2u\cdot F(u^2/(2\beta))=2(2\beta)^{-(\lambda-1)}\,u^{2\lambda-1}e^{-u^2/2+a\sqrt{\beta/2}\,u}$,
+and \texttt{integral\_const\_mul} pulls the constant out. Collecting the two Jacobians and the
+$(2\beta)^{-(\lambda-1)}$ against the target prefactor is the scalar identity
+$(2\beta)^{-1}\!\cdot 2(2\beta)^{-(\lambda-1)}=2^{1-\lambda}\beta^{-\lambda}$
+(\texttt{hconstant}). This is \texttt{fluctuation\_eq\_kernel}, which never mentions $\Gamma$.
+
+The corollary then unfolds \texttt{parCylNeg}$(2\lambda,-a\sqrt{\beta/2})$: its kernel integrand
+$e^{-u^2/2-(-a\sqrt{\beta/2})u}$ is (after one \texttt{ring} rewrite) the kernel of
+\texttt{fluctuation\_eq\_kernel}, its Gaussian prefactor is $e^{-\beta a^2/8}$ (since
+$(-a\sqrt{\beta/2})^2=\beta a^2/2$), and its $1/\Gamma(2\lambda)$ cancels the $\Gamma(2\lambda)$ in the
+target. \texttt{field\_simp} closes it with $\Gamma(2\lambda)\ne0$ and $e^{\beta a^2/8}\ne0$.
+
+\section{Roadblocks and resolutions}
+The route was Astra-planned, so the friction was purely Lean mechanics:
+\begin{itemize}
+\item The two change-of-variables lemmas live in \texttt{namespace MeasureTheory} inside a plain
+\texttt{section IoiChangeVariables} (grep for \texttt{namespace} finds only the enclosing one); with
+\texttt{open MeasureTheory} the unqualified names resolve.
+\item The pointwise power identity splits into three separately-stated \texttt{have}s
+(\texttt{hpow}, \texttt{hexp}, \texttt{hxx}): \texttt{ring} cannot see through \texttt{rpow}, so each
+exponent identity ($2(\lambda-1)=2\lambda-2$, $1+(2\lambda-2)=2\lambda-1$) is normalised by an
+explicit \texttt{show \ldots\ by ring} before \texttt{Real.rpow\_mul}/\texttt{rpow\_add}.
+\item Two square-root facts are proved by \emph{avoiding} $(\sqrt{\cdot})^2$ under \texttt{field\_simp}:
+$\sqrt{2\beta}\sqrt{\beta/2}=\beta$ via \texttt{Real.sqrt\_mul}$+$\texttt{sqrt\_sq}, and then
+$\beta/\sqrt{2\beta}=\sqrt{\beta/2}$; substituting the latter backwards keeps the exponent-phase
+identity rational in $\sqrt{2\beta}$ (never squared), so \texttt{field\_simp; ring} closes it.
+\item \texttt{setIntegral\_congr\_fun} hands its pointwise goal as applied lambdas ---
+\texttt{beta\_reduce} before the \texttt{rw}.
+\item Several \texttt{field\_simp} calls closed their goals outright; the trailing \texttt{ring}s then
+errored ``no goals'' and were deleted (a recurring repo pattern).
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+The change-of-variables engine is entirely Mathlib (\texttt{integral\_comp\_mul\_left\_Ioi},
+\texttt{integral\_comp\_rpow\_Ioi\_of\_pos}, \texttt{integral\_const\_mul}, the \texttt{rpow}/\texttt{sqrt}
+API). What is new is the pairing of the two Jacobians to realise the square-root substitution without a
+square-root change-of-variables lemma, the $\Gamma$-free intermediate factorisation, and the
+prefactor cancellation that identifies $S_\lambda$ with a named special function Mathlib does not have.
+
+\section{Lessons}
+A square-root change of variables is often cheaper as \emph{scale-then-square} than as one direct
+substitution: the two off-the-shelf Jacobians multiply to the one you want, and each half is a lemma
+Mathlib already proves unconditionally. And factoring the special-function definition out of the
+substitution (prove the bare kernel integral first, unfold the definition only at the end) keeps
+$\Gamma$ out of the change-of-variables algebra entirely --- the cancellation becomes a two-line
+\texttt{field\_simp}.
+
+\section{Follow-ups}
+With the closed form landed, the D$_\nu$ arc continues to \texttt{eq:Dn\_hermite} (the integer-order
+$D_n$ against Mathlib's Hermite polynomials) and \texttt{lem:qho} (the quantum harmonic oscillator
+identification). The remaining non-special-function \S4 items --- \texttt{prop:fluctuation\_weber}
+(ODE$\to$Weber transform) and the commutator $[b,b^\dagger]=1$ --- are independent of $D_\nu$.
+\end{document}
