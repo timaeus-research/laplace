@@ -85,4 +85,100 @@ theorem parCylNeg_zero (ν : ℝ) (hν : 0 < ν) :
   rw [hint, show (-0 ^ 2 / 4 : ℝ) = 0 by norm_num, Real.exp_zero]
   ring
 
+/-- **Fluctuation as a parabolic-cylinder kernel integral.** The change of variables
+`t = u²/(2β)` (scale by `2β`, then square) turns `S_λ` into
+`2^{1-λ} β^{-λ} ∫₀^∞ u^{2λ-1} e^{-u²/2 + a√(β/2)·u} du`, whose integrand is the `D_{-2λ}`
+kernel with `x = -a√(β/2)`. This isolates all change-of-variables work; `Γ` never enters. -/
+theorem fluctuation_eq_kernel (β lam a : ℝ) (hβ : 0 < β) :
+    fluctuation β lam a
+      = (2 ^ (1 - lam) * β ^ (-lam))
+        * ∫ u in Set.Ioi (0 : ℝ),
+            u ^ (2 * lam - 1) * Real.exp (-u ^ 2 / 2 + a * Real.sqrt (β / 2) * u) := by
+  have hβ0 : β ≠ 0 := hβ.ne'
+  have h2β : (0 : ℝ) < 2 * β := by positivity
+  have h2β0 : (2 * β : ℝ) ≠ 0 := h2β.ne'
+  have hs2β : Real.sqrt (2 * β) ≠ 0 := (by positivity : (0 : ℝ) < Real.sqrt (2 * β)).ne'
+  have hsqrt2 : Real.sqrt (2 * β) * Real.sqrt (β / 2) = β := by
+    rw [← Real.sqrt_mul h2β.le, show 2 * β * (β / 2) = β ^ 2 by ring, Real.sqrt_sq hβ.le]
+  have hbdiv : β / Real.sqrt (2 * β) = Real.sqrt (β / 2) := by
+    rw [div_eq_iff hs2β, mul_comm]; exact hsqrt2.symm
+  have hβp : β ^ (1 - lam) = β ^ (-lam) * β := by
+    rw [show (1 : ℝ) - lam = -lam + 1 by ring, Real.rpow_add hβ, Real.rpow_one]
+  have hconstant : (2 * β)⁻¹ * (2 * (2 * β) ^ (-(lam - 1))) = 2 ^ (1 - lam) * β ^ (-lam) := by
+    rw [show -(lam - 1) = 1 - lam by ring, Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hβ.le, hβp]
+    field_simp
+  set H : ℝ → ℝ := fun r =>
+    (r / (2 * β)) ^ (lam - 1) *
+      Real.exp (-β * (r / (2 * β)) + β * a * Real.sqrt (r / (2 * β))) with hHdef
+  have step1 : fluctuation β lam a = ∫ t in Set.Ioi (0 : ℝ), H (2 * β * t) := by
+    rw [fluctuation]
+    apply setIntegral_congr_fun measurableSet_Ioi
+    intro t ht
+    have ht0 : (0 : ℝ) < t := ht
+    simp only [hHdef]
+    rw [show 2 * β * t / (2 * β) = t by field_simp]
+  have step2 : (∫ t in Set.Ioi (0 : ℝ), H (2 * β * t))
+      = (2 * β)⁻¹ • ∫ r in Set.Ioi (0 : ℝ), H r := by
+    rw [integral_comp_mul_left_Ioi H 0 h2β, mul_zero]
+  have step3 : (∫ r in Set.Ioi (0 : ℝ), H r)
+      = ∫ x in Set.Ioi (0 : ℝ), (2 * x ^ ((2 : ℝ) - 1)) • H (x ^ (2 : ℝ)) :=
+    (integral_comp_rpow_Ioi_of_pos (by norm_num : (0 : ℝ) < 2)).symm
+  have step4 : (∫ x in Set.Ioi (0 : ℝ), (2 * x ^ ((2 : ℝ) - 1)) • H (x ^ (2 : ℝ)))
+      = ∫ x in Set.Ioi (0 : ℝ), (2 * (2 * β) ^ (-(lam - 1)))
+          * (x ^ (2 * lam - 1) * Real.exp (-x ^ 2 / 2 + a * Real.sqrt (β / 2) * x)) := by
+    apply setIntegral_congr_fun measurableSet_Ioi
+    intro x hx
+    have hx0 : (0 : ℝ) < x := hx
+    have hpow : (x ^ 2 / (2 * β)) ^ (lam - 1) = (2 * β) ^ (-(lam - 1)) * x ^ (2 * lam - 2) := by
+      rw [Real.div_rpow (by positivity) (by positivity),
+        show (x ^ 2 : ℝ) ^ (lam - 1) = x ^ (2 * lam - 2) by
+          rw [show (x : ℝ) ^ 2 = x ^ (2 : ℝ) by
+                rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast],
+            ← Real.rpow_mul hx0.le, show (2 : ℝ) * (lam - 1) = 2 * lam - 2 by ring],
+        Real.rpow_neg (by positivity : (0 : ℝ) ≤ 2 * β), div_eq_mul_inv]
+      ring
+    have hexp : -β * (x ^ 2 / (2 * β)) + β * a * Real.sqrt (x ^ 2 / (2 * β))
+        = -x ^ 2 / 2 + a * Real.sqrt (β / 2) * x := by
+      rw [Real.sqrt_div (sq_nonneg x), Real.sqrt_sq hx0.le, ← hbdiv]
+      field_simp
+    have hxx : x * x ^ (2 * lam - 2) = x ^ (2 * lam - 1) := by
+      rw [show (2 : ℝ) * lam - 1 = 1 + (2 * lam - 2) by ring, Real.rpow_add hx0, Real.rpow_one]
+    simp only [smul_eq_mul, hHdef]
+    rw [show ((2 : ℝ) - 1) = 1 by norm_num, Real.rpow_one,
+      show x ^ (2 : ℝ) = x ^ 2 by
+        rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast],
+      hpow, hexp, ← hxx]
+    ring
+  rw [step1, step2, step3, step4, integral_const_mul, smul_eq_mul, ← mul_assoc, hconstant]
+
+/-- **The fluctuation closed form** (grammar §4 `cor:fluctuation_closed_form`):
+`S_λ(a) = 2^{1-λ} β^{-λ} Γ(2λ) e^{βa²/8} D_{-2λ}(-a√(β/2))`. Combines
+`fluctuation_eq_kernel` with the definition of `parCylNeg`; the `Γ` and Gaussian prefactors
+cancel to leave the kernel integral. -/
+theorem fluctuation_closed_form (β lam a : ℝ) (hβ : 0 < β) (hlam : 0 < lam) :
+    fluctuation β lam a
+      = 2 ^ (1 - lam) * β ^ (-lam) * Real.Gamma (2 * lam) * Real.exp (β * a ^ 2 / 8)
+        * parCylNeg (2 * lam) (-a * Real.sqrt (β / 2)) := by
+  rw [fluctuation_eq_kernel β lam a hβ]
+  have hInt : (∫ u in Set.Ioi (0 : ℝ),
+        u ^ (2 * lam - 1) * Real.exp (-u ^ 2 / 2 - (-a * Real.sqrt (β / 2)) * u))
+      = ∫ u in Set.Ioi (0 : ℝ),
+        u ^ (2 * lam - 1) * Real.exp (-u ^ 2 / 2 + a * Real.sqrt (β / 2) * u) := by
+    apply setIntegral_congr_fun measurableSet_Ioi
+    intro u hu
+    beta_reduce
+    rw [show -u ^ 2 / 2 - (-a * Real.sqrt (β / 2)) * u
+        = -u ^ 2 / 2 + a * Real.sqrt (β / 2) * u by ring]
+  unfold parCylNeg
+  rw [hInt]
+  set I := ∫ u in Set.Ioi (0 : ℝ),
+    u ^ (2 * lam - 1) * Real.exp (-u ^ 2 / 2 + a * Real.sqrt (β / 2) * u) with hIdef
+  have hΓ : Real.Gamma (2 * lam) ≠ 0 := ne_of_gt (Real.Gamma_pos_of_pos (by linarith))
+  have hEne : Real.exp (β * a ^ 2 / 8) ≠ 0 := Real.exp_ne_zero _
+  have hE2 : Real.exp (-(-a * Real.sqrt (β / 2)) ^ 2 / 4) = (Real.exp (β * a ^ 2 / 8))⁻¹ := by
+    rw [← Real.exp_neg, show -(-a * Real.sqrt (β / 2)) ^ 2 / 4 = -(β * a ^ 2 / 8) by
+      rw [mul_pow, Real.sq_sqrt (by positivity : (0 : ℝ) ≤ β / 2)]; ring]
+  rw [hE2]
+  field_simp
+
 end Laplace.Grammar
