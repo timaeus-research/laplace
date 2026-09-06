@@ -1,0 +1,97 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Equal exponents give one logarithm for every $(k,h)$:\\
+$Z(n)\sim\dfrac{A_{p-1}}{2k_1k_2}\,n^{-p/2}\log n$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit~44 reduced the general two-dimensional chart integral exactly to
+$\tfrac1{k_1k_2}n^{-p_1/2}b^{k_2(p_2-p_1)}\int_0^Lx^{p_1-p_2-1}F_{p_2-1}$. This unit supplies the analytic
+infrastructure for the weighted primitives $F_\gamma$ ($\gamma>-1$) and settles the equal-exponent regime
+$p_1=p_2=p$: with $A_\gamma=\int_0^\infty t^\gamma f=S_{(\gamma+1)/2}(a)/2$,
+\[
+Z(n)\sim\frac{A_{p-1}}{2k_1k_2}\,n^{-p/2}\log n .
+\]
+At $k=(1,1)$, $h=(0,0)$ this is unit~35. Verified numerically at $k=(2,2)$, $h=(2,2)$ (ratio to the
+leading term $\to1$). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Everything in unit~35 used three facts about $F=F_0$: it is monotone with $F\le\min(A,Ex)$, its tail
+is $A-F(x)\le M/x$, and hence $\int_1^LF/x=A\log L+O(1)$. The weighted analogues are
+$F_\gamma\le\min(A_\gamma,Ex^{\gamma+1}/(\gamma+1))$ and $A_\gamma-F_\gamma(x)\le A_{\gamma+1}/x$
+(from $t^\gamma\le t^{\gamma+1}/x$ on $t\ge x$), giving
+$A_\gamma\log L-A_{\gamma+1}\le\int_0^LF_\gamma/x\le A_\gamma\log L+E/(\gamma+1)^2$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def weightedMass (β a γ : ℝ) : ℝ := ∫ t in Ioi 0, t ^ γ * quadKernel β a t
+theorem weightedMass_eq (β a γ : ℝ) :
+    weightedMass β a γ = 1 / 2 * fluctuation β ((γ + 1) / 2) a
+theorem weightedKernel_integrableOn (β a γ : ℝ) (hβ : 0 < β) (hγ : -1 < γ) :
+    IntegrableOn (fun t => t ^ γ * quadKernel β a t) (Ioi 0)
+theorem weightedMass_sub_primitive_le ... (hx : 0 < x) :
+    weightedMass β a γ - weightedPrimitive β a γ x ≤ weightedMass β a (γ + 1) / x
+theorem weightedLogPrimitive_bounds (β a γ L : ℝ) (hβ : 0 < β) (hγ : -1 < γ) (hL : 1 ≤ L) :
+    weightedMass β a γ * Real.log L - weightedMass β a (γ + 1)
+        ≤ weightedLogPrimitive β a γ L ∧
+      weightedLogPrimitive β a γ L
+        ≤ weightedMass β a γ * Real.log L + Real.exp (β * a ^ 2 / 2) / (γ + 1) ^ 2
+theorem twoDGeneral_isEquivalent_of_eq ...
+    (hp : ((h₁ : ℝ) + 1) / k₁ = ((h₂ : ℝ) + 1) / k₂) :
+    (fun n => twoDGeneral β a b n h₁ h₂ k₁ k₂) ~[atTop]
+      fun n => weightedMass β a (((h₁ : ℝ) + 1) / k₁ - 1) / (2 * ((k₁ : ℝ) * k₂))
+        * (n ^ (-(((h₁ : ℝ) + 1) / k₁ / 2)) * Real.log n)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The mass identity is the substitution $s=x^2$ in the fluctuation integral via
+\texttt{integral\_comp\_rpow\_Ioi\_of\_pos} (no hypotheses; holds even when both sides are the
+Bochner value of a non-integrable function), and integrability for $\gamma>-1$ comes from the same
+substitution through \texttt{integrableOn\_Ioi\_comp\_rpow\_iff} and the known integrability of the
+fluctuation integrand. Measurability of $F_\gamma$ is obtained from monotonicity
+(\texttt{Monotone.measurable}) rather than continuity, sidestepping $t^\gamma$ at negative $t$. The
+equal-exponent asymptotic follows the unit~35 template: the exact formula with $b^0=1$ and
+$x^{-1}$, the squeeze at $L=\sqrt n\,b^{k_1+k_2}$, $\log L=\tfrac12\log n+(k_1+k_2)\log b$, and
+$n^{r}=o(n^r\log n)$ (proved once for all $r$ from $1=o(\log)$ via \texttt{mul\_isBigO}).
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{intervalIntegrable\_rpow'} lives in the \texttt{intervalIntegral} namespace on this
+pin; an unqualified call is an unknown identifier.
+\item \texttt{nlinarith} failed on the two-sided remainder bound because $0\le E/p^2$ was not in
+context (both are opaque atoms after \texttt{set}); adding it makes plain \texttt{linarith} succeed.
+\item \texttt{integral\_rpow} leaves a $1-0$; add \texttt{sub\_zero} to the rewrite chain before
+\texttt{field\_simp}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integral\_comp\_rpow\_Ioi\_of\_pos}, \texttt{integrableOn\_Ioi\_comp\_rpow\_iff},
+\texttt{Monotone.measurable}, \texttt{setIntegral\_mono\_set}, \texttt{integral\_rpow},
+\texttt{intervalIntegral.intervalIntegrable\_rpow'}, \texttt{IsLittleO.mul\_isBigO}. New: the weighted
+mass/primitive calculus and the general equal-exponent logarithmic asymptotic.
+
+\section{Lessons}
+Monotonicity is the cheapest route to measurability for primitives of nonnegative integrands; it
+avoids every question about the integrand off the domain of interest. And when a family of lemmas
+(unit~35) is about to be generalised, restating them with a real parameter $\gamma$ costs little more
+than the original once the parameter-free proofs are in hand.
+
+\section{Outcome}
+Two of the three regimes of the general two-dimensional reduction are now closed: equal exponents
+(this unit, one logarithm with exact constant) and, structurally, the all-equal $d$-fold case (units
+39, 43). The remaining regime is $p_1<p_2$: convergence of $\int_0^\infty x^{p_1-p_2-1}F_{p_2-1}$ and
+$Z(n)\sim Cn^{-p_1/2}$ with $C$ that integral, the general form of unit~37's closed form.
+\end{document}
