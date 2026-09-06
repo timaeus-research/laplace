@@ -1,0 +1,47 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Free energy with divisible perturbations}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit~66's asymptotic for $\xi=a+u^k\tilde J$, $\eta=\eta_0+u^k\tilde\eta$ combined with the logarithm
+lemma of unit~61 gives $-\log Z(\xi,\eta)=\tfrac p2\log n-m\log\log n+F_0+o(1)$ for $\eta_0>0$, with
+$F_0=-\log(\eta_0C)$: the perturbations move only the constant term of the chart free energy. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem boxIntegralXiEta_freeEnergy ... (hη₀ : 0 < η₀) :
+    ∃ (p : ℝ) (m : ℕ) (F₀ : ℝ), (∀ i, p ≤ finExp k h i) ∧
+      m + 1 = (Finset.univ.filter fun i => finExp k h i = p).card ∧
+      Tendsto (fun n => -Real.log (boxIntegralXiEta β a b (Real.sqrt n) k h
+          (fun u => (∏ i, u i ^ k i) * J u) (fun u => η₀ + (∏ i, u i ^ k i) * η u))
+        - (p / 2 * Real.log n - m * Real.log (Real.log n))) atTop (𝓝 F₀)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\texttt{tendsto\_log\_of\_isEquivalent\_powLog} applied to unit~66's equivalence with constant
+$\eta_0C>0$, negated and rearranged.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item None: first-pass compile.
+\end{itemize}
+
+\section{Outcome}
+The chart free energy has the Watanabe form $\lambda\log n-(m-1)\log\log n+O(1)$ for the whole class
+of divisible perturbations of $\xi$ and $\eta$, with $\lambda$ and $m$ read off from $(k,h)$.
+\end{document}
