@@ -229,3 +229,4 @@ import Laplace.Grammar.DivisiblePerturbation
 import Laplace.Grammar.DivisibleWeight
 import Laplace.Grammar.FreeEnergyPerturbed
 import Laplace.Grammar.BoundedXi
+import Laplace.Grammar.OneDScale
