@@ -1,0 +1,63 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{State density III: positivity and the asymptotic-equivalence form\\
+$Z(n)\sim C(\xi,\eta)\,n^{-p/2}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The divisor density of unit~70 is measurable and integrable on the box, and positive when
+$\eta(0,\cdot)>0$, so its integral $C(\xi,\eta)=\frac1{k_0}\int v^{h'}(v^{k'})^{-p}A_{p-1}(\xi(0,v))\eta(0,v)\,dv$
+is a positive constant and the state integral satisfies $Z(n)\sim C(\xi,\eta)\,n^{-p/2}$. Along the
+way: the fluctuation mass $A_\gamma(a)$ is monotone, hence measurable, in $a$. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem weightedMass_mono_left (β γ : ℝ) (hβ : 0 < β) (hγ : -1 < γ) :
+    Monotone fun a => weightedMass β a γ
+theorem divisorWeight_integrable ... (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i) :
+    Integrable (fun v => ∏ i, (v i ^ h' i * (v i ^ k' i) ^ (-p))) (boxMeasure b d)
+theorem divisorDensity_integrable ... :
+    Integrable (divisorDensity β h₀ k₀ k' h' ξ η) (boxMeasure b d)
+theorem integral_divisorDensity_pos ...
+    (hηpos : ∀ v, (∀ i, 0 < v i ∧ v i ≤ b) → 0 < η 0 v) :
+    0 < ∫ v, divisorDensity β h₀ k₀ k' h' ξ η v ∂(boxMeasure b d)
+theorem stateIntegral_isEquivalent ... :
+    (fun n => stateIntegral β b n h₀ k₀ k' h' ξ η) ~[atTop]
+      fun n => (∫ v, divisorDensity β h₀ k₀ k' h' ξ η v ∂(boxMeasure b d))
+        * n ^ (-(((h₀ : ℝ) + 1) / k₀ / 2))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Monotonicity of $a\mapsto A_\gamma(a)$ is pointwise monotonicity of $e^{\beta a t}$; measurability
+follows. The density is dominated by $K\prod_iv_i^{h'_i}(v_i^{k'_i})^{-p}$ with $K$ built from the
+compact bounds on $\xi(0,\cdot),\eta(0,\cdot)$ and the monotonicity of $A$; the weight is a product of
+single-coordinate integrable functions. Positivity is \texttt{integral\_pos\_iff\_support\_of\_nonneg\_ae}
+with the whole box inside the support and $\texttt{boxMeasure}(\text{box})=(\mathrm{ofReal}\,b)^d>0$
+(\texttt{Measure.pi\_pi}). The equivalence multiplies the limit of $n^{p/2}Z$ by $n^{-p/2}$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item A bare \texttt{by} block as the left argument of \texttt{.trans} has no expected type; state
+the intermediate fact with \texttt{have}.
+\item The \texttt{rpow} exponent identity closes with \texttt{ring\_nf} rather than \texttt{congr 1; ring}.
+\end{itemize}
+
+\section{Outcome}
+For a unique minimal coordinate the state-density coefficient is positive and gives a sharp asymptotic
+equivalence. Remaining in Programme~A: the Fubini bridge to the $(d+1)$-dimensional box; then Programme~B
+(several minimal coordinates).
+\end{document}
