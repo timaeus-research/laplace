@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The two-dimensional trichotomy:\\
+$Z(n)=O\big(n^{-\min(p_1,p_2)/2}\log n\big)$ for every $(k,h)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The general two-dimensional chart integral is symmetric under exchanging its coordinates (Fubini on
+the compact box). This converts unit~46's $p_1<p_2$ theorem into the $p_1>p_2$ one and, with
+unit~45's equal case, yields the unconditional leading-term statement
+$Z(n)=O(n^{-\min(p_1,p_2)/2}\log n)$ for arbitrary exponents $k=(k_1,k_2)$, $h=(h_1,h_2)$: the
+two-dimensional content of \texttt{thm:TaylorTree}'s leading term, with the logarithm present exactly
+when the two candidate exponents coincide. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~44's exact reduction singles out the first coordinate ($n^{-p_1/2}$ in front). When $p_1>p_2$
+the reduction is still exact but its integral grows like $L^{p_1-p_2}$, so the useful statement is
+obtained by swapping the roles of the coordinates first.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem twoDGeneral_swap (β a b n : ℝ) (h₁ h₂ k₁ k₂ : ℕ) :
+    twoDGeneral β a b n h₁ h₂ k₁ k₂ = twoDGeneral β a b n h₂ h₁ k₂ k₁
+theorem twoDGeneral_isEquivalent_of_gt ...
+    (hgt : ((h₂ : ℝ) + 1) / k₂ < ((h₁ : ℝ) + 1) / k₁) :
+    (fun n => twoDGeneral β a b n h₁ h₂ k₁ k₂) ~[atTop]
+      fun n => 1 / ((k₂ : ℝ) * k₁) * b ^ (...) * noLogConst β a (...) (...)
+        * n ^ (-(((h₂ : ℝ) + 1) / k₂ / 2))
+theorem twoDGeneral_isBigO_min ... :
+    (fun n => twoDGeneral β a b n h₁ h₂ k₁ k₂) =O[atTop]
+      fun n => n ^ (-(min (((h₁ : ℝ) + 1) / k₁) (((h₂ : ℝ) + 1) / k₂) / 2)) * Real.log n
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The swap is \texttt{integral\_integral\_swap} for the product of the two restricted measures; the
+integrand is continuous on $\mathbb R^2$, hence integrable on the compact $[0,b]^2$ and on the box
+$(0,b]^2$ by monotonicity, and the two integrands agree pointwise after commuting the monomials. The
+trichotomy is \texttt{lt\_trichotomy} on $p_1,p_2$; in each branch the \texttt{IsEquivalent} gives an
+\texttt{IsBigO} to its own right-hand side, which is then compared to $n^{-\min/2}\log n$ using
+$n^r=O(n^r\log n)$ and \texttt{IsBigO.const\_mul\_left}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item None in Lean; the file compiled on the first pass. The line-length gate caught prose lines in
+the module docstring after an initial commit, which was amended.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integral\_integral\_swap}, \texttt{Measure.prod\_restrict},
+\texttt{ContinuousOn.integrableOn\_compact}, \texttt{lt\_trichotomy}, \texttt{IsBigO.const\_mul\_left}.
+New: the symmetry and the assembled trichotomy.
+
+\section{Lessons}
+Once each regime has its own \texttt{IsEquivalent}, the unconditional big-$O$ statement is a short
+case split; it is worth stating because it is the form in which the paper's theorem is quoted.
+
+\section{Outcome}
+Units~44--47 complete the two-dimensional leading-term theory of the standard integral for arbitrary
+$(k,h)$: exact reduction, three regimes with sharp constants, and the unified big-$O$ bound. Remaining
+directions: mixed multiplicity in general dimension, and next-order terms in the general equal case.
+\end{document}
