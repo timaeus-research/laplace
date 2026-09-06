@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Only minimal exponents count:\\
+$Z_{r+2+m}(\sqrt n)\sim\Big(\prod k_i^{-1}\Big)D\,\dfrac{C}{2^m\,m!}\,n^{-p/2}(\log n)^m$ for sorted exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Let the candidate exponents $q_i=(h_i+1)/k_i$ satisfy $q_0\ge\dots\ge q_r>p=q_{r+1}=\dots=q_{r+1+m}$
+(so the minimal exponent $p$ has multiplicity $m+1$). Then the general tower of unit~55 has
+polylog-bounded, positive levels $G_1,\dots,G_{r+1}$ (unit~56), its level $G_{r+2}$ is an admissible
+base with mass $C=\int_0^\infty x^{p-q_r-1}G_{r+1}>0$ and tail rate $(q_r-p)/2$, and
+$G_{r+2+i}=H^{G_{r+2}}_i$. Consequently
+$Z_{r+2+m}(\sqrt n)\sim(\prod k_i^{-1})\,D_{r+2+m}\,\frac{C}{2^mm!}\,n^{-p/2}(\log n)^m$, with a
+complete expansion and power-saving remainder: the multiplicity statement of \texttt{thm:TaylorTree}
+for constant $\xi$ in the chart geometry, for every sorted exponent vector. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Sorting makes every noncritical step either logarithmic ($q_{i+1}=q_i$) or convergent
+($q_{i+1}<q_i$), both of which preserve the polylog-bounded class with $\delta=q_i$; the transition
+to the minimal block is a convergent step with $t=p-q_r-1<-1$, producing a \texttt{LogBase}; the
+minimal block is then unit~49's tower.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem genTower_polyLog ...
+    (hsort : ∀ i, i < r → chartExp k h (i + 1) ≤ chartExp k h i) :
+    (∃ C₀ C₁ : ℝ, ∃ j : ℕ,
+        PolyLogBounded (genTower β a k h (r + 1)) C₀ (chartExp k h r) C₁ j)
+      ∧ ∀ x, 0 < x → 0 < genTower β a k h (r + 1) x
+noncomputable def sortedConst (β a : ℝ) (k h : ℕ → ℕ) (r : ℕ) (p : ℝ) : ℝ :=
+  PolyLogBounded.powLimit (p - chartExp k h r - 1) (genTower β a k h (r + 1))
+theorem genTower_logBase ... (hp : chartExp k h (r + 1) = p) (hlt : p < chartExp k h r) :
+    0 < sortedConst β a k h r p ∧ ∃ M C' : ℝ,
+      LogBase (genTower β a k h (r + 2)) (sortedConst β a k h r p) M C' p
+        ((chartExp k h r - p) / 2)
+theorem genTower_block_eq_iterDivPrim ... :
+    genTower β a k h (r + 2 + i) = iterDivPrim (genTower β a k h (r + 2)) i
+theorem iterChartGen_sorted_isEquivalent ... (hm : 0 < m) ...
+    (hsort : ∀ i, i < r → chartExp k h (i + 1) ≤ chartExp k h i)
+    (hp : ∀ l, r + 1 ≤ l → l ≤ r + 1 + m → chartExp k h l = p)
+    (hlt : p < chartExp k h r) :
+    (fun n => iterChartGen β a b k h (r + 2 + m) (Real.sqrt n)) ~[atTop]
+      fun n => (∏ i ∈ Finset.range (r + 2 + m), (1 : ℝ) / k i)
+        * genScale b k h (r + 2 + m)
+        * (sortedConst β a k h r p / (2 ^ m * (m.factorial : ℝ)))
+        * (n ^ (-(p / 2)) * Real.log n ^ m)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The class propagation is an induction on $r$ splitting on $q_{r+1}=q_r$ versus $q_{r+1}<q_r$ and
+applying unit~56's two closure theorems; positivity rides along. The \texttt{LogBase} certificate is
+\texttt{logBase\_powStep\_of\_lt} with $t=p-q_r-1$, after rewriting $t+q_r+1=p$ and
+$(-t-1)/2=(q_r-p)/2$. The block identification is the induction of unit~55 with the base level
+shifted. The asymptotic is the by now standard assembly (units~50, 52) fed with the exact reduction of
+unit~55 specialised via $\texttt{prevExp}(r+2+m)=p$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item Anonymous constructors with placeholder witnesses (\texttt{⟨\_, \_, \_, ?\_⟩}) cannot be
+elaborated before the proof is known; obtain the fact first and then \texttt{exact ⟨\_, \_, \_, this⟩}
+so the witnesses are read off its type.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: nothing beyond the earlier units. New: the sorted-exponent theorem, its constant, and the
+expansion.
+
+\section{Lessons}
+Three abstractions (\texttt{LogBase} with rate, \texttt{iterDivPrim}, \texttt{PolyLogBounded}) and
+one exact recursion (\texttt{genTower}) reduce the general multiplicity theorem to bookkeeping. The
+sortedness hypothesis is harmless for the paper (coordinates can be relabelled) but a permutation
+invariance of the box integral would remove it outright.
+
+\section{Outcome}
+For constant $\xi$ and any exponent vector sorted as above, the chart standard integral has leading
+term $n^{-p/2}(\log n)^m$ with explicit constant, exactly as \texttt{thm:TaylorTree} predicts: half
+the minimal candidate exponent, and the multiplicity minus one as the power of the logarithm. Together
+with unit~54 this holds on the paper's domain $(0,b]^d$.
+\end{document}
