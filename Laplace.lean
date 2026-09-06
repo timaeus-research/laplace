@@ -169,3 +169,4 @@ import Laplace.Grammar.ParabolicCylinder
 import Laplace.Grammar.Weber
 import Laplace.Grammar.Hermite
 import Laplace.Grammar.RegularCase
+import Laplace.Grammar.OrderDerivative
