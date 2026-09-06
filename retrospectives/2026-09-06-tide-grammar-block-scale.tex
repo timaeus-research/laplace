@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Minimal block II: uniform envelope and scale limit of an equal-exponent block}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For an equal-exponent block $q_0=\dots=q_d=p$ with constant $\xi=a$ the product-density formula of
+unit~73 yields two statements needed for the multiplicity-$m$ state-density theorem: a uniform envelope
+$c^pZ_{d+1}(c)\le(\prod k_i^{-1})\frac1{d!}E(\beta,L,p,d)\,(1+\log_+(cB))^d$ valid at every scale
+$c>0$ and uniformly in $|a|\le L$, and the scale limit
+$N^pZ_{d+1}(N\gamma)/\log^dN\to(\prod k_i^{-1})\frac1{d!}\gamma^{-p}A_{p-1}(a)$ for every fixed
+$\gamma>0$, by dominated convergence. The tower on any admissible base is also bounded by
+$K(1+\log_+x)^m$ at every $x>0$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem iterDivPrim_le_polyLog (hG : LogBase G A M C δ ε) (m : ℕ) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ x, 0 < x → iterDivPrim G m x ≤ K * (1 + logPlus x) ^ m
+noncomputable def blockEnv (β L p : ℝ) (d : ℕ) : ℝ :=
+  Real.exp (β * L ^ 2 / 2)
+    * ∫ t in Ioi (0 : ℝ), (1 + |Real.log t|) ^ d * (t ^ (p - 1) * quadKernel (β / 2) 0 t)
+theorem iterChartGen_block_le ... (ha : |a| ≤ L) (c : ℝ) (hc : 0 < c) :
+    c ^ p * iterChartGen β a b k h (d + 1) c
+      ≤ (∏ i ∈ Finset.range (d + 1), (1 : ℝ) / k i) * (1 / (d.factorial : ℝ))
+        * blockEnv β L p d * (1 + logPlus (c * b ^ (∑ i ∈ Finset.range (d + 1), k i))) ^ d
+theorem iterChartGen_block_tendsto ... (hγ : 0 < γ) :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ d * iterChartGen β a b k h (d + 1) (N * γ))
+      atTop (𝓝 ((∏ i ∈ Finset.range (d + 1), (1 : ℝ) / k i) * (1 / (d.factorial : ℝ))
+        * γ ^ (-p) * weightedMass β a (p - 1)))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Envelope: on $(0,cB]$, $0\le\log(cB)-\log t\le\log_+(cB)+|\log t|\le(1+\log_+(cB))(1+|\log t|)$ and
+$e^{-\beta t^2+\beta at}\le e^{\beta L^2/2}e^{-(\beta/2)t^2}$; the integral over $(0,cB]$ is then
+bounded by the integral over $(0,\infty)$ of the nonnegative dominating function
+(\texttt{setIntegral\_mono\_on}, \texttt{setIntegral\_mono\_set}). Scale limit: after the exact
+formula and $(N\gamma)^{-p}=N^{-p}\gamma^{-p}$, the integrand is
+$\mathbf 1_{(0,N\gamma B]}\big((\log N+\log(\gamma B)-\log t)/\log N\big)^d t^{p-1}e^{-\beta t^2+\beta at}$,
+which converges pointwise to $t^{p-1}e^{-\beta t^2+\beta at}$ and is dominated for $\log N\ge1$ by
+$(1+|\log(\gamma B)|+|\log t|)^d t^{p-1}e^{-\beta t^2+\beta at}$, integrable by the binomial expansion
+of unit~73. The tower envelope combines \texttt{iterDivPrim\_props} on $(0,1]$ with the complete
+expansion \texttt{iterDivPrim\_expansion} on $[1,\infty)$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{have := hG.ε\_pos} shadows an earlier anonymous \texttt{this}; name the facts.
+\item \texttt{positivity} cannot see through \texttt{logPlus} or \texttt{quadKernel}; supply
+\texttt{logPlus\_nonneg}/\texttt{quadKernel\_pos} explicitly and use
+\texttt{mul\_le\_mul\_of\_nonneg\_*} instead of \texttt{gcongr} when the side goals involve them.
+\item Rewriting with \texttt{mul\_assoc} to expose a factor also reassociates the other side; state the
+inner inequality with \texttt{suffices} and finish by \texttt{ring}.
+\item The final identity with $N^p N^{-p}=1$ closes by \texttt{linear\_combination} against that fact,
+after \texttt{set}-folding the integral and the product into atoms.
+\end{itemize}
+
+\section{Outcome}
+Astra target~2 is done. Next: the frozen coefficient theorem with noncritical coordinates
+(dominated convergence over $v$ with the envelope), then the strip estimate for a block with one
+non-minimal coordinate and the continuity freezing argument.
+\end{document}
