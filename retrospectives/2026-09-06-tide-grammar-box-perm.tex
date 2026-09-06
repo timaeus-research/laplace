@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Permutation invariance of the box integral,\\
+and the sorted theorem for every multiplicity}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Lebesgue measure on the box $(0,b]^d$ is invariant under permuting coordinates, so the box integral
+of unit~54 with exponents $k\circ\sigma,h\circ\sigma$ equals the one with $k,h$
+(\texttt{boxIntegralFin\_perm}). With a bridge from $\mathrm{Fin}\,d$-indexed to $\mathbb N$-indexed
+exponents this turns unit~57's sorted theorem into a statement for any exponent vector that some
+relabelling sorts (\texttt{boxIntegralFin\_isEquivalent\_of\_perm}). The leading asymptotic of the
+iterated primitives is also extended to $m=0$, so the sorted theorem now covers a unique minimal
+exponent (no logarithm) as well. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Mathlib's \texttt{measurePreserving\_piCongrLeft} states that reindexing a product measure along an
+equivalence of the index type is measure preserving; for a permutation of $\mathrm{Fin}\,d$ and a
+constant family of measures both sides are the box measure. The integrand transforms by reindexing
+the two finite products (\texttt{Fintype.prod\_equiv}) using
+\texttt{MeasurableEquiv.piCongrLeft\_apply\_apply}.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def boxIntegralFin (β a b c : ℝ) {d : ℕ} (k h : Fin d → ℕ) : ℝ :=
+  ∫ u : Fin d → ℝ, (∏ i, u i ^ h i) * quadKernel β a (c * ∏ i, u i ^ k i) ∂(boxMeasure b d)
+theorem boxIntegralFin_perm (β a b c : ℝ) {d : ℕ} (k h : Fin d → ℕ)
+    (σ : Equiv.Perm (Fin d)) :
+    boxIntegralFin β a b c (k ∘ σ) (h ∘ σ) = boxIntegralFin β a b c k h
+def toNatFun {d : ℕ} (g : Fin d → ℕ) (v : ℕ) : ℕ → ℕ :=
+  fun i => if hi : i < d then g ⟨i, hi⟩ else v
+theorem boxIntegralFin_eq_toNatFun ... :
+    boxIntegralFin β a b c k h = boxIntegral β a b c (toNatFun k 1) (toNatFun h 0) d
+theorem iterDivPrim_isEquivalent_all (hG : LogBase G A M C δ ε) (hA : 0 < A) (m : ℕ) :
+    (fun L => iterDivPrim G m L) ~[atTop] fun L => A / (m.factorial : ℝ) * Real.log L ^ m
+theorem boxIntegralFin_isEquivalent_of_perm ... (σ : Equiv.Perm (Fin (r + 2 + m))) ... :
+    (fun n => boxIntegralFin β a b (Real.sqrt n) k h) ~[atTop]
+      fun n => ... * (n ^ (-(p / 2)) * Real.log n ^ m)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The permutation lemma is \texttt{MeasurePreserving.integral\_comp'} applied to the integrand,
+followed by pointwise reindexing of the two products; the composite equation is assembled with
+\texttt{Eq.trans} against the (un-beta-reduced) change-of-variables identity rather than \texttt{rw}.
+The $m=0$ case of the tower asymptotic is \texttt{isEquivalent\_const\_iff\_tendsto} plus the
+\texttt{LogBase} tail with \texttt{tendsto\_rpow\_neg\_atTop}. The final theorem chains the permutation
+lemma, the bridge, unit~54's identification with the recursion, and unit~57.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{rw} inside a \texttt{congr\_left} goal met an un-beta-reduced application; a
+\texttt{beta\_reduce} first.
+\item \texttt{rw} with a change-of-variables lemma whose right-hand side is a beta-redex is fragile;
+\texttt{Eq.trans} with the lemma as a term unifies up to beta.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{measurePreserving\_piCongrLeft}, \texttt{MeasurableEquiv.piCongrLeft\_apply\_apply},
+\texttt{Fintype.prod\_equiv}, \texttt{isEquivalent\_const\_iff\_tendsto}, \texttt{tendsto\_rpow\_neg\_atTop}.
+New: the invariance, the bridge, and the relabelled multiplicity theorem.
+
+\section{Lessons}
+The recursion integrates coordinates in a fixed order, so sortedness is an artefact of the proof, not
+of the statement; making the box form primary and proving permutation invariance once removes it
+cleanly.
+
+\section{Outcome}
+The multiplicity theorem now applies to any exponent vector that can be relabelled into the sorted
+form; the remaining step is to show that every exponent vector can (via \texttt{Tuple.sort} and the
+first index attaining the minimum), which would give a hypothesis-free statement with the minimum
+candidate exponent and its multiplicity read off directly from $(k,h)$.
+\end{document}
