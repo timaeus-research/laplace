@@ -214,3 +214,4 @@ import Laplace.Grammar.IteratedDivPrim
 import Laplace.Grammar.IterChartGeneral
 import Laplace.Grammar.IterChartMixed
 import Laplace.Grammar.IterChartExpansion
+import Laplace.Grammar.BoxIntegral
