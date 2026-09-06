@@ -156,8 +156,8 @@ contractions before formalising — formalisation needs every term named.
 
 ## Monomial cumulant ladder (OneD)
 
-The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`) now has
-the first two even cumulants of `x` against `exp(-t·x^(2k)/(2k)!)` in Gamma closed form:
+The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,
+plus `MonomialMomentAsymptotic`) now has the even cumulants κ₂, κ₄, κ₆ of `x` against `exp(-t·x^(2k)/(2k)!)` in Gamma closed form:
 `monomial_variance_even` (2nd cumulant `⟨x²⟩` cov) and `monomial_excess_kurtosis` (4th cumulant
 `⟨x⁴⟩ - 3⟨x²⟩²`). RECIPE for the next rung: mirror `monomial_variance_even` verbatim — rewrite the
 observable powers into `x^(2·j)` form (`rfl`, since `2*j` reduces), substitute
@@ -165,6 +165,7 @@ observable powers into `x^(2·j)` form (`rfl`, since `2*j` reduces), substitute
 `((2k)!/t)^(a/k) = (((2k)!/t)^(1/k))^a` (`Real.rpow_add`), then `push_cast; rw [hpow]; ring` (the
 Gamma ratios ride as opaque atoms; push_cast MUST precede the power rewrite so the ℕ-cast exponent
 matches the ℝ-literal in the `rpow` lemma). Gaussian sanity check `k=1`: excess kurtosis `= 0`.
+`monomial_sixth_cumulant` = κ₆ = ⟨x⁶⟩−15⟨x⁴⟩⟨x²⟩+30⟨x²⟩³ (Gaussian κ₆=0) + its t^(-3/k) scaling; each even moment/cumulant and its `_isEquivalent_rpow` power law now exist. POWER-FOLD for a cube: `((2k)!/t)^(3/k) = (((2k)!/t)^(1/k))^3` via `← Real.rpow_natCast _ 3` then `← Real.rpow_mul hfac_t_pos.le` + `push_cast; ring`. Ladder COMPLETE at clean frontier (general even cumulant needs Bell-polynomial/set-partition machinery).
 
 ## Proof tactics (build out as we go)
 
