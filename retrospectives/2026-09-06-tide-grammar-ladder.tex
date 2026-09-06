@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The oscillator ladder algebra: $[b,b^\dagger]=1$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 16 of the grammar-paper \S4 autoformalisation: the oscillator ladder algebra
+\texttt{lem:oscillator\_algebra}. With $b^\dagger=\beta^{-1/2}\partial_a$ and
+$b=2\beta^{-1/2}\partial_a-\beta^{1/2}a$ as operators on functions of $a$, we prove the canonical
+commutator $[b,b^\dagger]=1$ (the Weyl relation) and identify the ladder actions on the fluctuation
+function, $b^\dagger S_\lambda=\beta^{1/2}S_{\lambda+1/2}$ and $b\,S_\lambda=(2\lambda-1)\beta^{-1/2}
+S_{\lambda-1/2}$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The QHO ladder was promised throughout \S4: the derivative ladder $S'_\lambda=\beta S_{\lambda+1/2}$
+(unit~2) and the lowering identity $2S'_\lambda-\beta a S_\lambda=(2\lambda-1)S_{\lambda-1/2}$ (unit~5)
+are the raising and lowering \emph{actions}, but the \emph{operators} $b,b^\dagger$ and their
+commutator had not been formalised. This unit supplies them, closing \texttt{lem:oscillator\_algebra}.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def raiseOp (β : ℝ) (f : ℝ → ℝ) : ℝ → ℝ := fun a => β ^ (-(1:ℝ)/2) * deriv f a
+noncomputable def lowerOp (β : ℝ) (f : ℝ → ℝ) : ℝ → ℝ :=
+  fun a => 2 * β ^ (-(1:ℝ)/2) * deriv f a - β ^ ((1:ℝ)/2) * (a * f a)
+
+theorem ladder_commutator (β : ℝ) (hβ : 0 < β) (f : ℝ → ℝ)
+    (hf1 : Differentiable ℝ f) (hf2 : Differentiable ℝ (deriv f)) (a : ℝ) :
+    lowerOp β (raiseOp β f) a - raiseOp β (lowerOp β f) a = f a
+
+theorem raiseOp_fluctuation ... :
+    raiseOp β (fun a => fluctuation β lam a) a = β^((1:ℝ)/2) * fluctuation β (lam + 1/2) a
+theorem lowerOp_fluctuation ... (hlam : 1/2 < lam) :
+    lowerOp β (fun a => fluctuation β lam a) a
+      = (2*lam - 1) * β^(-(1:ℝ)/2) * fluctuation β (lam - 1/2) a
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\textbf{Commutator.} Compute $b(b^\dagger f)=2\beta^{-1}f''-a f'$ and
+$b^\dagger(b f)=2\beta^{-1}f''-f-a f'$; the difference is $f$. In Lean, the two second-derivative
+values are obtained via \texttt{HasDerivAt} (\texttt{const\_mul}, \texttt{mul} of \texttt{hasDerivAt\_id}
+with $f$, \texttt{sub}), converted to \texttt{deriv} by \texttt{.deriv}; then a single
+\texttt{linear\_combination (f a) * hr2} over $\beta^{1/2}\beta^{-1/2}=1$ finishes --- the $2\beta^{-1}
+f''$ and $a f'$ terms cancel by \texttt{ring}, leaving the $\beta^{1/2}\beta^{-1/2}=1$ factor.
+
+\textbf{Ladder actions.} $b^\dagger S_\lambda=\beta^{-1/2}S'_\lambda=\beta^{-1/2}\beta S_{\lambda+1/2}
+=\beta^{1/2}S_{\lambda+1/2}$ (\texttt{deriv\_fluctuation} plus $\beta^{-1/2}\beta=\beta^{1/2}$).
+$b\,S_\lambda=\beta^{-1/2}(2S'_\lambda-\beta a S_\lambda)=\beta^{-1/2}(2\lambda-1)S_{\lambda-1/2}$
+(\texttt{fluctuation\_lowering}, after factoring $\beta^{-1/2}$ out of $2\beta^{-1/2}S'-\beta^{1/2}aS$).
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{deriv\_sub}/\texttt{deriv\_mul} match \texttt{Pi.sub}/\texttt{Pi.mul} of two lambdas, not a
+single \texttt{fun x => f x - g x}; building the derivative with \texttt{HasDerivAt} combinators and
+finishing by \texttt{.deriv} sidesteps the pattern mismatch entirely (cleaner than the
+\texttt{deriv\_fun\_*} variants here).
+\item The combinator value of \texttt{(hasDerivAt\_id a).mul \ldots} is $1\cdot f a+a\cdot f'$; keeping
+the literal $1\cdot f a$ (rather than normalising with \texttt{congr\_deriv}) and letting the final
+\texttt{linear\_combination}/\texttt{ring} absorb it avoided a spurious \texttt{ring} failure.
+\item $\beta^{-1/2}\cdot\beta=\beta^{1/2}$: rewriting $\beta\to\beta^1$ hits the \emph{base} of
+$\beta^{-1/2}$ too, so \texttt{nth\_rewrite 2} targets the standalone $\beta$ before
+\texttt{Real.rpow\_add}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied \texttt{HasDerivAt.const\_mul}/\texttt{.mul}/\texttt{.sub}/\texttt{.deriv},
+\texttt{hasDerivAt\_id}, and the rpow arithmetic. New: the operator definitions, the commutator (a Weyl
+relation on a concrete SLT family), and the identification of the ladder actions with the already-proved
+derivative ladder and lowering identity.
+
+\section{Lessons}
+For operator identities involving \texttt{deriv} of a hand-written $\lambda$ with $\pm$ and products,
+build the derivative as a \texttt{HasDerivAt} term and take \texttt{.deriv} at the end --- this avoids
+every \texttt{Pi.add}/\texttt{Pi.sub} pattern-match pitfall of the \texttt{deriv\_*} rewrite lemmas, and
+lets one \texttt{linear\_combination} over the scalar relation finish.
+
+\section{Follow-ups}
+This closes the operator side of \S4's ladder. The last outstanding \S4 item is
+\texttt{lem:log\_generating} ($\sum\frac{z^p}{p!}(c-\partial_\nu)^p S_\nu=e^{zc}S_{\nu-z}$), a
+sum/integral interchange over \texttt{log\_shift} needing the real exp series and dominated convergence
+(convergent for small $z$). The number operator and the extension of $S$ to $\lambda\le0$
+(\texttt{defn:S\_negative}) build directly on these ladder operators.
+\end{document}
