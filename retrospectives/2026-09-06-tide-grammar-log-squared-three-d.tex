@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The first $(\log n)^2$: the three-dimensional standard integral\\
+$Z_3(n)\sim\tfrac1{16}S_{1/2}(a)\,n^{-1/2}(\log n)^2$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $d=3$, $k=(1,1,1)$, $h=(0,0,0)$ all three candidate exponents equal $\tfrac12$, so the
+multiplicity is $m=3$ and the paper's expansion carries $(\log n)^{m-1}=(\log n)^2$. Iterating the
+two-dimensional reduction once more,
+\[
+Z_3(n)=\int_0^b\!\!\int_0^b\!\!\int_0^b e^{-\beta n(uvw)^2+\beta\sqrt n\,uvw\,a}
+=n^{-1/2}H_2(\sqrt n\,b^3),\qquad H_2(L)=\int_0^L\frac{H(x)}x\,dx,
+\]
+and integrating the unit-35 squeeze $H(x)=A\log x+O(1)$ against $dx/x$ gives
+$H_2(L)=\tfrac A2\log^2L+O(\log L)$, hence $Z_3(n)\sim\tfrac A8n^{-1/2}\log^2n=\tfrac{S_{1/2}(a)}{16}n^{-1/2}(\log n)^2$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The $\log n$ powers in \texttt{thm:TaylorTree} count coincidences among the candidate exponents. Unit~35
+gave $m=2$; the natural next question is whether the same one-dimensional machinery produces $m=3$.
+It does: the inner two integrals reduce (by \texttt{twoD\_inner} and the ``divide and substitute''
+lemma $\int_0^bF(cu)/u\,du=H(cb)$) to $n^{-1/2}\int_0^bH(\sqrt nb^2u)/u\,du$, and the same lemma for $H$
+gives $H_2(\sqrt nb^3)$. Each extra dimension with a coinciding exponent adds one more $\int dx/x$, i.e.\
+one more power of $\log$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem logLogPrimitive_bounds (β a L : ℝ) (hβ : 0 < β) (hL : 1 ≤ L) :
+    A * Real.log L ^ 2 / 2 - M * Real.log L ≤ logLogPrimitive β a L ∧
+      logLogPrimitive β a L ≤ A * Real.log L ^ 2 / 2 + E * Real.log L + E
+    -- (A = quadMass β a, M = quadMoment β a, E = exp (β a²/2))
+theorem threeDIntegral_eq ... :
+    threeDIntegral β a b n = (√n)⁻¹ * logLogPrimitive β a (√n * b ^ 3)
+theorem threeDIntegral_isEquivalent (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) :
+    (fun n => threeDIntegral β a b n) ~[atTop]
+      fun n => fluctuation β (1/2) a / 16 * (n ^ (-(1/2 : ℝ)) * Real.log n ^ 2)
+\end{verbatim}
+}
+Supporting lemmas: $|F(t)|\le E|t|$ on all of $\mathbb R$ (so $F(t)/t$ is bounded and $H$ has a
+continuous interval-integral representative), $0\le H(x)\le Ex$, integrability of $H(x)/x$,
+$\int_1^L\log x/x=\tfrac12\log^2L$ (FTC with $(\log x)^2/2$), the substitution lemmas
+\texttt{integral\_quadPrimitive\_div\_eq} and \texttt{integral\_logPrimitive\_div\_eq}, and an
+isolated algebraic helper \texttt{logsq\_bound\_helper} turning the $H_2$ squeeze at
+$\log L=\tfrac12\log n+3\log b$ into $|H_2-\tfrac A8\log^2n|\le K(\log n+1)$.
+
+\section{Proof strategy}
+Exactly the unit-35 pattern one level up. For the squeeze, split $(0,L]$ at $1$: on $(0,1]$ the
+integrand $H/x\le E$; on $(1,L]$ sandwich $H(x)/x$ between $(A\log x\mp\text{const})/x$ using
+\texttt{logPrimitive\_bounds}, and integrate exactly. The three substitutions are
+\texttt{intervalIntegral.integral\_comp\_mul\_left} with the everywhere-valid identity
+$G(cu)/u=c\cdot G(cu)/(cu)$ ($G=F$ or $H$, both vanishing at $0$). The final $o$-comparison is
+$(\log n+1)/\sqrt n=o(\log^2n/\sqrt n)$, i.e.\ $1/\log n+1/\log^2n\to0$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item Membership in \texttt{Ioc 1 L} gives $1<x$, not $1\le x$: use \texttt{one\_pos.trans hx.1} for
+positivity, \texttt{hx.1.le} for the bounds.
+\item A direct \texttt{nlinarith} on the $(\log n)^2$ bound (with $\log L$ substituted) failed; isolating
+the pure algebra in \texttt{logsq\_bound\_helper} with the needed product nonnegativities named made
+it a routine \texttt{nlinarith}, and the main proof applies it by \texttt{convert \dots using 2; ring}.
+\item \texttt{private} lemmas of an earlier file (the bounded-domination integrability of $1/x$,
+$1/x^2$) are not reusable; here the same facts came from continuity on $[1,L]$ instead.
+\item The unweighted \texttt{H} has no interval-integral definition; give it one for $x\ge0$
+(\texttt{logPrimitive\_eq\_intervalIntegral}) and take measurability from the continuous primitive
+of the bounded integrand $F(t)/t$.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{intervalIntegral.continuous\_primitive}, \texttt{integral\_eq\_sub\_of\_hasDerivAt},
+\texttt{Real.hasDerivAt\_log}, \texttt{integral\_inv\_of\_pos}, \texttt{integral\_comp\_mul\_left},
+\texttt{tendsto\_log\_atTop}. New: the iterated logarithmic primitive and its squeeze, the
+three-dimensional reduction, and the first formal $(\log n)^2$ asymptotic.
+
+\section{Lessons}
+The multiplicity mechanism is now completely transparent in Lean: each coinciding candidate exponent
+contributes one ``divide by $u$ and substitute'' step, i.e.\ one more $\int dx/x$ and one more power of
+$\log n$; the analytic content is a single uniform $O(1)$ squeeze propagated through these steps.
+
+\section{Follow-ups}
+General $d$ by induction on the iterated logarithmic primitive ($H_m(L)=\tfrac{A}{m!}\log^mL+O(\log^{m-1}L)$),
+mixed exponents in higher dimension, and the weighted primitives for general $k,h$.
+\end{document}
