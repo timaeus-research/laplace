@@ -222,3 +222,4 @@ import Laplace.Grammar.BoxPerm
 import Laplace.Grammar.BoxGeneral
 import Laplace.Grammar.TreeTerm
 import Laplace.Grammar.FreeEnergy
+import Laplace.Grammar.TreeSeries
