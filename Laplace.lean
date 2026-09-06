@@ -195,3 +195,4 @@ import Laplace.Grammar.LeadingContinuous
 import Laplace.Grammar.QuadraticKernel
 import Laplace.Grammar.LogTwoD
 import Laplace.Grammar.LogTwoDProduct
+import Laplace.Grammar.TwoDNoLog
