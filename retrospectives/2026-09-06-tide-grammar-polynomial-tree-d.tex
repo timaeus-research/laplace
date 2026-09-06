@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The polynomial Taylor tree in $d$ dimensions}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For a polynomial perturbation $J(u)=\sum_{\gamma\in S}c_\gamma u^\gamma$ the multinomial theorem
+expands $(J(u))^p$ into monomials $u^{\sum_\gamma\kappa_\gamma\gamma}$ indexed by compositions
+$\kappa\in\texttt{piAntidiag}\,S\,p$, so each layer of the exponential tree (unit~62) is a finite sum
+of tree terms (unit~60) and the chart standard integral with $\xi=a+J$ is the exact double series
+$\sum_p\frac{\beta^p}{p!}\sum_\kappa\binom{p}{\kappa}\prod_\gamma c_\gamma^{\kappa_\gamma}\cdot
+\texttt{treeTerm}(\textstyle\sum_\gamma\kappa_\gamma\gamma,p)$: the paper's
+\texttt{eq:flucttreeterms} grouped by composition. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Mathlib's \texttt{Finset.sum\_pow\_eq\_sum\_piAntidiag} is the multinomial theorem over a finite index
+set; the only bookkeeping is the identification
+$\prod_\gamma(\prod_iu_i^{\gamma_i})^{\kappa_\gamma}=\prod_iu_i^{\sum_\gamma\kappa_\gamma\gamma_i}$,
+which is \texttt{Finset.prod\_comm} plus \texttt{Finset.prod\_pow\_eq\_pow\_sum}.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def polyJ {d : ℕ} (S : Finset (Fin d → ℕ)) (coef : (Fin d → ℕ) → ℝ)
+    (u : Fin d → ℝ) : ℝ := ∑ γ ∈ S, coef γ * ∏ i, u i ^ γ i
+def compShift {d : ℕ} (S : Finset (Fin d → ℕ)) (κ : (Fin d → ℕ) → ℕ) (i : Fin d) : ℕ :=
+  ∑ γ ∈ S, κ γ * γ i
+theorem polyJ_pow ... : polyJ S coef u ^ p = ∑ κ ∈ Finset.piAntidiag S p,
+      (Nat.multinomial S κ : ℝ) * (∏ γ ∈ S, coef γ ^ κ γ) * ∏ i, u i ^ compShift S κ i
+theorem treeLayer_polynomial ... : treeLayer β a b c k h (polyJ S coef) p
+      = β ^ p / p.factorial * ∑ κ ∈ Finset.piAntidiag S p,
+          (Nat.multinomial S κ : ℝ) * (∏ γ ∈ S, coef γ ^ κ γ)
+            * treeTerm β a b c k h (compShift S κ) p
+theorem boxIntegralXi_polynomial_hasSum ... :
+    HasSum (fun p => β ^ p / p.factorial * ∑ κ ∈ Finset.piAntidiag S p, ...)
+      (boxIntegralXi β a b c k h (polyJ S coef))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The pointwise expansion is the multinomial theorem followed by \texttt{prod\_mul\_distrib},
+\texttt{prod\_comm}, \texttt{pow\_mul} and \texttt{prod\_pow\_eq\_pow\_sum}. The layer identity
+distributes the finite sum through the integral (\texttt{integral\_finsetSum}, integrability from
+continuity on the compact box) and pulls out the constants; the series statement is
+\texttt{HasSum.congr\_fun} of unit~62.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Nat.multinomial} and the multinomial theorem live in
+\texttt{Mathlib.Data.Nat.Choose.Multinomial}, outside the import closure.
+\item \texttt{rw [Finset.mul\_sum, Finset.sum\_mul]} fails when the sum is nested under two products;
+\texttt{simp only} with both lemmas distributes everything.
+\item \texttt{integral\_finsetSum} inferred its summand from the integrability proof in Pi form; giving
+\texttt{(f := …)} explicitly as a lambda makes the rewrite match.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Finset.sum\_pow\_eq\_sum\_piAntidiag}, \texttt{Nat.multinomial},
+\texttt{Finset.piAntidiag}, \texttt{Finset.prod\_comm}, \texttt{Finset.prod\_pow\_eq\_pow\_sum},
+\texttt{integral\_finsetSum}. New: the polynomial tree expansion.
+
+\section{Lessons}
+The paper's grouping of the $p$-fold products of Taylor coefficients by total multi-index is exactly a
+sum over compositions in Mathlib's \texttt{piAntidiag}; formalising along that grouping avoided any
+multiset combinatorics.
+
+\section{Outcome}
+For polynomial $\xi$ the full Taylor tree of \texttt{thm:TaylorTree} is an exact, convergent double
+series of tree terms, each of which has leading exponent in $\Lambda(h,k)$ and logarithmic degree at
+most $d-1$. The analytic remainder of the theorem is the resummation of this series.
+\end{document}
