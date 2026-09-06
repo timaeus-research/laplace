@@ -191,3 +191,4 @@ import Laplace.Grammar.AllOrders
 import Laplace.Grammar.AllOrdersAsymptotic
 import Laplace.Grammar.PolynomialPerturbation
 import Laplace.Grammar.LeadingGeneral
+import Laplace.Grammar.LeadingContinuous
