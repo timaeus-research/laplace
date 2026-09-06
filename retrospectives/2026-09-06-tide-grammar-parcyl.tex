@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Building $D_{-\nu}$: the negative-order parabolic cylinder function in Lean}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 6 of the grammar-paper \S4 autoformalisation, and the first step of the option-B plan to build
+the parabolic-cylinder infrastructure Mathlib lacks. We define the negative-order function
+$D_{-\nu}(x)=e^{-x^2/4}/\Gamma(\nu)\cdot\int_0^\infty u^{\nu-1}e^{-u^2/2-xu}\,du$ ($\nu>0$) via its
+DLMF \S12.5(i) integral representation --- exactly the orders $D_{-2\lambda}$ that
+\texttt{cor:fluctuation\_closed\_form} needs --- prove the DLMF integrand integrable on $(0,\infty)$,
+and pin the value $D_{-\nu}(0)=2^{\nu/2-1}\Gamma(\nu/2)/\Gamma(\nu)$ as a sanity anchor. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Units 1--5 formalised the whole of \S4.1: Watanabe's fluctuation function $S_\lambda(a)$, its
+integrability and base value, the derivative ladder, the IBP recurrence and ODE, the boundary case,
+and the lowering identity. What remains of \S4 --- the closed form $S_\lambda(a)=2^{1-\lambda}
+\beta^{-\lambda}\Gamma(2\lambda)e^{\beta a^2/8}D_{-2\lambda}(-a\sqrt{\beta/2})$ and the QHO
+identification --- rests on the parabolic cylinder function $D_\nu$, which Mathlib does not have. So
+the arc forks: rather than defer, we build the piece of $D_\nu$ theory the paper actually uses. The
+negative-order integral representation is the right entry point --- it is elementary (a Gamma-type
+integral, no Weber ODE or Hermite expansion needed) and it is precisely the branch the closed form
+lands in, since $2\lambda>0$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def parCylNeg (ν x : ℝ) : ℝ :=
+  Real.exp (-x ^ 2 / 4) / Real.Gamma ν *
+    ∫ u in Set.Ioi (0 : ℝ), u ^ (ν - 1) * Real.exp (-u ^ 2 / 2 - x * u)
+
+theorem parCylNeg_integrableOn (ν x : ℝ) (hν : 0 < ν) :
+    IntegrableOn (fun u => u ^ (ν - 1) * Real.exp (-u ^ 2 / 2 - x * u)) (Set.Ioi 0)
+
+theorem parCylNeg_zero (ν : ℝ) (hν : 0 < ν) :
+    parCylNeg ν 0 = 2 ^ (ν / 2 - 1) * Real.Gamma (ν / 2) / Real.Gamma ν
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\textbf{Integrability.} The integrand $u^{\nu-1}e^{-u^2/2-xu}$ is dominated by a pure Gaussian: the
+phase satisfies $-u^2/2-xu\le x^2-u^2/4$, which is $(u/2+x)^2\ge0$ rearranged. So the integrand is
+$\le e^{x^2}\cdot u^{\nu-1}e^{-u^2/4}$, and the majorant is integrable by
+\texttt{integrableOn\_rpow\_mul\_exp\_neg\_mul\_rpow} (the general Gamma-integral integrability at
+$p=2$, $q=\nu-1>-1$, $b=\tfrac14$). \texttt{Integrable.mono'} closes it, with the pointwise bound via
+\texttt{nlinarith [sq\_nonneg (u/2+x)]} and the $\mathrm{rpow}$/$\mathrm{npow}$ bridge
+$u^{(2:\mathbb R)}=u^2$.
+
+\textbf{Value at $0$.} At $x=0$ the integral is the standard $\int_0^\infty u^{\nu-1}e^{-u^2/2}\,du
+=2^{\nu/2-1}\Gamma(\nu/2)$, an instance of \texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} at
+$p=2$, $b=\tfrac12$, giving $(\tfrac12)^{-\nu/2}\cdot\tfrac12\cdot\Gamma(\nu/2)$; the $\mathrm{rpow}$
+identity $(\tfrac12)^{-\nu/2}=2^{\nu/2}$ and $2^{\nu/2-1}=2^{\nu/2}\cdot\tfrac12$ reconcile it to the
+stated form. The prefactor $e^{-0^2/4}/\Gamma(\nu)=1/\Gamma(\nu)$ then gives the quotient.
+
+\section{Roadblocks and resolutions}
+All Lean bookkeeping, no mathematical friction:
+\begin{itemize}
+\item \texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} takes its hypotheses in the order $(0<p)$,
+$(-1<q)$, $(0<b)$; feeding $q$'s bound where $p$'s was expected left a stray $\vdash 0<\nu$. The
+\texttt{integrableOn} sibling happens to accept $q$'s bound first, so the two are \emph{not}
+argument-compatible --- check each signature rather than copying.
+\item The $\mathrm{rpow}$ arithmetic $(\tfrac12)^{-\nu/2}=2^{\nu/2}$ needs
+\texttt{Real.inv\_rpow} then \texttt{Real.rpow\_neg}$+$\texttt{inv\_inv}; \texttt{Real.rpow\_neg\_one}
+does not exist on this pin (a known repo gotcha), so $2^{-1}$ went through
+\texttt{Real.rpow\_neg}$+$\texttt{Real.rpow\_one}.
+\item \texttt{setIntegral\_congr\_fun} hands the pointwise goal as applied lambdas; \texttt{beta\_reduce}
+before the \texttt{rw}, and rewrite the exp-argument directly (\texttt{ring} cannot pass under
+\texttt{exp}).
+\item The final $\mathrm{rw}$-chain closes the intermediate integral value by \texttt{rfl}, so a
+trailing \texttt{ring} errored ``no goals'' --- deleted; the outer prefactor step keeps its
+\texttt{ring}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Both Gamma-integral engines (\texttt{integral\_}/\texttt{integrableOn\_rpow\_mul\_exp\_neg\_mul\_rpow})
+are Mathlib. The new content is the definition itself --- Mathlib has no parabolic cylinder function ---
+and the two elementary facts that make it usable downstream: an integrability certificate valid for
+\emph{every} $x$ (via the completed-square Gaussian majorant, so later change-of-variables arguments
+have their dominating function ready) and the closed value at the origin.
+
+\section{Lessons}
+When a paper needs a special function absent from the library, the negative-order / integral-representation
+branch is usually the cheapest foothold: it is a Gamma-type integral, so the existing
+$\int x^q e^{-bx^p}$ machinery does all the analytic work, and one completed square gives an
+$x$-uniform majorant that unlocks the substitution proofs to come. Build the representation the target
+formula actually consumes, not the ``canonical'' definition.
+
+\section{Follow-ups}
+Next unit: \texttt{cor:fluctuation\_closed\_form} itself --- the change of variables $u=\sqrt{2\beta t}$
+in $S_\lambda$, matching the kernel against \texttt{parCylNeg}\,$(2\lambda)\,(-a\sqrt{\beta/2})$ (scale
+by \texttt{integral\_comp\_mul\_left\_Ioi}, then \texttt{integral\_comp\_rpow\_Ioi\_of\_pos} backwards
+at $p=2$, with Gamma left outside the substitution). Then \texttt{eq:Dn\_hermite} ($D_n$ at integer
+order via Mathlib's Hermite polynomials) and \texttt{lem:qho}.
+\end{document}
