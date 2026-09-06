@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The general power-step tower:\\
+$Z_d(c)=\Big(\prod_{i<d}k_i^{-1}\Big)D_d\,c^{-q_{d-1}}\,G_d\big(cb^{S_d}\big)$ for every $(k,h)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+All exact reductions so far (units~44, 50, 52) are instances of one recursion. With
+$q_i=(h_i+1)/k_i$ and $q_{-1}=0$, define $G_0=f$, $G_{j+1}(y)=\int_0^yx^{q_j-q_{j-1}-1}G_j(x)\,dx$ and
+$D_0=1$, $D_{d+1}=D_d\,(b^{S_d})^{q_{d-1}-q_d}$ with $S_d=\sum_{i<d}k_i$. Then for every $d$ and
+every exponent vector, $Z_d(c)=(\prod_{i<d}k_i^{-1})\,D_d\,c^{-q_{d-1}}\,G_d(cb^{S_d})$. The
+all-equal tower is \texttt{iterDivPrim}$(F_{p-1})$ and the second level with exponents $(q,p)$ is
+unit~52's noncritical base. The formula was checked by three-dimensional quadrature with three
+distinct exponents to $5\cdot10^{-14}$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Each coordinate contributes a chart power substitution and a scaling; the only data that changes
+from level to level is the exponent $q_d$ of the new coordinate versus the exponent $q_{d-1}$ carried
+by the previous level, which appear as the power $x^{q_d-q_{d-1}-1}$ in the next integrand and as the
+factor $B^{q_{d-1}-q_d}$ in the scale. The three earlier reductions correspond to
+$q_d=q_{d-1}$ (power $x^{-1}$: a logarithm), $q_d<q_{d-1}$ (a convergent integral) and the base
+level $q_{-1}=0$ (the weighted primitive).
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def powStep (s : ℝ) (G : ℝ → ℝ) (y : ℝ) : ℝ := ∫ x in Ioc 0 y, x ^ s * G x
+noncomputable def genTower (β a : ℝ) (k h : ℕ → ℕ) : ℕ → ℝ → ℝ
+  | 0 => quadKernel β a
+  | j + 1 => powStep (chartExp k h j - prevExp k h j - 1) (genTower β a k h j)
+theorem iterChartGen_step_general ... (hZ : ∀ c, 0 < c →
+      iterChartGen β a b k h d c = K * c ^ (-q') * D * G (c * B)) (c : ℝ) (hc : 0 < c) :
+    iterChartGen β a b k h (d + 1) c
+      = K * (1 / (k d : ℝ)) * c ^ (-(chartExp k h d)) * (D * B ^ (q' - chartExp k h d))
+        * powStep (chartExp k h d - q' - 1) G (c * (B * b ^ (k d)))
+theorem iterChartGen_eq_genTower ... (d : ℕ) (c : ℝ) (hc : 0 < c) :
+    iterChartGen β a b k h d c
+      = (∏ i ∈ Finset.range d, (1 : ℝ) / k i) * genScale b k h d * c ^ (-(prevExp k h d))
+        * genTower β a k h d (c * b ^ (∑ i ∈ Finset.range d, k i))
+theorem genTower_eq_iterDivPrim ... :
+    genTower β a k h (d + 1) = iterDivPrim (weightedPrimitive β a (p - 1)) d
+theorem genTower_two_eq_noLogBase ... : genTower β a k h 2 = noLogBase β a p q
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The general step is unit~52's step lemma with the exponent of the previous level freed: after the
+chart power substitution the integrand is $s^{q-1}s^{-q'}G(cBs)=s^{q-q'-1}G(cBs)$, the scaling lemma
+with $\gamma=q-q'-1$ produces $(cB)^{-(q-q')}$, and $c^{-q'}c^{-(q-q')}=c^{-q}$ leaves $B^{q'-q}$ as
+the new scale factor. The exact reduction is an induction on $d$ generalising $c$; the base case
+$d=0$ is trivial because all conventions ($q_{-1}=0$, $D_0=1$, $S_0=0$) make $Z_0=f$ fit the general
+shape. The two identifications are inductions in which the power $x^{-1}$ is rewritten as division
+and the definitions unfold by \texttt{rfl}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The final goal of the induction step differed only by the order of factors; \texttt{ring}.
+\item Unfolding \texttt{weightedPrimitive} under a binder with \texttt{rw} fails; the goal was
+closed by \texttt{rfl} since all three definitions unfold definitionally.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Real.mul\_rpow}, \texttt{Real.rpow\_add}, \texttt{Finset.prod\_range\_succ},
+\texttt{Finset.sum\_range\_succ}. New: the general tower, its exact reduction for arbitrary
+$(k,h)$, and the identifications with the earlier special towers.
+
+\section{Lessons}
+The right generality for an exact reduction is the one in which the base case is trivial: with
+$q_{-1}=0$ and $D_0=1$ the kernel itself is a tower of height zero, and no special treatment of the
+innermost coordinate is needed.
+
+\section{Outcome}
+The chart standard integral with constant $\xi$ is now reduced exactly, for every exponent vector, to
+a one-dimensional tower $G_d$. The remaining analytic problem is the growth of $G_d(y)$ as
+$y\to\infty$, expected to be $y^{q_{d-1}-q_{\min}}(\log y)^{m-1}$ with $m$ the multiplicity of the
+minimal exponent; this would give the full ``only minimal exponents count'' theorem.
+\end{document}
