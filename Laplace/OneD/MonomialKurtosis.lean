@@ -1,8 +1,10 @@
 /-
 Copyright (c) 2026 Timaeus. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Timaeus
 -/
 import Laplace.OneD.MonomialPotential
+import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
 
 /-!
 # Excess kurtosis (connected 4-point function) of the even-monomial Gibbs weight
@@ -20,7 +22,8 @@ substitute the even-moment closed form `gibbsExpectation_kthPotential_even` at `
 and `j = 1`, split the common power via `Real.rpow_add`, and finish by `ring`.
 -/
 
-open Real MeasureTheory
+open Real MeasureTheory Filter Asymptotics
+open scoped Topology
 
 namespace Laplace.OneD
 
@@ -53,5 +56,65 @@ theorem monomial_excess_kurtosis
   push_cast
   rw [hpow]
   ring
+
+/-- Constant prefactor of the excess-kurtosis power law:
+`K(k) := (2k)!^(2/k) · (Γ(5/(2k))/Γ(1/(2k)) - 3(Γ(3/(2k))/Γ(1/(2k)))²)`. -/
+noncomputable def kurtosisConst (k : ℕ) : ℝ :=
+  ((Nat.factorial (2 * k) : ℝ)) ^ ((2 : ℝ) / (k : ℝ)) *
+    (Real.Gamma ((2 * 2 + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) /
+          Real.Gamma ((1 : ℝ) / ((2 * k : ℕ) : ℝ)) -
+        3 * (Real.Gamma ((2 * 1 + 1 : ℝ) / ((2 * k : ℕ) : ℝ)) /
+          Real.Gamma ((1 : ℝ) / ((2 * k : ℕ) : ℝ))) ^ 2)
+
+/-- **Excess kurtosis in `const × t^(-...)` form.** For `k ≥ 1` and `t > 0`, the
+connected four-point function equals `K(k) · t^(-2/k)` exactly. -/
+theorem monomial_excess_kurtosis_eq_const_mul_rpow
+    {k : ℕ} (hk : 1 ≤ k) {t : ℝ} (ht : 0 < t) :
+    gibbsExpectation (kthPotential k) t (fun x ↦ x ^ 4)
+        - 3 * gibbsExpectation (kthPotential k) t (fun x ↦ x ^ 2) ^ 2 =
+      kurtosisConst k * t ^ (-((2 : ℝ) / (k : ℝ))) := by
+  rw [monomial_excess_kurtosis hk ht]
+  unfold kurtosisConst
+  have ht_le : (0 : ℝ) ≤ t := le_of_lt ht
+  have hfac_nonneg : (0 : ℝ) ≤ ((Nat.factorial (2 * k) : ℝ)) := by positivity
+  rw [Real.div_rpow hfac_nonneg ht_le, Real.rpow_neg ht_le]
+  ring
+
+/-- **Rescaled `Tendsto` for the excess kurtosis.** Multiplied by `t^(2/k)`, the
+connected four-point function tends to `K(k)` as `t → ∞`. -/
+theorem monomial_excess_kurtosis_rescaled_tendsto
+    {k : ℕ} (hk : 1 ≤ k) :
+    Tendsto (fun t : ℝ =>
+        t ^ ((2 : ℝ) / (k : ℝ)) *
+        (gibbsExpectation (kthPotential k) t (fun x ↦ x ^ 4)
+          - 3 * gibbsExpectation (kthPotential k) t (fun x ↦ x ^ 2) ^ 2))
+      atTop (𝓝 (kurtosisConst k)) := by
+  have hEq : (fun t : ℝ =>
+      t ^ ((2 : ℝ) / (k : ℝ)) *
+      (gibbsExpectation (kthPotential k) t (fun x ↦ x ^ 4)
+        - 3 * gibbsExpectation (kthPotential k) t (fun x ↦ x ^ 2) ^ 2))
+    =ᶠ[atTop] fun _ => kurtosisConst k := by
+    filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
+    rw [monomial_excess_kurtosis_eq_const_mul_rpow hk ht]
+    rw [show t ^ ((2 : ℝ) / (k : ℝ)) *
+            (kurtosisConst k * t ^ (-((2 : ℝ) / (k : ℝ))))
+          = kurtosisConst k *
+            (t ^ ((2 : ℝ) / (k : ℝ)) * t ^ (-((2 : ℝ) / (k : ℝ)))) by ring]
+    rw [← Real.rpow_add ht, add_neg_cancel, Real.rpow_zero, mul_one]
+  exact tendsto_const_nhds.congr' hEq.symm
+
+/-- **Asymptotic equivalence for the excess kurtosis.** The connected four-point
+function is asymptotically equivalent at `atTop` to `K(k) · t^(-2/k)` — indeed
+exactly equal to it for every `t > 0`. -/
+theorem monomial_excess_kurtosis_isEquivalent_rpow
+    {k : ℕ} (hk : 1 ≤ k) :
+    (fun t : ℝ =>
+        gibbsExpectation (kthPotential k) t (fun x ↦ x ^ 4)
+          - 3 * gibbsExpectation (kthPotential k) t (fun x ↦ x ^ 2) ^ 2)
+      ~[atTop]
+      (fun t : ℝ => kurtosisConst k * t ^ (-((2 : ℝ) / (k : ℝ)))) := by
+  refine (Asymptotics.IsEquivalent.refl).congr_left ?_
+  filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
+  exact (monomial_excess_kurtosis_eq_const_mul_rpow hk ht).symm
 
 end Laplace.OneD
