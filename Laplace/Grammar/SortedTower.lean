@@ -116,7 +116,7 @@ theorem genTower_block_eq_iterDivPrim (β a : ℝ) (k h : ℕ → ℕ) (r i : �
 `q_0 ≥ … ≥ q_r > p = q_{r+1} = … = q_{r+1+m}`,
 `Z_{r+2+m}(√n) ~ (∏ k_i^{-1}) D · C/(2^m m!) · n^{-p/2} (log n)^m`. -/
 theorem iterChartGen_sorted_isEquivalent (β a b : ℝ) (k h : ℕ → ℕ) (hβ : 0 < β) (hb : 0 < b)
-    (hk : ∀ i, 0 < k i) (r m : ℕ) (hm : 0 < m) (p : ℝ)
+    (hk : ∀ i, 0 < k i) (r m : ℕ) (p : ℝ)
     (hsort : ∀ i, i < r → chartExp k h (i + 1) ≤ chartExp k h i)
     (hp : ∀ l, r + 1 ≤ l → l ≤ r + 1 + m → chartExp k h l = p) (hlt : p < chartExp k h r) :
     (fun n : ℝ => iterChartGen β a b k h (r + 2 + m) (Real.sqrt n)) ~[atTop]
@@ -141,7 +141,7 @@ theorem iterChartGen_sorted_isEquivalent (β a b : ℝ) (k h : ℕ → ℕ) (hβ
     ring
   have hLtend : Tendsto (fun n : ℝ => Real.sqrt n * b ^ S) atTop atTop :=
     tendsto_sqrt_atTop.atTop_mul_const (pow_pos hb _)
-  have h2 := (iterDivPrim_isEquivalent hLB hC m hm).comp_tendsto hLtend
+  have h2 := (iterDivPrim_isEquivalent_all hLB hC m).comp_tendsto hLtend
   have h3 := (log_sqrt_mul_pow_isEquivalent b hb S).pow m
   have h4 : (fun n : ℝ => iterDivPrim (genTower β a k h (r + 2)) m (Real.sqrt n * b ^ S))
       ~[atTop] fun n : ℝ => C / (m.factorial : ℝ) * ((1 / 2 : ℝ) * Real.log n) ^ m := by

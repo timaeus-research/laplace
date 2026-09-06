@@ -152,6 +152,34 @@ theorem iterDivPrim_isEquivalent {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : Log
   have hA0 : A / (m.factorial : ℝ) ≠ 0 := (div_pos hA (by positivity)).ne'
   refine ((hsum.add hθ).congr_left fun L => (hdecomp L).symm).const_mul_right hA0
 
+
+/-- `H_0 = G → A`: the base tends to its mass. -/
+theorem iterDivPrim_isEquivalent_zero {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε)
+    (hA : 0 < A) :
+    (fun L : ℝ => iterDivPrim G 0 L) ~[atTop]
+      fun L : ℝ => A / ((0 : ℕ).factorial : ℝ) * Real.log L ^ 0 := by
+  have hε := hG.ε_pos
+  simp only [iterDivPrim_zero, Nat.factorial_zero, Nat.cast_one, div_one, pow_zero, mul_one]
+  refine (isEquivalent_const_iff_tendsto hA.ne').2 ?_
+  rw [tendsto_iff_norm_sub_tendsto_zero]
+  refine squeeze_zero' (g := fun L : ℝ => M * L ^ (-ε))
+    (Filter.Eventually.of_forall fun L => norm_nonneg _) ?_ ?_
+  · filter_upwards [eventually_ge_atTop (1 : ℝ)] with L hL
+    rw [Real.norm_eq_abs]
+    exact hG.tail L hL
+  · have := (tendsto_rpow_neg_atTop hε).const_mul M
+    simpa using this
+
+/-- Leading asymptotic of the iterated primitives for every `m` (including `m = 0`). -/
+theorem iterDivPrim_isEquivalent_all {G : ℝ → ℝ} {A M C δ ε : ℝ} (hG : LogBase G A M C δ ε)
+    (hA : 0 < A) (m : ℕ) :
+    (fun L : ℝ => iterDivPrim G m L) ~[atTop]
+      fun L : ℝ => A / (m.factorial : ℝ) * Real.log L ^ m := by
+  rcases Nat.eq_zero_or_pos m with hm | hm
+  · subst hm
+    exact iterDivPrim_isEquivalent_zero hG hA
+  · exact iterDivPrim_isEquivalent hG hA m hm
+
 /-- **The general multiplicity theorem, all-equal case, arbitrary `(k, h)`**
 (grammar §4.2 `thm:TaylorTree`, `d + 2` coordinates all with candidate exponent `p/2`):
 `Z_{d+2}(√n) ~ (∏ k_i^{-1}) · A_{p-1}/(2^{d+1}(d+1)!) · n^{-p/2} (log n)^{d+1}`. -/

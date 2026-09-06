@@ -218,3 +218,4 @@ import Laplace.Grammar.BoxIntegral
 import Laplace.Grammar.GeneralTower
 import Laplace.Grammar.PolyLogClass
 import Laplace.Grammar.SortedTower
+import Laplace.Grammar.BoxPerm
