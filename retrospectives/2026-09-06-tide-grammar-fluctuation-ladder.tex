@@ -1,0 +1,68 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The fluctuation ladder: lowering $2S'_\lambda-\beta a S_\lambda=(2\lambda-1)S_{\lambda-1/2}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 5 of the grammar-paper \S4 autoformalisation: the lowering identity of the fluctuation-function
+ladder algebra (\texttt{lem:oscillator\_algebra}), $2S'_\lambda(a)-\beta a\,S_\lambda(a)
+=(2\lambda-1)S_{\lambda-1/2}(a)$ for $\lambda>1/2$. It is the $\beta$-power-free form of the paper's
+$b\,S_\lambda=(2\lambda-1)\beta^{-1/2}S_{\lambda-1/2}$, and falls out of property (i) and the
+recurrence in a few lines. Zero \texttt{sorry}/\texttt{axiom}; proven first try.
+\end{abstract}
+
+\section{Setting}
+The ladder algebra of \S4 has a raising operator $b^\dagger=\beta^{-1/2}\partial_a$ and a lowering
+operator $b=2\beta^{-1/2}\partial_a-\beta^{1/2}a$. The raising action $b^\dagger S_\lambda=\beta^{1/2}
+S_{\lambda+1/2}$ is exactly the derivative ladder already formalised (\texttt{deriv\_fluctuation},
+unit~2). The lowering action is the one new identity, and it is what makes the pair a genuine
+oscillator algebra. Multiplying the paper's statement through by $\beta^{1/2}$ removes every
+fractional power of $\beta$, giving the clean form above.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_lowering (β lam : ℝ) (hβ : 0 < β) (hlam : 1 / 2 < lam) (a : ℝ) :
+    2 * deriv (fun a => fluctuation β lam a) a - β * a * fluctuation β lam a
+      = (2 * lam - 1) * fluctuation β (lam - 1 / 2) a
+\end{verbatim}
+}
+
+\section{Proof strategy}
+By the derivative ladder, $S'_\lambda=\beta S_{\lambda+1/2}$, so the left side is
+$2\beta S_{\lambda+1/2}-\beta a S_\lambda$. The recurrence at $\lambda-\tfrac12$ (valid since
+$\lambda>\tfrac12$) reads $S_{\lambda+1/2}=\tfrac{a}{2}S_\lambda+\tfrac{\lambda-1/2}{\beta}
+S_{\lambda-1/2}$; substituting cancels the $\beta a S_\lambda$ term and leaves
+$2(\lambda-\tfrac12)S_{\lambda-1/2}=(2\lambda-1)S_{\lambda-1/2}$. In Lean: rewrite the derivative,
+rewrite the recurrence (with the index normalisations $(\lambda-\tfrac12)+1=\lambda+\tfrac12$ and
+$(\lambda-\tfrac12)+\tfrac12=\lambda$), then \texttt{field\_simp; ring}.
+
+\section{Roadblocks and resolutions}
+None --- first try. The only care was normalising the recurrence's shifted indices to match
+$S_{\lambda+1/2}$ and $S_\lambda$ before substituting.
+
+\section{What was Mathlib, what was new}
+No Mathlib beyond \texttt{field\_simp}/\texttt{ring}; the content is purely the two prior grammar
+results (derivative ladder + recurrence) combined.
+
+\section{Lessons}
+When a paper states an operator identity with fractional powers of a parameter, clearing them by
+scaling the whole equation (here $\times\beta^{1/2}$) gives a Lean statement free of
+\texttt{rpow}-on-$\beta$ bookkeeping while remaining faithful --- the operator content is unchanged.
+
+\section{Follow-ups}
+Remaining \S4: \texttt{prop:fluctuation\_weber} (the ODE~(iii) $\to$ Weber's equation substitution;
+formalisable as an ODE transform, no special-function library needed) and the commutator
+$[b,b^\dagger]=1$ (needs an operator framework). \texttt{cor:fluctuation\_closed\_form} and
+\texttt{lem:qho} rest on parabolic-cylinder functions $D_\nu$, which Mathlib does not have --- deferred.
+\end{document}
