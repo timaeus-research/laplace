@@ -225,3 +225,4 @@ import Laplace.Grammar.FreeEnergy
 import Laplace.Grammar.TreeSeries
 import Laplace.Grammar.MonomialTreeD
 import Laplace.Grammar.PolynomialTreeD
+import Laplace.Grammar.DivisiblePerturbation
