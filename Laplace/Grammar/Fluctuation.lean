@@ -254,4 +254,74 @@ theorem fluctuation_ode (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) (a : ℝ)
   rw [fluctuation_recurrence β lam hβ hlam a]
   field_simp
 
+/-- Property (iv) (grammar §4 `lem:fluctuation_properties`): `S_1(a) = (a/2)·S_{1/2}(a) + 1/β`,
+the `λ = 0` boundary case of the recurrence (`∫₀^∞ d/dt[e^{phase}] = 0 − 1 = −1`). -/
+theorem fluctuation_one (β : ℝ) (hβ : 0 < β) (a : ℝ) :
+    fluctuation β 1 a = (a / 2) * fluctuation β (1 / 2) a + 1 / β := by
+  set e : ℝ → ℝ := fun t => Real.exp (-β * t + β * a * Real.sqrt t) with he_def
+  let D : ℝ → ℝ :=
+    fun t => -β * (t ^ (1 - 1 : ℝ) * e t) + β * a / 2 * (t ^ (1 / 2 - 1 : ℝ) * e t)
+  have hderiv : ∀ t ∈ Set.Ioi (0 : ℝ), HasDerivAt e (D t) t := by
+    intro t ht
+    have ht0 : (0 : ℝ) < t := ht
+    have hsqrt : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt t)) t := Real.hasDerivAt_sqrt ht0.ne'
+    have h1 : HasDerivAt (fun t : ℝ => -β * t) (-β) t := by
+      simpa using (hasDerivAt_id t).const_mul (-β)
+    have h2 : HasDerivAt (fun t : ℝ => β * a * Real.sqrt t) (β * a * (1 / (2 * Real.sqrt t))) t :=
+      hsqrt.const_mul (β * a)
+    have hph : HasDerivAt (fun t : ℝ => -β * t + β * a * Real.sqrt t)
+        (-β + β * a * (1 / (2 * Real.sqrt t))) t := h1.add h2
+    have hge : HasDerivAt e (e t * (-β + β * a * (1 / (2 * Real.sqrt t)))) t := hph.exp
+    have hsq : Real.sqrt t = t ^ (1 / 2 : ℝ) := Real.sqrt_eq_rpow t
+    have hA : t ^ (1 - 1 : ℝ) = 1 := by rw [show (1 : ℝ) - 1 = 0 by ring, Real.rpow_zero]
+    have hII : t ^ (1 / 2 - 1 : ℝ) = (Real.sqrt t)⁻¹ := by
+      rw [hsq, ← Real.rpow_neg ht0.le]; congr 1; ring
+    have hval : e t * (-β + β * a * (1 / (2 * Real.sqrt t))) = D t := by
+      change _ = -β * (t ^ (1 - 1 : ℝ) * e t) + β * a / 2 * (t ^ (1 / 2 - 1 : ℝ) * e t)
+      rw [hA, hII]; ring
+    rw [← hval]; exact hge
+  have hcont : ContinuousWithinAt e (Set.Ici 0) 0 := by
+    have hce : Continuous e := by rw [he_def]; fun_prop
+    exact hce.continuousWithinAt
+  have htop : Filter.Tendsto e Filter.atTop (nhds 0) := by
+    have hmaj : Filter.Tendsto (fun t : ℝ => Real.exp (β * a ^ 2 / 2) *
+        Real.exp (-(β / 2) * t)) Filter.atTop (nhds 0) := by
+      have := (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 0 (β / 2) (by linarith)).const_mul
+        (Real.exp (β * a ^ 2 / 2))
+      simpa using this
+    refine squeeze_zero' ?_ ?_ hmaj
+    · filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t _
+      exact (Real.exp_pos _).le
+    · filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht0
+      have hexp : Real.exp (-β * t + β * a * Real.sqrt t)
+          ≤ Real.exp (β * a ^ 2 / 2) * Real.exp (-(β / 2) * t) := by
+        rw [← Real.exp_add]; apply Real.exp_le_exp.mpr
+        nlinarith [sq_nonneg (Real.sqrt t - a), Real.sq_sqrt ht0.le]
+      rw [he_def]; exact hexp
+  have hDint : IntegrableOn D (Set.Ioi 0) := by
+    have h1 : IntegrableOn (fun t => t ^ (1 - 1 : ℝ) * e t) (Set.Ioi 0) := by
+      rw [he_def]; exact fluctuation_integrableOn β 1 hβ (by norm_num) a
+    have hh : IntegrableOn (fun t => t ^ (1 / 2 - 1 : ℝ) * e t) (Set.Ioi 0) := by
+      rw [he_def]; exact fluctuation_integrableOn β (1 / 2) hβ (by norm_num) a
+    exact (h1.const_mul (-β)).add (hh.const_mul (β * a / 2))
+  have hg0 : e 0 = 1 := by simp [he_def, Real.sqrt_zero]
+  have hFTC : (∫ t in Set.Ioi (0 : ℝ), D t) = -1 := by
+    have := integral_Ioi_of_hasDerivAt_of_tendsto hcont hderiv hDint htop
+    rw [hg0] at this; simpa using this
+  have hsplit : (∫ t in Set.Ioi (0 : ℝ), D t)
+      = -β * fluctuation β 1 a + β * a / 2 * fluctuation β (1 / 2) a := by
+    have h1 : IntegrableOn (fun t => t ^ (1 - 1 : ℝ) * e t) (Set.Ioi 0) := by
+      rw [he_def]; exact fluctuation_integrableOn β 1 hβ (by norm_num) a
+    have hh : IntegrableOn (fun t => t ^ (1 / 2 - 1 : ℝ) * e t) (Set.Ioi 0) := by
+      rw [he_def]; exact fluctuation_integrableOn β (1 / 2) hβ (by norm_num) a
+    have hDe : D = fun t => -β * (t ^ (1 - 1 : ℝ) * e t)
+        + β * a / 2 * (t ^ (1 / 2 - 1 : ℝ) * e t) := rfl
+    rw [hDe, integral_add (h1.const_mul (-β)) (hh.const_mul (β * a / 2)),
+      integral_const_mul, integral_const_mul]
+    rfl
+  rw [hFTC] at hsplit
+  have hβ' : β ≠ 0 := hβ.ne'
+  field_simp at hsplit ⊢
+  linarith [hsplit]
+
 end Laplace.Grammar
