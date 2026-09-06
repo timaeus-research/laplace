@@ -1,0 +1,105 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The standard integral as a rescaled fluctuation function:
+$\int_0^\infty u^h e^{-\beta n u^{2k}+\beta\sqrt n\,u^k a}\,du
+=\tfrac{1}{2k}n^{-(h+1)/(2k)}S_{(h+1)/(2k)}(a)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The first foothold into grammar \S4.2 (the Taylor-tree / standard-integral machinery), bridging it to
+the \S4.1 fluctuation function now fully formalised. We prove that the one-dimensional
+constant-coefficient population core of the per-chart standard integral
+(\texttt{eq:per\_chart\_integral}) --- $d=1$, $\xi\equiv a$, $\eta\equiv1$, over the full half-line ---
+is exactly a rescaled fluctuation function, via the change of variables $t=n u^{2k}$. This identifies
+$S_\lambda$ as the exact Mellin kernel of the standard integral and pins down the leading candidate
+exponent $(h+1)/(2k)$ of $\Lambda(h,k)$ (\texttt{eq:candidateexponents}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The standard integral $Z(\beta,n;\xi,\eta)=\int_{[0,b]^d}u^h e^{-\beta n u^{2k}+\beta\sqrt n\,u^k\xi(u)}
+\eta(u)\,du$ is the object whose full asymptotic expansion is \texttt{thm:TaylorTree}. That theorem is a
+heavy multivariate result (Dirac state densities, Mellin transforms in $\mathbb C$, multi-index tree
+combinatorics, meromorphic continuation) --- not a single tide. But its \emph{analytic core} in one
+dimension, with constant coefficients and no boundary truncation, is elementary and directly consumes
+the \S4.1 fluctuation function. Isolating that core is the right first step.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem standardIntegral1D_eq_fluctuation (β n a : ℝ) (h k : ℕ)
+    (hn : 0 < n) (hk : 0 < k) :
+    (∫ u in Set.Ioi (0:ℝ),
+        u ^ h * Real.exp (-β*n*u^(2*k) + β*Real.sqrt n*u^k*a))
+      = (1 / (2*(k:ℝ))) * n ^ (-(((h:ℝ)+1)/(2*k)))
+        * fluctuation β (((h:ℝ)+1)/(2*k)) a
+\end{verbatim}
+}
+The order of the fluctuation function produced is $\lambda=(h+1)/(2k)$ --- precisely the starting
+point of the $i$-th arithmetic progression in $\Lambda(h,k)=\bigcup_i\big((h_i{+}1)/(2k_i)+
+(1/2k_i)\mathbb N\big)$. The theorem needs no sign or size assumption on $\beta$: the substitution is
+algebraic and carries $\beta$ along untouched, so the result holds for all real $\beta$.
+
+\section{Proof strategy}
+The substitution $t=n u^{2k}$ factors as a scaling by $n$ and a power $u\mapsto u^{2k}$, matched to the
+two Mathlib change-of-variables lemmas (the same pair used by \texttt{fluctuation\_eq\_kernel}, here at
+general $p=2k$ instead of $p=2$):
+\begin{itemize}
+\item \texttt{integral\_comp\_mul\_left\_Ioi}: $\int_0^\infty G(n r)\,dr=n^{-1}\int_0^\infty G(t)\,dt$,
+so $S_\lambda=\int G=n\int G(n\,\cdot)$;
+\item \texttt{integral\_comp\_rpow\_Ioi\_of\_pos}:
+$\int_0^\infty (p x^{p-1})\,G(n x^p)\,dx=\int_0^\infty G(n r)\,dr$.
+\end{itemize}
+The integrand $ (p x^{p-1}) G(n x^p)$ then collapses pointwise (for $x>0$) to
+$2k\,n^{\lambda-1}\,x^h e^{-\beta n x^{2k}+\beta\sqrt n x^k a}$: the $x$-powers merge as
+$x^{(p-1)+p(\lambda-1)}=x^{h}$ (the exponent arithmetic $(2k-1)+((h{+}1)-2k)=h$ is where
+$\lambda=(h{+}1)/(2k)$ is \emph{used}), and $\sqrt{n x^{2k}}=\sqrt n\,x^k$. Pulling out the constant
+$2k\,n^{\lambda-1}$ gives $S_\lambda=2k\,n^{\lambda}Z$, and dividing yields the stated form.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The power bookkeeping mixes \texttt{npow} ($u^{2k}$, $u^k$ with $k:\mathbb N$) and \texttt{rpow}
+($x^p$, $x^{\lambda-1}$). Bridge with \texttt{Real.rpow\_natCast} ($x^{(m:\mathbb N)}=x^m$) and set
+$p=((2k:\mathbb N):\mathbb R)$ so $x^p=x^{2k}$ is one \texttt{rpow\_natCast} away; the radical uses
+$x^{2k}=(x^k)^2$ (\texttt{pow\_mul} + \texttt{Nat.mul\_comm}) then \texttt{Real.sqrt\_sq}.
+\item \texttt{ring} cannot see \texttt{rpow} exponent addition, so merge the two $x$-powers by
+\texttt{Real.rpow\_add} and prove the resulting exponent equals $(h:\mathbb R)$ by
+\texttt{field\_simp; ring} (needs $2k\ne0$); likewise $n\cdot n^{\lambda-1}=n^\lambda$ and
+$n^{-\lambda}n^\lambda=1$ each need an explicit \texttt{rpow\_add}/\texttt{rpow\_zero} rewrite before
+\texttt{ring} finishes the surrounding scalar algebra.
+\item The exponent-term reorder $-\beta(nx^{2k})+\beta a(\sqrt n x^k)=-\beta n x^{2k}+\beta\sqrt n x^k a$
+cannot go under \texttt{exp} via \texttt{ring}; state it as a separate \texttt{have} closed by
+\texttt{ring} and \texttt{rw} it into the exponent.
+\item Order the integrand rewrites so \texttt{hnpow} (which consumes $(n x^p)^{\lambda-1}$) fires
+before \texttt{hxp} ($x^p\to x^{2k}$) rewrites the remaining $x^p$ inside the exponent; the pattern
+$x^p$ never matches $x^{p-1}$ or $x^{p(\lambda-1)}$, so the rewrites stay surgical.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied the change-of-variables lemmas and the \texttt{rpow} calculus
+(\texttt{Real.rpow\_natCast}, \texttt{rpow\_add}, \texttt{rpow\_mul}, \texttt{mul\_rpow},
+\texttt{sqrt\_mul}, \texttt{sqrt\_sq}). New is the identification itself --- \S4.1's fluctuation
+function \emph{is} the state-density Mellin kernel of \S4.2's standard integral --- and the exponent
+arithmetic exhibiting $(h+1)/(2k)$.
+
+\section{Lessons}
+\texttt{fluctuation\_eq\_kernel} was a direct template at general $p$: when a second change of variables
+has the same scaling-then-power shape, reuse the lemma pair and only redo the pointwise integrand
+collapse. The empirical pre-check (relative error $\sim10^{-13}$ across four parameter sets) confirmed
+both the constant $1/(2k)$ and the exponent $-(h+1)/(2k)$ before any Lean was written.
+
+\section{Follow-ups}
+Natural next pieces toward \texttt{thm:TaylorTree}: the boundary-tail remainder $\Delta$ over $[b,\infty)$
+(exponentially small), the general-coefficient expansion of $e^{\beta\sqrt n u^k(\xi(u)-\xi(0))}$ into
+the tree terms $\xi_{\mathbf n,p}$ (\texttt{eq:flucttreeterms}), and the Mellin/meromorphic-continuation
+machinery for the state density --- all substantially heavier and multivariate.
+\end{document}
