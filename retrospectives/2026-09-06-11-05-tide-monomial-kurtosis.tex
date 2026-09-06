@@ -1,0 +1,65 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{−}{\ensuremath{-}}
+\title{Excess kurtosis of the even-monomial Gibbs weight}
+\author{Tide retrospective, laplace seabed}
+\date{2026-09-06}
+\begin{document}
+\sloppy
+\maketitle
+\section{Setting}
+The 1D monomial track of the laplace formalisation computes moments of $x$ against the symmetric
+reference weight $\exp(-t\,x^{2k}/(2k)!)$ in Gamma closed form. The second cumulant --- the variance
+--- was already landed as \texttt{monomial\_variance\_even}. This tide adds the fourth cumulant, the
+connected four-point function, which for a symmetric weight (mean zero) is $\langle x^4\rangle -
+3\langle x^2\rangle^2$. It is the minimal good next step: a self-contained closed form that reuses
+only machinery already present, and mirrors an already-proved lemma structurally. It also opens the
+cumulant ladder past the variance on the monomial track, complementing the anharmonic track's
+$\kappa_3,\kappa_4$ work.
+\section{The thing formalised}
+For $k \ge 1$ and $t > 0$,
+\[
+  \langle x^4\rangle - 3\langle x^2\rangle^2
+  = \Big(\tfrac{(2k)!}{t}\Big)^{2/k}
+    \left(\frac{\Gamma(5/(2k))}{\Gamma(1/(2k))}
+      - 3\left(\frac{\Gamma(3/(2k))}{\Gamma(1/(2k))}\right)^{2}\right).
+\]
+The Lean statement is \texttt{monomial\_excess\_kurtosis}, phrased with the raw
+\texttt{gibbsExpectation} of $x^4$ and $x^2$. For the Gaussian reference $k=1$ the bracket is
+$\tfrac34 - 3\cdot(\tfrac12)^2 = 0$: a Gaussian has zero excess kurtosis, the sanity check the tide
+began from.
+\section{Proof strategy}
+The proof is a near-verbatim structural copy of \texttt{monomial\_variance\_even}. Rewrite $x^4$ and
+$x^2$ into the even form $x^{2\cdot 2}$, $x^{2\cdot 1}$ (definitionally equal, so \texttt{rfl}), then
+substitute the even-moment closed form \texttt{gibbsExpectation\_kthPotential\_even} at $j=2$ and
+$j=1$. The two terms then share the power $\big((2k)!/t\big)^{2/k}$, once the square of the
+$j=1$ term's power $\big((2k)!/t\big)^{1/k}$ is folded in via
+$\big((2k)!/t\big)^{2/k} = \big(\big((2k)!/t\big)^{1/k}\big)^2$, an instance of \texttt{Real.rpow\_add}.
+After a \texttt{push\_cast} to align the natural-number casts in the exponents and Gamma arguments,
+that single power rewrite plus \texttt{ring} closes the goal --- the Gamma ratios ride along as
+opaque atoms.
+\section{Roadblocks and resolutions}
+None. The tide compiled on the first attempt; the mirror discipline (find the closest landed lemma,
+copy its skeleton, change the arithmetic) made it a mechanical exercise once the survey had picked
+the target. The only care needed was ordering \texttt{push\_cast} before the power rewrite so the
+$\mathbb{N}$-cast $2$ in the substituted exponent matches the $\mathbb{R}$-literal $2$ in the
+\texttt{Real.rpow\_add} lemma.
+\section{What was Mathlib, what was new}
+Everything analytic was already in the seabed: the closed-form even moments, the integrability
+inputs behind them, and the \texttt{Real.rpow} algebra. New here is the fourth-cumulant closed form
+itself, and the observation that it vanishes at $k=1$. No GPT consult was needed.
+\end{document}
