@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The boundary tail of the standard integral is exponentially small}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Third \S4.2 foothold: the one-dimensional population version of the remainder estimate
+\texttt{eq:Deltaupper}. The paper's standard integral lives on the chart $[0,b]$; the
+fluctuation-function identity of unit~22 lives on $(0,\infty)$. We bound the difference ---
+the tail over $(b,\infty)$ --- by $e^{\beta a^2/2}e^{-(\beta/4)nb^{2k}}$ times an explicit Gamma
+constant, for $n\ge1$, and conclude that the chart integral equals
+$(2k)^{-1}n^{-(h+1)/(2k)}S_{(h+1)/(2k)}(a)$ up to $O(e^{-\varepsilon n})$ with
+$\varepsilon=(\beta/4)b^{2k}$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+In the proof of \texttt{thm:TaylorTree} the state-density integral is cut at $T=nb^{2|k|}$ and the
+remainder $\Delta$ is bounded by $e^{-\beta T/4}$ times a convergent multi-sum. Stripped of the tree
+combinatorics, the analytic content is: on $u\ge b$ the exponent $-\beta nu^{2k}+\beta\sqrt n u^k a$
+is at most $-\tfrac\beta4 nb^{2k}-\tfrac\beta4u^{2k}+\tfrac\beta2a^2$, so the tail is dominated by a
+fixed Gamma integral times $e^{-(\beta/4)nb^{2k}}$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem standardIntegrand_le ... :
+    Real.exp (-β*n*u^(2*k) + β*Real.sqrt n*u^k*a)
+      ≤ Real.exp (β*a^2/2) * Real.exp (-(β/2*n) * u^(2*k))
+theorem standardIntegrand_integrableOn ... :
+    IntegrableOn (fun u => u^h * exp(...)) (Ioi 0)
+theorem standardIntegral1D_tail_le (β n a b : ℝ) (h k : ℕ) (hβ : 0 < β) (hn : 1 ≤ n)
+    (hb : 0 < b) (hk : 0 < k) :
+    (∫ u in Ioi b, u^h * exp(...))
+      ≤ exp(β*a^2/2) * exp(-(β/4)*n*b^(2*k))
+        * ((β/4)^(-(((h:ℝ)+1)/(2*k))) * (1/(2*(k:ℝ))) * Gamma(((h:ℝ)+1)/(2*k)))
+theorem standardIntegral1D_bounded_approx ... :
+    |(∫ u in Ioc 0 b, u^h * exp(...))
+        - (1/(2*(k:ℝ))) * n^(-(((h:ℝ)+1)/(2*k))) * fluctuation β (((h:ℝ)+1)/(2*k)) a|
+      ≤ (the same bound)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\texttt{standardIntegrand\_le} is the Gaussian domination of unit~23 evaluated at $t=nu^{2k}$, using
+$\sqrt{nu^{2k}}=\sqrt n\,u^k$. Integrability on $(0,\infty)$ follows by \texttt{Integrable.mono'}
+against $e^{\beta a^2/2}u^h e^{-(\beta/2)nu^{2k}}$, which is
+\texttt{integrableOn\_rpow\_mul\_exp\_neg\_mul\_rpow} after \texttt{rpow\_natCast}. For the tail, on
+$u>b$ we have $u^{2k}\ge b^{2k}$ and $n\ge1$, so
+$-\tfrac\beta2nu^{2k}\le-\tfrac\beta4nb^{2k}-\tfrac\beta4u^{2k}$ (\texttt{nlinarith} with the two
+product hints $\beta n(u^{2k}-b^{2k})\ge0$ and $\beta(n-1)u^{2k}\ge0$); the tail integral is then
+bounded by \texttt{setIntegral\_mono\_on} against $C\cdot u^he^{-(\beta/4)u^{2k}}$, enlarged from
+$(b,\infty)$ to $(0,\infty)$ by \texttt{setIntegral\_mono\_set}, and evaluated by
+\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow}. The chart approximation splits $(0,\infty)$ as
+$(0,b]\cup(b,\infty)$ (\texttt{Ioc\_union\_Ioi\_eq\_Ioi}, \texttt{setIntegral\_union}) and invokes
+unit~22 for the full-line value.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Integrable.const\_mul} returns a bare \texttt{Integrable} (an \texttt{And}), so
+dot-notation \texttt{.mono\_set} fails with ``\texttt{And.mono\_set}''; bind it first with the
+\texttt{IntegrableOn} type ascribed.
+\item \texttt{pow\_le\_pow\_left} is now \texttt{pow\_le\_pow\_left₀} on this pin.
+\item The a.e.\ nonnegativity hypothesis of \texttt{setIntegral\_mono\_set} is stated with
+\texttt{≤ᵐ[μ.restrict t]}; unfold \texttt{Filter.EventuallyLE} then \texttt{ae\_restrict\_iff'} to
+reduce it to a pointwise statement on the set, and use \texttt{HasSubset.Subset.eventuallyLE} for the
+set inclusion.
+\item The Gamma-lemma output carries $(-(h+1))/(2k)$; \texttt{push\_cast} then \texttt{neg\_div}
+aligns it with the stated $-((h+1)/(2k))$.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: the Gamma-integral pair, \texttt{Integrable.mono'}, \texttt{setIntegral\_mono\_on},
+\texttt{setIntegral\_mono\_set}, \texttt{setIntegral\_union}, \texttt{Ioc\_union\_Ioi\_eq\_Ioi}.
+New: integrability of the standard integrand, the explicit exponential tail bound with its Gamma
+constant, and the chart-vs-half-line approximation --- the 1D skeleton of $\Delta=O(e^{-\varepsilon n})$.
+
+\section{Lessons}
+A domination lemma factored out once (unit~23) pays twice: it gives integrability and the tail bound
+with the same majorant. State tail bounds with the explicit constant rather than an
+$O(\cdot)$ --- the constant is one Gamma evaluation away and makes the result quotable.
+
+\section{Follow-ups}
+The 1D population Taylor-tree pipeline now has all its analytic steps (kernel identity, insertions,
+tail). What remains multivariate: the tree-coefficient series interchange and the state-density
+Mellin machinery.
+\end{document}
