@@ -104,6 +104,7 @@ import Laplace.Multi.Covariance
 import Laplace.TwoD.SemiDegenerate
 import Laplace.TwoD.AddSeparable
 import Laplace.TwoD.SeparableSameCoordCov
+import Laplace.TwoD.SeparableMarginal
 import Laplace.TwoD.PureQuartic
 import Laplace.OneD.AnharmonicKappa3
 import Laplace.OneD.AnharmonicKappa3Affine
