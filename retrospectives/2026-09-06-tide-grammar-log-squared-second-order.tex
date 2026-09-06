@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Every term at $d=3$:\\
+$Z_3(n)=n^{-1/2}\,P(\log n)+O(n^{-1})$ with $P$ an explicit quadratic}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit~38 gave the leading term $Z_3(n)\sim\tfrac A8n^{-1/2}(\log n)^2$ for the $d=3$ chart integral
+with three coinciding exponents. Iterating the tail mechanism of unit~41 once more identifies the whole
+polynomial: with $\theta(x)=H(x)-A\log x-C_0\in[0,M/x]$ for $x\ge1$,
+\[
+H_2(L)=\tfrac A2\log^2L+C_0\log L+C_1-\int_L^\infty\frac{\theta(x)}{x}\,dx,\qquad
+0\le\int_L^\infty\frac{\theta}{x}\le\frac ML,
+\]
+with $C_1=\int_0^1H/x+\int_1^\infty\theta/x$, and hence $Z_3(n)=n^{-1/2}P(\log n)+O(n^{-1})$ where
+$P(\ell)=\tfrac A8\ell^2+(\tfrac32A\log b+\tfrac12C_0)\ell+(\tfrac92A\log^2b+3C_0\log b+C_1)$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The recursion $H_{m+1}(L)=\int_0^LH_m(x)/x\,dx$ maps an expansion ``polynomial in $\log x$ plus a
+remainder $O(1/x)$'' to an expansion of the same shape one degree higher: the polynomial part
+integrates exactly against $dx/x$ over $[1,L]$, the remainder over $[1,\infty)$ converges to a new
+constant, and its tail over $[L,\infty)$ is again $O(1/L)$. This unit runs the step once, from $H$
+(unit~41) to $H_2$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def logRemainder (β a x : ℝ) : ℝ :=
+  logPrimitive β a x - quadMass β a * Real.log x - logConst β a
+theorem logRemainder_div_integrableOn ... (hc : 1 ≤ c) :
+    IntegrableOn (fun x => logRemainder β a x / x) (Ioi c)
+noncomputable def logConst2 (β a : ℝ) : ℝ :=
+  (∫ x in Ioc 0 1, logPrimitive β a x / x) + ∫ x in Ioi 1, logRemainder β a x / x
+theorem logLogPrimitive_sub_poly ... (hL : 1 ≤ L) :
+    logLogPrimitive β a L
+      - (quadMass β a * Real.log L ^ 2 / 2 + logConst β a * Real.log L + logConst2 β a)
+      = -∫ x in Ioi L, logRemainder β a x / x
+theorem threeDIntegral_second_order_isBigO ... :
+    (fun n => threeDIntegral β a b n - n ^ (-(1/2 : ℝ)) * threeDSecondOrderCoeff β a b n)
+      =O[atTop] fun n => n⁻¹
+theorem threeDIntegral_second_order_tendsto ... :
+    Tendsto (fun n => Real.sqrt n * threeDIntegral β a b n
+        - quadMass β a / 8 * Real.log n ^ 2
+        - (3 * quadMass β a * Real.log b / 2 + logConst β a / 2) * Real.log n)
+      atTop (𝓝 (9 * quadMass β a * Real.log b ^ 2 / 2 + 3 * logConst β a * Real.log b
+        + logConst2 β a))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+On $(1,L]$ the integrand $H(x)/x$ is rewritten pointwise as
+$A\log x/x+C_0x^{-1}+\theta(x)/x$; the first two integrate to $\tfrac A2\log^2L+C_0\log L$ by the
+FTC lemmas of unit~38, and the third is $\int_1^\infty\theta/x-\int_L^\infty\theta/x$ by
+\texttt{setIntegral\_union}. Combined with the split at $x=1$ this is the exact identity. The
+integrability of $\theta(x)/x$ on $[1,\infty)$ uses the domination $0\le\theta/x\le Mx^{-2}$ from
+unit~41 and \texttt{integrableOn\_Ioi\_rpow\_of\_lt}; measurability comes from continuity on
+$(1,\infty)$, where $H$ agrees with its interval-integral primitive and $\log$ is continuous. The
+$Z_3$ statements then follow from $Z_3=n^{-1/2}H_2(\sqrt nb^3)$ and
+$\log(\sqrt nb^3)=\tfrac12\log n+3\log b$ exactly as at $d=2$; the polynomial coefficient is kept in
+nested form and expanded by a separate \texttt{ring} lemma so the \texttt{Tendsto} statement can name
+the constant. The identity and remainder sign were checked numerically first (residual $0$ at $L\ge5$
+to double precision).
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Integrable.add} returns a \texttt{Pi.add}; \texttt{rw [integral\_add …]} then fails to
+match the $\lambda$-integrand. Type-ascribe the combined integrability witness as a single lambda
+(the documented workaround) before rewriting.
+\item \texttt{positivity} cannot see $0\le M$ for the opaque \texttt{quadMoment}; supply
+\texttt{quadMoment\_nonneg} through \texttt{mul\_nonneg}/\texttt{div\_nonneg}.
+\item \texttt{field\_simp} on the pointwise decomposition of $H(x)/x$ leaves a commutativity goal;
+follow with \texttt{ring}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{ContinuousOn.aestronglyMeasurable}, \texttt{integrableOn\_Ioi\_rpow\_of\_lt},
+\texttt{integral\_Ioi\_rpow\_of\_lt}, \texttt{setIntegral\_union}, \texttt{squeeze\_zero'}. New: the
+remainder $\theta$ and constant $C_1$ of $H_2$, and the complete $O(n^{-1})$-accurate expansion of the
+$d=3$ log-squared chart integral.
+
+\section{Lessons}
+The one-step transfer ``polynomial in $\log$ plus $O(1/x)$'' $\mapsto$ same shape one degree higher
+is now visible as a reusable pattern; a general-$m$ version for \texttt{iterLogPrim} would make the
+constants below $(\log n)^{d-1}$ available for every $d$ at once, mirroring how unit~39 generalised
+units~35 and~38.
+
+\section{Outcome}
+The $d=2$ and $d=3$ coinciding-exponent integrals now carry complete polynomial-in-$\log n$
+expansions with explicit constants and $O(n^{-1})$ remainders. Next candidates: the general-$m$
+transfer lemma for \texttt{iterLogPrim}, or the weighted primitives $F_\gamma$ for general $(k,h)$.
+\end{document}
