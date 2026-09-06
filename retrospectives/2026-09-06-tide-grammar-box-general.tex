@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The multiplicity theorem without ordering hypotheses:\\
+$\int_{(0,b]^{D+2}}u^h f(\sqrt n\,u^k)\,du\sim C\,n^{-p/2}(\log n)^m$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For arbitrary exponent vectors $k,h:\mathrm{Fin}(D+2)\to\mathbb N$ with $k_i>0$, let $p$ be the
+minimum of the candidate exponents $q_i=(h_i+1)/k_i$ and $m+1$ the number of $i$ attaining it. Then
+the box integral at scale $\sqrt n$ is asymptotically $C\,n^{-p/2}(\log n)^m$ for some $C>0$
+(\texttt{boxIntegralFin\_isEquivalent\_general}). The coordinates are sorted with
+\texttt{Tuple.sort}, the first index attaining the minimum is a \texttt{Finset.min'}, the
+multiplicity is computed through \texttt{Finset.card\_equiv} and \texttt{Fin.card\_Ici}, and the two
+cases (all exponents equal; some strictly larger) are units~50 and~58. This closes the leading-term
+theory of \texttt{thm:TaylorTree} for constant $\xi$ and monomial $\eta$ in the chart geometry.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~58 needed a relabelling putting the exponents in the sorted shape. \texttt{Tuple.sort} applied
+to $-q$ gives a permutation $\sigma$ with $q\circ\sigma$ antitone; then $p=q(\sigma(\mathrm{last}))$
+is the minimum, the set of indices $j$ with $q(\sigma j)=p$ is an upper set, hence the interval
+$[i_0,\mathrm{last}]$ for its least element $i_0$, and everything below $i_0$ is strictly above $p$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def finExp {d : ℕ} (k h : Fin d → ℕ) (i : Fin d) : ℝ := ((h i : ℝ) + 1) / k i
+noncomputable def sortPerm {d : ℕ} (k h : Fin d → ℕ) : Equiv.Perm (Fin d) :=
+  Tuple.sort fun i => -(finExp k h i)
+theorem sortPerm_antitone {d : ℕ} (k h : Fin d → ℕ) : Antitone (finExp k h ∘ sortPerm k h)
+theorem boxIntegralFin_isEquivalent_general (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) (D : ℕ)
+    (k h : Fin (D + 2) → ℕ) (hk : ∀ i, 0 < k i) :
+    ∃ (p : ℝ) (m : ℕ) (C : ℝ), 0 < C ∧ (∀ i, p ≤ finExp k h i) ∧
+      m + 1 = (Finset.univ.filter fun i => finExp k h i = p).card ∧
+      (fun n => boxIntegralFin β a b (Real.sqrt n) k h) ~[atTop]
+        fun n => C * (n ^ (-(p / 2)) * Real.log n ^ m)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+With $i_0$ the least index of the minimal set $S$: $S=\mathrm{Ici}\,i_0$ (antitone plus minimality),
+so the multiplicity is $D+2-i_0$. If $i_0=0$ all exponents equal $p$ and unit~50 applies through the
+bridge of units~54 and~58, with $m=D+1$ and constant $(\prod k_i^{-1})A_{p-1}/(2^{D+1}(D+1)!)$.
+Otherwise $i_0=r+1$, $m=D+1-i_0$, and the sorted theorem in its $r+2+m=d$ form
+(\texttt{boxIntegralFin\_isEquivalent\_of\_perm'}) applies with the sortedness, block and strictness
+hypotheses read off through \texttt{chartExp\_toNatFun\_eq\_finExp}; the constant is positive because
+each factor is (\texttt{genScale\_pos}, \texttt{genTower\_logBase}).
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Tuple.sort} lives in \texttt{Mathlib.Data.Fin.Tuple.Sort}, not in the import closure.
+\item \texttt{linarith} does not unfold the definition \texttt{sortPerm}; \texttt{simp only [sortPerm]}
+first.
+\item Membership of the last index in the minimal set is \texttt{rfl} after unfolding the filter;
+\texttt{simp} stopped at the \texttt{set}-bound variable.
+\item The unit~58 theorem fixed the dimension as \texttt{r + 2 + m} in the types; a variant with the
+equation \texttt{r + 2 + m = d} (rewritten on the $\mathbb N$ side only) avoids transporting along a
+propositional equality of types.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Tuple.sort}, \texttt{Tuple.monotone\_sort}, \texttt{Finset.min'} and its API,
+\texttt{Finset.card\_equiv}, \texttt{Fin.card\_Ici}, \texttt{Fin.le\_last}. New: the hypothesis-free
+multiplicity theorem.
+
+\section{Lessons}
+Keep type-level dimensions fixed in the workhorse theorems and add a thin variant taking the dimension
+as a propositional equation; sorting arguments then live entirely on the $\mathbb N$ side.
+
+\section{Outcome}
+Units~44--59 formalise the leading-term content of \texttt{thm:TaylorTree} in the chart geometry for
+constant $\xi$ and monomial $\eta$: for every exponent vector the box integral is
+$C\,n^{-p/2}(\log n)^m$ with $p$ half the minimal candidate exponent and $m+1$ its multiplicity, and
+in the sorted form the constant and a complete polynomial-in-$\log n$ expansion are explicit.
+\end{document}
