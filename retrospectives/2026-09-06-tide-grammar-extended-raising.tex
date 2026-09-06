@@ -1,0 +1,113 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The extended raising ladder $b^\dagger S_{\mu-(k+1)/2}=\beta^{1/2}S_{\mu-k/2}$
+and the extended number operator}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The payoff of the smoothness foundation: the \emph{raising} half of \texttt{lem:extended\_ladder}.
+Where the lowering relation was definitional (unit~19), raising carries the analytic content ---
+$b^\dagger$ climbs the ladder \emph{against} the direction of the recursion, so it needs the Weyl
+commutator $[b,b^\dagger]=1$ and hence $C^\infty$ regularity of the extension. We prove
+$b^\dagger S_{\mu-(k+1)/2}=\beta^{1/2}S_{\mu-k/2}$ by induction on $k$, and combine it with the
+lowering relation to obtain the extended number operator
+$b^\dagger b\,S_{\mu-k/2}=(2(\mu-k/2)-1)S_{\mu-k/2}$. This completes the ladder/log structure of
+grammar \S4. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Recall \texttt{Sneg}$\,\beta\,\mu\,k=S_{\mu-k/2}$, defined by
+$S_\lambda=\tfrac{\sqrt\beta}{2\lambda}bS_{\lambda+1/2}$. The lowering relation
+$bS_{\mu-k/2}=(2(\mu-k/2)-1)\beta^{-1/2}S_{\mu-(k+1)/2}$ is that definition rearranged. The raising
+relation is its inverse in the ladder; to prove it we exploit
+$b^\dagger b=b b^\dagger-1$ (the commutator) and reduce $b^\dagger$ acting on a lowered function to
+$b^\dagger$ acting one rung up, where the inductive hypothesis (or, at the base, the integral-regime
+action $b^\dagger S_\mu=\beta^{1/2}S_{\mu+1/2}$) applies.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem raiseOp_Sneg (β μ : ℝ) (hβ : 0 < β) (hμ : 0 < μ)
+    (hpole : ∀ j : ℕ, 1 ≤ j → μ - (j : ℝ) / 2 ≠ 0) :
+    ∀ k : ℕ, raiseOp β (fun a => Sneg β μ (k + 1) a)
+      = fun a => β ^ ((1:ℝ)/2) * Sneg β μ k a
+
+theorem number_operator_Sneg (β μ : ℝ) (hβ : 0 < β) (hμ : 0 < μ)
+    (hpole : ∀ j : ℕ, 1 ≤ j → μ - (j : ℝ) / 2 ≠ 0) (k : ℕ) :
+    raiseOp β (lowerOp β (fun a => Sneg β μ k a))
+      = fun a => (2 * (μ - (↑k)/2) - 1) * Sneg β μ k a
+\end{verbatim}
+}
+The non-pole hypothesis $\mu-j/2\ne0$ for all $j\ge1$ says $\mu$ is not a positive half-integer ---
+exactly the condition that keeps every prefactor $\tfrac{\sqrt\beta}{2(\mu-j/2)}$ finite along the
+descent.
+
+\section{Proof strategy}
+Induction on $k$ for the raising relation. Both base and step share one shape: write
+$S_{\text{next}}=c\cdot bS_{\text{here}}$ (the \texttt{Sneg} recursion), pull the scalar out
+(\texttt{raiseOp\_const\_mul}), apply $b^\dagger b=bb^\dagger-1$ (\texttt{raiseOp\_lowerOp}), then
+substitute $b^\dagger S_{\text{here}}$ and lower once more:
+\begin{itemize}
+\item \textbf{Base} ($k=0$): $b^\dagger S_\mu=\beta^{1/2}S_{\mu+1/2}$
+(\texttt{raiseOp\_fluctuation}) and $bS_{\mu+1/2}=2\mu\,\beta^{-1/2}S_\mu$
+(\texttt{lowerOp\_fluctuation}), giving $b^\dagger b\,S_\mu=(2\mu-1)S_\mu$; the prefactor
+$c_1=\beta^{1/2}/(2\mu-1)$ cancels it.
+\item \textbf{Step}: the inductive hypothesis gives $b^\dagger S_{\mu-k/2}=\beta^{1/2}S_{\mu-(k-1)/2}$
+in disguise; \texttt{Sneg\_lowering} lowers, and the numeric collapse
+$2(\mu-k/2)-2=2(\mu-(k+2)/2)$ matches the prefactor denominator.
+\end{itemize}
+In each case the $\beta^{\pm1/2}$ factors meet as $\beta^{1/2}\beta^{-1/2}=1$ and a
+\texttt{div\_self} at the non-pole finishes. The number operator is then immediate: lower
+(\texttt{Sneg\_lowering}), raise (\texttt{raiseOp\_Sneg}), and the $\beta^{\pm1/2}$ cancel, leaving
+the eigenvalue $2(\mu-k/2)-1$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The whole computation is a \texttt{calc} over pointwise scalar identities, but the commutator
+\texttt{ladder\_commutator} and the linearity helpers act on \emph{functions} through \texttt{deriv}.
+The clean interface: state $b^\dagger(c\cdot g)=c\,b^\dagger g$ and $b(c\cdot g)=c\,bg$ as pointwise
+lemmas with a \texttt{DifferentiableAt} side-condition (discharged from \texttt{contDiff\_Sneg}),
+and rearrange the commutator to $b^\dagger(bf)=b(b^\dagger f)-f$.
+\item Feeding a function equality (the inductive hypothesis, or
+\texttt{raiseOp\_fluctuation}/\texttt{Sneg\_lowering} lifted by \texttt{funext}) into a
+\texttt{deriv}-bearing operator requires it as a genuine function identity, then \texttt{rw}. Keeping
+everything in the $\lambda a.\,\texttt{Sneg}\ \beta\ \mu\ \_\ a$ shape lets \texttt{calc}'s defeq
+boundaries absorb the eta/unfolding steps of the \texttt{Sneg} recursion.
+\item The final scalar collapses do not close by \texttt{ring} alone --- \texttt{ring} cannot see
+$\beta^{1/2}\beta^{-1/2}=1$ (\texttt{rpow} addition). Group the powers by a \texttt{show \dots by ring}
+rewrite, apply the \texttt{h}$\beta\beta$ fact, then discharge the remaining
+$\tfrac{c}{d}\cdot d=c$ by \texttt{field\_simp} with the denominator non-vanishing (supplied in the
+normalized $2\mu-(k{+}2)\ne0$ form).
+\item Style-linter notes carried forward: a goal-changing \texttt{show} is rejected --- use
+\texttt{change}; module-docstring lines still count toward the 100-column limit.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib gave only \texttt{deriv\_const\_mul}, \texttt{Real.rpow\_add}, \texttt{field\_simp},
+\texttt{linear\_combination}. Everything else is the grammar-\S4 tower built this arc: the ladder
+operators and commutator (unit~16), the extension (unit~19), the smoothness foundation (previous
+unit), and here the raising induction plus its number-operator corollary.
+
+\section{Lessons}
+An operator recursion gives one ladder direction free and makes the opposite direction the theorem:
+raising is $b^\dagger b=bb^\dagger-1$ applied once, with the inductive hypothesis supplying the
+one-rung-up value. Encode the operators' scalar-linearity as pointwise lemmas with
+\texttt{DifferentiableAt} obligations sourced from the smoothness unit, and let \texttt{calc} defeq
+soak up the recursion's unfolding.
+
+\section{Outcome}
+The entire ladder/log structure of grammar \S4 --- derivative ladder, recurrence, ODE, boundary,
+oscillator algebra $[b,b^\dagger]=1$, log insertions and their ODE/generating function, the
+parabolic-cylinder closed form, Weber/Hermite/QHO, the regular case, the extension below zero, and
+now the extended raising ladder and number operator --- is formalised, zero \texttt{sorry}/axiom.
+\end{document}

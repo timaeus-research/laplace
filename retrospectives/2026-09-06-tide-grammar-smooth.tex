@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{$C^\infty$ smoothness of the fluctuation function and its ladder extension}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The foundation unit for the extended ladder: the fluctuation function $S_\lambda$ is $C^\infty$ in
+$a$, the lowering operator $b$ preserves $C^\infty$, and hence the recursive extension
+$S_{\mu-k/2}=$\texttt{Sneg}$\,\beta\,\mu\,k$ is $C^\infty$ for base order $\mu>0$. This supplies the
+differentiability inputs (\texttt{Differentiable} of \texttt{Sneg} and of its derivative) that the
+Weyl commutator \texttt{ladder\_commutator} demands, unblocking the extended raising relation. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The ladder algebra of grammar \S4 needs $C^2$ regularity to apply $[b,b^\dagger]=1$: the commutator
+proof differentiates $f$ twice. The extension $S_{\mu-k/2}$ is built by applying the lowering
+operator $b=2\beta^{-1/2}\partial_a-\beta^{1/2}a$ repeatedly, so establishing that each stage is
+smooth is a prerequisite for the \emph{opposite} (raising) direction. The engine is the derivative
+ladder $S'_\lambda=\beta S_{\lambda+1/2}$ (unit~2): the family of fluctuation functions is closed
+under $a$-differentiation, so \emph{every} iterated derivative exists and is continuous.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem contDiff_fluctuation (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) :
+    ContDiff ℝ (⊤ : ℕ∞) (fun a => fluctuation β lam a)
+theorem contDiff_lowerOp (β : ℝ) (f : ℝ → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+    ContDiff ℝ (⊤ : ℕ∞) (lowerOp β f)
+theorem contDiff_Sneg (β μ : ℝ) (hβ : 0 < β) (hμ : 0 < μ) (k : ℕ) :
+    ContDiff ℝ (⊤ : ℕ∞) (fun a => Sneg β μ k a)
+theorem differentiable_Sneg ...        -- Differentiable ℝ (Sneg β μ k)
+theorem differentiable_deriv_Sneg ...  -- Differentiable ℝ (deriv (Sneg β μ k))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Smoothness of $S_\lambda$ is by an auxiliary finite-order induction
+\texttt{contDiff\_nat\_fluctuation}: for every $n:\mathbb N$ and $\lambda>0$,
+$\texttt{ContDiff}\ \mathbb R\ n\ S_\lambda$. The base is \texttt{contDiff\_zero} (continuity, from
+\texttt{hasDerivAt\_fluctuation}); the step uses \texttt{contDiff\_succ\_iff\_deriv} with
+$\partial_a S_\lambda=\beta S_{\lambda+1/2}$ staying in the family, so the inductive hypothesis at
+$\lambda+1/2$ closes it. Then \texttt{contDiff\_infty} lifts $\forall n$ to $\infty$. Smoothness of
+$b f$ is compositional: $\partial_a f$ is $C^\infty$ (\texttt{contDiff\_infty\_iff\_deriv}), and $b f$
+is a constant-scaled sum of $\partial_a f$ and $a\,f$. Smoothness of \texttt{Sneg} is then a one-line
+induction on $k$ using \texttt{contDiff\_lowerOp}.
+
+\section{Roadblocks and resolutions}
+The \texttt{ContDiff} index has migrated to \texttt{WithTop $\mathbb N\infty$}, adding an analytic
+grade $\omega=\top$ above $\infty$. Three frictions followed:
+\begin{itemize}
+\item \texttt{contDiff\_succ\_iff\_deriv} gained a clause $\uparrow n=\omega\to\texttt{AnalyticOn}$.
+For finite $n$ this is vacuous, discharged by \texttt{intro h; exact absurd h (by simp)}.
+\item Coercions $\mathbb N\to\mathbb N\infty\to\texttt{WithTop }\mathbb N\infty$ fight the finite-$n$
+induction; \texttt{Nat.cast\_succ} plus \texttt{exact\_mod\_cast} bridge them.
+\item \texttt{.differentiable le\_top} \emph{fails} --- \texttt{le\_top} yields $\le\omega$, not
+$\le\infty$, and \texttt{exact\_mod\_cast le\_top} also fails. The working incantation for
+``$1\le\infty$'' is simply \texttt{(by norm\_num)}.
+\end{itemize}
+Also: \texttt{ContDiff.const\_smul} produces $c\bullet x$, not $c*x$; use
+\texttt{contDiff\_const.mul} to land the multiplicative form the downstream \texttt{deriv} rewrites
+expect.
+
+\section{What was Mathlib, what was new}
+Mathlib supplied the \texttt{ContDiff} calculus (\texttt{contDiff\_succ\_iff\_deriv},
+\texttt{contDiff\_infty}, \texttt{contDiff\_infty\_iff\_deriv}, \texttt{contDiff\_zero},
+\texttt{contDiff\_const}, \texttt{contDiff\_id}). New is the observation that the fluctuation family
+is differentiation-closed and the resulting clean induction, plus the smoothness-preservation of the
+lowering operator.
+
+\section{Lessons}
+On the current pin, \texttt{ContDiff}'s top index is \texttt{WithTop $\mathbb N\infty$}; write finite
+regularity through an explicit $\mathbb N$-induction and lift with \texttt{contDiff\_infty}, and reach
+for \texttt{(by norm\_num)} rather than \texttt{le\_top} when you need $1\le\infty$ or $2\le\infty$.
+
+\section{Follow-ups}
+With \texttt{differentiable\_Sneg} and \texttt{differentiable\_deriv\_Sneg} in hand, the extended
+raising relation and number operator become provable (the very next unit).
+\end{document}
