@@ -232,3 +232,4 @@ import Laplace.Grammar.BoundedXi
 import Laplace.Grammar.OneDScale
 import Laplace.Grammar.StateDensityUnique
 import Laplace.Grammar.StateDensityUniqueCor
+import Laplace.Grammar.StateDensityBox
