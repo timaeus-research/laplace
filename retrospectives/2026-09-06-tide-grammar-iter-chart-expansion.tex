@@ -1,0 +1,80 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Complete expansions of the chart integrals with arbitrary $(k,h)$:\\
+$Z(\sqrt n)=n^{-p/2}KD\sum_{i\le j}c_{j,i}\big(\tfrac12\log n+S\log b\big)^i+O(n^{-p/2-\varepsilon/2})$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units~50 and~52 reduced the chart integrals exactly to the form $Z(\sqrt n)=K(\sqrt n)^{-p}D\,
+H_j(\sqrt n\,b^S)$ for a divide-and-integrate tower $H$ on an admissible base with tail rate
+$\varepsilon$. This unit turns the base-independent expansion of units~49/51 into a single generic
+theorem: $Z(\sqrt n)=n^{-p/2}KD\sum_{i\le j}c_{j,i}(\tfrac12\log n+S\log b)^i+O(n^{-p/2-\varepsilon/2})$,
+instantiated for the all-equal case with arbitrary $(k,h)$ ($\varepsilon=1$) and the mixed case
+($\varepsilon=q-p$). A bridge lemma identifies unit~39's \texttt{iterChart} with \texttt{iterChartGen}
+at $k=1$, $h=0$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+With $L=\sqrt n\,b^S$ one has $\log L=\tfrac12\log n+S\log b$ and
+$L^{-\varepsilon}=b^{-S\varepsilon}n^{-\varepsilon/2}$; the expansion
+$|H_j(L)-\sum c_{j,i}\log^iL|\le(M/\varepsilon^j)L^{-\varepsilon}$ therefore transfers to an explicit
+$O(n^{-p/2-\varepsilon/2})$ remainder once multiplied by the prefactor $K(\sqrt n)^{-p}D$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def towerCoeff (G : ℝ → ℝ) (A : ℝ) (j : ℕ) (b : ℝ) (S : ℕ) (n : ℝ) : ℝ :=
+  ∑ i ∈ Finset.range (j + 1),
+    divCoeff G A j i * (Real.log n / 2 + (S : ℝ) * Real.log b) ^ i
+theorem tower_expansion_isBigO (hG : LogBase G A M C δ ε) (j : ℕ) (K D p b : ℝ) (S : ℕ)
+    (hb : 0 < b) (Z : ℝ → ℝ)
+    (hZ : ∀ n, 0 < n →
+      Z n = K * (Real.sqrt n) ^ (-p) * D * iterDivPrim G j (Real.sqrt n * b ^ S)) :
+    (fun n => Z n - n ^ (-(p / 2)) * (K * D * towerCoeff G A j b S n))
+      =O[atTop] fun n => n ^ (-(p / 2) - ε / 2)
+theorem iterChartGen_expansion_isBigO ...        -- ε = 1, remainder n^(-(p/2) - 1/2)
+theorem iterChartGen_mixed_expansion_isBigO ...  -- ε = q - p
+theorem iterChart_eq_iterChartGen (β a b : ℝ) (d : ℕ) (c : ℝ) :
+    iterChart β a b d c = iterChartGen β a b (fun _ => 1) (fun _ => 0) d c
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The generic theorem is \texttt{IsBigO.of\_bound} with the constant $|KD|\,(M/\varepsilon^j)\,
+b^{-S\varepsilon}$, valid for $n\ge\max(1,b^{-2S})$ so that $L\ge1$; the three \texttt{rpow}
+identities ($(\sqrt n)^{-p}=n^{-p/2}$, $(\sqrt n)^{-\varepsilon}=n^{-\varepsilon/2}$,
+$(b^S)^{-\varepsilon}=b^{-S\varepsilon}$) are isolated as \texttt{have}s. The two instances supply
+only the exact-reduction hypothesis \texttt{hZ} from units~50 and~52. The bridge lemma is an
+induction with \texttt{pow\_zero}, \texttt{pow\_one}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item A \texttt{ring} after a \texttt{rw} that had already closed the goal (\texttt{log\_pow}
+produced the exact form); remove it. Otherwise first-pass.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Real.rpow\_add}, \texttt{Real.rpow\_mul}, \texttt{Real.sqrt\_eq\_rpow},
+\texttt{Real.log\_pow}. New: the generic tower expansion and its two instances.
+
+\section{Lessons}
+Once the exact reductions are stated in a common shape, the asymptotic and expansion theorems become
+one generic lemma plus one-line instances; stating the reductions with that shape in mind (constants
+$K,D$, scale $b^S$) is worth the small awkwardness at the reduction stage.
+
+\section{Outcome}
+For arbitrary $(k,h)$ the chart integrals of \texttt{thm:TaylorTree} in the all-equal and one-noncritical
+regimes now have complete polynomial-in-$\log n$ expansions with explicit recursive coefficients and
+power-saving remainders. Remaining at this level: several noncritical coordinates, and the product-set
+(Fubini) form of the $d$-fold integral.
+\end{document}
