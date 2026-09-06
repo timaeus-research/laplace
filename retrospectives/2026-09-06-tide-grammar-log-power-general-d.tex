@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The general multiplicity theorem, all-equal case:\\
+$Z_d(n)\sim\dfrac{S_{1/2}(a)}{2^d(d-1)!}\,n^{-1/2}(\log n)^{d-1}$ for every $d$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The $d=2$ and $d=3$ instances (units~35, 38) are promoted to a theorem for every dimension: for
+$k=(1,\dots,1)$, $h=(0,\dots,0)$ --- all $d$ candidate exponents equal to $\tfrac12$, multiplicity $d$ ---
+the chart standard integral satisfies
+\[
+Z_d(n)\sim\frac{S_{1/2}(a)}{2^d\,(d-1)!}\,n^{-1/2}(\log n)^{d-1}\qquad(d\ge2),
+\]
+the $(\log n)^{m-1}$ of \texttt{thm:TaylorTree} with $m=d$. Three files: the iterated logarithmic
+primitives $H_m$, their inductive squeeze $|H_{k+1}(L)-A\log^{k+1}L/(k+1)!|\le C_{k+1}(1+\log L)^k$,
+and the $d$-fold chart recursion with its reduction $Z_d(n)=n^{-1/2}H_{d-1}(\sqrt nb^d)$. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Each coinciding candidate exponent contributes one ``divide by $u$ and substitute'' step, i.e.\ one more
+$\int dx/x$ applied to the previous primitive. Making this an induction requires (i) a family
+$H_m$ closed under the operation $G\mapsto\int_0^xG(t)/t\,dt$ with uniform bounds, (ii) a squeeze whose
+error term is a polynomial in $\log L$ of degree one less than the main term, and (iii) a chart recursion
+$Z_{d+1}(c)=\int_0^bZ_d(cu)\,du$ whose reduction to $H_d$ is the same identity at every level.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def iterLogPrim (β a : ℝ) : ℕ → ℝ → ℝ
+  | 0 => quadPrimitive β a
+  | m + 1 => fun x => ∫ t in (0:ℝ)..x, iterLogPrim β a m t / t
+theorem integral_iterLogPrim_div_eq ... :
+    (∫ u in Ioc 0 b, iterLogPrim β a m (c * u) / u) = iterLogPrim β a (m + 1) (c * b)
+theorem iterLogPrim_sub_le (β a : ℝ) (hβ : 0 < β) (k : ℕ) (L : ℝ) (hL : 1 ≤ L) :
+    |iterLogPrim β a (k+1) L - quadMass β a * Real.log L ^ (k+1) / ((k+1).factorial : ℝ)|
+      ≤ iterConst β a (k+1) * (1 + Real.log L) ^ k
+noncomputable def iterChart (β a b : ℝ) : ℕ → ℝ → ℝ
+  | 0 => fun c => quadKernel β a c
+  | d + 1 => fun c => ∫ u in Ioc 0 b, iterChart β a b d (c * u)
+theorem iterChart_succ_eq ... :
+    iterChart β a b (d+1) c = c⁻¹ * iterLogPrim β a d (c * b ^ (d+1))
+theorem iterChart_isEquivalent (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) (k : ℕ) :
+    (fun n => iterChart β a b (k+2) (Real.sqrt n)) ~[atTop]
+      fun n => fluctuation β (1/2) a / (2 ^ (k+2) * ((k+1).factorial : ℝ))
+        * (n ^ (-(1/2 : ℝ)) * Real.log n ^ (k+1))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+$H_m$ is defined by interval integrals, so continuity is \texttt{continuous\_primitive} once the
+integrand $H_{m-1}(t)/t$ is shown bounded; the bound $|H_m(t)|\le E|t|$ on all of $\mathbb R$ is proved
+simultaneously with continuity by induction. The squeeze induction integrates the previous estimate
+against $dx/x$ over $[1,L]$: the main term integrates exactly to $A\log^{k+2}L/(k+2)!$
+($\int_1^L\log^{k+1}x/x=\log^{k+2}L/(k+2)$ by FTC), the remainder is bounded by
+$C_{k+1}\int_1^L(1+\log x)^k/x=C_{k+1}((1+\log L)^{k+1}-1)/(k+1)$, and the piece on $[0,1]$ by $E$;
+with $C_{k+2}=E+C_{k+1}/(k+1)$ and $(1+\log L)^{k+1}\ge1$ the bound closes. The reduction
+$Z_{d+1}(c)=c^{-1}H_d(cb^{d+1})$ is an induction using the divide-and-substitute identity. For the
+asymptotic, rather than expanding $(\tfrac12\log n+d\log b)^{k+1}$ with explicit polynomial bounds, the
+\texttt{IsEquivalent} calculus is used: $H_{k+1}(L)\sim A\log^{k+1}L/(k+1)!$ (from the squeeze, since
+$(1+\log L)^k=o(\log^{k+1}L)$), composed with $L(n)=\sqrt nb^{d}\to\infty$; $\log L(n)\sim\tfrac12\log n$
+(a constant is $o(\log n)$); \texttt{.pow}, \texttt{.mul} with $n^{-1/2}$, and two \texttt{congr}s.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item Pi-typed operations: \texttt{IsEquivalent.mul}/\texttt{.pow} produce \texttt{f * g} and
+\texttt{f \^{} n} as functions; the final \texttt{congr\_left}/\texttt{congr\_right} steps convert them to
+$\lambda$-forms with \texttt{Pi.mul\_apply} (\texttt{exact} also accepts the defeq directly).
+\item \texttt{HasDerivAt.pow} on \texttt{const + log} leaves a \texttt{Pi.add\_apply} redex and a
+\texttt{0 * x + 1}; add both to the \texttt{simp only} before \texttt{field\_simp}.
+\item \texttt{pow\_nonneg (by linarith) k} inside a \texttt{rw} elaborates the tactic block before the
+base is known; ascribe the inequality's type.
+\item \texttt{field\_simp} does not simplify $\log L\cdot(\log L)^{-1}$ inside a power nor
+$(1/2)^k\cdot2^k$; rewrite $1+\ell^{-1}=(1+\ell)/\ell$ and expand $(\tfrac12\log n)^{k+1}$,
+$2^{k+2}=2^{k+1}\cdot2$ first.
+\item The equation lemma for a recursive constant must be stated in the syntactic form the goal
+uses (\texttt{m + 1 + 1}, not \texttt{m + 2}) for \texttt{rw} to fire; \texttt{rfl} proves either.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{intervalIntegral.continuous\_primitive}, \texttt{integral\_add\_adjacent\_intervals},
+\texttt{abs\_integral\_le\_integral\_abs}, \texttt{integral\_mono\_on}, \texttt{integral\_eq\_sub\_of\_hasDerivAt},
+\texttt{IsEquivalent.comp\_tendsto}/\texttt{.mul}/\texttt{.pow}/\texttt{.trans},
+\texttt{isLittleO\_const\_left}, \texttt{tendsto\_sqrt\_atTop}, \texttt{Tendsto.atTop\_mul\_const}. New: the
+iterated logarithmic primitives with their uniform squeeze and the general-$d$ multiplicity theorem in
+the all-equal case.
+
+\section{Lessons}
+When a family of asymptotic instances shares one inductive mechanism, formalise the mechanism (here:
+one uniform squeeze propagated through $\int dx/x$) and let the instances become corollaries; and prefer
+the \texttt{IsEquivalent} calculus over explicit polynomial-in-$\log$ bounds for assembling final
+asymptotics.
+
+\section{Outcome}
+Across units~35--39 the multiplicity structure of \texttt{thm:TaylorTree} is now formalised in the
+simplest chart geometry: no logarithm when candidate exponents differ (unit~37), and
+$(\log n)^{d-1}$ with the exact constant $S_{1/2}(a)/(2^d(d-1)!)$ when all $d$ coincide (this unit).
+What remains is the general $(k,h)$ multivariate case with partially coinciding exponents, which needs
+the weighted primitives $F_\gamma$ of the GPT-6 Astra plan.
+\end{document}
