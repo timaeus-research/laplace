@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Two-term asymptotic expansion of the chart standard integral}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The $O$-form of the second-order result: for $\xi(u)=\xi_0+cu^m$,
+\[
+Z_{\rm chart}(n)=\tfrac1{2k}S_{\mu_1}(\xi_0)\,n^{-\mu_1}+\beta c\,\tfrac1{2k}S_{\mu_2+1/2}(\xi_0)\,n^{-\mu_2}
++O\bigl(n^{-\mu_3}\bigr)\qquad(n\to\infty),
+\]
+with $\mu_1,\mu_2,\mu_3=(h{+}1)/(2k),\,(h{+}m{+}1)/(2k),\,(h{+}2m{+}1)/(2k)$ three consecutive points of
+$\Lambda(h,k)$. The exponentially small boundary tails --- including the $\sqrt n\,e^{-\varepsilon n}$ one
+from the first-order insertion --- are absorbed into the $O(n^{-\mu_3})$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~28 bounds the two-term error by $C_2n^{-\mu_3}+\text{tail}_0+|\beta c|\,\text{tail}_1$ for $n\ge1$,
+with the tails explicit integrals. To read this as an asymptotic expansion in the paper's sense one
+needs the tails to be $O(n^{-\mu_3})$: $\text{tail}_0\le K_0e^{-\varepsilon n}$ directly from unit~25,
+while $\text{tail}_1=\sqrt n\int_b^\infty u^{h+m+k}e^{\rm pop}\le\sqrt n\,K_1e^{-\varepsilon n}$, and both
+$e^{-\varepsilon n}$ and $\sqrt n\,e^{-\varepsilon n}$ are $o(n^{-\mu_3})$.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem standardIntegral1D_second_order_isBigO (β ξ₀ c b : ℝ) (h k m : ℕ)
+    (hβ : 0 < β) (hb : 0 < b) (hk : 0 < k) :
+    (fun n : ℝ => Z_chart n
+        - (1/(2k)) n^(-μ₁) S_{μ₁}(ξ₀) - β c ((1/(2k)) n^(-μ₂) S_{μ₂+1/2}(ξ₀)))
+      =O[atTop] fun n : ℝ => n ^ (-μ₃)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\texttt{IsBigO.of\_bound} with the constant $C_2+K_0+|\beta c|K_1$, eventually for $n\ge1$. The two
+little-$o$ facts are \texttt{isLittleO\_exp\_neg\_mul\_rpow\_atTop} at exponent $-\mu_3$, and for the
+$\sqrt n$-weighted one, \texttt{IsBigO.mul\_isLittleO} of $\sqrt n=O(\sqrt n)$ with the same lemma at
+$-\mu_3-\tfrac12$, followed by \texttt{IsLittleO.congr'} using $\sqrt n\cdot n^{-\mu_3-1/2}=n^{-\mu_3}$
+for $n>0$ (\texttt{Real.sqrt\_eq\_rpow}, \texttt{rpow\_add}). Their \texttt{.bound one\_pos} instances are
+pulled into the same \texttt{filter\_upwards} as $n\ge1$; the rest is the unit-28 inequality with the
+tails replaced by $K_ie^{-\varepsilon n}$ (\texttt{standardIntegral1D\_tail\_le} at $h$ and at $h+m+k$)
+and then by $K_in^{-\mu_3}$, finished by \texttt{gcongr} and \texttt{ring}.
+
+\section{Roadblocks and resolutions}
+None: first-try compile. Idioms worth noting --- \texttt{.bound one\_pos} produces norms of
+un-beta-reduced lambda applications, so convert with \texttt{simp only [Real.norm\_eq\_abs]} (which
+beta-reduces) before \texttt{rw [abs\_of\_pos \dots]}; the first-order tail integrand is rewritten to
+$\sqrt n\cdot u^{h+m+k}e^{\rm pop}$ by \texttt{funext} + \texttt{pow\_add} so that the plain tail lemma
+applies; and \texttt{set μ₃} at the top folds the goal but not later-derived hypotheses, so
+\texttt{rw [← hμ₃] at hmain} re-aligns them.
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{IsBigO.of\_bound}, \texttt{IsBigO.mul\_isLittleO}, \texttt{IsLittleO.congr'},
+\texttt{IsLittleO.bound}, \texttt{isLittleO\_exp\_neg\_mul\_rpow\_atTop}, \texttt{Real.Gamma\_pos\_of\_pos}.
+New: the two-term asymptotic expansion of the chart standard integral, the first formal instance of
+\texttt{cor:standardintegralexp} beyond leading order.
+
+\section{Lessons}
+Keep the explicit-inequality theorem (unit~28) and the $O$-packaging (this unit) separate: the former
+is what one computes with (constants visible), the latter is what one quotes; the packaging step is
+short once the little-$o$ scales are named.
+
+\section{Follow-ups}
+Higher-order terms follow the same pattern from \texttt{standardIntegral1D\_monomial\_expansion} once the
+remainder $\sum_{p\ge N}$ is bounded; the multivariate tree remains the substantive gap.
+\end{document}
