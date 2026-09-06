@@ -180,3 +180,4 @@ import Laplace.Grammar.Extended
 import Laplace.Grammar.Smooth
 import Laplace.Grammar.ExtendedRaising
 import Laplace.Grammar.StandardIntegral
+import Laplace.Grammar.GaussianBound
