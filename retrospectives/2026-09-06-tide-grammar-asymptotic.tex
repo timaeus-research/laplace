@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Leading asymptotic of the chart standard integral:
+$\int_0^b u^he^{-\beta nu^{2k}+\beta\sqrt n u^ka}\,du\sim\tfrac{1}{2k}S_{(h+1)/(2k)}(a)\,n^{-(h+1)/(2k)}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The leading term of \texttt{cor:standardintegralexp} in one dimension, stated as a genuine
+\texttt{Asymptotics.IsEquivalent}: as $n\to\infty$ the population standard integral over the chart
+$(0,b]$ is asymptotically $\tfrac1{2k}S_{(h+1)/(2k)}(a)\,n^{-(h+1)/(2k)}$. The exponent
+$\mu_1=(h+1)/(2k)$ --- the first element of $\Lambda(h,k)$ --- is sharp because the fluctuation function
+is strictly positive (\texttt{fluctuation\_pos}, also new). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Units 22 and 25 give the chart integral as the half-line value $\tfrac1{2k}n^{-\mu_1}S_{\mu_1}(a)$ plus an
+error bounded by $Ke^{-\varepsilon n}$, $\varepsilon=\tfrac\beta4b^{2k}$. Since $e^{-\varepsilon n}=o(n^{-\mu_1})$
+and the coefficient is nonzero, this is exactly the statement $u\sim v$ in Mathlib's sense
+($u-v=o(v)$). The unit packages that observation in the seabed's standard \texttt{IsEquivalent} form
+(cf.\ the Wong-arc and \texttt{TwoD} asymptotic packaging).
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_pos (β lam a : ℝ) (hβ : 0 < β) (hlam : 0 < lam) :
+    0 < fluctuation β lam a
+
+theorem standardIntegral1D_chart_isEquivalent (β a b : ℝ) (h k : ℕ)
+    (hβ : 0 < β) (hb : 0 < b) (hk : 0 < k) :
+    (fun n : ℝ => ∫ u in Ioc 0 b, u^h * exp(-β*n*u^(2*k) + β*√n*u^k*a))
+      ~[atTop] fun n : ℝ => (1/(2*(k:ℝ))) * n^(-(((h:ℝ)+1)/(2*k)))
+        * fluctuation β (((h:ℝ)+1)/(2*k)) a
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\texttt{IsLittleO.isEquivalent} reduces the claim to $u-v=o(v)$. First $u-v=O(e^{-\varepsilon n})$ by
+\texttt{IsBigO.of\_bound} with the constant $K=e^{\beta a^2/2}(\beta/4)^{-\mu_1}(2k)^{-1}\Gamma(\mu_1)$
+from \texttt{standardIntegral1D\_bounded\_approx}, eventually for $n\ge1$. Then
+\texttt{isLittleO\_exp\_neg\_mul\_rpow\_atTop} gives $e^{-\varepsilon n}=o(n^{-\mu_1})$, and
+\texttt{IsLittleO.const\_mul\_right} with the nonzero constant $\tfrac1{2k}S_{\mu_1}(a)$ turns the
+right-hand side into $v$; \texttt{IsBigO.trans\_isLittleO} finishes. Positivity of $S_\lambda(a)$ is
+\texttt{setIntegral\_pos\_iff\_support\_of\_nonneg\_ae}: the integrand is positive on $(0,\infty)$, so
+its support meets $(0,\infty)$ in the whole half-line, of infinite measure.
+
+\section{Roadblocks and resolutions}
+None of substance: every step compiled on the first attempt. Two idioms recorded: the exponent match
+$-\tfrac\beta4nb^{2k}=-\varepsilon n$ is a \texttt{show \dots by ring} rewrite inside the calc (the
+exponential is opaque to \texttt{ring}); and \texttt{Real.volume\_Ioi} plus \texttt{ENNReal.zero\_lt\_top}
+supply the positive-measure input to the support criterion.
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{IsLittleO.isEquivalent}, \texttt{IsBigO.of\_bound}, \texttt{IsBigO.trans\_isLittleO},
+\texttt{isLittleO\_exp\_neg\_mul\_rpow\_atTop}, \texttt{IsLittleO.const\_mul\_right},
+\texttt{setIntegral\_pos\_iff\_support\_of\_nonneg\_ae}. New: strict positivity of the fluctuation
+function and the packaged leading asymptotic with its sharp exponent.
+
+\section{Lessons}
+A closed-form-plus-exponential-tail identity is one lemma away from an \texttt{IsEquivalent}; state
+the asymptotic as soon as the tail bound lands, since that is the form downstream consumers (and the
+paper's ``$\sim$'') actually use.
+
+\section{Follow-ups}
+The full one-dimensional expansion to all orders (all of $\Lambda(h,k)$ with $\log n$-free polynomial
+coefficients, since $d=1$) for a monomial perturbation is now a summability/tail-bookkeeping exercise on
+\texttt{standardIntegral1D\_monomial\_expansion}; the multivariate tree remains the substantive gap.
+\end{document}
