@@ -1,0 +1,60 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{∼}{\ensuremath{\sim}}
+\title{The 1D even-monomial moment asymptotic}
+\author{Tide retrospective, laplace seabed}
+\date{2026-09-06}
+\begin{document}
+\sloppy
+\maketitle
+\section{Setting}
+The laplace seabed's 2D separable-monomial track proves the mixed moment
+$\langle x^{2j_1} y^{2j_2}\rangle_t$ is asymptotically equivalent to a pure power of $t$
+(\texttt{KthKthMomentAsymptotic}), via a four-step pattern: exact factorisation into a product of
+1D moments, rewriting the $t$-dependence as $C\cdot t^{-\ldots}$, a rescaled \texttt{Tendsto} to the
+constant, and the \texttt{IsEquivalent} packaging. That 2D result quietly leans on the corresponding
+one-dimensional statement, which existed nowhere as a standalone lemma. This tide supplies it.
+\section{The thing formalised}
+For the symmetric weight $\exp(-t\,x^{2k}/(2k)!)$ with $k\ge 1$, and every $t>0$,
+\[
+  \langle x^{2j}\rangle_t = C(k,j)\cdot t^{-j/k},\qquad
+  C(k,j) := (2k)!^{\,j/k}\,\frac{\Gamma((2j+1)/(2k))}{\Gamma(1/(2k))},
+\]
+and hence $\langle x^{2j}\rangle_t \sim C(k,j)\,t^{-j/k}$ at $\mathrm{atTop}$. The Lean file gives
+all four rungs (\texttt{kthMomentConst}, \texttt{\_eq\_const\_mul\_rpow},
+\texttt{\_rescaled\_tendsto}, \texttt{\_isEquivalent\_rpow}), the single-factor mirror of the 2D
+trio. The equivalence is, in fact, an eventual equality: the moment is exactly the power law for
+every positive $t$, so there is no asymptotic remainder to control --- the content is entirely in the
+closed form the earlier tides already established.
+\section{Proof strategy}
+Each rung copies its 2D counterpart with one factor instead of two. The closed form
+$\langle x^{2j}\rangle_t = ((2k)!/t)^{j/k}\,\Gamma((2j+1)/(2k))/\Gamma(1/(2k))$
+splits by \texttt{Real.div\_rpow} into $(2k)!^{j/k}\,t^{-j/k}$ times the Gamma ratio, and
+\texttt{ring} finishes once $t^{-j/k}$ is written as $(t^{j/k})^{-1}$ by \texttt{Real.rpow\_neg}. The
+rescaled \texttt{Tendsto} is the constant sequence in disguise: multiplying by $t^{j/k}$ and
+combining the powers with \texttt{Real.rpow\_add} and \texttt{add\_neg\_cancel} collapses it to
+$C(k,j)$, so \texttt{tendsto\_const\_nhds.congr'} applies. The equivalence is
+\texttt{IsEquivalent.refl.congr\_left} against the closed form, valid eventually via
+\texttt{eventually\_gt\_atTop}.
+\section{Roadblocks and resolutions}
+None; the tide compiled on the first attempt. The four-step pattern is documented in the seabed's
+own notes, and the single-factor specialisation is mechanical once the closest 2D file is read.
+\section{What was Mathlib, what was new}
+Mathlib supplied only the \texttt{Real.rpow} algebra and the \texttt{IsEquivalent}/\texttt{Tendsto}
+API. Everything else --- the closed-form even moment and its integrability inputs --- was already in
+the seabed. New here is the packaged 1D asymptotic itself, the base the 2D lift had been assuming.
+No GPT consult was needed.
+\end{document}
