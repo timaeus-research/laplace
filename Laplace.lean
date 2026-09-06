@@ -175,3 +175,4 @@ import Laplace.Grammar.LogInsertions
 import Laplace.Grammar.LogShift
 import Laplace.Grammar.LogODE
 import Laplace.Grammar.Ladder
+import Laplace.Grammar.LogGenerating
