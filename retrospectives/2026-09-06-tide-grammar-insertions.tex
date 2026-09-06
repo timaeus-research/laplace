@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Monomial insertions in the standard integral are $a$-derivatives of $S_\lambda$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The second \S4.2 foothold: the one-dimensional mechanism behind the Taylor tree's
+$\partial^pS_\mu(\xi(0))$ terms. Expanding $e^{\beta\sqrt n\,u^k(\xi(u)-\xi(0))}$ inserts
+$(\sqrt n\,u^k)^p$ into the standard integral; we prove that in one dimension this insertion raises
+the order of the fluctuation function by $p/2$ while leaving $n^{-(h+1)/(2k)}$ untouched, and equals
+$\beta^{-p}\partial_a^pS_{(h+1)/(2k)}(a)$ by the general derivative ladder
+$\partial_a^pS_\lambda=\beta^pS_{\lambda+p/2}$ (also proved here for all $\lambda>0$). Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The proof of \texttt{thm:TaylorTree} expands the standard integral into
+$\sum_p\frac{\beta^p}{p!}\int u^{h+\mathbf m+\mathbf n}(\sqrt n\,u^k)^p e^{-\beta nu^{2k}+\beta\sqrt n
+u^k\xi(0)}du$ and later rewrites each term through $\partial^pS_\mu$. In one dimension, with the unit-21
+identity in hand, both steps are exact algebra: the insertion is a shift $h\mapsto h+kp$ absorbed by a
+$p/2$ shift of the fluctuation order, and the $a$-derivative ladder converts that shift back into a
+derivative.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem iteratedDeriv_fluctuation (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) (p : ℕ) :
+    iteratedDeriv p (fun a => fluctuation β lam a)
+      = fun a => β ^ p * fluctuation β (lam + (p:ℝ)/2) a
+
+theorem standardIntegral1D_insertion (β n a : ℝ) (h k p : ℕ) (hn : 0 < n) (hk : 0 < k) :
+    (∫ u in Set.Ioi (0:ℝ), u^h * (Real.sqrt n * u^k)^p * Real.exp (...))
+      = (1/(2*(k:ℝ))) * n^(-(((h:ℝ)+1)/(2*k)))
+        * fluctuation β (((h:ℝ)+1)/(2*k) + (p:ℝ)/2) a
+
+theorem standardIntegral1D_insertion_deriv ... (hβ : 0 < β) ... :
+    (∫ ... same integrand ...)
+      = (1/(2*(k:ℝ))) * n^(-(((h:ℝ)+1)/(2*k))) * β^(-(p:ℤ))
+        * iteratedDeriv p (fun a => fluctuation β (((h:ℝ)+1)/(2*k)) a) a
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The ladder is the same induction as \texttt{fluctuation\_half\_iteratedDeriv} with the order left
+symbolic: \texttt{iteratedDeriv\_succ}, then \texttt{deriv\_const\_mul} and \texttt{deriv\_fluctuation}
+at order $\lambda+p/2$, then the cast identity $\lambda+p/2+1/2=\lambda+(p{+}1)/2$. The insertion
+identity rewrites the integrand as $(\sqrt n)^p\cdot u^{h+kp}e^{\cdots}$ (\texttt{mul\_pow},
+\texttt{pow\_mul}, \texttt{pow\_add}), pulls the constant through the integral, applies
+\texttt{standardIntegral1D\_eq\_fluctuation} at $h+kp$, and merges $(\sqrt n)^p=n^{p/2}$ with
+$n^{-(h+kp+1)/(2k)}$ via \texttt{Real.rpow\_add} into $n^{-(h+1)/(2k)}$. The derivative form is the
+ladder substituted, with $\beta^{-p}\beta^p=1$.
+
+\section{Roadblocks and resolutions}
+None of substance --- every step compiled on the first attempt. Two small idioms worth recording:
+$(\sqrt n)^p=n^{p/2}$ is \texttt{Real.sqrt\_eq\_rpow} followed by \texttt{← Real.rpow\_natCast} and
+\texttt{← Real.rpow\_mul}; and the exponent identity $(h+kp+1)/(2k)=(h+1)/(2k)+p/2$ needs
+\texttt{push\_cast} before \texttt{field\_simp; ring} because $h+kp$ enters as a natural-number cast.
+Writing $\beta^{-p}$ as a \texttt{zpow} (\texttt{β\,\^{}\,(-(p:ℤ))}) keeps the statement honest about the
+sign and unfolds to $(\beta^p)^{-1}$ via \texttt{zpow\_neg}, \texttt{zpow\_natCast}.
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{iteratedDeriv\_succ}, \texttt{deriv\_const\_mul}, the \texttt{rpow} calculus,
+\texttt{integral\_const\_mul}. New: the general-order derivative ladder and the observation that the
+Taylor tree's insertions-to-derivatives step is, in one dimension, a pure reindexing of the unit-21
+identity.
+
+\section{Lessons}
+Once a change-of-variables identity is parametrised by the monomial exponent, every polynomial
+insertion is free; the paper's ``$\partial^p S_\mu$'' bookkeeping is the same fact read through the
+derivative ladder. Generalise the ladder to symbolic order as soon as it is needed at more than one
+value.
+
+\section{Follow-ups}
+The remaining \S4.2 content is genuinely multivariate: the series interchange for
+$e^{\beta\sqrt n u^k(\xi(u)-\xi(0))}$ against the tree coefficients $\xi_{\mathbf n,p}$, the
+bounded-domain remainder $\Delta$, and the Mellin/meromorphic state-density machinery.
+\end{document}
