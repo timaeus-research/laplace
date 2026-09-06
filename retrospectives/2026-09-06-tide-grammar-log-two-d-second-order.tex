@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The constant below the logarithm:\\
+$Z_2(n)=n^{-1/2}\big(\tfrac A2\log n+2A\log b+C_0\big)+O(n^{-1})$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit~35 established the leading term $Z_2(n)\sim\tfrac A2n^{-1/2}\log n$ of the $d=2$ chart
+integral with coinciding exponents. This unit identifies the next term exactly. The logarithmic
+primitive $H(L)=\int_0^LF(x)/x\,dx$ satisfies $H(L)=A\log L+C_0+\theta(L)$ with
+$0\le\theta(L)\le M/L$ for $L\ge1$ and the explicit constant
+$C_0=\int_0^1F(x)/x\,dx-\int_1^\infty(A-F(x))/x\,dx$; consequently
+$Z_2(n)=n^{-1/2}(\tfrac A2\log n+2A\log b+C_0)+O(n^{-1})$ with an explicit remainder, and
+$\sqrt n\,Z_2(n)-\tfrac A2\log n\to2A\log b+C_0$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The squeeze $A\log L-M\le H(L)\le A\log L+E$ of unit~35 pins the $O(1)$ term only to a window. Since
+$A-F(x)=\int_x^\infty f\le M/x$, the tail integrand $(A-F(x))/x$ is $O(x^{-2})$ and integrable on
+$[1,\infty)$, so the window collapses to a single constant with a rate: the difference
+$H(L)-A\log L-C_0$ is exactly the tail $\int_L^\infty(A-F)/x$, which is nonnegative and at most $M/L$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def logConst (β a : ℝ) : ℝ :=
+  (∫ x in Ioc 0 1, quadPrimitive β a x / x)
+    - ∫ x in Ioi 1, (quadMass β a - quadPrimitive β a x) / x
+theorem logPrimitive_sub_log_sub_const ... (hL : 1 ≤ L) :
+    logPrimitive β a L - quadMass β a * Real.log L - logConst β a
+      = ∫ x in Ioi L, (quadMass β a - quadPrimitive β a x) / x
+theorem logPrimitive_sub_log_sub_const_bounds ... : 0 ≤ ... ∧ ... ≤ quadMoment β a / L
+theorem twoDIntegral_second_order_isBigO (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) :
+    (fun n => twoDIntegral β a b n - n ^ (-(1/2 : ℝ)) * twoDSecondOrderCoeff β a b n)
+      =O[atTop] fun n => n⁻¹
+theorem twoDIntegral_second_order_tendsto ... :
+    Tendsto (fun n => Real.sqrt n * twoDIntegral β a b n - quadMass β a / 2 * Real.log n)
+      atTop (𝓝 (2 * quadMass β a * Real.log b + logConst β a))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The existing \texttt{logPrimitive\_split} already writes $H(L)-A\log L$ as
+$\int_0^1F/x-\int_1^L(A-F)/x$; splitting $\int_1^\infty=\int_1^L+\int_L^\infty$ with
+\texttt{setIntegral\_union} on $(1,L]\cup(L,\infty)$ gives the exact tail identity. The tail is
+compared to $M\int_L^\infty x^{-2}=M/L$ via \texttt{setIntegral\_mono\_on} and Mathlib's
+\texttt{integral\_Ioi\_rpow\_of\_lt}. For $Z_2$, the reduction $Z_2=n^{-1/2}H(\sqrt nb^2)$ of unit~35
+and $\log(\sqrt nb^2)=\tfrac12\log n+2\log b$ turn the bound into
+$0\le\sqrt nZ_2-(\tfrac A2\log n+2A\log b+C_0)\le M/(b^2\sqrt n)$ once $n\ge\max(1,b^{-4})$; the
+big-$O$ and the limit are read off this two-sided estimate (the limit by \texttt{squeeze\_zero'}).
+The constant and the tail bound were checked numerically first (residual $10^{-16}$ at $L\ge5$).
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Continuous.const\_sub} does not exist; write \texttt{continuous\_const.sub h}.
+\item $(\sqrt n)^{-1}\cdot(1/\sqrt n)=n^{-1}$: \texttt{field\_simp} followed by rewriting
+$n=\sqrt n\sqrt n$ rewrites the $n$ inside the radical too (a known trap). Isolate the step as
+\texttt{one\_div, ← mul\_inv, Real.mul\_self\_sqrt}.
+\item \texttt{squeeze\_zero'} cannot infer the dominating function from the later goals; pass
+\texttt{(g := …)} explicitly.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integrableOn\_Ioi\_rpow\_of\_lt}, \texttt{integral\_Ioi\_rpow\_of\_lt},
+\texttt{setIntegral\_union}, \texttt{Ioc\_union\_Ioi\_eq\_Ioi}, \texttt{setIntegral\_mono\_on},
+\texttt{squeeze\_zero'}, \texttt{tendsto\_inv\_atTop\_zero}. New: the constant $C_0$ of the logarithmic
+primitive with its sharp one-sided rate, and the two-term expansion of the $d=2$ log integral.
+
+\section{Lessons}
+When an $O(1)$ window comes from two one-sided bounds, look for the exact tail identity behind it:
+here the ``window'' is literally a nonnegative tail integral, so the constant term and its rate cost
+one lemma each. The same mechanism will give the constant term below $(\log n)^{d-1}$ for the
+iterated primitives $H_m$.
+
+\section{Outcome}
+The $d=2$ coinciding-exponent chart integral now has a two-term expansion with explicit constant and
+$O(n^{-1})$ remainder, complementing units~35--36 (leading term) and~40 (mixed multiplicity). Next
+candidates: the constant term for $H_2$ (the $\log n$ coefficient below $(\log n)^2$ at $d=3$), or the
+weighted primitives $F_\gamma$ for general $(k,h)$.
+\end{document}
