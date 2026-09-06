@@ -16,6 +16,7 @@ import Laplace.OneD.Rescaling
 import Laplace.OneD.MonomialPotential
 import Laplace.OneD.MonomialVariance
 import Laplace.OneD.MonomialKurtosis
+import Laplace.OneD.MonomialSixthCumulant
 import Laplace.OneD.MonomialMomentAsymptotic
 import Laplace.OneD.JetScaling
 import Laplace.OneD.JetDifference

@@ -1,0 +1,63 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{⁶}{\ensuremath{^6}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{∼}{\ensuremath{\sim}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\title{The sixth cumulant of the even-monomial Gibbs weight}
+\author{Tide retrospective, laplace seabed}
+\date{2026-09-06}
+\begin{document}
+\sloppy
+\maketitle
+\section{Setting}
+The laplace monomial track carries a cumulant ladder against the symmetric weight
+$\exp(-t\,x^{2k}/(2k)!)$: the variance $\kappa_2$ and the excess kurtosis $\kappa_4$, each in Gamma
+closed form and with its $t^{-\ldots}$ asymptotic scaling. This tide adds the next even rung, the
+sixth cumulant $\kappa_6$, completing the ladder at the clean frontier (the general even cumulant
+would require set-partition / Bell-polynomial machinery).
+\section{The thing formalised}
+For a symmetric weight the mean and all odd moments vanish, so
+$\kappa_6 = \langle x^6\rangle - 15\langle x^4\rangle\langle x^2\rangle + 30\langle x^2\rangle^3$, and
+\[
+  \kappa_6 = \Big(\tfrac{(2k)!}{t}\Big)^{3/k}\big(r_3 - 15\,r_2 r_1 + 30\,r_1^3\big),\qquad
+  r_j := \frac{\Gamma((2j+1)/(2k))}{\Gamma(1/(2k))},
+\]
+hence $\kappa_6 \sim K_6(k)\,t^{-3/k}$ at $\mathrm{atTop}$. The Lean file gives the closed form
+\texttt{monomial\_sixth\_cumulant}, the constant \texttt{sixthCumulantConst}, and the three asymptotic
+rungs. At $k=1$ the bracket is $15 - 15\cdot 3 + 30 = 0$: a Gaussian has vanishing sixth cumulant.
+\section{Proof strategy}
+The closed form is the three-moment mirror of the kurtosis proof. Rewrite $x^6, x^4, x^2$ into the
+even form $x^{2\cdot 3}, x^{2\cdot 2}, x^{2\cdot 1}$ (definitional), substitute the even-moment closed
+form at $j=3,2,1$, and reduce everything to the common base $B := ((2k)!/t)^{1/k}$. Two power folds do
+this: $((2k)!/t)^{2/k} = B^2$ (as in the kurtosis) and $((2k)!/t)^{3/k} = B^3$. The cube is the one
+new step: \texttt{Real.rpow\_natCast} turns the natural power $B^3$ into the real power $B^{(3:\mathbb{R})}$,
+and \texttt{Real.rpow\_mul} collapses $(base^{1/k})^{3} = base^{(1/k)\cdot 3}$; a \texttt{push\_cast}
+and \texttt{ring} match the exponent. With both folds the goal is polynomial in $B$ and the Gamma
+ratios (opaque atoms), so \texttt{ring} closes it. The three asymptotic rungs are the constant-sequence
+and reflexivity arguments reused verbatim from the moment and kurtosis asymptotics.
+\section{Roadblocks and resolutions}
+None; the tide compiled on the first attempt. The only forethought was including an \texttt{Authors:}
+line in the header from the outset, having learned the previous tide that the \texttt{style.header}
+linter flags its absence.
+\section{What was Mathlib, what was new}
+Mathlib supplied the \texttt{Real.rpow} algebra (including \texttt{rpow\_natCast}/\texttt{rpow\_mul} for
+the cube) and the \texttt{IsEquivalent}/\texttt{Tendsto} API. The closed-form even moments were already
+in the seabed. New here is the sixth cumulant, its constant, and its scaling --- the last clean rung of
+the monomial cumulant ladder. No GPT consult was needed.
+\end{document}
