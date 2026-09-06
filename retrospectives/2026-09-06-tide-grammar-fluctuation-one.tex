@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Closing §4.1: the fluctuation boundary case $S_1(a)=\tfrac{a}{2}S_{1/2}(a)+\tfrac1\beta$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 4 of the grammar-paper \S4 autoformalisation, and the one that closes
+\texttt{lem:fluctuation\_properties} (i)--(iv) together with the recurrence. Property (iv),
+$S_1(a)=\tfrac{a}{2}S_{1/2}(a)+\tfrac1\beta$, is the $\lambda=0$ boundary case: the same improper
+FTC as unit~3, but on $g(t)=e^{-\beta t+\beta a\sqrt t}$ with no $t^\lambda$ factor, so the endpoint
+value is $g(0)=1$ and the boundary contributes $0-1=-1$. Zero \texttt{sorry}/\texttt{axiom}; a clean
+mirror needing no fresh GPT consult.
+\end{abstract}
+
+\section{Setting}
+Unit~3's recurrence $S_{\lambda+1}=\tfrac{a}{2}S_{\lambda+1/2}+\tfrac{\lambda}{\beta}S_\lambda$
+requires $\lambda>0$ (its $\tfrac{\lambda}{\beta}S_\lambda$ term multiplies $S_\lambda$, which
+diverges as $\lambda\to0$). Property (iv) is the genuinely separate $\lambda=0$ endpoint, and it is
+what the paper uses to pin the additive constant. With it, all of \texttt{lem:fluctuation\_properties}
+and \texttt{eq:fluctuation\_recurrence} are now formalised --- the full first subsection of \S4.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+theorem fluctuation_one (β : ℝ) (hβ : 0 < β) (a : ℝ) :
+    fluctuation β 1 a = (a / 2) * fluctuation β (1 / 2) a + 1 / β
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Take $g(t)=e^{-\beta t+\beta a\sqrt t}$ (the $\lambda=0$ specialisation, $t^0=1$). Its derivative is
+$g'(t)=-\beta\,e^{\cdots}+\tfrac{\beta a}{2}t^{-1/2}e^{\cdots}$, whose two terms are the integrands
+of $-\beta S_1$ and $\tfrac{\beta a}{2}S_{1/2}$ (matching $t^{1-1}=t^0$ and $t^{1/2-1}=t^{-1/2}$).
+The improper FTC on $(0,\infty)$ gives $\int_0^\infty g'=\lim_{t\to\infty}g-g(0)=0-1=-1$, hence
+$-\beta S_1+\tfrac{\beta a}{2}S_{1/2}=-1$, i.e.\ (iv). Continuity of $g$ at $0$ is immediate
+($e$ is continuous everywhere, $g(0)=e^0=1$); the $\mathrm{atTop}$ decay reuses the $s=0$ case of the
+super-polynomial-decay lemma ($t^0e^{-(\beta/2)t}=e^{-(\beta/2)t}\to0$), squeezed under the AM--GM
+phase bound.
+
+\section{Roadblocks and resolutions}
+None of substance --- this is a mirror of unit~3. The two differences: the exponent identity
+$t^{1/2-1}=(\sqrt t)^{-1}$ has no $t^\lambda$ factor, so it is a single \texttt{rpow\_neg} (the
+\texttt{rpow\_add} step from unit~3 is dropped); and the $\mathrm{atTop}$ majorant instantiates the
+decay lemma at $s=0$, where $t^0=1$ collapses the power factor.
+
+\section{What was Mathlib, what was new}
+Entirely a re-instantiation of unit~3's FTC assembly at $\lambda=0$; the ``new'' part is only the
+endpoint value $g(0)=1$ that produces the $+1/\beta$.
+
+\section{Lessons}
+The boundary case that looked like it might need a different argument (because $S_0$ diverges) is in
+fact the \emph{cleaner} instance of the same FTC --- the divergent $S_0$ never appears because its
+coefficient $\lambda$ is zero, and dropping the $t^\lambda$ factor removes the only endpoint
+subtlety. When a limiting case of a proved identity is separate, try the same machinery at the limit
+before reaching for something new.
+
+\section{Follow-ups}
+\S4.1 is complete. Next: \texttt{prop:fluctuation\_weber} --- the substitution
+$S_\lambda(a)=e^{\beta a^2/8}f(a\sqrt{\beta/2})$ that turns the ODE (iii) into Weber's equation
+$f''+(\tfrac12-2\lambda-\tfrac{z^2}{4})f=0$, and \texttt{cor:fluctuation\_closed\_form}, the
+parabolic-cylinder closed form. A \texttt{\textbackslash leanref} update covering (i)--(iv) and the
+recurrence is staged, not inserted.
+\end{document}
