@@ -205,3 +205,5 @@ import Laplace.Grammar.LogTwoDSecondOrder
 import Laplace.Grammar.LogSquaredSecondOrder
 import Laplace.Grammar.IteratedLogExpansion
 import Laplace.Grammar.WeightedPrimitive
+import Laplace.Grammar.WeightedMass
+import Laplace.Grammar.TwoDGeneralLog
