@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The second-order term of the one-dimensional Taylor tree, with explicit remainder}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $\xi(u)=\xi_0+cu^m$ we isolate the first two terms of the one-dimensional Taylor tree with an
+explicit remainder:
+\[
+\begin{aligned}
+&\Bigl|Z_{\rm chart}-\tfrac1{2k}n^{-\mu_1}S_{\mu_1}(\xi_0)-\beta c\,\tfrac1{2k}n^{-\mu_2}S_{\mu_2+1/2}(\xi_0)\Bigr|\\
+&\qquad\le\tfrac{(\beta c)^2}{2}\tfrac1{2k}n^{-(h+2m+1)/(2k)}S_{(h+2m+2k+1)/(2k)}(\xi_0+|c|b^m)
++\text{tail}_0+|\beta c|\,\text{tail}_1,
+\end{aligned}
+\]
+$\mu_1=(h+1)/(2k)$, $\mu_2=(h+m+1)/(2k)$, the tails exponentially small. This exhibits the
+\emph{second} exponent of $\Lambda(h,k)$ with its fluctuation-function coefficient. It rests on a
+gap-fill $|e^x-1-x|\le\tfrac{x^2}{2}e^{|x|}$ valid for all real $x$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~26 gives the chart integral as an exact series in $p$; unit~27 its leading asymptotic. The next
+question a reader of \texttt{thm:TaylorTree} asks is what the \emph{subleading} term is and how large
+the error after two terms is. Writing $e^{x}=1+x+R(x)$ with $x=\beta\sqrt nu^kcu^m$, the chart integral
+splits into three pieces: the zeroth- and first-order insertions (known exactly up to tails from
+units~22/24/25) and a remainder controlled pointwise by $\tfrac{x^2}2e^{|x|}$. On the chart
+$|x|\le\beta\sqrt nu^k|c|b^m$, so $e^{\rm pop}e^{|x|}$ is again a population kernel, at the shifted
+argument $\xi_0+|c|b^m$, and $x^2$ contributes $n\,u^{2k+2m}$: the remainder integral is a fluctuation
+function at order $(h+2m+2k+1)/(2k)$ times $n\cdot n^{-(h+2m+2k+1)/(2k)}=n^{-(h+2m+1)/(2k)}$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_exp_sub_one_sub_self_le (x : ℝ) :
+    |Real.exp x - 1 - x| ≤ x ^ 2 / 2 * Real.exp |x|
+
+theorem standardIntegral1D_second_order (β n ξ₀ c b : ℝ) (h k m : ℕ)
+    (hβ : 0 < β) (hn : 1 ≤ n) (hb : 0 < b) (hk : 0 < k) :
+    |Z_chart - (1/(2k)) n^(-μ₁) S_{μ₁}(ξ₀) - β c ((1/(2k)) n^(-μ₂) S_{μ₂+1/2}(ξ₀))|
+      ≤ (β c)^2/2 * ((1/(2k)) n^(-(h+2m+1)/(2k)) S_{(h+2m+2k+1)/(2k)}(ξ₀ + |c| b^m))
+        + tail₀ + |β c| * tail₁
+\end{verbatim}
+}
+(The Lean statement carries the natural-number casts $\uparrow(h+m)$, $\uparrow(h+2m)$ from the
+insertion lemma; the tails are the explicit $(b,\infty)$ integrals.)
+
+\section{Proof strategy}
+The exponential bound is the series argument: $e^x-1-x=\sum_{p\ge0}x^{p+2}/(p+2)!$
+(\texttt{hasSum\_nat\_add\_iff'} at $2$), $|x|^{p+2}/(p+2)!\le\tfrac{x^2}2|x|^p/p!$ from
+$2\,p!\le(p+2)!$, and \texttt{hasSum\_le} in both directions. For the main theorem, the integrand is
+decomposed pointwise as $g_0+g_1+g_2$ (\texttt{funext}, \texttt{Real.exp\_add}); all three are
+continuous, hence integrable on the chart (\texttt{Continuous.integrableOn\_Ioc}), and
+\texttt{integral\_add} twice separates them. $\int g_0$ and $\int g_1$ are rewritten as half-line minus
+tail (\texttt{setIntegral\_union} on $(0,b]\cup(b,\infty)$) using the unit-22 identity and the
+$p=1$ insertion identity. $|\int g_2|\le\int|g_2|$ (\texttt{abs\_integral\_le\_integral\_abs}), then
+\texttt{setIntegral\_mono\_on} against the majorant, enlargement to $(0,\infty)$, and evaluation by the
+unit-22 identity at $h+2m+2k$; the $n\cdot n^{-\alpha}$ merge is one \texttt{rpow\_add}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{set} for the local pieces $g_0,g_1,g_2$ \emph{folded the statement's own tail integral}
+into $\int g_0$, which would have broken every later syntactic rewrite. Introduce local definitions
+opaquely --- \texttt{obtain ⟨g, hg⟩ : ∃ g, g = \dots := ⟨\_, rfl⟩} --- so the goal is untouched and the
+definition is unfolded only where wanted (\texttt{simp only [hg]}).
+\item The idiom \texttt{(by rw [h]; exact <multi-line term> : Continuous g)} does not parse when the
+term wraps lines; give continuity its own \texttt{have}.
+\item \texttt{rw [pow\_one] at hins} fails because the occurrence sits under the integral's binder ---
+use \texttt{simp only [pow\_one] at hins}.
+\item With an opaque \texttt{pop}, \texttt{positivity} cannot see $0<\mathrm{pop}\,u$; supply
+\texttt{Real.exp\_pos} once and thread it.
+\item The final \texttt{gcongr} left the remainder bound stated with the opaque $a'$ against a goal
+with $\xi_0+|c|b^m$ unfolded; \texttt{rw [← ha']} first.
+\item Over $\mathbb N$, \texttt{nlinarith} did not find $2\,p!\le(p+2)(p+1)p!$; \texttt{Nat.mul\_le\_mul}
+with \texttt{omega} side goals does.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{hasSum\_nat\_add\_iff'}, \texttt{hasSum\_le}, \texttt{abs\_integral\_le\_integral\_abs},
+\texttt{setIntegral\_mono\_on}/\texttt{mono\_set}, \texttt{setIntegral\_union},
+\texttt{Continuous.integrableOn\_Ioc}. New: the global exponential remainder bound (a lean-common
+candidate) and the two-term expansion with explicit constant, numerically confirmed (the error tracks
+$n^{-(h+2m+1)/(2k)}$ with ratio $\approx0.4$ to the bound).
+
+\section{Lessons}
+Use \texttt{obtain ⟨g, hg⟩ : ∃ g, g = \dots} rather than \texttt{set} whenever the statement contains
+a subterm that the abbreviation would capture: \texttt{set} rewrites the goal globally, and a folded
+statement no longer matches the lemmas built to rewrite it.
+
+\section{Follow-ups}
+An \texttt{IsBigO} packaging ($Z-A_0n^{-\mu_1}-A_1n^{-\mu_2}=O(n^{-(h+2m+1)/(2k)})$, absorbing the
+$\sqrt n\,e^{-\varepsilon n}$ tails) and the all-orders version via \texttt{standardIntegral1D\_monomial\_expansion}
+remain; the latter needs a summability estimate for $\Gamma$-weighted exponential coefficients.
+\end{document}
