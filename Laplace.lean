@@ -200,3 +200,4 @@ import Laplace.Grammar.LogSquaredThreeD
 import Laplace.Grammar.IteratedLogPrimitive
 import Laplace.Grammar.IteratedLogSqueeze
 import Laplace.Grammar.LogPowerGeneralD
+import Laplace.Grammar.MixedThreeD
