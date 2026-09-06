@@ -167,3 +167,4 @@ import Laplace.OneD.QuarticBoundedTest
 import Laplace.Grammar.Fluctuation
 import Laplace.Grammar.ParabolicCylinder
 import Laplace.Grammar.Weber
+import Laplace.Grammar.Hermite

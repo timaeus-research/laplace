@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The Hermite ODE and the integer-order parabolic cylinder function:
+$D_n=e^{-z^2/4}\mathrm{He}_n$ solves Weber}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 9 of the grammar-paper \S4 autoformalisation. We fill two gaps in Mathlib's Hermite-polynomial
+API --- derivative-lowering $\mathrm{He}_{n+1}'=(n+1)\mathrm{He}_n$ and the Hermite ODE
+$\mathrm{He}_n''-X\mathrm{He}_n'+n\mathrm{He}_n=0$ --- then define the integer-order parabolic
+cylinder function $D_n(z)=e^{-z^2/4}\mathrm{He}_n(z)$ (\texttt{eq:Dn\_hermite}) and prove it solves the
+parabolic cylinder equation $f''(z)+(n+\tfrac12-\tfrac{z^2}{4})f(z)=0$ (Weber order $\nu=n$), the
+quantum-harmonic-oscillator content of \texttt{lem:qho}. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~8 proved Weber's equation for Watanabe's fluctuation function $S_\lambda$ (order $\nu=-2\lambda$).
+This unit is the \emph{integer-order} companion: at $\nu=n\in\mathbb Z_{\ge0}$ the parabolic cylinder
+function is elementary --- a Hermite polynomial times a Gaussian --- and this is exactly the QHO
+wavefunction $\psi_n\propto D_n$ of \texttt{lem:qho}. Mathlib has the probabilist Hermite polynomials
+(\texttt{Polynomial.hermite}) with the recurrence $\mathrm{He}_{n+1}=X\mathrm{He}_n-\mathrm{He}_n'$ and
+the Gaussian--Rodrigues bridge, but not the two derivative identities the ODE needs, so we build them.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem derivative_hermite (n : ℕ) :
+    derivative (hermite (n + 1)) = (n + 1) • hermite n
+
+theorem hermite_ode (n : ℕ) :
+    derivative (derivative (hermite n)) = X * derivative (hermite n) - n • hermite n
+
+noncomputable def parCylNat (n : ℕ) (z : ℝ) : ℝ :=
+  Real.exp (-z ^ 2 / 4) * aeval z (hermite n)
+
+theorem parCylNat_weber (n : ℕ) (z : ℝ) :
+    deriv (deriv (fun z => parCylNat n z)) z
+      + ((n : ℝ) + 1 / 2 - z ^ 2 / 4) * parCylNat n z = 0
+\end{verbatim}
+}
+The paper writes $D_n(z)=2^{-n/2}e^{-z^2/4}H_n(z/\sqrt2)$ with the physicist $H_n$; via
+$H_n(x)=2^{n/2}\mathrm{He}_n(x/\sqrt2)$ this is $e^{-z^2/4}\mathrm{He}_n(z)$, the probabilist form
+Mathlib supports and \texttt{parCylNat} uses.
+
+\section{Proof strategy}
+\textbf{Derivative-lowering.} Induction on $n$. The step differentiates
+$\mathrm{He}_{n+2}=X\mathrm{He}_{n+1}-\mathrm{He}_{n+1}'$ and, crucially, rewrites the stray
+$\mathrm{He}_n'$ that appears using \texttt{hermite\_succ}~$n$ in the form
+$\mathrm{He}_n'=X\mathrm{He}_n-\mathrm{He}_{n+1}$ --- avoiding any reference to $\mathrm{He}_{n-1}$, so
+the induction hypothesis $\mathrm{He}_{n+1}'=(n+1)\mathrm{He}_n$ is all that is needed; \texttt{ring}
+closes the polynomial identity.
+
+\textbf{Hermite ODE.} Immediate from derivative-lowering: for $n=m+1$,
+$\mathrm{He}_{m+1}''=\bigl((m+1)\mathrm{He}_m\bigr)'=(m+1)\mathrm{He}_m'=(m+1)(X\mathrm{He}_m
+-\mathrm{He}_{m+1})=X\mathrm{He}_{m+1}'-(m+1)\mathrm{He}_{m+1}$; \texttt{map\_nsmul}, \texttt{smul\_sub},
+\texttt{mul\_smul\_comm} handle the $\bullet$-bookkeeping.
+
+\textbf{Weber for $D_n$.} Mirrors the $S_\lambda$ Weber unit. Transfer the ODE through \texttt{aeval}
+(\texttt{rw [hermite\_ode]; simp}) to $P_2(z)=zP_1(z)-nP_0(z)$ with $P_j(z)=\mathrm{aeval}\,z\,
+(\mathrm{He}_n^{(j)})$; take two derivatives of $e^{-z^2/4}P_0$ using
+\texttt{Polynomial.hasDerivAt\_aeval} for the polynomial factor and the Gaussian derivative, assembling
+each combinator value with \texttt{HasDerivAt.congr\_deriv (by ring)} and turning the first derivative
+into a function equality by \texttt{funext}$\,\circ\,$\texttt{HasDerivAt.deriv}; substitute the ODE and
+\texttt{ring} kills the $(n+\tfrac12-\tfrac{z^2}{4})$ coefficient.
+
+\section{Roadblocks and resolutions}
+Very few, thanks to unit~8's playbook:
+\begin{itemize}
+\item Derivative-lowering's induction step naively wants $\mathrm{He}_{n-1}$ (not available from the
+$n{+}1$ hypothesis); rewriting the offending $\mathrm{He}_n'$ via \texttt{hermite\_succ}~$n$ keeps
+everything in $\{\mathrm{He}_n,\mathrm{He}_{n+1}\}$ so \texttt{ring} finishes.
+\item \texttt{Polynomial.hasDerivAt\_aeval} takes the polynomial explicitly (dot form
+\texttt{(hermite n).hasDerivAt\_aeval z}); passing the point first mis-parses it as the polynomial.
+\item The same \texttt{HasDerivAt.congr\_deriv} idiom from unit~8 sidesteps the \texttt{smulRight}
+wrapper and the \texttt{Module}-instance diamond; the whole file compiled on the first build.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib gave \texttt{Polynomial.hermite}/\texttt{hermite\_succ}, \texttt{Polynomial.hasDerivAt\_aeval},
+the exp/product derivative combinators, and \texttt{HasDerivAt.congr\_deriv}. New: both Hermite
+derivative identities (Mathlib has the recurrence but neither the lowering rule nor the ODE), the
+definition of the integer-order $D_n$ against Mathlib's Hermite, and the parabolic cylinder / Weber
+equation it satisfies --- the integer-order companion of the $S_\lambda$ Weber result.
+
+\section{Lessons}
+When an induction step reaches for the ``previous-previous'' term, look for a recurrence that
+re-expresses the derivative in terms of the current and next terms only --- here \texttt{hermite\_succ}
+turns $\mathrm{He}_n'$ into $X\mathrm{He}_n-\mathrm{He}_{n+1}$, collapsing a two-step induction into a
+one-step one. And the unit~8 differentiation playbook (explicit first-derivative function via
+\texttt{funext}$\,\circ\,$\texttt{HasDerivAt.deriv}, \texttt{congr\_deriv} for value normalisation)
+transfers verbatim to any $e^{-z^2/4}\times(\text{smooth})$ Weber problem.
+
+\section{Follow-ups}
+The remaining \S4 items are the operator/algebra ones: the ladder operators $b,b^\dagger$ and the
+canonical commutator $[b,b^\dagger]=1$, and the generating function for log insertions
+(\texttt{lem:log\_generating}) --- these need a Weyl-algebra / operator framework rather than more
+special-function analysis.
+\end{document}
