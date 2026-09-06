@@ -99,4 +99,25 @@ theorem lowerOp_fluctuation (β lam : ℝ) (hβ : 0 < β) (hlam : 1 / 2 < lam) (
     ring, hlow]
   ring
 
+/-- **Number operator** (grammar §4 `lem:number_operator`, positive-order case `μ > 1/2`):
+`b†b S_μ = (2μ-1) S_μ`, so `S_μ` is an eigenvector of the number operator `b†b` with eigenvalue
+`2μ-1`. (With `μ = λ + Q/2` and `N_λ = b†b - (2λ-1)` this is the number-operator eigenvalue `Q`.) -/
+theorem number_operator_fluctuation (β μ : ℝ) (hβ : 0 < β) (hμ : 1 / 2 < μ) (a : ℝ) :
+    raiseOp β (lowerOp β (fun a => fluctuation β μ a)) a = (2 * μ - 1) * fluctuation β μ a := by
+  have hfin : β ^ (-(1 : ℝ) / 2) * β ^ (-(1 : ℝ) / 2) * β = 1 := by
+    rw [← Real.rpow_add hβ, show -(1 : ℝ) / 2 + -(1 : ℝ) / 2 = -1 by norm_num]
+    nth_rewrite 2 [show (β : ℝ) = β ^ (1 : ℝ) from (Real.rpow_one β).symm]
+    rw [← Real.rpow_add hβ, show (-1 : ℝ) + 1 = 0 by norm_num, Real.rpow_zero]
+  have hlowfun : lowerOp β (fun a => fluctuation β μ a)
+      = fun a => (2 * μ - 1) * β ^ (-(1 : ℝ) / 2) * fluctuation β (μ - 1 / 2) a :=
+    funext fun a => lowerOp_fluctuation β μ hβ hμ a
+  rw [show raiseOp β (lowerOp β (fun a => fluctuation β μ a)) a
+      = β ^ (-(1 : ℝ) / 2) * deriv (lowerOp β (fun a => fluctuation β μ a)) a from rfl, hlowfun,
+    show (fun a => (2 * μ - 1) * β ^ (-(1 : ℝ) / 2) * fluctuation β (μ - 1 / 2) a)
+      = fun a => ((2 * μ - 1) * β ^ (-(1 : ℝ) / 2)) * fluctuation β (μ - 1 / 2) a from by
+        funext a; ring,
+    deriv_const_mul _ ((hasDerivAt_fluctuation β (μ - 1 / 2) hβ (by linarith) a).differentiableAt),
+    deriv_fluctuation β (μ - 1 / 2) hβ (by linarith) a, show μ - 1 / 2 + 1 / 2 = μ by ring]
+  linear_combination ((2 * μ - 1) * fluctuation β μ a) * hfin
+
 end Laplace.Grammar
