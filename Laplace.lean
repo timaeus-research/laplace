@@ -197,3 +197,6 @@ import Laplace.Grammar.LogTwoD
 import Laplace.Grammar.LogTwoDProduct
 import Laplace.Grammar.TwoDNoLog
 import Laplace.Grammar.LogSquaredThreeD
+import Laplace.Grammar.IteratedLogPrimitive
+import Laplace.Grammar.IteratedLogSqueeze
+import Laplace.Grammar.LogPowerGeneralD
