@@ -182,3 +182,4 @@ import Laplace.Grammar.ExtendedRaising
 import Laplace.Grammar.StandardIntegral
 import Laplace.Grammar.GaussianBound
 import Laplace.Grammar.Insertions
+import Laplace.Grammar.Tail
