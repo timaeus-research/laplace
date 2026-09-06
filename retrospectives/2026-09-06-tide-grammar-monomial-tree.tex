@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The exact one-dimensional Taylor tree for a monomial perturbation}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The simplest nontrivial instance of \texttt{thm:TaylorTree}, made exact. With $d=1$, $\eta\equiv1$
+and $\xi(u)=\xi_0+cu^m$, the chart standard integral over $(0,b]$ equals the convergent series
+$\sum_p\frac{(\beta c)^p}{p!}\int_0^b u^{h+mp}(\sqrt n\,u^k)^pe^{-\beta nu^{2k}+\beta\sqrt n u^k\xi_0}du$,
+and each term is $(2k)^{-1}n^{-(h+mp+1)/(2k)}S_{(h+mp+1)/(2k)+p/2}(\xi_0)$ minus an exponentially small
+tail. The exponents $(h+1)/(2k)+mp/(2k)$ run along the arithmetic progression of the candidate exponent
+set $\Lambda(h,k)$ --- the tree's $n^{-\mu}$ structure, with fluctuation-function coefficients, in one
+dimension. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Units 22--25 supplied the analytic steps of the one-dimensional Taylor-tree pipeline: the kernel
+identity, insertions as $a$-derivatives, Gaussian domination, and the boundary tail. What remained was
+the series interchange for $e^{\beta\sqrt n u^k(\xi(u)-\xi(0))}$. For a single monomial
+$\xi(u)-\xi(0)=cu^m$ this is one exponential series, and on the bounded chart the interchange is
+dominated convergence against a constant multiple of $u^he^{-\beta nu^{2k}+\beta\sqrt nu^k\xi_0}$ ---
+exactly the route the paper takes before pushing each term to the half-line.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem standardIntegral1D_monomial_hasSum (β n ξ₀ c b : ℝ) (h k m : ℕ)
+    (hβ : 0 < β) (hb : 0 < b) :
+    HasSum (fun p : ℕ => (β*c)^p / p.factorial
+        * ∫ u in Ioc 0 b, u^(h + m*p) * (Real.sqrt n * u^k)^p * exp(-βn u^{2k} + β√n u^k ξ₀))
+      (∫ u in Ioc 0 b, u^h * exp(-βn u^{2k} + β√n u^k (ξ₀ + c u^m)))
+
+theorem standardIntegral1D_monomial_expansion ... (hn : 0 < n) (hk : 0 < k) :
+    HasSum (fun p : ℕ => (β*c)^p / p.factorial
+        * ((1/(2k)) * n^(-((h+mp+1)/(2k))) * fluctuation β ((h+mp+1)/(2k) + p/2) ξ₀
+          - ∫ u in Ioi b, u^(h + m*p) * (√n u^k)^p * exp(...)))
+      (∫ u in Ioc 0 b, u^h * exp(-βn u^{2k} + β√n u^k (ξ₀ + c u^m)))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Following the \texttt{fluctuation\_log\_generating} template, apply
+\texttt{hasSum\_integral\_of\_dominated\_convergence} on $\mu=\lambda|_{(0,b]}$ with
+$F_p(u)=\frac{(\beta c)^p}{p!}u^{h+mp}(\sqrt nu^k)^pe(u)$. The key rewriting is
+$F_p(u)=u^he(u)\cdot x^p/p!$ with $x=\beta\sqrt nu^kcu^m$ (\texttt{mul\_pow}, \texttt{pow\_mul},
+\texttt{pow\_add}), so that (i) the pointwise limit is $u^he(u)e^{x}=f(u)$ by
+\texttt{NormedSpace.expSeries\_div\_hasSum\_exp} and \texttt{HasSum.mul\_left}, and (ii) the bound is
+$B^p/p!\cdot u^he(u)$ with the constant $B=\beta\sqrt n\,b^k|c|b^m\ge|x|$ on the chart
+(\texttt{gcongr} from $u\le b$). The summed bound $e^Bu^he(u)$ is continuous, hence integrable on the
+bounded chart (\texttt{Continuous.integrableOn\_Ioc}). The second theorem splits each chart term as
+half-line minus tail (\texttt{setIntegral\_union} on $(0,b]\cup(b,\infty)$) and evaluates the half-line
+by \texttt{standardIntegral1D\_insertion} at $h+mp$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item A \texttt{let}-bound integrand family $F$ folds the \texttt{set} variable $e$ out of sight:
+\texttt{rw [he]} then fails on goals like \texttt{Continuous (F p)}. Expose the body with
+\texttt{change} (the style linter rejects goal-changing \texttt{show}) before rewriting, or use
+\texttt{simp only [he]}, which also beta-reduces the exposed lambda.
+\item An unguided \texttt{rw [mul\_assoc]} reassociated the \emph{exponent} $-\beta nu^{2k}$ instead of
+the outer product; give the first factor explicitly, \texttt{mul\_assoc (u \^{} h)}.
+\item Pointwise congruence of a \texttt{HasSum} is cleanest as a function-level \texttt{rw} with a
+\texttt{funext} of the pointwise identity, rather than hunting for a \texttt{congr\_fun} lemma.
+\item $0\le n$ is not needed for the chart theorem: $\sqrt n$ is total and the bound only uses
+\texttt{Real.sqrt\_nonneg}; the hypothesis was dropped.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{hasSum\_integral\_of\_dominated\_convergence}, the exponential series,
+\texttt{Real.summable\_pow\_div\_factorial}, \texttt{Continuous.integrableOn\_Ioc},
+\texttt{setIntegral\_union}. New: the exact monomial tree on the chart and its rewriting in fluctuation
+functions with the $\Lambda(h,k)$ exponents visible.
+
+\section{Lessons}
+The paper's tree is, term by term, a reindexing of two facts already formalised (the kernel identity and
+the insertion identity) plus one series interchange; once the interchange is set up on the bounded chart
+the whole expansion is exact, and only the passage to the half-line introduces the $e^{-\varepsilon n}$
+error. Generalising from a monomial to an analytic $\xi$ is where the multi-index combinatorics enters.
+
+\section{Follow-ups}
+The 1D analytic-$\xi$ tree (Cauchy product of the series for $(\xi(u)-\xi_0)^p$), the Mellin/state-density
+formulation, and the multivariate version remain.
+\end{document}
