@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Weber's equation for the fluctuation function:
+$f''+(\tfrac12-2\lambda-\tfrac{z^2}{4})f=0$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 8 of the grammar-paper \S4 autoformalisation. The substitution $S_\lambda(a)=e^{\beta a^2/8}
+f(a\sqrt{\beta/2})$ turns the fluctuation ODE (iii) into \emph{Weber's equation}
+$f''(z)+(\tfrac12-2\lambda-\tfrac{z^2}{4})f(z)=0$ (\texttt{prop:fluctuation\_weber}), the standard
+parabolic cylinder equation with order $\nu=-2\lambda$ --- so the Weber order depends only on the
+RLCT $\lambda$, not on the inverse temperature $\beta$. Proved from the \texttt{HasDerivAt} derivative
+ladder alone, no special-function library. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The closed form (unit~7) identified $S_\lambda$ with a parabolic cylinder function $D_{-2\lambda}$. This
+proposition is the ODE face of that identification, and unlike the closed form it needs \emph{no}
+$D_\nu$ machinery: it is a pure second-derivative computation on top of the already-formalised
+derivative ladder ($S'_\lambda=\beta S_{\lambda+1/2}$, $S''_\lambda=\beta^2 S_{\lambda+1}$) and the
+ODE (iii) $S''_\lambda=\tfrac{a\beta}{2}S'_\lambda+\lambda\beta S_\lambda$. It is the last
+non-operator item of \S4 that stands independently of $D_\nu$.
+
+\section{The thing formalised}
+{\small
+\begin{verbatim}
+noncomputable def weberSub (β lam z : ℝ) : ℝ :=
+  Real.exp (-z ^ 2 / 4) * fluctuation β lam (z * Real.sqrt (2 / β))
+
+theorem fluctuation_weber (β lam z : ℝ) (hβ : 0 < β) (hlam : 0 < lam) :
+    deriv (deriv (fun z => weberSub β lam z)) z
+      + (1 / 2 - 2 * lam - z ^ 2 / 4) * weberSub β lam z = 0
+\end{verbatim}
+}
+We formalise the substitution solved for $f$: $f(z)=e^{-z^2/4}S_\lambda(z\sqrt{2/\beta})$ (with
+$\sqrt{2/\beta}=1/\sqrt{\beta/2}$, so $z=a\sqrt{\beta/2}$).
+
+\section{Proof strategy}
+Write $k=\sqrt{2/\beta}$, so the argument is $a=zk$ and $\beta k^2=2$. The plan (GPT-6 Astra) is
+``prove the first derivative as an explicit function everywhere, then differentiate that function'':
+\begin{enumerate}
+\item Build \texttt{HasDerivAt} for the two fluctuation compositions $a\mapsto S_\lambda(ak)$ and
+$a\mapsto\beta S_{\lambda+1/2}(ak)$ by \texttt{HasDerivAt.comp} with the linear map $x\mapsto xk$ (giving
+the extra factor $k$), and for the Gaussian $e^{-z^2/4}$ (derivative $-\tfrac{z}{2}e^{-z^2/4}$).
+\item Product rule gives $f_1(w)=\operatorname{deriv} f\,(w)=e^{-w^2/4}\bigl(-\tfrac w2S_\lambda(wk)+k\beta
+S_{\lambda+1/2}(wk)\bigr)$ as a function; \texttt{funext} of \texttt{HasDerivAt.deriv} turns this into
+the \emph{function equality} $\operatorname{deriv} f=f_1$.
+\item Differentiate $f_1$ once more (product$+$sum$+$const-mul rules) to get $\operatorname{deriv}(\operatorname{deriv} f)(z)=f_{2,z}$.
+\item Substitute the ODE (iii) for the $\beta^2S_{\lambda+1}(zk)$ term. The whole expression factors as
+$e^{-z^2/4}(\beta k^2-2)\bigl(\lambda S_\lambda(zk)+\tfrac{zk}{2}\beta S_{\lambda+1/2}(zk)\bigr)$, which
+vanishes because $\beta k^2=2$.
+\end{enumerate}
+The three fluctuation values $S_\lambda(zk)$, $S_{\lambda+1/2}(zk)$, $S_{\lambda+1}(zk)$ stay opaque
+atoms throughout; the ODE eliminates the third and \texttt{ring} exposes the common factor
+$\beta k^2-2$.
+
+\section{Roadblocks and resolutions}
+Three \texttt{HasDerivAt} mechanics, each a reusable lesson:
+\begin{itemize}
+\item \textbf{\texttt{comp} higher-order unification splits at the wrong place.} Composing the
+derivative of $a\mapsto\beta S_{\lambda+1/2}(a)$ with the linear map, \texttt{exact (\ldots).comp} with
+the goal function $\lambda x.\,\beta S_{\lambda+1/2}(xk)$ let the elaborator peel the outer function as
+$(\beta\cdot-)$ rather than the intended $S_{\lambda+1/2}$-composition (error: expected
+\texttt{HasDerivAt (HMul.hMul $\beta$) \ldots}). Fix: state that goal with the function written as an
+explicit \texttt{Function.comp} $\bigl((\lambda a.\,\beta S_{\lambda+1/2}(a))\circ(\lambda x.\,xk)\bigr)$,
+so no HOU is needed.
+\item \textbf{Combinator derivative values need normalising.} The product/sum/\texttt{const\_mul}
+combinators produce a derivative in a fixed (un-factored) shape. \texttt{convert \ldots using 1} stops
+at the \texttt{ContinuousLinearMap.smulRight} wrapper (leaving a goal \texttt{ring} cannot touch), and
+\texttt{using 2} leaves a spurious \texttt{Module}-instance diamond goal
+(\texttt{Semiring.toModule} vs \texttt{(NormedAlgebra.toNormedSpace $\mathbb R$).toModule}). The clean
+tool is \texttt{HasDerivAt.congr\_deriv h (by ring)}, which changes only the derivative value and lets
+\texttt{ring} prove the raw$=$clean equality, while \texttt{exact} reconciles the instance diamond by
+defeq.
+\item \texttt{simpa \ldots using (comp result)} fails on the same instance diamond (its final match is
+stricter than \texttt{exact}); using \texttt{exact} on the bound composition succeeds.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Everything analytic is Mathlib: \texttt{HasDerivAt.comp}/\texttt{.mul}/\texttt{.add}/\texttt{.const\_mul}/
+\texttt{.exp}, \texttt{hasDerivAt\_pow}, \texttt{HasDerivAt.congr\_deriv}, \texttt{HasDerivAt.deriv}, and
+\texttt{Real.sq\_sqrt}. The new content is entirely the assembly: the explicit first- and
+second-derivative functions, and the observation that the ODE substitution collapses the second-order
+combination to a $(\beta k^2-2)$ multiple, which the single square-root identity $\beta k^2=2$ kills.
+
+\section{Lessons}
+For a change-of-variables ODE identity, differentiate the substituted function as an \emph{explicit
+function} (via \texttt{funext}$\,\circ\,$\texttt{HasDerivAt.deriv}) rather than manipulating
+\texttt{deriv} pointwise --- the second derivative is then just ``differentiate a named function
+again''. And \texttt{HasDerivAt.congr\_deriv} is the right way to reconcile a combinator's raw
+derivative value with a hand-chosen clean form: it sidesteps both the \texttt{smulRight} wrapper and the
+\texttt{Module}-instance diamond that defeat \texttt{convert} and \texttt{simpa}.
+
+\section{Follow-ups}
+The remaining \S4 items rest on the positive-order $D_n$ (Hermite$\times$Gaussian), which Mathlib does
+not have as a special function though it \emph{does} have the (probabilist) Hermite polynomials:
+\texttt{eq:Dn\_hermite} ($D_n(z)=e^{-z^2/4}\mathrm{He}_n(z)$ after the physicist/probabilist bridge) and
+\texttt{lem:qho} (the quantum harmonic oscillator). The operator identity $[b,b^\dagger]=1$ needs a Weyl
+algebra framework.
+\end{document}
