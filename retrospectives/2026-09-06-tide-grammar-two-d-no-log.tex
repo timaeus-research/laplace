@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{No $\log n$ when the candidate exponents differ:\\
+the $d=2$, $h=(0,1)$ chart integral in closed form}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The companion of the first-$\log n$ theorem. For $k=(1,1)$, $h=(0,1)$ the candidate exponents are
+$\mu_1=\tfrac12<\mu_2=1$, so the paper predicts leading exponent $\min=\tfrac12$ with multiplicity $1$
+and no logarithm. We prove the \emph{exact} chart formula
+\[
+Z(n)=\int_0^b\!\!\int_0^b v\,e^{-\beta n(uv)^2+\beta\sqrt n\,uv\,a}\,dv\,du
+=b\,n^{-1/2}F_0(L)-n^{-1}\frac{F_1(L)}b,\qquad L=\sqrt n\,b^2,
+\]
+with $F_0=\int_0^xf$, $F_1=\int_0^xsf(s)\,ds$, hence $|Z(n)-bA\,n^{-1/2}|\le(2M/b)n^{-1}$ and
+$Z(n)\sim\tfrac{b}{2}S_{1/2}(a)\,n^{-1/2}$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+A second GPT-6 Astra consult (\texttt{tide-log/gpt6\_gen2d\_v1.md}) gave the general two-dimensional
+reduction $Z(n)=\tfrac{n^{-p_1/2}B_2^{p_2-p_1}}{k_1k_2}\int_0^Lx^{p_1-p_2-1}F_{p_2-1}(x)\,dx$ with
+$p_i=(h_i+1)/k_i$, and the dichotomy: equal $p_i$ gives $\int F/x\sim A\log L$ (unit~35), unequal
+$p_i$ gives the exact noncritical identity $\int_0^Lx^{p-q-1}F_{q-1}=\frac{L^{p-q}F_{q-1}(L)-F_{p-1}(L)}{p-q}$
+and no logarithm. The instance $k=(1,1)$, $h=(0,1)$ ($p_1=1$, $p_2=2$) needs only the unweighted
+primitives $F_0,F_1$, so it is the natural first noncritical case.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem quadPowerPrimitive_eq (β a L : ℝ) (hβ : 0 < β) (hL : 0 < L) :
+    quadPowerPrimitive β a L = quadPrimitive β a L - quadMomentPrimitive β a L / L
+theorem twoDIntegralH01_exact ... :
+    twoDIntegralH01 β a b n = b * (√n)⁻¹ * F₀(√n b²) - n⁻¹ * b⁻¹ * F₁(√n b²)
+theorem twoDIntegralH01_sub_le ... :
+    |twoDIntegralH01 β a b n - b * quadMass β a * (√n)⁻¹| ≤ 2 * quadMoment β a / b * n⁻¹
+theorem twoDIntegralH01_isEquivalent (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) :
+    (fun n => twoDIntegralH01 β a b n) ~[atTop]
+      fun n => b * fluctuation β (1/2) a / 2 * n ^ (-(1/2 : ℝ))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The inner $v$-integral with weight $v$ is $c^{-2}F_1(cb)$, $c=\sqrt n\,u$
+(\texttt{integral\_comp\_mul\_left} with the kernel $x\mapsto xf(x)$); the outer integral becomes
+$(b/\sqrt n)K(\sqrt nb^2)$ with $K(L)=\int_0^Lx^{-2}F_1(x)\,dx$. The identity $K(L)=F_0(L)-F_1(L)/L$ is
+proved without integration by parts at the singular endpoint: the difference $G$ has derivative
+$x^{-2}F_1-f+(x\cdot xf-F_1)/x^2=0$ on $(0,\infty)$ (the primitive derivatives from
+\texttt{Continuous.integral\_hasStrictDerivAt}, that of $K$ from
+\texttt{intervalIntegral.integral\_hasDerivAt\_right} since the integrand is bounded near $0$ and
+continuous at $L>0$), so $G(t)=G(1)$ by \texttt{integral\_eq\_sub\_of\_hasDerivAt} on $[1,t]$; and
+$|G(t)|\le2Et$ on $(0,1]$ forces $G(1)=0$. The asymptotic follows from $0\le A-F_0(L)\le M/L$ (unit~35)
+and $F_1\le M$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{rw [← hss]} with \texttt{hss : √n * √n = n} rewrote \emph{every} $n$, including the one
+inside $\sqrt n$, producing $\sqrt{\sqrt n^2}$; instead normalise with \texttt{ring\_nf} and rewrite
+\texttt{Real.sq\_sqrt} forwards.
+\item \texttt{convert} on a \texttt{HasDerivAt} between a $\lambda$-function and a Pi-expression left
+an instance-mismatch goal; define $G$ in Pi form (\texttt{(K - F₀) + F₁ / id}) and use
+\texttt{HasDerivAt.congr\_deriv}, keeping a separate \texttt{hGapp} for the pointwise unfolding.
+\item The \texttt{IntervalIntegrable.mono\_fun} bound arrives as an un-beta-reduced \texttt{≤ᵐ}; use
+\texttt{(ae\_restrict\_iff' measurableSet\_uIoc).2}, \texttt{Set.uIoc\_of\_le}, then \texttt{beta\_reduce}.
+\item \texttt{ContinuousAt.inv₀} needs \texttt{(fun x => id x \^{} 2) x ≠ 0}; \texttt{positivity} cannot
+see through the redex --- pass \texttt{pow\_ne\_zero 2 hx0.ne'} (defeq).
+\item After \texttt{abs\_mul} splits a product of three factors, rewrite each factor's absolute value
+with \texttt{simp only} rather than a positional \texttt{rw}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integral\_hasDerivAt\_right}, \texttt{Continuous.integral\_hasStrictDerivAt},
+\texttt{integral\_eq\_sub\_of\_hasDerivAt}, \texttt{HasDerivAt.div}, \texttt{integral\_id},
+\texttt{norm\_integral\_le\_of\_norm\_le\_const}, \texttt{integral\_comp\_mul\_left}. New: the noncritical
+power-primitive identity and the exact closed form of a two-dimensional standard integral in terms of
+the kernel primitives, exhibiting multiplicity one.
+
+\section{Lessons}
+For identities between primitives, ``zero derivative on $(0,\infty)$ plus a bound at $0^+$'' is a robust
+substitute for integration by parts with a singular endpoint. Together with unit~35 this gives both
+halves of the two-dimensional multiplicity criterion in concrete instances.
+
+\section{Follow-ups}
+General $(k_1,k_2)$, $(h_1,h_2)$ via the weighted primitive $F_\gamma$ (real weights, power
+substitutions), the next-order term in the log case, and $d\ge3$.
+\end{document}
