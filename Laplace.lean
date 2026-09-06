@@ -173,3 +173,4 @@ import Laplace.Grammar.OrderDerivative
 import Laplace.Grammar.ParabolicCylinderZero
 import Laplace.Grammar.LogInsertions
 import Laplace.Grammar.LogShift
+import Laplace.Grammar.LogODE
