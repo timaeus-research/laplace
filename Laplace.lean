@@ -217,3 +217,4 @@ import Laplace.Grammar.IterChartExpansion
 import Laplace.Grammar.BoxIntegral
 import Laplace.Grammar.GeneralTower
 import Laplace.Grammar.PolyLogClass
+import Laplace.Grammar.SortedTower
