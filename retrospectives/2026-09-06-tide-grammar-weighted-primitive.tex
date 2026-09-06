@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{General $(k,h)$ in two dimensions:\\
+$Z(n)=\dfrac{n^{-p_1/2}\,b^{k_2(p_2-p_1)}}{k_1k_2}\int_0^{\sqrt n\,b^{k_1+k_2}}x^{p_1-p_2-1}F_{p_2-1}(x)\,dx$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units~35--43 kept $k=(1,\dots,1)$. This unit proves the exact two-dimensional reduction for arbitrary
+$k=(k_1,k_2)$ and $h=(h_1,h_2)$, in the form proposed by the GPT-6 Astra consult (identity~(5) of
+\texttt{tide-log/gpt6\_gen2d\_v1.md}): with $p_i=(h_i+1)/k_i$ and the weighted primitives
+$F_\gamma(x)=\int_0^xt^\gamma f(t)\,dt$ of the quadratic kernel,
+\[
+Z(n)=\frac{1}{k_1k_2}\,n^{-p_1/2}\,b^{k_2(p_2-p_1)}\int_0^{\sqrt n\,b^{k_1+k_2}}x^{p_1-p_2-1}F_{p_2-1}(x)\,dx
+\]
+for every $n>0$. The candidate exponents of \texttt{thm:TaylorTree} are $p_i/2$; the integral converges
+iff $p_1<p_2$, grows logarithmically iff $p_1=p_2$, and is dominated by the other coordinate iff
+$p_1>p_2$. Verified numerically to machine precision in four configurations including $k_i>1$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Two changes of variables suffice. The chart power substitution
+$\int_0^bu^hg(u^k)\,du=\tfrac1k\int_0^{b^k}s^{(h+1)/k-1}g(s)\,ds$ converts each coordinate's monomial
+weight into a real power of the new variable, and the power-weighted scaling
+$\int_0^Ls^\gamma G(ds)\,ds=d^{-(\gamma+1)}\int_0^{dL}x^\gamma G(x)\,dx$ moves the $n$- and
+$u$-dependence out of the kernel. Applied inside-out, the inner integral becomes
+$(1/k_2)\,u^{h_1}(\sqrt n\,u^{k_1})^{-p_2}F_{p_2-1}(\sqrt n\,u^{k_1}b^{k_2})$, and the outer integral is
+one more substitution and one more scaling.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integral_Ioc_pow_mul_comp_pow (h k : ℕ) (b : ℝ) (g : ℝ → ℝ) (hk : 0 < k) (hb : 0 < b) :
+    (∫ u in Ioc 0 b, u ^ h * g (u ^ k))
+      = 1 / (k : ℝ) * ∫ s in Ioc 0 (b ^ k), s ^ (((h : ℝ) + 1) / k - 1) * g s
+theorem integral_Ioc_rpow_mul_comp_mul_left (γ d L : ℝ) (G : ℝ → ℝ) (hd : 0 < d) (hL : 0 ≤ L) :
+    (∫ s in Ioc 0 L, s ^ γ * G (d * s)) = d ^ (-(γ + 1)) * ∫ x in Ioc 0 (d * L), x ^ γ * G x
+noncomputable def weightedPrimitive (β a γ x : ℝ) : ℝ := ∫ t in Ioc 0 x, t ^ γ * quadKernel β a t
+theorem twoDGeneral_eq ... (hn : 0 < n) (hb : 0 < b) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) :
+    twoDGeneral β a b n h₁ h₂ k₁ k₂
+      = 1 / ((k₁ : ℝ) * k₂)
+        * (n ^ (-(((h₁ : ℝ) + 1) / k₁ / 2))
+          * b ^ ((k₂ : ℝ) * (((h₂ : ℝ) + 1) / k₂ - ((h₁ : ℝ) + 1) / k₁)))
+        * ∫ x in Ioc 0 (Real.sqrt n * b ^ (k₁ + k₂)),
+            x ^ (((h₁ : ℝ) + 1) / k₁ - ((h₂ : ℝ) + 1) / k₂ - 1)
+              * weightedPrimitive β a (((h₂ : ℝ) + 1) / k₂ - 1) x
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The power substitution is Mathlib's half-line lemma \texttt{integral\_comp\_rpow\_Ioi\_of\_pos}
+applied to the indicator of $(0,b^k]$: the pointwise identity
+$kx^{k-1}\cdot\tfrac1k(x^k)^{(h+1)/k-1}=x^h$ and the equivalence $x^k\le b^k\iff x\le b$ turn the
+substituted indicator into the indicator of $(0,b]$, and \texttt{setIntegral\_indicator} converts
+both sides back to set integrals. No integrability hypotheses are needed because the lemma is a
+measure-preservation statement. The scaling is \texttt{intervalIntegral.integral\_comp\_mul\_left}
+after the pointwise factorisation $s^\gamma=d^{-\gamma}(ds)^\gamma$. The two-dimensional theorem
+composes these with the kernel identity $e^{-\beta nt^2+\beta\sqrt n\,ta}=f(\sqrt n\,t)$; the
+exponents $p_i$ and the scale $d=\sqrt n\,b^{k_2}$ are introduced as opaque variables (via
+\texttt{obtain ⟨p, hp⟩ : ∃ p, p = …}) so that \texttt{ring} treats them as atoms, and the constant
+$(\sqrt n)^{-p_2}d^{-(p_1-p_2)}=n^{-p_1/2}b^{k_2(p_2-p_1)}$ is assembled from three one-line
+\texttt{rpow} identities.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{integral\_comp\_rpow\_Ioi\_of\_pos} takes the function implicitly on this pin; pass
+it as \texttt{(g := G)}. This was the only compile error.
+\item Folding a compound exponent with \texttt{set} would also fold it inside later-rewritten
+terms inconsistently; opaque \texttt{obtain} variables plus \texttt{rw [← hp]} at the two places new
+occurrences appear kept every atom syntactically identical for \texttt{ring}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integral\_comp\_rpow\_Ioi\_of\_pos}, \texttt{setIntegral\_indicator},
+\texttt{pow\_le\_pow\_iff\_left₀}, \texttt{Real.mul\_rpow}, \texttt{Real.rpow\_natCast},
+\texttt{intervalIntegral.integral\_comp\_mul\_left}. New: the weighted primitives, both substitution
+lemmas in chart form, and the exact general two-dimensional reduction.
+
+\section{Lessons}
+A consult plan that names an explicit identity (here identity~(5)) is worth checking numerically
+\emph{before} formalising, and then formalising verbatim: the four numerical configurations took a
+minute and the Lean proof compiled on the second attempt. Substitutions on bounded charts are best
+done via half-line lemmas and indicators rather than interval-integral change-of-variables lemmas,
+whose derivative hypotheses fail at $u=0$ for $k>1$.
+
+\section{Outcome}
+The two-dimensional standard integral is now reduced exactly for every $(k,h)$. What remains for the
+two-dimensional theory is the asymptotics of $\int_0^Lx^{p_1-p_2-1}F_{p_2-1}$ in the three regimes;
+the $p_1=p_2$ case needs $A_\gamma-F_\gamma(x)\le A_{\gamma+1}/x$, the analogue of unit~35's
+$A-F(x)\le M/x$.
+\end{document}
