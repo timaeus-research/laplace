@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The two-dimensional $\log n$ asymptotic as a genuine double integral}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+A short companion to unit~35: the two-dimensional standard integral is identified with the integral
+over the product set $(0,b]^2\subseteq\mathbb R^2$ against two-dimensional Lebesgue measure, so that the
+first-$\log n$ theorem reads exactly in the paper's form
+\[
+\int_{(0,b]^2}e^{-\beta n(uv)^2+\beta\sqrt n\,uv\,a}\,d(u,v)\;\sim\;\frac{S_{1/2}(a)}4\,n^{-1/2}\log n.
+\]
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Unit~35 proved the asymptotic for the iterated integral, deliberately avoiding Fubini. The paper's
+standard integral is $\int_{[0,b]^d}$; matching that form is a one-lemma Fubini step, cheap because the
+integrand is continuous and the chart is compact.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def twoDIntegralProd (β a b n : ℝ) : ℝ :=
+  ∫ z in Ioc (0:ℝ) b ×ˢ Ioc (0:ℝ) b,
+    Real.exp (-β * n * (z.1 * z.2) ^ 2 + β * Real.sqrt n * (z.1 * z.2) * a)
+
+theorem twoDIntegralProd_eq (β a b n : ℝ) : twoDIntegralProd β a b n = twoDIntegral β a b n
+theorem twoDIntegralProd_isEquivalent (β a b : ℝ) (hβ : 0 < β) (hb : 0 < b) :
+    (fun n => twoDIntegralProd β a b n) ~[atTop]
+      fun n => fluctuation β (1/2) a / 4 * (n ^ (-(1/2 : ℝ)) * Real.log n)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Lebesgue measure on $\mathbb R^2$ is definitionally the product measure, and
+\texttt{Measure.prod\_restrict} identifies the restriction to $S\times T$ with the product of
+restrictions; \texttt{integral\_prod} then turns the double integral into the iterated one, given
+integrability on the product, which follows from continuity on the compact $[0,b]^2$
+(\texttt{ContinuousOn.integrableOn\_compact}, \texttt{IsCompact.prod}) and monotonicity of
+\texttt{IntegrableOn} in the set. The asymptotic is transported by \texttt{funext}.
+
+\section{Roadblocks and resolutions}
+None; first-try compile. Two idioms: rewrite the restricted measure into the product of restrictions
+\emph{before} applying \texttt{integral\_prod}, and check \texttt{volume = volume.prod volume} by
+\texttt{rfl} rather than searching for a lemma.
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{integral\_prod}, \texttt{Measure.prod\_restrict},
+\texttt{ContinuousOn.integrableOn\_compact}, \texttt{IsCompact.prod}, \texttt{Set.prod\_mono}. New: the
+paper-form statement of the two-dimensional $\log n$ asymptotic.
+
+\section{Lessons}
+Prove multivariate asymptotics in iterated form (where one-dimensional tools apply), and add the
+product-measure identification as a separate, trivial lemma afterwards.
+
+\section{Follow-ups}
+General $(k_1,k_2)$, $(h_1,h_2)$ in two dimensions --- multiplicity $2$ exactly when
+$(h_1+1)/(2k_1)=(h_2+1)/(2k_2)$, and the generic (non-log) case otherwise --- and the next-order term.
+\end{document}
