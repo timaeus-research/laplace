@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Perturbations divisible by $u^k$ do not change the leading term:\\
+$Z(a+u^k\tilde J)\sim Z(a)\sim C\,n^{-p/2}(\log n)^m$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The first multiplicity result for non-constant $\xi$. If $\xi(u)=a+u^k\tilde J(u)$ with $\tilde J$
+continuous on the box and $|\tilde J|\le L$, then with $t=\sqrt n\,u^k$ the exponent is
+$\beta ta+\beta t^2\tilde J/\sqrt n$ and the one-term exponential remainder bound gives, for
+$n\ge16L^2$, $|Z(\xi)-Z(a)|\le\frac{4L}{\sqrt n}Z_{\beta/2,2a}(n)$. The right-hand side has the same
+order $n^{-p/2}(\log n)^m$ as $Z(a)$ by unit~59 at $(\beta/2,2a)$, so $Z(\xi)\sim Z(a)$ and the
+multiplicity theorem holds verbatim for such $\xi$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The Taylor tree's higher layers are not individually lower order in general (a perturbation $J$ that
+does not vanish on a minimal divisor component contributes at leading order). Divisibility by $u^k$ is
+the natural sufficient condition: every layer then carries an extra $n^{-p/2}$, and the whole tail is
+controlled at once by $|e^x-1|\le|x|e^{|x|}$ together with $xe^{-x}\le1$.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem exp_pert_abs_le (β a L ε t y : ℝ) (hβ : 0 < β) (hL : 0 ≤ L) (hε : 0 ≤ ε)
+    (hy : |y| ≤ L) (hLε : L * ε ≤ 1 / 4) :
+    |Real.exp (-β * t ^ 2 + β * t * (a + t * y * ε)) - Real.exp (-β * t ^ 2 + β * t * a)|
+      ≤ 4 * L * ε * Real.exp (-(β / 2) * t ^ 2 + β * t * a)
+theorem boxIntegralXi_div_sub_le ... (hnL : 16 * L ^ 2 ≤ n) :
+    |boxIntegralXi β a b (Real.sqrt n) k h (fun u => (∏ i, u i ^ k i) * J u)
+        - boxIntegralFin β a b (Real.sqrt n) k h|
+      ≤ 4 * L / Real.sqrt n * boxIntegralFin (β / 2) (2 * a) b (Real.sqrt n) k h
+theorem boxIntegralXi_div_isEquivalent ...
+    (J : (Fin (D + 2) → ℝ) → ℝ) (hJ : Continuous J) :
+    ∃ (p : ℝ) (m : ℕ) (C : ℝ), 0 < C ∧ (∀ i, p ≤ finExp k h i) ∧
+      m + 1 = (Finset.univ.filter fun i => finExp k h i = p).card ∧
+      (fun n => boxIntegralXi β a b (Real.sqrt n) k h (fun u => (∏ i, u i ^ k i) * J u))
+        ~[atTop] fun n => C * (n ^ (-(p / 2)) * Real.log n ^ m)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Pointwise, $e^{-\beta t^2+\beta ta}|e^{\beta t^2y\varepsilon}-1|\le e^{-\beta t^2+\beta ta}\,
+\beta t^2L\varepsilon\,e^{\beta t^2/4}=4L\varepsilon\,e^{-(\beta/2)t^2+\beta ta}\cdot
+\tfrac{\beta t^2}{4}e^{-\beta t^2/4}$ and the last factor is at most $1$
+(\texttt{Real.add\_one\_le\_exp}). Integrating over the box (integrands continuous, hence
+integrable; the pointwise bound holds almost everywhere by \texttt{ae\_restrict\_mem}) gives the
+perturbation bound. For the asymptotic, unit~59 is applied at $(\beta,a)$ and at $(\beta/2,2a)$; the
+two minima and multiplicities coincide (both are read off from $(k,h)$), the difference is
+$O(n^{-1/2}Z_{\beta/2,2a})=o(Z(a))$ via \texttt{IsLittleO.mul\_isBigO} with
+$n^{-1/2}=o(1)$, and \texttt{IsEquivalent.add\_isLittleO} concludes.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item A \texttt{set} of $t=\sqrt n\prod u^k$ before unfolding the integrands did not fold the
+later-introduced occurrences, and a subsequent rewrite of $\prod u^k$ hit the inside of $t$; introduce
+$t$ as an opaque variable after unfolding and rewrite $\sqrt n\prod u^k$ into it.
+\item Nonnegativity of the box integral needs the almost-everywhere box membership
+(\texttt{integral\_nonneg\_of\_ae}), since $\prod u_i^{h_i}$ is not globally nonnegative.
+\item \texttt{isLittleO\_one\_iff} takes the codomain type explicitly.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{Real.add\_one\_le\_exp}, \texttt{Real.exp\_le\_exp}, \texttt{norm\_integral\_le\_of\_norm\_le},
+\texttt{integral\_nonneg\_of\_ae}, \texttt{isLittleO\_one\_iff}, \texttt{tendsto\_rpow\_neg\_atTop},
+\texttt{IsLittleO.mul\_isBigO}, \texttt{IsEquivalent.add\_isLittleO}. New: the perturbation bound and
+the multiplicity theorem for $\xi=a+u^k\tilde J$.
+
+\section{Lessons}
+Comparing $Z(\xi)$ with a constant-$\xi$ integral at a \emph{different} temperature $(\beta/2,2a)$ is
+the trick that makes the remainder uniform: the extra $e^{\beta t^2/4}$ from the perturbation is
+absorbed into the kernel, and the asymptotic theory for constant $\xi$ is available at every
+temperature.
+
+\section{Outcome}
+The multiplicity theorem now covers a genuine class of non-constant $\xi$: those whose variation is
+divisible by the resolution monomial $u^k$. Perturbations that do not vanish on the minimal divisor
+components remain part of the leading coefficient (the state-density picture of the paper).
+\end{document}
