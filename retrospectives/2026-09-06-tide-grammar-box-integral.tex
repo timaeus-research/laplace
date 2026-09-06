@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The chart integral as a genuine $d$-dimensional integral:\\
+$\int_{(0,b]^d}\prod u_i^{h_i}\,f\big(c\prod u_i^{k_i}\big)\,du=\texttt{iterChartGen}\,d\,c$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The recursive \texttt{iterChartGen} of unit~50 integrates one coordinate at a time; the paper writes
+the standard integral over the box $(0,b]^d\subseteq\mathbb R^d$. This unit defines the box integral as
+a Bochner integral on $\mathrm{Fin}\,d\to\mathbb R$ against the product of the restricted Lebesgue
+measures and proves it equal to the recursion, so that the multiplicity theorems of units~50 and~52
+hold verbatim in paper form (\texttt{boxIntegral\_isEquivalent},
+\texttt{boxIntegral\_mixed\_isEquivalent}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Splitting off the last coordinate of $\mathrm{Fin}(d+1)\to\mathbb R$ is the measurable equivalence
+\texttt{piFinSuccAbove} at \texttt{Fin.last d}, which is measure preserving from the product of the
+$d+1$ restricted measures to the product of one restricted measure with the product of the other $d$
+(\texttt{measurePreserving\_piFinSuccAbove}). Fubini on this product reduces the $(d+1)$-fold integral
+to $\int_0^bu^{h_d}\,(\text{$d$-fold integral at scale }cu^{k_d})\,du$, which is the recursion.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def boxMeasure (b : ℝ) (d : ℕ) : Measure (Fin d → ℝ) :=
+  Measure.pi fun _ => (volume : Measure ℝ).restrict (Ioc 0 b)
+noncomputable def boxIntegral (β a b c : ℝ) (k h : ℕ → ℕ) (d : ℕ) : ℝ :=
+  ∫ u : Fin d → ℝ, (∏ i, u i ^ h i) * quadKernel β a (c * ∏ i, u i ^ k i) ∂(boxMeasure b d)
+theorem boxIntegral_eq_iterChartGen (β a b : ℝ) (k h : ℕ → ℕ) (d : ℕ) (c : ℝ) :
+    boxIntegral β a b c k h d = iterChartGen β a b k h d c
+theorem boxIntegral_isEquivalent ... :
+    (fun n => boxIntegral β a b (Real.sqrt n) k h (d + 2)) ~[atTop]
+      fun n => (∏ i ∈ Finset.range (d + 2), (1 : ℝ) / k i)
+        * (weightedMass β a (p - 1) / (2 ^ (d + 1) * ((d + 1).factorial : ℝ)))
+        * (n ^ (-(p / 2)) * Real.log n ^ (d + 1))
+theorem boxIntegral_mixed_isEquivalent ...
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Induction on $d$ generalising the scale $c$. For $d=0$ the product measure over the empty index is a
+Dirac measure (\texttt{Measure.pi\_of\_empty}) and the integral is the kernel at $c$. For the step,
+the integrand is rewritten as $g\circ e$ with $g(t,v)=(\prod_jv_j^{h_j})t^{h_d}\,f(c\prod_jv_j^{k_j}t^{k_d})$
+using \texttt{Fin.prod\_univ\_castSucc} and the two definitional facts $(eu).1=u(\mathrm{last})$,
+$(eu).2\,j=u(\mathrm{castSucc}\,j)$ (\texttt{Fin.succAbove\_last\_apply}); then
+\texttt{MeasurePreserving.integral\_comp'} and \texttt{integral\_prod}. Integrability of $g$ on the
+product of restricted measures is obtained by identifying that measure with Lebesgue measure restricted
+to the box (\texttt{Measure.prod\_restrict}, \texttt{Measure.restrict\_pi\_pi}) and using continuity on
+the compact $[0,b]\times[0,b]^d$. The inner integral is the induction hypothesis at scale $cu^{k_d}$
+after pulling out $u^{h_d}$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{simp} would not unfold the structure-literal coercion of \texttt{piFinSuccAbove}; the
+two component identities are \texttt{rfl} up to \texttt{succAbove\_last\_apply}, so state them as
+\texttt{have}s and \texttt{simp only} with them under the product binder.
+\item \texttt{fun\_prop} does not know \texttt{quadKernel}; assemble continuity by hand from
+\texttt{continuous\_finsetProd}, \texttt{continuous\_apply}, and \texttt{quadKernel\_continuous}.
+\item \texttt{Measure.volume\_pi} is not the name on this pin; since \texttt{volume} on a pi type is
+definitionally \texttt{Measure.pi}, a \texttt{change} to the \texttt{Measure.pi} form suffices before
+\texttt{restrict\_pi\_pi}.
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib: \texttt{measurePreserving\_piFinSuccAbove}, \texttt{MeasurePreserving.integral\_comp'},
+\texttt{integral\_prod}, \texttt{Measure.pi\_of\_empty}, \texttt{integral\_dirac},
+\texttt{Measure.restrict\_pi\_pi}, \texttt{Fin.prod\_univ\_castSucc}, \texttt{isCompact\_univ\_pi}. New:
+the box integral and its identification with the recursion.
+
+\section{Lessons}
+Keeping the recursion as the working definition and proving the paper-form identity once at the end
+was the right order: all analysis was done on one-dimensional objects, and the $d$-dimensional
+measure theory is confined to a single induction.
+
+\section{Outcome}
+The multiplicity theorems for the chart standard integral with arbitrary $(k,h)$ are now stated on
+$(0,b]^d\subseteq\mathbb R^d$ exactly as in the paper, in the all-equal and one-noncritical regimes.
+\end{document}
