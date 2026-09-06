@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Differentiating the fluctuation function in its order:
+$\partial_\lambda S_\lambda(a)=\int_0^\infty (\log t)\,t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\,dt$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-06}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 11 of the grammar-paper \S4 autoformalisation: the order-derivative identity
+\texttt{eq:log\_lambda\_derivative} at $k=1$, $\partial_\lambda S_\lambda(a)=\int_0^\infty(\log t)
+t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\,dt$. Since $\partial_\lambda t^{\lambda-1}=(\log t)
+t^{\lambda-1}$, differentiating $S_\lambda$ in its \emph{order} inserts a $\log t$ under the integral;
+this is the analytic foundation of the paper's log-insertion machinery (\texttt{lem:log\_shift},
+\texttt{prop:LogODE}, \texttt{lem:log\_generating}), which encodes SLT pole multiplicities. Proved by
+differentiation under the integral sign, dominated by a $|\log t|$-weighted fluctuation integrand whose
+integrability we establish. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+Units 1--10 differentiated $S_\lambda$ in the \emph{argument} $a$ (the ladder). This unit differentiates
+in the \emph{order} $\lambda$ --- a different analytic problem, because $\lambda$ sits in the exponent of
+$t^{\lambda-1}$ and the derivative integrand acquires a $\log t$ factor that is singular at both ends of
+$(0,\infty)$. It is the last piece of \S4 that is pure real analysis rather than operator algebra.
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_log_le_rpow_add (t ε : ℝ) (ht : 0 < t) (hε : 0 < ε) :
+    |Real.log t| ≤ (t ^ ε + t ^ (-ε)) / ε
+
+theorem log_fluctuation_integrableOn (β c a : ℝ) (hβ : 0 < β) (hc : 0 < c) :
+    IntegrableOn (fun t => |Real.log t| * t^(c-1) * Real.exp (-β*t + β*a*Real.sqrt t)) (Set.Ioi 0)
+
+theorem hasDerivAt_fluctuation_order (β lam a : ℝ) (hβ : 0 < β) (hlam : 0 < lam) :
+    HasDerivAt (fun l => fluctuation β l a)
+      (∫ t in Set.Ioi 0, Real.log t * t^(lam-1) * Real.exp (-β*t + β*a*Real.sqrt t)) lam
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Mathlib's parametric-differentiation lemma\footnote{\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}.}
+needs: the pointwise $\lambda$-derivative of the integrand, a dominating function valid on a
+neighbourhood of $\lambda$, and its integrability.
+\begin{itemize}
+\item \textbf{Pointwise.} $\partial_\lambda t^{\lambda-1}=t^{\lambda-1}\log t$ from
+\texttt{Real.hasStrictDerivAt\_const\_rpow} (derivative of $x\mapsto t^x$) composed with $\lambda\mapsto
+\lambda-1$; multiply by the ($\lambda$-independent) Gaussian factor.
+\item \textbf{Domination.} On $\mathrm{ball}\,\lambda\,(\lambda/2)$ every order $l\in(\lambda/2,
+3\lambda/2)$ is positive, and $t^{l-1}\le t^{\lambda/2-1}+t^{3\lambda/2-1}$ (monotone/antitone in the
+exponent according as $t\gtrless1$). So $\|(\log t)t^{l-1}e^{\cdots}\|\le|\log t|(t^{\lambda/2-1}+
+t^{3\lambda/2-1})e^{\cdots}$, a sum of two $|\log t|$-weighted fluctuation integrands.
+\item \textbf{Log integrability.} For $c>0$, $|\log t|\,t^{c-1}e^{-\beta t+\beta a\sqrt t}$ is integrable:
+bound $|\log t|\le(t^{\varepsilon}+t^{-\varepsilon})/\varepsilon$ with $\varepsilon=c/2$
+(\texttt{abs\_log\_le\_rpow\_add}, from \texttt{Real.log\_le\_rpow\_div}), so the integrand is
+$\le(1/\varepsilon)(t^{c-1+\varepsilon}+t^{c-1-\varepsilon})e^{-\beta t+\beta a\sqrt t}$; the AM--GM
+phase bound $\beta a\sqrt t\le\tfrac\beta2 t+\tfrac\beta2 a^2$ reduces each term to
+\texttt{integrableOn\_rpow\_mul\_exp\_neg\_mul\_rpow} at $p=1$ (exponents $c-1\pm\varepsilon>-1$).
+\end{itemize}
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \textbf{The derivative integrand is signed.} $\log t$ is negative for $t<1$, so
+$\|(\log t)t^{l-1}e^{\cdots}\|$ must be handled by \texttt{abs\_mul} down to
+$|\log t|\cdot t^{l-1}\cdot e^{\cdots}$ (the last two factors positive, \texttt{abs\_of\_pos}) ---
+\emph{not} \texttt{abs\_of\_nonneg} on the whole product, which is false.
+\item \textbf{The $|\log t|$ bound is two-sided.} \texttt{Real.log\_le\_rpow\_div} gives only the upper
+side; the lower is recovered by applying it to $t^{-1}$ (\texttt{Real.log\_inv},
+\texttt{Real.inv\_rpow}$+$\texttt{rpow\_neg}), yielding the symmetric $t^{\varepsilon}+t^{-\varepsilon}$
+bound valid on all of $(0,\infty)$.
+\item \texttt{Real.hasStrictDerivAt\_const\_rpow.hasDerivAt.comp} carries a \texttt{Module}-instance
+diamond; \texttt{simp only [Function.comp, mul\_one] at h; exact h} lets defeq reconcile it (as in the
+earlier Weber unit).
+\item Exponent arithmetic $t^{c-1}t^{-(c/2)}=t^{c-1-c/2}$ needs the RHS exponent pre-normalised to
+$(c-1)+(-(c/2))$ before \texttt{Real.rpow\_add}, since $a-b$ and $a+(-b)$ are defeq but not syntactically
+equal (so \texttt{rpow\_add} alone leaves the goal open).
+\end{itemize}
+
+\section{What was Mathlib, what was new}
+Mathlib supplied the parametric-FTC lemma, \texttt{Real.log\_le\_rpow\_div},
+\texttt{Real.hasStrictDerivAt\_const\_rpow}, the rpow monotonicity lemmas, and
+\texttt{integrableOn\_rpow\_mul\_exp\_neg\_mul\_rpow}. New: the two-sided log--power bound, the
+$|\log t|$-weighted fluctuation integrability (a reusable analytic lemma), and the order-derivative
+itself --- the first differentiation of $S_\lambda$ in its order rather than its argument.
+
+\section{Lessons}
+Differentiating in an exponent parameter is dominated the same way as in an ordinary parameter, but the
+$\log$ that drops out demands a $|\log|$-integrability lemma Mathlib lacks; the clean route is the
+symmetric power sandwich $|\log t|\le(t^\varepsilon+t^{-\varepsilon})/\varepsilon$, which turns the
+domination into two ordinary $t^q e^{-bt}$ integrals. Keep the derivative integrand's sign in mind: its
+norm factorises through \texttt{abs\_mul}, never \texttt{abs\_of\_nonneg}.
+
+\section{Follow-ups}
+With the order-derivative in hand, \texttt{prop:LogODE} (differentiate the Weber ODE $k$ times in
+$\lambda$) and \texttt{lem:log\_shift}/\texttt{lem:log\_generating} (which reorganise
+$\partial_\lambda^k$) are within reach --- they iterate this identity. The remaining ladder-operator and
+commutator statements still want a Weyl-algebra framework.
+\end{document}
