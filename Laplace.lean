@@ -331,3 +331,4 @@ import Laplace.Grammar.HeadlinePosteriorRates
 import Laplace.Grammar.WeightedPowerSubstitution
 import Laplace.Grammar.ProductDensityHelpers
 import Laplace.Grammar.ProductDensity
+import Laplace.Grammar.GammaLogAsymptotic
