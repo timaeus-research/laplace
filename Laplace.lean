@@ -340,3 +340,4 @@ import Laplace.Grammar.DominatedCoordinate
 import Laplace.Grammar.WeightedMixedReal
 import Laplace.Grammar.WeightedMixedAsymptotic
 import Laplace.Grammar.MonomialMixedAsymptotic
+import Laplace.Grammar.HeadlineMonomialMixed
