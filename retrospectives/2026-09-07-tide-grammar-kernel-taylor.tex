@@ -1,0 +1,65 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The second-order Taylor bound for the kernel amplitude}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For the amplitude $F(u,s)=\eta(u)e^{\beta s\xi(u)}$ with $\xi,\eta$ admitting first-order Taylor
+expansions at $0$ with quadratic remainders on $[0,b]$, we prove
+$|F(u,s)-F(0,s)-u\,\partial_uF(0,s)|\le C\,u^2(1+s)^2e^{3\beta Ls}$ for $u\in[0,b]$, $s\ge0$, with
+$\partial_uF(0,s)=e^{\beta sa}(\eta_1+\beta s\eta_0a_1)$ and an explicit $C$. This is the input for the
+second-order asymptotics of the chart integral (Astra's step~3). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_exp_sub_one_sub_id_le' (t : ℝ) :
+    |Real.exp t - 1 - t| ≤ 3 * t ^ 2 * Real.exp |t|
+theorem abs_exp_sub_one_le' (t : ℝ) : |Real.exp t - 1| ≤ |t| * Real.exp |t|
+theorem kernel_taylor_bound (β b L K M M₁ L₁ a a₁ η₀ η₁ : ℝ) (ξ η : ℝ → ℝ) (hβ : 0 < β)
+    (hb : 0 < b) (hK : 0 ≤ K) (hM : 0 ≤ M) (hM₁ : 0 ≤ M₁) (hL₁ : 0 ≤ L₁)
+    (hξL : ∀ u ∈ Icc (0 : ℝ) b, |ξ u| ≤ L) (hη₀ : |η₀| ≤ M) (hη₁ : |η₁| ≤ M₁) (ha₁ : |a₁| ≤ L₁)
+    (hξT : ∀ u ∈ Icc (0 : ℝ) b, |ξ u - a - u * a₁| ≤ K * u ^ 2)
+    (hηT : ∀ u ∈ Icc (0 : ℝ) b, |η u - η₀ - u * η₁| ≤ K * u ^ 2)
+    (u s : ℝ) (hu : u ∈ Icc (0 : ℝ) b) (hs : 0 ≤ s) :
+    |η u * Real.exp (β * s * ξ u) - η₀ * Real.exp (β * s * a)
+        - u * (Real.exp (β * s * a) * (η₁ + β * s * η₀ * a₁))|
+      ≤ (K + M₁ * (L₁ + K * b) * β + 3 * M * β ^ 2 * (L₁ + K * b) ^ 2 + β * K * M)
+        * u ^ 2 * (1 + s) ^ 2 * Real.exp (3 * β * L * s)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Split $F(u,s)-F(0,s)-u\partial_uF(0,s)=(\eta-\eta_0-u\eta_1)e^{\beta s\xi}
++u\eta_1(e^{\beta s\xi}-e^{\beta sa})+\eta_0\big(e^{\beta s\xi}-e^{\beta sa}-\beta sua_1e^{\beta sa}\big)$
+and write $e^{\beta s\xi(u)}=e^{\beta sa}e^{t}$ with $t=\beta s(\xi(u)-a)$, $|t|\le\beta sXu$,
+$X=L_1+Kb$. The third piece is $e^{\beta sa}(e^t-1-t)+e^{\beta sa}\beta s(\xi-a-ua_1)$; the elementary
+bounds $|e^t-1|\le|t|e^{|t|}$ (from the unit-76 mean-value bound) and $|e^t-1-t|\le3t^2e^{|t|}$ (Mathlib's
+bound for $|t|\le1$, trivial otherwise) together with $e^{\beta sa}e^{|t|}\le e^{3\beta Ls}$ give the
+result; finally $1,s,s^2\le(1+s)^2$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{gcongr} on $3t^2\cdot(E_0e^{|t|})\le3(\beta sXu)^2\cdot E_x$ tries to prove $0\le t$; use
+\texttt{sq\_abs} and \texttt{pow\_le\_pow\_left₀} on $|t|$ explicitly.
+\item In a large context \texttt{nlinarith} for $s^2\le(1+s)^2$ hits the heartbeat limit; prove such
+facts by the dedicated lemmas (\texttt{one\_le\_pow₀}, \texttt{le\_self\_pow₀},
+\texttt{pow\_le\_pow\_left₀}) and feed \texttt{linarith} the four product inequalities explicitly.
+\end{itemize}
+
+\section{Outcome}
+The kernel Taylor bound is ready to be fed into the density-transfer theorem. Next: the one-dimensional
+second-order theorem $Z(n)=C_0n^{-p/2}+C_1n^{-q/2}+O(n^{-(h+3)/(2k)})$ with
+$C_1=\frac1k[\eta'(0)S_q(a)+\beta\eta(0)\xi'(0)S_{q+1}(a)]$.
+\end{document}
