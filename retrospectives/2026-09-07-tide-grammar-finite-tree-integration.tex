@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The Taylor tree commutes with parameter averaging}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#10 rank~1. An abstract lemma with no analytic content: if for a.e.\ parameter $w$
+$|Z(w)-\sum_{\alpha\in P}N^{-\alpha}(A_\alpha(w)\log N+B_\alpha(w))|\le KR$ with a.e.-bounded,
+a.e.-strongly-measurable coefficients and a nonnegative integrable weight $\varrho$, then
+$|\int Z\varrho-\sum_{\alpha\in P}N^{-\alpha}((\int A_\alpha\varrho)\log N+\int B_\alpha\varrho)|\le KR\int\varrho$
+(\texttt{integral\_finite\_expansion}); no separate integrability of $Z$ is required. Specialised to
+a measurable family of analytic amplitudes with a common envelope, the averaged chart integral has
+the SAME finite Taylor tree with averaged canonical coefficients and the remainder constant
+multiplied by the mass of the weight (\texttt{twoD\_taylor\_tree\_integrated}), and for a
+probability measure the expectation $E[Z_N]$ has the Taylor tree with expected coefficients
+(\texttt{twoD\_taylor\_tree\_expectation}). Measurability in the parameter is a hypothesis here.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integral_finite_expansion {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω)
+    (P : Finset ℝ)
+    (Z : Ω → ℝ) (A B : ℝ → Ω → ℝ) (ϱ : Ω → ℝ) (hϱ0 : ∀ᵐ w ∂μ, 0 ≤ ϱ w) (hϱ : Integrable ϱ μ)
+    (hZm : AEStronglyMeasurable Z μ) (hAm : ∀ α ∈ P, AEStronglyMeasurable (A α) μ)
+    (hBm : ∀ α ∈ P, AEStronglyMeasurable (B α) μ) (KA KB : ℝ → ℝ)
+    (hA : ∀ α ∈ P, ∀ᵐ w ∂μ, |A α w| ≤ KA α) (hB : ∀ α ∈ P, ∀ᵐ w ∂μ, |B α w| ≤ KB α)
+    (K R N : ℝ)
+    (hrem : ∀ᵐ w ∂μ, |Z w - ∑ α ∈ P, N ^ (-α) * (A α w * Real.log N + B α w)| ≤ K * R) :
+    |(∫ w, Z w * ϱ w ∂μ)
+        - ∑ α ∈ P, N ^ (-α) * ((∫ w, A α w * ϱ w ∂μ) * Real.log N + ∫ w, B α w * ϱ w ∂μ)|
+      ≤ K * R * ∫ w, ϱ w ∂μ
+theorem twoD_taylor_tree_integrated {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω)
+    ... (c : Ω → ℕ × ℕ → ℝ → ℝ) (common envelope hypotheses for every w) (ϱ) (hϱ0) (hϱ)
+    (T N : ℝ) (hN : 1 ≤ N)
+    (hZm : AEStronglyMeasurable (fun w => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (c w) b)) μ)
+    (hAm : ∀ α ∈ polesBelowGen ..., AEStronglyMeasurable (fun w => canonA ... α) μ)
+    (hBm : ∀ α ∈ polesBelowGen ..., AEStronglyMeasurable (fun w => canonB ... α) μ) :
+    |(∫ w, twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (c w) b) * ϱ w ∂μ)
+        - ∑ α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T,
+            N ^ (-α) * ((∫ w, canonA ... α * ϱ w ∂μ) * Real.log N
+              + ∫ w, canonB ... α * ϱ w ∂μ)|
+      ≤ uniformTreeConst β b ρ C₀ L p₁ p₂ T h₁ h₂ k₁ k₂ D
+        * (N ^ (-(2 * T)) * (1 + Real.log N)) * ∫ w, ϱ w ∂μ
+theorem twoD_taylor_tree_expectation ... [IsProbabilityMeasure μ] ... :
+    |(∫ w, twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (c w) b) ∂μ)
+        - ∑ α ∈ polesBelowGen ..., N ^ (-α) * ((∫ w, canonA ... α ∂μ) * Real.log N
+              + ∫ w, canonB ... α ∂μ)|
+      ≤ uniformTreeConst β b ρ C₀ L p₁ p₂ T h₁ h₂ k₁ k₂ D
+        * (N ^ (-(2 * T)) * (1 + Real.log N))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Write $E(w)=Z(w)-\sum_\alpha N^{-\alpha}(A_\alpha(w)\log N+B_\alpha(w))$. The a.e.\ bounds make
+$E\varrho$, $A_\alpha\varrho$, $B_\alpha\varrho$ integrable (bounded measurable times integrable),
+hence $Z\varrho$ too, and linearity of the integral gives
+$\int Z\varrho=\int E\varrho+\sum_\alpha N^{-\alpha}(\log N\int A_\alpha\varrho+\int B_\alpha\varrho)$;
+finally $|\int E\varrho|\le\int|E|\varrho\le KR\int\varrho$. The specialisation feeds the uniform
+Taylor tree of unit~135 (remainder bound for every $w$) and the envelope bounds of unit~134 on the
+canonical coefficients (a.e.\ bounds, here everywhere).
+
+\section{Paper-facing meaning}
+
+Astra~\#10's paper-facing message: the Taylor tree is uniform on bounded analytic families
+(unit~135) and commutes with finite-mass averaging, so the per-stratum integral
+$\int Z_w(N)\rho_I(w)\,dw$ over the noncritical coordinates, and the expectation over a random
+amplitude $\eta e^{\beta s\xi_n}$ with a common envelope, have the same finite expansion with
+averaged/expected canonical coefficients. What is NOT yet covered: measurability of the chart
+integral and of the canonical coefficients in the parameter (Astra~\#10 ranks~2--3, via partial sums
+and the series formulas), and anything about $E[\log Z]$ or the fluctuation function, which need
+lower-tail control beyond this deterministic bound.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Integrable.bdd\_mul (hg : Integrable g) (hf : AEStronglyMeasurable f) (∀ᵐ x, ‖f x‖ ≤
+c)} is the a.e.-bounded-times-integrable lemma; it lets one avoid any integrability hypothesis on
+$Z$ itself.
+\item \texttt{Finset.aestronglyMeasurable\_sum} produces the Pi-sum \texttt{∑ i ∈ s, f i}; there is
+no primed pointwise variant on this pin, so transfer with \texttt{.congr} and
+\texttt{Finset.sum\_apply}.
+\item \texttt{norm\_integral\_le\_of\_norm\_le (hg : Integrable g) (∀ᵐ x, ‖f x‖ ≤ g x)} gives
+$|\int f|\le\int g$ after \texttt{← Real.norm\_eq\_abs}.
+\item For a probability measure \texttt{simp} proves \texttt{∫ \_, (1 : ℝ) ∂μ = 1}.
+\end{itemize}
+
+\end{document}
