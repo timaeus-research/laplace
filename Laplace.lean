@@ -287,3 +287,4 @@ import Laplace.Grammar.TaylorTreeNormalisation
 import Laplace.Grammar.AxisFinitePartSeries
 import Laplace.Grammar.MomentSeries
 import Laplace.Grammar.TwoDCutoffGeneral
+import Laplace.Grammar.TwoDCutoffGeneralAnalytic
