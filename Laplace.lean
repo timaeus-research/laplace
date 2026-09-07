@@ -244,3 +244,4 @@ import Laplace.Grammar.BoxBridge
 import Laplace.Grammar.BoxGeneralOrder
 import Laplace.Grammar.DensityTransfer
 import Laplace.Grammar.KernelTaylor
+import Laplace.Grammar.OneDSecondOrder
