@@ -377,3 +377,4 @@ import Laplace.Grammar.HeadlineStochasticAssembly
 import Laplace.Grammar.SignedReflectionGeneral
 import Laplace.Grammar.HeadlineSymmetricPhase
 import Laplace.Grammar.NormalCrossingModel
+import Laplace.Grammar.NormalCrossingData
