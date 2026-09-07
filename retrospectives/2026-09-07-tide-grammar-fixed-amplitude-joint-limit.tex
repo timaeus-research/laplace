@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Joint limit of the normalised chart integrals for deterministic amplitudes}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#13 unit u158. In §4.3 only the phase $\xi_n$ is random; the amplitudes
+$\eta_\varphi=\varphi\cdot\mathrm{prior}\cdot\mathrm{Jac}$ and $\eta_1=\mathrm{prior}\cdot\mathrm{Jac}$
+are deterministic. We model this by \texttt{withY}~$y$, the map on the coefficient-pair space that
+keeps the phase data and replaces the amplitude data by a fixed array $y$ ($1$-Lipschitz). For equal
+starting exponents $p$ the leading exponent has no lower terms, and the pair of normalised chart
+integrals $(Z_{N_n}[\varphi]/s_n,\,Z_{N_n}[1]/s_n)$ with $s_n=N_n^{-p}\log N_n$ converges jointly in
+distribution to $(A_p(X;y_\varphi),A_p(X;y_1))$ whenever the random phase data converge in
+distribution (\texttt{tendstoInDistribution\_normA\_pair}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def withY (ρ) (hρ) (y) (hy : WSummable ρ y) (a : CoeffPair) : CoeffPair :=
+  ofPair ρ hρ (toX ρ a) y (wsummable_toX ρ hρ a) hy
+theorem toX_withY / toY_withY / withY_apply_inl / withY_apply_inr
+theorem norm_withY_sub_le : ‖withY … a - withY … a'‖ ≤ ‖a - a'‖
+theorem lipschitzWith_withY / continuous_withY / measurable_withY
+theorem lowerPart_leading_eq_zero (h₁ h₂ k₁ k₂) (hk₁ hk₂) (p T) (hp₁ hp₂) (A B) (N) :
+    lowerPart (polesBelowGen h₁ h₂ k₁ k₂ p p T) A B p N = 0
+theorem tendstoInMeasure_prodMk_zero (μ) (f g) (hf : TendstoInMeasure μ f l (fun _ => 0))
+    (hg) :
+    TendstoInMeasure μ (fun n ω => (f n ω, g n ω)) l (fun _ => (0, 0))
+theorem tendstoInMeasure_normA_withY_sub ... (hpT : p < 2 * T) (y) (hy) (X) (Z) (hX)
+    (Nseq) (hN) :
+    TendstoInMeasure μ (fun n ω => normA … p (Nseq n) (withY … y hy (X n ω))
+      - coeffA … p (withY … y hy (X n ω))) l (fun _ => 0)
+theorem tendstoInDistribution_normA_pair ... (yφ y₁) (hyφ hy₁) (X) (hXm) (Z) (hX)
+    (Nseq) (hN) :
+    TendstoInDistribution (fun n ω => (normA … p (Nseq n) (withY … yφ … (X n ω)),
+                                        normA … p (Nseq n) (withY … y₁ … (X n ω)))) l
+      (fun ω => (coeffA … p (withY … yφ … (Z ω)), coeffA … p (withY … y₁ … (Z ω))))
+      (fun _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+$\texttt{withY}\,y\,a$ has the same $\mathrm{inl}$-coordinates as $a$ and fixed
+$\mathrm{inr}$-coordinates, so $\|\texttt{withY}\,y\,a-\texttt{withY}\,y\,a'\|\le\|a-a'\|$ termwise.
+The leading exponent $p=\min\Lambda$ has empty lower part. The two normalised chart integrals are
+each the corresponding coefficient plus an error that tends to zero in probability (the argument of
+units~152--153 applied to the pushed-forward data $\texttt{withY}\,y\circ X_n$, which converge in
+distribution by the continuous mapping theorem and are therefore norm-bounded in probability); the
+pair of errors tends to zero in probability, and the pair of coefficients converges jointly by the
+continuous mapping theorem applied to the continuous map
+$a\mapsto(A_p(\texttt{withY}\,y_\varphi\,a),A_p(\texttt{withY}\,y_1\,a))$.
+
+\section{Paper-facing meaning}
+This is the joint numerator/denominator convergence that cor:empirical\_expectation's division
+needs, in the paper's own setting (deterministic amplitudes, random phase). With the quotient
+theorem of unit~157 and the positivity of unit~154 the chart posterior limit follows in the next
+unit, including Astra~\#13's observation that the common factor $\int s^{p-1}e^{-\beta s^2+\beta sx_{00}}ds$
+cancels, so that $Z_n[\varphi]/Z_n[1]\Rightarrow y_{\varphi,00}/y_{1,00}$.
+
+\section{Lean notes}
+\begin{itemize}
+\item Coordinates of \texttt{ofPair} are exposed by \texttt{change} (the underlying function is a
+\texttt{Sum.elim}); \texttt{lp.coeFn\_sub} then \texttt{Pi.sub\_apply} for differences.
+\item \texttt{LipschitzWith.of\_dist\_le\_mul} with \texttt{NNReal.coe\_one}.
+\item \texttt{Prod.mk\_sub\_mk} and \texttt{Prod.norm\_def} ($\|(a,b)\|=\max(\|a\|,\|b\|)$) reduce the
+pair convergence in measure to the components via \texttt{measure\_union\_le}.
+\item For \texttt{ENNReal}, \texttt{zero\_le} takes its argument implicitly; unused hypotheses are
+underscored and the unused section variable is \texttt{omit}ted.
+\end{itemize}
+
+\end{document}
