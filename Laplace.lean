@@ -415,3 +415,4 @@ import Laplace.Grammar.FamilyCoeffSeries
 import Laplace.Grammar.FluctuationDerivativeMu
 import Laplace.Grammar.TaylorTreeWrapper
 import Laplace.Grammar.CauchyCoeff1D
+import Laplace.Grammar.AnalyticBridge1D
