@@ -1,0 +1,75 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Cutoff scaling for the normal moment integral}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The paper's bare normal moment integral lives on $[0,b]^{|I|}$ with an arbitrary cutoff $b>0$; the
+monomial milestones were stated on the unit box. The substitution $u=bv$ on $\mathbb R^d$ gives the
+exact identity $M_b(N)=b^{\sum_i(h_i+1)}M_1(Nb^{2\sum_ik_i})$ (\texttt{monomialBoxRealCutoff\_eq}),
+and hence the mixed-ratio asymptotic on $(0,b]^d$ with the extra factor
+$b^{\sum_i(h_i+1)-2\lambda\sum_ik_i}=\prod_{i\notin J}b^{h_i+1-2k_i\lambda}$ --- exactly the
+$b$-dependence of the paper's Laurent coefficient $a_{-|J|}$ --- and no $b$-dependence at all in the
+equal-ratio case. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def cutoffBox (d : ℕ) (b : ℝ) : Set (Fin d → ℝ) := Set.pi univ fun _ => Ioc 0 b
+theorem cutoffBox_eq_smul (d b) (hb : 0 < b) : cutoffBox d b = b • unitBox d
+def monomialBoxRealCutoff (d) (h k) (b β N : ℝ) : ℝ :=
+  ∫ x in cutoffBox d b, (∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i)))
+theorem monomialBoxRealCutoff_eq (d h k b β N) (hb : 0 < b) :
+    monomialBoxRealCutoff d h k b β N
+      = b ^ (∑ i, (h i + 1)) * monomialBoxReal d h k β (N * b ^ (2 * ∑ i, k i))
+theorem cutoff_power_eq (d h k b l) (hb) :
+    b ^ (((∑ i, (h i + 1) : ℕ) : ℝ) - 2 * l * (∑ i, k i))
+      = b ^ (∑ i, (h i + 1)) * (b ^ (2 * ∑ i, k i)) ^ (-l)
+theorem tendsto_log_scale_pow (c) (hc : 0 < c) (r) :
+    Tendsto (fun N => (log (N * c) / log N) ^ r) atTop (𝓝 1)
+theorem monomialBoxRealCutoff_mixed_tendsto / _isEquivalent ... :
+    (fun N => monomialBoxRealCutoff (d + 1) h k b β N) ~[atTop]
+      fun N => b ^ ((∑ i, (h i + 1)) - 2 * l * ∑ i, k i) * monomialMixedConst h k l β
+        * N ^ (-l) * log N ^ (multCount (ratioExp h k) l - 1)
+theorem cutoff_power_eq_one_of_equal (hratio : ∀ i, ratioExp h k i = l) :
+    ((∑ i, (h i + 1) : ℕ) : ℝ) - 2 * l * (∑ i, k i) = 0
+\end{verbatim}
+}
+
+\section{Mathematics}
+$(0,b]^d=b\cdot(0,1]^d$ and Mathlib's \texttt{setIntegral\_comp\_smul\_of\_pos} on the
+$d$-dimensional space give $\int_{b\cdot S}f=b^d\int_Sf(bv)\,dv$; the monomial factor contributes
+$b^{\sum h_i}$ and the exponent absorbs $b^{2\sum k_i}$ into $N$. The asymptotic transfer is a product
+of two limits: the unit-box ratio along $N\mapsto Nb^{2\sum k_i}$ and $(\log(Nc)/\log N)^r\to1$; the
+scale factors combine as $b^{\sum(h_i+1)}\,c^{-\lambda}=b^{\sum(h_i+1)-2\lambda\sum k_i}$.
+
+\section{Paper-facing meaning}
+Item~(iii) of Astra~\#15's list: the cutoff dependence of the leading coefficient matches
+eq.~\texttt{a\_minus\_m\_explicit} ($\prod_{i\notin J}b^{h_i+1-2k_i\lambda}$), and is absent when all
+ratios are equal. Astra~\#16 (received during this unit) ranks the continuous-amplitude milestone
+next and records a leading-coefficient qualification for mixed ratios (the amplitude is integrated
+over the nonminimal normal directions, not evaluated at the origin).
+
+\section{Lean notes}
+\begin{itemize}
+\item Pointwise set scaling \texttt{b • S} needs \texttt{open scoped Pointwise}.
+\item \texttt{setIntegral\_comp\_smul\_of\_pos} lives in \texttt{MeasureTheory.Measure}; the
+dimension is \texttt{Module.finrank\_fin\_fun}.
+\item The asymptotic with cutoff is \emph{not} an eventual equality with the unit-box ratio (the log
+factors differ); prove it as a product of limits and close the algebra after \texttt{div\_pow} with
+explicit nonvanishing of both log powers.
+\item Again: a local named \texttt{h} shadows the exponent function; use \texttt{hT}.
+\end{itemize}
+
+\end{document}
