@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The axis integral as a convergent coefficient series}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The first genuinely infinite coefficient identity of the analytic bridge (Astra~\#4, rank~4). If the
+one-variable amplitude has a convergent expansion $\Psi(u,s)=\sum_ic_i(s)u^i$ on $[0,b]$ with the
+majorant $|c_i(s)|\rho^i\le H(s)$ for some $\rho>b$, then the axis integral of unit~87 is the
+absolutely convergent series
+\[
+I_\Psi(s)=\int_0^b\frac{\Psi(u,s)-\Psi(0,s)}u\,du=\sum_{i\ge1}\frac{b^i}{i}\,c_i(s),
+\]
+and, when $|w|H$ is integrable against the Gaussian log weight, the constant coefficient of the
+$d=2$ equal-exponent block is the absolutely convergent series
+\begin{gather*}
+B=\frac{\log B_*}{k_1k_2}\mathcal M_{p,0}(c_0)-\frac1{k_1k_2}\mathcal M_{p,1}(c_0)
++\frac1{k_2}\sum_{i\ge1}\frac{b^i}{i}\mathcal M_{p,0}(a_i)
++\frac1{k_1}\sum_{j\ge1}\frac{b^j}{j}\mathcal M_{p,0}(b_j),
+\end{gather*}
+with $a_i,b_j$ the Taylor coefficients of $\Phi(u,0,s)$ and $\Phi(0,v,s)$. No convergence of the
+inverse-$N$ expansion is asserted. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem coeff_geometric_bound (c H b ρ : ℝ) (i : ℕ) (hb : 0 ≤ b) (hρ : 0 < ρ)
+    (hmaj : |c| * ρ ^ i ≤ H) : |c| * b ^ i ≤ H * (b / ρ) ^ i
+theorem hasSum_zero_eq (c : ℕ → ℝ) (Ψ0 : ℝ)
+    (h : HasSum (fun i => c i * (0 : ℝ) ^ i) Ψ0) : Ψ0 = c 0
+theorem hasSum_shift_div (c : ℕ → ℝ) (Ψu Ψ0 u : ℝ) (hu : u ≠ 0)
+    (h : HasSum (fun i => c i * u ^ i) Ψu) (h0 : Ψ0 = c 0) :
+    HasSum (fun i => c (i + 1) * u ^ i) (u⁻¹ * (Ψu - Ψ0))
+theorem axisIntegral_hasSum (b ρ : ℝ) (hb : 0 < b) (hbρ : b < ρ) (Ψ : ℝ → ℝ → ℝ)
+    (c : ℕ → ℝ → ℝ) (H : ℝ → ℝ) (s : ℝ)
+    (hΨ : ∀ u ∈ Icc (0 : ℝ) b, HasSum (fun i => c i s * u ^ i) (Ψ u s))
+    (hmaj : ∀ i, |c i s| * ρ ^ i ≤ H s) :
+    HasSum (fun i : ℕ => b ^ (i + 1) / ((i : ℝ) + 1) * c (i + 1) s) (axisIntegral b Ψ s)
+theorem axis_series_dominated ... :
+    (Summable fun i : ℕ => |b ^ (i + 1) / ((i : ℝ) + 1) * c (i + 1) s|) ∧
+      ∑' i : ℕ, |b ^ (i + 1) / ((i : ℝ) + 1) * c (i + 1) s| ≤ (b / ρ) / (1 - b / ρ) * H s
+theorem axisIntegral_logMoment_hasSum (β p b ρ : ℝ) (hb : 0 < b) (hbρ : b < ρ)
+    (Ψ : ℝ → ℝ → ℝ) (c : ℕ → ℝ → ℝ) (H : ℝ → ℝ) (hc : ∀ i, Measurable (c i))
+    (hΨ : ∀ s, 0 < s → ∀ u ∈ Icc (0 : ℝ) b, HasSum (fun i => c i s * u ^ i) (Ψ u s))
+    (hmaj : ∀ s, 0 < s → ∀ i, |c i s| * ρ ^ i ≤ H s)
+    (hH : IntegrableOn (fun s => |momentWeight β p 0 s| * H s) (Ioi 0)) :
+    HasSum (fun i : ℕ => b ^ (i + 1) / ((i : ℝ) + 1) * logMoment β p 0 (c (i + 1)))
+      (logMoment β p 0 (axisIntegral b Ψ))
+theorem axisB_series ... :
+    axisB β b p k₁ k₂ Ψ
+      = 1 / ((k₁ : ℝ) * k₂) * (Real.log (b ^ (k₁ + k₂)) * logMoment β p 0 (c 0)
+          - logMoment β p 1 (c 0))
+        + 1 / (k₂ : ℝ) * ∑' i : ℕ, b ^ (i + 1) / ((i : ℝ) + 1) * logMoment β p 0 (c (i + 1))
+theorem twoDB_series ... :
+    twoDB β b p k₁ k₂ Φ
+      = 1 / ((k₁ : ℝ) * k₂) * (Real.log (b ^ (k₁ + k₂)) * logMoment β p 0 (a 0)
+          - logMoment β p 1 (a 0))
+        + 1 / (k₂ : ℝ) * ∑' i : ℕ, b ^ (i + 1) / ((i : ℝ) + 1) * logMoment β p 0 (a (i + 1))
+        + 1 / (k₁ : ℝ) * ∑' j : ℕ, b ^ (j + 1) / ((j : ℝ) + 1) * logMoment β p 0 (c (j + 1))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+At $u\in(0,b]$ the integrand is the shifted series $(\Psi(u)-\Psi(0))/u=\sum_ic_{i+1}u^i$
+(\texttt{hasSum\_nat\_add\_iff'} and $\Psi(0)=c_0$ by uniqueness of sums). Each term integrates to
+$c_{i+1}b^{i+1}/(i+1)$, and the $L^1$ norms are bounded by $|c_{i+1}|b^{i+1}\le H(b/\rho)^{i+1}$,
+a convergent geometric series; Mathlib's \texttt{hasSum\_integral\_of\_summable\_integral\_norm}
+then exchanges sum and integral. The log-moment statement is the same exchange one level up, through
+unit~98's \texttt{hasSum\_logMoment\_of\_dominated} with the pointwise domination
+$\sum_i|b^{i+1}c_{i+1}(s)/(i+1)|\le\frac{b/\rho}{1-b/\rho}H(s)$. The series formulas for
+$B_\Psi$ and for the $d=2$ constant coefficient $B$ are then rewrites of their definitions
+(units~87 and~88), using $\Psi(0,\cdot)=c_0$ under the log moments.
+
+\section{Paper-facing meaning}
+
+This is the precise form of Astra~\#3(c)/\#4(c): each coefficient of the finite expansion that is
+a regularised axis integral equals an absolutely convergent series in the corner Taylor
+coefficients, under a radius-margin hypothesis $b<\rho$ with a uniform majorant. It is the first
+formal instance of the paper's "coefficients as convergent series" claim, for an already
+formalised coefficient ($B$ in the $d=2$ block). Analyticity enters only as a provider of the
+majorant; the finite expansion itself needs no analyticity. Nothing is claimed about convergence of
+the expansion in $N^{-1/k}$, which is generally divergent.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item In \texttt{fun i => b \^{} (i + 1) / ((i : ℝ) + 1) * ...} the ascription \texttt{(i : ℝ)}
+makes the binder real; write \texttt{fun i : ℕ => …} (symptom: type mismatch \texttt{i + 1 : ℝ},
+or \texttt{Countable ℝ} failing).
+\item \texttt{integrableOn\_const} needs its autoParam \texttt{measure\_Ioc\_lt\_top.ne} passed
+explicitly.
+\item Pointwise goals from \texttt{ae\_restrict\_iff'} and \texttt{setIntegral\_congr\_fun} are
+beta-redexes: \texttt{beta\_reduce} before \texttt{rw}.
+\item \texttt{Integrable.const\_mul} produces an \texttt{And}; ascribe \texttt{IntegrableOn} before
+\texttt{.congr\_fun}.
+\item \texttt{hasSum\_single 0} plus \texttt{HasSum.unique} identifies the constant term of a
+power series at \texttt{0} without any analytic machinery.
+\end{itemize}
+
+\end{document}
