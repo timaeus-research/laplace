@@ -348,3 +348,4 @@ import Laplace.Grammar.MonomialAmplitudeAsymptotic
 import Laplace.Grammar.HeadlineAmplitude
 import Laplace.Grammar.BoxPeel
 import Laplace.Grammar.TangentialAmplitude
+import Laplace.Grammar.HeadlineTangential
