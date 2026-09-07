@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The analytic bridge: Cauchy coefficients in one and several variables (Taylor-tree Stages 6--7)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units 257--265 remove the qualification under which the Taylor-tree programme was frozen at unit 256:
+the theorem \texttt{thm:TaylorTree} had been formalised for phase and amplitude given by coefficient
+families with $\sum_\gamma|c_\gamma|b^{|\gamma|}<\infty$, but not under the paper's own hypothesis
+(holomorphic extension to a polydisc $D_R$, $R>b$). Stage~6 (two units) does the one-variable case
+with Mathlib's \texttt{cauchyPowerSeries}. Stage~7 (six units) builds the several-variable Cauchy theory
+that Mathlib lacks, from a normalised circle operator iterated along the coordinates, and lands
+Headline~XXXII: for real $\xi,\eta$ on $(0,b]^d$ with holomorphic extensions $F_\xi,F_\eta$ to
+$\{|z_i|<R\}$, $R>b$, the real parts of the Cauchy coefficients at any radius $r\in(b,R)$ are summable
+families representing $\xi,\eta$ on the box, the family integral is the original
+$Z(\beta,n;\xi,\eta)$, and the Taylor-tree conclusion holds --- in every dimension. Reviews v24 and v25:
+qualified passes with no mathematical defect. Remaining gap to the paper's formulation: the
+identification $c_\gamma=\partial^\gamma F(0)/\gamma!$. No \texttt{sorry}, no additional \texttt{axiom};
+9140 jobs; pin \texttt{45b0943}.
+\end{abstract}
+
+\section{Stage 6: one variable (units 257--259)}
+Mathlib's API sufficed in one unit. For $f$ differentiable on the closed disc $|z|\le r$,
+\texttt{DifferentiableOn.hasFPowerSeriesOnBall} gives a power series on the open disc whose
+coefficients are \texttt{cauchyPowerSeries f 0 r}; \texttt{norm\_cauchyPowerSeries\_le} with
+\texttt{FormalMultilinearSeries.norm\_apply\_eq\_norm\_coef} gives $|c_n|\le M_rr^{-n}$;
+\texttt{HasFPowerSeriesOnBall.hasSum} with \texttt{apply\_eq\_pow\_smul\_coeff} gives
+$\sum c_nz^n=f(z)$; and \texttt{AnalyticAt.hasFPowerSeriesAt} (the series
+$\sum f^{(n)}(0)/n!\,z^n$) with \texttt{HasFPowerSeriesAt.eq\_formalMultilinearSeries} gives
+$c_n=f^{(n)}(0)/n!$. Real parts are taken by \texttt{HasSum.mapL Complex.reCLM}, which needs no
+reality hypothesis on $f$: the family of real parts represents $\operatorname{Re}f$ on the segment, and
+equals $f$ there when $f$ is real. Unit 259 (review v24 should-fixes) added the paper-facing form: from
+$0<b<R$ and holomorphy on the open disc, choose $r\in(b,R)$; the family integral on $(0,b]$ is transported
+to the original integral by \texttt{setIntegral\_congr\_fun} with the representation.
+
+\section{Stage 7: several variables (units 260--265)}
+Mathlib has no several-variable Cauchy estimates or polydisc power series. Astra~\#31 chose route R2:
+induct on the dimension with a \emph{normalised circle operator}
+\[
+A_r(g)=\frac1{2\pi i}\oint_{|w|=r}\frac{g(w)}{w}\,dw,
+\]
+applied to \emph{slices of $F$}, never to coefficient functions, with the gate ``quantitative
+two-coordinate reconstruction'' after unit three. The gate was passed at unit 263 and the tranche closed
+in six units against a cap of ten.
+\paragraph{Circle operator (u260).} The bound $\|A_rg\|\le\sup_{|w|=r}\|g\|$ comes from
+\texttt{circleIntegral.norm\_integral\_le\_of\_norm\_le\_const}, since $|2\pi i|^{-1}\cdot2\pi r\cdot r^{-1}=1$;
+the Cauchy formula $A_r\bigl(w\mapsto(1-z/w)^{-1}g(w)\bigr)=g(z)$ for $|z|<r$ and $g$ differentiable on a
+larger ball, from \texttt{DiffContOnCl.circleIntegral\_sub\_inv\_smul} after rewriting
+$w^{-1}(1-z/w)^{-1}=(w-z)^{-1}$; coefficient \texttt{HasSum} $\sum_n A_r(w\mapsto w^{-n}g(w))z^n=g(z)$ from
+the geometric expansion of the kernel and dominated interchange
+(\texttt{intervalIntegral.hasSum\_integral\_of\_dominated\_convergence} on the parametrisation);
+continuity of $z\mapsto A_r(G(\cdot,z))$ from
+\texttt{intervalIntegral.continuous\_parametric\_intervalIntegral\_of\_continuous'}.
+\paragraph{Iterated operator and iterated Cauchy formula (u261).} $A_r^{[d+1]}(G)=A_r\bigl(w_0\mapsto
+A_r^{[d]}(w'\mapsto G(\mathrm{cons}\,w_0\,w'))\bigr)$, recursive along \texttt{Fin.cons}. The hypothesis
+\texttt{SliceHolo d r F} is recursive: continuity on the closed polydisc plus, for each $w_0$ on the circle,
+\texttt{SliceHolo} of the slice $F(w_0,\cdot)$, plus one-variable holomorphy of $w_0\mapsto A_r^{[d]}$-images;
+it is discharged from \texttt{DifferentiableOn} on the open polydisc by \texttt{differentiable\_pi} and
+\texttt{differentiable\_apply}. The iterated Cauchy formula
+$A_r^{[d]}\bigl(w\mapsto F(w)\prod_i(1-z_i/w_i)^{-1}\bigr)=F(z)$ is the induction with the one-variable
+formula applied to $w_0\mapsto F(w_0,z')$.
+\paragraph{Parametric continuity and series interchange (u262).} On sets:
+\texttt{continuousOn\_iff\_continuous\_domRestrict} converts the joint continuity of $G$ on
+$\text{circle}\times S$ to a genuine continuity, and the iterated version recurses. Interchange
+$A_r(\sum_nG_n)=\sum_nA_r(G_n)$ under a summable sup-majorant; the product geometric series
+$\sum_\gamma\prod_i(|z_i|/r)^{\gamma_i}$ as \texttt{summable\_prodGeom}.
+\paragraph{Cauchy coefficients and the gate (u263).} $c_\gamma=A_r^{[d]}\bigl(F\prod_iw_i^{-\gamma_i}\bigr)$;
+$|c_\gamma|\le Mr^{-|\gamma|}$ needs only a bound on the torus (Lean's totalised contour integrals ask for
+no holomorphy there). Reconstruction: extract the first coordinate with the one-variable coefficient
+\texttt{HasSum}, expand the tail slice by the induction hypothesis \emph{on the circle}, interchange
+$A_r$ with the tail series under the product-geometric majorant, and regroup the double series along
+\texttt{Fin.cons} with \texttt{HasSum.sigma} and \texttt{Fin.consEquiv}. Consequence:
+$\sum_\gamma|c_\gamma|b^{|\gamma|}\le M(1-b/r)^{-d}$ for $b<r$.
+\paragraph{Headline XXXII (u264--265).} Boundedness on the closed polydisc of radius $r$ comes from
+compactness (\texttt{isCompact\_univ\_pi}) inside the open polydisc of radius $R$; the real-part family
+\texttt{polyRealCoeff} is \texttt{AbsSummableAt} $b$ and represents $\operatorname{Re}F$ on the box via
+\texttt{HasSum.mapL Complex.reCLM}; the family integral is transported to the original integral
+$Z(\beta,n;\xi,\eta)$ pointwise on the box. The wrapper \texttt{thm\_TaylorTree\_coeffFamily} then
+gives \texttt{thm\_TaylorTree\_analytic}; the primed form takes only $b<R$.
+
+\section{Reviews and numerics}
+Review v24 (units 256--258) and v25 (units 260--264) are qualified passes with no mathematical defect.
+Review v25 asked for: ``applies under the paper's hypothesis'' rather than ``exactly'' (the formal
+matching assumption is real-part agreement $\operatorname{Re}F_\xi=\xi$ on the box, weaker than a
+genuine extension); the residual task stated with the complex/real distinction
+($c_\gamma=\partial^\gamma F(0)/\gamma!$, $\operatorname{Re}$ of it for the family, and the linkage to
+derivatives of the real $\xi$ at $0$ needing the genuine extension); an $\exists r$ corollary; and the
+distinction between the torus bound used for the estimate and the closed-polydisc bound used for the
+reconstruction. All applied in unit 265. Numerically, at $d=2$ with $F=e^{z_0+2z_1}+z_0z_1^2$ and
+$r=0.7$, the iterated contour coefficients agree with the Taylor coefficients to $2\times10^{-16}$ and the
+truncated reconstruction on the open polydisc to $4\times10^{-15}$.
+
+\section{Lessons}
+\begin{itemize}
+\item \textbf{Recurse on slices of the function, not on coefficient functions.} Coefficient functions
+$w_0\mapsto c_{\gamma'}(F(w_0,\cdot))$ would need parametric holomorphy of contour integrals; slices
+need only continuity, which the parametric-integral lemmas give directly.
+\item \textbf{Normalise the operator.} With $(2\pi i)^{-1}\oint w^{-1}$ the operator norm is exactly one,
+so torus bounds pass through the recursion without radius bookkeeping.
+\item \textbf{\texttt{circleIntegral} is a definition, not an interface.} Its unfolding
+$\int_0^{2\pi}\mathrm{deriv}(\mathrm{circleMap}\,c\,R)\,\theta\bullet f(\ldots)$ appears whenever the
+integrand is a lambda that Mathlib's lemmas do not recognise; fix the integrand with a \texttt{funext}
+equation and \texttt{circleIntegral.integral\_smul} before applying anything. Also
+\texttt{circleMap\_ne\_center} takes $R\ne0$ with $\theta$ implicit, and \texttt{Fin.cons w w' i} needs the
+type ascription \texttt{(Fin.cons w w' : Fin (d+1) -> C) i} to elaborate.
+\item \textbf{Apply \texttt{DifferentiableOn.diffContOnCl\_ball} to the larger ball}, then restrict; the
+closure of the smaller ball is where continuity is needed.
+\item \textbf{Renamed lemmas on this pin:} \texttt{tendsto\_finsetSum}, \texttt{integral\_finsetSum},
+\texttt{continuous\_finsetProd}, \texttt{continuousOn\_finsetProd}, \texttt{Metric.mem\_eball},
+\texttt{continuousOn\_iff\_continuous\_domRestrict}.
+\item \textbf{Statement-extractor artefact.} The review excerpts are produced by a Python extractor that
+sometimes duplicates or truncates a declaration; reviewers then report ``duplicate declaration''. The
+source always has one; say so in the prompt.
+\item \textbf{Hand-off before extension.} Freezing at unit 256 with an explicit gap statement made the
+bridge a separately reviewable tranche with its own gate and cap, rather than an open-ended extension.
+\end{itemize}
+\end{document}
