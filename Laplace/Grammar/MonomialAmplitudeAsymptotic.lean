@@ -120,7 +120,8 @@ theorem faceLeadConst_pos {d : ℕ} (h k : Fin d → ℕ) (hk : ∀ i, 0 < k i) 
 mixed constant of the shifted exponents. -/
 theorem face_moment_eq {d : ℕ} (h k : Fin d → ℕ) (hk : ∀ i, 0 < k i) (l β : ℝ)
     (hmin : ∀ i, l ≤ ratioExp h k i) (γ : Fin d → ℕ) (hγ : ∀ i, ratioExp h k i = l → γ i = 0) :
-    ∫ u in unitBox d, (∏ i, faceProj h k l u i ^ γ i) * (faceLeadConst h k l β * residualWeight h k l u) =
+    ∫ u in unitBox d, (∏ i, faceProj h k l u i ^ γ i) *
+        (faceLeadConst h k l β * residualWeight h k l u) =
       monomialMixedConst (fun i => h i + γ i) k l β := by
   -- the integrand is a product of one-dimensional factors
   have hpt : ∀ u ∈ unitBox d,
@@ -179,14 +180,14 @@ theorem face_moment_eq {d : ℕ} (h k : Fin d → ℕ) (hk : ∀ i, 0 < k i) (l 
 moment. -/
 theorem face_moment_eq_zero {d : ℕ} (h k : Fin d → ℕ) (l β : ℝ) (γ : Fin d → ℕ)
     (hγ : ∃ j, ratioExp h k j = l ∧ γ j ≠ 0) :
-    ∫ u in unitBox d, (∏ i, faceProj h k l u i ^ γ i) * (faceLeadConst h k l β * residualWeight h k l u)
-      = 0 := by
+    ∫ u in unitBox d, (∏ i, faceProj h k l u i ^ γ i) *
+        (faceLeadConst h k l β * residualWeight h k l u) = 0 := by
   obtain ⟨j, hj, hγj⟩ := hγ
   refine integral_eq_zero_of_ae (Eventually.of_forall fun u => ?_)
   have : faceProj h k l u j ^ γ j = 0 := by
     simp only [faceProj, if_pos hj]
     exact zero_pow hγj
-  show (∏ i, faceProj h k l u i ^ γ i) * (faceLeadConst h k l β * residualWeight h k l u) = 0
+  change (∏ i, faceProj h k l u i ^ γ i) * (faceLeadConst h k l β * residualWeight h k l u) = 0
   rw [Finset.prod_eq_zero (Finset.mem_univ j) this, zero_mul]
 
 /-- The normalised finite-`N` weight. -/
@@ -217,7 +218,8 @@ theorem integral_monomial_normWeight {d : ℕ} (h k : Fin d → ℕ) (l β N : �
   ring
 
 /-- **Continuous-amplitude asymptotic**: for a continuous amplitude `η`,
-`I_η(N) / (N^{-λ} (log N)^{|J|-1}) → Γ(λ)β^{-λ}/(|J|-1)! ∏_{J} 1/(2kⱼ) ∫ η(P_J u) ∏_{∉J} uᵢ^{hᵢ-2kᵢλ} du`. -/
+`I_η(N) / (N^{-λ} (log N)^{|J|-1}) →
+  Γ(λ)β^{-λ}/(|J|-1)! ∏_{J} 1/(2kⱼ) ∫ η(P_J u) ∏_{∉J} uᵢ^{hᵢ-2kᵢλ} du`. -/
 theorem amplitude_tendsto (d : ℕ) (h k : Fin (d + 1) → ℕ) (hk : ∀ i, 0 < k i) (l β : ℝ)
     (hl : 0 < l) (hβ : 0 < β) (hmin : ∀ i, l ≤ ratioExp h k i) (hatt : ∃ i, ratioExp h k i = l)
     (η : (Fin (d + 1) → ℝ) → ℝ) (hη : Continuous η) :
@@ -234,7 +236,8 @@ theorem amplitude_tendsto (d : ℕ) (h k : Fin (d + 1) → ℕ) (hk : ∀ i, 0 <
     (by
       filter_upwards [eventually_gt_atTop (1 : ℝ)] with N hN
       exact fun x hx => normWeight_nonneg h k l β N hN x hx)
-    (fun u hu => mul_nonneg (faceLeadConst_pos h k hk l β hl hβ).le (residualWeight_nonneg h k l u hu))
+    (fun u hu => mul_nonneg (faceLeadConst_pos h k hk l β hl hβ).le
+      (residualWeight_nonneg h k l u hu))
     (fun γ => ?_) η hη
   · unfold amplitudeCoeff
     rw [← integral_const_mul]
