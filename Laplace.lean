@@ -323,3 +323,4 @@ import Laplace.Grammar.HeadlinePosterior
 import Laplace.Grammar.GaussianDichotomy
 import Laplace.Grammar.GaussianThreshold
 import Laplace.Grammar.HeadlineGaussian
+import Laplace.Grammar.ProductDensityCore
