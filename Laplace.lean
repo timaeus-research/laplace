@@ -275,3 +275,4 @@ import Laplace.Grammar.ConstantKernelUnequal
 import Laplace.Grammar.DoubleSeries
 import Laplace.Grammar.AnalyticAdapter
 import Laplace.Grammar.TwoDCutoffAnalytic
+import Laplace.Grammar.TaylorProjections
