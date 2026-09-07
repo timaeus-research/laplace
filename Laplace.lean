@@ -400,3 +400,4 @@ import Laplace.Grammar.TaylorTreeAsymptotic
 import Laplace.Grammar.CandidateSupport
 import Laplace.Grammar.MonoRepPerm
 import Laplace.Grammar.CoeffStability
+import Laplace.Grammar.CoeffFamily
