@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Norm-boundedness in probability from convergence in distribution}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#12 rank~1. If the random Taylor data $X_n\colon\Omega\to\texttt{CoeffPair}$ converge in
+distribution to $Z$, their norms are bounded in probability:
+$\forall\eta>0\ \exists M\ \forall^\infty n,\ \mu\{\|X_n\|>M\}\le\eta$
+(\texttt{normBounded\_of\_tendstoInDistribution}). The tail $\mu'\{\|Z\|\ge m\}$ tends to $0$ by
+continuity from above, and the portmanteau theorem on the closed set $\{\|a\|\ge m\}$ bounds the
+limsup of $\mu\{\|X_n\|\ge m\}$ by it. Hence the tightness hypothesis of unit~152 is automatic and
+the ordered normalised remainders converge in distribution for any measurable Taylor data
+converging in distribution (\texttt{tendstoInDistribution\_normA'}, \texttt{tendstoInDistribution\_normB'}).
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem tendsto_measure_norm_ge_atTop (Z : Ω' → CoeffPair) (hZ : AEMeasurable Z μ') :
+    Tendsto (fun m : ℕ => μ' ((fun ω => ‖Z ω‖) ⁻¹' Set.Ici (m : ℝ))) atTop (𝓝 0)
+theorem normBounded_of_tendstoInDistribution (X : ι → Ω → CoeffPair) (Z : Ω' → CoeffPair)
+    (hX : TendstoInDistribution X l Z (fun _ => μ) μ') :
+    ∀ η : ENNReal, 0 < η → ∃ M : ℝ, 0 ≤ M ∧ ∀ᶠ n in l, μ {ω | M < ‖X n ω‖} ≤ η
+theorem tendstoInDistribution_normA' ... (X) (hXm : ∀ n, Measurable (X n)) (Z)
+    (hX : TendstoInDistribution X l Z (fun _ => μ) μ') (Nseq) (hN : Tendsto Nseq l atTop)
+    (α) (hα : α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T) :
+    TendstoInDistribution (fun n ω => normA … α (Nseq n) (X n ω)) l
+      (coeffA β ρ h₁ h₂ k₁ k₂ α ∘ Z) (fun _ => μ) μ'
+theorem tendstoInDistribution_normB' ... : … normB … ⇒ coeffB … α ∘ Z
+\end{verbatim}
+}
+
+\section{Mathematics}
+Given $\eta\in(0,\infty)$ pick $m\in\mathbb N$ with $\mu'\{\|Z\|\ge m\}<\eta/2$; this exists because
+the sets $\{\|Z\|\ge m\}$ decrease to $\emptyset$ and $\mu'$ is finite. The set
+$F=\{a:\|a\|\ge m\}$ is closed, so the portmanteau theorem for weak convergence of the laws gives
+$\limsup_n\mu\{X_n\in F\}\le\mu'\{Z\in F\}<\eta/2<\eta$, hence eventually $\mu\{\|X_n\|>m\}\le
+\mu\{X_n\in F\}<\eta$. As Astra~\#12 stressed, this is norm-boundedness in probability, not
+compact tightness (balls in $\ell^1$ are not compact); it is exactly what the ball estimates of
+units~149--152 need.
+
+\section{Paper-facing meaning}
+The second conclusion of thm:strataempiricalexpansion now holds at chart level for $d=2$ under the
+sole probabilistic hypothesis ``the Taylor data converge in distribution in the weighted coefficient
+space'': the deterministic bound of unit~150 and the tightness hypothesis of unit~152 are removed.
+The paper's separate tightness lemma (appendix prop:convergence~(i)) is thus not needed as an extra
+input at this level; it enters only through the (unformalised) functional CLT that supplies the
+convergence in distribution itself.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{tendsto\_measure\_iInter\_atTop} wants \texttt{NullMeasurableSet} for each set
+(\texttt{AEMeasurable.nullMeasurableSet\_preimage}), antitonicity, and one finite value; the empty
+intersection is \texttt{exists\_nat\_gt} after \texttt{simp}.
+\item \texttt{ProbabilityMeasure.limsup\_measure\_closed\_le\_of\_tendsto hX.tendsto hF}, then
+\texttt{simp only [ProbabilityMeasure.coe\_mk]} and \texttt{Measure.map\_apply\_of\_aemeasurable}
+(through a universally quantified \texttt{have} fed to \texttt{simp only}) turn the pushforward
+measures into $\mu\{X_n\in F\}$; \texttt{eventually\_lt\_of\_limsup\_lt} closes with the default
+boundedness autoParam in \texttt{ENNReal}.
+\item The case $\eta=\top$ is handled separately (\texttt{ENNReal.half\_pos} needs $\eta\ne0$,
+\texttt{half\_le\_self} is unconditional); set membership \texttt{ω ∈ \{ω | m < ‖X n ω‖\}} must be
+unfolded with \texttt{show} before \texttt{le\_of\_lt}.
+\end{itemize}
+
+\end{document}
