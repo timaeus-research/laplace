@@ -9,13 +9,15 @@ import Laplace.Grammar.StochasticLogRegime
 
 Paper-facing wrapper for unit 194. At chart level (`d = 2`, equal starting exponents `p`), for a
 deterministic corner-vanishing observable amplitude `y_φ` (`y_{φ,00} = 0`), a deterministic
-positive normaliser amplitude `y_1` (`y_{1,00} > 0`), and a common random phase whose Taylor data
+normaliser amplitude `y_1` with positive corner value (`y_{1,00} > 0`; positivity throughout the
+chart is not assumed), and a common random phase whose Taylor data
 `X_n` converge in distribution to `Z`,
 
   `log N_n · Z_{N_n}[φ](X_n) / Z_{N_n}[1](X_n) ⇒ B^φ_p(Z) / A^1_p(Z)`
 
-(`headline_posterior_log_decay_stochastic`): the empirical posterior expectation of a
-corner-vanishing observable decays like `1/log N` with the **random** coefficient
+(`headline_posterior_log_decay_stochastic`), a scaled convergence in distribution (not a pathwise
+asymptotic equivalence): the empirical posterior expectation of a corner-vanishing observable is
+of order `1/log N` with the **random** coefficient
 `B^φ_p(Z)/A^1_p(Z)`, the stochastic form of `headline_posterior_log_decay`. The denominator
 coefficient is strictly positive; when `B^φ_p(Z) = 0` the limit is `0` and no faster rate is
 claimed. NOT claimed: random amplitudes, rates beyond `1/log N`, or unequal starting exponents.

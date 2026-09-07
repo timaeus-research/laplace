@@ -28,8 +28,8 @@ Route (the feasibility gate of Astra #19 passes with the existing infrastructure
 * the positive-denominator quotient theorem (unit 157) and the exact identity
   `normB^φ / normA^1 = (Z[φ]/Z[1]) · log N` for `N > 1` finish.
 
-NOT claimed: a rate beyond `1/log N`, the case `B^φ_p(Z) = 0` (the limit is then `0`), or random
-amplitudes.
+The case `B^φ_p(Z) = 0` is covered (the limiting quotient is then `0`); NOT claimed: any rate beyond
+the displayed scaled convergence in distribution, or random amplitudes.
 -/
 
 open MeasureTheory Filter Topology Real
