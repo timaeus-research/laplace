@@ -1,0 +1,56 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Variants of the leading theorem: $C\ne0$ and nonnegative face amplitudes}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Following the audit in the second Astra consult, the leading theorem is exposed in coefficient-based
+form: the asymptotic equivalence $Z\sim CN^{-p}\log^{d_0}N$ needs only $C\ne0$, and $C>0$ holds as soon
+as $\eta(0,\cdot)\ge0$ on the noncritical box and $\eta(0,v_0)>0$ at one interior point, since the
+positive kernel and weights make the coefficient a positive integral over an open set of positive
+measure contained in the support. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem blockStateIntegral_isEquivalent_of_ne ... (hC : blockCoeff β b p k k' h' ξ η ≠ 0) :
+    (fun N : ℝ => blockStateIntegral β b N k h k' h' ξ η) ~[atTop]
+      fun N : ℝ => blockCoeff β b p k k' h' ξ η * (N ^ (-p) * Real.log N ^ d₀)
+theorem integral_blockDivisorDensity_pos_of_nonneg ...
+    (henn : ∀ v, (∀ i, 0 < v i ∧ v i ≤ b) → 0 ≤ e v)
+    (v₀ : Fin d' → ℝ) (hv₀ : ∀ i, 0 < v₀ i ∧ v₀ i < b) (hpos : 0 < e v₀) :
+    0 < ∫ v, blockDivisorDensity β p k d k' h' a e v ∂(boxMeasure b d')
+theorem blockStateIntegral_isEquivalent_of_nonneg ... :
+    0 < blockCoeff β b p k k' h' ξ η ∧
+    (fun N : ℝ => blockStateIntegral β b N k h k' h' ξ η) ~[atTop]
+      fun N : ℝ => blockCoeff β b p k k' h' ξ η * (N ^ (-p) * Real.log N ^ d₀)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+\texttt{integral\_pos\_iff\_support\_of\_nonneg\_ae} reduces positivity to a positive measure of the
+support; the open set $\{e>0\}\cap(0,b)^{d'}$ contains $v_0$, hence has positive Lebesgue measure
+(\texttt{IsOpen.measure\_pos}), lies in the closed box, and lies in the support because every other
+factor of the density is positive there.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Set.mem\_univ\_pi} cannot be rewritten at a membership in an intersection; project the
+component first.
+\end{itemize}
+
+\section{Outcome}
+The leading theorem now has the recommended interface: unconditional scaled limit, $C\ne0$ equivalence,
+$C>0$ under a mild sign condition. A third Astra consult on the all-order theory is in progress.
+\end{document}
