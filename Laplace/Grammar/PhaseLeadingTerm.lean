@@ -16,7 +16,8 @@ I_N / (N^{-p}(log N)^{m-1}) → phaseCoeff h k λ β ξ η
   = 2^{m-1}·2·faceNorm · ∫_{(0,1]^d} η(πu) S^{(β)}_{p/2}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-2kᵢλ} du,
 ```
 with `π = faceProj` (the minimising coordinates set to `0`),
-`S^{(β)}_{p/2}(a) = phaseMoment β p a`, and `faceNorm = 1/((m-1)! ∏_{i∈J} 2kᵢ)`; the paper-facing
+`S^{(β)}_{p/2}(a) = phaseMoment β p a` (the paper's `J_p(a) = S_{p/2}(a)/2`), and
+`faceNorm = 1/((m-1)! ∏_{i∈J} 2kᵢ)`; the paper-facing
 constant `2^{m-1}·2·faceNorm = 1/((m-1)! ∏_{i∈J} kᵢ)` is evaluated in the headline unit.
 
 **Method (Taylor-in-phase).** `e^{βsξ} = Σ_{j<2K} (βsξ)^j/j! + R_{2K}` with `s = Nu^k`. Each term is

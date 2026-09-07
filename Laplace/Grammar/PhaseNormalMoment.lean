@@ -9,7 +9,8 @@ import Laplace.Grammar.PhaseShiftedTerm
 
 Unit 201 (programme A, step 3). The one-dimensional normal moment dressed by a constant phase `a`,
 `phaseMoment β p a = S^{(β)}_{p/2}(a) = ∫₀^∞ s^{p-1} e^{-βs² + βas} ds`
-(the paper's `S_{p/2}(a)`, `quadKernel β a s = e^{-βs²+βas}`), with:
+(`quadKernel β a s = e^{-βs²+βas}`; this is the paper's `J_p(a) = S_{p/2}(a)/2`, since the
+paper's `S_λ(a) = ∫₀^∞ t^{λ-1} e^{-βt+βa√t} dt` is `2 phaseMoment β (2λ) a` under `t = s²`), with:
 
 * integrability and the Gaussian domination
   `s^{p-1} quadKernel β a s ≤ e^{βR²/2} s^{p-1} e^{-βs²/2}` for `|a| ≤ R`
@@ -28,7 +29,7 @@ open MeasureTheory Filter Topology Real Set
 
 namespace Laplace.Grammar
 
-/-- `S^{(β)}_{p/2}(a) = ∫₀^∞ s^{p-1} e^{-βs² + βas} ds`. -/
+/-- `S^{(β)}_{p/2}(a) = ∫₀^∞ s^{p-1} e^{-βs² + βas} ds` (the paper's `J_p(a) = S_{p/2}(a)/2`). -/
 noncomputable def phaseMoment (β p a : ℝ) : ℝ :=
   ∫ s in Ioi (0 : ℝ), s ^ (p - 1) * quadKernel β a s
 
