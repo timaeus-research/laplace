@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The amplitude adapter for $\eta e^{\beta s\xi}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The last module of the coefficient closure (Astra~\#7). From weighted-summable coefficient arrays
+$x$ of $\xi$ and $y$ of $\eta$ at radius $\rho$, the $s$-parametrised array
+$c_k(s)=e^{\beta sx_{00}}(y*E(\beta s))_k$, with $E$ the exponential of $x-x_{00}\delta$, is the
+double series of $\eta(u,v)e^{\beta s\xi(u,v)}$ for $|u|,|v|\le\rho$; each $c_k$ is continuous in $s$
+and $|c_k(s)|\rho^{|k|}\le Y e^{\beta sx_{00}}e^{|\beta s|X}$. Feeding this into
+\texttt{twoD\_cutoff\_analytic} with $L=x_{00}+X$, $D=0$, $C_0=Y$ gives
+\texttt{twoD\_cutoff\_amplitude}: the analytic $d=2$ cutoff theorem for the chart amplitude of
+\texttt{thm:TaylorTree}, whose only analytic hypothesis is the weighted summability of the two
+coefficient arrays. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def dropConst (x : ℕ × ℕ → ℝ) : ℕ × ℕ → ℝ :=
+  fun k => if k = (0, 0) then 0 else x k
+theorem dblSum_dropConst (ρ u v : ℝ) (x : ℕ × ℕ → ℝ) (hx : WSummable ρ x) (hu : |u| ≤ ρ)
+    (hv : |v| ≤ ρ) : dblSum (dropConst x) u v = dblSum x u v - x (0, 0)
+noncomputable def ampCoeff (β : ℝ) (x y : ℕ × ℕ → ℝ) (k : ℕ × ℕ) (s : ℝ) : ℝ :=
+  Real.exp (β * s * x (0, 0)) * conv y (expCoeff (dropConst x) (β * s)) k
+theorem ampCoeff_continuous (β : ℝ) (x y : ℕ × ℕ → ℝ) (k : ℕ × ℕ) :
+    Continuous (ampCoeff β x y k)
+theorem ampCoeff_abs_le (β ρ : ℝ) (hρ : 0 < ρ) (x y : ℕ × ℕ → ℝ)
+    (hx : WSummable ρ x) (hy : WSummable ρ y) (k : ℕ × ℕ) (s : ℝ) :
+    |ampCoeff β x y k s| * ρ ^ (k.1 + k.2)
+      ≤ wnorm ρ y * Real.exp (β * s * x (0, 0))
+        * Real.exp (|β * s| * wnorm ρ (dropConst x))
+theorem dblSum_ampCoeff (β ρ u v : ℝ) (hρ : 0 < ρ) (x y : ℕ × ℕ → ℝ)
+    (hx : WSummable ρ x) (hy : WSummable ρ y) (hu : |u| ≤ ρ) (hv : |v| ≤ ρ) (s : ℝ) :
+    dblSum (fun k => ampCoeff β x y k s) u v
+      = dblSum y u v * Real.exp (β * s * dblSum x u v)
+theorem anaAmp_ampCoeff (β b ρ : ℝ) (hb : 0 < b) (hbρ : b < ρ) (x y : ℕ × ℕ → ℝ)
+    (hx : WSummable ρ x) (hy : WSummable ρ y) (u v s : ℝ)
+    (hu : u ∈ Icc (0 : ℝ) b) (hv : v ∈ Icc (0 : ℝ) b) :
+    anaAmp (ampCoeff β x y) b u v s
+      = dblSum y u v * Real.exp (β * s * dblSum x u v)
+theorem twoD_cutoff_amplitude (β b p ρ : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hβ : 0 < β)
+    (hb : 0 < b)
+    (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
+    (hM₁ : ((M₁ : ℝ) - 1) / k₁ < (M₂ : ℝ) / k₂)
+    (hM₂ : ((M₂ : ℝ) - 1) / k₂ < (M₁ : ℝ) / k₁)
+    (x y : ℕ × ℕ → ℝ) (hx : WSummable ρ x) (hy : WSummable ρ y) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β x y) b)
+        - reducedSum β b h₁ h₂ k₁ k₂ M₁ M₂ (anaFaceU (ampCoeff β x y) b)
+            (anaFaceV (ampCoeff β x y) b) (fun i j s => ampCoeff β x y (i, j) s) N)
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(p + min ((M₁ : ℝ) / k₁) ((M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Everything is assembly of units 117 and 118. Removing the constant term preserves weighted
+summability termwise; the pointwise identity $x=\operatorname{dropConst}x+x_{00}\delta$ and
+additivity of absolutely convergent double series give
+$\mathrm{ev}(\operatorname{dropConst}x)=\xi-x_{00}$. The weighted norm of $c(s)$ is
+$e^{\beta sx_{00}}N_\rho(y*E(\beta s))\le e^{\beta sx_{00}}N_\rho(y)e^{|\beta s|X}$ by the closure
+and the exponential bound, and a single weighted term is at most the weighted norm. Evaluation is
+multiplicativity followed by the exponential identity and
+$e^{\beta sx_{00}}e^{\beta s(\xi-x_{00})}=e^{\beta s\xi}$. For $s\ge0$, $\beta>0$ the envelope
+$H(s)=Ye^{\beta sx_{00}}e^{|\beta s|X}$ equals $Y(1+s)^0e^{\beta s(x_{00}+X)}$, which is exactly the
+shape \texttt{twoD\_cutoff\_analytic} asks for with $D=0$, $L=x_{00}+X$, $C_0=Y$.
+
+\section{Paper-facing meaning}
+
+\texttt{twoD\_cutoff\_amplitude} is the $d=2$ equal-exponent instance of the $\tau$-cutoff expansion
+of \texttt{thm:TaylorTree} under the paper's standing hypothesis that $\xi$ and $\eta$ are analytic
+on a neighbourhood of the closed box: analyticity on $|u|,|v|<\rho'$ with $\rho'>b$ gives weighted
+summability at any $\rho\in(b,\rho')$, and the theorem then produces the reduced face-and-corner
+expansion with an explicit remainder order and no compatibility, moment or envelope hypotheses.
+The exponent $L=x_{00}+X_\rho$ is a crude bound for $\sup\xi$ on the box, harmless for the Gaussian
+moments in $s$. Remaining paper-facing gaps for this block: grouping the three log families by
+exponent (collision-finset identity), the quantitative first-order constant, the noncritical
+parameter adapter, and general $d$.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item The whole unit compiled on the first attempt apart from one unused hypothesis and one long
+line: the API of units 117--118 (\texttt{wnorm\_conv\_le}, \texttt{wnorm\_expCoeff\_le},
+\texttt{dblSum\_conv}, \texttt{dblSum\_expCoeff}) was designed to compose exactly here.
+\item Absolute summability of the evaluated family is
+\texttt{(dblSum\_abs\_le\_wnorm ...).1.of\_norm}; wrapping it as \texttt{dblSum\_summable} keeps the
+additivity step (\texttt{Summable.tsum\_add}) one line.
+\item A single weighted term is bounded by the weighted norm with \texttt{Summable.le\_tsum} after
+unfolding \texttt{WSummable}; the side condition is discharged by \texttt{positivity}.
+\item \texttt{tsum\_mul\_left} needs no summability on $\mathbb R$; pulling the scalar
+$e^{\beta sx_{00}}$ out of the double sum is \texttt{rw [← tsum\_mul\_left]} plus a
+\texttt{tsum\_congr ... ring}.
+\end{itemize}
+
+\end{document}
