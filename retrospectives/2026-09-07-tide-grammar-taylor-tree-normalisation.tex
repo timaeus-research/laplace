@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The Taylor tree in the paper's normalisation and the leading log coefficient}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Two paper-facing corollaries of \texttt{twoD\_taylor\_tree\_equal}. First, the substitution
+$N=\sqrt n$: for every $T$,
+$Z(\sqrt n)-\sum_{\alpha<2T}n^{-\alpha/2}\bigl(A_\alpha\tfrac{\log n}2+B_\alpha\bigr)=O(n^{-T}(1+\log n))$,
+so the paper's polynomial is $P_\mu(X)=\tfrac12A_{2\mu}X+B_{2\mu}$. Second, the leading pole
+$\alpha=p$ is the collision of $i=j=0$, the constant coefficient of the amplitude array is
+$c_{00}(s)=e^{\beta sx_{00}}y_{00}$, and therefore the coefficient of $N^{-p}\log N$ is
+$A_p=\dfrac{y_{00}}{k_1k_2}\int_0^\infty s^{p-1}e^{-\beta s^2+\beta sx_{00}}\,ds$: it depends on
+$\xi$ only through $\xi(0)$ and on $\eta$ only through $\eta(0)$. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem twoD_taylor_tree_equal_n ... (T : ℝ) :
+    (fun n : ℝ => twoDAmp β b (Real.sqrt n) h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β x y) b)
+        - ∑ α ∈ polesBelow h₁ h₂ k₁ k₂ p T,
+            n ^ (-(α / 2)) * (canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β x y (i, j) s) α
+                * (Real.log n / 2)
+              + canonB β b h₁ h₂ k₁ k₂ (anaFaceU (ampCoeff β x y) b)
+                  (anaFaceV (ampCoeff β x y) b) (fun i j s => ampCoeff β x y (i, j) s) α))
+      =O[atTop] fun n : ℝ => n ^ (-T) * (1 + Real.log n)
+theorem ampCoeff_zero (β : ℝ) (x y : ℕ × ℕ → ℝ) (s : ℝ) :
+    ampCoeff β x y (0, 0) s = Real.exp (β * s * x (0, 0)) * y (0, 0)
+theorem leading_pole_mem ... (hT : p < 2 * T) : p ∈ polesBelow h₁ h₂ k₁ k₂ p T
+theorem le_of_mem_polesBelow ... (α : ℝ) (hα : α ∈ polesBelow h₁ h₂ k₁ k₂ p T) : p ≤ α
+theorem canonC_leading ... (c : ℕ → ℕ → ℝ → ℝ) :
+    canonC h₁ h₂ k₁ k₂ c p = fun s => c 0 0 s / ((k₁ : ℝ) * k₂)
+theorem leading_log_coeff (β : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (p : ℝ)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p) (x y : ℕ × ℕ → ℝ) :
+    canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β x y (i, j) s) p
+      = y (0, 0) / ((k₁ : ℝ) * k₂)
+        * logMoment β p 0 (fun s => Real.exp (β * s * x (0, 0)))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Composition with $n\mapsto\sqrt n\to\infty$ transports the $N$-statement; $(\sqrt n)^{-\alpha}=n^{-\alpha/2}$
+and $\log\sqrt n=\tfrac12\log n$ identify the terms, and $(\sqrt n)^{-2T}(1+\tfrac12\log n)\le n^{-T}(1+\log n)$
+for $n\ge1$ absorbs the remainder. For the leading coefficient, the box below $(0,0)$ is the
+singleton, so $(y*E)_{00}=y_{00}E_{00}$, and $E_{00}(t)=\sum_{n\le0}t^n/n!\,(a^{*n})_{00}=\delta_{00}=1$;
+the collision coefficient at $p=\alpha_0=\delta_0$ is $c_{00}/(k_1k_2)$ and its $M[p;0;\cdot]$
+moment is the displayed Gaussian integral. All poles are $\ge p$ since $i/k_1,j/k_2\ge0$.
+
+\section{Paper-facing meaning}
+
+The first result is \texttt{thm:TaylorTree} for $d=2$ (equal starts) written literally in the
+paper's variable $n$ with $\mu=\alpha/2\in\Lambda(h,k)$. The second is the $d=2$ analogue of the
+leading-coefficient formula: the $n^{-p/2}\log n$ coefficient is
+$\tfrac12A_p=\dfrac{\eta(0)}{2k_1k_2}\int_0^\infty s^{p-1}e^{-\beta s^2+\beta s\xi(0)}ds$, a Gaussian
+moment of the fluctuation value at the origin. Astra~\#8 warned, correctly, that this
+``depends only on $\xi(0)$'' property does NOT extend to $B_p$ (which involves the face finite
+parts, hence $\xi,\eta$ along the axes) nor to unequal starting exponents.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{tendsto\_rpow\_atTop} with \texttt{Real.sqrt\_eq\_rpow} gives
+$\sqrt{\cdot}\to\infty$ in two lines; \texttt{IsBigO.comp\_tendsto} then transports the statement
+and \texttt{congr'} with an \texttt{eventually\_ge\_atTop 1} filter fixes the terms.
+\item Rewrite \texttt{Real.log\_sqrt} BEFORE \texttt{Real.sqrt\_eq\_rpow}: the latter rewrites
+every $\sqrt n$, including the one under the logarithm.
+\item \texttt{congr 1} on the subtraction keeps the $\sqrt n$ inside \texttt{twoDAmp} untouched
+while the sum is rewritten term by term.
+\item \texttt{box (0, 0) = \{(0, 0)\}} by \texttt{ext} and \texttt{simp [mem\_box, Prod.ext\_iff,
+Nat.le\_zero]}; \texttt{simp [convPow, delta]} evaluates $E_{00}$.
+\item Both files of this unit compiled on the first attempt.
+\end{itemize}
+
+\end{document}
