@@ -388,3 +388,4 @@ import Laplace.Grammar.StateDensityLeadCoeff
 import Laplace.Grammar.MonomialPhaseIdentity
 import Laplace.Grammar.MonomialPhaseExpansion
 import Laplace.Grammar.MonomialPhaseTail
+import Laplace.Grammar.SpectralLattice
