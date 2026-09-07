@@ -302,3 +302,4 @@ import Laplace.Grammar.CanonParamMeasurable
 import Laplace.Grammar.CoeffWeightedBound
 import Laplace.Grammar.CoeffDifference
 import Laplace.Grammar.ConvAlgebra
+import Laplace.Grammar.AmpCoeffLipschitz
