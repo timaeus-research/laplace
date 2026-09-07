@@ -26,7 +26,7 @@ with Mellin ratios `ℓᵢ = (hᵢ+1)/(2kᵢ)`, minimum `λ` and `J = {i : ℓ�
 Scope: nonempty block of boundary-type coordinates, unit cutoff `b = 1`, `kᵢ > 0`, `β > 0`. This is
 the paper's zeta-pole prediction for the bare normal moment integral (exponent = minimal ratio,
 logarithmic degree = multiplicity − 1, Laurent coefficient `a_{-|J|}` at `b = 1` times
-`Γ(λ)/(|J|-1)!`). NOT claimed: cutoffs `b ≠ 1`, interior coordinates with parity factors, variable
+`Γ(λ) β^{-λ}/(|J|-1)!`). NOT claimed: cutoffs `b ≠ 1`, interior coordinates with parity factors, variable
 amplitudes, or the full expectation expansion. Zero `sorry`/`axiom`.
 -/
 

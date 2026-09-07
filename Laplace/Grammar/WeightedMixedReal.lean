@@ -99,7 +99,39 @@ theorem weightedBoxIntegral_expKernel_lt_top (d : ℕ) (w : Fin d → ℝ) (hw :
   lt_of_le_of_lt (weightedBoxIntegral_expKernel_le d w β N hβN)
     (by rw [weightedBoxIntegral_one d w hw]; exact ENNReal.ofReal_lt_top)
 
-/-- The real weighted box integral `∫_{(0,1]^d} ∏ tᵢ^{ℓᵢ-1} e^{-βN ∏ tᵢ} dt` with exponents `ℓᵢ`. -/
+/-- **All-sign finiteness**: for admissible weights the exponential kernel integral is finite for
+every real `β, N`, since `e^{-βNz} ≤ e^{|βN|}` for `0 < z ≤ 1`. -/
+theorem weightedBoxIntegral_expKernel_lt_top_of_admissible (d : ℕ) (w : Fin d → ℝ)
+    (hw : ∀ i, -1 < w i) (β N : ℝ) : weightedBoxIntegral d w (expKernel β N) < ⊤ := by
+  have hle : weightedBoxIntegral d w (expKernel β N) ≤
+      ENNReal.ofReal (Real.exp |β * N|) * weightedBoxIntegral d w (fun _ => 1) := by
+    unfold weightedBoxIntegral
+    rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
+    refine setLIntegral_mono ((measurable_weightedBox_integrand d w _ measurable_const).const_mul _)
+      fun t ht => ?_
+    have hprod0 : 0 < ∏ i, t i := Finset.prod_pos fun i _ => (ht i (mem_univ i)).1
+    have hprod1 : ∏ i, t i ≤ 1 :=
+      Finset.prod_le_one (fun i _ => (ht i (mem_univ i)).1.le) fun i _ => (ht i (mem_univ i)).2
+    have hker : expKernel β N (∏ i, t i) ≤ ENNReal.ofReal (Real.exp |β * N|) := by
+      unfold expKernel
+      refine ENNReal.ofReal_le_ofReal (Real.exp_le_exp.2 ?_)
+      calc -(β * N * ∏ i, t i) ≤ |β * N * ∏ i, t i| := neg_le_abs _
+        _ = |β * N| * ∏ i, t i := by rw [abs_mul, abs_of_pos hprod0]
+        _ ≤ |β * N| * 1 := mul_le_mul_of_nonneg_left hprod1 (abs_nonneg _)
+        _ = |β * N| := mul_one _
+    calc (∏ i, ENNReal.ofReal (t i ^ w i)) * expKernel β N (∏ i, t i)
+        ≤ (∏ i, ENNReal.ofReal (t i ^ w i)) * ENNReal.ofReal (Real.exp |β * N|) := by gcongr
+      _ = ENNReal.ofReal (Real.exp |β * N|) * ((∏ i, ENNReal.ofReal (t i ^ w i)) * 1) := by ring
+  refine lt_of_le_of_lt hle (ENNReal.mul_lt_top ENNReal.ofReal_lt_top ?_)
+  rw [weightedBoxIntegral_one d w hw]
+  exact ENNReal.ofReal_lt_top
+
+/-- The real weighted box integral `∫_{(0,1]^d} ∏ tᵢ^{ℓᵢ-1} e^{-βN ∏ tᵢ} dt` with exponents `ℓᵢ`,
+as the `toReal` shadow of the nonnegative `ℝ≥0∞`-valued integral. For `∀ i, 0 < ℓ i` the underlying
+integral is finite for every real `β, N` (`weightedBoxIntegral_expKernel_lt_top_of_admissible`) and
+this is an ordinary Bochner integral; without admissibility the underlying integral may be `⊤`, in
+which case `toReal` returns `0` (totalised definition). All asymptotic statements assume
+admissibility. -/
 noncomputable def mixedBoxReal (d : ℕ) (ℓ : Fin d → ℝ) (β N : ℝ) : ℝ :=
   (weightedBoxIntegral d (fun i => ℓ i - 1) (expKernel β N)).toReal
 

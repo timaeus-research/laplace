@@ -20,7 +20,7 @@ satisfies
 
 (`monomialBoxReal_mixed_isEquivalent`), which is the paper's Laurent coefficient
 `a_{-|J|}` (eq. `a_minus_m_explicit`, cutoff `b = 1`) times the Laplace–Tauberian factor
-`Γ(λ)/(|J|-1)!`. The exact relation `M(N) = ∏ 1/(2kᵢ) · W_ℓ(N)` (`monomialBoxReal_eq_mixed`) comes
+`Γ(λ)/(|J|-1)!` and the inverse-temperature factor `β^{-λ}` (the paper has `β = 1`). The exact relation `M(N) = ∏ 1/(2kᵢ) · W_ℓ(N)` (`monomialBoxReal_eq_mixed`) comes
 from the coordinatewise substitution of unit 174; the weighted asymptotic is unit 180. A `min`
 wrapper (`minRatio`) removes the explicit minimum/attainment hypotheses.
 -/

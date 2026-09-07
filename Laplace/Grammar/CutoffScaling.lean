@@ -18,7 +18,7 @@ The paper's bare normal moment integral lives on the box `[0,b]^{|I|}` with an a
 leading constant by `b^{∑ᵢ(hᵢ+1-2kᵢλ)} = ∏_{i∉J} b^{hᵢ+1-2kᵢλ}` — exactly the `b`-dependence of the
 paper's Laurent coefficient `a_{-|J|}` (eq. `a_minus_m_explicit`), and no `b`-dependence at all in
 the equal-ratio case (`monomialBoxRealCutoff_mixed_isEquivalent`,
-`monomialBoxRealCutoff_equal_isEquivalent`).
+`monomialBoxRealCutoff_equal_isEquivalent`; the latter via `cutoff_power_eq_one_of_equal`).
 -/
 
 open MeasureTheory Set Filter Topology Asymptotics
@@ -171,5 +171,32 @@ theorem cutoff_power_eq_one_of_equal (d : ℕ) (h k : Fin d → ℕ) (hk : ∀ i
   unfold ratioExp at this
   field_simp at this
   linarith
+
+/-- **Equal-ratio asymptotic with cutoff**: the leading constant is independent of `b`. -/
+theorem monomialBoxRealCutoff_equal_isEquivalent (d : ℕ) (h k : Fin (d + 1) → ℕ)
+    (hk : ∀ i, 0 < k i) (b l β : ℝ) (hb : 0 < b) (hl : 0 < l) (hβ : 0 < β)
+    (hratio : ∀ i, ratioExp h k i = l) :
+    (fun N => monomialBoxRealCutoff (d + 1) h k b β N) ~[atTop]
+      fun N => Real.Gamma l * β ^ (-l) / ((d.factorial : ℝ) * ∏ i, 2 * (k i : ℝ)) *
+        N ^ (-l) * Real.log N ^ d := by
+  have hmin : ∀ i, l ≤ ratioExp h k i := fun i => (hratio i).symm.le
+  have hatt : ∃ i, ratioExp h k i = l := ⟨0, hratio 0⟩
+  refine (monomialBoxRealCutoff_mixed_isEquivalent d h k hk b l β hb hl hβ hmin hatt).congr_right
+    (Eventually.of_forall fun N => ?_)
+  have hm : multCount (ratioExp h k) l = d + 1 := by
+    unfold multCount
+    simp [hratio]
+  have hc : monomialMixedConst h k l β =
+      Real.Gamma l * β ^ (-l) / ((d.factorial : ℝ) * ∏ i, 2 * (k i : ℝ)) := by
+    unfold monomialMixedConst
+    rw [hm, Nat.add_sub_cancel]
+    have hprod : (∏ i, if ratioExp h k i = l then 1 / (2 * (k i : ℝ))
+        else 1 / ((h i : ℝ) + 1 - 2 * (k i : ℝ) * l)) = (∏ i, 2 * (k i : ℝ))⁻¹ := by
+      rw [← Finset.prod_inv_distrib]
+      exact Finset.prod_congr rfl fun i _ => by rw [if_pos (hratio i), one_div]
+    rw [hprod]
+    ring
+  rw [cutoff_power_eq_one_of_equal (d + 1) h k hk l hratio, Real.rpow_zero, one_mul, hc, hm,
+    Nat.add_sub_cancel]
 
 end Laplace.Grammar
