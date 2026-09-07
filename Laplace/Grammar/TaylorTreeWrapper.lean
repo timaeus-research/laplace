@@ -14,8 +14,10 @@ coefficient families with finite weighted mass `∑ |c_γ| b^{|γ|}`, `β > 0`, 
 coefficient system `C μ j` (the family coefficients of the rescaled data) such that
 
 * `C` is independent of the cutoff and of `N`, vanishes off the paper's candidate set `Λ(h,k)`, and
-  equals the paper's explicit absolutely convergent Cauchy-product series `∑_p β^p/p! T_p(cη * J^{*p})`;
-* for every cutoff `L > 0` the remainder of `Z_b(N) − b^{|h|+d} ∑_{μ ∈ Λ_L} (N b^{2|k|})^{-μ} ∑_{j ≤ d-1}
+  equals the paper's explicit absolutely convergent Cauchy-product series `∑_p β^p/p! T_p(cη *
+      J^{*p})`;
+* for every cutoff `L > 0` the remainder of `Z_b(N) − b^{|h|+d} ∑_{μ ∈ Λ_L} (N b^{2|k|})^{-μ}
+  ∑_{j ≤ d-1}
   C μ j (log(N b^{2|k|}))^j` is bounded by an explicit `N`-free constant times
   `(N b^{2|k|})^{-L} (1 + log(N b^{2|k|}))^{d-1}` whenever `N b^{2|k|} ≥ 1`, and is
   `O(N^{-L}(1+log N)^{d-1})` as `N → ∞`;
