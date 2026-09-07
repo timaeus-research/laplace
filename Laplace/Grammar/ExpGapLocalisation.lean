@@ -63,8 +63,9 @@ theorem norm_setIntegral_exp_gap_le {X : Type*} [MeasurableSpace X] {μ : Measur
 contributes `O(e^{-βNε})`. -/
 theorem exp_gap_isBigO {X : Type*} [MeasurableSpace X] {μ : Measure X} (S : Set X)
     (hS : MeasurableSet S) (a : ℝ → X → ℝ) (g f : X → ℝ) (β ε : ℝ) (hβ : 0 ≤ β)
-    (ha : ∀ N, AEStronglyMeasurable (a N) (μ.restrict S)) (hf : AEStronglyMeasurable f (μ.restrict S))
-    (hg : IntegrableOn g S μ) (hbound : ∀ N, ∀ x ∈ S, ‖a N x‖ ≤ g x) (hgap : ∀ x ∈ S, ε ≤ f x) :
+    (ha : ∀ N, AEStronglyMeasurable (a N) (μ.restrict S))
+    (hf : AEStronglyMeasurable f (μ.restrict S)) (hg : IntegrableOn g S μ)
+    (hbound : ∀ N, ∀ x ∈ S, ‖a N x‖ ≤ g x) (hgap : ∀ x ∈ S, ε ≤ f x) :
     (fun N => ∫ x in S, a N x * Real.exp (-(β * N * f x)) ∂μ) =O[atTop]
       fun N => Real.exp (-(β * N * ε)) := by
   refine IsBigO.of_bound (∫ x in S, g x ∂μ) ?_
