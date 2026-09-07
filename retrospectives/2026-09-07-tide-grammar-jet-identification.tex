@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Canonical identification of the one-dimensional jet coefficients}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The jet coefficients $F_j(s)=e^{\beta sx_0}P_j(s)$ of the all-order 1D theorem were defined by finite
+polynomial algebra from the Taylor data of $\xi,\eta$. They are identified here with the normalised
+derivatives
+\[
+F_j(s)=\frac1{j!}\,\partial_u^j\bigl(\eta(u)e^{\beta s\xi(u)}\bigr)\Big|_{u=0},\qquad j<R,\ s\ge0,
+\]
+by uniqueness of Taylor coefficients: two polynomial approximations of the same function with
+$O(u^R)$ errors on $(0,b]$ agree below order $R$, and the amplitude jet remainder (unit~95) and
+Mathlib's Taylor theorem (unit~97) supply the two approximations. Consequently the jets do not
+depend on the truncation order. No chain rule or Fa\`a di Bruno formula is used (Astra~\#4,
+rank~5). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem coeff_eq_zero_of_isBigO (b : ℝ) (hb : 0 < b) (R : ℕ) :
+    ∀ (d : ℕ → ℝ) (K : ℝ), (∀ u ∈ Ioc (0 : ℝ) b, |∑ n ∈ range R, d n * u ^ n| ≤ K * u ^ R) →
+      ∀ n, n < R → d n = 0
+theorem taylor_coeff_unique (b K₁ K₂ : ℝ) (hb : 0 < b) (R : ℕ) (f : ℝ → ℝ) (a a' : ℕ → ℝ)
+    (h₁ : ∀ u ∈ Ioc (0 : ℝ) b, |f u - ∑ n ∈ range R, a n * u ^ n| ≤ K₁ * u ^ R)
+    (h₂ : ∀ u ∈ Ioc (0 : ℝ) b, |f u - ∑ n ∈ range R, a' n * u ^ n| ≤ K₂ * u ^ R) :
+    ∀ n, n < R → a n = a' n
+theorem chartAmp_contDiff (β s : ℝ) (R : ℕ) (ξ η : ℝ → ℝ) (hξ : ContDiff ℝ R ξ)
+    (hη : ContDiff ℝ R η) : ContDiff ℝ R fun u => η u * Real.exp (β * s * ξ u)
+theorem chartJet_eq_taylorData (β b : ℝ) (hβ : 0 < β) (hb : 0 < b) (R : ℕ) (hR : 0 < R)
+    (ξ η : ℝ → ℝ) (hξ : ContDiff ℝ R ξ) (hη : ContDiff ℝ R η) (s : ℝ) (hs : 0 ≤ s) :
+    ∀ j, j < R →
+      chartJet β (taylorData ξ) (taylorData η) R j s
+        = taylorData (fun u => η u * Real.exp (β * s * ξ u)) j
+theorem chartJet_indep (β b : ℝ) (hβ : 0 < β) (hb : 0 < b) (R R' : ℕ) (hR : 0 < R)
+    (hRR' : R ≤ R') (ξ η : ℝ → ℝ) (hξ : ContDiff ℝ R' ξ) (hη : ContDiff ℝ R' η)
+    (s : ℝ) (hs : 0 ≤ s) :
+    ∀ j, j < R →
+      chartJet β (taylorData ξ) (taylorData η) R j s
+        = chartJet β (taylorData ξ) (taylorData η) R' j s
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+If $\sum_{n<R}d_nu^n=O(u^R)$ on $(0,b]$, the constant term vanishes by letting $u\to0^+$ (the
+polynomial is continuous with value $d_0$ at $0$ and is squeezed to $0$), and dividing by $u$ the
+shifted sequence $(d_{n+1})$ is $O(u^{R-1})$; induction on $R$ gives $d_n=0$ for all $n<R$. Applied
+to the difference of two approximations of the same $f$, this is uniqueness of Taylor coefficients.
+The chart amplitude $u\mapsto\eta(u)e^{\beta s\xi(u)}$ is $C^R$ when $\xi,\eta$ are, so unit~97's
+Taylor remainder bound gives one approximation with coefficients
+$\partial_u^jF(0,s)/j!$; unit~95's amplitude jet remainder gives the other, with coefficients
+$F_j(s)=e^{\beta sx_0}P_j(s)$ (constant $C(1+s)^Re^{\beta s(x_0+L_1b)}$, fixed $s\ge0$).
+
+\section{Paper-facing meaning}
+
+The all-order 1D coefficients $c_j=k^{-1}\int s^{p+j/k-1}e^{-\beta s^2}F_j(s)\,ds$ now have their
+canonical, truncation-independent meaning: $F_j$ is the $j$-th Taylor coefficient in $u$ of the
+amplitude $\eta e^{\beta s\xi}$, exactly the object the paper's tree expansion enumerates. What
+remains for a literal match with \texttt{eq:flucttreeterms} is the finite combinatorial identity
+between $e_{j,m}=\sum_{\ell\le j}y_\ell[u^{j-\ell}](g_R^m)$ and the paper's order-$j$ tree sum
+(Astra~\#4(f): recursion $\to$ partition formula $\to$ tree reindexing), none of which affects the
+asymptotic theorem.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Tendsto.mono\_left … nhdsWithin\_le\_nhds} needs the set named,
+\texttt{(nhdsWithin\_le\_nhds (s := Ioi 0))}, and the continuous function stated as a typed
+\texttt{have} (a bare \texttt{continuous\_const.mul …} leaves the constant a metavariable).
+\item \texttt{squeeze\_zero\_norm'} with \texttt{Ioc\_mem\_nhdsGT hb} handles the one-sided squeeze;
+\texttt{tendsto\_nhds\_unique} in \texttt{𝓝[>] 0} (NeBot instance found automatically) closes
+$d_0=0$.
+\item \texttt{Finset.sum\_range\_succ'} peels the constant term; \texttt{le\_of\_mul\_le\_mul\_left}
+divides the $O(u^{R+1})$ bound by $u$.
+\item \texttt{← Finset.sum\_sub\_distrib} needs the subtraction of sums adjacent; reorder with a
+\texttt{show … by ring} first.
+\end{itemize}
+
+\end{document}
