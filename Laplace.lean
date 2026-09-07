@@ -262,3 +262,4 @@ import Laplace.Grammar.ParamIntegration
 import Laplace.Grammar.FinitePartAxis
 import Laplace.Grammar.AxisSeries
 import Laplace.Grammar.JetIdentification
+import Laplace.Grammar.TwoDGenDensityUnequal
