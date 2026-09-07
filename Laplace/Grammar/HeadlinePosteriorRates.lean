@@ -14,7 +14,8 @@ Paper-facing wrappers for units 166–168 (deterministic, one chart, `d = 2`, eq
 * the two-term expansion with power-saving remainder (`headline_leading_two_terms`);
 * the constant limit `Z[φ]/Z[1] → y_{φ,00}/y_{1,00}` when the observable does not vanish at the
   corner (`headline_posterior_const_limit`);
-* the `1/log N` decay `(Z[φ]/Z[1]) log N → B^φ_p/A^1_p` when it does (`headline_posterior_log_decay`).
+* the `1/log N` decay `(Z[φ]/Z[1]) log N → B^φ_p/A^1_p` when it does
+(`headline_posterior_log_decay`).
 
 NOT claimed: a power improvement from corner vanishing (it does not hold in general), the
 identification of the next exponent under coordinatewise divisibility, unequal starting

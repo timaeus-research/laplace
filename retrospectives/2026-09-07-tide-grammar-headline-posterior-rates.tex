@@ -1,0 +1,35 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline statements, part IV: leading rates of the chart posterior ratio}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Paper-facing wrappers for units~166--168 (file \texttt{HeadlinePosteriorRates.lean}):
+the quotient calculus for power--log leading terms, the two-term expansion with power-saving
+remainder at the leading exponent, the constant posterior limit $Z[\varphi]/Z[1]\to\eta_\varphi(0)/\eta_1(0)$
+for an observable not vanishing at the corner, and the $1/\log N$ decay
+$(Z[\varphi]/Z[1])\log N\to B^\varphi_p/A^1_p$ for one that does. The mirror's remark on
+cor:empirical\_expectation was extended accordingly (staging copy committed; Overleaf sync pending
+authorisation). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Scope}
+Deterministic, one chart, $d=2$, equal starting exponents, fixed phase data, amplitudes with
+$\eta_1(0)>0$. Not claimed: a power improvement from corner vanishing (false in general), the next
+exponent under coordinatewise divisibility, unequal starting exponents, the stochastic $1/\log N$
+regime.
+
+\section{Lean notes}
+Wrappers only; compiled on the first attempt.
+
+\end{document}
