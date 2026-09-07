@@ -1,0 +1,129 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The density expansion of a face term}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For a one-variable amplitude $\Psi(u,s)$ with $u$-Taylor data $f_m(s)$ to order $M$ and weights
+$u^{h_1}v^{h_2}$, $p_2=(h_2+1)/k_2$, the density of unit~103 is expanded by the weighted
+finite-part axis lemma (unit~100) with $\gamma=k_1p_2-h_1-1<M$:
+\[
+\rho(r,s)=\sum_{m<M}r^{p_2+\frac{m-\gamma}{k_1}-1}c_m(s)+r^{p_2-1}\,k_2^{-1}\mathrm{FP}_\gamma\Psi(\cdot,s)
++r^{p_2-1}\log\tfrac1r\,\frac{f_\gamma(s)}{k_1k_2}+O\!\bigl(r^{p_2+\frac{M-\gamma}{k_1}-1}H(s)\bigr),
+\]
+with the logarithm present exactly when $\gamma$ is an integer below $M$ (a collision of
+exponents) and explicit $c_m$. The expansion is packaged as a \texttt{DensityExpansion} indexed by
+$\mathrm{Fin}\,M\oplus\mathrm{Fin}\,2$ and transferred to the $N$-expansion of the face term. This
+is the first concrete instance of Astra~\#4's cutoff-indexed $d=2$ density theorem: one face term,
+all of its exponents, its resonant logarithm and its finite-part coefficient.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def faceExp (p₂ γ : ℝ) (k₁ : ℕ) (m : ℕ) : ℝ := p₂ + ((m : ℝ) - γ) / k₁
+noncomputable def faceCoeff (γ A : ℝ) (k₁ k₂ : ℕ) (f : ℕ → ℝ → ℝ) (m : ℕ) (s : ℝ) : ℝ :=
+  if (m : ℝ) = γ then 1 / ((k₁ : ℝ) * k₂) * Real.log A * f m s
+  else -(1 / (k₂ : ℝ)) * A ^ (-(((m : ℝ) - γ) / k₁)) / ((m : ℝ) - γ) * f m s
+noncomputable def faceLogCoeff (γ : ℝ) (k₁ k₂ : ℕ) (f : ℕ → ℝ → ℝ) (M : ℕ) (s : ℝ) : ℝ :=
+  ∑ m ∈ range M, if (m : ℝ) = γ then 1 / ((k₁ : ℝ) * k₂) * f m s else 0
+noncomputable def faceFPCoeff (γ b : ℝ) (k₂ : ℕ) (Ψ : ℝ → ℝ → ℝ) (f : ℕ → ℝ → ℝ) (M : ℕ)
+    (s : ℝ) : ℝ := 1 / (k₂ : ℝ) * axisFinitePart γ b (fun u => Ψ u s) (fun m => f m s) M
+noncomputable def faceα / def faceJ / noncomputable def faceC
+  -- indexed by Fin M ⊕ Fin 2
+noncomputable def faceEnv (γ A : ℝ) (k₁ k₂ M : ℕ) (H : ℝ → ℝ) (s : ℝ) : ℝ :=
+  1 / (k₂ : ℝ) * (A ^ (-(((M : ℝ) - γ) / k₁)) / ((M : ℝ) - γ)) * H s
+theorem face_monomial_eq ... :
+    -(1 / (k₂ : ℝ)) * r ^ (p₂ - 1) * (f m s * axisPrim γ ((r / b ^ k₂) ^ ((k₁ : ℝ)⁻¹)) m)
+      = r ^ (faceExp p₂ γ k₁ m - 1) * faceCoeff γ (b ^ k₂) k₁ k₂ f m s
+        + r ^ (p₂ - 1) * Real.log (1 / r)
+          * (if (m : ℝ) = γ then 1 / ((k₁ : ℝ) * k₂) * f m s else 0)
+theorem face_terms_eq ...  -- local expression = ∑ᵢ r^{αᵢ-1} log(1/r)^{jᵢ} cᵢ(s)
+theorem genDensity_measurable / faceFPCoeff_measurable / faceC_measurable
+theorem faceDensity_expansion (p₂ b : ℝ) (h₁ k₁ k₂ M : ℕ) (hb : 0 < b) (hk₁ : 0 < k₁)
+    (Ψ : ℝ → ℝ → ℝ) (hΨc : Continuous (Function.uncurry Ψ)) (f : ℕ → ℝ → ℝ)
+    (hf : ∀ m, Measurable (f m)) (H : ℝ → ℝ) (hH : Measurable H) (hH0 : ∀ s, 0 ≤ H s)
+    (hγ : (k₁ : ℝ) * p₂ - h₁ - 1 < M)
+    (hrem : ∀ s, 0 < s → ∀ u ∈ Ioc (0 : ℝ) b,
+      |Ψ u s - ∑ m ∈ range M, f m s * u ^ m| ≤ H s * u ^ M) :
+    DensityExpansion (genDensity p₂ b h₁ k₁ k₂ Ψ) (faceα p₂ γ k₁ M) (faceJ M)
+      (faceC γ b k₁ k₂ Ψ f M) (p₂ + ((M : ℝ) - γ) / k₁) (b ^ (k₁ + k₂)) 1
+      (faceEnv γ (b ^ k₂) k₁ k₂ M H)   -- γ = k₁p₂-h₁-1
+theorem face_transfer_bound ... (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂) ... (N : ℝ) (hN : 1 ≤ N) :
+    |twoDAmp β b N h₁ h₂ k₁ k₂ (fun u _ s => Ψ u s)
+        - ∑ i, transferTerm β (faceα ..) (faceJ ..) (faceC ..) N|
+      ≤ N ^ (-(p₂ + (M - γ)/k₁)) * (1 + Real.log N) ^ 1
+        * (envMoment .. + ∑ i, R ^ (αᵢ - a) * tailMoment ..)
+theorem face_transfer_sum_eq ... :
+    ∑ i, transferTerm β (faceα p₂ γ k₁ M i) (faceJ M i) (faceC γ b k₁ k₂ Ψ f M i) N
+      = (∑ m : Fin M, N ^ (-(faceExp p₂ γ k₁ m))
+          * logMoment β (faceExp p₂ γ k₁ m) 0 (faceCoeff γ (b ^ k₂) k₁ k₂ f m))
+        + N ^ (-p₂) * logMoment β p₂ 0 (faceFPCoeff γ b k₂ Ψ f M)
+        + N ^ (-p₂) * (Real.log N * logMoment β p₂ 0 (faceLogCoeff γ k₁ k₂ f M)
+          - logMoment β p₂ 1 (faceLogCoeff γ k₁ k₂ f M))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+With $\varepsilon(r)=(r/b^{k_2})^{1/k_1}$ and $A=b^{k_2}$, unit~100 gives
+$J(\varepsilon)=\mathrm{FP}_\gamma-\sum_{m<M}f_m\,\mathrm{axisPrim}(\gamma,\varepsilon,m)+E$ with
+$|E|\le H\varepsilon^{M-\gamma}/(M-\gamma)$. The monomial terms are converted to powers of $r$ by
+\texttt{axisPrim\_rpow}: off resonance $(r/A)^{(m-\gamma)/k_1}/(m-\gamma)=r^{(m-\gamma)/k_1}A^{-(m-\gamma)/k_1}/(m-\gamma)$,
+so the term has exponent $p_2+(m-\gamma)/k_1$; at the resonance $m=\gamma$,
+$(\log r-\log A)/k_1$ splits into a $\log(1/r)$ term with coefficient $(k_1k_2)^{-1}f_\gamma$ and a
+constant $(k_1k_2)^{-1}\log A\,f_\gamma$ at exponent $p_2$ (\texttt{face\_monomial\_eq}). The
+remainder $k_2^{-1}r^{p_2-1}\varepsilon^{M-\gamma}H/(M-\gamma)$ has exponent
+$a=p_2+(M-\gamma)/k_1$, strictly above every term since $m<M$; the uniform log degree $1$ absorbs
+the resonant term. Measurability of the finite-part coefficient in $s$ is a parametric-integral
+argument (\texttt{StronglyMeasurable.integral\_prod\_right'}), and of the density in $(r,s)$ the
+indicator trick of unit~87.
+
+\section{Paper-facing meaning}
+
+A face term $u^ia_i(v,s)$ of the rectangular decomposition (after swapping coordinates) is exactly
+this situation with $\gamma=k_2i/k_1$, so its contribution to the $d=2$ block is
+\begin{gather*}
+\sum_{m<M}N^{-(p+m/k_2)}\,\mathcal M_{p+m/k_2,0}(c_m)
++N^{-(p+i/k_1)}\Bigl[\mathcal M_{p+i/k_1,0}(k_2^{-1}\mathrm{FP})\\
+\qquad+\log N\,\mathcal M_{p+i/k_1,0}(c_{\log})-\mathcal M_{p+i/k_1,1}(c_{\log})\Bigr]
++O\bigl(N^{-(p+M/k_2)}(1+\log N)\bigr),
+\end{gather*}
+with $c_{\log}\ne0$ only when $i/k_1=m/k_2$ for some $m<M$: the logarithms of the higher-order
+$d=2$ expansion occur precisely at collisions of the two exponent lattices $p+\mathbb N/k_1$ and
+$p+\mathbb N/k_2$, as predicted in Astra~\#3(b)/\#4(b). What remains for the full $\tau$-cutoff
+theorem is the rectangular decomposition $\Phi=\sum_iu^ia_i+\sum_jv^jb_j-\sum_{ij}c_{ij}u^iv^j+R$
+with the mixed remainder estimate, and the bookkeeping of the corner monomials.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item A file's import closure need not contain everything below it in \texttt{Laplace.lean}:
+\texttt{axisFinitePart} was unknown until \texttt{AxisSeries} (hence \texttt{FinitePartAxis}) was
+imported explicitly.
+\item \texttt{Fintype.sum\_sum\_type} + \texttt{Fin.sum\_univ\_two} + \texttt{simp only
+[Sum.elim\_inl, Sum.elim\_inr, Matrix.cons\_val\_zero, Matrix.cons\_val\_one]} unfold a
+\texttt{Fin M ⊕ Fin 2}-indexed sum; \texttt{Fin.sum\_univ\_eq\_sum\_range} aligns the
+\texttt{Fin M} sum with a \texttt{range M} sum; the final step is
+\texttt{linear\_combination (-1 : ℝ) * hS}.
+\item \texttt{simp only} may already distribute a scalar over a sum, so a later
+\texttt{rw [Finset.mul\_sum]} finds nothing; prove the combined identity as a \texttt{have} instead.
+\item A \texttt{gcongr} side goal \texttt{0 ≤ faceEnv …} is reported as an unsolved
+\texttt{case ha} at the enclosing \texttt{have}; opaque definitions need the monotonicity lemma
+spelled out (\texttt{mul\_le\_mul\_of\_nonneg\_right}).
+\item \texttt{split\_ifs} on a condition independent of the variable (\texttt{(m : ℝ) = γ}) is the
+cheap way to get measurability of an \texttt{ite}-defined coefficient.
+\end{itemize}
+
+\end{document}
