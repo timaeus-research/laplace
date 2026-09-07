@@ -1,0 +1,75 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The leading coefficient for unequal starting exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $p_1=(h_1+1)/k_1<p_2=(h_2+1)/k_2$ the smallest candidate exponent $p_1$ is a $u$-pole but no
+$v$-pole and no collision, so the Taylor tree has no leading logarithm ($A_{p_1}=0$) and its leading
+constant is
+\[
+B_{p_1}=\frac1{k_1}\sum_{j\ge0}\frac{b^{j+\Delta}}{j+\Delta}\,M[p_1;0;c_{0j}],\qquad\Delta=k_2(p_2-p_1)>0
+\]
+(\texttt{leading\_coeff\_unequal}): the finite part of the leading face is the genuine integral
+$\int_0^bv^{\Delta-1}a_0(v,s)\,dv$, expanded as an absolutely convergent series (Astra~\#9~(iii)).
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem vExp_ne_uExp_zero_of_lt (h₁ h₂ k₁ k₂ : ℕ) (hk₂ : 0 < k₂) (p₁ p₂ : ℝ)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂) (hlt : p₁ < p₂) (j : ℕ) :
+    vExp h₂ k₂ j ≠ uExp h₁ k₁ 0
+theorem leading_coeff_unequal (β b p₁ p₂ ρ C₀ L : ℝ) (h₁ h₂ k₁ k₂ D : ℕ) (hβ : 0 < β)
+    (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂) (hlt : p₁ < p₂)
+    (c : ℕ × ℕ → ℝ → ℝ) (hcc : ∀ ij, Continuous (c ij)) (H : ℝ → ℝ)
+    (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s) (hC₀ : 0 ≤ C₀)
+    (henv : ∀ s, 0 ≤ s → H s ≤ C₀ * (1 + s) ^ D * Real.exp (β * s * L)) :
+    canonA β h₁ h₂ k₁ k₂ (fun i j s => c (i, j) s) p₁ = 0 ∧
+      canonB β b h₁ h₂ k₁ k₂ (anaFaceU c b) (anaFaceV c b) (fun i j s => c (i, j) s) p₁
+        = 1 / (k₁ : ℝ) * ∑' j : ℕ, b ^ ((j : ℝ) + k₂ * (p₂ - p₁)) / ((j : ℝ) + k₂ * (p₂ - p₁))
+            * logMoment β p₁ 0 (c (0, j))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Every $v$-pole $\delta_j=p_2+j/k_2\ge p_2>p_1=\alpha_0$, so $C_{p_1}=0$ and $V_{p_1}=0$;
+$B_{p_1}=M[p_1;0;U_{p_1}]$ and by the moment series of unit~126
+$M[p_1;0;U_{p_1}]=k_1^{-1}\sum_jq_{\gamma_0}(j)M[p_1;0;c_{0j}]$ with
+$\gamma_0=k_2p_1-h_2-1=k_2(p_1-p_2)=-\Delta<0$, so no $j$ is resonant and
+$q_{\gamma_0}(j)=b^{j+\Delta}/(j+\Delta)$.
+
+\section{Paper-facing meaning}
+
+Complements the equal-start leading coefficient of unit~124: for $p_1\ne p_2$ the leading term of
+$Z(\beta,n;\xi,\eta)$ is $n^{-p_1/2}B_{p_1}$ with no logarithm, and $B_{p_1}$ depends on
+$\xi,\eta$ along the whole leading face ($c_{0j}$ for all $j$), not only at the origin. As Astra~\#9
+stressed, this is the correct replacement for ``leading exponent $p$'' in the paper's $d=2$
+discussion: the smallest candidate exponent is $\min(p_1,p_2)$, a leading logarithm requires
+$p_1=p_2$, and the leading coefficient may vanish.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{rw [← h0]} replaces every occurrence of $p_1$ by \texttt{uExp h₁ k₁ 0}, including in
+the target series; rewrite back with \texttt{h0} at the end (the final \texttt{rw} closes the goal by
+reflexivity).
+\item The resonant branch is excluded by \texttt{if\_neg} from $j\ge0>-\Delta$;
+\texttt{sub\_neg\_eq\_add} turns $j-(-\Delta)$ into $j+\Delta$ in both the exponent and the
+denominator at once.
+\end{itemize}
+
+\end{document}
