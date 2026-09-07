@@ -1,0 +1,99 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The analytic amplitude adapter}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+An amplitude given on the box by a double power series with a radius margin,
+$\Phi(u,v,s)=\sum c_{ij}(s)u^iv^j$ with $|c_{ij}(s)|\rho^{i+j}\le H(s)$ and $b<\rho$, is packaged
+into the data of the $d=2$ cutoff theorem (Astra~\#6, route~D): the jointly continuous amplitude
+\texttt{anaAmp} (coordinates clamped to $[0,b]$ so that the series converges everywhere), the
+compatible faces \texttt{anaFaceU}, \texttt{anaFaceV} of unit~113, the face remainders with envelope
+$H(s)\rho^{-i-M}/(1-b/\rho)$, and the mixed remainder bound
+$H(s)\rho^{-M_1-M_2}/(1-b/\rho)^2\cdot u^{M_1}v^{M_2}$. Continuity in $s$ comes from a locally uniform
+bound (\texttt{continuous\_tsum\_of\_locally\_bounded}), which needs only continuity of the coefficient
+functions and of $H$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem continuous_tsum_of_locally_bounded {X : Type*} [PseudoMetricSpace X]
+    [ProperSpace X] {ι : Type*} (f : ι → X → ℝ) (hf : ∀ n, Continuous (f n)) (u : ι → ℝ)
+    (hu : Summable u)
+    (hu0 : ∀ n, 0 ≤ u n) (G : X → ℝ) (hG : Continuous G)
+    (hbound : ∀ n x, |f n x| ≤ G x * u n) :
+    Continuous fun x => ∑' n, f n x
+theorem summable_geom_prod (θ : ℝ) (h0 : 0 ≤ θ) (h1 : θ < 1) :
+    Summable fun ij : ℕ × ℕ => θ ^ ij.1 * θ ^ ij.2
+noncomputable def clampB (b x : ℝ) : ℝ := max 0 (min b x)
+  -- + continuity, bounds, identity on Icc
+noncomputable def anaAmp (c : ℕ × ℕ → ℝ → ℝ) (b u v s : ℝ) : ℝ :=
+  dblSum (fun ij => c ij s) (clampB b u) (clampB b v)
+noncomputable def anaFaceU (c : ℕ × ℕ → ℝ → ℝ) (b : ℝ) (i : ℕ) (v s : ℝ) : ℝ :=
+  faceU (fun ij => c ij s) i (clampB b v)
+noncomputable def anaFaceV ... := faceV (fun ij => c ij s) j (clampB b u)
+def swapC (c : ℕ × ℕ → ℝ → ℝ) : ℕ × ℕ → ℝ → ℝ := fun ij s => c (ij.2, ij.1) s
+theorem anaAmp_continuous ... : Continuous fun x : ℝ × ℝ × ℝ => anaAmp c b x.1 x.2.1 x.2.2
+theorem anaFaceU_continuous / anaFaceV_continuous ... :
+    Continuous (Function.uncurry (anaFaceU c b i))
+theorem anaFaceU_rem ... (hv : v ∈ Ioc (0 : ℝ) b) :
+    |anaFaceU c b i v s - ∑ m ∈ Finset.range M, c (i, m) s * v ^ m|
+      ≤ H s * (ρ ^ i)⁻¹ * (ρ ^ M)⁻¹ / (1 - b / ρ) * v ^ M
+theorem anaFaceV_rem ...  -- via swapC
+theorem anaAmp_rectRem_le ... (hu : u ∈ Icc (0 : ℝ) b) (hv : v ∈ Icc (0 : ℝ) b) :
+    |rectRem (anaAmp c b) (anaFaceU c b) (anaFaceV c b) (fun i j s => c (i, j) s)
+        M₁ M₂ u v s|
+      ≤ H s * (ρ ^ (M₁ + M₂))⁻¹ / (1 - b / ρ) ^ 2 * (u ^ M₁ * v ^ M₂)
+theorem anaCoeff_abs_le ... : |c ij s| ≤ H s * (ρ ^ (ij.1 + ij.2))⁻¹
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The series $\sum_{ij}c_{ij}(s)u^iv^j$ converges absolutely on $[0,b]^2$ with the $s$-dependent bound
+$H(s)\theta^{i+j}$, $\theta=b/\rho$; a global uniform bound is unavailable (the envelope grows with
+$s$), but on every closed ball $H$ is bounded, and \texttt{continuousOn\_tsum} on the ball plus
+\texttt{ContinuousOn.continuousAt} gives continuity at every point. Clamping the coordinates to
+$[0,b]$ makes the amplitude and faces globally defined continuous functions agreeing with the series on
+the box, which is all the cutoff theorem uses. The remainder bounds are unit~113's with
+$1-v/\rho\ge1-b/\rho$ on $(0,b]$, and the $v$-face statements follow from the $u$-face ones for the
+swapped coefficient array.
+
+\section{Paper-facing meaning}
+
+With this adapter, the $d=2$ equal-exponent cutoff expansion needs no compatibility assumption on
+face jets and no symmetry of mixed partial derivatives: analytic data with a radius margin, the
+paper's standing hypothesis, produce compatible faces by construction. The next unit discharges the
+\texttt{FaceMoments} through \texttt{faceMoments\_of\_envelope} (all coefficients are bounded by
+$C_0\rho^{-i-j}(1+s)^De^{\beta sL}$ when $H$ is) and states the analytic $d=2$ cutoff theorem; the
+weighted-$\ell^1$ coefficient closure for $\eta e^{\beta s\xi}$ then supplies the series hypothesis
+from those of $\xi,\eta$.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{continuous\_tsum} needs a global bound; for envelopes growing in a parameter, prove
+continuity at each point from \texttt{continuousOn\_tsum} on \texttt{Metric.closedBall x₀ 1}
+(compact in a \texttt{ProperSpace}) and \texttt{IsCompact.exists\_bound\_of\_continuousOn}.
+\item Clamping with \texttt{max 0 (min b x)} is simpler than \texttt{Set.projIcc} (no subtype
+coercions); \texttt{clampB\_of\_mem} restores the identity on the box.
+\item \texttt{field\_simp} cannot cancel $1-b/\rho$ without the normalised fact $\rho-b\ne0$; a
+targeted \texttt{div\_mul\_eq\_mul\_div, div\_mul\_cancel₀ \_ hne} is more robust.
+\item \texttt{gcongr} side goals of the form \texttt{0 ≤ v \^{} M} need \texttt{0 < v} as a bare
+hypothesis in context (\texttt{have hv0 : 0 < v := hv.1}).
+\item Symmetric statements for the two faces: define the swapped array once (\texttt{swapC}) and
+transport the bound with \texttt{add\_comm}.
+\end{itemize}
+
+\end{document}
