@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Explicit bounds for the product-kernel block}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For a nonnegative kernel $g$ the product-kernel block
+$J(t)=\int\!\!\int_{(0,b]^2}u^{h_1}v^{h_2}g(tu^{k_1}v^{k_2})\,du\,dv$ is bounded explicitly rather
+than asymptotically (Astra~\#5(d)). With equal exponents $p$ and $R=b^{k_1+k_2}$ the exact density is
+$(k_1k_2)^{-1}r^{p-1}\log(R/r)$, and for $t\ge1$
+\[
+J(t)\le\frac{t^{-p}}{k_1k_2}\bigl(\log t\cdot M_p(g)+U_{p,R}(g)\bigr),\qquad
+M_p=\int_0^\infty s^{p-1}g,\quad U_{p,R}=\int_0^\infty s^{p-1}\log_+(R/s)\,g;
+\]
+for bounded $0\le g\le G_0$, $J(t)\le G_0\,b^{h_1+1}b^{h_2+1}/((h_1+1)(h_2+1))$ for every $t$. These
+constants replace the \texttt{IsBigO} mixed-remainder bound and are what the strict-gap parameter
+wrapper (unit~99) needs as an integrable $K(w)$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def prodKernel (b : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (g : ℝ → ℝ) (t : ℝ) : ℝ :=
+  ∫ u in Ioc (0 : ℝ) b, u ^ h₁ * ∫ v in Ioc (0 : ℝ) b, v ^ h₂ * g (t * (u ^ k₁ * v ^ k₂))
+theorem prodKernel_eq_twoDAmp ... :
+    prodKernel b h₁ h₂ k₁ k₂ g t = twoDAmp 0 b t h₁ h₂ k₁ k₂ (fun _ _ s => g s)
+noncomputable def kernelMoment (α : ℝ) (g : ℝ → ℝ) : ℝ :=
+  ∫ s in Ioi (0 : ℝ), s ^ (α - 1) * g s
+noncomputable def kernelLogMoment (α R : ℝ) (g : ℝ → ℝ) : ℝ :=
+  ∫ s in Ioi (0 : ℝ), s ^ (α - 1) * logPlus (R / s) * g s
+theorem integral_inv_Icc (ε b : ℝ) (hε : 0 < ε) (hεb : ε ≤ b) :
+    ∫ u in Icc ε b, u⁻¹ = Real.log b - Real.log ε
+theorem log_density_factor ... :
+    Real.log b - Real.log ((r / b ^ k₂) ^ ((k₁ : ℝ)⁻¹))
+      = 1 / (k₁ : ℝ) * (Real.log (b ^ (k₁ + k₂)) - Real.log r)
+theorem prodKernel_eq_density (b p : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hb : 0 < b) (hk₁ : 0 < k₁)
+    (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
+    (g : ℝ → ℝ) (hg : Continuous g) (t : ℝ) (ht : 0 ≤ t) :
+    prodKernel b h₁ h₂ k₁ k₂ g t
+      = ∫ r in Ioc (0 : ℝ) (b ^ (k₁ + k₂)),
+          1 / ((k₁ : ℝ) * k₂) * r ^ (p - 1) * (Real.log (b ^ (k₁ + k₂)) - Real.log r)
+            * g (t * r)
+theorem prodKernel_le_equal ... (hg0 : ∀ s, 0 ≤ g s)
+    (hM : IntegrableOn (fun s => s ^ (p - 1) * g s) (Ioi 0))
+    (hU : IntegrableOn (fun s => s ^ (p - 1) * logPlus (b ^ (k₁ + k₂) / s) * g s) (Ioi 0))
+    (t : ℝ) (ht : 1 ≤ t) :
+    prodKernel b h₁ h₂ k₁ k₂ g t
+      ≤ t ^ (-p) / ((k₁ : ℝ) * k₂)
+        * (Real.log t * kernelMoment p g + kernelLogMoment p (b ^ (k₁ + k₂)) g)
+theorem prodKernel_le_of_bounded (b G₀ : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hb : 0 < b) (g : ℝ → ℝ)
+    (hg : Continuous g) (hgG : ∀ s, g s ≤ G₀) (t : ℝ) :
+    prodKernel b h₁ h₂ k₁ k₂ g t
+      ≤ G₀ * (b ^ (h₁ + 1) / ((h₁ : ℝ) + 1)) * (b ^ (h₂ + 1) / ((h₂ : ℝ) + 1))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+$J(t)$ is the block integral of unit~86 with $\beta=0$ and the constant amplitude $g(s)$, so the
+one-variable density is $k_2^{-1}r^{p-1}g(tr)\int_\varepsilon^bu^{-1}du$ with
+$\varepsilon=(r/b^{k_2})^{1/k_1}$, and $\log b-\log\varepsilon=k_1^{-1}\log(R/r)$. Substituting
+$x=tr$ (\texttt{integral\_Ioc\_rpow\_mul\_comp\_mul\_left}),
+$J(t)=\frac{t^{-p}}{k_1k_2}\int_0^{tR}x^{p-1}\bigl(\log t+\log(R/x)\bigr)g(x)\,dx$, and on $(0,tR]$
+the bracket lies between $0$ and $\log t+\log_+(R/x)$ (lower bound from $x\le tR$); extending the
+integral to $(0,\infty)$ over the nonnegative dominating integrand gives the bound. The bounded
+kernel estimate is Fubini for the product of the two monomial integrals on the product box.
+
+\section{Paper-facing meaning}
+
+The mixed remainder of the rectangular decomposition is dominated by
+$J(t)$ with $g(s)=e^{-\beta s^2/2+\beta Ls}(1+s)^D$-type kernels and shifted exponents; the explicit
+bound makes the remainder term of the $d=2$ cutoff theorem quantitative, which is the prerequisite
+for instantiating the strict-gap parameter wrapper on mixed critical/noncritical blocks (the
+constants must be integrable in the parameter $w$, which pointwise \texttt{IsBigO} does not give).
+The unequal-exponent and gap-uniform bounds of Astra~\#5(d) are the natural follow-up.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{setIntegral\_congr\_fun} on the density hands the amplitude as an unreduced
+\texttt{(fun x s => g s) u (t * r)}; \texttt{beta\_reduce} before rewriting with
+\texttt{integral\_mul\_const}.
+\item Lower bounds for $\log(R/x)$ on $(0,tR]$: go through
+\texttt{Real.log\_le\_log hx0 hx.2} and \texttt{Real.log\_mul}, not through inverses and divisions.
+\item Continuity of a parametric integral in the outer variable is expensive to prove directly;
+integrating over the product box (\texttt{twoDAmp\_eq\_prod}, \texttt{integral\_mono\_ae},
+\texttt{integral\_prod\_mul}) avoids it entirely.
+\end{itemize}
+
+\end{document}
