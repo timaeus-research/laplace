@@ -16,8 +16,8 @@ continuous-amplitude theorem (unit 186):
   coefficient of `η_sym` (`symmetric_amplitude_tendsto`);
 * for equal ratios the limit is `η(0) ∏ᵢ(1+(-1)^{hᵢ}) · Γ(λ)β^{-λ}/(m! ∏ᵢ 2kᵢ)`
   (`symmetric_amplitude_equal`), so **an odd exponent annihilates the equal-ratio leading corner
-  coefficient** (`symmetric_amplitude_odd`): the integral is then `o(N^{-λ}(log N)^m)`; it does not
-  vanish, and no next-order rate is claimed.
+  coefficient** (`symmetric_amplitude_odd`): the integral is then `o(N^{-λ}(log N)^m)`; it need not
+  vanish identically (it may, e.g. for a constant amplitude), and no next-order rate is claimed.
 
 Headline wrappers (part XI) restate these on the Bochner integrals.
 -/
