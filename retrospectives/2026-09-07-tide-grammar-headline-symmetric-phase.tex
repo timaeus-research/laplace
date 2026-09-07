@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline XIX: the phase-dressed leading term on the symmetric box}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 217 closes Astra~\#23's programme~D2: interior coordinates with phase. On the orthant
+$x=\sigma\cdot u$ of $(-1,1]^d$ one has $x^{2k}=u^{2k}$, $x^h=\chi_h(\sigma)u^h$ and
+$x^k\xi(x)=\varepsilon_\sigma u^k\xi(\sigma u)$ with $\chi_h(\sigma)=\prod_i\sigma_i^{h_i}$,
+$\varepsilon_\sigma=\prod_i\sigma_i^{k_i}$; by the generic reflection identity of unit~216 the
+symmetric-box dressed integral is the sum over orthants of unit-box chart integrals with phase
+$\varepsilon_\sigma\,\xi\circ\sigma$ and amplitude $\chi_h(\sigma)\,\eta\circ\sigma$, and
+Headline~XIII on each orthant gives
+\[
+\frac{\int_{(-1,1]^d}\eta\,x^he^{-\beta N^2x^{2k}+\beta Nx^k\xi(x)}\,dx}{N^{-p}(\log N)^{m-1}}
+\longrightarrow\sum_{\sigma\in\{\pm1\}^d}\mathrm{phaseCoeff}\bigl(\varepsilon_\sigma\xi\circ\sigma,\ \chi_h(\sigma)\eta\circ\sigma\bigr)
+\]
+(\texttt{headline\_symmetric\_phase\_leading}); for the absolute density $|x|^h$ the sign
+$\chi_h(\sigma)$ disappears (\texttt{headline\_symmetric\_abs\_phase\_leading}). Odd $k_i$ flip the
+phase on the corresponding reflection ($J_p(a)$ against $J_p(-a)$): no parity cancellation is
+asserted in general, as Astra~\#22--23 warned; the zero-phase parity rule of unit~197 is the case
+$\xi=0$. Zero \texttt{sorry}/\texttt{axiom}; 9094 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def phaseSign (e : Fin d → ℕ) (σ : Fin d → Bool) : ℝ := ∏ i, sgn (σ
+      i) ^ e i
+theorem phaseSign_sq : phaseSign e σ ^ 2 = 1;  theorem abs_sgn (b) : |sgn b| = 1
+theorem prod_reflect_pow : ∏ i, reflect σ u i ^ e i = phaseSign e σ * ∏ i, u i ^ e i
+theorem prod_abs_reflect_pow (hu : u ∈ unitBox d) : ∏ i, |reflect σ u i| ^ e i = ∏
+      i, u i ^ e i
+theorem quadKernel_mul_sign (hε : ε ^ 2 = 1) : quadKernel β a (ε * s) = quadKernel
+      β (ε * a) s
+theorem symBox_phase_eq_sum (hξ) (hη) : ∫ x in symBox d, η x * ((∏ x^h) *
+      quadKernel β (ξ x) (N ∏ x^k))
+    = ∑ σ, chartIntegral d h k β N (fun u => phaseSign k σ * ξ (reflect σ u)) (fun
+      u => phaseSign h σ * η (reflect σ u))
+theorem symBox_abs_phase_eq_sum … (amplitude fun u => η (reflect σ u), density ∏ |x
+      i| ^ h i)
+theorem headline_symmetric_phase_leading (hk) (hl) (hβ) (hmin) (hatt) (hξ) (hη) :
+    Tendsto (fun N => (∫ x in symBox (m+1), η x * ((∏ x^h) * exp (-(β N² ∏ x^(2k))
+      + β (N ∏ x^k) ξ x)))
+        / (N^(-(2l)) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 (∑ σ, phaseCoeff h k l β (fun u => phaseSign k σ * ξ (reflect σ u)) (fun u
+      => phaseSign h σ * η (reflect σ u))))
+theorem headline_symmetric_abs_phase_leading … (𝓝 (∑ σ, phaseCoeff h k l β (fun u
+      => phaseSign k σ * ξ (reflect σ u)) (fun u => η (reflect σ u))))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Purely algebraic on top of units 216 and 202: $(\sigma_iu_i)^{h_i}=\sigma_i^{h_i}u_i^{h_i}$,
+$|\sigma_iu_i|^{h_i}=u_i^{h_i}$ on the positive orthant, and $e^{-\beta(\varepsilon s)^2+\beta a(\varepsilon s)}
+=e^{-\beta s^2+\beta(\varepsilon a)s}$ for $\varepsilon^2=1$ move all signs into the phase and the
+amplitude. Each orthant is then a Headline~XIII chart with continuous inputs (reflection is
+continuous), and finite sums of limits add.
+
+\section{Lean notes}
+\begin{itemize}
+\item After \texttt{congr 1} the goal shows the per-orthant integrals unfolded (the limit theorem's
+  function is the explicit integral, not \texttt{chartIntegral}); to rewrite with an identity stated
+  via \texttt{chartIntegral}, \texttt{unfold chartIntegral at hs; beta\_reduce at hs} first.
+\item \texttt{MeasurableSet.univ\_pi fun \_ => measurableSet\_Ioc} discharges measurability of
+  \texttt{symBox} without unfolding it.
+\end{itemize}
+
+\section{Status}
+Programmes A, A2, B, B2, D, D2, G complete; Headlines VI--XIX. Remaining: review v15 (units
+216--217), the hand-off report v3 with the explicit list of assumptions for application.
+\end{document}
