@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline XVIII: the assembled stochastic posterior quotient}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 215 closes Astra~\#23's programme~G: the paper's leading-order stochastic expectation
+expansion, conditional on the chart decomposition. For finitely many charts $a\in\kappa$ with their
+own dimensions and exponents, deterministic continuous observables $\varphi_a$ and densities $c_a>0$,
+a common $\beta$, jointly convergent random phases $X_n\Rightarrow Z$ in $\prod_aC([0,1]^{d_a+1})$ and
+deterministic $N_n\to\infty$ ($N_n>1$),
+\[
+\frac{\sum_a\int\varphi_ac_a\,u^{h_a}e^{-\beta N_n^2u^{2k_a}+\beta N_nu^{k_a}X_n^a}}
+     {\sum_a\int c_a\,u^{h_a}e^{-\beta N_n^2u^{2k_a}+\beta N_nu^{k_a}X_n^a}}
+\;\Rightarrow\;
+\frac{\sum_{a\in S}\mathrm{phaseCoeff}_a(Z^a,\varphi_ac_a)}{\sum_{a\in S}\mathrm{phaseCoeff}_a(Z^a,c_a)},
+\]
+$S$ the charts with minimal exponent $p_a=2\lambda_a$ and, among those, maximal multiplicity
+(\texttt{headline\_stochastic\_assembled\_posterior}). It is a ratio of sums, not a sum of chart
+ratios; the selected limiting denominator is a.s.\ (indeed surely) positive. Zero
+\texttt{sorry}/\texttt{axiom}; 9092 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem tendstoInDistribution_normChart_pairVec … (g₁ g₂ : (a : κ) → C(closedCube
+      (d a + 1), ℝ)) :
+    TendstoInDistribution (fun n ω a => (normChart … (Nseq n) (X n ω a, g₁ a),
+      normChart … (X n ω a, g₂ a))) L
+      (fun ω a => (limChart … (Z ω a, g₁ a), limChart … (Z ω a, g₂ a))) (fun _ =>
+      μ) μ'
+theorem headline_stochastic_assembled_posterior [Fintype κ] [Nonempty κ] (d) (h k)
+      (hk) (l) (β) (hl) (hβ) (hmin) (hatt)
+    (X : ι → Ω → PhaseSpaces κ d) (hXm) (Z) (hZm) (hX : TendstoInDistribution X L Z
+      (fun _ => μ) μ')
+    (Nseq) (hN : Tendsto Nseq L atTop) (hN1 : ∀ n, 1 < Nseq n) (φ c) (hcpos : ∀ a
+      x, 0 < c a x) :
+    TendstoInDistribution (fun n ω => (∑ a, chartIntegral (d a + 1) (h a) (k a) β
+      (Nseq n) (extCube (X n ω a))
+        (extCube (φ a * c a))) / ∑ a, chartIntegral … (extCube (X n ω a)) (extCube
+      (c a))) L
+      (fun ω => (∑ a ∈ univ.filter sel, limChart (h a) (k a) (l a) β (Z ω a, φ a *
+      c a))
+          / ∑ a ∈ univ.filter sel, limChart (h a) (k a) (l a) β (Z ω a, c a)) (fun
+      _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+Per chart, $\sum_aI_a/S_*=\sum_a(S_a/S_*)(I_a/S_a)$ with $S_a=N^{-p_a}(\log N)^{m_a-1}$ and
+$S_*$ the selected normalisation. The vector $(I_a^{\varphi c}/S_a,\,I_a^{c}/S_a)_a$ converges jointly
+in distribution (joint pair-vector Headline~XVI: common phase vector, errors to $0$ in probability
+collected by \texttt{tendstoInMeasure\_pi\_zero}); the deterministic ratios $S_a/S_*\to e_a\in\{0,1\}$
+(\texttt{scale\_ratio\_tendsto}); Slutsky pairs the two; the continuous map
+$(v,w)\mapsto(\sum_aw_av_a^{(1)},\sum_aw_av_a^{(2)})$ gives the assembled normalised numerator and
+denominator jointly; the selected denominator $\sum_{a\in S}\mathrm{phaseCoeff}_a(Z^a,c_a)$ is a
+finite sum of strictly positive terms over a nonempty selection; the quotient theorem of unit~157 and
+the exact cancellation of $S_*$ (all $N_n>1$) finish. As Astra~\#23 insisted, this is the honest
+random object --- the denominator weights are random and do not cancel chart by chart.
+
+\section{Lean notes}
+\begin{itemize}
+\item The whole proof compiled at the first attempt; the only friction was cosmetic (five long
+  lines, \texttt{continuous\_finset\_sum} deprecated for \texttt{continuous\_finsetSum}).
+\item \texttt{scale\_ratio\_tendsto} for the abstract $(p,m)=(2\lambda_a,\mathrm{multCount}_a)$ is
+  accepted against the \texttt{leadScale} form by defeq after \texttt{tendsto\_pi\_nhds}; no
+  rewriting needed.
+\item Passing the summation map \texttt{g} through \texttt{continuous\_comp} and then reading off the
+  two components with \texttt{Measurable.fst/snd} avoids restating measurability of the sums.
+\item \texttt{boole\_mul} with \texttt{Finset.sum\_filter} converts $\sum_ae_af_a$ into the
+  filtered sum.
+\end{itemize}
+
+\section{Status}
+Programme G complete (units 214--215). Remaining per Astra~\#23: D2 (signed orthants with phase, if
+the paper's interior charts stay unsplit) and the hand-off report v3.
+\end{document}
