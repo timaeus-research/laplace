@@ -88,8 +88,8 @@ theorem symBox_abs_phase_eq_sum {d : ℕ} (β N : ℝ) (h k : Fin d → ℕ) (ξ
       unfold quadKernel
       exact Real.continuous_exp.comp ((continuous_const.mul ((continuous_const.mul hP).pow 2)).add
         ((continuous_const.mul hξ).mul (continuous_const.mul hP)))
-    exact hη.mul ((continuous_finsetProd _ fun i _ => (continuous_abs.comp (continuous_apply i)).pow _).mul
-      hQ)
+    exact hη.mul ((continuous_finsetProd _ fun i _ =>
+      (continuous_abs.comp (continuous_apply i)).pow _).mul hQ)
   rw [integral_symBox_eq_sum_reflect d _ hcont]
   refine Finset.sum_congr rfl fun σ _ => ?_
   unfold chartIntegral
@@ -110,7 +110,8 @@ theorem headline_symmetric_phase_leading (m : ℕ) (h k : Fin (m + 1) → ℕ) (
         (fun u => phaseSign h σ * η (reflect σ u)))) := by
   have hT := tendsto_finsetSum Finset.univ fun σ _ =>
     phase_leading_tendsto m h k hk l β hl hβ hmin hatt (fun u => phaseSign k σ * ξ (reflect σ u))
-      (fun u => phaseSign h σ * η (reflect σ u)) (continuous_const.mul (hξ.comp (continuous_reflect σ)))
+      (fun u => phaseSign h σ * η (reflect σ u))
+      (continuous_const.mul (hξ.comp (continuous_reflect σ)))
       (continuous_const.mul (hη.comp (continuous_reflect σ)))
   refine hT.congr' (Eventually.of_forall fun N => ?_)
   rw [← Finset.sum_div]
