@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The zero-phase dictionary and the constant cross-validation}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#18's ``dictionary'': the two-dimensional quadratic chart of the random-phase Taylor tree,
+at zero phase $\xi\equiv0$ and unit amplitude $\eta\equiv1$ (Taylor data $x=0$, $y=\delta_{00}$),
+is \emph{exactly} the unit-box monomial integral at parameter $N^2$
+(\texttt{twoDAmp\_zeroPhase\_eq\_monomial\_sq}). A square-parameter transport lemma turns a
+power--log limit in $T$ into one in $N=\sqrt T$ with the logarithmic coefficient multiplied by $2^r$
+(\texttt{tendsto\_powLog\_comp\_sq}). By uniqueness of limits the Taylor-tree leading log coefficient
+at zero phase equals \emph{twice} the monomial mixed constant at $\lambda=p/2$
+(\texttt{canonA\_zeroPhase\_eq\_two\_mul\_monomialMixedConst}):
+\[
+\frac{y_{00}}{k_1k_2}\int_0^\infty s^{p-1}e^{-\beta s^2}\,ds
+=\frac{y_{00}\,\Gamma(p/2)\beta^{-p/2}}{2k_1k_2}
+=2\cdot\frac{\Gamma(p/2)\beta^{-p/2}}{1!\cdot2k_1\cdot2k_2},
+\]
+the factor $2$ being $\log N^2=2\log N$. This cross-validates the constants of the two programmes at
+the level of theorems. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem ampCoeff_zero_delta (β) (k) (s) : ampCoeff β (fun _ => 0) delta k s = delta k
+theorem anaAmp_ampCoeff_zero_delta (β b u v s) :
+    anaAmp (ampCoeff β (fun _ => 0) delta) b u v s = 1
+theorem twoDAmp_const_eq_monomialCutoff (β b N) (h₁ h₂ k₁ k₂) :
+    twoDAmp β b N h₁ h₂ k₁ k₂ (fun _ _ _ => 1)
+      = monomialBoxRealCutoff 2 ![h₁, h₂] ![k₁, k₂] b β (N ^ 2)
+theorem twoDAmp_zeroPhase_eq_monomial_sq (β N) (h₁ h₂ k₁ k₂) :
+    twoDAmp β 1 N h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β (fun _ => 0) delta) 1)
+      = monomialBoxReal 2 ![h₁, h₂] ![k₁, k₂] β (N ^ 2)
+theorem tendsto_powLog_comp_sq (F) (l C) (r)
+    (hF : Tendsto (fun T => F T / (T ^ (-l) * log T ^ r)) atTop (𝓝 C)) :
+    Tendsto (fun N => F (N ^ 2) / (N ^ (-(2 * l)) * log N ^ r)) atTop (𝓝 (2 ^ r * C))
+theorem canonA_zeroPhase_eq_two_mul_monomialMixedConst (β) (h₁ h₂ k₁ k₂) (hβ) (hk₁) (hk₂) (p)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p) :
+    canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β (fun _ => 0) delta (i, j) s) p
+      = 2 * monomialMixedConst ![h₁, h₂] ![k₁, k₂] (p / 2) β
+\end{verbatim}
+}
+
+\section{Mathematics}
+The exponential coefficient array of the zero phase is $\delta_{00}$ (only the $n=0$ term of the
+exponential series survives), so the amplitude array is $\delta_{00}$ and its analytic amplitude is
+the constant $1$; the quadratic kernel $e^{-\beta(Nu^{k_1}v^{k_2})^2}$ is $e^{-\beta N^2u^{2k_1}v^{2k_2}}$,
+and two Bochner peels identify the iterated integral with the $\mathrm{Fin}\,2$ box integral. The
+Taylor tree gives $\mathrm{twoDAmp}\sim A\,N^{-p}\log N$ with $A>0$ (units 154, 167); the monomial
+theorem at $T=N^2$ gives the same ratio with limit $2\cdot\Gamma(p/2)\beta^{-p/2}/(2k_1\cdot2k_2)$.
+Consistency with the fluctuation-function normalisation: $J_p(0)=\tfrac12\beta^{-p/2}\Gamma(p/2)$
+(\texttt{gaussMomentJ\_zero}), $S_{p/2}(a)=2J_p(a)$, $A_p=y_{00}J_p(x_{00})/(k_1k_2)$.
+
+\section{Paper-facing meaning}
+The two independent developments --- the random-phase Taylor tree in the variable $N=\sqrt n$ and
+the monomial normal-moment programme in the variable $N=n$ --- agree on the leading constant where
+they overlap. In the paper's variable $n$: $Q(\sqrt n)/(n^{-p/2}\log n)\to y_{00}\Gamma(p/2)\beta^{-p/2}/(4k_1k_2)$,
+i.e.\ the coefficient of $N^{-p}\log N$ is twice the coefficient of $n^{-p/2}\log n$.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{isEquivalent\_iff\_tendsto\_one} now takes \texttt{∀ᶠ x, v x ≠ 0} (not the older
+implication form).
+\item Indices of \texttt{Fin 2}: \texttt{Fin.cons u (Fin.cons v \_) 1} needs
+\texttt{← Fin.succ\_zero\_eq\_one, Fin.cons\_succ, Fin.cons\_zero}; \texttt{Matrix.cons\_val\_one}
+handles \texttt{![h₁, h₂] 1}.
+\item Continuity of \texttt{fun w => Fin.cons u w} by \texttt{continuous\_pi} and \texttt{Fin.cases}.
+\item A \texttt{simp} on a sum of indicator-like \texttt{if}s over \texttt{Fin 2} may rewrite it into
+a \texttt{Finset.card} of a set-builder; use \texttt{Fin.sum\_univ\_two} and \texttt{if\_pos} instead.
+\end{itemize}
+
+\end{document}
