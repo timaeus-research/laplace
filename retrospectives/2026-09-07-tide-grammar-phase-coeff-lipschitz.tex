@@ -1,0 +1,71 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Lipschitz dependence of the limit coefficient on phase and amplitude}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 210 (programme A2, step 2) is the limit-side companion of unit 209. The functional
+$(\xi,\eta)\mapsto\mathrm{phaseCoeff}(\xi,\eta)=D\int\eta(\pi u)J_p(\xi(\pi u))w(u)\,du$ of
+Headline~XIII is Lipschitz in sup norm on bounded input sets:
+\[
+|\mathrm{phaseCoeff}(\xi,\eta)-\mathrm{phaseCoeff}(\xi',\eta')|
+\le D\bigl(\|\eta-\eta'\|_\infty J_p(M)+\beta A\|\xi-\xi'\|_\infty J_{p+1}(M)\bigr)\int w
+\]
+for $|\xi|,|\xi'|\le M$, $|\eta'|\le A$ on the closed cube (\texttt{phaseCoeff\_sub\_le}), where
+$J_{p+1}(M)=\int_0^\infty s^pe^{-\beta s^2+\beta Ms}\,ds$. The moment-level inputs are monotonicity
+$J_p(a)\le J_p(M)$ for $a\le M$ and $|J_p(a)-J_p(a')|\le\beta|a-a'|J_{p+1}(M)$, both integrated from
+the kernel bounds of unit~209. With \texttt{normalised\_lipschitz\_eventually} this makes the whole
+family $\{F_N\}_{N\ge N_0}\cup\{F\}$ equi-Lipschitz on bounded input sets, the hypothesis of the
+uniform-convergence step. Zero \texttt{sorry}/\texttt{axiom}; 9087 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem phaseMoment_le_of_le (hβ) (hp : 0 < p) (haM : a ≤ M) : phaseMoment β p a ≤
+      phaseMoment β p M
+theorem phaseMoment_sub_le (hβ) (hp) (ha : |a| ≤ M) (ha' : |a'| ≤ M) :
+    |phaseMoment β p a - phaseMoment β p a'| ≤ β * |a - a'| * phaseMoment β (p + 1)
+      M
+theorem phaseCoeff_sub_le (hk) (hl) (hβ) (hmin) (continuity) (|ξ|,|ξ'| ≤ M) (|η'| ≤
+      A)
+    (|ξ - ξ'| ≤ δξ) (|η - η'| ≤ δη on closedCube d) :
+    |phaseCoeff h k l β ξ η - phaseCoeff h k l β ξ' η'|
+      ≤ 2 ^ (multCount (ratioExp h k) l - 1) * 2 * faceNorm h k l
+          * ((δη * phaseMoment β (2 l) M + β * A * δξ * phaseMoment β (2 l + 1) M)
+              * ∫ u in unitBox d, residualWeight h k l u)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Pointwise on the face, $\eta J(\xi)-\eta'J(\xi')=(\eta-\eta')J(\xi)+\eta'(J(\xi)-J(\xi'))$ with
+$J(\xi)\le J(M)$ and $|J(\xi)-J(\xi')|\le\beta|\xi-\xi'|J_{p+1}(M)$; the residual weight is
+nonnegative, so the bound integrates. $s^{p-1}\cdot s=s^{(p+1)-1}$ turns the extra factor $s$ from
+the kernel bound into the moment of order $p+1$ (\texttt{Real.rpow\_add\_one}).
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{gcongr} leaves the side goal $0\le J_{p+1}(M)$ when the atom is an opaque integral;
+  discharge it with \texttt{all\_goals first | exact … | exact (phaseMoment\_pos …).le} rather than
+  guessing the goal order.
+\item \texttt{set v := faceProj h k l u} folds every occurrence and keeps the pointwise calculation
+  readable; the bounds \texttt{hξM v hπ} apply because \texttt{faceProj\_mapsTo} lands in the
+  closed cube.
+\end{itemize}
+
+\section{Next}
+Unit 211: inputs as elements of $C([0,1]^d,\mathbb R)^2$ via the clamp extension
+$u\mapsto(\max(0,\min(1,u_i)))_i$; equi-Lipschitz $\Rightarrow$ equicontinuous on bounded sets;
+pointwise convergence $\Rightarrow$ uniform convergence on compact input sets. Unit 212: random
+inputs, using tightness of the limit law in the Polish space $C([0,1]^d)^2$ and the small-probability
+approximation lemma.
+\end{document}
