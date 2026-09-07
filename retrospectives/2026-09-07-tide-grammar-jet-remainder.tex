@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The amplitude jet remainder}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $\xi(u)=\sum_{i<R}x_iu^i+O(u^R)$ and $\eta(u)=\sum_{i<R}y_iu^i+O(u^R)$ on $[0,b]$ the $u$-jet of
+the amplitude $\eta(u)e^{\beta s\xi(u)}$ to order $R$ has coefficients $e^{\beta sx_0}P_j(s)$ with
+$P_j(s)=\sum_{\ell\le j}y_\ell E_{j-\ell}(s)$, and
+$|\eta(u)e^{\beta s\xi(u)}-\sum_{j<R}u^je^{\beta sx_0}P_j(s)|\le Cu^R(1+s)^Re^{\beta s(x_0+L_1b)}$.
+The product with $\eta$ is handled through polynomial multiplication: the jet sum is the degree
+$<R$ truncation of $\mathrm{jetPoly}(y)\cdot\mathrm{jetPoly}(E_\cdot(s))$, whose coefficients are
+Cauchy products, and the truncation constant of the product is bounded uniformly in $s$ by a
+$(1+s)^R$ envelope. This completes Astra~\#3's target~2b: the compatible finite jets of the 1D
+amplitude are now available with an explicit remainder of exactly the shape consumed by
+\texttt{oneDKernel\_jet\_expansion}. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem coeff_jetPoly' (x : ℕ → ℝ) (R n : ℕ) :
+    (jetPoly x R).coeff n = if n < R then x n else 0
+theorem natDegree_jetPoly_le (x : ℕ → ℝ) (R : ℕ) : (jetPoly x R).natDegree ≤ R - 1
+theorem coeff_jetPoly_mul (y E : ℕ → ℝ) (R j : ℕ) (hj : j < R) :
+    (jetPoly y R * jetPoly E R).coeff j = ∑ ℓ ∈ range (j + 1), y ℓ * E (j - ℓ)
+theorem abs_coeff_jetPoly_mul_le (y E : ℕ → ℝ) (R n : ℕ) :
+    |(jetPoly y R * jetPoly E R).coeff n|
+      ≤ ((n : ℝ) + 1) * ((∑ i ∈ range R, |y i|) * ∑ l ∈ range R, |E l|)
+theorem truncConst_jetPoly_mul_le (y E : ℕ → ℝ) (R : ℕ) (hR : 0 < R) (b : ℝ) (hb : 0 ≤ b) :
+    truncConst (jetPoly y R * jetPoly E R) R b
+      ≤ (∑ n ∈ Ico R (2 * R), ((n : ℝ) + 1) * b ^ (n - R))
+        * ((∑ i ∈ range R, |y i|) * ∑ l ∈ range R, |E l|)
+noncomputable def ampJet (β : ℝ) (x y : ℕ → ℝ) (R j : ℕ) (s : ℝ) : ℝ :=
+  ∑ ℓ ∈ range (j + 1), y ℓ * expJet β x R (j - ℓ) s
+theorem ampJet_continuous (β : ℝ) (x y : ℕ → ℝ) (R j : ℕ) : Continuous (ampJet β x y R j)
+theorem eval_gPoly_eq (x : ℕ → ℝ) (R : ℕ) (hR : 0 < R) (u : ℝ) :
+    (gPoly x R).eval u = (∑ i ∈ range R, x i * u ^ i) - x 0
+theorem amp_jet_remainder (β b K L₁ : ℝ) (hβ : 0 < β) (hb : 0 < b) (hK : 0 ≤ K)
+    (hL₁ : 0 ≤ L₁) (x y : ℕ → ℝ) (R : ℕ) (hR : 0 < R) (ξ η : ℝ → ℝ)
+    (hξT : ∀ u ∈ Set.Icc (0 : ℝ) b, |ξ u - ∑ i ∈ range R, x i * u ^ i| ≤ K * u ^ R)
+    (hηT : ∀ u ∈ Set.Icc (0 : ℝ) b, |η u - ∑ i ∈ range R, y i * u ^ i| ≤ K * u ^ R)
+    (hξL : ∀ u ∈ Set.Icc (0 : ℝ) b, |ξ u - x 0| ≤ L₁ * u) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ u ∈ Set.Icc (0 : ℝ) b, ∀ s, 0 ≤ s →
+      |η u * Real.exp (β * s * ξ u)
+          - ∑ j ∈ range R, u ^ j * (Real.exp (β * s * x 0) * ampJet β x y R j s)|
+        ≤ C * u ^ R * (1 + s) ^ R * Real.exp (β * s * (x 0 + L₁ * b))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Write $a=x_0$, $g=\xi-a$, $E=e^{\beta sg(u)}$, $E_{\rm jet}=\sum_{n<R}E_n(s)u^n$ and
+$\eta_P=\sum_{i<R}y_iu^i$. Then
+\[
+\eta e^{\beta s\xi}-\sum_{j<R}u^je^{\beta sa}P_j(s)
+ = e^{\beta sa}\Big[(\eta-\eta_P)E+\eta_P(E-E_{\rm jet})
+   +\big(\eta_PE_{\rm jet}-\textstyle\sum_{j<R}P_j(s)u^j\big)\Big].
+\]
+The first piece is bounded by $Ku^Re^{\beta L_1bs}$ (Taylor remainder of $\eta$ times the
+exponential envelope of $E$). The second is $|\eta_P|$ times the exponential jet remainder of the
+previous unit, with $|\eta_P|\le\sum|y_i|b^i$. The third is the truncation error of the polynomial
+$\mathrm{jetPoly}(y)\cdot\mathrm{jetPoly}(E_\cdot(s))$, whose coefficients below $R$ are precisely the
+Cauchy products $P_j(s)$ (\texttt{coeff\_jetPoly\_mul}, via \texttt{Polynomial.coeff\_mul} and
+\texttt{Finset.Nat.sum\_antidiagonal\_eq\_sum\_range\_succ}). The product has degree $\le 2R-2$, so
+\texttt{poly\_trunc\_le} sums over $n\in[R,2R)$; each coefficient is bounded by
+$(n+1)(\sum|y_i|)(\sum_l|E_l(s)|)$, and $\sum_l|E_l(s)|\le(\sum_l\mathrm{expJetConst}_l)(1+s)^R$ by the
+previous unit's envelope. Collecting, $C=K+Y_bC_1+T\,Y\,E_C$ with
+$T=\sum_{n\in[R,2R)}(n+1)b^{n-R}$.
+
+The hypothesis $0<R$ is needed only to identify $\mathrm{eval}(g_R)=\sum_{i<R}x_iu^i-x_0$
+(\texttt{eval\_gPoly\_eq}); for $R=0$ the statement is vacuous anyway.
+
+\section{Paper-facing meaning}
+
+With unit~92 (\texttt{oneDKernel\_jet\_expansion}: an abstract all-order transfer from a $u$-jet
+with remainder $u^RH_R(s)$ to an expansion of $\int_0^b u^h e^{-\beta(Nu^k)^2}F(u,Nu^k)\,du$ in
+$N^{-(p+j/k)}$) this unit supplies exactly the needed input for the chart amplitude
+$F(u,s)=\eta(u)e^{\beta s\xi(u)}$: $F_j(s)=e^{\beta sx_0}P_j(s)$ and
+$H_R(s)=C(1+s)^Re^{\beta s(x_0+L_1b)}$. The remaining step for the all-order 1D theorem
+(unit~96) is the moment integrability of $s^\gamma e^{-\beta s^2}\cdot s^\ell e^{\beta sa'}$, which is
+the polynomial-bound generalisation of \texttt{moment\_integrableOn\_of\_bound'}, plus the
+identification of the coefficients $c_j=k^{-1}\sum_\ell p_{j,\ell}S_{q_j+\ell}(x_0)$ in the
+$S_\lambda(a)$ notation of the paper.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{rw [Finset.sum\_mul]} matched an inner product $(\sum|y_i|)\cdot\sum|E_l|$ instead of
+the intended outer one; pass the Finset explicitly, \texttt{Finset.sum\_mul (Ico R (2 * R))}.
+\item \texttt{rw [Finset.mul\_sum]} unfolds \texttt{set}-bound variables whose value is a sum
+(zeta-delta reduction during matching), distributing $\eta_P\cdot E_{\rm jet}$ unexpectedly.
+Prove the sum identity as a separate \texttt{have} on the raw expression and rewrite with it.
+\item \texttt{Finset.sum\_congr rfl fun n \_ => by ring} inside a \texttt{calc} step left the
+\texttt{AddCommMonoid} instance stuck; \texttt{refine Finset.sum\_congr rfl ?\_; intro n \_; ring}
+works.
+\item \texttt{Polynomial.natDegree\_sum\_le\_of\_forall\_le} and
+\texttt{natDegree\_C\_mul\_X\_pow\_le} give the degree bound $\le R-1$ in two lines; combined with
+\texttt{natDegree\_mul\_le} the product's coefficient support is inside $[0,2R)$ by \texttt{omega}.
+\end{itemize}
+
+\end{document}
