@@ -308,3 +308,4 @@ import Laplace.Grammar.CoeffLipschitz
 import Laplace.Grammar.CoeffSpace
 import Laplace.Grammar.CoeffDistribution
 import Laplace.Grammar.NormalisedRemainder
+import Laplace.Grammar.AmpCoeffJoint
