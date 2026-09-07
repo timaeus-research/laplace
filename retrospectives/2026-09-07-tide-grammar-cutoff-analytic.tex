@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The analytic two-dimensional cutoff theorem}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For the equal-exponent block and an amplitude given on the box by a double power series with a radius
+margin, $\Phi(u,v,s)=\sum c_{ij}(s)u^iv^j$ with $|c_{ij}(s)|\rho^{i+j}\le H(s)\le C_0(1+s)^De^{\beta sL}$
+and $b<\rho$, the reduced cutoff expansion of units~107--109 holds with the faces
+$a_i=\sum_jc_{ij}v^j$, $b_j=\sum_ic_{ij}u^i$ and the corner jets $c_{ij}$, and no further hypotheses:
+\[
+Z_\Phi(N)-\mathrm{reducedSum}(N)=O\bigl(N^{-(p+\min(M_1/k_1,M_2/k_2))}(1+\log N)\bigr).
+\]
+All face remainders, the mixed remainder and the moment hypotheses are discharged by units~110 and~114.
+This is the paper-facing higher-order $d=2$ theorem under the paper's own analyticity assumption, in the
+Schwarz-free form recommended in Astra~\#6. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem uface_gamma_lt (p : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ i : ℕ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
+    (hM₁ : ((M₁ : ℝ) - 1) / k₁ < (M₂ : ℝ) / k₂) (hi : i < M₁) :
+    (k₂ : ℝ) * ((((h₁ + i : ℕ) : ℝ) + 1) / k₁) - h₂ - 1 < M₂
+theorem vface_gamma_lt / corner_gamma_lt   -- the other two resonance parameters
+theorem anaCoeff_env ... (hm : m < M) (s : ℝ) (hs : 0 < s) :
+    |c (i, m) s| ≤ C₀ * (ρ ^ i)⁻¹ * (1 + ρ⁻¹) ^ M * (1 + s) ^ D * Real.exp (β * s * L)
+theorem twoD_cutoff_analytic (β b p ρ C₀ L : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ D : ℕ) (hβ : 0 < β)
+    (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
+    (hM₁ : ((M₁ : ℝ) - 1) / k₁ < (M₂ : ℝ) / k₂) (hM₂ : ((M₂ : ℝ) - 1) / k₂ < (M₁ : ℝ) / k₁)
+    (c : ℕ × ℕ → ℝ → ℝ) (hcc : ∀ ij, Continuous (c ij)) (H : ℝ → ℝ) (hH : Continuous H)
+    (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s) (hC₀ : 0 ≤ C₀)
+    (henv : ∀ s, 0 ≤ s → H s ≤ C₀ * (1 + s) ^ D * Real.exp (β * s * L)) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp c b)
+        - reducedSum β b h₁ h₂ k₁ k₂ M₁ M₂ (anaFaceU c b) (anaFaceV c b)
+            (fun i j s => c (i, j) s) N)
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(p + min ((M₁ : ℝ) / k₁) ((M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The theorem is an instantiation of \texttt{twoD\_cutoff\_reduced\_isBigO}. Continuity of the amplitude
+and faces is unit~114's; the face remainders are $H(s)\rho^{-i-M_2}/(1-b/\rho)\cdot v^{M_2}$ and the
+mixed remainder $H(s)\rho^{-M_1-M_2}/(1-b/\rho)^2\cdot u^{M_1}v^{M_2}$, both of the required envelope
+form once $H\le C_0(1+s)^De^{\beta sL}$. The \texttt{FaceMoments} bundles come from unit~110's
+constructor: every coefficient $c_{im}$ with $m<M$ is bounded by
+$C_0\rho^{-i}(1+\rho^{-1})^M(1+s)^De^{\beta sL}$, the face envelopes by the corresponding constants,
+and the corner data by $C_0\rho^{-i-j}$ with a zero remainder. The resonance conditions
+$\gamma<M$ for the $u$-faces, $v$-faces and corners are the same arithmetic as in unit~107, now
+extracted as lemmas.
+
+\section{Paper-facing meaning}
+
+Under the paper's standing hypothesis (analytic data near the exceptional divisor, here in the form of
+a convergent double series on a larger polydisc), the $d=2$ equal-exponent block has the complete
+finite-cutoff expansion: exponents $p+i/k_1$ and $p+j/k_2$, logarithms exactly at collisions, constant
+coefficients given by the weighted finite parts of the face series, remainder
+$O(N^{-(p+\tau)}(1+\log N))$ with $\tau=\min(M_1/k_1,M_2/k_2)$. No compatibility or moment hypothesis
+remains. What the theorem does not yet do: produce the double series of $\eta e^{\beta s\xi}$ from those of
+$\xi,\eta$ (the weighted-$\ell^1$ coefficient closure, Astra~\#6 rank~2) and merge the three log
+families into one copy per collision.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item Symmetric hypotheses are discharged by symmetric lemmas: \texttt{vface\_gamma\_lt} is
+\texttt{uface\_gamma\_lt} with the coordinates swapped, and the $v$-face envelopes come from
+\texttt{anaCoeff\_env} applied to \texttt{swapC c} followed by \texttt{simpa [swapC]}.
+\item A two-factor inequality inside \texttt{calc} is \texttt{mul\_le\_mul} with two
+\texttt{positivity} side goals; \texttt{gcongr} may close the main goal and leave a side goal in
+an unexpected slot.
+\item Long theorem applications with many \texttt{?\_} placeholders are more legible as
+\texttt{refine … ?\_ ?\_} followed by bullet proofs than as inline lambdas.
+\end{itemize}
+
+\end{document}
