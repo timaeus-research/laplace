@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Double power series with a radius margin}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The algebra of a coefficient array $c:\mathbb N^2\to\mathbb R$ with $|c_{ij}|\rho^{i+j}\le H$ on
+$[0,b]^2$, $b<\rho$ (Astra~\#6(a), route~D): absolute summability of $\sum c_{ij}u^iv^j$, the faces
+$a_i(v)=\sum_jc_{ij}v^j$ and $b_j(u)=\sum_ic_{ij}u^i$, the face remainders
+$|a_i(v)-\sum_{j<M}c_{ij}v^j|\le H\rho^{-i}(v/\rho)^M/(1-v/\rho)$, the exact rectangular identity
+\[
+\Phi-\sum_{i<M_1}u^ia_i-\sum_{j<M_2}v^jb_j+\sum_{i<M_1}\sum_{j<M_2}c_{ij}u^iv^j
+=\sum_{i,j}c_{M_1+i,M_2+j}u^{M_1+i}v^{M_2+j},
+\]
+and the tail bound $H\rho^{-M_1-M_2}u^{M_1}v^{M_2}/((1-u/\rho)(1-v/\rho))$. Compatibility of the face
+jets is automatic because both faces are built from the same $c_{ij}$, so no symmetry of mixed
+partial derivatives is needed: this is the Schwarz-free route to the smooth/analytic $d=2$ theorem.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem summable_abs_of_geom (d : ℕ × ℕ → ℝ) (A r t : ℝ) (hA : 0 ≤ A) (hr0 : 0 ≤ r)
+    (hr1 : r < 1) (ht0 : 0 ≤ t) (ht1 : t < 1)
+    (hd : ∀ ij, |d ij| ≤ A * r ^ ij.1 * t ^ ij.2) :
+    (Summable fun ij => |d ij|) ∧ ∑' ij, |d ij| ≤ A / ((1 - r) * (1 - t))
+theorem coeff_term_le ... :
+    |c ij * u ^ ij.1 * v ^ ij.2| ≤ H * (u / ρ) ^ ij.1 * (v / ρ) ^ ij.2
+noncomputable def dblSum (c : ℕ × ℕ → ℝ) (u v : ℝ) : ℝ :=
+  ∑' ij : ℕ × ℕ, c ij * u ^ ij.1 * v ^ ij.2
+noncomputable def faceU (c : ℕ × ℕ → ℝ) (i : ℕ) (v : ℝ) : ℝ := ∑' j : ℕ, c (i, j) * v ^ j
+noncomputable def faceV (c : ℕ × ℕ → ℝ) (j : ℕ) (u : ℝ) : ℝ := ∑' i : ℕ, c (i, j) * u ^ i
+theorem dbl_summable_abs / dbl_summable / faceU_term_le / faceU_summable_abs
+theorem faceU_rem_le (c : ℕ × ℕ → ℝ) (ρ H v : ℝ) (hρ : 0 < ρ)
+    (hc : ∀ ij, |c ij| * ρ ^ (ij.1 + ij.2) ≤ H) (hv : 0 ≤ v) (hvρ : v < ρ) (i M : ℕ) :
+    |faceU c i v - ∑ j ∈ Finset.range M, c (i, j) * v ^ j|
+      ≤ H * (ρ ^ i)⁻¹ * (v / ρ) ^ M / (1 - v / ρ)
+theorem dbl_rect_identity (c : ℕ × ℕ → ℝ) (ρ H u v : ℝ) (hρ : 0 < ρ) (hH : 0 ≤ H)
+    (hc : ∀ ij, |c ij| * ρ ^ (ij.1 + ij.2) ≤ H) (hu : 0 ≤ u) (huρ : u < ρ) (hv : 0 ≤ v)
+    (hvρ : v < ρ) (M₁ M₂ : ℕ) :
+    dblSum c u v - ∑ i ∈ Finset.range M₁, u ^ i * faceU c i v
+        - ∑ j ∈ Finset.range M₂, v ^ j * faceV c j u
+        + ∑ i ∈ Finset.range M₁, ∑ j ∈ Finset.range M₂, c (i, j) * (u ^ i * v ^ j)
+      = ∑' ij : ℕ × ℕ, c (M₁ + ij.1, M₂ + ij.2) * u ^ (M₁ + ij.1) * v ^ (M₂ + ij.2)
+theorem dbl_tail_le ... :
+    |∑' ij : ℕ × ℕ, c (M₁ + ij.1, M₂ + ij.2) * u ^ (M₁ + ij.1) * v ^ (M₂ + ij.2)|
+      ≤ H * (ρ ^ (M₁ + M₂))⁻¹ * (u ^ M₁ * v ^ M₂) / ((1 - u / ρ) * (1 - v / ρ))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Everything rests on the geometric double bound: a family dominated by $Ar^it^j$ with $r,t<1$ is
+absolutely summable with sum at most $A/((1-r)(1-t))$ (product of two geometric series via
+\texttt{summable\_mul\_of\_summable\_norm} and \texttt{tsum\_mul\_tsum\_of\_summable\_norm}). The
+rectangular identity is proved by writing the double sum as an iterated sum (\texttt{Summable.tsum\_prod}),
+splitting each row at $M_2$ and the resulting column sums at $M_1$
+(\texttt{Summable.sum\_add\_tsum\_nat\_add}), interchanging the finite sum over $j<M_2$ with the
+$i$-sum (\texttt{Summable.tsum\_finsetSum}), and identifying the doubly shifted tail with the product
+sum over the shifted index set (\texttt{Summable.comp\_injective} for the shift, then
+\texttt{tsum\_prod} again); the summability of the row tails in $i$ comes from the summability of the
+row absolute sums (\texttt{summable\_prod\_of\_nonneg}).
+
+\section{Paper-facing meaning}
+
+An amplitude given by a convergent double series with a radius margin, the standing situation for
+analytic $\xi,\eta$ near the exceptional divisor, produces exactly the data of the $d=2$ cutoff theorem:
+compatible faces, face remainders and a mixed remainder with geometric constants, with the same
+$s$-envelope $H(s)$ throughout. The next unit attaches the parameter $s$, supplies the continuity
+hypotheses (via a clamp of the coordinates to the box) and the \texttt{FaceMoments} through
+\texttt{faceMoments\_of\_envelope}, giving the analytic $d=2$ cutoff theorem; the coefficient
+closure for $\eta e^{\beta s\xi}$ (Astra~\#6 rank~2) then discharges the series hypothesis.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Summable.comp\_injective} names its injection \texttt{i}, not \texttt{f}.
+\item \texttt{pow\_add} in \texttt{rw} hits every $x^{m+n}$, including inside an absolute value that
+must stay intact; pass the base (\texttt{pow\_add (v / ρ)}) to restrict it.
+\item Row-tail summability in the outer index follows from \texttt{Summable.of\_norm\_bounded} with
+the row absolute sums, which \texttt{summable\_prod\_of\_nonneg} makes summable.
+\item \texttt{Summable.tsum\_finsetSum} is the tsum-of-finite-sum lemma (not \texttt{tsum\_sum}).
+\item After \texttt{tsum\_geometric\_of\_lt\_one}, close $a\cdot(1-q)^{-1}=a/(1-q)$ with
+\texttt{ring}, not a targeted \texttt{div\_eq\_mul\_inv} rewrite.
+\end{itemize}
+
+\end{document}
