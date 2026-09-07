@@ -395,3 +395,4 @@ import Laplace.Grammar.PhaseMajorant
 import Laplace.Grammar.PhaseTaylorIdentity
 import Laplace.Grammar.HighSpectrumBound
 import Laplace.Grammar.SpectralCoefficients
+import Laplace.Grammar.LowSpectrumTail

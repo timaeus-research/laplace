@@ -381,6 +381,26 @@ theorem abs_highRemainder_le (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : ∀ i, 
     (highTerm_le n h k hk β hβ hL hN ξ η)
   rwa [Real.norm_eq_abs] at this
 
+theorem truncSum_term_split (n : ℕ) (h k : Fin (n + 1) → ℕ) (β : ℝ) (N L : ℝ)
+    (ξ η : MonoRep (n + 1)) (p : ℕ) :
+    β ^ p / (p.factorial : ℝ) *
+      ((mul η (pow (fluct ξ) p)).map fun s =>
+        s.2 * monomialTruncSum n (h + s.1) k β (eval ξ 0) p N).sum =
+      β ^ p / (p.factorial : ℝ) * lowPart n h k β (eval ξ 0) p N L (mul η (pow (fluct ξ) p)) +
+        β ^ p / (p.factorial : ℝ) *
+          highPart n h k β (eval ξ 0) p N L (mul η (pow (fluct ξ) p)) := by
+  rw [← mul_add, lowPart_add_highPart]
+
+theorem summable_lowSeries_terms (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : ∀ i, 0 < k i) (β : ℝ)
+    (hβ : 0 < β) {L : ℝ} (hL : 0 < L) {N : ℝ} (hN : 1 ≤ N) (ξ η : MonoRep (n + 1)) :
+    Summable fun p : ℕ => β ^ p / (p.factorial : ℝ) *
+      lowPart n h k β (eval ξ 0) p N L (mul η (pow (fluct ξ) p)) := by
+  have htot := hasSum_truncSum_series n h k hk β hβ.le (by linarith : (0 : ℝ) < N) ξ η
+  have hhigh := summable_highRemainder_terms n h k hk β hβ hL hN ξ η
+  refine (htot.summable.sub hhigh).congr fun p => ?_
+  rw [truncSum_term_split n h k β N L ξ η p]
+  ring
+
 /-- **Decomposition** `Z(N) = lowSeries + highRemainder` for `N ≥ 1`. -/
 theorem polyPhaseIntegral_eq_low_add_high (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : ∀ i, 0 < k i)
     (β : ℝ) (hβ : 0 < β) {L : ℝ} (hL : 0 < L) {N : ℝ} (hN : 1 ≤ N) (ξ η : MonoRep (n + 1)) :
@@ -388,20 +408,9 @@ theorem polyPhaseIntegral_eq_low_add_high (n : ℕ) (h k : Fin (n + 1) → ℕ) 
       lowSeries n h k β N L ξ η + highRemainder n h k β N L ξ η := by
   have htot := hasSum_truncSum_series n h k hk β hβ.le (by linarith : (0 : ℝ) < N) ξ η
   have hhigh := summable_highRemainder_terms n h k hk β hβ hL hN ξ η
-  have hsplit : ∀ p : ℕ, β ^ p / (p.factorial : ℝ) *
-      ((mul η (pow (fluct ξ) p)).map fun s =>
-        s.2 * monomialTruncSum n (h + s.1) k β (eval ξ 0) p N).sum =
-      β ^ p / (p.factorial : ℝ) * lowPart n h k β (eval ξ 0) p N L (mul η (pow (fluct ξ) p)) +
-        β ^ p / (p.factorial : ℝ) *
-          highPart n h k β (eval ξ 0) p N L (mul η (pow (fluct ξ) p)) := fun p => by
-    rw [← mul_add, lowPart_add_highPart]
-  have hlow : Summable fun p : ℕ => β ^ p / (p.factorial : ℝ) *
-      lowPart n h k β (eval ξ 0) p N L (mul η (pow (fluct ξ) p)) := by
-    refine (htot.summable.sub hhigh).congr fun p => ?_
-    rw [hsplit p]
-    ring
+  have hlow := summable_lowSeries_terms n h k hk β hβ hL hN ξ η
   unfold lowSeries highRemainder
   rw [← hlow.tsum_add hhigh, ← htot.tsum_eq]
-  exact tsum_congr hsplit
+  exact tsum_congr (truncSum_term_split n h k β N L ξ η)
 
 end Laplace.Grammar
