@@ -351,3 +351,4 @@ import Laplace.Grammar.TangentialAmplitude
 import Laplace.Grammar.HeadlineTangential
 import Laplace.Grammar.ExpGapLocalisation
 import Laplace.Grammar.SymmetricBox
+import Laplace.Grammar.QuadraticMonomialBridge
