@@ -293,3 +293,4 @@ import Laplace.Grammar.MixedExplicit
 import Laplace.Grammar.TwoDCutoffExplicit
 import Laplace.Grammar.FaceConstEnvelope
 import Laplace.Grammar.TwoDCutoffUniform
+import Laplace.Grammar.CanonCoeffEnvelope
