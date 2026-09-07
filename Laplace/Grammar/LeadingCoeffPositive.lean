@@ -39,7 +39,7 @@ theorem logMoment_exp_pos (β α x : ℝ) (hβ : 0 < β) (hα : 0 < α) :
       * (Real.exp (-β * s ^ 2) * Real.exp (β * s * x)) := by
     refine ae_restrict_of_forall_mem measurableSet_Ioi fun s hs => ?_
     have : 0 < s ^ (α - 1) := Real.rpow_pos_of_pos hs _
-    show (0 : ℝ) ≤ s ^ (α - 1) * Real.log s ^ 0 * (Real.exp (-β * s ^ 2) * Real.exp (β * s * x))
+    change (0 : ℝ) ≤ s ^ (α - 1) * Real.log s ^ 0 * (Real.exp (-β * s ^ 2) * Real.exp (β * s * x))
     positivity
   refine (setIntegral_pos_iff_support_of_nonneg_ae hnn hint).2 ?_
   have hsupp : Function.support (fun s : ℝ => s ^ (α - 1) * Real.log s ^ 0

@@ -1,0 +1,76 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Positivity of the leading log coefficient}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#12 rank~3. For equal starting exponents the leading log coefficient is
+$A_p=\frac{y_{00}}{k_1k_2}\int_0^\infty s^{p-1}e^{-\beta s^2}e^{\beta sx_{00}}\,ds$ (unit~124). The
+Gaussian moment is strictly positive and monotone in $x_{00}$, so $y_{00}>0$ implies $A_p>0$
+(\texttt{leading\_log\_coeff\_pos}), with the quantitative bound
+$A_p\ge\frac{c}{k_1k_2}\int_0^\infty s^{p-1}e^{-\beta s^2}e^{-\beta sM}\,ds$ when $y_{00}\ge c\ge0$
+and $\|x\|_\rho\le M$ (\texttt{leading\_log\_coeff\_ge}); both are restated on the coefficient-pair
+space. This is the nonvanishing of the denominator in the posterior ratio $Z_n[\varphi]/Z_n$ of
+cor:empirical\_expectation. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem gaussMoment_exp_integrableOn (β α x) (hβ : 0 < β) (hα : 0 < α) :
+    IntegrableOn (fun s => s^(α-1) * log s ^ 0 * (exp (-β*s^2) * exp (β*s*x))) (Ioi 0)
+theorem logMoment_exp_pos (β α x) (hβ) (hα) : 0 < logMoment β α 0 (fun s => exp (β * s * x))
+theorem logMoment_exp_mono (β α x x') (hβ) (hα) (hxx' : x ≤ x') :
+    logMoment β α 0 (fun s => exp (β*s*x)) ≤ logMoment β α 0 (fun s => exp (β*s*x'))
+theorem leading_log_coeff_pos (β) (h₁ h₂ k₁ k₂) (hβ hk₁ hk₂) (p) (hp₁ hp₂) (x y)
+    (hy : 0 < y (0,0)) :
+    0 < canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β x y (i, j) s) p
+theorem leading_log_coeff_ge (β ρ M c) ... (hx : WSummable ρ x) (hM : wnorm ρ x ≤ M)
+    (hc : 0 ≤ c)
+    (hy : c ≤ y (0,0)) :
+    c / (k₁ * k₂) * logMoment β p 0 (fun s => exp (β * s * (-M))) ≤ canonA … p
+theorem coeffA_leading_pos ... (a : CoeffPair) (hy : 0 < toY ρ a (0,0)) :
+    0 < coeffA β ρ h₁ h₂ k₁ k₂ p a
+theorem coeffA_leading_ge ... (ha : ‖a‖ ≤ M) (hy : c ≤ toY ρ a (0,0)) :
+    … ≤ coeffA β ρ h₁ h₂ k₁ k₂ p a
+\end{verbatim}
+}
+
+\section{Mathematics}
+The integrand $s^{p-1}e^{-\beta s^2}e^{\beta sx}$ is positive on $(0,\infty)$ and integrable
+(Gaussian moment, unit~126), so its support meets $(0,\infty)$ in a set of infinite Lebesgue
+measure and the integral is positive. Monotonicity in $x$ is pointwise. The lower bound on the ball
+uses $|x_{00}|\le\|x\|_\rho\le M$. As Astra~\#12 noted, positivity of $\eta$ on the open box does
+not force $y_{00}>0$; the hypothesis is stated at the corner ($y_{00}>0$, or $y_{00}\ge c$), which is
+what positivity of $\eta$ on the closed box gives.
+
+\section{Paper-facing meaning}
+cor:empirical\_expectation divides the expansion of $Z_n[\varphi]$ by that of $Z_n=Z_n[1]$; the
+leading term is $A_{i_0,j_0}(\varphi,\xi_n)/B_{k_0,p_0}(\xi_n)$ and the paper cites the grey book for
+$B_{k_0,p_0}>0$. At chart level with equal starting exponents the denominator's leading coefficient
+is $A_p(x,y_1)$ with $y_1$ the Taylor data of the prior times Jacobian, positive at the corner; the
+present unit supplies its positivity and a quantitative lower bound uniform on balls of the
+fluctuation data, which is what the first-order division (next units) needs.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{setIntegral\_pos\_iff\_support\_of\_nonneg\_ae hnn hint : 0 < ∫ ↔ 0 < μ (support f ∩ s)};
+the a.e.\ nonnegativity is stated as \texttt{(0 : ℝ → ℝ) ≤ᵐ[…] f}, so after
+\texttt{ae\_restrict\_of\_forall\_mem} a \texttt{show (0 : ℝ) ≤ …} is needed before
+\texttt{positivity}; \texttt{Real.volume\_Ioi} gives $\infty$ and \texttt{ENNReal.zero\_lt\_top} closes.
+\item \texttt{positivity} proves \texttt{≠ 0} goals for products of positive factors once
+\texttt{0 < s \^{} (α − 1)} is in context.
+\item The file compiled on the first attempt.
+\end{itemize}
+
+\end{document}
