@@ -253,3 +253,4 @@ import Laplace.Grammar.LeadingCoeffVariants
 import Laplace.Grammar.MomentBounds
 import Laplace.Grammar.KernelJetTransfer
 import Laplace.Grammar.LeadingCoeffNonzero
+import Laplace.Grammar.JetPolynomials
