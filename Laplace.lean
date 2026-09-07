@@ -394,3 +394,4 @@ import Laplace.Grammar.MonomialRep
 import Laplace.Grammar.PhaseMajorant
 import Laplace.Grammar.PhaseTaylorIdentity
 import Laplace.Grammar.HighSpectrumBound
+import Laplace.Grammar.SpectralCoefficients
