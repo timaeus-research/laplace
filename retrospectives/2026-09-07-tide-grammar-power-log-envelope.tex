@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Power--log envelopes from a ratio limit}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+First step of the mixed-ratio general-$d$ monomial programme (Astra~\#15, route~A). If $f$ is
+bounded on $(0,\infty)$ and $f(M)/(M^{-\lambda}(\log M)^r)\to C$, then
+$|f(M)|\le K\,M^{-\lambda}(1+\max(0,\log M))^r$ for all $M>0$
+(\texttt{envelope\_of\_tendsto\_ratio}); for fixed $t>0$,
+$f(Nt)/(N^{-\lambda}(\log N)^r)\to Ct^{-\lambda}$ (\texttt{tendsto\_scaled\_ratio}); and for
+$N\ge e$, $0<t\le1$, $|t^{q-1}f(Nt)/(N^{-\lambda}(\log N)^r)|\le K2^rt^{q-\lambda-1}$
+(\texttt{scaled\_envelope\_bound}). These are exactly the ingredients of the dominated-coordinate
+transfer lemma of the next unit. Also this unit: the independent statement-level fidelity review v2
+of units 161--176 (no blocking findings; five prose qualifications applied). Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem envelope_of_tendsto_ratio (f) (l) (r) (C B) (hl : 0 < l)
+    (hB : ∀ M, 0 < M → |f M| ≤ B)
+    (hlim : Tendsto (fun M => f M / (M ^ (-l) * log M ^ r)) atTop (𝓝 C)) :
+    ∃ K, 0 ≤ K ∧ ∀ M, 0 < M → |f M| ≤ K * M ^ (-l) * (1 + max 0 (log M)) ^ r
+theorem tendsto_scaled_ratio (f) (l) (r) (C) (hlim) (t) (ht : 0 < t) :
+    Tendsto (fun N => f (N * t) / (N ^ (-l) * log N ^ r)) atTop (𝓝 (C * t ^ (-l)))
+theorem scaled_envelope_bound (f) (l q) (r) (K) (hK : 0 ≤ K) (henv) (N t)
+    (hN : exp 1 ≤ N) (ht : 0 < t) (ht1 : t ≤ 1) :
+    |t ^ (q - 1) * f (N * t) / (N ^ (-l) * log N ^ r)| ≤ K * 2 ^ r * t ^ (q - l - 1)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Beyond a threshold $M_1=\max(M_0,2)$ the ratio is bounded by $|C|+1$ and $\log M\le1+\max(0,\log M)$;
+below it, $|f|\le B\le BM_1^{\lambda}M^{-\lambda}$ since $M^{-\lambda}\ge M_1^{-\lambda}$. The scaled
+limit factors as $\big(f(Nt)/((Nt)^{-\lambda}\log(Nt)^r)\big)\cdot t^{-\lambda}\cdot
+\big((\log N+\log t)/\log N\big)^r$. The domination uses $\max(0,\log(Nt))\le\log N\le 2\log N-1$ so
+that $(1+\max(0,\log(Nt)))^r\le(2\log N)^r$ once $\log N\ge1$; it never divides by $\log(Nt)$, so
+$Nt<1$, $Nt=1$ and $r=0$ need no case split.
+
+\section{Review v2}
+The independent review of units 161--176 (\texttt{tide-log/gpt6\_fidelity\_review\_v2.md}) found no
+blocking or should-fix statement errors; it confirmed the Gamma/log constant (no factorial in one
+dimension), the monomial bridge (genuine Bochner integrability plus \texttt{ofReal} injectivity, not
+a lossy \texttt{toReal}), the Gaussian threshold including equality, and the mirror remark. Its five
+prose qualifications were applied: zero-model semantics of the quotient calculus; the
+$B^\varphi_p\neq0$ qualification of the $1/\log N$ regime; the deterministic-ratio reading of the
+chart ``posterior''; the positive-multiple scope of the Gaussian threshold; and the $\beta N>0$ scope
+of the exact monomial reductions.
+
+\section{Lean notes}
+\begin{itemize}
+\item Threshold $\max(M_0,1)$ is \emph{not} enough: at $M=1$ Lean's totalised division makes the
+ratio $f(1)/0=0$, so the ``ratio bound'' carries no information; use $\max(M_0,2)$.
+\item \texttt{le\_or\_lt} is gone; use \texttt{le\_or\_gt}.
+\item After rewriting $\log(Nt)=\log N+\log t$ in the goal, rewrite the same in the nonvanishing
+hypothesis, or \texttt{field\_simp} cannot clear the denominator.
+\item \texttt{field\_simp} does not normalise $\log N\cdot(\log N)^{-1}+\log t\cdot(\log N)^{-1}$
+inside a power; rewrite $1+\log t\,(\log N)^{-1}$ as $(\log N+\log t)/\log N$ first, then
+\texttt{div\_pow}.
+\end{itemize}
+
+\end{document}
