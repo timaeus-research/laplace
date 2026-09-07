@@ -367,3 +367,4 @@ import Laplace.Grammar.PhasePosterior
 import Laplace.Grammar.MixedRatioCounterexample
 import Laplace.Grammar.ChartAssembly
 import Laplace.Grammar.HeadlineAssembly
+import Laplace.Grammar.PhaseLipschitz
