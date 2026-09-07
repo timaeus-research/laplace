@@ -392,3 +392,4 @@ import Laplace.Grammar.SpectralLattice
 import Laplace.Grammar.DensityBudget
 import Laplace.Grammar.MonomialRep
 import Laplace.Grammar.PhaseMajorant
+import Laplace.Grammar.PhaseTaylorIdentity
