@@ -1,0 +1,48 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline part IX: the local leading-density coefficient}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Paper-facing wrappers for the tangentially integrated normal block (unit~189). For a compact
+tangential set $K$ with an integrable signed density $q$ and a continuous amplitude $\eta(v,u)$: the
+mixed-ratio face-supported coefficient spelled out
+(\texttt{headline\_tangential\_normal\_moment}); the equal-ratio \emph{local leading-density}
+formula
+\[
+\frac{\int_Kq(v)\int_{(0,1]^{m+1}}\eta(v,u)\,u^he^{-\beta Nu^{2k}}\,du\,dv}{N^{-\lambda}(\log N)^m}
+\longrightarrow\frac{\Gamma(\lambda)\beta^{-\lambda}}{m!\prod_i2k_i}\int_Kq(v)\,\eta(v,0)\,dv
+\]
+(\texttt{headline\_tangential\_normal\_moment\_equal}), the chart-level precursor of the paper's
+$\Gamma(\lambda)/(m-1)!\,a_I\int_{S_I}(\phi\circ\pi)c_0|dv|$ with $c_0$ and $\phi\circ\pi$ absorbed in
+$q\eta$; and the equivalence form under a nonzero integrated coefficient
+(\texttt{headline\_tangential\_normal\_moment\_equiv}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Paper-facing meaning}
+Astra~\#17's ``leading-density corollary'': at the level of one normal block in fixed coordinates,
+the paper's leading coefficient structure --- a Gamma/Jacobian constant times an integral over the
+tangential variables of the amplitude restricted to the normal origin --- is now a theorem when all
+normal ratios are equal, and is replaced by the face-supported integral when they are mixed. The
+identification of $\int_Kq(v)\,\cdot\,dv$ with $\int_{S_I}c_0\,|dv|$ (chart, density, partition of
+unity) is outside the formalised boundary and is not claimed.
+
+\section{Lean notes}
+\begin{itemize}
+\item Pointwise goals produced by \texttt{integral\_congr\_ae (Eventually.of\_forall fun v => ?\_)}
+are beta-redexes on both sides; \texttt{beta\_reduce} before \texttt{rw [amplitudeCoeff\_equal ...]}.
+\item The mixed-ratio wrapper is a one-line \texttt{exact}: unfolding \texttt{amplitudeCoeff} applied to
+\texttt{fun u => η (v, u)} is definitional, including the beta-redex at \texttt{faceProj u}.
+\end{itemize}
+
+\end{document}
