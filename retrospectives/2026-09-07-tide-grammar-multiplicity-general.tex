@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The multiplicity-$m$ leading term for general $\xi,\eta$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Combining the freezing limit (unit~78) with the frozen coefficient theorem (unit~75): for a block of
+$m=d_0+2$ coordinates with common exponent $p=(h_i+1)/k_i$, noncritical coordinates with exponents
+$q'_i>p$, and jointly continuous $\xi,\eta$,
+\[
+\frac{N^p\,Z(N)}{\log^{d_0+1}N}\longrightarrow
+C(\xi,\eta)=\frac{\prod_ik_i^{-1}}{(d_0+1)!}\int_{(0,b]^{d'}}v^{h'}(v^{k'})^{-p}
+A_{p-1}(\xi(0,v))\,\eta(0,v)\,dv ,
+\]
+with $C>0$ when $\eta(0,\cdot)>0$; hence $Z(N)\sim C\,N^{-p}\log^{d_0+1}N$ and, at $N=\sqrt n$,
+$Z\sim(C/2^{d_0+1})\,n^{-p/2}\log^{d_0+1}n$. This is the leading term of \texttt{thm:TaylorTree} for
+general continuous $\xi,\eta$ and multiplicity $m\ge2$; Programme~A (unit~72) covers $m=1$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integral_blockDivisorDensity_pos ...
+    (hepos : ∀ v, (∀ i, 0 < v i ∧ v i ≤ b) → 0 < e v) :
+    0 < ∫ v, blockDivisorDensity β p k d k' h' a e v ∂(boxMeasure b d')
+noncomputable def blockCoeff (β b p : ℝ) {d₀ d' : ℕ} (k : Fin (d₀ + 2) → ℕ)
+    (k' h' : Fin d' → ℕ) (ξ η : (Fin (d₀ + 2) → ℝ) → (Fin d' → ℝ) → ℝ) : ℝ :=
+  ∫ v, blockDivisorDensity β p (toNatFun k 1) (d₀ + 1) k' h'
+    (fun v => ξ 0 v) (fun v => η 0 v) v ∂(boxMeasure b d')
+theorem blockStateIntegral_tendsto ... (hp : ∀ j, finExp k h j = p)
+    (hq : ∀ i, p < ...) ... :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ (d₀ + 1)
+      * blockStateIntegral β b N k h k' h' ξ η) atTop (𝓝 (blockCoeff β b p k k' h' ξ η))
+theorem blockStateIntegral_isEquivalent ... (hηpos : ...) :
+    (fun N : ℝ => blockStateIntegral β b N k h k' h' ξ η) ~[atTop]
+      fun N : ℝ => blockCoeff β b p k k' h' ξ η * (N ^ (-p) * Real.log N ^ (d₀ + 1))
+theorem blockStateIntegral_sqrt_isEquivalent ... :
+    (fun n : ℝ => blockStateIntegral β b (Real.sqrt n) k h k' h' ξ η) ~[atTop]
+      fun n : ℝ => blockCoeff β b p k k' h' ξ η / 2 ^ (d₀ + 1)
+        * (n ^ (-(p / 2)) * Real.log n ^ (d₀ + 1))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+$N^p Z/\log^{d_0+1}N=N^p(Z-Z_0)/\log^{d_0+1}N+N^pZ_0/\log^{d_0+1}N$; the first term tends to $0$
+(unit~78) and the second to the block divisor coefficient (unit~75, through the identification of the
+frozen block state integral with the frozen state integral). Positivity of the coefficient is
+\texttt{integral\_pos\_iff\_support\_of\_nonneg\_ae} with the open box inside the support, as in
+unit~71; integrability is domination by $K\prod_iv_i^{h'_i}(v_i^{k'_i})^{-p}$ using monotonicity of
+$A_{p-1}$ in $a$. The equivalence is \texttt{isEquivalent\_const\_iff\_tendsto} multiplied by the
+reference function; the $n$-form composes with $\sqrt n\to\infty$ and uses
+$\log\sqrt n=\tfrac12\log n$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item After \texttt{field\_simp} the shape of the target no longer matches the intended
+\texttt{linear\_combination}; instead rewrite the product as
+$(N^{-p}N^p)(\log^{d}N/\log^{d}N)\,Z$ by \texttt{ring} and close with the two cancellation facts.
+\end{itemize}
+
+\section{Outcome}
+The Astra plan (targets~1--5) is complete: the leading term of the Taylor-tree theorem is formalised for
+general continuous $\xi,\eta$ at every multiplicity. Remaining for the leading term: the Fubini bridge
+from the iterated block/noncritical form to the genuine box over $\mathrm{Fin}(m+d')$ with an arbitrary
+coordinate order, and the free-energy corollary. Beyond: the quantitative remainder (Astra target~6) and
+the state-density expansion transfer (targets~7--8).
+\end{document}
