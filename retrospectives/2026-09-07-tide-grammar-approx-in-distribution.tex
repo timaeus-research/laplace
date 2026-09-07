@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Convergence in distribution is stable under small-probability modifications}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+A generic probabilistic lemma (Astra~\#13, route R1) needed for the division step of the posterior
+ratio. If for every $\eta>0$ there are random variables $Y_n^\eta\Rightarrow W^\eta$ with
+$\mu\{X_n\ne Y_n^\eta\}\le\eta$ eventually and $\mu'\{Z\ne W^\eta\}\le\eta$, then $X_n\Rightarrow Z$
+(\texttt{tendstoInDistribution\_of\_approx}). The workhorse is the modification bound
+$|\int f\circ X-\int f\circ Y|\le C\eta$ for a test function with $\operatorname{dist}(f(x),f(y))\le C$
+(\texttt{abs\_integral\_comp\_sub\_le\_of\_ne}); the conclusion follows from Mathlib's
+bounded-Lipschitz characterisation of weak convergence. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+variable {E} [PseudoEMetricSpace E] [MeasurableSpace E] [OpensMeasurableSpace E]
+  [MeasurableEq E]
+theorem integrable_comp_of_bounded (f : E → ℝ) (hf : Measurable f) (x₀ : E) (C)
+    (hC : ∀ x y, dist (f x) (f y) ≤ C) (X : Ω → E) (hX : Measurable X) :
+    Integrable (fun ω => f (X ω)) μ
+theorem abs_integral_comp_sub_le_of_ne (f) (hf) (x₀) (C) (hC) (X Y : Ω → E) (hX hY) (η)
+    (hη : 0 ≤ η) (hS : μ {ω | X ω ≠ Y ω} ≤ ENNReal.ofReal η) :
+    |(∫ ω, f (X ω) ∂μ) - ∫ ω, f (Y ω) ∂μ| ≤ C * η
+theorem tendstoInDistribution_of_approx [Nonempty E] [l.IsCountablyGenerated]
+    (X : ι → Ω → E) (Z : Ω' → E) (hX : ∀ n, Measurable (X n)) (hZ : Measurable Z)
+    (happrox : ∀ η, 0 < η → ∃ (Y : ι → Ω → E) (W : Ω' → E),
+      (∀ n, Measurable (Y n)) ∧ Measurable W ∧
+      TendstoInDistribution Y l W (fun _ => μ) μ' ∧
+      (∀ᶠ n in l, μ {ω | X n ω ≠ Y n ω} ≤ ENNReal.ofReal η) ∧
+      μ' {ω | Z ω ≠ W ω} ≤ ENNReal.ofReal η) :
+    TendstoInDistribution X l Z (fun _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+Weak convergence of the laws is equivalent to $\int f\,d\mu_n\to\int f\,d\mu$ for every bounded
+Lipschitz $f$ (Mathlib \texttt{tendsto\_iff\_forall\_lipschitz\_integral\_tendsto}, which is where
+the countably generated filter enters). For such $f$ with oscillation $\le C$, changing a random
+variable on an event of probability $\le\eta$ changes $\int f\circ X$ by at most $C\eta$: the
+integrand difference is dominated by $C$ times the indicator of the disagreement event. Given
+$\varepsilon>0$ take $\eta=\varepsilon/(3(C+1))$ and the approximants for this $\eta$; the three
+terms of the triangle inequality are each $<\varepsilon/3$ eventually.
+
+\section{Paper-facing meaning}
+The posterior ratio $Z_n[\varphi]/Z_n[1]$ is a quotient of two jointly convergent normalised chart
+integrals whose limiting denominator is a.s.\ positive but not bounded below. Mathlib's continuous
+mapping theorem needs global continuity, which division lacks; the standard fix is to divide by
+$\max(v,c)$ (continuous), which agrees with division except on $\{V_n<c\}$, an event of small
+probability uniformly in $n$ by portmanteau. The present lemma converts that approximation into
+convergence in distribution of the ratio itself (next unit).
+
+\section{Lean notes}
+\begin{itemize}
+\item The disagreement event $\{X\ne Y\}$ is measurable via \texttt{measurableSet\_eq\_fun}, which
+needs the class \texttt{MeasurableEq E} (instances: second-countable $T_2$ spaces, standard Borel
+spaces); we assume it on $E$.
+\item \texttt{Integrable.of\_bound} with the bound $\|f(x_0)\|+C$; the indicator bound integrates via
+\texttt{integral\_indicator\_const} and \texttt{ENNReal.toReal\_le\_of\_le\_ofReal}.
+\item Rewriting with \texttt{tendsto\_iff\_forall\_lipschitz\_integral\_tendsto} on the
+\texttt{TendstoInDistribution.tendsto} field needs
+\texttt{set\_option backward.isDefEq.respectTransparency.types false} (as in Mathlib's own proofs),
+because \texttt{ProbabilityMeasure} is a subtype behind a definition; then
+\texttt{ProbabilityMeasure.coe\_mk} and \texttt{integral\_map} expose the integrals over $\Omega$.
+\item \texttt{field\_simp} closed the scalar identity by itself (a trailing \texttt{ring} errors with
+``no goals''); \texttt{add\_le\_add (abs\_add\_le \_ \_) le\_rfl} for the right-associated triangle
+inequality (\texttt{add\_le\_add\_right} adds on the left).
+\end{itemize}
+
+\end{document}
