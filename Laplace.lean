@@ -386,3 +386,4 @@ import Laplace.Grammar.StateDensity
 import Laplace.Grammar.StateDensityAPI
 import Laplace.Grammar.StateDensityLeadCoeff
 import Laplace.Grammar.MonomialPhaseIdentity
+import Laplace.Grammar.MonomialPhaseExpansion

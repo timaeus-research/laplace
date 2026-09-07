@@ -18,10 +18,11 @@ exact density `v` of unit 224. This file provides the two ingredients of the exa
 * `integral_unitBox_monomial_eq_stateDensity`: the real monomial bridge carrying the Jacobian;
 * `basis_scaling`: for one basis term, the substitution `t = Nτ` and the binomial expansion of
   `(log N - log t)^j` give
-  `∫₀¹ τ^{μ-1}(-log τ)^j g(Nτ) dτ = N^{-μ} ∑_{i≤j} C(j,i) (log N)^{j-i} ∫₀^N t^{μ-1}(-log t)^i g(t) dt`
+  `∫₀¹ τ^{μ-1}(-log τ)^j g(Nτ) dτ =
+     N^{-μ} ∑_{i≤j} C(j,i) (log N)^{j-i} ∫₀^N t^{μ-1}(-log t)^i g(t) dt`
   (`truncMoment`: the truncated log-weighted fluctuation moment).
-Integrability of the signed integrands `t^{μ-1}(-log t)^i g(t)` on `(0,N]` (`integrableOn_truncMoment`)
-is what licenses splitting the finite sums inside the integral. Zero `sorry`/`axiom`.
+Integrability of the signed integrands `t^{μ-1}(-log t)^i g(t)` on `(0,N]`
+(`integrableOn_truncMoment`) is what licenses splitting the finite sums inside the integral. Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Set Real
@@ -44,8 +45,7 @@ noncomputable def truncMoment (β a : ℝ) (p : ℕ) (ν : ℝ) (i : ℕ) (N : �
   ∫ t in Ioc (0 : ℝ) N, t ^ (ν - 1) * (-Real.log t) ^ i * phaseKernel β a p t
 
 /-- Integrability of `t^{ν-1} (-log t)^i g(t)` on `(0,N]` for `ν > 0`. -/
-theorem integrableOn_truncMoment (β a : ℝ) (p : ℕ) {ν : ℝ} (hν : 0 < ν) (i : ℕ) {N : ℝ}
-    (hN : 0 < N) :
+theorem integrableOn_truncMoment (β a : ℝ) (p : ℕ) {ν : ℝ} (hν : 0 < ν) (i : ℕ) (N : ℝ) :
     IntegrableOn (fun t => t ^ (ν - 1) * (-Real.log t) ^ i * phaseKernel β a p t) (Ioc 0 N) := by
   -- on `(0,1]`: basis term times a bounded continuous factor; on `(1,N]`: continuous on a compact
   have hbdd : ∀ M : ℝ, ∃ C, ∀ t ∈ Icc (0 : ℝ) M, |phaseKernel β a p t| ≤ C := fun M => by
@@ -89,7 +89,8 @@ theorem powLogBasis_div (μ : ℝ) (j : ℕ) {t N : ℝ} (ht : 0 < t) (hN : 0 < 
   field_simp
 
 /-- **Scaling of a basis term**:
-`∫₀¹ τ^{μ-1}(-log τ)^j g(Nτ) dτ = N^{-μ} ∑_{i≤j} C(j,i) (log N)^{j-i} ∫₀^N t^{μ-1}(-log t)^i g(t) dt`. -/
+`∫₀¹ τ^{μ-1}(-log τ)^j g(Nτ) dτ =
+  N^{-μ} ∑_{i≤j} C(j,i) (log N)^{j-i} ∫₀^N t^{μ-1}(-log t)^i g(t) dt`. -/
 theorem basis_scaling (β a : ℝ) (p : ℕ) {μ : ℝ} (hμ : 0 < μ) (j : ℕ) {N : ℝ} (hN : 0 < N) :
     ∫ τ in Ioc (0 : ℝ) 1, powLogBasis μ j τ * phaseKernel β a p (N * τ) =
       N ^ (-μ) * ∑ i ∈ Finset.range (j + 1),
@@ -114,7 +115,7 @@ theorem basis_scaling (β a : ℝ) (p : ℕ) {μ : ℝ} (hμ : 0 < μ) (j : ℕ)
     refine Finset.sum_congr rfl fun i _ => ?_
     ring
   rw [setIntegral_congr_fun measurableSet_Ioc hpt, integral_finsetSum _ fun i _ =>
-    (integrableOn_truncMoment β a p hμ i hN).const_mul _]
+    (integrableOn_truncMoment β a p hμ i N).const_mul _]
   unfold truncMoment
   rw [Finset.mul_sum, Finset.mul_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
@@ -130,18 +131,21 @@ theorem integral_unitBox_monomial_eq_stateDensity (n : ℕ) (h k : Fin (n + 1) �
     (hk : ∀ i, 0 < k i) (f : ℝ → ℝ) (hf : Measurable f) (hf0 : ∀ z ∈ Ioc (0 : ℝ) 1, 0 ≤ f z) :
     ∫ u in unitBox (n + 1), (∏ i, u i ^ h i) * f (∏ i, u i ^ (2 * k i)) =
       (∏ i, 1 / (2 * (k i : ℝ))) * ∫ z in Ioc (0 : ℝ) 1,
-        PowLogRep.eval (stateDensityRep n fun i => ((h i : ℝ) + 1) / (2 * (k i : ℝ)) - 1) z * f z := by
+        PowLogRep.eval (stateDensityRep n fun i => ((h i : ℝ) + 1) / (2 * (k i : ℝ)) - 1) z *
+          f z := by
   have hprod : ∀ u ∈ unitBox (n + 1), ∏ i, u i ^ (2 * k i) ∈ Ioc (0 : ℝ) 1 := fun u hu =>
     ⟨Finset.prod_pos fun i _ => pow_pos (hu i (mem_univ i)).1 _,
       Finset.prod_le_one (fun i _ => pow_nonneg (hu i (mem_univ i)).1.le _)
         fun i _ => pow_le_one₀ (hu i (mem_univ i)).1.le (hu i (mem_univ i)).2⟩
-  have hmeasL : Measurable fun u : Fin (n + 1) → ℝ => (∏ i, u i ^ h i) * f (∏ i, u i ^ (2 * k i)) :=
+  have hmeasL : Measurable fun u : Fin (n + 1) → ℝ =>
+      (∏ i, u i ^ h i) * f (∏ i, u i ^ (2 * k i)) :=
     (Finset.measurable_prod _ fun i _ => (measurable_pi_apply i).pow_const _).mul
       (hf.comp (Finset.measurable_prod _ fun i _ => (measurable_pi_apply i).pow_const _))
   have hP : 0 ≤ ∏ i, 1 / (2 * (k i : ℝ)) := Finset.prod_nonneg fun i _ => by positivity
   set w : Fin (n + 1) → ℝ := fun i => ((h i : ℝ) + 1) / (2 * (k i : ℝ)) - 1 with hw
   rw [integral_eq_lintegral_of_nonneg_ae (ae_restrict_of_forall_mem (measurableSet_unitBox _)
-      fun u hu => mul_nonneg (Finset.prod_nonneg fun i _ => pow_nonneg (hu i (mem_univ i)).1.le _)
+      fun u hu => mul_nonneg
+        (Finset.prod_nonneg fun i _ => pow_nonneg (hu i (mem_univ i)).1.le _)
         (hf0 _ (hprod u hu))) hmeasL.aestronglyMeasurable,
     integral_eq_lintegral_of_nonneg_ae (ae_restrict_of_forall_mem measurableSet_Ioc
       fun z hz => mul_nonneg (stateDensityRep_nonneg n w z hz) (hf0 z hz))
@@ -149,7 +153,8 @@ theorem integral_unitBox_monomial_eq_stateDensity (n : ℕ) (h k : Fin (n + 1) �
   have hM := monomialBoxIntegral_eq_stateDensity n h k hk (fun z => ENNReal.ofReal (f z))
     (ENNReal.measurable_ofReal.comp hf)
   unfold monomialBoxIntegral at hM
-  have hL : ∫⁻ u in unitBox (n + 1), ENNReal.ofReal ((∏ i, u i ^ h i) * f (∏ i, u i ^ (2 * k i))) =
+  have hL : ∫⁻ u in unitBox (n + 1),
+      ENNReal.ofReal ((∏ i, u i ^ h i) * f (∏ i, u i ^ (2 * k i))) =
       ∫⁻ u in unitBox (n + 1), (∏ i, ENNReal.ofReal (u i ^ h i)) *
         ENNReal.ofReal (f (∏ i, u i ^ (2 * k i))) :=
     setLIntegral_congr_fun (measurableSet_unitBox _) fun u hu => by
