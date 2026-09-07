@@ -1,0 +1,37 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline part X: the stochastic $1/\log N$ regime}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Paper-facing wrapper for unit~194: at chart level ($d=2$, equal starting exponents), for a
+deterministic corner-vanishing observable amplitude, a positive normaliser amplitude and a common
+random phase with Taylor data $X_n\Rightarrow Z$,
+$\log N_n\cdot Z_{N_n}[\phi](X_n)/Z_{N_n}[1](X_n)\Rightarrow B^\phi_p(Z)/A^1_p(Z)$
+(\texttt{headline\_posterior\_log\_decay\_stochastic}), stated on the explicit chart integrals
+\texttt{twoDAmp} with the analytic amplitudes of the Taylor data. This is the stochastic form of
+\texttt{headline\_posterior\_log\_decay}; when $B^\phi_p(Z)=0$ the limit is $0$ and no faster rate is
+claimed. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Paper-facing meaning}
+The empirical posterior expectation of an observable vanishing at the corner of the chart decays like
+$1/\log N$ with a \emph{random} coefficient determined by the limiting Taylor data of the empirical
+phase; this closes the ``stochastic version of the $1/\log N$ regime'' left open in
+\texttt{rem:empirical\_expectation\_lean} since unit~169.
+
+\section{Lean notes}
+The wrapper is a one-line \texttt{exact}: \texttt{chartZ} unfolds definitionally to the
+\texttt{twoDAmp} of the analytic amplitude of the coefficient pair.
+
+\end{document}
