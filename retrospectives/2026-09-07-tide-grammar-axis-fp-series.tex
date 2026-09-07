@@ -1,0 +1,97 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Finite parts of power series as termwise series}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#8 rank~4 (face half). For a power series $a(v)=\sum_jz_jv^j$ with $|z_j|\rho^j\le H$ and
+$0<b<\rho$, the weighted finite part at any admissible order $J>\gamma$ is the termwise absolutely
+convergent series $\mathrm{FP}_\gamma(a)=\sum_jz_j\,q_\gamma(j)$ with $q_\gamma(j)=b^{j-\gamma}/(j-\gamma)$
+($\log b$ at $j=\gamma$) (\texttt{axisFinitePart\_series}). The proof follows Astra's advice to avoid
+the $\varepsilon\to0$ limit: the Taylor remainder is the tail $\sum_{j\ge J}z_jv^j$, the weighted tail
+integrates termwise to $z_jb^{j-\gamma}/(j-\gamma)$, dominated by a geometric series, and the Bochner
+integral commutes with the sum. Applied to the analytic faces, the canonical face coefficient
+functions become explicit series $U_{\alpha_i}(s)=k_1^{-1}\sum_jc_{ij}(s)q_{\gamma_i}(j)$
+(\texttt{canonU\_anaFaceU\_series}, and symmetrically for $V$). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem axisFinitePart_congr (γ b : ℝ) (f g : ℝ → ℝ) (fm : ℕ → ℝ) (M : ℕ)
+    (h : ∀ v ∈ Ioc (0 : ℝ) b, f v = g v) :
+    axisFinitePart γ b f fm M = axisFinitePart γ b g fm M
+theorem axisFinitePart_series (γ b ρ H : ℝ) (hb : 0 < b) (hbρ : b < ρ) (z : ℕ → ℝ)
+    (hz : ∀ j, |z j| * ρ ^ j ≤ H) (J : ℕ) (hJ : γ < J) :
+    (Summable fun j : ℕ => z j * axisPrim γ b j) ∧
+      axisFinitePart γ b (fun v => ∑' j : ℕ, z j * v ^ j) z J
+        = ∑' j : ℕ, z j * axisPrim γ b j
+theorem row_majorant ... (i : ℕ) (s : ℝ) (j : ℕ) : |c (i, j) s| * ρ ^ j ≤ H s / ρ ^ i
+theorem faceFPCoeff_anaFaceU_series (c : ℕ × ℕ → ℝ → ℝ) (b ρ γ : ℝ) (H : ℝ → ℝ)
+    (hb : 0 < b) (hbρ : b < ρ) (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s)
+    (k i J : ℕ) (hJ : γ < J) (s : ℝ) :
+    faceFPCoeff γ b k (anaFaceU c b i) (fun m => c (i, m)) J s
+      = 1 / (k : ℝ) * ∑' j : ℕ, c (i, j) s * axisPrim γ b j
+theorem canonU_anaFaceU_series (c : ℕ × ℕ → ℝ → ℝ) (b ρ : ℝ) (H : ℝ → ℝ) (h₁ h₂ k₁ k₂ : ℕ)
+    (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁)
+    (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s) (i : ℕ) :
+    canonU b h₁ h₂ k₁ k₂ (anaFaceU c b) (fun i j s => c (i, j) s) (uExp h₁ k₁ i)
+      = fun s => 1 / (k₁ : ℝ)
+          * ∑' j : ℕ, c (i, j) s * axisPrim ((k₂ : ℝ) * uExp h₁ k₁ i - h₂ - 1) b j
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Write $e_j=(j+J)-1-\gamma>-1$. On $(0,b]$ the weighted remainder is
+$v^{-1-\gamma}\sum_{j\ge J}z_jv^j=\sum_jz_{j+J}v^{e_j}$ (tail of an absolutely convergent series,
+then $v^{-1-\gamma}v^{j+J}=v^{e_j}$). Each term is integrable with
+$\int_0^bz_{j+J}v^{e_j}dv=z_{j+J}b^{(j+J)-\gamma}/((j+J)-\gamma)=z_{j+J}q_\gamma(j+J)$ (the resonant
+branch is excluded since $j+J\ge J>\gamma$), and
+$\int_0^b|z_{j+J}|v^{e_j}dv\le|z_{j+J}|b^{j+J}\,b^{-\gamma}/(J-\gamma)\le\frac{Hb^{-\gamma}}{J-\gamma}(b/\rho)^{j+J}$,
+a geometric majorant. Hence the regularised integral is the tail series
+$\sum_jz_{j+J}q_\gamma(j+J)$, which added to the counterterms $\sum_{j<J}z_jq_\gamma(j)$ gives the
+full series; summability of the full sequence follows from summability of its tail. For the analytic
+faces, $a_i(v,s)=\sum_jc_{ij}(s)v^j$ on $(0,b]$ (the clamp is the identity there), and the row
+majorant $|c_{ij}(s)|\rho^j\le H(s)/\rho^i$ comes from the double-series envelope.
+
+\section{Paper-facing meaning}
+
+The paper's coefficients are ``absolutely convergent series'' in the Taylor data of $\xi$, $\eta$;
+our canonical constant coefficient $B_\alpha=M[\alpha;0;U_\alpha]+M[\alpha;0;V_\alpha]-M[\alpha;1;C_\alpha]$
+now has $U_{\alpha_i}(s)=k_1^{-1}\sum_jc_{ij}(s)\,b^{j-\gamma_i}/(j-\gamma_i)$ (with $\log b$ at the
+resonant $j$), i.e.\ the finite part is the bounded linear functional $z\mapsto\sum_jz_jq_\gamma(j)$
+on the weighted-$\ell^1$ row. The remaining half of rank~4 is to pull the $j$-sum through the
+Gaussian $s$-moment ($M[\alpha;0;U_{\alpha_i}]=k_1^{-1}\sum_jq_{\gamma_i}(j)M[\alpha;0;c_{ij}]$),
+which needs the $s$-envelope $|c_{ij}(s)|\le H(s)\rho^{-i-j}$ with $H(s)=Ye^{\beta sL}$ and the
+moment integrability already available.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Summable.sum\_add\_tsum\_nat\_add J} rewritten right-to-left, then
+\texttt{add\_sub\_cancel\_left}, isolates the tail of a series in one step;
+\texttt{summable\_nat\_add\_iff} transfers summability from the tail.
+\item \texttt{hasSum\_integral\_of\_summable\_integral\_norm} takes integrability with respect to
+\texttt{volume.restrict (Ioc 0 b)}, which is what \texttt{IntegrableOn.const\_mul} of
+\texttt{intervalIntegrable\_rpow'} produces; its conclusion's integral prints as the set integral,
+so \texttt{← h.tsum\_eq} fires directly.
+\item \texttt{gcongr} cannot discharge side goals like $0\le H$ for a bare variable; use
+\texttt{mul\_le\_mul} with explicit nonnegativity proofs.
+\item \texttt{rw [pow\_add]} may leave a commutativity goal (\texttt{ring}) or none, depending on
+the association; \texttt{by rw [pow\_add]; ring} is the safe form.
+\item \texttt{setIntegral\_congr\_fun} goals here needed no \texttt{beta\_reduce} (the linter flags
+it as unused when the redex is absent).
+\end{itemize}
+
+\end{document}
