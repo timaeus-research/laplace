@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Taylor-data identification of the double-series coefficients}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#10's R7. The Taylor-tree theorems take coefficient arrays $x,y\colon\mathbb N^2\to\mathbb R$
+as input; the paper writes them as Taylor coefficients of the phase and amplitude. We prove the
+identification: if $\xi(u,v)=\sum_{ij}x_{ij}u^iv^j$ on the open ball $|u|,|v|<\rho$ with
+$\|x\|_\rho<\infty$, then $\partial_v^j\partial_u^i\xi(0,0)=i!\,j!\,x_{ij}$
+(\texttt{taylorData\_of\_eq\_dblSum}), so the coefficients are determined by the function on any
+ball (\texttt{dblSum\_injective}). The one-variable engine is \texttt{iteratedDeriv\_zero\_of\_hasSum}:
+$\partial^nf(0)=n!\,c_n$ for $f(y)=\sum c_ny^n$ on $|y|<r$ with $\sum|c_n|r^n<\infty$, a direct
+consequence of Mathlib's \texttt{HasFPowerSeriesOnBall.factorial\_smul} applied to the scalar series
+\texttt{FormalMultilinearSeries.ofScalars}. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem iteratedDeriv_zero_of_hasSum (c : ℕ → ℝ) (r) (hr : 0 < r)
+    (hs : Summable fun n => |c n| * r ^ n) (f : ℝ → ℝ)
+    (hf : ∀ y, |y| < r → HasSum (fun n => c n * y ^ n) (f y)) (n) :
+    iteratedDeriv n f 0 = n.factorial * c n
+def rowNorm (ρ) (x) (i) : ℝ := ∑' j, |x (i, j)| * ρ ^ j
+theorem row_summable / rowNorm_mul_summable / abs_faceU_le_rowNorm / faceU_hasSum
+theorem dblSum_hasSum_faceU (ρ) (hρ) (x) (hx : WSummable ρ x) (u v)
+    (hu : |u| ≤ ρ) (hv : |v| ≤ ρ) :
+    HasSum (fun i => faceU x i v * u ^ i) (dblSum x u v)
+theorem taylorData_of_eq_dblSum (ρ) (hρ) (x) (hx) (ξ : ℝ → ℝ → ℝ)
+    (hξ : ∀ u v, |u| < ρ → |v| < ρ → ξ u v = dblSum x u v) (i j) :
+    iteratedDeriv j (fun v => iteratedDeriv i (fun u => ξ u v) 0) 0
+      = i.factorial * j.factorial * x (i, j)
+theorem dblSum_taylorData ... (ξ = dblSum x)
+theorem dblSum_injective (ρ) (hρ) (x x') (hx hx')
+    (h : ∀ u v, |u| < ρ → |v| < ρ → dblSum x u v = dblSum x' u v) : x = x'
+\end{verbatim}
+}
+
+\section{Mathematics}
+For a scalar power series $\sum c_ny^n$ with $\sum|c_n|r^n<\infty$, the formal multilinear series
+$p_n=c_n\cdot\mathrm{mkPiAlgebraFin}$ has radius $\ge r$ and sums to $f$ on the ball, so
+\texttt{HasFPowerSeriesOnBall f p 0 r}; Mathlib's \texttt{factorial\_smul} then gives
+$n!\,p_n(1,\dots,1)=D^nf(0)(1,\dots,1)=\partial^nf(0)$, and $p_n(1,\dots,1)=c_n$. Nothing about
+the function off the ball is used, which is what makes the lemma applicable to functions that only
+agree with the series near the origin. The two-variable statement is two applications: for fixed
+$|v|<\rho$ the function $u\mapsto\xi(u,v)$ is the series $\sum_ia_i(v)u^i$ with
+$a_i(v)=\sum_jx_{ij}v^j$ (\texttt{faceU}), absolutely convergent since
+$|a_i(v)|\le\sum_j|x_{ij}|\rho^j$ and $\sum_i(\sum_j|x_{ij}|\rho^j)\rho^i=\|x\|_\rho$; so
+$\partial_u^i\xi(0,v)=i!\,a_i(v)$. Then $v\mapsto i!\,a_i(v)$ is the series with coefficients
+$i!\,x_{ij}$, and one more application gives $i!\,j!\,x_{ij}$. Injectivity follows by applying the
+identification to $x'$ against the function $\mathrm{dblSum}\,x$.
+
+\section{Paper-facing meaning}
+This closes the gap between the paper's phrasing (``$x_{ij}$ are the Taylor coefficients of $\xi$
+at the origin'') and the Lean input (an abstract array with $\|x\|_\rho<\infty$): any analytic
+$\xi$ on the $\rho$-ball with such a representation has exactly these coefficients, and the
+canonical Taylor-tree coefficients $A_\alpha,B_\alpha$ are therefore functions of the germ of
+$(\xi,\eta)$ at the origin. With units~138--143 the whole chain germ $\mapsto$ coefficient arrays
+$\mapsto$ amplitude coefficients $\mapsto(A_\alpha,B_\alpha)$ is now formalised, the last step
+locally Lipschitz. Astra~\#10's R7 is complete; what remains from that consult is the R9 expectation
+bridge for $\mathbb E[\log Z]$, which needs the §4.3 fluctuation-function definition first.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{FormalMultilinearSeries.le\_radius\_of\_summable\_norm} and
+\texttt{ofScalars\_norm} (needs \texttt{NormOneClass}, fine over $\mathbb R$) give the radius
+bound; \texttt{ofScalars\_apply\_eq} evaluates $p_n(y,\dots,y)=c_n\cdot y^n$;
+\texttt{iteratedDeriv\_eq\_iteratedFDeriv} is \texttt{rfl} and bridges to \texttt{factorial\_smul}.
+\item Ball membership for an \texttt{NNReal} radius: \texttt{Metric.eball\_coe}
+(\texttt{Metric.emetric\_ball\_nnreal} is deprecated on this pin), then
+\texttt{Metric.mem\_ball, dist\_zero\_right}.
+\item \texttt{summable\_prod\_of\_nonneg} with a \texttt{by positivity} nonnegativity argument fails
+when the term is presented as an unreduced lambda application; pass an explicit
+\texttt{mul\_nonneg (abs\_nonneg \_) (pow\_nonneg \_ \_)} term instead.
+\item The style linter flags goal-changing \texttt{show} (use \texttt{change}); the project-wide
+``Copyright too short!'' header lint fires on every Grammar file and is not specific to this unit.
+\item Row-wise resummation is \texttt{HasSum.prod\_fiberwise} applied to the absolutely convergent
+double family, with each row's \texttt{HasSum} from \texttt{faceU\_hasSum.mul\_right}.
+\end{itemize}
+
+\end{document}
