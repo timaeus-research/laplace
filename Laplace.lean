@@ -296,3 +296,4 @@ import Laplace.Grammar.TwoDCutoffUniform
 import Laplace.Grammar.CanonCoeffEnvelope
 import Laplace.Grammar.TaylorTreeUniform
 import Laplace.Grammar.LeadingUnequal
+import Laplace.Grammar.FiniteTreeIntegration
