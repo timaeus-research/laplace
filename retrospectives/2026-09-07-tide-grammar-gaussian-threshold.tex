@@ -1,0 +1,80 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The constant-Gaussian fluctuation model: the finiteness threshold}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Second half of the rem:pop\_vs\_emp dichotomy. For $X\sim N(0,v)$ the expected Gaussian moment
+$\mathbb E_+[J_p(X)]=\int_0^\infty s^{p-1}e^{-(\beta-\beta^2v/2)s^2}ds$ (unit~161) is
+$J_p(0)(1-\beta v/2)^{-p/2}<\infty$ when $\beta v<2$ (\texttt{lintegral\_gaussMomentJ\_eq\_of\_lt}),
+strictly larger than $J_p(0)$ for $v>0$ (\texttt{lt\_lintegral\_gaussMomentJ}), and $+\infty$ when
+$\beta v\ge2$ (\texttt{lintegral\_gaussMomentJ\_eq\_top\_of\_ge}); hence
+$\mathbb E_+[J_p(X)]<\infty\iff\beta v<2$ (\texttt{lintegral\_gaussMomentJ\_lt\_top\_iff}). The expected
+leading coefficient can be infinite although every sample coefficient is finite. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integral_rpow_mul_exp_neg_mul_sq (c p) (hc : 0 < c) (hp : 0 < p) :
+    ∫ s in Ioi 0, s^(p-1) * exp (-c * s^2) = c^(-p/2) * (1/2) * Gamma (p/2)
+theorem gaussMomentJ_zero (β p) (hβ) (hp) : gaussMomentJ β p 0 = β^(-p/2) * (1/2) * Gamma (p/2)
+theorem gaussTail_eq_of_lt (β p v) (hβ) (hp) (hv : 0 ≤ v) (h : β * v < 2) :
+    ∫⁻ s in Ioi 0, ofReal (s^(p-1) * exp (-β*s^2) * exp (v*(β*s)^2/2))
+      = ofReal (gaussMomentJ β p 0 * (1 - β*v/2)^(-p/2))
+theorem lintegral_rpow_Ioi_one_eq_top (p) (hp : 0 < p) : ∫⁻ s in Ioi 1, ofReal (s^(p-1)) = ⊤
+theorem gaussTail_eq_top_of_ge (β p v) (hβ) (hp) (h : 2 ≤ β * v) :
+    ∫⁻ s in Ioi 0, ofReal (…) = ⊤
+theorem lintegral_gaussMomentJ_eq_of_lt / _eq_top_of_ge (X) (hX) (v : NNReal)
+    (hXg : μ.map X = gaussianReal 0 v) …
+theorem lintegral_gaussMomentJ_lt_top_iff ... :
+    (∫⁻ ω, ofReal (gaussMomentJ β p (X ω)) ∂μ) < ⊤ ↔ β * v < 2
+theorem lt_lintegral_gaussMomentJ ... (hv : 0 < v) (h : β * v < 2) :
+    ofReal (gaussMomentJ β p 0) < ∫⁻ ω, ofReal (gaussMomentJ β p (X ω)) ∂μ
+\end{verbatim}
+}
+
+\section{Mathematics}
+Combining the exponentials, the integrand is $s^{p-1}e^{-cs^2}$ with $c=\beta(1-\beta v/2)$. For
+$c>0$ the Gamma integral gives $c^{-p/2}\Gamma(p/2)/2$, and $J_p(0)=\beta^{-p/2}\Gamma(p/2)/2$, so the
+ratio is $(1-\beta v/2)^{-p/2}$, which exceeds $1$ when $0<1-\beta v/2<1$. For $c\le0$ the integrand
+dominates $s^{p-1}$ on $(1,\infty)$, whose integral diverges for $p>0$, so the Lebesgue integral is
+$+\infty$; the extended-real formulation makes this a legitimate value rather than an integrability
+failure.
+
+\section{Paper-facing meaning}
+rem:pop\_vs\_emp says the expected empirical coefficient is not the population coefficient. The
+constant-Gaussian model sharpens this in two ways recorded in the mirror's remark: a Jensen gap
+($\mathbb E[J_p(X)]>J_p(0)$) and a temperature threshold ($\beta v<2$) beyond which the expected
+leading coefficient is infinite. As Astra~\#12 stressed, this concerns the expected asymptotic
+coefficient; the fixed-$n$ chart integral on a compact chart has finite expectation in all regimes.
+The model is a Gaussian constant fluctuation, not the empirical process itself (whose finite-$n$
+exponential moments need not exist).
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} with exponent $2$ and \texttt{Real.rpow\_two}
+converts to the \texttt{Monoid} power $s^2$ used in our integrands.
+\item Non-integrability of $s^{p-1}$ on $(1,\infty)$ is \texttt{integrableOn\_Ioi\_rpow\_iff one\_pos}
+(iff $p-1<-1$); converting to $\int^-=\top$ is \texttt{hasFiniteIntegral\_iff\_ofReal} with
+\texttt{not\_lt} and \texttt{top\_le\_iff}, using that \texttt{Integrable} is the pair
+(\texttt{AEStronglyMeasurable}, \texttt{HasFiniteIntegral}).
+\item Pointwise comparison must be restricted to $s>1$ (\texttt{lintegral\_mono\_ae} with
+\texttt{ae\_restrict\_of\_forall\_mem}); a global \texttt{lintegral\_mono} fails because \texttt{rpow}
+with negative base is not controlled.
+\item \texttt{Real.one\_lt\_rpow\_of\_pos\_of\_lt\_one\_of\_neg} for the Jensen gap;
+\texttt{ENNReal.ofReal\_lt\_ofReal\_iff} needs positivity of the right argument.
+\end{itemize}
+
+\end{document}
