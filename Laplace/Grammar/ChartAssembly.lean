@@ -16,13 +16,19 @@ selection rule abstractly, for any finite family of functions with power–log a
 * `scale_ratio_tendsto`: `N^{-p_a}(log N)^{m_a-1} / (N^{-p_*}(log N)^{m_*-1}) → 1` if
   `(p_a, m_a) = (p_*, m_*)`, `→ 0` otherwise;
 * `assembly_tendsto`: if `I_a(N)/(N^{-p_a}(log N)^{m_a-1}) → L_a` for every `a`, then
-  `∑_a I_a(N) / (N^{-p_*}(log N)^{m_*-1}) → ∑_{a : (p_a,m_a)=(p_*,m_*)} L_a`;
+  `∑_a I_a(N) / (N^{-p_*}(log N)^{m_*-1}) → ∑_{a : (p_a,m_a)=(p_*,m_*)} L_a`. This is convergence at
+  the *selected normalisation*; the limiting coefficient may vanish by cancellation between charts
+  (signed `L_a`), in which case the actual leading order of the sum is smaller and not determined
+  here;
 * `assembly_ratio_tendsto`: numerator and denominator families assembled **separately**; if the
   selected denominator sum is positive, the quotient of the two sums converges to the quotient of
   the selected sums (the posterior limit is a ratio of sums, not a sum of chart ratios).
 
-Everything about resolution, charts, Jacobians and partitions of unity enters only through the
-hypotheses `hI`; this is a *conditional* assembly theorem. The instantiation with the phase-dressed
+The family is finite and nonempty (`[Fintype ι] [Nonempty ι]`); the multiplicities satisfy
+`m_a ≥ 1`. Everything about resolution, charts, Jacobians and partitions of unity enters only
+through the hypotheses `hI`; this is a *conditional* assembly theorem. Non-chart remainders are not
+modelled (they may be added as `o(N^{-p_*}(log N)^{m_*-1})` terms); zero chart coefficients are
+allowed, only the selected denominator sum must be positive. The instantiation with the phase-dressed
 chart integrals of Headlines XIII–XIV is unit 208. Zero `sorry`/`axiom`.
 -/
 
@@ -130,9 +136,9 @@ theorem scale_ratio_tendsto (p : ι → ℝ) (m : ι → ℕ) (hm : ∀ a, 1 ≤
         _ = Real.log N ^ (m a - 1) / N ^ (p a - leadExp p) := div_one _
 
 /-- **Conditional chart assembly**: if every chart integral has a power–log leading asymptotic
-`I_a(N)/(N^{-p_a}(log N)^{m_a-1}) → L_a`, then the sum has leading exponent `p_* = min p_a`,
-multiplicity `m_* = max {m_a : p_a = p_*}`, and coefficient the sum of the `L_a` over the charts
-attaining both. -/
+`I_a(N)/(N^{-p_a}(log N)^{m_a-1}) → L_a`, then the sum, normalised at `p_* = min p_a` and
+`m_* = max {m_a : p_a = p_*}`, converges to the sum of the `L_a` over the charts attaining both
+(possibly `0` by cancellation). -/
 theorem assembly_tendsto (I : ι → ℝ → ℝ) (p : ι → ℝ) (m : ι → ℕ) (hm : ∀ a, 1 ≤ m a) (L : ι → ℝ)
     (hI : ∀ a, Tendsto (fun N : ℝ => I a N / (N ^ (-(p a)) * Real.log N ^ (m a - 1))) atTop
       (𝓝 (L a))) :

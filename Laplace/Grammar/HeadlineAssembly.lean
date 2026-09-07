@@ -23,6 +23,9 @@ This is the conditional chart assembly of unit 207 fed with Headlines XIII–XIV
 the resolution-of-singularities input (that the posterior integral equals such a sum of chart
 integrals with these amplitudes), Jacobians, partitions of unity, tangential variables, or random
 phases; the theorem says what the leading quotient is *once* the chart decomposition is given.
+The densities `c a` are required to be strictly positive on the closed cube: partition-of-unity
+weights vanish at chart boundaries and do not satisfy this as stated (the abstract theorem of unit
+207 allows vanishing chart coefficients and needs only a positive selected denominator sum).
 Zero `sorry`/`axiom`.
 -/
 

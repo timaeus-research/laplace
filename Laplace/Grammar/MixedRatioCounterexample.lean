@@ -8,16 +8,18 @@ import Laplace.Grammar.PhasePosterior
 # A formal counterexample: mixed ratios evaluate on the face, not at the corner
 
 Unit 206. The paper's leading-coefficient formula reads the amplitude at the origin. For
-**mixed** exponent ratios this is wrong: the leading coefficient of the dressed integral is the face
-functional `amplitudeCoeff`, and here is the smallest instance, recorded as theorems.
+**mixed** exponent ratios this is not valid in general: the leading coefficient of the dressed
+integral is the face functional `amplitudeCoeff` (evaluation at the origin is correct only when the
+amplitude is constant along the face, or by accidental cancellation), and here is the smallest
+instance, recorded as theorems.
 
 `d = 2`, `h = (0, 2)`, `k = (1, 1)`, `β = 1`: ratios `1/2` and `3/2`, so `λ = 1/2`, `J = {0}`,
 `m = 1`. Amplitude `η(u) = 1 + u₁`. Then
 ```
-∫_{(0,1]²} (1 + u₁) u₁² e^{-N u₀² u₁²} du / N^{-1/2}  →  5√π/12      (mixed_counterexample_tendsto)
-η(0) · (bare constant)                               =  √π/4        (mixed_counterexample_corner)
+∫_{(0,1]²} (1 + u₁) u₁² e^{-N u₀² u₁²} du / N^{-1/2}  →  5√π/12      (MixedCounterexample.tendsto)
+η(0) · (bare constant)                               =  √π/4        (MixedCounterexample.corner_eq)
 ```
-and `5√π/12 ≠ √π/4` (`mixed_ratio_corner_evaluation_fails`). The face functional is
+and `5√π/12 ≠ √π/4` (`MixedCounterexample.corner_evaluation_fails`). The face functional is
 `Γ(1/2)/2 · ∫₀¹ (1 + v) v dv = (√π/2)(1/2 + 1/3)`: the residual coordinate `u₁` carries the weight
 `u₁^{h₁ - 2k₁λ} = u₁` and the amplitude is integrated against it, not evaluated at `u₁ = 0`.
 Zero `sorry`/`axiom`.
