@@ -1,0 +1,69 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Unifying the general-$\xi,\eta$ leading theorem to every multiplicity $m\ge1$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The second GPT-6 Astra consult (\texttt{tide-log/gpt6\_bigpicture\_v2.md}) identified the $m=1$
+Lipschitz hypothesis of Programme~A as a proof-architecture artefact: the freezing argument extends to
+a one-coordinate block, because the inserted block has exponent $q=(h+2)/k>p$, so
+$c^pZ_{h+1}(c)$ is bounded at every scale and tends to zero. With that strip lemma the freezing limit,
+the leading theorem, its box form, the free energy and the arbitrary-order theorem are now stated
+uniformly for blocks of $d_0+1\ge1$ coordinates (multiplicity $M+1\ge1$, logarithmic degree $d_0$,
+resp.\ $M$), under joint continuity only. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem constStateIntegral_shift_tendsto_zero₁ ... (k h : Fin 1 → ℕ) ... :
+    Tendsto (fun N : ℝ => N ^ p * constStateIntegral β a b N k (shiftExp h 0) k' h')
+      atTop (𝓝 0)
+theorem constStateIntegral_shift_tendsto_zero' ... (k h : Fin (d₀ + 1) → ℕ) ...
+    (i : Fin (d₀ + 1)) :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ d₀
+      * constStateIntegral β a b N k (shiftExp h i) k' h') atTop (𝓝 0)
+-- generalised (d₀ + 2 ↦ d₀ + 1, M + 2 ↦ M + 1):
+theorem blockStateIntegral_sub_frozen_tendsto, blockStateIntegral_tendsto,
+  blockStateIntegral_isEquivalent, blockStateIntegral_sqrt_isEquivalent,
+  boxIntegralGen_mult_isEquivalent, boxIntegralGen_mult_freeEnergy,
+  boxIntegralGen_isEquivalent_general :
+    ... (hM : (Finset.univ.filter fun i => finExp K H i = p).card = M + 1) ... :
+    ∃ C : ℝ, 0 < C ∧ (fun n : ℝ => boxIntegralGen β b (Real.sqrt n) K H ξ η) ~[atTop]
+      fun n : ℝ => C * (n ^ (-(p / 2)) * Real.log n ^ M)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+For the one-coordinate strip, two bounds: $c^qZ(c)\le E$ for all $c>0$ (the block envelope with
+$d=0$) and $Z(c)\le e^{\beta a^2/2}\int_0^bu^{h+1}$ for all $c$; hence $c^pZ(c)\le C_1+E$ (cases
+$c\le1$, $c\ge1$) and $c^pZ(c)\le Ec^{p-q}\to0$. Dominated convergence over the noncritical box with
+dominator $(C_1+E)\,v^{h'}(v^{k'})^{-p}$ finishes, the measurability in $v$ coming from
+\texttt{StronglyMeasurable.integral\_prod\_right'}. The unified lemma is a case split on $d_0$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{toNatFun h 0 0} with a numeral index is not syntactically \texttt{toNatFun\_coe}'s
+\texttt{↑(0 : Fin 1)}; prove the evaluation by \texttt{simp [toNatFun]}.
+\item \texttt{Fin (0 + 1)} has no \texttt{Subsingleton} instance found; use \texttt{Fin.ext} with
+\texttt{omega}.
+\item Generalising in place: \texttt{lake env lean} on a dependent file uses stale \texttt{.olean}s of
+edited imports; run the full \texttt{lake build} to see the true state.
+\end{itemize}
+
+\section{Outcome}
+The leading term of \texttt{thm:TaylorTree} for general continuous $\xi,\eta$ is now one theorem
+family covering every multiplicity and coordinate order. Next (Astra sequence): the finite
+density-transfer theorem, the parameterised Taylor kernel lemma, and the $d=2$ anchored-subtraction
+milestone $Z(n)=n^{-p/2}(\tfrac A2\log n+B)+O(n^{-(p+\delta)/2}(1+\log n))$.
+\end{document}
