@@ -8,7 +8,7 @@ import Laplace.Grammar.PhaseShiftedTerm
 # The phase-dressed normal moment
 
 Unit 201 (programme A, step 3). The one-dimensional normal moment dressed by a constant phase `a`,
-`phaseMoment β p a = S^{(β)}_{p/2}(a) = ∫₀^∞ s^{p-1} e^{-βs² + βas} ds`
+`phaseMoment β p a = J_p^{(β)}(a) = ∫₀^∞ s^{p-1} e^{-βs² + βas} ds`
 (`quadKernel β a s = e^{-βs²+βas}`; this is the paper's `J_p(a) = S_{p/2}(a)/2`, since the
 paper's `S_λ(a) = ∫₀^∞ t^{λ-1} e^{-βt+βa√t} dt` is `2 phaseMoment β (2λ) a` under `t = s²`), with:
 
@@ -19,7 +19,7 @@ paper's `S_λ(a) = ∫₀^∞ t^{λ-1} e^{-βt+βa√t} dt` is `2 phaseMoment β
 * the Gaussian moments `∫₀^∞ s^{p-1} s^j e^{-βs²} ds = Γ(p/2 + j/2) β^{-(p/2+j/2)} / 2`
   (`gaussMoment_nat_eq`) and the zero-phase value `phaseMoment β p 0 = Γ(p/2)β^{-p/2}/2`;
 * the **finite Taylor approximation** (`phaseMoment_taylor_le`): for `|βa| ≤ b`,
-  `|S(a) - Σ_{j<2K} (βa)^j/j! · Γ(p/2+j/2)β^{-(p/2+j/2)}/2| ≤ tailCoeff β b K · gaussTail β p`,
+  `|J_p(a) - Σ_{j<2K} (βa)^j/j! · Γ(p/2+j/2)β^{-(p/2+j/2)}/2| ≤ tailCoeff β b K · gaussTail β p`,
   `gaussTail β p = ∫₀^∞ s^{p-1} e^{-βs²/4} ds`, with the uniform tail constant of unit 199.
 
 Zero `sorry`/`axiom`.
@@ -29,7 +29,7 @@ open MeasureTheory Filter Topology Real Set
 
 namespace Laplace.Grammar
 
-/-- `S^{(β)}_{p/2}(a) = ∫₀^∞ s^{p-1} e^{-βs² + βas} ds` (the paper's `J_p(a) = S_{p/2}(a)/2`). -/
+/-- `J_p^{(β)}(a) = ∫₀^∞ s^{p-1} e^{-βs² + βas} ds`, the paper's `J_p(a) = S_{p/2}(a)/2`. -/
 noncomputable def phaseMoment (β p a : ℝ) : ℝ :=
   ∫ s in Ioi (0 : ℝ), s ^ (p - 1) * quadKernel β a s
 
@@ -131,7 +131,7 @@ theorem gaussMoment_nat_eq (β p : ℝ) (j : ℕ) (hβ : 0 < β) (hp : 0 < p) :
     rw [Real.rpow_add_natCast hs0.ne', mul_assoc]
   rw [hcongr, h, show (p - 1 + j + 1) / 2 = p / 2 + j / 2 by ring]
 
-/-- Zero phase: `S^{(β)}_{p/2}(0) = Γ(p/2) β^{-p/2} / 2`. -/
+/-- Zero phase: `J_p^{(β)}(0) = Γ(p/2) β^{-p/2} / 2`. -/
 theorem phaseMoment_zero (β p : ℝ) (hβ : 0 < β) (hp : 0 < p) :
     phaseMoment β p 0 = Real.Gamma (p / 2) * β ^ (-(p / 2)) / 2 := by
   have h := gaussMoment_nat_eq β p 0 hβ hp
@@ -147,7 +147,7 @@ theorem gaussTail_integrand_integrableOn (β p : ℝ) (hβ : 0 < β) (hp : 0 < p
 
 /-- **Finite Taylor approximation of the dressed normal moment**, with the uniform tail of
 `phase_tail_le`: for `|βa| ≤ b`,
-`|S(a) - Σ_{j<2K} (βa)^j/j! Γ(p/2+j/2)β^{-(p/2+j/2)}/2| ≤ tailCoeff β b K · gaussTail β p`. -/
+`|J_p(a) - Σ_{j<2K} (βa)^j/j! Γ(p/2+j/2)β^{-(p/2+j/2)}/2| ≤ tailCoeff β b K · gaussTail β p`. -/
 theorem phaseMoment_taylor_le (β p a b : ℝ) (hβ : 0 < β) (hp : 0 < p) (hab : |β * a| ≤ b)
     (K : ℕ) :
     |phaseMoment β p a - ∑ j ∈ Finset.range (2 * K), (β * a) ^ j / (j.factorial : ℝ) *

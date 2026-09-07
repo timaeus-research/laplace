@@ -19,7 +19,8 @@ as a limit in the chart variable `N` (monomial parameter `N²`, leading scale
   `faceProj_phaseShift`, `residualWeight_phaseShift` (the residual exponents `hᵢ + jkᵢ − 2kᵢ(λ+j/2)`
   are `hᵢ − 2kᵢλ`), and the explicit `faceLeadConst_phaseShift`, `amplitudeCoeff_phaseShift`.
 * `shifted_term_tendsto`: `N^j ∫ η u^{h+jk} e^{-βN²u^{2k}} / (N^{-2λ}(log N)^{m-1})
-  → 2^{m-1} amplitudeCoeff (h+jk) k (λ+j/2) β η`.
+  → 2^{m-1} amplitudeCoeff (h+jk) k (λ+j/2) β η`; the actual `j`-th Taylor term of `e^{βNu^kξ}`
+  is this with the prefactor `β^j/j!` and amplitude `ξ^j η` (supplied in unit 202).
 
 Zero `sorry`/`axiom`.
 -/

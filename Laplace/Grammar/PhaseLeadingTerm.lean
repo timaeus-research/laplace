@@ -13,10 +13,10 @@ asymptotic. For continuous phase `ξ` and amplitude `η` on `ℝ^d`, exponents `
 ```
 I_N = ∫_{(0,1]^d} η(u) u^h e^{-β(Nu^k)² + β(Nu^k)ξ(u)} du,
 I_N / (N^{-p}(log N)^{m-1}) → phaseCoeff h k λ β ξ η
-  = 2^{m-1}·2·faceNorm · ∫_{(0,1]^d} η(πu) S^{(β)}_{p/2}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-2kᵢλ} du,
+  = 2^{m-1}·2·faceNorm · ∫_{(0,1]^d} η(πu) J_p^{(β)}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-2kᵢλ} du,
 ```
 with `π = faceProj` (the minimising coordinates set to `0`),
-`S^{(β)}_{p/2}(a) = phaseMoment β p a` (the paper's `J_p(a) = S_{p/2}(a)/2`), and
+`J_p^{(β)}(a) = phaseMoment β p a` (the paper's `J_p(a) = S_{p/2}(a)/2`), and
 `faceNorm = 1/((m-1)! ∏_{i∈J} 2kᵢ)`; the paper-facing
 constant `2^{m-1}·2·faceNorm = 1/((m-1)! ∏_{i∈J} kᵢ)` is evaluated in the headline unit.
 

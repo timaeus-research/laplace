@@ -138,7 +138,8 @@ theorem headline_quadratic_zeroPhase_mixed (β : ℝ) (h₁ h₂ k₁ k₂ : ℕ
   rw [twoDGeneral_zeroPhase_eq_monomial β n h₁ h₂ k₁ k₂ hn.le, Real.rpow_neg hn.le,
     div_inv_eq_mul, mul_comm]
 
-/-- **Headline XII, swapped (`p₂ < p₁`)**: the dominated coordinate is the first one. -/
+/-- **Headline XII, swapped (`p₂ < p₁`)**: the minimum ratio is attained at the second coordinate,
+so the first coordinate carries the residue factor `1/(h₁+1-p₂k₁)`. -/
 theorem headline_quadratic_zeroPhase_mixed' (β : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β) (hk₁ : 0 < k₁)
     (hk₂ : 0 < k₂) (p₁ p₂ : ℝ) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
     (hgt : p₂ < p₁) :

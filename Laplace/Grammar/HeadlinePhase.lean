@@ -9,20 +9,21 @@ import Laplace.Grammar.PhaseLeadingTerm
 
 Paper-facing wrappers for unit 202 (programme A, deterministic core). With `s = N u^k`,
 `p = 2λ`, `λ = min_i (hᵢ+1)/(2kᵢ)`, minimiser set `J`, `m = |J|`, `π` the projection setting the
-`J`-coordinates to `0`, `S^{(β)}_{p/2}(a) = ∫₀^∞ s^{p-1} e^{-βs²+βas} ds` (`phaseMoment β p a`;
+`J`-coordinates to `0`, `J_p^{(β)}(a) = ∫₀^∞ s^{p-1} e^{-βs²+βas} ds` (`phaseMoment β p a`;
 this is the paper's `J_p(a) = S_{p/2}(a)/2`, so the equal-ratio `d = 2` limit is the paper's
 `A_p = y₀₀ J_p(x₀₀)/(k₁k₂)`):
 
 * `headline_phase_leading`: for continuous `ξ`, `η` on `ℝ^d`,
   `∫_{(0,1]^d} η(u) u^h e^{-βN²u^{2k} + βNu^k ξ(u)} du / (N^{-p}(log N)^{m-1})
-     → (1/((m-1)! ∏_{i∈J} kᵢ)) ∫_{(0,1]^d} η(πu) S^{(β)}_{p/2}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-pkᵢ} du`.
+     → (1/((m-1)! ∏_{i∈J} kᵢ)) ∫_{(0,1]^d} η(πu) J_p^{(β)}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-pkᵢ} du`.
 * `headline_phase_leading_equal` (all ratios equal, `J` everything, `m = d`): the limit is the
-  corner value `η(0) S^{(β)}_{p/2}(ξ(0)) / ((d-1)! ∏ᵢ kᵢ)`.
+  corner value `η(0) J_p^{(β)}(ξ(0)) / ((d-1)! ∏ᵢ kᵢ)`.
 * `phaseCoeff_zero_phase`: at `ξ = 0` the coefficient is `2^{m-1}` times the zero-phase amplitude
   coefficient of unit 186, consistent with the square-parameter transport (`n = N²`,
   `log n = 2 log N`).
 
-Scope: deterministic fixed phase; one positive unit-box chart with boundary-type coordinates; the
+Naming: in the Lean statements `m + 1` is the dimension while the prose multiplicity `|J|` is
+`multCount (ratioExp h k) l`; they coincide only in the equal-ratio case. Scope: deterministic fixed phase; one positive unit-box chart with boundary-type coordinates; the
 local unnormalised integral (a posterior-expectation statement needs the denominator and chart
 assembly); the phase and amplitude of the leading term live on the face `πu`. Zero `sorry`/`axiom`.
 -/
@@ -111,7 +112,7 @@ theorem paperKernel_eq_quadKernel {d : ℕ} (β N : ℝ) (k : Fin d → ℕ) (ξ
 /-- **Headline XIII (general-dimensional phase-dressed leading asymptotic)**: for continuous phase
 `ξ` and amplitude `η`,
 `∫ η(u) u^h e^{-βN²u^{2k} + βNu^k ξ(u)} du / (N^{-p}(log N)^{m-1})
-   → (1/((m-1)! ∏_{i∈J} kᵢ)) ∫ η(πu) S^{(β)}_{p/2}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-pkᵢ} du`. -/
+   → (1/((m-1)! ∏_{i∈J} kᵢ)) ∫ η(πu) J_p^{(β)}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-pkᵢ} du`. -/
 theorem headline_phase_leading (m : ℕ) (h k : Fin (m + 1) → ℕ) (hk : ∀ i, 0 < k i) (l β : ℝ)
     (hl : 0 < l) (hβ : 0 < β) (hmin : ∀ i, l ≤ ((h i : ℝ) + 1) / (2 * (k i : ℝ)))
     (hatt : ∃ i, ((h i : ℝ) + 1) / (2 * (k i : ℝ)) = l) (ξ η : (Fin (m + 1) → ℝ) → ℝ)
@@ -132,7 +133,7 @@ theorem headline_phase_leading (m : ℕ) (h k : Fin (m + 1) → ℕ) (hk : ∀ i
   rw [paperKernel_eq_quadKernel]
 
 /-- **Headline XIII, equal ratios**: all `λᵢ = λ`, so the leading term concentrates at the corner:
-the limit is `η(0) S^{(β)}_{p/2}(ξ(0)) / ((d-1)! ∏ᵢ kᵢ)`. -/
+the limit is `η(0) J_p^{(β)}(ξ(0)) / ((d-1)! ∏ᵢ kᵢ)`. -/
 theorem headline_phase_leading_equal (m : ℕ) (h k : Fin (m + 1) → ℕ) (hk : ∀ i, 0 < k i) (l β : ℝ)
     (hl : 0 < l) (hβ : 0 < β) (hratio : ∀ i, ((h i : ℝ) + 1) / (2 * (k i : ℝ)) = l)
     (ξ η : (Fin (m + 1) → ℝ) → ℝ) (hξ : Continuous ξ) (hη : Continuous η) :
