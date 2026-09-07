@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The leading Mellin (zeta) coefficient of a normal-crossing amplitude}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 222 is Astra~\#24's optional programme E2. The paper evaluates normal moments through the zeta
+function $\zeta(z)=\int(u^{2k})^z\eta(u)u^h\,du$ (transform of $K=u^{2k}$), whose leading Laurent
+coefficient at the pole $z=-\lambda$ of order $m$ is $a_{-m}=\prod_{i\in J}\frac1{2k_i}\prod_{i\notin J}
+\frac1{h_i+1-2k_i\lambda}$ at $b=1$ (eq.\ \texttt{a\_minus\_m\_explicit}). We prove the Abelian, real-axis
+form for a continuous amplitude on the unit box:
+\[
+s^m\!\int_{(0,1]^d}\eta(u)\prod_iu_i^{2k_i(-\lambda+s)+h_i}\,du\;\longrightarrow\;
+\prod_{i\in J}\frac1{2k_i}\int\eta(\pi u)\prod_{i\notin J}u_i^{h_i-2k_i\lambda}\,du\qquad(s\to0^+)
+\]
+(\texttt{mellin\_leading\_tendsto}), with $\pi$ zeroing the minimising coordinates. For $\eta=1$ the
+limit is $a_{-m}$ (\texttt{mellinCoeff\_one}); for equal ratios it is $\eta(0)\prod_i\frac1{2k_i}$
+(\texttt{mellinCoeff\_equal}); and the Laplace-side coefficient of Headline~VIII equals
+$\Gamma(\lambda)\beta^{-\lambda}/(m-1)!$ times the Mellin coefficient
+(\texttt{amplitudeCoeff\_eq\_gamma\_mul\_mellinCoeff}) --- the paper's ``single $\Gamma(\lambda)$
+factor from the Laplace--Tauberian passage'', obtained here by comparing two Abelian limits. Not a
+meromorphic continuation or complex pole theorem. Zero \texttt{sorry}/\texttt{axiom}; 9099 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def mellinConst h k l := ∏ i, if ratioExp h k i = l then 1/(2 kᵢ) else 1
+def mellinCoeff h k l η :=
+  mellinConst h k l * ∫ u in unitBox d, η (faceProj u) * residualWeight u
+def mellinWeight h k l N u := if 0 < N then (∏ i, uᵢ ^ (2kᵢ(-l + 1/N) + hᵢ)) / N ^ m else 0
+theorem integral_monomial_mellinWeight :
+  ∫ (∏ uᵢ^γᵢ) * mellinWeight N = ∏ i, mellinFactor N γ i
+theorem mellinFactor_tendsto : mellinFactor N γ i → mellinFactorLim γ i   (N → ∞)
+theorem mellin_face_moment_eq / _eq_zero : face moments of mellinConst * residualWeight
+theorem mellinWeight_tendsto : ∫ η u * mellinWeight N u → mellinCoeff h k l η
+theorem mellin_leading_tendsto : Tendsto (fun s => s ^ m * ∫ η u * ∏ uᵢ^(2kᵢ(-l+s)+hᵢ))
+  (𝓝[>] 0) (𝓝 (mellinCoeff h k l η))
+theorem mellinCoeff_one : mellinCoeff h k l 1 = ∏ i, if J then 1/(2kᵢ) else 1/(hᵢ+1-2kᵢl)
+theorem mellinCoeff_equal (hratio) : mellinCoeff h k l η = η 0 * ∏ i, 1/(2 kᵢ)
+theorem amplitudeCoeff_eq_gamma_mul_mellinCoeff :
+  amplitudeCoeff h k l β η = Γ l * β^(-l) / (m-1)! * mellinCoeff h k l η
+\end{verbatim}
+}
+
+\section{Mathematics}
+Same skeleton as the Laplace-side amplitude theorem (unit~187): the monomial-moment transfer
+\texttt{tendsto\_integral\_of\_monomials} reduces a continuous amplitude to monomials, and for the
+Mellin weight the monomial moments are \emph{closed forms}: $\int_0^1u^{a}du=1/(a+1)$, so
+$s^m\int u^{\gamma}\prod u_i^{2k_i(-\lambda+s)+h_i}=\prod_i\frac{1}{\gamma_i+e_i(s)+1}\big/\prod_{i\in J}(1/s)$
+with $e_i(s)=-1+2k_is$ on $J$. A minimising coordinate with $\gamma_i=0$ contributes
+$\frac{1}{2k_is}\cdot s=\frac1{2k_i}$; with $\gamma_i>0$ it contributes $\frac{s}{\gamma_i+2k_is}\to0$
+(the face moment vanishes); a nonminimal coordinate contributes $\frac1{\gamma_i+h_i+1-2k_i\lambda+2k_is}
+\to\frac1{\gamma_i+h_i+1-2k_i\lambda}$. No Gamma functions, no logarithms: the $\Gamma(\lambda)/(m-1)!$
+of the Laplace side is visible as the ratio of the two limiting functionals. Numerics: $d=2$, $h=(0,1)$,
+$k=(1,1)$, $\eta=1+u_1$: $s\,V(-\tfrac12+s)=0.6439,0.7377,0.7488$ at $s=10^{-1},10^{-2},10^{-3}$
+against $3/4$; equal ratios $h=0$, $\eta=1+0.3u_0+0.2u_1^2$: $s^2V=0.2670,0.2520,0.2502$ against $1/4$.
+
+\section{Lean notes}
+\begin{itemize}
+\item Guard the weight (\texttt{if 0 < N then … else 0}) so that the transfer lemma's
+  \texttt{∀ N, IntegrableOn} hypothesis holds without a positivity side condition.
+\item \texttt{Finset.prod\_ite} would not elaborate inside \texttt{rw}; \texttt{← Finset.prod\_filter p f}
+  with explicit arguments gives \texttt{∏ (if p i then N else 1) = ∏ i ∈ filter p, N}, then
+  \texttt{Finset.prod\_const} and \texttt{multCount\_eq\_card}.
+\item \texttt{Finset.prod\_div\_distrib} inside \texttt{rw} hits the first product (the left-hand
+  $\prod 1/a_i$); \texttt{simp only} normalises both sides instead.
+\item Box membership is \texttt{∀ i ∈ Set.univ} (\texttt{Set.mem\_univ i}, not \texttt{Finset.mem\_univ}).
+\item $s\to0^+$ from $N\to\infty$: compose with \texttt{tendsto\_inv\_nhdsGT\_zero} and rewrite
+  \texttt{1/s⁻¹}, \texttt{(s⁻¹)\^{}m} pointwise.
+\end{itemize}
+
+\section{Status}
+E2 done (Headline XXI). All Astra~\#24 items now complete (H2-lite XX--XX$''$ + prior lemmas, E2).
+Freeze; a review v17 of units 221--222 is the natural closing step.
+\end{document}
