@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\emergencystretch=3em
+
+\title{Zero-phase dictionary for unequal exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 198, the first (and, it turns out, only necessary) unit of Astra~\#20's programme~B. The
+quadratic-kernel chart programme (\texttt{twoDGeneral}, parameter $n$, kernel $e^{-\beta n s^2+\beta\sqrt n\,s a}$)
+and the monomial normal-moment programme (\texttt{monomialBoxReal}, kernel $e^{-\beta N u^{2k}}$) are
+tied together at zero phase and \emph{unequal} exponent ratios $p_1=(h_1+1)/k_1<p_2=(h_2+1)/k_2$:
+the unit-cutoff zero-phase chart integral \emph{is} the two-dimensional unit-box monomial integral at
+the same parameter, so the mixed-ratio monomial theorem transports to
+\[
+n^{p_1/2}\int_0^1\!\!\int_0^1u^{h_1}v^{h_2}e^{-\beta n(u^{k_1}v^{k_2})^2}\,dv\,du
+\longrightarrow\frac{\Gamma(p_1/2)}{2k_1\,\beta^{p_1/2}\,(h_2+1-p_1k_2)}
+\]
+(\texttt{headline\_quadratic\_zeroPhase\_mixed}, plus the swapped version), and uniqueness of limits
+against the quadratic programme's own no-log theorem evaluates its constant in closed form:
+$\mathrm{noLogConst}(\beta,0,p_1,p_2)=\Gamma(p_1/2)\beta^{-p_1/2}/(2(p_2-p_1))$. Zero
+\texttt{sorry}/\texttt{axiom}; 9075 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem twoDGeneral_zeroPhase_eq_twoDAmp (hn : 0 ≤ n) :
+    twoDGeneral β 0 b n h₁ h₂ k₁ k₂ = twoDAmp β b (√n) h₁ h₂ k₁ k₂ (fun _ _ _ => 1)
+theorem twoDGeneral_zeroPhase_eq_monomial (hn : 0 ≤ n) :
+    twoDGeneral β 0 1 n h₁ h₂ k₁ k₂ = monomialBoxReal 2 ![h₁, h₂] ![k₁, k₂] β n
+theorem multCount_two_mixed / monomialMixedConst_two_mixed :
+    monomialMixedConst ![h₁, h₂] ![k₁, k₂] l β = Γ l * β^(-l) / (2k₁ (h₂ + 1 - 2k₂ l))
+theorem monomial_two_mixed_tendsto (hlt : p₁ < p₂) :
+    Tendsto (fun n => monomialBoxReal 2 ![h₁,h₂] ![k₁,k₂] β n / n^(-(p₁/2))) atTop
+      (𝓝 (monomialMixedConst ![h₁,h₂] ![k₁,k₂] (p₁/2) β))
+theorem headline_quadratic_zeroPhase_mixed (hlt : p₁ < p₂) :
+    Tendsto (fun n => n^(p₁/2) * twoDGeneral β 0 1 n h₁ h₂ k₁ k₂) atTop
+      (𝓝 (Γ (p₁/2) / (2k₁ * β^(p₁/2) * (h₂ + 1 - p₁ k₂))))
+theorem headline_quadratic_zeroPhase_mixed' (hgt : p₂ < p₁) : ... (coordinates exchanged)
+theorem noLogConst_zeroPhase_eq_monomialMixedConst (hlt : p₁ < p₂) :
+    1 / (k₁ k₂) * noLogConst β 0 p₁ p₂ = monomialMixedConst ![h₁,h₂] ![k₁,k₂] (p₁/2) β
+theorem noLogConst_zeroPhase_eq (hlt : p₁ < p₂) :
+    noLogConst β 0 p₁ p₂ = Γ (p₁/2) * β^(-(p₁/2)) / (2 (p₂ - p₁))
+\end{verbatim}
+}
+
+\section{Mathematics}
+\paragraph{Dictionary.} With $a=0$ the quadratic kernel is $e^{-\beta n(u^{k_1}v^{k_2})^2}=e^{-\beta n u^{2k_1}v^{2k_2}}$,
+so the monomial parameter is $n$ itself (not $n^2$, contrast unit~193 where \texttt{twoDAmp} is
+parametrised by $N=\sqrt n$). The proof goes through unit~193's
+\texttt{twoDAmp\_const\_eq\_monomialCutoff} at $N=\sqrt n$ and $(\sqrt n)^2=n$.
+
+\paragraph{Transport.} The monomial mixed theorem at $\lambda=p_1/2$ has $J=\{0\}$, $|J|=1$, so the
+logarithmic power is $(\log n)^0$ and the constant is
+$\Gamma(\lambda)\beta^{-\lambda}/0!\cdot\frac1{2k_1}\cdot\frac1{h_2+1-2k_2\lambda}$. No factor of two
+arises anywhere (no square in the parameter, no logarithm), which is the audit Astra~\#20 asked for.
+
+\paragraph{Constant cross-validation.} The quadratic programme proves
+$\texttt{twoDGeneral}\sim\frac1{k_1k_2}b^{k_2(p_2-p_1)}\,\mathrm{noLogConst}(\beta,a,p_1,p_2)\,n^{-p_1/2}$
+with $\mathrm{noLogConst}(\beta,a,p_1,p_2)=\int_0^\infty x^{p_1-p_2-1}\int_0^xt^{p_2-1}e^{-\beta t^2+\beta ta}\,dt\,dx$.
+At $a=0$, $b=1$ both programmes describe the same function, so
+$\frac1{k_1k_2}\mathrm{noLogConst}(\beta,0,p_1,p_2)=\frac{\Gamma(p_1/2)\beta^{-p_1/2}}{2k_1k_2(p_2-p_1)}$
+(using $h_2+1=p_2k_2$), i.e.\ $\mathrm{noLogConst}(\beta,0,p_1,p_2)=\Gamma(p_1/2)\beta^{-p_1/2}/(2(p_2-p_1))$.
+This is exactly what Fubini gives directly ($\int_t^\infty x^{p_1-p_2-1}dx=t^{p_1-p_2}/(p_2-p_1)$,
+then $\int_0^\infty t^{p_1-1}e^{-\beta t^2}dt=\tfrac12\beta^{-p_1/2}\Gamma(p_1/2)$), but the Lean proof
+is by uniqueness of limits and so is valid only for ratios realised by natural data. Numerical check
+at $\beta=1.3$, $(h,k)=((0,2),(1,1))$, $p_1=1$, $p_2=3$: quadrature $0.38863621594708$ vs closed form
+$0.38863621594708$; $n^{1/2}Q_n$ at $n=10^6$ is $0.388636$.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{ring} cannot prove $\frac{X}{2k_1(h_2+1-2k_2l)}=X\cdot\frac1{2k_1}\cdot\frac1{h_2+1-2k_2l}$
+  because it expands the product inside the inverse into a sum first and then treats the inverse of
+  the sum as an atom. \texttt{simp only [div\_eq\_mul\_inv, mul\_inv, one\_mul]} before \texttt{ring}
+  distributes the inverse over the product syntactically.
+\item Rewriting a \texttt{≠} goal \texttt{(h₂+1)/(2k₂) ≠ p₁/2} with \texttt{← hp₂} fails (no $p_2$
+  present); establish the equality \texttt{ratioExp … 1 = p₂/2} first and rewrite with it.
+\item \texttt{monomialBoxReal\_mixed\_tendsto 1 ![h₁,h₂] ![k₁,k₂]} elaborates without fuss
+  (\texttt{Fin (1+1)} vs \texttt{Fin 2}).
+\end{itemize}
+
+\section{Status}
+Astra~\#20 programme~B is closed in one unit (the general mixed-$d$ transport it mentioned as a
+possible follow-on is already available in the monomial programme; the quadratic side has no
+arbitrary-dimensional mixed theorem beyond one dominated coordinate, and nothing in the paper
+requires one at zero phase). Next: gate for programme~A (general-$d$ random-phase leading term).
+\end{document}
