@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Exact monomial moments with a constant phase (Taylor-tree Stage 2)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units 227--229 complete Stage~2 of the Taylor-tree programme. The Taylor-tree terms are monomial
+integrals with a constant phase $a=\xi(0)$ and a phase power $p$,
+$T(N)=\int_{(0,1]^{d}}u^h(\sqrt N u^k)^pe^{-\beta Nu^{2k}+\beta\sqrt N u^ka}\,du$. In the
+state-density variable $\tau=u^{2k}$ the kernel is $g(N\tau)$ with the \emph{phase kernel}
+$g(t)=(\sqrt t)^pe^{-\beta t+\beta\sqrt t a}$, so $T(N)=\prod\frac1{2k_i}\int_0^1v(\tau)g(N\tau)\,d\tau$
+with the exact density $v$ of Stage~1. Substituting $t=N\tau$ termwise and expanding
+$(\log N-\log t)^j$ binomially gives the \textbf{exact identity} (Headline~XXIII,
+\texttt{monomialPhase\_eq}), for every $N>0$,
+\[
+T(N)=\prod_i\frac1{2k_i}\sum_{(\mu,j,c)\in v}c\,N^{-\mu}\sum_{i\le j}\binom ji(\log N)^{j-i}
+\int_0^Nt^{\mu-1}(-\log t)^ig(t)\,dt,
+\]
+a finite identity with no Mellin inversion, no asymptotic expansion of the density and no
+interchange of infinite sums: the paper's substitution of the state-density expansion into the
+standard integral. The truncated moments differ from the full \emph{fluctuation moments}
+$\int_0^\infty t^{\mu-1}(-\log t)^ig(t)\,dt$ by exponentially small tails: $g(t)\le(\sqrt t)^p
+e^{\beta a^2/2}e^{-\beta t/2}$ (from $2\sqrt t\,a\le t+a^2$) and $t^me^{-\beta t/4}\le m!(4/\beta)^m$
+give $|\int_N^\infty\cdots|\le Ce^{-\beta N/4}$ (\texttt{tail\_le}), whence
+\textbf{Headline~XXIII$'$} (\texttt{monomialPhase\_isBigO}): $T(N)$ minus the main sum with full
+moments is $O(e^{-\beta N/8})$ --- the paper's $\Delta=O(e^{-\varepsilon n})$ for one monomial term,
+with the main sum a finite combination of the scales $N^{-\mu}(\log N)^k$, $\mu\in\{(h_i+1)/(2k_i)\}$,
+$k<$ multiplicity. Numerics ($d=2$, $h=(0,1)$, $k=(1,1)$, $p=1$, $a=0.3$, $\beta=1$, $N=5$): both sides
+of XXIII equal $0.1692991699$. Zero \texttt{sorry}/\texttt{axiom}; 9106 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def phaseKernel β a p t := √t ^ p * exp (-(β t) + β √t a)
+def truncMoment β a p ν i N := ∫ t in Ioc 0 N, t^(ν-1) (-log t)^i g t
+theorem integrableOn_truncMoment (hν : 0 < ν) (N)   -- split (0,1] ∪ (1,N]
+theorem basis_scaling (hμ : 0 < μ) (hN : 0 < N) :
+  ∫ τ in Ioc 0 1, powLogBasis μ j τ * g (N τ)
+    = N^(-μ) * ∑ i ∈ range (j+1), C(j,i) (log N)^(j-i) * truncMoment β a p μ i N
+theorem integral_unitBox_monomial_eq_stateDensity (f ≥ 0 measurable) :
+  ∫ unitBox (n+1), (∏ uᵢ^hᵢ) f (∏ uᵢ^(2kᵢ)) = (∏ 1/(2kᵢ)) * ∫ Ioc 0 1, eval rep z * f z
+theorem phaseKernel_box_eq : (√N ∏u^k)^p e^{…} = g (N ∏ u^(2k))
+theorem monomialPhase_eq (hk) (hN : 0 < N) : T N = (∏ 1/(2kᵢ)) * (rep.map …).sum  -- XXIII
+def fluctMoment β a p ν i := ∫ t in Ioi 0, t^(ν-1) (-log t)^i g t
+theorem phaseKernel_le (hβ) : g t ≤ √t^p * (exp (β a²/2) * exp (-(β t/2)))
+theorem tail_integrand_le (t ≥ 1) : |…| ≤ tailConst β a p ν i * exp (-(β t/4))
+theorem integrableOn_fluct (hν) ;  truncMoment_eq_fluct_sub (N ≥ 1)
+theorem tail_le (N ≥ 1) : |∫ Ioi N, …| ≤ tailConst * (4/β) * exp (-(β N/4))
+theorem log_pow_mul_exp_le : N^(-μ) (log N)^k e^{-βN/4} ≤ k! (8/β)^k e^{-βN/8}
+theorem term_tail_isBigO;  def monomialMainSum
+theorem monomialPhase_isBigO (hβ) : (fun N => T N - monomialMainSum N) =O[atTop] exp (-(β N/8))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Everything is elementary once the density is exact. The only analytic inputs are the three bounds in
+the abstract and the substitution $t=N\tau$ on an interval integral. The tail constant is explicit,
+$C=e^{\beta a^2/2}m!(4/\beta)^m$ with $m=\lceil\nu\rceil+i+p$, and the final $O(e^{-\beta N/8})$
+absorbs the factors $N^{-\mu}(\log N)^k$ of the main sum through $(\log N)^k\le N^k\le k!(8/\beta)^k
+e^{\beta N/8}$. Astra~\#26's warning is respected: the identity is for a \emph{fixed} monomial and
+phase order; nothing is summed over infinitely many monomials here.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{Integrable.bdd\_mul (c := C) hf.aestronglyMeasurable (ae bound)} for ``integrable
+  times bounded''; ascribe the \texttt{IntegrableOn} type before \texttt{.congr\_fun}.
+\item \texttt{Asymptotics.IsBigO.sum} takes the family as \texttt{A} and yields a Pi-sum; convert with
+  \texttt{.congr\_left fun N => Finset.sum\_apply \_ \_ \_}.
+\item \texttt{gcongr} on products with several factors generates nonnegativity side goals in an
+  unexpected order; explicit \texttt{mul\_le\_mul\_of\_nonneg\_left} chains are more predictable.
+\item Naming a hypothesis \texttt{h} when \texttt{h} is the exponent function silently shadows it.
+\end{itemize}
+
+\section{Status}
+Stages 1--2 complete (Headlines XXII--XXIII$'$). Next: Stage 3 (spectral truncation, per Astra~\#26):
+finitely many exponents below a cutoff on the rational lattice, uniform bounds on the density
+coefficients, all phase orders summed at each retained exponent with the Gaussian domination
+$\sum_p(\beta B)^p/p!\int t^{\mu+p/2-1}|\log t|^je^{-\beta t+\beta|a|\sqrt t}=\int t^{\mu-1}|\log t|^j
+e^{-\beta t+\beta(|a|+B)\sqrt t}$.
+\end{document}

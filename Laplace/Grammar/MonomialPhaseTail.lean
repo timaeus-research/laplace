@@ -102,8 +102,8 @@ theorem tailConst_nonneg (β a : ℝ) (hβ : 0 < β) (p : ℕ) (ν : ℝ) (i : �
 
 theorem continuousOn_tail_integrand (β a : ℝ) (p : ℕ) (ν : ℝ) (i : ℕ) :
     ContinuousOn (fun t => t ^ (ν - 1) * (-Real.log t) ^ i * phaseKernel β a p t) (Ioi 0) :=
-  ((continuousOn_id.rpow_const fun t ht => Or.inl (ne_of_gt ht)).mul
-    ((Real.continuousOn_log.mono fun t ht => ne_of_gt ht).neg.pow i)).mul
+  ((continuousOn_id.rpow_const fun _ ht => Or.inl (ne_of_gt ht)).mul
+    ((Real.continuousOn_log.mono fun _ ht => ne_of_gt ht).neg.pow i)).mul
     (continuous_phaseKernel β a p).continuousOn
 
 /-- Integrability on `(1,∞)` by domination. -/
@@ -116,7 +116,7 @@ theorem integrableOn_tail_Ioi_one (β a : ℝ) (hβ : 0 < β) (p : ℕ) (ν : �
   rw [Real.norm_eq_abs, show -(β / 4) * t = -(β * t / 4) by ring]
   exact tail_integrand_le β a hβ p ν i (le_of_lt ht)
 
-theorem integrableOn_tail_Ioi (β a : ℝ) (hβ : 0 < β) (p : ℕ) {ν : ℝ} (hν : 0 < ν) (i : ℕ) {N : ℝ}
+theorem integrableOn_tail_Ioi (β a : ℝ) (hβ : 0 < β) (p : ℕ) (ν : ℝ) (i : ℕ) {N : ℝ}
     (hN : 1 ≤ N) :
     IntegrableOn (fun t => t ^ (ν - 1) * (-Real.log t) ^ i * phaseKernel β a p t) (Ioi N) :=
   (integrableOn_tail_Ioi_one β a hβ p ν i).mono_set (Ioi_subset_Ioi hN)

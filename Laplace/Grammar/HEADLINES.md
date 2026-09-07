@@ -8,7 +8,14 @@
 | XXII′ | Mellin transform `∫₀¹ z^s v = ∏ 1/(wᵢ+s+1)`; basis `∫₀¹ τ^{c-1}(-log τ)^j = j!/c^{j+1}`; real identity for `f ≥ 0`; integrability | StateDensityAPI.lean (`mellin_stateDensity`, `integral_Ioc_rpow_mul_neg_log_pow`, `integral_unitBox_eq_stateDensity`) |
 | XXII″ | top coefficient `c_{l,m-1} = (1/(m-1)!) ∏_{wᵢ+1≠l} 1/(wᵢ+1-l)`; monomial form `= a_{-m}/(m-1)!` (Headline XXI's `mellinCoeff h k l 1`) | StateDensityLeadCoeff.lean (`stateDensityRep_leadCoeff`, `monomial_leadCoeff`) |
 Convolution calculus in `PowLogCalculus.lean` (`PowLogRep.eval_conv`, `conv_exponent_mem`, `conv_degree_lt`).
-Next: Stage 2 — exact monomial moment identity with constant phase, all orders, exponentially small tail.
+**Stage 2 — exact monomial moments with a constant phase — COMPLETE (units 227–229).**
+| Headline | Statement | File:line |
+|---|---|---|
+| XXIII | exact identity: `∫_{(0,1]^{n+1}} u^h (√N u^k)^p e^{-βNu^{2k}+β√N u^k a} = ∏1/(2kᵢ) ∑_{(μ,j,c)∈v} c N^{-μ} ∑_{i≤j} C(j,i)(log N)^{j-i} ∫₀^N t^{μ-1}(-log t)^i g(t)`, `g(t) = (√t)^p e^{-βt+β√t a}`, every `N > 0` | MonomialPhaseExpansion.lean (`monomialPhase_eq`) |
+| XXIII′ | asymptotic form: `T(N) − monomialMainSum(N) = O(e^{-βN/8})` with the full moments `fluctMoment β a p μ i = ∫₀^∞ t^{μ-1}(-log t)^i g` | MonomialPhaseTail.lean (`monomialPhase_isBigO`, `tail_le`) |
+Tools: `phaseKernel`, `truncMoment`, `basis_scaling`, `integral_unitBox_monomial_eq_stateDensity` (MonomialPhaseIdentity.lean).
+Next: Stage 3 — spectral truncation (Astra #26): finitely many exponents below a cutoff, uniform coefficient bounds, all phase orders summed at each retained exponent.
+
 
 ## Completion statement (2026-09-07)
 The scoped **§4 normal-block programme is complete** at the reviewed baseline `d65d48b` (Astra #24–#25; reviews
