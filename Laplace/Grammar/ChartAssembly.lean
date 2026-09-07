@@ -17,9 +17,9 @@ selection rule abstractly, for any finite family of functions with power–log a
   `(p_a, m_a) = (p_*, m_*)`, `→ 0` otherwise;
 * `assembly_tendsto`: if `I_a(N)/(N^{-p_a}(log N)^{m_a-1}) → L_a` for every `a`, then
   `∑_a I_a(N) / (N^{-p_*}(log N)^{m_*-1}) → ∑_{a : (p_a,m_a)=(p_*,m_*)} L_a`. This is convergence at
-  the *selected normalisation*; the limiting coefficient may vanish by cancellation between charts
-  (signed `L_a`), in which case the actual leading order of the sum is smaller and not determined
-  here;
+  the *selected normalisation*; the limiting coefficient may vanish by cancellation between
+  charts (signed `L_a`), in which case the actual leading order of the sum is smaller and not
+  determined here;
 * `assembly_ratio_tendsto`: numerator and denominator families assembled **separately**; if the
   selected denominator sum is positive, the quotient of the two sums converges to the quotient of
   the selected sums (the posterior limit is a ratio of sums, not a sum of chart ratios).
