@@ -243,7 +243,8 @@ theorem amplitude_tendsto (d : ℕ) (h k : Fin (d + 1) → ℕ) (hk : ∀ i, 0 <
     rw [← integral_const_mul]
     have hlim : ∫ x in unitBox (d + 1), η (faceProj h k l x) *
         (faceLeadConst h k l β * residualWeight h k l x) =
-        ∫ x in unitBox (d + 1), faceLeadConst h k l β * (η (faceProj h k l x) * residualWeight h k l x) :=
+        ∫ x in unitBox (d + 1),
+          faceLeadConst h k l β * (η (faceProj h k l x) * residualWeight h k l x) :=
       setIntegral_congr_fun (measurableSet_unitBox _) fun x _ => by ring
     rw [hlim] at hT
     refine hT.congr' (Eventually.of_forall fun N => ?_)
