@@ -329,3 +329,4 @@ import Laplace.Grammar.LeadingTermExtraction
 import Laplace.Grammar.ChartPosteriorDeterministic
 import Laplace.Grammar.HeadlinePosteriorRates
 import Laplace.Grammar.WeightedPowerSubstitution
+import Laplace.Grammar.ProductDensityHelpers
