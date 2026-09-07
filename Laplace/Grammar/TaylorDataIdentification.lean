@@ -57,7 +57,7 @@ theorem row_summable (ρ : ℝ) (hρ : 0 < ρ) (x : ℕ × ℕ → ℝ) (hx : WS
   have h := ((summable_prod_of_nonneg fun k => mul_nonneg (abs_nonneg (x k))
     (pow_nonneg hρ.le _)).1 hx).1 i
   refine (h.mul_left (ρ ^ i)⁻¹).congr fun j => ?_
-  show (ρ ^ i)⁻¹ * (|x (i, j)| * ρ ^ (i + j)) = _
+  change (ρ ^ i)⁻¹ * (|x (i, j)| * ρ ^ (i + j)) = _
   rw [pow_add]
   field_simp
 
@@ -71,7 +71,7 @@ theorem rowNorm_mul_summable (ρ : ℝ) (hρ : 0 < ρ) (x : ℕ × ℕ → ℝ) 
     (pow_nonneg hρ.le _)).1 hx).2
   refine h.congr fun i => ?_
   unfold rowNorm
-  show ∑' j, |x (i, j)| * ρ ^ (i + j) = (∑' j, |x (i, j)| * ρ ^ j) * ρ ^ i
+  change ∑' j, |x (i, j)| * ρ ^ (i + j) = (∑' j, |x (i, j)| * ρ ^ j) * ρ ^ i
   rw [← tsum_mul_right]
   refine tsum_congr fun j => ?_
   rw [pow_add]; ring
