@@ -1,11 +1,14 @@
 # Grammar §4 formalisation — headline index (general-dimensional normal block)
 
 ## Taylor-tree programme (opened 2026-09-07, after the freeze; Astra #26)
-Stage 1 (exact multivariate state density): units 223 (`PowLogCalculus.lean`: power–log representations,
-one-coordinate convolution calculus, exponent/degree invariants) and 224 (`StateDensity.lean`:
-`weightedBoxIntegral_eq_stateDensity`, `monomialBoxIntegral_eq_stateDensity`, `stateDensityRep_exponent_mem`,
-`stateDensityRep_degree_lt`). Next: integrability/real API, Mellin transform of the density, leading coefficient
-(factorial-normalised link to Headline XXI); then Stage 2 (exact monomial moment identity, all orders).
+**Stage 1 — exact multivariate state density — COMPLETE (units 223–226).**
+| Headline | Statement | File:line |
+|---|---|---|
+| XXII | exact state density: `∫_{(0,1]^{n+1}} ∏aᵢ^{wᵢ} g(∏aᵢ) = ∫₀¹ v g`, `v = eval (stateDensityRep n w)` a finite sum of `z^{μ-1}(-log z)^j`, `μ ∈ {wᵢ+1}`, `j < multiplicity` | StateDensity.lean (`weightedBoxIntegral_eq_stateDensity`, `stateDensityRep_exponent_mem`, `stateDensityRep_degree_lt`) |
+| XXII′ | Mellin transform `∫₀¹ z^s v = ∏ 1/(wᵢ+s+1)`; basis `∫₀¹ τ^{c-1}(-log τ)^j = j!/c^{j+1}`; real identity for `f ≥ 0`; integrability | StateDensityAPI.lean (`mellin_stateDensity`, `integral_Ioc_rpow_mul_neg_log_pow`, `integral_unitBox_eq_stateDensity`) |
+| XXII″ | top coefficient `c_{l,m-1} = (1/(m-1)!) ∏_{wᵢ+1≠l} 1/(wᵢ+1-l)`; monomial form `= a_{-m}/(m-1)!` (Headline XXI's `mellinCoeff h k l 1`) | StateDensityLeadCoeff.lean (`stateDensityRep_leadCoeff`, `monomial_leadCoeff`) |
+Convolution calculus in `PowLogCalculus.lean` (`PowLogRep.eval_conv`, `conv_exponent_mem`, `conv_degree_lt`).
+Next: Stage 2 — exact monomial moment identity with constant phase, all orders, exponentially small tail.
 
 ## Completion statement (2026-09-07)
 The scoped **§4 normal-block programme is complete** at the reviewed baseline `d65d48b` (Astra #24–#25; reviews

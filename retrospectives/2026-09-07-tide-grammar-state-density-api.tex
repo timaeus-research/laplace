@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{State density: integrability, Mellin transform and the leading coefficient (Stage 1c--d)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units 225--226 complete Stage~1 of the Taylor-tree programme. Unit 225 exports the exact state
+density $v=\mathrm{eval}(\mathrm{stateDensityRep}\,n\,w)$ of unit~224 in the forms later stages need:
+integrability on $(0,1]$ (from the box identity with $g=1$, no analysis of individual power--log terms),
+the real-valued identity $\int_{(0,1]^{n+1}}\prod a_i^{w_i}f(\prod a_i)\,da=\int_0^1v f$ for measurable
+$f\ge0$ (both sides as \texttt{toReal} of the $\mathbb R_{\ge0}^\infty$ identity, no integrability side
+conditions), the Mellin transform $\int_0^1z^sv(z)\,dz=\prod_i1/(w_i+s+1)$ (the paper's product zeta
+function in the weight normalisation, by the same one-coordinate recursion), and the Mellin transform of
+a basis term $\int_0^1\tau^{c-1}(-\log\tau)^j\,d\tau=j!/c^{j+1}$ (substitution $\tau=e^{-x}$ into Euler's
+integral), hence termwise $\int_0^1z^s\,\mathrm{eval}\,c=\sum c_t\,j_t!/(s+\mu_t)^{j_t+1}$. Unit 226 proves
+the \textbf{top coefficient}: with $l=\min(w_i+1)$ of multiplicity $m$,
+\[
+c_{l,m-1}=\frac1{(m-1)!}\prod_{w_i+1\ne l}\frac1{w_i+1-l},
+\]
+by an Abelian argument identical in spirit to Headline~XXI: $(s+l)^m\int_0^1z^sv$ tends, as $s\to-l^+$,
+to that product (from the product transform) and to $(m-1)!\,c_{l,m-1}$ (termwise: every term but the
+top one vanishes in the limit). In the monomial normalisation the coefficient is $a_{-m}/(m-1)!$,
+$a_{-m}=\mathrm{mellinCoeff}\,h\,k\,l\,1$ (\texttt{monomial\_leadCoeff}): Astra~\#26's factorial
+conversion between density and Laurent coefficients, as a theorem. Zero \texttt{sorry}/\texttt{axiom};
+9103 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem weightedBoxIntegral_rpow : WBI d w (ofReal ∘ (·^s)) = ∏ ofReal (1/(wᵢ+s+1))
+theorem stateDensity_integrableOn (hw : ∀ i, -1 < w i) : IntegrableOn (eval rep) (Ioc 0 1)
+theorem integral_unitBox_eq_stateDensity (hf : Measurable f)
+  (hf0 : ∀ z ∈ Ioc 0 1, 0 ≤ f z) :
+  ∫ a in unitBox (n+1), (∏ aᵢ^{wᵢ}) * f (∏ aᵢ) = ∫ z in Ioc 0 1, eval rep z * f z
+theorem mellin_stateDensity : ∫ z in Ioc 0 1, z^s * eval rep z = ∏ 1/(wᵢ+s+1)
+theorem integral_Ioc_rpow_mul_neg_log_pow (hc : 0 < c) : ∫ τ^(c-1)(-log τ)^j = j!/c^(j+1)
+theorem integrableOn_powLogBasis (hc : 0 < c) (j)
+theorem mellin_eval (hc : ∀ t ∈ c, 0 < t.1 + s) : ∫ z^s eval c = ∑ cₜ jₜ!/(s+μₜ)^(jₜ+1)
+def PowLogRep.coeffAt c μ j;  theorem term_tendsto; list_tendsto; product_tendsto
+theorem stateDensityRep_leadCoeff (hl : ∀ i, l ≤ w i + 1) (hatt) :
+  coeffAt (stateDensityRep n w) l (expMult w l - 1)
+    = (1/(expMult w l - 1)!) * ∏ i, if w i + 1 = l then 1 else 1/(w i + 1 - l)
+theorem monomial_leadCoeff : (∏ 1/(2kᵢ)) * coeffAt (rep (ratioExp − 1)) l (m−1)
+    = mellinCoeff h k l 1 / (m−1)!
+\end{verbatim}
+}
+
+\section{Mathematics}
+The Abelian limit is the natural tool once the Mellin transform is a product: multiplying by
+$(s+l)^m$ cancels the $m$ factors at the minimum, and the surviving product is continuous at $s=-l$
+because the other exponents are strictly larger. On the density side the degree bound $j\le m-1$ at
+$\mu=l$ (unit 224) is exactly what makes every lower-degree term vanish: $(s+l)^{m-1-j}\to0$ for
+$j<m-1$. No inverse Mellin transform and no partial-fraction formula for the other coefficients are
+needed for the leading term; the full residue formula (\texttt{eq:residuecoefficients}) remains a
+corollary for later, checked numerically in the unit~224 replica.
+
+\section{Lean notes}
+\begin{itemize}
+\item `\lambda` is the lambda token and cannot name a variable; use `l`.
+\item \texttt{tendsto\_const\_nhds.div h hne} needs the constant fixed: \texttt{(tendsto\_const\_nhds (x := (1:ℝ))).div}.
+\item \texttt{rw [show m = a + b by omega]} rewrites every \texttt{m}, including inside the exponent
+  being manipulated; state the power identity as a separate \texttt{have} instead.
+\item Real identity for nonnegative $f$ without integrability: \texttt{integral\_eq\_lintegral\_of\_nonneg\_ae}
+  on both sides, then the $\mathbb R_{\ge0}^\infty$ theorem.
+\item The substitution $\tau=e^{-x}$: \texttt{integral\_image\_eq\_integral\_abs\_deriv\_smul} on
+  \texttt{Ioc 0 1} with \texttt{-log}, image \texttt{Ici 0}; its \texttt{iff} version transports integrability.
+\end{itemize}
+
+\section{Status}
+Stage 1 complete (Headlines XXII, XXII$'$, XXII$''$). Next: review v18 of units 223--226; Stage 2 --- the
+exact monomial moment identity with constant phase: $\int_{(0,1]^d}u^{h}(\sqrt n u^k)^p
+e^{-\beta nu^{2k}+\beta\sqrt n u^k\xi_0}\,du=\sum_{\mu,j}\sum_{k'}n^{-\mu}(\log n)^{k'}c_{\mu,j}
+\binom{j}{k'}\int_0^{n}t^{\mu+p/2-1}(-\log t)^{j-k'}e^{-\beta t+\beta\sqrt t\xi_0}\,dt$ exactly, then the
+tail $\int_n^\infty$ exponentially small.
+\end{document}
