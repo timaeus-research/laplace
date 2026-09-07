@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline statements of the grammar \S4 formalisation}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#12 rank~5 (``unusually high value at 151 units''). \texttt{Laplace/Grammar/Headline.lean}
+collects thin, paper-facing wrappers of the main theorems with all hypotheses spelled out, a module
+docstring fixing the scope ($d=2$, one chart, Taylor data in the $\rho$-weighted $\ell^1$ space,
+canonical coefficients), and an explicit not-claimed list. It also identifies the Lean chart integral
+with the paper's standard integral (\texttt{headline\_standard\_integral}). Nothing is re-proved.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The headline statements}
+\begin{enumerate}
+\item \texttt{headline\_standard\_integral}: $\texttt{twoDAmp}\,\beta\,b\,N\,h\,k\,(\texttt{anaAmp}\,(\texttt{ampCoeff}\,\beta\,x\,y)\,b)
+=\int\!\!\int_{(0,b]^2}u^{h_1}v^{h_2}e^{-\beta(Nu^{k_1}v^{k_2})^2}\eta(u,v)e^{\beta Nu^{k_1}v^{k_2}\xi(u,v)}$,
+$\xi=\sum x_{ij}u^iv^j$, $\eta=\sum y_{ij}u^iv^j$ (defn:std\_integral at $\sqrt n=N$).
+\item \texttt{headline\_taylor\_tree}: thm:TaylorTree for $d=2$, all $(h,k)$, every truncation $T$
+(unit~129).
+\item \texttt{headline\_taylor\_tree\_uniform}: remainder $\le K(\beta,b,\rho,M,h,k,T)N^{-2T}(1+\log N)$
+uniformly on $\|a\|\le M$ (units~135, 149).
+\item \texttt{headline\_leading\_coefficient}: $A_p=\frac{y_{00}}{k_1k_2}\int_0^\infty s^{p-1}e^{-\beta s^2+\beta sx_{00}}ds$
+and $y_{00}>0\Rightarrow A_p>0$ (units~124, 154).
+\item \texttt{headline\_taylor\_data}: $\partial_v^j\partial_u^i\xi(0,0)=i!j!x_{ij}$ (unit~144).
+\item \texttt{headline\_expectation}: averaged Taylor tree with uniform remainder, only joint
+measurability assumed (units~137--139).
+\item \texttt{headline\_coefficient\_lipschitz}: local Lipschitz continuity of $A_\alpha$ in the Taylor
+data (unit~145).
+\item \texttt{headline\_coefficients\_in\_distribution}: finite coefficient vectors converge in
+distribution (unit~147).
+\item \texttt{headline\_normalised\_remainders}: ordered A/B-slot normalised remainders converge in
+distribution for measurable Taylor data converging in distribution (units~148--153).
+\item \texttt{headline\_far\_phase}: $|\int_E\eta e^{-\beta nK+\beta\sqrt{nK}\psi}|\le(\int_E|\eta|)e^{-\beta n\varepsilon/2+\beta M^2/2}$
+(unit~151).
+\end{enumerate}
+
+\section{Scope and what is not claimed}
+Scope: dimension two, one resolution chart, box $[0,b]^2$, monomial phase $u^{k_1}v^{k_2}$ with
+Jacobian exponents $(h_1,h_2)$, evaluation at $\sqrt n=N$, phase and amplitude given by Taylor data
+absolutely summable at radius $\rho>b$, canonical (cutoff-independent) coefficients. Not claimed:
+general $d$; the multi-chart/resolution assembly; the functional CLT for the empirical process; the
+identification of the paper's $C^\omega$ topology with the weighted coefficient norm (Cauchy
+estimates); convergence of expectations from convergence in distribution beyond the stated
+domination hypotheses; uniform far-phase decay without control of the random bound $M$; a full
+posterior-ratio expansion (only the positivity of the leading denominator is proved so far).
+
+\section{Lean notes}
+\begin{itemize}
+\item The standard-integral identification is two nested \texttt{setIntegral\_congr\_fun}s with
+\texttt{anaAmp\_ampCoeff} on $\mathrm{Ioc}\subseteq\mathrm{Icc}$.
+\item Wrappers are proved by direct application; the file compiled on the first attempt apart from
+two over-long docstring lines.
+\item Section-scoped \texttt{variable}s separate the two probabilistic settings (varying sample
+spaces for the continuous-mapping transfer; a fixed sample space with a countably generated filter
+for the Slutsky-based normalised remainders).
+\end{itemize}
+
+\end{document}
