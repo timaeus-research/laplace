@@ -372,3 +372,4 @@ import Laplace.Grammar.PhaseCoeffLipschitz
 import Laplace.Grammar.PhaseUniform
 import Laplace.Grammar.PhaseRandomTransfer
 import Laplace.Grammar.PhaseRandomPosterior
+import Laplace.Grammar.StochasticAssemblyInfra
