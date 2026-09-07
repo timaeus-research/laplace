@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Normalised remainders of a finite log-polynomial expansion}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Deterministic half of Astra~\#11 rank~4 (the ordered-remainder statement of
+thm:strataempiricalexpansion). Given $Z(N)=\sum_{\gamma\in P}N^{-\gamma}(A_\gamma\log N+B_\gamma)+R(N)$
+with $|R(N)|\le KN^{-E}(1+\log N)$, bounded coefficients $|A_\gamma|,|B_\gamma|\le K_c$ and a gap
+$\delta>0$ above $\alpha\in P$, the two normalised remainders satisfy for $N\ge e$
+\[
+\Big|\frac{Z(N)-L_{<\alpha}(N)}{N^{-\alpha}\log N}-A_\alpha\Big|\le\mathrm{errA}(N),\qquad
+\Big|\frac{Z(N)-L_{<\alpha}(N)-N^{-\alpha}A_\alpha\log N}{N^{-\alpha}}-B_\alpha\Big|\le\mathrm{errB}(N),
+\]
+with explicit rates $\mathrm{errA}(N)=2(KN^{\alpha-E}+|P|K_cN^{-\delta})+K_c/\log N$ and
+$\mathrm{errB}(N)=(KN^{\alpha-E}+|P|K_cN^{-\delta})(1+\log N)$, both tending to $0$
+(\texttt{normalised\_A\_le}, \texttt{normalised\_B\_le}, \texttt{tendsto\_errA}, \texttt{tendsto\_errB}).
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def lowerPart (P : Finset ℝ) (A B : ℝ → ℝ) (α N : ℝ) : ℝ :=
+  ∑ γ ∈ P.filter (· < α), N ^ (-γ) * (A γ * log N + B γ)
+def upperPart ... (α < ·) ...
+theorem sum_split (hα : α ∈ P) :
+    ∑ γ ∈ P, … = lowerPart … + N^(-α) * (A α * log N + B α) + upperPart …
+theorem abs_upperPart_le (hN : 1 ≤ N) (hKc) (hgap : ∀ γ ∈ P, α < γ → α + δ ≤ γ) (hAB) :
+    |upperPart P A B α N| ≤ P.card * (N ^ (-(α + δ)) * (Kc * (1 + log N)))
+def errA (K Kc E α δ) (P) (N) := 2 * (K * N^(α - E) + P.card * Kc * N^(-δ)) + Kc / log N
+def errB ... := (K * N^(α - E) + P.card * Kc * N^(-δ)) * (1 + log N)
+theorem normalised_A_le (hK hKc) (hα : α ∈ P) (hgap)
+    (hZ : ∀ N, 1 ≤ N → |Z N - ∑ γ ∈ P, N^(-γ) * (A γ * log N + B γ)|
+      ≤ K * (N^(-E) * (1 + log N)))
+    (hAB : ∀ γ ∈ P, |A γ| ≤ Kc ∧ |B γ| ≤ Kc) (N) (hN : exp 1 ≤ N) :
+    |(Z N - lowerPart P A B α N) / (N^(-α) * log N) - A α| ≤ errA K Kc E α δ P N
+theorem normalised_B_le ... :
+    |(Z N - lowerPart P A B α N - N^(-α) * (A α * log N)) / N^(-α) - B α| ≤ errB K Kc E α δ P N
+theorem tendsto_rpow_neg_mul_one_add_log (a) (ha : 0 < a) :
+    Tendsto (fun N => N^(-a) * (1 + log N)) atTop (𝓝 0)
+theorem tendsto_errA / tendsto_errB (hαE : α < E) (hδ : 0 < δ) : Tendsto (err…) atTop (𝓝 0)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Split the finite expansion at $\alpha$: $\sum_P=L_{<\alpha}+N^{-\alpha}(A_\alpha\log N+B_\alpha)+U_{>\alpha}$.
+The upper part is bounded by $|P|\,N^{-(\alpha+\delta)}K_c(1+\log N)$ because every exponent above
+$\alpha$ is at least $\alpha+\delta$ and $N\ge1$. Then
+$(Z-L_{<\alpha})/(N^{-\alpha}\log N)-A_\alpha=(R+U)/(N^{-\alpha}\log N)+B_\alpha/\log N$, and for
+$\log N\ge1$ the factor $(1+\log N)/\log N\le2$ gives $\mathrm{errA}$. The B-slot has no
+$1/\log N$ term but keeps the $(1+\log N)$ growth, harmless against $N^{-\delta}$. The rates tend to
+zero by $N^{-a}\to0$ and $\log N=o(N^a)$ (Mathlib \texttt{isLittleO\_log\_rpow\_atTop}).
+
+\section{Paper-facing meaning}
+The paper's second conclusion in thm:strataempiricalexpansion is that the normalised remainder
+converges in distribution to $C_{\mu',m'}(G)$. Astra~\#11 stressed two points that this unit makes
+precise: the two slots ($\log N$ coefficient and constant) must be treated in order, and the
+B-slot must subtract the CURRENT random coefficient $A_\alpha(\xi_n)$, not its limit. With the
+uniform Taylor tree (unit~135) supplying $K$ independent of the data on a bounded family and the
+envelope bounds (unit~134) supplying $K_c$, the deterministic error is uniform over the family, so
+the probabilistic statement reduces to the continuous-mapping transfer (unit~147) plus a
+deterministic $o(1)$ perturbation (Slutsky: \texttt{TendstoInDistribution.add\_of\_tendstoInMeasure\_const}).
+That wrapper needs the measurability of $\omega\mapsto Z_n(\omega)$, i.e.\ joint continuity of the
+amplitude coefficients in $(a,s)$ on \texttt{CoeffPair}~$\times\mathbb R$: the next unit.
+
+\section{Lean notes}
+\begin{itemize}
+\item Splitting a \texttt{Finset} sum at a member: \texttt{Finset.add\_sum\_erase} then
+\texttt{Finset.sum\_filter\_add\_sum\_filter\_not} on the erased set, with two small
+\texttt{Finset.ext} identifications of the filters.
+\item \texttt{Real.add\_one\_le\_exp 0} does not give $1\le e$ in a usable form; use
+\texttt{Real.one\_le\_exp zero\_le\_one}. $1\le\log N\iff e\le N$ is
+\texttt{Real.le\_log\_iff\_exp\_le}.
+\item Powers: prove \texttt{N\^{}(α−E) * N\^{}(−α) = N\^{}(−E)} once via \texttt{← Real.rpow\_add} and
+rewrite backwards (\texttt{rw [← hE1, ← hE2]; ring}) to pass from $N^{-E}$ to $N^{\alpha-E}N^{-\alpha}$.
+\item \texttt{div\_le\_iff₀} turns the normalised bound into a product bound; \texttt{field\_simp; ring}
+closes the two algebraic identities for the normalised remainders.
+\item \texttt{Real.tendsto\_log\_atTop.inv\_tendsto\_atTop.const\_mul Kc} with
+\texttt{simpa [div\_eq\_mul\_inv]} gives $K_c/\log N\to0$.
+\end{itemize}
+
+\end{document}
