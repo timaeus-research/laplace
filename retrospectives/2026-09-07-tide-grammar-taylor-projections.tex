@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Commuting Taylor projections: the general-$d$ algebraic skeleton}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For a sequence of linear "Taylor projection" operators $P_n$ on a module, the recursion
+$R_0=I$, $R_{n+1}=(I-P_n)R_n$, $F_0=0$, $F_{n+1}=F_n+P_nR_n$ gives the exact decomposition
+$I=F_n+R_n$ with no commutation or idempotence hypotheses (Astra~\#6(d)). For $n=2$ this is the
+rectangular face-jet decomposition $F_2=P_0+P_1-P_1P_0$, $R_2=I-P_0-P_1+P_1P_0$ of unit~106. The
+analytic instantiation is coefficient truncation on multi-index arrays: $\mathrm{truncProj}_\ell^M$
+keeps the coefficients with $\alpha_\ell<M$; these are linear, idempotent and commute, and the
+remainder of the first $d$ truncations is the tail indicator $\alpha_\ell\ge M_\ell$ for all
+$\ell<d$. This is the general-$d$ skeleton on which the product-density and finite-part calculus will
+be hung. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def remOp (P : ℕ → E →ₗ[ℝ] E) : ℕ → E →ₗ[ℝ] E
+  | 0 => LinearMap.id
+  | n + 1 => (LinearMap.id - P n) ∘ₗ remOp P n
+noncomputable def faceOp (P : ℕ → E →ₗ[ℝ] E) : ℕ → E →ₗ[ℝ] E
+  | 0 => 0
+  | n + 1 => faceOp P n + P n ∘ₗ remOp P n
+theorem faceOp_add_remOp (P : ℕ → E →ₗ[ℝ] E) (n : ℕ) :
+    faceOp P n + remOp P n = LinearMap.id
+theorem remOp_two (P) : remOp P 2 = LinearMap.id - P 0 - P 1 + P 1 ∘ₗ P 0
+theorem faceOp_two (P) : faceOp P 2 = P 0 + P 1 - P 1 ∘ₗ P 0
+noncomputable def truncProj (ℓ M : ℕ) : ((ℕ → ℕ) → ℝ) →ₗ[ℝ] ((ℕ → ℕ) → ℝ)
+  -- c ↦ fun α => if α ℓ < M then c α else 0
+theorem truncProj_idem / truncProj_comm
+theorem remOp_truncProj_apply (M : ℕ → ℕ) (d : ℕ) (c : (ℕ → ℕ) → ℝ) (α : ℕ → ℕ) :
+    remOp (fun ℓ => truncProj ℓ (M ℓ)) d c α = if ∀ ℓ < d, M ℓ ≤ α ℓ then c α else 0
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+$F_{n+1}+R_{n+1}=F_n+P_nR_n+R_n-P_nR_n=F_n+R_n$, so the decomposition holds by induction using only
+additivity. Unfolding two steps gives the rectangular operators, with the corner term $P_1P_0$ (the
+$v$-projection applied to the $u$-face jets) exactly as in unit~106, where $c_{ij}$ were defined as the
+$v$-jets of the $u$-faces. For truncations, $(I-P_d)x(\alpha)=x(\alpha)$ if $\alpha_d\ge M_d$ and
+$0$ otherwise, so $R_d$ restricts the array to the orthant $\alpha_\ell\ge M_\ell$ ($\ell<d$).
+
+\section{Paper-facing meaning}
+
+This is the operator form of the inclusion--exclusion over faces of the box in
+\texttt{thm:TaylorTree}: the block integral of an amplitude splits as $\sum_S(\pm)$ face contributions
+(polynomial in the coordinates of $S$) plus a remainder vanishing to order $M_\ell$ in every
+coordinate, and for a coefficient array the remainder is literally the tail of the double (multiple)
+series. The $d=2$ theory (units~104--115) is the case $d=2$; the general-$d$ analytic content still
+to come is the product density $r^{p-1}\log(R/r)^{d-1}/((d-1)!\prod k_\ell)$ and the iterated
+finite parts.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{abel} closes the operator identities in the additive group of linear maps after
+\texttt{LinearMap.sub\_comp}, \texttt{comp\_sub}, \texttt{id\_comp}, \texttt{comp\_id}.
+\item \texttt{simp} normalises \texttt{∀ ℓ < d + 1} to \texttt{∀ ℓ ≤ d}, defeating hypotheses stated
+in the former form; rewrite the \texttt{if}s explicitly with \texttt{if\_pos}/\texttt{if\_neg} and
+keep the conditions verbatim.
+\item A \texttt{LinearMap} defined by \texttt{where toFun … map\_add' … map\_smul'} with pointwise
+\texttt{ite} needs \texttt{funext} and \texttt{split\_ifs <;> simp} in both fields.
+\end{itemize}
+
+\end{document}
