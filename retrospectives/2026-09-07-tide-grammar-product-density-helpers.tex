@@ -1,0 +1,55 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Transport helpers for the recursive product-density lemma}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Step~2a of the general-$d$ equal-ratio monomial milestone (Astra~\#14). Three transport lemmas for
+Lebesgue integrals on $(0,1]$, in $[0,\infty]$-valued form so that no integrability is needed inside
+the induction: scaling $\int_{(0,1]}F(tz)\,dz=\frac1t\int_{(0,t]}F(w)\,dw$ for $t>0$
+(\texttt{lintegral\_Ioc\_scale}); the triangle swap
+$\int_{(0,1]}\int_{(0,t]}G(t,w)\,dw\,dt=\int_{(0,1]}\int_{[w,1]}G(t,w)\,dt\,dw$
+(\texttt{lintegral\_triangle\_swap}); and the FTC identity of unit~165 on $[z,1]$ in $[0,\infty]$ form
+(\texttt{lintegral\_log\_sub\_pow\_div}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem image_mul_Ioc (t) (ht : 0 < t) : (fun z : ℝ => t * z) '' Ioc 0 1 = Ioc 0 t
+theorem lintegral_Ioc_scale (t) (ht : 0 < t) (F : ℝ → ENNReal) :
+    ∫⁻ z in Ioc 0 1, F (t * z) = ENNReal.ofReal (1 / t) * ∫⁻ w in Ioc 0 t, F w
+theorem lintegral_triangle_swap (G : ℝ → ℝ → ENNReal)
+    (hG : Measurable fun q : ℝ × ℝ => G q.1 q.2) :
+    ∫⁻ t in Ioc 0 1, ∫⁻ w in Ioc 0 t, G t w = ∫⁻ w in Ioc 0 1, ∫⁻ t in Icc w 1, G t w
+theorem lintegral_log_sub_pow_div (z) (hz : 0 < z) (hz1 : z ≤ 1) (d : ℕ) :
+    ∫⁻ t in Icc z 1, ENNReal.ofReal ((log t - log z) ^ d / t)
+      = ENNReal.ofReal ((-log z) ^ (d + 1) / (d + 1))
+\end{verbatim}
+}
+
+\section{Lean notes}
+\begin{itemize}
+\item Scaling is the one-dimensional Jacobian lemma with $f=(t\cdot)$, derivative $t$ and image
+$(0,t]$; the constant $\frac1t$ is pulled out with \texttt{lintegral\_const\_mul'}.
+\item The triangle swap writes each inner integral as an integral over $(0,1]$ against the indicator
+of $\{w\le t\}$; \texttt{Measure.restrict\_restrict} expects the intersection as
+\texttt{s ∩ t} with the inner set first, and the measurable sets must be spelled \texttt{Iic}/\texttt{Ici}
+for the rewrite to match. Then \texttt{lintegral\_lintegral\_swap} on the restricted product measure.
+\item \texttt{intervalIntegral.integral\_of\_le}, \texttt{setLIntegral\_congr Ioc\_ae\_eq\_Icc.symm}
+and \texttt{ofReal\_integral\_eq\_lintegral\_ofReal} convert the real FTC identity; interval
+integrability comes from \texttt{ContinuousOn.intervalIntegrable} via \texttt{.def'} and
+\texttt{uIoc\_of\_le}.
+\end{itemize}
+
+\end{document}
