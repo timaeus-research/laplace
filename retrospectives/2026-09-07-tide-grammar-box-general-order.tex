@@ -1,0 +1,68 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The multiplicity-$m$ theorem for an arbitrary coordinate order}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Relabelling the coordinates of the box along an equivalence $\tau:\mathrm{Fin}\,D'\simeq\mathrm{Fin}\,D$
+leaves the chart integral invariant when $\xi,\eta$ are transported along the induced measurable
+equivalence. Sorting the exponents puts the minimisers last, so unit~80 yields the general form of the
+leading term of \texttt{thm:TaylorTree}: for any exponents on $\mathrm{Fin}\,D$ whose minimal candidate
+exponent $p$ is attained $M+2\ge2$ times, and jointly continuous $\xi,\eta$ with $\eta>0$ on the minimal
+face, $\int_{(0,b]^D}w^H\eta\,e^{-\beta nw^{2K}+\beta\sqrt n\,w^K\xi}\sim C\,n^{-p/2}\log^{M+1}n$ with
+$C>0$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def relabel {D D' : ℕ} (τ : Fin D' ≃ Fin D) : (Fin D' → ℝ) ≃ᵐ (Fin D → ℝ)
+theorem boxIntegralGen_relabel (β b c : ℝ) {D D' : ℕ} (τ : Fin D' ≃ Fin D) (K H : Fin D → ℕ)
+    (ξ η : (Fin D → ℝ) → ℝ) :
+    boxIntegralGen β b c (K ∘ τ) (H ∘ τ) (ξ ∘ relabel τ) (η ∘ relabel τ)
+      = boxIntegralGen β b c K H ξ η
+theorem boxIntegralGen_isEquivalent_general (β b : ℝ) (hβ : 0 < β) (hb : 0 < b) {D : ℕ}
+    (K H : Fin D → ℕ) (hK : ∀ i, 0 < K i) (p : ℝ) (hmin : ∀ i, p ≤ finExp K H i) (M : ℕ)
+    (hM : (Finset.univ.filter fun i => finExp K H i = p).card = M + 2)
+    (ξ η : (Fin D → ℝ) → ℝ) (hξc : Continuous ξ) (hηc : Continuous η)
+    (hηpos : ∀ w : Fin D → ℝ, (∀ i, finExp K H i = p → w i = 0) →
+      (∀ i, finExp K H i ≠ p → 0 < w i ∧ w i ≤ b) → 0 < η w) :
+    ∃ C : ℝ, 0 < C ∧ (fun n : ℝ => boxIntegralGen β b (Real.sqrt n) K H ξ η) ~[atTop]
+      fun n : ℝ => C * (n ^ (-(p / 2)) * Real.log n ^ (M + 1))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Relabelling invariance is \texttt{measurePreserving\_piCongrLeft} applied to
+\texttt{MeasurePreserving.integral\_comp'}, with the monomials reindexed by
+\texttt{Fintype.prod\_equiv}. For the general theorem, $\sigma=\mathrm{sortPerm}$ makes the exponents
+antitone; the minimisers form the final segment $\mathrm{Ici}\,i_0$ of cardinality $M+2$, so
+$i_0=D-(M+2)=:d'$, and $\tau=\mathrm{finCongr}\circ\sigma$ relabels $\mathrm{Fin}(d'+(M+2))$. The
+exponent hypotheses of unit~80 follow from the segment description; the face condition transports
+through \texttt{relabel\_apply\_apply} and \texttt{Fin.addCases} on $\tau^{-1}i$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{MeasurableEquiv.piCongrLeft\_apply\_apply} needs the family given explicitly
+(\texttt{(β := fun \_ => ℝ)}) when the equivalence is wrapped in a definition.
+\item \texttt{Finset.card\_equiv} maps the left set into the right one: with the sorted set on the
+right the equivalence is $\sigma^{-1}$, not $\sigma$.
+\item \texttt{Fin.addCases} does not generalise hypotheses mentioning the eliminated index;
+\texttt{revert} them first.
+\end{itemize}
+
+\section{Outcome}
+The leading term of \texttt{thm:TaylorTree} is formalised for general continuous $\xi,\eta$ on the
+genuine chart box in any coordinate order and any multiplicity ($m=1$ by unit~72, $m\ge2$ here).
+Next: consult Astra on the remainder and expansion programme (targets~6--8).
+\end{document}
