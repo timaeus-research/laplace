@@ -22,7 +22,8 @@ exact density `v` of unit 224. This file provides the two ingredients of the exa
      N^{-μ} ∑_{i≤j} C(j,i) (log N)^{j-i} ∫₀^N t^{μ-1}(-log t)^i g(t) dt`
   (`truncMoment`: the truncated log-weighted fluctuation moment).
 Integrability of the signed integrands `t^{μ-1}(-log t)^i g(t)` on `(0,N]`
-(`integrableOn_truncMoment`) is what licenses splitting the finite sums inside the integral. Zero `sorry`/`axiom`.
+(`integrableOn_truncMoment`) is what licenses splitting the finite sums inside the integral.
+Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Set Real
@@ -79,7 +80,8 @@ theorem integrableOn_truncMoment (β a : ℝ) (p : ℕ) {ν : ℝ} (hν : 0 < ν
 /-- Pointwise: `(t/N)^{μ-1} (-log(t/N))^j = N^{1-μ} t^{μ-1} ∑ C(j,i) (-log t)^i (log N)^{j-i}`. -/
 theorem powLogBasis_div (μ : ℝ) (j : ℕ) {t N : ℝ} (ht : 0 < t) (hN : 0 < N) :
     powLogBasis μ j (t / N) = N ^ (1 - μ) * (t ^ (μ - 1) *
-      ∑ i ∈ Finset.range (j + 1), (j.choose i : ℝ) * (Real.log N) ^ (j - i) * (-Real.log t) ^ i) := by
+      ∑ i ∈ Finset.range (j + 1),
+        (j.choose i : ℝ) * (Real.log N) ^ (j - i) * (-Real.log t) ^ i) := by
   unfold powLogBasis
   rw [Real.div_rpow ht.le hN.le, Real.log_div ht.ne' hN.ne', neg_sub,
     show Real.log N - Real.log t = -Real.log t + Real.log N by ring, add_pow, Finset.mul_sum,

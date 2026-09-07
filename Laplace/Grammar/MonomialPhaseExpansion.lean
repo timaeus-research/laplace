@@ -14,7 +14,8 @@ T(N) = ∫_{(0,1]^{n+1}} u^h (√N u^k)^p exp(-βN u^{2k} + β√N u^k a) du
 ```
 equals **exactly**, for every `N > 0`,
 ```
-∏ 1/(2kᵢ) · ∑_{(μ,j,c) ∈ v} c · N^{-μ} ∑_{i ≤ j} C(j,i) (log N)^{j-i} ∫₀^N t^{μ-1} (-log t)^i g(t) dt,
+∏ 1/(2kᵢ) · ∑_{(μ,j,c) ∈ v} c · N^{-μ} ∑_{i ≤ j} C(j,i) (log N)^{j-i}
+                                             ∫₀^N t^{μ-1} (-log t)^i g(t) dt,
 ```
 where `v = stateDensityRep n w` is the exact state density of unit 224 (`wᵢ = (hᵢ+1)/(2kᵢ) - 1`,
 `μ ∈ {(hᵢ+1)/(2kᵢ)}`, `j < multiplicity`) and `g(t) = (√t)^p e^{-βt+β√t a}` is the phase kernel
@@ -56,7 +57,8 @@ theorem integral_eval_mul_phaseKernel (β a : ℝ) (p : ℕ) {N : ℝ} (hN : 0 <
     have ht := hc t (List.mem_cons_self ..)
     have hrest := ih fun u hu => hc u (List.mem_cons_of_mem t hu)
     have hint1 : IntegrableOn
-        (fun τ => t.2.2 * (powLogBasis t.1 t.2.1 τ * phaseKernel β a p (N * τ))) (Ioc 0 1) := (integrableOn_powLogBasis_mul_phaseKernel β a p ht t.2.1 N).const_mul _
+        (fun τ => t.2.2 * (powLogBasis t.1 t.2.1 τ * phaseKernel β a p (N * τ)))
+        (Ioc 0 1) := (integrableOn_powLogBasis_mul_phaseKernel β a p ht t.2.1 N).const_mul _
     have hint2 : IntegrableOn (fun τ => PowLogRep.eval c τ * phaseKernel β a p (N * τ))
         (Ioc 0 1) := by
       clear ih hrest
@@ -65,7 +67,8 @@ theorem integral_eval_mul_phaseKernel (β a : ℝ) (p : ℕ) {N : ℝ} (hN : 0 <
       | cons u c ihc =>
         have hu := hc u (List.mem_cons_of_mem t (List.mem_cons_self ..))
         have h1 : IntegrableOn
-            (fun τ => u.2.2 * (powLogBasis u.1 u.2.1 τ * phaseKernel β a p (N * τ))) (Ioc 0 1) := (integrableOn_powLogBasis_mul_phaseKernel β a p hu u.2.1 N).const_mul _
+            (fun τ => u.2.2 * (powLogBasis u.1 u.2.1 τ * phaseKernel β a p (N * τ)))
+            (Ioc 0 1) := (integrableOn_powLogBasis_mul_phaseKernel β a p hu u.2.1 N).const_mul _
         have h2 := ihc fun v hv => hc v (by
           rcases List.mem_cons.mp hv with hv | hv
           · exact hv ▸ List.mem_cons_self ..
@@ -86,7 +89,8 @@ theorem phaseKernel_box_eq {d : ℕ} (β a : ℝ) (p : ℕ) (k : Fin d → ℕ) 
     (Real.sqrt N * ∏ i, u i ^ k i) ^ p *
         Real.exp (-(β * N * ∏ i, u i ^ (2 * k i)) + β * (Real.sqrt N * ∏ i, u i ^ k i) * a) =
       phaseKernel β a p (N * ∏ i, u i ^ (2 * k i)) := by
-  have hP : 0 ≤ ∏ i, u i ^ k i := Finset.prod_nonneg fun i _ => pow_nonneg (hu i (mem_univ i)).1.le _
+  have hP : 0 ≤ ∏ i, u i ^ k i :=
+    Finset.prod_nonneg fun i _ => pow_nonneg (hu i (mem_univ i)).1.le _
   have hsq : ∏ i, u i ^ (2 * k i) = (∏ i, u i ^ k i) ^ 2 := by
     rw [← Finset.prod_pow]
     exact Finset.prod_congr rfl fun i _ => by rw [← pow_mul, mul_comm]
@@ -103,7 +107,8 @@ theorem monomialPhase_eq (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : ∀ i, 0 < 
       (∏ i, 1 / (2 * (k i : ℝ))) *
         ((stateDensityRep n fun i => ((h i : ℝ) + 1) / (2 * (k i : ℝ)) - 1).map fun t =>
           t.2.2 * (N ^ (-t.1) * ∑ i ∈ Finset.range (t.2.1 + 1),
-            (t.2.1.choose i : ℝ) * (Real.log N) ^ (t.2.1 - i) * truncMoment β a p t.1 i N)).sum := by
+            (t.2.1.choose i : ℝ) * (Real.log N) ^ (t.2.1 - i) *
+              truncMoment β a p t.1 i N)).sum := by
   have hbox : ∫ u in unitBox (n + 1), (∏ i, u i ^ h i) * ((Real.sqrt N * ∏ i, u i ^ k i) ^ p *
       Real.exp (-(β * N * ∏ i, u i ^ (2 * k i)) + β * (Real.sqrt N * ∏ i, u i ^ k i) * a)) =
       ∫ u in unitBox (n + 1), (∏ i, u i ^ h i) * phaseKernel β a p (N * ∏ i, u i ^ (2 * k i)) :=
