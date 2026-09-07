@@ -9,13 +9,15 @@ import Laplace.Grammar.CircleOpParam
 
 Unit 263 (Astra #31 route R2, units 3/6/7 of the tranche). The **several-variable Cauchy
 coefficients** `c_γ = A_r^{[d]}(w ↦ F w ∏ᵢ wᵢ^{-γᵢ})` (`polyCoeff`) satisfy the **Cauchy estimate**
-`‖c_γ‖ ≤ M r^{-|γ|}` with `M` a bound of `‖F‖` on the torus (`norm_polyCoeff_le`), and the
+`‖c_γ‖ ≤ M r^{-|γ|}` with `M` a bound of `‖F‖` on the **torus** only (`norm_polyCoeff_le`, no
+holomorphy needed there — Lean's totalised contour integrals), and the
 **reconstruction** `∑_γ c_γ z^γ = F z` as a `HasSum` on the open polydisc (`hasSum_polyCoeff`), for
-`F ∈ SliceHolo d r` bounded on the closed polydisc. The induction extracts the first coordinate with
-the one-variable `HasSum` (unit 260), expands the tail by the induction hypothesis on the circle,
-interchanges the circle operator with the tail series under the product-geometric majorant
-(unit 262), and regroups the double series along `Fin.cons`. Consequences: `∑_γ ‖c_γ‖ b^{|γ|} <
-∞` for
+`F ∈ SliceHolo d r` bounded on the **closed polydisc** (a stronger hypothesis than the torus bound,
+supplied in unit 264 by compactness inside a larger open polydisc). The induction extracts the
+first coordinate with the one-variable `HasSum` (unit 260), expands the tail by the induction
+hypothesis on the circle, interchanges the circle operator with the tail series under the
+product-geometric majorant (unit 262), and regroups the double series along `Fin.cons`.
+Consequences: `∑_γ ‖c_γ‖ b^{|γ|} < ∞` for
 every `b < r` (`summable_norm_polyCoeff_mul_pow`) — the weighted-mass hypothesis of the
 coefficient-family Taylor tree. This is the quantitative reconstruction gate of Astra #31.
 No `sorry` and no additional `axiom` declarations.

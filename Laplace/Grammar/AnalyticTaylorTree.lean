@@ -16,11 +16,15 @@ coefficients at radius `r` form a coefficient family `polyRealCoeff d r F` with
 **Headline XXXII** (`thm_TaylorTree_analytic`): for real `ξ, η` on `(0,b]^d` with holomorphic
 extensions `Fξ, Fη` to a polydisc of radius `R > b` (`Re Fξ = ξ`, `Re Fη = η` on the box), the
 Taylor-tree conclusion holds for their Cauchy-coefficient families and the family standard
-integral is
-the original `Z(N) = ∫_{(0,b]^d} η u^h e^{-βN u^{2k} + β√N u^k ξ(u)} du` — `thm:TaylorTree` /
-`cor:standardintegralexp` under the paper's own hypothesis, in every dimension (the multi-index
-derivative identification `c_γ = ∂^γ F(0)/γ!` is not part of this statement). No `sorry` and no
-additional `axiom` declarations.
+integral is the original `Z(N) = ∫_{(0,b]^d} η u^h e^{-βN u^{2k} + β√N u^k ξ(u)} du` —
+`thm:TaylorTree` / `cor:standardintegralexp` **applies under the paper's hypothesis**, in every
+dimension. The formal matching assumption is the weaker real-part agreement `Re Fξ = ξ` on the
+positive box (a genuine holomorphic extension of a real-analytic `ξ` satisfies it); the intermediate
+radius `r ∈ (b, R)` always exists (`thm_TaylorTree_analytic'`). Not part of this statement: the
+identification of the Cauchy coefficients with derivatives, `polyCoeff γ F = ∂^γ F(0)/γ!` (complex)
+and hence `polyRealCoeff γ F = Re(∂^γ F(0)/γ!)`, and its linkage to derivatives of the given real
+`ξ` at `0` (which needs the genuine extension, not box agreement). No `sorry` and no additional
+`axiom` declarations.
 -/
 
 open MeasureTheory Set Real Filter Topology Complex
@@ -123,5 +127,22 @@ theorem thm_TaylorTree_analytic (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : ∀ 
   refine ⟨C, hC, fun N => familyPhaseIntegralBox_eq_orig n h k β N b ?_ ?_⟩
   · intro u hu; rw [evalF_polyRealCoeff hr hrR hbr hFξ hu, hξ u hu]
   · intro u hu; rw [evalF_polyRealCoeff hr hrR hbr hFη hu, hη u hu]
+
+/-- **Headline XXXII, paper-facing form**: the same conclusion from `0 < b < R` alone (the
+intermediate radius `r = (b + R)/2` is chosen inside the proof). -/
+theorem thm_TaylorTree_analytic' (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : ∀ i, 0 < k i) (β : ℝ)
+    (hβ : 0 < β) {b R : ℝ} (hb : 0 < b) (hbR : b < R)
+    {Fξ Fη : (Fin (n + 1) → ℂ) → ℂ} {ξ η : (Fin (n + 1) → ℝ) → ℝ}
+    (hFξ : DifferentiableOn ℂ Fξ (openPolydisc (n + 1) R))
+    (hFη : DifferentiableOn ℂ Fη (openPolydisc (n + 1) R))
+    (hξ : ∀ u ∈ piBox (n + 1) (Ioc 0 b), (Fξ fun i => (u i : ℂ)).re = ξ u)
+    (hη : ∀ u ∈ piBox (n + 1) (Ioc 0 b), (Fη fun i => (u i : ℂ)).re = η u) :
+    ∃ (cξ cη : CoeffFamily (n + 1)) (C : ℝ → ℕ → ℝ),
+      TaylorTreeConclusion n h k β b cξ cη C ∧
+      ∀ N, familyPhaseIntegralBox n h k β N b cξ cη = origPhaseIntegral n h k β N b ξ η := by
+  have hbr : b < (b + R) / 2 := by linarith
+  have hrR : (b + R) / 2 < R := by linarith
+  obtain ⟨C, hC, hZ⟩ := thm_TaylorTree_analytic n h k hk β hβ hb hbr hrR hFξ hFη hξ hη
+  exact ⟨_, _, C, hC, hZ⟩
 
 end Laplace.Grammar
