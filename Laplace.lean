@@ -299,3 +299,4 @@ import Laplace.Grammar.LeadingUnequal
 import Laplace.Grammar.FiniteTreeIntegration
 import Laplace.Grammar.ParamMeasurable
 import Laplace.Grammar.CanonParamMeasurable
+import Laplace.Grammar.CoeffWeightedBound
