@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The rectangular face-jet decomposition}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For face jets $a_i(v,s)$, $b_j(u,s)$ and corner jets $c_{ij}(s)$ the rectangular remainder is
+\[
+R=\Phi-\sum_{i<M_1}u^ia_i(v,s)-\sum_{j<M_2}v^jb_j(u,s)+\sum_{i<M_1}\sum_{j<M_2}c_{ij}(s)u^iv^j,
+\]
+and the block integral of $\Phi$ is the corresponding sum of block integrals
+(\texttt{twoDAmp\_rect}). Monomial weights are absorbed into the exponents, so that a face term
+$u^ia_i(v,s)$ is the one-variable amplitude $a_i$ with exponents $(h_1+i,h_2)$ and a corner term is
+the constant amplitude $c_{ij}$ with exponents $(h_1+i,h_2+j)$. Each piece is now exactly the input of
+an existing theorem: the face terms of unit~104, the corner terms of unit~104 with zero remainder, the
+remainder of unit~105. This is the algebraic skeleton of Astra~\#4(b)'s cutoff-indexed $d=2$
+theorem; the next unit assembles it. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def rectRem (Φ : ℝ → ℝ → ℝ → ℝ) (a b : ℕ → ℝ → ℝ → ℝ) (c : ℕ → ℕ → ℝ → ℝ)
+    (M₁ M₂ : ℕ) (u v s : ℝ) : ℝ :=
+  Φ u v s - ∑ i ∈ Finset.range M₁, u ^ i * a i v s - ∑ j ∈ Finset.range M₂, v ^ j * b j u s
+    + ∑ i ∈ Finset.range M₁, ∑ j ∈ Finset.range M₂, c i j s * (u ^ i * v ^ j)
+theorem rectRem_continuous ...
+theorem twoDIntegrand_rectRem ...   -- linearity of the product-form integrand
+theorem twoDAmp_rect (β b N : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (Φ : ℝ → ℝ → ℝ → ℝ) (a bj : ℕ → ℝ → ℝ → ℝ)
+    (c : ℕ → ℕ → ℝ → ℝ) (M₁ M₂ : ℕ) (hΦ : Continuous fun x : ℝ × ℝ × ℝ => Φ x.1 x.2.1 x.2.2)
+    (ha : ∀ i, Continuous (Function.uncurry (a i)))
+    (hb : ∀ j, Continuous (Function.uncurry (bj j))) (hc : ∀ i j, Continuous (c i j)) :
+    twoDAmp β b N h₁ h₂ k₁ k₂ Φ
+      = (∑ i ∈ Finset.range M₁, twoDAmp β b N h₁ h₂ k₁ k₂ (fun u v s => u ^ i * a i v s))
+        + (∑ j ∈ Finset.range M₂, twoDAmp β b N h₁ h₂ k₁ k₂ (fun u v s => v ^ j * bj j u s))
+        - (∑ i ∈ Finset.range M₁, ∑ j ∈ Finset.range M₂,
+            twoDAmp β b N h₁ h₂ k₁ k₂ (fun u v s => c i j s * (u ^ i * v ^ j)))
+        + twoDAmp β b N h₁ h₂ k₁ k₂ (rectRem Φ a bj c M₁ M₂)
+theorem twoDAmp_pow_absorb (β b N : ℝ) (h₁ h₂ k₁ k₂ i : ℕ) (Ψ : ℝ → ℝ → ℝ) :
+    twoDAmp β b N h₁ h₂ k₁ k₂ (fun u v s => u ^ i * Ψ v s)
+      = twoDAmp β b N (h₁ + i) h₂ k₁ k₂ (fun _ v s => Ψ v s)
+theorem twoDAmp_pow_absorb' ... :
+    twoDAmp β b N h₁ h₂ k₁ k₂ (fun u v s => v ^ j * Ψ u s)
+      = twoDAmp β b N h₁ (h₂ + j) k₁ k₂ (fun u _ s => Ψ u s)
+theorem twoDAmp_corner (β b N : ℝ) (h₁ h₂ k₁ k₂ i j : ℕ) (c : ℝ → ℝ) :
+    twoDAmp β b N h₁ h₂ k₁ k₂ (fun u v s => c s * (u ^ i * v ^ j))
+      = twoDAmp β b N (h₁ + i) (h₂ + j) k₁ k₂ (fun _ _ s => c s)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The product-form integrand $u^{h_1}v^{h_2}e^{-\beta s^2}\Phi(u,v,s)$ is linear in $\Phi$, so the
+identity is a matter of integrability: every piece is continuous on the closed box, hence integrable
+for the product measure, and \texttt{integral\_finsetSum}/\texttt{integral\_sub}/\texttt{integral\_add}
+distribute the integral over the finite sums. The absorption lemmas are pointwise: $u^{h_1}\cdot u^i
+=u^{h_1+i}$ inside the outer integral (after pulling $u^i$ out of the inner one) and
+$v^{h_2}\cdot v^j=v^{h_2+j}$ inside the inner one.
+
+\section{Paper-facing meaning}
+
+Under Astra~\#4(b)'s hypotheses (compatible face jets $a_i,b_j$ with Taylor data $c_{ij}$ and a mixed
+remainder $|R|\le Hu^{M_1}v^{M_2}$), the $d=2$ block is now a finite sum of terms each of whose
+$N$-expansion is known: face terms via \texttt{face\_transfer\_bound} (exponents $p+m/k_2$ with a
+logarithm at the collisions $i/k_1=m/k_2$), corner monomials via the same theorem with zero
+remainder, and the mixed remainder via \texttt{twoDAmp\_env\_isBigO} at order
+$N^{-\min(p+M_1/k_1,p+M_2/k_2)}(1+\log N)$.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{simp\_rw} with a lemma whose explicit arguments are placeholders
+(\texttt{twoDAmp\_eq\_prod … (hA \_)}) cannot instantiate the metavariables; rewrite the sums
+termwise through \texttt{Finset.sum\_congr} in named \texttt{have}s instead.
+\item \texttt{Integrable.sub} yields a \texttt{Pi.sub}; ascribe the single-lambda type before
+\texttt{← integral\_sub} (the unit-77 gotcha again).
+\item After \texttt{congr 1} on \texttt{a * ∫ … = a * ∫ …} the inner
+\texttt{setIntegral\_congr\_fun measurableSet\_Ioc} left \texttt{ClosedIicTopology ?m} stuck;
+state the inner-integral identity as a \texttt{have} with explicit integrands and \texttt{rw} it.
+\item With both \texttt{Set} and \texttt{Finset} open, \texttt{Ioc}/\texttt{range} are ambiguous;
+open \texttt{Set} only and write \texttt{Finset.range}.
+\end{itemize}
+
+\end{document}
