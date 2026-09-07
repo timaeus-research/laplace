@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Jet polynomials and the exponential jet remainder}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $\xi(u)=\sum_{i<R}x_iu^i+O(u^R)$ and $g=\xi-x_0$, the $u$-jet of $e^{\beta sg(u)}$ to order $R$
+has coefficients $E_n(s)=\sum_{m<R}\frac{(\beta s)^m}{m!}[u^n](g_R(u)^m)$, finite sums of coefficients
+of powers of the Taylor polynomial $g_R$. We prove the exponential jet remainder
+$|e^{\beta sg(u)}-\sum_{n<R}E_n(s)u^n|\le Cu^R(1+s)^Re^{\beta L_1bs}$ on $[0,b]$ from the Taylor
+remainder of $\xi$ and the Lipschitz bound $|g(u)|\le L_1u$, using the exponential tail bound, the
+identity $a^m-b^m=(a-b)\sum a^ib^{m-1-i}$, and the truncation error of a polynomial on $[0,b]$. This
+is the first half of Astra~\#3's target~2b (finite compatible jets as the engine of the all-order
+theory). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem poly_trunc_le (P : ℝ[X]) (R : ℕ) (b u : ℝ) (hu : 0 ≤ u) (hub : u ≤ b) :
+    |P.eval u - ∑ n ∈ range R, P.coeff n * u ^ n|
+      ≤ u ^ R * ∑ n ∈ Ico R (max R (P.natDegree + 1)), |P.coeff n| * b ^ (n - R)
+noncomputable def jetPoly (x : ℕ → ℝ) (R : ℕ) : ℝ[X] := ∑ i ∈ range R, C (x i) * X ^ i
+noncomputable def expJet (β : ℝ) (x : ℕ → ℝ) (R n : ℕ) (s : ℝ) : ℝ :=
+  ∑ m ∈ range R, (β * s) ^ m / (m.factorial : ℝ) * ((gPoly x R) ^ m).coeff n
+theorem expJet_abs_le ... : |expJet β x R n s| ≤ expJetConst β x R n * (1 + s) ^ R
+theorem exp_jet_remainder (β b K L₁ : ℝ) ... (x : ℕ → ℝ) (R : ℕ) (g : ℝ → ℝ)
+    (hg : ∀ u ∈ Set.Icc (0 : ℝ) b, |g u - (gPoly x R).eval u| ≤ K * u ^ R)
+    (hgL : ∀ u ∈ Set.Icc (0 : ℝ) b, |g u| ≤ L₁ * u) (u s : ℝ) (hu : u ∈ Set.Icc (0 : ℝ) b)
+    (hs : 0 ≤ s) :
+    |Real.exp (β * s * g u) - ∑ n ∈ range R, expJet β x R n s * u ^ n|
+      ≤ C(β, b, K, L₁, x, R) * u ^ R * (1 + s) ^ R * Real.exp (β * L₁ * b * s)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+$e^{\beta sg}-\sum_nE_nu^n=\big(e^{\beta sg}-\sum_{m<R}\tfrac{(\beta sg)^m}{m!}\big)
++\sum_{m<R}\tfrac{(\beta s)^m}{m!}\big(g^m-\mathrm{trunc}_R(g_R^m)\big)$. The first term is the
+exponential tail $\le|\beta sg|^Re^{|\beta sg|}/R!$; for the second, $|g^m-g_R^m|\le m|g-g_R|(L_3b)^{m-1}$
+by the geometric-sum identity and $|g_R^m-\mathrm{trunc}_R(g_R^m)|\le u^R\,\mathrm{truncConst}$ by the
+polynomial truncation lemma. Powers $s^m$, $m\le R$, are absorbed into $(1+s)^R$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Σ} is notation and cannot appear in an identifier (\texttt{hΣ}).
+\item A placeholder inside \texttt{mul\_comm (|\_|)} leaves the type of the absolute value
+undetermined and stalls instance search; restructure the bound as a separate \texttt{have}.
+\item Distribute sums (\texttt{simp\_rw [Finset.sum\_mul]}) before \texttt{Finset.sum\_comm}.
+\end{itemize}
+
+\section{Outcome}
+Next: the amplitude jet $P_j(s)=\sum_{\ell\le j}y_\ell E_{j-\ell}(s)$ with the product remainder, then
+the all-order one-dimensional theorem with $c_j=k^{-1}\sum_\ell p_{j,\ell}S_{q_j+\ell}(a)$.
+\end{document}
