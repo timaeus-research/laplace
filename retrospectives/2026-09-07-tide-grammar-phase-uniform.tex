@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Uniform convergence of the normalised chart integral on compact input sets}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 211 (programme A2, step 3) moves the inputs into the Polish space
+$E=C([0,1]^d,\mathbb R)\times C([0,1]^d,\mathbb R)$ (phase, amplitude; sup metric). A continuous
+function on the closed cube is extended to $\mathbb R^d$ by the coordinatewise clamp
+$u\mapsto(\max(0,\min(1,u_i)))_i$ (\texttt{extCube}: continuous, bounded by the sup norm, the
+identity on the cube, and $\|\mathrm{ext}f-\mathrm{ext}g\|_\infty\le d(f,g)$). With
+$F_N(x)=\mathrm{chartIntegral}(\mathrm{ext}\,x_1,\mathrm{ext}\,x_2)/S_N$ and
+$F(x)=\mathrm{phaseCoeff}(\mathrm{ext}\,x_1,\mathrm{ext}\,x_2)$: $F_N\to F$ pointwise (Headline~XIII);
+$F_N$ ($N\ge N_0(R)$) and $F$ are Lipschitz on the closed ball of radius $R$ in $E$ (units 209--210);
+and therefore $F_N\to F$ \emph{uniformly on every compact} $K\subseteq E$
+(\texttt{tendstoUniformlyOn\_normChart}), by the finite-net argument: $K$ lies in a ball, a finite
+$\delta$-net $T\subseteq K$ exists, pointwise convergence at the net points is eventual, and the
+two Lipschitz bounds carry it to all of $K$. This is the deterministic input to the random-phase
+transfer. Zero \texttt{sorry}/\texttt{axiom}; 9088 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+instance compactSpace_closedCube (d) : CompactSpace (closedCube d)
+def clampCube (d) (x : Fin d → ℝ) : closedCube d      -- (max 0 (min 1 (x i)))ᵢ
+theorem continuous_clampCube; theorem clampCube_of_mem (hx : x ∈ closedCube d) :
+      ↑(clampCube d x) = x
+noncomputable def extCube (f : C(closedCube d, ℝ)) : (Fin d → ℝ) → ℝ := fun x => f
+      (clampCube d x)
+theorem continuous_extCube; theorem abs_extCube_le : |extCube f x| ≤ ‖f‖
+theorem abs_extCube_sub_le : |extCube f x - extCube g x| ≤ dist f g
+abbrev InputSpace (d) := C(closedCube d, ℝ) × C(closedCube d, ℝ)
+noncomputable def normChart (h k) (l β N) (x : InputSpace d) : ℝ :=
+  chartIntegral d h k β N (extCube x.1) (extCube x.2) / leadScale h k l N
+noncomputable def limChart (h k) (l β) (x : InputSpace d) : ℝ := phaseCoeff h k l β
+      (extCube x.1) (extCube x.2)
+theorem tendsto_normChart … (x) : Tendsto (fun N => normChart h k l β N x) atTop (𝓝
+      (limChart h k l β x))
+theorem normChart_lipschitz_eventually … (R) : ∃ L, 0 ≤ L ∧ ∀ᶠ N in atTop, ∀ x y ∈
+      closedBall 0 R,
+    |normChart h k l β N x - normChart h k l β N y| ≤ L * dist x y
+theorem limChart_lipschitz … (R) : ∃ L, 0 ≤ L ∧ ∀ x y ∈ closedBall 0 R,
+    |limChart h k l β x - limChart h k l β y| ≤ L * dist x y
+theorem tendstoUniformlyOn_normChart … (K) (hK : IsCompact K) :
+    TendstoUniformlyOn (fun N x => normChart h k l β N x) (limChart h k l β) atTop K
+\end{verbatim}
+}
+
+\section{Mathematics}
+Given $\varepsilon$, put $\delta=\varepsilon/(3(L+L'+1))$ with $L$, $L'$ the Lipschitz constants on
+the ball containing $K$; \texttt{finite\_cover\_balls\_of\_compact} gives a finite $T\subseteq K$
+with $K\subseteq\bigcup_{t\in T}B(t,\delta)$; for $N$ large (Lipschitz threshold and the finitely
+many pointwise convergences, \texttt{Filter.eventually\_all\_finite}), and $x\in K$ with
+$d(x,t)<\delta$:
+$|F(x)-F_N(x)|\le L'\delta+\varepsilon/3+L\delta<\varepsilon$. Taking the net inside $K$ matters:
+the Lipschitz bounds are only available on the ball containing $K$.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{C(closedCube d, ℝ)} gets its sup norm and metric only once
+  \texttt{CompactSpace (closedCube d)} is an instance; register it from
+  \texttt{isCompact\_iff\_compactSpace} before anything else.
+\item \texttt{Metric.totallyBounded\_iff'} (net inside the set) is not a Mathlib name;
+  \texttt{finite\_cover\_balls\_of\_compact hK hδ : ∃ t ⊆ s, t.Finite ∧ s ⊆ ⋃ x ∈ t, ball x e} is.
+\item \texttt{filter\_upwards} already unfolds \texttt{∈ Metric.ball} to \texttt{dist … <}; a following
+  \texttt{rw [Metric.mem\_ball]} fails.
+\item Product metric facts: \texttt{Prod.dist\_eq} (max), \texttt{Prod.norm\_def} (max),
+  \texttt{mem\_closedBall\_zero\_iff}.
+\end{itemize}
+
+\section{Next}
+Unit 212: random inputs $X_n\Rightarrow Z$ in $E$ with $N_n\to\infty$: show
+$F_{N_n}(X_n)-F(X_n)\to0$ in probability (uniform convergence on a compact $K$ carrying most of the
+limit law, extended to its $\delta$-thickening by the Lipschitz bounds, plus portmanteau for the open
+thickening), then $F(X_n)\Rightarrow F(Z)$ by continuous mapping, and a Slutsky-type lemma to
+conclude $F_{N_n}(X_n)\Rightarrow F(Z)$.
+\end{document}
