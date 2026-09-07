@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Merging the log families of the reduced cutoff expansion}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The reduced $d=2$ cutoff expansion listed three logarithmic families: the $u$-face logs, the
+$v$-face logs, and the subtracted corner logs. All three are supported on the collision predicate
+$(h_1+i+1)/k_1=(h_2+j+1)/k_2$, and for fixed $i$ (resp.\ $j$) at most one partner collides. Hence
+the $v$-face family equals the corner family exactly and the reduced sum equals a merged sum with
+ONE transferred log term $N^{-\alpha_i}(M[\alpha_i;0;c_{ij}/(k_1k_2)]\log N-M[\alpha_i;1;c_{ij}/(k_1k_2)])$
+per collision $(i,j)$ (\texttt{reducedSum\_eq\_merged}). The proof is integrability-free. The analytic
+cutoff theorems are restated in merged form. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem transferTerm_ite (β α : ℝ) (n : ℕ) (P : Prop) [Decidable P] (g : ℝ → ℝ) (N : ℝ) :
+    transferTerm β α n (fun s => if P then g s else 0) N
+      = if P then transferTerm β α n g N else 0
+theorem transferTerm_sum_ite_unique {ι : Type*} (β α : ℝ) (n : ℕ) (t : Finset ι)
+    (Q : ι → Prop) [DecidablePred Q] (huniq : ∀ i ∈ t, ∀ j ∈ t, Q i → Q j → i = j)
+    (g : ι → ℝ → ℝ) (N : ℝ) :
+    transferTerm β α n (fun x => ∑ i ∈ t, if Q i then g i x else 0) N
+      = ∑ i ∈ t, if Q i then transferTerm β α n (g i) N else 0
+theorem uface_resonance_iff (h₁ h₂ k₁ k₂ i m : ℕ) (hk₂ : 0 < k₂) :
+    ((m : ℝ) = (k₂ : ℝ) * ((((h₁ + i : ℕ) : ℝ) + 1) / k₁) - h₂ - 1)
+      ↔ (((h₁ + i : ℕ) : ℝ) + 1) / k₁ = (((h₂ + m : ℕ) : ℝ) + 1) / k₂
+noncomputable def mergedLog (β : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (c : ℕ → ℕ → ℝ → ℝ)
+    (N : ℝ) : ℝ :=
+  ∑ i ∈ Finset.range M₁, ∑ j ∈ Finset.range M₂,
+    if (((h₁ + i : ℕ) : ℝ) + 1) / k₁ = (((h₂ + j : ℕ) : ℝ) + 1) / k₂ then
+      transferTerm β ((((h₁ + i : ℕ) : ℝ) + 1) / k₁) 1
+        (fun s => c i j s / ((k₁ : ℝ) * k₂)) N
+    else 0
+noncomputable def mergedSum ... :=
+  (u-face finite parts) + (v-face finite parts) + mergedLog
+theorem reducedSum_eq_merged (β b : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hk₁ : 0 < k₁)
+    (hk₂ : 0 < k₂) (a bj : ℕ → ℝ → ℝ → ℝ) (c : ℕ → ℕ → ℝ → ℝ) (N : ℝ) :
+    reducedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N = mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N
+theorem twoD_cutoff_analytic_merged ...   -- twoD_cutoff_analytic with mergedSum
+theorem twoD_cutoff_amplitude_merged ...  -- twoD_cutoff_amplitude with mergedSum
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The three resonance predicates $m=k_2\alpha_i-h_2-1$ ($u$-face), $m=k_1\delta_j-h_1-1$ ($v$-face)
+and $0=k_1\delta_j-(h_1+i)-1$ (corner) are all equivalent to the collision $\alpha_i=\delta_j$
+with $\alpha_i=(h_1+i+1)/k_1$, $\delta_j=(h_2+j+1)/k_2$. The $u$-face log coefficient at $i$ is the
+function $s\mapsto\sum_{j<M_2}[\alpha_i=\delta_j]c_{ij}(s)/(k_1k_2)$; since $j\mapsto\delta_j$ is
+injective, at most one $j$ contributes, so the transferred term of this sum of indicators equals the
+sum of indicator-weighted transferred terms (a two-case argument: a unique witness, or none, in which
+case both sides vanish because \texttt{transferTerm} of the zero function is zero). The same applies
+to the $v$-face family, which after \texttt{Finset.sum\_comm} coincides term by term with the corner
+family (whose coefficient \texttt{faceLogCoeff} of \texttt{cornerData} is a single indicator). So
+$U+V-C=U$, and $U$ is the merged family. On a collision $\alpha_i=\delta_j$, so the exponent may be
+written either way. Astra~\#8's monomial tests hold for the merged form: with
+$M[\alpha;\ell;f]=\int_0^\infty s^{\alpha-1}(\log s)^\ell e^{-\beta s^2}f(s)\,ds$ the collision term is
+$N^{-\alpha}(M[\alpha;0;f]\log N-M[\alpha;1;f])/(k_1k_2)$ (sign fixed by
+$\log(s/N)=\log s-\log N$), the two face finite parts add $(k_1+k_2)\log b\,M[\alpha;0;f]/(k_1k_2)$
+at a collision with $b\ne1$, and off collisions the faces give
+$b^{k_2(d-a)}N^{-a}M[a;0;f]/(k_1k_2(d-a))-b^{k_1(a-d)}N^{-d}M[d;0;f]/(k_1k_2(d-a))$.
+
+\section{Paper-facing meaning}
+
+This is the ``decisive bookkeeping lemma'' of Astra~\#8: the reduced sum is now in the normal form
+$\sum_iN^{-\alpha_i}M[\alpha_i;0;U]+\sum_jN^{-\delta_j}M[\delta_j;0;V]+\sum_{\text{collisions}}N^{-\alpha_i}(M[\alpha_i;0;C]\log N-M[\alpha_i;1;C])$
+from which the $d=2$ Taylor-tree statement (one polynomial $P_\mu$ of degree $\le1$ in $\log N$ per
+pole $\mu$, coefficients independent of the cutoff) is a regrouping by exponent. Next: cutoff
+independence of the finite parts and canonical $U_\alpha,V_\alpha,C_\alpha$, then the wrapper
+\texttt{twoD\_taylor\_tree\_equal}.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{transferTerm\_zero} already existed with a different meaning (log-degree $0$); the
+zero-function lemma is \texttt{transferTerm\_zero\_fun}, following \texttt{logMoment\_zero\_fun}.
+\item \texttt{if\_congr (hiff) (by ring) rfl} rewrites a decidable condition inside \texttt{ite}
+together with its branch; \texttt{Finset.sum\_congr rfl fun j \_ => if\_congr ...} handles the
+indicator sums without \texttt{simp} normalising the real equations.
+\item Injectivity of $i\mapsto(h_1+i+1)/k_1$: \texttt{div\_left\_inj'}, \texttt{push\_cast},
+then \texttt{exact\_mod\_cast} on a \texttt{linarith}-derived real equation.
+\item The predicate equivalences are \texttt{eq\_div\_iff}/\texttt{div\_eq\_iff} followed by
+\texttt{push\_cast} and \texttt{constructor <;> intro h <;> linarith}.
+\item The whole unit compiled at the second attempt (the only failure was the name clash).
+\end{itemize}
+
+\end{document}
