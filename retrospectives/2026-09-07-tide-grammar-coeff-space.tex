@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The weighted analytic coefficient-pair space}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#11 rank~2. The Taylor data $(x,y)$ of phase and amplitude are realised as a single point of
+Mathlib's Banach space $\ell^1\big((\mathbb N^2)\sqcup(\mathbb N^2),\mathbb R\big)$ after the rescaling
+$a(\mathrm{inl}\,k)=x_k\rho^{|k|}$, $a(\mathrm{inr}\,k)=y_k\rho^{|k|}$ (\texttt{CoeffPair},
+\texttt{toX}, \texttt{toY}, \texttt{ofPair}, with round trips and $\|a\|=\|x\|_\rho+\|y\|_\rho$).
+The norm dominates both weighted norms, so by unit~145 the canonical coefficient maps
+$\texttt{coeffA},\texttt{coeffB}\colon\texttt{CoeffPair}\to\mathbb R$ are continuous (locally Lipschitz)
+and Borel measurable. This is the domain on which convergence in distribution of the coefficient data
+will be stated. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+abbrev PairIdx := (ℕ × ℕ) ⊕ (ℕ × ℕ)
+abbrev CoeffPair := lp (fun _ : PairIdx => ℝ) 1   -- + Borel instance
+def toX (ρ) (a : CoeffPair) : ℕ × ℕ → ℝ := fun k => a (Sum.inl k) / ρ ^ (k.1 + k.2)
+def toY ... (Sum.inr)
+theorem norm_eq_tsum_abs (a) : ‖a‖ = ∑' i, |a i|
+theorem wsummable_toX / wsummable_toY (ρ) (hρ : 0 < ρ) (a) : WSummable ρ (toX ρ a)
+theorem wnorm_toX_le_norm / wnorm_toY_le_norm : wnorm ρ (toX ρ a) ≤ ‖a‖
+theorem wnorm_toX_sub_le_dist : wnorm ρ (fun k => toX ρ a k - toX ρ b k) ≤ dist a b
+def ofPair (ρ) (hρ) (x y) (hx hy) : CoeffPair      -- Sum.elim of the rescaled arrays
+theorem toX_ofPair / toY_ofPair / ofPair_toXY      -- round trips
+theorem norm_ofPair : ‖ofPair ρ hρ x y hx hy‖ = wnorm ρ x + wnorm ρ y
+def coeffA (β ρ) (h₁ h₂ k₁ k₂) (α) (a) :=
+    canonA … (fun i j s => ampCoeff β (toX ρ a) (toY ρ a) (i,j) s) α
+def coeffB (β b ρ) ... := canonB … (anaFaceU …) (anaFaceV …) … α
+theorem continuous_coeffA (β ρ r) (h₁ h₂ k₁ k₂) (hβ hρ hr0 hrρ hk₁ hk₂) (α) (hα) :
+    Continuous (coeffA β ρ h₁ h₂ k₁ k₂ α)
+theorem continuous_coeffB ... (hb hbρ hbr hrρ ...) : Continuous (coeffB β b ρ h₁ h₂ k₁ k₂ α)
+theorem measurable_coeffA / measurable_coeffB
+\end{verbatim}
+}
+
+\section{Mathematics}
+The weighted norm $\|x\|_\rho=\sum|x_k|\rho^{|k|}$ is the $\ell^1$ norm of the rescaled array, so
+the space of weighted-summable arrays is isometric to $\ell^1(\mathbb N^2)$; a pair of arrays is a
+point of $\ell^1$ over the disjoint union of two copies of $\mathbb N^2$, with norm the sum of the
+two weighted norms. Working in a single $\ell^1$ space (rather than a product of two) sidesteps the
+product-Borel-$\sigma$-algebra question: the Borel $\sigma$-algebra of a product of metric spaces
+equals the product $\sigma$-algebra only under second countability, which Mathlib does not provide
+for \texttt{lp} in general. Continuity of $A_\alpha,B_\alpha$ follows from the unit-145 Lipschitz
+bound on the unit ball around each point (with $M=\|a_0\|+1$ as the common bound) via
+\texttt{continuousAt\_of\_locally\_lipschitz}; measurability is then automatic.
+
+\section{Paper-facing meaning}
+Astra~\#11 recommended defining the coefficient topology through the arrays and treating the bridge
+to the paper's $C^\omega$ topology as an unformalised compatibility statement. The present space is
+that definition: a separable Banach space of Taylor data in which the $d=2$ canonical coefficients
+are continuous functions, ready for the continuous mapping theorem
+(\texttt{TendstoInDistribution.continuous\_comp}) in the next unit.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{Memℓp} for $p=1$: \texttt{(memℓp\_gen\_iff (p := 1) (by simp)).1 (lp.memℓp a)} then
+\texttt{simpa} turns $\|a_i\|^{1}$ into $|a_i|$; \texttt{lp.norm\_eq\_tsum\_rpow (by simp)} plus
+\texttt{simp} gives $\|a\|=\sum'|a_i|$.
+\item Summability over a sum type: \texttt{Summable.sum f h₁ h₂} (from
+\texttt{Multipliable.sum} by \texttt{to\_additive}) and \texttt{Summable.tsum\_sum}; there is no
+\texttt{Summable.sum\_elim}. Row inequalities against the total use
+\texttt{Summable.tsum\_le\_tsum\_of\_inj} with \texttt{Sum.inl\_injective}.
+\item The coercion of \texttt{⟨f, hf⟩ : lp E p} to a function is \texttt{Subtype.val}, so
+\texttt{change} exposes \texttt{f k} directly; membership \texttt{f ∈ lp E p} is
+\texttt{Memℓp f p} by \texttt{change}.
+\item A Borel instance on the abbreviation \texttt{CoeffPair} is
+\texttt{noncomputable instance : MeasurableSpace CoeffPair := borel CoeffPair} with
+\texttt{BorelSpace := ⟨rfl⟩}.
+\end{itemize}
+
+\end{document}
