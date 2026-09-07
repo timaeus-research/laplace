@@ -44,7 +44,7 @@ theorem faceNorm_nonneg {d : ℕ} (h k : Fin d → ℕ) (l : ℝ) : 0 ≤ faceNo
   split_ifs <;> positivity
 
 /-- **The phase-dressed leading coefficient**
-`2^{m-1}·2·faceNorm · ∫ η(πu) S^{(β)}_{λ}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-2kᵢλ} du`. -/
+`2^{m-1}·2·faceNorm · ∫ η(πu) J^{(β)}_{2λ}(ξ(πu)) ∏_{i∉J} uᵢ^{hᵢ-2kᵢλ} du`. -/
 noncomputable def phaseCoeff {d : ℕ} (h k : Fin d → ℕ) (l β : ℝ) (ξ η : (Fin d → ℝ) → ℝ) : ℝ :=
   2 ^ (multCount (ratioExp h k) l - 1) * 2 * faceNorm h k l *
     ∫ u in unitBox d, (η (faceProj h k l u) * phaseMoment β (2 * l) (ξ (faceProj h k l u))) *

@@ -23,7 +23,8 @@ this is the paper's `J_p(a) = S_{p/2}(a)/2`, so the equal-ratio `d = 2` limit is
   `log n = 2 log N`).
 
 Naming: in the Lean statements `m + 1` is the dimension while the prose multiplicity `|J|` is
-`multCount (ratioExp h k) l`; they coincide only in the equal-ratio case. Scope: deterministic fixed phase; one positive unit-box chart with boundary-type coordinates; the
+`multCount (ratioExp h k) l`; they coincide only in the equal-ratio case. Scope: deterministic
+fixed phase; one positive unit-box chart with boundary-type coordinates; the
 local unnormalised integral (a posterior-expectation statement needs the denominator and chart
 assembly); the phase and amplitude of the leading term live on the face `πu`. Zero `sorry`/`axiom`.
 -/

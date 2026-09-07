@@ -110,7 +110,8 @@ theorem monomial_two_mixed_tendsto (β : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ :
   exact hT
 
 /-- **Headline XII (zero-phase, unequal exponents, `p₁ < p₂`)**:
-`n^{p₁/2} ∫₀¹∫₀¹ u^{h₁} v^{h₂} e^{-βn(u^{k₁}v^{k₂})²} dv du → Γ(p₁/2) / (2k₁ β^{p₁/2} (h₂+1-p₁k₂))`. -/
+`n^{p₁/2} ∫₀¹∫₀¹ u^{h₁} v^{h₂} e^{-βn(u^{k₁}v^{k₂})²} dv du
+  → Γ(p₁/2) / (2k₁ β^{p₁/2} (h₂+1-p₁k₂))`. -/
 theorem headline_quadratic_zeroPhase_mixed (β : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β) (hk₁ : 0 < k₁)
     (hk₂ : 0 < k₂) (p₁ p₂ : ℝ) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
     (hlt : p₁ < p₂) :

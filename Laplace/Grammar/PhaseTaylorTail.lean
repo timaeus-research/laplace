@@ -81,7 +81,8 @@ theorem exp_linear_sub_sq_le (β b s : ℝ) (hβ : 0 < β) :
     Real.exp (b * s - β * s ^ 2) ≤ Real.exp (b ^ 2 / (2 * β)) * Real.exp (-(β / 2 * s ^ 2)) := by
   rw [← Real.exp_add]
   apply Real.exp_le_exp.2
-  have hsq : b ^ 2 / (2 * β) + -(β / 2 * s ^ 2) - (b * s - β * s ^ 2) = (β * s - b) ^ 2 / (2 * β) := by
+  have hsq : b ^ 2 / (2 * β) + -(β / 2 * s ^ 2) - (b * s - β * s ^ 2) =
+      (β * s - b) ^ 2 / (2 * β) := by
     field_simp
     ring
   have hnn : 0 ≤ (β * s - b) ^ 2 / (2 * β) := by positivity
