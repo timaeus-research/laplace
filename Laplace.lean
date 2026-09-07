@@ -257,3 +257,4 @@ import Laplace.Grammar.JetPolynomials
 import Laplace.Grammar.JetRemainder
 import Laplace.Grammar.AllOrdersOneD
 import Laplace.Grammar.SmoothChart
+import Laplace.Grammar.MomentInterchange
