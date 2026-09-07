@@ -358,3 +358,4 @@ import Laplace.Grammar.SignedReflection
 import Laplace.Grammar.SymmetricAmplitudeAsymptotic
 import Laplace.Grammar.QuadraticMixedBridge
 import Laplace.Grammar.PhaseTaylorTail
+import Laplace.Grammar.PhaseShiftedTerm
