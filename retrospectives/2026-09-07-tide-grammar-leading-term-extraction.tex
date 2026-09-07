@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Leading-term extraction from the Taylor tree (equal starting exponents)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Groundwork for Astra~\#14 rank~2 (the unequal-leading-term posterior ratio). For equal starting
+exponents $p=(h_1+1)/k_1=(h_2+1)/k_2$ the retained exponent set of the Taylor tree below
+$2T\le p+\min(1/k_1,1/k_2)$ is $\{p\}$ (\texttt{polesBelowGen\_eq\_singleton}), so the chart integral
+satisfies $Z(N)=N^{-p}(A_p\log N+B_p)+O(N^{-(p+\delta)}(1+\log N))$ with
+$\delta=\min(1/k_1,1/k_2)/2$ (\texttt{chart\_leading\_isBigO}). Hence $Z\sim A_pN^{-p}\log N$ when
+$A_p\ne0$ (\texttt{chart\_isEquivalent\_log}) and $Z\sim B_pN^{-p}$ when $A_p=0\ne B_p$
+(\texttt{chart\_isEquivalent\_const}): the two leading behaviours whose quotient the calculus of
+unit~166 handles. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem polesBelowGen_eq_singleton (h₁ h₂ k₁ k₂) (hk₁ hk₂) (p T) (hp₁ hp₂) (hT₁ : p < 2 * T)
+    (hT₂ : 2 * T ≤ p + 1 / k₁) (hT₃ : 2 * T ≤ p + 1 / k₂) :
+    polesBelowGen h₁ h₂ k₁ k₂ p p T = {p}
+def leadingGap (k₁ k₂ : ℕ) : ℝ := min (1 / k₁) (1 / k₂) / 2
+theorem chart_leading_isBigO ... :
+    (fun N => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β x y) b)
+        - N ^ (-p) * (canonA … p * Real.log N + canonB … p))
+      =O[atTop] fun N => N ^ (-(p + leadingGap k₁ k₂)) * (1 + Real.log N)
+theorem isLittleO_remainder_log (p δ) (hδ) (A) (hA : A ≠ 0) :
+    (fun N => N ^ (-(p + δ)) * (1 + log N)) =o[atTop] powLog A p 1
+theorem isLittleO_const_term (p A B) (hA : A ≠ 0) : (fun N => B * N ^ (-p)) =o[atTop] powLog A p 1
+theorem isLittleO_remainder_const (p δ) (hδ) (B) (hB : B ≠ 0) :
+    (fun N => N ^ (-(p + δ)) * (1 + log N)) =o[atTop] powLog B p 0
+theorem chart_isEquivalent_log ... (hA : canonA … p ≠ 0) :
+    (fun N => twoDAmp …) ~[atTop] powLog (canonA … p) p 1
+theorem chart_isEquivalent_const ... (hA : canonA … p = 0) (hB : canonB … p ≠ 0) :
+    (fun N => twoDAmp …) ~[atTop] powLog (canonB … p) p 0
+\end{verbatim}
+}
+
+\section{Mathematics}
+The exponents of $\Lambda(h,k)$ above the common start $p$ are $p+i/k_1$ and $p+j/k_2$ with
+$i,j\ge1$, so nothing lies in $(p,p+\min(1/k_1,1/k_2))$; taking $2T=p+\delta$ with $\delta$ half the
+gap retains only $p$ and gives the remainder $O(N^{-(p+\delta)}(1+\log N))$ from the general theorem.
+The remainder and the constant term are $o(N^{-p}\log N)$, and the remainder is $o(N^{-p})$,
+by the elementary limits $N^{-\delta}(1+\log N)/\log N\to0$, $1/\log N\to0$ and
+$N^{-\delta}(1+\log N)\to0$.
+
+\section{Paper-facing meaning}
+With unit~166 this gives the deterministic leading posterior ratio for equal starting exponents in
+all three regimes: $A^\varphi_p\ne0$ (constant limit $A^\varphi_p/A^1_p=y_{\varphi,00}/y_{1,00}$),
+$A^\varphi_p=0\ne B^\varphi_p$ (decay like $1/\log N$, the corner-vanishing case Astra~\#14
+highlighted), and the power-decay case, which cannot occur at equal starts within this two-term
+expansion (it requires the next exponent). The chart-level corollary is the next unit.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{rintro rfl} on a goal \texttt{α = p} substitutes the theorem variable \texttt{p} away
+(``unknown identifier p''); use \texttt{intro hα; rw [hα]}.
+\item \texttt{Real.tendsto\_log\_atTop.inv\_tendsto\_atTop} produces the Pi inverse
+\texttt{log⁻¹}; rewrite \texttt{Pi.inv\_apply} before \texttt{field\_simp}.
+\item \texttt{isLittleO\_iff\_tendsto'} needs the eventual implication ``denominator zero ⇒
+numerator zero'', discharged by contradiction since the model term is nonzero for $N>1$.
+\item \texttt{Finset.sum\_singleton} after rewriting the retained set to \texttt{\{p\}};
+\texttt{IsBigO.trans\_isLittleO} and \texttt{IsLittleO.add} assemble the equivalences via
+\texttt{IsLittleO.isEquivalent}.
+\end{itemize}
+
+\end{document}
