@@ -1,0 +1,97 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Envelope bounds for the canonical coefficients}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Towards a uniform Taylor tree. Under a Gaussian envelope $|c(s)|\le K(1+s)^De^{\beta sa'}$ the log
+moments obey $|M[\alpha;\ell;c]|\le K\int_0^\infty s^{\alpha-1}(1+|\log s|)^\ell e^{-\beta s^2}(1+s)^De^{\beta sa'}ds$
+(\texttt{abs\_logMoment\_le\_of\_env}); a discarded pole term obeys
+$|N^{-\alpha}(A\log N+B)|\le(|A|+|B|)N^{-2T}(1+\log N)$ for $\alpha\ge2T$, $N\ge1$
+(\texttt{discard\_explicit}); and for the analytic amplitude with envelope $(C_0,L,D,\rho)$ the
+canonical coefficient functions $U_\alpha,V_\alpha,C_\alpha$ have explicit envelopes
+(\texttt{canonUEnv}, \texttt{canonVEnv}, \texttt{canonCEnv}), whence
+$|A_\alpha|\le\mathrm{canonCEnv}(\alpha)\,EM(\alpha,0)$ and
+$|B_\alpha|\le\mathrm{canonUEnv}(\alpha)EM(\alpha,0)+\mathrm{canonVEnv}(\alpha)EM(\alpha,0)+\mathrm{canonCEnv}(\alpha)EM(\alpha,1)$
+(\texttt{canonA\_abs\_le\_env}, \texttt{canonB\_abs\_le\_env}), all constants depending only on
+the envelope data. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_logMoment_le_tailMoment (β α : ℝ) (ℓ : ℕ) (c : ℝ → ℝ) (hc : Measurable c)
+    (hint : IntegrableOn (fun s => s ^ (α - 1) * (1 + |Real.log s|) ^ ℓ
+      * (Real.exp (-β * s ^ 2) * |c s|)) (Ioi 0)) :
+    |logMoment β α ℓ c| ≤ tailMoment β α ℓ c
+theorem abs_logMoment_le_of_env (β a' α K : ℝ) (ℓ D : ℕ) (c : ℝ → ℝ) (hβ : 0 < β)
+    (hα : 0 < α) (hc : Measurable c) (henv : ∀ s, 0 < s → |c s| ≤ K * gaussEnv β a' D s) :
+    |logMoment β α ℓ c| ≤ K * envMoment β α ℓ (gaussEnv β a' D)
+theorem discard_explicit (T A B α N : ℝ) (hα : 2 * T ≤ α) (hN : 1 ≤ N) :
+    |N ^ (-α) * (A * Real.log N + B)| ≤ (|A| + |B|) * (N ^ (-(2 * T)) * (1 + Real.log N))
+noncomputable def canonUEnv (b ρ C₀ : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (α : ℝ) : ℝ :=
+  if uExp h₁ k₁ (uIdx h₁ k₁ α) = α then
+    fpEnvConst γ b k₁ (canonicalM γ) (C₀ * (ρ ^ i)⁻¹ * (1 + ρ⁻¹) ^ canonicalM γ)
+      (C₀ * (ρ ^ i)⁻¹ * (ρ ^ canonicalM γ)⁻¹ / (1 - b / ρ))
+      -- γ = k₂α − h₂ − 1, i = uIdx α
+  else 0
+noncomputable def canonCEnv (ρ C₀ : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (α : ℝ) : ℝ :=
+  if uExp h₁ k₁ (uIdx h₁ k₁ α) = α ∧ vExp h₂ k₂ (vIdx h₂ k₂ α) = α then
+    C₀ * (ρ ^ (uIdx h₁ k₁ α + vIdx h₂ k₂ α))⁻¹ / ((k₁ : ℝ) * k₂)
+  else 0
+theorem canonA_abs_le_env ... (α : ℝ) (hα : 0 < α) :
+    |canonA β h₁ h₂ k₁ k₂ (fun i j s => c (i, j) s) α|
+      ≤ canonCEnv ρ C₀ h₁ h₂ k₁ k₂ α * envMoment β α 0 (gaussEnv β L D)
+theorem canonB_abs_le_env ... (α : ℝ) (hα : 0 < α) :
+    |canonB β b h₁ h₂ k₁ k₂ (anaFaceU c b) (anaFaceV c b) (fun i j s => c (i, j) s) α|
+      ≤ canonUEnv b ρ C₀ h₁ h₂ k₁ k₂ α * envMoment β α 0 (gaussEnv β L D)
+        + canonVEnv b ρ C₀ h₁ h₂ k₁ k₂ α * envMoment β α 0 (gaussEnv β L D)
+        + canonCEnv ρ C₀ h₁ h₂ k₁ k₂ α * envMoment β α 1 (gaussEnv β L D)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+$|\int f|\le\int|f|$ and $|\log s|^\ell\le(1+|\log s|)^\ell$ give the tail-moment bound; the
+pointwise envelope then gives the Gaussian-moment bound (unit~132). The canonical $u$-face
+coefficient at a $u$-pole is $k_1^{-1}\mathrm{FP}_\gamma$ at the canonical truncation order, so its
+envelope is the finite-part envelope of unit~132 with the analytic adapter's Taylor-data and
+remainder envelopes at that order; the collision coefficient $c_{ij}/(k_1k_2)$ has envelope
+$C_0\rho^{-i-j}/(k_1k_2)$. Off the poles the coefficients vanish and the envelope constants are set
+to zero.
+
+\section{Paper-facing meaning}
+
+This provides the missing uniform bound on the discarded pole terms of the Taylor tree (Astra~\#9:
+``\texttt{discard\_isBigO} needs uniform coefficient bounds''), so that the ``for every $T$''
+statement can be made uniform over the analytic family with a constant $K_T$ depending only on the
+envelope data and $T$. It also bounds the canonical coefficients themselves in terms of the envelope,
+the first half of Astra's R6 (coefficient maps bounded on the weighted family).
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \textbf{Name clashes are invisible to the single-file check.} \texttt{lake env lean} on the new
+file sees only its import closure; a lemma name already used in another \texttt{Laplace.Grammar}
+file outside that closure fails only at \texttt{lake build} (``environment already contains'').
+\texttt{grep} the namespace for the intended name before committing to it.
+\item \texttt{norm\_integral\_le\_integral\_norm} is the Bochner form of $|\int f|\le\int|f|$;
+convert the goal's absolute value with \texttt{← Real.norm\_eq\_abs} first, and provide
+integrability of \texttt{‖f‖} via \texttt{Integrable.mono'} against the tail integrand.
+\item \texttt{split\_ifs} on a definition whose branches are functions (\texttt{fun s => ...} vs
+\texttt{fun \_ => 0}) works after \texttt{unfold}; the zero branch closes with \texttt{simp}.
+\item \texttt{positivity} cannot prove $0<1-b/\rho$; a two-line lemma
+(\texttt{sub\_pos}, \texttt{div\_lt\_one}) is worth having.
+\end{itemize}
+
+\end{document}
