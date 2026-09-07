@@ -1,0 +1,61 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Dressed normal moments on symmetric boxes: asymptotics and parity}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Second and final unit of the signed-reflection extension. Combining the exact reduction of unit~196
+with the continuous-amplitude theorem of unit~186: the symmetric-box dressed normal moment,
+normalised by $N^{-\lambda}(\log N)^{|J|-1}$, converges to the face coefficient of the signed
+symmetrisation $\eta_{\rm sym}$ (\texttt{symmetric\_amplitude\_tendsto}); for equal ratios the limit is
+$\eta(0)\prod_i(1+(-1)^{h_i})\cdot\Gamma(\lambda)\beta^{-\lambda}/(m!\prod_i2k_i)$
+(\texttt{symmetric\_amplitude\_equal}), so \textbf{an odd exponent annihilates the equal-ratio leading
+corner coefficient} (\texttt{symmetric\_amplitude\_odd}): the integral is then
+$o(N^{-\lambda}(\log N)^m)$; it does not vanish, and no next-order rate is claimed. Headline~XI
+wrappers restate this on the Bochner integrals. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem symmetric_amplitude_tendsto (d) (h k : Fin (d+1) → ℕ) (hk) (l β) (hl) (hβ)
+    (hmin) (hatt) (η) (hη : Continuous η) :
+    Tendsto (fun N => (∫ x in symBox (d + 1), η x * ((∏ i, x i ^ h i)
+        * exp (-(β * N * ∏ i, x i ^ (2 * k i)))))
+      / (N ^ (-l) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 (amplitudeCoeff h k l β (symAmp h η)))
+theorem symmetric_amplitude_equal ... (hratio : ∀ i, ratioExp h k i = l) :
+    Tendsto (... / (N ^ (-l) * log N ^ m)) atTop
+      (𝓝 (η 0 * (∏ i, (1 + (-1 : ℝ) ^ h i))
+        * (Gamma l * β ^ (-l) / (m.factorial * ∏ i, 2 * k i))))
+theorem symmetric_amplitude_odd ... (j) (hodd : Odd (h j)) :
+    Tendsto (... / (N ^ (-l) * log N ^ m)) atTop (𝓝 0)
+theorem headline_symmetric_normal_moment_amplitude
+theorem headline_symmetric_normal_moment_equal
+\end{verbatim}
+}
+
+\section{Paper-facing meaning}
+Interior normal coordinates with a continuous amplitude are now covered: the leading functional is
+the face functional of the signed symmetrisation, and the paper's parity mechanism appears as the
+factor $\prod_i(1+(-1)^{h_i})$ on the corner value in the equal-ratio case. Astra~\#18's caution is
+formalised exactly: an odd exponent kills the corner coefficient (hence little-$o$ of the bare
+scale), not the integral, and no faster rate follows.
+
+\section{Lean notes}
+Both theorems are one-line compositions of \texttt{integral\_symBox\_eq\_symAmp},
+\texttt{amplitude\_tendsto}, \texttt{amplitudeCoeff\_equal} and \texttt{symAmp\_zero}; the odd case is
+\texttt{Finset.prod\_eq\_zero} with \texttt{Odd.neg\_one\_pow}. The only friction was the usual
+beta-redex in a \texttt{Tendsto.congr'} goal.
+
+\end{document}
