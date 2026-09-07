@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Integrating a block expansion over noncritical parameters}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+An abstract wrapper for the "equal-exponent block times noncritical coordinates" situation
+(Astra~\#4, rank~1). If a parametrised family $Z_w(n)$ satisfies
+$|Z_w(n)-n^{-p}(A(w)\log n+B(w))|\le K(w)n^{-q}(1+\log n)$ for $n\ge1$ ($q=p+\delta$),
+$|Z_w(n)|\le G(w)$ for $n<1$, $0<t(w)\le T$, and the envelope $t^{-q}(G+K+|A|+|B|)$ is
+$\mu$-integrable (the strict gap), then
+\begin{gather*}
+\int Z_w(Nt(w))\,d\mu=N^{-p}(\bar A\log N+\bar B)+O\bigl(N^{-q}(1+\log N)\bigr),\\
+\bar A=\int t^{-p}A\,d\mu,\qquad \bar B=\int t^{-p}(B+A\log t)\,d\mu .
+\end{gather*}
+The region $Nt(w)<1$ is handled by subtracting the full local expression and the elementary bound
+$n^{-p}|\log n|\le n^{-q}/\delta$. The wrapper knows nothing about kernels, decompositions or
+derivatives. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem rpow_mul_abs_log_le (x δ : ℝ) (hx : 0 < x) (hx1 : x ≤ 1) (hδ : 0 < δ) :
+    x ^ δ * |Real.log x| ≤ 1 / δ
+theorem rpow_neg_le_shift (t T p δ : ℝ) (ht : 0 < t) (htT : t ≤ T) (hδ : 0 < δ) :
+    t ^ (-p) ≤ T ^ δ * t ^ (-(p + δ))
+noncomputable def logShiftConst (T δ : ℝ) : ℝ := 1 / δ + T ^ δ * max 0 (Real.log T)
+theorem rpow_neg_mul_abs_log_le_shift ... :
+    t ^ (-p) * |Real.log t| ≤ logShiftConst T δ * t ^ (-(p + δ))
+noncomputable def paramConst (T δ : ℝ) : ℝ := 1 + max 0 (Real.log T) + 1 / δ
+theorem param_pointwise_bound (Z : ℝ → ℝ) (A B K G t T p δ N : ℝ) (hδ : 0 < δ) (hp : 0 ≤ p)
+    (ht : 0 < t) (htT : t ≤ T) (hN : 1 ≤ N) (hK : 0 ≤ K) (hG : 0 ≤ G)
+    (hexp : ∀ n, 1 ≤ n →
+      |Z n - n ^ (-p) * (A * Real.log n + B)| ≤ K * n ^ (-(p + δ)) * (1 + Real.log n))
+    (hsmall : ∀ n, 0 < n → n < 1 → |Z n| ≤ G) :
+    |Z (N * t) - N ^ (-p) * (t ^ (-p) * A * Real.log N + t ^ (-p) * (B + A * Real.log t))|
+      ≤ N ^ (-(p + δ)) * (1 + Real.log N)
+        * (paramConst T δ * (t ^ (-(p + δ)) * (G + K + |A| + |B|)))
+theorem param_integration {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω)
+    (Z : Ω → ℝ → ℝ) (A B K G t : Ω → ℝ) (T p δ : ℝ) (hδ : 0 < δ) (hp : 0 ≤ p) (hT : 0 ≤ T)
+    (htm : Measurable t) (hAm : AEStronglyMeasurable A μ) (hBm : AEStronglyMeasurable B μ)
+    (hZm : ∀ N : ℝ, AEStronglyMeasurable (fun w => Z w (N * t w)) μ)
+    (ht : ∀ᵐ w ∂μ, 0 < t w ∧ t w ≤ T)
+    (hKG : ∀ᵐ w ∂μ, 0 ≤ K w ∧ 0 ≤ G w)
+    (hexp : ∀ᵐ w ∂μ, ∀ n, 1 ≤ n →
+      |Z w n - n ^ (-p) * (A w * Real.log n + B w)| ≤ K w * n ^ (-(p + δ)) * (1 + Real.log n))
+    (hsmall : ∀ᵐ w ∂μ, ∀ n, 0 < n → n < 1 → |Z w n| ≤ G w)
+    (hE : Integrable (fun w => t w ^ (-(p + δ)) * (G w + K w + |A w| + |B w|)) μ) :
+    ∃ C : ℝ, ∀ N : ℝ, 1 ≤ N →
+      |(∫ w, Z w (N * t w) ∂μ)
+          - N ^ (-p) * ((∫ w, t w ^ (-p) * A w ∂μ) * Real.log N
+              + ∫ w, t w ^ (-p) * (B w + A w * Real.log (t w)) ∂μ)|
+        ≤ C * N ^ (-(p + δ)) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+With $n=Nt(w)$ the full local expression $N^{-p}(t^{-p}A\log N+t^{-p}(B+A\log t))$ is exactly
+$n^{-p}(A\log n+B)$, so the pointwise deviation is the block remainder at $n$. On $n\ge1$ it is
+bounded by $Kn^{-q}(1+\log n)$ and $1+\log n=1+\log N+\log t\le(1+\log^+T)(1+\log N)$. On $n<1$
+we bound $|Z_w(n)|\le G$, $n^{-p}\le n^{-q}$ and $n^{-p}|\log n|=n^{-q}n^\delta|\log n|\le n^{-q}/\delta$
+(from Mathlib's $|x\log x|<1$ on $(0,1]$ applied to $x=n^\delta$), and use $1\le n^{-q}$ to absorb
+$G$. Both regions give $n^{-q}\cdot\mathrm{const}\cdot(G+K+|A|+|B|)=N^{-q}t^{-q}(\dots)$, and
+integrating against $\mu$ costs exactly the envelope moment.
+
+The coefficient integrals $\bar A,\bar B$ are finite because $t^{-p}\le T^\delta t^{-q}$ and
+$t^{-p}|\log t|\le(1/\delta+T^\delta\log^+T)\,t^{-q}$ on $(0,T]$, so both integrands are dominated by
+the same envelope. The strict gap $p_\ell>p+\delta$ is what makes $\int t^{-q}\,d\mu$ finite in the
+application ($\mu=w^h\,dw$ on the noncritical box): this wrapper takes the envelope moment as its
+single integrability hypothesis.
+
+\section{Paper-facing meaning}
+
+This is the general mechanism by which the $d=2$ equal-exponent block theorem (units~86--89)
+extends to the mixed situation of \texttt{thm:TaylorTree}: a block of two coordinates attaining the
+minimal exponent, plus noncritical coordinates with strictly larger exponents. The next unit
+instantiates $Z_w$ by the parametrised chart block, supplying measurable $A(w),B(w),K(w),G(w)$
+from the anchored decomposition with uniform constants, and the envelope moment from the strict gap.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Real.abs\_log\_mul\_self\_lt} gives $|x\log x|<1$ on $(0,1]$ with constant $1$; the
+sharp $1/e$ is not needed, so $n^{-p}|\log n|\le n^{-q}/\delta$ suffices.
+\item \texttt{Real.rpow\_le\_rpow\_of\_exponent\_ge} (base in $(0,1]$, exponents reversed) gives
+both $n^{-p}\le n^{-q}$ and $1=n^0\le n^{-q}$.
+\item \texttt{mul\_le\_mul\_of\_nonneg\_right} wants \texttt{0 ≤ c}, not \texttt{1 ≤ c}; a
+\texttt{by linarith} in place of a misnamed hypothesis is cheaper than a rename.
+\item \texttt{positivity} cannot see \texttt{0 ≤ K w} from a conjunction hypothesis; extract the
+components and use \texttt{mul\_nonneg} explicitly.
+\item The final assembly is \texttt{integral\_sub} + \texttt{integral\_add} +
+\texttt{integral\_const\_mul} + \texttt{norm\_integral\_le\_of\_norm\_le}; integrability of the
+scaled block itself is obtained from the pointwise bound as \texttt{(f - g) + g}.
+\end{itemize}
+
+\end{document}
