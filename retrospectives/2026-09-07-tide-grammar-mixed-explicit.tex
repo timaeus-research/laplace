@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Explicit constants for the mixed remainder}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#9 R5, step~1. The mixed-remainder estimate was the only genuinely asymptotic step of the
+$d=2$ cutoff theorem (an \texttt{IsBigO} with an existential constant). It is made explicit:
+$\mathrm{twoDGeneral}(\beta,a,b,N^2;h,k)$ is the product kernel of the Gaussian kernel
+$g(s)=e^{-\beta s^2+\beta as}$, so the explicit product-kernel bounds of units~111--112 give, for
+$N\ge1$, $\mathrm{twoDGeneral}(N^2)\le\mathrm{mixConst}\cdot N^{-\min(p_1,p_2)}(1+\log N)$ with
+$\mathrm{mixConst}$ a finite expression in the Gaussian moments $\int_0^\infty s^{p-1}g$ and
+$\int_0^\infty s^{p-1}\log_+(R/s)g$ (equal case) or a single moment (unequal case). Hence
+$|\mathrm{twoDAmp}\,\Phi|\le Ce^{D^2/\beta}\,\mathrm{mixConst}(\beta/2,2L,b,h+M,k)\,N^{-E'}(1+\log N)$
+for an amplitude with the rectangular envelope (\texttt{twoDAmp\_env\_explicit}). Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem twoDGeneral_sq_eq_prodKernel (β a b N : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hN : 0 ≤ N) :
+    twoDGeneral β a b (N ^ 2) h₁ h₂ k₁ k₂ = prodKernel b h₁ h₂ k₁ k₂ (quadKernel β a) N
+theorem quadKernel_moment_integrableOn (β a p : ℝ) (hβ : 0 < β) (hp : 0 < p) :
+    IntegrableOn (fun s => s ^ (p - 1) * quadKernel β a s) (Ioi 0)
+theorem logPlus_div_le (R s : ℝ) (hR : 0 < R) (hs : 0 < s) :
+    logPlus (R / s) ≤ (1 + |Real.log R|) * (1 + |Real.log s|)
+theorem quadKernel_logMoment_integrableOn (β a p R : ℝ) (hβ : 0 < β) (hp : 0 < p)
+    (hR : 0 < R) :
+    IntegrableOn (fun s => s ^ (p - 1) * logPlus (R / s) * quadKernel β a s) (Ioi 0)
+noncomputable def mixConst (β a b : ℝ) (h₁ h₂ k₁ k₂ : ℕ) : ℝ   -- Gaussian moments, by case
+theorem twoDGeneral_sq_le (β a b : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β) (hb : 0 < b)
+    (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (N : ℝ) (hN : 1 ≤ N) :
+    twoDGeneral β a b (N ^ 2) h₁ h₂ k₁ k₂
+      ≤ mixConst β a b h₁ h₂ k₁ k₂
+        * N ^ (-min (((h₁ : ℝ) + 1) / k₁) (((h₂ : ℝ) + 1) / k₂)) * (1 + Real.log N)
+theorem twoDAmp_env_explicit (β b L C N : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ D : ℕ) (Φ : ℝ → ℝ → ℝ → ℝ)
+    (hβ : 0 < β) (hb : 0 < b) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hC : 0 ≤ C) (hN : 1 ≤ N)
+    (hΦ : Continuous fun x : ℝ × ℝ × ℝ => Φ x.1 x.2.1 x.2.2)
+    (hbound : ∀ u ∈ Icc (0 : ℝ) b, ∀ v ∈ Icc (0 : ℝ) b, ∀ s, 0 ≤ s →
+      |Φ u v s| ≤ C * (u ^ M₁ * v ^ M₂) * ((1 + s) ^ D * Real.exp (β * s * L))) :
+    |twoDAmp β b N h₁ h₂ k₁ k₂ Φ|
+      ≤ C * Real.exp ((D : ℝ) ^ 2 / β) * mixConst (β / 2) (2 * L) b (h₁ + M₁) (h₂ + M₂) k₁ k₂
+        * N ^ (-min ((((h₁ + M₁ : ℕ) : ℝ) + 1) / k₁) ((((h₂ + M₂ : ℕ) : ℝ) + 1) / k₂))
+        * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+With $t=N$ and $n=N^2$, $e^{-\beta n(u^kv^k)^2+\beta\sqrt n\,u^kv^k\,a}=g(N u^kv^k)$, so the double
+integral is the product kernel $\int\!\!\int u^{h_1}v^{h_2}g(Nu^{k_1}v^{k_2})$. In the equal case
+$p_1=p_2=p$ the product-kernel bound reads $N^{-p}(k_1k_2)^{-1}(\log N\,M_p(g)+U_{p,R}(g))\le
+(M_p+U_{p,R})(k_1k_2)^{-1}N^{-p}(1+\log N)$; in the unequal case $p_1<p_2$ it is
+$b^{k_2(p_2-p_1)}M_{p_1}(g)/(k_1k_2(p_2-p_1))\,N^{-p_1}$ and the factor $1+\log N\ge1$ is added for a
+uniform shape; the case $p_2<p_1$ follows by swapping the two variables. The moments exist because
+$g(s)=e^{-\beta s^2}e^{\beta as}$ has the envelope form accepted by the moment-integrability lemma of
+unit~96, and $\log_+(R/s)\le(1+|\log R|)(1+|\log s|)$ reduces the log-moment to the $j=1$ case.
+
+\section{Paper-facing meaning}
+
+This is the first step of Astra~\#9's R5 (explicit constants, then uniform families): the
+remainder constant of the mixed term is now a named expression in Gaussian moments, as Astra
+recommended (``explicit enough, and maintainable''). What remains for a fully explicit
+$|Z(N)-S(N)|\le KN^{-E}(1+\log N)$: the face transfer constants (already explicit in
+\texttt{face\_transfer\_bound}, but stated through moments of the actual face coefficients, which
+must be bounded by envelope moments for uniformity), the corner transfer tails, and the discard step.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item To match $\int\!\!\int u^hv^h\,e^{(\cdot)}$ with $\int u^h\int v^h\,g$, pull the outer
+factor into the inner integral with \texttt{rw [← integral\_const\_mul]} and identify the
+exponents with a \texttt{show ... by ring} rewrite rather than \texttt{congr} chains.
+\item \texttt{Measurable.div} with constants (\texttt{measurable\_const.div measurable\_id}) handles
+$s\mapsto R/s$; \texttt{logPlus} must be unfolded to \texttt{max} first.
+\item Case analysis on the starting exponents via \texttt{lt\_trichotomy} with \texttt{if\_pos}/
+\texttt{if\_neg} on the definition of \texttt{mixConst}; the third case rewrites through
+\texttt{twoDGeneral\_swap} back and forth around \texttt{twoDGeneral\_sq\_eq\_prodKernel}.
+\item \texttt{le\_mul\_of\_one\_le\_right} adds the harmless factor $1+\log N\ge1$.
+\end{itemize}
+
+\end{document}
