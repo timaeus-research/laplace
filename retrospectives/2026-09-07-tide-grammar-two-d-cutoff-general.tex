@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The $d=2$ cutoff expansion with unequal starting exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#8 rank~3 (abstract half), guided by Astra consult~\#9. The equal-exponent assembly used
+$(h_1+1)/k_1=(h_2+1)/k_2$ only for exponent bookkeeping. With $\alpha_i=(h_1+i+1)/k_1$,
+$\delta_j=(h_2+j+1)/k_2$ and $D=\delta_j-\alpha_i$ the face-vs-corner cancellations are identities in
+$D$ alone (\texttt{uface\_coeff\_eq\_corner\_fp'}), so the over-complete sum equals the merged sum
+for any corner order (\texttt{overcomplete\_eq\_merged}); the $u$-face remainder exponent is
+$p_2+M_2/k_2$, the $v$-face one $p_1+M_1/k_1$, the mixed one $E=\min$ of the two; the shifted
+compatibilities $p_1+(M_1-1)/k_1<p_2+M_2/k_2$ (and symmetrically) give the face admissibilities and,
+as Astra~\#9 observed, also the corner admissibility $\gamma_{ij}<M_1$, so the old corner order
+$M_1+k_1M_2$ survives. Result: \texttt{twoD\_cutoff\_general\_merged}, the cutoff expansion of the
+$d=2$ block with independent starting exponents and remainder $O(N^{-E}(1+\log N))$. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem sub_gamma_u (h₁ h₂ k₁ k₂ i j : ℕ) (hk₂ : 0 < k₂) :
+    (j : ℝ) - ((k₂ : ℝ) * ((((h₁ + i : ℕ) : ℝ) + 1) / k₁) - h₂ - 1)
+      = (k₂ : ℝ) * ((((h₂ + j : ℕ) : ℝ) + 1) / k₂ - (((h₁ + i : ℕ) : ℝ) + 1) / k₁)
+theorem uface_coeff_eq_corner_fp' (b : ℝ) (h₁ h₂ k₁ k₂ i j Mc : ℕ) (hb : 0 < b)
+    (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hMc : 0 < Mc) (c : ℕ → ℕ → ℝ → ℝ) :
+    faceCoeff ((k₂ : ℝ) * ((((h₁ + i : ℕ) : ℝ) + 1) / k₁) - h₂ - 1) (b ^ k₁) k₂ k₁
+        (fun m => c i m) j
+      = faceFPCoeff ((k₁ : ℝ) * ((((h₂ + j : ℕ) : ℝ) + 1) / k₂) - ((h₁ + i : ℕ) : ℝ) - 1)
+        b k₂ (fun _ s => c i j s) (cornerData (c i j)) Mc
+theorem overcomplete_eq_merged (β b : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ Mc : ℕ) (hb : 0 < b)
+    (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hMc : 0 < Mc) (a bj : ℕ → ℝ → ℝ → ℝ)
+    (c : ℕ → ℕ → ℝ → ℝ) (N : ℝ) :
+    (u-face sums, order M₂) + (v-face sums, order M₁) - (corner sums, order Mc)
+      = mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N
+theorem corner_gamma_lt_general (p₁ p₂ : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hk₁ : 0 < k₁)
+    (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (hM₂ : p₂ + ((M₂ : ℝ) - 1) / k₂ < p₁ + (M₁ : ℝ) / k₁) (i j : ℕ) (hj : j < M₂) :
+    (k₁ : ℝ) * ((((h₂ + j : ℕ) : ℝ) + 1) / k₂) - ((h₁ + i : ℕ) : ℝ) - 1 < M₁
+theorem twoD_cutoff_general_merged (β b p₁ p₂ : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hβ : 0 < β)
+    (hb : 0 < b) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (hM₁ : p₁ + ((M₁ : ℝ) - 1) / k₁ < p₂ + (M₂ : ℝ) / k₂)
+    (hM₂ : p₂ + ((M₂ : ℝ) - 1) / k₂ < p₁ + (M₁ : ℝ) / k₁)
+    ... (same amplitude, face, remainder, envelope and moment hypotheses as before) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ Φ - mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N)
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(min (p₁ + (M₁ : ℝ) / k₁) (p₂ + (M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The $u$-face $i$ expansion has transverse parameter $\gamma_i=k_2\alpha_i-h_2-1=k_2(\alpha_i-p_2)$;
+its monomial $m=j$ sits at $\alpha_i+(j-\gamma_i)/k_2=\delta_j$ and its coefficient
+$-(k_1)^{-1}(b^{k_1})^{-(j-\gamma_i)/k_2}c_{ij}/(j-\gamma_i)=-b^{-k_1D}c_{ij}/(k_1k_2D)$ equals the
+corner's finite-part coefficient $k_2^{-1}c_{ij}\,b^{-\gamma_c}/(-\gamma_c)$ with
+$\gamma_c=k_1(\delta_j-\alpha_i)=k_1D$; at a collision both are $c_{ij}\log b/k_2$. Nothing here
+refers to $p_1=p_2$. The remainder exponents: $\alpha_i+(M_2-\gamma_i)/k_2=p_2+M_2/k_2$ and
+$\delta_j+(M_1-\gamma'_j)/k_1=p_1+M_1/k_1$, both $\ge E$; the mixed remainder is exactly $E$. The
+admissibility $\gamma_i<M_2$ is $k_2(\alpha_i-p_2)<M_2$, i.e.\ $\alpha_i<p_2+M_2/k_2$, which the
+first shifted compatibility gives for all $i<M_1$. For the corners, $\gamma_{ij}=k_1(\delta_j-p_1)-i$
+and the second compatibility gives $\delta_j<p_1+M_1/k_1$ for $j<M_2$, hence $\gamma_{ij}<M_1\le
+M_1+k_1M_2$, and the corner remainder exponent $\alpha_i+(M_1+k_1M_2)/k_1\ge p_1+M_1/k_1\ge E$.
+
+\section{Paper-facing meaning}
+
+This removes the equal-exponent restriction from the $d=2$ block: the cutoff expansion now covers
+every pair $(h,k)$, with the leading candidate exponent $\min(p_1,p_2)$ and a leading logarithm
+possible only when $p_1=p_2$ (later logarithms still occur at collisions $\alpha_i=\delta_j$).
+Astra~\#9's answers on the rest of the programme: the leading coefficient for $p_1<p_2$ is
+$B_{p_1}=k_1^{-1}\sum_j\frac{b^{j+\Delta}}{j+\Delta}M[p_1;0;c_{0j}]$ with $\Delta=k_2(p_2-p_1)$
+(a genuine integral, no counterterms); next the analytic adapter and the general Taylor tree
+(cutoffs $q=\max(2T,p_1,p_2)+1$, $M_\ell=\lceil k_\ell(q-p_\ell)\rceil$), then the equal theorem as a
+corollary; afterwards (R5) an explicit-constant cutoff bound and uniform families, (R6) coefficient
+maps as bounded linear maps in a weighted norm with $r<\rho$, (R7) Taylor-data identification by
+one-variable differentiation twice, (R9) expectation commuting with coefficient extraction under an
+integrable majorant, (R8) the general-$d$ constant product density.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{push\_cast} zeta-unfolds \texttt{set} variables in the goal, so hypotheses stated with
+the abbreviation no longer match for \texttt{linarith}; prove the needed real identities as
+\texttt{have}s in terms of the abbreviations and avoid \texttt{push\_cast} on goals mentioning them.
+\item Keep two forms of a cast identity: \texttt{(0 : ℝ) - γc} for \texttt{linarith} and
+\texttt{((0 : ℕ) : ℝ) - γc} for rewriting the \texttt{axisPrim} branch (\texttt{Nat.cast\_zero}
+bridges them).
+\item From $kD=0$ with $k\ne0$, \texttt{(mul\_eq\_zero.1 h).resolve\_left} gives $D=0$; then
+\texttt{rw [hD0, mul\_zero] at hu} before \texttt{linarith} (it cannot multiply hypotheses).
+\item \texttt{field\_simp} may close a goal completely; a trailing \texttt{ring} then fails with
+``no goals''.
+\item When a lemma's statement carries \texttt{↑(h₂ + j)} and the goal has been \texttt{push\_cast},
+apply \texttt{push\_cast at h ⊢} to both.
+\item The degenerate case $M_1=0\lor M_2=0$ of the merged form needs a separate branch since the
+corner order must be positive in \texttt{overcomplete\_eq\_merged}; there all corner sums vanish.
+\end{itemize}
+
+\end{document}
