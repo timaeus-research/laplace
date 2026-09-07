@@ -1,0 +1,55 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Weighted one-dimensional power substitution}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Step~1 of the general-$d$ equal-ratio monomial milestone (Astra~\#14). For an arbitrary measurable
+$g\colon\mathbb R\to[0,\infty]$,
+\[
+\int_{(0,1]}u^h\,g(u^{2k})\,du=\frac1{2k}\int_{(0,1]}t^{\lambda-1}g(t)\,dt,\qquad\lambda=\frac{h+1}{2k},
+\]
+in Lebesgue-integral form (\texttt{lintegral\_weighted\_power\_subst}), so no integrability is needed
+and the identity can be iterated inside Tonelli arguments. It rests on the change of variables
+$t=u^p$ on $(0,1]$ (\texttt{lintegral\_Ioc\_rpow\_subst}), which maps the interval onto itself
+(\texttt{image\_rpow\_Ioc}), via Mathlib's one-dimensional Jacobian formula. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem image_rpow_Ioc (p) (hp : 0 < p) : (fun x : ℝ => x ^ p) '' Ioc 0 1 = Ioc 0 1
+theorem lintegral_Ioc_rpow_subst (p) (hp : 0 < p) (g : ℝ → ENNReal) :
+    ∫⁻ t in Ioc 0 1, g t = ∫⁻ u in Ioc 0 1, ENNReal.ofReal (p * u ^ (p - 1)) * g (u ^ p)
+theorem lintegral_weighted_power_subst (h k : ℕ) (hk : 0 < k) (G : ℝ → ENNReal) :
+    ∫⁻ u in Ioc 0 1, ENNReal.ofReal (u ^ h) * G (u ^ (2 * k))
+      = ENNReal.ofReal (1 / (2 * k))
+        * ∫⁻ t in Ioc 0 1, ENNReal.ofReal (t ^ ((h + 1) / (2 * k) - 1)) * G t
+\end{verbatim}
+}
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{MeasureTheory.lintegral\_image\_eq\_lintegral\_abs\_deriv\_mul} (file
+\texttt{JacobianOneDim}) with $s=(0,1]$, $f=(\cdot)^p$, derivative from
+\texttt{Real.hasDerivAt\_rpow\_const} and injectivity from \texttt{Real.rpow\_left\_injOn}
+restricted to nonnegative reals.
+\item Rewriting the substitution into the right-hand side only needs \texttt{conv\_rhs}; a bare
+\texttt{rw} hits the left-hand integral first.
+\item \texttt{ENNReal.ofReal\_mul} with metavariables rewrites the first product it finds; pass
+the factors explicitly (\texttt{@ENNReal.ofReal\_mul (1/p) (p * u\^{}(p-1)) …}) before \texttt{ring},
+which treats the \texttt{ofReal} atoms consistently only if both sides are split identically.
+\end{itemize}
+
+\end{document}

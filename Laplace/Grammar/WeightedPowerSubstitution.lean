@@ -29,7 +29,7 @@ theorem image_rpow_Ioc (p : ℝ) (hp : 0 < p) : (fun x : ℝ => x ^ p) '' Ioc 0 
   · rintro ⟨hy0, hy1⟩
     refine ⟨y ^ (1 / p), ⟨Real.rpow_pos_of_pos hy0 _, Real.rpow_le_one hy0.le hy1 (by positivity)⟩,
       ?_⟩
-    show (y ^ (1 / p)) ^ p = y
+    change (y ^ (1 / p)) ^ p = y
     rw [← Real.rpow_mul hy0.le, one_div_mul_cancel hp.ne', Real.rpow_one]
 
 /-- **Change of variables `t = u^p` on `(0,1]`** for Lebesgue integrals. -/
