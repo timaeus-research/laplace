@@ -401,3 +401,4 @@ import Laplace.Grammar.CandidateSupport
 import Laplace.Grammar.MonoRepPerm
 import Laplace.Grammar.CoeffStability
 import Laplace.Grammar.CoeffFamily
+import Laplace.Grammar.FamilyPhaseIntegral
