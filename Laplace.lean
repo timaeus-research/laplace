@@ -300,3 +300,4 @@ import Laplace.Grammar.FiniteTreeIntegration
 import Laplace.Grammar.ParamMeasurable
 import Laplace.Grammar.CanonParamMeasurable
 import Laplace.Grammar.CoeffWeightedBound
+import Laplace.Grammar.CoeffDifference
