@@ -35,7 +35,8 @@ variable {ι Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] {μ : Me
   [IsProbabilityMeasure μ] {μ' : Measure Ω'} [IsProbabilityMeasure μ'] {L : Filter ι}
   [L.IsCountablyGenerated]
 
-/-- **Joint pair-vector form of Headline XVI**: numerator and denominator amplitudes on every chart. -/
+/-- **Joint pair-vector form of Headline XVI**: numerator and denominator amplitudes on every
+chart. -/
 theorem tendstoInDistribution_normChart_pairVec {κ : Type*} [Fintype κ] (d : κ → ℕ)
     (h k : (a : κ) → Fin (d a + 1) → ℕ) (hk : ∀ a i, 0 < k a i) (l : κ → ℝ) (β : ℝ)
     (hl : ∀ a, 0 < l a) (hβ : 0 < β) (hmin : ∀ a i, l a ≤ ratioExp (h a) (k a) i)
@@ -53,7 +54,8 @@ theorem tendstoInDistribution_normChart_pairVec {κ : Type*} [Fintype κ] (d : �
     (continuous_limChart (d a) (h a) (k a) (hk a) (l a) β (hl a) hβ (hmin a)).comp
       ((continuous_pair_const g).comp (continuous_apply a))
   have hlim : TendstoInDistribution (fun n ω a =>
-      (limChart (h a) (k a) (l a) β (X n ω a, g₁ a), limChart (h a) (k a) (l a) β (X n ω a, g₂ a))) L
+      (limChart (h a) (k a) (l a) β (X n ω a, g₁ a),
+        limChart (h a) (k a) (l a) β (X n ω a, g₂ a))) L
       (fun ω a => (limChart (h a) (k a) (l a) β (Z ω a, g₁ a),
         limChart (h a) (k a) (l a) β (Z ω a, g₂ a))) (fun _ => μ) μ' :=
     hX.continuous_comp (continuous_pi fun a => (hcont a (g₁ a)).prodMk (hcont a (g₂ a)))
@@ -139,7 +141,7 @@ theorem headline_stochastic_assembled_posterior {κ : Type*} [Fintype κ] [Nonem
   have hpair := tendstoInDistribution_prodMk_tendsto_const _ _ hV _ _ hcoef
   have hg : Continuous fun q : (κ → ℝ × ℝ) × (κ → ℝ) =>
       (∑ a, q.2 a * (q.1 a).1, ∑ a, q.2 a * (q.1 a).2) := by
-    refine (continuous_finset_sum _ fun a _ => ?_).prodMk (continuous_finset_sum _ fun a _ => ?_)
+    refine (continuous_finsetSum _ fun a _ => ?_).prodMk (continuous_finsetSum _ fun a _ => ?_)
     · exact ((continuous_apply a).comp continuous_snd).mul
         (continuous_fst.comp ((continuous_apply a).comp continuous_fst))
     · exact ((continuous_apply a).comp continuous_snd).mul
@@ -157,7 +159,8 @@ theorem headline_stochastic_assembled_posterior {κ : Type*} [Fintype κ] [Nonem
       (hm _)).prodMk ((continuous_normChart (d a) (h a) (k a) (l a) β (Nseq n) hβ
         (hN0 n)).measurable.comp (hm _))
   have hV₀m : Measurable fun ω => fun a =>
-      (limChart (h a) (k a) (l a) β (Z ω a, φ a * c a), limChart (h a) (k a) (l a) β (Z ω a, c a)) := by
+      (limChart (h a) (k a) (l a) β (Z ω a, φ a * c a),
+        limChart (h a) (k a) (l a) β (Z ω a, c a)) := by
     refine measurable_pi_iff.2 fun a => ?_
     have hm : ∀ g : C(closedCube (d a + 1), ℝ),
         Measurable fun ω => ((Z ω a, g) : InputSpace (d a + 1)) := fun g =>
@@ -171,7 +174,8 @@ theorem headline_stochastic_assembled_posterior {κ : Type*} [Fintype κ] [Nonem
           normChart (h a) (k a) (l a) β (Nseq n) (X n ω a, c a))),
           fun a => leadScale (h a) (k a) (l a) (Nseq n) /
             ((Nseq n) ^ (-(leadExp fun b => 2 * l b)) * Real.log (Nseq n) ^
-              (leadMult (fun b => 2 * l b) (fun b => multCount (ratioExp (h b) (k b)) (l b)) - 1))) :=
+              (leadMult (fun b => 2 * l b)
+                (fun b => multCount (ratioExp (h b) (k b)) (l b)) - 1))) :=
     fun n => hg.measurable.comp ((hVm n).prodMk measurable_const)
   have hG₀m : Measurable fun ω => (fun q : (κ → ℝ × ℝ) × (κ → ℝ) =>
       (∑ a, q.2 a * (q.1 a).1, ∑ a, q.2 a * (q.1 a).2))
@@ -215,8 +219,8 @@ theorem headline_stochastic_assembled_posterior {κ : Type*} [Fintype κ] [Nonem
     obtain ⟨a, ha1, ha2⟩ := exists_leadMult (fun b => 2 * l b)
       (fun b => multCount (ratioExp (h b) (k b)) (l b)) hm1
     exact ⟨a, Finset.mem_filter.2 ⟨Finset.mem_univ a, ha1, ha2⟩⟩
-  have hdiv := tendstoInDistribution_div_of_pos _ _ _ _ (fun n => (hGm n).fst) (fun n => (hGm n).snd)
-    hG₀m.fst hG₀m.snd hsum hpos
+  have hdiv := tendstoInDistribution_div_of_pos _ _ _ _ (fun n => (hGm n).fst)
+    (fun n => (hGm n).snd) hG₀m.fst hG₀m.snd hsum hpos
   refine hdiv.congr (fun n => Eventually.of_forall fun ω => ?_) (Eventually.of_forall fun ω => ?_)
   · -- cancel the scales: (Σ_a (s_a/S) (I_a/s_a)) / (Σ_a (s_a/S) (I'_a/s_a)) = (Σ I_a)/(Σ I'_a)
     have hN0' : 0 < Nseq n := by linarith [hN1 n]
