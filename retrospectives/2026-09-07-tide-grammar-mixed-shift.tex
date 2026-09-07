@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The mixed remainder with arbitrary shifts}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The mixed term of the anchored decomposition (unit~88) was bounded by the constant-kernel block with
+both exponents shifted by one. Here the bound is generalised to any amplitude dominated by
+$Cu^{M_1}v^{M_2}(1+s)^De^{\beta sL}$ on the box: its block integral is at most
+$Ce^{D^2/\beta}\cdot\mathrm{twoDGeneral}(\beta/2,2L,b,N^2,h_1+M_1,h_2+M_2,k_1,k_2)$, which is
+$O\bigl(N^{-\min((h_1+M_1+1)/k_1,(h_2+M_2+1)/k_2)}(1+\log N)\bigr)$. With $M_1/k_1,M_2/k_2>\tau$
+this is the remainder estimate $O(N^{-(p+\tau)}(1+\log N))$ of the rectangular face-jet decomposition
+of the $d=2$ block. The polynomial envelope is absorbed by $(1+s)^D\le e^{D^2/\beta}e^{\beta s^2/2}$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem one_add_pow_le_exp (β s : ℝ) (D : ℕ) (hβ : 0 < β) (hs : 0 ≤ s) :
+    (1 + s) ^ D ≤ Real.exp ((D : ℝ) ^ 2 / β) * Real.exp (β / 2 * s ^ 2)
+theorem twoDAmp_env_le (β b L C N : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ D : ℕ) (Φ : ℝ → ℝ → ℝ → ℝ)
+    (hβ : 0 < β) (hN : 0 ≤ N) (hC : 0 ≤ C)
+    (hΦ : Continuous fun x : ℝ × ℝ × ℝ => Φ x.1 x.2.1 x.2.2)
+    (hbound : ∀ u ∈ Icc (0 : ℝ) b, ∀ v ∈ Icc (0 : ℝ) b, ∀ s, 0 ≤ s →
+      |Φ u v s| ≤ C * (u ^ M₁ * v ^ M₂) * ((1 + s) ^ D * Real.exp (β * s * L))) :
+    |twoDAmp β b N h₁ h₂ k₁ k₂ Φ|
+      ≤ C * Real.exp ((D : ℝ) ^ 2 / β)
+        * twoDGeneral (β / 2) (2 * L) b (N ^ 2) (h₁ + M₁) (h₂ + M₂) k₁ k₂
+theorem twoDGeneral_shift_isBigO (β a b : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β) (hb : 0 < b)
+    (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) :
+    (fun N : ℝ => twoDGeneral β a b (N ^ 2) h₁ h₂ k₁ k₂) =O[atTop]
+      fun N : ℝ => N ^ (-min (((h₁ : ℝ) + 1) / k₁) (((h₂ : ℝ) + 1) / k₂)) * (1 + Real.log N)
+theorem twoDAmp_env_isBigO ... :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ Φ) =O[atTop]
+      fun N : ℝ => N ^ (-min ((((h₁ + M₁ : ℕ) : ℝ) + 1) / k₁)
+          ((((h₂ + M₂ : ℕ) : ℝ) + 1) / k₂)) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Pointwise on the box, $u^{h_1}v^{h_2}e^{-\beta s^2}|\Phi|\le Cu^{h_1+M_1}v^{h_2+M_2}e^{-\beta s^2}(1+s)^De^{\beta sL}$
+with $s=Nu^{k_1}v^{k_2}$, and $(1+s)^D\le e^{Ds}\le e^{D^2/\beta}e^{\beta s^2/2}$ (the second step is
+$Ds\le D^2/\beta+\beta s^2/2$, i.e. $(\beta s/2-D)^2\ge0$). The right side is then
+$Ce^{D^2/\beta}$ times the integrand of the constant-kernel block $\mathrm{twoDGeneral}$ with
+parameters $(\beta/2,2L,N^2)$ and exponents $(h_1+M_1,h_2+M_2)$, whose $N\to\infty$ behaviour is
+known from the unconditional trichotomy of unit~47 (\texttt{twoDGeneral\_isBigO\_min}) after
+composing with $N\mapsto N^2$ and converting $\log N^2=2\log N$.
+
+\section{Paper-facing meaning}
+
+In the rectangular decomposition $\Phi=\sum_{i<M_1}u^ia_i+\sum_{j<M_2}v^jb_j-\sum c_{ij}u^iv^j+R$
+with $|R|\le Hu^{M_1}v^{M_2}$ (Astra~\#4(b)), the remainder contributes
+$O(N^{-\min(p+M_1/k_1,p+M_2/k_2)}(1+\log N))$; choosing $M_1/k_1,M_2/k_2>\tau$ makes it
+$O(N^{-(p+\tau)}(1+\log N))$, the remainder order of the $\tau$-cutoff theorem. Together with the
+face-term expansions of unit~104 this is all the analysis needed; what remains is the decomposition
+identity and the bookkeeping.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{field\_simp} can close a goal outright; a trailing \texttt{ring} then errors with
+"no goals".
+\item After \texttt{Real.log\_pow} the factor \texttt{↑2} is a \texttt{Nat} cast, invisible to
+\texttt{nlinarith}; \texttt{push\_cast} first.
+\item \texttt{IsBigO.comp\_tendsto} with \texttt{tendsto\_pow\_atTop two\_ne\_zero} transports an
+\texttt{atTop} estimate in $n$ to one in $N=\sqrt n$; \texttt{Real.rpow\_natCast} and
+\texttt{Real.rpow\_mul} collapse $(N^2)^{-m/2}$ to $N^{-m}$.
+\end{itemize}
+
+\end{document}
