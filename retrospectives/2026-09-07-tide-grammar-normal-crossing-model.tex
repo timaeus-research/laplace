@@ -39,12 +39,15 @@ theorem integral_quadKernel (β a) : ∫ s, quadKernel β a s = √(π/β) * exp
 theorem phaseMoment_one_add_neg : phaseMoment β 1 a + phaseMoment β 1 (-a) = √(π/β) e^{βa²/4}
 theorem chart_const_phase_tendsto_moving : cₙ → c₀, Nₙ → ∞ ⊢
   chartIntegral … (Nₙ) (fun _ => cₙ) η / leadScale … (Nₙ) → phaseCoeff … (fun _ => c₀) η
-def ncLikelihood n y x := ∏ i, gaussianPDFReal (x 0 * x 1) 1 (y i);  ncPhase n y := (∑ y)/√n
+def ncLikelihood n y x := ∏ i, gaussianPDFReal (x 0 * x 1) 1 (y i)
+def ncPhase n y := (∑ i, y i) / √n
 def ncKernel N z x := exp (-(N²(x₀x₁)²)/2 + N z x₀x₁);  ncPosteriorMean; ncFluctMGF
 theorem ncLikelihood_eq (hn : 0 < n) : ncLikelihood n y x =
   (∏ i, gaussianPDFReal 0 1 (y i)) * ncKernel (√n) (ncPhase n y) x
-theorem ncPosteriorMean_eq : posterior mean = ratio of kernel integrals (truth factor cancels)
-theorem nc_integral_tendsto : (∫_{symBox 2} ρ K_{Nₙ,zₙ}) / leadScale … → 2ρ(0)√(2π) e^{z₀²/2}
+theorem ncPosteriorMean_eq : posterior mean = ratio of kernel integrals
+  (the truth's likelihood factor cancels)
+theorem nc_integral_tendsto :
+  (∫_{symBox 2} ρ K_{Nₙ,zₙ}) / leadScale … → 2ρ(0)√(2π) e^{z₀²/2}
 theorem ncFluctMGF_tendsto (hρ0 : 0 < ρ 0) (hz : ncPhase n (y n) → z) :
   ncFluctMGF n (y n) ρ θ → exp (z θ + θ²/2)
 \end{verbatim}
