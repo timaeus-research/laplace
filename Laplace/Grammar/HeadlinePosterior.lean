@@ -39,8 +39,10 @@ theorem headline_approx_in_distribution {E : Type*} [PseudoEMetricSpace E] [Meas
     TendstoInDistribution X l Z (fun _ => μ) μ' :=
   tendstoInDistribution_of_approx X Z hX hZ happrox
 
-/-- **Quotients with a.s. positive limiting denominator converge in distribution**
-(the division lemma of cor:empirical_expectation, probabilistic form). -/
+/-- **Quotients with a.s. positive limiting denominator converge in distribution.** A probabilistic
+quotient tool supporting the leading-term limit of cor:empirical_expectation; it is NOT the paper's
+formal division lemma for asymptotic expansions (no recursive coefficient division, no index sets).
+(Fidelity review v1, finding 12.) -/
 theorem headline_quotient_in_distribution (U V : ι → Ω → ℝ) (U₀ V₀ : Ω' → ℝ)
     (hU : ∀ n, Measurable (U n)) (hV : ∀ n, Measurable (V n)) (hU₀ : Measurable U₀)
     (hV₀ : Measurable V₀)
@@ -70,9 +72,13 @@ theorem headline_joint_normalised_pair (β b p ρ r T : ℝ) (h₁ h₂ k₁ k�
 
 /-- **The chart posterior limit** (cor:empirical_expectation, leading term, chart level): for a
 common random phase `X n ⇒ Z` and deterministic amplitudes with `y_{1,00} > 0`,
-`Z_{N_n}[φ] / Z_{N_n}[1] ⇒ y_{φ,00} / y_{1,00}`. The random fluctuation factor cancels: the leading
-posterior expectation converges to the deterministic corner-value ratio (`= φ(0,0)` when
-`η_φ = φ η_1`). -/
+`Z_{N_n}[φ] / Z_{N_n}[1] ⇒ y_{φ,00} / y_{1,00}`. The random fluctuation factor
+`∫ s^{p−1} e^{−βs²+βs x₀₀} ds` cancels, so the limit is the deterministic corner-value ratio
+(`= φ(0,0)` when `η_φ = φ η_1`, a relation that is explanatory prose, not a hypothesis here).
+Scope: equal starting exponents are essential; if `y_{φ,00} = 0` the conclusion is a zero limit, not
+an identification of the numerator's true leading index; the denominator amplitude is only assumed
+positive at the corner and finite-stage denominators may vanish (totalised division).
+(Fidelity review v1, finding 14.) -/
 theorem headline_chart_posterior_limit (β b p ρ r T : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β)
     (hb : 0 < b) (hbρ : b < ρ) (hbr : b < r) (hrρ : r < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
     (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p) (hpT : p < 2 * T)

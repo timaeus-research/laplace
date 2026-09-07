@@ -80,8 +80,11 @@ theorem headline_taylor_tree_uniform (β b p₁ p₂ ρ : ℝ) (h₁ h₂ k₁ k
   chartZ_taylor_tree_ball β b p₁ p₂ ρ h₁ h₂ k₁ k₂ hβ hb hbρ hk₁ hk₂ hp₁ hp₂ M hM a ha T N hN
 
 /-- **The leading coefficient** for equal starting exponents `p = (h₁+1)/k₁ = (h₂+1)/k₂`:
-`A_p = y₀₀/(k₁k₂) ∫₀^∞ s^{p−1} e^{−βs²} e^{βs x₀₀} ds` (the fluctuation function of defn:fluctuation
-evaluated at `a = x₀₀ = ξ(0)`, in the `s = √t` variable), and `A_p > 0` when `y₀₀ = η(0) > 0`. -/
+`A_p = y₀₀/(k₁k₂) ∫₀^∞ s^{p−1} e^{−βs²} e^{βs x₀₀} ds`, and `A_p > 0` when `y₀₀ = η(0) > 0`.
+In terms of the fluctuation function `S_λ(a) = ∫₀^∞ t^{λ−1} e^{−βt+βa√t} dt` of defn:fluctuation,
+the substitution `t = s²` gives `∫₀^∞ s^{p−1} e^{−βs²+βas} ds = S_{p/2}(a) / 2`, so
+`A_p = y₀₀/(2k₁k₂) · S_{p/2}(x₀₀)`; since `A_p` multiplies `log N = (log n)/2`, the coefficient of
+`n^{−p/2} log n` is `A_p/2`. (Fidelity review v1, finding 4.) -/
 theorem headline_leading_coefficient (β : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β) (hk₁ : 0 < k₁)
     (hk₂ : 0 < k₂) (p : ℝ) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
     (x y : ℕ × ℕ → ℝ) :
@@ -104,10 +107,12 @@ theorem headline_taylor_data (ρ : ℝ) (hρ : 0 < ρ) (x : ℕ × ℕ → ℝ) 
 
 /-! ### Expectation (averaging over a parameter) -/
 
-/-- **The Taylor tree commutes with averaging** over a probability space of jointly measurable
-amplitude data with a common envelope:
+/-- **The Taylor tree commutes with averaging** over a probability space of amplitude data:
 `E[Z_w(N)] = ∑ N^{−α}(E[A_α] log N + E[B_α]) + O(N^{−2T}(1+log N))`
-for every `N ≥ 1`, with the uniform constant. (Only joint measurability of the data is assumed.) -/
+for every `N ≥ 1`, with the uniform constant. Hypotheses: joint measurability of `(w, s) ↦ c_w(s)`,
+continuity in `s` of the coefficients and of the envelope, and a common deterministic envelope
+`|c_{w,ij}(s)| ρ^{i+j} ≤ H_w(s) ≤ C₀(1+s)^D e^{βsL}`; no regularity in `w` is needed. This is an
+averaged expansion, not the posterior expectation `Z_n[φ]/Z_n`. (Fidelity review v1, finding 6.) -/
 theorem headline_expectation {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω)
     [IsProbabilityMeasure μ] (β b p₁ p₂ ρ C₀ L : ℝ) (h₁ h₂ k₁ k₂ D : ℕ) (hβ : 0 < β) (hb : 0 < b)
     (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁)
@@ -130,8 +135,11 @@ theorem headline_expectation {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω)
 
 /-! ### Fluctuations (§4.3, thm:strataempiricalexpansion at chart level) -/
 
-/-- **Coefficient continuity**: the canonical coefficients are locally Lipschitz in the Taylor data
-(weighted norm `‖·‖_ρ`), the continuity the paper attributes to prop:convergence. -/
+/-- **Coefficient continuity (log coefficient)**: `A_α` is locally Lipschitz in the Taylor data
+(weighted norm `‖·‖_ρ`); see `headline_coefficient_lipschitz_B` for `B_α`. Together they supply,
+at chart level and in the weighted coefficient norm, the continuity of the coefficient functionals
+that §4.3 uses; the identification with the paper's `C^ω` topology is not formalised.
+(Fidelity review v1, finding 7.) -/
 theorem headline_coefficient_lipschitz (β ρ r : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β) (hρ : 0 < ρ)
     (hr0 : 0 < r) (hrρ : r < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (x x' y y' : ℕ × ℕ → ℝ)
     (hx : WSummable ρ x) (hx' : WSummable ρ x') (hy : WSummable ρ y) (hy' : WSummable ρ y')
@@ -143,6 +151,22 @@ theorem headline_coefficient_lipschitz (β ρ r : ℝ) (h₁ h₂ k₁ k₂ : �
           * (wnorm ρ (fun k => y k - y' k) + 2 * β * My * wnorm ρ (fun k => x k - x' k)) :=
   abs_canonA_ampCoeff_sub_le β ρ r h₁ h₂ k₁ k₂ hβ hρ hr0 hrρ hk₁ hk₂ x x' y y' hx hx' hy hy' Mx My
     hMx hMx' hMy hMy' α hα
+
+/-- **Coefficient continuity (constant coefficient)**: `B_α` is locally Lipschitz in the Taylor
+data (weighted norm `‖·‖_ρ`). -/
+theorem headline_coefficient_lipschitz_B (β b ρ r : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β) (hb : 0 < b)
+    (hbρ : b < ρ) (hbr : b < r) (hrρ : r < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (x x' y y' : ℕ × ℕ → ℝ) (hx : WSummable ρ x) (hx' : WSummable ρ x') (hy : WSummable ρ y)
+    (hy' : WSummable ρ y') (Mx My : ℝ) (hMx : wnorm ρ x ≤ Mx) (hMx' : wnorm ρ x' ≤ Mx)
+    (hMy : wnorm ρ y ≤ My) (hMy' : wnorm ρ y' ≤ My) (α : ℝ) (hα : 0 < α) :
+    |canonB β b h₁ h₂ k₁ k₂ (anaFaceU (ampCoeff β x y) b) (anaFaceV (ampCoeff β x y) b)
+          (fun i j s => ampCoeff β x y (i, j) s) α
+        - canonB β b h₁ h₂ k₁ k₂ (anaFaceU (ampCoeff β x' y') b) (anaFaceV (ampCoeff β x' y') b)
+          (fun i j s => ampCoeff β x' y' (i, j) s) α|
+      ≤ lipB β b ρ r h₁ h₂ k₁ k₂ Mx α
+          * (wnorm ρ (fun k => y k - y' k) + 2 * β * My * wnorm ρ (fun k => x k - x' k)) :=
+  abs_canonB_ampCoeff_sub_le β b ρ r h₁ h₂ k₁ k₂ hβ hb hbρ hbr hrρ hk₁ hk₂ x x' y y' hx hx' hy hy'
+    Mx My hMx hMx' hMy hMy' α hα
 
 section Probabilistic
 
@@ -191,9 +215,11 @@ theorem headline_normalised_remainders (β b p₁ p₂ ρ r T : ℝ) (h₁ h₂ 
 
 end NormalisedRemainders
 
-/-- **The far-phase region is exponentially negligible** (the `Z_n^{(2)}` step of
-thm:strataempiricalexpansion): on a measurable set where the phase is `≥ ε` and the fluctuation is
-bounded by `M`, `|∫_E η e^{−βnK + β√(nK)ψ}| ≤ (∫_E |η|) e^{−βnε/2 + βM²/2}`. -/
+/-- **The far-phase bound** (the `Z_n^{(2)}` step of thm:strataempiricalexpansion): on a
+measurable set where the phase is `≥ ε` and the fluctuation is bounded by `M`,
+`|∫_E η e^{−βnK + β√(nK)ψ}| ≤ (∫_E |η|) e^{−βnε/2 + βM²/2}`. Exponential negligibility in `n`
+requires `ε > 0` and control of `M` (deterministic here; the paper's probabilistic control of
+`sup |ψ_n|` is not part of this statement). (Fidelity review v1, finding 10.) -/
 theorem headline_far_phase {W : Type*} [MeasurableSpace W] (μ : Measure W) (E : Set W)
     (hE : MeasurableSet E) (β n ε M : ℝ) (hβ : 0 < β) (hn : 0 ≤ n) (hε : 0 ≤ ε)
     (η K ψ : W → ℝ) (hK : ∀ w ∈ E, ε ≤ K w) (hψ : ∀ w ∈ E, |ψ w| ≤ M)
