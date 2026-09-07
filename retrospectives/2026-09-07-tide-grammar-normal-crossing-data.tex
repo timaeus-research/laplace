@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The normal-crossing example with Gaussian data}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 219 completes the H2-lite example of Astra~\#24 on the probabilistic side. Unit~218 gave the
+posterior moment generating function limit $\mathbb E_{\rm post}[e^{\theta\sqrt n\,x_0x_1}]\to
+e^{z\theta+\theta^2/2}$ along data sequences whose empirical phase $Z_n=n^{-1/2}\sum_iy_i$ converges to
+$z$. Here the data are random, $Y_i$ i.i.d.\ $N(0,1)$, so $Z_n$ has mean $0$ and variance $1$ for every
+$n$ and Chebyshev gives $P(|Z_n|\ge M)\le M^{-2}$. Together with \emph{uniform} convergence of the
+posterior moment generating function on compact phase sets (eventual equi-Lipschitz dependence on the
+phase from unit~209, pointwise limits from unit~218, finite net; a quotient lemma for uniformly convergent
+numerators over denominators bounded below) this gives
+\[
+\mathbb E_{\rm post}\bigl[e^{\theta\sqrt n\,x_0x_1}\bigr]-e^{Z_n\theta+\theta^2/2}\longrightarrow0
+\quad\text{in $P$-probability}
+\]
+(\texttt{ncFluctMGF\_tendstoInMeasure}): the posterior law of $\sqrt n\,x_0x_1$ is asymptotically
+$N(Z_n,1)$ with a random standard-normal centre. The only probabilistic inputs are the second moment
+of the data and pairwise independence (variance of the sum). Zero \texttt{sorry}/\texttt{axiom}; 9096 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem tendstoUniformlyOn_of_lipschitz_eventually : compact K,
+  eventual equi-Lipschitz F n, continuous f, pointwise F n x → f x on K
+  ⊢ TendstoUniformlyOn F f l K
+theorem tendstoUniformlyOn_div_of_pos : F → f, G → g uniformly, |f| ≤ B, c ≤ g
+  ⊢ F/G → f/g uniformly
+def ncNorm ρ N z := (∫_{symBox 2} ρ K_{N,z}) / leadScale … N
+def ncLimit ρ z := 2ρ(0)√(2π)e^{z²/2}
+def ncRatio ρ N z θ := (∫ ρ K_{N,z+θ}) / (∫ ρ K_{N,z})
+theorem ncFluctMGF_eq : ncFluctMGF n y ρ θ = ncRatio ρ √n (ncPhase n y) θ
+theorem ncNorm_lipschitz_eventually : ∃ L, ∀ᶠ n, ∀ z z' ∈ [-M,M],
+  |ncNorm … z − ncNorm … z'| ≤ L|z−z'|
+theorem tendstoUniformlyOn_ncNorm / tendstoUniformlyOn_ncRatio (on Icc (-M) M)
+def ncPhaseRV Y n ω := ncPhase n (fun i : Fin n => Y i ω)   -- (√n)⁻¹ • ∑ i, Y i
+theorem variance_ncPhaseRV (hY : ∀ i, HasLaw (Y i) (gaussianReal 0 1) P)
+  (hind : iIndepFun Y P) : Var[ncPhaseRV Y n; P] = 1
+theorem meas_abs_ncPhaseRV_ge_le :
+  P {ω | M ≤ |ncPhaseRV Y n ω|} ≤ ENNReal.ofReal (1 / M ^ 2)
+theorem ncFluctMGF_tendstoInMeasure : TendstoInMeasure P (fun n ω =>
+  ncFluctMGF n (fun i => Y i ω) ρ θ − exp (ncPhaseRV Y n ω * θ + θ²/2)) atTop 0
+\end{verbatim}
+}
+
+\section{Mathematics}
+Uniformity in the phase is the only new analytic point: on $[-M,M]$ the four quadrant integrals are
+eventually $2L_\sigma$-Lipschitz in $z$ (phase $\varepsilon_\sigma\cdot2z$, $|\varepsilon_\sigma|=1$), so
+the normalised denominator is eventually equi-Lipschitz, and equi-Lipschitz plus pointwise convergence
+to a continuous limit on a compact set is uniform convergence (finite $\delta$-net). The numerator is the
+denominator at $z+\theta$, uniform on $[-M-|\theta|,M+|\theta|]$; the limiting denominator is bounded
+below by $2\rho(0)\sqrt{2\pi}>0$, so the quotient converges uniformly. Then on $\{|Z_n|<M\}$ the error is
+eventually $<\varepsilon$, and $P(|Z_n|\ge M)\le M^{-2}$ is made smaller than any $\delta$ by choosing
+$M=\max(1,1/\delta)$.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{TendstoInMeasure} is now stated with \texttt{edist} and $\varepsilon\in[0,\infty]$; use
+  \texttt{tendstoInMeasure\_iff\_norm} to work with real $\varepsilon$ and $\|f-g\|$.
+\item Sums of random variables indexed by \texttt{Fin n} with \texttt{Y : ℕ → Ω → ℝ}: pass
+  \texttt{(f := fun i : Fin n => Y i)} / \texttt{(X := …)} to \texttt{memLp\_finsetSum'},
+  \texttt{integral\_finsetSum}, \texttt{IndepFun.variance\_sum}, else the index type unifies to \texttt{ℕ}.
+  Pairwise independence from \texttt{hind.indepFun (Fin.val\_injective.ne hij)}.
+\item \texttt{MemLp} from a law: \texttt{memLp\_id\_gaussianReal 2} transported through
+  \texttt{HasLaw.map\_eq} and \texttt{memLp\_map\_measure\_iff aestronglyMeasurable\_id hY.aemeasurable}.
+\item \texttt{omit [IsProbabilityMeasure P] in} must precede the docstring, not sit between the docstring
+  and the theorem (parse error). A \texttt{lake build | grep} pipeline returns grep's status: the broken
+  file was committed once (13c8440) before the gated rebuild caught it (fixed in 9e94412).
+\end{itemize}
+
+\section{Status}
+H2-lite complete at the in-probability level (Headline XX, XX$'$). Possible last step: the exact law
+$Z_n\sim N(0,1)$ via characteristic functions (\texttt{iIndepFun.charFun\_map\_sum\_eq\_prod},
+\texttt{charFun\_gaussianReal}) to state convergence in distribution to $e^{Z\theta+\theta^2/2}$,
+$Z\sim N(0,1)$; then freeze per Astra~\#24.
+\end{document}
