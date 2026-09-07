@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The cutoff-indexed expansion of the two-dimensional block}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Assembly of units~104--106. For the equal-exponent block $(h_1+1)/k_1=(h_2+1)/k_2=p$ with a general
+amplitude $\Phi(u,v,s)$ admitting compatible face jets $a_i(v,s)$, $b_j(u,s)$ and corner jets
+$c_{ij}(s)$ (truncation lengths $M_1,M_2$ with $(M_1-1)/k_1<M_2/k_2$ and $(M_2-1)/k_2<M_1/k_1$) and a
+mixed remainder $|R|\le Cu^{M_1}v^{M_2}(1+s)^De^{\beta sL}$,
+\begin{gather*}
+Z_\Phi(N)=\sum_{i<M_1}S_{a_i}(N)+\sum_{j<M_2}S_{b_j}(N)-\sum_{i<M_1}\sum_{j<M_2}S_{c_{ij}}(N)\\
++O\bigl(N^{-(p+\min(M_1/k_1,M_2/k_2))}(1+\log N)\bigr),
+\end{gather*}
+where each $S$ is the explicit finite sum of transferred terms of a face expansion: powers
+$N^{-(p+m/k)}$ with a logarithm exactly at the collisions $i/k_1=m/k_2$. This is the
+$\tau$-cutoff theorem of Astra~\#4(b) with $\tau=\min(M_1/k_1,M_2/k_2)$, in the form "all terms
+listed, some below the remainder order". Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+structure FaceMoments (β p₂ b : ℝ) (h₁ k₁ k₂ M : ℕ) (Ψ : ℝ → ℝ → ℝ) (f : ℕ → ℝ → ℝ)
+    (H : ℝ → ℝ) : Prop   -- the three moment hypotheses of face_transfer_bound
+noncomputable def faceSum (β p₂ b : ℝ) (h₁ k₁ k₂ M : ℕ) (Ψ : ℝ → ℝ → ℝ) (f : ℕ → ℝ → ℝ)
+    (N : ℝ) : ℝ :=
+  ∑ i, transferTerm β (faceα p₂ ((k₁ : ℝ) * p₂ - h₁ - 1) k₁ M i) (faceJ M i)
+    (faceC ((k₁ : ℝ) * p₂ - h₁ - 1) b k₁ k₂ Ψ f M i) N
+theorem face_isBigO ... :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (fun u _ s => Ψ u s)
+        - faceSum β p₂ b h₁ k₁ k₂ M Ψ f N)
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(p₂ + ((M : ℝ) - ((k₁ : ℝ) * p₂ - h₁ - 1)) / k₁)) * (1 + Real.log N)
+theorem isBigO_rpow_log_mono (a a' : ℝ) (h : a' ≤ a) :
+    (fun N : ℝ => N ^ (-a) * (1 + Real.log N)) =O[atTop]
+      fun N : ℝ => N ^ (-a') * (1 + Real.log N)
+def cornerData (c : ℝ → ℝ) (m : ℕ) (s : ℝ) : ℝ := if m = 0 then c s else 0
+theorem twoD_cutoff_isBigO (β b p : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hβ : 0 < β) (hb : 0 < b)
+    (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
+    (hM₁ : ((M₁ : ℝ) - 1) / k₁ < (M₂ : ℝ) / k₂) (hM₂ : ((M₂ : ℝ) - 1) / k₂ < (M₁ : ℝ) / k₁)
+    (Φ : ℝ → ℝ → ℝ → ℝ) (a bj : ℕ → ℝ → ℝ → ℝ) (c : ℕ → ℕ → ℝ → ℝ)
+    (continuity of Φ, a i, bj j, c i j)
+    (Ha Hb : ℕ → ℝ → ℝ) (measurable, nonnegative)
+    (hremA : ∀ i, i < M₁ → ∀ s, 0 < s → ∀ v ∈ Ioc (0 : ℝ) b,
+      |a i v s - ∑ m ∈ Finset.range M₂, c i m s * v ^ m| ≤ Ha i s * v ^ M₂)
+    (hremB : ∀ j, j < M₂ → ∀ s, 0 < s → ∀ u ∈ Ioc (0 : ℝ) b,
+      |bj j u s - ∑ m ∈ Finset.range M₁, c m j s * u ^ m| ≤ Hb j s * u ^ M₁)
+    (C L : ℝ) (D : ℕ) (hC : 0 ≤ C)
+    (hmix : ∀ u ∈ Icc (0 : ℝ) b, ∀ v ∈ Icc (0 : ℝ) b, ∀ s, 0 ≤ s →
+      |rectRem Φ a bj c M₁ M₂ u v s|
+        ≤ C * (u ^ M₁ * v ^ M₂) * ((1 + s) ^ D * Real.exp (β * s * L)))
+    (hmomA hmomB hmomC : FaceMoments for the u-faces, v-faces and corners) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ Φ
+        - ((∑ i ∈ Finset.range M₁,
+              faceSum β ((((h₁ + i : ℕ) : ℝ) + 1) / k₁) b h₂ k₂ k₁ M₂ (a i)
+                (fun m => c i m) N)
+          + (∑ j ∈ Finset.range M₂,
+              faceSum β ((((h₂ + j : ℕ) : ℝ) + 1) / k₂) b h₁ k₁ k₂ M₁ (bj j)
+                (fun m => c m j) N)
+          - ∑ i ∈ Finset.range M₁, ∑ j ∈ Finset.range M₂,
+              faceSum β ((((h₂ + j : ℕ) : ℝ) + 1) / k₂) b (h₁ + i) k₁ k₂ (M₁ + k₁ * M₂)
+                (fun _ s => c i j s) (cornerData (c i j)) N))
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(p + min ((M₁ : ℝ) / k₁) ((M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+By \texttt{twoDAmp\_rect} the block integral is the sum of the face, corner and remainder pieces.
+A $u$-face $u^ia_i(v,s)$ becomes, after absorbing the weight and swapping the coordinates, the
+one-variable amplitude $a_i$ with parameters $(h_2,h_1+i,k_2,k_1)$; its face expansion (unit~104)
+has $p_2=p+i/k_1$, $\gamma=k_2i/k_1$, remainder exponent $p_2+(M_2-\gamma)/k_2=p+M_2/k_2$,
+and the condition $\gamma<M_2$ is exactly $(M_1-1)/k_1<M_2/k_2$ (integrality of $i<M_1$ is used).
+A $v$-face is symmetric with remainder exponent $p+M_1/k_1$. A corner monomial
+$c_{ij}(s)u^iv^j$ is the constant amplitude with exponents $(h_1+i,h_2+j)$, i.e. a face term with
+Taylor data $(c_{ij},0,0,\dots)$ and zero remainder, truncation length $M_1+k_1M_2>\gamma=k_1j/k_2-i$,
+remainder exponent $p+(M_1+k_1M_2+i)/k_1\ge p+M_1/k_1$. The mixed remainder is
+$O(N^{-\min(p+M_1/k_1,p+M_2/k_2)}(1+\log N))$ by unit~105. All remainders are at least as small as
+$N^{-(p+\tau)}(1+\log N)$, $\tau=\min(M_1/k_1,M_2/k_2)$ (\texttt{isBigO\_rpow\_log\_mono}), and
+\texttt{IsBigO.sum}/\texttt{add}/\texttt{sub} assemble.
+
+\section{Paper-facing meaning}
+
+This is the higher-order $d=2$ theorem promised in Astra~\#3(b) and~\#4(b): all terms
+$N^{-(p+q)}(A_q\log N+B_q)$ with $q$ in the two lattices $\mathbb N/k_1\cup\mathbb N/k_2$ below the
+cutoff appear, with $A_q\ne0$ only at collisions $i/k_1=m/k_2$ (the resonant
+\texttt{faceLogCoeff}), the nonlogarithmic coefficients contain regularised axis integrals
+(\texttt{faceFPCoeff}, the finite parts of unit~100), and the remainder is
+$O(N^{-(p+\tau)}(1+\log N))$. Terms whose exponent exceeds $p+\tau$ are listed but could be dropped;
+grouping the coefficients by exponent (the collision bookkeeping $\Lambda_\tau$) and the explicit
+smooth specialisation (jets from derivatives, moment hypotheses from envelopes) are the natural
+follow-ups. Combined with the strict-gap parameter wrapper (unit~99) this reaches the mixed
+critical/noncritical blocks of \texttt{thm:TaylorTree}.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item Bundle repeated integrability hypotheses in a \texttt{Prop} structure
+(\texttt{FaceMoments}); the assembly theorem then takes three quantified instances instead of nine.
+\item \texttt{IsBigO.sum} infers the summand family \texttt{A} by higher-order unification, which
+fails when the summand is a bare lambda inside \texttt{congr\_left}; introduce the families with
+\texttt{set FA : ℕ → ℝ → ℝ := fun i N => …} and state the pieces as \texttt{FA i =O g}; the
+assembled function is then written with Pi-sums applied to \texttt{N}, matching the output shape
+of \texttt{IsBigO.add/sub} exactly (\texttt{Finset.sum\_apply} in the identity proof).
+\item Over $\mathbb R$, \texttt{i < M₁} does not give \texttt{i ≤ M₁ − 1}; take
+\texttt{Finset.mem\_range.1 hi : i + 1 ≤ M₁} (definitionally) and cast.
+\item \texttt{push\_cast; field\_simp} typically leaves a commutativity goal; finish with
+\texttt{ring}.
+\end{itemize}
+
+\end{document}
