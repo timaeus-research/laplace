@@ -408,3 +408,4 @@ import Laplace.Grammar.FamilyTaylorTree
 import Laplace.Grammar.BoxScaling
 import Laplace.Grammar.BoxTaylorTree
 import Laplace.Grammar.FluctuationDerivative
+import Laplace.Grammar.CoeffConv
