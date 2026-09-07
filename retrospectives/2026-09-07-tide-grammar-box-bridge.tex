@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The multiplicity-$m$ theorem in box form}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The chart standard integral over the genuine box $(0,b]^{d'+m}$ with general continuous $\xi,\eta$ is
+identified by Fubini with the block state integral of unit~77 (first $d'$ coordinates noncritical,
+last $m$ the minimal block). Hence, for the last $m=d_0+2$ exponents equal to $p$ and the first $d'$
+above $p$,
+$\int_{(0,b]^{d'+m}}w^H\eta(w)e^{-\beta nw^{2K}+\beta\sqrt n\,w^K\xi(w)}\,dw\sim
+\frac{C(\xi,\eta)}{2^{d_0+1}}\,n^{-p/2}\log^{d_0+1}n$ with
+$C(\xi,\eta)=\frac{\prod k_i^{-1}}{(d_0+1)!}\int v^{h'}(v^{k'})^{-p}A_{p-1}(\xi(v,0))\eta(v,0)\,dv$, and
+the free-energy form $-\log Z=\frac p2\log n-(d_0+1)\log\log n+F_0+o(1)$. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def splitEquiv (d' m : ℕ) : (Fin (d' + m) → ℝ) ≃ᵐ (Fin d' → ℝ) × (Fin m → ℝ)
+theorem splitEquiv_measurePreserving (b : ℝ) (d' m : ℕ) :
+    MeasurePreserving (splitEquiv d' m) (boxMeasure b (d' + m))
+      ((boxMeasure b d').prod (boxMeasure b m))
+theorem splitEquiv_symm_apply (d' m : ℕ) (v : Fin d' → ℝ) (u : Fin m → ℝ) :
+    (splitEquiv d' m).symm (v, u) = Fin.append v u
+theorem boxIntegralGen_eq_blockStateIntegral (β b N : ℝ) {d' m : ℕ}
+    (K H : Fin (d' + m) → ℕ) (ξ η : (Fin (d' + m) → ℝ) → ℝ)
+    (hξc : Continuous ξ) (hηc : Continuous η) :
+    boxIntegralGen β b N K H ξ η
+      = blockStateIntegral β b N (fun i => K (Fin.natAdd d' i))
+          (fun i => H (Fin.natAdd d' i))
+          (fun j => K (Fin.castAdd m j)) (fun j => H (Fin.castAdd m j))
+          (fun u v => ξ (Fin.append v u)) (fun u v => η (Fin.append v u))
+theorem boxIntegralGen_mult_isEquivalent (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d' d₀ : ℕ}
+    (K H : Fin (d' + (d₀ + 2)) → ℕ) (hK : ∀ i, 0 < K i)
+    (hp : ∀ i : Fin (d₀ + 2), ((H (Fin.natAdd d' i) : ℝ) + 1) / K (Fin.natAdd d' i) = p)
+    (hq : ∀ j : Fin d',
+      p < ((H (Fin.castAdd (d₀ + 2) j) : ℝ) + 1) / K (Fin.castAdd (d₀ + 2) j))
+    (ξ η) (hξc : Continuous ξ) (hηc : Continuous η)
+    (hηpos : ∀ v : Fin d' → ℝ, (∀ j, 0 < v j ∧ v j ≤ b) → 0 < η (Fin.append v 0)) :
+    (fun n : ℝ => boxIntegralGen β b (Real.sqrt n) K H ξ η) ~[atTop]
+      fun n : ℝ => blockCoeff β b p ... / 2 ^ (d₀ + 1) * (n ^ (-(p / 2)) * Real.log n ^ (d₀ + 1))
+theorem boxIntegralGen_mult_freeEnergy ... :
+    ∃ F₀ : ℝ, Tendsto (fun n : ℝ => -Real.log (boxIntegralGen β b (Real.sqrt n) K H ξ η)
+      - (p / 2 * Real.log n - (d₀ + 1 : ℕ) * Real.log (Real.log n))) atTop (𝓝 F₀)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The splitting equivalence is \texttt{piCongrLeft} along \texttt{finSumFinEquiv} followed by
+\texttt{sumPiEquivProdPi}; both are measure preserving for pi measures
+(\texttt{measurePreserving\_piCongrLeft}, \texttt{measurePreserving\_sumPiEquivProdPi}), and its
+inverse is \texttt{Fin.append} (checked coordinatewise by \texttt{Fin.addCases} and
+\texttt{piCongrLeft\_apply\_apply}). \texttt{MeasurePreserving.integral\_comp'} transports the box
+integral to the product measure, \texttt{integral\_prod} iterates it with the noncritical coordinates
+outermost, and \texttt{Fin.prod\_univ\_add} splits the monomials. The asymptotics are then unit~79
+applied to $\xi(v,u),\eta(v,u)$ and the free energy is \texttt{tendsto\_log\_of\_isEquivalent\_powLog}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item A \texttt{set e := splitEquiv d' m} hides the equivalence from \texttt{symm\_apply\_apply}
+(the goal shows \texttt{e.symm ((splitEquiv d' m) w)}); use the explicit name throughout.
+\item An anonymous \texttt{-Real.log \_} witness cannot be synthesised; spell out the constant.
+\item \texttt{ring} closing via its \texttt{ring\_nf} fallback emits a ``Try this'' note; write
+\texttt{ring\_nf} directly.
+\end{itemize}
+
+\section{Outcome}
+The leading term of \texttt{thm:TaylorTree} is now available on the genuine chart box for general
+continuous $\xi,\eta$, at every multiplicity, in the sorted coordinate order. Remaining polish: arbitrary
+coordinate order via the sorting permutation (a general-`ξ,η` permutation lemma), and the paper-facing
+remainder/expansion theory (Astra targets 6--8).
+\end{document}
