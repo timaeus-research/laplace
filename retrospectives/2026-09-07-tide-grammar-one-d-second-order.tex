@@ -1,0 +1,80 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The one-dimensional second-order theorem}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $Z(N)=\int_0^bu^h\eta(u)e^{-\beta(Nu^k)^2+\beta Nu^k\xi(u)}\,du$ with $\xi,\eta$ admitting
+first-order Taylor expansions at $0$ with quadratic remainders, the density-transfer theorem (unit~83)
+applied to the exact density $\rho(r,s)=k^{-1}r^{p-1}\eta(r^{1/k})e^{\beta s\xi(r^{1/k})}$ and the
+kernel Taylor bound (unit~84) give, for $N\ge1$,
+\begin{align*}
+\big|Z(N)-C_0N^{-p}-C_1N^{-q}\big|&\le K'N^{-(h+3)/k},\\
+C_0=\tfrac1k\eta_0S_p(a),\qquad C_1&=\tfrac1k\big(\eta_1S_q(a)+\beta\eta_0a_1S_{q+1}(a)\big),
+\end{align*}
+with $p=(h+1)/k$, $q=(h+2)/k$, $a=\xi(0)$, $\eta_0=\eta(0)$, $\eta_1=\eta'(0)$, $a_1=\xi'(0)$ and
+$S_\lambda(a)=\int_0^\infty s^{\lambda-1}e^{-\beta s^2+\beta as}\,ds$. This is the two-term case of
+\texttt{thm:TaylorTree} at $d=1$ with the coefficient at the second candidate exponent identified.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def oneDDensity (β p : ℝ) (k : ℕ) (ξ η : ℝ → ℝ) (r s : ℝ) : ℝ :=
+  1 / (k : ℝ) * r ^ (p - 1) * (η (r ^ ((k : ℝ)⁻¹)) * Real.exp (β * s * ξ (r ^ ((k : ℝ)⁻¹))))
+theorem oneDScale_eq_transferZ ... :
+    oneDScale β b N h k ξ η = transferZ (oneDDensity β (((h : ℝ) + 1) / k) k ξ η) β (b ^ k) N
+theorem oneDDensity_expansion ... :
+    DensityExpansion (oneDDensity β p k ξ η) ![p, q] ![0, 0]
+      ![oneDCoeff₀ β a η₀ k, oneDCoeff₁ β a a₁ η₀ η₁ k] (((h : ℝ) + 3) / k) (b ^ k) 0
+      (oneDEnvelope β L C k)
+theorem oneDScale_second_order ... :
+    ∃ K' : ℝ, ∀ N : ℝ, 1 ≤ N →
+      |oneDScale β b N h k ξ η
+        - (N ^ (-(((h : ℝ) + 1) / k))
+            * (1 / (k : ℝ) * (η₀ * weightedMass β a (((h : ℝ) + 1) / k - 1)))
+          + N ^ (-(((h : ℝ) + 2) / k))
+            * (1 / (k : ℝ) * (η₁ * weightedMass β a (((h : ℝ) + 2) / k - 1)
+              + β * η₀ * a₁ * weightedMass β a (((h : ℝ) + 2) / k))))|
+        ≤ K' * N ^ (-(((h : ℝ) + 3) / k))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The substitution $r=u^k$ (unit~44's \texttt{integral\_Ioc\_pow\_mul\_comp\_pow} with
+$(u^k)^{1/k}=u$) writes the chart integral as a transfer integral with the exact density. The
+density expansion has two terms indexed by \texttt{Fin 2}: $r^{p-1}c_0(s)$ and $r^{q-1}c_1(s)$ with
+$c_0=k^{-1}\eta_0e^{\beta sa}$, $c_1=k^{-1}e^{\beta sa}(\eta_1+\beta s\eta_0a_1)$, and remainder
+$r^{p+2/k-1}H(s)$, $H=Ck^{-1}(1+s)^2e^{3\beta Ls}$, read off from the kernel Taylor bound at
+$u=r^{1/k}$. The weighted moments are finite because every coefficient is bounded by
+$e^{\beta sa'}(A+Bs+Ds^2)$, i.e.\ by sums of weighted quadratic kernels; the log moments at degree~0
+are the fluctuation masses $S_\lambda(a)$ by \texttt{weightedMass}.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The subtracted sum in the \texttt{rem} field is $A-(B+C)$ after \texttt{Fin.sum\_univ\_two};
+state the algebraic identity in that shape.
+\item \texttt{rw [Fin.sum\_univ\_two]} rewrites only the first sum; use \texttt{simp only} to expand
+both sides before matching against the transferred bound.
+\item After \texttt{fin\_cases} on \texttt{Fin 2} the vector entries are already reduced; the
+\texttt{Matrix.cons\_val\_*} simp arguments are then unused (linter).
+\end{itemize}
+
+\section{Outcome}
+The first nonconstant-$\xi,\eta$ coefficient beyond the leading term is formalised, in the explicit
+form predicted by Astra's consult ($C_1=k^{-1}[\eta'(0)S_q(a)+\beta\eta(0)\xi'(0)S_{q+1}(a)]$).
+Next: the $d=2$ equal-exponent anchored subtraction (the coefficient $B$ seeing both axes) via the same
+transfer theorem, and the face-parameter version of the second-order theorem under the strict gap
+$q<\min_ip_i$.
+\end{document}
