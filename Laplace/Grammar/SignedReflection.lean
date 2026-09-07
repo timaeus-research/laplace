@@ -23,9 +23,9 @@ to the unit-box one:
 
 (`integral_symBox_eq_symAmp`). The proof peels the first coordinate on both boxes (unit 188), splits
 the sign sum along `Fin.consEquiv`, and uses the one-dimensional signed reflection
-`∫_{(-1,1]} g = ∫_{(0,1]} (g(a) + g(-a)) da`. The asymptotic consequences (amplitude theorem applied to
-`η_sym`; an odd exponent kills the equal-ratio corner coefficient but not the integral) are the
-next unit.
+`∫_{(-1,1]} g = ∫_{(0,1]} (g(a) + g(-a)) da`. The asymptotic consequences (amplitude theorem
+applied to `η_sym`; an odd exponent kills the equal-ratio corner coefficient but not the integral)
+are the next unit.
 -/
 
 open MeasureTheory Set Filter Topology
