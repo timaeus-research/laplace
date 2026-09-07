@@ -10,8 +10,9 @@ import Laplace.Grammar.PhaseUniform
 # Random phases and amplitudes in general dimension: the stochastic transfer
 
 Unit 212 (programme A2, step 4). Random inputs `X n : Ω → InputSpace (d+1)` (phase, amplitude
-pairs in `C([0,1]^d)²`) converging in distribution to `Z`, along a countably generated filter, with
-scales `N n → ∞`:
+pairs in `C([0,1]^{d+1})²`) converging in distribution to `Z`, along a countably generated filter
+`L`, with deterministic scales `N n → ∞`, `N n ≥ 0`; `μ` and `μ'` are probability measures on the
+sample spaces `Ω`, `Ω'`:
 ```
 F_{N n}(X n) ⇒ F(Z),   F_N = normChart (Headline XIII normalised integral), F = limChart.
 ```
@@ -24,9 +25,11 @@ there the uniform convergence on `K` (unit 211) extends by the Lipschitz bounds 
 Mathlib's
 `TendstoInDistribution.add_of_tendstoInMeasure_const` (Slutsky) finishes.
 
-Also: `C([0,1]^d)` carries the Borel σ-algebra (so `InputSpace` has the product = Borel one); `continuous_limChart`, `continuous_normChart`
-(for `N ≥ 0`). No `N`-dependence of the amplitude beyond the input pair is allowed; the scales
-`N n ≥ 0` are deterministic. Zero `sorry`/`axiom`.
+Also: `C([0,1]^d)` carries the Borel σ-algebra (so `InputSpace` has the product = Borel one);
+`continuous_limChart`, `continuous_normChart` (for `N ≥ 0`). Scale-dependent random amplitudes are
+allowed when encoded in `X n` (only the joint convergence `X n ⇒ Z` matters); the scales `N n ≥ 0`
+are deterministic. This is a conditional leading-order transfer: the convergence of the empirical
+inputs is a hypothesis, not proved. Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Filter Topology Real Set
