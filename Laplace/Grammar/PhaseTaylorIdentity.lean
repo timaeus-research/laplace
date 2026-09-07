@@ -153,12 +153,14 @@ theorem abs_phaseOrderIntegrand_le (n : ℕ) (h k : Fin (n + 1) → ℕ) (β : �
 
 /-! ### The integrated identity -/
 
-/-- **Integrated phase Taylor identity**: `Z(N) = ∑_p β^p/p! ∫ P_p u^h phaseKernel_p(N u^{2k})`,
-an absolutely convergent series for every fixed `N > 0`, `β ≥ 0`. -/
-theorem polyPhaseIntegral_eq_tsum (n : ℕ) (h k : Fin (n + 1) → ℕ) (β : ℝ) (hβ : 0 ≤ β) {N : ℝ}
+/-- **Integrated phase Taylor identity** (`HasSum` form): the phase-order series
+`∑_p β^p/p! ∫ P_p u^h phaseKernel_p(N u^{2k})` converges absolutely to `Z(N)` for every fixed
+`N ≥ 0`, `β ≥ 0`. -/
+theorem hasSum_phaseOrderIntegral (n : ℕ) (h k : Fin (n + 1) → ℕ) (β : ℝ) (hβ : 0 ≤ β) {N : ℝ}
     (hN : 0 ≤ N) (ξ η : MonoRep (n + 1)) :
-    polyPhaseIntegral n h k β N ξ η = ∑' p : ℕ, β ^ p / (p.factorial : ℝ) *
-      phaseOrderIntegral n h k β (eval ξ 0) p N (mul η (pow (fluct ξ) p)) := by
+    HasSum (fun p : ℕ => β ^ p / (p.factorial : ℝ) *
+      phaseOrderIntegral n h k β (eval ξ 0) p N (mul η (pow (fluct ξ) p)))
+      (polyPhaseIntegral n h k β N ξ η) := by
   set F : ℕ → (Fin (n + 1) → ℝ) → ℝ := fun p u => β ^ p / (p.factorial : ℝ) *
     phaseOrderIntegrand n h k β (eval ξ 0) p N (mul η (pow (fluct ξ) p)) u with hF
   have hint : ∀ p, Integrable (F p) (volume.restrict (unitBox (n + 1))) := fun p =>
@@ -188,11 +190,23 @@ theorem polyPhaseIntegral_eq_tsum (n : ℕ) (h k : Fin (n + 1) → ℕ) (β : �
     exact setIntegral_congr_fun (measurableSet_unitBox _) fun u hu =>
       tsum_phaseOrderIntegrand n h k β hN ξ η hu
   rw [hL] at hsum
-  rw [← hsum.tsum_eq]
-  refine tsum_congr fun p => ?_
-  simp only [hF]
-  rw [integral_const_mul]
-  rfl
+  have hfun : (fun p : ℕ => β ^ p / (p.factorial : ℝ) *
+      phaseOrderIntegral n h k β (eval ξ 0) p N (mul η (pow (fluct ξ) p))) =
+      fun p => ∫ u, F p u ∂(volume.restrict (unitBox (n + 1))) := by
+    funext p
+    simp only [hF]
+    rw [integral_const_mul]
+    rfl
+  rw [hfun]
+  exact hsum
+
+/-- **Integrated phase Taylor identity**: `Z(N) = ∑_p β^p/p! ∫ P_p u^h phaseKernel_p(N u^{2k})`,
+an absolutely convergent series for every fixed `N ≥ 0`, `β ≥ 0`. -/
+theorem polyPhaseIntegral_eq_tsum (n : ℕ) (h k : Fin (n + 1) → ℕ) (β : ℝ) (hβ : 0 ≤ β) {N : ℝ}
+    (hN : 0 ≤ N) (ξ η : MonoRep (n + 1)) :
+    polyPhaseIntegral n h k β N ξ η = ∑' p : ℕ, β ^ p / (p.factorial : ℝ) *
+      phaseOrderIntegral n h k β (eval ξ 0) p N (mul η (pow (fluct ξ) p)) :=
+  (hasSum_phaseOrderIntegral n h k β hβ hN ξ η).tsum_eq.symm
 
 /-! ### Finite monomial expansion of a phase-order integral -/
 
@@ -264,5 +278,25 @@ theorem polyPhaseIntegral_eq_tsum_truncSum (n : ℕ) (h k : Fin (n + 1) → ℕ)
   congr 2
   refine List.map_congr_left fun s _ => ?_
   rw [monomialPhase_eq_truncSum n (h + s.1) k hk β (eval ξ 0) p hN]
+
+/-- Headline XXIV in `HasSum` form. -/
+theorem hasSum_truncSum_series (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : ∀ i, 0 < k i)
+    (β : ℝ) (hβ : 0 ≤ β) {N : ℝ} (hN : 0 < N) (ξ η : MonoRep (n + 1)) :
+    HasSum (fun p : ℕ => β ^ p / (p.factorial : ℝ) *
+      ((mul η (pow (fluct ξ) p)).map fun s =>
+        s.2 * monomialTruncSum n (h + s.1) k β (eval ξ 0) p N).sum)
+      (polyPhaseIntegral n h k β N ξ η) := by
+  have hfun : (fun p : ℕ => β ^ p / (p.factorial : ℝ) *
+      ((mul η (pow (fluct ξ) p)).map fun s =>
+        s.2 * monomialTruncSum n (h + s.1) k β (eval ξ 0) p N).sum) =
+      fun p : ℕ => β ^ p / (p.factorial : ℝ) *
+        phaseOrderIntegral n h k β (eval ξ 0) p N (mul η (pow (fluct ξ) p)) := by
+    funext p
+    rw [phaseOrderIntegral_eq_sum]
+    congr 2
+    refine List.map_congr_left fun s _ => ?_
+    rw [monomialPhase_eq_truncSum n (h + s.1) k hk β (eval ξ 0) p hN]
+  rw [hfun]
+  exact hasSum_phaseOrderIntegral n h k β hβ hN.le ξ η
 
 end Laplace.Grammar
