@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Canonical cutoff-independent coefficients of the $d=2$ expansion}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#8 rank~1. The face finite parts $\mathrm{FP}^M_\gamma$ of the reduced expansion carry a
+truncation order $M$; for $\gamma<M\le M'$ the value is independent of $M$
+(\texttt{axisFinitePart\_indep}), so a canonical finite part at the order
+$\lceil\max(\gamma,0)\rceil+1$ is well defined and equals every admissible one for the analytic
+faces. On top of this we define canonical coefficient functions of $s$ at an exponent $\alpha$:
+$U_\alpha=k_1^{-1}\mathrm{FP}_{k_2\alpha-h_2-1}(a_i)$ if $\alpha=\alpha_i$, $V_\alpha$ likewise,
+$C_\alpha=c_{ij}/(k_1k_2)$ at collisions, all zero otherwise, and the pole coefficients
+$A_\alpha=M[\alpha;0;C_\alpha]$, $B_\alpha=M[\alpha;0;U_\alpha]+M[\alpha;0;V_\alpha]-M[\alpha;1;C_\alpha]$,
+with $N^{-\alpha}(A_\alpha\log N+B_\alpha)$ equal to the three grouped contributions of the merged
+sum (\texttt{canon\_term\_eq}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem axisFinitePart_succ (γ b H : ℝ) (M : ℕ) (hM : γ < M) (hb : 0 < b) (f : ℝ → ℝ)
+    (fm : ℕ → ℝ) (hf : Measurable f)
+    (hrem : ∀ v ∈ Ioc (0 : ℝ) b, |taylorRem f fm M v| ≤ H * v ^ M) :
+    axisFinitePart γ b f fm (M + 1) = axisFinitePart γ b f fm M
+theorem axisFinitePart_indep (γ b : ℝ) (M M' : ℕ) (hM : γ < M) (hMM' : M ≤ M') (hb : 0 < b)
+    (f : ℝ → ℝ) (fm : ℕ → ℝ) (hf : Measurable f) (H : ℕ → ℝ)
+    (hrem : ∀ n, ∀ v ∈ Ioc (0 : ℝ) b, |taylorRem f fm n v| ≤ H n * v ^ n) :
+    axisFinitePart γ b f fm M' = axisFinitePart γ b f fm M
+noncomputable def canonicalM (γ : ℝ) : ℕ := ⌈max γ 0⌉₊ + 1
+theorem faceFPCoeff_anaFaceU_canonical ... (k : ℕ) (i M : ℕ) (hM : γ < M) :
+    faceFPCoeff γ b k (anaFaceU c b i) (fun m => c (i, m)) M
+      = faceFPCoeff γ b k (anaFaceU c b i) (fun m => c (i, m)) (canonicalM γ)
+noncomputable def uIdx (h₁ k₁ : ℕ) (α : ℝ) : ℕ := ⌊(k₁ : ℝ) * α - h₁ - 1⌋₊
+theorem uIdx_uExp (h₁ k₁ : ℕ) (hk₁ : 0 < k₁) (i : ℕ) : uIdx h₁ k₁ (uExp h₁ k₁ i) = i
+noncomputable def canonU (b : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (a : ℕ → ℝ → ℝ → ℝ)
+    (c : ℕ → ℕ → ℝ → ℝ) (α : ℝ) : ℝ → ℝ :=
+  if uExp h₁ k₁ (uIdx h₁ k₁ α) = α then
+    faceFPCoeff ((k₂ : ℝ) * α - h₂ - 1) b k₁ (a (uIdx h₁ k₁ α))
+      (fun m => c (uIdx h₁ k₁ α) m) (canonicalM ((k₂ : ℝ) * α - h₂ - 1))
+  else fun _ => 0
+noncomputable def canonC (h₁ h₂ k₁ k₂ : ℕ) (c : ℕ → ℕ → ℝ → ℝ) (α : ℝ) : ℝ → ℝ :=
+  if uExp h₁ k₁ (uIdx h₁ k₁ α) = α ∧ vExp h₂ k₂ (vIdx h₂ k₂ α) = α then
+    fun s => c (uIdx h₁ k₁ α) (vIdx h₂ k₂ α) s / ((k₁ : ℝ) * k₂)
+  else fun _ => 0
+noncomputable def canonA (β : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (c : ℕ → ℕ → ℝ → ℝ) (α : ℝ) : ℝ :=
+  logMoment β α 0 (canonC h₁ h₂ k₁ k₂ c α)
+noncomputable def canonB ... (α : ℝ) : ℝ :=
+  logMoment β α 0 (canonU b h₁ h₂ k₁ k₂ a c α) + logMoment β α 0 (canonV b h₁ h₂ k₁ k₂ bj c α)
+    - logMoment β α 1 (canonC h₁ h₂ k₁ k₂ c α)
+theorem canon_term_eq ... (α N : ℝ) :
+    N ^ (-α) * (canonA β h₁ h₂ k₁ k₂ c α * Real.log N + canonB β b h₁ h₂ k₁ k₂ a bj c α)
+      = N ^ (-α) * logMoment β α 0 (canonU b h₁ h₂ k₁ k₂ a c α)
+        + N ^ (-α) * logMoment β α 0 (canonV b h₁ h₂ k₁ k₂ bj c α)
+        + transferTerm β α 1 (canonC h₁ h₂ k₁ k₂ c α) N
+theorem canonC_collision ... (i j : ℕ) (hij : uExp h₁ k₁ i = vExp h₂ k₂ j) :
+    canonC h₁ h₂ k₁ k₂ c (uExp h₁ k₁ i) = fun s => c i j s / ((k₁ : ℝ) * k₂)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Passing from order $M$ to $M+1$, the Taylor remainder loses the term $f_Mv^M$, so the regularised
+integral changes by $-f_M\int_0^bv^{M-1-\gamma}dv=-f_M\,b^{M-\gamma}/(M-\gamma)$, which is exactly
+$-f_M\,\mathrm{axisPrim}(\gamma,b,M)$ since $M\ne\gamma$; the counterterm sum gains
+$+f_M\,\mathrm{axisPrim}(\gamma,b,M)$. Both integrals exist because the order-$M$ weighted remainder
+is integrable (envelope $Hv^M$, $\gamma<M$) and $v^{M-1-\gamma}$ is integrable at $0$. Induction on
+$M'\ge M$ then gives independence; the analytic faces supply remainder envelopes at every order
+(\texttt{anaFaceU\_rem} with the geometric constant $H(s)\rho^{-i-M}/(1-b/\rho)$). The inverse index
+$\lfloor k_1\alpha-h_1-1\rfloor_{\mathbb N}$ recovers $i$ from $\alpha_i$ exactly, which makes
+``$\alpha$ is a $u$-pole'' the decidable equation $\alpha_{\lfloor\cdot\rfloor}=\alpha$ and gives
+integrability-free definitions of $U_\alpha,V_\alpha,C_\alpha$. The pole identity is the explicit
+form $\mathrm{transferTerm}(\alpha,1,f)=N^{-\alpha}(\log N\,M[\alpha;0;f]-M[\alpha;1;f])$ plus ring.
+
+\section{Paper-facing meaning}
+
+These are the paper's $P_\mu$ data in the $N$-normalisation ($n=N^2$, $\alpha=2\mu$,
+$P_\mu(X)=\tfrac12A_\alpha X+B_\alpha$), defined once, independently of any truncation $T$, as
+Astra~\#8 insisted. The next unit regroups the merged sum by exponent (fibres of the two injective
+axis maps, with the compatibility inequalities excluding out-of-range collisions), discards retained
+terms beyond $2T$, and states \texttt{twoD\_taylor\_tree\_equal}: for every $T$,
+$Z(N)-\sum_{\alpha\in\Lambda_{<2T}}N^{-\alpha}(A_\alpha\log N+B_\alpha)=O(N^{-2T}(1+\log N))$.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Nat.ceil} on $\mathbb R$ is noncomputable: mark \texttt{canonicalM} accordingly.
+\item \texttt{transferTerm\_one} already exists in \texttt{AxisExpansion} (with the factors in the
+order $\log N\cdot M$); reuse it.
+\item After \texttt{rw [uIdx\_uExp, hij, vIdx\_vExp, ← hij]} the collision condition becomes
+\texttt{P ∧ P} with both sides syntactically equal; \texttt{if\_pos ⟨rfl, rfl⟩} closes the goal and a
+trailing \texttt{simp} reports ``no goals''.
+\item \texttt{Nat.le\_induction} with the \texttt{induction M', hMM' using} syntax handles the
+$M\le M'$ induction; the cast inequality $M\le n$ comes from \texttt{exact\_mod\_cast}.
+\item \texttt{intervalIntegral.integral\_of\_le} plus \texttt{integral\_rpow (Or.inl hc)} and
+\texttt{Real.zero\_rpow} give $\int_0^bv^c=b^{c+1}/(c+1)$ in three rewrites.
+\end{itemize}
+
+\end{document}
