@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Symmetric normal boxes: the bare parity identity}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Interior normal coordinates range over $(-1,1]$ rather than $(0,1]$. For the bare monomial integral
+the coordinate reflections give the exact identity
+\[
+\int_{(-1,1]^d}u^he^{-\beta Nu^{2k}}\,du=\prod_i\big(1+(-1)^{h_i}\big)\int_{(0,1]^d}u^he^{-\beta Nu^{2k}}\,du
+\]
+(\texttt{monomialSymReal\_eq}): each odd exponent kills the integral, each even one doubles it ---
+the paper's parity factor $(1+(-1)^{h_i})$ without the $\tfrac12$ of an averaged measure. Hence the
+symmetric-box integral has the mixed-ratio asymptotic with the constant multiplied by the parity
+product (\texttt{monomialSymReal\_tendsto}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integrableOn_pi_box_marginal (d S F) (hF : IntegrableOn F (piBox (d + 1) S)) :
+    IntegrableOn (fun a => ∫ b in piBox d S, F (Fin.cons a b)) S
+theorem integral_Ioc_symm_of_parity (g) (h : ℕ) (hg : IntegrableOn g (Ioc (-1) 1))
+    (hsym : ∀ a, g (-a) = (-1) ^ h * g a) :
+    ∫ a in Ioc (-1) 1, g a = (1 + (-1) ^ h) * ∫ a in Ioc 0 1, g a
+def symBox (d : ℕ) : Set (Fin d → ℝ) := piBox d (Ioc (-1) 1)
+def monomialSymReal (d) (h k) (β N) : ℝ :=
+  ∫ x in symBox d, (∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i)))
+theorem monomialSymReal_eq (β) : ∀ d h k N,
+    monomialSymReal d h k β N = (∏ i, (1 + (-1 : ℝ) ^ h i)) * monomialBoxReal d h k β N
+theorem monomialSymReal_tendsto ... : Tendsto (fun N => monomialSymReal (d + 1) h k β N
+      / (N ^ (-l) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 ((∏ i, (1 + (-1 : ℝ) ^ h i)) * monomialMixedConst h k l β))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Induction on the dimension: the Bochner peel (unit~188) exposes the first coordinate on both boxes,
+the inner symmetric integral is the $d$-dimensional one at parameter $Na^{2k_0}$ (induction
+hypothesis), and the one-dimensional reflection identity handles the peeled coordinate, whose
+integrand $a\mapsto a^{h_0}G(a^{2k_0})$ has parity $(-1)^{h_0}$. Integrability of the peeled marginal
+comes from \texttt{Integrable.integral\_prod\_left} along the same measure-preserving transport.
+
+\section{Paper-facing meaning}
+This is the bare version of the paper's interior-coordinate reduction (parity factors
+$\frac{1+(-1)^{h_i+\gamma_i}}2$ up to the normalisation of the measure). For a general amplitude the
+reflections produce the signed combination $\sum_\sigma\prod_i\sigma_i^{h_i}\eta(\sigma\cdot u)$, not a
+scalar factor; an odd exponent then cancels only the corner coefficient, not the whole integral.
+That reduction is a natural follow-up.
+
+\section{Lean notes}
+\begin{itemize}
+\item The reflection identity is cleanest as a statement about an integrable $g$ with pointwise parity,
+proved with \texttt{integral\_add\_adjacent\_intervals} and \texttt{integral\_comp\_neg} on interval
+integrals, converting to \texttt{Ioc} integrals with \texttt{integral\_of\_le} at the ends.
+\item \texttt{IntegrableOn.congr\_fun} with the peel identity transfers marginal integrability to the
+rewritten integrand; its pointwise goal is a beta-redex (\texttt{beta\_reduce}).
+\item \texttt{unitBox d = piBox d (Ioc 0 1)} and \texttt{symBox d = piBox d (Ioc (-1) 1)} are
+\texttt{rfl}; state them as \texttt{have} equations to \texttt{rw} into the peel lemma's shape.
+\end{itemize}
+
+\end{document}
