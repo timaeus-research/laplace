@@ -21,7 +21,8 @@ constant amplitude `η ≡ 1` the two integrands coincide with `M = N²`:
   (`twoDAmp_const_eq_monomialCutoff`);
 * hence, by uniqueness of limits, the Taylor-tree leading log coefficient at zero phase equals
   **twice** the monomial mixed constant at `λ = p/2`, the factor `2` being `log N² = 2 log N`
-  (`canonA_zeroPhase_eq_two_mul_monomialMixedConst`, `y₀₀ = 1`): `½ β^{-p/2} Γ(p/2)/(k₁k₂) = 2 · Γ(p/2) β^{-p/2}/(1! · 2k₁ · 2k₂)`.
+  (`canonA_zeroPhase_eq_two_mul_monomialMixedConst`, `y₀₀ = 1`):
+  `½ β^{-p/2} Γ(p/2)/(k₁k₂) = 2 · Γ(p/2) β^{-p/2}/(1! · 2k₁ · 2k₂)`.
 
 This ties the fluctuation-function normalisation `S_{p/2}(0) = β^{-p/2}Γ(p/2)` of the first
 programme to the Gamma constant of the second at the level of theorems, not just formulas.
