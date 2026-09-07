@@ -1,0 +1,97 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The uniform-family cutoff theorem}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#9's R5 target. For every $s$-parametrised double series $c$ with the COMMON envelope
+$|c_{ij}(s)|\rho^{i+j}\le H(s)\le C_0(1+s)^De^{\beta sL}$ and every $N\ge1$,
+\[
+|Z_c(N)-S_c(N)|\le\mathrm{uniformConst}\cdot N^{-E}(1+\log N),\qquad
+E=\min\Bigl(p_1+\frac{M_1}{k_1},\,p_2+\frac{M_2}{k_2}\Bigr),
+\]
+where $\mathrm{uniformConst}$ depends only on $(\beta,b,\rho,C_0,L,D,h,k,M)$: the constant is chosen
+before the coefficient family (\texttt{twoD\_cutoff\_uniform}). It is the explicit cutoff constant
+of unit~131 with every face constant replaced by its envelope bound (unit~132) at the face envelopes
+of the analytic adapter, plus the explicit mixed constant of unit~130. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def uniformConst (β b ρ C₀ L : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ D : ℕ) : ℝ :=
+  (∑ i ∈ Finset.range M₁,
+      faceEnvConst α_i b h₂ k₂ k₁ M₂
+          (C₀ * (ρ ^ i)⁻¹ * (1 + ρ⁻¹) ^ M₂) (C₀ * (ρ ^ i)⁻¹ * (ρ ^ M₂)⁻¹ / (1 - b / ρ))
+        * envMoment β (α_i + (M₂ - γ_i) / k₂) 1 (gaussEnv β L D))
+  + (∑ j ∈ Finset.range M₂, ... symmetric ...)
+  + (∑ i ∈ Finset.range M₁, ∑ j ∈ Finset.range M₂,
+      faceEnvConst δ_j b (h₁ + i) k₁ k₂ (M₁ + k₁ * M₂) (C₀ * (ρ ^ (i + j))⁻¹) 0
+        * envMoment β (δ_j + (M₁ + k₁ M₂ - γ_ij) / k₁) 1 (gaussEnv β L D))
+  + C₀ * (ρ ^ (M₁ + M₂))⁻¹ / (1 - b / ρ) ^ 2 * Real.exp ((D : ℝ) ^ 2 / β)
+      * mixConst (β / 2) (2 * L) b (h₁ + M₁) (h₂ + M₂) k₁ k₂
+theorem twoD_cutoff_uniform (β b p₁ p₂ ρ C₀ L : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ D : ℕ)
+    (hβ : 0 < β) (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (hM₁ : p₁ + ((M₁ : ℝ) - 1) / k₁ < p₂ + (M₂ : ℝ) / k₂)
+    (hM₂ : p₂ + ((M₂ : ℝ) - 1) / k₂ < p₁ + (M₁ : ℝ) / k₁)
+    (c : ℕ × ℕ → ℝ → ℝ) (hcc : ∀ ij, Continuous (c ij)) (H : ℝ → ℝ) (hH : Continuous H)
+    (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s) (hC₀ : 0 ≤ C₀)
+    (henv : ∀ s, 0 ≤ s → H s ≤ C₀ * (1 + s) ^ D * Real.exp (β * s * L)) (N : ℝ)
+    (hN : 1 ≤ N) :
+    |twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp c b)
+        - mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ (anaFaceU c b) (anaFaceV c b)
+            (fun i j s => c (i, j) s) N|
+      ≤ uniformConst β b ρ C₀ L h₁ h₂ k₁ k₂ M₁ M₂ D
+        * N ^ (-(min (p₁ + (M₁ : ℝ) / k₁) (p₂ + (M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The analytic adapter supplies, for the $u$-face $i$, the Taylor-data envelope
+$|c_{im}(s)|\le C_0\rho^{-i}(1+\rho^{-1})^{M_2}(1+s)^De^{\beta sL}$ ($m<M_2$) and the remainder
+envelope $H_i(s)=H(s)\rho^{-i-M_2}/(1-b/\rho)\le C_0\rho^{-i-M_2}(1-b/\rho)^{-1}(1+s)^De^{\beta sL}$;
+for the corners the constant Taylor datum $c_{ij}$ has envelope $C_0\rho^{-i-j}(1+s)^De^{\beta sL}$
+and zero remainder. Unit~132 converts each face constant into $\mathrm{faceEnvConst}$ times one
+Gaussian envelope moment at the face's remainder exponent; the mixed constant is already
+envelope-only. Summing termwise gives $\mathrm{cutoffConst}\le\mathrm{uniformConst}$, and unit~131
+gives the bound for every $N\ge1$.
+
+\section{Paper-facing meaning}
+
+This is the uniformity Astra~\#9 asked for: a single remainder constant for the whole family of
+chart amplitudes $\eta_we^{\beta s\xi_w}$ whose coefficient arrays share a weighted bound, i.e.\ for
+$\xi,\eta$ analytic on a common neighbourhood of the closed box times the support of the partition
+of unity in the noncritical coordinates $w$. With $K(w)\equiv\mathrm{uniformConst}$ measurable and
+bounded, the per-stratum integral over $w$ can be fed to \texttt{param\_integration} (unit~99) once
+the leading-order corollary is extracted and the coefficient functions $A(w),B(w)$ are shown
+measurable; that is the noncritical-coordinate adapter of Astra~\#6 rank~4.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item The hypothesis-discharge block of the analytic adapter (envelopes, remainders, mixed bound,
+\texttt{FaceMoments}) was reused verbatim by extracting it programmatically from the source file;
+the new theorem differs only in what is done with those hypotheses afterwards.
+\item Passing \texttt{\_} for the envelope constants \texttt{Cf}, \texttt{CH} in
+\texttt{faceConst\_le\_env} lets unification read them off the target
+\texttt{uniformConst} summand; only the two envelope side goals then need proofs.
+\item \texttt{anaCoeff\_env} produces the bound in the form
+\texttt{C₀ * (ρ \^{} i)⁻¹ * (1 + ρ⁻¹) \^{} M * (1 + s) \^{} D * exp}; \texttt{this.trans (le\_of\_eq
+(by unfold gaussEnv; ring))} reassociates it to \texttt{Cf * gaussEnv}.
+\item The whole unit compiled on the first attempt.
+\end{itemize}
+
+\end{document}
