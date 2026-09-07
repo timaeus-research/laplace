@@ -238,3 +238,4 @@ import Laplace.Grammar.BlockScale
 import Laplace.Grammar.FrozenBlock
 import Laplace.Grammar.MixedBlockEnvelope
 import Laplace.Grammar.FreezingInequality
+import Laplace.Grammar.FreezingLimit
