@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Infrastructure for the stochastic chart assembly}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 214 (Astra~\#23 programme~G, step~1) provides the probabilistic glue for assembling finitely many
+charts with jointly random phases: a deterministic convergent sequence converges in measure; finitely
+many sequences converging to $0$ in measure give a vector converging to $0$ (sup norm); Slutsky
+pairing of a sequence converging in distribution with a deterministic convergent sequence (a wrapper
+around Mathlib's \texttt{TendstoInDistribution.prodMk\_of\_tendstoInMeasure\_const}); and the
+\emph{joint vector form of Headline~XVI}: for charts $a\in\kappa$ (finite) with their own dimensions
+and exponents, jointly convergent random phases $X_n\Rightarrow Z$ in
+$\prod_aC([0,1]^{d_a+1})$ and fixed amplitudes $g_a$, the vector
+$(F^{(a)}_{N_n}(X_n^a,g_a))_a$ converges in distribution to $(F^{(a)}(Z^a,g_a))_a$
+(\texttt{tendstoInDistribution\_normChart\_vec}). Zero \texttt{sorry}/\texttt{axiom}; 9091 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem tendstoInMeasure_const_of_tendsto (c : ι → E) (c₀) (hc : Tendsto c L (𝓝
+      c₀)) :
+    TendstoInMeasure μ (fun n _ => c n) L (fun _ => c₀)
+theorem tendstoInMeasure_pi_zero [Fintype κ] (f : κ → ι → Ω → E)
+    (hf : ∀ a, TendstoInMeasure μ (f a) L (fun _ => 0)) :
+    TendstoInMeasure μ (fun n ω a => f a n ω) L (fun _ => (0 : κ → E))
+theorem tendstoInDistribution_prodMk_tendsto_const (hX : TendstoInDistribution X L
+      Z (fun _ => μ) μ')
+    (c : ι → E') (c₀) (hc : Tendsto c L (𝓝 c₀)) :
+    TendstoInDistribution (fun n ω => (X n ω, c n)) L (fun ω => (Z ω, c₀)) (fun _
+      => μ) μ'
+abbrev PhaseSpaces (κ) (d : κ → ℕ) := (a : κ) → C(closedCube (d a + 1), ℝ)
+theorem tendstoInDistribution_normChart_vec … (X : ι → Ω → PhaseSpaces κ d) (hXm)
+      (Z) (hZm) (hX) (Nseq) (hN)
+    (hN0 : ∀ n, 0 ≤ Nseq n) (g : (a : κ) → C(closedCube (d a + 1), ℝ)) :
+    TendstoInDistribution (fun n ω a => normChart (h a) (k a) (l a) β (Nseq n) (X n
+      ω a, g a)) L
+      (fun ω a => limChart (h a) (k a) (l a) β (Z ω a, g a)) (fun _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+Nothing new analytically: the vector statement is Headline~XVI componentwise, with the errors
+collected by the union bound (\texttt{measure\_iUnion\_fintype\_le} behind
+\texttt{pi\_norm\_lt\_iff}) and the limits by continuous mapping of the phase vector. The
+deterministic-coefficient Slutsky lemma is what will turn the per-chart normalised integrals into
+the assembled sums $\sum_aI_a/S_*=\sum_a(S_a/S_*)\,(I_a/S_a)$ with $S_a/S_*\to e_a\in\{0,1\}$.
+
+\section{Lean notes}
+\begin{itemize}
+\item Mathlib's \texttt{prodMk\_of\_tendstoInMeasure\_const} needs the first space to be a
+  \texttt{SeminormedAddCommGroup} with \texttt{BorelSpace} and \texttt{SecondCountableTopology};
+  a wrapper stated with a bare \texttt{TopologicalSpace} does not typecheck.
+\item Composing \texttt{continuous\_apply a} inside \texttt{continuous\_comp} leaves the Pi type
+  metavariable unresolved; state the composite continuity as a typed \texttt{have} first.
+\item The Borel σ-algebra on the factors gives the product σ-algebra on
+  \texttt{PhaseSpaces κ d} for free (\texttt{measurable\_pi\_iff}, \texttt{measurable\_pi\_apply}).
+\end{itemize}
+
+\section{Next}
+Unit 215: Headline~XVIII, the assembled stochastic posterior quotient: the pair vector
+$(F^{\varphi c}_a,F^{c}_a)_a$, Slutsky with the deterministic scale ratios, continuous summation,
+a.s.-positive selected denominator, and the exact cancellation of the common scale for $N_n>1$.
+\end{document}
