@@ -411,3 +411,4 @@ import Laplace.Grammar.FluctuationDerivative
 import Laplace.Grammar.CoeffConv
 import Laplace.Grammar.CoeffFnBridge
 import Laplace.Grammar.CoeffKernel
+import Laplace.Grammar.FamilyCoeffSeries
