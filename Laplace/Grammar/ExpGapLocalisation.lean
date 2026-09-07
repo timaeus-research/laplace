@@ -14,8 +14,9 @@ zero set of the phase, where `f ≥ ε > 0`, a Laplace-type integral is exponent
   `‖∫_S a(x) e^{-βN f(x)} dx‖ ≤ e^{-βNε} ∫_S g(x) dx`   whenever `‖a‖ ≤ g` on `S`
 
 (`norm_setIntegral_exp_gap_le`), uniformly in any family of amplitudes dominated by `g`; hence the
-region contributes `O(e^{-βNε})` (`exp_gap_isBigO`) and in particular `o` of every power–log scale
-(`exp_gap_isLittleO_powLog`, for `β > 0`, `ε > 0`). The estimates carry measurability hypotheses on
+region contributes `O(e^{-βNε})` (`exp_gap_isBigO`; stated for `β ≥ 0` and any real `ε`, so the
+comparison function need not decay) and, for `β > 0`, `ε > 0`, `o` of every power–log scale
+(`exp_gap_isLittleO_powLog`). The estimates carry measurability hypotheses on
 the amplitude and the phase, so that the weighted integrand is a genuine (integrable) Bochner
 integrand rather than a totalised one (`exp_gap_integrable`). Establishing the gap `f ≥ ε` on the
 complement of a neighbourhood of the zero set is a separate geometric task and is not addressed
