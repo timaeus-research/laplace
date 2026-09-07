@@ -405,3 +405,4 @@ import Laplace.Grammar.FamilyPhaseIntegral
 import Laplace.Grammar.UniformCutoffConst
 import Laplace.Grammar.FamilySpectralCoeff
 import Laplace.Grammar.FamilyTaylorTree
+import Laplace.Grammar.BoxScaling
