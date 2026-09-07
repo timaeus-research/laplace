@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Signed reflections of an amplitude on symmetric boxes}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#18/\#19's rank-2 extension, first unit. For an amplitude $\eta$ on the symmetric box
+$(-1,1]^d$ the coordinate reflections produce the signed symmetrisation
+$\eta_{\rm sym}(u)=\sum_{\sigma\in\{\pm1\}^d}\big(\prod_i\sigma_i^{h_i}\big)\eta(\sigma u)$
+(\texttt{symAmp}, indexed by $\sigma\colon\mathrm{Fin}\,d\to\mathrm{Bool}$), which is continuous when
+$\eta$ is, evaluates at the origin to $\eta(0)\prod_i(1+(-1)^{h_i})$ (\texttt{symAmp\_zero}), and
+reduces the symmetric-box dressed integral exactly to the unit-box one:
+\[
+\int_{(-1,1]^d}\eta(x)\,x^he^{-\beta Nx^{2k}}\,dx=\int_{(0,1]^d}\eta_{\rm sym}(u)\,u^he^{-\beta Nu^{2k}}\,du
+\]
+(\texttt{integral\_symBox\_eq\_symAmp}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def sgn (b : Bool) : ℝ := if b then -1 else 1
+def reflect (σ : Fin d → Bool) (u : Fin d → ℝ) : Fin d → ℝ := fun i => sgn (σ i) * u i
+def symAmp (h : Fin d → ℕ) (η) (u) : ℝ :=
+  ∑ σ : Fin d → Bool, (∏ i, sgn (σ i) ^ h i) * η (reflect σ u)
+theorem continuous_symAmp (hη : Continuous η) : Continuous (symAmp h η)
+theorem symAmp_zero : symAmp h η 0 = η 0 * ∏ i, (1 + (-1 : ℝ) ^ h i)
+theorem symAmp_cons (a) (w) : symAmp h η (Fin.cons a w)
+    = symAmp (Fin.tail h) (fun w' => η (Fin.cons a w')) w
+      + (-1) ^ h 0 * symAmp (Fin.tail h) (fun w' => η (Fin.cons (-a) w')) w
+theorem integral_Ioc_symm_add (hg : IntegrableOn g (Ioc (-1) 1)) :
+    ∫ a in Ioc (-1) 1, g a = ∫ a in Ioc 0 1, (g a + g (-a))
+theorem integral_symBox_eq_symAmp (β) : ∀ d h k N η, Continuous η →
+    ∫ x in symBox d, η x * ((∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i))))
+      = ∫ u in unitBox d, symAmp h η u * ((∏ i, u i ^ h i) * exp (-(β * N * ∏ i, u i ^ (2 * k i))))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Induction on the dimension with the Bochner peel on both boxes (unit~188). The inner symmetric
+integral at fixed first coordinate $a$ is the $d$-dimensional one with amplitude $\eta(a,\cdot)$ at
+parameter $Na^{2k_0}$, hence by the induction hypothesis a unit-box integral of the symmetrised
+section; the peeled coordinate is handled by $\int_{(-1,1]}g=\int_{(0,1]}(g(a)+g(-a))\,da$, and
+$(\pm a)^{h_0}$ produces the sign $(-1)^{h_0}$ in front of the reflected section, matching the
+splitting of the sign sum along \texttt{Fin.consEquiv}.
+
+\section{Paper-facing meaning}
+For interior normal coordinates the dressed integral is the unit-box integral of the signed
+symmetrisation, so the whole continuous-amplitude theory applies with $\eta_{\rm sym}$ in place of
+$\eta$; the corner value $\eta_{\rm sym}(0)=\eta(0)\prod(1+(-1)^{h_i})$ shows that an odd exponent kills
+the equal-ratio corner coefficient (next unit), not the integral.
+
+\section{Lean notes}
+\begin{itemize}
+\item Sum over sign vectors: \texttt{Finset.prod\_univ\_sum} with \texttt{Fintype.piFinset\_univ} turns
+$\prod_i\sum_b$ into $\sum_\sigma\prod_i$; \texttt{(Fin.consEquiv \_).sum\_comp} then
+\texttt{Fintype.sum\_prod\_type} and \texttt{Fintype.sum\_bool} split the first coordinate.
+\item \texttt{IntervalIntegrable.iff\_comp\_neg} has an autoParam; apply it with named
+\texttt{(f := g) (a := -1) (b := 0)} and \texttt{.mp}.
+\item Using the closure box \texttt{piBox d (Ioc (-c) 1)} with $c\in\{0,1\}$ for both integrability
+lemmas leaves \texttt{Ioc (-0) 1}; rewrite \texttt{neg\_zero} before \texttt{exact}.
+\end{itemize}
+
+\end{document}
