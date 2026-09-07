@@ -15,7 +15,8 @@ import Laplace.Grammar.ProductDensityHelpers
 
 i.e. the pushforward of `∏ tᵢ^{λ−1} dt` under `t ↦ ∏ tᵢ` has density `z^{λ−1}(−log z)^m/m!` on
 `(0,1]`. The induction step scales the inner variable, swaps the order on the triangle and uses the
-FTC identity `∫_w^1 (log t − log w)^m/t dt = (−log w)^{m+1}/(m+1)` (units 165, 171). Everything is in
+FTC identity `∫_w^1 (log t − log w)^m/t dt = (−log w)^{m+1}/(m+1)` (units 165, 171).
+Everything is in
 `ℝ≥0∞`, for arbitrary measurable `g`. Zero `sorry`/`axiom`.
 -/
 

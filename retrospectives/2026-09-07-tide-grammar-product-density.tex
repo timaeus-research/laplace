@@ -1,0 +1,75 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The recursive product-density lemma}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Step~2b of the general-$d$ equal-ratio monomial milestone (Astra~\#14). With
+$\texttt{productIntegral}\,\lambda\,d\,g$ the recursively defined iterated integral
+$\int_{(0,1]^d}g(\prod_it_i)\prod_it_i^{\lambda-1}\,dt$, the product-density formula
+\[
+\int_{(0,1]^{m+1}}g\Big(\prod_it_i\Big)\prod_it_i^{\lambda-1}\,dt
+=\frac1{m!}\int_0^1g(z)\,z^{\lambda-1}(-\log z)^m\,dz
+\]
+holds for every measurable $g\colon\mathbb R\to[0,\infty]$ (\texttt{productIntegral\_succ\_eq}): the
+pushforward of $\prod_it_i^{\lambda-1}dt$ under the product map has density
+$z^{\lambda-1}(-\log z)^m/m!$ on $(0,1]$. The induction step scales the inner variable, swaps the
+order on the triangle and applies the FTC identity of unit~165 (helpers of unit~171). Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def productIntegral (l : ℝ) : ℕ → (ℝ → ENNReal) → ENNReal
+  | 0, g => g 1
+  | n + 1, g => ∫⁻ t in Ioc 0 1,
+      ENNReal.ofReal (t ^ (l - 1)) * productIntegral l n (fun z => g (t * z))
+def logDensity (l : ℝ) (m : ℕ) (z : ℝ) : ℝ := z ^ (l - 1) * (-Real.log z) ^ m
+theorem productIntegral_succ_eq (l : ℝ) (m : ℕ) : ∀ g, Measurable g →
+    productIntegral l (m + 1) g
+      = ENNReal.ofReal (1 / m.factorial)
+        * ∫⁻ z in Ioc 0 1, ENNReal.ofReal (logDensity l m z) * g z
+\end{verbatim}
+}
+
+\section{Mathematics}
+For $m=0$ the statement is the definition. For the step, the induction hypothesis applied to
+$z\mapsto g(tz)$ gives an inner integral $\frac1{m!}\int_0^1g(tz)z^{\lambda-1}(-\log z)^m\,dz$; the
+substitution $w=tz$ turns it into $\frac1{m!}\cdot\frac1t\int_0^t g(w)(w/t)^{\lambda-1}(\log t-\log w)^m\,dw$,
+and $t^{\lambda-1}\cdot\frac1t\cdot(w/t)^{\lambda-1}=w^{\lambda-1}/t$. Swapping the order on the
+triangle $0<w\le t\le1$ and evaluating $\int_w^1(\log t-\log w)^m/t\,dt=(-\log w)^{m+1}/(m+1)$
+gives the formula with $m!\,(m+1)=(m+1)!$.
+
+\section{Paper-facing meaning}
+This is the analytic heart of the equal-ratio monomial model in general dimension: it turns the
+$d$-dimensional monomial integral into a one-dimensional one with an explicit $(\log)^{d-1}$ density,
+which is where the log multiplicity $d$ of the Taylor tree for $k=(k_i)$, $(h_i+1)/(2k_i)=\lambda$
+comes from. Remaining: the box bridge from \texttt{Fin d → ℝ} to the recursive integral, the
+general-$\lambda$ Gamma/log asymptotic, and the assembly.
+
+\section{Lean notes}
+\begin{itemize}
+\item Everything in \texttt{ℝ≥0∞}: constants leave integrals via \texttt{lintegral\_const\_mul'}
+(finite constant) or \texttt{lintegral\_const\_mul''} (measurable integrand, needed when the constant
+is \texttt{g w}, possibly infinite).
+\item \texttt{ENNReal.ofReal\_mul} must be applied with the exact factorisation in mind;
+\texttt{ring} then handles the commutative rearrangement of the \texttt{ofReal} atoms. Pass explicit
+constants to \texttt{lintegral\_const\_mul'} to control which product is rewritten.
+\item The joint measurability of the triangle integrand is a one-liner from \texttt{Measurable.pow\_const},
+\texttt{Real.measurable\_log} and \texttt{Measurable.div}.
+\item After \texttt{setLIntegral\_congr\_fun} the pointwise goals are already beta-reduced
+(\texttt{simp only} makes no progress and errors).
+\end{itemize}
+
+\end{document}
