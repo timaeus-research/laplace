@@ -269,3 +269,4 @@ import Laplace.Grammar.RectDecomp
 import Laplace.Grammar.TwoDCutoff
 import Laplace.Grammar.JetRecursion
 import Laplace.Grammar.TwoDCutoffReduced
+import Laplace.Grammar.FaceMomentsEnvelope
