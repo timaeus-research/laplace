@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Taylor tail control for the phase factor}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 199, the first unit of programme~A (general-$d$ phase-dressed leading term). Rather than the
+rescaled-measure route proposed in Astra~\#20, the programme expands the phase factor
+$e^{\beta s\xi(u)}$, $s=Nu^k$, in a Taylor series so that every term is the existing
+continuous-amplitude theorem at shifted exponents $h+jk$; Astra~\#21 endorsed this
+(``GO with Taylor-in-phase'') and corrected the assembly (bound $|C-P_K|$ by the same tail estimate
+against the limiting measure; avoid \texttt{tsum} in the headline). This unit provides the
+elementary tail estimates: the Taylor remainder $|e^x-\sum_{j<J}x^j/j!|\le|x|^Je^{|x|}/J!$ for all
+real $x$; $s^{2K}e^{-cs^2}\le K!/c^K$; completing the square
+$e^{bs-\beta s^2}\le e^{b^2/(2\beta)}e^{-\beta s^2/2}$; the tail constant
+$\tau_K=(b^2)^K/(2K)!\cdot K!/(\beta/4)^K\cdot e^{b^2/(2\beta)}\to0$; and the uniform bound
+$|e^{sx}-\sum_{j<2K}(sx)^j/j!|\,e^{-\beta s^2}\le\tau_Ke^{-\beta s^2/4}$ for $s\ge0$, $|x|\le b$.
+Zero \texttt{sorry}/\texttt{axiom}; 9076 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem abs_exp_sub_sum_le (x : ℝ) (J : ℕ) :
+    |exp x - ∑ j ∈ range J, x^j / j!| ≤ |x|^J / J! * exp |x|
+theorem pow_mul_exp_neg_sq_le (hc : 0 < c) (K) : s^(2K) * exp (-(c s²)) ≤ K! / c^K
+theorem exp_linear_sub_sq_le (hβ : 0 < β) :
+    exp (b s - β s²) ≤ exp (b²/(2β)) * exp (-(β/2 s²))
+noncomputable def tailCoeff (β b : ℝ) (K : ℕ) : ℝ :=
+  (b^2)^K / (2K)! * (K! / (β/4)^K) * exp (b²/(2β))
+theorem tendsto_tailCoeff (hβ : 0 < β) : Tendsto (fun K => tailCoeff β b K) atTop (𝓝 0)
+theorem phase_tail_le (hβ : 0 < β) (hs : 0 ≤ s) (hx : |x| ≤ b) (K) :
+    |exp (s x) - ∑ j ∈ range (2K), (s x)^j / j!| * exp (-(β s²))
+      ≤ tailCoeff β b K * exp (-(β/4 s²))
+\end{verbatim}
+}
+
+\section{Mathematics}
+The remainder bound is the crude series estimate
+$\sum_{i\ge J}|x|^i/i!\le(|x|^J/J!)\sum_i|x|^i/i!$ from $(i+J)!\ge i!\,J!$; Mathlib's own
+\texttt{Real.exp\_bound} needs $|x|\le1$, which is useless here because $s$ is unbounded. The
+even truncation order $2K$ is chosen so that the polynomial factor $s^{2K}$ can be absorbed by
+half of a Gaussian, $s^{2K}e^{-cs^2}\le K!/c^K$, without any Gamma-function asymptotics; the price
+$(2K)!\ge(K!)^2$ then makes $\tau_K\le(4b^2/\beta)^K/K!\cdot e^{b^2/(2\beta)}$, and
+\texttt{FloorSemiring.tendsto\_pow\_div\_factorial\_atTop} finishes.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{NormedSpace.expSeries\_div\_hasSum\_exp x} has the algebra implicit; passing
+  \texttt{ℝ} explicitly makes Lean read \texttt{ℝ} as the algebra element.
+  \texttt{Real.exp\_eq\_exp\_ℝ} bridges to \texttt{Real.exp}.
+\item The tail-of-series lemma is \texttt{Summable.sum\_add\_tsum\_nat\_add} (dot notation);
+  \texttt{sum\_add\_tsum\_nat\_add} is only mentioned in a docstring.
+\item \texttt{set c := β / 4} did not fold the occurrence produced by \texttt{unfold tailCoeff}
+  (different elaboration of the literal), so \texttt{div\_pow} hit the wrong power. Use
+  \texttt{conv\_rhs => rw [div\_pow, div\_div]} to scope the rewrite instead of folding.
+\item \texttt{gcongr} closes the side goal \texttt{0 ≤ |x|} itself; an explicit bullet afterwards
+  errors with ``no goals''.
+\end{itemize}
+
+\section{Next}
+Unit 200: shifted-exponent transport ($J$, $m$, \texttt{faceProj}, \texttt{residualWeight}
+invariant under $h\mapsto h+jk$, $\lambda\mapsto\lambda+j/2$; the term theorem with the $N^j$ and
+$2^{m-1}$ bookkeeping). Unit 201: the phase-dressed normal moment
+$S^{(\beta)}_{p/2}(a)=\int_0^\infty s^{p-1}e^{-\beta s^2+\beta sa}\,ds$ with its Gaussian moments and
+finite Taylor approximation. Unit 202: the leading-term theorem by direct approximation to the
+explicit coefficient.
+\end{document}
