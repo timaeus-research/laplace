@@ -369,3 +369,4 @@ import Laplace.Grammar.ChartAssembly
 import Laplace.Grammar.HeadlineAssembly
 import Laplace.Grammar.PhaseLipschitz
 import Laplace.Grammar.PhaseCoeffLipschitz
+import Laplace.Grammar.PhaseUniform
