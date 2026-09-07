@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Linearity and the difference form of the canonical coefficients}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Completion of Astra~\#10's R6. On the envelope class the canonical coefficients are linear:
+$A_\alpha(c-d)=A_\alpha(c)-A_\alpha(d)$ and $B_\alpha(c-d)=B_\alpha(c)-B_\alpha(d)$
+(\texttt{canonA\_sub}, \texttt{canonB\_sub}), proved through the collision formula and the moment
+series of unit~126 (the finite-part functionals are linear on absolutely convergent rows; the
+envelope class is closed under differences with envelope $H+H'$). With the weighted-norm bounds of
+unit~140 this gives the difference form Astra asked for:
+$|A_\alpha(c)-A_\alpha(d)|\le w_C(\alpha)\|c-d\|_{\alpha,0,r}$ and
+$|B_\alpha(c)-B_\alpha(d)|\le(w_U+w_V)(\alpha)\|c-d\|_{\alpha,0,r}+w_C(\alpha)\|c-d\|_{\alpha,1,r}$
+(\texttt{abs\_canonA\_sub\_le}, \texttt{abs\_canonB\_sub\_le}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem logMoment_sub (β α : ℝ) (ℓ : ℕ) (c₁ c₂ : ℝ → ℝ)
+    (h₁ : IntegrableOn ...) (h₂ : ...) :
+    logMoment β α ℓ (fun s => c₁ s - c₂ s) = logMoment β α ℓ c₁ - logMoment β α ℓ c₂
+theorem sub_envelope (c d : ℕ × ℕ → ℝ → ℝ) (ρ : ℝ) (hρ : 0 < ρ) (H H' : ℝ → ℝ)
+    (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s)
+    (hd : ∀ ij s, |d ij s| * ρ ^ (ij.1 + ij.2) ≤ H' s) (ij : ℕ × ℕ) (s : ℝ) :
+    |c ij s - d ij s| * ρ ^ (ij.1 + ij.2) ≤ H s + H' s
+theorem canonA_sub ... (α : ℝ) (hα : 0 < α) :
+    canonA β h₁ h₂ k₁ k₂ (fun i j s => c (i, j) s - d (i, j) s) α
+      = canonA β h₁ h₂ k₁ k₂ (fun i j s => c (i, j) s) α
+        - canonA β h₁ h₂ k₁ k₂ (fun i j s => d (i, j) s) α
+theorem canonB_sub ... (α : ℝ) (hα : 0 < α) :
+    canonB β b h₁ h₂ k₁ k₂ (anaFaceU (fun ij s => c ij s - d ij s) b)
+        (anaFaceV (fun ij s => c ij s - d ij s) b)
+        (fun i j s => c (i, j) s - d (i, j) s) α
+      = canonB ... (c) α - canonB ... (d) α
+theorem abs_canonA_sub_le ... (α : ℝ) (hα : 0 < α) :
+    |canonA ... (c) α - canonA ... (d) α|
+      ≤ cWeight r h₁ h₂ k₁ k₂ α * coeffNorm β α 0 r (fun ij s => c ij s - d ij s)
+theorem abs_canonB_sub_le ... (α : ℝ) (hα : 0 < α) :
+    |canonB ... (c) α - canonB ... (d) α|
+      ≤ (uWeight b r h₁ h₂ k₁ k₂ α + vWeight b r h₁ h₂ k₁ k₂ α)
+          * coeffNorm β α 0 r (fun ij s => c ij s - d ij s)
+        + cWeight r h₁ h₂ k₁ k₂ α * coeffNorm β α 1 r (fun ij s => c ij s - d ij s)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Linearity is immediate for the collision coefficient and for the log moment (Bochner integrals of
+integrable integrands). For the face moments the direct definition through the finite part of the
+face function is awkward; instead the moment series $k_1^{-1}\sum_jq_j\,M[\alpha;\ell;c_{ij}]$ of
+unit~126, valid for $c$, $d$ and $c-d$ (all in the envelope class), reduces linearity to
+$M[c_{ij}-d_{ij}]=M[c_{ij}]-M[d_{ij}]$ and the linearity of absolutely convergent sums. The
+difference bound is then the boundedness theorem of unit~140 applied to $c-d$.
+
+\section{Paper-facing meaning}
+
+The coefficient functionals $c\mapsto(A_\alpha(c),B_\alpha(c))$ are bounded linear functionals of
+the amplitude coefficient array in the weighted moment norm, with explicit constants: the
+deterministic half of the continuity argument that turns $\xi_n\Rightarrow G$ into convergence of
+the Taylor-tree coefficients. The remaining nonlinear link is the amplitude map
+$(x,y)\mapsto c=e^{\beta sx_{00}}(y*E_{x-x_{00}}(\beta s))$, whose local Lipschitz estimate in the
+coefficient Banach-algebra norm is Astra~\#10's rank~5.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{tsum\_sub} is protected: use \texttt{hf.tsum\_sub hg} (dot notation).
+\item \texttt{le\_or\_lt} is gone (\texttt{le\_or\_gt}); here the case split was unnecessary once
+$\rho>0$ was made a hypothesis.
+\item Proving linearity through a series identity valid on a class closed under differences avoids
+any linearity lemma for the finite-part functional itself.
+\end{itemize}
+
+\end{document}
