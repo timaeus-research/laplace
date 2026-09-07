@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The Taylor tree for $d=2$ with arbitrary starting exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Completion of Astra~\#8 rank~3: the paper's Theorem (Taylor Tree) for $d=2$ without any
+restriction on $(h,k)$. With $p_1=(h_1+1)/k_1$, $p_2=(h_2+1)/k_2$ independent, for analytic
+$\xi,\eta$ (weighted-summable coefficient arrays at a radius $\rho>b$) and for every $T$,
+\[
+Z(N)-\sum_{\alpha\in\Lambda(h,k),\ \alpha<2T}N^{-\alpha}\bigl(A_\alpha\log N+B_\alpha\bigr)
+=O\bigl(N^{-2T}(1+\log N)\bigr),
+\]
+with the canonical coefficients of unit~121 unchanged and independent of $T$
+(\texttt{twoD\_taylor\_tree\_general}). The cutoffs are $q=\max(2T,p_1,p_2)+1$,
+$M_\ell=\lceil k_\ell(q-p_\ell)\rceil$ (Astra~\#9); the retained pole set is
+$\{\alpha\in\Lambda:\alpha<2T\}$ exactly (\texttt{mem\_polesBelowGen\_iff}) and every retained pole
+is at least $\min(p_1,p_2)$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem uExp_lt_vExp_general (p₁ p₂ : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (hM₁ : p₁ + ((M₁ : ℝ) - 1) / k₁ < p₂ + (M₂ : ℝ) / k₂) (i j : ℕ) (hi : i < M₁)
+    (hj : M₂ ≤ j) : uExp h₁ k₁ i < vExp h₂ k₂ j
+theorem mergedSum_eq_canon_general ... :
+    mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N
+      = ∑ α ∈ poleSet h₁ h₂ k₁ k₂ M₁ M₂,
+          N ^ (-α) * (canonA β h₁ h₂ k₁ k₂ c α * Real.log N
+            + canonB β b h₁ h₂ k₁ k₂ a bj c α)
+noncomputable def cutoffQ (p₁ p₂ T : ℝ) : ℝ := max (2 * T) (max p₁ p₂) + 1
+noncomputable def cutoffMg (k : ℕ) (p q : ℝ) : ℕ := ⌈(k : ℝ) * (q - p)⌉₊
+theorem cutoffMg_bounds (k : ℕ) (hk : 0 < k) (p q : ℝ) (hq : p + 1 ≤ q) :
+    p + ((cutoffMg k p q : ℝ) - 1) / k < q ∧ q ≤ p + (cutoffMg k p q : ℝ) / k
+noncomputable def polesBelowGen (h₁ h₂ k₁ k₂ : ℕ) (p₁ p₂ T : ℝ) : Finset ℝ
+theorem mem_polesBelowGen_iff ... (α : ℝ) :
+    α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T
+      ↔ α < 2 * T ∧ ((∃ i, uExp h₁ k₁ i = α) ∨ ∃ j, vExp h₂ k₂ j = α)
+theorem twoD_taylor_tree_general (β b p₁ p₂ ρ : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β)
+    (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (x y : ℕ × ℕ → ℝ) (hx : WSummable ρ x) (hy : WSummable ρ y) (T : ℝ) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β x y) b)
+        - ∑ α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T,
+            N ^ (-α) * (canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β x y (i, j) s) α
+                * Real.log N
+              + canonB β b h₁ h₂ k₁ k₂ (anaFaceU (ampCoeff β x y) b)
+                  (anaFaceV (ampCoeff β x y) b) (fun i j s => ampCoeff β x y (i, j) s) α))
+      =O[atTop] fun N : ℝ => N ^ (-(2 * T)) * (1 + Real.log N)
+theorem min_le_of_mem_polesBelowGen ... (hα : α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T) :
+    min p₁ p₂ ≤ α
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The regrouping of units 122--123 goes through verbatim once the two ordering facts are re-proved
+from the shifted compatibilities: for $i<M_1\le j$, $\alpha_i\le p_1+(M_1-1)/k_1<p_2+M_2/k_2\le\delta_j$,
+and symmetrically. For the cutoffs, $q-p_\ell\ge1$ gives $k_\ell(q-p_\ell)\le M_\ell<k_\ell(q-p_\ell)+1$,
+hence $p_\ell+(M_\ell-1)/k_\ell<q\le p_\ell+M_\ell/k_\ell$: both compatibilities, remainder exponent
+$\ge q>2T$, and every pole $\alpha_i<2T<q\le p_1+M_1/k_1$ has $i<M_1$. Unequal starts do not remove
+later logarithms: they occur at every collision $\alpha_i=\delta_j$.
+
+\section{Paper-facing meaning}
+
+This is \texttt{thm:TaylorTree} for $d=2$ under the paper's own hypotheses (analyticity of
+$\xi,\eta$ near the closed box) and for all $(h,k)$, with three refinements over the paper's
+statement: canonical truncation-independent coefficients, a rigorous remainder
+$O(n^{-T}(1+\log n))$ for every $T$, and the exact pole set $\{\mu\in\Lambda(h,k):\mu<T\}$ with
+$\deg P_\mu\le1$ and logarithms only at collisions. The leading candidate exponent is $\min(p_1,p_2)$,
+with a leading logarithm only when $p_1=p_2$ (whose coefficient is
+$\eta(0)/(2k_1k_2)\int_0^\infty s^{p-1}e^{-\beta s^2+\beta s\xi(0)}ds$ in the $n$-normalisation), and for
+$p_1<p_2$ the leading coefficient is $k_1^{-1}\sum_j\frac{b^{j+\Delta}}{j+\Delta}M[p_1;0;c_{0j}]$,
+$\Delta=k_2(p_2-p_1)$ (Astra~\#9), a genuine integral. Remaining programme (Astra~\#9): explicit
+constants and uniform families (R5), bounded linear coefficient maps (R6), Taylor-data
+identification (R7), expectation commuting with coefficient extraction (R9), general-$d$ density (R8).
+
+\section{Lean notes}
+
+\begin{itemize}
+\item The whole unit compiled at the first attempt: it is the equal-start pair of files with the
+compatibility consequences re-proved and the cutoffs replaced.
+\item \texttt{div\_lt\_div\_iff\_of\_pos\_right} converts $i/k<M/k$ to $i<M$ before
+\texttt{exact\_mod\_cast}.
+\item \texttt{le\_min (by linarith) (by linarith)} is the cleanest way to bound $2T$ by a
+\texttt{min} of two explicit expressions.
+\end{itemize}
+
+\end{document}
