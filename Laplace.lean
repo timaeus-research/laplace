@@ -311,3 +311,4 @@ import Laplace.Grammar.NormalisedRemainder
 import Laplace.Grammar.AmpCoeffJoint
 import Laplace.Grammar.ProbNormalisedRemainder
 import Laplace.Grammar.FarPhase
+import Laplace.Grammar.TightNormalisedRemainder
