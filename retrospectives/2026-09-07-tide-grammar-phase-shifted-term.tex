@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Shifted-exponent transport for the phase expansion}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 200 (programme~A, step~2). The $j$-th Taylor term of the phase factor $e^{\beta Nu^k\xi(u)}$
+is $(\beta N)^j/j!\cdot\xi(u)^ju^{jk}$, which turns the dressed normal integral with exponents $h$
+into one with exponents $h+jk$ and amplitude $\xi^j\eta$. We record that the shift
+$(h,\lambda)\mapsto(h+jk,\lambda+j/2)$ leaves the entire face structure invariant --- the minimiser
+set $J$, the multiplicity $m$, the face projection and the residual weight
+$\prod_{i\notin J}u_i^{h_i-2k_i\lambda}$ --- and only replaces $\Gamma(\lambda)\beta^{-\lambda}$
+by $\Gamma(\lambda+j/2)\beta^{-\lambda-j/2}$ in the face constant. The $j$-th term is then packaged
+as a limit in the chart variable $N$ (monomial parameter $N^2$):
+\[
+\frac{N^j\int_{(0,1]^d}\eta(u)\,u^{h+jk}e^{-\beta N^2u^{2k}}\,du}{N^{-2\lambda}(\log N)^{m-1}}
+\longrightarrow 2^{m-1}\,\mathrm{amplitudeCoeff}(h+jk,k,\lambda+j/2,\beta)(\eta),
+\]
+by the continuous-amplitude theorem of unit~186 and the square-parameter transport of unit~193.
+Zero \texttt{sorry}/\texttt{axiom}; 9077 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def phaseShift (h k : Fin d → ℕ) (j : ℕ) : Fin d → ℕ := fun i => h i + j * k i
+theorem prod_pow_phaseShift : ∏ i, x i ^ phaseShift h k j i = (∏ i, x i ^ h i) * (∏ i,
+    x i ^ k i) ^ j
+theorem ratioExp_phaseShift (hk) : ratioExp (phaseShift h k j) k i = ratioExp h k i + j
+    / 2
+theorem multCount_phaseShift : multCount (ratioExp (phaseShift h k j) k) (l + j/2) =
+    multCount (ratioExp h k) l
+theorem faceProj_phaseShift : faceProj (phaseShift h k j) k (l + j/2) = faceProj h k l
+theorem residualWeight_phaseShift : residualWeight (phaseShift h k j) k (l + j/2) =
+    residualWeight h k l
+theorem faceLeadConst_phaseShift : faceLeadConst (phaseShift h k j) k (l + j/2) β
+    = Γ (l + j/2) * β^(-(l + j/2)) / (multCount (ratioExp h k) l - 1)! * ∏ i, if
+    ratioExp h k i = l then 1/(2 k i) else 1
+theorem amplitudeCoeff_phaseShift : amplitudeCoeff (phaseShift h k j) k (l + j/2) β η
+    = Γ (l + j/2) * β^(-(l + j/2)) / (m-1)! * (∏ …) * ∫ u in unitBox d, η (faceProj h k
+    l u) * residualWeight h k l u
+theorem shifted_term_tendsto (hmin) (hatt) (hη : Continuous η) (j : ℕ) :
+    Tendsto (fun N => N^j * (∫ x in unitBox (d+1), η x * ((∏ i, x i ^ phaseShift h k j
+    i)
+        * exp (-(β * N^2 * ∏ i, x i ^ (2 k i))))) / (N^(-(2l)) * log N ^ (multCount
+    (ratioExp h k) l - 1)))
+      atTop (𝓝 (2 ^ (multCount (ratioExp h k) l - 1) * amplitudeCoeff (phaseShift h k
+    j) k (l + j/2) β η))
+\end{verbatim}
+}
+
+\section{Mathematics}
+$\mathrm{ratioExp}(h+jk,k,i)=\frac{h_i+jk_i+1}{2k_i}=\frac{h_i+1}{2k_i}+\frac j2$, so
+$\mathrm{ratioExp}(h+jk,k,i)=\lambda+j/2\iff\mathrm{ratioExp}(h,k,i)=\lambda$: the minimisers, hence
+$J$, $m$, the face projection and the indicator structure of every face object, are unchanged. The
+residual exponents $h_i+jk_i-2k_i(\lambda+j/2)=h_i-2k_i\lambda$ are literally unchanged. The
+bookkeeping $N^j\,(N^2)^{-(\lambda+j/2)}=N^{-2\lambda}$ and $(\log N^2)^{m-1}=2^{m-1}(\log N)^{m-1}$
+gives the $2^{m-1}$; the $\beta^j/j!$ of the Taylor coefficient is left to the assembly unit.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{shiftExp} was already taken (\texttt{MixedBlockEnvelope.lean}, a one-coordinate shift
+  by a unit vector); the phase shift is \texttt{phaseShift}. The "already declared" error appears
+  only at the second definition, but every later use silently resolved to the OLD constant and
+  produced "application type mismatch" cascades --- check the first error only.
+\item Rewriting under the condition of an \texttt{if} with \texttt{rw} fails (the
+  \texttt{Decidable} instance depends on the proposition); \texttt{simp only [iff\_lemma]} handles
+  the instance transport, or use \texttt{by\_cases} with \texttt{if\_pos}/\texttt{if\_neg}.
+\item \texttt{Real.rpow\_neg hN.le} without an explicit exponent rewrites only the first
+  instantiation it meets; a second occurrence with a different exponent needs its own
+  \texttt{Real.rpow\_neg hN.le (j : ℝ)} before \texttt{Real.rpow\_natCast} can fire.
+\item \texttt{filter\_upwards} already beta-reduces the pointwise goal of a
+  \texttt{Tendsto.congr'}; a following \texttt{simp only []} errors with "no progress".
+\end{itemize}
+
+\section{Next}
+Unit 201: the phase-dressed normal moment $S^{(\beta)}_{p/2}(a)=\int_0^\infty s^{p-1}e^{-\beta s^2+\beta sa}\,ds$:
+integrability, Gaussian moments $\int_0^\infty s^{p+j-1}e^{-\beta s^2}\,ds=\tfrac12\Gamma(\lambda+j/2)\beta^{-\lambda-j/2}$,
+and the finite Taylor approximation with the uniform tail of unit~199.
+\end{document}
