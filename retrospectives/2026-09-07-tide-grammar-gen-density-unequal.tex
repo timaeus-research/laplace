@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The one-variable density for unequal exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit~86 gave the exact one-variable density of the $d=2$ chart integral
+$\int\!\!\int u^{h_1}v^{h_2}e^{-\beta(Nu^{k_1}v^{k_2})^2}\Psi(u,Nu^{k_1}v^{k_2})\,du\,dv$ when the two
+exponents $(h_i+1)/k_i$ agree. Here the restriction is dropped: with $p_2=(h_2+1)/k_2$ the density in
+$r=u^{k_1}v^{k_2}$ is
+\[
+\rho(r,s)=\frac1{k_2}\,r^{p_2-1}\int_{(r/b^{k_2})^{1/k_1}}^{b}u^{h_1-k_1p_2}\,\Psi(u,s)\,du,
+\]
+a weighted axis integral with weight $u^{-1-\gamma}$, $\gamma=k_1(p_2-p_1)$. This is exactly the
+shape consumed by the weighted finite-part axis lemma (unit~100): the face terms $u^ia_i(v,s)$ of the
+rectangular decomposition have exponents $p+i/k_1\ne p$, and their densities are now available.
+First step of Astra~\#4's post-rank-5 programme (monomial block densities and the $\tau$-cutoff
+theorem). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def genDensity (p₂ b : ℝ) (h₁ k₁ k₂ : ℕ) (Ψ : ℝ → ℝ → ℝ) (r s : ℝ) : ℝ :=
+  1 / (k₂ : ℝ) * r ^ (p₂ - 1)
+    * ∫ u in Icc ((r / b ^ k₂) ^ ((k₁ : ℝ)⁻¹)) b, u ^ ((h₁ : ℝ) - k₁ * p₂) * Ψ u s
+noncomputable def regionIntegrand' (β b N p₂ : ℝ) (h₁ k₁ k₂ : ℕ) (Ψ : ℝ → ℝ → ℝ) (u r : ℝ) : ℝ
+theorem regionIntegrand'_measurable / _integral_r / _integral_u / _integrable
+theorem rpow_weight_mul_pow (u p₂ : ℝ) (h₁ k₁ : ℕ) (hu : 0 < u) :
+    u ^ ((h₁ : ℝ) - k₁ * p₂) * (u ^ k₁) ^ p₂ = u ^ h₁
+theorem twoDAmp_uOnly_eq_transferZ' (β b N p₂ : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 ≤ β) (hb : 0 < b)
+    (hN : 0 ≤ N) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (Ψ : ℝ → ℝ → ℝ) (hΨc : Continuous (Function.uncurry Ψ)) :
+    twoDAmp β b N h₁ h₂ k₁ k₂ (fun u _ s => Ψ u s)
+      = transferZ (genDensity p₂ b h₁ k₁ k₂ Ψ) β (b ^ (k₁ + k₂)) N
+theorem genDensity_eq_axis (p₂ b : ℝ) (h₁ k₁ k₂ : ℕ) (Ψ : ℝ → ℝ → ℝ) (r s : ℝ) :
+    genDensity p₂ b h₁ k₁ k₂ Ψ r s
+      = 1 / (k₂ : ℝ) * r ^ (p₂ - 1)
+        * ∫ u in Ioc ((r / b ^ k₂) ^ ((k₁ : ℝ)⁻¹)) b,
+            u ^ (-1 - ((k₁ : ℝ) * p₂ - h₁ - 1)) * Ψ u s
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The proof is the unit-86 proof with one change of weight. The inner substitution
+$r=u^{k_1}v^{k_2}$ turns $\int_0^bv^{h_2}g(u^{k_1}v^{k_2})\,dv$ into
+$k_2^{-1}(u^{k_1})^{-p_2}\int_0^{u^{k_1}b^{k_2}}r^{p_2-1}g(r)\,dr$, and the outer weight combines as
+$u^{h_1}(u^{k_1})^{-p_2}=u^{h_1-k_1p_2}$ (in unit~86 this was $u^{-1}$). Fubini over the curved
+region $\{r\le u^{k_1}b^{k_2}\}$ then gives the $u$-section $[(r/b^{k_2})^{1/k_1},b]$. Integrability
+of the region integrand uses the bound $u^{h_1-k_1p_2}(u^{k_1}b^{k_2})^{p_2}=b^{k_2p_2}u^{h_1}$,
+integrable on $(0,b]$ since $h_1\ge0$ (\texttt{rpow\_weight\_mul\_pow}).
+
+Writing $-1-\gamma=h_1-k_1p_2$, i.e. $\gamma=k_1p_2-h_1-1=k_1(p_2-p_1)$, the inner integral is
+$\int_\varepsilon^bu^{-1-\gamma}\Psi(u,s)\,du$ with $\varepsilon=(r/b^{k_2})^{1/k_1}$
+(\texttt{genDensity\_eq\_axis}), so the finite-part lemma applies verbatim with $A=b^{k_2}$,
+$k=k_1$.
+
+\section{Paper-facing meaning}
+
+In the rectangular decomposition of the $d=2$ block, a face term $u^ia_i(v,s)$ is (after
+\texttt{twoDAmp\_swap}) the case $\Psi=a_i$ with weights $v^{h_2}$, $u^{h_1+i}$; its density has
+$p_2\to p+i/k_1$ and $\gamma=k_2i/k_1$, so unit~100 produces the exponents $p+m/k_2$, a logarithm
+exactly at the collision $i/k_1=m/k_2$, and the finite-part coefficient. The next units assemble
+these into the cutoff-indexed density expansion and feed it to the transfer theorem.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{open Finset} together with \texttt{open Set} makes \texttt{mem\_Ioc},
+\texttt{mem\_Iic}, \texttt{mem\_Ici}, \texttt{mem\_Icc} ambiguous in \texttt{simp only}; open only
+\texttt{Set} in measure-theoretic files.
+\item \texttt{integral\_Icc\_eq\_integral\_Ioc} inside \texttt{rw} leaves
+\texttt{ClosedIicTopology ?m} stuck even with \texttt{(x := …) (y := …)}; and the same stuck
+instance reappears for \texttt{measurableSet\_Ioc} after \texttt{congr}. Bind the lemma with all of
+\texttt{(μ := volume) (f := …) (x := …) (y := …)} in a \texttt{have} and finish with a
+\texttt{show … by ring} rewrite of the exponent rather than \texttt{congr}.
+\item \texttt{Real.rpow\_natCast} in the forward direction converts \texttt{u \^{} (h₁ : ℝ)} to
+\texttt{u \^{} h₁} once the exponent identity is established.
+\end{itemize}
+
+\end{document}
