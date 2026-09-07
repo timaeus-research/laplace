@@ -1,0 +1,47 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Core identity for the general-$d$ product-density lemma}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Step~0 of the general-$d$ equal-ratio monomial milestone (Astra~\#12~(c)). The pushforward of
+$\prod_it_i^{\lambda-1}dt$ on $(0,1]^d$ under $t\mapsto\prod_it_i$ has density
+$z^{\lambda-1}(-\log z)^{d-1}/(d-1)!$; Astra identified the one-dimensional identity that drives the
+induction, $\int_z^1(-\log(z/t))^{d-1}/t\,dt=(-\log z)^d/d$. It is proved here in the form
+$\int_z^1(\log t-\log z)^d/t\,dt=(-\log z)^{d+1}/(d+1)$ for $0<z\le1$
+(\texttt{integral\_log\_sub\_pow\_div}) by the fundamental theorem of calculus with antiderivative
+$(\log t-\log z)^{d+1}/(d+1)$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem hasDerivAt_log_sub_pow_div (z t) (ht : 0 < t) (d : ℕ) :
+    HasDerivAt (fun t => (log t - log z)^(d+1) / (d + 1)) ((log t - log z)^d / t) t
+theorem integral_log_sub_pow_div (z) (hz : 0 < z) (hz1 : z ≤ 1) (d : ℕ) :
+    ∫ t in z..1, (log t - log z)^d / t = (-log z)^(d+1) / (d + 1)
+\end{verbatim}
+}
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{intervalIntegral.integral\_eq\_sub\_of\_hasDerivAt} needs the derivative on
+\texttt{uIcc z 1} (\texttt{uIcc\_of\_le}) and interval integrability, supplied by
+\texttt{ContinuousOn.intervalIntegrable} for the quotient of continuous functions with nonvanishing
+denominator on $[z,1]$.
+\item \texttt{HasDerivAt.congr\_deriv} with \texttt{field\_simp} matches the derivative of the
+antiderivative to the integrand; \texttt{volume} needs \texttt{open MeasureTheory}.
+\item The evaluation at the endpoints is \texttt{simp [Real.log\_one]} ($0^{d+1}=0$ at $t=z$).
+\end{itemize}
+
+\end{document}
