@@ -9,7 +9,10 @@ import Laplace.Grammar.ProductDensityCore
 
 If `Z_φ(N) ~ C_φ N^{−α_φ} (log N)^{r_φ}` and `Z_1(N) ~ C_1 N^{−α_1} (log N)^{r_1}`, then
 `Z_φ/Z_1 ~ (C_φ/C_1) N^{−(α_φ − α_1)} (log N)^{r_φ}/(log N)^{r_1}` (`quotient_isEquivalent`;
-totalised division, so `C_1 ≠ 0` is only needed to make the limit meaningful), with the
+totalised division; no nonzero-coefficient hypothesis is needed for the limits themselves — if
+`C₁ = 0` the equivalence `Z₁ ~ 0` forces `Z₁ = 0` eventually and the statements hold in Lean's
+degenerate totalised sense — and `C₁ ≠ 0` is what a nondegenerate quotient interpretation
+requires), with the
 three consequences used for posterior expectations: the same leading term gives the constant limit
 `C_φ/C_1` (`tendsto_quotient_of_eq`); one fewer logarithm in the numerator gives decay like
 `1/log N`, i.e. `(Z_φ/Z_1) log N → C_φ/C_1` (`tendsto_quotient_mul_log_of_eq`); a strictly larger

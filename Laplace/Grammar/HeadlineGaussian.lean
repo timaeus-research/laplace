@@ -24,7 +24,9 @@ variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasu
 
 /-- **The Gaussian dichotomy** (rem:pop_vs_emp): for `X ~ N(0, v)` the expected leading moment
 `E₊[J_p(X)]` is finite iff `βv < 2`, in which case it equals `J_p(0)(1 − βv/2)^{−p/2}`; above the
-threshold it is `+∞`. -/
+threshold (including equality `βv = 2`) it is `+∞`. The same threshold applies to any fixed
+strictly positive multiple of `J_p`, such as the leading coefficient `A_p = y₀₀/(k₁k₂) · J_p(x₀₀)`
+when `y₀₀ > 0`. -/
 theorem headline_gaussian_dichotomy (β p : ℝ) (hβ : 0 < β) (hp : 0 < p) (X : Ω → ℝ)
     (hX : Measurable X) (v : NNReal) (hXg : μ.map X = gaussianReal 0 v) :
     ((∫⁻ ω, ENNReal.ofReal (gaussMomentJ β p (X ω)) ∂μ) < ⊤ ↔ β * v < 2)

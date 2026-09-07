@@ -16,7 +16,8 @@ box integral
   `I(N) = ∫_{(0,1]^{m+1}} ∏ xᵢ^{hᵢ} e^{-βN ∏ xᵢ^{2kᵢ}} dx`
 
 is **exactly** `(∏ 1/(2kᵢ)) · (1/m!) · ∫₀¹ z^{λ-1} (-log z)^m e^{-βNz} dz`
-(`monomialBoxIntegral_exp_eq`, `monomialBoxReal_eq`), and therefore
+(`monomialBoxIntegral_exp_eq`, `monomialBoxReal_eq`; the exact reductions are stated for
+`βN > 0`, the only regime the asymptotic needs), and therefore
 
   `I(N) ~ Γ(λ) β^{-λ} / (m! ∏ᵢ 2kᵢ) · N^{-λ} (log N)^m`
 

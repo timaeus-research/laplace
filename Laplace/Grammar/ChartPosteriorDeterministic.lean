@@ -16,7 +16,12 @@ For a fixed phase `x` and amplitudes `y_φ`, `y_1` with `y_{1,00} > 0`, equal st
   `N` (Astra #14's correction to the naive vanishing-order heuristic).
 
 The log coefficient vanishes exactly when the amplitude vanishes at the corner
-(`leading_log_coeff_eq_zero_iff`). Zero `sorry`/`axiom`.
+(`leading_log_coeff_eq_zero_iff`).
+
+These are statements about a deterministic ratio of chart integrals; reading the ratio as a
+probability posterior for every `N` additionally requires a nonnegative denominator density on
+the box, which is not assumed (only `y_{1,00} > 0`, which makes the denominator eventually
+positive through its positive leading coefficient). Zero `sorry`/`axiom`.
 -/
 
 open Asymptotics Filter Real Topology
