@@ -8,8 +8,10 @@ import Laplace.Grammar.MonoRepPerm
 # Coefficient stability for polynomial data (Stage 4b — the stability gate)
 
 Unit 242 (Taylor-tree programme, Stage 4; Astra #28 "single riskiest step"). The spectral
-coefficients `A_{μ,j}(ξ, η)` of unit 237 are **Lipschitz in the monomial coefficients** of the data,
-with a constant depending only on upper bounds for the coefficient masses: if `η' ~ η ++ Δη`,
+coefficients `A_{μ,j}(ξ, η)` of unit 237 are **stable under appended perturbations with a fixed
+constant phase** (the situation of nested box truncations; this is not a Lipschitz statement for
+arbitrary pairs of polynomial presentations measured by their functional difference), with a
+constant depending only on upper bounds for the coefficient masses: if `η' ~ η ++ Δη`,
 `J' ~ J ++ Δ` (`J = ξ − ξ(0)`), `ξ'(0) = ξ(0) = a`, `‖η‖₁ ≤ E`, `‖J‖₁ + ‖Δ‖₁ ≤ B`, then for `μ > 0`
 ```
 |A_{μ,j}(ξ',η') − A_{μ,j}(ξ,η)|
