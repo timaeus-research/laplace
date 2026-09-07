@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Joint continuity of the amplitude coefficients and the measurable chart integral}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Infrastructure for the probabilistic normalised-remainder theorem (Astra~\#11 rank~4, second half).
+The amplitude coefficients $c_k(s)=\texttt{ampCoeff}\,\beta\,x\,y\,k\,s$ are finite algebraic
+expressions in finitely many entries of $(x,y)$ and in $s$, hence jointly continuous on
+$\texttt{CoeffPair}\times\mathbb R$ (\texttt{ampCoeff\_pair\_continuous}). For a measurable random
+Taylor datum $X\colon\Omega\to\texttt{CoeffPair}$ the chart integral $Z_N(X(\omega))$ is therefore a
+measurable function of $\omega$ (\texttt{measurable\_chartZ\_comp}), by the parameter-measurability
+theorem of unit~138. The chart integral is packaged as \texttt{chartZ} on \texttt{CoeffPair}, and the
+uniform Taylor tree of unit~135 is restated on norm balls with the coefficient maps
+\texttt{coeffA}, \texttt{coeffB} (\texttt{chartZ\_taylor\_tree\_ball}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem continuous_eval_coeffPair (i : PairIdx) : Continuous fun a : CoeffPair => a i
+theorem continuous_toX / continuous_toY (ρ) (k) :
+    Continuous fun a : CoeffPair => toX ρ a k
+theorem convPow_continuous_param (f : X → ℕ × ℕ → ℝ)
+    (hf : ∀ k, Continuous fun p => f p k) (n) :
+    ∀ k, Continuous fun p => convPow (f p) n k
+theorem dropConst_continuous_param / expCoeff_continuous_param
+theorem ampCoeff_continuous_param (β) (x y : X → ℕ × ℕ → ℝ) (hx hy) (s : X → ℝ) (hs) (k) :
+    Continuous fun p => ampCoeff β (x p) (y p) k (s p)
+theorem ampCoeff_pair_continuous (β ρ) (k) :
+    Continuous fun q : CoeffPair × ℝ => ampCoeff β (toX ρ q.1) (toY ρ q.1) k q.2
+theorem ampCoeff_pair_measurable (X : Ω → CoeffPair) (hX : Measurable X) (k) :
+    Measurable fun p : Ω × ℝ => ampCoeff β (toX ρ (X p.1)) (toY ρ (X p.1)) k p.2
+def chartZ (β b ρ) (h₁ h₂ k₁ k₂) (N) (a : CoeffPair) : ℝ :=
+  twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β (toX ρ a) (toY ρ a)) b)
+theorem measurable_chartZ_comp ... (X) (hX : Measurable X) :
+    Measurable fun ω => chartZ … N (X ω)
+theorem measurable_chartZ ... : Measurable (chartZ β b ρ h₁ h₂ k₁ k₂ N)
+theorem chartZ_taylor_tree_ball ... (M) (hM : 0 ≤ M) (a) (ha : ‖a‖ ≤ M) (T N)
+    (hN : 1 ≤ N) :
+    |chartZ … N a - ∑ α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T,
+        N^(-α) * (coeffA β ρ … α a * log N + coeffB β b ρ … α a)|
+      ≤ uniformTreeConst β b ρ M (2 * M) p₁ p₂ T h₁ h₂ k₁ k₂ 0 * (N^(-(2 * T)) * (1 + log N))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Each $c_k(s)$ is $e^{\beta sx_{00}}\sum_{a\le k}y_a\,E_{k-a}(\beta s)$ with
+$E_m(t)=\sum_{n\le|m|}\frac{t^n}{n!}(\bar x^{*n})_m$, and $(\bar x^{*n})_m$ is a finite sum of
+products of entries of $\bar x$; so $c_k$ is a polynomial in finitely many entries of $(x,y)$ and in
+$e^{\beta sx_{00}}$, $s$. Point evaluation is $1$-Lipschitz on $\ell^1$, so all of this is jointly
+continuous on $\texttt{CoeffPair}\times\mathbb R$, hence Borel measurable (the product of a metric
+space with the second-countable $\mathbb R$ has Borel $\sigma$-algebra equal to the product
+$\sigma$-algebra). Composing with a measurable $X$ gives the joint measurability hypothesis of
+unit~138's parameter theorem, whose conclusion is the measurability of $\omega\mapsto Z_N(X(\omega))$.
+On the ball $\|a\|\le M$ the amplitude has the common envelope $Me^{2\beta Ms}$ (unit~145), so the
+uniform Taylor tree applies with $C_0=M$, $L=2M$, $D=0$.
+
+\section{Paper-facing meaning}
+Two of the three ingredients of the probabilistic normalised-remainder statement are now in place:
+the deterministic bounds (unit~148, applied with $K=\texttt{uniformTreeConst}$ from
+\texttt{chartZ\_taylor\_tree\_ball}) and the measurability of the random chart integral. The next
+unit assembles them with Slutsky's theorem: for random Taylor data bounded by $M$ and converging in
+distribution, $(Z_n-L_{<\alpha})/(N_n^{-\alpha}\log N_n)\Rightarrow A_\alpha(Z)$ and the B-slot
+analogue.
+
+\section{Lean notes}
+\begin{itemize}
+\item Continuity by induction on the convolution power: the \texttt{zero} case is
+\texttt{change Continuous fun \_ => delta k} (definitional unfolding of \texttt{convPow a 0}),
+the \texttt{succ} case unfolds \texttt{conv} to a \texttt{continuous\_finsetSum}.
+\item Binders over a product must be type-annotated (\texttt{fun q : CoeffPair × ℝ => …});
+otherwise projections \texttt{q.1} fail to elaborate (``Invalid projection'').
+\item \texttt{lp.lipschitzWith\_one\_eval 1 i} gives continuity of point evaluation on $\ell^1$;
+\texttt{Continuous.measurable} on \texttt{CoeffPair × ℝ} finds the product
+\texttt{OpensMeasurableSpace} instance through \texttt{SecondCountableTopologyEither} with the
+$\mathbb R$ factor.
+\item The file compiled after one binder-annotation fix.
+\end{itemize}
+
+\end{document}
