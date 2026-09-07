@@ -1,0 +1,75 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The constant-Gaussian fluctuation model: Tonelli identity}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+First half of the rem:pop\_vs\_emp dichotomy (Astra~\#12~(b), \#13~(c)). The leading coefficient is
+$A_p=\frac{y_{00}}{k_1k_2}J_p(x_{00})$ with the positive Gaussian moment
+$J_p(x)=\int_0^\infty s^{p-1}e^{-\beta s^2}e^{\beta sx}ds$. For a Gaussian constant fluctuation
+$X\sim N(0,v)$ we prove, in the extended nonnegative reals,
+\[
+\mathbb E_+[J_p(X)]=\int_0^\infty s^{p-1}e^{-\beta s^2}e^{v(\beta s)^2/2}\,ds
+\]
+(\texttt{lintegral\_gaussMomentJ\_eq}), by Tonelli and the Gaussian moment generating function.
+The right-hand side is finite iff $\beta v<2$ (next unit): the expected leading coefficient can be
+infinite although every sample coefficient is finite. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def gaussMomentJ (β p x : ℝ) : ℝ := logMoment β p 0 (fun s => Real.exp (β * s * x))
+theorem gaussMomentJ_pos (hβ) (hp) : 0 < gaussMomentJ β p x
+theorem measurable_gaussMoment_integrand (β p) (X : Ω → ℝ) (hX : Measurable X) :
+    Measurable fun q : Ω × ℝ => ENNReal.ofReal (q.2^(p-1) * log q.2 ^ 0
+      * (exp (-β * q.2^2) * exp (β * q.2 * X q.1)))
+theorem lintegral_exp_gaussian (X) (hX : Measurable X) (v : NNReal)
+    (hXg : μ.map X = gaussianReal 0 v) (t) :
+    ∫⁻ ω, ENNReal.ofReal (exp (t * X ω)) ∂μ = ENNReal.ofReal (exp (v * t ^ 2 / 2))
+theorem lintegral_gaussMomentJ_eq (β p) (hβ) (hp) (X) (hX) (v) (hXg) :
+    ∫⁻ ω, ENNReal.ofReal (gaussMomentJ β p (X ω)) ∂μ
+      = ∫⁻ s in Ioi 0, ENNReal.ofReal (s^(p-1) * exp (-β * s^2) * exp (v * (β * s)^2 / 2))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Each $J_p(X(\omega))$ is a Bochner integral of a positive integrable function, hence equal (after
+\texttt{ofReal}) to the corresponding Lebesgue integral. The joint integrand is measurable, so
+Tonelli swaps the order; the inner integral over $\omega$ is the exponential moment
+$\mathbb E[e^{\beta sX}]=e^{v(\beta s)^2/2}$ (Mathlib's \texttt{mgf\_gaussianReal}, transported
+from the pushforward measure by \texttt{integrable\_map\_measure}). Isolating the positive moment
+$J_p$ from the prefactor $y_{00}/(k_1k_2)$, as Astra~\#12 advised, keeps the sign cases out of
+the core identity.
+
+\section{Paper-facing meaning}
+rem:pop\_vs\_emp states that the expected empirical coefficient differs from the population one
+because the coefficients depend nonlinearly on the fluctuation; the present identity quantifies this
+for the simplest random fluctuation (a Gaussian constant): the expectation replaces $e^{-\beta s^2}$ by
+$e^{-(\beta-\beta^2v/2)s^2}$, so $\mathbb E[J_p(X)]=J_p(0)(1-\beta v/2)^{-p/2}>J_p(0)$ when
+$\beta v<2$ and $=+\infty$ when $\beta v\ge2$ (next unit). As Astra~\#12 stressed, this concerns
+the expected asymptotic coefficient, not the fixed-$n$ chart integral on a compact chart, whose
+expectation stays finite.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{integrable\_map\_measure hg hX.aemeasurable} transports integrability along
+\texttt{μ.map X = gaussianReal 0 v}; the a.e.-strong-measurability argument must be given as a
+separate \texttt{have} (an inline dot-chain mis-associates).
+\item \texttt{lintegral\_lintegral\_swap} needs \texttt{AEMeasurable (uncurry f)} on the product;
+\texttt{Measurable.pow\_const} covers real powers of the coordinate.
+\item \texttt{ENNReal.ofReal\_mul} (with the nonnegativity of the left factor) and
+\texttt{lintegral\_const\_mul} pull the $s$-dependent factor out of the $\omega$-integral.
+\end{itemize}
+
+\end{document}
