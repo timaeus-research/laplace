@@ -9,8 +9,8 @@ import Laplace.Grammar.PhaseLeadingTerm
 
 Paper-facing wrappers for unit 202 (programme A, deterministic core). With `s = N u^k`,
 `p = 2λ`, `λ = min_i (hᵢ+1)/(2kᵢ)`, minimiser set `J`, `m = |J|`, `π` the projection setting the
-`J`-coordinates to `0`, `S^{(β)}_{p/2}(a) = ∫₀^∞ s^{p-1} e^{-βs²+βas} ds` (`phaseMoment β p a`; this is
-the paper's `J_p(a) = S_{p/2}(a)/2`, so the equal-ratio `d = 2` limit is the paper's
+`J`-coordinates to `0`, `S^{(β)}_{p/2}(a) = ∫₀^∞ s^{p-1} e^{-βs²+βas} ds` (`phaseMoment β p a`;
+this is the paper's `J_p(a) = S_{p/2}(a)/2`, so the equal-ratio `d = 2` limit is the paper's
 `A_p = y₀₀ J_p(x₀₀)/(k₁k₂)`):
 
 * `headline_phase_leading`: for continuous `ξ`, `η` on `ℝ^d`,

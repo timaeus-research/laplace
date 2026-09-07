@@ -23,8 +23,8 @@ constant `2^{m-1}·2·faceNorm = 1/((m-1)! ∏_{i∈J} kᵢ)` is evaluated in th
 **Method (Taylor-in-phase).** `e^{βsξ} = Σ_{j<2K} (βsξ)^j/j! + R_{2K}` with `s = Nu^k`. Each term is
 the shifted-exponent theorem of unit 200 (`shifted_term_tendsto`), the `N`-side remainder is bounded
 by `tailCoeff · Mη · ∫ u^h e^{-(β/4)N²u^{2k}}` (unit 199, bare monomial theorem at `β/4`), and the
-distance of `phaseCoeff` to the finite Taylor coefficient sum is bounded by the same tail against the
-limiting face measure (unit 201, `phaseMoment_taylor_le`). `tendsto_of_approx` assembles.
+distance of `phaseCoeff` to the finite Taylor coefficient sum is bounded by the same tail against
+the limiting face measure (unit 201, `phaseMoment_taylor_le`). `tendsto_of_approx` assembles.
 
 Zero `sorry`/`axiom`.
 -/
@@ -128,7 +128,8 @@ theorem continuous_taylorTerm {d : ℕ} (β N : ℝ) (h k : Fin d → ℕ) (ξ �
       (Real.continuous_exp.comp (continuous_const.mul hP2).neg)))
 
 /-- **`N`-side remainder**: the phase-dressed integral minus its `2K`-term Taylor approximant is
-bounded by `Mη · tailCoeff · ∫ u^h e^{-(β/4)N²u^{2k}}`, where `|η| ≤ Mη` and `|βξ| ≤ b` on the cube. -/
+bounded by `Mη · tailCoeff · ∫ u^h e^{-(β/4)N²u^{2k}}`, where `|η| ≤ Mη` and `|βξ| ≤ b` on the
+cube. -/
 theorem phase_remainder_le (d : ℕ) (h k : Fin d → ℕ) (β N b Mη : ℝ) (hβ : 0 < β) (hN : 0 ≤ N)
     (ξ η : (Fin d → ℝ) → ℝ) (hξ : Continuous ξ) (hη : Continuous η)
     (hb : ∀ x ∈ closedCube d, |β * ξ x| ≤ b) (hMη0 : 0 ≤ Mη)
@@ -213,8 +214,9 @@ theorem phaseCoeff_remainder_le (d : ℕ) (h k : Fin d → ℕ) (hk : ∀ i, 0 <
       ((β * ξ (faceProj h k l u)) ^ j / (j.factorial : ℝ) *
         (Real.Gamma (l + j / 2) * β ^ (-(l + j / 2)) / 2))) * residualWeight h k l u)
       (unitBox d) :=
-    fun j => integrableOn_face_mul h k hk l hmin (fun x => η x * ((β * ξ x) ^ j / (j.factorial : ℝ) *
-      (Real.Gamma (l + j / 2) * β ^ (-(l + j / 2)) / 2))) (by fun_prop)
+    fun j => integrableOn_face_mul h k hk l hmin
+      (fun x => η x * ((β * ξ x) ^ j / (j.factorial : ℝ) *
+        (Real.Gamma (l + j / 2) * β ^ (-(l + j / 2)) / 2))) (by fun_prop)
   have hterm : ∀ j : ℕ, IntegrableOn (fun u => (fun x => ξ x ^ j * η x) (faceProj h k l u) *
       residualWeight h k l u) (unitBox d) :=
     fun j => integrableOn_face_mul h k hk l hmin _ ((hξ.pow j).mul hη)
