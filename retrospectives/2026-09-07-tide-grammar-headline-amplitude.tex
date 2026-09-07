@@ -1,0 +1,66 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline part VIII: the dressed normal moment integral}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Paper-facing wrappers for the continuous-amplitude milestone (units 184--186). For the dressed
+normal moment $I_\eta(N)=\int_{(0,1]^{m+1}}\eta(x)x^he^{-\beta Nx^{2k}}\,dx$ with continuous $\eta$:
+the face-supported leading functional spelled out on the Bochner integral
+(\texttt{headline\_normal\_moment\_amplitude}); the constant-amplitude consistency check
+(\texttt{amplitudeCoeff\_const}); the equal-ratio case, where the coefficient is $\eta(0)$ times the
+bare constant (\texttt{headline\_normal\_moment\_amplitude\_equal}); the face-vanishing case with zero
+coefficient (\texttt{amplitudeCoeff\_eq\_zero\_of\_face}); and the equivalence form under a nonzero
+coefficient (\texttt{headline\_normal\_moment\_amplitude\_equiv}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem volume_unitBox (d) : volume (unitBox d) = 1
+theorem amplitudeCoeff_const (hk) (hmin) (c) :
+    amplitudeCoeff h k l β (fun _ => c) = c * monomialMixedConst h k l β
+theorem amplitudeCoeff_eq_zero_of_face (hη : ∀ u, η (faceProj h k l u) = 0) :
+    amplitudeCoeff h k l β η = 0
+theorem amplitudeCoeff_equal (hratio : ∀ i, ratioExp h k i = l) (η) :
+    amplitudeCoeff h k l β η = η 0 * (Gamma l * β ^ (-l) / (d.factorial * ∏ i, 2 * k i))
+theorem headline_normal_moment_amplitude ... (η) (hη : Continuous η) : Tendsto
+    (fun N => (∫ x in unitBox (m + 1), η x * ((∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i)))))
+      / (N ^ (-l) * log N ^ (|J| - 1))) atTop
+    (𝓝 ((Gamma l * β ^ (-l) / (|J| - 1)! * ∏ i, if ℓ i = l then 1 / (2 * k i) else 1)
+      * ∫ u in unitBox (m + 1), η (fun i => if ℓ i = l then 0 else u i)
+          * ∏ i, if ℓ i = l then 1 else u i ^ ((h i : ℝ) - 2 * k i * l)))
+theorem headline_normal_moment_amplitude_equal ... (hratio) : Tendsto (... / (N ^ (-l) * log N ^ m))
+    atTop (𝓝 (η 0 * (Gamma l * β ^ (-l) / (m.factorial * ∏ i, 2 * k i))))
+theorem headline_normal_moment_amplitude_equiv ... (hc : amplitudeCoeff h k l β η ≠ 0) :
+    (fun N => ∫ ...) ~[atTop] fun N => amplitudeCoeff h k l β η * N ^ (-l) * log N ^ (|J| - 1)
+\end{verbatim}
+}
+
+\section{Paper-facing meaning}
+This closes the deterministic one-block programme at the level Astra~\#16 called ``one normal block
+complete'': arbitrary mixed ratios, continuous amplitudes, an explicit face-supported leading
+functional, cutoff scaling, and an explicit treatment of a possibly vanishing leading coefficient
+(the asymptotic equivalence is asserted only when the coefficient is nonzero). Origin evaluation of
+the amplitude is verified to be correct exactly in the equal-ratio case.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{setIntegral\_const} now returns \texttt{μ.real s • c}; unfold with
+\texttt{measureReal\_def} before using the \texttt{volume} value.
+\item \texttt{volume (unitBox d) = 1} is \texttt{volume\_pi\_pi} plus \texttt{Real.volume\_Ioc}.
+\item A \texttt{congrArg} around \texttt{setIntegral\_congr\_fun} does not typecheck (the latter
+already produces the integral equality); use it directly.
+\end{itemize}
+
+\end{document}
