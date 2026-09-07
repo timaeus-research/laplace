@@ -283,3 +283,4 @@ import Laplace.Grammar.LogMerge
 import Laplace.Grammar.CanonicalCoefficients
 import Laplace.Grammar.TaylorTreeRegroup
 import Laplace.Grammar.TaylorTreeEqual
+import Laplace.Grammar.TaylorTreeNormalisation
