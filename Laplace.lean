@@ -403,3 +403,4 @@ import Laplace.Grammar.CoeffStability
 import Laplace.Grammar.CoeffFamily
 import Laplace.Grammar.FamilyPhaseIntegral
 import Laplace.Grammar.UniformCutoffConst
+import Laplace.Grammar.FamilySpectralCoeff
