@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The explicit coefficient series and the phase-derivative dictionary (Taylor-tree Stage 5)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units 250--254 close review v21's qualification (ii): the family coefficients $A_{\mu,j}(\xi,\eta)$ of
+Stage~4, defined as limits of polynomial truncation coefficients, are identified with the paper's
+explicit absolutely convergent series. With $J$ the constant-free part of the coefficient family of
+$\xi$ and $c*e$ the Cauchy product $(c*e)_\gamma=\sum_{\alpha\le\gamma}c_\alpha e_{\gamma-\alpha}$,
+\begin{align*}
+A_{\mu,j}(\xi,\eta)&=\sum_{p\ge0}\frac{\beta^p}{p!}\,T_{\mu,j,p}\bigl(c^\eta*J^{*p}\bigr),\\
+T_{\mu,j,p}(f)&=\prod_i\frac1{2k_i}\sum_\gamma f_\gamma\sum_{q=j}^{d-1}c_{\mu,q}(u^{h+\gamma})\binom qj
+\int_0^\infty t^{\mu-1}(-\log t)^{q-j}(\sqrt t)^pe^{-\beta t+\beta\sqrt ta}\,dt
+\end{align*}
+(Headline~XXIX, \texttt{familySpectralCoeff\_eq\_series}, $\mu>0$), where $(c^\eta*J^{*p})_\gamma=
+\sum_{\mathbf m+\mathbf n=\gamma}\frac{\eta_{\mathbf m}}{\mathbf m!}\xi_{\mathbf n,p}$ is the paper's
+collected coefficient (eq:flucttreeterms) once the families are normalised Taylor coefficients. The
+phase half of the derivative dictionary is a theorem: $\partial_a^pS_\mu(a)=\beta^p\int_0^\infty
+t^{\mu-1}(\sqrt t)^pe^{-\beta t+\beta\sqrt ta}\,dt$ (unit 250). Review v22: qualified pass, no
+mathematical defect. No \texttt{sorry} and no additional \texttt{axiom} declarations; 9130 jobs.
+\end{abstract}
+
+\section{Architecture}
+\paragraph{Cauchy product without an antidiagonal instance (u251).} Mathlib has no
+\texttt{HasAntidiagonal} on $\mathrm{Fin}\,d\to\mathbb N$; the convolution is a finite sum over
+$\mathrm{Iic}\,\gamma$ and the double series over pairs is regrouped along $\gamma=\alpha+\delta$ by the
+equivalence $(\alpha,\delta)\mapsto\langle\alpha+\delta,\alpha\rangle$ and \texttt{HasSum.sigma}, giving
+$\mathrm{eval}(c*e)=\mathrm{eval}\,c\cdot\mathrm{eval}\,e$ on the cube and $\mathrm{mass}(c*e)\le
+\mathrm{mass}\,c\cdot\mathrm{mass}\,e$.
+\paragraph{Collected coefficients (u252).} A monomial list collects to a finitely supported family;
+list product collects to convolution, powers to convolution powers, the fluctuation part to the
+constant-free family and box truncations to restrictions. Every Stage-3 list sum
+$\sum_{(\gamma,c)\in P}c\,f(\gamma)$ equals $\sum_\gamma(\mathrm{coeffFn}\,P)_\gamma f(\gamma)$.
+\paragraph{Kernel functional (u253).} $\mathrm{coeffTerm}_p(P)=T_p(\mathrm{coeffFn}\,P)$ with
+$|T_p f|\le K_kD\,M_{\mu,d-1,p}(a)\,\mathrm{mass}f$: the coefficient functional is $\ell^1$-continuous,
+uniformly in the monomial by the Stage-3 budget.
+\paragraph{Identification (u254).} The truncation coefficients are the same series for the truncated
+families; each term converges as the box grows (ℓ$^1$ continuity, the family power-difference estimate
+$\mathrm{mass}(c^{*p}-c'^{*p})\le pB^{p-1}\mathrm{mass}(c-c')$, tail masses $\to0$), and the series
+passes to the limit by dominated convergence with the Tonelli majorant
+$\sum_p\frac{(\beta B)^p}{p!}M_{\mu,n,p}(a)=M_{\mu,n}(a+B)$. Uniqueness of limits identifies the
+Stage-4 coefficient with the explicit series.
+\paragraph{Phase derivatives (u250).} Differentiation under the integral
+(\texttt{hasDerivAt\_integral\_of\_dominated\_loc\_of\_deriv\_le}) with the log majorant at phase
+parameter $|a|+1$ gives $\partial_a\,\mathrm{fluctMoment}=\beta\,\mathrm{fluctMoment}$ at the next phase
+order, hence $\partial_a^pS_\mu=\beta^pS_{\mu+p/2}$ (the paper's displayed formula omits $\beta^p$).
+
+\section{Status of the programme}
+Proved: the Taylor-tree expansion and remainder on general boxes for phase and amplitude given by
+absolutely summable power series (Headlines~XXVII--XXVIII), with the paper's exponent set, logarithmic
+indexing and cutoff-independent coefficients equal to the paper's explicit series (XXIX). Not proved:
+the Cauchy-estimate bridge from holomorphy on a polydisc to summability of the Taylor coefficients (no
+several-variable Cauchy estimates in Mathlib; Astra \#29 estimates 15--25 units and does not budget it),
+and the spectral half $(-\partial_\mu)^i$ of the derivative dictionary (next unit).
+
+\section{Lessons}
+Dot notation on hypotheses of a \texttt{def}-alias type (\texttt{AbsSummable}) resolves to lemmas in
+that namespace first; call \texttt{Summable.add} explicitly. \texttt{conv} already existed in the
+project namespace: qualify as \texttt{CoeffFamily.conv}. \texttt{Pi.sub\_apply} before
+\texttt{Finset.sum\_sub\_distrib}; \texttt{List.filter\_cons\_of\_pos/neg} for filters;
+\texttt{Finset.sum\_coe\_sort} for fibre sums over a Finset coercion; the pi-type order instances
+live in \texttt{Mathlib.Data.Pi.Interval} and \texttt{Mathlib.Algebra.Order.Sub.Prod}.
+\end{document}
