@@ -375,3 +375,4 @@ import Laplace.Grammar.PhaseRandomPosterior
 import Laplace.Grammar.StochasticAssemblyInfra
 import Laplace.Grammar.HeadlineStochasticAssembly
 import Laplace.Grammar.SignedReflectionGeneral
+import Laplace.Grammar.HeadlineSymmetricPhase
