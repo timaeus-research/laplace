@@ -1,0 +1,105 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Regrouping the merged expansion by exponent}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The merged $d=2$ cutoff expansion, indexed by face indices $i<M_1$, $j<M_2$, is regrouped over the
+finite pole set $\Lambda_M=\{\alpha_i\}_{i<M_1}\cup\{\delta_j\}_{j<M_2}$ as
+$\sum_{\alpha\in\Lambda_M}N^{-\alpha}(A_\alpha\log N+B_\alpha)$ with the canonical
+cutoff-independent coefficients of the previous unit (\texttt{mergedSum\_eq\_canon}). The
+compatibility inequalities $(M_1-1)/k_1<M_2/k_2$ and $(M_2-1)/k_2<M_1/k_1$ are used exactly once
+each: a retained pole of one axis lies strictly below every discarded pole of the other, so no
+canonical coefficient is supported outside the retained ranges. The analytic cutoff theorems follow
+in canonical pole form (\texttt{twoD\_cutoff\_canon}, \texttt{twoD\_cutoff\_amplitude\_canon}).
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem uExp_lt_vExp_of (p : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
+    (hM₁ : ((M₁ : ℝ) - 1) / k₁ < (M₂ : ℝ) / k₂) (i j : ℕ) (hi : i < M₁) (hj : M₂ ≤ j) :
+    uExp h₁ k₁ i < vExp h₂ k₂ j
+theorem not_uPole_of_vExp ... (j : ℕ) (hj : j < M₂)
+    (hno : ∀ i ∈ Finset.range M₁, uExp h₁ k₁ i ≠ vExp h₂ k₂ j) :
+    ∀ i, uExp h₁ k₁ i ≠ vExp h₂ k₂ j
+theorem uface_gamma_lt_of ... (i : ℕ) (hi : i < M₁) : (k₂ : ℝ) * uExp h₁ k₁ i - h₂ - 1 < M₂
+noncomputable def poleSet (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) : Finset ℝ :=
+  (Finset.range M₁).image (uExp h₁ k₁) ∪ (Finset.range M₂).image (vExp h₂ k₂)
+theorem canonC_sum_eq ... :
+    ∑ α ∈ poleSet h₁ h₂ k₁ k₂ M₁ M₂, transferTerm β α 1 (canonC h₁ h₂ k₁ k₂ c α) N
+      = mergedLog β h₁ h₂ k₁ k₂ M₁ M₂ c N
+theorem mergedSum_eq_canon ... (hU : ∀ i, i < M₁, canonical FP = FP at order M₂)
+    (hV : ∀ j, j < M₂, canonical FP = FP at order M₁) (N : ℝ) :
+    mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N
+      = ∑ α ∈ poleSet h₁ h₂ k₁ k₂ M₁ M₂,
+          N ^ (-α) * (canonA β h₁ h₂ k₁ k₂ c α * Real.log N
+            + canonB β b h₁ h₂ k₁ k₂ a bj c α)
+theorem twoD_cutoff_amplitude_canon (β b p ρ : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hβ : 0 < β)
+    (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
+    (hM₁ : ((M₁ : ℝ) - 1) / k₁ < (M₂ : ℝ) / k₂) (hM₂ : ((M₂ : ℝ) - 1) / k₂ < (M₁ : ℝ) / k₁)
+    (x y : ℕ × ℕ → ℝ) (hx : WSummable ρ x) (hy : WSummable ρ y) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β x y) b)
+        - ∑ α ∈ poleSet h₁ h₂ k₁ k₂ M₁ M₂,
+            N ^ (-α) * (canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β x y (i, j) s) α
+                * Real.log N
+              + canonB β b h₁ h₂ k₁ k₂ (anaFaceU (ampCoeff β x y) b)
+                  (anaFaceV (ampCoeff β x y) b) (fun i j s => ampCoeff β x y (i, j) s) α))
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(p + min ((M₁ : ℝ) / k₁) ((M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Each canonical pole term splits into the $u$-face, $v$-face and collision contributions
+(\texttt{canon\_term\_eq}). The $u$-face block over $\Lambda_M$ reduces to the block over the
+$u$-poles because $U_\alpha$ vanishes at a $v$-pole $\delta_j$ ($j<M_2$) which is no retained
+$u$-pole: it is then no $u$-pole at all, since $\alpha_i\ge\alpha_{M_1}=p+M_1/k_1>p+(M_2-1)/k_2\ge\delta_j$
+for $i\ge M_1$. Over the $u$-poles the sum pulls back along the injective map $i\mapsto\alpha_i$
+and the canonical finite part is replaced by the order-$M_2$ one (admissible since
+$\gamma_i=k_2\alpha_i-h_2-1<M_2$, again by compatibility). The collision block is the merged log
+family: for each $i<M_1$ either a unique $j_0<M_2$ collides (then the indicator sum is that single
+term and $C_{\alpha_i}=c_{ij_0}/(k_1k_2)$) or none does, in which case $\alpha_i$ is no $v$-pole at
+all (compatibility once more) and both sides vanish.
+
+\section{Paper-facing meaning}
+
+With this the analytic $d=2$ theorem reads exactly like \texttt{thm:TaylorTree} restricted to a
+finite pole set: $Z(N)=\sum_{\alpha\in\Lambda_M}N^{-\alpha}P_\alpha(\log N)+O(N^{-q_M}(1+\log N))$
+with $P_\alpha$ of degree $\le1$ and coefficients defined once for all. The remaining step to the
+paper's ``for every $T$'' form is the choice $M_\ell=\lceil k_\ell R\rceil$, $R=\max(1,2T-p)$, which
+satisfies both compatibility inequalities and $q_M\ge2T$, plus discarding the retained poles
+$\ge2T$ into the remainder.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Finset.sum\_subset} composed as
+\texttt{((Finset.sum\_subset Finset.subset\_union\_left ?\_).symm).trans ?\_} turns a sum over a
+union into a sum over one part plus a vanishing obligation; then \texttt{Finset.sum\_image} with the
+axis injectivity pulls back to \texttt{range}.
+\item The \texttt{if} conditions in \texttt{mergedLog} are spelled with the literal exponent
+expressions; a \texttt{change} to the \texttt{uExp}/\texttt{vExp} form (definitional) is needed
+before \texttt{if\_pos}/\texttt{if\_neg} with hypotheses stated via \texttt{uExp}.
+\item \texttt{gcongr} proves $i/k_1\le(M_1-1)/k_1$ from the side goal $i\le M_1-1$ (discharged by
+\texttt{linarith} from the cast of $i+1\le M_1$).
+\item \texttt{lt\_div\_iff₀} is the current name for clearing a positive denominator in a strict
+inequality.
+\item The unit compiled on the first attempt.
+\end{itemize}
+
+\end{document}
