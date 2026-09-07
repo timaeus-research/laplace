@@ -1,0 +1,71 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The deterministic chart posterior ratio and the corner-vanishing regime}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#14 rank~2. For a fixed phase $x$ and amplitudes $y_\varphi,y_1$ with $y_{1,00}>0$ and equal
+starting exponents $p$: if $y_{\varphi,00}\ne0$ then $Z[\varphi](N)/Z[1](N)\to y_{\varphi,00}/y_{1,00}$
+(\texttt{chart\_posterior\_tendsto\_const}); if $y_{\varphi,00}=0$ but the constant coefficient
+$B^\varphi_p\ne0$ then $(Z[\varphi]/Z[1])\log N\to B^\varphi_p/A^1_p$
+(\texttt{chart\_posterior\_tendsto\_log}). The log coefficient vanishes exactly when the amplitude
+vanishes at the corner (\texttt{leading\_log\_coeff\_eq\_zero\_iff}). So the posterior expectation of
+an observable vanishing at the corner decays like $1/\log N$, not like a power of $N$: Astra~\#14's
+correction of the naive vanishing-order heuristic, now a theorem. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem leading_log_coeff_eq_zero_iff ... :
+    canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β x y (i, j) s) p = 0 ↔ y (0, 0) = 0
+theorem chart_posterior_tendsto_const ... (hy₁0 : 0 < y₁ (0,0)) (hyφ0 : yφ (0,0) ≠ 0) :
+    Tendsto (fun N => twoDAmp … (anaAmp (ampCoeff β x yφ) b)
+                       / twoDAmp … (anaAmp (ampCoeff β x y₁) b))
+      atTop (𝓝 (yφ (0,0) / y₁ (0,0)))
+theorem chart_posterior_tendsto_log ... (hyφ0 : yφ (0,0) = 0)
+    (hB : canonB … (ampCoeff β x yφ) … p ≠ 0) :
+    Tendsto (fun N => twoDAmp … yφ … / twoDAmp … y₁ … * Real.log N) atTop
+      (𝓝 (canonB … yφ … p / canonA … y₁ … p))
+\end{verbatim}
+}
+
+\section{Mathematics}
+By unit~167, $Z[\varphi]\sim A^\varphi_pN^{-p}\log N$ if $A^\varphi_p\ne0$ and
+$Z[\varphi]\sim B^\varphi_pN^{-p}$ if $A^\varphi_p=0\ne B^\varphi_p$, while
+$Z[1]\sim A^1_pN^{-p}\log N$ with $A^1_p>0$. Since $A_p=\frac{y_{00}}{k_1k_2}\int_0^\infty
+s^{p-1}e^{-\beta s^2+\beta sx_{00}}ds$ with a positive integral, $A_p=0$ iff $y_{00}=0$, and the ratio
+$A^\varphi_p/A^1_p$ is $y_{\varphi,00}/y_{1,00}$. The quotient calculus of unit~166 then gives the two
+limits.
+
+\section{Paper-facing meaning}
+cor:empirical\_expectation's leading term $A_{i_0,j_0}(\varphi)/B_{k_0,p_0}$ with different leading
+indices: at chart level the first case beyond the generic one is an observable vanishing at the
+corner, and the theorem shows the leading indices differ in the log power, not in the exponent
+of $N$ --- the posterior expectation decays like $1/\log N$. This corrects the tempting reading
+``vanishing to order $m$ at the singularity improves the power of $N$'' (Astra~\#14: the power only
+improves under coordinatewise divisibility, which raises the exponents $(h_i+1)/k_i$ to
+$(h_i+a_i+1)/k_i$ and needs the face terms). The stochastic version (random phase converging in
+distribution) follows the same pattern and is left for a later unit; the formulas for $B^\varphi_p$
+(the face/finite-part coefficients of unit~121) remain implicit here.
+
+\section{Lean notes}
+\begin{itemize}
+\item Naming a local hypothesis \texttt{h₁} shadows the exponent variable \texttt{h₁ : ℕ} and breaks
+later applications (``expected ℕ''); use distinct names (\texttt{hE₁}).
+\item \texttt{tendsto\_quotient\_mul\_log\_of\_eq} with $r=0$ takes the denominator equivalence at
+$r+1$, which is definitionally $1$.
+\item The coefficient-ratio identity is \texttt{field\_simp} after \texttt{set M := logMoment …}.
+\end{itemize}
+
+\end{document}
