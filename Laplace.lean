@@ -298,3 +298,4 @@ import Laplace.Grammar.TaylorTreeUniform
 import Laplace.Grammar.LeadingUnequal
 import Laplace.Grammar.FiniteTreeIntegration
 import Laplace.Grammar.ParamMeasurable
+import Laplace.Grammar.CanonParamMeasurable
