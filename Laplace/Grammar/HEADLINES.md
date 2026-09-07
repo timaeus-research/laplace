@@ -1,5 +1,17 @@
 # Grammar §4 formalisation — headline index (general-dimensional normal block)
 
+## Completion statement (2026-09-07)
+The scoped **§4 normal-block programme is complete** at the reviewed baseline `d65d48b` (Astra #24–#25; reviews
+v1–v17): general machinery (Headlines VI–XIX), the assembled statistical example (XX–XX'' with the genuine-prior
+lemmas), and the Abelian coefficient dictionary (XXI). Explicit non-claims: XX–XX'' are fixed-`θ` moment-generating-
+function limits, not a formalised weak-convergence theorem for posterior laws; XXI is a real-axis Abelian coefficient
+limit, not meromorphic continuation or an exact-pole-order theorem; the signed-weight statements are analytic, the
+posterior interpretation needs `ρ ≥ 0`. The remaining paper material (full Taylor-tree expansion, complex Mellin
+continuation, the boundary tail, `eq:flucttreeterms`, the resolution-based §4.3 application) is **outside the
+completed work package**. Preferred separately authorised successor (Astra #25): posterior weak convergence of the
+law of `√n x₀x₁` to `N(z,1)` for deterministic phases (reconnaissance first: Lévy/Curtiss route vs direct
+test-function route); a cheap robustness variant is available via Mathlib's CLT (i.i.d. mean-0 variance-1 data).
+
 Pinned commit for the mirror `grammar_lean.tex`: see `\laplaceLeanCommit` there. All statements
 zero `sorry`/`axiom`; independent statement-level reviews v1–v15 in `tide-log/gpt6_fidelity_review_v*.md`.
 Conventions: boxes `(0,1]^d` (`unitBox`), `(-1,1]^d` (`symBox`); `ratioExp h k i = (hᵢ+1)/(2kᵢ)`,
