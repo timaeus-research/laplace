@@ -10,7 +10,7 @@ import Laplace.Grammar.ProductDensityCore
 Unit 223 (Taylor-tree programme, Stage 1a; Astra #26). The exact state density of a monomial on
 the unit box is a finite combination of `τ^{μ-1} (-log τ)^j` (`powLogBasis μ j`). We represent such
 combinations concretely as lists of triples `(μ, j, c)` (`PowLogRep`, evaluated by
-`PowLogRep.eval`), and prove that peeling one coordinate of weight `t^{w-1}`,
+`PowLogRep.eval`), and prove that peeling one coordinate (original weight `t^w`, kernel weight `t^{w-1}`),
 ```
 (powLogConv w v)(z) = ∫_{[z,1]} t^{w-1} v(z/t) dt,
 ```
