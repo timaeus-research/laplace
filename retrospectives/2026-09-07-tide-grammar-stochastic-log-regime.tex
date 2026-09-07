@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The stochastic $1/\log N$ regime}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+First unit of Astra~\#19's next programme, and its feasibility gate. For a corner-vanishing
+observable ($y_{\varphi,00}=0$) with a random phase $X_n\Rightarrow Z$ in the coefficient-pair space,
+the chart posterior ratio decays like $1/\log N$ with a \emph{random} limiting constant:
+\[
+\log N\cdot\frac{Z_N[\varphi](X_n)}{Z_N[1](X_n)}\;\Rightarrow\;\frac{B^\varphi_p(Z)}{A^1_p(Z)}
+\]
+(\texttt{tendstoInDistribution\_log\_posterior}). The gate passed with the existing infrastructure:
+the numerator's leading log coefficient vanishes identically for every phase, so its B-slot
+normalised remainder is exactly $Z_N[\varphi]/N^{-p}$; the B-slot error tends to zero in probability
+along the same random input as the denominator's A-slot error, giving joint convergence; the
+positive-denominator quotient theorem and the exact identity
+$\mathrm{normB}^\varphi/\mathrm{normA}^1=(Z[\varphi]/Z[1])\log N$ finish. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem coeffA_withY_eq_zero (hy0 : yφ (0, 0) = 0) (a) :
+    coeffA β ρ h₁ h₂ k₁ k₂ p (withY ρ hρ yφ hyφ a) = 0
+theorem normB_withY_eq (hy0) (N a) : normB β b ρ p p T h₁ h₂ k₁ k₂ p N (withY ρ hρ yφ hyφ a)
+    = chartZ β b ρ h₁ h₂ k₁ k₂ N (withY ρ hρ yφ hyφ a) / N ^ (-p)
+theorem normA_leading_eq (N a) : normA β b ρ p p T h₁ h₂ k₁ k₂ p N a
+    = chartZ β b ρ h₁ h₂ k₁ k₂ N a / (N ^ (-p) * log N)
+theorem normB_div_normA_eq (hy0) (hN : 1 < N) (a a') : normB … (withY yφ a) / normA … a'
+    = chartZ … (withY yφ a) / chartZ … a' * log N
+theorem tendstoInMeasure_normB_withY_sub ... : TendstoInMeasure μ (fun n ω =>
+    normB … p (Nseq n) (withY yφ (X n ω)) - coeffB … p (withY yφ (X n ω))) l (fun _ => 0)
+theorem tendstoInDistribution_normBA_pair ... : TendstoInDistribution (fun n ω =>
+    (normB … (withY yφ (X n ω)), normA … (withY y₁ (X n ω)))) l
+    (fun ω => (coeffB … (withY yφ (Z ω)), coeffA … (withY y₁ (Z ω)))) (fun _ => μ) μ'
+theorem tendstoInDistribution_log_posterior ...
+    (hyφ0 : yφ (0, 0) = 0) (hy₁0 : 0 < y₁ (0, 0)) :
+    TendstoInDistribution (fun n ω => chartZ … (Nseq n) (withY yφ (X n ω))
+      / chartZ … (Nseq n) (withY y₁ (X n ω)) * log (Nseq n)) l
+    (fun ω => coeffB … p (withY yφ (Z ω)) / coeffA … p (withY y₁ (Z ω))) (fun _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+Astra~\#19's gate obligations: (1) cancellation for the whole stochastic phase family ---
+$A^\varphi_p=y_{\varphi,00}J_p(x_{00})/(k_1k_2)=0$ for every phase; (2) the correct scale of the
+numerator remainder --- with $a_N=N^{-p}\log N$ the B-slot theorem gives
+$Z_N[\varphi]-N^{-p}B^\varphi_p=o_{\mathbb P}(N^{-p})=o_{\mathbb P}(a_N/\log N)$ exactly as required;
+(3) joint convergence from the common input --- both errors are functions of $X_n$ and the pair of
+limiting coefficients is a continuous image of $Z$; (4) almost-sure positivity of $A^1_p(Z)$ from
+$y_{1,00}>0$. Everything reduces to units 148--159 (envelope bounds on balls, tightness, the
+approximation lemma, the clipped-division quotient theorem).
+
+\section{Paper-facing meaning}
+This is the stochastic form of the $1/\log N$ regime recorded in \texttt{rem:empirical\_expectation\_lean}:
+for an observable vanishing at the corner, the empirical posterior expectation decays like
+$1/\log N$ with a random coefficient $B^\varphi_p(Z)/A^1_p(Z)$ determined by the limiting
+coefficient array; when $B^\varphi_p(Z)=0$ the limit is $0$ and no faster rate is claimed.
+
+\section{Lean notes}
+The unit is a near-verbatim B-slot mirror of \texttt{FixedAmplitudeJointLimit.lean} and
+\texttt{ChartPosteriorLimit.lean}: \texttt{normB\_sub\_le}/\texttt{tendsto\_errB} replace the A-slot
+bounds, \texttt{measurable\_normB\_comp} and \texttt{continuous\_coeffB} need the extra hypothesis
+$p>0$, and the final transfer uses \texttt{tendstoInMeasure\_of\_eventually\_abs\_le} with the exact
+identity for $N>1$. It compiled at the first attempt.
+
+\end{document}
