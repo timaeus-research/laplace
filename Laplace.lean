@@ -354,3 +354,4 @@ import Laplace.Grammar.SymmetricBox
 import Laplace.Grammar.QuadraticMonomialBridge
 import Laplace.Grammar.StochasticLogRegime
 import Laplace.Grammar.HeadlineStochasticLog
+import Laplace.Grammar.SignedReflection
