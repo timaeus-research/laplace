@@ -9,23 +9,28 @@ import Laplace.Grammar.HeadlinePhase
 # The leading Mellin (zeta) coefficient of a normal-crossing amplitude
 
 Unit 222 (Astra #24, optional programme E2). The paper evaluates normal moments through the zeta
-function `ζ(z) = ∫ (u^{2k})^z η(u) u^h du` (transform of `K = u^{2k}`), with its leading Laurent
-coefficient `a_{-m}` at the pole `z = -λ` of order `m` (eq. `a_minus_m_explicit`, `b = 1`):
-`a_{-m} = ∏_{i∈J} 1/(2kᵢ) · ∏_{i∉J} 1/(hᵢ+1-2kᵢλ)`. We prove the **Abelian, real-axis** form of
-this statement for a continuous amplitude on the unit box:
+function `ζ(z) = ∫ (u^{2k})^z η(u) u^h du` (transform of `K = u^{2k}`); for `η = 1` (paper's bare
+case, `b = 1`) `ζ(z) = ∏ᵢ 1/(2kᵢz+hᵢ+1)` has a pole of order `m` at `z = -λ` with leading Laurent
+coefficient `a_{-m} = ∏_{i∈J} 1/(2kᵢ) · ∏_{i∉J} 1/(hᵢ+1-2kᵢλ)` (eq. `a_minus_m_explicit`). We prove
+the **real-axis Abelian limit corresponding to this leading coefficient** for an amplitude `η`
+extending continuously to the closed cube (Lean: `η` continuous on `ℝ^d`):
 ```
 s^m ∫_{(0,1]^d} η(u) ∏ᵢ uᵢ^{2kᵢ(-λ+s)+hᵢ} du → ∏_{J} 1/(2kᵢ) · ∫ η(πu) ∏_{i∉J} uᵢ^{hᵢ-2kᵢλ} du
 ```
 as `s → 0⁺` (`mellin_leading_tendsto`), where `π` zeroes the minimising coordinates. The proof is
 the monomial-moment transfer of `ContinuousMomentTransfer` (as for the Laplace-side amplitude
-theorem), with the trivial closed forms `∫₀¹ u^a du = 1/(a+1)` as the only analytic input: on each
+theorem), with the closed forms `∫₀¹ u^a du = 1/(a+1)` as the only analytic input: on each
 minimising coordinate the measure `(2kᵢ s) u^{2kᵢ s - 1} du` has mass one and concentrates at `0`.
-For `η = 1` the limit is the paper's `a_{-m}` (`mellinCoeff_one`); in the equal-ratio case it is
-`η(0) ∏ 1/(2kᵢ)` (`mellinCoeff_equal`); and the Laplace-side leading coefficient of Headline VIII is
-`Γ(λ) β^{-λ}/(m-1)!` times the Mellin coefficient (`amplitudeCoeff_eq_gamma_mul_mellinCoeff`), the
-paper's "single `Γ(λ)` factor from the Laplace–Tauberian passage" — obtained here by comparing two
-Abelian limits, not by a Tauberian theorem. This is a real-axis leading-coefficient statement, not a
-meromorphic continuation or a complex pole theorem. Zero `sorry`/`axiom`.
+The statement does not assume that `λ` is attained: if no coordinate attains it, `m = 0`, `π = id`,
+and the limit is the regular value at `-λ`. For general `η` the limit does not establish
+meromorphic continuation or the exact pole order (the coefficient may vanish). For `η = 1` the
+limit is the paper's `a_{-m}` (`mellinCoeff_one`); in the equal-ratio case it is `η(0) ∏ 1/(2kᵢ)`
+(`mellinCoeff_equal`); and, by a definitional identity, the Laplace-side leading coefficient of
+Headline VIII equals `Γ(λ) β^{-λ}/(m-1)!` times the Mellin coefficient
+(`amplitudeCoeff_eq_gamma_mul_mellinCoeff`) — under the hypotheses of the Laplace amplitude theorem
+(attained minimum, `β > 0`) the two independently proved Abelian limits thus recover the paper's
+"single `Γ(λ)` factor from the Laplace–Tauberian passage", with no Tauberian theorem, meromorphic
+continuation or pole theorem involved. Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Filter Topology Real Set

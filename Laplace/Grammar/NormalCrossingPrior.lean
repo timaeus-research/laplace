@@ -11,10 +11,11 @@ Unit 221 (review v16 should-fix). Headlines XX–XX'' are stated for continuous 
 `ρ(0) > 0` and allow signed `ρ`; there the quotient `ncPosteriorMean` is an analytic object and
 Lean's totalised division may return `0` at a finite sample size if the evidence vanishes. For a
 **genuine prior weight** — `ρ ≥ 0` on the box and `ρ(0) > 0` — the evidence
-`∫_{(-1,1]²} ρ · likelihood` is strictly positive at every sample size (`nc_evidence_pos`: `ρ` is
-bounded below near the origin and the Gaussian likelihood is positive), so the posterior is a
-probability measure (`ncPosteriorMean_one`: the posterior mean of `1` is `1`) and the headline
-limits are statements about an actual normalised posterior. Zero `sorry`/`axiom`.
+`∫_{(-1,1]²} ρ · likelihood` is finite and strictly positive at every sample size
+(`nc_evidence_pos`: `ρ` is bounded below near the origin and the Gaussian likelihood is positive),
+so the finite positive density `ρ · likelihood / evidence` defines a probability measure on the box
+and `ncPosteriorMean` is its expectation for bounded measurable observables; `ncPosteriorMean_one`
+is the normalisation identity (posterior mean of `1` is `1`). Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Filter Topology Real Set ProbabilityTheory
@@ -97,7 +98,7 @@ theorem nc_evidence_pos (n : ℕ) (hn : 0 < n) (y : Fin n → ℝ) (ρ : (Fin 2 
   rw [h]
   exact mul_pos hC (nc_integral_pos ρ hρ hρnn hρ0 _ _)
 
-/-- The posterior is a probability measure: the posterior mean of `1` is `1`. -/
+/-- Normalisation of the posterior quotient: the posterior mean of `1` is `1`. -/
 theorem ncPosteriorMean_one (n : ℕ) (hn : 0 < n) (y : Fin n → ℝ) (ρ : (Fin 2 → ℝ) → ℝ)
     (hρ : Continuous ρ) (hρnn : ∀ x ∈ symBox 2, 0 ≤ ρ x) (hρ0 : 0 < ρ 0) :
     ncPosteriorMean n y ρ (fun _ => 1) = 1 := by
