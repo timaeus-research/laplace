@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The coefficient moments as absolutely convergent series}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Completion of Astra~\#8 rank~4. Two interchanges make the $d=2$ Taylor-tree coefficients
+explicit. (1) The face moments: $M[\alpha;\ell;U_{\alpha_i}]=k_1^{-1}\sum_jq_{\gamma_i}(j)\,M[\alpha;\ell;c_{ij}]$,
+absolutely convergent, by the weighted $L^1$ interchange under the envelope
+$|c_{ij}(s)|\le H(s)\rho^{-i-j}$, $H(s)\le C_0(1+s)^De^{\beta sL}$, with the weights
+$\sum_j|q_\gamma(j)|\rho^{-j}$ summable. (2) The Gaussian fluctuation moments: for the amplitude
+array, $c_k(s)=e^{\beta sx_{00}}\sum_{n\le|k|}\frac{(\beta s)^n}{n!}(y*a^{*n})_k$ is a FINITE sum (degree
+support), hence
+$M[\alpha;\ell;c_k]=\sum_{n\le|k|}\frac{\beta^n}{n!}(y*a^{*n})_k\int_0^\infty s^{\alpha+n-1}(\log s)^\ell e^{-\beta s^2+\beta sx_{00}}ds$,
+the paper's moments $\int t^{p/2}e^{-\beta t+\beta\sqrt t\,\xi(0)}dt$ in the variable $s=\sqrt t$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem axisPrim_div_summable (γ b ρ : ℝ) (hb : 0 < b) (hbρ : b < ρ) :
+    Summable fun j : ℕ => |axisPrim γ b j| / ρ ^ j
+theorem logMoment_canonU_series (β b ρ C₀ L : ℝ) (h₁ h₂ k₁ k₂ D : ℕ) (hβ : 0 < β)
+    (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁) (c : ℕ × ℕ → ℝ → ℝ)
+    (hcc : ∀ ij, Continuous (c ij)) (H : ℝ → ℝ)
+    (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s) (hC₀ : 0 ≤ C₀)
+    (henv : ∀ s, 0 ≤ s → H s ≤ C₀ * (1 + s) ^ D * Real.exp (β * s * L)) (ℓ : ℕ) (i : ℕ) :
+    (Summable fun j : ℕ => axisPrim ((k₂ : ℝ) * uExp h₁ k₁ i - h₂ - 1) b j
+        * logMoment β (uExp h₁ k₁ i) ℓ (c (i, j))) ∧
+      logMoment β (uExp h₁ k₁ i) ℓ
+          (canonU b h₁ h₂ k₁ k₂ (anaFaceU c b) (fun i j s => c (i, j) s) (uExp h₁ k₁ i))
+        = 1 / (k₁ : ℝ) * ∑' j : ℕ, axisPrim ((k₂ : ℝ) * uExp h₁ k₁ i - h₂ - 1) b j
+            * logMoment β (uExp h₁ k₁ i) ℓ (c (i, j))
+theorem ampCoeff_eq_sum (β : ℝ) (x y : ℕ × ℕ → ℝ) (k : ℕ × ℕ) (s : ℝ) :
+    ampCoeff β x y k s = Real.exp (β * s * x (0, 0))
+      * ∑ n ∈ Finset.range (k.1 + k.2 + 1),
+          (β * s) ^ n / (n.factorial : ℝ) * conv y (convPow (dropConst x) n) k
+theorem gaussMoment_integrableOn (β α x₀ : ℝ) (hβ : 0 < β) (hα : 0 < α) (ℓ n : ℕ) :
+    IntegrableOn (fun s => s ^ (α - 1) * Real.log s ^ ℓ
+      * (Real.exp (-β * s ^ 2) * (s ^ n * Real.exp (β * s * x₀)))) (Ioi 0)
+theorem logMoment_ampCoeff_eq_sum (β α : ℝ) (hβ : 0 < β) (hα : 0 < α) (x y : ℕ × ℕ → ℝ)
+    (k : ℕ × ℕ) (ℓ : ℕ) :
+    logMoment β α ℓ (ampCoeff β x y k)
+      = ∑ n ∈ Finset.range (k.1 + k.2 + 1),
+          β ^ n / (n.factorial : ℝ) * conv y (convPow (dropConst x) n) k
+            * logMoment β α ℓ (fun s => s ^ n * Real.exp (β * s * x (0, 0)))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+For the face moments the term family is $f_j(s)=c_{ij}(s)q_{\gamma_i}(j)$ with
+$|f_j(s)|\le\frac{H(s)}{\rho^i}\cdot\frac{|q_{\gamma_i}(j)|}{\rho^j}$; the weights are summable because
+$|q_\gamma(j)|\le b^jb^{-\gamma}/(J-\gamma)$ for $j\ge J>\gamma$ gives a geometric tail
+$(b/\rho)^j$. So $\sum_j|f_j(s)|\le\frac{C_0Q}{\rho^i}(1+s)^De^{\beta sL}$ with $Q=\sum_j|q(j)|\rho^{-j}$,
+an envelope of the shape accepted by \texttt{hasSum\_logMoment\_of\_envelope} (unit~98), and the
+interchange follows. For the Gaussian moments, $E_m(t)=\sum_{n<M}t^n/n!\,(a^{*n})_m$ for any
+$M>|m|$ (the extra terms vanish by degree support), so the convolution $(y*E(t))_k$ can be summed
+over a common range $n\le|k|$ and the two finite sums commute; the finite sum then passes through
+the $s$-integral once each term $s^{\alpha-1}(\log s)^\ell e^{-\beta s^2}s^ne^{\beta sx_{00}}$ is
+integrable, which is the envelope integrability of unit~96 with $R=n$, $a'=x_{00}$.
+
+\section{Paper-facing meaning}
+
+Combining units 121--126, every coefficient of the $d=2$ Taylor tree (equal starts) is now an
+explicit absolutely convergent series in the convolution data $(y*a^{*n})_{ij}$ of the coefficient
+arrays of $\eta$ and $\xi-\xi(0)$, weighted by $b^{j-\gamma}/(j-\gamma)$ (or $\log b$) and by the
+Gaussian moments $\int_0^\infty s^{\alpha+n-1}(\log s)^\ell e^{-\beta s^2+\beta s\xi(0)}ds$. This is the
+content of the paper's ``coefficients are absolutely convergent series expressed as derivatives of
+$\xi$, $\eta$ and the fluctuation function'' once the coefficient arrays are identified with Taylor
+data (the 1D identification exists; the 2D one is Taylor-coefficient uniqueness for double series).
+What remains for the paper's $d=2$ theorem is the unequal-starting-exponent case (Astra~\#8
+rank~3), which needs a new corner formula and an audit of the face expansion for negative $\gamma$.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{HasSum.congr\_fun} wants the equation in the direction ``new term $=$ old term''.
+\item \texttt{Finset.range\_subset} is no longer an iff usable with \texttt{.2}; use
+\texttt{Finset.range\_mono}.
+\item \texttt{Finset.sum\_comm} needs the inner sum exposed: push the outer factor in with
+\texttt{Finset.mul\_sum} inside the \texttt{sum\_congr} first.
+\item \texttt{gcongr} may leave a single arithmetic side goal (here $s\le1+s$) rather than one per
+factor; bullets then fail with ``no goals''.
+\item \texttt{positivity} cannot see $0\le s^{\alpha-1}$ from $s\in\mathrm{Ioi}\,0$; pass
+\texttt{Real.rpow\_nonneg hs.le \_}.
+\item \texttt{integral\_finset\_sum} is deprecated for \texttt{integral\_finsetSum}.
+\item Writing \texttt{div\_eq\_mul\_inv b \^{} j} parses as \texttt{(div\_eq\_mul\_inv b) \^{} j};
+prove the rpow identity as a separate \texttt{have}.
+\end{itemize}
+
+\end{document}
