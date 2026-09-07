@@ -34,7 +34,7 @@ Hypothesis: `ξ(u) = ∑_γ cξ_γ u^γ`, `η(u) = ∑_γ cη_γ u^γ` with `∑
 | Headline | Statement | File:line |
 |---|---|---|
 | XXVII | `|Z(N) − ∑_{μ∈Λ_L} N^{-μ} ∑_{j≤n} A_{μ,j}(cξ,cη)(log N)^j| ≤ cutoffBound(ξ(0), mass η, mass ξ) · N^{-L}(1+log N)^n` for all `N ≥ 1`, `L > 0`; `O(N^{-L}(1+log N)^n)` (L54), `O(N^{-L}(log N)^n)` (L66), `o(N^{-L'})` for `L' < L` (L96), over `Λ(h,k)` (L122) | FamilyTaylorTree.lean:39 (`familyTaylorTree_cutoff_bound`) |
-| — | **stability gate**: `|A_{μ,j}(ξ',η') − A_{μ,j}(ξ,η)| ≤ K_k D (E β M_{μ+1/2,n}(a+B) ‖Δ‖₁ + M_{μ,n}(a+B) ‖Δη‖₁)` for `η' ~ η ++ Δη`, `J' ~ J ++ Δ`, same constant phase | CoeffStability.lean:145 (`abs_spectralCoeff_sub_le`) |
+| — | **stability gate**: `|A_{μ,j}(ξ',η') − A_{μ,j}(ξ,η)| ≤ K_k D (E β M_{μ+1/2,n}(a+B) ‖Δ‖₁ + M_{μ,n}(a+B) ‖Δη‖₁)` for `η' ~ η ++ Δη`, `J' ~ J ++ Δ`, same constant phase | CoeffStability.lean:147 (`abs_spectralCoeff_sub_le`) |
 | — | family coefficients `A_{μ,j}(cξ,cη) = lim_m A_{μ,j}(truncations)` (Cauchy via the gate), vanishing off `Λ(h,k)` | FamilySpectralCoeff.lean:130 (`familySpectralCoeff`), :135 (`tendsto_truncCoeff`), :142 |
 | — | `Z_m(N) → Z(N)` at fixed `N` (dominated convergence) | FamilyPhaseIntegral.lean:45 (`tendsto_polyPhaseIntegral_truncList`) |
 | — | uniform constant: `taylorCutoffConst ≤ cutoffBound a E B` from `ξ(0) = a`, `‖η‖₁ ≤ E`, `‖J‖₁ ≤ B` (`M` monotone in `b`, `tailConst` in `|b|`) | UniformCutoffConst.lean:61 (`taylorCutoffConst_le`) |
