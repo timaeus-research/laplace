@@ -1,0 +1,80 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Measurability of the chart integral in the parameter}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#10 rank~2. For a coefficient family $c:\Omega\to\mathbb N^2\to\mathbb R\to\mathbb R$ jointly
+measurable in $(w,s)$ with a common radius $\rho>b$, the parametrised amplitude
+$(w,z)\mapsto\Phi_w(z_1,z_2,Nz_1^{k_1}z_2^{k_2})$ is measurable: its rectangular partial sums are
+measurable and converge everywhere on the box, so the limit is measurable
+(\texttt{anaAmp\_param\_measurable}); the product integrand follows, and the parametric Bochner
+integral over the box measure gives measurability of $w\mapsto Z_w(N)$
+(\texttt{twoDAmp\_param\_measurable}), discharging the first measurability hypothesis of the
+averaged Taylor tree. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem anaAmp_param_measurable {Ω : Type*} [MeasurableSpace Ω] (b N ρ : ℝ) (k₁ k₂ : ℕ)
+    (hb : 0 < b) (hbρ : b < ρ) (c : Ω → ℕ × ℕ → ℝ → ℝ)
+    (hcm : ∀ ij, Measurable fun p : Ω × ℝ => c p.1 ij p.2) (H : Ω → ℝ → ℝ)
+    (hc : ∀ w ij s, |c w ij s| * ρ ^ (ij.1 + ij.2) ≤ H w s) :
+    Measurable fun p : Ω × (ℝ × ℝ) =>
+      anaAmp (c p.1) b p.2.1 p.2.2 (N * (p.2.1 ^ k₁ * p.2.2 ^ k₂))
+theorem twoDAmp_param_measurable {Ω : Type*} [MeasurableSpace Ω] (β b N ρ : ℝ)
+    (h₁ h₂ k₁ k₂ : ℕ) (hb : 0 < b) (hbρ : b < ρ) (c : Ω → ℕ × ℕ → ℝ → ℝ)
+    (hcc : ∀ w ij, Continuous (c w ij))
+    (hcm : ∀ ij, Measurable fun p : Ω × ℝ => c p.1 ij p.2)
+    (H : Ω → ℝ → ℝ) (hH : ∀ w, Continuous (H w))
+    (hc : ∀ w ij s, |c w ij s| * ρ ^ (ij.1 + ij.2) ≤ H w s) :
+    Measurable fun w => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (c w) b)
+theorem twoDAmp_param_aestronglyMeasurable ... :
+    AEStronglyMeasurable (fun w => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (c w) b)) μ
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Each term $c_w(ij,s)\,\bar u^i\bar v^j$ ($\bar u,\bar v$ the clamped coordinates, $s=Nu^{k_1}v^{k_2}$)
+is measurable in $(w,z)$; the finite partial sums over $F\subset\mathbb N^2$ are measurable; for every
+$(w,z)$ the series is absolutely convergent since $\bar u,\bar v\le b<\rho$ and $|c|\rho^{i+j}\le H$,
+so the partial sums converge to the amplitude along the directed family of finite sets, a countably
+generated filter; hence the amplitude is measurable as a pointwise limit. The integrand
+$u^{h_1}v^{h_2}e^{-\beta s^2}\Phi_w$ is then measurable on $\Omega\times\mathbb R^2$, and the integral
+over the finite box measure is measurable in $w$ by the Fubini-type measurability of parametric
+integrals; finally $Z_w(N)$ equals that integral by the product-form identity of unit~89.
+
+\section{Paper-facing meaning}
+
+Ordinary but necessary: the per-stratum integral $\int Z_w(N)\rho_I(w)\,dw$ of \texttt{thm:TaylorTree}
+is well defined once the chart amplitude depends measurably (in the natural joint sense) on the
+noncritical coordinates, which holds for analytic $\xi,\eta$. Together with unit~137 this makes the
+averaged Taylor tree a theorem about a measurable family with a common envelope, modulo the
+measurability of the canonical coefficients (Astra~\#10 rank~3, next).
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{measurable\_of\_tendsto\_metrizable' atTop} works along the filter of finite subsets
+of $\mathbb N^2$ because \texttt{atTop.isCountablyGenerated} applies to any countable preorder; the
+\texttt{HasSum} of each point is exactly the required \texttt{Tendsto} of partial sums, packaged with
+\texttt{tendsto\_pi\_nhds}.
+\item \texttt{StronglyMeasurable.integral\_prod\_right'} needs \texttt{SFinite} of the second
+measure; for the project's \texttt{boxMeasure₂} (a plain \texttt{def}) provide it with a local
+\texttt{have ... := by unfold boxMeasure₂; infer\_instance}.
+\item The linter prefers \texttt{have} to \texttt{haveI} for propositional instances.
+\end{itemize}
+
+\end{document}
