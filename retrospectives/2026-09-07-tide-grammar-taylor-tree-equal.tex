@@ -1,0 +1,105 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The Taylor tree for $d=2$ with equal starting exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The paper's Theorem (Taylor Tree) for $d=2$ and equal starting exponents
+$(h_1+1)/k_1=(h_2+1)/k_2=p$, in the normalisation $N=\sqrt n$: for analytic $\xi,\eta$ with
+weighted-summable coefficient arrays at a radius $\rho>b$ and for EVERY $T$,
+\[
+Z(N)-\sum_{\alpha\in\Lambda(h,k),\ \alpha<2T}N^{-\alpha}\bigl(A_\alpha\log N+B_\alpha\bigr)
+=O\bigl(N^{-2T}(1+\log N)\bigr),
+\]
+with $A_\alpha,B_\alpha$ the canonical coefficients of unit~121, defined once and independent of
+$T$ (\texttt{twoD\_taylor\_tree\_equal}). The truncation orders $M_\ell=\lceil k_\ell R\rceil$,
+$R=\max(1,2T-p)$, satisfy both compatibility inequalities and push the remainder below $N^{-2T}$;
+the pole set below $2T$ is characterised without reference to the cutoff
+(\texttt{mem\_polesBelow\_iff}) and retained poles $\ge2T$ are discarded into the remainder.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def cutoffR (p T : ℝ) : ℝ := max 1 (2 * T - p)
+noncomputable def cutoffM (k : ℕ) (p T : ℝ) : ℕ := ⌈(k : ℝ) * cutoffR p T⌉₊
+theorem cutoffM_bounds (k : ℕ) (hk : 0 < k) (p T : ℝ) :
+    ((cutoffM k p T : ℝ) - 1) / k < cutoffR p T ∧ cutoffR p T ≤ (cutoffM k p T : ℝ) / k
+theorem cutoff_ge (k₁ k₂ : ℕ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (p T : ℝ) :
+    2 * T ≤ p + min ((cutoffM k₁ p T : ℝ) / k₁) ((cutoffM k₂ p T : ℝ) / k₂)
+noncomputable def polesBelow (h₁ h₂ k₁ k₂ : ℕ) (p T : ℝ) : Finset ℝ :=
+  (poleSet h₁ h₂ k₁ k₂ (cutoffM k₁ p T) (cutoffM k₂ p T)).filter (· < 2 * T)
+theorem mem_polesBelow_iff (h₁ h₂ k₁ k₂ : ℕ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (p T : ℝ)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p) (α : ℝ) :
+    α ∈ polesBelow h₁ h₂ k₁ k₂ p T
+      ↔ α < 2 * T ∧ ((∃ i, uExp h₁ k₁ i = α) ∨ ∃ j, vExp h₂ k₂ j = α)
+theorem discard_isBigO (T A B α : ℝ) (hα : 2 * T ≤ α) :
+    (fun N : ℝ => N ^ (-α) * (A * Real.log N + B)) =O[atTop]
+      fun N : ℝ => N ^ (-(2 * T)) * (1 + Real.log N)
+theorem twoD_taylor_tree_equal (β b p ρ : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 < β) (hb : 0 < b)
+    (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p) (x y : ℕ × ℕ → ℝ) (hx : WSummable ρ x)
+    (hy : WSummable ρ y) (T : ℝ) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β x y) b)
+        - ∑ α ∈ polesBelow h₁ h₂ k₁ k₂ p T,
+            N ^ (-α) * (canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β x y (i, j) s) α
+                * Real.log N
+              + canonB β b h₁ h₂ k₁ k₂ (anaFaceU (ampCoeff β x y) b)
+                  (anaFaceV (ampCoeff β x y) b) (fun i j s => ampCoeff β x y (i, j) s) α))
+      =O[atTop] fun N : ℝ => N ^ (-(2 * T)) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+With $R=\max(1,2T-p)$ and $M_\ell=\lceil k_\ell R\rceil$ we have $k_\ell R\le M_\ell<k_\ell R+1$,
+hence $(M_\ell-1)/k_\ell<R\le M_\ell/k_\ell$. Both compatibility inequalities
+$(M_1-1)/k_1<R\le M_2/k_2$ (and symmetrically) follow, and
+$p+\min_\ell M_\ell/k_\ell\ge p+R\ge2T$, so the canonical cutoff theorem of unit~122 gives the
+expansion over $\Lambda_M$ with remainder $O(N^{-2T}(1+\log N))$. Splitting $\Lambda_M$ by the
+predicate $\alpha<2T$, the discarded terms have $N^{-\alpha}\le N^{-2T}$ and
+$|A\log N+B|\le(|A|+|B|)(1+\log N)$ for $N\ge1$. Conversely every pole $\alpha_i<2T$ has
+$i<k_1(2T-p)\le k_1R\le M_1$, so nothing below $2T$ is missed: the retained set is exactly
+$\{\alpha\in\Lambda(h,k):\alpha<2T\}$, independent of how the cutoff was chosen.
+
+\section{Paper-facing meaning}
+
+This is \texttt{thm:TaylorTree} for $d=2$ under the equal-exponent hypothesis, with
+$Z(\beta,n;\xi,\eta)=Z(N)$ at $N=\sqrt n$, exponent labels $\alpha=2\mu$, and
+$P_\mu(X)=\tfrac12A_\alpha X+B_\alpha$ (degree $\le d-1=1$). Compared with the paper's statement:
+(i) the hypothesis is weighted summability of the coefficient arrays of $\xi,\eta$ at some
+$\rho>b$, which holds for functions holomorphic on $|z_i|<R$, $R>b$; (ii) the expansion is stated
+with a rigorous remainder for every $T$ rather than as a formal asymptotic series; (iii) the
+coefficients are canonical finite parts and Gaussian $s$-moments of the exponential coefficient
+array, and their identification with the paper's ``absolutely convergent series in derivatives of
+$\xi$, $\eta$'' is the finite-part/series formula of Astra~\#8 rank~4, still to do. Unequal starting
+exponents (rank~3) are the other outstanding piece of the $d=2$ theorem.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{div\_lt\_iff₀} needs the fraction isolated: derive $i/k_1<2T-p$ by
+\texttt{linarith} first, then rewrite; \texttt{nlinarith} is not needed once the product
+$k_1(2T-p)\le k_1R$ is stated via \texttt{mul\_le\_mul\_of\_nonneg\_right}.
+\item \texttt{le\_of\_not\_lt} is gone; use \texttt{not\_lt.1}.
+\item \texttt{Finset.sum\_filter\_add\_sum\_filter\_not s p} splits a sum by a predicate; with
+\texttt{set} names for the pole set and the coefficient functions the resulting identity closes by
+\texttt{ring}.
+\item \texttt{IsBigO.sum} produces a Pi-sum of functions; pass \texttt{A} explicitly and finish
+with \texttt{congr\_left} and \texttt{simp only [Finset.sum\_apply]}.
+\item \texttt{Real.rpow\_le\_rpow\_of\_exponent\_le (hN : 1 ≤ N)} compares powers of the same
+base $\ge1$.
+\end{itemize}
+
+\end{document}
