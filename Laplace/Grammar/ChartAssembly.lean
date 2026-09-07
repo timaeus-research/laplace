@@ -28,8 +28,8 @@ The family is finite and nonempty (`[Fintype ι] [Nonempty ι]`); the multiplici
 `m_a ≥ 1`. Everything about resolution, charts, Jacobians and partitions of unity enters only
 through the hypotheses `hI`; this is a *conditional* assembly theorem. Non-chart remainders are not
 modelled (they may be added as `o(N^{-p_*}(log N)^{m_*-1})` terms); zero chart coefficients are
-allowed, only the selected denominator sum must be positive. The instantiation with the phase-dressed
-chart integrals of Headlines XIII–XIV is unit 208. Zero `sorry`/`axiom`.
+allowed, only the selected denominator sum must be positive. The instantiation with the
+phase-dressed chart integrals of Headlines XIII–XIV is unit 208. Zero `sorry`/`axiom`.
 -/
 
 open Filter Topology Real Asymptotics
