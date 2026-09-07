@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The reduced form of the two-dimensional cutoff expansion}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The cutoff theorem of unit~107 lists the transferred terms of all faces and corners. The monomial
+terms cancel exactly against the corner terms (Astra~\#5(a)): the $m=j$ monomial coefficient of the
+$u$-face $i$ equals the finite-part coefficient of the corner $(i,j)$, and the $m=i$ monomial
+coefficient of the $v$-face $j$ equals the monomial coefficient of the corner, as functions of $s$
+and with equal exponents, both at resonance and off it. What remains is the reduced sum
+\begin{gather*}
+\sum_{i<M_1}N^{-(p+i/k_1)}\mathcal M\bigl[k_1^{-1}\mathrm{FP}_{k_2i/k_1}(a_i)\bigr]
++\sum_{j<M_2}N^{-(p+j/k_2)}\mathcal M\bigl[k_2^{-1}\mathrm{FP}_{k_1j/k_2}(b_j)\bigr]\\
++(\text{$u$-face logs})+(\text{$v$-face logs})-(\text{corner logs}),
+\end{gather*}
+and \texttt{twoD\_cutoff\_reduced\_isBigO} restates unit~107 with it: the constant coefficients of
+the higher-order $d=2$ expansion are exactly the weighted finite parts of the face jets, as
+predicted. The three log families combine to one copy per collision; that final simplification is
+left as a separate lemma. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem cornerData_sum (c : ℝ → ℝ) (g : ℕ → ℝ) (M : ℕ) (hM : 0 < M) (s : ℝ) :
+    ∑ m ∈ Finset.range M, cornerData c m s * g m = c s * g 0
+theorem faceCoeff_cornerData_succ (γ A : ℝ) (k₁ k₂ : ℕ) (c : ℝ → ℝ) (m : ℕ) :
+    faceCoeff γ A k₁ k₂ (cornerData c) (m + 1) = fun _ => 0
+theorem faceFPCoeff_corner (γ b : ℝ) (k₂ : ℕ) (c : ℝ → ℝ) (M : ℕ) (hM : 0 < M) (s : ℝ) :
+    faceFPCoeff γ b k₂ (fun _ s => c s) (cornerData c) M s
+      = 1 / (k₂ : ℝ) * (c s * axisPrim γ b 0)
+theorem uface_coeff_eq_corner_fp (b p : ℝ) (h₁ h₂ k₁ k₂ i j Mc : ℕ) (hb : 0 < b)
+    (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p) (hMc : 0 < Mc) (c : ℕ → ℕ → ℝ → ℝ) :
+    faceCoeff ((k₂ : ℝ) * ((((h₁ + i : ℕ) : ℝ) + 1) / k₁) - h₂ - 1) (b ^ k₁) k₂ k₁
+        (fun m => c i m) j
+      = faceFPCoeff ((k₁ : ℝ) * ((((h₂ + j : ℕ) : ℝ) + 1) / k₂) - ((h₁ + i : ℕ) : ℝ) - 1) b k₂
+        (fun _ s => c i j s) (cornerData (c i j)) Mc
+theorem vface_coeff_eq_corner_coeff (b : ℝ) (h₁ h₂ k₁ k₂ i j : ℕ) (c : ℕ → ℕ → ℝ → ℝ) :
+    faceCoeff ((k₁ : ℝ) * ((((h₂ + j : ℕ) : ℝ) + 1) / k₂) - h₁ - 1) (b ^ k₂) k₁ k₂
+        (fun m => c m j) i
+      = faceCoeff ((k₁ : ℝ) * ((((h₂ + j : ℕ) : ℝ) + 1) / k₂) - ((h₁ + i : ℕ) : ℝ) - 1)
+        (b ^ k₂) k₁ k₂ (cornerData (c i j)) 0
+theorem uface_exp_eq / vface_exp_eq   -- the matching exponents
+noncomputable def reducedSum (β b : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (a bj : ℕ → ℝ → ℝ → ℝ)
+    (c : ℕ → ℕ → ℝ → ℝ) (N : ℝ) : ℝ   -- face finite parts + u-logs + v-logs − corner logs
+theorem overcomplete_eq_reduced ... :
+    (∑ i ∈ Finset.range M₁, faceSum [u-face i] N) + (∑ j ∈ Finset.range M₂, faceSum [v-face j] N)
+      - ∑ i ∈ Finset.range M₁, ∑ j ∈ Finset.range M₂, faceSum [corner i j] N
+      = reducedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N
+theorem twoD_cutoff_reduced_isBigO ... :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ Φ - reducedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N)
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(p + min ((M₁ : ℝ) / k₁) ((M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+With $\gamma_u=k_2i/k_1$ (the $u$-face) and $\gamma_c=k_1j/k_2-i$ (the corner), $j=\gamma_u$ iff
+$\gamma_c=0$ iff $k_1j=k_2i$. Off resonance the $u$-face monomial coefficient is
+$-k_1^{-1}(b^{k_1})^{-(j-\gamma_u)/k_2}c_{ij}/(j-\gamma_u)=-b^{-\gamma_c}c_{ij}/(k_2\gamma_c)$,
+which is $k_2^{-1}c_{ij}\,\mathrm{axisPrim}(\gamma_c,b,0)$, the finite part of the corner (whose
+regularised integral vanishes since its Taylor remainder is identically zero); at resonance both are
+$k_2^{-1}c_{ij}\log b$ (using $\log b^{k_1}=k_1\log b$). The $v$-face/corner monomial identity is a
+relabelling $\gamma_c=\gamma_v-i$. The corner's monomial terms with $m\ge1$ have zero coefficient
+functions and so vanish under the moment functional. Summing over faces and corners and commuting
+the double sum gives the reduced form; no integrability or asymptotics is used, only pointwise
+equality of coefficient functions.
+
+\section{Paper-facing meaning}
+
+This is the grouped coefficient description of Astra~\#5(a) up to the merging of the three log
+families: at exponent $p+q$ the nonlogarithmic coefficient is $\mathcal M_{p+q}$ of
+$k_1^{-1}\mathrm{FP}_{k_2q}(a_i)+k_2^{-1}\mathrm{FP}_{k_1q}(b_j)$ (whichever of $q=i/k_1$,
+$q=j/k_2$ apply), and the corner monomials contribute nothing beyond what is already inside the two
+face finite parts. This is the closest formal counterpart so far of the paper's description of the
+higher-order coefficients through renormalised face integrals.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item Two competing normalisations of the same denominator ($k_1j-k_2i$ vs $-(k_1j)+k_2i$) defeat
+\texttt{field\_simp}; rewrite both denominators to a common form first
+(\texttt{d1}, \texttt{d2}) and then \texttt{field\_simp} closes the goal outright.
+\item \texttt{Fin.sum\_univ\_eq\_sum\_range} with a large explicit lambda left an instance stuck
+inside \texttt{rw}; \texttt{congr 1} down to the sum and \texttt{rw [Finset.sum\_range]} on the
+range side, then \texttt{Finset.sum\_congr} over \texttt{Fin}, is robust. \texttt{Fin.pos j} gives
+\texttt{0 < M₂} from an inhabitant.
+\item \texttt{Finset.sum\_comm} as a bare \texttt{rw} may hit the wrong double sum; state the
+specific commutation as a \texttt{have} with explicit summands.
+\item \texttt{try ring} after \texttt{field\_simp} accommodates both outcomes (closed or not).
+\end{itemize}
+
+\end{document}
