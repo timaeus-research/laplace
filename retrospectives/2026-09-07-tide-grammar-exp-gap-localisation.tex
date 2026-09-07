@@ -1,0 +1,57 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Exponential-gap localisation}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The analytic content of the paper's localisation step (remark \texttt{rem:cutoff\_correct}): away
+from the zero set of the phase, where $f\ge\varepsilon$, a Laplace-type integral with amplitude
+dominated by an integrable $g$ satisfies
+$\big\|\int_Sa\,e^{-\beta Nf}\big\|\le e^{-\beta N\varepsilon}\int_Sg$
+(\texttt{norm\_setIntegral\_exp\_gap\_le}); uniformly over dominated families this is
+$O(e^{-\beta N\varepsilon})$ (\texttt{exp\_gap\_isBigO}), which is $o$ of every power--log scale
+$N^{-\lambda}(\log N)^r$ (\texttt{exp\_gap\_isLittleO\_powLog}). Establishing the gap on the complement
+of a neighbourhood of the zero set is a separate geometric task. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem norm_setIntegral_exp_gap_le (S) (hS) (a g f : X → ℝ) (β N ε) (hβN : 0 ≤ β * N)
+    (hg : IntegrableOn g S μ) (hbound : ∀ x ∈ S, ‖a x‖ ≤ g x) (hgap : ∀ x ∈ S, ε ≤ f x) :
+    ‖∫ x in S, a x * exp (-(β * N * f x)) ∂μ‖ ≤ exp (-(β * N * ε)) * ∫ x in S, g x ∂μ
+theorem exp_gap_isBigO (S) (hS) (a : ℝ → X → ℝ) (g f) (β ε) (hβ : 0 ≤ β) (hg)
+    (hbound : ∀ N, ∀ x ∈ S, ‖a N x‖ ≤ g x) (hgap) :
+    (fun N => ∫ x in S, a N x * exp (-(β * N * f x)) ∂μ) =O[atTop] fun N => exp (-(β * N * ε))
+theorem exp_gap_isLittleO_powLog (β ε C l) (r) (hβ : 0 < β) (hε : 0 < ε) (hC : 0 < C) :
+    (fun N => exp (-(β * N * ε))) =o[atTop] powLog C l r
+\end{verbatim}
+}
+
+\section{Paper-facing meaning}
+Together with the normal-block and tangential results, this supplies the third analytic ingredient
+of the paper's per-stratum expansion: contributions from regions where the phase is bounded below
+are negligible against every power--log term. What remains geometric is the existence of the gap
+on $U\setminus U_\varepsilon$ and the chart/partition-of-unity bookkeeping.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{norm\_integral\_le\_of\_norm\_le} needs only integrability of the dominating function;
+no measurability of the amplitude or phase is required.
+\item Beware \texttt{mul\_comm} rewrites hitting the product inside the exponent first; conclude with
+\texttt{.trans (le\_of\_eq (mul\_comm \_ \_))} instead.
+\item \texttt{isLittleO\_exp\_neg\_mul\_rpow\_atTop} gives $e^{-aN}=o(N^b)$; the log power is absorbed
+by $N^{-\lambda}=O(N^{-\lambda}(\log N)^r)$ for $N\ge e$.
+\end{itemize}
+
+\end{document}
