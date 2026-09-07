@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The phase-dressed normal moment}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 201 (programme~A, step~3). The one-dimensional normal moment dressed by a constant phase,
+\[
+S^{(\beta)}_{p/2}(a)=\int_0^\infty s^{p-1}e^{-\beta s^2+\beta as}\,ds
+\]
+(\texttt{phaseMoment β p a}; the paper's $S_{p/2}(a)$, kernel \texttt{quadKernel β a}), is
+formalised with everything the assembly unit needs: integrability with the uniform Gaussian
+domination $s^{p-1}e^{-\beta s^2+\beta as}\le e^{\beta R^2/2}s^{p-1}e^{-\beta s^2/2}$ for $|a|\le R$,
+continuity in $a$ (dominated convergence on a ball), the Gaussian moments
+$\int_0^\infty s^{p-1}s^je^{-\beta s^2}\,ds=\tfrac12\Gamma(\tfrac p2+\tfrac j2)\beta^{-(p/2+j/2)}$,
+the zero-phase value $\tfrac12\Gamma(p/2)\beta^{-p/2}$, and the \emph{finite Taylor approximation}
+\[
+\Bigl|S^{(\beta)}_{p/2}(a)-\sum_{j<2K}\frac{(\beta a)^j}{j!}\cdot\tfrac12\Gamma(\tfrac p2+\tfrac j2)\beta^{-(p/2+j/2)}\Bigr|
+\le\tau_K(\beta,b)\int_0^\infty s^{p-1}e^{-\beta s^2/4}\,ds\qquad(|\beta a|\le b),
+\]
+with the uniform tail constant $\tau_K$ of unit~199. Zero \texttt{sorry}/\texttt{axiom}; 9078 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def phaseMoment (β p a : ℝ) : ℝ :=
+    ∫ s in Ioi 0, s ^ (p - 1) * quadKernel β a s
+noncomputable def gaussTail (β p : ℝ) : ℝ := ∫ s in Ioi 0, s ^ (p - 1) * exp (-(β/4 * s^2))
+theorem gauss_integrableOn (hc : 0 < c) (hq : -1 < q) :
+    IntegrableOn (fun s => s ^ q * exp (-(c * s^2))) (Ioi 0)
+theorem quadKernel_le_of_abs_le (hβ) (hs : 0 ≤ s) (haR : |a| ≤ R) :
+    quadKernel β a s ≤ exp (β R²/2) * exp (-(β/2 s²))
+theorem phaseMoment_integrand_integrableOn (hβ) (hp : 0 < p) :
+    IntegrableOn (fun s => s ^ (p - 1) * quadKernel β a s) (Ioi 0)
+theorem continuous_phaseMoment (hβ) (hp) : Continuous fun a => phaseMoment β p a
+theorem gaussMoment_eq (hβ) (hq : -1 < q) :
+    ∫ s in Ioi 0, s ^ q * exp (-(β s²)) = Γ ((q+1)/2) * β ^ (-((q+1)/2)) / 2
+theorem gaussMoment_nat_eq (j : ℕ) (hβ) (hp) :
+    ∫ s in Ioi 0, s ^ (p-1) * (s ^ j * exp (-(β s²))) = Γ (p/2 + j/2) * β ^ (-(p/2 + j/2)) / 2
+theorem phaseMoment_zero (hβ) (hp) : phaseMoment β p 0 = Γ (p/2) * β ^ (-(p/2)) / 2
+theorem phaseMoment_taylor_le (hβ) (hp) (hab : |β * a| ≤ b) (K : ℕ) :
+    |phaseMoment β p a - ∑ j ∈ range (2K), (β a)^j / j! * (Γ (p/2 + j/2) * β^(-(p/2+j/2)) / 2)|
+      ≤ tailCoeff β b K * gaussTail β p
+\end{verbatim}
+}
+
+\section{Mathematics}
+The finite sum is rewritten as one integral, $\int_0^\infty s^{p-1}\bigl(\sum_{j<2K}(s\beta a)^j/j!\bigr)e^{-\beta s^2}\,ds$,
+via the Gaussian moments (Mathlib's \texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} at $p=2$);
+the difference with $S(a)$ is then a single integral whose integrand is bounded pointwise by
+\texttt{phase\_tail\_le}, and \texttt{norm\_integral\_le\_of\_norm\_le} finishes. Nothing here
+depends on the exponent data $(h,k)$; in the assembly the phase $a=\xi(\pi u)$ varies over the face
+and the bound is uniform because $|\beta\xi|\le\beta\|\xi\|_\infty=:b$ on the cube.
+
+\section{Lean notes}
+\begin{itemize}
+\item Dot notation \texttt{(h.const\_mul c).congr\_fun} fails with ``\texttt{And.congr\_fun}'':
+  \texttt{Integrable} unfolds to a conjunction, so the result of \texttt{Integrable.const\_mul}
+  is not seen as an \texttt{IntegrableOn}. Ascribe the type in a \texttt{have} first.
+\item \texttt{integral\_finset\_sum}/\texttt{integrable\_finset\_sum} are deprecated for
+  \texttt{integral\_finsetSum}/\texttt{integrable\_finsetSum}.
+\item \texttt{IntegrableOn.congr\_fun} hands the pointwise goal as an applied lambda;
+  \texttt{beta\_reduce} before \texttt{rw}.
+\item \texttt{continuousAt\_of\_dominated} with the bound depending on the centre $a_0$ (radius-one
+  ball, $R=|a_0|+1$) is the clean way to get continuity of a parametric integral whose integrand is
+  not globally dominated.
+\end{itemize}
+
+\section{Next}
+Unit 202: the leading-term theorem. Define
+$C=\frac{1}{(m-1)!\prod_{i\in J}k_i}\int_{(0,1]^d}\eta(\pi u)\,S^{(\beta)}_{p/2}(\xi(\pi u))\,w(u)\,du$
+and prove $I_N/(N^{-p}(\log N)^{m-1})\to C$ by \texttt{tendsto\_of\_approx}: the finite Taylor
+approximants converge by unit~200, the $N$-side error is bounded by the bare monomial theorem at
+$\beta/4$ times $\tau_K$, and $|C-P_K|$ by \texttt{phaseMoment\_taylor\_le}.
+\end{document}
