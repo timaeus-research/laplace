@@ -1,0 +1,67 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The $d=2$ theorem for the chart amplitude $\eta e^{\beta s\xi}$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The amplitude-level hypotheses of unit~88 (axis Lipschitz bounds and the mixed second difference)
+are derived for $\Phi(u,v,s)=\eta(u,v)e^{\beta s\xi(u,v)}$ from Lipschitz and mixed-difference bounds
+on $\xi,\eta$ themselves, which hold for $C^2$ functions. The rectangle difference of a product,
+$D[fg]=D[f]g_3+(f_1-f_0)(g_3-g_1)+(f_2-f_0)(g_3-g_2)+f_0D[g]$, and the identity
+$e^{t_3}-e^{t_1}-e^{t_2}+1=(e^{t_1}-1)(e^{t_2}-1)+(e^{t_3}-e^{t_1+t_2})$ give
+$|D[\eta e^{\beta s\xi}]|\le C_2uv(1+s)^2e^{5\beta Ls}$. Consequently the two-dimensional chart integral
+with equal exponents satisfies $Z(N)=N^{-p}(A\log N+B)+O(N^{-(p+\delta)}(1+\log N))$ with
+$A=(k_1k_2)^{-1}\eta(0,0)S_p(\xi(0,0))$; the $n$-form follows with $\tfrac A2\log n$. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem amp_sub_le (β L M ξ₁ ξ₂ η₁ η₂ s : ℝ) (hβ : 0 < β) (hs : 0 ≤ s) (hξ₁ : |ξ₁| ≤ L)
+    (hξ₂ : |ξ₂| ≤ L) (hη₂ : |η₂| ≤ M) :
+    |η₁ * Real.exp (β * s * ξ₁) - η₂ * Real.exp (β * s * ξ₂)|
+      ≤ (|η₁ - η₂| + M * (β * s) * |ξ₁ - ξ₂|) * Real.exp (β * s * L)
+theorem amp_mixed_le ... :
+    |e₃ * Real.exp (β * s * a₃) - e₁ * Real.exp (β * s * a₁) - e₂ * Real.exp (β * s * a₂)
+        + e₀ * Real.exp (β * s * a₀)|
+      ≤ (K + 2 * K ^ 2 * β + M * β ^ 2 * K ^ 2 + M * β * K) * (u * v) * ((1 + s) ^ 2
+        * Real.exp (5 * β * L * s))
+noncomputable def chartAmp (β : ℝ) (ξ η : ℝ → ℝ → ℝ) (u v s : ℝ) : ℝ :=
+  η u v * Real.exp (β * s * ξ u v)
+theorem twoDChart_second_order ... (hξu hξv hηu hηv : Lipschitz in each variable)
+    (hξD hηD : mixed second differences ≤ K * (u * v)) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (chartAmp β ξ η)
+        - N ^ (-p) * (twoDA β p k₁ k₂ (chartAmp β ξ η) * Real.log N
+          + twoDB β b p k₁ k₂ (chartAmp β ξ η))) =O[atTop]
+      fun N : ℝ => N ^ (-(p + min (k₁ : ℝ)⁻¹ (k₂ : ℝ)⁻¹)) * (1 + Real.log N)
+theorem twoDChart_A (β p : ℝ) (k₁ k₂ : ℕ) (ξ η : ℝ → ℝ → ℝ) :
+    twoDA β p k₁ k₂ (chartAmp β ξ η)
+      = 1 / ((k₁ : ℝ) * k₂) * (η 0 0 * weightedMass β (ξ 0 0) (p - 1))
+\end{verbatim}
+}
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{linarith} needs the product $\beta sL\ge0$ as a named hypothesis to compare
+$2\beta sL$ with $4\beta Ls$ (nonlinear monomials are atoms).
+\item A single-step \texttt{calc} as the last tactic of a \texttt{have} block swallowed the following
+\texttt{exact} line as a further step; use \texttt{exact} directly for one-step bounds.
+\end{itemize}
+
+\section{Outcome}
+The $d=2$ log polynomial is available for the paper's chart integral with $\xi,\eta$ of class $C^2$
+(via Lipschitz and mixed-difference bounds). Next: the face-parameter second-order theorem under the
+strict gap, the $C\ne0$ variants of the leading theorem, and a third Astra consult on all-order
+subtraction.
+\end{document}
