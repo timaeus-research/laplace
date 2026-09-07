@@ -1,0 +1,67 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The dominated-coordinate transfer lemma}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Second step of the mixed-ratio general-$d$ monomial programme (Astra~\#15, route~A). For
+$q>\lambda>0$ and a bounded measurable $f$ on $(0,\infty)$ with
+$f(M)/(M^{-\lambda}(\log M)^r)\to C$,
+\[
+\frac{\int_0^1t^{q-1}f(Nt)\,dt}{N^{-\lambda}(\log N)^r}\longrightarrow\frac{C}{q-\lambda}
+\]
+(\texttt{tendsto\_weighted\_scale\_div}): integrating against a dominated coordinate weight
+preserves the exponent and the logarithmic degree and multiplies the constant by $1/(q-\lambda)$.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integral_Ioc_rpow_gap (l q) (hq : l < q) :
+    ∫ t in Ioc 0 1, t ^ (q - l - 1) = 1 / (q - l)
+theorem integrableOn_Ioc_rpow_gap (l q) (hq : l < q) :
+    IntegrableOn (fun t : ℝ => t ^ (q - l - 1)) (Ioc 0 1)
+theorem tendsto_weighted_scale_div (f) (l q) (r) (C B) (hl : 0 < l) (hq : l < q)
+    (hf : Measurable f) (hB : ∀ M, 0 < M → |f M| ≤ B)
+    (hlim : Tendsto (fun M => f M / (M ^ (-l) * log M ^ r)) atTop (𝓝 C)) :
+    Tendsto (fun N => (∫ t in Ioc 0 1, t ^ (q - 1) * f (N * t)) / (N ^ (-l) * log N ^ r))
+      atTop (𝓝 (C / (q - l)))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Dominated convergence on $(0,1]$ along $N\to\infty$: the integrand
+$t^{q-1}f(Nt)/(N^{-\lambda}(\log N)^r)$ converges pointwise to $Ct^{q-\lambda-1}$ (unit~177's scaled
+limit) and is dominated for $N\ge e$ by $K2^rt^{q-\lambda-1}$ (unit~177's scaled envelope), which is
+integrable because $q>\lambda$; the limit integral is $C/(q-\lambda)$.
+
+\section{Paper-facing meaning}
+This is the analytic content of the paper's residue factor $1/(h_i+\gamma_i+1-2k_i\lambda)$ for a
+coordinate $i\notin J$ not realising the minimal ratio (eq.~\texttt{a\_minus\_m\_explicit}, $b=1$):
+after the substitution $t_i=u_i^{2k_i}$ it is $\frac1{2k_i}\cdot\frac1{\lambda_i-\lambda}$. The
+remaining units build the real weighted box integral, its permutation invariance and the induction
+that removes nonminimal coordinates one at a time.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{integral\_Ioc\_rpow\_sub\_one} already existed (unit on iterated primitives, with a
+variable upper limit $x$); a same-named declaration in the namespace is a hard error, so the new
+helper is \texttt{integral\_Ioc\_rpow\_gap}. Grep the namespace before naming helpers.
+\item \texttt{tendsto\_integral\_filter\_of\_dominated\_convergence} with an eventual bound: the
+measurability, bound and limit goals are all discharged on \texttt{volume.restrict (Ioc 0 1)} via
+\texttt{ae\_restrict\_iff'}; the bound only holds for $N\ge e$, which the \texttt{∀ᶠ} form allows.
+\item \texttt{integral\_div} converts the DCT conclusion about $\int F_N$ into the ratio form.
+\end{itemize}
+
+\end{document}
