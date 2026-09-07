@@ -246,3 +246,4 @@ import Laplace.Grammar.DensityTransfer
 import Laplace.Grammar.KernelTaylor
 import Laplace.Grammar.OneDSecondOrder
 import Laplace.Grammar.TwoDGenDensity
+import Laplace.Grammar.AxisExpansion
