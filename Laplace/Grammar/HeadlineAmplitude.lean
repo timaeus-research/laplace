@@ -83,7 +83,8 @@ theorem headline_normal_moment_amplitude (m : ℕ) (h k : Fin (m + 1) → ℕ) (
     (η : (Fin (m + 1) → ℝ) → ℝ) (hη : Continuous η) :
     Tendsto (fun N => (∫ x in unitBox (m + 1),
         η x * ((∏ i, x i ^ h i) * Real.exp (-(β * N * ∏ i, x i ^ (2 * k i))))) /
-        (N ^ (-l) * Real.log N ^ ((∑ i, if ((h i : ℝ) + 1) / (2 * (k i : ℝ)) = l then 1 else 0) - 1)))
+        (N ^ (-l) *
+          Real.log N ^ ((∑ i, if ((h i : ℝ) + 1) / (2 * (k i : ℝ)) = l then 1 else 0) - 1)))
       atTop
       (𝓝 ((Real.Gamma l * β ^ (-l) /
           (((∑ i, if ((h i : ℝ) + 1) / (2 * (k i : ℝ)) = l then 1 else 0) - 1).factorial : ℝ) *
@@ -94,7 +95,8 @@ theorem headline_normal_moment_amplitude (m : ℕ) (h k : Fin (m + 1) → ℕ) (
               else u i ^ ((h i : ℝ) - 2 * (k i : ℝ) * l))) :=
   amplitude_tendsto m h k hk l β hl hβ hmin hatt η hη
 
-/-- **Equal ratios, continuous amplitude**: `I_η(N)/(N^{-λ}(log N)^m) → η(0) Γ(λ)β^{-λ}/(m! ∏ 2kᵢ)`. -/
+/-- **Equal ratios, continuous amplitude**:
+`I_η(N)/(N^{-λ}(log N)^m) → η(0) Γ(λ)β^{-λ}/(m! ∏ 2kᵢ)`. -/
 theorem headline_normal_moment_amplitude_equal (m : ℕ) (h k : Fin (m + 1) → ℕ)
     (hk : ∀ i, 0 < k i) (l β : ℝ) (hl : 0 < l) (hβ : 0 < β)
     (hratio : ∀ i, ((h i : ℝ) + 1) / (2 * (k i : ℝ)) = l)
@@ -120,7 +122,8 @@ theorem headline_normal_moment_amplitude_equiv (m : ℕ) (h k : Fin (m + 1) → 
       fun N => amplitudeCoeff h k l β η * N ^ (-l) *
         Real.log N ^ (multCount (ratioExp h k) l - 1) := by
   refine isEquivalent_of_tendsto_one ?_
-  have hT := (amplitude_tendsto m h k hk l β hl hβ hmin hatt η hη).div_const (amplitudeCoeff h k l β η)
+  have hT := (amplitude_tendsto m h k hk l β hl hβ hmin hatt η hη).div_const
+    (amplitudeCoeff h k l β η)
   rw [div_self hc] at hT
   refine hT.congr' ?_
   filter_upwards [eventually_gt_atTop (1 : ℝ)] with N hN
