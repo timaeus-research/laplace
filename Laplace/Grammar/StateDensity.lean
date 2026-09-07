@@ -18,9 +18,12 @@ and each further coordinate acts by `PowLogRep.conv`. Consequently (`stateDensit
 `stateDensityRep_degree_lt`) every term `c · z^{μ-1} (-log z)^j` of the density has `μ = wᵢ + 1` for
 some coordinate and `j` strictly less than the number of coordinates with that value: the exact
 multivariate state density `v(τ) = ∑_{μ} ∑_{j < r(μ)} c_{μ,j} τ^{μ-1} (-log τ)^j` of the paper, on
-`(0,1]`, without any Mellin inversion. Through the coordinatewise power substitution
-(`monomialBoxIntegral_eq_weighted`) this is the state density of the monomial `u^h` under
-`τ = u^{2k}`: `μ = (hᵢ+1)/(2kᵢ)` (`monomialBoxIntegral_eq_stateDensity`). Zero `sorry`/`axiom`.
+`(0,1]`, without any Mellin inversion (the density is a representative on `(0,1]`; the pushforward
+determines it only almost everywhere). Through the coordinatewise power substitution
+(`monomialBoxIntegral_eq_weighted`) the **monomial state density** — the density of `K = u^{2k}`
+under the weight `u^h` on the positive unit box, `kᵢ > 0` — is `∏ 1/(2kᵢ)` times this density with
+`wᵢ = (hᵢ+1)/(2kᵢ) - 1`, i.e. `μ = (hᵢ+1)/(2kᵢ)` (`monomialBoxIntegral_eq_stateDensity`).
+Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Set Real

@@ -21,8 +21,10 @@ is computed in two ways as `s → -l⁺` — from the product Mellin transform `
 `∑ cₜ jₜ!/(s+μₜ)^{jₜ+1}` every term tends to `0` except the top one, which tends to
 `(m-1)! · c_{l,m-1}`. In the monomial normalisation (`wᵢ = (hᵢ+1)/(2kᵢ) - 1`, Jacobian `∏ 1/(2kᵢ)`)
 the top coefficient of the monomial state density is `a_{-m}/(m-1)!` with `a_{-m}` the paper's
-leading Laurent coefficient (= `mellinCoeff h k l 1` of Headline XXI): the density coefficient is
-the Laurent coefficient divided by `(m-1)!` (`monomial_leadCoeff`). Zero `sorry`/`axiom`.
+leading Laurent coefficient at the minimal pole (= `mellinCoeff h k l 1` of Headline XXI): the density
+coefficient is the Laurent coefficient divided by `(m-1)!` (`monomial_leadCoeff`). Only this
+minimum-exponent, highest-degree coefficient is identified here; the other coefficients are exact
+(unit 224) but not exported as Laurent coefficients. Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Set Real Filter Topology

@@ -15,10 +15,16 @@ Fubini: this file exports the state density of unit 224 in the forms they need.
 * `stateDensity_integrableOn`: the density is integrable on `(0,1]` (from the box identity with
   `g = 1`: no analysis of the individual power–log terms is needed).
 * `integral_unitBox_eq_stateDensity`: the **real-valued identity**
-  `∫_{(0,1]^{n+1}} ∏ aᵢ^{wᵢ} f(∏ aᵢ) da = ∫₀¹ v(z) f(z) dz` for measurable `f ≥ 0` on `(0,1]`.
-* `weightedBoxIntegral_rpow` / `mellin_stateDensity`: the Mellin transform
-  `∫₀¹ z^s v(z) dz = ∏ᵢ 1/(wᵢ + s + 1)` for `wᵢ + s > -1` — the paper's product zeta function
-  `∏ 1/(2kᵢz + hᵢ + 1)` in the weight normalisation.
+  `∫_{(0,1]^{n+1}} ∏ aᵢ^{wᵢ} f(∏ aᵢ) da = ∫₀¹ v(z) f(z) dz` for measurable `f ≥ 0` on `(0,1]`. Both
+  sides are Lean's totalised Bochner integrals: the identity holds without integrability hypotheses,
+  but it does not by itself assert that either side is a finite classical integral (both are `0` when
+  the common `ℝ≥0∞` integral is infinite); finiteness must come separately, e.g. from
+  `stateDensity_integrableOn` and boundedness of `f`.
+* `weightedBoxIntegral_rpow` / `mellin_stateDensity`: the real-parameter Mellin transform
+  `∫₀¹ z^s v(z) dz = ∏ᵢ 1/(wᵢ + s + 1)` for `wᵢ + s > -1`; after restoring the Jacobian `∏ 1/(2kᵢ)`
+  and setting `wᵢ = (hᵢ+1)/(2kᵢ) - 1` this is the paper's product zeta function
+  `∏ 1/(2kᵢ s + hᵢ + 1)`, the transform of `K = u^{2k}` with weight `u^h` (real `s` in the
+  convergence half-line; no complex continuation is asserted).
 * `integral_Ioc_rpow_mul_neg_log_pow`: the Mellin transform of a basis term,
   `∫₀¹ τ^{c-1} (-log τ)^j dτ = j!/c^{j+1}` (substitution `τ = e^{-x}` into Euler's integral), and
   `mellin_eval`: termwise, `∫₀¹ z^s eval c z dz = ∑ cₜ jₜ!/(s+μₜ)^{jₜ+1}` — the factorial that
