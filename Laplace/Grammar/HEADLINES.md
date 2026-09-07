@@ -1,5 +1,12 @@
 # Grammar §4 formalisation — headline index (general-dimensional normal block)
 
+## Taylor-tree programme (opened 2026-09-07, after the freeze; Astra #26)
+Stage 1 (exact multivariate state density): units 223 (`PowLogCalculus.lean`: power–log representations,
+one-coordinate convolution calculus, exponent/degree invariants) and 224 (`StateDensity.lean`:
+`weightedBoxIntegral_eq_stateDensity`, `monomialBoxIntegral_eq_stateDensity`, `stateDensityRep_exponent_mem`,
+`stateDensityRep_degree_lt`). Next: integrability/real API, Mellin transform of the density, leading coefficient
+(factorial-normalised link to Headline XXI); then Stage 2 (exact monomial moment identity, all orders).
+
 ## Completion statement (2026-09-07)
 The scoped **§4 normal-block programme is complete** at the reviewed baseline `d65d48b` (Astra #24–#25; reviews
 v1–v17): general machinery (Headlines VI–XIX), the assembled statistical example (XX–XX'' with the genuine-prior

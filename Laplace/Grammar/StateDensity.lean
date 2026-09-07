@@ -136,8 +136,8 @@ theorem weightedBoxIntegral_eq_stateDensity :
     rw [stateDensityRep_succ, PowLogRep.eval_conv _ _ hu.1 hu.2]
     rfl
 
-/-- **Monomial form**: `∫_{(0,1]^{n+1}} u^h g(u^{2k}) du = ∏ 1/(2kᵢ) ∫₀¹ v(z) g(z) dz` with the state
-density of weights `(hᵢ+1)/(2kᵢ) - 1`. -/
+/-- **Monomial form**: `∫_{(0,1]^{n+1}} u^h g(u^{2k}) du = ∏ 1/(2kᵢ) ∫₀¹ v(z) g(z) dz` with the
+state density of weights `(hᵢ+1)/(2kᵢ) - 1`. -/
 theorem monomialBoxIntegral_eq_stateDensity (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : ∀ i, 0 < k i)
     (g : ℝ → ENNReal) (hg : Measurable g) :
     monomialBoxIntegral (n + 1) h k g =

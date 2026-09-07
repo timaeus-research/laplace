@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The exact multivariate state density (Taylor-tree Stage 1a--b)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units 223--224 open the Taylor-tree programme (Astra~\#26 confirmed the density-first plan). The
+state density of a monomial, $v(\tau)=\int\delta(\tau-u^{2k})u^h\,du$ on $(0,1]^d$, is represented
+\emph{exactly} as a finite list of triples $(\mu,j,c)$ standing for $\sum c\,\tau^{\mu-1}(-\log\tau)^j$
+(\texttt{PowLogRep}). Peeling one coordinate of weight $t^{w-1}$ is the multiplicative convolution
+$(\mathrm{powLogConv}_w v)(z)=\int_z^1t^{w-1}v(z/t)\,dt$, and acts on representations by an explicit
+linear map (\texttt{PowLogRep.conv}, \texttt{eval\_conv}): the kernel identity
+$t^{w-1}(z/t)^{\mu-1}(-\log(z/t))^j=z^{\mu-1}t^{\alpha-1}(\log t-\log z)^j$, $\alpha=w-\mu+1$, reduces
+everything to $G_j(z)=\int_z^1t^{\alpha-1}(\log t-\log z)^j\,dt$ with $G_0=(1-z^\alpha)/\alpha$,
+$G_{j+1}=(-\log z)^{j+1}/\alpha-\tfrac{j+1}{\alpha}G_j$ ($\alpha\ne0$) and $G_j=(-\log z)^{j+1}/(j+1)$
+($\alpha=0$). Hence the new exponent $w+1$ enters only at logarithmic degree $0$ and the two
+invariants hold term by term: exponents are among the $w_i+1$ and degrees are below the multiplicity
+(\texttt{stateDensityRep\_exponent\_mem}, \texttt{stateDensityRep\_degree\_lt}). The measure-theoretic
+bridge (\texttt{weightedBoxIntegral\_eq\_stateDensity}) is the recursion of the equal-ratio product
+density (units 165--175) with the concrete representation in place of $(-\log z)^{d-1}/(d-1)!$:
+$\int_{(0,1]^{n+1}}\prod a_i^{w_i}g(\prod a_i)\,da=\int_0^1v(z)g(z)\,dz$ for every measurable
+$g\ge0$; through the coordinatewise power substitution this is the monomial state density with
+$\mu_i=(h_i+1)/(2k_i)$ and Jacobian $\prod1/(2k_i)$ (\texttt{monomialBoxIntegral\_eq\_stateDensity}).
+No Mellin inversion is used. Zero \texttt{sorry}/\texttt{axiom}; 9101 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def powLogBasis μ j τ := τ^(μ-1) * (-log τ)^j;   abbrev PowLogRep := List (ℝ × ℕ × ℝ)
+PowLogRep.eval, smul, shift (τ^a ·), eval_append/smul/shift/flatMap
+integral_G_zero / integral_G_succ / integral_G_zero_exp   -- the G_j recursion
+def gRep α j : PowLogRep  (representation of z ↦ G_j(z));  eval_gRep;  gRep_mem
+def powLogConv w v z := ∫ t in Icc z 1, t^(w-1) * v (z/t)
+def PowLogRep.basisConv w (μ,j,c);  def PowLogRep.conv w c := c.flatMap (basisConv w)
+theorem eval_basisConv
+theorem PowLogRep.eval_conv : eval (conv w c) z = powLogConv w (eval c) z
+theorem conv_exponent_mem : exponents ⊆ insert (w+1) P
+theorem conv_degree_lt : degree < r μ + (if μ = w+1 then 1 else 0)
+def stateDensityRep : (n) → (Fin (n+1) → ℝ) → PowLogRep
+  -- base [(w0+1,0,1)]; step conv (w 0) (rep (tail w))
+theorem stateDensityRep_nonneg;  PowLogRep.measurable_eval
+theorem weightedBoxIntegral_eq_stateDensity :
+  weightedBoxIntegral (n+1) w g
+    = ∫⁻ z in Ioc 0 1, ofReal (eval (stateDensityRep n w) z) * g z
+theorem monomialBoxIntegral_eq_stateDensity (Jacobian ∏ 1/(2kᵢ), weights (hᵢ+1)/(2kᵢ) − 1)
+theorem stateDensityRep_exponent_mem : ∀ t ∈ rep, ∃ i, t.1 = w i + 1
+def expMult w μ := #{i | w i + 1 = μ}
+theorem stateDensityRep_degree_lt : t.2.1 < expMult w t.1
+\end{verbatim}
+}
+
+\section{Mathematics}
+A first design used the kernel $(\log t)^i(-\log z)^{j-i}$ after a binomial expansion; that produces
+terms $\tau^{w}(-\log\tau)^{i'}$ at the new exponent with $i'$ up to $j$, which cancel in the sum but
+would break a term-by-term multiplicity invariant. Integrating $(\log t-\log z)^j$ directly, the
+boundary term at $t=z$ vanishes for $j\ge1$, so only $(-\log z)^j/\alpha$ survives at $t=1$ and the
+$z^\alpha$ term appears once, at degree $0$: partial fractions with a simple new pole. Numerical
+replica of the recursion against box quadrature: weights $(\tfrac12,\tfrac12)$, $(-\tfrac12,\tfrac14)$,
+$(0,0,0)$, $(0,0,1)$, $(-\tfrac12,0,1)$ agree to $10^{-8}$, with exponent/degree sets $\{(1.5,1)\}$,
+$\{(0.5,0),(1.25,0)\}$, $\{(1,2)\}$, $\{(1,0),(1,1),(2,0)\}$, $\{(0.5,0),(1,0),(2,0)\}$.
+Astra~\#26's cautions for later stages are recorded in the tide-log: phase order does not raise the
+exponent in several variables (truncate by spectral exponent, sum all phase orders below the cutoff);
+complete moments must not be summed before a spectral cutoff; holomorphy on the open polydisc gives
+weighted summability only at smaller radii; Mellin Laurent coefficients are density coefficients times
+factorials.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{Real.rpow\_sub ht} without explicit exponents rewrites the first matching
+  $t^{x-y}$ (here $t^{w-1}$), and \texttt{ring} normalises real powers unexpectedly; pass the exponents
+  and \texttt{generalize} the powers to atoms before \texttt{ring}.
+\item \texttt{Laplace.Grammar.powLog} already exists (\texttt{QuotientCalculus}); the basis is
+  \texttt{powLogBasis}. A \texttt{grep -q "import …StateDensity"} prefix-matched \texttt{StateDensityUnique}
+  and skipped the registration (fixed in c7efae6): match the full line.
+\item Nested \texttt{List.map}s destructure as \texttt{obtain ⟨s, ⟨a, ha, rfl⟩, rfl⟩}.
+\item \texttt{div\_eq\_mul\_inv} rewrites the first division pattern; pass the arguments.
+\end{itemize}
+
+\section{Status}
+Stage 1a--b done. Next: integrability of the density from the box identity with $g=1$, the real-valued
+identity for nonnegative bounded $f$, the Mellin transform $\int_0^1\tau^sv=\prod1/(s+w_i+1)$, and the
+factorial-normalised leading coefficient (Headline~XXI link); then Stage 2.
+\end{document}
