@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Phase-dressed leading term with a uniform cutoff}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 204: the transport-only part of Astra~\#20's programme~D, taken because it is what the paper's
+tubular fibres $(0,\varepsilon]^d$ actually need. The dilation $u=bx$ turns the phase-dressed integral
+on $(0,b]^d$ into $b^{\sum_i(h_i+1)}$ times the unit-box integral at parameter $Nb^{\sum_ik_i}$
+with phase and amplitude composed with the dilation (\texttt{phaseBoxCutoff\_eq}); since
+$(\log Nc/\log N)^{m-1}\to1$, the leading coefficient acquires exactly
+$b^{\sum_i(h_i+1)-2\lambda\sum_ik_i}=\prod_{i\notin J}b^{h_i+1-2k_i\lambda}$
+(\texttt{phaseBoxCutoff\_tendsto}), the $b$-dependence of the paper's eq.~\texttt{a\_minus\_m\_explicit},
+while the face integral becomes $\int\eta(b\pi u)J_p(\xi(b\pi u))\prod_{i\notin J}u_i^{h_i-pk_i}\,du$,
+i.e.\ the amplitude and phase are read on the face of the box $(0,b]^d$
+(\texttt{headline\_phase\_leading\_cutoff}). Review v9 (units 198--203) reported no statement-level
+defects; its should-fix (write $J^{(\beta)}_p$, never $S$, for \texttt{phaseMoment} in the
+documentation) is applied in this branch. Zero \texttt{sorry}/\texttt{axiom}; 9081 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def phaseBoxCutoff (d) (h k) (b β N : ℝ) (ξ η) : ℝ :=
+  ∫ u in cutoffBox d b, η u * ((∏ i, u i ^ h i) * quadKernel β (ξ u) (N * ∏ i, u i
+        ^ k i))
+theorem phaseBoxCutoff_eq (hb : 0 < b) : phaseBoxCutoff d h k b β N ξ η
+    = b ^ (∑ i, (h i + 1)) * ∫ x in unitBox d, η (b • x) * ((∏ i, x i ^ h i)
+        * quadKernel β (ξ (b • x)) ((N * b ^ (∑ i, k i)) * ∏ i, x i ^ k i))
+theorem cutoff_power_eq' (hb) :
+    b ^ ((∑ (h i + 1) : ℝ) - 2 l (∑ k i : ℝ)) = b ^ (∑ (h i + 1)) * (b ^ (∑ k i)) ^
+        (-(2 l))
+theorem phaseBoxCutoff_tendsto (hk) (hb) (hl) (hβ) (hmin) (hatt) (hξ) (hη) :
+    Tendsto (fun N => phaseBoxCutoff (d+1) h k b β N ξ η
+        / (N ^ (-(2 l)) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 (b ^ ((∑ (h i + 1) : ℝ) - 2 l (∑ k i : ℝ))
+          * phaseCoeff h k l β (fun x => ξ (b • x)) (fun x => η (b • x))))
+theorem headline_phase_leading_cutoff … :
+    Tendsto (fun N => (∫ u in cutoffBox (m+1) b, η u * ((∏ u^h)
+        * exp (-(β N² ∏ u^(2k)) + β (N ∏ u^k) ξ u))) / (N^(-(2l)) * log N ^
+        (multCount … - 1)))
+      atTop (𝓝 (b ^ (…) / ((multCount … - 1)! * ∏ i, if ratioExp h k i = l then k i
+        else 1)
+          * ∫ u in unitBox (m+1), (η (b • faceProj h k l u) * phaseMoment β (2l) (ξ
+        (b • faceProj h k l u)))
+              * residualWeight h k l u))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Pure transport: \texttt{setIntegral\_comp\_smul\_of\_pos} for the dilation of the box, the scaling
+$N\mapsto Nb^{\sum k_i}$ inside the kernel (the phase argument $s=Nu^k$ scales exactly, so the
+dressed kernel is unchanged in form), and the two limits
+$I(Nc)/((Nc)^{-p}(\log Nc)^{m-1})\to C$ and $(\log Nc/\log N)^{m-1}\to1$ multiplied together, as in
+unit~183. Nothing new is estimated. Fixed \emph{rectangular} cutoffs $\prod(0,a_i]$ would need the
+coordinatewise dilation (a diagonal linear map) and give $\prod_ia_i^{h_i+1-pk_i}$; they are not used
+by the paper, whose fibres are cubes, so they are left out.
+
+\section{Review v9 disposition}
+Pass at statement level for units 198--203 (constants, normalisations, tail lemmas, mirror prose).
+Should-fix applied: documentation writes $J^{(\beta)}_p(a)$ (or \texttt{phaseMoment}) for
+$\int_0^\infty s^{p-1}e^{-\beta s^2+\beta as}\,ds$, never $S_{p/2}$, which in the paper is twice
+this. Cosmetic applied: a naming note that the Lean parameter \texttt{m + 1} is the dimension while
+the prose $m=|J|$ is \texttt{multCount}; the Taylor prefactor $(\beta N)^j/j!$ made explicit in the
+unit-200 docstring; the swapped headline's wording. Mirror standing assumptions: added a pointer to
+the hypotheses of \texttt{eq:normal\_moment\_amplitude\_lean} in the phase paragraph.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{b • unitBox d} needs \texttt{open scoped Pointwise} (again), else ``failed to
+  synthesize instance''.
+\item \texttt{continuous\_const.smul continuous\_id} does not elaborate against the expected
+  \texttt{Continuous fun x => b • x} (it produces \texttt{(fun x => ?c) • id}); use
+  \texttt{continuous\_const\_smul b}.
+\item Reusing \texttt{tendsto\_log\_scale\_pow} and the \texttt{filter\_upwards [eventually\_gt\_atTop (max 1 (1/c))]}
+  template from \texttt{CutoffScaling.lean} made the asymptotic transport a copy with
+  \texttt{2l} in place of \texttt{l} and $c=b^{\sum k_i}$ in place of $b^{2\sum k_i}$.
+\end{itemize}
+
+\section{Status}
+Programme A (deterministic core) and the paper-relevant part of D are complete. Next: mirror
+sentence for the cutoff, consolidated report v2 (units 165, 170--204), then stop or await direction
+(Astra~\#21: do not start C).
+\end{document}
