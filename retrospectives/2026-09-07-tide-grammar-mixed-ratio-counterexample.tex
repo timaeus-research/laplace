@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{A formal counterexample: mixed ratios evaluate on the face, not at the corner}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 206 records, as theorems, the smallest instance of the paper-facing correction reported since
+unit~186: for \emph{mixed} exponent ratios the leading coefficient of a dressed normal moment
+integral is the face functional of the amplitude, not its value at the origin. With $d=2$,
+$h=(0,2)$, $k=(1,1)$, $\beta=1$ (ratios $\tfrac12,\tfrac32$; $\lambda=\tfrac12$, $J=\{0\}$) and
+$\eta(u)=1+u_1$,
+\[
+\frac{\int_{(0,1]^2}(1+u_1)\,u_1^2\,e^{-Nu_0^2u_1^2}\,du}{N^{-1/2}}\longrightarrow\frac{5\sqrt\pi}{12},
+\qquad
+\eta(0)\cdot\frac{\Gamma(\tfrac12)}{2\,(2+1-1)}=\frac{\sqrt\pi}{4},
+\]
+and $5\sqrt\pi/12\ne\sqrt\pi/4$ (\texttt{MixedCounterexample.tendsto},
+\texttt{corner\_evaluation\_fails}). Review v10 (units 204--205) reported no statement-level
+defects; Astra~\#22 ranks the remaining work B2 (finite chart assembly) $\to$ A2 (general-$d$
+stochastic transfer by equi-Lipschitz control) $\to$ D2 (signed orthants with phase, where the
+phase reflects with $\varepsilon_\sigma=\prod_i\sigma_i^{k_i}$) $\to$ hand-off; C2 stays NO-GO.
+Zero \texttt{sorry}/\texttt{axiom}; 9083 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+namespace MixedCounterexample
+def hEx : Fin 2 → ℕ := ![0, 2];  def kEx : Fin 2 → ℕ := ![1, 1]
+noncomputable def ηEx (u : Fin 2 → ℝ) : ℝ := 1 + u 1
+theorem ratio0 : ratioExp hEx kEx 0 = 1/2;  theorem ratio1 : ratioExp hEx kEx 1 = 3/2
+theorem mixedConst_eq : monomialMixedConst hEx kEx (1/2) 1 = √π / 4
+theorem mixedConst_shift_eq :
+    monomialMixedConst (fun i => hEx i + ![0, 1] i) kEx (1/2) 1 = √π / 6
+theorem amplitudeCoeff_eq : amplitudeCoeff hEx kEx (1/2) 1 ηEx = 5 * √π / 12
+theorem corner_eq : ηEx 0 * monomialMixedConst hEx kEx (1/2) 1 = √π / 4
+theorem corner_evaluation_fails :
+    amplitudeCoeff hEx kEx (1/2) 1 ηEx ≠ ηEx 0 * monomialMixedConst hEx kEx (1/2) 1
+theorem tendsto : Tendsto (fun N => (∫ x in unitBox 2, ηEx x * ((∏ i, x i ^ hEx i)
+    * exp (-(1 * N * ∏ i, x i ^ (2 * kEx i))))) / N ^ (-(1/2 : ℝ))) atTop (𝓝 (5 * √π / 12))
+\end{verbatim}
+}
+
+\section{Mathematics}
+No integration is performed by hand: the amplitude $1+u_1$ is the sum of the two monomials
+$u^{(0,0)}$ and $u^{(0,1)}$, and the face-moment theorem of unit~186
+(\texttt{face\_moment\_eq}: $\int(\pi u)^\gamma\,\mathrm{faceLeadConst}\,w
+=\mathrm{monomialMixedConst}(h+\gamma)$ when $\gamma$ vanishes on $J$) evaluates each as a bare
+mixed constant, $\sqrt\pi/4$ for $h=(0,2)$ and $\sqrt\pi/6$ for $h=(0,3)$, via the two-dimensional
+closed form of unit~198. The sum $5\sqrt\pi/12$ is the face value
+$\tfrac{\sqrt\pi}2\int_0^1(1+v)v\,dv$; the corner value $\sqrt\pi/4$ forgets the $u_1$-integration
+against the residual weight $u_1^{h_1-2k_1\lambda}=u_1$.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{simp [ratioExp, hEx, kEx]} closes $(0+1)/(2\cdot1)=1/2$ outright but leaves
+  $2+1=3$ for $(2+1)/(2\cdot1)=3/2$; a trailing \texttt{norm\_num} is needed in one case and is an
+  error (``no goals'') in the other. Check each.
+\item A hypothesis stated for the abbreviations \texttt{hEx kEx} is accepted by defeq as a term
+  argument but not by \texttt{rw} inside a goal stated with \texttt{![0,2] ![1,1]}; use
+  \texttt{show ratioExp hEx kEx 1 ≠ 1/2} first.
+\item \texttt{Real.Gamma\_one\_half\_eq : Γ(1/2) = √π} and \texttt{Real.one\_rpow} reduce the
+  closed forms; \texttt{nlinarith} with \texttt{0 < √π} separates $5\sqrt\pi/12$ from $\sqrt\pi/4$.
+\end{itemize}
+
+\section{Review v10 and Astra \#22}
+Review v10 (units 204--205): clean; mirror should say ``$c>0$ on the closed cube'' with continuity,
+keep the ``leading quotient limit, not full expansion'' caveat, and make clear that the cutoff face
+integral is the unit-box parametrisation (the $b$-factor is displayed once). Astra~\#22: next is
+B2, the conditional finite chart assembly (minimum exponent wins, then \emph{maximum} log
+multiplicity; assemble numerator and denominator separately; 2--4 units), then A2 (general-$d$
+stochastic transfer via eventual equi-Lipschitz dependence of the normalised integral on
+$(\eta,\xi)$ in sup norm, 4--8 units), then D2 if the paper integrates full signed fibres (the phase
+reflects: $\xi_\sigma(u)=\varepsilon_\sigma\xi(\sigma u)$, $\varepsilon_\sigma=\prod\sigma_i^{k_i}$;
+odd monomials give $J_p(a)+J_p(-a)$, not $2J_p(a)$).
+\end{document}
