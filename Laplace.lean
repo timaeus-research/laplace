@@ -380,3 +380,4 @@ import Laplace.Grammar.NormalCrossingModel
 import Laplace.Grammar.NormalCrossingData
 import Laplace.Grammar.NormalCrossingLaw
 import Laplace.Grammar.NormalCrossingPrior
+import Laplace.Grammar.MellinCoefficient
