@@ -319,3 +319,4 @@ import Laplace.Grammar.ApproxInDistribution
 import Laplace.Grammar.PositiveDenominatorRatio
 import Laplace.Grammar.FixedAmplitudeJointLimit
 import Laplace.Grammar.ChartPosteriorLimit
+import Laplace.Grammar.HeadlinePosterior
