@@ -1,0 +1,56 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline statements, part II: the chart posterior ratio}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#13 unit u160. \texttt{Laplace/Grammar/HeadlinePosterior.lean} adds paper-facing wrappers
+for units~156--159: the stability of convergence in distribution under small-probability
+modifications, the quotient theorem with a.s.\ positive limiting denominator, the joint convergence
+of the normalised numerator and denominator, and the chart posterior limit
+$Z_{N_n}[\varphi]/Z_{N_n}[1]\Rightarrow y_{\varphi,00}/y_{1,00}$. A separate file is needed because the
+probabilistic layer imports \texttt{Headline.lean}. This completes the Astra~\#13 programme.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The headline statements}
+\begin{enumerate}
+\item \texttt{headline\_approx\_in\_distribution} (unit~156): if $\forall\eta>0$ there are
+$Y^\eta_n\Rightarrow W^\eta$ agreeing with $X_n$, $Z$ off events of probability $\le\eta$, then
+$X_n\Rightarrow Z$.
+\item \texttt{headline\_quotient\_in\_distribution} (unit~157): $(U_n,V_n)\Rightarrow(U_0,V_0)$ in
+$\mathbb R^2$ and $V_0>0$ a.s.\ imply $U_n/V_n\Rightarrow U_0/V_0$.
+\item \texttt{headline\_joint\_normalised\_pair} (unit~158): deterministic amplitudes $y_\varphi,y_1$,
+common random phase $X_n\Rightarrow Z$, equal starts $p$:
+$(Z_{N_n}[\varphi]/s_n,Z_{N_n}[1]/s_n)\Rightarrow(A_p(Z;y_\varphi),A_p(Z;y_1))$, $s_n=N_n^{-p}\log N_n$.
+\item \texttt{headline\_chart\_posterior\_limit} (unit~159): with $y_{1,00}>0$,
+$Z_{N_n}[\varphi]/Z_{N_n}[1]\Rightarrow y_{\varphi,00}/y_{1,00}$.
+\end{enumerate}
+
+\section{Scope and what is not claimed}
+Same scope as Headline part~I ($d=2$, one chart, weighted coefficient space), plus: deterministic
+amplitudes (the paper's $\eta=\varphi\cdot\mathrm{prior}\cdot\mathrm{Jac}$), random phase only, equal
+starting exponents. Not claimed: the multi-chart posterior; the full division expansion beyond the
+leading ratio; finite-sample positivity of the normaliser (unnecessary with totalised division);
+the functional CLT supplying convergence of the phase data.
+
+\section{What comes next}
+Per Astra~\#13: an independent fidelity review of the roughly eighty new files (theorem statements,
+normalisations, coefficient identifications), then the \texttt{grammar\_lean.tex} \texttt{\textbackslash leanref}
+annotations for §4.2/§4.3 from the reviewed inventory with the caveat wording recorded in staging,
+then the constant-Gaussian dichotomy and the general-$d$ product-density milestone.
+
+\section{Lean notes}
+Wrappers only; compiled on the first attempt.
+
+\end{document}
