@@ -334,3 +334,4 @@ import Laplace.Grammar.ProductDensity
 import Laplace.Grammar.GammaLogAsymptotic
 import Laplace.Grammar.MonomialBoxBridge
 import Laplace.Grammar.MonomialAsymptotic
+import Laplace.Grammar.HeadlineMonomial
