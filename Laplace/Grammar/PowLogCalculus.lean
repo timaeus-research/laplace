@@ -173,7 +173,8 @@ theorem eval_gRep {α : ℝ} (hα : α ≠ 0) (j : ℕ) {z : ℝ} (hz : 0 < z) (
     ring
   | succ j ih =>
     rw [integral_G_succ hα j hz hz1, ← ih]
-    simp only [gRep, PowLogRep.eval_cons, PowLogRep.eval_smul, powLogBasis, sub_self, Real.rpow_zero]
+    simp only [gRep, PowLogRep.eval_cons, PowLogRep.eval_smul, powLogBasis, sub_self,
+      Real.rpow_zero]
     ring
 
 theorem gRep_mem {α : ℝ} (j : ℕ) :
