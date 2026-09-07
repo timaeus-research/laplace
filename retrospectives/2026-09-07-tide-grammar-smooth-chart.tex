@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The all-order 1D chart theorem for smooth data}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The all-order expansion of the one-dimensional chart integral (unit~96) is restated with
+hypotheses only on the regularity of the chart data: for $\xi,\eta\in C^R(\mathbb R)$, $R\ge1$,
+\[
+\int_0^bu^he^{-\beta(Nu^k)^2}\eta(u)e^{\beta(Nu^k)\xi(u)}\,du
+=\sum_{j<R}c_jN^{-(p+j/k)}+O(N^{-(p+R/k)}),
+\]
+where the $c_j$ are the jet coefficients of unit~96 evaluated at the Taylor data
+$x_i=\xi^{(i)}(0)/i!$, $y_i=\eta^{(i)}(0)/i!$. The order-$R$ Taylor remainders on $[0,b]$ and the
+Lipschitz bound at $0$ are extracted from Mathlib's \texttt{taylor\_mean\_remainder\_bound} and
+compactness of $[0,b]$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def taylorData (f : ℝ → ℝ) (i : ℕ) : ℝ :=
+  iteratedDeriv i f 0 / (i.factorial : ℝ)
+theorem taylorWithinEval_eq_taylorData (f : ℝ → ℝ) (n : ℕ) (b : ℝ) (hb : 0 < b)
+    (hf : ContDiff ℝ n f) (u : ℝ) :
+    taylorWithinEval f n (Icc 0 b) 0 u = ∑ i ∈ range (n + 1), taylorData f i * u ^ i
+theorem exists_taylor_remainder_bound (f : ℝ → ℝ) (n : ℕ) (b : ℝ) (hb : 0 < b)
+    (hf : ContDiff ℝ (n + 1) f) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ u ∈ Icc (0 : ℝ) b,
+      |f u - ∑ i ∈ range (n + 1), taylorData f i * u ^ i| ≤ K * u ^ (n + 1)
+theorem exists_lipschitz_bound (f : ℝ → ℝ) (b : ℝ) (hb : 0 < b) (hf : ContDiff ℝ 1 f) :
+    ∃ L : ℝ, 0 ≤ L ∧ ∀ u ∈ Icc (0 : ℝ) b, |f u - f 0| ≤ L * u
+theorem oneDChart_all_orders_smooth (β b p : ℝ) (h k R : ℕ) (hβ : 0 < β) (hb : 0 < b)
+    (hk : 0 < k) (hp : ((h : ℝ) + 1) / k = p) (hR : 0 < R)
+    (ξ η : ℝ → ℝ) (hξ : ContDiff ℝ R ξ) (hη : ContDiff ℝ R η) :
+    ∃ K' : ℝ, ∀ N : ℝ, 1 ≤ N →
+      |oneDScale β b N h k ξ η
+          - ∑ j ∈ range R, jetCoeff β p k (chartJet β (taylorData ξ) (taylorData η) R) j
+              * N ^ (-(p + (j : ℝ) / k))|
+        ≤ K' * N ^ (-(p + (R : ℝ) / k))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Mathlib's Taylor theorem gives, for $f\in C^{n+1}$ on $[a,b]$ and $x\in[a,b]$,
+$|f(x)-T_n f(x)|\le C(x-a)^{n+1}/n!$ whenever the $(n+1)$-st derivative within $[a,b]$ is bounded by
+$C$. With $a=0$ and $f\in C^{n+1}(\mathbb R)$ the within-derivatives agree with the global ones
+(\texttt{iteratedDerivWithin\_eq\_iteratedDeriv}, using \texttt{uniqueDiffOn\_Icc}), the
+$(n+1)$-st derivative is continuous hence bounded on the compact interval, and the Taylor polynomial
+$T_nf(u)=\sum_{i\le n}\frac{f^{(i)}(0)}{i!}u^i$ is exactly the Taylor sum of unit~95. The Lipschitz
+bound is the $n=0$ case. Feeding both into \texttt{oneDChart\_all\_orders} with the Taylor data
+gives the theorem; measurability of $\xi,\eta$ comes from continuity.
+
+\section{Paper-facing meaning}
+
+Together with unit~96's closed form
+$c_j=k^{-1}\sum_{m<R}\frac{\beta^m}{m!}e_{j,m}S_{p+j/k+m}(\xi(0))$, this is a complete formal
+statement of the one-dimensional all-order fluctuation expansion under the paper's own hypotheses
+(smooth $\xi,\eta$ near the exceptional divisor), with an explicit finite-$R$ remainder. No claim is
+made about convergence of the full inverse-$N$ series.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{taylorWithinEval} lives in \texttt{Mathlib.Analysis.Calculus.Taylor}, which the
+project's import closure did not yet contain; import it explicitly.
+\item A line break inside a \texttt{by} block nested in a \texttt{rw [...]} list is a parse error;
+hoist the term into a named \texttt{have}.
+\item \texttt{ContDiff ℝ (n + 1) f} with \texttt{n : ℕ} elaborates the order as
+\texttt{((n + 1 : ℕ) : WithTop ℕ∞)}, whereas \texttt{taylor\_mean\_remainder\_bound} wants
+\texttt{(n : WithTop ℕ∞) + 1}; \texttt{exact\_mod\_cast} bridges both directions.
+\item \texttt{Finset.sum\_range\_one} + \texttt{iteratedDeriv\_zero} reduce the $n=0$ Taylor
+polynomial to $f(0)$ in one \texttt{simp only}.
+\end{itemize}
+
+\end{document}
