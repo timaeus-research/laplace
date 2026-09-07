@@ -24,7 +24,7 @@ there the uniform convergence on `K` (unit 211) extends by the Lipschitz bounds 
 Mathlib's
 `TendstoInDistribution.add_of_tendstoInMeasure_const` (Slutsky) finishes.
 
-Also: `InputSpace` carries the Borel σ-algebra; `continuous_limChart`, `continuous_normChart`
+Also: `C([0,1]^d)` carries the Borel σ-algebra (so `InputSpace` has the product = Borel one); `continuous_limChart`, `continuous_normChart`
 (for `N ≥ 0`). No `N`-dependence of the amplitude beyond the input pair is allowed; the scales
 `N n ≥ 0` are deterministic. Zero `sorry`/`axiom`.
 -/
@@ -33,11 +33,12 @@ open MeasureTheory Filter Topology Real Set
 
 namespace Laplace.Grammar
 
-instance instMeasurableSpaceInputSpace (d : ℕ) : MeasurableSpace (InputSpace d) := borel _
-instance instBorelSpaceInputSpace (d : ℕ) : BorelSpace (InputSpace d) := ⟨rfl⟩
+instance instMeasurableSpaceCCube (d : ℕ) : MeasurableSpace C(closedCube d, ℝ) := borel _
+instance instBorelSpaceCCube (d : ℕ) : BorelSpace C(closedCube d, ℝ) := ⟨rfl⟩
 
 example (d : ℕ) : SecondCountableTopology (InputSpace d) := inferInstance
 example (d : ℕ) : CompleteSpace (InputSpace d) := inferInstance
+example (d : ℕ) : BorelSpace (InputSpace d) := inferInstance
 
 /-- Lipschitz bound for `F_N` on a ball at a fixed scale `N ≥ 0`. -/
 theorem normChart_lipschitzOn (d : ℕ) (h k : Fin (d + 1) → ℕ) (l β N R : ℝ) (hβ : 0 < β)
