@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Envelope bounds for the face transfer constants}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#9 R5, step~3 (face half). The explicit face constant of unit~131 involves tail moments of
+the actual face coefficients. Under the envelope hypotheses of unit~110 (Taylor data $f_m$ and
+remainder envelope $H$ bounded by $C(1+s)^De^{\beta sa'}$), every face coefficient is bounded
+pointwise by an explicit multiple of the Gaussian envelope $(1+s)^De^{\beta sa'}$, tail moments are
+monotone under pointwise envelopes, and hence
+$\mathrm{faceConst}\le\mathrm{faceEnvConst}\cdot\int_0^\infty s^{q-1}(1+|\log s|)e^{-\beta s^2}(1+s)^De^{\beta sa'}ds$
+with $\mathrm{faceEnvConst}$ a function of $(p_2,b,h_1,k_1,k_2,M,C_f,C_H)$ only
+(\texttt{faceConst\_le\_env}). This is the ingredient that makes the cutoff constant uniform over a
+family of amplitudes with a common envelope. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def gaussEnv (β a' : ℝ) (D : ℕ) (s : ℝ) : ℝ :=
+  (1 + s) ^ D * Real.exp (β * s * a')
+theorem tailMoment_le_of_env (β a' q K : ℝ) (j D : ℕ) (c : ℝ → ℝ) (hβ : 0 < β) (hq : 0 < q)
+    (hc : Measurable c) (henv : ∀ s, 0 < s → |c s| ≤ K * gaussEnv β a' D s) :
+    tailMoment β q j c ≤ K * envMoment β q j (gaussEnv β a' D)
+theorem envMoment_gauss_mono (β a' q : ℝ) (D : ℕ) (hβ : 0 < β) (hq : 0 < q) :
+    envMoment β q 0 (gaussEnv β a' D) ≤ envMoment β q 1 (gaussEnv β a' D)
+noncomputable def fpEnvConst (γ b : ℝ) (k₂ M : ℕ) (Cf CH : ℝ) : ℝ :=
+  1 / (k₂ : ℝ) * (CH / ((M : ℝ) - γ) * b ^ ((M : ℝ) - γ)
+    + ∑ m ∈ Finset.range M, Cf * |axisPrim γ b m|)
+theorem faceFPCoeff_abs_le_env ... (s : ℝ) (hs : 0 < s) :
+    |faceFPCoeff γ b k₂ Ψ f M s| ≤ fpEnvConst γ b k₂ M Cf CH * gaussEnv β a' D s
+noncomputable def faceCEnv (γ b : ℝ) (k₁ k₂ M : ℕ) (Cf CH : ℝ) : Fin M ⊕ Fin 2 → ℝ :=
+  Sum.elim (fun m => |faceScalar γ (b ^ k₂) k₁ k₂ m| * Cf)
+    ![fpEnvConst γ b k₂ M Cf CH, (M : ℝ) * (1 / ((k₁ : ℝ) * k₂)) * Cf]
+theorem faceC_abs_le_env ... (i : Fin M ⊕ Fin 2) (s : ℝ) (hs : 0 < s) :
+    |faceC γ b k₁ k₂ Ψ f M i s| ≤ faceCEnv γ b k₁ k₂ M Cf CH i * gaussEnv β a' D s
+noncomputable def faceEnvConst (p₂ b : ℝ) (h₁ k₁ k₂ M : ℕ) (Cf CH : ℝ) : ℝ :=
+  envEnvConst γ (b ^ k₂) k₁ k₂ M CH
+    + ∑ i, (b ^ (k₁ + k₂)) ^ (faceα p₂ γ k₁ M i - q) * faceCEnv γ b k₁ k₂ M Cf CH i
+theorem faceConst_le_env (β p₂ b a' Cf CH : ℝ) (h₁ k₁ k₂ M D : ℕ) ...
+    (hCf : 0 ≤ Cf) (hCH : 0 ≤ CH)
+    (hfenv : ∀ m, m < M → ∀ s, 0 < s → |f m s| ≤ Cf * gaussEnv β a' D s)
+    (hHenv : ∀ s, 0 < s → H s ≤ CH * gaussEnv β a' D s) (hrem : ...) :
+    faceConst β p₂ b h₁ k₁ k₂ M Ψ f H
+      ≤ faceEnvConst p₂ b h₁ k₁ k₂ M Cf CH
+        * envMoment β (p₂ + ((M : ℝ) - ((k₁ : ℝ) * p₂ - h₁ - 1)) / k₁) 1 (gaussEnv β a' D)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The monomial coefficient is $\mathrm{faceScalar}\cdot f_m$, the finite-part coefficient is bounded
+via $|\mathrm{FP}_\gamma|\le\frac{H}{M-\gamma}b^{M-\gamma}+\sum_m|f_m||\mathrm{axisPrim}(m)|$
+(unit~110), the log coefficient by $\frac{M}{k_1k_2}\max|f_m|$, and the remainder envelope
+$\mathrm{faceEnv}$ is a constant multiple of $H$; each therefore has the envelope
+$K\,(1+s)^De^{\beta sa'}$ with an explicit $K$. A tail moment $\int s^{q-1}(1+|\log s|)^je^{-\beta s^2}|c|$
+of such a $c$ is at most $K$ times the Gaussian envelope moment (pointwise comparison of integrable
+integrands), and the $j=0$ moment is at most the $j=1$ moment. Summing with the (nonnegative)
+weights $(b^{k_1+k_2})^{\alpha_i-q}$ gives the bound.
+
+\section{Paper-facing meaning}
+
+Combined with units~130--131, the $d=2$ cutoff remainder constant is now bounded by an explicit
+function of the envelope data $(C_0,L,D,\rho,b,\beta,h,k,M)$ times Gaussian moments, once the face
+envelopes of the analytic adapter ($C_f=C_0\rho^{-i}(1+\rho^{-1})^{M_2}$,
+$C_H=C_0\rho^{-i-M_2}/(1-b/\rho)$, corners $C_f=C_0\rho^{-i-j}$, $C_H=0$) are substituted. That
+substitution and the resulting uniform-family theorem ($\exists K\ \forall c$ with the common
+envelope, $\forall N\ge1$) is the next unit; it delivers Astra~\#9's R5 target and the input for the
+parameter integration over the noncritical coordinates.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item Exporting the local bounds of a long proof as standalone lemmas is cheap and makes them
+reusable; the envelope function was given a name (\texttt{gaussEnv}) so that all bounds share one
+shape.
+\item \texttt{moment\_integrableOn\_of\_envelope} expects the bound as
+\texttt{K * (1 + s) \^{} D * exp}, left-associated; a hypothesis stated with \texttt{K * gaussEnv}
+needs \texttt{rw [mul\_assoc]} in the discharging lambda.
+\item Entries of \texttt{![a, b]} at \texttt{Fin.mk} indices produced by \texttt{fin\_cases} are
+best handled by \texttt{show} with the expected entry (definitional), not by
+\texttt{Matrix.cons\_val\_zero/one} in \texttt{simp only}.
+\item \texttt{positivity} cannot see through \texttt{(M : ℝ) - γ}; supply \texttt{div\_nonneg} and
+\texttt{mul\_nonneg} explicitly.
+\item \texttt{gcongr} for a power comparison leaves \texttt{1 ≤ 1 + |log s|} and sometimes
+\texttt{0 ≤ 1}; \texttt{all\_goals linarith} covers both.
+\end{itemize}
+
+\end{document}
