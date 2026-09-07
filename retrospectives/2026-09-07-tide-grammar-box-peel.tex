@@ -1,0 +1,58 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Peeling the first coordinate of a Bochner box integral}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Infrastructure for the next geometric bridges (Astra~\#17: tangential integration, exponential
+localisation, symmetric normal boxes). The $[0,\infty]$-valued peel of unit~174 gets a Bochner
+counterpart for an arbitrary measurable one-dimensional factor $S$ and an integrable integrand:
+$\int_{S^{d+1}}F=\int_S\int_{S^d}F(\mathrm{cons}(a,b))\,db\,da$ (\texttt{integral\_pi\_box\_succ}).
+Also in this unit: the independent statement-level review v4 of units 184--187 (no blocking findings;
+two should-fix items applied) and Astra~\#17 saved. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def piBox (d : ℕ) (S : Set ℝ) : Set (Fin d → ℝ) := Set.pi univ fun _ => S
+theorem restrict_piBox (d S) :
+    volume.restrict (piBox d S) = Measure.pi fun _ => volume.restrict S
+theorem integral_piBox_zero (S) (F) : ∫ x in piBox 0 S, F x = F isEmptyElim
+theorem integral_pi_box_succ (d) (S) (F) (hF : IntegrableOn F (piBox (d + 1) S)) :
+    ∫ x in piBox (d + 1) S, F x = ∫ a in S, ∫ b in piBox d S, F (Fin.cons a b)
+\end{verbatim}
+}
+
+\section{Review v4 and Astra \#17}
+Review v4 (\texttt{tide-log/gpt6\_fidelity\_review\_v4.md}) recomputed the sanity example
+($k=(1,1)$, $h=(0,2)$, $\eta=1+y$: $N^{1/2}I_\eta\to5\sqrt\pi/12$) from the Lean statement, confirmed
+the mirror equation, and asked for two changes, both applied: \texttt{amplitudeCoeff\_eq\_zero\_of\_face}
+now only requires vanishing on the face \emph{over the box}, and the equal-ratio prose is qualified
+(origin evaluation holds for \emph{every} continuous amplitude exactly when all ratios are equal;
+particular amplitudes satisfy it otherwise). Astra~\#17 (\texttt{gpt6\_bigpicture\_v17.md}) ranks
+tangential integration first (average the amplitude over the tangential variable, then apply the
+amplitude theorem once), then a local leading-density headline, exponential-gap localisation, and
+symmetric normal boxes with signed reflections; and recommends an author-facing consolidated report,
+which accompanies this unit in the staging area.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{MeasurePreserving.integral\_comp} and \texttt{integrable\_comp\_emb} transport both the
+integral and the integrability along \texttt{piFinSuccAbove}; the Bochner Fubini
+\texttt{integral\_prod} needs the transported integrability.
+\item The \texttt{IntegrableOn} hypothesis is unfolded and rewritten with \texttt{restrict\_piBox}
+before the transport, so that the product measure appears syntactically.
+\end{itemize}
+
+\end{document}
