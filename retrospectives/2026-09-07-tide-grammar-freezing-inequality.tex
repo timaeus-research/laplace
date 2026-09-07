@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Minimal block V: the freezing inequality}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For the block state integral with general jointly continuous $\xi,\eta$ (block $u\in(0,b]^m$,
+noncritical $v\in(0,b]^{d'}$) and its frozen version with $\xi(0,v),\eta(0,v)$, the mean-value bound
+and the corner/strip split of unit~76 give, at every scale $N\ge0$,
+$|Z(N)-Z_0(N)|\le C_2\big(\omega\,Z^{\beta/2,2L}_h(N)+\tfrac{2M+2L}{\delta}\sum_iZ^{\beta/2,2L}_{h+e_i}(N)\big)$,
+where $\omega$ bounds the oscillation of $\xi,\eta$ on the corner $\{u_i\le\delta\}$ and the right-hand
+side consists of constant-$\xi$ state integrals. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def blockStateIntegral (β b N : ℝ) {m d' : ℕ} (k h : Fin m → ℕ)
+    (k' h' : Fin d' → ℕ) (ξ η : (Fin m → ℝ) → (Fin d' → ℝ) → ℝ) : ℝ :=
+  ∫ v, (∏ i, v i ^ h' i) * (∫ u, (∏ i, u i ^ h i) * η u v
+      * quadKernel β (ξ u v) (N * (∏ i, v i ^ k' i) * ∏ i, u i ^ k i) ∂(boxMeasure b m))
+    ∂(boxMeasure b d')
+noncomputable def constStateIntegral (β a b N : ℝ) ... : ℝ :=
+  ∫ v, (∏ i, v i ^ h' i) * boxIntegralFin β a b (N * ∏ i, v i ^ k' i) k h
+    ∂(boxMeasure b d')
+theorem constStateIntegral_eq_frozen ... :
+    constStateIntegral β a b N k h k' h'
+      = frozenStateIntegral β b N (toNatFun k 1) (toNatFun h 0) d k' h'
+          (fun _ => a) (fun _ => 1)
+theorem blockStateIntegral_sub_le (β b : ℝ) (hβ : 0 < β) (hb : 0 < b) ... (L M : ℝ) ...
+    (ω δ : ℝ) (hω : 0 ≤ ω) (hδ : 0 < δ)
+    (hcorner : ∀ u v, ... → (∀ i, u i ≤ δ) → |η u v - η 0 v| + |ξ u v - ξ 0 v| ≤ ω)
+    (N : ℝ) (hN : 0 ≤ N) :
+    |blockStateIntegral β b N k h k' h' ξ η
+        - blockStateIntegral β b N k h k' h' (fun _ v => ξ 0 v) (fun _ v => η 0 v)|
+      ≤ max 1 (M * Real.exp (β / 2))
+        * (ω * constStateIntegral (β / 2) (2 * L) b N k h k' h'
+          + (2 * M + 2 * L) / δ
+            * ∑ i, constStateIntegral (β / 2) (2 * L) b N k (shiftExp h i) k' h')
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Everything is done on the product box measure, where all integrands are continuous on the compact
+closed box, hence integrable (\texttt{integrable\_box\_prod\_of\_continuous}); \texttt{integral\_prod}
+converts to the iterated forms. On the open product box (almost everywhere) the integrand difference
+is $v^{h'}u^h\,|\eta f_\xi-\eta_0f_{\xi_0}|(s)$, bounded by
+$v^{h'}u^hC_2D\,e^{-(\beta/2)s^2+\beta Ls}$ and then, via the corner/strip split, by
+$C_2\big(\omega+\tfrac{D_{\max}}{\delta}\sum_iu_i\big)v^{h'}u^he^{-(\beta/2)s^2+\beta Ls}$; the terms
+$u^hu_i=u^{h+e_i}$ are recognised as shifted-exponent integrands. Then
+$\|\int(G-G_0)\|\le\int\|G-G_0\|\le\int H$ and $\int H$ is expanded by linearity into the constant-$\xi$
+state integrals.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{ae\_restrict\_mem} on a product of pi measures needs both \texttt{volume}s and the set
+given explicitly; otherwise the measurable-space instance is left as a metavariable.
+\item \texttt{integral\_congr\_ae} pointwise goals are beta redexes; \texttt{beta\_reduce} before
+\texttt{rw}.
+\item The unifier cannot recover \texttt{fun \_ v => ξ 0 v} from a continuity proof; pass the frozen
+functions explicitly to \texttt{blockIntegrand\_continuous}.
+\item The bound $|\xi(0,v)|\le L$ needs $(0,v)$ in the closed box, hence $0\le b$: add
+\texttt{hb : 0 < b}.
+\end{itemize}
+
+\section{Outcome}
+The freezing inequality reduces the general multiplicity-$m$ leading term to the constant-$\xi$ theory
+already formalised. Next: the limit argument ($N^p\log^{-d}N\cdot$strip terms $\to0$, then an
+$\varepsilon$-argument with uniform continuity on the closed box) and the main theorem
+$Z\sim C\,N^{-p}\log^dN$.
+\end{document}
