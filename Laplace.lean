@@ -382,3 +382,4 @@ import Laplace.Grammar.NormalCrossingLaw
 import Laplace.Grammar.NormalCrossingPrior
 import Laplace.Grammar.MellinCoefficient
 import Laplace.Grammar.PowLogCalculus
+import Laplace.Grammar.StateDensity

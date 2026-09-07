@@ -37,7 +37,8 @@ theorem stateDensityRep_zero (w : Fin 1 → ℝ) : stateDensityRep 0 w = [(w 0 +
 theorem stateDensityRep_succ (n : ℕ) (w : Fin (n + 2) → ℝ) :
     stateDensityRep (n + 1) w = PowLogRep.conv (w 0) (stateDensityRep n (Fin.tail w)) := rfl
 
-theorem div_mem_Ioc_of_mem_Icc {z t : ℝ} (hz : 0 < z) (ht : t ∈ Icc z 1) : z / t ∈ Ioc (0 : ℝ) 1 := by
+theorem div_mem_Ioc_of_mem_Icc {z t : ℝ} (hz : 0 < z) (ht : t ∈ Icc z 1) :
+    z / t ∈ Ioc (0 : ℝ) 1 := by
   have ht0 : 0 < t := hz.trans_le ht.1
   exact ⟨div_pos hz ht0, (div_le_one ht0).2 ht.1⟩
 
@@ -52,8 +53,8 @@ theorem PowLogRep.measurable_eval (c : PowLogRep) : Measurable (PowLogRep.eval c
     rw [this]
     exact measurable_const
   | cons t c ih =>
-    have : PowLogRep.eval (t :: c) = fun τ => t.2.2 * powLogBasis t.1 t.2.1 τ + PowLogRep.eval c τ :=
-      rfl
+    have : PowLogRep.eval (t :: c) =
+        fun τ => t.2.2 * powLogBasis t.1 t.2.1 τ + PowLogRep.eval c τ := rfl
     rw [this]
     exact (measurable_const.mul (measurable_powLogBasis _ _)).add ih
 
@@ -122,7 +123,8 @@ theorem weightedBoxIntegral_eq_stateDensity :
         ENNReal.ofReal (q.1 ^ (w 0 - 1) * v (q.2 / q.1)) * g q.2 :=
       (ENNReal.measurable_ofReal.comp ((measurable_fst.pow_const _).mul
         (hvm.comp (measurable_snd.div measurable_fst)))).mul (hg.comp measurable_snd)
-    rw [lintegral_triangle_swap (fun a u => ENNReal.ofReal (a ^ (w 0 - 1) * v (u / a)) * g u) hmeas]
+    rw [lintegral_triangle_swap (fun a u => ENNReal.ofReal (a ^ (w 0 - 1) * v (u / a)) * g u)
+      hmeas]
     refine setLIntegral_congr_fun measurableSet_Ioc fun u hu => ?_
     have hmeas' : Measurable fun a : ℝ => ENNReal.ofReal (a ^ (w 0 - 1) * v (u / a)) :=
       ENNReal.measurable_ofReal.comp ((measurable_id.pow_const _).mul
@@ -142,7 +144,8 @@ theorem monomialBoxIntegral_eq_stateDensity (n : ℕ) (h k : Fin (n + 1) → ℕ
       ENNReal.ofReal (∏ i, 1 / (2 * (k i : ℝ))) *
         ∫⁻ z in Ioc (0 : ℝ) 1, ENNReal.ofReal (PowLogRep.eval
           (stateDensityRep n fun i => ((h i : ℝ) + 1) / (2 * (k i : ℝ)) - 1) z) * g z := by
-  rw [monomialBoxIntegral_eq_weighted (n + 1) h k hk g hg, weightedBoxIntegral_eq_stateDensity n _ g hg]
+  rw [monomialBoxIntegral_eq_weighted (n + 1) h k hk g hg,
+    weightedBoxIntegral_eq_stateDensity n _ g hg]
 
 /-! ### Exponents and logarithmic degrees -/
 
@@ -167,7 +170,8 @@ theorem stateDensityRep_exponent_mem : ∀ (n : ℕ) (w : Fin (n + 1) → ℝ),
     · exact ⟨i.succ, hi.symm⟩
 
 /-- The multiplicity of an exponent `μ`: the number of coordinates with `wᵢ + 1 = μ`. -/
-noncomputable def expMult {n : ℕ} (w : Fin n → ℝ) (μ : ℝ) : ℕ := (Finset.univ.filter fun i => w i + 1 = μ).card
+noncomputable def expMult {n : ℕ} (w : Fin n → ℝ) (μ : ℝ) : ℕ :=
+  (Finset.univ.filter fun i => w i + 1 = μ).card
 
 theorem expMult_succ {n : ℕ} (w : Fin (n + 1) → ℝ) (μ : ℝ) :
     expMult w μ = expMult (Fin.tail w) μ + (if μ = w 0 + 1 then 1 else 0) := by
