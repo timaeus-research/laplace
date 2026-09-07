@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Normalised remainders for tight families of Taylor data}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The localisation upgrade suggested by Astra~\#11. The bounded-family theorems of unit~150 required a
+deterministic bound $\|X_n\|\le M$ on the random Taylor data, which excludes Gaussian-type limits.
+Here the hypothesis is replaced by tightness of the norms,
+$\forall\eta>0\ \exists M\ \forall^\infty n,\ \mu\{\|X_n\|>M\}\le\eta$ (the content of the paper's
+appendix prop:convergence~(i)). On the ball the error is deterministically small; off the ball the
+probability is at most $\eta$; so the error tends to zero in probability
+(\texttt{tendstoInMeasure\_zero\_of\_tight}), and Mathlib's
+\texttt{tendstoInDistribution\_of\_tendstoInMeasure\_sub} yields
+$\mathrm{normA}\Rightarrow A_\alpha(Z)$ and $\mathrm{normB}\Rightarrow B_\alpha(Z)$
+(\texttt{tendstoInDistribution\_normA\_tight}, \texttt{tendstoInDistribution\_normB\_tight}).
+Bounded families are tight (\texttt{tight\_of\_bounded}), so unit~150 is a special case. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem tendstoInMeasure_zero_of_tight (μ) (f : ι → Ω → ℝ) (X : ι → Ω → CoeffPair)
+    (e : ℝ → ι → ℝ)
+    (he : ∀ M, 0 ≤ M → Tendsto (e M) l (𝓝 0))
+    (hf : ∀ M, 0 ≤ M → ∀ᶠ n in l, ∀ ω, ‖X n ω‖ ≤ M → |f n ω| ≤ e M n)
+    (htight : ∀ η : ENNReal, 0 < η → ∃ M, 0 ≤ M ∧ ∀ᶠ n in l, μ {ω | M < ‖X n ω‖} ≤ η) :
+    TendstoInMeasure μ f l (fun _ => 0)
+theorem tendstoInDistribution_normA_tight ... (X) (hXm : ∀ n, Measurable (X n))
+    (htight : ∀ η : ENNReal, 0 < η → ∃ M, 0 ≤ M ∧ ∀ᶠ n in l, μ {ω | M < ‖X n ω‖} ≤ η)
+    (Z) (hX : TendstoInDistribution X l Z (fun _ => μ) μ') (Nseq)
+    (hN : Tendsto Nseq l atTop)
+    (α) (hα : α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T) :
+    TendstoInDistribution (fun n ω => normA … α (Nseq n) (X n ω)) l
+      (coeffA … α ∘ Z) (fun _ => μ) μ'
+theorem tendstoInDistribution_normB_tight ... : … normB … ⇒ coeffB … α ∘ Z
+theorem tight_of_bounded (μ) (X) (M) (hM : 0 ≤ M) (hXb : ∀ n ω, ‖X n ω‖ ≤ M) : (tightness)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Fix $\varepsilon>0$ and $\eta>0$; choose $M$ from tightness. For $n$ large,
+$\mathrm{errA}_M(N_n)<\varepsilon$, so $\{|\mathrm{err}_n|\ge\varepsilon\}\subseteq\{\|X_n\|>M\}$
+and $\mu\{|\mathrm{err}_n|\ge\varepsilon\}\le\eta$. Since $\eta$ is arbitrary, $\mathrm{err}_n\to0$
+in probability. The rest is the same as unit~150, with Mathlib's
+\texttt{tendstoInDistribution\_of\_tendstoInMeasure\_sub} replacing the additive Slutsky lemma.
+
+\section{Paper-facing meaning}
+This is the form of the ordered normalised-remainder convergence in thm:strataempiricalexpansion
+that applies to the empirical process: the paper establishes tightness of $\tilde\xi_n$ from the
+moment bound $\mathbb E\sup|\tilde\xi_n|^s\le C$ (appendix lem:thm58new and prop:convergence~(i));
+in our formulation the corresponding hypothesis is norm tightness of the Taylor data in
+\texttt{CoeffPair}, which follows from the paper's bound by Cauchy estimates (not formalised) or
+can be taken as the standing hypothesis. Units~145--152 together give, for $d=2$ and one chart:
+coefficient continuity, convergence in distribution of finitely many coefficients, convergence of
+the ordered normalised remainders for tight families, and exponential negligibility of the far
+region.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{ENNReal.tendsto\_nhds\_zero}: $u\to0$ iff $\forall\eta>0,\ \forall^\infty n,\ u_n\le\eta$,
+which is exactly the shape a tightness argument produces; \texttt{measure\_mono} on the set
+inclusion finishes.
+\item \texttt{tendstoInDistribution\_of\_tendstoInMeasure\_sub} takes the difference as the Pi
+subtraction \texttt{Y - X}; a term stated with an explicit lambda difference is accepted by
+\texttt{exact} (definitional unfolding of \texttt{Pi.sub\_apply}).
+\item \texttt{zero\_le} for \texttt{ENNReal} needs a type ascription
+(\texttt{(zero\_le : (0 : ENNReal) ≤ η)}); \texttt{zero\_le \_} fails since the argument is implicit.
+\end{itemize}
+
+\end{document}
