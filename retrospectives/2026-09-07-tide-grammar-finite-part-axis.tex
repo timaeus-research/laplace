@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The weighted finite-part axis lemma}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $f(v)=\sum_{m<M}f_mv^m+R_M(v)$ on $(0,b]$ with $|R_M(v)|\le Hv^M$ and $0\le\gamma<M$, the weighted
+axis integral $J(\varepsilon)=\int_\varepsilon^bv^{-1-\gamma}f(v)\,dv$ has the exact expansion
+\[
+J(\varepsilon)=\mathrm{FP}_\gamma f-\sum_{m<M}f_m\,\mathrm{axisPrim}(\gamma,\varepsilon,m)+E(\varepsilon),
+\qquad |E(\varepsilon)|\le\frac{H}{M-\gamma}\varepsilon^{M-\gamma},
+\]
+where $\mathrm{axisPrim}(\gamma,x,m)=\log x$ at the resonance $m=\gamma$ and $x^{m-\gamma}/(m-\gamma)$
+otherwise, and the finite part $\mathrm{FP}_\gamma f=\int_0^bv^{-1-\gamma}(f-T_Mf)\,dv+\sum_{m<M}f_m\,
+\mathrm{axisPrim}(\gamma,b,m)$ collects the regularised integral and the upper-endpoint counterterms.
+With $\varepsilon=(r/A)^{1/k}$ this produces the shifted exponents $(m-\gamma)/k$ and the resonant
+$\log(A/r)/k$ of the $d=2$ density expansion. This is Astra~\#4's rank-2 unit, the gateway to the
+$\tau$-cutoff $d=2$ theorem. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integral_rpow_Ioc (ε b c : ℝ) (hε : 0 < ε) (hεb : ε ≤ b) :
+    ∫ v in Ioc ε b, v ^ c
+      = if c = -1 then Real.log b - Real.log ε else (b ^ (c + 1) - ε ^ (c + 1)) / (c + 1)
+noncomputable def axisPrim (γ x : ℝ) (m : ℕ) : ℝ :=
+  if (m : ℝ) = γ then Real.log x else x ^ ((m : ℝ) - γ) / ((m : ℝ) - γ)
+theorem integral_rpow_shift_Ioc (γ ε b : ℝ) (m : ℕ) (hε : 0 < ε) (hεb : ε ≤ b) :
+    ∫ v in Ioc ε b, v ^ ((m : ℝ) - 1 - γ) = axisPrim γ b m - axisPrim γ ε m
+def taylorRem (f : ℝ → ℝ) (fm : ℕ → ℝ) (M : ℕ) (v : ℝ) : ℝ :=
+  f v - ∑ m ∈ range M, fm m * v ^ m
+noncomputable def regAxisIntegral (γ b : ℝ) (f : ℝ → ℝ) (fm : ℕ → ℝ) (M : ℕ) : ℝ :=
+  ∫ v in Ioc (0 : ℝ) b, v ^ (-1 - γ) * taylorRem f fm M v
+noncomputable def axisFinitePart (γ b : ℝ) (f : ℝ → ℝ) (fm : ℕ → ℝ) (M : ℕ) : ℝ :=
+  regAxisIntegral γ b f fm M + ∑ m ∈ range M, fm m * axisPrim γ b m
+theorem weighted_taylorRem_integrableOn (γ b H : ℝ) (M : ℕ) (hM : γ < M)
+    (f : ℝ → ℝ) (fm : ℕ → ℝ) (hf : Measurable f)
+    (hrem : ∀ v ∈ Ioc (0 : ℝ) b, |taylorRem f fm M v| ≤ H * v ^ M) :
+    IntegrableOn (fun v => v ^ (-1 - γ) * taylorRem f fm M v) (Ioc 0 b)
+theorem weighted_taylorRem_tail_le ... (ε : ℝ) (hε : 0 < ε) (hεb : ε ≤ b) :
+    |∫ v in Ioc (0 : ℝ) ε, v ^ (-1 - γ) * taylorRem f fm M v|
+      ≤ H / ((M : ℝ) - γ) * ε ^ ((M : ℝ) - γ)
+theorem axis_finite_part_expansion (γ b H : ℝ) (M : ℕ) (hM : γ < M)
+    (f : ℝ → ℝ) (fm : ℕ → ℝ) (hf : Measurable f)
+    (hrem : ∀ v ∈ Ioc (0 : ℝ) b, |taylorRem f fm M v| ≤ H * v ^ M)
+    (ε : ℝ) (hε : 0 < ε) (hεb : ε ≤ b) :
+    |(∫ v in Ioc ε b, v ^ (-1 - γ) * f v)
+        - (axisFinitePart γ b f fm M - ∑ m ∈ range M, fm m * axisPrim γ ε m)|
+      ≤ H / ((M : ℝ) - γ) * ε ^ ((M : ℝ) - γ)
+theorem axisPrim_rpow (γ A r k : ℝ) (m : ℕ) (hA : 0 < A) (hr : 0 < r) :
+    axisPrim γ ((r / A) ^ (1 / k)) m
+      = if (m : ℝ) = γ then (Real.log r - Real.log A) / k
+        else (r / A) ^ (((m : ℝ) - γ) / k) / ((m : ℝ) - γ)
+theorem rpow_one_div_rpow (x k c : ℝ) (hx : 0 ≤ x) : (x ^ (1 / k)) ^ c = x ^ (c / k)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+On $(\varepsilon,b]$, $v^{-1-\gamma}f=v^{-1-\gamma}R_M+\sum_{m<M}f_mv^{m-1-\gamma}$, and the
+monomials integrate exactly to $\mathrm{axisPrim}(\gamma,b,m)-\mathrm{axisPrim}(\gamma,\varepsilon,m)$
+(Mathlib's \texttt{integral\_rpow} off the origin, and \texttt{integral\_inv} at the resonance
+$m-1-\gamma=-1$). The remainder term is integrable down to $0$ because
+$v^{-1-\gamma}|R_M|\le Hv^{M-1-\gamma}$ with $M-1-\gamma>-1$; splitting at $\varepsilon$ gives the
+regularised integral over $(0,b]$ minus a tail over $(0,\varepsilon]$, and the tail is bounded by
+$H\int_0^\varepsilon v^{M-1-\gamma}=H\varepsilon^{M-\gamma}/(M-\gamma)$.
+
+As Astra~\#4 stressed, the regularised integral alone is not the constant coefficient: the
+upper-endpoint counterterms $\sum_mf_m\,\mathrm{axisPrim}(\gamma,b,m)$ are part of
+$\mathrm{FP}_\gamma f$. The formalisation subtracts the full order-$M$ Taylor polynomial (rather
+than only the terms with $m\le\lfloor\gamma\rfloor$); the resulting finite part is independent of
+$M>\gamma$ because the extra monomials contribute exactly cancelling terms, but that independence is
+not needed for the expansion and is left for later.
+
+\section{Paper-facing meaning}
+
+In the $d=2$ block, a face term $u^ia_i(v,s)$ has density
+$k_1^{-1}r^{p+i/k_1-1}\int_{(r/A)^{1/k_2}}^{b_2}v^{-1-k_2i/k_1}a_i(v,s)\,dv$; this lemma with
+$\gamma=k_2i/k_1$ and $\varepsilon=(r/A)^{1/k_2}$ (\texttt{axisPrim\_rpow}) yields the exponents
+$p+i/k_1+(m-\gamma)/k_2=p+m/k_2$, a $\log(A/r)$ precisely at the collision $i/k_1=m/k_2$, and the
+finite-part coefficient $D_q(s)$ of the cutoff density theorem. It generalises the unit-87 axis
+integral $I_\Psi=\int_0^b(\Psi-\Psi(0))/u$, which is the case $\gamma=0$, $M=1$.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Real.rpow\_neg\_one} does not exist; the resonant case converts $v^{-1}$ to $v^{-1}$
+via \texttt{Real.rpow\_neg} and \texttt{Real.rpow\_one} inside an
+\texttt{intervalIntegral.integral\_congr}.
+\item \texttt{integral\_rpow} needs \texttt{Or.inr ⟨hc, h0⟩} with \texttt{0 ∉ uIcc ε b} when the
+exponent may be below $-1$; \texttt{uIcc\_of\_le} turns \texttt{uIcc} into \texttt{Icc}.
+\item \texttt{← intervalIntegral.integral\_of\_le} in a hypothesis with two set integrals rewrites
+the first one; compute the power integral in a separate \texttt{have} first.
+\item Membership in \texttt{Icc ε b} vs \texttt{Ioc ε b}: \texttt{ContinuousOn.integrableOn\_Icc}
+hands \texttt{ε ≤ v}, the pointwise decomposition hands \texttt{ε < v}; \texttt{hε.trans} vs
+\texttt{lt\_of\_lt\_of\_le} accordingly.
+\item \texttt{Finset.measurable\_sum \_ fun m \_ => measurable\_const.mul (measurable\_id.pow\_const m)}
+for measurability of a polynomial.
+\end{itemize}
+
+\end{document}
