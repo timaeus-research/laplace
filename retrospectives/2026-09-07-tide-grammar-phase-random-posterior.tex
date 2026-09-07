@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline XVII: the random per-stratum posterior expectation in general dimension}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 213 combines Headline~XVI with the positive-denominator quotient theorem of unit~157. With a
+deterministic continuous observable $\varphi$ and density $c>0$ on the closed cube, a random phase
+$\xi_n:\Omega\to C([0,1]^d)$ converging in distribution to $\xi$, and deterministic scales
+$N_n\to\infty$ ($N_n>1$),
+\[
+\frac{\int\varphi c\,u^he^{-\beta N_n^2u^{2k}+\beta N_nu^k\xi_n}\,du}
+     {\int c\,u^he^{-\beta N_n^2u^{2k}+\beta N_nu^k\xi_n}\,du}
+\;\Rightarrow\;
+\frac{\mathrm{phaseCoeff}(\xi,\varphi c)}{\mathrm{phaseCoeff}(\xi,c)}
+\]
+(\texttt{tendstoInDistribution\_phase\_posterior}); in the equal-ratio case the limit is the
+deterministic corner value $\varphi(0)$, whatever the limiting phase
+(\texttt{tendstoInDistribution\_phase\_posterior\_equal}) --- the general-$d$ form of the $d=2$ chart
+posterior limit $Z[\varphi]/Z[1]\Rightarrow y_{\varphi,00}/y_{1,00}$. Review v12 (units 209--212):
+clean at statement level, prose should-fixes applied. Zero \texttt{sorry}/\texttt{axiom}; 9090 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+instance : MeasurableSpace C(closedCube d, ℝ) := borel _   (BorelSpace; product =
+      Borel on InputSpace)
+theorem measurable_pair_const (hX : Measurable X) (g) : Measurable fun ω => ((X ω,
+      g) : InputSpace d)
+theorem continuous_pair_const (g) : Continuous fun f => ((f, g) : InputSpace d)
+theorem extCube_mul (φ c) : extCube (φ * c) = fun x => extCube φ x * extCube c x
+theorem tendstoInDistribution_normChart_pair … (g₁ g₂) :
+    TendstoInDistribution (fun n ω => (normChart … (Nseq n) (X n ω, g₁), normChart
+      … (Nseq n) (X n ω, g₂))) L
+      (fun ω => (limChart … (Z ω, g₁), limChart … (Z ω, g₂))) (fun _ => μ) μ'
+theorem tendstoInDistribution_phase_posterior … (hN1 : ∀ n, 1 < Nseq n) (φ c)
+      (hcpos : ∀ x, 0 < c x) :
+    TendstoInDistribution (fun n ω => chartIntegral … (Nseq n) (extCube (X n ω))
+      (extCube (φ * c))
+        / chartIntegral … (Nseq n) (extCube (X n ω)) (extCube c)) L
+      (fun ω => limChart … (Z ω, φ * c) / limChart … (Z ω, c)) (fun _ => μ) μ'
+theorem tendstoInDistribution_phase_posterior_equal (hratio) … : … L (fun _ => φ 0)
+      (fun _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+The numerator and denominator are functions of the same random phase paired with the fixed
+amplitudes $\varphi c$ and $c$, so their joint convergence is Headline~XVI for the vector
+$(F_N(\cdot,\varphi c),F_N(\cdot,c))$: the pair of errors tends to $0$ in probability
+(\texttt{tendstoInMeasure\_prodMk\_zero}) and the pair of limits is a continuous function of the phase.
+The limiting denominator $\mathrm{phaseCoeff}(\xi,c)$ is strictly positive for every $\xi$ by
+unit~205 (it depends on $\xi$ only through $J_p(\xi(\pi u))>0$), so the quotient theorem applies with
+totalised division; the common scale cancels exactly once $N_n>1$, which is why that hypothesis
+replaces $N_n\ge0$.
+
+\section{Lean notes}
+\begin{itemize}
+\item Putting the Borel σ-algebra on the \emph{factor} $C([0,1]^d,\mathbb R)$ (rather than on the
+  product) makes \texttt{Measurable.prodMk} available for pairing with a constant and gives
+  \texttt{BorelSpace (InputSpace d)} through \texttt{Prod.borelSpace}; a separate
+  \texttt{borel} instance on the product would create an instance diamond.
+\item \texttt{TendstoInDistribution.congr} needs a.e. equality for \emph{every} index, so the
+  totalised quotient identity $(a/S)/(b/S)=a/b$ must hold at every $n$; requiring $N_n>1$ (rather
+  than eventually) keeps $S\ne0$ throughout.
+\item The corner point $\langle 0,\_\rangle$ of the closed cube is not syntactically the clamp of
+  $0$; \texttt{Subtype.ext (clampCube\_of\_mem …)} bridges them.
+\end{itemize}
+
+\section{Review v12 disposition}
+Units 209--212 clean. Applied: the unit-212 module doc now displays the ambient assumptions
+(probability measures, countably generated filter, deterministic $N_n\ge0$), states that
+scale-dependent amplitudes are allowed when encoded in the input, and fixes the dimension mismatch;
+the mirror comparison is narrowed to a conditional leading-order analogue of the empirical-phase
+transfer.
+
+\section{Status}
+Headlines XIII--XVII: deterministic and random leading-order theory of one normal block in general
+dimension, plus conditional chart assembly. Next: Astra~\#23 for the remaining direction (signed
+orthants with phase, Mellin dictionary, or hand-off with report v3).
+\end{document}
