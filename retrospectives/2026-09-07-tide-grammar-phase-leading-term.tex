@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The phase-dressed leading term in general dimension}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 202 closes the deterministic core of programme~A. For continuous phase $\xi$ and amplitude
+$\eta$ on $\mathbb R^d$, exponents $h,k$ with $\lambda=\min_i(h_i+1)/(2k_i)$, minimiser set $J$,
+$m=|J|$, $p=2\lambda$, and $s=Nu^k$,
+\begin{align*}
+\frac{\int_{(0,1]^d}\eta(u)\,u^h\,e^{-\beta s^2+\beta s\,\xi(u)}\,du}{N^{-p}(\log N)^{m-1}}
+\;\longrightarrow\;
+&2^{m-1}\cdot2\cdot\frac{1}{(m-1)!\prod_{i\in J}2k_i}\\
+&\quad\times\int_{(0,1]^d}\eta(\pi u)\,S^{(\beta)}_{p/2}(\xi(\pi u))\prod_{i\notin J}u_i^{h_i-2k_i\lambda}\,du
+\end{align*}
+(\texttt{phase\_leading\_tendsto}, limit \texttt{phaseCoeff}), where $\pi$ sets the minimising
+coordinates to zero and $S^{(\beta)}_{p/2}(a)=\int_0^\infty s^{p-1}e^{-\beta s^2+\beta as}\,ds$. The
+proof is the Taylor-in-phase argument of units 199--201 assembled with \texttt{tendsto\_of\_approx}:
+the $2K$-term Taylor approximants converge by the shifted-exponent theorem; the $N$-side remainder is
+bounded by $M_\eta\,\tau_K\int u^he^{-(\beta/4)N^2u^{2k}}$, whose normalised version converges to a
+$K$-independent constant; and the distance of \texttt{phaseCoeff} to the finite coefficient sum is
+bounded by the same $\tau_K$ against the limiting face measure. Numerical check ($d=2$,
+$h=(0,1)$, $k=(1,1)$, $\lambda=\tfrac12$, $J=\{0\}$, $\xi(u)=u_1$, $\eta=1$, $\beta=1$):
+$N\cdot I_N=1.2332,\ 1.2378$ at $N=10^2,10^3$ against $\int_0^1S(v)\,dv=1.2383$. Zero
+\texttt{sorry}/\texttt{axiom}; 9079 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def faceNorm (h k : Fin d → ℕ) (l : ℝ) : ℝ :=
+  1 / (multCount (ratioExp h k) l - 1)! * ∏ i, if ratioExp h k i = l then 1/(2 k i)
+      else 1
+noncomputable def phaseCoeff (h k) (l β : ℝ) (ξ η : (Fin d → ℝ) → ℝ) : ℝ :=
+  2 ^ (multCount (ratioExp h k) l - 1) * 2 * faceNorm h k l *
+    ∫ u in unitBox d, (η (faceProj h k l u) * phaseMoment β (2 l) (ξ (faceProj h k l
+      u)))
+      * residualWeight h k l u
+theorem sq_mul_prod_pow : (N * ∏ i, x i ^ k i) ^ 2 = N ^ 2 * ∏ i, x i ^ (2 * k i)
+theorem quadKernel_eq_phase_mul_gauss : quadKernel β (ξ x) (N * ∏ x^k)
+    = exp ((N * ∏ x^k) * (β * ξ x)) * exp (-(β * N^2 * ∏ x^(2k)))
+theorem taylor_term_eq / phase_diff_eq   (pointwise algebra of the truncated
+      expansion)
+theorem phase_remainder_le (hN : 0 ≤ N) (hb : ∀ x ∈ closedCube d, |β * ξ x| ≤ b)
+    (hMη0) (hMη : ∀ x ∈ closedCube d, |η x| ≤ Mη) (K) :
+    |∫ η u^h quadKernel β (ξ u) (N u^k) - ∑ j < 2K, β^j/j! * (N^j * ∫ (ξ^j η)
+      u^{h+jk} e^{-βN²u^{2k}})|
+      ≤ Mη * tailCoeff β b K * monomialBoxReal d h k (β/4) (N^2)
+theorem phaseCoeff_remainder_le ... :
+    |phaseCoeff h k l β ξ η - ∑ j < 2K, β^j/j! * (2^(m-1) * amplitudeCoeff
+      (phaseShift h k j) k (l+j/2) β (ξ^j η))|
+      ≤ tailCoeff β b K * (2^(m-1) * 2 * faceNorm h k l * (Mη * gaussTail β (2l) * ∫
+      residualWeight))
+theorem phase_leading_tendsto (hk) (hl) (hβ) (hmin) (hatt) (hξ : Continuous ξ) (hη :
+      Continuous η) :
+    Tendsto (fun N => (∫ x in unitBox (d+1), η x * ((∏ x^h) * quadKernel β (ξ x) (N *
+      ∏ x^k)))
+      / (N^(-(2l)) * log N ^ (multCount (ratioExp h k) l - 1))) atTop (𝓝 (phaseCoeff
+      h k l β ξ η))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Three bookkeeping facts make the assembly exact. (i) $u^{h+jk}=u^h(u^k)^j$ and $N^j(u^k)^j=s^j$, so the
+$j$-th Taylor term of $e^{\beta s\xi}$ is literally the shifted-exponent integrand with amplitude
+$\xi^j\eta$ (\texttt{taylor\_term\_eq}). (ii) The Gaussian moments
+$\int_0^\infty s^{p-1}s^je^{-\beta s^2}ds=\tfrac12\Gamma(\lambda+j/2)\beta^{-\lambda-j/2}$ turn the
+finite coefficient sum $\sum_j\frac{\beta^j}{j!}2^{m-1}\,\mathrm{amplitudeCoeff}(h+jk,\dots)(\xi^j\eta)$
+into $2^{m-1}\cdot2\cdot\mathrm{faceNorm}\int\eta(\pi u)\bigl[\sum_j\frac{(\beta\xi(\pi u))^j}{j!}\tfrac12\Gamma\beta^{-}\bigr]w(u)\,du$,
+the finite Taylor approximant of $S$ under the face measure. (iii) Both remainders are controlled
+by the one tail constant $\tau_K$ of unit~199, uniformly because $|\beta\xi|\le\beta\|\xi\|_\infty$
+on the cube; the $N$-side normaliser $\int u^he^{-(\beta/4)N^2u^{2k}}/(N^{-2\lambda}(\log N)^{m-1})$
+converges (bare monomial theorem at $\beta/4$, square-parameter transport) and is eventually
+$\le L+1$. Given $\varepsilon$, choose $K$ with $\tau_K\max(C_1,C_2)\le\varepsilon$ and apply
+\texttt{tendsto\_of\_approx}. No infinite series, no Cauchy limit, no $\Sigma/\!\int$ interchange
+beyond finite sums, as Astra~\#21 recommended.
+
+\section{Lean notes}
+\begin{itemize}
+\item \textbf{Single-step \texttt{calc} followed by a dedented \texttt{have}}: after a one-step
+  \texttt{calc a ≤ b := by …}, the calc-steps parser saves its position at the \emph{next token},
+  so a following \texttt{have h := e} at any column is parsed as a further calc step (a term-level
+  \texttt{have}) and the parser dies at the next line with ``expected \texttt{:=}'' — here on the
+  \texttt{at} of \texttt{rw [...] at h}. The symptom is a parse error two lines below the real
+  culprit plus ``unknown identifier'' for everything the \texttt{have} defined. Fix: do not end a
+  tactic block with a single-step calc (use \texttt{gcongr} directly), or give the calc two steps.
+\item \texttt{have h := …} silently shadows the exponent vector \texttt{h}; the next
+  \texttt{faceProj h k l} then fails with a Prop-vs-\texttt{Fin d → ℕ} mismatch. Name auxiliary
+  facts \texttt{hnorm}.
+\item \texttt{gcongr} discharges the side goal \texttt{0 ≤ Mη} itself when it is an assumption;
+  the remaining goal is only the main inequality \texttt{|η x| ≤ Mη}.
+\item Passing \texttt{\_} for the continuous function in
+  \texttt{integrableOn\_face\_mul … \_ (by fun\_prop)} leaves a metavariable that
+  higher-order unification (\texttt{?f (faceProj u)}) cannot solve; give \texttt{f} explicitly.
+\item \texttt{sed 's/\textbackslash bshiftExp\textbackslash b/…/'} does not rename
+  \texttt{prod\_pow\_shiftExp}: \texttt{\_} is a word character. Unit~200's lemmas are now
+  \texttt{*\_phaseShift} (renamed in this commit).
+\item \texttt{simp only [mul\_sub, sub\_mul, Finset.mul\_sum, Finset.sum\_mul]} closes the
+  distributivity identity between a difference of products and a sum of products without
+  \texttt{ring} (which cannot see inside \texttt{Finset.sum}).
+\end{itemize}
+
+\section{Next}
+Unit 203: Headline XIII (paper kernel $e^{-\beta N^2u^{2k}+\beta Nu^k\xi}$, paper constant
+$1/((m-1)!\prod_{i\in J}k_i)$, equal-ratio corner form $\eta(0)S_{p/2}(\xi(0))/((d-1)!\prod k_i)$,
+zero-phase regression $\mathrm{phaseCoeff}(\xi=0)=2^{m-1}\mathrm{amplitudeCoeff}$), mirror,
+review, report~v2.
+\end{document}
