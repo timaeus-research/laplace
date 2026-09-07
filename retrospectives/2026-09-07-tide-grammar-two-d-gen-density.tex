@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The two-dimensional amplitude integral and its one-variable density}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For an amplitude $\Phi(u,v,s)$ the two-dimensional chart integral
+$Z_\Phi(N)=\int_0^bu^{h_1}\int_0^bv^{h_2}e^{-\beta(Nu^{k_1}v^{k_2})^2}\Phi(u,v,Nu^{k_1}v^{k_2})\,dv\,du$
+is symmetric under exchange of the coordinates, and when $\Phi(u,v,s)=\Psi(u,s)$ depends on $u$ only,
+with equal exponents $(h_1+1)/k_1=(h_2+1)/k_2=p$, it is the transfer integral of the exact one-variable
+density $\rho_\Psi(r,s)=k_2^{-1}r^{p-1}\int_{(r/b^{k_2})^{1/k_1}}^bu^{-1}\Psi(u,s)\,du$ over
+$(0,R]$, $R=b^{k_1+k_2}$. This is the mechanism behind the anchored subtraction of the $d=2$ theorem
+(Astra's step~4). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def twoDAmp (β b N : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (Φ : ℝ → ℝ → ℝ → ℝ) : ℝ :=
+  ∫ u in Ioc (0 : ℝ) b, u ^ h₁ * ∫ v in Ioc (0 : ℝ) b, v ^ h₂
+    * (Real.exp (-β * (N * (u ^ k₁ * v ^ k₂)) ^ 2) * Φ u v (N * (u ^ k₁ * v ^ k₂)))
+noncomputable def uDensity (p b : ℝ) (k₁ k₂ : ℕ) (Ψ : ℝ → ℝ → ℝ) (r s : ℝ) : ℝ :=
+  1 / (k₂ : ℝ) * r ^ (p - 1)
+    * ∫ u in Icc ((r / b ^ k₂) ^ ((k₁ : ℝ)⁻¹)) b, u⁻¹ * Ψ u s
+theorem twoDAmp_swap ... :
+    twoDAmp β b N h₁ h₂ k₁ k₂ Φ = twoDAmp β b N h₂ h₁ k₂ k₁ (fun v u s => Φ u v s)
+theorem twoDAmp_uOnly_eq_transferZ (β b N p : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hβ : 0 ≤ β) (hb : 0 < b)
+    (hN : 0 ≤ N) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p) (Ψ : ℝ → ℝ → ℝ)
+    (hΨc : Continuous (Function.uncurry Ψ)) :
+    twoDAmp β b N h₁ h₂ k₁ k₂ (fun u _ s => Ψ u s)
+      = transferZ (uDensity p b k₁ k₂ Ψ) β (b ^ (k₁ + k₂)) N
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Inner substitution $r=u^{k_1}v^{k_2}$ (units~44's two substitution lemmas) turns the $v$-integral into
+$k_2^{-1}(u^{k_1})^{-p}\int_0^{u^{k_1}b^{k_2}}r^{p-1}e^{-\beta(Nr)^2}\Psi(u,Nr)\,dr$, and
+$u^{h_1}(u^{k_1})^{-p}=u^{-1}$ by the equal-exponent relation. The resulting iterated integral over the
+curved region $\{r\le u^{k_1}b^{k_2}\}$ is written with an indicator on the rectangle
+$(0,b]\times(0,R]$ and swapped by \texttt{integral\_integral\_swap}; the $u$-section is the integral over
+$[(r/b^{k_2})^{1/k_1},b]$ because $r\le u^{k_1}b^{k_2}\iff(r/b^{k_2})^{1/k_1}\le u$
+(\texttt{Real.rpow\_le\_rpow\_iff}). Integrability on the rectangle follows from
+\texttt{integrable\_prod\_iff}: the $r$-sections are dominated by $u^{-1}Mr^{p-1}$ on
+$(0,u^{k_1}b^{k_2}]$, whose integral is $Mb^{k_2p}u^{pk_1-1}/p$, integrable in $u$ since $p>0$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{gcongr} side goals $0\le u^{-1}$, $0\le r^{p-1}$ need $0<u$, $0<r$ as named hypotheses in
+context (membership in \texttt{Ioc} is not enough for \texttt{positivity}).
+\item \texttt{integrableOn\_rpow\_sub\_one\_Ioc} (unit~49) is only on $(0,1]$; the general interval
+comes from \texttt{intervalIntegral.intervalIntegrable\_rpow'} via its \texttt{.1} projection.
+\item \texttt{positivity} cannot prove $0\le Nr$ from $0\le N$ and $r\in\mathrm{Ioc}$; use
+\texttt{mul\_nonneg} explicitly.
+\end{itemize}
+
+\section{Outcome}
+The exact density of a one-variable amplitude is available in transfer form. Next: expand
+$\rho_\Psi$ (Piece~A: $\Psi(0,s)\,k_1^{-1}\log(R/r)$ plus the axis integral
+$I_\Psi(s)=\int_0^b(\Psi(u,s)-\Psi(0,s))/u\,du$ with an $O(r^{1/k_1})$ tail), bound the mixed term
+$uvG$ by a shifted constant-kernel box integral, and assemble the $d=2$ theorem
+$Z(n)=n^{-p/2}(\tfrac A2\log n+B)+O(n^{-(p+\delta)/2}(1+\log n))$.
+\end{document}
