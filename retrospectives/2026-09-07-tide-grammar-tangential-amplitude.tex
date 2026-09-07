@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Tangential integration of the normal block}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+First geometric bridge after the normal block (Astra~\#17). For a continuous amplitude
+$\eta(v,u)$ on tangential$\times$normal variables, a compact tangential set $K$ and an integrable
+density $q$ on $K$, the tangential average $\bar\eta(u)=\int_Kq(v)\eta(v,u)\,dv$ is continuous
+(\texttt{continuous\_tangentialAvg}), Fubini identifies the tangentially integrated dressed normal
+moment with the dressed moment of $\bar\eta$ (\texttt{integral\_tangential\_swap}), and hence
+\[
+\frac{\int_Kq(v)\int_{(0,1]^{d}}\eta(v,u)\,u^he^{-\beta Nu^{2k}}\,du\,dv}{N^{-\lambda}(\log N)^{|J|-1}}
+\longrightarrow\int_Kq(v)\,\operatorname{amplitudeCoeff}(\eta(v,\cdot))\,dv
+\]
+(\texttt{tangential\_amplitude\_tendsto}). Signed densities and amplitudes are allowed. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def tangentialAvg (K) (q) (η : (Fin t → ℝ) × (Fin r → ℝ) → ℝ) (u) : ℝ :=
+  ∫ v in K, q v * η (v, u)
+theorem continuous_tangentialAvg (K) (hKc : IsCompact K) (hK) (q) (hq : IntegrableOn q K)
+    (η) (hη : Continuous η) : Continuous (tangentialAvg K q η)
+theorem integrable_tangential_prod ... :
+    Integrable (fun z => (q z.1 * w z.2) * η (z.1, φ z.2))
+      ((volume.restrict K).prod (volume.restrict S))
+theorem integral_tangential_swap ... :
+    ∫ v in K, q v * ∫ u in S, η (v, φ u) * w u
+      = ∫ u in S, (∫ v in K, q v * η (v, φ u)) * w u
+theorem tangential_amplitude_tendsto (d) (h k) (hk) (l β) (hl) (hβ) (hmin) (hatt)
+    (K) (hKc) (hK) (q) (hq) (η : (Fin t → ℝ) × (Fin (d+1) → ℝ) → ℝ) (hη : Continuous η) :
+    Tendsto (fun N => (∫ v in K, q v * ∫ x in unitBox (d + 1),
+        η (v, x) * ((∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i)))))
+      / (N ^ (-l) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 (∫ v in K, q v * amplitudeCoeff h k l β (fun u => η (v, u))))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Astra~\#17's ``average first'' route: the weight $u^he^{-\beta Nu^{2k}}$ does not depend on $v$, so
+Fubini moves the tangential integral inside, the amplitude theorem of unit~186 applies once to
+$\bar\eta$, and a second Fubini (with the face projection as the cube-valued map) turns
+$\operatorname{amplitudeCoeff}(\bar\eta)$ into $\int_Kq\,\operatorname{amplitudeCoeff}(\eta(v,\cdot))$.
+Continuity of $\bar\eta$ is dominated continuity: near $u_0$ the amplitude is bounded on
+$K\times\overline B(u_0,1)$, so $C|q|$ dominates. Joint integrability on $K\times S$ uses the product
+integrability of $q(v)w(u)$ and the same compactness bound.
+
+\section{Paper-facing meaning}
+This is the deterministic chart-level precursor of the paper's tangential integration of the normal
+block against the density $c_0$ and the observable's normal data: for equal ratios the limit reduces
+to $\Gamma(\lambda)\beta^{-\lambda}/((d-1)!\prod2k_i)\int_Kq(v)\eta(v,0)\,dv$ (next unit), and for
+mixed ratios it retains the face integral in the nonminimal normal directions. The identification of
+$\int_Kq(v)\,\cdot\,dv$ with $\int_{S_I}c_0|dv|$ requires the chart/partition-of-unity bridge, which
+remains outside the formalised boundary.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{continuousAt\_of\_dominated} wants \texttt{∀ᶠ x in 𝓝 x₀} measurability and bound;
+\texttt{Metric.closedBall\_mem\_nhds} supplies the neighbourhood on which the compact bound holds.
+\item For the product integrability, put the integrable factor first:
+\texttt{(hq.mul\_prod hw).aestronglyMeasurable.mul (continuous∘measurable)} avoids any
+\texttt{AEStronglyMeasurable.fst} lemma.
+\item \texttt{Measure.prod\_restrict} converts the product of restricted measures into the restriction
+to \texttt{K ×ˢ S} so that \texttt{ae\_restrict\_iff'} applies.
+\item Definitions applied to a beta-redex (\texttt{amplitudeCoeff ... (fun u => η (v, u))}) unfold to
+\texttt{(fun u => ...) (faceProj u)}: \texttt{unfold} then \texttt{beta\_reduce} before \texttt{rw}.
+\end{itemize}
+
+\end{document}
