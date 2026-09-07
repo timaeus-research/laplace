@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The normal-crossing example: exact law of the phase and convergence in distribution}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 220 is the last step of Astra~\#24's H2-lite example. For $Y_i$ i.i.d.\ $N(0,1)$ the empirical
+phase $Z_n=n^{-1/2}\sum_{i<n}Y_i$ is \emph{exactly} standard normal for every $n\ge1$: the characteristic
+function of the sum of independent variables is the product (\texttt{iIndepFun.charFun\_map\_sum\_eq\_prod}),
+$\varphi_{N(0,1)}(t)^n=e^{-nt^2/2}=\varphi_{N(0,n)}(t)$, and characteristic functions determine finite
+measures (\texttt{Measure.ext\_of\_charFun}); scaling by $n^{-1/2}$ is Mathlib's
+\texttt{gaussianReal\_const\_mul}. Hence $Z_n\Rightarrow Z\sim N(0,1)$ trivially, and Slutsky
+(\texttt{TendstoInDistribution.add\_of\_tendstoInMeasure\_const}) with the in-probability statement of
+unit~219 gives
+\[
+\mathbb E_{\rm post}\bigl[e^{\theta\sqrt n\,x_0x_1}\bigr]\Longrightarrow e^{Z\theta+\theta^2/2},\qquad Z\sim N(0,1)
+\]
+(\texttt{ncFluctMGF\_tendstoInDistribution}). Measurability of the posterior moment generating function in
+the data comes from continuity of the model integral in the phase (dominated convergence on the box).
+Zero \texttt{sorry}/\texttt{axiom}; 9097 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem continuous_nc_integral (hρ : Continuous ρ) (N) :
+  Continuous fun z => ∫ x in symBox 2, ρ x * ncKernel N z x
+theorem measurable_ncRatio : Measurable fun z => ncRatio ρ N z θ
+theorem map_sum_gaussian (hY : ∀ i, HasLaw (Y i) (gaussianReal 0 1) P)
+  (hind : iIndepFun Y P) : P.map (∑ i : Fin n, Y i) = gaussianReal 0 n
+theorem hasLaw_ncPhaseRV (hn : 0 < n) : HasLaw (ncPhaseRV Y n) (gaussianReal 0 1) P
+theorem tendstoInDistribution_ncPhaseRV :
+  TendstoInDistribution (ncPhaseRV Y) atTop id (fun _ => P) (gaussianReal 0 1)
+theorem aemeasurable_ncFluctMGF :
+  AEMeasurable (fun ω => ncFluctMGF n (fun i => Y i ω) ρ θ) P
+theorem ncFluctMGF_tendstoInDistribution (hρ0 : 0 < ρ 0) :
+  TendstoInDistribution (fun n ω => ncFluctMGF n (fun i : Fin n => Y i ω) ρ θ) atTop
+    (fun z => exp (z * θ + θ ^ 2 / 2)) (fun _ => P) (gaussianReal 0 1)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Nothing new analytically: the exact Gaussian law of $Z_n$ (a two-line characteristic-function argument
+once Mathlib's independence API is located), the domination $|\rho(x)|\,K_{N,z}(x)\le A\,e^{|N|(|z_0|+1)}$
+for $|z-z_0|<1$ on the box (the Gaussian factor is at most $1$ and $|x_0x_1|\le1$), and Slutsky's lemma
+in the form ``$X_n\Rightarrow X$, $Y_n\to c$ in probability $\Rightarrow X_n+Y_n\Rightarrow X+c$''. The
+statement is the fluctuation phenomenon of \S4 in one concrete model: the posterior law of
+$\sqrt n\,x_0x_1$ is asymptotically $N(Z_n,1)$ with $Z_n\sim N(0,1)$ exactly.
+
+\section{Lean notes}
+\begin{itemize}
+\item After \texttt{charFun\_map\_sum\_eq\_prod} the product of identical factors is a \texttt{Pi} power:
+  \texttt{Finset.prod\_const} then \texttt{Pi.pow\_apply} before \texttt{charFun\_gaussianReal}, then
+  \texttt{← Complex.exp\_nat\_mul}, \texttt{push\_cast}, \texttt{ring}.
+\item The \texttt{tendsto} field of \texttt{TendstoInDistribution} compares subtypes; for an eventually
+  constant law use \texttt{tendsto\_const\_nhds.congr'} with \texttt{Subtype.ext} and a \texttt{change} to the
+  underlying measure equality (\texttt{ProbabilityMeasure.coe\_mk} does not fire by \texttt{rw}).
+\item \texttt{gaussianReal\_const\_mul} produces the variance \texttt{NNReal.mk (c\^{}2) \_ * v}; discharge
+  \texttt{= 1} by \texttt{NNReal.eq} + \texttt{push\_cast}.
+\item The $n=0$ sample has no data: \texttt{fun i : Fin 0 => Y i ω} is constant in $\omega$
+  (\texttt{funext fun i => i.elim0}), so measurability at $n=0$ is \texttt{aemeasurable\_const}.
+\end{itemize}
+
+\section{Status}
+H2-lite complete: Headlines XX (deterministic phase), XX$'$ (in probability), XX$''$ (in distribution).
+Next: fidelity review v16 of units 218--220, then freeze per Astra~\#24 (E2 Mellin coefficient remains an
+optional appendix).
+\end{document}
