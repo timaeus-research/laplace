@@ -247,3 +247,4 @@ import Laplace.Grammar.KernelTaylor
 import Laplace.Grammar.OneDSecondOrder
 import Laplace.Grammar.TwoDGenDensity
 import Laplace.Grammar.AxisExpansion
+import Laplace.Grammar.TwoDSecondOrder
