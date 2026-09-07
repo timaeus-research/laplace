@@ -237,3 +237,4 @@ import Laplace.Grammar.LogWeightedPrim
 import Laplace.Grammar.BlockScale
 import Laplace.Grammar.FrozenBlock
 import Laplace.Grammar.MixedBlockEnvelope
+import Laplace.Grammar.FreezingInequality
