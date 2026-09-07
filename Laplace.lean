@@ -327,3 +327,4 @@ import Laplace.Grammar.ProductDensityCore
 import Laplace.Grammar.QuotientCalculus
 import Laplace.Grammar.LeadingTermExtraction
 import Laplace.Grammar.ChartPosteriorDeterministic
+import Laplace.Grammar.HeadlinePosteriorRates
