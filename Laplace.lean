@@ -278,3 +278,4 @@ import Laplace.Grammar.TwoDCutoffAnalytic
 import Laplace.Grammar.TaylorProjections
 import Laplace.Grammar.DoubleSeriesConvolution
 import Laplace.Grammar.DoubleSeriesExp
+import Laplace.Grammar.AmplitudeAdapter
