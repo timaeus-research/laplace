@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline XIII: the general-dimensional phase-dressed leading asymptotic}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 203 wraps the deterministic core of programme~A (unit~202) in the paper's notation. With
+$p=2\lambda$, $J$ the minimiser set, $m=|J|$, $\pi$ the projection to the face $u_J=0$, and
+$J_p(a)=\int_0^\infty s^{p-1}e^{-\beta s^2+\beta as}\,ds$ (\texttt{phaseMoment β p a}):
+\begin{align*}
+\frac{\int_{[0,1]^d}\eta(u)\,u^h\,e^{-\beta N^2u^{2k}+\beta Nu^k\xi(u)}\,du}{N^{-p}(\log N)^{m-1}}
+\;\longrightarrow\;&\frac{1}{(m-1)!\prod_{i\in J}k_i}\\
+&\times\int_{[0,1]^d}\eta(\pi u)\,J_p(\xi(\pi u))\prod_{i\notin J}u_i^{h_i-pk_i}\,du
+\end{align*}
+(\texttt{headline\_phase\_leading}); when all ratios are equal the limit is the corner value
+$\eta(0)J_p(\xi(0))/((d-1)!\prod_ik_i)$ (\texttt{headline\_phase\_leading\_equal}), which for $d=2$
+is exactly the paper's Taylor-tree leading coefficient $A_p=y_{00}J_p(x_{00})/(k_1k_2)$. The
+zero-phase regression \texttt{phaseCoeff\_zero\_phase} identifies $\mathrm{phaseCoeff}(\xi=0)$ with
+$2^{m-1}$ times the amplitude coefficient of unit~186. Zero \texttt{sorry}/\texttt{axiom}; 9080 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem multCount_eq_card : multCount ℓ l = (univ.filter fun i => ℓ i = l).card
+theorem prod_ite_half_div : ∏ i, (if ratioExp h k i = l then 1/(2 k i) else 1)
+    = (1/2) ^ multCount (ratioExp h k) l * ∏ i, (if ratioExp h k i = l then 1/(k i)
+      else 1)
+theorem two_pow_mul_faceNorm (hm : 1 ≤ multCount …) :
+    2 ^ (m - 1) * 2 * faceNorm h k l = 1 / ((m - 1)! * ∏ i, if ratioExp h k i = l
+      then k i else 1)
+theorem paperKernel_eq_quadKernel :
+    exp (-(β N² ∏ u^(2k)) + β (N ∏ u^k) ξ u) = quadKernel β (ξ u) (N ∏ u^k)
+theorem headline_phase_leading (hk) (hl) (hβ) (hmin) (hatt) (hξ) (hη) :
+    Tendsto (fun N => (∫ u in unitBox (m+1), η u * ((∏ u^h) * exp (-(β N² ∏ u^(2k))
+      + β (N ∏ u^k) ξ u)))
+        / (N^(-(2l)) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 (1 / ((multCount … - 1)! * ∏ i, if ratioExp h k i = l then k i else 1)
+          * ∫ u in unitBox (m+1), (η (faceProj h k l u) * phaseMoment β (2l) (ξ
+      (faceProj h k l u)))
+              * residualWeight h k l u))
+theorem headline_phase_leading_equal (hratio : ∀ i, (h i + 1)/(2 k i) = l) … :
+    Tendsto (fun N => … / (N^(-(2l)) * log N ^ m)) atTop
+      (𝓝 (η 0 * phaseMoment β (2l) (ξ 0) / (m! * ∏ i, k i)))
+theorem phaseCoeff_zero_phase (hl) (hβ) :
+    phaseCoeff h k l β (fun _ => 0) η = 2 ^ (multCount (ratioExp h k) l - 1) *
+      amplitudeCoeff h k l β η
+\end{verbatim}
+}
+
+\section{Notation correction}
+Units 201--202 (retros and docstrings) called $\int_0^\infty s^{p-1}e^{-\beta s^2+\beta as}\,ds$
+``the paper's $S_{p/2}(a)$''. The paper's fluctuation function is
+$S_\lambda(a)=\int_0^\infty t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\,dt$, and $t=s^2$ gives
+$S_{p/2}(a)=2\int_0^\infty s^{p-1}e^{-\beta s^2+\beta as}\,ds$. So \texttt{phaseMoment β p a} is
+$J_p(a)=S_{p/2}(a)/2$, the object that actually appears in the paper's
+$A_p=y_{00}J_p(x_{00})/(k_1k_2)$. The docstrings are corrected in this branch; the Lean
+statements were never affected (they name \texttt{phaseMoment}, not $S$). The constant check
+against the paper: for $d=2$ with equal ratios the wrapper gives $\eta(0)J_p(\xi(0))/(1!\,k_1k_2)$,
+which is $A_p$ with $y_{00}=\eta(0)$, $x_{00}=\xi(0)$, and reduces at $\xi=0$ to
+$\eta(0)\Gamma(p/2)\beta^{-p/2}/(2k_1k_2)=2\cdot\Gamma(\lambda)\beta^{-\lambda}/(1!\cdot2k_1\cdot2k_2)$,
+the ``twice the monomial mixed constant'' of unit~193.
+
+\section{Mathematics}
+The paper constant: $2^{m-1}\cdot2\cdot\frac{1}{(m-1)!}\prod_{i\in J}\frac1{2k_i}
+=\frac{2^m}{2^m}\cdot\frac{1}{(m-1)!\prod_{i\in J}k_i}$, via
+$\prod_{i}(\text{if }i\in J\text{ then }\tfrac1{2k_i}\text{ else }1)
+=(\tfrac12)^{|J|}\prod_i(\text{if }i\in J\text{ then }\tfrac1{k_i}\text{ else }1)$ and
+$|J|=\mathrm{multCount}$ (\texttt{Finset.sum\_boole}, \texttt{Finset.prod\_ite},
+\texttt{Finset.prod\_const}). In the equal-ratio case $\pi\equiv0$ and the residual weight is
+$1$, so the face integral is the constant $\eta(0)J_p(\xi(0))$ times the unit volume.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{rw [if\_pos (hratio i)]} fails when the \texttt{if} condition is the folded
+  \texttt{ratioExp h k i = l}: give the proof the folded type,
+  \texttt{if\_pos (show ratioExp h k i = l from hratio i)} (defeq, but \texttt{rw} matches
+  syntactically).
+\item \texttt{Finset.prod\_ite} rewrites the first matching product; when two products of
+  \texttt{if}s are present, isolate the intended one in a \texttt{have} first.
+\item \texttt{ring} proves $2^m\cdot(1/f\cdot((1/2)^m\cdot P^{-1}))=(2^m(1/2)^m)\cdot(1/f\cdot P^{-1})$
+  without knowing $2^m(1/2)^m=1$; do the cancellation as a separate rewrite so no nonvanishing
+  hypothesis on $\prod k_i$ is needed.
+\end{itemize}
+
+\section{Status}
+Programme A (deterministic core) is complete in five units (199--203). Next: mirror entry
+\texttt{eq:normal\_moment\_phase\_lean}, fidelity review v9 (units 198--203), report v2.
+\end{document}
