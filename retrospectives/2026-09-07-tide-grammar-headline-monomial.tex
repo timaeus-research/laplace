@@ -1,0 +1,66 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline part VI: the equal-ratio normal moment integral}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Paper-facing wrappers for the general-$d$ equal-ratio monomial milestone (units 165, 170--175),
+stated directly on the Bochner box integral
+$M(N)=\int_{(0,1]^{m+1}}\prod_ix_i^{h_i}e^{-\beta N\prod_ix_i^{2k_i}}\,dx$ (the paper's bare normal
+moment integral with cutoff $b=1$): the product density, the Gamma/log asymptotic, the exact
+reduction $M(N)=\prod_i\frac1{2k_i}\cdot\frac1{m!}\int_0^1z^{\lambda-1}(-\log z)^me^{-\beta Nz}\,dz$,
+and the asymptotic $M(N)\sim\Gamma(\lambda)\beta^{-\lambda}/(m!\prod_i2k_i)\,N^{-\lambda}(\log N)^m$
+in ratio and paper forms. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem headline_product_density (l) (m) (g) (hg : Measurable g) :
+    weightedBoxIntegral (m + 1) (fun _ => l - 1) g
+      = ofReal (1 / m.factorial) * ∫⁻ z in Ioc 0 1, ofReal (logDensity l m z) * g z
+theorem headline_gamma_log_asymptotic (hl : 0 < l) (hβ : 0 < β) :
+    (fun N => ∫ z in Ioc 0 1, z ^ (l - 1) * (-log z) ^ m * exp (-(β * N * z)))
+      ~[atTop] fun N => Gamma l * β ^ (-l) * N ^ (-l) * log N ^ m
+theorem headline_normal_moment_reduction (m) (h k : Fin (m+1) → ℕ) (hk) (l β N) (hl)
+    (hratio : ∀ i, ((h i : ℝ) + 1) / (2 * k i) = l) (hβN : 0 < β * N) :
+    ∫ x in unitBox (m + 1), (∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i)))
+      = (∏ i, 1 / (2 * k i)) * (1 / m.factorial)
+        * ∫ z in Ioc 0 1, z ^ (l - 1) * (-log z) ^ m * exp (-(β * N * z))
+theorem headline_normal_moment_ratio ... : Tendsto (fun N => (∫ x in unitBox (m + 1), ...)
+      / (N ^ (-l) * log N ^ m)) atTop
+      (𝓝 ((∏ i, 1 / (2 * k i)) * (1 / m.factorial) * (Gamma l * β ^ (-l))))
+theorem headline_normal_moment_asymptotic ... :
+    (fun N => ∫ x in unitBox (m + 1),
+        (∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i))))
+      ~[atTop] fun N => Gamma l * β ^ (-l) / (m.factorial * ∏ i, 2 * k i)
+        * N ^ (-l) * log N ^ m
+\end{verbatim}
+}
+
+\section{Paper-facing meaning}
+The paper's zeta-function analysis of the bare normal moment integral (\S\,``Standard form and the
+normal moment integrals'') predicts the leading exponent $\lambda=\min_i(h_i+1)/(2k_i)$ with
+multiplicity $|J|$, $J$ the set of coordinates realising the minimum, and the constant
+$\Gamma(\lambda)a_{-|J|}/(|J|-1)!$ with $a_{-|J|}=\prod_{i\in J}\frac1{2k_i}$ when $b=1$ and $J=I$.
+The wrappers formalise exactly this equal-ratio boundary case, for arbitrary $\beta>0$, without any
+Taylor-tree or quadratic-chart intermediary. Not claimed: unequal ratios, cutoffs $b\neq1$, interior
+coordinates with parity factors.
+
+\section{Lean notes}
+The wrappers unfold \texttt{monomialBoxReal}, \texttt{gammaLogIntegral} and \texttt{logDensity}
+definitionally, so each is a one-line \texttt{exact} of the unit-175 theorem; no
+\texttt{show}/\texttt{change} was needed because the definitions are reducible enough for
+\texttt{exact}-level unification of the integrands.
+
+\end{document}
