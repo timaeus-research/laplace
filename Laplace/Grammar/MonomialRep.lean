@@ -46,7 +46,9 @@ theorem eval_append (P Q : MonoRep d) (u : Fin d → ℝ) : eval (P ++ Q) u = ev
   unfold eval
   rw [List.map_append, List.sum_append]
 
-/-- The coefficient `ℓ¹` norm `∑ |c|`. -/
+/-- The list mass `∑ |c|` (a representation budget for the *uncollected* list, not the canonical
+`ℓ¹` norm of the polynomial: collecting duplicate monomials can only decrease it, and
+`l1_mul` is an equality only for uncollected products). -/
 def l1 (P : MonoRep d) : ℝ := (P.map fun t => |t.2|).sum
 
 @[simp] theorem l1_nil : l1 ([] : MonoRep d) = 0 := rfl

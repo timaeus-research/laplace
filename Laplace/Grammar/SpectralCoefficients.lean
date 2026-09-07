@@ -367,7 +367,8 @@ theorem summable_coeffTerm_series (n : ℕ) (h k : Fin (n + 1) → ℕ) (hk : �
     simp_rw [hzero, mul_zero]
     exact summable_zero
 
-/-- **The spectral coefficient** `A_{μ,j}` — defined without reference to any cutoff. -/
+/-- **The spectral coefficient** `A_{μ,j}` — defined without reference to any cutoff; the paper's
+`C_{μ,m}` is `A_{μ,m-1}` (`spectralCoeff_eq` in `CandidateSupport.lean` displays the formula). -/
 noncomputable def spectralCoeff (n : ℕ) (h k : Fin (n + 1) → ℕ) (β : ℝ) (ξ η : MonoRep (n + 1))
     (μ : ℝ) (j : ℕ) : ℝ :=
   ∑' p : ℕ, β ^ p / (p.factorial : ℝ) *

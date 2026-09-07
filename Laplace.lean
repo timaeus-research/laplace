@@ -397,3 +397,4 @@ import Laplace.Grammar.HighSpectrumBound
 import Laplace.Grammar.SpectralCoefficients
 import Laplace.Grammar.LowSpectrumTail
 import Laplace.Grammar.TaylorTreeAsymptotic
+import Laplace.Grammar.CandidateSupport
