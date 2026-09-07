@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The analytic $d=2$ cutoff theorem with unequal starting exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The analytic adapter of unit~115 generalised to independent starting exponents
+$p_1=(h_1+1)/k_1$, $p_2=(h_2+1)/k_2$: for an $s$-parametrised double series with envelope
+$|c_{ij}(s)|\rho^{i+j}\le H(s)\le C_0(1+s)^De^{\beta sL}$ and the shifted compatibilities, the merged
+expansion holds with remainder $O(N^{-\min(p_1+M_1/k_1,\,p_2+M_2/k_2)}(1+\log N))$
+(\texttt{twoD\_cutoff\_general\_analytic}), and hence for the chart amplitude $\eta e^{\beta s\xi}$
+of two analytic functions (\texttt{twoD\_cutoff\_general\_amplitude}). The proof was generated
+mechanically from the equal-start proof by replacing the three admissibility bounds and the final
+assembly theorem: the equal-exponent hypothesis entered nowhere else. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem corner_gamma_lt_general' (p₁ p₂ : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ i j : ℕ) (hk₁ : 0 < k₁)
+    (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (hM₂ : p₂ + ((M₂ : ℝ) - 1) / k₂ < p₁ + (M₁ : ℝ) / k₁) (hj : j < M₂) :
+    (k₁ : ℝ) * ((((h₂ + j : ℕ) : ℝ) + 1) / k₂) - ((h₁ + i : ℕ) : ℝ) - 1
+      < ((M₁ + k₁ * M₂ : ℕ) : ℝ)
+theorem twoD_cutoff_general_analytic (β b p₁ p₂ ρ C₀ L : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ D : ℕ)
+    (hβ : 0 < β) (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (hM₁ : p₁ + ((M₁ : ℝ) - 1) / k₁ < p₂ + (M₂ : ℝ) / k₂)
+    (hM₂ : p₂ + ((M₂ : ℝ) - 1) / k₂ < p₁ + (M₁ : ℝ) / k₁)
+    (c : ℕ × ℕ → ℝ → ℝ) (hcc : ∀ ij, Continuous (c ij)) (H : ℝ → ℝ) (hH : Continuous H)
+    (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s) (hC₀ : 0 ≤ C₀)
+    (henv : ∀ s, 0 ≤ s → H s ≤ C₀ * (1 + s) ^ D * Real.exp (β * s * L)) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp c b)
+        - mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ (anaFaceU c b) (anaFaceV c b)
+            (fun i j s => c (i, j) s) N)
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(min (p₁ + (M₁ : ℝ) / k₁) (p₂ + (M₂ : ℝ) / k₂))) * (1 + Real.log N)
+theorem twoD_cutoff_general_amplitude ... (x y : ℕ × ℕ → ℝ) (hx : WSummable ρ x)
+    (hy : WSummable ρ y) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp (ampCoeff β x y) b)
+        - mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ (anaFaceU (ampCoeff β x y) b)
+            (anaFaceV (ampCoeff β x y) b) (fun i j s => ampCoeff β x y (i, j) s) N)
+      =O[atTop] fun N : ℝ =>
+        N ^ (-(min (p₁ + (M₁ : ℝ) / k₁) (p₂ + (M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Nothing new beyond unit~127: the face envelopes $H(s)\rho^{-i-M_2}/(1-b/\rho)$, the mixed
+remainder constant $C_0\rho^{-M_1-M_2}/(1-b/\rho)^2$ and the \texttt{FaceMoments} constructions
+from the envelope are exactly as in the equal case; only the three admissibility inequalities
+$\gamma_i<M_2$, $\gamma'_j<M_1$, $\gamma_{ij}<M_1+k_1M_2$ now come from the shifted compatibilities
+(the last via $\gamma_{ij}<M_1$, Astra~\#9).
+
+\section{Paper-facing meaning}
+
+Together with unit~127 this is the $d=2$ cutoff theorem of \texttt{thm:TaylorTree} for arbitrary
+$(h,k)$, under the paper's analyticity hypothesis alone, in merged normal form. The regrouping by
+exponent and the ``for every $T$'' statement for unequal starts follow in the next unit with the
+cutoffs $q=\max(2T,p_1,p_2)+1$, $M_\ell=\lceil k_\ell(q-p_\ell)\rceil$.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item Generating a variant proof by scripted textual substitution with an assertion per
+replacement is a reliable way to port a 120-line assembly: every site where the old hypothesis was
+used is forced to appear in the substitution list, and the compiler checks the rest.
+\item The generated header kept the original odd line break inside the statement
+(\texttt{c (i,} / \texttt{j) s}); harmless, but the one line that grew past 100 columns was the
+corner admissibility argument.
+\end{itemize}
+
+\end{document}
