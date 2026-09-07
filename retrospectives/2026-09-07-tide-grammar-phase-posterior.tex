@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline XIV: the per-stratum posterior expectation in general dimension}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 205 takes the quotient the paper actually cares about. With numerator amplitude $\varphi c$
+(observable times density) and denominator amplitude $c>0$, both dressed by the same phase $\xi$,
+Headline~XIII gives both leading terms at the same scale, and the denominator coefficient is strictly
+positive, so
+\[
+\frac{\int_{(0,1]^d}\varphi(u)c(u)\,u^he^{-\beta N^2u^{2k}+\beta Nu^k\xi(u)}\,du}
+     {\int_{(0,1]^d}c(u)\,u^he^{-\beta N^2u^{2k}+\beta Nu^k\xi(u)}\,du}
+\;\longrightarrow\;
+\frac{\int\varphi(\pi u)\,c(\pi u)\,J_p(\xi(\pi u))\,w(u)\,du}{\int c(\pi u)\,J_p(\xi(\pi u))\,w(u)\,du}
+\]
+with $w(u)=\prod_{i\notin J}u_i^{h_i-pk_i}$
+(\texttt{headline\_phase\_posterior}): the per-stratum posterior expectation of $\varphi$ concentrates
+on the face $u_J=0$ with density $c\,J_p(\xi)\,w$. In the equal-ratio case the face is the corner and
+the limit is $\varphi(0)$ (\texttt{headline\_phase\_posterior\_equal}). Zero
+\texttt{sorry}/\texttt{axiom}; 9082 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem faceProj_mem_closedCube (hu : u ∈ closedCube d) : faceProj h k l u ∈
+      closedCube d
+theorem continuous_faceProj : Continuous (faceProj h k l)
+theorem phaseMoment_pos (hβ) (hp : 0 < p) : 0 < phaseMoment β p a
+theorem integral_residualWeight_pos (hk) (hl) (hβ) (hmin) :
+    0 < ∫ u in unitBox d, residualWeight h k l u
+theorem faceNorm_pos (hk) : 0 < faceNorm h k l
+theorem phaseCoeff_pos (hk) (hl) (hβ) (hmin) (hξ) (hc) (hcpos : ∀ x ∈ closedCube d,
+      0 < c x) :
+    0 < phaseCoeff h k l β ξ c
+theorem phase_posterior_tendsto … (hcpos) :
+    Tendsto (fun N => (∫ (φ x * c x) * (∏ x^h * quadKernel β (ξ x) (N ∏ x^k)))
+        / ∫ c x * (∏ x^h * quadKernel β (ξ x) (N ∏ x^k))) atTop
+      (𝓝 (phaseCoeff h k l β ξ (fun x => φ x * c x) / phaseCoeff h k l β ξ c))
+theorem headline_phase_posterior … :  … atTop
+      (𝓝 ((∫ u in unitBox (m+1), (φ (π u) * c (π u) * phaseMoment β (2l) (ξ (π u)))
+      * w u)
+          / ∫ u in unitBox (m+1), (c (π u) * phaseMoment β (2l) (ξ (π u))) * w u))
+theorem phaseCoeff_equal (hratio) :
+    phaseCoeff h k l β ξ η = η 0 * phaseMoment β (2l) (ξ 0) / (m! * ∏ i, k i)
+theorem headline_phase_posterior_equal (hratio) (hcpos) : … atTop (𝓝 (φ 0))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Positivity of the denominator coefficient: the face density $G(u)=c(\pi u)J_p(\xi(\pi u))$ is
+continuous on the closed cube (\texttt{faceProj} is continuous: each coordinate is either $0$ or a
+coordinate projection) and positive there ($c>0$, $J_p>0$ as an integral of a positive integrand
+over $(0,\infty)$), so it has a positive minimum $G(x_0)$; then
+$\int Gw\ge G(x_0)\int w>0$, where $\int_{(0,1]^d}w>0$ follows from the zero-phase amplitude theorem
+at constant amplitude ($\mathrm{faceLeadConst}\cdot\int w=\mathrm{monomialMixedConst}>0$). The
+quotient theorem is then \texttt{Tendsto.div} of the two Headline~XIII limits, with the common scale
+$N^{-p}(\log N)^{m-1}$ cancelling exactly for $N>1$
+(\texttt{div\_div\_div\_cancel\_right₀}). The prefactor $2^{m-1}\cdot2\cdot\mathrm{faceNorm}$ cancels
+in the quotient, leaving the ratio of face integrals; in the equal-ratio case the face is the corner
+and $\varphi(0)c(0)J_p(\xi(0))/(c(0)J_p(\xi(0)))=\varphi(0)$.
+
+This is the general-$d$, deterministic-phase, single-chart form of the paper's statement that
+posterior expectations localise to the exceptional divisor: the observable is read on the face
+$u_J=0$, weighted by the density $c$, the dressed normal moment $J_p(\xi)$ of the phase, and the
+residual weights of the non-minimising coordinates. It matches the $d=2$ chart posterior limit
+$Z[\varphi]/Z[1]\Rightarrow y_{\varphi,00}/y_{1,00}$ of unit~159 (there the amplitudes were
+independent Taylor arrays; here $y_{\varphi,00}=\varphi(0)c(0)$, $y_{1,00}=c(0)$).
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{faceProj\_mapsTo} only maps the half-open box into the closed cube; the closed-cube
+  version needed here is a two-line lemma (\texttt{faceProj\_mem\_closedCube}).
+\item The quotient identity $(a/K)/(b/K)=a/b$ then $(\varphi c J)/(cJ)=\varphi$: rather than
+  \texttt{field\_simp} (which left a goal), the three rewrites
+  \texttt{div\_div\_div\_cancel\_right₀}, \texttt{mul\_div\_mul\_right}, \texttt{mul\_div\_cancel\_right₀}
+  close it exactly.
+\item \texttt{IsCompact.exists\_isMinOn} needs a nonemptiness witness; $0\in[0,1]^d$ is
+  \texttt{⟨0, fun i \_ => ⟨le\_rfl, zero\_le\_one⟩⟩}.
+\item An unused hypothesis (\texttt{hk} in \texttt{phaseCoeff\_equal}) is flagged by the linter;
+  drop it from the statement.
+\end{itemize}
+
+\section{Status}
+Headlines XIII--XIV close the deterministic general-$d$ story at leading order: dressed integral,
+cutoff, and posterior quotient. Remaining gaps (report v2 §7): random phases in general dimension,
+subleading terms, chart assembly.
+\end{document}
