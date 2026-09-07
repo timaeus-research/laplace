@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The Taylor tree for absolutely summable coefficient families (Taylor-tree Stage 4)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units 241--247 complete Stage~4 of the Taylor-tree programme (Astra \#28): the polynomial theorem of
+Stage~3 is extended to phase and amplitude given on the unit box by \emph{absolutely summable power
+series} $\xi(u)=\sum_\gamma c^\xi_\gamma u^\gamma$, $\eta(u)=\sum_\gamma c^\eta_\gamma u^\gamma$ with
+$\sum_\gamma|c_\gamma|<\infty$ --- the hypothesis implied by the paper's holomorphy on a polydisc
+$D_R$, $R>b=1$, through Cauchy estimates. For $\beta>0$, $k_i>0$, every cutoff $L>0$ and every $N\ge1$,
+\[
+\Bigl|Z(N)-\sum_{\mu\in\Lambda_L}N^{-\mu}\sum_{j\le d-1}A_{\mu,j}(\log N)^j\Bigr|
+\le C\bigl(\xi(0),\|c^\eta\|_1,\|c^\xi\|_1\bigr)\,N^{-L}(1+\log N)^{d-1}
+\]
+(Headline~XXVII, \texttt{familyTaylorTree\_cutoff\_bound}), with cutoff-free coefficients $A_{\mu,j}$
+vanishing off $\Lambda(h,k)$ and a constant depending on the data only through $\xi(0)$ and the two
+coefficient masses; hence $O(N^{-L}(\log N)^{d-1})$ and $o(N^{-L'})$ for $L'<L$. The route is
+\emph{completion by density}, not a redo of Stage~3 for infinite families: box truncations are
+genuine monomial lists, the truncated coefficients form a Cauchy sequence by a Lipschitz
+\emph{stability gate}, the truncated integrals converge by dominated convergence at fixed $N$, and
+the uniform polynomial bound passes to the limit. Numerics ($d=1$, $\xi=0.3e^{u/2}$,
+$\eta=(1-u/3)^{-1}$, $L=5/2$): error$\times N^{5/2}\approx0.05$--$0.06$ for $N=10,\dots,640$. No
+\texttt{sorry} and no additional \texttt{axiom} declarations; 9123 jobs.
+\end{abstract}
+
+\section{Architecture}
+
+\paragraph{List algebra (u241, \texttt{MonoRepPerm}).} The coefficient functionals of Stage~3 depend
+on a monomial list only through its multiset of $(\gamma,c)$ pairs: invariant under permutation,
+additive under \texttt{++}; the list product distributes over \texttt{++} (exactly on the left, up to
+permutation on the right). The \textbf{power-difference estimate}
+$\mathrm{pow}(J\mathbin{+\!\!+}\Delta)^p\sim\mathrm{pow}(J)^p\mathbin{+\!\!+}R_p$ with
+$\|R_p\|_1\le p\|\Delta\|_1(\|J\|_1+\|\Delta\|_1)^{p-1}$ is the list form of
+$\mathrm{mass}(x^p-y^p)\le pB^{p-1}\mathrm{mass}(x-y)$.
+
+\paragraph{Stability gate (u242, \texttt{CoeffStability}).} If $\eta'\sim\eta\mathbin{+\!\!+}\Delta\eta$,
+$J'\sim J\mathbin{+\!\!+}\Delta$, $\xi'(0)=\xi(0)=a$, $\|\eta\|_1\le E$, $\|J\|_1+\|\Delta\|_1\le B$, then for
+$\mu>0$
+\[
+|A_{\mu,j}(\xi',\eta')-A_{\mu,j}(\xi,\eta)|
+\le K_kD\bigl(E\beta M_{\mu+1/2,n}(a+B)\,\|\Delta\|_1+M_{\mu,n}(a+B)\,\|\Delta\eta\|_1\bigr),
+\]
+where the factor $p$ from the power difference is absorbed by shifting the phase order,
+$M_{\nu,n,p+1}=M_{\nu+1/2,n,p}$, and the phase orders are summed by the Tonelli identity of unit 234.
+Astra \#28 named this the single riskiest step of Stage~4; it passed in one unit.
+
+\paragraph{Coefficient families (u243, \texttt{CoeffFamily}).} Families $c:\mathbb N^d\to\mathbb R$ with
+$\sum|c_\gamma|<\infty$; mass, evaluation ($|\mathrm{eval}\,c\,u|\le\mathrm{mass}\,c$ on the cube), box
+truncations $\{\gamma:\gamma_i\le m\}$ as monomial lists keeping the constant term; the tail mass
+$\sum_{\gamma\notin\mathrm{box}_m}|c_\gamma|\to0$ (Tannery); successive truncations differ by an
+appended list of mass at most the tail mass; uniform convergence on the cube.
+
+\paragraph{Integral convergence (u244).} $Z_m(N)\to Z(N)$ at fixed $N\ge0$ by dominated convergence
+with the constant bound $\mathrm{mass}(\eta)\,e^{\beta\sqrt N\mathrm{mass}(\xi)}$ on the box.
+
+\paragraph{Coefficient convergence (u245).} $|A(m')-A(m)|\le C_1\,\mathrm{tail}_\xi(m)+C_2\,\mathrm{tail}_\eta(m)$
+for $m\le m'$, so the truncated coefficients are Cauchy; $A_{\mu,j}(c^\xi,c^\eta)$ is their limit (at
+$\mu\le0$ and off $\Lambda(h,k)$ all terms vanish, so the limit does).
+
+\paragraph{Uniform constants (u246).} $M_{\nu,r}(b)$ is increasing in $b$ and the tail constant in
+$|b|$, so the polynomial cutoff constant is bounded by an explicit function of $(\xi(0),E,B)$ whenever
+$\|\eta\|_1\le E$, $\|J\|_1\le B$.
+
+\paragraph{Assembly (u247).} Fix $N\ge1$; apply the uniform polynomial bound to every truncation and
+let $m\to\infty$ on both sides (\texttt{le\_of\_tendsto'}). No exchange of the asymptotic limit with the
+truncation limit is needed.
+
+\section{Correspondence with the paper}
+Lean's $N$ is the sample size $n$; the dimension is $d=n_{\rm Lean}+1$; $(\log N)^j$ carries the
+paper's $m=j+1$. The hypothesis is the coefficient-summability form of the analytic hypothesis of
+\texttt{thm:TaylorTree}; the Cauchy-estimate bridge from holomorphy on $D_R$ to $\sum|c_\gamma|<\infty$ is
+a separate (unformalised) obligation, as is $b\neq1$ (scaling
+$Z_b(N)=b^{|h|+d}Z_1(Nb^{2|k|};\xi(b\cdot),\eta(b\cdot))$) and the derivative dictionary
+$\beta^p\!\int t^{\mu-1}(-\log t)^i(\sqrt t)^pe^{-\beta t+\beta a\sqrt t}=(-\partial_\mu)^i\partial_a^pS_\mu(a)$.
+
+\section{Lessons}
+Complete by density: keep Stage~3 for lists, extend only the coefficient algebra and functionals.
+Avoid the infinite Cauchy product ($\mathrm{Fin}\,d\to\mathbb N$ has no \texttt{HasAntidiagonal}
+instance): truncation differences are literal appended lists, so permutation invariance replaces
+convolution algebra. Lean: \texttt{tendsto\_tsum\_of\_dominated\_convergence} lives in
+\texttt{Mathlib.Analysis.Normed.Group.Tannery} (import it explicitly); use
+\texttt{List.perm\_of\_nodup\_nodup\_toFinset\_eq} with \texttt{List.mem\_toFinset} rather than
+\texttt{Finset.toList\_toFinset}; \texttt{limUnder} + \texttt{cauchySeq\_tendsto\_of\_complete} for a limit
+defined without choosing a representative; \texttt{cauchySeq\_of\_le\_tendsto\_0} wants a bound at the
+smaller index, so tail masses must be shown antitone.
+\end{document}
