@@ -1,0 +1,63 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline part VII: the normal moment integral with arbitrary ratios}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Paper-facing wrappers for the mixed-ratio general-$d$ monomial milestone (units 177--181), stated on
+the Bochner box integral $M(N)=\int_{(0,1]^{m+1}}\prod_ix_i^{h_i}e^{-\beta N\prod_ix_i^{2k_i}}\,dx$:
+the exact weighted reduction, the dominated-coordinate transfer principle, the mixed-ratio
+asymptotic with the explicit Gamma/residue constant
+$\Gamma(\lambda)\beta^{-\lambda}/(|J|-1)!\cdot\prod_{i\in J}\frac1{2k_i}\prod_{i\notin J}\frac1{h_i+1-2k_i\lambda}$,
+and its form at the computed minimal ratio. The mirror \texttt{grammar\_lean.tex} gains the labelled
+equation \texttt{eq:normal\_moment\_mixed\_lean} inside \texttt{rem:normal\_moment\_lean} with a
+\texttt{\textbackslash leanrefL} dot, and the pinned commit is bumped to \texttt{ef76bda}. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem headline_normal_moment_weighted (d) (h k) (hk) (β N) :
+    ∫ x in unitBox d, (∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i)))
+      = (∏ i, 1 / (2 * k i)) * (weightedBoxIntegral d
+          (fun i => ((h i : ℝ) + 1) / (2 * k i) - 1) (expKernel β N)).toReal
+theorem headline_dominated_coordinate ... (transfer lemma, unit 178)
+theorem headline_normal_moment_mixed (m) (h k : Fin (m+1) → ℕ) (hk) (l β) (hl) (hβ)
+    (hmin : ∀ i, l ≤ ((h i : ℝ) + 1) / (2 * k i))
+    (hatt : ∃ i, ((h i : ℝ) + 1) / (2 * k i) = l) :
+    (fun N => ∫ x in unitBox (m + 1),
+        (∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i))))
+      ~[atTop] fun N =>
+        (Gamma l * β ^ (-l) / ((∑ i, if ℓ i = l then 1 else 0) - 1).factorial
+          * ∏ i, if ℓ i = l then 1 / (2 * k i) else 1 / ((h i : ℝ) + 1 - 2 * k i * l))
+        * N ^ (-l) * log N ^ ((∑ i, if ℓ i = l then 1 else 0) - 1)
+theorem headline_normal_moment_min (m) (h k) (hk) (β) (hβ) : ... at minRatio h k
+\end{verbatim}
+}
+
+\section{Paper-facing meaning}
+For the deterministic positive-orthant unit-cutoff normal moment integral, the paper's zeta-function
+prediction is now formalised in full generality of exponent pattern and dimension: decay exponent
+equal to the minimal ratio, logarithmic degree one less than its multiplicity, and the Laurent
+coefficient $a_{-|J|}$ of eq.~\texttt{a\_minus\_m\_explicit} (at $b=1$) times the Laplace--Tauberian
+factor $\Gamma(\lambda)/(|J|-1)!$. Excluded: cutoffs $b\neq1$, interior parity assembly, variable
+amplitudes, stochastic phase terms, the full Taylor-tree expansion.
+
+\section{Lean notes}
+The wrappers spell out \texttt{multCount}, \texttt{monomialMixedConst} and \texttt{ratioExp} in the
+statement (sum of indicators, product of \texttt{if}s), so the paper reader sees $|J|$ and the two
+residue products directly; the proofs are one-line \texttt{exact}s because those definitions
+unfold definitionally.
+
+\end{document}
