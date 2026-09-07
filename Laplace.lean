@@ -240,3 +240,4 @@ import Laplace.Grammar.MixedBlockEnvelope
 import Laplace.Grammar.FreezingInequality
 import Laplace.Grammar.FreezingLimit
 import Laplace.Grammar.MultiplicityGeneral
+import Laplace.Grammar.BoxBridge
