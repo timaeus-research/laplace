@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Local Lipschitz continuity of the canonical Taylor-tree coefficients}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#11 rank~1. Composing the amplitude Lipschitz estimate (unit~143) with the bounded-linear
+difference form of the canonical coefficients (units~140--141) gives, on the bounded family
+$\|x\|_\rho,\|x'\|_\rho\le M_x$, $\|y\|_\rho,\|y'\|_\rho\le M_y$,
+\[
+|A_\alpha(x,y)-A_\alpha(x',y')|\le \mathrm{lipA}\cdot\big(\|y-y'\|_\rho+2\beta M_y\|x-x'\|_\rho\big),
+\]
+and the same bound for $|B_\alpha(x,y)-B_\alpha(x',y')|$ with the constant $\mathrm{lipB}$,
+with explicit constants (\texttt{abs\_canonA\_ampCoeff\_sub\_le}, \texttt{abs\_canonB\_ampCoeff\_sub\_le}).
+This is the chart-level formal counterpart of the continuity of $\xi\mapsto C_{\mu,m}(\xi)$ that
+§4.3 of the paper asserts by reference to the continuous mapping theorem. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem tsum_geom_prod (θ) (h0 : 0 ≤ θ) (h1 : θ < 1) :
+    ∑' ij : ℕ × ℕ, θ ^ ij.1 * θ ^ ij.2 = (1 - θ)⁻¹ ^ 2
+theorem cWeight_nonneg / uWeight_nonneg / vWeight_nonneg
+theorem ampEnv_le_common ... : ampEnv β ρ x y s ≤ My * (1 + s) ^ 0 * exp (β * s * (2 * Mx))
+theorem ampCoeff_sub_env ... (hs : 0 < s) :
+    |ampCoeff β x y ij s - ampCoeff β x' y' ij s|
+      ≤ (ρ ^ (ij.1 + ij.2))⁻¹ * ((Dy + 2 * β * My * Dx) * gaussEnv β (2 * Mx) 1 s)
+theorem tailMoment_ampCoeff_sub_le ... :
+    tailMoment β α ℓ (fun s => ampCoeff β x y ij s - ampCoeff β x' y' ij s)
+      ≤ (ρ ^ (ij.1 + ij.2))⁻¹ * (Dy + 2 * β * My * Dx)
+          * envMoment β α ℓ (gaussEnv β (2 * Mx) 1)
+theorem coeffNorm_ampCoeff_sub_le ... (hr0 : 0 ≤ r) (hrρ : r < ρ) :
+    coeffNorm β α ℓ r (fun ij s => ampCoeff β x y ij s - ampCoeff β x' y' ij s)
+      ≤ (1 - r / ρ)⁻¹ ^ 2 * (Dy + 2 * β * My * Dx) * envMoment β α ℓ (gaussEnv β (2 * Mx) 1)
+def lipA (β ρ r) (h₁ h₂ k₁ k₂) (Mx α) := cWeight r … α * ((1 - r/ρ)⁻¹ ^ 2 * EM α 0)
+def lipB (β b ρ r) (h₁ h₂ k₁ k₂) (Mx α) := (uWeight + vWeight) * ((1 - r/ρ)⁻¹ ^ 2 * EM α 0)
+                                          + cWeight * ((1 - r/ρ)⁻¹ ^ 2 * EM α 1)
+theorem abs_canonA_ampCoeff_sub_le ... : |A_α(x,y) − A_α(x',y')| ≤ lipA * (Dy + 2βMy Dx)
+theorem abs_canonB_ampCoeff_sub_le ... : |B_α(x,y) − B_α(x',y')| ≤ lipB * (Dy + 2βMy Dx)
+\end{verbatim}
+}
+Here $D_y=\|y-y'\|_\rho$, $D_x=\|x-x'\|_\rho$ and $\mathrm{EM}\,\alpha\,\ell=\int_0^\infty
+s^{\alpha-1}(1+|\log s|)^\ell(1+s)e^{2\beta M_xs}e^{-\beta s^2}\,ds$.
+
+\section{Mathematics}
+Unit~143 gives, for $s>0$, $|c_{ij}(s)-c'_{ij}(s)|\rho^{i+j}\le e^{2\beta sM_x}(D_y+2\beta sM_yD_x)
+\le(D_y+2\beta M_yD_x)(1+s)e^{2\beta M_xs}$, a Gaussian envelope of the type
+\texttt{gaussEnv}~$\beta\,(2M_x)\,1$. Its weighted tail moment is therefore at most
+$\rho^{-(i+j)}(D_y+2\beta M_yD_x)\mathrm{EM}$, and summing against $r^{i+j}$ gives the weighted
+moment norm bound with the geometric factor $\sum_{ij}(r/\rho)^{i+j}=(1-r/\rho)^{-2}$. The
+canonical coefficient differences are then bounded by unit~141's difference form, which needs a
+common envelope for both data sets: $\|y\|e^{\beta sx_{00}}e^{\beta s\|\bar x\|}\le M_ye^{2\beta M_xs}$
+on $s\ge0$ (\texttt{ampEnv\_le\_common}). Astra~\#11 points out that a norm-level route (integrating
+$\|c_s-c'_s\|_\rho$ directly against the moment weight, with a sum--integral interchange) would avoid
+the factor $(1-r/\rho)^{-2}$; since unit~140's weights already require $r<\rho$, we kept the
+coordinatewise route, which is what the bounded-linear functionals of unit~140 consume.
+
+\section{Paper-facing meaning}
+The paper's proof of thm:strataempiricalexpansion needs $\xi\mapsto C_{\mu,m}(\xi)$ continuous on
+$C^\omega([0,b]^d)$ and cites prop:convergence, which proves only the continuous mapping theorem.
+For $d=2$ the present unit supplies the chart-level continuity: the canonical coefficients are
+locally Lipschitz in the $\rho$-weighted $\ell^1$ norm of the Taylor data $(x,y)$ of $(\xi,\eta)$,
+with constants depending only on $(\beta,b,\rho,r,h,k,\alpha,M_x)$. The bridge to the paper's
+$C^\omega$ topology (Cauchy estimates $\|x\|_\rho\le(1-\rho/R)^{-2}\sup_{\bar D_R^2}|\tilde\xi|$) is a
+compatibility remark, not formalised. Next: the weighted coefficient space as a rescaled $\ell^1$
+(Mathlib \texttt{lp}), the continuous mapping transfer of convergence in distribution, and the
+normalised-remainder statements.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{positivity} cannot see $0\le M_y$ for a bare variable; derive it from
+\texttt{wnorm\_nonneg} and the bound and pass \texttt{mul\_nonneg} explicitly.
+\item The two-slot inequality $D_y+2M_y\beta sD_x\le(D_y+2\beta M_yD_x)(1+s)$ is
+\texttt{nlinarith} with the two product nonnegativity facts supplied.
+\item $\sum_{ij}\theta^{i+j}=(1-\theta)^{-2}$ is \texttt{tsum\_mul\_tsum\_of\_summable\_norm} (in
+\texttt{Mathlib.Analysis.Normed.Ring.InfiniteSum}) plus \texttt{tsum\_geometric\_of\_lt\_one}.
+\item \texttt{abs\_canonA\_sub\_le} accepts the envelope \texttt{ampEnv} via
+\texttt{ampCoeff\_abs\_le} by definitional unfolding, exactly as in unit~119.
+\end{itemize}
+
+\end{document}
