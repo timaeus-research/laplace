@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The $\mathrm{Fin}\,d$ monomial box bridge}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Step~4 of the general-$d$ equal-ratio monomial milestone (Astra~\#14). The paper's monomial
+integral over the genuine box $(0,1]^d\subseteq\mathbb R^d$ is identified with the recursive
+\texttt{productIntegral} of unit~172 in the $[0,\infty]$-valued setting:
+\[
+\int_{(0,1]^d}\prod_ix_i^{h_i}\,g\Big(\prod_ix_i^{2k_i}\Big)dx
+=\prod_i\frac1{2k_i}\int_{(0,1]^d}\prod_it_i^{w_i}\,g\Big(\prod_it_i\Big)dt,
+\qquad w_i=\frac{h_i+1}{2k_i}-1,
+\]
+for every measurable $g$ and \emph{without} an equal-ratio hypothesis
+(\texttt{monomialBoxIntegral\_eq\_weighted}); for constant weights $w_i=\lambda-1$ the weighted
+box integral is \texttt{productIntegral}
+(\texttt{weightedBoxIntegral\_const\_eq\_productIntegral}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def unitBox (d : ℕ) : Set (Fin d → ℝ) := Set.pi univ fun _ => Ioc 0 1
+theorem lintegral_unitBox_succ (d) (F) (hF : Measurable F) :
+    ∫⁻ x in unitBox (d + 1), F x
+      = ∫⁻ a in Ioc 0 1, ∫⁻ b in unitBox d, F (Fin.cons a b)
+def weightedBoxIntegral (d) (w : Fin d → ℝ) (g : ℝ → ℝ≥0∞) : ℝ≥0∞ :=
+  ∫⁻ t in unitBox d, (∏ i, ofReal (t i ^ w i)) * g (∏ i, t i)
+def monomialBoxIntegral (d) (h k : Fin d → ℕ) (g) : ℝ≥0∞ :=
+  ∫⁻ x in unitBox d, (∏ i, ofReal (x i ^ h i)) * g (∏ i, x i ^ (2 * k i))
+theorem weightedBoxIntegral_succ (d) (w) (g) (hg) : weightedBoxIntegral (d+1) w g
+    = ∫⁻ a in Ioc 0 1, ofReal (a ^ w 0)
+        * weightedBoxIntegral d (Fin.tail w) (fun z => g (a * z))
+theorem weightedBoxIntegral_const_eq_productIntegral (l) : ∀ d g, Measurable g →
+    weightedBoxIntegral d (fun _ => l - 1) g = productIntegral l d g
+theorem monomialBoxIntegral_eq_weighted : ∀ d h k, (∀ i, 0 < k i) → ∀ g, Measurable g →
+    monomialBoxIntegral d h k g = ofReal (∏ i, 1 / (2 * k i))
+      * weightedBoxIntegral d (fun i => ((h i : ℝ) + 1) / (2 * k i) - 1) g
+\end{verbatim}
+}
+
+\section{Mathematics}
+The first coordinate is peeled with the measure-preserving equivalence
+$\mathbb R^{d+1}\simeq\mathbb R\times\mathbb R^d$ of \texttt{measurePreserving\_piFinSuccAbove}
+at index $0$, applied to the product of restricted Lebesgue measures, followed by Tonelli; its
+inverse is $\mathrm{Fin.cons}$ (\texttt{Fin.insertNth\_zero'}). With
+$\prod_{i\le d}f_i=f_0\prod_{i<d}f_{i+1}$ this gives the weighted box integral exactly the
+recursion defining \texttt{productIntegral}. The monomial reduction is an induction on $d$ that
+peels a coordinate, applies the induction hypothesis to $z\mapsto g(a^{2k_0}z)$ and then the
+one-dimensional weighted power substitution of unit~170 in the peeled variable.
+
+\section{Paper-facing meaning}
+Combined with units~172 and~173, the equal-ratio monomial box integral with
+$g(z)=e^{-\beta Nz}$ is now expressed exactly as
+$\prod_i\frac1{2k_i}\cdot\frac1{(d-1)!}\int_0^1z^{\lambda-1}(-\log z)^{d-1}e^{-\beta Nz}\,dz$,
+whose asymptotic is known. The assembly into the real-valued theorem
+$I_d(N)\sim\Gamma(\lambda)\beta^{-\lambda}/((d-1)!\prod_i2k_i)\,N^{-\lambda}(\log N)^{d-1}$ is
+unit~175.
+
+\section{Lean notes}
+\begin{itemize}
+\item \textbf{Process gotcha.} A heredoc \texttt{cat >} silently clobbered the existing
+\texttt{BoxBridge.lean} of unit~80 (the seabed already had a \texttt{BoxBridge}); the duplicate
+import produced a spurious ``build cycle detected''. Restored from git and renamed the new file
+\texttt{MonomialBoxBridge.lean}. Always \texttt{ls} a proposed new filename first.
+\item \texttt{Fin.insertNth\_zero'} needs the dependent family fixed:
+\texttt{change Fin.insertNth (α := fun \_ : Fin (d+1) => ℝ) 0 y.1 y.2 = \_} before \texttt{exact}.
+\item \texttt{lintegral\_prod} must be given the integrand explicitly
+(\texttt{fun y => F (e.symm y)}); otherwise the pattern is \texttt{F ∘ e.symm} and the rewrite fails.
+\item \texttt{simp only [Fin.tail]} cannot unfold an \emph{unapplied} \texttt{Fin.tail w};
+state the unfolding as an \texttt{rfl} equation of functions and rewrite with it.
+\item \texttt{(Fin.cons a b : Fin (d+1) → ℝ) i} needs the type ascription inside statements,
+otherwise the dependent family is left as a metavariable.
+\item \texttt{← lintegral\_const\_mul'} fires on the first matching side; use
+\texttt{conv\_rhs} to target the right-hand integral.
+\end{itemize}
+
+\end{document}
