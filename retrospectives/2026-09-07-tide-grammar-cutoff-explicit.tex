@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The $d=2$ cutoff expansion with an explicit remainder constant}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#9 R5, step~2. Every step of the $d=2$ cutoff assembly is now quantitative for $N\ge1$:
+the face transfers carry the explicit constant $\mathrm{faceConst}$ (an envelope moment plus tail
+moments of the face coefficients, read off \texttt{face\_transfer\_bound}), the mixed remainder
+carries the Gaussian-moment constant of unit~130, and a bound at a larger exponent is a bound at the
+target exponent for $N\ge1$. Summing,
+\[
+|Z(N)-S^{\mathrm{merged}}(N)|\le\mathrm{cutoffConst}\cdot N^{-E}(1+\log N),\qquad
+E=\min\Bigl(p_1+\frac{M_1}{k_1},\,p_2+\frac{M_2}{k_2}\Bigr),
+\]
+for every $N\ge1$ and arbitrary starting exponents (\texttt{twoD\_cutoff\_general\_explicit}),
+with $\mathrm{cutoffConst}$ the finite sum of the face, corner and mixed constants. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem bound_mono_exp (X K q E N : ℝ) (hN : 1 ≤ N) (hqE : E ≤ q)
+    (h : |X| ≤ K * N ^ (-q) * (1 + Real.log N)) : |X| ≤ K * N ^ (-E) * (1 + Real.log N)
+noncomputable def faceConst (β p₂ b : ℝ) (h₁ k₁ k₂ M : ℕ) (Ψ : ℝ → ℝ → ℝ) (f : ℕ → ℝ → ℝ)
+    (H : ℝ → ℝ) : ℝ :=
+  envMoment β (p₂ + ((M : ℝ) - ((k₁ : ℝ) * p₂ - h₁ - 1)) / k₁) 1
+      (faceEnv ((k₁ : ℝ) * p₂ - h₁ - 1) (b ^ k₂) k₁ k₂ M H)
+    + ∑ i, (b ^ (k₁ + k₂)) ^ (faceα p₂ ((k₁ : ℝ) * p₂ - h₁ - 1) k₁ M i
+        - (p₂ + ((M : ℝ) - ((k₁ : ℝ) * p₂ - h₁ - 1)) / k₁))
+      * tailMoment β (p₂ + ((M : ℝ) - ((k₁ : ℝ) * p₂ - h₁ - 1)) / k₁) (faceJ M i)
+        (faceC ((k₁ : ℝ) * p₂ - h₁ - 1) b k₁ k₂ Ψ f M i)
+theorem face_bound_explicit ... (N : ℝ) (hN : 1 ≤ N) :
+    |twoDAmp β b N h₁ h₂ k₁ k₂ (fun u _ s => Ψ u s) - faceSum β p₂ b h₁ k₁ k₂ M Ψ f N|
+      ≤ faceConst β p₂ b h₁ k₁ k₂ M Ψ f H
+        * N ^ (-(p₂ + ((M : ℝ) - ((k₁ : ℝ) * p₂ - h₁ - 1)) / k₁)) * (1 + Real.log N)
+noncomputable def cutoffConst (β b L C : ℝ) (h₁ h₂ k₁ k₂ M₁ M₂ D : ℕ) (a bj) (c) (Ha Hb) :
+    ℝ :=
+  (∑ i ∈ range M₁, faceConst (u-face i)) + (∑ j ∈ range M₂, faceConst (v-face j))
+  + (∑ i ∈ range M₁, ∑ j ∈ range M₂, faceConst (corner i j))
+  + C * Real.exp ((D : ℝ) ^ 2 / β) * mixConst (β / 2) (2 * L) b (h₁ + M₁) (h₂ + M₂) k₁ k₂
+theorem twoD_cutoff_general_explicit ... (same hypotheses as twoD_cutoff_general_isBigO)
+    (N : ℝ) (hN : 1 ≤ N) :
+    |twoDAmp β b N h₁ h₂ k₁ k₂ Φ - mergedSum β b h₁ h₂ k₁ k₂ M₁ M₂ a bj c N|
+      ≤ cutoffConst β b L C h₁ h₂ k₁ k₂ M₁ M₂ D a bj c Ha Hb
+        * N ^ (-(min (p₁ + (M₁ : ℝ) / k₁) (p₂ + (M₂ : ℝ) / k₂))) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The decomposition $Z-S^{\mathrm{merged}}=\sum_iF^A_i+\sum_jF^B_j-\sum_{ij}F^C_{ij}+F^R$ is the
+rectangular identity of unit~106 combined with the over-complete-to-merged identity of unit~127
+(at the standard corner order). Each face piece is bounded by \texttt{face\_transfer\_bound} at its
+own exponent ($p_2+M_2/k_2$ for $u$-faces, $p_1+M_1/k_1$ for $v$-faces,
+$p_1+(M_1+k_1M_2+i)/k_1$ for corners), the mixed piece by unit~130 at
+$\min(p_1+M_1/k_1,p_2+M_2/k_2)$; all exponents are $\ge E$, and for $N\ge1$ a bound
+$|X|\le KN^{-q}(1+\log N)$ with $q\ge E$ implies $|X|\le KN^{-E}(1+\log N)$ (the constant is
+nonnegative because the right side dominates $|X|\ge0$ with a positive factor). The triangle
+inequality over the finite sums gives the sum of constants.
+
+\section{Paper-facing meaning}
+
+With unit~130 this is the ``explicit cutoff bound'' half of Astra~\#9's R5: the remainder in
+\texttt{thm:TaylorTree} ($d=2$) is bounded by a named finite expression for every $N\ge1$, not only
+eventually. For the uniform-family theorem the face constants must still be bounded in terms of the
+envelope data alone: $\mathrm{faceConst}$ involves the tail moments of the actual face
+coefficients ($k_1^{-1}\mathrm{FP}$, monomial coefficients, log coefficient), which the envelope
+constructor of unit~110 bounds by $(1+s)^De^{\beta sa'}$ envelopes; turning those pointwise bounds
+into moment bounds is the next step.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{face\_transfer\_bound} is already stated for the swapped amplitude, so only the goal
+needs the \texttt{twoDAmp\_pow\_absorb}/\texttt{twoDAmp\_swap} rewrite, not the hypothesis.
+\item \texttt{set A := N \^{} (-E) * (1 + log N)} does not fold later-appearing copies; rewrite
+with \texttt{hAdef} and \texttt{← mul\_assoc} to line up \texttt{K * A} with the bounds' shape
+\texttt{K * N \^{} (-E) * (1 + log N)}.
+\item Nonnegativity of an explicit constant is cheapest to extract from the bound it appears in:
+\texttt{le\_of\_mul\_le\_mul\_right} with \texttt{0 * A ≤ K * A}.
+\item \texttt{Finset.sum\_mul} then \texttt{Finset.abs\_sum\_le\_sum\_abs} and
+\texttt{Finset.sum\_le\_sum} turn termwise bounds \texttt{|F i| ≤ K i * A} into a bound on the
+absolute value of the sum.
+\end{itemize}
+
+\end{document}
