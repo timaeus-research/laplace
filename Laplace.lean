@@ -419,3 +419,4 @@ import Laplace.Grammar.AnalyticBridge1D
 import Laplace.Grammar.AnalyticTaylorTree1D
 import Laplace.Grammar.CircleOperator
 import Laplace.Grammar.PolydiscCauchy
+import Laplace.Grammar.CircleOpParam
