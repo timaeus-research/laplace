@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Quotients with positive limiting denominator converge in distribution}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#13 unit u157. If $(U_n,V_n)\Rightarrow(U_0,V_0)$ in $\mathbb R^2$ and $V_0>0$ almost surely,
+then $U_n/V_n\Rightarrow U_0/V_0$ (\texttt{tendstoInDistribution\_div\_of\_pos}), with Lean's
+totalised division and no finite-$n$ nonvanishing hypothesis. Division is not continuous at $v=0$;
+we divide instead by $\max(v,c)$, which is continuous and agrees with division on $\{v\ge c\}$. By
+portmanteau on the closed half-line $\{v\le c\}$ the disagreement probability is eventually at most
+$\mu'\{V_0\le c\}$, which is small for small $c$; the approximation lemma of unit~156 finishes.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def clipDiv (c : ℝ) (p : ℝ × ℝ) : ℝ := p.1 / max p.2 c
+theorem continuous_clipDiv (c) (hc : 0 < c) : Continuous (clipDiv c)
+theorem clipDiv_eq (c) (p) (h : c ≤ p.2) : clipDiv c p = p.1 / p.2
+theorem tendsto_measure_le_inv_atTop (V : Ω' → ℝ) (hV : Measurable V)
+    (hpos : ∀ᵐ ω ∂μ', 0 < V ω) :
+    Tendsto (fun m : ℕ => μ' {ω | V ω ≤ 1 / (m + 1)}) atTop (𝓝 0)
+theorem tendstoInDistribution_div_of_pos [l.IsCountablyGenerated] (U V : ι → Ω → ℝ)
+    (U₀ V₀ : Ω' → ℝ)
+    (hU hV hU₀ hV₀ : measurability)
+    (hUV : TendstoInDistribution (fun n ω => (U n ω, V n ω)) l (fun ω => (U₀ ω, V₀ ω))
+      (fun _ => μ) μ')
+    (hpos : ∀ᵐ ω ∂μ', 0 < V₀ ω) :
+    TendstoInDistribution (fun n ω => U n ω / V n ω) l (fun ω => U₀ ω / V₀ ω) (fun _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+Given $\eta>0$ choose $c=1/(m+1)$ with $\mu'\{V_0\le c\}<\eta/2$ (the sets $\{V_0\le1/(m+1)\}$
+decrease to $\{V_0\le0\}$, a null set). The marginal $V_n\Rightarrow V_0$ follows from the joint
+convergence by projection, and portmanteau on the closed set $(-\infty,c]$ gives
+$\limsup_n\mu\{V_n\le c\}\le\mu'\{V_0\le c\}<\eta$, hence eventually $\mu\{V_n\le c\}\le\eta$. On
+$\{V_n>c\}$ the clipped quotient equals the true quotient, so the two disagree with probability at
+most $\eta$; the same holds for the limits. Since the clipped quotients converge by the continuous
+mapping theorem, unit~156's approximation lemma yields convergence of the quotients.
+
+\section{Paper-facing meaning}
+This is the division step of cor:empirical\_expectation at chart level: the posterior expectation
+$Z_n[\varphi]/Z_n$ is the quotient of two jointly convergent normalised chart integrals whose limiting
+denominator is a.s.\ positive (unit~154). Astra~\#13 recommended exactly this route (clipped division
+plus portmanteau on the denominator marginal) over a general a.e.-continuous mapping theorem or a
+ball-localisation of the input, and noted that Lean's totalised division removes any need for
+finite-sample nonvanishing of the chart normaliser.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{continuous\_fst.div (continuous\_snd.max continuous\_const)} with the nonvanishing
+witness \texttt{(lt\_max\_of\_lt\_right hc).ne'}.
+\item \texttt{exists\_nat\_one\_div\_lt} produces $m$ with $1/(m+1)<x$ for $x>0$; the deprecated
+\texttt{push\_neg} is now \texttt{push Not}; for \texttt{ENNReal}, \texttt{zero\_le} takes its argument
+implicitly (\texttt{zero\_le \_} fails).
+\item The portmanteau bookkeeping is the same as in unit~153: \texttt{ProbabilityMeasure.coe\_mk},
+\texttt{Measure.map\_apply\_of\_aemeasurable} through a universally quantified \texttt{have}, and
+\texttt{eventually\_lt\_of\_limsup\_lt}.
+\end{itemize}
+
+\end{document}

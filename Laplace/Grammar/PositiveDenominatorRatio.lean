@@ -104,14 +104,14 @@ theorem tendstoInDistribution_div_of_pos (U V : ι → Ω → ℝ) (U₀ V₀ : 
     refine le_trans (measure_mono ?_) hn.le
     intro ω hω
     simp only [Set.mem_ofPred_eq] at hω
-    show V n ω ∈ Set.Iic c
+    change V n ω ∈ Set.Iic c
     rw [Set.mem_Iic]
     by_contra hcon
     exact hω (clipDiv_eq c (U n ω, V n ω) (not_le.1 hcon).le).symm
   · refine le_trans (measure_mono ?_) (hVc.le.trans (ENNReal.ofReal_le_ofReal (by linarith)))
     intro ω hω
     simp only [Set.mem_ofPred_eq] at hω
-    show V₀ ω ∈ Set.Iic c
+    change V₀ ω ∈ Set.Iic c
     rw [Set.mem_Iic]
     by_contra hcon
     exact hω (clipDiv_eq c (U₀ ω, V₀ ω) (not_le.1 hcon).le).symm
