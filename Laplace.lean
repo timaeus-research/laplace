@@ -423,3 +423,5 @@ import Laplace.Grammar.CircleOpParam
 import Laplace.Grammar.PolydiscCoeff
 import Laplace.Grammar.AnalyticTaylorTree
 import Laplace.Grammar.ParamHolo
+import Laplace.Grammar.CoordDeriv
+import Laplace.Grammar.TaylorTreeDerivatives
