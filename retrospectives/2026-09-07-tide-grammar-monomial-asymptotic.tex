@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The equal-ratio monomial asymptotic in general dimension}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Assembly of the general-$d$ equal-ratio monomial milestone (Astra~\#14, units 165, 170--175). For
+$h,k\colon\mathrm{Fin}(m{+}1)\to\mathbb N$ with $k_i>0$ and common ratio $(h_i+1)/(2k_i)=\lambda$,
+the monomial box integral
+\[
+I(N)=\int_{(0,1]^{m+1}}\prod_ix_i^{h_i}\,e^{-\beta N\prod_ix_i^{2k_i}}\,dx
+\]
+equals \emph{exactly} $\prod_i\frac1{2k_i}\cdot\frac1{m!}\int_0^1z^{\lambda-1}(-\log z)^me^{-\beta Nz}\,dz$
+(\texttt{monomialBoxReal\_eq}), hence
+\[
+I(N)\sim\frac{\Gamma(\lambda)\beta^{-\lambda}}{m!\prod_i2k_i}\,N^{-\lambda}(\log N)^m
+\qquad(N\to\infty)
+\]
+(\texttt{monomialBoxReal\_isEquivalent'}), the logarithmic multiplicity $d=m+1$ coming from the
+product density of unit~172 and the constant from the Gamma/log asymptotic of unit~173. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def expKernel (β N : ℝ) (z : ℝ) : ℝ≥0∞ := ofReal (exp (-(β * N * z)))
+theorem monomialBoxIntegral_exp_eq (m) (h k : Fin (m+1) → ℕ) (hk) (l β N) (hl : 0 < l)
+    (hratio : ∀ i, ((h i : ℝ) + 1) / (2 * k i) = l) (hβN : 0 < β * N) :
+    monomialBoxIntegral (m + 1) h k (expKernel β N)
+      = ofReal ((∏ i, 1 / (2 * k i)) * (1 / m.factorial) * gammaLogIntegral l m β N)
+def monomialBoxReal (d) (h k : Fin d → ℕ) (β N : ℝ) : ℝ :=
+  ∫ x in unitBox d, (∏ i, x i ^ h i) * exp (-(β * N * ∏ i, x i ^ (2 * k i)))
+theorem ofReal_monomialBoxReal (d h k β N) :
+    ofReal (monomialBoxReal d h k β N) = monomialBoxIntegral d h k (expKernel β N)
+theorem monomialBoxReal_eq ... : monomialBoxReal (m + 1) h k β N
+      = (∏ i, 1 / (2 * k i)) * (1 / m.factorial) * gammaLogIntegral l m β N
+theorem monomialBoxReal_tendsto ... : Tendsto
+    (fun N => monomialBoxReal (m + 1) h k β N / (N ^ (-l) * log N ^ m)) atTop
+    (𝓝 ((∏ i, 1 / (2 * k i)) * (1 / m.factorial) * (Gamma l * β ^ (-l))))
+theorem monomialBoxReal_isEquivalent ... : (fun N => monomialBoxReal (m + 1) h k β N)
+    ~[atTop] powLog ((∏ i, 1 / (2 * k i)) * (1 / m.factorial) * (Gamma l * β ^ (-l))) l m
+theorem monomialBoxReal_isEquivalent' ... : (fun N => monomialBoxReal (m + 1) h k β N)
+    ~[atTop] fun N => Gamma l * β ^ (-l) / (m.factorial * ∏ i, 2 * k i) * N ^ (-l) * log N ^ m
+\end{verbatim}
+}
+
+\section{Mathematics}
+Unit~174 reduces the monomial integral to the weighted box integral with weights
+$(h_i+1)/(2k_i)-1=\lambda-1$ and Jacobian $\prod_i1/(2k_i)$; unit~172 identifies the constant-weight
+box integral with the recursive product integral and evaluates it through the density
+$z^{\lambda-1}(-\log z)^m/m!$; unit~173 supplies the asymptotic of the resulting one-dimensional
+integral. The Bochner integral is bridged to the $[0,\infty]$-valued one by
+\texttt{ofReal\_integral\_eq\_lintegral\_ofReal}: the integrand is continuous, hence integrable on
+the compact closed box $[0,1]^d$ and a fortiori on $(0,1]^d$, and nonnegative there.
+
+\section{Paper-facing meaning}
+This is the general-dimensional statement behind the equal-ratio case of the Taylor-tree
+multiplicity: the leading exponent is the common Mellin ratio $\lambda$ and the logarithmic
+multiplicity is the number of coordinates realising it. Compared with the quadratic-chart
+multiplicity theorem of units 22--60 (\texttt{boxIntegral\_isEquivalent}, kernel
+$e^{-\beta s^2+\beta as}$ with $s=\sqrt n\prod u_i^{k_i}$), the present statement covers an
+arbitrary monomial exponent $e^{-\beta N\prod x_i^{2k_i}}$ with the Gamma-function constant
+$\Gamma(\lambda)\beta^{-\lambda}$ in place of the weighted mass. Astra~\#14's scope sentence now
+reads: general logarithmic multiplicity is complete both for the recursive quadratic chart and for
+arbitrary equal-ratio monomial charts.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{Tendsto.div\_const} needs the constant explicitly when the goal is not yet
+determined (placeholder \texttt{y} error).
+\item Membership in \texttt{Set.pi univ t} unfolds definitionally: \texttt{hx i (mem\_univ i)}
+gives \texttt{x i ∈ t i}.
+\item Continuity of a finite product: \texttt{continuous\_finsetProd \_ fun i \_ => ...}
+(\texttt{fun\_prop} was not tried for the Finset product; the manual term is short).
+\item \texttt{ENNReal.ofReal\_prod\_of\_nonneg} turns \texttt{ofReal (∏ f i)} into
+\texttt{∏ ofReal (f i)}; the remaining goal is \texttt{rfl} once \texttt{expKernel} is unfolded.
+\end{itemize}
+
+\end{document}
