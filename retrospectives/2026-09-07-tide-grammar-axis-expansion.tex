@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The axis expansion of a one-variable amplitude}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For an amplitude $\Psi(u,s)$ depending on the first coordinate only, Lipschitz in $u$ at $0$, the
+one-variable density of unit~86 expands as
+$\rho_\Psi(r,s)=r^{p-1}\log(1/r)\,\tfrac{\Psi(0,s)}{k_1k_2}+r^{p-1}\big(\tfrac{\log R\,\Psi(0,s)}{k_1k_2}
++\tfrac{I_\Psi(s)}{k_2}\big)+O\big(r^{p-1+1/k_1}(1+s)e^{\beta Ls}\big)$ with the axis integral
+$I_\Psi(s)=\int_0^b(\Psi(u,s)-\Psi(0,s))/u\,du$, and the density-transfer theorem gives
+$Z_\Psi(N)=N^{-p}(A_\Psi\log N+B_\Psi)+O(N^{-(p+1/k_1)}(1+\log N))$ for $N\ge1$. The constant $B_\Psi$
+sees the whole axis $\{v=0\}$, not only the corner. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def axisIntegral (b : ℝ) (Ψ : ℝ → ℝ → ℝ) (s : ℝ) : ℝ :=
+  ∫ u in Ioc (0 : ℝ) b, u⁻¹ * (Ψ u s - Ψ 0 s)
+theorem uDensity_integral_eq ... (m : ℝ) (hm : 0 < m) (hmb : m ≤ b) :
+    (∫ u in Icc m b, u⁻¹ * Ψ u s)
+      = Ψ 0 s * Real.log (b / m) + axisIntegral b Ψ s
+        - ∫ u in Ioc (0 : ℝ) m, u⁻¹ * (Ψ u s - Ψ 0 s)
+theorem uDensity_expansion ... :
+    DensityExpansion (uDensity p b k₁ k₂ Ψ) ![p, p] ![1, 0]
+      ![uCoeff₀ k₁ k₂ Ψ, uCoeff₁ b k₁ k₂ Ψ] (p + (k₁ : ℝ)⁻¹) (b ^ (k₁ + k₂)) 1
+      (uEnvelope β b L C₁ k₁ k₂)
+noncomputable def axisA (β p : ℝ) (k₁ k₂ : ℕ) (Ψ : ℝ → ℝ → ℝ) : ℝ :=
+  1 / ((k₁ : ℝ) * k₂) * logMoment β p 0 (Ψ 0)
+noncomputable def axisB (β b p : ℝ) (k₁ k₂ : ℕ) (Ψ : ℝ → ℝ → ℝ) : ℝ :=
+  1 / ((k₁ : ℝ) * k₂) * (Real.log (b ^ (k₁ + k₂)) * logMoment β p 0 (Ψ 0)
+    - logMoment β p 1 (Ψ 0)) + 1 / (k₂ : ℝ) * logMoment β p 0 (axisIntegral b Ψ)
+theorem twoDAmp_uOnly_expansion ... :
+    ∃ K' : ℝ, ∀ N : ℝ, 1 ≤ N →
+      |twoDAmp β b N h₁ h₂ k₁ k₂ (fun u _ s => Ψ u s)
+        - N ^ (-p) * (axisA β p k₁ k₂ Ψ * Real.log N + axisB β b p k₁ k₂ Ψ)|
+        ≤ K' * N ^ (-(p + (k₁ : ℝ)⁻¹)) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Split $u^{-1}\Psi(u,s)=u^{-1}\Psi(0,s)+u^{-1}(\Psi(u,s)-\Psi(0,s))$ on $[m,b]$,
+$m=(r/b^{k_2})^{1/k_1}$: the first part integrates to $\Psi(0,s)\log(b/m)$ with
+$\log(b/m)=(\log R+\log(1/r))/k_1$, the second is $I_\Psi(s)$ minus the tail over $(0,m]$, bounded by
+$m\,C_1(1+s)e^{\beta Ls}$ since the integrand is bounded by $C_1(1+s)e^{\beta Ls}$. Hence the density
+expansion with a degree-one log term and remainder $r^{p-1+1/k_1}$. The moments are finite by the
+log-power version of the polynomial-exponential bound lemma, and the transferred terms are
+$N^{-p}(\log N\cdot M_0-M_1)$ (degree~1) and $N^{-p}M_0$ (degree~0), which rearrange to
+$A_\Psi\log N+B_\Psi$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item Joint measurability of $(r,s)\mapsto\int_{m(r)}^b u^{-1}\Psi(u,s)\,du$: write the set integral as
+an integral of an indicator over $\mathbb R$ and use
+\texttt{StronglyMeasurable.integral\_prod\_right'} with the indicator function named explicitly
+(otherwise the typeclass search for the codomain is stuck).
+\item \texttt{Integrable.const\_mul} of an \texttt{IntegrableOn} returns an \texttt{Integrable} on the
+restricted measure; ascribe the \texttt{IntegrableOn} type before \texttt{.congr\_fun}.
+\item \texttt{logMoment\_const\_mul} rewrites also through eta-reduced $\Psi\,0$; state the
+coefficients with \texttt{(Ψ 0)} rather than \texttt{fun s => Ψ 0 s}.
+\item The envelope must be nonnegative for all $s$ (structure field): use $(1+|s|)$.
+\end{itemize}
+
+\section{Outcome}
+The axis contribution of the $d=2$ theorem is formalised. Remaining for the milestone: the anchored
+decomposition $F=F(u,0)+F(0,v)-F(0,0)+uvG$ with the mixed-term bound via a shifted constant-kernel
+block integral, and the assembly $Z(N)=N^{-p}(A\log N+B)+O(N^{-(p+\delta)}(1+\log N))$.
+\end{document}
