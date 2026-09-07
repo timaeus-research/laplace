@@ -42,7 +42,7 @@ theorem quotient_isEquivalent (Zφ Z₁ : ℝ → ℝ) (Cφ C₁ αφ α₁ : �
   have hlog : 0 < Real.log N := Real.log_pos hN
   have hpow : N ^ (-(αφ - α₁)) = N ^ (-αφ) / N ^ (-α₁) := by
     rw [← Real.rpow_sub hN0]; congr 1; ring
-  show powLog Cφ αφ rφ N / powLog C₁ α₁ r₁ N = _
+  change powLog Cφ αφ rφ N / powLog C₁ α₁ r₁ N = _
   unfold powLog
   rw [hpow]
   have h1 : N ^ (-αφ) ≠ 0 := (Real.rpow_pos_of_pos hN0 _).ne'
@@ -70,7 +70,7 @@ theorem tendsto_quotient_mul_log_of_eq (Zφ Z₁ : ℝ → ℝ) (Cφ C₁ α : �
   refine (h'.congr_right ?_).tendsto_const
   filter_upwards [eventually_gt_atTop (1 : ℝ)] with N hN
   have hlog : 0 < Real.log N := Real.log_pos hN
-  show (Cφ / C₁) * N ^ (-(α - α)) * (Real.log N ^ r / Real.log N ^ (r + 1)) * Real.log N = Cφ / C₁
+  change (Cφ / C₁) * N ^ (-(α - α)) * (Real.log N ^ r / Real.log N ^ (r + 1)) * Real.log N = Cφ / C₁
   rw [sub_self, neg_zero, Real.rpow_zero, mul_one]
   field_simp
   ring

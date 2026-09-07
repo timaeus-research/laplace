@@ -1,0 +1,67 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Quotient calculus for power--log leading terms}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#14 rank~1. If $Z_\varphi(N)\sim C_\varphi N^{-\alpha_\varphi}(\log N)^{r_\varphi}$ and
+$Z_1(N)\sim C_1N^{-\alpha_1}(\log N)^{r_1}$, then
+$Z_\varphi/Z_1\sim(C_\varphi/C_1)N^{-(\alpha_\varphi-\alpha_1)}(\log N)^{r_\varphi}/(\log N)^{r_1}$
+(\texttt{quotient\_isEquivalent}), with the three consequences used for posterior expectations: equal
+leading terms give the constant limit $C_\varphi/C_1$; one fewer logarithm in the numerator gives
+decay like $1/\log N$, i.e.\ $(Z_\varphi/Z_1)\log N\to C_\varphi/C_1$; a strictly larger power in the
+numerator gives decay to $0$. The calculus is independent of the chart indexing and uses totalised
+division. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def powLog (C α : ℝ) (r : ℕ) (N : ℝ) : ℝ := C * N ^ (-α) * Real.log N ^ r
+theorem quotient_isEquivalent (Zφ Z₁) (Cφ C₁ αφ α₁) (rφ r₁) (hφ : Zφ ~[atTop] powLog Cφ αφ rφ)
+    (h₁ : Z₁ ~[atTop] powLog C₁ α₁ r₁) :
+    (fun N => Zφ N / Z₁ N) ~[atTop]
+      fun N => (Cφ / C₁) * N ^ (-(αφ - α₁)) * (Real.log N ^ rφ / Real.log N ^ r₁)
+theorem tendsto_quotient_of_eq ... : Tendsto (fun N => Zφ N / Z₁ N) atTop (𝓝 (Cφ / C₁))
+theorem tendsto_quotient_mul_log_of_eq ... (h₁ : Z₁ ~ powLog C₁ α (r + 1)) :
+    Tendsto (fun N => Zφ N / Z₁ N * Real.log N) atTop (𝓝 (Cφ / C₁))
+theorem tendsto_quotient_zero_of_lt ... (hα : α₁ < αφ) :
+    Tendsto (fun N => Zφ N / Z₁ N) atTop (𝓝 0)
+\end{verbatim}
+}
+
+\section{Mathematics}
+\texttt{IsEquivalent.div} handles the quotient; the model term is simplified for $N>1$ where
+$N^{-\alpha}>0$ and $\log N>0$. The zero limit uses $(\log N)^{r_\varphi}=o(N^{\delta})$ for
+$\delta=\alpha_\varphi-\alpha_1>0$ (Mathlib \texttt{isLittleO\_log\_rpow\_rpow\_atTop}) after bounding
+$(\log N)^{r_\varphi}/(\log N)^{r_1}\le(\log N)^{r_\varphi}$ for $N\ge e$.
+
+\section{Paper-facing meaning}
+This is the deterministic backbone of cor:empirical\_expectation's leading term when numerator and
+denominator have different leading terms. Astra~\#14's correction is built in: an observable
+vanishing at the corner typically removes a logarithm rather than raising the power, so the posterior
+expectation decays like $1/\log N$ (\texttt{tendsto\_quotient\_mul\_log\_of\_eq}), not like a power of
+$N$. The chart instantiation (leading-term extraction from the Taylor tree for equal starts, with
+$A_p\neq0$ or $A_p=0\neq B_p$) is the next unit.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{IsEquivalent.div} produces the Pi quotient; convert with \texttt{congr\_left} and a
+pointwise \texttt{rfl}. \texttt{IsEquivalent.tendsto\_const} needs the model rewritten to
+\texttt{const} by \texttt{congr\_right}.
+\item Avoid a global \texttt{div\_eq\_mul\_inv}/\texttt{abs\_of\_pos \_} rewrite: it hits the
+coefficient quotient $C_\varphi/C_1$ first; give \texttt{abs\_of\_pos} its argument explicitly.
+\item \texttt{squeeze\_zero\_norm'} with an eventual bound and \texttt{IsLittleO.tendsto\_div\_nhds\_zero}.
+\end{itemize}
+
+\end{document}
