@@ -264,3 +264,4 @@ import Laplace.Grammar.AxisSeries
 import Laplace.Grammar.JetIdentification
 import Laplace.Grammar.TwoDGenDensityUnequal
 import Laplace.Grammar.FaceDensityExpansion
+import Laplace.Grammar.MixedShiftBound
