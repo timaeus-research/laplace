@@ -1,0 +1,83 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The coefficient recursion for the exponential jets}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The exponential jets $E_n(s)=\sum_{m<R}\frac{(\beta s)^m}{m!}[X^n](g_R^m)$ of unit~94 satisfy
+\[
+nE_n(s)=\beta s\sum_{i=1}^{n}i\,x_i\,E_{n-i}(s),\qquad 1\le n<R,
+\]
+the computational interface recommended in Astra~\#3/\#4 (the paper's tree recursion in disguise).
+The proof is finite polynomial algebra: with $T_R=\sum_{m<R}\frac{(\beta s)^m}{m!}g_R^m$,
+$T_R'-\beta sg_R'T_R=-\frac{(\beta s)^R}{(R-1)!}g_R'g_R^{R-1}$ is divisible by $X^{R-1}$ because
+$g_R$ is divisible by $X$, so the coefficients below $R-1$ of $T_R'$ and $\beta sg_R'T_R$ agree. No
+power-series exponential is needed. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def expPoly (β : ℝ) (x : ℕ → ℝ) (R : ℕ) (s : ℝ) : ℝ[X] :=
+  ∑ m ∈ range R, C ((β * s) ^ m / (m.factorial : ℝ)) * (gPoly x R) ^ m
+theorem coeff_expPoly (β : ℝ) (x : ℕ → ℝ) (R n : ℕ) (s : ℝ) :
+    (expPoly β x R s).coeff n = expJet β x R n s
+theorem X_dvd_gPoly (x : ℕ → ℝ) (R : ℕ) : (X : ℝ[X]) ∣ gPoly x R
+theorem derivative_expPoly (β : ℝ) (x : ℕ → ℝ) (R : ℕ) (s : ℝ) :
+    derivative (expPoly β x (R + 1) s)
+      = C (β * s) * derivative (gPoly x (R + 1))
+        * (expPoly β x (R + 1) s
+          - C ((β * s) ^ R / (R.factorial : ℝ)) * (gPoly x (R + 1)) ^ R)
+theorem coeff_derivative_gPoly (x : ℕ → ℝ) (R i : ℕ) (hi : i + 1 < R) :
+    (derivative (gPoly x R)).coeff i = ((i : ℝ) + 1) * x (i + 1)
+theorem expJet_recursion (β : ℝ) (x : ℕ → ℝ) (R n : ℕ) (hn : 0 < n) (hnR : n < R) (s : ℝ) :
+    (n : ℝ) * expJet β x R n s
+      = β * s * ∑ i ∈ range n, ((i : ℝ) + 1) * x (i + 1) * expJet β x R (n - 1 - i) s
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Differentiating $T_R$ termwise, $(g^m)'=mg^{m-1}g'$ and $\frac{(\beta s)^m}{m!}m=\beta s\frac{(\beta s)^{m-1}}{(m-1)!}$
+reindex the sum to $\beta sg'\,T_{R-1}$, i.e. $\beta sg'(T_R-\frac{(\beta s)^{R-1}}{(R-1)!}g^{R-1})$.
+Comparing the coefficient of $X^{n-1}$: on the left it is $nE_n$ (\texttt{coeff\_derivative}); on
+the right, $\beta s\sum_{i+k=n-1}[X^i]g'\,[X^k]T_R=\beta s\sum_{i<n}(i+1)x_{i+1}E_{n-1-i}$ by the
+Cauchy product and $[X^i]g'=(i+1)x_{i+1}$, while the correction $g'g^{R-1}$ is a multiple of
+$X^{R-1}$ (\texttt{pow\_dvd\_pow\_of\_dvd} from $X\mid g$) and contributes nothing below $R-1$.
+
+\section{Paper-facing meaning}
+
+Together with the derivative identification of unit~102 this gives the one-dimensional jet
+coefficients three equivalent descriptions: the closed truncated exponential formula, the normalised
+derivatives, and the recursion $nE_n=\beta s\sum i\,x_iE_{n-i}$ that generates them from the Taylor
+data of $\xi$ alone. The recursion is the natural bridge to the partition formula and to the
+paper's tree indexing (Astra~\#4(f)), which remain the only unproved steps of the coefficient
+identification.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Polynomial.derivative} lives in \texttt{Mathlib.Algebra.Polynomial.Derivative}, not in
+the project's import closure; import it explicitly.
+\item Identities mixing \texttt{C a * p} with products of polynomials defeat \texttt{ring}
+(\texttt{C} of a product is not syntactically a product). Convert to scalar actions with
+\texttt{simp only [C\_mul', smul\_smul, smul\_mul\_assoc, mul\_smul\_comm]}, then \texttt{congr 1}
+separates the scalar identity (\texttt{field\_simp; ring}) from the polynomial one.
+\item \texttt{coeff\_smul} + \texttt{coeff\_X\_pow\_mul'} kill the coefficients of an $X^{R-1}$-multiple
+below $R-1$ in one \texttt{rw}.
+\item \texttt{simp} normalises \texttt{n' + 1 - 1} to \texttt{n'} in the goal but not in a
+hypothesis introduced later; normalise both (\texttt{simp only [Nat.add\_sub\_cancel] at hkey ⊢})
+before \texttt{linear\_combination}.
+\end{itemize}
+
+\end{document}
