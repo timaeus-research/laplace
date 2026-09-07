@@ -271,3 +271,4 @@ import Laplace.Grammar.JetRecursion
 import Laplace.Grammar.TwoDCutoffReduced
 import Laplace.Grammar.FaceMomentsEnvelope
 import Laplace.Grammar.ConstantKernelBound
+import Laplace.Grammar.ConstantKernelUnequal
