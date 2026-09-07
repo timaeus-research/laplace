@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The general-$\lambda$ Gamma/log asymptotic}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Step~3 of the general-$d$ equal-ratio monomial milestone (Astra~\#14). The one-dimensional
+integral produced by the product density of unit~172 satisfies
+\[
+\int_0^1 z^{\lambda-1}(-\log z)^m e^{-\beta Nz}\,dz
+\;\sim\;\Gamma(\lambda)\,\beta^{-\lambda}\,N^{-\lambda}(\log N)^m
+\qquad(N\to\infty),
+\]
+for every $\lambda>0$, $\beta>0$, $m\in\mathbb N$ (\texttt{tendsto\_gammaLogIntegral\_div},
+\texttt{gammaLogIntegral\_isEquivalent}). A Lebesgue-integral bridge
+(\texttt{lintegral\_logDensity\_mul\_exp}) connects the real-valued statement to the
+$[0,\infty]$-valued product-density integrand. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def gammaLogIntegral (l : ℝ) (m : ℕ) (β N : ℝ) : ℝ :=
+  ∫ z in Ioc 0 1, logDensity l m z * Real.exp (-(β * N * z))
+def logTailIntegral (l β : ℝ) (i : ℕ) (N : ℝ) : ℝ :=
+  ∫ t in Ioc 0 N, t ^ (l - 1) * (-Real.log t) ^ i * Real.exp (-(β * t))
+theorem integral_rpow_mul_exp_neg_mul (hl : 0 < l) (hβ : 0 < β) :
+    ∫ t in Ioi 0, t ^ (l - 1) * Real.exp (-(β * t)) = Real.Gamma l * β ^ (-l)
+theorem abs_logTailIntegral_le ... : |logTailIntegral l β i N| ≤
+    ∫ t in Ioi 0, |Real.log t| ^ i * t ^ (l - 1) * Real.exp (-(β * t))
+theorem gammaLogIntegral_eq_scaled (hN : 0 < N) : gammaLogIntegral l m β N =
+    N ^ (-l) * ∫ t in Ioc 0 N, t ^ (l-1) * (log N - log t) ^ m * exp (-(β * t))
+theorem scaled_integral_eq_sum ... = ∑ j ∈ range (m+1),
+    log N ^ j * (m.choose j) * logTailIntegral l β (m - j) N
+theorem tendsto_gammaLogIntegral_div (hl : 0 < l) (hβ : 0 < β) :
+    Tendsto (fun N => gammaLogIntegral l m β N / (N ^ (-l) * Real.log N ^ m))
+      atTop (𝓝 (Real.Gamma l * β ^ (-l)))
+theorem gammaLogIntegral_isEquivalent (hl : 0 < l) (hβ : 0 < β) :
+    (fun N => gammaLogIntegral l m β N) ~[atTop] powLog (Real.Gamma l * β ^ (-l)) l m
+theorem lintegral_logDensity_mul_exp (hl : 0 < l) (hβN : 0 < β * N) :
+    ∫⁻ z in Ioc 0 1, ofReal (logDensity l m z) * ofReal (exp (-(β * N * z)))
+      = ofReal (gammaLogIntegral l m β N)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Substituting $t=Nz$ gives
+$N^{-\lambda}\int_0^N t^{\lambda-1}(\log N-\log t)^m e^{-\beta t}\,dt$. Expanding
+$(\log N-\log t)^m=\sum_j\binom mj(\log N)^j(-\log t)^{m-j}$ and dividing by
+$N^{-\lambda}(\log N)^m$ leaves
+$\sum_j\binom mj(\log N)^{j-m}J_{m-j}(N)$ with
+$J_i(N)=\int_0^N t^{\lambda-1}(-\log t)^ie^{-\beta t}\,dt$. Each $J_i$ is bounded uniformly in $N$
+by $\int_0^\infty|\log t|^it^{\lambda-1}e^{-\beta t}\,dt<\infty$, so every term with $j<m$ tends to
+zero, while $J_0(N)\to\int_0^\infty t^{\lambda-1}e^{-\beta t}\,dt=\Gamma(\lambda)\beta^{-\lambda}$.
+The plan recorded after unit~172 was dominated convergence; the binomial split is shorter because the
+envelope integrability was already in the seabed (\texttt{log\_pow\_fluctuation\_integrableOn} with
+$a=0$), and it produces the bounded-tail lemma as a reusable by-product.
+
+\section{Paper-facing meaning}
+Combined with unit~172 this gives, for the equal-ratio monomial $\prod_i x_i^{2k_i}$ with
+$(h_i+1)/(2k_i)=\lambda$ in $d$ variables, the leading behaviour
+$N^{-\lambda}(\log N)^{d-1}$ with explicit constant $\Gamma(\lambda)\beta^{-\lambda}/(d-1)!$ times the
+Jacobian factors $\prod_i 1/(2k_i)$ from unit~170. Remaining: the \texttt{Fin d} box bridge
+(unit~174) and the assembly (unit~175).
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{rw [sub\_eq\_add\_neg]} rewrites the \emph{first} subtraction, which here was the
+exponent $\lambda-1$, not $\log N-\log t$; use an explicit \texttt{show ... by ring} rewrite.
+\item \texttt{pow\_sub₀} produces $a^m\cdot(a^n)^{-1}$, not a division; close with
+\texttt{mul\_inv, inv\_inv, div\_eq\_mul\_inv, mul\_comm}.
+\item \texttt{Asymptotics.isEquivalent\_of\_tendsto\_one} on this pin takes only the ratio limit
+(no eventual-vanishing side condition); the \texttt{\textasciitilde[l]} notation needs
+\texttt{open Asymptotics}.
+\item \texttt{integral\_finset\_sum}/\texttt{tendsto\_finset\_sum} are deprecated for
+\texttt{integral\_finsetSum}/\texttt{tendsto\_finsetSum}.
+\item \texttt{Tendsto.zero\_mul\_isBoundedUnder\_le} with \texttt{isBoundedUnder\_of} accepts an
+\texttt{|·| ≤ M} bound directly (\texttt{Real.norm\_eq\_abs} is definitional).
+\end{itemize}
+
+\end{document}
