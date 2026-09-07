@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Measurability of the canonical coefficients in the parameter}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#10 rank~3, completing the parameter-integration adapter. For a coefficient family jointly
+measurable in $(w,s)$ with a common radius, the canonical coefficient functions $U_\alpha,V_\alpha,C_\alpha$
+are jointly measurable (via the series formulas of unit~125, as pointwise-convergent series of
+measurable terms), log moments of jointly measurable functions are measurable in the parameter
+(a parametric Bochner integral), hence $w\mapsto A_\alpha(w)$, $w\mapsto B_\alpha(w)$ are measurable
+(\texttt{canonA\_param\_measurable}, \texttt{canonB\_param\_measurable}). Consequently the averaged
+and expected Taylor trees hold with joint measurability of the family as the ONLY measurability
+hypothesis (\texttt{twoD\_taylor\_tree\_integrated'}, \texttt{twoD\_taylor\_tree\_expectation'}).
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem measurable_tsum_of_summable {X : Type*} [MeasurableSpace X] (term : ℕ → X → ℝ)
+    (hm : ∀ j, Measurable (term j)) (hs : ∀ x, Summable fun j => term j x) :
+    Measurable fun x => ∑' j, term j x
+theorem logMoment_param_measurable {Ω : Type*} [MeasurableSpace Ω] (β α : ℝ) (ℓ : ℕ)
+    (f : Ω → ℝ → ℝ) (hf : Measurable fun p : Ω × ℝ => f p.1 p.2) :
+    Measurable fun w => logMoment β α ℓ (f w)
+theorem canonU_param_measurable ... (α : ℝ) :
+    Measurable fun p : Ω × ℝ =>
+      canonU b h₁ h₂ k₁ k₂ (anaFaceU (c p.1) b) (fun i j s => c p.1 (i, j) s) α p.2
+theorem canonA_param_measurable {Ω : Type*} [MeasurableSpace Ω] (β : ℝ) (h₁ h₂ k₁ k₂ : ℕ)
+    (c : Ω → ℕ × ℕ → ℝ → ℝ) (hcm : ∀ ij, Measurable fun p : Ω × ℝ => c p.1 ij p.2)
+    (α : ℝ) :
+    Measurable fun w => canonA β h₁ h₂ k₁ k₂ (fun i j s => c w (i, j) s) α
+theorem canonB_param_measurable ... (α : ℝ) :
+    Measurable fun w => canonB β b h₁ h₂ k₁ k₂ (anaFaceU (c w) b) (anaFaceV (c w) b)
+      (fun i j s => c w (i, j) s) α
+theorem twoD_taylor_tree_integrated' ...
+    (hcm : ∀ ij, Measurable fun p : Ω × ℝ => c p.1 ij p.2) ... : |∫ Z_w(N) ϱ - ∑_{α<2T} N^{-α}((∫ A_α ϱ) log N + ∫ B_α ϱ)|
+      ≤ uniformTreeConst ... * (N ^ (-(2 * T)) * (1 + Real.log N)) * ∫ ϱ
+theorem twoD_taylor_tree_expectation' ... [IsProbabilityMeasure μ] ... :
+    |E[Z_N] - ∑_{α<2T} N^{-α}(E[A_α] log N + E[B_α])|
+      ≤ uniformTreeConst ... * (N ^ (-(2 * T)) * (1 + Real.log N))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+At a $u$-pole $\alpha=\alpha_i$ the canonical face coefficient is $k_1^{-1}\sum_jc_{ij}(w,s)q_{\gamma_i}(j)$
+(unit~125), a series of jointly measurable terms which converges for every $(w,s)$ by the weighted
+row bound; off the $u$-poles it vanishes. The collision coefficient is $c_{ij}/(k_1k_2)$ or zero. The
+log moment $\int_0^\infty s^{\alpha-1}(\log s)^\ell e^{-\beta s^2}f(w,s)\,ds$ of a jointly
+measurable $f$ is measurable in $w$ (Fubini-type measurability of parametric integrals over the
+$\sigma$-finite measure on $(0,\infty)$). Sums and differences preserve measurability.
+
+\section{Paper-facing meaning}
+
+Together with units 135, 137 and 138: \emph{the Taylor tree is uniform on bounded analytic families
+and commutes with finite-mass averaging}, now as a theorem whose only hypotheses are analytic
+(common envelope) and the natural joint measurability of the family. In the SLT application this
+covers both the per-stratum integral over the noncritical coordinates and the expectation over the
+empirical fluctuation $\xi_n$, with expected canonical coefficients. As Astra~\#10 cautions, this
+says nothing yet about $E[\log Z]$.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item To use a lemma stated at \texttt{uExp h₁ k₁ i} for a general pole \texttt{α} with
+\texttt{hP : uExp (uIdx α) = α}, substitute with \texttt{obtain ⟨i, rfl⟩ : ∃ i, uExp h₁ k₁ i = α
+:= ⟨\_, hP⟩}; rewriting \texttt{← hP} would loop through \texttt{uIdx α}.
+\item Anonymous-function arguments whose binder type cannot be inferred from the expected type
+(\texttt{fun j p => c p.1 ...}) need an explicit annotation \texttt{(p : Ω × ℝ)}.
+\item \texttt{StronglyMeasurable.integral\_prod\_right'} with \texttt{(ν := volume.restrict (Ioi
+0))} matches the set-integral notation of \texttt{logMoment} directly.
+\end{itemize}
+
+\end{document}
