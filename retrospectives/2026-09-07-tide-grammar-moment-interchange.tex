@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Weighted $L^1$ interchange for the log moments}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The paper's fluctuation coefficients are series indexed by tree types, integrated against the
+Gaussian log weight $w(s)=s^{\alpha-1}(\log s)^\ell e^{-\beta s^2}$. This unit exposes the
+interchange API for such series: if the weighted $L^1$ norms $\int|w f_t|$ are summable then
+$\mathcal M(\sum_tf_t)=\sum_t\mathcal M(f_t)$ with absolute convergence
+(\texttt{hasSum\_logMoment}); a normal-convergence hypothesis $\sum_t|f_t(s)|\le G(s)$ with $|w|G$
+integrable supplies both hypotheses through a Tonelli argument in \texttt{ENNReal}
+(\texttt{weighted\_summable\_of\_dominated}); and the envelope $C(1+s)^De^{\beta sa'}$ is
+integrable against $|w|$ for $\alpha>0$ (\texttt{hasSum\_logMoment\_of\_envelope}). This is
+Astra~\#4's rank-3 unit and the tool for the first genuinely infinite coefficient identity (the
+axis series for the $d=2$ constant coefficient $B$). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def momentWeight (β α : ℝ) (ℓ : ℕ) (s : ℝ) : ℝ :=
+  s ^ (α - 1) * Real.log s ^ ℓ * Real.exp (-β * s ^ 2)
+theorem logMoment_eq_integral_weight (β α : ℝ) (ℓ : ℕ) (c : ℝ → ℝ) :
+    logMoment β α ℓ c = ∫ s in Ioi (0 : ℝ), momentWeight β α ℓ s * c s
+theorem hasSum_logMoment {ι : Type*} [Countable ι] (β α : ℝ) (ℓ : ℕ) (f : ι → ℝ → ℝ)
+    (hint : ∀ t, IntegrableOn (fun s => momentWeight β α ℓ s * f t s) (Ioi 0))
+    (hsum : Summable fun t => ∫ s in Ioi (0 : ℝ), |momentWeight β α ℓ s * f t s|) :
+    HasSum (fun t => logMoment β α ℓ (f t)) (logMoment β α ℓ (fun s => ∑' t, f t s))
+theorem logMoment_tsum ... :
+    logMoment β α ℓ (fun s => ∑' t, f t s) = ∑' t, logMoment β α ℓ (f t)
+theorem weighted_summable_of_dominated {ι : Type*} [Countable ι] (w : ℝ → ℝ)
+    (hw : Measurable w) (f : ι → ℝ → ℝ) (hf : ∀ t, Measurable (f t)) (G : ℝ → ℝ)
+    (hsumm : ∀ s ∈ Ioi (0 : ℝ), Summable fun t => |f t s|)
+    (hdom : ∀ s ∈ Ioi (0 : ℝ), ∑' t, |f t s| ≤ G s)
+    (hG : IntegrableOn (fun s => |w s| * G s) (Ioi 0)) :
+    (∀ t, IntegrableOn (fun s => w s * f t s) (Ioi 0)) ∧
+      Summable fun t => ∫ s in Ioi (0 : ℝ), |w s * f t s|
+theorem hasSum_logMoment_of_dominated ...
+theorem momentWeight_envelope_integrableOn (β a' α C : ℝ) (hβ : 0 < β) (hα : 0 < α)
+    (hC : 0 ≤ C) (ℓ D : ℕ) :
+    IntegrableOn
+      (fun s => |momentWeight β α ℓ s| * (C * (1 + s) ^ D * Real.exp (β * s * a'))) (Ioi 0)
+theorem hasSum_logMoment_of_envelope {ι : Type*} [Countable ι] (β a' α C : ℝ) (hβ : 0 < β)
+    (hα : 0 < α) (hC : 0 ≤ C) (ℓ D : ℕ) (f : ι → ℝ → ℝ) (hf : ∀ t, Measurable (f t))
+    (hsumm : ∀ s ∈ Ioi (0 : ℝ), Summable fun t => |f t s|)
+    (hdom : ∀ s ∈ Ioi (0 : ℝ), ∑' t, |f t s| ≤ C * (1 + s) ^ D * Real.exp (β * s * a')) :
+    HasSum (fun t => logMoment β α ℓ (f t)) (logMoment β α ℓ (fun s => ∑' t, f t s))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The core is Mathlib's \texttt{hasSum\_integral\_of\_summable\_integral\_norm}: for integrable
+$F_t$ with $\sum_t\|F_t\|_{L^1}<\infty$, $\sum_t\int F_t=\int\sum_tF_t$ as a \texttt{HasSum}. With
+$F_t=wf_t$ the left side is $\sum_t\mathcal M(f_t)$ and the integrand on the right is
+$w\sum_tf_t$ by \texttt{tsum\_mul\_left} (unconditional in a division ring).
+
+The domination step converts $\sum_t|f_t|\le G$ into the two hypotheses by working in
+\texttt{ENNReal}: $\sum_t\int^-\|wf_t\|_e=\int^-\sum_t\|wf_t\|_e$ (\texttt{lintegral\_tsum}, no
+summability needed) and pointwise
+$\sum_t\|wf_t\|_e=\mathrm{ofReal}|w|\cdot\mathrm{ofReal}\sum_t|f_t|\le\|\,|w|G\|_e$
+(\texttt{ENNReal.ofReal\_tsum\_of\_nonneg} uses the pointwise summability). Finiteness of
+$\int^-\||w|G\|_e$ is the \texttt{HasFiniteIntegral} half of the integrability of $|w|G$. Then each
+$\int^-\|wf_t\|_e$ is finite (integrability) and
+$\int|wf_t|=(\int^-\|wf_t\|_e)_{\mathrm{toReal}}$ is summable by \texttt{ENNReal.summable\_toReal}.
+
+For the envelope, $|w(s)|\,C(1+s)^De^{\beta sa'}\le s^{\alpha-1}(1+|\log s|)^\ell e^{-\beta s^2}
+\cdot C(1+s)^De^{\beta sa'}$, integrable by unit~96's
+\texttt{moment\_integrableOn\_of\_envelope} for $\alpha>0$.
+
+\section{Paper-facing meaning}
+
+This is the interchange lemma Astra~\#3(c) asked for, in the form recommended in Astra~\#4(c): an
+arbitrary measurable weight first, the Gaussian log weight as a specialisation, with the
+normal-convergence corollary. Its first application will be the absolutely convergent series for the
+axis integral $I_\Psi(s)=\sum_{i\ge1}\Psi_i(s)b^i/i$ and hence for the $d=2$ constant coefficient
+$B$ when $\Phi$ has convergent Taylor series on a strictly larger disc. No convergence of the
+inverse-$N$ expansion is implied.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{hasSum\_integral\_of\_summable\_integral\_norm} with explicit
+\texttt{(μ := volume.restrict (Ioi 0))} left \texttt{NormedSpace ℝ ?E} stuck (the \texttt{0} in
+\texttt{Ioi 0} has no type there). Give the \texttt{have} an explicit \texttt{HasSum} type and
+let unification fill everything.
+\item \texttt{Measurable.abs} does not exist; use
+\texttt{continuous\_abs.measurable.comp}.
+\item \texttt{Real.enorm\_eq\_ofReal\_abs}, \texttt{ENNReal.ofReal\_mul},
+\texttt{ENNReal.tsum\_mul\_left}, \texttt{ENNReal.ofReal\_tsum\_of\_nonneg} chain the pointwise
+\texttt{ENNReal} identity; \texttt{gcongr} handles the final \texttt{ofReal} monotonicity.
+\item \texttt{integral\_norm\_eq\_lintegral\_enorm} converts the real $L^1$ norm to the
+\texttt{toReal} of the lower integral, matching \texttt{ENNReal.summable\_toReal}.
+\item An envelope coefficient must be assumed nonnegative (\texttt{hC : 0 ≤ C}) for
+\texttt{positivity}; a bound of the form $|c|\le A(\dots)$ with $A<0$ is vacuous anyway.
+\end{itemize}
+
+\end{document}
