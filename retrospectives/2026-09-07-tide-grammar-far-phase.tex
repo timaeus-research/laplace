@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Exponential negligibility of the far-phase region}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#11 rank~5. The proof of thm:strataempiricalexpansion splits the partition function into the
+region $K<\varepsilon$ (resolution and Taylor tree) and the far region $K\ge\varepsilon$, where the
+AM--GM inequality $\beta\sqrt{nK}\,\psi\le\beta(nK+\psi^2)/2$ makes the integrand exponentially
+small. We formalise the far-region step on an arbitrary measurable set $E$ of a measure space:
+if $K\ge\varepsilon\ge0$ and $|\psi|\le M$ on $E$ and $\eta$ is integrable on $E$, then
+\[
+\Big|\int_E\eta\,e^{-\beta nK+\beta\sqrt{nK}\psi}\,d\mu\Big|
+\le\Big(\int_E|\eta|\,d\mu\Big)e^{-\beta n\varepsilon/2+\beta M^2/2}
+\]
+(\texttt{farPhase\_bound}), with exponential decay in $n$ for fixed $M$
+(\texttt{farPhase\_tendsto\_zero}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem farPhase_exponent_le (β n ε M K ψ) (hβ : 0 < β) (hn : 0 ≤ n) (hε : 0 ≤ ε)
+    (hK : ε ≤ K) (hψ : |ψ| ≤ M) :
+    -β * n * K + β * Real.sqrt (n * K) * ψ ≤ -β * n * ε / 2 + β * M ^ 2 / 2
+theorem farPhase_bound (μ : Measure W) (E : Set W) (hE : MeasurableSet E) (β n ε M)
+    (hβ hn hε) (η K ψ : W → ℝ) (hK : ∀ w ∈ E, ε ≤ K w) (hψ : ∀ w ∈ E, |ψ w| ≤ M)
+    (hη : IntegrableOn η E μ) :
+    |∫ w in E, η w * exp (-β * n * K w + β * Real.sqrt (n * K w) * ψ w) ∂μ|
+      ≤ (∫ w in E, |η w| ∂μ) * exp (-β * n * ε / 2 + β * M ^ 2 / 2)
+theorem farPhase_tendsto_zero (β ε M I) (hβ : 0 < β) (hε : 0 < ε) :
+    Tendsto (fun n : ℝ => I * exp (-β * n * ε / 2 + β * M ^ 2 / 2)) atTop (𝓝 0)
+\end{verbatim}
+}
+
+\section{Mathematics}
+For $nK\ge0$, $2\sqrt{nK}\,|\psi|\le nK+\psi^2$, so
+$-\beta nK+\beta\sqrt{nK}\psi\le-\beta nK/2+\beta\psi^2/2\le-\beta n\varepsilon/2+\beta M^2/2$.
+The integrand is therefore dominated pointwise on $E$ by $|\eta|$ times a constant, and the
+integral bound follows from \texttt{norm\_integral\_le\_of\_norm\_le} on the restricted measure. The
+paper's formulation uses $\sup_{K\ge\varepsilon}|\psi_n|$; we take an explicit bound $M$, from which
+the supremum version is immediate. Astra~\#11 warned that ``outside a small box'' is not a valid
+region for the monomial phase $u_1^{2k_1}u_2^{2k_2}$ (it approaches the axes); the region must be
+$\{K\ge\varepsilon\}$, which is how the theorem is stated.
+
+\section{Paper-facing meaning}
+This is the $Z_n^{(2)}$ step of thm:strataempiricalexpansion: with $M_n^2=\sup_{K\ge\varepsilon}\psi_n^2$
+bounded in probability, $Z_n^{(2)}=O_p(e^{-\beta\varepsilon n/2})$, hence $o_p(e^{-cn})$ for every
+$c<\beta\varepsilon/2$ (the paper writes $o_p(e^{-\varepsilon'n})$ for some $\varepsilon'>0$, which
+is what this gives). Together with units~145--150 the chart-level analytic content of §4.3 for
+$d=2$ is now formalised; what remains is probabilistic input (the functional CLT, tightness) and
+the resolution/chart assembly. Astra~\#11 ranks 1--5 are complete.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{two\_mul\_le\_add\_sq a b : 2 * a * b ≤ a\^{}2 + b\^{}2} — the statement must be written
+left-associated (\texttt{2 * √(nK) * |ψ|}), not \texttt{2 * (√(nK) * |ψ|)}.
+\item The exponent inequality is one \texttt{nlinarith} call with the AM--GM fact, \texttt{Real.sq\_sqrt},
+$\psi^2\le M^2$ and $n\varepsilon\le nK$ supplied (after \texttt{rw [sq\_abs]}).
+\item \texttt{ae\_restrict\_of\_forall\_mem hE} converts a pointwise bound on $E$ to an a.e.\ bound for
+\texttt{μ.restrict E}; \texttt{integral\_mul\_const} finishes.
+\item Exponential decay: \texttt{tendsto\_id.const\_mul\_atTop\_of\_neg}, then
+\texttt{tendsto\_atBot\_add\_const\_right}, then \texttt{Real.tendsto\_exp\_atBot.comp}
+(there is no \texttt{Tendsto.atBot\_add\_const}).
+\end{itemize}
+
+\end{document}
