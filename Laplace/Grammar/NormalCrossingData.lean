@@ -14,16 +14,16 @@ import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 Unit 219 (Astra #24, programme H2-lite, step 2). Unit 218 proved the posterior moment generating
 function limit along data sequences whose empirical phase `Zₙ` converges. Here the data are random:
 `Yᵢ` i.i.d. `N(0,1)` (the truth), so `Zₙ = n^{-1/2} ∑_{i<n} Yᵢ` has mean `0` and variance `1` for
-every `n`, and Chebyshev gives tightness. Combined with **uniform convergence on compact phase
+every `n ≥ 1`, and Chebyshev gives tightness. Combined with **uniform convergence on compact phase
 sets** of the posterior moment generating function (eventual equi-Lipschitz dependence on the phase
 plus the pointwise limit; `tendstoUniformlyOn_ncRatio`) this yields the **in-probability statement**
 (`ncFluctMGF_tendstoInMeasure`):
 ```
 E_post[exp(θ √n x₀x₁)] - exp(Zₙ θ + θ²/2) → 0   in P-probability,
 ```
-i.e. the posterior law of the fluctuation variable `√n x₀x₁` is asymptotically `N(Zₙ, 1)`, centred
-at the (random, standard-normal) empirical phase. The only probabilistic input is the second moment
-of the data; independence enters only through the variance of the sum. Zero `sorry`/`axiom`.
+i.e. at each fixed `θ` the posterior moment generating function of `√n x₀x₁` is asymptotically that
+of `N(Zₙ, 1)` with the random centre `Zₙ`. The tightness argument uses only the zero means, unit
+variances and pairwise independence implied by the i.i.d. Gaussian hypotheses. Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Filter Topology Real Set ProbabilityTheory

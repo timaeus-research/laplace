@@ -28,8 +28,11 @@ give the **end-to-end theorem** (`ncFluctMGF_tendsto`): along any data sequence 
 ```
 E_post[exp(θ √n x₀x₁)] → exp(zθ + θ²/2),
 ```
-the moment generating function of `N(z, 1)`: the posterior law of `√n x₀x₁` is asymptotically the
-Gaussian `N(Zₙ, 1)` centred at the empirical phase. Only `ρ(0) > 0` is needed. Zero `sorry`/`axiom`.
+the moment generating function of `N(z, 1)`: at each fixed `θ` the posterior moment generating
+function of `√n x₀x₁` is asymptotically that of `N(Zₙ, 1)`, centred at the empirical score `Zₙ`
+(weak convergence of the posterior law and rates are not asserted). The analytic statement needs only
+`ρ(0) > 0` and allows signed weights; for a genuine prior (`ρ ≥ 0` on the box) the evidence is
+positive at every sample size, see `NormalCrossingPrior.lean`. Zero `sorry`/`axiom`.
 -/
 
 open MeasureTheory Filter Topology Real Set ProbabilityTheory
