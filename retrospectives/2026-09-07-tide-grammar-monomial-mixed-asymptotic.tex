@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The mixed-ratio monomial asymptotic in general dimension}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Assembly of the mixed-ratio general-$d$ monomial programme (Astra~\#15, units 177--181). For
+$h,k\colon\mathrm{Fin}(m{+}1)\to\mathbb N$ with $k_i>0$, Mellin ratios $\ell_i=(h_i+1)/(2k_i)$,
+minimum $\lambda$ attained on $J$,
+\[
+\int_{(0,1]^{m+1}}\prod_ix_i^{h_i}e^{-\beta N\prod_ix_i^{2k_i}}\,dx
+\;\sim\;
+\frac{\Gamma(\lambda)\beta^{-\lambda}}{(|J|-1)!}
+\prod_{i\in J}\frac1{2k_i}\prod_{i\notin J}\frac1{h_i+1-2k_i\lambda}\;
+N^{-\lambda}(\log N)^{|J|-1}
+\]
+(\texttt{monomialBoxReal\_mixed\_isEquivalent}; \texttt{monomialBoxReal\_minRatio\_isEquivalent}
+with $\lambda=\min_i\ell_i$ computed by \texttt{Finset.inf'}). This is the paper's Laurent
+coefficient $a_{-|J|}$ of eq.~\texttt{a\_minus\_m\_explicit} at cutoff $b=1$ times the
+Laplace--Tauberian factor $\Gamma(\lambda)/(|J|-1)!$, now for arbitrary exponent patterns. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def ratioExp (h k : Fin d → ℕ) (i : Fin d) : ℝ := ((h i : ℝ) + 1) / (2 * (k i : ℝ))
+theorem monomialBoxReal_eq_mixed (d) (h k) (hk) (β N) :
+    monomialBoxReal d h k β N = (∏ i, 1 / (2 * k i)) * mixedBoxReal d (ratioExp h k) β N
+def monomialMixedConst (h k) (l β : ℝ) : ℝ :=
+  Gamma l * β ^ (-l) / ((multCount (ratioExp h k) l - 1).factorial : ℝ)
+    * ∏ i, if ratioExp h k i = l then 1 / (2 * k i) else 1 / ((h i : ℝ) + 1 - 2 * k i * l)
+theorem monomialMixedConst_eq (hk) : monomialMixedConst h k l β
+    = (∏ i, 1 / (2 * k i)) * mixedConst (ratioExp h k) l β
+theorem monomialBoxReal_mixed_tendsto (d) (h k : Fin (d+1) → ℕ) (hk) (l β) (hl) (hβ)
+    (hmin : ∀ i, l ≤ ratioExp h k i) (hatt : ∃ i, ratioExp h k i = l) :
+    Tendsto (fun N => monomialBoxReal (d + 1) h k β N
+      / (N ^ (-l) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 (monomialMixedConst h k l β))
+theorem monomialBoxReal_mixed_isEquivalent ... :
+    (fun N => monomialBoxReal (d + 1) h k β N)
+      ~[atTop] fun N => monomialMixedConst h k l β * N ^ (-l)
+        * log N ^ (multCount (ratioExp h k) l - 1)
+def minRatio (h k : Fin (d+1) → ℕ) : ℝ :=
+  Finset.univ.inf' Finset.univ_nonempty (ratioExp h k)
+theorem monomialBoxReal_minRatio_isEquivalent (d) (h k) (hk) (β) (hβ) : ...
+\end{verbatim}
+}
+
+\section{Mathematics}
+The coordinatewise substitution of unit~174 gives $M(N)=\prod_i\frac1{2k_i}\,W_\ell(N)$ exactly;
+unit~180 gives the asymptotic of $W_\ell$. The two constants are identified factorwise:
+$\frac1{2k_i}\cdot\frac1{\ell_i-\lambda}=\frac1{h_i+1-2k_i\lambda}$ because $2k_i\ell_i=h_i+1$.
+Positivity of the constant follows from $\Gamma(\lambda)>0$ and $h_i+1-2k_i\lambda>0$ for
+$i\notin J$.
+
+\section{Paper-facing meaning}
+Together with unit~175 (the equal-ratio special case) this completes, for the deterministic
+positive-orthant unit-cutoff normal moment integral, the paper's zeta-function prediction: decay
+exponent equal to the minimal ratio, logarithmic degree one less than its multiplicity, and the
+explicit Gamma/residue coefficient --- in arbitrary dimension and for arbitrary exponent patterns.
+Not covered: cutoffs $b\neq1$ (which add the factors $b^{h_i+1-2k_i\lambda}$ for $i\notin J$),
+interior coordinates with parity factors, variable amplitudes, stochastic phase terms, and the full
+Taylor-tree expansion.
+
+\section{Lean notes}
+\begin{itemize}
+\item A local hypothesis named \texttt{h} shadows the exponent function \texttt{h : Fin d → ℕ} and
+produces a baffling ``argument has type Tendsto ... but is expected to have type Fin (d+1) → ℕ'';
+name such locals \texttt{hT}.
+\item Goals produced by \texttt{Eventually.of\_forall fun N => ?\_} arrive with unreduced
+\texttt{(fun N => ...) N} on the sides; run \texttt{beta\_reduce} before \texttt{rw}.
+\item In the case split of the constant identification, the nonvanishing of
+$h_i+1-2k_i\lambda$ is derived from $\ell_i\neq\lambda$ by \texttt{field\_simp} and
+\texttt{linarith}, then supplied to a second \texttt{field\_simp}.
+\item \texttt{Finset.inf'\_le \_ (Finset.mem\_univ i)} typechecks against
+\texttt{univ.inf' Finset.univ\_nonempty f} by proof irrelevance of the nonemptiness witness.
+\end{itemize}
+
+\end{document}
