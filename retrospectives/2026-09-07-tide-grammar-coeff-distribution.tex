@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Convergence in distribution of the canonical coefficients}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#11 rank~3. If the random Taylor data $X_n\colon\Omega_n\to\texttt{CoeffPair}$ converge in
+distribution to $Z$, then every finite vector of canonical coefficients
+$(A_{\alpha_i}(X_n),B_{\alpha_i}(X_n))_i$ converges in distribution to the vector at $Z$
+(\texttt{tendstoInDistribution\_coeffVec}), and so do the individual coefficients. This is
+Mathlib's continuous mapping theorem \texttt{TendstoInDistribution.continuous\_comp} applied to
+the continuous maps of unit~146; it is the $d=2$ chart-level form of the convergence
+$C_{\mu,m}(\xi_n)\to C_{\mu,m}(G)$ in thm:strataempiricalexpansion. The represented-array form
+(\texttt{tendstoInDistribution\_canonA\_of\_arrays}) states the conclusion for
+$\texttt{canonA}$ of the amplitude $\eta_n e^{\beta s\xi_n}$ of random arrays. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem coeffA_ofPair / coeffB_ofPair :
+    coeffA … (ofPair ρ hρ x y hx hy) = canonA … (ampCoeff β x y) α
+def coeffVec (β b ρ) (h₁ h₂ k₁ k₂) (αs : Fin m → ℝ) (a : CoeffPair) : Fin m → ℝ × ℝ
+theorem continuous_coeffVec ... (hαs : ∀ i, 0 < αs i) :
+    Continuous (coeffVec β b ρ h₁ h₂ k₁ k₂ αs)
+variable {Ω : ι → Type*} [∀ i, MeasurableSpace (Ω i)] {μ : (i : ι) → Measure (Ω i)}
+  [∀ i, IsProbabilityMeasure (μ i)] {Ω'} [MeasurableSpace Ω'] {μ' : Measure Ω'}
+  [IsProbabilityMeasure μ']
+theorem tendstoInDistribution_coeffA ... (X : (i : ι) → Ω i → CoeffPair)
+    (Z : Ω' → CoeffPair) (hX : TendstoInDistribution X l Z μ μ') :
+    TendstoInDistribution (fun n => coeffA β ρ h₁ h₂ k₁ k₂ α ∘ X n) l
+      (coeffA … α ∘ Z) μ μ'
+theorem tendstoInDistribution_coeffB ...
+theorem tendstoInDistribution_coeffVec ... :
+    TendstoInDistribution (fun n => coeffVec … αs ∘ X n) l (coeffVec … αs ∘ Z) μ μ'
+theorem tendstoInDistribution_canonA_of_arrays ...
+    (x y : (i : ι) → Ω i → ℕ × ℕ → ℝ) (hx hy)
+    (hX : TendstoInDistribution
+      (fun i ω => ofPair ρ hρ (x i ω) (y i ω) (hx i ω) (hy i ω)) l Z μ μ') :
+    TendstoInDistribution
+      (fun n ω => canonA β h₁ h₂ k₁ k₂ (fun i j s => ampCoeff β (x n ω) (y n ω) (i,j) s) α)
+      l (coeffA β ρ h₁ h₂ k₁ k₂ α ∘ Z) μ μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+Convergence in distribution is weak convergence of the laws $\mu_n\circ X_n^{-1}$ in the space of
+probability measures on \texttt{CoeffPair}; the continuous mapping theorem pushes it forward along
+any continuous $g$. With $g$ the finite vector of coefficient maps, jointly continuous by unit~146
+(each component locally Lipschitz), we get joint convergence of finitely many coefficients. Joint
+convergence, not merely marginal, is what the division formula for posterior ratios
+(cor:empirical\_expectation) needs. The sample spaces $\Omega_n$ may vary with $n$ (Mathlib's
+\texttt{TendstoInDistribution} allows a family $\mu_n$ on $\Omega_n$), which matches the paper's
+datasets $\mathcal D_n$ of growing size.
+
+\section{Paper-facing meaning}
+This is the second half of the argument the paper compresses into ``by prop:convergence'': given
+continuity of the coefficient functionals (unit~145/146) and convergence in distribution of the
+Taylor data, the coefficients converge in distribution. What is NOT formalised: the functional CLT
+$\xi_n\Rightarrow G$ itself (appendix prop:convergence (i)--(iv)), the identification of the
+paper's $C^\omega$ topology with the weighted-array topology, and the chart assembly over the
+resolution. The next unit (Astra~\#11 rank~4) is the ordered normalised remainder statement:
+$(Z_n-L_{<\alpha})/(N^{-\alpha}\log N)\Rightarrow A_\alpha(Z)$ and the $B$-slot analogue, first
+for uniformly bounded analytic families.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{TendstoInDistribution.continuous\_comp} needs \texttt{[OpensMeasurableSpace E]} on the
+domain (our Borel instance on \texttt{CoeffPair}) and \texttt{[BorelSpace F]} on the codomain;
+for $F=\mathrm{Fin}\,m\to\mathbb R\times\mathbb R$ the Pi/Prod Borel instances are found
+automatically (countable index, second-countable factors).
+\item The represented-array form is \texttt{TendstoInDistribution.congr} with pointwise
+\texttt{Eventually.of\_forall} equalities and \texttt{coeffA\_ofPair}.
+\item The whole file compiled on the first attempt: the abstraction layer of unit~146 pays off
+immediately.
+\end{itemize}
+
+\end{document}
