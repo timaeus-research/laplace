@@ -20,8 +20,18 @@ becomes the **asymptotic form** (Headline XXIII′, `monomialPhase_isBigO`):
 T(N) - ∏ 1/(2kᵢ) ∑_{(μ,j,c)} c N^{-μ} ∑_{i≤j} C(j,i) (log N)^{j-i} fluctMoment β a p μ i
   = O(e^{-βN/8})   as N → ∞,
 ```
-the paper's `Δ(β,n;ξ,η) = O(e^{-εn})` for one monomial term, with the main sum a finite combination
-of the scales `N^{-μ} (log N)^k`, `μ ∈ {(hᵢ+1)/(2kᵢ)}`, `k < multiplicity`. Zero `sorry`/`axiom`.
+the tail-replacement contribution of one fixed monomial and one fixed phase order to the paper's
+`Δ(β,n;ξ,η) = O(e^{-εn})` (`b = 1`, `ε = β/8`, `β > 0`), with the main sum a finite combination of the
+scales `N^{-μ} (log N)^k`, `μ ∈ {(hᵢ+1)/(2kᵢ)}`, `k < multiplicity`.
+
+**Scope and conventions.** All parameters `n, h, k, β, a, p` are fixed; the implicit constant depends
+on them (it contains `(⌈ν⌉+i+p)! (4/β)^{⌈ν⌉+i+p}`), so nothing here licenses summing infinitely many
+phase orders or monomials — that uniformity is Stage 3's obligation. Interpretation of the moments:
+with `S_μ(a) = ∫₀^∞ t^{μ-1} e^{-βt+β√t a} dt`, mathematically
+`β^p · fluctMoment β a p μ i = (-∂_μ)^i ∂_a^p S_μ(a) = (-∂_ν)^i S_ν(a) |_{ν = μ+p/2}`; this
+identification (differentiation under the integral) is not formalised here. Index shift against the
+paper: Lean's density degree `j` is the paper's `j - 1`, and Lean's moment index `i` is the paper's
+`j - 1 - k`. No `sorry` and no additional `axiom` declarations.
 -/
 
 open MeasureTheory Set Real Filter Topology Asymptotics

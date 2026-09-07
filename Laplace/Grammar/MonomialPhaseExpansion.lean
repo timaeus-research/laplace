@@ -23,7 +23,8 @@ where `v = stateDensityRep n w` is the exact state density of unit 224 (`wᵢ = 
 expansion into the standard integral, made into a finite exact identity: the only asymptotics left
 are the truncated moments `∫₀^N`, whose tails `∫_N^∞` are exponentially small (next unit). No
 Mellin inversion, no asymptotic expansion of the density, and no interchange of infinite sums is
-involved. Zero `sorry`/`axiom`.
+involved (one fixed monomial, one fixed phase order, `b = 1`; the identity needs no sign condition on
+`β`). No `sorry` and no additional `axiom` declarations.
 -/
 
 open MeasureTheory Set Real

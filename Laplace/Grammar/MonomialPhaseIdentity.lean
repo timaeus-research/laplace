@@ -22,8 +22,9 @@ exact density `v` of unit 224. This file provides the two ingredients of the exa
      N^{-μ} ∑_{i≤j} C(j,i) (log N)^{j-i} ∫₀^N t^{μ-1}(-log t)^i g(t) dt`
   (`truncMoment`: the truncated log-weighted fluctuation moment).
 Integrability of the signed integrands `t^{μ-1}(-log t)^i g(t)` on `(0,N]`
-(`integrableOn_truncMoment`) is what licenses splitting the finite sums inside the integral.
-Zero `sorry`/`axiom`.
+(`integrableOn_truncMoment`) is what licenses splitting the finite sums inside the integral. The
+real bridge uses Lean's totalised integral (no integrability asserted for arbitrary `f ≥ 0`; the
+phase-kernel application is integrable). No `sorry` and no additional `axiom` declarations.
 -/
 
 open MeasureTheory Set Real
