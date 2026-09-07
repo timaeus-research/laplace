@@ -280,3 +280,4 @@ import Laplace.Grammar.DoubleSeriesConvolution
 import Laplace.Grammar.DoubleSeriesExp
 import Laplace.Grammar.AmplitudeAdapter
 import Laplace.Grammar.LogMerge
+import Laplace.Grammar.CanonicalCoefficients
