@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The product-kernel block with unequal exponents}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $p_1=(h_1+1)/k_1<p_2=(h_2+1)/k_2$ and a nonnegative kernel $g$, the product-kernel block
+$J(t)=\int\!\!\int_{(0,b]^2}u^{h_1}v^{h_2}g(tu^{k_1}v^{k_2})$ is bounded by the smaller exponent
+alone (Astra~\#5(d)):
+\[
+J(t)\le\frac{b^{k_2(p_2-p_1)}}{k_1k_2(p_2-p_1)}\,M_{p_1}(g)\,t^{-p_1},\qquad t>0 .
+\]
+The density of unit~103 with constant amplitude is
+$k_2^{-1}r^{p_2-1}g(tr)(\varepsilon^{-\gamma}-b^{-\gamma})/\gamma$ with $\gamma=k_1(p_2-p_1)$ and
+$\varepsilon=(r/b^{k_2})^{1/k_1}$, which is at most
+$b^{k_2(p_2-p_1)}/(k_1k_2(p_2-p_1))\cdot r^{p_1-1}g(tr)$. Together with the equal-exponent bound of
+unit~111 this makes the mixed remainder of the $d=2$ cutoff theorem fully quantitative in both regimes.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem genDensity_const_le (b p₁ p₂ : ℝ) (h₁ k₁ k₂ : ℕ) (hb : 0 < b) (hk₁ : 0 < k₁)
+    (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hlt : p₁ < p₂) (g : ℝ → ℝ)
+    (hg0 : ∀ s, 0 ≤ g s) (r s : ℝ) (hr : 0 < r) (hrR : r ≤ b ^ (k₁ + k₂)) :
+    genDensity p₂ b h₁ k₁ k₂ (fun _ s => g s) r s
+      ≤ b ^ ((k₂ : ℝ) * (p₂ - p₁)) / ((k₁ : ℝ) * k₂ * (p₂ - p₁)) * (r ^ (p₁ - 1) * g s)
+theorem prodKernel_le_unequal (b p₁ p₂ : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (hb : 0 < b) (hk₁ : 0 < k₁)
+    (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂)
+    (hlt : p₁ < p₂) (g : ℝ → ℝ) (hg : Continuous g) (hg0 : ∀ s, 0 ≤ g s)
+    (hM : IntegrableOn (fun s => s ^ (p₁ - 1) * g s) (Ioi 0)) (t : ℝ) (ht : 0 < t) :
+    prodKernel b h₁ h₂ k₁ k₂ g t
+      ≤ b ^ ((k₂ : ℝ) * (p₂ - p₁)) / ((k₁ : ℝ) * k₂ * (p₂ - p₁)) * kernelMoment p₁ g
+        * t ^ (-p₁)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+With weight exponent $w=h_1-k_1p_2$, $w+1=-k_1(p_2-p_1)=-\gamma<0$, so
+$\int_\varepsilon^bu^w\,du=(\varepsilon^{-\gamma}-b^{-\gamma})/\gamma\le\varepsilon^{-\gamma}/\gamma$
+and $\varepsilon^{-\gamma}=(r/b^{k_2})^{-(p_2-p_1)}=r^{-(p_2-p_1)}b^{k_2(p_2-p_1)}$; the powers of $r$
+combine to $r^{p_2-1-(p_2-p_1)}=r^{p_1-1}$. The block integral is the $r$-integral of the density over
+$(0,R]$ (unit~103 at $\beta=0$); \texttt{integral\_mono\_of\_nonneg} compares it with the dominating
+integrand without needing integrability of the density itself (only nonnegativity and integrability
+of the bound, which follows from boundedness of $g$ on $[0,tR]$), the substitution $x=tr$ produces
+$t^{-p_1}$, and the resulting moment over $(0,tR]$ is at most $M_{p_1}$.
+
+\section{Paper-facing meaning}
+
+The mixed remainder of the rectangular decomposition has shifted exponents
+$(h_1+M_1+1)/k_1$ and $(h_2+M_2+1)/k_2$, which coincide only when $M_1/k_1=M_2/k_2$; the present
+bound covers the generic unequal case with an explicit constant, the unit-111 bound the equal case.
+The $1/(p_2-p_1)$ factor is the artificial blow-up Astra~\#5(d) warned about near a collision; the
+gap-uniform alternative $(1-x^\delta)/\delta\le\log(1/x)$ remains a follow-up.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{integral\_mono\_of\_nonneg} needs integrability of the \emph{dominating} function
+only; use it whenever the smaller integrand is awkward to show integrable.
+\item Power identities: after \texttt{Real.div\_rpow}, \texttt{← Real.rpow\_natCast},
+\texttt{← Real.rpow\_mul}, \texttt{div\_eq\_mul\_inv} and \texttt{← Real.rpow\_neg}, finish with
+\texttt{congr 2; ring} on the exponent; \texttt{rw} cannot see through
+\texttt{(b \^{} x)⁻¹ = b \^{} (-x)} in the other direction once other rewrites have fired.
+\item \texttt{div\_neg}, \texttt{← neg\_div}, \texttt{neg\_sub} in that order rewrite
+$(a-c)/(-d)$ to $(c-a)/d$.
+\item \texttt{field\_simp; try ring} accommodates both outcomes (closed or not).
+\end{itemize}
+
+\end{document}
