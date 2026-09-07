@@ -284,3 +284,4 @@ import Laplace.Grammar.CanonicalCoefficients
 import Laplace.Grammar.TaylorTreeRegroup
 import Laplace.Grammar.TaylorTreeEqual
 import Laplace.Grammar.TaylorTreeNormalisation
+import Laplace.Grammar.AxisFinitePartSeries
