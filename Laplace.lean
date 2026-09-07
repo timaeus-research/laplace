@@ -273,3 +273,4 @@ import Laplace.Grammar.FaceMomentsEnvelope
 import Laplace.Grammar.ConstantKernelBound
 import Laplace.Grammar.ConstantKernelUnequal
 import Laplace.Grammar.DoubleSeries
+import Laplace.Grammar.AnalyticAdapter
