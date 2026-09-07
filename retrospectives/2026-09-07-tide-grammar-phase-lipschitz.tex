@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Lipschitz dependence of the normalised chart integral on phase and amplitude}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 209 opens Astra~\#22's programme~A2 (general-$d$ stochastic transfer). Transferring
+Headline~XIII to random phases needs remainder control along varying inputs; the mechanism is an
+eventual equi-Lipschitz estimate for the normalised chart integral $F_N(\xi,\eta)=I_N(\xi,\eta)/S_N$.
+Pointwise, $|e^{-\beta s^2+\beta as}-e^{-\beta s^2+\beta a's}|\le\beta s|a-a'|e^{-\beta s^2+\beta Ms}$
+for $|a|,|a'|\le M$, $s\ge0$; integrating,
+\begin{align*}
+|I_N(\xi,\eta)-I_N(\xi',\eta')|&\le\|\eta-\eta'\|_\infty G_0(N)+\beta A\|\xi-\xi'\|_\infty G_1(N),\\
+G_0&=\int u^he^{-\beta s^2+\beta Ms},\qquad G_1=\int u^h\,s\,e^{-\beta s^2+\beta Ms},
+\end{align*}
+with $s=Nu^k$ and $|\eta'|\le A$. Both $G_0/S_N$ and $G_1/S_N$ converge (Headline~XIII at constant
+phase $M$, exponents $h$ and $h+k$; $G_1=N\cdot I^{h+k}$), so there is $L=L(h,k,\beta,M,A)$ with
+$|F_N(\xi,\eta)-F_N(\xi',\eta')|\le L(\|\xi-\xi'\|_\infty+\|\eta-\eta'\|_\infty)$ for all large $N$
+and all continuous inputs bounded by $M$ and $A$ on the cube
+(\texttt{normalised\_lipschitz\_eventually}). Review v11 (units 206--208) was clean; its
+documentation should-fixes are applied. Zero \texttt{sorry}/\texttt{axiom}; 9086 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem quadKernel_le_of_le (hβ) (hs : 0 ≤ s) (haM : a ≤ M) : quadKernel β a s ≤
+      quadKernel β M s
+theorem quadKernel_sub_le (hβ) (hs) (ha : |a| ≤ M) (ha' : |a'| ≤ M) :
+    |quadKernel β a s - quadKernel β a' s| ≤ β * s * |a - a'| * quadKernel β M s
+theorem chartIntegral_shift_mul : ∫ u in unitBox d, (∏ u^h) * ((N ∏ u^k) *
+      quadKernel β M (N ∏ u^k))
+    = N * chartIntegral d (phaseShift h k 1) k β N (fun _ => M) (fun _ => 1)
+theorem chartIntegral_sub_le (hβ) (hN : 0 ≤ N) (continuity) (|ξ|,|ξ'| ≤ M) (|η'| ≤
+      A)
+    (|ξ - ξ'| ≤ δξ) (|η - η'| ≤ δη on closedCube d) :
+    |chartIntegral d h k β N ξ η - chartIntegral d h k β N ξ' η'|
+      ≤ δη * chartIntegral d h k β N (fun _ => M) (fun _ => 1)
+        + β * A * δξ * (N * chartIntegral d (phaseShift h k 1) k β N (fun _ => M)
+      (fun _ => 1))
+noncomputable def leadScale (h k) (l N : ℝ) : ℝ := N ^ (-(2 l)) * log N ^
+      (multCount (ratioExp h k) l - 1)
+theorem shifted_const_phase_tendsto : Tendsto (fun N => N * chartIntegral (d+1)
+      (phaseShift h k 1) k β N
+    (fun _ => M) (fun _ => 1) / leadScale h k l N) atTop (𝓝 (phaseCoeff (phaseShift
+      h k 1) k (l + 1/2) β M 1))
+theorem normalised_lipschitz_eventually (hk) (hl) (hβ) (hmin) (hatt) :
+    ∃ L, 0 ≤ L ∧ ∀ᶠ N in atTop, ∀ ξ ξ' η η' δξ δη, Continuous ξ → … → (bounds on
+      closedCube) →
+      |chartIntegral (d+1) h k β N ξ η / leadScale h k l N
+        - chartIntegral (d+1) h k β N ξ' η' / leadScale h k l N| ≤ L * (δξ + δη)
+\end{verbatim}
+}
+
+\section{Mathematics}
+The decomposition $\eta K-\eta'K'=(\eta-\eta')K+\eta'(K-K')$, the monotonicity $K_a\le K_M$ for
+$a\le M$, and $|K_a-K_{a'}|\le\beta s|a-a'|K_M$ (from $|e^x-e^y|\le|x-y|e^{\max(x,y)}$, already in
+\texttt{MixedBlockEnvelope}) give the integrand bound; \texttt{norm\_integral\_le\_of\_norm\_le}
+integrates it. The factor $s=Nu^k$ in $G_1$ is exactly the exponent shift $h\mapsto h+k$
+(\texttt{prod\_pow\_phaseShift} with $j=1$), so $G_1/S_N$ converges by Headline~XIII at
+$(h+k,\lambda+\tfrac12)$ after the same $N^{-2(\lambda+1/2)}=N^{-2\lambda}N^{-1}$ bookkeeping as in
+unit~200. The constant $L=(|C_0|+1)+\beta|A|(|C_1|+1)$ with $C_0,C_1$ the two limits is uniform in
+the inputs because $G_0$, $G_1$ do not depend on them.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{rw [integral\_const\_mul]} unifies up to beta, so a constant written as
+  \texttt{(fun \_ => 1) u} still matches \texttt{?c * ?f}; when two constant-multiple integrals are
+  present, give the constant explicitly (\texttt{integral\_const\_mul (β * A * δξ)}) to steer which
+  one is rewritten.
+\item \texttt{Real.rpow\_neg\_one} does exist on this pin (contrary to the CLAUDE.md note about
+  \texttt{Real.rpow\_neg\_one} being missing) --- it rewrote $N^{-1}=N^{-1}$ here without complaint.
+  Keep the CLAUDE.md caveat in mind but test.
+\item Deriving $0\le A$, $0\le\delta$ from the bounds at the point $0\in[0,1]^d$ avoids adding
+  nonnegativity hypotheses.
+\end{itemize}
+
+\section{Review v11 disposition}
+Statements of units 206--208 clean. Applied: unit 207's docstrings now say ``convergence at the
+selected normalisation; the limiting coefficient may vanish by cancellation'', state finite nonempty
+family and $m_a\ge1$, and mention remainders and zero coefficients; unit 208's docstring notes that
+partition-of-unity weights vanish and do not satisfy its strict positivity hypothesis as stated;
+unit 206's docstring uses the actual theorem names and ``not valid in general''.
+
+\section{Next}
+Unit 210: Lipschitz continuity of the limit functional $(\xi,\eta)\mapsto\mathrm{phaseCoeff}$ in sup
+norm, and uniform convergence $F_N\to F$ on sup-norm-compact input sets (equi-Lipschitz + finite net
++ pointwise convergence). Unit 211: transfer to random inputs in $C([0,1]^d)^2$.
+\end{document}
