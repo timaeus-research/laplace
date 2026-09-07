@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Weighted convolution of double series}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The Cauchy product of two double power series, on coefficient arrays $\mathbb N^2\to\mathbb R$:
+$(f*g)_k=\sum_{a\le k}f_ag_{k-a}$, with the weighted $\ell^1$ norm $N_\rho(f)=\sum_k|f_k|\rho^{|k|}$
+and weighted summability. The two results (Astra~\#7(a)) are the closure
+$N_\rho(f*g)\le N_\rho(f)N_\rho(g)$ (with weighted summability of the product) and multiplicativity
+of evaluation $\sum_k(f*g)_ku^iv^j=(\sum_kf_ku^iv^j)(\sum_kg_ku^iv^j)$ for $|u|,|v|\le\rho$. Both come from
+one finite-fibre bridge: the fibre of the addition map $(\mathbb N^2)^2\to\mathbb N^2$ over $k$ is
+in bijection with the box $\{a\le k\}$, so \texttt{HasSum.tsum\_fiberwise} regroups the product
+family. No \texttt{HasAntidiagonal} instance on $\mathbb N^2$ is needed. Module~1 of the
+coefficient closure for $\eta e^{\beta s\xi}$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def psub (k a : ℕ × ℕ) : ℕ × ℕ := (k.1 - a.1, k.2 - a.2)
+def box (k : ℕ × ℕ) : Finset (ℕ × ℕ) := Finset.range (k.1 + 1) ×ˢ Finset.range (k.2 + 1)
+noncomputable def conv (f g : ℕ × ℕ → ℝ) (k : ℕ × ℕ) : ℝ := ∑ a ∈ box k, f a * g (psub k a)
+def WSummable (ρ : ℝ) (f : ℕ × ℕ → ℝ) : Prop := Summable fun k => |f k| * ρ ^ (k.1 + k.2)
+noncomputable def wnorm (ρ : ℝ) (f : ℕ × ℕ → ℝ) : ℝ := ∑' k, |f k| * ρ ^ (k.1 + k.2)
+noncomputable def fiberEquiv (k : ℕ × ℕ) : ↥(box k) ≃ addFiber k
+theorem fiber_tsum_eq (H : (ℕ × ℕ) × (ℕ × ℕ) → ℝ) (k : ℕ × ℕ) :
+    ∑' p : addFiber k, H p = ∑ a ∈ box k, H (a, psub k a)
+theorem wnorm_conv_le (ρ : ℝ) (hρ : 0 < ρ) (f g : ℕ × ℕ → ℝ) (hf : WSummable ρ f)
+    (hg : WSummable ρ g) :
+    WSummable ρ (conv f g) ∧ wnorm ρ (conv f g) ≤ wnorm ρ f * wnorm ρ g
+theorem dblSum_abs_le_wnorm (ρ u v : ℝ) (f : ℕ × ℕ → ℝ) (hf : WSummable ρ f)
+    (hu : |u| ≤ ρ) (hv : |v| ≤ ρ) :
+    (Summable fun k : ℕ × ℕ => ‖f k * u ^ k.1 * v ^ k.2‖) ∧
+      ∑' k : ℕ × ℕ, ‖f k * u ^ k.1 * v ^ k.2‖ ≤ wnorm ρ f
+theorem dblSum_conv (ρ u v : ℝ) (f g : ℕ × ℕ → ℝ) (hf : WSummable ρ f) (hg : WSummable ρ g)
+    (hu : |u| ≤ ρ) (hv : |v| ≤ ρ) :
+    dblSum (conv f g) u v = dblSum f u v * dblSum g u v
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The weighted product family $H(a,b)=(|f_a|\rho^{|a|})(|g_b|\rho^{|b|})$ is absolutely summable
+with sum $N_\rho(f)N_\rho(g)$ (\texttt{summable\_mul\_of\_summable\_norm},
+\texttt{tsum\_mul\_tsum\_of\_summable\_norm}). Grouping it along the fibres of addition
+(\texttt{HasSum.tsum\_fiberwise}) and converting each fibre sum to the finite sum over the box gives
+$B_k=\rho^{|k|}\sum_{a\le k}|f_a||g_{k-a}|$ with $\sum_kB_k=N_\rho(f)N_\rho(g)$, and
+$|(f*g)_k|\rho^{|k|}\le B_k$ by the triangle inequality; the weight identity is
+$\rho^{|a|}\rho^{|k-a|}=\rho^{|k|}$. Evaluation multiplicativity is the same grouping applied to
+the signed family $(f_au^{a_1}v^{a_2})(g_bu^{b_1}v^{b_2})$, absolutely summable because
+$|u^iv^j|\le\rho^{i+j}$, with $u^{a_1}u^{(k-a)_1}=u^{k_1}$ on each fibre. As Astra~\#7 stressed,
+the weighted family is grouped, never the unweighted one: weighted summability at $\rho<1$ does not
+give unweighted summability.
+
+\section{Paper-facing meaning}
+
+This is the algebra needed to build the coefficient array of $\eta(u,v)e^{\beta s\xi(u,v)}$ from the
+double series of $\xi$ and $\eta$ (next units: convolution powers, the exponential series and its
+majorant, then the amplitude adapter feeding \texttt{twoD\_cutoff\_analytic}), so that the analytic
+$d=2$ cutoff theorem applies to the chart amplitude of \texttt{thm:TaylorTree} under the paper's
+analyticity hypothesis on $\xi,\eta$ alone.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item Avoid antidiagonals on $\mathbb N^2$ altogether: index the convolution by the box
+$\{a\le k\}$ with componentwise truncated subtraction, and prove one \texttt{Equiv} between the
+box and the addition fibre; \texttt{Equiv.tsum\_eq} plus \texttt{Finset.tsum\_subtype} then give the
+fibre-sum bridge.
+\item After \texttt{rw [← e.tsum\_eq]} the summand is \texttt{H (e c)}; a \texttt{change} to the
+unfolded pair is needed before \texttt{Finset.tsum\_subtype} matches.
+\item For a subtype of a product, \texttt{p.1} is the value, not its first component; write
+\texttt{(p : (ℕ × ℕ) × (ℕ × ℕ)).1}.
+\item \texttt{Real.norm\_of\_nonneg} with an explicit \texttt{positivity} proof converts norms of
+weighted absolute values; \texttt{simp} with \texttt{Real.norm\_eq\_abs} tends to reassociate.
+\item Rewriting \texttt{k} via \texttt{a + psub k a = k} also rewrites inside \texttt{psub k a};
+derive component identities with \texttt{omega} from \texttt{mem\_box} instead.
+\end{itemize}
+
+\end{document}
