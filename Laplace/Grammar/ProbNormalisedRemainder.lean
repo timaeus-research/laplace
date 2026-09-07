@@ -151,7 +151,8 @@ theorem measurable_lowerPart_comp (β b ρ r p₁ p₂ T : ℝ) (h₁ h₂ k₁ 
     (hbρ : b < ρ) (hbr : b < r) (hrρ : r < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (α N : ℝ)
     (X : Ω → CoeffPair) (hX : Measurable X) :
     Measurable fun ω => lowerPart (polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T)
-      (fun γ => coeffA β ρ h₁ h₂ k₁ k₂ γ (X ω)) (fun γ => coeffB β b ρ h₁ h₂ k₁ k₂ γ (X ω)) α N := by
+      (fun γ => coeffA β ρ h₁ h₂ k₁ k₂ γ (X ω)) (fun γ => coeffB β b ρ h₁ h₂ k₁ k₂ γ (X ω))
+      α N := by
   have hρ : 0 < ρ := lt_trans hb hbρ
   have hr0 : 0 < r := lt_trans hb hbr
   unfold lowerPart

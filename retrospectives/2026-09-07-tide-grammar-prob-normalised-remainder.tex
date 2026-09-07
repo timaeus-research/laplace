@@ -1,0 +1,104 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Convergence in distribution of the normalised remainders}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Completion of Astra~\#11 rank~4. For measurable random Taylor data $X_n\colon\Omega\to\texttt{CoeffPair}$
+with $\|X_n\|\le M$, converging in distribution to $Z$, and a scale $N_n\to\infty$, the ordered
+normalised remainders of the chart integral converge in distribution to the limiting canonical
+coefficients:
+\[
+\frac{Z_{N_n}(X_n)-L_{<\alpha}}{N_n^{-\alpha}\log N_n}\Rightarrow A_\alpha(Z),\qquad
+\frac{Z_{N_n}(X_n)-L_{<\alpha}-N_n^{-\alpha}A_\alpha(X_n)\log N_n}{N_n^{-\alpha}}\Rightarrow B_\alpha(Z)
+\]
+(\texttt{tendstoInDistribution\_normA}, \texttt{tendstoInDistribution\_normB}), for every retained
+exponent $\alpha$ of the Taylor tree. This is the $d=2$ chart-level form, for bounded analytic
+families, of the second conclusion of thm:strataempiricalexpansion. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem exists_gap (P : Finset ℝ) (α) : ∃ δ, 0 < δ ∧ ∀ γ ∈ P, α < γ → α + δ ≤ γ
+def ballCoeffBound (β b ρ M) (h₁ h₂ k₁ k₂) (P : Finset ℝ) : ℝ
+  -- Σ_{γ∈P} (|envelope bound for A_γ| + |envelope bound for B_γ|)
+theorem coeff_abs_le_ball ... (a) (ha : ‖a‖ ≤ M) (γ) (hγ : γ ∈ P) (hγ0 : 0 < γ) :
+    |coeffA … γ a| ≤ ballCoeffBound … P ∧ |coeffB … γ a| ≤ ballCoeffBound … P
+def normA (β b ρ p₁ p₂ T) (h₁ h₂ k₁ k₂) (α N) (a : CoeffPair) : ℝ :=
+  (chartZ … N a - lowerPart (polesBelowGen …) (coeffA … · a) (coeffB … · a) α N)
+    / (N^(-α) * log N)
+def normB ... :=
+  (chartZ … N a - lowerPart … - N^(-α) * (coeffA … α a * log N)) / N^(-α)
+theorem normA_sub_le / normB_sub_le ... (hα : α ∈ polesBelowGen …) (δ) (hgap) (N)
+    (hN : exp 1 ≤ N) :
+    |normA … α N a - coeffA … α a|
+      ≤ errA |uniformTreeConst β b ρ M (2M) p₁ p₂ T h k 0| (ballCoeffBound …) (2T) α δ P N
+theorem measurable_lowerPart_comp / measurable_normA_comp / measurable_normB_comp
+theorem tendstoInMeasure_of_eventually_abs_le (μ) (f : ι → Ω → ℝ) (e : ι → ℝ)
+    (he : Tendsto e l (𝓝 0)) (hf : ∀ᶠ n in l, ∀ ω, |f n ω| ≤ e n) :
+    TendstoInMeasure μ f l (fun _ => 0)
+theorem tendstoInDistribution_normA ... [l.IsCountablyGenerated] (M) (hM : 0 ≤ M)
+    (X : ι → Ω → CoeffPair) (hXm : ∀ n, Measurable (X n)) (hXb : ∀ n ω, ‖X n ω‖ ≤ M)
+    (Z : Ω' → CoeffPair) (hX : TendstoInDistribution X l Z (fun _ => μ) μ')
+    (Nseq : ι → ℝ) (hN : Tendsto Nseq l atTop)
+    (α) (hα : α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T) :
+    TendstoInDistribution (fun n ω => normA β b ρ p₁ p₂ T h₁ h₂ k₁ k₂ α (Nseq n) (X n ω)) l
+      (coeffA β ρ h₁ h₂ k₁ k₂ α ∘ Z) (fun _ => μ) μ'
+theorem tendstoInDistribution_normB ... : … normB … ⇒ coeffB β b ρ h₁ h₂ k₁ k₂ α ∘ Z
+\end{verbatim}
+}
+
+\section{Mathematics}
+Write the normalised remainder as $A_\alpha(X_n)+\varepsilon_n$. On the ball $\|a\|\le M$ the uniform
+Taylor tree (unit~149) gives the remainder bound with the data-independent constant
+$K=|\texttt{uniformTreeConst}|$, the envelope bounds (unit~134) give a uniform coefficient bound $K_c$
+(a sum of absolute values of the per-exponent envelope constants, so that each term is dominated
+without a separate nonnegativity argument), and the exponent set has a gap $\delta$ above $\alpha$;
+so unit~148's deterministic bound gives $|\varepsilon_n(\omega)|\le\mathrm{errA}(N_n)\to0$ uniformly
+in $\omega$. Hence $\varepsilon_n\to0$ in probability (indeed the exceptional set is eventually
+empty), $A_\alpha(X_n)\Rightarrow A_\alpha(Z)$ by the continuous mapping theorem (unit~147), and
+Slutsky's theorem gives the claim. The B-slot is identical with the current $A_\alpha(X_n)$ removed
+first, exactly as Astra~\#11 insisted.
+
+\section{Paper-facing meaning}
+thm:strataempiricalexpansion states that
+\[
+\frac{Z_n^0-\sum_{(\mu,m)<(\mu',m')}C_{\mu,m}(\xi_n)n^{-\mu}(\log n)^{m-1}}{n^{-\mu'}(\log n)^{m'-1}}
+\to C_{\mu',m'}(G)
+\]
+in distribution. For $d=2$, one chart, and Taylor data confined to a norm ball,
+this is now a theorem: the two slots $(\alpha,2)$ (the $\log$ coefficient) and $(\alpha,1)$ (the
+constant) are handled in order. Limitations, to be stated in staging: bounded families (the natural
+upgrade localises by $\Pr(\|X_n\|>M)$); a common sample space (Mathlib's Slutsky is stated for a
+fixed $\Omega$); the functional CLT $\xi_n\Rightarrow G$ and the resolution/chart assembly are not
+formalised.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{Finset.exists\_min\_image} on the filter $\{\gamma\in P:\alpha<\gamma\}$ gives the gap;
+the empty case takes $\delta=1$.
+\item No nonnegativity lemmas exist for the envelope constants \texttt{canonUEnv} etc.; wrapping
+each per-exponent bound in $|\cdot|$ and summing makes \texttt{Finset.single\_le\_sum} applicable
+with \texttt{abs\_nonneg}. Likewise $K=|\texttt{uniformTreeConst}|$ avoids proving the constant
+nonnegative.
+\item \texttt{tendstoInMeasure\_iff\_norm} turns convergence in measure into statements about
+$\mu\{\varepsilon\le\|f_n-g\|\}$; when $|f_n|\le e_n<\varepsilon$ everywhere the set is empty and
+\texttt{tendsto\_const\_nhds.congr'} finishes. \texttt{Set.mem\_setOf\_eq} is deprecated for
+\texttt{Set.mem\_ofPred\_eq}.
+\item \texttt{TendstoInDistribution.add\_of\_tendstoInMeasure\_const} needs
+\texttt{[l.IsCountablyGenerated]} and a fixed sample space; the final \texttt{congr} step is
+\texttt{simp only [Pi.add\_apply, Function.comp]; ring}.
+\end{itemize}
+
+\end{document}
