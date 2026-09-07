@@ -10,18 +10,22 @@ import Laplace.Grammar.CoordDeriv
 Unit 268 (Astra #32, unit 4 of the derivative-identification sprint). The coefficient families of
 Headline XXXII are identified with the normalised Taylor derivatives: `taylorFamily d F γ =
 Re(∂^γ F(0)/γ!)` (`polyRealCoeff_eq_taylorFamily`), and the paper-facing theorem
-`thm_TaylorTree_taylor` states `thm:TaylorTree` / `cor:standardintegralexp` for these families
-directly: for real `ξ, η` on `(0,b]^d` with holomorphic `Fξ, Fη` on the polydisc of radius `R > b`
-agreeing with `ξ, η` in real part on the box, the Taylor-tree conclusion holds for the families
-`γ ↦ Re(∂^γ Fξ(0)/γ!)`, `γ ↦ Re(∂^γ Fη(0)/γ!)`, and the family integral is the original `Z(N)`.
+`thm_TaylorTree_taylor` realises `thm:TaylorTree` / `cor:standardintegralexp` with Taylor-derivative
+coefficient families in the holomorphic-polydisc, normal-crossing-box setting of Headline XXXII, in
+every positive dimension `d = n + 1`: for real `ξ, η` on `(0,b]^d` with holomorphic `Fξ, Fη` on the
+polydisc of radius `R > b` agreeing with `ξ, η` in real part on the box, the Taylor-tree conclusion
+holds for the families `γ ↦ Re(∂^γ Fξ(0)/γ!)`, `γ ↦ Re(∂^γ Fη(0)/γ!)`, and the family integral is
+the original `Z(N)`.
 
-**Non-claims.** `∂^γ` is the fixed-order iterated coordinate derivative `coordDeriv` (no
-permutation-invariance theorem). The families are the Taylor coefficients of the canonical
-real-analytic representative `Re F` at `0`, not derivatives of the supplied real functions `ξ, η`,
-which are constrained only on the positive box `(0,b]^d` (in particular `taylorFamily Fξ 0 =
-Re Fξ(0)`, which need not equal the supplied value `ξ(0)`); when `Fξ` is a genuine holomorphic
-extension of a real-analytic `ξ` from a real neighbourhood of `0`, these are the Taylor coefficients
-of `ξ`.
+**Non-claims** (review v26). `∂^γ F(0)` denotes `coordDeriv`, the fixed-order nested coordinate
+derivative (tail coordinates first, head last); for holomorphic `F` it is a representative of the
+usual mixed partial, and no theorem comparing coordinate orders is claimed. The families are the
+Taylor coefficients at `0` of the real restriction `u ↦ Re F((uᵢ : ℂ)ᵢ)`, not derivatives of the
+supplied real functions `ξ, η`, which are constrained only on the positive box `(0,b]^d` (in
+particular `taylorFamily Fξ 0 = Re Fξ(0)`, which need not equal the supplied value `ξ(0)`); when
+`Fξ` is a genuine holomorphic extension of a real-analytic `ξ` from a real neighbourhood of `0`,
+these are the Taylor coefficients of `ξ`. The holomorphic polydisc extensions are hypotheses, not
+constructed from a real-analyticity assumption.
 -/
 
 open MeasureTheory Set Real Filter Topology Complex
@@ -44,7 +48,8 @@ theorem taylorFamily_zero (d : ℕ) (F : (Fin d → ℂ) → ℂ) : taylorFamily
   rw [coordDeriv_zero]
   simp [multiFactorial]
 
-/-- **Headline XXXIII — `thm:TaylorTree` with Taylor-derivative coefficients, every dimension.**
+/-- **Headline XXXIII — `thm:TaylorTree` with Taylor-derivative coefficients, every positive
+dimension.**
 For real `ξ, η` on `(0,b]^d` with holomorphic `Fξ, Fη` on the polydisc `{|zᵢ| < R}`, `R > b`,
 whose real parts agree with `ξ, η` on the box, the Taylor-tree conclusion holds for the families
 `γ ↦ Re(∂^γ Fξ(0)/γ!)`, `γ ↦ Re(∂^γ Fη(0)/γ!)` and the family integral is the original

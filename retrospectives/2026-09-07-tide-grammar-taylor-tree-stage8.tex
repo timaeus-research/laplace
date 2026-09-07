@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Cauchy coefficients are Taylor coefficients: the derivative identification (Taylor-tree Stage 8)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units 266--268 close the last qualification of the Taylor-tree programme: the several-variable Cauchy
+coefficients $c_\gamma=A_r^{[d]}(F\prod_iw_i^{-\gamma_i})$ of Stage~7 are the normalised Taylor
+derivatives $\partial^\gamma F(0)/\gamma!$, $\gamma!=\prod_i\gamma_i!$, for $F$ holomorphic on the open
+polydisc of radius $R>r$. Consequently \texttt{thm:TaylorTree} and \texttt{cor:standardintegralexp}
+hold, in every dimension and under the paper's own hypothesis, with the coefficient families
+$\gamma\mapsto\operatorname{Re}(\partial^\gamma F(0)/\gamma!)$ and the original integral
+(Headline~XXXIII, \texttt{thm\_TaylorTree\_taylor}). Astra~\#32 capped the sprint at six units with a
+gate after the first; it closed in three. No \texttt{sorry}, no additional \texttt{axiom}; 9143 jobs;
+pin \texttt{066b8c6}. The Taylor-tree programme is frozen at this pin.
+\end{abstract}
+
+\section{The design (Astra \#32)}
+The obvious route --- differentiate the contour integral under the integral sign to arbitrary order
+--- was rejected. Instead the target is the \emph{fixed-order} iterated coordinate derivative
+\[
+\partial^\gamma F(0)
+=\partial_x^{\gamma_0}\Bigl[x\mapsto\partial^{\gamma'}F(x,\cdot)(0)\Bigr](0),
+\]
+tail coordinates first and the head coordinate last (\texttt{coordDeriv}), with ordinary
+\texttt{iteratedDeriv} at $0$. By the recursion $c_{(\gamma_0,\gamma')}(F)=A_r\bigl(x\mapsto
+x^{-\gamma_0}g(x)\bigr)$ with $g(x)=c_{\gamma'}(F(x,\cdot))$, and $A_r(x^{-n}g)$ is the one-variable Cauchy
+coefficient of $g$ (\texttt{cauchyPowerSeries}), so the one-variable identification of Stage~6 applies
+provided $g$ is holomorphic on a neighbourhood of the closed disc of radius $r$. The induction
+hypothesis then gives $g(x)=\partial^{\gamma'}F(x,\cdot)(0)/\gamma'!$ for every $x$ in the parameter
+disc, an equality of functions near $0$, so the $\gamma_0$-th derivative may be taken of the right-hand
+side (\texttt{Filter.EventuallyEq.iteratedDeriv\_eq}). The only analytic obligation is the holomorphy
+of $g$ in the parameter.
+
+\section{The gate: holomorphy in a parameter without differentiating integrals (unit 266)}
+Two identities make this cheap.
+\begin{itemize}
+\item \textbf{The circle operator is the circle average.} Since $\partial_\theta(re^{i\theta})=ire^{i\theta}$,
+$A_r(g)=(2\pi i)^{-1}\oint w^{-1}g=(2\pi)^{-1}\int_0^{2\pi}g(re^{i\theta})\,d\theta$
+(\texttt{circleOp\_eq\_integral}). With this, Fubini for two circle operators with a jointly continuous
+integrand is \texttt{MeasureTheory.integral\_integral\_swap} on $[0,2\pi]^2$
+(\texttt{Measure.prod\_restrict}, \texttt{ContinuousOn.integrableOn\_compact} on a product of compact
+intervals), and induction along \texttt{Fin.cons} with the parametric-continuity lemma of unit 262 gives
+$A_r^{[d]}\bigl(w\mapsto A_\rho(z\mapsto K(z,w))\bigr)=A_\rho\bigl(z\mapsto A_r^{[d]}(K(z,\cdot))\bigr)$
+(\texttt{iterOp\_circleOp\_swap}).
+\item \textbf{Cauchy-type integrals are holomorphic.} Mathlib's
+\texttt{hasFPowerSeriesOn\_cauchy\_integral} says $x\mapsto(2\pi i)^{-1}\oint_{|z|=\rho}(z-x)^{-1}g(z)\,dz$
+has a power series on $|x|<\rho$ for circle-integrable $g$; rewriting $z^{-1}(1-x/z)^{-1}=(z-x)^{-1}$
+gives \texttt{differentiableOn\_circleOp\_cauchyKernel}.
+\end{itemize}
+For $r<\rho<R$ and $|x|<\rho$, the slice Cauchy formula $F(x,w')=A_\rho\bigl(z\mapsto(1-x/z)^{-1}F(z,w')\bigr)$
+holds for every $w'$ on the torus of radius $r$ (unit 260), so
+\[
+g(x)=A_r^{[d]}\Bigl(w'\mapsto A_\rho\bigl(z\mapsto(1-x/z)^{-1}F(z,w')\textstyle\prod w'^{-\gamma'}\bigr)\Bigr)
+=A_\rho\bigl(z\mapsto(1-x/z)^{-1}g(z)\bigr),
+\]
+and $g$ is continuous on the circle of radius $\rho$ by parametric continuity. Hence $g$ is holomorphic
+on $|x|<\rho\supset\{|x|\le r\}$ (\texttt{differentiableOn\_polyCoeff\_param}). The gate passed in one
+unit, as Astra~\#32 required.
+
+\section{Identification and the paper-facing theorem (units 267--268)}
+\texttt{circleOp\_eq\_discCoeff} is \texttt{cauchyPowerSeries\_apply} at $w=1$;
+\texttt{polyCoeff\_eq\_discCoeff} is the recursion \texttt{polyCoeff\_cons} of unit 263. The induction
+\texttt{polyCoeff\_eq\_coordDeriv\_div} takes $\rho=(r+R)/2$, applies
+\texttt{discCoeff\_eq\_iteratedDeriv\_div} (which wants differentiability on the closed disc of radius
+$r$ as an \texttt{NNReal}), rewrites $g$ near $0$ by the induction hypothesis, and pulls out the constant
+$\gamma'!$ with \texttt{iteratedDeriv\_div\_const}; $\gamma!=\gamma_0!\,\gamma'!$ is
+\texttt{Fin.prod\_univ\_succ}. Unit 268 defines
+$\texttt{taylorFamily}\,F\,\gamma=\operatorname{Re}(\partial^\gamma F(0)/\gamma!)$, proves it equal to the
+real Cauchy family of Headline~XXXII, and restates \texttt{thm\_TaylorTree\_analytic'} for it
+(\texttt{thm\_TaylorTree\_taylor}); $\texttt{taylorFamily}\,F\,0=\operatorname{Re}F(0)$.
+
+\section{Non-claims}
+Fixed-order derivatives: no permutation-invariance theorem (for holomorphic $F$ any order gives the
+usual mixed partial). The families are the Taylor coefficients of the canonical analytic representative
+$\operatorname{Re}F$ at $0$, not of the supplied real functions $\xi,\eta$, which the hypotheses
+constrain only on the positive box $(0,b]^d$; when $F_\xi$ is a genuine holomorphic extension of a
+real-analytic $\xi$ near $0$ these are the Taylor coefficients of $\xi$. Cutoff independence means
+independence from the spectral threshold $L$; candidate support is containment, not nonvanishing; no
+resolution, general-domain, Mellin-continuation or posterior-weak-convergence statement is implied.
+
+\section{Lessons}
+\begin{itemize}
+\item \textbf{Use the induction hypothesis as a local identity.} Once the parametric coefficient is
+known to be holomorphic, the recursion never needs derivatives of integrals: the derivative is taken of
+the right-hand side of the induction hypothesis.
+\item \textbf{Normalise contour integrals to averages before Fubini.} The circle-average form removes
+the Jacobian and makes the double integral a plain product-measure statement.
+\item \textbf{\texttt{NNReal} literals in statements.} \texttt{(0 : NNReal) < ⟨r, h⟩} elaborates the
+anonymous constructor as a bare subtype and the rewrite fails with a confusing transparency note;
+bind \texttt{set rN : NNReal := ⟨r, h⟩} first and rely on the definitional coercion.
+\item \textbf{Deprecations on this pin.} \texttt{Metric.emetric\_ball\_nnreal} is
+\texttt{Metric.eball\_coe}; \texttt{fun\_prop} does not see through \texttt{circleMap}, so compose
+\texttt{continuous\_circleMap} by hand.
+\item \textbf{A gate that is a lemma, not a feeling.} Astra~\#32's stop criteria (no arbitrary-order
+dominated-differentiation hierarchy, no multilinear-series bridge, no strengthening of hypotheses) were
+checkable at the end of unit 266; the sprint then had a fixed shape.
+\end{itemize}
+\end{document}

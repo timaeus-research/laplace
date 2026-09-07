@@ -133,6 +133,12 @@ theorem polyCoeff_eq_coordDeriv_div : ∀ (d : ℕ) {r R : ℝ}, 0 < r → r < R
     simp only [coordDeriv, multiFactorial_succ]
     rw [div_div, mul_comm (multiFactorial _)]
 
+/-- The Cauchy coefficients do not depend on the admissible contour radius. -/
+theorem polyCoeff_radius_indep {d : ℕ} {r r' R : ℝ} (hr : 0 < r) (hrR : r < R) (hr' : 0 < r')
+    (hr'R : r' < R) {F : (Fin d → ℂ) → ℂ} (hF : DifferentiableOn ℂ F (openPolydisc d R))
+    (γ : Fin d → ℕ) : polyCoeff d r F γ = polyCoeff d r' F γ := by
+  rw [polyCoeff_eq_coordDeriv_div d hr hrR hF γ, polyCoeff_eq_coordDeriv_div d hr' hr'R hF γ]
+
 /-- The real-part family used in Headline XXXII is `Re(∂^γ F(0)/γ!)`. -/
 theorem polyRealCoeff_eq {d : ℕ} {r R : ℝ} (hr : 0 < r) (hrR : r < R) {F : (Fin d → ℂ) → ℂ}
     (hF : DifferentiableOn ℂ F (openPolydisc d R)) (γ : Fin d → ℕ) :
