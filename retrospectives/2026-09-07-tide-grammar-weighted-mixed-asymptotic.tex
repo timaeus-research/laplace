@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The mixed-ratio weighted asymptotic}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Fourth step of the mixed-ratio general-$d$ monomial programme (Astra~\#15, route~A). For arbitrary
+positive exponents $\ell_i$ ($i<d$) with minimum $\lambda$ attained $m$ times,
+\[
+\frac{\int_{(0,1]^d}\prod_it_i^{\ell_i-1}e^{-\beta N\prod_it_i}\,dt}{N^{-\lambda}(\log N)^{m-1}}
+\longrightarrow
+\frac{\Gamma(\lambda)\beta^{-\lambda}}{(m-1)!}\prod_{\ell_i>\lambda}\frac1{\ell_i-\lambda}
+\]
+(\texttt{mixedBoxReal\_tendsto}, equivalence form \texttt{mixedBoxReal\_isEquivalent}). Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def multCount (ℓ : Fin d → ℝ) (l : ℝ) : ℕ := ∑ i, if ℓ i = l then 1 else 0
+def resFactor (ℓ : Fin d → ℝ) (l : ℝ) : ℝ := ∏ i, if ℓ i = l then 1 else 1 / (ℓ i - l)
+def mixedConst (ℓ) (l β : ℝ) : ℝ :=
+  Gamma l * β ^ (-l) / ((multCount ℓ l - 1).factorial : ℝ) * resFactor ℓ l
+theorem mixedBoxReal_tendsto (l β) (hl : 0 < l) (hβ : 0 < β) :
+    ∀ (d : ℕ) (ℓ : Fin (d + 1) → ℝ), (∀ i, l ≤ ℓ i) → (∃ i, ℓ i = l) →
+      Tendsto (fun N => mixedBoxReal (d + 1) ℓ β N
+          / (N ^ (-l) * log N ^ (multCount ℓ l - 1))) atTop (𝓝 (mixedConst ℓ l β))
+theorem mixedBoxReal_isEquivalent (l β) (hl) (hβ) (d) (ℓ) (hmin) (hatt) :
+    (fun N => mixedBoxReal (d + 1) ℓ β N)
+      ~[atTop] powLog (mixedConst ℓ l β) l (multCount ℓ l - 1)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Induction on the number of coordinates. If all exponents equal $\lambda$, the integral is the product
+density of unit~172 applied to $e^{-\beta Nz}$ and the Gamma/log asymptotic of unit~173 gives the
+constant $\Gamma(\lambda)\beta^{-\lambda}/d!$ with log degree $d$ (one less than the multiplicity
+$d+1$). Otherwise some $\ell_j>\lambda$; the swap $(0\,j)$ moves it to position $0$ without changing
+the integral (unit~179), the multiplicity or the residue product (both are sums/products over all
+coordinates, invariant under \texttt{Equiv.sum\_comp}/\texttt{Equiv.prod\_comp}); the real recursion
+of unit~179 peels it, and the dominated-coordinate transfer lemma of unit~178 --- applied to the
+lower-dimensional integral, which is measurable in its parameter and bounded by its mass --- multiplies
+the constant by $1/(\ell_0-\lambda)$ while preserving exponent and log degree. The minimal value
+remains attained in the tail because the attaining index is not $0$.
+
+\section{Paper-facing meaning}
+This is the paper's zeta-function prediction for the (substituted) normal moment integral:
+exponent $\lambda=\min_i\ell_i$, logarithmic degree one less than the number of coordinates
+realising it, and the residue factor $\prod_{i\notin J}1/(\ell_i-\lambda)$ of the Laurent coefficient
+$a_{-m}$ (eq.~\texttt{a\_minus\_m\_explicit}, $b=1$, before the Jacobian $1/(2k_i)$). The monomial
+assembly with $\ell_i=(h_i+1)/(2k_i)$ is the next unit.
+
+\section{Lean notes}
+\begin{itemize}
+\item A \texttt{def} whose body decides equality of reals (\texttt{if ℓ i = l then ...}) must be
+\texttt{noncomputable}.
+\item \texttt{Finset.single\_le\_sum} needs the summand supplied explicitly (\texttt{(f := ...)}) when
+the goal is an \texttt{if}; the nonnegativity side goal is then \texttt{Nat.zero\_le \_}.
+\item \texttt{Subsingleton (Fin (0+1))} does not synthesise; use
+\texttt{Fin.ext (by omega)} for two elements of \texttt{Fin 1}.
+\item State multiplicities as \texttt{∑ if} and residue products as \texttt{∏ if} over
+\texttt{univ}: permutation invariance is then one lemma application and the first coordinate peels
+with \texttt{Fin.sum\_univ\_succ}/\texttt{Fin.prod\_univ\_succ}, avoiding \texttt{Finset.filter}
+cardinality bookkeeping.
+\item The transfer lemma takes the lower-dimensional integral as an anonymous function
+\texttt{fun M => mixedBoxReal ...}; the recursion lemma then matches after beta reduction without
+further rewriting.
+\end{itemize}
+
+\end{document}
