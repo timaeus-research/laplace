@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The real weighted box integral: mass, recursion, permutations}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Third step of the mixed-ratio general-$d$ monomial programme (Astra~\#15, route~A). The real
+weighted box integral
+$W_\ell(N)=\int_{(0,1]^d}\prod_it_i^{\ell_i-1}e^{-\beta N\prod_it_i}\,dt$ is defined as the
+\texttt{toReal} of the $[0,\infty]$-valued \texttt{weightedBoxIntegral}, and the four facts the
+mixed-ratio induction needs are proved: the mass bound
+$\int_{(0,1]^d}\prod_it_i^{w_i}\,dt=\prod_i1/(w_i+1)$ (hence $0\le W_\ell(N)\le\prod_i1/\ell_i$ for
+$\beta N\ge0$); measurability of $N\mapsto W_\ell(N)$; the real recursion
+$W_\ell(N)=\int_0^1t^{\ell_0-1}W_{\ell'}(Nt)\,dt$ with $\ell'$ the tail; and permutation invariance
+of the weighted box integral. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem weightedBoxIntegral_one : ∀ d w, (∀ i, -1 < w i) →
+    weightedBoxIntegral d w (fun _ => 1) = ofReal (∏ i, 1 / (w i + 1))
+theorem weightedBoxIntegral_expKernel_lt_top (d w) (hw) (β N) (hβN : 0 ≤ β * N) :
+    weightedBoxIntegral d w (expKernel β N) < ⊤
+def mixedBoxReal (d) (ℓ : Fin d → ℝ) (β N : ℝ) : ℝ :=
+  (weightedBoxIntegral d (fun i => ℓ i - 1) (expKernel β N)).toReal
+theorem mixedBoxReal_le (d ℓ) (hℓ : ∀ i, 0 < ℓ i) (β N) (hβN : 0 ≤ β * N) :
+    mixedBoxReal d ℓ β N ≤ ∏ i, 1 / ℓ i
+theorem measurable_mixedBoxReal (d ℓ β) : Measurable fun N => mixedBoxReal d ℓ β N
+theorem mixedBoxReal_succ (d) (ℓ : Fin (d+1) → ℝ) (hℓ) (β N) (hβ : 0 < β) (hN : 0 < N) :
+    mixedBoxReal (d + 1) ℓ β N
+      = ∫ t in Ioc 0 1, t ^ (ℓ 0 - 1) * mixedBoxReal d (Fin.tail ℓ) β (N * t)
+theorem weightedBoxIntegral_comp_perm (d w g) (σ : Equiv.Perm (Fin d)) :
+    weightedBoxIntegral d (w ∘ σ) g = weightedBoxIntegral d w g
+\end{verbatim}
+}
+
+\section{Mathematics}
+The mass bound is the constant-kernel case of the weighted recursion,
+$\int_0^1a^{w_0}\,da=1/(w_0+1)$ at each level; since $e^{-\beta Nz}\le1$ on the box for
+$\beta N\ge0$, the exponential integral is finite and bounded by the mass. The real recursion is the
+$[0,\infty]$ recursion of unit~174 after \texttt{integral\_toReal}, which needs the parametric
+integral $M\mapsto W(M)$ to be measurable (a Tonelli-type statement,
+\texttt{Measurable.lintegral\_prod\_right'}) and finite almost everywhere on $(0,1]$. Permutation
+invariance transports the integral along \texttt{MeasurableEquiv.piCongrLeft}, which preserves the
+product of restricted Lebesgue measures, and reindexes the two products with
+\texttt{Equiv.prod\_comp}.
+
+\section{Paper-facing meaning}
+$W_\ell$ is the substituted normal moment integral with exponents $\ell_i=(h_i+1)/(2k_i)$; the
+recursion peels one normal coordinate, and permutation invariance lets the induction of the next
+unit always peel a coordinate that does \emph{not} realise the minimal ratio, which is where the
+dominated-coordinate transfer lemma applies.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{positivity} cannot prove $0\le1/(w+1)$ from a hypothesis $-1<w$; use
+\texttt{div\_nonneg zero\_le\_one (by linarith)}.
+\item \texttt{lintegral\_mul\_const} with a composed measurability proof leaves a
+\texttt{(ofReal ∘ f) a} pattern that does not match the goal; \texttt{lintegral\_mul\_const'} with
+\texttt{ENNReal.ofReal\_ne\_top} avoids measurability altogether.
+\item \texttt{mul\_le\_mul\_left'} is gone on this pin; \texttt{gcongr} handles
+$a\cdot b\le a\cdot c$ in \texttt{ℝ≥0∞}.
+\item \texttt{Equiv.piCongrLeft\_apply\_apply} takes the family and the equivalence explicitly:
+\texttt{Equiv.piCongrLeft\_apply\_apply (fun \_ => ℝ) σ y b}.
+\item \texttt{rw [restrict\_unitBox]} rewrites both occurrences at once; a second \texttt{rw} fails.
+\item Rewrite the measure-preserving transport on the right-hand side with \texttt{conv\_rhs} so
+that the pointwise goal has the composed integrand on the side where the reindexing lemma applies.
+\end{itemize}
+
+\end{document}
