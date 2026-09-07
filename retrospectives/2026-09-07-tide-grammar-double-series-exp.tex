@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The exponential of a double series}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Module~2 of the coefficient closure for $\eta e^{\beta s\xi}$ (Astra~\#7(b)). For a coefficient
+array $a:\mathbb N^2\to\mathbb R$ with $a_{00}=0$ and $N_\rho(a)<\infty$, the convolution powers
+$a^{*n}$ satisfy $N_\rho(a^{*n})\le N_\rho(a)^n$ and vanish below degree $n$, so the exponential
+coefficients $E_k(t)=\sum_{n\le|k|}t^n/n!\,(a^{*n})_k$ are finite sums (continuous in $t$) that agree
+with the full series. A joint majorant $(n,k)\mapsto|t|^n/n!\,|(a^{*n})_k|\rho^{|k|}$ with row sums
+$\le(|t|X)^n/n!$ gives $N_\rho(E(t))\le e^{|t|X}$ (with weighted summability), and grouping the signed
+family gives $\sum_kE_k(t)u^iv^j=\exp(t\sum_ka_ku^iv^j)$ for $|u|,|v|\le\rho$. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def delta : ℕ × ℕ → ℝ := fun k => if k = (0, 0) then 1 else 0
+noncomputable def convPow (a : ℕ × ℕ → ℝ) : ℕ → (ℕ × ℕ → ℝ)
+  -- a^{*0} = delta, a^{*(n+1)} = conv a (a^{*n})
+theorem wnorm_convPow_le (ρ : ℝ) (hρ : 0 < ρ) (a : ℕ × ℕ → ℝ) (ha : WSummable ρ a)
+    (n : ℕ) :
+    WSummable ρ (convPow a n) ∧ wnorm ρ (convPow a n) ≤ wnorm ρ a ^ n
+theorem dblSum_convPow (ρ u v : ℝ) (hρ : 0 < ρ) (a : ℕ × ℕ → ℝ) (ha : WSummable ρ a)
+    (hu : |u| ≤ ρ) (hv : |v| ≤ ρ) (n : ℕ) :
+    dblSum (convPow a n) u v = dblSum a u v ^ n
+theorem convPow_eq_zero_of_lt (a : ℕ × ℕ → ℝ) (ha0 : a (0, 0) = 0) :
+    ∀ n (k : ℕ × ℕ), k.1 + k.2 < n → convPow a n k = 0
+noncomputable def expCoeff (a : ℕ × ℕ → ℝ) (t : ℝ) (k : ℕ × ℕ) : ℝ :=
+  ∑ n ∈ Finset.range (k.1 + k.2 + 1), t ^ n / (n.factorial : ℝ) * convPow a n k
+theorem expCoeff_continuous (a : ℕ × ℕ → ℝ) (k : ℕ × ℕ) :
+    Continuous fun t => expCoeff a t k
+theorem expCoeff_eq_tsum (a : ℕ × ℕ → ℝ) (ha0 : a (0, 0) = 0) (t : ℝ) (k : ℕ × ℕ) :
+    expCoeff a t k = ∑' n : ℕ, t ^ n / (n.factorial : ℝ) * convPow a n k
+noncomputable def expMaj (ρ : ℝ) (a : ℕ × ℕ → ℝ) (t : ℝ) (p : ℕ × (ℕ × ℕ)) : ℝ :=
+  |t| ^ p.1 / (p.1.factorial : ℝ) * (|convPow a p.1 p.2| * ρ ^ (p.2.1 + p.2.2))
+theorem expMaj_summable (ρ : ℝ) (hρ : 0 < ρ) (a : ℕ × ℕ → ℝ) (ha : WSummable ρ a) (t : ℝ) :
+    Summable (expMaj ρ a t) ∧ ∑' p, expMaj ρ a t p ≤ Real.exp (|t| * wnorm ρ a)
+theorem wnorm_expCoeff_le (ρ : ℝ) (hρ : 0 < ρ) (a : ℕ × ℕ → ℝ) (ha : WSummable ρ a)
+    (ha0 : a (0, 0) = 0) (t : ℝ) :
+    WSummable ρ (expCoeff a t) ∧ wnorm ρ (expCoeff a t) ≤ Real.exp (|t| * wnorm ρ a)
+theorem dblSum_expCoeff (ρ u v : ℝ) (hρ : 0 < ρ) (a : ℕ × ℕ → ℝ) (ha : WSummable ρ a)
+    (ha0 : a (0, 0) = 0) (hu : |u| ≤ ρ) (hv : |v| ≤ ρ) (t : ℝ) :
+    dblSum (expCoeff a t) u v = Real.exp (t * dblSum a u v)
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+The convolution unit $\delta$ has $N_\rho(\delta)=1$ and evaluation $1$, so the closure and
+multiplicativity of unit~117 give $N_\rho(a^{*n})\le N_\rho(a)^n$ and
+$\mathrm{ev}(a^{*n})=(\mathrm{ev}\,a)^n$ by induction. The degree support is the observation that each
+term $a_b\,(a^{*n})_{k-b}$ of $(a^{*(n+1)})_k$ vanishes: either $b=0$ (since $a_{00}=0$) or
+$|k-b|<|k|<n+1$ forces $|k-b|<n$. Hence the finite definition of $E_k(t)$ equals the full series
+(\texttt{tsum\_eq\_sum}), which is the form needed for the two summation arguments. The majorant
+$g(n,k)$ is summable on $\mathbb N\times\mathbb N^2$ because its rows are summable with row sums
+$|t|^n/n!\,N_\rho(a^{*n})\le(|t|X)^n/n!$, whose sum is $e^{|t|X}$
+(\texttt{summable\_prod\_of\_nonneg}, \texttt{Real.summable\_pow\_div\_factorial}). Then
+$|E_k(t)|\rho^{|k|}\le\sum_ng(n,k)$ termwise, and summing over $k$ (after swapping the product order
+with \texttt{Summable.prod\_symm} and \texttt{Equiv.prodComm}) gives the weighted bound. For the
+evaluation, the signed family $F(n,k)=t^n/n!\,(a^{*n})_ku^{k_1}v^{k_2}$ is dominated by $g$, so
+\texttt{tsum\_prod'} regroups it either way: summing $k$ first gives
+$\sum_nt^n/n!\,(\mathrm{ev}\,a)^n=\exp(t\,\mathrm{ev}\,a)$, summing $n$ first gives
+$\sum_kE_k(t)u^{k_1}v^{k_2}$.
+
+\section{Paper-facing meaning}
+
+With $a=x-x_{00}\delta$ the coefficient array of $\xi-\xi(0)$, the array $E(\beta s)$ is the double
+series of $e^{\beta s(\xi-\xi(0))}$ on the box, with weighted norm at most $e^{\beta sX_{\rho}}$. The
+next unit multiplies by the array of $\eta$ and the scalar $e^{\beta sx_{00}}$ to produce the
+$s$-parametrised coefficient array of the chart amplitude $\eta e^{\beta s\xi}$, with the envelope
+$Y_\rho e^{\beta s(x_{00}+X_\rho)}$ required by \texttt{twoD\_cutoff\_analytic}: this closes the loop
+from the paper's analyticity hypothesis on $\xi,\eta$ to the analytic $d=2$ cutoff theorem.
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Real.exp} as a power series: \texttt{Real.exp\_eq\_exp\_ℝ} followed by
+\texttt{NormedSpace.exp\_eq\_tsum\_div} rewrites $\exp z$ to $\sum'z^n/n!$; the summability is
+\texttt{Real.summable\_pow\_div\_factorial}.
+\item \texttt{(WSummable).mul\_left} timed out at \texttt{isDefEq} on the folded definition; unfold
+\texttt{WSummable} first and finish with \texttt{.congr fun k => rfl}.
+\item Unreduced projections \texttt{(n, k).1} in a summand block \texttt{tsum\_mul\_left}; a
+\texttt{show} of the reduced form first makes the rewrite fire.
+\item \texttt{Nat.abs\_cast} in a \texttt{simp only} set already removes $|n!|$, so a later
+\texttt{abs\_of\_pos} rewrite fails with ``did not find an occurrence''.
+\item A \texttt{rw} chain reports ``No goals to be solved'' when \texttt{rfl} closes the goal
+mid-chain; drop the trailing steps rather than guarding with \texttt{try}.
+\end{itemize}
+
+\end{document}
