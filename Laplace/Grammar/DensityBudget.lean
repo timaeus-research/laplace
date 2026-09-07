@@ -13,8 +13,8 @@ Unit 231 (Taylor-tree programme; Astra #27). For a representation `c` and a latt
 lattice `Q⁻¹ℕ` the one-coordinate convolution multiplies the budget by at most `(D+2)Q`, `D` the
 maximal degree (`budget_conv_le`): a resonant step turns `(μ,j,c)` into `(μ,j+1,c/(j+1))` with
 budget `Q·|c|j!Q^j`; a nonresonant step produces `j+2` terms each of budget at most `Q·|c|j!Q^j`,
-because the denominators `|α|^{j-i+1}` are bounded by `Q^{j-i+1}` on the lattice. Hence for the state
-density of `n+1` coordinates `B_Q(v) ≤ (n+1)! Q^n` (`budget_stateDensityRep_le`), **uniformly in the
+because the denominators `|α|^{j-i+1}` are bounded by `Q^{j-i+1}` on the lattice. Hence for the
+state density of `n+1` coordinates `B_Q(v) ≤ (n+1)! Q^n` (`budget_stateDensityRep_le`), **uniformly in the
 monomial**: the list `ℓ¹` norm of the coefficients is at most `(n+1)! Q^n`
 (`sum_abs_le_budget`) and every aggregated coefficient satisfies
 `|coeffAt v μ j| ≤ (n+1)! Q^{n-j}/j!` (`abs_coeffAt_le`). This is Gate A of the Stage 3 plan: the
@@ -77,7 +77,8 @@ theorem sum_abs_le_budget {Q : ℝ} (hQ : 1 ≤ Q) (c : PowLogRep) :
   | cons t c ih =>
     rw [List.map_cons, List.sum_cons, budget_cons]
     refine add_le_add ?_ ih
-    have h1 : (1 : ℝ) ≤ (t.2.1.factorial : ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.factorial_ne_zero _)
+    have h1 : (1 : ℝ) ≤ (t.2.1.factorial : ℝ) := by
+      exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.factorial_ne_zero _)
     have h2 : (1 : ℝ) ≤ Q ^ t.2.1 := one_le_pow₀ hQ
     calc |t.2.2| = |t.2.2| * 1 * 1 := by ring
       _ ≤ |t.2.2| * (t.2.1.factorial : ℝ) * Q ^ t.2.1 := by gcongr
@@ -92,7 +93,8 @@ theorem abs_coeffAt_le {Q : ℝ} (hQ : 1 ≤ Q) (c : PowLogRep) (μ : ℝ) (j : 
     rw [coeffAt_cons, budget_cons]
     have hQ0 : (0 : ℝ) < Q := by linarith
     calc |(if t.1 = μ ∧ t.2.1 = j then t.2.2 else 0) + coeffAt c μ j| * ((j.factorial : ℝ) * Q ^ j)
-        ≤ (|if t.1 = μ ∧ t.2.1 = j then t.2.2 else 0| + |coeffAt c μ j|) * ((j.factorial : ℝ) * Q ^ j) :=
+        ≤ (|if t.1 = μ ∧ t.2.1 = j then t.2.2 else 0| + |coeffAt c μ j|) *
+            ((j.factorial : ℝ) * Q ^ j) :=
           mul_le_mul_of_nonneg_right (abs_add_le _ _) (by positivity)
       _ = |if t.1 = μ ∧ t.2.1 = j then t.2.2 else 0| * ((j.factorial : ℝ) * Q ^ j) +
           |coeffAt c μ j| * ((j.factorial : ℝ) * Q ^ j) := by ring
