@@ -7,8 +7,14 @@ import Laplace.Grammar.TaylorTreeWrapper
 /-!
 # The one-variable Cauchy-estimate bridge (pilot, Stage 6a)
 
-Unit 257 (Astra #30 candidate C₁, scouting gate). For `f : ℂ → ℂ` differentiable on the closed disc
-`|z| ≤ r`, Mathlib's Cauchy power series `cauchyPowerSeries f 0 r` represents `f` on the open disc.
+Unit 257 (Astra #30 candidate C₁, scouting gate). For `f : ℂ → ℂ` with `DifferentiableOn ℂ f
+(closedBall 0 r)` ("holomorphic on the closed disc" below is shorthand for this hypothesis, which
+the
+paper's holomorphy on the larger open disc `|z| < R` supplies for every `r < R`), Mathlib's Cauchy
+power series `cauchyPowerSeries f 0 r` represents `f` on the open disc. The estimate and the
+weighted
+summability are stated for arbitrary `f` (Lean's totalised contour integrals); they are used only
+under the differentiability hypothesis.
 Its scalar coefficients `discCoeff f r n` satisfy
 ```
 ∑_n discCoeff f r n · z^n = f z            (|z| < r; `hasSum_discCoeff`),

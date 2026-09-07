@@ -85,7 +85,7 @@ theorem evalF_toFamily1 (c : ℕ → ℝ) (u : Fin 1 → ℝ) :
   refine tsum_congr fun γ => ?_
   simp [oneVarEquiv, Equiv.funUnique, mono_one_var]
 
-/-- The real-coefficient family represents `f` on `(0,b]`. -/
+/-- The real-coefficient family represents `Re f` on `(0,b]`. -/
 theorem evalF_toFamily1_realCoeff {f : ℂ → ℂ} {r : NNReal}
     (hf : DifferentiableOn ℂ f (Metric.closedBall 0 r)) (hr : 0 < r) {b : ℝ} (hbr : b < r)
     {u : Fin 1 → ℝ} (hu : u ∈ piBox 1 (Ioc 0 b)) :
