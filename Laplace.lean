@@ -317,3 +317,4 @@ import Laplace.Grammar.LeadingCoeffPositive
 import Laplace.Grammar.Headline
 import Laplace.Grammar.ApproxInDistribution
 import Laplace.Grammar.PositiveDenominatorRatio
+import Laplace.Grammar.FixedAmplitudeJointLimit
