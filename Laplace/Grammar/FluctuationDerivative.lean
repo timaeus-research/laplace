@@ -8,8 +8,10 @@ import Laplace.Grammar.PhaseMajorant
 # The derivative dictionary in the phase parameter (Stage 4j)
 
 Unit 250 (Taylor-tree programme; Astra #28 candidate C, first half). The paper writes the
-coefficients through derivatives of the fluctuation function `S_μ(a) = ∫₀^∞ t^{μ-1} e^{-βt+β√t a} dt`:
-`∂_a^p S_μ(a) = β^p ∫₀^∞ t^{μ-1}(√t)^p e^{-βt+β√t a} dt`. Here this is a theorem: for `β > 0`, `μ > 0`,
+coefficients through derivatives of the fluctuation function
+`S_μ(a) = ∫₀^∞ t^{μ-1} e^{-βt+β√t a} dt`:
+`∂_a^p S_μ(a) = β^p ∫₀^∞ t^{μ-1}(√t)^p e^{-βt+β√t a} dt`. Here this is a theorem: for `β > 0`,
+`μ > 0`,
 ```
 ∂_a fluctMoment β a p μ i = β · fluctMoment β a (p+1) μ i,
 iteratedDeriv p (a ↦ fluctMoment β a q μ i) a = β^p · fluctMoment β a (p+q) μ i,
@@ -17,7 +19,8 @@ iteratedDeriv p (a ↦ fluctMoment β a q μ i) a = β^p · fluctMoment β a (p+
 (`hasDerivAt_fluctMoment`, `iteratedDeriv_fluctMoment`), by differentiation under the integral
 (`hasDerivAt_integral_of_dominated_loc_of_deriv_le`) with the log majorant of unit 234 at phase
 parameter `|a| + 1` as the local dominating function. In particular
-`β^p fluctMoment β a p μ 0 = ∂_a^p S_μ(a)` (`iteratedDeriv_fluctuationFn`), so the Stage 3 coefficient
+`β^p fluctMoment β a p μ 0 = ∂_a^p S_μ(a)` (`iteratedDeriv_fluctuationFn`), so the Stage 3
+coefficient
 formula reads as in the paper. No `sorry` and no additional `axiom` declarations.
 -/
 
@@ -25,7 +28,8 @@ open MeasureTheory Set Real Filter Topology
 
 namespace Laplace.Grammar
 
-/-- The fluctuation function `S_μ(a) = ∫₀^∞ t^{μ-1} e^{-βt+β√t a} dt` (`fluctMoment` at `p = i = 0`). -/
+/-- The fluctuation function `S_μ(a) = ∫₀^∞ t^{μ-1} e^{-βt+β√t a} dt`
+(`fluctMoment` at `p = i = 0`). -/
 noncomputable def fluctuationFn (β μ a : ℝ) : ℝ := fluctMoment β a 0 μ 0
 
 theorem phaseKernel_eq_exp (β a : ℝ) (p : ℕ) (t : ℝ) :
@@ -54,7 +58,8 @@ theorem fluctIntegrand_succ (β : ℝ) (p : ℕ) (μ : ℝ) (i : ℕ) (a t : ℝ
 `|β √t · fluctIntegrand a' t| ≤ β · logMajorant β (|a|+1) μ i (p+1) t`. -/
 theorem abs_deriv_fluctIntegrand_le (β : ℝ) (hβ : 0 < β) (p : ℕ) (μ : ℝ) (i : ℕ) {a a' : ℝ}
     (ha : a' ∈ Metric.ball a 1) {t : ℝ} (ht : 0 < t) :
-    ‖β * Real.sqrt t * fluctIntegrand β p μ i a' t‖ ≤ β * logMajorant β (|a| + 1) μ i (p + 1) t := by
+    ‖β * Real.sqrt t * fluctIntegrand β p μ i a' t‖ ≤
+      β * logMajorant β (|a| + 1) μ i (p + 1) t := by
   rw [fluctIntegrand_succ, Real.norm_eq_abs, abs_mul, abs_of_pos hβ]
   refine mul_le_mul_of_nonneg_left ?_ hβ.le
   unfold fluctIntegrand logMajorant
