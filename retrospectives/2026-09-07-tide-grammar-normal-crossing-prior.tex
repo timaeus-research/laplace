@@ -1,0 +1,63 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Review v16 and genuine priors for the normal-crossing example}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Review v16 (independent, statement level) found Headlines XX, XX$'$, XX$''$ of units 218--220
+\emph{faithful with caveats}: the kernel identification, the constant $2\rho(0)\sqrt{2\pi}e^{z^2/2}$
+(checked independently through the product coordinate $t=x_0x_1$, whose pushforward density is
+$2\log(1/|t|)$), the tilt and the three modes of convergence are right; the should-fix items are
+(i) the Lean weights may be signed, so ``posterior'' needs $\rho\ge0$; (ii) the statements are
+fixed-$\theta$ moment generating function limits, not weak convergence of posterior measures;
+(iii) no $O(1/\log n)$ rate is proved; (iv) ``unconditional'' must distinguish XX (assumes $Z_n\to z$)
+from XX$'$/XX$''$; (v) ``variance $1$ for every $n\ge1$''; (vi) the tightness argument uses zero
+means, unit variances and pairwise independence, not ``second moments only''. Unit 221 supplies the
+one Lean item: for a genuine prior weight ($\rho\ge0$ on the box, $\rho(0)>0$) the evidence
+$\int_{(-1,1]^2}\rho\,L_n$ is strictly positive at every sample size (\texttt{nc\_evidence\_pos}) and
+the posterior mean of $1$ is $1$ (\texttt{ncPosteriorMean\_one}); the wording items were applied to
+the module headers, the mirror, the reports and the headline index. Zero \texttt{sorry}/\texttt{axiom};
+9098 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem nc_integral_pos (hρ : Continuous ρ) (hρnn : ∀ x ∈ symBox 2, 0 ≤ ρ x) (hρ0 : 0 < ρ 0)
+  (N z) : 0 < ∫ x in symBox 2, ρ x * ncKernel N z x
+theorem nc_evidence_pos (hn : 0 < n) … : 0 < ∫ x in symBox 2, ρ x * ncLikelihood n y x
+theorem ncPosteriorMean_one (hn : 0 < n) … : ncPosteriorMean n y ρ (fun _ => 1) = 1
+\end{verbatim}
+}
+
+\section{Mathematics}
+Continuity gives $\rho\ge\rho(0)/2$ on a sup-norm ball $B_\delta$ around the origin, $\delta\le1$, which
+lies in the box; there the kernel is at least $e^{-N^2/2-|Nz|}$ since $|x_0x_1|\le1$. So
+$\int_{(-1,1]^2}\rho K\ge\int_{B_\delta}\rho K\ge\tfrac{\rho(0)}2e^{-N^2/2-|Nz|}\,|B_\delta|>0$,
+using nonnegativity of the integrand on the whole box for the monotonicity in the domain. The truth's
+likelihood factor is a positive constant.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{setIntegral\_ge\_of\_const\_le} now returns \texttt{μ.real s • c ≤ ∫}; convert with
+  \texttt{smul\_eq\_mul, measureReal\_def}.
+\item \texttt{rw [abs\_mul]} rewrites the first matching product; pass the factors explicitly
+  (\texttt{abs\_mul (N * z) (x 0 * x 1)}) when two products are present.
+\item \texttt{setIntegral\_mono\_set} wants the set inclusion as \texttt{s ≤ᵐ[μ] t}:
+  \texttt{Filter.Eventually.of\_forall hball}.
+\item Reflow docstring paragraphs line-count-neutrally when downstream \texttt{\#Lnn} dots must stay valid.
+\end{itemize}
+
+\section{Status}
+H2-lite complete and reviewed (Headlines XX--XX$''$ plus the genuine-prior lemmas). Per Astra~\#24:
+freeze; E2 (Abelian Mellin coefficient) remains an optional appendix.
+\end{document}
