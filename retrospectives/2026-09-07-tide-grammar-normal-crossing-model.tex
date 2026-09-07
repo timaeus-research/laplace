@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{An end-to-end normal-crossing example: the model $N(x_0x_1,1)$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 218 follows Astra~\#24's top recommendation (programme H2-lite): after the hand-off, demonstrate
+applicability with one bounded example rather than enlarge the theorem catalogue. Observations
+$y_1,\dots,y_n$ are modelled as $N(x_0x_1,1)$ with $x\in(-1,1]^2$ and a continuous prior density
+$\rho$; against the truth $N(0,1)$ the likelihood ratio is \emph{exactly}
+$\exp(-\tfrac n2(x_0x_1)^2+\sqrt n\,Z_nx_0x_1)$ with $Z_n=n^{-1/2}\sum_iy_i$, i.e.\ the grammar
+paper's dressed normal-crossing kernel at $\beta=\tfrac12$, $N=\sqrt n$, $h=0$, $k=(1,1)$, phase
+$2Z_n$ (\texttt{ncLikelihood\_eq}). No resolution of singularities, no likelihood remainder and no
+empirical-process limit is assumed: the quadrant decomposition is Headline~XIX's
+\texttt{symBox\_phase\_eq\_sum} and the phase is a datum. The fluctuation variable is $\sqrt n\,x_0x_1$;
+its posterior moment generating function is a ratio of two model integrals with phases $2Z_n+2\theta$
+and $2Z_n$ (exponential tilt = phase shift), and the end-to-end theorem is
+\[
+\mathbb E_{\rm post}\bigl[e^{\theta\sqrt n\,x_0x_1}\bigr]\longrightarrow e^{z\theta+\theta^2/2}
+\qquad\text{whenever } Z_n\to z
+\]
+(\texttt{ncFluctMGF\_tendsto}): the posterior law of $\sqrt n\,x_0x_1$ is asymptotically $N(Z_n,1)$,
+centred at the empirical phase. Only $\rho(0)>0$ is needed. Zero \texttt{sorry}/\texttt{axiom}; 9095 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integral_quadKernel (β a) : ∫ s, quadKernel β a s = √(π/β) * exp (β a²/4)
+theorem phaseMoment_one_add_neg : phaseMoment β 1 a + phaseMoment β 1 (-a) = √(π/β) e^{βa²/4}
+theorem chart_const_phase_tendsto_moving : cₙ → c₀, Nₙ → ∞ ⊢
+  chartIntegral … (Nₙ) (fun _ => cₙ) η / leadScale … (Nₙ) → phaseCoeff … (fun _ => c₀) η
+def ncLikelihood n y x := ∏ i, gaussianPDFReal (x 0 * x 1) 1 (y i);  ncPhase n y := (∑ y)/√n
+def ncKernel N z x := exp (-(N²(x₀x₁)²)/2 + N z x₀x₁);  ncPosteriorMean; ncFluctMGF
+theorem ncLikelihood_eq (hn : 0 < n) : ncLikelihood n y x =
+  (∏ i, gaussianPDFReal 0 1 (y i)) * ncKernel (√n) (ncPhase n y) x
+theorem ncPosteriorMean_eq : posterior mean = ratio of kernel integrals (truth factor cancels)
+theorem nc_integral_tendsto : (∫_{symBox 2} ρ K_{Nₙ,zₙ}) / leadScale … → 2ρ(0)√(2π) e^{z₀²/2}
+theorem ncFluctMGF_tendsto (hρ0 : 0 < ρ 0) (hz : ncPhase n (y n) → z) :
+  ncFluctMGF n (y n) ρ θ → exp (z θ + θ²/2)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Three ingredients on top of the existing block. (i) The \emph{moving-phase} form of the leading-term
+theorem: with $c_n\to c_0$ and $N_n\to\infty$ the eventual Lipschitz dependence of the normalised
+chart integral on the phase (unit~209) and the fixed-phase limit (Headline~XIII) give
+$F_{N_n}(c_n)\to\mathcal C(c_0)$ --- needed because the empirical phase moves with $n$.
+(ii) Completing the square: $J_1(a)+J_1(-a)=\int_{\mathbb R}e^{-\beta s^2+\beta as}\,ds
+=\sqrt{\pi/\beta}\,e^{\beta a^2/4}$, so the four quadrants ($\varepsilon_\sigma=\pm1$ twice each)
+sum to $2\rho(0)\sqrt{2\pi}\,e^{z^2/2}$ at $\beta=\tfrac12$, phase $2z$, and the ratio of the
+numerator (phase $2z+2\theta$) to the denominator is $e^{((z+\theta)^2-z^2)/2}=e^{z\theta+\theta^2/2}$.
+(iii) The exact likelihood identity, an elementary Gaussian computation. The example sits in the
+$m=2$ logarithmic regime: the scale is $N^{-1}\log N$ and finite-$n$ corrections are $O(1/\log n)$;
+a numerical check ($\rho=1+0.3x_0+0.2x_1^2$, $z=0.7$, $\theta=0.5$, target $1.6080$) gives
+$1.407,1.498,1.532,1.559$ at $n=10^2,10^4,10^6,10^8$ with gap$\times\log n\approx1$ throughout,
+consistent with the theorem and with a $C/\log n$ correction.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{integral\_sub\_right\_eq\_self} needs \texttt{(μ := volume)} or the
+  \texttt{IsAddRightInvariant} instance search is stuck on a metavariable.
+\item \texttt{Tendsto.div} produces a \texttt{Pi.div} of lambdas; before rewriting the pointwise
+  identity, \texttt{simp only [Pi.div\_apply]}. Pointwise goals from \texttt{integral\_congr\_ae}
+  again need \texttt{beta\_reduce} before \texttt{rw}.
+\item Sums over $\sigma:\mathrm{Fin}\,2\to\mathrm{Bool}$: \texttt{rw [← (piFinTwoEquiv fun \_ => Bool).symm.sum\_comp,
+  Fintype.sum\_prod\_type]; simp only [Fintype.sum\_bool, piFinTwoEquiv, Fin.cons\_zero, Fin.cons\_one, …]}
+  enumerates the four quadrants explicitly.
+\item The \texttt{ring} fallback message ``Try this: ring\_nf'' is an info, not a warning, but the
+  build log shows it; use \texttt{ring\_nf} where \texttt{ring} only normalises.
+\end{itemize}
+
+\section{Status}
+Headline XX (end-to-end normal-crossing example) added to the index. Next (unit 219): the Gaussian-data
+layer --- for $y_i$ i.i.d.\ $N(0,1)$ the phase $Z_n$ has variance one, so by Chebyshev and uniform
+convergence on compact phase sets the difference $\mathbb E_{\rm post}[e^{\theta\sqrt n x_0x_1}]-
+e^{Z_n\theta+\theta^2/2}$ tends to zero in probability.
+\end{document}

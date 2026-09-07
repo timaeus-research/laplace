@@ -24,6 +24,7 @@ Conventions: boxes `(0,1]^d` (`unitBox`), `(-1,1]^d` (`symBox`); `ratioExp h k i
 | XVII | random per-stratum posterior quotient | PhaseRandomPosterior.lean:99 |
 | XVIII | assembled stochastic posterior quotient over charts | HeadlineStochasticAssembly.lean:102 |
 | XIX | symmetric box with phase (signed `x^h` / absolute `|x|^h`) | HeadlineSymmetricPhase.lean:102 / 127 |
+| XX  | end-to-end example: model `N(x₀x₁,1)` on `(-1,1]²`, posterior MGF of `√n x₀x₁` → `e^{zθ+θ²/2}` (exact likelihood identity at L149) | NormalCrossingModel.lean:275 |
 | — | formal face-vs-corner counterexample (`5√π/12 ≠ √π/4`) | MixedRatioCounterexample.lean:126 |
 | — | abstract assembly (min exponent, max log multiplicity) | ChartAssembly.lean:142 |
 
@@ -35,3 +36,5 @@ See `projects/grammar/staging/normal-block-report-v3.pdf` §Assumptions: the cha
 external input ("conditional" = assuming); densities are deterministic and strictly positive; no
 remainders; joint convergence of the empirical phases is a hypothesis; the stochastic results are weak
 limits, not expansions with rates; selection is at the normalised scale and signed numerators may cancel.
+Headline XX is the exception: it is an unconditional statement about a concrete statistical model (its only
+hypotheses are the model, a continuous prior with `ρ(0) > 0`, and convergence of the empirical phase `Zₙ`).
