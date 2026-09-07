@@ -16,9 +16,12 @@ moment integral `I_η(N) = ∫_{(0,1]^{m+1}} η(x) x^h e^{-βN x^{2k}} dx` with 
      ∫_{(0,1]^{m+1}} η(P_J u) ∏_{i∉J} uᵢ^{hᵢ-2kᵢλ} du`, with `P_J` zeroing the minimal coordinates;
 * **constant amplitude** recovers the bare mixed constant (`amplitudeCoeff_const`);
 * **equal ratios**: the coefficient is `η(0)` times the bare constant
-  (`headline_normal_moment_amplitude_equal`) — origin evaluation is valid exactly in this case;
+  (`headline_normal_moment_amplitude_equal`). Under the standing hypotheses, origin evaluation
+  holds for *every* continuous amplitude exactly when all ratios are equal; particular amplitudes
+  (e.g. constants) satisfy it also for unequal ratios, while `η(u) = uᵢ` with `i ∉ J` vanishes at
+  the origin yet has a strictly positive face coefficient;
 * **face-vanishing amplitude**: the coefficient is `0` (`amplitudeCoeff_eq_zero_of_face`), so the
-  true decay is faster than the bare scale;
+  dressed integral is `o` of the bare scale (no quantitative next-order claim);
 * the **equivalence form** under `amplitudeCoeff ≠ 0` (`headline_normal_moment_amplitude_equiv`).
 
 Scope: nonempty block of boundary-type coordinates, unit cutoff, `kᵢ > 0`, fixed `β > 0`, amplitude
@@ -45,12 +48,15 @@ theorem amplitudeCoeff_const {d : ℕ} (h k : Fin d → ℕ) (hk : ∀ i, 0 < k 
   rw [← h0, ← integral_const_mul, ← integral_const_mul]
   exact setIntegral_congr_fun (measurableSet_unitBox d) fun u _ => by ring
 
-/-- **Face-vanishing amplitude**: the leading coefficient vanishes. -/
+/-- **Face-vanishing amplitude**: if `η` vanishes on the face `u_J = 0` (over the box), the
+leading coefficient vanishes, so the dressed integral is `o(N^{-λ} (log N)^{|J|-1})`; no
+quantitative improvement of the exponent or log power is claimed. -/
 theorem amplitudeCoeff_eq_zero_of_face {d : ℕ} (h k : Fin d → ℕ) (l β : ℝ)
-    (η : (Fin d → ℝ) → ℝ) (hη : ∀ u, η (faceProj h k l u) = 0) :
+    (η : (Fin d → ℝ) → ℝ) (hη : ∀ u ∈ unitBox d, η (faceProj h k l u) = 0) :
     amplitudeCoeff h k l β η = 0 := by
   unfold amplitudeCoeff
-  simp [hη]
+  rw [setIntegral_congr_fun (measurableSet_unitBox d) (fun u hu => by rw [hη u hu, zero_mul]),
+    integral_zero, mul_zero]
 
 /-- **Equal ratios**: the face is the origin and the coefficient is `η(0)` times the bare constant
 `Γ(λ) β^{-λ} / (d! ∏ᵢ 2kᵢ)`. -/
