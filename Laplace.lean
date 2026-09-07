@@ -336,3 +336,4 @@ import Laplace.Grammar.MonomialBoxBridge
 import Laplace.Grammar.MonomialAsymptotic
 import Laplace.Grammar.HeadlineMonomial
 import Laplace.Grammar.PowerLogEnvelope
+import Laplace.Grammar.DominatedCoordinate
