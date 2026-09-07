@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The abstract all-order one-dimensional kernel-jet transfer}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For $Z(N)=\int_0^bu^he^{-\beta(Nu^k)^2}F(u,Nu^k)\,du$ with an amplitude admitting a finite jet
+expansion $|F(u,s)-\sum_{j<R}u^jF_j(s)|\le u^RH_R(s)$ at $u=0$ and Gaussian-weighted moments finite,
+the density-transfer theorem gives $|Z(N)-\sum_{j<R}c_jN^{-q_j}|\le K_RN^{-q_R}$ for $N\ge1$, with
+$q_j=(h+1+j)/k$ and $c_j=k^{-1}\int_0^\infty s^{q_j-1}e^{-\beta s^2}F_j(s)\,ds$. This is the engine
+of the all-order theory recommended by the third Astra consult: finite compatible jets with
+moment-integrable remainders, no analyticity. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def oneDKernel (β b N : ℝ) (h k : ℕ) (F : ℝ → ℝ → ℝ) : ℝ :=
+  ∫ u in Ioc (0 : ℝ) b, u ^ h * (Real.exp (-β * (N * u ^ k) ^ 2) * F u (N * u ^ k))
+noncomputable def jetCoeff (β p : ℝ) (k : ℕ) (Fj : ℕ → ℝ → ℝ) (j : ℕ) : ℝ :=
+  1 / (k : ℝ) * logMoment β (p + (j : ℝ) / k) 0 (Fj j)
+theorem oneDKernel_jet_expansion (β b p : ℝ) (h k R : ℕ) (F : ℝ → ℝ → ℝ) (Fj : ℕ → ℝ → ℝ)
+    (HR : ℝ → ℝ) (hβ : 0 < β) (hb : 0 < b) (hk : 0 < k) (hp : ((h : ℝ) + 1) / k = p)
+    ... (hrem : ∀ u ∈ Icc (0 : ℝ) b, ∀ s, 0 < s →
+      |F u s - ∑ j ∈ Finset.range R, u ^ j * Fj j s| ≤ u ^ R * HR s)
+    (hMc hMt hMH : Gaussian-weighted moment integrability) :
+    ∃ K : ℝ, ∀ N : ℝ, 1 ≤ N →
+      |oneDKernel β b N h k F
+          - ∑ j ∈ Finset.range R, jetCoeff β p k Fj j * N ^ (-(p + (j : ℝ) / k))|
+        ≤ K * N ^ (-(p + (R : ℝ) / k))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+The exact density $\rho(r,s)=k^{-1}r^{p-1}F(r^{1/k},s)$ (unit~85's substitution with a general
+amplitude) has the \texttt{Fin R}-indexed density expansion with exponents $p+j/k$, log degrees $0$,
+coefficients $k^{-1}F_j$ and remainder $r^{p+R/k-1}k^{-1}H_R$, because $r^{p+j/k-1}=r^{p-1}u^j$. The
+transfer theorem then produces the statement, after converting the transferred terms
+$N^{-q_j}M_0(k^{-1}F_j)$ and the \texttt{Fin}-sums to range sums.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Integrable.const\_mul} of an \texttt{IntegrableOn} again needs a type ascription before
+\texttt{.congr\_fun}.
+\item The exact density lemma is stated with $(h+1)/k$; rewrite it with the exponent hypothesis before
+using it against the density expansion stated with $p$.
+\end{itemize}
+
+\section{Outcome}
+The all-order one-dimensional theorem is reduced to producing finite jets with quantitative remainders.
+Next: the polynomial jet recursion $E_n=\frac{\beta s}{n}\sum_ii\,x_iE_{n-i}$, $P_j=\sum_\ell y_\ell
+E_{j-\ell}$ for $\eta e^{\beta s\xi}$ and the jet remainder bound from order-$R$ Taylor remainders of
+$\xi,\eta$, giving $c_j=k^{-1}\sum_\ell p_{j,\ell}S_{q_j+\ell}(a)$.
+\end{document}

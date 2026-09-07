@@ -123,7 +123,7 @@ theorem oneDKernelDensity_expansion (b p : ℝ) (k R : ℕ) (F : ℝ → ℝ →
 /-- **The all-order kernel-jet transfer**: for `N ≥ 1`,
 `|Z(N) − ∑_{j<R} c_j N^{-q_j}| ≤ K_R N^{-q_R}`. -/
 theorem oneDKernel_jet_expansion (β b p : ℝ) (h k R : ℕ) (F : ℝ → ℝ → ℝ) (Fj : ℕ → ℝ → ℝ)
-    (HR : ℝ → ℝ) (hβ : 0 < β) (hb : 0 < b) (hk : 0 < k) (hp : ((h : ℝ) + 1) / k = p)
+    (HR : ℝ → ℝ) (hb : 0 < b) (hk : 0 < k) (hp : ((h : ℝ) + 1) / k = p)
     (hFm : Measurable (Function.uncurry F)) (hFjm : ∀ j, Measurable (Fj j))
     (hHm : Measurable HR) (hH0 : ∀ s, 0 ≤ HR s)
     (hrem : ∀ u ∈ Icc (0 : ℝ) b, ∀ s, 0 < s →
