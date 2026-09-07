@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Weighted-norm bounds for the canonical coefficients}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#10 rank~4 (R6 boundedness). The weighted coefficient norm at exponent $\alpha$, log degree
+$\ell$ and radius $r$ is
+$\|c\|_{\alpha,\ell,r}=\sum_{ij}r^{i+j}\int_0^\infty s^{\alpha-1}(1+|\log s|)^\ell e^{-\beta s^2}|c_{ij}(s)|\,ds$.
+For $b<r<\rho$ and $c$ in the envelope class the norm is finite, and the canonical coefficients are
+bounded by it: $|A_\alpha(c)|\le w_C(\alpha)\|c\|_{\alpha,0,r}$ and
+$|B_\alpha(c)|\le(w_U(\alpha)+w_V(\alpha))\|c\|_{\alpha,0,r}+w_C(\alpha)\|c\|_{\alpha,1,r}$
+(\texttt{abs\_canonA\_le\_coeffNorm}, \texttt{abs\_canonB\_le\_coeffNorm}) with weights depending
+only on $(\alpha,b,r,h,k)$. The key input is the geometric bound
+$|\mathrm{axisPrim}(\gamma,b,j)|\le C_\gamma b^j$ on the finite-part multipliers
+(\texttt{abs\_axisPrim\_le\_geom}), exactly as Astra~\#10 prescribed. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def coeffNorm (β α : ℝ) (ℓ : ℕ) (r : ℝ) (c : ℕ × ℕ → ℝ → ℝ) : ℝ :=
+  ∑' ij : ℕ × ℕ, r ^ (ij.1 + ij.2) * tailMoment β α ℓ (c ij)
+theorem coeffNorm_summable ... (hr0 : 0 ≤ r) (hrρ : r < ρ) ... :
+    Summable fun ij : ℕ × ℕ => r ^ (ij.1 + ij.2) * tailMoment β α ℓ (c ij)
+noncomputable def axisPrimGeomConst (γ b : ℝ) : ℝ :=
+  b ^ (-γ) / ((canonicalM γ : ℝ) - γ)
+    + ∑ m ∈ Finset.range (canonicalM γ), |axisPrim γ b m| / b ^ m
+theorem abs_axisPrim_le_geom (γ b : ℝ) (hb : 0 < b) (j : ℕ) :
+    |axisPrim γ b j| ≤ axisPrimGeomConst γ b * b ^ j
+noncomputable def cWeight (r : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (α : ℝ) : ℝ :=
+  if collision then 1 / ((k₁ : ℝ) * k₂ * r ^ (uIdx h₁ k₁ α + vIdx h₂ k₂ α)) else 0
+noncomputable def uWeight (b r : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (α : ℝ) : ℝ :=
+  if u-pole then axisPrimGeomConst ((k₂ : ℝ) * α - h₂ - 1) b / ((k₁ : ℝ) * r ^ uIdx h₁ k₁ α)
+  else 0
+theorem abs_canonA_le_coeffNorm ... (α : ℝ) (hα : 0 < α) :
+    |canonA β h₁ h₂ k₁ k₂ (fun i j s => c (i, j) s) α|
+      ≤ cWeight r h₁ h₂ k₁ k₂ α * coeffNorm β α 0 r c
+theorem abs_canonB_le_coeffNorm ... (hbr : b < r) (hrρ : r < ρ) ... (α : ℝ) (hα : 0 < α) :
+    |canonB β b h₁ h₂ k₁ k₂ (anaFaceU c b) (anaFaceV c b) (fun i j s => c (i, j) s) α|
+      ≤ (uWeight b r h₁ h₂ k₁ k₂ α + vWeight b r h₁ h₂ k₁ k₂ α) * coeffNorm β α 0 r c
+        + cWeight r h₁ h₂ k₁ k₂ α * coeffNorm β α 1 r c
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+Each tail moment is at most $\rho^{-i-j}C_0EM$ by the envelope, so the weighted sum converges
+geometrically for $r<\rho$. The collision coefficient is a single scaled entry, bounded by one
+term of the norm. For the face coefficient at $\alpha=\alpha_i$, the moment series
+$k_1^{-1}\sum_jq_{\gamma_i}(j)M[\alpha;\ell;c_{ij}]$ (unit~126) is bounded termwise by
+$C_{\gamma_i}b^j\cdot\mathrm{tailMoment}(c_{ij})\le C_{\gamma_i}r^{-i}\cdot r^{i+j}\mathrm{tailMoment}(c_{ij})$,
+and the row sum is at most the full weighted sum (comparison along the injection $j\mapsto(i,j)$).
+The multiplier bound uses $|q_\gamma(j)|\le b^jb^{-\gamma}/(J-\gamma)$ for $j\ge J>\gamma$ and a
+finite sum for $j<J$.
+
+\section{Paper-facing meaning}
+
+The canonical coefficients of the $d=2$ Taylor tree are bounded functionals of the amplitude
+coefficient array in a weighted $\ell^1$-of-Gaussian-moments norm, with explicit operator constants.
+With linearity (next unit) this gives the difference form $|A_\alpha(c)-A_\alpha(d)|\le w\|c-d\|$,
+the deterministic half of the continuity needed to pass from $\xi_n\Rightarrow G$ to convergence of
+the coefficients (Astra~\#10: R6 is the bridge to convergence in law; the remaining nonlinear link is
+the amplitude map $(x,y)\mapsto c$).
+
+\section{Lean notes}
+
+\begin{itemize}
+\item \texttt{Summable.prod\_factor} (rows) and \texttt{.prod\_symm.prod\_factor} (columns)
+extract one-index summability from a summable family on $\mathbb N^2$;
+\texttt{Summable.tsum\_le\_tsum\_of\_inj} compares a row sum with the full sum.
+\item \texttt{gcongr} descends INTO a \texttt{tsum} and leaves termwise goals with inaccessible
+binder names; when the intended step is a tsum-level inequality, use
+\texttt{mul\_le\_mul\_of\_nonneg\_left} and \texttt{Summable.tsum\_le\_tsum} explicitly.
+\item \texttt{Integrable.div\_const} returns \texttt{Integrable ... (volume.restrict s)}, on which
+dot-notation \texttt{.congr\_fun} (an \texttt{IntegrableOn} lemma) fails; restate the type as
+\texttt{IntegrableOn} in a \texttt{have} first.
+\item \texttt{Summable.mul\_left \_} with an underscore can time out at \texttt{isDefEq}; pass
+the constant explicitly.
+\end{itemize}
+
+\end{document}
