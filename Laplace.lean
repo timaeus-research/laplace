@@ -251,3 +251,4 @@ import Laplace.Grammar.TwoDSecondOrder
 import Laplace.Grammar.TwoDChart
 import Laplace.Grammar.LeadingCoeffVariants
 import Laplace.Grammar.MomentBounds
+import Laplace.Grammar.KernelJetTransfer
