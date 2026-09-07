@@ -5,9 +5,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Laplace.Grammar.FreezingInequality
 
 /-!
-# Minimal block VI: the freezing limit (grammar §4.2, multiplicity `m = d₀+2`)
+# Minimal block VI: the freezing limit (grammar §4.2, multiplicity `m = d₀+1 ≥ 1`)
 
-The right-hand side of the freezing inequality is normalised by `N^p / (log N)^{d₀+1}`:
+The right-hand side of the freezing inequality is normalised by `N^p / (log N)^{d₀}` (block of
+`d₀+1` coordinates):
 
 * the strip terms (shifted exponents) vanish, since the mixed-block envelope loses one logarithm
   (`constStateIntegral_shift_tendsto_zero`);
@@ -15,9 +16,10 @@ The right-hand side of the freezing inequality is normalised by `N^p / (log N)^{
 * uniform continuity of `ξ, η` on the closed box makes `ω` arbitrarily small
   (`corner_oscillation`).
 
-Hence `N^p (Z(N) − Z₀(N)) / (log N)^{d₀+1} → 0` (`blockStateIntegral_sub_frozen_tendsto`): the
-leading coefficient of a multiplicity-`m ≥ 2` block sees only the values of `ξ, η` on the minimal
-face `u = 0`. Zero `sorry`/`axiom`.
+Hence `N^p (Z(N) − Z₀(N)) / (log N)^{d₀} → 0` (`blockStateIntegral_sub_frozen_tendsto`): the
+leading coefficient of a block of any multiplicity `m ≥ 1` sees only the values of `ξ, η` on the
+minimal face `u = 0` (for `m = 1` the inserted block has exponent `q > p`, unit 82). Zero
+`sorry`/`axiom`.
 -/
 
 open Real MeasureTheory Set Filter Topology
@@ -200,6 +202,210 @@ theorem constStateIntegral_shift_tendsto_zero (β a b p : ℝ) (hβ : 0 < β) (h
     _ = C / Real.log N := by
         rw [hC]; field_simp; ring
 
+/-- Measurability of the scaled block integral in the noncritical variable. -/
+theorem stronglyMeasurable_boxIntegralFin_scale (β a b N : ℝ) {m d' : ℕ} (k h : Fin m → ℕ)
+    (k' : Fin d' → ℕ) :
+    StronglyMeasurable fun v : Fin d' → ℝ => boxIntegralFin β a b (N * ∏ i, v i ^ k' i) k h := by
+  have hG : Continuous fun x : (Fin d' → ℝ) × (Fin m → ℝ) =>
+      (∏ i, x.2 i ^ h i) * quadKernel β a ((N * ∏ i, x.1 i ^ k' i) * ∏ i, x.2 i ^ k i) := by
+    have h2 : Continuous fun x : (Fin d' → ℝ) × (Fin m → ℝ) =>
+        (N * ∏ i, x.1 i ^ k' i) * ∏ i, x.2 i ^ k i :=
+      (continuous_const.mul ((continuous_prod_pow k').comp continuous_fst)).mul
+        ((continuous_prod_pow k).comp continuous_snd)
+    exact ((continuous_prod_pow h).comp continuous_snd).mul ((quadKernel_continuous β a).comp h2)
+  have := hG.stronglyMeasurable.integral_prod_right' (ν := boxMeasure b m)
+  exact this
+
+/-- A one-coordinate block is bounded uniformly in the scale. -/
+theorem boxIntegralFin_one_le (β a b c : ℝ) (hβ : 0 < β) (k h : Fin 1 → ℕ) :
+    boxIntegralFin β a b c k h
+      ≤ Real.exp (β * a ^ 2 / 2) * ∫ u in Ioc (0 : ℝ) b, u ^ h 0 := by
+  rw [boxIntegralFin_eq_toNatFun, boxIntegral_eq_iterChartGen, iterChartGen_succ,
+    ← integral_const_mul]
+  have hint : IntegrableOn (fun u : ℝ => Real.exp (β * a ^ 2 / 2) * u ^ toNatFun h 0 0) (Ioc 0 b) :=
+    ((continuous_const.mul (continuous_pow _)).continuousOn.integrableOn_compact
+      isCompact_Icc).mono_set Ioc_subset_Icc_self
+  have hint' : IntegrableOn (fun u : ℝ => u ^ toNatFun h 0 0
+      * iterChartGen β a b (toNatFun k 1) (toNatFun h 0) 0 (c * u ^ toNatFun k 1 0)) (Ioc 0 b) := by
+    simp only [iterChartGen_zero]
+    exact (((continuous_pow _).mul ((quadKernel_continuous β a).comp
+      (continuous_const.mul (continuous_pow _)))).continuousOn.integrableOn_compact
+      isCompact_Icc).mono_set Ioc_subset_Icc_self
+  have hh : toNatFun h 0 0 = h 0 := by simp [toNatFun]
+  rw [hh] at hint hint' ⊢
+  refine setIntegral_mono_on hint' hint measurableSet_Ioc fun u hu => ?_
+  rw [iterChartGen_zero]
+  have := quadKernel_le_const β a (c * u ^ toNatFun k 1 0) hβ
+  have hu0 : 0 ≤ u ^ h 0 := pow_nonneg hu.1.le _
+  calc u ^ h 0 * quadKernel β a (c * u ^ toNatFun k 1 0)
+      ≤ u ^ h 0 * Real.exp (β * a ^ 2 / 2) := mul_le_mul_of_nonneg_left this hu0
+    _ = _ := by ring
+
+/-- **The strip term vanishes for a one-coordinate block**: with `q = (h+2)/k > p = (h+1)/k`,
+`N^p Z^{a}_{h+1}(N) → 0` (the inserted block has exponent `q > p`; no logarithms). -/
+theorem constStateIntegral_shift_tendsto_zero₁ (β a b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d' : ℕ}
+    (k h : Fin 1 → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
+    (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i) (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i) :
+    Tendsto (fun N : ℝ => N ^ p * constStateIntegral β a b N k (shiftExp h 0) k' h') atTop
+      (𝓝 0) := by
+  have hk0 : (0 : ℝ) < k 0 := Nat.cast_pos.2 (hk 0)
+  set q : ℝ := ((h 0 : ℝ) + 2) / k 0 with hq_def
+  have hpq : p < q := by
+    rw [← hp 0, finExp, hq_def, div_lt_div_iff_of_pos_right hk0]; linarith
+  have hp0 : 0 < p := by rw [← hp 0]; exact finExp_pos k h hk 0
+  -- exponent of the shifted block
+  have hshift : ∀ i, i ≤ 0 → ((toNatFun (shiftExp h 0) 0 i : ℝ) + 1) / toNatFun k 1 i = q := by
+    intro i hi
+    have hi0 : i = 0 := Nat.le_zero.1 hi
+    subst hi0
+    have h1 : toNatFun (shiftExp h 0) 0 0 = h 0 + 1 := by simp [toNatFun, shiftExp]
+    have h2 : toNatFun k 1 0 = k 0 := by simp [toNatFun]
+    rw [h1, h2, hq_def]; push_cast; ring
+  have hk'' : ∀ i, 0 < toNatFun k 1 i := toNatFun_pos k hk
+  -- the two bounds on the shifted block
+  set E : ℝ := (∏ i ∈ Finset.range (0 + 1), (1 : ℝ) / toNatFun k 1 i)
+    * (1 / ((0 : ℕ).factorial : ℝ)) * blockEnv β |a| q 0 with hE
+  have hE0 : 0 ≤ E := by
+    have := blockEnv_nonneg β |a| q 0
+    have : 0 ≤ ∏ i ∈ Finset.range (0 + 1), (1 : ℝ) / toNatFun k 1 i :=
+      Finset.prod_nonneg fun i _ => by have := hk'' i; positivity
+    positivity
+  set C₁ : ℝ := Real.exp (β * a ^ 2 / 2) * ∫ u in Ioc (0 : ℝ) b, u ^ (h 0 + 1) with hC₁
+  have hC₁0 : 0 ≤ C₁ := by
+    refine mul_nonneg (Real.exp_pos _).le (setIntegral_nonneg measurableSet_Ioc fun u hu => ?_)
+    exact pow_nonneg hu.1.le _
+  have hZq : ∀ c, 0 < c → c ^ q * boxIntegralFin β a b c k (shiftExp h 0) ≤ E := by
+    intro c hc
+    have := iterChartGen_block_le β b |a| q (toNatFun k 1) (toNatFun (shiftExp h 0) 0) hβ hb hk'' 0
+      hshift a le_rfl c hc
+    rw [boxIntegralFin_eq_toNatFun, boxIntegral_eq_iterChartGen]
+    simpa [hE] using this
+  have hZ1 : ∀ c, boxIntegralFin β a b c k (shiftExp h 0) ≤ C₁ := by
+    intro c
+    have := boxIntegralFin_one_le β a b c hβ k (shiftExp h 0)
+    rw [shiftExp_apply_self] at this
+    exact this
+  have hZ0 : ∀ c, 0 ≤ boxIntegralFin β a b c k (shiftExp h 0) := fun c =>
+    boxIntegralFin_nonneg β a b c k (shiftExp h 0)
+  -- uniform bound `c^p Z(c) ≤ C₁ + E`
+  have hbnd : ∀ c, 0 < c → c ^ p * boxIntegralFin β a b c k (shiftExp h 0) ≤ C₁ + E := by
+    intro c hc
+    rcases le_or_gt c 1 with hc1 | hc1
+    · have : c ^ p ≤ 1 := Real.rpow_le_one hc.le hc1 hp0.le
+      calc c ^ p * boxIntegralFin β a b c k (shiftExp h 0)
+          ≤ 1 * C₁ := mul_le_mul this (hZ1 c) (hZ0 c) zero_le_one
+        _ ≤ C₁ + E := by linarith
+    · have h1 : c ^ p = c ^ (p - q) * c ^ q := by rw [← Real.rpow_add hc]; ring_nf
+      have h2 : c ^ (p - q) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hc1.le (by linarith)
+      calc c ^ p * boxIntegralFin β a b c k (shiftExp h 0)
+          = c ^ (p - q) * (c ^ q * boxIntegralFin β a b c k (shiftExp h 0)) := by rw [h1]; ring
+        _ ≤ 1 * E := mul_le_mul h2 (hZq c hc) (mul_nonneg (Real.rpow_nonneg hc.le _) (hZ0 c))
+          zero_le_one
+        _ ≤ C₁ + E := by linarith
+  -- dominated convergence over the noncritical box
+  set F : ℝ → (Fin d' → ℝ) → ℝ := fun N v => N ^ p * ((∏ i, v i ^ h' i)
+    * boxIntegralFin β a b (N * ∏ i, v i ^ k' i) k (shiftExp h 0)) with hF
+  set bound : (Fin d' → ℝ) → ℝ := fun v => (C₁ + E) * ∏ i, (v i ^ h' i * (v i ^ k' i) ^ (-p))
+    with hbound
+  have hmem : ∀ᵐ v ∂(boxMeasure b d'), v ∈ Set.pi univ fun _ : Fin d' => Ioc (0 : ℝ) b := by
+    rw [boxMeasure_eq_restrict]
+    exact ae_restrict_mem (MeasurableSet.univ_pi fun _ => measurableSet_Ioc)
+  have hprod : ∀ v : Fin d' → ℝ, (∀ i, 0 < v i) →
+      (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p) = ∏ i, (v i ^ h' i * (v i ^ k' i) ^ (-p)) := by
+    intro v hv
+    rw [Finset.prod_mul_distrib, Real.finsetProd_rpow _ _ fun i _ => pow_nonneg (hv i).le _]
+  have hF_meas : ∀ N : ℝ, AEStronglyMeasurable (F N) (boxMeasure b d') := fun N =>
+    (continuous_const.stronglyMeasurable.mul ((continuous_prod_pow h').stronglyMeasurable.mul
+      (stronglyMeasurable_boxIntegralFin_scale β a b N k (shiftExp h 0) k'))).aestronglyMeasurable
+  have h_bound : ∀ᶠ N in atTop, ∀ᵐ v ∂(boxMeasure b d'), ‖F N v‖ ≤ bound v := by
+    filter_upwards [eventually_gt_atTop (0 : ℝ)] with N hN
+    filter_upwards [hmem] with v hv
+    have hv' : ∀ i, 0 < v i := by rw [Set.mem_univ_pi] at hv; exact fun i => (hv i).1
+    have hV : 0 < ∏ i, v i ^ k' i := Finset.prod_pos fun i _ => pow_pos (hv' i) _
+    set c : ℝ := N * ∏ i, v i ^ k' i with hc
+    have hc0 : 0 < c := by positivity
+    have hnpow : N ^ p = c ^ p * (∏ i, v i ^ k' i) ^ (-p) := by
+      rw [hc, Real.mul_rpow hN.le hV.le, Real.rpow_neg hV.le, mul_assoc,
+        mul_inv_cancel₀ (Real.rpow_pos_of_pos hV p).ne', mul_one]
+    have hprodh : 0 ≤ ∏ i, v i ^ h' i := Finset.prod_nonneg fun i _ => pow_nonneg (hv' i).le _
+    simp only [hF, hbound]
+    rw [← hc, Real.norm_eq_abs, hnpow, ← hprod v hv']
+    rw [show c ^ p * (∏ i, v i ^ k' i) ^ (-p) * ((∏ i, v i ^ h' i)
+        * boxIntegralFin β a b c k (shiftExp h 0))
+      = (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p)
+        * (c ^ p * boxIntegralFin β a b c k (shiftExp h 0)) by ring]
+    have hW : 0 ≤ (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p) :=
+      mul_nonneg hprodh (Real.rpow_nonneg hV.le _)
+    rw [abs_of_nonneg (mul_nonneg hW (mul_nonneg (Real.rpow_nonneg hc0.le _) (hZ0 c)))]
+    calc (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p)
+          * (c ^ p * boxIntegralFin β a b c k (shiftExp h 0))
+        ≤ (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p) * (C₁ + E) :=
+          mul_le_mul_of_nonneg_left (hbnd c hc0) hW
+      _ = _ := by ring
+  have hbound_int : Integrable bound (boxMeasure b d') :=
+    (divisorWeight_integrable b k' h' hk' p hq).const_mul _
+  have h_lim : ∀ᵐ v ∂(boxMeasure b d'), Tendsto (fun N => F N v) atTop (𝓝 0) := by
+    filter_upwards [hmem] with v hv
+    have hv' : ∀ i, 0 < v i := by rw [Set.mem_univ_pi] at hv; exact fun i => (hv i).1
+    have hV : 0 < ∏ i, v i ^ k' i := Finset.prod_pos fun i _ => pow_pos (hv' i) _
+    have hprodh : 0 ≤ ∏ i, v i ^ h' i := Finset.prod_nonneg fun i _ => pow_nonneg (hv' i).le _
+    -- squeeze: `F N v ≤ (∏ v^{h'}) (v^{k'})^{-p} E (N v^{k'})^{p-q}`
+    have hlim' : Tendsto (fun N : ℝ => (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p) * E
+        * (N * ∏ i, v i ^ k' i) ^ (p - q)) atTop (𝓝 0) := by
+      have h1 : Tendsto (fun N : ℝ => N * ∏ i, v i ^ k' i) atTop atTop :=
+        tendsto_id.atTop_mul_const hV
+      have h2 := (tendsto_rpow_neg_atTop (by linarith : 0 < q - p)).comp h1
+      have h3 := h2.const_mul ((∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p) * E)
+      rw [mul_zero] at h3
+      refine h3.congr' (Filter.Eventually.of_forall fun N => ?_)
+      simp only [Function.comp]
+      rw [show -(q - p) = p - q by ring]
+    refine squeeze_zero' ?_ ?_ hlim'
+    · filter_upwards [eventually_gt_atTop (0 : ℝ)] with N hN
+      simp only [hF]
+      exact mul_nonneg (Real.rpow_nonneg hN.le _) (mul_nonneg hprodh (hZ0 _))
+    · filter_upwards [eventually_gt_atTop (0 : ℝ)] with N hN
+      set c : ℝ := N * ∏ i, v i ^ k' i with hc
+      have hc0 : 0 < c := by positivity
+      have hnpow : N ^ p = c ^ p * (∏ i, v i ^ k' i) ^ (-p) := by
+        rw [hc, Real.mul_rpow hN.le hV.le, Real.rpow_neg hV.le, mul_assoc,
+          mul_inv_cancel₀ (Real.rpow_pos_of_pos hV p).ne', mul_one]
+      have h1 : c ^ p = c ^ (p - q) * c ^ q := by rw [← Real.rpow_add hc0]; ring_nf
+      have hW : 0 ≤ (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p) :=
+        mul_nonneg hprodh (Real.rpow_nonneg hV.le _)
+      simp only [hF]
+      rw [← hc, hnpow, h1]
+      calc c ^ (p - q) * c ^ q * (∏ i, v i ^ k' i) ^ (-p)
+            * ((∏ i, v i ^ h' i) * boxIntegralFin β a b c k (shiftExp h 0))
+          = (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p)
+            * (c ^ q * boxIntegralFin β a b c k (shiftExp h 0)) * c ^ (p - q) := by ring
+        _ ≤ (∏ i, v i ^ h' i) * (∏ i, v i ^ k' i) ^ (-p) * E * c ^ (p - q) := by
+            gcongr
+            exact hZq c hc0
+  have hmain := tendsto_integral_filter_of_dominated_convergence bound
+    (Filter.Eventually.of_forall hF_meas) h_bound hbound_int h_lim
+  rw [integral_zero] at hmain
+  refine hmain.congr' (Filter.Eventually.of_forall fun N => ?_)
+  simp only [hF, constStateIntegral]
+  rw [← integral_const_mul]
+
+/-- **Unified strip lemma** for a block of `d₀ + 1` coordinates (`d₀ = 0` allowed):
+`N^p Z_{h+eᵢ}(N)/(log N)^{d₀} → 0`. -/
+theorem constStateIntegral_shift_tendsto_zero' (β a b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d₀ d' : ℕ}
+    (k h : Fin (d₀ + 1) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
+    (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i) (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i)
+    (i : Fin (d₀ + 1)) :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ d₀
+      * constStateIntegral β a b N k (shiftExp h i) k' h') atTop (𝓝 0) := by
+  cases d₀ with
+  | zero =>
+    have hi : i = 0 := Fin.ext (by omega)
+    subst hi
+    have := constStateIntegral_shift_tendsto_zero₁ β a b p hβ hb k h hk hp k' h' hk' hq
+    simpa using this
+  | succ d₁ =>
+    exact constStateIntegral_shift_tendsto_zero β a b p hβ hb k h hk hp k' h' hk' hq i
+
 /-- The frozen block state integral equals the frozen state integral of unit 75. -/
 theorem blockStateIntegral_frozen_eq (β b N : ℝ) {d d' : ℕ} (k h : Fin (d + 1) → ℕ)
     (k' h' : Fin d' → ℕ) (ξ η : (Fin (d + 1) → ℝ) → (Fin d' → ℝ) → ℝ) :
@@ -219,19 +425,19 @@ theorem blockStateIntegral_frozen_eq (β b N : ℝ) {d d' : ℕ} (k h : Fin (d +
   ring
 
 /-- **The freezing limit**: `N^p (Z(N) − Z₀(N)) / (log N)^{d₀+1} → 0` for jointly continuous
-`ξ, η` on an equal-exponent block of multiplicity `d₀+2` with noncritical coordinates. -/
+`ξ, η` on an equal-exponent block of multiplicity `d₀+1` with noncritical coordinates. -/
 theorem blockStateIntegral_sub_frozen_tendsto (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d₀ d' : ℕ}
-    (k h : Fin (d₀ + 2) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
+    (k h : Fin (d₀ + 1) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
     (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i) (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i)
-    (ξ η : (Fin (d₀ + 2) → ℝ) → (Fin d' → ℝ) → ℝ)
-    (hξc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
-    (hηc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => η x.1 x.2) :
-    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ (d₀ + 1)
+    (ξ η : (Fin (d₀ + 1) → ℝ) → (Fin d' → ℝ) → ℝ)
+    (hξc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
+    (hηc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => η x.1 x.2) :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ d₀
       * (blockStateIntegral β b N k h k' h' ξ η
         - blockStateIntegral β b N k h k' h' (fun _ v => ξ 0 v) (fun _ v => η 0 v))) atTop
       (𝓝 0) := by
   -- bounds on the closed box
-  have hcpt : IsCompact ((Set.pi univ fun _ : Fin (d₀ + 2) => Icc (0 : ℝ) b)
+  have hcpt : IsCompact ((Set.pi univ fun _ : Fin (d₀ + 1) => Icc (0 : ℝ) b)
       ×ˢ (Set.pi univ fun _ : Fin d' => Icc (0 : ℝ) b)) :=
     (isCompact_univ_pi fun _ => isCompact_Icc).prod (isCompact_univ_pi fun _ => isCompact_Icc)
   obtain ⟨L₀, hL₀⟩ := hcpt.exists_bound_of_continuousOn hξc.continuousOn
@@ -242,13 +448,13 @@ theorem blockStateIntegral_sub_frozen_tendsto (β b p : ℝ) (hβ : 0 < β) (hb 
   have hM : 0 ≤ M := le_max_right _ _
   have hξL : ∀ u v, (∀ i, 0 ≤ u i ∧ u i ≤ b) → (∀ i, 0 ≤ v i ∧ v i ≤ b) → |ξ u v| ≤ L := by
     intro u v hu hv
-    have hmem : (u, v) ∈ (Set.pi univ fun _ : Fin (d₀ + 2) => Icc (0 : ℝ) b)
+    have hmem : (u, v) ∈ (Set.pi univ fun _ : Fin (d₀ + 1) => Icc (0 : ℝ) b)
         ×ˢ (Set.pi univ fun _ : Fin d' => Icc (0 : ℝ) b) := by
       rw [mem_prod, Set.mem_univ_pi, Set.mem_univ_pi]; exact ⟨hu, hv⟩
     have := hL₀ (u, v) hmem; rw [Real.norm_eq_abs] at this; exact this.trans (le_max_left _ _)
   have hηM : ∀ u v, (∀ i, 0 ≤ u i ∧ u i ≤ b) → (∀ i, 0 ≤ v i ∧ v i ≤ b) → |η u v| ≤ M := by
     intro u v hu hv
-    have hmem : (u, v) ∈ (Set.pi univ fun _ : Fin (d₀ + 2) => Icc (0 : ℝ) b)
+    have hmem : (u, v) ∈ (Set.pi univ fun _ : Fin (d₀ + 1) => Icc (0 : ℝ) b)
         ×ˢ (Set.pi univ fun _ : Fin d' => Icc (0 : ℝ) b) := by
       rw [mem_prod, Set.mem_univ_pi, Set.mem_univ_pi]; exact ⟨hu, hv⟩
     have := hM₀ (u, v) hmem; rw [Real.norm_eq_abs] at this; exact this.trans (le_max_left _ _)
@@ -257,28 +463,28 @@ theorem blockStateIntegral_sub_frozen_tendsto (β b p : ℝ) (hβ : 0 < β) (hb 
   set Dmax : ℝ := 2 * M + 2 * L with hDmax
   have hDmax0 : 0 ≤ Dmax := by positivity
   -- the corner term converges
-  have hp' : ∀ i, i ≤ d₀ + 1 → ((toNatFun h 0 i : ℝ) + 1) / toNatFun k 1 i = p := by
+  have hp' : ∀ i, i ≤ d₀ → ((toNatFun h 0 i : ℝ) + 1) / toNatFun k 1 i = p := by
     intro i hi
-    have hi' : i < d₀ + 2 := by omega
+    have hi' : i < d₀ + 1 := by omega
     have := chartExp_toNatFun_eq_finExp k h ⟨i, hi'⟩
     rw [chartExp] at this
     rw [this]; exact hp _
   have hk'' : ∀ i, 0 < toNatFun k 1 i := toNatFun_pos k hk
   have hA := frozenStateIntegral_tendsto (β / 2) b p (by positivity) hb (toNatFun k 1)
-    (toNatFun h 0) hk'' (d₀ + 1) hp' k' h' hk' hq (fun _ => 2 * L) (fun _ => 1) continuous_const
+    (toNatFun h 0) hk'' d₀ hp' k' h' hk' hq (fun _ => 2 * L) (fun _ => 1) continuous_const
     continuous_const
-  set C₄ := ∫ v, blockDivisorDensity (β / 2) p (toNatFun k 1) (d₀ + 1) k' h' (fun _ => 2 * L)
+  set C₄ := ∫ v, blockDivisorDensity (β / 2) p (toNatFun k 1) d₀ k' h' (fun _ => 2 * L)
     (fun _ => 1) v ∂(boxMeasure b d') with hC₄
-  have hA' : Tendsto (fun N : ℝ => N ^ p / Real.log N ^ (d₀ + 1)
+  have hA' : Tendsto (fun N : ℝ => N ^ p / Real.log N ^ d₀
       * constStateIntegral (β / 2) (2 * L) b N k h k' h') atTop (𝓝 C₄) := by
     refine hA.congr' (Filter.Eventually.of_forall fun N => ?_)
     beta_reduce
     rw [constStateIntegral_eq_frozen]
   -- the strip terms vanish
-  have hS : Tendsto (fun N : ℝ => N ^ p / Real.log N ^ (d₀ + 1)
+  have hS : Tendsto (fun N : ℝ => N ^ p / Real.log N ^ d₀
       * ∑ i, constStateIntegral (β / 2) (2 * L) b N k (shiftExp h i) k' h') atTop (𝓝 0) := by
-    have := tendsto_finsetSum (Finset.univ : Finset (Fin (d₀ + 2))) fun i _ =>
-      constStateIntegral_shift_tendsto_zero (β / 2) (2 * L) b p (by positivity) hb k h hk hp k' h'
+    have := tendsto_finsetSum (Finset.univ : Finset (Fin (d₀ + 1))) fun i _ =>
+      constStateIntegral_shift_tendsto_zero' (β / 2) (2 * L) b p (by positivity) hb k h hk hp k' h'
         hk' hq i
     simp only [Finset.sum_const_zero] at this
     refine this.congr' (Filter.Eventually.of_forall fun N => ?_)
@@ -292,32 +498,32 @@ theorem blockStateIntegral_sub_frozen_tendsto (β b p : ℝ) (hβ : 0 < β) (hb 
   obtain ⟨δ, hδ, hcorner⟩ := corner_oscillation₂ b hb ξ η hξc hηc ω hωpos
   set ε₂ : ℝ := ε / (2 * C₂ * (Dmax / δ + 1)) with hε₂
   have hε₂pos : 0 < ε₂ := by positivity
-  have hAev : ∀ᶠ N in atTop, N ^ p / Real.log N ^ (d₀ + 1)
+  have hAev : ∀ᶠ N in atTop, N ^ p / Real.log N ^ d₀
       * constStateIntegral (β / 2) (2 * L) b N k h k' h' < |C₄| + 1 :=
     hA'.eventually_lt_const (by linarith [le_abs_self C₄])
-  have hSev : ∀ᶠ N in atTop, N ^ p / Real.log N ^ (d₀ + 1)
+  have hSev : ∀ᶠ N in atTop, N ^ p / Real.log N ^ d₀
       * ∑ i, constStateIntegral (β / 2) (2 * L) b N k (shiftExp h i) k' h' < ε₂ :=
     hS.eventually_lt_const hε₂pos
   filter_upwards [hAev, hSev, eventually_gt_atTop (1 : ℝ)] with N hAN hSN hN1
   have hNpos : 0 < N := by linarith
   have hlogN : 0 < Real.log N := Real.log_pos hN1
-  have hpref : 0 < N ^ p / Real.log N ^ (d₀ + 1) := by positivity
+  have hpref : 0 < N ^ p / Real.log N ^ d₀ := by positivity
   rw [Real.dist_eq, sub_zero, abs_mul, abs_of_pos hpref]
   have hkey := blockStateIntegral_sub_le β b hβ hb k h k' h' ξ η hξc hηc L M hL hM hξL hηM ω δ
     hωpos.le hδ hcorner N hNpos.le
-  have hA0 : 0 ≤ N ^ p / Real.log N ^ (d₀ + 1)
+  have hA0 : 0 ≤ N ^ p / Real.log N ^ d₀
       * constStateIntegral (β / 2) (2 * L) b N k h k' h' :=
     mul_nonneg hpref.le (constStateIntegral_nonneg _ _ _ _ _ _ _ _)
-  have h1 : N ^ p / Real.log N ^ (d₀ + 1)
+  have h1 : N ^ p / Real.log N ^ d₀
       * (C₂ * ω * constStateIntegral (β / 2) (2 * L) b N k h k' h') < ε / 2 := by
     have : C₂ * ω * (|C₄| + 1) = ε / 2 := by
       rw [hω]; field_simp
-    calc N ^ p / Real.log N ^ (d₀ + 1) * (C₂ * ω * constStateIntegral (β / 2) (2 * L) b N k h k' h')
-        = C₂ * ω * (N ^ p / Real.log N ^ (d₀ + 1)
+    calc N ^ p / Real.log N ^ d₀ * (C₂ * ω * constStateIntegral (β / 2) (2 * L) b N k h k' h')
+        = C₂ * ω * (N ^ p / Real.log N ^ d₀
             * constStateIntegral (β / 2) (2 * L) b N k h k' h') := by ring
       _ < C₂ * ω * (|C₄| + 1) := by gcongr
       _ = ε / 2 := this
-  have h2 : N ^ p / Real.log N ^ (d₀ + 1) * (C₂ * (Dmax / δ)
+  have h2 : N ^ p / Real.log N ^ d₀ * (C₂ * (Dmax / δ)
       * ∑ i, constStateIntegral (β / 2) (2 * L) b N k (shiftExp h i) k' h') ≤ ε / 2 := by
     have hDδ : 0 ≤ Dmax / δ := div_nonneg hDmax0 hδ.le
     have : C₂ * (Dmax / δ) * ε₂ ≤ ε / 2 := by
@@ -327,19 +533,19 @@ theorem blockStateIntegral_sub_frozen_tendsto (β b p : ℝ) (hβ : 0 < β) (hb 
       have : (Dmax / δ) / (Dmax / δ + 1) ≤ 1 := by
         rw [div_le_one (by positivity)]; linarith
       nlinarith
-    calc N ^ p / Real.log N ^ (d₀ + 1) * (C₂ * (Dmax / δ)
+    calc N ^ p / Real.log N ^ d₀ * (C₂ * (Dmax / δ)
           * ∑ i, constStateIntegral (β / 2) (2 * L) b N k (shiftExp h i) k' h')
-        = C₂ * (Dmax / δ) * (N ^ p / Real.log N ^ (d₀ + 1)
+        = C₂ * (Dmax / δ) * (N ^ p / Real.log N ^ d₀
             * ∑ i, constStateIntegral (β / 2) (2 * L) b N k (shiftExp h i) k' h') := by ring
       _ ≤ C₂ * (Dmax / δ) * ε₂ := by gcongr
       _ ≤ ε / 2 := this
-  calc N ^ p / Real.log N ^ (d₀ + 1) * |blockStateIntegral β b N k h k' h' ξ η
+  calc N ^ p / Real.log N ^ d₀ * |blockStateIntegral β b N k h k' h' ξ η
         - blockStateIntegral β b N k h k' h' (fun _ v => ξ 0 v) (fun _ v => η 0 v)|
-      ≤ N ^ p / Real.log N ^ (d₀ + 1) * (C₂ * (ω * constStateIntegral (β / 2) (2 * L) b N k h k' h'
+      ≤ N ^ p / Real.log N ^ d₀ * (C₂ * (ω * constStateIntegral (β / 2) (2 * L) b N k h k' h'
           + Dmax / δ * ∑ i, constStateIntegral (β / 2) (2 * L) b N k (shiftExp h i) k' h')) :=
         mul_le_mul_of_nonneg_left hkey hpref.le
-    _ = N ^ p / Real.log N ^ (d₀ + 1) * (C₂ * ω * constStateIntegral (β / 2) (2 * L) b N k h k' h')
-        + N ^ p / Real.log N ^ (d₀ + 1) * (C₂ * (Dmax / δ)
+    _ = N ^ p / Real.log N ^ d₀ * (C₂ * ω * constStateIntegral (β / 2) (2 * L) b N k h k' h')
+        + N ^ p / Real.log N ^ d₀ * (C₂ * (Dmax / δ)
           * ∑ i, constStateIntegral (β / 2) (2 * L) b N k (shiftExp h i) k' h') := by ring
     _ < ε := by linarith
 

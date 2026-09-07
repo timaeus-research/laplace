@@ -8,16 +8,16 @@ import Laplace.Grammar.FreezingLimit
 # The multiplicity-`m` leading term for general `ξ, η` (grammar §4.2, `thm:TaylorTree` leading term)
 
 Combining the freezing limit (unit 78) with the frozen coefficient theorem (unit 75): for a block of
-`m = d₀+2` coordinates with common exponent `p = (hᵢ+1)/kᵢ` and noncritical coordinates with
+`m = d₀+1 ≥ 1` coordinates with common exponent `p = (hᵢ+1)/kᵢ` and noncritical coordinates with
 exponents `> p`, and jointly continuous `ξ, η`,
 
-  `N^p Z(N) / (log N)^{d₀+1} → C(ξ,η)`,
-  `C(ξ,η) = (∏ kᵢ⁻¹) / (d₀+1)! · ∫_v v^{h'} (v^{k'})^{-p} A_{p-1}(ξ(0,v)) η(0,v) dv`
+  `N^p Z(N) / (log N)^{d₀} → C(ξ,η)`,
+  `C(ξ,η) = (∏ kᵢ⁻¹) / d₀! · ∫_v v^{h'} (v^{k'})^{-p} A_{p-1}(ξ(0,v)) η(0,v) dv`
 
 (`blockStateIntegral_tendsto`); `C > 0` when `η(0,·) > 0`
 (`integral_blockDivisorDensity_pos`), giving the asymptotic equivalences
-`Z(N) ~ C N^{-p} (log N)^{d₀+1}` (`blockStateIntegral_isEquivalent`) and, at `N = √n`,
-`Z ~ (C / 2^{d₀+1}) n^{-p/2} (log n)^{d₀+1}` (`blockStateIntegral_sqrt_isEquivalent`).
+`Z(N) ~ C N^{-p} (log N)^{d₀}` (`blockStateIntegral_isEquivalent`) and, at `N = √n`,
+`Z ~ (C / 2^{d₀}) n^{-p/2} (log n)^{d₀}` (`blockStateIntegral_sqrt_isEquivalent`).
 Zero `sorry`/`axiom`.
 -/
 
@@ -118,23 +118,23 @@ theorem integral_blockDivisorDensity_pos (β b p : ℝ) (hβ : 0 < β) (hb : 0 <
     exact (hpos v hv).le
 
 /-- The leading coefficient of the multiplicity-`(d₀+2)` block with general `ξ, η`. -/
-noncomputable def blockCoeff (β b p : ℝ) {d₀ d' : ℕ} (k : Fin (d₀ + 2) → ℕ) (k' h' : Fin d' → ℕ)
-    (ξ η : (Fin (d₀ + 2) → ℝ) → (Fin d' → ℝ) → ℝ) : ℝ :=
-  ∫ v, blockDivisorDensity β p (toNatFun k 1) (d₀ + 1) k' h' (fun v => ξ 0 v) (fun v => η 0 v) v
+noncomputable def blockCoeff (β b p : ℝ) {d₀ d' : ℕ} (k : Fin (d₀ + 1) → ℕ) (k' h' : Fin d' → ℕ)
+    (ξ η : (Fin (d₀ + 1) → ℝ) → (Fin d' → ℝ) → ℝ) : ℝ :=
+  ∫ v, blockDivisorDensity β p (toNatFun k 1) d₀ k' h' (fun v => ξ 0 v) (fun v => η 0 v) v
     ∂(boxMeasure b d')
 
-/-- **Leading term of the general multiplicity-`m` block**: `N^p Z(N)/(log N)^{d₀+1} → C(ξ,η)`. -/
+/-- **Leading term of the general multiplicity-`m` block**: `N^p Z(N)/(log N)^{d₀} → C(ξ,η)`. -/
 theorem blockStateIntegral_tendsto (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d₀ d' : ℕ}
-    (k h : Fin (d₀ + 2) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
+    (k h : Fin (d₀ + 1) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
     (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i) (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i)
-    (ξ η : (Fin (d₀ + 2) → ℝ) → (Fin d' → ℝ) → ℝ)
-    (hξc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
-    (hηc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => η x.1 x.2) :
-    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ (d₀ + 1) * blockStateIntegral β b N k h k' h' ξ η)
+    (ξ η : (Fin (d₀ + 1) → ℝ) → (Fin d' → ℝ) → ℝ)
+    (hξc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
+    (hηc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => η x.1 x.2) :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ d₀ * blockStateIntegral β b N k h k' h' ξ η)
       atTop (𝓝 (blockCoeff β b p k k' h' ξ η)) := by
-  have hp' : ∀ i, i ≤ d₀ + 1 → ((toNatFun h 0 i : ℝ) + 1) / toNatFun k 1 i = p := by
+  have hp' : ∀ i, i ≤ d₀ → ((toNatFun h 0 i : ℝ) + 1) / toNatFun k 1 i = p := by
     intro i hi
-    have hi' : i < d₀ + 2 := by omega
+    have hi' : i < d₀ + 1 := by omega
     have := chartExp_toNatFun_eq_finExp k h ⟨i, hi'⟩
     rw [chartExp] at this
     rw [this]; exact hp _
@@ -143,7 +143,7 @@ theorem blockStateIntegral_tendsto (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d
     hξc.comp (continuous_const.prodMk continuous_id)
   have hη0 : Continuous fun v : Fin d' → ℝ => η 0 v :=
     hηc.comp (continuous_const.prodMk continuous_id)
-  have hZ₀ := frozenStateIntegral_tendsto β b p hβ hb (toNatFun k 1) (toNatFun h 0) hk'' (d₀ + 1)
+  have hZ₀ := frozenStateIntegral_tendsto β b p hβ hb (toNatFun k 1) (toNatFun h 0) hk'' d₀
     hp' k' h' hk' hq (fun v => ξ 0 v) (fun v => η 0 v) hξ0 hη0
   have hdiff := blockStateIntegral_sub_frozen_tendsto β b p hβ hb k h hk hp k' h' hk' hq ξ η hξc hηc
   have hsum := hdiff.add hZ₀
@@ -153,27 +153,27 @@ theorem blockStateIntegral_tendsto (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d
   rw [blockStateIntegral_frozen_eq]
   ring
 
-/-- **Asymptotic equivalence** `Z(N) ~ C(ξ,η) N^{-p} (log N)^{d₀+1}` when `η(0,·) > 0`. -/
+/-- **Asymptotic equivalence** `Z(N) ~ C(ξ,η) N^{-p} (log N)^{d₀}` when `η(0,·) > 0`. -/
 theorem blockStateIntegral_isEquivalent (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d₀ d' : ℕ}
-    (k h : Fin (d₀ + 2) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
+    (k h : Fin (d₀ + 1) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
     (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i) (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i)
-    (ξ η : (Fin (d₀ + 2) → ℝ) → (Fin d' → ℝ) → ℝ)
-    (hξc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
-    (hηc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => η x.1 x.2)
+    (ξ η : (Fin (d₀ + 1) → ℝ) → (Fin d' → ℝ) → ℝ)
+    (hξc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
+    (hηc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => η x.1 x.2)
     (hηpos : ∀ v : Fin d' → ℝ, (∀ i, 0 < v i ∧ v i ≤ b) → 0 < η 0 v) :
     (fun N : ℝ => blockStateIntegral β b N k h k' h' ξ η) ~[atTop]
-      fun N : ℝ => blockCoeff β b p k k' h' ξ η * (N ^ (-p) * Real.log N ^ (d₀ + 1)) := by
+      fun N : ℝ => blockCoeff β b p k k' h' ξ η * (N ^ (-p) * Real.log N ^ d₀) := by
   have hp0 : 0 < p := by rw [← hp 0]; exact finExp_pos k h hk 0
   have hC : 0 < blockCoeff β b p k k' h' ξ η :=
-    integral_blockDivisorDensity_pos β b p hβ hb hp0 (toNatFun k 1) (toNatFun_pos k hk) (d₀ + 1)
+    integral_blockDivisorDensity_pos β b p hβ hb hp0 (toNatFun k 1) (toNatFun_pos k hk) d₀
       k' h' hk' hq (fun v => ξ 0 v) (fun v => η 0 v)
       (hξc.comp (continuous_const.prodMk continuous_id))
       (hηc.comp (continuous_const.prodMk continuous_id)) hηpos
   have ht := blockStateIntegral_tendsto β b p hβ hb k h hk hp k' h' hk' hq ξ η hξc hηc
-  have h1 : (fun N : ℝ => N ^ p / Real.log N ^ (d₀ + 1) * blockStateIntegral β b N k h k' h' ξ η)
+  have h1 : (fun N : ℝ => N ^ p / Real.log N ^ d₀ * blockStateIntegral β b N k h k' h' ξ η)
       ~[atTop] Function.const ℝ (blockCoeff β b p k k' h' ξ η) :=
     (isEquivalent_const_iff_tendsto hC.ne').2 ht
-  have h2 := (IsEquivalent.refl (u := fun N : ℝ => N ^ (-p) * Real.log N ^ (d₀ + 1))
+  have h2 := (IsEquivalent.refl (u := fun N : ℝ => N ^ (-p) * Real.log N ^ d₀)
     (l := atTop)).mul h1
   refine (h2.congr_left ?_).congr_right ?_
   · filter_upwards [eventually_gt_atTop (1 : ℝ)] with N hN
@@ -181,26 +181,26 @@ theorem blockStateIntegral_isEquivalent (β b p : ℝ) (hβ : 0 < β) (hb : 0 < 
     have hlog : 0 < Real.log N := Real.log_pos hN
     simp only [Pi.mul_apply]
     have hNN : N ^ (-p) * N ^ p = 1 := by rw [← Real.rpow_add hN0]; simp
-    have hlogne : Real.log N ^ (d₀ + 1) ≠ 0 := pow_ne_zero _ hlog.ne'
-    rw [show N ^ (-p) * Real.log N ^ (d₀ + 1)
-        * (N ^ p / Real.log N ^ (d₀ + 1) * blockStateIntegral β b N k h k' h' ξ η)
-      = (N ^ (-p) * N ^ p) * (Real.log N ^ (d₀ + 1) / Real.log N ^ (d₀ + 1))
+    have hlogne : Real.log N ^ d₀ ≠ 0 := pow_ne_zero _ hlog.ne'
+    rw [show N ^ (-p) * Real.log N ^ d₀
+        * (N ^ p / Real.log N ^ d₀ * blockStateIntegral β b N k h k' h' ξ η)
+      = (N ^ (-p) * N ^ p) * (Real.log N ^ d₀ / Real.log N ^ d₀)
         * blockStateIntegral β b N k h k' h' ξ η by ring, hNN, div_self hlogne, one_mul, one_mul]
   · filter_upwards with N
     simp only [Pi.mul_apply, Function.const_apply]
     ring
 
-/-- **The `n`-form** (`N = √n`): `Z(√n) ~ (C/2^{d₀+1}) n^{-p/2} (log n)^{d₀+1}`. -/
+/-- **The `n`-form** (`N = √n`): `Z(√n) ~ (C/2^{d₀}) n^{-p/2} (log n)^{d₀}`. -/
 theorem blockStateIntegral_sqrt_isEquivalent (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d₀ d' : ℕ}
-    (k h : Fin (d₀ + 2) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
+    (k h : Fin (d₀ + 1) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
     (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i) (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i)
-    (ξ η : (Fin (d₀ + 2) → ℝ) → (Fin d' → ℝ) → ℝ)
-    (hξc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
-    (hηc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => η x.1 x.2)
+    (ξ η : (Fin (d₀ + 1) → ℝ) → (Fin d' → ℝ) → ℝ)
+    (hξc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
+    (hηc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => η x.1 x.2)
     (hηpos : ∀ v : Fin d' → ℝ, (∀ i, 0 < v i ∧ v i ≤ b) → 0 < η 0 v) :
     (fun n : ℝ => blockStateIntegral β b (Real.sqrt n) k h k' h' ξ η) ~[atTop]
-      fun n : ℝ => blockCoeff β b p k k' h' ξ η / 2 ^ (d₀ + 1)
-        * (n ^ (-(p / 2)) * Real.log n ^ (d₀ + 1)) := by
+      fun n : ℝ => blockCoeff β b p k k' h' ξ η / 2 ^ d₀
+        * (n ^ (-(p / 2)) * Real.log n ^ d₀) := by
   have hE := blockStateIntegral_isEquivalent β b p hβ hb k h hk hp k' h' hk' hq ξ η hξc hηc hηpos
   have hcomp := hE.comp_tendsto tendsto_sqrt_atTop
   refine hcomp.congr_right ?_

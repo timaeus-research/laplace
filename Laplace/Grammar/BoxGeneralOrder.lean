@@ -11,10 +11,10 @@ Relabelling the coordinates of the box by an equivalence `τ : Fin D' ≃ Fin D`
 integral invariant when `ξ, η` are transported along the induced measurable equivalence of the box
 (`boxIntegralGen_relabel`). Sorting the exponents (`sortPerm`) puts the minimisers last, so the
 theorem of unit 80 yields the **hypothesis-light general form**: for any exponents on `Fin D` with
-minimal candidate exponent `p` attained `M + 2 ≥ 2` times and jointly continuous `ξ, η` with
+minimal candidate exponent `p` attained `M + 1 ≥ 2` times and jointly continuous `ξ, η` with
 `η > 0` on the minimal face,
 
-  `∫_{(0,b]^D} w^H η e^{-βn w^{2K} + β√n w^K ξ} ~ C n^{-p/2} (log n)^{M+1}`,  `C > 0`
+  `∫_{(0,b]^D} w^H η e^{-βn w^{2K} + β√n w^K ξ} ~ C n^{-p/2} (log n)^{M}`,  `C > 0`
 
 (`boxIntegralGen_isEquivalent_general`). Zero `sorry`/`axiom`.
 -/
@@ -64,35 +64,35 @@ theorem boxIntegralGen_relabel (β b c : ℝ) {D D' : ℕ} (τ : Fin D' ≃ Fin 
 
 /-- Positivity of the block coefficient when `η > 0` on the minimal face. -/
 theorem blockCoeff_pos (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) (hp0 : 0 < p) {d₀ d' : ℕ}
-    (k : Fin (d₀ + 2) → ℕ) (hk : ∀ j, 0 < k j) (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i)
-    (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i) (ξ η : (Fin (d₀ + 2) → ℝ) → (Fin d' → ℝ) → ℝ)
-    (hξc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
-    (hηc : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => η x.1 x.2)
+    (k : Fin (d₀ + 1) → ℕ) (hk : ∀ j, 0 < k j) (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i)
+    (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i) (ξ η : (Fin (d₀ + 1) → ℝ) → (Fin d' → ℝ) → ℝ)
+    (hξc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => ξ x.1 x.2)
+    (hηc : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => η x.1 x.2)
     (hηpos : ∀ v : Fin d' → ℝ, (∀ i, 0 < v i ∧ v i ≤ b) → 0 < η 0 v) :
     0 < blockCoeff β b p k k' h' ξ η :=
-  integral_blockDivisorDensity_pos β b p hβ hb hp0 (toNatFun k 1) (toNatFun_pos k hk) (d₀ + 1)
+  integral_blockDivisorDensity_pos β b p hβ hb hp0 (toNatFun k 1) (toNatFun_pos k hk) d₀
     k' h' hk' hq (fun v => ξ 0 v) (fun v => η 0 v)
     (hξc.comp (continuous_const.prodMk continuous_id))
     (hηc.comp (continuous_const.prodMk continuous_id)) hηpos
 
 /-- **The multiplicity theorem for general `ξ, η`, arbitrary coordinate order**: if the minimal
-candidate exponent `p` is attained `M + 2` times and `η > 0` on the minimal face
+candidate exponent `p` is attained `M + 1` times and `η > 0` on the minimal face
 `{wᵢ = 0 for minimisers, wᵢ ∈ (0,b] otherwise}`, then `Z ~ C n^{-p/2} (log n)^{M+1}` with
 `C > 0`. -/
 theorem boxIntegralGen_isEquivalent_general (β b : ℝ) (hβ : 0 < β) (hb : 0 < b) {D : ℕ}
     (K H : Fin D → ℕ) (hK : ∀ i, 0 < K i) (p : ℝ) (hmin : ∀ i, p ≤ finExp K H i) (M : ℕ)
-    (hM : (Finset.univ.filter fun i => finExp K H i = p).card = M + 2)
+    (hM : (Finset.univ.filter fun i => finExp K H i = p).card = M + 1)
     (ξ η : (Fin D → ℝ) → ℝ) (hξc : Continuous ξ) (hηc : Continuous η)
     (hηpos : ∀ w : Fin D → ℝ, (∀ i, finExp K H i = p → w i = 0) →
       (∀ i, finExp K H i ≠ p → 0 < w i ∧ w i ≤ b) → 0 < η w) :
     ∃ C : ℝ, 0 < C ∧ (fun n : ℝ => boxIntegralGen β b (Real.sqrt n) K H ξ η) ~[atTop]
-      fun n : ℝ => C * (n ^ (-(p / 2)) * Real.log n ^ (M + 1)) := by
+      fun n : ℝ => C * (n ^ (-(p / 2)) * Real.log n ^ M) := by
   -- sorting
   set σ := sortPerm K H with hσ
   set q : Fin D → ℝ := finExp K H ∘ σ with hq
   have hanti : Antitone q := sortPerm_antitone K H
   set S : Finset (Fin D) := Finset.univ.filter fun j => q j = p with hS
-  have hcardS : S.card = M + 2 := by
+  have hcardS : S.card = M + 1 := by
     rw [← hM]
     refine (Finset.card_equiv σ.symm fun i => ?_).symm
     simp [hS, hq]
@@ -115,23 +115,23 @@ theorem boxIntegralGen_isEquivalent_general (β b : ℝ) (hβ : 0 < β) (hb : 0 
       by_contra hlt
       exact absurd hjp (hlt_p j (not_le.1 hlt)).ne'
     · exact hge j
-  have hi₀val : (i₀ : ℕ) = D - (M + 2) := by
+  have hi₀val : (i₀ : ℕ) = D - (M + 1) := by
     have := hcardS
     rw [hSIci, Fin.card_Ici] at this
     omega
-  have hMD : M + 2 ≤ D := by
+  have hMD : M + 1 ≤ D := by
     have := Finset.card_le_univ S
     rw [hcardS, Fintype.card_fin] at this
     exact this
-  set d' : ℕ := D - (M + 2) with hd'
-  have hD : d' + (M + 2) = D := by omega
+  set d' : ℕ := D - (M + 1) with hd'
+  have hD : d' + (M + 1) = D := by omega
   -- the relabelling
-  set τ : Fin (d' + (M + 2)) ≃ Fin D := (finCongr hD).trans σ with hτ
-  have hτval : ∀ y : Fin (d' + (M + 2)), finExp K H (τ y) = q (finCongr hD y) := fun y => rfl
-  have hcast_val : ∀ y : Fin (d' + (M + 2)), ((finCongr hD y : Fin D) : ℕ) = (y : ℕ) :=
+  set τ : Fin (d' + (M + 1)) ≃ Fin D := (finCongr hD).trans σ with hτ
+  have hτval : ∀ y : Fin (d' + (M + 1)), finExp K H (τ y) = q (finCongr hD y) := fun y => rfl
+  have hcast_val : ∀ y : Fin (d' + (M + 1)), ((finCongr hD y : Fin D) : ℕ) = (y : ℕ) :=
     fun y => rfl
   -- exponents of the relabelled vector
-  have hp : ∀ i : Fin (M + 2),
+  have hp : ∀ i : Fin (M + 1),
       ((H (τ (Fin.natAdd d' i)) : ℝ) + 1) / K (τ (Fin.natAdd d' i)) = p := by
     intro i
     have : finExp K H (τ (Fin.natAdd d' i)) = p := by
@@ -141,10 +141,10 @@ theorem boxIntegralGen_isEquivalent_general (β b : ℝ) (hβ : 0 < β) (hb : 0 
       simp only [Fin.val_natAdd]
       omega
     simpa [finExp] using this
-  have hq' : ∀ j : Fin d', p < ((H (τ (Fin.castAdd (M + 2) j)) : ℝ) + 1)
-      / K (τ (Fin.castAdd (M + 2) j)) := by
+  have hq' : ∀ j : Fin d', p < ((H (τ (Fin.castAdd (M + 1) j)) : ℝ) + 1)
+      / K (τ (Fin.castAdd (M + 1) j)) := by
     intro j
-    have : p < finExp K H (τ (Fin.castAdd (M + 2) j)) := by
+    have : p < finExp K H (τ (Fin.castAdd (M + 1) j)) := by
       rw [hτval]
       refine hlt_p _ (Fin.lt_def.2 ?_)
       rw [hcast_val, hi₀val]
@@ -192,8 +192,8 @@ theorem boxIntegralGen_isEquivalent_general (β b : ℝ) (hβ : 0 < β) (hb : 0 
   refine ⟨_, ?_, hE.congr_left (Filter.Eventually.of_forall fun n => ?_)⟩
   · refine div_pos ?_ (by positivity)
     refine blockCoeff_pos β b p hβ hb hp0 _ (fun j => hK _) _ _ (fun j => hK _) hq' _ _ ?_ ?_ hface
-    · exact hξc'.comp ((continuous_append d' (M + 2)).comp (continuous_snd.prodMk continuous_fst))
-    · exact hηc'.comp ((continuous_append d' (M + 2)).comp (continuous_snd.prodMk continuous_fst))
+    · exact hξc'.comp ((continuous_append d' (M + 1)).comp (continuous_snd.prodMk continuous_fst))
+    · exact hηc'.comp ((continuous_append d' (M + 1)).comp (continuous_snd.prodMk continuous_fst))
   · exact boxIntegralGen_relabel β b (Real.sqrt n) τ K H ξ η
 
 end Laplace.Grammar

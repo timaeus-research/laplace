@@ -10,13 +10,13 @@ import Laplace.Grammar.MultiplicityGeneral
 The chart standard integral over the genuine box `(0,b]^{d'+m}` with general continuous `ξ, η`
 (`boxIntegralGen`, unit 72) is identified by Fubini with the block state integral of unit 77, the
 first `d'` coordinates being noncritical and the last `m` forming the minimal block
-(`boxIntegralGen_eq_blockStateIntegral`). Consequently, when the last `m = d₀+2` exponents are equal
+(`boxIntegralGen_eq_blockStateIntegral`). Consequently, when the last `m = d₀+1` exponents are equal
 to `p` and the first `d'` exceed `p`,
 
   `∫_{(0,b]^{d'+m}} w^H η(w) e^{-βn w^{2K} + β√n w^K ξ(w)} dw
-      ~ (C(ξ,η)/2^{d₀+1}) n^{-p/2} (log n)^{d₀+1}`
+      ~ (C(ξ,η)/2^{d₀}) n^{-p/2} (log n)^{d₀}`
 
-with `C(ξ,η) = (∏ kᵢ⁻¹)/(d₀+1)! ∫ v^{h'}(v^{k'})^{-p} A_{p-1}(ξ(v,0)) η(v,0) dv`
+with `C(ξ,η) = (∏ kᵢ⁻¹)/d₀! ∫ v^{h'}(v^{k'})^{-p} A_{p-1}(ξ(v,0)) η(v,0) dv`
 (`boxIntegralGen_mult_isEquivalent`), together with the free-energy form
 (`boxIntegralGen_mult_freeEnergy`). Zero `sorry`/`axiom`.
 -/
@@ -114,56 +114,56 @@ theorem boxIntegralGen_eq_blockStateIntegral (β b N : ℝ) {d' m : ℕ} (K H : 
   ring_nf
 
 /-- **The multiplicity-`m` theorem in box form** (`thm:TaylorTree` leading term for general
-continuous `ξ, η`): last `d₀+2` exponents equal to `p`, first `d'` exponents `> p`,
+continuous `ξ, η`): last `d₀+1` exponents equal to `p`, first `d'` exponents `> p`,
 `η > 0` on the minimal face. -/
 theorem boxIntegralGen_mult_isEquivalent (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d' d₀ : ℕ}
-    (K H : Fin (d' + (d₀ + 2)) → ℕ) (hK : ∀ i, 0 < K i)
-    (hp : ∀ i : Fin (d₀ + 2), ((H (Fin.natAdd d' i) : ℝ) + 1) / K (Fin.natAdd d' i) = p)
-    (hq : ∀ j : Fin d', p < ((H (Fin.castAdd (d₀ + 2) j) : ℝ) + 1) / K (Fin.castAdd (d₀ + 2) j))
-    (ξ η : (Fin (d' + (d₀ + 2)) → ℝ) → ℝ) (hξc : Continuous ξ) (hηc : Continuous η)
+    (K H : Fin (d' + (d₀ + 1)) → ℕ) (hK : ∀ i, 0 < K i)
+    (hp : ∀ i : Fin (d₀ + 1), ((H (Fin.natAdd d' i) : ℝ) + 1) / K (Fin.natAdd d' i) = p)
+    (hq : ∀ j : Fin d', p < ((H (Fin.castAdd (d₀ + 1) j) : ℝ) + 1) / K (Fin.castAdd (d₀ + 1) j))
+    (ξ η : (Fin (d' + (d₀ + 1)) → ℝ) → ℝ) (hξc : Continuous ξ) (hηc : Continuous η)
     (hηpos : ∀ v : Fin d' → ℝ, (∀ j, 0 < v j ∧ v j ≤ b) → 0 < η (Fin.append v 0)) :
     (fun n : ℝ => boxIntegralGen β b (Real.sqrt n) K H ξ η) ~[atTop]
       fun n : ℝ => blockCoeff β b p (fun i => K (Fin.natAdd d' i))
-          (fun j => K (Fin.castAdd (d₀ + 2) j)) (fun j => H (Fin.castAdd (d₀ + 2) j))
-          (fun u v => ξ (Fin.append v u)) (fun u v => η (Fin.append v u)) / 2 ^ (d₀ + 1)
-        * (n ^ (-(p / 2)) * Real.log n ^ (d₀ + 1)) := by
-  have hξc' : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => ξ (Fin.append x.2 x.1) :=
-    hξc.comp ((continuous_append d' (d₀ + 2)).comp (continuous_snd.prodMk continuous_fst))
-  have hηc' : Continuous fun x : (Fin (d₀ + 2) → ℝ) × (Fin d' → ℝ) => η (Fin.append x.2 x.1) :=
-    hηc.comp ((continuous_append d' (d₀ + 2)).comp (continuous_snd.prodMk continuous_fst))
+          (fun j => K (Fin.castAdd (d₀ + 1) j)) (fun j => H (Fin.castAdd (d₀ + 1) j))
+          (fun u v => ξ (Fin.append v u)) (fun u v => η (Fin.append v u)) / 2 ^ d₀
+        * (n ^ (-(p / 2)) * Real.log n ^ d₀) := by
+  have hξc' : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => ξ (Fin.append x.2 x.1) :=
+    hξc.comp ((continuous_append d' (d₀ + 1)).comp (continuous_snd.prodMk continuous_fst))
+  have hηc' : Continuous fun x : (Fin (d₀ + 1) → ℝ) × (Fin d' → ℝ) => η (Fin.append x.2 x.1) :=
+    hηc.comp ((continuous_append d' (d₀ + 1)).comp (continuous_snd.prodMk continuous_fst))
   have hE := blockStateIntegral_sqrt_isEquivalent β b p hβ hb (fun i => K (Fin.natAdd d' i))
     (fun i => H (Fin.natAdd d' i)) (fun i => hK _) (fun i => hp i)
-    (fun j => K (Fin.castAdd (d₀ + 2) j)) (fun j => H (Fin.castAdd (d₀ + 2) j)) (fun j => hK _) hq
+    (fun j => K (Fin.castAdd (d₀ + 1) j)) (fun j => H (Fin.castAdd (d₀ + 1) j)) (fun j => hK _) hq
     (fun u v => ξ (Fin.append v u)) (fun u v => η (Fin.append v u)) hξc' hηc' hηpos
   refine hE.congr_left (Filter.Eventually.of_forall fun n => ?_)
   exact (boxIntegralGen_eq_blockStateIntegral β b (Real.sqrt n) K H ξ η hξc hηc).symm
 
-/-- **Free-energy form**: `−log Z = (p/2) log n − (d₀+1) log log n + F₀ + o(1)`. -/
+/-- **Free-energy form**: `−log Z = (p/2) log n − d₀ log log n + F₀ + o(1)`. -/
 theorem boxIntegralGen_mult_freeEnergy (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b) {d' d₀ : ℕ}
-    (K H : Fin (d' + (d₀ + 2)) → ℕ) (hK : ∀ i, 0 < K i)
-    (hp : ∀ i : Fin (d₀ + 2), ((H (Fin.natAdd d' i) : ℝ) + 1) / K (Fin.natAdd d' i) = p)
-    (hq : ∀ j : Fin d', p < ((H (Fin.castAdd (d₀ + 2) j) : ℝ) + 1) / K (Fin.castAdd (d₀ + 2) j))
-    (ξ η : (Fin (d' + (d₀ + 2)) → ℝ) → ℝ) (hξc : Continuous ξ) (hηc : Continuous η)
+    (K H : Fin (d' + (d₀ + 1)) → ℕ) (hK : ∀ i, 0 < K i)
+    (hp : ∀ i : Fin (d₀ + 1), ((H (Fin.natAdd d' i) : ℝ) + 1) / K (Fin.natAdd d' i) = p)
+    (hq : ∀ j : Fin d', p < ((H (Fin.castAdd (d₀ + 1) j) : ℝ) + 1) / K (Fin.castAdd (d₀ + 1) j))
+    (ξ η : (Fin (d' + (d₀ + 1)) → ℝ) → ℝ) (hξc : Continuous ξ) (hηc : Continuous η)
     (hηpos : ∀ v : Fin d' → ℝ, (∀ j, 0 < v j ∧ v j ≤ b) → 0 < η (Fin.append v 0)) :
     ∃ F₀ : ℝ, Tendsto (fun n : ℝ => -Real.log (boxIntegralGen β b (Real.sqrt n) K H ξ η)
-      - (p / 2 * Real.log n - (d₀ + 1 : ℕ) * Real.log (Real.log n))) atTop (𝓝 F₀) := by
+      - (p / 2 * Real.log n - (d₀ : ℕ) * Real.log (Real.log n))) atTop (𝓝 F₀) := by
   have hE := boxIntegralGen_mult_isEquivalent β b p hβ hb K H hK hp hq ξ η hξc hηc hηpos
   have hp0 : 0 < p := by
     rw [← hp 0]
     have := hK (Fin.natAdd d' 0)
     positivity
   have hC : 0 < blockCoeff β b p (fun i => K (Fin.natAdd d' i))
-      (fun j => K (Fin.castAdd (d₀ + 2) j)) (fun j => H (Fin.castAdd (d₀ + 2) j))
+      (fun j => K (Fin.castAdd (d₀ + 1) j)) (fun j => H (Fin.castAdd (d₀ + 1) j))
       (fun u v => ξ (Fin.append v u))
-      (fun u v => η (Fin.append v u)) / 2 ^ (d₀ + 1) := by
+      (fun u v => η (Fin.append v u)) / 2 ^ d₀ := by
     refine div_pos ?_ (by positivity)
     refine integral_blockDivisorDensity_pos β b p hβ hb hp0 _ (toNatFun_pos _ fun i => hK _) _ _ _
       (fun j => hK _) hq _ _ ?_ ?_ hηpos
-    · exact hξc.comp ((continuous_append d' (d₀ + 2)).comp (continuous_id.prodMk continuous_const))
-    · exact hηc.comp ((continuous_append d' (d₀ + 2)).comp (continuous_id.prodMk continuous_const))
+    · exact hξc.comp ((continuous_append d' (d₀ + 1)).comp (continuous_id.prodMk continuous_const))
+    · exact hηc.comp ((continuous_append d' (d₀ + 1)).comp (continuous_id.prodMk continuous_const))
   refine ⟨-Real.log (blockCoeff β b p (fun i => K (Fin.natAdd d' i))
-    (fun j => K (Fin.castAdd (d₀ + 2) j)) (fun j => H (Fin.castAdd (d₀ + 2) j))
-    (fun u v => ξ (Fin.append v u)) (fun u v => η (Fin.append v u)) / 2 ^ (d₀ + 1)), ?_⟩
+    (fun j => K (Fin.castAdd (d₀ + 1) j)) (fun j => H (Fin.castAdd (d₀ + 1) j))
+    (fun u v => ξ (Fin.append v u)) (fun u v => η (Fin.append v u)) / 2 ^ d₀), ?_⟩
   have := (tendsto_log_of_isEquivalent_powLog hC hE).neg
   refine this.congr' (Filter.Eventually.of_forall fun n => ?_)
   push_cast
