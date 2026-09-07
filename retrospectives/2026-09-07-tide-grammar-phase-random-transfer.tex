@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline XVI: random phases and amplitudes in general dimension}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 212 completes programme~A2 (Astra~\#22). For random inputs $X_n:\Omega\to C([0,1]^d)^2$
+(phase, amplitude) converging in distribution to $Z$ along a countably generated filter, and
+deterministic scales $N_n\to\infty$, the normalised chart integrals converge in distribution to the
+limit functional of the limiting input:
+\[
+F_{N_n}(X_n)\;\Rightarrow\;F(Z),\qquad
+F_N=\frac{\int\eta\,u^he^{-\beta N^2u^{2k}+\beta Nu^k\xi}}{N^{-p}(\log N)^{m-1}},\quad F=\mathrm{phaseCoeff}
+\]
+(\texttt{tendstoInDistribution\_normChart}). Proof: $F$ is continuous (Lipschitz on balls), so
+$F(X_n)\Rightarrow F(Z)$ by continuous mapping; and $F_{N_n}(X_n)-F(X_n)\to0$ in probability, because
+the limit law is tight in the Polish space $C([0,1]^d)^2$ (Mathlib's
+\texttt{isTightMeasureSet\_singleton}), portmanteau puts most of $X_n$ in the open $\delta$-thickening
+of a compact $K$ carrying most of $Z$, and on that thickening the uniform convergence on $K$
+(unit~211) extends by the Lipschitz bounds (units 209--210). Mathlib's Slutsky lemma
+\texttt{TendstoInDistribution.add\_of\_tendstoInMeasure\_const} finishes. Zero
+\texttt{sorry}/\texttt{axiom}; 9089 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+instance : MeasurableSpace (InputSpace d) := borel _;  instance : BorelSpace
+      (InputSpace d)
+theorem normChart_lipschitzOn (hβ) (hN : 0 ≤ N) (R) : ∃ L, 0 ≤ L ∧ ∀ x y ∈
+      closedBall 0 R,
+    |normChart h k l β N x - normChart h k l β N y| ≤ L * dist x y
+theorem continuous_normChart (hβ) (hN : 0 ≤ N) : Continuous (normChart h k l β N)
+theorem continuous_limChart (hk) (hl) (hβ) (hmin) : Continuous (limChart h k l β)
+theorem tendstoInMeasure_normChart_sub … (hZm : Measurable Z) (hX :
+      TendstoInDistribution X L Z (fun _ => μ) μ')
+    (hN : Tendsto Nseq L atTop) :
+    TendstoInMeasure μ (fun n ω => normChart h k l β (Nseq n) (X n ω) - limChart h
+      k l β (X n ω)) L (fun _ => 0)
+theorem tendstoInDistribution_normChart … (hXm : ∀ n, Measurable (X n)) (hZm) (hX)
+      (hN) (hN0 : ∀ n, 0 ≤ Nseq n) :
+    TendstoInDistribution (fun n ω => normChart h k l β (Nseq n) (X n ω)) L
+      (fun ω => limChart h k l β (Z ω)) (fun _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+The key point, anticipated in Astra~\#21/\#22, is that no tightness of the \emph{sequence} $X_n$ is
+needed: only the limit law is tight (automatic on a Polish space), and the passage from the compact
+$K$ to its open $\delta$-thickening $U$ uses (i) portmanteau for the closed set $U^c$
+($\limsup\mu(X_n\in U^c)\le\mu'(Z\in U^c)\le\mu'(Z\notin K)$), and (ii) the equi-Lipschitz bounds on
+the ball of radius $R+1\supseteq U$: for $x\in U$ with $d(x,y)<\delta$, $y\in K$,
+$|F_N(x)-F(x)|\le L\delta+\sup_K|F_N-F|+L'\delta<\varepsilon$ once $(L+L')\delta\le\varepsilon/3$ and
+$N$ is large. The random inputs enter only through their sup-norm topology; the deterministic
+Headline~XIII does the analysis.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{SecondCountableTopology C(K, ℝ)} needs the import
+  \texttt{Mathlib.Topology.ContinuousMap.\allowbreak SecondCountableSpace} (instance
+  \texttt{ContinuousMap.instSecondCountableTopology}, requiring a second countable locally compact
+  domain); it was not in the import closure, and \texttt{\#synth} fails silently otherwise.
+  \texttt{isTightMeasureSet\_singleton} needs \texttt{Mathlib.MeasureTheory.Measure.Tight}.
+\item \texttt{set S := leadScale …} folds only existing occurrences; a later \texttt{unfold normChart}
+  reintroduces \texttt{leadScale}, so \texttt{rw [← hS]} again before case-splitting on \texttt{S = 0}
+  (division by a possibly zero scale is handled by \texttt{div\_zero}, no positivity needed).
+\item The portmanteau pattern from \texttt{NormBoundedInProbability}
+  (\texttt{ProbabilityMeasure.limsup\_measure\_closed\_le\_of\_tendsto}, \texttt{Measure.map\_apply\_of\_aemeasurable},
+  \texttt{eventually\_lt\_of\_limsup\_lt}) transfers verbatim to the function space.
+\item A section variable \texttt{[L.IsCountablyGenerated]} that a theorem does not use triggers the
+  linter; \texttt{omit [L.IsCountablyGenerated] in} before the theorem.
+\end{itemize}
+
+\section{Status}
+A2 complete (units 209--212). Natural corollary: the random per-stratum posterior quotient
+$Z_N[\varphi c](X_n)/Z_N[c](X_n)\Rightarrow F^{\varphi c}(Z)/F^{c}(Z)$ via the existing
+positive-denominator quotient theorem (unit 213). Then review v12, report v3 / hand-off.
+\end{document}
