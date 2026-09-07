@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The $d=2$ equal-exponent theorem with a nonconstant amplitude}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+For the two-dimensional chart integral with general amplitude $\Phi(u,v,s)$ and equal exponents
+$(h_1+1)/k_1=(h_2+1)/k_2=p$, the anchored decomposition
+$\Phi=\Phi(u,0)+\Phi(0,v)-\Phi(0,0)+[\Phi(u,v)-\Phi(u,0)-\Phi(0,v)+\Phi(0,0)]$ splits $Z_\Phi$ into two
+axis integrals (unit~87), a corner integral, and a mixed term dominated by a constant-kernel block with
+both exponents shifted (unit~47, one logarithm lost). Hence
+\[
+Z_\Phi(N)=N^{-p}(A\log N+B)+O\big(N^{-(p+\delta)}(1+\log N)\big),\qquad\delta=\min(1/k_1,1/k_2),
+\]
+with $A=(k_1k_2)^{-1}\int s^{p-1}e^{-\beta s^2}\Phi(0,0,s)\,ds$ and
+$B=(k_1k_2)^{-1}\int s^{p-1}(\log R-\log s)e^{-\beta s^2}\Phi(0,0,s)\,ds
++k_2^{-1}\int s^{p-1}e^{-\beta s^2}I_1(s)\,ds+k_1^{-1}\int s^{p-1}e^{-\beta s^2}I_2(s)\,ds$. This is the
+milestone of the second Astra consult: the first complete nonconstant-$\xi,\eta$ log polynomial of
+\texttt{thm:TaylorTree}, whose constant term sees both axes and not only the corner.
+Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem twoDAmp_anchored ... :
+    twoDAmp β b N h₁ h₂ k₁ k₂ Φ
+      = twoDAmp β b N h₁ h₂ k₁ k₂ (fun u _ s => Φ u 0 s)
+        + twoDAmp β b N h₁ h₂ k₁ k₂ (fun _ v s => Φ 0 v s)
+        - twoDAmp β b N h₁ h₂ k₁ k₂ (fun _ _ s => Φ 0 0 s)
+        + twoDAmp β b N h₁ h₂ k₁ k₂ (mixedAmp Φ)
+theorem twoDAmp_mixed_le ... :
+    |twoDAmp β b N h₁ h₂ k₁ k₂ (mixedAmp Φ)|
+      ≤ C₂ * max 2 (4 / β) * twoDGeneral (β / 2) (2 * L) b (N ^ 2) (h₁ + 1) (h₂ + 1) k₁ k₂
+theorem twoDAmp_second_order (β b L C₁ C₂ M p : ℝ) (h₁ h₂ k₁ k₂ : ℕ) (Φ : ℝ → ℝ → ℝ → ℝ)
+    (hβ : 0 < β) (hb : 0 < b) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂)
+    (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p) (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p)
+    (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂)
+    (hΦ : Continuous fun x : ℝ × ℝ × ℝ => Φ x.1 x.2.1 x.2.2)
+    (hlipA : ∀ u ∈ Icc (0 : ℝ) b, ∀ s, 0 ≤ s →
+      |Φ u 0 s - Φ 0 0 s| ≤ C₁ * u * ((1 + s) * Real.exp (β * s * L)))
+    (hlipB : ∀ v ∈ Icc (0 : ℝ) b, ∀ s, 0 ≤ s →
+      |Φ 0 v s - Φ 0 0 s| ≤ C₁ * v * ((1 + s) * Real.exp (β * s * L)))
+    (hmix : ∀ u ∈ Icc (0 : ℝ) b, ∀ v ∈ Icc (0 : ℝ) b, ∀ s, 0 ≤ s →
+      |mixedAmp Φ u v s| ≤ C₂ * (u * v) * ((1 + s) ^ 2 * Real.exp (β * s * L)))
+    (hΦ₀ : ∀ s, 0 ≤ s → |Φ 0 0 s| ≤ M * Real.exp (β * s * L)) :
+    (fun N : ℝ => twoDAmp β b N h₁ h₂ k₁ k₂ Φ
+        - N ^ (-p) * (twoDA β p k₁ k₂ Φ * Real.log N + twoDB β b p k₁ k₂ Φ)) =O[atTop]
+      fun N : ℝ => N ^ (-(p + min (k₁ : ℝ)⁻¹ (k₂ : ℝ)⁻¹)) * (1 + Real.log N)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+All linearity is done in product form on $(0,b]^2$ (\texttt{integral\_prod}), where every piece is
+continuous on the compact box. The two axis pieces and the corner piece are instances of the axis
+expansion of unit~87 (the second after the coordinate swap of unit~86), giving $N\ge1$ bounds with
+exponents $p+1/k_1$, $p+1/k_2$, converted to $O(N^{-(p+\delta)}(1+\log N))$. The mixed piece is
+bounded pointwise by $C_2uv(1+s)^2e^{\beta Ls}$ and $(1+s)^2\le\max(2,4/\beta)e^{(\beta/2)s^2}$, hence
+by the constant-kernel integral with exponents $(h_1+1,h_2+1)$, whose asymptotics
+\texttt{twoDGeneral\_isBigO\_min} at $n=N^2$ read $O(N^{-(p+\delta)}\log N)$. The coefficients add up
+because all three one-variable amplitudes agree at the corner, and the corner piece has vanishing axis
+integral.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item Chained \texttt{← integral\_add}/\texttt{← integral\_sub} rewrites fail on the \texttt{Pi.add}
+form of \texttt{Integrable.add}; give the combined integrability facts single-lambda type ascriptions.
+\item \texttt{twoDIntegrand\_integrable} cannot infer the amplitude from a continuity proof of its
+composite; pass the amplitudes explicitly.
+\item \texttt{positivity} needs $0<u$, $0<v$ as hypotheses, not membership in \texttt{Ioc}.
+\end{itemize}
+
+\section{Outcome}
+Astra's step~5 milestone is complete at the amplitude level. Remaining polish: derive the amplitude
+hypotheses from $C^2$ regularity of $\xi,\eta$ for $\Phi=\eta e^{\beta s\xi}$ (mixed second
+difference), the $n$-form $Z(n)=n^{-p/2}(\tfrac A2\log n+B)+O(n^{-(p+\delta)/2}(1+\log n))$, and the
+face-parameter second-order theorem under the strict gap.
+\end{document}
