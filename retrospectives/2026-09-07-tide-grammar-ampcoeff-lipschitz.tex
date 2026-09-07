@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Local Lipschitz estimate for the amplitude coefficients}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Completion of Astra~\#10's rank~5. The amplitude coefficient map $(x,y)\mapsto c(x,y)(s)$ of the
+§4.2 cutoff integrand, $c_k(s)=e^{\beta s x_{00}}\,(y*E_{\bar x}(\beta s))_k$, is locally Lipschitz
+in the weighted norm $\|\cdot\|_\rho$:
+\[
+\|c(x,y)(s)-c(x',y')(s)\|_\rho\le e^{2|\beta s|M_x}\big(\|y-y'\|_\rho+2M_y|\beta s|\|x-x'\|_\rho\big)
+\]
+for $\|x\|_\rho,\|x'\|_\rho\le M_x$, $\|y'\|_\rho\le M_y$ (\texttt{ampCoeff\_lipschitz}), with the
+pointwise form $|c_k(x,y)(s)-c_k(x',y')(s)|\rho^{|k|}\le$ the same
+(\texttt{ampCoeff\_sub\_abs\_le}). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem wnorm_const_mul (ρ c f) : wnorm ρ (fun k => c * f k) = |c| * wnorm ρ f
+theorem term_le_wnorm (ρ) (hρ : 0 ≤ ρ) (f) (hf) (k) : |f k| * ρ ^ (k.1 + k.2) ≤ wnorm ρ f
+theorem dropConst_sub (x x') :
+    dropConst (fun k => x k - x' k) = fun k => dropConst x k - dropConst x' k
+theorem ampCoeff_sub_decomp (β x x' y y' s) :
+    (fun k => ampCoeff β x y k s - ampCoeff β x' y' k s)
+    = fun k => exp(βs x₀₀) * (conv (y − y') E k + conv y' (E − E') k)
+             + (exp(βs x₀₀) − exp(βs x'₀₀)) * conv y' E' k
+theorem exp_phase_sub_le ... : |exp (t * x (0,0)) - exp (t * x' (0,0))|
+    ≤ Real.exp (|t| * M) * (|t| * wnorm ρ (fun k => x k - x' k))
+theorem ampCoeff_lipschitz (β ρ) (hρ : 0 < ρ) (x x' y y') (hx hx' hy hy') (Mx My)
+    (hMx : wnorm ρ x ≤ Mx) (hMx' : wnorm ρ x' ≤ Mx) (hMy' : wnorm ρ y' ≤ My) (s) :
+    WSummable ρ (fun k => ampCoeff β x y k s - ampCoeff β x' y' k s) ∧
+    wnorm ρ (fun k => ampCoeff β x y k s - ampCoeff β x' y' k s)
+      ≤ Real.exp (2 * |β * s| * Mx)
+        * (wnorm ρ (fun k => y k - y' k)
+           + 2 * My * |β * s| * wnorm ρ (fun k => x k - x' k))
+theorem ampCoeff_sub_abs_le ... :
+    |ampCoeff β x y k s - ampCoeff β x' y' k s| * ρ ^ (k.1 + k.2) ≤ ...
+\end{verbatim}
+}
+
+\section{Mathematics}
+Write $u=\beta s x_{00}$, $E=E_{\bar x}(\beta s)$ with $\bar x=$ \texttt{dropConst}$\,x$, and
+primes for the second data set. Then
+\[
+c-c'=e^{u}\,(y-y')*E\;+\;e^{u}\,y'*(E-E')\;+\;(e^{u}-e^{u'})\,y'*E'.
+\]
+The norms are controlled by $\|E\|_\rho\le e^{|t|\|\bar x\|_\rho}\le e^{|t|M_x}$ (unit~118 and
+$\|\bar x\|_\rho\le\|x\|_\rho$), $\|E-E'\|_\rho\le|t|e^{|t|M_x}\|\bar x-\bar x'\|_\rho\le
+|t|e^{|t|M_x}\|x-x'\|_\rho$ (unit~142, using $\overline{x-x'}=\bar x-\bar x'$), $e^{u}\le
+e^{|t|M_x}$ since $|x_{00}|\le\|x\|_\rho$ (the $k=(0,0)$ term with weight $\rho^0=1$), and
+$|e^u-e^{u'}|\le|u-u'|e^{\max(u,u')}\le e^{|t|M_x}|t|\|x-x'\|_\rho$. Adding the three pieces gives
+$e^{2|t|M_x}(\|y-y'\|_\rho+2M_y|t|\|x-x'\|_\rho)$. Only $y'$ needs a norm bound; $y$ enters through
+$y-y'$ alone.
+
+\section{Paper-facing meaning}
+Astra~\#10 listed ``$c_s(x,y)$ is locally Lipschitz in the Banach-algebra norm'' as the last piece of
+the coefficient-closure programme: with parameter measurability (units~138--139), the weighted
+bounds (140) and linearity (141), it makes the map from analytic data $(\xi,\eta)$ to Taylor-tree
+coefficients a continuous (indeed locally Lipschitz) map on the $\rho$-ball, which is what one
+needs to move expectations and limits past the coefficient extraction in §4.3. The estimate is
+uniform on $s\in[0,S]$ for each fixed $S$, with the Gaussian-type growth $e^{2|\beta s|M_x}$ in $s$
+that the envelope class of unit~140 absorbs.
+
+\section{Lean notes}
+\begin{itemize}
+\item The decomposition lemma \texttt{ampCoeff\_sub\_decomp} is proved by \texttt{funext},
+unfolding \texttt{ampCoeff}, rewriting with \texttt{conv\_sub\_left}/\texttt{conv\_sub\_right} and
+\texttt{ring}; the convolution values are atoms for \texttt{ring}, so no further work is needed.
+\item Introducing \texttt{set t := β * s} before the main calc and rewriting the goal with
+\texttt{← ht} after \texttt{rw [ampCoeff\_sub\_decomp]} keeps all hypotheses syntactically in
+terms of \texttt{t}, which is what makes the final \texttt{add\_le\_add (mul\_le\_mul ...)} step
+type-check against the \texttt{have}s.
+\item \texttt{abs\_exp\_sub\_exp\_le} (already in \texttt{MixedBlockEnvelope}) has the shape
+$|x-y|\,e^{\max(x,y)}$; the case split on \texttt{le\_total} for the maximum is two lines.
+\item The file compiled on the first attempt, an indication that the convolution-algebra layer of
+unit~142 is the right abstraction.
+\end{itemize}
+
+\end{document}
