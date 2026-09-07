@@ -313,3 +313,4 @@ import Laplace.Grammar.ProbNormalisedRemainder
 import Laplace.Grammar.FarPhase
 import Laplace.Grammar.TightNormalisedRemainder
 import Laplace.Grammar.NormBoundedInProbability
+import Laplace.Grammar.LeadingCoeffPositive
