@@ -406,3 +406,4 @@ import Laplace.Grammar.UniformCutoffConst
 import Laplace.Grammar.FamilySpectralCoeff
 import Laplace.Grammar.FamilyTaylorTree
 import Laplace.Grammar.BoxScaling
+import Laplace.Grammar.BoxTaylorTree
