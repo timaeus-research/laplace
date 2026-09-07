@@ -1,0 +1,71 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Shifted monomial moments}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+First step of the continuous-amplitude milestone (Astra~\#16, route~C: monomial moments, polynomial
+density, bounded mass). Dressing the bare normal moment integral with a monomial $u^\gamma$ shifts
+the exponents $h\mapsto h+\gamma$. Normalising by the scale $N^{-\lambda}(\log N)^{|J|-1}$ of the
+\emph{undressed} integral: if $\gamma$ vanishes on the minimal set $J$, the normalised moment converges
+to $\Gamma(\lambda)\beta^{-\lambda}/(|J|-1)!\cdot\prod_{i\in J}\frac1{2k_i}\prod_{i\notin J}\frac1{h_i+\gamma_i+1-2k_i\lambda}$
+(\texttt{shiftedMoment\_tendsto\_of\_face}); otherwise it tends to $0$
+(\texttt{shiftedMoment\_tendsto\_zero}). These are the monomial moments of the face-supported
+limiting functional. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem tendsto_log_pow_div_pow (a b : ℕ) (hab : a < b) :
+    Tendsto (fun N => log N ^ a / log N ^ b) atTop (𝓝 0)
+theorem ratioExp_le_shift / ratioExp_shift_eq_of_zero / ratioExp_lt_shift / shift_min
+theorem shiftedMoment_tendsto_of_face (d) (h k : Fin (d+1) → ℕ) (hk) (l β) (hl) (hβ)
+    (hmin) (hatt) (γ : Fin (d+1) → ℕ) (hγ : ∀ i, ratioExp h k i = l → γ i = 0) :
+    Tendsto (fun N => monomialBoxReal (d + 1) (fun i => h i + γ i) k β N
+        / (N ^ (-l) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 (monomialMixedConst (fun i => h i + γ i) k l β))
+theorem shiftedMoment_tendsto_zero ... (hγ : ∃ j, ratioExp h k j = l ∧ γ j ≠ 0) :
+    Tendsto (fun N => monomialBoxReal (d + 1) (fun i => h i + γ i) k β N
+        / (N ^ (-l) * log N ^ (multCount (ratioExp h k) l - 1))) atTop (𝓝 0)
+\end{verbatim}
+}
+
+\section{Mathematics}
+Shifting never decreases a ratio, strictly increases it exactly where $\gamma_i>0$. For a face shift
+the minimum and its multiplicity are unchanged and the mixed theorem (unit~181) applies to $h+\gamma$.
+Otherwise the multiplicity of $\lambda$ strictly drops: if it stays positive, the same exponent
+appears with a lower log power and $(\log N)^{m'-1}/(\log N)^{m-1}\to0$; if it drops to zero, every
+shifted ratio exceeds $\lambda$, the new minimum $\lambda'>\lambda$ is attained, and the quotient of
+power--log leading terms with $\lambda<\lambda'$ tends to zero (\texttt{tendsto\_quotient\_zero\_of\_lt}).
+
+\section{Paper-facing meaning}
+For the dressed normal moment $\int u^h\eta(u)e^{-Nu^{2k}}$ these limits are the moments of the
+leading functional: Taylor monomials supported on the nonminimal coordinates $I\setminus J$
+contribute at leading order with the residue factors $1/(h_i+\gamma_i+1-2k_i\lambda)$, while any
+monomial involving a minimal coordinate is of lower order. This is the mechanism behind Astra~\#16's
+qualification of eq.~\texttt{thm\_leading\_coeff} for mixed ratios.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{set m' := multCount ... with hm'} does not fold occurrences inside hypotheses created
+\emph{later}; \texttt{rw [← hm'] at hT} after obtaining them.
+\item \texttt{unfold} fails on a goal whose \texttt{set} variables hide the constant; \texttt{rw [hm]}
+first, then \texttt{unfold}.
+\item \texttt{rw [if\_neg H]} takes the negation as an argument; the remaining goal is the numeric
+inequality, not \texttt{H}.
+\item After \texttt{unfold ratioExp} the beta-redex \texttt{(fun i => h i + γ i) i} blocks
+\texttt{rw}; use \texttt{simp only}.
+\end{itemize}
+
+\end{document}
