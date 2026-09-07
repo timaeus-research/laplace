@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Minimal block VI: the freezing limit}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The right-hand side of the freezing inequality (unit~77) is normalised by $N^p/\log^{d_0+1}N$: the strip
+terms vanish because the mixed-block envelope loses one logarithm, the corner term converges to
+$\omega C_4$ by the frozen coefficient theorem, and uniform continuity of $\xi,\eta$ on the closed box
+makes $\omega$ arbitrarily small. Hence $N^p(Z(N)-Z_0(N))/\log^{d_0+1}N\to0$: the leading coefficient
+of a block of multiplicity $m=d_0+2\ge2$ depends on $\xi,\eta$ only through their values on the minimal
+face $u=0$. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem corner_oscillation {m d' : ℕ} (b : ℝ) (hb : 0 < b) (ξ) (hξc : Continuous ...)
+    (ε : ℝ) (hε : 0 < ε) :
+    ∃ δ > 0, ∀ u v, (∀ i, 0 ≤ u i ∧ u i ≤ b) → (∀ i, 0 ≤ v i ∧ v i ≤ b) → (∀ i, u i ≤ δ) →
+      |ξ u v - ξ 0 v| ≤ ε
+theorem constStateIntegral_shift_tendsto_zero ... (hp : ∀ j, finExp k h j = p) ... (i) :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ (d₀ + 1)
+      * constStateIntegral β a b N k (shiftExp h i) k' h') atTop (𝓝 0)
+theorem blockStateIntegral_frozen_eq ... :
+    blockStateIntegral β b N k h k' h' (fun _ v => ξ 0 v) (fun _ v => η 0 v)
+      = frozenStateIntegral β b N (toNatFun k 1) (toNatFun h 0) d k' h' (fun v => ξ 0 v)
+          (fun v => η 0 v)
+theorem blockStateIntegral_sub_frozen_tendsto (β b p : ℝ) (hβ : 0 < β) (hb : 0 < b)
+    {d₀ d' : ℕ} (k h : Fin (d₀ + 2) → ℕ) (hk : ∀ j, 0 < k j) (hp : ∀ j, finExp k h j = p)
+    (k' h' : Fin d' → ℕ) (hk' : ∀ i, 0 < k' i) (hq : ∀ i, p < ((h' i : ℝ) + 1) / k' i)
+    (ξ η) (hξc : Continuous ...) (hηc : Continuous ...) :
+    Tendsto (fun N : ℝ => N ^ p / Real.log N ^ (d₀ + 1)
+      * (blockStateIntegral β b N k h k' h' ξ η
+        - blockStateIntegral β b N k h k' h' (fun _ v => ξ 0 v) (fun _ v => η 0 v))) atTop
+      (𝓝 0)
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Strip terms: on the open box the shifted block is bounded by
+$K(Nv^{k'})^{-p}(1+\log_+(Nv^{k'}B))^{d_0}$, hence the normalised integrand by
+$K(2+\log_+(B'B))^{d_0}\,v^{h'}(v^{k'})^{-p}/\log N$; \texttt{integral\_mono\_of\_nonneg} needs only
+integrability of the dominating side, and \texttt{squeeze\_zero'} against $C/\log N$ finishes.
+Freezing limit: given $\varepsilon$, choose $\omega=\varepsilon/(2C_2(|C_4|+1))$, get $\delta$ from
+uniform continuity (\texttt{IsCompact.uniformContinuousOn\_of\_continuous},
+\texttt{Metric.uniformContinuousOn\_iff}, with $\mathrm{dist}((u,v),(0,v))=\max_i|u_i|$ via
+\texttt{Prod.dist\_eq} and \texttt{dist\_pi\_le\_iff}), then eventually the corner term is
+$<\varepsilon/2$ and the strip sum is $<\varepsilon/2$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{Tendsto.congr'} pointwise goals are beta redexes: \texttt{beta\_reduce} before
+\texttt{rw}.
+\item Rewriting the frozen inner integral with \texttt{← integral\_const\_mul} is ambiguous (two
+matching products); state the integrand identity by \texttt{integral\_congr\_ae} and rewrite forward.
+\item \texttt{field\_simp} closes the two scalar identities outright; a trailing \texttt{ring} errors
+with ``no goals''.
+\item \texttt{tendsto\_finset\_sum} is deprecated for \texttt{tendsto\_finsetSum}.
+\end{itemize}
+
+\section{Outcome}
+Astra target~5 is essentially complete: the general multiplicity-$m$ leading term reduces to the
+frozen one. Next: assemble the main theorem $Z\sim C\,N^{-p}\log^{d_0+1}N$ with
+$C=\frac{1}{(d_0+1)!\prod k_i}\int v^{h'}(v^{k'})^{-p}A_{p-1}(\xi(0,v))\eta(0,v)\,dv$, positivity when
+$\eta(0,\cdot)>0$, the $\log n$ form, and the Fubini bridge to the full box.
+\end{document}
