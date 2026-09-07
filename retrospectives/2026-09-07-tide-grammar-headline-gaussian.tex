@@ -1,0 +1,38 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline statements, part III: the constant-Gaussian fluctuation model}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Paper-facing wrappers for units~161 and 163 (\texttt{Laplace/Grammar/HeadlineGaussian.lean}):
+\texttt{headline\_gaussian\_dichotomy} states that for $X\sim N(0,v)$ the expected leading moment
+$\mathbb E_+[J_p(X)]$ is finite iff $\beta v<2$, equals $J_p(0)(1-\beta v/2)^{-p/2}$ below the
+threshold and $+\infty$ above it; \texttt{headline\_gaussian\_jensen\_gap} states the strict
+inequality $\mathbb E_+[J_p(X)]>J_p(0)$ for $v>0$. The module docstring fixes the scope (a Gaussian
+constant fluctuation model of the leading coefficient's positive factor; nothing about the empirical
+process or the fixed-$n$ chart integral). Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Paper-facing meaning}
+rem:pop\_vs\_emp~(ii) asserts $\mathbb E_{\mathcal D_n}[C(\xi_n)]\ne C(0)$ because the coefficients
+depend nonlinearly on the fluctuation. The wrappers record the two precise consequences for the
+simplest model: a Jensen gap and a temperature threshold $\beta v=2$ beyond which the expected
+leading coefficient is infinite. The mirror \texttt{grammar\_lean.tex} already carries a sentence
+to this effect in rem:pop\_vs\_emp; a dot is not placed since the remark is prose (bounded-statement
+convention).
+
+\section{Lean notes}
+Wrappers only; compiled on the first attempt. Separate file since the Gaussian units import
+\texttt{HeadlinePosterior.lean}.
+
+\end{document}
