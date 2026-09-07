@@ -14,7 +14,8 @@ lattice `Q⁻¹ℕ` the one-coordinate convolution multiplies the budget by at m
 maximal degree (`budget_conv_le`): a resonant step turns `(μ,j,c)` into `(μ,j+1,c/(j+1))` with
 budget `Q·|c|j!Q^j`; a nonresonant step produces `j+2` terms each of budget at most `Q·|c|j!Q^j`,
 because the denominators `|α|^{j-i+1}` are bounded by `Q^{j-i+1}` on the lattice. Hence for the
-state density of `n+1` coordinates `B_Q(v) ≤ (n+1)! Q^n` (`budget_stateDensityRep_le`), **uniformly in the
+state density of `n+1` coordinates `B_Q(v) ≤ (n+1)! Q^n` (`budget_stateDensityRep_le`),
+**uniformly in the
 monomial**: the list `ℓ¹` norm of the coefficients is at most `(n+1)! Q^n`
 (`sum_abs_le_budget`) and every aggregated coefficient satisfies
 `|coeffAt v μ j| ≤ (n+1)! Q^{n-j}/j!` (`abs_coeffAt_le`). This is Gate A of the Stage 3 plan: the

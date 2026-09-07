@@ -10,7 +10,8 @@ import Laplace.Grammar.ContinuousMomentTransfer
 
 Unit 233 (Taylor-tree programme; Astra #27). Polynomial amplitudes and phases enter Stage 3 only
 through their monomial coefficients, so we represent a real polynomial on `ℝ^d` as a finite list of
-`(exponent γ, coefficient c)` pairs (`MonoRep d`), evaluated by `eval P u = ∑ c · ∏ uᵢ^{γᵢ}`, with the
+`(exponent γ, coefficient c)` pairs (`MonoRep d`), evaluated by `eval P u = ∑ c · ∏ uᵢ^{γᵢ}`, with
+the
 coefficient norm `‖P‖₁ = ∑ |c|` (`l1`). Products are the list of pairwise products
 (`MonoRep.mul`, `eval_mul`), so `‖PQ‖₁ ≤ ‖P‖₁ ‖Q‖₁` is an equality (`l1_mul`) and
 `‖P^p‖₁ ≤ ‖P‖₁^p` (`l1_pow_le`); on the closed unit cube `|P(u)| ≤ ‖P‖₁` (`abs_eval_le_l1`). The
@@ -70,7 +71,8 @@ theorem continuous_eval (P : MonoRep d) : Continuous (eval P) := by
   | cons t P ih =>
     have : eval (t :: P) = fun u => t.2 * mono t.1 u + eval P u := rfl
     rw [this]
-    exact (continuous_const.mul (continuous_finsetProd _ fun i _ => (continuous_apply i).pow _)).add ih
+    exact (continuous_const.mul
+      (continuous_finsetProd _ fun i _ => (continuous_apply i).pow _)).add ih
 
 theorem measurable_eval (P : MonoRep d) : Measurable (eval P) := (continuous_eval P).measurable
 

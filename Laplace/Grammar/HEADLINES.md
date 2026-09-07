@@ -14,7 +14,21 @@ Convolution calculus in `PowLogCalculus.lean` (`PowLogRep.eval_conv`, `conv_expo
 | XXIII | exact identity: `∫_{(0,1]^{n+1}} u^h (√N u^k)^p e^{-βNu^{2k}+β√N u^k a} = ∏1/(2kᵢ) ∑_{(μ,j,c)∈v} c N^{-μ} ∑_{i≤j} C(j,i)(log N)^{j-i} ∫₀^N t^{μ-1}(-log t)^i g(t)`, `g(t) = (√t)^p e^{-βt+β√t a}`, every `N > 0` | MonomialPhaseExpansion.lean (`monomialPhase_eq`) |
 | XXIII′ | asymptotic form: `T(N) − monomialMainSum(N) = O(e^{-βN/8})` with the full moments `fluctMoment β a p μ i = ∫₀^∞ t^{μ-1}(-log t)^i g` | MonomialPhaseTail.lean (`monomialPhase_isBigO`, `tail_le`) |
 Tools: `phaseKernel`, `truncMoment`, `basis_scaling`, `integral_unitBox_monomial_eq_stateDensity` (MonomialPhaseIdentity.lean).
-Next: Stage 3 — spectral truncation (Astra #26): finitely many exponents below a cutoff, uniform coefficient bounds, all phase orders summed at each retained exponent.
+**Stage 3 — polynomial Taylor tree with spectral truncation — COMPLETE (units 230–239; Astra #27, Gates A–D passed).**
+Scope: polynomial phase `ξ` and amplitude `η` (finite monomial lists `MonoRep`), box `(0,1]^{n+1}` (`d = n+1`), `β > 0`, `kᵢ > 0`, `N` = paper's `n`; `Z(N) = polyPhaseIntegral = ∫ η u^h e^{-βN u^{2k} + β√N u^k ξ(u)}`; `Λ_L = latticeBelow (2∏kᵢ) L` (the lattice `Q⁻¹ℕ` below the cutoff; coefficients vanish at exponents not carried by any density).
+| Headline | Statement | File:line |
+|---|---|---|
+| XXIV | exact polynomial Taylor tree, every `N > 0`: `Z(N) = ∑_p β^p/p! ∑_{(γ,c)∈ηJ^p} c · monomialTruncSum(h+γ)` with `J = ξ − ξ(0)` (absolutely convergent; `HasSum` form at L159 / L286) | PhaseTaylorIdentity.lean:270 (`polyPhaseIntegral_eq_tsum_truncSum`) |
+| XXV | quantitative cutoff: `|Z(N) − ∑_{μ∈Λ_L} N^{-μ} ∑_{j≤n} A_{μ,j}(log N)^j| ≤ C · N^{-L}(1+log N)^n` for all `N ≥ 1`, `L > 0`, `C` explicit and `N`-free; exact form `= R_high − tail` at L444 | LowSpectrumTail.lean:457 (`taylorTree_cutoff_bound`) |
+| XXVI | asymptotic expansion: `Z − spectralSum_L = O(N^{-L}(1+log N)^n)` (L41), `= O(N^{-L}(log N)^n)` (L64), `= o(N^{-L'})` for `L' < L` (L81) | TaylorTreeAsymptotic.lean:41 (`taylorTree_isBigO`) |
+| — | spectral coefficient `A_{μ,j} = ∑_p β^p/p! K_k ∑_{(γ,c)} c ∑_{q=j}^{n} coeffAt(ρ_{h+γ},μ,q) C(q,j) fluctMoment_p(μ,q−j)`: cutoff-free, absolutely convergent (Gate D) | SpectralCoefficients.lean:371 (`spectralCoeff`), :343 (`summable_coeffTerm_series`), :384 (`mainSeries_eq_sum`) |
+| — | Gate C: `|R_high(N)| ≤ K_k‖η‖₁(n+1)!Q^n M_{L,n}(ξ(0)+‖J‖₁) · N^{-L}(1+log N)^n` (τ-side estimate, constants independent of the monomial) | HighSpectrumBound.lean:376 (`abs_highRemainder_le`), :118 (`basis_integral_le`) |
+| — | Gate B: log majorant `M_{ν,r,p}(b) = ∫₀^∞ t^{ν-1}(1+|log t|)^r(√t)^p e^{-βt+βb√t}` finite for all real `b`; Tonelli `∑_p (βB)^p/p! M_{ν,r,p}(b) = M_{ν,r,0}(b+B)` (no smallness on `B`) | PhaseMajorant.lean:146 (`integrableOn_logMajorant`), :246 (`tsum_phaseLogMoment_series`) |
+| — | Gate A: uniform weighted budget `∑|c| j! Q^j ≤ (n+1)! Q^n` for every lattice-supported state density | DensityBudget.lean:204 (`budget_stateDensityRep_le`) |
+| — | lattice `Q = 2∏kᵢ`, `(e+1)/(2kᵢ) ∈ Q⁻¹ℕ_{>0}`, spacing `1/Q`, finite `latticeBelow` | SpectralLattice.lean:37 (`ratio_mem_lattice`) |
+| — | polynomial ℓ¹ algebra: `|P(u)| ≤ ‖P‖₁` on the cube, `‖PQ‖₁ = ‖P‖₁‖Q‖₁`, `‖P^p‖₁ ≤ ‖P‖₁^p`, `fluct` | MonomialRep.lean:85 (`abs_eval_le_l1`), :149 (`l1_pow_le`) |
+Low-spectrum tail replacement: `LowSpectrumTail.lean` (`tsum_logTailMoment_series` L48, `exp_le_rpow_const` L137, `abs_tailSeries_le` L396). Numerical checks: XXIV in d=1 to 2e-15; XXV in d=1 (L = 5/2): error × N^{5/2} ≈ 0.15 stable over N = 10…640.
+Not formalised (Stage 4 — not authorised): analytic (non-polynomial) `ξ, η` (coefficient space with weighted ℓ¹ norm, monomial summability), `b ≠ 1`, identification of the coarse lattice with the paper's `Λ(h,k)`, the derivative dictionary `β^p fluctMoment = (−∂_μ)^i ∂_a^p S_μ(a)`.
 
 
 ## Completion statement (2026-09-07)

@@ -1,0 +1,122 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The polynomial Taylor tree with spectral truncation (Taylor-tree Stage 3)}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Units 230--239 complete Stage~3 of the Taylor-tree programme (Astra \#27, gates A--D): the
+\emph{polynomial} version of \texttt{thm:TaylorTree}/\texttt{cor:standardintegralexp}. For polynomial
+phase $\xi$ and amplitude $\eta$ (finite monomial lists), $\beta>0$, $k_i>0$, on the unit box, the
+standard integral $Z(N)=\int_{(0,1]^d}\eta\,u^he^{-\beta Nu^{2k}+\beta\sqrt N u^k\xi(u)}du$ satisfies,
+for every cutoff $L>0$ and every $N\ge1$,
+\[
+\Bigl|Z(N)-\sum_{\mu\in\Lambda_L}N^{-\mu}\sum_{j\le d-1}A_{\mu,j}(\log N)^j\Bigr|
+\le C\,N^{-L}(1+\log N)^{d-1}
+\]
+(Headline~XXV, \texttt{taylorTree\_cutoff\_bound}), with $\Lambda_L$ the lattice $(2\prod k_i)^{-1}\mathbb N$
+below $L$, an explicit $N$-free constant $C$, and coefficients $A_{\mu,j}$ that are cutoff-free
+absolutely convergent series over phase orders (Headline~XXVI packages this as $O$ and $o$
+statements, i.e.\ an asymptotic expansion in the scale $N^{-\mu}(\log N)^j$). The route never
+estimates a moment at a large exponent: high-spectrum entries are bounded on the $\tau$-side before
+substitution, phase orders are summed under the absolute integral by a Tonelli identity that folds
+$\sum_p(\beta B)^p/p!$ into the exponent, and coefficient bounds come from a weighted budget on the
+state-density lists that is uniform in the monomial. Numerics ($d=1$, $\xi=0.3+0.5u$, $\eta=1+u$,
+$L=5/2$): the error times $N^{5/2}$ is $\approx0.15$ for $N=10,40,160,640$. No \texttt{sorry} and no
+additional \texttt{axiom} declarations; 9115 jobs.
+\end{abstract}
+
+\section{Architecture}
+
+\paragraph{Spectral lattice (u230, \texttt{SpectralLattice}).} With $Q=2\prod_ik_i$ every density
+exponent $(e+1)/(2k_i)$ lies in $Q^{-1}\mathbb N_{>0}$; distinct lattice points are $\ge1/Q$ apart; the
+cutoff set $\Lambda_L=\{m/Q:m<\lceil LQ\rceil\}$ is a \texttt{Finset}.
+
+\paragraph{Weighted budget (u231, \texttt{DensityBudget}; Gate A).} For a representation
+$v=\sum c\,\tau^{\mu-1}(-\log\tau)^j$ define $B_Q(v)=\sum|c|\,j!\,Q^j$. Through the $G_j$ recursion of
+the one-coordinate convolution ($|\alpha|\ge1/Q$ for non-coincident exponents) one gets
+$B_Q(\mathrm{conv})\le(r+1)\,Q\,B_Q(v)$ at each step, hence $B_Q(v_w)\le(n+1)!\,Q^n$ for every
+lattice-supported weight vector $w$ on $n+1$ coordinates, \emph{uniformly in the monomial}
+(\texttt{budget\_stateDensityRep\_le}). Consequences: $\sum|c|\le B_Q$ and $|{\rm coeffAt}(\mu,j)|\,j!Q^j\le B_Q$.
+
+\paragraph{Polynomial $\ell^1$ algebra (u233, \texttt{MonomialRep}).} Lists of (exponent, coefficient)
+pairs with $\|P\|_1=\sum|c|$: $|P(u)|\le\|P\|_1$ on the closed cube, $\|PQ\|_1=\|P\|_1\|Q\|_1$,
+$\|P^p\|_1\le\|P\|_1^p$, and the fluctuation part $J=\xi-\xi(0)$ as the list without the constant term.
+
+\paragraph{Log majorant and Tonelli (u234, \texttt{PhaseMajorant}; Gate B).}
+$M_{\nu,r,p}(b)=\int_0^\infty t^{\nu-1}(1+|\log t|)^r(\sqrt t)^pe^{-\beta t+\beta b\sqrt t}dt$ is finite for
+$\beta,\nu>0$ and \emph{every} real $b$ (binomial reduction to the Stage~1 basis on $(0,1]$,
+exponential domination on $(1,\infty)$), and
+\[
+\sum_{p\ge0}\frac{(\beta B)^p}{p!}M_{\nu,r,p}(b)=M_{\nu,r,0}(b+B)\qquad(B\ge0),
+\]
+absolutely convergent with no smallness assumption on $B$: pointwise $\sum_p(\beta B\sqrt t)^p/p!=e^{\beta B\sqrt t}$
+and \texttt{hasSum\_integral\_of\_summable\_integral\_norm} with the partial sums dominated by the
+folded majorant.
+
+\paragraph{Integrated phase Taylor identity (u235, \texttt{PhaseTaylorIdentity}; Headline XXIV).}
+With $a=\xi(0)$, $J=\xi-a$, $P_p=\eta J^p$, for every fixed $N\ge0$,
+$Z(N)=\sum_p\frac{\beta^p}{p!}\int_{(0,1]^d}P_p(u)u^hg_p(Nu^{2k})\,du$, the interchange justified by the
+constant bound $\|\eta\|_1(\beta\|J\|_1\sqrt N)^p/p!\,e^{\beta\sqrt N|a|}$ on the box. Each phase order is a
+\emph{finite} sum of monomial phase integrals, each of which is the exact Stage~2 identity XXIII; the
+combination (\texttt{polyPhaseIntegral\_eq\_tsum\_truncSum}) is the exact polynomial Taylor tree before any
+truncation (checked numerically to $2\cdot10^{-15}$ in $d=1$).
+
+\paragraph{High spectrum (u236, \texttt{HighSpectrumBound}; Gate C).} For an entry $(\mu,j,c)$ with
+$\mu\ge L$, $j\le n$, $N\ge1$:
+$\int_0^1\tau^{\mu-1}(-\log\tau)^jg_p(N\tau)d\tau\le N^{-L}(1+\log N)^nM_{L,n,p}(a)$ (lower the exponent
+on $(0,1]$, substitute $t=N\tau$, use $|\log N-\log t|\le(1+\log N)(1+|\log t|)$, enlarge to $(0,\infty)$).
+Summing with the budget, the $\ell^1$ algebra and the Tonelli identity,
+$|R_{\rm high}(N)|\le K_k\|\eta\|_1(n+1)!Q^nM_{L,n}(a+\|J\|_1)\,N^{-L}(1+\log N)^n$, and
+$Z=\text{lowSeries}+R_{\rm high}$.
+
+\paragraph{Spectral coefficients (u237, \texttt{SpectralCoefficients}; Gate D).} The low part with full
+moments is regrouped by the \emph{aggregated} coefficient \texttt{coeffAt} (never a single list entry)
+over $\Lambda_L\times\{0,\dots,n\}$ and the binomial sum is reflected, giving
+$\text{mainPart}_p=\sum_{\mu\in\Lambda_L}\sum_{j\le n}N^{-\mu}(\log N)^j\,\text{coeffTerm}_p(\mu,j)$ with
+\[
+\text{coeffTerm}_p(\mu,j)=K_k\sum_{(\gamma,c)\in P_p}c\sum_{q=j}^{n}{\rm coeffAt}(\rho_{h+\gamma},\mu,q)\binom qj
+\int_0^\infty t^{\mu-1}(-\log t)^{q-j}g_p(t)\,dt .
+\]
+$A_{\mu,j}=\sum_p\frac{\beta^p}{p!}\text{coeffTerm}_p(\mu,j)$ is defined without any cutoff and converges
+absolutely ($|{\rm coeffAt}|\le(n+1)!Q^n$, $\binom qj\le2^n$, $|\text{fluctMoment}|\le M_{\mu,n,p}$, Tonelli);
+at $\mu\le0$ all coefficients vanish. Hence $\sum_p\frac{\beta^p}{p!}\text{mainPart}_p=\sum_{\mu\in\Lambda_L}
+N^{-\mu}\sum_jA_{\mu,j}(\log N)^j$ exactly.
+
+\paragraph{Low-spectrum tail (u238, \texttt{LowSpectrumTail}; Headline XXV).} The truncated moments of the
+low part differ from the full ones by tails $\int_N^\infty$, dominated for $0<\mu\le L$ by
+$\int_N^\infty{\rm logMajorant}_{L,n,p}$; phase orders are summed first (Tonelli on $(N,\infty)$), the
+folded tail is $\le C_1e^{-\beta N/4}$ and $e^{-\beta N/4}\le\lceil L\rceil!(4/\beta)^{\lceil L\rceil}N^{-L}$.
+Assembling: $Z-\sum_{\mu\in\Lambda_L}N^{-\mu}\sum_jA_{\mu,j}(\log N)^j=R_{\rm high}-\text{tailSeries}$ exactly,
+and the displayed bound follows with $C=\text{highConst}+\text{tailSeriesConst}$.
+
+\paragraph{Asymptotic packaging (u239, \texttt{TaylorTreeAsymptotic}; Headline XXVI).}
+$Z-\text{spectralSum}_L=O(N^{-L}(1+\log N)^{d-1})=O(N^{-L}(\log N)^{d-1})$ and $=o(N^{-L'})$ for every $L'<L$.
+
+\section{Correspondence with the paper}
+The Lean $N$ is the paper's $n$; the Lean dimension index is $n=d-1$; the Lean log degree $j$ is the
+paper's $j-1$ and $(\log N)^j$ carries the paper's $m=j+1$. The lattice $\Lambda_L\subseteq Q^{-1}\mathbb N$ is
+coarser than $\Lambda(h,k)$; the coefficients vanish at exponents not carried by any state density, so the
+expansion is over $\Lambda(h,k)$ in effect (the identification is not exported). The integrals
+$\beta^p\int_0^\infty t^{\mu-1}(-\log t)^ig_p$ are the paper's $(-\partial_\mu)^i\partial_a^pS_\mu(a)$ as an
+interpretation, not a formal derivative theorem. Not formalised: analytic (non-polynomial) $\xi,\eta$
+(Stage~4: a coefficient space with a weighted $\ell^1$ norm and summability over monomials), $b\ne1$.
+
+\section{Lessons}
+Sum phase orders under the absolute integral, never the per-order tail constants (they contain
+$(\lceil\nu\rceil+i+p)!$); bound high exponents on the $\tau$-side before substituting; regroup by the
+aggregated coefficient with a list-induction lemma over a finite index set; the $\mu\le0$ lattice point
+needs a vanishing-coefficient case, not an integrability argument. Lean gotchas: \texttt{tsum\_add} and
+\texttt{sum\_le\_tsum} are now dot-notation on \texttt{Summable}; \texttt{summable\_of\_sum\_range\_le} needs
+the bound constant named; \texttt{convert ... using 1} on \texttt{HasSum} spawns instance goals --- rewrite the
+function with a \texttt{funext} equation instead; \texttt{first | ring | ...} does not fall through when
+\texttt{ring} degrades to \texttt{ring\_nf}, so put the contradiction alternatives first.
+\end{document}
