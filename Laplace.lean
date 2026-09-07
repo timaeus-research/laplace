@@ -332,3 +332,4 @@ import Laplace.Grammar.WeightedPowerSubstitution
 import Laplace.Grammar.ProductDensityHelpers
 import Laplace.Grammar.ProductDensity
 import Laplace.Grammar.GammaLogAsymptotic
+import Laplace.Grammar.MonomialBoxBridge
