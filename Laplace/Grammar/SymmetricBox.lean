@@ -14,7 +14,9 @@ the reflections `uᵢ ↦ -uᵢ` give the exact identity
   `∫_{(-1,1]^d} u^h e^{-βN u^{2k}} du = ∏ᵢ (1 + (-1)^{hᵢ}) · ∫_{(0,1]^d} u^h e^{-βN u^{2k}} du`
 
 (`monomialSymReal_eq`): each odd exponent kills the integral, each even exponent doubles it. This is
-the paper's parity factor `(1+(-1)^{hᵢ})` (without the `1/2` normalisation of an averaged measure).
+the paper's parity factor `(1+(-1)^{hᵢ})` for ordinary Lebesgue measure; the paper's
+`(1+(-1)^{hᵢ})/2` reflects a different normalisation convention, which these statements do not
+identify.
 Consequently the symmetric-box integral has the mixed-ratio asymptotic with the constant multiplied
 by the parity product (`monomialSymReal_tendsto`), which vanishes as soon as one exponent is odd.
 

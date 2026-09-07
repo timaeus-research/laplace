@@ -15,7 +15,8 @@ normal data `(hᵢ, kᵢ)` with Mellin ratios `ℓᵢ`, minimum `λ` attained on
   moment, normalised by `N^{-λ}(log N)^{|J|-1}`, converges to
   `∫_K q(v) · Γ(λ)β^{-λ}/(|J|-1)! ∏_{j∈J} 1/(2kⱼ) ∫ η(v, P_J u) ∏_{i∉J} uᵢ^{hᵢ-2kᵢλ} du dv`;
 * **equal ratios** (`headline_tangential_normal_moment_equal`): the limit is
-  `Γ(λ)β^{-λ}/(m! ∏ᵢ 2kᵢ) · ∫_K q(v) η(v, 0) dv` — the deterministic chart-level precursor of the
+  `Γ(λ)β^{-λ}/(m! ∏ᵢ 2kᵢ) · ∫_K q(v) η(v, 0) dv` for `m + 1` normal variables (the paper's
+  `(m−1)!` counts `m` normal variables) — the deterministic chart-level precursor of the
   paper's leading coefficient `Γ(λ)/(m-1)! a_I ∫_{S_I} (φ∘π) c₀ |dv|` (eq. `thm_leading_coeff`),
   with the density `c₀` and the observable both absorbed into `q · η`;
 * the **equivalence form** under a nonzero integrated coefficient
