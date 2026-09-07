@@ -242,3 +242,4 @@ import Laplace.Grammar.FreezingLimit
 import Laplace.Grammar.MultiplicityGeneral
 import Laplace.Grammar.BoxBridge
 import Laplace.Grammar.BoxGeneralOrder
+import Laplace.Grammar.DensityTransfer
