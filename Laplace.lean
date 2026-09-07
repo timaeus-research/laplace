@@ -349,3 +349,4 @@ import Laplace.Grammar.HeadlineAmplitude
 import Laplace.Grammar.BoxPeel
 import Laplace.Grammar.TangentialAmplitude
 import Laplace.Grammar.HeadlineTangential
+import Laplace.Grammar.ExpGapLocalisation
