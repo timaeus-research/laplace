@@ -266,3 +266,4 @@ import Laplace.Grammar.TwoDGenDensityUnequal
 import Laplace.Grammar.FaceDensityExpansion
 import Laplace.Grammar.MixedShiftBound
 import Laplace.Grammar.RectDecomp
+import Laplace.Grammar.TwoDCutoff
