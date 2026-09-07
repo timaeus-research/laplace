@@ -304,3 +304,4 @@ import Laplace.Grammar.CoeffDifference
 import Laplace.Grammar.ConvAlgebra
 import Laplace.Grammar.AmpCoeffLipschitz
 import Laplace.Grammar.TaylorDataIdentification
+import Laplace.Grammar.CoeffLipschitz
