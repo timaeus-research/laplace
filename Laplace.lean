@@ -322,3 +322,4 @@ import Laplace.Grammar.ChartPosteriorLimit
 import Laplace.Grammar.HeadlinePosterior
 import Laplace.Grammar.GaussianDichotomy
 import Laplace.Grammar.GaussianThreshold
+import Laplace.Grammar.HeadlineGaussian
