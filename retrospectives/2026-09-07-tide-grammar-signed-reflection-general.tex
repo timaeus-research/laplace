@@ -1,0 +1,65 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The signed-reflection identity for arbitrary continuous integrands}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 216 (Astra~\#23 programme~D2, step~1). Unit~196 reduced the zero-phase dressed integral over the
+symmetric box $(-1,1]^d$ to the unit box by reflecting coordinates; with a phase the kernel is no
+longer a function of $x^{2k}$ alone, so the reduction is needed for an arbitrary continuous integrand:
+\[
+\int_{(-1,1]^d}F(x)\,dx=\sum_{\sigma\in\{\pm1\}^d}\int_{(0,1]^d}F(\sigma\cdot u)\,du
+\qquad(\texttt{integral\_symBox\_eq\_sum\_reflect}).
+\]
+Proof by induction on $d$ with the Bochner box peel, the one-coordinate symmetrisation
+$\int_{-1}^1g=\int_0^1(g(a)+g(-a))$, and the splitting of the sign sum along the first coordinate
+(\texttt{Fin.consEquiv}). Zero \texttt{sorry}/\texttt{axiom}; 9093 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem integrableOn_piBox_Ioc_of_continuous (d) (a b : ℝ) (F) (hF : Continuous F) :
+    IntegrableOn F (piBox d (Ioc a b))
+theorem integral_symBox_eq_sum_reflect : ∀ (d : ℕ) (F : (Fin d → ℝ) → ℝ), Continuous F →
+    ∫ x in symBox d, F x = ∑ σ : Fin d → Bool, ∫ u in unitBox d, F (reflect σ u)
+\end{verbatim}
+}
+
+\section{Mathematics}
+For $d+1$ coordinates: peel the first, $\int_{-1}^1\!\int_{(-1,1]^d}F(a,b)\,db\,da$; the inner
+integral is $\sum_\tau\int_{(0,1]^d}F(a,\tau\cdot v)\,dv$ by induction; symmetrise $a$:
+$\int_0^1\sum_\tau[\int F(a,\tau v)+\int F(-a,\tau v)]\,da$; on the right,
+$\sum_{\sigma=(b,\tau)}\int_{(0,1]^{d+1}}F(\sigma\cdot u)$ peels to
+$\sum_b\sum_\tau\int_0^1\!\int F(\operatorname{sgn}(b)a,\tau v)$ by
+\texttt{reflect\_cons}; the two agree with $\operatorname{sgn}(\mathrm{true})=-1$,
+$\operatorname{sgn}(\mathrm{false})=1$. The marginal integrabilities come from
+\texttt{integrableOn\_pi\_box\_marginal} applied to $F\circ\mathrm{reflect}$.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{reflect}, \texttt{sgn}, \texttt{integral\_Ioc\_symm\_add} live in
+  \texttt{SignedReflection.lean}, a sibling branch of the import graph not reachable from the
+  phase programme; import \texttt{SymmetricAmplitudeAsymptotic} explicitly.
+\item In \texttt{integral\_pi\_box\_succ d \_ \_ (proof)} the integrand gets unified from the proof
+  term (\texttt{F ∘ reflect σ}, a \texttt{Function.comp}) rather than from the goal's lambda, and the
+  rewrite then fails; pass the lambda explicitly as the function argument.
+\item \texttt{simp only [sgn, Bool.false\_eq\_true, ↓reduceIte, neg\_one\_mul, one\_mul]} evaluates
+  \texttt{sgn true * a} and \texttt{sgn false * a} without disturbing the integrals.
+\end{itemize}
+
+\section{Next}
+Unit 217: Headline~XIX --- the phase-dressed leading term on the symmetric box as the sum over
+orthants of Headline~XIII with phase $\varepsilon_\sigma\,\xi\circ\sigma$
+($\varepsilon_\sigma=\prod\operatorname{sgn}(\sigma_i)^{k_i}$) and amplitude
+$\chi_h(\sigma)\,\eta\circ\sigma$ (signed monomial) or $\eta\circ\sigma$ (absolute density $|x|^h$).
+\end{document}
