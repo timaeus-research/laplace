@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Conditional finite chart assembly}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 207, first unit of Astra~\#22's programme~B2. The paper's expectation expansion is a sum over
+charts (strata) of normal-block integrals; at leading order only the charts attaining the
+\emph{minimum exponent} $p_*=\min_ap_a$ and, among those, the \emph{maximum} logarithmic
+multiplicity $m_*=\max\{m_a:p_a=p_*\}$ survive. We prove this selection rule abstractly, for any
+finite family with $I_a(N)/(N^{-p_a}(\log N)^{m_a-1})\to L_a$:
+\[
+\frac{\sum_aI_a(N)}{N^{-p_*}(\log N)^{m_*-1}}\longrightarrow\sum_{a:(p_a,m_a)=(p_*,m_*)}L_a,
+\]
+and the quotient version with numerator and denominator assembled \emph{separately} (the posterior
+limit is a ratio of sums, not a sum of chart ratios), given a positive selected denominator sum.
+Resolution, Jacobians and partitions of unity enter only through the per-chart hypotheses: a
+\emph{conditional} assembly theorem. Zero \texttt{sorry}/\texttt{axiom}; 9084 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+variable {ι : Type*} [Fintype ι] [Nonempty ι]
+noncomputable def leadExp (p : ι → ℝ) : ℝ := univ.inf' univ_nonempty p
+noncomputable def leadMult (p : ι → ℝ) (m : ι → ℕ) : ℕ :=
+  univ.sup fun a => if p a = leadExp p then m a else 0
+theorem leadExp_le / exists_leadExp / le_leadMult / exists_leadMult (hm : ∀ a, 1 ≤
+      m a)
+theorem scale_ratio_tendsto (hm) (a) :
+    Tendsto (fun N => (N^(-(p a)) * log N ^ (m a - 1)) / (N^(-(leadExp p)) * log N
+      ^ (leadMult p m - 1)))
+      atTop (𝓝 (if p a = leadExp p ∧ m a = leadMult p m then 1 else 0))
+theorem assembly_tendsto (I : ι → ℝ → ℝ) (p) (m) (hm) (L)
+    (hI : ∀ a, Tendsto (fun N => I a N / (N^(-(p a)) * log N ^ (m a - 1))) atTop (𝓝
+      (L a))) :
+    Tendsto (fun N => (∑ a, I a N) / (N^(-(leadExp p)) * log N ^ (leadMult p m -
+      1))) atTop
+      (𝓝 (∑ a ∈ univ.filter (fun a => p a = leadExp p ∧ m a = leadMult p m), L a))
+theorem assembly_ratio_tendsto (Iφ Ic) (p) (m) (hm) (Lφ Lc) (hφ) (hc)
+    (hpos : 0 < ∑ a ∈ univ.filter (…), Lc a) :
+    Tendsto (fun N => (∑ a, Iφ a N) / ∑ a, Ic a N) atTop
+      (𝓝 ((∑ a ∈ univ.filter (…), Lφ a) / ∑ a ∈ univ.filter (…), Lc a))
+\end{verbatim}
+}
+
+\section{Mathematics}
+Each summand is $I_a/S_a\cdot S_a/S_*$ with $S_a=N^{-p_a}(\log N)^{m_a-1}$. The scale ratio is $1$
+on selected charts; equals $(\log N)^{-(m_*-m_a)}\to0$ when $p_a=p_*$ but $m_a<m_*$; and is bounded
+by $(\log N)^{m_a-1}/N^{p_a-p_*}\to0$ (Mathlib's \texttt{isLittleO\_log\_rpow\_rpow\_atTop}) when
+$p_a>p_*$, using $(\log N)^{m_*-1}\ge1$ for $N\ge e$. Then \texttt{tendsto\_finsetSum} and
+\texttt{Finset.sum\_filter}. The quotient version cancels the common scale exactly.
+
+The rule is \emph{not} the lexicographic minimum of $(p_a,m_a)$: at the minimal exponent the
+\emph{largest} logarithm wins. The multiplicity hypothesis $m_a\ge1$ is needed for the natural
+subtraction $m_*-1=(m_a-1)+(m_*-m_a)$.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{Finset.exists\_mem\_eq\_sup} gives the attained maximum; to conclude the maximiser
+  attains the minimum exponent one uses $m_a\ge1$ (otherwise the sup could be $0$ from an
+  off-selection chart).
+\item \texttt{isLittleO\_log\_rpow\_rpow\_atTop (r : ℝ) (hs : 0 < s)} uses a real power of the
+  logarithm; convert the natural power with \texttt{Real.rpow\_natCast}.
+\item \texttt{Real.rpow\_neg hN.le} without an explicit exponent rewrites only the first
+  instantiation; the second occurrence needs its own explicit exponent (again).
+\item \texttt{field\_simp} closed the scale identity outright here; a trailing \texttt{ring} then
+  errors with ``no goals''.
+\end{itemize}
+
+\section{Next}
+Unit 208: instantiate with the phase-dressed chart integrals of Headlines XIII--XIV over a finite
+family of charts with their own dimensions, exponents, phases and amplitudes (Headline XV: the
+assembled leading posterior quotient, with the denominator positivity supplied by
+\texttt{phaseCoeff\_pos} on the selected charts).
+\end{document}
