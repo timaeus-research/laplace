@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The finite density-transfer theorem}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+An abstract, finite, quantitative form of ``a power-log expansion of the state density transfers to a
+power-log asymptotic expansion of the partition function''. For
+$Z(N)=\int_0^Re^{-\beta(Nr)^2}\rho(r,Nr)\,dr$ with a two-variable density satisfying
+$\rho(r,s)=\sum_ir^{\alpha_i-1}\log^{j_i}(1/r)\,c_i(s)+E(r,s)$, $|E|\le r^{a-1}(1+|\log r|)^JH(s)$,
+$\alpha_i<a$, $j_i\le J$, and finite weighted moments,
+\begin{align*}
+&\Big|Z(N)-\sum_iN^{-\alpha_i}\sum_{m\le j_i}\binom{j_i}{m}(\log N)^m(-1)^{j_i-m}M_{i,j_i-m}\Big|\\
+&\qquad\le N^{-a}(1+\log N)^J\Big(M_H+\sum_iR^{\alpha_i-a}T_i\Big)\qquad(N\ge1),
+\end{align*}
+with $M_{i,\ell}=\int_0^\infty s^{\alpha_i-1}(\log s)^\ell e^{-\beta s^2}c_i(s)\,ds$. This is Astra's
+target~7 in the form recommended in the second consult. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def transferZ (ρ : ℝ → ℝ → ℝ) (β R N : ℝ) : ℝ :=
+  ∫ r in Ioc (0 : ℝ) R, Real.exp (-β * (N * r) ^ 2) * ρ r (N * r)
+noncomputable def logMoment (β α : ℝ) (ℓ : ℕ) (c : ℝ → ℝ) : ℝ :=
+  ∫ s in Ioi (0 : ℝ), s ^ (α - 1) * Real.log s ^ ℓ * (Real.exp (-β * s ^ 2) * c s)
+noncomputable def transferTerm (β α : ℝ) (j : ℕ) (c : ℝ → ℝ) (N : ℝ) : ℝ :=
+  N ^ (-α) * ∑ m ∈ Finset.range (j + 1),
+    Real.log N ^ m * (-1) ^ (j - m) * (j.choose m : ℝ) * logMoment β α (j - m) c
+structure DensityExpansion (ρ) (α : ι → ℝ) (j : ι → ℕ) (c : ι → ℝ → ℝ) (a R : ℝ) (J : ℕ) (H)
+  -- R_pos, α_lt, j_le, measurability, H ≥ 0, and
+  rem : ∀ r ∈ Ioc 0 R, ∀ s, 0 < s →
+    |ρ r s - ∑ i, r ^ (α i - 1) * Real.log (1 / r) ^ j i * c i s|
+      ≤ r ^ (a - 1) * (1 + |Real.log r|) ^ J * H s
+theorem densityTransfer_bound (hD : DensityExpansion ρ α j c a R J H) (β : ℝ)
+    (hMc : ∀ i, IntegrableOn (s^(α i-1)(1+|log s|)^(j i) e^{-βs²}|c i s|) (Ioi 0))
+    (hMt : ∀ i, IntegrableOn (s^(a-1)(1+|log s|)^(j i) e^{-βs²}|c i s|) (Ioi 0))
+    (hMH : IntegrableOn (s^(a-1)(1+|log s|)^J e^{-βs²} H s) (Ioi 0))
+    (N : ℝ) (hN : 1 ≤ N) :
+    |transferZ ρ β R N - ∑ i, transferTerm β (α i) (j i) (c i) N|
+      ≤ N ^ (-a) * (1 + Real.log N) ^ J
+        * (envMoment β a J H + ∑ i, R ^ (α i - a) * tailMoment β a (j i) (c i))
+\end{verbatim}
+}
+
+\section{Proof strategy}
+Three independent mechanisms, each a lemma. Scaling: $\int_0^RF(Nr)\,dr=N^{-1}\int_0^{NR}F$
+(\texttt{intervalIntegral.integral\_comp\_mul\_left}), and integrability transports the same way
+(\texttt{IntervalIntegrable.comp\_mul\_left}). Binomial expansion:
+$(\log N-\log s)^j=\sum_m\binom jm(\log N)^m(-\log s)^{j-m}$ (\texttt{add\_pow}), so the truncated
+term is a combination of truncated log moments. Tail replacement: on $s\ge NR$,
+$s^{\alpha-1}\le(NR)^{\alpha-a}s^{a-1}$ and $|\log s|^\ell\le(1+|\log s|)^j$, whence the tail costs
+$N^{-a}R^{\alpha-a}T$ times $\sum_m\binom jm(\log N)^m=(1+\log N)^j\le(1+\log N)^J$. The remainder is
+dominated pointwise after scaling via $1+|\log s-\log N|\le(1+\log N)(1+|\log s|)$.
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item \texttt{IntervalIntegrable.comp\_mul\_left} takes the scale as a named implicit (\texttt{(c := N)})
+after two autoParams.
+\item \texttt{sub\_eq\_add\_neg} rewrites the first subtraction it finds (the exponent $\alpha-1$),
+not the intended $\log N-\log s$; rewrite the specific term with \texttt{show}.
+\item A helper name (\texttt{abs\_log\_pow\_le}) clashed with an existing declaration in another file
+of the namespace; the clash surfaces only in the full \texttt{lake build} of \texttt{Laplace.lean}.
+\textbf{Gate lesson}: a shell pipeline that greps ``error'' returns success; gate on the build's exit
+code, not on the grep.
+\item \texttt{Measurable.abs} does not exist; use \texttt{continuous\_abs.measurable.comp}.
+\end{itemize}
+
+\section{Outcome}
+The transfer theorem separates analytic estimates from the future combinatorial construction of the
+density expansion. Next: the parameterised first/second-order Taylor kernel lemma for
+$\eta(u,v)e^{\beta s\xi(u,v)}$ and the $d=2$ anchored-subtraction density formula, whose output plugs
+into \texttt{densityTransfer\_bound} to give the first complete nonconstant-$\xi,\eta$ log polynomial.
+\end{document}
