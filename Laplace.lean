@@ -343,3 +343,4 @@ import Laplace.Grammar.MonomialMixedAsymptotic
 import Laplace.Grammar.HeadlineMonomialMixed
 import Laplace.Grammar.CutoffScaling
 import Laplace.Grammar.MonomialShiftedMoments
+import Laplace.Grammar.ContinuousMomentTransfer
