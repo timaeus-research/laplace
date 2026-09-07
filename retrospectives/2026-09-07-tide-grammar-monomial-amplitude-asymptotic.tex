@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The dressed normal moment integral with a continuous amplitude}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Assembly of the continuous-amplitude milestone (Astra~\#16, route~C; units 184--186). For
+$h,k\colon\mathrm{Fin}(m{+}1)\to\mathbb N$ with $k_i>0$, ratios $\ell_i=(h_i+1)/(2k_i)$, minimum
+$\lambda$ attained on $J$, and a continuous amplitude $\eta$,
+\[
+\frac{\int_{(0,1]^{m+1}}\eta(x)\,x^he^{-\beta Nx^{2k}}\,dx}{N^{-\lambda}(\log N)^{|J|-1}}
+\longrightarrow
+\frac{\Gamma(\lambda)\beta^{-\lambda}}{(|J|-1)!}\prod_{j\in J}\frac1{2k_j}
+\int_{(0,1]^{m+1}}\eta(P_Ju)\prod_{i\notin J}u_i^{h_i-2k_i\lambda}\,du
+\]
+(\texttt{amplitude\_tendsto}), where $P_J$ zeroes the minimal coordinates. The limiting functional
+is \emph{face-supported}: the amplitude is restricted to $u_J=0$ and integrated over the nonminimal
+normal directions against the residual weight. This is the corrected leading coefficient behind
+Astra~\#16's qualification of the paper's eq.~\texttt{thm\_leading\_coeff}; it reduces to
+$\eta(0)$ times the bare constant only when all ratios are equal. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+def faceProj (h k) (l) (u) : Fin d → ℝ := fun i => if ratioExp h k i = l then 0 else u i
+def residualWeight (h k) (l) (u) : ℝ :=
+  ∏ i, if ratioExp h k i = l then 1 else u i ^ ((h i : ℝ) - 2 * k i * l)
+def faceLeadConst (h k) (l β) : ℝ :=
+  Gamma l * β ^ (-l) / (multCount (ratioExp h k) l - 1).factorial
+    * ∏ i, if ratioExp h k i = l then 1 / (2 * k i) else 1
+def amplitudeCoeff (h k) (l β) (η) : ℝ :=
+  faceLeadConst h k l β * ∫ u in unitBox d, η (faceProj h k l u) * residualWeight h k l u
+theorem face_moment_eq (hγ : ∀ i, ratioExp h k i = l → γ i = 0) :
+    ∫ u in unitBox d, (∏ i, faceProj h k l u i ^ γ i)
+        * (faceLeadConst h k l β * residualWeight h k l u)
+      = monomialMixedConst (fun i => h i + γ i) k l β
+theorem face_moment_eq_zero (hγ : ∃ j, ratioExp h k j = l ∧ γ j ≠ 0) : ... = 0
+theorem amplitude_tendsto (d) (h k : Fin (d+1) → ℕ) (hk) (l β) (hl) (hβ) (hmin) (hatt) (η)
+    (hη : Continuous η) :
+    Tendsto (fun N => (∫ x in unitBox (d + 1), η x * ((∏ i, x i ^ h i)
+        * exp (-(β * N * ∏ i, x i ^ (2 * k i)))))
+      / (N ^ (-l) * log N ^ (multCount (ratioExp h k) l - 1))) atTop
+      (𝓝 (amplitudeCoeff h k l β η))
+\end{verbatim}
+}
+
+\section{Mathematics}
+The finite-$N$ functionals are $T_N(\eta)=\int\eta(x)\,w_N(x)\,dx$ with the normalised weight
+$w_N=x^he^{-\beta Nx^{2k}}/(N^{-\lambda}(\log N)^{|J|-1})$; the limit is
+$T(\eta)=\int\eta(P_Ju)\,c\,r(u)\,du$. Their monomial moments agree in the limit: for a face shift
+$\gamma$ the moment of $T$ is a product of one-dimensional integrals
+$\int_0^1u_i^{h_i+\gamma_i-2k_i\lambda}du_i=1/(h_i+\gamma_i+1-2k_i\lambda)$ over $i\notin J$ (and $1$
+over $J$), which is exactly the mixed constant of the shifted exponents (unit~184); for a non-face
+shift some factor is $0^{\gamma_j}=0$ and the shifted moment tends to $0$. The moment-transfer
+theorem of unit~185 (with eventual nonnegativity of $w_N$, i.e.\ $N>1$) finishes.
+
+\section{Paper-facing meaning}
+This is the leading term of the paper's dressed normal moment at the level of one normal block, in
+full generality of exponent pattern: exponent $\lambda$, log degree $|J|-1$, and a face-supported
+residue/moment functional in place of origin evaluation. Combined with the bare results
+(units 175, 181, 183) the deterministic positive-orthant unit-cutoff programme now covers continuous
+amplitudes.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{faceConst} already existed (2D cutoff file); the new constant is \texttt{faceLeadConst}.
+Grep the namespace before naming.
+\item \texttt{lake env lean} on a file uses the \emph{stale} oleans of its imports: after changing a
+statement in an imported file, \texttt{lake build <Module>} that module first.
+\item \texttt{rw} cannot rewrite under \texttt{fun N =>} inside a \texttt{Tendsto}; prove the
+function equality by \texttt{funext} and rewrite with it.
+\item Goals from \texttt{Eventually.of\_forall fun u => ?\_} and from \texttt{integral\_eq\_zero\_of\_ae}
+arrive as beta-redexes (\texttt{(fun u => ...) u = 0 u}); \texttt{change} to the intended statement.
+\item \texttt{Integrable.fintype\_prod\_dep} and \texttt{integral\_fintype\_prod\_eq\_prod} on
+\texttt{Measure.pi} of the restricted Lebesgue measures (via \texttt{restrict\_unitBox}) handle the
+product structure of the face functional without any coordinate splitting.
+\end{itemize}
+
+\end{document}
