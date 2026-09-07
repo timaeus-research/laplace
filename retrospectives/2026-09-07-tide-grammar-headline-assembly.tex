@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Headline XV: the assembled leading posterior quotient}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Unit 208 closes programme~B2 by feeding the conditional assembly theorem of unit~207 with the
+phase-dressed chart integrals of Headlines~XIII--XIV. For a finite family of charts $a\in\iota$,
+each with its own dimension, exponents $(h_a,k_a)$, minimum ratio $\lambda_a$ ($p_a=2\lambda_a$),
+multiplicity $m_a$, continuous phase $\xi_a$, observable $\varphi_a$ and density $c_a>0$ on the
+closed cube, all at the same $\beta$,
+\[
+\frac{\sum_a\int_{(0,1]^{d_a}}\varphi_ac_a\,u^{h_a}e^{-\beta N^2u^{2k_a}+\beta Nu^{k_a}\xi_a}}
+     {\sum_a\int_{(0,1]^{d_a}}c_a\,u^{h_a}e^{-\beta N^2u^{2k_a}+\beta Nu^{k_a}\xi_a}}
+\;\longrightarrow\;
+\frac{\sum_{a\in\mathrm{sel}}\mathrm{phaseCoeff}_a[\varphi_ac_a]}{\sum_{a\in\mathrm{sel}}\mathrm{phaseCoeff}_a[c_a]},
+\]
+where $\mathrm{sel}$ is the set of charts with $p_a=\min_bp_b$ and $m_a=\max\{m_b:p_b=\min\}$
+(\texttt{headline\_assembled\_posterior}). The denominator is positive since each selected
+$\mathrm{phaseCoeff}_a[c_a]>0$ and the selection is nonempty. Zero \texttt{sorry}/\texttt{axiom};
+9085 jobs.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def chartIntegral (d) (h k : Fin d → ℕ) (β N : ℝ) (ξ η) : ℝ :=
+  ∫ u in unitBox d, η u * ((∏ i, u i ^ h i) * quadKernel β (ξ u) (N * ∏ i, u i ^ k
+      i))
+theorem chartIntegral_eq : chartIntegral d h k β N ξ η
+    = ∫ u in unitBox d, η u * ((∏ u^h) * exp (-(β N² ∏ u^(2k)) + β (N ∏ u^k) ξ u))
+theorem headline_assembled_posterior (d : ι → ℕ) (h k : (a : ι) → Fin (d a + 1) →
+      ℕ) (hk) (l : ι → ℝ)
+    (β) (hl) (hβ) (hmin) (hatt) (ξ φ c : (a : ι) → (Fin (d a + 1) → ℝ) → ℝ) (hξ)
+      (hφ) (hc)
+    (hcpos : ∀ a, ∀ x ∈ closedCube (d a + 1), 0 < c a x) :
+    Tendsto (fun N => (∑ a, chartIntegral (d a + 1) (h a) (k a) β N (ξ a) (fun x =>
+      φ a x * c a x))
+        / ∑ a, chartIntegral (d a + 1) (h a) (k a) β N (ξ a) (c a)) atTop
+      (𝓝 ((∑ a ∈ univ.filter (sel), phaseCoeff (h a) (k a) (l a) β (ξ a) (fun x =>
+      φ a x * c a x))
+          / ∑ a ∈ univ.filter (sel), phaseCoeff (h a) (k a) (l a) β (ξ a) (c a)))
+  -- sel a := 2 l a = leadExp (fun b => 2 l b) ∧ multCount (ratioExp (h a) (k a))
+      (l a)
+  --                = leadMult (fun b => 2 l b) (fun b => multCount (ratioExp (h b)
+      (k b)) (l b))
+\end{verbatim}
+}
+
+\section{Mathematics and scope}
+Nothing new analytically: \texttt{assembly\_ratio\_tendsto} with $I_a$ the chart integrals,
+$p_a=2\lambda_a$, $m_a=$ \texttt{multCount}, limits from \texttt{phase\_leading\_tendsto}, and
+positivity of the selected denominator sum from \texttt{phaseCoeff\_pos} and
+\texttt{exists\_leadMult}. Dependent types carry the per-chart dimensions
+(\texttt{h k : (a : ι) → Fin (d a + 1) → ℕ}).
+
+What the theorem says: \emph{given} that the posterior numerator and denominator are these finite
+sums of chart integrals, the leading quotient is the selected-chart face average. What it does not
+say: that the resolution, Jacobians, partition of unity and tangential integrations produce such a
+sum (the paper-level input), nor anything about random phases. Astra~\#22's gates are met:
+minimum exponent then \emph{maximum} multiplicity; numerator and denominator assembled separately;
+denominator positivity via an explicit interface (here $c_a>0$; Astra suggested allowing vanishing
+partition amplitudes with positivity of the assembled coefficient instead --- a one-line weakening
+of the hypothesis \texttt{hpos} in unit~207's \texttt{assembly\_ratio\_tendsto}, already available).
+
+\section{Lean notes}
+\begin{itemize}
+\item A family of charts with varying dimension is a dependent function
+  \texttt{h : (a : ι) → Fin (d a + 1) → ℕ}; all downstream lemmas apply pointwise in \texttt{a}
+  without friction.
+\item The selection predicate must be spelled out identically in the statement and in the
+  \texttt{Finset.filter} of \texttt{assembly\_ratio\_tendsto} for \texttt{exact} to unify; using
+  \texttt{fun b => 2 * l b} for \texttt{p} and \texttt{fun b => multCount …} for \texttt{m}
+  throughout makes this syntactic.
+\end{itemize}
+
+\section{Status}
+B2 complete (units 207--208). Remaining per Astra~\#22: A2 (general-$d$ stochastic transfer via
+equi-Lipschitz control), D2 (signed orthants with phase), hand-off.
+\end{document}
