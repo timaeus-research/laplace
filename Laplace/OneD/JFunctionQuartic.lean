@@ -138,7 +138,7 @@ theorem quartic_jfunction_centered_tendsto_zero
   set bound : ℝ → ℝ := fun u => 2 * M * Real.exp (-(u^4 / 24)) with hbound_def
   -- DCT: `∫ F t u du → 0` as `t → ∞`.
   have h_dct : Tendsto (fun t : ℝ => ∫ u : ℝ, F t u) atTop (𝓝 0) := by
-    have h_zero_eq : (0 : ℝ) = ∫ _u : ℝ, (0 : ℝ) := by simp
+    have h_zero_eq : (0 : ℝ) = ∫ _u : ℝ, (0 : ℝ) := Eq.symm (integral_zero ℝ ℝ)
     rw [h_zero_eq]
     refine MeasureTheory.tendsto_integral_filter_of_dominated_convergence bound
       ?_ ?_ ?_ ?_
@@ -156,27 +156,25 @@ theorem quartic_jfunction_centered_tendsto_zero
         calc |prior (u / t^((1:ℝ)/4)) - prior 0|
             ≤ |prior (u / t^((1:ℝ)/4))| + |prior 0| := abs_sub _ _
           _ ≤ M + M := add_le_add (hprior_bd _) (hprior_bd _)
-          _ = 2 * M := by ring
+          _ = 2 * M := Eq.symm (two_mul M)
       simp only [hF_def, hbound_def, Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
       calc Real.exp (-(u^4 / 24)) * |prior (u / t^((1:ℝ)/4)) - prior 0|
           ≤ Real.exp (-(u^4 / 24)) * (2 * M) := by
                 exact mul_le_mul_of_nonneg_left hbnd hexp_nn
-        _ = 2 * M * Real.exp (-(u^4 / 24)) := by ring
+        _ = 2 * M * Real.exp (-(u^4 / 24)) := mul_comm' (rexp (-(u ^ 4 / 24))) (2 * M)
     · -- Bound is integrable.
       exact quartic_dominator_integrable M
     · -- For a.e. u, F t u → 0 as t → ∞.
       filter_upwards with u
       have h_div_zero : Tendsto (fun t : ℝ => u / t^((1:ℝ)/4)) atTop (𝓝 0) := by
         have h_inf : Tendsto (fun t : ℝ => t^((1:ℝ)/4)) atTop atTop :=
-          tendsto_rpow_atTop (by norm_num : (0:ℝ) < (1:ℝ)/4)
+          tendsto_rpow_atTop (by simp only [one_div, inv_pos, Nat.ofNat_pos] : (0:ℝ) < (1:ℝ)/4)
         exact (tendsto_const_nhds (x := u)).div_atTop h_inf
       have h_prior_lim : Tendsto (fun t : ℝ => prior (u / t^((1:ℝ)/4))) atTop (𝓝 (prior 0)) :=
         (hprior_cont.tendsto 0).comp h_div_zero
       have h_diff_lim : Tendsto (fun t : ℝ => prior (u / t^((1:ℝ)/4)) - prior 0)
           atTop (𝓝 0) := by
-        have : Tendsto (fun t : ℝ => prior (u / t^((1:ℝ)/4)) - prior 0)
-            atTop (𝓝 (prior 0 - prior 0)) := h_prior_lim.sub_const _
-        simpa using this
+        exact tendsto_sub_nhds_zero_iff.mpr h_prior_lim
       simp only [hF_def]
       have := h_diff_lim.const_mul (Real.exp (-(u^4 / 24)))
       simpa using this

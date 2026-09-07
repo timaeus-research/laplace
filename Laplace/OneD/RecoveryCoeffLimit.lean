@@ -102,13 +102,7 @@ theorem quartic_expansion_coefficient_limit {b : ℝ} (hb : 0 ≤ b) (n : ℕ) :
           t ^ ((((n + 1) : ℕ) : ℝ) + 1 / 2) := by
         apply mul_le_mul_of_nonneg_right _
           (Real.rpow_pos_of_pos ht _).le
-        calc |Z t - Real.sqrt (2 * π) * ∑ j ∈ Finset.range (n + 2),
-              c j * t ^ (-((j : ℝ) + 1 / 2))|
-            ≤ Real.sqrt (2 * π) * b ^ (n + 2) *
-                ((4 * (n + 2) - 1)‼ : ℝ) / (Nat.factorial (n + 2) : ℝ) *
-                t ^ (-(((n + 2) : ℕ) : ℝ) - 1 / 2) := h
-          _ = C * t ^ (-(((n + 2) : ℕ) : ℝ) - 1 / 2) := by
-              rw [hC_def]
+        exact h
       refine hstep.trans (le_of_eq ?_)
       rw [mul_assoc, ← Real.rpow_add ht]
       have hexp : (-(((n + 2) : ℕ) : ℝ) - 1 / 2) +

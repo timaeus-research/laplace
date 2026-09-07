@@ -85,13 +85,9 @@ theorem sector_window_lower_bound_multi
       = (volume S).toReal * u ^ (Fintype.card ι) := by
     rw [measureReal_def, hvol, ENNReal.toReal_mul,
       ENNReal.toReal_ofReal (by positivity)]
-    ring
-  calc (volume S).toReal * u ^ (Fintype.card ι) *
-        (c ^ 2 * u ^ (2 * m) * Real.exp (-(4 * (C0 * (t * u ^ 2)))))
-      = volume.real (u • S)
-          • (c ^ 2 * u ^ (2 * m) * Real.exp (-(4 * (C0 * (t * u ^ 2))))) := by
-        rw [hlen, smul_eq_mul]
-    _ ≤ ∫ w in u • S, (a w) ^ 2 * Real.exp (-(t * K w)) := hbound
+    exact mul_comm' (u ^ Fintype.card ι) (volume S).toReal
+  exact le_of_eq_of_le (congrFun (congrArg HMul.hMul (id (Eq.symm hlen))) (c ^ 2 * u ^ (2 * m) *
+    rexp (-(4 * (C0 * (t * u ^ 2)))))) hbound
 
 /-- **Sector lower bound at the Laplace scale, multivariate** (germbij
 Lemma 7.2 in `ℝ^d`, scaled-set form). Substituting `u = (√t)⁻¹`, under

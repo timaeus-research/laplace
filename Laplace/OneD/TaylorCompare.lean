@@ -547,14 +547,7 @@ theorem admissible_normalized_difference_littleO
           q ^ (0 + D - 1)|) = fun q : ℝ ↦
         |((∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₁ x))) -
           ∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₂ x))) / q ^ (D - 1)| := by
-      funext q
-      have e₁ : (∫ x : ℝ, x ^ 0 * Real.exp (-((q ^ 2)⁻¹ * K₁ x))) =
-          ∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₁ x)) :=
-        integral_congr_ae (Filter.Eventually.of_forall fun x ↦ by simp)
-      have e₂ : (∫ x : ℝ, x ^ 0 * Real.exp (-((q ^ 2)⁻¹ * K₂ x))) =
-          ∫ x : ℝ, Real.exp (-((q ^ 2)⁻¹ * K₂ x)) :=
-        integral_congr_ae (Filter.Eventually.of_forall fun x ↦ by simp)
-      rw [e₁, e₂, show (0 : ℕ) + D - 1 = D - 1 by omega]
+      simp only [pow_zero, one_mul, zero_add]
     rwa [heq] at h
   -- The squeeze bound function.
   have hbound : Tendsto (fun q : ℝ ↦
@@ -631,7 +624,7 @@ theorem admissible_normalized_difference_littleO
       rw [hq2]
       have hZZ : C₀₁ * q * (C₀₂ * q) ≤ Z₁ * Z₂ :=
         mul_le_mul hZ₁l hZ₂l (by positivity) hZ₁p.le
-      exact mul_le_mul_of_nonneg_right hZZ (by positivity)
+      exact (mul_le_mul_iff_of_pos_right hqp).mpr hZZ
     calc |A₂| * |Z₁ - Z₂| / (Z₁ * Z₂ * q ^ (s + D - 2))
         ≤ C₂ * q ^ (s + 1) * |Z₁ - Z₂| /
           (C₀₁ * C₀₂ * q ^ (s + D)) := by

@@ -248,12 +248,12 @@ theorem kth_jfunction_centered_tendsto_zero
     fun t u => Real.exp (-(u ^ p / fac)) * (prior (u / t ^ α) - prior 0) with hF_def
   set bound : ℝ → ℝ := fun u => 2 * M * Real.exp (-(u ^ p / fac)) with hbound_def
   have hα_pos : 0 < α := by
-    have hp_pos : 0 < p := by change 0 < 2 * k; omega
+    have hp_pos : 0 < p := Nat.succ_mul_pos 1 hk
     have hpR_pos : (0 : ℝ) < ((p : ℕ) : ℝ) := by exact_mod_cast hp_pos
-    exact div_pos (by norm_num) hpR_pos
+    exact div_pos (by simp only [zero_lt_one]) hpR_pos
   -- DCT: `∫ F t u du → 0` as `t → ∞`.
   have h_dct : Tendsto (fun t : ℝ => ∫ u : ℝ, F t u) atTop (𝓝 0) := by
-    have h_zero_eq : (0 : ℝ) = ∫ _u : ℝ, (0 : ℝ) := by simp
+    have h_zero_eq : (0 : ℝ) = ∫ _u : ℝ, (0 : ℝ) := Eq.symm (integral_zero ℝ ℝ)
     rw [h_zero_eq]
     refine MeasureTheory.tendsto_integral_filter_of_dominated_convergence bound
       ?_ ?_ ?_ ?_
@@ -273,7 +273,7 @@ theorem kth_jfunction_centered_tendsto_zero
         funext u
         change prior (u / t ^ α) = prior ((t ^ α)⁻¹ * u)
         congr 1
-        rw [div_eq_mul_inv, mul_comm]
+        exact div_eq_inv_mul u (t ^ α)
       have h_aem : AEMeasurable (fun u : ℝ => prior (u / t ^ α)) volume := by
         rw [hreshape]
         exact hprior_meas.comp_quasiMeasurePreserving h_qmp
@@ -291,13 +291,13 @@ theorem kth_jfunction_centered_tendsto_zero
         calc |prior (u / t ^ α) - prior 0|
             ≤ |prior (u / t ^ α)| + |prior 0| := abs_sub _ _
           _ ≤ M + M := add_le_add (hprior_bd _) (hprior_bd _)
-          _ = 2 * M := by ring
+          _ = 2 * M := Eq.symm (two_mul M)
       simp only [hF_def, hbound_def, Real.norm_eq_abs, abs_mul,
         abs_of_pos (Real.exp_pos _)]
       calc Real.exp (-(u ^ p / fac)) * |prior (u / t ^ α) - prior 0|
           ≤ Real.exp (-(u ^ p / fac)) * (2 * M) := by
                 exact mul_le_mul_of_nonneg_left hbnd hexp_nn
-        _ = 2 * M * Real.exp (-(u ^ p / fac)) := by ring
+        _ = 2 * M * Real.exp (-(u ^ p / fac)) := mul_comm' (rexp (-(u ^ p / fac))) (2 * M)
     · -- Bound is integrable.
       exact kth_dominator_integrable hk M
     · -- For a.e. u, F t u → 0 as t → ∞.
@@ -310,9 +310,7 @@ theorem kth_jfunction_centered_tendsto_zero
         hprior_cont0.tendsto.comp h_div_zero
       have h_diff_lim : Tendsto (fun t : ℝ => prior (u / t ^ α) - prior 0)
           atTop (𝓝 0) := by
-        have : Tendsto (fun t : ℝ => prior (u / t ^ α) - prior 0)
-            atTop (𝓝 (prior 0 - prior 0)) := h_prior_lim.sub_const _
-        simpa using this
+        exact tendsto_sub_nhds_zero_iff.mpr h_prior_lim
       simp only [hF_def]
       have := h_diff_lim.const_mul (Real.exp (-(u ^ p / fac)))
       simpa using this

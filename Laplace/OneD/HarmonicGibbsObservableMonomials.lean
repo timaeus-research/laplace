@@ -232,12 +232,7 @@ lemma harmonic_perturbed_integrand_pow_hasDerivAt
   have h_id : HasDerivAt (fun h : ℝ => h * x) x h := by
     exact hasDerivAt_mul_const x
   have h_aff : HasDerivAt (fun h : ℝ => (lam / 2) * x ^ 2 + h * x) x h := by
-    have h_const : HasDerivAt (fun _ : ℝ => (lam / 2) * x ^ 2) 0 h :=
-      hasDerivAt_const h ((lam / 2) * x ^ 2)
-    have hsum : HasDerivAt
-        (fun y : ℝ => (lam / 2) * x ^ 2 + y * x) (0 + x) h := h_const.add h_id
-    have hzero : (0 : ℝ) + x = x := zero_add x
-    rwa [hzero] at hsum
+    exact HasDerivAt.const_add (lam / 2 * x ^ 2) h_id
   have h_scale : HasDerivAt
       (fun h : ℝ => t * ((lam / 2) * x ^ 2 + h * x)) (t * x) h :=
     h_aff.const_mul t

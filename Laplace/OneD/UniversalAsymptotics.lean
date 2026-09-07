@@ -96,10 +96,7 @@ theorem gibbsExpectation_universal_sq_large_t_rate :
       have hT_big : 1 + 2 * K₀ / a ≤ T := le_trans hT₀_ge_other hT
       have h2K₀_le : 2 * K₀ ≤ a * (T - 1) := by
         have hsub : 2 * K₀ / a ≤ T - 1 := le_tsub_of_add_le_left hT_big
-        have : a * (2 * K₀ / a) ≤ a * (T - 1) :=
-          mul_le_mul_of_nonneg_left hsub ha_pos.le
-        have heq : a * (2 * K₀ / a) = 2 * K₀ := by field_simp
-        linarith
+        exact (div_le_iff₀' ha_pos).mp hsub
       nlinarith
     · rw [← hK₀_zero, zero_div]; linarith
   have hsqrtTD_lb : a / 2 ≤ Real.sqrt T * D := by
