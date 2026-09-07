@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The chart posterior limit}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Astra~\#13 unit u159, closing the posterior-ratio programme at chart level. For a common random
+phase converging in distribution and deterministic amplitudes $y_\varphi$, $y_1$ with
+$y_{1,00}>0$, the chart posterior ratio $Z_{N_n}[\varphi]/Z_{N_n}[1]$ converges in distribution to
+the deterministic corner-value ratio $y_{\varphi,00}/y_{1,00}$
+(\texttt{tendstoInDistribution\_chart\_posterior}). The normalised pair converges jointly
+(unit~158), the limiting denominator is positive (unit~154), so the quotient of normalised chart
+integrals converges (unit~157); the common factor $\int_0^\infty s^{p-1}e^{-\beta s^2+\beta sx_{00}}ds$
+cancels in the limit (\texttt{coeffA\_withY\_div}) and the normalisation $s_n$ cancels in the
+quotient for $N_n>1$. Lean's totalised division is used throughout. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem coeffA_withY_div ... (hy₁0 : 0 < y₁ (0,0)) (a : CoeffPair) :
+    coeffA β ρ h₁ h₂ k₁ k₂ p (withY ρ hρ yφ hyφ a)
+      / coeffA β ρ h₁ h₂ k₁ k₂ p (withY ρ hρ y₁ hy₁ a) = yφ (0,0) / y₁ (0,0)
+theorem tendstoInDistribution_normA_div ... (hZm : Measurable Z) ... :
+    TendstoInDistribution (fun n ω => normA … p (Nseq n) (withY … yφ … (X n ω))
+        / normA … p (Nseq n) (withY … y₁ … (X n ω))) l
+      (fun _ => yφ (0,0) / y₁ (0,0)) (fun _ => μ) μ'
+theorem normA_div_eq_chartZ_div ... (N) (hN : 1 < N) (a a') :
+    normA … p N a / normA … p N a' = chartZ … N a / chartZ … N a'
+theorem tendstoInDistribution_chart_posterior (β b p ρ r T) (h₁ h₂ k₁ k₂)
+    (hβ hb hbρ hbr hrρ hk₁ hk₂) (hp₁ hp₂ : equal starts p) (hpT : p < 2 * T)
+    (yφ y₁) (hyφ hy₁) (hy₁0 : 0 < y₁ (0,0))
+    (X : ι → Ω → CoeffPair) (hXm) (Z : Ω' → CoeffPair) (hZm)
+    (hX : TendstoInDistribution X l Z …) (Nseq) (hN : Tendsto Nseq l atTop) :
+    TendstoInDistribution (fun n ω => chartZ … (Nseq n) (withY … yφ … (X n ω))
+        / chartZ … (Nseq n) (withY … y₁ … (X n ω))) l
+      (fun _ => yφ (0,0) / y₁ (0,0)) (fun _ => μ) μ'
+\end{verbatim}
+}
+
+\section{Mathematics}
+Both leading coefficients are $\frac{y_{00}}{k_1k_2}\int_0^\infty s^{p-1}e^{-\beta s^2+\beta sx_{00}}ds$
+with the same phase $x$, so their ratio is $y_{\varphi,00}/y_{1,00}$ (the integral is positive). The
+quotient theorem of unit~157 applies to the jointly convergent normalised pair with a.s.\ positive
+limiting denominator; for $N_n>1$ the normalisation $N_n^{-p}\log N_n$ is nonzero and cancels in the
+quotient (the leading exponent has no lower terms), so the quotient of chart integrals and the
+quotient of normalised chart integrals eventually coincide, which is a null perturbation in probability.
+
+\section{Paper-facing meaning}
+cor:empirical\_expectation states that the leading term of the posterior expectation
+$\mathbb E_{w|\mathcal D_n}[\varphi]=Z_n[\varphi]/Z_n$ is $A_{i_0,j_0}(\varphi,\xi_n)/B_{k_0,p_0}(\xi_n)$
+and converges in distribution. At chart level with equal starting exponents this is now a theorem,
+and Astra~\#13's observation makes it sharper than the paper's phrasing: the random fluctuation
+factor cancels, the limit is the deterministic corner-value ratio $y_{\varphi,00}/y_{1,00}$ (equal to
+$\varphi(0,0)$ when $\eta_\varphi=\varphi\eta_1$). The empirical fluctuations affect the leading
+posterior expectation only through the common factor, hence not at all in the limit; they enter at
+the subleading orders. Caveats (staging): one chart, equal starts, $d=2$; convergence of the phase
+data is a hypothesis; the identification $Z_n[\varphi]=\texttt{chartZ}(\texttt{withY}\,y_\varphi\,X_n)$
+is the chart-level model of the paper's $Z_n[\varphi]$.
+
+\section{Lean notes}
+\begin{itemize}
+\item \texttt{field\_simp} may rewrite inside lambdas under \texttt{logMoment} and desynchronise two
+syntactically equal occurrences ($\beta s x$ vs $\beta x s$); \texttt{set M := logMoment …} before
+\texttt{field\_simp} folds both into one atom.
+\item \texttt{tendstoInMeasure\_of\_eventually\_abs\_le} with a constant zero rate needs the filter
+passed explicitly (\texttt{(l := l)}), since \texttt{tendsto\_const\_nhds} does not determine it.
+\item \texttt{div\_div\_div\_cancel\_right₀ hs} for $(a/s)/(b/s)=a/b$ in a field.
+\end{itemize}
+
+\end{document}
