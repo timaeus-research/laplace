@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{The uniform Taylor tree for $d=2$}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Completion of Astra~\#9's R5. For the analytic family with common envelope $(C_0,L,D,\rho)$ and
+every target $T$ there is a constant $K_T=\mathrm{uniformTreeConst}$, depending only on
+$(\beta,b,\rho,C_0,L,p_1,p_2,T,h,k,D)$, such that for EVERY member $c$ of the family and EVERY
+$N\ge1$,
+\[
+\Bigl|Z_c(N)-\sum_{\alpha\in\Lambda(h,k),\ \alpha<2T}N^{-\alpha}(A_\alpha\log N+B_\alpha)\Bigr|
+\le K_T\,N^{-2T}(1+\log N)
+\]
+(\texttt{twoD\_taylor\_tree\_uniform}). The constant is the uniform cutoff constant of unit~133 at
+the cutoffs of unit~129 plus the envelope bounds of unit~134 on the discarded pole terms. Zero
+\texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+theorem pos_of_mem_poleSet (h₁ h₂ k₁ k₂ M₁ M₂ : ℕ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (α : ℝ)
+    (hα : α ∈ poleSet h₁ h₂ k₁ k₂ M₁ M₂) : 0 < α
+noncomputable def coeffEnv (b ρ C₀ L β : ℝ) (h₁ h₂ k₁ k₂ D : ℕ) (α : ℝ) : ℝ :=
+  canonCEnv ρ C₀ h₁ h₂ k₁ k₂ α * envMoment β α 0 (gaussEnv β L D)
+    + (canonUEnv b ρ C₀ h₁ h₂ k₁ k₂ α * envMoment β α 0 (gaussEnv β L D)
+      + canonVEnv b ρ C₀ h₁ h₂ k₁ k₂ α * envMoment β α 0 (gaussEnv β L D)
+      + canonCEnv ρ C₀ h₁ h₂ k₁ k₂ α * envMoment β α 1 (gaussEnv β L D))
+noncomputable def uniformTreeConst (β b ρ C₀ L p₁ p₂ T : ℝ) (h₁ h₂ k₁ k₂ D : ℕ) : ℝ :=
+  uniformConst β b ρ C₀ L h₁ h₂ k₁ k₂ (cutoffMg k₁ p₁ (cutoffQ p₁ p₂ T))
+      (cutoffMg k₂ p₂ (cutoffQ p₁ p₂ T)) D
+    + ∑ α ∈ (poleSet ... at those cutoffs).filter (fun α => ¬ α < 2 * T),
+      coeffEnv b ρ C₀ L β h₁ h₂ k₁ k₂ D α
+theorem twoD_taylor_tree_uniform (β b p₁ p₂ ρ C₀ L : ℝ) (h₁ h₂ k₁ k₂ D : ℕ) (hβ : 0 < β)
+    (hb : 0 < b) (hbρ : b < ρ) (hk₁ : 0 < k₁) (hk₂ : 0 < k₂) (hp₁ : ((h₁ : ℝ) + 1) / k₁ = p₁)
+    (hp₂ : ((h₂ : ℝ) + 1) / k₂ = p₂) (c : ℕ × ℕ → ℝ → ℝ) (hcc : ∀ ij, Continuous (c ij))
+    (H : ℝ → ℝ) (hH : Continuous H) (hc : ∀ ij s, |c ij s| * ρ ^ (ij.1 + ij.2) ≤ H s)
+    (hC₀ : 0 ≤ C₀) (henv : ∀ s, 0 ≤ s → H s ≤ C₀ * (1 + s) ^ D * Real.exp (β * s * L))
+    (T N : ℝ) (hN : 1 ≤ N) :
+    |twoDAmp β b N h₁ h₂ k₁ k₂ (anaAmp c b)
+        - ∑ α ∈ polesBelowGen h₁ h₂ k₁ k₂ p₁ p₂ T,
+            N ^ (-α) * (canonA β h₁ h₂ k₁ k₂ (fun i j s => c (i, j) s) α * Real.log N
+              + canonB β b h₁ h₂ k₁ k₂ (anaFaceU c b) (anaFaceV c b)
+                  (fun i j s => c (i, j) s) α)|
+      ≤ uniformTreeConst β b ρ C₀ L p₁ p₂ T h₁ h₂ k₁ k₂ D
+        * (N ^ (-(2 * T)) * (1 + Real.log N))
+\end{verbatim}
+}
+
+\section{Mathematics}
+
+$Z-\sum_{\alpha<2T}=(Z-S^{\mathrm{merged}})+\sum_{\alpha\ge2T\text{ retained}}$, where the
+merged sum equals the canonical pole sum over the whole retained set (unit~129 regrouping). The
+first term is bounded by the uniform cutoff constant at exponent $E\ge2T$, pushed to exponent $2T$
+(unit~131's monotonicity); each discarded term is at most $(|A_\alpha|+|B_\alpha|)N^{-2T}(1+\log N)$
+and $|A_\alpha|+|B_\alpha|$ is bounded by the envelope constants of unit~134 (all retained poles are
+positive). Summing gives $K_T$.
+
+\section{Paper-facing meaning}
+
+This is the strongest form of \texttt{thm:TaylorTree} for $d=2$ obtained so far: the expansion
+holds with an explicit remainder constant that is uniform over all chart amplitudes
+$\eta_we^{\beta s\xi_w}$ whose coefficient arrays share a weighted bound, for every $N\ge1$ (not
+only eventually). In the SLT application the noncritical coordinates $w$ range over the support of
+a partition of unity, and $\xi,\eta$ analytic on a common neighbourhood give exactly such a common
+bound; so the per-stratum integral $\int Z_w(N)\rho_I(w)dw$ inherits the expansion with
+coefficients $\int A_\alpha(w)\rho_I$, $\int B_\alpha(w)\rho_I$ once measurability in $w$ is
+established (the remaining piece of the noncritical-coordinate adapter, Astra~\#6 rank~4).
+
+\section{Lean notes}
+
+\begin{itemize}
+\item Wrapping many intermediate objects in \texttt{set} (cutoffs, coefficient functions, the
+pole set, the remainder scale $R$) keeps the long statement manageable; a final \texttt{show}
+restates the goal with \texttt{polesBelowGen} unfolded to \texttt{S.filter}.
+\item \texttt{bound\_mono\_exp} produces \texttt{K * N \^{} (-E) * (1 + log N)}; regroup with
+\texttt{← mul\_assoc} against the \texttt{set} variable \texttt{R}.
+\item The unit compiled on the first attempt.
+\end{itemize}
+
+\end{document}
