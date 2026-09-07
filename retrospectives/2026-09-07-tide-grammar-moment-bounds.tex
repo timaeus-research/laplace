@@ -1,0 +1,59 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Uniform bounds for the transfer moments}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-07}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+The constants of the density-transfer theorem (unit~83), the weighted remainder moment $M_H$ and the
+tail moments $T_i$, are bounded explicitly by the log-weighted kernel moments
+$\Lambda_{\gamma,j}(a')=\int_0^\infty s^\gamma(1+|\log s|)^je^{-\beta s^2+\beta a's}\,ds$ under the
+polynomial-exponential bound $|c(s)|\le e^{\beta sa'}(A+Bs+Ds^2)$. Since $\Lambda_{\gamma,j}$ is
+monotone in $a'$, the bounds are uniform over face parameters $|a|\le L$, the input for the
+second-order theorem with noncritical coordinates. The third GPT-6 Astra consult
+(\texttt{tide-log/gpt6\_bigpicture\_v3.md}) fixes the architecture of the all-order theory: finite
+compatible jets with moment-integrable remainders as the engine, analyticity only as a provider of jets
+and of coefficient-series representations. Zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{The things formalised}
+{\small
+\begin{verbatim}
+noncomputable def logKernelMoment (β a γ : ℝ) (j : ℕ) : ℝ :=
+  ∫ s in Ioi (0 : ℝ), (1 + |Real.log s|) ^ j * (s ^ γ * quadKernel β a s)
+theorem logKernelMoment_mono (β γ : ℝ) (hβ : 0 < β) (hγ : -1 < γ) (j : ℕ) {a a' : ℝ}
+    (haa : a ≤ a') : logKernelMoment β a γ j ≤ logKernelMoment β a' γ j
+theorem tailMoment_le_of_bound (β a' a A B D : ℝ) (hβ : 0 < β) (ha : -1 < a - 1)
+    (j : ℕ) (c : ℝ → ℝ) (hc : Measurable c)
+    (hbound : ∀ s, 0 < s → |c s| ≤ Real.exp (β * s * a') * (A + B * s + D * s ^ 2)) :
+    tailMoment β a j c ≤ A * logKernelMoment β a' (a - 1) j + B * logKernelMoment β a' a j
+      + D * logKernelMoment β a' (a + 1) j
+theorem envMoment_le_of_bound ... :
+    envMoment β a J H ≤ A * logKernelMoment β a' (a - 1) J + B * logKernelMoment β a' a J
+      + D * logKernelMoment β a' (a + 1) J
+\end{verbatim}
+}
+
+\section{Roadblocks and resolutions}
+\begin{itemize}
+\item The \texttt{Pi.add} form of \texttt{Integrable.add} again defeats \texttt{← integral\_add};
+name the sums with single-lambda type ascriptions.
+\end{itemize}
+
+\section{Outcome}
+Astra~\#3 ranking: (1) signed leading limit and the correct nonnegative-face variant (done except the
+``not identically zero'' phrasing); (2) abstract all-order 1D kernel-jet transfer followed by the
+polynomial jet recursion $E_n=\frac{\beta s}{n}\sum_i i\,x_iE_{n-i}$, $P_j=\sum_\ell y_\ell E_{j-\ell}$,
+$c_j=k^{-1}\sum_\ell p_{j,\ell}S_{q_j+\ell}(a)$; (3) $d=2$ block with noncritical face parameters under a
+strict gap; (4) weighted finite-part axis theorem and the cutoff-indexed density expansion; (5) a
+narrow tree identification plus the $L^1$ interchange lemma. Next: target~(2).
+\end{document}
