@@ -248,3 +248,4 @@ import Laplace.Grammar.OneDSecondOrder
 import Laplace.Grammar.TwoDGenDensity
 import Laplace.Grammar.AxisExpansion
 import Laplace.Grammar.TwoDSecondOrder
+import Laplace.Grammar.TwoDChart
