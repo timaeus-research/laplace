@@ -330,8 +330,8 @@ theorem integral_ncPhaseRV (Y : ℕ → Ω → ℝ) (hY : ∀ i, HasLaw (Y i) (g
     (memLp_two_of_hasLaw_gaussian P (hY i)).integrable one_le_two]
   simp [integral_of_hasLaw_gaussian P (hY _)]
 
-/-- `Var[Zₙ] = 1` for every `n ≥ 1`. -/
 omit [IsProbabilityMeasure P] in
+/-- `Var[Zₙ] = 1` for every `n ≥ 1`. -/
 theorem variance_ncPhaseRV (Y : ℕ → Ω → ℝ) (hY : ∀ i, HasLaw (Y i) (gaussianReal 0 1) P)
     (hind : iIndepFun Y P) (n : ℕ) (hn : 0 < n) : Var[ncPhaseRV Y n; P] = 1 := by
   rw [ncPhaseRV_eq, variance_smul, IndepFun.variance_sum (X := fun i : Fin n => Y i)
