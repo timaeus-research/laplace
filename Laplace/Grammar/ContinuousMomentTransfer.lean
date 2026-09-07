@@ -136,7 +136,7 @@ theorem tendsto_integral_of_monomials (d : ℕ) (S : Set (Fin d → ℝ)) (hS : 
     (hφm : ∀ N, Measurable (φ N)) (hφLm : Measurable φL)
     (w : ℝ → (Fin d → ℝ) → ℝ) (wL : (Fin d → ℝ) → ℝ)
     (hw : ∀ N, IntegrableOn (w N) S) (hwL : IntegrableOn wL S)
-    (hwnn : ∀ N, ∀ x ∈ S, 0 ≤ w N x) (hwLnn : ∀ x ∈ S, 0 ≤ wL x)
+    (hwnn : ∀ᶠ N in atTop, ∀ x ∈ S, 0 ≤ w N x) (hwLnn : ∀ x ∈ S, 0 ≤ wL x)
     (hmono : ∀ γ : Fin d → ℕ, Tendsto (fun N => ∫ x in S, (∏ i, φ N x i ^ γ i) * w N x) atTop
       (𝓝 (∫ x in S, (∏ i, φL x i ^ γ i) * wL x)))
     (η : (Fin d → ℝ) → ℝ) (hη : Continuous η) :
@@ -176,9 +176,9 @@ theorem tendsto_integral_of_monomials (d : ℕ) (S : Set (Fin d → ℝ)) (hS : 
     exact mul_le_mul_of_nonneg_right (hp _ (hψ hx)).le (hvnn x hx)
   refine ⟨fun N => ∫ x in S, MvPolynomial.eval (φ N x) p * w N x,
     ∫ x in S, MvPolynomial.eval (φL x) p * wL x, hpoly p, ?_, ?_⟩
-  · filter_upwards [hB] with N hN
+  · filter_upwards [hB, hwnn] with N hN hNnn
     calc |(∫ x in S, η (φ N x) * w N x) - ∫ x in S, MvPolynomial.eval (φ N x) p * w N x|
-        ≤ δ * ∫ x in S, w N x := hbound (φ N) (w N) (hφ N) (hφm N) (hw N) (hwnn N)
+        ≤ δ * ∫ x in S, w N x := hbound (φ N) (w N) (hφ N) (hφm N) (hw N) hNnn
       _ ≤ δ * (M + 1) := by gcongr
       _ ≤ ε := by
           rw [hδ, div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
