@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\emergencystretch=3em
+
+\title{Opening §4: Watanabe's fluctuation function in \texttt{laplace}}
+\author{Claude, with Daniel Murfet}
+\date{2026-09-05}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The first unit of the Stage-1 autoformalisation of the grammar paper (\emph{Expectations and the
+Exceptional Divisor}) \S4. We define Watanabe's fluctuation function
+$S_\lambda(a)=\int_0^\infty t^{\lambda-1}e^{-\beta t+\beta a\sqrt t}\,dt$, prove it integrable for
+every $a$, and evaluate the base case $S_\lambda(0)=\beta^{-\lambda}\Gamma(\lambda)$. All three land
+first-attempt against existing Mathlib Gamma-integral machinery; zero \texttt{sorry}/\texttt{axiom}.
+\end{abstract}
+
+\section{Setting}
+The grammar paper's headline asymptotic
+$Z_n[\phi]\sim\sum_{\mu,m}C_{\mu,m}\,n^{-\mu}(\log n)^{m-1}$ (\S4) is assembled from derivatives of
+the \emph{fluctuation function} (Watanabe, Def.~5.8), which packages the interaction between Gaussian
+fluctuations and the power-law singularity of the resolved phase. The \texttt{laplace} seabed already
+carries a deep 1D/2D Laplace-expansion body, but \S4 was untouched: no fluctuation, Weber, or Hermite
+material anywhere. This unit opens that block with the object everything else in \S4 is built from.
+It is the minimal foundational step: the definition plus the two facts (well-definedness and the base
+value) that every subsequent property presupposes.
+
+\section{The thing formalised}
+For $\beta,\lambda>0$,
+\[
+  S_\lambda(a) \;=\; \int_0^\infty t^{\lambda-1}\,e^{-\beta t+\beta a\sqrt t}\,dt ,
+  \qquad
+  S_\lambda(0)=\beta^{-\lambda}\Gamma(\lambda).
+\]
+Lean signatures (namespace \texttt{Laplace.Grammar}, file \texttt{Laplace/Grammar/Fluctuation.lean}):
+\begin{verbatim}
+noncomputable def fluctuation (β lam a : ℝ) : ℝ :=
+  ∫ t in Set.Ioi (0:ℝ), t ^ (lam - 1) * Real.exp (-β * t + β * a * Real.sqrt t)
+
+theorem fluctuation_integrableOn (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) (a : ℝ) :
+    IntegrableOn (fun t => t ^ (lam - 1) *
+      Real.exp (-β * t + β * a * Real.sqrt t)) (Set.Ioi 0)
+
+theorem fluctuation_zero (β lam : ℝ) (hβ : 0 < β) (hlam : 0 < lam) :
+    fluctuation β lam 0 = β ^ (-lam) * Real.Gamma lam
+\end{verbatim}
+
+\section{Proof strategy}
+\emph{Base value.} At $a=0$ the phase collapses to $-\beta t$, and the integrand is exactly the
+integrand of Mathlib's \texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} at $p=1$, $q=\lambda-1$,
+$b=\beta$, whose value $b^{-(q+1)/p}(1/p)\,\Gamma((q+1)/p)$ specialises to $\beta^{-\lambda}\Gamma(\lambda)$.
+A \texttt{setIntegral\_congr\_fun} rewrites $\beta\cdot 0\cdot\sqrt t$ away and $-\beta t$ into
+$-\beta\,t^{1}$ (\texttt{rpow\_one}) to match the lemma verbatim.
+
+\emph{Integrability.} Completing the square gives the AM--GM bound $a\sqrt t\le t/2+a^2/2$, i.e.
+$\tfrac12(\sqrt t-a)^2\ge 0$, so $e^{-\beta t+\beta a\sqrt t}\le e^{\beta a^2/2}e^{-(\beta/2)t}$. Hence
+the integrand is dominated by $e^{\beta a^2/2}\,t^{\lambda-1}e^{-(\beta/2)t}$, which is Gamma-integrable
+(\texttt{integrableOn\_rpow\_mul\_exp\_neg\_mul\_rpow} at $p=1$, $b=\beta/2$, times a constant). The
+assembly is \texttt{Integrable.mono'}: the majorant, \texttt{AEStronglyMeasurable} of the integrand
+(\texttt{ContinuousOn} on $(0,\infty)$ --- \texttt{rpow\_const} off zero times a continuous exponential),
+and the a.e.\ pointwise bound, the last closed by
+\texttt{nlinarith [sq\_nonneg (√t - a), Real.sq\_sqrt ht0.le]}.
+
+\section{Roadblocks and resolutions}
+None mathematical. The GPT reasoning consult timed out ($>540$s) twice, so this ran on the tide
+skill's ``proceed without GPT'' path --- appropriate for a standard domination argument with high
+prior confidence. Both proofs compiled on the first \texttt{lean-state} check.
+
+\section{What was Mathlib, what was new}
+Entirely a Mathlib assembly: the two Gamma-integral lemmas (value and integrability) are the whole
+analytic content; the ``new'' part is only the AM--GM domination and the base-value bookkeeping. This
+is exactly the intended character of a Stage-1 autoformalisation unit --- evaluate existing machinery
+on the paper's specific integrand.
+
+\section{Lessons}
+The \texttt{laplace} Gamma-integral toolkit (\texttt{integral\_rpow\_mul\_exp\_neg\_mul\_rpow} and its
+integrability companion, both at $p=1$) is the natural substrate for the entire fluctuation-function
+family: every $\lambda\mapsto\lambda+\tfrac12$ shift in \S4 is a re-indexing of the same Gamma
+integral. Recorded for the next units.
+
+\section{Follow-ups}
+Immediate next unit: \texttt{lem:fluctuation\_properties} (i)--(ii), the derivative ladder
+$S'_\lambda=\beta S_{\lambda+1/2}$, $S''_\lambda=\beta^2 S_{\lambda+1}$ (differentiation under the
+integral); then the integration-by-parts recurrence (iii)--(iv) and \texttt{eq:fluctuation\_recurrence};
+then \texttt{prop:fluctuation\_weber} (parabolic cylinder) and the ladder algebra. A one-line
+\texttt{\textbackslash leanref} marker for \texttt{eq:fluctuation} is staged (not inserted --- paper
+edits await explicit authorisation).
+\end{document}
