@@ -41,7 +41,9 @@ lake env comparator/.lake/build/bin/comparator comparator.json  # expect: Your s
 
 ## Status
 
-- ~46k lines of Lean 4 + Mathlib across the 1D, 2D and multi-D tracks.
+- ~68k lines of Lean 4 + Mathlib across the 1D, 2D and multi-D tracks
+  (`Laplace/OneD/`, `Laplace/TwoD/`, `Laplace/Multi/` plus the top-level
+  identifiability modules).
 - **0 sorries, 0 axioms, 0 `native_decide`** (the deliberate `sorry` bodies
   of `Statements.lean` are exempt by design; each is proved in
   `Solutions.lean`).
@@ -52,9 +54,10 @@ Audit with `scripts/sorries`.
 ## Build
 
 Requires [`elan`](https://github.com/leanprover/elan) (to manage the Lean
-toolchain) and `git`. The toolchain is pinned to `leanprover/lean4:v4.29.0`
-in `lean-toolchain`; Mathlib is pinned to the matching `v4.29.0` tag in
-`lakefile.toml`.
+toolchain) and `git`. The toolchain is pinned to `leanprover/lean4:v4.33.0`
+in `lean-toolchain`; Mathlib is pinned to the matching `v4.33.0` tag in
+`lakefile.toml`, alongside `resolution-common` and
+`threepoint`.
 
 ```bash
 lake exe cache get   # download prebuilt Mathlib oleans (~1 min)
@@ -65,6 +68,19 @@ Pulling the Mathlib cache is essential. Building Mathlib from source takes
 30+ minutes.
 
 ## File map
+
+The two tables below cover the primer core (the modules behind
+`Statements.lean`). The bulk of the library is the germbij identifiability
+programme built on top of it — singular identifiability (`Laplace/Pencil.lean`,
+`Sector.lean`, `Identifiability.lean`, `Turnkey.lean`, `Analytic.lean`,
+`Decay.lean`, `Anchoring.lean`, `OnePointAnchoring.lean` and their
+`Laplace/Multi/` counterparts), 1D jet/germ recovery (`Laplace/OneD/*Recovery*.lean`,
+`FlatInvisible.lean`), multivariate Hessian/tensor recovery and jet induction
+(`Laplace/Multi/HessianRecovery.lean`, `JetInduction.lean`, `MonomialTests.lean`),
+the forward all-orders expansion (`Laplace/Multi/ForwardTheorems.lean`), and
+the degenerate/separable tracks (`Laplace/Multi/Separable*.lean`,
+`Laplace/TwoD/`). Per-tide entries are in [`tide-log/`](tide-log/) and
+[`retrospectives/`](retrospectives/).
 
 ### 1D track (anharmonic potential)
 
