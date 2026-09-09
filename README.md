@@ -56,7 +56,7 @@ Audit with `scripts/sorries`.
 Requires [`elan`](https://github.com/leanprover/elan) (to manage the Lean
 toolchain) and `git`. The toolchain is pinned to `leanprover/lean4:v4.33.0`
 in `lean-toolchain`; Mathlib is pinned to the matching `v4.33.0` tag in
-`lakefile.toml`, alongside `resolution-common` (formerly `lean-common`) and
+`lakefile.toml`, alongside `resolution-common` and
 `threepoint`.
 
 ```bash
