@@ -80,9 +80,7 @@ programme built on top of it — singular identifiability (`Laplace/Pencil.lean`
 the forward all-orders expansion (`Laplace/Multi/ForwardTheorems.lean`), and
 the degenerate/separable tracks (`Laplace/Multi/Separable*.lean`,
 `Laplace/TwoD/`). Per-tide entries are in [`tide-log/`](tide-log/) and
-[`retrospectives/`](retrospectives/). The grammar-paper §4 material
-(fluctuation function, Taylor tree) has been factored out into
-[`timaeus-research/grammar`](https://github.com/timaeus-research/grammar).
+[`retrospectives/`](retrospectives/).
 
 ### 1D track (anharmonic potential)
 
