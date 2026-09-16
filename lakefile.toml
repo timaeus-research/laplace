@@ -34,4 +34,4 @@ name = "Solutions"
 [[require]]
 name = "resolution-common"
 git = "https://github.com/timaeus-research/lean-common.git"
-rev = "7180a7e99f3d3f8bd5b70947c3b8ee5068d37401"
+rev = "v0.7.0"
