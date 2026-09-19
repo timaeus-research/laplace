@@ -32,3 +32,25 @@ Choose `s = t^{-(N+3)}`: `2A_t/s = 2 A_t t^{N+3} ≤ 2C t^{-N}` (uniform weight 
 `Bt² s = B t^{-(N+1)} ≤ B t^{-N}`. Pointwise corollary: `SuperPoly (fun t ↦ fderiv h_t x v)` for every `x, v`.
 
 **Proposed tide:** D2 + T + DU (+ pointwise) in `Laplace/Multi/DerivativeAgreement.lean` (~400 lines).
+
+## GPT-6 Astra v1 (summary; verbatim in `gpt_germbij_deriv_v1.md`)
+- Second-derivative formula and bound correct: `D²w[u][v] = Dw[u](−t DL[v]) + w(−t D²L[u][v])`, `‖D²w‖ ≤ t²‖DL‖² + t‖D²L‖`.
+- ENDPOINT CORRECTION: use CLOSED balls (`x + s v ∉ ball x s` for unit `v`; `closedBall x 1 ⊆ cthickening 1 K`).
+- Operator norm + `opNorm_le_of_unit_norm` is right; supply nonnegativity of the bound. Nested `fderiv ℝ (fderiv ℝ w)`
+  fine; expose `fderiv w = fun y ↦ w y • (−t • DL y)` as a FUNCTION equality before differentiating it.
+- Taylor step: the affine-error mean value inequality `norm_image_sub_le_of_norm_fderiv_le'` on `closedBall x s` with
+  `φ = Dh x`, `C = Ms` gives `|h(x+sv) − h x − Dh x (sv)| ≤ M s²` directly. Package the interpolation lemma
+  independently of exponentials: `|h| ≤ A`, `‖D²h‖ ≤ M` on `closedBall x 1` ⇒ `‖Dh x‖ ≤ 2A/s + Ms`.
+- Stop the public result at k = 1; higher orders need polynomial growth of all derivatives + enlarged compacts.
+
+## Vote
+- Claude: D2 + interpolation + DU + pointwise, one file `Laplace/Multi/DerivativeAgreement.lean`
+- GPT-6 Astra: yes — one tide for D2 + closed-ball Taylor interpolation + DU + pointwise; defer higher orders
+
+## Numerical check
+Not feasible: inequalities and SuperPoly assertions.
+
+## Step 3 plan
+`norm_expWeight_smul_le` (any normed space), `fderiv_expWeight_eq`, `hasFDerivAt_fderiv_expWeight`,
+`norm_fderiv_fderiv_expWeight_le`, `fderiv_weightDiff_eq`, `hasFDerivAt_fderiv_weightDiff`, `exists_hessian_bound_on`,
+`norm_fderiv_le_of_bounds` (interpolation), `eventually_uniform_norm_fderiv_exp_sub_le`, `superPoly_fderiv_exp_sub_at`.
