@@ -1,0 +1,287 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\usepackage{xcolor}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-6 Astra:}} #1\end{quote}\medskip}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective: which observables suffice?\\
+\large the observation operator on homogeneous polynomials}
+\author{Claude (Anthropic), with a GPT-6 Astra consult}
+\date{2026-09-19}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Fix a nondegenerate minimum with Hessian form $H$ and let $\gamma =
+N(0, H^{-1})$. For a family $S = (\phi_i)$ of continuous polynomially
+growing observables, define the observation operator on the degree-$k$
+homogeneous polynomials, $\mathcal T_S : Q \mapsto (\Cov_\gamma[\phi_i,
+Q])_i$. For two certified losses with equal jets below $k$, the
+family's rescaled moment differences are $o(q^{k-2})$ at every
+$\phi_i$ if and only if the degree-$k$ Taylor difference lies in
+$\ker \mathcal T_S$. Hence an injective observation operator recovers
+the degree-$k$ derivative tensor, the monomial words being one such
+family, and in $d \ge 2$ a family of $n$ observables has a nonzero
+kernel direction in every degree $k \ge n$, so no fixed finite family
+sees every homogeneous perturbation at its first rate. This answers the
+germbij note's ``sufficient set'' question at the level of leading
+rates. Five hundred and sixty lines, two LSP rounds, no new analysis:
+the seabed's pairing limit already carried an arbitrary test, and the
+file is linear algebra on top of it. Two corrections to my own working
+notes came out of the consult: the pairing does not depend only on the
+jet of the observable, and the obstruction is a leading-rate statement,
+not an impossibility theorem for entire expansions.
+\end{abstract}
+
+\section{Setting}
+
+The germbij note recovers the Taylor jet of a loss at a nondegenerate
+minimum from the asymptotic expansions of posterior expectations; the
+laplace seabed carries this as the degree-by-degree induction
+\code{finite\_jet\_recovery\_of\_monomial\_rates}, whose data at step $k$
+are the $d^k$ monomial words $x \mapsto \prod_j x_{m_j}$. The user's
+question for this tide was which sub-families of observables suffice,
+whether there is a clean condition, and what is lost when one takes
+fewer. The seabed's answer was implicit: the step-$k$ engine
+\code{tendsto\_pairwise\_normalized\_moment\_difference} states that for
+\emph{any} continuous polynomially growing test $P$ the rescaled
+difference $(M_1(P,q) - M_2(P,q))/q^{k-2}$ tends to
+$-\Cov_\gamma[P, Q_k]$, where $Q_k$ is the degree-$k$ Taylor difference
+of the two losses. Everything a family can or cannot see at the leading
+rate is in that pairing. The tide made the statement explicit.
+
+The deliberation (tide log
+\code{tide-log/2026-09-19-14-40-tide-germbij-sufficient.md}, consult in
+\code{gpt\_germbij\_sufficient\_v1.md}) proposed the sufficiency theorem
+(A), its converse (B), a finite-family obstruction (C), and an instance
+construction (B$'$: perturb a certified loss by a kernel polynomial).
+Both parties voted A+B+C, with B$'$ deferred as a one-line remark for
+the paper.
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+Let $H_k$ be the degree-$k$ homogeneous polynomials on $\R^d$ (the span
+of the monomial words). Let $\phi_i$, $i \in \iota$, be continuous with
+polynomial growth, and let $\mathcal T_S(Q) = (\Cov_\gamma[\phi_i,
+Q])_i$, a linear map $H_k \to \R^\iota$.
+\begin{enumerate}
+\item[(B)] For certified losses $L_1, L_2$ with equal jets below $k >
+2$: all differences $M_1(\phi_i, q) - M_2(\phi_i, q)$ are $o(q^{k-2})$
+iff $\mathcal T_S(Q_k) = 0$.
+\item[(A)] If $\ker \mathcal T_S = 0$, such data identify the degree-$k$
+derivative tensor. The monomial family has $\ker \mathcal T_S = 0$.
+\item[(C)] If $d \ge 2$ and $|\iota| = n \le k$, then $\ker
+\mathcal T_S \neq 0$; consequently there is a nonzero $Q \in H_k$ such
+that any two certified losses with equal lower jets and $Q_k = Q$ have
+all their $S$-data $o(q^{k-2})$.
+\end{enumerate}
+\end{quote}
+
+\noindent The Lean signature of (A):
+\begin{verbatim}
+theorem iteratedFDeriv_recovery_of_family_rates (hk : 2 < k)
+    (A1 : HigherLaplaceDomain k L1 H) (A2 : HigherLaplaceDomain k L2 H)
+    (hlower : forall j < k,
+      iteratedFDeriv R j L1 0 = iteratedFDeriv R j L2 0)
+    (hsymm1 : (iteratedFDeriv R k L1 0).IsSymm)
+    (hsymm2 : (iteratedFDeriv R k L2 0).IsSymm)
+    {iota : Type*} (phi : iota -> EuclidD d -> R)
+    (hphic : forall i, Continuous (phi i))
+    (hphig : forall i, HasPolynomialGrowth (phi i))
+    (hinj : forall Q in homogPolySpan d k,
+      (forall i, gaussianCovariance H (phi i) Q = 0) -> Q = 0)
+    (hdata : forall i,
+      (fun q => A1.rescaledMoment (phi i) q - A2.rescaledMoment (phi i) q)
+        =o[nhdsWithin 0 (Ioi 0)] fun q => q ^ (k - 2)) :
+    iteratedFDeriv R k L1 0 = iteratedFDeriv R k L2 0
+\end{verbatim}
+with
+\begin{center}\code{homogPolySpan d k := Submodule.span R (Set.range monomialTest)}.\end{center}
+The other declarations:
+\begin{itemize}
+\item the operator itself, \code{pairingMap}, a linear map on the span;
+\item (B): \code{family\_rates\_iff\_pairing\_eq\_zero};
+\item (C): \code{exists\_kernel\_of\_finite\_family} and
+\code{finite\_family\_leading\_rate\_blind};
+\item the monomial instance: \code{monomialTest\_family\_injective}.
+\end{itemize}
+
+The hypotheses of (A) and (B) are those of the seabed's step-$k$
+theorem; nothing was added. The injectivity hypothesis quantifies over
+the finite-dimensional span, not over all continuous homogeneous
+functions, on Astra's advice: the latter space is infinite-dimensional
+for $d \ge 2$ and no finite family could ever satisfy it, so the theorem
+would have been true and useless.
+
+\section{Proof strategy}
+
+(B) is the pairing limit plus uniqueness of limits in one direction, and
+the pairing limit with target $0$ plus \code{isLittleO\_iff\_tendsto'} in
+the other. (A) is (B) followed by injectivity, then the diagonal
+argument copied from \code{DegreeRecovery}: $Q_k = 0$ gives equal
+diagonals of the two symmetric tensors, and
+\code{iteratedFDeriv\_eq\_of\_diag\_eq} polarises. The one new fact is
+that $Q_k$ lies in the span, which is the seabed's own
+\code{diag\_eq\_sum\_monomialTest} read as a membership statement.
+
+For (C) the span is finite-dimensional
+(\code{FiniteDimensional.span\_of\_finite}) and the $k + 1$ two-coordinate
+words $x_0^{k-j} x_1^{j}$ are linearly independent: evaluate any
+relation along the line $(s, 1, 0, \dots)$ to get a real polynomial in
+$s$ vanishing identically, kill it with \code{Polynomial.funext}, and
+read off each coefficient. So $\dim H_k \ge k + 1 > n = \dim \R^n$ and
+\code{LinearMap.ker\_ne\_bot\_of\_finrank\_lt} produces the kernel
+element. The two-coordinate count is sharp for $d = 2$; the full count
+$\binom{k+d-1}{d-1}$ fails earlier in higher dimension and was not
+needed. Linearity of the covariance in the second slot, which the
+seabed did not have, is three short lemmas from
+\code{integrable\_mul\_quadKernel\_of\_polynomialGrowth}.
+
+For the monomial instance, pairings against all words control the
+self-pairing of any span element (induction on the first slot with
+\code{gaussianCovariance\_comm}), and the seabed's rigidity theorem
+finishes.
+
+\section{Roadblocks and resolutions}
+
+Two rounds, all mechanical.
+
+\emph{Section variables versus explicit arguments.} Declaring
+\code{variable (hd : 2 <= d)} and also writing \code{(hd : 2 <= d)} on
+the definitions double-bound the name, so every later application
+\code{sliceWord hd j} fed \code{j} into the proposition slot. Dropping
+the section variable fixed twelve errors at once.
+
+\emph{\code{rw} with lemmas whose function arguments are lambdas.} The
+rewrite
+\begin{center}\code{rw [<- gaussianExpectation\_add hH (hphic.mul hPc) ...]}\end{center}
+instantiated the lemma from the continuity proofs, whose statement
+prints the product as \code{phi * P}, and then failed to find that
+pattern. Elaborating the lemma first with explicit \code{(f := fun x =>
+...)} and closing with \code{Eq.trans} and \code{congr 1; funext} avoids
+the pattern match entirely. Same family as the \code{Pi.add} gotcha in
+\code{CLAUDE.md}.
+
+\emph{\code{split\_ifs} did not split an \code{if} inside a coordinate
+projection.} A \code{by\_cases} followed by two \code{rw [if\_pos hi]}
+did. And on this pin \code{WithLp} is a structure, so
+\code{EuclideanSpace.single\_apply} is deprecated for
+\code{PiLp.single\_apply}, and \code{simp [Fin.ext\_iff]} alone decides
+the resulting \code{if}s.
+
+\emph{The consult.} One round, before writing, and it changed the
+statements rather than the proofs. The load-bearing paragraph on my
+working note's claim that the pairing depends only on the jet of the
+observable:
+\gptbox{Already in one dimension, set
+\[\phi(x) = x^k - c\,x^{k+2}, \qquad c = \Cov(X^k, X^k)/\Cov(X^{k+2}, X^k).\]
+Then $\phi$ has the same
+$k$-jet as $x^k$, but $\Cov(\phi(X), X^k) = 0$. A genuinely $H$-uniform
+sufficient condition is $\mathcal H_k \subseteq \operatorname{span}\{\phi_i\}
++ \R\mathbf 1$ as functions, not merely as jets.}
+And on the scope of (C):
+\gptbox{C+B+B$'$ do not prove that no finite family recovers the full
+jet from its entire expansions. A perturbation invisible at order
+$q^{k-2}$ may be visible later. For example, with $H = I$, take locally
+$L_\varepsilon(x) = \tfrac12|x|^2 + \varepsilon x_1^3$, $\phi(x) =
+x_1^2$. The degree-three covariance vanishes by parity. Nevertheless
+$M_\varepsilon(q) - M_0(q) = 45\varepsilon^2 q^2 + o(q^2)$.}
+The coefficient checks by hand ($\mathbb E X^8 - \mathbb E X^2\,
+\mathbb E X^6 = 105 - 15 = 90$, halved). Both corrections are now in
+the file's module docstring and in the working notes for the paper.
+
+\section{What was Mathlib, what was new}
+
+Mathlib, all lookup:
+\begin{itemize}
+\item spans: \code{Submodule.span\_induction} (the current
+motive-with-membership form) and \code{FiniteDimensional.span\_of\_finite};
+\item dimension: \code{LinearIndependent.of\_comp} and
+\code{fintype\_card\_le\_finrank};
+\item kernel: \code{Module.finrank\_fin\_fun} and
+\code{LinearMap.ker\_ne\_bot\_of\_finrank\_lt};
+\item polynomials: \code{Polynomial.funext}, \code{finsetSum\_coeff},
+and \code{coeff\_C\_mul\_X\_pow};
+\item counting: \code{Fin.card\_filter\_val\_lt};
+\item asymptotics: \code{isLittleO\_iff\_tendsto'}.
+\end{itemize}
+
+Seabed: the pairing limit, the Gaussian rigidity theorem, the diagonal
+expansion into monomial words, the certificates of the words, the
+polarisation lemma, the integrability of polynomially growing
+observables against the quadratic kernel.
+
+New: closure of \code{HasPolynomialGrowth} and
+\code{IsHomogeneousOfDegree} under the module operations, the span
+\code{homogPolySpan} with its certificates, membership of the Taylor
+difference, linearity and symmetry of \code{gaussianCovariance}, the
+observation operator, and the six theorems. No new analysis.
+
+\section{Lessons}
+
+\begin{itemize}
+\item For \code{CLAUDE.md}: never combine \code{variable (h : P)} with
+an explicit \code{(h : P)} on a declaration in the same section; and
+elaborate lambda-argument lemmas with named \code{(f := ...)} and close
+by \code{Eq.trans} rather than \code{rw}.
+\item For the tide skill: when a statement is about ``which data
+suffice'', consult before writing on the \emph{quantifier domain} of the
+condition. The move from all homogeneous functions to the polynomial
+span cost nothing in Lean and is the difference between a theorem
+finite families can meet and one they cannot.
+\item For the paper: a rate-level identifiability theorem needs its
+scope stated as such. The working notes had drifted from ``degree-$D$
+observables give the $D$-jet'' to ``and nothing more'', which the
+seabed does not prove and which the cubic example shows is false at the
+level of full expansions.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Instance (B$'$).} From a kernel direction $Q$, the pair
+$L_0 = \tfrac12 H(x,x)$, $L_1 = L_0 + Q$ realises the blindness with
+certified packages: both are polynomials, so the order-$k$ Taylor
+remainder of $L_1$ is zero and the quadratic lower bound survives a
+shrunken ball. Needs the Taylor coefficients of a polynomial in the
+\code{taylorHomogeneousTerm} normalisation.
+\item \emph{Recovery modulo the invisible subspace.} The data determine
+the $\Cov_\gamma$-orthogonal projection of $Q_k$ onto $(\ker
+\mathcal T_S)^\perp$; the seabed's rigidity theorem makes $\Cov_\gamma$
+an inner product on $H_k$. The cheap Lean form is
+$\mathcal T_S Q = \mathcal T_S R \iff Q - R \in \ker \mathcal T_S$; the
+substantive one is a quantitative singular-value bound for stable
+recovery from noisy leading coefficients.
+\item \emph{Full-expansion identifiability from a finite family.} Open.
+The cubic example suggests a finite family may recover the jet from all
+orders through nonlinear terms in the earlier perturbations; the seabed
+has the forward all-orders expansions but no machinery for the
+second-order coefficient in the perturbation.
+\item \emph{The $H$-uniform spanning criterion.} $H_k \subseteq
+\operatorname{span}\{\phi_i\} + \R\mathbf 1$ as functions implies
+injectivity for every positive-definite $H$; a short corollary of the
+monomial instance and covariance linearity.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-6 Astra corrected the quantifier domain of the sufficiency theorem
+and the scope of the obstruction, and supplied both counterexamples.
+The seabed is the germbij nondegenerate arc, in particular the
+monomial-tests tide whose diagonal expansion this file reuses, and the
+normalized-singular tide of the same day,
+\tideref[2026-09-19-06-05]{2026-09-19-06-05-tide-germbij-normalized},
+whose retrospective sets the paper context.
+
+\end{document}
