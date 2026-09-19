@@ -124,3 +124,23 @@ form, the anchor exponent `t^{-d/2}`, is the Gaussian volume scaling already che
 `exists_scalar_upper_bound`, `eventually_scalar_lower_bound`; (Z) `superPoly_scalar_of_zero_gap`,
 `zero_iff_zero_of_projective`; (R) `superPoly_scalar_sub_one_of_eventuallyEq`, `superPoly_difference_of_projective`;
 (N) `normalized_expectations_closure`. Smooth bumps via `ContDiffBump p`.
+
+## Result
+
+Commit `001f1f0` on `tide/germbij-projective-closure`: `Laplace/Multi/ProjectiveClosure.lean` (657 lines), imported
+from `Laplace.lean`; `lake build` clean (8890 jobs), `scripts/sorries` 0/0/0/0. Two LSP rounds (ten errors total:
+one implicit `p`, one `one_pow` simp-shape in the sector bound, one beta-redex before `rw`, and `ContDiff.of_le (by simp)`
+for `2 ≤ ∞` which does not fire — replaced by `AnalyticAt.contDiffAt`).
+
+Theorems: (G) `exists_lower_bound_integral_exp_of_quadratic`, `exists_lower_bound_integral_exp_near_zero`,
+`anchor_lower_bound_eventually`, `not_superPoly_integral_exp_near_zero`; (E) `abs_integral_mul_exp_le_of_gap`,
+`superPoly_polyBounded_mul_integral_of_gap`, `superPoly_integral_mul_exp_of_gap`; `ProjectiveAgreement` (def),
+`gapBump`, `exists_gapBump_of_pos`; tameness `exists_scalar_upper_bound`, `eventually_scalar_lower_bound`;
+(Z) `superPoly_scalar_of_zero_gap`, `zero_iff_zero_of_projective`; (R) `superPoly_scalar_sub_one_of_eventuallyEq`,
+`superPoly_difference_of_projective`, `projective_forces_exact_at`; (N) `projectiveAgreement_of_normalized`,
+`normalized_expectations_closure`.
+
+Surprises: (1) the seabed's `hanchor_low` hypothesis (three consumers, never discharged since the anchoring tide)
+falls to the `a ≡ 1` case of the sector bound in 90 lines; (2) `ContDiff.of_le` to grade 2 from `∞` has no
+one-liner on this pin — analyticity at the zeros (already assumed for the germ theorem) is the cheap route;
+(3) `eventually_scalar_lower_bound` gives eventual POSITIVITY of the scalar with no sign assumption anywhere.
