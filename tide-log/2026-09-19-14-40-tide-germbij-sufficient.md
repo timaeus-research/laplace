@@ -126,3 +126,23 @@ add/smul/zero in the second slot; (4) `pairingMap H φ : homogPolySpan k →ₗ[
 (kernel-zero hypothesis) + monomial family as instance sanity check; (7) C: linear independence of
 `x₀^{k−j}x₁^{j}` (slice x = (s,1,0,…), `Polynomial.funext`), `ker_ne_bot_of_finrank_lt`,
 `exists_kernel_of_finite_family`; (8) corollary `finite_family_leading_rate_blind` (B ∘ C).
+
+## Result
+
+Commit `dc7626d` on `tide/germbij-sufficient`: `Laplace/Multi/SufficientFamilies.lean` (~560 lines), imported
+from `Laplace.lean`; `lake build` clean (8889 jobs), `scripts/sorries` 0/0/0/0. Two LSP rounds.
+
+Theorems: `homogPolySpan` + certificates (`homogPolySpan_continuous/_hasPolynomialGrowth/_isHomogeneous`),
+`taylorDifference_mem_homogPolySpan`, `gaussianExpectation_add/_const_mul`,
+`gaussianCovariance_add_right/_const_smul_right/_comm`, `pairingMap` (the observation operator, a
+`LinearMap` on the span), **B** `HigherLaplaceDomain.family_rates_iff_pairing_eq_zero`, **A**
+`HigherLaplaceDomain.iteratedFDeriv_recovery_of_family_rates` (+ `_of_pairingMap_ker_eq_bot`),
+`monomialTest_family_injective` (consistency with the seabed's monomial theorem), **C**
+`linearIndependent_sliceMonomials`, `le_finrank_homogPolySpan`, `exists_kernel_of_finite_family`,
+`finite_family_leading_rate_blind`.
+
+Surprises: (1) my slop note S4 had claimed the pairing depends only on the k-jet of the test — false
+(Astra's `x^k − c x^{k+2}` example); the H-uniform condition is spanning as functions modulo constants.
+(2) The finite-family obstruction is a leading-rate statement only; the cubic example shows a
+perturbation invisible at first order that reappears at `ε² q²`. Both go to the slop file.
+(3) The whole file needed no new analysis: the pairing limit already carried the general test.
