@@ -47,3 +47,35 @@ Take a bump `η = 1` on a closed ball containing `tsupport φ`; `|∫ φ (b − 
 conclusion added).
 
 **Proposed tide:** P + V + U + C in `Laplace/Multi/TotalVariation.lean` (~300 lines). Vote: all.
+
+## GPT-6 Astra v1 (summary; verbatim in `gpt_germbij_tv_v1.md`)
+
+- P, V, U correct; the AM–GM route with ε = t^{-N} loses nothing at the SuperPoly level; use the O(t^{-(N+1)})
+  bound to get o(t^{-N}). No hidden integrability (e^{-tL} ≤ 1 for t ≥ 0). Note E = I₁ − I₂ (one negation).
+- Smooth losses are sufficient, not necessary: what is needed is `η²D ∈ C_c^∞`, i.e. smoothness of D = L₂ − L₁.
+  Keep `ContDiff ℝ ∞` for both for this tide; do not claim a necessity theorem.
+- Package the compact-set statement `∫_K |e^{-tL₂} − e^{-tL₁}| = o(t^{-∞})` (uniform over bounded tests
+  supported in K, including t-dependent ones). Continuous cutoffs follow by domination. Local L^∞ is TRUE under
+  smoothness (gradient bound ‖∇h_t‖ ≤ Ct ⇒ sup_K |h_t| ≤ C(t^d ∫_{K'}|h_t|)^{1/(d+1)}) but needs interpolation
+  infrastructure — later tide. Global L^∞ / noncompact tails do not follow.
+- Normalized version for bounded compactly supported tests via I₂/Z₂ − I₁/Z₁ = (I₂−I₁)/Z₁ + (I₂/Z₂)(1 − Z₂/Z₁);
+  needs 1/Z₁ = O(t^{d/2}) (anchor) and Z₂/Z₁ − 1 SuperPoly. Scope: compactly supported φ only.
+- (P): elementary route via `Real.add_one_le_exp`, split on x ≤ y; sign lemma by splitting on L₁ ≤ L₂ (handles t = 0).
+- Wiring: keep the chain projective + anchor ⇒ smooth exact ⇒ local TV ⇒ bounded tests; do not replace the anchor
+  hypotheses by a bare common zero.
+
+## Vote
+- Claude: P + V + local-TV + U + C (+ normalized bounded version), one file `Laplace/Multi/TotalVariation.lean`
+- GPT-6 Astra: ship P+V+local-TV+U+C together; leave local L^∞ and noncompact tails for later
+
+## Numerical check
+Not feasible / not needed: the statements are inequalities and SuperPoly assertions; the one closed form
+(|e^{-x} − e^{-y}| ≤ |x − y| on x, y ≥ 0) is the mean value theorem for a 1-Lipschitz function.
+
+## Step 3 plan
+`Laplace/Multi/TotalVariation.lean`: pointwise P (`abs_exp_neg_sub_exp_neg_le`, `mul_exp_neg_sub_exp_neg_nonneg`,
+`weightDiff_mul_nonneg`, `sq_exp_sub_le_mul`); SuperPoly helpers (`superPoly_of_forall_eventually_le`,
+`SuperPoly.of_abs_le`, `SuperPoly.polyBounded_mul`); `integrable_of_bounded_of_hasCompactSupport`;
+V `superPoly_integral_sq_mul_abs_exp_sub`; `exists_smooth_bump_one_on_compact`; U `superPoly_difference_of_bounded`,
+`superPoly_difference_of_continuous`; K-form `superPoly_setIntegral_abs_exp_sub`; C
+`superPoly_difference_of_projective_bounded`, `superPoly_normalized_difference_of_bounded`.
