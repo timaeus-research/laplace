@@ -310,6 +310,16 @@ real-valued norm on the left and `‖s‖` on the right, use
 `Real.norm_of_nonneg hs.le` for the specific scalar; the generic
 `Real.norm_eq_abs` fires on the first norm it meets.
 
+**Finite grades below `∞`: use `natCast_le_infty` (AllOrders).** The
+recurring side conditions `(k : WithTop ℕ∞) ≤ ∞`, `↑k + 1 < ∞`, `2 ≤ ∞`
+that `by simp`/`le_top` do not discharge are closed by
+`by exact_mod_cast natCast_le_infty k` / `natCast_lt_infty (k + 1)`
+(`Laplace/Multi/AllOrders.lean`; proof: `← WithTop.coe_natCast` then
+`WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)`). So `h.of_le (by
+exact_mod_cast natCast_le_infty 2)` DOES give `C²` from `ContDiff ℝ ∞`.
+Also: `∞` is ambiguous (`ℕ∞ω` vs `ℝ≥0∞`) when both `open scoped ENNReal`
+and `open scoped ContDiff` are in force — drop the one you do not need.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
