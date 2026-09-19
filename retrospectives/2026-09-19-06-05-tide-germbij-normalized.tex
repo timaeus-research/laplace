@@ -1,0 +1,315 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\usepackage{xcolor}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-6 Astra:}} #1\end{quote}\medskip}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective: the normalized singular identifiability theorem\\
+\large germbij Question~7.7 answered, by integration by parts}
+\author{Claude (Anthropic), with a GPT-6 Astra consult}
+\date{2026-09-19}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Two nonnegative analytic losses whose Laplace families agree
+\emph{projectively} beyond all orders, $\int \phi\, e^{-tL_2} -
+C(t)\int \phi\, e^{-tL_1} = o(t^{-\infty})$ for every $\phi \in
+C_c^\infty$ and some scalar $C(t)$, coincide on a neighbourhood of every
+common zero. This is the normalized form of the singular identifiability
+problem of the germbij note (``What expectation values know about the
+loss landscape''): with $C = Z_2/Z_1$ the hypothesis is exactly equality
+of the normalized expansions $\Phi_{L_1} = \Phi_{L_2}$, so the note's
+last open question closes with no anchoring point required. The
+mechanism is a three-line integration by parts that a co-author added to
+the note on 2026-08-26 but that had no theorem environment and no Lean:
+$\int \partial_v\phi\, e^{-tL} = t\int \phi\,\partial_v L\, e^{-tL}$,
+so the observables $\partial_v\phi$ and $\phi\,\partial_v L_1$ cancel
+the unknown scalar exactly and leave a plain family beyond all orders,
+which the existing sector lower bound turns into vanishing of the germ
+of $\partial_v(L_2 - L_1)$. Five hundred lines of new Lean in one file,
+no \code{sorry}, no axiom, four LSP rounds, one strategic consult; the
+scalar $C$ may be an arbitrary function. The corollary with the $1/Z$
+incorporated is stated separately.
+\end{abstract}
+
+\section{Setting}
+
+The germbij note asks when the family of posterior expectation values
+$\langle\phi\rangle_t = \int\phi\, e^{-tL}/Z(t)$, read as asymptotic
+expansions in $t$, determines the germ of the loss $L$ at its minimum.
+The laplace seabed carries the note's earlier answers end to end: the
+nondegenerate theorem (jet and germ recovery modulo a constant, with the
+location), the flat-perturbation counterexamples, and the singular
+theorem \code{pencil\_families\_force\_eq\_near\_smooth}, which is the
+\emph{unnormalized} statement, agreement on the nose of $\int\phi\,
+e^{-tL_1}$ and $\int\phi\, e^{-tL_2}$. The note's Question~7.7 was
+whether the normalized data, which only fix the unnormalized families
+up to a common scalar series $C(t)$, still force equality; the seabed
+had the one-point anchoring wrapper
+\code{one\_point\_anchoring\_contradiction}, which closes the gap
+wherever the zero locus has a point of constructive recovery, and
+nothing in general.
+
+Surveying the paper for this tide showed that the question is no
+longer open on paper: the Overleaf commit of 2026-08-26 inserted a proof
+by integration by parts directly under the Question, without a theorem
+environment, without a Lean counterpart, and with the surrounding prose
+still describing the pre-proof state. The user's direction was to
+continue the germbij formalisation and to consider what the newly
+formalised \code{hironaka} and \code{greybook} seabeds unlock. The
+deliberation (tide log
+\code{tide-log/2026-09-19-06-05-tide-germbij-normalized.md}, consult in
+\code{gpt\_germbij\_normalized\_v1.md}) weighed three candidates: the
+normalized theorem; a cross-seabed forward direction (leading
+$\Theta$-asymptotics of $\int e^{-tK}$ from hironaka's sublevel-volume
+statement plus an Abelian transfer); and the projective form of
+``equal zero loci are forced''. Both parties voted for the normalized
+theorem: one coherent statement, every ingredient present in the seabed,
+and it is the paper's headline change since August. The cross-seabed
+bridge was recorded as the next arc (it needs a toolchain bump of
+laplace to v4.33.1, two new dependencies, and a $\Theta$-version of the
+greybook transfer that does not yet exist).
+
+\section{The thing formalised}
+
+\begin{quote}\itshape
+Let $L_1, L_2 : \R^d \to \R$ be smooth and nonnegative, analytic at a
+common zero $p$. Suppose there is a function $C : \R \to \R$ such that
+for every smooth compactly supported $\phi$,
+\[
+\int \phi\, e^{-tL_2}\, dw \;-\; C(t)\int \phi\, e^{-tL_1}\, dw
+\;=\; o(t^{-N}) \quad\text{for every } N .
+\]
+Then $L_1 = L_2$ on a neighbourhood of $p$. If this holds at every point
+of a set $W_0$ of common zeros, $L_1 = L_2$ on an open neighbourhood of
+$W_0$. In particular, if the expectation values normalized by a common
+nonnegative window $\chi$ agree beyond all orders for every $\phi$, the
+same conclusion holds.
+\end{quote}
+
+\noindent The Lean signature of the point form:
+\begin{verbatim}
+theorem normalized_families_force_germ_eq_at
+    {L1 L2 : (iota -> R) -> R} {p : iota -> R}
+    (h1 : ContDiff R infty L1) (h2 : ContDiff R infty L2)
+    (hL1 : forall w, 0 <= L1 w) (hL2 : forall w, 0 <= L2 w)
+    (hA1 : AnalyticAt R L1 p) (hA2 : AnalyticAt R L2 p)
+    (hp1 : L1 p = 0) (hp2 : L2 p = 0) {C : R -> R}
+    (hfam : forall phi : (iota -> R) -> R,
+      ContDiff R infty phi -> HasCompactSupport phi ->
+      SuperPoly fun t => (integral w, phi w * Real.exp (-(t * L2 w)))
+        - C t * integral w, phi w * Real.exp (-(t * L1 w))) :
+    forallf w in nhds p, L1 w = L2 w
+\end{verbatim}
+with the seabed's ``beyond all orders'' predicate
+\begin{verbatim}
+SuperPoly f := forall N : Nat, f =o[atTop] fun t => t ^ (-(N : R))
+\end{verbatim} The locus form
+\code{normalized\_families\_force\_eq\_near} quantifies the hypotheses over
+$p \in W_0$; the form with the normalization,
+\code{normalized\_expectations\_force\_eq\_near}, takes a continuous,
+compactly supported, nonnegative window $\chi$ with $Z_i(t) = \int\chi\,
+e^{-tL_i} > 0$ and the hypothesis $\int\phi e^{-tL_2}/Z_2 -
+\int\phi e^{-tL_1}/Z_1$ beyond all orders.
+
+The hypotheses are what the argument uses and no more. Smoothness of
+$L_1$ everywhere is what makes $\phi\,\partial_v L_1$ an admissible
+observable (analyticity near $W_0$ would do, with observables localized
+to that neighbourhood; the global form was kept because it removes
+support bookkeeping). Analyticity enters only through finite vanishing
+order of the amplitude $\partial_v(L_2 - L_1)$, exactly as in the
+unnormalized theorem. Nothing at all is assumed about $C$: not
+positivity, not a power-log expansion, not measurability. Compactness of
+$W_0$ is not used; the neighbourhood is the union of the per-point ones.
+
+\section{Proof strategy}
+
+Write $I_i(\phi, t) = \int\phi\, e^{-tL_i}$ and $R_\phi = I_2(\phi) -
+C\, I_1(\phi)$; the hypothesis is that every admissible $R_\phi$ is
+beyond all orders. For a direction $v$, integrating by parts against the
+Boltzmann weight gives $I_i(\partial_v\phi) = t\, I_i(\phi\, \partial_v
+L_i)$. Hence, for $t > 0$,
+\[
+\frac{R_{\partial_v\phi}(t)}{t} - R_{\phi\,\partial_v L_1}(t)
+\;=\; I_2\big(\phi\,\partial_v(L_2 - L_1),\, t\big) ,
+\]
+an exact identity in which $C$ has cancelled. Both observables on the
+left are smooth with compact support, so the right side is beyond all
+orders for every $\phi$; in the file this is
+\code{superPoly\_integral\_fderiv\_sub\_mul\_exp}. This is the whole idea;
+the rest is the seabed.
+
+Set $g = L_2 - L_1$ and $a = \partial_v g$. Taking $\phi = \psi\, a$
+with $\psi$ a smooth bump at $p$ turns the family into $\int\psi\,
+a^2\, e^{-tL_2}$. If the germ of $a$ at $p$ were nonzero, the sector
+lower bound would give $\int\psi\, a^2\, e^{-tL_2} \geq \kappa\,
+t^{-m-d/2}$ for large $t$, $m$ the vanishing order of $a$; this is the
+content of the new packaged lemma
+\code{analytic\_square\_weight\_eq\_zero\_near}, which translates $p$ to
+the origin, extracts the least nonzero diagonal of the power series of
+$a$ (\code{exists\_least\_nonzero\_diagonal}), the Taylor remainder
+(\code{analytic\_remainder\_bound}) and the scaled set
+(\code{leading\_part\_scaled\_set}), the quadratic upper bound on the
+weight $K = L_2$ (\code{quadratic\_upper\_bound\_of\_nonneg}, which needs
+only $C^2$, nonnegativity and $K(p) = 0$), a \code{ContDiffBump} equal
+to $1$ on the ball where that bound holds, and then
+\code{sector\_lower\_bound\_multi} on the window $(\sqrt t)^{-1} S$ where
+the bump is $1$, compared with the full integral by
+\code{setIntegral\_le\_integral}; the contradiction is
+\code{lower\_bound\_not\_superpolynomial}. The one hypothesis of the
+diagonal lemma that is not free is $a(p) = 0$, and it holds because
+both losses have a local minimum at $p$, so $dL_1(p) = dL_2(p) = 0$
+(\code{IsLocalMin.fderiv\_eq\_zero}).
+
+So $\partial_v g = 0$ near $p$ for every coordinate direction $v$; over
+the finitely many directions this gives $dg = 0$ on a ball around $p$,
+$g$ is constant on the ball by convexity
+(\code{Convex.is\_const\_of\_fderivWithin\_eq\_zero}, only $C^1$ used), and
+$g(p) = 0$. The locus form is the union of the balls, copied from the
+pencil theorem. The corollary with the normalization takes $C = Z_2/Z_1$
+and uses $0 \le Z_2(t) \le \int\chi$ for $t \ge 0$ to pass from the
+normalized difference to the projective one (\code{SuperPoly.bounded\_mul}).
+
+\section{Roadblocks and resolutions}
+
+There were none of substance; this was a four-round file. The rounds
+were mechanical and are worth recording because they will recur.
+
+\emph{Grades.} On this pin \code{ContDiff.differentiable} wants
+$\infty \ne 0$ and \code{ContDiff.fderiv\_right} wants $\infty + 1 \le
+\infty$, neither of which \code{le\_top} proves (the top of
+\code{WithTop Nat-infty} is $\omega$, not $\infty$); \code{by simp} and
+\code{contDiff\_infty\_iff\_fderiv} discharge them. For $C^2$ at an
+analytic point, \code{AnalyticAt.contDiffAt} gives any grade for free,
+where \code{ContDiffAt.of\_le} against $\infty$ needs a coercion lemma
+one has to hunt for.
+
+\emph{Derivative of a difference.} \code{fderiv\_sub} is stated for
+\code{Pi} subtraction and does not rewrite \code{fun w => L2 w - L1 w};
+\code{(hasFDerivAt.sub hasFDerivAt).fderiv} does.
+
+\emph{The clash the per-file check cannot see.} The file compiled clean
+under the LSP with its own \code{SuperPoly.sub} and \code{SuperPoly.congr},
+and the library root then failed: both already exist, in
+\code{CutoffRemoval} and \code{LocatedCutoff}, files the new one did not
+import. The fix was to import them and delete the duplicates; the
+seabed's \code{congr} takes \code{f =f[atTop] g} and hands the pointwise
+goal as an applied lambda, so a \code{beta\_reduce} was needed before
+\code{congr 1}. Lesson: grep the library for a lemma name before
+declaring it, even in a leaf file.
+
+\emph{One consult, before writing.} The deliberation consult vetted the
+inserted proof and shaped the file. Its load-bearing paragraph:
+\gptbox{Consequently, for $t>0$, $R_{D\phi}(t)/t - R_{\phi DL_1}(t) =
+I_2(\phi D(L_2-L_1),t)$. This is the clean cancellation identity to
+formalise. Its right-hand side is superpolynomially small because that
+class is closed under subtraction and division by $t$. There is no
+multiplication of an error by $C$.}
+It also flagged that the amplitude vanishes at $p$ automatically, that
+local constancy must be stated on a ball rather than globally, and that
+$C$ needs no property at all, all of which the file follows. The only
+divergence from the deliberation plan is that the square-weight
+rigidity was written as a standalone lemma with the family hypothesis
+quantified over all smooth bumps, rather than inlined; this is what let
+the main theorem stay at forty lines.
+
+\section{What was Mathlib, what was new}
+
+Mathlib provided the integration by parts,
+\begin{center}\code{integral\_mul\_fderiv\_eq\_neg\_fderiv\_mul\_of\_integrable}\end{center}
+with $f = \phi$ and $g = e^{-tL}$, whose three integrability side conditions
+come from compact support via the
+\code{integrable\_of\_hasCompactSupport} lemma for continuous functions; the derivative of the exponential (\code{HasFDerivAt.exp}), the
+compact-support bookkeeping (\code{HasCompactSupport.fderiv},
+\code{.comp\_left}, \code{.mul\_right}), the bump functions
+(\code{ContDiffBump}), the convexity argument for local constancy, and
+the asymptotic algebra (\code{IsLittleO.mul\_isBigO},
+\code{IsBigO.mul\_isLittleO}, \code{isBigO\_const\_of\_tendsto}).
+
+The seabed provided everything analytic: the least nonzero diagonal,
+the remainder bound, the scaled set, the quadratic upper bound, the
+sector lower bound and the decay contradiction, plus the
+\code{SuperPoly} predicate and its closure under subtraction and
+congruence.
+
+New in this tide: the directional integration-by-parts identity for
+Boltzmann weights (\code{integral\_fderiv\_mul\_exp}), the cancellation
+lemma, the square-weight rigidity lemma (the first reusable form of the
+sector bound for an amplitude that is not the pencil difference), the
+finite-direction local-constancy lemma, two closure lemmas for
+\code{SuperPoly} (division by $t$, multiplication by a bounded
+function), and the three theorems. About 520 lines, of which the
+rigidity lemma is roughly a third.
+
+\section{Lessons}
+
+\begin{itemize}
+\item For \code{CLAUDE.md}: the three grade and derivative gotchas above
+(\code{infty != 0} via \code{by simp}; \code{fderiv\_sub} is \code{Pi}-shaped;
+\code{AnalyticAt.contDiffAt} for any finite grade), and ``grep for the
+name before declaring a \code{SuperPoly.*} helper''.
+\item For the tide skill: the survey step paid for itself. The
+candidate came from reading the Overleaf history, not the Lean; a
+33-line insertion without a theorem environment is invisible to
+anything that greps for \code{\textbackslash begin\{theorem\}}. When a
+paper is the seabed's source, diff the paper against the last pinned
+commit before drafting candidates.
+\item For the formalisation skill: a per-file LSP check is not a
+library build. The clash surfaced only when \code{Laplace.lean} imported
+both files; \code{lake build} of the root before the first commit is
+the gate, as the seabed's \code{CLAUDE.md} already says.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Scalar rigidity.} After $L_1 = L_2$ near $p$, a bump
+$\psi_0$ there has $I_1(\psi_0) = I_2(\psi_0)$ exactly, so $(1 - C(t))
+I_1(\psi_0)$ is beyond all orders and $I_1(\psi_0) \gtrsim t^{-d/2}$
+gives \code{SuperPoly (fun t => C t - 1)}. Needs the Gaussian-type lower
+bound $\int\psi_0 e^{-tL_1} \gtrsim t^{-d/2}$ from the quadratic upper
+bound, which the seabed states as a hypothesis
+(\code{hanchor\_low}) but does not yet prove.
+\item \emph{Equal zero loci, projective form.} A bump at $p \in \{L_1 =
+0\} \setminus \{L_2 = 0\}$ forces $C = o(t^{-\infty})$ and then every
+$I_2(\phi)$ beyond all orders, impossible if $L_2$ has a zero; the
+reverse inclusion needs $|C(t)| = O(t^{d/2})$ from a bump at a zero of
+$L_1$. Elementary, no analyticity; would let the theorem's ``common
+zeros'' read ``zeros of $L_1$''.
+\item \emph{Support-local hypotheses.} Replace global smoothness by
+analyticity on a neighbourhood of $W_0$ with observables supported
+there, using \code{contDiff\_mul\_of\_tsupport\_subset}.
+\item \emph{Cross-seabed arc.} A standalone $\Theta$-Abelian transfer
+($\mu\{K \le \varepsilon\} = \Theta(\varepsilon^\lambda (\log 1/\varepsilon)^{m})$
+implies $\int e^{-tK} d\mu = \Theta(t^{-\lambda}(\log t)^m)$), which
+needs no hironaka dependency; then, after bumping laplace to v4.33.1,
+compose with hironaka's sublevel-volume theorem
+\code{exists\_hasLLCExponentsOn\_of\_analyticOnNhd\_nonneg} for the leading term of the singular expansion of an analytic loss.
+\item \emph{Paper.} The note should promote the inserted proof to a
+theorem (statement drafted in the Overleaf working file
+\code{germbij\_slop.tex}, section S1), delete the ``we expect the answer
+is no'' paragraph, demote Proposition~7.8 to a constructive remark, and
+carry \code{\textbackslash leanref} markers for the three theorems once
+the merge SHA is pinned. Paper edits await the author's direction.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+The mechanism is the co-author's integration-by-parts argument in the
+note. GPT-6 Astra vetted it and fixed the shape of the cancellation
+identity and the rigidity lemma. The seabed is the germbij singular arc
+of 2026-08-09 and 2026-08-10, in particular
+\tideref[the singular-smooth tide]{2026-08-10-11-30-tide-germbij-singular-smooth}
+whose bump construction this file copies.
+
+\end{document}

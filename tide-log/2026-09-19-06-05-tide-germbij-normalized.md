@@ -54,3 +54,7 @@ File `Laplace/Multi/NormalizedSingular.lean` (imports `Laplace.Multi.SingularSmo
 Commit `4a057b4` on `tide/germbij-normalized`; `lake build` clean, `scripts/sorries` 0/0/0/0. Theorems: `normalized_families_force_germ_eq_at`, `normalized_families_force_eq_near`, `normalized_expectations_force_eq_near`, plus the four lemmas above. Surprises: (i) the whole file landed in four LSP rounds; the only mathematical wrinkle was that the amplitude `∂_v(L₂ − L₁)` must vanish at `p` for `exists_least_nonzero_diagonal`, which holds because both losses have a local minimum there (`IsLocalMin.fderiv_eq_zero`); (ii) `fderiv_sub` on this Mathlib pin is stated for `Pi` subtraction and does not rewrite `fun w ↦ L₂ w − L₁ w`; use `(hasFDerivAt.sub hasFDerivAt).fderiv`; (iii) grade side conditions for `ContDiff ℝ ∞` (`∞ ≠ 0`, `∞ + 1 ≤ ∞`) are discharged by `by simp` / `contDiff_infty_iff_fderiv`, and `C²` at an analytic point comes free from `AnalyticAt.contDiffAt`, not from `ContDiffAt.of_le`.
 
 Final state after removing the duplicate `SuperPoly.sub` / `SuperPoly.congr` (already in `CutoffRemoval` / `LocatedCutoff`; the per-file check did not see the clash, the library-root build did): commit `8e6c605`, full `lake build` clean (8888 jobs), `scripts/sorries` 0/0/0/0.
+
+## Retrospective
+
+`retrospectives/2026-09-19-06-05-tide-germbij-normalized.tex` (compiled PDF alongside).
