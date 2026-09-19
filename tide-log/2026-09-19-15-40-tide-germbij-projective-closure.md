@@ -22,3 +22,66 @@
 - Missing: (i) a standalone Gaussian-type lower bound near a zero; (ii) exponential smallness of
   `∫ψ e^{-tL}` when `L ≥ δ > 0` on `supp ψ`; (iii) the polynomial bound `|C(t)| = O(t^{d/2})`; (iv) the
   equal-zero-loci theorem; (v) `SuperPoly (C − 1)` and the transfer projective ⇒ exact.
+
+## Candidates v1 (Claude)
+
+Notation: `I_i(φ, t) = ∫ φ e^{-tL_i}`, `R_φ = I₂(φ) − C·I₁(φ)`; hypothesis "projective" = `SuperPoly R_φ` for all `φ ∈ C_c^∞`
+(or for all continuous compactly supported `φ` — the closure results below need only bumps, so the weaker
+hypothesis class suffices and I will state them for the `C_c^∞` class to compose with NormalizedSingular).
+
+### G. Gaussian-type lower bound near a zero (standalone lemma; a ≡ 1 case of the sector bound)
+```
+theorem exists_lower_bound_integral_exp_near_zero {K ψ} {p}
+    (hKc : Continuous K) (hK0 : ∀ w, 0 ≤ K w) (hKp : K p = 0) (hK2 : ContDiffAt ℝ 2 K p)
+    (hψc : Continuous ψ) (hψs : HasCompactSupport ψ) (hψ0 : ∀ w, 0 ≤ ψ w)
+    {R : ℝ} (hR : 0 < R) (hψ1 : ∀ w, ‖w − p‖ ≤ R → ψ w = 1) :
+    ∃ κ T₀ : ℝ, 0 < κ ∧ ∀ t, T₀ ≤ t → κ * t ^ (-(Fintype.card ι : ℝ)/2) ≤ ∫ w, ψ w * exp(-(t * K w))
+```
+Copy of the assembly inside `analytic_square_weight_eq_zero_near` with `a ≡ 1`, `m = 0`, `S = ball 0 1`.
+Discharges the seabed's standing `hanchor_low` hypothesis (used by `superPoly_of_mul_anchor`,
+`anchored_proportionality_remove_scalar`, `one_point_anchoring_contradiction`). ~120 lines.
+
+### E. Exponential smallness away from the zero set
+`L` continuous, `L ≥ δ > 0` on `tsupport ψ`, `ψ` continuous c.s. ⇒ `|∫ ψ e^{-tL}| ≤ (∫|ψ|) e^{-tδ}` for `t ≥ 0`,
+hence `SuperPoly (fun t ↦ ∫ ψ e^{-tL})` and even `O(t^{d/2} e^{-tδ})`-type products stay SuperPoly. ~50 lines.
+
+### Z. Equal zero loci, projective form (no analyticity)
+```
+theorem zero_locus_eq_of_projective {L₁ L₂} (h1 : ContDiff ℝ 2 L₁) (h2 : ContDiff ℝ 2 L₂)
+    (hL1 : ∀ w, 0 ≤ L₁ w) (hL2 : ∀ w, 0 ≤ L₂ w) {C : ℝ → ℝ} (hfam : projective over C_c^∞)
+    (hne1 : ∃ p, L₁ p = 0) (hne2 : ∃ q, L₂ q = 0) :
+    {w | L₁ w = 0} = {w | L₂ w = 0}
+```
+Proof. (⊆) `p ∈ Z(L₁) \ Z(L₂)`: `L₂ ≥ δ` near `p`; bump `ψ` there: `I₂(ψ)` SuperPoly (E), so `C·I₁(ψ)` SuperPoly;
+`I₁(ψ) ≥ κ t^{-d/2}` (G) ⇒ `SuperPoly C` (variant of `superPoly_of_mul_anchor` with `C` in place of `C−1`).
+Then every `I₂(φ) = R_φ + C·I₁(φ)` is SuperPoly (`I₁(φ)` bounded, `laplace_moment_bounded`), contradicting
+G at `q ∈ Z(L₂)`. (⊇) `q ∈ Z(L₂) \ Z(L₁)`: from a bump at `p ∈ Z(L₁)`: `|C(t)| ≤ (∫ψ_p + 1)·t^{d/2}/κ`
+eventually (bounded `I₂`, G for `I₁`); bump `ψ_q`: `I₁(ψ_q) ≤ M e^{-tδ}` so `C·I₁(ψ_q)` is SuperPoly
+(polynomial × exponential), hence `I₂(ψ_q)` SuperPoly, contradicting G at `q`. ~150 lines.
+Both zero sets nonempty is necessary (`L₂ = L₁ + c` is projective with `C = e^{-ct}`).
+
+### R. Scalar rigidity and the transfer projective ⇒ exact
+```
+theorem superPoly_scalar_sub_one_of_eqOn {L₁ L₂} … {p} (hp : L₁ p = 0) (hEq : ∀ᶠ w in 𝓝 p, L₁ w = L₂ w)
+    (hfam : projective) : SuperPoly fun t ↦ C t − 1
+theorem superPoly_difference_of_projective … : ∀ φ ∈ C_c^∞ (or continuous c.s.), SuperPoly fun t ↦ I₂(φ) − I₁(φ)
+```
+Proof: bump `ψ₀` inside the agreement neighbourhood: `I₁(ψ₀) = I₂(ψ₀)` exactly (`anchor_moment_eq`), so
+`(C−1)·I₁(ψ₀) = −R_{ψ₀}` SuperPoly; G gives the anchor lower bound; `superPoly_of_mul_anchor`; then
+`superPoly_sub_of_scalar_gauge` with `laplace_moment_bounded`. ~60 lines. Composed with
+`normalized_families_force_germ_eq_at` (which supplies `hEq`): **projective agreement + one common
+analytic zero ⇒ exact (unnormalized) agreement beyond all orders for every observable.** So the whole
+unnormalized theory (pencil theorem etc.) applies to normalized data.
+
+### N. The 1/Z package (headline for the paper)
+```
+theorem normalized_expectations_closure {L₁ L₂ χ} (h1 h2 : ContDiff ℝ ∞) (hL1 hL2 : nonneg)
+    (hA1 hA2 : analytic at every zero) (hne1 hne2 : zero sets nonempty)
+    (hχ … window, hZ1 hZ2 positivity) (hfam : Φ_{L₁} = Φ_{L₂} over C_c^∞) :
+    {L₁ = 0} = {L₂ = 0} ∧ (∃ U open ⊇ {L₁ = 0}, EqOn L₁ L₂ U) ∧ SuperPoly (fun t ↦ Z₂ t / Z₁ t − 1)
+      ∧ ∀ φ ∈ C_c^∞, SuperPoly (fun t ↦ I₂(φ) − I₁(φ))
+```
+Z + `normalized_families_force_eq_near` at `W₀ = Z(L₁) = Z(L₂)` + R with `C = Z₂/Z₁`. ~80 lines.
+
+**Proposed tide:** G + E + Z + R + N in one file `Laplace/Multi/ProjectiveClosure.lean` (~450 lines).
+Vote: all five; G is the load-bearing new lemma, Z and R the new theorems, N the paper statement.
