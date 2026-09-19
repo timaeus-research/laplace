@@ -300,6 +300,16 @@ instance in place and accept the unused-section-variable warning.
 with the lambda type in a `have` before `rw [h.fderiv]`. `ring` does not
 distribute a symbolic power over a product; `rw [mul_pow]` first.
 
+**`rw [this]` with an equation whose RHS contains its LHS rewrites the
+copies inside the RHS too (DerivativeAgreement).** Rewriting
+`s * Dh = A - (A - s * Dh)` in a goal that mentions `A - s * Dh` elsewhere
+produces nested `A - (A - (A - …))` terms and `linarith` dies. Prove the
+triangle step as a separate `have` from `abs_sub` + `sub_sub_cancel`
+instead of rewriting. Also: in a rewrite chain that must normalise both a
+real-valued norm on the left and `‖s‖` on the right, use
+`Real.norm_of_nonneg hs.le` for the specific scalar; the generic
+`Real.norm_eq_abs` fires on the first norm it meets.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
