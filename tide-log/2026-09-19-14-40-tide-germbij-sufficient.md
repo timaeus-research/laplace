@@ -146,3 +146,7 @@ Surprises: (1) my slop note S4 had claimed the pairing depends only on the k-jet
 (2) The finite-family obstruction is a leading-rate statement only; the cubic example shows a
 perturbation invisible at first order that reappears at `ε² q²`. Both go to the slop file.
 (3) The whole file needed no new analysis: the pairing limit already carried the general test.
+
+## Retrospective
+
+`retrospectives/2026-09-19-14-40-tide-germbij-sufficient.tex` (compiled PDF alongside).
