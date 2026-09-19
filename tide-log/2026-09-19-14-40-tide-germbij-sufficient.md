@@ -24,3 +24,67 @@
   So "degree-≤D observables give the D-jet" is ALREADY formalised; slop S4 must say so.
 - Missing: any statement about a *general* family `S` of tests, the iff condition, the
   converse (data blind to a kernel direction), and the finite-family impossibility.
+
+## Candidates v1 (Claude)
+
+Notation: `γ = N(0, H⁻¹)`, `Cov_γ = gaussianCovariance H`, `Q_k(L₁,L₂) = taylorHomogeneousTerm k L₁ − taylorHomogeneousTerm k L₂`
+(the degree-k Taylor difference; a homogeneous degree-k polynomial when the tensors are symmetric).
+"S-data at degree k" for a family `φ : ι → EuclidD d → ℝ` of tests: `∀ i, (A₁.rescaledMoment (φ i) q − A₂.rescaledMoment (φ i) q) = o(q^{k−2})` as `q → 0⁺`.
+
+### A. Sufficient family at one degree (the "if" of the iff), general test family
+```
+theorem iteratedFDeriv_recovery_of_family_rates {ι : Type*} (hk : 2 < k)
+    (A₁ : HigherLaplaceDomain k L₁ H) (A₂ : HigherLaplaceDomain k L₂ H)
+    (hlower : ∀ j < k, iteratedFDeriv ℝ j L₁ 0 = iteratedFDeriv ℝ j L₂ 0)
+    (hsymm₁ hsymm₂ : IsSymm …)
+    (φ : ι → EuclidD d → ℝ) (hφc : ∀ i, Continuous (φ i)) (hφg : ∀ i, HasPolynomialGrowth (φ i))
+    (hinj : ∀ Q : EuclidD d → ℝ, Continuous Q → HasPolynomialGrowth Q → IsHomogeneousOfDegree k Q →
+       (∀ i, gaussianCovariance H (φ i) Q = 0) → Q = 0)
+    (hdata : ∀ i, (fun q ↦ A₁.rescaledMoment (φ i) q − A₂.rescaledMoment (φ i) q) =o[𝓝[>] 0] fun q ↦ q^(k−2)) :
+    iteratedFDeriv ℝ k L₁ 0 = iteratedFDeriv ℝ k L₂ 0
+```
+Proof: pairing limit for each `φ i` + uniqueness of limits ⇒ `Cov_γ[φ i, Q_k] = 0 ∀ i` ⇒ `Q_k = 0` by `hinj` ⇒ diagonals equal ⇒ tensors equal. ~40 lines. Recovers the monomial theorem (monomials are a spanning family; `hinj` from the self-covariance rigidity). Rationale: this IS the "clean condition" — injectivity of the covariance pairing on `H_k`, and it is `H`-dependent in general.
+
+### B. The converse: kernel directions are invisible at the rate (the "only if", pair form)
+```
+theorem family_rates_of_kernel (hk : 2 < k) (A₁ A₂) (hlower) (φ …)
+    (hker : ∀ i, gaussianCovariance H (φ i) (Q_k L₁ L₂) = 0) :
+    ∀ i, (fun q ↦ A₁.rescaledMoment (φ i) q − A₂.rescaledMoment (φ i) q) =o[𝓝[>] 0] fun q ↦ q^(k−2)
+```
+Immediate from the pairing limit (limit is 0 ⇒ little-o). ~15 lines. Together with A this is the iff, stated
+relative to a given pair of losses. The *absolute* form ("if the pairing is not injective there EXIST two
+losses with different k-jets and matching S-data") needs an instance:
+
+### B′. Instance: perturb a certified loss by a kernel polynomial
+Given `A₁ : HigherLaplaceDomain k L₁ H` (package family for all degrees) and `Q ≠ 0` homogeneous of degree k
+(diagonal of a symmetric k-tensor `T`, so `Q x = T (fun _ ↦ x)`), build `HigherLaplaceDomain k (L₁ + Q) H`
+with the same lower jets and `iteratedFDeriv k (L₁+Q) 0 = iteratedFDeriv k L₁ 0 + k! • T ≠ iteratedFDeriv k L₁ 0`.
+Needs: `iteratedFDeriv j (T ∘ diag) 0` for all `j` (Mathlib `ContinuousMultilinearMap.iteratedFDeriv` /
+`cpolynomial` API + `ContinuousLinearMap.iteratedFDeriv_comp_right` for the diagonal), Taylor remainder bound
+of `L₁ + Q` from that of `L₁` (Q's own Taylor remainder at order k is 0), the `rescaled_lower` bound on a
+shrunken ball (`c/2` after `|Q(x)| ≤ M‖x‖^k`), measurability/contDiff. Estimated 200–300 lines; the most
+Lean-friction-prone part. Could be deferred: A+B already give the relative iff.
+
+### C. No finite family suffices for the full jet when d ≥ 2 (pairing-level)
+```
+theorem exists_kernel_homogeneous_of_finite_family (hd : 2 ≤ d) (hH : H.PosDef)
+    {n : ℕ} (φ : Fin n → EuclidD d → ℝ) (hφc hφg) (k : ℕ) (hk : n < k + 1) :
+    ∃ Q : EuclidD d → ℝ, Continuous Q ∧ HasPolynomialGrowth Q ∧ IsHomogeneousOfDegree k Q ∧ Q ≠ 0 ∧
+      ∀ i, gaussianCovariance H (φ i) Q = 0
+```
+Proof: the `k+1` functions `x ↦ x₀^{k−j} x₁^{j}` are linearly independent (restrict to `x = (s, 1, 0, …)`:
+a real polynomial in `s` vanishing everywhere is zero, `Polynomial.funext`); `Cov_γ[φ i, ·]` is linear on
+their span (needs `gaussianCovariance` additivity/smul in the second slot under polynomial growth — NOT yet
+in the seabed, ~40 lines from `integrable_mul_quadKernel_of_polynomialGrowth`); a linear map from an
+`(k+1)`-dimensional space to `ℝ^n` with `n < k+1` has nontrivial kernel (`LinearMap.ker_ne_bot_of_finrank_lt`).
+~150 lines. With B: for ANY finite family and any pair of losses whose degree-`(n+3)` Taylor difference is
+that `Q`, the family's data are blind at the rate; with B′: such pairs exist, so no finite family is
+sufficient for the jet in `d ≥ 2`. (In `d = 1` two observables suffice — `{x², x³}`, already implicit in
+the 1D recovery theorems; worth a remark, not a theorem.)
+
+### D. (Already formalised, for the record) Degree-≤N observables give exactly the N-jet
+`finite_jet_recovery_of_monomial_rates` (MonomialTests). The "and nothing more" half is B/B′ at degree N+1.
+Slop S4 wrongly implied this was new; correct it.
+
+**Proposed tide:** A + B + C (+ B′ if the Mathlib cpolynomial API makes the instance cheap). Vote: A+B+C as
+one file `Laplace/Multi/SufficientFamilies.lean`.
