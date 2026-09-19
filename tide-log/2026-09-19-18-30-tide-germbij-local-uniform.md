@@ -37,3 +37,29 @@ hence `H ≤ C'^{1/(d+1)} t^{-N}`. Uniform in `x₀ ∈ K` because `C'` depends 
 `‖fderiv ℝ (fun w ↦ exp(-(t L w))) x‖ ≤ t ‖fderiv ℝ L x‖` for `t ≥ 0`, `L ≥ 0`, `L` differentiable at `x`.
 
 **Proposed tide:** G + U∞ + P∞ in `Laplace/Multi/LocalUniform.lean` (~350 lines). Vote: all.
+
+## GPT-6 Astra v1 (summary; verbatim in `gpt_germbij_lu_v1.md`)
+- Peak argument correct; exponent d+1 and constant `2^{d+1} Λ^d / c_d` right. Handle `H = 0` separately (positive-radius
+  ball-volume lemma); `G = 0` harmless since `Λ ≥ 1`; empty `K` vacuous. Rapid `O(t^{-N})` for all N ⇒ little-o by
+  shifting N (the seabed helper `superPoly_of_forall_eventually_le` is exactly this).
+- API: `∀ N, ∃ C ≥ 0, ∀ᶠ t, ∀ x ∈ K, |h_t x| ≤ C t^{-N}`; pointwise corollary `∀ x, SuperPoly (fun t ↦ h_t x)`;
+  avoid real `iSup`/`C(K,ℝ)` infrastructure.
+- Regularity: `C¹` with bounded derivative on a neighbourhood suffices for the upgrade itself; keep `C^∞` in the
+  application theorem (upstream hypothesis). Make the peak lemma generic: bounded amplitude + Lipschitz + L¹ mass ⇒ powered estimate.
+- CORRECTION to my note: derivative agreement IS true under smoothness (second interpolation: `‖D²h_t‖ ≤ B t²`,
+  Taylor along a segment with `s = t^{-(N+3)}`); all fixed-order derivatives locally uniformly SuperPoly. Follow-up tide.
+- Normalized densities uniform: `|w₂/Z₂ − w₁/Z₁| ≤ Z₂^{-1}(|h_t| + |ρ|)`, `ρ = Z₂/Z₁ − 1` — one-liner later.
+
+## Vote
+- Claude: G + Lip + powered peak + root corollary + U∞ + pointwise, one file `Laplace/Multi/LocalUniform.lean`
+- GPT-6 Astra: same; derivative agreement and normalized densities as separate follow-ups
+
+## Numerical check
+Not feasible: inequalities and SuperPoly assertions; the ball-volume scaling `vol(ball r) = r^d vol(ball 1)` is Mathlib's.
+
+## Step 3 plan
+`Laplace/Multi/LocalUniform.lean`: `norm_fderiv_exp_neg_le` (G), `abs_exp_sub_le_one`, `hasFDerivAt_expWeight`,
+`norm_fderiv_weightDiff_le` (‖∇h_t‖ ≤ t(‖∇L₁‖+‖∇L₂‖)); generic `pow_abs_le_of_lipschitz_of_integral` (bounded
+amplitude ≤ 1, Λ-Lipschitz on ball x₀ 1 ⊆ K', ⇒ |f x₀|^{d+1} ≤ 2^{d+1}/c_d · Λ^d ∫_{K'}|f|); `exists_lipschitz_const_on_cthickening`
+(G from compactness + continuity of fderiv); `pow_abs_exp_sub_le` (powered peak for h_t, t ≥ 1);
+`eventually_uniform_abs_exp_sub_le` (U∞); `superPoly_exp_sub_at` (pointwise).
