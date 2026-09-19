@@ -174,6 +174,7 @@ import Laplace.Multi.NormalizedClosure
 import Laplace.Multi.SpanningCriterion
 import Laplace.Multi.AnchorDischarged
 import Laplace.Multi.EmpiricalStability
+import Laplace.Multi.AllOrders
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
