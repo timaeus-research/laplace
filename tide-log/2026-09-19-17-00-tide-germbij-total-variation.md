@@ -79,3 +79,21 @@ Not feasible / not needed: the statements are inequalities and SuperPoly asserti
 V `superPoly_integral_sq_mul_abs_exp_sub`; `exists_smooth_bump_one_on_compact`; U `superPoly_difference_of_bounded`,
 `superPoly_difference_of_continuous`; K-form `superPoly_setIntegral_abs_exp_sub`; C
 `superPoly_difference_of_projective_bounded`, `superPoly_normalized_difference_of_bounded`.
+
+## Result
+
+Commit `a66d56a` on `tide/germbij-total-variation`: `Laplace/Multi/TotalVariation.lean` (595 lines), imported from
+`Laplace.lean`; `lake build` clean (8891 jobs), `scripts/sorries` 0/0/0/0. Four LSP rounds; one whnf timeout
+bisected by successive `sorry` insertion to a `HasCompactSupport.mul_right` unification (fixed by naming the
+compact-support fact with its lambda type first).
+
+Theorems: pointwise `abs_exp_neg_sub_exp_neg_le`, `mul_exp_neg_sub_exp_neg_nonneg`, `weightDiff_mul_nonneg`,
+`sq_exp_sub_le_mul`; helpers `superPoly_of_forall_eventually_le`, `SuperPoly.of_abs_le`, `SuperPoly.polyBounded_mul`,
+`integrable_of_bounded_of_hasCompactSupport`, `exists_smooth_bump_one_on_compact`; (V)
+`superPoly_integral_sq_mul_abs_exp_sub`, `superPoly_setIntegral_abs_exp_sub`; (U) `superPoly_difference_of_bounded`,
+`superPoly_difference_of_continuous`; (C) `superPoly_difference_of_projective_bounded`,
+`superPoly_normalized_difference_of_bounded`.
+
+Surprises: (1) the AM–GM free-parameter trick made the whole file Hölder-free and sqrt-free, exactly as the
+consult predicted; (2) I first stated the sign lemma without `t ≥ 0` — false for `t < 0`, caught by `linarith`;
+(3) `∫ w, η w ^ 2 + …` parses the `+ …` INTO the integrand — a parenthesisation trap invisible in the pretty-printer.
