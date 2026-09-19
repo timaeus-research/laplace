@@ -290,6 +290,16 @@ and pass `hsupp`. Also: `∫ w, f w + g w` parses `+ g w` INTO the
 integrand — parenthesise `(∫ w, f w) + …`; the pretty-printer shows the
 two readings identically.
 
+**`omit [Fintype ι] in` and norms on `ι → ℝ` (LocalUniform).** The Pi
+normed-group instances need `Fintype ι`, so `omit` is refused for any
+statement mentioning `fderiv`/`‖·‖` on `ι → ℝ`, and even where the
+linter says the instance is unused in the *type*, omitting it can make
+elaboration hit an `isDefEq` timeout (`hasFDerivAt_expWeight`). Leave the
+instance in place and accept the unused-section-variable warning.
+`HasFDerivAt.sub` returns a `Pi`-form function: name the derivative fact
+with the lambda type in a `have` before `rw [h.fderiv]`. `ring` does not
+distribute a symbolic power over a product; `rw [mul_pow]` first.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
