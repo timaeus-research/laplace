@@ -277,6 +277,19 @@ proposition slot); and for `rw` with lemmas whose function arguments are
 lambdas, elaborate the lemma first with named `(f := fun x ↦ ...)` and
 close by `Eq.trans` + `congr 1; funext` rather than rewriting.
 
+**whnf timeout on a whole declaration: bisect with `sorry` (TotalVariation).**
+A `(deterministic) timeout at whnf` reported at the theorem's first line,
+with every `have` fine in isolation, is located fastest by inserting
+`sorry` at successive tactic positions and re-running `lean-state check`
+(three runs found one term). The culprit there was
+`hcont.integrable_of_hasCompactSupport (hη2s.mul_right)`: `mul_right`
+yields `HasCompactSupport (f * g)` in `Pi` form and the unifier unfolds
+its way to the lambda. Name the fact first with its lambda type
+(`have hsupp : HasCompactSupport fun w ↦ f w * g w := hη2s.mul_right`)
+and pass `hsupp`. Also: `∫ w, f w + g w` parses `+ g w` INTO the
+integrand — parenthesise `(∫ w, f w) + …`; the pretty-printer shows the
+two readings identically.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
