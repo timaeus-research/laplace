@@ -266,6 +266,17 @@ helper: `SuperPoly.sub` (CutoffRemoval) and `SuperPoly.congr`
 (LocatedCutoff) already exist and a per-file `lean-state check` will not
 see the clash at the library root.
 
+**Finite grade from `ContDiff ℝ ∞` has no one-liner (ProjectiveClosure).**
+`h.of_le (by simp)` does not discharge `(2 : WithTop ℕ∞) ≤ ∞` on this pin
+and `le_top` is wrong (top is `ω`). Where an `AnalyticAt` hypothesis is in
+scope use `hA.contDiffAt` (any grade); otherwise take `ContDiffAt ℝ 2 K p`
+as a hypothesis and let callers discharge it. Also: never combine
+`variable (h : P)` with an explicit `(h : P)` on declarations in the same
+section (the name double-binds and later applications feed data into the
+proposition slot); and for `rw` with lemmas whose function arguments are
+lambdas, elaborate the lemma first with named `(f := fun x ↦ ...)` and
+close by `Eq.trans` + `congr 1; funext` rather than rewriting.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
