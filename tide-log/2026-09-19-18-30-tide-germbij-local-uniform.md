@@ -63,3 +63,22 @@ Not feasible: inequalities and SuperPoly assertions; the ball-volume scaling `vo
 amplitude ≤ 1, Λ-Lipschitz on ball x₀ 1 ⊆ K', ⇒ |f x₀|^{d+1} ≤ 2^{d+1}/c_d · Λ^d ∫_{K'}|f|); `exists_lipschitz_const_on_cthickening`
 (G from compactness + continuity of fderiv); `pow_abs_exp_sub_le` (powered peak for h_t, t ≥ 1);
 `eventually_uniform_abs_exp_sub_le` (U∞); `superPoly_exp_sub_at` (pointwise).
+
+## Result
+
+Commit `73df2ae` on `tide/germbij-local-uniform`: `Laplace/Multi/LocalUniform.lean` (343 lines), imported from
+`Laplace.lean`; `lake build` clean (8892 jobs), `scripts/sorries` 0/0/0/0. Three LSP rounds plus one
+`omit [Fintype ι] in` that produced an `isDefEq` timeout although the linter called the instance unused.
+
+Theorems: `expWeight_le_one`, `abs_exp_sub_le_one`, `hasFDerivAt_expWeight`, `norm_expWeight_deriv_le`,
+`norm_fderiv_weightDiff_le`; generic peak lemma `pow_abs_le_of_lipschitz_of_setIntegral`;
+`exists_gradient_bound_on`; powered peak `pow_abs_exp_sub_le` and root form `abs_exp_sub_le_rpow`;
+**`eventually_uniform_abs_exp_sub_le`** (∀ N ∃ C, eventually ∀ x ∈ K, |h_t x| ≤ C t^{-N}); `superPoly_exp_sub_at`.
+
+Surprises: (1) the peak argument needed no case on `G = 0` once `Λ = tG + 1`; (2) Astra's correction that
+DERIVATIVES of `h_t` are also uniformly SuperPoly (second interpolation) — a clean follow-up; (3) the
+`omit`/isDefEq interaction.
+
+## Retrospective
+
+`retrospectives/2026-09-19-18-30-tide-germbij-local-uniform.tex` (compiled PDF alongside).
