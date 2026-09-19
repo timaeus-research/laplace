@@ -1,0 +1,317 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\usepackage{xcolor}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-6 Astra:}} #1\end{quote}\medskip}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective: projective agreement fixes its own gauge\\
+\large equal zero loci, scalar rigidity, and the $1/Z$ closure}
+\author{Claude (Anthropic), with a GPT-6 Astra consult}
+\date{2026-09-19}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Two nonnegative losses whose Laplace families agree projectively beyond
+all orders, $\int\phi\,e^{-tL_2} - C(t)\int\phi\,e^{-tL_1} =
+o(t^{-\infty})$ for every $\phi \in C_c^\infty$ and an arbitrary scalar
+function $C$, have the same zero set as soon as both have a zero; the
+scalar is polynomially tame and eventually positive; and once the losses
+agree near one zero, which the morning's germ theorem supplies at any
+common analytic zero, $C(t) = 1 + o(t^{-\infty})$ and the two families
+agree \emph{exactly} beyond all orders at every tested observable. With
+$C = Z_2/Z_1$ this closes the germbij note's normalized story: equality
+of the normalized expansions $\Phi_{L_1} = \Phi_{L_2}$ for smooth
+nonnegative losses analytic at their zeros gives equal zero sets, local
+equality on an open neighbourhood of the zero set, $Z_2/Z_1 = 1 +
+o(t^{-\infty})$, and exact agreement of every moment. The load-bearing
+new lemma is the anchor, $\int\psi\,e^{-tK} \ge \kappa\,t^{-d/2}$ near a
+$C^2$ zero, the $a \equiv 1$ case of the seabed's sector bound; it
+discharges a polynomial lower bound that three seabed theorems had
+carried as a hypothesis since the anchoring tide. Six hundred and
+fifty lines, two LSP rounds, no analyticity anywhere except through the
+germ theorem.
+\end{abstract}
+
+\section{Setting}
+
+The morning's tide,
+\tideref[2026-09-19-06-05]{2026-09-19-06-05-tide-germbij-normalized},
+proved that projective agreement forces $L_1 = L_2$ near every common
+analytic zero, whatever $C$ is, and recorded two stretch corollaries from
+its consult: that equal zero loci are forced without analyticity, and
+that the scalar must be $1 + o(t^{-\infty})$. Both rest on one missing
+estimate. The seabed's scalar-gauge algebra in \code{Anchoring} and
+\code{OnePointAnchoring} (\code{superPoly\_of\_mul\_anchor},
+\code{superPoly\_sub\_of\_scalar\_gauge},
+\code{anchored\_proportionality\_remove\_scalar},
+\code{one\_point\_anchoring\_contradiction}) is complete modulo a
+hypothesis \code{hanchor\_low}: a positive polynomial lower bound on the
+reference moment $\int\psi\,e^{-tL_1}$ at an anchoring bump. Nothing in
+the seabed proved such a bound, although the sector lower bound
+\code{sector\_lower\_bound\_multi} contains it as the degenerate case
+$a \equiv 1$, $m = 0$. The deliberation (tide log
+\code{tide-log/2026-09-19-15-40-tide-germbij-projective-closure.md},
+consult in \code{gpt\_germbij\_projective\_v1.md}) settled on packaging
+that anchor, the complementary exponential gap bound away from the zero
+set, and the four consequences: tameness of $C$, equal zero loci, scalar
+rigidity with the transfer to exact agreement, and the $1/Z$ headline.
+Both parties voted for the whole package.
+
+\section{The thing formalised}
+
+Write $I_i(\phi, t) = \int\phi\,e^{-tL_i}$ and call the families
+\emph{projectively agreeing} (\code{ProjectiveAgreement L1 L2 C}) when
+$I_2(\phi) - C\,I_1(\phi) = o(t^{-\infty})$ for every smooth compactly
+supported $\phi$.
+
+\begin{quote}\itshape
+\begin{enumerate}
+\item[(G)] If $K \ge 0$ is continuous, $K(p) = 0$, $K$ is $C^2$ at $p$,
+and $\psi \ge 0$ is continuous, compactly supported, and equal to $1$
+near $p$, then $\int\psi\,e^{-tK} \ge \kappa\,t^{-d/2}$ for large $t$.
+\item[(E)] If $L \ge \delta > 0$ on the support of $\psi$, then
+$|\int\psi\,e^{-tL}| \le \|\psi\|_1 e^{-t\delta}$ for $t \ge 0$, and
+$B(t)\int\psi\,e^{-tL} = o(t^{-\infty})$ for any polynomially bounded
+$B$.
+\item[(T)] For continuous nonnegative $L_1, L_2$ agreeing projectively:
+a $C^2$ zero of $L_1$ gives $|C(t)| \le A\,t^{d}$ eventually; a $C^2$
+zero of $L_2$ gives $C(t) \ge c\,t^{-d} > 0$ eventually.
+\item[(Z)] If moreover both losses are $C^2$ near their zeros and both
+have a zero, their zero sets coincide.
+\item[(R)] If $L_1 = L_2$ near some $C^2$ zero $p$ of $L_1$, then
+$C(t) = 1 + o(t^{-\infty})$, and $I_2(\phi) - I_1(\phi) =
+o(t^{-\infty})$ for every tested $\phi$.
+\item[(N)] For smooth nonnegative losses analytic at their zeros, both
+with zeros, and a nonnegative window $\chi$ with positive partition
+values: if the normalized families agree beyond all orders for every
+tested $\phi$, then the zero sets coincide, $L_1 = L_2$ on an open
+neighbourhood of the zero set, $Z_2/Z_1 = 1 + o(t^{-\infty})$, and
+$I_2(\phi) - I_1(\phi) = o(t^{-\infty})$ for every tested $\phi$.
+\end{enumerate}
+\end{quote}
+
+\noindent The Lean signature of the headline:
+\begin{verbatim}
+theorem normalized_expectations_closure {L1 L2 chi : (iota -> R) -> R}
+    (h1 : ContDiff R infty L1) (h2 : ContDiff R infty L2)
+    (hL1 : forall w, 0 <= L1 w) (hL2 : forall w, 0 <= L2 w)
+    (hA1 : forall p, L1 p = 0 -> AnalyticAt R L1 p)
+    (hA2 : forall p, L2 p = 0 -> AnalyticAt R L2 p)
+    (hne1 : exists p, L1 p = 0) (hne2 : exists q, L2 q = 0)
+    (hchic : Continuous chi) (hchis : HasCompactSupport chi)
+    (hchi0 : forall w, 0 <= chi w)
+    (hZ1 : forall t, 0 < integral (chi * exp (-(t * L1))))
+    (hZ2 : forall t, 0 < integral (chi * exp (-(t * L2))))
+    (hfam : forall phi, ContDiff R infty phi -> HasCompactSupport phi ->
+      SuperPoly fun t => I2 phi t / Z2 t - I1 phi t / Z1 t) :
+    (forall w, L1 w = 0 <-> L2 w = 0) /\
+    (exists U, IsOpen U /\ {w | L1 w = 0} <= U /\
+      forall w in U, L1 w = L2 w) /\
+    SuperPoly (fun t => Z2 t / Z1 t - 1) /\
+    forall phi, ContDiff R infty phi -> HasCompactSupport phi ->
+      SuperPoly fun t => I2 phi t - I1 phi t
+\end{verbatim}
+(integrals abbreviated). The components are
+\code{exists\_lower\_bound\_integral\_exp\_near\_zero} and
+\code{anchor\_lower\_bound\_eventually} for (G),
+\code{abs\_integral\_mul\_exp\_le\_of\_gap} and
+\code{superPoly\_polyBounded\_mul\_integral\_of\_gap} for (E),
+\code{exists\_scalar\_upper\_bound} and
+\code{eventually\_scalar\_lower\_bound} for (T),
+\code{zero\_iff\_zero\_of\_projective} for (Z),
+\code{superPoly\_scalar\_sub\_one\_of\_eventuallyEq},
+\code{superPoly\_difference\_of\_projective} and
+\code{projective\_forces\_exact\_at} for (R).
+
+Nothing is assumed of $C$: not a sign, not measurability, not growth.
+Every estimate involving $C(t)$ is pointwise in $t$, and (T) is where the
+sign and the growth come \emph{out}. Analyticity enters only through
+\code{normalized\_families\_force\_germ\_eq\_at}, which supplies the
+local agreement (R) needs; (Z) and (R) themselves are $C^2$ statements.
+In (N) the regularity needed at the zeros is taken from analyticity,
+since \code{ContDiff.of\_le} from $\infty$ to $2$ has no one-line
+discharge on this pin while \code{AnalyticAt.contDiffAt} gives every
+grade for free.
+
+\section{Proof strategy}
+
+\emph{The anchor.} Translate $p$ to the origin, take $S$ the closed unit
+ball, $a \equiv 1$, $m = 0$, $c = 1$ in \code{sector\_lower\_bound\_multi}:
+on the scaled ball $t^{-1/2}S$ the bump is $1$ once $t \ge 4/R^2$, the
+quadratic upper bound $K \le C_0\|w\|^2$ comes from
+\code{quadratic\_upper\_bound\_of\_nonneg}, and
+\code{setIntegral\_le\_integral} compares with the full nonnegative
+integral. The constant is $\mathrm{vol}(S)\,e^{-4C_0}$ and the exponent
+$-d/2$. An integer-power wrapper $\kappa\,t^{-d}$ for $t \ge 1$ matches
+the shape of \code{hanchor\_low}.
+
+\emph{The gap.} $|\int\psi\,e^{-tL}| \le \int|\psi|\,e^{-tL} \le
+\|\psi\|_1 e^{-t\delta}$, pointwise on the support. For the product
+with a polynomially bounded $B$, Mathlib's
+\code{isLittleO\_pow\_exp\_pos\_mul\_atTop} gives $t^n \le
+e^{(\delta/2)t}$ eventually, so
+\[|B\cdot I| \le A\|\psi\|_1 e^{-(\delta/2)t},\]
+and the seabed's
+\code{superPoly\_of\_eventually\_abs\_le\_exp} finishes.
+
+\emph{Tameness.} At a zero $p$ of $L_1$ with bump $\psi_p$,
+\[|C|\,I_1(\psi_p) \le |I_2(\psi_p)| + |R_{\psi_p}| \le M + 1\]
+eventually, and the anchor gives $I_1(\psi_p) \ge \kappa\,t^{-d}$. At a zero $q$ of
+$L_2$: $C\,I_1(\psi_q) = I_2(\psi_q) - R_{\psi_q} \ge \tfrac{\kappa}{2}
+t^{-d}$ eventually, and $I_1(\psi_q) \le M$, so $C \ge
+\tfrac{\kappa}{2M}t^{-d} > 0$.
+
+\emph{Equal zero loci.} If $L_1(p) = 0 < L_2(p)$, a bump in the gap of
+$L_2$ makes $I_2$ exponentially small, so $C\,I_1(\psi_p)$ is beyond all
+orders and the anchor makes $C$ itself beyond all orders
+(\code{superPoly\_of\_mul\_anchor} applied to $C + 1$); then every
+$I_2(\phi) = R_\phi + C\,I_1(\phi)$ is beyond all orders, contradicting
+the anchor at any zero of $L_2$. If $L_2(q) = 0 < L_1(q)$, the upper
+tameness bound makes $C\,I_1(\psi_q)$ beyond all orders by (E), so
+$I_2(\psi_q)$ is, contradicting the anchor at $q$.
+
+\emph{Rigidity and transfer.} A bump $\psi_0$ inside the agreement
+neighbourhood has $I_1(\psi_0) = I_2(\psi_0)$ exactly
+(\code{anchor\_moment\_eq}), so $R_{\psi_0} = -(C - 1)\,I_1(\psi_0)$;
+the anchor and \code{superPoly\_of\_mul\_anchor} give $C - 1 =
+o(t^{-\infty})$, and \code{superPoly\_sub\_of\_scalar\_gauge} against
+the bounded $I_1(\phi)$ removes the gauge from every tested moment.
+
+\emph{The headline.} Normalized agreement gives projective agreement
+with $C = Z_2/Z_1$ because $Z_2$ is bounded for $t \ge 0$ (the block of
+the morning's $1/Z$ theorem, now a standalone lemma
+\code{projectiveAgreement\_of\_normalized}); then (Z), the locus form of
+the germ theorem at $W_0 = \{L_1 = 0\}$, and (R) at any zero.
+
+\section{Roadblocks and resolutions}
+
+None of substance. The two LSP rounds fixed: an implicit centre $p$ the
+elaborator could not infer through the quadratic-bound lemma (passed as
+\code{(p := p)}); a \code{simp} that had already reduced $1^2\cdot$ in
+the sector bound's integrand, so the \code{calc} step had to name the
+reduced form; a beta-redex in front of a rewrite inside
+\code{SuperPoly.congr} (the standing \code{beta\_reduce} gotcha); and
+\code{ContDiff.of\_le (by simp)} for $2 \le \infty$, which does not fire
+on this pin. The last was resolved by design rather than by finding the
+coercion lemma: the closure theorems take $C^2$ at the zeros as a
+hypothesis, and the analytic corollaries discharge it with
+\code{AnalyticAt.contDiffAt}, which is what the germ theorem already
+assumes.
+
+\emph{The consult}, before writing, confirmed every statement and
+sharpened three things. On the scalar:
+\gptbox{There is no issue with negative or nonmeasurable $C$. All
+estimates involving $C(t)$ are pointwise in $t$; you never integrate
+$C$. In particular $|C(t)|\,I_1(\psi,t) \le |I_2(\psi,t)| +
+|R_\psi(t)|$ gives the upper polynomial bound without a sign
+assumption.}
+On what the transfer does and does not give:
+\gptbox{Thus the immediate conclusion is for $C_c^\infty$, not
+automatically $C_c^0$. However, with globally smooth losses, the
+continuous-test conclusion is indeed true. [\ldots] This proves local
+total-variation agreement beyond all orders, hence agreement against
+every continuous compactly supported observable. I would formalize that
+as a separate theorem.}
+And on the normalized/projective bridge:
+\gptbox{For a fixed compactly supported window, nonnegative losses make
+$Z_2$ bounded, so normalized SuperPoly agreement implies projective
+agreement. The converse requires control of $1/Z_2$. A positive window
+supported away from all zeros can have exponentially small $Z_2$.}
+The file follows all three: (T) has no sign hypothesis, the conclusions
+are stated for the tested class only, and (N) uses the one direction
+that holds.
+
+\section{What was Mathlib, what was new}
+
+Mathlib, all lookup:
+\begin{itemize}
+\item asymptotics: \code{isLittleO\_pow\_exp\_pos\_mul\_atTop};
+\item real powers: \code{Real.rpow\_le\_rpow\_of\_exponent\_le};
+\item bumps: the \code{ContDiffBump} API (\code{tsupport\_eq},
+\code{eventuallyEq\_one}, \code{nonneg'}, \code{contDiff},
+\code{hasCompactSupport}) and \code{Metric.eventually\_nhds\_iff};
+\item integrals: \code{abs\_integral\_le\_integral\_abs} and
+\code{integral\_mono};
+\item set integrals: \code{setIntegral\_le\_integral} and
+\code{integral\_add\_left\_eq\_self};
+\item supports: \code{image\_eq\_zero\_of\_notMem\_tsupport}.
+\end{itemize}
+
+Seabed:
+\begin{itemize}
+\item the sector arc: \code{sector\_lower\_bound\_multi},
+\code{quadratic\_upper\_bound\_of\_nonneg}, and
+\code{lower\_bound\_not\_superpolynomial};
+\item the anchoring arc: \code{laplace\_moment\_bounded} and
+\code{anchor\_moment\_eq};
+\item the gauge algebra: \code{superPoly\_of\_mul\_anchor} and
+\code{superPoly\_sub\_of\_scalar\_gauge};
+\item \code{superPoly\_of\_eventually\_abs\_le\_exp}, the
+\code{SuperPoly} closure lemmas, and the morning's germ theorems.
+\end{itemize}
+
+New: the anchor in three forms, the gap bounds, the
+\code{ProjectiveAgreement} predicate and the \code{gapBump} helper,
+tameness, equal zero loci, scalar rigidity, the transfer, the analytic
+corollary, the standalone normalized-to-projective lemma, and the
+headline. About 650 lines; the anchor is a quarter of it.
+
+\section{Lessons}
+
+\begin{itemize}
+\item For \code{CLAUDE.md}: \code{ContDiff.of\_le} from $\infty$ to a
+finite grade has no \code{by simp} discharge on this pin. Where an
+analyticity hypothesis is in scope, \code{AnalyticAt.contDiffAt} is the
+route; otherwise take the finite grade as a hypothesis and let callers
+discharge it.
+\item For the tide skill: a hypothesis that several seabed theorems
+share and none discharges (\code{hanchor\_low}, three consumers, one
+month) is a tide in itself. The survey step should grep for repeated
+undischarged hypotheses, not only for open questions in the paper.
+\item For the paper: the headline is ``at a common analytic zero,
+projective agreement fixes its own gauge''. State the scope: modulo
+$o(t^{-\infty})$, for the tested class, and only in the presence of a
+zero on each side ($L_2 = L_1 + c$ is projectively identical to $L_1$
+with $C = e^{-ct}$).
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Local total variation.} $\int_K|e^{-tL_2} - e^{-tL_1}| =
+o(t^{-\infty})$ for compact $K$, via $|a - b|^2 \le t\,D\,(a - b)$ with
+$D = L_2 - L_1$ tested at the smooth observable $\eta^2 D$. Upgrades the
+transfer to continuous and bounded measurable observables. Needs smooth
+losses, not analyticity.
+\item \emph{The converse bridge.} Projective agreement implies
+normalized agreement when the window is positive near a zero, by the
+anchor applied to $Z_2$.
+\item \emph{Retire the anchor hypothesis.} Restate the one-point
+anchoring contradiction and the packaged gauge removal of
+\code{Anchoring} with the lower bound discharged internally.
+\item \emph{Two-sided tameness as one statement,} $c\,t^{-d/2} \le C(t)
+\le A\,t^{d/2}$ with the sharp half-integer exponents; the file has the
+integer-exponent forms.
+\item \emph{Paper.} Promote (Z), (R), (N) to the note as the closing
+theorems of the normalized section; Proposition~7.8 (one-point
+anchoring) becomes a corollary of (R).
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-6 Astra vetted every statement, insisted on the scope of the
+continuous-test upgrade and of the normalized-to-projective bridge, and
+proposed the tameness organisation. The seabed is the germbij singular
+arc, the anchoring tides, and the morning's normalized tide.
+
+\end{document}

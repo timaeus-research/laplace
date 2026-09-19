@@ -144,3 +144,7 @@ Surprises: (1) the seabed's `hanchor_low` hypothesis (three consumers, never dis
 falls to the `a ≡ 1` case of the sector bound in 90 lines; (2) `ContDiff.of_le` to grade 2 from `∞` has no
 one-liner on this pin — analyticity at the zeros (already assumed for the germ theorem) is the cheap route;
 (3) `eventually_scalar_lower_bound` gives eventual POSITIVITY of the scalar with no sign assumption anywhere.
+
+## Retrospective
+
+`retrospectives/2026-09-19-15-40-tide-germbij-projective-closure.tex` (compiled PDF alongside).
