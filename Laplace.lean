@@ -166,6 +166,7 @@ import Laplace.Multi.SingularPrep
 import Laplace.Multi.SingularPoint
 import Laplace.Multi.SingularSmooth
 import Laplace.Multi.NormalizedSingular
+import Laplace.Multi.ProjectiveClosure
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
