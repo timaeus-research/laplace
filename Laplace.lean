@@ -172,6 +172,8 @@ import Laplace.Multi.LocalUniform
 import Laplace.Multi.DerivativeAgreement
 import Laplace.Multi.NormalizedClosure
 import Laplace.Multi.SpanningCriterion
+import Laplace.Multi.AnchorDischarged
+import Laplace.Multi.EmpiricalStability
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
