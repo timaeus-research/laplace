@@ -251,6 +251,21 @@ calc step, not on any specific tactic. Workaround:
 `set_option maxHeartbeats 1600000 in` on the lemma. Add a comment
 explaining why (the linter requires it).
 
+**Smoothness grades and derivatives of differences (NormalizedSingular).**
+`ContDiff.differentiable` / `continuous_fderiv_apply` want `∞ ≠ 0` and
+`ContDiff.fderiv_right` wants `∞ + 1 ≤ ∞`; `le_top` does NOT prove these
+(the top of `WithTop ℕ∞` is `ω`). Use `(by simp)` for the first and
+`(contDiff_infty_iff_fderiv.mp h).2` instead of `fderiv_right`. For `C²`
+at an analytic point use `hA.contDiffAt` (any grade), not `.of_le`.
+`fderiv_sub` is stated for `Pi` subtraction and does not rewrite
+`fun w ↦ f w - g w`; use `(hf.hasFDerivAt.sub hg.hasFDerivAt).fderiv`.
+Scaled sets `c • S` need `open scoped Pointwise`; `Pi.single` needs
+`classical` for `DecidableEq`. `ContDiffBump` continuity is `f.continuous`
+(`fun_prop` fails). Grep the library for `SuperPoly.*` before declaring a
+helper: `SuperPoly.sub` (CutoffRemoval) and `SuperPoly.congr`
+(LocatedCutoff) already exist and a per-file `lean-state check` will not
+see the clash at the library root.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
