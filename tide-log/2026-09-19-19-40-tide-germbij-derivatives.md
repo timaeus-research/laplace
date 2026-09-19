@@ -54,3 +54,22 @@ Not feasible: inequalities and SuperPoly assertions.
 `norm_expWeight_smul_le` (any normed space), `fderiv_expWeight_eq`, `hasFDerivAt_fderiv_expWeight`,
 `norm_fderiv_fderiv_expWeight_le`, `fderiv_weightDiff_eq`, `hasFDerivAt_fderiv_weightDiff`, `exists_hessian_bound_on`,
 `norm_fderiv_le_of_bounds` (interpolation), `eventually_uniform_norm_fderiv_exp_sub_le`, `superPoly_fderiv_exp_sub_at`.
+
+## Result
+
+Commit `64d3e93` on `tide/germbij-derivatives`: `Laplace/Multi/DerivativeAgreement.lean` (328 lines), imported from
+`Laplace.lean`; `lake build` clean (8893 jobs), `scripts/sorries` 0/0/0/0. Three LSP rounds (an `nlinarith`
+needing `t‖D²L‖ ≤ t²‖D²L‖` spelled out; `Real.norm_eq_abs` firing on the wrong norm; a `rw [this]` whose RHS
+contained its LHS, recursing into the goal — replaced by `abs_sub` + `sub_sub_cancel`).
+
+Theorems: `norm_expWeight_smul_le`, `fderiv_expWeight_eq`, `hasFDerivAt_fderiv_expWeight`,
+`norm_fderiv_fderiv_expWeight_le`, `fderiv_weightDiff_eq`, `hasFDerivAt_fderiv_weightDiff`,
+`exists_hessian_bound_on`, `norm_fderiv_le_of_bounds` (interpolation), **`eventually_uniform_norm_fderiv_exp_sub_le`**,
+`superPoly_fderiv_exp_sub_at`.
+
+Surprises: none mathematical. The two interpolation tides (weights, gradients) shared their shape; the second
+cost about half the first.
+
+## Retrospective
+
+`retrospectives/2026-09-19-19-40-tide-germbij-derivatives.tex` (compiled PDF alongside).
