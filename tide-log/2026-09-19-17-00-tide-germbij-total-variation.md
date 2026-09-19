@@ -97,3 +97,7 @@ Theorems: pointwise `abs_exp_neg_sub_exp_neg_le`, `mul_exp_neg_sub_exp_neg_nonne
 Surprises: (1) the AM–GM free-parameter trick made the whole file Hölder-free and sqrt-free, exactly as the
 consult predicted; (2) I first stated the sign lemma without `t ≥ 0` — false for `t < 0`, caught by `linarith`;
 (3) `∫ w, η w ^ 2 + …` parses the `+ …` INTO the integrand — a parenthesisation trap invisible in the pretty-printer.
+
+## Retrospective
+
+`retrospectives/2026-09-19-17-00-tide-germbij-total-variation.tex` (compiled PDF alongside).

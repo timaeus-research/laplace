@@ -1,0 +1,274 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\usepackage{xcolor}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-6 Astra:}} #1\end{quote}\medskip}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective: from smooth tests to bounded tests\\
+\large local total variation of Laplace families beyond all orders}
+\author{Claude (Anthropic), with a GPT-6 Astra consult}
+\date{2026-09-19}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+If two smooth nonnegative losses have Laplace families that agree
+beyond all orders on every smooth compactly supported observable, then
+the local total variation of the two Boltzmann weights is beyond all
+orders: $\int\eta^2\,|e^{-tL_2} - e^{-tL_1}| = o(t^{-\infty})$ for every
+smooth bump $\eta$, and $\int_K|e^{-tL_2} - e^{-tL_1}| = o(t^{-\infty})$
+for every compact $K$. Consequently every bounded measurable compactly
+supported observable, in particular every continuous one, sees the two
+families agree beyond all orders, and normalized expectations of such
+observables agree once the partition values carry the anchor. This
+closes the observable-class gap left open by the day's two previous
+tides, whose transfer theorem was stated for the tested class
+$C_c^\infty$ only. The mechanism is two pointwise inequalities,
+$D(a - b) \ge 0$ and $|a - b| \le t|D|$ for $a = e^{-tL_1}$, $b =
+e^{-tL_2}$, $D = L_2 - L_1$, tested at the smooth observable $\eta^2 D$,
+and an AM--GM step with the free parameter $t^{-N}$ that does the work
+of Cauchy--Schwarz with no square roots and no H\"older inequality. Six
+hundred and fifty lines, four LSP rounds, one whnf timeout bisected to a
+compact-support unification.
+\end{abstract}
+
+\section{Setting}
+
+The projective-closure tide
+(\tideref[2026-09-19-15-40]{2026-09-19-15-40-tide-germbij-projective-closure})
+ended with a transfer theorem,
+\begin{center}\code{superPoly\_difference\_of\_projective}.\end{center}
+It says that projective
+agreement plus local equality near one zero gives exact agreement
+$I_2(\phi) - I_1(\phi) = o(t^{-\infty})$ for every $\phi$ in the tested
+class $C_c^\infty$. Its consult flagged the natural question, whether
+the conclusion extends to continuous observables, and sketched the
+answer: control the local total variation of the weights through the
+smooth observable $\eta^2 D$. This tide formalises that sketch. The
+deliberation (tide log \code{2026-09-19-17-00-tide-germbij-total-variation.md}
+in \code{tide-log/}, consult in \code{gpt\_germbij\_tv\_v1.md}) fixed the plan at the level
+of statements and settled the one design choice that mattered for Lean:
+replace the Cauchy--Schwarz step by an AM--GM bound with a free
+parameter, so that nothing about $L^2$ norms or square roots enters.
+Both parties voted for the full package.
+
+\section{The thing formalised}
+
+Write $a = e^{-tL_1}$, $b = e^{-tL_2}$, $D = L_2 - L_1$, and
+$I_i(\phi) = \int\phi\,e^{-tL_i}$.
+
+\begin{quote}\itshape
+Let $L_1, L_2 \ge 0$ be smooth and suppose $I_2(\phi) - I_1(\phi) =
+o(t^{-\infty})$ for every $\phi \in C_c^\infty$. Then:
+\begin{enumerate}
+\item[(V)] $\int\eta^2\,|b - a| = o(t^{-\infty})$ for every smooth
+compactly supported $\eta$, and $\int_K|b - a| = o(t^{-\infty})$ for
+every compact $K$.
+\item[(U)] $I_2(\phi) - I_1(\phi) = o(t^{-\infty})$ for every bounded
+measurable compactly supported $\phi$, in particular for every
+continuous compactly supported $\phi$.
+\item[(N)] If moreover $Z_1, Z_2 > 0$ carry polynomial lower bounds and
+$Z_2/Z_1 = 1 + o(t^{-\infty})$, then $I_2(\phi)/Z_2 - I_1(\phi)/Z_1 =
+o(t^{-\infty})$ for every such $\phi$.
+\end{enumerate}
+\end{quote}
+
+\noindent The Lean signature of (V):
+\begin{verbatim}
+theorem superPoly_integral_sq_mul_abs_exp_sub {L1 L2 : (iota -> R) -> R}
+    (h1 : ContDiff R infty L1) (h2 : ContDiff R infty L2)
+    (hL1 : forall w, 0 <= L1 w) (hL2 : forall w, 0 <= L2 w)
+    (hexact : forall phi, ContDiff R infty phi -> HasCompactSupport phi ->
+      SuperPoly fun t => (integral phi * exp (-(t * L2)))
+        - integral phi * exp (-(t * L1)))
+    {eta : (iota -> R) -> R} (heta : ContDiff R infty eta)
+    (hetas : HasCompactSupport eta) :
+    SuperPoly fun t =>
+      integral (eta ^ 2 * |exp (-(t * L2)) - exp (-(t * L1))|)
+\end{verbatim}
+(integrals abbreviated). The other declarations:
+\begin{itemize}
+\item the compact-set form, \code{superPoly\_setIntegral\_abs\_exp\_sub};
+\item (U): \code{superPoly\_difference\_of\_bounded} and
+\code{superPoly\_difference\_of\_continuous};
+\item (N): \code{superPoly\_normalized\_difference\_of\_bounded};
+\item the closure wiring,
+\code{superPoly\_difference\_of\_projective\_bounded};
+\item the pointwise lemmas \code{abs\_exp\_neg\_sub\_exp\_neg\_le},
+\code{weightDiff\_mul\_nonneg} and \code{sq\_exp\_sub\_le\_mul};
+\item the helper \code{superPoly\_of\_forall\_eventually\_le};
+\item the helpers \code{SuperPoly.of\_abs\_le} and
+\code{SuperPoly.polyBounded\_mul}.
+\end{itemize}
+
+Smoothness of both losses is used exactly once, to put $\eta^2 D$ in the
+tested class; the consult's remark that smoothness of $D$ alone would
+do is recorded but not formalised. The conclusions are for compactly
+supported observables; nothing is claimed about tails, and the local
+$L^\infty$ statement the consult showed to be true (via a gradient
+bound and interpolation) is left for a later tide.
+
+\section{Proof strategy}
+
+\emph{Pointwise.} For $x, y \ge 0$, $|e^{-x} - e^{-y}| \le |x - y|$:
+in the ordered case $e^{-x} - e^{-y} = e^{-x}(1 - e^{-(y-x)}) \le
+y - x$ from $e^{-x} \le 1$ and $1 - u \le e^{-u}$
+(\code{Real.add\_one\_le\_exp}). The weight is antitone, so $D(a - b)
+\ge 0$ for $t \ge 0$, and then $|a - b|^2 \le |a - b|\,t|D| = t\,D(a - b)$.
+
+\emph{Energy.} $E(t) = \int\eta^2 D(a - b) = I_1(\eta^2 D) -
+I_2(\eta^2 D)$ is beyond all orders by hypothesis at the smooth
+observable $\eta^2 D$, and nonnegative pointwise.
+
+\emph{AM--GM with a free parameter.} For $\varepsilon = t^{-N}$,
+$|h| \le \varepsilon/2 + h^2/(2\varepsilon)$, so $|a - b| \le t^{-N}/2 +
+t^{N+1} D(a - b)/2$ and
+\[
+\int\eta^2|a - b| \;\le\; \tfrac12\Big(\int\eta^2\Big)t^{-N} +
+\tfrac12\,t^{N+1}E(t) \;\le\; C_N\,t^{-N}
+\]
+eventually, using $E(t) \le t^{-(2N+1)}$. Since this holds for every
+$N$, the integral is beyond all orders
+(\code{superPoly\_of\_forall\_eventually\_le}, which turns an $O(t^{-N})$
+bound for all $N$ into $o(t^{-N})$ for all $N$ by shifting the index).
+
+\emph{Bounded tests.} A \code{ContDiffBump} at the origin equal to $1$
+on a closed ball containing the support of $\phi$ gives $\eta^2 = 1$ on
+$\operatorname{supp}\phi$, so $|I_2(\phi) - I_1(\phi)| \le \int|\phi|\,
+|b - a| \le M\int\eta^2|b - a|$. Integrability of $\phi\,e^{-tL_i}$ for
+$t \ge 0$ comes from a small lemma,
+\code{integrable\_of\_bounded\_of\_hasCompactSupport}, via domination by
+the indicator of the support. Continuous $\phi$ is bounded by
+\code{HasCompactSupport.exists\_bound\_of\_continuous}.
+
+\emph{Normalized tests.} $I_2/Z_2 - I_1/Z_1 = (I_2 - I_1)/Z_1 +
+(I_2/Z_2)(1 - Z_2/Z_1)$; the first term is (U) times a polynomially
+bounded $1/Z_1$, the second is $Z_2/Z_1 - 1$ times a polynomially bounded
+factor ($|I_2| \le M\,\mathrm{vol}(\operatorname{supp}\phi)$ and $1/Z_2
+= O(t^n)$), both by \code{SuperPoly.polyBounded\_mul}.
+
+\section{Roadblocks and resolutions}
+
+Four LSP rounds. Three were ordinary: an \code{isLittleO\_one\_iff} that
+needs its normed type passed explicitly; an absolute-value orientation;
+a parenthesisation slip where an integral written as
+\code{integral w, eta w \^{} 2 + ...} swallowed the rest of the line into
+the integrand (the pretty-printer shows the same
+text either way, so read integrals with a following \code{+} twice); a
+sign lemma I had first stated without $t \ge 0$, which is false for
+$t < 0$ and which \code{linarith} rightly refused; and the
+\code{Measure.real} versus \code{toReal} spelling of
+\code{setIntegral\_const}.
+
+The fourth was a deterministic whnf timeout attributed to the whole
+compact-set lemma, with every \code{have} checking. Bisection by
+inserting \code{sorry} at successive points located it to one term,
+\begin{center}
+\code{((heta.continuous.pow 2).mul hc).integrable\_of\_hasCompactSupport}
+\code{(heta2s.mul\_right)}
+\end{center}
+where \code{mul\_right} produces \code{HasCompactSupport (f * g)} in
+\code{Pi} form and the expected type is a lambda; the unifier tried to
+unfold its way through. Naming the compact-support fact first with the
+lambda type ascribed (\code{have hsupp : HasCompactSupport fun w => ...}
+followed by \code{:= heta2s.mul\_right}) and passing \code{hsupp} elaborated instantly. The
+identical construction had worked two lemmas earlier by luck of the
+elaboration order. This is the \code{Pi.add} gotcha of \code{CLAUDE.md}
+in a new coat.
+
+\emph{The consult}, before writing, settled the design and scoped the
+claims. On the AM--GM route:
+\gptbox{The AM--GM route loses nothing at the SuperPoly level. [\ldots]
+The one bookkeeping point: to conclude little-$o$ at exponent $N$, use
+the big-$O$ estimate at exponent $N + 1$. Your proposed helper is
+exactly right.}
+On regularity:
+\gptbox{Both losses being smooth is sufficient, but not genuinely
+necessary. What this proof needs for the test is $\eta^2(L_2 - L_1) \in
+C_c^\infty$. [\ldots] I would not promote that into a necessity theorem.}
+And on the scope of the normalized corollary:
+\gptbox{(U) covers bounded measurable compactly supported $\varphi$. It
+does not establish this normalized conclusion for arbitrary globally
+bounded measurable tests. Partition-function agreement alone does not
+control total variation in remote tails.}
+
+\section{What was Mathlib, what was new}
+
+Mathlib, all lookup:
+\begin{itemize}
+\item exponentials: \code{Real.add\_one\_le\_exp}, \code{Real.exp\_le\_exp},
+\code{Real.exp\_le\_one\_iff};
+\item asymptotics: \code{isLittleO\_one\_iff} and
+\code{tendsto\_inv\_atTop\_zero};
+\item big-O algebra: \code{IsBigO.trans\_isLittleO};
+\item integrals: \code{integral\_mono}, \code{integral\_add}, and
+\code{integral\_const\_mul};
+\item set integrals: \code{setIntegral\_congr\_fun} and
+\code{setIntegral\_const};
+\item comparison: \code{setIntegral\_le\_integral};
+\item integrability: \code{Integrable.mono'}, \code{integrable\_indicator\_iff},
+\code{integrableOn\_const}, \code{IsCompact.measure\_lt\_top};
+\item supports: \code{HasCompactSupport.comp\_left} and
+\code{HasCompactSupport.exists\_bound\_of\_continuous};
+\item balls: \code{Metric.isBounded\_iff\_subset\_closedBall}.
+\end{itemize}
+
+Seabed: \code{SuperPoly} and its closure lemmas,
+\code{integrable\_mul\_exp\_neg\_of\_compactSupport}, the \code{gapBump}
+helper and \code{ProjectiveAgreement} from the closure tide, and the
+transfer theorem it wires into.
+
+New: the three pointwise inequalities, three \code{SuperPoly} helpers,
+the bounded-compact-support integrability lemma, the smooth bump on a
+compact set, and the five theorems. About 650 lines.
+
+\section{Lessons}
+
+\begin{itemize}
+\item For \code{CLAUDE.md}: a whnf timeout attributed to a whole
+declaration is bisected fastest by inserting \code{sorry} at successive
+tactic positions and re-checking; three runs located this one. And
+compact-support facts built by \code{mul\_right} should be named with
+their lambda type before use.
+\item For the tide skill: when the consult of the previous tide names
+a follow-up with a proof sketch, the next tide can go straight to a
+statement-level consult; this one needed one round and no revision.
+\item For the paper: the observable class of the closure theorems is now
+$C_c^0$, indeed bounded measurable with compact support. The
+normalized/unnormalized distinction of the note collapses, modulo
+$o(t^{-\infty})$, on that class as soon as one common zero anchors the
+gauge.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Local $L^\infty$.} Under smoothness, $\|\nabla(a - b)\| \le
+Ct$ on a fixed ball, so $\sup_K|a - b| \le C_K\,(t^d\int_{K'}|a -
+b|)^{1/(d+1)}$: local total variation beyond all orders implies local
+uniform agreement beyond all orders. Needs a Lipschitz-peak
+interpolation argument.
+\item \emph{Smooth difference only.} Restate (V) with $L_1$ merely
+continuous and $D = L_2 - L_1$ smooth.
+\item \emph{$t$-dependent tests.} The compact-set form is uniform over
+$|\phi_t| \le M$ supported in $K$; state it.
+\item \emph{Paper.} Fold (U) into the closure theorem's statement as the
+final observable class; one sentence on the AM--GM mechanism.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-6 Astra proposed the mechanism in the previous tide's consult,
+confirmed the AM--GM replacement of Cauchy--Schwarz, and scoped the
+normalized corollary. The seabed is the day's three germbij tides.
+
+\end{document}
