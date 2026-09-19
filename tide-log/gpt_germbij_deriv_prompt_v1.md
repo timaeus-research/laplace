@@ -1,0 +1,19 @@
+# Consult: uniform agreement of the gradients of Laplace weights (germbij / laplace Lean)
+
+## Context
+Lean 4 + Mathlib. Smooth nonnegative losses `L₁ L₂ : ℝ^d → ℝ`, `w_i = e^{-tL_i}`, `h_t = w₂ − w₁`. Merged today (your previous consults): exact smooth-test agreement ⇒ local total variation `∫_K |h_t| = o(t^{-∞})` ⇒ local UNIFORM agreement `∀ N ∃ C, eventually ∀ x ∈ K, |h_t x| ≤ C t^{-N}` (`eventually_uniform_abs_exp_sub_le`, via the Lipschitz-peak lemma). You stated that all fixed-order derivatives are also locally uniformly SuperPoly, by a second interpolation. This tide does the first derivative.
+
+## Plan
+(D2) `Dw = w • (−t DL)` (have this), so `D²w(y) = Dw(y) ⊗ (−t DL(y)) + w(y) • (−t D²L(y))` via `HasFDerivAt.smul`; `‖D²w(y)‖ ≤ t²‖DL(y)‖² + t‖D²L(y)‖ ≤ t²(‖DL‖² + ‖D²L‖)` for `t ≥ 1`. On the compact `K'' = cthickening 1 K` a common bound `B` (continuity of `fderiv (fderiv L)` from `ContDiff ℝ ∞ L`). So `‖D²h_t(y)‖ ≤ B t²` on `K''`.
+(T) For `x ∈ K`, `‖v‖ = 1`, `0 < s ≤ 1`: the segment `x + [0,s] v ⊆ ball x 1 ⊆ K''`. Mean value for `Dh_t` on the convex ball: `‖Dh_t(x+σv) − Dh_t(x)‖ ≤ B t² σ`. Let `g(σ) = h_t(x+σv) − h_t(x) − σ Dh_t(x) v`; `g' (σ) = Dh_t(x+σv)v − Dh_t(x)v`, `|g'(σ)| ≤ Bt² s` on `[0,s]`, so `|g(s)| ≤ Bt² s²` (1D mean value; I drop the 1/2). Hence `|Dh_t(x) v| ≤ (|h_t(x+sv)| + |h_t(x)|)/s + B t² s ≤ 2A_t/s + Bt² s`, `A_t = sup_{K''}|h_t|`, and `‖Dh_t(x)‖ ≤ 2A_t/s + Bt² s` by `ContinuousLinearMap.opNorm_le_of_unit_norm`.
+(DU) Given `N`, take `s = t^{-(N+3)}` (≤ 1 for t ≥ 1) and the uniform weight bound on `K''` at exponent `2N+3`: `‖Dh_t(x)‖ ≤ 2C t^{-(2N+3)} t^{N+3} + B t^{2-(N+3)} = 2C t^{-N} + B t^{-(N+1)} ≤ (2C + B) t^{-N}` for `t ≥ 1`, uniformly in `x ∈ K`.
+Statement: `∀ N, ∃ C, ∀ᶠ t in atTop, ∀ x ∈ K, ‖fderiv ℝ (fun w ↦ e^{-tL₂ w} − e^{-tL₁ w}) x‖ ≤ C t^{-N}`. Corollary: pointwise `SuperPoly (fun t ↦ fderiv h_t x v)`.
+
+## Questions
+1. Correct as stated? Any slip in the second-derivative bound or in the segment argument (e.g. the segment must lie in the set where the `D²h_t` bound holds — `ball x 1 ⊆ K''` for `x ∈ K` handles it)? Is dropping the `1/2` harmless (yes at SuperPoly level)?
+2. Lean shape: is `‖fderiv ℝ h_t x‖` (operator norm of the Fréchet derivative) the right object, and `opNorm_le_of_unit_norm` the right bridge from directional bounds? Or should I bound `‖fderiv ℝ h_t x v‖ ≤ (...) ‖v‖` for all `v` directly (then `opNorm_le_bound`)? The Taylor step needs a unit `v` only to keep the segment inside the ball — with general `v` and step `s/‖v‖` it works too.
+3. For the second derivative I plan to avoid `iteratedFDeriv` and work with `fderiv ℝ (fderiv ℝ w)` as an `E →L (E →L ℝ)`; the mean value theorem for `Dh_t` uses `Convex.norm_image_sub_le_of_norm_fderiv_le` for the map `y ↦ fderiv ℝ h_t y` (values in `E →L ℝ`). Any pitfall? (The lemma is generic in the codomain normed space.)
+4. Is there a cleaner route to `|g(s)| ≤ Bt²s²`? Options: (i) 1D mean value on `g` with `g' ` bounded by `Bt²s`; (ii) `Convex.norm_image_sub_le_of_norm_hasFDerivWithin_le'`-style Taylor bound `‖f y − f x − f' x (y − x)‖ ≤ C ‖y − x‖²`… Mathlib has `Convex.norm_image_sub_le_of_norm_hasFDerivWithin_le'` giving `‖f y − f x − φ (y − x)‖ ≤ C ‖y − x‖` when `‖f' z − φ‖ ≤ C` on the set — with `φ = Dh_t(x)` and `C = Bt² s` on `ball x s` this gives exactly `|h(x+sv) − h(x) − Dh(x)(sv)| ≤ Bt² s · s` in one step, no 1D reduction. Is that the intended tool?
+5. Higher derivatives (k ≥ 2) by the same pattern: would you state a general-`k` theorem now, or stop at `k = 1` and let a later tide do the induction? (The induction needs `‖D^{k+1} h_t‖ ≤ B_k t^{k+1}` on compacts, i.e. polynomial growth of all derivatives of `e^{-tL}` in `t`.)
+6. Vote: D2 + T + DU + pointwise corollary as one tide (~400 lines)?
+Numbered answers, statement-level Lean shapes; one-line vote at the end.

@@ -1,0 +1,216 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\usepackage{xcolor}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-6 Astra:}} #1\end{quote}\medskip}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective: the gradients agree too\\
+\large a second interpolation for the Boltzmann weights}
+\author{Claude (Anthropic), with a GPT-6 Astra consult}
+\date{2026-09-19}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For smooth nonnegative losses whose Laplace families agree beyond all
+orders on smooth compactly supported tests, the gradients of the
+Boltzmann weights agree uniformly on compacts beyond all orders: for
+every compact $K$ and every $N$ there is $C$ with $\|D(e^{-tL_2} -
+e^{-tL_1})(x)\| \le C\,t^{-N}$ for all $x \in K$ and all large $t$, and
+$D(e^{-tL_2} - e^{-tL_1})(x)v = o(t^{-\infty})$ at every point in every
+direction. The input is the uniform agreement of the weights from the
+previous tide; the new ingredients are a Hessian bound
+$\|D^2 e^{-tL}\| \le t^2(\|DL\|^2 + \|D^2 L\|)$ and a deterministic
+interpolation lemma: if $|h| \le A$ and $\|D^2 h\| \le M$ on the closed
+unit ball about $x$, then $\|Dh(x)\| \le 2A/s + Ms$ for every $0 < s \le
+1$, by the affine-error mean value inequality along $x + sv$. With
+$s = t^{-(N+3)}$ and the weight bound at exponent $2N+3$ the theorem
+follows. Three hundred lines, two LSP rounds, no surprises.
+\end{abstract}
+
+\section{Setting}
+
+The local-uniform tide
+(\tideref[2026-09-19-18-30]{2026-09-19-18-30-tide-germbij-local-uniform})
+proved $\sup_K|e^{-tL_2} - e^{-tL_1}| = O(t^{-N})$ for every $N$, and its
+consult corrected a remark in my notes: the derivatives of the weight
+difference are \emph{also} uniformly beyond all orders, by a second
+interpolation using the Hessian. This tide formalises that first
+derivative. The deliberation (tide log
+\code{2026-09-19-19-40-tide-germbij-derivatives.md} in
+\code{tide-log/}, consult in \code{gpt\_germbij\_deriv\_v1.md}) fixed one
+endpoint slip (closed balls, not open ones, since $x + sv$ lies on the
+sphere of radius $s$), recommended the affine-error mean value lemma
+over a one-dimensional reduction, and asked that the interpolation
+lemma be stated without reference to exponentials. Both parties voted
+for the package and for stopping at the first derivative.
+
+\section{The thing formalised}
+
+Write $w_i = e^{-tL_i}$, $h_t = w_2 - w_1$, $K' = \overline{K}_1$ for
+the closed unit thickening.
+
+\begin{quote}\itshape
+\begin{enumerate}
+\item[(H)] $D w = w\,(-t\,DL)$ as a function, $D^2 w = Dw \otimes (-t\,DL)
++ w\,(-t\,D^2L)$, and $\|D^2 w(y)\| \le t^2(\|DL(y)\|^2 + \|D^2L(y)\|)$
+for $t \ge 1$. On a compact $S$: $\|D^2 h_t\| \le B\,t^2$ for $t \ge 1$.
+\item[(I)] If $h$ is twice differentiable on $\overline{B}(x,1)$ with
+$|h| \le A$ and $\|D^2h\| \le M$ there, then $\|Dh(x)\| \le 2A/s + Ms$
+for every $0 < s \le 1$.
+\item[(G)] Under exact smooth-test agreement, for every compact $K$ and
+every $N$ there is $C$ with $\|Dh_t(x)\| \le C\,t^{-N}$ for all $x \in K$
+eventually; and $Dh_t(x)v = o(t^{-\infty})$ for all $x, v$.
+\end{enumerate}
+\end{quote}
+
+\noindent The Lean signature of (G):
+\begin{verbatim}
+theorem eventually_uniform_norm_fderiv_exp_sub_le {L1 L2 : (iota -> R) -> R}
+    (h1 : ContDiff R infty L1) (h2 : ContDiff R infty L2)
+    (hL1 : forall w, 0 <= L1 w) (hL2 : forall w, 0 <= L2 w)
+    (hexact : forall phi, ContDiff R infty phi -> HasCompactSupport phi ->
+      SuperPoly fun t => I2 phi t - I1 phi t)
+    {K : Set (iota -> R)} (hK : IsCompact K) :
+    forall N : Nat, exists C : R, eventually t in atTop, forall x in K,
+      ||fderiv R (fun w => exp (-(t * L2 w)) - exp (-(t * L1 w))) x||
+        <= C * t ^ (-(N : R))
+\end{verbatim}
+(integrals abbreviated). The other declarations:
+\begin{itemize}
+\item (H), the weight: \code{fderiv\_expWeight\_eq} and
+\code{hasFDerivAt\_fderiv\_expWeight};
+\item (H), the bound: \code{norm\_fderiv\_fderiv\_expWeight\_le};
+\item the difference: \code{fderiv\_weightDiff\_eq} and
+\code{hasFDerivAt\_fderiv\_weightDiff};
+\item the compact bound: \code{exists\_hessian\_bound\_on};
+\item (I): \code{norm\_fderiv\_le\_of\_bounds};
+\item the pointwise corollary \code{superPoly\_fderiv\_exp\_sub\_at};
+\item a helper \code{norm\_expWeight\_smul\_le} valid in any normed space.
+\end{itemize}
+
+\section{Proof strategy}
+
+\emph{Hessian.} The derivative field $y \mapsto w(y)\,(-t\,DL(y))$ is a
+scalar function times a vector field; \code{HasFDerivAt.smul} gives its
+derivative $w(y)\,(-t\,D^2L(y)) + (Dw(y)).\mathrm{smulRight}(-t\,DL(y))$,
+whose norm is at most $t\|D^2L\| + (t\|DL\|)^2$ using $0 < w \le 1$ and
+\code{norm\_smulRight\_apply}; for $t \ge 1$ this is at most
+$t^2(\|DL\|^2 + \|D^2L\|)$. The difference is bounded by the sum, and on
+a compact the continuous function $\|DL_1\|^2 + \|D^2L_1\| + \|DL_2\|^2 +
+\|D^2L_2\|$ is bounded (\code{ContDiff.continuous\_fderiv} twice, the
+second through \code{contDiff\_infty\_iff\_fderiv}).
+
+\emph{Interpolation.} For a unit vector $v$ and $0 < s \le 1$: the
+mean value inequality for $Dh$ on $\overline{B}(x,1)$ gives $\|Dh(z) -
+Dh(x)\| \le Ms$ on $\overline{B}(x,s)$; the affine-error mean value
+inequality \code{Convex.norm\_image\_sub\_le\_of\_norm\_fderiv\_le'} on
+$\overline{B}(x,s)$ with $\varphi = Dh(x)$ then gives $|h(x+sv) - h(x) -
+s\,Dh(x)v| \le Ms\cdot s$. Hence $s|Dh(x)v| \le 2A + Ms^2$, and
+\code{ContinuousLinearMap.opNorm\_le\_of\_unit\_norm} turns the
+directional bound into the operator-norm bound.
+
+\emph{Assembly.} On $K'$ take $A = C_1 t^{-(2N+3)}$ from the uniform
+weight theorem and $M = Bt^2$ from the Hessian bound; with $s =
+t^{-(N+3)}$, $2A/s = 2C_1 t^{-N}$ and $Ms = B t^{-(N+1)} \le B t^{-N}$
+for $t \ge 1$. The pointwise corollary takes $K = \{x\}$ and
+$|Dh(x)v| \le \|Dh(x)\|\,\|v\|$.
+
+\section{Roadblocks and resolutions}
+
+Two LSP rounds, both trivial: an \code{nlinarith} that needed the
+intermediate fact $t\|D^2L\| \le t^2\|D^2L\|$ spelled out, and a rewrite
+chain where \code{Real.norm\_eq\_abs} fired on the left-hand norm before
+\code{abs\_of\_pos} could reach $\|s\|$; \code{Real.norm\_of\_nonneg}
+directly on $\|s\|$ fixed it. The lambda-versus-\code{Pi} discipline of
+the previous tides (name every derivative fact with its function type
+before rewriting with \code{.fderiv}) was applied from the start and
+caused no round.
+
+\emph{The consult}, before writing, caught the endpoint:
+\gptbox{Endpoint correction: when $s = 1$, $x + sv$ need not belong to
+\code{ball x 1}. Use $[x, x + sv] \subseteq \operatorname{closedBall}(x,1)
+\subseteq \operatorname{cthickening}(1,K)$. Likewise, $x + sv \notin
+\operatorname{ball}(x,s)$ for unit $v$; use \code{closedBall x s} in the
+Taylor step.}
+and prescribed the tool:
+\gptbox{Apply the affine-error version of the convex mean-value estimate
+on \code{closedBall x s}, with $\varphi = Dh(x)$, $C = Ms$. It gives
+$|h(x+sv) - h(x) - Dh(x)(sv)| \le Ms\,\|sv\| = Ms^2$. [\ldots] I would
+package the resulting analytic lemma independently of exponentials.}
+
+\section{What was Mathlib, what was new}
+
+Mathlib, all lookup:
+\begin{itemize}
+\item derivatives: \code{HasFDerivAt.smul}, \code{HasFDerivAt.const\_smul},
+\code{HasFDerivAt.neg}, \code{HasFDerivAt.sub};
+\item regularity: \code{contDiff\_infty\_iff\_fderiv};
+\item continuity: \code{ContDiff.continuous\_fderiv} and
+\code{ContDiff.differentiable};
+\item operator norms: \code{ContinuousLinearMap.opNorm\_le\_of\_unit\_norm};
+\item \code{ContinuousLinearMap.norm\_smulRight\_apply};
+\item \code{ContinuousLinearMap.le\_opNorm};
+\item mean value: \code{Convex.norm\_image\_sub\_le\_of\_norm\_fderiv\_le}
+and its affine-error variant;
+\item thickenings: \code{IsCompact.cthickening} and
+\code{Metric.mem\_cthickening\_of\_dist\_le};
+\item bounds: \code{IsCompact.exists\_bound\_of\_continuousOn}.
+\end{itemize}
+
+Seabed:
+\begin{itemize}
+\item \code{eventually\_uniform\_abs\_exp\_sub\_le};
+\item \code{hasFDerivAt\_expWeight} and \code{expWeight\_le\_one};
+\item \code{superPoly\_of\_forall\_eventually\_le}.
+\end{itemize}
+
+New: the Hessian identity and bound, the compact Hessian bound for the
+difference, the interpolation lemma, the uniform theorem and the
+pointwise corollary. About 300 lines.
+
+\section{Lessons}
+
+\begin{itemize}
+\item For \code{CLAUDE.md}: when a rewrite chain has to normalise both a
+real norm on the left and $\|s\|$ on the right, use
+\code{Real.norm\_of\_nonneg} for the specific scalar rather than the
+generic \code{Real.norm\_eq\_abs}, which fires on the first norm it sees.
+\item For the tide skill: two consecutive interpolation tides
+($L^1 \to L^\infty$, $L^\infty \to$ gradient) shared their shape; the
+second cost half the first. Recording the mechanism as a template in the
+retrospective paid off within the hour.
+\item For the paper: exact agreement beyond all orders now holds for the
+weights and their gradients, uniformly on compacts. The note can state
+the normalized-case closure at the level of the densities.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{All orders.} Induction on $k$: $\|D^{k+1}h_t\| \le B_k
+t^{k+1}$ on compacts (polynomial growth of all derivatives of
+$e^{-tL}$), then the interpolation lemma applied to $D^{k-1}h_t$ with
+Banach codomain. Needs the interpolation lemma restated for
+vector-valued $h$ (the proof is unchanged) and bookkeeping of enlarged
+compacts.
+\item \emph{Normalized densities and their gradients} uniformly on
+compacts, once the anchor bounds the partition values below.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-6 Astra stated the result in the previous consult, corrected the
+endpoint, and named the affine-error mean value lemma. The seabed is
+the day's germbij tides.
+
+\end{document}
