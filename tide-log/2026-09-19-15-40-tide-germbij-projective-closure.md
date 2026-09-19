@@ -85,3 +85,42 @@ Z + `normalized_families_force_eq_near` at `W₀ = Z(L₁) = Z(L₂)` + R with `
 
 **Proposed tide:** G + E + Z + R + N in one file `Laplace/Multi/ProjectiveClosure.lean` (~450 lines).
 Vote: all five; G is the load-bearing new lemma, Z and R the new theorems, N the paper statement.
+
+## GPT-6 Astra v1 (summary; verbatim in `gpt_germbij_projective_v1.md`)
+
+- G, E, Z correct. Z needs only global continuity + C² near the zeros (a polynomially visible anchor at
+  every zero); "both zero sets nonempty" is the right sharp nondegeneracy. No issue with C negative or
+  non-measurable: all estimates are pointwise in t, `|C| I₁ ≤ |I₂| + |R|`.
+- R correct for the tested class (C_c^∞): projective ⇒ exact for every observable IN THE HYPOTHESIS CLASS.
+  Upgrading to continuous/bounded measurable tests needs a separate argument: local total variation
+  `∫_K |e^{-tL₂} − e^{-tL₁}| ∈ SuperPoly` via `|a−b|² ≤ t·D·(a−b)`, `D = L₂−L₁`, tested at the smooth
+  observable `η²D`. Recorded as follow-up; do not smuggle it in.
+- N correct; normalized ⇒ projective is fine (Z₂ bounded for t ≥ 0). The CONVERSE needs 1/Z₂ control
+  (window positive near a zero + G); positivity alone is not enough. Do not claim an unrestricted
+  equivalence.
+- Analyticity enters ONLY via the merged germ theorem (supplying `hEq`); make R analyticity-free.
+- Extra target (b): scalar tameness BEFORE Z: `c t^{-d/2} ≤ C(t) ≤ A t^{d/2}` eventually (upper from a
+  bump at a zero of L₁, lower + eventual positivity from a bump at a zero of L₂). Organise: G+E →
+  tameness → Z → R → N.
+- Headline for the paper: "at a common analytic zero, projective agreement fixes its own scalar gauge";
+  normalized and unnormalized identifiability coincide modulo SuperPoly errors in that regime (not
+  literally; additive constants remain ambiguous without a zero-level anchor).
+- Different windows: denominators-only changes are harmless; windowed numerators are NOT (χ₂ = aχ₁ gives
+  identical normalized expectations with Z₂/Z₁ = a).
+
+## Vote
+- Claude: G + E + tameness + Z + R + N, one file `Laplace/Multi/ProjectiveClosure.lean`; TV upgrade as follow-up
+- GPT-6 Astra: ship G+E+tameness+Z+R+N together, smooth-test conclusions first, continuous-test upgrade explicit or deferred
+
+## Numerical check
+Not feasible: structural statements (existence of bounds, equality of zero sets, SuperPoly). The one closed
+form, the anchor exponent `t^{-d/2}`, is the Gaussian volume scaling already checked in the sector arc.
+
+## Step 3 plan
+`Laplace/Multi/ProjectiveClosure.lean` (imports NormalizedSingular, OnePointAnchoring): (G) `exists_lower_bound_integral_exp_of_quadratic`
+(a ≡ 1 sector bound), `exists_lower_bound_integral_exp_near_zero` (C² interface), `anchor_lower_bound_eventually`
+(integer power `t^{-d}`, the seabed's `hanchor_low` shape); (E) `abs_integral_mul_exp_le_of_gap`,
+`superPoly_integral_mul_exp_of_gap`, `superPoly_polyBounded_mul_integral_of_gap`; tameness
+`exists_scalar_upper_bound`, `eventually_scalar_lower_bound`; (Z) `superPoly_scalar_of_zero_gap`,
+`zero_iff_zero_of_projective`; (R) `superPoly_scalar_sub_one_of_eventuallyEq`, `superPoly_difference_of_projective`;
+(N) `normalized_expectations_closure`. Smooth bumps via `ContDiffBump p`.
