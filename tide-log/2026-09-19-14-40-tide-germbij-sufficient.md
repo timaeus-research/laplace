@@ -88,3 +88,41 @@ Slop S4 wrongly implied this was new; correct it.
 
 **Proposed tide:** A + B + C (+ B′ if the Mathlib cpolynomial API makes the instance cheap). Vote: A+B+C as
 one file `Laplace/Multi/SufficientFamilies.lean`.
+
+## GPT-6 Astra v1 (summary; verbatim in `gpt_germbij_sufficient_v1.md`)
+
+- A, B correct. **Quantify `hinj` over homogeneous POLYNOMIAL diagonals** (the finite-dimensional
+  `H_k`), not over all continuous homogeneous functions (infinite-dimensional in d ≥ 2, so finite
+  families could never satisfy it). B is best stated as an iff: S-data o(q^{k−2}) ⇔ Cov_γ[φ_i, Q_k] = 0 ∀i.
+- **Correction to my S4 claim**: the pairing does NOT depend only on the k-jet of φ. 1D counterexample:
+  φ = x^k − c x^{k+2}, c = Var(X^k)/Cov(X^{k+2},X^k), has the k-jet of x^k but Cov(φ, X^k) = 0. The
+  H-uniform sufficient condition is `H_k ⊆ span{φ_i} + ℝ·1` as FUNCTIONS.
+- C's count is right (k+1 > n via the two-coordinate slice; sharp for d = 2; in d > 2 the full
+  binomial count fails earlier). **Major correction**: C+B(+B′) prove only LEADING-RATE blindness, not
+  that no finite family recovers the jet from entire expansions. Example H = I, L_ε = ½|x|² + εx₁³,
+  φ = x₁²: cubic pairing vanishes by parity, but ΔM = (ε²q²/2)·Cov(X₁², X₁⁶) + o(q²) = 45ε²q² + o(q²)
+  (hand check: E X⁸ − E X² E X⁶ = 105 − 15 = 90, 90/2 = 45 ✓). So the justified statement: no fixed
+  finite family is injective on homogeneous perturbations at their first rate in every degree, d ≥ 2.
+- B′ (instance): defer; cheapest route is L₀ = ½H(x,x), L₁ = L₀ + Q (polynomial, order-k remainder 0,
+  shrink ball). Paper: one-line remark.
+- Nearby addition: "recovery modulo the invisible subspace" — the data determine [Q_k] ∈ H_k / ker T,
+  i.e. the Cov_γ-orthogonal projection onto (ker T)^⊥; cheap kernel statement in Lean if free.
+- Also: distinguish full Taylor jet from smooth germ (flat perturbations; already in seabed).
+
+## Vote
+- Claude: A+B+C (polynomial-diagonal form, leading-rate framing), one file `Laplace/Multi/SufficientFamilies.lean`
+- GPT-6 Astra: A+B+C, restricted to polynomial/tensor diagonals, framed as leading-rate recovery
+
+## Numerical check
+Structural statements (existence/iff); the one number in play is Astra's cubic example coefficient,
+checked by hand above (Gaussian moments 105, 15, 3). No further numerical check feasible.
+
+## Step 3 plan
+`Laplace/Multi/SufficientFamilies.lean`: (1) `homogPolySpan k : Submodule ℝ (EuclidD d → ℝ) := span (range monomialTest)`,
+certificates for span members (continuous, polynomial growth, homogeneous) by span induction;
+(2) `taylorDifference_mem_homogPolySpan` via `diag_eq_sum_monomialTest`; (3) `gaussianCovariance`
+add/smul/zero in the second slot; (4) `pairingMap H φ : homogPolySpan k →ₗ[ℝ] (ι → ℝ)`;
+(5) B iff `family_rates_iff_pairing_eq_zero`; (6) A `iteratedFDeriv_recovery_of_family_rates`
+(kernel-zero hypothesis) + monomial family as instance sanity check; (7) C: linear independence of
+`x₀^{k−j}x₁^{j}` (slice x = (s,1,0,…), `Polynomial.funext`), `ker_ne_bot_of_finrank_lt`,
+`exists_kernel_of_finite_family`; (8) corollary `finite_family_leading_rate_blind` (B ∘ C).
