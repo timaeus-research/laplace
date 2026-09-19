@@ -1,0 +1,239 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\usepackage{xcolor}
+\emergencystretch=3em
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-6 Astra:}} #1\end{quote}\medskip}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective: local uniform agreement\\
+\large a Lipschitz peak turns $L^1$ decay into $L^\infty$ decay}
+\author{Claude (Anthropic), with a GPT-6 Astra consult}
+\date{2026-09-19}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For smooth nonnegative losses whose Laplace families agree beyond all
+orders on smooth compactly supported tests, the Boltzmann weights
+themselves agree uniformly on compacts beyond all orders: for every
+compact $K$ and every $N$ there is $C$ with $|e^{-tL_2(x)} -
+e^{-tL_1(x)}| \le C\,t^{-N}$ for all $x \in K$ and all large $t$, and in
+particular the weights agree beyond all orders at every point. The
+input is the local total-variation decay of the previous tide; the
+mechanism is a peak argument. The weights take values in $[0,1]$ and
+have gradient of norm at most $t\,\|\nabla L\|$, so their difference is
+$\Lambda$-Lipschitz on unit balls with $\Lambda = tG + 1$; a peak of
+height $H$ therefore carries mass at least $H/2$ on a ball of radius
+$H/(2\Lambda)$, whence $H^{d+1} \le (2^{d+1}/c_d)\,\Lambda^d
+\int_{K'}|e^{-tL_2} - e^{-tL_1}|$ on the unit thickening $K'$ of $K$. The
+powered inequality is stated for any bounded Lipschitz function and is
+the reusable part. Three hundred and forty lines, three LSP rounds.
+\end{abstract}
+
+\section{Setting}
+
+The total-variation tide
+(\tideref[2026-09-19-17-00]{2026-09-19-17-00-tide-germbij-total-variation})
+proved $\int_K|e^{-tL_2} - e^{-tL_1}| = o(t^{-\infty})$ on every compact
+$K$, and its consult remarked that the local $L^\infty$ version is also
+true under smoothness, sketching a gradient bound and an interpolation.
+This tide formalises that remark. The deliberation (tide log
+\code{2026-09-19-18-30-tide-germbij-local-uniform.md} in
+\code{tide-log/}, consult in \code{gpt\_germbij\_lu\_v1.md}) confirmed
+the exponent $d+1$ and the constant, asked for the degenerate cases
+($H = 0$, $G = 0$, empty $K$) to be handled explicitly, recommended the
+uniform-bound API over a real supremum, and recommended stating the
+peak lemma generically. Both parties voted for the package.
+
+\section{The thing formalised}
+
+Write $h_t = e^{-tL_2} - e^{-tL_1}$, $d$ for the dimension, $c_d$ for the
+volume of the unit ball, and $K' = \overline{K}_1$ for the closed
+$1$-thickening of $K$.
+
+\begin{quote}\itshape
+\begin{enumerate}
+\item[(P)] Let $f$ be integrable on $K'$, with $|f(x_0)| \le 1$, $B(x_0,1)
+\subseteq K'$, and $|f(y) - f(x_0)| \le \Lambda\|y - x_0\|$ on $B(x_0,1)$
+for some $\Lambda \ge 1$. Then $|f(x_0)|^{d+1} \le (2^{d+1}/c_d)\,
+\Lambda^d \int_{K'}|f|$.
+\item[(W)] For $L_1, L_2 \ge 0$ smooth and $K$ compact there is $C$ with
+$|h_t(x)|^{d+1} \le C\,t^{d}\int_{K'}|h_t|$ for all $t \ge 1$, $x \in K$;
+equivalently $|h_t(x)| \le (C t^d \int_{K'}|h_t|)^{1/(d+1)}$.
+\item[(U)] If moreover the families agree beyond all orders on smooth
+tests, then for every $N$ there is $C$ with $|h_t(x)| \le C\,t^{-N}$
+for all $x \in K$, eventually in $t$; and $h_t(x) = o(t^{-\infty})$ for
+every $x$.
+\end{enumerate}
+\end{quote}
+
+\noindent The Lean signature of (U):
+\begin{verbatim}
+theorem eventually_uniform_abs_exp_sub_le {L1 L2 : (iota -> R) -> R}
+    (h1 : ContDiff R infty L1) (h2 : ContDiff R infty L2)
+    (hL1 : forall w, 0 <= L1 w) (hL2 : forall w, 0 <= L2 w)
+    (hexact : forall phi, ContDiff R infty phi -> HasCompactSupport phi ->
+      SuperPoly fun t => I2 phi t - I1 phi t)
+    {K : Set (iota -> R)} (hK : IsCompact K) :
+    forall N : Nat, exists C : R, eventually t in atTop, forall x in K,
+      |exp (-(t * L2 x)) - exp (-(t * L1 x))| <= C * t ^ (-(N : R))
+\end{verbatim}
+(integrals abbreviated). The other declarations:
+\begin{itemize}
+\item (P): the peak lemma \code{pow\_abs\_le\_of\_lipschitz\_of\_setIntegral};
+\item gradients: \code{hasFDerivAt\_expWeight} and
+\code{norm\_expWeight\_deriv\_le};
+\item the difference gradient: \code{norm\_fderiv\_weightDiff\_le};
+\item the amplitude bound \code{abs\_exp\_sub\_le\_one} and the gradient
+bound on a compact, \code{exists\_gradient\_bound\_on};
+\item (W): \code{pow\_abs\_exp\_sub\_le} and \code{abs\_exp\_sub\_le\_rpow};
+\item the pointwise corollary \code{superPoly\_exp\_sub\_at}.
+\end{itemize}
+
+Nothing about the losses beyond differentiability with a bounded gradient
+near $K$ is used in (P) and (W); the smoothness hypothesis is inherited
+from the upstream agreement hypothesis, which tested $\eta^2(L_2 - L_1)$.
+
+\section{Proof strategy}
+
+\emph{Gradients.} $D(e^{-tL})(x) = e^{-tL(x)}\,(-t\,DL(x))$ by the chain
+rule (\code{HasFDerivAt.exp} after \code{const\_mul} and \code{neg}), so
+$\|D(e^{-tL})(x)\| \le t\|DL(x)\|$ for $t \ge 0$ since the weight is at
+most $1$. The difference has $\|Dh_t\| \le t(\|DL_1\| + \|DL_2\|) \le tG$
+on $K'$, with $G$ from continuity of \code{fderiv} on the compact $K'$
+(\code{ContDiff.continuous\_fderiv}, \code{IsCompact.exists\_bound\_of\_continuousOn}).
+
+\emph{Lipschitz on unit balls.} The mean value inequality on the convex
+ball,
+\begin{center}\code{Convex.norm\_image\_sub\_le\_of\_norm\_fderiv\_le}\end{center}
+with \code{DifferentiableAt} hypotheses, gives $|h_t(y) - h_t(x_0)| \le
+tG\,\|y - x_0\| \le \Lambda\|y - x_0\|$. Taking $\Lambda = tG + 1$ rather
+than $tG$ costs nothing and makes $\Lambda \ge 1$, which is what keeps
+the peak radius $H/(2\Lambda) \le 1/2$ inside the unit ball, with no
+case distinction on $G$.
+
+\emph{Peak.} If $H = |f(x_0)| = 0$ there is nothing to prove. Otherwise
+on $B(x_0, r)$ with $r = H/(2\Lambda)$ one has $|f| \ge H - \Lambda r =
+H/2$, so \code{setIntegral\_ge\_of\_const\_le} and monotonicity of the
+set integral give $\int_{K'}|f| \ge (H/2)\,\mathrm{vol}(B(x_0,r))$, and
+\code{Measure.addHaar\_ball\_of\_pos} with
+\code{Module.finrank\_fintype\_fun\_eq\_card} evaluates the volume as
+$r^d c_d$. The algebra $H^{d+1} = (r^d c_d \cdot H/2)\cdot(2^{d+1}/c_d)
+\Lambda^d$ is one \code{field\_simp; ring}.
+
+\emph{Assembly.} For $t \ge 1$, $\Lambda \le (G+1)t$, so $|h_t(x)|^{d+1}
+\le C t^d \int_{K'}|h_t|$ with $C = (2^{d+1}/c_d)(G+1)^d$. Feeding the
+total-variation decay at exponent $(d+1)N + d$ gives $|h_t(x)|^{d+1} \le
+C\,(t^{-N})^{d+1} = (C^{1/(d+1)} t^{-N})^{d+1}$
+(\code{Real.rpow\_inv\_natCast\_pow}) and
+\code{le\_of\_pow\_le\_pow\_left0} takes the root. The pointwise corollary
+applies this to $K = \{x\}$ and the seabed's
+\code{superPoly\_of\_forall\_eventually\_le}.
+
+\section{Roadblocks and resolutions}
+
+Three LSP rounds. The pointwise lemmas about $e^{-tL}$ cannot omit the
+\code{Fintype} instance once a \code{fderiv} on $\iota \to \R$ appears
+(the Pi normed-group instance needs it), and \code{HasFDerivAt.sub}
+returns its function in \code{Pi} form, so the rewrite by its
+\code{fderiv} must go through a \code{have} with the lambda type stated.
+A \code{set H := |f x0|} placed before the case split on $H = 0$ left the
+hypothesis in the unfolded spelling; the split now comes first. An
+\code{abs\_sub\_le\_iff} rewrite produced an \code{isDefEq} timeout for no
+visible reason and was replaced by \code{abs\_le.mpr} with two
+\code{linarith} calls. \code{ring} does not distribute a symbolic power
+over a product, so \code{mul\_pow} precedes it. The implicit compact set
+of the total-variation theorem must be named when the argument is a
+thickening.
+
+\emph{The consult}, before writing, fixed the shape and caught the scope
+of a claim in my own notes:
+\gptbox{Derivatives: the proposed ``so no'' is not correct. Under
+$C^\infty$, all fixed-order spatial derivatives are locally uniformly
+superpolynomially small. [\ldots] For a unit vector $v$ and $0 < s \le
+1$, Taylor's estimate along a segment gives $|Dh_t(x)v| \le 2A_t/s +
+\tfrac12 B_K t^2 s$. For target exponent $N$, choose $s = t^{-(N+3)}$.}
+That is recorded as the next follow-up. On the API:
+\gptbox{The uniform-bound formulation is a good primary Lean API. [\ldots]
+The subtype, compact-space instance, and norm evaluation infrastructure
+are probably more work than they save in this tide.}
+
+\section{What was Mathlib, what was new}
+
+Mathlib, all lookup:
+\begin{itemize}
+\item calculus: \code{HasFDerivAt.exp}, \code{HasFDerivAt.const\_mul},
+and \code{HasFDerivAt.sub};
+\item regularity: \code{ContDiff.continuous\_fderiv} and
+\code{ContDiff.differentiable};
+\item mean value: \code{Convex.norm\_image\_sub\_le\_of\_norm\_fderiv\_le};
+\item measure: \code{Measure.addHaar\_ball\_of\_pos} and
+\code{Metric.measure\_ball\_pos};
+\item finiteness: \code{measure\_ball\_lt\_top};
+\item dimension: \code{Module.finrank\_fintype\_fun\_eq\_card};
+\item set integrals: \code{setIntegral\_ge\_of\_const\_le} and
+\code{setIntegral\_mono\_set};
+\item integrability: \code{ContinuousOn.integrableOn\_compact};
+\item thickenings: \code{IsCompact.cthickening} and
+\code{Metric.mem\_cthickening\_of\_dist\_le};
+\item bounds: \code{IsCompact.exists\_bound\_of\_continuousOn};
+\item roots: \code{Real.rpow\_inv\_natCast\_pow} and
+\code{Real.pow\_rpow\_inv\_natCast};
+\item monotonicity: \code{le\_of\_pow\_le\_pow\_left0}.
+\end{itemize}
+
+Seabed: \code{superPoly\_setIntegral\_abs\_exp\_sub} and
+\code{superPoly\_of\_forall\_eventually\_le} from the total-variation
+tide.
+
+New: the gradient lemmas, the generic peak lemma, the gradient bound on
+a compact, the powered and root inequalities, the uniform theorem and
+the pointwise corollary. About 340 lines.
+
+\section{Lessons}
+
+\begin{itemize}
+\item For \code{CLAUDE.md}: \code{omit [Fintype iota] in} is refused as soon
+as a norm or derivative on $\iota \to \R$ appears in the statement, since
+the Pi normed instances need it; and \code{HasFDerivAt.sub} yields a
+\code{Pi}-form function, so name the derivative fact with the lambda
+type before rewriting with \code{.fderiv}.
+\item For the tide skill: an $L^1$-to-$L^\infty$ upgrade by a Lipschitz
+peak is a reusable pattern whenever the objects have polynomially
+bounded gradients; the generic peak lemma is the piece to reach for.
+\item For the paper: the closure theorems now hold at the level of the
+weights themselves, uniformly on compacts, not only against test
+functions. The $o(t^{-\infty})$ agreement is pointwise and locally
+uniform.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Derivatives.} Uniform beyond-all-orders agreement of $Dh_t$
+(and all fixed-order derivatives) on compacts, by a second interpolation
+with $\|D^2h_t\| \le B_K t^2$ and Taylor along segments with step
+$s = t^{-(N+3)}$; the consult's sketch is in the tide log.
+\item \emph{Normalized densities.} $|e^{-tL_2}/Z_2 - e^{-tL_1}/Z_1| \le
+Z_2^{-1}(|h_t| + |Z_2/Z_1 - 1|)$ gives uniform agreement of the
+normalized densities on compacts once the anchor bounds $Z_i$ below.
+\item \emph{Weaker regularity.} Restate (W) and (U) with $C^1$ losses of
+locally bounded gradient and a smooth difference, the only facts used.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-6 Astra proposed the mechanism in the previous tide's consult,
+confirmed the constants, corrected the note on derivatives, and
+recommended the generic peak lemma. The seabed is the day's germbij
+tides.
+
+\end{document}
