@@ -5,6 +5,8 @@ Authors: Timaeus
 -/
 import Mathlib
 import Laplace.Multi.SingularSmooth
+import Laplace.Multi.CutoffRemoval
+import Laplace.Multi.LocatedCutoff
 import Laplace.Anchoring
 
 /-!
@@ -59,15 +61,10 @@ namespace Laplace
 
 variable {ι : Type*} [Fintype ι]
 
-/-! ### Closure properties of `SuperPoly` -/
+/-! ### Closure properties of `SuperPoly`
 
-theorem SuperPoly.sub {f g : ℝ → ℝ} (hf : SuperPoly f) (hg : SuperPoly g) :
-    SuperPoly fun t ↦ f t - g t :=
-  fun N ↦ (hf N).sub (hg N)
-
-theorem SuperPoly.congr {f g : ℝ → ℝ} (hf : SuperPoly f)
-    (h : ∀ᶠ t in atTop, f t = g t) : SuperPoly g :=
-  fun N ↦ (hf N).congr' h EventuallyEq.rfl
+`SuperPoly.sub` (`Laplace.Multi.CutoffRemoval`) and `SuperPoly.congr`
+(`Laplace.Multi.LocatedCutoff`) are imported; the two below are new. -/
 
 /-- Dividing a beyond-all-orders function by `t` keeps it beyond all orders. -/
 theorem SuperPoly.div_id {f : ℝ → ℝ} (hf : SuperPoly f) :
@@ -437,6 +434,7 @@ theorem normalized_families_force_germ_eq_at
     have hcanc := superPoly_integral_fderiv_sub_mul_exp h1 h2 hfam
       (φ := fun w ↦ ψ w * fderiv ℝ g w v) (hψ.mul has) hψs.mul_right v
     refine hcanc.congr (Eventually.of_forall fun t ↦ ?_)
+    beta_reduce
     congr 1
     funext w
     simp only [hg_def]
