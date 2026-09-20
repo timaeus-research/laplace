@@ -152,14 +152,13 @@ theorem SuperPoly.finset_sum {α : Type*} (s : Finset α) {f : α → ℝ → �
 
 /-- From `SuperPoly (projDiff χ)` for a window `χ` equal to `1` near a `C²` zero of `L₁`:
 `|C(t)| ≤ A t^d` eventually. -/
-theorem exists_scalar_upper_bound_of_window {χ : (ι → ℝ) → ℝ} {p : ι → ℝ}
-    (hL1c : Continuous L₁) (hL2c : Continuous L₂)
-    (hL1 : ∀ w, 0 ≤ L₁ w) (hL2 : ∀ w, 0 ≤ L₂ w)
-    (hp : L₁ p = 0) (hC1 : ContDiffAt ℝ 2 L₁ p)
-    (hχc : Continuous χ) (hχs : HasCompactSupport χ) (hχ0 : ∀ w, 0 ≤ χ w)
-    (hχ1 : ∀ᶠ w in 𝓝 p, χ w = 1) (h0 : SuperPoly (projDiff L₁ L₂ C χ)) :
+theorem exists_scalar_upper_bound_of_lower_bound {χ : (ι → ℝ) → ℝ}
+    (hL2c : Continuous L₂) (hL2 : ∀ w, 0 ≤ L₂ w)
+    (hχc : Continuous χ) (hχs : HasCompactSupport χ) {κ : ℝ} (hκ : 0 < κ)
+    (hlow : ∀ᶠ t in atTop,
+      κ * t ^ (-(Fintype.card ι : ℝ)) ≤ ∫ w, χ w * Real.exp (-(t * L₁ w)))
+    (h0 : SuperPoly (projDiff L₁ L₂ C χ)) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ᶠ t in atTop, |C t| ≤ A * t ^ (Fintype.card ι) := by
-  obtain ⟨κ, hκ, hlow⟩ := anchor_lower_bound_eventually hL1c hL1 hp hC1 hχc hχs hχ0 hχ1
   obtain ⟨M, hM⟩ := isBigO_iff.mp (laplace_moment_bounded hχc hχs hL2c hL2)
   have hR1 : ∀ᶠ t in atTop, |(∫ w, χ w * Real.exp (-(t * L₂ w))) -
       C t * ∫ w, χ w * Real.exp (-(t * L₁ w))| ≤ 1 := by
@@ -197,6 +196,61 @@ theorem exists_scalar_upper_bound_of_window {χ : (ι → ℝ) → ℝ} {p : ι 
     _ = |C t| * (κ * t ^ (-(Fintype.card ι : ℝ))) * (t ^ (Fintype.card ι) / κ) := by ring
     _ ≤ (M + 1) * (t ^ (Fintype.card ι) / κ) := mul_le_mul_of_nonneg_right key hfrac
     _ = (M + 1) / κ * t ^ (Fintype.card ι) := by ring
+
+/-- From `SuperPoly (projDiff χ)` for a window `χ` equal to `1` near a `C²` zero of `L₁`:
+`|C(t)| ≤ A t^d` eventually. -/
+theorem exists_scalar_upper_bound_of_window {χ : (ι → ℝ) → ℝ} {p : ι → ℝ}
+    (hL1c : Continuous L₁) (hL2c : Continuous L₂)
+    (hL1 : ∀ w, 0 ≤ L₁ w) (hL2 : ∀ w, 0 ≤ L₂ w)
+    (hp : L₁ p = 0) (hC1 : ContDiffAt ℝ 2 L₁ p)
+    (hχc : Continuous χ) (hχs : HasCompactSupport χ) (hχ0 : ∀ w, 0 ≤ χ w)
+    (hχ1 : ∀ᶠ w in 𝓝 p, χ w = 1) (h0 : SuperPoly (projDiff L₁ L₂ C χ)) :
+    ∃ A : ℝ, 0 ≤ A ∧ ∀ᶠ t in atTop, |C t| ≤ A * t ^ (Fintype.card ι) := by
+  obtain ⟨κ, hκ, hlow⟩ := anchor_lower_bound_eventually hL1c hL1 hp hC1 hχc hχs hχ0 hχ1
+  exact exists_scalar_upper_bound_of_lower_bound hL2c hL2 hχc hχs hκ hlow h0
+
+/-- **Positive weights anchor as well as windows**: a continuous compactly supported weight
+`χ ≥ a₀ > 0` near a `C²` zero of `L₁` dominates `a₀` times a bump equal to `1` near the zero,
+so `∫ χ e^{-tL₁} ≥ κ t^{-d}` eventually and `|C(t)| ≤ A t^d`. -/
+theorem exists_scalar_upper_bound_of_weight {χ : (ι → ℝ) → ℝ} {p : ι → ℝ}
+    (hL1c : Continuous L₁) (hL2c : Continuous L₂)
+    (hL1 : ∀ w, 0 ≤ L₁ w) (hL2 : ∀ w, 0 ≤ L₂ w)
+    (hp : L₁ p = 0) (hC1 : ContDiffAt ℝ 2 L₁ p)
+    (hχc : Continuous χ) (hχs : HasCompactSupport χ) (hχ0 : ∀ w, 0 ≤ χ w)
+    {a₀ : ℝ} (ha₀ : 0 < a₀) (hχ1 : ∀ᶠ w in 𝓝 p, a₀ ≤ χ w)
+    (h0 : SuperPoly (projDiff L₁ L₂ C χ)) :
+    ∃ A : ℝ, 0 ≤ A ∧ ∀ᶠ t in atTop, |C t| ≤ A * t ^ (Fintype.card ι) := by
+  obtain ⟨r, hr, hball⟩ := Metric.eventually_nhds_iff.mp hχ1
+  let f : ContDiffBump p := ⟨r / 2, r, by positivity, by linarith⟩
+  have hf1 : ∀ᶠ w in 𝓝 p, f w = 1 :=
+    f.eventuallyEq_one_of_mem_ball (Metric.mem_ball_self (by positivity))
+  obtain ⟨κ, hκ, hlow⟩ := anchor_lower_bound_eventually hL1c hL1 hp hC1 f.continuous
+    f.hasCompactSupport f.nonneg' hf1
+  have hdom : ∀ w, a₀ * f w ≤ χ w := by
+    intro w
+    by_cases hw : dist w p < r
+    · calc a₀ * f w ≤ a₀ * 1 := mul_le_mul_of_nonneg_left f.le_one ha₀.le
+        _ = a₀ := mul_one _
+        _ ≤ χ w := hball hw
+    · rw [f.zero_of_le_dist (not_lt.mp hw), mul_zero]
+      exact hχ0 w
+  have hlow' : ∀ᶠ t in atTop,
+      (a₀ * κ) * t ^ (-(Fintype.card ι : ℝ)) ≤ ∫ w, χ w * Real.exp (-(t * L₁ w)) := by
+    filter_upwards [hlow] with t ht
+    calc (a₀ * κ) * t ^ (-(Fintype.card ι : ℝ)) = a₀ * (κ * t ^ (-(Fintype.card ι : ℝ))) := by
+          ring
+      _ ≤ a₀ * ∫ w, f w * Real.exp (-(t * L₁ w)) := mul_le_mul_of_nonneg_left ht ha₀.le
+      _ = ∫ w, a₀ * f w * Real.exp (-(t * L₁ w)) := by
+          rw [← integral_const_mul]
+          refine integral_congr_ae (Filter.Eventually.of_forall fun w ↦ ?_)
+          beta_reduce
+          ring
+      _ ≤ ∫ w, χ w * Real.exp (-(t * L₁ w)) := by
+          refine integral_mono (integrable_mul_exp_neg_of_compactSupport
+            (continuous_const.mul f.continuous) f.hasCompactSupport.mul_left hL1c t)
+            (integrable_mul_exp_neg_of_compactSupport hχc hχs hL1c t) fun w ↦ ?_
+          exact mul_le_mul_of_nonneg_right (hdom w) (Real.exp_pos _).le
+  exact exists_scalar_upper_bound_of_lower_bound hL2c hL2 hχc hχs (by positivity) hlow' h0
 
 /-! ### The coercivity sup bound -/
 
@@ -321,17 +375,16 @@ coercivity of `L₁` on `tsupport χ`, a polynomial bound on `C`, and superpolyn
 projective agreement on the family `χ · coordMonomial p m`, every smooth compactly
 supported test with support in `ball p ρ` (where `χ = 1`) has superpolynomial
 projective agreement. -/
-theorem superPoly_projDiff_of_cutoff_monomials
+theorem superPoly_projDiff_weight_mul_of_monomials
     (h1c : Continuous L₁) (h2c : Continuous L₂)
     {χ : (ι → ℝ) → ℝ} (hχc : Continuous χ) (hχs : HasCompactSupport χ) (hχ0 : ∀ w, 0 ≤ χ w)
-    {p : ι → ℝ} {ρ : ℝ} (hχ1 : ∀ w ∈ Metric.ball p ρ, χ w = 1)
+    {p : ι → ℝ}
     {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) (hcoer : ∀ w ∈ tsupport χ, c * ‖w - p‖ ^ ν ≤ L₁ w)
     {A : ℝ} (hA : 0 ≤ A) (hCbound : ∀ᶠ t in atTop, |C t| ≤ A * t ^ (Fintype.card ι))
     (hfam : ∀ (k : ℕ) (m : Fin k → ι),
       SuperPoly (projDiff L₁ L₂ C fun w ↦ χ w * coordMonomial p m w))
-    {φ : (ι → ℝ) → ℝ} (hφ : ContDiff ℝ ∞ φ) (hφs : HasCompactSupport φ)
-    (hφsupp : tsupport φ ⊆ Metric.ball p ρ) :
-    SuperPoly (projDiff L₁ L₂ C φ) := by
+    {φ : (ι → ℝ) → ℝ} (hφ : ContDiff ℝ ∞ φ) (hφs : HasCompactSupport φ) :
+    SuperPoly (projDiff L₁ L₂ C fun w ↦ χ w * φ w) := by
   classical
   refine superPoly_of_forall_eventually_le fun N₀ ↦ ?_
   set d : ℕ := Fintype.card ι with hd_def
@@ -352,21 +405,16 @@ theorem superPoly_projDiff_of_cutoff_monomials
     refine continuous_finsetSum _ fun k _ ↦ continuous_const.mul ?_
     exact (iteratedFDeriv ℝ k φ p).coe_continuous.comp
       (continuous_pi fun _ ↦ continuous_id.sub continuous_const)
-  -- `φ = χ φ` and the decomposition
-  have hχφ : ∀ x, φ x = χ x * φ x := by
-    intro x
-    by_cases hx : x ∈ tsupport φ
-    · rw [hχ1 x (hφsupp hx), one_mul]
-    · rw [image_eq_zero_of_notMem_tsupport hx, mul_zero]
-  have hsplit : φ = fun x ↦ χ x * T x + χ x * (φ x - T x) := by
+  -- the decomposition of the weighted test
+  have hsplit : (fun w ↦ χ w * φ w) = fun x ↦ χ x * T x + χ x * (φ x - T x) := by
     funext x
-    calc φ x = χ x * φ x := hχφ x
-      _ = χ x * T x + χ x * (φ x - T x) := by ring
+    ring
   have hχT_c : Continuous fun w ↦ χ w * T w := hχc.mul hTc
   have hχT_s : HasCompactSupport fun w ↦ χ w * T w := hχs.mul_right
   have hrem_c : Continuous fun w ↦ χ w * (φ w - T w) := hχc.mul (hφ.continuous.sub hTc)
   have hrem_s : HasCompactSupport fun w ↦ χ w * (φ w - T w) := hχs.mul_right
-  have hdecomp : ∀ t, projDiff L₁ L₂ C φ t = projDiff L₁ L₂ C (fun w ↦ χ w * T w) t +
+  have hdecomp : ∀ t, projDiff L₁ L₂ C (fun w ↦ χ w * φ w) t =
+      projDiff L₁ L₂ C (fun w ↦ χ w * T w) t +
       projDiff L₁ L₂ C (fun w ↦ χ w * (φ w - T w)) t := by
     intro t
     rw [← projDiff_add h1c h2c hχT_c hχT_s hrem_c hrem_s]
@@ -573,6 +621,28 @@ theorem superPoly_projDiff_of_cutoff_monomials
     _ ≤ t ^ (-(N₀ : ℝ)) + (2 * M * A * d * K * (∫ w, χ w) + M) * t ^ (-(N₀ : ℝ)) :=
         add_le_add hT hRpart
     _ = (1 + 2 * M * A * d * K * (∫ w, χ w) + M) * t ^ (-(N₀ : ℝ)) := by ring
+
+/-- The cutoff form: for a window `χ = 1` on `ball p ρ` and a smooth test supported in that
+ball, the weighted test is the test itself. -/
+theorem superPoly_projDiff_of_cutoff_monomials
+    (h1c : Continuous L₁) (h2c : Continuous L₂)
+    {χ : (ι → ℝ) → ℝ} (hχc : Continuous χ) (hχs : HasCompactSupport χ) (hχ0 : ∀ w, 0 ≤ χ w)
+    {p : ι → ℝ} {ρ : ℝ} (hχ1 : ∀ w ∈ Metric.ball p ρ, χ w = 1)
+    {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) (hcoer : ∀ w ∈ tsupport χ, c * ‖w - p‖ ^ ν ≤ L₁ w)
+    {A : ℝ} (hA : 0 ≤ A) (hCbound : ∀ᶠ t in atTop, |C t| ≤ A * t ^ (Fintype.card ι))
+    (hfam : ∀ (k : ℕ) (m : Fin k → ι),
+      SuperPoly (projDiff L₁ L₂ C fun w ↦ χ w * coordMonomial p m w))
+    {φ : (ι → ℝ) → ℝ} (hφ : ContDiff ℝ ∞ φ) (hφs : HasCompactSupport φ)
+    (hφsupp : tsupport φ ⊆ Metric.ball p ρ) :
+    SuperPoly (projDiff L₁ L₂ C φ) := by
+  have hχφ : (fun w ↦ χ w * φ w) = φ := by
+    funext x
+    by_cases hx : x ∈ tsupport φ
+    · rw [hχ1 x (hφsupp hx), one_mul]
+    · rw [image_eq_zero_of_notMem_tsupport hx, mul_zero]
+  have := superPoly_projDiff_weight_mul_of_monomials h1c h2c hχc hχs hχ0 hc hν hcoer hA hCbound
+    hfam hφ hφs
+  rwa [hχφ] at this
 
 /-! ### The fixed-family theorem -/
 
