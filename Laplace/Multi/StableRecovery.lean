@@ -159,4 +159,25 @@ theorem exists_stable_recovery {ι : Type*} [Fintype ι] {H : Matrix (Fin d) (Fi
   obtain ⟨R, hR, h1, -, h3⟩ := h Q hQ
   exact ⟨R, hR, h1, h3⟩
 
+/-- **Stability under perturbation of the data.** Two degree-`k` polynomials
+whose pairings with the family differ by `η` in norm have visible components
+within `C η` in covariance norm: apply `exists_stable_recovery` to `Q - Q'`.
+Read with `Q'` the polynomial reconstructed from noisy leading coefficients. -/
+theorem exists_stable_recovery_sub {ι : Type*} [Fintype ι] {H : Matrix (Fin d) (Fin d) ℝ}
+    (hH : H.PosDef) (hk : 0 < k) (φ : ι → EuclidD d → ℝ)
+    (hφc : ∀ i, Continuous (φ i)) (hφg : ∀ i, HasPolynomialGrowth (φ i)) :
+    ∃ C : ℝ, 0 < C ∧ ∀ Q ∈ homogPolySpan d k, ∀ Q' ∈ homogPolySpan d k,
+      ∃ R ∈ homogPolySpan d k, (∀ i, gaussianCovariance H (φ i) R = 0) ∧
+      Real.sqrt (gaussianCovariance H (fun x ↦ Q x - Q' x - R x) (fun x ↦ Q x - Q' x - R x)) ≤
+        C * ‖(fun i ↦ gaussianCovariance H (φ i) Q) - fun i ↦ gaussianCovariance H (φ i) Q'‖ := by
+  obtain ⟨C, hC, h⟩ := exists_stable_recovery hH hk φ hφc hφg
+  refine ⟨C, hC, fun Q hQ Q' hQ' ↦ ?_⟩
+  obtain ⟨R, hR, h1, h2⟩ := h (Q - Q') (Submodule.sub_mem _ hQ hQ')
+  refine ⟨R, hR, h1, ?_⟩
+  have hlin : (fun i ↦ gaussianCovariance H (φ i) (Q - Q')) =
+      (fun i ↦ gaussianCovariance H (φ i) Q) - fun i ↦ gaussianCovariance H (φ i) Q' :=
+    map_sub (pairingMap (k := k) hH φ hφc hφg) ⟨Q, hQ⟩ ⟨Q', hQ'⟩
+  rw [← hlin]
+  exact h2
+
 end Laplace.Multi
