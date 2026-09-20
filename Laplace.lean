@@ -180,6 +180,7 @@ import Laplace.Multi.KernelInstance
 import Laplace.Multi.StableRecovery
 import Laplace.Multi.SingularSufficientTests
 import Laplace.Multi.EmpiricalSchedule
+import Laplace.Multi.ScalingObstruction
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
