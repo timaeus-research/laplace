@@ -359,6 +359,27 @@ does not typecheck for `x : n → ℝ`; for `1 × 1` use `hH.det_pos` +
 Multi-line `by` blocks inside parenthesised arguments break parsing — hoist to a
 `have`.
 
+**Pi-form products and other friction from the sufficient-family / Stein arc
+(CutoffMonomialFamily, GaussianStein, TaylorMonomialExpansion).**
+`Continuous.mul`, `HasPolynomialGrowth.mul`, `HasCompactSupport.add` return
+`f * g` / `f + g` in Pi form; after feeding them to a lemma the integrand
+carries `(f * g) x` redexes that `ring` treats as atoms — `simp only
+[Pi.mul_apply]` (or `Pi.add_apply`) first. `HasFDerivAt.mul` on lambdas: name
+the result with an explicit lambda type (`have hd : HasFDerivAt (fun y ↦ y i *
+F y) _ x := …`) before `rw [hd.fderiv]`, or the rewrite looks for the Pi form.
+Coordinate derivatives on `EuclidD d` are `(EuclideanSpace.proj (𝕜 := ℝ)
+i).hasFDerivAt`; `EuclideanSpace.single_apply` is deprecated for
+`PiLp.single_apply` and `ext j; simp [Finset.sum_apply, Pi.single_apply]`
+proves `∑ i, x i • single i 1 = x`. Composing a `HasFDerivAt` with a real
+`HasDerivAt` (`comp_hasDerivAt`) lands in the `RCLike`-derived `Module ℝ ℝ`
+instance; `convert this using 1 <;> rfl` closes the instance diamond where
+`simpa`/`exact` fail. `gcongr` cannot discharge side goals like `0 ≤ χ w`
+from hypotheses — spell out `mul_le_mul`. `omit [..] in` must come BEFORE the
+docstring. `le_or_lt` is now `le_or_gt`. The multivariate Taylor remainder is
+cheapest through `taylor_mean_remainder_bound` on `g s = φ (p + s • v)` with
+`ℓ.iteratedFDeriv_comp_right` + `iteratedFDeriv_comp_add_left` identifying the
+iterated derivatives along the line.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
