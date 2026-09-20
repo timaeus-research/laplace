@@ -213,6 +213,7 @@ import Laplace.Multi.WeightedReconstruction
 import Laplace.Multi.WeightedCutoff
 import Laplace.Multi.TruncatedBlindness
 import Laplace.Multi.CylinderSufficient
+import Laplace.Multi.SeparableTangential
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
