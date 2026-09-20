@@ -199,6 +199,10 @@ import Laplace.Multi.GaussianStein
 import Laplace.Multi.SecondOrderEngine
 import Laplace.Multi.SecondOrderLaplace
 import Laplace.Multi.SecondOrderRadial
+import Laplace.Multi.WeightedDegree
+import Laplace.Multi.KernelComparison
+import Laplace.Multi.WeightedPolynomialComparison
+import Laplace.Multi.WeightedTemperatureAdapter
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
