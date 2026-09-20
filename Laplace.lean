@@ -183,6 +183,7 @@ import Laplace.Multi.EmpiricalSchedule
 import Laplace.Multi.ScalingObstruction
 import Laplace.Multi.AbelianTransfer
 import Laplace.Multi.AbelianTransferLog
+import Laplace.Multi.AbelianTransferInstances
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
