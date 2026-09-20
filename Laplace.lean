@@ -189,6 +189,7 @@ import Laplace.Multi.OneDimSufficient
 import Laplace.Multi.AbelianTransferCube
 import Laplace.Multi.EmpiricalTransfer
 import Laplace.Multi.AbelianTransferMonomial
+import Laplace.Multi.SeparableSuperPoly
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
