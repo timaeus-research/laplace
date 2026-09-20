@@ -191,6 +191,9 @@ import Laplace.Multi.EmpiricalTransfer
 import Laplace.Multi.AbelianTransferMonomial
 import Laplace.Multi.SeparableSuperPoly
 import Laplace.Multi.GibbsSufficient
+import Laplace.Multi.LocalizedSingular
+import Laplace.Multi.TaylorMonomialExpansion
+import Laplace.Multi.CutoffMonomialFamily
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
