@@ -93,4 +93,81 @@ theorem boltzmannMass_log_transfer_of_uniform_close {K L : X → ℝ} (hK : Meas
   · exact le_trans (mul_le_mul_of_nonneg_left ht.1 (Real.exp_pos _).le) hs1
   · exact le_trans hs2 (mul_le_mul_of_nonneg_left ht.2 (Real.exp_pos _).le)
 
+/-- **Empirical free energy along a schedule.** With `t_n → ∞` and `t_n δ_n ≤ B`, the empirical
+free energy `-log Z_{K_n}(t_n)` equals `λ log t_n - k log log t_n` up to a bounded error, where
+`(λ, k+1)` are the population sublevel data. -/
+theorem eventually_abs_neg_log_boltzmannMass_sub_le_of_uniform_close {K : ℕ → X → ℝ}
+    {L : X → ℝ} (hK : ∀ n, Measurable (K n)) (hL : Measurable L)
+    (hK0 : ∀ n x, 0 ≤ K n x) (hL0 : ∀ x, 0 ≤ L x) {δ t : ℕ → ℝ}
+    (hclose : ∀ n x, |K n x - L x| ≤ δ n) (hδ : ∀ n, 0 ≤ δ n) {B : ℝ} (htδ : ∀ n, t n * δ n ≤ B)
+    (ht : Tendsto t atTop atTop) {lam ε₀ c₁ c₂ : ℝ} (k : ℕ)
+    (hlam : 0 < lam) (hε₀ : 0 < ε₀) (hε₀1 : ε₀ < 1) (hc₁ : 0 < c₁) (hc₂ : 0 < c₂)
+    (hlower : ∀ ε : ℝ, 0 < ε → ε ≤ ε₀ →
+      c₁ * ε ^ lam * (Real.log ε⁻¹) ^ k ≤ sublevelMass μ L ε)
+    (hupper : ∀ ε : ℝ, 0 < ε → ε ≤ ε₀ →
+      sublevelMass μ L ε ≤ c₂ * ε ^ lam * (Real.log ε⁻¹) ^ k) :
+    ∃ D : ℝ, ∀ᶠ n in atTop,
+      |(-Real.log (boltzmannMass μ (K n) (t n))) -
+        (lam * Real.log (t n) - k * Real.log (Real.log (t n)))| ≤ D := by
+  obtain ⟨C₁, C₂, hC₁, hC₂, h⟩ :=
+    boltzmannMass_log_transfer μ L hL hL0 k hlam hε₀ hε₀1 hc₁ hc₂ hlower hupper
+  refine ⟨max |B + Real.log C₂| |B - Real.log C₁|, ?_⟩
+  have hev : ∀ᶠ n in atTop, (C₁ * t n ^ (-lam) * (Real.log (t n)) ^ k ≤ boltzmannMass μ L (t n) ∧
+      boltzmannMass μ L (t n) ≤ C₂ * t n ^ (-lam) * (Real.log (t n)) ^ k) ∧ Real.exp 1 < t n :=
+    (ht.eventually h).and (ht.eventually (eventually_gt_atTop (Real.exp 1)))
+  filter_upwards [hev] with n hn
+  obtain ⟨⟨hlo, hhi⟩, hte⟩ := hn
+  have htpos : 0 < t n := lt_trans (Real.exp_pos 1) hte
+  have hlog1 : 1 < Real.log (t n) := by
+    have := Real.log_lt_log (Real.exp_pos 1) hte
+    rwa [Real.log_exp] at this
+  have hlogpos : 0 < Real.log (t n) := zero_lt_one.trans hlog1
+  set S : ℝ := t n ^ (-lam) * (Real.log (t n)) ^ k with hS_def
+  have hSpos : 0 < S := mul_pos (Real.rpow_pos_of_pos htpos _) (pow_pos hlogpos _)
+  have hlogS : Real.log S = -lam * Real.log (t n) + k * Real.log (Real.log (t n)) := by
+    rw [hS_def, Real.log_mul (Real.rpow_pos_of_pos htpos _).ne' (pow_pos hlogpos _).ne',
+      Real.log_rpow htpos, Real.log_pow]
+  have htδ0 : 0 ≤ t n * δ n := mul_nonneg htpos.le (hδ n)
+  obtain ⟨hs1, hs2⟩ := boltzmannMass_sandwich_of_uniform_close μ (hK n) hL (hK0 n) hL0 (hclose n)
+    htpos.le
+  -- two-sided bounds on `Z_K` by `e^{±B} C S`
+  have hZlo : Real.exp (-B) * (C₁ * S) ≤ boltzmannMass μ (K n) (t n) := by
+    calc Real.exp (-B) * (C₁ * S) ≤ Real.exp (-(t n * δ n)) * (C₁ * S) := by
+          gcongr
+          linarith [htδ n]
+      _ ≤ Real.exp (-(t n * δ n)) * boltzmannMass μ L (t n) := by
+          gcongr
+          simpa [hS_def, mul_assoc] using hlo
+      _ ≤ boltzmannMass μ (K n) (t n) := hs1
+  have hZhi : boltzmannMass μ (K n) (t n) ≤ Real.exp B * (C₂ * S) := by
+    calc boltzmannMass μ (K n) (t n) ≤ Real.exp (t n * δ n) * boltzmannMass μ L (t n) := hs2
+      _ ≤ Real.exp (t n * δ n) * (C₂ * S) := by
+          gcongr
+          simpa [hS_def, mul_assoc] using hhi
+      _ ≤ Real.exp B * (C₂ * S) := by
+          gcongr
+          exact htδ n
+  have hZpos : 0 < boltzmannMass μ (K n) (t n) :=
+    lt_of_lt_of_le (by positivity) hZlo
+  -- take logarithms
+  have hlo' : -B + (Real.log C₁ + Real.log S) ≤ Real.log (boltzmannMass μ (K n) (t n)) := by
+    have := Real.log_le_log (by positivity) hZlo
+    rwa [Real.log_mul (Real.exp_pos _).ne' (by positivity), Real.log_exp,
+      Real.log_mul hC₁.ne' hSpos.ne'] at this
+  have hhi' : Real.log (boltzmannMass μ (K n) (t n)) ≤ B + (Real.log C₂ + Real.log S) := by
+    have := Real.log_le_log hZpos hZhi
+    rwa [Real.log_mul (Real.exp_pos _).ne' (by positivity), Real.log_exp,
+      Real.log_mul hC₂.ne' hSpos.ne'] at this
+  rw [hlogS] at hlo' hhi'
+  rw [abs_le]
+  constructor
+  · have : -(max |B + Real.log C₂| |B - Real.log C₁|) ≤ -(B + Real.log C₂) := by
+      have := le_abs_self (B + Real.log C₂)
+      have := le_max_left |B + Real.log C₂| |B - Real.log C₁|
+      linarith
+    linarith
+  · have : B - Real.log C₁ ≤ max |B + Real.log C₂| |B - Real.log C₁| :=
+      (le_abs_self _).trans (le_max_right _ _)
+    linarith
+
 end Laplace
