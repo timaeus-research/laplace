@@ -194,6 +194,7 @@ import Laplace.Multi.GibbsSufficient
 import Laplace.Multi.LocalizedSingular
 import Laplace.Multi.TaylorMonomialExpansion
 import Laplace.Multi.CutoffMonomialFamily
+import Laplace.Multi.AmplitudeFamily
 import Laplace.Multi.EmpiricalSublevel
 import Laplace.Multi.GaussianStein
 import Laplace.Multi.SecondOrderEngine
