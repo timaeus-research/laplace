@@ -380,6 +380,35 @@ cheapest through `taylor_mean_remainder_bound` on `g s = φ (p + s • v)` with
 `ℓ.iteratedFDeriv_comp_right` + `iteratedFDeriv_comp_add_left` identifying the
 iterated derivatives along the line.
 
+**Second-order Laplace arc (SecondOrderEngine, SecondOrderLaplace,
+SecondOrderRadial).** `abs_exp_neg_sub_one_add_le` already exists in
+`CovarianceSharp` with the `exp|r|` weight; the Gaussian-friendly endpoint bound
+`|e^{-v} − 1 + v| ≤ v²(1 + e^{-v})` is `abs_exp_neg_sub_one_add_le_endpoint` —
+the root module fails to import on a duplicate name even when `lean-state
+check` of the file is clean, so grep for the name before adding a lemma.
+`rw [taylorTail_smul_succ]` without arguments rewrites the FIRST matching
+Taylor tail (often the one on the other side of the equation) — pass the
+degree explicitly. `rw [← pow_add, add_comm]` reorders whichever sum it sees
+first; use `show (2 : ℕ) + ρ = ρ + 2 by ring`. `add_le_add_left h a : a + b ≤
+a + c`? In this Mathlib the argument order made `add_le_add le_rfl h` the safe
+choice. `Σ` (U+03A3) is a reserved token — `hΣ0` does not parse as an
+identifier. `Finset.sum_eq_add_of_mem 0 2 h0 h2 (by norm_num) hrest` collapses a
+sum whose other terms vanish (the `hrest` binder is `∀ c ∈ s, c ≠ a ∧ c ≠ b →
+f c = 0`). `iteratedFDeriv_const_of_ne hn c : iteratedFDeriv 𝕜 n (fun _ ↦ c) =
+0` is a FUNCTION equality, so after rewriting an applied term you get `0 0` —
+follow with `Pi.zero_apply`. `ContinuousMultilinearMap.zero_apply/smul_apply`
+are deprecated for the root `zero_apply/smul_apply`. `∞` in `ContDiff ℝ ∞ f`
+needs `open scoped ContDiff` (otherwise "type expected, got (ContDiff ℝ : …)").
+Higher-order unification cannot infer `a : ℕ → ℝ` from `a (ρ + j)`; pass the
+coefficient sequences explicitly `(a := fun m ↦ …)` and let beta reduction
+match `m + 2` against `ρ + j + 2`. Directional-derivative growth of a smooth
+homogeneous `Q` (needed for the Stein identities) comes from
+`iteratedFDeriv_smul_eq_of_isHomogeneous` at `j = 1` plus
+`exists_abs_le_of_isHomogeneous`
+(`hasPolynomialGrowth_fderiv_of_isHomogeneous`). Analyticity of `qform` is
+`(innerSL ℝ).analyticAt_bilinear … |>.comp₂ analyticAt_id (A.analyticAt x)` then
+`convert … using 2 with y; simp [qform]`.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
