@@ -510,6 +510,24 @@ measure_ball_lt_top.ne)`. `Measure.addHaar_ball_of_pos volume q hρ` + `Module.f
 fderiv version with `DifferentiableAt` hypotheses elaborates instantly (the HasFDerivWithinAt gotcha above
 is about mixing the two).
 
+**Smoothness of a parametric integral: use the convolution theorem (MarginalCutoff).** Mathlib has no
+general "differentiate under the integral to all orders" lemma, but
+`contDiffOn_convolution_right_with_param (𝕜 := ℝ) (μ := volume) (f := fun _ ↦ (1 : ℝ)) (n := ⊤)
+(ContinuousLinearMap.mul ℝ ℝ) isOpen_univ hk hgs (locallyIntegrable_const 1) hg` gives
+`ContDiffOn ℝ ∞ (fun q ↦ (1 ⋆ g q.1) q.2) (univ ×ˢ univ)` for a family `g : P → G → ℝ` smooth in `(q, y)` with
+`g q y = 0` for `y ∉ k` (`k` compact, independent of `q`), and `(1 ⋆ g q) 0 = ∫ y, g q (−y) = ∫ y, g q y`
+(`convolution_def`, `ContinuousLinearMap.mul_apply'`, `integral_neg_eq_self`) — so `q ↦ ∫ g q y dy` is smooth.
+Needs `open scoped Convolution`; `n : ℕ∞` there, `(⊤ : ℕ∞)` coerces to `∞`. Joint smoothness of
+`(q, y) ↦ χ (Sum.elim q y)`: `↿g = χ ∘ ⇑(LinearMap.toContinuousLinearMap
+(LinearEquiv.sumArrowLequivProdArrow ι₁ ι₂ ℝ ℝ).symm.toLinearMap)` by `funext; rfl`, then
+`hχ.comp (ContinuousLinearMap.contDiff _)`. Fubini for a non-product integrand along the coordinate
+splitting: `volume_measurePreserving_sumPiEquivProdPi_symm` + `.integral_comp'`, integrability transported by
+`(hmp.integrable_comp_emb (MeasurableEquiv.measurableEmbedding _)).mpr`, then
+`rw [Measure.volume_eq_prod (ι₁ → ℝ) (ι₂ → ℝ), integral_prod _ hint']` (explicit type arguments so only the
+product-space `volume` is rewritten); `(sumPiEquivProdPi _).symm (x, y) = Sum.elim x y` is `rfl`, so a `change`
+to the glued form works. `dist_pi_lt_iff hr` splits a sup-norm ball on `ι₁ ⊕ ι₂ → ℝ` into transverse and
+tangential balls (`cases i with | inl | inr`).
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
