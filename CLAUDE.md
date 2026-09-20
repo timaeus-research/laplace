@@ -432,6 +432,24 @@ including the one inside the target `W.wdeg α - D` — state the power identity
 normalized-quotient algebra, keep the kernel-level theorem
 (`tendsto_normalizedKernel_difference_div_pow`) free of exponentials and prove the
 exponential/masked versions as wrappers.
+More from the same arc: `Fintype.piFinset` needs `DecidableEq ι` — a def using it
+under `open Classical in` must be `noncomputable`. A def taking the section
+variable `(W : IntWeights ι)` explicitly cannot be used with dot notation on a
+structure that mentions `W` in its type (`J.rem N x` puts `J` in the first
+`WeightedJet` slot and shifts everything else): declare such helpers with
+`omit W in noncomputable def WeightedJet.rem {W : IntWeights ι} …`. `rw` cannot
+rewrite `ε ^ 1` under `fun ε ↦ …` inside a `Tendsto` (bound variable) — state the
+continuous majorant without the exponent and rewrite the pointwise bound instead.
+`|a| / c` is not `|a| / |c|`: to get `|a/c − b/c| ≤ |a|/c + |b|/c` use
+`rw [← sub_div, abs_div, abs_of_pos hc, ← add_div]` then `abs_sub`. In this
+Mathlib `add_le_add_left h c : h.lhs + c ≤ h.rhs + c` (adds on the RIGHT); use
+`add_le_add le_rfl h` / `add_le_add h le_rfl` to avoid guessing. Flat analytic ⇒
+zero germ: mirror `HasFPowerSeriesAt.apply_eq_zero` (strong induction, partial
+sum `k+1` collapses to `p k` on the diagonal, `isBigO_sub_partialSum_pow (k+1)`,
+`IsBigO.continuousMultilinearMap_apply_eq_zero`), then `hasFPowerSeries_diag_eq`
++ `ContinuousMultilinearMap.eq_of_diag_eq` with symmetry from
+`(h.analyticAt.contDiffAt (n := ω)).iteratedFDeriv_comp_perm` (needs
+`open scoped ContDiff` for `ω`).
 
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
