@@ -20,7 +20,7 @@ gives the second-order expansion of the moment `M h A = ∫ A w h / ∫ w h`:
   `(M h A - E₀ A + ∑ h^m Cov₀(A, B m)) / h^{2ρ} → Cov₀(A, ½Q² - R) - E₀(B ρ) Cov₀(A, B ρ)`
 
 (`tendsto_normalizedMoment_linear_subtracted_div_pow`). The endpoint bound
-`|e^{-v} - 1 + v| ≤ v² (1 + e^{-v})` (`abs_exp_neg_sub_one_add_le`) is the
+`|e^{-v} - 1 + v| ≤ v² (1 + e^{-v})` (`abs_exp_neg_sub_one_add_le_endpoint`) is the
 domination tool for the Laplace instantiation: the residual is controlled by the
 reference and the deformed weights, both Gaussian-dominated, with no positivity
 of the perturbation required.
@@ -61,7 +61,7 @@ theorem abs_exp_sub_one_sub_le_of_nonneg {u : ℝ} (hu : 0 ≤ u) :
     _ = Real.exp u * u ^ 2 := by ring
 
 /-- **Endpoint bound**: `|e^{-v} - 1 + v| ≤ v² (1 + e^{-v})`. -/
-theorem abs_exp_neg_sub_one_add_le (v : ℝ) :
+theorem abs_exp_neg_sub_one_add_le_endpoint (v : ℝ) :
     |Real.exp (-v) - 1 + v| ≤ v ^ 2 * (1 + Real.exp (-v)) := by
   rcases le_or_gt 0 v with hv | hv
   · -- `v ≥ 0`: `e^{-v} ≤ 1/(1+v) ≤ 1 - v + v²`
