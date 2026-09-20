@@ -338,6 +338,27 @@ goal contains `⟨w, hw⟩` (motive not type correct) — `change` the goal to a
 `w`-only form first; and `pdflatex … > foo.out` CLOBBERS hyperref's
 bookmark file `foo.out` — redirect to `.stdout`.
 
+**Measure-theory gotchas from the Abelian-transfer arc (AbelianTransfer*,
+EmpiricalTransfer, OneDimSufficient).** `∫⁻ x, ∫⁻ ε in s, H x ε ∂μ` attaches
+`∂μ` to the INNER integral — parenthesise `(∫⁻ ε in s, H x ε)`. A.e. equality of
+sets `s ∩ t =ᵐ[μ] u` needs `(… : Set ℝ)` ascriptions or the elaborator asks for
+`Inter (ℝ → Prop)`. `.const_mul`/`.mul_const` on an `IntegrableOn` yield an
+`Integrable` (an `And`), so `.congr_fun` fails: name the result with an explicit
+`IntegrableOn` type first. `setIntegral_mono_set` wants the inclusion as
+`(h : s ⊆ t).eventuallyLE`; `Eventually.of_forall h` elaborates the set as
+`Membership.mem s` and `linarith` then cannot match integrals. For
+`Integrable.of_bound` pass `Measurable.aestronglyMeasurable (by fun_prop)`; a
+bare `by fun_prop` for `AEStronglyMeasurable` tries continuity (fails on rpow).
+`Measure.volume_eq_prod ℝ ℝ` needs explicit type arguments;
+`Real.volume_real_Icc_of_le`/`Real.volume_Ioc` are namespaced. `∀ᵐ x, x ≠ 0` is
+`rw [ae_iff]; simp`. `Matrix.PosDef` is Finsupp-based on this pin: `hH.2 x hx`
+does not typecheck for `x : n → ℝ`; for `1 × 1` use `hH.det_pos` +
+`Matrix.det_fin_one`. `Nat.doubleFactorial_zero/one` do not exist — use
+`norm_num [Nat.doubleFactorial]`. `Set.mem_setOf_eq` is deprecated for
+`Set.mem_ofPred_eq`. `pdflatex … > foo.out` clobbers hyperref's bookmark file.
+Multi-line `by` blocks inside parenthesised arguments break parsing — hoist to a
+`have`.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
