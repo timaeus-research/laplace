@@ -469,6 +469,15 @@ sum over exponents; a `subst` on `totalDeg α = n` transports `Fin n → ι` sum
 uniform Taylor remainder; `HasFPowerSeriesOnBall.hasFPowerSeriesAt` needs no positivity
 argument (the structure carries `r_pos`). `zero_le` has an implicit argument here:
 write `lt_of_le_of_lt zero_le h`, not `zero_le _`.
+Cutoff arc (WeightedCutoff): `norm_integral_le_of_norm_le hg (f := …) (h)` needs the
+explicit `f` or the `NormedSpace` instance search sticks; `Set.indicator_le_self` needs a
+canonically ordered codomain — over `ℝ` use `Set.indicator_le_self' (fun _ _ ↦ nonneg)`;
+after `refine integral_congr_ae (Eventually.of_forall fun u ↦ ?_)` the goal is a beta-redex
+`(fun u ↦ …) u` — `beta_reduce` before `rw [Set.indicator_of_mem]`; `W.integral_dil hε (f := …)`
+should name `f` or the lambda is inferred from the measurability proof in `∘` form and the
+`rw` fails; `t⁻¹ ≤ t^(-(1/D))` for `t ≥ 1` is `Real.rpow_le_rpow_of_exponent_le` after
+`← Real.rpow_neg_one`; `Set.indicator_le_indicator_of_subset hUU' (fun _ ↦ nonneg) x` is the
+pointwise monotonicity of indicators in the set.
 
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
