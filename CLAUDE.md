@@ -409,6 +409,30 @@ homogeneous `Q` (needed for the Stein identities) comes from
 `(innerSL ℝ).analyticAt_bilinear … |>.comp₂ analyticAt_id (A.analyticAt x)` then
 `convert … using 2 with y; simp [qform]`.
 
+**Weighted-jet arc (WeightedDegree, KernelComparison,
+WeightedPolynomialComparison, WeightedTemperatureAdapter).** Coefficient
+uniqueness for `∑ α ∈ S, c α * mvMonomial α u = 0` goes through
+`MvPolynomial.funext` with `p := ∑ α ∈ S, monomial (Finsupp.equivFunOnFinite.symm α) (c α)`;
+`MvPolynomial.eval_monomial` + `Finsupp.prod_pow` evaluate to `mvMonomial` by `rfl`
+(`coe_equivFunOnFinite_symm` is rfl), and `coeff_sum` + `coeff_monomial` +
+`Finset.sum_eq_single` extract a coefficient (the `if` compares Finsupps, use
+`Finsupp.equivFunOnFinite.symm.injective`). `isLittleO_one_iff.mp` is an "unknown
+constant" — `rwa [isLittleO_one_iff] at h` works. Binders from `filter_upwards
+[self_mem_nhdsWithin] with ε hε` have type `ε ∈ Set.Ioi 0`; `pow_pos hε` needs
+`Set.mem_Ioi.mp hε` (or `have : 0 < ε := hε`). A section `variable [Fintype ι]` is
+included in every declaration and lints as unused — put `[Fintype ι]` on the
+individual declarations that sum over `ι` (or `omit [Fintype ι] in`). Dot notation
+`W.foo` only works if `W` genuinely occurs in `foo`'s signature; a def in
+`namespace IntWeights` that does not mention `W` is `IntWeights.foo`, not `W.foo`.
+`rw [show W.wdeg α = (W.wdeg α - D) + D from …]` rewrites every occurrence
+including the one inside the target `W.wdeg α - D` — state the power identity
+`ε ^ W.wdeg α = ε ^ (W.wdeg α - D) * ε ^ D` as a `have` and rewrite with that.
+`Tendsto.div`/`.mul`/`.sub` on function-valued limits produce Pi-form
+`(f / g) h` redexes: `simp only [Pi.div_apply]` before `field_simp`. For the
+normalized-quotient algebra, keep the kernel-level theorem
+(`tendsto_normalizedKernel_difference_div_pow`) free of exponentials and prove the
+exponential/masked versions as wrappers.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
