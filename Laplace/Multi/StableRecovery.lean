@@ -74,6 +74,74 @@ noncomputable def covCore {H : Matrix (Fin d) (Fin d) ℝ} (hH : H.PosDef) (hk :
         (homogPolySpan_hasPolynomialGrowth x.2) (homogPolySpan_isHomogeneous x.2) hx
     exact Submodule.coe_eq_zero.mp h0
 
+/-- **Stable recovery of the visible component, orthogonal form.** For a finite
+family of continuous polynomially growing tests there is `C > 0` such that every
+degree-`k` homogeneous polynomial `Q` splits as `Q = R + (Q - R)` with `R` in the
+kernel of the observation operator (all pairings with the family vanish), `Q - R`
+covariance-orthogonal to that kernel (the visible component), and
+`√Cov_γ[Q - R, Q - R] ≤ C · ‖(Cov_γ[φ_i, Q])_i‖`. -/
+theorem exists_stable_recovery_orthogonal {ι : Type*} [Fintype ι]
+    {H : Matrix (Fin d) (Fin d) ℝ} (hH : H.PosDef) (hk : 0 < k) (φ : ι → EuclidD d → ℝ)
+    (hφc : ∀ i, Continuous (φ i)) (hφg : ∀ i, HasPolynomialGrowth (φ i)) :
+    ∃ C : ℝ, 0 < C ∧ ∀ Q ∈ homogPolySpan d k, ∃ R ∈ homogPolySpan d k,
+      (∀ i, gaussianCovariance H (φ i) R = 0) ∧
+      (∀ P ∈ homogPolySpan d k, (∀ i, gaussianCovariance H (φ i) P = 0) →
+        gaussianCovariance H P (fun x ↦ Q x - R x) = 0) ∧
+      Real.sqrt (gaussianCovariance H (fun x ↦ Q x - R x) (fun x ↦ Q x - R x)) ≤
+        C * ‖fun i ↦ gaussianCovariance H (φ i) Q‖ := by
+  classical
+  let core : InnerProductSpace.Core ℝ (homogPolySpan d k) := covCore hH hk
+  let _ : NormedAddCommGroup (homogPolySpan d k) :=
+    InnerProductSpace.Core.toNormedAddCommGroup (𝕜 := ℝ)
+  let _ : UniformSpace (homogPolySpan d k) := PseudoMetricSpace.toUniformSpace
+  let _ : TopologicalSpace (homogPolySpan d k) := UniformSpace.toTopologicalSpace
+  let _ : InnerProductSpace ℝ (homogPolySpan d k) := InnerProductSpace.ofCore core.toCore
+  have : FiniteDimensional ℝ (homogPolySpan d k) :=
+    FiniteDimensional.span_of_finite ℝ (Set.finite_range _)
+  set T : homogPolySpan d k →ₗ[ℝ] (ι → ℝ) := pairingMap (k := k) hH φ hφc hφg with hT_def
+  set K : Submodule ℝ (homogPolySpan d k) := LinearMap.ker T with hK_def
+  have : CompleteSpace K := FiniteDimensional.complete ℝ K
+  have hW : IsCompl K Kᗮ := K.isCompl_orthogonal
+  -- the restriction of `T` to the orthogonal complement is injective
+  set T' : Kᗮ →ₗ[ℝ] (ι → ℝ) := T.domRestrict Kᗮ with hT'_def
+  have hker : LinearMap.ker T' = ⊥ := by
+    rw [LinearMap.ker_eq_bot']
+    intro x hx
+    have h1 : (x : homogPolySpan d k) ∈ K := LinearMap.mem_ker.mpr hx
+    have h2 : (x : homogPolySpan d k) ∈ K ⊓ Kᗮ := ⟨h1, x.2⟩
+    rw [hW.inf_eq_bot, Submodule.mem_bot] at h2
+    exact Subtype.ext h2
+  obtain ⟨C, hC, hanti⟩ := T'.exists_antilipschitzWith hker
+  refine ⟨(C : ℝ), by exact_mod_cast hC, fun Q hQ ↦ ?_⟩
+  -- decompose `Q = r + w` with `r ∈ K`, `w ∈ Kᗮ`
+  obtain ⟨r, hr, w, hw, hrw⟩ := K.exists_add_mem_mem_orthogonal (⟨Q, hQ⟩ : homogPolySpan d k)
+  have hwQ : w = (⟨Q, hQ⟩ : homogPolySpan d k) - r := eq_sub_of_add_eq' hrw.symm
+  refine ⟨(r : EuclidD d → ℝ), r.2, ?_, ?_, ?_⟩
+  · intro i
+    exact congrFun (LinearMap.mem_ker.mp hr) i
+  · intro P hP hPker
+    have hPK : (⟨P, hP⟩ : homogPolySpan d k) ∈ K := LinearMap.mem_ker.mpr (funext hPker)
+    have h := Submodule.inner_right_of_mem_orthogonal hPK hw
+    change gaussianCovariance H P (w : EuclidD d → ℝ) = 0 at h
+    rw [hwQ] at h
+    exact h
+  · have hTw : T w = T ⟨Q, hQ⟩ := by
+      rw [hwQ, map_sub, LinearMap.mem_ker.mp hr, sub_zero]
+    have hdist := hanti.le_mul_dist ⟨w, hw⟩ 0
+    rw [dist_zero_right, map_zero, dist_zero_right] at hdist
+    have hnorm : ‖(⟨w, hw⟩ : Kᗮ)‖ = Real.sqrt (gaussianCovariance H
+        (fun x ↦ Q x - (r : EuclidD d → ℝ) x) (fun x ↦ Q x - (r : EuclidD d → ℝ) x)) := by
+      rw [Submodule.coe_norm, InnerProductSpace.Core.norm_eq_sqrt_re_inner]
+      change Real.sqrt (gaussianCovariance H (w : EuclidD d → ℝ) w) = _
+      rw [hwQ]
+      rfl
+    have hT' : T' ⟨w, hw⟩ = fun i ↦ gaussianCovariance H (φ i) Q := by
+      change T w = _
+      rw [hTw]
+      rfl
+    rw [hnorm, hT'] at hdist
+    exact hdist
+
 /-- **Stable recovery of the visible component.** For a finite family of
 continuous polynomially growing tests there is `C > 0` such that every
 degree-`k` homogeneous polynomial `Q` admits a kernel correction `R` (all
@@ -86,51 +154,9 @@ theorem exists_stable_recovery {ι : Type*} [Fintype ι] {H : Matrix (Fin d) (Fi
       (∀ i, gaussianCovariance H (φ i) R = 0) ∧
       Real.sqrt (gaussianCovariance H (fun x ↦ Q x - R x) (fun x ↦ Q x - R x)) ≤
         C * ‖fun i ↦ gaussianCovariance H (φ i) Q‖ := by
-  classical
-  let core : InnerProductSpace.Core ℝ (homogPolySpan d k) := covCore hH hk
-  let _ : NormedAddCommGroup (homogPolySpan d k) :=
-    InnerProductSpace.Core.toNormedAddCommGroup (𝕜 := ℝ)
-  let _ : NormedSpace ℝ (homogPolySpan d k) := InnerProductSpace.Core.toNormedSpace
-  have : FiniteDimensional ℝ (homogPolySpan d k) :=
-    FiniteDimensional.span_of_finite ℝ (Set.finite_range _)
-  set T : homogPolySpan d k →ₗ[ℝ] (ι → ℝ) := pairingMap (k := k) hH φ hφc hφg with hT_def
-  set K : Submodule ℝ (homogPolySpan d k) := LinearMap.ker T with hK_def
-  obtain ⟨W, hW⟩ := Submodule.exists_isCompl K
-  -- the restriction of `T` to the complement is injective
-  set T' : W →ₗ[ℝ] (ι → ℝ) := T.domRestrict W with hT'_def
-  have hker : LinearMap.ker T' = ⊥ := by
-    rw [LinearMap.ker_eq_bot']
-    intro x hx
-    have h1 : (x : homogPolySpan d k) ∈ K := LinearMap.mem_ker.mpr hx
-    have h2 : (x : homogPolySpan d k) ∈ K ⊓ W := ⟨h1, x.2⟩
-    rw [hW.inf_eq_bot, Submodule.mem_bot] at h2
-    exact Subtype.ext h2
-  obtain ⟨C, hC, hanti⟩ := T'.exists_antilipschitzWith hker
-  refine ⟨(C : ℝ), by exact_mod_cast hC, fun Q hQ ↦ ?_⟩
-  -- decompose `Q = r + w` with `r ∈ K`, `w ∈ W`
-  have hmem : (⟨Q, hQ⟩ : homogPolySpan d k) ∈ K ⊔ W := by
-    rw [hW.sup_eq_top]
-    exact Submodule.mem_top
-  obtain ⟨r, hr, w, hw, hrw⟩ := Submodule.mem_sup.mp hmem
-  refine ⟨(r : EuclidD d → ℝ), r.2, ?_, ?_⟩
-  · intro i
-    exact congrFun (LinearMap.mem_ker.mp hr) i
-  · have hwQ : w = (⟨Q, hQ⟩ : homogPolySpan d k) - r := eq_sub_of_add_eq' hrw
-    have hTw : T w = T ⟨Q, hQ⟩ := by
-      rw [hwQ, map_sub, LinearMap.mem_ker.mp hr, sub_zero]
-    have hdist := hanti.le_mul_dist ⟨w, hw⟩ 0
-    rw [dist_zero_right, map_zero, dist_zero_right] at hdist
-    have hnorm : ‖(⟨w, hw⟩ : W)‖ = Real.sqrt (gaussianCovariance H
-        (fun x ↦ Q x - (r : EuclidD d → ℝ) x) (fun x ↦ Q x - (r : EuclidD d → ℝ) x)) := by
-      rw [Submodule.coe_norm, InnerProductSpace.Core.norm_eq_sqrt_re_inner]
-      change Real.sqrt (gaussianCovariance H (w : EuclidD d → ℝ) w) = _
-      rw [hwQ]
-      rfl
-    have hT' : T' ⟨w, hw⟩ = fun i ↦ gaussianCovariance H (φ i) Q := by
-      change T w = _
-      rw [hTw]
-      rfl
-    rw [hnorm, hT'] at hdist
-    exact hdist
+  obtain ⟨C, hC, h⟩ := exists_stable_recovery_orthogonal hH hk φ hφc hφg
+  refine ⟨C, hC, fun Q hQ ↦ ?_⟩
+  obtain ⟨R, hR, h1, -, h3⟩ := h Q hQ
+  exact ⟨R, hR, h1, h3⟩
 
 end Laplace.Multi

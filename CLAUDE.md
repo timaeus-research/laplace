@@ -320,6 +320,24 @@ exact_mod_cast natCast_le_infty 2)` DOES give `C²` from `ContDiff ℝ ∞`.
 Also: `∞` is ambiguous (`ℕ∞ω` vs `ℝ≥0∞`) when both `open scoped ENNReal`
 and `open scoped ContDiff` are in force — drop the one you do not need.
 
+**A custom inner product on a `Submodule` of a function space needs the
+uniformity pinned (StableRecovery).** `let core : InnerProductSpace.Core ℝ V
+:= …; let _ : NormedAddCommGroup V := InnerProductSpace.Core.toNormedAddCommGroup
+(𝕜 := ℝ)` (the `(𝕜 := ℝ)` is required or the instance problem is stuck) and
+`let _ : InnerProductSpace ℝ V := InnerProductSpace.ofCore core.toCore` work
+for norms and `LinearMap.exists_antilipschitzWith`, but `CompleteSpace K` /
+`IsUniformAddGroup K` for a submodule `K` of `V = ↥(homogPolySpan d k)` fail:
+`V` is a subtype of `EuclidD d → ℝ`, which carries the Pi uniformity, and
+instance search picks that one. Add `let _ : UniformSpace V :=
+PseudoMetricSpace.toUniformSpace` and `let _ : TopologicalSpace V :=
+UniformSpace.toTopologicalSpace` right after the normed-group `let`; then
+`FiniteDimensional.complete ℝ K`, `HasOrthogonalProjection`, and
+`K.isCompl_orthogonal` all resolve. Mark the core `@[instance_reducible]`
+(class-type def linter). Also: `rw [hwQ]` with `hwQ : w = …` fails when the
+goal contains `⟨w, hw⟩` (motive not type correct) — `change` the goal to a
+`w`-only form first; and `pdflatex … > foo.out` CLOBBERS hyperref's
+bookmark file `foo.out` — redirect to `.stdout`.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
