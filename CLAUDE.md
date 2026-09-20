@@ -479,6 +479,37 @@ should name `f` or the lambda is inferred from the measurability proof in `∘` 
 `← Real.rpow_neg_one`; `Set.indicator_le_indicator_of_subset hUU' (fun _ ↦ nonneg) x` is the
 pointwise monotonicity of indicators in the set.
 
+**Research-item arc (TruncatedBlindness, CylinderSufficient, SeparableTangential,
+RotationCounterexample).** Fubini along a coordinate splitting `ι₁ ⊕ ι₂`:
+`volume_measurePreserving_sumPiEquivProdPi (fun _ ↦ ℝ)` + `.integral_comp'` + `integral_prod_mul`;
+state the chain as a `calc` whose first step is `rfl` (the equiv's components are definitionally
+`w ∘ Sum.inl` / `w ∘ Sum.inr`) — a `rw [← integral_prod_mul, ← h]` does not find the pattern because the
+product integral carries `∂volume.prod volume`. Linear changes of variables on `Fin 2 → ℝ`:
+`Real.map_linearMap_volume_pi_eq_smul_volume_pi (hf : LinearMap.det f ≠ 0)` gives
+`map f volume = ofReal |det⁻¹| • volume`; package an involution as a `MeasurableEquiv` literal
+(`toFun := S, invFun := S, …`) and use `MeasurePreserving.integral_comp'`. `LinearMap.det_toLin'` +
+`Matrix.det_fin_two_of` evaluate `det (toLin' !![a,b;c,d])`; `rw [Matrix.toLin'_apply]; ext i; fin_cases i <;>
+simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two]` computes the vector, and component lemmas `rot y 0 = …`
+close by `rw [rot_apply]; rfl`. After `fin_cases i` the index is `⟨1, _⟩`, not `1`: `linarith`/`rw` on
+lemmas stated with `0`/`1` fail syntactically while `exact` (defeq) succeeds — prove the per-index facts as
+separate lemmas with literal indices and finish by `fin_cases i <;> exact …`. Real-arithmetic defs (`/ 2`)
+must be `noncomputable`. `√2` algebra: rewrite with `Real.mul_self_sqrt`/`Real.sq_sqrt` after
+`div_mul_div_comm`/`div_pow` rather than `field_simp; linear_combination` (whose coefficient depends on
+field_simp's normal form). `AnalyticAt.div_const` takes the constant implicitly (`(c := 2)`); `AnalyticAt` of a
+coordinate is `(ContinuousLinearMap.proj (R := ℝ) (φ := fun _ ↦ ℝ) i).analyticAt 0` (both implicits needed).
+Lemmas with implicit observables (`tempMoment_add {φ ψ}`) applied via `rw` need `(φ := fun y ↦ …) (ψ := …)`
+named, or continuity proofs built by `Continuous.const_smul` instantiate `φ` in Pi-`•` form and the rewrite
+fails. `LipschitzOnWith.dist_le_mul h x hx y hy` takes the points explicitly. `integrable_const` needs a finite
+measure — for an indicator of a ball use `(integrable_indicator_iff hmeas).mpr (integrableOn_const
+measure_ball_lt_top.ne)`. `Measure.addHaar_ball_of_pos volume q hρ` + `Module.finrank_fintype_fun_eq_card` +
+`measureReal_def`/`ENNReal.toReal_mul`/`toReal_ofReal` turn `volume.real (ball q ρ)` into
+`ρ ^ card ι * (volume (ball 0 1)).toReal`; positivity of the latter is `ENNReal.toReal_pos
+(Metric.measure_ball_pos volume 0 zero_lt_one).ne' measure_ball_lt_top.ne`. Quadratic bound at a minimum of a
+`C²` function: `hV.contDiffAt.fderiv_right (m := 1) (by norm_num)` then `ContDiffAt.exists_lipschitzOnWith`,
+`IsLocalMin.fderiv_eq_zero`, and `(convex_closedBall q ‖y − q‖).norm_image_sub_le_of_norm_fderiv_le` — the
+fderiv version with `DifferentiableAt` hypotheses elaborates instantly (the HasFDerivWithinAt gotcha above
+is about mixing the two).
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
