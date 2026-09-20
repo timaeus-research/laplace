@@ -74,7 +74,7 @@ structure WeightedJet (P L : (ι → ℝ) → ℝ) (U : Set (ι → ℝ)) where
   /-- The weighted Taylor coefficients of `L − P` (only exponents of weighted degree `> D`
   are used). -/
   coeff : (ι → ℕ) → ℝ
-  remainder_bound : ∀ N : ℕ, ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ U,
+  remainder_bound : ∀ N : ℕ, W.D < N → ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ U,
     |L x - P x - wpoly (W.sBelow N) coeff x| ≤ C * ‖x‖ ^ N
 
 /-- The exact rescaled correction `L (dil ε u)/ε^D − P u`. -/
@@ -119,10 +119,10 @@ theorem norm_dil_le {ε : ℝ} (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (u : ι → �
 /-- **Rescaled remainder bound**: on the mask, for `0 < ε ≤ 1`,
 `|rem N (dil ε u)| / ε^D ≤ C ε^{N−D} ‖u‖^N`. -/
 theorem exists_rem_dil_div_le {P L : (ι → ℝ) → ℝ} {U : Set (ι → ℝ)} (J : W.WeightedJet P L U)
-    {N : ℕ} (hN : W.D ≤ N) :
+    {N : ℕ} (hN : W.D < N) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ ε : ℝ, 0 < ε → ε ≤ 1 → ∀ u ∈ W.mask U ε,
       |J.rem N (W.dil ε u)| / ε ^ W.D ≤ C * ε ^ (N - W.D) * ‖u‖ ^ N := by
-  obtain ⟨C, hC0, hC⟩ := J.remainder_bound N
+  obtain ⟨C, hC0, hC⟩ := J.remainder_bound N hN
   refine ⟨C, hC0, fun ε hε hε1 u hu ↦ ?_⟩
   have hpos : (0 : ℝ) < ε ^ W.D := pow_pos hε _
   rw [div_le_iff₀ hpos]
@@ -132,7 +132,7 @@ theorem exists_rem_dil_div_le {P L : (ι → ℝ) → ℝ} {U : Set (ι → ℝ)
           hC0
     _ = C * ε ^ (N - W.D) * ‖u‖ ^ N * ε ^ W.D := by
         rw [mul_pow, show ε ^ N = ε ^ (N - W.D) * ε ^ W.D by
-          rw [← pow_add, Nat.sub_add_cancel hN]]
+          rw [← pow_add, Nat.sub_add_cancel hN.le]]
         ring
 
 /-! ### Pointwise limits and uniform bounds of the exact correction -/
@@ -527,10 +527,10 @@ theorem weightedJet_coeff_eq_of_superPoly (hPm : Measurable P) (hP0 : ∀ u, 0 �
 /-- **Flatness of the difference**: equal weighted jets make `L₁ − L₂ = O(‖x‖^N)` on `U` for
 every `N`. -/
 theorem weightedJet_sub_isBigO_of_coeff_eq (J₁ : W.WeightedJet P L₁ U) (J₂ : W.WeightedJet P L₂ U)
-    (hcoeff : ∀ α, W.D < W.wdeg α → J₁.coeff α = J₂.coeff α) (N : ℕ) :
+    (hcoeff : ∀ α, W.D < W.wdeg α → J₁.coeff α = J₂.coeff α) {N : ℕ} (hN : W.D < N) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ U, |L₁ x - L₂ x| ≤ C * ‖x‖ ^ N := by
-  obtain ⟨C₁, hC₁0, hC₁⟩ := J₁.remainder_bound N
-  obtain ⟨C₂, hC₂0, hC₂⟩ := J₂.remainder_bound N
+  obtain ⟨C₁, hC₁0, hC₁⟩ := J₁.remainder_bound N hN
+  obtain ⟨C₂, hC₂0, hC₂⟩ := J₂.remainder_bound N hN
   refine ⟨C₁ + C₂, by positivity, fun x hx ↦ ?_⟩
   have hpoly : wpoly (W.sBelow N) J₁.coeff x = wpoly (W.sBelow N) J₂.coeff x := by
     unfold wpoly

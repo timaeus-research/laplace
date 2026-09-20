@@ -116,12 +116,16 @@ theorem weightedJet_germ_eq_of_superPoly (hPm : Measurable P) (hP0 : ∀ u, 0 �
     J₁ J₂ hc₀ hdom₁ hdom₂ hdata
   have hflat : ∀ N : ℕ, (fun y ↦ (L₁ - L₂) y) =O[𝓝 (0 : ι → ℝ)] fun y ↦ ‖y‖ ^ N := by
     intro N
-    obtain ⟨C, _, hC⟩ := W.weightedJet_sub_isBigO_of_coeff_eq J₁ J₂ hcoeff N
+    obtain ⟨C, hC0, hC⟩ := W.weightedJet_sub_isBigO_of_coeff_eq J₁ J₂ hcoeff
+      (N := N + W.D + 1) (by omega)
     refine IsBigO.of_bound C ?_
-    filter_upwards [hU0] with x hx
+    filter_upwards [hU0, Metric.closedBall_mem_nhds (0 : ι → ℝ) zero_lt_one] with x hx hx1
     rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (pow_nonneg (norm_nonneg x) N),
       Pi.sub_apply]
-    exact hC x hx
+    have hx1' : ‖x‖ ≤ 1 := by simpa using hx1
+    calc |L₁ x - L₂ x| ≤ C * ‖x‖ ^ (N + W.D + 1) := hC x hx
+      _ ≤ C * ‖x‖ ^ N :=
+          mul_le_mul_of_nonneg_left (pow_le_pow_of_le_one (norm_nonneg x) hx1' (by omega)) hC0
   have := eventually_eq_zero_of_flat_analytic (hL₁a.sub hL₂a) hflat
   filter_upwards [this] with y hy
   simpa [sub_eq_zero] using hy
