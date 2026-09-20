@@ -196,6 +196,7 @@ import Laplace.Multi.TaylorMonomialExpansion
 import Laplace.Multi.CutoffMonomialFamily
 import Laplace.Multi.EmpiricalSublevel
 import Laplace.Multi.GaussianStein
+import Laplace.Multi.SecondOrderEngine
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
