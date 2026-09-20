@@ -450,6 +450,25 @@ sum `k+1` collapses to `p k` on the diagonal, `isBigO_sub_partialSum_pow (k+1)`,
 + `ContinuousMultilinearMap.eq_of_diag_eq` with symmetry from
 `(h.analyticAt.contDiffAt (n := ω)).iteratedFDeriv_comp_perm` (needs
 `open scoped ContDiff` for `ω`).
+Follow-up arc (WeightedTaylor, WeightedCoercivity, WeightedReconstruction): the
+matrix-vector notation `*ᵥ` is scoped — `open Matrix` or it fails with
+"elaboration function for subscriptTerm has not been implemented". `set S := …`
+cannot abstract an expression that occurs inside a dependent binder type
+(`v : S.filter … → ℝ`); pass the finset as a parameter with an equation
+`(hSk : Sk = S.filter …)` and `rw [hSk] at h` for membership (`hSk ▸ h` picks the
+wrong motive). `rw [div_eq_inv_mul] at h` rewrites the FIRST division, which may be a
+real exponent `D / a i`; rewrite the goal side with `← div_eq_inv_mul` instead. The
+`unusedFintypeInType` lint on a theorem whose type has no `Fintype` but whose proof
+sums over `univ`: state it with `[Finite ι]` and open with `have := Fintype.ofFinite ι`.
+Regrouping a word expansion by exponent: `Finset.prod_comp` gives
+`∏ j, x (m j) = ∏ i ∈ univ.image m, x i ^ #{j | m j = i}` (extend to `univ` with
+`Finset.prod_subset`), `Finset.card_eq_sum_card_fiberwise` gives the total degree, and
+`Finset.sum_fiberwise_of_maps_to (g := wordExp)` collapses the sum over words into a
+sum over exponents; a `subst` on `totalDeg α = n` transports `Fin n → ι` sums.
+`HasFPowerSeriesOnBall.uniform_geometric_approx' hf (h : ↑r' < r)` is the one-ball
+uniform Taylor remainder; `HasFPowerSeriesOnBall.hasFPowerSeriesAt` needs no positivity
+argument (the structure carries `r_pos`). `zero_le` has an implicit argument here:
+write `lt_of_le_of_lt zero_le h`, not `zero_le _`.
 
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
