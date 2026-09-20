@@ -198,4 +198,46 @@ theorem energy_sub_ae_const_of_moments_eq (f : ι → X → ℝ) (a b : ι → �
     rw [mul_div_assoc, mul_div_assoc, hmom i]
   exact energy_sub_ae_const_of_gibbsExpectation_eq μ hZa hZb hZapos hZbpos hDa hDb hmomD
 
+/-! ### Continuous energies: equality everywhere -/
+
+/-- **Finite sufficient statistics, continuous form.** On a topological measure space whose
+measure charges every nonempty open set, continuous statistics `fᵢ` vanishing at a base point
+`x₀` are sufficient: equal normalized Gibbs moments of the `fᵢ` force `E_a = E_b` everywhere.
+Read with `fᵢ` the monomials of weighted degree one for fixed positive weights and `x₀ = 0`:
+a positive weighted-homogeneous polynomial is determined by the Gibbs moments of those finitely
+many monomials. -/
+theorem energy_eq_of_moments_eq {X : Type*} [MeasurableSpace X] [TopologicalSpace X]
+    (μ : Measure X) [μ.IsOpenPosMeasure] (f : ι → X → ℝ) (a b : ι → ℝ)
+    (hfc : ∀ i, Continuous (f i)) (x₀ : X) (hf0 : ∀ i, f i x₀ = 0)
+    (hZa : Integrable (fun x ↦ Real.exp (-energy f a x)) μ)
+    (hZb : Integrable (fun x ↦ Real.exp (-energy f b x)) μ)
+    (hZapos : 0 < ∫ x, Real.exp (-energy f a x) ∂μ)
+    (hZbpos : 0 < ∫ x, Real.exp (-energy f b x) ∂μ)
+    (hfa : ∀ i, Integrable (fun x ↦ f i x * Real.exp (-energy f a x)) μ)
+    (hfb : ∀ i, Integrable (fun x ↦ f i x * Real.exp (-energy f b x)) μ)
+    (hmom : ∀ i, (∫ x, f i x * Real.exp (-energy f a x) ∂μ) / (∫ x, Real.exp (-energy f a x) ∂μ) =
+      (∫ x, f i x * Real.exp (-energy f b x) ∂μ) / (∫ x, Real.exp (-energy f b x) ∂μ)) :
+    energy f a = energy f b := by
+  obtain ⟨c, hc⟩ := energy_sub_ae_const_of_moments_eq μ f a b hZa hZb hZapos hZbpos hfa hfb hmom
+  have hEc : ∀ d : ι → ℝ, Continuous (energy f d) := fun d ↦ by
+    unfold energy
+    exact continuous_finsetSum _ fun i _ ↦ continuous_const.mul (hfc i)
+  have hcont : Continuous fun x ↦ energy f b x - energy f a x := (hEc b).sub (hEc a)
+  have heq : (fun x ↦ energy f b x - energy f a x) = fun _ ↦ c :=
+    (hcont.ae_eq_iff_eq μ continuous_const).mp hc
+  have h0 : energy f a x₀ = 0 := by
+    unfold energy
+    simp [hf0]
+  have h0' : energy f b x₀ = 0 := by
+    unfold energy
+    simp [hf0]
+  have hc0 : c = 0 := by
+    have := congrFun heq x₀
+    simp only [h0, h0', sub_zero] at this
+    exact this.symm
+  funext x
+  have := congrFun heq x
+  simp only [hc0] at this
+  linarith
+
 end Laplace
