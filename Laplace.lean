@@ -185,6 +185,7 @@ import Laplace.Multi.AbelianTransfer
 import Laplace.Multi.AbelianTransferLog
 import Laplace.Multi.AbelianTransferInstances
 import Laplace.Multi.AbelianTransferSquare
+import Laplace.Multi.OneDimSufficient
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
