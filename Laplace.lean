@@ -210,6 +210,7 @@ import Laplace.Multi.WeightedGerm
 import Laplace.Multi.WeightedTaylor
 import Laplace.Multi.WeightedCoercivity
 import Laplace.Multi.WeightedReconstruction
+import Laplace.Multi.WeightedCutoff
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
