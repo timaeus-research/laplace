@@ -32,3 +32,9 @@ Accepted; the centred second moments `∫ xᵢxⱼ = Sᵢⱼ` are the core (`cov
 - GPT-6 Astra: Q1–Q4.
 
 Agreed after one round.
+
+## Result
+
+- Commit `e58b9a5` on `tide/gaussian-quadratic`. Full `lake build` green; `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide.
+- `Laplace/Sampler/GaussianQuadratic.lean` (     221 lines): `integral_coord_mul_multivariateGaussian` (`∫ xᵢxⱼ = Sᵢⱼ`), `inner_euclid_eq_sum`, `integrable_coord_mul_multivariateGaussian`, `integral_inner_euclid_multivariateGaussian` (`∫⟨x,Hx⟩ = tr(HS)`), `integral_coord_multivariateGaussian`, `integrable_coord_multivariateGaussian`, `integrable_coord_mul_multivariateGaussian'`, `integral_coord_mul_multivariateGaussian'` (`Sᵢⱼ + mᵢmⱼ`), `integral_inner_euclid_multivariateGaussian'` (`tr(HS) + ⟨m,Hm⟩`), `llc_ula_invariant`, `llc_gibbs`, `integral_inner_euclid_gaussStep_iterate`, `llc_ula_trajectory`.
+- Surprises: none; Mathlib's `covarianceBilin_apply` and `covarianceBilin_multivariateGaussian` made the second moments a ten-line proof. Lean friction: `integral_add`/`integral_sub` rewrites need lambda-form integrability facts, and a hypothesis spelled with `ulaNoise h` does not rewrite a goal spelled with `(2 * h) • 1`.
