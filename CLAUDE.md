@@ -1659,3 +1659,17 @@ matrix version is `whiteningOf`.
   (`minibatchCov_conj_diag`), `unfold Matrix.trace Matrix.diag` and `Finset.sum_congr`.
 - Frobenius norms do not obey the same comparison: a `1/p²`-weighted RMS is bounded by Chebyshev only by the uniform RMS, not the uniform
   mean (GPT counterexample `p = (1, 1.1)`, `h = 1.8`). Keep Frobenius claims out of trace theorems.
+
+### Cauchy–Schwarz envelopes and abbreviations under binders (tide `frobenius-free`)
+
+- `set a := fun i => … with ha` does **not** abbreviate occurrences under a `∑ i, …` binder (the summand `a i` mentions the bound variable, so
+  `set` cannot abstract it); a subsequent `simp_rw [hterm]` written in terms of `a i` then "makes no progress", and the elaborator can emit a
+  spurious "function expected" error. Write the per-term identity with the explicit expressions, and pass the abbreviation only as the
+  argument of the abstract lemma (`sum_sum_ite_mul_le (fun i => …) (fun i j => …) …`); `calc`/`le_trans` match up to β.
+- `sq_sum_le_card_mul_sum_sq (s := univ) (f := a) : (∑ a)² ≤ #univ * ∑ a²`, then `Finset.card_univ`; the double sum
+  `∑ᵢⱼ (τ aᵢaⱼ + τ·[i=j] aᵢaⱼ)` collapses with a per-row `have` (`Finset.sum_add_distrib, ← Finset.mul_sum ×3, Finset.sum_ite_eq`) and
+  `← Finset.sum_mul, sq` for `(∑ a)²`.
+- `add_le_add_left h c : c + a ≤ c + b`?? No — in this Mathlib `add_le_add_left h a : b + a ≤ c + a` adds on the *right* and
+  `add_le_add_right h a : a + b ≤ a + c` adds on the *left*; when the goal has the changing summand first, use `add_le_add_left`.
+- `√(X / Y) = √X / √Y` is `Real.sqrt_div (hx : 0 ≤ X) Y`; the nonnegativity of an integral of a sum of squares is
+  `integral_nonneg fun ω => Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => sq_nonneg _`.

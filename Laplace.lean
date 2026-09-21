@@ -287,3 +287,4 @@ import Laplace.Multi.OneLoopSeparable
 import Laplace.Sampler.AutocorrelationTime
 import Laplace.Sampler.BatchSizeRule
 import Laplace.Sampler.LLCSensitivity
+import Laplace.Sampler.FrobeniusFree
