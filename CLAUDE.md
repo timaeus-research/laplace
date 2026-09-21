@@ -209,6 +209,21 @@ values `![1, 0, 1/(λt), 0, 3/(λt)²]` substitute through `funext_iff`. Harmoni
 `gibbsExpectation_harmonic_pow_even/odd` need `norm_num [Nat.doubleFactorial] at h` to evaluate
 `(2k-1)‼` and `2*k`, then `unfold harmonicMoment; simpa using h`.
 
+### Multivariate Gaussians on `EuclideanSpace` (Sampler/GaussianInvariance)
+
+`ProbabilityTheory.multivariateGaussian m S` is defined for every matrix and is a Dirac mass when `S` is not
+`PosSemidef`; every moment/charFun lemma (`covarianceBilin_multivariateGaussian`, `charFun_multivariateGaussian`)
+needs `hS : S.PosSemidef`, so carry PSD hypotheses and prove PSD of derived matrices
+(`hS.conjTranspose_mul_mul_same Aᵀ` + `conjTranspose_eq_transpose_of_trivial` gives `A * S * Aᵀ`;
+`PosSemidef.add`, `PosSemidef.one.smul (by positivity)`). Matrices act through
+`Matrix.toEuclideanCLM (𝕜 := ℝ) A` (a `≃⋆ₐ[ℝ]`): `ofLp_toEuclideanCLM` is `rfl`, the adjoint is the transpose via
+`← ContinuousLinearMap.star_eq_adjoint, ← map_star, Matrix.star_eq_conjTranspose`, products/powers via `map_mul`/
+`map_pow`. Two Gaussian measures are equal by `IsGaussian.ext` (mean: `ContinuousLinearMap.integral_id_map`
+after `simp only [id_eq]`; covariance: `covarianceBilin_map IsGaussian.memLp_two_id`, then `ext u v`) or by
+`Measure.ext_of_charFun` with `charFun_conv` (`∗` is `Measure.conv`, scoped in `MeasureTheory`; probability
+instances for `μ ∗ ν` exist). Quadratic-form algebra: `mulVec_transpose`, `dotProduct_mulVec`, `vecMul_vecMul`.
+`ContinuousLinearMap.mul_apply` is deprecated: `mul_apply_eq_comp`.
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,

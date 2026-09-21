@@ -233,3 +233,4 @@ import Laplace.Sampler.Lyapunov
 import Laplace.Sampler.ULA
 import Laplace.Multi.GaussianLLC
 import Laplace.TwoD.Rosenbrock
+import Laplace.Sampler.GaussianInvariance
