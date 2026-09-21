@@ -238,3 +238,4 @@ import Laplace.Sampler.AR1
 import Laplace.TwoD.Rosenbrock
 import Laplace.Sampler.GaussianInvariance
 import Laplace.Sampler.GaussianUniqueness
+import Laplace.Sampler.FullStep

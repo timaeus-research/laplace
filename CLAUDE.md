@@ -253,6 +253,22 @@ entries of a convergent matrix sequence via `(continuous_id.matrix_elem i j).ten
 `diagonal_mul_diagonal`; `|a i| < 1` gives `tendsto_pow_atTop_nhds_zero_of_abs_lt_one`. `PiLp.continuous_toLp` transports
 entrywise limits to `EuclideanSpace` (`euclid M t = toLp 2 (M *ᵥ ofLp t)` by `rw [← ofLp_toEuclideanCLM]`).
 
+### Matrix norms, contractions and the PSD cone (Sampler/FullStep)
+
+Matrix norms are scoped: `open scoped Matrix.Norms.Operator` gives the ℓ∞-operator norm (`linfty_opNorm_mul :
+‖A * B‖ ≤ ‖A‖ * ‖B‖`; transposition is *not* an isometry, keep `‖Aᵀ‖`), `Matrix.Norms.Elementwise` the sup norm,
+`Matrix.Norms.Frobenius` the Frobenius norm. `CompleteSpace (Matrix ι ι ℝ)` is `FiniteDimensional.complete ℝ _`.
+Affine contractions: `LipschitzWith.of_dist_le_mul` with `dist_eq_norm`, then `ContractingWith K f := ⟨K < 1, lipschitz⟩`
+(`K : ℝ≥0` as `⟨k, hk⟩`), and `ContractingWith.fixedPoint`, `fixedPoint_isFixedPt`, `fixedPoint_unique`,
+`tendsto_iterate_fixedPoint`. `gcongr` mis-splits products of three norms; write the `calc` by hand.
+Mathlib's `Matrix.PosSemidef M` is `M.IsHermitian ∧ ∀ x : n →₀ R, 0 ≤ x.sum fun i xi => x.sum fun j xj => star xi * M i j * xj`
+(finitely supported vectors, not `dotProduct`): prove closedness of the PSD cone entrywise (`Matrix.IsHermitian.ext`,
+`tendsto_nhds_unique`) and through this double sum (`simp only [Finsupp.sum]`, `continuous_finsetSum`), with entry continuity
+from `(Matrix.entryLinearMap ℝ ℝ i j).continuous_of_finiteDimensional` (the operator-norm topology instance is not the Pi
+one syntactically). Finite sums of PSD matrices: `Finset.sum_induction _ (fun M => M.PosSemidef) (fun _ _ => .add) .zero`.
+`rw [← hS]` for a fixed-point equation `hS : f S = S` rewrites every `S`, including inside iterates: state the needed
+identity with `covStep A N S` on one side and rewrite `hS` there instead.
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,
