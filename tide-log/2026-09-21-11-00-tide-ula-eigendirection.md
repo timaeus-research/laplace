@@ -32,3 +32,9 @@ Accepted in full: symmetric `Q`, `0 ≤ h`, deterministic projection lemma first
 - GPT-6 Astra: G1–G4.
 
 Agreed after one round.
+
+## Result
+
+- Commit `dec52b1` on `tide/ula-eigendirection`. Full `lake build` green; `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide.
+- `Laplace/Sampler/ULAEigen.lean` (     259 lines): `vecChain`, `inner_vecChain_eq_realChain` (deterministic projection lemma), `ulaChain`, `projNoise`, `inner_euclid_ulaStep`, `inner_ulaChain_eq_realChain`, `memLp_inner_stdGaussian`, `integral_innerSL_stdGaussian`, `integral_inner_stdGaussian`, `integral_inner_sq_stdGaussian`, `memLp_projNoise`, `integral_projNoise`, `integral_projNoise_sq`, `integral_projNoise_mul` (white noise with variance `2h‖u‖²`), `expected_pooled_sample_variance_ula`, `ula_variance_eq`, `orthoCol`, `mul_orthoOf_eq`, `mulVec_orthoCol`, `norm_orthoCol`.
+- Surprises: none mathematical after GPT-6 Astra's symmetry correction. Lean friction: rewrite patterns carrying `⇑(innerSL ℝ u)` vs `inner ℝ u z` (pass the lambdas explicitly), a stuck `IsGaussian ?μ` instance until the measure was pinned, and an implicit variance parameter assigned by a stray `rfl`.
