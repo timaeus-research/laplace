@@ -1138,3 +1138,16 @@ matrix version is `whiteningOf`.
 - `simp only [...] at h` on a hypothesis mentioning `(t • H) i j` can fail with "function expected
   `(t • H) x`" (Matrix-as-function transparency); prefer `Finset.sum_congr rfl fun j _ => by
   rw [Matrix.smul_apply, smul_eq_mul]` on goals, and `hdiag`-style pointwise lemmas.
+### Symbolic coefficient matrices over the shear coordinates (tide `valley-quadratic`)
+
+- The Rosenbrock pattern `gibbsExpectation_valley_of_poly … ![![…], …] _ (fun q => by simp only
+  [Fin.sum_univ_five, quadFn, valleySlope]; simp; ring)` works unchanged with symbolic entries
+  (`μ * quadFn b c e μ`, `2 * valleySlope μ b c * b`); keep the floor `quadFn` and the slope
+  `valleySlope` as named defs in statements and unfold them only inside the `hφ` proof.
+- In a section with `variable (g : ℝ → ℝ) (hg : Continuous g)` and `include hg`, lemmas whose
+  statement mentions `μ` only through `valley μ g a` need `(μ := μ)` when used as `have h := …`.
+- After `simp` on the closed forms a stray `b * t⁻¹ = b / t` may remain: finish with `ring`.
+- `field_simp` closes all but one of the `fin_cases` branches: put the final `ring` on its own
+  line (the `unnecessarySeqFocus` linter flags `<;> ring` otherwise), and drop `Matrix.smul_mulVec`
+  / `dotProduct_smul` rewrites before `congr 1` (they leave a spurious `True ∨ b = 0 ∨ t = 0`
+  goal); `simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two]; ring` does it directly.

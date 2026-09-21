@@ -255,3 +255,4 @@ import Laplace.Multi.GaussianMomentsPosDef
 import Laplace.Multi.GaussianWickPosDef
 import Laplace.Multi.OneLoop
 import Laplace.Multi.TiltedGaussian
+import Laplace.TwoD.ValleyQuadratic
