@@ -517,4 +517,27 @@ theorem mbg_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ
       ((tendsto_mul_mbgExp_transverse_second h₂ hy₀ i k w).congr'
         ((hN i k q w).mono fun t ht ↦ by simp only; rw [ht]))
 
+/-! ### The free energy: `λ = r/2` and the Morse–Bott volume -/
+
+/-- **Free energy asymptotics with a transverse remainder**:
+`-log Z_t - (r/2) log t → -log ∫ χ₂ ρ_H`. The learning coefficient is `r/2` (multiplicity one) and
+the `O(1)` term is minus the log of the Morse–Bott volume `∫ χ₂ (2π)^{r/2} det H^{-1/2}`. -/
+theorem tendsto_neg_log_partition_sub {H : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
+    {R : EuclidD r → EuclidD n → ℝ} {χ₁ : EuclidD r → ℝ} {χ₂ : EuclidD n → ℝ} {c C δ : ℝ}
+    (h : MBGenData H R χ₁ χ₂ c C δ) {y₀ : EuclidD n} (hy₀ : χ₂ y₀ ≠ 0) :
+    Tendsto (fun t ↦ -Real.log (∫ z, mbgWeight H R χ₁ χ₂ t z) - (r / 2 : ℝ) * Real.log t) atTop
+      (𝓝 (-Real.log (∫ y, χ₂ y * mbDensity H y))) := by
+  have hden := tendsto_sqrt_pow_mul_partition h
+  have hA : 0 < ∫ y, χ₂ y * mbDensity H y := integral_cutoff_mul_mbDensity_pos h.base hy₀
+  have hlog : Tendsto (fun t ↦ -Real.log (Real.sqrt t ^ r * ∫ z, mbgWeight H R χ₁ χ₂ t z)) atTop
+      (𝓝 (-Real.log (∫ y, χ₂ y * mbDensity H y))) :=
+    (((Real.continuousAt_log hA.ne').tendsto).comp hden).neg
+  refine hlog.congr' ?_
+  filter_upwards [eventually_gt_atTop 0, hden (Ioi_mem_nhds hA)] with t ht hpos
+  have hst : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hZ : 0 < ∫ z, mbgWeight H R χ₁ χ₂ t z :=
+    pos_of_mul_pos_right hpos (pow_pos hst r).le
+  rw [Real.log_mul (pow_pos hst r).ne' hZ.ne', Real.log_pow, Real.log_sqrt ht.le]
+  ring
+
 end Laplace.Multi

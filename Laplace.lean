@@ -234,6 +234,7 @@ import Laplace.Multi.MomentDeterminacy
 import Laplace.Multi.MorseBottNormalForm
 import Laplace.Multi.MorseBottLeading
 import Laplace.Multi.CyclicBlindness
+import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring

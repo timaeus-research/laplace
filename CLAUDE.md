@@ -1212,3 +1212,7 @@ matrix version is `whiteningOf`.
 - After `set A := …` and unfolding a definition that re-introduces the same expression, `rw [← hA]`
   before `ring`; and when one side has `c * ∑ f` and the other `∑ c * f`, `simp only
   [← Finset.mul_sum]` first.
+- Under `open scoped Nat`, `φ` is the totient NOTATION: a binder `(φ : ι → …)` fails with
+  "unexpected token 'φ'; expected identifier". Rename the family (`F`) or don't open `Nat`.
+- `rw [show (1 : ℕ) = 2 * 0 + 1 by norm_num]` rewrites the `1` inside `Fin 1` too (motive not type
+  correct); derive the specialised fact with `simpa using lemma H 0` instead.

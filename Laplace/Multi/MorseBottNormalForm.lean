@@ -444,4 +444,16 @@ theorem mb_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
     rw [mbExp_transverse_second h₁ ht hy₀ i k w, mbExp_transverse_second h₂ ht hy₀ i k w] at h
     exact mul_left_cancel₀ (inv_ne_zero ht.ne') h
 
+/-! ### The free energy: `λ = r/2` and the Morse–Bott volume -/
+
+/-- **Exact free energy of the normal form**: `-log Z_t = (r/2) log t - log ∫ χ ρ_H`, so the
+learning coefficient is `r/2` (multiplicity one) and the constant is the log Morse–Bott volume. -/
+theorem neg_log_integral_mbWeight {H : EuclidD n → Matrix (Fin r) (Fin r) ℝ} {χ : EuclidD n → ℝ}
+    {c : ℝ} (h : MBData H χ c) {t : ℝ} (ht : 0 < t) {y₀ : EuclidD n} (hy₀ : χ y₀ ≠ 0) :
+    -Real.log (∫ z, mbWeight H χ t z) =
+      (r / 2 : ℝ) * Real.log t - Real.log (∫ y, χ y * mbDensity H y) := by
+  rw [integral_mbWeight h ht, Real.log_mul (pow_ne_zero _ (inv_ne_zero (Real.sqrt_pos.mpr ht).ne'))
+    (integral_cutoff_mul_mbDensity_pos h hy₀).ne', Real.log_pow, Real.log_inv, Real.log_sqrt ht.le]
+  ring
+
 end Laplace.Multi
