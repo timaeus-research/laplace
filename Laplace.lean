@@ -258,3 +258,4 @@ import Laplace.Multi.TiltedGaussian
 import Laplace.TwoD.ValleyQuadratic
 import Laplace.Sampler.Minibatch
 import Laplace.Multi.HessianRoute
+import Laplace.Multi.CovKClosedForm

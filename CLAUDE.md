@@ -1206,3 +1206,22 @@ matrix version is `whiteningOf`.
   mul_one]` with `hPP : P * P⁻¹ = 1`.
 - After changing an imported seabed file, `lake build <Module>` for it and then `lean-state restart`
   before `check`ing dependents (the daemon holds the old oleans).
+
+### Unfolding the second-order coefficient (tide `covk-closed-form`)
+
+- `cov2Coefficient` unfolds to four terms in `trASig`, `dot`, `tensorContractMatrix` and nested
+  `ContinuousLinearMap.comp`s. Cancel `matCLM P ∘ matCLM P⁻¹` with dedicated equalities
+  (`comp_inv_comp_eq`, `inv_comp_comp_inv_eq`) proved by `← ContinuousLinearMap.comp_assoc h g f`
+  with all three maps given explicitly (otherwise `rw` reassociates the inner composition), then
+  `matCLM_comp_inv`/`matCLM_inv_comp` and `id_comp`/`comp_id`; pointwise `Hinv (A (Hinv v)) = Hinv v`
+  by `matCLM_inv_apply_matCLM`.
+- Structure projections of a `def` (`(quadObservable P hP).A`, `.Φ`, `.jet_radius`) are exposed
+  with `rw [show … = … from rfl]`; `simp` will not unfold them, and `simpa using` fails on them.
+- `trASig`, `tensorContractMatrix` mention `Pi.single`, so they need `[DecidableEq ι]`: do not `omit`
+  it on lemmas about them ("cannot omit referenced section variable").
+- `tensorContractMatrix 0 Sig = 0` is `funext i; simp [tensorContractMatrix]` (the `Fin 3` match is
+  harmless once the zero multilinear map is applied); `trASig (B.comp Hinv) 1 = trASig B Hinv` is
+  `simp [trASig]`.
+- After changing an imported seabed file, a fresh worktree needs `lake build <Module>` before the
+  daemon can `check` dependents; the first `check` may report a spurious "file elaboration timed
+  out" while the big oleans load — rerun it.
