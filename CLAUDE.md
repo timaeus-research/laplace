@@ -1181,3 +1181,7 @@ matrix version is `whiteningOf`.
 - Definitions in a section with `variable [Fintype ι] [DecidableEq ι]` inherit the instances even
   if unused (`Matrix ι ι ℝ`, `vecMulVec`, `X * S * Yᵀ` need only `Fintype` or nothing); `omit … in`
   the defs too, or every user of them needs the instance.
+- Under `open scoped Nat`, `φ` is the totient NOTATION: a binder `(φ : ι → …)` fails with
+  "unexpected token 'φ'; expected identifier". Rename the family (`F`) or don't open `Nat`.
+- `rw [show (1 : ℕ) = 2 * 0 + 1 by norm_num]` rewrites the `1` inside `Fin 1` too (motive not type
+  correct); derive the specialised fact with `simpa using lemma H 0` instead.
