@@ -32,3 +32,11 @@ Accepted: R1; whitening algebra block; standard-coordinate package; D3 and the I
 - GPT-6 Astra: D1 + D3 + adapter, D2 deferred.
 
 Agreed after one round.
+
+## Result
+
+Committed as `Laplace/Multi/GaussianMomentsPosDef.lean` (3e6a701, renamed `whitening` → `whiteningOf` in f33c278 after the umbrella build exposed a clash with `QuadForm.whitening`), 0 sorries, full `lake build` green after merging `origin/main` (germbij tides `435b651`, `24cb50b`).
+
+Theorems: `matCLM`, `quadForm_matCLM`, `whiteningOf` (`Mᵀ P M = 1`, `M Mᵀ = P⁻¹`, `|det M| = (√det P)⁻¹`), `map_mulVec_volume`, `integral_comp_mulVec`, `integrable_comp_mulVec_iff`, the standard-Gaussian product integrals on `ι → ℝ` (`integral_std_gaussian_pi`, `integral_coord_mul_std_gaussian_pi`, integrability), `gaussianZ_matCLM` (`√(2π)^d (√det P)⁻¹`), `integral_coord_mul_gaussianWeight_matCLM` (`Z (P⁻¹)ᵢⱼ`), `fubiniIBPHypothesis_matCLM`, `gaussian_quadForm_integral_posDef`, `gaussian_llc_posDef` (`t E[½⟨u,Hu⟩] = d/2` with only `H.PosDef`).
+
+Surprises: `Real.map_linearMap_volume_pi_eq_smul_volume_pi` makes the change of variables a two-line affair once the map is packaged as `Matrix.toLin'`; `lean-state check` on a single module cannot see cross-module name clashes, only the umbrella `lake build` can (hence the rename).
