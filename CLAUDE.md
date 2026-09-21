@@ -324,6 +324,23 @@ directional derivatives (`LowPoly.deriv_dir`), and `EuclideanSpace.proj i |>.has
 gives the explicit product-rule derivative. `Matrix.PosDef.det_pos` lives in
 `Mathlib/Analysis/Matrix/PosDef.lean`.
 
+**Idioms from the parallel Patterning round (HorizonNonlinear, IsotropicExpansion, VolumeExponent,
+MovingMinimizer, PosteriorSusceptibility).** Parity of Gaussian moments is free via
+`MeasureTheory.Measure.integral_comp_smul` with `R = -1` (odd integrands against an even kernel
+integrate to zero), which replaces Stein computations of fifth moments. Scaling a Gaussian's
+precision by `σ⁻²` is `integral_dilation` on numerator and denominator (no integrability needed).
+The moving critical point of an implicit equation `G s w = 0` is best obtained from the inverse
+function theorem on `Φ(s,w) = (s, G s w)` (`HasStrictFDerivAt.localInverse`,
+`localInverse_apply_image`, `eventually_right_inverse`, `to_localInverse`), packaging the derivative
+as a `ContinuousLinearEquiv` via `ContinuousLinearEquiv.equivOfInverse` with an explicit inverse built
+from `LinearMap.toContinuousLinearMap (Matrix.toLin' H⁻¹)`; Mathlib's implicit-function API is more
+awkward. `tendsto_log_mul_rpow_nhdsGT_zero` is root-namespace (not `Real.`); `ε^a (−log ε)^n → 0`
+follows from it with exponent `a/(n+1)`, no induction. `pow_sub₀` is stated with `* (·)⁻¹` on this
+pin, so `div_eq_mul_inv` first. The primer's hypothesis packages (`PotentialJetApprox`,
+`LaplaceCovHypotheses`) survive adding a quadratic localiser `(ρ/2)‖w‖²` with Hessian `H + ρ·id`;
+`FubiniIBPHypothesis` stays an input (the repo never derives it). Trailing `ring` after a closing
+`field_simp` errors with "no goals".
+
 **Mathlib namespace gotchas.** Some lemmas live under deeper namespaces than
 expected. `integral_comp_mul_right` is `MeasureTheory.Measure.integral_comp_mul_right`,
 not `MeasureTheory.integral_comp_mul_right`. When in doubt, write a scratch

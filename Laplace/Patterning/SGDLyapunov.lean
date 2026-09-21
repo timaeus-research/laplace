@@ -3,7 +3,7 @@ Copyright (c) 2026 Timaeus. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Daniel Murfet
 -/
-import Laplace.Sampler.Lyapunov
+import Laplace.Sampler.GaussianInvariance
 
 /-!
 # SGD fluctuations measure sharpness
@@ -22,7 +22,7 @@ stationary covariance is not part of the statements.
 
 namespace Laplace.Patterning
 
-open Matrix Laplace.Sampler
+open Matrix Laplace.Sampler MeasureTheory ProbabilityTheory
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -122,6 +122,47 @@ theorem sgd_discrete_mode_expansion (lam η B c : ℝ) (hB : B ≠ 0) (h2 : η *
   have h2'' : 2 - lam * η ≠ 0 := by rwa [mul_comm]
   field_simp
   ring
+
+
+/-! ### The stationary law of the linearised SGD chain with Gaussian noise -/
+
+/-- The discrete SGD fixed point is the diagonal matrix with entries `ηc/(B(2 - ηλ_i))`. -/
+theorem sgd_discrete_diagLyapunov_eq_diagonal (lam : ι → ℝ) (η B c : ℝ) (hB : 0 < B)
+    (hstab : ∀ i, |1 - η * lam i| < 1) :
+    diagLyapunov (fun i => 1 - η * lam i) ((η ^ 2 / B) • (c • diagonal lam))
+      = diagonal (fun i => η * c / (B * (2 - η * lam i))) := by
+  ext i j
+  by_cases hij : i = j
+  · subst hij
+    rw [sgd_discrete_diag lam η B c hB hstab i, Matrix.diagonal_apply_eq]
+  · simp [diagLyapunov, Matrix.diagonal_apply_ne _ hij]
+
+/-- **The stationary Gaussian law of linearised SGD** (Proposition 12.2, discrete form): with
+Gaussian minibatch noise `ξ ~ N(0, (η²c/B) diag λ)`, the centred Gaussian with covariance
+`diag(ηc/(B(2 - ηλ_i)))` is invariant under the step `w ↦ (1 - η diag λ) w + ξ`. -/
+theorem sgd_gaussian_invariant (lam : ι → ℝ) (η B c : ℝ) (hη : 0 < η) (hB : 0 < B) (hc : 0 ≤ c)
+    (hstab : ∀ i, |1 - η * lam i| < 1) :
+    ((multivariateGaussian 0 (diagonal (fun i => η * c / (B * (2 - η * lam i))))).map
+        (euclid (1 - η • diagonal lam))) ∗
+      multivariateGaussian (0 : EuclideanSpace ℝ ι) ((η ^ 2 / B) • (c • diagonal lam))
+      = multivariateGaussian 0 (diagonal (fun i => η * c / (B * (2 - η * lam i)))) := by
+  have hlam : ∀ i, 0 < lam i := by
+    intro i
+    have h := abs_lt.mp (hstab i)
+    have : 0 < η * lam i := by linarith
+    exact (pos_iff_pos_of_mul_pos this).mp hη
+  have hS : (diagonal (fun i => η * c / (B * (2 - η * lam i)))).PosSemidef := by
+    refine Matrix.posSemidef_diagonal_iff.mpr fun i => ?_
+    have h := abs_lt.mp (hstab i)
+    exact div_nonneg (mul_nonneg hη.le hc) (mul_nonneg hB.le (by linarith))
+  have hR : ((η ^ 2 / B) • (c • diagonal lam)).PosSemidef := by
+    rw [← Matrix.diagonal_smul, ← Matrix.diagonal_smul]
+    refine Matrix.posSemidef_diagonal_iff.mpr fun i => ?_
+    simp only [Pi.smul_apply, smul_eq_mul]
+    exact mul_nonneg (by positivity) (mul_nonneg hc (hlam i).le)
+  refine invariant_of_covStep_fixed hS hR _ ?_
+  rw [← sgd_discrete_diagLyapunov_eq_diagonal lam η B c hB hstab]
+  exact (sgd_discrete_fixed_iff lam η B c hstab _).mpr rfl
 
 end
 

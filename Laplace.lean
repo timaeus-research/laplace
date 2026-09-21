@@ -252,3 +252,8 @@ import Laplace.Patterning.FourGonStationary
 import Laplace.Patterning.FourGonModel
 import Laplace.Patterning.FourGonSaddle
 import Laplace.Patterning.VirialMulti
+import Laplace.Patterning.HorizonNonlinear
+import Laplace.Patterning.MovingMinimizer
+import Laplace.Patterning.PosteriorSusceptibility
+import Laplace.Patterning.VolumeExponent
+import Laplace.Patterning.IsotropicExpansion
