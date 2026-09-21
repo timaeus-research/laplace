@@ -1535,3 +1535,23 @@ matrix version is `whiteningOf`.
 - A theorem with no measure in its statement must live outside the `variable {P : Measure Ω} [IsProbabilityMeasure P]` section (the
   `unusedSectionVars` linter flags `[MeasurableSpace Ω]`); `omit [DecidableEq ι] in` goes *before* the docstring, and the proof then opens
   with `classical` if it calls a `DecidableEq`-typed lemma.
+
+### Spectral functions of `tH + γI` (tide `localised-llc-bounds`)
+
+- Conjugating an affine function of a symmetric matrix into the eigenbasis: `simp only [Matrix.mul_add, Matrix.add_mul, Matrix.mul_smul,
+  Matrix.smul_mul, Matrix.mul_one, orthoOf_transpose_mul_mul hH, orthoOf_transpose_mul hH]` turns `Uᵀ (t•H + γ•1) U` into
+  `t • diagonal λ + γ • 1`; finish with `ext i j; by_cases hij : i = j` and `simp`.
+- The inverse of a conjugated diagonal: exhibit it. `Matrix.inv_eq_left_inv` with the candidate `U * diagonal (1/a) * Uᵀ`; reassociate the
+  product to expose `Uᵀ M U` (`simp only [Matrix.mul_assoc, hUU', Matrix.mul_one]` where `hUU' : U * Uᵀ = 1`), rewrite it by the conjugation
+  lemma, then `Matrix.mul_assoc U`, `diagonal_mul_diagonal`, a `funext` identity `1/a i * a i = 1` (`one_div_mul_cancel`), `diagonal_one`.
+  To then read off `Uᵀ M⁻¹ U`: `simp only [← Matrix.mul_assoc]` fully left-associates, then `rw [hUU, Matrix.one_mul, Matrix.mul_assoc, hUU,
+  Matrix.mul_one]`.
+- `∑ᵢⱼ Aᵢⱼ Bᵢⱼ = trace (Aᵀ B)`: `simp only [Matrix.trace, Matrix.diag, Matrix.mul_apply, Matrix.transpose_apply]; rw [Finset.sum_comm]`.
+  `t • diagonal λ = diagonal (fun i => t * λ i)` is `← diagonal_smul` followed by `rfl`.
+- Real-variable limits at `atTop`: `tendsto_atTop_add_const_left _ _ tendsto_id : Tendsto (fun γ => c + γ) atTop atTop`, then
+  `(tendsto_inv_atTop_zero.comp hden).const_mul c` and `simpa [div_eq_mul_inv, Function.comp_def]`; sums with `tendsto_finsetSum`
+  (`tendsto_finset_sum` is deprecated).
+- `add_le_add_left h a` here produces `b + a ≤ c + a`, not `a + b ≤ a + c`; when the goal is `1 + x ≤ 1 + y`, derive the core inequality
+  with a `have` and finish with `linarith` rather than guessing the side.
+- Strict sum bounds: `Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty` (needs `[Nonempty ι]`), `Finset.sum_pos … Finset.univ_nonempty`;
+  `div_lt_one (hb : 0 < b) : a / b < 1 ↔ a < b`.
