@@ -375,7 +375,7 @@ theorem tendsto_sqrt_pow_mul_integral_cont {H : EuclidD n → Matrix (Fin r) (Fi
   · by_cases hy : y ∈ tsupport χ₂
     · have := (tendsto_innerScaledG h hG hM' hy).const_mul (χ₂ y)
       convert this using 1
-      ring
+      ring_nf
     · rw [image_eq_zero_of_notMem_tsupport hy]
       simp
 
