@@ -33,3 +33,18 @@ defer. Vote: A+B.
 
 `numcheck_gibbs_rotation.py` (`d = 2`, rotated anharmonic, `θ = 0.7`, `w* = (0.3, −0.2)`, `t = 15`, quadrature): `Z` invariant (5e-14),
 mean `= w* + Q⟨u⟩` (4e-14), `Cov_w = Q Cov_u Qᵀ` (2e-13), projected variances `= Var_{uᵢ}` (2e-13), `t⟨L⟩` identical in both frames.
+
+## Result
+
+Commit `9608511` on `tide/gibbs-rotation`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/Multi/GibbsRotation.lean` (     244 lines): `affineFrame` (+`_apply`), `abs_det_of_orthogonal`,
+`det_transpose_ne_zero_of_orthogonal`, `integral_comp_affineFrame`, `rotated`, `partitionFunction_rotated`,
+`gibbsExpectation_rotated`, `gibbsCov_rotated`, `gibbsExpectation_rotated_of_continuous`, `gibbsCov_rotated_of_continuous`,
+`gibbsExpectation_rotated_self`, `gibbsCov_rotated_coord`, `gibbsExpectation_rotated_coord`, `continuous_separableAnharmonic`,
+`rotatedAnharmonic`, `gibbsCov_rotatedAnharmonic_eq`, `gibbsExpectation_rotatedAnharmonic_eq`,
+`gibbsExpectation_rotatedAnharmonic_self`, `gibbsCov_rotatedAnharmonic`, `rotatedAnharmonic_var_second_order`,
+`rotatedAnharmonic_var_relative_rate_note`, `rotatedAnharmonic_mean_asymptotic`, `rotatedAnharmonic_energy_asymptotic`.
+
+Surprises: the whole frame change is one lemma (`integral_comp_affineFrame`) on top of the seabed's `integral_comp_mulVec` and
+Mathlib's translation invariance; everything downstream is a rewrite. The only friction was Lean's: `(1 : Matrix ι ι ℝ)` wants
+`DecidableEq`, and `Tendsto.congr'` goals need `simp only` rather than `rw` because of an unreduced beta-redex.
