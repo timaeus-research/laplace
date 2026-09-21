@@ -272,3 +272,4 @@ import Laplace.Sampler.DirectionClosures
 import Laplace.Sampler.LLCClosures
 import Laplace.Sampler.EstimatorVariance
 import Laplace.Sampler.Metropolis
+import Laplace.Sampler.MetropolisKernel

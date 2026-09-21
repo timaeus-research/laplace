@@ -1399,3 +1399,21 @@ matrix version is `whiteningOf`.
   turns the goal into `rfl`, drop the following `congr 1`.
 - `a⁻¹ * (a * X)`-style cancellations: `mul_div_mul_left _ _ (inv_ne_zero h)`; the `(√t)^r` factors
   cancel with `mul_div_mul_left _ _ (pow_ne_zero _ …)` after `simp only [Pi.div_apply]`.
+
+### Packaging a sampler as a `ProbabilityTheory.Kernel` (tide `mala-kernel`)
+
+- A `Kernel X X` is a measurable `X → Measure X`; build it with `Measure.measurable_of_measurable_coe _ fun E hE => …`, proving
+  measurability of `x ↦ K x E` for each measurable `E` after rewriting `K x E` to the set formula (`withDensity_apply _ hE`,
+  `Measure.add_apply`, `Measure.smul_apply`, `Measure.dirac_apply' _ hE`, then `by_cases hx : x ∈ E <;> simp [hx]` for the indicator).
+  The constructor's measurability field cannot take hypotheses from thin air: make them arguments of the `def` (`mhKernel hπm hqm μ hZ0`).
+- `IsMarkovKernel κ` is `⟨fun x => ⟨κ x univ = 1⟩⟩`; evaluate with the set formula, `Set.indicator_univ`, `Measure.restrict_univ`, and
+  `add_tsub_cancel_of_le`.
+- The fixed-point statement is literally `ν.bind κ = ν`: `ext E hE; rw [Measure.bind_apply hE κ.measurable.aemeasurable]`, rewrite the
+  integrand with the set formula (`simp_rw`), and apply the `lintegral` invariance theorem. `n`-step stationarity is
+  `Function.iterate_succ_apply'` + induction, three lines.
+- Real integrals against a `withDensity` measure with an `ℝ≥0∞` density: `integral_withDensity_eq_integral_toReal_smul₀ (hf.aemeasurable)
+  (ae_of_all _ fun x => ENNReal.div_lt_top ENNReal.ofReal_ne_top hT0) g`, then `ENNReal.toReal_div`, `ENNReal.toReal_ofReal (nonneg)`;
+  integrability likewise via `integrable_withDensity_iff_integrable_smul₀'`. The normaliser's `toReal` is
+  `integral_eq_lintegral_of_nonneg_ae (ae_of_all _ …) (cont.aestronglyMeasurable)` read backwards.
+- `P⁻¹` and `matCLM` need `[DecidableEq ι]`: give it as an explicit instance binder on the theorems whose *types* mention them, and use
+  `classical` inside proofs that only need it internally (the `unusedDecidableInType` linter flags the other arrangement).
