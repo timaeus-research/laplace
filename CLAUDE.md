@@ -185,6 +185,19 @@ Polynomial-in-`P` inverses commute with `P`: `Matrix.mul_nonsing_inv` / `nonsing
 which matches the same lemma: use `rw` inside `Finset.sum_congr` instead. Deprecations:
 `integral_finset_sum → integral_finsetSum`, `integrable_finset_sum → integrable_finsetSum`.
 
+### Inner-product notation and chains in a real inner product space (Sampler/AR1)
+
+`⟪x, y⟫_ℝ` is **not** global notation in the current pin: `⟪x, y⟫_𝕜` is scoped in `InnerProductSpace`
+and `⟪x, y⟫` (real) in `RealInnerProductSpace`; inside a `structure … where` field the `_ℝ` form fails to
+parse even after `open scoped`. Write `inner ℝ x y` explicitly; the lemmas are `real_inner_smul_left/right`,
+`sum_inner`, `inner_sum`, `real_inner_comm`, `real_inner_self_eq_norm_sq`. A chain defined by a recursion
+is best given an explicit closed form first (`x k = ∑ j ∈ range k, ρ ^ j • η (k - j)` avoids ℕ-subtraction
+pain: `Finset.sum_range_succ'` peels the `j = 0` term and `Nat.add_sub_add_right` handles the shift).
+Sums with an `if` selecting one index: `Finset.sum_eq_single` plus `omega` for the index arithmetic.
+`Nat.dist` facts: `Nat.dist_eq_sub_of_le`, `Nat.dist_eq_sub_of_le_right`, `Nat.dist_self`; shifts by
+`unfold Nat.dist; omega`. `sq` in `rw` rewrites the first `_ ^ 2` it sees: pass the argument, `sq (∑ …)`.
+`omit [DecidableEq ι] in` must come *before* the docstring, not between it and the theorem.
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,

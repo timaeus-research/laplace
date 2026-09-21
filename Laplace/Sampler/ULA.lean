@@ -263,6 +263,92 @@ theorem minibatch_fixed_iff {P : Matrix ι ι ℝ} (hP : P.IsHermitian) (h t : �
     (orthoOf_transpose_mul hP) (orthoOf_mul_transpose hP) (ulaStep_eq_conj hP h)
     (fun i => abs_one_sub_mul_lt_one hh (hev i).1 (hev i).2)
 
+/-! ### The ULA-corrected local learning coefficient -/
+
+/-- `Uᵀ P U` is the diagonal matrix of eigenvalues. -/
+theorem orthoOf_transpose_mul_mul {P : Matrix ι ι ℝ} (hP : P.IsHermitian) :
+    (orthoOf hP)ᵀ * P * orthoOf hP = diagonal hP.eigenvalues := by
+  have hspec := spectral_real hP
+  have h : (orthoOf hP)ᵀ * P * orthoOf hP =
+      (orthoOf hP)ᵀ * (orthoOf hP * diagonal hP.eigenvalues * (orthoOf hP)ᵀ) * orthoOf hP := by
+    rw [← hspec]
+  rw [h]
+  simp only [Matrix.mul_assoc]
+  rw [← Matrix.mul_assoc (orthoOf hP)ᵀ (orthoOf hP), orthoOf_transpose_mul hP, Matrix.one_mul,
+    Matrix.mul_one]
+
+/-- `Uᵀ Σ_ULA U` is diagonal with entries `1/(p_i (1 - h p_i/2))`. -/
+theorem ulaCov_conj_eq_diagonal {P : Matrix ι ι ℝ} (hP : P.IsHermitian) (h : ℝ) (hh : 0 < h)
+    (hev : ∀ i, 0 < hP.eigenvalues i ∧ h * hP.eigenvalues i < 2) :
+    (orthoOf hP)ᵀ * ulaCov P h * orthoOf hP =
+      diagonal (fun i => 1 / (hP.eigenvalues i * (1 - h * hP.eigenvalues i / 2))) := by
+  ext i j
+  rw [ulaCov_conj_apply hP h hh hev i j, Matrix.diagonal_apply]
+
+/-- **ULA-corrected trace.** `trace (P Σ_ULA) = ∑ᵢ 1 / (1 - h pᵢ / 2)`. -/
+theorem trace_mul_ulaCov {P : Matrix ι ι ℝ} (hP : P.PosDef) (h : ℝ) (hh : 0 < h)
+    (hev : ∀ i, h * hP.1.eigenvalues i < 2) :
+    (P * ulaCov P h).trace = ∑ i, 1 / (1 - h * hP.1.eigenvalues i / 2) := by
+  have hev' : ∀ i, 0 < hP.1.eigenvalues i ∧ h * hP.1.eigenvalues i < 2 :=
+    fun i => ⟨hP.eigenvalues_pos i, hev i⟩
+  have hU' := orthoOf_mul_transpose hP.1
+  have h1 : (P * ulaCov P h).trace =
+      (((orthoOf hP.1)ᵀ * P * orthoOf hP.1) *
+        ((orthoOf hP.1)ᵀ * ulaCov P h * orthoOf hP.1)).trace := by
+    have : ((orthoOf hP.1)ᵀ * P * orthoOf hP.1) * ((orthoOf hP.1)ᵀ * ulaCov P h * orthoOf hP.1) =
+        (orthoOf hP.1)ᵀ * (P * ulaCov P h) * orthoOf hP.1 := by
+      simp only [Matrix.mul_assoc]
+      rw [← Matrix.mul_assoc (orthoOf hP.1) (orthoOf hP.1)ᵀ, hU', Matrix.one_mul]
+    rw [this, Matrix.trace_mul_cycle, hU', Matrix.one_mul]
+  rw [h1, orthoOf_transpose_mul_mul hP.1, ulaCov_conj_eq_diagonal hP.1 h hh hev',
+    Matrix.diagonal_mul_diagonal, Matrix.trace_diagonal]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  have hp := hP.eigenvalues_pos i
+  have hne : 1 - h * hP.1.eigenvalues i / 2 ≠ 0 := by have := hev i; linarith
+  field_simp
+
+/-- **ULA-corrected LLC.** For `P = t • H` with `γ = 0`, the sampler's `t ⟨K⟩` is
+`½ ∑ᵢ 1 / (1 - h pᵢ / 2)` in terms of the eigenvalues `pᵢ` of `P`, instead of `d / 2`. -/
+theorem ula_llc {H : Matrix ι ι ℝ} (t h : ℝ) (hP : (t • H).PosDef) (hh : 0 < h)
+    (hev : ∀ i, h * hP.1.eigenvalues i < 2) :
+    t / 2 * (H * ulaCov (t • H) h).trace = 1 / 2 * ∑ i, 1 / (1 - h * hP.1.eigenvalues i / 2) := by
+  rw [← trace_mul_ulaCov hP h hh hev, Matrix.smul_mul, Matrix.trace_smul, smul_eq_mul]
+  ring
+
+omit [DecidableEq ι] in
+/-- The ULA excess over `d / 2`: `∑ᵢ 1/(1 - xᵢ) = d + ∑ᵢ xᵢ / (1 - xᵢ)` with `xᵢ = h pᵢ / 2`. -/
+theorem sum_one_div_one_sub_eq (x : ι → ℝ) (hx : ∀ i, x i ≠ 1) :
+    ∑ i, 1 / (1 - x i) = Fintype.card ι + ∑ i, x i / (1 - x i) := by
+  have hterm : ∀ i, 1 / (1 - x i) = 1 + x i / (1 - x i) := fun i => by
+    have hne : 1 - x i ≠ 0 := sub_ne_zero.mpr (hx i).symm
+    rw [add_div' _ _ _ hne]
+    congr 1; ring
+  simp only [hterm, Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
+    mul_one]
+
+omit [DecidableEq ι] in
+/-- **Bounds on the ULA-corrected LLC.** If `0 < pᵢ ≤ pmax` and `h pmax < 2`, then
+`d ≤ ∑ᵢ 1/(1 - h pᵢ/2) ≤ d / (1 - h pmax / 2)`. -/
+theorem sum_one_div_one_sub_bounds {p : ι → ℝ} {h pmax : ℝ} (hh : 0 < h)
+    (hp : ∀ i, 0 < p i) (hpmax : ∀ i, p i ≤ pmax) (hstab : h * pmax < 2) :
+    (Fintype.card ι : ℝ) ≤ ∑ i, 1 / (1 - h * p i / 2) ∧
+      ∑ i, 1 / (1 - h * p i / 2) ≤ Fintype.card ι / (1 - h * pmax / 2) := by
+  have hden : ∀ i, 0 < 1 - h * p i / 2 := fun i => by
+    have := mul_le_mul_of_nonneg_left (hpmax i) hh.le; linarith
+  have hdenmax : 0 < 1 - h * pmax / 2 := by linarith
+  constructor
+  · calc (Fintype.card ι : ℝ) = ∑ _i : ι, (1 : ℝ) := by simp
+      _ ≤ ∑ i, 1 / (1 - h * p i / 2) := by
+        refine Finset.sum_le_sum fun i _ => ?_
+        rw [le_div_iff₀ (hden i)]
+        have := mul_pos hh (hp i); linarith
+  · calc ∑ i, 1 / (1 - h * p i / 2)
+        ≤ ∑ _i : ι, 1 / (1 - h * pmax / 2) := by
+          refine Finset.sum_le_sum fun i _ => ?_
+          exact one_div_le_one_div_of_le hdenmax (by
+            have := mul_le_mul_of_nonneg_left (hpmax i) hh.le; linarith)
+      _ = Fintype.card ι / (1 - h * pmax / 2) := by
+          rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one_div]
 
 end
 
