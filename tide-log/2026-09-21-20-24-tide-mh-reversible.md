@@ -64,3 +64,9 @@ Saved verbatim in `tide-log/gpt_mh_reversible_v1.md`. Summary: A–C correct und
 - GPT-6 Astra: A+B+C
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/mh-reversible` at b553fc5 (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/MetropolisReversible.lean` (214 lines): `mh_rectangle_mass`, `mh_reversible`, `mh_invariant_of_reversible`, `mh_reversible_law`, `mhKernel_reversible`, `mhKernel_compProd_swap`, `mala_reversible`, `mala_reversible_law`, `pmala_reversible`, `pmala_reversible_law`.
+
+Surprises: (i) the optional joint-law symmetry (D) went through in a dozen lines with `ext_of_generate_finite`, `generateFrom_prod`, `isPiSystem_prod` and `Measure.compProd_apply_prod` — the rectangle extensionality for finite measures is exactly what Mathlib provides; (ii) `lintegral_lintegral_swap` inside `rw` leaves the measures as metavariables and the `SFinite` search sticks — a typed `have` with explicit measures fixes it; (iii) the `⊗ₘ` notation is scoped to `ProbabilityTheory`.
