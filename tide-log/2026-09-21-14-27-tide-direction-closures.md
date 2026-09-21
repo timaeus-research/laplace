@@ -60,3 +60,17 @@ the ULA corollary. Votes **A** with the tightness wording corrected and the `2/(
 - GPT-6 Astra: candidate A (same)
 
 Agreed.
+
+## Result
+
+Committed as `df52b7e` on `tide/direction-closures` (`Laplace/Sampler/DirectionClosures.lean`, 373 lines; zero sorry/axiom/native_decide).
+
+Theorems: `geom_sum_le_one_div`, `sum_pow_two_mul_le`, `toeplitz_sum_le`, `finiteChainPrediction`, `finiteChainPrediction_le`,
+`stationary_sub_finiteChainPrediction_le`, `AR1Chain.pooledSampleVariance`, `pooledSampleVariance_eq`, `toeplitz_sub_sq_nonneg`,
+`pooledSampleVariance_le`, `stationary_sub_pooledSampleVariance_le`, `expected_pooled_sample_variance_ula_shortfall`;
+`effectivePrecision_eq_conj`, `effectivePrecision_inv_eq`, `sum_mul_effectivePrecision_inv_eq`, `localised_llc_centred_eigen`,
+`eigen_direction_variance`, `eigen_direction_variance_rel`.
+
+Surprises: the whole shortfall bound is elementary once the pooled sample variance is written as `σ² − σ²(R₂/N + (T_N − R₁²)/(CN²))`;
+the only measure-theoretic input is the seabed's `expected_pooled_sample_variance_ula`, and the ULA realisation is a `change` plus one
+division inequality. In the eigenbasis part the only friction was association around `Uᵀ U` in the inverse-conjugation lemma.
