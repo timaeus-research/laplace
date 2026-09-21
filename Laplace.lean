@@ -283,3 +283,4 @@ import Laplace.Sampler.LLCVariance
 import Laplace.Sampler.LocalisedLLC
 import Laplace.Sampler.LLCMSE
 import Laplace.Multi.OneLoopSeparable
+import Laplace.Sampler.AutocorrelationTime
