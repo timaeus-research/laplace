@@ -1,6 +1,6 @@
 # Patterning flow: statement digest for review
 
-Branch `patterning-flow`, `Laplace/Patterning/` (26 files). Every claim of the working note
+Branch `patterning-flow` (merged to `main`), `Laplace/Patterning/` (27 files). Every claim of the working note
 *Patterning flow* (`learning-theory/local/directsgld/main.tex`, Overleaf `6aada9b9684134925b8ee562`)
 that carries a blue margin marker is listed here with the Lean statement it links to, the
 hypotheses that statement carries, and what is *not* covered. The purpose is a 20-minute read:
@@ -83,7 +83,8 @@ Mathlib's Gaussian, a Dirac mass off the positive semidefinite cone.
 | Prop 12.2, discrete recursion, mode expansion | `sgd_discrete_diag`, `sgd_discrete_excessLoss`, `sgd_discrete_mode_expansion` | `B > 0`, `|1 − ηλᵢ| < 1` | state-dependent noise |
 | Prop 12.2, invariance of the discrete Gaussian | `sgd_gaussian_invariant` | as above, `η > 0`, `c ≥ 0` | |
 | Prop 12.2, the OU semigroup `N(e^{−sH}m, Σ_s)`: Lyapunov ODE, stationarity, relaxation | `ou_sgd_stationary`, `ouStep_invariant`, `hasDerivAt_ouCov'`, `ouCov_tendsto` (OrnsteinUhlenbeck.lean) | `Hᵀ = H`, `Σᵀ = Σ ⪰ 0`, `(η/B)C ⪰ 0`, Lyapunov identity; relaxation needs `H ≻ 0` | |
-| Prop 12.2, the OU **equation** `dw = −Hw ds + σ dW` has marginal law `N(e^{−sH}w₀, ∫₀ˢ e^{−uH}σσᵀe^{−uH}du)` | `ou_marginal_law`, `ou_marginal_law_lyapunov` (OUBrownian.lean); `ouSol_integral_equation`, `ouSol_unique` (OUPathwise.lean); `tendsto_ouIncrementSum` (OUIncrement.lean) | `W` an `IsBrownianVec` (centred Gaussian process, `Cov = δᵢⱼ min(s,t)`, continuous paths); `Hᵀ = H`; `s ≥ 0`; the process is the pathwise variation-of-constants solution | the process-level Markov property; existence of Brownian motion (not on this Mathlib pin); `IsBrownianVec` is satisfied by `d` independent real Brownian motions, `isBrownianVec_of_iIndepFun` |
+| Prop 12.2, the OU **equation** `dw = −Hw ds + σ dW` has marginal law `N(e^{−sH}w₀, ∫₀ˢ e^{−uH}σσᵀe^{−uH}du)` | `ou_marginal_law`, `ou_marginal_law_lyapunov` (OUBrownian.lean); `ouSol_integral_equation`, `ouSol_unique` (OUPathwise.lean); `tendsto_ouIncrementSum` (OUIncrement.lean) | `W` an `IsBrownianVec` (centred Gaussian process, `Cov = δᵢⱼ min(s,t)`, continuous paths); `Hᵀ = H`; `s ≥ 0`; the process is the pathwise variation-of-constants solution | existence of Brownian motion (not on this Mathlib pin); `IsBrownianVec` is satisfied by `d` independent real Brownian motions, `isBrownianVec_of_iIndepFun` |
+| Prop 12.2, the OU process is Markov with transition kernel `N(e^{−rH}x, C_r)` | `ou_two_time_law_compProd`, `condDistrib_ouProcess`, `ouKernel_eq` (OUMarkov.lean); `ouSol_restart`, `indepFun_ouProcess_restartNoise` | `IsBrownianVec`, `Hᵀ = H`, `s, r ≥ 0` | conditioning is on the present state `X_s` only, not on the whole past σ-algebra; finite-dimensional distributions for three or more times not assembled |
 | Prop 12.4, virial identity `E[δ·∇U] = d` | `virial_multi`, `virial_localized` (VirialMulti.lean); `radial_virial`, `gibbs_virial_one_dim`, `ulaCov_virial` | `U` differentiable (`C¹`), `e^{−U}`, `xᵢe^{−U}`, `xᵢ∂ᵢU e^{−U}` integrable | the note's locally Lipschitz hypothesis |
 | eq (virial), degree decomposition | `degree_decomposition` | algebra only: `ta + γb = d`, `K ≠ 0`, `p = a/K ≠ 0` | |
 | eq (degree_decomp), Gaussian and ULA balances | `gaussian_virial`, `ulaCov_virial` | `P` invertible; ULA denominator invertible | |

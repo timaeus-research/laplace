@@ -236,6 +236,28 @@ after `simp only [id_eq]`; covariance: `covarianceBilin_map IsGaussian.memLp_two
 instances for `μ ∗ ν` exist). Quadratic-form algebra: `mulVec_transpose`, `dotProduct_mulVec`, `vecMul_vecMul`.
 `ContinuousLinearMap.mul_apply` is deprecated: `mul_apply_eq_comp`.
 
+### Independence, kernels and conditional laws (Patterning/OUMarkov)
+
+- `IsGaussianProcess.of_isGaussianProcess (hX) (h : ∀ s, ∃ I : Finset T, ∃ L : (I → E) →L[ℝ] F, ∀ ω, Y s ω = L (I.restrict (X · ω)))`
+  is the workhorse for "finite linear combinations of a Gaussian process form a Gaussian process";
+  build the CLM as a structure literal with `toFun z := (z ⟨t₂, by simp⟩ - z ⟨t₁, by simp⟩) i` on
+  `({t₁, t₂} : Finset _) → E` (as in Mathlib's `IsGaussianProcess.shift`), `cont := by fun_prop`.
+  Then `IsGaussianProcess.indepFun_of_covariance_eq_zero` on `Sum.elim X Y` gives independence of two
+  scalar arrays from zero cross-covariance, and `IndepFun.comp` with continuous maps transports it.
+- Independence passes to a.s. limits through `indepFun_iff_charFunDual_prod` (Banach-valued; no
+  inner product on `E × F` needed) plus dominated convergence of `charFunDual (P.map (Zn n)) L`.
+- `condDistrib Y X P` needs `[IsFiniteMeasure P]` *in the statement*; `have := hW.isProbabilityMeasure`
+  inside the proof is too late. `condDistrib_ae_eq_of_measure_eq_compProd X hY (hκ : P.map (X, Y) = P.map X ⊗ₘ κ)`
+  turns a two-time law into a conditional law. A kernel `x ↦ ν.map (A x + ·)` is best built as
+  `Kernel.map (Kernel.deterministic id measurable_id ×ₖ Kernel.const _ ν) (fun p => A p.1 + p.2)`,
+  which carries `IsMarkovKernel` via `Kernel.IsMarkovKernel.map _ hf`; `(μ.prod ν).map (x, z) ↦ (x, A x + z) = μ ⊗ₘ κ`
+  by `ext S hS` with `Measure.map_apply`, `Measure.prod_apply`, `Measure.compProd_apply` and `rfl` on preimages.
+- After `set w := e with hw`, `simp only [defn]` may re-expose `e`; `rw [← hw]` restores `w` before using
+  hypotheses stated in terms of `w`. `WithLp.toLp 2 (fun i => x.ofLp i) = x` is closed by `simp only` (eta + `toLp_ofLp`); a trailing `rfl` errors with "no goals".
+- `notes/` is gitignored in this repo: `git add -f` for handoffs and digests.
+- Landing on `main` while tides land concurrently: `git fetch && git merge origin/main && git push origin branch:main`
+  in one command; a `lake build` in between loses the race. The merges are unions of disjoint files.
+
 ### Matrix-valued calculus and the topology diamond (Patterning/OU*)
 
 - `Matrix ι ι ℝ` carries the Pi topology globally and the `linftyOp` norm only as a
