@@ -285,3 +285,4 @@ import Laplace.Sampler.LLCMSE
 import Laplace.Sampler.ULALocalised
 import Laplace.Multi.OneLoopSeparable
 import Laplace.Sampler.AutocorrelationTime
+import Laplace.Sampler.MetropolisReversible
