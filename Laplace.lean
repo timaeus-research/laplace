@@ -277,5 +277,6 @@ import Laplace.Sampler.Wick4
 import Laplace.Sampler.FrobeniusLaw
 import Laplace.Sampler.Metropolis
 import Laplace.Sampler.MetropolisKernel
+import Laplace.TwoD.RosenbrockE5
 import Laplace.Sampler.GaussianTable
 import Laplace.Sampler.LLCVariance
