@@ -226,6 +226,8 @@ import Laplace.Multi.TraceVisibility
 import Laplace.Multi.TiltInterpolation
 import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.TiltVariance
+import Laplace.Multi.TraceKernel
+import Laplace.Multi.TraceKernelMain
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
