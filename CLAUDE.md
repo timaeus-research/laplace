@@ -1297,3 +1297,27 @@ matrix version is `whiteningOf`.
   `{0 ≤ y}`.
 - `congrArg (fun x ↦ c * x) h` is already beta-reduced; a following `simp only at this` errors
   with "no progress".
+
+### Eigenbasis traces, quadratic forms and running means (tide `llc-closures`)
+
+- Trace of a product in the eigenbasis: conjugate *both* factors (`(Uᵀ P U) (Uᵀ Σ U)`), fold the middle `U Uᵀ = 1` with
+  `simp only [Matrix.mul_assoc]` + one `← Matrix.mul_assoc`, then `Matrix.trace_mul_cycle`; `simp only [Matrix.trace, Matrix.diag,
+  Matrix.diagonal_mul]` turns `tr(diagonal p * X)` into `∑ i, p i * X i i`. `trace_mul_ulaCov` is the template.
+- `∑ i, (Uᵀ C U) i i = tr C` is `change (Uᵀ * C * U).trace = C.trace; rw [Matrix.trace_mul_cycle, hU, Matrix.one_mul]`; nonnegativity of
+  the diagonal from `hC.conjTranspose_mul_mul_same U` + `Matrix.conjTranspose_eq_transpose_of_trivial` + `.diag_nonneg`.
+- Rewriting `P` by `spectral_real hP` fails with a motive error when `hP : P.IsHermitian` appears in the goal (inside `orthoOf hP`);
+  state the rewritten form as a `have … := by rw [← spectral_real hP]` instead. The quadratic form `x ⬝ᵥ P *ᵥ x = ∑ pᵢ ((Uᵀ x)ᵢ)²` is then
+  `← mulVec_mulVec` twice, `dotProduct_mulVec`, `← mulVec_transpose`, `simp only [dotProduct, mulVec_diagonal]`, termwise `ring`; the
+  Euclidean wrapper is `inner_toEuclideanCLM` and, for `(Uᵀ x)ᵢ = ⟨orthoCol i, x⟩`, `simp only [EuclideanSpace.inner_eq_star_dotProduct,
+  star_trivial, orthoCol, mulVec, dotProduct, transpose_apply]` + `mul_comm` termwise. `(t • H) *ᵥ x` is `smul_mulVec` (not
+  `smul_mulVec_assoc`).
+- `field_simp` only clears a denominator whose `≠ 0` fact is present *in the normal form it produces*: after clearing `/ 2` it wants
+  `2 - h * pmax ≠ 0`, and it commutes products (`p * h`, not `h * p`); when `ring` fails after `field_simp`, read the goal with
+  `lean-state goal` and add the missing `≠ 0` facts in both orders rather than fighting the normal form.
+- Sum-then-divide bookkeeping in running means: `∑ i, f i / d = (∑ i, f i) / d` is `← Finset.sum_div`; `∑ i ∈ range N, (1 - a i) =
+  N - ∑ a i` is `Finset.sum_sub_distrib, Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one`. For a chain of `integral_finsetSum`
+  under a double sum use `Finset.sum_congr rfl fun c _ => integral_finsetSum _ fun i _ => hint c _` inside `rw`.
+- Geometric tails with possibly negative `ρ`: state `∑ ρ^{2(b+1+i)} ≤ ρ^{2(b+1)}/(1 - ρ²)` with the hypothesis `ρ ^ 2 < 1` and prove
+  `0 ≤ ρ ^ (2 * (b + 1))` by `rw [pow_mul]; positivity` (`positivity` cannot see the even exponent through `2 * (b + 1)`).
+- `ulaChain`/`euclid` need `[DecidableEq ι]` (`toEuclideanCLM`), so `omit [DecidableEq ι]` is refused there; `omit [IsProbabilityMeasure P]`
+  is right for the `MemLp`/`Integrable` lemmas that never integrate.
