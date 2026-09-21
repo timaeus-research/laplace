@@ -1771,3 +1771,15 @@ matrix version is `whiteningOf`.
   (`minibatchCov_conj_diag`), `unfold Matrix.trace Matrix.diag` and `Finset.sum_congr`.
 - Frobenius norms do not obey the same comparison: a `1/p²`-weighted RMS is bounded by Chebyshev only by the uniform RMS, not the uniform
   mean (GPT counterexample `p = (1, 1.1)`, `h = 1.8`). Keep Frobenius claims out of trace theorems.
+
+### Relative chart arc (RelativeChartLeading, RelativeChartFamily)
+
+- A stuck `IsFiniteMeasureOnCompacts ?μ` (from `integrableOn_const`, `IsCompact.measure_lt_top`,
+  `Continuous.integrable_of_hasCompactSupport`) means nothing fixed the measure: pass
+  `(μ := (volume : Measure (ℝ × EuclidD n)))` explicitly.
+- `hasDerivAt_integral_of_dominated_loc_of_deriv_le` with `(s := Set.univ) Filter.univ_mem` when the
+  bound is global; the derivative-bound binder order is `∀ᵐ y, ∀ s ∈ univ, ‖F' s y‖ ≤ bound y`.
+- A sum of `if p i then f i else 0` over `univ`: `Finset.sum_ite, Finset.sum_const_zero, add_zero`
+  turns it into the sum over `univ.filter p`; combine with `tendsto_finsetSum` for termwise limits.
+- `HasCompactSupport fun y ↦ χ (0, y)` from `HasCompactSupport χ`: `IsCompact.of_isClosed_subset`
+  of `Prod.snd '' tsupport χ` with `closure_minimal`.
