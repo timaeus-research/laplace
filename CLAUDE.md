@@ -1899,3 +1899,27 @@ matrix version is `whiteningOf`.
 - Deprecations in this Mathlib: `continuous_mul_right → continuous_mul_const`, `continuous_finset_sum → continuous_finsetSum`.
 - The unused-variable linter fires on hypotheses that `linarith`/`nlinarith` did not need (`0 ≤ h` when `h ≤ h'` and `0 ≤ h'` suffice);
   drop them from the statement rather than underscore them.
+
+### Eigenvector quadratic forms and single-direction perturbations (tide `direction-readings`)
+
+- `Π` is a reserved token (dependent-function binder); never name a matrix `Π`. Use `M`.
+- Eigenvector algebra with `mulVec`: `P⁻¹ *ᵥ s = p⁻¹ • s` from `P *ᵥ s = p • s` via
+  `calc P⁻¹ *ᵥ s = p⁻¹ • (P⁻¹ *ᵥ (P *ᵥ s))` (`rw [hs, Matrix.mulVec_smul, smul_smul, inv_mul_cancel₀ hp, one_smul]`) and
+  `Matrix.mulVec_mulVec, Matrix.nonsing_inv_mul P (isUnit_iff_ne_zero.mpr hP.det_pos.ne'), Matrix.one_mulVec`. The row version
+  `s ᵥ* P⁻¹` is `← Matrix.mulVec_transpose, Matrix.transpose_nonsing_inv, hPt`.
+- `Matrix.dotProduct_mulVec : v ⬝ᵥ A *ᵥ w = v ᵥ* A ⬝ᵥ w` rewrites the *first* `⬝ᵥ … *ᵥ` it meets, which may be on the other side of the
+  equation; isolate the intended instance in a `have h3 : s ⬝ᵥ (P⁻¹ *ᵥ (M *ᵥ s)) = …` and rewrite with `h3`.
+- Expanding `(A + B * M * C) *ᵥ s`: `Matrix.add_mulVec, dotProduct_add, ← Matrix.mulVec_mulVec` (twice), then `Matrix.mulVec_smul`,
+  `dotProduct_smul`, `smul_eq_mul`, and `ring` handles `p⁻¹ * (p⁻¹ * x) = x / p ^ 2`.
+- A unit column of `orthoOf`: `(orthoCol hQ i).ofLp ⬝ᵥ (orthoCol hQ i).ofLp = 1` is the `(i, i)` entry of `orthoOf_transpose_mul`:
+  `congrFun (congrFun … i) i`, `rw [Matrix.mul_apply, Matrix.one_apply_eq] at h`, `simpa [orthoCol, dotProduct, transpose_apply] using h`.
+- `tr(P U D Uᵀ) = ∑ pᵢ dᵢ`: `rw [← Matrix.mul_assoc, ← Matrix.mul_assoc, Matrix.trace_mul_cycle, ← Matrix.mul_assoc,
+  orthoOf_transpose_mul_mul hP.1, diagonal_mul_diagonal, trace_diagonal]`.
+- `Pi.single i₀ a i` needs its codomain: write `(Pi.single i₀ a : ι → ℝ) i` in statements (needs `[DecidableEq ι]`); sums over it
+  collapse with `Finset.sum_eq_single i₀ (fun j _ hj => by simp [hj]) (by simp)` then `simp`.
+- `Finset.single_le_sum (f := fun i => …) (fun i _ => by positivity) (Finset.mem_univ i₀)` for `f i₀ ≤ ∑ f`;
+  `Finset.sum_mul_sq_le_sq_mul_sq _ _ _` is Cauchy–Schwarz `(∑ f g)² ≤ (∑ f²)(∑ g²)`; `Finset.sum_sq_le_sq_sum_of_nonneg` gives
+  `∑ f² ≤ (∑ f)²` for nonnegative `f`.
+- `positivity` cannot use `pmin ≤ p i` to see `0 < p i`; give `(one_div_pos.mpr (lt_of_lt_of_le hpmin (hmin i))).le` explicitly.
+- `field_simp` closed every ratio identity of this file on its own (`(½ (p a))/(d/2) = a p / d`, `a²/(1/pmin)² = (a pmin)²`); a trailing `ring`
+  errors with "No goals".
