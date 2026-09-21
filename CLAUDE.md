@@ -236,6 +236,42 @@ after `simp only [id_eq]`; covariance: `covarianceBilin_map IsGaussian.memLp_two
 instances for `μ ∗ ν` exist). Quadratic-form algebra: `mulVec_transpose`, `dotProduct_mulVec`, `vecMul_vecMul`.
 `ContinuousLinearMap.mul_apply` is deprecated: `mul_apply_eq_comp`.
 
+### Matrix-valued calculus and the topology diamond (Patterning/OU*)
+
+- `Matrix ι ι ℝ` carries the Pi topology globally and the `linftyOp` norm only as a
+  `local instance`. Bare `TopologicalSpace` searches in a *statement* (`HasDerivAt`,
+  `Continuous`, `ContinuousOn`) pick the Pi instance; lemmas that require a
+  `SeminormedAddCommGroup` produce the norm topology. The two are defeq at default
+  transparency, so `exact` works but `simpa`, `simp` and unification with an undetermined
+  codomain fail. Consequences: state the codomain explicitly
+  (`isCompact_Icc.exists_bound_of_continuousOn (E := Matrix ι ι ℝ) hF'.continuousOn`), prefer
+  `exact ((h₁.sub h₂).congr_deriv (sub_self _))` over `simpa using h₁.sub h₂`, and never write
+  `IntervalIntegrable M volume a b` or `LinearMap.toContinuousLinearMap` for a matrix-valued
+  `M` (the elaborator asks for `ENormedAddMonoid (Matrix ι ι ℝ)` w.r.t. the Pi topology and
+  fails). Take `Continuous M` instead and derive integrability inside the proof.
+- Avoid matrix-valued integrals altogether where possible: apply the FTC to the vector path
+  `u ↦ F u *ᵥ v` (`integral_deriv_mulVec_const`) or to the scalar `u ↦ x ⬝ᵥ (C u *ᵥ y)`
+  (`hasDerivAt_dotProduct_mulVec`, `ouCovInt_bilin`), and get symmetry/PSD of an integral
+  matrix from the derivatives of its entries (`hasDerivAt_entry`, `is_const_of_deriv_eq_zero`).
+- `IsCompact.exists_bound_of_continuousOn'` (primed) is the *multiplicative* version; the norm
+  bound for additive groups is the unprimed `IsCompact.exists_bound_of_continuousOn`.
+- `rw [← node_last s n]` rewrites *every* `s` in the goal, including the one inside `node s n k`;
+  use a `calc` step instead of rewriting the right-hand side.
+- `simp_rw [heq]` with `heq : ∀ n, f n = g n` does nothing on an eta-reduced `Tendsto f`; first
+  `rw [show f = fun n => g n from funext heq]`. `simp_rw` also fails if *any* lemma in the list
+  makes no progress: with `set m := e with hm`, rewrite `hm` before a lemma stated in terms of `e`.
+- Mathlib Brownian API on this pin: `IsGaussianProcess.hasGaussianLaw_increments` gives the joint
+  law of increments along `t : Fin (n+1) → T`; combine with `HasGaussianLaw.map_fun` of a CLM
+  `∑ k, (L k).comp (ContinuousLinearMap.proj k)` for weighted increment sums. Scalar covariance
+  arithmetic: `covariance_fun_sub_fun_sub`, `covariance_fun_sum_fun_sum`,
+  `covariance_const_mul_left/right`, `covariance_self`, all needing `MemLp _ 2` (from
+  `HasGaussianLaw.memLp_two`). Characteristic functions: `HasGaussianLaw.charFun_map_eq`,
+  `charFun_map_const_add`, `charFun_multivariateGaussian`, `Measure.ext_of_charFun`; limits via
+  `tendsto_integral_of_dominated_convergence` with bound `1` and `Complex.norm_exp_ofReal_mul_I`;
+  a.e. measurability of the limit via `aemeasurable_of_tendsto_metrizable_ae`.
+- Lake 5 keeps compiled modules of dependencies in a content-addressed artifact cache, so
+  `lake env lean File.lean` fails with "object file ... does not exist" for cached imports. Check
+  a file with `lake build Laplace.Patterning.File` (or `lean-state`, which uses `lake setup-file`).
 ### Characteristic functions, matrix limits, bundled probability measures (Sampler/GaussianUniqueness)
 
 `charFun (μ.map L) t = charFun μ (L† t)` is not in Mathlib: prove it from `charFun_apply` (rfl), `integral_map`
@@ -375,6 +411,67 @@ For `x^(2k)` (even Nat power):
 rw [show x^(2*k) = |x|^(2*k) from by rw [pow_mul x 2 k, ← sq_abs x, ← pow_mul]]
 ```
 For `x^2`: `(sq_abs x).symm` gives `x^2 = |x|^2`.
+
+**Matrix/vector idioms from the Patterning arc.** `Σ` is the sigma-type token and cannot
+name a binder (use `S`). `Matrix.smul_mulVec : (b • M) *ᵥ v = b • M *ᵥ v` (there is no
+`smul_mulVec_assoc`); `Matrix.mulVec_transpose : Aᵀ *ᵥ x = x ᵥ* A`;
+`Matrix.dotProduct_mulVec : v ⬝ᵥ A *ᵥ w = v ᵥ* A ⬝ᵥ w`, while `dotProduct_comm/sub/neg/zero`
+live at the root. `Matrix.diagonal_add/sub` are oriented
+`diagonal a - diagonal b = diagonal fun i => a i - b i`; `Matrix.diagonal_smul :
+diagonal (r • d) = r • diagonal d`, so `← diagonal_smul` pulls a scalar inside.
+`Matrix.trace_one : trace 1 = Fintype.card n` (as a cast). For `U diag(a) Uᵀ` algebra,
+prove `(U diag a Uᵀ)⁻¹ = U diag a⁻¹ Uᵀ` via `Matrix.inv_eq_left_inv` and reuse it
+(`Profile.lean`: `inv_spectral`, `spectral_mul_spectral`, `trace_spectral`).
+Deprecations on this pin: `tendsto_finset_sum → tendsto_finsetSum`,
+`Set.mem_setOf_eq → Set.mem_ofPred_eq`. For derivatives of products use
+`h.congr_deriv (by simp only [id_eq, Pi.neg_apply]; ring)` rather than `convert h using 1`,
+which leaves instance-mismatch goals. `field_simp` only clears a denominator whose
+nonzero-ness hypothesis matches syntactically (`2 - lam * η ≠ 0` is not `2 - η * lam ≠ 0`).
+
+**Analysis idioms from the Patterning fundamentals (Jacobi, RadialVirial, GaussianFourth).**
+The `∫ x in s, body` notation parses `body` at precedence 60, so `∫ f + c * ∫ g` is
+`∫ (f + c * ∫ g)`: parenthesise `(∫ x in s, f x) + c * (∫ x in s, g x)`. `HasDerivAt.sum` produces
+the Pi-sum `∑ i, A i` as the function; use `HasDerivAt.fun_sum` for `fun y ↦ ∑ i, A i y`, or
+`congr_of_eventuallyEq` with `Finset.sum_apply`. There is no `HasDerivAt.finset_prod` on this
+pin; `Jacobi.lean` has `hasDerivAt_finset_prod` by induction. `Matrix.det_apply'` gives the
+Leibniz sum with a real sign `((sign σ : ℤ) : ℝ)`; column replacement branches on `j = i`
+(`updateCol_self/ne`), and `cramer_apply` + `cramer_eq_adjugate_mulVec` turn the column-replaced
+sum into `tr(adj A · B)`. With `open Matrix`, `add_apply`/`smul_apply` are ambiguous with
+`Matrix.add_apply`: write `_root_.add_apply`. `field_simp` normalises *inside* integrands and
+breaks syntactic matching with an earlier `have`; clear denominators by hand
+(`eq_sub_iff_add_eq`, `← mul_div_assoc`, `← add_div`, `div_eq_iff`) when a hypothesis must be
+reused. Distributing `(∑ i, ∑ j, f) * (∑ k, ∑ l, g) * K` with `simp only [Finset.sum_mul,
+Finset.mul_sum]` fixes the nesting order to (i, j, k, l); `rw [Finset.sum_mul_sum]` then
+`simp only [Finset.sum_mul_sum]`, then `simp only [Finset.sum_mul]` gives (i, k, j, l); state the
+expanded form in whichever order the tactic produces and never rely on `simp` to permute
+four-fold sums (use `Finset.sum_comm` under `conv` and match the trace expansion order
+`(i, l, k, j)` of `tr(A S B T)`). `integral_finset_sum`/`integrable_finset_sum` are
+`integral_finsetSum`/`integrable_finsetSum`; rewriting `∫ ∑∑ f` needs the summand function
+passed explicitly (higher-order pattern), see `integral_sum2`/`integral_sum4`. Stein in a
+non-coordinate direction: `stein_quadKernel` with `v = toEuclideanCLM H⁻¹ (single a 1)`, using
+`inner_toEuclideanCLM`, `ofLp_toEuclideanCLM`, `dotProduct_mulVec`, `← mulVec_transpose` and the
+symmetry `Hᵀ = H` from `hH.1.eq` via `conjTranspose_eq_transpose_of_trivial`; `LowPoly`
+(`MonomialVisibility.lean`) supplies smoothness and growth of monomials and of their
+directional derivatives (`LowPoly.deriv_dir`), and `EuclideanSpace.proj i |>.hasFDerivAt.mul`
+gives the explicit product-rule derivative. `Matrix.PosDef.det_pos` lives in
+`Mathlib/Analysis/Matrix/PosDef.lean`.
+
+**Idioms from the parallel Patterning round (HorizonNonlinear, IsotropicExpansion, VolumeExponent,
+MovingMinimizer, PosteriorSusceptibility).** Parity of Gaussian moments is free via
+`MeasureTheory.Measure.integral_comp_smul` with `R = -1` (odd integrands against an even kernel
+integrate to zero), which replaces Stein computations of fifth moments. Scaling a Gaussian's
+precision by `σ⁻²` is `integral_dilation` on numerator and denominator (no integrability needed).
+The moving critical point of an implicit equation `G s w = 0` is best obtained from the inverse
+function theorem on `Φ(s,w) = (s, G s w)` (`HasStrictFDerivAt.localInverse`,
+`localInverse_apply_image`, `eventually_right_inverse`, `to_localInverse`), packaging the derivative
+as a `ContinuousLinearEquiv` via `ContinuousLinearEquiv.equivOfInverse` with an explicit inverse built
+from `LinearMap.toContinuousLinearMap (Matrix.toLin' H⁻¹)`; Mathlib's implicit-function API is more
+awkward. `tendsto_log_mul_rpow_nhdsGT_zero` is root-namespace (not `Real.`); `ε^a (−log ε)^n → 0`
+follows from it with exponent `a/(n+1)`, no induction. `pow_sub₀` is stated with `* (·)⁻¹` on this
+pin, so `div_eq_mul_inv` first. The primer's hypothesis packages (`PotentialJetApprox`,
+`LaplaceCovHypotheses`) survive adding a quadratic localiser `(ρ/2)‖w‖²` with Hessian `H + ρ·id`;
+`FubiniIBPHypothesis` stays an input (the repo never derives it). Trailing `ring` after a closing
+`field_simp` errors with "no goals".
 
 **Mathlib namespace gotchas.** Some lemmas live under deeper namespaces than
 expected. `integral_comp_mul_right` is `MeasureTheory.Measure.integral_comp_mul_right`,
