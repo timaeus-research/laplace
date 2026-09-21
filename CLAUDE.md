@@ -154,6 +154,37 @@ contractions before formalising — formalisation needs every term named.
 - `Nat.doubleFactorial_pos : 0 < n‼`
 
 
+### Real spectral theorem and matrix Lyapunov idioms (Sampler arc)
+
+`Matrix.IsHermitian.spectral_theorem` (Mathlib pin of Sep 2026) reads
+`A = Unitary.conjStarAlgAut ℝ _ hA.eigenvectorUnitary (diagonal (RCLike.ofReal ∘ hA.eigenvalues))`.
+Over `ℝ`, unfold with `Unitary.conjStarAlgAut_apply` (the `Matrix.`-prefixed name is gone),
+turn `star U` into `Uᵀ` with `Matrix.star_eq_conjTranspose` +
+`Matrix.conjTranspose_eq_transpose_of_trivial`, and close
+`diagonal (RCLike.ofReal ∘ eigenvalues) = diagonal eigenvalues` with `congr 1` **alone**
+(a following `funext`/`simp` errors with "no goals"). Packaged as `Laplace.Sampler.orthoOf`
+/ `spectral_real` / `orthoOf_transpose_mul` / `orthoOf_mul_transpose`.
+
+Orthogonality of `eigenvectorUnitary` as a real matrix: `Matrix.mem_unitaryGroup_iff` +
+`Matrix.UnitaryGroup.star_mul_self`. Determinant of a symmetric matrix:
+`hA.det_eq_prod_eigenvalues` (then `RCLike.ofReal_real_eq_id`). Positivity transport:
+`Matrix.PosDef.diagonal` and `Matrix.PosDef.conjTranspose_mul_mul_same` (needs `Function.Injective
+Uᵀ.mulVec`, from `Matrix.mulVec_mulVec` and `U Uᵀ = 1`).
+
+Discrete Lyapunov equations `X = A X Aᵀ + N`: go **spectral, not Neumann**. Solve the diagonal
+case entrywise (`X_ij = N_ij / (1 - a_i a_j)`, `|a_i| < 1`), transport by orthogonal conjugation
+(`Laplace.Sampler.lyapunovVia_fixed_iff`). State stability eigenvalue-wise (`|a i| < 1`); the
+operator norm on `ι → ℝ` is the sup norm and does not give `‖I - hP‖₂ < 1`.
+
+Polynomial-in-`P` inverses commute with `P`: `Matrix.mul_nonsing_inv` / `nonsing_inv_mul` with
+`isUnit_iff_isUnit_det`. `I - (I - hP)² = 2h(P - (h/2)P²)` is a `module` one-liner.
+`congr 1` often closes the whole goal (e.g. `2 * h * 1 / D = 2 * h / D` needs `rw [mul_one]`, not
+`rfl`); don't follow it with bullets unless the goals are shown.
+
+`simp only [f_apply_eq_sum, ...]` loops when the expansion of `(H u) i` produces `(H e_j) i`,
+which matches the same lemma: use `rw` inside `Finset.sum_congr` instead. Deprecations:
+`integral_finset_sum → integral_finsetSum`, `integrable_finset_sum → integrable_finsetSum`.
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,

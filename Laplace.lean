@@ -223,3 +223,6 @@ import Laplace.Anchoring
 import Laplace.AsymptoticPolynomial
 import Laplace.OnePointAnchoring
 import Laplace.OneD.QuarticBoundedTest
+import Laplace.Sampler.Lyapunov
+import Laplace.Sampler.ULA
+import Laplace.Multi.GaussianLLC
