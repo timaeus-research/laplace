@@ -1469,3 +1469,29 @@ matrix version is `whiteningOf`.
 - `omit [Nonempty X] in` before theorems that don't use the section instance (linter
   `unusedSectionVars`); `(_h : TiltData …)` keeps dot-notation while silencing unused-variable.
 - Unicode `Θ` in the slop LaTeX breaks pdflatex: write `$\Theta$`.
+
+### Joint Gaussian independence across a product index (tide `gaussian-table`)
+
+- Independence of the scalar projections of independent Gaussian vectors: restrict the block index to a finite window with
+  `iIndepFun.precomp (g := fun a : Fin C × Fin T => ((a.1, (a.2 : ℕ)) : Fin C × ℕ)) (injective)`, get the joint law with
+  `iIndepFun.hasGaussianLaw (hG : ∀ a, HasGaussianLaw (ξ a) P)`, push it through
+  `L := ContinuousLinearMap.pi fun a => (innerSL ℝ (u a.2.2)).comp (ContinuousLinearMap.proj (a.1, a.2.1))` and conclude with
+  `HasGaussianLaw.iIndepFun_of_covariance_inner`. Use `HasGaussianLaw.map_of_measurable L L.continuous.measurable`, **not** `map_fun`:
+  the latter expects the CLM with the normed-space instances on the Pi type (`Pi.normedSpace.toModule`), while the CLM you build carries
+  `Pi.module`, and instance arguments are compared at reducible transparency. After `convert … using 2` the goal is already pointwise;
+  `simp [L]` closes it.
+- The covariance hypothesis quantifies over scalar probes `x y : ℝ` with `⟪x, z⟫ = z * x` (`RCLike.inner_apply`, `conj_trivial`);
+  rewrite `fun ω => Z ω * c` to `fun ω => c * Z ω` by a small `funext`/`mul_comm` lemma and pull the constants out with
+  `covariance_const_mul_left/right`. Same block: `covariance_map` (forms `X ∘ Z`, use `Function.comp_def`) then
+  `← covarianceBilin_apply_eq_cov IsGaussian.memLp_two_id` and `covarianceBilin_stdGaussian`, finishing with `rfl` (`innerSL` applied is
+  `inner`). Different blocks: `(hindW.indepFun hblock).comp` — state the resulting `IndepFun` with a typed `have` in lambda form, or
+  `covariance_eq_zero` will not match.
+- From finite windows to an `ℕ`-indexed family: `iIndepFun_iff_measure_inter_preimage_eq_mul`, take `T := S.sup (·.2.1) + 1`, embed
+  with `a ↦ (a.1, ⟨a.2.1 % T, _⟩, a.2.2)` (total; the identity on `S` by `Nat.mod_eq_of_lt`), apply the window statement to `S.image e`
+  with `sets := fun a' => sets (a'.1, ↑a'.2.1, a'.2.2)`, and transport with `Finset.set_biInter_finset_image`, `Finset.prod_image`,
+  `Set.iInter₂_congr`, `Finset.prod_congr`. Write the tuples explicitly rather than through a `let r := …` (a `let`-bound function
+  applied is not syntactically the tuple, so `rw` will not see through it). `Finset.image` needs `DecidableEq` of the target: `classical`.
+- `orthonormal_iff_ite` + the `(Uᵀ U) i j = if i = j then 1 else 0` entry (as in `norm_orthoCol`) gives `Orthonormal ℝ (orthoCol hQ)`;
+  `hu.1 i : ‖u i‖ = 1` and `hu.inner_eq_zero hij` are the two facts consumed downstream.
+- `[Finite ι]` (not `Fintype`) is what `iIndepFun_of_covariance_inner` needs for the index; the `unusedFintypeInType` linter flags the
+  stronger instance.
