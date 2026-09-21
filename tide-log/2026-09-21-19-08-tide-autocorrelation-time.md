@@ -73,3 +73,9 @@ Saved verbatim in `tide-log/gpt_autocorrelation_time_v1.md` (prompt in `gpt_auto
 - GPT-6 Astra: A+B+C+D+E
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/autocorrelation-time` at b3c2aaf (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/AutocorrelationTime.lean` (273 lines): `sum_range_sub_mul_pow_eq`, `toeplitz_sum_eq`, `tendsto_toeplitz_div`, `iat_eq`, `iat_flat_twenty_kappa`, `iat_flat_e1`, `integral_realChain_eq_zero`, `variance_running_mean_realChain`, `iat_realChain`, `variance_running_mean_ulaChain`, `iat_ulaChain`.
+
+Surprises: (i) `simp_rw [pow_add]` split `ρ^(b+1)` itself into `ρ^b * ρ^1` — give `pow_add` its first arguments; (ii) two `field_simp; ring` sites went opposite ways (one closed by `field_simp`, one needed `ring`) and the first fix removed the wrong `ring`; (iii) `ulaChain` silently needs `[DecidableEq ι]` in the section.
