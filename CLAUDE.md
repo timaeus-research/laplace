@@ -1151,3 +1151,33 @@ matrix version is `whiteningOf`.
   line (the `unnecessarySeqFocus` linter flags `<;> ring` otherwise), and drop `Matrix.smul_mulVec`
   / `dotProduct_smul` rewrites before `congr 1` (they leave a spurious `True ∨ b = 0 ∨ t = 0`
   goal); `simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two]; ring` does it directly.
+
+### Uniform subsets and finite-population counting (tide `minibatch-fpc`)
+
+- `Finset.card_filter_powersetCard_subset s t n (hst : s ⊆ t) (hsn : #s ≤ n) :
+  #((t.powersetCard n).filter (s ⊆ ·)) = (#t − #s).choose (n − #s)` counts the `n`-subsets containing
+  `s`; convert the predicate with `Finset.filter_congr fun B _ => Finset.singleton_subset_iff.symm`
+  (singletons) or `rw [Finset.insert_subset_iff, Finset.singleton_subset_iff]` (pairs; a bare `simp
+  [Finset.insert_subset_iff]` times out here). The pair count `C(n−2, m−2)` is *wrong at `m = 1`*
+  under truncated subtraction: guard it (`if 2 ≤ m then … else 0`) and prove the `m = 1` branch by
+  `Finset.card_le_card` of `{i, j} ⊆ B`.
+- Double counting: `∑ i ∈ B, F i = ∑ i, if i ∈ B then F i else 0` (`← Finset.sum_filter` +
+  `univ.filter (· ∈ B) = B`), then plain `Finset.sum_comm`, then `← Finset.sum_filter`,
+  `Finset.sum_const` and the count. **Never `simp_rw` with that indicator lemma**: its right-hand
+  side is again a `Finset` sum and `simp` loops to a heartbeat timeout; use
+  `rw [Finset.sum_congr rfl fun B _ => lemma B f]`.
+- Binomials: `Nat.add_one_mul_choose_eq n k : (n+1) * choose n k = choose (n+1) (k+1) * (k+1)`
+  (`succ_mul_choose_eq` no longer exists); reindex `n = n' + 1` with `obtain ⟨n', rfl⟩ : ∃ n', n = n' + 1
+  := ⟨n - 1, by omega⟩`. Cast cross-multiplied ℕ identities to ℝ with `exact_mod_cast`, and
+  `Nat.cast_sub (by omega : 1 ≤ n)` for `((n − 1 : ℕ) : ℝ)`.
+- Bilinear maps `β : V →ₗ[ℝ] V →ₗ[ℝ] W`: `LinearMap.map_smul₂`, `LinearMap.map_sum₂` for the first
+  argument (`rw [map_smul]`/`rw [map_sum]` picks the *second* argument first and then
+  `LinearMap.smul_apply`/`sum_apply` find nothing). Build instances with `LinearMap.mk₂ ℝ f h₁ h₂ h₃ h₄`
+  (`add_vecMulVec`, `smul_vecMulVec`, `vecMulVec_add`, `vecMulVec_smul`; for `X * S * Yᵀ`: `simp
+  [add_mul]`, `simp`, `simp [Matrix.transpose_add, mul_add]`, `simp [Matrix.transpose_smul]`).
+- nsmul from `Finset.sum_const` versus real smul: `← Nat.cast_smul_eq_nsmul ℝ`, then `sub_smul`,
+  `smul_smul`; scalar bookkeeping as a separate lemma with `N₁ = C m / n` via `(eq_div_iff hn).mpr`
+  then `field_simp; ring`.
+- Definitions in a section with `variable [Fintype ι] [DecidableEq ι]` inherit the instances even
+  if unused (`Matrix ι ι ℝ`, `vecMulVec`, `X * S * Yᵀ` need only `Fintype` or nothing); `omit … in`
+  the defs too, or every user of them needs the instance.

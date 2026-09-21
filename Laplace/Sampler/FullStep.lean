@@ -253,20 +253,23 @@ theorem fullFixed_sub_sub_posSemidef (A N : Matrix ι ι ℝ)
 
 /-! ### The minibatch coefficient of the note -/
 
-/-- The note's state-dependent coefficient `c = h² t² (1 - m/n) / (m n)` for batches of size `m`
-drawn without replacement from `n` samples. -/
+/-- The note's state-dependent coefficient `c = h² t² (1 - m/n) / (m (n - 1))` for batches of
+size `m` drawn without replacement from `n` samples: Cochran's finite population correction with
+the `n - 1` sample covariance (derived in `Laplace/Sampler/Minibatch.lean`,
+`minibatch_hessian_term`). -/
 noncomputable def minibatchCoeff (h t : ℝ) (m n : ℕ) : ℝ :=
-  h ^ 2 * t ^ 2 * (1 - (m : ℝ) / n) / (m * n)
+  h ^ 2 * t ^ 2 * (1 - (m : ℝ) / n) / (m * ((n : ℝ) - 1))
 
 theorem minibatchCoeff_nonneg (h t : ℝ) {m n : ℕ} (hm : 0 < m) (hmn : m ≤ n) :
     0 ≤ minibatchCoeff h t m n := by
   have hn : (0 : ℝ) < n := by exact_mod_cast hm.trans_le hmn
+  have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hm.trans_le hmn
   have hm' : (0 : ℝ) < m := by exact_mod_cast hm
   have hle : (m : ℝ) / n ≤ 1 := (div_le_one hn).mpr (by exact_mod_cast hmn)
   unfold minibatchCoeff
   apply div_nonneg
   · exact mul_nonneg (by positivity) (by linarith)
-  · positivity
+  · exact mul_nonneg hm'.le (by linarith)
 
 /-- The E8 full law of the note: ULA step, additive minibatch noise, and the state-dependent term
 with `Dᵢ = Hᵢ - H` (per-sample Hessians `Hs i` minus their mean `H`). -/
