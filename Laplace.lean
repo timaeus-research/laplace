@@ -321,3 +321,4 @@ import Laplace.Sampler.FrobeniusFree
 import Laplace.Sampler.FrobeniusBridge
 import Laplace.Sampler.FrobeniusTarget
 import Laplace.Sampler.BurnInEnvelope
+import Laplace.Sampler.StepSizeTradeoff

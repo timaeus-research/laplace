@@ -1854,3 +1854,26 @@ matrix version is `whiteningOf`.
   turns it into the sum over `univ.filter p`; combine with `tendsto_finsetSum` for termwise limits.
 - `HasCompactSupport fun y ↦ χ (0, y)` from `HasCompactSupport χ`: `IsCompact.of_isClosed_subset`
   of `Prod.snd '' tsupport χ` with `closure_minimal`.
+
+### Monotone bias terms and intermediate-value arguments (tide `stepsize-tradeoff`)
+
+- Monotonicity of a rational-in-`h` bias term without calculus: prove the *termwise* inequality after `div_le_div_iff₀`, splitting
+  `x ^ (2m) = x ^ (2m−1) * x` (`rw [← pow_succ, Nat.sub_add_cancel (by omega : 1 ≤ 2 * m)]`) so that `mul_le_mul` combines a power
+  inequality (`pow_le_pow_left₀`) with a linear one (`nlinarith`). Then lift to the sum with `Finset.sum_le_sum` and
+  `mul_le_mul_of_nonneg_left`.
+- `ring` treats `(p * (1 − u/2))⁻¹` as an atom and will not split it into `p⁻¹ * (1 − u/2)⁻¹`: rewrite with `← one_div_mul_one_div`
+  (`1 / a * (1 / b) = 1 / (a * b)`) first, then `simp only [Finset.mul_sum]` and per-term `ring`.
+- Sign change ⇒ zero: put the sign-carrying numerator in its own polynomial `def` (`balanceGap`), prove `Continuous` with
+  `(continuous_mul_const p).sub (continuous_const.mul (… (continuous_finsetSum _ fun k _ => by fun_prop)))`, and use
+  `intermediate_value_Ioo (hab) hf.continuousOn h0 : Ioo (f a) (f b) ⊆ f '' Ioo a b` — the membership `0 ∈ Ioo (f 0) (f b)` is two `norm_num`
+  goals after rewriting the endpoint values. Uniqueness: `StrictMonoOn.injOn` with `Set.Ioo_subset_Icc_self`. `StrictMonoOn f s` unfolds to
+  `∀ ⦃a⦄, a ∈ s → ∀ ⦃b⦄, b ∈ s → a < b → f a < f b`, so `intro h hh h' hh' hlt` is the whole setup.
+- `∃! h, h ∈ s ∧ P h ∧ Q h ∧ R h`: `refine ⟨h₀, ⟨hmem, ?_, ?_, ?_⟩, fun h ⟨hmem', hz', _, _⟩ => ?_⟩`.
+- Endpoint values of the zero-start factor: at `h = 0`, `simp [zeroStartFactor, hN']` with `hN' : (N:ℝ) ≠ 0` (the sum of `1` over
+  `range N` is `N`); at `h = 1/p`, `simp only [zeroStartFactor, one_div_mul_cancel hp.ne', sub_self]` then
+  `Finset.sum_eq_zero fun k _ => zero_pow (by omega)`.
+- Sign transfer through a positive denominator: `div_neg_of_neg_of_pos`, `div_pos`, and `div_eq_zero_iff` (then discharge the
+  denominator case with `absurd … (mul_pos …).ne'`).
+- Deprecations in this Mathlib: `continuous_mul_right → continuous_mul_const`, `continuous_finset_sum → continuous_finsetSum`.
+- The unused-variable linter fires on hypotheses that `linarith`/`nlinarith` did not need (`0 ≤ h` when `h ≤ h'` and `0 ≤ h'` suffice);
+  drop them from the statement rather than underscore them.
