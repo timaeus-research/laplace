@@ -36,3 +36,15 @@ rates are available (they are: `thirdMoment_anharmonic_rate`, `fourthMoment_anha
 `|t(λtVar − 1) − (a² − ½)| = 1.6e-2, 2.6e-3, 2.7e-4, 2.7e-5` at `t = 10, 100, 1000, 10000` (`≈ 0.27/t`, independent of `λ`): the true remainder
 after the one-loop term is `O(1/t)` in this quantity (relative `O(t⁻²)`, the note's claim); the seabed's moment rates certify `O(t^{-1/2})`
 (relative `O(t^{-3/2})`).
+
+## Result
+
+Commit `6861bd8` on `tide/var-order2-rate`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/Multi/VarianceOrder2.lean` (     420 lines): `var_order2_coeff`, `var_anharmonic_order2_rate`, `var_relative_rate_order2`,
+`var_relative_rate_order2_note`, `separableAnharmonic_var_order2_rate_note`, `rotatedAnharmonic_var_order2_rate_note`,
+`mean_anharmonic_rate_div`, `energy_order1_coeff`, `energy_anharmonic_order1_rate`, `energy_anharmonic_order1_rate_note`,
+`separableAnharmonic_energy_order1_rate_note`, `rotatedAnharmonic_energy_order1_rate_note`.
+
+Surprises: the energy's first-order coefficient `5α²/(24λ³) − γ/(8λ²)` (GPT's suggestion) reproduces E2's measured "4.76" at `t = 3`,
+`d = 10`, `a = ½` to three digits (`5 − 10·0.0729/3 = 4.757`); the `t^{-3/2}` loss in the variance is entirely the second-moment
+rate's, the mean enters squared and is already `O(t⁻²)`.
