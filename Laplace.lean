@@ -217,6 +217,7 @@ import Laplace.Multi.CylinderSufficient
 import Laplace.Multi.SeparableTangential
 import Laplace.Multi.PositiveWeightFamily
 import Laplace.Multi.MarginalCutoff
+import Laplace.Multi.GermCorrespondence
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
