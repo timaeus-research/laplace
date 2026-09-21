@@ -33,3 +33,9 @@ Accepted: quotient route; abstract theorem with the decay hypothesis; spectral a
 - GPT-6 Astra: U + C0.
 
 Agreed after one round (the attraction corollary is GPT's own "stronger nearby target").
+
+## Result
+
+- Commit `e65217b` on `tide/ula-uniqueness` (base a1afc78 + `tide/ula-invariance`), merged with upstream in `06e2286`. Full `lake build` green; `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide.
+- `Laplace/Sampler/GaussianUniqueness.lean` (     316 lines): `charFun_map_clm` (`charFun (μ.map L) t = charFun μ (L† t)`), `charFun_map_euclid`, `gaussFactor`, `charFun_multivariateGaussian_zero`, `charFun_multivariateGaussian_ne_zero`, `isProbabilityMeasure_gaussStep` (instance), `isProbabilityMeasure_gaussStep_iterate`, `charFun_gaussStep`, `pow_eq_conj_diagonal_pow`, `tendsto_diagonal_pow`, `tendsto_pow_of_spectral`, `transpose_eq_self_of_spectral`, `tendsto_mulVec_of_tendsto`, `tendsto_euclid_apply_of_tendsto`, `tendsto_euclid_pow_of_spectral`, `tendsto_covStep_iterate` (covariance iterates converge from any start), `euclid_transpose_pow_succ`, `quotient_step`, `quotient_iterate`, `tendsto_quotient_zero`, `invariant_eq_multivariateGaussian_of_tendsto` (abstract uniqueness), `tendsto_charFun_gaussStep_iterate` (attraction, pointwise charFun), `gaussStepPM`, `gaussianPM`, `tendsto_gaussStepPM` (weak convergence by Lévy), `ulaCov_unique_invariant`, `tendsto_ula_iterate`.
+- Surprises: GPT-6 Astra's quotient argument removed all iterated-covariance bookkeeping; Lévy's theorem is in the pin for finite-dimensional inner product spaces, so weak convergence from any initial law came for free. Lean friction: `Matrix` is opaque to `rw [tendsto_pi_nhds]` (use `refine tendsto_pi_nhds.mpr`), and anonymous `ProbabilityMeasure` constructors inside `Tendsto` break instance search (wrap in defs).
