@@ -42,3 +42,10 @@ Accepted. This tide takes A in the general-valley form: the measure-preserving s
 - GPT-6 Astra: A0–A5 alone.
 
 Agreed after one round.
+
+## Result
+
+- Commit `f5f8605` on `tide/sanity-closed-forms` (base ee83216). Full `lake build` green; `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide.
+- `Laplace/TwoD/Rosenbrock.lean` (     462 lines): `valley`, `rosenbrock`, `valleyShear` (Homeomorph → MeasurableEquiv), `valleyShear_measurePreserving`, `integral_valley_shear`, `integrable_valley_shear_iff`, `partitionFunction_valley` (= Z_harm(1) Z_harm(a) for any continuous g), `integral_valley_shearMonomial`, `integrable_valley_shearMonomial`, `gibbsExpectation_valley_shearMonomial`, `gibbsExpectation_valley_poly` (coefficient matrix Fin 5 × Fin 5), `harmonicMoment_zero..four`, `harmonicMoment_vec`, `partitionFunction_rosenbrock` (= 2π/(t√a)), `gibbsExpectation_rosenbrock_{fst, fst_sq, snd, fst_mul_snd, snd_sq, self, self_sq}`, `gibbsCov_rosenbrock_{fst_fst, fst_snd, snd_snd, self}`, `rosenHess`, `rosenbrock_taylor`, `rosenHess_inv`, `rosenCov`, `rosenCov_eq_laplace_add`.
+- Surprises: none mathematical. Lean friction: `convert` between `Integrable f volume` and `Integrable f (volume.prod volume)` leaves instance goals (use `Integrable.congr`); `ring` cannot go under `exp` (`congr 1` first); the harmonic-moment values need `norm_num [Nat.doubleFactorial]`; the coefficient-matrix approach made the seven observables one-liners.
+- The general valley statements (partition function independent of the curve) came free from the shear lemma.
