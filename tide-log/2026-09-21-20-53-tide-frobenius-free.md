@@ -54,3 +54,9 @@ Saved verbatim in `tide-log/gpt_frobenius_free_v1.md`. Summary: A–C correct; `
 - GPT-6 Astra: A+B+C
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/frobenius-free` at c94aea0 (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/FrobeniusFree.lean` (212 lines): `tau_lin_mono`, `sum_sum_ite_mul_le`, `frobenius_ula_le_free`, `frobenius_ula_relative_le_free`, `frobenius_ula_rms_le_free`.
+
+Surprises: (i) `set a := fun i => …` cannot abbreviate under the `∑` binders, so the per-term identity had to be written out in full; (ii) in this Mathlib `add_le_add_left` adds on the right; (iii) GPT: the free/spectral ratio is at most `d` only when `pmin` is attained, and the Frobenius identity `∑ s₂ᵢ² = ‖Σ_ULA‖_F²` deserves its own bridge — taken up as the next tide.
