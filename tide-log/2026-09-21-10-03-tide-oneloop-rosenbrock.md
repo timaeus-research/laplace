@@ -62,3 +62,18 @@ Saved verbatim in `gpt_oneloop_rosenbrock_v1.md`. Summary: the transcription of 
 - GPT-6 Astra: candidate A (staged contraction lemmas; quadratic-valley exactness optional)
 
 Agreed. The quadratic-valley generalisation is noted as a follow-up.
+
+## Result
+
+Committed as `Laplace/Multi/OneLoop.lean` (467f77c), 229 lines, 0 sorries, `lean-state check` clean.
+
+Theorems: `contractQ`, `contractT`, `bubble`, `tadpoleLine`, `oneLoopPi`, `oneLoopCov` (the functional on `Fin d`);
+`smul_single_inv`, `oneLoopCov_oneDim` (`= 1/(λt) + (α²/λ⁴ − γ/(2λ³))/t²`), `secondMoment_anharmonic_second_order`,
+`var_anharmonic_second_order` (`t²(Var_t[x] − 1/(λt)) → α²/λ⁴ − γ/(2λ³)`); `rosenT`, `rosenQ`, `rosenbrock_taylor_full`,
+`rosenSigma`, `rosenHess_smul_inv`, `contractQ_rosenbrock`, `contractT_rosenbrock`, `bubble_rosenbrock`,
+`tadpoleLine_rosenbrock`, `oneLoopPi_rosenbrock` (`Π = 2a²(2,−1)(2,−1)ᵀ`), `oneLoopCov_rosenbrock` (`= rosenCov a t`).
+
+Surprises: none mathematical; the whole tide is definitions, one squeeze argument on the seabed's second-order rate, and
+`fin_cases`/`simp`/`field_simp`/`ring` over `Fin 2`, once the contractions are evaluated one lemma at a time.
+The note's 1D formula turned from a display into a theorem about the true variance because the seabed's gamma-rung programme
+already had the second-order second moment with the matching coefficient.
