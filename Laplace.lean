@@ -245,3 +245,5 @@ import Laplace.Patterning.Virial
 import Laplace.Patterning.FourGon
 import Laplace.Patterning.Positivity
 import Laplace.Patterning.FourGonGibbs
+import Laplace.Patterning.Jacobi
+import Laplace.Patterning.RadialVirial

@@ -135,6 +135,8 @@ header says which parts are covered.
 | [`Laplace/Patterning/Virial.lean`](Laplace/Patterning/Virial.lean) | Virial balance `tr(PX) = d + (h/2) tr(P²X)` for the ULA law, 1D Gibbs virial `⟨x U'⟩ = 1` by the whole-line FTC, degree decomposition (Prop. 12.4) |
 | [`Laplace/Patterning/FourGon.lean`](Laplace/Patterning/FourGon.lean) | Population TMS at the 4-gon: exact frozen loss with the dead unit at `(x, y)`, `r⁴/15` at uniform `h`, ray form `a(θ;h) r² + (h₄/3) r⁴`, sublevel volume `π √(15ε)` (Prop. 11.1 (ii)–(iv)) |
 | [`Laplace/Patterning/FourGonGibbs.lean`](Laplace/Patterning/FourGonGibbs.lean) | Gibbs moments of the dead component `K = r⁴/15` on `ℝ²` by polar coordinates and Gamma integrals: `Z(t)`, the exact `t ⟨K⟩_t = ½` for every `t`, and `⟨r⟩_t = Γ(3/4) π^{-1/2} (15/t)^{1/4}` (Prop. 11.1 (iii)) |
+| [`Laplace/Patterning/Jacobi.lean`](Laplace/Patterning/Jacobi.lean) | Jacobi's formula from the Leibniz expansion: `d/ds det H(s) = tr(adj H · H')`, `d/ds log det H = tr(H⁻¹ H')`, the column-replacement sum `∑ᵢ det(H[i ← B·ᵢ]) = tr(adj H · B)`, and the Prop. 5.2 identification `tr(Σ(B - H + T·v)) = tr(BΣ) - d + (T:Σ)·v` (Lemma 5.1) |
+| [`Laplace/Patterning/RadialVirial.lean`](Laplace/Patterning/RadialVirial.lean) | Virial identity for radial potentials in the plane, `∫₀^∞ r² U' e^{-U} = 2 ∫₀^∞ r e^{-U}` by the FTC on `(0,∞)`, with quartic-dominated integrability and decay; the localised 4-gon law `t⟨K⟩_{t,γ} = ½ - (γ/4)⟨r²⟩_{t,γ}` (Prop. 11.1 (iii), Prop. 12.4 in the plane) |
 | [`Laplace/Patterning/Positivity.lean`](Laplace/Patterning/Positivity.lean) | Bounded positive reweighting: sandwich `c₁K ≤ K_w ≤ c₂K`, equal zero sets, sublevel and measure sandwich (Prop. 6.1, sublevel core) |
 
 ## Proof strategy
