@@ -257,3 +257,4 @@ import Laplace.Multi.OneLoop
 import Laplace.Multi.TiltedGaussian
 import Laplace.TwoD.ValleyQuadratic
 import Laplace.Sampler.Minibatch
+import Laplace.Sampler.MinibatchStep
