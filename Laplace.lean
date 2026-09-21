@@ -280,5 +280,6 @@ import Laplace.Sampler.MetropolisKernel
 import Laplace.TwoD.RosenbrockE5
 import Laplace.Sampler.GaussianTable
 import Laplace.Sampler.LLCVariance
+import Laplace.Sampler.LocalisedLLC
 import Laplace.Sampler.LLCMSE
 import Laplace.Sampler.AutocorrelationTime
