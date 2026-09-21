@@ -559,6 +559,29 @@ product-space `volume` is rewritten); `(sumPiEquivProdPi _).symm (x, y) = Sum.el
 to the glued form works. `dist_pi_lt_iff hr` splits a sup-norm ball on `ι₁ ⊕ ι₂ → ℝ` into transverse and
 tangential balls (`cases i with | inl | inr`).
 
+**Empirical / visibility arc (EmpiricalRelative, HarmonicWitness, MonomialVisibility).** A theorem
+named `Foo.fderiv` shadows the root `fderiv` inside its own proof (every `fderiv ℝ` then elaborates
+as the theorem, "argument ℝ … expected LowPoly") — name derivative lemmas `deriv_dir` or similar. Inside
+`induction h with | coord_mul i hF ih` the constructor's implicit function is inaccessible; write
+`| @coord_mul q i F hF ih` to name it, and never use `_` for it in `have` statements. `∀ᶠ n in atTop, P`
+with `n` unused in `P` leaves `n`'s type a metavariable ("typeclass instance problem is stuck
+Preorder ?m") — derive the fact from `(h.and h').exists` instead. `abbrev K x := quadKernel 1 x` is NOT
+seen through by `rw` with lemmas stated for `quadKernel 1 x`; use `local notation "K₁" =>
+quadKernel (1 : Matrix (Fin d) (Fin d) ℝ)` (section variables are fine inside a local notation).
+`stdKernel` already exists in `StdGaussian` — grep before naming. `Matrix.PosDef.one` (not
+`posDef_one`) is the identity's positivity; `simp` proves `toEuclideanCLM 1 = 1` and
+`EuclideanSpace.inner_single_right/left` evaluate `⟪x, single i 1⟫`. `HasFDerivAt.pow` gives the
+derivative of `z ↦ (ℓ z)^k` for a CLM `ℓ` into `ℂ` as `(k • ℓ z ^ (k-1)) • ℓ`; take re/im parts with
+`Complex.reCLM.hasFDerivAt.comp`, and rewrite the function by `funext; simp [harmRe]` before `.fderiv`.
+`HasFDerivAt.mul` / `.add` / `.const_mul` produce Pi-form functions — state the `HasFDerivAt` with the
+lambda type in a `have` before `rw [h.fderiv, add_apply, smul_apply, smul_eq_mul]`; `(EuclideanSpace.proj i) v = v i`
+is `rfl` (there is no `EuclideanSpace.proj_apply`). `Continuous.mul` inferring `f` for
+`integrable_mul_quadKernel_of_polynomialGrowth` yields `(F * G) a` Pi redexes that `rw [integral_add …]`
+cannot match — state the `Integrable` facts with explicit lambda types. `abs_of_nonneg (by positivity)`
+inside `rw` rewrites the FIRST `|·|` it sees when positivity's goal is a metavariable — give the explicit
+nonnegativity proof. `Real.exp_le_exp.mpr`, `abs_le`, and `nlinarith` handle `e^{-tδ} ≤ e^{-t(K−L)} ≤ e^{tδ}`.
+`positivity` cannot use `∀ n, 0 ≤ δ n`; instantiate `have := hδ n` first.
+
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 
 The `Laplace/TwoD/KthKth*.lean` trio (Partition, Numerator, Moment)
