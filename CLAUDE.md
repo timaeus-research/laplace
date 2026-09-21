@@ -1692,3 +1692,14 @@ matrix version is `whiteningOf`.
 - Square-root algebra `2√X/d = √Y/q`: go through `√((2/d)²) · √X = √((2/d)² X)` with `Real.sqrt_sq` and `(Real.sqrt_mul (hx : 0 ≤ a) _).symm`
   — give `Real.sqrt_mul` its first argument with a type ascription, otherwise `rw` splits the wrong square root — and a `field_simp`
   identity between the radicands.
+### Relative chart arc (RelativeChartLeading, RelativeChartFamily)
+
+- A stuck `IsFiniteMeasureOnCompacts ?μ` (from `integrableOn_const`, `IsCompact.measure_lt_top`,
+  `Continuous.integrable_of_hasCompactSupport`) means nothing fixed the measure: pass
+  `(μ := (volume : Measure (ℝ × EuclidD n)))` explicitly.
+- `hasDerivAt_integral_of_dominated_loc_of_deriv_le` with `(s := Set.univ) Filter.univ_mem` when the
+  bound is global; the derivative-bound binder order is `∀ᵐ y, ∀ s ∈ univ, ‖F' s y‖ ≤ bound y`.
+- A sum of `if p i then f i else 0` over `univ`: `Finset.sum_ite, Finset.sum_const_zero, add_zero`
+  turns it into the sum over `univ.filter p`; combine with `tendsto_finsetSum` for termwise limits.
+- `HasCompactSupport fun y ↦ χ (0, y)` from `HasCompactSupport χ`: `IsCompact.of_isClosed_subset`
+  of `Prod.snd '' tsupport χ` with `closure_minimal`.
