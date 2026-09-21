@@ -1612,3 +1612,16 @@ matrix version is `whiteningOf`.
   `tendsto_const_div_atTop_nhds_zero_nat`, `squeeze_zero`; transfer an identity that needs `N ≠ 0` with
   `.congr' (eventually_atTop.mpr ⟨1, fun N hN => (heq N (by omega)).symm⟩)`.
 - `ulaChain` needs `[DecidableEq ι]`; a section that mentions it without the instance fails with "failed to synthesize DecidableEq ι".
+
+### Positive semidefiniteness and section instances (tide `batch-size-rule`)
+
+- `Matrix.PosSemidef` and `posSemidef_sum`, `PosSemidef.smul`, `posSemidef_vecMulVec_self_star` need only `[Finite ι]` (the `Fintype`
+  block in `PosDef.lean` starts later); `trace_nonneg` and anything with `Matrix.trace` need `[Fintype ι]`; `minibatchCov`/`ulaCov` need
+  `[DecidableEq ι]` too. Put the three groups in three sections, or the `unusedFintypeInType`/`unusedDecidableInType` linters fire.
+- A real outer product is PSD via `posSemidef_vecMulVec_self_star v` and `simpa` (`star v = v`). `PosSemidef.smul` takes the explicit
+  `0 ≤ c`; prove `0 ≤ 1 − (m : ℝ)/n` with `rw [sub_nonneg, div_le_one hn']; exact_mod_cast hmn`, and `0 ≤ (n : ℝ) − 1` from `2 ≤ n` by
+  `exact_mod_cast` + `linarith` before `positivity`.
+- Rewriting two-sided bounds into another parametrisation: prove each side's algebraic identity as `e : A = B := by field_simp` (with the
+  nonzero facts in context; no `ring` needed) and finish with `⟨e1 ▸ hlo, e2 ▸ hhi⟩`.
+- Dropping a factor `0 ≤ 1 − m/n ≤ 1` from a bound: `div_le_div_of_nonneg_right _ (by positivity)` and `nlinarith
+  [mul_le_mul_of_nonneg_left hfpc hK0]`; then clear denominators on both the hypothesis and the goal with `div_le_iff₀` and `nlinarith`.
