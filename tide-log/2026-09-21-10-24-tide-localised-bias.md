@@ -46,3 +46,20 @@ Saved verbatim in `gpt_localised_bias_v1.md`. Summary: A.1–A.4 correct (the qu
 - GPT-6 Astra: candidate A (same)
 
 Agreed.
+
+## Result
+
+Committed as \`Laplace/Multi/TiltedGaussian.lean\` (119b6ee), 324 lines, 0 sorries, \`lean-state check\` clean.
+
+Theorems: \`tiltedWeight\`, \`tiltMean\`, \`tiltedZ\`, \`tiltedExpectation\`; \`mulVec_tiltMean\`, \`dotProduct_mulVec_symm\`,
+\`tiltedWeight_eq\` (completed square), \`integral_tilted\` (the shift), \`tiltedZ_eq\`, \`tiltedZ_pos\`, \`tiltedExpectation_eq\`
+(normalised shift); centred helpers \`integrable_coord_mul_gaussianWeight_matCLM'\`, \`integral_coord_mul_gaussianWeight_matCLM_eq_zero\`,
+\`integrable_dotProduct_mul_gaussianWeight_matCLM\`, \`integral_dotProduct_mul_gaussianWeight_matCLM\`,
+\`integrable_quadForm_mul_gaussianWeight_matCLM\`; moments \`tiltedExpectation_coord\` (\`= m\`), \`tiltedExpectation_coord_mul\`
+(\`P⁻¹ + mmᵀ\`), \`tiltedCov\` (\`P⁻¹\`), \`tiltedExpectation_quadForm\` (\`∑ Hᵢⱼ(P⁻¹)ᵢⱼ + mᵀHm\`), \`tiltedExpectation_const_mul\`;
+E3: \`effectivePrecision_posDef\`, \`localisedWeight_eq\` (the note's target is a tilted Gaussian), \`localised_cov\` (\`(tH+γ)⁻¹\`),
+\`localised_llc\` (\`½ ∑ (tH)ᵢⱼ((tH+γ)⁻¹)ᵢⱼ + ½ t mᵀHm\`), \`localised_llc_bias_nonneg\`, \`tiltMean_zero\`, \`tiltedWeight_zero\`,
+\`localised_llc_unlocalised\` (\`d/2\`).
+
+Surprises: \`integral_add_right_eq_self\` does the whole shift in one line and needs no integrability; the only friction was
+\`integral_add\` wanting lambda-typed integrability facts, and Matrix-as-function transparency defeating \`simp … at h\`.
