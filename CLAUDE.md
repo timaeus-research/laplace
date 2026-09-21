@@ -1535,3 +1535,23 @@ matrix version is `whiteningOf`.
 - A theorem with no measure in its statement must live outside the `variable {P : Measure Ω} [IsProbabilityMeasure P]` section (the
   `unusedSectionVars` linter flags `[MeasurableSpace Ω]`); `omit [DecidableEq ι] in` goes *before* the docstring, and the proof then opens
   with `classical` if it calls a `DecidableEq`-typed lemma.
+
+### Bias–variance assembly and error budgets (tide `llc-mse`)
+
+- Statements of the form `∫ ω, (X ω - a) ^ 2 ∂P ≤ RHS` where `X` is a defined statistic: annotate the integrand `((X ω - a) ^ 2 : ℝ)`.
+  Without it the binop elaborator can pick `ℕ` for the integrand's expected type (`HPow ℝ ℕ ℕ`, `NormedAddCommGroup ℕ` failures at
+  the `∑` inside) even though every leaf is real; the `=` versions never needed it because the RHS integrals fixed the type.
+- Rewriting with an equation whose two sides print identically but fails (`rw` "did not find an occurrence"): use
+  `(h_eq …).trans_le ?_` (`Eq.trans_le`) instead of `rw [h_eq]` — unification up to defeq succeeds where syntactic matching fails.
+- Per-chain independence from the joint family: `have h := iIndepFun.precomp (Prod.mk_right_injective c) hind; exact h`. Do not write
+  `hind.precomp …` against the expected type `iIndepFun (ξ c) P`: the unifier then solves `?f ∘ ?g = ξ c` with `g = id` and complains that
+  `Prod.mk_right_injective c` should be `Function.Injective fun i ↦ i`. (`Prod.mk.inj_left` does not exist here; `Prod.mk_right_injective`
+  is the name.)
+- `ring` cannot prove `a / (N * B * q) = 1 / N * (a / (B * q))` when `B, q` are polynomials in other atoms: it normalises `N * B * q` into
+  one polynomial and inverts it as a single atom. Use `rw [one_div_mul_eq_div, div_div]; congr 1; ring` (or `field_simp` with the
+  nonzero facts in context).
+- `div_le_div_iff` / `div_le_div_iff_of_pos` are not in this Mathlib; the positive-denominator form is `div_le_div_iff₀ (hb : 0 < b) (hd : 0 < d)`.
+- `√(a + b²) ≤ √a + b` (`a, b ≥ 0`): `rw [Real.sqrt_le_left (by positivity)]; nlinarith [Real.sq_sqrt ha, Real.sqrt_nonneg a, mul_nonneg …]`.
+  Compose an MSE bound into an RMS bound with `Real.sqrt_le_sqrt` then this lemma; `add_assoc` first so the bound reads `√env + (infl + short)`.
+- Theorems mixing a probability-measure section with pure algebra (spectral sums, `Fintype.card`) go in their own `section` with only
+  `{ι} [Fintype ι]`; keep `[DecidableEq ι]` out unless an `if` appears in the statement (`unusedDecidableInType`).
