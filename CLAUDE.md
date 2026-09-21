@@ -296,6 +296,34 @@ Deprecations on this pin: `tendsto_finset_sum → tendsto_finsetSum`,
 which leaves instance-mismatch goals. `field_simp` only clears a denominator whose
 nonzero-ness hypothesis matches syntactically (`2 - lam * η ≠ 0` is not `2 - η * lam ≠ 0`).
 
+**Analysis idioms from the Patterning fundamentals (Jacobi, RadialVirial, GaussianFourth).**
+The `∫ x in s, body` notation parses `body` at precedence 60, so `∫ f + c * ∫ g` is
+`∫ (f + c * ∫ g)`: parenthesise `(∫ x in s, f x) + c * (∫ x in s, g x)`. `HasDerivAt.sum` produces
+the Pi-sum `∑ i, A i` as the function; use `HasDerivAt.fun_sum` for `fun y ↦ ∑ i, A i y`, or
+`congr_of_eventuallyEq` with `Finset.sum_apply`. There is no `HasDerivAt.finset_prod` on this
+pin; `Jacobi.lean` has `hasDerivAt_finset_prod` by induction. `Matrix.det_apply'` gives the
+Leibniz sum with a real sign `((sign σ : ℤ) : ℝ)`; column replacement branches on `j = i`
+(`updateCol_self/ne`), and `cramer_apply` + `cramer_eq_adjugate_mulVec` turn the column-replaced
+sum into `tr(adj A · B)`. With `open Matrix`, `add_apply`/`smul_apply` are ambiguous with
+`Matrix.add_apply`: write `_root_.add_apply`. `field_simp` normalises *inside* integrands and
+breaks syntactic matching with an earlier `have`; clear denominators by hand
+(`eq_sub_iff_add_eq`, `← mul_div_assoc`, `← add_div`, `div_eq_iff`) when a hypothesis must be
+reused. Distributing `(∑ i, ∑ j, f) * (∑ k, ∑ l, g) * K` with `simp only [Finset.sum_mul,
+Finset.mul_sum]` fixes the nesting order to (i, j, k, l); `rw [Finset.sum_mul_sum]` then
+`simp only [Finset.sum_mul_sum]`, then `simp only [Finset.sum_mul]` gives (i, k, j, l); state the
+expanded form in whichever order the tactic produces and never rely on `simp` to permute
+four-fold sums (use `Finset.sum_comm` under `conv` and match the trace expansion order
+`(i, l, k, j)` of `tr(A S B T)`). `integral_finset_sum`/`integrable_finset_sum` are
+`integral_finsetSum`/`integrable_finsetSum`; rewriting `∫ ∑∑ f` needs the summand function
+passed explicitly (higher-order pattern), see `integral_sum2`/`integral_sum4`. Stein in a
+non-coordinate direction: `stein_quadKernel` with `v = toEuclideanCLM H⁻¹ (single a 1)`, using
+`inner_toEuclideanCLM`, `ofLp_toEuclideanCLM`, `dotProduct_mulVec`, `← mulVec_transpose` and the
+symmetry `Hᵀ = H` from `hH.1.eq` via `conjTranspose_eq_transpose_of_trivial`; `LowPoly`
+(`MonomialVisibility.lean`) supplies smoothness and growth of monomials and of their
+directional derivatives (`LowPoly.deriv_dir`), and `EuclideanSpace.proj i |>.hasFDerivAt.mul`
+gives the explicit product-rule derivative. `Matrix.PosDef.det_pos` lives in
+`Mathlib/Analysis/Matrix/PosDef.lean`.
+
 **Mathlib namespace gotchas.** Some lemmas live under deeper namespaces than
 expected. `integral_comp_mul_right` is `MeasureTheory.Measure.integral_comp_mul_right`,
 not `MeasureTheory.integral_comp_mul_right`. When in doubt, write a scratch

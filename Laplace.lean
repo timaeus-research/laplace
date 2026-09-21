@@ -247,3 +247,4 @@ import Laplace.Patterning.Positivity
 import Laplace.Patterning.FourGonGibbs
 import Laplace.Patterning.Jacobi
 import Laplace.Patterning.RadialVirial
+import Laplace.Patterning.GaussianFourth
