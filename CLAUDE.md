@@ -1216,3 +1216,24 @@ matrix version is `whiteningOf`.
   "unexpected token 'φ'; expected identifier". Rename the family (`F`) or don't open `Nat`.
 - `rw [show (1 : ℕ) = 2 * 0 + 1 by norm_num]` rewrites the `1` inside `Fin 1` too (motive not type
   correct); derive the specialised fact with `simpa using lemma H 0` instead.
+
+### Geometric tails, Toeplitz sums and eigenbasis conjugation (tide `direction-closures`)
+
+- `∑_{k<N} x^k ≤ 1/(1−x)` for `0 ≤ x < 1`: `geom_sum_eq` (needs `x ≠ 1`) then `div_le_div_of_nonneg_right`/`div_le_iff₀`; the
+  numerator `1 − x^N ≤ 1` is `pow_le_one₀`. Toeplitz double sums `∑_{i<N} ∑_{j<N} ρ^{|i−j|}` are bounded termwise via
+  `(N − m − 1) ρ^{m+1} ≤ N ρ^{m+1}` after `Finset.sum_range_succ`-style reindexing; do not try to evaluate them in closed form.
+- A bound of the shape `a − X ≤ a·(u + v)` with `X` a definitional unfolding: prove the identity `a − X = …` with `ring`/`field_simp`
+  first (`have hX : X = …`), then `linarith`/`gcongr` on the pieces. `gcongr` leaves side goals it cannot discharge on
+  products of nonnegative factors; give `mul_le_mul_of_nonneg_left h (by positivity)` explicitly.
+- Realising an abstract chain bound for ULA: rewrite the seabed theorem's RHS into the abstract form with `change … ≤ _` (definitional
+  unfolding of `finiteChainPrediction`), apply the abstract bound, then relax `(1+ρ)/(1−ρ) ≤ 2/(hp)` via
+  `div_le_div_of_nonneg_right` after `show (1:ℝ) − (1 − h*p) = h*p by ring`. No measure theory is needed at this level.
+- Eigenbasis conjugation of `t•H + γ•1` with `U = orthoOf hH.1`: `effectivePrecision = U * diagonal (t λᵢ + γ) * Uᵀ` from
+  `spectral_real` plus `U * Uᵀ = 1` (`Matrix.mul_smul`, `smul_diagonal`... prove the diagonal affine identity entrywise with
+  `ext i j; by_cases h : i = j; simp [diagonal, h]`). Inverting: `(U D Uᵀ)⁻¹ = U D⁻¹ Uᵀ` via `Matrix.inv_eq_right_inv` and
+  associating explicitly around `Uᵀ U` — after `rw [← Matrix.mul_assoc Uᵀ U, hUtU, Matrix.one_mul]` the goal already has the form
+  `D⁻¹ * 1`, so a second `hUtU` rewrite fails; finish with `Matrix.mul_one`.
+- `∑ᵢⱼ Aᵢⱼ Bᵢⱼ = trace (A * Bᵀ)`; for symmetric `B` cycle with `Matrix.trace_mul_cycle`, cancel `Uᵀ U`, and finish with
+  `diagonal_mul_diagonal` + `trace_diagonal`. Along an eigenvector `H u = λ u`, `(tH+γ)u = (tλ+γ)u` (`Matrix.add_mulVec`,
+  `Matrix.smul_mulVec`, `one_mulVec`), so `(tH+γ)⁻¹ u = (tλ+γ)⁻¹ u` by applying the inverse to both sides
+  (`Matrix.mulVec_mulVec`, `nonsing_inv_mul`).
