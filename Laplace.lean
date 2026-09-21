@@ -236,6 +236,7 @@ import Laplace.Multi.MorseBottLeading
 import Laplace.Multi.CurvedMorseBott
 import Laplace.Multi.SingularPowerNormalForm
 import Laplace.Multi.CoordinateMomentDeterminacy
+import Laplace.Multi.TruthVariation
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
@@ -267,3 +268,4 @@ import Laplace.Multi.CovKClosedForm
 import Laplace.Sampler.MinibatchStep
 import Laplace.Sampler.DirectionClosures
 import Laplace.Sampler.LLCClosures
+import Laplace.Sampler.EstimatorVariance
