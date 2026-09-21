@@ -221,6 +221,7 @@ import Laplace.Multi.GermCorrespondence
 import Laplace.Multi.EmpiricalRelative
 import Laplace.Multi.HarmonicWitness
 import Laplace.Multi.MonomialVisibility
+import Laplace.Multi.EmpiricalRescaled
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
@@ -231,3 +232,4 @@ import Laplace.Sampler.Lyapunov
 import Laplace.Sampler.ULA
 import Laplace.Multi.GaussianLLC
 import Laplace.Sampler.AR1
+import Laplace.TwoD.Rosenbrock

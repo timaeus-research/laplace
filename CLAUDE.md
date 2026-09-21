@@ -197,6 +197,29 @@ Sums with an `if` selecting one index: `Finset.sum_eq_single` plus `omega` for t
 `Nat.dist` facts: `Nat.dist_eq_sub_of_le`, `Nat.dist_eq_sub_of_le_right`, `Nat.dist_self`; shifts by
 `unfold Nat.dist; omega`. `sq` in `rw` rewrites the first `_ ^ 2` it sees: pass the argument, `sq (∑ …)`.
 `omit [DecidableEq ι] in` must come *before* the docstring, not between it and the theorem.
+### Non-separable 2D potentials via a measure-preserving shear (TwoD/Rosenbrock)
+
+A curved valley `L(x,y) = ((x-μ)² + a(y - g x)²)/2` becomes separable under the triangular shear
+`(z,u) ↦ (μ + z, u + g(μ + z))`. Build it as a `Homeomorph` (`fun_prop` for both continuities) and coerce
+with `Homeomorph.toMeasurableEquiv`; measure preservation is one application of
+`MeasurePreserving.skew_product (measurePreserving_add_left volume μ) hgm hg` with
+`hg := Filter.Eventually.of_forall fun z => map_add_right_eq_self volume _`. State the goal as
+`MeasurePreserving (fun p => …) (volume.prod volume) (volume.prod volume)` via `change` first
+(`volume` on `ℝ × ℝ` is `volume.prod volume` by `rfl`). Transport integrals with
+`MeasurePreserving.integral_comp'` (for a `≃ᵐ`) and integrability with
+`MeasurePreserving.integrable_comp_emb h T.measurableEmbedding`; separable integrability is
+`Integrable.mul_prod`, separable integrals are `integral_prod_mul`.
+
+`convert h using 2` between `Integrable f volume` and `Integrable f (volume.prod volume)` leaves
+unprovable-looking instance goals (`Measure.prod.measureSpace.toMeasurableSpace = Prod.instMeasurableSpace`).
+Ascribe the type of `h` with `volume` on the product and use `h.congr (Filter.Eventually.of_forall …)`
+instead of `convert`.
+
+Polynomial observables in the shear coordinates: a coefficient matrix `c : Fin 5 → Fin 5 → ℝ` given by
+vector notation `![![…], …]`, expanded with `simp only [Fin.sum_univ_five]; simp; ring`; the moment
+values `![1, 0, 1/(λt), 0, 3/(λt)²]` substitute through `funext_iff`. Harmonic moment values from
+`gibbsExpectation_harmonic_pow_even/odd` need `norm_num [Nat.doubleFactorial] at h` to evaluate
+`(2k-1)‼` and `2*k`, then `unfold harmonicMoment; simpa using h`.
 
 ## Monomial cumulant ladder (OneD)
 
