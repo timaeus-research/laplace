@@ -1590,3 +1590,40 @@ matrix version is `whiteningOf`.
   `mul_le_mul_of_nonneg_left`). A bare `refine mul_le_mul_of_nonneg_right ?_ (by norm_num)` leaves an unassignable `0 ≤ ?m`.
 - `h > 0` is not needed for the conjugation and trace identities (only `h aᵢ < 2` and `aᵢ > 0`); it is needed for the ordering statements
   (`0 ≤ h aᵢ`). The unused-variable linter flags the superfluous hypothesis.
+### Separable tensors on `Fin d` and diagonal algebra (tide `separable-oneloop`)
+
+- Contractions of a separable tensor (`if i = j ∧ j = k then α i else 0`) against a diagonal matrix: work entrywise (`ext i j`,
+  `simp only [def, Matrix.of_apply, diagonal_apply]`), kill each summation index with
+  `rw [Finset.sum_eq_single i (fun k _ hk => by simp [Ne.symm hk]) (by simp)]` (the off-index hypothesis comes as `k ≠ i`; the `if` reads
+  `i = k`, hence `Ne.symm`), then `by_cases hij : i = j` with `subst`/`simp`. Four nested sums (the bubble) are four such rewrites.
+- `diagonal_add : diagonal d₁ + diagonal d₂ = diagonal (d₁ + d₂)` and `diagonal_smul : diagonal (r • d) = r • diagonal d` point in
+  opposite directions: to *collapse* a sum of scaled diagonals write `simp only [← diagonal_smul, diagonal_add]` — `← diagonal_add`
+  instead *splits* a diagonal whose entries are sums (it will happily rewrite the right-hand side of your goal), after which `congr 1`
+  pairs the wrong summands.
+- `(t • diagonal λ)⁻¹`: `Matrix.inv_eq_right_inv`, rewrite `t • diagonal λ = diagonal (fun i => t * λ i)` by `← diagonal_smul; rfl`,
+  `diagonal_mul_diagonal`, a `funext` identity via `mul_one_div_cancel`, `diagonal_one`.
+- After `congr 1; funext i` on `diagonal f = diagonal g` the goal is already the real identity; a `simp only [Pi.add_apply]` there makes
+  no progress (error). Use `simp only [Pi.smul_apply, smul_eq_mul]` only when a `•` is present.
+- Positivity of a quadratic `g u² + 4αu + 12λ` under a discriminant hypothesis: multiply by `g`, complete the square
+  (`g·q = (g u + 2α)² + (12λg − 4α²)`, by `ring`), `nlinarith [sq_nonneg _]`, and divide back with `pos_of_mul_pos_right h hg.le`.
+  `λ > 0` is not needed once `g > 0` and `α² < 3λg` are given — the linter will tell you.
+### Toeplitz sums and running means of the AR(1) chain (tide `autocorrelation-time`)
+
+- Weighted geometric sums `∑_{m<N} (N − m − 1) ρ^{m+1}` whose summand mentions `N`: induct on `N`, `Finset.sum_range_succ`, then rewrite
+  the old summands with a `∀ m ∈ range n, …` identity (`push_cast; ring`) and `Finset.sum_add_distrib`; the new geometric piece is
+  `simp_rw [pow_succ]; rw [← Finset.sum_mul, geom_sum_eq hρ n]`. Close with `push_cast; field_simp; ring`.
+- `field_simp` sometimes closes the goal and sometimes leaves a polynomial identity — the two `field_simp; ring` sites in one file went
+  opposite ways. Check each one; a stray `ring` errors with "no goals", a missing one leaves the goal open.
+- `field_simp` needs `h ≠ 0` and `p ≠ 0` separately, not `h * p ≠ 0` (`left_ne_zero_of_mul`, `right_ne_zero_of_mul`).
+- A single chain through a `Fin C`-family lemma: instantiate `C := 1`, `fun _ : Fin 1 => η`, discharge `c = c'` by `Subsingleton.elim` and
+  `simpa` the `if (0 : Fin 1) = 0 ∧ …` away.
+- Zero-start chains have mean zero: induction with `integral_add (….integrable one_le_two).const_mul ρ) …` (the constant is an explicit
+  argument of `Integrable.const_mul`).
+- `L² · L²` is integrable: `(hf : MemLp f 2 P).integrable_mul (hg : MemLp g 2 P)`.
+- `simp_rw [pow_add]` rewrites every `ρ ^ (a + b)`, including `ρ ^ (b + 1)` into `ρ ^ b * ρ ^ 1`; give the first arguments,
+  `pow_add ρ (b + 1)`, to split only `ρ ^ (b + 1 + k)`. `geom_sum_le_one_div` states `≤ 1 / (1 - ρ)`; when the goal has
+  `ρ ^ n / (1 - ρ)` rewrite it with `div_eq_mul_one_div` before `mul_le_mul_of_nonneg_left`.
+- Limits along `ℕ`: `tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop : (N : ℝ)⁻¹ → 0`, `tendsto_pow_atTop_nhds_zero_of_lt_one`,
+  `tendsto_const_div_atTop_nhds_zero_nat`, `squeeze_zero`; transfer an identity that needs `N ≠ 0` with
+  `.congr' (eventually_atTop.mpr ⟨1, fun N hN => (heq N (by omega)).symm⟩)`.
+- `ulaChain` needs `[DecidableEq ι]`; a section that mentions it without the instance fails with "failed to synthesize DecidableEq ι".
