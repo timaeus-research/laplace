@@ -76,3 +76,22 @@ Agreed on the target. The architectural divergence (exponent-form Stein vs Mathl
 | `E[x⁶]` | 2.7513969759579253 | `15S₁₁³` = 2.7513969759579258 |
 | Stein `E[x·xy²]` | 0.5337465564738292 | `S₁₁E[y²] + 2S₁₂E[xy]` = 0.5337465564738293 |
 | cubic IBP, `A = (x,x,y)`, `l = x` | `E[2xy]` = -0.45454545454545464 | `E[x²y (Pu)ₓ]` = -0.45454545454545453 |
+
+## Result
+
+Committed as `Laplace/Multi/GaussianWickPosDef.lean` (1d572c5), 396 lines, 0 sorries, `lean-state check` clean (no warnings).
+
+Theorems: `prod_erase_eq_prod_ite`, `prod_ite_eq_prod_succAbove`; `hasFDerivAt_quadForm`, `fderiv_quadForm_apply`
+(`= 2 ∑ᵢ vᵢ (Hu)ᵢ`), `hasFDerivAt_gaussianWeight`, `fderiv_gaussianWeight_apply` (`= -(∑ᵢ vᵢ (Hu)ᵢ) gW`),
+`hasFDerivAt_prod_coord`, `fderiv_prod_coord_apply`; `integrable_monomial_std_gaussian_pi`, `prod_mulVec_apply_eq_sum`,
+`integrable_prod_coord_mul_gaussianWeight_matCLM`, `integrable_prod_coord_mul_apply_gaussianWeight_matCLM`,
+`integrable_prod_coord_ite_mul_gaussianWeight_matCLM`, `integrable_delta_sum_mul_gaussianWeight_matCLM`;
+`quadForm_symm_matCLM`, `gaussian_ibp_prod_coord_matCLM` (the IBP identity for any monomial),
+`gaussian_stein_prod_coord_matCLM` (Isserlis in Stein form); `laplaceCovHypotheses_matCLM`,
+`fubiniIBPHypothesisCubic_matCLM`, `fubiniIBPHypothesisQuintic_matCLM`, `laplaceCov4MomentHypotheses_matCLM`,
+`laplaceCov6MomentHypotheses_matCLM`; `gaussian_fourth_moment_matCLM`, `gaussian_sixth_moment_matCLM`.
+
+Surprises: with Mathlib's IBP the whole tide needed no Gaussian moment value at all (not even `∫ x² e^{-x²/2}`);
+the only analysis is integrability, and that is the previous tide's whitening plus `Finset.prod_univ_sum`.
+The instantiation at `![a, b, c]` is a single `simp only` (list from `simp?`), provided `matCLM_apply` is kept
+out of it. The linter `unusedFintypeInType` fires falsely on derivative statements over `ι → ℝ`.
