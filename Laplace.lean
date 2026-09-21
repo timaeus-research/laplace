@@ -222,6 +222,7 @@ import Laplace.Multi.EmpiricalRelative
 import Laplace.Multi.HarmonicWitness
 import Laplace.Multi.MonomialVisibility
 import Laplace.Multi.EmpiricalRescaled
+import Laplace.Multi.TraceVisibility
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
