@@ -1,0 +1,223 @@
+# Spec: relative (parametrised) resolution for singular learning theory
+
+**For:** the hironaka campaign (timaeus-research/hironaka).
+**From:** the germbij / laplace formalisation ("What expectation values know about the loss landscape").
+**Date:** 2026-09-21.
+**Status of the consumer side:** everything below the interface is formalised in laplace
+(`Laplace/Multi/ResolvedChartResponse.lean`, `MorseBottResponse.lean`, `SingularPowerNormalForm.lean`,
+`ToyCrossover.lean`) and in greybook `Extras/Germbij`; this document specifies the missing input.
+
+---
+
+## 1. What we want to prove downstream, and why it needs a family version
+
+Let `q_s` be a smooth family of true distributions (parameter `s` in an open `S ⊆ ℝ^p`), and
+`L_s(w) = -∫ q_s log p_w` the population loss. The posterior expectation values at temperature `t`
+have asymptotic expansions in `t` whose exponents are the poles of the zeta function of the fibre
+`L_s` and whose coefficients are integrals over the exceptional divisor. The downstream theorem is:
+
+> **Level 3 (smooth response on a stratum).** If the family `L_s` admits a resolution *in the
+> family* — a single modification over `W × S` whose chart exponent data do not depend on `s` —
+> then along the family (i) the leading pole `(λ, m)` is constant, (ii) every expansion
+> coefficient is a smooth function of `s`, and (iii) its derivative is a covariance of the test with
+> an explicit score built from the `s`-derivatives of the units and amplitudes on the charts.
+
+What is already formalised is (iii) chart by chart, for a chart with one active exponent
+(`SPFamilyData.hasDerivAt_spExp_tangential`: score `χ'/χ − (1/2k)·a'/a`) and for the Morse–Bott
+chart (`MBFamilyData.hasDerivAt_tanExp`, `MBFamilyData'.hasDerivAt_mbExp_tangential`: score
+`χ'/χ − ½ tr(H⁻¹ H')`), plus the counterexample `x⁴ + u²x²` showing that (i)–(iii) fail when the
+exponent data change with `s` (`ToyCrossover`). What is missing is the global object that makes
+"chart exponent data independent of `s`" a theorem rather than a hypothesis, i.e. the relative
+version of hironaka's `WatanabeModificationOn`.
+
+## 2. What hironaka currently exports (the single-function interface)
+
+`Monomialize/Transport/AnalyticResolutionExports.lean`:
+
+```lean
+structure WatanabeModificationOn (f : (Fin d → ℝ) → ℝ) (W : Opens (Fin d → ℝ)) where
+  U : AnalyticManifold.{0} ℝ (Fin d → ℝ)
+  g : AnalyticMap U ((AnalyticManifold.model ℝ (Fin d → ℝ)).restrict W)
+  proper : IsProperMap g
+  surjective : Function.Surjective g
+  isoOff : AnalyticMap.IsAnalyticIsoOver g {x | f (inclusion W x) ≠ 0}
+  chartAt : ∀ P : U, f (inclusion W (g P)) = 0 → WatanabeChartAt f g P
+
+theorem exists_watanabeModificationOn (hU₀ : IsOpen U₀) (hf : AnalyticOnNhd ℝ f U₀) (h0 : f 0 = 0)
+    (hne : ¬ ∀ᶠ x in 𝓝 0, f x = 0) (W : Opens _) (hW : IsConnected W) (h0W : 0 ∈ W)
+    (hWU : W ⊆ U₀) : Nonempty (WatanabeModificationOn f W)
+```
+
+`Monomialize/Transport/ZeroChartExtraction.lean`:
+
+```lean
+structure EvenChartBox (R : WatanabeModificationOn K W) where
+  φ : OpenPartialHomeomorph R.U (Fin d → ℝ)
+  mem : φ ∈ maximalAtlas 𝓘(ℝ, Fin d → ℝ) ω R.U
+  k : Fin d → ℕ                 -- half exponents of the phase
+  h : Fin d → ℕ                 -- exponents of the Jacobian
+  b : (Fin d → ℝ) → ℝ           -- analytic nonvanishing Jacobian unit
+  b_analytic : AnalyticOnNhd ℝ b φ.target
+  b_ne_zero : ∀ u ∈ φ.target, b u ≠ 0
+  phase_eq : ∀ u ∈ φ.target, K (watanabeRep R.g φ u) = ∏ j, u j ^ (2 * k j)
+  jac_eq : ∀ u ∈ φ.target, (fderiv ℝ (watanabeRep R.g φ) u).det = b u * ∏ j, u j ^ h j
+  r ρ : ℝ; r_pos; r_lt_ρ; box_subset : centeredBox d ρ ⊆ φ.target
+  zero_mem : 0 ∈ φ.target ∧ K (watanabeRep R.g φ 0) = 0
+```
+
+greybook consumes exactly this (`GreyBook.Ch2.RLCTExistence`, `Extras/Germbij/AnalyticLaplace`:
+`exists_hasRLCTTheta_of_analyticOnNhd_nonneg`) to get the Θ-form expansion of a single loss. Note
+that in these charts the phase is an *exact* monomial (no unit `a`): the unit has been absorbed into
+the chart. For the family version we do **not** want that normalisation, see §3.3.
+
+## 3. The requested object: `RelativeWatanabeModificationOn`
+
+### 3.1 Data
+
+For a parameter space `S : Opens (Fin p → ℝ)` (or a general analytic manifold; `p = 1` suffices for
+a first version) and a function `f : (Fin d → ℝ) → (Fin p → ℝ) → ℝ`, analytic in `(x, s)` jointly on
+`U₀ × S`, with `f x s ≥ 0` (SLT losses are nonnegative; positivity of the amplitude is used
+downstream but is not needed for the resolution itself):
+
+```lean
+structure RelativeWatanabeModificationOn
+    (f : (Fin d → ℝ) → (Fin p → ℝ) → ℝ) (W : Opens (Fin d → ℝ)) (S : Opens (Fin p → ℝ)) where
+  /-- The resolved total space, a manifold of dimension `d + p`. -/
+  U : AnalyticManifold.{0} ℝ (Fin (d + p) → ℝ)
+  /-- The blow-down over the parameter space: `g : U → W × S`, commuting with the projection to `S`. -/
+  g : AnalyticMap U (model.restrict (W ×ˢ S))
+  proper : IsProperMap g
+  surjective : Function.Surjective g
+  /-- `U → S` is a submersion (the family is smooth over `S`). -/
+  smoothOverS : IsSubmersion (projS ∘ g)
+  /-- `g` is an analytic isomorphism over `{(x, s) | f x s ≠ 0}`. -/
+  isoOff : AnalyticMap.IsAnalyticIsoOver g {z | f (inclusion z).1 (inclusion z).2 ≠ 0}
+  /-- The relative chart clause at every point over the zero set (see 3.2). -/
+  chartAt : ∀ P : U, f (g P).1 (g P).2 = 0 → RelativeWatanabeChartAt f g P
+```
+
+### 3.2 The relative chart clause (the heart of the request)
+
+`RelativeWatanabeChartAt f g P` should provide a chart `φ` of `U` around `P`, **fibred over `S`**:
+coordinates `(u, s) ∈ (Fin d → ℝ) × (Fin p → ℝ)` with `projS ∘ g ∘ φ⁻¹ = (u, s) ↦ s`, and on
+`φ.target`:
+
+```lean
+  k : Fin d → ℕ                          -- half exponents of the phase, INDEPENDENT of s
+  h : Fin d → ℕ                          -- Jacobian exponents, INDEPENDENT of s
+  a : (Fin d → ℝ) → (Fin p → ℝ) → ℝ      -- analytic positive unit
+  b : (Fin d → ℝ) → (Fin p → ℝ) → ℝ      -- analytic nonvanishing Jacobian unit
+  a_analytic : AnalyticOnNhd ℝ (uncurry a) φ.target
+  b_analytic : AnalyticOnNhd ℝ (uncurry b) φ.target
+  a_pos : ∀ z ∈ φ.target, 0 < a z.1 z.2
+  b_ne_zero : ∀ z ∈ φ.target, b z.1 z.2 ≠ 0
+  phase_eq : ∀ z ∈ φ.target, f (g (φ.symm z)).1 (g (φ.symm z)).2 = a z.1 z.2 * ∏ j, z.1 j ^ (2 * k j)
+  jac_eq : ∀ z ∈ φ.target, (relative Jacobian of g ∘ φ.symm in the u-directions at z) = b z.1 z.2 * ∏ j, z.1 j ^ h j
+  box_subset : centeredBox d ρ ×ˢ ball s₀ σ ⊆ φ.target      -- a product box, uniform in s
+```
+
+The two clauses that matter downstream are: **`k` and `h` do not depend on `s`**, and the chart
+target contains a **product box** `(u-box) × (s-ball)` so that the units and amplitudes are
+controlled uniformly on compact parameter sets. Everything the laplace theorems need
+(`SPFamilyData`: common lower bound on the unit, common compact support, bounded continuous
+`s`-derivatives) follows from analyticity of `a`, `b` on such a product box.
+
+### 3.3 Do not absorb the unit
+
+In the single-function `EvenChartBox` the phase is an exact monomial, the unit having been absorbed
+by a further coordinate change (`a^{1/2k}` rescaling). In the family version please **keep the unit
+`a(u, s)` explicit** (or provide both forms). The response formula downstream is precisely the
+covariance with `∂_s log a` weighted by the RLCT, and it is invisible if the unit is normalised
+away; also the normalising coordinate change would itself depend on `s`, which is what we want to
+track.
+
+### 3.4 Existence theorem (what to prove)
+
+```lean
+theorem exists_relativeWatanabeModificationOn
+    (hf : AnalyticOnNhd ℝ (uncurry f) (U₀ ×ˢ S₀)) (hnonneg : ∀ x s, 0 ≤ f x s)
+    (hne : ∀ s ∈ S₀, ¬ ∀ᶠ x in 𝓝 0, f x s = 0)
+    (W : Opens _) (hW : IsConnected W) (h0W : 0 ∈ W) (hWU : W ⊆ U₀) (s₀ : Fin p → ℝ) (hs₀ : s₀ ∈ S₀) :
+    ∃ S : Opens (Fin p → ℝ), s₀ ∈ S ∧ S ⊆ S₀ ∧ Nonempty (RelativeWatanabeModificationOn f W S)
+```
+
+**Important: this is false as stated for arbitrary `s₀`** (the toy `x⁴ + u²x²` has no relative
+resolution on any neighbourhood of `u = 0` with constant exponents). The correct statement is
+*generic*: there is an open dense (in the algebraic setting Zariski-open dense) subset `S' ⊆ S₀` of
+parameters over which a relative modification exists, i.e.
+
+```lean
+theorem exists_relativeWatanabeModificationOn_generic … :
+    ∃ S' : Set (Fin p → ℝ), IsOpen S' ∧ Dense S' ∧ S' ⊆ S₀ ∧
+      ∀ s₀ ∈ S', ∃ S : Opens _, s₀ ∈ S ∧ Nonempty (RelativeWatanabeModificationOn f W S)
+```
+
+together with the local statement at a given `s₀` under an **equisingularity hypothesis** to be
+chosen by the campaign (see §5). The generic statement is the one the note needs first: it says
+"resolution works in the family on strata", and the complement of `S'` is where the phase
+transitions live.
+
+### 3.5 Minimal first version
+
+If the full relative theorem is too far, the following would already unlock the downstream chain:
+
+- `p = 1` (one real parameter);
+- `d = 1` transverse variable plus tangential variables handled as parameters (the singular power
+  normal form `a_s(y) x^{2k}` is then literally the chart clause with `k` constant) — this is the
+  case already treated in laplace *assuming* the chart form, so a hironaka theorem producing it
+  from an analytic family would close the loop;
+- or: the **relative chart-existence statement alone** (3.2 without 3.1's global properness):
+  for `(x₀, s₀)` in the zero set and `s₀` generic, a fibred chart with `s`-independent exponents on a
+  product box. Downstream we can glue with a partition of unity ourselves.
+
+## 4. What the consumer will do with it (acceptance test)
+
+Given `R : RelativeWatanabeModificationOn f W S` and a finite cover of the zero set over a compact
+`S₁ ⊆ S` by relative chart boxes, laplace will:
+
+1. write each chart contribution to `∫ φ e^{-t f_s} dx` as an integral of the form treated by
+   `SPFamilyData` (one active exponent) or its several-active-exponent analogue (to be added to
+   laplace: the generalised Gaussian moments `∫ ∏ u_j^{m_j} e^{-∏ u_j^{2k_j}}` and the
+   Newton-polytope leading pole, which is greybook Ch4 material);
+2. read off that `(λ, m)` is constant on `S` (from constant `(k, h)` and positivity of `a`);
+3. prove `HasDerivAt (fun s ↦ coefficient s) (Σ_charts Cov(test, score_chart)) s₀` by
+   `hasDerivAt_normalized_of_dominated` on each chart and `HasDerivAt.sum`;
+4. state the theorem of §1 and record in `germbij_slop.tex` S7 that Level 3 is unconditional on
+   `S'`.
+
+An acceptance test for the hironaka side, independent of laplace: for `f x s = a(s) · x₁^{2k}` with
+`a` analytic positive, the relative modification is the identity with the obvious chart, `k` constant;
+for `f x u = x⁴ + u²x²`, the generic set `S'` must exclude `u = 0`.
+
+## 5. Mathematical background and pointers (from the Astra consult of 2026-09-21,
+`laplace/gpt_responses/research_truth_variation_v1.md`)
+
+- Generic simultaneous resolution (characteristic zero, algebraic families): resolve the generic
+  fibre and spread out over a nonempty Zariski-open subset of the base; after shrinking one obtains
+  relative smoothness and relative simple normal crossings. Resolving the total space does **not**
+  by itself resolve every fibre. Analytic families have local analogues; "Zariski-open dense" must
+  be replaced by the appropriate analytic notion.
+- Equisingularity notions are **not interchangeable**: Whitney equisingularity, Zariski
+  equisingularity and algorithmic equiresolution (Encinas–Nobile–Villamayor, *On algorithmic
+  equiresolution and stratification of Hilbert schemes*) are different hypotheses; the campaign
+  should fix the one whose relative monomialisation properties are actually used, and state it.
+  The functorial (Włodarczyk/Kollár) proof strand already in hironaka is the natural route: the
+  functoriality with respect to smooth morphisms (hironaka's `resolution_functorial`,
+  `localResolutionIndependentOn`) is the ingredient that makes the algorithm commute with the
+  projection to `S` on the good locus.
+- Fixed exponent data `(k, h)` fix the **candidate** pole set `{-(h_j + 1 + ℓ)/(2 k_j)}`; actual
+  poles can disappear by cancellation, but the leading pole is stable given positivity of the
+  amplitude, which SLT losses have. The consumer only needs the leading pole and the coefficients.
+- The real RLCT has **no** semicontinuity direction: `x⁴ + u²x²` (special fibre more singular,
+  λ: 1/2 → 1/4) and `(x²+y²+z²+2ux)²` in `ℝ³` (special fibre less singular, λ: 1/2 → 3/4) are both
+  nonnegative analytic families. This is why the theorem is generic, not everywhere.
+- Subtracting `min L_s` need not preserve analytic parameter dependence (switching minimisers);
+  the spec above therefore takes `f` itself nonnegative with `0` in the zero set for every `s`, and
+  leaves the minimiser bookkeeping to the consumer.
+
+## 6. Non-goals
+
+- No claim about the full actual pole set or about log multiplicities beyond the leading pair.
+- No complex-analytic or algebraic variant is required; real-analytic, as in the existing exports.
+- No statement across strata: the boundary behaviour (crossover, `u t^β` variables) is the
+  consumer's business (`ToyCrossover.lean` is the model example).

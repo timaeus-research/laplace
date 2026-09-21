@@ -1397,3 +1397,75 @@ matrix version is `whiteningOf`.
 - Chains with *different* coefficients but orthogonal noise are orthogonal: `inner_x_x_of_orthogonal'` generalises the seabed's
   same-`ρ` lemma with the identical proof; the multi-direction Gram table then follows from `toAR1Chain` per `(c, i)` and the white
   table of the whole innovation family.
+### Metropolis–Hastings in `lintegral` form (tide `mala-invariance`)
+
+- State MH invariance with unnormalised densities and `lintegral` of `ENNReal.ofReal`: no integrability side conditions, Tonelli is
+  `lintegral_lintegral_swap (hf : AEMeasurable (uncurry f) (μ.prod ν))` (take `ν := μ.restrict E` for the set integral), and constants
+  move with `lintegral_const_mul' _ _ (h : r ≠ ∞)` (no measurability needed; `ENNReal.ofReal_ne_top`, `ENNReal.inv_ne_top.mpr hZ0`).
+- Prove the flux identity over `ℝ` first: `π x * q x y * min 1 (π y * q y x / (π x * q x y)) = min (π x * q x y) (π y * q y x)` is
+  `mul_min_of_nonneg _ _ hpos.le, mul_one, mul_div_cancel₀ _ hpos.ne'`; then transport through `ENNReal.ofReal_mul (hπ x).le`. The
+  symmetric flux `mhFlux` is what gets swapped, never the acceptance probability.
+- ENNReal subtraction `1 - a x` is safe once `a x ≤ 1` (`ENNReal.div_le_iff hZ0 hZtop` + `lintegral_mono`); finish with
+  `add_tsub_cancel_of_le`. Indicators: `Set.indicator_of_mem hx`/`Set.indicator_of_notMem hx` after `by_cases` (`Set.indicator_apply`
+  needs a `Decidable` instance and `simp only` may refuse it); `lintegral_indicator hE` turns `∫⁻ indicator` into `∫⁻ x in E`.
+- Measurability of `x ↦ ∫⁻ y, f x y ∂ν` is `Measurable.lintegral_prod_right (hf : Measurable (uncurry f))`; for `min`/`div` use
+  `Measurable.min`, `Measurable.div`, with `hqm.comp measurable_swap` for `q y x`. Give the measurability facts their function
+  form by a typed `have` — a `.comp`/`.div_const` term carries `∘` and will not match `lintegral_withDensity_eq_lintegral_mul`.
+- A numeral matrix must be pinned when nothing else fixes the index type: `propZ ((1 / (4 * h)) • (1 : Matrix ι ι ℝ))` — otherwise
+  "typeclass instance problem is stuck: OfNat (Matrix ?n ?n ℝ) 1". Likewise `(Matrix.PosDef.one : (1 : Matrix ι ι ℝ).PosDef).smul`.
+- `c • M *ᵥ v` parses as `c • (M *ᵥ v)`; write `(c • M) *ᵥ v` explicitly when the term comes from a matrix identity such as
+  `G = -(h/4) • (P * P)`, or `smul_mulVec` will not fire.
+- Gaussian normalisations: row integrals of `exp(-(y - A x)ᵀ S (y - A x))` are all `∫ exp(-yᵀ S y)` by
+  `lintegral_sub_right_eq_self (fun z => …) (A *ᵥ x)` (Lebesgue on `ι → ℝ` is add-invariant); positivity via
+  `lintegral_pos_iff_support` + `isOpen_univ.measure_pos`; finiteness via the seabed's `integrable_gaussianWeight_matCLM` and
+  `Integrable.lintegral_lt_top`, after rewriting `exp(-yᵀ S y) = gaussianWeight (matCLM (2 • S)) y` (`quadForm_matCLM`).
+- The transpose/drift bookkeeping `(v - A u)ᵀ S (v - A u) = vᵀSv - 2 vᵀ(SA)u + uᵀ(AᵀSA)u` is `mulVec_sub, dotProduct_sub,
+  sub_dotProduct` plus the three helpers (`dotProduct_mulVec_symm hS`, `mulVec_mulVec`, and `← vecMul_transpose A u,
+  ← dotProduct_mulVec, mulVec_mulVec, ← Matrix.mul_assoc` for `(Au)ᵀ S (Au)`).
+## Gotchas from the truth-variation arc (2026-09-21)
+
+- `HasDerivAt.sum` / `HasFDerivAt.sum` return the Pi-sum function `∑ j, fun u ↦ …`; convert with
+  `have hfun : (fun u ↦ ∑ j, f j u) = ∑ j, fun u ↦ f j u := by funext u; simp [Finset.sum_apply]`.
+- Matrix entries: `hasDerivAt_pi.mp (hasDerivAt_pi.mp hH i) j : HasDerivAt (fun u ↦ H u i j) (H' i j) u`.
+- `qform_eq_dotProduct` + `simp only [dotProduct, Matrix.mulVec]` (root `dotProduct`) unfolds the
+  quadratic form to `∑ i, x i * ∑ j, A i j * x j` and closes the goal by itself — no trailing `rfl`.
+- Chain `hq.neg.div_const 2 |>.exp` then `.congr_deriv` for `u ↦ exp (-q u / 2)`; `convert … using 1`
+  on a `HasDerivAt` leaves `NormedAddCommGroup`/`Module` instance goals instead.
+- `Measure.integral_comp_mul_left g a` on `ℝ`: to solve for the ORIGINAL integral write
+  `∫ F = a⁻¹ * ∫ F (a⁻¹ x)` via `rw [h, ← mul_assoc, inv_mul_cancel₀, one_mul]` (no `field_simp`).
+- `continuousWithinAt_of_dominated` (domination only on `𝓝[Ici 0] s₀`) + `ContinuousOn.comp_continuous`
+  when a parametric integral is only well-behaved for `s ≥ 0`.
+- `Tendsto.const_mul_atTop (hr : 0 < r) (hf : Tendsto f l atTop)` (not a dot-lemma on `hf`).
+- After `field_simp` closes a goal, a trailing `ring` errors "No goals"; likewise after `rw` that
+  turns the goal into `rfl`, drop the following `congr 1`.
+- `a⁻¹ * (a * X)`-style cancellations: `mul_div_mul_left _ _ (inv_ne_zero h)`; the `(√t)^r` factors
+  cancel with `mul_div_mul_left _ _ (pow_ne_zero _ …)` after `simp only [Pi.div_apply]`.
+
+### Packaging a sampler as a `ProbabilityTheory.Kernel` (tide `mala-kernel`)
+
+- A `Kernel X X` is a measurable `X → Measure X`; build it with `Measure.measurable_of_measurable_coe _ fun E hE => …`, proving
+  measurability of `x ↦ K x E` for each measurable `E` after rewriting `K x E` to the set formula (`withDensity_apply _ hE`,
+  `Measure.add_apply`, `Measure.smul_apply`, `Measure.dirac_apply' _ hE`, then `by_cases hx : x ∈ E <;> simp [hx]` for the indicator).
+  The constructor's measurability field cannot take hypotheses from thin air: make them arguments of the `def` (`mhKernel hπm hqm μ hZ0`).
+- `IsMarkovKernel κ` is `⟨fun x => ⟨κ x univ = 1⟩⟩`; evaluate with the set formula, `Set.indicator_univ`, `Measure.restrict_univ`, and
+  `add_tsub_cancel_of_le`.
+- The fixed-point statement is literally `ν.bind κ = ν`: `ext E hE; rw [Measure.bind_apply hE κ.measurable.aemeasurable]`, rewrite the
+  integrand with the set formula (`simp_rw`), and apply the `lintegral` invariance theorem. `n`-step stationarity is
+  `Function.iterate_succ_apply'` + induction, three lines.
+- Real integrals against a `withDensity` measure with an `ℝ≥0∞` density: `integral_withDensity_eq_integral_toReal_smul₀ (hf.aemeasurable)
+  (ae_of_all _ fun x => ENNReal.div_lt_top ENNReal.ofReal_ne_top hT0) g`, then `ENNReal.toReal_div`, `ENNReal.toReal_ofReal (nonneg)`;
+  integrability likewise via `integrable_withDensity_iff_integrable_smul₀'`. The normaliser's `toReal` is
+  `integral_eq_lintegral_of_nonneg_ae (ae_of_all _ …) (cont.aestronglyMeasurable)` read backwards.
+- `P⁻¹` and `matCLM` need `[DecidableEq ι]`: give it as an explicit instance binder on the theorems whose *types* mention them, and use
+  `classical` inside proofs that only need it internally (the `unusedDecidableInType` linter flags the other arrangement).
+- Total-variation bounds from uniform-in-test bounds: test against the sign of the remainder,
+  `f := fun x ↦ if 0 ≤ g x then 1 else -1` (`Measurable.ite (measurableSet_le measurable_const hg)`),
+  so `∫ f * g = ∫ |g|`; avoids the signed-measure API entirely.
+- Bounds `a ^ e ≤ a₀ ^ e` for `0 < a₀ ≤ a`, `e ≤ 0`: `Real.rpow_neg` on both sides then
+  `inv_anti₀ (Real.rpow_pos_of_pos …) (Real.rpow_le_rpow …)`; `positivity` cannot see `a > 0` from
+  a hypothesis, so give `(Real.rpow_pos_of_pos ha _).le` explicitly.
+- A cutoff family vanishing off a common `K` has vanishing `u`-derivative off `K`: `HasDerivAt.unique`
+  against `hasDerivAt_const` after rewriting the family to the zero function.
+- `omit [Nonempty X] in` before theorems that don't use the section instance (linter
+  `unusedSectionVars`); `(_h : TiltData …)` keeps dot-notation while silencing unused-variable.
+- Unicode `Θ` in the slop LaTeX breaks pdflatex: write `$\Theta$`.

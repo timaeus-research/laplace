@@ -237,6 +237,10 @@ import Laplace.Multi.CurvedMorseBott
 import Laplace.Multi.SingularPowerNormalForm
 import Laplace.Multi.CoordinateMomentDeterminacy
 import Laplace.Multi.TruthVariation
+import Laplace.Multi.ToyCrossover
+import Laplace.Multi.MorseBottResponse
+import Laplace.Multi.TotalVariationResponse
+import Laplace.Multi.ResolvedChartResponse
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
@@ -271,3 +275,5 @@ import Laplace.Sampler.LLCClosures
 import Laplace.Sampler.EstimatorVariance
 import Laplace.Sampler.Wick4
 import Laplace.Sampler.FrobeniusLaw
+import Laplace.Sampler.Metropolis
+import Laplace.Sampler.MetropolisKernel
