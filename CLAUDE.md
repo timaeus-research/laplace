@@ -1923,3 +1923,28 @@ matrix version is `whiteningOf`.
 - `positivity` cannot use `pmin ≤ p i` to see `0 < p i`; give `(one_div_pos.mpr (lt_of_lt_of_le hpmin (hmin i))).le` explicitly.
 - `field_simp` closed every ratio identity of this file on its own (`(½ (p a))/(d/2) = a p / d`, `a²/(1/pmin)² = (a pmin)²`); a trailing `ring`
   errors with "No goals".
+
+### Separable Gibbs measures and moment-route limits (tide `separable-exact`)
+
+- `integral_fintype_prod_volume_eq_prod (f := fun i x => …)` (`∫ ∏ᵢ fᵢ(wᵢ) = ∏ᵢ ∫ fᵢ`) has no integrability hypothesis, so the
+  factorisation of the Gibbs expectation of a product observable, `(∏ Nᵢ)/(∏ Zᵢ) = ∏ (Nᵢ/Zᵢ)` (`Finset.prod_div_distrib`), holds with no
+  hypotheses at all; only the *coordinate* reduction `⟨φ(wᵢ₀)⟩ = ⟨φ⟩_{ℓᵢ₀}` needs `Zᵢ ≠ 0` for the spectators (`div_self`). Derive coordinate
+  and pair statements from the product one with `fun i x => if i = i₀ then φ x else 1` (`Finset.prod_ite_eq'` on the observable side,
+  `Finset.prod_eq_single` on the expectation side) and `if k = i ∨ k = j then x else 1` with `Finset.prod_eq_mul i j hij`.
+- An `if` used only inside a proof still needs `Decidable`: start the proof with `classical` rather than adding `[DecidableEq ι]` to the
+  statement (the linter flags the unused instance). Theorems whose *statement* has `if i = j` keep `[DecidableEq ι]` explicitly.
+- `Integrable.congr`/`integral_congr_ae` goals against `h.add h'` are stated with Pi addition `(f + g) x`; add `Pi.add_apply` to the
+  `simp only` before `ring`. For `← integral_add` the integrability witnesses must be `have`s with explicit lambda types, otherwise the
+  `(f + g) a` pattern does not match the beta-reduced integrand. Cleanest: prove the numerator identity `∫ ℓ e = ∫ (c₂ x²e + c₃ x³e) + c₄ x⁴e`
+  by `integral_congr_ae` + `ring`, then `rw [hnum, integral_add h23 …, integral_add …, integral_const_mul ×3]` forwards and finish with `ring`.
+- `0 < ∫ exp(−tℓ)`: `MeasureTheory.integral_exp_pos (hf : Integrable (fun x => rexp (f x)))` after `unfold partitionFunction`.
+- `xᵐ e^{−tℓ}` integrable from `|x|ᵐ e^{−tℓ}` (`integrable_abs_pow_mul_exp_neg_t_anharmonic`) via `.mono'` with continuity
+  (`unfold anharmonicPotential; fun_prop`) and `rw [norm_mul, norm_pow, Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]`.
+- Limits: `t²f → c ⇒ tf → 0` is `tendsto_inv_atTop_zero.mul h` then `congr'` with `field_simp` (needs `t ≠ 0` in context). From an explicit rate
+  `|t²M − c − C/t| ≤ K/(t√t)` to `t²M → c`: `tendsto_iff_norm_sub_tendsto_zero`, `squeeze_zero' (Eventually.of_forall fun t => norm_nonneg _)`
+  (not `squeeze_zero_norm'`, which double-wraps the norm), bound `(|C| + K)/t` via `tendsto_const_nhds.div_atTop tendsto_id`,
+  `abs_sub_abs_le_abs_sub`, `Real.one_le_sqrt`, `le_mul_of_one_le_right`.
+- `Integrable.fintype_prod (f := fun j x => …) hf` gives integrability of `∏ⱼ fⱼ(wⱼ)` on `ι → ℝ`; pick `fⱼ = (if j = i then ℓⱼ else 1) · e^{−tℓⱼ}`
+  to cover one coordinate energy times the whole Boltzmann factor.
+- `field_simp` closed the ratio identities of this file except one with literal zeros (`lam/2 * (1/lam) + α/6 * 0 + … = 1/2`), which needed a
+  trailing `ring`; check each.
