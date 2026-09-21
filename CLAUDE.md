@@ -1825,6 +1825,29 @@ matrix version is `whiteningOf`.
 - Integrability of raw entries: express them as finite linear combinations of the eigen entries (`pooledRaw_apply_eq_sum`) and use
   `integrable_finsetSum`/`.const_mul`/`.mul_const`; then `integral_finsetSum`, `integral_mul_const`, `integral_const_mul` commute the
   expectation. Never try to prove `L⁴` of the raw coordinates directly.
+
+### Deterministic-target Frobenius identities and Matrix-valued estimators (tide `frobenius-target-raw`)
+
+- `rw [integral_sum_sq_sub_eq _ _ h1 h2]` fails with "motive is not type correct … function expected `pooledRaw … ω a`" when `S i j ω`
+  is an entry of a `Matrix`-valued estimator: the motive needs `Matrix ι ι ℝ` unfolded to a function type. State the identity once for a
+  generic `S : ι → ι → Ω → ℝ` (`integral_sum_sq_sub_eq_centred`) and apply it with `refine (… _ _ h1 h2).trans ?_`; `_ _` are solved from
+  `h1 : ∀ a a', Integrable (fun ω => pooledRaw … ω a a') P` by higher-order pattern unification, and `congr 1` then closes the centred term
+  by `rfl` (no `beta_reduce` needed).
+- `((U * diagonal (fun i => f i - t i) * Uᵀ) a a')` inside a `have` statement fails to elaborate ("Function expected … ?m") because the
+  lambda's type is only fixed after the product; bind the matrix first with `set D : Matrix ι ι ℝ := diagonal (fun i => …) with hD` and
+  write `(U * D * Uᵀ) a a'`. Finish with `rw [hc, hD, sum_sq_diagonal]`.
+- Bias against a target `T = U diag(t) Uᵀ`: `∫ raw a a' − T a a' = (U * diagonal (s − t) * Uᵀ) a a'` by
+  `rw [hmean, ← Matrix.sub_apply, ← Matrix.sub_mul, ← Matrix.mul_sub, diagonal_sub]` after turning the matrix mean identity into an entry
+  identity with `congrFun (congrFun hmean a) a'` and `rw [Matrix.of_apply] at this`.
+- `Uᵀ A U = D` to `A = U D Uᵀ`: `rw [← hconj]; simp only [← Matrix.mul_assoc]; rw [hUU', Matrix.one_mul, Matrix.mul_assoc, hUU', Matrix.mul_one]`
+  with `hUU' : U * Uᵀ = 1` (`ulaCov_eq_conj_diagonal`, `inv_eq_conj_diagonal`).
+- `pow_le_pow_left` is gone; use `pow_le_pow_left₀ (ha : 0 ≤ a) (hab : a ≤ b) n`. `memLp_finset_sum` is deprecated for `memLp_finsetSum`.
+- Geometric sums with a shifted exponent: rewrite each term `ρ ^ (2 * (b + 1 + k)) = ρ ^ (2 * (b + 1)) * (ρ ^ 2) ^ k` (`← pow_mul, ← pow_add`,
+  `congr 1; ring`), then `← Finset.mul_sum, geom_sum_eq hρ, ← pow_mul` and `field_simp; ring` with `ρ ^ 2 - 1 ≠ 0` and `1 - ρ ^ 2 ≠ 0` both in
+  context.
+- `ula_variance_eq` (`2h/(1 − (1 − hp)²) = 1/(p(1 − hp/2))`) already exists in `ULAEigen.lean`; don't redeclare it.
+- `lean-state check` times out (120 s) on a 380-line file whose imports were only just restored from the artifact cache; `lake build
+  Laplace.Sampler.<Module>` (≈1 min once the import closure is cached) is the reliable per-file diagnostic in a fresh worktree.
 ### Spectrum-free envelopes and monotone factors (tide `burnin-envelope`)
 
 - A per-direction term that is a product of monotone factors (here `2ρ^{2b}/(1−ρ)·(ρ/(1+ρ))²`): prove the factorisation as an equation
