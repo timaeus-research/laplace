@@ -1297,3 +1297,38 @@ matrix version is `whiteningOf`.
   `{0 ≤ y}`.
 - `congrArg (fun x ↦ c * x) h` is already beta-reduced; a following `simp only at this` errors
   with "no progress".
+
+### Fourth moments of chains: Hölder, block independence and Gaussian transport (tide `estimator-variance`)
+
+- Products of `L⁴` functions: declare `instance : ENNReal.HolderTriple 4 4 2` once (`inv_add_inv_eq_inv` via
+  `show (4 : ENNReal) = 2 * 2`, `ENNReal.mul_inv`, `ENNReal.inv_two_add_inv_two`); then `hg.mul hf : MemLp (f * g) 2` and
+  `MemLp.integrable_mul` (`HolderConjugate 2 2` is an instance) give `Integrable (f * g * (k * l))` for four `L⁴` factors. Keep every
+  integrand *homogeneous of degree four* and written as a product of exactly four factors (`X * Y * (W * G)`), then a single
+  helper covers all integrability side goals; `simpa only [sq, pow_one, mul_assoc]` bridges to the `^ 2`/`^ 1` spellings.
+- `Finset.sum_coe_sort` does not fire in `simp` (the pattern `f ↑i` is not a higher-order pattern); use
+  `rw [Finset.sum_coe_sort s (fun i => a i * g i ω)]` with the function given explicitly.
+- Block independence from `iIndepFun g P`: `hind.indepFun_finset s {n} (Finset.disjoint_singleton_right.mpr hn) hmeas`, then
+  `.comp` with the *pair* map `fun z : s → ℝ => (∑ i : s, a i * z i, ∑ i : s, b i * z i)` (measurable by `fun_prop`) and the
+  evaluation `fun z : ({n} : Finset κ) → ℝ => z ⟨n, Finset.mem_singleton_self n⟩`; `convert this using 1` leaves the pair goal
+  (`funext`, `Function.comp_apply`, the explicit `sum_coe_sort`) and the `g n = _ ∘ _` goal (`rfl`). Independence of `X` and of `Y`
+  from `g n` separately does not give independence of `X * Y`; always go through the pair.
+- Factorising `∫ φ (X ω, Y ω) * g n ω ^ k`: `IndepFun.comp hφ (measurable_id.pow_const k)` then
+  `IndepFun.integral_fun_mul_eq_mul_integral` (needs only `AEStronglyMeasurable`). Pass `φ` explicitly as a lambda
+  (`(fun p : ℝ × ℝ => p.1 * p.2) (by fun_prop) 2`); the instantiated statement is beta-reduced so `rw` matches the goal written
+  as `X ω * Y ω * g n ω ^ 2`. Afterwards `rw [pow_one]` fails under the integral binder — use `simp only [pow_one]`, which also
+  reduces the `(X ω, Y ω).1` projections.
+- Finset induction with opaque abbreviations: `obtain ⟨X, hXd⟩ : ∃ X : Ω → ℝ, X = fun ω => ∑ i ∈ s, a i * g i ω := ⟨_, rfl⟩`
+  (not `set`, whose body is not syntactically in the goal); `IsLinComb g s X := ⟨a, fun ω => by rw [hXd]⟩`; expansions
+  `hexp : ∀ ω, … = …` by `simp only [hXd, hYd]; ring` then `simp_rw [hexp]`. `integral_add` needs the combined integrability
+  facts typed as lambdas (`have h12 : Integrable (fun ω => A ω + B ω) P := h1.add h2`), or the `f a + g a` pattern will not match.
+- `memLp_finset_sum` (no prime) is the `fun a => ∑ i ∈ s, f i a` form; the primed one is the `Pi` sum. `pow_le_pow_left` is now
+  `pow_le_pow_left₀`. The deprecated `integral_finset_sum`/`integrable_finset_sum` are `integral_finsetSum`/`integrable_finsetSum`.
+- Gaussian transport for `⟨u, ξ⟩`, `ξ ~ stdGaussian E`, `‖u‖ = 1`: `IsGaussian.hasGaussianLaw` (after `have : IsGaussian (P.map ξ)`
+  by `rw [hlaw]; infer_instance`), `.map_fun (innerSL ℝ u)`, `.map_eq_gaussianReal`; the mean via `← integral_map` +
+  `integral_innerSL_stdGaussian`, the variance via `variance_map (X := ⇑(innerSL ℝ u)) (μ := P) (Y := ξ)` (the `μ` must be
+  given), `Function.comp_def`, `variance_dual_stdGaussian`, `innerSL_apply_norm`; finish with `Real.toNNReal_one`. Moments of
+  `gaussianReal 0 1`: `integral_gaussianReal_eq_integral_smul one_ne_zero`, `gaussianPDFReal_def`, then the seabed's
+  `Laplace.OneD.integral_pow_mul_exp_neg_sq_half`/`_odd` (write `Real.pi`, not `π`, unless `open Real`). `MemLp 4` by
+  `memLp_id_gaussianReal' 4` + `memLp_map_measure_iff`. State `integral_map`/`memLp_map_measure_iff` with the map in the lambda form
+  `fun ω => innerSL ℝ u (ξ ω)` (a `Measurable.comp` term has type `Measurable (f ∘ g)` and its `∘` will not match the goal).
+- `Qᵀ` in a statement needs `open Matrix`; a parse error "unexpected token 'ᵀ'" is the symptom.
