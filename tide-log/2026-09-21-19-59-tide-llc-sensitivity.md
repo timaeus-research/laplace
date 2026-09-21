@@ -75,3 +75,9 @@ Saved verbatim in `tide-log/gpt_llc_sensitivity_v1.md`. Summary: A–D correct (
 - GPT-6 Astra: A+B+C+D+extras
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/llc-sensitivity` at 69c7afc (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/LLCSensitivity.lean` (304 lines): `mul_sub_mul_sub_nonneg_of_monovary`, `sum_sum_mul_sub_mul_sub`, `sum_mul_sum_le_of_cov_nonneg`, `sum_mul_sum_le_of_monovary`, `sum_mul_sum_ge_of_antivary`, `weighted_mean_le_of_monovary`, `weighted_mean_ge_of_antivary`, `inv_weighted_mean_le_uniform_mean`, `orthoOf_transpose_inv_mul`, `trace_inv_eq_sum`, `trace_ulaCov`, `trace_minibatchCov`, `ula_llc_inflation_ge_trace_inflation`, `minibatch_llc_inflation_ge_trace_inflation`, `minibatch_trace_inflation_ge_llc_inflation`.
+
+Surprises: (i) GPT's counterexample shows the Frobenius version of the claim is false — the note's E5 sentence is an observation, not a theorem; the theorems are about the trace; (ii) the weighted Chebyshev identity is a one-line `ring` after distributing the sums; (iii) simp normalises `1/(pq)·p·f` via `e3` before any three-factor rule can fire, leaving `1/q · f` for `one_div_mul_eq_div`.
