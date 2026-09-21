@@ -64,3 +64,9 @@ Saved verbatim in `tide-log/gpt_separable_oneloop_v1.md`. Summary: A–C correct
 - GPT-6 Astra: A+B+C
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/separable-oneloop` at fb8cc1e (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Multi/OneLoopSeparable.lean` (197 lines): `sepT`, `sepQ`, `smul_diagonal_inv`, `contractQ_sep`, `contractT_sep`, `bubble_sep`, `tadpoleLine_sep`, `oneLoopPi_sep`, `oneLoopCov_separable`, `oneLoopCov_separable_note`, `oneLoopCov_separable_note_ratio`, `anharmonic_factor`, `anharmonic_pos`, `disc_iff_note`, `oneLoopCov_separable_note_abs_ratio`.
+
+Surprises: (i) `← diagonal_add` splits a diagonal of sums (it rewrote the goal's right-hand side) — the collapsing direction is the forward `diagonal_add`; (ii) `λ > 0` is not needed for the positivity of the anharmonic potential once `g > 0` and `α² < 3λg` hold — the unused-variable linter caught it; (iii) the four-index bubble collapsed with four `Finset.sum_eq_single` rewrites and no further help.
