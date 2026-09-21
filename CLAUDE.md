@@ -1574,3 +1574,19 @@ matrix version is `whiteningOf`.
   Compose an MSE bound into an RMS bound with `Real.sqrt_le_sqrt` then this lemma; `add_assoc` first so the bound reads `√env + (infl + short)`.
 - Theorems mixing a probability-measure section with pure algebra (spectral sums, `Fintype.card`) go in their own `section` with only
   `{ι} [Fintype ι]`; keep `[DecidableEq ι]` out unless an `if` appears in the statement (`unusedDecidableInType`).
+
+### The ULA law for a shifted precision in another matrix's eigenbasis (tide `ula-localised`)
+
+- `Uᵀ (P * P) U = (Uᵀ P U)²` needs `U Uᵀ = 1` inserted: state the reassociated form as a `have` proved by `simp only [Matrix.mul_assoc]`,
+  then `rw [hUU', Matrix.mul_one]`. With `Uᵀ P U = diagonal a` in hand, `Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_smul, Matrix.smul_mul`
+  distribute the conjugation over `P − (h/2) • (P * P)`, and `← diagonal_smul, diagonal_sub` (forward, to combine) give
+  `diagonal (a − (h/2) a²)`.
+- `ulaCov P h = (P − (h/2) • (P * P))⁻¹` conjugates by the same exhibit-the-inverse pattern as `(tH + γI)⁻¹`; write the denominator
+  nonvanishing as `a − (h/2)a² = a (1 − h a/2)` (`ring`) and use `mul_ne_zero`.
+- Reciprocal comparisons: `one_div_le_one_div_of_le (hpos : 0 < a) (h : a ≤ b) : 1 / b ≤ 1 / a` (there is no `one_div_le_one_div_iff`);
+  `mul_le_of_le_one_right (ha : 0 ≤ a) (h : b ≤ 1) : a * b ≤ a`; `le_div_self (ha : 0 ≤ a) (hb : 0 < b) (hb1 : b ≤ 1) : a ≤ a / b`.
+- Comparing two sums termwise after `le_div_iff₀`: `Finset.mul_sum, Finset.mul_sum, Finset.sum_mul` then `Finset.sum_le_sum`; inside, isolate
+  the core inequality `x / q * Q ≤ x` (`div_mul_eq_mul_div, div_le_iff₀`) as a `have` and finish with a two-line `calc` (`ring` to reassociate,
+  `mul_le_mul_of_nonneg_left`). A bare `refine mul_le_mul_of_nonneg_right ?_ (by norm_num)` leaves an unassignable `0 ≤ ?m`.
+- `h > 0` is not needed for the conjugation and trace identities (only `h aᵢ < 2` and `aᵢ > 0`); it is needed for the ordering statements
+  (`0 ≤ h aᵢ`). The unused-variable linter flags the superfluous hypothesis.

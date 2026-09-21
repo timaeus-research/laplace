@@ -282,3 +282,4 @@ import Laplace.Sampler.GaussianTable
 import Laplace.Sampler.LLCVariance
 import Laplace.Sampler.LocalisedLLC
 import Laplace.Sampler.LLCMSE
+import Laplace.Sampler.ULALocalised
