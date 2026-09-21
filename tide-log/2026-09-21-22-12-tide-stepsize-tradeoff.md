@@ -34,3 +34,15 @@ Frobenius trade-off (different directions cancel at different steps; the centred
 `numcheck_stepsize_tradeoff.py`: `s₂a` and `a` antitone on a 400-point grid of `h ∈ (0, 1/p]` for three `(p, N, b)`;
 `f(0⁺) = −1/p`, `f(1/p) = 1/p` to four digits; the unique zero at `h*p ≈ 0.11–0.18`; the termwise inequality on a grid over
 `u ≤ u' ≤ 1`, `m = 1..7`; the E1 numerics 2/4/20 and 10/20/100.
+
+## Result
+
+Commit `41d53d8` on `tide/stepsize-tradeoff`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/Sampler/StepSizeTradeoff.lean` (     269 lines): `pow_div_antitone_term`, `zeroStartFactor_antitone`, `ula_bias_antitone`,
+`ula_bias_sq_sum_antitone`, `balanceGap` (+`_zero`, `_inv`, `_strictMonoOn`, `_exists_zero`), `continuous_balanceGap`,
+`posteriorBias` (+`_eq`, `_eq_ula`), `posteriorBias_tradeoff` (`∃!`), `frobenius_ula_posterior_raw_of_balanced`,
+`frobenius_ula_posterior_raw_isotropic`, `ula_inflation_e1`, `ula_llc_isotropic`, `ula_llc_e1`.
+
+Surprises: the sign change is cleanest on the polynomial numerator `hp − 2a(h)` (GPT's simplification), which is continuous for free and
+strictly increasing because `a` is antitone; the intermediate value theorem then needs only the two endpoint values `−2` and `1`. `ring`
+does not split `(p(1 − u/2))⁻¹`; `one_div_mul_one_div` does.
