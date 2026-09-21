@@ -1469,3 +1469,18 @@ matrix version is `whiteningOf`.
 - `omit [Nonempty X] in` before theorems that don't use the section instance (linter
   `unusedSectionVars`); `(_h : TiltData …)` keeps dot-notation while silencing unused-variable.
 - Unicode `Θ` in the slop LaTeX breaks pdflatex: write `$\Theta$`.
+
+### `Fin 2` directional corollaries of a closed-form covariance (tide `rosenbrock-e5`)
+
+- Directional variances `v ⬝ᵥ M *ᵥ v` for explicit `![…]` vectors and `!![…]` matrices: `simp [mulVec, dotProduct, Fin.sum_univ_two]`
+  then `field_simp` closes rational identities (no trailing `ring` — it fails with "no goals" when `field_simp` finishes). Rewrite the
+  matrix by its closed form first (`rosenCov_eq_laplace_add`, `rosenHess_smul_inv`); `add_mulVec` is not needed once `simp` sees the
+  explicit matrices.
+- Numeric instances (`a = 100`, `t = 1000`): do **not** rewrite with the multiplicative-identity theorem and `norm_num` the factor — the
+  goal keeps `1000 • M` on one side and `1000 * M` on the other. Rewrite both sides to their closed forms (`rosenCov_stiff`,
+  `laplace_stiff`) and let `norm_num` compare rationals.
+- Explicit Frobenius sums `∑ i, ∑ j, (M i j) ^ 2` over `Fin 2`: `simp [Fin.sum_univ_two]` after the closed form, then `field_simp`/`ring`.
+- Namespaces: the 2D `gibbsExpectation`/`gibbsCov` live in `Laplace.TwoD` (SemiDegenerate.lean), the Rosenbrock helpers
+  `rosenHess_smul_inv`, `rosenSigma` in `Laplace.Multi` (OneLoop.lean); `open Laplace.Multi` inside `namespace Laplace.TwoD`.
+- The seabed's `rosenbrock` carries the factor `1/2`, so its Hessian is `!![1 + 4a, -2a; -2a, a]` and the note's `200/t` is `2a/t`;
+  `H (2,-1) = 5a (2,-1) + (2,0)` (not `10a`).
