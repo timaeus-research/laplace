@@ -225,6 +225,7 @@ import Laplace.Multi.EmpiricalRescaled
 import Laplace.Multi.TraceVisibility
 import Laplace.Multi.TiltInterpolation
 import Laplace.Multi.TiltCauchySchwarz
+import Laplace.Multi.TiltVariance
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
@@ -239,3 +240,5 @@ import Laplace.TwoD.Rosenbrock
 import Laplace.Sampler.GaussianInvariance
 import Laplace.Sampler.GaussianUniqueness
 import Laplace.Sampler.FullStep
+import Laplace.Sampler.AR1Real
+import Laplace.Sampler.RandomMap
