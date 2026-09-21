@@ -33,3 +33,14 @@ adds `½ mᵀPm`, and inserting the one-loop covariance does not give the full o
 
 `numcheck_direction_readings.py` (d = 6, random PD `P`, random symmetric `Π` and `δ`): A to 1e-12 along every eigenvector; the two
 identities of B to 1e-14; stiff case `LLC_rel/Frob_rel = 9.94 ≥ κ/d = 9.04`; flat case `Frob_rel/LLC_rel = 5.46 ≥ √d = 2.45`.
+
+## Result
+
+Commit `bd74260` on `tide/direction-readings`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/Sampler/DirectionReadings.lean` (     231 lines): `inv_mulVec_eigen`, `vecMul_inv_eigen`, `directional_variance_eq`,
+`orthoCol_dotProduct_self`, `oneLoopCov_directional`, `frobenius_rel_eigen_perturb`, `llc_shift_eigen_perturb`, `sum_inv_sq_ge`,
+`sum_inv_sq_le`, `sum_sq_single`, `sum_mul_single`, `stiff_perturbation_hidden`, `flat_perturbation_dominates`, `sum_mul_sq_bounds`
+(the last is GPT's deferred C, included because it is thirty lines).
+
+Surprises: `Π` is a reserved token in Lean 4, so the self-energy had to be renamed in the statement; `Matrix.dotProduct_mulVec` rewrites the
+first `v ⬝ᵥ A *ᵥ w` it finds, which was on the wrong side of the equation; `field_simp` alone closed every ratio identity.
