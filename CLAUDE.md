@@ -185,6 +185,18 @@ Polynomial-in-`P` inverses commute with `P`: `Matrix.mul_nonsing_inv` / `nonsing
 which matches the same lemma: use `rw` inside `Finset.sum_congr` instead. Deprecations:
 `integral_finset_sum → integral_finsetSum`, `integrable_finset_sum → integrable_finsetSum`.
 
+### Inner-product notation and chains in a real inner product space (Sampler/AR1)
+
+`⟪x, y⟫_ℝ` is **not** global notation in the current pin: `⟪x, y⟫_𝕜` is scoped in `InnerProductSpace`
+and `⟪x, y⟫` (real) in `RealInnerProductSpace`; inside a `structure … where` field the `_ℝ` form fails to
+parse even after `open scoped`. Write `inner ℝ x y` explicitly; the lemmas are `real_inner_smul_left/right`,
+`sum_inner`, `inner_sum`, `real_inner_comm`, `real_inner_self_eq_norm_sq`. A chain defined by a recursion
+is best given an explicit closed form first (`x k = ∑ j ∈ range k, ρ ^ j • η (k - j)` avoids ℕ-subtraction
+pain: `Finset.sum_range_succ'` peels the `j = 0` term and `Nat.add_sub_add_right` handles the shift).
+Sums with an `if` selecting one index: `Finset.sum_eq_single` plus `omega` for the index arithmetic.
+`Nat.dist` facts: `Nat.dist_eq_sub_of_le`, `Nat.dist_eq_sub_of_le_right`, `Nat.dist_self`; shifts by
+`unfold Nat.dist; omega`. `sq` in `rw` rewrites the first `_ ^ 2` it sees: pass the argument, `sq (∑ …)`.
+`omit [DecidableEq ι] in` must come *before* the docstring, not between it and the theorem.
 ### Non-separable 2D potentials via a measure-preserving shear (TwoD/Rosenbrock)
 
 A curved valley `L(x,y) = ((x-μ)² + a(y - g x)²)/2` becomes separable under the triangular shear
@@ -620,6 +632,36 @@ cannot match — state the `Integrable` facts with explicit lambda types. `abs_o
 inside `rw` rewrites the FIRST `|·|` it sees when positivity's goal is a metavariable — give the explicit
 nonnegativity proof. `Real.exp_le_exp.mpr`, `abs_le`, and `nlinarith` handle `e^{-tδ} ≤ e^{-t(K−L)} ≤ e^{tδ}`.
 `positivity` cannot use `∀ n, 0 ≤ δ n`; instantiate `have := hδ n` first.
+
+**Tilt / trace arc (TiltInterpolation, TiltCauchySchwarz, TraceVisibility, EmpiricalRescaled).**
+Differentiation under the integral: `hasDerivAt_integral_of_dominated_loc_of_deriv_le (F := fun u x ↦ …)
+(F' := …) hs hmeasF hint hmeasF' hbound hbound_int hdiff` with `hs : Metric.ball u₀ 1 ∈ 𝓝 u₀`
+(`Metric.ball_mem_nhds`), the bound stated as `∀ᵐ x, ∀ u ∈ ball u₀ 1, ‖F' u x‖ ≤ bound x`
+(`|u| ≤ |u₀| + 1` from `Metric.mem_ball` + `Real.dist_eq` + `abs_add_le`), and the pointwise
+derivative from `((hasDerivAt_id u).const_mul c)` simplified BEFORE `.neg`/`.exp` (applying `.neg`
+first produces a `-fun y ↦ …` that `simpa` cannot match). Name `F`/`F'` explicitly or the
+higher-order unification fails. Quotient rule: `hN.div hZ hZ0` gives a Pi-form function and the raw
+`(c' d − c d')/d²` derivative; finish with `hdiv.congr_deriv hval` where `hval` is proved by
+`field_simp; ring` after `unfold` — `convert … using 1; field_simp` leaves the function-equality goal
+untouched ("field_simp made no progress"). Mean value on `[0,1]`:
+`norm_image_sub_le_of_norm_deriv_le_segment' (f := …) (f' := …) (a := 0) (b := 1) (C := …) hderivWithin
+hbound 1 (Set.right_mem_Icc.mpr zero_le_one)` then `simpa`. `abs_add` is now `abs_add_le`; the
+inequalities `−|a| ≤ a`, `a ≤ |a|`, `−a ≤ |a|` are `neg_abs_le`, `le_abs_self`, `neg_le_abs`.
+Cauchy–Schwarz for a covariance without L²: expand `Var(f − λ g) ≥ 0`, feed `discrim_le_zero` (needs the
+quadratic written as `a * (l * l) + b * l + c`), `rw [discrim]`, `nlinarith`, then `Real.abs_le_sqrt`
+and `Real.sqrt_mul`. `Integrable.bdd_mul (hg : Integrable g) (hf_meas) (bound : ∀ᵐ x, ‖f x‖ ≤ c)`
+gives `Integrable (fun x ↦ f x * g x)` — the bounded factor must come FIRST in the product. A
+structure of Props (`TiltData`) is a good carrier for standing hypotheses; put `[Nonempty X]` on the
+lemmas that extract `0 ≤ M` from a bound `∀ x, |R x| ≤ M`. Trace arc: theorem names must not end in
+a definition's name used inside (`SmoothHomog.pd` shadowed `pd`); prove homogeneity of `fderiv` in
+degree 1 by continuity in the dilation parameter (`tendsto_nhds_unique` along `𝓝[≠] 0`); the basis
+expansion `∑ i, x i • single i 1 = x` is `(EuclideanSpace.basisFun _ ℝ).sum_repr x` with
+`basisFun_apply`/`basisFun_repr` simp; `integral_finset_sum` is now `integral_finsetSum`; `rw [hc]` with
+`hc : f = fun _ ↦ f 0` is fine but `simp [hc]` loops. EmpiricalRescaled: `LocalLaplaceDomain.weight`
+and `integrable_integrand` already existed (SecondOrderLaplace, LocationRecovery) — a chained
+`; git commit` after a failed root build pushed a broken import; gate commits on the build exit
+code explicitly. `tendsto_pairwise_normalized_moment_difference` lives in namespace
+`HigherLaplaceDomain`.
 
 ## Architecture: the generic-(k₁,k₂) 2D lift pattern
 

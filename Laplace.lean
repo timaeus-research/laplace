@@ -223,6 +223,8 @@ import Laplace.Multi.HarmonicWitness
 import Laplace.Multi.MonomialVisibility
 import Laplace.Multi.EmpiricalRescaled
 import Laplace.Multi.TraceVisibility
+import Laplace.Multi.TiltInterpolation
+import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
@@ -232,5 +234,6 @@ import Laplace.OneD.QuarticBoundedTest
 import Laplace.Sampler.Lyapunov
 import Laplace.Sampler.ULA
 import Laplace.Multi.GaussianLLC
+import Laplace.Sampler.AR1
 import Laplace.TwoD.Rosenbrock
 import Laplace.Sampler.GaussianInvariance
