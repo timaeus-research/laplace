@@ -241,6 +241,7 @@ import Laplace.Multi.ToyCrossover
 import Laplace.Multi.MorseBottResponse
 import Laplace.Multi.TotalVariationResponse
 import Laplace.Multi.ResolvedChartResponse
+import Laplace.Multi.RelativeChartLeading
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
