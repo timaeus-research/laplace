@@ -98,3 +98,16 @@ numpy/scipy, d = 5, random SPD P with eigenvalues (0.3, 0.8, 1.5, 2.5, 4.0), h =
   diagonal/commuting corollary, 1D chain), `Laplace/Multi/GaussianLLC.lean` (quadratic Gaussian expectation bridge to
   `gaussian_second_moment_eq_inverse_entry`). Imports added to `Laplace.lean`.
 - Skeleton first (statements with `sorry`, typechecked), then fill; `scripts/sorries` clean before each commit.
+
+## Result
+
+- Commit `eab4a82` on `tide/sampler-laws` (base b7e20dd). Full `lake build` green (8944 jobs); `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide.
+- `Laplace/Sampler/Lyapunov.lean` (251 lines): `diagLyapunov_fixed`, `diagLyapunov_unique`, `covStep_diagonal_fixed_iff`, `covStep_conj`, `lyapunovVia_fixed_iff`, `lyapunovVia_conj_apply`, `orthoOf`, `spectral_real`, `symmLyapunov_fixed_iff`, `covStep_iterate_sub_fixed`, `covStep_iterate_zero`, `covStep_iterate_zero_of_comm`, `ar1_var_iterate`.
+- `Laplace/Sampler/ULA.lean` (269 lines): `one_sub_ulaStep_sq`, `ulaCov_commute`, `ulaCov_fixed`, `ulaStep_eq_conj`, `ula_fixed_iff`, `isUnit_det_ulaDenom`, `ulaCov_eq_lyapunov`, `ulaCov_conj_apply`, `ulaCov_posDef`, `minibatchCov_conj_apply`, `minibatchCov_conj_diag`, `minibatch_fixed_iff`.
+- `Laplace/Multi/GaussianLLC.lean` (195 lines): `hessInvPairing`, `quadForm_eq_double_sum`, `gaussian_quadForm_integral`, `localised_gaussian_K_expectation`, `hessInvPairing_self_inv`, `gaussian_K_expectation_eq_half_dim`.
+- Scope note: the Gaussian LLC bridge (item 6 of the Integration section) was included after all, contrary to the "Scope of this tide" line at the top; the one-loop term, the Rosenbrock closed forms, Gaussian invariance and the expected sample variance remain deferred.
+- Surprises: none mathematical. All friction was Lean idiom in the spectral packaging (`Unitary.conjStarAlgAut_apply`, `congr 1` closing the `RCLike.ofReal ∘ eigenvalues` goal outright) and one looping `simp` in the quadratic-form expansion. The only statement change during filling was dropping an unused `0 < h` hypothesis from `isUnit_det_ulaDenom`.
+
+## Retrospective
+
+`retrospectives/2026-09-21-01-57-tide-sampler-laws.tex` (PDF alongside).

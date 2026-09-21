@@ -1,0 +1,380 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{parskip}
+\usepackage{xcolor}
+\emergencystretch=3em
+\sloppy
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\lr}{\mathrm{lr}}
+\newcommand{\code}[1]{{\def\_{\textunderscore\allowbreak}\texttt{#1}}}
+\newcommand{\gptbox}[1]{\par\medskip\begin{quote}\small\textbf{\textcolor{green!50!black}{GPT-6 Astra:}} #1\end{quote}\medskip}
+\newcommand{\tideref}[2][]{\href{https://therisensea.org/tides/#2/}{\ifx&#1&\texttt{#2}\else#1\fi}}
+
+\title{Tide retrospective: sampler laws for a Gaussian target\\
+\large the ULA closed form, the minibatch Lyapunov entries, the finite-time
+identity and the Gaussian LLC}
+\author{Claude (Anthropic), with a GPT-6 Astra consult}
+\date{2026-09-21}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Let $P$ be a real symmetric positive definite precision matrix with
+eigenvalues $p_i$ and let $h > 0$ satisfy $h\,p_i < 2$ for every $i$. The
+Euler-discretised Langevin chain $w \leftarrow (I - hP)\,w + \sqrt{2h}\,\xi$
+has a unique stationary covariance, namely
+$\Sigma_{\mathrm{ULA}} = (P - \tfrac{h}{2}P^2)^{-1}$; it is positive
+definite, commutes with $P$, and has eigenvalues
+$1/(p_i(1 - hp_i/2))$. If the noise covariance is instead
+$2hI + h^2t^2C$ for an arbitrary matrix $C$, the unique stationary
+covariance has entries
+$(2h\delta_{ij} + h^2t^2\tilde C_{ij})/(h(p_i + p_j) - h^2p_ip_j)$ in the
+eigenbasis of $P$, whose diagonal is the ULA variance times
+$1 + ht^2\tilde C_{ii}/2$. The iterates of the covariance recursion from
+any start satisfy $\Sigma_k - \Sigma_\infty = A^k(\Sigma_0 -
+\Sigma_\infty)(A^\top)^k$, which gives $\Sigma_\infty(I - A^{2k})$ from a
+zero start and $\sigma^2(1 - \rho^{2k})$ in one dimension. On the Gibbs
+side, in the seabed's own language, the expectation of $K = \tfrac12
+w^\top Hw$ under the weight $\exp(-tK - \gamma|w|^2/2)$ is $\tfrac12
+\tr\big(H(tH + \gamma I)^{-1}\big)$, and $t\langle K\rangle = d/2$ when
+$\gamma = 0$. These are the closed forms that the note \emph{Sanity on
+Sampling} checks stochastic gradient Langevin dynamics against.
+Three new modules, 715 lines, no \code{sorry}, \code{axiom} or
+\code{native\_decide}; one deliberation round in which GPT-6 Astra
+strengthened two of the three candidates; a single session.
+\end{abstract}
+
+\section{Setting}
+
+The note \emph{Sanity on Sampling} (paper \code{sanity} in the SRI
+registry, Overleaf clone \code{learning-theory/papers/sanity}, code in
+\code{timaeus-research/sanity-sampling}) compares two ways of computing
+posterior covariances and the local learning coefficient for
+nondegenerate potentials: the inverse Hessian, through the Laplace
+formulas of the Susceptibility Primer, and sampling with SGLD. Its
+experiments E1 to E8 rest on a small set of closed forms for the
+Gaussian linear recursion: the ULA law (its equation \code{eq:ula}), the
+Lyapunov law with minibatch noise (\code{eq:mblaw}), the AR(1) variance
+of a finite chain, and the Gaussian identities for the localised LLC
+(\code{eq:llc}). All of them were derived by hand in the note and
+checked numerically; none had been formalised.
+
+The seabed is the \code{laplace} repository at commit \code{b7e20dd}. It
+carries the Gibbs objects (\code{partitionFunction},
+\code{gibbsExpectation}, \code{gibbsCov}), the multivariate Gaussian
+weight \code{gaussianWeight}, the quadratic form \code{quadForm}, and
+the Gaussian integration by parts theorem
+\code{gaussian\_second\_moment\_eq\_inverse\_entry}, which says that the
+second moment of $e^{-\frac12 u^\top Pu}$ is $Z\,(P^{-1})_{ij}$. It has
+nothing on discrete-time samplers, Markov chains or Lyapunov equations,
+so this tide opens a new arc, \code{Laplace/Sampler/}.
+
+The deliberation is recorded in \code{tide-log/}: the log entry carries
+the same date stamp as this retrospective, and the consult is
+\code{gpt\_sampler\_laws\_v1.md}. It started from three candidates: the Lyapunov laws as linear algebra, the Gaussian
+invariance of the ULA step as a probabilistic statement, and the Gaussian
+LLC identity in the seabed's language. GPT-6 Astra confirmed all three,
+deferred the probabilistic one as measure-theoretic plumbing, and
+strengthened the other two: the minibatch formula needs no commutation
+between $C$ and $P$, and the finite-time identity holds for any starting
+covariance without any commutation. It also fixed the route:
+\gptbox{Route: spectral, not Neumann. Diagonal Lyapunov solver
+$X_{ij} = N_{ij}/(1 - a_ia_j)$ for $|a_i| < 1$, transported through an
+orthogonal diagonalisation; existence and uniqueness become scalar
+algebra. State the stability hypothesis eigenvalue-wise: the sup norm on
+$\iota \to \R$ does not give $\|I - hP\|_2 < 1$.}
+Both parties voted for the six-item cluster after one round.
+
+\section{The thing formalised}
+
+Write $A = I - hP$ for the ULA step, $\mathcal T_N(X) = AXA^\top + N$ for
+the covariance step, and $U$ for an orthogonal matrix with $P = U\,
+\mathrm{diag}(p)\,U^\top$.
+
+\begin{quote}\itshape
+\begin{enumerate}
+\item[(L)] For $a \in \R^d$ with $|a_i| < 1$ and any $N$, the equation
+$X = \mathrm{diag}(a)\,X\,\mathrm{diag}(a) + N$ has the unique solution
+$X_{ij} = N_{ij}/(1 - a_ia_j)$. For $A = U\,\mathrm{diag}(a)\,U^\top$ with
+$U$ orthogonal, $X = AXA^\top + N$ has the unique solution
+$U\,\big[(U^\top NU)_{ij}/(1 - a_ia_j)\big]\,U^\top$.
+\item[(U)] For $P$ symmetric positive definite and $0 < h$ with
+$hp_i < 2$: $\Sigma_{\mathrm{ULA}} = (P - \tfrac h2 P^2)^{-1}$ is the
+unique solution of $\Sigma = A\Sigma A + 2hI$, it is positive definite,
+and $(U^\top\Sigma_{\mathrm{ULA}}U)_{ij} = \delta_{ij}/(p_i(1 - hp_i/2))$.
+\item[(M)] With $N = 2hI + h^2t^2C$ and $\tilde C = U^\top CU$, the
+unique solution has $(U^\top\Sigma U)_{ij} = (2h\delta_{ij} +
+h^2t^2\tilde C_{ij})/(h(p_i + p_j) - h^2p_ip_j)$, and on the diagonal
+$(1 + ht^2\tilde C_{ii}/2)/(p_i(1 - hp_i/2))$.
+\item[(F)] If $S$ is a fixed point of $\mathcal T_N$ then
+$\mathcal T_N^{\,k}(X_0) - S = A^k(X_0 - S)(A^\top)^k$; for $X_0 = 0$,
+$A$ symmetric and $AS = SA$ this is $S(I - A^{2k})$; in one dimension the
+variance after $k$ steps is $\frac{v}{1 - \rho^2}(1 - \rho^{2k})$.
+\item[(G)] For $P = tH + \gamma I$ with the seabed's integrability
+package,
+\[
+\frac{1}{Z(P)}\int \tfrac12\langle u, Hu\rangle\,
+e^{-\frac12\langle u, Pu\rangle}\,du = \tfrac12\sum_{ij}H_{ij}(P^{-1})_{ij},
+\]
+and for symmetric $H$ and $\gamma = 0$ the right side is $d/(2t)$.
+\end{enumerate}
+\end{quote}
+
+\noindent The Lean signatures of (U) and (M), transliterated
+($U$ is \code{orthoOf hP}, the real orthogonal matrix packaged from
+Mathlib's \code{eigenvectorUnitary}):
+{\small
+\begin{verbatim}
+theorem ula_fixed_iff {P : Matrix i i R} (hP : P.IsHermitian) (h : R)
+    (hh : 0 < h)
+    (hev : forall i, 0 < hP.eigenvalues i and h * hP.eigenvalues i < 2) (X) :
+    covStep (ulaStep P h) (ulaNoise h) X = X <->
+      X = lyapunovVia (orthoOf hP) (fun i => 1 - h * hP.eigenvalues i)
+            (ulaNoise h)
+
+theorem ulaCov_fixed (P : Matrix i i R) (h : R) (hP : P^T = P)
+    (hdet : IsUnit (P - (h / 2) * (P * P)).det) :
+    covStep (ulaStep P h) (ulaNoise h) (ulaCov P h) = ulaCov P h
+
+theorem ulaCov_posDef {P} (hP : P.PosDef) (h : R) (hh : 0 < h)
+    (hev : forall i, h * hP.1.eigenvalues i < 2) : (ulaCov P h).PosDef
+
+theorem minibatchCov_conj_apply {P} (hP : P.IsHermitian) (h t : R) (C) (i j) :
+    ((orthoOf hP)^T * lyapunovVia (orthoOf hP)
+        (fun i => 1 - h * hP.eigenvalues i) (minibatchNoise h t C)
+      * orthoOf hP) i j =
+      ((2 * h) * (if i = j then 1 else 0)
+          + h ^ 2 * t ^ 2 * ((orthoOf hP)^T * C * orthoOf hP) i j) /
+        (h * (hP.eigenvalues i + hP.eigenvalues j)
+          - h ^ 2 * hP.eigenvalues i * hP.eigenvalues j)
+\end{verbatim}}
+The other declarations, by module:
+\begin{itemize}\raggedright
+\item \code{Laplace/Sampler/Lyapunov.lean}: (L) as \code{diagLyapunov\_fixed},
+\code{diagLyapunov\_unique}, \code{covStep\_diagonal\_fixed\_iff},
+\code{lyapunovVia\_fixed\_iff}, \code{lyapunovVia\_conj\_apply}; the real
+spectral packaging \code{orthoOf}, \code{spectral\_real},
+\code{symmLyapunov\_fixed\_iff}; (F) as \code{covStep\_iterate\_sub\_fixed},
+\code{covStep\_iterate\_zero}, \code{covStep\_iterate\_zero\_of\_comm},
+\code{ar1\_var\_iterate}.
+\item \code{Laplace/Sampler/ULA.lean}: (U) as \code{ulaCov\_commute},
+\code{ulaCov\_fixed}, \code{isUnit\_det\_ulaDenom}, \code{ulaCov\_eq\_lyapunov},
+\code{ulaCov\_conj\_apply}, \code{ulaCov\_posDef}; (M) as
+\code{minibatchCov\_conj\_apply}, \code{minibatchCov\_conj\_diag},
+\code{minibatch\_fixed\_iff}.
+\item \code{Laplace/Multi/GaussianLLC.lean}: (G) as
+\code{gaussian\_quadForm\_integral},
+\code{localised\_gaussian\_K\_expectation},
+\code{gaussian\_K\_expectation\_eq\_half\_dim}, with the pairing
+\code{hessInvPairing H Pinv} $= \sum_{ij}H_{ij}(P^{-1})_{ij}$.
+\end{itemize}
+
+In the note, (U) is the ULA law, the black curve of experiment E1 and
+the correction applied throughout; (M) is the Lyapunov law of E8, whose
+diagonal is the ``$1 + \lr\,t^2 c_i/2$'' inflation of the per-direction
+variance; (F) is the finite-chain correction of E2 and E4; (G) is the
+Hessian value of the localised LLC that E3 and E6 compare against. The
+stability hypothesis $hp_i < 2$ is the note's $\lr\,p_{\max} < 2$. The
+hypothesis package of (G) is the seabed's: integrability of the weight
+and its second moments, and the Fubini hypothesis of the integration by
+parts theorem, all stated abstractly rather than derived from positive
+definiteness of $P$.
+
+\section{Proof strategy}
+
+\emph{Diagonal solver and transport.} For $D = \mathrm{diag}(a)$ the
+covariance step acts entrywise, $(DXD + N)_{ij} = a_ia_jX_{ij} + N_{ij}$,
+so a fixed point is a scalar equation per entry with the unique solution
+$N_{ij}/(1 - a_ia_j)$ because $1 - a_ia_j > 0$ when $|a_i|, |a_j| < 1$.
+Conjugation by an orthogonal $U$ intertwines the steps,
+$U^\top\mathcal T_{A,N}(X)U = \mathcal T_{D,\,U^\top NU}(U^\top XU)$
+(\code{covStep\_conj}), and is a bijection on matrices, so the fixed
+points of the general step are the transports of the diagonal ones. This
+is \code{lyapunovVia\_fixed\_iff}. Mathlib's spectral theorem for
+Hermitian matrices produces a unitary over $\R$; \code{orthoOf} coerces
+it to a real matrix and \code{spectral\_real} restates
+$A = U\,\mathrm{diag}(\lambda)\,U^\top$ using
+\code{conjTranspose\_eq\_transpose\_of\_trivial} to turn the star into a
+transpose.
+
+\emph{ULA closed form.} The step satisfies $I - A^2 = 2hP\,(I -
+\tfrac h2P) = 2h\,(P - \tfrac h2P^2)$, a two-line \code{module} identity
+(\code{one\_sub\_ulaStep\_sq}). Since $\Sigma_{\mathrm{ULA}}$ is the
+inverse of a polynomial in $P$ it commutes with $P$
+(\code{ulaCov\_commute}, from \code{mul\_nonsing\_inv} and
+\code{nonsing\_inv\_mul}), hence with $A$, so $\Sigma - A\Sigma A = (I -
+A^2)\Sigma = 2h\,(P - \tfrac h2P^2)\Sigma = 2hI$. This is
+\code{ulaCov\_fixed}; it needs only $P^\top = P$ and the invertibility of
+$P - \tfrac h2P^2$. Under the stability hypothesis the determinant is
+$\prod_i p_i \prod_i(1 - hp_i/2) \ne 0$ (\code{isUnit\_det\_ulaDenom},
+through \code{det\_eq\_prod\_eigenvalues} and \code{ulaStep\_eq\_conj}),
+so uniqueness follows from \code{lyapunovVia\_fixed\_iff}, and the
+eigenbasis entries are $2h/(1 - (1 - hp_i)^2) = 1/(p_i(1 - hp_i/2))$.
+Positivity is \code{PosDef.diagonal} for the diagonal solution and
+\code{PosDef.conjTranspose\_mul\_mul\_same} for its transport.
+
+\emph{Minibatch entries.} With $N = 2hI + h^2t^2C$ the transported
+formula gives $(2h\delta_{ij} + h^2t^2\tilde C_{ij})/(1 - (1 - hp_i)(1 -
+hp_j))$, and the denominator is $h(p_i + p_j) - h^2p_ip_j$ by \code{ring}.
+No commutation is used anywhere; the diagonal specialisation is a
+\code{div\_eq\_div\_iff} plus \code{ring}.
+
+\emph{Finite time.} $\mathcal T_N(Y) - S = A(Y - S)A^\top$ for a fixed
+point $S$, so induction with \code{Function.iterate\_succ\_apply'} gives
+$A^k(X_0 - S)(A^\top)^k$. With $X_0 = 0$, $A = A^\top$ and $AS = SA$ the
+right side is $-S A^{2k}$, whence $S(I - A^{2k})$; the scalar AR(1) case
+is the same induction on $\R$.
+
+\emph{Gaussian LLC.} Writing $u = \sum_j u_j e_j$ (the seabed's
+\code{eq\_sum\_stdBasis}) gives $\langle u, Hu\rangle = \sum_{ij}H_{ij}
+u_iu_j$; the integral of each term against the Gaussian weight is
+$Z\,(P^{-1})_{ij}$ by \code{gaussian\_second\_moment\_eq\_inverse\_entry},
+and the finite sums pass through the integral by
+\code{integral\_finsetSum}. Dividing by $Z$ gives $\tfrac12\sum_{ij}
+H_{ij}(P^{-1})_{ij}$. For $P = tH$ and $P^{-1} = \tfrac1t H^{-1}$ the
+pairing collapses: $\sum_{ij}H_{ij}(H^{-1})_{ij} = \sum_{ij}H_{ji}
+(H^{-1})_{ij} = \tr(HH^{-1}) = d$ using the symmetry of $H$, so
+$t\langle K\rangle = d/2$.
+
+\section{Roadblocks and resolutions}
+
+None of the mathematics resisted; the friction was all Lean idiom, and
+most of it in the spectral packaging.
+\begin{itemize}\raggedright
+\item Mathlib's \code{Matrix.IsHermitian.spectral\_theorem} now reads
+\[
+A = \code{Unitary.conjStarAlgAut}\ \R\ \_\ U\
+\big(\mathrm{diag}(\code{RCLike.ofReal} \circ \lambda)\big).
+\]
+Unfolding needs \code{Unitary.conjStarAlgAut\_apply}
+(the \code{Matrix.}-prefixed name no longer exists), and the
+$\code{RCLike.ofReal} \circ \lambda$ over $\R$ is closed by \code{congr 1}
+alone; adding a \code{funext} or \code{simp} after it errors with ``no
+goals''. The same ``no goals'' appeared twice more when \code{congr 1}
+finished a goal that I had followed with \code{ring} bullets.
+\item The diagonal solver's uniqueness reduced to $x = n/(1 - a^2)$ from
+$x = a^2x + n$; \code{field\_simp} followed by \code{linear\_combination}
+left a residue, and \code{rw [eq\_div\_iff hpos.ne']} followed by
+\code{linear\_combination -h} closed it.
+\item In the commuting finite-time identity, rewriting $S\,A^{2k}$ into
+$S\,A^k\,A^k$ failed on associativity until the chain was ordered
+\code{mul\_sub, mul\_one, hc, mul\_assoc, ← pow\_add, two\_mul}.
+\item \code{simp only [quadForm, clm\_apply\_eq\_sum, Finset.mul\_sum]}
+loops: the expansion of $(Hu)_i$ produces terms $(He_j)_i$ that match the
+same lemma again. The fix is a targeted \code{rw} inside
+\code{Finset.sum\_congr}.
+\item Scalar cancellation orientation: the goal was $(\tfrac1t\cdot t)
+\bullet (H \circ H^{-1}) = \mathrm{id}$, so \code{one\_div\_mul\_cancel},
+not \code{mul\_one\_div\_cancel}.
+\item After \code{split\_ifs} in the diagonal positivity computation the
+$i = j$ branch still mentioned $\lambda_j$; \code{subst} then
+\code{rw [mul\_one]} closed it.
+\item Deprecations since the seabed's pin: \code{integral\_finset\_sum}
+is now \code{integral\_finsetSum}, \code{integrable\_finset\_sum} is
+\code{integrable\_finsetSum}, and \code{ContinuousLinearMap.smul\_apply}
+resolves under the open namespace as \code{smul\_apply}.
+\end{itemize}
+The one architectural point worth recording: the deliberation proposed
+stating stability as $\|A\|_2 < 1$ and noted that Mathlib's operator norm
+on $\iota \to \R$ is the sup norm, which does not give it. Stating the
+hypothesis eigenvalue-wise ($|1 - hp_i| < 1$, equivalently $0 < hp_i <
+2$) avoided \code{EuclideanSpace} entirely, and every theorem is stated
+on \code{Matrix} $\iota\,\iota\,\R$ with \code{Fintype} and \code{DecidableEq} instances on $\iota$.
+
+\section{What was Mathlib, what was new}
+
+{\raggedright Mathlib, all lookup: \code{Matrix.IsHermitian.spectral\_theorem},
+\code{eigenvectorUnitary}, \code{eigenvalues},
+\code{Unitary.conjStarAlgAut\_apply}, \code{Matrix.UnitaryGroup.star\_mul\_self},
+\code{mem\_unitaryGroup\_iff}, \code{conjTranspose\_eq\_transpose\_of\_trivial},
+\code{IsHermitian.det\_eq\_prod\_eigenvalues}, \code{PosDef.eigenvalues\_pos},
+\code{PosDef.diagonal}, \code{PosDef.conjTranspose\_mul\_mul\_same},
+\code{det\_mul}, \code{det\_diagonal}, \code{det\_transpose},
+\code{isUnit\_iff\_isUnit\_det}, \code{mul\_nonsing\_inv},
+\code{nonsing\_inv\_mul}, the \code{diagonal\_mul}/\code{mul\_diagonal}
+family, \code{Function.iterate\_succ\_apply'}, \code{Commute.pow\_left},
+\code{integral\_finsetSum}, \code{integral\_const\_mul}, and the
+\code{module} and \code{linear\_combination} tactics.\par}
+
+Seabed: \code{gaussianWeight}, \code{gaussianZ}, \code{quadForm},
+\code{FubiniIBPHypothesis}, \code{eq\_sum\_stdBasis},
+\code{gaussian\_second\_moment\_eq\_inverse\_entry}.
+
+{\raggedright New: the covariance step and the two Lyapunov solvers with their
+fixed-point characterisations, the real-orthogonal packaging of the
+spectral theorem, the ULA closed form with its commutation, determinant
+and positivity lemmas, the minibatch entry formulas, the finite-time
+identities, and the quadratic-form bridge \code{hessInvPairing} with its
+two LLC corollaries. About 715 lines, 51 declarations.\par}
+
+\section{Lessons}
+
+\begin{itemize}
+\item For \code{CLAUDE.md}: the real spectral theorem recipe
+(\code{orthoOf}, \code{spectral\_real}) and the \code{congr 1} closure
+of $\code{RCLike.ofReal} \circ \lambda$ are worth a section; they will
+recur in any matrix-valued tide. Landed in this commit.
+\item For the lean-formalisation skill: for linear-algebraic targets, a
+skeleton of typechecked \code{sorry} statements written in one pass and
+then filled module by module worked with no rework; the only statement
+change during filling was dropping an unused positivity hypothesis from
+the determinant lemma.
+\item For the tide skill: the direction was a six-item programme. Taking
+the sampler-side cluster and one Gibbs-side bridge, and writing the
+remaining items into the log as deferred, kept the tide to one coherent
+excursion. The numerical check was free: the note's experiments E1 and
+E8 had already tested every closed form at machine precision on the
+exact-gradient cells.
+\item For the paper: the Lean statements make explicit what the note
+states loosely, that the minibatch law needs no commutation of $C_g$
+with $P$ and that its diagonal inflation factor is exact for any $C_g$
+in the eigenbasis of the precision.
+\end{itemize}
+
+\section{Follow-ups}
+
+\begin{itemize}
+\item \emph{Gaussian invariance.} $N(0, \Sigma)$ pushed through one ULA
+step is $N(0, A\Sigma A^\top + 2hI)$, via \code{isGaussian\_map} and
+\code{isGaussian\_conv} on \code{EuclideanSpace} $\R\,\iota$; then
+$N(0, \Sigma_{\mathrm{ULA}})$ is invariant.
+\item \emph{Expected sample variance.} Temporal cross-covariances
+$\Cov(x_{r+l}, x_r) = A^l\Sigma_r$ and the note's finite-chain formula
+for the variance of $n$ consecutive draws (\code{ar1\_expected\_sample\_variance}
+in the code).
+\item \emph{Full state-dependent law.} $\Sigma = A\Sigma A + 2hI +
+h^2t^2(C + c\sum_i(H_i - H)\Sigma(H_i - H))$, needing a contraction
+hypothesis on the whole operator, not just on $A$.
+\item \emph{Monotonicity.} $N_1 \preceq N_2$ implies $\Sigma(N_1) \preceq
+\Sigma(N_2)$, hence $\Sigma_{\mathrm{mb}} \succeq \Sigma_{\mathrm{ULA}}$;
+cheap from the entry formula.
+\item \emph{Operator-norm wrapper.} $\|I - hP\|_2 < 1$ on
+\code{EuclideanSpace} equivalent to the eigenvalue-wise hypothesis.
+\item \emph{Discharging the Gibbs hypotheses.} Derive the integrability
+and Fubini package of (G) from $P$ positive definite, so that
+\code{localised\_gaussian\_K\_expectation} takes \code{hP : P.PosDef}
+alone.
+\item \emph{One-loop coefficient and Rosenbrock.} The $t^{-2}$ covariance
+correction of experiment E7 and the $d = 2$ Rosenbrock closed forms of
+E5, both from the direction, both untouched.
+\item \emph{Paper tags.} Proposed \code{\textbackslash leanref} markers
+for \code{eq:ula}, \code{eq:mblaw} and \code{eq:llc} of the note are
+staged in \code{learning-theory/projects/sanity/staging/}; landing them
+in the Overleaf clone is a separate step.
+\end{itemize}
+
+\section*{Acknowledgements}
+
+GPT-6 Astra fixed the spectral route, removed the commutation hypothesis
+from the minibatch formula, supplied the finite-time identity in its
+general form, and flagged the sup-norm trap. The seabed's Gaussian
+integration by parts is the multivariate laplace work of May 2026.
+
+\end{document}
