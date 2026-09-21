@@ -1628,6 +1628,33 @@ matrix version is `whiteningOf`.
   `.congr' (eventually_atTop.mpr ⟨1, fun N hN => (heq N (by omega)).symm⟩)`.
 - `ulaChain` needs `[DecidableEq ι]`; a section that mentions it without the instance fails with "failed to synthesize DecidableEq ι".
 
+### Reversibility of the MH kernel (tide `mh-reversible`)
+
+- Rectangle masses of `π ⊗ K`: restrict the outer integral (`∫⁻ x in A, …`) and reuse the invariance proof verbatim — `lintegral_add_left`,
+  the `e1` rewrite of `π(x)·(∫⁻_B w)/Z` into `Z⁻¹ ∫⁻_B flux`, `lintegral_const_mul' _ _ hZinv` — all work on `μ.restrict A` unchanged; the
+  Dirac part becomes `lintegral_indicator hB` then `Measure.restrict_restrict hB : (μ.restrict A).restrict B = μ.restrict (B ∩ A)` and
+  `Set.inter_comm`.
+- Tonelli on restricted measures: `lintegral_lintegral_swap` takes `⦃f⦄` strict-implicit and `[SFinite μ]`; inside `rw` the measures stay
+  metavariables and the instance search gets stuck (`SFinite ?m`). State the swapped equation as a typed `have` and supply
+  `(μ := μ.restrict A) (ν := μ.restrict B)` **and** `hFm.aemeasurable (μ := (μ.restrict A).prod (μ.restrict B))`, then `rw [hswap]`.
+- `K(x, univ) = 1`: `simp only [mhKernelSet, Measure.restrict_univ, Set.indicator_univ]` then
+  `exact add_tsub_cancel_of_le (mhAcceptMass_le_one hq hZ hZ0 hZtop x)` (the unfolded integral is defeq to `mhAcceptMass`).
+- Restriction through a density: `restrict_withDensity hA : (μ.withDensity f).restrict A = (μ.restrict A).withDensity f` lives in the
+  `MeasureTheory` namespace, not `Measure`.
+- The step-size hypothesis `0 < h` is not needed for the MALA/pMALA reversibility instances (only for their Markov/probability statements):
+  drop it or the linter flags it.
+### Positive semidefiniteness and section instances (tide `batch-size-rule`)
+
+- `Matrix.PosSemidef` and `posSemidef_sum`, `PosSemidef.smul`, `posSemidef_vecMulVec_self_star` need only `[Finite ι]` (the `Fintype`
+  block in `PosDef.lean` starts later); `trace_nonneg` and anything with `Matrix.trace` need `[Fintype ι]`; `minibatchCov`/`ulaCov` need
+  `[DecidableEq ι]` too. Put the three groups in three sections, or the `unusedFintypeInType`/`unusedDecidableInType` linters fire.
+- A real outer product is PSD via `posSemidef_vecMulVec_self_star v` and `simpa` (`star v = v`). `PosSemidef.smul` takes the explicit
+  `0 ≤ c`; prove `0 ≤ 1 − (m : ℝ)/n` with `rw [sub_nonneg, div_le_one hn']; exact_mod_cast hmn`, and `0 ≤ (n : ℝ) − 1` from `2 ≤ n` by
+  `exact_mod_cast` + `linarith` before `positivity`.
+- Rewriting two-sided bounds into another parametrisation: prove each side's algebraic identity as `e : A = B := by field_simp` (with the
+  nonzero facts in context; no `ring` needed) and finish with `⟨e1 ▸ hlo, e2 ▸ hhi⟩`.
+- Dropping a factor `0 ≤ 1 − m/n ≤ 1` from a bound: `div_le_div_of_nonneg_right _ (by positivity)` and `nlinarith
+  [mul_le_mul_of_nonneg_left hfpc hK0]`; then clear denominators on both the hypothesis and the goal with `div_le_iff₀` and `nlinarith`.
 ### Weighted Chebyshev and re-weighted averages (tide `llc-sensitivity`)
 
 - The weighted Chebyshev identity `∑ᵢⱼ vᵢvⱼ(rᵢ − rⱼ)(fᵢ − fⱼ) = 2((∑ v r f)(∑ v) − (∑ v r)(∑ v f))`: expand the summand by a
