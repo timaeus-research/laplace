@@ -317,4 +317,6 @@ import Laplace.Sampler.AutocorrelationTime
 import Laplace.Sampler.MetropolisReversible
 import Laplace.Sampler.BatchSizeRule
 import Laplace.Sampler.LLCSensitivity
+import Laplace.Sampler.FrobeniusFree
+import Laplace.Sampler.FrobeniusBridge
 import Laplace.Sampler.BurnInEnvelope

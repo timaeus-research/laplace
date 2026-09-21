@@ -1772,6 +1772,37 @@ matrix version is `whiteningOf`.
 - Frobenius norms do not obey the same comparison: a `1/p²`-weighted RMS is bounded by Chebyshev only by the uniform RMS, not the uniform
   mean (GPT counterexample `p = (1, 1.1)`, `h = 1.8`). Keep Frobenius claims out of trace theorems.
 
+### Cauchy–Schwarz envelopes and abbreviations under binders (tide `frobenius-free`)
+
+- `set a := fun i => … with ha` does **not** abbreviate occurrences under a `∑ i, …` binder (the summand `a i` mentions the bound variable, so
+  `set` cannot abstract it); a subsequent `simp_rw [hterm]` written in terms of `a i` then "makes no progress", and the elaborator can emit a
+  spurious "function expected" error. Write the per-term identity with the explicit expressions, and pass the abbreviation only as the
+  argument of the abstract lemma (`sum_sum_ite_mul_le (fun i => …) (fun i j => …) …`); `calc`/`le_trans` match up to β.
+- `sq_sum_le_card_mul_sum_sq (s := univ) (f := a) : (∑ a)² ≤ #univ * ∑ a²`, then `Finset.card_univ`; the double sum
+  `∑ᵢⱼ (τ aᵢaⱼ + τ·[i=j] aᵢaⱼ)` collapses with a per-row `have` (`Finset.sum_add_distrib, ← Finset.mul_sum ×3, Finset.sum_ite_eq`) and
+  `← Finset.sum_mul, sq` for `(∑ a)²`.
+- `add_le_add_left h c : c + a ≤ c + b`?? No — in this Mathlib `add_le_add_left h a : b + a ≤ c + a` adds on the *right* and
+  `add_le_add_right h a : a + b ≤ a + c` adds on the *left*; when the goal has the changing summand first, use `add_le_add_left`.
+- `√(X / Y) = √X / √Y` is `Real.sqrt_div (hx : 0 ≤ X) Y`; the nonnegativity of an integral of a sum of squares is
+  `integral_nonneg fun ω => Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => sq_nonneg _`.
+### Conjugating pooled estimators and Frobenius sums (tide `frobenius-bridge`)
+
+- The outer-product identity `vecMulVec (Uᵀ *ᵥ x) (Uᵀ *ᵥ x) = Uᵀ * vecMulVec x x * U`: `ext i j; simp only [vecMulVec_apply, mulVec,
+  dotProduct, Matrix.mul_apply, transpose_apply]; rw [Finset.sum_mul_sum, Finset.sum_comm]`, then `Finset.sum_mul` and `ring` per term.
+  Use it, not a bare four-index sum shuffle, to conjugate a pooled second-moment matrix: define the raw estimator as a matrix
+  (`(1/(CN)) • ∑ ∑ vecMulVec x x`) and push the conjugation through with `Matrix.mul_smul, Matrix.smul_mul, Matrix.mul_sum, Matrix.sum_mul`,
+  reading entries with `Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul`.
+- `EuclideanSpace` vectors are `WithLp 2 (ι → ℝ)`: the coordinate function is `v.ofLp`, and `⟨orthoCol hQ i, v⟩ = ((orthoOf hQ)ᵀ *ᵥ v.ofLp) i`
+  after `EuclideanSpace.inner_eq_star_dotProduct, star_trivial`, `orthoCol, WithLp.ofLp_toLp, mulVec, dotProduct, transpose_apply` and a
+  per-term `ring`.
+- Orthogonal invariance of `∑ᵢⱼ Aᵢⱼ²`: go through `tr(AᵀA)` (`sum_mul_apply_eq_trace` with `sq`), reassociate the transposes
+  (`transpose_mul, transpose_transpose`, `simp only [Matrix.mul_assoc]`, insert `U * Uᵀ = 1`), then `Matrix.trace_mul_cycle`. Only `U Uᵀ = 1`
+  is needed; to use it with `U` and `Uᵀ` swapped, apply to `Uᵀ` and rewrite `transpose_transpose`.
+- `pooledSecondMoment` needs no `Fintype`/`DecidableEq`/`MeasurableSpace`; `orthoCol`/`orthoOf` need `DecidableEq`; a lemma with no `P` in
+  its statement must `omit [IsProbabilityMeasure P]`, one with no measure at all `omit [MeasurableSpace Ω]`.
+- Integrability of raw entries: express them as finite linear combinations of the eigen entries (`pooledRaw_apply_eq_sum`) and use
+  `integrable_finsetSum`/`.const_mul`/`.mul_const`; then `integral_finsetSum`, `integral_mul_const`, `integral_const_mul` commute the
+  expectation. Never try to prove `L⁴` of the raw coordinates directly.
 ### Spectrum-free envelopes and monotone factors (tide `burnin-envelope`)
 
 - A per-direction term that is a product of monotone factors (here `2ρ^{2b}/(1−ρ)·(ρ/(1+ρ))²`): prove the factorisation as an equation
