@@ -45,3 +45,15 @@ Saved verbatim in `tide-log/gpt_frobenius_bridge_v1.md`. Summary: A–D correct;
 - GPT-6 Astra: A+B+C+D
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Commit `2623d37` on `tide/frobenius-bridge`; `lake build` clean (9007 jobs), `scripts/sorries` 0/0/0/0.
+`Laplace/Sampler/FrobeniusBridge.lean` (280 lines): `sum_sq_eq_trace`, `sum_sq_conj`, `sum_sq_diagonal`, `frobenius_inv`,
+`frobenius_ulaCov`, `vecMulVec_transpose_mulVec`, `inner_orthoCol_eq_mulVec`, `pooledRaw` (+`_apply`), `pooledEig_eq_conj`,
+`pooledRaw_eq_conj`, `memLp_four_inner_ulaChain_Q`, `pooledRaw_apply_eq_sum`, `integrable_pooledRaw_apply`, `integral_pooledRaw_apply`,
+`frobenius_error_raw_eq_eig`, `frobenius_ula_le_raw`.
+
+Surprises: the whole bridge is one outer-product identity (`vecMulVec (Uᵀx)(Uᵀx) = Uᵀ (x xᵀ) U`) pushed through the pooled sum; the
+integrability of the raw entries is best obtained as finite linear combinations of the eigen entries rather than from `L⁴` of the raw
+coordinates. `sum_sq_conj` needs only `U Uᵀ = 1`.
