@@ -9,7 +9,7 @@ import Laplace.Gibbs
 /-!
 # The virial identity and the effective degree
 
-Proposition 13.3 of the working note *Patterning flow* and the ULA remark that follows it.
+Proposition 12.4 of the working note *Patterning flow* and the ULA remark that follows it.
 
 * `ula_virial_trace`: for any `X` with `(P - (h/2) P²) X = 1` (in particular the ULA law
   `ulaCov P h`), `tr(P X) = d + (h/2) tr(P² X)`. For the Gaussian potential `U = ½ δᵀ P δ`

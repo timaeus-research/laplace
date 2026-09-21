@@ -8,7 +8,7 @@ import Mathlib
 /-!
 # The degenerate 4-gon of the toy model of superposition
 
-The algebra of Proposition 12.1 (ii)–(iv) of the working note *Patterning flow*, in the
+The algebra of Proposition 11.1 (ii)–(iv) of the working note *Patterning flow*, in the
 population model with single-feature inputs: five columns `W : Fin 5 → Fin 2 → ℝ`, per-feature
 losses `ℓ_i(W) = ⅓[(1 - |W_i|²)² + ∑_{j≠i} [W_j·W_i]_+²]`, weighted loss `L_h = ∑ h_i ℓ_i`,
 and the 4-gon `W_0 = (1,0), W_1 = (0,1), W_2 = (-1,0), W_3 = (0,-1), W_4 = 0`.

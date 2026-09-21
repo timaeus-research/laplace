@@ -8,7 +8,7 @@ import Laplace.Sampler.Lyapunov
 /-!
 # SGD fluctuations measure sharpness
 
-The algebra of Proposition 13.2 of the working note *Patterning flow*. For the
+The algebra of Proposition 12.2 of the working note *Patterning flow*. For the
 Ornstein–Uhlenbeck model of SGD near a minimiser, the stationary covariance `Σ` solves the
 continuous Lyapunov equation `H Σ + Σ H = (η/B) C`; taking the trace gives the stationary
 excess loss `E[K] = ½ tr(H Σ) = (η/4B) tr C`. When `C = c H` the isotropic matrix

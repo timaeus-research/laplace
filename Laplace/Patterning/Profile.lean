@@ -8,7 +8,7 @@ import Laplace.Sampler.ULA
 /-!
 # The short-chain profile of a Gaussian target
 
-Section 13 of the working note *Patterning flow*: the exact finite-chain form of the
+Section 12 of the working note *Patterning flow*: the exact finite-chain form of the
 estimator `λ̂(k) = nβ (E[L(w_k)] - L*)` under unadjusted Langevin dynamics on a Gaussian
 target, and its three readings (slope, plateau, spectrum).
 
@@ -22,7 +22,7 @@ The chain is `x_{k+1} = (1 - (ε/2) Q) x_k + √ε ξ_k` with `Q = nβ H + γ`, 
 * `profile_one`: **the first step is the sharpness**, `λ̂(1) = ½ nβ tr(H) ε`.
 * `profile_tendsto`: **the plateau**, `λ̂(k) → ½ ∑ nβλ_i / (q_i (1 - εq_i/4))`.
 * `plateau_tendsto_effdim`: **the small-step count**, the plateau tends to
-  `½ ∑ λ_i / (λ_i + ρ)` as `ε → 0`, with `ρ = γ/nβ` (Proposition 13.1).
+  `½ ∑ λ_i / (λ_i + ρ)` as `ε → 0`, with `ρ = γ/nβ` (Proposition 12.1).
 * `ula_iterate_zero`: the finite-chain matrix identity
   `S_{ε,k} = S_ε (1 - (1 - (ε/2) Q)^{2k})` (Proposition 3.2).
 * `trace_mul_ulaCov_spectral` / `trace_mul_inv_spectral`: the plateau and the effective
@@ -124,7 +124,7 @@ theorem profile_tendsto (t γ ε : ℝ) (lam : ι → ℝ)
   exact (modeVar_tendsto _ _ (hstab i).1 (hstab i).2).const_mul _
 
 /-- **The small-step count is the effective dimension.** As `ε → 0` the plateau tends to
-`½ ∑ λ_i / (λ_i + ρ)`, `ρ = γ/nβ` (Proposition 13.1). -/
+`½ ∑ λ_i / (λ_i + ρ)`, `ρ = γ/nβ` (Proposition 12.1). -/
 theorem plateau_tendsto_effdim (t γ : ℝ) (lam : ι → ℝ) (ht : 0 < t)
     (hq : ∀ i, t * lam i + γ ≠ 0) :
     Tendsto (fun ε => plateau t γ ε lam) (𝓝 0) (𝓝 ((1 / 2) * ∑ i, lam i / (lam i + γ / t))) := by
@@ -209,7 +209,7 @@ theorem spectral_add_smul_one (U : Matrix ι ι ℝ) (a : ι → ℝ) (ρ : ℝ)
   rw [hone, ← Matrix.add_mul, ← Matrix.mul_add, Matrix.diagonal_add]
 
 /-- **The effective dimension as a trace.** For `H = U diag(λ) Uᵀ` and `λ_i + ρ ≠ 0`,
-`tr(H (H + ρ)⁻¹) = ∑ λ_i / (λ_i + ρ)`; halved, this is `λ̂_∞` of Proposition 13.1. -/
+`tr(H (H + ρ)⁻¹) = ∑ λ_i / (λ_i + ρ)`; halved, this is `λ̂_∞` of Proposition 12.1. -/
 theorem trace_mul_inv_spectral (U : Matrix ι ι ℝ) (lam : ι → ℝ) (ρ : ℝ)
     (hU : Uᵀ * U = 1) (hU' : U * Uᵀ = 1) (hρ : ∀ i, lam i + ρ ≠ 0) :
     ((U * diagonal lam * Uᵀ) * (U * diagonal lam * Uᵀ + ρ • (1 : Matrix ι ι ℝ))⁻¹).trace
