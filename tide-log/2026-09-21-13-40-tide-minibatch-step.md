@@ -60,3 +60,19 @@ centred subspace is invariant, which is why second moments close. Uniqueness of 
 - GPT-6 Astra: candidate A (same)
 
 Agreed.
+
+## Result
+
+Committed as `Laplace/Sampler/MinibatchStep.lean` (f582f62), 521 lines, 0 sorries, `lean-state check` clean.
+
+Theorems: Gaussian step `stdExp`, `stdExp_const`, `stdExp_coord`, `stdExp_coord_mul`, `stdExp_affine`, `stdExp_affine_mul`,
+`stdExpVec`, `stdExpMat`, `stdExpVec_affine`, `stdExpMat_affine`; batch averages `batchAvg`, `batchAvg_const`, `batchAvg_add`,
+`batchAvg_sub`, `batchAvg_smul`, `batchAvg_batchMean` (unbiasedness), `batchAvg_batchMean_sub`; the step `minibatchGrad`, `sgldStep`,
+`popMean_affine`, `ulaStep_mulVec`, `sgld_mean_step`, `residual_eq`, `vecMulVec_mulVec_mulVec`, `sgld_second_moment_step`;
+law form `mul_mul_transpose_apply`, `vecMulVec_mulVec_left_apply`, `vecMulVec_mulVec_right_apply`, `vecMulVec_residual`, the entry
+integrability/integral lemmas, `sgld_law_step` (joint mean/second-moment form), `sgld_law_step_centred`, `sgld_step_law_centred`
+(`= e8FullStep`).
+
+Surprises: the single-family trick made the second-moment step a one-line use of `fpc_bilinear`; the only friction was `abel` versus
+`module` for smul-distributed expansions and the usual lambda-typed integrability facts for `integral_add`. With this the E8 arc is
+closed at the level of the recursion: the note's full law with its constants is the exact stationary equation on linear regression.
