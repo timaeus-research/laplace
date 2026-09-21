@@ -7,6 +7,7 @@ import Laplace.Multi.MomentDeterminacy
 import Laplace.Multi.QuadMoments
 import Laplace.Multi.RateCalculus
 import Laplace.Multi.Dilation
+import Laplace.Multi.GaussianStein
 
 /-!
 # The Morse–Bott normal form: exact identification of the transverse Hessian field
@@ -455,5 +456,120 @@ theorem neg_log_integral_mbWeight {H : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
   rw [integral_mbWeight h ht, Real.log_mul (pow_ne_zero _ (inv_ne_zero (Real.sqrt_pos.mpr ht).ne'))
     (integral_cutoff_mul_mbDensity_pos h hy₀).ne', Real.log_pow, Real.log_inv, Real.log_sqrt ht.le]
   ring
+
+/-! ### The energy observable: `t E_t[L] = r/2` exactly -/
+
+/-- `∫ q e^{-t q/2} dx = t^{-r/2} t⁻¹ ∫ q K_H`. -/
+theorem integral_qform_mul_exp_neg_mul_qform (H : Matrix (Fin r) (Fin r) ℝ) {t : ℝ}
+    (ht : 0 < t) :
+    ∫ x : EuclidD r, qform H x * Real.exp (-(t * (qform H x / 2))) =
+      (Real.sqrt t)⁻¹ ^ r * t⁻¹ * ∫ x : EuclidD r, qform H x * quadKernel H x := by
+  have hst : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+  have hs : 0 < (Real.sqrt t)⁻¹ := inv_pos.mpr hst
+  have h := integral_dilation (d := r)
+    (fun x ↦ qform H x * quadKernel H ((Real.sqrt t • x : EuclidD r))) hs
+  simp only [exp_neg_mul_qform_eq H ht]
+  rw [h]
+  have hsq : (Real.sqrt t)⁻¹ * (Real.sqrt t)⁻¹ = t⁻¹ := by
+    rw [← mul_inv, Real.mul_self_sqrt ht.le]
+  rw [mul_assoc]
+  congr 1
+  rw [← hsq, ← integral_const_mul]
+  refine integral_congr_ae (Filter.Eventually.of_forall fun x ↦ ?_)
+  simp only
+  rw [qform_smul, smul_smul, mul_inv_cancel₀ hst.ne', one_smul]
+  ring
+
+/-- `s e^{-a s} ≤ 1/(a e)` for `s ≥ 0`, `a > 0`. -/
+theorem mul_exp_neg_le {a s : ℝ} (ha : 0 < a) (_hs : 0 ≤ s) :
+    s * Real.exp (-(a * s)) ≤ (a * Real.exp 1)⁻¹ := by
+  have h := Real.add_one_le_exp (a * s - 1)
+  rw [sub_add_cancel, Real.exp_sub] at h
+  have he : 0 < Real.exp 1 := Real.exp_pos 1
+  have hpos : 0 < Real.exp (a * s) := Real.exp_pos _
+  rw [le_div_iff₀ he] at h
+  rw [Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ hpos,
+    show (a * Real.exp 1)⁻¹ * Real.exp (a * s) = Real.exp (a * s) / (a * Real.exp 1) by ring,
+    le_div_iff₀ (by positivity)]
+  nlinarith [h]
+
+/-- The energy integrand `L χ e^{-tL}` is integrable (bounded by `χ(y) (2/(te)) e^{-tc|x|²/4}`). -/
+theorem integrable_mbLoss_mul_mbWeight {H : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
+    {χ : EuclidD n → ℝ} {c : ℝ} (h : MBData H χ c) {t : ℝ} (ht : 0 < t) :
+    Integrable fun z : EuclidD r × EuclidD n ↦ mbLoss H z * mbWeight H χ t z := by
+  have hc := h.c_pos
+  have hprod : Integrable (fun z : EuclidD r × EuclidD n ↦
+      ((t / 4 * Real.exp 1)⁻¹ * Real.exp (-(t * c / 4) * ‖z.1‖ ^ 2)) * |χ z.2|) := by
+    rw [Measure.volume_eq_prod]
+    exact ((integrable_exp_neg_mul_sq_norm (by positivity)).const_mul _).mul_prod
+      (h.χ_cont.integrable_of_hasCompactSupport h.χ_supp).abs
+  refine hprod.mono' ?_ (Filter.Eventually.of_forall fun z ↦ ?_)
+  · unfold mbWeight mbLoss
+    exact (((continuous_qform_param h.cont).div_const 2).mul
+      ((h.χ_cont.comp continuous_snd).mul (Real.continuous_exp.comp
+        ((continuous_const.mul ((continuous_qform_param h.cont).div_const 2)).neg))))
+      |>.aestronglyMeasurable
+  · unfold mbWeight mbLoss
+    rw [Real.norm_eq_abs]
+    set q := qform (H z.2) z.1 with hq
+    have hq0 : 0 ≤ q := (mul_nonneg hc.le (sq_nonneg _)).trans (h.ellip z.2 z.1)
+    have hsplit : Real.exp (-(t * (q / 2))) =
+        Real.exp (-(t / 4 * q)) * Real.exp (-(t / 4 * q)) := by
+      rw [← Real.exp_add]
+      congr 1
+      ring
+    have h1 : q / 2 * Real.exp (-(t / 4 * q)) ≤ (t / 4 * Real.exp 1)⁻¹ := by
+      have := mul_exp_neg_le (a := t / 4) (by positivity) hq0
+      have hhalf : q / 2 ≤ q := by linarith
+      calc q / 2 * Real.exp (-(t / 4 * q)) ≤ q * Real.exp (-(t / 4 * q)) :=
+            mul_le_mul_of_nonneg_right hhalf (Real.exp_pos _).le
+        _ ≤ (t / 4 * Real.exp 1)⁻¹ := this
+    have h2 : Real.exp (-(t / 4 * q)) ≤ Real.exp (-(t * c / 4) * ‖z.1‖ ^ 2) := by
+      apply Real.exp_le_exp.mpr
+      have := h.ellip z.2 z.1
+      rw [← hq] at this
+      nlinarith
+    calc |q / 2 * (χ z.2 * Real.exp (-(t * (q / 2))))|
+        = q / 2 * Real.exp (-(t / 4 * q)) * Real.exp (-(t / 4 * q)) * |χ z.2| := by
+          have hq2 : (0 : ℝ) ≤ q / 2 := by positivity
+          rw [hsplit]
+          simp only [abs_mul, Real.abs_exp, abs_of_nonneg hq2]
+          ring
+      _ ≤ (t / 4 * Real.exp 1)⁻¹ * Real.exp (-(t * c / 4) * ‖z.1‖ ^ 2) * |χ z.2| := by
+          gcongr
+      _ = (t / 4 * Real.exp 1)⁻¹ * Real.exp (-(t * c / 4) * ‖z.1‖ ^ 2) * |χ z.2| := rfl
+
+/-- **The energy observable sees the learning coefficient**: `t E_t[L] = r/2` exactly, for every
+`t > 0`, whatever the Hessian field `H(y)` (it is the mean of a chi-square with `r` degrees of
+freedom divided by `2t`). -/
+theorem mul_mbExp_mbLoss {H : EuclidD n → Matrix (Fin r) (Fin r) ℝ} {χ : EuclidD n → ℝ}
+    {c : ℝ} (h : MBData H χ c) {t : ℝ} (ht : 0 < t) {y₀ : EuclidD n} (hy₀ : χ y₀ ≠ 0) :
+    t * mbExp H χ t (mbLoss H) = (r : ℝ) / 2 := by
+  unfold mbExp
+  have hi := integrable_mbLoss_mul_mbWeight h ht
+  rw [Measure.volume_eq_prod] at hi
+  have hnum : (∫ z : EuclidD r × EuclidD n, mbLoss H z * mbWeight H χ t z) =
+      (Real.sqrt t)⁻¹ ^ r * t⁻¹ * ((r : ℝ) / 2) * ∫ y, χ y * mbDensity H y := by
+    rw [Measure.volume_eq_prod, integral_prod_symm _ hi]
+    simp only [mbWeight, mbLoss]
+    rw [← integral_const_mul]
+    refine integral_congr_ae (Filter.Eventually.of_forall fun y ↦ ?_)
+    simp only
+    have hinner : (∫ x : EuclidD r, qform (H y) x / 2 *
+        (χ y * Real.exp (-(t * (qform (H y) x / 2))))) =
+        χ y / 2 * ∫ x : EuclidD r, qform (H y) x * Real.exp (-(t * (qform (H y) x / 2))) := by
+      rw [← integral_const_mul]
+      refine integral_congr_ae (Filter.Eventually.of_forall fun x ↦ ?_)
+      ring
+    rw [hinner, integral_qform_mul_exp_neg_mul_qform _ ht,
+      integral_qform_mul_quadKernel (h.posDef y)]
+    unfold mbDensity
+    ring
+  rw [hnum, integral_mbWeight h ht]
+  have hA : (∫ y, χ y * mbDensity H y) ≠ 0 := (integral_cutoff_mul_mbDensity_pos h hy₀).ne'
+  have hs : (Real.sqrt t)⁻¹ ^ r ≠ 0 := by
+    have : 0 < Real.sqrt t := Real.sqrt_pos.mpr ht
+    positivity
+  field_simp
 
 end Laplace.Multi
