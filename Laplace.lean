@@ -267,3 +267,4 @@ import Laplace.Multi.CovKClosedForm
 import Laplace.Sampler.MinibatchStep
 import Laplace.Sampler.DirectionClosures
 import Laplace.Sampler.EstimatorVariance
+import Laplace.Sampler.Metropolis

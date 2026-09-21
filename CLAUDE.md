@@ -1332,3 +1332,29 @@ matrix version is `whiteningOf`.
   `memLp_id_gaussianReal' 4` + `memLp_map_measure_iff`. State `integral_map`/`memLp_map_measure_iff` with the map in the lambda form
   `fun ω => innerSL ℝ u (ξ ω)` (a `Measurable.comp` term has type `Measurable (f ∘ g)` and its `∘` will not match the goal).
 - `Qᵀ` in a statement needs `open Matrix`; a parse error "unexpected token 'ᵀ'" is the symptom.
+
+### Metropolis–Hastings in `lintegral` form (tide `mala-invariance`)
+
+- State MH invariance with unnormalised densities and `lintegral` of `ENNReal.ofReal`: no integrability side conditions, Tonelli is
+  `lintegral_lintegral_swap (hf : AEMeasurable (uncurry f) (μ.prod ν))` (take `ν := μ.restrict E` for the set integral), and constants
+  move with `lintegral_const_mul' _ _ (h : r ≠ ∞)` (no measurability needed; `ENNReal.ofReal_ne_top`, `ENNReal.inv_ne_top.mpr hZ0`).
+- Prove the flux identity over `ℝ` first: `π x * q x y * min 1 (π y * q y x / (π x * q x y)) = min (π x * q x y) (π y * q y x)` is
+  `mul_min_of_nonneg _ _ hpos.le, mul_one, mul_div_cancel₀ _ hpos.ne'`; then transport through `ENNReal.ofReal_mul (hπ x).le`. The
+  symmetric flux `mhFlux` is what gets swapped, never the acceptance probability.
+- ENNReal subtraction `1 - a x` is safe once `a x ≤ 1` (`ENNReal.div_le_iff hZ0 hZtop` + `lintegral_mono`); finish with
+  `add_tsub_cancel_of_le`. Indicators: `Set.indicator_of_mem hx`/`Set.indicator_of_notMem hx` after `by_cases` (`Set.indicator_apply`
+  needs a `Decidable` instance and `simp only` may refuse it); `lintegral_indicator hE` turns `∫⁻ indicator` into `∫⁻ x in E`.
+- Measurability of `x ↦ ∫⁻ y, f x y ∂ν` is `Measurable.lintegral_prod_right (hf : Measurable (uncurry f))`; for `min`/`div` use
+  `Measurable.min`, `Measurable.div`, with `hqm.comp measurable_swap` for `q y x`. Give the measurability facts their function
+  form by a typed `have` — a `.comp`/`.div_const` term carries `∘` and will not match `lintegral_withDensity_eq_lintegral_mul`.
+- A numeral matrix must be pinned when nothing else fixes the index type: `propZ ((1 / (4 * h)) • (1 : Matrix ι ι ℝ))` — otherwise
+  "typeclass instance problem is stuck: OfNat (Matrix ?n ?n ℝ) 1". Likewise `(Matrix.PosDef.one : (1 : Matrix ι ι ℝ).PosDef).smul`.
+- `c • M *ᵥ v` parses as `c • (M *ᵥ v)`; write `(c • M) *ᵥ v` explicitly when the term comes from a matrix identity such as
+  `G = -(h/4) • (P * P)`, or `smul_mulVec` will not fire.
+- Gaussian normalisations: row integrals of `exp(-(y - A x)ᵀ S (y - A x))` are all `∫ exp(-yᵀ S y)` by
+  `lintegral_sub_right_eq_self (fun z => …) (A *ᵥ x)` (Lebesgue on `ι → ℝ` is add-invariant); positivity via
+  `lintegral_pos_iff_support` + `isOpen_univ.measure_pos`; finiteness via the seabed's `integrable_gaussianWeight_matCLM` and
+  `Integrable.lintegral_lt_top`, after rewriting `exp(-yᵀ S y) = gaussianWeight (matCLM (2 • S)) y` (`quadForm_matCLM`).
+- The transpose/drift bookkeeping `(v - A u)ᵀ S (v - A u) = vᵀSv - 2 vᵀ(SA)u + uᵀ(AᵀSA)u` is `mulVec_sub, dotProduct_sub,
+  sub_dotProduct` plus the three helpers (`dotProduct_mulVec_symm hS`, `mulVec_mulVec`, and `← vecMul_transpose A u,
+  ← dotProduct_mulVec, mulVec_mulVec, ← Matrix.mul_assoc` for `(Au)ᵀ S (Au)`).
