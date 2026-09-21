@@ -61,3 +61,17 @@ algebra lemma; 400 lines is optimistic. Addition: the remainder bound `0 <= Delt
 - GPT-6 Astra: A+B+C
 
 Agreed.
+
+## Result
+
+Committed as `fddec7e` on `tide/llc-closures` (`Laplace/Sampler/LLCClosures.lean`, 474 lines; full `lake build` and `scripts/sorries` clean:
+0 sorry, 0 axiom, 0 native_decide).
+
+Theorems: `minibatchCov`, `trace_mul_minibatchCov`, `minibatch_llc`, `minibatch_llc_sub_ula_llc`, `conj_diag_nonneg`, `sum_conj_diag`,
+`minibatch_inflation_bounds`, `minibatch_inflation_remainder`, `minibatch_inflation_normalised`; `dotProduct_mulVec_eq_sum_eigen`,
+`inner_euclid_eq_sum_eigen`, `inner_euclid_smul`, `half_inner_euclid_eq_sum_eigen`, `sum_pow_two_mul_le'`; `memLp_inner_ulaChain`,
+`integrable_inner_ulaChain_sq`, `integral_inner_ulaChain_sq`, `integral_llc_ulaChain`, `integral_llc_running_mean`,
+`llc_running_mean_shortfall`; `two_div_eq_twenty_kappa`, `expected_pooled_sample_variance_ula_shortfall_kappa`.
+
+Surprises: none mathematical; the friction was all `field_simp` normal forms (it commutes products and clears the inner `/2`, so the
+`≠ 0` facts must be supplied as `2 - p * h ≠ 0`), and the motive error when rewriting `P` by `spectral_real hP` while `hP` is in the goal.
