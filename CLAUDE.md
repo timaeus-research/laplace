@@ -301,6 +301,24 @@ A deterministic projection lemma (`inner_vecChain_eq_realChain`, by induction wi
 keeps all probability out of the AR(1) identification; columns of `orthoOf hQ` are unit eigenvectors by entrywise algebra from
 `Q * U = U * diagonal p` (`mul_apply`, `mul_diagonal`) and `Uᵀ U = 1` (`one_apply_eq`), packaged with `WithLp.toLp 2`.
 
+### Gaussian integrals on `ι → ℝ` by linear change of variables (Multi/GaussianMomentsPosDef)
+
+Lebesgue measure under a matrix: `Real.map_linearMap_volume_pi_eq_smul_volume_pi (f := Matrix.toLin' M) (h : LinearMap.det f ≠ 0)
+: map f volume = ENNReal.ofReal |det f|⁻¹ • volume` with `LinearMap.det_toLin'`, `abs_inv`; hence the substitution
+`∫ g = |det M| * ∫ g (M *ᵥ ·)` (`integral_map`, `integral_smul_measure`, `ENNReal.toReal_ofReal`) and
+`Integrable (g ∘ M) ↔ Integrable g` (`integrable_map_measure`, `integrable_smul_measure`), both needing
+`AEStronglyMeasurable g` (continuity). Matrices act on `ι → ℝ` through `LinearMap.toContinuousLinearMap (Matrix.toLin' P)`
+(`matCLM`), `quadForm (matCLM P) u = u ⬝ᵥ P *ᵥ u`. Whitening `M = orthoOf hP * diagonal (√p)⁻¹`: `MᵀPM = 1`, `MMᵀ = P⁻¹`
+(`Matrix.inv_eq_right_inv`, `symm` first), `|det M| = (√det P)⁻¹` from `det (MᵀPM) = 1` via `Real.sqrt_sq_eq_abs`, `Real.sqrt_inv`.
+Product Gaussians: `Real.exp_sum` + `Finset.mul_sum` turn `exp(-½ Σ v_i²)` into `∏ exp(-v_i²/2)`; `integral_fintype_prod_volume_eq_prod
+(fun (i : ι) (x : ℝ) => …)` (pass `f` explicitly) and `Integrable.fintype_prod` after `rw [volume_pi]`; coordinates as products
+`v k * v l = ∏ i, (if i = k then v i else 1) * (if i = l then v i else 1)` (`Finset.prod_ite_eq'`), then split `k = l`
+(`Finset.prod_congr` + `split_ifs`, `Finset.prod_const`) / `k ≠ l` (`Finset.prod_eq_zero`); rewrite ifs under binders with
+`simpa [hkl]`, not `rw`. 1D inputs: `integral_gaussian (1/2)`, seabed `Laplace.OneD.integral_pow_mul_exp_neg_sq_half/odd`,
+`integrable_pow_mul_exp_neg_half_sq`. `Finset.sum_ite_eq` (unprimed) matches `if a = x`, primed matches `if x = a`.
+The seabed's `FubiniIBPHypothesis P i j` follows from the second moments: `∫ u_j (Pu)_i g = Σ_k P_ik ∫ u_k u_j g = Z (P P⁻¹)_ij`;
+apply the moment theorem with indices `k j` to land on `P⁻¹ k j`.
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,
