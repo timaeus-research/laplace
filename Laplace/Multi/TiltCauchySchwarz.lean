@@ -92,6 +92,7 @@ theorem TiltData.tiltExp_add {ν R : X → ℝ} {M : ℝ} (h : TiltData μ ν R 
   unfold tiltExp
   rw [h.tiltNum_add hf hg, add_div]
 
+omit [Nonempty X] in
 theorem tiltExp_const_mul (ν R : X → ℝ) (c : ℝ) (f : X → ℝ) (t u : ℝ) :
     tiltExp μ ν (fun x ↦ c * f x) R t u = c * tiltExp μ ν f R t u := by
   unfold tiltExp
