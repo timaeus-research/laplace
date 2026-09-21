@@ -110,6 +110,14 @@ the degenerate/separable tracks (`Laplace/Multi/Separable*.lean`,
 | [`Laplace/Multi/CovarianceSharp.lean`](Laplace/Multi/CovarianceSharp.lean) | Sharp-track `gibbsCov_first_order_rate_sharp` (`O(t^{-2})`) |
 | [`Laplace/Multi/CovarianceExplicit.lean`](Laplace/Multi/CovarianceExplicit.lean) | Explicit-coefficient `gibbsExpectation_first_order_rate_explicit` (`lem:laplace_exp`) and `gibbsCov_first_order_rate_explicit` (`lem:laplace_cov2`) |
 | [`Laplace/Multi/Defs.lean`](Laplace/Multi/Defs.lean) | Statement vocabulary of the multi-D track (Mathlib-only import closure; shared with [Statements.lean](Statements.lean)) |
+| [`Laplace/Multi/GaussianLLC.lean`](Laplace/Multi/GaussianLLC.lean) | Gaussian LLC identity: `⟨½ uᵀHu⟩ = ½ Σ H_ij (P⁻¹)_ij` under `exp(-½ uᵀ(tH + γ)u)`, `t⟨K⟩ = d/2` at `γ = 0` |
+
+### Sampler track (SGLD on a Gaussian target)
+
+| File | Role |
+|---|---|
+| [`Laplace/Sampler/Lyapunov.lean`](Laplace/Sampler/Lyapunov.lean) | Discrete Lyapunov equation `X = A X Aᵀ + N`: diagonal solver, transport by orthogonal diagonalisation (`orthoOf`, `spectral_real`), finite-time identity `X_k - S = A^k (X_0 - S) (Aᵀ)^k`, AR(1) variance |
+| [`Laplace/Sampler/ULA.lean`](Laplace/Sampler/ULA.lean) | ULA law `(P - (h/2)P²)⁻¹` (unique fixed point, positive definite, eigenbasis entries) and the minibatch entry formula `(2hδ_ij + h²t²C̃_ij)/(h(p_i+p_j) - h²p_ip_j)` for arbitrary `C` |
 
 ## Proof strategy
 
