@@ -1086,3 +1086,30 @@ matrix version is `whiteningOf`.
   `set_option linter.unusedFintypeInType false in`.
 - `continuous_gaussianWeight` (RescaledIntegrals) carries an unneeded `[DecidableEq ι]`;
   `unfold gaussianWeight quadForm; fun_prop` proves continuity without it.
+
+### Finite tensor contractions on `Fin d` (tide `oneloop-rosenbrock`)
+
+- Write contractions as `Matrix.of fun i j => ∑ k, ∑ l, …` over `Fin d`; concrete `Fin 2` instances
+  close by `ext i j; fin_cases i <;> fin_cases j <;> simp [defs, Fin.sum_univ_two] <;> field_simp <;> ring`.
+  Prove each contraction (`contractQ`, `bubble`, `tadpoleLine`) as its own lemma before assembling
+  `Π` and `SΠS`; a 4-fold sum inside a triple matrix product in one `simp` call is slow and opaque.
+- `simp` unfolds your definitions *before* trying your rewrite lemmas about them: in
+  `simp [tadpoleLine, contractT_rosenbrock …, rosenT, rosenSigma]` the `contractT_rosenbrock` rewrite
+  never fires because `rosenT`/`rosenSigma` were already unfolded. Do `simp only [tadpoleLine,
+  Matrix.of_apply, contractT_rosenbrock …]` first, then the unfolding `simp`.
+- On `Fin 1` matrices, `fin_cases` + `simp` leaves `vecHead (c • vecHead (c' • fun i j => …))`;
+  add `Matrix.vecHead, Pi.smul_apply, smul_eq_mul` to the simp set.
+- Nested vector notation `![![![…], …], …] : Fin 2 → Fin 2 → Fin 2 → ℝ` for a tensor works fine under
+  `Fin.sum_univ_two`; an `if i = 0 ∧ j = 0 ∧ … then c else 0` tensor also reduces.
+- 1D Taylor tensors as constant functions `fun _ _ _ => alpha`; `!![lam]⁻¹` via
+  `Matrix.inv_eq_right_inv` + `fin_cases` + `simp [Matrix.mul_apply]; field_simp`.
+- Squeeze idiom for a rate bound `∀ {t}, T ≤ t → |f t − c/t| ≤ K/(t√t)` to a limit of `t·(f t)`:
+  `filter_upwards [eventually_ge_atTop T, eventually_gt_atTop 0]`, `rw [mul_sub, mul_div_assoc',
+  mul_div_cancel_left₀ c ht.ne']`, `abs_mul`, `abs_of_pos`, then
+  `tendsto_iff_norm_sub_tendsto_zero.mpr (by simpa only [Real.norm_eq_abs] using squeeze_zero' … hev hk)`
+  with `hk : Tendsto (fun t => K / √t) atTop (𝓝 0)` from
+  `(tendsto_inv_atTop_zero.comp Real.tendsto_sqrt_atTop).const_mul K` and `simpa [div_eq_mul_inv]`.
+- `gibbsCov L t id id` unfolds to `gibbsExpectation (fun x => x * x)`; `simp only [gibbsCov, ← pow_two]`
+  matches the seabed's `fun x => x ^ 2` moments.
+- The linter `unnecessarySeqFocus` flags a trailing `<;> ring` when `simp` already closed all goals
+  but one; put `ring` on its own line.

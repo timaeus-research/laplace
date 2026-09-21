@@ -253,3 +253,4 @@ import Laplace.Sampler.GaussianQuadratic
 import Laplace.Sampler.ULAEigen
 import Laplace.Multi.GaussianMomentsPosDef
 import Laplace.Multi.GaussianWickPosDef
+import Laplace.Multi.OneLoop
