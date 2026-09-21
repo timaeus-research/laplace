@@ -335,18 +335,19 @@ theorem mbExp_transverse_second {H : EuclidD n → Matrix (Fin r) (Fin r) ℝ} {
 
 /-! ### Identification -/
 
-/-- **Exact identification of the transverse Hessian field at one temperature.** If two
-Morse–Bott normal forms have the same normalised expectations of all tangential monomials `yᵛ`
-and of all transverse second moments `xᵢ xₖ yᵛ` at a single temperature `t > 0`, then their
-Hessian fields agree wherever the cutoff is nonzero. -/
-theorem mb_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ} {χ : EuclidD n → ℝ}
-    {c₁ c₂ : ℝ} (h₁ : MBData H₁ χ c₁) (h₂ : MBData H₂ χ c₂) {t : ℝ} (ht : 0 < t)
+/-- **Identification from the density ratios.** If the normalised tangential densities
+`χ ρ_j / A_j` and second-moment densities `χ σ_j^{ik} / A_j` have the same monomial moments, the
+Hessian fields agree where `χ ≠ 0`. This is the common core of the exact (`mb_identification`) and
+the leading-order (`MorseBottLeading`) identification theorems. -/
+theorem mb_identification_of_ratios {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
+    {χ : EuclidD n → ℝ} {c₁ c₂ : ℝ} (h₁ : MBData H₁ χ c₁) (h₂ : MBData H₂ χ c₂)
     {y₀ : EuclidD n} (hy₀ : χ y₀ ≠ 0)
     (hT : ∀ (q : ℕ) (w : Fin q → Fin n),
-      mbExp H₁ χ t (fun z ↦ monomialTest w z.2) = mbExp H₂ χ t (fun z ↦ monomialTest w z.2))
+      (∫ y, monomialTest w y * (χ y * mbDensity H₁ y)) / ∫ y, χ y * mbDensity H₁ y =
+        (∫ y, monomialTest w y * (χ y * mbDensity H₂ y)) / ∫ y, χ y * mbDensity H₂ y)
     (hN : ∀ (i k : Fin r) (q : ℕ) (w : Fin q → Fin n),
-      mbExp H₁ χ t (fun z ↦ z.1 i * z.1 k * monomialTest w z.2) =
-        mbExp H₂ χ t (fun z ↦ z.1 i * z.1 k * monomialTest w z.2)) :
+      (∫ y, monomialTest w y * (χ y * mbSecond H₁ i k y)) / ∫ y, χ y * mbDensity H₁ y =
+        (∫ y, monomialTest w y * (χ y * mbSecond H₂ i k y)) / ∫ y, χ y * mbDensity H₂ y) :
     ∀ y, χ y ≠ 0 → H₁ y = H₂ y := by
   set A₁ := ∫ y, χ y * mbDensity H₁ y with hA₁
   set A₂ := ∫ y, χ y * mbDensity H₂ y with hA₂
@@ -359,8 +360,6 @@ theorem mb_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
         ((mbDensity_continuous h₂).div_const _))
     · exact h₁.χ_supp.mul_right
     · intro q w
-      have e₁ := mbExp_tangential h₁ ht hy₀ w
-      have e₂ := mbExp_tangential h₂ ht hy₀ w
       have hi₁ : Integrable fun y ↦ monomialTest w y * (χ y * mbDensity H₁ y) :=
         ((monomialTest_continuous w).mul (h₁.χ_cont.mul (mbDensity_continuous h₁)))
           |>.integrable_of_hasCompactSupport (h₁.χ_supp.mul_right.mul_left)
@@ -373,7 +372,7 @@ theorem mb_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
         funext y
         ring
       rw [hfun, integral_sub (hi₁.div_const _) (hi₂.div_const _), integral_div, integral_div,
-        hA₁, hA₂, ← e₁, ← e₂, hT q w, sub_self]
+        hT q w, sub_self]
   -- the second-moment densities agree
   have hσ : ∀ i k : Fin r,
       (fun y ↦ χ y * (mbSecond H₁ i k y / A₁ - mbSecond H₂ i k y / A₂)) = 0 := by
@@ -383,8 +382,6 @@ theorem mb_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
         ((mbSecond_continuous h₂ i k).div_const _))
     · exact h₁.χ_supp.mul_right
     · intro q w
-      have e₁ := mbExp_transverse_second h₁ ht hy₀ i k w
-      have e₂ := mbExp_transverse_second h₂ ht hy₀ i k w
       have hi₁ : Integrable fun y ↦ monomialTest w y * (χ y * mbSecond H₁ i k y) :=
         ((monomialTest_continuous w).mul (h₁.χ_cont.mul (mbSecond_continuous h₁ i k)))
           |>.integrable_of_hasCompactSupport (h₁.χ_supp.mul_right.mul_left)
@@ -397,11 +394,8 @@ theorem mb_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
             monomialTest w y * (χ y * mbSecond H₂ i k y) / A₂ := by
         funext y
         ring
-      have hN' := hN i k q w
-      rw [e₁, e₂, ← hA₁, ← hA₂] at hN'
-      have hN'' := mul_left_cancel₀ (inv_ne_zero ht.ne') hN'
       rw [hfun, integral_sub (hi₁.div_const _) (hi₂.div_const _), integral_div, integral_div,
-        hN'', sub_self]
+        hN i k q w, sub_self]
   intro y hy
   have hρy : mbDensity H₁ y / A₁ = mbDensity H₂ y / A₂ := by
     have := congrFun hρ y
@@ -429,5 +423,25 @@ theorem mb_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ}
   have hdet₁ : IsUnit (H₁ y).det := isUnit_iff_ne_zero.mpr (h₁.posDef y).det_pos.ne'
   have hdet₂ : IsUnit (H₂ y).det := isUnit_iff_ne_zero.mpr (h₂.posDef y).det_pos.ne'
   rw [← Matrix.nonsing_inv_nonsing_inv (H₁ y) hdet₁, hinv, Matrix.nonsing_inv_nonsing_inv _ hdet₂]
+
+/-- **Exact identification of the transverse Hessian field at one temperature.** If two
+Morse–Bott normal forms have the same normalised expectations of all tangential monomials `yᵛ`
+and of all transverse second moments `xᵢ xₖ yᵛ` at a single temperature `t > 0`, then their
+Hessian fields agree wherever the cutoff is nonzero. -/
+theorem mb_identification {H₁ H₂ : EuclidD n → Matrix (Fin r) (Fin r) ℝ} {χ : EuclidD n → ℝ}
+    {c₁ c₂ : ℝ} (h₁ : MBData H₁ χ c₁) (h₂ : MBData H₂ χ c₂) {t : ℝ} (ht : 0 < t)
+    {y₀ : EuclidD n} (hy₀ : χ y₀ ≠ 0)
+    (hT : ∀ (q : ℕ) (w : Fin q → Fin n),
+      mbExp H₁ χ t (fun z ↦ monomialTest w z.2) = mbExp H₂ χ t (fun z ↦ monomialTest w z.2))
+    (hN : ∀ (i k : Fin r) (q : ℕ) (w : Fin q → Fin n),
+      mbExp H₁ χ t (fun z ↦ z.1 i * z.1 k * monomialTest w z.2) =
+        mbExp H₂ χ t (fun z ↦ z.1 i * z.1 k * monomialTest w z.2)) :
+    ∀ y, χ y ≠ 0 → H₁ y = H₂ y := by
+  refine mb_identification_of_ratios h₁ h₂ hy₀ (fun q w ↦ ?_) (fun i k q w ↦ ?_)
+  · rw [← mbExp_tangential h₁ ht hy₀ w, ← mbExp_tangential h₂ ht hy₀ w]
+    exact hT q w
+  · have h := hN i k q w
+    rw [mbExp_transverse_second h₁ ht hy₀ i k w, mbExp_transverse_second h₂ ht hy₀ i k w] at h
+    exact mul_left_cancel₀ (inv_ne_zero ht.ne') h
 
 end Laplace.Multi
