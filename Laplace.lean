@@ -251,3 +251,4 @@ import Laplace.Patterning.GaussianFourth
 import Laplace.Patterning.FourGonStationary
 import Laplace.Patterning.FourGonModel
 import Laplace.Patterning.FourGonSaddle
+import Laplace.Patterning.VirialMulti

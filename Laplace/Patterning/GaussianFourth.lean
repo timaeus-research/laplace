@@ -439,4 +439,122 @@ theorem gaussianExpectation_linForm_mul_cubicForm_div_six {H : Matrix (Fin d) (F
   rw [posDef_inv_symm hH j m]
   ring
 
+/-! ### Odd moments and the linear observables of Proposition 8.1 -/
+
+/-- **First moments vanish.** `∫ x_a k = 0`. -/
+theorem integral_coord_quadKernel {H : Matrix (Fin d) (Fin d) ℝ} (hH : H.PosDef) (a : Fin d) :
+    ∫ x, x a * quadKernel H x = 0 := by
+  have hlow : LowPoly 0 (fun _ : EuclidD d ↦ (1 : ℝ)) := LowPoly.const 0 1
+  have h := stein_invDir hH hlow.contDiff hlow.growth a (hlow.deriv_dir _).growth
+  have hder : ∀ x : EuclidD d, fderiv ℝ (fun _ : EuclidD d ↦ (1 : ℝ)) x (invDir H a) = 0 := by
+    intro x
+    simp
+  simp only [mul_one] at h
+  rw [h]
+  simp_rw [hder, zero_mul, integral_zero]
+
+/-- **Third moments vanish.** `∫ x_a x_b x_c k = 0`. -/
+theorem integral_coord3_quadKernel {H : Matrix (Fin d) (Fin d) ℝ} (hH : H.PosDef)
+    (a b c : Fin d) :
+    ∫ x, x a * (x b * x c) * quadKernel H x = 0 := by
+  have hlow : LowPoly 2 (fun x : EuclidD d ↦ x b * x c) := by
+    have := LowPoly.coord_mul b (LowPoly.coord_mul c (LowPoly.const 0 1))
+    simpa using this
+  rw [stein_invDir hH hlow.contDiff hlow.growth a (hlow.deriv_dir _).growth]
+  have hder : ∀ x : EuclidD d, fderiv ℝ (fun x : EuclidD d ↦ x b * x c) x (invDir H a)
+      = H⁻¹ a b * x c + x b * H⁻¹ a c := by
+    intro x
+    have hd : HasFDerivAt (fun x : EuclidD d ↦ x b * x c)
+        ((x b) • EuclideanSpace.proj (𝕜 := ℝ) c + (x c) • EuclideanSpace.proj (𝕜 := ℝ) b) x :=
+      (EuclideanSpace.proj (𝕜 := ℝ) b).hasFDerivAt.mul
+        (EuclideanSpace.proj (𝕜 := ℝ) c).hasFDerivAt
+    rw [hd.fderiv]
+    simp only [_root_.add_apply, _root_.smul_apply, smul_eq_mul, proj_invDir hH]
+    ring
+  simp_rw [hder]
+  have e1 : ∀ x : EuclidD d, (H⁻¹ a b * x c + x b * H⁻¹ a c) * quadKernel H x
+      = H⁻¹ a b * (x c * quadKernel H x) + H⁻¹ a c * (x b * quadKernel H x) := fun x ↦ by ring
+  simp_rw [e1]
+  have hI : ∀ i : Fin d, Integrable fun x : EuclidD d ↦ x i * quadKernel H x := fun i ↦
+    integrable_mul_quadKernel_of_polynomialGrowth hH
+      (contDiff_coord i).continuous.aestronglyMeasurable (hasPolynomialGrowth_coord i)
+  rw [integral_add ((hI c).const_mul _) ((hI b).const_mul _), integral_const_mul, integral_const_mul,
+    integral_coord_quadKernel hH, integral_coord_quadKernel hH]
+  ring
+
+/-- **The gradient–gradient term of Proposition 8.1**: `Cov(aᵀx, gᵀx) = aᵀ Σ g`. -/
+theorem gaussianCovariance_linForm_linForm {H : Matrix (Fin d) (Fin d) ℝ} (hH : H.PosDef)
+    (a g : Fin d → ℝ) :
+    gaussianCovariance H (linForm a) (linForm g) = ∑ m, ∑ n, a m * H⁻¹ m n * g n := by
+  have hZ : (∫ x : EuclidD d, quadKernel H x) ≠ 0 := (integral_quadKernel_pos hH).ne'
+  unfold gaussianCovariance gaussianExpectation
+  have hlin : ∀ (c : Fin d → ℝ) (x : EuclidD d), linForm c x * quadKernel H x
+      = ∑ m, c m * (x m * quadKernel H x) := by
+    intro c x
+    unfold linForm
+    rw [Finset.sum_mul]
+    refine Finset.sum_congr rfl fun m _ ↦ ?_
+    ring
+  have hI : ∀ i : Fin d, Integrable fun x : EuclidD d ↦ x i * quadKernel H x := fun i ↦
+    integrable_mul_quadKernel_of_polynomialGrowth hH
+      (contDiff_coord i).continuous.aestronglyMeasurable (hasPolynomialGrowth_coord i)
+  have hE : ∀ c : Fin d → ℝ, ∫ x : EuclidD d, linForm c x * quadKernel H x = 0 := by
+    intro c
+    simp_rw [hlin]
+    rw [integral_finsetSum _ fun m _ ↦ (hI m).const_mul _]
+    simp_rw [integral_const_mul, integral_coord_quadKernel hH, mul_zero, Finset.sum_const_zero]
+  have hprod : ∀ x : EuclidD d, linForm a x * linForm g x * quadKernel H x
+      = ∑ m, ∑ n, (a m * g n) * (x m * x n * quadKernel H x) := by
+    intro x
+    unfold linForm
+    rw [Finset.sum_mul_sum]
+    simp only [Finset.sum_mul]
+    refine Finset.sum_congr rfl fun m _ ↦ Finset.sum_congr rfl fun n _ ↦ ?_
+    ring
+  have h2 : (∫ x : EuclidD d, (fun x ↦ linForm a x * linForm g x) x * quadKernel H x)
+      = ∫ x : EuclidD d, linForm a x * linForm g x * quadKernel H x := rfl
+  rw [h2]
+  simp_rw [hprod]
+  rw [integral_sum2 (fun m n x ↦ (a m * g n) * (x m * x n * quadKernel H x))
+    (fun m n ↦ (integrable_coord_mul_coord_quadKernel hH m n).const_mul _)]
+  simp_rw [integral_const_mul, integral_coord_mul_coord_quadKernel hH]
+  rw [hE, hE]
+  simp only [zero_div, mul_zero, sub_zero]
+  rw [Finset.sum_div]
+  refine Finset.sum_congr rfl fun m _ ↦ ?_
+  rw [Finset.sum_div]
+  refine Finset.sum_congr rfl fun n _ ↦ ?_
+  field_simp
+
+/-- **The quadratic–linear term vanishes** (Proposition 8.1, "by symmetry"):
+`∫ ⟪x,Ax⟫ (gᵀx) k = 0`. -/
+theorem integral_qform_mul_linForm_mul_quadKernel {H : Matrix (Fin d) (Fin d) ℝ} (hH : H.PosDef)
+    (A : Matrix (Fin d) (Fin d) ℝ) (g : Fin d → ℝ) :
+    ∫ x, qform A x * linForm g x * quadKernel H x = 0 := by
+  have hprod : ∀ x : EuclidD d, qform A x * linForm g x * quadKernel H x
+      = ∑ i, ∑ m, ∑ j, (A i j * g m) * (x i * (x j * x m) * quadKernel H x) := by
+    intro x
+    rw [qform_eq_sum]
+    unfold linForm
+    rw [Finset.sum_mul_sum]
+    simp only [Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ ↦ Finset.sum_congr rfl fun m _ ↦
+      Finset.sum_congr rfl fun j _ ↦ ?_
+    ring
+  simp_rw [hprod]
+  have hI : ∀ i j m : Fin d, Integrable fun x : EuclidD d ↦ x i * (x j * x m) * quadKernel H x :=
+    fun i j m ↦ integrable_mul_quadKernel_of_polynomialGrowth hH
+      ((contDiff_coord i).continuous.mul ((contDiff_coord j).continuous.mul
+        (contDiff_coord m).continuous)).aestronglyMeasurable
+      ((hasPolynomialGrowth_coord i).mul ((hasPolynomialGrowth_coord j).mul
+        (hasPolynomialGrowth_coord m)))
+  rw [integral_finsetSum _ fun i _ ↦ integrable_finsetSum _ fun m _ ↦
+    integrable_finsetSum _ fun j _ ↦ (hI i j m).const_mul _]
+  refine Finset.sum_eq_zero fun i _ ↦ ?_
+  rw [integral_finsetSum _ fun m _ ↦ integrable_finsetSum _ fun j _ ↦ (hI i j m).const_mul _]
+  refine Finset.sum_eq_zero fun m _ ↦ ?_
+  rw [integral_finsetSum _ fun j _ ↦ (hI i j m).const_mul _]
+  refine Finset.sum_eq_zero fun j _ ↦ ?_
+  rw [integral_const_mul, integral_coord3_quadKernel hH, mul_zero]
+
 end Laplace.Patterning

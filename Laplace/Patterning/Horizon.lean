@@ -100,6 +100,51 @@ theorem horizonFilter_mulVec_null (H : Matrix ι ι ℝ) (η : ℝ) (v : ι → 
   simp only [pow_one_sub_smul_mulVec_eigen H η 0 v h0, mul_zero, sub_zero, one_pow, one_smul]
   rw [Finset.sum_const, Finset.card_range, ← Nat.cast_smul_eq_nsmul ℝ, smul_smul]
 
+
+/-! ### The gradient-flow filter and the saturation mismatch -/
+
+/-- **Gradient flow in an eigendirection.** `δ(t) = -ε ((1 - e^{-λt})/λ) b` solves
+`δ' = -λ δ - ε b`, `δ(0) = 0`: the gradient-flow filter is `(1 - e^{-λt})/λ` (Prop. 3.1). -/
+theorem gradientFlow_filter (lam ε b : ℝ) (hlam : lam ≠ 0) :
+    (∀ t, HasDerivAt (fun t => -(ε * ((1 - Real.exp (-(lam * t))) / lam) * b))
+      (-lam * (-(ε * ((1 - Real.exp (-(lam * t))) / lam) * b)) - ε * b) t) ∧
+    -(ε * ((1 - Real.exp (-(lam * 0))) / lam) * b) = 0 := by
+  refine ⟨fun t => ?_, by simp⟩
+  have h := ((((hasDerivAt_id t).const_mul lam).neg.exp.const_sub 1).div_const lam).const_mul ε
+    |>.mul_const b |>.neg
+  refine h.congr_deriv ?_
+  simp only [Pi.neg_apply, id_eq]
+  field_simp
+  ring
+
+/-- On the null space (`λ = 0`) the filter is `t`: `δ(t) = -ε t b` solves `δ' = -ε b`. -/
+theorem gradientFlow_filter_null (ε b : ℝ) :
+    ∀ t, HasDerivAt (fun t : ℝ => -(ε * t * b)) (-(ε * b)) t := by
+  intro t
+  have h := (((hasDerivAt_id t).const_mul ε).mul_const b).neg
+  refine h.congr_deriv ?_
+  simp
+
+/-- **The 26% mismatch of Corollary 3.3.** At `λ = ρ` and `ηT = 1/ρ` the gradient-flow filter
+`(1 - e^{-1})/ρ` exceeds the posterior filter `1/(2ρ)` by a factor between `1.26` and `1.27`. -/
+theorem mismatch_ratio_bounds :
+    (1.26 : ℝ) < 2 * (1 - Real.exp (-1)) ∧ 2 * (1 - Real.exp (-1)) < 1.27 := by
+  have h1 := Real.exp_one_gt_d9
+  have h2 := Real.exp_one_lt_d9
+  have hpos : 0 < Real.exp 1 := Real.exp_pos 1
+  rw [Real.exp_neg]
+  constructor
+  · have : (Real.exp 1)⁻¹ < 0.37 := by
+      rw [inv_lt_comm₀ hpos (by norm_num)]
+      norm_num at h1 ⊢
+      linarith
+    linarith
+  · have : (0.365 : ℝ) < (Real.exp 1)⁻¹ := by
+      rw [lt_inv_comm₀ (by norm_num) hpos]
+      norm_num at h2 ⊢
+      linarith
+    linarith
+
 end
 
 end Laplace.Patterning
