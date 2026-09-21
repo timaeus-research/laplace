@@ -64,3 +64,22 @@ packaging and reversibility if cheap; B opportunistic).
 - GPT-6 Astra: candidate A
 
 Agreed.
+
+## Result
+
+Committed as `51934ef` on `tide/mala-invariance` (`Laplace/Sampler/Metropolis.lean`, 501 lines; full `lake build` and `scripts/sorries` clean:
+0 sorry, 0 axiom, 0 native_decide).
+
+Theorems: `mhAccept`, `mhFlux`, `mhAccept_le_one`, `mhAccept_nonneg`, `mul_mhAccept_eq_min`, `mh_detailed_balance`, `mhFlux_comm`, `mhFlux_eq`;
+`mhAcceptMass`, `mhKernelSet`, `measurable_mhAccept`, `measurable_mhWeight`, `measurable_mhFlux`, `mhAcceptMass_le_one`, `measurable_mhKernelSet`,
+`mh_invariant`, `mhTargetLaw`, `mhTargetLaw_apply`, `isProbabilityMeasure_mhTargetLaw`, `mh_invariant_law`; `targetWeight`, `propWeight`,
+`targetWeight_pos`, `propWeight_pos`, `continuous_quad`, `continuous_targetWeight`, `continuous_propWeight`, `dotProduct_mulVec_symm`,
+`residual_quad`, `targetWeight_propWeight_ratio`, `mala_S_symm`, `mala_SA_symm`, `mala_G`, `mala_ratio`, `pmala_S_symm`, `pmala_SA_symm`,
+`pmala_G`, `pmala_ratio`, `propZ`, `lintegral_propWeight`, `propZ_ne_zero`, `exp_neg_quad_eq_gaussianWeight`, `propZ_ne_top`, `targetZ`,
+`targetZ_ne_zero`, `targetWeight_eq_gaussianWeight`, `targetZ_ne_top`, `gaussianLaw`, `isProbabilityMeasure_gaussianLaw`, `mala_invariant`,
+`mala_invariant_law`, `pmala_invariant`, `pmala_invariant_law`.
+
+Surprises: the whole MH invariance proof is ~40 lines once the flux is written as the symmetric minimum and everything is a `lintegral`
+(Tonelli with no integrability side conditions, as GPT predicted); the density-level statement needs neither `h p_max < 2` nor `P`
+positive for MALA (positivity of `P` only enters through the normalisation of the target and pMALA's proposal). Friction was purely
+syntactic: `∘` in measurability terms, an unpinned `(1 : Matrix ?n ?n ℝ)` inside `propZ`, and the `c • M *ᵥ v` parse.
