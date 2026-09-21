@@ -257,3 +257,4 @@ import Laplace.Patterning.MovingMinimizer
 import Laplace.Patterning.PosteriorSusceptibility
 import Laplace.Patterning.VolumeExponent
 import Laplace.Patterning.IsotropicExpansion
+import Laplace.Patterning.OrnsteinUhlenbeck
