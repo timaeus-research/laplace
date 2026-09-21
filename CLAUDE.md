@@ -1399,3 +1399,14 @@ matrix version is `whiteningOf`.
   turns the goal into `rfl`, drop the following `congr 1`.
 - `a⁻¹ * (a * X)`-style cancellations: `mul_div_mul_left _ _ (inv_ne_zero h)`; the `(√t)^r` factors
   cancel with `mul_div_mul_left _ _ (pow_ne_zero _ …)` after `simp only [Pi.div_apply]`.
+- Total-variation bounds from uniform-in-test bounds: test against the sign of the remainder,
+  `f := fun x ↦ if 0 ≤ g x then 1 else -1` (`Measurable.ite (measurableSet_le measurable_const hg)`),
+  so `∫ f * g = ∫ |g|`; avoids the signed-measure API entirely.
+- Bounds `a ^ e ≤ a₀ ^ e` for `0 < a₀ ≤ a`, `e ≤ 0`: `Real.rpow_neg` on both sides then
+  `inv_anti₀ (Real.rpow_pos_of_pos …) (Real.rpow_le_rpow …)`; `positivity` cannot see `a > 0` from
+  a hypothesis, so give `(Real.rpow_pos_of_pos ha _).le` explicitly.
+- A cutoff family vanishing off a common `K` has vanishing `u`-derivative off `K`: `HasDerivAt.unique`
+  against `hasDerivAt_const` after rewriting the family to the zero function.
+- `omit [Nonempty X] in` before theorems that don't use the section instance (linter
+  `unusedSectionVars`); `(_h : TiltData …)` keeps dot-notation while silencing unused-variable.
+- Unicode `Θ` in the slop LaTeX breaks pdflatex: write `$\Theta$`.
