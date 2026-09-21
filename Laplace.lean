@@ -228,6 +228,7 @@ import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.TiltVariance
 import Laplace.Multi.TraceKernel
 import Laplace.Multi.TraceKernelMain
+import Laplace.Multi.TiltVarianceQuadratic
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
@@ -245,3 +246,4 @@ import Laplace.Sampler.FullStep
 import Laplace.Sampler.AR1Real
 import Laplace.Sampler.RandomMap
 import Laplace.Sampler.GaussianQuadratic
+import Laplace.Sampler.ULAEigen

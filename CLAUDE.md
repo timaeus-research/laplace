@@ -298,6 +298,21 @@ because `hf.sub hg` alone has type `Integrable (f - g)` (Pi subtraction) and the
 `Matrix.inv_eq_right_inv` for `(t • H)⁻¹ = t⁻¹ • H⁻¹`, `trace (H * S) = ∑ᵢⱼ Hᵢⱼ Sᵢⱼ` needs `S` symmetric (`hS.1.apply`).
 A hypothesis stated with `ulaNoise h` does not rewrite a goal containing `(2 * h) • 1`: restate it with the goal's spelling
 (`have hfix : covStep _ ((2 * h) • 1) _ = _ := ulaCov_fixed …`, accepted by defeq).
+### Projections of Gaussian noise and pushing laws through functionals (Sampler/ULAEigen)
+
+Work under `stdGaussian E` first, with the functional `innerSL ℝ u` (`innerSL_apply_apply : innerSL 𝕜 v w = inner v w`,
+`innerSL_apply_norm : ‖innerSL 𝕜 x‖ = ‖x‖`): mean `∫ innerSL u = 0` by `(innerSL ℝ u).integral_comp_comm (μ := stdGaussian E)
+(φ := id) IsGaussian.integrable_id` (pin `μ`, otherwise `IsGaussian ?μ` is stuck), second moment by
+`variance_dual_stdGaussian` + `variance_of_integral_eq_zero`, `MemLp` by `IsGaussian.memLp_two_id` (implicit `μ`, give the
+expected type) and `ContinuousLinearMap.comp_memLp'`. Transfer to random variables with law `P.map ξ = stdGaussian E` via
+`integral_map (f := fun z => …)` and `memLp_map_measure_iff (g := fun z => …)`: pass the lambda explicitly, since the
+measurability proof terms mention `⇑(innerSL ℝ u)` and the rewrite pattern would not match `inner ℝ u z`. Mutual independence
+`iIndepFun ξ P` gives pairs by `hind.indepFun hij`, pushed through a functional by `IndepFun.comp (φ := …) (ψ := …)`.
+When a lemma has an implicit numerical parameter fixed by one hypothesis (`white_of_indep (v := …)`), pass it: otherwise the
+first `rw` that closes a goal by `rfl` assigns it to an unsimplified expression.
+A deterministic projection lemma (`inner_vecChain_eq_realChain`, by induction with `inner_add_right`, `real_inner_smul_right`)
+keeps all probability out of the AR(1) identification; columns of `orthoOf hQ` are unit eigenvectors by entrywise algebra from
+`Q * U = U * diagonal p` (`mul_apply`, `mul_diagonal`) and `Uᵀ U = 1` (`one_apply_eq`), packaged with `WithLp.toLp 2`.
 
 ## Monomial cumulant ladder (OneD)
 
