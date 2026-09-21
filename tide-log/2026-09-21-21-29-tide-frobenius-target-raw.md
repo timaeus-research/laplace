@@ -31,3 +31,16 @@ squared relative error, RMS is the square root.
 `numcheck40.py` (d = 3, random PD Q, h = 0.4/p_max, N = 5, b = 2, C = 4, 40000 Monte Carlo replicates): `Σ_ULA = U diag(s₂) Uᵀ`,
 `s₂ = 1/(p(1 − hp/2))`, `s₂ − 1/p = h/(2 − hp)` and the geometric form of `aᵢ` hold to 1e-16; the Monte Carlo mean of `Σ̂_raw` matches
 `U diag(s₂(1 − a)) Uᵀ` to within 0.4 standard errors (max abs deviation 6.5e-4, s.e. 1.6e-3); bias sums 3.3e-3 (Σ_ULA) and 1.5e-3 (Q⁻¹).
+
+## Result
+
+Commit `fc40889` on `tide/frobenius-target-raw`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/Sampler/FrobeniusTarget.lean` (     389 lines): `zeroStartFactor` (+`_eq`, `_nonneg`, `_le`), `mul_zeroStartFactor_sq_le`,
+`ulaCov_eq_conj_diagonal`, `inv_eq_conj_diagonal`, `ula_variance_sub_inv`, `gram_ulaChain_eig`, `integral_pooledSecondMoment_ula`,
+`integral_pooledRaw`, `integral_sum_sq_sub_eq_centred`, `frobenius_ula_target_raw_eq`, `frobenius_ula_target_raw` (+`_le`, `_rel`),
+`frobenius_ula_posterior_raw` (+`_le`, `_rel`).
+
+Surprises: `rw` with the Frobenius-decomposition lemma fails on `Matrix`-valued estimators (motive not type-correct: `Matrix ι ι ℝ` must be
+unfolded to apply an entry), so the deterministic-target identity is stated once for a generic `S : ι → ι → Ω → ℝ` and applied with
+`.trans`; a diagonal matrix built from a lambda with a subtraction must be bound with `set` before its entries are taken. `lean-state check`
+timed out in the fresh worktree, so per-module `lake build` served as the inner loop (≈1 min per round).
