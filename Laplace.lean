@@ -244,3 +244,4 @@ import Laplace.Patterning.SGDLyapunov
 import Laplace.Patterning.Virial
 import Laplace.Patterning.FourGon
 import Laplace.Patterning.Positivity
+import Laplace.Patterning.FourGonGibbs
