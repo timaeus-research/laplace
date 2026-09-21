@@ -46,3 +46,18 @@ division). Votes **A** with the guarded pair count and the transposed sandwich.
 - GPT-6 Astra: candidate A (same)
 
 Agreed.
+
+## Result
+
+Committed as `Laplace/Sampler/Minibatch.lean` (a171afd), 322 lines, 0 sorries, `lean-state check` clean; `FullStep.lean`'s
+`minibatchCoeff` corrected to `h² t² (1 − m/n) / (m ((n:ℝ) − 1))` (its nonnegativity re-proved; nothing else depended on the value).
+
+Theorems: `batchMean`, `popMean`, `sum_sub_popMean`, `batchMean_sub_popMean`; counting `card_powersetCard_mem` (`C(n−1,m−1)`),
+`card_powersetCard_pair` (`C(n−2,m−2)`, `0` at `m = 1`); double counting `sum_eq_sum_ite_mem`, `sum_powersetCard_sum`,
+`sum_powersetCard_sum_sum`; binomials `choose_mul_eq_choose_pred`, `choose_mul_eq_choose_pred_pred`, `fpc_coeff`;
+`fpc_bilinear₂` (two families), `fpc_bilinear`; E8: `outerBilin`, `sampleCov`, `minibatch_gradient_cov`
+(`C_g = (1/m)(1 − m/n) S²`), `sandwichBilin`, `minibatch_hessian_term` (`= ((1−m/n)/(m(n−1))) • stateTerm`), `minibatchCoeff_eq`.
+
+Surprises: the pair count `C(n−2, m−2)` is false at `m = 1` under truncated subtraction (GPT caught it); `simp_rw` with the indicator
+lemma loops (its right-hand side is again a `Finset` sum); `Nat.succ_mul_choose_eq` is now `Nat.add_one_mul_choose_eq`. The cross
+form `fpc_bilinear₂` costs nothing extra and is what the one-step minibatch recursion (next tide) needs for its `H`–`g` cross terms.
