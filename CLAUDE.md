@@ -1181,3 +1181,28 @@ matrix version is `whiteningOf`.
 - Definitions in a section with `variable [Fintype ι] [DecidableEq ι]` inherit the instances even
   if unused (`Matrix ι ι ℝ`, `vecMulVec`, `X * S * Yᵀ` need only `Fintype` or nothing); `omit … in`
   the defs too, or every user of them needs the instance.
+
+### Reusing the rate theorems and the observable packages (tide `hessian-route`)
+
+- `cov2Coefficient`/`cov2Coefficient_full` in `CovarianceExplicit.lean` were `private`, so the tagged
+  theorem `gibbsCov_first_order_rate_explicit` could not be restated outside its file; they are now
+  public. A `private def` appearing in a public theorem statement is a usability defect: avoid it.
+- Building an `ObservableTensorApprox φ a` by hand: fields in order `phi_continuous`, `phi_zero`,
+  `local_radius/const` (+ positivity), `local_bound`, `poly_growth : HasPolyGrowth φ` (witnesses
+  `⟨K, p, hK, fun w => …⟩`), then the jet layer `qφ`, `qφ_continuous`, `qφ_even : Function.Even qφ`,
+  `qφ_bound_const(_nonneg)`, `qφ_bound`, `jet_radius/const` (+ positivity/nonneg), `jet_bound`
+  (`‖w‖³`), then `A`, `A_symm : dot u (A v) = dot v (A u)`, `qφ_eq_A_diag`, `Φ`, `Φ_symm`,
+  `Φ_jet_bound` (`‖w‖⁴`; same radius and constant as `jet_bound`, so take `min`/`max` when the
+  potential package has different ones). With `a = 0`, clear `dot 0 w` by
+  `simp only [dot, Pi.zero_apply, zero_mul, Finset.sum_const_zero, sub_zero]` (`Pi.zero_apply` is
+  essential). `Φ := 0` satisfies `Φ_symm` by `simp`.
+- Sup norm on `ι → ℝ`: `|w i| ≤ ‖w‖` is `norm_le_pi_norm w i` (+ `Real.norm_eq_abs`);
+  `|wᵀPw| ≤ (∑ᵢⱼ |Pᵢⱼ|) ‖w‖²` by `Finset.abs_sum_le_sum_abs` twice and `gcongr`.
+- `abs_add` is `abs_add_le` at this pin; `add_le_add_right` adds on the left here, so prefer
+  `add_le_add h le_rfl`. `gcongr` leaves side goals like `0 ≤ hV.local_const` that `positivity`
+  cannot see: use `mul_le_mul_of_nonneg_left h hV.local_const_nonneg` explicitly.
+- `trASig (matCLM P) (matCLM P⁻¹) = card ι`: `simp only [trASig, matCLM_apply, Matrix.mulVec_mulVec,
+  hPP, Matrix.one_mulVec, Pi.single_eq_same, Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
+  mul_one]` with `hPP : P * P⁻¹ = 1`.
+- After changing an imported seabed file, `lake build <Module>` for it and then `lean-state restart`
+  before `check`ing dependents (the daemon holds the old oleans).
