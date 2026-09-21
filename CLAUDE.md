@@ -236,6 +236,23 @@ after `simp only [id_eq]`; covariance: `covarianceBilin_map IsGaussian.memLp_two
 instances for `μ ∗ ν` exist). Quadratic-form algebra: `mulVec_transpose`, `dotProduct_mulVec`, `vecMul_vecMul`.
 `ContinuousLinearMap.mul_apply` is deprecated: `mul_apply_eq_comp`.
 
+### Characteristic functions, matrix limits, bundled probability measures (Sampler/GaussianUniqueness)
+
+`charFun (μ.map L) t = charFun μ (L† t)` is not in Mathlib: prove it from `charFun_apply` (rfl), `integral_map`
+(`L.continuous.measurable.aemeasurable`, `by fun_prop` for the integrand) and `ContinuousLinearMap.adjoint_inner_right`.
+`continuous_charFun` lives in `MeasureTheory/Measure/CharacteristicFunction/TaylorExpansion.lean`; `charFun_zero` gives
+`μ.real univ`, closed by `probReal_univ`. `Measure.isProbabilityMeasure_map` (namespace `Measure`) needs `AEMeasurable`.
+Lévy: `ProbabilityMeasure.tendsto_of_tendsto_charFun` in `MeasureTheory/Measure/LevyConvergence.lean`, for finite-dimensional
+real inner product spaces, with `ProbabilityMeasure` bundles. Anonymous constructors `⟨μ, inst⟩ : ProbabilityMeasure E`
+inside a `Tendsto` statement make instance search fail on the unfolded subtype: wrap them in a `def` (`gaussStepPM`,
+`gaussianPM`) and prove equalities of `charFun ↑(…)` by `exact` (defeq), not `simpa`.
+Matrix limits: the matrix topology is the Pi topology but `rw [tendsto_pi_nhds]` does not see through `Matrix`; use
+`refine tendsto_pi_nhds.mpr fun i => tendsto_pi_nhds.mpr fun j => ?_` (unification unfolds the def) and `Matrix.zero_apply`;
+entries of a convergent matrix sequence via `(continuous_id.matrix_elem i j).tendsto _ |>.comp hM` (`exact`, not `simpa`).
+`Filter.Tendsto.const_mul`/`mul_const`/`mul` work in `Matrix ι ι ℝ`; `A^n = U diag(a^n) Uᵀ` by induction with
+`diagonal_mul_diagonal`; `|a i| < 1` gives `tendsto_pow_atTop_nhds_zero_of_abs_lt_one`. `PiLp.continuous_toLp` transports
+entrywise limits to `EuclideanSpace` (`euclid M t = toLp 2 (M *ᵥ ofLp t)` by `rw [← ofLp_toEuclideanCLM]`).
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,
