@@ -1182,6 +1182,49 @@ matrix version is `whiteningOf`.
   if unused (`Matrix ι ι ℝ`, `vecMulVec`, `X * S * Yᵀ` need only `Fintype` or nothing); `omit … in`
   the defs too, or every user of them needs the instance.
 
+### Reusing the rate theorems and the observable packages (tide `hessian-route`)
+
+- `cov2Coefficient`/`cov2Coefficient_full` in `CovarianceExplicit.lean` were `private`, so the tagged
+  theorem `gibbsCov_first_order_rate_explicit` could not be restated outside its file; they are now
+  public. A `private def` appearing in a public theorem statement is a usability defect: avoid it.
+- Building an `ObservableTensorApprox φ a` by hand: fields in order `phi_continuous`, `phi_zero`,
+  `local_radius/const` (+ positivity), `local_bound`, `poly_growth : HasPolyGrowth φ` (witnesses
+  `⟨K, p, hK, fun w => …⟩`), then the jet layer `qφ`, `qφ_continuous`, `qφ_even : Function.Even qφ`,
+  `qφ_bound_const(_nonneg)`, `qφ_bound`, `jet_radius/const` (+ positivity/nonneg), `jet_bound`
+  (`‖w‖³`), then `A`, `A_symm : dot u (A v) = dot v (A u)`, `qφ_eq_A_diag`, `Φ`, `Φ_symm`,
+  `Φ_jet_bound` (`‖w‖⁴`; same radius and constant as `jet_bound`, so take `min`/`max` when the
+  potential package has different ones). With `a = 0`, clear `dot 0 w` by
+  `simp only [dot, Pi.zero_apply, zero_mul, Finset.sum_const_zero, sub_zero]` (`Pi.zero_apply` is
+  essential). `Φ := 0` satisfies `Φ_symm` by `simp`.
+- Sup norm on `ι → ℝ`: `|w i| ≤ ‖w‖` is `norm_le_pi_norm w i` (+ `Real.norm_eq_abs`);
+  `|wᵀPw| ≤ (∑ᵢⱼ |Pᵢⱼ|) ‖w‖²` by `Finset.abs_sum_le_sum_abs` twice and `gcongr`.
+- `abs_add` is `abs_add_le` at this pin; `add_le_add_right` adds on the left here, so prefer
+  `add_le_add h le_rfl`. `gcongr` leaves side goals like `0 ≤ hV.local_const` that `positivity`
+  cannot see: use `mul_le_mul_of_nonneg_left h hV.local_const_nonneg` explicitly.
+- `trASig (matCLM P) (matCLM P⁻¹) = card ι`: `simp only [trASig, matCLM_apply, Matrix.mulVec_mulVec,
+  hPP, Matrix.one_mulVec, Pi.single_eq_same, Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
+  mul_one]` with `hPP : P * P⁻¹ = 1`.
+- After changing an imported seabed file, `lake build <Module>` for it and then `lean-state restart`
+  before `check`ing dependents (the daemon holds the old oleans).
+
+### Unfolding the second-order coefficient (tide `covk-closed-form`)
+
+- `cov2Coefficient` unfolds to four terms in `trASig`, `dot`, `tensorContractMatrix` and nested
+  `ContinuousLinearMap.comp`s. Cancel `matCLM P ∘ matCLM P⁻¹` with dedicated equalities
+  (`comp_inv_comp_eq`, `inv_comp_comp_inv_eq`) proved by `← ContinuousLinearMap.comp_assoc h g f`
+  with all three maps given explicitly (otherwise `rw` reassociates the inner composition), then
+  `matCLM_comp_inv`/`matCLM_inv_comp` and `id_comp`/`comp_id`; pointwise `Hinv (A (Hinv v)) = Hinv v`
+  by `matCLM_inv_apply_matCLM`.
+- Structure projections of a `def` (`(quadObservable P hP).A`, `.Φ`, `.jet_radius`) are exposed
+  with `rw [show … = … from rfl]`; `simp` will not unfold them, and `simpa using` fails on them.
+- `trASig`, `tensorContractMatrix` mention `Pi.single`, so they need `[DecidableEq ι]`: do not `omit`
+  it on lemmas about them ("cannot omit referenced section variable").
+- `tensorContractMatrix 0 Sig = 0` is `funext i; simp [tensorContractMatrix]` (the `Fin 3` match is
+  harmless once the zero multilinear map is applied); `trASig (B.comp Hinv) 1 = trASig B Hinv` is
+  `simp [trASig]`.
+- After changing an imported seabed file, a fresh worktree needs `lake build <Module>` before the
+  daemon can `check` dependents; the first `check` may report a spurious "file elaboration timed
+  out" while the big oleans load — rerun it.
 ### Random affine steps: averaging over batch and Gaussian noise (tide `minibatch-step`)
 
 - Keep both expectations in density/finite-average form: `stdExp φ := (∫ φ ξ * gW(matCLM 1) ξ) / Z`
@@ -1237,3 +1280,20 @@ matrix version is `whiteningOf`.
   `diagonal_mul_diagonal` + `trace_diagonal`. Along an eigenvector `H u = λ u`, `(tH+γ)u = (tλ+γ)u` (`Matrix.add_mulVec`,
   `Matrix.smul_mulVec`, `one_mulVec`), so `(tH+γ)⁻¹ u = (tλ+γ)⁻¹ u` by applying the inverse to both sides
   (`Matrix.mulVec_mulVec`, `nonsing_inv_mul`).
+- `Measure.integral_comp_mul_left (g) (a) : ∫ x, g (a * x) = |a⁻¹| • ∫ g` lives in the `Measure`
+  namespace (Haar/NormedSpace); `integral_comp_abs : ∫ x, f |x| = 2 * ∫ x in Ioi 0, f x` is root.
+  Gamma-type values: `integral_rpow_mul_exp_neg_rpow (hp : 0 < p) (hq : -1 < q) :
+  ∫ x in Ioi 0, x ^ q * exp (-x ^ p) = (1/p) * Gamma ((q+1)/p)` (rpow exponents; convert with
+  `Real.rpow_natCast`, which is unconditional).
+- `field_simp` rewrites `-1 / (2k)` to `-(1 / (2k))` inside rpow EXPONENTS, so a hypothesis
+  `hA : ∫ … a y ^ (-1 / (2k)) ≠ 0` no longer matches afterwards; cancel with
+  `mul_div_mul_left/right _ _ h` BEFORE `field_simp`, or restate the exponent.
+- `conv_lhs => rw [← Real.rpow_one x]` rewrites EVERY `x` on the lhs (also inside `x ^ e`); use
+  `have := Real.rpow_add hx 1 e; rw [Real.rpow_one] at this; rw [← this]` instead.
+- `rw [show (1 : ℕ) = … ]` / `show (4:ℕ) = 2*2` style rewrites hit numerals inside `Fin 1`, `Fin 4`
+  (motive not type correct); specialise the lemma instead (`simpa using lemma H 0`).
+- `Real.rpow_le_rpow_left_iff (hx : 1 < x) : x ^ y ≤ x ^ z ↔ y ≤ z` gives exponent injectivity
+  (`le_antisymm` of both directions); `Real.rpow_left_injOn (hz : z ≠ 0)` gives base injectivity on
+  `{0 ≤ y}`.
+- `congrArg (fun x ↦ c * x) h` is already beta-reduced; a following `simp only at this` errors
+  with "no progress".
