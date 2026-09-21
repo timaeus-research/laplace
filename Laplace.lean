@@ -233,6 +233,7 @@ import Laplace.Multi.TraceSurjective
 import Laplace.Multi.MomentDeterminacy
 import Laplace.Multi.MorseBottNormalForm
 import Laplace.Multi.MorseBottLeading
+import Laplace.Multi.CurvedMorseBott
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
