@@ -325,3 +325,4 @@ import Laplace.Sampler.BurnInEnvelope
 import Laplace.Sampler.StepSizeTradeoff
 import Laplace.Sampler.DirectionReadings
 import Laplace.Multi.SeparableExact
+import Laplace.Multi.GibbsRotation

@@ -1948,3 +1948,21 @@ matrix version is `whiteningOf`.
   to cover one coordinate energy times the whole Boltzmann factor.
 - `field_simp` closed the ratio identities of this file except one with literal zeros (`lam/2 * (1/lam) + α/6 * 0 + … = 1/2`), which needed a
   trailing `ring`; check each.
+
+### Frame changes of Gibbs measures (tide `gibbs-rotation`)
+
+- `(1 : Matrix ι ι ℝ)` needs `[DecidableEq ι]`; a section whose statements contain `Qᵀ * Q = 1` must carry it in `variable`, and the lemmas
+  that don't mention `1` (`affineFrame_apply`, continuity facts) take `omit [DecidableEq ι] in`.
+- `|det Q| = 1` from `Qᵀ Q = 1`: `congrArg Matrix.det hQ`, `rwa [Matrix.det_mul, Matrix.det_transpose, Matrix.det_one] at this` gives
+  `det * det = 1`; then `rw [← Real.sqrt_sq_eq_abs, sq, h, Real.sqrt_one]`.
+- Change of variables for `w ↦ Qᵀ(w − c)`: `integral_sub_right_eq_self (fun w => g (Qᵀ *ᵥ w)) c` (Lebesgue on `ι → ℝ` is add-right-invariant,
+  instance found automatically) then `integral_comp_mulVec Qᵀ hdet g hg : ∫ g = |Qᵀ.det| * ∫ g (Qᵀ *ᵥ v)` — rewriting with it replaces the
+  *right-hand* `∫ g` of the goal, after which `det_transpose, abs_det_of_orthogonal, one_mul` close it.
+- Frame-independence of `gibbsExpectation`/`gibbsCov`: the identities are between totalised integrals, so only `AEStronglyMeasurable` of the
+  weighted integrands is needed (`(by fun_prop : Continuous fun u => φ u * Real.exp (-(t * L u))).aestronglyMeasurable` in the continuity
+  wrappers). Coordinate observables are `continuous_apply i`.
+- `Filter.Tendsto.congr' … (Eventually.of_forall fun t => ?_)` leaves the goal with an unreduced `(fun t => …) t`; `rw` cannot see through it,
+  `simp only [h]` beta-reduces first and closes the goal.
+- A def built from a `noncomputable` def (`rotatedAnharmonic := rotated Q c (separableAnharmonic …)`) must itself be `noncomputable def`.
+- `simp only [separableAnharmonic, separablePotential]` flags `separablePotential` unused when the occurrence is unapplied
+  (`Continuous (separablePotential ℓ)`); `continuous_finsetSum _ fun i _ => ?_` unifies through the definition anyway.
