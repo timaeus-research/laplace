@@ -76,3 +76,9 @@ Saved verbatim in `tide-log/gpt_localised_llc_v1.md` (prompt in `gpt_localised_l
 - GPT-6 Astra: A+B+C
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/localised-llc-bounds` at 9edda86 (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/LocalisedLLC.lean` (272 lines): `sum_mul_apply_eq_trace`, `orthoOf_transpose_localised_mul`, `orthoOf_transpose_localised_inv_mul`, `localisedLLC`, `localised_llc_matrix_eq_eigen`, `localised_llc_centred`, `trace_localised_inv`, `localisedLLC_zero`, `localisedLLC_antitone`, `localisedLLC_lt_half_dim`, `localisedLLC_pos`, `localisedLLC_tendsto_zero`, `localisedLLC_bounds`, `localisedLLC_bounds_kappa`, `localised_variance_ratio_bounds`.
+
+Surprises: (i) exhibiting the inverse `U diag(1/a) Uᵀ` and using `Matrix.inv_eq_left_inv` went through in one pass once the product was reassociated to expose `Uᵀ M U`; (ii) `add_le_add_left h a` adds on the right in this Mathlib; (iii) the whole file checked clean on the second pass — the spectral toolkit from the ULA tides transfers directly.
