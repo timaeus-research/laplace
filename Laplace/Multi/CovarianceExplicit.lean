@@ -3946,7 +3946,7 @@ $T = \nabla^3 V(0)$, $\Sigma = H^{-1}$.
 This is the connected ("cumulant") part of the $t^{-2}$ coefficient — it
 equals the full pair coefficient `cov2_full` minus the disconnected piece
 `expNumeratorCoeff(φ) · expNumeratorCoeff(ψ)`. -/
-private noncomputable def cov2Coefficient
+noncomputable def cov2Coefficient
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
     (hV : PotentialTensorApprox V H)
@@ -3968,7 +3968,7 @@ asymptote `|t² · N_t(φψ) - cov2Coefficient_full · D_t| ≤ K/t`; the
 disconnected piece cancels in the wrapper against
 `(t · E_t[φ])(t · E_t[ψ]) → μ_φ · μ_ψ` from the explicit expectation
 theorem (Stage 4), leaving `t² · gibbsCov → cov2Coefficient`. -/
-private noncomputable def cov2Coefficient_full
+noncomputable def cov2Coefficient_full
     (V φ ψ : (ι → ℝ) → ℝ) (H Hinv : (ι → ℝ) →L[ℝ] (ι → ℝ))
     (a b : ι → ℝ)
     (hV : PotentialTensorApprox V H)
