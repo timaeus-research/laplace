@@ -48,3 +48,19 @@ LLC statements.
 - GPT-6 Astra: candidate A (same additions)
 
 Agreed.
+
+## Result
+
+Committed as `Laplace/TwoD/ValleyQuadratic.lean` (74db0e8), 336 lines, 0 sorries, `lean-state check` clean.
+
+Theorems: `quadFn`, `valleySlope`, `rosenbrock_eq_quadValley`; for every continuous floor `g`:
+`gibbsExpectation_valley_of_poly`, `gibbsExpectation_valley_self` (`⟨L⟩ = 1/t`), `gibbsExpectation_valley_self_sq`
+(`2/t²`), `gibbsCov_valley_self` (`1/t²`); quadratic floors: `gibbsExpectation_quadValley_{fst, fst_sq, snd, fst_mul_snd,
+snd_sq, self}`, `gibbsCov_quadValley_{fst_fst, fst_snd, snd_snd}`; `quadValleyHess`, `quadValleySigma`,
+`quadValleyHess_rosenbrock`, `quadValleyHess_smul_inv`, `quadValleyCov`, `quadValleyCov_eq_laplace_add`
+(`Cov = (tH)⁻¹ + (2b²/t²) e_y e_yᵀ`), `quadValleyCov_quadForm`; `quadValleyT`, `quadValleyQ`, `quadValley_taylor`,
+`contractQ_quadValley`, `contractT_quadValley`, `bubble_quadValley`, `tadpoleLine_quadValley`,
+`oneLoopPi_quadValley` (`Π = 2a²b²(p,−1)(p,−1)ᵀ`), `oneLoopCov_quadValley` (exact).
+
+Surprises: none; the Rosenbrock proofs generalised line for line with symbolic coefficient matrices. GPT corrected an
+aside of mine (`κ₃(y) = 6bp²/t² + 8b³/t³`, not `8b³/t³`), which is why no third cumulant is claimed here.
