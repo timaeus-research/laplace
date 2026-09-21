@@ -1693,3 +1693,14 @@ matrix version is `whiteningOf`.
 - Integrability of raw entries: express them as finite linear combinations of the eigen entries (`pooledRaw_apply_eq_sum`) and use
   `integrable_finsetSum`/`.const_mul`/`.mul_const`; then `integral_finsetSum`, `integral_mul_const`, `integral_const_mul` commute the
   expectation. Never try to prove `L⁴` of the raw coordinates directly.
+### Relative chart arc (RelativeChartLeading, RelativeChartFamily)
+
+- A stuck `IsFiniteMeasureOnCompacts ?μ` (from `integrableOn_const`, `IsCompact.measure_lt_top`,
+  `Continuous.integrable_of_hasCompactSupport`) means nothing fixed the measure: pass
+  `(μ := (volume : Measure (ℝ × EuclidD n)))` explicitly.
+- `hasDerivAt_integral_of_dominated_loc_of_deriv_le` with `(s := Set.univ) Filter.univ_mem` when the
+  bound is global; the derivative-bound binder order is `∀ᵐ y, ∀ s ∈ univ, ‖F' s y‖ ≤ bound y`.
+- A sum of `if p i then f i else 0` over `univ`: `Finset.sum_ite, Finset.sum_const_zero, add_zero`
+  turns it into the sum over `univ.filter p`; combine with `tendsto_finsetSum` for termwise limits.
+- `HasCompactSupport fun y ↦ χ (0, y)` from `HasCompactSupport χ`: `IsCompact.of_isClosed_subset`
+  of `Prod.snd '' tsupport χ` with `closure_minimal`.
