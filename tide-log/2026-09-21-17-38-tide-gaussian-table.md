@@ -64,3 +64,17 @@ bookkeeping; "unconditional" means the table hypothesis is discharged (Gaussian 
 - GPT-6 Astra: A+B+C
 
 Agreed.
+
+## Result
+
+Committed as `b09e163` on `tide/gaussian-table` (`Laplace/Sampler/GaussianTable.lean`, 260 lines; full `lake build` and `scripts/sorries` clean:
+0 sorry, 0 axiom, 0 native_decide).
+
+Theorems: `orthonormal_orthoCol`, `hasGaussianLaw_of_map_stdGaussian`, `memLp_two_inner_of_stdGaussian`,
+`covariance_inner_inner_of_stdGaussian`, `iIndepFun_inner_window`, `iIndepFun_of_windows`, `fourthMomentTable_projNoise_dir`,
+`frobenius_ula_le`.
+
+Surprises: Mathlib's `HasGaussianLaw` API did all the heavy lifting (`iIndepFun.hasGaussianLaw`, `iIndepFun_of_covariance_inner`,
+`covarianceBilin_stdGaussian`); the only real friction was the Pi-type instance mismatch that rules out `map_fun` in favour of
+`map_of_measurable`, and the finite-window → ℕ passage, which is ~40 lines of Finset gymnastics through the finite-subfamily
+characterisation of independence.
