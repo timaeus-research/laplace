@@ -239,6 +239,7 @@ import Laplace.Multi.CoordinateMomentDeterminacy
 import Laplace.Multi.TruthVariation
 import Laplace.Multi.ToyCrossover
 import Laplace.Multi.MorseBottResponse
+import Laplace.Multi.TotalVariationResponse
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
