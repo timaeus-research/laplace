@@ -46,3 +46,9 @@ multiplicative identities (not literal quotients) plus the two closed forms; exa
 - GPT-6 Astra: A+B+C+D
 
 Agreed.
+
+## Result
+
+Committed on `tide/rosenbrock-e5` at 91d8cf8 (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/TwoD/RosenbrockE5.lean`: `rosenHess_mulVec_stiff`, `laplace_stiff`, `rosenCov_stiff`, `rosenCov_stiff_ratio` (factor `1 + 2a/t`), `rosenCov_stiff_ratio_100_1000` (`6/5`), `rosenCov_stiff_ratio_100_10000` (`51/50`), `laplace_flat`, `rosenCov_flat_ratio` (`1 + 8/(t(25 + 4/a))`), `rosenCov_frobenius_sq` (`4/t⁴`), `laplace_frobenius_sq` (`(9 + (4 + 1/a)²)/t²`), `rosenCov_frobenius_rel`, `rosenbrock_llc`.
+
+Surprises: (i) the eigenvector remark in the first draft had `H w = 10a w + …`; the correct identity is `H (2,-1) = 5a (2,-1) + (2,0)` (GPT flagged the same slip independently); (ii) the rational corollaries need the scalar numerals pinned to `ℝ` (`((1000 : ℝ) • rosenHess (100 : ℝ))⁻¹`) or `rw` cannot unify the general lemma against them.
