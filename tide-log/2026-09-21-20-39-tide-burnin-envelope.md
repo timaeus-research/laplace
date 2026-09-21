@@ -63,3 +63,9 @@ Saved verbatim in `tide-log/gpt_burnin_envelope_v1.md`. Summary: A–C correct w
 - GPT-6 Astra: A+B+C
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/burnin-envelope` at cd77779 (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/BurnInEnvelope.lean` (316 lines): `tau_mono`, `excess_mono`, `burnin_term_eq`, `div_one_add_mono`, `burnin_term_mono`, `inflation_sum_le_free`, `shortfall_bd_sum_le_free`, `envelope_sum_le_free`, `llc_rel_rms_le_free`, `monte_carlo_term_eq`, `llc_rel_rms_le_free'`.
+
+Surprises: (i) the envelope term `(1+ρ²)/((1−ρ²)(1−hp/2)²)` is not monotone in `ρ` (the numerical check caught the first draft's claim) — the product-of-maxima bound is the honest spectrum-free statement, and GPT located the sharper `max(f(s), f(r))`; (ii) GPT's factor-of-two correction: the note's `20κ` is the chain's autocorrelation time, the variance envelope uses the squared chain's `≈ 10κ`; (iii) three hypotheses (`0 ≤ x` in `excess_mono`, `0 ≤ ρ` in the identity, `hp` in the inflation sum) were redundant and caught by the linter.
