@@ -65,3 +65,17 @@ separate algebraic task — left as a follow-up. Votes **A** plus the quintic pa
 
 Agreed. Note: `cov2Coefficient` was `private` in `CovarianceExplicit.lean`, which made the tagged theorem's statement unnameable from outside;
 this tide makes it (and `cov2Coefficient_full`) public.
+
+## Result
+
+Committed as `Laplace/Multi/HessianRoute.lean` (2141949), 297 lines, 0 sorries, `lean-state check` clean; `cov2Coefficient` and
+`cov2Coefficient_full` made public in `CovarianceExplicit.lean`.
+
+Theorems: `gibbsCov_first_order_rate_sharp_posDef`, `gibbsExpectation_first_order_rate_explicit_posDef`,
+`gibbsCov_first_order_rate_explicit_posDef`; `abs_coord_le_norm`, `abs_quadForm_matCLM_le`, `quadObservable`, `quadObservable_A`,
+`trASig_matCLM_inv`, `llc_first_order_rate_posDef`; `potentialObservable`, `llc_potential_first_order_rate_posDef`;
+`quadObservableQuintic`, `covK_first_order_rate_posDef`; `meanShift`, `meanShift_quadValley`, `gibbsMean_quadValley_eq_meanShift`.
+
+Surprises: the tagged theorem's statement used a private definition (fixed); otherwise pure bookkeeping — the observable packages are
+long but every field is either a seabed field or the one sup-norm bound. GPT's remark to distinguish the quadratic `K` from the loss `V`
+produced the theorem the note actually needs (`2t⟨V⟩ → d`).
