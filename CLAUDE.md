@@ -1417,3 +1417,14 @@ matrix version is `whiteningOf`.
   `integral_eq_lintegral_of_nonneg_ae (ae_of_all _ …) (cont.aestronglyMeasurable)` read backwards.
 - `P⁻¹` and `matCLM` need `[DecidableEq ι]`: give it as an explicit instance binder on the theorems whose *types* mention them, and use
   `classical` inside proofs that only need it internally (the `unusedDecidableInType` linter flags the other arrangement).
+- Total-variation bounds from uniform-in-test bounds: test against the sign of the remainder,
+  `f := fun x ↦ if 0 ≤ g x then 1 else -1` (`Measurable.ite (measurableSet_le measurable_const hg)`),
+  so `∫ f * g = ∫ |g|`; avoids the signed-measure API entirely.
+- Bounds `a ^ e ≤ a₀ ^ e` for `0 < a₀ ≤ a`, `e ≤ 0`: `Real.rpow_neg` on both sides then
+  `inv_anti₀ (Real.rpow_pos_of_pos …) (Real.rpow_le_rpow …)`; `positivity` cannot see `a > 0` from
+  a hypothesis, so give `(Real.rpow_pos_of_pos ha _).le` explicitly.
+- A cutoff family vanishing off a common `K` has vanishing `u`-derivative off `K`: `HasDerivAt.unique`
+  against `hasDerivAt_const` after rewriting the family to the zero function.
+- `omit [Nonempty X] in` before theorems that don't use the section instance (linter
+  `unusedSectionVars`); `(_h : TiltData …)` keeps dot-notation while silencing unused-variable.
+- Unicode `Θ` in the slop LaTeX breaks pdflatex: write `$\Theta$`.
