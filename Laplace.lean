@@ -242,3 +242,4 @@ import Laplace.Sampler.GaussianUniqueness
 import Laplace.Sampler.FullStep
 import Laplace.Sampler.AR1Real
 import Laplace.Sampler.RandomMap
+import Laplace.Sampler.ULAEigen

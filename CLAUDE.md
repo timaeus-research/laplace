@@ -285,6 +285,22 @@ lambda differs syntactically from the proof term's inferred function (`measurabl
 `AEMeasurable.map_map_of_aemeasurable`. `‖t‖² = t.ofLp ⬝ᵥ t.ofLp` on `EuclideanSpace` via `real_inner_self_eq_norm_sq`
 and `EuclideanSpace.inner_eq_star_dotProduct`.
 
+### Projections of Gaussian noise and pushing laws through functionals (Sampler/ULAEigen)
+
+Work under `stdGaussian E` first, with the functional `innerSL ℝ u` (`innerSL_apply_apply : innerSL 𝕜 v w = inner v w`,
+`innerSL_apply_norm : ‖innerSL 𝕜 x‖ = ‖x‖`): mean `∫ innerSL u = 0` by `(innerSL ℝ u).integral_comp_comm (μ := stdGaussian E)
+(φ := id) IsGaussian.integrable_id` (pin `μ`, otherwise `IsGaussian ?μ` is stuck), second moment by
+`variance_dual_stdGaussian` + `variance_of_integral_eq_zero`, `MemLp` by `IsGaussian.memLp_two_id` (implicit `μ`, give the
+expected type) and `ContinuousLinearMap.comp_memLp'`. Transfer to random variables with law `P.map ξ = stdGaussian E` via
+`integral_map (f := fun z => …)` and `memLp_map_measure_iff (g := fun z => …)`: pass the lambda explicitly, since the
+measurability proof terms mention `⇑(innerSL ℝ u)` and the rewrite pattern would not match `inner ℝ u z`. Mutual independence
+`iIndepFun ξ P` gives pairs by `hind.indepFun hij`, pushed through a functional by `IndepFun.comp (φ := …) (ψ := …)`.
+When a lemma has an implicit numerical parameter fixed by one hypothesis (`white_of_indep (v := …)`), pass it: otherwise the
+first `rw` that closes a goal by `rfl` assigns it to an unsimplified expression.
+A deterministic projection lemma (`inner_vecChain_eq_realChain`, by induction with `inner_add_right`, `real_inner_smul_right`)
+keeps all probability out of the AR(1) identification; columns of `orthoOf hQ` are unit eigenvectors by entrywise algebra from
+`Q * U = U * diagonal p` (`mul_apply`, `mul_diagonal`) and `Uᵀ U = 1` (`one_apply_eq`), packaged with `WithLp.toLp 2`.
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,
