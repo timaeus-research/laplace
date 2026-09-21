@@ -1048,3 +1048,41 @@ matrix version is `whiteningOf`.
 - `Submodule.span_mul_span` + `Submodule.mul_mem_mul` to show a span is closed under products when
   generators multiply to generators (monomials via `Fin.append`, `Fin.prod_univ_add`).
 - `ring` that only closes via `ring_nf` prints an info "Try this: ring_nf"; use `ring_nf` there.
+
+### Gaussian integration by parts on `ι → ℝ` (tide `gaussian-moments-high`)
+
+- Mathlib's `integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable` works on `ι → ℝ` with `volume`
+  (the `IsAddHaarMeasure` instance is found). It takes three integrability facts and
+  `∀ x ∈ tsupport g, DifferentiableAt ℝ f x` (give `fun x _ => (h x).differentiableAt`). Prove
+  `HasFDerivAt` statements and rewrite with `.fderiv`; never unfold `fderiv`.
+- Product rule: `HasFDerivAt.finsetProd (hg : ∀ i ∈ u, HasFDerivAt (g i) (g' i) x) :
+  HasFDerivAt (∏ i ∈ u, g i ·) (∑ i ∈ u, (∏ j ∈ u.erase i, g j x) • g' i) x` (the `finset_prod`
+  spelling is deprecated). Coordinates: `hasFDerivAt_apply i u : HasFDerivAt (fun f => f i) (proj i) u`.
+  Sums of functions: `HasFDerivAt.sum` after `have : quadForm H = ∑ i, fun u => u i * (H u) i := by
+  funext u; simp [quadForm, Finset.sum_apply]`. Evaluate derivatives with
+  `simp only [_root_.sum_apply, _root_.add_apply, _root_.smul_apply, ContinuousLinearMap.comp_apply,
+  ContinuousLinearMap.proj_apply, smul_eq_mul]` (`ContinuousLinearMap.sum_apply` etc. are deprecated).
+- `Integrable.neg.congr` presents the function as `-f` (Pi negation): put `Pi.neg_apply` in the simp
+  set, otherwise `ring` faces `(-fun u => …) u`.
+- `∏_{s ≠ r}` as `∏ s, if s = r then 1 else f s`: `prod_erase_eq_prod_ite` converts from
+  `univ.erase r` (`Finset.prod_erase` with `f r = 1`), `prod_ite_eq_prod_succAbove` reindexes to
+  `Fin n` (`Fin.prod_univ_succAbove`, `Fin.succAbove_ne`); the `Fin 0` case is `r.elim0` after
+  `cases n`.
+- Products of linear forms: `Finset.prod_univ_sum` then `Fintype.piFinset_univ` gives
+  `∏ s, ∑ k, f s k = ∑ k : Fin n → ι, ∏ s, f s (k s)`. Monomial to exponent form:
+  `rw [← Finset.prod_fiberwise univ k (fun s => v (k s))]` on the `Fin n` product *before*
+  `← Finset.prod_mul_distrib` against an `ι`-indexed product (the two products have different index
+  types until then).
+- Instantiating a `Fin n → ι` statement at `![a, b, c]`: `simp only [Fin.sum_univ_three,
+  Fin.prod_univ_three, Fin.isValue, cons_val_zero, cons_val_one, cons_val, mul_ite, mul_one, ite_mul,
+  one_mul, Fin.reduceEq, ↓reduceIte, one_ne_zero, zero_ne_one] at h` (from `simp?`). Do not let
+  `simp` at the hypotheses fire lemmas that change the shape you later `rw` against: `matCLM_apply`
+  is `@[simp]`, so `rw [integral_sub hI1 hI2]` fails on `(P *ᵥ u) l` vs `(matCLM P) u l` unless the
+  simp set is explicit (or `-matCLM_apply`).
+- `LaplaceCovHypotheses`, `LaplaceCov4MomentHypotheses`, `LaplaceCov6MomentHypotheses` are Props:
+  build them with `theorem … where`, not `def`.
+- `linter.unusedFintypeInType` fires falsely on `HasFDerivAt`/`fderiv` statements over `ι → ℝ` (the
+  Pi norm needs `Fintype ι`; `omit [Fintype ι]` breaks elaboration): use
+  `set_option linter.unusedFintypeInType false in`.
+- `continuous_gaussianWeight` (RescaledIntegrals) carries an unneeded `[DecidableEq ι]`;
+  `unfold gaussianWeight quadForm; fun_prop` proves continuity without it.
