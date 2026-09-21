@@ -258,3 +258,6 @@ import Laplace.Patterning.PosteriorSusceptibility
 import Laplace.Patterning.VolumeExponent
 import Laplace.Patterning.IsotropicExpansion
 import Laplace.Patterning.OrnsteinUhlenbeck
+import Laplace.Patterning.OUPathwise
+import Laplace.Patterning.OUIncrement
+import Laplace.Patterning.OUBrownian

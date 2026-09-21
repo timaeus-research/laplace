@@ -236,6 +236,43 @@ after `simp only [id_eq]`; covariance: `covarianceBilin_map IsGaussian.memLp_two
 instances for `μ ∗ ν` exist). Quadratic-form algebra: `mulVec_transpose`, `dotProduct_mulVec`, `vecMul_vecMul`.
 `ContinuousLinearMap.mul_apply` is deprecated: `mul_apply_eq_comp`.
 
+### Matrix-valued calculus and the topology diamond (Patterning/OU*)
+
+- `Matrix ι ι ℝ` carries the Pi topology globally and the `linftyOp` norm only as a
+  `local instance`. Bare `TopologicalSpace` searches in a *statement* (`HasDerivAt`,
+  `Continuous`, `ContinuousOn`) pick the Pi instance; lemmas that require a
+  `SeminormedAddCommGroup` produce the norm topology. The two are defeq at default
+  transparency, so `exact` works but `simpa`, `simp` and unification with an undetermined
+  codomain fail. Consequences: state the codomain explicitly
+  (`isCompact_Icc.exists_bound_of_continuousOn (E := Matrix ι ι ℝ) hF'.continuousOn`), prefer
+  `exact ((h₁.sub h₂).congr_deriv (sub_self _))` over `simpa using h₁.sub h₂`, and never write
+  `IntervalIntegrable M volume a b` or `LinearMap.toContinuousLinearMap` for a matrix-valued
+  `M` (the elaborator asks for `ENormedAddMonoid (Matrix ι ι ℝ)` w.r.t. the Pi topology and
+  fails). Take `Continuous M` instead and derive integrability inside the proof.
+- Avoid matrix-valued integrals altogether where possible: apply the FTC to the vector path
+  `u ↦ F u *ᵥ v` (`integral_deriv_mulVec_const`) or to the scalar `u ↦ x ⬝ᵥ (C u *ᵥ y)`
+  (`hasDerivAt_dotProduct_mulVec`, `ouCovInt_bilin`), and get symmetry/PSD of an integral
+  matrix from the derivatives of its entries (`hasDerivAt_entry`, `is_const_of_deriv_eq_zero`).
+- `IsCompact.exists_bound_of_continuousOn'` (primed) is the *multiplicative* version; the norm
+  bound for additive groups is the unprimed `IsCompact.exists_bound_of_continuousOn`.
+- `rw [← node_last s n]` rewrites *every* `s` in the goal, including the one inside `node s n k`;
+  use a `calc` step instead of rewriting the right-hand side.
+- `simp_rw [heq]` with `heq : ∀ n, f n = g n` does nothing on an eta-reduced `Tendsto f`; first
+  `rw [show f = fun n => g n from funext heq]`. `simp_rw` also fails if *any* lemma in the list
+  makes no progress: with `set m := e with hm`, rewrite `hm` before a lemma stated in terms of `e`.
+- Mathlib Brownian API on this pin: `IsGaussianProcess.hasGaussianLaw_increments` gives the joint
+  law of increments along `t : Fin (n+1) → T`; combine with `HasGaussianLaw.map_fun` of a CLM
+  `∑ k, (L k).comp (ContinuousLinearMap.proj k)` for weighted increment sums. Scalar covariance
+  arithmetic: `covariance_fun_sub_fun_sub`, `covariance_fun_sum_fun_sum`,
+  `covariance_const_mul_left/right`, `covariance_self`, all needing `MemLp _ 2` (from
+  `HasGaussianLaw.memLp_two`). Characteristic functions: `HasGaussianLaw.charFun_map_eq`,
+  `charFun_map_const_add`, `charFun_multivariateGaussian`, `Measure.ext_of_charFun`; limits via
+  `tendsto_integral_of_dominated_convergence` with bound `1` and `Complex.norm_exp_ofReal_mul_I`;
+  a.e. measurability of the limit via `aemeasurable_of_tendsto_metrizable_ae`.
+- Lake 5 keeps compiled modules of dependencies in a content-addressed artifact cache, so
+  `lake env lean File.lean` fails with "object file ... does not exist" for cached imports. Check
+  a file with `lake build Laplace.Patterning.File` (or `lean-state`, which uses `lake setup-file`).
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,
