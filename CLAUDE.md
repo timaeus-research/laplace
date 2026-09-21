@@ -1019,3 +1019,32 @@ module cannot see this (it does not import the sibling). Before naming a new
 def in `Laplace.Multi`/`Laplace.Sampler`, `grep -rn "def foo\b" Laplace/`;
 e.g. `whitening` already lives in `QuadForm.lean` (a `Fin d` CLM `√H`), so the
 matrix version is `whiteningOf`.
+## Gotchas from the Morse–Bott / cyclic-blindness arc (2026-09-21)
+
+- `open Complex` brings the NOTATION `cexp` for `Complex.exp`: a def named `cexp` silently becomes
+  `Complex.exp` applied to your arguments ("Function expected at cexp ↑N"). Pick another name.
+- `conj` needs `open ComplexConjugate`; otherwise "Unknown identifier conj" and downstream terms
+  elaborate with `sorry` types (e.g. `w : ℕ` for a complex root).
+- `PiLp.continuous_ofLp` takes explicit `p` and `β`: `PiLp.continuous_ofLp 2 (fun _ : Fin r ↦ ℝ)`.
+- `⬝ᵥ` / `*ᵥ` are scoped: `open scoped Matrix` (error: "elaboration function for subscriptTerm").
+- `volume` on a product type is `Measure.volume_eq_prod` (namespace `MeasureTheory.Measure`), then
+  `integral_prod_symm f hf : ∫ z, f z = ∫ y, ∫ x, f (x, y)` (integrability of the JOINT function).
+- `continuous_of_dominated` (root namespace, MeasureTheory) for parametric integrals; bound must be
+  independent of the parameter, hence assume uniform ellipticity globally rather than derive it.
+- `Continuous.ae_eq_iff_eq` takes the measure EXPLICITLY: `(hf.ae_eq_iff_eq volume hg).mp`.
+- After `set A := ∫ … with hA`, hypotheses introduced LATER still contain the integral, not `A`;
+  `rw [hA]` (forward) unfolds `A` in the goal to match them.
+- `rw [← integral_const_mul]` picks the FIRST `c * ∫` it sees (possibly the wrong side); do
+  `rw [mul_assoc]; congr 1` first to isolate the factor you mean.
+- Rotation invariance of Lebesgue measure on `ℂ`: `Measure.map_linearMap_addHaar_eq_smul_addHaar`
+  with `f := ((rotation a).toLinearEquiv : ℂ →ₗ[ℝ] ℂ)` and `det_rotation`; then
+  `MeasurePreserving.integral_comp _ (rotation a).toHomeomorph.measurableEmbedding` (no integrability
+  needed), `Circle.coe_exp` to unfold `rotation (Circle.exp θ)`.
+- `Complex.exp_two_pi_mul_I_mul_div_eq_one_iff (hN : N ≠ 0) : exp (2πI k / N) = 1 ↔ N ∣ k`.
+- `IsAlgClosed.exists_pow_nat_eq (x : ℂ) (hn : 0 < n) : ∃ z, z ^ n = x` for N-th roots.
+- Stone–Weierstrass: `ContinuousMap.exists_mem_subalgebra_near_continuousMap_of_separatesPoints`
+  with `A := Algebra.adjoin ℝ (Set.range coords)` in `C(K, ℝ)`, `K = tsupport f` (`CompactSpace K`
+  from `isCompact_iff_compactSpace`); `Algebra.adjoin_induction with | mem | algebraMap | add | mul`.
+- `Submodule.span_mul_span` + `Submodule.mul_mem_mul` to show a span is closed under products when
+  generators multiply to generators (monomials via `Fin.append`, `Fin.prod_univ_add`).
+- `ring` that only closes via `ring_nf` prints an info "Try this: ring_nf"; use `ring_nf` there.
