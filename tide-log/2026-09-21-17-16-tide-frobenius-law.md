@@ -72,3 +72,16 @@ corollary; `sqrt(d/(CN))` as a relative RMS upper bound).
 - GPT-6 Astra: A+B+C
 
 Agreed.
+
+## Result
+
+Committed as `fd27f11` on `tide/frobenius-law` (`Laplace/Sampler/FrobeniusLaw.lean`, 424 lines; full `lake build` and `scripts/sorries` clean:
+0 sorry, 0 axiom, 0 native_decide).
+
+Theorems: `integral_sum_sq_sub_eq`, `variance_sum_eq_sum_cov`, `pooledSecondMoment`, `integrable_pooledSecondMoment`,
+`integrable_pooledSecondMoment_sq`, `variance_pooledSecondMoment`, `frobenius_pooledSecondMoment`, `frobenius_pooledSecondMoment_le`,
+`integral_pooledSecondMoment`, `frobenius_pooledSecondMoment_target`; `AR1Chain.inner_x_x_of_orthogonal'`, `gram_realChain_dir`,
+`isLinComb_realChain_dir`, `frobenius_realChain_le`.
+
+Surprises: the whole law is ~400 lines because every layer was already in the seabed (moment-form Wick, Gram tables, Toeplitz bound); the
+only design decision that mattered was quantifying the linear-combination hypothesis over the window rather than over all times.
