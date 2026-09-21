@@ -1688,3 +1688,14 @@ matrix version is `whiteningOf`.
   `add_le_add_right h a : a + b ≤ a + c` adds on the *left*; when the goal has the changing summand first, use `add_le_add_left`.
 - `√(X / Y) = √X / √Y` is `Real.sqrt_div (hx : 0 ≤ X) Y`; the nonnegativity of an integral of a sum of squares is
   `integral_nonneg fun ω => Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => sq_nonneg _`.
+### Relative chart arc (RelativeChartLeading, RelativeChartFamily)
+
+- A stuck `IsFiniteMeasureOnCompacts ?μ` (from `integrableOn_const`, `IsCompact.measure_lt_top`,
+  `Continuous.integrable_of_hasCompactSupport`) means nothing fixed the measure: pass
+  `(μ := (volume : Measure (ℝ × EuclidD n)))` explicitly.
+- `hasDerivAt_integral_of_dominated_loc_of_deriv_le` with `(s := Set.univ) Filter.univ_mem` when the
+  bound is global; the derivative-bound binder order is `∀ᵐ y, ∀ s ∈ univ, ‖F' s y‖ ≤ bound y`.
+- A sum of `if p i then f i else 0` over `univ`: `Finset.sum_ite, Finset.sum_const_zero, add_zero`
+  turns it into the sum over `univ.filter p`; combine with `tendsto_finsetSum` for termwise limits.
+- `HasCompactSupport fun y ↦ χ (0, y)` from `HasCompactSupport χ`: `IsCompact.of_isClosed_subset`
+  of `Prod.snd '' tsupport χ` with `closure_minimal`.
