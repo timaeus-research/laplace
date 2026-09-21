@@ -1575,6 +1575,38 @@ matrix version is `whiteningOf`.
 - Theorems mixing a probability-measure section with pure algebra (spectral sums, `Fintype.card`) go in their own `section` with only
   `{ι} [Fintype ι]`; keep `[DecidableEq ι]` out unless an `if` appears in the statement (`unusedDecidableInType`).
 
+### The ULA law for a shifted precision in another matrix's eigenbasis (tide `ula-localised`)
+
+- `Uᵀ (P * P) U = (Uᵀ P U)²` needs `U Uᵀ = 1` inserted: state the reassociated form as a `have` proved by `simp only [Matrix.mul_assoc]`,
+  then `rw [hUU', Matrix.mul_one]`. With `Uᵀ P U = diagonal a` in hand, `Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_smul, Matrix.smul_mul`
+  distribute the conjugation over `P − (h/2) • (P * P)`, and `← diagonal_smul, diagonal_sub` (forward, to combine) give
+  `diagonal (a − (h/2) a²)`.
+- `ulaCov P h = (P − (h/2) • (P * P))⁻¹` conjugates by the same exhibit-the-inverse pattern as `(tH + γI)⁻¹`; write the denominator
+  nonvanishing as `a − (h/2)a² = a (1 − h a/2)` (`ring`) and use `mul_ne_zero`.
+- Reciprocal comparisons: `one_div_le_one_div_of_le (hpos : 0 < a) (h : a ≤ b) : 1 / b ≤ 1 / a` (there is no `one_div_le_one_div_iff`);
+  `mul_le_of_le_one_right (ha : 0 ≤ a) (h : b ≤ 1) : a * b ≤ a`; `le_div_self (ha : 0 ≤ a) (hb : 0 < b) (hb1 : b ≤ 1) : a ≤ a / b`.
+- Comparing two sums termwise after `le_div_iff₀`: `Finset.mul_sum, Finset.mul_sum, Finset.sum_mul` then `Finset.sum_le_sum`; inside, isolate
+  the core inequality `x / q * Q ≤ x` (`div_mul_eq_mul_div, div_le_iff₀`) as a `have` and finish with a two-line `calc` (`ring` to reassociate,
+  `mul_le_mul_of_nonneg_left`). A bare `refine mul_le_mul_of_nonneg_right ?_ (by norm_num)` leaves an unassignable `0 ≤ ?m`.
+- `h > 0` is not needed for the conjugation and trace identities (only `h aᵢ < 2` and `aᵢ > 0`); it is needed for the ordering statements
+  (`0 ≤ h aᵢ`). The unused-variable linter flags the superfluous hypothesis.
+### Separable tensors on `Fin d` and diagonal algebra (tide `separable-oneloop`)
+
+- Contractions of a separable tensor (`if i = j ∧ j = k then α i else 0`) against a diagonal matrix: work entrywise (`ext i j`,
+  `simp only [def, Matrix.of_apply, diagonal_apply]`), kill each summation index with
+  `rw [Finset.sum_eq_single i (fun k _ hk => by simp [Ne.symm hk]) (by simp)]` (the off-index hypothesis comes as `k ≠ i`; the `if` reads
+  `i = k`, hence `Ne.symm`), then `by_cases hij : i = j` with `subst`/`simp`. Four nested sums (the bubble) are four such rewrites.
+- `diagonal_add : diagonal d₁ + diagonal d₂ = diagonal (d₁ + d₂)` and `diagonal_smul : diagonal (r • d) = r • diagonal d` point in
+  opposite directions: to *collapse* a sum of scaled diagonals write `simp only [← diagonal_smul, diagonal_add]` — `← diagonal_add`
+  instead *splits* a diagonal whose entries are sums (it will happily rewrite the right-hand side of your goal), after which `congr 1`
+  pairs the wrong summands.
+- `(t • diagonal λ)⁻¹`: `Matrix.inv_eq_right_inv`, rewrite `t • diagonal λ = diagonal (fun i => t * λ i)` by `← diagonal_smul; rfl`,
+  `diagonal_mul_diagonal`, a `funext` identity via `mul_one_div_cancel`, `diagonal_one`.
+- After `congr 1; funext i` on `diagonal f = diagonal g` the goal is already the real identity; a `simp only [Pi.add_apply]` there makes
+  no progress (error). Use `simp only [Pi.smul_apply, smul_eq_mul]` only when a `•` is present.
+- Positivity of a quadratic `g u² + 4αu + 12λ` under a discriminant hypothesis: multiply by `g`, complete the square
+  (`g·q = (g u + 2α)² + (12λg − 4α²)`, by `ring`), `nlinarith [sq_nonneg _]`, and divide back with `pos_of_mul_pos_right h hg.le`.
+  `λ > 0` is not needed once `g > 0` and `α² < 3λg` are given — the linter will tell you.
 ### Toeplitz sums and running means of the AR(1) chain (tide `autocorrelation-time`)
 
 - Weighted geometric sums `∑_{m<N} (N − m − 1) ρ^{m+1}` whose summand mentions `N`: induct on `N`, `Finset.sum_range_succ`, then rewrite
