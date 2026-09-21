@@ -41,10 +41,10 @@ noncomputable def matCLM (P : Matrix ι ι ℝ) : (ι → ℝ) →L[ℝ] (ι →
 theorem quadForm_matCLM (P : Matrix ι ι ℝ) (u : ι → ℝ) : quadForm (matCLM P) u = u ⬝ᵥ P *ᵥ u := by
   simp [quadForm, dotProduct]
 
-/-! ### The whitening change of variables -/
+/-! ### The whiteningOf change of variables -/
 
-/-- The whitening matrix `M = U diag(p^{-1/2})` with `P = U diag(p) Uᵀ`. -/
-noncomputable def whitening {P : Matrix ι ι ℝ} (hP : P.PosDef) : Matrix ι ι ℝ :=
+/-- The whiteningOf matrix `M = U diag(p^{-1/2})` with `P = U diag(p) Uᵀ`. -/
+noncomputable def whiteningOf {P : Matrix ι ι ℝ} (hP : P.PosDef) : Matrix ι ι ℝ :=
   orthoOf hP.1 * diagonal fun i => (Real.sqrt (hP.1.eigenvalues i))⁻¹
 
 theorem mul_orthoOf_eq_diagonal {P : Matrix ι ι ℝ} (hP : P.PosDef) :
@@ -57,10 +57,10 @@ theorem mul_orthoOf_eq_diagonal {P : Matrix ι ι ℝ} (hP : P.PosDef) :
 theorem sqrt_eigenvalue_pos {P : Matrix ι ι ℝ} (hP : P.PosDef) (i : ι) :
     0 < Real.sqrt (hP.1.eigenvalues i) := Real.sqrt_pos.mpr (hP.eigenvalues_pos i)
 
-theorem whitening_transpose_mul_mul {P : Matrix ι ι ℝ} (hP : P.PosDef) :
-    (whitening hP)ᵀ * P * whitening hP = 1 := by
+theorem whiteningOf_transpose_mul_mul {P : Matrix ι ι ℝ} (hP : P.PosDef) :
+    (whiteningOf hP)ᵀ * P * whiteningOf hP = 1 := by
   have hUPU := orthoOf_transpose_mul_mul hP.1
-  unfold whitening
+  unfold whiteningOf
   rw [transpose_mul, diagonal_transpose]
   calc (diagonal (fun i => (Real.sqrt (hP.1.eigenvalues i))⁻¹) * (orthoOf hP.1)ᵀ) * P *
         (orthoOf hP.1 * diagonal (fun i => (Real.sqrt (hP.1.eigenvalues i))⁻¹))
@@ -78,11 +78,11 @@ theorem whitening_transpose_mul_mul {P : Matrix ι ι ℝ} (hP : P.PosDef) :
         linarith
 
 
-theorem whitening_mul_transpose {P : Matrix ι ι ℝ} (hP : P.PosDef) :
-    whitening hP * (whitening hP)ᵀ = P⁻¹ := by
+theorem whiteningOf_mul_transpose {P : Matrix ι ι ℝ} (hP : P.PosDef) :
+    whiteningOf hP * (whiteningOf hP)ᵀ = P⁻¹ := by
   symm
   apply Matrix.inv_eq_right_inv
-  unfold whitening
+  unfold whiteningOf
   rw [transpose_mul, diagonal_transpose]
   simp only [Matrix.mul_assoc]
   rw [← Matrix.mul_assoc P (orthoOf hP.1), mul_orthoOf_eq_diagonal hP]
@@ -99,21 +99,21 @@ theorem whitening_mul_transpose {P : Matrix ι ι ℝ} (hP : P.PosDef) :
   rw [h, diagonal_one, Matrix.one_mul, orthoOf_mul_transpose hP.1]
 
 
-theorem abs_det_whitening {P : Matrix ι ι ℝ} (hP : P.PosDef) :
-    |(whitening hP).det| = (Real.sqrt P.det)⁻¹ := by
-  have h := congrArg Matrix.det (whitening_transpose_mul_mul hP)
+theorem abs_det_whiteningOf {P : Matrix ι ι ℝ} (hP : P.PosDef) :
+    |(whiteningOf hP).det| = (Real.sqrt P.det)⁻¹ := by
+  have h := congrArg Matrix.det (whiteningOf_transpose_mul_mul hP)
   rw [det_mul, det_mul, det_transpose, det_one] at h
   have hdet := hP.det_pos
-  have hsq : (whitening hP).det ^ 2 = (P.det)⁻¹ := by
+  have hsq : (whiteningOf hP).det ^ 2 = (P.det)⁻¹ := by
     field_simp
     linarith [h]
   rw [← Real.sqrt_sq_eq_abs, hsq, Real.sqrt_inv]
 
 
 
-theorem det_whitening_ne_zero {P : Matrix ι ι ℝ} (hP : P.PosDef) : (whitening hP).det ≠ 0 := by
+theorem det_whiteningOf_ne_zero {P : Matrix ι ι ℝ} (hP : P.PosDef) : (whiteningOf hP).det ≠ 0 := by
   intro h
-  have := congrArg Matrix.det (whitening_transpose_mul_mul hP)
+  have := congrArg Matrix.det (whiteningOf_transpose_mul_mul hP)
   rw [det_mul, det_mul, det_transpose, h, mul_zero, det_one] at this
   exact zero_ne_one this
 
@@ -290,13 +290,13 @@ theorem continuous_coord_mul_gaussianWeight (P : Matrix ι ι ℝ) (i j : ι) :
     Continuous (fun u : ι → ℝ => u i * u j * gaussianWeight (matCLM P) u) :=
   ((continuous_apply i).mul (continuous_apply j)).mul (continuous_gaussianWeight _)
 
-theorem gaussianWeight_matCLM_whitening {P : Matrix ι ι ℝ} (hP : P.PosDef) (v : ι → ℝ) :
-    gaussianWeight (matCLM P) (whitening hP *ᵥ v) = Real.exp (-(1 / 2) * ∑ i, v i * v i) := by
+theorem gaussianWeight_matCLM_whiteningOf {P : Matrix ι ι ℝ} (hP : P.PosDef) (v : ι → ℝ) :
+    gaussianWeight (matCLM P) (whiteningOf hP *ᵥ v) = Real.exp (-(1 / 2) * ∑ i, v i * v i) := by
   unfold gaussianWeight
   rw [quadForm_matCLM]
   congr 2
-  have h := dotProduct_conj_mulVec (whitening hP)ᵀ P v v
-  rw [transpose_transpose, whitening_transpose_mul_mul hP, one_mulVec] at h
+  have h := dotProduct_conj_mulVec (whiteningOf hP)ᵀ P v v
+  rw [transpose_transpose, whiteningOf_transpose_mul_mul hP, one_mulVec] at h
   exact h
 
 
@@ -304,10 +304,10 @@ theorem gaussianWeight_matCLM_whitening {P : Matrix ι ι ℝ} (hP : P.PosDef) (
 theorem gaussianZ_matCLM {P : Matrix ι ι ℝ} (hP : P.PosDef) :
     gaussianZ (matCLM P) = Real.sqrt (2 * Real.pi) ^ Fintype.card ι * (Real.sqrt P.det)⁻¹ := by
   unfold gaussianZ
-  rw [integral_comp_mulVec (whitening hP) (det_whitening_ne_zero hP) _
+  rw [integral_comp_mulVec (whiteningOf hP) (det_whiteningOf_ne_zero hP) _
     (continuous_gaussianWeight _).aestronglyMeasurable]
-  simp_rw [gaussianWeight_matCLM_whitening hP]
-  rw [integral_std_gaussian_pi, abs_det_whitening hP]
+  simp_rw [gaussianWeight_matCLM_whiteningOf hP]
+  rw [integral_std_gaussian_pi, abs_det_whiteningOf hP]
   ring
 
 theorem gaussianZ_matCLM_pos {P : Matrix ι ι ℝ} (hP : P.PosDef) : 0 < gaussianZ (matCLM P) := by
@@ -318,17 +318,17 @@ theorem gaussianZ_matCLM_pos {P : Matrix ι ι ℝ} (hP : P.PosDef) : 0 < gaussi
 
 theorem integrable_gaussianWeight_matCLM {P : Matrix ι ι ℝ} (hP : P.PosDef) :
     Integrable (gaussianWeight (matCLM P)) := by
-  rw [← integrable_comp_mulVec_iff (whitening hP) (det_whitening_ne_zero hP) _
+  rw [← integrable_comp_mulVec_iff (whiteningOf hP) (det_whiteningOf_ne_zero hP) _
     (continuous_gaussianWeight _).aestronglyMeasurable]
-  simp_rw [gaussianWeight_matCLM_whitening hP]
+  simp_rw [gaussianWeight_matCLM_whiteningOf hP]
   exact integrable_std_gaussian_pi
 
 
 theorem integrable_coord_mul_gaussianWeight_matCLM {P : Matrix ι ι ℝ} (hP : P.PosDef) (i j : ι) :
     Integrable (fun u : ι → ℝ => u i * u j * gaussianWeight (matCLM P) u) := by
-  rw [← integrable_comp_mulVec_iff (whitening hP) (det_whitening_ne_zero hP) _
+  rw [← integrable_comp_mulVec_iff (whiteningOf hP) (det_whiteningOf_ne_zero hP) _
     (continuous_coord_mul_gaussianWeight P i j).aestronglyMeasurable]
-  simp_rw [gaussianWeight_matCLM_whitening hP, mulVec_apply_mul_mulVec_apply_mul]
+  simp_rw [gaussianWeight_matCLM_whiteningOf hP, mulVec_apply_mul_mulVec_apply_mul]
   exact integrable_finsetSum _ fun a _ => integrable_finsetSum _ fun b _ =>
     (integrable_coord_mul_std_gaussian_pi a b).const_mul _
 
@@ -336,18 +336,18 @@ theorem integrable_coord_mul_gaussianWeight_matCLM {P : Matrix ι ι ℝ} (hP : 
 /-- **Second moments**: `∫ uᵢ uⱼ e^{-½uᵀPu} = Z (P⁻¹)ᵢⱼ`. -/
 theorem integral_coord_mul_gaussianWeight_matCLM {P : Matrix ι ι ℝ} (hP : P.PosDef) (i j : ι) :
     ∫ u : ι → ℝ, u i * u j * gaussianWeight (matCLM P) u = gaussianZ (matCLM P) * P⁻¹ i j := by
-  rw [integral_comp_mulVec (whitening hP) (det_whitening_ne_zero hP) _
+  rw [integral_comp_mulVec (whiteningOf hP) (det_whiteningOf_ne_zero hP) _
     (continuous_coord_mul_gaussianWeight P i j).aestronglyMeasurable]
-  simp_rw [gaussianWeight_matCLM_whitening hP, mulVec_apply_mul_mulVec_apply_mul]
+  simp_rw [gaussianWeight_matCLM_whiteningOf hP, mulVec_apply_mul_mulVec_apply_mul]
   rw [integral_finsetSum _ fun a _ => integrable_finsetSum _ fun b _ =>
     (integrable_coord_mul_std_gaussian_pi a b).const_mul _]
   simp_rw [integral_finsetSum _ fun b _ => (integrable_coord_mul_std_gaussian_pi _ b).const_mul _,
     integral_const_mul, integral_coord_mul_std_gaussian_pi, mul_ite, mul_zero, Finset.sum_ite_eq,
     Finset.mem_univ, if_true]
-  have hMM : P⁻¹ i j = ∑ a, whitening hP i a * whitening hP j a := by
-    rw [← whitening_mul_transpose hP, mul_apply]
+  have hMM : P⁻¹ i j = ∑ a, whiteningOf hP i a * whiteningOf hP j a := by
+    rw [← whiteningOf_mul_transpose hP, mul_apply]
     simp only [transpose_apply]
-  rw [gaussianZ_matCLM hP, ← abs_det_whitening hP, hMM, Finset.mul_sum, Finset.mul_sum]
+  rw [gaussianZ_matCLM hP, ← abs_det_whiteningOf hP, hMM, Finset.mul_sum, Finset.mul_sum]
   refine Finset.sum_congr rfl fun a _ => ?_
   ring
 

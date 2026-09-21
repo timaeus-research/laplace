@@ -1009,3 +1009,13 @@ and the `case` block finds no goal (symptom: `introN` failure then
 "unknown identifier h"). Pass the argument as an inline lambda (with
 a `by` block if tactics are needed), or restate it as a separate
 `have` with an explicit type.
+
+### Name clashes across modules surface only at `Laplace.lean`
+
+Two modules in the same namespace may each compile, yet `lake build` of the
+umbrella `Laplace.lean` fails with `import X failed, environment already
+contains 'Laplace.Multi.foo._proof_1' from Y`. `lean-state check` on the new
+module cannot see this (it does not import the sibling). Before naming a new
+def in `Laplace.Multi`/`Laplace.Sampler`, `grep -rn "def foo\b" Laplace/`;
+e.g. `whitening` already lives in `QuadForm.lean` (a `Fin d` CLM `√H`), so the
+matrix version is `whiteningOf`.
