@@ -32,3 +32,9 @@ Accepted: general PSD `R` and general means from the start (the same proofs), th
 - GPT-6 Astra: the same.
 
 Agreed after one round.
+
+## Result
+
+- Commit `c743ce6` on `tide/ula-invariance` (base 2f9576e), merged with upstream in `73d002f`. Full `lake build` green; `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide.
+- `Laplace/Sampler/GaussianInvariance.lean` (     172 lines): `euclid` (= `toEuclideanCLM`), `euclid_adjoint`, `euclid_pow`, `euclid_mul`, `dotProduct_conj_mulVec`, `posSemidef_conj`, `covStep_posSemidef`, `covStep_iterate_posSemidef`, `multivariateGaussian_map_euclid` (`N(m,S).map A = N(Am, ASAᵀ)`), `multivariateGaussian_conv` (`N(m,S) ∗ N(b,R) = N(m+b, S+R)`), `multivariateGaussian_map_conv`, `invariant_of_covStep_fixed`, `ulaCov_invariant`, `gaussStep`, `gaussStep_iterate` (finite-time marginal law), `gaussStep_iterate_zero`.
+- Surprises: none mathematical; the whole module went through in three check rounds. Mathlib's API was exactly sufficient (`IsGaussian.ext`, `covarianceBilin_map`, `charFun_conv`, `Measure.ext_of_charFun`); the only friction was `Σ` being a reserved token and `ContinuousLinearMap.mul_apply` being deprecated.
