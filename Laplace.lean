@@ -282,6 +282,8 @@ import Laplace.Patterning.OrnsteinUhlenbeck
 import Laplace.Patterning.OUPathwise
 import Laplace.Patterning.OUIncrement
 import Laplace.Patterning.OUBrownian
+import Laplace.Patterning.BrownianVecInstances
+import Laplace.Patterning.PrimerNLO
 import Laplace.Sampler.GaussianUniqueness
 import Laplace.Sampler.FullStep
 import Laplace.Sampler.AR1Real
