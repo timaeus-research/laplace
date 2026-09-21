@@ -32,3 +32,10 @@ B is the main target as voted; M1–M3 are attempted at the end of the same excu
 - GPT-6 Astra: B alone.
 
 Agreed after one round.
+
+## Result
+
+- Commit `dbd40a2` on `tide/sampler-bridges` (base 649efcc). Full `lake build` green; `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide.
+- `Laplace/Sampler/AR1Real.lean` (     166 lines): `inner_toLp_eq_integral`, `norm_toLp_sq_eq_integral`, `toLp_finset_sum`, `realChain` (+ `_zero`, `_succ`), `memLp_realChain`, `toAR1Chain` (the realised chain as an `AR1Chain (Lp ℝ 2 P)`), `integral_pooled_statistic` (generic expected quadratic statistic of a finite family), `expected_pooled_sample_variance` (the note's finite-chain prediction as an expectation), `white_of_indep`.
+- `Laplace/Sampler/RandomMap.lean` (      99 lines): `stdGaussian_map_smul` (`c • ξ ~ N(0, c² I)`), `map_add_prod` (sampling-map form of a convolution), `gaussStep_eq_map_prod`, `ula_update_law` (the ULA update `(w, ξ) ↦ A w + √(2h) ξ` on `μ ⊗ N(0, I)` has law `gaussStep`), `ula_update_law_of_indep` (for independent random variables).
+- Both the main target B and the stretch M landed. Surprises: none; the L² packaging went through with GPT-6 Astra's recipe (identify inner products through `L2.inner_def`, recurrences by `rfl` after `toLp_add`/`toLp_const_smul`); the only friction was `Measure.map_map` needing its functions passed explicitly.
