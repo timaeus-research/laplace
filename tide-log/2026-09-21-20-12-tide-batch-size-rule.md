@@ -60,3 +60,9 @@ Saved verbatim in `tide-log/gpt_batch_size_rule_v1.md`. Summary: A–D correct w
 - GPT-6 Astra: A+B+C+D
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/batch-size-rule` at beeb96e (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/BatchSizeRule.lean` (176 lines): `posSemidef_vecMulVec_self`, `sampleCov_posSemidef`, `minibatchGradCov`, `minibatchGradCov_posSemidef`, `trace_minibatchGradCov`, `minibatch_excess_bounds_note`, `batch_size_rule`, `step_size_rule`.
+
+Surprises: (i) `Matrix.PosSemidef` and its sum/smul/outer-product lemmas need only `[Finite ι]`, so the linters force three separate sections (`Finite`, `Fintype`, `Fintype + DecidableEq`); (ii) the note's rule of thumb drops the finite-population factor `1 − m/n`, which is what makes the lower bound exact — GPT caught that the note's expression itself is not a lower bound; (iii) both parametrisation identities closed with `field_simp` alone.
