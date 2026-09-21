@@ -69,3 +69,24 @@ innovation fourth-moment theorem applied to `realChain`, (6) Gaussian discharge.
 - GPT-6 Astra: candidate A
 
 Agreed.
+
+## Result
+
+Committed as `468ecb7` on `tide/estimator-variance` (`Laplace/Sampler/EstimatorVariance.lean`, 711 lines; full `lake build` and
+`scripts/sorries` clean: 0 sorry, 0 axiom, 0 native_decide).
+
+Theorems: `holderTriple_four_four_two`, `memLp_two_mul_of_memLp_four`, `integrable_mul_mul_mul_of_memLp_four`,
+`integrable_sq_mul_sq_of_memLp_four`, `integrable_mul_of_memLp_four`, `integrable_sq_of_memLp_four`; `IsserlisFamily`,
+`variance_sum_sq_of_isserlis`; `memLp_realChain_of_memLp`, `integral_realChain_mul_realChain`, `pooled_second_moment_variance`,
+`pooled_second_moment_variance_le`; `IsLinComb` (+ `zero`, `add`, `const_mul`, `of_mem`), `measurable_of_isLinComb`,
+`memLp_of_isLinComb`, `FourthMomentTable`, `indepFun_pair_of_isLinComb`, `integral_mul_pow_of_isLinComb`, `integral_linComb_mul`,
+`integral_linComb_sq_mul_sq`, `FourthMomentTable.white`, `isserlisFamily_of_isLinComb`, `isLinComb_realChain`;
+`integral_pow_gaussianReal_zero_one`, `integral_pow_three_gaussianReal`, `integral_pow_four_gaussianReal`,
+`map_innerSL_eq_gaussianReal`, `integral_inner_pow_of_stdGaussian`, `memLp_four_inner_of_stdGaussian`; `fourthMomentTable_projNoise`,
+`ula_second_moment_variance`, `ula_second_moment_variance_le`.
+
+Surprises: the Isserlis induction is cleanest with the terms grouped by powers of the new innovation as products of exactly four
+`L^4` factors (one Hölder helper covers every integrability side goal) and with the `(X, Y)` pair independent of `g_n` (GPT's point);
+the Gaussian discharge went through Mathlib's `HasGaussianLaw` in ~30 lines once `variance_map` was given its measure explicitly. The
+only real friction was syntactic: `Finset.sum_coe_sort` is not a higher-order pattern for `simp`, and `Measurable.comp` terms carry a
+`∘` that `integral_map`/`memLp_map_measure_iff` patterns will not match.
