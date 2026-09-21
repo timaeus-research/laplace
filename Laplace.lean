@@ -278,3 +278,4 @@ import Laplace.Sampler.FrobeniusLaw
 import Laplace.Sampler.Metropolis
 import Laplace.Sampler.MetropolisKernel
 import Laplace.Sampler.GaussianTable
+import Laplace.Sampler.LLCVariance

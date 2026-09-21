@@ -1495,3 +1495,29 @@ matrix version is `whiteningOf`.
   `hu.1 i : ‖u i‖ = 1` and `hu.inner_eq_zero hij` are the two facts consumed downstream.
 - `[Finite ι]` (not `Fintype`) is what `iIndepFun_of_covariance_inner` needs for the index; the `unusedFintypeInType` linter flags the
   stronger instance.
+
+### Cross-covariances of estimator entries and weighted statistics (tide `llc-variance`)
+
+- The four-way Wick identity `cov_mul_mul_of_isLinComb` gives `Cov(x_i x_j, x_i' x_j')` as two products of Gram entries, each an
+  `if c = c' ∧ i = i' then G else 0`. Do not `split_ifs` on the whole expression inside the sum: factor the delta bookkeeping into a
+  standalone real identity (`ite_pair_expand`: `(if i = i' then A else 0) * (if j = j' then B else 0) + … =
+  ((if i = i' ∧ j = j' then 1 else 0) + (if i = j' ∧ j = i' then 1 else 0)) * (A * B)`), proven by `split_ifs <;> (simp_all; try ring)`
+  (contradictory branches close by `simp_all`; the linter rejects `simp_all <;> ring` when a branch leaves one goal). Case on the chain index
+  first (`by_cases hc : a.1 = a'.1; simp only [hc, true_and, if_true]`), then apply the identity.
+- A weighted sum of estimator entries `∑ᵢ wᵢ Yᵢ`: get its variance from `variance_sum_eq_sum_cov univ (fun i ω => w i * Y i ω) … 1`
+  (then `simp only [one_mul, one_pow] at hvar`), and reduce each `Cov(wᵢ Yᵢ, wⱼ Yⱼ)` to `wᵢ wⱼ Cov(Yᵢ, Yⱼ)` by rewriting the product
+  function with a `funext; ring` equation, `integral_const_mul` three times, and a `ring`-proved refactoring `have`; then the general
+  cross-covariance theorem and `by_cases hij : i = j` (`subst; simp only [and_self, if_true, ← sq]; ring` / `simp [hij]`).
+  `Finset.sum_ite_eq` (with `Finset.mem_univ, if_true`) then collapses the double sum and `Finset.mul_sum` pulls the constant.
+- Integrability of a product of two pooled estimators: rewrite both as sums over `univ ×ˢ range N` (`Finset.sum_product`), combine with
+  `mul_mul_mul_comm, Finset.sum_mul_sum, ← sq`, and discharge each four-fold product by `integrable_mul_mul_mul_of_memLp_four`.
+- Squared AR(1) Gram kernel: `(s₂ (ρ^d - ρ^{k+l}))² ≤ s₂² (ρ²)^d` via `mul_pow, ← pow_mul, mul_comm 2, pow_mul` and
+  `pow_le_pow_left₀ h0 h1 2`; the Toeplitz envelope `toeplitz_sum_le` is then applied to `ρ²` (`0 ≤ ρ² < 1` by `positivity`/`nlinarith`).
+  No sign hypothesis on `s₂` is needed for the squared kernel — the linter flags it if you keep it.
+- Triple-sum reindexing `∑ c, ∑ k, ∑ i = ∑ i, ∑ c, ∑ k`: `rw [Finset.sum_congr rfl fun c _ => Finset.sum_comm]; exact Finset.sum_comm`.
+  State the instance explicitly (a `key` with the concrete summand) rather than a higher-order pattern for `rw`.
+- `field_simp` closes `a * b / c = …` goals outright when the denominators' nonzero facts are in context; a trailing `ring` then errors
+  "no goals" — re-check every `field_simp; ring` after the fact. For `1 - h p/2` denominators give `2 - h * p ≠ 0` **and** `2 - p * h ≠ 0`.
+- A theorem with no measure in its statement must live outside the `variable {P : Measure Ω} [IsProbabilityMeasure P]` section (the
+  `unusedSectionVars` linter flags `[MeasurableSpace Ω]`); `omit [DecidableEq ι] in` goes *before* the docstring, and the proof then opens
+  with `classical` if it calls a `DecidableEq`-typed lemma.
