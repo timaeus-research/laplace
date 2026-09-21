@@ -280,6 +280,22 @@ rw [show x^(2*k) = |x|^(2*k) from by rw [pow_mul x 2 k, ← sq_abs x, ← pow_mu
 ```
 For `x^2`: `(sq_abs x).symm` gives `x^2 = |x|^2`.
 
+**Matrix/vector idioms from the Patterning arc.** `Σ` is the sigma-type token and cannot
+name a binder (use `S`). `Matrix.smul_mulVec : (b • M) *ᵥ v = b • M *ᵥ v` (there is no
+`smul_mulVec_assoc`); `Matrix.mulVec_transpose : Aᵀ *ᵥ x = x ᵥ* A`;
+`Matrix.dotProduct_mulVec : v ⬝ᵥ A *ᵥ w = v ᵥ* A ⬝ᵥ w`, while `dotProduct_comm/sub/neg/zero`
+live at the root. `Matrix.diagonal_add/sub` are oriented
+`diagonal a - diagonal b = diagonal fun i => a i - b i`; `Matrix.diagonal_smul :
+diagonal (r • d) = r • diagonal d`, so `← diagonal_smul` pulls a scalar inside.
+`Matrix.trace_one : trace 1 = Fintype.card n` (as a cast). For `U diag(a) Uᵀ` algebra,
+prove `(U diag a Uᵀ)⁻¹ = U diag a⁻¹ Uᵀ` via `Matrix.inv_eq_left_inv` and reuse it
+(`Profile.lean`: `inv_spectral`, `spectral_mul_spectral`, `trace_spectral`).
+Deprecations on this pin: `tendsto_finset_sum → tendsto_finsetSum`,
+`Set.mem_setOf_eq → Set.mem_ofPred_eq`. For derivatives of products use
+`h.congr_deriv (by simp only [id_eq, Pi.neg_apply]; ring)` rather than `convert h using 1`,
+which leaves instance-mismatch goals. `field_simp` only clears a denominator whose
+nonzero-ness hypothesis matches syntactically (`2 - lam * η ≠ 0` is not `2 - η * lam ≠ 0`).
+
 **Mathlib namespace gotchas.** Some lemmas live under deeper namespaces than
 expected. `integral_comp_mul_right` is `MeasureTheory.Measure.integral_comp_mul_right`,
 not `MeasureTheory.integral_comp_mul_right`. When in doubt, write a scratch

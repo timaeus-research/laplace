@@ -237,3 +237,10 @@ import Laplace.Multi.GaussianLLC
 import Laplace.Sampler.AR1
 import Laplace.TwoD.Rosenbrock
 import Laplace.Sampler.GaussianInvariance
+import Laplace.Patterning.Horizon
+import Laplace.Patterning.Profile
+import Laplace.Patterning.Direct
+import Laplace.Patterning.SGDLyapunov
+import Laplace.Patterning.Virial
+import Laplace.Patterning.FourGon
+import Laplace.Patterning.Positivity

@@ -119,6 +119,23 @@ the degenerate/separable tracks (`Laplace/Multi/Separable*.lean`,
 | [`Laplace/Sampler/Lyapunov.lean`](Laplace/Sampler/Lyapunov.lean) | Discrete Lyapunov equation `X = A X Aᵀ + N`: diagonal solver, transport by orthogonal diagonalisation (`orthoOf`, `spectral_real`), finite-time identity `X_k - S = A^k (X_0 - S) (Aᵀ)^k`, AR(1) variance |
 | [`Laplace/Sampler/ULA.lean`](Laplace/Sampler/ULA.lean) | ULA law `(P - (h/2)P²)⁻¹` (unique fixed point, positive definite, eigenbasis entries) and the minibatch entry formula `(2hδ_ij + h²t²C̃_ij)/(h(p_i+p_j) - h²p_ip_j)` for arbitrary `C` |
 
+### Patterning track (the *Patterning flow* working note)
+
+Algebraic cores of the propositions of `learning-theory/local/directsgld/main.tex`; the
+asymptotic and probabilistic reductions leading to these identities (Laplace expansions,
+stationarity of SDEs, RLCT asymptotics) are stated in the note and not formalised. Each file
+header says which parts are covered.
+
+| File | Role |
+|---|---|
+| [`Laplace/Patterning/Horizon.lean`](Laplace/Patterning/Horizon.lean) | Finite-horizon response of linearised gradient descent to a constant force: `δ_T = -ε F_T(H) b`, `F_T = η ∑_{k<T} (1 - ηH)^k`, eigen-form `(1 - (1 - ηλ)^T)/λ`, null-space form `ηT` (Prop. 3.1) |
+| [`Laplace/Patterning/Profile.lean`](Laplace/Patterning/Profile.lean) | Short-chain ULA profile of a Gaussian target: per-mode variance, first step `½ nβ tr(H) ε`, plateau, small-step limit `½ ∑ λ_i/(λ_i + ρ)` (Prop. 13.1), finite-chain matrix identity (Prop. 3.2), spectral trace identities for `tr(H (H+ρ)⁻¹)` and `tr(H S_ε)` |
+| [`Laplace/Patterning/Direct.lean`](Laplace/Patterning/Direct.lean) | Regime-1 direct force: `χχᵀ = S/n`, minimal-norm solution `ω_P` of the fundamental equation, mean zero, force `-C R A S⁻¹ dμ`, the `C = H` corollary (Prop. 4.1, Cor. 4.2) |
+| [`Laplace/Patterning/SGDLyapunov.lean`](Laplace/Patterning/SGDLyapunov.lean) | OU model of SGD: `tr(HΣ) = (η/2B) tr C`, isotropic solution for `C = cH`, discrete diagonal fixed point `ηc/(B(2 - ηλ_i))` and its exact `O(η³)` remainder (Prop. 13.2) |
+| [`Laplace/Patterning/Virial.lean`](Laplace/Patterning/Virial.lean) | Virial balance `tr(PX) = d + (h/2) tr(P²X)` for the ULA law, 1D Gibbs virial `⟨x U'⟩ = 1` by the whole-line FTC, degree decomposition (Prop. 13.3) |
+| [`Laplace/Patterning/FourGon.lean`](Laplace/Patterning/FourGon.lean) | Population TMS at the 4-gon: exact frozen loss with the dead unit at `(x, y)`, `r⁴/15` at uniform `h`, ray form `a(θ;h) r² + (h₄/3) r⁴`, sublevel volume `π √(15ε)` (Prop. 12.1 (ii)–(iv)) |
+| [`Laplace/Patterning/Positivity.lean`](Laplace/Patterning/Positivity.lean) | Bounded positive reweighting: sandwich `c₁K ≤ K_w ≤ c₂K`, equal zero sets, sublevel and measure sandwich (Prop. 6.1, sublevel core) |
+
 ## Proof strategy
 
 Following the rescaled-Gaussian-plus-global-remainder route under the
