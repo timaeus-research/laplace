@@ -243,6 +243,7 @@ import Laplace.Multi.TotalVariationResponse
 import Laplace.Multi.ResolvedChartResponse
 import Laplace.Multi.RelativeChartLeading
 import Laplace.Multi.RelativeChartFamily
+import Laplace.Multi.ToyCrossoverResponse
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
@@ -291,3 +292,4 @@ import Laplace.Sampler.MetropolisReversible
 import Laplace.Sampler.BatchSizeRule
 import Laplace.Sampler.LLCSensitivity
 import Laplace.Sampler.FrobeniusBridge
+import Laplace.Sampler.BurnInEnvelope

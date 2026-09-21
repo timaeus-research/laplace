@@ -1693,6 +1693,23 @@ matrix version is `whiteningOf`.
 - Integrability of raw entries: express them as finite linear combinations of the eigen entries (`pooledRaw_apply_eq_sum`) and use
   `integrable_finsetSum`/`.const_mul`/`.mul_const`; then `integral_finsetSum`, `integral_mul_const`, `integral_const_mul` commute the
   expectation. Never try to prove `L⁴` of the raw coordinates directly.
+### Spectrum-free envelopes and monotone factors (tide `burnin-envelope`)
+
+- A per-direction term that is a product of monotone factors (here `2ρ^{2b}/(1−ρ)·(ρ/(1+ρ))²`): prove the factorisation as an equation
+  (`field_simp; ring` after rewriting `1 − ρ² = (1−ρ)(1+ρ)`), prove each factor monotone (`pow_le_pow_left₀`, `div_le_div_of_nonneg_left`
+  for the reciprocal — note `1 − ρ' ≤ 1 − ρ` reverses — and `div_le_div_iff₀` + `nlinarith` for `ρ/(1+ρ)`), and combine with nested
+  `mul_le_mul` and `positivity` side goals. The unfactored denominator `(1−ρ²)(1+ρ)/2` is *not* monotone; do not try to bound it directly.
+- Products of two factors that peak on *different* directions (autocorrelation on the flattest, step factor on the stiffest): bound each
+  by its own maximum and multiply (`mul_le_mul hτ hstep …`) — a valid, if loose, spectrum-free statement. The `1/x²` factor's nonnegativity
+  is `div_nonneg` with an explicit `0 < 1 − r²` from `nlinarith`; `positivity` cannot see the sign of `1 − (…)²`.
+- Hypotheses that only guard denominators may be redundant: `excess_mono` needs no `0 ≤ x` (both denominators are positive from `x ≤ x' < 1`),
+  and `burnin_term_eq` needs `−1 < ρ`, not `0 ≤ ρ`. The unused-variable linter finds these; supply the nonzero facts as *terms*
+  (`(sub_pos.mpr h1).ne'`, `(neg_lt_iff_pos_add.mp h0).ne'` after `rw [add_comm]`) when a `linarith` would hide the reference.
+- `pmin ≤ pmax` does not follow from `∀ i, pmin ≤ p i ≤ pmax` when `ι` may be empty; take it as a hypothesis in the algebraic lemmas and
+  derive it from `[Nonempty ι]` (`Classical.arbitrary ι`) where the instance is available.
+- Square-root algebra `2√X/d = √Y/q`: go through `√((2/d)²) · √X = √((2/d)² X)` with `Real.sqrt_sq` and `(Real.sqrt_mul (hx : 0 ≤ a) _).symm`
+  — give `Real.sqrt_mul` its first argument with a type ascription, otherwise `rw` splits the wrong square root — and a `field_simp`
+  identity between the radicands.
 ### Relative chart arc (RelativeChartLeading, RelativeChartFamily)
 
 - A stuck `IsFiniteMeasureOnCompacts ?μ` (from `integrableOn_const`, `IsCompact.measure_lt_top`,
