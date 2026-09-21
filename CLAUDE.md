@@ -1674,3 +1674,22 @@ matrix version is `whiteningOf`.
   (`minibatchCov_conj_diag`), `unfold Matrix.trace Matrix.diag` and `Finset.sum_congr`.
 - Frobenius norms do not obey the same comparison: a `1/p²`-weighted RMS is bounded by Chebyshev only by the uniform RMS, not the uniform
   mean (GPT counterexample `p = (1, 1.1)`, `h = 1.8`). Keep Frobenius claims out of trace theorems.
+
+### Conjugating pooled estimators and Frobenius sums (tide `frobenius-bridge`)
+
+- The outer-product identity `vecMulVec (Uᵀ *ᵥ x) (Uᵀ *ᵥ x) = Uᵀ * vecMulVec x x * U`: `ext i j; simp only [vecMulVec_apply, mulVec,
+  dotProduct, Matrix.mul_apply, transpose_apply]; rw [Finset.sum_mul_sum, Finset.sum_comm]`, then `Finset.sum_mul` and `ring` per term.
+  Use it, not a bare four-index sum shuffle, to conjugate a pooled second-moment matrix: define the raw estimator as a matrix
+  (`(1/(CN)) • ∑ ∑ vecMulVec x x`) and push the conjugation through with `Matrix.mul_smul, Matrix.smul_mul, Matrix.mul_sum, Matrix.sum_mul`,
+  reading entries with `Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul`.
+- `EuclideanSpace` vectors are `WithLp 2 (ι → ℝ)`: the coordinate function is `v.ofLp`, and `⟨orthoCol hQ i, v⟩ = ((orthoOf hQ)ᵀ *ᵥ v.ofLp) i`
+  after `EuclideanSpace.inner_eq_star_dotProduct, star_trivial`, `orthoCol, WithLp.ofLp_toLp, mulVec, dotProduct, transpose_apply` and a
+  per-term `ring`.
+- Orthogonal invariance of `∑ᵢⱼ Aᵢⱼ²`: go through `tr(AᵀA)` (`sum_mul_apply_eq_trace` with `sq`), reassociate the transposes
+  (`transpose_mul, transpose_transpose`, `simp only [Matrix.mul_assoc]`, insert `U * Uᵀ = 1`), then `Matrix.trace_mul_cycle`. Only `U Uᵀ = 1`
+  is needed; to use it with `U` and `Uᵀ` swapped, apply to `Uᵀ` and rewrite `transpose_transpose`.
+- `pooledSecondMoment` needs no `Fintype`/`DecidableEq`/`MeasurableSpace`; `orthoCol`/`orthoOf` need `DecidableEq`; a lemma with no `P` in
+  its statement must `omit [IsProbabilityMeasure P]`, one with no measure at all `omit [MeasurableSpace Ω]`.
+- Integrability of raw entries: express them as finite linear combinations of the eigen entries (`pooledRaw_apply_eq_sum`) and use
+  `integrable_finsetSum`/`.const_mul`/`.mul_const`; then `integral_finsetSum`, `integral_mul_const`, `integral_const_mul` commute the
+  expectation. Never try to prove `L⁴` of the raw coordinates directly.
