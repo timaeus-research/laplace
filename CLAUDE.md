@@ -1355,3 +1355,20 @@ matrix version is `whiteningOf`.
   `memLp_id_gaussianReal' 4` + `memLp_map_measure_iff`. State `integral_map`/`memLp_map_measure_iff` with the map in the lambda form
   `fun ω => innerSL ℝ u (ξ ω)` (a `Measurable.comp` term has type `Measurable (f ∘ g)` and its `∘` will not match the goal).
 - `Qᵀ` in a statement needs `open Matrix`; a parse error "unexpected token 'ᵀ'" is the symptom.
+
+### Four-way Wick by Finset induction (tide `wick4`)
+
+- Prove block independence once and abstractly: `indepFun_block_of_notMem : IndepFun (fun ω => F fun i : s => g i ω) (g n) P` for any
+  measurable `F : (s → ℝ) → β`; the pair and quadruple versions are `convert … using 1` + `funext` + the explicit
+  `Finset.sum_coe_sort s (fun i => a i * g i ω)` rewrites (`fun_prop` proves measurability of the tuple of sums).
+- Nested pairs `((X, Y), (Z, W))` with `φ : (ℝ × ℝ) × (ℝ × ℝ) → ℝ` work well: pass each `φ` as an explicit projection lambda
+  (`fun p => p.1.2 * p.2.1 * p.2.2`) and the instantiated statement is beta-reduced, so `rw` matches the goal written as
+  `Y ω * Z ω * W ω * g n ω ^ 1`.
+- Sixteen-term expansions: state the expansion as an equality of *functions* built with `Pi` addition of lambdas
+  (`(fun ω => …) + ((fun ω => …) + …)`), prove it by `funext ω; simp only [Pi.add_apply, hXd, …]; ring`, then `rw [hexp]` and split with
+  `integral_add' (h.add h') h''` — the `Integrable (f + g)` types line up with `Integrable.add` without retyping any lambda. Group the
+  terms by the power of the new innovation so the `integral_add'` chain mirrors the grouping.
+- One-line integrability helpers per term shape (`f * g * k * l ^ 1`, `f * g * l ^ 2`, `f * l ^ 3`, `l ^ 4`) via
+  `simpa only [pow_one / sq / pow_succ, pow_zero, one_mul, mul_assoc] using integrable_mul_mul_mul_of_memLp_four …`.
+- Second moments of the opaque abbreviations: a local `hpair : ∀ U V u w, U = (fun ω => ∑ …) → V = … → ∫ U * V = v * ∑ u * w` proved once
+  by `← integral_linComb_mul` + `congr 1; funext; simp only [hU, hV]` saves six copies.
