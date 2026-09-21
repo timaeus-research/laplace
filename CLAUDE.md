@@ -285,6 +285,19 @@ lambda differs syntactically from the proof term's inferred function (`measurabl
 `AEMeasurable.map_map_of_aemeasurable`. `‖t‖² = t.ofLp ⬝ᵥ t.ofLp` on `EuclideanSpace` via `real_inner_self_eq_norm_sq`
 and `EuclideanSpace.inner_eq_star_dotProduct`.
 
+### Gaussian second moments in measure form (Sampler/GaussianQuadratic)
+
+`∫ xᵢ xⱼ ∂N(m,S) = Sᵢⱼ + mᵢ mⱼ` comes from `covarianceBilin_multivariateGaussian hS (EuclideanSpace.single i 1) (single j 1)`
+rewritten with `covarianceBilin_apply IsGaussian.memLp_two_id` (`∫ ⟪eᵢ, z - μ[id]⟫ ⟪eⱼ, z - μ[id]⟫`), `integral_id_multivariateGaussian`,
+`EuclideanSpace.inner_single_left`, `conj_trivial`; the single-vector quadratic form `(single i 1) ⬝ᵥ S *ᵥ (single j 1)` is closed by
+`simp`. Coordinate functionals: `EuclideanSpace.proj (𝕜 := ℝ) i : StrongDual ℝ _` (pass `𝕜`), `comp_memLp'` for `MemLp 2`,
+`MemLp.integrable_mul` for products, `integral_comp_comm` for the mean. `integral_add`/`integral_sub` rewrites need the
+integrability facts stated for the *lambda* forms appearing in the goal (`have : Integrable (fun x => f x - g x) := hf.sub hg`),
+because `hf.sub hg` alone has type `Integrable (f - g)` (Pi subtraction) and the rewrite pattern `(f - g) a` does not match
+`f a - g a`. `integral_finsetSum` needs `(f := fun i x => …)` explicitly under a double sum. `Matrix.posDef_inv_iff.mpr`,
+`Matrix.inv_eq_right_inv` for `(t • H)⁻¹ = t⁻¹ • H⁻¹`, `trace (H * S) = ∑ᵢⱼ Hᵢⱼ Sᵢⱼ` needs `S` symmetric (`hS.1.apply`).
+A hypothesis stated with `ulaNoise h` does not rewrite a goal containing `(2 * h) • 1`: restate it with the goal's spelling
+(`have hfix : covStep _ ((2 * h) • 1) _ = _ := ulaCov_fixed …`, accepted by defeq).
 ### Projections of Gaussian noise and pushing laws through functionals (Sampler/ULAEigen)
 
 Work under `stdGaussian E` first, with the functional `innerSL ℝ u` (`innerSL_apply_apply : innerSL 𝕜 v w = inner v w`,
