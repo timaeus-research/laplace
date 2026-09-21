@@ -1372,3 +1372,28 @@ matrix version is `whiteningOf`.
   `simpa only [pow_one / sq / pow_succ, pow_zero, one_mul, mul_assoc] using integrable_mul_mul_mul_of_memLp_four …`.
 - Second moments of the opaque abbreviations: a local `hpair : ∀ U V u w, U = (fun ω => ∑ …) → V = … → ∫ U * V = v * ∑ u * w` proved once
   by `← integral_linComb_mul` + `congr 1; funext; simp only [hU, hV]` saves six copies.
+
+### Estimator algebra over finite index products (tide `frobenius-law`)
+
+- Quantify linear-combination/`L⁴` hypotheses only over the *window* actually used
+  (`∀ c i k, k ∈ range N → IsLinComb g s (x c i (b + 1 + k))`); a hypothesis for all times is false for a chain whose innovations
+  beyond the window are not in `s`, and the proofs only ever need membership (`(Finset.mem_product.mp ha).2`).
+- Variance of a weighted sum as a covariance double sum: `(q ∑ f)^2 = q^2 ∑∑ f_a f_b` (`mul_pow`, `sq`, `Finset.sum_mul_sum`), integrate
+  with `integral_finsetSum` twice (the inner one through `Finset.sum_congr rfl fun a ha => integral_finsetSum _ …`), and finish with a
+  generic identity `∑∑ (I a b - m a * m b) = ∑∑ I - (∑ m)^2` proved once for abstract `I m` (`sq`, `Finset.sum_mul_sum`,
+  `← Finset.sum_sub_distrib` twice) so that `ring` never sees sums.
+- Kronecker bookkeeping: rewrite the pointwise covariance first (`by_cases hij : i = j; subst; simp only [and_true, if_true];
+  split_ifs <;> ring` / `simp only [hij, Ne.symm hij, and_false, if_false, …]`), then collapse `∑ c' (if c = c' then _ else 0)` with
+  `Finset.sum_product_right` + `Finset.sum_ite_eq` + `Finset.mem_univ`, and pull the constant `if i = j then 2 else 1` out with
+  `← Finset.mul_sum`; cancel `C`, `N` at the very end with `field_simp` (no trailing `ring` — it errors with "no goals" when
+  `field_simp` closes the goal).
+- `Finset.sum_eq_single i (fun j _ hji => by simp [Ne.symm hji]) (fun h => absurd (Finset.mem_univ i) h)` isolates the diagonal of a
+  sum over `univ`; a sum of the form `∑ k, c * (a * (1 - r k))` is normalised by `← Finset.mul_sum, Finset.sum_sub_distrib,
+  Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one` before `field_simp`.
+- `gcongr` on `a * b ≤ c * d` with factors of mixed sign structure leaves side goals; `mul_le_mul h₁ h₂ (nonneg c) (nonneg b')` with
+  explicit `mul_le_mul_of_nonneg_left` pieces is more predictable.
+- `(univ : Finset ι)` needs `[Fintype ι]`, so `omit [Fintype ι]` is refused for statements mentioning it; `omit [MeasurableSpace Ω]`
+  is fine for purely algebraic chain lemmas (it drops `P` too).
+- Chains with *different* coefficients but orthogonal noise are orthogonal: `inner_x_x_of_orthogonal'` generalises the seabed's
+  same-`ρ` lemma with the identical proof; the multi-direction Gram table then follows from `toAR1Chain` per `(c, i)` and the white
+  table of the whole innovation family.

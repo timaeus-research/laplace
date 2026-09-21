@@ -270,3 +270,4 @@ import Laplace.Sampler.DirectionClosures
 import Laplace.Sampler.LLCClosures
 import Laplace.Sampler.EstimatorVariance
 import Laplace.Sampler.Wick4
+import Laplace.Sampler.FrobeniusLaw
