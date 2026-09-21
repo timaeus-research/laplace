@@ -1643,3 +1643,34 @@ matrix version is `whiteningOf`.
   `MeasureTheory` namespace, not `Measure`.
 - The step-size hypothesis `0 < h` is not needed for the MALA/pMALA reversibility instances (only for their Markov/probability statements):
   drop it or the linter flags it.
+### Positive semidefiniteness and section instances (tide `batch-size-rule`)
+
+- `Matrix.PosSemidef` and `posSemidef_sum`, `PosSemidef.smul`, `posSemidef_vecMulVec_self_star` need only `[Finite ι]` (the `Fintype`
+  block in `PosDef.lean` starts later); `trace_nonneg` and anything with `Matrix.trace` need `[Fintype ι]`; `minibatchCov`/`ulaCov` need
+  `[DecidableEq ι]` too. Put the three groups in three sections, or the `unusedFintypeInType`/`unusedDecidableInType` linters fire.
+- A real outer product is PSD via `posSemidef_vecMulVec_self_star v` and `simpa` (`star v = v`). `PosSemidef.smul` takes the explicit
+  `0 ≤ c`; prove `0 ≤ 1 − (m : ℝ)/n` with `rw [sub_nonneg, div_le_one hn']; exact_mod_cast hmn`, and `0 ≤ (n : ℝ) − 1` from `2 ≤ n` by
+  `exact_mod_cast` + `linarith` before `positivity`.
+- Rewriting two-sided bounds into another parametrisation: prove each side's algebraic identity as `e : A = B := by field_simp` (with the
+  nonzero facts in context; no `ring` needed) and finish with `⟨e1 ▸ hlo, e2 ▸ hhi⟩`.
+- Dropping a factor `0 ≤ 1 − m/n ≤ 1` from a bound: `div_le_div_of_nonneg_right _ (by positivity)` and `nlinarith
+  [mul_le_mul_of_nonneg_left hfpc hK0]`; then clear denominators on both the hypothesis and the goal with `div_le_iff₀` and `nlinarith`.
+### Weighted Chebyshev and re-weighted averages (tide `llc-sensitivity`)
+
+- The weighted Chebyshev identity `∑ᵢⱼ vᵢvⱼ(rᵢ − rⱼ)(fᵢ − fⱼ) = 2((∑ v r f)(∑ v) − (∑ v r)(∑ v f))`: expand the summand by a
+  `∀ i j, … = a i * b j - …` identity (`ring`), then `simp_rw [hterm, Finset.sum_add_distrib, Finset.sum_sub_distrib, ← Finset.mul_sum,
+  ← Finset.sum_mul]` and `ring`. Prove the identity as its own lemma and derive the inequality from a *covariance-condition* hypothesis
+  `0 ≤ ∑∑ …`; the `Monovary`/`Antivary` versions are corollaries (`Antivary f r` is `Monovary (fun i => -f i) r`, then `mul_neg,
+  Finset.sum_neg_distrib, neg_mul` and `linarith`).
+- `Monovary f g : ∀ ⦃i j⦄, g i < g j → f i ≤ f j` (Mathlib, `Order/Monotone/Monovary`); the pairwise sign fact
+  `0 ≤ (r i − r j)(f i − f j)` is `rcases lt_trichotomy` with `mul_nonneg_of_nonpos_of_nonpos` / `mul_nonneg`.
+- Instantiating `weighted_mean_le_of_monovary` and then normalising the weights: `simp only [e1, e3, one_mul, one_div_mul_eq_div,
+  Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at key` — write the per-term normalisations `e1 : 1/p * f = f/p`
+  (`one_div_mul_eq_div`) and `e3 : 1/(p q) * p = 1/q` (`field_simp`) as `∀ i` facts. An `e2` for the three-factor product is never reached
+  because simp fires `e3` first; the leftover `1/q * f` is `one_div_mul_eq_div`.
+- `(½ ∑ a)/(½ ∑ b) = (∑ a)/(∑ b)`: `mul_div_mul_left _ _ (by norm_num : (1/2 : ℝ) ≠ 0)`.
+- Traces of conjugated matrices: `rw [← trace_diagonal d, ← hconj, Matrix.trace_mul_cycle, hUU', Matrix.one_mul]` turns `tr M` into
+  `tr (Uᵀ M U) = ∑ dᵢ` in one line once `hconj : Uᵀ M U = diagonal d` is available; when only the diagonal *entries* are known
+  (`minibatchCov_conj_diag`), `unfold Matrix.trace Matrix.diag` and `Finset.sum_congr`.
+- Frobenius norms do not obey the same comparison: a `1/p²`-weighted RMS is bounded by Chebyshev only by the uniform RMS, not the uniform
+  mean (GPT counterexample `p = (1, 1.1)`, `h = 1.8`). Keep Frobenius claims out of trace theorems.
