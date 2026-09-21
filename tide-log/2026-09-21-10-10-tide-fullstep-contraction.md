@@ -32,3 +32,9 @@ Accepted as is: ∞-operator norm (`open scoped Matrix.Norms.Operator`), Lipschi
 - GPT-6 Astra: F1–F5.
 
 Agreed after one round.
+
+## Result
+
+- Commit `0493e28` on `tide/fullstep-contraction`. Full `lake build` green; `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide.
+- `Laplace/Sampler/FullStep.lean` (     277 lines): `stateTerm`, `fullLinear`, `fullStep`, subtraction identities, `fullLipschitz`, `norm_stateTerm_le`, `norm_fullLinear_le`, `lipschitzWith_fullStep`, `contractingWith_fullStep`, `fullFixed`, `fullStep_fullFixed`, `eq_fullFixed_of_fixed`, `tendsto_iterate_fullFixed`, `stateTerm_posSemidef`, `fullStep_posSemidef`, `fullStep_iterate_posSemidef`, `continuous_entry`, `continuous_quadForm_matrix`, `posSemidef_of_tendsto` (the PSD cone is closed), `fullFixed_posSemidef`, `fullStep_iterate_sub_posSemidef`, `fullFixed_sub_posSemidef` (domination), `fullFixed_sub_sub_posSemidef` (first-order inflation), `minibatchCoeff`, `minibatchCoeff_nonneg`, `e8FullStep`.
+- Surprises: Mathlib's `PosSemidef` is now stated with finitely supported vectors and a double sum rather than `dotProduct`, which changed the closedness proof; the ℓ∞-operator norm with `FiniteDimensional.complete` gave the contraction machinery with no friction. GPT-6 Astra's direct identity for F5 removed a limiting argument.
