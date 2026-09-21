@@ -38,3 +38,21 @@ or convexity of `log Z`; not formal differentiation of an asymptotic. Vote: A+B,
 `numcheck_separable_exact.py`: for `a = 0.5`, `λ ∈ {1, 3, 10}`, exact quadrature gives `t(λtVar − 1) = −0.2655, −0.2526, −0.2503` at
 `t = 10, 100, 1000` (limit `a² − 1/2 = −0.25`); `t⟨x⟩ → −α/(2λ²)` to three digits; `t⟨ℓ⟩ = 0.49993` at `t = 1000`; a two-dimensional check
 gives `Z = Z₁Z₂` to 1e-14 and cross-covariance `≈ 1e-14`.
+
+## Result
+
+Commit `fe13374` on `tide/separable-exact`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/Multi/SeparableExact.lean` (     433 lines): `separablePotential`, `exp_separablePotential`, `integral_prod_separable`,
+`partitionFunction_separable`, `gibbsExpectation_prod_separable`, `gibbsExpectation_one_of_ne_zero`,
+`gibbsExpectation_coord_separable`, `gibbsExpectation_pair_separable`, `gibbsCov_coord_separable`,
+`partitionFunction_anharmonic_pos`, `separableAnharmonic`, `gibbsExpectation_coord_separableAnharmonic`,
+`gibbsCov_separableAnharmonic`, `separableAnharmonic_var_second_order`, `separableAnharmonic_var_relative_rate`,
+`separableAnharmonic_var_relative_rate_note`, `separableAnharmonic_mean_asymptotic`, `integrable_pow_mul_exp_neg_t_anharmonic`,
+`integrable_anharmonic_mul_exp`, `gibbsExpectation_anharmonic_energy`, `tendsto_mul_of_tendsto_sq_mul`,
+`fourthMoment_anharmonic_asymptotic`, `energy_anharmonic_asymptotic`, `integrable_coord_energy_separableAnharmonic`,
+`gibbsExpectation_energy_separableAnharmonic`, `separableAnharmonic_energy_asymptotic` (C, by the moment route GPT suggested).
+
+Surprises: the product-observable factorisation needs no hypotheses at all (total Bochner integrals plus
+`integral_fintype_prod_volume_eq_prod`); the whole E2 remainder statement then reduces to the one-dimensional theorems already in the
+seabed. The energy limit came for free from the third- and fourth-moment second-order results (`t²⟨x³⟩`, `t²⟨x⁴⟩` bounded ⇒
+`t⟨x³⟩, t⟨x⁴⟩ → 0`).
