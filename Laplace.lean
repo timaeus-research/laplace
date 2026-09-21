@@ -289,3 +289,4 @@ import Laplace.Sampler.MetropolisReversible
 import Laplace.Sampler.BatchSizeRule
 import Laplace.Sampler.LLCSensitivity
 import Laplace.Sampler.FrobeniusBridge
+import Laplace.Sampler.FrobeniusTarget
