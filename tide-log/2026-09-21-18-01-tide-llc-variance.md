@@ -92,3 +92,9 @@ Saved verbatim in `tide-log/gpt_llc_variance_v1.md` (prompt in `gpt_llc_variance
 - GPT-6 Astra: A+B+C+D
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/llc-variance` at 15c4b73 (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/LLCVariance.lean` (526 lines): `cov_sum_eq_sum_cov`, `integrable_pooledSecondMoment_mul`, `ite_pair_expand`, `cov_pooledSecondMoment`, `variance_weighted_diag`, `gram_sq_sum_le`, `variance_weighted_diag_le`, `variance_weighted_diag_realChain_le`, `variance_weighted_diag_realChain`, `llc_statistic_eq_weighted_diag`, `variance_llc_ula`, `variance_llc_ula_le`, `sum_sum_ite_two_one`, `llc_vs_frobenius_isotropic`.
+
+Surprises: (i) the delta bookkeeping of the two Wick pairings is best isolated as a standalone real identity (`ite_pair_expand`, `split_ifs <;> (simp_all; try ring)`) rather than split inside the double sum; (ii) `field_simp` closed every final algebraic goal on its own — five trailing `ring`s had to be deleted; (iii) the first draft carried a sign hypothesis on `s₂` for the squared Gram kernel that the linter correctly flagged as unused.
