@@ -60,3 +60,15 @@ with the Watanabe qualification; suggests `Tendsto` corollaries if cheap.
 - GPT-6 Astra: candidate A (same)
 
 Agreed.
+
+## Result
+
+Committed as `Laplace/Multi/CovKClosedForm.lean` (0039aaa), 168 lines, 0 sorries, `lean-state check` clean.
+
+Theorems: `matCLM_inv_comp`, `matCLM_inv_apply_matCLM`, `dot_matCLM_inv_symm`, `trASig_comp_one`, `tensorContractMatrix_zero`,
+`comp_inv_comp_eq`, `inv_comp_comp_inv_eq`; `cov2Coefficient_quadObservable` (`½ trASig B Σ − ⟨Σb, T:Σ⟩`),
+`cov2Coefficient_potentialObservable` (`½ trASig B Σ − ½ ⟨Σb, T:Σ⟩`); `potentialObservableQuintic`; `covV_first_order_rate_posDef`,
+`covK_closed_form_rate_posDef`, `varV_first_order_rate_posDef` (`t² Var_t(V) → d/2`), `varK_first_order_rate_posDef`.
+
+Surprises: none; once the coefficient was public the whole tide was two composition identities and `ring`. The Watanabe qualification
+from the consult is recorded in the docstring wording ("the regular-model value of the singular fluctuation", not an identification).
