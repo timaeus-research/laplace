@@ -1355,3 +1355,22 @@ matrix version is `whiteningOf`.
   `memLp_id_gaussianReal' 4` + `memLp_map_measure_iff`. State `integral_map`/`memLp_map_measure_iff` with the map in the lambda form
   `fun ω => innerSL ℝ u (ξ ω)` (a `Measurable.comp` term has type `Measurable (f ∘ g)` and its `∘` will not match the goal).
 - `Qᵀ` in a statement needs `open Matrix`; a parse error "unexpected token 'ᵀ'" is the symptom.
+
+## Gotchas from the truth-variation arc (2026-09-21)
+
+- `HasDerivAt.sum` / `HasFDerivAt.sum` return the Pi-sum function `∑ j, fun u ↦ …`; convert with
+  `have hfun : (fun u ↦ ∑ j, f j u) = ∑ j, fun u ↦ f j u := by funext u; simp [Finset.sum_apply]`.
+- Matrix entries: `hasDerivAt_pi.mp (hasDerivAt_pi.mp hH i) j : HasDerivAt (fun u ↦ H u i j) (H' i j) u`.
+- `qform_eq_dotProduct` + `simp only [dotProduct, Matrix.mulVec]` (root `dotProduct`) unfolds the
+  quadratic form to `∑ i, x i * ∑ j, A i j * x j` and closes the goal by itself — no trailing `rfl`.
+- Chain `hq.neg.div_const 2 |>.exp` then `.congr_deriv` for `u ↦ exp (-q u / 2)`; `convert … using 1`
+  on a `HasDerivAt` leaves `NormedAddCommGroup`/`Module` instance goals instead.
+- `Measure.integral_comp_mul_left g a` on `ℝ`: to solve for the ORIGINAL integral write
+  `∫ F = a⁻¹ * ∫ F (a⁻¹ x)` via `rw [h, ← mul_assoc, inv_mul_cancel₀, one_mul]` (no `field_simp`).
+- `continuousWithinAt_of_dominated` (domination only on `𝓝[Ici 0] s₀`) + `ContinuousOn.comp_continuous`
+  when a parametric integral is only well-behaved for `s ≥ 0`.
+- `Tendsto.const_mul_atTop (hr : 0 < r) (hf : Tendsto f l atTop)` (not a dot-lemma on `hf`).
+- After `field_simp` closes a goal, a trailing `ring` errors "No goals"; likewise after `rw` that
+  turns the goal into `rfl`, drop the following `congr 1`.
+- `a⁻¹ * (a * X)`-style cancellations: `mul_div_mul_left _ _ (inv_ne_zero h)`; the `(√t)^r` factors
+  cancel with `mul_div_mul_left _ _ (pow_ne_zero _ …)` after `simp only [Pi.div_apply]`.
