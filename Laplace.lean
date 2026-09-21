@@ -230,6 +230,7 @@ import Laplace.Multi.TraceKernel
 import Laplace.Multi.TraceKernelMain
 import Laplace.Multi.TiltVarianceQuadratic
 import Laplace.Multi.TraceSurjective
+import Laplace.Multi.MomentDeterminacy
 import Laplace.Multi.RotationCounterexample
 import Laplace.Multi.SufficientFamilies
 import Laplace.Anchoring
