@@ -241,6 +241,7 @@ import Laplace.Multi.ToyCrossover
 import Laplace.Multi.MorseBottResponse
 import Laplace.Multi.TotalVariationResponse
 import Laplace.Multi.ResolvedChartResponse
+import Laplace.Multi.RelativeChartLeading
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
@@ -285,6 +286,7 @@ import Laplace.Sampler.LLCMSE
 import Laplace.Sampler.ULALocalised
 import Laplace.Multi.OneLoopSeparable
 import Laplace.Sampler.AutocorrelationTime
+import Laplace.Sampler.MetropolisReversible
 import Laplace.Sampler.BatchSizeRule
 import Laplace.Sampler.LLCSensitivity
 import Laplace.Sampler.FrobeniusFree

@@ -1628,6 +1628,21 @@ matrix version is `whiteningOf`.
   `.congr' (eventually_atTop.mpr ⟨1, fun N hN => (heq N (by omega)).symm⟩)`.
 - `ulaChain` needs `[DecidableEq ι]`; a section that mentions it without the instance fails with "failed to synthesize DecidableEq ι".
 
+### Reversibility of the MH kernel (tide `mh-reversible`)
+
+- Rectangle masses of `π ⊗ K`: restrict the outer integral (`∫⁻ x in A, …`) and reuse the invariance proof verbatim — `lintegral_add_left`,
+  the `e1` rewrite of `π(x)·(∫⁻_B w)/Z` into `Z⁻¹ ∫⁻_B flux`, `lintegral_const_mul' _ _ hZinv` — all work on `μ.restrict A` unchanged; the
+  Dirac part becomes `lintegral_indicator hB` then `Measure.restrict_restrict hB : (μ.restrict A).restrict B = μ.restrict (B ∩ A)` and
+  `Set.inter_comm`.
+- Tonelli on restricted measures: `lintegral_lintegral_swap` takes `⦃f⦄` strict-implicit and `[SFinite μ]`; inside `rw` the measures stay
+  metavariables and the instance search gets stuck (`SFinite ?m`). State the swapped equation as a typed `have` and supply
+  `(μ := μ.restrict A) (ν := μ.restrict B)` **and** `hFm.aemeasurable (μ := (μ.restrict A).prod (μ.restrict B))`, then `rw [hswap]`.
+- `K(x, univ) = 1`: `simp only [mhKernelSet, Measure.restrict_univ, Set.indicator_univ]` then
+  `exact add_tsub_cancel_of_le (mhAcceptMass_le_one hq hZ hZ0 hZtop x)` (the unfolded integral is defeq to `mhAcceptMass`).
+- Restriction through a density: `restrict_withDensity hA : (μ.withDensity f).restrict A = (μ.restrict A).withDensity f` lives in the
+  `MeasureTheory` namespace, not `Measure`.
+- The step-size hypothesis `0 < h` is not needed for the MALA/pMALA reversibility instances (only for their Markov/probability statements):
+  drop it or the linter flags it.
 ### Positive semidefiniteness and section instances (tide `batch-size-rule`)
 
 - `Matrix.PosSemidef` and `posSemidef_sum`, `PosSemidef.smul`, `posSemidef_vecMulVec_self_star` need only `[Finite ι]` (the `Fintype`
