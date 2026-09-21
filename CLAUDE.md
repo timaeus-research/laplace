@@ -1574,3 +1574,21 @@ matrix version is `whiteningOf`.
   Compose an MSE bound into an RMS bound with `Real.sqrt_le_sqrt` then this lemma; `add_assoc` first so the bound reads `√env + (infl + short)`.
 - Theorems mixing a probability-measure section with pure algebra (spectral sums, `Fintype.card`) go in their own `section` with only
   `{ι} [Fintype ι]`; keep `[DecidableEq ι]` out unless an `if` appears in the statement (`unusedDecidableInType`).
+
+### Separable tensors on `Fin d` and diagonal algebra (tide `separable-oneloop`)
+
+- Contractions of a separable tensor (`if i = j ∧ j = k then α i else 0`) against a diagonal matrix: work entrywise (`ext i j`,
+  `simp only [def, Matrix.of_apply, diagonal_apply]`), kill each summation index with
+  `rw [Finset.sum_eq_single i (fun k _ hk => by simp [Ne.symm hk]) (by simp)]` (the off-index hypothesis comes as `k ≠ i`; the `if` reads
+  `i = k`, hence `Ne.symm`), then `by_cases hij : i = j` with `subst`/`simp`. Four nested sums (the bubble) are four such rewrites.
+- `diagonal_add : diagonal d₁ + diagonal d₂ = diagonal (d₁ + d₂)` and `diagonal_smul : diagonal (r • d) = r • diagonal d` point in
+  opposite directions: to *collapse* a sum of scaled diagonals write `simp only [← diagonal_smul, diagonal_add]` — `← diagonal_add`
+  instead *splits* a diagonal whose entries are sums (it will happily rewrite the right-hand side of your goal), after which `congr 1`
+  pairs the wrong summands.
+- `(t • diagonal λ)⁻¹`: `Matrix.inv_eq_right_inv`, rewrite `t • diagonal λ = diagonal (fun i => t * λ i)` by `← diagonal_smul; rfl`,
+  `diagonal_mul_diagonal`, a `funext` identity via `mul_one_div_cancel`, `diagonal_one`.
+- After `congr 1; funext i` on `diagonal f = diagonal g` the goal is already the real identity; a `simp only [Pi.add_apply]` there makes
+  no progress (error). Use `simp only [Pi.smul_apply, smul_eq_mul]` only when a `•` is present.
+- Positivity of a quadratic `g u² + 4αu + 12λ` under a discriminant hypothesis: multiply by `g`, complete the square
+  (`g·q = (g u + 2α)² + (12λg − 4α²)`, by `ring`), `nlinarith [sq_nonneg _]`, and divide back with `pos_of_mul_pos_right h hg.le`.
+  `λ > 0` is not needed once `g > 0` and `α² < 3λg` are given — the linter will tell you.
