@@ -253,6 +253,23 @@ entries of a convergent matrix sequence via `(continuous_id.matrix_elem i j).ten
 `diagonal_mul_diagonal`; `|a i| < 1` gives `tendsto_pow_atTop_nhds_zero_of_abs_lt_one`. `PiLp.continuous_toLp` transports
 entrywise limits to `EuclideanSpace` (`euclid M t = toLp 2 (M *ᵥ ofLp t)` by `rw [← ofLp_toEuclideanCLM]`).
 
+### `Lp` packaging and product-measure push-forwards (Sampler/AR1Real, Sampler/RandomMap)
+
+Real random variables into `Lp ℝ 2 P`: `MemLp.toLp`; identify `inner ℝ (hf.toLp f) (hg.toLp g) = ∫ f * g` through
+`L2.inner_def` + `integral_congr_ae` + `filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp]`, and `‖toLp f‖² = ∫ f²` from it via
+`real_inner_self_eq_norm_sq` (never through `Lp.norm_def`). Recurrences hold in `Lp` by `rw [← MemLp.toLp_const_smul,
+← MemLp.toLp_add]; rfl` (the pointwise and `Pi` forms are defeq). `toLp` of a finite sum: induction with `Finset.sum_insert`
+and `← MemLp.toLp_add; rfl`. `MemLp.zero`, `MemLp.const_mul`, `MemLp.add`, `memLp_finsetSum` (the deprecated
+`memLp_finset_sum` returns the `fun a => ∑ i, f i a` form). `Integrable (fun ω => f ω ^ 2)` from `(hf.integrable_mul hf)`
+after `simp only [sq]; exact this` (`simpa` fails on `f * f` vs the lambda).
+Push-forwards of products: `Measure.map_map` needs its functions passed explicitly (`(g := …) (f := …)`) when the goal's
+lambda differs syntactically from the proof term's inferred function (`measurable_fst.add measurable_snd` is stated for
+`Prod.fst + Prod.snd`); `Measure.map_prod_map` with `measurable_id` and `conv_rhs => rw [← Measure.map_id]` to introduce
+`ν.map id`; `Measure.conv` unfolds by `change` to `(μ.prod ν).map (fun p => p.1 + p.2)`. `measurable_const_smul` for
+`fun ξ => c • ξ`. Independence to product law: `(indepFun_iff_map_prod_eq_prod_map_map hX hξ).mp hind` and
+`AEMeasurable.map_map_of_aemeasurable`. `‖t‖² = t.ofLp ⬝ᵥ t.ofLp` on `EuclideanSpace` via `real_inner_self_eq_norm_sq`
+and `EuclideanSpace.inner_eq_star_dotProduct`.
+
 ## Monomial cumulant ladder (OneD)
 
 The symmetric even-monomial track (`MonomialPotential`/`MonomialVariance`/`MonomialKurtosis`/`MonomialSixthCumulant`,
