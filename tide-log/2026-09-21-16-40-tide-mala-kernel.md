@@ -60,3 +60,18 @@ stationarity by induction is cheap; C (reversibility) is correct but not cheap �
 - GPT-6 Astra: A+B
 
 Agreed.
+
+## Result
+
+Committed as `879b78d` on `tide/mala-kernel` (`Laplace/Sampler/MetropolisKernel.lean`, 244 lines; full `lake build` and `scripts/sorries` clean:
+0 sorry, 0 axiom, 0 native_decide).
+
+Theorems: `mhKernelFun`, `mhKernelFun_apply`, `mhKernel`, `mhKernel_apply_set`, `isMarkovKernel_mhKernel`, `bind_mhKernel`,
+`bind_mhKernel_iterate`; `malaKernel`, `pmalaKernel`, `isMarkovKernel_malaKernel`, `isMarkovKernel_pmalaKernel`, `bind_malaKernel`,
+`bind_pmalaKernel`, `bind_malaKernel_iterate`; `targetWeight_eq_tiltedWeight_zero`, `targetZ_toReal`, `integral_gaussianLaw`,
+`integrable_gaussianLaw_iff`, `integrable_coord_gaussianLaw`, `integrable_coord_mul_gaussianLaw`, `integral_coord_gaussianLaw`,
+`integral_coord_mul_gaussianLaw`, `covariance_gaussianLaw`.
+
+Surprises: none; the kernel packaging is ~30 lines on top of the setwise theorems (`Measure.measurable_of_measurable_coe` +
+`Measure.bind_apply`), and the moment identification is a change of density (`integral_withDensity_eq_integral_toReal_smul₀`) into the
+seabed's tilted Gaussian API at zero tilt. The only wrinkle was where `[DecidableEq ι]` lives (`P⁻¹`, `matCLM`).
