@@ -133,12 +133,12 @@ noncomputable def empMoment (A : LocalLaplaceDomain L H) (K h : EuclidD d → �
   (∫ x, A.empIntegrand K h q x) / ∫ x, A.empIntegrand K (fun _ ↦ 1) q x
 
 /-- The reweighting factor `e^{-((K−L)(qx) − (K−L)(0))/q²}`. -/
-noncomputable def weight (K L : EuclidD d → ℝ) (q : ℝ) (x : EuclidD d) : ℝ :=
+noncomputable def empWeight (K L : EuclidD d → ℝ) (q : ℝ) (x : EuclidD d) : ℝ :=
   Real.exp (-(((K (q • x) - L (q • x)) - (K 0 - L 0)) / q ^ 2))
 
 theorem empIntegrand_eq (A : LocalLaplaceDomain L H) (K h : EuclidD d → ℝ) (q : ℝ)
-    (x : EuclidD d) : A.empIntegrand K h q x = A.integrand h q x * weight K L q x := by
-  unfold empIntegrand integrand weight
+    (x : EuclidD d) : A.empIntegrand K h q x = A.integrand h q x * empWeight K L q x := by
+  unfold empIntegrand integrand empWeight
   by_cases hx : x ∈ {x : EuclidD d | q • x ∈ A.U}
   · rw [Set.indicator_of_mem hx, Set.indicator_of_mem hx, mul_assoc, ← Real.exp_add]
     congr 2
@@ -148,14 +148,14 @@ theorem empIntegrand_eq (A : LocalLaplaceDomain L H) (K h : EuclidD d → ℝ) (
 theorem zero_mem_U (A : LocalLaplaceDomain L H) : (0 : EuclidD d) ∈ A.U :=
   A.ball_subset_U (Metric.mem_ball_self A.delta_pos)
 
-theorem weight_bounds (A : LocalLaplaceDomain L H) {K : EuclidD d → ℝ} {δ : ℝ}
+theorem empWeight_bounds (A : LocalLaplaceDomain L H) {K : EuclidD d → ℝ} {δ : ℝ}
     (hclose : ∀ y ∈ A.U, |K y - L y| ≤ δ) {q : ℝ} (hq : 0 < q) {x : EuclidD d}
     (hx : q • x ∈ A.U) :
-    Real.exp (-(2 * δ / q ^ 2)) ≤ weight K L q x ∧ weight K L q x ≤ Real.exp (2 * δ / q ^ 2) := by
+    Real.exp (-(2 * δ / q ^ 2)) ≤ empWeight K L q x ∧ empWeight K L q x ≤ Real.exp (2 * δ / q ^ 2) := by
   have h1 := abs_le.mp (hclose _ hx)
   have h2 := abs_le.mp (hclose _ A.zero_mem_U)
   have hq2 : 0 < q ^ 2 := by positivity
-  unfold weight
+  unfold empWeight
   constructor
   · rw [Real.exp_le_exp, neg_le_neg_iff, div_le_div_iff_of_pos_right hq2]
     linarith
@@ -194,9 +194,9 @@ theorem integrable_empIntegrand (A : LocalLaplaceDomain L H) {K : EuclidD d → 
     (Filter.Eventually.of_forall fun x ↦ ?_)
   rw [A.empIntegrand_eq K h q x, norm_mul]
   by_cases hx : x ∈ {x : EuclidD d | q • x ∈ A.U}
-  · have hw := (A.weight_bounds hclose hq hx).2
-    have hwpos : 0 < weight K L q x := Real.exp_pos _
-    rw [Real.norm_eq_abs (weight K L q x), abs_of_pos hwpos, mul_comm]
+  · have hw := (A.empWeight_bounds hclose hq hx).2
+    have hwpos : 0 < empWeight K L q x := Real.exp_pos _
+    rw [Real.norm_eq_abs (empWeight K L q x), abs_of_pos hwpos, mul_comm]
     exact mul_le_mul_of_nonneg_right hw (norm_nonneg _)
   · rw [A.integrand_eq_zero_of_notMem h q hx]
     simp
@@ -211,27 +211,27 @@ theorem abs_empMoment_sub_popMoment_le (A : LocalLaplaceDomain L H) {K : EuclidD
   unfold empMoment popMoment
   have hF := A.integrable_integrand h_cont h_growth hq
   have hG := A.integrable_integrand continuous_const (hasPolynomialGrowth_const 1) hq
-  have hFw : Integrable fun x ↦ A.integrand h q x * weight K L q x :=
+  have hFw : Integrable fun x ↦ A.integrand h q x * empWeight K L q x :=
     (A.integrable_empIntegrand hKm hclose h_cont h_growth hq).congr
       (Filter.Eventually.of_forall fun x ↦ A.empIntegrand_eq K h q x)
-  have hGw : Integrable fun x ↦ A.integrand (fun _ ↦ 1) q x * weight K L q x :=
+  have hGw : Integrable fun x ↦ A.integrand (fun _ ↦ 1) q x * empWeight K L q x :=
     (A.integrable_empIntegrand hKm hclose continuous_const (hasPolynomialGrowth_const 1) hq).congr
       (Filter.Eventually.of_forall fun x ↦ A.empIntegrand_eq K (fun _ ↦ 1) q x)
   have hw : ∀ x, A.integrand h q x ≠ 0 ∨ A.integrand (fun _ ↦ 1) q x ≠ 0 →
-      Real.exp (-(2 * δ / q ^ 2)) ≤ weight K L q x ∧ weight K L q x ≤ Real.exp (2 * δ / q ^ 2) := by
+      Real.exp (-(2 * δ / q ^ 2)) ≤ empWeight K L q x ∧ empWeight K L q x ≤ Real.exp (2 * δ / q ^ 2) := by
     intro x hx
     by_cases hmem : x ∈ {x : EuclidD d | q • x ∈ A.U}
-    · exact A.weight_bounds hclose hq hmem
+    · exact A.empWeight_bounds hclose hq hmem
     · exfalso
       rcases hx with hx | hx
       · exact hx (A.integrand_eq_zero_of_notMem h q hmem)
       · exact hx (A.integrand_eq_zero_of_notMem _ q hmem)
   have habs := abs_reweighted_ratio_sub_le (a := 2 * δ / q ^ 2) (by positivity) hF hFw hG hGw
     (A.integrand_nonneg_one q) hZ hw
-  have e1 : ∫ x, A.empIntegrand K h q x = ∫ x, A.integrand h q x * weight K L q x :=
+  have e1 : ∫ x, A.empIntegrand K h q x = ∫ x, A.integrand h q x * empWeight K L q x :=
     integral_congr_ae (Filter.Eventually.of_forall fun x ↦ A.empIntegrand_eq K h q x)
   have e2 : ∫ x, A.empIntegrand K (fun _ ↦ 1) q x =
-      ∫ x, A.integrand (fun _ ↦ 1) q x * weight K L q x :=
+      ∫ x, A.integrand (fun _ ↦ 1) q x * empWeight K L q x :=
     integral_congr_ae (Filter.Eventually.of_forall fun x ↦ A.empIntegrand_eq K _ q x)
   have e3 : ∫ x, |A.integrand h q x| = ∫ x, A.integrand (fun x ↦ |h x|) q x := by
     refine integral_congr_ae (Filter.Eventually.of_forall fun x ↦ ?_)
