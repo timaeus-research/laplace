@@ -1240,3 +1240,20 @@ matrix version is `whiteningOf`.
   "unexpected token 'φ'; expected identifier". Rename the family (`F`) or don't open `Nat`.
 - `rw [show (1 : ℕ) = 2 * 0 + 1 by norm_num]` rewrites the `1` inside `Fin 1` too (motive not type
   correct); derive the specialised fact with `simpa using lemma H 0` instead.
+- `Measure.integral_comp_mul_left (g) (a) : ∫ x, g (a * x) = |a⁻¹| • ∫ g` lives in the `Measure`
+  namespace (Haar/NormedSpace); `integral_comp_abs : ∫ x, f |x| = 2 * ∫ x in Ioi 0, f x` is root.
+  Gamma-type values: `integral_rpow_mul_exp_neg_rpow (hp : 0 < p) (hq : -1 < q) :
+  ∫ x in Ioi 0, x ^ q * exp (-x ^ p) = (1/p) * Gamma ((q+1)/p)` (rpow exponents; convert with
+  `Real.rpow_natCast`, which is unconditional).
+- `field_simp` rewrites `-1 / (2k)` to `-(1 / (2k))` inside rpow EXPONENTS, so a hypothesis
+  `hA : ∫ … a y ^ (-1 / (2k)) ≠ 0` no longer matches afterwards; cancel with
+  `mul_div_mul_left/right _ _ h` BEFORE `field_simp`, or restate the exponent.
+- `conv_lhs => rw [← Real.rpow_one x]` rewrites EVERY `x` on the lhs (also inside `x ^ e`); use
+  `have := Real.rpow_add hx 1 e; rw [Real.rpow_one] at this; rw [← this]` instead.
+- `rw [show (1 : ℕ) = … ]` / `show (4:ℕ) = 2*2` style rewrites hit numerals inside `Fin 1`, `Fin 4`
+  (motive not type correct); specialise the lemma instead (`simpa using lemma H 0`).
+- `Real.rpow_le_rpow_left_iff (hx : 1 < x) : x ^ y ≤ x ^ z ↔ y ≤ z` gives exponent injectivity
+  (`le_antisymm` of both directions); `Real.rpow_left_injOn (hz : z ≠ 0)` gives base injectivity on
+  `{0 ≤ y}`.
+- `congrArg (fun x ↦ c * x) h` is already beta-reduced; a following `simp only at this` errors
+  with "no progress".
