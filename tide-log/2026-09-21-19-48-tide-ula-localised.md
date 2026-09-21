@@ -64,3 +64,9 @@ Saved verbatim in `tide-log/gpt_ula_localised_v1.md`. Summary: A–C correct; st
 - GPT-6 Astra: A+B+C
 
 Agreed. Proceeding to Step 3.
+
+## Result
+
+Committed on `tide/ula-localised` at d18d845 (`lake build` clean, `scripts/sorries`: 0 sorry, 0 axiom, 0 native_decide). New module `Laplace/Sampler/ULALocalised.lean` (233 lines): `orthoOf_transpose_ulaDenom_mul`, `orthoOf_transpose_ulaCov_localised_mul`, `trace_ulaCov_localised`, `ula_localised_llc`, `ula_excess_mono`, `localisedLLC_le_ula_localised_llc`, `ula_localised_llc_le`, `trace_ulaCov_localised_bounds`.
+
+Surprises: (i) the numerical check reproduced the note's *measured* E3 values (4.26/2.56/0.83 vs 4.23/2.55/0.83) from the ULA-corrected formula — the residual really is the ULA inflation; (ii) `h > 0` was unnecessary for the conjugation and trace identities; (iii) `one_div_le_one_div_iff` does not exist — `one_div_le_one_div_of_le` does.
