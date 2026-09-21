@@ -230,3 +230,4 @@ import Laplace.OneD.QuarticBoundedTest
 import Laplace.Sampler.Lyapunov
 import Laplace.Sampler.ULA
 import Laplace.Multi.GaussianLLC
+import Laplace.TwoD.Rosenbrock
