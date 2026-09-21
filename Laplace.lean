@@ -248,3 +248,6 @@ import Laplace.Patterning.FourGonGibbs
 import Laplace.Patterning.Jacobi
 import Laplace.Patterning.RadialVirial
 import Laplace.Patterning.GaussianFourth
+import Laplace.Patterning.FourGonStationary
+import Laplace.Patterning.FourGonModel
+import Laplace.Patterning.FourGonSaddle
