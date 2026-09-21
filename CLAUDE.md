@@ -1206,3 +1206,37 @@ matrix version is `whiteningOf`.
   mul_one]` with `hPP : P * P⁻¹ = 1`.
 - After changing an imported seabed file, `lake build <Module>` for it and then `lean-state restart`
   before `check`ing dependents (the daemon holds the old oleans).
+### Random affine steps: averaging over batch and Gaussian noise (tide `minibatch-step`)
+
+- Keep both expectations in density/finite-average form: `stdExp φ := (∫ φ ξ * gW(matCLM 1) ξ) / Z`
+  (with `Matrix.PosDef.one`, `P⁻¹ = 1` via `inv_one`) and `batchAvg m F := (n.choose m)⁻¹ • ∑ B ∈
+  powersetCard m univ, F B`; vector/matrix expectations entrywise (`stdExpVec`, `stdExpMat` as
+  functions, `ext i j` to enter). Polynomial integrands of degree ≤ 2 in the Gaussian variable:
+  expand with `ring` inside a `hexp : ∀ ξ, … = …`, `simp_rw [hexp]`, then `integral_add` with
+  *lambda-typed* integrability facts (`have h12 : Integrable (fun ξ => A ξ + B ξ) := h1.add h2`).
+- `batchAvg_const` needs the lambda's domain spelled out: `batchAvg m (fun _ : Finset (Fin n) => x)`;
+  otherwise the implicit `n` cannot be inferred from the statement.
+- Linear maps under `batchAvg`: `batchAvg m (fun B => outerBilin x (Δ B)) = outerBilin x (batchAvg m Δ)`
+  by `unfold batchAvg; rw [map_smul, map_sum]` (second argument) or
+  `rw [LinearMap.map_smul₂, LinearMap.map_sum₂]` (first argument), then
+  `simp only [outerBilin, LinearMap.mk₂_apply]`. Do **not** `simpa [batchAvg, outerBilin]`: `simp`
+  distributes `vecMulVec` over sums and turns `c • X = 0` into disjunctions.
+- Expanding `vecMulVec (x − c • y) (x − c • y)`: `simp only [sub_vecMulVec, vecMulVec_sub,
+  smul_vecMulVec, vecMulVec_smul]` then `module` (not `abel`, which treats `c • (X + Y)` as an atom).
+  `vecMulVec (A *ᵥ w) (A *ᵥ w) = A * vecMulVec w w * Aᵀ` is `Matrix.mul_vecMulVec`,
+  `Matrix.vecMulVec_mul`, `Matrix.vecMul_transpose`.
+- `Matrix.smul_mulVec : (c • A) *ᵥ v = c • A *ᵥ v` (there is no `smul_mulVec_assoc`);
+  `Matrix.sum_mulVec : (∑ i, x i) *ᵥ y = ∑ i, x i *ᵥ y`.
+- Law form with a probability measure: entrywise scalar integrals against hypotheses
+  `∫ w i = q i`, `∫ w i * w j = M i j` plus their `Integrable` facts; entry lemmas
+  `(A * X * Aᵀ) i j = ∑ k ∑ l, A i k * A j l * X k l` (`Matrix.mul_apply`, `Finset.sum_mul`,
+  `Finset.sum_comm`, `ring`) and `vecMulVec (D *ᵥ w) g i j = ∑ l, (D i l * g j) * w l`;
+  `integral_const` gives `μ.real univ • c`, discharged by `simp only [measureReal_def, measure_univ,
+  ENNReal.toReal_one]` (`measureReal_univ_eq_one` does not exist at this pin).
+- After `set A := …` and unfolding a definition that re-introduces the same expression, `rw [← hA]`
+  before `ring`; and when one side has `c * ∑ f` and the other `∑ c * f`, `simp only
+  [← Finset.mul_sum]` first.
+- Under `open scoped Nat`, `φ` is the totient NOTATION: a binder `(φ : ι → …)` fails with
+  "unexpected token 'φ'; expected identifier". Rename the family (`F`) or don't open `Nat`.
+- `rw [show (1 : ℕ) = 2 * 0 + 1 by norm_num]` rewrites the `1` inside `Fin 1` too (motive not type
+  correct); derive the specialised fact with `simpa using lemma H 0` instead.
