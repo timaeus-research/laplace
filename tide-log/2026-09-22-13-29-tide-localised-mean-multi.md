@@ -53,3 +53,22 @@ alone is not enough under repeated eigenvalues); localised covariance needs new 
 ## Vote
 - Claude: A + B + C (C flagship, exact reductions exposed)
 - GPT-6 Astra: A + B + C (C flagship; if scope shrinks, A + C)
+
+## Result
+
+Commit `0b835b6` on `tide/localised-mean-multi`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B + C as voted, with the exact reductions
+exposed as GPT asked.
+`Laplace/Multi/LocalisedAnharmonicMulti.lean` (     462 lines): `localiser`, `localisedPotential`, `exp_neg_localisedPotential`, `sum_sq_mulVec_transpose`,
+`localiser_affineFrame`, `rotated_localisedPotential`, `localisedPotential_separable`, `integrable_localised_of_integrable`,
+`gibbsExpectation_localisedAnharmonic_id`, `partitionFunction_localisedAnharmonic_pos`, `localisedRotatedAnharmonic`,
+`localisedRotatedAnharmonic_eq_rotated`, `localisedRotatedAnharmonic_frame_coord`, `localisedRotatedAnharmonic_frame_rate`,
+`integrable_exp_localisedRotatedAnharmonic`, `partitionFunction_localisedRotatedAnharmonic_pos`,
+`integrable_frame_coord_localised`, `localisedRotatedAnharmonic_ambient_coord`, `sum_rate_div_sqrt`,
+`localisedMean_sub_leading_div_rate`, `sub_eq_mulVec_affineFrame`, `meanShift_add_localisation_rot`, `locPrec_rot`,
+`locS_rot`, `meanShiftLoc_rot`, `displayed_mean_rot`, `localisedRotatedAnharmonic_ambient_rate`,
+`localisedRotatedAnharmonic_displayed_rate`.
+
+Surprises: none of substance — the whole tide is the one geometric fact `|Qᵀ(w − c) − Qᵀ(w₀ − c)|² = |w − w₀|²` plus bookkeeping;
+the nonnegative localiser only lowers the Boltzmann factor, so every integrability premise is inherited from the unlocalised
+seabed by `Integrable.mono'`. The displayed resolvent `(tH + gI)⁻¹ = Q diag(1/(tλᵢ + g)) Qᵀ` and `meanShiftLoc` on E2's tensors
+follow the `meanShift_rot` template line by line.
