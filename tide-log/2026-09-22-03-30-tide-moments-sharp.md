@@ -31,3 +31,13 @@ double factorials opaque (no recurrence needed); real differences, not ℕ subtr
 `numcheck_moments_sharp.py` (`λ = 2`, `a = ½`, `γ = λ²`, `t = 50 … 800`): `t·(t^{k+1}⟨x^{2k+1}⟩ − limit)` for `k = 0..3` converges to
 `0.180, 0.772, 3.96, 23.7` (limits `−0.1768, −0.4419, −1.5468, −6.9606 = −α(2k+3)‼/(6λ^{k+2})`); `t²·(t^k⟨x^{2k}⟩ − (2k−1)‼/λ^k −
 C_k/(λ^k t))` for `k = 1..3` converges to `−0.199, −1.60, −13.2`; `C₁ = −0.1875 = 45A² − 12B`, `C₂ = −0.875 = 450A² − 96B`.
+
+## Result
+
+Commit `b2fd05c` on `tide/moments-sharp`; `lake build` clean, `scripts/sorries` 0/0/0/0. A and B landed, plus the even  corollary.
+`Laplace/OneD/MomentsSharp.lean` (     310 lines): `gaussian_even_moment`, `gaussian_moment_shift`, `evenMomentCoeff`,
+`evenMomentCoeff_one`, `evenMomentCoeff_two`, `J_even_delta`, `evenMoment_anharmonic_order2_rate`, `evenMoment_anharmonic_rate`,
+`J_odd_delta`, `oddMoment_anharmonic_rate`, `oddMoment_anharmonic_asymptotic`.
+
+Surprises: with the parity-sharp `J_n` layer and the two ratio lemmas in place, the general-`k` statements are no harder than the
+`k = 1` ones; the only friction is index bookkeeping (`2k + 4 = 2(k + 2)`, `omega` for the truncated `− 1`).
