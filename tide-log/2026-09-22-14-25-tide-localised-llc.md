@@ -60,3 +60,18 @@ prediction; coefficient deferred.
 ## Vote
 - Claude: A + B + C (C = algebra of the trace prediction and the `d/2` corollary)
 - GPT-6 Astra: A + B + C (sign claim restricted to the Gaussian trace prediction; coefficient deferred)
+
+## Result
+
+Commit `080a2d8` on `tide/localised-llc`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B + C as voted (C = the trace
+prediction's algebra and the `d/2` corollary; the sign claim is about the prediction only).
+`Laplace/Multi/LocalisedAnharmonicLLC.lean` (     577 lines): `locR₄`/`locR₆`/`locR₈`, `locCubic_pointwise`, `gibbsExpectation_const_mul₁`, `exp_neg_locPotential1`,
+`integrable_pow_locPotential1`, `partitionFunction_locPotential1_pos`, `locSecondMoment_eq`, `locSecondMoment_rate`,
+`locCubic_expansion`, `locCubic_rate`, `locThirdMoment_loc_rate`, `locFourthMoment_loc_le`, `anharmonicPotential_eq_lin`,
+`locEnergy_eq`, `localisedEnergy_rate`, `localisedRotatedAnharmonic_energy_coord`, `trace_smul_locS_rot`,
+`localisedRotatedAnharmonic_llc_rate`, `trace_smul_locS_rot_eq`, `trace_smul_locS_rot_le`,
+`localisedRotatedAnharmonic_llc_leading`.
+
+Surprises: the cubic weight needs only the seabed's *first-order* expansion (`x³φ − x³ − g x₀x⁴ = x³(φ − 1 − g x₀x)`, no `x⁵`
+term — GPT's identity was in the variable `y`); with tides 67–68 in place the whole tide is assembly. The section-variable
+`include` bit a `rfl` lemma (`rw` with it demanded `0 < lam`).
