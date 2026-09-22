@@ -291,6 +291,38 @@ theorem deadChi_deadQuartic_sum (t : ℝ) (ht : 0 < t) :
   field_simp
   ring
 
+/-- The mean and the second moment of the excess loss: `E_t[K] = E₄/15`, `E_t[K²] = E₈/225`. -/
+theorem gibbsExpectation_deadQuartic_sq (t : ℝ) (ht : 0 < t) :
+    Laplace.TwoD.gibbsExpectation deadQuartic t (fun z => deadQuartic z * deadQuartic z)
+      = gibbsMoment t 8 / 225 := by
+  rw [gibbsExpectation_eq_radial, gibbsMoment_eq_ratio]
+  unfold radialExpectation
+  rw [integral_radial_weight,
+    integral_polar_sep (fun z => deadQuartic z * deadQuartic z * quarticWeight t (z.1 ^ 2 + z.2 ^ 2))
+      (fun r => 1 / 225 * (r ^ 9 * quarticWeight t (r ^ 2))) (fun _ => 1)
+      (fun r _ θ _ => by rw [deadQuartic_polar, polar_sq]; ring),
+    intervalIntegral.integral_const, MeasureTheory.integral_const_mul]
+  have h8 : ∫ r in Ioi (0 : ℝ), r ^ 9 * quarticWeight t (r ^ 2) = polarMoment (quarticWeight t) 8 :=
+    rfl
+  rw [h8]
+  simp only [sub_neg_eq_add, smul_eq_mul, mul_one]
+  have hm0 := (polarMoment_quartic_pos t ht 0).ne'
+  field_simp
+  ring
+
+/-- **The fluctuation of the excess loss**: `t² Var_t(K) = ½`. The learning coefficient of the
+dead component is both the mean and the variance of `tK`: `tK` is `Gamma(½, 1)`. -/
+theorem deadQuartic_gibbs_variance (t : ℝ) (ht : 0 < t) :
+    t ^ 2 * Laplace.TwoD.gibbsCov deadQuartic t deadQuartic deadQuartic = 1 / 2 := by
+  have hK : Laplace.TwoD.gibbsExpectation deadQuartic t deadQuartic = 1 / (2 * t) := by
+    have h := deadQuartic_gibbs_excess t ht
+    field_simp
+    linarith
+  unfold Laplace.TwoD.gibbsCov
+  rw [gibbsExpectation_deadQuartic_sq t ht, hK, gibbsMoment_eight t ht]
+  field_simp
+  ring
+
 /-! ### The sign of the norm row: `Cov_t(r, r²) > 0` -/
 
 /-- Log-convexity of `Γ` at the midpoint of `[1/2, 1]`: `Γ(3/4)² ≤ Γ(1/2) Γ(1) = √π`. -/
