@@ -2122,3 +2122,29 @@ matrix version is `whiteningOf`.
 - `gcongr` on `K/(t√t)/t ≤ K/t²` produces the wrong side goal (`K/(t√t) ≤ K`); prove such steps by hand: `rw [div_div]` then
   `div_le_div_of_nonneg_left hK (by positivity) (by calc t ^ 2 = t * 1 * t := by ring; _ ≤ t * √t * t := by gcongr)`.
 - `field_simp` closes the `2 / c * N / t ^ 2 = (N / t ^ 2) / (c / 2)`-type goals outright (a trailing `ring` errors "no goals").
+
+### Tensor contractions of the rotated oscillator and matrix-form E7 (tide `e7-matrix`)
+
+- Every one-loop contraction of the rotated tensors `Tᵢⱼₖ = ∑ₗ αₗ Qᵢₗ Qⱼₗ Qₖₗ`, `Q4 = ∑ₗ γₗ Q⊗⁴` against `S = Q diag(s) Qᵀ` reduces to
+  `contract_conj_diagonal : ∑ₖₘ Qₖₚ Sₖₘ Qₘ_q = if p = q then s p else 0`, proved as the `(p, q)` entry of `Qᵀ S Q = diag s` (`set S`
+  first so `Matrix.mul_apply` does not unfold `S`, then `Finset.sum_comm`). Prove the contractions for arbitrary `s` and substitute
+  `s = 1/(λt)` only in `oneLoopCov_rot`.
+- A contraction lemma stated with `M : Fin d → Fin d → ℝ` cannot be `rw`-applied to a `Matrix`-valued `S k l` ("target is not type
+  correct under `implicit` transparency … function expected"): `Matrix` is not unfolded when unifying `?M k l`. Instantiate by hand,
+  `have h := rotQ_contract Q gamma i j (fun k l => (Q * diagonal s * Qᵀ) k l); rw [h]` (the inferred type is beta-reduced).
+- Reordering nested sums: `sum_comm3 (f) : ∑ a, ∑ b, ∑ c, f a b c = ∑ c, ∑ a, ∑ b, f a b c` (two `Finset.sum_comm`s) and then
+  `rw [sum_comm3]` (higher-order pattern `?f a b c` unifies). Never `simp only [Finset.mul_sum, Finset.sum_mul]` on a *product of
+  two sums*: `mul_sum` also fires on `(∑ m, a m) * (∑ n, b n)` (as `b * ∑`) and the resulting nesting order is unpredictable, so the
+  sides no longer line up under `Finset.sum_congr`. Distribute by hand instead: `rw [Finset.sum_mul_sum]` for `(∑)(∑)`, and for a
+  scalar times a nested sum state the pointwise `Finset.mul_sum` as a `have e : ∀ k l, c * ∑ q, F = ∑ q, c * F` and `simp_rw [e]`.
+- `rw [conj_smul]` rewrites all instances with the same scalar and diagonal at once: `bubble_rot` and `tadpoleLine_rot` give
+  syntactically identical matrices, so `(t²/2) • X + (t²/2) • X` needs one `conj_smul`, not two.
+- `(Q * diagonal (fun i => …) * Qᵀ) j k` in a `have` statement can fail with "function expected … has type ?m": the `HMul` instance is
+  still pending when the application is elaborated. Ascribe `(… : Matrix (Fin d) (Fin d) ℝ) j k`.
+- The multi-dimensional `gibbsCov (separableAnharmonic …) t (fun u => u i) (fun u => u i)` and the one-dimensional
+  `Laplace.gibbsCov (anharmonicPotential (lam i) …) t id id` are equal by `gibbsCov_separableAnharmonic … i i` with `if_pos rfl`;
+  convert the scalar rate hypothesis with `rw [← hVe] at e` before using it against a `set V`.
+- `(t • (Q * diagonal lam * Qᵀ))⁻¹`: `Matrix.inv_eq_right_inv`, then `Matrix.smul_mul`, `conj_mul_conj`, `diagonal_mul_diagonal`,
+  `conj_smul` (which is `← Matrix.smul_mul, ← Matrix.mul_smul, ← diagonal_smul`) and `diagonal_one`.
+- `Filter.eventually_atTop.mp (hlim.eventually (lt_mem_nhds (half_lt_self hpos)))` turns `Tendsto f atTop (𝓝 L)` with `0 < L` into
+  `∃ T, ∀ t ≥ T, L/2 < f t`; then `div_le_iff₀` and `nlinarith` give the `c/t²` lower bound.
