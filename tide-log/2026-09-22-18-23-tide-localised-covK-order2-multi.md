@@ -76,3 +76,17 @@ coefficient `c'ᵢcⱼ + cᵢc'ⱼ`, covariance `3(c'ᵢcⱼ + cᵢc'ⱼ)`).
 - Claude: A + B + C (ordered-pair bookkeeping as written); the centred variance derivative as the next tide
 - GPT-6 Astra: "YES to A+B+C, with explicit ordered-pair bookkeeping and no differentiation of bare remainder bounds; prioritise the
   centred E2 covariance tensor next"
+
+## Result
+
+Commit `6599171` on `tide/localised-covK-order2-multi`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedCovKOrder2Multi.lean` (     588 lines).
+A + B + C as voted (ordered-pair bookkeeping; the centred variance derivative is the next tide).
+Theorems: `locLeadMean`, `locCovKPairCoeff2`, `locProbePairCoeff2` (+`_eq_two_mul`), `locCovKCoeff2Sep` (+`_eq`, `_eq_two_mul`),
+`locProbeCoeff2`, `localisedCovK_frame_sq/lin/offdiag/pair_order2_rate` (A), `localisedCovK_frame_quadratic_order2_rate`,
+`localisedRotatedAnharmonic_covK_order2_rate` (B), `localisedRotated_gibbsExpectation_eq`, `localised_frame_coord/pair_expectation`,
+`localised_quadratic_expectation_split`, `localised_frame_lin/pair_expectation_order2_rate`,
+`localised_frame_quadratic_expectation_order2_rate`, `localisedRotatedAnharmonic_probe_order2_rate` (C).
+
+Surprises: none — tide 75's assembly on tide 76's frame objects, plus the expectation side, which needed one new rotation lemma for
+expectations and the product identity on the localised frame measure. GPT's centred-covariance observation (the raw `2cᵢcⱼ` cancels on
+centring; the diagonal becomes `2(c₂' − c²) = 2·varLocCoeff2`) is recorded as the next target.
