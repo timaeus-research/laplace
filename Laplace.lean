@@ -344,3 +344,5 @@ import Laplace.Multi.E2Matrix
 import Laplace.OneD.MomentsSharp
 import Laplace.OneD.CovKRate
 import Laplace.Multi.CovKRateSeparable
+import Laplace.Multi.RotatedTaylor
+import Laplace.Multi.RotatedDerivatives

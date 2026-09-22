@@ -2207,3 +2207,23 @@ matrix version is `whiteningOf`.
   sub_neg_eq_add]` on the goal before `exact`.
 - A full `lake build` can carry a warning from *another* session's freshly landed file (here `Laplace/Multi/RelativeChartFamily.lean:4`);
   the landing loop ignores warnings, so filter the finish script's warning check to the files of the tide.
+
+### Taylor identity and coordinate derivatives of the rotated oscillator (tide `tensor-identification`)
+
+- `set u := … with hu` variables are *transparent to `rw`*: `kabstract` unfolds let-values, so `Finset.sum_mul_sum` matched `u p * u p`
+  through the abbreviation and rewrote inside every summand. After `set`, `clear_value u` and keep `hup : ∀ p, ∑ i, Q i p * v i = u p`
+  (`by rw [hu]`) for the two or three places where the definition is needed. A "typeclass instance problem is stuck" on a following
+  `Finset.sum_congr` is the symptom of such an unintended rewrite.
+- Never `simp only [Finset.mul_sum]` on goals containing products of two sums: `mul_sum` also fires on `(∑ …) * (∑ …)`. Distribute the
+  scalar with a per-index `have e : ∀ i, c * ∑ p, F = ∑ p, c * F`, `simp_rw [e]`, then `Finset.sum_comm`/`sum_comm3`.
+- One-variable chain rule along a coordinate line: `HasDerivAt (fun s => ∑ l, g l (a l + s * b l)) (∑ l, gp l * b l) 0` from
+  `((hasDerivAt_id' (x := 0)).mul_const (b l)).const_add (a l)`, `HasDerivAt.comp (0 : ℝ)`, `HasDerivAt.sum` and
+  `.congr_of_eventuallyEq (Eventually.of_forall fun s => by simp [Finset.sum_apply])` (the sum lemma produces the Pi-sum of functions).
+  `affineFrame Q c (w + s • Pi.single k 1) = fun l => affineFrame Q c w l + s * Q k l` via `add_sub_right_comm, Matrix.mulVec_add,
+  Matrix.mulVec_smul, Matrix.mulVec_single_one` and `rfl` for `Qᵀ.col k l = Q k l`.
+- Explicit polynomial derivatives: build `HasDerivAt` with `(hasDerivAt_pow n x).const_mul c`, `hasDerivAt_id' (x := x)`,
+  `hasDerivAt_const x c`, `.add`, then `rw [e]` where `e` states the target value in the raw form `c * ((n : ℝ) * x ^ (n - 1))`
+  (`simp only [def]; norm_num; ring`) and `exact h` (the function unfolds by defeq).
+- Nested `partialD`: compute each level for *all* `w` as `fun w => ∑ l, A l * g l (affineFrame Q c w l)` (rewrite the previous level into
+  this shape with `funext w; rw [prev]; exact Finset.sum_congr rfl fun l _ => by ring`), then apply the one-step lemma; evaluate at the
+  centre only at the end (`affineFrame_center`, `simp`).
