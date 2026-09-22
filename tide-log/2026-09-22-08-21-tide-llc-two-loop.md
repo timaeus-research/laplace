@@ -37,3 +37,17 @@ two-loop `4.75694…` with E2's exact value at `t = 3` (an `O(t⁻²)` theorem g
 
 Adopted: add the `T₁₁₂`-type regression test (`theta`/`dumbbell` at `d = 2`) to the numerical check; phrase E2's `4.76` as "matching at
 the displayed precision"; distinguish definition / evaluation / rate in the staging note.
+
+## Result
+
+Commit `f8d2596` on `tide/llc-two-loop`; `lake build` clean, `scripts/sorries` 0/0/0/0. A and B landed.
+`Laplace/Multi/TwoLoopEnergy.lean` (     287 lines): `thetaDiagram`, `dumbbell`, `figureEight`, `twoLoopEnergy`, `testT`,
+`thetaDiagram_test` (`= 3s³`), `dumbbell_test` (`= s³`), `frobenius_conj_diagonal`, `thetaDiagram_rot`, `dumbbell_rot`,
+`figureEight_rot`, `trace_HS_rot`, `twoLoopEnergy_rot`, `twoLoopEnergy_rot_note`, `twoLoop_E2_value` (`685/144`),
+`twoLoop_E2_rounds`, `separableAnharmonic_energy_order1_rate_sharp` (general parameters),
+`twoLoopEnergy_rotatedAnharmonic_scaled_rate` (`K/t²`), `twoLoopEnergy_rotatedAnharmonic_rate` (`K/t³`).
+
+Surprises: none mathematical. GPT's regression tensor (`T₀₀₁ = T₀₁₀ = T₁₀₀ = 1`) evaluates by `simp [Fin.sum_univ_two]; ring`
+over 64 terms in seconds, and it is what certifies that the `1/12` and `1/8` weights are distinct in the Lean definition (the
+separable family sees only their sum `5/24`). Bookkeeping: `field_simp` rewrites inside a summand on one side of an identity,
+so the coefficient sum must be made an atom (`set … ; clear_value`) first.
