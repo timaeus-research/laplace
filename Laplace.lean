@@ -250,6 +250,8 @@ import Laplace.Multi.WallResponse
 import Laplace.Multi.TwoChartCompetition
 import Laplace.Multi.WallCutoff
 import Laplace.Multi.MergingZeros
+import Laplace.Multi.WallSlopes
+import Laplace.Multi.WallEmpirical
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
