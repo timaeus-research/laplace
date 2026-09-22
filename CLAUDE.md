@@ -1967,6 +1967,26 @@ matrix version is `whiteningOf`.
 - `simp only [separableAnharmonic, separablePotential]` flags `separablePotential` unused when the occurrence is unapplied
   (`Continuous (separablePotential ℓ)`); `continuous_finsetSum _ fun i _ => ?_` unifies through the definition anyway.
 
+### Bilinearity of Gibbs moments and ambient coordinates (tide `ambient-moments`)
+
+- `Integrable.add` and `Integrable.const_mul` state their conclusions with Pi arithmetic (`(f + g) w`, `fun x => c * f x`); a `.congr
+  (Eventually.of_forall fun w => by simp only [Pi.add_apply]; ring)` brings them to the shape a later lemma expects. Always state the
+  intermediate integrability facts as `have h : Integrable (fun w => <exact shape>) := …congr …` — an anonymous `.congr` inside a bigger term
+  leaves its target as an unresolved metavariable (`?m j i w`).
+- `integrable_finsetSum _ fun i _ => …` does not infer the `Finset`; write `integrable_finsetSum Finset.univ fun i _ => …`.
+- Products of sums: `simp only [Finset.sum_mul, Finset.mul_sum]` normalises `(∑ f)(∑ g) e` to `∑ ∑ f g e` but may leave the two summation
+  orders swapped; finish with `exact Finset.sum_comm`.
+- `Q * Qᵀ = 1` from `Qᵀ * Q = 1`: the generic `mul_eq_one_comm.mp hQ` (Dedekind-finite monoid instance for matrices); there is no
+  `Matrix.mul_eq_one_comm` in this Mathlib.
+- A `rw` with a bilinear covariance lemma whose observables were left as `_` picks them up from the *first* integrability argument; if the goal
+  has `Cov[a + φ, b + ψ]` and the lemma was instantiated with `ψ` from `hψ : Integrable (ψ e)`, the pattern will not be found. State both
+  observables, or use a two-sided lemma (`gibbsCov_const_add_both`).
+- The `Fintype` sum `∑ k, u k ^ (Pi.single i 1 : ι → ℕ) k = u i` is `Finset.prod_eq_single i (fun k _ hk => by simp [hk]) (by simp)` then
+  `simp`; `Pi.single i 1 + Pi.single j 1` covers `u i * u j` including `i = j` (`Pi.add_apply, pow_add, Finset.prod_mul_distrib`). Under a
+  `.congr` the goal is a beta-redex: `change (∏ k, u k ^ (Pi.single i 1 + Pi.single j 1 : ι → ℕ) k) * _ = _` before `rw`.
+- `show` that changes the goal is linted; use `change`.
+- Lemmas from another namespace (`Laplace.Sampler.sum_sq_conj`, `sum_sq_diagonal`) need the full name inside `Laplace.Multi`.
+- `field_simp` closed the final Frobenius ratio identity and the per-term `hnum`/`hden` identities on its own; the trailing `ring`s errored.
 ### Combining explicit rate bounds (tide `var-order2-rate`)
 
 - Rates of the form `∃ K T, 0 ≤ K ∧ 1 ≤ T ∧ ∀ {t}, T ≤ t → |…| ≤ K/(t√t)` combine with `refine ⟨K₂ + …, max T₁ T₂, by positivity,
