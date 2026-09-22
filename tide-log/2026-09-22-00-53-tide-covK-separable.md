@@ -34,3 +34,19 @@ for that. Vote: A+B+C staged, A+B as fallback.
 `numcheck_covK_separable.py` (`d = 2`, `λ = (1, 3)`, `a = ½`, `B = [[2, 0.7],[0.7, 1.5]]`, `b = (0.8, −0.4)`): at `t = 800` the full-probe and
 diagonal-probe `t² Cov[L, ψ]` agree with eq:covK's eigenframe value `1.1077` to three digits (`1.1087`, `1.1087`; quadrature box truncation
 accounts for the drift), and the off-diagonal `t² Cov[L, u₁u₂]` is `9 × 10⁻⁵` and shrinking.
+
+## Result
+
+Commit `7982de3` on `tide/covK-separable`; `lake build` clean, `scripts/sorries` 0/0/0/0. All of A, B and C landed.
+`Laplace/Multi/CovKSeparable.lean` (     674 lines): `gibbsExpectation_two_coord_separable`, `gibbsCov_coord_fun_separable`,
+`prod_pow_single_pow`, `integrable_coord_pow_mul_separableAnharmonic`, `integrable_energy_coord_pow_separableAnharmonic`,
+`gibbsCov_energy_probe_separableAnharmonic`, `covK_separable_diag`, `covKDiag`, `covKDiag_eq`, `covK_separable_diag_agree`,
+`gibbsExpectation_three_coord_separable`, `integrable_coord_pow_mul_mul_separableAnharmonic`,
+`integrable_energy_coord_mul_separableAnharmonic`, `gibbsCov_energy_pair_separableAnharmonic`, `covK_separable_offdiag`,
+`gibbsCov_add_left_of_integrable`, `integrable_energy_mul_separableAnharmonic`, `gibbsCov_energy_coord_pow_separableAnharmonic`,
+`covK_separable_pair`, `covK_separable_lin`, `covK_separable_quadratic`, `covK_rotatedAnharmonic_diag`,
+`covK_rotatedAnharmonic_quadratic`.
+
+Surprises: the whole tide is exact algebra plus the 1D limits of `covK-anharmonic`; no new analysis was needed. GPT's off-diagonal identity
+`Cov_L[L, uᵢuⱼ] = ⟨x⟩ⱼ Cov_i[ℓᵢ, x] + ⟨x⟩ᵢ Cov_j[ℓⱼ, x]` came out verbatim from the three-coordinate product lemma, and the full quadratic
+probe reduces to it by flattening the double sum to `ι × ι`.
