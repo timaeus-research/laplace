@@ -1,6 +1,6 @@
 # Patterning flow: statement digest for review
 
-Branch `patterning-flow` (merged to `main`), `Laplace/Patterning/` (27 files). Every claim of the working note
+Branch `patterning-flow` (merged to `main`), `Laplace/Patterning/` (30 files). Every claim of the working note
 *Patterning flow* (`learning-theory/local/directsgld/main.tex`, Overleaf `6aada9b9684134925b8ee562`)
 that carries a blue margin marker is listed here with the Lean statement it links to, the
 hypotheses that statement carries, and what is *not* covered. The purpose is a 20-minute read:
@@ -68,6 +68,11 @@ Mathlib's Gaussian, a Dirac mass off the positive semidefinite cone.
 | Prop 11.1 (iii), sublevel volume `π√(15ε)`, hence `λ = ½` | `volume_sublevel_quartic` | `ε > 0` | the RLCT is read off the volume; no Watanabe theory invoked |
 | Prop 11.1 (iii), Gibbs moments `t⟨K⟩_t = ½`, `E_t[r]` | `deadQuartic_gibbs_excess`, `deadQuartic_gibbs_radius`, `partitionFunction_deadQuartic` (FourGonGibbs.lean) | `t > 0`; unlocalised | |
 | Prop 11.1 (iii), localised law `t⟨K⟩ = ½ − (γ/4)E[r²]` | `deadQuartic_localized_virial` (RadialVirial.lean) | `t > 0`, `γ ≥ 0` | |
+| Section 12 results, susceptibilities at the degenerate point: `χ(dⱼ; hⱼ) = −0.31`, `χ(dⱼ; hⱼ₊₂) = +0.32`, orthogonal and dead ≈ 0 | `deadChi_dir_same`, `deadChi_dir_opposite`, `deadChi_dir_orth`, `deadChi_dirObs_dead` (FourGonSusceptibility.lean), from `radialCov_dirObs_plusLoss` | restricted Gibbs law `e^{−t r⁴/15}`, `t > 0`; `χ(φ; hᵢ) := −(t/5) Cov_t(φ, ℓᵢ)`; exact value `c = (t/5)(2/9π)E_t[r³]` (= 0.310 at t = 1000) | the full-parameter-space chain (only the restricted one is computed) |
+| the direction rows are the same for every rotationally symmetric ensemble up to `E[r³]` | `radialCov_dirObs_plusLoss` | any weight `G(‖z‖²)` | |
+| `χ(‖W₄‖; hⱼ) = −0.08`, `χ(‖W₄‖; h₄) = +0.29`, `χ(K; hⱼ) = −0.0005`, `χ(K; h₄) = +0.0018` | `deadChi_normObs_alive(_neg)`, `deadChi_normObs_dead`, `deadChi_deadQuartic_alive`, `deadChi_deadQuartic_dead` (FourGonSusceptibilityRadial.lean) | closed forms in the Gamma moments; the sign of the norm row is proved, the sign of `χ(‖W₄‖; h₄)` depends on `t` and is not | |
+| "summing to zero within noise" | `deadChi_deadQuartic_sum`: the row sums to `−1/(2t)` exactly (= −0.0005 at t = 1000), i.e. `−t Var_t(K)` with `t² Var_t(K) = ½` | | the note's text has been corrected |
+| Which gap: `ω = (−0.48, −0.48, +0.49, +0.50, −0.03)`, every grown seed in the target half-plane | `omegaStar_solves`, `omegaStar_sum`, `omegaStar_minimal`, `stabilityCoeff_omegaStar`, `stabilityCoeff_omegaStar_neg_iff`, `weightedLoss_omegaStar_lt` (FourGonPatterning.lean) | exact `ω*`; destabilisation means `a(θ) < 0` on the frozen-component ray, and the loss drops below the plateau for small `r` | the SGD dynamics itself (growth in 32/40 seeds) is not modelled |
 | Prop 11.1 (v), descending path `−r⁴/15 + r⁶/15 + 103r⁸/1920`, negative for `r < ½` | `weightedLoss_saddlePath`, `saddlePath_descends` (FourGonSaddle.lean) | `0 < r < 1` | |
 
 ## Section 12: effective dimension, SGD, OU, virial
