@@ -2769,3 +2769,20 @@ matrix version is `whiteningOf`.
   with both before `ring`; a single `simp only […]; ring` expands `(t λ + g)⁻²` differently on the two sides.
 - Write coordinate-rate statements with the scaling `t ^ 3 * (…)` on the left so the summed identity matches the `sum_rate_div_sq`
   weights verbatim; `(…) * t ^ 3` forces an extra `mul_comm` pass in every consumer.
+
+### The fourth cumulant of the localised energy (tide `localised-energy-cumulant4`)
+
+- Nested `HasDerivAt.mul`: `h1.mul (h1.mul h1)` leaves the inner product as a Pi-multiplication applied to the point,
+  `((fun s => F s) * fun s => F s) t`, in the derivative; a `rw` with a frame-expectation lemma then finds no `F t` inside it. Run
+  `simp only [Pi.mul_apply]` before the rewrites (the outer factor `c x` is beta-reduced automatically, the Pi one is not).
+- After `congr_deriv` the derivative expression contains only the covariances and the *lower* expectations (`F₂`, `F₁` for `κ₃`), never
+  the top one: don't add a `localised_frame_fun_expectation` rewrite for `F₃` — it fails with "did not find an occurrence".
+- Solving the Stein recursion for the top moment: introduce `r := t/(tλ+g)` with `hr : r * (tλ+g) = t`; then the scaled identity is the
+  pure `linear_combination t ^ k * r * hrec - t ^ k * m * hr`, and `r ≤ 1/λ` (`div_le_div_iff₀` + `nlinarith`),
+  `r − 1/λ = −g/(λ(tλ+g))` (`field_simp; ring`) carry the rate. Turning `|t⁴m| ≤ K` into `|t³m| ≤ K/t`: `rw [eq_div_iff ht0.ne']; ring` for
+  the identity `t³m = (t⁴m)/t`, then `abs_div` and `div_le_div_of_nonneg_right`.
+- Line-wrapping generated Lean: never break inside `by simp only [...]; ring` — a newline before the `[...]` list makes Lean parse
+  `simp only` as finished ("Function expected"). Break before `(Eventually.of_forall …)` instead.
+- `ratio_rate` (LocalisedFrobenius) does the kurtosis-type quotient `a/b − a₀/L` with `L/2 ≤ b`; for `b = (t²V)²` get the lower bound from
+  `|t²V − d/2| ≤ KV/t ≤ d/8` (threshold `8KV/d`) via `pow_le_pow_left₀` and `nlinarith`, and remove the `t`-scaling afterwards with
+  `mul_div_mul_left _ _ (by positivity : t ^ 4 ≠ 0)` after `(t²V)² = t⁴V²` by `ring`.

@@ -389,3 +389,4 @@ import Laplace.Multi.LocalisedMeanEuclid
 import Laplace.Multi.LocalisedEnergyInvariant
 import Laplace.Multi.LocalisedEnergyCumulant3
 import Laplace.Multi.LocalisedEnergyVarOrder2
+import Laplace.Multi.LocalisedEnergyCumulant4
