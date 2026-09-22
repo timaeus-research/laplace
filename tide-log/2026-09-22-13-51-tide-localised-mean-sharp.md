@@ -58,3 +58,16 @@ bookkeeping: defer, record as follow-up.
 ## Vote
 - Claude: A + B
 - GPT-6 Astra: A + B (defer C; record the integration-by-parts bridge and `c'` as a follow-up)
+
+## Result
+
+Commit `800d5f4` on `tide/localised-mean-sharp`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B as voted; C deferred.
+`Laplace/Multi/LocalisedAnharmonicSharp.lean` (     504 lines): `abs_exp_sub_taylor2_le`, `locWeight_taylor2`, `cube_add_le`, `abs_locExponent_cube_le`,
+`locNumerator_pointwise`(+`'`), `locA`/`locB`/`locC`, `gibbs_lin3`, `locNumerator_expansion2`, `thirdMoment_bound`,
+`locNumerator_rate_sharp`, `localisedMean_anharmonic_rate_sharp`, `localisedMean_sub_locLeading_rate_sharp`,
+`sum_rate_div_sq`, `localisedRotatedAnharmonic_frame_rate_sharp`, `localisedRotatedAnharmonic_displayed_rate_sharp`.
+
+Surprises: the half power lost in tide 65 was entirely an artefact of taking absolute values before integrating; one more Taylor
+term makes every remainder even and the signed third moment does the rest — the sharp rate cost fewer lines than the
+`t`-dependent Young trick it replaces. Mathlib's `Real.exp_bound` needs its sum and constant rewritten separately (`norm_num at h`
+reshapes the polynomial).
