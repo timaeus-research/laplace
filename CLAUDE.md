@@ -2488,3 +2488,19 @@ matrix version is `whiteningOf`.
   Matrix.trace_diagonal`; `t • (Q D Qᵀ) = Q (t • D) Qᵀ` via `← Matrix.smul_mul, ← Matrix.mul_smul, ← diagonal_smul` and `rfl`.
 - `gcongr with i; exact h i` over a `Finset.sum` can hand you the positivity side goal first; `mul_le_mul_of_nonneg_left
   (Finset.sum_le_sum fun i _ => h i) (by norm_num)` is deterministic.
+
+### Integration by parts for the Gibbs measure (tide `gibbs-ibp`)
+
+- `integral_eq_zero_of_hasDerivAt_of_integrable (hderiv : ∀ x, HasDerivAt f (f' x) x) (hf' : Integrable f') (hf : Integrable f) :
+  ∫ f' = 0` — no boundary terms or `Tendsto` proofs needed for `x^k e^{−tℓ}`: both integrabilities are the seabed's
+  polynomial-moment theorem. Stein identities then come from `integral_sub`, `integral_const_mul`, `sub_eq_zero` and
+  `simp only [gibbsExpectation]; rw [← mul_div_assoc, ← mul_div_assoc, h]`.
+- `HasDerivAt.neg` produces the Pi-negated function `(-f) x`; restate the result with a `have h0 : HasDerivAt (fun y => -(t * ℓ y))
+  … := (…).neg` (defeq) before composing with `.exp`, otherwise the `exp` shape never matches. `hasDerivAt_pow n x` carries
+  `↑n * x ^ (n - 1)`: normalise with `simp only [Nat.cast_ofNat, Nat.reduceSub, pow_one]` then `ring`.
+- `ring` does handle `x ^ (k + 1) * (… x ^ 3) = … x ^ (k + 4)` with a variable exponent plus numerals; no `pow_add` needed.
+- Truncated `k − 1` at `k = 0` is harmless: the term is `↑0 * …`; `simp only [Nat.cast_zero, zero_mul]` then `mul_eq_zero`.
+- `gibbsExpectation_coord_rotatedAnharmonic` lands on the *multi-d* coordinate expectation `gibbsExpectation (separableAnharmonic …)
+  t (fun u => u i)`; convert to 1D with `gibbsExpectation_coord_separableAnharmonic … i (fun x => x)` stated via a `have hcoord :
+  ∀ i, … = …` (defeq ascription absorbs the `(fun x => x) (u i)` redex) and `simp only [hcoord]`.
+- `cubicScale lam alpha ^ 2 = alpha²/(36 lam³)`: `rw [div_pow, mul_pow, mul_pow, Real.sq_sqrt hlam.le]` then `field_simp; ring`.
