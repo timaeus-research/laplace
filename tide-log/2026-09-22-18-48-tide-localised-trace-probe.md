@@ -67,3 +67,21 @@ Raw second moments are less invariant (mean-drift terms); third-cumulant derivat
 ## Vote
 - Claude: A + B + C (corollaries `B = 1`, `B = H`, and the centred quadratic Cov form)
 - GPT-6 Astra: "**Vote: A+B+C.** … Commit A+B+C; if time tightens, cut specialised corollaries before cutting B."
+
+## Result
+
+Commit `dbefb28` on `tide/localised-trace-probe`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedTraceProbe.lean` (     616 lines).
+A + B + C as voted (GPT: "Commit A+B+C; if time tightens, cut specialised corollaries before cutting B"); all corollaries kept.
+Algebra: `sumsum_conj` (`∑ⱼₖ Bⱼₖ(Qy)ⱼ(Qy)ₖ = ∑ᵢᵢ' (QᵀBQ)ᵢᵢ' yᵢyᵢ'` via the `dotProduct`/`mulVec` API), `sum_sum_eq_trace`,
+`conj_diagonal_entry`, `conj_diagonal_transpose`, `trace_mul_conj_diagonal`, `sum_sum_conj_diag`, `conj_conj`,
+`sum_sum_cov_eq_trace`. Defs `locFrameMean`, `locCentredD`.
+A: `hasDerivAt_localised_trace_cov`. B: `localised_mean_coord`, `coord_sub_mean_eq`, `gibbsCov_energy_centred_pair_locFamily`,
+`localisedCovK_centred_pair` (the centred frame pair covariance: `Dᵢ` on the diagonal, `0` off it),
+`localisedCovK_centred_quadratic_eq` (the bridge). C: `localised_centredD_weighted_order2_rate`,
+`localisedTraceCov_neg_deriv_order2_rate`, `localisedCovK_centred_quadratic_order2_rate`,
+`localisedTotalVar_neg_deriv_order2_rate` (`B = 1`), `localisedTraceCov_hessian_neg_deriv_order2_rate` and
+`localisedCovK_hessian_centred_quadratic_order2_rate` (`B = H`, leading coefficient `d`).
+
+Surprises: the trace algebra is cleanest through `Matrix.trace_mul_comm` on the conjugated diagonal rather than nested
+`Finset.sum_comm`; the quadratic-form conjugation is five named `dotProduct`/`mulVec` rewrites. The frame family's partition
+function is nonzero as a product of the 1D ones (`partitionFunction_separable` + `partitionFunction_locFamily_ne`).
