@@ -2243,3 +2243,21 @@ matrix version is `whiteningOf`.
   Matrix.mulVec, dotProduct]` then `ring` evaluates six-fold sums (64 terms) without trouble.
 - `energy_anharmonic_order1_rate_sharp` and `anharmonicPotential` live in `Laplace.Multi`/`Laplace.OneD`: `open … Laplace.OneD` is
   needed for the bare name `anharmonicPotential`.
+
+### Rosenbrock: the series terminates (tide `rosenbrock-terminating`)
+
+- Exact Rosenbrock expectations of polynomials of `z`-degree above four: `gibbsExpectation_valley_poly'` (any `Fin n → Fin m`
+  coefficient matrix, a verbatim copy of the `Fin 5` proof) with `harmonicMoment_vec7` (`⟨z⁶⟩ = 15/(λt)³` from
+  `gibbsExpectation_harmonic_pow_even … 3` and `norm_num [Nat.doubleFactorial]`). Generate the coefficient table with sympy
+  (`sp.Poly(expr, z, u).terms()`), paste as `![![…], …]`, and close the identity `φ p = ∑ᵢⱼ cᵢⱼ zⁱ uʲ` by
+  `simp only [defs, Fin.sum_univ_seven, Fin.sum_univ_five, Matrix.mulVec, dotProduct, Fin.sum_univ_two]; simp; ring`
+  (35 symbolic coefficients, seconds).
+- `(H * S * B * S).trace` with concrete `2 × 2` `H`, `S` and symbolic `B`: plain `simp` stops at `vecMul` forms
+  (`(![t⁻¹, 0] ᵥ* (B * !![…])) 0`); use `simp only [Matrix.trace, Matrix.diag_apply, Matrix.mul_apply, Matrix.mulVec,
+  dotProduct, Fin.sum_univ_two, defs, Matrix.smul_apply, smul_eq_mul, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
+  Matrix.cons_val_one, Matrix.empty_val', Matrix.cons_val_fin_one]` then `field_simp; ring`.
+- `field_simp` closes some of the `12a/t³`-type identities and not others (`dumbbell` needed `ring`, `figureEight` did not); the
+  "No goals" error line points at the theorem *after* the one whose `ring` is redundant when several are adjacent — check line
+  numbers against the file, not against the last edit.
+- Namespace clash: `Laplace.TwoD.gibbsExpectation`/`gibbsCov` (on `ℝ × ℝ`) versus `Laplace.Multi.gibbsExpectation` (on `ι → ℝ`)
+  when working in `Laplace.Multi` with `open Laplace.TwoD`; write `Laplace.TwoD.gibbsExpectation` explicitly in statements.

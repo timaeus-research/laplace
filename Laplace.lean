@@ -347,3 +347,4 @@ import Laplace.Multi.CovKRateSeparable
 import Laplace.Multi.RotatedTaylor
 import Laplace.Multi.RotatedDerivatives
 import Laplace.Multi.TwoLoopEnergy
+import Laplace.Multi.RosenbrockTerminating
