@@ -71,3 +71,16 @@ depends on `t`: prove by expanding the centred quadratic, not by the fixed-probe
 - Claude: A + B, C as remark in GPT's wording
 - GPT-6 Astra: "accept A + B; retain C as an explanatory remark after correcting the scaling, derivative sign wording, and frame
   qualification"
+
+## Result
+
+Commit `136734c` on `tide/localised-centred-derivative`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedCentredDerivative.lean` (     275 lines).
+A + B as voted; C as a remark with GPT's wording (the mean-product term is `−∂ₜ(μᵀB̃μ)`; "off-diagonal vanishing" refers to the
+separable frame).
+Theorems: `hasDerivAt_localised_frame_pow`, `hasDerivAt_localised_frame_var`, `localisedVar_frame_eq_neg_deriv`,
+`centred_pair_offdiag_zero`, `hasDerivAt_localised_cov_coord` (A), `localisedVar_neg_deriv_order2_rate`,
+`localisedCov_neg_deriv_order2_rate` (B).
+
+Surprises: none mathematical. Operationally, this tide followed the discovery that tide 79's landing commit had omitted its Lean
+file (a `sed \b` word boundary is not supported by macOS sed, so the `git add` path was not substituted); the file was restored on
+`main` from the draft plus the recorded fixes before this tide's chain was built on it.
