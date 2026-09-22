@@ -2701,3 +2701,13 @@ matrix version is `whiteningOf`.
 - Before naming a new lemma, `grep -rn "theorem NAME " Laplace/` across the *whole* seabed: the umbrella `Laplace.lean` imports every
   module, so a name already used in an unrelated file (`frobenius_conj_diagonal` in `TwoLoopEnergy`) breaks only the full build,
   after the per-module build and `lean-state check` have both passed.
+
+### The derivative's Frobenius discrepancies (tide `localised-deriv-frobenius`)
+
+- A `t³`-scaled rate feeds the `t²` Frobenius transport through `f̃ᵢ = t fᵢ` (`frobenius_conj_rate_cubic`): no power-`n` generalisation
+  is needed; `t⁶ ∑(∑QQ f)² = t⁴ ∑(∑QQ (t f))²` is `Finset.mul_sum` + one pulled-out factor + `ring`.
+- `HasDerivAt` of a resolvent entry: differentiate the finite rational sum (`HasDerivAt.fun_sum`, `HasDerivAt.inv` with
+  `tλᵢ + g ≠ 0`, `simp only [one_div]` to match `1 / (…)`) and transfer to `locS` by `congr_of_eventuallyEq` on `Ioi_mem_nhds ht`
+  (the entry formula `locS_rot_apply` needs `0 < s`). Keep the derivative as `−λᵢ/(tλᵢ + g)²` and fix signs with `congr_deriv`.
+- `div_right_comm` (`a / b / c = a / c / b`) is the one rewrite for `K / L / t` vs `K / t / L`; do not reach for
+  `div_div`/`mul_comm`, which rewrite the wrong product first.
