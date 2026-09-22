@@ -2281,3 +2281,18 @@ matrix version is `whiteningOf`.
   (`ContinuousLinearMap.zero_apply` is deprecated), `Finset.sum_eq_zero`, then `← partialD_eq_fderiv`.
 - Finish-script hygiene: `sed 's#Laplace.Multi.X#…#g'` also rewrites the *path* `Laplace/Multi/X` (dots match slashes), which
   broke tide 57's `git add`; write file paths in the finish script by hand.
+
+### `a² < 3` keeps the minimum unique (tide `unique-minimum`)
+
+- Sign facts about a polynomial with parameters: prove a *denominator-cleared square identity* by `ring` (`24γ q(x) = (γx + 2α)² +
+  4(3λγ − α²)`, `2γ ℓ''(x) = (γx + α)² + (2λγ − α²)`), then `nlinarith [sq_nonneg …]` for the sign of the product, then cancel the
+  positive factor with `(mul_pos_iff_of_pos_left (by positivity)).mp` or `nonneg_of_mul_nonneg_right h (by positivity)`. One big
+  `nlinarith` on the quartic is unreliable.
+- Mathlib's quadratic formula: `discrim a b c := b^2 − 4*a*c`; `quadratic_eq_zero_iff (ha : a ≠ 0) (h : discrim a b c = s * s) x :
+  a * (x * x) + b * x + c = 0 ↔ x = (-b + s)/(2a) ∨ x = (-b − s)/(2a)` and `discrim_eq_sq_of_quadratic_eq_zero (h : a * (x * x) + b
+  * x + c = 0) : discrim a b c = (2ax + b)^2` — both want the shape `a * (x * x)`, not `a * x * x`; factor `ℓ'` as
+  `x * (γ/6 * (x * x) + α/2 * x + λ)` accordingly. `s = √D` with `Real.mul_self_sqrt hD0 : √D * √D = D`.
+- `Function.ne_iff : f ≠ g ↔ ∃ a, f a ≠ g a` turns `affineFrame Q c w ≠ 0` into a coordinate witness for `Finset.sum_pos'`.
+- Positive definiteness of `Q * diagonal lam * Qᵀ`: `Matrix.PosDef.conjTranspose_mul_mul_same (PosDef.diagonal hlam) hinj` with
+  `hinj : Function.Injective Qᵀ.mulVec` (from `Q * Qᵀ = 1`), then `rwa [Matrix.conjTranspose_eq_transpose_of_trivial,
+  Matrix.transpose_transpose] at this`.
