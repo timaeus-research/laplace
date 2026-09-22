@@ -2684,3 +2684,20 @@ matrix version is `whiteningOf`.
 - The frame family's partition function is nonzero via `partitionFunction_separable` + `Finset.prod_ne_zero_iff` +
   `partitionFunction_locFamily_ne` (the latter is the 1D factor, not the product).
 - `conj_diagonal_apply` already exists (`OneLoopRotated`, summand order `s p * Q i p * Q j p`); a new entrywise lemma needs another name.
+
+### Frobenius discrepancies (tide `localised-frobenius`)
+
+- Matrix-valued statements about `C(t) − S(t)` are cheapest through the frame: `C − S` entrywise is `∑ᵢ QⱼᵢQₖᵢ (Var_loc,ᵢ − 1/(tλᵢ + g))`
+  (`localisedRotatedAnharmonic_cov_coord` + `locS_rot_apply` + `Finset.sum_sub_distrib`), so a Frobenius rate is one generic transport
+  (`frobenius_conj_rate`: per-coordinate `|t²fᵢ − wᵢ| ≤ K/t`, weights, `sq_rate`, `‖Q diag(a) Qᵀ‖_F² = ∑aᵢ²`) — no matrix remainder algebra.
+- `rw [mul_assoc]` without arguments rewrites the *matrix* product `Q * diagonal lam * Qᵀ` inside the statement before the real-number
+  product you meant; pass the factors (`mul_assoc (t ^ 2) (t ^ 2)`).
+- `ring` treats `(a + b)⁻¹` as an atom and does not identify `(1/(a + b))^2` with `1/(a + b)^2`: `rw [div_pow, one_pow]` first.
+- `omit … in` must precede the docstring (`omit hgamma hdisc in` / `/-- … -/` / `theorem …`), otherwise "unexpected token 'omit'".
+- `have h : … := by positivity; linarith` on one line parses the `linarith` into the `positivity` block ("no goals"); put the two
+  `have`s on separate lines.
+- After `field_simp` closes an equation, a following `ring` is an error ("no goals"), and `try ring` trips the unreachable-tactic
+  linter — decide per site from the check output.
+- Before naming a new lemma, `grep -rn "theorem NAME " Laplace/` across the *whole* seabed: the umbrella `Laplace.lean` imports every
+  module, so a name already used in an unrelated file (`frobenius_conj_diagonal` in `TwoLoopEnergy`) breaks only the full build,
+  after the per-module build and `lean-state check` have both passed.
