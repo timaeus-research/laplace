@@ -340,3 +340,4 @@ import Laplace.OneD.JnThirdOrder
 import Laplace.OneD.MomentThirdOrder
 import Laplace.Multi.VarianceOrder3
 import Laplace.Multi.OneLoopRotated
+import Laplace.Multi.E2Matrix

@@ -2148,3 +2148,25 @@ matrix version is `whiteningOf`.
   `conj_smul` (which is `← Matrix.smul_mul, ← Matrix.mul_smul, ← diagonal_smul`) and `diagonal_one`.
 - `Filter.eventually_atTop.mp (hlim.eventually (lt_mem_nhds (half_lt_self hpos)))` turns `Tendsto f atTop (𝓝 L)` with `0 < L` into
   `∃ T, ∀ t ≥ T, L/2 < f t`; then `div_le_iff₀` and `nlinarith` give the `c/t²` lower bound.
+
+### eq:mean and eq:covK in matrix form (tide `e2-matrix`)
+
+- Vector transport under an orthogonal `Q`: `(Q diag s Qᵀ) *ᵥ (Q *ᵥ v) = Q *ᵥ (s * v)` is `Matrix.mulVec_mulVec`, `Matrix.mul_assoc`,
+  `hQ`, `Matrix.mul_one`, `← Matrix.mulVec_mulVec` and `Matrix.mulVec_diagonal`; `(Q v) ⬝ᵥ (Q w) = v ⬝ᵥ w` is `Matrix.dotProduct_mulVec`,
+  `← Matrix.vecMul_transpose`, `Matrix.vecMul_vecMul`, `hQ`, `Matrix.vecMul_one`; `b ⬝ᵥ (Q v) = (Qᵀ b) ⬝ᵥ v` is
+  `Matrix.dotProduct_mulVec` + `Matrix.mulVec_transpose`. Rewrite `S *ᵥ b` into `Q *ᵥ (…)` *before* `S` is unfolded, and unfold
+  `Matrix.mulVec, dotProduct` into sums only at the very end.
+- `tr(HSBS)`: `Matrix.trace_mul_cycle` (`trace (A * B * C) = trace (C * A * B)`) moves the last `S` to the front so the seabed's
+  `SHS = Q diag(1/(λt²)) Qᵀ` identity applies; a second `trace_mul_cycle` and `simp only [Matrix.trace, Matrix.diag_apply,
+  Matrix.mul_diagonal]` finish. Order the rewrites `trace_HSBS_rot, SHS_rot, smul_conj_diagonal_inv` (the `S H S` pattern must be
+  matched while `S` still reads `(t • H)⁻¹`).
+- `w − c = Q *ᵥ affineFrame Q c w` by `unfold affineFrame; rw [Matrix.mulVec_mulVec, hUU, Matrix.one_mulVec]`; substitute it on the
+  left only (`conv_lhs => rw [hwc]`) since the right-hand side also mentions `w − c` through `affineFrame`.
+- Combining `½∑A + ½∑B − (t/2)∑C − (t/2)∑D` into one sum: `Finset.mul_sum` four times, then `← Finset.sum_add_distrib` *before* the two
+  `← Finset.sum_sub_distrib` (the subtraction pattern needs a plain sum on its left), then `Finset.sum_div` and a per-index `field_simp`.
+- `mul_sub` inside `Tendsto.congr'` goals picks the first product-of-difference it sees (here on the wrong side); state the needed
+  `(Q *ᵥ (fun i => m i / t)) j = (∑ i, Q j i * m i) / t` as a `have` and let `field_simp` close the scalar identity.
+- `field_simp` closed every coefficient identity of this file outright; a trailing `ring` is an error ("no goals").
+- A duplicate definition in the same namespace (`Laplace.Multi.meanShift` already lived in `HessianRoute`) passes the *module* build and
+  fails only at the root `lake build` ("import … failed, environment already contains …"). Before defining a note-level functional,
+  `grep -rn "def <name>" Laplace/` and reuse the existing one (its shape may differ: `HessianRoute.meanShift` keeps the `t •` inside).
