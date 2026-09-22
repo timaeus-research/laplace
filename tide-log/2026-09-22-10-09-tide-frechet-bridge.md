@@ -42,3 +42,15 @@ the natural fit for outermost-first `partialD`. Vote A+B+C+D; defer arbitrary-or
 
 The prototype already follows every recommendation (minimal orders per rung, `Fin.cons` in B, `funext` rewrites in C,
 `contDiff_affineFrame` + `contDiff_anharmonicPotential` + `ContDiff.sum` composition for D).
+
+## Result
+
+Commit `0a79778` on `tide/frechet-bridge`; `lake build` clean, `scripts/sorries` 0/0/0/0. A, B, C and D landed.
+`Laplace/Multi/RotatedFrechet.lean` (     152 lines): `partialD_eq_fderiv`, `partialD_iteratedFDeriv`, `partialD1_eq_iteratedFDeriv`,
+`partialD2_eq_iteratedFDeriv`, `partialD3_eq_iteratedFDeriv`, `partialD4_eq_iteratedFDeriv`, `contDiff_anharmonicPotential`,
+`contDiff_affineFrame`, `contDiff_rotatedAnharmonic`, `fderiv_rotatedAnharmonic_center`, `iteratedFDeriv2_rotatedAnharmonic_center`,
+`iteratedFDeriv3_rotatedAnharmonic_center`, `iteratedFDeriv4_rotatedAnharmonic_center`.
+
+Surprises: none. The whole bridge is one ten-line rung lemma plus bookkeeping; the only friction was API spelling
+(`contDiff_apply ℝ ℝ i` with both type arguments explicit, `ContDiff.sum`, no `fun_prop` theorems for `Matrix.mulVec`, and
+`unfold` of a `∑` exposing `Multiset.map`). The prototype typechecked before the consult returned.
