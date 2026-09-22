@@ -31,3 +31,13 @@ theorem, unnecessary for covK); `t²⟨x⁵⟩ = λ^{-5/2} t^{-1/2} S₅(t) → 
 
 `numcheck_moments_all_orders.py` (`λ = 2`, `a = ½`): `t^{n/2}⟨xⁿ⟩ → 0.5, 0.75, 1.875, 6.5625 = (n−1)‼/λ^{n/2}` for `n = 2, 4, 6, 8` to three
 digits at `t = 1000`; odd `t^{(n+1)/2}⟨xⁿ⟩` converge to finite constants, so `√(λt)^n⟨xⁿ⟩ → 0` for odd `n`.
+
+## Result
+
+Commit `78c6e7b` on `tide/moments-all-orders`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/OneD/MomentsAllOrders.lean` (     183 lines): `tendsto_rescaledPerturbation`, `tendsto_J_n`, `sqrt_pow_mul_moment_eq`,
+`moment_anharmonic_asymptotic`, `evenMoment_anharmonic_asymptotic` (+`'`), `oddMoment_anharmonic_tendsto_zero`,
+`sixthMoment_anharmonic_asymptotic`, `sixthMoment_t_sq_tendsto_zero`, `fifthMoment_t_sq_tendsto_zero`.
+
+Surprises: one dominated-convergence theorem replaces four bespoke asymptotic proofs (the seabed's `rescaled_boltzmann_decay` was
+already the right uniform bound); the whole file compiled on the third round with only bookkeeping fixes.
