@@ -384,3 +384,4 @@ import Laplace.Multi.LocalisedCentredDerivative
 import Laplace.Multi.LocalisedTraceProbe
 import Laplace.Multi.LocalisedFrobenius
 import Laplace.Multi.LocalisedDerivativeFrobenius
+import Laplace.Multi.LocalisedMeanEuclid

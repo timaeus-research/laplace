@@ -2711,3 +2711,16 @@ matrix version is `whiteningOf`.
   (the entry formula `locS_rot_apply` needs `0 < s`). Keep the derivative as `−λᵢ/(tλᵢ + g)²` and fix signs with `congr_deriv`.
 - `div_right_comm` (`a / b / c = a / c / b`) is the one rewrite for `K / L / t` vs `K / t / L`; do not reach for
   `div_div`/`mul_comm`, which rewrite the wrong product first.
+
+### The mean's Euclidean discrepancy and its derivative (tide `localised-mean-euclid`)
+
+- `HasDerivAt.inv` yields the *Pi-inverse function* `c⁻¹` (so `c⁻¹ y`, not `(c y)⁻¹`): reconcile with `Pi.inv_apply` inside a
+  `congr_of_eventuallyEq (Eventually.of_forall fun s => by simp [Pi.inv_apply, div_eq_mul_inv])`, and fix the derivative with
+  `congr_deriv (by ring)`. Do not `convert … using 1` a `HasDerivAt`: it spawns instance-equality goals.
+- `simpa using (hasDerivAt_id t).const_mul (-alpha)` normalises the function to `fun s => -(alpha * s)` (`neg_mul`), which no longer
+  matches `-alpha * s`; use `simpa only [id_eq, mul_one]`. For `(h.pow 2).const_mul 2` leave the derivative unascribed, `norm_num at`,
+  and finish with `congr_deriv (by field_simp; ring)`.
+- A rational remainder identity proved by `field_simp; ring` fails *silently on a sign error* only at `ring`: when `ring` leaves a
+  polynomial goal whose two sides differ by signs on some monomials, the closed form (not the tactic) is wrong — recompute it.
+- A worktree created from the local `main` before that `main` was fast-forwarded lacks the previous tide's module; `lean-state` then
+  reports "bad import" even after `git merge --ff-only origin/main` until `lean-state restart` (the daemon snapshot predates the file).
