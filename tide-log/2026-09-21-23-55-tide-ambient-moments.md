@@ -35,3 +35,19 @@ covariance has the same leading coefficient); do not bring `Σ_ULA` in. Vote: A�
 
 `numcheck_ambient_moments.py` (`d = 4`, `λ = (1, 2, 5, 10)`, `a = ½`): `t · ‖Cov − S‖_F/‖S‖_F = 0.2655, 0.2526, 0.2503` at `t = 10, 100, 1000`
 (→ 0.25, spectrum-independent); identical in a random frame `Q`; `t(⟨w⟩ − c) = Q(t⟨u⟩)` to 1e-14 and within 1% of `−Q(αᵢ/(2λᵢ²))` at `t = 100`.
+
+## Result
+
+Commit `f0e684e` on `tide/ambient-moments`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/Multi/AmbientMoments.lean` (     480 lines): `gibbsExpectation_finsetSum`, `gibbsExpectation_const_mul`,
+`gibbsExpectation_add_of_integrable`, `gibbsExpectation_const_of_ne_zero`, `gibbsCov_comm`, `gibbsCov_finsetSum_left`,
+`gibbsCov_const_mul_left`, `gibbsCov_const_add_left`, `gibbsCov_const_add_both`, `gibbsCov_linear_combination`,
+`integrable_comp_affineFrame`, `integrable_monomial_separableAnharmonic`, `prod_pow_single`, `prod_pow_single_add`,
+`integrable_exp/coord/coord_mul_separableAnharmonic`, `integrable_exp/coord/coord_mul_rotatedAnharmonic`,
+`partitionFunction_rotatedAnharmonic_pos`, `coord_eq_sum_affineFrame`, `gibbsExpectation_coord_rotatedAnharmonic`,
+`rotatedAnharmonic_ambient_mean_asymptotic`, `gibbsCov_coord_rotatedAnharmonic`, `gibbsCovMatrix_rotatedAnharmonic`,
+`frobenius_rel_laplace_rotatedAnharmonic`.
+
+Surprises: four build rounds, all bookkeeping — Pi-arithmetic shapes from `Integrable.add`, an unresolved `Finset` in
+`integrable_finsetSum`, a bilinear lemma instantiated from the wrong integrability argument, and swapped summation orders; the
+mathematics (affine reconstruction + bilinearity + frame independence + diagonal separable covariance) went through unchanged.
