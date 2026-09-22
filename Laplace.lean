@@ -335,3 +335,7 @@ import Laplace.Multi.VarianceOrder2
 import Laplace.OneD.MomentsAllOrders
 import Laplace.OneD.CovKAnharmonic
 import Laplace.Multi.CovKSeparable
+import Laplace.OneD.IntegralRemainder3
+import Laplace.OneD.JnThirdOrder
+import Laplace.OneD.MomentThirdOrder
+import Laplace.Multi.VarianceOrder3
