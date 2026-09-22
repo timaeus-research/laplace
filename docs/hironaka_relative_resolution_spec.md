@@ -221,3 +221,64 @@ for `f x u = x⁴ + u²x²`, the generic set `S'` must exclude `u = 0`.
 - No complex-analytic or algebraic variant is required; real-analytic, as in the existing exports.
 - No statement across strata: the boundary behaviour (crossover, `u t^β` variables) is the
   consumer's business (`ToyCrossover.lean` is the model example).
+
+---
+
+## Revisions after the hironaka planning round (2026-09-21/22)
+
+Chris's planning note ("Relative resolution for SLT: what the hironaka side will deliver, and what
+the consumer side must settle", 21 September 2026) was checked against this spec and against the
+repositories. The consumer side accepts the following; the record described there supersedes §3 of
+this document where they differ.
+
+### Accepted producer decisions
+
+- **D0** (built on `timaeus-research/hironaka` main, `a3b0fd098`, not on the fork). Confirmed: the
+  interface quoted in §2 above (`WatanabeModificationOn`, `EvenChartBox`,
+  `exists_watanabeModificationOn`) exists only on `dmurfet/hironaka` branch `sector-atlas`
+  (`cb11bc8d9`); the certified input `watanabe_thm_2_3_of_isConnected`, `IsAnalyticIsoOver`,
+  `exists_chart_absorbing_unit` are on upstream main. Nothing on the consumer side depends on the
+  fork's names.
+- **D1** (record over `V × S'` with `cl(V)` compact in `W`; `S'` open and dense in `S`).
+- **D2** (all `d, p ≥ 1`), **D4** (no fibrewise canonicity), **D5** (product typing).
+- **D3** (equiresolubility with respect to a fixed total-space resolution, provisional): acceptable
+  as the hypothesis of the local statement. The consumer needs only the chart-form output; whether
+  a printed equisingularity notion also characterises the good set is of interest for interpreting
+  the stratification of truth space, not for the bridge.
+
+### Accepted edits to this spec
+
+1. **Density.** Read `Dense S'` as `S' ⊆ S ∧ IsOpen S' ∧ S ⊆ closure S'`. The ambient reading was an
+   error in this document.
+2. **`W` relatively compact.** Add `IsCompact (closure W) ∧ closure W ⊆ U₀` to the existence theorem.
+3. **Base point.** Replace `h0W`/`hne` by "`F` does not vanish identically on any nonempty open subset
+   of `W × S`"; the base-point form is a corollary.
+4. **Nonnegativity** only on `W × S`.
+5. **`smoothOverS`** dropped as a field (derived).
+6. **The unit.** Accepted that `a` may be the constant `1` on some charts after the unit is absorbed
+   into a `u`-coordinate (the note's "`±1`" should read `1`, since `a > 0` is a clause). No
+   normalisation of `a` is needed on the consumer side: the response theorems take the score
+   `∂_s b / b − e · ∂_s a / a` as it comes, and with `a ≡ 1` the whole `s`-dependence sits in `b`.
+7. **Jacobian sign.** Accepted; the bridge applies `|det| = |b| ∏ |u_j|^{h_j}`.
+8. **Several active variables, `p > 1`.** Consumer-side additions, not yet done.
+9. **Typing.** Accepted.
+
+### Consumer-side obligations (status)
+
+| Obligation (note §6) | Status |
+|---|---|
+| 4. Remainder term | **Done** (laplace, this commit): `RelativeChartDecomposition` now carries a remainder `R s t`, and `tendsto_rpow_mul` takes `t^λ R s t → 0`; `tendsto_rpow_mul_of_exp_remainder` shows an `O(e^{-εt})` remainder qualifies. |
+| 5. Localisation in `s` | **Done**: `RelativeChartFamily S' …` quantifies over `s ∈ S'` and the response theorems take `S' ∈ 𝓝 s₀`. |
+| 3. Uniform bounds on nested compact boxes | Consumer takes the bounds as hypotheses of `RelativeChartFamily`; the bridge must supply them from the closed box `[−ρ, ρ]^d × closedBall(s_P, σ)` in the record. Not yet done. |
+| 1. Finite cover, 2. injectivity, 6. moving amplitudes | Bridge-side; not yet done. |
+| 7. Positivity on a minimising chart | Noted. `tendsto_rpow_mul` is true regardless (the limit is then `0` and `λ = min e_i` is only a lower bound on the exponent); the identification of `λ` with the RLCT needs the leading amplitude nonzero at the divisor, which holds for a positive prior and cutoff. This is the "second failure mode" of the crossover section (germbij_slop.tex S8). |
+| Bridge location | Recommended: greybook `Extras/Germbij` (already depends on hironaka, toolchain `v4.33.1`); laplace stays hironaka-free and exports the chart theorems. |
+
+### Acceptance test T2
+
+The note's exclusion argument for `x⁴ + u²x²` (no relative Watanabe modification over `V × S'` with
+`0 ∈ S'`, for any resolution, by comparing vanishing orders `2k = 2(h+1)` at `s ≠ 0` against
+`2k = 4(h+1)` at `s = 0`) was checked and is correct. It makes the crossover section's "first failure
+mode" a theorem rather than an observation about one chart choice. The consumer does not have the
+bridge from a chart decomposition to `t·E[L] → λ`; the limits `1/4` and `1/2` in
+`Laplace/Multi/ToyCrossover.lean` are proved directly.
