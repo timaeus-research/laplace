@@ -2091,3 +2091,60 @@ matrix version is `whiteningOf`.
   `(Finset.univ : Finset (ι × ι))` when the index type is not otherwise determined.
 - State `tendsto_finsetSum … |>.add …` with an explicit beta-reduced `Tendsto (fun t => ∑ …) …` type; otherwise the `congr'` goal
   carries `(fun t => …) t` redexes that `ring` treats as atoms.
+
+### Fourth-order remainder, parity, and `t⁻²` moment rates (tide `order3-parity`)
+
+- The quartic-order layer mirrors `IntegralRemainder2` but is simpler: `|s_t|⁴` is even, so `(x + y)⁴ ≤ 8(x⁴ + y⁴)` (proved by
+  `nlinarith [mul_nonneg (sq_nonneg (x - y)) h7]` with `h7 : 0 ≤ 7x² + 10xy + 7y²`) plus `u¹⁶/t⁴ ≤ u¹⁶/t²` gives the envelope
+  `8(A⁴ + B⁴)(u¹² + u¹⁶)/t²` with no odd absolute powers to absorb. `abs_expRemainder_le_max 4` needs
+  `(Nat.factorial 4 : ℝ) = 24` by `norm_num [Nat.factorial]`; `expRemainder 4 s` unfolds with
+  `simp only [expRemainder, Finset.sum_range_succ, Finset.sum_range_zero, Nat.factorial]; push_cast; ring`.
+- `J_n_asymptotic_order3` avoids a ten-term integrand identity: split `J_n = ∫ f·P₃ + ∫ f·(e^{-s} − P₃)` and `∫ f·P₃ = ∫ f·P₂ − ∫ f·s³/6`
+  with `rw [← integral_add h₁ h₂]; congr 1; funext u; ring` (lambda-typed integrability, never `Integrable.sub`'s Pi form), then reuse
+  `quadratised_integral_decomposition` and a four-term `cubed_integral_decomposition`. Integrability of `f·P₂` comes for free from
+  `integrable_J_n`, the remainder's integrability (`integrable_remainder4`, from `Integrable.mono'` and `fun_prop`) and the cubed part.
+- Parity corollaries: state them for `n = 2 * k` / `2 * k + 1`; odd Gaussian moments are `integral_pow_mul_exp_neg_sq_odd (k + j)` after
+  `rwa [show 2 * (k + j) + 1 = 2 * k + m by ring] at h'`; exponents such as `2 * k + 1 + 3` must be renormalised with
+  `rw [show 2 * k + 1 + 3 = 2 * k + 4 by ring] at h` before `simpa only [mul_zero, zero_sub, sub_zero, add_zero]`. With literal indices
+  (`J_n … 0`, `2`, `3`) the seabed's `exact` trick works: `∫ u ^ (2 + 3) …` is defeq to `∫ u ^ (2 * 2 + 1) …`.
+- `rw [← h]` fails with "did not find pattern" when `h : … = J_n … 3 t` and the goal shows a `set` variable `J3`: `kabstract` filters
+  candidate subterms by head symbol before trying defeq, so a let-variable never matches a constant-headed pattern. Obtain `h` *before*
+  the `set` (which then folds `h` too), or `rw [← hJ3] at h`.
+- Conversely `rw [abs_div]` *does* see through `set p := a / c` and rewrites `|p|` to `|a| / |c|`; pass explicit arguments
+  (`abs_div q t`) to pin the occurrence.
+- The two ratio lemmas (`ratio_rate_order2`, `ratio_rate_order1`) replace the inline `1/t` cancellation of `MomentSecondOrder`: prove
+  `X/Y − p − q/t = (e_X − (p + q/t)e_Y − qd/t²)/Y` by `rw [hp, hq]; field_simp; ring`, bound the numerator with `abs_sub`/`abs_add_le`,
+  and divide by `c/2 ≤ Y` via `div_le_div_of_nonneg_left`. Downstream, `rw [hpc, hq'] at hratio` rewrites the constant too, so the
+  `refine ⟨K, …⟩` constant must be written in the rewritten form (`|(1 : ℝ)|`, `|c₂|`, …).
+- `√λ` in a coefficient identity: `set s := Real.sqrt lam; have hs : lam = s ^ 2 := (Real.sq_sqrt hlam.le).symm; clear_value s; subst hs`
+  at the top of the proof makes everything rational in `s` (`Real.sqrt (s ^ 2 * t) = s * √t` by `Real.sqrt_mul, Real.sqrt_sq`). For
+  `√t` identities use `linear_combination e * Real.mul_self_sqrt ht.le` and read `e` off the residual `ring` prints.
+- `gcongr` on `K/(t√t)/t ≤ K/t²` produces the wrong side goal (`K/(t√t) ≤ K`); prove such steps by hand: `rw [div_div]` then
+  `div_le_div_of_nonneg_left hK (by positivity) (by calc t ^ 2 = t * 1 * t := by ring; _ ≤ t * √t * t := by gcongr)`.
+- `field_simp` closes the `2 / c * N / t ^ 2 = (N / t ^ 2) / (c / 2)`-type goals outright (a trailing `ring` errors "no goals").
+
+### Tensor contractions of the rotated oscillator and matrix-form E7 (tide `e7-matrix`)
+
+- Every one-loop contraction of the rotated tensors `Tᵢⱼₖ = ∑ₗ αₗ Qᵢₗ Qⱼₗ Qₖₗ`, `Q4 = ∑ₗ γₗ Q⊗⁴` against `S = Q diag(s) Qᵀ` reduces to
+  `contract_conj_diagonal : ∑ₖₘ Qₖₚ Sₖₘ Qₘ_q = if p = q then s p else 0`, proved as the `(p, q)` entry of `Qᵀ S Q = diag s` (`set S`
+  first so `Matrix.mul_apply` does not unfold `S`, then `Finset.sum_comm`). Prove the contractions for arbitrary `s` and substitute
+  `s = 1/(λt)` only in `oneLoopCov_rot`.
+- A contraction lemma stated with `M : Fin d → Fin d → ℝ` cannot be `rw`-applied to a `Matrix`-valued `S k l` ("target is not type
+  correct under `implicit` transparency … function expected"): `Matrix` is not unfolded when unifying `?M k l`. Instantiate by hand,
+  `have h := rotQ_contract Q gamma i j (fun k l => (Q * diagonal s * Qᵀ) k l); rw [h]` (the inferred type is beta-reduced).
+- Reordering nested sums: `sum_comm3 (f) : ∑ a, ∑ b, ∑ c, f a b c = ∑ c, ∑ a, ∑ b, f a b c` (two `Finset.sum_comm`s) and then
+  `rw [sum_comm3]` (higher-order pattern `?f a b c` unifies). Never `simp only [Finset.mul_sum, Finset.sum_mul]` on a *product of
+  two sums*: `mul_sum` also fires on `(∑ m, a m) * (∑ n, b n)` (as `b * ∑`) and the resulting nesting order is unpredictable, so the
+  sides no longer line up under `Finset.sum_congr`. Distribute by hand instead: `rw [Finset.sum_mul_sum]` for `(∑)(∑)`, and for a
+  scalar times a nested sum state the pointwise `Finset.mul_sum` as a `have e : ∀ k l, c * ∑ q, F = ∑ q, c * F` and `simp_rw [e]`.
+- `rw [conj_smul]` rewrites all instances with the same scalar and diagonal at once: `bubble_rot` and `tadpoleLine_rot` give
+  syntactically identical matrices, so `(t²/2) • X + (t²/2) • X` needs one `conj_smul`, not two.
+- `(Q * diagonal (fun i => …) * Qᵀ) j k` in a `have` statement can fail with "function expected … has type ?m": the `HMul` instance is
+  still pending when the application is elaborated. Ascribe `(… : Matrix (Fin d) (Fin d) ℝ) j k`.
+- The multi-dimensional `gibbsCov (separableAnharmonic …) t (fun u => u i) (fun u => u i)` and the one-dimensional
+  `Laplace.gibbsCov (anharmonicPotential (lam i) …) t id id` are equal by `gibbsCov_separableAnharmonic … i i` with `if_pos rfl`;
+  convert the scalar rate hypothesis with `rw [← hVe] at e` before using it against a `set V`.
+- `(t • (Q * diagonal lam * Qᵀ))⁻¹`: `Matrix.inv_eq_right_inv`, then `Matrix.smul_mul`, `conj_mul_conj`, `diagonal_mul_diagonal`,
+  `conj_smul` (which is `← Matrix.smul_mul, ← Matrix.mul_smul, ← diagonal_smul`) and `diagonal_one`.
+- `Filter.eventually_atTop.mp (hlim.eventually (lt_mem_nhds (half_lt_self hpos)))` turns `Tendsto f atTop (𝓝 L)` with `0 < L` into
+  `∃ T, ∀ t ≥ T, L/2 < f t`; then `div_le_iff₀` and `nlinarith` give the `c/t²` lower bound.
