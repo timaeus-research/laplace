@@ -1,3 +1,8 @@
+> **Archived.** This repository was merged into the resolution monorepo on 2026-09-22:
+> it now lives at [https://github.com/resolutionorg/resolution/tree/main/lean/laplace](https://github.com/resolutionorg/resolution/tree/main/lean/laplace)
+> (`lean/laplace/`), history included.  An old commit SHA maps to its new one via
+> `lean/.monorepo/commit-map/laplace.txt` there.  Nothing here is maintained.
+
 # laplace
 
 A Lean 4 + Mathlib formalisation of the Laplace asymptotics of Gibbs
