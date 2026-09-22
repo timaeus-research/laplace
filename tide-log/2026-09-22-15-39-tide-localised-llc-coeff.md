@@ -114,3 +114,23 @@ correction plus the anchor-dependent `a²/(2λ) − aα/(2λ²)`"; qualification
 ## Vote
 - Claude: A + B + C (single shared `x²φ` expansion; `e₁ = e₀ + d₁` recorded as a lemma)
 - GPT-6 Astra: A + B + C, "using one shared pointwise expansion and correcting the missing `−(g/2)x⁵` term in the cubic route"
+
+## Result
+
+Commit `a3dc3be` on `tide/localised-llc-coeff`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B + C as voted, with GPT's single
+shared `x²φ` expansion.
+`Laplace/Multi/LocalisedLLCCoeff.lean` (    1100 lines): `mul_sq_P3_eq`, `locH₆`/`locH₈`/`locH₁₀`, `locSquare_pointwise`, `locJ₆`…`locJ₁₂`,
+`locCubic_pointwise2`, `locM₆`/`locM₈`, `locQuartic_pointwise2`, `locSquare_expansion`, `locCubic_expansion2`,
+`locQuartic_expansion2`, `locN2`, `locSecondCoeff2`, `locThirdCoeff`, `energyCoeff1`, `energyLocCoeff1`(+`_eq`, `_eq_add`
+(`e₁ = e₀ + d₁`), `_add_eq`), `locD1_eq`, `locD1_anchor_zero`, `energyCoeff1_eq`, `trace_scalar_remainder`,
+`locSquare_key`/`_assembly`, `locCubic_assembly`, `locQuartic_assembly`, `ratio_lead_key`, `energy_assembly`,
+`locSquare_rate2`, `locCubic_rate2`, `locQuartic_rate2`, `locSecondMoment_loc_rate2`, `loc_ratio_lead_rate`,
+`locThirdMoment_loc_rate2`, `locFourthMoment_loc_rate2`, `localisedEnergy_order2_rate` (A), `energy_anharmonic_coeff1_rate`,
+`localisedEnergy_sub_energy_rate` (C), `localisedEnergy_sub_trace_rate`, `localisedRotatedAnharmonic_llc_order2_rate` (B),
+`localisedRotatedAnharmonic_llc_sub_trace_rate`.
+
+Surprises: the candidates claimed the seabed's unlocalised energy was known only to `K/(t√t)`; in fact
+`energy_anharmonic_order1_rate_sharp` (`VarianceOrder3.lean`) already has `K/t²` (the `VarianceOrder2` docstring
+advertises only the weaker one), so C's "sharpening" reduced to a wrapper. GPT's `e₁ = e₀ + d₁` reading (the energy as the
+negative logarithmic `t`-derivative of the partition function) is now a lemma. The file compiled on the second check: four
+routine diagnostics (a greedy `abs_div`, a nested-division `nlinarith`, an unused simp arg, a duplicate name).
