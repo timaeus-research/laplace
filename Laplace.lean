@@ -357,3 +357,4 @@ import Laplace.Multi.CovKDerivativeMulti
 import Laplace.Multi.CovKDerivativeLoc
 import Laplace.Sampler.E1Numbers
 import Laplace.Multi.CovKDerivative
+import Laplace.Multi.LocalisedAnharmonicMulti

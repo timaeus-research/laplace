@@ -2407,3 +2407,27 @@ matrix version is `whiteningOf`.
   `simp only [Matrix.mul_smul, Matrix.smul_mul, Matrix.trace_smul, Matrix.smul_mulVec, Matrix.mulVec_smul, contractT_smul,
   smul_dotProduct, dotProduct_smul, smul_eq_mul, Matrix.mul_nonsing_inv H hH, Matrix.nonsing_inv_mul H hH, Matrix.one_mul]` reduces
   every `(t • H)⁻¹` expression to scalars times `H⁻¹`-constants.
+
+### The localised mean in `d` dimensions (tide `localised-mean-multi`)
+
+- Orthogonal frame change preserves sums of squares: `(Qᵀ *ᵥ v) ⬝ᵥ (Qᵀ *ᵥ v) = v ⬝ᵥ v` by
+  `rw [dotProduct_mulVec, vecMul_transpose, mulVec_mulVec, hQQ, one_mulVec]` with `hQQ : Q * Qᵀ = 1 := mul_eq_one_comm.mp hQ`,
+  then `simpa [dotProduct, sq]` for the `∑ (…)^2` form. `affineFrame Q c w − affineFrame Q c w₀ = Qᵀ *ᵥ (w − w₀)` is
+  `rw [← Pi.sub_apply …, ← mulVec_sub, sub_sub_sub_cancel_right]`.
+- A `t`-dependent potential `L + (g/(2t))|w − w₀|²` keeps the seabed's `gibbsExpectation L t` API usable for the localised measure
+  `e^{−tL − (g/2)|w−w₀|²}`; `congr 1` on `exp` then `field_simp; ring` (with `t ≠ 0`) for the identification. When the potential
+  is a lambda, unfold `gibbsExpectation` with `simp only [...]` (beta-reduces) rather than `unfold`, and rewrite pointwise with
+  `simp only [lemma]` — `rw` does not see through the `(fun x => …) x` redexes.
+- Integrability under a nonnegative extra term in the exponent: `Integrable.mono' hint.norm hmeas (Eventually.of_forall …)` with
+  `Real.exp_le_exp.mpr` and `nlinarith [mul_nonneg ht.le h0]`; measurability from continuity via
+  `Continuous.aestronglyMeasurable (by fun_prop)` with the potential's continuity as a named hypothesis in context (give `(L := …)
+  (φ := …)` explicitly so the expected type is known before `fun_prop` runs).
+- Section-variable hygiene: put `[DecidableEq ι]` on the theorems that need `1 : Matrix ι ι ℝ` rather than in `variable`; otherwise
+  every matrix-free lemma gets an `unusedSectionVars`/`unusedDecidableInType` warning that the finish script treats as fatal.
+- Resolvent on E2's tensors: `locPrec g (Q D Qᵀ) t = Q diag(tλ + g) Qᵀ` via `← Matrix.smul_mul, ← Matrix.mul_smul, ← diagonal_smul`
+  (then `rfl` for `t • lam = fun i => t * lam i`), `← smul_one_eq_diagonal`, `← Matrix.add_mul, ← Matrix.mul_add, diagonal_add`;
+  then `Matrix.inv_eq_right_inv` with `conj_mul_conj hQ, diagonal_mul_diagonal` and `diagonal_one`. `meanShiftLoc_rot` is
+  `meanShift_rot` with `1/(tλᵢ + g)` in place of `1/(λᵢt)`.
+- Finite sums of rates: `Finset.abs_sum_le_sum_abs`, `Finset.sum_le_sum`, `Finset.sum_div`; threshold `1 + ∑ Tᵢ` with
+  `Finset.single_le_sum`. `(Q *ᵥ x) j` opens with `simp only [Matrix.mulVec, dotProduct]`; combine with `mul_sub,
+  Finset.sum_sub_distrib` and `ring`.
