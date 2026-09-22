@@ -67,3 +67,16 @@ target (it does not eliminate the anharmonic mean residual).
 ## Vote
 - Claude: A + B + C + D (D is one call of `two_sided_of_rate`)
 - GPT-6 Astra: "**Vote: A+B+C.** Land A first, B second, and C last … Add D only if the existing wrappers make it genuinely trivial."
+
+## Result
+
+Commit `2802358` on `tide/localised-mean-euclid`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedMeanEuclid.lean` (     426 lines).
+A + B + C + D as voted.
+Algebra/rates: `euclid_conj_eq`, `euclid_conj_rate`, `euclid_conj_rate_cubic` (the vector transports), `lin_coord_scaled`,
+`mean_deriv_coord_combine`, `hasDerivAt_locLeading`, `locLeading_deriv_order2` (the displayed mean's derivative to second order),
+`hasDerivAt_displayed_mean_coord`. A: `localisedMean_sub_displayed_coord`, `localisedMean_euclid_displayed_rate`.
+B: `hasDerivAt_localised_mean_coord`, `localisedMean_deriv_add_lead_coord`, `localisedMean_deriv_euclid_rate`.
+C: `localisedMean_deriv_sub_displayed_coord`, `localisedMean_deriv_euclid_displayed_rate`. D: `localisedMean_euclid_displayed_two_sided`.
+
+Surprises: the displayed mean's `t⁻²` coefficient is exactly `locLeadingCoeff2`, so `∂ₜ(μ − P) = −2r/t³ + O(t⁻⁴)` needs no new
+moment input — only the rational closed form of `∂ₜP` and two monotone bounds.
