@@ -359,3 +359,4 @@ import Laplace.Sampler.E1Numbers
 import Laplace.Multi.CovKDerivative
 import Laplace.Multi.LocalisedAnharmonicMulti
 import Laplace.Multi.LocalisedAnharmonicSharp
+import Laplace.Multi.LocalisedAnharmonicCov

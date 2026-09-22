@@ -2450,3 +2450,23 @@ matrix version is `whiteningOf`.
   (rules with the *full* literal expression as LHS; a rule for `2 * 1` alone would pre-empt them) and leave `((5 : ℕ)‼ : ℝ)`
   symbolic in the constant.
 - Many thresholds: `T := T₁ + … + T₈` with every `Tᵢ ≥ 1` makes each `Tᵢ ≤ t` a one-line `linarith`, cheaper than nested `max`.
+
+### eq:cov with the localiser (tide `localised-cov`)
+
+- `open scoped Nat` turns `φ` into Euler's totient: a named argument `(φ := …)` then fails to parse ("unexpected token ':='")
+  and the error blames a `ℕ → ℕ`. Do not open `Nat` in files that name observables `φ`; `Nat.doubleFactorial` as a simp lemma
+  needs no notation.
+- Constant names are global in `Laplace.Multi`: `locC₂` already existed (tide 65); grep before naming (`locQ₄/locQ₆/locQ₈` here).
+- Ratio of integrals with a common constant: prove `∫ f·e^{−tL_loc} = c * ∫ f φ e^{−tℓ}` by `rw [← integral_const_mul]` and
+  `integral_congr_ae` (pointwise `simp only [e x]; ring` — `rw` misses the `(fun x => …) x` redexes), then
+  `mul_div_mul_left _ _ hc.ne'` and `div_div_div_cancel_right₀ hZ'` with `hZ'` stated as the *unfolded* integral `≠ 0`.
+  `simp only [gibbsExpectation, partitionFunction, e]` is too eager here (it also cancels the constant), leaving a goal the
+  planned `rw` chain no longer matches.
+- Even-remainder bookkeeping: convert `x^{2k}` to `|x|^{2k}` first, then a three-step `calc … := by ring`, `gcongr` (with the
+  Young inequalities `|x|⁵ ≤ (|x|⁴ + |x|⁶)/2` in context), `by rw [hE]; unfold …; ring` — `nlinarith` on the nested products
+  `|x|² * (E * (4 * (…)))` fails because linarith does not normalise products of atoms.
+- Variance of a ratio: `t·Var = tN₂/D − (tN₁)²/(tD²)`; `div_le_div_iff₀ (hb : 0 < b) (hd : 0 < d) : a/b ≤ c/d ↔ a*d ≤ c*b`,
+  then a `calc` through `(|c| + K₁)² · t · (4D²)` with `1 ≤ 4D²` from `D ≥ ½` (`nlinarith`). `|tN₁| ≤ |c| + K₁` is
+  `rate_bounded`.
+- Entries of `Q * diagonal d * Qᵀ`: `rw [Matrix.mul_apply]` *once* (outer product), then `simp only [Matrix.mul_diagonal,
+  Matrix.transpose_apply]`; a bare `simp only [Matrix.mul_apply, …]` expands the inner product first and `mul_diagonal` never fires.
