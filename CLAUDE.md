@@ -2560,3 +2560,17 @@ matrix version is `whiteningOf`.
   fails on the nested division.
 - Before writing a "sharpened" seabed lemma, `grep -rn "theorem <name>"`: `energy_anharmonic_order1_rate_sharp` (K/t²) already
   existed in `VarianceOrder3.lean` although `VarianceOrder2.lean`'s docstring only advertises the `K/(t√t)` version.
+
+### eq:covK to second order on E2 (tide `covK-order2-multi`)
+
+- `-alpha / (2 * lam ^ 2)` parses as `(-alpha) / …`, not `-(alpha / …)`: `sub_neg_eq_add` does not fire on `x - -alpha / c`. Rewrite
+  first with `show -alpha / c = -(alpha / c) by ring` (or `neg_div`), then `sub_neg_eq_add`.
+- `rw [abs_div, abs_div, abs_of_pos ht0, abs_of_pos ht0]` fails on the second `abs_of_pos`: `rw` rewrites *all* `|t|` at once.
+- `set L := … with hL` does not reach terms a later `rw [lemma]` introduces with the unfolded name; `ring` then sees two atoms.
+  Follow the `rw` with `← hL` (`rw [lemma, ← hL]`).
+- `ring` does not normalise summands: `∑ f` and `∑ g` with `f`, `g` equal only up to `ring` are different atoms. Rewrite the summand
+  first (`have e : ∀ i, f i = g i := fun i => by ring; simp only [e]`), pull signs out with `Finset.sum_neg_distrib`, and only then `ring`.
+- A product of two `K/t` rates is a `K'/t` rate (`prod_rate`: `|XY − ab| ≤ (K_X(|b| + K_Y) + |a|K_Y)/t`); it needs `0 ≤ K_X` for the
+  `gcongr` side goal `0 ≤ K_X / t` — carry nonnegativity of every rate constant.
+- Diagonal extraction from a sum over `ι × ι`: `rw [← Finset.univ_product_univ, Finset.sum_product]; simp only [Finset.sum_ite_eq,
+  Finset.mem_univ, if_true]` (with `mul_ite, mul_zero` when the `if` sits inside a product).
