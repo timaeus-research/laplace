@@ -73,3 +73,19 @@ in the seabed).
 - Claude: A + B + the localised Stein–covariance reduction (`stein_loc_cov_reduction`), C as remark
 - GPT-6 Astra: "A + B + the exact localised Stein–covariance reduction; C as a remark, with no general `t`-dependent-potential
   derivative theorem this tide"
+
+## Result
+
+Commit `af8c147` on `tide/localised-derivative`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedDerivative.lean` (     503 lines).
+A + B + the localised Stein–covariance reduction as voted; C as a remark.
+Theorems: `localiserWeight` (+`_pos`, `_le_one`, `continuous_`), `exp_neg_localisedPotential_eq`, `integrable_mul_localiserWeight`,
+`gibbsExpectation_localisedPotential_eq_ratio`, `gibbsExpectation_localiserWeight_pos`, `localised_separable_eq_ratio`,
+`hasDerivAt_localised_separable` (frame, generic probe), `localisedRotatedAnharmonic_eq_rotated_localised`,
+`integrable_energy_quadratic_separableAnharmonic`, `integrable_quadratic_separableAnharmonic`,
+`hasDerivAt_localisedRotatedAnharmonic_probe` (A), `localisedCovK_eq_neg_deriv`, `hasDerivAt_locWeight`,
+`hasDerivAt_pow_mul_locWeight`, `stein_locWeight`, `stein_loc_pow` (B), `stein_loc_recursion`, `stein_loc_zero`, `locMoment_zero`,
+`stein_loc_cov_reduction`.
+
+Surprises: none mathematical. The engineering lesson is that the localised measure is a fixed-potential Gibbs measure with a
+bounded `t`-independent weight, so every exact identity (derivative, Stein) is the unlocalised one applied to weighted observables;
+GPT's Stein–covariance reduction came out as a two-line `linear_combination` once the recursion instances had matching power indices.
