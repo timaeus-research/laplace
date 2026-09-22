@@ -330,3 +330,4 @@ import Laplace.Multi.AmbientMoments
 import Laplace.Multi.VarianceOrder2
 import Laplace.OneD.MomentsAllOrders
 import Laplace.OneD.CovKAnharmonic
+import Laplace.Multi.CovKSeparable

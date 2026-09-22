@@ -2035,3 +2035,25 @@ matrix version is `whiteningOf`.
   `ring`) and `calc … := by rw [← e1]` — eta unifies `fun x => L x` with `L`.
 - `field_simp` sometimes leaves a goal with literal zeros (`(6 + lam*alpha*0)*24 + … = 6*24`) that needs `ring`, and sometimes closes the
   goal (then `ring` errors "no goals"); check each occurrence.
+
+### Separable covK, off-diagonal probes and the full quadratic probe (tide `covK-separable`)
+
+- Coordinate independence under `separablePotential ℓ` needs no integrability: `gibbsExpectation_prod_separable` with the observable
+  `fun m x => if m = i then f x else if m = j then g x else 1` and `Finset.prod_eq_mul i j hij` (two coordinates) or
+  `Finset.mul_prod_erase … i` followed by `prod_eq_mul j k` (three coordinates). The repeated-coordinate case of
+  `Cov_L[f(uᵢ), g(uⱼ)]` is handled by combining `f·g` on the single coordinate, not by encoding repeats in the product.
+- `gibbsCov_coord_fun_separable` returns `if i = j then … else 0`; use `Finset.sum_eq_single i (fun k _ hk => if_neg hk) …` (for
+  `if k = i`) or `Finset.sum_eq_add i j hij` (two survivors) to collapse the coordinate sum.
+- Rewriting `Laplace.gibbsCov … (fun x => x ^ 1)` against a goal containing `fun x => x` fails (`pow_one` is not applied inside the
+  pattern): instantiate the lemma at `m = 1`, `simp only [pow_one] at h`, then `rw [h]`.
+- Mixed monomials `uₖ^a uᵢ uⱼ e^{−tL}`: `integrable_monomial_separableAnharmonic (Pi.single k a + Pi.single i 1 + Pi.single j 1)` and
+  `change (∏ n, u n ^ (… : ι → ℕ) n) * _ = _; simp only [Pi.add_apply, pow_add, Finset.prod_mul_distrib, prod_pow_single_pow, pow_one]`.
+- A finite sum of coordinate energies against a general observable: `integrable_finsetSum Finset.univ` then
+  `simp only [separableAnharmonic, separablePotential, Finset.sum_mul]` closes the pointwise goal (unfolding inside the exponential is
+  harmless because both sides unfold identically).
+- Double sums over `ι` are best flattened to `∑ p : ι × ι` before `gibbsCov_finsetSum_left`: `congr 1; exact
+  (Fintype.sum_prod_type' fun a c => …).symm` (explicit function, `rw` cannot match the higher-order pattern); go back with
+  `rw [Fintype.sum_prod_type]` and `simp only [mul_ite, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, if_true]`. Annotate
+  `(Finset.univ : Finset (ι × ι))` when the index type is not otherwise determined.
+- State `tendsto_finsetSum … |>.add …` with an explicit beta-reduced `Tendsto (fun t => ∑ …) …` type; otherwise the `congr'` goal
+  carries `(fun t => …) t` redexes that `ring` treats as atoms.
