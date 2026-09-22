@@ -362,3 +362,4 @@ import Laplace.Multi.LocalisedAnharmonicSharp
 import Laplace.Multi.LocalisedAnharmonicCov
 import Laplace.Multi.LocalisedAnharmonicLLC
 import Laplace.Multi.GibbsIBP
+import Laplace.Multi.CovKOrder2

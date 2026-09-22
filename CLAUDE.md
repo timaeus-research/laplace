@@ -2504,3 +2504,19 @@ matrix version is `whiteningOf`.
   t (fun u => u i)`; convert to 1D with `gibbsExpectation_coord_separableAnharmonic … i (fun x => x)` stated via a `have hcoord :
   ∀ i, … = …` (defeq ascription absorbs the `(fun x => x) (u i)` redex) and `simp only [hcoord]`.
 - `cubicScale lam alpha ^ 2 = alpha²/(36 lam³)`: `rw [div_pow, mul_pow, mul_pow, Real.sq_sqrt hlam.le]` then `field_simp; ring`.
+
+### eq:covK to second order (tide `covK-order2`)
+
+- The Stein–covariance reduction: `ℓ = ½xℓ' − (α/12)x³ − (γ/24)x⁴` (pointwise, `ring`) and `ibp_anharmonic` at `k = n + 1` and
+  `k = 1` give the exact `t²Cov[ℓ, xⁿ] = (n/2)·t⟨xⁿ⟩ − (α/12)t²Cov[x³, xⁿ] − (γ/24)t²Cov[x⁴, xⁿ]`; prove the two expectation
+  identities with `rw [← gibbs_lin3 …]; congr 1; funext x; unfold …; ring` (never `rw` a lemma that rewrites the *potential*
+  `anharmonicPotential lam alpha gamma` itself — it is also the measure), then `Laplace.OneD.gibbsCov_pow_pow`/`_pow_id`,
+  `simp only [_root_.Laplace.gibbsCov]`, substitute `X = 3M₂/t` and `field_simp; ring`.
+- Instantiating a rate `h : ∀ {t}, T ≤ t → …` inside `have e := h (by linarith)` leaves `t` a metavariable and `linarith` fails on
+  `T ≤ ?t`; write `h (t := t) (by linarith)` or a named `hTt : T ≤ t`.
+- `gibbs_lin3` with an `x * ℓ'` term: the integrability lemma is stated for `x ^ 1 * ℓ'`; convert with
+  `.congr (Eventually.of_forall fun x => by simp only [pow_one])` before `rw [← gibbs_lin3 hi1 …]`.
+- Pair covariances to `O(1/t)` with `O(t⁻²)` remainder: write `t²(M_{m+n} − M_mM_n) = (t^{a}M_{m+n} − (t^{b}M_m)(t^{c}M_n))/t`
+  (`field_simp`), `Laplace.OneD.rate_mul` for the product, and the one-line `sub_div_rate`.
+- `field_simp` frequently closes `e : … = …/t` goals outright; a following `ring` then errors "No goals" — check each after the
+  first `lean-state check`.
