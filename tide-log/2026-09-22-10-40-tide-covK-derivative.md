@@ -38,3 +38,14 @@ of `tH + γ` at the point; do not differentiate `SA = 1` to *establish* differen
   of the Laplace remainder")
 
 Adopted: A+B; C left as a follow-up; wording per GPT in the staging note.
+
+## Result
+
+Commit `1e1eab6` on `tide/covK-derivative`; `lake build` clean, `scripts/sorries` 0/0/0/0. A and B landed (C deferred).
+`Laplace/Multi/CovKDerivative.lean` (     224 lines): `contractT_smul`, `smul_inv_of_isUnit`, `covKConst`, `covKFormula_eq_const_div_sq`, `firstOrder_eq`,
+`hasDerivAt_firstOrder`, `covKFormula_eq_neg_deriv`, `hasDerivAt_moment_integral`, `hasDerivAt_gibbsExpectation_pow`,
+`gibbsCov_eq_neg_deriv`.
+
+Surprises: the dominated-differentiation theorem went through on the first structural attempt once `ℓ ≥ 0` (yesterday's
+`unique-minimum`) supplied the uniform bound on `s > t/2`; the friction was entirely Lean-idiomatic (`convert` splitting
+`HasDerivAt` into instance goals, `field_simp` rewriting inside integrals so that `ring` saw two different atoms).
