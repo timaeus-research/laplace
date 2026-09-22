@@ -37,3 +37,20 @@ certification only; narrow the reviewer caveat, do not remove it. Optional sharp
 
 Adopted: elementary expansion with the sixth moment (no Taylor theorem needed); the `P_t` corollary if time permits; wording
 "leading-order certification".
+
+## Result
+
+Commit `6fc0303` on `tide/localised-mean-1d`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B + C landed with GPT's framing
+(leading-order certification; the `P_t` corollary added as suggested).
+`Laplace/Multi/LocalisedAnharmonic.lean` (     771 lines): `locWeight`, `locWeight_le`, `abs_exp_sub_one_sub_le`, `locWeight_expansion`, `locC₁`, `locC₂`,
+`gibbsExpectation_mono'`, `abs_gibbsExpectation_le'`, `gibbsExpectation_one'`, `gibbsExpectation_lin`, `abs_cube_le`,
+`abs_fifth_le`, `evenMoment_bound`, `gibbs_sub_sub`, `absMoment_three_bound`, `absMoment_five_bound`,
+`integrable_pow_locWeight`, `localisedMean`, `localisedMean_eq_ratio`, `locNumerator_expansion`,
+`locDenominator_expansion`, `locNumerator_rate`, `locDenominator_rate`, `localisedMean_anharmonic_rate`, `locLeading`,
+`locLeading_sub_le`, `localisedMean_sub_locLeading_rate`.
+
+Surprises: no localisation theorem or Laplace machinery was needed — the bounded weight `φ ≤ e^{g x₀²/2}` turns the
+localised mean into a ratio of plain anharmonic Gibbs expectations, and the whole rate is elementary bookkeeping on top of the
+seabed's sharp moment rates. The only genuinely new estimate is the `t`-dependent Young inequality `|x|³ ≤ (x²/√t + √t x⁴)/2`
+that trades the missing odd-moment rates for even ones at the cost of the `1/√t` (rather than `1/t`) error. The seabed was
+archived (10:48 UTC) and unarchived (≈13:15 UTC) during this tide; landing resumed once the four preceding tides were pushed.
