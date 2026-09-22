@@ -85,3 +85,18 @@ eq:covK second order is a worthwhile next tide but adds a mixed-moment bookkeepi
 - Claude: A + B + C + D (D's docstrings reworded as GPT suggests)
 - GPT-6 Astra: A + B + C + D, "with enlarged remainder constants explicit and D phrased as absorption of all localiser-dependent terms
   through `t⁻²`, not exact second-order accuracy"
+
+## Result
+
+Commit `0a8ee05` on `tide/localised-order2-multi`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B + C + D as voted, with D's docstrings in
+GPT's wording.
+`Laplace/Multi/LocalisedOrder2Multi.lean` (     430 lines): `varLocCoeff2`(+`_eq`), `covLocCoeff2`(+`_eq`, `_anchor_zero`), `locLeadingCoeff2`, `meanLocResidual2`(+`_eq`,
+`_anchor_zero`), `locLeading_order2_sub_le`, `displayed_var_remainder`, `var_assembly`, `localisedVar_order2_rate` (A),
+`localisedVar_sub_displayed_order2_rate`, `localisedMean_sub_locLeading_order2_rate` (B, 1D), `sum_rate_div_cube`,
+`localisedRotatedAnharmonic_displayed_order2_rate` (B), `localisedRotatedAnharmonic_cov_order2_rate` (C), `affineFrame_self`,
+`localisedRotatedAnharmonic_displayed_order2_rate_anchor`, `localisedRotatedAnharmonic_cov_order2_rate_anchor` (D).
+
+Surprises: none mathematical — every input existed (tides 72, 73 and the E2 transports of tides 66–68), and the whole tide is ratio
+and finite-sum bookkeeping. GPT's structural reading of D (the localiser at the minimiser is the substitution `λ ↦ λ + g/t`, whose
+effect on second-order coefficients is `O(t⁻³)`) went into the module docstring; its predicted third-order `g`-dependence
+(`gB₁'(λ)`, `gV₂'(λ)`) is a follow-up, not certified.
