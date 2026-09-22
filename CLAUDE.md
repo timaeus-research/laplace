@@ -2588,3 +2588,20 @@ matrix version is `whiteningOf`.
   up `∑ Qⱼᵢ rᵢ / t²` with `∑ Qⱼᵢ (rᵢ / t²)`.
 - Anchor-at-the-minimiser corollaries: `affineFrame Q c c i = 0` is `simp [affineFrame]`; then a `∀ i, coeff (…0) = coeff₀`
   hypothesis used as `simp only [e] at this` rewrites under the finite sum.
+
+### eq:covK on the localised measure (tide `localised-covK`)
+
+- Generic separable lemmas with *two* families (measure `ℓ`, observable `φ`) cost nothing over the single-family ones: copy the
+  anharmonic proof and replace `ℓ k` by `φ k` in the observable slots. Keep `[DecidableEq ι]` out of the statement when only the proof
+  needs it (`classical` inside), or the linter complains.
+- `rw [lemma_with_section_hyps]` where the lemma sits inside an `include hlam hgamma hdisc` block but does not use them leaves
+  `case hlam` goals behind ("unsolved goals ⊢ ∀ i, 0 < lam i"). Put `omit hlam hgamma hdisc in` in front of such `rfl`-style lemmas.
+- A rotation lemma stated for `rotated Q c ψ` applies to `fun w => affineFrame Q c w i * affineFrame Q c w j` by defeq, but the
+  probe `ψ` must be pinned by hand (`(ψ := fun u => u i * u j)`) before `by fun_prop`: unification through `rotated` leaves `?ψ` open
+  and `fun_prop` fails on `Continuous ?m`.
+- After `set L := … with hL`, a lemma instantiated by `rw`/`congr` may produce the unfolded name; close the resulting
+  `f … (L u) = f … (unfolded u)` goals with `simp only […, hL]`.
+- An identity needing a hypothesis `hc : A = B` on part of the expression: `rw [← hc]` rewrites *every* occurrence of `B` (including
+  inside `A`) and the goal drifts; use `linear_combination hc` instead, keeping any `t³M/t` as `t²M` so no division is present.
+- Two products of leading rates: `prod_rate` needs both `0 ≤ K_X`, `0 ≤ K_Y`; pass the rate constants' nonnegativity through the
+  abstract assembly lemmas rather than re-deriving it from the rate (that `nlinarith` fails).

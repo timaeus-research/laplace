@@ -374,3 +374,4 @@ import Laplace.Multi.LocalisedMeanCoeff
 import Laplace.Multi.LocalisedLLCCoeff
 import Laplace.Multi.CovKOrder2Multi
 import Laplace.Multi.LocalisedOrder2Multi
+import Laplace.Multi.LocalisedCovK
