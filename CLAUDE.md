@@ -2170,3 +2170,18 @@ matrix version is `whiteningOf`.
 - A duplicate definition in the same namespace (`Laplace.Multi.meanShift` already lived in `HessianRoute`) passes the *module* build and
   fails only at the root `lake build` ("import … failed, environment already contains …"). Before defining a note-level functional,
   `grep -rn "def <name>" Laplace/` and reuse the existing one (its shape may differ: `HessianRoute.meanShift` keeps the `t •` inside).
+
+### All-orders sharp moments (tide `moments-sharp`)
+
+- Shifted Gaussian moments: wrap `integral_pow_mul_exp_neg_sq_half` once as `gaussian_moment_shift k j : m (2k + 2j) = (2k + 2j − 1)‼ √(2π)`
+  and specialise with `rwa [show 2 * k + 2 * 2 = 2 * k + 4 by ring, show 2 * k + 4 - 1 = 2 * k + 3 by omega] at h'`; `omega` is the
+  tool for the truncated `− 1`. Keep `(2k+3)‼`, `(2k+5)‼` opaque casts; `norm_num [Nat.doubleFactorial]` evaluates them at literal `k`.
+- General-`k` bridges: `sqrt_pow_mul_moment_eq … (2 * k)` then `rw [pow_mul, Real.sq_sqrt …, mul_pow] at hmom` gives
+  `lam ^ k * t ^ k * E = J_{2k}/J₀`; for odd `2k+1` substitute `lam = s ^ 2` (`set s := Real.sqrt lam; … clear_value s; subst hs`),
+  rewrite `√(s² t) = s √t`, and close the bridge with `conv_lhs => rw [← hsq2]` (`hsq2 : √t ^ 2 = t`) followed by `ring`, which
+  handles the symbolic exponents `(√t ^ 2) ^ (k + 1) = √t * √t ^ (2k + 1)` and `s ^ 3 * s ^ (2k + 1) = (s ^ 2) ^ (k + 2)`.
+- After `rw [hDc, hCk'] at hratio` the `refine ⟨K, …⟩` constant must be written in the rewritten form (`|D|`, `|Ck|`, `|Ck * (c * q₀)|`).
+- `squeeze_zero'` needs its bound function pinned: `have hK0 : Tendsto (fun t : ℝ => K / t) atTop (𝓝 0) :=
+  tendsto_const_nhds.div_atTop tendsto_id` first, then `squeeze_zero' (Eventually.of_forall fun t => norm_nonneg _) ?_ hK0` after
+  `rw [tendsto_iff_norm_sub_tendsto_zero]`.
+- `field_simp` closes some `√t`-cancellation goals and leaves others (`(√t J + …) * t * 6 = …`) for `ring`; check each.
