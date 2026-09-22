@@ -66,3 +66,17 @@ second-order `m₆`, leading rates of `t⁴m₇`, `t⁴m₈`, and remainders thr
 - Claude: A + B + C
 - GPT-6 Astra: "**Vote: A+B+C**, with A+B the mandatory core and C the first stretch … Commitment order: the two covariance-rate
   lemmas → A → B → C."
+
+## Result
+
+Commit `db791e7` on `tide/localised-energy-var-order2`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedEnergyVarOrder2.lean` (     709 lines).
+A + B + C as voted.
+Rates: `bound_of_rate`, `bound_of_rate2`, `prod_div_sq_bound`, `scale_down_sq`, `scale_down_one`, `rate_shift_one`, `rate_shift_two`.
+1D: `integrable_energy_pow_locPotential1`, `locEnergyVar_split` (bilinearity), `locCovK_cubic_order2`, `locCovK_quartic_order2`,
+`varOrder2_coeff_identity` (`λc₂' + (α/6)C₃' + γ/(4λ²) = 2e₁`), `locEnergyVar_order2`.
+E2: `tracePrediction_eq`, `hasDerivAt_tracePrediction`, `tracePrediction_coord_rate`, `localisedVar_energy_order2`,
+`localisedEnergy_neg_deriv_order2`, `localisedVar_energy_add_tracePrediction_deriv`.
+
+Surprises: GPT's earlier "needs second-order fifth/sixth moments" was unnecessary — the Stein–covariance reduction turns the
+second-order variance into leading rates plus the bounded signed seventh/eighth moments; the identity `λc₂' + (α/6)C₃' + γ/(4λ²) = 2e₁`
+closes by `field_simp; ring` after unfolding five coefficient definitions.
