@@ -40,3 +40,16 @@ identities with `ring`, then sign lemmas; `sq_pos_of_ne_zero`/`mul_pos`; for C i
 Adopted: `anharmonicPotential_two_minimisers` (equality case as two minimisers with `ℓ ≥ 0`), `anharmonic_inflection` (`ℓ' = ℓ'' = 0`
 at `x*` when `α² = 8λγ/3`), `anhD2_ge` (the convexity bound), `rotatedHess_posDef` (Morse at `c` only); staging text uses the
 open interval `8/3 < a² < 3`.
+
+## Result
+
+Commit `0ddbbb6` on `tide/unique-minimum`; `lake build` clean, `scripts/sorries` 0/0/0/0. A, B and C landed with GPT's corrections.
+`Laplace/Multi/UniqueMinimum.lean` (     269 lines): `anharmonicPotential_eq_mul_sq`, `quad_factor_pos`, `anharmonicPotential_pos`, `anharmonicPotential_zero`,
+`anharmonicPotential_nonneg`, `anharmonicPotential_zero_lt`, `quad_factor_at`, `anharmonicPotential_root_of_disc_eq`,
+`anharmonicPotential_neg_of_disc_gt`, `anharmonicPotential_nonneg_of_disc_le`, `anharmonicPotential_two_minimisers`,
+`anharmonic_crit_iff`, `anharmonic_inflection`, `anhD2_ge`, `anhD2_zero_pos`, `affineFrame_ne_zero`, `rotatedAnharmonic_pos`,
+`rotatedAnharmonic_center_lt`, `rotatedHess_posDef`.
+
+Surprises: the note's "unique minimum" hides two thresholds (`3` for the global minimiser, `8/3` for unimodality) and a third
+(`2`, strong convexity) that E2's `a ∈ {½, 1}` satisfies; GPT caught that the `8/3` boundary is a stationary inflection rather than
+an extremum. Mathlib's quadratic lemmas want `a * (x * x)`, not `a * x * x`.
