@@ -89,3 +89,16 @@ cheap corollaries `lim t(Cov/covK − 1) = C'/C` and, for `C = 0 ≠ C'`, `Cov =
 ## Vote
 - Claude: A + B + C, with D as B's closed-form corollary in GPT's wording (`covKCoeff2Sep_eq`, `covKCoeff2Sep_offdiag_eq`)
 - GPT-6 Astra: "A + B + C, with D as the corrected closed-form corollary; defer derivative and localized extensions"
+
+## Result
+
+Commit `0f780fa` on `tide/covK-order2-multi`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B + C as voted, D as B's closed-form
+corollary in GPT's wording.
+`Laplace/Multi/CovKOrder2Multi.lean` (     358 lines): `prod_rate`, `covK_separable_sq_order2_rate`, `covK_separable_lin_order2_rate`,
+`covK_separable_offdiag_order2_rate` (A), `covKPairCoeff2`, `covK_separable_pair_order2_rate`, `covKCoeff2Sep`,
+`covKCoeff2Sep_eq`, `covKCoeff2Sep_offdiag_eq` (D), `covK_separable_quadratic_order2_rate` (B), `covKFormula_rot_order2_rate`,
+`covKFormula_rot_ratio_order2_rate` (C).
+
+Surprises: none — the exact pair identity of `CovKSeparable` plus tide 71's coefficients made this a bookkeeping tide; the only
+new analytic content is the product-of-rates lemma. GPT's correction to D (non-cancellation, not nonzero entries) went into the
+docstring; its `C' = mᵀBm + tr(BS₂) + bᵀr` presentation is recorded in the log as exposition, not formalised.
