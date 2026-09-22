@@ -246,6 +246,7 @@ import Laplace.Multi.RelativeChartFamily
 import Laplace.Multi.ToyCrossoverResponse
 import Laplace.Multi.PatternAttenuation
 import Laplace.Multi.WallCrossover
+import Laplace.Multi.WallResponse
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
