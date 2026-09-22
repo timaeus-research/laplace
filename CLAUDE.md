@@ -1987,3 +1987,17 @@ matrix version is `whiteningOf`.
 - `show` that changes the goal is linted; use `change`.
 - Lemmas from another namespace (`Laplace.Sampler.sum_sq_conj`, `sum_sq_diagonal`) need the full name inside `Laplace.Multi`.
 - `field_simp` closed the final Frobenius ratio identity and the per-term `hnum`/`hden` identities on its own; the trailing `ring`s errored.
+### Combining explicit rate bounds (tide `var-order2-rate`)
+
+- Rates of the form `∃ K T, 0 ≤ K ∧ 1 ≤ T ∧ ∀ {t}, T ≤ t → |…| ≤ K/(t√t)` combine with `refine ⟨K₂ + …, max T₁ T₂, by positivity,
+  le_max_of_le_left hT₁, fun {t} ht => ?_⟩`; recover `1 ≤ t` via `hT₁.trans ((le_max_left _ _).trans ht)` and the two component bounds via
+  `h₂ ((le_max_right _ _).trans ht)`.
+- A difference of products against a square of a rate: `(tM)² − m₀² = (tM − m₀)(tM + m₀)`, `|tM + m₀| ≤ |tM − m₀| + 2|m₀|` (write
+  `tM + m₀ = (tM − m₀) + 2m₀` with `ring_nf` inside the `calc`, then `abs_add_le`, `abs_mul`, `abs_two`), and `K₁/t ≤ K₁` from `div_le_self`.
+  Downgrade `1/t²` to `1/(t√t)` with `div_le_div_of_nonneg_left … (mul_le_mul_of_nonneg_left hst htpos.le)` where `hst : √t ≤ t` comes from
+  `Real.sqrt_le_sqrt (by nlinarith)` and `Real.sqrt_sq`.
+- To eliminate `Real.sqrt lam` from a coefficient identity: `set s := Real.sqrt lam with hsdef; clear_value s; subst hs` with
+  `hs : s ^ 2 = lam` (after `Real.sq_sqrt`), then `field_simp; ring` in the variable `s`.
+- `div_div : a / b / c = a / (b * c)` aligns `C/t` with a bound stated as `…/(lam * t)`.
+- `Matrix` transpose notation `ᵀ` is scoped: a file that states `Qᵀ * Q = 1` must `open Matrix`; otherwise "unexpected token 'ᵀ'".
+- `abs_sub (a b) : |a − b| ≤ |a| + |b|` (the triangle inequality for a difference) — note the name.
