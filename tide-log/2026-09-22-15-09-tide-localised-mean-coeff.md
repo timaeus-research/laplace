@@ -55,3 +55,18 @@ the displayed E2 approximation". Vote: strong yes on A (P₄ route, cross-multip
 ## Vote
 - Claude: A (+ B if it fits)
 - GPT-6 Astra: A ("strong yes", `P₄` route); B optional; C deferred
+
+## Result
+
+Commit `ef2699f` on `tide/localised-mean-coeff`; `lake build` clean, `scripts/sorries` 0/0/0/0. A as voted (GPT's `P₄` route with the
+cross-multiplied ratio); B and C left as follow-ups.
+`Laplace/Multi/LocalisedMeanCoeff.lean` (     889 lines): `abs_exp_sub_taylor_le`, `add_pow_le_two_pow_mul`, `abs_locExponent_pow_le`, `locWeight_taylor_le`,
+`locP₃`/`locP₄`/`locP₅`, `locQ₆'`…`locQ₉'`, `mul_P4_eq`, `locE₆`…`locE₁₂`, `locNumerator_pointwise5`, `locR₃'`…`locR₆'`,
+`P3_eq`, `locDenominator_pointwise3`, `gibbs_add'`, `gibbs_sub'`, `gibbs_lin4`, `gibbs_lin5`, `locNumerator_expansion5`,
+`locDenominator_expansion3`, `locN1`, `locD1`, `meanLocCoeff2`(+`_eq`), `locNumerator_key`, `locDenominator_key`, `ratio_key`,
+`numerator_assembly`, `denominator_assembly`, `locNumerator_rate2`, `locDenominator_rate2`, `localisedMean_order2_rate`.
+
+Surprises: the mathematics was exactly as planned; the cost was Lean elaboration — the first version of the two rate proofs, done
+directly on the `gibbsExpectation` terms, hit the 200000-heartbeat limit, and factoring each into an algebraic `key` lemma plus an
+`assembly` lemma over abstract reals (with the concrete expectations passed explicitly) made them fast. The seabed's signed
+odd-moment rates are what keep the remainder even; no parity trick was needed.
