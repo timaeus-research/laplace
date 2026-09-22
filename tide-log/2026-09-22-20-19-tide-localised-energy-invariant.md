@@ -69,3 +69,17 @@ derivative discrepancy `|t³(Var_loc(L) + P'(t)) − 2C₁| ≤ K/t` with `P = �
 ## Vote
 - Claude: A + B (leading order) + C, plus the matched-anchor corollary
 - GPT-6 Astra: "**Vote: A+B+C, with B committed only at leading order.** Prioritise A, then B; C is a cheap corollary."
+
+## Result
+
+Commit `3c72259` on `tide/localised-energy-invariant`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedEnergyInvariant.lean` (     606 lines).
+A + B (leading order) + C as voted, plus the matched-anchor corollary; D dropped (GPT: it mixes scaled and unscaled predictors).
+1D: `locEighth_bound`, `locSeventh_bound` (`|x|⁷ ≤ (x⁶ + x⁸)/2`), `locSeventh_loc_bound`, `locEighth_loc_bound`, `locEnergySq_eq`,
+`energySq_assembly`, `locEnergySq_leading` (`t²⟨ℓ²⟩_loc → 3/4`), `locEnergyVar_leading` (`t²Var_loc(ℓ) → ½`).
+Algebra: `sum_anchor_sq_div_eq`, `sum_anchor_alpha_eq`, `scaled_sq_from_rate`.
+A: `localisedRotatedAnharmonic_llc_sub_trace_invariant`, `_matched`. C: `localisedRotatedAnharmonic_llc_sub_trace_sq_rate`.
+B: `localisedVar_energy_eq_sum`, `localisedVar_energy_leading`, `hasDerivAt_localised_energy`, `localisedEnergy_neg_deriv_eq_var`,
+`localisedEnergy_neg_deriv_leading`.
+
+Surprises: the variance splitting is one `gibbsCov_coord_fun_separable` after two `gibbsCov_finsetSum_left`s, and the energy's
+`t/2`-integrability for the derivative identity is three `integrable_energy_coord_pow_separableAnharmonic` calls per coordinate pair.
