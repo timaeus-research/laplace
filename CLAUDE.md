@@ -2227,3 +2227,19 @@ matrix version is `whiteningOf`.
 - Nested `partialD`: compute each level for *all* `w` as `fun w => ∑ l, A l * g l (affineFrame Q c w l)` (rewrite the previous level into
   this shape with `funext w; rw [prev]; exact Finset.sum_congr rfl fun l _ => by ring`), then apply the one-step lemma; evaluate at the
   centre only at the end (`affineFrame_center`, `simp`).
+
+### The energy to two loops (tide `llc-two-loop`)
+
+- Splitting a sum of differences on *one side only*: `rw [Finset.sum_sub_distrib]` rewrites the first match, which may be a coefficient
+  sum `∑ (a − b)` on the *other* side. Use `conv_rhs => rw [Finset.sum_sub_distrib, …, Finset.sum_const, Finset.card_univ,
+  nsmul_eq_mul, ← Finset.sum_div]` and finish with `ring` on identical sum-atoms.
+- `field_simp` then `ring` on an identity containing `∑ i, (5α²/(24λ³) − γ/(8λ²))` fails: `field_simp` rewrites *inside* the summand
+  on one side. `set C := ∑ …; clear_value C` first, so the sum is an atom.
+- Frobenius pairing in the eigenframe: `∑ᵢⱼ Aᵢⱼ Bᵢⱼ = (Aᵀ * B).trace` by `simp only [Matrix.trace, Matrix.diag_apply, Matrix.mul_apply,
+  transpose_apply]; exact Finset.sum_comm`; then `conj_mul_conj`, `diagonal_mul_diagonal`, `Matrix.trace_mul_cycle`, `hQ`,
+  `Matrix.one_mul`, `trace_diagonal`. Symmetry of `Q diag a Qᵀ`: `rw [transpose_mul, transpose_mul, transpose_transpose,
+  diagonal_transpose, Matrix.mul_assoc]`.
+- Concrete tensors on `Fin 2` via `![![![0, 1], ![1, 0]], ![![1, 0], ![0, 0]]]`: `simp [defs, Fin.sum_univ_two, Matrix.one_apply,
+  Matrix.mulVec, dotProduct]` then `ring` evaluates six-fold sums (64 terms) without trouble.
+- `energy_anharmonic_order1_rate_sharp` and `anharmonicPotential` live in `Laplace.Multi`/`Laplace.OneD`: `open … Laplace.OneD` is
+  needed for the bare name `anharmonicPotential`.
