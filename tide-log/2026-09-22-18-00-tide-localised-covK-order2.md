@@ -86,3 +86,20 @@ genuinely cheap".
 - Claude: A + B + C with GPT's fifth-moment repair (exact to degree eight); D if it fits
 - GPT-6 Astra: "approve A–C with the two proof corrections and the seventh-moment coefficient audit; bundle D only if the existing
   assembly makes it genuinely cheap"
+
+## Result
+
+Commit `91ab805` on `tide/localised-covK-order2`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedCovKOrder2.lean` (    1288 lines).
+A + B + C as voted (D, the rotated E2 pairs `2cᵢcⱼ`, left as the next step).
+Theorems: `locQuartic_pointwise4`, `locU₈`…`locU₁₄`, `locFifth_pointwise4`, `locS₈`/`locS₁₀`, `locSixth_pointwise`,
+`locQuartic_expansion4`, `locFifth_expansion4`, `locSixth_expansion`, `locN4`, `locFourthCoeff2` (+`_eq`), `locFifthCoeff`,
+`locQuartic4_assembly`, `locFifth_lead_assembly`, `locSixth_lead_assembly`, `ratio_key2`, `ratio_lead3_key`, `seventhMoment_bound`,
+`eighthMoment_bound`, `locQuartic_rate4`, `locFifth_rate`, `locSixth_rate`, `loc_ratio_lead3_rate`, `locFourthMoment_loc_rate4` (A),
+`locFifthMoment_loc_rate`, `locSixthMoment_loc_rate` (B), `covKLocCoeff2Lin` (+`_eq` `= 2·meanLocCoeff2`), `covKLocCoeff2Sq`
+(+`_eq` `= 2·locSecondCoeff2`), `covK_loc_lin_order2_assembly`, `covK_loc_sq_order2_assembly`, `stein_loc_cov_reduction_lin/_sq`,
+`locMean_loc_order2`, `localisedCovK_lin_order2_rate`, `localisedCovK_sq_order2_rate` (C).
+
+Surprises: GPT caught that tide 76's fifth-moment envelope (from `x⁶`) is `O(1)` after `t³`, so the degree-eight exact expansion was
+needed; a hand-computed sixth-moment envelope constant was off by the `2²` of `abs_locExponent_pow_le` (the `ring` residual showed it);
+`unfold` needs outer definitions listed before inner ones. The two coefficient identities `K₁ = 2c'`, `K₂ = 2c₂'` closed by
+`field_simp; ring` once all definitions were unfolded.
