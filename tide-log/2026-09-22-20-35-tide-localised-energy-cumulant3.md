@@ -73,3 +73,18 @@ coordinate variances and their sum first, converting to nested `deriv` only at t
 ## Vote
 - Claude: A + B + C (D deferred)
 - GPT-6 Astra: "**Vote: A+B+C, staged with A+B as the firm checkpoint; defer D.**"
+
+## Result
+
+Commit `71ea1a6` on `tide/localised-energy-cumulant3`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedEnergyCumulant3.lean` (     919 lines).
+A + B + C as voted; D (the direct multi-d cumulant identity) deferred per GPT.
+1D: `loc_ratio_bounded4`, `locEven_weighted_bound4`/`locOdd_weighted_bound4` (generic degrees `2k`, `2k+1`, `k ≥ 4`), `locEven_loc_bound4`,
+`locOdd_loc_bound4`, `stein_leading_consistency`, `locSeventhMoment_loc_bound4` (the signed seventh moment), `locEnergyCube_eq`,
+`energyCube_assembly`, `locEnergyCube_leading`, `locEnergy_leading`, `locEnergyCum3_leading`.
+E2: `localised_frame_fun_expectation`, `localisedCovK_frame_fun`, `hasDerivAt_localised_frame_fun`, the integrability suppliers
+`integrable_energy_energy_coord`, `integrable_energy_energySq_coord`, `integrable_energy_coord_alone`, `integrable_energySq_coord_alone`,
+`integrable_energy_energy_locFamily`, `integrable_energy_energySq_locFamily`, `hasDerivAt_localised_frame_energyVar`,
+`localisedVar_energy_eq_frame_sum`, `hasDerivAt_localised_energy_deriv`, `localisedEnergy_deriv2_leading`.
+
+Surprises: the seventh moment costs one Stein recursion plus the exact cancellation of its `O(t)` terms — no new expansion; the
+second derivative is `HasDerivAt` of `deriv f` through the local identity `deriv f = −Var` on `(0, ∞)`.
