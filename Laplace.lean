@@ -377,3 +377,4 @@ import Laplace.Multi.LocalisedOrder2Multi
 import Laplace.Multi.LocalisedCovK
 import Laplace.Multi.LocalisedDerivative
 import Laplace.Multi.LocalisedCovKOrder2
+import Laplace.Multi.LocalisedCovKOrder2Multi

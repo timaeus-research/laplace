@@ -2640,3 +2640,16 @@ matrix version is `whiteningOf`.
   monomials of that degree exact (signed moments) and start the envelope one even degree higher.
 - Statements with many `gibbsExpectation (locPotential1 …) t (fun x => x ^ j)` terms overflow 100 columns; break after
   `gibbsExpectation` rather than introducing an abbreviation that later steps must unfold.
+
+### eq:covK on E2's localised measure to second order (tide `localised-covK-order2-multi`)
+
+- Every rotated-measure identity for a new observable shape (`uᵢuⱼ`, `∑…`) is one call of a `localisedRotated_gibbs*_eq` rotation
+  lemma with the probe pinned (`(ψ := fun u => u i * u j)`) followed by the generic separable lemma on the frame family
+  (`gibbsExpectation_two_coord_separable`, `gibbsExpectation_coord_separable`, `partitionFunction_locFamily_ne`).
+- Rotation lemmas that do not need `hlam hgamma hdisc` must be declared with `omit hlam hgamma hdisc in` when they sit inside the
+  include block, or every call site receives "expected `∀ i, 0 < ?m i`, got `hQ`" and downstream `fun_prop` sees `ℝ`.
+- After splitting a double sum into diagonal and off-diagonal parts with `hsplit` + `Finset.sum_add_distrib`, do not `rw
+  [Finset.sum_add_distrib]` again — the sums are already separate; rewrite the summands (`simp only [e]`) and let `ring` treat the sums
+  as atoms.
+- The expectation side of a second-order covariance statement is cheaper than the covariance side: `⟨uᵢuⱼ⟩_loc = ⟨uᵢ⟩_loc⟨uⱼ⟩_loc`
+  exactly, so only `prod_rate` on the two leading means is needed off the diagonal.
