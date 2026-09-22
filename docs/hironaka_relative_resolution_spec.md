@@ -345,3 +345,30 @@ Estimated 1,000–2,500 lines. R2 (chartwise change of variables in `d = 1`, giv
 cutoff in the decomposition interface (partition weights `ψ_i(u, s)`) and a derivative bound on the
 remainder, not just the remainder bound. General `d` needs a multi-active monomial leading theorem
 (log factors from tied exponents), a separate campaign.
+
+### Refinement after reading the readout (2026-09-22, later)
+
+hironaka's chart-family readout (`LogResolutionData`, `hasLLCExponentsOn_closedBall`) has a SINGLE
+base point `w`: every chart's parametrisation satisfies `φ_α 0 = w`, and the exponents are read on
+balls around `w`. In the relative setting the zero set of `f(·, s)` near a zero `x₀` of `f(·, s₀)`
+is, in each relative chart, the curve `u = 0`, which maps to a zero `x_P(s)` of `f(·, s)`; the
+sliced family has a common base point only if all these curves coincide. Two zero curves meeting at
+`(x₀, s₀)` force a type change there (the T2 vanishing-order argument), so on `S'` they should
+coincide, but proving that is a separate lemma (roots with multiplicity). The first bridge theorem
+therefore takes the tracked zero as a hypothesis, which is exactly the "track one point `w* ∈ W₀`"
+setting of germbij_slop S9:
+
+> `hzero : ∀ s ∈ S', ∀ x ∈ V, f x s = 0 → x = x₀` (the zero of `f(·, s)` in `V` is `x₀` for all `s`).
+
+Under it every chart curve is `x ≡ x₀`, the slices give a `LogResolutionData` at `x₀` for every `s`
+near `s₀` from ONE finite family of relative charts, and `(combLam, combTheta)` is a function of the
+frozen `(k, h)`, hence constant. Also: `fibre_prop_product`/`watanabeChartAt_fibreBlowDown` package
+the sliced charts EXISTENTIALLY through `M.chartAt` (a choice per fibre point), so they cannot be
+used for constancy; the bridge must slice an explicit finite family (`slice_phase`,
+`slice_jacobian` on `IsRelativeWatanabeChartFlat` are the explicit tools).
+
+**First adapter landed**: greybook `Extras/Germbij/RelativeCover.lean`,
+`exists_finite_relativeChartCover` — over a zero `z₀` of the family, finitely many relative charts
+at fibre points over `z₀` (so centred at `(0, s₀)`, frozen `(k i, h i)`) whose open boxes cover every
+point of the resolved space over a ball around `z₀`. Proof: hironaka's `logResolutionData_of_watanabe`
+compactness argument, transported to the total space.
