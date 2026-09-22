@@ -2623,3 +2623,20 @@ matrix version is `whiteningOf`.
 - The power-index normal forms must agree before `linear_combination`: rewrite `n + 1 + 1 = n + 2` (`by omega`) in the recursion
   instance and `pow_one` in the `k = 1` instance, or `ring` sees `x ^ 1` and `x` as different atoms.
 - `Nat.add_sub_cancel` takes explicit arguments; `show n + 1 - 1 = n by omega` is simpler.
+
+### The second-order localised eq:covK (tide `localised-covK-order2`)
+
+- Rates through a Stein/covariance reduction are bookkeeping on abstract reals: state one assembly lemma per probe with the moment
+  rates as hypotheses (`e₁ : |t m₁ − c − c'/t| ≤ K₁/t²`, …), derive leading rates from second-order ones with `order2_to_order1`,
+  products with `prod_rate`, and prove the residual identity by `subst hc; field_simp; ring`. Keep the coefficient identity
+  (`covKLocCoeff2Lin_eq : … = 2 * meanLocCoeff2`) a separate lemma.
+- `unfold a b c` unfolds each name once, in order: a definition revealed by unfolding a *later* name in the list stays folded
+  (the goal kept `locP₃`, `locD1`). List outer definitions before inner ones.
+- A `(2 * 3 - 1)‼`-style double factorial appears when instantiating `evenMoment_anharmonic_rate k`; normalise the index with
+  `show (2 * 3 - 1 : ℕ) = 5 from rfl` and the value with `norm_num [Nat.doubleFactorial]`. `‼` needs `open scoped Nat`.
+- An envelope constant computed by hand is easily off by the factor from `abs_locExponent_pow_le` (`2^n`): let the final `ring`
+  step tell you (the residual goal displays the two sides' constants) and fix the definition, not the proof.
+- Envelope terms of the same order as the target rate do not vanish after scaling: `N₆⟨x⁶⟩ = O(t⁻³)` is `O(1)` after `t³`. Keep the
+  monomials of that degree exact (signed moments) and start the envelope one even degree higher.
+- Statements with many `gibbsExpectation (locPotential1 …) t (fun x => x ^ j)` terms overflow 100 columns; break after
+  `gibbsExpectation` rather than introducing an abbreviation that later steps must unfold.
