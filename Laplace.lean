@@ -244,6 +244,7 @@ import Laplace.Multi.ResolvedChartResponse
 import Laplace.Multi.RelativeChartLeading
 import Laplace.Multi.RelativeChartFamily
 import Laplace.Multi.ToyCrossoverResponse
+import Laplace.Multi.PatternAttenuation
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
@@ -352,3 +353,4 @@ import Laplace.Multi.FrameCovariance
 import Laplace.Multi.RotatedFrechet
 import Laplace.Multi.UniqueMinimum
 import Laplace.Sampler.E1Numbers
+import Laplace.Multi.CovKDerivative
