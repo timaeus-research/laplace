@@ -38,3 +38,18 @@ not that individual higher diagrams vanish; keep a general second-order `covKFor
 - GPT-6 Astra: A+B+C ("Keep the tide focused on the exact Rosenbrock identity and explicit remainder")
 
 Adopted: GPT's wording for the staging note; the `−d⟨ψ⟩/dt` reading recorded as a remark (not formalised).
+
+## Result
+
+Commit `de63117` on `tide/rosenbrock-terminating`; `lake build` clean, `scripts/sorries` 0/0/0/0. A, B and C landed.
+`Laplace/Multi/RosenbrockTerminating.lean` (     274 lines): `gibbsExpectation_valley_poly'`, `harmonicMoment_five`,
+`harmonicMoment_six`, `harmonicMoment_vec7`, `gibbsExpectation_rosenbrock_of_poly7`, `thetaDiagram_rosenbrock`,
+`dumbbell_rosenbrock`, `figureEight_rosenbrock`, `trace_HS_rosenbrock`, `twoLoopEnergy_rosenbrock`,
+`twoLoopEnergy_rosenbrock_exact`, `meanShift_rosenbrock`, `meanShift_rosenbrock_exact`, `rosenProbe`,
+`contractT_rosenbrock_SHS`, `covKFormula_rosenbrock`, `gibbsCov_rosenbrock_probe`, `gibbsCov_rosenbrock_linear_probe`,
+`covKFormula_rosenbrock_linear`.
+
+Surprises: the degree-six computation (35 symbolic coefficients from sympy, `simp; ring`) compiled first time; the only friction was
+the trace of `H S B S` with symbolic `B`, where plain `simp` stops at `vecMul` forms. Mathematically, the first-order eq:covK is
+*not* exact for Rosenbrock although the one-loop covariance and the two-loop energy are: the `3B₁₁/t³` remainder is the flat
+direction's `z²` pushed through `y − 1 = u + 2z + z²` into `Cov[z²/2, z⁴]`.
