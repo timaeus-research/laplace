@@ -61,3 +61,16 @@ nonzero; no `g > 0` needed.
 ## Vote
 - Claude: A + B (C if it fits)
 - GPT-6 Astra: A + B core; C optional as an `O(1/t)` energy corollary
+
+## Result
+
+Commit `0a1dc0d` on `tide/localised-cov`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B as voted; C (the localised LLC at
+`O(1/t)`) left for its own tide.
+`Laplace/Multi/LocalisedAnharmonicCov.lean` (     592 lines): `locQ₄`/`locQ₆`/`locQ₈`, `locSecond_pointwise`, `locPotential1`, `localisedVar`,
+`gibbsExpectation_locPotential1`, `localisedVar_eq`, `locSecond_expansion2`, `locSecond_rate`, `localisedVar_rate`,
+`localisedVar_sub_displayed_rate`, `sum_rate_div`, `localisedRotatedAnharmonic_cov_frame`, `localisedRotatedAnharmonic_cov_coord`,
+`locS_rot_apply`, `conj_diagonal_inv_apply`, `localisedRotatedAnharmonic_cov_rate`, `localisedRotatedAnharmonic_cov_rate_leading`.
+
+Surprises: `open scoped Nat` silently turns the observable name `φ` into the totient notation and breaks named arguments; the
+ratio lemma needed the explicit `integral_const_mul` route because `simp only` with the pointwise identity also cancelled the
+constant and left a shape the planned rewrite could not see. The mathematics was exactly tide 67's expansion applied to `x²φ`.
