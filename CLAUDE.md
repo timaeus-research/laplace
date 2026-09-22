@@ -2285,3 +2285,22 @@ matrix version is `whiteningOf`.
 - Diagonal tensors as `if`s: put the *innermost* summation index's condition outermost, `diagT α a b c := if c = a then (if b = a
   then α a else 0) else 0`, so `simp only [mul_ite, mul_zero, Finset.sum_ite_eq', Finset.mem_univ, if_true]` collapses the sums
   from the inside out (with the other order `Finset.sum_ite_eq'` never fires).
+### The rotated tensors as Fréchet derivatives (tide `frechet-bridge`)
+
+- Directional derivative along `eᵢ` = Fréchet derivative on `eᵢ`: `HasFDerivAt.comp_hasDerivAt (l := f) (f := fun s => w + s • eᵢ)
+  (x := 0)` with the line's `HasDerivAt` from `((hasDerivAt_id' (x := 0)).smul_const eᵢ).const_add w` (`simpa`) and the base
+  point aligned by `rw [hw]` (`hw : w + (0 : ℝ) • eᵢ = w`, `simp`); finish with `.deriv`.
+- One rung of the `partialD`/`iteratedFDeriv` ladder: `fderiv_continuousMultilinear_apply_const_apply (hdiff x) m eᵢ` turns
+  `fderiv (fun y => iteratedFDeriv n f y m) x eᵢ` into `fderiv (iteratedFDeriv n f) x eᵢ m`, and `iteratedFDeriv_succ_apply_left`
+  (reversed) with `Fin.cons_zero`, `Fin.tail_cons` gives `iteratedFDeriv (n+1) f x (Fin.cons eᵢ m)`. Differentiability of
+  `iteratedFDeriv n f` from `hf.differentiable_iteratedFDeriv (by exact_mod_cast Nat.lt_succ_self n)` for `hf : ContDiff ℝ (n+1) f`.
+  `![a, b] = Fin.cons a ![b]` definitionally, so the tower theorems state `![…]` and `exact` the rung lemma.
+- Smoothness of polynomial potentials: `contDiff_apply ℝ ℝ i` (both type arguments explicit), `ContDiff.sum fun i _ => …` (not
+  `contDiff_finset_sum`), `contDiff_pi.2` for vector-valued maps; `Matrix.mulVec` has no `fun_prop` theorems, so rewrite
+  `affineFrame Q c = fun w i => ∑ j, Qᵀ i j * (w j - c j)` first. `unfold separablePotential` on a `∑` exposes `Multiset.map`
+  junk; use `change ContDiff ℝ n fun w => ∑ i, …` instead.
+- `fderiv f c = 0` from vanishing coordinate derivatives: `ext v`, `hv : v = ∑ k, v k • Pi.single k 1` (`funext j; simp
+  [Finset.sum_apply, Pi.single_apply]`), `rw [hv, map_sum]`, `simp only [map_smul, _root_.zero_apply]`
+  (`ContinuousLinearMap.zero_apply` is deprecated), `Finset.sum_eq_zero`, then `← partialD_eq_fderiv`.
+- Finish-script hygiene: `sed 's#Laplace.Multi.X#…#g'` also rewrites the *path* `Laplace/Multi/X` (dots match slashes), which
+  broke tide 57's `git add`; write file paths in the finish script by hand.
