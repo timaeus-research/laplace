@@ -329,3 +329,4 @@ import Laplace.Multi.GibbsRotation
 import Laplace.Multi.AmbientMoments
 import Laplace.Multi.VarianceOrder2
 import Laplace.OneD.MomentsAllOrders
+import Laplace.OneD.CovKAnharmonic

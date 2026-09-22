@@ -2018,3 +2018,20 @@ matrix version is `whiteningOf`.
   `√(λt) ≠ 0` in context.
 - `Nat.doubleFactorial` numerals: `norm_num [Nat.doubleFactorial] at h` evaluates `(2 * 3 - 1)‼` to `15`.
 - `Filter.Tendsto.div hf hg (hb : b ≠ 0)` produces a Pi-division function; `congr'` against `fun t => f t / g t` is accepted by defeq.
+
+### Covariances of monomials and the one-dimensional covK (tide `covK-anharmonic`)
+
+- `Tendsto.congr' (Eventually.of_forall fun t => ?_)` leaves `(fun t => …) t` beta-redexes on the right; `rw` cannot instantiate a
+  metavariable with the bound `t`, so rewrite with `simp only [lemma, show (2 + 2 : ℕ) = 4 from rfl]` and finish with `ring`. The same
+  applies to pointwise goals under `Integrable.congr`: `simp only [pow_add]`, `simp only [pow_one]; ring`, not `rw`.
+- `gibbsCov L t (fun x => x ^ m) (fun x => x ^ n) = ⟨x^(m+n)⟩ − ⟨x^m⟩⟨x^n⟩`: `unfold gibbsCov; rw [funext-identity for x^m * x^n]`; the
+  literal `m + n` must then be normalised (`show (3 + 2 : ℕ) = 5 from rfl`) before `ring` can match `⟨x^5⟩` from the moment lemmas.
+- Products of moments: `t²⟨x³⟩⟨x²⟩ = (t²⟨x³⟩)·⟨x²⟩` with `⟨x²⟩ → 0` from `t⟨x²⟩ → 1/λ` via `tendsto_zero_of_tendsto_pow_mul`; the pair
+  `(3, 1)` has total degree four and needs the refined `t²⟨x³⟩ → −5α/(2λ³)`, not a degree count.
+- The 1D bilinearity lemmas (`Laplace.gibbsCov_add_left/right`, `gibbsCov_smul_left/right`) want integrability in exactly the shapes
+  `φ e`, `φ ψ e` (left) / `ψ e`, `φ ψ e` (right); build them from `Laplace.Multi.integrable_pow_mul_exp_neg_t_anharmonic k` with
+  `.const_mul` and `.congr (… by ring)`. To expand the energy observable use
+  `have e1 : (fun x => L x) = fun x => (a x² + b x³) + c x⁴ := by funext x; simp only [hL, anharmonicPotential]` (already closed, no
+  `ring`) and `calc … := by rw [← e1]` — eta unifies `fun x => L x` with `L`.
+- `field_simp` sometimes leaves a goal with literal zeros (`(6 + lam*alpha*0)*24 + … = 6*24`) that needs `ring`, and sometimes closes the
+  goal (then `ring` errors "no goals"); check each occurrence.
