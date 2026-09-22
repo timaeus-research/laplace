@@ -2738,3 +2738,18 @@ matrix version is `whiteningOf`.
   are `(ℓ : ι → ℝ → ℝ) (t : ℝ)`.
 - `|x|⁷ ≤ (x⁶ + x⁸)/2` is `nlinarith [mul_nonneg (pow_nonneg (abs_nonneg x) 6) (sq_nonneg (|x| - 1))]` after `Even.pow_abs` for the
   even powers; the weighted seventh-moment bound then follows the `locSixth_bound` template with the two-term majorant.
+
+### The third cumulant of the localised energy (tide `localised-energy-cumulant3`)
+
+- A signed odd moment at the next order comes free from the Stein recursion once the `O(t)` terms cancel: multiply the recursion by the
+  right power of `t` with `linear_combination t ^ 3 * hrec` (pure ring identity), then subtract the coefficient identity with
+  `linear_combination t * hc` after `congr 1`; prove the coefficient identity separately (`field_simp; ring`). Do not `field_simp` the
+  whole scaled recursion — the residual mixes `λ⁻¹` powers that `ring` cannot match.
+- `stein_loc_recursion` needs `(x₀ := x₀)`: nothing in its arguments pins the anchor.
+- Symbolic even powers: `positivity` cannot prove `0 ≤ x ^ (2 * k)`; use `(even_two_mul k).pow_nonneg x`, and `Even.pow_abs` for
+  `|x| ^ (2 * k) = x ^ (2 * k)`. State the neighbouring even degree as `2 * (k + 1)` so `even_two_mul (k + 1)` applies verbatim.
+- Passing a probe as `_` to a lemma whose continuity argument is `hf.comp (continuous_apply i)` infers the probe as the composition
+  `f ∘ fun p => p i`, which no longer matches `fun u => f (u i)` in the goal; give the probe explicitly (or ascribe the continuity proof).
+- `HasDerivAt.pow` on a Gibbs expectation trips instance-path mismatches under `simpa`; state the squared function as a product and use
+  `h.mul h` (as in `LocalisedCentredDerivative`).
+- `HasDerivAt.fun_sum fun i _ => …` without an ascribed statement fails to infer `f`, `f'`, `u`; write the `HasDerivAt` type out.
