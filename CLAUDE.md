@@ -2520,3 +2520,22 @@ matrix version is `whiteningOf`.
   (`field_simp`), `Laplace.OneD.rate_mul` for the product, and the one-line `sub_div_rate`.
 - `field_simp` frequently closes `e : … = …/t` goals outright; a following `ring` then errors "No goals" — check each after the
   first `lean-state check`.
+
+### The localised mean to second order (tide `localised-mean-coeff`)
+
+- Taylor remainders of `exp` to any order: `|e^y − ∑_{m<n} y^m/m!| ≤ (e^M + n)|y|^n` for `y ≤ M`, `n ≥ 2` (`Real.exp_bound` on
+  `|y| ≤ 1`, and for `|y| > 1` every lower power is `≤ |y|^n` with `1/m! ≤ 1`); the constant `(n+1)/(n!·n) ≤ 2` is one
+  `div_le_iff₀; push_cast; nlinarith`. `(p + q)^n ≤ 2^n(p^n + q^n)` via `p + q ≤ 2 max p q`.
+- Polynomial identities in the localised exponent `y = ax − bx²`: state the truncated sum as `∑ m ∈ Finset.range n, y^m/m!`, then
+  `simp only [Finset.sum_range_succ, Finset.sum_range_zero, Nat.factorial]; push_cast; ring` against explicit coefficient defs; the
+  `Finset.range 5` truncation gives a degree-9 identity, `range 4` a degree-6 one. Keep *signed* odd monomials `x³, x⁵` exact and
+  bound their expectations by the signed leading rates; only the Taylor remainder is bounded through absolute powers.
+- Long rate proofs time out (`whnf`/`isDefEq` at 200000 heartbeats) when the residual identity and the triangle bookkeeping are done
+  on the `gibbsExpectation` terms directly. Factor them: an algebraic `*_key` lemma over abstract reals (`unfold; field_simp; ring`),
+  an `*_assembly` lemma over abstract reals taking the moment inputs as hypotheses, and a thin instantiation with the concrete
+  expectations passed *explicitly* (underscores for them break elaboration with "failed to synthesize Zero ?m").
+- `gcongr` on `a/b ≤ a/c` leaves the side goal `c ≤ b`, not the division inequality: a following `exact div_le_div_of_nonneg_left …`
+  mismatches — close it with `nlinarith` or `pow_le_pow_right₀ ht1 (by norm_num)`. `(by nlinarith)` for `t^3 ≤ t^4` is unreliable;
+  use `pow_le_pow_right₀`.
+- Thresholds inside `refine ⟨K, T, by positivity, by linarith, …⟩` can fail with a metavariable in the goal; prove `h1T : 1 ≤ T`
+  beforehand and pass it. Two `variable … include` blocks in one section silently attach the hypotheses to every lemma in between.

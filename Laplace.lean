@@ -363,3 +363,4 @@ import Laplace.Multi.LocalisedAnharmonicCov
 import Laplace.Multi.LocalisedAnharmonicLLC
 import Laplace.Multi.GibbsIBP
 import Laplace.Multi.CovKOrder2
+import Laplace.Multi.LocalisedMeanCoeff
