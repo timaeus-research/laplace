@@ -2342,3 +2342,31 @@ matrix version is `whiteningOf`.
 - Symmetry transport: `(locS γ H s)ᵀ = locS γ H s` from `Hᵀ = H` via `Matrix.transpose_nonsing_inv` and `congr 1; simp [locPrec,
   Matrix.transpose_add, Matrix.transpose_smul, hH]`; `(S *ᵥ b) ⬝ᵥ v = b ⬝ᵥ (S *ᵥ v)` by `rw [dotProduct_mulVec_eq, hS]`;
   `tr(H S B S) = tr(B S H S)` by re-associating to `(H*S)*(B*S)` and `Matrix.trace_mul_comm`.
+### E1/E5 numbers (tide `e1-numbers`)
+
+- Numerical corollaries with decimal literals (`1.5`, `1.9`) are `norm_num` one-liners; interval bounds like
+  `|½(4/3 + 1/(1 − 1/(4κ))) − 7/6| ≤ 10⁻⁴` for `κ ≥ 2500` go through `div_le_div_iff₀`/`le_div_iff₀` for the two bounds on the
+  flat factor and `abs_le` + `nlinarith` (with the bounds as hypotheses).
+- `ula_llc` with `Fin 2` eigenvalues given by `hp0 : eigenvalues 0 = p`, `hp1 : eigenvalues 1 = p/κ`: discharge the `∀ i, h * pᵢ < 2`
+  side condition by `fin_cases i <;> simp [hp0, hp1, hhp, hhpκ]` and expand with `Fin.sum_univ_two`.
+### eq:covK as a temperature derivative (tide `covK-derivative`)
+
+- `convert h using 1` on `HasDerivAt` goals splits into *instance* goals (`Real.instAddCommGroup = Real.normedAddCommGroup.
+  toAddCommGroup`, `Semiring.toModule = …`) whenever the derivative was built by the field API (`hasDerivAt_inv`, `HasDerivAt.exp`)
+  and the target states the derivative over the normed group; use `h.congr_deriv (by ring)` / `refine h.congr_deriv ?_` (and
+  `HasDerivAt.congr_of_eventuallyEq` for the function), never `convert`.
+- `HasDerivAt.div` produces the *function* `f / g` (Pi division); `refine h.congr_deriv ?_` still unifies with `fun s => f s / g s`.
+- `field_simp` rewrites *inside integrals* (`exp (-(t * ℓ x))` became `exp (-(ℓ x * t))` on one side only, so `ring` saw two atoms).
+  `set N := ∫ … with hN; …; clear_value N Z LN LZ` before `field_simp` keeps the integrals opaque.
+- `(fun s => x ^ k * exp (-(s * c)))` has derivative `(((hasDerivAt_id' (x := s)).mul_const c).neg.exp).const_mul (x ^ k)`; its
+  stated value carries `(-fun y => y * c) s`, so `congr_deriv (by simp only [Pi.neg_apply]; ring)`.
+- Dominated differentiation in the temperature: `hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := volume) (F := …) (F' := …)
+  (bound := …) (x₀ := t) (s := Set.Ioi (t / 2)) (Ioi_mem_nhds …)`, then `hF_meas` by `Eventually.of_forall` + continuity
+  `.aestronglyMeasurable`, `hF_int` from `integrable_pow_mul_exp_neg_t_anharmonic`, the bound via `Real.exp_le_exp` with `ℓ ≥ 0`
+  (`anharmonicPotential_nonneg`) and `ℓ ≤ λ/2|x|² + |α|/6|x|³ + γ/24|x|⁴`; the result's second component has `∫ -(…)`, so
+  `rw [integral_neg] at key` first. `Laplace.OneD.integrable_abs_pow_mul_exp_neg_t_anharmonic` (namespace!) supplies the bound's
+  integrability.
+- `smul_inv_of_isUnit : (s • H)⁻¹ = s⁻¹ • H⁻¹` by `Matrix.inv_eq_right_inv` and `Matrix.mul_nonsing_inv H hH`; then
+  `simp only [Matrix.mul_smul, Matrix.smul_mul, Matrix.trace_smul, Matrix.smul_mulVec, Matrix.mulVec_smul, contractT_smul,
+  smul_dotProduct, dotProduct_smul, smul_eq_mul, Matrix.mul_nonsing_inv H hH, Matrix.nonsing_inv_mul H hH, Matrix.one_mul]` reduces
+  every `(t • H)⁻¹` expression to scalars times `H⁻¹`-constants.
