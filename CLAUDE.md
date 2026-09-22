@@ -2431,3 +2431,22 @@ matrix version is `whiteningOf`.
 - Finite sums of rates: `Finset.abs_sum_le_sum_abs`, `Finset.sum_le_sum`, `Finset.sum_div`; threshold `1 + ∑ Tᵢ` with
   `Finset.single_le_sum`. `(Q *ᵥ x) j` opens with `simp only [Matrix.mulVec, dotProduct]`; combine with `mul_sub,
   Finset.sum_sub_distrib` and `ring`.
+
+### eq:mean's `O(S²)` remainder on the localised measure (tide `localised-mean-sharp`)
+
+- Taylor remainders of `exp` on an interval: `Real.exp_bound (hx : |x| ≤ 1) (hn : 0 < n) : |exp x − ∑ m ∈ range n, x^m/m!| ≤
+  |x|^n * ((n+1)/(n!·n))`; rewrite the sum with `simp [Finset.sum_range_succ, Nat.factorial]; ring` *as a separate equation*
+  and bound the constant with `norm_num [Nat.factorial]` — do not `norm_num at h`, it reshapes the polynomial. For `|x| > 1` bound
+  every lower power by `|x|^n` (`one_le_pow₀`, `nlinarith`). Result: `|e^y − 1 − y − y²/2| ≤ (e^M + 3)|y|³` for all `y ≤ M`.
+- Odd absolute powers without `t`: `|x|⁵ ≤ (x⁴ + x⁶)/2`, `|x|⁷ ≤ (x⁶ + x⁸)/2` from `sq_nonneg (|x|^2 − |x|^3)`,
+  `sq_nonneg (|x|^3 − |x|^4)`; rewrite even powers as `|x|^n` first (`rw [← abs_pow, abs_of_nonneg (by positivity)]`) so the final
+  `nlinarith` sees one atom. Keep the signed odd moment (`oddMoment_anharmonic_rate`) for `⟨x³⟩`; converting `|X + a| ≤ K/t` to
+  `rate_bounded`'s `|X − (−a)|` is `rw [sub_neg_eq_add]`.
+- `abs_mul` in `rw` is greedy in *both* directions: `abs_mul t` also splits `|t * M₃|` inside another factor — give both
+  arguments, `abs_mul t (N − …)`. `add_le_add_right` has the summand on the left in this Mathlib; use
+  `add_le_add h le_rfl` for `A + D ≤ B + D`.
+- `oddMoment_anharmonic_rate … 1` carries `t ^ (1 + 1)`, `x ^ (2 * 1 + 1)`, `(2 * 1 + 3)‼`: normalise with
+  `simp only [show (2 * 1 + 1 : ℕ) = 3 from rfl, show (1 + 1 : ℕ) = 2 from rfl, show (2 * 1 + 3 : ℕ) = 5 from rfl] at h`
+  (rules with the *full* literal expression as LHS; a rule for `2 * 1` alone would pre-empt them) and leave `((5 : ℕ)‼ : ℝ)`
+  symbolic in the constant.
+- Many thresholds: `T := T₁ + … + T₈` with every `Tᵢ ≥ 1` makes each `Tᵢ ≤ t` a one-line `linarith`, cheaper than nested `max`.
