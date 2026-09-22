@@ -64,3 +64,17 @@ parameter-uniformity would be new; ULA/SGLD is a larger pivot.
 ## Vote
 - Claude: A + B + C + D
 - GPT-6 Astra: "**Vote: A+B+C+D**, with A+B the protected core; C and D are cheap corollaries."
+
+## Result
+
+Commit `86fafe4` on `tide/localised-deriv-frobenius`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedDerivativeFrobenius.lean` (     298 lines).
+A + B + C + D as voted (GPT: "A+B the protected core; C and D are cheap corollaries"). Signs as GPT prescribed: `∂ₜS` is
+negative-definite, so `−∂ₜC + ∂ₜS = −∂ₜ(C − S)`; the positive diagonal expression is `−∂ₜS`.
+Rates: `frobenius_conj_rate_cubic` (GPT's `t³` wrapper of tide 82's transport via `f̃ᵢ = t fᵢ`), `deriv_coord_scaled`,
+`resolvent_deriv_coord_rate`, `deriv_coord_resolvent_scaled`. Exact: `hasDerivAt_locS_entry`, `neg_deriv_locS_entry`,
+`localisedCov_neg_deriv_sub_inv_entry`, `localisedCov_neg_deriv_add_deriv_locS_entry`, `inv_div_sq_frobenius`.
+A: `localisedCov_neg_deriv_frobenius_inv_rate`. B: `localisedCov_neg_deriv_frobenius_locS_rate`.
+C: `localisedCov_neg_deriv_frobenius_relative_rate` (`0 < d`). D: `localisedCov_neg_deriv_frobenius_two_sided`.
+
+Surprises: none mathematical; the per-coordinate identity `t³(λ/(tλ+g)² − 1/(λt²)) + 2g/λ² = g²(3tλ + 2g)/(λ²(tλ+g)²)` makes B a
+two-line combination of A's coordinate rate and the resolvent's.
