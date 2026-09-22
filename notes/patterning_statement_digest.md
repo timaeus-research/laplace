@@ -103,6 +103,7 @@ Mathlib's Gaussian, a Dirac mass off the positive semidefinite cone.
 | Prop 16.x (score-function form of the path-space response), `d/dε E_ε[φ]|₀ = E_0[φ ∑ₖ ω(sₖ)]` | `hasDerivAt_pathExpect_score` (ScoreFunction.lean) | none: an identity for the finite product law `P_ε(s) = ∏ₖ q(sₖ)(1 + εω(sₖ))` on paths `Fin T → ι` | |
 | Prop 16.x, covariance form `d/dε E_ε[φ]|₀ = ∑ᵢ ω(i) Cov_0(φ, Nᵢ)` | `score_deriv_eq_cov`, `score_deriv_eq_cov_uniform` | `∑ᵢ q(i) = 1`, `∑ᵢ q(i)ω(i) = 0` (uniform case: `∑ᵢ ω(i) = 0`, `ι` nonempty); `φ` any real function of the index path | the identification of `φ(w_T)` with a function of the path is by conditioning on the independent randomness (not modelled); the linear-regime identification `χ^path(T) = −(1/n) aᵀF_T(H) gᵢ` |
 | Prop 16.x, normalisation and `E_0[Nᵢ] = T q(i)` | `sum_pathProb_eq_pow`, `sum_pathProb_eq_one`, `baseExpect_count`, `baseExpect_indicator` | `∑ᵢ q(i) = 1` (and `∑ qω = 0` for `= 1`) | |
+| Prop 16.x (Gibbs law of a homogeneous loss), `d_s = 2`: `Z(t)`, `E_t[r^k]`, `tE_t[K] = 2/p`, `t²Var_t[K] = 2/p` | `partitionFunction_homogeneous`, `homogeneous_gibbs_moment`, `homogeneous_gibbs_excess`, `homogeneous_gibbs_variance` (HomogeneousGibbs.lean) | `K(z) = a‖z‖^p` with `a > 0`, `p > 0` (real), `t > 0`; moments for `k > −2` | general `d_s`; a non-constant angular profile `K(u)` (the angular marginal `∝ K(u)^{−d_s/p}` and the conditional Gamma law); the Gamma law of `tK` beyond its first two moments; the localizer |
 
 ## What the reader should look at first
 

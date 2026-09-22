@@ -2520,3 +2520,9 @@ matrix version is `whiteningOf`.
   (`field_simp`), `Laplace.OneD.rate_mul` for the product, and the one-line `sub_div_rate`.
 - `field_simp` frequently closes `e : … = …/t` goals outright; a following `ring` then errors "No goals" — check each after the
   first `lean-state check`.
+
+### Path sums, fibrewise regrouping and homogeneous radial integrals (patterning: score function, homogeneous Gibbs)
+
+- A sum over index paths `Fin T → ι` of a product is a product of sums: `Fintype.prod_sum (f : ∀ k, κ k → R) : ∏ k, ∑ j, f k j = ∑ x : ∀ k, κ k, ∏ k, f k (x k)`; instantiate `f` explicitly with `fun (_ : Fin T) i => …` and `rw [← h]`. Regroup `∑ k, ω (s k)` by fibre with `Finset.sum_fiberwise univ s (fun k => ω (s k))` then `sum_const`/`nsmul_eq_mul`; the count `#{k | s k = i}` as a real is `∑ k, if s k = i then 1 else 0` by `simp [count]` (`Finset.sum_boole` is simp). Both lemmas come out beta-reduced: a `simp only at h` afterwards fails with "no progress".
+- Derivative of `∏ k ∈ u, (1 + ε c k)` at `0`: no `HasDerivAt.finset_prod` on this pin; `Finset.induction_on` with `HasDerivAt.mul` and `classical` (drop `[DecidableEq]` from the statement, the linter flags it).
+- `(√s)^k * (√s)^k` with `√s` possibly `0`: `rpow_add_of_nonneg (sqrt_nonneg _) hk.le hk.le`, not `rpow_add` (needs `0 < x`). `(√s)^k = s^(k/2)` via `sqrt_eq_rpow, ← rpow_mul hs`; `(r^2)^(k/2) = r^k` via `← rpow_two, ← rpow_mul hr`. `integral_radial` needs its `G` given explicitly when the integrand is a beta-redex `(fun s => …) (z.1^2 + z.2^2)`, then `beta_reduce`.
