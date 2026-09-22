@@ -79,3 +79,19 @@ errors after tⁿ rescaling" — not "the Gamma law is verified".
 - GPT-6 Astra: A+B+C, "with C stated first as the coordinate-cumulant ratio and then as a derivative-response corollary"
 
 Agreed: A+B+C.
+
+## Result
+
+Commit `96bcdff` on `tide/localised-energy-cumulant4`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedEnergyCumulant4.lean` (    1092 lines).
+A + B + C as voted.
+1D: `loc_ratio_bounded5`, `locEven_weighted_bound5`, `locOdd_weighted_bound5`, `locEven_loc_bound5`, `locOdd_loc_bound5`,
+`locNinthMoment_loc_bound5` (Stein k = 8), `locEighthMoment_loc_rate` (Stein k = 7, `105/λ⁴`), `locEnergyFourth_eq` (degrees 8–16),
+`energyFourth_assembly`, `locEnergyFourth_leading` (`105/16`), `locEnergyCum4_leading` (`3`).
+E2: `integrable_energy_energyCube_coord`, `integrable_energyCube_coord_alone`, `integrable_energy_energyCube_locFamily`,
+`localisedCum3_eq_frame_sum`, `hasDerivAt_localised_frame_cum3` (`κ₃' = −κ₄`), `hasDerivAt_localised_energy_deriv2`,
+`localisedEnergy_deriv3_leading` (`−3d`), `localisedCum4_ratio_leading` (`12/d`), `localisedEnergy_deriv3_ratio_leading`.
+
+Surprises: the whole tide compiled at the second check — the only real errors were a Pi-multiplication left by the nested
+`HasDerivAt.mul` (fixed by `simp only [Pi.mul_apply]`), a rewrite for an expectation that does not occur in the derivative, and a
+line-wrapper that broke a `simp only […]` list. The `r := t/(tλ+g)` trick makes each Stein-recursion solve a one-line
+`linear_combination`.
