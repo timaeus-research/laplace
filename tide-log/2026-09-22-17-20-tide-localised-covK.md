@@ -100,3 +100,22 @@ hierarchy; second order still needs second coefficients for `m₃, m₄` — kee
 ## Vote
 - Claude: A + B (C as the corrected remark, D deferred)
 - GPT-6 Astra: "A + B, with corrected C as a remark and D deferred"
+
+## Result
+
+Commit `e1f9b6f` on `tide/localised-covK`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B as voted; C as the corrected remark
+(centred localisation or ), D deferred.
+`Laplace/Multi/LocalisedCovK.lean` (    1139 lines): `gibbsCov_energy_coord_separable`, `gibbsCov_energy_pair_separable` (generic, two families),
+`locN₆`…`locN₁₄`, `locFifth_pointwise`, `locFifth_expansion`, `locFifth_bound`, `locSixth_bound`, `loc_ratio_bounded`,
+`locFifth_loc_bound`, `locSixth_loc_bound`, `order2_to_order1`, `covK_loc_lin_assembly`, `covK_loc_sq_assembly`,
+`locEnergyMul_eq`, `locEnergyMulSq_eq`, `localisedEnergy_leading`, `locSecondMoment_loc_leading`, `locMean_loc_leading`,
+`localisedCovK_lin_rate`, `localisedCovK_sq_rate`, `localisedCov_probe_eq`, `localisedCovK_rate` (A); `locFamily`,
+`separablePotential_locFamily`, `localisedRotatedAnharmonic_eq_rotated_locFamily`, `integrable_locFamily_of_integrable`,
+`localisedRotated_gibbsCov_eq`, `partitionFunction_locFamily_ne`, `integrable_energy_*_locFamily`, `localisedCovK_frame_coord`,
+`localisedCovK_frame_pair`, `localisedCovK_frame_sq/lin/offdiag/pair_rate`, `localisedCovK_quadratic_split`,
+`localisedCovK_frame_quadratic_rate`, `localisedRotatedAnharmonic_covK_rate` (B).
+
+Surprises: none mathematical — the constants came out as predicted (`c`, `1/λ`), and GPT's independent check agreed. The
+two-family generic decomposition is the seabed's anharmonic proof with the families abstracted; the E2 quadratic split is the
+seabed's `gibbsCov_energy_quadratic_split` transported through the rotation lemma and re-proved on the frame localised measure.
+GPT's cheaper fifth-moment route (`|φ − 1| ≤ C|x|`) is noted; ours (the shared expansion times `x³`) was already written.
