@@ -2574,3 +2574,17 @@ matrix version is `whiteningOf`.
   `gcongr` side goal `0 ≤ K_X / t` — carry nonnegativity of every rate constant.
 - Diagonal extraction from a sum over `ι × ι`: `rw [← Finset.univ_product_univ, Finset.sum_product]; simp only [Finset.sum_ite_eq,
   Finset.mem_univ, if_true]` (with `mul_ite, mul_zero` when the `if` sits inside a product).
+### eq:mean's and eq:cov's `O(S²)` coefficients on E2 (tide `localised-order2-multi`)
+
+- Second-order results compose by pure bookkeeping: `t·Var = t⟨x²⟩ − (t⟨x⟩)²/t` turns two `K/t²` inputs into a `K/t²` output
+  through `(m − c)(m + c)` with `|m − c| ≤ (|c'| + K)/t` and `|m + c| ≤ 2|c| + |c'| + K` (`var_assembly`, abstract reals); the
+  unscaled `K/t³` forms are the scaled ones divided by `t` plus a rational remainder (`displayed_var_remainder`,
+  `locLeading_order2_sub_le`: `unfold; field_simp; ring` for the identity, then `div_le_div₀`/`div_le_div_of_nonneg_left` with
+  `t²λ² ≤ (tλ + g)²`).
+- Lemmas stated in a section *without* `include hlam hgamma hdisc` (e.g. `locSecondMoment_eq {t} (ht : 0 < t)`) take only their
+  explicit arguments; passing the section hypotheses gives "Function expected". Check with `hover` before calling.
+- Transporting a `1/t²`-coefficient statement through `Q`: `rw [ambient_coord, displayed_mean_rot, Finset.sum_div]` then
+  `simp only [Matrix.mulVec, dotProduct, mul_sub, Finset.sum_sub_distrib, mul_div_assoc]; ring` — `mul_div_assoc` is what lines
+  up `∑ Qⱼᵢ rᵢ / t²` with `∑ Qⱼᵢ (rᵢ / t²)`.
+- Anchor-at-the-minimiser corollaries: `affineFrame Q c c i = 0` is `simp [affineFrame]`; then a `∀ i, coeff (…0) = coeff₀`
+  hypothesis used as `simp only [e] at this` rewrites under the finite sum.

@@ -247,6 +247,9 @@ import Laplace.Multi.ToyCrossoverResponse
 import Laplace.Multi.PatternAttenuation
 import Laplace.Multi.WallCrossover
 import Laplace.Multi.WallResponse
+import Laplace.Multi.TwoChartCompetition
+import Laplace.Multi.WallCutoff
+import Laplace.Multi.MergingZeros
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
@@ -370,3 +373,4 @@ import Laplace.Multi.CovKOrder2
 import Laplace.Multi.LocalisedMeanCoeff
 import Laplace.Multi.LocalisedLLCCoeff
 import Laplace.Multi.CovKOrder2Multi
+import Laplace.Multi.LocalisedOrder2Multi
