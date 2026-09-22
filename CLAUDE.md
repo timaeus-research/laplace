@@ -2262,6 +2262,29 @@ matrix version is `whiteningOf`.
 - Namespace clash: `Laplace.TwoD.gibbsExpectation`/`gibbsCov` (on `ℝ × ℝ`) versus `Laplace.Multi.gibbsExpectation` (on `ι → ℝ`)
   when working in `Laplace.Multi` with `open Laplace.TwoD`; write `Laplace.TwoD.gibbsExpectation` explicitly in statements.
 
+### Frame covariance of the tensor formulas (tide `frame-covariance`)
+
+- Six-index contractions (the bubble) are best handled at the *matrix* level: `frob X Y := (Xᵀ * Y).trace` with
+  `frob_apply : frob X Y = ∑ᵢⱼ Xᵢⱼ Yᵢⱼ`, bilinearity by `simp only [frob, Matrix.transpose_sum, Matrix.transpose_smul,
+  Matrix.sum_mul, Matrix.smul_mul, Matrix.mul_sum, Matrix.mul_smul, Matrix.trace_sum, Matrix.trace_smul, smul_eq_mul]`, the slice
+  `slice T i := of fun k l => T i k l`, `slice (rotateT Q T) i = ∑ a, Q i a • (Q * slice T a * Qᵀ)` (one index proof), and
+  `bubble T S i j = frob (slice T i) (S * slice T j * Sᵀ)` (one index proof). The rotated bubble is then
+  `simp only [Matrix.mul_sum, Matrix.sum_mul, Matrix.mul_smul, Matrix.smul_mul, frob_sum_left, frob_sum_right, frob_smul_left,
+  frob_smul_right]`, the conjugation identity, `frob_conj`, then `Finset.mul_sum`, `Finset.sum_comm`, `ring`.
+- `(t • (Q * H * Qᵀ))⁻¹ = Q * (t • H)⁻¹ * Qᵀ` unconditionally: `rw [← Matrix.smul_mul, ← Matrix.mul_smul]` (note the direction:
+  `Matrix.smul_mul : a • M * N = a • (M * N)`), `Matrix.mul_inv_rev` twice, `Matrix.inv_eq_left_inv hQ : Q⁻¹ = Qᵀ`,
+  `Matrix.inv_eq_right_inv hQ : (Qᵀ)⁻¹ = Q`.
+- `Q * S * Qᵀ *ᵥ v` parses as `Q * S * (Qᵀ *ᵥ v)` (`*ᵥ` binds tighter than `*`): parenthesise `(Q * S * Qᵀ) *ᵥ v`.
+- `Matrix.mul_assoc` bare in `rw` picks the first associable product (it re-associated the trace factor instead of the intended
+  `… * Qᵀ * Q`); give the left factor: `Matrix.mul_assoc (Q * S)`. For `Qᵀ * Q` cancellations inside `mulVec` chains prefer
+  `simp only [Matrix.mulVec_smul, Matrix.mulVec_mulVec, Matrix.mul_assoc, hQ, Matrix.mul_one]` (it also closes the goal).
+- `(Q *ᵥ w) j = ∑ b, Q j b * w b` is `rfl`; `Matrix.sum_mulVec`, `Matrix.smul_mulVec` (not `smul_mulVec_assoc`) distribute sums
+  and scalars through `*ᵥ`.
+- After `rw [hS]` has replaced `(t • H')⁻¹` everywhere, a lemma stated in terms of `(t • H')⁻¹` (like `conj_SHS`) no longer matches;
+  order the rewrites, or state the helper in the post-rewrite form.
+- Diagonal tensors as `if`s: put the *innermost* summation index's condition outermost, `diagT α a b c := if c = a then (if b = a
+  then α a else 0) else 0`, so `simp only [mul_ite, mul_zero, Finset.sum_ite_eq', Finset.mem_univ, if_true]` collapses the sums
+  from the inside out (with the other order `Finset.sum_ite_eq'` never fires).
 ### The rotated tensors as Fréchet derivatives (tide `frechet-bridge`)
 
 - Directional derivative along `eᵢ` = Fréchet derivative on `eᵢ`: `HasFDerivAt.comp_hasDerivAt (l := f) (f := fun s => w + s • eᵢ)

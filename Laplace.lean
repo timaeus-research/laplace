@@ -348,5 +348,6 @@ import Laplace.Multi.RotatedTaylor
 import Laplace.Multi.RotatedDerivatives
 import Laplace.Multi.TwoLoopEnergy
 import Laplace.Multi.RosenbrockTerminating
+import Laplace.Multi.FrameCovariance
 import Laplace.Multi.RotatedFrechet
 import Laplace.Multi.UniqueMinimum
