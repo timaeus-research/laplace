@@ -34,3 +34,24 @@ depends on C's second moment. Vote: A+B+C, D as a stretch rather than an accepta
 `−16.08`); `t²(J_n − 2-term)` for odd `n = 1, 3` decays like `t^{-1/2}` (parity: the odd remainder is `O(t^{-5/2})`);
 `t·[t(λtVar − 1) − (a² − ½)] → −0.2715` (the note's "≈ 0.27/t"); `t²·[t⟨ℓ⟩ − ½ − (5a²/24 − 1/8)/t] → −0.0542`;
 `t·[t²⟨x³⟩ + 5α/(2λ³)] → 0.772`.
+
+## Result
+
+Commit `5e65337` on `tide/order3-parity`; `lake build` clean, `scripts/sorries` 0/0/0/0. A, B, C and the stretch D all landed.
+`Laplace/OneD/IntegralRemainder3.lean` (     271 lines): `perturbation_remainder4_pointwise`, `add_pow_four_le_eight_mul`,
+`rescaled_fourth_bound`, `perturbation_remainder4_combined`, `integrable_pow_add2_mul_exp_neg_mul_sq`, `integrable_remainder4`,
+`perturbation_remainder4_integral_bound`.
+`Laplace/OneD/JnThirdOrder.lean` (     306 lines): `cubed_integral_decomposition`, `J_n_asymptotic_order3`, `J_n_even_asymptotic_order3`,
+`J_n_odd_asymptotic_order3`.
+`Laplace/OneD/MomentThirdOrder.lean` (     393 lines): `ratio_rate_order2`, `ratio_rate_order1`, `J0_delta_order3`, `J2_delta_order3`,
+`J3_delta_order2`, `J0_delta_order1`, `secondMoment_anharmonic_order3_rate`, `thirdMoment_anharmonic_rate_sharp`,
+`fourthMoment_anharmonic_t_rate`.
+`Laplace/Multi/VarianceOrder3.lean` (     350 lines): `var_anharmonic_order2_rate_sharp`, `var_relative_rate_order2_sharp`,
+`var_relative_rate_order2_note_sharp`, `separableAnharmonic_var_order2_rate_note_sharp`,
+`rotatedAnharmonic_var_order2_rate_note_sharp`, `energy_order1_coeff_sharp`, `energy_anharmonic_order1_rate_sharp`,
+`energy_anharmonic_order1_rate_note_sharp`, `separableAnharmonic_energy_order1_rate_note_sharp`,
+`rotatedAnharmonic_energy_order1_rate_note_sharp`.
+
+Surprises: the fourth-order layer is *simpler* than the cubic one (an even power needs no odd-absolute-value absorption); the whole
+`t⁻²` upgrade is parity bookkeeping on top of the existing expansion plus two ten-line ratio lemmas, and the energy's third and
+fourth moments needed no new analysis at all.
