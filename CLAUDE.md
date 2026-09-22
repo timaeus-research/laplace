@@ -2319,3 +2319,26 @@ matrix version is `whiteningOf`.
 - Positive definiteness of `Q * diagonal lam * Qᵀ`: `Matrix.PosDef.conjTranspose_mul_mul_same (PosDef.diagonal hlam) hinj` with
   `hinj : Function.Injective Qᵀ.mulVec` (from `Q * Qᵀ = 1`), then `rwa [Matrix.conjTranspose_eq_transpose_of_trivial,
   Matrix.transpose_transpose] at this`.
+
+### The localised anharmonic mean (tide `localised-mean-1d`)
+
+- Bounded reweighting of a Gibbs measure: `⟨x⟩_loc = ⟨xφ⟩_t/⟨φ⟩_t` with `φ = exp(g x₀ x − (g/2)x²) ≤ e^{g x₀²/2}`; integrability of
+  `x^m φ e^{−tℓ}` is `Integrable.bdd_mul (c := …) hcont.aestronglyMeasurable (Eventually.of_forall …)` (the bound is an
+  `∀ᵐ`, not an `∃ C`), followed by `.congr` with `change … = _` (not `show`, which the style linter rejects) and `ring`.
+- `|e^y − 1 − y| ≤ (e^M + 2) y²` for all `y ≤ M`: split on `|y| ≤ 1` (`Real.abs_exp_sub_one_sub_id_le`) versus `|y| > 1`
+  (`|y| ≤ y²`, then `abs_sub`, `abs_add_le`, `nlinarith`).
+- Odd absolute moments from even ones: Young with a free weight `|x|³ ≤ (ε x² + x⁴/ε)/2` (`key : 2ε|x|³ ≤ ε²x² + x⁴` via
+  `(ε|x| − x²)² ≥ 0` and `sq_abs`), then `ε = 1/√t` gives `⟨|x|³⟩ ≤ K/(t√t)`. Clear `√t` with `hsq : √t ^ 2 = t`
+  (`Real.sq_sqrt`) and `linear_combination (C * t) * hsq` after `div_eq_div_iff`; `rw [← hss]` on `√t * √t = t` also rewrites
+  the `t` inside `√t` and leaves `√(√t^2)` junk.
+- `positivity` proves `0 ≤ x ^ (2 * k)` only after `rw [pow_mul]`; literal even exponents are fine.
+- `evenMoment_anharmonic_rate … 1` normalises with `simpa [Nat.doubleFactorial] using h ht` (`t ^ 1`, `x ^ (2 * 1)`,
+  `↑(2 * 1 − 1)‼` all disappear; the target may then carry `lam⁻¹`, which `simpa` also normalises).
+- Section variables and `omit`: `omit hlam hgamma hdisc in` must precede the docstring, not sit between it and `theorem`; a
+  lemma so omitted is called without those arguments.
+- `abs_mul` in `rw` picks the first product it sees (`|g * x₀|` splits into `|g| * |x₀|`): give the factors, `abs_mul (g * x₀)`,
+  `abs_mul t`. Likewise `abs_sub_comm 1 D`. `gcongr` often closes the resulting goals by `assumption` — a trailing `· exact` then
+  errors with "No goals".
+- Ratio-of-expectations rate: for `D → 1` with `|D − 1| ≤ K_D/t`, take `T ≥ 2K_D` so `D ≥ 1/2` (`abs_le.mp`), write
+  `t N/D − c = ((tN − c) + c(1 − D))/D` (`field_simp; ring` with `hDne : D ≠ 0` in context), then `div_le_iff₀` and one `gcongr`
+  against `1/2 ≤ D`.

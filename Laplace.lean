@@ -351,3 +351,4 @@ import Laplace.Multi.RosenbrockTerminating
 import Laplace.Multi.FrameCovariance
 import Laplace.Multi.RotatedFrechet
 import Laplace.Multi.UniqueMinimum
+import Laplace.Multi.LocalisedAnharmonic
