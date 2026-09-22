@@ -1,6 +1,6 @@
 # Patterning flow: statement digest for review
 
-Branch `patterning-flow` (merged to `main`), `Laplace/Patterning/` (30 files). Every claim of the working note
+Branch `patterning-flow` (merged to `main`), `Laplace/Patterning/` (31 files). Every claim of the working note
 *Patterning flow* (`learning-theory/local/directsgld/main.tex`, Overleaf `6aada9b9684134925b8ee562`)
 that carries a blue margin marker is listed here with the Lean statement it links to, the
 hypotheses that statement carries, and what is *not* covered. The purpose is a 20-minute read:
@@ -17,7 +17,8 @@ Mathlib's Gaussian, a Dirac mass off the positive semidefinite cone.
 | Note | Lean | Hypotheses | Not covered |
 |---|---|---|---|
 | Prop 3.1, linearised recursion `w_T − w* = −ε F_T(H) B ω` | `horizon_iterate_zero_filter` (Horizon.lean) | none: an identity for the affine recursion `δ ↦ (I − ηH)δ − εη b` from `0` | the reduction from the nonlinear recursion (see next row) |
-| Prop 3.1, nonlinear recursion is tangent to the linear one | `gdIter_isLittleO`, `hasDerivAt_gdIter` (HorizonNonlinear.lean) | gradient field `G` with `G w* = 0` and Fréchet derivative `H` at `w*`; `b` differentiable at `w*` | the `O(ε²)` form: it needs a `C²` loss and is *not claimed* |
+| Prop 3.1, nonlinear recursion is tangent to the linear one | `gdIter_isLittleO`, `hasDerivAt_gdIter` (HorizonNonlinear.lean) | gradient field `G` with `G w* = 0` and Fréchet derivative `H` at `w*`; `b` differentiable at `w*` | |
+| Prop 3.1, the `O(ε²)` remainder (the pipeline step is the linear response to second order) | `gdIter_isBigO_sq` (HorizonSecondOrder.lean) | quadratic Taylor bound `‖G(w) − H(w − w*)‖ ≤ L‖w − w*‖²` and Lipschitz bound `‖b(w) − b(w*)‖ ≤ K‖w − w*‖` on a ball around `w*` (a `C²` loss with Lipschitz Hessian) | the retrain-to-minimiser variant (moving minimiser) is still `o(s)`, not `O(s²)` |
 | eq (horizon), eigen and null forms of `F_T` | `horizonFilter_mulVec_eigen`, `horizonFilter_mulVec_null` | eigenvector `Hv = λv`, `λ ≠ 0` (resp. `Hv = 0`) | |
 | eq (horizon), gradient flow filter `(1 − e^{−λt})/λ` | `gradientFlow_filter`, `gradientFlow_filter_null` | `λ ≠ 0` | |
 | eq (matching), `1.26 < 2(1 − e^{−1}) < 1.27` | `mismatch_ratio_bounds` | none | |
@@ -102,7 +103,8 @@ Mathlib's Gaussian, a Dirac mass off the positive semidefinite cone.
 2. `primer_nlo_centered` (PrimerNLO.lean): check the sign convention of the bracket against the
    note and the primer, and that `ObservableTensorApprox ψ g` with `hψ.A = B − matCLM P` is the
    centred perturbation.
-3. `gdIter_isLittleO`: the note says `O(ε²)`; the Lean says `o(ε)`. The note's text has been
-   qualified accordingly.
+3. `gdIter_isBigO_sq`: the `O(ε²)` remainder of Prop 3.1 now has a Lean statement; check that
+   the two local bounds are the hypotheses you want (they hold for a `C²` loss with Lipschitz
+   Hessian).
 4. `movingMinimizer_exists`: criticality, not minimality.
 5. `gaussianCovariance_obs_scaled_bound`: cubic polynomial observables only.
