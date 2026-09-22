@@ -32,3 +32,17 @@ differentiate an equality at `c`). C (`iteratedFDeriv`) deferred. Vote: A+B, A i
 
 `numcheck_tensor_identification.py` (`d = 3`, random `Q, c`, central differences `h = 0.01`): `F(c) = 0`, gradient `≈ 3e-5 = O(h²)`;
 `max |FD − H| = 2.7e-4` (`O(h²)`), `max |FD − rotT| = 2.7e-14`, `max |FD − rotQ| = 7.6e-12`.
+
+## Result
+
+Commit `8eb16d0` on `tide/tensor-identification`; `lake build` clean, `scripts/sorries` 0/0/0/0. A and B landed (C deferred).
+`Laplace/Multi/RotatedTaylor.lean` (     176 lines): `rotT_swap₁₂`, `rotT_swap₂₃`, `rotQ_swap₁₂`, `rotQ_swap₂₃`, `rotQ_swap₃₄`,
+`transpose_mulVec_apply`, `quadratic_form_conj`, `rotT_cubic_form`, `rotQ_quartic_form`, `affineFrame_add`, `rotatedAnharmonic_taylor`,
+`rotatedAnharmonic_center`.
+`Laplace/Multi/RotatedDerivatives.lean` (     246 lines): `partialD`, `anhD1`–`anhD4`, `hasDerivAt_anharmonic`, `hasDerivAt_anhD1/2/3`,
+`hasDerivAt_sum_affine`, `affineFrame_line`, `partialD_sum_affineFrame`, `partialD_rotatedAnharmonic`, `partialD2/3/4_rotatedAnharmonic`,
+`affineFrame_center`, `partialD_rotatedAnharmonic_center`, `partialD2/3/4_rotatedAnharmonic_center`.
+
+Surprises: `set` variables are transparent to `rw` (kabstract unfolds let-values), so `Finset.sum_mul_sum` rewrote `u p * u p` through the
+abbreviation; `clear_value` after `set` is the fix. The derivative tower goes through with one chain-rule helper and no
+`iteratedFDeriv`.
