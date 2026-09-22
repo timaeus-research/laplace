@@ -2470,3 +2470,21 @@ matrix version is `whiteningOf`.
   `rate_bounded`.
 - Entries of `Q * diagonal d * Qᵀ`: `rw [Matrix.mul_apply]` *once* (outer product), then `simp only [Matrix.mul_diagonal,
   Matrix.transpose_apply]`; a bare `simp only [Matrix.mul_apply, …]` expands the inner product first and `mul_diagonal` never fires.
+
+### E3's localised LLC (tide `localised-llc`)
+
+- The seabed's first-order weight expansion is `|φ − 1 − g x₀ x| ≤ C₁x² + C₂x⁴` (linear part of `y` only), so `x³φ − x³ − g x₀x⁴ =
+  x³(φ − 1 − g x₀ x)` exactly — no `−(g/2)x⁵` term (that appears only if one expands in `y`). Check which expansion a lemma
+  states before writing the algebraic identity.
+- Section `variable (hlam …)` + `include` attaches the hypotheses to *every* declaration mentioning `lam`, including a `rfl`
+  lemma such as `anharmonicPotential lam alpha gamma = fun x => …`; `rw` with it then spawns `0 < lam` side goals. Mark such
+  lemmas `omit hlam hgamma hdisc in`, and call omitted lemmas without those arguments.
+- `abs_of_nonneg (by positivity)` inside `rw [...]` elaborates the `positivity` goal with a metavariable target and fails; give
+  the type ascription `(by positivity : (0 : ℝ) ≤ e)`. `positivity` cannot see through `∀ i, 0 < lam i` for a summand: prove
+  `0 ≤ ∑ i, …` with `Finset.sum_nonneg fun i _ => by have := hlam i; positivity` and feed it as a hypothesis.
+- `⟨c * f⟩ = c⟨f⟩` in one dimension had no lemma: `unfold gibbsExpectation; simp only [mul_assoc]; rw [integral_const_mul,
+  mul_div_assoc]` (`gibbsExpectation_const_mul₁`).
+- Trace of `Q D₁ Qᵀ · Q D₂ Qᵀ`: `conj_mul_conj hQ, diagonal_mul_diagonal, Matrix.trace_mul_cycle, hQ, Matrix.one_mul,
+  Matrix.trace_diagonal`; `t • (Q D Qᵀ) = Q (t • D) Qᵀ` via `← Matrix.smul_mul, ← Matrix.mul_smul, ← diagonal_smul` and `rfl`.
+- `gcongr with i; exact h i` over a `Finset.sum` can hand you the positivity side goal first; `mul_le_mul_of_nonneg_left
+  (Finset.sum_le_sum fun i _ => h i) (by norm_num)` is deterministic.

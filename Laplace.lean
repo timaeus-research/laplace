@@ -360,3 +360,4 @@ import Laplace.Multi.CovKDerivative
 import Laplace.Multi.LocalisedAnharmonicMulti
 import Laplace.Multi.LocalisedAnharmonicSharp
 import Laplace.Multi.LocalisedAnharmonicCov
+import Laplace.Multi.LocalisedAnharmonicLLC
