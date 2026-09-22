@@ -2605,3 +2605,21 @@ matrix version is `whiteningOf`.
   inside `A`) and the goal drifts; use `linear_combination hc` instead, keeping any `t³M/t` as `t²M` so no division is present.
 - Two products of leading rates: `prod_rate` needs both `0 ≤ K_X`, `0 ≤ K_Y`; pass the rate constants' nonnegativity through the
   abstract assembly lemmas rather than re-deriving it from the rate (that `nlinarith` fails).
+
+### The exact identities on the localised measure (tide `localised-derivative`)
+
+- A `t`-dependent localised potential whose `t·U_t` has a `t`-independent part is a *fixed-potential* problem in disguise:
+  `⟨ψ⟩_loc(s) = ⟨ψΦ⟩_s/⟨Φ⟩_s` with `Φ = e^{−(g/2)|w − w₀|²}`, so `hasDerivAt_gibbsExpectation_of_integrable` (fixed `L`) plus
+  `HasDerivAt.div` and `HasDerivAt.congr_of_eventuallyEq (Filter.eventuallyEq_of_mem (Ioi_mem_nhds ht) …)` give the derivative;
+  no differentiation under a moving potential is needed. Pass the probe explicitly (`(ψ := fun u => ψ u * Φ u)`) or the continuity
+  argument `hψ.mul hΦc` is stored as the Pi-product `ψ * Φ` and later `ring` steps see `(ψ * Φ) u`.
+- Do not `set L := …`/`set Φ := …` in a proof that later invokes seabed lemmas mentioning `separableAnharmonic …` or
+  `localiserWeight …` explicitly: the outputs come back unabbreviated and `ring`/`field_simp` treat `L u` and `separableAnharmonic … u`
+  as different atoms. Write the names out.
+- `div_div_div_cancel_right₀ hZ0` needs `partitionFunction L t` *folded*; `unfold gibbsExpectation` only, not `partitionFunction`.
+- Goals of the form `(fun w ↦ …) w = …` produced by `integral_congr_ae (Eventually.of_forall …)` need `beta_reduce` before `rw`.
+- `rw [lemma]` with the lemma's function argument implicit rewrites the *first* matching expectation; when three localised
+  expectations need the ratio form, pass the observable each time (`hr (fun u => …)`, `hr L`, `hr ψ`).
+- The power-index normal forms must agree before `linear_combination`: rewrite `n + 1 + 1 = n + 2` (`by omega`) in the recursion
+  instance and `pow_one` in the `k = 1` instance, or `ring` sees `x ^ 1` and `x` as different atoms.
+- `Nat.add_sub_cancel` takes explicit arguments; `show n + 1 - 1 = n by omega` is simpler.
