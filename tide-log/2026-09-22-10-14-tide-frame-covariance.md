@@ -38,3 +38,18 @@ rotateT (Q₁Q₂) T` (no orthogonality), linearity, symmetry preservation if a 
 
 Adopted: matrix route throughout (the prototype already used it); `rotateT_one`, `rotateQ_one` added; composition law attempted
 if cheap; the "covariance is not a complete index test" correction goes into the note and staging text.
+
+## Result
+
+Commit `1e7515c` on `tide/frame-covariance`; `lake build` clean, `scripts/sorries` 0/0/0/0. A, B and C landed, plus the identity and
+composition laws.
+`Laplace/Multi/FrameCovariance.lean` (     348 lines): `rotateT`, `rotateQ`, `slice`, `slice2`, `frob` (+ `frob_apply`, `frob_sum_left/right`,
+`frob_smul_left/right`), `conj_apply`, `transpose_conj`, `frob_conj`, `smul_conj_inv`, `slice_rotateT`, `slice2_rotateQ`,
+`contractT_eq_frob`, `contractQ_eq_frob`, `bubble_eq_frob`, `tadpoleLine_eq_mulVec`, `thetaDiagram_eq_frob`, `figureEight_eq_frob`,
+`contractT_rotate`, `contractQ_rotate`, `bubble_rotate`, `tadpoleLine_rotate`, `oneLoopPi_rotate`, `oneLoopCov_rotate`,
+`meanShift_rotate`, `conj_SHS`, `covKFormula_rotate`, `twoLoopEnergy_rotate`, `rotateT_one`, `rotateQ_one`, `slice_ext`,
+`rotateT_rotateT`, `diagT`, `diagQ`, `rotT_eq_rotateT`, `rotQ_eq_rotateQ`.
+
+Surprises: the matrix route made the general six-index bubble *shorter* than tide 51's diagonal proof (no index reordering beyond one
+`Finset.sum_comm`); everything compiled on the second pass. Friction: `*ᵥ` precedence, `Matrix.mul_assoc` picking the wrong
+product in `rw`, and rewriting `hS` before a lemma stated in terms of the pre-rewrite form.
