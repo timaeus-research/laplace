@@ -290,6 +290,7 @@ import Laplace.Patterning.FourGonSusceptibility
 import Laplace.Patterning.FourGonSusceptibilityRadial
 import Laplace.Patterning.FourGonPatterning
 import Laplace.Patterning.HorizonSecondOrder
+import Laplace.Patterning.ScoreFunction
 import Laplace.Sampler.GaussianUniqueness
 import Laplace.Sampler.FullStep
 import Laplace.Sampler.AR1Real

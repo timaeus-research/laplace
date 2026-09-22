@@ -1,6 +1,6 @@
 # Patterning flow: statement digest for review
 
-Branch `patterning-flow` (merged to `main`), `Laplace/Patterning/` (31 files). Every claim of the working note
+Branch `patterning-flow` (merged to `main`), `Laplace/Patterning/` (33 files). Every claim of the working note
 *Patterning flow* (`learning-theory/local/directsgld/main.tex`, Overleaf `6aada9b9684134925b8ee562`)
 that carries a blue margin marker is listed here with the Lean statement it links to, the
 hypotheses that statement carries, and what is *not* covered. The purpose is a 20-minute read:
@@ -95,6 +95,14 @@ Mathlib's Gaussian, a Dirac mass off the positive semidefinite cone.
 | Prop 12.4, virial identity `E[δ·∇U] = d` | `virial_multi`, `virial_localized` (VirialMulti.lean); `radial_virial`, `gibbs_virial_one_dim`, `ulaCov_virial` | `U` differentiable (`C¹`), `e^{−U}`, `xᵢe^{−U}`, `xᵢ∂ᵢU e^{−U}` integrable | the note's locally Lipschitz hypothesis |
 | eq (virial), degree decomposition | `degree_decomposition` | algebra only: `ta + γb = d`, `K ≠ 0`, `p = a/K ≠ 0` | |
 | eq (degree_decomp), Gaussian and ULA balances | `gaussian_virial`, `ulaCov_virial` | `P` invertible; ULA denominator invertible | |
+
+## Section 16: between the direct rule and the sampler
+
+| Note | Lean | Hypotheses | Not covered |
+|---|---|---|---|
+| Prop 16.x (score-function form of the path-space response), `d/dε E_ε[φ]|₀ = E_0[φ ∑ₖ ω(sₖ)]` | `hasDerivAt_pathExpect_score` (ScoreFunction.lean) | none: an identity for the finite product law `P_ε(s) = ∏ₖ q(sₖ)(1 + εω(sₖ))` on paths `Fin T → ι` | |
+| Prop 16.x, covariance form `d/dε E_ε[φ]|₀ = ∑ᵢ ω(i) Cov_0(φ, Nᵢ)` | `score_deriv_eq_cov`, `score_deriv_eq_cov_uniform` | `∑ᵢ q(i) = 1`, `∑ᵢ q(i)ω(i) = 0` (uniform case: `∑ᵢ ω(i) = 0`, `ι` nonempty); `φ` any real function of the index path | the identification of `φ(w_T)` with a function of the path is by conditioning on the independent randomness (not modelled); the linear-regime identification `χ^path(T) = −(1/n) aᵀF_T(H) gᵢ` |
+| Prop 16.x, normalisation and `E_0[Nᵢ] = T q(i)` | `sum_pathProb_eq_pow`, `sum_pathProb_eq_one`, `baseExpect_count`, `baseExpect_indicator` | `∑ᵢ q(i) = 1` (and `∑ qω = 0` for `= 1`) | |
 
 ## What the reader should look at first
 
