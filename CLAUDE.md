@@ -2724,3 +2724,17 @@ matrix version is `whiteningOf`.
   polynomial goal whose two sides differ by signs on some monomials, the closed form (not the tactic) is wrong — recompute it.
 - A worktree created from the local `main` before that `main` was fast-forwarded lacks the previous tide's module; `lean-state` then
   reports "bad import" even after `git merge --ff-only origin/main` until `lean-state restart` (the daemon snapshot predates the file).
+
+### The localised energy's invariant correction and the LLC as a fluctuation coefficient (tide `localised-energy-invariant`)
+
+- Inside `namespace Laplace.Multi`, a bare `gibbsExpectation_add`/`gibbsExpectation_smul` resolves to the *multi-dimensional* lemma
+  even when the goal is one-dimensional ("expected `fun (w : ?ι → ℝ) ↦ …`"); the 1D API is `_root_.Laplace.gibbsExpectation_add` etc.
+- `rw [e]` with `e : rotatedAnharmonic Q c lam alpha gamma = rotated Q c (separableAnharmonic …)` rewrites *both* slots of
+  `gibbsCov … (rotatedAnharmonic …) (rotatedAnharmonic …)`, after which the transport lemma (first slot `rotatedAnharmonic`) no longer
+  matches. State the one-slot conversion as an `rfl` equation between the two `gibbsCov` terms and rewrite with that.
+- Integrability of a polynomial probe assembled from `Integrable.const_mul`/`.add`: never leave the coefficients as `_` inside a
+  `.congr (… by ring)` — the metavariables are then solved by unification with whatever `ring` finds first (here `t`). Spell them out.
+- `gibbsCov_coord_fun_separable` takes the family and the time explicitly (`(ℓ) (t) hZ i j f g`): the `section Independence` variables
+  are `(ℓ : ι → ℝ → ℝ) (t : ℝ)`.
+- `|x|⁷ ≤ (x⁶ + x⁸)/2` is `nlinarith [mul_nonneg (pow_nonneg (abs_nonneg x) 6) (sq_nonneg (|x| - 1))]` after `Even.pow_abs` for the
+  even powers; the weighted seventh-moment bound then follows the `locSixth_bound` template with the two-term majorant.
