@@ -2753,3 +2753,19 @@ matrix version is `whiteningOf`.
 - `HasDerivAt.pow` on a Gibbs expectation trips instance-path mismatches under `simpa`; state the squared function as a product and use
   `h.mul h` (as in `LocalisedCentredDerivative`).
 - `HasDerivAt.fun_sum fun i _ => …` without an ascribed statement fails to infer `f`, `f'`, `u`; write the `HasDerivAt` type out.
+
+### The second-order localised energy variance (tide `localised-energy-var-order2`)
+
+- `stein_loc_cov_reduction … n` puts the leading factor as a Nat cast `↑n / 2`; a `key` stated with the literal `(3 : ℝ) / 2` will not
+  `rw`. Add `Nat.cast_ofNat` to the `simp only` that unfolds the reduction so the cast normalises before the rewrite.
+- `λ` is a reserved token: `hλ` is not an identifier (parse error "unexpected token 'λ'; expected command"). Use `hhalf`, `hlam`, ….
+- Combining a coefficient identity `hid : … = 0` into a scaled statement: don't `field_simp` first (the residual is a polynomial
+  `linear_combination` cannot match); prove the small ratio fact `lam / 2 * (1 / lam) = 1 / 2` separately and close with
+  `linear_combination (1 / t) * hid + hhalf`.
+- Pulling a scalar out of a finite sum inside `simp only` needs both directions chosen deliberately: `← Finset.sum_div` and
+  `← Finset.mul_sum` together turn `∑ i, 2 * E i / t` into `2 * (∑ E) / t` so a closing `ring` sees one sum atom.
+- A `∑ i, (t³·aᵢ − t/2 + g/λᵢ)` bookkeeping identity: state the split `hsum1` (sum of the three pieces, `Finset.sum_const` for the
+  `t/2` part) and the coefficient split `hsum2` (via `Finset.sum_congr` and a per-term `field_simp`) as separate `have`s and rewrite
+  with both before `ring`; a single `simp only […]; ring` expands `(t λ + g)⁻²` differently on the two sides.
+- Write coordinate-rate statements with the scaling `t ^ 3 * (…)` on the left so the summed identity matches the `sum_rate_div_sq`
+  weights verbatim; `(…) * t ^ 3` forces an extra `mul_comm` pass in every consumer.

@@ -388,3 +388,4 @@ import Laplace.Multi.LocalisedDerivativeFrobenius
 import Laplace.Multi.LocalisedMeanEuclid
 import Laplace.Multi.LocalisedEnergyInvariant
 import Laplace.Multi.LocalisedEnergyCumulant3
+import Laplace.Multi.LocalisedEnergyVarOrder2
