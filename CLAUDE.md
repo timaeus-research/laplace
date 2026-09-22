@@ -2319,3 +2319,19 @@ matrix version is `whiteningOf`.
 - Positive definiteness of `Q * diagonal lam * Qᵀ`: `Matrix.PosDef.conjTranspose_mul_mul_same (PosDef.diagonal hlam) hinj` with
   `hinj : Function.Injective Qᵀ.mulVec` (from `Q * Qᵀ = 1`), then `rwa [Matrix.conjTranspose_eq_transpose_of_trivial,
   Matrix.transpose_transpose] at this`.
+
+### The temperature derivative in `d` dimensions (tide `covK-derivative-multi`)
+
+- The dominated-differentiation proof of `d/ds ∫ψe^{−sL} = −∫Lψe^{−sL}` is dimension-free: state it for `L ψ : (ι → ℝ) → ℝ`
+  continuous with `L ≥ 0`, bound `‖L ψ e^{−(t/2)L}‖` (`Integrable.norm` of the given integrability), region `Set.Ioi (t/2)`, and
+  `Integrable (ψ e^{−tL})` from `Integrable.mono' hint0.norm hmeas (Eventually.of_forall hbound)` with `hmeas` and `hbound` stated as
+  separate `have`s (inline they hit "typeclass instance problem is stuck").
+- Inside the `?_` bullets of a big `refine`/`have key := hasDerivAt_integral_of_dominated_loc_of_deriv_le …` term, give
+  `norm_nonneg (L u * ψ u)` and `norm_mul (L u * ψ u)` their arguments: bare `_` elaborates before the goal is known, and a bare
+  `rw [norm_mul, norm_mul]` splits `‖L u * ψ u‖` on one side only.
+- `gibbsExpectation_add_of_integrable` and `gibbsExpectation_const_mul` (AmbientMoments) take `L t` *explicitly*; use
+  `(L := …) (t := …)` named arguments before the `_ _ h1 h2`. `integrable_finsetSum` needs its `Finset` given (`Finset.univ`), or the
+  `congr` side goal keeps a metavariable finset.
+- `∑ i, ∑ j, f i j = ∑ p : ι × ι, f p.1 p.2` is `← Fintype.sum_prod_type'` (the primed lemma is stated left-to-right as the product
+  sum). Annotate `fun (p : ι × ι) _ => …` in `HasDerivAt.sum (u := Finset.univ)` or `p.1` fails to elaborate.
+- `integrable_exp_separableAnharmonic` already exists (AmbientMoments); grep before naming.
