@@ -2319,3 +2319,26 @@ matrix version is `whiteningOf`.
 - Positive definiteness of `Q * diagonal lam * Qᵀ`: `Matrix.PosDef.conjTranspose_mul_mul_same (PosDef.diagonal hlam) hinj` with
   `hinj : Function.Injective Qᵀ.mulVec` (from `Q * Qᵀ = 1`), then `rwa [Matrix.conjTranspose_eq_transpose_of_trivial,
   Matrix.transpose_transpose] at this`.
+
+### The localised resolvent and eq:covK with `γ` (tide `covK-derivative-loc`)
+
+- Differentiating `S(s) = (sH + γ1)⁻¹` needs no matrix norm: the resolvent identity `S(s) − S(t) = −(s − t) • (S(s) H S(t))`
+  (algebra with `Matrix.nonsing_inv_mul`/`mul_nonsing_inv`, association by `simp only [Matrix.mul_sub, Matrix.sub_mul,
+  Matrix.mul_assoc]`), continuity of `S` through `Matrix.inv_def` + `Ring.inverse_eq_inv'` with `Continuous.matrix_det`,
+  `Continuous.matrix_adjugate`, `ContinuousAt.inv₀` (`isUnit_iff_ne_zero`), eventual invertibility from `ContinuousAt.eventually_ne`,
+  and the entrywise derivative by `hasDerivAt_iff_tendsto_slope`, `slope_def_field`, `filter_upwards [self_mem_nhdsWithin,
+  nhdsWithin_le_nhds hev]`, `Tendsto.congr'` and `ContinuousAt.tendsto.mono_left nhdsWithin_le_nhds`. Entry continuity of a matrix
+  product: `((continuous_apply j).comp (continuous_apply i)).comp ((continuous_id.matrix_mul continuous_const).matrix_mul
+  continuous_const)`.
+- `HasDerivAt.sum` yields a Pi-sum of functions; fix the function with `(h.congr_of_eventuallyEq (Eventually.of_forall fun s => by
+  simp [defs, Finset.sum_apply, Pi.mul_apply]))` and the value with `.congr_deriv`. Apply `const_mul` *before* `congr_of_eventuallyEq`
+  when the target function is not syntactically a product (`b ⬝ᵥ meanShiftLoc s`), otherwise unification fails.
+- Assemble scalar derivatives with matrix-form values (`−(B * R).trace`, `b ⬝ᵥ (R *ᵥ C)`) and prove the sum identities separately
+  (`meanShift_deriv_sum`: `rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]; exact
+  Finset.sum_congr rfl fun k _ => by ring`), so the final step is `simp only [def]; ring` on atoms. Unfolding `Matrix.mul_apply`
+  globally expands the products inside the atoms on one side only.
+- `set R := … with hR` variables are *not* substituted into later-unfolded definitions; `rw [← hDv, ← hR, ← hC, ← hS]` in that order
+  (longest expressions first) or, better, avoid `set` and keep the full expressions.
+- Symmetry transport: `(locS γ H s)ᵀ = locS γ H s` from `Hᵀ = H` via `Matrix.transpose_nonsing_inv` and `congr 1; simp [locPrec,
+  Matrix.transpose_add, Matrix.transpose_smul, hH]`; `(S *ᵥ b) ⬝ᵥ v = b ⬝ᵥ (S *ᵥ v)` by `rw [dotProduct_mulVec_eq, hS]`;
+  `tr(H S B S) = tr(B S H S)` by re-associating to `(H*S)*(B*S)` and `Matrix.trace_mul_comm`.
