@@ -2653,3 +2653,17 @@ matrix version is `whiteningOf`.
   as atoms.
 - The expectation side of a second-order covariance statement is cheaper than the covariance side: `⟨uᵢuⱼ⟩_loc = ⟨uᵢ⟩_loc⟨uⱼ⟩_loc`
   exactly, so only `prod_rate` on the two leading means is needed off the diagonal.
+
+### The centred covariance's derivative on E2's localised measure (tide `localised-centred-derivative`)
+
+- The exact derivative of a *centred* frame quantity is the product rule on the raw derivative lemma
+  (`hasDerivAt_localised_frame_pow` at `m = 2` and `m = 1`): `(h2.sub (h1.mul h1)).congr_deriv (by ring)` after rewriting
+  `gibbsCov ψ ψ` to `⟨ψ²⟩ − ⟨ψ⟩²` by `funext s; unfold gibbsCov`.
+- A coefficient defined in a sibling tide file (`varLocCoeff2` in `LocalisedOrder2Multi`) is not reachable through the covK chain
+  (`LocalisedCovKOrder2Multi → … → LocalisedCovK`); "Unknown identifier" for a name that `grep` finds means a missing import,
+  not a namespace problem. Check the import chain before renaming.
+- A `have m := lemma … i 1` produces `fun w => … ^ 1`; `simp only [pow_one] at m` *before* `rw [m]`, since the goal has already lost
+  the `^ 1` (rewriting the goal with the unsimplified `m` fails with "did not find an occurrence").
+- `−∂ₜCov_loc(wⱼ, wₖ)` in physical coordinates: prove `HasDerivAt` of the frame sum with `HasDerivAt.fun_sum`, then transport with
+  `congr_of_eventuallyEq` on `Ioi_mem_nhds ht` (the covariance identity `localisedRotatedAnharmonic_cov_coord` needs `0 < s`), and
+  finish with `congr_deriv` + `Finset.sum_neg_distrib`.
