@@ -69,3 +69,16 @@ entrywise remainder gives `‖C − S‖_F² = O(t⁻⁶)`). **Next target**: th
 - Claude: A + B + C (+ the two-sided corollary), B reworded as GPT says
 - GPT-6 Astra: "**Vote: A+B+C.** Commit in that order … If proof engineering overruns, preserve A+B and defer C rather than weakening
   the quantitative statements."
+
+## Result
+
+Commit `ac4fc17` on `tide/localised-frobenius`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedFrobenius.lean` (     353 lines).
+A + B + C as voted plus the two-sided corollary; B reworded per GPT ("changing the reference covariance", not "the localiser
+drops out": `V` still depends on `g`).
+Algebra/rates: `frobenius_eq_trace`, `frobenius_conj_diagonal`, `sq_rate`, `order3_to_scaled`, `order2_to_scaled`, `ratio_rate`,
+`two_sided_of_rate`, `resolvent_sq_coord_rate`, `frobenius_conj_rate` (the generic Frobenius transport of per-coordinate rates).
+A: `localisedCov_sub_locS_entry`, `localisedCov_frobenius_locS_rate`. B: `localisedCov_sub_inv_entry`, `localisedCov_frobenius_inv_rate`.
+C: `locS_frobenius`, `locS_frobenius_rate`, `localisedCov_frobenius_relative_rate` (needs `0 < d`). D: `localisedCov_frobenius_locS_two_sided`.
+
+Surprises: the frame route makes A and B one generic transport lemma each (per-coordinate `t²(Var_loc,ᵢ − ref_i) − coeff_i = O(1/t)`
+from tide 74's 1D rates, weighted by `QⱼᵢQₖᵢ`, squared, summed over `(j, k)`), so no matrix remainder bookkeeping is needed at all.
