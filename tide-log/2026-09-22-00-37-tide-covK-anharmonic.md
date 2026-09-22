@@ -32,3 +32,15 @@ only under `c ≠ 0` (the plan's `t²Cov/covK − 1` had a stray `t²`). Vote: A
 `numcheck_covK_anharmonic.py` (`λ = 2`, `a = ½`, `B = 3`, `b = 1.5`): `t² Cov[ℓ, x²] = 0.49998 → 1/λ = 0.5`, `t² Cov[ℓ, x] = −0.17674 →
 −α/(2λ²) = −0.1768`, `t² Cov[ℓ, ψ] = 0.48486` at `t = 10⁴` against `c = 0.48483`; the four terms of eq:covK evaluate to
 `0.75, 0.265, −0.265, −0.265` with the same sum.
+
+## Result
+
+Commit `ca71300` on `tide/covK-anharmonic`; `lake build` clean, `scripts/sorries` 0/0/0/0.
+`Laplace/OneD/CovKAnharmonic.lean` (     350 lines): `tendsto_zero_of_tendsto_pow_mul`, `gibbsCov_pow_pow`, `gibbsCov_pow_id`,
+`firstMoment_tendsto_zero`, `secondMoment_tendsto_zero`, `cov_sq_sq_asymptotic`, `cov_cube_sq_asymptotic`,
+`cov_fourth_sq_asymptotic`, `cov_cube_id_asymptotic`, `cov_fourth_id_asymptotic`, `gibbsCov_anharmonic_left`,
+`covK_anharmonic_sq`, `covK_anharmonic_lin`, `covK_anharmonic`, `covKOneDim`, `covKOneDim_eq`, `covK_anharmonic_agree`,
+`covK_anharmonic_ratio`.
+
+Surprises: with the all-orders moment scaling in hand the whole covK computation is bookkeeping (six pair limits, three bilinear
+expansions); the note's four-term formula collapses in one dimension to `(B/(2λ) − bα/(2λ²))/t²` by `field_simp; ring`.
