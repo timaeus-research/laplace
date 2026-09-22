@@ -325,3 +325,11 @@ import Laplace.Sampler.FrobeniusFree
 import Laplace.Sampler.FrobeniusBridge
 import Laplace.Sampler.FrobeniusTarget
 import Laplace.Sampler.BurnInEnvelope
+import Laplace.Sampler.StepSizeTradeoff
+import Laplace.Sampler.DirectionReadings
+import Laplace.Multi.SeparableExact
+import Laplace.Multi.GibbsRotation
+import Laplace.Multi.AmbientMoments
+import Laplace.Multi.VarianceOrder2
+import Laplace.OneD.MomentsAllOrders
+import Laplace.OneD.CovKAnharmonic

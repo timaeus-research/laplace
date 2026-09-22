@@ -1876,3 +1876,162 @@ matrix version is `whiteningOf`.
   turns it into the sum over `univ.filter p`; combine with `tendsto_finsetSum` for termwise limits.
 - `HasCompactSupport fun y ↦ χ (0, y)` from `HasCompactSupport χ`: `IsCompact.of_isClosed_subset`
   of `Prod.snd '' tsupport χ` with `closure_minimal`.
+
+### Monotone bias terms and intermediate-value arguments (tide `stepsize-tradeoff`)
+
+- Monotonicity of a rational-in-`h` bias term without calculus: prove the *termwise* inequality after `div_le_div_iff₀`, splitting
+  `x ^ (2m) = x ^ (2m−1) * x` (`rw [← pow_succ, Nat.sub_add_cancel (by omega : 1 ≤ 2 * m)]`) so that `mul_le_mul` combines a power
+  inequality (`pow_le_pow_left₀`) with a linear one (`nlinarith`). Then lift to the sum with `Finset.sum_le_sum` and
+  `mul_le_mul_of_nonneg_left`.
+- `ring` treats `(p * (1 − u/2))⁻¹` as an atom and will not split it into `p⁻¹ * (1 − u/2)⁻¹`: rewrite with `← one_div_mul_one_div`
+  (`1 / a * (1 / b) = 1 / (a * b)`) first, then `simp only [Finset.mul_sum]` and per-term `ring`.
+- Sign change ⇒ zero: put the sign-carrying numerator in its own polynomial `def` (`balanceGap`), prove `Continuous` with
+  `(continuous_mul_const p).sub (continuous_const.mul (… (continuous_finsetSum _ fun k _ => by fun_prop)))`, and use
+  `intermediate_value_Ioo (hab) hf.continuousOn h0 : Ioo (f a) (f b) ⊆ f '' Ioo a b` — the membership `0 ∈ Ioo (f 0) (f b)` is two `norm_num`
+  goals after rewriting the endpoint values. Uniqueness: `StrictMonoOn.injOn` with `Set.Ioo_subset_Icc_self`. `StrictMonoOn f s` unfolds to
+  `∀ ⦃a⦄, a ∈ s → ∀ ⦃b⦄, b ∈ s → a < b → f a < f b`, so `intro h hh h' hh' hlt` is the whole setup.
+- `∃! h, h ∈ s ∧ P h ∧ Q h ∧ R h`: `refine ⟨h₀, ⟨hmem, ?_, ?_, ?_⟩, fun h ⟨hmem', hz', _, _⟩ => ?_⟩`.
+- Endpoint values of the zero-start factor: at `h = 0`, `simp [zeroStartFactor, hN']` with `hN' : (N:ℝ) ≠ 0` (the sum of `1` over
+  `range N` is `N`); at `h = 1/p`, `simp only [zeroStartFactor, one_div_mul_cancel hp.ne', sub_self]` then
+  `Finset.sum_eq_zero fun k _ => zero_pow (by omega)`.
+- Sign transfer through a positive denominator: `div_neg_of_neg_of_pos`, `div_pos`, and `div_eq_zero_iff` (then discharge the
+  denominator case with `absurd … (mul_pos …).ne'`).
+- Deprecations in this Mathlib: `continuous_mul_right → continuous_mul_const`, `continuous_finset_sum → continuous_finsetSum`.
+- The unused-variable linter fires on hypotheses that `linarith`/`nlinarith` did not need (`0 ≤ h` when `h ≤ h'` and `0 ≤ h'` suffice);
+  drop them from the statement rather than underscore them.
+
+### Eigenvector quadratic forms and single-direction perturbations (tide `direction-readings`)
+
+- `Π` is a reserved token (dependent-function binder); never name a matrix `Π`. Use `M`.
+- Eigenvector algebra with `mulVec`: `P⁻¹ *ᵥ s = p⁻¹ • s` from `P *ᵥ s = p • s` via
+  `calc P⁻¹ *ᵥ s = p⁻¹ • (P⁻¹ *ᵥ (P *ᵥ s))` (`rw [hs, Matrix.mulVec_smul, smul_smul, inv_mul_cancel₀ hp, one_smul]`) and
+  `Matrix.mulVec_mulVec, Matrix.nonsing_inv_mul P (isUnit_iff_ne_zero.mpr hP.det_pos.ne'), Matrix.one_mulVec`. The row version
+  `s ᵥ* P⁻¹` is `← Matrix.mulVec_transpose, Matrix.transpose_nonsing_inv, hPt`.
+- `Matrix.dotProduct_mulVec : v ⬝ᵥ A *ᵥ w = v ᵥ* A ⬝ᵥ w` rewrites the *first* `⬝ᵥ … *ᵥ` it meets, which may be on the other side of the
+  equation; isolate the intended instance in a `have h3 : s ⬝ᵥ (P⁻¹ *ᵥ (M *ᵥ s)) = …` and rewrite with `h3`.
+- Expanding `(A + B * M * C) *ᵥ s`: `Matrix.add_mulVec, dotProduct_add, ← Matrix.mulVec_mulVec` (twice), then `Matrix.mulVec_smul`,
+  `dotProduct_smul`, `smul_eq_mul`, and `ring` handles `p⁻¹ * (p⁻¹ * x) = x / p ^ 2`.
+- A unit column of `orthoOf`: `(orthoCol hQ i).ofLp ⬝ᵥ (orthoCol hQ i).ofLp = 1` is the `(i, i)` entry of `orthoOf_transpose_mul`:
+  `congrFun (congrFun … i) i`, `rw [Matrix.mul_apply, Matrix.one_apply_eq] at h`, `simpa [orthoCol, dotProduct, transpose_apply] using h`.
+- `tr(P U D Uᵀ) = ∑ pᵢ dᵢ`: `rw [← Matrix.mul_assoc, ← Matrix.mul_assoc, Matrix.trace_mul_cycle, ← Matrix.mul_assoc,
+  orthoOf_transpose_mul_mul hP.1, diagonal_mul_diagonal, trace_diagonal]`.
+- `Pi.single i₀ a i` needs its codomain: write `(Pi.single i₀ a : ι → ℝ) i` in statements (needs `[DecidableEq ι]`); sums over it
+  collapse with `Finset.sum_eq_single i₀ (fun j _ hj => by simp [hj]) (by simp)` then `simp`.
+- `Finset.single_le_sum (f := fun i => …) (fun i _ => by positivity) (Finset.mem_univ i₀)` for `f i₀ ≤ ∑ f`;
+  `Finset.sum_mul_sq_le_sq_mul_sq _ _ _` is Cauchy–Schwarz `(∑ f g)² ≤ (∑ f²)(∑ g²)`; `Finset.sum_sq_le_sq_sum_of_nonneg` gives
+  `∑ f² ≤ (∑ f)²` for nonnegative `f`.
+- `positivity` cannot use `pmin ≤ p i` to see `0 < p i`; give `(one_div_pos.mpr (lt_of_lt_of_le hpmin (hmin i))).le` explicitly.
+- `field_simp` closed every ratio identity of this file on its own (`(½ (p a))/(d/2) = a p / d`, `a²/(1/pmin)² = (a pmin)²`); a trailing `ring`
+  errors with "No goals".
+
+### Separable Gibbs measures and moment-route limits (tide `separable-exact`)
+
+- `integral_fintype_prod_volume_eq_prod (f := fun i x => …)` (`∫ ∏ᵢ fᵢ(wᵢ) = ∏ᵢ ∫ fᵢ`) has no integrability hypothesis, so the
+  factorisation of the Gibbs expectation of a product observable, `(∏ Nᵢ)/(∏ Zᵢ) = ∏ (Nᵢ/Zᵢ)` (`Finset.prod_div_distrib`), holds with no
+  hypotheses at all; only the *coordinate* reduction `⟨φ(wᵢ₀)⟩ = ⟨φ⟩_{ℓᵢ₀}` needs `Zᵢ ≠ 0` for the spectators (`div_self`). Derive coordinate
+  and pair statements from the product one with `fun i x => if i = i₀ then φ x else 1` (`Finset.prod_ite_eq'` on the observable side,
+  `Finset.prod_eq_single` on the expectation side) and `if k = i ∨ k = j then x else 1` with `Finset.prod_eq_mul i j hij`.
+- An `if` used only inside a proof still needs `Decidable`: start the proof with `classical` rather than adding `[DecidableEq ι]` to the
+  statement (the linter flags the unused instance). Theorems whose *statement* has `if i = j` keep `[DecidableEq ι]` explicitly.
+- `Integrable.congr`/`integral_congr_ae` goals against `h.add h'` are stated with Pi addition `(f + g) x`; add `Pi.add_apply` to the
+  `simp only` before `ring`. For `← integral_add` the integrability witnesses must be `have`s with explicit lambda types, otherwise the
+  `(f + g) a` pattern does not match the beta-reduced integrand. Cleanest: prove the numerator identity `∫ ℓ e = ∫ (c₂ x²e + c₃ x³e) + c₄ x⁴e`
+  by `integral_congr_ae` + `ring`, then `rw [hnum, integral_add h23 …, integral_add …, integral_const_mul ×3]` forwards and finish with `ring`.
+- `0 < ∫ exp(−tℓ)`: `MeasureTheory.integral_exp_pos (hf : Integrable (fun x => rexp (f x)))` after `unfold partitionFunction`.
+- `xᵐ e^{−tℓ}` integrable from `|x|ᵐ e^{−tℓ}` (`integrable_abs_pow_mul_exp_neg_t_anharmonic`) via `.mono'` with continuity
+  (`unfold anharmonicPotential; fun_prop`) and `rw [norm_mul, norm_pow, Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]`.
+- Limits: `t²f → c ⇒ tf → 0` is `tendsto_inv_atTop_zero.mul h` then `congr'` with `field_simp` (needs `t ≠ 0` in context). From an explicit rate
+  `|t²M − c − C/t| ≤ K/(t√t)` to `t²M → c`: `tendsto_iff_norm_sub_tendsto_zero`, `squeeze_zero' (Eventually.of_forall fun t => norm_nonneg _)`
+  (not `squeeze_zero_norm'`, which double-wraps the norm), bound `(|C| + K)/t` via `tendsto_const_nhds.div_atTop tendsto_id`,
+  `abs_sub_abs_le_abs_sub`, `Real.one_le_sqrt`, `le_mul_of_one_le_right`.
+- `Integrable.fintype_prod (f := fun j x => …) hf` gives integrability of `∏ⱼ fⱼ(wⱼ)` on `ι → ℝ`; pick `fⱼ = (if j = i then ℓⱼ else 1) · e^{−tℓⱼ}`
+  to cover one coordinate energy times the whole Boltzmann factor.
+- `field_simp` closed the ratio identities of this file except one with literal zeros (`lam/2 * (1/lam) + α/6 * 0 + … = 1/2`), which needed a
+  trailing `ring`; check each.
+
+### Frame changes of Gibbs measures (tide `gibbs-rotation`)
+
+- `(1 : Matrix ι ι ℝ)` needs `[DecidableEq ι]`; a section whose statements contain `Qᵀ * Q = 1` must carry it in `variable`, and the lemmas
+  that don't mention `1` (`affineFrame_apply`, continuity facts) take `omit [DecidableEq ι] in`.
+- `|det Q| = 1` from `Qᵀ Q = 1`: `congrArg Matrix.det hQ`, `rwa [Matrix.det_mul, Matrix.det_transpose, Matrix.det_one] at this` gives
+  `det * det = 1`; then `rw [← Real.sqrt_sq_eq_abs, sq, h, Real.sqrt_one]`.
+- Change of variables for `w ↦ Qᵀ(w − c)`: `integral_sub_right_eq_self (fun w => g (Qᵀ *ᵥ w)) c` (Lebesgue on `ι → ℝ` is add-right-invariant,
+  instance found automatically) then `integral_comp_mulVec Qᵀ hdet g hg : ∫ g = |Qᵀ.det| * ∫ g (Qᵀ *ᵥ v)` — rewriting with it replaces the
+  *right-hand* `∫ g` of the goal, after which `det_transpose, abs_det_of_orthogonal, one_mul` close it.
+- Frame-independence of `gibbsExpectation`/`gibbsCov`: the identities are between totalised integrals, so only `AEStronglyMeasurable` of the
+  weighted integrands is needed (`(by fun_prop : Continuous fun u => φ u * Real.exp (-(t * L u))).aestronglyMeasurable` in the continuity
+  wrappers). Coordinate observables are `continuous_apply i`.
+- `Filter.Tendsto.congr' … (Eventually.of_forall fun t => ?_)` leaves the goal with an unreduced `(fun t => …) t`; `rw` cannot see through it,
+  `simp only [h]` beta-reduces first and closes the goal.
+- A def built from a `noncomputable` def (`rotatedAnharmonic := rotated Q c (separableAnharmonic …)`) must itself be `noncomputable def`.
+- `simp only [separableAnharmonic, separablePotential]` flags `separablePotential` unused when the occurrence is unapplied
+  (`Continuous (separablePotential ℓ)`); `continuous_finsetSum _ fun i _ => ?_` unifies through the definition anyway.
+
+### Bilinearity of Gibbs moments and ambient coordinates (tide `ambient-moments`)
+
+- `Integrable.add` and `Integrable.const_mul` state their conclusions with Pi arithmetic (`(f + g) w`, `fun x => c * f x`); a `.congr
+  (Eventually.of_forall fun w => by simp only [Pi.add_apply]; ring)` brings them to the shape a later lemma expects. Always state the
+  intermediate integrability facts as `have h : Integrable (fun w => <exact shape>) := …congr …` — an anonymous `.congr` inside a bigger term
+  leaves its target as an unresolved metavariable (`?m j i w`).
+- `integrable_finsetSum _ fun i _ => …` does not infer the `Finset`; write `integrable_finsetSum Finset.univ fun i _ => …`.
+- Products of sums: `simp only [Finset.sum_mul, Finset.mul_sum]` normalises `(∑ f)(∑ g) e` to `∑ ∑ f g e` but may leave the two summation
+  orders swapped; finish with `exact Finset.sum_comm`.
+- `Q * Qᵀ = 1` from `Qᵀ * Q = 1`: the generic `mul_eq_one_comm.mp hQ` (Dedekind-finite monoid instance for matrices); there is no
+  `Matrix.mul_eq_one_comm` in this Mathlib.
+- A `rw` with a bilinear covariance lemma whose observables were left as `_` picks them up from the *first* integrability argument; if the goal
+  has `Cov[a + φ, b + ψ]` and the lemma was instantiated with `ψ` from `hψ : Integrable (ψ e)`, the pattern will not be found. State both
+  observables, or use a two-sided lemma (`gibbsCov_const_add_both`).
+- The `Fintype` sum `∑ k, u k ^ (Pi.single i 1 : ι → ℕ) k = u i` is `Finset.prod_eq_single i (fun k _ hk => by simp [hk]) (by simp)` then
+  `simp`; `Pi.single i 1 + Pi.single j 1` covers `u i * u j` including `i = j` (`Pi.add_apply, pow_add, Finset.prod_mul_distrib`). Under a
+  `.congr` the goal is a beta-redex: `change (∏ k, u k ^ (Pi.single i 1 + Pi.single j 1 : ι → ℕ) k) * _ = _` before `rw`.
+- `show` that changes the goal is linted; use `change`.
+- Lemmas from another namespace (`Laplace.Sampler.sum_sq_conj`, `sum_sq_diagonal`) need the full name inside `Laplace.Multi`.
+- `field_simp` closed the final Frobenius ratio identity and the per-term `hnum`/`hden` identities on its own; the trailing `ring`s errored.
+### Combining explicit rate bounds (tide `var-order2-rate`)
+
+- Rates of the form `∃ K T, 0 ≤ K ∧ 1 ≤ T ∧ ∀ {t}, T ≤ t → |…| ≤ K/(t√t)` combine with `refine ⟨K₂ + …, max T₁ T₂, by positivity,
+  le_max_of_le_left hT₁, fun {t} ht => ?_⟩`; recover `1 ≤ t` via `hT₁.trans ((le_max_left _ _).trans ht)` and the two component bounds via
+  `h₂ ((le_max_right _ _).trans ht)`.
+- A difference of products against a square of a rate: `(tM)² − m₀² = (tM − m₀)(tM + m₀)`, `|tM + m₀| ≤ |tM − m₀| + 2|m₀|` (write
+  `tM + m₀ = (tM − m₀) + 2m₀` with `ring_nf` inside the `calc`, then `abs_add_le`, `abs_mul`, `abs_two`), and `K₁/t ≤ K₁` from `div_le_self`.
+  Downgrade `1/t²` to `1/(t√t)` with `div_le_div_of_nonneg_left … (mul_le_mul_of_nonneg_left hst htpos.le)` where `hst : √t ≤ t` comes from
+  `Real.sqrt_le_sqrt (by nlinarith)` and `Real.sqrt_sq`.
+- To eliminate `Real.sqrt lam` from a coefficient identity: `set s := Real.sqrt lam with hsdef; clear_value s; subst hs` with
+  `hs : s ^ 2 = lam` (after `Real.sq_sqrt`), then `field_simp; ring` in the variable `s`.
+- `div_div : a / b / c = a / (b * c)` aligns `C/t` with a bound stated as `…/(lam * t)`.
+- `Matrix` transpose notation `ᵀ` is scoped: a file that states `Qᵀ * Q = 1` must `open Matrix`; otherwise "unexpected token 'ᵀ'".
+- `abs_sub (a b) : |a − b| ≤ |a| + |b|` (the triangle inequality for a difference) — note the name.
+
+### Dominated convergence for the rescaled moment integrals (tide `moments-all-orders`)
+
+- `tendsto_integral_filter_of_dominated_convergence (bound) hF_meas h_bound bound_integrable h_lim` on `atTop : Filter ℝ` works with
+  `filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht` for the two eventual hypotheses; the bound is `|u| ^ n * exp (-(c₀ * u ^ 2))`
+  from `rescaled_boltzmann_decay` (the seabed's `t`-uniform Gaussian domination of the *whole* Boltzmann factor) and
+  `integrable_abs_pow_mul_exp_neg_mul_sq`. Measurability: `Continuous.aestronglyMeasurable` after `unfold rescaledPerturbation cubicScale
+  quarticScale; fun_prop` with `0 < Real.sqrt t` in context.
+- Pointwise limits through `exp`: `Filter.Tendsto.neg` produces `𝓝 (-0)`; `rw [neg_zero] at h0` *before* composing with
+  `Real.continuous_exp.tendsto 0`, then `rw [Real.exp_zero]`.
+- `Real.tendsto_sqrt_atTop` exists; `tendsto_const_nhds.div_atTop` gives `c/√t → 0` and `c/t → 0`; `Tendsto.const_mul_atTop hr` scales a
+  divergent function.
+- `√(λt)^n ⟨xⁿ⟩ = J_n/J_0`: unfold `gibbsExpectation partitionFunction J_n`, `simp only [pow_zero, one_mul, zero_add, pow_one] at h0 ⊢`
+  (to match `I_n_J_n_relation` at `n = 0`), then `rw [← hn, ← h0, pow_succ]; field_simp` with `Z ≠ 0` (`integral_exp_pos`) and
+  `√(λt) ≠ 0` in context.
+- `Nat.doubleFactorial` numerals: `norm_num [Nat.doubleFactorial] at h` evaluates `(2 * 3 - 1)‼` to `15`.
+- `Filter.Tendsto.div hf hg (hb : b ≠ 0)` produces a Pi-division function; `congr'` against `fun t => f t / g t` is accepted by defeq.
+
+### Covariances of monomials and the one-dimensional covK (tide `covK-anharmonic`)
+
+- `Tendsto.congr' (Eventually.of_forall fun t => ?_)` leaves `(fun t => …) t` beta-redexes on the right; `rw` cannot instantiate a
+  metavariable with the bound `t`, so rewrite with `simp only [lemma, show (2 + 2 : ℕ) = 4 from rfl]` and finish with `ring`. The same
+  applies to pointwise goals under `Integrable.congr`: `simp only [pow_add]`, `simp only [pow_one]; ring`, not `rw`.
+- `gibbsCov L t (fun x => x ^ m) (fun x => x ^ n) = ⟨x^(m+n)⟩ − ⟨x^m⟩⟨x^n⟩`: `unfold gibbsCov; rw [funext-identity for x^m * x^n]`; the
+  literal `m + n` must then be normalised (`show (3 + 2 : ℕ) = 5 from rfl`) before `ring` can match `⟨x^5⟩` from the moment lemmas.
+- Products of moments: `t²⟨x³⟩⟨x²⟩ = (t²⟨x³⟩)·⟨x²⟩` with `⟨x²⟩ → 0` from `t⟨x²⟩ → 1/λ` via `tendsto_zero_of_tendsto_pow_mul`; the pair
+  `(3, 1)` has total degree four and needs the refined `t²⟨x³⟩ → −5α/(2λ³)`, not a degree count.
+- The 1D bilinearity lemmas (`Laplace.gibbsCov_add_left/right`, `gibbsCov_smul_left/right`) want integrability in exactly the shapes
+  `φ e`, `φ ψ e` (left) / `ψ e`, `φ ψ e` (right); build them from `Laplace.Multi.integrable_pow_mul_exp_neg_t_anharmonic k` with
+  `.const_mul` and `.congr (… by ring)`. To expand the energy observable use
+  `have e1 : (fun x => L x) = fun x => (a x² + b x³) + c x⁴ := by funext x; simp only [hL, anharmonicPotential]` (already closed, no
+  `ring`) and `calc … := by rw [← e1]` — eta unifies `fun x => L x` with `L`.
+- `field_simp` sometimes leaves a goal with literal zeros (`(6 + lam*alpha*0)*24 + … = 6*24`) that needs `ring`, and sometimes closes the
+  goal (then `ring` errors "no goals"); check each occurrence.
