@@ -282,3 +282,66 @@ The note's exclusion argument for `x⁴ + u²x²` (no relative Watanabe modifica
 mode" a theorem rather than an observation about one chart choice. The consumer does not have the
 bridge from a chart decomposition to `t·E[L] → λ`; the limits `1/4` and `1/2` in
 `Laplace/Multi/ToyCrossover.lean` are proved directly.
+
+---
+
+## The record landed (2026-09-22): verification and bridge plan
+
+**Producer.** `timaeus-research/hironaka` main `a8897879f` (Extension A). Statements of record in
+`Statements/Record/RelativeChartForm.lean` (`Statements.exists_relativeWatanabeModificationOn_generic`,
+`…_generic_of_zero_at_origin`) and `Statements/Record/RelativeChartFormLocal.lean`
+(`Statements.exists_relativeWatanabeModificationOn_of_equiresoluble`); vocabulary in
+`Monomialize/Relative/Vocabulary.lean` (`IsRelativeWatanabeChart`, `RelativeWatanabeChartAt`,
+`RelativeWatanabeModificationOn`, product typing, closed box `centeredBox d ρ ×ˢ closedBall s_P σ`,
+`a > 0`, `b ≠ 0`, `relJacobian` = det of the `u`-block). Fibre specialisation in
+`Monomialize/Relative/Fibre/*` (`fibreAnalyticManifold`, `fibreBlowDown` proper/surjective/iso off
+the zero set, `watanabeChartAt_fibreBlowDown`, `slice_phase`/`slice_jacobian` with the same `(k, h)`,
+`volume_fibre_zeroSet_eq_zero`).
+
+**Audit (this session, worktree `lean/hironaka-upstream` at `a8897879f`).** `lake build` of
+`Proofs.Record.RelativeChartForm` and `Proofs.Record.RelativeChartFormLocal`: 9769 jobs, clean.
+`#print axioms`: `Proofs.Record.RelativeChartForm.exists_relativeWatanabeModificationOn_generic`,
+`…_generic_of_zero_at_origin`, and `Monomialize.Relative.exists_relativeWatanabeModificationOn_of_equiresoluble`
+(the local twin is a `hironaka_type_eq` check against it) each depend only on
+`propext, Classical.choice, Quot.sound`. The single textual "sorry" under `Monomialize/Relative/` is a
+word in a docstring (`TotalSpace/ApplyCertified.lean:22`).
+
+**How hironaka is consumed today.** Not by a change of variables in the Laplace integral. greybook
+(`Extras/Germbij/AnalyticLaplace.lean`) goes modification → `LogResolutionData` (finite chart family,
+`Monomialize/VolumeScaling/Interface.lean`) → `Monomialize.Analytic.hasLLCExponentsOn_closedBall
+(D) : HasLLCExponentsOn volume (closedBall w r) f D.combLam D.combTheta` (sublevel-volume Θ-form;
+`combLam = inf_α (chart α).lam`, `combTheta = sup over minimisers of (chart α).theta`) → Θ-form
+Abelian transfer to `Z(t) = Θ(t^{-λ} log^{θ-1} t)`. The readout IS data-preserving, so the exponent
+pair of a sliced relative family is a function of the frozen `(k, h)`.
+
+**Correction to the consumer goals (Astra, `gpt_responses/research_relative_bridge_v1.md`).** Local
+constancy of `(λ, θ)` on `S'` is FALSE for an arbitrary compactly supported prior: `f(x, s) = (x − s)²`
+with prior `x² η(x)` has `Z_0 ~ t^{-3/2}`, `Z_s ~ s² t^{-1/2}` although the identity is a relative
+modification with `(k, h) = (1, 0)` on all of `S`. The prior must be positive at every zero in its
+support at the reference parameter (the amplitude-vanishing failure mode of germbij_slop S8), and the
+statement is local in `s`. Coefficient differentiability additionally needs a smooth prior
+(`1 + |x|` gives `C(s) = √π (1 + |s|)`).
+
+**Bridge plan (route R1 first, then R2 in `d = p = 1`), home: greybook `Extras/Germbij`, hironaka pin → `a8897879f`.**
+
+First bridge theorem (weighted local Θ, `d = p = 1`): for `M : RelativeWatanabeModificationOn f V S'`,
+`f ≥ 0` on `V × S'`, a continuous compactly supported prior `φ ≥ 0` with `tsupport φ ⊆ V`, a reference
+`s₀ ∈ S'` with at least one zero of `f(·, s₀)` in `tsupport φ` and `φ > 0` at every such zero: there
+are `λ : ℚ`, `0 < λ`, and an open `T ∋ s₀`, `T ⊆ S'`, with
+`HasLLCExponentsOn (volume.withDensity (ofReal ∘ φ)) V (fun x ↦ |f x s|) λ 1` for all `s ∈ T`; Abelian
+corollary: a common `HasLaplaceTheta (λ, 1)` on `T`. Sub-lemmas:
+1. `exists_uniform_relativeChartCover_near` — from properness: a parameter neighbourhood `T` of `s₀`
+   and finitely many relative charts at points of the fibre over `s₀`, with shrunken boxes, covering
+   the lifted zeros over `tsupport φ × T`; fixed `(k i, h i)`.
+2. `relativeChartCover.slice_logResolutionData` — for each `s ∈ T`, a `LogResolutionData` for
+   `f(·, s)` from the slices (`slice_phase`, `slice_jacobian`, `volume_fibre_zeroSet_eq_zero`).
+3. `combLam_slice_eq`, `combTheta_slice_eq` — the pair depends only on `(k, h)`, hence is constant on `T`.
+4. `hasLLCExponentsOn_closedBall` (exists) → weighted compact version: finite-cover gluing, comparison
+   with a prior bounded above and below near the zeros, removal of the region `f ≥ δ`.
+5. Assembly and the Laplace Θ corollary.
+Estimated 1,000–2,500 lines. R2 (chartwise change of variables in `d = 1`, giving a
+`RelativeChartDecomposition` and hence coefficients and expectations via laplace's
+`RelativeChartFamily`) is a subsequent several-thousand-line campaign; it needs a parameter-dependent
+cutoff in the decomposition interface (partition weights `ψ_i(u, s)`) and a derivative bound on the
+remainder, not just the remainder bound. General `d` needs a multi-active monomial leading theorem
+(log factors from tied exponents), a separate campaign.
