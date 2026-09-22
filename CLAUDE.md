@@ -2319,3 +2319,11 @@ matrix version is `whiteningOf`.
 - Positive definiteness of `Q * diagonal lam * Qᵀ`: `Matrix.PosDef.conjTranspose_mul_mul_same (PosDef.diagonal hlam) hinj` with
   `hinj : Function.Injective Qᵀ.mulVec` (from `Q * Qᵀ = 1`), then `rwa [Matrix.conjTranspose_eq_transpose_of_trivial,
   Matrix.transpose_transpose] at this`.
+
+### E1/E5 numbers (tide `e1-numbers`)
+
+- Numerical corollaries with decimal literals (`1.5`, `1.9`) are `norm_num` one-liners; interval bounds like
+  `|½(4/3 + 1/(1 − 1/(4κ))) − 7/6| ≤ 10⁻⁴` for `κ ≥ 2500` go through `div_le_div_iff₀`/`le_div_iff₀` for the two bounds on the
+  flat factor and `abs_le` + `nlinarith` (with the bounds as hypotheses).
+- `ula_llc` with `Fin 2` eigenvalues given by `hp0 : eigenvalues 0 = p`, `hp1 : eigenvalues 1 = p/κ`: discharge the `∀ i, h * pᵢ < 2`
+  side condition by `fin_cases i <;> simp [hp0, hp1, hhp, hhpκ]` and expand with `Fin.sum_univ_two`.
