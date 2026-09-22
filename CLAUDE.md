@@ -1981,3 +1981,20 @@ matrix version is `whiteningOf`.
 - `div_div : a / b / c = a / (b * c)` aligns `C/t` with a bound stated as `…/(lam * t)`.
 - `Matrix` transpose notation `ᵀ` is scoped: a file that states `Qᵀ * Q = 1` must `open Matrix`; otherwise "unexpected token 'ᵀ'".
 - `abs_sub (a b) : |a − b| ≤ |a| + |b|` (the triangle inequality for a difference) — note the name.
+
+### Dominated convergence for the rescaled moment integrals (tide `moments-all-orders`)
+
+- `tendsto_integral_filter_of_dominated_convergence (bound) hF_meas h_bound bound_integrable h_lim` on `atTop : Filter ℝ` works with
+  `filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht` for the two eventual hypotheses; the bound is `|u| ^ n * exp (-(c₀ * u ^ 2))`
+  from `rescaled_boltzmann_decay` (the seabed's `t`-uniform Gaussian domination of the *whole* Boltzmann factor) and
+  `integrable_abs_pow_mul_exp_neg_mul_sq`. Measurability: `Continuous.aestronglyMeasurable` after `unfold rescaledPerturbation cubicScale
+  quarticScale; fun_prop` with `0 < Real.sqrt t` in context.
+- Pointwise limits through `exp`: `Filter.Tendsto.neg` produces `𝓝 (-0)`; `rw [neg_zero] at h0` *before* composing with
+  `Real.continuous_exp.tendsto 0`, then `rw [Real.exp_zero]`.
+- `Real.tendsto_sqrt_atTop` exists; `tendsto_const_nhds.div_atTop` gives `c/√t → 0` and `c/t → 0`; `Tendsto.const_mul_atTop hr` scales a
+  divergent function.
+- `√(λt)^n ⟨xⁿ⟩ = J_n/J_0`: unfold `gibbsExpectation partitionFunction J_n`, `simp only [pow_zero, one_mul, zero_add, pow_one] at h0 ⊢`
+  (to match `I_n_J_n_relation` at `n = 0`), then `rw [← hn, ← h0, pow_succ]; field_simp` with `Z ≠ 0` (`integral_exp_pos`) and
+  `√(λt) ≠ 0` in context.
+- `Nat.doubleFactorial` numerals: `norm_num [Nat.doubleFactorial] at h` evaluates `(2 * 3 - 1)‼` to `15`.
+- `Filter.Tendsto.div hf hg (hb : b ≠ 0)` produces a Pi-division function; `congr'` against `fun t => f t / g t` is accepted by defeq.
