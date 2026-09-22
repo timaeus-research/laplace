@@ -2667,3 +2667,20 @@ matrix version is `whiteningOf`.
 - `−∂ₜCov_loc(wⱼ, wₖ)` in physical coordinates: prove `HasDerivAt` of the frame sum with `HasDerivAt.fun_sum`, then transport with
   `congr_of_eventuallyEq` on `Ioi_mem_nhds ht` (the covariance identity `localisedRotatedAnharmonic_cov_coord` needs `0 < s`), and
   finish with `congr_deriv` + `Finset.sum_neg_distrib`.
+
+### The invariant centred quadratic probe (tide `localised-trace-probe`)
+
+- `Integrable.add`/`.sub` produce the Pi-operations `f + g`, `f - g` as functions; a `.congr (Eventually.of_forall fun u => by ring)`
+  then faces `(f + g) u = …` and `ring` fails. `simp only [Pi.add_apply, Pi.sub_apply]; ring` — listing only the operations actually
+  present, or the unused-simp-argument linter fires.
+- Never pass `_` for the frame anchor `u₀` of the `locFamily` integrability lemmas inside a `.congr (… by simp)`: the anchor stays a
+  metavariable while `simp` runs and the goal degenerates to `… = separableAnharmonic ?m u ∨ t = 0`. Pin `(affineFrame Q c w₀)`.
+- Same failure for `integrable_locFamily_of_integrable … (ψ := fun _ => 1) (h.congr (by simp))`: state `hexp0 : Integrable (fun u =>
+  1 * exp …)` as its own `have` first, then apply the transport lemma to it.
+- Trace algebra: `tr(B (Q diag(a) Qᵀ)) = ∑ᵢ (QᵀBQ)ᵢᵢ aᵢ` is `Matrix.trace_mul_comm, mul_assoc, trace_mul_comm, ← mul_assoc` then
+  `simp only [Matrix.trace, Matrix.diag, Matrix.mul_diagonal]` — no nested `Finset.sum_comm`. The quadratic-form conjugation
+  `∑ⱼₖ Bⱼₖ(Qy)ⱼ(Qy)ₖ = ∑ᵢᵢ' (QᵀBQ)ᵢᵢ' yᵢyᵢ'` is `Matrix.mulVec_mulVec, dotProduct_mulVec, ← vecMul_transpose Q y, vecMul_vecMul,
+  ← dotProduct_mulVec, mul_assoc` after turning both double sums into `x ⬝ᵥ (M *ᵥ x)`.
+- The frame family's partition function is nonzero via `partitionFunction_separable` + `Finset.prod_ne_zero_iff` +
+  `partitionFunction_locFamily_ne` (the latter is the 1D factor, not the product).
+- `conj_diagonal_apply` already exists (`OneLoopRotated`, summand order `s p * Q i p * Q j p`); a new entrywise lemma needs another name.

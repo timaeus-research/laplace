@@ -379,3 +379,4 @@ import Laplace.Multi.LocalisedDerivative
 import Laplace.Multi.LocalisedCovKOrder2
 import Laplace.Multi.LocalisedCovKOrder2Multi
 import Laplace.Multi.LocalisedCentredDerivative
+import Laplace.Multi.LocalisedTraceProbe
