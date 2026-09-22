@@ -369,3 +369,4 @@ import Laplace.Multi.GibbsIBP
 import Laplace.Multi.CovKOrder2
 import Laplace.Multi.LocalisedMeanCoeff
 import Laplace.Multi.LocalisedLLCCoeff
+import Laplace.Multi.LocalisedOrder2Multi
