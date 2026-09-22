@@ -342,3 +342,5 @@ import Laplace.Multi.VarianceOrder3
 import Laplace.Multi.OneLoopRotated
 import Laplace.Multi.E2Matrix
 import Laplace.OneD.MomentsSharp
+import Laplace.OneD.CovKRate
+import Laplace.Multi.CovKRateSeparable

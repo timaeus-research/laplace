@@ -34,7 +34,7 @@ C_k/(λ^k t))` for `k = 1..3` converges to `−0.199, −1.60, −13.2`; `C₁ =
 
 ## Result
 
-Commit `b2fd05c` on `tide/moments-sharp`; `lake build` clean, `scripts/sorries` 0/0/0/0. A and B landed, plus the even  corollary.
+Commit `b2fd05c` on `tide/moments-sharp`; `lake build` clean, `scripts/sorries` 0/0/0/0. A and B landed, plus the even `O(1/t)` corollary.
 `Laplace/OneD/MomentsSharp.lean` (     310 lines): `gaussian_even_moment`, `gaussian_moment_shift`, `evenMomentCoeff`,
 `evenMomentCoeff_one`, `evenMomentCoeff_two`, `J_even_delta`, `evenMoment_anharmonic_order2_rate`, `evenMoment_anharmonic_rate`,
 `J_odd_delta`, `oddMoment_anharmonic_rate`, `oddMoment_anharmonic_asymptotic`.

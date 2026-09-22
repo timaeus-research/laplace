@@ -2185,3 +2185,25 @@ matrix version is `whiteningOf`.
   tendsto_const_nhds.div_atTop tendsto_id` first, then `squeeze_zero' (Eventually.of_forall fun t => norm_nonneg _) ?_ hK0` after
   `rw [tendsto_iff_norm_sub_tendsto_zero]`.
 - `field_simp` closes some `√t`-cancellation goals and leaves others (`(√t J + …) * t * 6 = …`) for `ring`; check each.
+
+### eq:covK with a rate (tide `covK-rate`)
+
+- Rates compose pointwise: `rate_mul` (`|XY − ab| ≤ (K|b| + K'|a| + KK')/t` from `XY − ab = (X−a)b + a(Y−b) + (X−a)(Y−b)` and
+  `t⁻² ≤ t⁻¹`), `rate_bounded` (`|X| ≤ |a| + K`), `bounded_div`. Package all normalised moments once with a *common* threshold
+  (`Z_rates`: `T := T₁ + … + T₆`, each `Tᵢ ≤ t` by `linarith`) and then the six pair covariances (`pair_cov_rates`); downstream theorems
+  destructure the package instead of juggling six thresholds.
+- `simpa [Nat.doubleFactorial] using h` converts the general-`k` moment theorems at literal `k` (`t ^ 1 → t`, `x ^ (2 * 1) → x ^ 2`,
+  `(2 * 3 − 1)‼ → 15`, `1 / lam → lam⁻¹` on both sides); the odd constant then reads `alpha * 105 / (6 * lam ^ 4)` — state the packaged
+  bound in that literal form rather than the simplified fraction.
+- `t² Cov[xᵐ, xⁿ]` in normalised moments: `rw [gibbsCov_pow_pow …, eq_div_iff htne]; simp only [show (3 + 2 : ℕ) = 5 from rfl, ← hM5, …]; ring`
+  (`ring` will not cancel a `/ t` by itself; `eq_div_iff` first). For `x ^ 1` first `simp only [pow_one, show (2 + 1 : ℕ) = 3 from rfl] at h`.
+- `rw [abs_mul, abs_mul, abs_mul]` on a three-term sum picks up the wrong products (`|t ^ 2 * C|` inside a summand); give the first
+  argument, `abs_mul (lam / 2)`, `abs_mul (alpha / 6)`, `abs_mul (gamma / 24)`.
+- `positivity` cannot see `0 ≤ K p` for a `choose`-obtained family; write `Finset.sum_nonneg fun p _ => mul_nonneg (abs_nonneg _) (hK p)`.
+- Pulling `t²` into a sum of sums for a rate: prove `∑ p, t² * (c p * X p) = ∑ p, c p * (t² * X p)` by `Finset.sum_congr … ring` first,
+  then `simp only [mul_sub, Finset.sum_sub_distrib]` and `ring` on the four sum-atoms; `← Finset.sum_sub_distrib` does not fire on
+  `(∑ + ∑) − (∑ + ∑)`.
+- The tide-49 constant `-alpha i / (2 * lam i ^ 2)` is `(-alpha i) / …`; a hypothesis in `+ alpha i / …` form needs `rw [neg_div,
+  sub_neg_eq_add]` on the goal before `exact`.
+- A full `lake build` can carry a warning from *another* session's freshly landed file (here `Laplace/Multi/RelativeChartFamily.lean:4`);
+  the landing loop ignores warnings, so filter the finish script's warning check to the files of the tide.
