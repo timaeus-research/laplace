@@ -104,8 +104,8 @@ hierarchy; second order still needs second coefficients for `m₃, m₄` — kee
 ## Result
 
 Commit `e1f9b6f` on `tide/localised-covK`; `lake build` clean, `scripts/sorries` 0/0/0/0. A + B as voted; C as the corrected remark
-(centred localisation or ), D deferred.
-`Laplace/Multi/LocalisedCovK.lean` (    1139 lines): `gibbsCov_energy_coord_separable`, `gibbsCov_energy_pair_separable` (generic, two families),
+(centred localisation or `bᵀgH⁻¹(w₀ − w*) = 0`), D deferred.
+`Laplace/Multi/LocalisedCovK.lean` (1139 lines): `gibbsCov_energy_coord_separable`, `gibbsCov_energy_pair_separable` (generic, two families),
 `locN₆`…`locN₁₄`, `locFifth_pointwise`, `locFifth_expansion`, `locFifth_bound`, `locSixth_bound`, `loc_ratio_bounded`,
 `locFifth_loc_bound`, `locSixth_loc_bound`, `order2_to_order1`, `covK_loc_lin_assembly`, `covK_loc_sq_assembly`,
 `locEnergyMul_eq`, `locEnergyMulSq_eq`, `localisedEnergy_leading`, `locSecondMoment_loc_leading`, `locMean_loc_leading`,
