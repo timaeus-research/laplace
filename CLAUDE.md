@@ -236,6 +236,40 @@ after `simp only [id_eq]`; covariance: `covarianceBilin_map IsGaussian.memLp_two
 instances for `μ ∗ ν` exist). Quadratic-form algebra: `mulVec_transpose`, `dotProduct_mulVec`, `vecMul_vecMul`.
 `ContinuousLinearMap.mul_apply` is deprecated: `mul_apply_eq_comp`.
 
+### Polar coordinates, angular integrals and big-O inductions (Patterning/FourGonSusceptibility*, HorizonSecondOrder)
+
+- `integral_polar_sep f R Θ (hf : ∀ r > 0, ∀ θ ∈ Ioo (-π) π, r * f (r cos θ, r sin θ) = R r * Θ θ) :
+  ∫ f = (∫ r in Ioi 0, R r) * ∫ θ in -π..π, Θ θ` (from `integral_comp_polarCoord_symm`,
+  `polarCoord.target = Ioi 0 ×ˢ Ioo (-π) π` by `rfl`, `Measure.volume_eq_prod`, `integral_prod_mul`; no
+  integrability needed). For `radialCov`-type identities `unfold` then `beta_reduce` before `rw`,
+  since `radialExpectation (fun z => φ z * ψ z)` leaves a beta-redex that blocks the pattern.
+- Angular integrals of `[cos θ]₊`: split `-π..π` at `±π/2` with `integral_add_adjacent_intervals`,
+  kill the outer pieces with `relu_of_nonpos` (`cos_nonpos_of_pi_div_two_le_of_le`, needs `pi_pos`
+  in `linarith`), then `integral_cos_sq`, `integral_cos_pow_three`. Shift angles with
+  `intervalIntegral.integral_comp_sub_right` + `Function.Periodic.intervalIntegral_add_eq hg t s`
+  (explicit, not dot notation). Odd integrands vanish via `integral_comp_neg` + `integral_neg` +
+  `linarith`. Feature angles `0, π/2, π, −π/2` (not `3π/2`): then `simp [cos_sub, cos_add,
+  cos_pi_div_two, sin_pi_div_two, cos_pi, sin_pi]` evaluates every `cos(θⱼ − θₖ)`.
+- `Laplace.gibbsExpectation` (1D) shadows `Laplace.TwoD.gibbsExpectation` inside
+  `namespace Laplace.Patterning` even with `open Laplace.TwoD`: write `Laplace.TwoD.` explicitly.
+  `Continuous.dotProduct` is protected. `le_or_lt` is now `le_or_gt`. `Fin.castSucc (0 : Fin 4)`
+  is defeq to `(0 : Fin 5)`: state the specialisation with a type ascription (`have h0 : f 0 = … := lemma 0`).
+- `polarMoment G k = ∫ r ^ (k+1) * G (r^2)`: `∫ r ^ 4 * G (r^2) = polarMoment G 3` is `rfl`.
+  Splitting `∫ (r^6 G − r^4 G)` needs integrability (`integrableOn_pow_mul_exp_neg_quartic` +
+  `IntegrableOn.congr_fun`), so state general-`G` lemmas only for products and do differences for the
+  concrete weight. After `field_simp` a trailing `ring` may hit "no goals": use `try ring`.
+- Gamma facts on the pin: `Gamma_one_half_eq`, `Gamma_add_one`, `Gamma_mul_Gamma_add_half` (real
+  Legendre duplication, `2 ^ (1 - 2s)` as rpow; rewrite the exponent *before* `2 * (3/4)`),
+  `convexOn_log_Gamma` (no strict version): `convexOn_log_Gamma.2 hx hy ha hb hab` at weights ½,½
+  gives `Γ(3/4)² ≤ √π`. Strict inequalities then come from `pi_gt_three`.
+- Big-O inductions: `isBigO_zero _ _` (explicit args), `IsBigO.bound`, `IsBigO.of_bound c (∀ᶠ …)`,
+  `IsBigO.trans_tendsto h tendsto_id`, `(CLM).isBigO_comp _ l |>.trans h`, `IsBigO.const_smul_left`,
+  `IsBigO.congr_left (∀ x, f₁ x = f₂ x)`. Eventual smallness from a `Tendsto` to `0`:
+  `filter_upwards [h.eventually (Metric.closedBall_mem_nhds 0 hr)]` then `rwa [dist_zero_right] at hε`
+  (the membership is already unfolded to `dist`). The recursion identity for the error closes with
+  `module` after `simp only [gdStep, horizonIter, Matrix.sub_mulVec, Matrix.one_mulVec,
+  Matrix.smul_mulVec, Matrix.mulVec_sub, Matrix.mulVec_smul, smul_sub, smul_add, smul_smul]`.
+
 ### Independence, kernels and conditional laws (Patterning/OUMarkov)
 
 - `IsGaussianProcess.of_isGaussianProcess (hX) (h : ∀ s, ∃ I : Finset T, ∃ L : (I → E) →L[ℝ] F, ∀ ω, Y s ω = L (I.restrict (X · ω)))`
