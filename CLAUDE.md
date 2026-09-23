@@ -3238,3 +3238,17 @@ matrix version is `whiteningOf`.
   Finset.smul_sum]` and `[…, Matrix.mul_add, Matrix.add_mul, Finset.sum_add_distrib]`.
 - Banach at `0`: `(contractingWith_fullStep …).dist_fixedPoint_le 0` with `dist_zero_left` gives the Neumann bound `‖R(Y)‖ ≤ ‖Y‖/(1−a)` once
   `fullFixed_eq_of_c_zero` identifies the `c = 0` fixed point with `lyapunovVia`.
+
+### Tide 116 (fulllaw-scaled) gotchas
+- `FullLawResolvent`/`FullLawUpper` do not import `MinibatchScaled`/`AutocovScaled`; a file using both the full-law and the β-scaled limits
+  needs both imports. Inside `namespace Laplace.Multi`, the sampler defs must be qualified (`Laplace.Sampler.lyapunovVia`, `…stateTerm`,
+  `…minibatchNoise`, `…minibatchCov_frame_apply`).
+- Matrix limits from entry limits: `tendsto_pi_nhds.2 fun k => tendsto_pi_nhds.2 fun l => …` works as a *term* (Matrix unfolds to the Pi type);
+  then transport through `X ↦ Q * X * Qᵀ` with `(continuous_const.matrix_mul continuous_id).matrix_mul continuous_const` and
+  `conj_transpose_mul_mul_self`. Continuity of `Σ ↦ (Qᵀ B(Σ) Q) j j`: `continuous_finsetSum` (not the deprecated `continuous_finset_sum`) and
+  `continuous_apply j` twice.
+- `minibatchCov_frame_apply` gives the denominator `h(pᵢ+pⱼ) − h²pᵢpⱼ`; bridge to `1 − (1−hpᵢ)(1−hpⱼ)` with `congr 1; ring` and pass
+  `(p := fun i => t * lam i + g)` explicitly.
+- `rw [← mul_assoc]` without arguments re-associates the first product it finds (often on the wrong side); give the factors,
+  `rw [← mul_assoc (1 / t) (t / 2), …]`.
+- A `have h := thm …` whose statement's implicit `{Q}`/`{g}` appear only in the conclusion needs `(Q := Q)`, `(g := g)`.
