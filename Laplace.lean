@@ -259,6 +259,7 @@ import Laplace.Multi.EdgeResidual
 import Laplace.Multi.WellCompetition
 import Laplace.Multi.DivisorData
 import Laplace.Multi.ChartAssembly
+import Laplace.Multi.RescaledData
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
