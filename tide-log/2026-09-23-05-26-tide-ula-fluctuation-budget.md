@@ -41,3 +41,15 @@ Correctness of A–D; E5 reading (`t → ∞` limits at fixed `η`, what a singl
 ## Vote
 - Claude: A–D plus the fixed-`η` main-variance limit; MSE/Chebyshev, autocovariance and the explicit burn bound deferred
 - GPT-6 Astra: YES on A–D; prioritise the fixed-`η` limit and explicit burn bound, MSE optional, autocorrelation deferred
+
+## Result
+
+Commit `408f22e` on `tide/ula-fluctuation-budget`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/ULAFluctuationBudget.lean` (     374 lines).
+A–D as voted, plus the fixed-η main-variance limit.
+Sampler: `transpose_mul_frame`, `transpose_mulVec_mulVec_frame`, `burnInAnch_trace_sq_frame`, `burnInAnch_cross_frame`, `burnInAnch_var_frame`.
+Multi: `rho_pow_tendsto_of_stable`, `rho_pow_two_mul_tendsto`, `ulaAnchored_energy_tendsto`, `ulaAnchored_burn_tendsto`, `ulaAnchored_var_tendsto`,
+`ulaScaledStep_factor_tendsto`, `ulaScaledStep_var_main_tendsto`, `ulaAnchored_llc_var`, `ulaAnchored_llc_budget_stationary`.
+
+Surprises: everything is exact algebra on tides 96 and 99's lemmas; the only analytic content is the scalar limits. GPT corrected the
+prose (the stationary variance's second piece is anchor-, not start-, dependent and is O(1/t) at fixed η; Var_k need not be monotone in k).
+A `simpa` could not reduce the limit `c * (b² − b²)` to 0 — compute the limit expression by `ring` and rewrite instead.
