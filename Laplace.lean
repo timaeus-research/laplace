@@ -416,3 +416,4 @@ import Laplace.Multi.MinibatchScaled
 import Laplace.Multi.FullLawLLC
 import Laplace.Multi.BurnInLog
 import Laplace.Multi.NoiseRegime
+import Laplace.Multi.MSELog

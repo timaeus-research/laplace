@@ -3165,3 +3165,15 @@ matrix version is `whiteningOf`.
   `Tendsto.atTop_mul_atTop₀` squares it (`simpa [sq]`).
 - `if i₀ = i₀ then 1 else 0` inside a term that must stay syntactically equal to a summand: prove the identity after `rw [if_pos rfl]`
   *inside* the `have`, so the equation's RHS keeps the `if` for the later `rw`.
+
+### Tide 110 (mse-log) gotchas
+- A schedule `k : ℝ → ℕ` substituted into a generated statement must be parenthesised as an argument: `burnInTiltAnch P h (k t) m x₀`, not
+  `… h k t m x₀` (the latter passes `k` and `t` as two arguments).
+- `[DecidableEq ι]` as a section variable is a hard failure (unused-instance linter) on any theorem whose *type* does not need it (`tiltedExpectation`
+  needs no inverse; `tiltMean` does). Put `[DecidableEq ι]` on the theorems that mention `tiltMean` and use `classical` in the others' proofs.
+- `rw [mul_comm t, …]` rewrites the first `t * _` it finds, not the one you meant; for `t * (a / t) = a` use `← mul_div_assoc` then
+  `mul_div_cancel_left₀ _ ht` after `congr 1` has isolated the factor.
+- `field_simp` alone closes `t ^ 2 * (q − c/t) ^ 2 = (t q − c) ^ 2` under `funext`; a trailing `ring` then fails with "No goals".
+- `ring` proves the per-mode identity `t² σ² (1−ρ^{2k}) λ² (m̂ + ρ^k d)² = (tσ²)(1−ρ^{2k}) λ² ((tm̂)m̂ + 2(tm̂)ρ^k d + (tρ^{2k}) d²)` once `pow_mul'`
+  has turned `ρ ^ (2 * k)` into `(ρ ^ k) ^ 2` on both sides (`simp only [pow_mul']` first).
+- `(1 − 0)` inside a limit blocks `field_simp` from closing `(λ · (1/(λκ)) · (1−0))² = (1/κ)²`: `simp only [sub_zero, mul_one]` first.
