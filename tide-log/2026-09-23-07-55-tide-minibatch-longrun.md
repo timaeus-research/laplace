@@ -63,3 +63,21 @@ special case `Δτ²_{lin} = mᵀCm`, the β-scaled `Θ(t²)` statement, `τ²_{
 ## Vote
 - Claude: A–D + E
 - GPT-6 Astra: A–D + full E (+ symmetrisation, diagonal recovery)
+
+## Result
+
+Commit `decc2b5` on `tide/minibatch-longrun`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/MinibatchLongRun.lean` (     595 lines).
+A–D + full E as voted (GPT strengthened E to the complete temporal inflation via the resolvent identity); symmetrised form added.
+Frame: `transpose_conj_frame`, `conj_conj_frame`, `sum_sum_conj_diagonal_mul_conj`, `ulaStep_transpose_frame`.
+Definitions: `mbFrameCov`, `mbBurnInCov`, `mbBurnInTilt`, `mbCondEnergy`, `mbAutoCov`, `mbLongRunVar`.
+Theorems: `mbBurnInCov_eq_iterate`, `mbBurnInCov_eq_conj_frame`, `mbFrameCov_apply_eq_sum`, `mbFrameCov_quadForm`, `mbFrameCov_posDef`,
+`mbBurnInCov_posDef`, `mbBurnInCov_inv_inv`, `mbBurnIn_energy_frame`, `mbCondEnergy_eq`, `mbFrame_symm`, `mbAutoCov_zero_eq`,
+`mbAutoCov_eq_of_pos`, `mbAutoCov_eq`, `mbAutoCov_summable`, `mbLongRunVar_eq`, `mbAutoCov_eq_symm`, `mbFrame_split`,
+`mbLongRunVar_sub_ulaLongRunVar`, `conj_symm_apply`, `ulaLongRunVar_le_mbLongRunVar`.
+
+Surprises: the core (A–D, 385 lines) compiled on the second round (one implicit argument); E needed two more rounds — `rw` cannot
+distribute a sum under a binder (use `simp only`), and two simp lemmas competing for the same dot-product term must be run in separate
+calls. Mathematically, GPT turned my "sign not controllable" for the mean part of the long-run excess into a theorem: the resolvent
+identity `(f(ρᵢ)+f(ρⱼ))/(2(1−ρᵢρⱼ)) = 1/((1−ρᵢ)(1−ρⱼ))` makes it the PSD form `zᵀ(h²t²Ĉ)z`, so `τ²_{ULA} ≤ τ²_{mb}` holds in full — the
+temporal inflation statement tide 104's consult had asked for. At the β-scaled step with fixed `C` the minibatch long-run variance of the
+scaled statistic is `Θ(t²)` (prose): the batch must grow linearly in `t` for bounded fluctuations, as for the bias.
