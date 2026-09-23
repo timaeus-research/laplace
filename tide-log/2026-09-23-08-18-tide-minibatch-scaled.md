@@ -52,3 +52,18 @@ converse, strictness in D, the general `tĈ_t → B` organisation and the `C₀/
 ## Vote
 - Claude: A–D (+ `L_∞ > 0` from a nonzero entry)
 - GPT-6 Astra: A–D + `L_∞ > 0 ⟺ C ≠ 0` (+ general `tC_t → B` organisation)
+
+## Result
+
+Commit `d22017a` on `tide/minibatch-scaled`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/MinibatchScaled.lean` (     356 lines).
+A–D as voted, plus `Linf_pos_of_ne` (GPT's `L_∞ > 0 ⟺ Ĉ ≠ 0`, the direction needed for divergence).
+Scalar: `one_sub_rho_mul_scaled_tendsto`, `one_sub_rho_mul_pos`, `mbEntry_scaled_tendsto`, `mbEntry_lin_scaled_tendsto`,
+`mbEntry_lin_tendsto_zero`, `mul_anchoredMean_tendsto`, `anchoredMean_tendsto_zero`.
+Anchored: `mbAnchored_longRunVar`. Scaled: `mbScaled_longRunVar_tendsto`, `mbScaled_longRunVar_mul_sq_tendsto_atTop`,
+`mbScaled_lin_longRunVar_tendsto`, `Linf_pos_of_ne`, `Llin_zero_eq`, `Leta_le_Llin`.
+
+Surprises: three build rounds. A `whnf` timeout came from unifying `(Qᵀ * ((1/t) • C₀) * Q) i j` against `1/t * (Qᵀ * C₀ * Q) i j` inside a
+`Tendsto` term (write closed forms in simp-normal shape); `pow_le_pow_left` is `pow_le_pow_left₀`; a surviving `0 ^ 2` defeats `positivity`.
+Mathematically GPT sharpened the batch-size story: `L_∞ > 0 ⟺ Ĉ ≠ 0`, `L_lin(C₀) > L_η` strictly for nonzero PSD `C₀`, `L_∞` is the long-run
+variance of the limiting noise-driven chain `S^∞ = RS^∞R + η²Ĉ` (the stationary noise floor), and the cleanest organisation of the batch
+regimes is a single lemma around `tĈ_t → B` (deferred).
