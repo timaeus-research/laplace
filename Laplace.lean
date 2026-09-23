@@ -273,6 +273,7 @@ import Laplace.Multi.FibreKernel
 import Laplace.Multi.WallChartsData
 import Laplace.Multi.FibreContinuity
 import Laplace.Multi.FibrePointwise
+import Laplace.Multi.WallKernelExplicit
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
