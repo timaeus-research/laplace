@@ -45,3 +45,19 @@ Correctness of A–C and sign conventions; E4/E5 reading (β-scaled step ⇒ O(1
 ## Vote
 - Claude: A–C plus `burnInAnch_energy_frame_modeStart`, `burnIn_meanTerm_expand`, `ulaScaledStep_bias_tendsto`
 - GPT-6 Astra: land A → B → C plus the stationary identity and expanded burn-in formula; state the rate via `max|ρᵢ|`; distinguish bounded from `t⁻¹`-accurate burn-in
+
+## Result
+
+Commit `ba1eacc` on `tide/ula-error-budget`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/ULAErrorBudget.lean` (     400 lines).
+A–C as voted, plus GPT's cheap additions.
+Sampler frame algebra: `conj_mul_conj_frame`, `conj_pow_frame`, `one_sub_conj_frame`, `inv_conj_diagonal_frame`, `conj_diagonal_entry'`,
+`conj_diagonal_symm`, `sum_sum_mul_conj_eq`, `dotProduct_conj_diagonal_mulVec`; ULA in a frame: `ulaStep_eq_conj_frame`, `ulaStep_pow_eq_conj_frame`,
+`ulaCov_eq_conj_frame`, `burnInCov_eq_conj_frame`, `burnInVar_pos_frame`, `burnInCov_inv_eq_conj_frame`, `burnInCov_inv_posDef_frame`,
+`burnInCov_inv_inv_frame`; anchored ULA: `burnInMeanAnch`, `burnInTiltAnch`, `transpose_mulVec_burnInMeanAnch`, `burnInAnch_energy_frame`,
+`burnInAnch_energy_frame_modeStart`.
+Multi: `transpose_localisedPrecision_conj`, `burnIn_meanTerm_expand`, `ulaScaledStep_bias_tendsto`, `ulaAnchored_llc_budget`.
+
+Surprises: the budget's remainder constant and threshold are those of tide 95 verbatim — the sampler terms are exact identities, so the
+budget is uniform over every admissible step size, step count and start (including t-dependent ones); with the β-scaled step h = η/t the
+step-size bias tends to (η/4)∑λᵢ/(1 − ηλᵢ/2), an O(1) error that masks the O(1/t) anharmonic gap, and the transient from a fixed ambient
+start grows like t·ρ^{2k}. `field_simp` again needed the expanded denominator `2 − h(tλ+g) ≠ 0` spelled out.
