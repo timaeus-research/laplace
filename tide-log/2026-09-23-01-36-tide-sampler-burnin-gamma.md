@@ -79,3 +79,14 @@ estimator's; exact for the quadratic model and the exact ULA recursion; the tilt
   monotonicity and the stationary limit; add the geometric mean-bias/transform bound if proof budget permits."
 
 Agreed: A + B + C.
+
+## Result
+
+Commit `09ff32c` on `tide/sampler-burnin-gamma`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Sampler/BurnInGammaLaw.lean` (     292 lines).
+A + B + C as voted (zero start).
+`conj_mul_conj`, `conj_pow`, `one_sub_conj`, `conj_left_inv`, `inv_conj_diagonal`, `det_orthoOf_conj`; `burnInCov_eq_conj`,
+`burnInVar_pos`, `burnInCov_inv_eq_conj`, `burnInCov_inv_posDef`; `burnIn_factor`, `laplace_ulaBurnIn`; `burnIn_mean`, `burnIn_bias`;
+`burnInTransform`, `burnInTransform_antitone`, `burnInTransform_tendsto`.
+
+Surprises: the whole burn-in law is conjugation algebra once tide 91's partition-function ratio exists; the only analytic content is
+`0 ≤ ρᵢ² < 1` and `ρᵢ^{2k} = (ρᵢ²)^k`, exactly as GPT advised.
