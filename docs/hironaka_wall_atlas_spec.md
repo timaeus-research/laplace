@@ -190,3 +190,28 @@ Remaining for the fibre identity: the Euclidean fibre-transport layer (laplace) 
 solved coordinate on each chart box, `integral_two_branch` fibrewise (`c(w) = S ∏_{j≠k} w_j^{q_j}`,
 null exceptional set `c(w) = 0`), continuity in `s ≠ 0` of the weighted kernel, and the
 fibre-measure equality / indicator-kernel corollary.
+
+## Status (2026-09-24, evening): the Euclidean fibre-transport layer
+
+laplace, Mathlib only:
+
+- `Laplace/Multi/FibreKernel.lean` (`970aa00`): `truthMono S q u = S ∏ u^q`, `solvedCoeff k S q w`
+  (`truthMono (insertNth k v w) = solvedCoeff · v^{q k}`), the `lintegral` two-branch substitution
+  `lintegral_two_branch` (sign sets `{0 < c(−1)^q s}`, `{0 < c s}`; `solvedCoord_pos/neg_spec`),
+  the null exceptional set `volume {c(w) = 0} = 0`, the branch and fibre kernels
+  `branchKernel`, `fibreKernel k S q Φ s = ∫⁻ w, branchKernel … w s`, and
+  **Fubini in the solved coordinate** `lintegral_mul_comp_truthMono`:
+  `∫⁻ u, Φ u · η (truthMono S q u) = ∫⁻ s, η s · fibreKernel k S q Φ s` (measurable `Φ η ≥ 0`,
+  `S ≠ 0`, `q k > 0`).
+- `Laplace/Multi/WallChartsData.lean` (`35ab2c0`): the Euclidean export interface
+  `WallChartsData m ℓ L'` (finite charts, measurable `rep i`, `dom i`, `dens i ≥ 0`, `S i ≠ 0`,
+  solve index `k i` with `q i (k i) > 0`, `rep i u ℓ = truthMono (S i) (q i) u` on `dom i`, and the
+  `lintegral` transport identity); `chartFun θ i = 1_{dom i} · θ ∘ rep i · dens i`,
+  `totalKernel θ s = ∑ i fibreKernel …`; the push-forward identity `lintegral_mul_comp_coord`
+  (`∫⁻_{L'} θ(z) η(z ℓ) = ∫⁻ η(s) K_θ(s)`) and the **fibre identity a.e.** `fibre_ae`: for
+  `L' = splitAt⁻¹(B ×ˢ A)`, `s ↦ ∫⁻_{z' ∈ A} θ(insertNth ℓ s z')` equals `totalKernel θ` a.e. on
+  `B` (uniqueness of densities, `ae_eq_of_forall_setLIntegral_eq_of_sigmaFinite₀`).
+
+Remaining: pointwise identity for `s ≠ 0` by continuity of both sides (route A step 3), the
+real-valued kernel for signed integrands, and the instantiation of `WallChartsData` from the
+hironaka export (a bridge workspace importing both, as for greybook).
