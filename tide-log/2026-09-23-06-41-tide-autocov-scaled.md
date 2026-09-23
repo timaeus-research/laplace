@@ -53,3 +53,21 @@ Adopted: A–C, the mean-rate constant (`ulaScaledStep_longRunVar_mean_rate`), t
 ## Vote
 - Claude: A+B+C (+ mean rate, ESS bound, fixed-lag limit)
 - GPT-6 Astra: A+B+C (+ mean rate, ESS bound, fixed-lag/D if budget)
+
+## Result
+
+Commit `ed036a6` on `tide/autocov-scaled`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/AutocovScaled.lean` (     446 lines).
+A–C as voted, plus GPT's cheap additions (mean-rate constant, ESS bound, fixed-lag limit); D deferred.
+Scalar: `scaledStep_mul_tendsto`, `rho_scaled_tendsto`, `kappa_scaled_tendsto`, `scaledStep_eventually`, `one_sub_sq_pos_of_scaled`,
+`iat_quad_scaled_tendsto`, `iat_lin_scaled_tendsto`, `ratio_scaled_tendsto`, `inv_scaled_tendsto`, `inv_p_tendsto`, `longRun_ratio_eq_iat`,
+`iat_quad_limit_sub_one`, `one_le_iat_quad_limit`, `longRun_limit_ge_var0`.
+Anchored: `transpose_mulVec_anchoredMean`, `ulaAnchored_autoCov`, `ulaAnchored_longRunVar`.
+Scaled: `ulaScaledStep_longRunVar_main_tendsto`, `ulaScaledStep_longRunVar_mean_tendsto`, `ulaScaledStep_longRunVar_tendsto`,
+`ulaScaledStep_var0_tendsto`, `ulaScaledStep_longRunVar_mean_rate`, `ulaScaledStep_autoCov_tendsto`.
+Multi: `ulaAnchored_longRunVar_tendsto`.
+
+Surprises: five build rounds, all bookkeeping — the substituted step `h = η/t` must be parenthesised inside generated statements
+(`4 * (η / t)` vs `4 * η / t`), `field_simp` closes almost every eventual-rewrite identity on its own (trailing `ring` = "No goals"), and one
+wrong factor (`1/(λp)` for `1/p`) surfaced as a `ring_nf` residue. Mathematically GPT corrected two of my prose guesses: the upper-endpoint
+asymptotics of `F(x) = (1+(1−x)²)/(4x(1−x/2)³)` is `2/(2−x)³`, and `ηλ = 1` (one effective sample per step) does not minimise the long-run
+variance (single-mode minimiser at `x ≈ 0.639`).
