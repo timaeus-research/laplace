@@ -156,3 +156,37 @@ domain, zero outside (piecewise definitions, never totalised inverses). Route (B
 of variables) is the reusable alternative; its new lemma is the Euclidean determinant identity
 `|det D(w ↦ X(w, V(w)))| = |det DR| / |∂_v T|`, proved by multiplying `DR` by the unit-determinant
 shear `[[I, 0], [DV, 1]]` to make it block triangular.
+
+## Status (2026-09-24, later): steps 8 (weighted transport) and the Euclidean substitution are done
+
+hironaka branch `wall-atlas`, commits `653413d3c` (`WallWeighted.lean`) and `748cefb58`
+(`WallIntegral.lean`), all axioms `propext`/`Classical.choice`/`Quot.sound`:
+
+- `WallAtlas.lintegral_eq_sum_charts_box`: for a measurable `L' ⊆ W`, a partition of unity `f` on
+  `g⁻¹(L')` subordinate to the cores, and measurable `Ψ ≥ 0`,
+  `∫⁻_{L'} Ψ = ∑_i ∫⁻_{box_i ∩ rep_i⁻¹ L'} Ψ(rep_i u) · ofReal(f i (φ_i⁻¹ u)) · ofReal |b_i u ∏ u^{h_i}|`.
+  Mechanism: `L' ∖ {F z_ℓ ≠ 0}` is null (`volume_diff_offWall`: it lies in the images under the
+  analytic `rep_i` of the coordinate hyperplanes of the boxes, by the partition of unity and the
+  exact monomial form of `F z_ℓ ∘ rep_i`); the weights push down to `wallWeight` on the model (the
+  value of `f i` at the unique preimage, `g` being injective off the wall), measurable because
+  `rep_i` is continuous and injective on the off-wall box (`MeasurableSet.image_of_continuousOn_injOn`);
+  then `transportsToOn_of_injOn_of_hasFDerivWithinAt` on `box_i ∩ rep_i⁻¹(L' ∩ off-wall)` with the
+  clamped representative `repClamp` (globally continuous) and the Jacobian identity `jac`.
+- `WallAtlas.integral_eq_sum_charts` (Bochner): for measurable `Ψ` integrable on `L'`,
+  `∫_{L'} Ψ = ∑_i ∫_{chartSet i L'} Ψ(rep_i u) · chartDensity f i u` with
+  `chartDensity f i u = f i (φ_i⁻¹ u) · |b_i u ∏ u^{h_i}|`, every chart integrand integrable
+  (`integrableOn_chart`); the density is continuous on the closed box
+  (`chartDensity_continuousOn`), and the weight vanishes on the target off the open ball
+  (`weight_eq_zero_of_notMem_ball`), so the effective support of each chart integrand is inside the
+  open ball of the box.
+
+laplace `Laplace/Multi/FibreSubstitution.lean` (`dcdb9e5`, Mathlib only): the two-branch
+substitution `s = c v^q` — `solvedCoord c q s = (|s|/|c|)^{1/q}`, `integral_branch_pos/neg`
+(`∫_{v>0} Φ = ∫_{s ∈ c·(0,∞)^q} Φ(V(s)) V(s)/(q|s|) ds`, and the `v<0` branch with `−V`), the image
+identifications `image_pow_Ioi` (`(0,∞)` or `(−∞,0)` by the sign of `c`) and `image_pow_Iio_eq`,
+and `integral_two_branch` (full line, integrable `Φ`).
+
+Remaining for the fibre identity: the Euclidean fibre-transport layer (laplace) — Fubini in the
+solved coordinate on each chart box, `integral_two_branch` fibrewise (`c(w) = S ∏_{j≠k} w_j^{q_j}`,
+null exceptional set `c(w) = 0`), continuity in `s ≠ 0` of the weighted kernel, and the
+fibre-measure equality / indicator-kernel corollary.
