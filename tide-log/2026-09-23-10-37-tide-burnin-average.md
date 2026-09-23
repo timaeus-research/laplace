@@ -71,3 +71,18 @@ Full response in `gpt_burnin-average_v1.md` (prompt in `gpt_burnin-average_v1_pr
 ## Vote
 - Claude: A + B + C + D + E, plus F
 - GPT-6 Astra: "Formalise A, B, C, D, E now … prioritise the endpoint/regression lemmas, the IAT bound, and monotonicity"
+
+## Result
+
+Commit `437a0a5` on `tide/burnin-average`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/BurnInAverage.lean` (     524 lines).
+A–E as voted plus the GPT-suggested lag-weight lemmas (F).
+Lemmas: `burnAutoCov` (def), `avgVar` (def), `burnAutoCov_zero_eq`, `burnAutoCov_eq_of_pos`, `burnAutoCov_eq`, `ulaAnchored_burnAutoCov`,
+`ulaAnchored_autoCov_schedule_tendsto`, `lagWeight` (def), `sum_range_sub_succ`, `lagWeight_le_one`, `inv_le_lagWeight`, `lagWeight_zero`,
+`lagWeight_one_draw`, `lagWeight_at_one`, `lagWeight_mono`, `lagWeight_le_iat`, `avgLimit_eq_lagWeight`, `ulaAnchored_avgVar_schedule_tendsto`,
+`ulaAnchored_sampled_schedule_tendsto`, `ulaAnchored_avg_mse_log_tendsto`.
+
+Surprises: three short build rounds. The Wick computation of tide 102 carried over verbatim to the non-stationary law once the tilt was unfolded to
+`Σ_s⁻¹ *ᵥ μ_s` (so `tiltMean_mulVec_self` applies) and `transpose_mulVec_burnInMeanAnch` was added to the frame simp set; the one real
+obstacle was `ring`'s inability to identify `α^(2j+2)` with `(α²)^(j+1)` for a compound base after `mul_add` had distributed the exponent, fixed
+by ordering the simp calls. GPT confirmed the pair bookkeeping and insisted the memory term be checked at the `t²` scale (`tμ_sμ_{s+ℓ} → 0`),
+which is what the expansion does.
