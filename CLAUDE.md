@@ -3283,3 +3283,33 @@ matrix version is `whiteningOf`.
 - `positivity` cannot use `hd.hκ : 0 < κ` from a structure field for `0 ≤ κ * y²`; give `mul_nonneg hd.hκ.le (sq_nonneg _)`.
 - `twoWell_energy_eq_hump (A := hd.C₀)` when `C₀` is a `def` wrapping the integral; `Fin.forall_fin_two.mpr ⟨_, _⟩`
   with `![a, b] 0` defeq avoids `fin_cases <;> simp` lint.
+
+### Fibre-transport layer (FibreSubstitution, FibreKernel, WallChartsData, FibreContinuity, FibrePointwise)
+
+- Splitting off one coordinate of `Fin (m+1) → ℝ`: `MeasurableEquiv.piFinSuccAbove (fun _ ↦ ℝ) k`,
+  measure preserving by `volume_preserving_piFinSuccAbove`; `e.symm p = k.insertNth p.1 p.2` and
+  `(e z).1 = z k` are `rfl`. Transfer with `hmp.symm.lintegral_comp_emb e.symm.measurableEmbedding`,
+  then `Measure.volume_eq_prod` and `lintegral_prod_symm'` (inner integral in the split coordinate).
+  For a set integral over `e ⁻¹' T`, `(hmp.restrict_preimage hT).lintegral_comp_emb` then
+  `← Measure.prod_restrict`. Compactness of `e ⁻¹' (B ×ˢ A)`: rewrite as the image of `B ×ˢ A` under
+  `Continuous.finInsertNth (A := fun _ ↦ ℝ) k continuous_fst continuous_snd` (no `Homeomorph` version).
+- `k.insertNth v w` needs `(α := fun _ ↦ ℝ)` (or a type ascription) when nothing fixes the family.
+- `set e := piFinSuccAbove …` in a theorem whose hypothesis `D`'s TYPE mentions the equivalence
+  shadows `D` (`D✝`); use `local notation "splitAt" => …` instead (dot notation needs `(splitAt).symm`).
+- `hK.comp (measurable_id.prodMk measurable_const)` against the goal `Measurable fun w ↦ f w s` makes
+  the unifier unfold `f` (whnf timeout); state `hK' : Measurable (Function.uncurry f) := hK` and use
+  `hK'.of_uncurry_right` / `.of_uncurry_left`. Same medicine for `lintegral_lintegral_swap`: pass
+  `(f := fun w s ↦ …)` explicitly.
+- ENNReal products: no `ContinuousMul`; use `ENNReal.Tendsto.mul hma (Or.inr ENNReal.ofReal_ne_top)
+  hmb (Or.inr (hne_top _))` (`ContinuousAt` is `Tendsto`). `zero_le` takes its argument implicitly;
+  `Finset.single_le_sum` needs `(f := …)` explicit. Pin `continuousAt_const` by a type ascription.
+- `Set.indicator_of_mem hs` with `hs : 0 < c * s` is mis-parsed as a membership in `Real.lt 0`;
+  write `have hs' : s ∈ {s | 0 < c * s} := hs` first, or `simp only [Set.indicator_apply,
+  Set.mem_ofPred_eq, hs, if_true]`. Dependent-set indicators `{s | P w s}.indicator (F w) s` are
+  jointly measurable via `Set.indicator_apply` + `Measurable.ite`.
+- `lintegral_indicator hs : ∫⁻ s.indicator f = ∫⁻ in s, f` (use `←` to go from a set integral to an
+  indicator); `lintegral_inter_add_sdiff f A hB`; `restrict_compl_singleton`, `Iio_union_Ioi`;
+  `Measure.eqOn_open_of_ae_eq` turns an a.e. identity of two continuous functions on an open set
+  into equality; `ae_eq_of_forall_setLIntegral_eq_of_sigmaFinite₀` for uniqueness of densities.
+- Never gate a commit on `( lake build … ; echo BUILD_EXIT=$? )`: the subshell's status is the echo's.
+  Write `lake build X > log 2>&1; BE=$?; if [ $BE -eq 0 ]; then …; fi`.
