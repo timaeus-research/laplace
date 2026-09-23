@@ -241,3 +241,28 @@ fixed truth `s ≠ 0` near the wall are finite sums of chart kernels
 inputs of the `RescaledData`/`ChartAssembly` asymptotics. Open: the bridge instantiation, and the
 explicit monomial form of the kernels (`WallFibreFormulas` parametrisation) for the exponent
 bookkeeping.
+
+## Status (2026-09-24, late): `wall_fibre_identity` — the end-to-end theorem on the hironaka branch
+
+hironaka `wall-atlas` `a1b78e8a7`. Since laplace (Lean 4.33.0) and hironaka (4.33.1) cannot share a
+bridge workspace, the Mathlib-only Euclidean layer was mirrored onto the branch verbatim
+(`Monomialize/Relative/Wall/Euclid/{FibreSubstitution, FibreKernel, WallChartsData,
+FibreContinuity, FibrePointwise}.lean`, namespace `Monomialize.Wall`; it built unchanged) and
+instantiated:
+
+- `WallAtlas.toWallChartsData` (`Instance.lean`): the `WallChartsData` of an atlas over `L'` from
+  `euclidean_export`'s ingredients; `WallAtlas.fibre_eq`.
+- `wall_fibre_identity` (`Theorem.lean`): for `F` analytic on an open `U₀ ⊆ ℝ^{m+1}`, not
+  identically zero near `0`, a connected open `W ∋ 0` in `U₀`, compact `B₀ ⊆ ℝ`, `A' ⊆ ℝ^m` with
+  `splitAt⁻¹(B₀ ×ˢ A') ⊆ W`: there are `ε > 0` and Euclidean wall data
+  `D : WallChartsData m ℓ (splitAt⁻¹((B₀ ∩ [−ε, ε]) ×ˢ A'))` such that for every continuous
+  bounded `θ ≥ 0` supported in that region and in a ball, and every `s ≠ 0` interior to
+  `B₀ ∩ [−ε, ε]`, `∫⁻_{z' ∈ A'} θ(insertNth ℓ s z') = D.totalKernel θ s`. Axioms: `propext`,
+  `Classical.choice`, `Quot.sound`.
+
+So Interface F (the wall atlas with its fibre identity) is a theorem, modulo reading the kernels:
+`D.totalKernel θ s = ∑_i ∫⁻_w [Φ_i(w, −V) + Φ_i(w, V)] · V/(q_k |s|)` on the sign branches, with
+`Φ_i = θ ∘ rep_i · dens_i`, `V = (|s|/|c_i(w)|)^{1/q_k}`, `c_i(w) = S_i ∏_{j≠k} w_j^{q_ij}`, and
+`dens_i = f_i ∘ φ_i⁻¹ · |b_i ∏ u^{h_i}|`. What the asymptotics still need from here is the exponent
+bookkeeping of these kernels (the `WallFibreFormulas` parametrisation `ν, κ_i, p, r_i`) and their
+`RescaledData` packaging.
