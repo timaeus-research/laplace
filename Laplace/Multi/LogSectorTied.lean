@@ -30,6 +30,37 @@ noncomputable def tiedBlockIntegral {k : ℕ} (A h : Fin (k + 1) → ℝ) (t : �
   ∫ x in Set.pi Set.univ (fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) 1),
     exp (-(t * ∏ i, x i ^ A i)) * ∏ i, x i ^ h i
 
+/-- The tied-block integral in `lintegral` form: the logarithmic substitution and the simplex
+reduction. -/
+theorem lintegral_tiedBlock {k : ℕ} {A h : Fin (k + 1) → ℝ} (hA : ∀ i, 0 < A i) {lam : ℝ}
+    (htied : ∀ i, (h i + 1) / A i = lam) (s : ℝ) :
+    ∫⁻ x in Set.pi Set.univ (fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) 1),
+        ENNReal.ofReal (exp (-(s * ∏ i, x i ^ A i)) * ∏ i, x i ^ h i) =
+      (∏ i, ENNReal.ofReal (1 / A i)) * ∫⁻ z in Ioi (0 : ℝ),
+        ENNReal.ofReal (exp (-(s * exp (-z))) * exp (-(lam * z)) * z ^ k / (k.factorial : ℝ)) := by
+  have hcube : MeasurableSet (Set.pi Set.univ (fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) 1)) :=
+    MeasurableSet.pi countable_univ fun _ _ ↦ measurableSet_Ioo
+  have hG : Measurable fun c : ℝ ↦ ENNReal.ofReal (exp (-(s * c))) :=
+    ENNReal.measurable_ofReal.comp (measurable_const.mul measurable_id).neg.exp
+  have e1 : ∫⁻ x in Set.pi Set.univ (fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) 1),
+      ENNReal.ofReal (exp (-(s * ∏ i, x i ^ A i)) * ∏ i, x i ^ h i) =
+      ∫⁻ x in Set.pi Set.univ (fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) 1),
+        (∏ i, ENNReal.ofReal (x i ^ h i)) * ENNReal.ofReal (exp (-(s * ∏ i, x i ^ A i))) := by
+    refine setLIntegral_congr_fun hcube fun x hx ↦ ?_
+    rw [ENNReal.ofReal_mul (exp_pos _).le,
+      ENNReal.ofReal_prod_of_nonneg (fun i _ ↦ rpow_nonneg (hx i (mem_univ _)).1.le _), mul_comm]
+  rw [e1, lintegral_pi_Ioo_tied k A h hA lam htied _ hG]
+  have hG₂ : Measurable fun z : ℝ ↦
+      ENNReal.ofReal (exp (-(lam * z))) * ENNReal.ofReal (exp (-(s * exp (-z)))) :=
+    (ENNReal.measurable_ofReal.comp (measurable_const.mul measurable_id).neg.exp).mul
+      (hG.comp measurable_neg.exp)
+  rw [lintegral_pi_Ioi_comp_sum _ hG₂ k]
+  congr 1
+  refine setLIntegral_congr_fun measurableSet_Ioi fun z hz ↦ ?_
+  have hz : 0 < z := hz
+  rw [mul_div_assoc, ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_mul (exp_pos _).le]
+  ring
+
 /-- The tied-block integral reduces to the one-dimensional core integral. -/
 theorem tiedBlockIntegral_eq {k : ℕ} {A h : Fin (k + 1) → ℝ} (hA : ∀ i, 0 < A i) {lam : ℝ}
     (htied : ∀ i, (h i + 1) / A i = lam) (t : ℝ) :
@@ -52,22 +83,8 @@ theorem tiedBlockIntegral_eq {k : ℕ} {A h : Fin (k + 1) → ℝ} (hA : ∀ i, 
     change (0 : ℝ) ≤ _
     exact mul_nonneg (exp_pos _).le
       (Finset.prod_nonneg fun i _ ↦ rpow_nonneg (hx i (mem_univ _)).1.le _)
-  rw [integral_eq_lintegral_of_nonneg_ae hnn hf_meas.aestronglyMeasurable]
-  have hG : Measurable fun c : ℝ ↦ ENNReal.ofReal (exp (-(t * c))) :=
-    ENNReal.measurable_ofReal.comp (measurable_const.mul measurable_id).neg.exp
-  have e1 : ∫⁻ x in Set.pi Set.univ (fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) 1),
-      ENNReal.ofReal (exp (-(t * ∏ i, x i ^ A i)) * ∏ i, x i ^ h i) =
-      ∫⁻ x in Set.pi Set.univ (fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) 1),
-        (∏ i, ENNReal.ofReal (x i ^ h i)) * ENNReal.ofReal (exp (-(t * ∏ i, x i ^ A i))) := by
-    refine setLIntegral_congr_fun hcube fun x hx ↦ ?_
-    rw [ENNReal.ofReal_mul (exp_pos _).le,
-      ENNReal.ofReal_prod_of_nonneg (fun i _ ↦ rpow_nonneg (hx i (mem_univ _)).1.le _), mul_comm]
-  rw [e1, lintegral_pi_Ioo_tied k A h hA lam htied _ hG]
-  have hG₂ : Measurable fun z : ℝ ↦
-      ENNReal.ofReal (exp (-(lam * z))) * ENNReal.ofReal (exp (-(t * exp (-z)))) :=
-    (ENNReal.measurable_ofReal.comp (measurable_const.mul measurable_id).neg.exp).mul
-      (hG.comp measurable_neg.exp)
-  rw [lintegral_pi_Ioi_comp_sum _ hG₂ k, ENNReal.toReal_mul, ENNReal.toReal_prod]
+  rw [integral_eq_lintegral_of_nonneg_ae hnn hf_meas.aestronglyMeasurable, lintegral_tiedBlock hA
+    htied t, ENNReal.toReal_mul, ENNReal.toReal_prod]
   have e2 : ∀ i ∈ (Finset.univ : Finset (Fin (k + 1))),
       (ENNReal.ofReal (1 / A i)).toReal = 1 / A i :=
     fun i _ ↦ ENNReal.toReal_ofReal (one_div_pos.mpr (hA i)).le
@@ -83,16 +100,7 @@ theorem tiedBlockIntegral_eq {k : ℕ} {A h : Fin (k + 1) → ℝ} (hA : ∀ i, 
     have hz : 0 < z := hz
     change (0 : ℝ) ≤ _
     positivity
-  have e3 : ∫⁻ z in Ioi (0 : ℝ),
-      ENNReal.ofReal (exp (-(lam * z))) * ENNReal.ofReal (exp (-(t * exp (-z)))) *
-        ENNReal.ofReal (z ^ k / k.factorial) =
-      ∫⁻ z in Ioi (0 : ℝ),
-        ENNReal.ofReal (exp (-(t * exp (-z))) * exp (-(lam * z)) * z ^ k / (k.factorial : ℝ)) := by
-    refine setLIntegral_congr_fun measurableSet_Ioi fun z hz ↦ ?_
-    have hz : 0 < z := hz
-    rw [mul_div_assoc, ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_mul (exp_pos _).le]
-    ring
-  rw [e3, ← integral_eq_lintegral_of_nonneg_ae hJnn hJmeas.aestronglyMeasurable, integral_div]
+  rw [← integral_eq_lintegral_of_nonneg_ae hJnn hJmeas.aestronglyMeasurable, integral_div]
   ring
 
 /-- **The tied-block power–log theorem.** -/
