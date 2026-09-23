@@ -3177,3 +3177,18 @@ matrix version is `whiteningOf`.
 - `ring` proves the per-mode identity `t² σ² (1−ρ^{2k}) λ² (m̂ + ρ^k d)² = (tσ²)(1−ρ^{2k}) λ² ((tm̂)m̂ + 2(tm̂)ρ^k d + (tρ^{2k}) d²)` once `pow_mul'`
   has turned `ρ ^ (2 * k)` into `(ρ ^ k) ^ 2` on both sides (`simp only [pow_mul']` first).
 - `(1 − 0)` inside a limit blocks `field_simp` from closing `(λ · (1/(λκ)) · (1−0))² = (1/κ)²`: `simp only [sub_zero, mul_one]` first.
+
+### Tide 111 (burnin-average) gotchas
+- Files in `namespace Laplace.Sampler` that use `tiltedExpectation`/`tiltMean` need `open … Laplace.Multi` (the E3 tilted-Gaussian API lives
+  in `Laplace.Multi`); `tiltedCov_quadForm_quadProbe` is `Laplace.Multi.…` while `tiltedCov_energy_quadProbe_add_const` is `Laplace.Sampler.…`.
+- `simp only [mul_add, …, pow_mul]` in one call lets `mul_add` distribute the ℕ exponent `2 * (j + 1)` first, after which `pow_mul` no longer
+  fires and `ring` cannot bridge `α^(2j+2)` with `(α²)^(j+1)` for a compound base. Run `simp only [pow_mul, pow_zero, mul_one]` *before* the
+  distributing simp set.
+- `Nat.cast_sub (Finset.mem_range.1 hj)` instantiates `m := j.succ`, so follow it with `Nat.cast_succ`, not `Nat.cast_add, Nat.cast_one`.
+- `field_simp` normalises *inside* a sum (`∑ λ·2/(2−ηλ)` vs `∑ 2λ/(2−ηλ)`) and then cannot close `1/n * (n * ∑…) = ∑…`; use
+  `rw [← mul_assoc, one_div_mul_cancel hn0, one_mul]`.
+- `Finset.sum_comm` as a bare `rw` may pick the wrong double sum; `conv_lhs => arg 2; rw [Finset.sum_comm]` targets the summand.
+- `(by norm_num)`/`(by positivity)` side goals inside a `refine … (mul_le_mul_of_nonneg_left … (by norm_num)) …` chain can run before the
+  constant is known ("⊢ 0 ≤ ?m"): ascribe the type, `(by norm_num : (0 : ℝ) ≤ 2)`.
+- Sampler-level definitions whose statements only involve `tiltedExpectation` compile without `[DecidableEq ι]` in the section variables only
+  if nothing mentions `⁻¹`; here `ulaCov … ⁻¹` appears, so `[DecidableEq ι]` stays as a section variable (no unused-instance warning).
