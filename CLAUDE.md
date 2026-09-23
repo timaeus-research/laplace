@@ -3192,3 +3192,13 @@ matrix version is `whiteningOf`.
   constant is known ("⊢ 0 ≤ ?m"): ascribe the type, `(by norm_num : (0 : ℝ) ≤ 2)`.
 - Sampler-level definitions whose statements only involve `tiltedExpectation` compile without `[DecidableEq ι]` in the section variables only
   if nothing mentions `⁻¹`; here `ulaCov … ⁻¹` appears, so `[DecidableEq ι]` stays as a section variable (no unused-instance warning).
+
+### Tide 112 (lagweight-longrun) gotchas
+- `nlinarith` does not identify `z ^ (n + 1)` with `z ^ n * z` inside a product hint; `rw [pow_succ]` first (or state the helper inequality with
+  `z ^ n * z`), then feed the product hint `mul_le_mul_of_nonneg_left hkey hc`.
+- `rw [Finset.mul_sum, Finset.mul_sum]` on `n * (½ * ∑ …) ≤ ½ * ∑ …` may spend its second rewrite on the right-hand side; `simp only [Finset.mul_sum]`
+  normalises both sides.
+- Bernoulli is `one_add_mul_le_pow (H : -2 ≤ a) (n) : 1 + n * a ≤ (1 + a) ^ n`; `z^n (1 + n(1−z)) ≤ z^n (2 − z)^n = (z(2−z))^n ≤ 1` gives the
+  monotonicity of `n ↦ n·F_n(z)`.
+- `field_simp` sometimes closes a `calc` step outright (then `ring` fails with "No goals") and sometimes leaves the cleared identity (then `ring` is
+  needed): check the residue rather than guessing; the two `lagWeight` identities behaved oppositely.
