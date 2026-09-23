@@ -52,3 +52,18 @@ version deferred). Anchored scaling: with `c = η²α`, `α = (1−m/n)/(m(n−1
 ## Vote
 - Claude: A + B + C + D + E + F
 - GPT-6 Astra: "prioritize A → B → E, retain C–D for quantitative control, add (ii) if cheap, reject unqualified (i)"
+
+## Result
+
+Commit `5c99e88` on `tide/fulllaw-resolvent`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/FullLawResolvent.lean` (     340 lines).
+A–E as voted plus the GPT-suggested second-order rung (F).
+Lemmas: `diagLyapunov_smul`, `lyapunovVia_smul`, `lyapunovVia_sub`, `lyapunovVia_sub_self_posSemidef`, `covStep_ulaStep_fixed_iff`, `abs_rho_lt_one'`,
+`fullFixed_sub_eq_resolvent`, `fullFixed_sub_sub_resolvent_eq`, `fullFixed_sub_sub_resolvent_posSemidef`, `resolvent_stateTerm_sub_posSemidef`,
+`stateTerm_add`, `stateTerm_smul`, `fullFixed_sub_second_order_eq`, `fullFixed_sub_second_order_posSemidef`, `norm_lyapunovVia_le`,
+`fullFixed_sub_resolvent_norm_le`, `trace_resolvent_frame`, `one_sub_rho_sq`, `fullLaw_llc_first_order`, `fullLaw_llc_ge'`.
+
+Surprises: three build rounds. The exact identity is a two-line consequence of Lyapunov uniqueness once `Δ = T(Δ) + cB(Σ_full)` is written down,
+and the Neumann bound is Banach's estimate at `0` for the `c = 0` law. GPT rejected a scalar-multiple PSD upper bound with a two-dimensional
+counterexample (the resolvent can move mass between modes), pointed out that the amplification factor `1/(1−ρᵢ²)` is a geometric accumulation
+factor and not the integrated autocorrelation time `(1+r)/(1−r)`, and fixed the anchored-scaling reading of the first-order term
+(`(ηtα/2)∑B̂ᵢᵢ/(2−ηλᵢ)` at `pᵢ = tλᵢ`, no extra `1/λᵢ`).
