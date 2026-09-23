@@ -3111,3 +3111,20 @@ matrix version is `whiteningOf`.
 - Nonnegativity of a non-symmetric bilinear sum `∑ᵢⱼ vᵢvⱼEᵢⱼf(ρⱼ)`: double it, add the `Finset.sum_comm` copy, rewrite per term with the
   scalar identity (`field_simp; ring`) into `2 Qᵢⱼzᵢzⱼ`, recognise `z ⬝ᵥ Q *ᵥ z` via `dotProduct_mulVec_eq_sum`, and use
   `PosSemidef.dotProduct_mulVec_nonneg`; finish with `linarith`.
+
+### Tide 106 (`minibatch-scaled`) gotchas
+
+- **A `(deterministic) timeout at whnf` when elaborating a `Tendsto` term** means the closed-form function and the limit lemma's function differ
+  syntactically in a way unification tries to bridge by unfolding (here `(Qᵀ * ((1/t) • C₀) * Q) i j` against `1 / t * (Qᵀ * C₀ * Q) i j`).
+  Write the closed-form function in the simp-normal form the entry lemma uses, and convert the actual expression to it with `simp only
+  [Matrix.mul_smul, Matrix.smul_mul, Matrix.smul_apply, smul_eq_mul]` inside the final `congr'` step.
+- `pow_le_pow_left` is now `pow_le_pow_left₀ (ha : 0 ≤ a) (hab : a ≤ b) (n)`. After `simp only [mul_zero, zero_add]` a `(0 : ℝ) ^ 2` survives
+  and `positivity` rejects `0 ^ 2 ≤ x`: add `zero_pow two_ne_zero` to the simp set. The generic `mul_zero` already kills `Qᵀ * 0`, so
+  `Matrix.mul_zero` in the same simp set is flagged unused.
+- Double-sum limits: nest `tendsto_finsetSum Finset.univ fun i _ => tendsto_finsetSum Finset.univ fun j _ => …`; for a vanishing part state the
+  limit as `𝓝 (∑ i : Fin d, ∑ j : Fin d, (0 : ℝ))` and clean with `simp only [Finset.sum_const_zero, add_zero] at hF`. Divergence:
+  `(tendsto_pow_atTop two_ne_zero).atTop_mul_pos hL hτ` (`Filter.Tendsto.atTop_mul_pos (hC : 0 < C) (hf : Tendsto f l atTop) (hg : Tendsto g l (𝓝 C))`).
+- Positivity of a double sum with one positive witness: `Finset.sum_pos' (fun a _ => nonneg) ⟨i, Finset.mem_univ _, Finset.sum_pos' … ⟨j, _, pos⟩⟩`;
+  `sq_pos_iff.2 (hx : x ≠ 0) : 0 < x ^ 2`.
+- `t · gw/(tλ+g) = (gw/λ) · (tλ/(tλ+g))` for `t > 0` (`field_simp` after `positivity` for `tλ + g ≠ 0`), and `Ŝ = (tŜ)/t → 0` via
+  `(h.div_atTop tendsto_id).congr'` with `mul_div_cancel_left₀ _ ht`.
