@@ -84,3 +84,18 @@ regime, not a two-regime or crossover theorem.
 - GPT-6 Astra: A+B, "treat uniformity away from `s = −1` as an optional strengthening"
 
 Agreed: A+B.
+
+## Result
+
+Commit `953274e` on `tide/localised-laplace-transform`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedLaplaceTransform.lean` (     399 lines).
+A + B as voted (uniform-in-`s ≥ −1 + δ` form as the main statements, pointwise corollaries).
+Generic: `scaled_ratio_rate` (`F((1+s)t)/F(t) = 1 + O(1/t)` uniformly in `s ≥ −1 + δ`), `prod_one_rate` (`|∏R − 1| ≤ 2^{|s|}∑K/t`).
+1D: `exp_locPotential1_scale`, `locLaplace_eq_partition_ratio`, `locPartition_eq` (`Z_loc = e^{−gx₀²/2} D Z`), `partition_eq_J0`
+(`Z = J₀/√(λu)`), `locDenominator_pos`, `J0_pos`, `locLaplace_scaled_eq`, `locLaplace_scaled_rate`, `locLaplace_rate`,
+`locLaplace_rate_pointwise`.
+E2: `exp_localisedRotated_scale`, `localisedLaplace_eq_partition_ratio`, `partitionFunction_localisedRotated_eq_prod`,
+`localisedLaplace_eq_prod`, `localisedLaplace_rate`, `localisedLaplace_rate_pointwise`.
+
+Surprises: the first full check hit the daemon's elaboration timeout; bisecting by sorrying groups of proofs located the slow
+tactic (see CLAUDE.md). The transform statement itself is cheap once the partition-function ratio is exact — the whole tide is
+bookkeeping around two landed rates (`J0_delta_order1`, `locDenominator_rate`).
