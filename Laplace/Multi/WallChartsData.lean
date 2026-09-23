@@ -9,9 +9,10 @@ import Laplace.Multi.FibreKernel
 # The Euclidean wall data and the fibre identity
 
 The Euclidean interface exported by a wall atlas (hironaka branch `wall-atlas`,
-`WallAtlas.lintegral_eq_sum_charts_box`): finitely many chart representatives `rep i` (globally
-measurable, e.g. the clamped representatives), chart domains `dom i`, nonnegative densities
-`dens i` (partition weight times absolute Jacobian), on each domain the truth coordinate
+`WallAtlas.euclidean_export`): finitely many chart representatives `rep i` (globally continuous:
+the clamped representatives), closed boxes of radii `ρ i`, chart domains `dom i` (the part of the
+box over `L'`), continuous nonnegative densities `dens i` (partition weight times absolute
+Jacobian) vanishing off the open box, on each domain the truth coordinate
 `z ℓ ∘ rep i = truthMono (S i) (q i)` exactly, and the weighted transport identity
 `∫⁻_{L'} Ψ = ∑_i ∫⁻_{dom i} Ψ(rep_i u) · dens_i(u) du` (`WallChartsData`).
 
@@ -35,16 +36,22 @@ structure WallChartsData (m : ℕ) (ℓ : Fin (m + 1)) (L' : Set (Fin (m + 1) �
   /-- The finite chart index. -/
   ι : Type
   [fin : Fintype ι]
-  /-- The chart representatives (globally measurable). -/
+  /-- The chart representatives (globally continuous, e.g. clamped to the box). -/
   rep : ι → (Fin (m + 1) → ℝ) → (Fin (m + 1) → ℝ)
-  rep_meas : ∀ i, Measurable (rep i)
-  /-- The chart domains. -/
+  rep_cont : ∀ i, Continuous (rep i)
+  /-- The radii of the closed boxes. -/
+  ρ : ι → ℝ
+  ρ_pos : ∀ i, 0 < ρ i
+  /-- The chart domains: the part of the box over `L'`. -/
   dom : ι → Set (Fin (m + 1) → ℝ)
+  dom_eq : ∀ i, dom i = Metric.closedBall (0 : Fin (m + 1) → ℝ) (ρ i) ∩ rep i ⁻¹' L'
   dom_meas : ∀ i, MeasurableSet (dom i)
-  /-- The chart densities (weight times absolute Jacobian). -/
+  /-- The chart densities (weight times absolute Jacobian): continuous, nonnegative, vanishing off
+  the open box. -/
   dens : ι → (Fin (m + 1) → ℝ) → ℝ
-  dens_meas : ∀ i, Measurable (dens i)
+  dens_cont : ∀ i, Continuous (dens i)
   dens_nonneg : ∀ i u, 0 ≤ dens i u
+  dens_supp : ∀ i u, dens i u ≠ 0 → u ∈ Metric.ball (0 : Fin (m + 1) → ℝ) (ρ i)
   /-- Sign, exponents and solve index of the truth monomial of each chart. -/
   S : ι → ℝ
   S_ne : ∀ i, S i ≠ 0
@@ -70,6 +77,10 @@ local notation "splitAt" => MeasurableEquiv.piFinSuccAbove (fun _ : Fin (m + 1) 
 noncomputable def chartFun (θ : (Fin (m + 1) → ℝ) → ℝ≥0∞) (i : D.ι) (u : Fin (m + 1) → ℝ) :
     ℝ≥0∞ :=
   (D.dom i).indicator (fun u ↦ θ (D.rep i u) * ENNReal.ofReal (D.dens i u)) u
+
+theorem rep_meas (i : D.ι) : Measurable (D.rep i) := (D.rep_cont i).measurable
+
+theorem dens_meas (i : D.ι) : Measurable (D.dens i) := (D.dens_cont i).measurable
 
 theorem measurable_chartFun {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞} (hθ : Measurable θ) (i : D.ι) :
     Measurable (D.chartFun θ i) :=
