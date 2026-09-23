@@ -82,3 +82,14 @@ through order `1/t`" unless `C₁′ = 0`; for a genuinely quadratic model the a
   anchored energy corollary if the existing E2 energy rate theorem makes it short; defer distributional and variance packaging."
 
 Agreed: A′ + A″ + B + C.
+
+## Result
+
+Commit `b23c9c8` on `tide/anchored-gaussian-gap`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/AnchoredGaussianGap.lean` (     338 lines).
+A′ + A″ + B + C as voted.
+Sampler: `tiltedExpectation_exp_quadForm_tilted`, `inv_localisedPrecision_eq_conj`, `tiltMean_dot_localised`, `laplace_localisedGibbs_anchored`.
+Multi: `inv_shift_rate`, `anchoredExponent_rate`, `exp_rate2`, `anchoredGaussianTransform_rate2`, `energyLocCoeff1_anchored`,
+`localisedLaplace_anchoredGap`.
+
+Surprises: the anchored prediction is one extra exponential factor on tide 91's formula (the tilt never touches the quadratic
+integrand identity); the anchor's Gaussian effects (`g`, `a²`) cancel exactly in the gap, leaving `∑(e₀ᵢ − aᵢαᵢ/(2λᵢ²))`.
