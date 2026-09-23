@@ -396,3 +396,4 @@ import Laplace.Multi.LocalisedLaplaceCorrection
 import Laplace.Sampler.GammaLaw
 import Laplace.Sampler.BurnInGammaLaw
 import Laplace.Multi.LocalisedLaplaceGaussianGap
+import Laplace.Multi.AnchoredGaussianGap

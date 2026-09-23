@@ -2866,3 +2866,18 @@ matrix version is `whiteningOf`.
 - State `1/t` corrections as `c / (1 + s) / t`, not `c / ((1 + s) * t)`: then `linear_combination (P / t) * hX` closes the assembly
   identity by `ring` (with `((1+s)*t)⁻¹` ring sees an inverse of a sum-times-`t` polynomial and fails).
 - Python string patches against a generated file with wrapped lines fail silently on multi-line statements; patch the *generator*.
+
+### The anchored Gaussian prediction (tide `anchored-gaussian-gap`)
+
+- A tilt `vᵀu` in `tiltedWeight` passes straight through the quadratic integrand identity: the tilted transform is
+  `tiltedZ (Q + cH) v / tiltedZ Q v`, and `tiltedZ_eq` + `mulVec_tiltMean` turn the completed squares into `½ m·v` terms. After
+  `Real.exp_sub`, `field_simp` (with the four nonzero facts) closes the ratio.
+- Quadratic form of a conjugated diagonal: `unfold tiltMean; rw [inv_eq_conj, ← mulVec_mulVec, ← mulVec_mulVec, dotProduct_comm,
+  dotProduct_mulVec, ← mulVec_transpose, dotProduct_comm]; simp only [dotProduct, mulVec_diagonal]` gives `∑ dᵢ (Uᵀv)ᵢ²` termwise.
+- `|1/(u+g) − 1/u| ≤ g/u²` (`inv_shift_rate`) applied at `u = (1+s)tλ` and `u = tλ` gives the anchored exponent's rate without
+  expanding a product of denominators; `Real.abs_exp_sub_one_sub_id_le` needs `|x| ≤ 1`, so the threshold carries `|X| + KR`.
+- Do not `field_simp` an identity whose atoms are `∏ √(rational)`: it rewrites *inside* the square roots and the two sides get different
+  normal forms. Cancel the scalar explicitly (`sub_div`, `mul_div_cancel_left₀ _ hP0.ne'`) and finish with `ring`.
+- Generated files: rewrap over-long lines with continuation indent `+4` for code (same indent for docstrings) and re-run; a
+  `Finset.sum_div`/`sum_sub_distrib` chain inside a goal with several sums is fragile — state the single-sum form as a `calc` step
+  `= |∑ i, (…)|` proven by `rw [Finset.sum_sub_distrib, ← Finset.sum_div, Finset.sum_neg_distrib]`.
