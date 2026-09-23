@@ -264,6 +264,7 @@ import Laplace.Multi.TwoWell
 import Laplace.Multi.GaussianWell
 import Laplace.Multi.RayExponent
 import Laplace.Multi.DivisorDataMulti
+import Laplace.Multi.LPExponent
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
