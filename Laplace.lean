@@ -281,6 +281,7 @@ import Laplace.Multi.SimplexReduction
 import Laplace.Multi.LogSubstitutionPi
 import Laplace.Multi.LogSectorTied
 import Laplace.Multi.LogSubstitutionPiGeneral
+import Laplace.Multi.LogSectorGeneral
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
