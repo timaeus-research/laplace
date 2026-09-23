@@ -405,3 +405,4 @@ import Laplace.Multi.AnchoredEnergyGap
 import Laplace.Multi.AnchoredVarianceGap
 import Laplace.Multi.AnchoredCovarianceGap
 import Laplace.Sampler.BurnInStart
+import Laplace.Multi.ULAErrorBudget

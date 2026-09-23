@@ -2986,3 +2986,21 @@ matrix version is `whiteningOf`.
 - Reuse tide 92's zero-start theorems for the nonzero start: `tr(PΣ_k)` from `burnIn_mean` (rewrite with `tiltedExpectation_quadForm`,
   `tiltMean _ 0 = 0`, then `linarith`), the determinant ratio from `laplace_ulaBurnIn` (rewrite with `tiltedExpectation_exp_quadForm_tilted
   hQ hQs 0`, then `simpa`).
+
+### Tide `ula-error-budget` gotchas (`Laplace/Multi/ULAErrorBudget.lean`)
+
+- `field_simp` matches nonzero facts up to syntax, not commutativity: after normalising `1 − h·pp/2` it produces `(2 − pp * h)⁻¹`, and
+  `h2 : 2 − h * pp ≠ 0` is *not* recognised; supply the commuted form too (`have h2' : 2 - pp * h ≠ 0 := by rw [mul_comm]; exact h2`).
+  Read the leftover inverse in the failed `ring_nf` goal to see which spelling it wants.
+- `Matrix.trace (H * S) = ∑ i, (H * S) i i` is `rfl`; do not `simp only [Matrix.trace, Matrix.diag, Matrix.mul_apply]` when `S` is itself a
+  product (`mul_apply` then unfolds `S i j` too). Rewrite the single instance with `Matrix.mul_apply (M := H) (N := S)`.
+- `conj_pow`, `conj_mul_conj`, `one_sub_conj`, `inv_conj_diagonal` of `BurnInGammaLaw` are `orthoOf`-specific; their frame-general versions
+  (`_frame`, hypothesis `hU : Uᵀ * U = 1`) live here and are one-liners given `mul_transpose_eq_one_of hU`.
+- Frame-general `ulaCov`: prove `P − (h/2)•(P*P) = U diag(p(1 − hp/2)) Uᵀ` by rewriting the *diagonal* side
+  (`diagonal (…) = diagonal p − (h/2)•(diagonal p * diagonal p)` by `ext; by_cases; simp; ring`) and then
+  `Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_smul, Matrix.smul_mul, ← conj_mul_conj_frame hU, ← frame_eq_conj hU hdiag`.
+- `ulaCov`, `ulaStep` are in `Laplace.Sampler`; from `Laplace.Multi` write them qualified (an unqualified use is "unknown identifier").
+- `Filter.Tendsto.congr'` takes `f₁ =ᶠ f₂` and a `Tendsto f₁`; build the eventual equality with `filter_upwards [eventually_ne_atTop (0 : ℝ)]`
+  and `field_simp` (which usually closes `η / 4 = t * (η / t) / 4` outright — no trailing `ring`). `Tendsto.div_atTop` gives `c / t → 0`.
+- Drop hypotheses a statement no longer needs (`hh` in the frame `ulaCov`, `hlam` in the scaled-step limit): the unused-variable linter
+  is a hard failure for the land script.
