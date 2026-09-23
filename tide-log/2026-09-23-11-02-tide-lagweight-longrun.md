@@ -51,3 +51,15 @@ post-burn-in limit, not a limit interchange."
 ## Vote
 - Claude: A + B + C + D + E
 - GPT-6 Astra: "approve A–C. Add the exact finite-n correction and its upper bound; monotonicity is also cheap."
+
+## Result
+
+Commit `144304c` on `tide/lagweight-longrun`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LagWeightLongRun.lean` (     229 lines).
+A–C as voted plus the GPT-suggested exact deficit bounds and monotonicity (D, E).
+Lemmas: `sum_range_sub_succ_mul_pow`, `lagWeight_eq`, `mul_lagWeight_eq`, `lagWeight_mul_le`, `lagWeight_mul_deficit_le`, `pow_mul_one_add_le_one`,
+`mul_lagWeight_succ_le`, `lagWeight_mul_tendsto`, `alpha_sq_lt_one`, `Leta_eq_lagWeight_limit`, `avgLimit_mul_tendsto_Leta`,
+`Leta_sub_avgLimit_mul_le`, `avgLimit_mul_le_Leta`.
+
+Surprises: a small closing tide (four short build rounds, all `field_simp`/`ring` residues and one `nlinarith` that needed `z^(n+1)` rewritten
+as `z^n * z`). GPT corrected the reading of `nW_{η,n} ≤ L_η`: the fixed-window variance is at most the long-run approximation `L_η/n` and
+approaches it from below; it does not "beat" or "fail to beat" the long-run rate.
