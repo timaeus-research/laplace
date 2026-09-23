@@ -3252,3 +3252,34 @@ matrix version is `whiteningOf`.
 - `rw [← mul_assoc]` without arguments re-associates the first product it finds (often on the wrong side); give the factors,
   `rw [← mul_assoc (1 / t) (t / 2), …]`.
 - A `have h := thm …` whose statement's implicit `{Q}`/`{g}` appear only in the conclusion needs `(Q := Q)`, `(g := g)`.
+
+### Relative push-forward arc (RescaledData, ChartAssembly, TwoWell, LPExponent, UniformSchedule)
+
+- `set S := fun t ↦ ∑ i, L i t` does not fold applied occurrences under binders; use
+  `obtain ⟨S, hS⟩ : ∃ S, S = fun t ↦ … := ⟨_, rfl⟩` and convert hypotheses with `.congr' (… by simp only [hS])`.
+- `Tendsto.zero_mul_isBoundedUnder_le` needs the bounded factor named: `have hbd : IsBoundedUnder (· ≤ ·) l (norm ∘ f) :=
+  isBoundedUnder_of_eventually_le (a := M) …`.
+- `∞`, `λ`, `X∞` are not identifiers; `omit … in` goes BEFORE the docstring; `push Not` replaces `push_neg`.
+- After editing an imported module, `lake build <Module>` then `lean-state restart`, or dependents report bogus
+  "type mismatch" against the stale olean.
+- `rw [lemma]` whose RHS has a variable absent from the LHS leaves a metavariable goal: pass it (`(x₁ := x₁)`).
+- Never `rw [← hN]` on an integral whose integrand association differs from the goal's (whnf timeout); state
+  `hN'` in the goal's association and prove it by `rw [hN]; exact integral_congr_ae (of_forall fun u ↦ by ring)`.
+- `Real.rpow_sum_of_pos ht f s : x ^ ∑ f = ∏ x ^ f i` (fold with `←`); `(t⁻¹)^(-α) = t^α` by
+  `Real.inv_rpow, Real.rpow_neg, inv_inv`; `Real.rpow_neg_one` exists for real bases here.
+- `isLittleO_log_rpow_rpow_atTop r hs |>.tendsto_div_nhds_zero : (log t)^r / t^s → 0`;
+  `tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero s b hb : x^s e^{-bx} → 0`; `Tendsto.div_atTop` has no `r` argument.
+- Pi-type product integrals: `rw [volume_pi]` then `integral_fintype_prod_eq_prod (fun i y ↦ …)`,
+  `Integrable.fintype_prod (f := …)`; positive orthant has positive measure via `Measure.pi_pi`,
+  `Real.volume_Ioi`, `CanonicallyOrderedAdd.prod_pos.mpr`, `ENNReal.coe_lt_top`.
+- `setIntegral_mono_set` wants `0 ≤ᵐ[μ.restrict t] f`: `(ae_restrict_iff' hs).mpr (of_forall fun x hx ↦ …)`;
+  `∫ x in Ioo 0 r, x^h` via `← integral_Ioc_eq_integral_Ioo, ← intervalIntegral.integral_of_le, integral_pow`;
+  rpow version `integral_rpow (Or.inl hr)`, integrability `intervalIntegral.intervalIntegrable_rpow'`.
+- `norm_setIntegral_le_of_norm_le_const (hs : μ s < ⊤) hC : ‖∫‖ ≤ C * μ.real s`, with `measureReal_def`,
+  `Real.volume_Ico`, `ENNReal.toReal_ofReal`.
+- `le_inv_iff_mul_le_one_left` is the group version (no positivity argument): prove `e^{-u} ≤ (t^q)⁻¹` by a
+  `calc` through `field_simp` and `div_le_div_of_nonneg_right`.
+- Dominated convergence for `y e^{-y}` against a lower bound `z ≤ y`: `y e^{-y} ≤ z e^{-z} + e^{-z}` (`mul_exp_neg_le_of_le`).
+- `positivity` cannot use `hd.hκ : 0 < κ` from a structure field for `0 ≤ κ * y²`; give `mul_nonneg hd.hκ.le (sq_nonneg _)`.
+- `twoWell_energy_eq_hump (A := hd.C₀)` when `C₀` is a `def` wrapping the integral; `Fin.forall_fin_two.mpr ⟨_, _⟩`
+  with `![a, b] 0` defeq avoids `fin_cases <;> simp` lint.
