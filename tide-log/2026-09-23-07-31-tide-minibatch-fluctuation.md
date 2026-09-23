@@ -54,3 +54,22 @@ long-run (temporal) inflation statement.
 ## Vote
 - Claude: A+B+C
 - GPT-6 Astra: A+B+C (+ covariance order / D if cheap)
+
+## Result
+
+Commit `ef3c8a6` on `tide/minibatch-fluctuation`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/MinibatchFluctuation.lean` (     400 lines).
+A–C as voted (GPT's corrected first-order reading in the docstrings); deferred: Σ^{mb} ⪰ N^{mb}, the PSD trace-product lemma and D.
+Lyapunov: `abs_mul_lt_one_of_abs_lt_one`, `diagLyapunov_isHermitian`, `quadForm_pow_eq_sum`, `summable_quadForm_pow`,
+`diagLyapunov_quadForm_eq_tsum`, `summable_quadForm_pow_total`, `quadForm_le_diagLyapunov_quadForm`, `diagLyapunov_sub_posSemidef`,
+`diagLyapunov_posSemidef`, `diagLyapunov_posDef`.
+Frame: `mulVec_injective_of_transpose_mul`, `lyapunovVia_posSemidef`, `lyapunovVia_posDef`, `diagLyapunov_add`, `lyapunovVia_add`,
+`minibatchNoise_posDef`, `minibatchCov_posDef_frame`, `lyapunovVia_ulaNoise_frame`, `minibatchCov_sub_ulaCov`,
+`minibatchCov_sub_ulaCov_posSemidef`, `sum_sum_conj_mul_conj'`, `dotProduct_conj_mulVec_frame`, `conj_transpose_mul_mul_self`,
+`minibatchVar_frame`, `minibatchCov_frame_split`, `minibatchCov_frame_split_diag`, `minibatchVar_sub_ulaVar`.
+
+Surprises: four build rounds, all bookkeeping. `omit [DecidableEq ι]` is refused on any lemma with `hU : Uᵀ * U = 1` because the identity
+matrix needs `DecidableEq`, while `lyapunovVia` itself does not need it; the finsupp-based `PosDef` needs the `of_dotProduct_mulVec_*`
+constructors; `conjTranspose_mul_mul_same` unfolds `Uᵀ` to a lambda unless `(B := Uᵀ)` is passed; `field_simp` closes the Lyapunov
+denominators once rewritten as `h p (2 − h p)`. Mathematically GPT corrected my prose twice: the variance's first-order relative increment is
+twice the mean's (`(1+α)²`), and off-diagonal noise enters linearly through the mean term when `m ≠ 0`; no long-run (temporal) inflation
+claim follows from the marginal variance.
