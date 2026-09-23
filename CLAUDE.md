@@ -3004,3 +3004,16 @@ matrix version is `whiteningOf`.
   and `field_simp` (which usually closes `η / 4 = t * (η / t) / 4` outright — no trailing `ring`). `Tendsto.div_atTop` gives `c / t → 0`.
 - Drop hypotheses a statement no longer needs (`hh` in the frame `ulaCov`, `hlam` in the scaled-step limit): the unused-variable linter
   is a hard failure for the land script.
+
+### Tide `ula-fluctuation-budget` gotchas (`Laplace/Multi/ULAFluctuationBudget.lean`)
+
+- `simpa using (… .sub (tendsto_const_nhds (x := b ^ 2))).const_mul c` does not reduce the limit `c * (b ^ 2 - b ^ 2)` to `0` (the `simp`
+  pass on the term's type and on the goal diverge); instead compute the limit expression explicitly with `have e0 : c * ((b + 0 * w) ^ 2 -
+  b ^ 2) = 0 := by ring` and `rw [e0] at h'`.
+- Frame-general `tr((HΣ_k)²)`: rewrite `Σ_k⁻¹⁻¹` with `burnInCov_inv_inv_frame`, `H` with `frame_eq_conj`, then `conj_mul_conj_frame` twice
+  (inner products first — the outer product is not of the conjugation shape), `trace_mul_cycle`, `hU`, `diagonal_mul_diagonal` twice.
+- `Uᵀ(Hx) = diag(λ)(Uᵀx)` needs `Uᵀ H = diag(λ) Uᵀ` (`transpose_mul_frame`, from `UᵀHU = diag λ` and `UUᵀ = 1`); with it, the cross term
+  `(Hm)ᵀΣ(Hm)` is `dotProduct_conj_diagonal_mulVec` + `simp only [transpose_mulVec_mulVec_frame, Matrix.mulVec_diagonal, …]`.
+- Limits in `k` for the E2 formulas: state them for generic data `(t lam p b z)` with `hp`, `hev`; the E2 instantiation is prose.
+- Limits in `t` of rational expressions: divide numerator and denominator by `t` in an `=ᶠ[atTop]` equality proved with
+  `filter_upwards [eventually_ne_atTop (0 : ℝ)]; field_simp; ring`, then `Tendsto.div` with the nonzero limit and `.congr'`.
