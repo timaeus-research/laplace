@@ -34,3 +34,21 @@ Correctness of A–D and the cumulant consistency (mean `E₁/t`, variance `2E�
 ## Vote
 - Claude: A–D (`tiltedVar_quadForm`, `anchoredGaussianVar_eq`, `anchoredGaussianVar_rate2`, `localisedVar_anchoredGap`), mixed covariance deferred
 - GPT-6 Astra: A → B → C → D this tide; mixed covariance only if genuinely cheap
+
+## Result
+
+Commit `e63f59b` on `tide/anchored-variance-gap`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/AnchoredVarianceGap.lean` (     506 lines).
+A–D as voted.
+Sampler: `inv_apply_symm`, `apply_symm_of_isHermitian`, `transpose_eq_of_isHermitian`, `dotProduct_mulVec_symm_of_isHermitian`,
+`dotProduct_mulVec_eq_sum`, `quadForm_sq_mul_eq_sum`, `dotProduct_sq_mul_eq_sum`, `quadForm_mul_dotProduct_mul_eq_sum`,
+`integrable_three_coord_mul_gaussianWeight_matCLM`, `integrable_quadForm_sq_mul_gaussianWeight_matCLM`,
+`integrable_dotProduct_sq_mul_gaussianWeight_matCLM`, `integrable_quadForm_mul_dotProduct_mul_gaussianWeight_matCLM`,
+`integral_quadForm_sq_mul_gaussianWeight_matCLM` (Wick: `Z(tr(HΣ)² + 2tr(HΣHΣ))`), `integral_dotProduct_sq_mul_gaussianWeight_matCLM`,
+`integral_quadForm_mul_dotProduct_mul_gaussianWeight_matCLM` (= 0 by reflection), `tiltedVar_quadForm`,
+`mul_inv_localisedPrecision_eq_conj`, `trace_sq_mul_inv_localisedPrecision`, `anchoredMean_energy_localised`, `anchoredGaussianVar_eq`.
+Multi: `central_var_term_bound`, `noncentral_var_term_bound`, `anchoredGaussianVar_rate2`, `localisedVar_anchoredGap`.
+
+Surprises: the three Wick contractions need only one binder permutation (the second connected contraction is the first after
+`c ↔ d`, two `Finset.sum_comm`s); the existing `integral_odd_mul_gaussian_eq_zero` kills the cubic moment with no integrability
+hypothesis; `ring` cannot equate `((tλ+g)⁻¹)³` with `((tλ+g)³)⁻¹` (expanded-polynomial inverse is a fresh atom) — normalise with
+`simp only [div_eq_mul_inv, ← inv_pow]` first.
