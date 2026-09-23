@@ -2881,3 +2881,24 @@ matrix version is `whiteningOf`.
 - Generated files: rewrap over-long lines with continuation indent `+4` for code (same indent for docstrings) and re-run; a
   `Finset.sum_div`/`sum_sub_distrib` chain inside a goal with several sums is fragile — state the single-sum form as a `calc` step
   `= |∑ i, (…)|` proven by `rw [Finset.sum_sub_distrib, ← Finset.sum_div, Finset.sum_neg_distrib]`.
+
+### Tide `anchored-energy-gap` gotchas (`Laplace/Multi/AnchoredEnergyGap.lean`)
+
+- `Matrix.mulVec_mulVec` takes explicit args `(v) (M) (N)`: `Matrix.mulVec_mulVec H` reads `H` as the *vector* and the
+  rewrite fails with "did not find `?M *ᵥ ?N *ᵥ H`". For a chain `H *ᵥ (U *ᵥ w)` state the target as a `have` and
+  `rw [Matrix.mulVec_mulVec, mul_orthoOf_eq hH, ← Matrix.mulVec_mulVec]` — the outermost match is rewritten first.
+- `mul_orthoOf_eq` (`Q * orthoOf hQ = orthoOf hQ * diagonal hQ.eigenvalues`) already lives in `Laplace.Sampler.ULAEigen`;
+  grep the seabed before adding eigen-conjugation helpers (a duplicate is a hard error, not a shadowing).
+- Read the residual `linear_combination` prints: `(…) * (1/4) + (…) * (-1/4) = 0` means the coefficient was off by a factor 2
+  (`t * (1/2 * (S + M)) − (1/2 X + t/2 M)` against `h : 1/2 * (t S) = 1/2 X` wants `linear_combination h`, not `(1/2) * h`).
+- Orientation of the reciprocal remainder: `½tλ/(tλ+g) − ½ + g/(2λt) = (g/2)(1/(tλ) − 1/(tλ+g))`; `inv_shift_rate` bounds
+  `|1/(u+g) − 1/u|`, so `rw [abs_sub_comm]` before using it. `field_simp; ring` reports the sign error as an unsolved goal
+  whose two sides differ only in the sign of the `g²`, `g³` monomials.
+- `nlinarith` proves `u² ≤ (u+g)²` (`g ≥ 0`) but not `u²·u² ≤ u²·(u+g)²`; factor with `mul_le_mul_of_nonneg_left`.
+  `t² ≤ t³` for `1 ≤ t`: `nlinarith [mul_le_mul_of_nonneg_left ht (sq_nonneg t)]`.
+- `gcongr` on `c * (X/t² + Y/t³) ≤ c * (X/t² + Y/t²)` leaves goals of an unexpected shape (the following `exact` dies with
+  "failed to synthesize Zero ?m"); write `mul_le_mul_of_nonneg_left (add_le_add le_rfl h3) (by positivity)` directly.
+- Sum assembly `a * ∑f + b * ∑g − d/2 − (∑p − ∑q)/t = ∑ (a f + b g − 1/2 − (p − q)/t)`:
+  `simp only [Finset.sum_sub_distrib, Finset.sum_add_distrib, Finset.sum_div, Finset.mul_sum, sub_div, hd]` with
+  `hd : (d : ℝ)/2 = ∑ _i : Fin d, (1/2 : ℝ)` closes it in one step; a hand `rw` chain over-rewrites and fails with
+  "did not find `(∑ f)/a`" once both sides already agree.
