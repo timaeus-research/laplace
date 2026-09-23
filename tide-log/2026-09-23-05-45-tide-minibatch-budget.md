@@ -43,3 +43,15 @@ Correctness of A–C (only the frame diagonal of `C` enters the mean); E8 readin
 ## Vote
 - Claude: A–C plus `minibatch_bias_nonneg`, `minibatch_bias_scaled`, `minibatch_bias_le`
 - GPT-6 Astra: land A–C plus exact scaling and nonnegative inflation; label constant `C` a frozen-noise approximation; defer the variance
+
+## Result
+
+Commit `5a3334e` on `tide/minibatch-budget`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/MinibatchBudget.lean` (     226 lines).
+A–C as voted.
+Sampler: `minibatchCov_frame_apply`, `minibatchCov_frame_diag`, `minibatch_fixed_iff_frame`, `trace_mul_eq_sum_conj_diag`, `minibatch_llc_frame`.
+Multi: `posSemidef_conj_frame`, `minibatch_bias_nonneg`, `minibatch_bias_scaled`, `minibatch_bias_le`, `ulaAnchored_llc_budget_minibatch`.
+
+Surprises: compiled first time — the seabed's Lyapunov API was already frame-general, so the whole tide is a transcription plus one
+exact rearrangement of sums; only the frame diagonal of the gradient-noise covariance enters the mean of the LLC statistic, and at the
+β-scaled step the minibatch bias grows linearly in t (0.066 → 1.07 over t = 40 → 640 in the check) while the discretisation bias stays
+at 0.199.
