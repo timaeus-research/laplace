@@ -2931,3 +2931,16 @@ matrix version is `whiteningOf`.
 - `omit [DecidableEq ι] in` is not enough for lemmas about plain `IsHermitian` entries: they use neither instance, so write
   `omit [Fintype ι] [DecidableEq ι] in` (else the `unusedSectionVars` / `unusedFintypeInType` linters fire); but `matCLM` needs
   `DecidableEq`, so don't omit it on Gaussian-weight lemmas.
+
+### Newton-edge / two-layer / hump arc (2026-09-23)
+
+- When `E + R` is syntactically the target `F` (same association), `simp only [edgeEnergy, F]` closes the `congr'` goal
+  outright and a following `congr 1` errors "No goals"; only add `congr 1 <;> integral_congr_ae … ring_nf` when the
+  association differs (edge 2 of the two-layer wall).
+- `tendsto_inv_nhdsGT_zero (𝕜 := ℝ)` is the `v⁻¹ → ∞` along `𝓝[>] 0` lemma; `(v⁻¹) ^ (-α) = v ^ α` by
+  `Real.inv_rpow hv.le, Real.rpow_neg hv.le, inv_inv`.
+- Two-well ratios `(a + b e^{-z})/(c + d e^{-z})`: `rw [Real.exp_neg]` first, then `field_simp; ring` with `0 < exp z`
+  in context; `linear_combination` against `exp(-z) * exp z = 1` is fragile.
+- `Real.one_le_rpow (hx : 1 ≤ x) (hz : 0 ≤ z) : 1 ≤ x ^ z`; `Real.log_rpow (hx : 0 < x) : log (x ^ y) = y * log x`.
+- Numerics of separated wells: integrate per well in local coordinates with the *correct* Gaussian width
+  (`F ≈ x² s⁴` near `0` for `x²((x−s)⁴+s⁶)` gives width `1/(√(2t) s²)`); a wrong width silently drops a well.
