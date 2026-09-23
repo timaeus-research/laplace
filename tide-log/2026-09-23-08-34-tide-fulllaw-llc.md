@@ -55,3 +55,16 @@ strictness.
 ## Vote
 - Claude: A–C (+ iterate bounds, zero-noise equality)
 - GPT-6 Astra: A–C as one-step lower bounds (+ monotone iterates, zero-noise equality)
+
+## Result
+
+Commit `eef6960` on `tide/fulllaw-llc`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/FullLawLLC.lean` (     247 lines).
+A–C as voted (B relabelled a one-step lower bound per GPT), plus the monotone iterate bounds and zero-noise equalities.
+Lemmas: `posSemidef_transpose_mul_mul`, `trace_mul_nonneg_frame`, `trace_mul_le_frame`, `fullFixed_trace_ge`, `stateTerm_trace_nonneg`,
+`fullFixed_trace_ge'`, `ula_llc_le_minibatch_llc_frame`, `fullLaw_llc_ge`, `trace_mul_conj_apply`, `trace_stateTerm_frame`,
+`fullStep_iterate_trace_mono`, `fullStep_iterate_trace_le`, `fullFixed_eq_of_c_zero`, `fullFixed_eq_of_D_zero`.
+
+Surprises: the core compiled on the third round (omit bookkeeping, a swapped summation order fixed by `Finset.sum_comm`, and a `rw` that
+already closed the goal). Mathematically GPT corrected the framing: `c∑DᵢSDᵢᵀ` is the one-step lower correction, not the first-order
+correction in `c` — the latter is propagated through the additive Lyapunov resolvent `R = (1−T)⁻¹`, `F = S + cRB(S) + O(c²)`, and is `O(η)`
+rather than `O(η²)` at small step; the seabed's finite iterates `fullStep^k(S)` make the missing propagation visible as monotone lower bounds.
