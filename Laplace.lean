@@ -410,3 +410,4 @@ import Laplace.Multi.ULAFluctuationBudget
 import Laplace.Multi.MinibatchBudget
 import Laplace.Multi.ULAAutocovariance
 import Laplace.Multi.AutocovScaled
+import Laplace.Multi.MinibatchFluctuation

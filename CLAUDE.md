@@ -3068,3 +3068,24 @@ matrix version is `whiteningOf`.
 - A limit statement about a seabed object (`ulaLongRunVar …`) that is only meaningful eventually: prove the closed-form limit first, then
   `(closed_form_tendsto …).congr' ?_` with `filter_upwards [eventually_gt_atTop 0, hev] with t ht hev; rw [anchored_identity … ht … hev]`.
 - `le_div_iff₀ (hc : 0 < c) : a ≤ b / c ↔ a * c ≤ b`; `one_half_pos`; `one_div_pos.2`.
+
+### Tide 104 (`minibatch-fluctuation`) gotchas
+
+- **`omit [DecidableEq ι] in` fails with "cannot omit referenced section variable" whenever a hypothesis mentions `(1 : Matrix ι ι ℝ)`** — e.g.
+  `hU : Uᵀ * U = 1` — because `Matrix.one` needs `DecidableEq ι`. Such lemmas legitimately use the instance; omit only on lemmas without `1`,
+  `diagonal`, `⁻¹`. Conversely `lyapunovVia`/`diagLyapunov` do **not** need `DecidableEq` (the linter flags it unused): omit there.
+- The current Mathlib defines `Matrix.PosDef`/`PosSemidef` via finsupp double sums; work through `Matrix.PosDef.of_dotProduct_mulVec_pos
+  (hM1 : IsHermitian) (hM2 : ∀ ⦃x⦄, x ≠ 0 → 0 < star x ⬝ᵥ M *ᵥ x)`, `Matrix.PosSemidef.of_dotProduct_mulVec_nonneg`,
+  `PosSemidef.dotProduct_mulVec_nonneg`, `(posDef_iff_dotProduct_mulVec.1 h).2 hx`, and kill `star x` with `star_trivial` (Pi instance exists).
+  `PosDef.conjTranspose_mul_mul_same (hA) (hB : Function.Injective B.mulVec) : (Bᴴ * A * B).PosDef` — pass `(B := U)`/`(B := Uᵀ)` explicitly,
+  otherwise `Uᵀ` is unfolded to a lambda and `conjTranspose_eq_transpose_of_trivial` no longer matches; injectivity via
+  `mulVec_injective_of_isUnit (isUnit_iff_exists.2 ⟨Uᵀ, mul_transpose_eq_one_of hU, hU⟩)`. `PosSemidef.conjTranspose_mul_mul_same (hA) (B)`
+  needs no injectivity. `PosDef.one`, `PosDef.smul (ha : 0 < a)`, `PosSemidef.smul (ha : 0 ≤ a)`, `PosDef.add_posSemidef`, `PosSemidef.add`.
+- A lemma whose *type* needs neither `Fintype` nor `DecidableEq` but whose proof needs `Fintype` (e.g. `PosSemidef` of a matrix): `omit [Fintype ι]
+  [DecidableEq ι] in theorem foo [Finite ι] … := by cases nonempty_fintype ι; …`.
+- `Summable.le_tsum (hf) (i) (hb : ∀ j ≠ i, 0 ≤ f j) : f i ≤ ∑' j, f j`; `tsum_nonneg`; `tsum_congr`; swap a finite double sum with a `tsum` by
+  two `Summable.tsum_finsetSum` steps (`summable_sum` for the inner finite sum) after `simp_rw` of the pointwise geometric-series identity.
+- `field_simp` on Lyapunov denominators `1 − (1 − hp)²`, `h(p+p) − h²p²`: `rw` them into `h * p * (2 − h * p)` first (`ring`), supply `h ≠ 0`,
+  `p ≠ 0`, `2 − h p ≠ 0`, `1 − hp/2 ≠ 0`; `field_simp` then closes without `ring`.
+- `Finset.sum_ite_eq (s) (a) (f) : ∑ x ∈ s, (if a = x then f x else 0) = if a ∈ s then f a else 0` — with `Finset.mem_univ, if_true` it collapses the
+  diagonal of a double sum; split `(δᵢⱼσ + E)²` pointwise with `split_ifs with hij; · subst hij; ring; · ring` before collapsing.
