@@ -93,3 +93,31 @@ superpolynomial bounds; then `ChartAssembly` with the dominance rule "smaller `�
 `r`" (`Laplace/Multi/PowerLogDominance.lean`). The restricted version (isolated coercive residual
 sectors) is available now; the general one-parameter version needs constrained-monomial integration
 with logarithmic sectors, which is the remaining analytic work on our side.
+
+## Status (2026-09-24): the geometric core is proven on a local hironaka branch
+
+Branch `wall-atlas` of the local hironaka worktree (`lean/hironaka-upstream`, based on `a8897879f`;
+not pushed), commit `435b6a7`, `Monomialize/Relative/Wall/`:
+
+- `FactorSeparation.lean`: `exists_factor_monomial` — if `F₁ F₂ = S ∏ u_i^{k_i}` near `0` with
+  `S ≠ 0`, each factor is a unit times a monomial with exponents adding to `k` (primality of the
+  coordinate germs `IsSmoothAt.dvd_or_dvd`, cancellation of a coordinate by density
+  `eventuallyEq_of_coord_mul`, induction on the total degree).
+- `AbsorbPair.lean`: `exists_chart_absorbing_unit_pair` — the unit-absorbing coordinate change
+  `v_j = (S a)^{1/k_j} u_j` transports a second monomial × unit function to the same form.
+- `WallChart.lean`: `WallChartAt F ℓ g P` and `exists_wallResolution_of_bo` — the total-space
+  Watanabe resolution of `F · z_ℓ` (`watanabe_thm_2_3_of_isConnected_of_bo`) has, at every point
+  over the wall `{z_ℓ = 0}`, a centred chart with `F ∘ g ∘ φ⁻¹ = a · u^k` (`a` a unit),
+  `z_ℓ ∘ g ∘ φ⁻¹ = S · u^q` exactly (`S = ±1`, `q ≠ 0`), `det D(g ∘ φ⁻¹) = b · u^h`; `g` proper,
+  surjective, an analytic isomorphism off `{F · z_ℓ = 0}`.
+- `Record.lean`: `exists_wallResolution`, the unconditional instance at the fully Monomialize
+  order-reduction family; axioms `propext`, `Classical.choice`, `Quot.sound` only.
+
+So items 1–4 of the mechanism (resolve `F s`, proper, cover the central preimage, absorb the base
+unit) are done at the level of "a chart at every point"; the remaining geometric work is the
+FINITE atlas with closed boxes and uniform bounds (5–6), the partition of unity (7), and the
+fibre identity (8–9). For the fibre identity the intended route reuses the total-space transport
+certificates of the existing read-out (`Monomialize/Manifold/Watanabe/Readout.lean`): with
+`s ∘ g ∘ φ⁻¹` an exact monomial, the one-dimensional substitution `v ↦ s` inside each box gives the
+fibre density `|v|/(q_ℓ |s|)`, and equality of the `s`-integrals against every test function `η(s)`
+plus continuity in `s` (compactly supported partition weights) gives the pointwise fibre identity.
