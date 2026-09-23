@@ -72,3 +72,15 @@ exact localised measure, fixed parameters/dimension, eventual bounds, separation
   signed-law expansion as an identified interpretation"
 
 Agreed: A+B+C (architectural divergence noted: pointwise vs uniform in `s`; Step 3 does pointwise).
+
+## Result
+
+Commit `35b12f2` on `tide/localised-laplace-correction`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedLaplaceCorrection.lean` (     308 lines).
+A + B + C as voted (pointwise in `s > −1`; the uniform-in-`s` normalised form left as a follow-up).
+Generic: `prod_rate_order2` (two factors `1 + x/t + O(t⁻²)`), `scaled_ratio_rate2` (`F((1+s)t)/F(t) = 1 − f₁s/((1+s)t) + O(t⁻²)` via
+`ratio_rate_order2`), `prod_one_rate2` (finite product, existential constants by `Finset.induction_on`).
+1D: `cubicScale_sq`, `energyLocCoeff1_eq_J1_add_D1` (`e₁ = j₁ + d₁`), `locLaplace_scaled_rate2`, `locLaplace_rate2`.
+E2: `localisedLaplace_rate2`.
+
+Surprises: `e₁ = j₁ + d₁` closes by `field_simp; ring` after one `cubicScale_sq` rewrite (`√λ² = λ`) — the whole first correction of
+the transform is the energy's first correction, coordinate by coordinate.
