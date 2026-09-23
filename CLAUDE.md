@@ -3216,3 +3216,13 @@ matrix version is `whiteningOf`.
   `generalize` that sum away before the simp.
 - Unused section variables (`hη`) in a theorem are hard failures: `omit hη in theorem …`; an unused explicit hypothesis (`η` in a `def`) too.
 - `one_div_pow` is ambiguous with `Matrix.one_div_pow` under `open Matrix`: write `_root_.one_div_pow`.
+
+### Tide 114 (fulllaw-upper) gotchas
+- Under `open scoped Matrix.Norms.Operator`, an `omit [DecidableEq ι] in` on a statement mentioning `‖M‖` fails with "cannot omit referenced
+  section variable" (the norm instance path references it); just keep the instance.
+- `zero_le` takes its argument implicitly here: `Finset.single_le_sum (f := fun j => ‖M i j‖₊) (fun _ _ => zero_le) (Finset.mem_univ j)`; the `f`
+  must be given explicitly or the sum's summand is left as a metavariable.
+- Banach's a-priori estimate is `ContractingWith.dist_fixedPoint_le (x) : dist x (fixedPoint f hf) ≤ dist x (f x) / (1 - K)`; the coercion
+  `((⟨L, _⟩ : ℝ≥0) : ℝ)` and `fullFixed` unfold definitionally, so a `have` with the intended real-valued type typechecks directly.
+- `|Mᵢⱼ| ≤ ‖M‖` for the `ℓ∞` operator norm: `linfty_opNorm_def`, `Finset.single_le_sum` inside the row sum, `Finset.le_sup` over rows, then
+  `rw [← Real.norm_eq_abs, ← coe_nnnorm]; exact_mod_cast`.

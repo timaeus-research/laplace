@@ -420,3 +420,4 @@ import Laplace.Multi.MSELog
 import Laplace.Multi.BurnInAverage
 import Laplace.Multi.LagWeightLongRun
 import Laplace.Multi.GrowingWindow
+import Laplace.Multi.FullLawUpper
