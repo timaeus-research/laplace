@@ -68,3 +68,13 @@ unscaled energy discrepancy and the `2C₁t⁻³` variance discrepancy"; constan
   qualification and corrected energy normalization"
 
 Agreed: A + B.
+
+## Result
+
+Commit `fbc0638` on `tide/localised-laplace-gaussian-gap`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/LocalisedLaplaceGaussianGap.lean` (     213 lines).
+A + B as voted (GPT's single-perturbation square-root route).
+`sqrt_one_add_sub_le`, `sqrt_gaussianFactor_eq`, `gaussianFactor_rate2` (explicit constant `g²(|s| + s²)/(2(1+s)²λ²)`, threshold `1`),
+`gaussianTransform_rate2`, `localisedLaplace_gaussianGap`.
+
+Surprises: the exact remainder identity `√(1+x) − 1 − x/2 = −(√(1+x) − 1)²/2` (a two-line `linear_combination` from `√(1+x)² = 1 + x`)
+removes every smallness threshold; the whole per-factor rate is then `abs` bookkeeping around one rational perturbation.
