@@ -3128,3 +3128,17 @@ matrix version is `whiteningOf`.
   `sq_pos_iff.2 (hx : x ≠ 0) : 0 < x ^ 2`.
 - `t · gw/(tλ+g) = (gw/λ) · (tλ/(tλ+g))` for `t > 0` (`field_simp` after `positivity` for `tλ + g ≠ 0`), and `Ŝ = (tŜ)/t → 0` via
   `(h.div_atTop tendsto_id).congr'` with `mul_div_cancel_left₀ _ ht`.
+
+### Tide 107 (`fulllaw-llc`) gotchas
+
+- Trace against a PSD-ordered pair in the frame: `tr(HX) = ∑ᵢλᵢ(UᵀXU)ᵢᵢ` (`trace_mul_eq_sum_conj_diag`) plus `PosSemidef.diag_nonneg` of the
+  congruence `Uᵀ X U` (`hX.conjTranspose_mul_mul_same U` + `conjTranspose_eq_transpose_of_trivial`) gives `0 ≤ tr(HX)` for `λ ≥ 0`, and
+  monotonicity from `Matrix.mul_sub`, `Matrix.trace_sub`, `linarith`; a `c • X` term goes through `Matrix.mul_smul`, `Matrix.trace_smul`,
+  `smul_eq_mul`.
+- The full law's API (`fullFixed`, `fullFixed_sub_sub_posSemidef`, `fullStep_fullFixed`, `eq_fullFixed_of_fixed`) takes `hc : 0 ≤ c` and
+  `hK : fullLipschitz A D c < 1` as explicit *data* of `fullFixed`; instantiate the additive fixed point `S := lyapunovVia …` with
+  `(minibatch_fixed_iff_frame …).2 rfl` only at the end.
+- Expanding `tr(H · D S Dᵀ)` in the frame: insert `U Uᵀ = 1` twice after `simp only [Matrix.mul_assoc]` via `rw [← Matrix.mul_assoc U Uᵀ, hUU,
+  Matrix.one_mul]`, then `Matrix.mul_apply`, `Finset.sum_mul`, `Matrix.transpose_apply`; a mismatch `S k l` vs `S l k` between the two nested sums
+  is fixed by `Finset.sum_comm` on the double sum before `Finset.sum_congr` — and once the bodies agree, `rw` closes the goal (a trailing
+  `refine …; ring` errors with "No goals").
