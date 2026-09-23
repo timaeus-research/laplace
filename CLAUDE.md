@@ -2804,3 +2804,17 @@ matrix version is `whiteningOf`.
 - Uniform-in-`s` statements (`∀ s, −1 + δ ≤ s → …`) cost nothing extra once the constants are explicit: bound `1/(1+s) ≤ 1/δ`,
   `1/√(1+s) ≤ 1/√δ` (`one_div_le_one_div_of_le`, `Real.sqrt_le_sqrt`), and take the threshold `T₀ (1 + 1/δ)` so that both `t` and
   `(1+s)t` exceed `T₀`.
+
+### The first correction to the Laplace transform (tide `localised-laplace-correction`)
+
+- `gcongr` on `K/t² + a ≤ K/t + a` reduces the same-numerator quotient to `t ≤ t²` itself; a following
+  `exact div_le_div_of_nonneg_left …` then fails with a metavariable goal. Use `add_le_add (div_le_div_of_nonneg_left hK ht0 (by nlinarith)) le_rfl`.
+- Generated one-line tactic blocks `… := by ring; rw [e] at h; exact h` parse the whole `ring; rw …; exact …` as the proof of the
+  inner `have`; write the block on separate lines (the inner `by` must end before the next tactic).
+- `ring` cannot see `(s·t·√a + t·√a)⁻¹ = √a⁻¹ (1+s)⁻¹ t⁻¹` (inverse of a sum is an atom): `field_simp` first (with the three nonzero facts
+  in context), then `ring`.
+- `ratio_rate_order2 (X := …) (Y := …) (a := …) (b := …) (c := …) (d := …) (KX := …) (KY := …)` with all eight named arguments, then rewrite
+  its coefficient `(b*c − a*d)/c²` and `a/c` in the result with pre-proved equations before `exact`; the `∃ K'` witness is that rewritten
+  expression verbatim.
+- `cubicScale ^ 2` hides `√λ`: prove `cubicScale_sq : cubicScale lam alpha ^ 2 = alpha ^ 2 / (36 * lam ^ 3)` by
+  `rw [div_pow, mul_pow, mul_pow, Real.sq_sqrt hlam.le]; ring` and rewrite with it *before* unfolding the other coefficient definitions.
