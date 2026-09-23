@@ -276,6 +276,8 @@ import Laplace.Multi.FibrePointwise
 import Laplace.Multi.WallKernelExplicit
 import Laplace.Multi.ChartCluster
 import Laplace.Multi.LogSectorCore
+import Laplace.Multi.LogSubstitution
+import Laplace.Multi.SimplexReduction
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
