@@ -129,3 +129,30 @@ targets, two-sided unit bounds on the boxes, open cores covering `g⁻¹(C)`),
 `exists_partitionOfUnity_cores`/`exists_partitionOfUnity_smallParameter` (continuous partition of
 unity subordinate to the cores on `g⁻¹(L ∩ {|z_ℓ| ≤ ε})`, compactly supported pieces). Remaining:
 the fibre identity (steps 8–9); consult `gpt_responses/research_fibre_identity_v1.md`.
+
+## The fibre identity: plan of record (Astra, `gpt_responses/research_fibre_identity_v1.md`)
+
+Route (A), in this order: (1) **weighted total-space transport interface** — hironaka exports, for
+the finite atlas, the identity `∫ Ψ(y) dy = ∑_i ∫ w_i(u) Ψ(rep_i u) |det D rep_i(u)| du` for tests
+supported in the covered region, with upstairs weights `w_i = ρ_i ∘ φ_i⁻¹` compactly supported in
+the CERTIFIED boxes (certify transport on the atlas boxes before the finite subcover, or shrink
+consistently); (2) **two-branch substitution** (Euclidean, laplace): split `u = (w, v)` at the solve
+index, `s = c(w) v^{q_k}` with `c(w) = S ∏_{j≠k} w_j^{q_j}`, on `v > 0` and `v < 0` separately,
+`|ds/dv| = q_k |s|/|v|`; the exceptional set `c(w) = 0` is null; (3) **continuous compact tests**:
+for `Ψ = f(x) η(s)`, equality of the `s`-integrals for all `η` gives a.e. equality in `s`; both
+sides are continuous in `s ≠ 0` (parameter-local domination: on the effective support the active
+coordinates satisfy `|u_j| ≥ (a / ∏ R_m^{q_m})^{1/q_j}`, so the apparently singular powers are
+harmless; moving domains handled by proving continuity of the weighted zero extension, never of a
+raw indicator), hence equality for every `s ≠ 0` small; (4) **fibre-measure equality** from the
+continuous tests, then (5) the **indicator-kernel corollary** for nonnegative/bounded measurable
+tests and a compact physical region `K`. Branches: sum over the sign `σ = ±1` of the solved
+coordinate only, with the compatibility condition `s · S σ^{q_k} ∏_{j≠k} w_j^{q_j} > 0`; keep `w`
+signed. Library boundary: hironaka exports Euclidean representatives, certified boxes, monomial
+identities, unit bounds, compactly supported weights and the weighted transport identity; a
+Euclidean fibre-transport layer (laplace) proves substitution, continuity, and the fibre-measure
+equality; laplace's asymptotics consume only the explicit kernels
+`J_{i,σ}(s, w) = w_i(u) |b_i(u)| / q_k · |s|^{α−1} ∏_{j≠k} |w_j|^{h_j − q_j α}` on the solved
+domain, zero outside (piecewise definitions, never totalised inverses). Route (B) (fibrewise change
+of variables) is the reusable alternative; its new lemma is the Euclidean determinant identity
+`|det D(w ↦ X(w, V(w)))| = |det DR| / |∂_v T|`, proved by multiplying `DR` by the unit-determinant
+shear `[[I, 0], [DV, 1]]` to make it block triangular.
