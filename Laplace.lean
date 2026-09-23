@@ -398,3 +398,4 @@ import Laplace.Sampler.BurnInGammaLaw
 import Laplace.Multi.LocalisedLaplaceGaussianGap
 import Laplace.Multi.AnchoredGaussianGap
 import Laplace.Multi.AnchoredEnergyGap
+import Laplace.Multi.AnchoredVarianceGap

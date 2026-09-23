@@ -2902,3 +2902,32 @@ matrix version is `whiteningOf`.
   `simp only [Finset.sum_sub_distrib, Finset.sum_add_distrib, Finset.sum_div, Finset.mul_sum, sub_div, hd]` with
   `hd : (d : ℝ)/2 = ∑ _i : Fin d, (1/2 : ℝ)` closes it in one step; a hand `rw` chain over-rewrites and fails with
   "did not find `(∑ f)/a`" once both sides already agree.
+
+### Tide `anchored-variance-gap` gotchas (`Laplace/Multi/AnchoredVarianceGap.lean`)
+
+- `Integrable`, `integral_finsetSum`, `integrable_finsetSum`, `integral_add` all live in `MeasureTheory`; a file that only
+  `open`s `Matrix Filter Topology` fails with "Unknown identifier `Integrable`" on every integrability lemma.
+- `conj_mul_conj` exists twice: `Laplace.Multi.conj_mul_conj (hQ : Qᵀ * Q = 1)` (OneLoopRotated) and
+  `Laplace.Sampler.conj_mul_conj (hA : A.IsHermitian)` (BurnInGammaLaw, *not* in the AnchoredGaussianGap import closure).
+  Inside `namespace Laplace.Sampler` with `open Laplace.Multi` the bare name resolves to the Multi one ("expected `?ᵀ * ? = 1`");
+  import `Laplace.Sampler.BurnInGammaLaw` and write the qualified name.
+- Expanding `(∑ₐ∑_b F a b)·(∑_c∑_d F c d)·G` into a quadruple sum: `simp only [Finset.sum_mul, Finset.mul_sum]` fires `mul_sum`
+  first and yields the binder order `a, c, d, b`; to get `a, c, b, d` do `rw [Finset.sum_mul_sum]`, then
+  `simp only [Finset.sum_mul_sum]`, then `simp only [Finset.sum_mul]` (three separate calls). Read the per-term `ring` residual
+  (`H a d * … * H c b` vs `H a b * H c d`) to detect a binder permutation.
+- Wick contractions to traces: `∑ₐ∑_c (HΣ)ₐ_c (HΣ)_cₐ` expands (`Matrix.mul_apply`, `Finset.sum_mul_sum`) to the order `a, c, b, d`
+  with body `(H a b Σ b c)(H c d Σ d a)`; the first connected contraction `Σ a d Σ b c` matches termwise after `Σ d a = Σ a d`
+  (`hP.inv.1.apply`), the second `Σ b d Σ a c` becomes the first after renaming `c ↔ d`, which is two `Finset.sum_comm`s
+  (`Finset.sum_comm`, then `Finset.sum_congr rfl fun _ _ => Finset.sum_comm`, then `Finset.sum_comm`) written as explicit `calc`
+  steps whose final RHS is α-equivalent to the target.
+- `rw [integral_add (I1.add I2) …]` fails ("did not find `∫ (f + g) a`"): `Integrable.add` produces Pi-addition of lambdas. Give
+  the combined integrability a typed `have I12 : Integrable (fun u => A u + B u) := I1.add I2` and rewrite with that.
+- `integral_odd_mul_gaussian_eq_zero (H) (f) (hodd : ∀ u, f (-u) = -f u)` (GaussianIBP) needs no integrability: the cubic Gaussian
+  moment `∫ (uᵀHu)(uᵀw) gw = 0` is `simp only [Matrix.mulVec_neg, neg_dotProduct, dotProduct_neg, neg_neg]; ring`.
+- `ring` cannot equate `((tλ+g)⁻¹)³` (from `λ/(tλ+g) · 1/(tλ+g) · …`) with `((tλ+g)³)⁻¹` (from `x/(tλ+g)³`): the inverse of an
+  expanded polynomial is a fresh atom. `simp only [div_eq_mul_inv, ← inv_pow]` first, then `ring`.
+- The rewrapper splits `rw [...] at hvar` into `at` / `hvar` across lines → "expected '*' or checkColGt"; break long `rw … at h`
+  lines by hand inside the bracket.
+- `omit [DecidableEq ι] in` is not enough for lemmas about plain `IsHermitian` entries: they use neither instance, so write
+  `omit [Fintype ι] [DecidableEq ι] in` (else the `unusedSectionVars` / `unusedFintypeInType` linters fire); but `matCLM` needs
+  `DecidableEq`, so don't omit it on Gaussian-weight lemmas.
