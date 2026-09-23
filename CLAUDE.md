@@ -2786,3 +2786,21 @@ matrix version is `whiteningOf`.
 - `ratio_rate` (LocalisedFrobenius) does the kurtosis-type quotient `a/b − a₀/L` with `L/2 ≤ b`; for `b = (t²V)²` get the lower bound from
   `|t²V − d/2| ≤ KV/t ≤ d/8` (threshold `8KV/d`) via `pow_le_pow_left₀` and `nlinarith`, and remove the `t`-scaling afterwards with
   `mul_div_mul_left _ _ (by positivity : t ^ 4 ≠ 0)` after `(t²V)² = t⁴V²` by `ring`.
+
+### The Laplace transform of the localised energy (tide `localised-laplace-transform`)
+
+- The `lean-state` daemon has a 120 s per-query elaboration timeout (240 s cold): a ~400-line file with long Gibbs-expectation
+  statements can exceed it and `check` prints only `error: TimeoutError: file elaboration timed out`. Fall back to
+  `lake build <module>` (no timeout) and read the errors from its log; or bisect with scratch copies whose proof bodies are `sorry`
+  — but note a naive "cut at the first `:= by`" sorry-er mangles statements wrapped as `:=\n  by` (it hits the first `have … := by`).
+- Temperature change at fixed localiser: `t · locPotential1(t) = tℓ + g(x − x₀)²/2` is `t`-free in the localiser, so
+  `e^{−stℓ} e^{−t·locPotential1(t)} = e^{−(1+s)t·locPotential1((1+s)t)}`; `field_simp` needs `1 + s ≠ 0` *and* `t ≠ 0` in context
+  (from `(1+s)t ≠ 0` alone it leaves `(1+s)⁻¹`), and on E2 `set A := ∑ j, (w j - w₀ j) ^ 2` after `unfold localiser` so the sum is one
+  atom for `field_simp; ring`.
+- `partitionFunction_locPotential1_pos`, `locDenominator_pos` (this file) need `(x₀ := x₀)`: nothing in their explicit arguments pins
+  the anchor.
+- `Z(u) = J₀(u)/√(λu)` is `I_n_J_n_relation lam alpha gamma 0 hlam hu` after `simp only [zero_add, pow_one, pow_zero, one_mul]`;
+  `J_n` unfolds to the same integral.
+- Uniform-in-`s` statements (`∀ s, −1 + δ ≤ s → …`) cost nothing extra once the constants are explicit: bound `1/(1+s) ≤ 1/δ`,
+  `1/√(1+s) ≤ 1/√δ` (`one_div_le_one_div_of_le`, `Real.sqrt_le_sqrt`), and take the threshold `T₀ (1 + 1/δ)` so that both `t` and
+  `(1+s)t` exceed `T₀`.
