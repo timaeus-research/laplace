@@ -324,3 +324,28 @@ Remaining in Astra's plan: untied factors in the single-monomial theorem (`∏_{
 normalisation of the signed branch kernels with the explicit moving cutoff (lemma 1), the
 moving-unit comparison (lemma 2), the certified moving-kernel limit through `RescaledData`
 (lemma 3), and the LP/profile compatibility (lemma 5).
+
+## Status (2026-09-25, later): the single-monomial power–log theorem in full
+
+laplace, Mathlib only, standard axioms:
+
+- `LogSubstitutionPiGeneral.lean` (`cdae7ed`): the logarithmic substitution on a block with
+  arbitrary exponents, including the empty block (`lintegral_pi_Ioo_log`).
+- `LogSectorGeneral.lean` (`0d3b5db`, `2e234fb`): `coreIntegral lam k s = ∫₀^∞ e^{-s e^{-z}} e^{-λz} z^k`,
+  measurable in `s` (`StronglyMeasurable.integral_prod_right'`), `lintegral_tiedBlock_ofReal`
+  (`s ≥ 0`), and the exact reduction `generalIntegral_eq`: the tied × untied monomial integral is
+  `∏(1/A_i)(1/k!)∏(1/A'_j) ∫_{(0,∞)^m} ∏ e^{-(h'_j+1)/A'_j y_j} · J(t e^{-∑ y})`.
+- `LogSectorGeneralAux.lean` (`8bb0abe`): `1 + ∑ y ≤ ∏ (1+y)`, `e^{-εy}(1+y)^k` integrable,
+  `∫₀^∞ e^{-εy} = 1/ε`, the rescaled core identity `t^λ J(t e^{-Y}) = e^{λY} ∫₀^{te^{-Y}} …`,
+  the uniform bound `(1+Y)^k C_k` on the rescaled inner integral and its limit `Γ(λ)`.
+- `LogSectorGeneralLimit.lean` (`6e6c14f`): **`tendsto_general`** —
+  `t^λ (log t)^{-k} ∫_{(0,1)^{k+1}×(0,1)^m} e^{-t∏x^A ∏x'^{A'}} ∏x^h ∏x'^{h'}
+   → Γ(λ)/k! · ∏ 1/A_i · ∏ 1/(h'_j + 1 − λ A'_j)`
+  for a tied block `(h_i+1)/A_i = λ > 0` and an untied block `(h'_j+1)/A'_j > λ` (Astra's
+  (10)–(11)). Numerics for `A = (2,2)`, `h = 0`, one untied coordinate `x'^1`: the ratio of
+  `√t I(t)/log t` to the predicted `√π/2` is `1 + c/log t` at `t = 10³…10⁷`.
+
+Astra's lemma 4 is therefore complete (both blocks), lemma 6 (`ChartCluster`) too. Remaining:
+lemma 1 (normalised signed branch kernels with the explicit moving cutoff), lemma 2 (moving-unit
+comparison), lemma 3 (certified moving-kernel limit through `RescaledData`), lemma 5 (LP/profile
+compatibility), and the enrichment of `WallChartsData` with the phase data.
