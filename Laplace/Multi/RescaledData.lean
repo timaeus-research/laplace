@@ -74,6 +74,33 @@ theorem bound_num (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ} (hl : ∀ u, 
   · exact mul_le_mul (hd.w_bd t u) (mul_exp_neg_le_of_le hz (hl u hw))
       (mul_nonneg (hG u) (Real.exp_pos _).le) (hd.W_nonneg u)
 
+/-- Integrability of the weighted Boltzmann factor where the comparability bound holds. -/
+theorem integrable_den (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ}
+    (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) :
+    Integrable fun u ↦ w t u * Real.exp (-(G t u)) := by
+  have h1 := hd.w_meas t
+  have h2 := hd.G_meas t
+  refine hd.int.mono' (Measurable.aestronglyMeasurable (by fun_prop))
+    (Filter.Eventually.of_forall fun u ↦ ?_)
+  rw [Real.norm_eq_abs, abs_mul, Real.abs_exp]
+  exact hd.bound_den hl u
+
+/-- Integrability of the weighted energy density where the comparability bound holds. -/
+theorem integrable_num (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ}
+    (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (hG : ∀ u, 0 ≤ G t u) :
+    Integrable fun u ↦ w t u * (G t u * Real.exp (-(G t u))) := by
+  have h1 := hd.w_meas t
+  have h2 := hd.G_meas t
+  have hdom : Integrable fun u ↦
+      W u * (c * Φ₀ u * Real.exp (-(c * Φ₀ u)) + Real.exp (-(c * Φ₀ u))) := by
+    refine ((hd.Φint.const_mul c).add hd.int).congr (Filter.Eventually.of_forall fun u ↦ ?_)
+    simp only [Pi.add_apply]
+    ring
+  refine hdom.mono' (Measurable.aestronglyMeasurable (by fun_prop))
+    (Filter.Eventually.of_forall fun u ↦ ?_)
+  rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (mul_nonneg (hG u) (Real.exp_pos _).le)]
+  exact hd.bound_num hl hG u
+
 /-- Weighted partition function / bounded observable. -/
 theorem tendsto_den (hd : RescaledData G w Φ₀ w₀ W c) {g : ℝ → ℝ} (hg : Measurable g) {Mg : ℝ}
     (hMg : ∀ u, |g u| ≤ Mg) :
