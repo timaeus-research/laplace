@@ -2837,3 +2837,18 @@ matrix version is `whiteningOf`.
   sides, `simp only [Matrix.mul_assoc]`), `Matrix.PosDef.diagonal`, then `PosDef.conjTranspose_mul_mul_same` with the injectivity of
   `Uᵀ.mulVec` (`posDef_of_orthoOf_conj`); `Q + c•H` for `c ≥ 0`: `hQ.add_posSemidef (hH.posSemidef.smul hc)`.
 - `√(∏ f) = ∏ √f`: `Real.sqrt_prod s (fun i _ => nonneg)`; `√(x/y) = √x/√y` with only `0 ≤ y`: `Real.sqrt_div' x hy`.
+
+### The burn-in Gamma law (tide `sampler-burnin-gamma`)
+
+- Orthogonal-conjugation API for `U = orthoOf hA`: `conj_mul_conj`, `conj_pow` (induction with `pow_succ`), `one_sub_conj`,
+  `conj_left_inv`, `inv_conj_diagonal` (via `Matrix.inv_eq_left_inv`), `det_orthoOf_conj`. In `Uᵀ * (U * (D * (Uᵀ * U)))` one
+  `rw [orthoOf_transpose_mul hA]` rewrites *both* `Uᵀ * U` at once — a second `rw` of the same lemma fails with "did not find".
+- `Matrix.diagonal_one` is stated with a lambda `diagonal (fun _ => 1) = 1`; a `diagonal (1 : ι → ℝ)` produced by `funext` into `1`
+  does not match. State the pointwise identity as `= fun _ => (1 : ℝ)`.
+- `diagonal_pow` leaves `((fun i => v i) ^ n) i` inside the diagonal: finish with `simp only [Pi.pow_apply]` after the `rw` chain
+  (`congr 2; funext` is not needed — and "No goals" errors after a `rw` chain can be misleading when an *earlier* `rw` in the chain has
+  silently left a different residual; rebuild after each fix).
+- `Filter.Tendsto.div` needs the limit `≠ 0` — remember the `0 ≤ s` hypothesis in a stationary-limit statement whose denominator is
+  `a + s·(…)`; `tendsto_finset_prod` is deprecated for `tendsto_finsetProd`; `(1 − hp)^{2k} → 0` from
+  `tendsto_pow_atTop_nhds_zero_of_abs_lt_one` composed with `tendsto_id.const_mul_atTop' two_pos`.
+- `omit [DecidableEq ι] in` must precede the docstring (again): after it Lean reports "unexpected token 'omit'; expected 'lemma'".
