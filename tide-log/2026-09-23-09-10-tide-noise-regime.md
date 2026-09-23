@@ -98,3 +98,20 @@ mean coefficient: t^3 * meanpart(C_t = B/t + D/t^1.5) -> A_mean = 8.556086491417
 ## Vote
 - Claude: A + B + C1 + C2 + D + E, plus F–I
 - GPT-6 Astra: "ship A–D and the stated E … also prove a batch-specific sublinear-divergence corollary … the mean coefficient is a particularly cheap optional addition"
+
+## Result
+
+Commit `71a2527` on `tide/noise-regime`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/NoiseRegime.lean` (     606 lines).
+A–E as voted plus the GPT-suggested additions F–I (sub-linear divergence, super-linear corollary, strict monotonicity, mean coefficient).
+Lemmas: `scaledNoiseLimit` (def), `iat_weight_pos`, `mbEntry_general_scaled_tendsto`, `mbEntry_general_tendsto_zero`, `mbEntry_batch_tendsto_zero`,
+`mbAnchored_sq_longRunVar_eq`, `mbMeanPart_tendsto_zero`, `mbGeneral_longRunVar_tendsto`, `mbGeneral_meanPart_mul_tendsto`, `scaledNoiseLimit_zero`,
+`Llin_eq_scaledNoiseLimit`, `mbGeneral_longRunVar_tendsto_Leta`, `mbScaled_quad_longRunVar_tendsto`, `mbBatch_longRunVar_tendsto`,
+`mbBatch_longRunVar_tendsto_Leta`, `mbBatch_longRunVar_tendsto_atTop`, `entry_sq_mono`, `entry_sq_lt`, `scaledNoiseLimit_mono`, `scaledNoiseLimit_lt`,
+`Leta_le_scaledNoiseLimit`, `Leta_lt_scaledNoiseLimit_iff`, `frame_diag_nonneg`, `conj_eq_zero_iff`, `exists_conj_ne_zero`, `Leta_lt_Llin`,
+`scaledNoiseLimit_batch_anti`, `scaledNoiseLimit_batch_anti_strict`.
+
+Surprises: the extended file compiled on its first build after the v1 core had needed one repair round (a section variable `Q` out of scope in a
+statement that does not mention it, `id`/`Pi.div` residues after `Tendsto.div_atTop`/`Tendsto.div`, and the deprecated `push_neg`). Splitting
+`t²τ²_mb` into the `t`-scaled quadratic part and the mean part once (`mbAnchored_sq_longRunVar_eq`) made B, the divergence and the mean coefficient
+one-line consumers of the same identity. The divergence needed `n_t → ∞` so that the mean part vanishes; GPT's remark that a nonzero PSD matrix
+must be detected through a positive diagonal entry (not entrywise divergence) fixed the hypothesis.
