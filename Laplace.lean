@@ -392,3 +392,4 @@ import Laplace.Multi.LocalisedEnergyVarOrder2
 import Laplace.Multi.LocalisedEnergyCumulant4
 import Laplace.Multi.LocalisedLaplaceTransform
 import Laplace.Multi.LocalisedLaplaceCorrection
+import Laplace.Sampler.GammaLaw
