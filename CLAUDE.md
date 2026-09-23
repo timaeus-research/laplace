@@ -3226,3 +3226,15 @@ matrix version is `whiteningOf`.
   `((⟨L, _⟩ : ℝ≥0) : ℝ)` and `fullFixed` unfold definitionally, so a `have` with the intended real-valued type typechecks directly.
 - `|Mᵢⱼ| ≤ ‖M‖` for the `ℓ∞` operator norm: `linfty_opNorm_def`, `Finset.single_le_sum` inside the row sum, `Finset.le_sup` over rows, then
   `rw [← Real.norm_eq_abs, ← coe_nnnorm]; exact_mod_cast`.
+
+### Tide 115 (fulllaw-resolvent) gotchas
+- `rw [h]` with `h : F - S = …` rewrites *every* `F - S`, including one nested inside the right-hand side you are aiming for; use a `calc`
+  whose first step's target does not contain the pattern, or `nth_rewrite`.
+- `rw [lemma hU hdiagH]` with metavariable arguments picks the first matching subterm: when both `tr(H·R(N))` and `tr(H·R(B S))` are present,
+  pass the intended `Y` explicitly (`trace_resolvent_frame hU hdiagH (fun i => …) (stateTerm D S)`).
+- A section variable `{n : ℕ}` is not in scope inside a proof whose statement does not mention it; use a concrete `Fin 1` family for the
+  `c = 0` instance of the full law.
+- `Finset.smul_sum` distributes `c • ∑`; `stateTerm_smul`/`stateTerm_add` come from `simp only [stateTerm, Matrix.mul_smul, Matrix.smul_mul,
+  Finset.smul_sum]` and `[…, Matrix.mul_add, Matrix.add_mul, Finset.sum_add_distrib]`.
+- Banach at `0`: `(contractingWith_fullStep …).dist_fixedPoint_le 0` with `dist_zero_left` gives the Neumann bound `‖R(Y)‖ ≤ ‖Y‖/(1−a)` once
+  `fullFixed_eq_of_c_zero` identifies the `c = 0` fixed point with `lyapunovVia`.
