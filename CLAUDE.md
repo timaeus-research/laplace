@@ -2931,3 +2931,27 @@ matrix version is `whiteningOf`.
 - `omit [DecidableEq ι] in` is not enough for lemmas about plain `IsHermitian` entries: they use neither instance, so write
   `omit [Fintype ι] [DecidableEq ι] in` (else the `unusedSectionVars` / `unusedFintypeInType` linters fire); but `matCLM` needs
   `DecidableEq`, so don't omit it on Gaussian-weight lemmas.
+
+### Tide `anchored-covariance-gap` gotchas (`Laplace/Multi/AnchoredCovarianceGap.lean`)
+
+- `∑ i, f i / t + …` parses as `(∑ i, f i / t) + …`: the big-operator body is parsed at precedence 67, so `/` and `*`
+  (70) go *inside* the sum and `+`/`-` (65) end it. `g * ∑ i, f i / t` is `g * ∑ i, (f i / t)`, not `(g * ∑ f)/t`;
+  when a later `ring` must treat the sum as an atom, parenthesise: `g * (∑ i, f i) / t`.
+- `Finset.sum_div` does not fire on `(∑ f + ∑ g) / t`; put `add_div` first: `simp only [add_div, Finset.sum_div, …]`.
+- `mul_eq_one_comm` (one-sided inverse ⇒ two-sided) is now the root-namespace monoid lemma
+  (`IsDedekindFiniteMonoid`), not `Matrix.mul_eq_one_comm`; `mul_eq_one_comm.1 hU` gives `U * Uᵀ = 1` from `Uᵀ * U = 1`.
+- A failed `omit … in` (e.g. omitting `DecidableEq` on a statement using `(1 : Matrix ι ι ℝ)`) leaves a broken
+  declaration; downstream `rw`s with it fail *silently* (error suppressed as sorry-tainted) and the enclosing proof ends
+  with "unsolved goals" showing the pre-`rw` state. Fix the `omit` first.
+- Lemmas with section-variable implicits not determined by the explicit args (`locCovGapCoeff_eq {alpha gamma g}`):
+  pass them by name, `(alpha := alpha) (gamma := gamma) (g := g)`.
+- Merging finitely many sums into one: `simp only [Finset.mul_sum, ← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]`
+  then `Finset.sum_congr rfl fun i _ => by ring`; equate two such combinations with `linear_combination h` (sums as
+  atoms) rather than `ring` after splitting — `ring` cannot see inside `∑`.
+- Diagonal/off-diagonal split of a double sum: `Fintype.sum_prod_type'` (to `∑ p : ι × ι`), `split_ifs <;> simp` for
+  the pointwise `ite` decomposition, `Fintype.sum_prod_type` + `Finset.sum_ite_eq` for the diagonal (`Finset.sum_ite_eq'`
+  is unused there).
+- Generated 15-term Gaussian expansions: emit each leaf as `(c) * (F u)` with `F` the exact lambda body of the landed
+  integrability lemma, typed `have Iₙ : Integrable (fun u => L + R) := Iₗ.add Iᵣ` for every internal node, and
+  `rw [integral_add …]` in pre-order; after `simp only [integral_const_mul]` a single `rw` with each value lemma hits
+  all its occurrences; finish with `field_simp; ring`.

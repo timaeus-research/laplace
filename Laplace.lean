@@ -402,3 +402,4 @@ import Laplace.Multi.LocalisedLaplaceGaussianGap
 import Laplace.Multi.AnchoredGaussianGap
 import Laplace.Multi.AnchoredEnergyGap
 import Laplace.Multi.AnchoredVarianceGap
+import Laplace.Multi.AnchoredCovarianceGap
