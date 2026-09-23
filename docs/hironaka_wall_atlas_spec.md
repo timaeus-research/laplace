@@ -121,3 +121,11 @@ certificates of the existing read-out (`Monomialize/Manifold/Watanabe/Readout.le
 `s ∘ g ∘ φ⁻¹` an exact monomial, the one-dimensional substitution `v ↦ s` inside each box gives the
 fibre density `|v|/(q_ℓ |s|)`, and equality of the `s`-integrals against every test function `η(s)`
 plus continuity in `s` (compactly supported partition weights) gives the pointwise fibre identity.
+
+Update (2026-09-24, later): steps 5–7 are also proven on the branch (`ebf18d7`, `7cd7abb`):
+`WallAtlas`/`exists_wallAtlas` (finite atlas over a compact wall set `C`: closed boxes in the
+targets, two-sided unit bounds on the boxes, open cores covering `g⁻¹(C)`),
+`eventually_preimage_subset_of_isCompact` (small-parameter cover, Cantor intersection),
+`exists_partitionOfUnity_cores`/`exists_partitionOfUnity_smallParameter` (continuous partition of
+unity subordinate to the cores on `g⁻¹(L ∩ {|z_ℓ| ≤ ε})`, compactly supported pieces). Remaining:
+the fibre identity (steps 8–9); consult `gpt_responses/research_fibre_identity_v1.md`.
