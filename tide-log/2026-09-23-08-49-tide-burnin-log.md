@@ -47,3 +47,17 @@ Full response in `gpt_burnin-log_v1.md` (prompt in `gpt_burnin-log_v1_prompt.md`
 ## Vote
 - Claude: A + B + C + D (sign-corrected), E as a remark
 - GPT-6 Astra: "ship A–C and sign-corrected D, add qualified iteration-count and unscaled corollaries, and present active-mode sharpness as a remark rather than formalizing E now"
+
+## Result
+
+Commit `78fda60` on `tide/burnin-log`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/BurnInLog.lean` (     269 lines).
+A–D as voted (D with the corrected sign); E recorded as a remark only.
+Lemmas: `burnScaled` (def), `tendsto_zero_of_abs_le`, `abs_rho_scaled_eventually_le`, `tsigma_scaled_tendsto`, `abs_pow_le_pow_of_abs_le`,
+`rho_pow_schedule_tendsto_zero`, `mul_rho_pow_schedule_tendsto_zero`, `log_schedule_natCeil_tendsto`, `mul_pow_natCeil_le_rpow`,
+`log_schedule_tendsto`, `burnScaled_tendsto_zero`, `burnScaled_log_tendsto_zero`, `ulaAnchored_sampled_log_tendsto`.
+
+Surprises: two build rounds. `conv_lhs => rw [← Real.exp_log ht0]` rewrote the `t` inside `Real.log t` as well (fixed by proving the
+exponent identity with `ring` and rewriting the right-hand side); a schedule introduced with `set` cannot appear in the theorem statement,
+so `⌈κ log t⌉₊` is written inline throughout. The budget's burn-in expression is defeq to `burnScaled` after `unfold`, so the E2–E4 budget
+plugs in without any algebra; the whole of D is then three `Tendsto.sub`s and a `ring`. Mathematically the sign of D (sampled minus exact
+is *plus* the step-size bias) was caught by the GPT consult before formalising.
