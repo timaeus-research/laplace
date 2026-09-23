@@ -215,3 +215,29 @@ laplace, Mathlib only:
 Remaining: pointwise identity for `s ≠ 0` by continuity of both sides (route A step 3), the
 real-valued kernel for signed integrands, and the instantiation of `WallChartsData` from the
 hironaka export (a bridge workspace importing both, as for greybook).
+
+## Status (2026-09-24, night): the fibre identity is closed (pointwise off the wall)
+
+- hironaka `wall-atlas` `dfb72cb2f` (`WallExport.lean`): `WallAtlas.euclidean_export` — for an atlas
+  over a measurable `L' ⊆ W` with a partition of unity `f` on `g⁻¹(L')` subordinate to the cores:
+  `repClamp i` continuous, `chartSet i L'` measurable, `chartDensityClamp f i` continuous,
+  nonnegative, vanishing off the open ball of radius `ρ i > 0`, `S i = ±1`, `∃ k, 0 < qs i k`,
+  `repClamp i u ℓ = S i ∏ u^{qs i}` on `chartSet i L'`, and the `lintegral` transport identity with
+  these data. This is exactly the field list of laplace's `WallChartsData` (instantiation needs a
+  bridge workspace importing both libraries; not done here).
+- laplace `FibreContinuity.lean` (`69f14d5`): `continuousAt_fibreKernel` — for continuous `Φ ≤ M < ∞`
+  supported in `‖u‖ < ρ`, the fibre kernel is continuous at every `s₀ ≠ 0` (branch kernels are
+  continuous off the wall; domination `2M · ofReal(2ρ/(q|s₀|)) · 1_{‖w‖ ≤ ρ}` from
+  `branchKernel_le`).
+- laplace `FibrePointwise.lean` (`e1f022b`): `WallChartsData.fibre_eq` — for
+  `L' = splitAt⁻¹(B ×ˢ A)`, continuous bounded `θ` supported in `L'` and in a ball,
+  `∫⁻_{z' ∈ A} θ(insertNth ℓ s z') = totalKernel θ s` for EVERY `s ∈ interior B`, `s ≠ 0`
+  (`Measure.eqOn_open_of_ae_eq` from `fibre_ae` and the two continuity statements;
+  `WallChartsData` now carries `rep_cont`, `ρ`, `ρ_pos`, `dom_eq`, `dens_cont`, `dens_supp`).
+
+What the germbij consumer gets: the fibre partition function / fibre expectation numerators at a
+fixed truth `s ≠ 0` near the wall are finite sums of chart kernels
+`∫_w Φ_i(w, ±V_w(s)) · V_w(s)/(q_k |s|) dw` with `V_w(s) = (|s|/|c_i(w)|)^{1/q_k}`, exactly the
+inputs of the `RescaledData`/`ChartAssembly` asymptotics. Open: the bridge instantiation, and the
+explicit monomial form of the kernels (`WallFibreFormulas` parametrisation) for the exponent
+bookkeeping.
