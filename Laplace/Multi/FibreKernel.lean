@@ -14,12 +14,14 @@ Step (3) of the fibre-identity plan (laplace `docs/hironaka_wall_atlas_spec.md`)
 `c(w) = S ∏_{j ≠ k} w_j^{q_j}`. For nonnegative measurable `Φ` on the box (the pulled-back integrand
 times the chart density) and a nonnegative measurable test `η` of the truth,
 `∫ Φ(u) η(T u) du = ∫ η(s) K(s) ds` with the **fibre kernel**
-`K(s) = ∫_w [Φ(w, −V) + Φ(w, V)] V/(q_k |s|) dw` restricted to the branch where `c(w) (±V)^{q_k} = s`,
+`K(s) = ∫_w [Φ(w, −V) + Φ(w, V)] V/(q_k |s|) dw` restricted to the branch where
+`c(w) (±V)^{q_k} = s`,
 `V = (|s|/|c(w)|)^{1/q_k}` (`lintegral_mul_comp_truthMono`). Fubini splits off the solved coordinate
 (`MeasurableEquiv.piFinSuccAbove`), the one-dimensional two-branch substitution
 (`lintegral_two_branch`, from Mathlib's `lintegral_image_eq_lintegral_abs_deriv_mul`) handles each
 fibre `c(w) ≠ 0`, the exceptional set `c(w) = 0` is a finite union of coordinate hyperplanes, and
-Tonelli swaps the order. In measure language: the push-forward of `Φ · du` under `T` has density `K`.
+Tonelli swaps the order. In measure language: the push-forward of `Φ · du` under `T` has density
+`K`.
 -/
 
 open Real MeasureTheory Set Filter
