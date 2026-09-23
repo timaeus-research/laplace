@@ -3017,3 +3017,13 @@ matrix version is `whiteningOf`.
 - Limits in `k` for the E2 formulas: state them for generic data `(t lam p b z)` with `hp`, `hev`; the E2 instantiation is prose.
 - Limits in `t` of rational expressions: divide numerator and denominator by `t` in an `=ᶠ[atTop]` equality proved with
   `filter_upwards [eventually_ne_atTop (0 : ℝ)]; field_simp; ring`, then `Tendsto.div` with the nonzero limit and `.congr'`.
+
+### Tide `minibatch-budget` gotchas (`Laplace/Multi/MinibatchBudget.lean`)
+
+- The seabed's `lyapunovVia_conj_apply (U a N) (hU : Uᵀ * U = 1)` is already frame-general; the `orthoOf`-specific
+  `minibatchCov_conj_apply/diag` copy over to any frame verbatim (replace `hP.eigenvalues` by the frame's `p`), and
+  `lyapunovVia_fixed_iff` identifies the fixed point once `ulaStep_eq_conj_frame` supplies `A = U diag(ρ) Uᵀ`.
+- `tr(H X) = ∑ᵢ λᵢ (UᵀXU)ᵢᵢ` for `UᵀHU = diag λ`: `frame_eq_conj`, two `Matrix.mul_assoc`, `Matrix.trace_mul_comm`, one more
+  `Matrix.mul_assoc`, then `simp only [Matrix.trace, Matrix.diag, Matrix.diagonal_mul]` — no symmetry of `X` needed.
+- A budget extension whose new term is an exact rearrangement of sums needs only `simp only [Finset.mul_sum, ←
+  Finset.sum_add_distrib]` + termwise `ring`, then `rw [key]; ring` against the previous theorem's inner expression.

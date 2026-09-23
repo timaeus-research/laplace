@@ -407,3 +407,4 @@ import Laplace.Multi.AnchoredCovarianceGap
 import Laplace.Sampler.BurnInStart
 import Laplace.Multi.ULAErrorBudget
 import Laplace.Multi.ULAFluctuationBudget
+import Laplace.Multi.MinibatchBudget
