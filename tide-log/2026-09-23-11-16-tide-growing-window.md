@@ -44,3 +44,20 @@ no CLT.
 ## Vote
 - Claude: A + B + C
 - GPT-6 Astra: "yes—formalise the candidate. The strongest useful packaging is a uniform-in-n variance-error bound plus a uniform post-burn-in bias bound; the growing-window theorem then follows immediately."
+
+## Result
+
+Commit `5759435` on `tide/growing-window`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/GrowingWindow.lean` (     843 lines).
+A–C as voted.
+Lemmas: `cq`, `cσ`, `cm`, `memEnv`, `memK`, `winQ`, `winM`, `winEnv`, `burnEnv` (defs); `rho_pow_two_mul_le`, `cq_le_cσ`, `cσ_mul_le_cq`, `abs_mu_le`,
+`memEnv_nonneg`, `abs_mul_mu_mu_le`, `abs_cm_le`, `memK_nonneg`, `sum_range_pow_succ_le`, `abs_winM_le`, `winQ_le_winEnv`, `winEnv_mul_le_winQ`,
+`winEnv_eq_lagWeight`, `mul_lagWeight_comp_tendsto`, `one_sub_pow_sq_tendsto`, `memEnv_tendsto_zero`, `memK_tendsto_zero`, `winEnv_tendsto`,
+`sq_burnAutoCov_eq`, `window_split`, `ulaAnchored_window_var_tendsto`, `abs_burnScaled_le`, `burnEnv_tendsto_zero`,
+`ulaAnchored_window_bias_tendsto`, `ulaAnchored_window_mse_tendsto`.
+
+Surprises: three build rounds for the largest file of the run. All errors were bookkeeping: the line re-wrapper splitting long tactic lines (parse
+errors), a mis-parenthesised generated exponent (`2 * k t + a`), the swapped-name `add_le_add_left`, a `calc` ending at the wrong association, and
+`field_simp` normalising inside the sampler's expectation arguments (cured by `generalize`). The mathematics went through exactly as planned: the
+sandwich made the growing window a one-line consumer of tide 112's exact lag weight, and the uniform memory envelope needed only tide 108's
+schedule facts. GPT confirmed that no coupling between `n(t)` and `t` is needed and that `L_η` is tide 103's constant under the per-iteration
+scaled-observable normalisation.
