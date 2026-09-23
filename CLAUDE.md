@@ -3027,3 +3027,25 @@ matrix version is `whiteningOf`.
   `Matrix.mul_assoc`, then `simp only [Matrix.trace, Matrix.diag, Matrix.diagonal_mul]` — no symmetry of `X` needed.
 - A budget extension whose new term is an exact rearrangement of sums needs only `simp only [Finset.mul_sum, ←
   Finset.sum_add_distrib]` + termwise `ring`, then `rw [key]; ring` against the previous theorem's inner expression.
+
+### Tide 102 (`ula-autocovariance`) gotchas
+
+- **`Σ` is a reserved token.** A hypothesis named `hΣ` fails to parse (`unexpected token 'Σ'; expected ')'`) and the error cascades into `⊢ ?m`
+  goals and a shadowed `h✝`. Use `hS`.
+- **`ring` does not identify `x ^ (2 * ℓ)` with `(x ^ 2) ^ ℓ` for a compound base** (it expands `(1 − hp)^2` inside the base of `(·)^ℓ`): `rw [← pow_mul]`
+  first, then `ring`. Keep `ρ ^ (2 * ℓ)` in statements and convert to `(ρ ^ 2) ^ ℓ` only where a geometric-series lemma needs it.
+- `AnchoredVarianceGap`/`AnchoredCovarianceGap` are **not** in `ULAFluctuationBudget`'s import closure, and their Wick/integrability lemmas
+  (`tiltedVar_quadForm`, `tiltedCov_quadForm_quadProbe`, `integrable_quadForm_mul_quadForm_mul_gaussianWeight_matCLM`, `dotProduct_mulVec_symm_of_isHermitian`)
+  live in `namespace Laplace.Sampler`, not `Laplace.Multi`. Import explicitly and work inside `Laplace.Sampler`.
+- A goal-changing `show` trips `linter.style.show`; use `unfold Matrix.IsHermitian` (or `change`).
+- Theorems whose *type* mentions no `P⁻¹`/`tiltMean`/`diagonal` trip `linter.unusedDecidableInType`: `omit [DecidableEq ι] in` and start the proof with
+  `classical` when the proof term needs the instance. Pure-real lemmas go before the `variable {ι …}` line (or `omit [Fintype ι] [DecidableEq ι] in`).
+- `field_simp` on `(1+ρ)/(1−ρ)`, `(1+ρ²)/(1−ρ²)` with `ρ = 1 − hp` against `κ = 1 − hp/2` denominators: first `rw` the denominators into products of
+  atoms (`1 − ρ = hp`, `1 − ρ² = hp(2 − hp)`, `1 + ρ = 2 − hp`, each by `ring`) and supply `≠ 0` for every factor in both commutativity variants
+  (`2 − h*p ≠ 0` and `2 − p*h ≠ 0`); then `field_simp; ring`. With `σ = 1/(p(1 − hp/2))` present but not to be expanded, `generalize σ = s` first.
+- Infinite sums: `Summable.tsum_add`, `Summable.tsum_finsetSum` (to_additive of `Multipliable.tprod_mul/tprod_finsetProd`), `summable_sum`,
+  `Summable.mul_left/mul_right`, `tsum_mul_left/right` (no summability over ℝ), `tsum_geometric_of_abs_lt_one`/`summable_geometric_of_abs_lt_one`
+  (signed `ρ`), `pow_lt_one₀ (h₀ : 0 ≤ a) (h₁ : a < 1) : ∀ {n}, n ≠ 0 → a ^ n < 1`. State the per-mode summable function with a typed
+  `have hs : ∀ i, Summable (fun ℓ => F i ℓ + G i ℓ) := fun i => (hs1 i).add (hs2 i)` so `rw [Summable.tsum_finsetSum fun i _ => hs i]` matches.
+- `geom_sum_eq (h : x ≠ 1) n : ∑ i ∈ range n, x ^ i = (x ^ n − 1)/(x − 1)`; Cesàro-weighted sums `∑_{j<n} (n − (j+1)) r^{j+1}` by induction with
+  `Finset.sum_range_succ`, a pointwise `push_cast; ring` split of the weight, `field_simp; ring`.

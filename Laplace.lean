@@ -408,3 +408,4 @@ import Laplace.Sampler.BurnInStart
 import Laplace.Multi.ULAErrorBudget
 import Laplace.Multi.ULAFluctuationBudget
 import Laplace.Multi.MinibatchBudget
+import Laplace.Multi.ULAAutocovariance
