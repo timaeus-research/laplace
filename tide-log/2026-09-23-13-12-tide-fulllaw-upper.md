@@ -51,3 +51,15 @@ Gaussian stationary law; `(t/2)tr(HΣ)` is the quadratic expectation of any cent
 ## Vote
 - Claude: A + B + C + D′ + E + F
 - GPT-6 Astra: "formalize A → B → C, add the relative estimate cheaply, and pursue (ii) as the strongest natural refinement. Reject D's current unqualified small-h wording."
+
+## Result
+
+Commit `c36c645` on `tide/fulllaw-upper`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/FullLawUpper.lean` (     189 lines).
+A–C as voted, D reworded per GPT (fixed-gap `O(c)`, not `O(h²t²/m)`), plus the relative estimate and the two-sided package.
+Lemmas: `abs_entry_le_linfty_opNorm`, `abs_trace_le`, `abs_trace_mul_le`, `fullFixed_sub_norm_le`, `fullFixed_sub_norm_le'`,
+`fullFixed_sub_norm_div_le`, `abs_fullFixed_sub_entry_le`, `trace_fullFixed_le`, `fullLaw_llc_le`, `fullLaw_llc_bounds`, `e8_fullFixed_sub_norm_le`.
+
+Surprises: a short tide (four build rounds, all name/instance bookkeeping: `omit` refused under the scoped operator norm, `zero_le` implicit,
+`Finset.single_le_sum` needing its `f`). Mathematically GPT's correction matters for the note: the covariance forcing is `O(h²t²/m)` but the
+contraction gap is `Θ(h)`, so the stationary correction is `O(ht²/m)` — the theorem is right, the first draft's docstring was not. The exact
+resolvent identity `Δ = cRB(Σ_full)` with its `O(c²)` remainder and sharper lower bound is the natural next refinement.
