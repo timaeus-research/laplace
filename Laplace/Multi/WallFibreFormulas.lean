@@ -13,7 +13,8 @@ The algebraic content of the fibre part of the `OneParameterWallMonomialAtlas` s
 solved coordinate, suppose on a sign branch `|s| = |v|^{q_ℓ} ∏ |u_i|^{q_i}` with `q_ℓ > 0`. Then the
 fibre over `s` is parametrised by `u` through `v(u, s) = (|s| ∏ |u_i|^{-q_i})^{1/q_ℓ}`
 (`wallSolve`), and the monomials of the chart restrict to the fibre as monomials in `|s|` and `|u|`:
-`|v|^{K_ℓ} ∏ |u_i|^{K_i} = |s|^{K_ℓ/q_ℓ} ∏ |u_i|^{K_i − q_i K_ℓ/q_ℓ}` (`wallSolve_monomial`), and the
+`|v|^{K_ℓ} ∏ |u_i|^{K_i} = |s|^{K_ℓ/q_ℓ} ∏ |u_i|^{K_i − q_i K_ℓ/q_ℓ}` (`wallSolve_monomial`), and
+the
 relative density `|v|^{H_ℓ} ∏ |u_i|^{H_i} · |v| / (q_ℓ |s|)` (total Jacobian over `|∂s/∂v|`) equals
 `(1/q_ℓ) |s|^{(H_ℓ+1)/q_ℓ − 1} ∏ |u_i|^{H_i − q_i (H_ℓ+1)/q_ℓ}` (`wallSolve_density`). These are the
 exponents `ν, κ_i, p, r_i` of the spec.
@@ -47,7 +48,8 @@ theorem wallSolve_base {q : ι → ℝ} {qℓ : ℝ} (hq : 0 < qℓ) {s : ℝ} (
     rw [← Real.rpow_add (abs_pos.mpr (hu i)), neg_add_cancel, Real.rpow_zero]
   simp only [this, Finset.prod_const_one, mul_one]
 
-/-- A chart monomial on the fibre: `v^{Kℓ} ∏ |u_i|^{K_i} = |s|^{Kℓ/qℓ} ∏ |u_i|^{K_i − q_i Kℓ/qℓ}`. -/
+/-- A chart monomial on the fibre:
+`v^{Kℓ} ∏ |u_i|^{K_i} = |s|^{Kℓ/qℓ} ∏ |u_i|^{K_i − q_i Kℓ/qℓ}`. -/
 theorem wallSolve_monomial {q : ι → ℝ} {qℓ : ℝ} {s : ℝ} (hs : s ≠ 0) {u : ι → ℝ}
     (hu : ∀ i, u i ≠ 0) (K : ι → ℝ) (Kℓ : ℝ) :
     wallSolve q qℓ s u ^ Kℓ * ∏ i, |u i| ^ (K i) =
