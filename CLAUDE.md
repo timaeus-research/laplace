@@ -3202,3 +3202,17 @@ matrix version is `whiteningOf`.
   monotonicity of `n ↦ n·F_n(z)`.
 - `field_simp` sometimes closes a `calc` step outright (then `ring` fails with "No goals") and sometimes leaves the cleared identity (then `ring` is
   needed): check the residue rather than guessing; the two `lagWeight` identities behaved oppositely.
+
+### Tide 113 (growing-window) gotchas
+- `rewrap.py` splits any line over 100 characters at a space, including tactic lines: an inline `(by rw [h]; exact foo bar)` whose tail lands on
+  the next line at lower indentation is a parse error ("unexpected token; expected ')'"), and a long `exact …` gets a continuation at column 6.
+  Keep tactic lines under 100 characters by introducing `have`/`set` names; only statements go through `wrap()`.
+- A generated exponent `(2 * {k})` with `k = "k t + a"` yields `2 * k t + a`; always pass a parenthesised expression to such builders.
+- `add_le_add_left (h : b ≤ c) (a)` proves `b + a ≤ c + a` in this Mathlib; use `add_le_add le_rfl h` for `a + b ≤ a + c`.
+- A `calc` chain must end at the goal's exact association: `a + (b + c)` vs `a + b + c` leaves an unsolved `calc.step`; finish with `_ = … := by ring`.
+- `field_simp` rewrites inside `tiltedExpectation`/`gibbsExpectation` arguments (`η / t ↦ η * t⁻¹`, `2 * (k+a) ↦ k*2 + a*2`) and then `ring`
+  sees different atoms on the two sides. `generalize` the big atoms (`BIAS`, `C/t`, the sums) first, then `field_simp` on the scalar identity.
+- `simp only [Finset.sum_sub_distrib]` also fires inside an unrelated sum whose summand is a difference (`∑ i, (A i + B i - C i)`);
+  `generalize` that sum away before the simp.
+- Unused section variables (`hη`) in a theorem are hard failures: `omit hη in theorem …`; an unused explicit hypothesis (`η` in a `def`) too.
+- `one_div_pow` is ambiguous with `Matrix.one_div_pow` under `open Matrix`: write `_root_.one_div_pow`.

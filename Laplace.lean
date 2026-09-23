@@ -419,3 +419,4 @@ import Laplace.Multi.NoiseRegime
 import Laplace.Multi.MSELog
 import Laplace.Multi.BurnInAverage
 import Laplace.Multi.LagWeightLongRun
+import Laplace.Multi.GrowingWindow
