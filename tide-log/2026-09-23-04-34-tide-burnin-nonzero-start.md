@@ -42,3 +42,18 @@ Correctness of A–D and the noncentrality identification; E4 reading (hot vs co
 ## Vote
 - Claude: A–D plus `burnIn_var_start_tendsto` and `burnIn_bias_start_le`; `k = 0`, covariance monotonicity and pooling deferred
 - GPT-6 Astra: land A–D with the corrected bias statements, prioritise mean/bias and transform, add variance and cheap limits, defer correlated time-pooling
+
+## Result
+
+Commit `d90d003` on `tide/burnin-nonzero-start`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Sampler/BurnInStart.lean` (     443 lines).
+A–D as voted.
+`burnInMean`, `burnInTilt`, `tiltMean_mulVec_self`, `ulaStep_pow_eq_conj`, `burnInMean_eq`, `burnInCov_det_ne_zero`, `burnInCov_inv_inv`,
+`burnIn_trace`, `burnIn_quadForm_mean`, `burnIn_mean_start`, `burnIn_bias_start`, `mul_burnInCov_eq_conj`, `burnIn_trace_sq`, `burnIn_cross`,
+`burnIn_var_start`, `burnInPrecision_add_eq_conj`, `burnInPrecision_add_inv`, `burnInTilt_eq`, `burnIn_tiltMean_shift_dot`, `burnIn_tiltMean_dot`,
+`laplace_ulaBurnIn_start`, `burnIn_rho_pow_tendsto`, `burnIn_transient_tendsto`, `burnIn_mean_start_tendsto`,
+`burnIn_var_start_tendsto`, `burnIn_bias_start_le`.
+
+Surprises: the trace `tr(PΣ_k)` and the determinant ratio were read off tide 92's zero-start theorems (`burnIn_mean`, `laplace_ulaBurnIn`)
+by specialising the tilted formulas at tilt 0, so no new determinant or trace work; the whole tide is eigen-algebra on tides 92–97's
+lemmas. `field_simp` needs the `≠ 0` facts (`f ≠ 0`, `a + sf ≠ 0`, `pa/f + sp ≠ 0`) spelled out or it leaves inverses for `ring` to choke on;
+`.const_mul hP.1.eigenvalues i` parses as `(… .const_mul hP.1.eigenvalues) i` — parenthesise generated arguments.
