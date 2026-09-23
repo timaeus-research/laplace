@@ -318,7 +318,7 @@ laplace, Mathlib only, standard axioms:
   `tendsto_tiedBlock`: `t^λ (log t)^{-k} ∫_{(0,1)^{k+1}} e^{-t∏x^{A}} ∏x^{h} → Γ(λ)/k! ∏ (1/A_i)`
   (Astra's (10)–(11) with all coordinates tied), and `tendsto_x2y2`:
   `∫₀¹∫₀¹ e^{-t x² y²} ~ (√π/4) t^{-1/2} log t` (numerics: the ratio to `√π/4` is `1 + 1.96/log t` at
-  `t = 10³, 10⁵, 10⁷`, consistent with a relative `t^{-1/2}`-order correction... i.e. `1/log t`).
+  `t = 10³, 10⁵, 10⁷`, the `1/log t` relative correction expected from the subleading `t^{-1/2}` term).
 
 Remaining in Astra's plan: untied factors in the single-monomial theorem (`∏_{i∉M} 1/(b_i − λA_i)`),
 normalisation of the signed branch kernels with the explicit moving cutoff (lemma 1), the
