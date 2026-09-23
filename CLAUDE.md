@@ -3149,3 +3149,19 @@ matrix version is `whiteningOf`.
 - `anchoredMean_tendsto_zero` / `mul_anchoredMean_tendsto` live in `Laplace.Multi.MinibatchScaled`, not `AutocovScaled` (whose closure already contains `ULAErrorBudget`).
 - `exact hb …` against a goal stated with a `noncomputable def` abbreviation of the budget's burn-in expression: `unfold burnScaled` first; the defeq check then reduces to syntactic identity.
 - `tendsto_of_tendsto_of_tendsto_of_le_of_le'` with `tendsto_const_nhds` for the lower bound `0 ≤ t * r ^ n` closes a squeeze; `positivity` handles the eventual nonnegativity under `filter_upwards [eventually_ge_atTop 0]`.
+
+### Tide 109 (noise-regime) gotchas
+- A section variable (`Q`) that a theorem statement does not mention is *not* in scope inside its proof; passing `(Q := Q)` to a lemma
+  then fails with "Unknown identifier". Use any concrete instance (`(Q := (1 : Matrix _ _ ℝ))`) when the lemma's conclusion does not
+  depend on it, and drop `(Q := …)` when calling theorems whose statements never mention `Q`.
+- `Tendsto.div_atTop … tendsto_id` leaves `id t` in the congr' goal: add `id_eq` to the `simp only` before `field_simp`.
+  `Tendsto.div hf hg` produces the Pi division `(f / g) t`: add `Pi.div_apply`.
+- A helper lemma for "one entry of a double sum" should take the indices `(i j)` *before* the index-dependent hypothesis
+  (`(hd : i = j → …)`), otherwise the caller's `∀ i' j'` cannot be instantiated at the fixed pair.
+- `push_neg` is deprecated (warning = hard failure): replace `by_contra h; push_neg at h` with `of_not_not fun h' => h ⟨…⟩` or
+  `funext … (of_not_not …)`.
+- `t/n_t → ∞` from `n_t/t → 0⁺`: `tendsto_nhdsWithin_iff.2 ⟨h, eventually_pos⟩` then `.inv_tendsto_nhdsGT_zero`, and `simp [inv_div]`
+  for the `Pi.inv` congr. `Filter.Tendsto.atTop_mul_pos (hC : 0 < C) hf hg` multiplies a divergent `f` by `g → C`;
+  `Tendsto.atTop_mul_atTop₀` squares it (`simpa [sq]`).
+- `if i₀ = i₀ then 1 else 0` inside a term that must stay syntactically equal to a summand: prove the identity after `rw [if_pos rfl]`
+  *inside* the `have`, so the equation's RHS keeps the `if` for the later `rw`.
