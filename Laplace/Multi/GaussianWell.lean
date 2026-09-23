@@ -124,7 +124,7 @@ theorem cube_rescale {t : ℝ} (ht : 0 < t) (u : ℝ) :
 
 /-- The Gaussian well satisfies the dominated rescaling hypotheses at the scale `t^{-1/2}`. -/
 theorem toRescaledData :
-    RescaledData volume (fun t u ↦ t * (F (x₁ (p t) + t ^ (-(1 / 2 : ℝ)) * u) (p t) - f₁ (p t)))
+    RescaledData atTop volume (fun t u ↦ t * (F (x₁ (p t) + t ^ (-(1 / 2 : ℝ)) * u) (p t) - f₁ (p t)))
       (fun t u ↦ ψ (x₁ (p t) + t ^ (-(1 / 2 : ℝ)) * u)) (fun u ↦ Al / 2 * u ^ 2)
       (fun _ ↦ ψ x₁l) (fun _ ↦ Mψ) (min 1 (2 * κ / Al)) where
   hc := lt_min one_pos (div_pos (mul_pos two_pos hd.hκ) hd.hA)

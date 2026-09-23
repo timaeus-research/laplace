@@ -50,9 +50,9 @@ structure TwoWellData (F : ℝ → ℝ → ℝ) (p x₁ f₁ : ℝ → ℝ) (χ 
   ρ_int : Integrable ρ
   hg : 0 < g
   gap : ∀ᶠ t in atTop, ∀ x, ρ x ≠ 0 → g ≤ F x (p t)
-  well₀ : RescaledData volume (fun t u ↦ t * F (t ^ (-(1 / 2 : ℝ)) * u) (p t))
+  well₀ : RescaledData atTop volume (fun t u ↦ t * F (t ^ (-(1 / 2 : ℝ)) * u) (p t))
     (fun t u ↦ ψ₀ (t ^ (-(1 / 2 : ℝ)) * u)) Φ₀ w₀ W₀ c₀
-  well₁ : RescaledData volume
+  well₁ : RescaledData atTop volume
     (fun t u ↦ t * (F (x₁ (p t) + t ^ (-(1 / 2 : ℝ)) * u) (p t) - f₁ (p t)))
     (fun t u ↦ ψ₁ (x₁ (p t) + t ^ (-(1 / 2 : ℝ)) * u)) Φ₁ w₁ W₁ c₁
   Z₀_pos : 0 < ∫ u, w₀ u * Real.exp (-Φ₀ u)

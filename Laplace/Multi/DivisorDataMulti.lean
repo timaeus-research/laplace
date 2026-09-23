@@ -138,7 +138,7 @@ theorem continuous_rescaled (t : ℝ) :
 
 /-- The dominated rescaling lemma on `(ℝ^ι, volume)`. -/
 theorem toRescaledData {χ : (ι → ℝ) → ℝ} (hχ : Continuous χ) {M : ℝ} (hM : ∀ x, |χ x| ≤ M) :
-    RescaledData volume (fun t u ↦ t * F (aniScale α t u) (σ * t ^ (-γ)))
+    RescaledData atTop volume (fun t u ↦ t * F (aniScale α t u) (σ * t ^ (-γ)))
       (fun t u ↦ χ (aniScale α t u) * monoDensity h u) Φ₀ (fun u ↦ χ 0 * monoDensity h u)
       (fun u ↦ M * monoDensity h u) c where
   hc := hd.hc
