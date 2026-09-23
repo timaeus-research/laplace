@@ -2818,3 +2818,22 @@ matrix version is `whiteningOf`.
   expression verbatim.
 - `cubicScale ^ 2` hides `√λ`: prove `cubicScale_sq : cubicScale lam alpha ^ 2 = alpha ^ 2 / (36 * lam ^ 3)` by
   `rw [div_pow, mul_pow, mul_pow, Real.sq_sqrt hlam.le]; ring` and rewrite with it *before* unfolding the other coefficient definitions.
+
+### The Gamma law of the LLC statistic under Gaussian laws (tide `sampler-gamma-law`)
+
+- The Laplace transform of a quadratic form under a centred tilted Gaussian is a pure partition-function ratio:
+  `e^{−c·½uᵀHu} · tiltedWeight Q 0 u = tiltedWeight (Q + c•H) 0 u` (`add_mulVec`, `smul_mulVec`, `dotProduct_add`,
+  `dotProduct_smul`), then `tiltedZ_eq` + `gaussianZ_matCLM` twice and `field_simp` (with the two `√det ≠ 0` and `√(2π)^d ≠ 0` facts).
+  No change of variables, no commutation of `Q` and `H`.
+- `IsHermitian.eigenvalues` and `orthoOf` need `[DecidableEq ι]`: don't `omit [DecidableEq ι]` on statements that mention them
+  ("cannot omit referenced section variable"); do omit it (and `classical` in the proof) on statements that don't, or the
+  `unusedDecidableInType` linter fires.
+- `det(UᵀBU) = det B` for `U = orthoOf hA`: from `det (UᵀU) = 1` via `det_mul`, `det_transpose`; then `linear_combination B.det * h1`
+  — no `det U = ±1` case split. Determinants of `tH + γI` and the ULA denominator follow by `rw [← det_conj_orthoOf hA, <eigen lemma>,
+  Matrix.det_diagonal]`; a sum of two conjugated diagonals closes with `Matrix.diagonal_add, Matrix.det_diagonal` (the `Pi.add_apply`
+  beta is absorbed by `rw`'s closing `rfl` — an explicit `rfl` afterwards is "no goals").
+- `Matrix.smul_mulVec_assoc` is now `Matrix.smul_mulVec`.
+- Positive definiteness from a diagonalisation `Uᵀ Q U = diagonal v`, `v > 0`: `Q = U (diagonal v) Uᵀ` (insert `U Uᵀ = 1` on both
+  sides, `simp only [Matrix.mul_assoc]`), `Matrix.PosDef.diagonal`, then `PosDef.conjTranspose_mul_mul_same` with the injectivity of
+  `Uᵀ.mulVec` (`posDef_of_orthoOf_conj`); `Q + c•H` for `c ≥ 0`: `hQ.add_posSemidef (hH.posSemidef.smul hc)`.
+- `√(∏ f) = ∏ √f`: `Real.sqrt_prod s (fun i _ => nonneg)`; `√(x/y) = √x/√y` with only `0 ≤ y`: `Real.sqrt_div' x hy`.
