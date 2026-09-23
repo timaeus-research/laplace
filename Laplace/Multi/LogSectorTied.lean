@@ -110,3 +110,33 @@ theorem tendsto_tiedBlock {k : ℕ} {A h : Fin (k + 1) → ℝ} (hA : ∀ i, 0 <
   ring
 
 end Laplace.Multi
+
+namespace Laplace.Multi
+
+/-- **The two-dimensional log sector**: `∫₀¹∫₀¹ e^{−t x² y²} dx dy ~ (√π/4) t^{−1/2} log t`. -/
+theorem tendsto_x2y2 :
+    Tendsto (fun t ↦ t ^ (1 / 2 : ℝ) / log t *
+      ∫ x in Set.pi Set.univ (fun _ : Fin 2 ↦ Ioo (0 : ℝ) 1), exp (-(t * (x 0 ^ 2 * x 1 ^ 2))))
+      atTop (𝓝 (√π / 4)) := by
+  have hA : ∀ i : Fin 2, 0 < (![2, 2] : Fin 2 → ℝ) i := by
+    intro i; fin_cases i <;> norm_num
+  have htied : ∀ i : Fin 2, ((![0, 0] : Fin 2 → ℝ) i + 1) / (![2, 2] : Fin 2 → ℝ) i = 1 / 2 := by
+    intro i; fin_cases i <;> norm_num
+  have h := tendsto_tiedBlock (k := 1) hA (lam := 1 / 2) one_half_pos htied
+  have hc : Gamma (1 / 2) / (Nat.factorial 1 : ℝ) * ∏ i : Fin 2, 1 / (![2, 2] : Fin 2 → ℝ) i =
+      √π / 4 := by
+    rw [Real.Gamma_one_half_eq, Fin.prod_univ_two]
+    simp only [Nat.factorial_one, Nat.cast_one, div_one, Matrix.cons_val_zero, Matrix.cons_val_one]
+    ring
+  rw [hc] at h
+  refine h.congr' (Eventually.of_forall fun t ↦ ?_)
+  beta_reduce
+  rw [pow_one]
+  congr 1
+  unfold tiedBlockIntegral
+  refine setIntegral_congr_fun (MeasurableSet.pi countable_univ fun _ _ ↦ measurableSet_Ioo)
+    fun x _ ↦ ?_
+  simp only [Fin.prod_univ_succ, Fin.prod_univ_zero, Matrix.cons_val_zero, Matrix.cons_val_succ,
+    Fin.succ_zero_eq_one, Real.rpow_two, Real.rpow_zero, mul_one]
+
+end Laplace.Multi
