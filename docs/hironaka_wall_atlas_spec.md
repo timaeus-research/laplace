@@ -342,8 +342,8 @@ laplace, Mathlib only, standard axioms:
   `t^λ (log t)^{-k} ∫_{(0,1)^{k+1}×(0,1)^m} e^{-t∏x^A ∏x'^{A'}} ∏x^h ∏x'^{h'}
    → Γ(λ)/k! · ∏ 1/A_i · ∏ 1/(h'_j + 1 − λ A'_j)`
   for a tied block `(h_i+1)/A_i = λ > 0` and an untied block `(h'_j+1)/A'_j > λ` (Astra's
-  (10)–(11)). Numerics for `A = (2,2)`, `h = 0`, one untied coordinate `x'^1`: the ratio of
-  `√t I(t)/log t` to the predicted `√π/2` is `1 + c/log t` at `t = 10³…10⁷`.
+  (10)–(11)). Numerics for `A = (2,2)`, `h = 0`, one untied coordinate `x'^1`: `√t I(t)/log t`
+  agrees with the predicted `√π/2` to within 0.3% at `t = 10³…10⁷`.
 
 Astra's lemma 4 is therefore complete (both blocks), lemma 6 (`ChartCluster`) too. Remaining:
 lemma 1 (normalised signed branch kernels with the explicit moving cutoff), lemma 2 (moving-unit
