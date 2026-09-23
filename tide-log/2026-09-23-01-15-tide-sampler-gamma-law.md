@@ -85,3 +85,15 @@ note that A2 itself carries a `1/t` localisation correction at fixed `γ`.
 - GPT-6 Astra: "A1 + A2 + the combined localised-ULA product theorem for `s ≥ 0`, with unlocalised A3 as a specialisation"
 
 Agreed: A1 + A2 + A3 (localised, `s ≥ 0`, with the unlocalised specialisation).
+
+## Result
+
+Commit `96b2ab2` on `tide/sampler-gamma-law`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Sampler/GammaLaw.lean` (     239 lines).
+A1 + A2 + A3 as voted (localised ULA for `s ≥ 0`, unlocalised as a specialisation).
+`dotProduct_add_smul_mulVec`, `tiltedExpectation_exp_quadForm` (the exact partition-function ratio), `det_conj_orthoOf`,
+`det_localisedPrecision`, `posDef_of_orthoOf_conj`, `laplace_localisedGibbs`, `laplace_gibbs` (`(1/√(1+s))^d` exactly),
+`laplace_ulaLocalised`, `laplace_ula`.
+
+Surprises: the sampler-side Gamma law is a ~230-line file — every ingredient (tilted Gaussians, `gaussianZ_matCLM`, the eigenbasis
+lemmas of `LocalisedLLC`/`ULALocalised`) was already landed; the transform of a Gaussian quadratic form is nothing but
+`Z(Q + cH)/Z(Q)`, so the Gamma(d/2, 1) law that tide 89 reaches asymptotically for the anharmonic target is exact for the Gaussian one.
