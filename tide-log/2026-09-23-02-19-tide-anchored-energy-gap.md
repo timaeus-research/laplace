@@ -67,3 +67,13 @@ Vote for one bundle at the end.
 ## Vote
 - Claude: A–C (`anchoredGaussianEnergy_eq`, `anchoredGaussianEnergy_rate2`, `localisedEnergy_anchoredGap`), D deferred
 - GPT-6 Astra: A–C, with the sharper reciprocal-factorisation proof of B, one shared coefficient identity, D deferred
+
+## Result
+
+Commit `8909e31` on `tide/anchored-energy-gap`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/AnchoredEnergyGap.lean` (     233 lines).
+A + B + C as voted.
+Sampler: `dotProduct_orthoOf_mulVec`, `tiltMean_quadForm_localised`, `anchoredGaussianEnergy_eq`.
+Multi: `inv_sq_shift_rate`, `anchoredGaussianEnergy_rate2`, `localisedEnergy_anchoredGap`.
+
+Surprises: the energy gap coefficient comes out as `∑e₁ᵢ − (A − G)`, and `energyLocCoeff1_anchored` (tide 94) turns it into `C₁′`
+termwise — the same coefficient as the transform gap, obtained from the landed energy theorem without touching any `s`-derivative.
