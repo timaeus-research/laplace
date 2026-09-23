@@ -65,3 +65,22 @@ shifted product is still a generated 15-term tree (the seabed has no polynomial-
 ## Vote
 - Claude: A+B+C (+ the cheap additions)
 - GPT-6 Astra: A+B+C
+
+## Result
+
+Commit `e79b206` on `tide/ula-autocovariance`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/ULAAutocovariance.lean` (     682 lines).
+A–C as voted, plus GPT's cheap additions.
+Sampler (tilted layer): `tiltedExpectation_add_const`, `tiltedExpectation_mul_add_const`, `tiltedCov_add_const`, `integrable_shift_energy`,
+`integrable_shift_quadProbe`, `integrable_shift_energy_mul_quadProbe`, `tiltedCov_energy_quadProbe_add_const`.
+Sampler (frame): `sum_range_cesaro_geometric`, `conj_diagonal_transpose_frame`, `isHermitian_conj_diagonal`, `sum_sum_conj_mul_conj`,
+`dotProduct_conj_diagonal_mulVec₂`, `transpose_mulVec_conj_mulVec`, `conj_mulVec_dotProduct_conj_mulVec`, `ulaCov_posDef_frame`,
+`ulaCov_inv_inv_frame`, `statTilt`, `tiltMean_statTilt`, `condEnergy`, `ulaAutoCov`, `ulaLongRunVar`, `lagSumVar`, `condEnergy_eq`,
+`isHermitian_of_frame`, `ulaAutoCov_zero_eq`, `ulaAutoCov_eq_of_pos`, `ulaAutoCov_eq`, `abs_rho_lt_one`, `ulaAutoCov_summable`,
+`ulaLongRunVar_eq`, `ulaLongRunVar_eq_sampler`, `ulaLongRunVar_nonneg`, `lagSumVar_eq`, `lagSumVar_eq_longRun_sub`.
+
+Surprises: two build rounds. `Σ` is a reserved token (a hypothesis `hΣ` broke parsing), `ring` does not see `x^(2ℓ) = (x²)^ℓ` for a compound
+base (`← pow_mul` first), and the E3 Wick lemmas live in `Laplace.Sampler` behind an import not in `ULAFluctuationBudget`'s closure. The
+sampler-variable form of τ² needed the denominators rewritten into products of atoms before `field_simp`. Mathematically, the cross and linear
+Wick terms merge per mode into a single `ρ^ℓ` term (GPT: `B_ℓm + b_ℓ = A^ℓHm` at matrix level), and at the β-scaled step the integrated
+autocorrelation times `(1+ρ²)/(1−ρ²) → (1+(1−ηλ)²)/(ηλ(2−ηλ))`, `(1+ρ)/(1−ρ) → (2−ηλ)/(ηλ)` are t-independent: stationary sampling needs an
+asymptotically t-independent number of steps for fixed precision (the check: 2.8/5.4 steps per effective sample vs 1/(hp) = 3.2, 2/(hp) = 6.4).
