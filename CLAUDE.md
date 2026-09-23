@@ -3049,3 +3049,22 @@ matrix version is `whiteningOf`.
   `have hs : ∀ i, Summable (fun ℓ => F i ℓ + G i ℓ) := fun i => (hs1 i).add (hs2 i)` so `rw [Summable.tsum_finsetSum fun i _ => hs i]` matches.
 - `geom_sum_eq (h : x ≠ 1) n : ∑ i ∈ range n, x ^ i = (x ^ n − 1)/(x − 1)`; Cesàro-weighted sums `∑_{j<n} (n − (j+1)) r^{j+1}` by induction with
   `Finset.sum_range_succ`, a pointwise `push_cast; ring` split of the weight, `field_simp; ring`.
+
+### Tide 103 (`autocov-scaled`) gotchas
+
+- **Substituting a compound step into a generated statement**: `h := η / t` inside `4 * h * p ^ 3` must become `4 * (η / t) * p ^ 3`, not
+  `4 * η / t * p ^ 3` (which parses as `(4*η)/t * p^3`, a different term that `rw` will not match). Parenthesise the substituted expression.
+- `field_simp` closes most eventual-rewrite identities `(fun t => …) =ᶠ[atTop] fun t => …` by itself once every factor has a syntactic `≠ 0`
+  fact in context (`t`, `η`, `λᵢ`, `tλᵢ + g` via `positivity`, `κᵢ` from an eventual positivity fact); a trailing `ring` then fails with "No
+  goals". Only genuinely non-normalising identities needed `ring` — and a wrong identity shows up as a `ring_nf` residue with an extra factor.
+- Package eventual admissibility once: `scaledStep_eventually : ∀ᶠ t, (η/t)(tλ+g) < 2 ∧ 0 < 1 − (η/t)(tλ+g)/2` from
+  `Filter.Tendsto.eventually_lt_const` / `.eventually_const_lt` on the scalar limits, lifted to all modes by `Filter.eventually_all.2`,
+  combined with `eventually_gt_atTop 0` via `.and`; destructure in `filter_upwards [hev] with t ⟨ht, hκ⟩`.
+- Limit toolkit at `h = η/t`: `scaledStep_mul_tendsto` (`(η/t)(tλ+g) → ηλ`), `rho_scaled_tendsto`, `kappa_scaled_tendsto`,
+  `ratio_scaled_tendsto` (`tλ/(tλ+g) → 1`), `inv_p_tendsto` (`1/(tλ+g) → 0` via `Tendsto.div_atTop` and
+  `tendsto_atTop_add_const_right atTop g (tendsto_id.atTop_mul_const hlam)`), tide 100's `ulaScaledStep_factor_tendsto`; combine with
+  `.pow`, `.mul`, `.const_mul`, `.const_add`, `.const_sub`, `.div_const`, `.div _ hne`, `tendsto_finsetSum Finset.univ fun i _ => …`, and
+  finish with `simpa using` (kills `1 ^ k`, `* 0`, `∑ 0`) or `simpa [Finset.mul_sum] using`.
+- A limit statement about a seabed object (`ulaLongRunVar …`) that is only meaningful eventually: prove the closed-form limit first, then
+  `(closed_form_tendsto …).congr' ?_` with `filter_upwards [eventually_gt_atTop 0, hev] with t ht hev; rw [anchored_identity … ht … hev]`.
+- `le_div_iff₀ (hc : 0 < c) : a ≤ b / c ↔ a * c ≤ b`; `one_half_pos`; `one_div_pos.2`.
