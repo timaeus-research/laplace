@@ -269,6 +269,7 @@ import Laplace.Multi.PowerLogDominance
 import Laplace.Multi.WallFibreFormulas
 import Laplace.Multi.UniformSchedule
 import Laplace.Multi.FibreSubstitution
+import Laplace.Multi.FibreKernel
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
