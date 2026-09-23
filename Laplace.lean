@@ -414,3 +414,4 @@ import Laplace.Multi.MinibatchFluctuation
 import Laplace.Multi.MinibatchLongRun
 import Laplace.Multi.MinibatchScaled
 import Laplace.Multi.FullLawLLC
+import Laplace.Multi.BurnInLog

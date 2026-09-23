@@ -3142,3 +3142,10 @@ matrix version is `whiteningOf`.
   Matrix.one_mul]`, then `Matrix.mul_apply`, `Finset.sum_mul`, `Matrix.transpose_apply`; a mismatch `S k l` vs `S l k` between the two nested sums
   is fixed by `Finset.sum_comm` on the double sum before `Finset.sum_congr` — and once the bodies agree, `rw` closes the goal (a trailing
   `refine …; ring` errors with "No goals").
+
+### Tide 108 (burnin-log) gotchas
+- `conv_lhs => rw [← Real.exp_log ht0]` rewrites *every* `t` on the LHS, including the one inside `Real.log t`. To turn `t * exp(a)` into `exp(b)`, prove `b = log t + a` by `ring` and `rw [this, Real.exp_add, Real.exp_log ht0]` on the RHS instead.
+- A schedule `k : ℝ → ℕ` that appears inside a theorem statement cannot be introduced with `set` in the proof (the statement is elaborated first: "Function expected at k"). Write `⌈κ * Real.log t⌉₊` inline in the statement and in every intermediate `have`.
+- `anchoredMean_tendsto_zero` / `mul_anchoredMean_tendsto` live in `Laplace.Multi.MinibatchScaled`, not `AutocovScaled` (whose closure already contains `ULAErrorBudget`).
+- `exact hb …` against a goal stated with a `noncomputable def` abbreviation of the budget's burn-in expression: `unfold burnScaled` first; the defeq check then reduces to syntactic identity.
+- `tendsto_of_tendsto_of_tendsto_of_le_of_le'` with `tendsto_const_nhds` for the lower bound `0 ≤ t * r ^ n` closes a squeeze; `positivity` handles the eventual nonnegativity under `filter_upwards [eventually_ge_atTop 0]`.
