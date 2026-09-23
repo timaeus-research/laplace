@@ -3089,3 +3089,25 @@ matrix version is `whiteningOf`.
   `p ≠ 0`, `2 − h p ≠ 0`, `1 − hp/2 ≠ 0`; `field_simp` then closes without `ring`.
 - `Finset.sum_ite_eq (s) (a) (f) : ∑ x ∈ s, (if a = x then f x else 0) = if a ∈ s then f a else 0` — with `Finset.mem_univ, if_true` it collapses the
   diagonal of a double sum; split `(δᵢⱼσ + E)²` pointwise with `split_ifs with hij; · subst hij; ring; · ring` before collapsing.
+
+### Tide 105 (`minibatch-longrun`) gotchas
+
+- **`rw` cannot rewrite under a binder when the pattern mentions the bound variable**: `rw [Finset.sum_add_distrib]` on `∑ i, ∑ j, (f i j + g i j)`
+  fails ("did not find … / target not type-correct under implicit transparency, function expected `(Uᵀ * C * U) i`"); use
+  `simp only [Finset.sum_add_distrib]`, which handles both levels.
+- When two simp lemmas match the same term (`dotProduct_conj_mulVec_frame` vs `dotProduct_mulVec_eq_sum` on `x ⬝ᵥ (UMUᵀ) *ᵥ y`), the general one
+  may win and the frame lemma is reported unused: run them in **separate** `simp only` calls in the intended order (frame reduction, then
+  `transpose_mulVec_conj_mulVec`, then the sum expansion).
+- A section-variable-only lemma (`mbFrame_symm : Ŝ j i = Ŝ i j`) whose conclusion alone determines `p`/`U`: pass `(p := p)`/`(U := U)` at the call
+  site, otherwise "don't know how to synthesize implicit argument".
+- Frobenius invariance `∑ᵢⱼ (UDUᵀ)ᵢⱼ (UMUᵀ)ᵢⱼ = ∑ᵢ dᵢ Mᵢᵢ` (`sum_sum_conj_diagonal_mul_conj`) via the transpose trick
+  `(UMUᵀ)ᵢⱼ = (UMᵀUᵀ)ⱼᵢ` and tide 104's `sum_sum_conj_mul_conj'`; `conj_conj_frame (hU) M : Uᵀ * (U * M * Uᵀ) * U = M`; `lyapunovVia` unfolds
+  by `simp only [lyapunovVia]`/`unfold lyapunovVia` to `U * diagLyapunov … * Uᵀ`, so `(Uᵀ * Σ * U) i j` reduces to `Ŝ i j` with `conj_conj_frame`.
+- Finite geometric sums: `geom_sum_eq (hx : x ≠ 1) n : ∑ i ∈ range n, x ^ i = (x ^ n − 1)/(x − 1)`, then `mul_pow` and `field_simp` (supply
+  `1 − x ≠ 0` **and** `x − 1 ≠ 0`); first-term bound `Finset.single_le_sum (fun r _ => …) (Finset.mem_range.2 hk)`; triple-sum reordering
+  `Finset.sum_comm.trans (Finset.sum_congr rfl fun a _ => Finset.sum_comm)`.
+- A symmetrised double sum: `rw [Finset.sum_comm]` then per-term `rw [hSsym i j]; ring`; combine the two orientations with `linear_combination
+  (1/4) * h1 + (1/2) * h2` after `simp only [mul_add, Finset.sum_add_distrib]` splits the `(a + b)` factor.
+- Nonnegativity of a non-symmetric bilinear sum `∑ᵢⱼ vᵢvⱼEᵢⱼf(ρⱼ)`: double it, add the `Finset.sum_comm` copy, rewrite per term with the
+  scalar identity (`field_simp; ring`) into `2 Qᵢⱼzᵢzⱼ`, recognise `z ⬝ᵥ Q *ᵥ z` via `dotProduct_mulVec_eq_sum`, and use
+  `PosSemidef.dotProduct_mulVec_nonneg`; finish with `linarith`.
