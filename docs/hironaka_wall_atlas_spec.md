@@ -266,3 +266,31 @@ So Interface F (the wall atlas with its fibre identity) is a theorem, modulo rea
 `dens_i = f_i ∘ φ_i⁻¹ · |b_i ∏ u^{h_i}|`. What the asymptotics still need from here is the exponent
 bookkeeping of these kernels (the `WallFibreFormulas` parametrisation `ν, κ_i, p, r_i`) and their
 `RescaledData` packaging.
+
+## The analytic layer: Astra's plan of record (`gpt_responses/research_kernel_asymptotics_v1.md`)
+
+Verdicts on the sketch: (1) the moving cutoff `V < ρ` (i.e. `∏|w_j|^{q_j} > |s|/ρ^q`) is NOT harmless —
+it is the LP constraint `Q·α ≤ γ`, and it changes the exponent (`∫_{t^{-γ}}^1 e^{-tx²}` is
+`t^{-1/2}`-order only for `γ > 1/2`); (2) the atlas bounds `|a|`, not a positive phase — positivity
+of `F ∘ rep` on each sign sector must be an explicit hypothesis; (3) the unit may never be frozen
+at `0`: it is evaluated at the limiting FACE point (`∫∫ e^{-t(1+y)x²}`, or `a(0, σ/u)` on a moving
+fibre); (4) with merely continuous weights no LP constant is guaranteed (weights like `x^β`,
+`e^{-1/x²}`, `1/log(e/x)` change the order) — the safe output is a rescaled limit, possibly `0`, and
+`ChartAssembly` needs strict positivity of the constants; (5) `WallChartsData` must be enriched with
+the phase data (`kF`, `a`, unit bounds) to connect to asymptotics; (6) `θ = e^{-tF} φ` needs a truth
+cutoff and support bookkeeping; (7) `γ = 0` is a separate entry point (positive minimum ⇒
+`e^{-t F_min}` factor). The existing `LPData.tendsto_lpExponent` is the log-exponent statement, so
+it is compatible with log sectors (Astra's worry about a finite-limit form does not apply).
+
+Two theorems: a **constrained monomial comparison** (`K(t) ≍ t^{-λ}(log t)^m`,
+`λ = γp + min_{P_γ} b·α`, `P_γ = {α ≥ 0, Q·α ≤ γ, κ·α ≥ 1 − γν}`, `m = dim` of the optimal face) and
+a **certified rescaling** (profile certificate = exact rescaled integral identities + `RescaledData`
+hypotheses ⇒ `K/L → C`, numerators `Q/L → J`). Single-monomial log theorem:
+`∫_{(0,1)^d} e^{-t ∏ x^{A}} ∏ x^{h} ~ Γ(λ)/(k−1)! · ∏_{i∈M} 1/A_i · ∏_{i∉M} 1/(b_i − λA_i) · t^{-λ}(log t)^{k−1}`
+with `b = h+1`, `λ = min b_i/A_i`, `k = #argmin` (`∫∫ e^{-tx²y²} ~ (√π/4) t^{-1/2} log t`); proof by
+`y_i = −A_i log x_i`, the simplex volume `z^{k−1}/(k−1)!`, `u = t e^{-Y-z}`, Gamma + dominated
+convergence. Chart ties: constants add, no extra log. Recommended order: (1) normalise signed
+branch kernels (orthants, explicit cutoff), (2) moving-unit comparison (sandwich by constant-unit
+models), (3) certified moving-kernel limit from `RescaledData`, (4) single-monomial power–log
+theorem, (5) LP/profile compatibility (a new constrained certificate, not `LPData` unchanged),
+(6) finite dominant-cluster assembly generalising `dominated_chart_limit` (`Fin 2` only).
