@@ -294,3 +294,33 @@ branch kernels (orthants, explicit cutoff), (2) moving-unit comparison (sandwich
 models), (3) certified moving-kernel limit from `RescaledData`, (4) single-monomial power–log
 theorem, (5) LP/profile compatibility (a new constrained certificate, not `LPData` unchanged),
 (6) finite dominant-cluster assembly generalising `dominated_chart_limit` (`Fin 2` only).
+
+## Status (2026-09-25): the analytic layer, first two lemmas of Astra's plan
+
+laplace, Mathlib only, standard axioms:
+
+- `ChartCluster.lean` (`657c960`): `ChartAssembly.cluster_limit` — with a reference chart `i₀` and
+  `L i / L i₀ → d i ≥ 0`, the assembled ratio converges to `(∑ d i J i)/(∑ d i C i)`;
+  `ChartAssembly.powLog_cluster_limit` — for `L i = k i · powLog (λ i) (r i)` the weights are
+  `k i / k i₀` on the charts sharing the winning pair (smallest `λ`, then largest `r`) and `0`
+  elsewhere (Astra's lemma 6; ties add constants, no extra log).
+- `LogSectorCore.lean` (`657c960`): `tendsto_logSector_core`:
+  `t^λ (log t)^{-n} ∫₀^∞ e^{-t e^{-z}} e^{-λ z} z^n dz → Γ(λ)` (substitution `u = t e^{-z}`,
+  dominated convergence with the envelope `u^{λ-1} e^{-u} (1+|log u|)^n`, integrable by comparison
+  with three Gamma integrands `integrableOn_gammaLog`).
+- `LogSubstitution.lean`, `LogSubstitutionPi.lean` (`ff33ded`, `c9a5f88`): the coordinatewise
+  logarithmic substitution `x_i = e^{-y_i/A_i}` on `(0,1)`, and on a tied block
+  `(h_i+1)/A_i = λ`: `∫⁻_{(0,1)^{k+1}} ∏ x^h G(∏ x^A) = ∏(1/A_i) ∫⁻_{(0,∞)^{k+1}} e^{-λ∑y} G(e^{-∑y})`
+  (induction through the coordinate splitting).
+- `SimplexReduction.lean` (`ff33ded`): `lintegral_pi_Ioi_comp_sum`:
+  `∫⁻_{(0,∞)^{k+1}} G(∑ y) = ∫⁻_{(0,∞)} G(z) z^k/k!` (power convolution + Tonelli over `{0<z<w}`).
+- `LogSectorTied.lean` (`f28f899`, `635b488`): **the tied-block power–log theorem**
+  `tendsto_tiedBlock`: `t^λ (log t)^{-k} ∫_{(0,1)^{k+1}} e^{-t∏x^{A}} ∏x^{h} → Γ(λ)/k! ∏ (1/A_i)`
+  (Astra's (10)–(11) with all coordinates tied), and `tendsto_x2y2`:
+  `∫₀¹∫₀¹ e^{-t x² y²} ~ (√π/4) t^{-1/2} log t` (numerics: the ratio to `√π/4` is `1 + 1.96/log t` at
+  `t = 10³, 10⁵, 10⁷`, consistent with a relative `t^{-1/2}`-order correction... i.e. `1/log t`).
+
+Remaining in Astra's plan: untied factors in the single-monomial theorem (`∏_{i∉M} 1/(b_i − λA_i)`),
+normalisation of the signed branch kernels with the explicit moving cutoff (lemma 1), the
+moving-unit comparison (lemma 2), the certified moving-kernel limit through `RescaledData`
+(lemma 3), and the LP/profile compatibility (lemma 5).
