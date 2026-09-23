@@ -47,3 +47,17 @@ with its normalisation assumptions (fixed relative step does not make `1 − η�
 ## Vote
 - Claude: A + B + C + D
 - GPT-6 Astra: "yes to A–D and to adding the diagnostic; revise 'the Hessian-fluctuation correction has slope σ₁' to 'the first-order Hessian-fluctuation term has slope σ₁'"
+
+## Result
+
+Commit `2898ad3` on `tide/fulllaw-scaled`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/FullLawScaled.lean` (     163 lines).
+A–D as voted.
+Lemmas: `mbCov_frame_tendsto`, `mbCov_tendsto`, `continuous_stateTerm_frame_diag`, `firstOrder_slope_tendsto`, `mb_slope_tendsto`,
+`fullLaw_lower_slope_tendsto`.
+
+Surprises: three build rounds, all namespace/import bookkeeping (the full-law files do not import the β-scaled limits; sampler defs need
+qualification inside `Laplace.Multi`) plus an unanchored `← mul_assoc`. The matrix limit via `tendsto_pi_nhds` and continuity of the frame
+diagonal of `B(Σ)` made the first-order slope a three-line consumer of tide 106's entry limits. GPT confirmed the reconciliation with tides
+107/114 (`1 − ρⱼ² → ηλⱼ(2−ηλⱼ) > 0` along the anchored scaling, versus `Θ(h)` at fixed `pⱼ`), insisted the slope be attributed to the
+*first-order* term (higher-order Hessian-fluctuation terms are also `Θ(t)` at fixed `c`), and gave the eigenframe simplification
+`σ₁ = (c/2)∑ⱼvⱼĈⱼⱼ/(λⱼ(2−ηλⱼ)²)` with the modewise feedback reading `R₁ = ∑wⱼqⱼ/∑wⱼ`.
