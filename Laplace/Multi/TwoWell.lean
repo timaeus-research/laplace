@@ -50,9 +50,10 @@ structure TwoWellData (F : ℝ → ℝ → ℝ) (p x₁ f₁ : ℝ → ℝ) (χ 
   ρ_int : Integrable ρ
   hg : 0 < g
   gap : ∀ᶠ t in atTop, ∀ x, ρ x ≠ 0 → g ≤ F x (p t)
-  well₀ : RescaledData (fun t u ↦ t * F (t ^ (-(1 / 2 : ℝ)) * u) (p t))
+  well₀ : RescaledData volume (fun t u ↦ t * F (t ^ (-(1 / 2 : ℝ)) * u) (p t))
     (fun t u ↦ ψ₀ (t ^ (-(1 / 2 : ℝ)) * u)) Φ₀ w₀ W₀ c₀
-  well₁ : RescaledData (fun t u ↦ t * (F (x₁ (p t) + t ^ (-(1 / 2 : ℝ)) * u) (p t) - f₁ (p t)))
+  well₁ : RescaledData volume
+    (fun t u ↦ t * (F (x₁ (p t) + t ^ (-(1 / 2 : ℝ)) * u) (p t) - f₁ (p t)))
     (fun t u ↦ ψ₁ (x₁ (p t) + t ^ (-(1 / 2 : ℝ)) * u)) Φ₁ w₁ W₁ c₁
   Z₀_pos : 0 < ∫ u, w₀ u * Real.exp (-Φ₀ u)
   Z₁_pos : 0 < ∫ u, w₁ u * Real.exp (-Φ₁ u)
@@ -109,6 +110,7 @@ theorem tendsto_Z₀ :
     Tendsto (fun t ↦ (∫ x, ψ₀ x * Real.exp (-(t * F x (p t)))) / t ^ (-(1 / 2 : ℝ))) atTop
       (𝓝 hd.C₀) := by
   have h := hd.well₀.tendsto_den (g := fun _ ↦ (1 : ℝ)) measurable_const (Mg := 1) (fun _ ↦ by simp)
+    zero_le_one
   simp only [one_mul] at h
   refine h.congr' ?_
   filter_upwards [eventually_gt_atTop 0] with t ht
@@ -119,6 +121,7 @@ theorem tendsto_Q₀ :
     Tendsto (fun t ↦ (∫ x, ψ₀ x * (t * F x (p t) * Real.exp (-(t * F x (p t))))) /
       t ^ (-(1 / 2 : ℝ))) atTop (𝓝 hd.J₀) := by
   have h := hd.well₀.tendsto_num (g := fun _ ↦ (1 : ℝ)) measurable_const (Mg := 1) (fun _ ↦ by simp)
+    zero_le_one
   simp only [one_mul] at h
   refine h.congr' ?_
   filter_upwards [eventually_gt_atTop 0] with t ht
@@ -128,6 +131,7 @@ theorem tendsto_Q₀ :
 theorem tendsto_Z₁ : Tendsto (fun t ↦ (∫ x, ψ₁ x * Real.exp (-(t * F x (p t)))) /
     (t ^ (-(1 / 2 : ℝ)) * Real.exp (-(t * f₁ (p t))))) atTop (𝓝 hd.C₁) := by
   have h := hd.well₁.tendsto_den (g := fun _ ↦ (1 : ℝ)) measurable_const (Mg := 1) (fun _ ↦ by simp)
+    zero_le_one
   simp only [one_mul] at h
   refine h.congr' ?_
   filter_upwards [eventually_gt_atTop 0] with t ht
@@ -143,9 +147,9 @@ theorem tendsto_Z₁ : Tendsto (fun t ↦ (∫ x, ψ₁ x * Real.exp (-(t * F x 
 theorem tendsto_Q₁ : Tendsto (fun t ↦ (∫ x, ψ₁ x * (t * F x (p t) * Real.exp (-(t * F x (p t))))) /
     (t ^ (-(1 / 2 : ℝ)) * Real.exp (-(t * f₁ (p t))))) atTop (𝓝 (z * hd.C₁ + hd.J₁)) := by
   have hN := hd.well₁.tendsto_num (g := fun _ ↦ (1 : ℝ)) measurable_const (Mg := 1)
-    (fun _ ↦ by simp)
+    (fun _ ↦ by simp) zero_le_one
   have hD := hd.well₁.tendsto_den (g := fun _ ↦ (1 : ℝ)) measurable_const (Mg := 1)
-    (fun _ ↦ by simp)
+    (fun _ ↦ by simp) zero_le_one
   simp only [one_mul] at hN hD
   have h := (hd.hz.mul hD).add hN
   refine h.congr' ?_

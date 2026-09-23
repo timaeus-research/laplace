@@ -25,37 +25,40 @@ open Real MeasureTheory Filter Topology
 
 namespace Laplace.Multi
 
-/-- Hypotheses of the dominated rescaling lemma. -/
-structure RescaledData (G w : ℝ → ℝ → ℝ) (Φ₀ w₀ W : ℝ → ℝ) (c : ℝ) : Prop where
+variable {X : Type*} [MeasurableSpace X]
+
+/-- Hypotheses of the dominated rescaling lemma, on a fibre `(X, μ)`. Nonnegativity and the
+comparability bound are only required where the weight is nonzero. -/
+structure RescaledData (μ : Measure X) (G w : ℝ → X → ℝ) (Φ₀ w₀ W : X → ℝ) (c : ℝ) : Prop where
   hc : 0 < c
   hc1 : c ≤ 1
   G_meas : ∀ t, Measurable (G t)
   w_meas : ∀ t, Measurable (w t)
-  G_nonneg : ∀ᶠ t in atTop, ∀ u, 0 ≤ G t u
+  G_nonneg : ∀ᶠ t in atTop, ∀ u, w t u ≠ 0 → 0 ≤ G t u
   Φ₀_nonneg : ∀ u, 0 ≤ Φ₀ u
   G_lim : ∀ u, Tendsto (fun t ↦ G t u) atTop (𝓝 (Φ₀ u))
   w_lim : ∀ u, Tendsto (fun t ↦ w t u) atTop (𝓝 (w₀ u))
   w_bd : ∀ t u, |w t u| ≤ W u
   lower : ∀ᶠ t in atTop, ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u
-  int : Integrable fun u ↦ W u * Real.exp (-(c * Φ₀ u))
-  Φint : Integrable fun u ↦ W u * (Φ₀ u * Real.exp (-(c * Φ₀ u)))
+  int : Integrable (fun u ↦ W u * Real.exp (-(c * Φ₀ u))) μ
+  Φint : Integrable (fun u ↦ W u * (Φ₀ u * Real.exp (-(c * Φ₀ u)))) μ
 
 namespace RescaledData
 
-variable {G w : ℝ → ℝ → ℝ} {Φ₀ w₀ W : ℝ → ℝ} {c : ℝ}
+variable {μ : Measure X} {G w : ℝ → X → ℝ} {Φ₀ w₀ W : X → ℝ} {c : ℝ}
 
-theorem W_nonneg (hd : RescaledData G w Φ₀ w₀ W c) (u : ℝ) : 0 ≤ W u :=
+theorem W_nonneg (hd : RescaledData μ G w Φ₀ w₀ W c) (u : X) : 0 ≤ W u :=
   (abs_nonneg _).trans (hd.w_bd 0 u)
 
-theorem Φ₀_meas (hd : RescaledData G w Φ₀ w₀ W c) : Measurable Φ₀ :=
+theorem Φ₀_meas (hd : RescaledData μ G w Φ₀ w₀ W c) : Measurable Φ₀ :=
   measurable_of_tendsto_metrizable' atTop hd.G_meas (tendsto_pi_nhds.mpr hd.G_lim)
 
-theorem w₀_meas (hd : RescaledData G w Φ₀ w₀ W c) : Measurable w₀ :=
+theorem w₀_meas (hd : RescaledData μ G w Φ₀ w₀ W c) : Measurable w₀ :=
   measurable_of_tendsto_metrizable' atTop hd.w_meas (tendsto_pi_nhds.mpr hd.w_lim)
 
 /-- Pointwise domination of the weighted Boltzmann factor. -/
-theorem bound_den (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ} (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u)
-    (u : ℝ) : |w t u| * Real.exp (-(G t u)) ≤ W u * Real.exp (-(c * Φ₀ u)) := by
+theorem bound_den (hd : RescaledData μ G w Φ₀ w₀ W c) {t : ℝ}
+    (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (u : X) : |w t u| * Real.exp (-(G t u)) ≤ W u * Real.exp (-(c * Φ₀ u)) := by
   by_cases hw : w t u = 0
   · rw [hw, abs_zero, zero_mul]
     exact mul_nonneg (hd.W_nonneg u) (Real.exp_pos _).le
@@ -63,21 +66,22 @@ theorem bound_den (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ} (hl : ∀ u, 
       (Real.exp_pos _).le (hd.W_nonneg u)
 
 /-- Pointwise domination of the weighted energy density. -/
-theorem bound_num (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ} (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u)
-    (hG : ∀ u, 0 ≤ G t u) (u : ℝ) :
-    |w t u| * (G t u * Real.exp (-(G t u))) ≤
+theorem bound_num (hd : RescaledData μ G w Φ₀ w₀ W c) {t : ℝ}
+    (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (hG : ∀ u, w t u ≠ 0 → 0 ≤ G t u) (u : X) :
+    |w t u * (G t u * Real.exp (-(G t u)))| ≤
       W u * (c * Φ₀ u * Real.exp (-(c * Φ₀ u)) + Real.exp (-(c * Φ₀ u))) := by
   have hz : 0 ≤ c * Φ₀ u := mul_nonneg hd.hc.le (hd.Φ₀_nonneg u)
   by_cases hw : w t u = 0
-  · rw [hw, abs_zero, zero_mul]
+  · rw [hw, zero_mul, abs_zero]
     exact mul_nonneg (hd.W_nonneg u) (by positivity)
-  · exact mul_le_mul (hd.w_bd t u) (mul_exp_neg_le_of_le hz (hl u hw))
-      (mul_nonneg (hG u) (Real.exp_pos _).le) (hd.W_nonneg u)
+  · rw [abs_mul, abs_of_nonneg (mul_nonneg (hG u hw) (Real.exp_pos _).le)]
+    exact mul_le_mul (hd.w_bd t u) (mul_exp_neg_le_of_le hz (hl u hw))
+      (mul_nonneg (hG u hw) (Real.exp_pos _).le) (hd.W_nonneg u)
 
 /-- Integrability of the weighted Boltzmann factor where the comparability bound holds. -/
-theorem integrable_den (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ}
+theorem integrable_den (hd : RescaledData μ G w Φ₀ w₀ W c) {t : ℝ}
     (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) :
-    Integrable fun u ↦ w t u * Real.exp (-(G t u)) := by
+    Integrable (fun u ↦ w t u * Real.exp (-(G t u))) μ := by
   have h1 := hd.w_meas t
   have h2 := hd.G_meas t
   refine hd.int.mono' (Measurable.aestronglyMeasurable (by fun_prop))
@@ -86,27 +90,26 @@ theorem integrable_den (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ}
   exact hd.bound_den hl u
 
 /-- Integrability of the weighted energy density where the comparability bound holds. -/
-theorem integrable_num (hd : RescaledData G w Φ₀ w₀ W c) {t : ℝ}
-    (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (hG : ∀ u, 0 ≤ G t u) :
-    Integrable fun u ↦ w t u * (G t u * Real.exp (-(G t u))) := by
+theorem integrable_num (hd : RescaledData μ G w Φ₀ w₀ W c) {t : ℝ}
+    (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (hG : ∀ u, w t u ≠ 0 → 0 ≤ G t u) :
+    Integrable (fun u ↦ w t u * (G t u * Real.exp (-(G t u)))) μ := by
   have h1 := hd.w_meas t
   have h2 := hd.G_meas t
-  have hdom : Integrable fun u ↦
-      W u * (c * Φ₀ u * Real.exp (-(c * Φ₀ u)) + Real.exp (-(c * Φ₀ u))) := by
+  have hdom : Integrable (fun u ↦
+      W u * (c * Φ₀ u * Real.exp (-(c * Φ₀ u)) + Real.exp (-(c * Φ₀ u)))) μ := by
     refine ((hd.Φint.const_mul c).add hd.int).congr (Filter.Eventually.of_forall fun u ↦ ?_)
     simp only [Pi.add_apply]
     ring
   refine hdom.mono' (Measurable.aestronglyMeasurable (by fun_prop))
     (Filter.Eventually.of_forall fun u ↦ ?_)
-  rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (mul_nonneg (hG u) (Real.exp_pos _).le)]
+  rw [Real.norm_eq_abs]
   exact hd.bound_num hl hG u
 
 /-- Weighted partition function / bounded observable. -/
-theorem tendsto_den (hd : RescaledData G w Φ₀ w₀ W c) {g : ℝ → ℝ} (hg : Measurable g) {Mg : ℝ}
-    (hMg : ∀ u, |g u| ≤ Mg) :
-    Tendsto (fun t ↦ ∫ u, w t u * (g u * Real.exp (-(G t u)))) atTop
-      (𝓝 (∫ u, w₀ u * (g u * Real.exp (-Φ₀ u)))) := by
-  have hMg0 : 0 ≤ Mg := (abs_nonneg _).trans (hMg 0)
+theorem tendsto_den (hd : RescaledData μ G w Φ₀ w₀ W c) {g : X → ℝ} (hg : Measurable g) {Mg : ℝ}
+    (hMg : ∀ u, |g u| ≤ Mg) (hMg0 : 0 ≤ Mg) :
+    Tendsto (fun t ↦ ∫ u, w t u * (g u * Real.exp (-(G t u))) ∂μ) atTop
+      (𝓝 (∫ u, w₀ u * (g u * Real.exp (-Φ₀ u)) ∂μ)) := by
   refine tendsto_integral_filter_of_dominated_convergence
     (fun u ↦ Mg * (W u * Real.exp (-(c * Φ₀ u)))) (Filter.Eventually.of_forall fun t ↦ ?_) ?_
     (hd.int.const_mul Mg) (Filter.Eventually.of_forall fun u ↦ ?_)
@@ -124,13 +127,12 @@ theorem tendsto_den (hd : RescaledData G w Φ₀ w₀ W c) {g : ℝ → ℝ} (hg
       ((Real.continuous_exp.tendsto _).comp (hd.G_lim u).neg))
 
 /-- Weighted energy numerator. -/
-theorem tendsto_num (hd : RescaledData G w Φ₀ w₀ W c) {g : ℝ → ℝ} (hg : Measurable g) {Mg : ℝ}
-    (hMg : ∀ u, |g u| ≤ Mg) :
-    Tendsto (fun t ↦ ∫ u, w t u * (g u * (G t u * Real.exp (-(G t u))))) atTop
-      (𝓝 (∫ u, w₀ u * (g u * (Φ₀ u * Real.exp (-Φ₀ u))))) := by
-  have hMg0 : 0 ≤ Mg := (abs_nonneg _).trans (hMg 0)
-  have hdom : Integrable fun u ↦
-      Mg * (W u * (c * Φ₀ u * Real.exp (-(c * Φ₀ u)) + Real.exp (-(c * Φ₀ u)))) := by
+theorem tendsto_num (hd : RescaledData μ G w Φ₀ w₀ W c) {g : X → ℝ} (hg : Measurable g) {Mg : ℝ}
+    (hMg : ∀ u, |g u| ≤ Mg) (hMg0 : 0 ≤ Mg) :
+    Tendsto (fun t ↦ ∫ u, w t u * (g u * (G t u * Real.exp (-(G t u)))) ∂μ) atTop
+      (𝓝 (∫ u, w₀ u * (g u * (Φ₀ u * Real.exp (-Φ₀ u))) ∂μ)) := by
+  have hdom : Integrable (fun u ↦
+      Mg * (W u * (c * Φ₀ u * Real.exp (-(c * Φ₀ u)) + Real.exp (-(c * Φ₀ u))))) μ := by
     refine (((hd.Φint.const_mul c).add hd.int).const_mul Mg).congr
       (Filter.Eventually.of_forall fun u ↦ ?_)
     simp only [Pi.add_apply]
@@ -143,35 +145,37 @@ theorem tendsto_num (hd : RescaledData G w Φ₀ w₀ W c) {g : ℝ → ℝ} (hg
     exact Measurable.aestronglyMeasurable (by fun_prop)
   · filter_upwards [hd.lower, hd.G_nonneg] with t hl hG
     refine Filter.Eventually.of_forall fun u ↦ ?_
-    rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg (mul_nonneg (hG u) (Real.exp_pos _).le)]
-    calc |w t u| * (|g u| * (G t u * Real.exp (-(G t u))))
-        = |g u| * (|w t u| * (G t u * Real.exp (-(G t u)))) := by ring
+    calc ‖w t u * (g u * (G t u * Real.exp (-(G t u))))‖
+        = |g u| * |w t u * (G t u * Real.exp (-(G t u)))| := by
+          simp only [Real.norm_eq_abs, abs_mul]; ring
       _ ≤ Mg * (W u * (c * Φ₀ u * Real.exp (-(c * Φ₀ u)) + Real.exp (-(c * Φ₀ u)))) :=
-          mul_le_mul (hMg u) (hd.bound_num hl hG u)
-            (mul_nonneg (abs_nonneg _) (mul_nonneg (hG u) (Real.exp_pos _).le)) hMg0
+          mul_le_mul (hMg u) (hd.bound_num hl hG u) (abs_nonneg _) hMg0
   · exact (hd.w_lim u).mul (tendsto_const_nhds.mul
       ((hd.G_lim u).mul ((Real.continuous_exp.tendsto _).comp (hd.G_lim u).neg)))
 
 /-- The energy statistic of the rescaled family converges to the Boltzmann energy of `Φ₀`. -/
-theorem tendsto_energy (hd : RescaledData G w Φ₀ w₀ W c)
-    (hpos : ∫ u, w₀ u * Real.exp (-Φ₀ u) ≠ 0) :
-    Tendsto (fun t ↦ (∫ u, w t u * (G t u * Real.exp (-(G t u)))) /
-      ∫ u, w t u * Real.exp (-(G t u))) atTop
-      (𝓝 ((∫ u, w₀ u * (Φ₀ u * Real.exp (-Φ₀ u))) / ∫ u, w₀ u * Real.exp (-Φ₀ u))) := by
+theorem tendsto_energy (hd : RescaledData μ G w Φ₀ w₀ W c)
+    (hpos : ∫ u, w₀ u * Real.exp (-Φ₀ u) ∂μ ≠ 0) :
+    Tendsto (fun t ↦ (∫ u, w t u * (G t u * Real.exp (-(G t u))) ∂μ) /
+      ∫ u, w t u * Real.exp (-(G t u)) ∂μ) atTop
+      (𝓝 ((∫ u, w₀ u * (Φ₀ u * Real.exp (-Φ₀ u)) ∂μ) / ∫ u, w₀ u * Real.exp (-Φ₀ u) ∂μ)) := by
   have hN := hd.tendsto_num (g := fun _ ↦ (1 : ℝ)) measurable_const (Mg := 1) (fun _ ↦ by simp)
+    zero_le_one
   have hD := hd.tendsto_den (g := fun _ ↦ (1 : ℝ)) measurable_const (Mg := 1) (fun _ ↦ by simp)
+    zero_le_one
   simp only [one_mul] at hN hD
   exact hN.div hD hpos
 
 /-- Every bounded observable of the rescaled family converges to its Boltzmann expectation. -/
-theorem tendsto_expectation (hd : RescaledData G w Φ₀ w₀ W c)
-    (hpos : ∫ u, w₀ u * Real.exp (-Φ₀ u) ≠ 0) {g : ℝ → ℝ} (hg : Measurable g) {Mg : ℝ}
-    (hMg : ∀ u, |g u| ≤ Mg) :
-    Tendsto (fun t ↦ (∫ u, w t u * (g u * Real.exp (-(G t u)))) /
-      ∫ u, w t u * Real.exp (-(G t u))) atTop
-      (𝓝 ((∫ u, w₀ u * (g u * Real.exp (-Φ₀ u))) / ∫ u, w₀ u * Real.exp (-Φ₀ u))) := by
-  have hN := hd.tendsto_den hg hMg
+theorem tendsto_expectation (hd : RescaledData μ G w Φ₀ w₀ W c)
+    (hpos : ∫ u, w₀ u * Real.exp (-Φ₀ u) ∂μ ≠ 0) {g : X → ℝ} (hg : Measurable g) {Mg : ℝ}
+    (hMg : ∀ u, |g u| ≤ Mg) (hMg0 : 0 ≤ Mg) :
+    Tendsto (fun t ↦ (∫ u, w t u * (g u * Real.exp (-(G t u))) ∂μ) /
+      ∫ u, w t u * Real.exp (-(G t u)) ∂μ) atTop
+      (𝓝 ((∫ u, w₀ u * (g u * Real.exp (-Φ₀ u)) ∂μ) / ∫ u, w₀ u * Real.exp (-Φ₀ u) ∂μ)) := by
+  have hN := hd.tendsto_den hg hMg hMg0
   have hD := hd.tendsto_den (g := fun _ ↦ (1 : ℝ)) measurable_const (Mg := 1) (fun _ ↦ by simp)
+    zero_le_one
   simp only [one_mul] at hD
   exact hN.div hD hpos
 
@@ -181,7 +185,7 @@ end RescaledData
 theorem DivisorData.toRescaledData {F : ℝ → ℝ → ℝ} {Φ₀ : ℝ → ℝ} {α γ σ c : ℝ} {h : ℕ}
     (hd : DivisorData F Φ₀ α γ σ c h) {χ : ℝ → ℝ} (hχ : Cutoff χ) {M : ℝ}
     (hM : ∀ x, |χ x| ≤ M) :
-    RescaledData (fun t u ↦ t * F (t ^ (-α) * u) (σ * t ^ (-γ)))
+    RescaledData volume (fun t u ↦ t * F (t ^ (-α) * u) (σ * t ^ (-γ)))
       (fun t u ↦ χ (t ^ (-α) * u) * |u| ^ h) Φ₀ (fun u ↦ χ 0 * |u| ^ h) (fun u ↦ M * |u| ^ h)
       c where
   hc := hd.hc
@@ -191,7 +195,7 @@ theorem DivisorData.toRescaledData {F : ℝ → ℝ → ℝ} {Φ₀ : ℝ → �
     have := hχ.cont
     fun_prop
   G_nonneg := by
-    filter_upwards [eventually_gt_atTop 0] with t ht u
+    filter_upwards [eventually_gt_atTop 0] with t ht u _
     exact mul_nonneg ht.le (hd.F_nonneg _ _)
   Φ₀_nonneg := hd.Φ₀_nonneg
   G_lim := hd.lim
