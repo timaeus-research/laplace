@@ -395,3 +395,4 @@ import Laplace.Multi.LocalisedLaplaceTransform
 import Laplace.Multi.LocalisedLaplaceCorrection
 import Laplace.Sampler.GammaLaw
 import Laplace.Sampler.BurnInGammaLaw
+import Laplace.Multi.LocalisedLaplaceGaussianGap

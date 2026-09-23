@@ -2852,3 +2852,17 @@ matrix version is `whiteningOf`.
   `a + s·(…)`; `tendsto_finset_prod` is deprecated for `tendsto_finsetProd`; `(1 − hp)^{2k} → 0` from
   `tendsto_pow_atTop_nhds_zero_of_abs_lt_one` composed with `tendsto_id.const_mul_atTop' two_pos`.
 - `omit [DecidableEq ι] in` must precede the docstring (again): after it Lean reports "unexpected token 'omit'; expected 'lemma'".
+
+### The transform-level Gaussian gap (tide `localised-laplace-gaussian-gap`)
+
+- The exact square-root remainder `√(1+x) − 1 − x/2 = −(√(1+x) − 1)²/2` is `linear_combination (1/2) * hr` from
+  `hr : √(1+x)^2 = 1 + x` (`Real.sq_sqrt`), valid for all `x ≥ −1`; with `(√(1+x) − 1)(√(1+x) + 1) = x` (`linear_combination hr`) it gives
+  `|√(1+x) − 1 − x/2| ≤ x²/2` with no smallness threshold — prefer it to two-sided Taylor bounds that need `|x| ≤ ½`.
+- `rw [abs_of_pos (by positivity)]` inside a `rw` list fails ("failed to prove positivity"): the tactic block runs before the
+  metavariable is unified. Prove the positivity fact as a named `have` first and pass it.
+- `ring` cannot identify `a/X/2` with `a/(2X)` or `a/(2X)/t²` with `a/(2Xt²)`: an inverse of an *expanded* polynomial is an atom, so
+  `X⁻¹·2⁻¹ ≠ (2X)⁻¹` for ring. Normalise with `rw [div_div]` (and `← add_div` for `a/D + b/D`) so both sides carry the inverse of
+  the same product, then `ring`. `div_add_div_same` no longer exists; use `← add_div`.
+- State `1/t` corrections as `c / (1 + s) / t`, not `c / ((1 + s) * t)`: then `linear_combination (P / t) * hX` closes the assembly
+  identity by `ring` (with `((1+s)*t)⁻¹` ring sees an inverse of a sum-times-`t` polynomial and fails).
+- Python string patches against a generated file with wrapped lines fail silently on multi-line statements; patch the *generator*.
