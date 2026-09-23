@@ -2967,3 +2967,22 @@ matrix version is `whiteningOf`.
 - `Real.one_le_rpow (hx : 1 ≤ x) (hz : 0 ≤ z) : 1 ≤ x ^ z`; `Real.log_rpow (hx : 0 < x) : log (x ^ y) = y * log x`.
 - Numerics of separated wells: integrate per well in local coordinates with the *correct* Gaussian width
   (`F ≈ x² s⁴` near `0` for `x²((x−s)⁴+s⁶)` gives width `1/(√(2t) s²)`); a wrong width silently drops a well.
+
+### Tide `burnin-nonzero-start` gotchas (`Laplace/Sampler/BurnInStart.lean`)
+
+- `field_simp` loses `≠ 0` facts whose denominators contain a numeral division (`a = 1 − hp/2`): after normalising `a + s f` it can no
+  longer match `hafs : a + s f ≠ 0`, leaves the inverse and `ring` fails (silently, via `ring_nf`, giving "unsolved goals"). `set aa := …`,
+  `set ff := …` first so the denominators are opaque atoms, then `field_simp; ring`.
+- Compound denominators like `p a/f + s p`: rewrite them to a single fraction by hand (`div_add' _ _ _ hf'`, then `congr 1; ring`) and
+  invert with `inv_div` before `field_simp`; `field_simp` will not prove `p a + s p f ≠ 0` on its own.
+- `(1 / (p * a) * f)⁻¹ = p * a / f` is `rw [one_div, inv_mul_eq_div, inv_div]` — no side conditions.
+- Generated arguments: `.const_mul hP.1.eigenvalues i` parses as `(… .const_mul hP.1.eigenvalues) i`; parenthesise every generated
+  argument expression.
+- `tendsto_finset_sum` is deprecated (warning → land script failure); use `tendsto_finsetSum`. `tendsto_const_nhds` in a `.sub` needs the
+  constant pinned: `(tendsto_const_nhds (x := (1 : ℝ))).sub h`, else `simpa` cannot match the limit.
+- `diagonal_pow` yields `diagonal (v ^ k)` with the *unapplied* Pi power; `simp only [Pi.pow_apply]` makes no progress — the goal
+  `diagonal (v ^ k) = diagonal (fun i => v i ^ k)` is `rfl`.
+- `|x ^ (2k)|` with `pow_mul, abs_pow` becomes `|x ^ 2| ^ k`; a second `abs_pow` then `sq_abs` gives `(x ^ 2) ^ k`; use `pow_le_pow_left₀`.
+- Reuse tide 92's zero-start theorems for the nonzero start: `tr(PΣ_k)` from `burnIn_mean` (rewrite with `tiltedExpectation_quadForm`,
+  `tiltMean _ 0 = 0`, then `linarith`), the determinant ratio from `laplace_ulaBurnIn` (rewrite with `tiltedExpectation_exp_quadForm_tilted
+  hQ hQs 0`, then `simpa`).

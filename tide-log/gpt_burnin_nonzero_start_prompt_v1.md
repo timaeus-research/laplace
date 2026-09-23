@@ -1,0 +1,18 @@
+# Tide 98 consult: the ULA burn-in law from an arbitrary start (laplace seabed, Lean 4 + Mathlib; E4)
+
+Landed (tide 92, `BurnInGammaLaw`): ULA `x_{k+1} = (1 − hP)x_k + √(2h)ξ` on the Gaussian target with precision `P ≻ 0` (`P = tH`), eigenvalues `pᵢ`, `ρᵢ = 1 − hpᵢ`, stability `hpᵢ < 2`, `aᵢ = 1 − hpᵢ/2`, `fᵢ(k) = 1 − ρᵢ^{2k}`. From the mode (x₀ = 0) the k-step law is the centred Gaussian with `Σ_k = ulaCov P h·(1 − (ulaStep P h)^{2k}) = U diag(fᵢ/(pᵢaᵢ)) Uᵀ`; formalised as `tiltedExpectation Σ_k⁻¹ 0` (analytic tilted-Gaussian formalism; identification with the trajectory law is prose): `laplace_ulaBurnIn`: `⟨e^{−s·½uᵀPu}⟩ = √∏ aᵢ/(aᵢ + s fᵢ)` (s ≥ 0, k ≥ 1); `burnIn_mean`: `½∑fᵢ/aᵢ`; `burnIn_bias`: below the stationary ULA mean `½∑1/aᵢ` by `½∑ρᵢ^{2k}/aᵢ`; monotone in k. Also landed: `tiltedExpectation_exp_quadForm_tilted` (tide 94: `⟨e^{−c·½uᵀHu}⟩_{Q,v} = exp(½m_c·v − ½m·v)√det Q/√det(Q+cH)`), `tiltedVar_quadForm` (tide 96: `Var_{P,v}(uᵀHu) = 2tr(HΣHΣ) + 4(Hm)ᵀΣ(Hm)`), `tiltedExpectation_quadForm`, eigen-conjugation lemmas, arbitrary-frame lemmas (tide 97).
+
+Candidates v1 (Claude). Start `x₀`, `bᵢ = (Uᵀx₀)ᵢ`, `m_k = (1 − hP)^k x₀` (so `(Uᵀm_k)ᵢ = ρᵢ^k bᵢ`); the k-step law from `x₀` is `N(m_k, Σ_k)`, formalised as `tiltedExpectation Σ_k⁻¹ (Σ_k⁻¹ m_k)` (k ≥ 1).
+A (mean, bias). `⟨½uᵀPu⟩_k = ½∑ᵢ fᵢ/aᵢ + ½∑ᵢ pᵢρᵢ^{2k}bᵢ²` (`½tr(PΣ_k) + ½m_kᵀPm_k`); bias against the stationary ULA mean: `⟨½uᵀPu⟩_k − ½∑1/aᵢ = ½∑ᵢ ρᵢ^{2k}(pᵢbᵢ² − 1/aᵢ)` — per mode the sign is that of `pᵢbᵢ² − 1/aᵢ` (start energy above/below the stationary mode energy), and the burn-in bias from `x₀` vanishes identically iff `pᵢbᵢ² = 1/aᵢ` for every mode.
+B (variance). `Var_k(½uᵀPu) = ½∑ᵢ(fᵢ/aᵢ)² + ∑ᵢ pᵢρᵢ^{2k}bᵢ² fᵢ/aᵢ` (`½tr((PΣ_k)²) + m_kᵀPΣ_kPm_k`).
+C (transform). For s ≥ 0: `⟨e^{−s·½uᵀPu}⟩_k = exp(−½∑ᵢ s pᵢaᵢρᵢ^{2k}bᵢ²/(aᵢ + s fᵢ))·√∏ᵢ aᵢ/(aᵢ + s fᵢ)` — a sum of independent noncentral Gamma(½)/χ²₁ variables: mode i is `(fᵢ/(2aᵢ))·χ²₁(δᵢ)` with noncentrality `δᵢ = (m_k)ᵢ²/(Σ_k)ᵢᵢ = pᵢaᵢρᵢ^{2k}bᵢ²/fᵢ`.
+D (limits). The transient `∑pᵢρᵢ^{2k}bᵢ² → 0` and `⟨½uᵀPu⟩_k → ½∑1/aᵢ` as k → ∞ (`|ρᵢ| < 1` from stability).
+
+Numerical check (random 3×3 P, h = 0.05, x₀ = (1.2, −0.7, 0.4), k = 4, s = 0.7, 4·10⁵ ULA chains): chain mean/cov match `m_k`, `Σ_k`; mean energy, variance and transform: matrix form = eigen form to all digits, Monte Carlo agrees to 3 digits.
+
+Questions:
+1. Are A–D correct (including the noncentrality identification and the sign statement in A)? Is there a cleaner or more informative form of C (e.g. in terms of `δᵢ`)?
+2. E4 reading: from the mode the bias is negative and shrinks monotonically (tide 92); from a general start the bias is a signed sum `½∑ρᵢ^{2k}(pᵢbᵢ² − 1/aᵢ)`, so a "hot" start (some `pᵢbᵢ² > 1/aᵢ`) can give a positive bias and non-monotone approach, and per-mode crossover never happens (each mode's term keeps its sign). Fair? What should the note say about choosing the start (e.g. the SGLD initialisation at the pretrained weights = the mode, the cold start) and about the classic burn-in heuristic "wait until the energy stabilises"?
+3. Lean route: mean via `tiltedExpectation_quadForm` + reuse of `burnIn_mean` for `tr(PΣ_k)`; variance via `tiltedVar_quadForm` with `Σ_k⁻¹⁻¹ = Σ_k` and `PΣ_k = U diag(fᵢ/aᵢ) Uᵀ`; transform via `tiltedExpectation_exp_quadForm_tilted` with the det ratio taken from `laplace_ulaBurnIn` at tilt 0 and the exponent computed in the eigenbasis (`(Q + sP)⁻¹ = U diag(1/(qᵢ + spᵢ)) Uᵀ`, `qᵢ = pᵢaᵢ/fᵢ`, exponent `−½∑ s pᵢqᵢ/(qᵢ+spᵢ)·ρᵢ^{2k}bᵢ²`). Pitfalls?
+4. Anything cheap and worth adding (e.g. the k = 0 point-mass case, monotonicity in k of the covariance part, the stationary limit of the variance, the pooled-estimator law)?
+5. Vote.
