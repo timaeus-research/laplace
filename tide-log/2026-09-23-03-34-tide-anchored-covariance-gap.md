@@ -34,3 +34,22 @@ Correctness of A–D (mixed Wick, cross term, linear covariance, non-diagonal `B
 ## Vote
 - Claude: A–D (`tiltedCov_quadForm_quadProbe`, `tiltedCov_quadForm`, `anchoredGaussianCov_eq` in an arbitrary frame, `anchoredGaussianCov_rate2`, `localisedCov_anchoredGap`), cubic/quartic identity recorded only
 - GPT-6 Astra: land A–D; polarisation (we used direct Wick), arbitrary-eigenframe bridge (adopted), record the cubic/quartic identity, qualify the E3 claim
+
+## Result
+
+Commit `88b3809` on `tide/anchored-covariance-gap`; `lake build` clean, `scripts/sorries` 0/0/0/0. `Laplace/Multi/AnchoredCovarianceGap.lean` (     959 lines).
+A–D as voted (with GPT's arbitrary-frame bridge).
+Sampler: `quadForm_mul_quadForm_mul_eq_sum`, `dotProduct_mul_dotProduct_mul_eq_sum`, `integrable_quadForm_mul_quadForm_mul_gaussianWeight_matCLM`,
+`integrable_dotProduct_mul_dotProduct_mul_gaussianWeight_matCLM`, `integral_quadForm_mul_quadForm_mul_gaussianWeight_matCLM` (mixed Wick),
+`integral_dotProduct_mul_dotProduct_mul_gaussianWeight_matCLM`; frame lemmas `mul_transpose_eq_one_of`, `dotProduct_mulVec_orth`, `frame_eq_conj`,
+`mul_frame_eq_diag`, `posDef_conj_diagonal`, `posDef_frame`, `localisedPrecision_eq_conj_frame`, `posDef_localisedPrecision_frame`,
+`inv_localisedPrecision_eq_conj_frame`, `mul_inv_localisedPrecision_eq_conj_frame`, `tiltMean_frame`, `mulVec_tiltMean_frame`, `mulVec_apply_eq_sum`,
+`dotProduct_diagonal_mulVec_mulVec`, `trace_frame_mixed`, `cross_frame`, `linear_frame`; `integral_quadForm_mul_gaussianWeight_matCLM`,
+`tiltedExpectation_quadProbe`, `tiltedCov_quadForm_quadProbe`, `tiltedCov_quadForm`, `anchoredGaussianCov_eq`.
+Multi: `sq_ratio_sub_one_bound`, `central_cov_term_bound`, `linear_cov_term_bound`, `cross_cov_term_bound`, `anchoredGaussianCov_rate2`,
+`locCovGapDiag`, `locSecondCoeff2_gap_eq`, `meanLocCoeff2_gap_eq`, `locCovGapCoeff`, `sum_sum_split_diag`, `locCovGapCoeff_eq`, `localisedCov_anchoredGap`.
+
+Surprises: the Multi gap theorem is stated against the *actual* tilted-Gaussian covariance with `H = Q diag(λ) Qᵀ` (no prose frame
+identification) because the eigenframe formula was proved for an arbitrary orthogonal diagonaliser; the 15-term Gaussian expansion was
+emitted programmatically and compiled first time; a failed `omit` silently killed two frame lemmas' proofs (error suppression), and the
+big-operator precedence (`g * ∑ i, f i / t` puts `/t` inside the sum) broke a `ring` step until parenthesised.
