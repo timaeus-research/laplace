@@ -339,6 +339,7 @@ import Laplace.Multi.ExpectationValuesKnow
 import Laplace.Multi.DegenerateFace
 import Laplace.Multi.ActiveTruthLP
 import Laplace.Multi.PolytopeFibre
+import Laplace.Multi.LogCoordinates
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
