@@ -11,7 +11,8 @@ import Laplace.Multi.RescaledData
 Astra's lemma 3 (`research_kernel_asymptotics_v1`): a family `K t` (a chart kernel along a schedule)
 is certified by finitely many pieces `e`, each a `RescaledData` instance on its own measure space
 `(X e, μ e)`, together with the exact decomposition `K t = L t · ∑ e ∫ w e t u e^{-G e t u}`
-(`ProfileCertificate`). Then `K t / L t → C = ∑ e ∫ w₀ e u e^{-Φ₀ e u}` (`tendsto_K_div_L`), a numerator
+(`ProfileCertificate`). Then `K t / L t → C = ∑ e ∫ w₀ e u e^{-Φ₀ e u}` (`tendsto_K_div_L`), a
+numerator
 with a bounded observable whose pullback converges under the same maps has `Q t / L t → J`
 (`tendsto_Q_div_L`, through `RescaledData.tendsto_den_moving`), the energy numerator
 `∑ e ∫ w G e^{-G}` converges likewise (`tendsto_energy_div_L`), and `Q t / K t → J / C` when
