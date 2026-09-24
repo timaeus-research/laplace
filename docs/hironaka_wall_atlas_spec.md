@@ -582,3 +582,43 @@ dominant set of terms only, the rest assumed negligible at the dominant normalis
   (`volume_limitDomain_pos`), and nonempty when the truth constraint is strict
   (`limitDomain_nonempty_of_strict`). With `termConst_pos` this discharges the denominator
   hypothesis from positivity of the limiting weight alone in the strict-truth case.
+
+## How the pieces fit (reading guide, 2026-09-26)
+
+Geometric half (hironaka `wall-atlas`, local): `exists_wallResolution` → `WallAtlas`
+(`exists_wallAtlas`, partition of unity `exists_partitionOfUnity_smallParameter`) → weighted
+transport (`WallWeighted`, `WallIntegral`, `WallExport`) → the Euclidean record
+`WallAtlas.toWallChartsData` with phase `WallAtlas.toPhase` (`Instance.lean`) → the pointwise
+fibre identity `wall_fibre_identity` / `wall_fibre_identity_phase` (`Theorem.lean`,
+`TheoremPhase.lean`).
+
+Euclidean half (laplace `Laplace/Multi`, mirrored to `Monomialize/Relative/Wall/Euclid`):
+
+1. Fibre transport: `FibreSubstitution` (two-branch `s = c v^q`), `FibreKernel`
+   (`branchKernel`, `fibreKernel`, Fubini in the solved coordinate), `WallChartsData`
+   (record, `chartFun`, `totalKernel`, a.e. identity), `FibreContinuity`, `FibrePointwise`
+   (`fibre_eq`, pointwise for `s ≠ 0` interior).
+2. Phase data and normalisation: `WallFibreFormulas`, `WallKernelExplicit` (`ν, κ, p, r`),
+   `WallPhaseData` (`Phase`), `WallKernelNormalised` (`branch_integrand_eq`, moving-unit sandwich).
+3. Constrained model: `ConstrainedLP` (`P_γ`, `ConstrainedLPCert`, `modelKernel`,
+   `modelKernel_eq_rescaled`), `OrthantSplit`, `WallModelBridge` + `WallModelKernel`
+   (`fibreKernel_eq_sum_modelKernel`, `totalKernel_toReal`: chart kernel = sum of model kernels
+   over orthants and admissible branches).
+4. Certificates: `RescaledData` (dominated rescaling), `ProfileCertificate`, `DominantScale`
+   (`DominantScaleHyp`, `tendsto_modelKernel`), `WallCertificate` (`wallDominantScaleHyp`,
+   `tendsto_modelKernelOf`), `WallTermPositivity` (`termConst_pos`), `LimitDomainMeasure`.
+5. Assembly and the theorem: `PowerAssembly` (`tendsto_sum_ratio`), `PowerLogAssembly`
+   (`tendsto_sum_ratio_powLog`, `tendsto_sum_ratio_lex`), `WallFibreExpectation`
+   (`tendsto_fibre_expectation`), `WallFibreExpectationDominant`; ambient versions
+   `wall_fibre_expectation`, `wall_fibre_expectation_dominant` (hironaka `TheoremPhase.lean`).
+6. Logarithmic faces: `LogSectorCore`, `LogSubstitution(Pi)`, `SimplexReduction`,
+   `LogSectorTied` (`tendsto_tiedBlock`), `LogSectorGeneral(Aux/Limit)` (`tendsto_general`),
+   `LogModel` (`tendsto_modelKernel_const`), `LogSandwich` (`modelKernel_sandwich`),
+   `ChartCluster` (`powLog_cluster_limit`).
+7. Instance: `ToyWallRecord`, `ToyWallLimit` (`toy_tendsto_fibre_expectation`).
+
+Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_asymptotics_v1.md`,
+`review_endtoend_v1.md`. Open problems: the exact constant of a logarithmic face (face volume ×
+transverse profile integral, unit at the face point; needs a tube/boundary localisation), the
+equivalence "profile integrable ⇔ isolated LP optimum" (recession-cone argument), and certificates
+for concrete resolved charts beyond the identity chart.
