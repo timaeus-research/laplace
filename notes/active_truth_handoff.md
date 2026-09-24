@@ -24,6 +24,10 @@ constant units first (`W ≡ w₀`, `a ≡ a₀`, `I = ∅`).
 - `ActiveTruthModel.lean` (step 1b): `logCut`, `cutVar_negExp_lt_iff`, `modelIntegrand_const_negExp`,
   `modelKernel_const_eq_log` (the kernel as an orthant integral in `z`).
 
+- `LintegralChange.lean`: `lintegral_sum_split`, `lintegral_comp_mulVec_add`.
+- `ActiveTruthAssembly.lean` (step 2): `transMat`, `transShift`, `transMat_mulVec_add_shift`,
+  `image_mulVec_add_orthant`, `innerKv`, `logIntegrand`, `lintegral_inner_subst`.
+
 ## Decision: do steps 2–5 in `lintegral` form
 
 As in `DegenerateFace.lean`: convert the model kernel once with `ofReal_integral_eq_lintegral_ofReal`
