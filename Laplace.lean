@@ -330,6 +330,7 @@ import Laplace.Multi.MixedTruthLog
 import Laplace.Multi.MixedTruthRecord
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
+import Laplace.Multi.ProductChartLP
 import Laplace.Multi.WallDistinguishabilityLex
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
