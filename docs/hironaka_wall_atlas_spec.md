@@ -622,3 +622,10 @@ Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_
 transverse profile integral, unit at the face point; needs a tube/boundary localisation), the
 equivalence "profile integrable ⇔ isolated LP optimum" (recession-cone argument), and certificates
 for concrete resolved charts beyond the identity chart.
+- `RecessionObstruction.lean`: the coordinate case of Astra's recession-cone characterisation
+  (§1.2). If a scaled coordinate `j` is invisible to the limiting phase (`κ_j ≤ 0`) while its
+  density does not decay (`r_j ≥ −1`), the unweighted profile is not integrable
+  (`not_integrable_of_coordinate_recession`: the shells `u_j ∈ [eⁿ, eⁿ⁺¹)` each carry a fixed
+  positive mass), so `ProfileIntegrableOf` fails (`not_integrable_envelope_of_recession`, strict
+  truth constraint). This is the "only if" half for coordinate directions; the general recession
+  direction and the converse (isolated optimum ⇒ integrable) remain open.
