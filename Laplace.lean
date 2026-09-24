@@ -333,6 +333,7 @@ import Laplace.Multi.ParameterStability
 import Laplace.Multi.WallLogTermParam
 import Laplace.Multi.PartialTiedParam
 import Laplace.Multi.TermMeasureCertificate
+import Laplace.Multi.MixedTruthWeighted
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
