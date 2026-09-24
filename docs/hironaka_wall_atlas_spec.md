@@ -625,6 +625,17 @@ Euclidean half (laplace `Laplace/Multi`, mirrored to `Monomialize/Relative/Wall/
    `λ = 1/2`, tied phase, strict truth; certificate from `ProfileIntegrableOf.of_vertex` in its
    `κ_j < 0` case (`η = 1/2`); term constant `φ(0)√π/2` (Gamma integral in `1/u`); limit
    `ψ(0)/χ(0)`, matching the direct `∫ e^{-t(s² + z₁²)} ψ dz₁ ~ √(π/t) ψ(0)`.
+   `BlowupAtlasRecord`, `BlowupAtlasLimit` (`at_tendsto_fibre_expectation`): the genuine two-chart
+   atlas — charts `A : (x, y) ↦ (x, xy)` and `B : (xy, y)` over the unit box, glued by the
+   partition of unity `ω_A = clamp((4z₀² − z₁²)/(z₀² + z₁²))`, `ω_B = 1 − ω_A`, whose chart
+   pullbacks `clamp((4 − y²)/(1 + y²))`, `1 − clamp((4x² − 1)/(x² + 1))` are continuous (the
+   blow-up resolves the angular discontinuity at the origin). Transport identity `at_transport` =
+   two changes of variables off null lines. Chart `A` (`q = (1, 0)`, `Q = 0`, `κ = 0`, `p = 1`,
+   `r = 0`) has LP optimum `α = 0`, `λ_A = γ`, phase slack (trivial certificate); chart `B` is the
+   sector chart with `λ_B = 1/2`; for `γ > 1/2` chart `A` is subdominant and the ratio limit is
+   `ψ(0)/χ(0)` from the two-chart transport. Chart indices are `iA`, `iB : atData.ι` with
+   `forall_index`; a `Fin 2` numeral in an `atData.ι` slot breaks every `rw` (motive not
+   type-correct at implicit transparency).
 
 Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_asymptotics_v1.md`,
 `review_endtoend_v1.md`, `research_logconst_v1.md`.
