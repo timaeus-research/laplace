@@ -559,3 +559,9 @@ then the `WallFibreExpectation` variant built on `tendsto_sum_ratio_powLog`.
   (`modelKernel_sandwich`). The two constants differ by `(aU/aL)^λ`, `wU/wL` and the box ratio; the
   exact constant of a fully tied face is the constant-unit one with the unit at the origin (the face
   point), which needs the localisation argument of Astra §3.
+- `WallFibreExpectationDominant.lean` (`7b7a96e`): `tendsto_fibre_expectation_dominant` — only a
+  set `S` of terms is certified (admissible, common exponent `λ₀`, feasible scale, integrable
+  profile); every other term is assumed `o(1)` at `t^{λ₀}` for both observables (supplied by a
+  certificate at a larger exponent through `tendsto_negligible_of_certified`, by a logarithmic
+  sandwich, or by a vanishing weight); the ratio converges to `∑_S C^ψ / ∑_S C^χ`. This removes the
+  need to certify irrelevant charts at their own scales (Astra §1.1, §5).
