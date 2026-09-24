@@ -425,3 +425,20 @@ scale `α` from the constrained LP of the chart, the convergence of `wt |b| φ` 
 rescaling from continuity, positivity of the unit on the support of the weight, and the
 integrability of the profile), then `ChartAssembly`/`cluster_limit` over the finitely many terms;
 the tied (logarithmic) faces go through `tendsto_general` instead of a single dominant scale.
+
+## Status (2026-09-25, later still): the certificate of a wall model kernel
+
+laplace `WallCertificate.lean` (`d77984a`), Mathlib only, standard axioms. For one term of
+`fibreKernel_eq_sum_modelKernel` (chart `i` with phase data and `|S| = 1`, orthant `ε`, admissible
+branch `b`) and a feasible scale `α` of the chart's constrained LP, `wallDominantScaleHyp` produces
+the `DominantScaleHyp` of `DominantScale.lean`, hence (`tendsto_modelKernelOf`)
+`t^λ K_{i,ε,b}(t) → A ∫ w₀ e^{-Φ₀}` with `λ = γp + ∑ (r_j + 1) α_j`. The branch point converges
+to the limiting branch point `(ε·facePt(u), ± limitCut(u))` (`tendsto_bridgePt`), which lies in the
+open chart ball for `u` in the limiting domain (`limitBranchPt_mem_ball`); the unit `|a|` and the
+weight `φ(rep) wt |b|` converge by continuity, and the chart-domain indicator is eventually `1`
+where `φ ≠ 0` because the branch point solves the truth equation (`truthMono_bridgePt`,
+admissibility) and, by hypothesis `hLφ`, the truth fibre where `φ ≠ 0` eventually lies in `L'` (the
+slab of the fibre identity gives this when `0` is interior to the truth set and `φ` is supported in
+the cylinder over `A'`). Extra hypothesis on the record: `rep u ℓ = truthMono S q u` on the closed
+ball (true for the hironaka instance: `repClamp_apply_truth`). The remaining hypothesis is the
+integrability of the limiting profile (twice), which encodes the uniqueness of the dominant scale.
