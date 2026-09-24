@@ -855,3 +855,14 @@ certificates for concrete resolved charts beyond the identity chart.
   `dx/x`) converges to `ψ(0,0)/χ(0,0)` when `w(0,0)χ(0,0) ≠ 0` — concentration at the corner after
   logarithmic averaging. Open: the bookkeeping into the `totalKernel`/`fibreKernel` conventions
   (Jacobians, branches, atlas weights).
+- `CertificateNecessity.lean` (round-3 target 3, analytic half): `not_integrable_tiedDom_of_recession`
+  (recession directions of the constant-unit profile may decrease the boxed coordinates and
+  increase the cutoff monomial: `d_j ≤ 0` on boxed `j`, `d·κ ≤ 0`, `d·Q ≥ 0` when the truth is
+  tied, `d·(r+1) ≥ 0`); `vertex_conditions_of_integrable` / `integrable_vertexDom_iff` (strict
+  truth, one scaled coordinate `s`: the profile is integrable **iff** `η = (r_s+1)/κ_s > 0` and
+  `κ_j η < r_j + 1` for all `j ≠ s`; the directions `−e_s` and `κ_j e_s − κ_s e_j`);
+  `twoScaled_conditions_of_integrable` / `integrable_tiedDom_twoScaled_iff` (nondegenerate tied
+  truth on a nonempty limiting domain: integrable **iff** `η > 0`, `θ > 0` and every residual
+  exponent `r_j − ηκ_j + θQ_j > −1`; the scaled-plane directions with `(κ·d, Q·d) = (−1,0)`,
+  `(0,1)` and `−e_j + v` with `(κ·v, Q·v) = (κ_j, Q_j)`). So the certificate hypotheses are
+  exact in the constant-unit model. Open: the LP half (unique minimiser ⇔ the same conditions).
