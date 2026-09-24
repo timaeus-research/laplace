@@ -515,3 +515,37 @@ the ratio `K_ψ/K_φ` is `1.72, 1.88, 1.95, 1.98` against the predicted `ψ(0)/�
 
 Open: the logarithmic (tied) faces, where the single dominant scale is replaced by the
 single-monomial power–log theorem; certificates for concrete resolved charts beyond the toy.
+
+## Status (2026-09-26): Astra's review of the end-to-end theorem; the logarithmic endpoint
+
+Astra's adversarial review (`gpt_responses/review_endtoend_v1.md`): the combined statement is sound
+as a *conditional* pure-power theorem. Confirmed: the mixed scaled/unscaled limiting domain with the
+tied cutoff, the unit at the face point `a₀(u) = |a(u∞)|` (not `a(0)`), the non-circularity of the
+denominator condition, the pointwise (not a.e.) fibre identity we use. Limitations to document:
+`ProfileIntegrableOf` is an *unweighted* test (it can fail for a chart whose weighted kernel is
+harmless or identically zero), every admissible term is currently required to be certified at its
+own scale (a subleading logarithmic chart blocks the theorem although negligible), `hmin` is
+imposed on inadmissible terms too. In the toy, `γ = 1/2` (`α = 0`, bounded profile with the
+nonconstant unit) and `γ > 1/2` (`α = 0`, zero phase, `I_φ → ∫_{A'} φ(0, x) dx`) are covered by the
+theorem, not vacuous. For logarithmic faces the exact constant is `A ρ^{∑c} Vol_k(F) ∫_Y W∞ e^{-c·y}
+e^{-H(y)}` (face volume times a transverse profile integral; the unit does not average over the
+face; the Gamma product is the separable special case), and its general certificate is a research
+project (tube/boundary estimates). Recommended next: (5) power–log assembly with lexicographic
+dominance and negligible terms; (4) a two-sided sandwich for a tied block with `Q = 0`.
+
+Landed accordingly (laplace, Mathlib only, standard axioms):
+
+- `LogModel.lean` (`dd9a2bb`): `modelKernel_const_eq` — the constant-unit, constant-weight model
+  kernel with `Q = 0` is `A t^{-γp} w₀ ρ^{∑(r+1)} tiedBlockIntegral κ r (B a₀ ρ^{∑κ} t^δ)` past
+  the cutoff (box scaling `x = ρ y`); `tendsto_modelKernel_const` — for a fully tied face
+  (`(r_i+1)/κ_i = λ`), `t^{γp+δλ} (log t)^{-k} K(t) → A w₀ ρ^{∑(r+1)} (B a₀ ρ^{∑κ})^{-λ} δ^k
+  Γ(λ)/k! ∏ 1/κ_i` (the `B^{-λ} δ^k` factors Astra insists on).
+- `PowerLogAssembly.lean` (`2c341fd`): `tendsto_negligible_of_certified` (a term certified at
+  `(λ, k)` is `o(1)` at a lexicographically smaller `(λ₀, k₀)`), `tendsto_sum_ratio_powLog`
+  (dominant set with limits, all other terms `o(1)` at the dominant normalisation),
+  `tendsto_sum_ratio_lex` (every term certified at its own pair; dominant set = the lexicographic
+  minimum). This is the assembly that accepts `tendsto_general` terms and does not require
+  certifying irrelevant charts.
+
+Next: the two-sided sandwich for a fully tied model kernel with moving unit and weight (Astra §4),
+then the `WallFibreExpectation` variant built on `tendsto_sum_ratio_powLog`.
