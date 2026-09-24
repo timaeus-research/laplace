@@ -325,6 +325,7 @@ import Laplace.Multi.WallTiedTruth
 import Laplace.Multi.TiedTruthObstruction
 import Laplace.Multi.NormalisedMeasure
 import Laplace.Multi.WallDistinguishability
+import Laplace.Multi.PartialFaceMeasure
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
