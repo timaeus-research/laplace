@@ -866,3 +866,18 @@ certificates for concrete resolved charts beyond the identity chart.
   exponent `r_j − ηκ_j + θQ_j > −1`; the scaled-plane directions with `(κ·d, Q·d) = (−1,0)`,
   `(0,1)` and `−e_j + v` with `(κ·v, Q·v) = (κ_j, Q_j)`). So the certificate hypotheses are
   exact in the constant-unit model. Open: the LP half (unique minimiser ⇔ the same conditions).
+- `CertificateLP.lean` (round-3 target 3, LP half): `UniqueLPMin Q κ γ δ a α` (feasible and
+  strictly better than every other feasible point). `vertex_identity`
+  `a·β − a·α = η(κ·β − δ) + ∑ (a_i − ηκ_i)β_i` and `uniqueLPMin_vertex_iff` (strict truth,
+  `α = (δ/κ_s) e_s`: unique minimiser **iff** `η = a_s/κ_s > 0` and `κ_j η < a_j`, `j ≠ s`; the
+  perturbations `α + ε e_s`, `α + ε(e_j − (κ_j/κ_s) e_s)` with explicit `ε`); `tied_identity`
+  `a·β − a·α = η(κ·β − δ) + θ(γ − Q·β) + ∑_N (a_j − ηκ_j + θQ_j)β_j`, `eq_of_two_eqs` (Cramer) and
+  `uniqueLPMin_twoScaled_iff` (tied truth, `α` supported on two scaled coordinates, `Δ ≠ 0`,
+  `a_S = ηκ_S − θQ_S`: unique minimiser **iff** `η > 0`, `θ > 0` and positive residual reduced costs;
+  the scaled-plane directions `(κ·d, Q·d) = (1,0)`, `(0,−1)` and `e_j − v`). Together with
+  `CertificateNecessity`: in the constant-unit model, **profile certificate ⇔ unique LP
+  minimiser** in both nondegenerate shapes (`integrable_vertexDom_iff` + `uniqueLPMin_vertex_iff`
+  with `a = r + 1`; `integrable_tiedDom_twoScaled_iff` + `uniqueLPMin_twoScaled_iff`). Degenerate
+  cases (a tied one-coordinate vertex, `Δ = 0`, zero reduced costs) remain outside, as Astra
+  advised. Round-3 target 4 (local uniformity in `σ`) and the `totalKernel` bookkeeping of the
+  mixed-truth endpoint are the remaining items of the ranking.
