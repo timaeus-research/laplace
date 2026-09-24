@@ -327,6 +327,7 @@ import Laplace.Multi.NormalisedMeasure
 import Laplace.Multi.WallDistinguishability
 import Laplace.Multi.PartialFaceMeasure
 import Laplace.Multi.MixedTruthLog
+import Laplace.Multi.MixedTruthRecord
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.WallDistinguishabilityLex
