@@ -323,6 +323,7 @@ import Laplace.Multi.TwoScaledInner
 import Laplace.Multi.TiedTruthCertificate
 import Laplace.Multi.WallTiedTruth
 import Laplace.Multi.TiedTruthObstruction
+import Laplace.Multi.NormalisedMeasure
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
