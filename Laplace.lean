@@ -305,6 +305,7 @@ import Laplace.Multi.WallTermPositivity
 import Laplace.Multi.LimitDomainMeasure
 import Laplace.Multi.RecessionObstruction
 import Laplace.Multi.VertexCertificate
+import Laplace.Multi.RecessionDirection
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
