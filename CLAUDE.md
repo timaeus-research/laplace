@@ -3313,3 +3313,39 @@ matrix version is `whiteningOf`.
   into equality; `ae_eq_of_forall_setLIntegral_eq_of_sigmaFinite₀` for uniqueness of densities.
 - Never gate a commit on `( lake build … ; echo BUILD_EXIT=$? )`: the subshell's status is the echo's.
   Write `lake build X > log 2>&1; BE=$?; if [ $BE -eq 0 ]; then …; fi`.
+
+### Analytic wall layer (ConstrainedLP, DominantScale, OrthantSplit, WallModel*, WallCertificate, ToyWall*)
+
+- A `def` placed in `namespace X.Phase` whose signature does not mention `P : X.Phase F` cannot be
+  called as `P.foo` ("does not have a usable parameter of type Phase"): put it in `namespace X`
+  with explicit `(D) (F)` arguments (`D.branchReal F i …`). Dot notation on a lemma whose explicit
+  `(P)` precedes the self argument needs the `P` slot filled: `hprof.int' _ _`.
+- `W x v * ∏ j, x j ^ r j * exp (…)` parses the `exp` INTO the product body (big operators parse
+  their body at precedence 67): write `W x v * (∏ j, x j ^ r j) * exp (…)`.
+- `rw [add_comm]` rewrites the first `+` it finds — usually the LHS sum; swap the `congr 1` bullets
+  instead of adding `add_comm`.
+- `rw [← hV]` fails on `cutVar … t x` sitting under `indicator (fun x ↦ …) x`: `Set.indicator_of_mem`
+  first, then rewrite. After `set u := …`, a later `unfold` reintroduces the expression — `rw [← hudef]`
+  before `ring`, or `ring` sees two atoms.
+- `Set.indicator_apply_eq_zero.mpr` mis-infers the function: pass `(s := …) (f := …) (a := …)`.
+- `Fin.prod_univ_two` does not fire on `Fin (1 + 1)` (the `m + 1` of a record): use
+  `Fin.prod_univ_succ, Fin.prod_univ_zero, Fin.succ_zero_eq_one, Matrix.cons_val_zero/one`.
+  `rw [toyData_k]` (a `rfl` projection lemma) before `Fin.insertNth_apply_same`. State auxiliary
+  identities in the post-simp form (after `kappa` is already rewritten to its value).
+- `∑' (ε : ι → Bool), ∫⁻ w in s, f w` fails to parse ("expected token"): write
+  `tsum fun ε ↦ …`. `Disjoint on f` needs `open Function`; `ℝ≥0∞` in a statement needs
+  `open scoped ENNReal`; `*ᵥ` needs `open scoped Matrix`.
+- Bounded compactly supported integrands: `Real.volume_pi_Ioo` + `ENNReal.prod_lt_top` for the
+  box, `Measure.integrableOn_of_bounded hvol hmeas (ae_restrict_iff' hbox).2 …`, then
+  `integrableOn_iff_integrable_of_support_subset`. `∫⁻ ofReal g = ofReal ∫ g` is
+  `ofReal_integral_eq_lintegral_ofReal hint (Eventually.of_forall hnn)`.
+- Convergence of `insertNth`-built points: `Tendsto.finInsertNth (k) hf hg`; the orthant reflection
+  `orth ε` is continuous by `continuous_pi`. `((funUnique (Fin 1) ℝ) u = u 0)` is `rfl`, so
+  `volume_preserving_funUnique … |>.integrable_comp_emb (MeasurableEquiv.measurableEmbedding _)`
+  and `.integral_comp` transfer Gaussian integrals from `ℝ` to `Fin 1 → ℝ`.
+- `Filter.Tendsto.div` returns the Pi-form `f / g`: `simp only [Pi.div_apply]` in the `congr'`.
+  `tendsto_rpow_neg_atTop`/`tendsto_rpow_atTop` with `.const_mul_atTop hρ` for `ρ t^α → ∞`.
+- Hironaka mirror (Lean 4.33.1) is stricter than laplace (4.33.0): it flags unused
+  `[l.IsCountablyGenerated]` on lemmas laplace accepts; `omit … in` goes BEFORE the docstring.
+  Mirror only Mathlib-only files; copy the two change-of-variables lemmas of `GaussianMomentsPosDef`
+  (`LinearChange`) and the core of `RescaledData` (without `DivisorData`) instead of importing them.
