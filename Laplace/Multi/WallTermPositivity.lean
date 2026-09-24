@@ -103,13 +103,12 @@ theorem limitWeight_le (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z
           zero_le_one) (mul_nonneg (P.wt_nonneg i _) (abs_nonneg _)) hMφ0
     _ = Mφ * P.Mb i := by ring
 
-/-- **Positivity of a term constant**: if the limiting weight is positive on the limiting domain
-and that domain has positive measure, the term constant is positive. -/
-theorem termConst_pos (hσ : σ ≠ 0) (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
-    (hMφ : ∀ z, φ z ≤ Mφ) (hprof : P.ProfileIntegrableOf i ε b σ γ α)
-    (hlimW : ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α,
-      0 < P.limitWeight i φ ε b σ γ α u)
-    (hvol : 0 < volume (limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α)) :
+/-- **Positivity of a term constant**: if the limiting weight is positive on a subset of positive
+measure of the limiting domain, the term constant is positive. -/
+theorem termConst_pos_of_subset (hσ : σ ≠ 0) (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
+    (hMφ : ∀ z, φ z ≤ Mφ) (hprof : P.ProfileIntegrableOf i ε b σ γ α) {V : Set (Fin m → ℝ)}
+    (hV : V ⊆ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α)
+    (hlimW : ∀ u ∈ V, 0 < P.limitWeight i φ ε b σ γ α u) (hvol : 0 < volume V) :
     0 < P.termConst i φ ε b σ γ α := by
   unfold termConst
   have hA : 0 < P.constA i σ := by
@@ -125,15 +124,16 @@ theorem termConst_pos (hσ : σ ≠ 0) (hφm : Measurable φ) (hφ : ∀ z, 0 �
         (D.Qexp i) (P.kappa i) α (P.limitUnit i ε b σ γ α) u) := fun u ↦ by
     unfold dsWeight₀
     exact mul_nonneg (Set.indicator_nonneg (fun u hu ↦
-      mul_nonneg (hlimW u hu).le (hprodpos u hu).le) u) (exp_pos _).le
-  have hfpos : ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α,
+      mul_nonneg (mul_nonneg (hφ _) (mul_nonneg (P.wt_nonneg i _) (abs_nonneg _)))
+        (hprodpos u hu).le) u) (exp_pos _).le
+  have hfpos : ∀ u ∈ V,
       0 < dsWeight₀ (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) (P.rExp i) α
         (P.limitWeight i φ ε b σ γ α) u *
       exp (-dsProfile (D.ρ i) (P.constB i σ) (D.constD i σ) γ (D.q i (D.k i)) (P.phaseExp i γ)
         (D.Qexp i) (P.kappa i) α (P.limitUnit i ε b σ γ α) u) := fun u hu ↦ by
     unfold dsWeight₀
-    rw [Set.indicator_of_mem hu]
-    exact mul_pos (mul_pos (hlimW u hu) (hprodpos u hu)) (exp_pos _)
+    rw [Set.indicator_of_mem (hV hu)]
+    exact mul_pos (mul_pos (hlimW u hu) (hprodpos u (hV hu))) (exp_pos _)
   have hmeas : Measurable fun u ↦ dsWeight₀ (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i)
       (P.rExp i) α (P.limitWeight i φ ε b σ γ α) u *
       exp (-dsProfile (D.ρ i) (P.constB i σ) (D.constD i σ) γ (D.q i (D.k i)) (P.phaseExp i γ)
@@ -166,6 +166,16 @@ theorem termConst_pos (hσ : σ ≠ 0) (hφm : Measurable φ) (hφ : ∀ z, 0 �
     · rw [Set.indicator_of_notMem hu, Set.indicator_of_notMem hu, zero_mul, mul_zero, zero_mul]
   rw [integral_pos_iff_support_of_nonneg_ae (Eventually.of_forall hf0) hint]
   exact hvol.trans_le (measure_mono fun u hu ↦ (hfpos u hu).ne')
+
+/-- **Positivity of a term constant** when the limiting weight is positive on the whole limiting
+domain and that domain has positive measure. -/
+theorem termConst_pos (hσ : σ ≠ 0) (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
+    (hMφ : ∀ z, φ z ≤ Mφ) (hprof : P.ProfileIntegrableOf i ε b σ γ α)
+    (hlimW : ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α,
+      0 < P.limitWeight i φ ε b σ γ α u)
+    (hvol : 0 < volume (limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α)) :
+    0 < P.termConst i φ ε b σ γ α :=
+  P.termConst_pos_of_subset hσ hφm hφ hMφ hprof subset_rfl hlimW hvol
 
 end WallChartsData.Phase
 

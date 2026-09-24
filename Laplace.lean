@@ -314,6 +314,7 @@ import Laplace.Multi.BlowupAtlasLimit
 import Laplace.Multi.LimitingMeasure
 import Laplace.Multi.WallLogTerm
 import Laplace.Multi.WallFibreExpectationLog
+import Laplace.Multi.BlowupAtlasHalf
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample

@@ -195,6 +195,18 @@ theorem termMeasure_eq_zero {s : Set (Fin (m + 1) → ℝ)} (hs : MeasurableSet 
     fun h ↦ hdisj u h hu
   rw [P.termDensity_eq_zero_of_notMem hu', ENNReal.ofReal_zero]
 
+/-- The total mass of a term measure is the term constant of the observable `1`. -/
+theorem termMeasure_univ (hσ : σ ≠ 0) (hprof : P.ProfileIntegrableOf i ε b σ γ α) :
+    P.termMeasure i ε b σ γ α univ = ENNReal.ofReal (P.termConst i (fun _ ↦ 1) ε b σ γ α) := by
+  unfold termMeasure
+  rw [Measure.map_apply (D.measurable_faceMap i ε b σ γ α) MeasurableSet.univ, Set.preimage_univ,
+    withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ,
+    ← ofReal_integral_eq_lintegral_ofReal (P.integrable_termDensity hσ hprof)
+      (ae_of_all _ (P.termDensity_nonneg))]
+  congr 1
+  unfold termDensity WallChartsData.Phase.termConst
+  rw [integral_const_mul]
+
 /-! ### The limiting measure -/
 
 variable (σ γ) (αf : D.ι → (Fin m → Bool) → Bool → Fin m → ℝ) (lam₀ : ℝ)
@@ -219,6 +231,14 @@ theorem isFiniteMeasure_limitMeasure (hσ : σ ≠ 0)
   have := P.isFiniteMeasure_termMeasure hσ
     (hprof p.1 p.2.1 p.2.2 (Finset.mem_filter.mp hp).2.2)
   exact measure_lt_top _ _
+
+theorem termMeasure_le_limitMeasure {p : TermIdx D} (hp : p ∈ P.dominantTerms σ γ αf lam₀)
+    (s : Set (Fin (m + 1) → ℝ)) :
+    P.termMeasure p.1 p.2.1 p.2.2 σ γ (αf p.1 p.2.1 p.2.2) s ≤ P.limitMeasure σ γ αf lam₀ s := by
+  unfold limitMeasure
+  rw [Measure.finsetSum_apply]
+  exact Finset.single_le_sum (f := fun p : TermIdx D ↦
+    P.termMeasure p.1 p.2.1 p.2.2 σ γ (αf p.1 p.2.1 p.2.2) s) (fun _ _ ↦ zero_le) hp
 
 /-- **The dominant sum of term constants is the integral against the limiting measure.** -/
 theorem sum_termConst'_eq_integral (hσ : σ ≠ 0) (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
