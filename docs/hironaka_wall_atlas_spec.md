@@ -1001,3 +1001,18 @@ certificates for concrete resolved charts beyond the identity chart.
   tied ⇒ `(γp+δλ, k, point mass)`, partial ⇒ `(γp+δλ, k, partialMeasure)`) — the per-term
   `tendsto` facts exist (`tendsto_termKernel_vertex/tied/partial_measure`) but their observable
   hypotheses (`hφL : φ ≠ 0 → z ∈ L'`) differ from the certificate's class.
+- Certificate class corrected (c19b6c8): `TermMeasureCertificate.tendsto` is quantified over
+  continuous nonnegative bounded observables **supported in `L'`** (`hφL`), the class the term
+  theorems actually certify (`tendsto_termKernel_vertex/tied/partial_measure` all carry `hφL`,
+  since the domain indicator at the wall point is invisible only for such observables);
+  `TermMeasureCertificate.ofTerms [Nonempty D.ι] lam kk μ finite tendsto` computes the leading
+  order (`Finset.univ.inf'` of the powers, `sup` of the log orders on the minimal power; `hmin`
+  from `Finset.inf'_le` and `Finset.le_sup`); the normalised-measure theorem is reproved with the
+  supported class (`hχL`, same proof body as `normalise_restrict_lexMeasure_eq_of_forall_tendsto`).
+- `MixedTruthWeighted.lean` (round-5 item 5, case `h > 0`; Mathlib only; mirrored):
+  `tendsto_weightedMixed` — for `b, σ, h > 0` and `f` continuous on `ℝ²`,
+  `∫_{σ/(bt)}^{b} x^{h−1} f(x, σ/(tx)) dx → ∫_0^b x^{h−1} f(x, 0) dx` (dominated convergence on
+  `Ioo 0 b` with the indicator of `Ioi (σ/(bt))`, bound `C x^{h−1}` from the compact box, pointwise
+  `σ/(tx) → 0`; `Ioi_inter_Ioo_eq` for the range). Every positive weight exponent removes the
+  logarithm; `h = 0` is the threshold (`MixedTruthLog`). Not a Lebesgue `TruthChartsData` with the
+  identity chart (Astra): a model statement.
