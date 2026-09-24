@@ -198,4 +198,120 @@ theorem lintegral_inner_subst {ρ D γ q t δ β η c₀ : ℝ} {Q c κ : Fin k 
   unfold logIntegrand innerKv
   rw [horth, hcut, hexp1, hexp2]
 
+/-! ### Step 3: the transverse variables outside, the fibre volume inside -/
+
+/-- The fibre over `v = (s, h)`: the free coordinates `z' > 0` whose solved pair lands in the
+orthant. -/
+def fibreSet (κ Q : Fin k ⊕ Fin 2 → ℝ) (δ γ L : ℝ) (v : Fin 2 → ℝ) : Set (Fin k → ℝ) :=
+  {z' | (∀ j, 0 < z' j) ∧
+    v ∈ (fun y ↦ transMat κ Q *ᵥ y + transShift κ Q δ γ L z') '' {y : Fin 2 → ℝ | ∀ j, 0 < y j}}
+
+/-- The weight in the transverse variables: the truth cut, the exponential weight and the
+Boltzmann factor. -/
+noncomputable def vWeight (β η mL c₀ h₀ : ℝ) (v : Fin 2 → ℝ) : ℝ≥0∞ :=
+  (Ioi h₀).indicator (fun _ ↦ (1 : ℝ≥0∞)) (v 1) *
+    ENNReal.ofReal (exp (-(β * v 0 + η * v 1 + mL)) * exp (-(c₀ * exp (-v 0))))
+
+theorem innerKv_eq (κ Q : Fin k ⊕ Fin 2 → ℝ) (δ γ L β η mL c₀ h₀ : ℝ) (z' : Fin k → ℝ)
+    (v : Fin 2 → ℝ) :
+    innerKv κ Q δ γ L β η mL c₀ h₀ z' v =
+      (fibreSet κ Q δ γ L v).indicator (fun _ ↦ (1 : ℝ≥0∞)) z' * vWeight β η mL c₀ h₀ v := by
+  unfold innerKv vWeight
+  by_cases hz : ∀ j, 0 < z' j
+  · by_cases hv : v ∈ (fun y ↦ transMat κ Q *ᵥ y + transShift κ Q δ γ L z') ''
+        {y : Fin 2 → ℝ | ∀ j, 0 < y j}
+    · rw [Set.indicator_of_mem (show z' ∈ {z' : Fin k → ℝ | ∀ j, 0 < z' j} from hz),
+        Set.indicator_of_mem hv,
+        Set.indicator_of_mem (show z' ∈ fibreSet κ Q δ γ L v from ⟨hz, hv⟩)]
+      ring
+    · rw [Set.indicator_of_notMem hv,
+        Set.indicator_of_notMem (show z' ∉ fibreSet κ Q δ γ L v from fun h ↦ hv h.2)]
+      ring
+  · rw [Set.indicator_of_notMem (show z' ∉ {z' : Fin k → ℝ | ∀ j, 0 < z' j} from hz),
+      Set.indicator_of_notMem (show z' ∉ fibreSet κ Q δ γ L v from fun h ↦ hz h.1)]
+    ring
+
+theorem continuous_transShift (κ Q : Fin k ⊕ Fin 2 → ℝ) (δ γ L : ℝ) :
+    Continuous (transShift κ Q δ γ L) := by
+  refine continuous_pi fun i ↦ ?_
+  fin_cases i <;> simp only [transShift] <;> fun_prop
+
+/-- The fibre relation is measurable in `(z', v)`. -/
+theorem measurableSet_fibreSet_prod {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (transMat κ Q).det ≠ 0)
+    (δ γ L : ℝ) :
+    MeasurableSet {p : (Fin k → ℝ) × (Fin 2 → ℝ) | p.1 ∈ fibreSet κ Q δ γ L p.2} := by
+  have e : {p : (Fin k → ℝ) × (Fin 2 → ℝ) | p.1 ∈ fibreSet κ Q δ γ L p.2} =
+      {p : (Fin k → ℝ) × (Fin 2 → ℝ) | ∀ j, 0 < p.1 j} ∩
+        (fun p : (Fin k → ℝ) × (Fin 2 → ℝ) ↦ (transMat κ Q)⁻¹ *ᵥ (p.2 - transShift κ Q δ γ L p.1))
+          ⁻¹' {y : Fin 2 → ℝ | ∀ j, 0 < y j} := by
+    ext p
+    simp only [fibreSet, Set.mem_ofPred_eq, mem_inter_iff, mem_preimage]
+    rw [image_mulVec_add_orthant hΔ]
+    rfl
+  rw [e]
+  refine MeasurableSet.inter ?_ ?_
+  · have : {p : (Fin k → ℝ) × (Fin 2 → ℝ) | ∀ j, 0 < p.1 j} =
+        ⋂ j, {p : (Fin k → ℝ) × (Fin 2 → ℝ) | 0 < p.1 j} := by
+      ext p
+      simp
+    rw [this]
+    exact MeasurableSet.iInter fun j ↦
+      measurableSet_lt measurable_const ((measurable_pi_apply j).comp measurable_fst)
+  · have hS : MeasurableSet {y : Fin 2 → ℝ | ∀ j, 0 < y j} := by
+      have : {y : Fin 2 → ℝ | ∀ j, 0 < y j} = Set.pi univ fun _ ↦ Ioi (0 : ℝ) := by
+        ext y
+        simp only [Set.mem_univ_pi, mem_Ioi, Set.mem_ofPred_eq]
+      rw [this]
+      exact MeasurableSet.univ_pi fun _ ↦ measurableSet_Ioi
+    refine hS.preimage ?_
+    exact ((Matrix.toLin' (transMat κ Q)⁻¹).toContinuousLinearMap.continuous.comp
+      (continuous_snd.sub ((continuous_transShift κ Q δ γ L).comp continuous_fst))).measurable
+
+theorem measurableSet_fibreSet {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (transMat κ Q).det ≠ 0)
+    (δ γ L : ℝ) (v : Fin 2 → ℝ) : MeasurableSet (fibreSet κ Q δ γ L v) := by
+  have := (measurableSet_fibreSet_prod hΔ δ γ L).preimage
+    (measurable_id.prodMk (measurable_const (a := v)))
+  exact this
+
+theorem measurable_vWeight (β η mL c₀ h₀ : ℝ) : Measurable (vWeight β η mL c₀ h₀) := by
+  unfold vWeight
+  refine Measurable.mul ?_ ?_
+  · exact (measurable_const.indicator measurableSet_Ioi).comp (measurable_pi_apply 1)
+  · exact ENNReal.measurable_ofReal.comp ((Real.measurable_exp.comp
+      (((measurable_const.mul (measurable_pi_apply 0)).add
+        (measurable_const.mul (measurable_pi_apply 1))).add measurable_const).neg).mul
+      (Real.measurable_exp.comp ((measurable_const.mul
+        (Real.measurable_exp.comp (measurable_pi_apply 0).neg)).neg)))
+
+/-- **Tonelli**: the transverse variables outside, the fibre volume inside. -/
+theorem lintegral_innerKv_swap {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (transMat κ Q).det ≠ 0)
+    (δ γ L β η mL c₀ h₀ : ℝ) :
+    ∫⁻ z' : Fin k → ℝ, ∫⁻ v : Fin 2 → ℝ, innerKv κ Q δ γ L β η mL c₀ h₀ z' v =
+      ∫⁻ v : Fin 2 → ℝ, vWeight β η mL c₀ h₀ v * volume (fibreSet κ Q δ γ L v) := by
+  simp_rw [innerKv_eq]
+  have hmeas : Measurable (Function.uncurry fun (z' : Fin k → ℝ) (v : Fin 2 → ℝ) ↦
+      (fibreSet κ Q δ γ L v).indicator (fun _ ↦ (1 : ℝ≥0∞)) z' * vWeight β η mL c₀ h₀ v) := by
+    have e : (Function.uncurry fun (z' : Fin k → ℝ) (v : Fin 2 → ℝ) ↦
+        (fibreSet κ Q δ γ L v).indicator (fun _ ↦ (1 : ℝ≥0∞)) z' * vWeight β η mL c₀ h₀ v) =
+        fun p : (Fin k → ℝ) × (Fin 2 → ℝ) ↦
+          {p : (Fin k → ℝ) × (Fin 2 → ℝ) | p.1 ∈ fibreSet κ Q δ γ L p.2}.indicator
+            (fun _ ↦ (1 : ℝ≥0∞)) p * vWeight β η mL c₀ h₀ p.2 := by
+      funext p
+      rcases p with ⟨z', v⟩
+      simp only [Function.uncurry_apply_pair]
+      by_cases h : z' ∈ fibreSet κ Q δ γ L v
+      · rw [Set.indicator_of_mem h, Set.indicator_of_mem (show (z', v) ∈
+          {p : (Fin k → ℝ) × (Fin 2 → ℝ) | p.1 ∈ fibreSet κ Q δ γ L p.2} from h)]
+      · rw [Set.indicator_of_notMem h, Set.indicator_of_notMem (show (z', v) ∉
+          {p : (Fin k → ℝ) × (Fin 2 → ℝ) | p.1 ∈ fibreSet κ Q δ γ L p.2} from h)]
+    rw [e]
+    exact (measurable_const.indicator (measurableSet_fibreSet_prod hΔ δ γ L)).mul
+      ((measurable_vWeight β η mL c₀ h₀).comp measurable_snd)
+  rw [lintegral_lintegral_swap (μ := volume) (ν := volume)
+    (hmeas.aemeasurable (μ := volume.prod volume))]
+  refine lintegral_congr fun v ↦ ?_
+  rw [lintegral_mul_const _ (measurable_const.indicator (measurableSet_fibreSet hΔ δ γ L v)),
+    lintegral_indicator (measurableSet_fibreSet hΔ δ γ L v), setLIntegral_const, one_mul,
+    mul_comm]
+
 end Laplace.Multi
