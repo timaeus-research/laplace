@@ -627,9 +627,21 @@ Euclidean half (laplace `Laplace/Multi`, mirrored to `Monomialize/Relative/Wall/
    `ψ(0)/χ(0)`, matching the direct `∫ e^{-t(s² + z₁²)} ψ dz₁ ~ √(π/t) ψ(0)`.
 
 Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_asymptotics_v1.md`,
-`review_endtoend_v1.md`. Open problems: the exact constant of a logarithmic face (face volume ×
-transverse profile integral, unit at the face point; needs a tube/boundary localisation), the
-equivalence "profile integrable ⇔ isolated LP optimum" at degenerate (non-vertex) optima — the
+`review_endtoend_v1.md`, `research_logconst_v1.md`.
+- `LogExactConstant.lean`: the exact constant of a fully tied logarithmic face (`Q = 0`). The box
+  radius cancels from `tiedConst` on a tied face (`tiedConst_eq`, since `r_i + 1 = λ κ_i`), so the
+  constant-unit kernels over nested boxes share their power–log constant and the integral away
+  from the face point is negligible; for `W`, `a` continuous at the face point `(0, 0)` (box and
+  cut variable), with the global bounds `0 ≤ W ≤ wU`, `a ≥ aL > 0`,
+  `t^{γp+δλ}/(log t)^k K(t) → A W(0,0) (B a(0,0))^{-λ} δ^k Γ(λ)/k! ∏ 1/κ_i`
+  (`tendsto_modelKernel_tied`), by a three-kernel sandwich (no Fubini, no dimension induction).
+  Astra's `research_logconst_v1` confirms the route and the hypotheses (local continuity plus
+  global unit/weight bounds), and ranks the next targets: a two-chart atlas-level ratio example,
+  then the limiting measure on the dominant strata, then the degenerate-LP classification
+  (integrable ⇔ isolated optimum in the polyhedral monomial model, `h·d < 0` on the recession
+  cone with `κ·d ≤ 0`).
+Open problems: the chart-level assembly of the log constant (the face point of a fully tied face
+is where the bridge map must extend continuously), the equivalence "profile integrable ⇔ isolated LP optimum" at degenerate (non-vertex) optima — the
 "only if" half is now general (`RecessionDirection`), the "if" half is the vertex case — and
 certificates for concrete resolved charts beyond the identity chart.
 - `RecessionObstruction.lean`: the coordinate case of Astra's recession-cone characterisation
