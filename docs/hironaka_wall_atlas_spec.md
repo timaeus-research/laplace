@@ -466,3 +466,20 @@ mirrored rather than combined because of the toolchain difference.
 Next: a concrete instance exercising the chain (a trivial chart with `F = (1 + x²) s² x²`), the
 logarithmic faces (tied blocks through `tendsto_general`), and the hironaka mirror of the analytic
 layer (`integral_comp_mulVec` must be copied into the Euclid namespace).
+
+## Status (2026-09-25, night): the chain closes on an instance
+
+laplace `ToyWallRecord.lean`, `ToyWallLimit.lean` (`ad6f574`), Mathlib only, standard axioms.
+The identity chart on the sup-norm unit ball of `Fin 2 → ℝ` for `F = (1 + x²) s² x²` (truth
+monomial `s`: `S = 1`, `q = (1, 0)`, solve index `0`; density `1` on the half ball and vanishing
+off the open unit ball; slab `L' = [-1/2, 1/2] × closedBall(1/2)`) is a `WallChartsData` with phase
+data (`kF = (2, 2)`, `hJ = 0`, unit `1 + x² ∈ [1, 2]`, `b = 1`, weight the density). Its model
+constants are `q_k = 1`, `Q = 0`, `ν = κ = 2`, `p = r = 0`, `δ = 1 − 2γ`, `A = 1`, `B = σ²`,
+`D = |σ|`; the scale `α = (1 − 2γ)/2` is feasible (phase constraint tied, truth strict), the
+limiting branch point is the origin, the limiting profile is `σ² u²` on `(0, ∞)`
+(`ProfileIntegrableOf` holds), and each admissible term has `termConst = φ(0) √(π/σ²)/2`. Hence
+`toy_tendsto_fibre_expectation`: for `0 < γ < 1/2`, `σ > 0` and localised observables `ψ, χ` with
+`χ(0) > 0`, the ratio of the total kernels along `s = σ t^{-γ}` converges to `ψ(0)/χ(0)` — every
+hypothesis of `tendsto_fibre_expectation` is discharged on an instance ("instances, not names").
+The predicted kernel asymptotic `∫ e^{-tF} φ ~ φ(0) √π/|σ| · t^{-(1−2γ)/2}` over the fibre is the
+sum of the two admissible terms (two orthants, the `+V` branch).
