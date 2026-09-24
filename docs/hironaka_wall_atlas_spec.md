@@ -800,11 +800,12 @@ certificates for concrete resolved charts beyond the identity chart.
   `v ↦ (κ·v, Q·v)`), and one orientation has `d·(r+1) ≥ 0`. Hence
   `not_integrable_envelope_of_three_scaled` and, at the chart level,
   `not_profileIntegrableOf_of_three_scaled` (unit bounded by `Ma` on the limiting domain via
-  `limitBranchPt_mem_ball`). **The isolated-optimum count is closed**: `of_vertex` (strict truth,
-  one scaled coordinate), `of_twoScaled` (tied truth, two), and three scaled coordinates never
-  certify — Astra's recession-cone reading of the LP (`research_partial_v1.md` §(b)) in full. Open:
-  Astra's (3) distinguishability (two landscapes have the same limiting normalised expectations
-  iff their normalised limiting measures agree).
+  `limitBranchPt_mem_ball`). Per Astra's round-3 audit (`research_round3_v1.md`): the certificate
+  obstruction excludes three or more scaled coordinates, and the nondegenerate one- and
+  two-coordinate cases have explicit certificates (`of_vertex`, `of_twoScaled`); a full
+  classification still needs the converses and the degenerate two-constraint cases (round-3
+  target 3). Failure of the envelope certificate does not exclude a logarithmically renormalised
+  asymptotic — that is exactly the positive-dimensional-face regime.
 - `NormalisedMeasure.lean` (Mathlib only): `normaliseMeasure μ = μ(1)⁻¹ • μ`;
   `ratio_eq_of_normalise_eq` (equal normalisations give equal ratios `∫ψ/∫χ`);
   `normalise_eq_iff_forall_ratio` (two nonzero finite Borel measures on a space with outer
@@ -824,4 +825,21 @@ certificates for concrete resolved charts beyond the identity chart.
   every nonnegative bounded continuous `ψ` supported in `L'`, the normalised restrictions to `L'`
   of the two limiting measures agree. **The leading expectations know exactly the normalised
   limiting measure on `L'`**: not the mass, not the dominant power or log scale, not what the face
-  maps erase. Astra's three ranked targets of `research_partial_v1.md` are all closed.
+  maps erase. (`IsOpen L'` does genuine work: with test functions whose nonzero set lies in `L'`
+  only the interior of `L'` is observable; Astra advises keeping it a theorem-level hypothesis, not
+  a record field.) Astra's three ranked targets of `research_partial_v1.md` are all closed.
+- `PartialFaceMeasure.lean` (round-3 target 1): `partialPt` (chart face point), `partialFacePt`
+  (its image `ρ_i(pt_z)` in the ambient space), `partialConst = A δ^k Γ(λ)/k! ∏_T κ^{-1}`,
+  `partialDensity` (the constant times `wt|b| (B|a|)^{-λ} ∏_N z^{r−λκ}` on `(0,ρ)^N`),
+  `partialMeasure` (the push-forward of the density under the ambient face point; finite by the
+  strict gaps and the bounds `wt ≤ 1`, `|b| ≤ Mb`, `|a| ≥ ma`), `integral_partialMeasure`,
+  `tendsto_modelKernelOf_partial_measure` / `tendsto_termKernel_partial_measure`
+  (`t^{γp+δλ}/(log t)^k K_{i,ε,b}(t) → ∫ φ dμ_{i,ε,b}`), and
+  `tendsto_fibre_expectation_lex_measure`: with a finite measure `μ_p` per term certified at
+  `(λ_p, k_p)`, the fibre expectation converges to `∫ψ dμ_*/∫χ dμ_*` for the lexicographic
+  coefficient measure `μ_* = ∑_{(λ_p,k_p)=(λ_*,k_*)} μ_p`. The distinguishability theorems of
+  `NormalisedMeasure` apply verbatim to `μ_*`. Caveat (Astra): `μ_{i,ε,b}` is a parameter-space
+  density before push-forward, not a density on the represented face, and a chart contribution
+  before atlas weights and dominance selection. Round-3 ranking still open: (2) the canonical
+  mixed-truth log endpoint `xy = s` (`J_f(t,σ)/log t → f(0,0)`), (3) the nondegenerate
+  certificate–LP equivalence in the constant-unit model, (4) local uniformity in `σ`.
