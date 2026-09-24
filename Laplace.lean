@@ -308,6 +308,7 @@ import Laplace.Multi.VertexCertificate
 import Laplace.Multi.RecessionDirection
 import Laplace.Multi.BlowupSectorRecord
 import Laplace.Multi.BlowupSectorLimit
+import Laplace.Multi.LogExactConstant
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
