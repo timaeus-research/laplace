@@ -886,3 +886,17 @@ certificates for concrete resolved charts beyond the identity chart.
   lift the two distinguishability statements to the lexicographic coefficient measure: the leading
   expectations know exactly the normalised coefficient measure on the open `L'`, whether the
   dominant terms are isolated vertices, fully tied point masses or partially tied face densities.
+- Round-4 consult (`gpt_responses/research_round4_v1.md`): audit clean; `Q ≥ 0` dropped from
+  `uniqueLPMin_vertex_iff`; wrappers `integrable_vertexDom_iff_uniqueLPMin`,
+  `integrable_tiedDom_twoScaled_iff_uniqueLPMin` (certificate ⇔ unique LP minimiser, both
+  nondegenerate shapes, `a = r + 1`). Ranking: (1) record-level mixed-truth coefficient measure
+  (a 2D instance with truth monomial `xy`; `branchKernel` with `q = (1,1)`, `k = 0` gives
+  `Φ(s/w, w)/w` on the positive branch, coarea convention, `γ = 1`); (2) product-chart LP face
+  classification (`Opt = conv{(δ/κ_i) e_i : i ∈ T}`, `dim = |T| − 1 = k`, three coefficient-measure
+  shapes; a unique LP vertex is not a point mass in general); (3) local σ-uniformity and
+  `σ(t) → σ₀`; (4) a scoped degeneracy theorem (optimal set = feasible points with vanishing gap
+  terms); plus atlas-independence of the normalised coefficient measure on the hironaka side.
+  Numerical check `docs/numerics/partial_face_ratio.py` (Astra's example
+  `∫ xyz³ e^{−txyz} φ` on `(0,1)³`, `λ = 2`, `T = {x,y}`, `k = 1`): `I(z)/I(1) → 2/3`,
+  `I(z²)/I(1) → 1/2`, `t²/log t · I(1) → 1/2`, observed 0.675 / 0.510 / 0.467 at `t = 10⁶` with
+  monotone logarithmic approach.
