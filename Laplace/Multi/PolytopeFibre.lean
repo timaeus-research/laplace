@@ -58,6 +58,17 @@ theorem volume_hyperplane {c : Fin k → ℝ} (hc : c ≠ 0) (a : ℝ) :
   rw [LinearMap.mem_ker, dotLin_apply] at this
   exact dotProduct_self_eq_zero.mp this
 
+/-- A hyperplane `{c·x = a}` with `(c, a) ≠ (0, 0)` is Lebesgue-null (empty when `c = 0`). -/
+theorem volume_hyperplane' {c : Fin k → ℝ} {a : ℝ} (h : c ≠ 0 ∨ a ≠ 0) :
+    volume {x : Fin k → ℝ | c ⬝ᵥ x = a} = 0 := by
+  by_cases hc : c = 0
+  · have ha : a ≠ 0 := h.resolve_left (not_not.mpr hc)
+    have : {x : Fin k → ℝ | c ⬝ᵥ x = a} = ∅ := by
+      ext x
+      simp [hc, ha.symm]
+    rw [this, measure_empty]
+  · exact volume_hyperplane hc a
+
 /-- The coordinate hyperplane `{x i = 0}` is null. -/
 theorem volume_coordHyperplane (i : Fin k) : volume {x : Fin k → ℝ | x i = 0} = 0 := by
   have := volume_hyperplane (c := Pi.single i 1) (by simp) 0
@@ -113,10 +124,11 @@ theorem volume_fibre2 {b₁ b₂ L : ℝ} (hL : 0 < L) :
       ENNReal.ofReal (L ^ k) * volume (poly2 c₁ c₂ (a₁ + b₁ / L) (a₂ + b₂ / L)) := by
   rw [fibre2_eq_smul hL, Measure.addHaar_smul, Module.finrank_fin_fun, abs_of_pos (pow_pos hL _)]
 
-/-- **The polytope-fibre asymptotic.** For nonzero `c₁, c₂` and a bounded enlarged polytope, the
+/-- **The polytope-fibre asymptotic.** For nondegenerate constraints (`(c_j, a_j) ≠ (0, 0)`) and a
+bounded enlarged polytope, the
 volume of `{α ≥ 0 | c₁·α ≤ a₁ + b₁/L, c₂·α ≤ a₂ + b₂/L}` converges to the volume of the limiting
 polytope `{α ≥ 0 | c₁·α ≤ a₁, c₂·α ≤ a₂}`. -/
-theorem tendsto_volume_poly2 (hc₁ : c₁ ≠ 0) (hc₂ : c₂ ≠ 0) (b₁ b₂ : ℝ)
+theorem tendsto_volume_poly2 (hc₁ : c₁ ≠ 0 ∨ a₁ ≠ 0) (hc₂ : c₂ ≠ 0 ∨ a₂ ≠ 0) (b₁ b₂ : ℝ)
     (hbdd : Bornology.IsBounded (poly2 c₁ c₂ (a₁ + 1) (a₂ + 1))) :
     Tendsto (fun L ↦ volume (poly2 c₁ c₂ (a₁ + b₁ / L) (a₂ + b₂ / L))) atTop
       (𝓝 (volume (poly2 c₁ c₂ a₁ a₂))) := by
@@ -137,8 +149,8 @@ theorem tendsto_volume_poly2 (hc₁ : c₁ ≠ 0) (hc₂ : c₂ ≠ 0) (b₁ b�
     exact hbdd.measure_lt_top.ne
   · have hnull : volume ({x : Fin k → ℝ | c₁ ⬝ᵥ x = a₁} ∪ {x | c₂ ⬝ᵥ x = a₂} ∪
         ⋃ i, {x : Fin k → ℝ | x i = 0}) = 0 := by
-      refine measure_union_null (measure_union_null (volume_hyperplane hc₁ a₁)
-        (volume_hyperplane hc₂ a₂)) (measure_iUnion_null fun i ↦ volume_coordHyperplane i)
+      refine measure_union_null (measure_union_null (volume_hyperplane' hc₁)
+        (volume_hyperplane' hc₂)) (measure_iUnion_null fun i ↦ volume_coordHyperplane i)
     filter_upwards [compl_mem_ae_iff.mpr hnull] with x hx
     simp only [mem_compl_iff, mem_union, mem_iUnion, Set.mem_ofPred_eq, not_or, not_exists] at hx
     obtain ⟨⟨hx1, hx2⟩, hx0⟩ := hx

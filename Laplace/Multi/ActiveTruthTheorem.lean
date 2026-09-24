@@ -11,7 +11,7 @@ import Laplace.Multi.ActiveTruthLimit
 The assembly of steps 1–5 (`notes/active_truth_handoff.md`). For the constant-unit model kernel
 `K(t) = A t^{-γp} ∫_{(0,ρ)^n, cut} w₀ ∏ x^r e^{-B t^δ a₀ ∏ x^κ} dx` on `n = k + 2` coordinates
 with `r + 1 = βκ − ηQ` (the dual certificate), `κ > 0`, the transverse matrix
-`M = [[κ_a, κ_b], [−Q_a, −Q_b]]` invertible and the two fibre constraints nondegenerate:
+`M = [[κ_a, κ_b], [−Q_a, −Q_b]]` invertible and the two fibre constraints nondegenerate (`(c_j, a_j) ≠ (0, 0)`):
 
 `t^{γp + βδ − ηγ} / (log t)^k · K(t) →
   A w₀ ρ^{∑(r+1)} / |det M| · Γ(β) c₀^{-β} e^{-ηh₀}/η · vol(F')`
@@ -108,7 +108,8 @@ theorem volume_facePolytope_ne_top {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (tran
 theorem tendsto_modelKernel_activeTruth {ρ A B D γ p q δ β η w₀ a₀ : ℝ}
     {Q κ r : Fin k ⊕ Fin 2 → ℝ} (hρ : 0 < ρ) (hD : 0 < D) (hq : 0 < q) (hB : 0 < B)
     (ha₀ : 0 < a₀) (hβ : 0 < β) (hη : 0 < η) (hδ : 0 ≤ δ) (hκ : ∀ i, 0 < κ i)
-    (hΔ : (transMat κ Q).det ≠ 0) (hc₀ : fibreCoef κ Q 0 ≠ 0) (hc₁ : fibreCoef κ Q 1 ≠ 0)
+    (hΔ : (transMat κ Q).det ≠ 0) (hc₀ : fibreCoef κ Q 0 ≠ 0 ∨ fibreA κ Q δ γ 0 ≠ 0)
+    (hc₁ : fibreCoef κ Q 1 ≠ 0 ∨ fibreA κ Q δ γ 1 ≠ 0)
     (hr : ∀ i, r i + 1 = β * κ i - η * Q i) :
     Tendsto (fun t ↦ t ^ (γ * p + (β * δ - η * γ)) / log t ^ k *
         modelKernel ρ A B D γ p q δ Q κ r (fun _ _ ↦ w₀) (fun _ _ ↦ a₀) t) atTop
@@ -127,7 +128,7 @@ theorem tendsto_modelKernel_activeTruth {ρ A B D γ p q δ β η w₀ a₀ : �
       ENNReal.ofReal (Gamma β * c₀ ^ (-β) * (exp (-(η * h₀)) / η)) *
         volume (facePolytope κ Q δ γ) := by
     rw [lintegral_mul_const _ (measurable_vWeight _ _ _ _ _), lintegral_vWeight_zero hβ hη hc]
-  have hlim := (tendsto_lintegral_vWeight_fibre hΔ hκ hc₀ hc₁ hβ hη hc hδ γ h₀).comp
+  have hlim := (tendsto_lintegral_vWeight_fibre hΔ hκ hc₀ hc₁ hβ hη hc hδ h₀).comp
     Real.tendsto_log_atTop
   rw [show poly2 (fibreCoef κ Q 0) (fibreCoef κ Q 1) (fibreA κ Q δ γ 0) (fibreA κ Q δ γ 1) =
     facePolytope κ Q δ γ from rfl, hI] at hlim
@@ -199,7 +200,8 @@ theorem activeTruth_const_eq {ρ B D q β η a₀ : ℝ} {Q κ r : Fin k ⊕ Fin
 theorem tendsto_modelKernel_activeTruth' {ρ A B D γ p q δ β η w₀ a₀ : ℝ}
     {Q κ r : Fin k ⊕ Fin 2 → ℝ} (hρ : 0 < ρ) (hD : 0 < D) (hq : 0 < q) (hB : 0 < B)
     (ha₀ : 0 < a₀) (hβ : 0 < β) (hη : 0 < η) (hδ : 0 ≤ δ) (hκ : ∀ i, 0 < κ i)
-    (hΔ : (transMat κ Q).det ≠ 0) (hc₀ : fibreCoef κ Q 0 ≠ 0) (hc₁ : fibreCoef κ Q 1 ≠ 0)
+    (hΔ : (transMat κ Q).det ≠ 0) (hc₀ : fibreCoef κ Q 0 ≠ 0 ∨ fibreA κ Q δ γ 0 ≠ 0)
+    (hc₁ : fibreCoef κ Q 1 ≠ 0 ∨ fibreA κ Q δ γ 1 ≠ 0)
     (hr : ∀ i, r i + 1 = β * κ i - η * Q i) :
     Tendsto (fun t ↦ t ^ (γ * p + (β * δ - η * γ)) / log t ^ k *
         modelKernel ρ A B D γ p q δ Q κ r (fun _ _ ↦ w₀) (fun _ _ ↦ a₀) t) atTop

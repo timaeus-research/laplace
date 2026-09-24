@@ -346,6 +346,7 @@ import Laplace.Multi.ActiveTruthAssembly
 import Laplace.Multi.ActiveTruthFibre
 import Laplace.Multi.ActiveTruthLimit
 import Laplace.Multi.ActiveTruthTheorem
+import Laplace.Multi.ActiveTruthExample
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP

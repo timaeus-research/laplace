@@ -198,9 +198,10 @@ theorem measurable_volume_fibreSet {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (tran
 
 /-- **The transverse limit**: `∫ vWeight · volume(fibreSet)/L^k → ∫ vWeight · vol(F')`. -/
 theorem tendsto_lintegral_vWeight_fibre {κ Q : Fin k ⊕ Fin 2 → ℝ}
-    (hΔ : (transMat κ Q).det ≠ 0) (hκ : ∀ i, 0 < κ i) (hc₀ : fibreCoef κ Q 0 ≠ 0)
-    (hc₁ : fibreCoef κ Q 1 ≠ 0) {β η c₀ δ : ℝ} (hβ : 0 < β) (hη : 0 < η) (hc : 0 < c₀)
-    (hδ : 0 ≤ δ) (γ h₀ : ℝ) :
+    (hΔ : (transMat κ Q).det ≠ 0) (hκ : ∀ i, 0 < κ i) {β η c₀ δ γ : ℝ}
+    (hc₀ : fibreCoef κ Q 0 ≠ 0 ∨ fibreA κ Q δ γ 0 ≠ 0)
+    (hc₁ : fibreCoef κ Q 1 ≠ 0 ∨ fibreA κ Q δ γ 1 ≠ 0) (hβ : 0 < β) (hη : 0 < η) (hc : 0 < c₀)
+    (hδ : 0 ≤ δ) (h₀ : ℝ) :
     Tendsto (fun L ↦ ∫⁻ v : Fin 2 → ℝ,
         vWeight β η 0 c₀ h₀ v * (volume (fibreSet κ Q δ γ L v) / ENNReal.ofReal (L ^ k))) atTop
       (𝓝 (∫⁻ v : Fin 2 → ℝ, vWeight β η 0 c₀ h₀ v * volume (poly2 (fibreCoef κ Q 0)
@@ -230,7 +231,7 @@ theorem tendsto_lintegral_vWeight_fibre {κ Q : Fin k ⊕ Fin 2 → ℝ}
         (hWeight_nonneg _ _ _))]
     exact ENNReal.ofReal_ne_top
   · refine Eventually.of_forall fun v ↦ ?_
-    refine ENNReal.Tendsto.const_mul (tendsto_volume_fibreSet_div hΔ hκ hc₀ hc₁ δ γ v)
+    refine ENNReal.Tendsto.const_mul (tendsto_volume_fibreSet_div hΔ hκ hc₀ hc₁ v)
       (Or.inr ?_)
     rw [vWeight_zero_eq]
     exact ENNReal.ofReal_ne_top

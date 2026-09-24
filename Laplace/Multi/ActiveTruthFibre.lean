@@ -119,9 +119,12 @@ theorem fibre2_subset_box {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (transMat κ Q
     Finset.sum_nonneg fun j _ ↦ mul_nonneg (hκ _).le (hy j)
   linarith
 
-/-- The open fibre and the closed fibre have the same volume (they differ by hyperplanes). -/
+/-- The open fibre and the closed fibre have the same volume (they differ by hyperplanes), as long
+as no constraint is the degenerate `0 < 0`. -/
 theorem volume_fibreSet_eq {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (transMat κ Q).det ≠ 0)
-    (hc₀ : fibreCoef κ Q 0 ≠ 0) (hc₁ : fibreCoef κ Q 1 ≠ 0) (δ γ L : ℝ) (v : Fin 2 → ℝ) :
+    {δ γ L : ℝ} {v : Fin 2 → ℝ}
+    (hc₀ : fibreCoef κ Q 0 ≠ 0 ∨ fibreA κ Q δ γ 0 * L + fibreB κ Q v 0 ≠ 0)
+    (hc₁ : fibreCoef κ Q 1 ≠ 0 ∨ fibreA κ Q δ γ 1 * L + fibreB κ Q v 1 ≠ 0) :
     volume (fibreSet κ Q δ γ L v) =
       volume (fibre2 (fibreCoef κ Q 0) (fibreCoef κ Q 1) (fibreA κ Q δ γ 0) (fibreA κ Q δ γ 1)
         (fibreB κ Q v 0) (fibreB κ Q v 1) L) := by
@@ -131,7 +134,7 @@ theorem volume_fibreSet_eq {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (transMat κ 
       {x | fibreCoef κ Q 1 ⬝ᵥ x = fibreA κ Q δ γ 1 * L + fibreB κ Q v 1} ∪
       ⋃ i, {x : Fin k → ℝ | x i = 0} with hN
   have hnull : volume N = 0 :=
-    measure_union_null (measure_union_null (volume_hyperplane hc₀ _) (volume_hyperplane hc₁ _))
+    measure_union_null (measure_union_null (volume_hyperplane' hc₀) (volume_hyperplane' hc₁))
       (measure_iUnion_null fun i ↦ volume_coordHyperplane i)
   calc volume (fibre2 (fibreCoef κ Q 0) (fibreCoef κ Q 1) (fibreA κ Q δ γ 0)
         (fibreA κ Q δ γ 1) (fibreB κ Q v 0) (fibreB κ Q v 1) L)
@@ -193,15 +196,29 @@ theorem isBounded_poly2_fibre {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (transMat 
 /-- **The fibre-volume asymptotic**: `volume (fibreSet v) / L^k` converges to the volume of the
 limiting polytope `{w ≥ 0 | c_j · w ≤ a_j}`. -/
 theorem tendsto_volume_fibreSet_div {κ Q : Fin k ⊕ Fin 2 → ℝ} (hΔ : (transMat κ Q).det ≠ 0)
-    (hκ : ∀ i, 0 < κ i) (hc₀ : fibreCoef κ Q 0 ≠ 0) (hc₁ : fibreCoef κ Q 1 ≠ 0) (δ γ : ℝ)
-    (v : Fin 2 → ℝ) :
+    (hκ : ∀ i, 0 < κ i) {δ γ : ℝ} (hc₀ : fibreCoef κ Q 0 ≠ 0 ∨ fibreA κ Q δ γ 0 ≠ 0)
+    (hc₁ : fibreCoef κ Q 1 ≠ 0 ∨ fibreA κ Q δ γ 1 ≠ 0) (v : Fin 2 → ℝ) :
     Tendsto (fun L ↦ volume (fibreSet κ Q δ γ L v) / ENNReal.ofReal (L ^ k)) atTop
       (𝓝 (volume (poly2 (fibreCoef κ Q 0) (fibreCoef κ Q 1) (fibreA κ Q δ γ 0)
         (fibreA κ Q δ γ 1)))) := by
+  have hev : ∀ j, fibreCoef κ Q j ≠ 0 ∨ fibreA κ Q δ γ j ≠ 0 →
+      ∀ᶠ L in atTop, fibreCoef κ Q j ≠ 0 ∨ fibreA κ Q δ γ j * L + fibreB κ Q v j ≠ 0 := by
+    intro j hj
+    rcases hj with h | h
+    · exact Eventually.of_forall fun _ ↦ Or.inl h
+    · filter_upwards [eventually_gt_atTop (|fibreB κ Q v j| / |fibreA κ Q δ γ j|)] with L hL
+      right
+      intro h0
+      have hL0 : 0 < L := lt_of_le_of_lt (by positivity) hL
+      have habs : |fibreA κ Q δ γ j| * L = |fibreB κ Q v j| := by
+        rw [add_eq_zero_iff_eq_neg] at h0
+        rw [← abs_of_pos hL0, ← abs_mul, h0, abs_neg]
+      rw [div_lt_iff₀ (abs_pos.mpr h), mul_comm] at hL
+      exact lt_irrefl _ (habs ▸ hL)
   refine (tendsto_volume_poly2 hc₀ hc₁ (fibreB κ Q v 0) (fibreB κ Q v 1)
     (isBounded_poly2_fibre hΔ hκ δ γ)).congr' ?_
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with L hL
-  rw [volume_fibreSet_eq hΔ hc₀ hc₁, volume_fibre2 hL, mul_comm,
+  filter_upwards [eventually_gt_atTop (0 : ℝ), hev 0 hc₀, hev 1 hc₁] with L hL h0 h1
+  rw [volume_fibreSet_eq hΔ h0 h1, volume_fibre2 hL, mul_comm,
     ENNReal.mul_div_cancel_right (ENNReal.ofReal_pos.mpr (pow_pos hL _)).ne' ENNReal.ofReal_ne_top]
 
 end Laplace.Multi
