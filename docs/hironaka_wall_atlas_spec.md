@@ -565,3 +565,10 @@ then the `WallFibreExpectation` variant built on `tendsto_sum_ratio_powLog`.
   certificate at a larger exponent through `tendsto_negligible_of_certified`, by a logarithmic
   sandwich, or by a vanishing weight); the ratio converges to `∑_S C^ψ / ∑_S C^χ`. This removes the
   need to certify irrelevant charts at their own scales (Astra §1.1, §5).
+
+hironaka `wall-atlas` (local): the logarithmic modules and the dominant-set variant are mirrored
+(`253278276`: `LogSubstitution`, `LogSubstitutionPi`, `SimplexReduction`, `LogSectorCore`,
+`LogSectorTied`, `PowerLogDominance`, `LogModel`, `PowerLogAssembly`, `LogSandwich`,
+`WallFibreExpectationDominant`; one wrapped line), and `TheoremPhase.lean` carries the ambient
+`wall_fibre_expectation_dominant` (`64ea01529`): the resolution's record with certificates for a
+dominant set of terms only, the rest assumed negligible at the dominant normalisation.
