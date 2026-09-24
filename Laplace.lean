@@ -300,6 +300,7 @@ import Laplace.Multi.ToyWallLimit
 import Laplace.Multi.LogModel
 import Laplace.Multi.PowerLogAssembly
 import Laplace.Multi.LogSandwich
+import Laplace.Multi.WallFibreExpectationDominant
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
