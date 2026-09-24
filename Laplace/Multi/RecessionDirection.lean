@@ -357,4 +357,53 @@ theorem not_integrable_envelope_of_recession_direction {ρ B D γ q δ : ℝ} {Q
     · rw [mul_zero]
       exact mul_nonneg (mul_nonneg (mul_nonneg hc hB) hamax) hpos
 
+/-- **Two scaled coordinates forbid the certificate** (strict truth constraint): if `α_i ≠ 0` and
+`α_j ≠ 0` for `i ≠ j`, the direction `±(κ_j e_i − κ_i e_j)` (or `±e_i` when both `κ` vanish) is a
+recession direction with `d·κ = 0` and `d·(r+1) ≥ 0`, so the profile is not integrable. An isolated
+LP optimum with a strict truth constraint has at most one scaled coordinate. -/
+theorem not_integrable_envelope_of_two_scaled {ρ B D γ q δ : ℝ} {Q κ r α : ι → ℝ}
+    {a₀ : (ι → ℝ) → ℝ} {amax c : ℝ} (hρ : 0 < ρ) (hstrict : ∑ i, Q i * α i < γ) {i j : ι}
+    (hij : i ≠ j) (hαi : α i ≠ 0) (hαj : α j ≠ 0) (hB : 0 ≤ B) (hc : 0 ≤ c)
+    (ha₀ : ∀ u, |a₀ u| ≤ amax) :
+    ¬ Integrable fun u ↦ dsEnvelope ρ D γ q Q r α 1 u *
+      exp (-(c * dsProfile ρ B D γ q δ Q κ α a₀ u)) := by
+  classical
+  -- the candidate direction and its sign
+  obtain ⟨d, hd0, hsupp, hκd, hrd⟩ : ∃ d : ι → ℝ, d ≠ 0 ∧ (∀ l, α l = 0 → d l = 0) ∧
+      ∑ l, d l * κ l = 0 ∧ 0 ≤ ∑ l, d l * (r l + 1) := by
+    -- the unsigned direction
+    obtain ⟨e, he0, hesupp, heκ⟩ : ∃ e : ι → ℝ, e ≠ 0 ∧ (∀ l, α l = 0 → e l = 0) ∧
+        ∑ l, e l * κ l = 0 := by
+      by_cases hκ : κ i = 0 ∧ κ j = 0
+      · refine ⟨Pi.single i 1, ?_, ?_, ?_⟩
+        · intro h
+          have := congrFun h i
+          simp at this
+        · intro l hl
+          by_cases hli : l = i
+          · subst hli; exact absurd hl hαi
+          · simp [hli]
+        · rw [Finset.sum_eq_single i (fun l _ hl ↦ by simp [hl]) (by simp)]
+          simp [hκ.1]
+      · refine ⟨Pi.single i (κ j) - Pi.single j (κ i), ?_, ?_, ?_⟩
+        · intro h
+          have hi : κ j = 0 := by simpa [hij, hij.symm] using congrFun h i
+          have hj : κ i = 0 := by simpa [hij, hij.symm] using congrFun h j
+          exact hκ ⟨hj, hi⟩
+        · intro l hl
+          have hli : l ≠ i := fun h ↦ hαi (h ▸ hl)
+          have hlj : l ≠ j := fun h ↦ hαj (h ▸ hl)
+          simp [hli, hlj]
+        · simp only [Pi.sub_apply, sub_mul, Finset.sum_sub_distrib]
+          rw [Finset.sum_eq_single i (fun l _ hl ↦ by simp [hl]) (by simp),
+            Finset.sum_eq_single j (fun l _ hl ↦ by simp [hl]) (by simp)]
+          simp [mul_comm]
+    rcases le_or_gt 0 (∑ l, e l * (r l + 1)) with h | h
+    · exact ⟨e, he0, hesupp, heκ, h⟩
+    · refine ⟨-e, neg_ne_zero.mpr he0, fun l hl ↦ by simp [hesupp l hl], ?_, ?_⟩
+      · simp only [Pi.neg_apply, neg_mul, Finset.sum_neg_distrib, heκ, neg_zero]
+      · simp only [Pi.neg_apply, neg_mul, Finset.sum_neg_distrib]
+        linarith
+  exact not_integrable_envelope_of_recession_direction hρ hstrict d hd0 hsupp hκd.le hrd hB hc ha₀
+
 end Laplace.Multi
