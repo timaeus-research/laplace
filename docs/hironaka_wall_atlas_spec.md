@@ -1083,3 +1083,30 @@ certificates for concrete resolved charts beyond the identity chart.
   optimal segment `ζ = 1, α+β = 1`, `k = 1` — a log from a positive-dimensional face with the
   truth constraint active, which the `Q = 0` theorems do not cover. Not done: the general theorem
   behind it (an active-truth partial-face theorem in the model-kernel conventions).
+- Round-7 consult (`gpt_responses/research_round7_v1.md`, 0c845c6): audit of the example (chain and
+  constant correct; the next constant is `1 + γ_E ≈ 1.577`, consistent with the numerics) and of the
+  iff (record: identifies restricted measures up to scale; "vanishes off `L'`" is the right class,
+  not `tsupport ⊆ L'`). **The transverse active-truth face theorem** (the general statement behind
+  the example, to formalise): dual certificate `(β, η)`, `β, η > 0`, `c = r + 1`, coordinates
+  `J ⊔ I` with `c_j = βκ_j − ηQ_j` (`j ∈ J`) and `d_i = c_i − βκ_i + ηQ_i > 0` (`i ∈ I`); `κ_J, Q_J`
+  independent and `F_J = {α_J ≥ 0 | κ_J·α_J = δ, Q_J·α_J = γ}` with a strictly positive point;
+  `k = |J| − 2`, `m = βδ − ηγ`, `λ = γp + m`; then `Opt = {α_I = 0, α_J ∈ F_J}`, `dim = k`, and
+  `t^λ/(log t)^k · K(t) → A q D^{-qη} Γ(β)/(𝒥 B^β) · H^k(F_J) · ∫_{(0,1)^I} ∏ y^{d_i−1} ∫_0^ρ
+  v^{qη−1} W₀(y,v)/a₀(y,v)^β dv dy` with `𝒥 = √(|κ_J|²|Q_J|² − ⟨κ_J,Q_J⟩²)` (coarea factor); the
+  limiting unnormalised measure `A q D^{-qη}/𝒥 · dH^k_{F_J}(α) ∏ y^{d_i−1} dy v^{qη−1} dv w^{β−1}
+  W₀ e^{-Ba₀w} dw`. Mechanism: log coordinates `z_J = −log x_J`, transverse coordinates
+  `s = κ_J·z_J − δ log t`, `h = γ log t − Q_J·z_J`; the remaining `k` directions have scale `log t`;
+  the strict truth truncation is the fixed interval `0 < v < ρ` (weight `v^{qη−1}`), no lost log.
+  Dominating factor `(1 + |log w| + |log v| + ∑|log y_i|)^k ∏ y^{d_i−1} v^{qη−1} w^{β−1} e^{-Ba_-w}`.
+  No universal reduction to the `Q = 0` partial theorem (the monomial substitution moves the box
+  into coupled inequalities). Example check: `J = all`, `β = 2, η = 1`, `H¹(F) = √2 = 𝒥`, limit
+  `Γ(2)∫_0^1 v^0 dv = 1`. Ranking: (1) this theorem — first with `W, a` independent of `x_J`
+  (polytope-fibre asymptotic + log-moment bound), then face traces by localisation; package the dual
+  data `(J, I, β, η, d)` as a certificate [LP half DONE: `ActiveTruthLP.lean` b800bea, hironaka
+  2d305f085 — `dual_identity`, `lpOptimal_activeTruth_iff` (optimal iff `α ≥ 0`, `κ·α = δ`,
+  `Q·α = γ`, `α_i = 0` where `d_i > 0`, given a nonempty face), `lpOptimal_deg_iff` (the example:
+  the segment `α₂ = 1, α₀ + α₁ = 1`)]; (2) general-truth hironaka export (with the caveat that not
+  every active-truth chart is transverse); (3) variable-unit partial faces with moving parameters
+  only under joint continuity in the parameter (pointwise face continuity is NOT enough — shrinking
+  spikes); (4) compact-uniform packaging after the hypotheses stabilise. Skip: a universal
+  active-truth-to-`Q = 0` reduction, dependent-normal faces, second-order asymptotics.
