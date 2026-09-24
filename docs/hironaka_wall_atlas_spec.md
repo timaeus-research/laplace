@@ -881,3 +881,8 @@ certificates for concrete resolved charts beyond the identity chart.
   cases (a tied one-coordinate vertex, `Δ = 0`, zero reduced costs) remain outside, as Astra
   advised. Round-3 target 4 (local uniformity in `σ`) and the `totalKernel` bookkeeping of the
   mixed-truth endpoint are the remaining items of the ranking.
+- `WallDistinguishabilityLex.lean`: `lexMeasure lam kk μ lam₀ k₀ = ∑_{(λ_p,k_p)=(λ₀,k₀)} μ_p`;
+  `tendsto_fibreRatio_sub_of_normalise_eq_lex` and `normalise_restrict_lexMeasure_eq_of_forall_tendsto`
+  lift the two distinguishability statements to the lexicographic coefficient measure: the leading
+  expectations know exactly the normalised coefficient measure on the open `L'`, whether the
+  dominant terms are isolated vertices, fully tied point masses or partially tied face densities.
