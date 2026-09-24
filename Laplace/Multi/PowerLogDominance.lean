@@ -58,7 +58,8 @@ theorem tendsto_powLog_div_powLog_of_eq {lam₁ r₁ r₂ : ℝ} (h : r₂ < r�
 
 /-- **The selection rule.** `powLog lam₂ r₂ = o(powLog lam₁ r₁)` iff (as a sufficient condition) the
 power is larger or the power ties and the log exponent is smaller. -/
-theorem tendsto_powLog_div_powLog {lam₁ lam₂ r₁ r₂ : ℝ} (h : lam₁ < lam₂ ∨ (lam₁ = lam₂ ∧ r₂ < r₁)) :
+theorem tendsto_powLog_div_powLog {lam₁ lam₂ r₁ r₂ : ℝ}
+    (h : lam₁ < lam₂ ∨ (lam₁ = lam₂ ∧ r₂ < r₁)) :
     Tendsto (fun t ↦ powLog lam₂ r₂ t / powLog lam₁ r₁ t) atTop (𝓝 0) := by
   rcases h with h | ⟨rfl, h⟩
   · exact tendsto_powLog_div_powLog_of_lt h
