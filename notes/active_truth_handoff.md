@@ -20,6 +20,18 @@ constant units first (`W ≡ w₀`, `a ≡ a₀`, `I = ∅`).
   (`∫ e^{ηv} e^{-c e^v} dv = Γ(η) c^{-η}`), `integral_twoScaledInner` (the `(s, h)` integral for
   `k = 0`: `Γ η c^{-η} (e^{-θh}/θ)/|Δ|`).
 - `LinearChange` / `GaussianMomentsPosDef`: `integral_comp_mulVec`, `integrable_comp_mulVec_iff`.
+- `LogCoordinates.lean` (step 1a): `integral_box_eq_orthant`, `integrableOn_box_iff_orthant`.
+- `ActiveTruthModel.lean` (step 1b): `logCut`, `cutVar_negExp_lt_iff`, `modelIntegrand_const_negExp`,
+  `modelKernel_const_eq_log` (the kernel as an orthant integral in `z`).
+
+## Decision: do steps 2–5 in `lintegral` form
+
+As in `DegenerateFace.lean`: convert the model kernel once with `ofReal_integral_eq_lintegral_ofReal`
+(the integrand is bounded by `w₀ ∏ x^r` on the box, integrable for `r > −1`), then all substitutions
+are `lintegral_map` against `Real.map_linearMap_volume_pi_eq_smul_volume_pi` / translations, Tonelli
+swaps are free, and the only analysis is the final `tendsto_lintegral_filter_of_dominated_convergence`.
+Bound the fibre volume by `((s + δL)/κ_min)^k` directly (from `κ·z = s + δL`, `z ≥ 0`, `κ > 0`)
+rather than through `poly2` inclusions.
 
 ## The target (constant units, `I = ∅`, all coordinates tied to the face)
 
