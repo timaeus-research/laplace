@@ -1158,3 +1158,18 @@ certificates for concrete resolved charts beyond the identity chart.
   `tendsto_volume_poly2` and the bound `e^{-βs−ηh} e^{-ce^{-s}} (|s|+δ)^k` (finite via
   `(|s|+δ)^k ≤ C(e^{βs/2} + e^{-βs/2})` and `integral_exp_mul_exp_neg_exp`); limit
   `Γ(β) c^{-β} e^{-ηh₀'}/η · vol F'`.
+- `LintegralChange.lean` (8f8a3c1; hironaka 4d078c752): `lintegral_sum_split` (Fubini on
+  `ι₁ ⊕ ι₂` via `sumPiEquivProdPi`), `lintegral_comp_mulVec_add` (`∫⁻ G(My + b) = |det M|⁻¹ ∫⁻ G`).
+- `ActiveTruthAssembly.lean` (5d51f2a; hironaka 8e37e25d0): step 2. On `Fin k ⊕ Fin 2` (solved
+  pair last): `transMat κ Q = [[κ_a, κ_b], [−Q_a, −Q_b]]` (`transMat_det = −Δ`), `transShift =
+  (κ'·z' − δL, γL − Q'·z')`, `transMat_mulVec_add_shift : My + shift = (κ·z − δL, γL − Q·z)`;
+  `injective_mulVec_add`, `image_mulVec_add_orthant` (the image of the orthant under `y ↦ My + b`
+  is the preimage of the orthant under `v ↦ M⁻¹(v − b)`, hence measurable); `innerKv` (the
+  integrand in `v = (s, h)`: `1_{z'>0} · 1_{v ∈ image(z')} · 1_{h > h₀} · ofReal(e^{-βs−ηh−mL}
+  e^{-c₀e^{-s}})`), `logIntegrand`, and `lintegral_inner_subst`: `∫⁻ y, logIntegrand(z', y) =
+  ofReal |det M|⁻¹ · ∫⁻ v, innerKv z' v` with `c = βκ − ηQ`, `B' = c₀ e^{δ log t}`, `mL =
+  (βδ − ηγ) log t`, `h₀ = −(q log(ρ/D) + (∑Q) log ρ)`. The orthant condition on the solved pair
+  is carried as an image set (no explicit inverse in the substitution); the `t`-dependence is now
+  only in `e^{-mL}` and in the fibre set. Gotchas: `Sum.forall` splits `∀ i, P (Sum.elim z' y i)`
+  by defeq; `Function.Injective.mem_set_image`; `Matrix.det_fin_two` (not `det_fin_two_of`) for
+  `Matrix.of ![f, g]`; `ring` in `ℝ≥0∞` closes reassociations of indicator products.
