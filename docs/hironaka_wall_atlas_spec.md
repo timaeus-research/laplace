@@ -577,3 +577,8 @@ dominant set of terms only, the rest assumed negligible at the dominant normalis
   nonnegative, integrable by the certificate's envelope, positive on the domain); with the
   measurability of `facePt`, `limitCut`, `limitBranchPt`, `limitWeight`, `limitUnit` and
   `dsProfile`. This supplies the nonzero-denominator hypothesis of both fibre-expectation theorems.
+- `LimitDomainMeasure.lean`: the limiting domain is open (`isOpen_limitDomain`; the cutoff function is
+  continuous on the positive orthant), hence of positive measure when nonempty
+  (`volume_limitDomain_pos`), and nonempty when the truth constraint is strict
+  (`limitDomain_nonempty_of_strict`). With `termConst_pos` this discharges the denominator
+  hypothesis from positivity of the limiting weight alone in the strict-truth case.
