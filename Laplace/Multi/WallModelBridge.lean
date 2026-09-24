@@ -16,7 +16,7 @@ the unsolved coordinates and the two branches `±V` of the solved coordinate, of
 kernels (`ConstrainedLP.modelKernel`) with the constants
 `A = |σ|^p / q_k`, `B = |σ|^ν`, `D = |σ|^{1/q_k}`, `δ = 1 − γν`, the truth exponents `Q_j = q_j`,
 the exponents `κ, r` of the fibre formulas, the weight
-`W(x, v) = 1_{rep u ∈ L'} φ(rep u) wt(u) |b(u)|` and the unit `a(x, v) = |a(u)|` evaluated at the
+`W(x, v) = 1_{dom}(u) φ(rep u) wt(u) |b(u)|` and the unit `a(x, v) = |a(u)|` evaluated at the
 branch point `u = (ε·x, ±v)`. The branch admissibility `0 < S ∏ (±1)^{q_j} (±1)^{q_k} σ` is
 constant on each orthant.
 
@@ -135,10 +135,11 @@ namespace WallChartsData.Phase
 
 variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 
-/-- The model weight of a branch: `1_{rep u ∈ L'} φ(rep u) wt(u) |b(u)|` at the branch point. -/
+/-- The model weight of a branch: `1_{dom}(u) φ(rep u) wt(u) |b(u)|` at the branch point (the
+chart domain is the closed ball intersected with `rep⁻¹ L'`). -/
 noncomputable def weightFn (i : D.ι) (φ : (Fin (m + 1) → ℝ) → ℝ) (ε : Fin m → Bool) (b : Bool)
     (x : Fin m → ℝ) (v : ℝ) : ℝ :=
-  (D.rep i ⁻¹' L').indicator (fun u ↦ φ (D.rep i u) * (P.wt i u * |P.b i u|)) (D.bridgePt i ε b x v)
+  (D.dom i).indicator (fun u ↦ φ (D.rep i u) * (P.wt i u * |P.b i u|)) (D.bridgePt i ε b x v)
 
 /-- The model unit of a branch: `|a(u)|` at the branch point. -/
 noncomputable def unitFn (i : D.ι) (ε : Fin m → Bool) (b : Bool) (x : Fin m → ℝ) (v : ℝ) : ℝ :=
@@ -243,8 +244,7 @@ theorem branchReal_eq_model (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (ht : 0 <
     rw [← hV]
     by_cases hL : D.rep i u ∈ L'
     · unfold WallChartsData.branchReal
-      rw [Set.indicator_of_mem (hdom.mpr hL),
-        Set.indicator_of_mem (show u ∈ D.rep i ⁻¹' L' from hL)]
+      rw [Set.indicator_of_mem (hdom.mpr hL), Set.indicator_of_mem (hdom.mpr hL)]
       have hw : ∀ j, orth ε x j ≠ 0 := fun j ↦ by
         rw [orth]; exact mul_ne_zero (bsign_ne_zero _) (hx j).ne'
       have hs : σ * t ^ (-γ) ≠ 0 := mul_ne_zero hσ (rpow_pos_of_pos ht _).ne'
@@ -269,8 +269,7 @@ theorem branchReal_eq_model (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (ht : 0 <
       rw [e1, neg_mul, ← hudef]
       ring_nf
     · unfold WallChartsData.branchReal
-      rw [Set.indicator_of_notMem (hdom.not.mpr hL),
-        Set.indicator_of_notMem (show u ∉ D.rep i ⁻¹' L' from hL)]
+      rw [Set.indicator_of_notMem (hdom.not.mpr hL), Set.indicator_of_notMem (hdom.not.mpr hL)]
       simp
   · have hxm : x ∉ modelDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) t :=
       fun h ↦ hb (hball.mpr (hmodel.mp h))

@@ -49,12 +49,12 @@ namespace WallChartsData.Phase
 variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 variable {i : D.ι} {φ : (Fin (m + 1) → ℝ) → ℝ} {ε : Fin m → Bool} {b : Bool} {t γ σ : ℝ}
 
-theorem measurable_weightFn (hL' : MeasurableSet L') (hφ : Measurable φ) :
+theorem measurable_weightFn (hφ : Measurable φ) :
     Measurable (uncurry (P.weightFn i φ ε b)) := by
   have hg : Measurable fun u ↦ φ (D.rep i u) * (P.wt i u * |P.b i u|) :=
     (hφ.comp (D.rep_meas i)).mul
       ((P.wt_cont i).measurable.mul (continuous_abs.comp (P.b_cont i)).measurable)
-  exact (hg.indicator (D.rep_meas i hL')).comp (D.measurable_bridgePt i ε b)
+  exact (hg.indicator (D.dom_meas i)).comp (D.measurable_bridgePt i ε b)
 
 theorem measurable_unitFn : Measurable (uncurry (P.unitFn i ε b)) :=
   (continuous_abs.comp (P.a_cont i)).measurable.comp (D.measurable_bridgePt i ε b)
@@ -142,13 +142,11 @@ theorem modelG_nonneg (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (ht : 0 < t) (h
     exact branchReal_nonneg hφ x
   · rw [P.modelG_eq_zero_of_notMem fun h ↦ hx fun j ↦ (Set.mem_univ_pi.mp h j).1]
 
-theorem measurable_modelG (hL' : MeasurableSet L') (hφ : Measurable φ) :
-    Measurable (P.modelG i φ ε b t γ σ) :=
+theorem measurable_modelG (hφ : Measurable φ) : Measurable (P.modelG i φ ε b t γ σ) :=
   measurable_const.mul
-    (measurable_modelIntegrand (P.measurable_weightFn hL' hφ) P.measurable_unitFn t)
+    (measurable_modelIntegrand (P.measurable_weightFn hφ) P.measurable_unitFn t)
 
-theorem integrable_modelG (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hL' : MeasurableSet L')
-    (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ) (ht : 0 < t)
+theorem integrable_modelG (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ) (ht : 0 < t)
     (hσ : σ ≠ 0) {C : ℝ} (hC : ∀ u, D.dens i u ≤ C) : Integrable (P.modelG i φ ε b t γ σ) := by
   have hbox : MeasurableSet (Set.pi univ fun _ : Fin m ↦ Ioo (0 : ℝ) (D.ρ i)) :=
     MeasurableSet.pi countable_univ fun _ _ ↦ measurableSet_Ioo
@@ -160,7 +158,7 @@ theorem integrable_modelG (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hL' : Meas
       by_contra h
       exact hx (P.modelG_eq_zero_of_notMem h)
   rw [← integrableOn_iff_integrable_of_support_subset hsupp]
-  refine Measure.integrableOn_of_bounded hvol (P.measurable_modelG hL' hφm).aestronglyMeasurable
+  refine Measure.integrableOn_of_bounded hvol (P.measurable_modelG hφm).aestronglyMeasurable
     (M := C * Mφ * (D.ρ i / (D.q i (D.k i) * |σ * t ^ (-γ)|))) ?_
   rw [ae_restrict_iff' hbox]
   refine Eventually.of_forall fun x hx ↦ ?_
@@ -178,7 +176,7 @@ open scoped Classical in
 /-- **The chart kernel along the schedule is a sum of model kernels** over the orthants and the
 admissible branches. -/
 theorem fibreKernel_eq_sum_modelKernel (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hFm : Measurable F)
-    (hL' : MeasurableSet L') (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
+    (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
     (hMφ : ∀ z, φ z ≤ Mφ) (ht : 0 < t) (hσ : σ ≠ 0) :
     fibreKernel (D.k i) (D.S i) (D.q i)
         (D.chartFun (fun z ↦ ENNReal.ofReal (exp (-(t * F z)) * φ z)) i) (σ * t ^ (-γ)) =
@@ -205,7 +203,7 @@ theorem fibreKernel_eq_sum_modelKernel (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z
       if D.admissible i ε b σ then ENNReal.ofReal (P.modelG i φ ε b t γ σ x) else 0 := fun b ↦ by
     by_cases hadm : D.admissible i ε b σ
     · simp only [if_pos hadm]
-      exact ENNReal.measurable_ofReal.comp (P.measurable_modelG hL' hφm)
+      exact ENNReal.measurable_ofReal.comp (P.measurable_modelG hφm)
     · simp only [if_neg hadm]
       exact measurable_const
   rw [setLIntegral_congr_fun measurableSet_posOrthant hpt, lintegral_finsetSum _ fun b _ ↦ hmeas b]
@@ -220,7 +218,7 @@ theorem fibreKernel_eq_sum_modelKernel (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z
       rw [P.modelG_eq_zero_of_notMem fun hb ↦ h (mem_posOrthant.mpr fun j ↦
         (Set.mem_univ_pi.mp hb j).1), ENNReal.ofReal_zero]
     rw [setLIntegral_eq_of_support_subset hsupp,
-      ← ofReal_integral_eq_lintegral_ofReal (P.integrable_modelG hS hF hL' hφm hφ hMφ ht hσ hC)
+      ← ofReal_integral_eq_lintegral_ofReal (P.integrable_modelG hS hF hφm hφ hMφ ht hσ hC)
         (Eventually.of_forall (P.modelG_nonneg hS hF ht hσ hφ)), P.modelKernelOf_eq_integral]
   · simp only [if_neg hadm, lintegral_zero]
 
@@ -228,24 +226,24 @@ open scoped Classical in
 /-- **The total kernel along the schedule** is the sum over charts, orthants and admissible
 branches of model kernels. -/
 theorem totalKernel_eq_sum_modelKernel (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F z)
-    (hFm : Measurable F) (hL' : MeasurableSet L') (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z)
+    (hFm : Measurable F) (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z)
     {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ) (ht : 0 < t) (hσ : σ ≠ 0) :
     D.totalKernel (fun z ↦ ENNReal.ofReal (exp (-(t * F z)) * φ z)) (σ * t ^ (-γ)) =
       ∑ i, ∑ ε : Fin m → Bool, ∑ b : Bool, if D.admissible i ε b σ then
         ENNReal.ofReal (P.modelKernelOf i φ ε b t γ σ) else 0 := by
   unfold WallChartsData.totalKernel
   exact Finset.sum_congr rfl fun i _ ↦
-    P.fibreKernel_eq_sum_modelKernel (hS i) hF hFm hL' hφm hφ hMφ ht hσ
+    P.fibreKernel_eq_sum_modelKernel (hS i) hF hFm hφm hφ hMφ ht hσ
 
 open scoped Classical in
 /-- The real form of `totalKernel_eq_sum_modelKernel`. -/
 theorem totalKernel_toReal (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hFm : Measurable F)
-    (hL' : MeasurableSet L') (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
+    (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
     (hMφ : ∀ z, φ z ≤ Mφ) (ht : 0 < t) (hσ : σ ≠ 0) :
     (D.totalKernel (fun z ↦ ENNReal.ofReal (exp (-(t * F z)) * φ z)) (σ * t ^ (-γ))).toReal =
       ∑ i, ∑ ε : Fin m → Bool, ∑ b : Bool, if D.admissible i ε b σ then
         P.modelKernelOf i φ ε b t γ σ else 0 := by
-  rw [P.totalKernel_eq_sum_modelKernel hS hF hFm hL' hφm hφ hMφ ht hσ]
+  rw [P.totalKernel_eq_sum_modelKernel hS hF hFm hφm hφ hMφ ht hσ]
   have hne : ∀ (i : D.ι) (ε : Fin m → Bool) (b : Bool),
       (if D.admissible i ε b σ then ENNReal.ofReal (P.modelKernelOf i φ ε b t γ σ) else 0) ≠ ⊤ :=
     fun i ε b ↦ by split_ifs <;> simp
