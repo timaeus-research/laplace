@@ -636,6 +636,13 @@ Euclidean half (laplace `Laplace/Multi`, mirrored to `Monomialize/Relative/Wall/
    `ψ(0)/χ(0)` from the two-chart transport. Chart indices are `iA`, `iB : atData.ι` with
    `forall_index`; a `Fin 2` numeral in an `atData.ι` slot breaks every `rw` (motive not
    type-correct at implicit transparency).
+   `BlowupAtlasHalf` (`at_tendsto_fibre_expectation_half`): the same atlas at `γ = 1/2`, where
+   both charts have exponent `1/2` (chart A tied at `α = 0` with profile `σ²(1+y²)`, chart B's
+   vertex collapsed to `α = 0` with profile `σ²(1+x²)x^{-2}`), all four admissible terms are
+   dominant without closed-form constants, every face map is the origin, and the point theorem
+   of `LimitingMeasure` gives `ψ(0)/χ(0)` — the "two genuinely leading charts" test. Uses
+   `termConst_pos_of_subset` (positivity on a positive-measure subset), `termMeasure_univ`
+   (mass = term constant of `1`) and `termMeasure_le_limitMeasure`.
 
 Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_asymptotics_v1.md`,
 `review_endtoend_v1.md`, `research_logconst_v1.md`.
