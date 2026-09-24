@@ -1110,3 +1110,26 @@ certificates for concrete resolved charts beyond the identity chart.
   only under joint continuity in the parameter (pointwise face continuity is NOT enough — shrinking
   spikes); (4) compact-uniform packaging after the hypotheses stabilise. Skip: a universal
   active-truth-to-`Q = 0` reduction, dependent-normal faces, second-order asymptotics.
+- `PolytopeFibre.lean` (1428ca9; hironaka eeb2f69be): the core of the transverse active-truth
+  face theorem, in the projected coordinates. `dotLin c` (the functional `c ⬝ᵥ ·`),
+  `volume_hyperplane (hc : c ≠ 0) a : volume {x | c ⬝ᵥ x = a} = 0` (translate the kernel
+  submodule: `measure_preimage_add_right` + `Measure.addHaar_submodule`, `c ∉ ker` from
+  `dotProduct_self_eq_zero`), `volume_coordHyperplane`; `poly2 c₁ c₂ a₁ a₂ = {α ≥ 0 | c₁·α ≤ a₁,
+  c₂·α ≤ a₂}` (measurable, monotone in `a`); the fibre at scale `L`,
+  `fibre2 c₁ c₂ a₁ a₂ b₁ b₂ L = {z ≥ 0 | c₁·z ≤ a₁L + b₁, c₂·z ≤ a₂L + b₂} = L • poly2 c₁ c₂
+  (a₁ + b₁/L) (a₂ + b₂/L)` (`fibre2_eq_smul`, `Set.mem_smul_set_iff_inv_smul_mem₀`), so
+  `volume (fibre2 …) = ofReal (L^k) · volume (poly2 … (a + b/L))` (`volume_fibre2`,
+  `Measure.addHaar_smul`, `Module.finrank_fin_fun`); and `tendsto_volume_poly2 (hc₁ hc₂ b₁ b₂)
+  (hbdd : IsBounded (poly2 c₁ c₂ (a₁+1) (a₂+1)))`: `volume (poly2 (a + b/L)) → volume (poly2 a)`
+  (dominated convergence of indicators, `tendsto_lintegral_filter_of_dominated_convergence` with the
+  enlarged polytope as bound, finite by `IsBounded.measure_lt_top`; pointwise convergence off the
+  null set `{c₁·x = a₁} ∪ {c₂·x = a₂} ∪ ⋃ {x_i = 0}`, by `compl_mem_ae_iff`). Reading: in the log
+  coordinates `z_J = −log x_J` with the two transverse coordinates solved, the fibre of the
+  constraints is `fibre2` with `L = log t` and `b_i = b_i(s, h, y)` bounded, so its volume is
+  `(log t)^k (vol F' + o(1))`, `F'` the projected face; `vol F'/|det R| = H^k(F_J)/𝒥`. Remaining for
+  the theorem (constant units first): the log substitution `x = e^{-z}` of the model kernel on the
+  box with the truth cut (`integral_posOrthant_comp_exp` style, orthant `z ≥ 0`), the linear change
+  to `(s, h, z')` with `|det R|`, Fubini separating `(s, h)` from the fibre, and DCT in `(s, h)`
+  with `volume_fibre2`/`tendsto_volume_poly2` and the bound `(1 + |s| + |h|)^k e^{-βs} e^{-ηh}
+  e^{-Ba₀e^{-s}}` (needs a polynomial bound on `vol(poly2(a + b/L))` for large `|b|/L`, i.e.
+  `poly2 c₁ c₂ (a₁ + u) (a₂ + u') ⊆ ball 0 (C(1 + |u| + |u'|))` when the constraints bound the orthant).
