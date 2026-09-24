@@ -293,6 +293,8 @@ import Laplace.Multi.OrthantSplit
 import Laplace.Multi.WallModelBridge
 import Laplace.Multi.WallModelKernel
 import Laplace.Multi.WallCertificate
+import Laplace.Multi.PowerAssembly
+import Laplace.Multi.WallFibreExpectation
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
