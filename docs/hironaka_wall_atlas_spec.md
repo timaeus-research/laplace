@@ -641,14 +641,16 @@ certificates for concrete resolved charts beyond the identity chart.
   coordinates with `d·κ ≤ 0`, `d·(r+1) ≥ 0` forbids the certificate (strict truth). This is the
   full "only if" direction of the recession-cone reading for the unweighted profile.
 - `VertexCertificate.lean`: the converse in the generic case. At a *strictly optimal vertex* of
-  the constrained LP — one scaled coordinate `j`, `α = (δ/κ_j) e_j` (tied phase), strict truth
-  constraint, and `κ_i (r_j+1)/κ_j < r_i + 1` for `i ≠ j` — the profile certificate holds:
+  the constrained LP — one scaled coordinate `j`, `α = (δ/κ_j) e_j > 0` (tied phase), strict truth
+  constraint, `η = (r_j+1)/κ_j > 0` (either sign of `κ_j`; for `κ_j < 0` the Gamma integral comes
+  from the `p > 0` one by `x ↦ 1/x`, `integral_comp_rpow_Ioi` at `p = −1`), and
+  `κ_i η < r_i + 1` for `i ≠ j` — the profile certificate holds:
   `integrable_vertexDom` integrates out `u_j` (a Gamma integral, `integral_rpow_mul_exp_neg_mul_rpow`
   after `volume_preserving_piFinSuccAbove` + `integrable_prod_iff'`) and is left with the box
   integral of `∏ u_i^{r_i − κ_i (r_j+1)/κ_j}`, whose exponents exceed `−1` exactly by strict
   optimality. `integrable_envelope_of_vertex` and `integrable_envelope_mul_profile_of_vertex`
   (via `x e^{-cx} ≤ (2/c) e^{-cx/2}`) are the two `ProfileIntegrableOf` integrabilities for a unit
   bounded below on the limiting domain, and `ProfileIntegrableOf.of_vertex` packages them for a
-  wall chart term `(i, ε, b)` from LP data alone (`hκj`, `hrj`, `hδ`, `hα`, `hstrict`, `hgap`).
+  wall chart term `(i, ε, b)` from LP data alone (`hκj`, `hη`, `hδκ`, `hα`, `hstrict`, `hgap`).
   So in the generic (vertex) case the certificate is decided by the LP: isolated vertex optimum
   ⇒ certificate, coordinate recession direction ⇒ no certificate.
