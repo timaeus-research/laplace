@@ -290,6 +290,7 @@ import Laplace.Multi.WallKernelNormalised
 import Laplace.Multi.ConstrainedLP
 import Laplace.Multi.DominantScale
 import Laplace.Multi.OrthantSplit
+import Laplace.Multi.WallModelBridge
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
