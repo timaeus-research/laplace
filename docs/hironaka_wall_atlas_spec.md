@@ -549,3 +549,13 @@ Landed accordingly (laplace, Mathlib only, standard axioms):
 
 Next: the two-sided sandwich for a fully tied model kernel with moving unit and weight (Astra §4),
 then the `WallFibreExpectation` variant built on `tendsto_sum_ratio_powLog`.
+
+- `LogSandwich.lean` (`adc0715`): Astra's short logarithmic theorem for `Q = 0`. A fully tied model
+  kernel with moving unit `aL ≤ a ≤ aU` on the box and moving weight `0 ≤ W ≤ wU`, bounded below by
+  `wL` on a smaller box `(0, RL)^{k+1}`, is squeezed between two constant-unit model kernels
+  (`modelIntegrand_le_const`, `const_le_modelIntegrand`; the model integrand is integrable because
+  `r_i > −1` on a tied face, `integrable_box_prod_rpow`), so with `Λ = γp + δλ` and `C = tiedConst`,
+  `C(RL, aU, wL) − ε ≤ t^Λ (log t)^{-k} K(t) ≤ C(ρ, aL, wU) + ε` eventually
+  (`modelKernel_sandwich`). The two constants differ by `(aU/aL)^λ`, `wU/wL` and the box ratio; the
+  exact constant of a fully tied face is the constant-unit one with the unit at the origin (the face
+  point), which needs the localisation argument of Astra §3.
