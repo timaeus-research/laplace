@@ -1214,3 +1214,16 @@ certificates for concrete resolved charts beyond the identity chart.
   (`← mul_assoc` at the hypothesis first); `ring` cannot commute inside `exp` (`mul_comm (log t) δ`
   before `ring`); `convert h using 2` + `linear_combination coef * e` for a constant identity
   whose factors are not adjacent.
+- Nondegeneracy weakened + `ActiveTruthExample.lean` (c86a8f5, 471b5a6; hironaka 69f7cc141):
+  `volume_hyperplane' (h : c ≠ 0 ∨ a ≠ 0)` (the hyperplane is empty when `c = 0`), and
+  `tendsto_volume_poly2`, `volume_fibreSet_eq` (`fibreCoef j ≠ 0 ∨ fibreA j * L + fibreB v j ≠ 0`),
+  `tendsto_volume_fibreSet_div`, `tendsto_lintegral_vWeight_fibre`,
+  `tendsto_modelKernel_activeTruth(')` now assume `fibreCoef j ≠ 0 ∨ fibreA j ≠ 0` per constraint:
+  a vacuous constraint `0 < a_j L + b_j` (`a_j > 0`) is allowed. This is forced by the degenerate
+  example: on `Fin 1 ⊕ Fin 2` with `κ = (1,1,2)`, `Q = (1,1,1)`, `r = (0,0,2)`, `(β, η) = (2, 1)`,
+  `transMat = [[1, 2], [−1, −1]]` (det `1`), `fibreCoef = (1, 0)`, `fibreA = (1, 1)`,
+  `facePolytope = [0, 1]`; `tendsto_modelKernel_degExample : t⁴/log t · K(t) → 1` reproduces the
+  constant of `DegenerateFace.tendsto_degI` from the general theorem (`Real.Gamma_two`). Gotchas:
+  `simp [fibreCoef, degTransMat_inv, degκ]` unfolds `degκ` inside `transMat` before the inverse
+  lemma fires — `simp only [fibreCoef, degTransMat_inv]` first; `norm_num at h` turns
+  `t ^ (2*0 + (2*3 − 1*2))` into the ℕ-power `t ^ 4`, so state the instance with `t ^ 4`.
