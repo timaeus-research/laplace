@@ -974,3 +974,30 @@ certificates for concrete resolved charts beyond the identity chart.
   limiting coefficients at `σ₀`. Not done: the locally uniform (`sup_{σ ∈ C}`) form, which follows
   abstractly from the moving-parameter form by a compactness argument, and the partial-face
   (`tendsto_modelKernel_partial`) moving version.
+- `PartialTiedParam.lean` (round-5 target 1, partial faces; mirrored): the constant-unit `Q = 0`
+  model kernel is linear in `A` (`modelKernel_eq_A_mul`), independent of `D` past the cutoff
+  (`modelKernel_const_of_cut`, both cuts `< ρ`, via `modelDomain_eq_of_Q_zero'`) and antitone in
+  the scale `B` (`modelIntegrand_const_anti`, `modelKernel_const_anti`, with the integrability
+  `integrable_modelIntegrand_const` from `integrable_box_prod_rpow'` and `exp ≤ 1`). The abstract
+  squeeze `tendsto_of_antitone_param` (a family antitone in a parameter, fixed-parameter limits
+  `L b` continuous at `B₀`, `B t → B₀ > 0` ⇒ convergence to `L B₀`; ε–η with `d = min(η/2, B₀/2)`)
+  then lifts `tendsto_modelKernel_partial` to `tendsto_modelKernel_partial_param` (`A t → A₀`,
+  `B t → B₀`, `D t · t^{-γ/q} → 0`) with the fixed theorem as a black box (`A := 1`, `D := 1`),
+  `L b` continuous by `ContinuousAt.rpow_const`. This route would also have given the fully tied
+  `_param` theorem; it does not give the variable-unit versions, whose `W(x, v_t)`, `a(x, v_t)` see
+  `D`.
+- `TermMeasureCertificate.lean` (round-5 target 2, interface form; mirrored):
+  `WallChartsData.Phase.TermMeasureCertificate P σ γ` = `(lam, kk, μ, finite, lam₀, k₀, hmin,
+  tendsto)` with `tendsto` quantified over every continuous nonnegative bounded observable;
+  `leadingMeasure C = lexMeasure C.lam C.kk C.μ C.lam₀ C.k₀` (finite);
+  `TermMeasureCertificate.tendsto_fibre_expectation` (`fibreRatio → ∫ψ dμ_*/∫χ dμ_*` when
+  `∫χ dμ_* ≠ 0`, from `tendsto_fibre_expectation_lex_measure`) and
+  `TermMeasureCertificate.normalise_eq_of_forall_tendsto` (two certified phases with the same
+  leading expectations on an open `L'` have the same normalised leading measure, from
+  `normalise_restrict_lexMeasure_eq_of_forall_tendsto`). The certificate is the common interface
+  for the established asymptotics (vertex, fully tied, partially tied terms certify their
+  `(λ_p, k_p, μ_p)`), not a claim that every chart has one. Remaining on the assembly side: a
+  constructor of the certificate from per-chart LP/face data (vertex ⇒ `(λ, 0, termMeasure)`,
+  tied ⇒ `(γp+δλ, k, point mass)`, partial ⇒ `(γp+δλ, k, partialMeasure)`) — the per-term
+  `tendsto` facts exist (`tendsto_termKernel_vertex/tied/partial_measure`) but their observable
+  hypotheses (`hφL : φ ≠ 0 → z ∈ L'`) differ from the certificate's class.
