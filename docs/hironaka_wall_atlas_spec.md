@@ -747,3 +747,17 @@ certificates for concrete resolved charts beyond the identity chart.
   block, not a point mass. Open: the chart-level identification (reindexing `Fin m ≃ Fin (k+1) ⊕ ν`
   of `modelKernel`, continuity of the chart weight/unit at general face points) and the
   lexicographic assembly of partially tied terms.
+- `WallPartialTerm.lean`: the partially tied term at the chart level. `modelKernel_reindex e`
+  (the model kernel is invariant under reindexing the coordinates along `e : ι ≃ ι'`, from
+  `volume_measurePreserving_piCongrLeft`); `continuousAt_weightFn` (joint continuity of the chart
+  weight at any point whose bridge point lies in the open ball, generalising
+  `tendsto_weightFn_face`), `continuousAt_unitFn`, `ma_le_unitFn_of_mem_ball`,
+  `bridgePt_mem_ball_of_abs_lt`; `partialFace e z` (tied coordinates `0`, worse coordinates `z`).
+  `tendsto_modelKernelOf_partial`: for a chart with `Q = 0` whose transverse coordinates split
+  along `e : Fin (k+1) ⊕ ν ≃ Fin m` into a tied block and a strictly worse block,
+  `t^{γp+δλ}/(log t)^k K_{i,ε,b}(t) → A δ^k Γ(λ)/k! ∏_T κ^{-1} ∫_{(0,ρ)^N} φ(ρ_i(pt_z)) wt|b|(pt_z) (B|a(pt_z)|)^{-λ} ∏_N z^{r−λκ} dz`
+  with `pt_z = bridgePt (partialFace e z) 0` (solved coordinate `0`, tied coordinates `0`, worse
+  coordinates `±z`). `tendsto_termKernel_partial` is the `termKernel` form: the certificate of an
+  admissible partially tied branch at the pair `(γp + δλ, k)` for `tendsto_fibre_expectation_lex`.
+  Astra's target (1) is closed at every level (model, chart, assembly input). Open: (2) the
+  two-scaled tied-truth certificate, (3) distinguishability.
