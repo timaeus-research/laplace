@@ -615,7 +615,16 @@ Euclidean half (laplace `Laplace/Multi`, mirrored to `Monomialize/Relative/Wall/
    `LogSectorTied` (`tendsto_tiedBlock`), `LogSectorGeneral(Aux/Limit)` (`tendsto_general`),
    `LogModel` (`tendsto_modelKernel_const`), `LogSandwich` (`modelKernel_sandwich`),
    `ChartCluster` (`powLog_cluster_limit`).
-7. Instance: `ToyWallRecord`, `ToyWallLimit` (`toy_tendsto_fibre_expectation`).
+7. Instances: `ToyWallRecord`, `ToyWallLimit` (`toy_tendsto_fibre_expectation`, identity chart,
+   `Q = 0`); `BlowupSectorRecord`, `BlowupSectorLimit` (`bs_tendsto_fibre_expectation`): the
+   blow-up chart `(x, y) ↦ (xy, y)` for `F = z₀² + z₁²`, truth coordinate `z₀`, over the sector
+   `|z₀| ≤ |z₁| ≤ 1`. Mixed truth monomial `q = (1, 1)` so `Q = 1 ≠ 0`; the transport identity is
+   the change of variables with Jacobian `|y|` (`lintegral_image_eq_lintegral_abs_det_fderiv_mul`,
+   the null line `z₁ = 0` by `addHaar_submodule`). Constants (solving for `y`): `ν = 2`, `κ = −2`,
+   `p = 1`, `r = −2`, `δ = 1 − 2γ`, `A = |σ|`, `B = σ²`; LP vertex `α = γ − 1/2` for `γ > 1/2`,
+   `λ = 1/2`, tied phase, strict truth; certificate from `ProfileIntegrableOf.of_vertex` in its
+   `κ_j < 0` case (`η = 1/2`); term constant `φ(0)√π/2` (Gamma integral in `1/u`); limit
+   `ψ(0)/χ(0)`, matching the direct `∫ e^{-t(s² + z₁²)} ψ dz₁ ~ √(π/t) ψ(0)`.
 
 Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_asymptotics_v1.md`,
 `review_endtoend_v1.md`. Open problems: the exact constant of a logarithmic face (face volume ×
