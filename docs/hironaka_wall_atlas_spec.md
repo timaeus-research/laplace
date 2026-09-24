@@ -1133,3 +1133,28 @@ certificates for concrete resolved charts beyond the identity chart.
   with `volume_fibre2`/`tendsto_volume_poly2` and the bound `(1 + |s| + |h|)^k e^{-βs} e^{-ηh}
   e^{-Ba₀e^{-s}}` (needs a polynomial bound on `vol(poly2(a + b/L))` for large `|b|/L`, i.e.
   `poly2 c₁ c₂ (a₁ + u) (a₂ + u') ⊆ ball 0 (C(1 + |u| + |u'|))` when the constraints bound the orthant).
+- `LogCoordinates.lean` (1b0db08; hironaka f5bf08ee0): `negExpMap ρ z = ρ e^{-z}` from the open
+  orthant onto the open box, `negExpDeriv` (diagonal `−ρe^{-z_i}`), `abs_det_negExpDeriv`,
+  `negExpMap_injective`, `image_negExpMap_orthant`, `integral_box_eq_orthant`
+  (`∫_{(0,ρ)^ι} F = ∫_{z>0} (∏ ρe^{-z_i}) F(ρe^{-z})`, via
+  `integral_image_eq_integral_abs_det_fderiv_smul`), `integrableOn_box_iff_orthant`.
+- `ActiveTruthModel.lean` (8584cce; hironaka 4435c426a): step 1 of the active-truth theorem.
+  `logCut ρ D γ q t Q = {z | Q·z < q log(ρ/D) + γ log t + (∑Q) log ρ}`; `cutVar_negExp`,
+  `cutVar_negExp_lt_iff` (the cut `D t^{-γ/q} ∏x^{-Q/q} < ρ` at `x = ρe^{-z}` is `z ∈ logCut`);
+  `modelIntegrand_const_negExp` (with the Jacobian: `w₀ ρ^{∑(r+1)} e^{-(r+1)·z} e^{-B t^δ a₀ ρ^{∑κ}
+  e^{-κ·z}}` on the cut); `modelKernel_const_eq_log` (the constant-unit kernel with arbitrary `Q`
+  as `A t^{-γp} w₀ ρ^{∑(r+1)} ∫_{z>0} 1_{logCut} e^{-c·z} e^{-B'e^{-κ·z}}`). Gotchas: `Real.rpow_sum_of_pos`
+  folds with `←`; `ring` cannot reassociate inside `exp` (rewrite the argument first);
+  `MeasurableSet.univ_pi` needs the interval's type ascribed; put `← integral_const_mul` after
+  `congr 1` so it only hits the intended side. Plan for step 2 (lintegral form, index
+  `Fin k ⊕ Fin 2`, the two solved coordinates last): Fubini via `sumPiEquivProdPi`; for fixed `z'`
+  the 2D affine change `y ↦ (s, h) = M y + shift(z')` with `M = [[κ_a, κ_b], [−Q_a, −Q_b]]`,
+  `|det M| = |Δ|`, by `Real.map_linearMap_volume_pi_eq_smul_volume_pi` + translation +
+  `lintegral_map`; then `c·z = βs + ηh + mL`, `κ·z = s + δL` (the `t`-dependence cancels in the
+  Boltzmann factor: `B t^δ ρ^{∑κ} e^{-κ·z} = Bρ^{∑κ} e^{-s}`), the cut `h > h₀'`; Tonelli to put
+  `(s, h)` outside with the fibre volume `vol{z' ≥ 0 | y(z', s, h) ≥ 0}` inside; the fibre is
+  contained in `‖z'‖ ≤ (s + δL)/κ_min` (from `κ·z = s + δL`, `z ≥ 0`, `κ > 0`), giving the
+  polynomial bound `(|s| + δ)^k/κ_min^k` after dividing by `L^k`; DCT with `volume_fibre2` +
+  `tendsto_volume_poly2` and the bound `e^{-βs−ηh} e^{-ce^{-s}} (|s|+δ)^k` (finite via
+  `(|s|+δ)^k ≤ C(e^{βs/2} + e^{-βs/2})` and `integral_exp_mul_exp_neg_exp`); limit
+  `Γ(β) c^{-β} e^{-ηh₀'}/η · vol F'`.
