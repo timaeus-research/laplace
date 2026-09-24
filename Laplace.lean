@@ -329,6 +329,7 @@ import Laplace.Multi.PartialFaceMeasure
 import Laplace.Multi.MixedTruthLog
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
+import Laplace.Multi.WallDistinguishabilityLex
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
