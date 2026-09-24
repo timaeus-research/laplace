@@ -926,3 +926,19 @@ certificates for concrete resolved charts beyond the identity chart.
   and the fibre expectation `→ ψ(0)/χ(0)` (`mix_tendsto_fibre_expectation`): the coefficient measure
   at the logarithmic scale is `e^{-σ a(0)} δ_0`, with the positive-branch multiplicity one on the
   square (the other sign branch leaves the region).
+- `ProductChartLP.lean` (round-4 target 2; mirrored as `Euclid/ProductChartLP.lean`): the LP of a
+  product chart in closed form. `LPOptimal Q κ γ δ a α` (feasible and minimal);
+  `uniqueLPMin_iff_lpOptimal_unique`. With `Q = 0`, `0 ≤ γ`, `κ > 0`, `δ > 0`, `λ > 0`,
+  `a_i = λκ_i` on the tied set `T ≠ ∅` and `λκ_i < a_i` off it: `lpOptimal_product_iff`
+  (optimal **iff** `α ≥ 0`, `α_N = 0`, `κ·α = δ`; proof: `λ κ·β ≤ a·β` termwise, the tied vertex
+  `(δ/κ_s) e_s` has value `λδ`, and the excess `∑ (a_i − λκ_i) α_i` vanishes termwise),
+  `lpOptimal_value` (`a·α = λδ`), `lpOptimal_single`, `lpOptimal_iff_exists_weights`
+  (`Opt = conv{(δ/κ_i) e_i : i ∈ T}`, weights `w_i = κ_i α_i/δ`), `uniqueLPMin_iff_card_eq_one`
+  (unique minimiser **iff** `|T| = 1`, and then `α` is the tied vertex; two tied coordinates give
+  two distinct optimal vertices). In the index shape of `tendsto_modelKernel_partial`
+  (`Fin (k+1) ⊕ ν`, `htied`, `hgap`, `a = r + 1`): `lpOptimal_partial_iff` (optimal iff `α ≥ 0`,
+  `α ∘ inr = 0`, `κ·α = δ`) and `card_image_inl` (`|T| = k + 1`), so the LP face dimension
+  `|T| − 1 = k` is the logarithmic exponent of the coefficient. The three shapes: `T = univ` gives
+  the fully tied point mass (`tendsto_modelKernel_tied`), `|T| = 1` a unique LP vertex whose
+  coefficient is still a face density in the `ν` variables, intermediate `T` the partial face
+  density — "the LP tells which faces carry the measure", with a unique vertex not a point mass.
