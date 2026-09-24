@@ -715,3 +715,21 @@ certificates for concrete resolved charts beyond the identity chart.
   wall chart term `(i, ε, b)` from LP data alone (`hκj`, `hη`, `hδκ`, `hα`, `hstrict`, `hgap`).
   So in the generic (vertex) case the certificate is decided by the LP: isolated vertex optimum
   ⇒ certificate, coordinate recession direction ⇒ no certificate.
+- `TiedBlockBound.lean`: an all-scale bound for the tied-block integral. Writing the tied-block
+  integral through the core integral `coreJ λ n s = ∫_{z>0} e^{-s e^{-z}} e^{-λz} z^n`
+  (`tiedBlockIntegral_eq_coreJ`), `coreJ_le_bound` gives `coreJ λ n s ≤ M s^{-λ} (1 + log⁺ s)^n`
+  for every `s > 0` (constant for `s ≤ e`, the growth bound `coreJ_le_growth` beyond), hence
+  `tiedBlockIntegral_le_bound`: the power–log envelope `M s^{-λ}(1 + log⁺ s)^k` holds at every
+  scale, not only asymptotically — the dominated-convergence majorant for slicing arguments.
+- `PartialTiedModel.lean`: the partially tied constant-unit model. Index `Fin (k+1) ⊕ ν`: the
+  tied block `T` (`(r_i+1)/κ_i = λ`) and a strictly worse block `N` (`λκ_j < r_j + 1`). Fubini
+  along `MeasurableEquiv.sumPiEquivProdPi` integrates the tied block first at the effective
+  constant `a₀ ∏_N z^κ`, where the fully tied theorem (`tendsto_modelKernel_const` +
+  `tiedConst_eq`) gives the slice limit `(B a₀ ∏_N z^κ)^{-λ} δ^k Γ(λ)/k! ∏_T κ^{-1}`; the all-scale
+  bound supplies the majorant `C ∏_N z^{r_j − λκ_j}`, integrable on the box exactly because the
+  gaps are strict; dominated convergence gives (`tendsto_modelKernel_partial`)
+  `t^{γp+δλ}/(log t)^k K(t) → A w₀ (B a₀)^{-λ} δ^k Γ(λ)/k! ∏_T κ_i^{-1} ∫_{(0,ρ)^N} ∏_N z^{r_j − λκ_j}`.
+  The logarithmic degree is the dimension of the tied face; the strictly worse coordinates
+  contribute a finite transverse integral — the constant-unit half of Astra's partially tied
+  face-measure target (`research_partial_v1.md`). Open: the variable-unit version (slice-wise
+  `tendsto_modelKernel_tied` + the same majorant), then the chart-level and assembly connection.
