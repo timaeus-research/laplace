@@ -318,6 +318,7 @@ import Laplace.Multi.BlowupAtlasHalf
 import Laplace.Multi.TiedBlockBound
 import Laplace.Multi.PartialTiedModel
 import Laplace.Multi.PartialTiedVariable
+import Laplace.Multi.WallPartialTerm
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
