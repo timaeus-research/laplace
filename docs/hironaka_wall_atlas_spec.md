@@ -620,16 +620,26 @@ Euclidean half (laplace `Laplace/Multi`, mirrored to `Monomialize/Relative/Wall/
 Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_asymptotics_v1.md`,
 `review_endtoend_v1.md`. Open problems: the exact constant of a logarithmic face (face volume ×
 transverse profile integral, unit at the face point; needs a tube/boundary localisation), the
-equivalence "profile integrable ⇔ isolated LP optimum" beyond the vertex/coordinate cases (general
-recession direction, degenerate optima), and certificates for concrete resolved charts beyond the
-identity chart.
+equivalence "profile integrable ⇔ isolated LP optimum" at degenerate (non-vertex) optima — the
+"only if" half is now general (`RecessionDirection`), the "if" half is the vertex case — and
+certificates for concrete resolved charts beyond the identity chart.
 - `RecessionObstruction.lean`: the coordinate case of Astra's recession-cone characterisation
   (§1.2). If a scaled coordinate `j` is invisible to the limiting phase (`κ_j ≤ 0`) while its
   density does not decay (`r_j ≥ −1`), the unweighted profile is not integrable
   (`not_integrable_of_coordinate_recession`: the shells `u_j ∈ [eⁿ, eⁿ⁺¹)` each carry a fixed
   positive mass), so `ProfileIntegrableOf` fails (`not_integrable_envelope_of_recession`, strict
-  truth constraint). This is the "only if" half for coordinate directions; the general recession
-  direction remains open.
+  truth constraint). This is the "only if" half for coordinate directions.
+- `RecessionDirection.lean`: the same obstruction along an arbitrary direction `d ≠ 0`, without
+  shells. If the domain is invariant under the flow `u ↦ e^{s d} ⊙ u` (`flow`), contains a box,
+  the phase is bounded by `K ∏ u^κ` with `d·κ ≤ 0`, and `d·(r+1) ≥ 0`, then `1_L ∏u^r e^{-Φ}` is
+  not integrable (`not_integrable_of_recession_direction`): the tails
+  `A_n = L ∩ {n|d|² + m₀ ≤ ⟨d, log u⟩}` (`logHeight`) decrease to `∅`, so by
+  `tendsto_setIntegral_of_antitone` their integrals tend to `0`, while the transported box
+  `e^{nd} ⊙ K₀ ⊆ A_n` carries mass `≥ e^{n d·(r+1)} J₀ ≥ J₀ > 0` by the change of variables
+  `integral_comp_rescale` (`flow_eq_rescale`, `prod_flow_rpow`). For the limiting domain,
+  `not_integrable_envelope_of_recession_direction`: any `d ≠ 0` supported on the scaled
+  coordinates with `d·κ ≤ 0`, `d·(r+1) ≥ 0` forbids the certificate (strict truth). This is the
+  full "only if" direction of the recession-cone reading for the unweighted profile.
 - `VertexCertificate.lean`: the converse in the generic case. At a *strictly optimal vertex* of
   the constrained LP — one scaled coordinate `j`, `α = (δ/κ_j) e_j` (tied phase), strict truth
   constraint, and `κ_i (r_j+1)/κ_j < r_i + 1` for `i ≠ j` — the profile certificate holds:
