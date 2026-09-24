@@ -442,3 +442,27 @@ slab of the fibre identity gives this when `0` is interior to the truth set and 
 the cylinder over `A'`). Extra hypothesis on the record: `rep u ℓ = truthMono S q u` on the closed
 ball (true for the hironaka instance: `repClamp_apply_truth`). The remaining hypothesis is the
 integrability of the limiting profile (twice), which encodes the uniqueness of the dominant scale.
+
+## Status (2026-09-25, end of day): the expectation along the truth fibre
+
+laplace `PowerAssembly.lean`, `WallFibreExpectation.lean` (`db71f23`), Mathlib only, standard
+axioms. `tendsto_sum_ratio`: for finitely many kernels with `t^{λ_i} K_i → C_i`, the ratio of two
+such finite sums converges to the ratio of the constants at the minimal scale `λ₀` (nonzero
+dominant denominator); the non-dominant terms are absorbed automatically (no positivity of every
+constant, unlike `ChartAssembly`). `tendsto_fibre_expectation`: for a chart record with phase data
+and `|S_i| = 1`, a nonnegative measurable loss, the truth coordinate of `rep` monomial on the closed
+balls, two localised observables `ψ, χ` (continuous, nonnegative, bounded, supported in `L'`), a
+certified scale `α(i, ε, b)` for every admissible term (`ConstrainedFeasible` for the chart's LP and
+`ProfileIntegrableOf`, the integrability of the limiting profile with envelope constant `1`), and a
+nonzero dominant denominator constant,
+`K^ψ(t) / K^χ(t) → ∑_{λ_p = λ₀} C^ψ_p / ∑_{λ_p = λ₀} C^χ_p` along `s = σ t^{-γ}`,
+where `K^φ(t) = (totalKernel (e^{-tF} φ) s_t).toReal` is, through the fibre identity, the ambient
+integral of `e^{-tF} φ` over the truth fibre, `λ_p = γ p_i + ∑ (r_j + 1) α_j(p)` and
+`C^φ_p = A_i ∫ w₀ e^{-Φ₀}` (`termConst'`). This is the Euclidean half of the general relative
+push-forward statement of S14 for pure-power (non-logarithmic) dominant faces; the geometric half
+(`wall_fibre_identity`, `WallAtlas.toPhase`) lives on the hironaka branch, and the two halves are
+mirrored rather than combined because of the toolchain difference.
+
+Next: a concrete instance exercising the chain (a trivial chart with `F = (1 + x²) s² x²`), the
+logarithmic faces (tied blocks through `tendsto_general`), and the hironaka mirror of the analytic
+layer (`integral_comp_mulVec` must be copied into the Euclid namespace).
