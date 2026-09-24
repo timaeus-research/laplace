@@ -311,6 +311,7 @@ import Laplace.Multi.BlowupSectorLimit
 import Laplace.Multi.LogExactConstant
 import Laplace.Multi.BlowupAtlasRecord
 import Laplace.Multi.BlowupAtlasLimit
+import Laplace.Multi.LimitingMeasure
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
