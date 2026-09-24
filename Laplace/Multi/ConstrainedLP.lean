@@ -17,11 +17,12 @@ polyhedron is `P_γ = {α ≥ 0, Q·α ≤ γ, κ·α ≥ δ}` (`ConstrainedFeas
 `α` together with dual multipliers `μ, τ ≥ 0` certifying optimality by weak duality
 (`ConstrainedLPCert.le`).
 
-The compatibility statement (`modelKernel_eq_rescaled`): the constrained model kernel
-`K(t) = A t^{-γp} ∫_{(0,1)^d, v_t < 1} W(x, v_t) ∏x^r e^{-B t^δ a(x, v_t) ∏x^κ} dx`
-is exactly `A t^{-λ}` times the rescaled integral over `u ∈ ∏(0, t^{α_j})` with cutoff
-`D t^{-(γ − Q·α)/q} ∏u^{-Q/q} < 1` and phase `B t^{δ − κ·α} a ∏u^κ` — so the exponent that factors
-out is the LP value at `α`, and the two feasibility conditions say exactly that the remaining
+The compatibility statement (`modelKernel_eq_rescaled`): the constrained model kernel on the box
+of radius `ρ` (the chart ball), `K(t) = A t^{-γp} ∫_{(0,ρ)^d, v_t < ρ} W(x, v_t) ∏x^r
+e^{-B t^δ a(x, v_t) ∏x^κ} dx`, is exactly `A t^{-λ}` times the rescaled integral over
+`u ∈ ∏(0, ρ t^{α_j})` with cutoff `D t^{-(γ − Q·α)/q} ∏u^{-Q/q} < ρ` and phase
+`B t^{δ − κ·α} a ∏u^κ` — so the exponent that factors out is the LP value at `α`, and the two
+feasibility conditions say exactly that the remaining
 `t`-powers are `≤ 1` for `t ≥ 1` (`rpow_truth_le_one`, `rpow_phase_le_one`), tending to `0` when
 the constraint is strict. This is the moving-kernel form consumed by `ProfileCertificate`.
 -/
@@ -98,11 +99,11 @@ theorem prod_rpow_rescale {t : ℝ} (ht : 0 < t) (α : ι → ℝ) {u : ι → �
   rw [← Finset.sum_neg_distrib, Real.rpow_sum_of_pos ht]
 
 omit [Fintype ι] in
-theorem mem_Ioo_rescale_iff {t : ℝ} (ht : 0 < t) (α : ι → ℝ) (u : ι → ℝ) (j : ι) :
-    rescale t α u j ∈ Ioo (0 : ℝ) 1 ↔ u j ∈ Ioo 0 (t ^ α j) := by
+theorem mem_Ioo_rescale_iff {t : ℝ} (ht : 0 < t) (α : ι → ℝ) (ρ : ℝ) (u : ι → ℝ) (j : ι) :
+    rescale t α u j ∈ Ioo 0 ρ ↔ u j ∈ Ioo 0 (ρ * t ^ α j) := by
   have hc : 0 < t ^ α j := rpow_pos_of_pos ht _
   unfold rescale
-  rw [mem_Ioo, mem_Ioo, Real.rpow_neg ht.le, inv_mul_lt_iff₀ hc, mul_one,
+  rw [mem_Ioo, mem_Ioo, Real.rpow_neg ht.le, inv_mul_lt_iff₀ hc, mul_comm ρ,
     mul_pos_iff_of_pos_left (inv_pos.mpr hc)]
 
 /-- The Lebesgue change of variables `x = t^{-α} u` on `ι → ℝ`. -/
@@ -127,39 +128,39 @@ theorem integral_comp_rescale {t : ℝ} (ht : 0 < t) (α : ι → ℝ) (g : (ι 
 noncomputable def cutVar (D γ q : ℝ) (Q : ι → ℝ) (t : ℝ) (x : ι → ℝ) : ℝ :=
   D * t ^ (-(γ / q)) * ∏ j, x j ^ (-(Q j / q))
 
-/-- The model domain: the open unit box cut by `v_t < 1`. -/
-def modelDomain (D γ q : ℝ) (Q : ι → ℝ) (t : ℝ) : Set (ι → ℝ) :=
-  Set.pi univ (fun _ ↦ Ioo (0 : ℝ) 1) ∩ {x | cutVar D γ q Q t x < 1}
+/-- The model domain: the open box of radius `ρ` cut by `v_t < ρ`. -/
+def modelDomain (ρ D γ q : ℝ) (Q : ι → ℝ) (t : ℝ) : Set (ι → ℝ) :=
+  Set.pi univ (fun _ ↦ Ioo 0 ρ) ∩ {x | cutVar D γ q Q t x < ρ}
 
 /-- The model integrand `1_{domain} W(x, v_t) ∏x^r e^{-B t^δ a(x, v_t) ∏x^κ}`. -/
-noncomputable def modelIntegrand (B D γ q δ : ℝ) (Q κ r : ι → ℝ) (W a : (ι → ℝ) → ℝ → ℝ) (t : ℝ)
-    (x : ι → ℝ) : ℝ :=
-  (modelDomain D γ q Q t).indicator (fun x ↦
+noncomputable def modelIntegrand (ρ B D γ q δ : ℝ) (Q κ r : ι → ℝ) (W a : (ι → ℝ) → ℝ → ℝ)
+    (t : ℝ) (x : ι → ℝ) : ℝ :=
+  (modelDomain ρ D γ q Q t).indicator (fun x ↦
     W x (cutVar D γ q Q t x) * (∏ j, x j ^ r j) *
       exp (-(B * t ^ δ * a x (cutVar D γ q Q t x) * ∏ j, x j ^ κ j))) x
 
 /-- The constrained model kernel `K(t) = A t^{-γp} ∫ modelIntegrand`. -/
-noncomputable def modelKernel (A B D γ p q δ : ℝ) (Q κ r : ι → ℝ) (W a : (ι → ℝ) → ℝ → ℝ)
+noncomputable def modelKernel (ρ A B D γ p q δ : ℝ) (Q κ r : ι → ℝ) (W a : (ι → ℝ) → ℝ → ℝ)
     (t : ℝ) : ℝ :=
-  A * t ^ (-(γ * p)) * ∫ x, modelIntegrand B D γ q δ Q κ r W a t x
+  A * t ^ (-(γ * p)) * ∫ x, modelIntegrand ρ B D γ q δ Q κ r W a t x
 
 /-- The rescaled cutoff variable `D t^{-(γ − Q·α)/q} ∏ u_j^{-Q_j/q}`. -/
 noncomputable def rescaledCut (D γ q : ℝ) (Q α : ι → ℝ) (t : ℝ) (u : ι → ℝ) : ℝ :=
   D * t ^ (-((γ - ∑ j, Q j * α j) / q)) * ∏ j, u j ^ (-(Q j / q))
 
-/-- The rescaled domain `∏ (0, t^{α_j})` cut by the rescaled cutoff. -/
-def rescaledDomain (D γ q : ℝ) (Q α : ι → ℝ) (t : ℝ) : Set (ι → ℝ) :=
-  Set.pi univ (fun j ↦ Ioo (0 : ℝ) (t ^ α j)) ∩ {u | rescaledCut D γ q Q α t u < 1}
+/-- The rescaled domain `∏ (0, ρ t^{α_j})` cut by the rescaled cutoff `< ρ`. -/
+def rescaledDomain (ρ D γ q : ℝ) (Q α : ι → ℝ) (t : ℝ) : Set (ι → ℝ) :=
+  Set.pi univ (fun j ↦ Ioo 0 (ρ * t ^ α j)) ∩ {u | rescaledCut D γ q Q α t u < ρ}
 
 /-- The rescaled integrand: the moving-kernel form with phase `B t^{δ − κ·α} a ∏u^κ`. -/
-noncomputable def rescaledIntegrand (B D γ q δ : ℝ) (Q κ r α : ι → ℝ) (W a : (ι → ℝ) → ℝ → ℝ)
-    (t : ℝ) (u : ι → ℝ) : ℝ :=
-  (rescaledDomain D γ q Q α t).indicator (fun u ↦
+noncomputable def rescaledIntegrand (ρ B D γ q δ : ℝ) (Q κ r α : ι → ℝ)
+    (W a : (ι → ℝ) → ℝ → ℝ) (t : ℝ) (u : ι → ℝ) : ℝ :=
+  (rescaledDomain ρ D γ q Q α t).indicator (fun u ↦
     W (rescale t α u) (rescaledCut D γ q Q α t u) * (∏ j, u j ^ r j) *
       exp (-(B * t ^ (δ - ∑ j, κ j * α j) * a (rescale t α u) (rescaledCut D γ q Q α t u) *
         ∏ j, u j ^ κ j))) u
 
-variable {D γ q : ℝ} {Q α : ι → ℝ}
+variable {ρ D γ q : ℝ} {Q α : ι → ℝ}
 
 theorem cutVar_rescale {t : ℝ} (ht : 0 < t) {u : ι → ℝ} (hu : ∀ j, 0 < u j) :
     cutVar D γ q Q t (rescale t α u) = rescaledCut D γ q Q α t u := by
@@ -173,7 +174,7 @@ theorem cutVar_rescale {t : ℝ} (ht : 0 < t) {u : ι → ℝ} (hu : ∀ j, 0 < 
   ring_nf
 
 theorem mem_modelDomain_rescale_iff {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
-    rescale t α u ∈ modelDomain D γ q Q t ↔ u ∈ rescaledDomain D γ q Q α t := by
+    rescale t α u ∈ modelDomain ρ D γ q Q t ↔ u ∈ rescaledDomain ρ D γ q Q α t := by
   simp only [modelDomain, rescaledDomain, mem_inter_iff, Set.mem_univ_pi, mem_ofPred_eq,
     mem_Ioo_rescale_iff ht]
   constructor
@@ -188,10 +189,10 @@ variable {B δ : ℝ} {κ r : ι → ℝ} {W a : (ι → ℝ) → ℝ → ℝ}
 
 /-- The model integrand under the rescaling: the density exponent `r·α` factors out. -/
 theorem modelIntegrand_rescale {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
-    modelIntegrand B D γ q δ Q κ r W a t (rescale t α u) =
-      t ^ (-∑ j, r j * α j) * rescaledIntegrand B D γ q δ Q κ r α W a t u := by
+    modelIntegrand ρ B D γ q δ Q κ r W a t (rescale t α u) =
+      t ^ (-∑ j, r j * α j) * rescaledIntegrand ρ B D γ q δ Q κ r α W a t u := by
   unfold modelIntegrand rescaledIntegrand
-  by_cases h : u ∈ rescaledDomain D γ q Q α t
+  by_cases h : u ∈ rescaledDomain ρ D γ q Q α t
   · have h' := (mem_modelDomain_rescale_iff ht u).mpr h
     have hu : ∀ j, 0 < u j := fun j ↦ ((Set.mem_univ_pi.mp h.1) j).1
     rw [Set.indicator_of_mem h, Set.indicator_of_mem h', cutVar_rescale ht hu,
@@ -206,13 +207,13 @@ theorem modelIntegrand_rescale {t : ℝ} (ht : 0 < t) (u : ι → ℝ) :
 theorem measurable_cutVar (t : ℝ) : Measurable (cutVar D γ q Q t) :=
   measurable_const.mul (Finset.measurable_prod _ fun j _ ↦ (measurable_pi_apply j).pow_const _)
 
-theorem measurableSet_modelDomain (t : ℝ) : MeasurableSet (modelDomain D γ q Q t) :=
+theorem measurableSet_modelDomain (t : ℝ) : MeasurableSet (modelDomain ρ D γ q Q t) :=
   (MeasurableSet.pi countable_univ fun _ _ ↦ measurableSet_Ioo).inter
     (measurableSet_lt (measurable_cutVar t) measurable_const)
 
 theorem measurable_modelIntegrand (hW : Measurable (Function.uncurry W))
     (ha : Measurable (Function.uncurry a)) (t : ℝ) :
-    Measurable (modelIntegrand B D γ q δ Q κ r W a t) := by
+    Measurable (modelIntegrand ρ B D γ q δ Q κ r W a t) := by
   have hcut := measurable_cutVar (D := D) (γ := γ) (q := q) (Q := Q) t
   have hWc : Measurable fun x ↦ W x (cutVar D γ q Q t x) :=
     hW.comp (measurable_id.prodMk hcut)
@@ -234,9 +235,9 @@ theorem measurable_modelIntegrand (hW : Measurable (Function.uncurry W))
 integral, with `λ = γp + ∑ (r_j + 1) α_j` the LP value at `α`. -/
 theorem modelKernel_eq_rescaled (A p : ℝ) (hW : Measurable (Function.uncurry W))
     (ha : Measurable (Function.uncurry a)) {t : ℝ} (ht : 0 < t) :
-    modelKernel A B D γ p q δ Q κ r W a t =
+    modelKernel ρ A B D γ p q δ Q κ r W a t =
       A * t ^ (-lpExponent γ p (fun j ↦ r j + 1) α) *
-        ∫ u, rescaledIntegrand B D γ q δ Q κ r α W a t u := by
+        ∫ u, rescaledIntegrand ρ B D γ q δ Q κ r α W a t u := by
   unfold modelKernel
   rw [integral_comp_rescale ht α _ (measurable_modelIntegrand hW ha t).aestronglyMeasurable]
   simp only [modelIntegrand_rescale ht]
