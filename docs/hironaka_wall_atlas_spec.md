@@ -733,3 +733,17 @@ certificates for concrete resolved charts beyond the identity chart.
   contribute a finite transverse integral — the constant-unit half of Astra's partially tied
   face-measure target (`research_partial_v1.md`). Open: the variable-unit version (slice-wise
   `tendsto_modelKernel_tied` + the same majorant), then the chart-level and assembly connection.
+- `PartialTiedVariable.lean`: the variable-unit partially tied model (Astra's target (1), model
+  level). Weight `W` and unit `a` depend on the box point and the cutoff variable, with `0 ≤ W ≤
+  wU`, `aL ≤ a` on the box, `0 < a` at the face points and joint continuity of `W`, `a` at every
+  face point `(0_T, z_N, 0)`. Each slice in `z_N` is a fully tied kernel with weight
+  `W(y, z, v)` and unit `a(y, z, v) ∏_N z^κ`, so `tendsto_modelKernel_tied` gives the slice limit
+  `tiedConst 1 B δ κ_T r_T λ ρ (a(0,z,0) ∏_N z^κ) W(0,z,0)`; after freezing the cutoff variable
+  (`modelIntegrand_Q_zero_freeze`) the slice is dominated by the constant-unit slice at
+  `(wU, aL ∏_N z^κ)`, whose all-scale bound `slice_const_bound` (the Stage C bound, general
+  weight) is the DCT majorant. `tendsto_modelKernel_partial_var`:
+  `t^{γp+δλ}/(log t)^k K(t) → A δ^k Γ(λ)/k! ∏_T κ_i^{-1} ∫_{(0,ρ)^N} W(0_T,z,0) (B a(0_T,z,0))^{-λ} ∏_N z^{r_j−λκ_j} dz`
+  — a partially tied face carries the *face density* `W (B a)^{-λ} ∏_N z^{r−λκ}` on the worse
+  block, not a point mass. Open: the chart-level identification (reindexing `Fin m ≃ Fin (k+1) ⊕ ν`
+  of `modelKernel`, continuity of the chart weight/unit at general face points) and the
+  lexicographic assembly of partially tied terms.
