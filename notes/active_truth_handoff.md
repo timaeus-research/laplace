@@ -1,5 +1,7 @@
 # Handoff: the transverse active-truth face theorem (analytic half)
 
+**STATUS 2026-09-26: the constant-unit, `I = ∅` theorem is landed (`ActiveTruthTheorem.lean`, `tendsto_modelKernel_activeTruth'`). Remaining: the items under "Then".**
+
 **TL;DR.** Astra (round 7, `gpt_responses/research_round7_v1.md`) gave the general statement behind
 the degenerate example (`DegenerateFace.lean`, `t⁴ I(t)/log t → 1`): with a dual certificate
 `(β, η)`, coordinates `J ⊔ I` (`c_j = βκ_j − ηQ_j` on `J`, reduced costs `d_i > 0` on `I`),
@@ -27,6 +29,16 @@ constant units first (`W ≡ w₀`, `a ≡ a₀`, `I = ∅`).
 - `LintegralChange.lean`: `lintegral_sum_split`, `lintegral_comp_mulVec_add`.
 - `ActiveTruthAssembly.lean` (step 2): `transMat`, `transShift`, `transMat_mulVec_add_shift`,
   `image_mulVec_add_orthant`, `innerKv`, `logIntegrand`, `lintegral_inner_subst`.
+- `ActiveTruthAssembly.lean` (step 3): `fibreSet`, `vWeight`, `innerKv_eq`, `lintegral_innerKv_swap`.
+- `ActiveTruthFibre.lean` (step 4): `fibreCoef`/`fibreA`/`fibreB`, `mem_fibreSet_iff`,
+  `fibre2_subset_box`, `volume_fibreSet_eq`, `volume_fibreSet_le`, `isBounded_poly2_fibre`,
+  `tendsto_volume_fibreSet_div`.
+- `ActiveTruthLimit.lean` (step 5): `sWeight`/`hWeight`, `lintegral_vWeight_zero`,
+  `pow_abs_add_le_exp`, `integrable_sWeight_mul_pow`, `volume_fibreSet_div_le`,
+  `tendsto_lintegral_vWeight_fibre`.
+- `ActiveTruthTheorem.lean` (assembly): `modelKernel_const_eq_lintegral`, `lintegral_logIntegrand_eq`,
+  `facePolytope`, `tendsto_modelKernel_activeTruth`, `activeTruth_const_eq`,
+  `tendsto_modelKernel_activeTruth'` — **the constant-unit theorem is DONE** (68b3d17).
 
 ## Decision: do steps 2–5 in `lintegral` form
 

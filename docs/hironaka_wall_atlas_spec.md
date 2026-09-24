@@ -1173,3 +1173,44 @@ certificates for concrete resolved charts beyond the identity chart.
   only in `e^{-mL}` and in the fibre set. Gotchas: `Sum.forall` splits `∀ i, P (Sum.elim z' y i)`
   by defeq; `Function.Injective.mem_set_image`; `Matrix.det_fin_two` (not `det_fin_two_of`) for
   `Matrix.of ![f, g]`; `ring` in `ℝ≥0∞` closes reassociations of indicator products.
+- `ActiveTruthAssembly.lean` step 3 (a970b6b; hironaka ac6d2400b): Tonelli. `fibreSet κ Q δ γ L v`
+  (free coordinates `z' > 0` whose solved pair lands in the orthant, as an image-set condition),
+  `vWeight β η mL c₀ h₀ v = 1_{h > h₀} · ofReal(e^{-βs − ηh − mL} e^{-c₀ e^{-s}})`, `innerKv_eq`
+  (`innerKv = 1_{fibreSet v}(z') · vWeight v`), `measurableSet_fibreSet_prod` (joint measurability
+  through the inverse affine map), `lintegral_innerKv_swap : ∫⁻ z', ∫⁻ v, innerKv = ∫⁻ v, vWeight v ·
+  volume (fibreSet v)`. Gotcha: `lintegral_indicator_one` wants the Pi `1`; with `fun _ ↦ 1` use
+  `lintegral_indicator` + `setLIntegral_const` + `one_mul`.
+- `ActiveTruthFibre.lean` (79b29c8; hironaka c56aa98fe): step 4, the fibre is a polytope. With
+  `N = M⁻¹`: `fibreCoef j = N_{j0} κ' − N_{j1} Q'`, `fibreA j = N_{j0} δ − N_{j1} γ`,
+  `fibreB v j = (N v)_j`; `inv_mulVec_sub_shift` (the solved pair is affine in `z'`),
+  `mem_fibreSet_iff : z' ∈ fibreSet ↔ z' > 0 ∧ ∀ j, c_j·z' < a_j L + b_j`, `mem_fibre2_iff`,
+  `fibreSet_subset_fibre2`, `fibre2_subset_box` (`κ'_i z'_i ≤ s + δL`, the `κ_min` bound),
+  `volume_fibreSet_eq` (open = closed volume; needs `fibreCoef j ≠ 0` for the null hyperplanes),
+  `volume_fibreSet_le ≤ ∏ ofReal((s + δL)/κ'_i)` (`Real.volume_pi_Ioc`), `poly2_eq_fibre2_one`,
+  `isBounded_poly2_fibre` (via `Metric.isBounded_Icc` + `Set.pi_univ_Icc`),
+  `tendsto_volume_fibreSet_div : volume (fibreSet v)/L^k → volume (poly2 c a)`.
+- `ActiveTruthLimit.lean` (7800f59; hironaka 09931ab1f): step 5, DCT in `v`. `sWeight β c₀ s =
+  e^{-βs} e^{-c₀ e^{-s}}`, `hWeight η h₀ = 1_{Ioi h₀} e^{-ηh}`, `vWeight_zero_eq`, `vWeight_eq_mul`
+  (`vWeight mL = ofReal(e^{-mL}) · vWeight 0`), `integral_sWeight = Γ(β) c₀^{-β}` (via
+  `integral_exp_mul_exp_neg_exp` and `integral_neg_eq_self`), `integral_hWeight = e^{-ηh₀}/η`,
+  `lintegral_vWeight_zero`, `pow_abs_add_le_exp : (|s|+δ)^k ≤ (k/a + δ)^k e^{a|s|}`,
+  `exp_abs_le_add`, `integrable_sWeight_mul_pow` (rates `β/2`, `3β/2`), `volume_fibreSet_div_le`
+  (`L ≥ 1`: `volume/L^k ≤ (|s|+δ)^k/∏κ'`), `measurable_volume_fibreSet`
+  (`measurable_measure_prodMk_right`), `tendsto_lintegral_vWeight_fibre`. Gotchas: `rw [h3]` with
+  `h3 : |s| = …` rewrites the `|s|` inside the exponential too (use a `calc`);
+  `← Real.exp_add (-(β*s))` with the first argument pinned so the rewrite hits the intended product;
+  after `set C := … with hC`, later `have`s contain the expanded form — `rw [← hC] at h1`.
+- `ActiveTruthTheorem.lean` (68b3d17; hironaka ba92c45e5): **the transverse active-truth face
+  theorem, constant units.** `measurableSet_logCut`, `measurable_logIntegrand`,
+  `modelKernel_const_eq_lintegral` (`integral_eq_lintegral_of_nonneg_ae`: no integrability needed),
+  `lintegral_logIntegrand_eq` (steps 2–3: `∫⁻ logIntegrand = ofReal|det M|⁻¹ · ofReal(e^{-mL}) ·
+  ∫⁻ v, vWeight 0 · volume(fibreSet)`), `facePolytope κ Q δ γ := poly2 (fibreCoef 0) (fibreCoef 1)
+  (fibreA 0) (fibreA 1)`, `volume_facePolytope_ne_top`, `tendsto_modelKernel_activeTruth` (raw
+  constant), `activeTruth_const_eq` (`ρ^{∑(r+1)} c₀^{-β} e^{-ηh₀} = (Ba₀)^{-β} (ρ/D)^{qη}` from
+  `r + 1 = βκ − ηQ`), `tendsto_modelKernel_activeTruth'`:
+  `t^{γp + βδ − ηγ}/(log t)^k · K(t) → A w₀ Γ(β) (Ba₀)^{-β} (ρ/D)^{qη}/η · vol(F')/|det M|`
+  under `ρ, D, q, B, a₀, β, η > 0`, `δ ≥ 0`, `κ > 0`, `det M ≠ 0`, `fibreCoef j ≠ 0`,
+  `r + 1 = βκ − ηQ`. Gotchas: `Tendsto.congr'` compares the association of the limit
+  (`← mul_assoc` at the hypothesis first); `ring` cannot commute inside `exp` (`mul_comm (log t) δ`
+  before `ring`); `convert h using 2` + `linear_combination coef * e` for a constant identity
+  whose factors are not adjacent.
