@@ -341,6 +341,7 @@ import Laplace.Multi.ActiveTruthLP
 import Laplace.Multi.PolytopeFibre
 import Laplace.Multi.LogCoordinates
 import Laplace.Multi.ActiveTruthModel
+import Laplace.Multi.LintegralChange
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
