@@ -344,6 +344,7 @@ import Laplace.Multi.ActiveTruthModel
 import Laplace.Multi.LintegralChange
 import Laplace.Multi.ActiveTruthAssembly
 import Laplace.Multi.ActiveTruthFibre
+import Laplace.Multi.ActiveTruthLimit
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
