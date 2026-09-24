@@ -900,3 +900,29 @@ certificates for concrete resolved charts beyond the identity chart.
   `∫ xyz³ e^{−txyz} φ` on `(0,1)³`, `λ = 2`, `T = {x,y}`, `k = 1`): `I(z)/I(1) → 2/3`,
   `I(z²)/I(1) → 1/2`, `t²/log t · I(1) → 1/2`, observed 0.675 / 0.510 / 0.467 at `t = 10⁶` with
   monotone logarithmic approach.
+- `MixedTruthRecord.lean` (round-4 target 1, resolved with a correction; mirrored as
+  `Monomialize/Relative/Wall/Euclid/MixedTruthRecord.lean`). **Coordinate truths carry no
+  logarithm**: for `D : WallChartsData m ℓ L'` with `L' ⊆ closedBall 0 R` and `θ ≤ M`,
+  `totalKernel θ s ≤ M (2R)^m` for a.e. `s` (`WallChartsData.totalKernel_ae_le`: the push-forward
+  identity bounds `∫⁻_E K_θ` by `M · vol(L' ∩ {z ℓ ∈ E}) ≤ M (2R)^m |E|`, via the splitting
+  `piFinSuccAbove` and `Real.volume_pi_closedBall`). So the record-level target as first posed — a
+  wall chart with `q = (1,1)` whose fibre kernel grows like `log t` — cannot exist: a genuinely
+  mixed truth monomial in a chart of a Euclidean wall atlas comes with a Jacobian vanishing at the
+  corner (`z₀ = u₀u₁` has zero differential there), and that Jacobian cancels the coarea `1/w`
+  (`BlowupSectorRecord`: `dens = |u₁|`, fibre kernel `∫_{|s|≤|x|≤1} θ(s, x) dx`, no log). The log
+  endpoint of `MixedTruthLog` is the **general-truth** situation, truth function `T = z₀z₁` on the
+  Lebesgue square, which is now a record too: `TruthChartsData m T L'` (the `WallChartsData` fields
+  with `T (rep i u) = truthMono (S i) (q i) u`; `WallChartsData.toTruth` is the case `T = (· ℓ)`)
+  has the same push-forward identity `∫⁻_{L'} θ η(T z) = ∫⁻ η K_θ` (`lintegral_mul_comp_truth`,
+  proof verbatim). `mixData : TruthChartsData 1 (z₀z₁) (0,1/2]²` is the identity chart (density
+  `toyDens`, `= 1` on the square; `q = (1,1)`, `k = 0`, `S = 1`); its branch kernel at `s > 0` is
+  supported on the branch `x > 0` with fibre point `(s/x, x)` and Jacobian `1/x`
+  (`mixData_branchKernel`: `solvedCoeff = x`, `solvedCoord x 1 s = s/|x|`,
+  `insertNth 0 v (fun _ ↦ x) = ![v, x]` by `fin_cases; rfl`), so
+  `K_θ(s) = ∫_{2s}^{1/2} θ(s/x, x) dx/x` (`mixData_totalKernel`; the `Fin 1 → ℝ` integral is
+  transferred by `volume_preserving_funUnique` through `Eq.trans`, since `rw` fails on the
+  `Fin (0+1)` instance). For `F = z₀z₁·a(z)`, `s = σ/t`: `K(σ/t)/log t → e^{-σ a(0)} ψ(0)`
+  (`mix_tendsto_totalKernel`, from `tendsto_mixedLog` with `f(x,y) = e^{-σ a(y,x)} ψ(y,x)`, `ρ = 1/2`)
+  and the fibre expectation `→ ψ(0)/χ(0)` (`mix_tendsto_fibre_expectation`): the coefficient measure
+  at the logarithmic scale is `e^{-σ a(0)} δ_0`, with the positive-branch multiplicity one on the
+  square (the other sign branch leaves the region).
