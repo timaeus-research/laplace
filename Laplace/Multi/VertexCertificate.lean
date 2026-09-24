@@ -11,12 +11,15 @@ import Laplace.Multi.WallTermPositivity
 
 The positive half of Astra's recession-cone reading (`review_endtoend_v1`, §1.2), in the generic
 case. At a vertex of the constrained LP with a single scaled coordinate `j`
-(`α = (δ/κ_j) e_j`, so the phase constraint is tied), a strict truth constraint, and strict
-optimality `κ_i (r_j + 1)/κ_j < r_i + 1` for the other coordinates, the limiting profile is
-integrable: integrating out the scaled coordinate gives a Gamma integral, and what remains is a
-box integral of `∏ u_i^{r_i − κ_i (r_j+1)/κ_j}` with exponents `> −1` — exactly the strict
-optimality. `profile_integrable_of_vertex` and `profile_integrable_of_vertex'` are the two
-integrabilities of `ProfileIntegrableOf`, derived from LP data alone.
+(`α = (δ/κ_j) e_j > 0`, so the phase constraint is tied), a strict truth constraint,
+`η := (r_j + 1)/κ_j > 0` (either sign of `κ_j`: for `κ_j < 0` the phase `u_j^{κ_j}` blows up at
+`0` and the density exponent `r_j < −1` is allowed), and strict optimality
+`κ_i η < r_i + 1` for the other coordinates, the limiting profile is integrable: integrating out
+the scaled coordinate gives a Gamma integral, and what remains is a box integral of
+`∏ u_i^{r_i − κ_i η}` with exponents `> −1` — exactly the strict optimality.
+`integrable_envelope_of_vertex` and `integrable_envelope_mul_profile_of_vertex` are the two
+integrabilities of `ProfileIntegrableOf`, derived from LP data alone
+(`ProfileIntegrableOf.of_vertex`).
 -/
 
 open Real MeasureTheory Set Filter Topology
@@ -56,6 +59,55 @@ theorem integrable_box_prod_rpow' {ρ : ℝ} (hρ : 0 < ρ) {r : ι → ℝ} (hr
   exact prod_indicator_eq' _ x
 
 variable {k : ℕ}
+
+/-- The substitution `x ↦ x⁻¹` on `(0, ∞)` for `x^s e^{-b x^p}`. -/
+theorem rpow_mul_exp_neg_mul_rpow_inv {p s b : ℝ} (x : ℝ) (hx : 0 < x) :
+    (|(-1 : ℝ)| * x ^ ((-1 : ℝ) - 1)) • ((x ^ (-1 : ℝ)) ^ s * exp (-b * (x ^ (-1 : ℝ)) ^ p)) =
+      x ^ (-s - 2) * exp (-b * x ^ (-p)) := by
+  rw [abs_neg, abs_one, one_mul, smul_eq_mul, ← Real.rpow_mul hx.le, ← Real.rpow_mul hx.le,
+    ← mul_assoc, ← Real.rpow_add hx, neg_one_mul, neg_one_mul]
+  congr 2
+  ring
+
+/-- The Gamma integral for a negative exponent `p < 0`, `s < −1`. -/
+theorem integrableOn_rpow_mul_exp_neg_mul_rpow_of_neg {p s b : ℝ} (hp : p < 0) (hs : s < -1)
+    (hb : 0 < b) : IntegrableOn (fun x : ℝ ↦ x ^ s * exp (-b * x ^ p)) (Ioi 0) := by
+  have h := integrableOn_rpow_mul_exp_neg_mul_rpow (p := -p) (s := -s - 2) (b := b)
+    (by linarith) (by linarith) hb
+  rw [← integrableOn_Ioi_comp_rpow_iff _ (neg_ne_zero.mpr one_ne_zero)]
+  refine h.congr_fun (fun x hx ↦ ?_) measurableSet_Ioi
+  exact (rpow_mul_exp_neg_mul_rpow_inv x hx).symm
+
+theorem integral_rpow_mul_exp_neg_mul_rpow_of_neg {p s b : ℝ} (hp : p < 0) (hs : s < -1)
+    (hb : 0 < b) :
+    ∫ x in Ioi (0 : ℝ), x ^ s * exp (-b * x ^ p) =
+      b ^ (-(s + 1) / p) * (1 / (-p)) * Gamma ((s + 1) / p) := by
+  rw [← integral_comp_rpow_Ioi _ (neg_ne_zero.mpr one_ne_zero)]
+  rw [setIntegral_congr_fun measurableSet_Ioi fun x hx ↦ rpow_mul_exp_neg_mul_rpow_inv x hx,
+    integral_rpow_mul_exp_neg_mul_rpow (by linarith) (by linarith) hb]
+  have e1 : -(-s - 2 + 1) / -p = -(s + 1) / p := by ring
+  have e2 : (-s - 2 + 1) / -p = (s + 1) / p := by ring
+  rw [e1, e2]
+
+/-- The Gamma integral for either sign of `p`, under `(s + 1)/p > 0`. -/
+theorem integrableOn_rpow_mul_exp_neg_mul_rpow' {p s b : ℝ} (hp : p ≠ 0) (hη : 0 < (s + 1) / p)
+    (hb : 0 < b) : IntegrableOn (fun x : ℝ ↦ x ^ s * exp (-b * x ^ p)) (Ioi 0) := by
+  have e : s + 1 = (s + 1) / p * p := by field_simp
+  rcases lt_or_gt_of_ne hp with hneg | hpos
+  · exact integrableOn_rpow_mul_exp_neg_mul_rpow_of_neg hneg
+      (by have := mul_neg_of_pos_of_neg hη hneg; linarith) hb
+  · exact integrableOn_rpow_mul_exp_neg_mul_rpow (by have := mul_pos hη hpos; linarith) hpos hb
+
+theorem integral_rpow_mul_exp_neg_mul_rpow' {p s b : ℝ} (hp : p ≠ 0) (hη : 0 < (s + 1) / p)
+    (hb : 0 < b) :
+    ∫ x in Ioi (0 : ℝ), x ^ s * exp (-b * x ^ p) =
+      b ^ (-(s + 1) / p) * (1 / |p|) * Gamma ((s + 1) / p) := by
+  have e : s + 1 = (s + 1) / p * p := by field_simp
+  rcases lt_or_gt_of_ne hp with hneg | hpos
+  · rw [integral_rpow_mul_exp_neg_mul_rpow_of_neg hneg
+      (by have := mul_neg_of_pos_of_neg hη hneg; linarith) hb, abs_of_neg hneg]
+  · rw [integral_rpow_mul_exp_neg_mul_rpow hpos (by have := mul_pos hη hpos; linarith) hb,
+      abs_of_pos hpos]
 
 /-- The limiting domain under a strict truth constraint and a vertex scale. -/
 theorem limitDomain_eq_vertex {ρ D γ q δ : ℝ} {Q κ α : Fin (k + 1) → ℝ} (j : Fin (k + 1))
@@ -136,11 +188,11 @@ theorem measurable_vertexDom (ρ D γ q c₀ : ℝ) (Q κ r α : Fin (k + 1) →
 
 /-- **Integrability of the dominating profile at a strictly optimal vertex.** -/
 theorem integrable_vertexDom {ρ D γ q δ c₀ : ℝ} {Q κ r α : Fin (k + 1) → ℝ} (j : Fin (k + 1))
-    (hρ : 0 < ρ) (hc₀ : 0 < c₀) (hκj : 0 < κ j) (hrj : -1 < r j) (hδ : 0 < δ)
+    (hρ : 0 < ρ) (hc₀ : 0 < c₀) (hκj : κ j ≠ 0) (hη : 0 < (r j + 1) / κ j) (hδκ : 0 < δ / κ j)
     (hα : ∀ i, α i = if i = j then δ / κ j else 0) (hstrict : ∑ i, Q i * α i < γ)
     (hgap : ∀ i, κ (j.succAbove i) * ((r j + 1) / κ j) < r (j.succAbove i) + 1) :
     Integrable (vertexDom ρ D γ q c₀ Q κ r α) := by
-  have hne : δ / κ j ≠ 0 := (div_pos hδ hκj).ne'
+  have hne : δ / κ j ≠ 0 := hδκ.ne'
   -- transfer to the split coordinates
   have hmp := (volume_preserving_piFinSuccAbove (fun _ : Fin (k + 1) ↦ ℝ) j).symm
   rw [← hmp.integrable_comp_emb (MeasurableEquiv.measurableEmbedding _)]
@@ -154,7 +206,7 @@ theorem integrable_vertexDom {ρ D γ q δ c₀ : ℝ} {Q κ r α : Fin (k + 1) 
     exact vertexDom_insertNth j hα hne hstrict p.1 p.2
   rw [e, Measure.volume_eq_prod]
   -- the constants
-  set η : ℝ := (r j + 1) / κ j with hη
+  set η : ℝ := (r j + 1) / κ j with hηdef
   have hbox : MeasurableSet (Set.pi univ fun _ : Fin k ↦ Ioo (0 : ℝ) ρ) :=
     MeasurableSet.pi countable_univ fun _ _ ↦ measurableSet_Ioo
   have hA : ∀ w : Fin k → ℝ, w ∈ (Set.pi univ fun _ : Fin k ↦ Ioo (0 : ℝ) ρ) →
@@ -198,7 +250,7 @@ theorem integrable_vertexDom {ρ D γ q δ c₀ : ℝ} {Q κ r α : Fin (k + 1) 
     · simp only [Set.indicator_of_mem hw]
       refine Integrable.mul_const ?_ _
       refine (integrable_indicator_iff measurableSet_Ioi).mpr ?_
-      refine (integrableOn_rpow_mul_exp_neg_mul_rpow hrj hκj (hA w hw)).congr_fun
+      refine (integrableOn_rpow_mul_exp_neg_mul_rpow' hκj hη (hA w hw)).congr_fun
         (fun v _ ↦ ?_) measurableSet_Ioi
       simp only [neg_mul]
     · simp only [Set.indicator_of_notMem hw, mul_zero]
@@ -209,7 +261,7 @@ theorem integrable_vertexDom {ρ D γ q δ c₀ : ℝ} {Q κ r α : Fin (k + 1) 
         (Set.pi univ fun _ : Fin k ↦ Ioo (0 : ℝ) ρ).indicator
           (fun w ↦ ∏ i, w i ^ r (j.succAbove i)) w‖) =
         (Set.pi univ fun _ : Fin k ↦ Ioo (0 : ℝ) ρ).indicator (fun w ↦
-          c₀ ^ (-η) * (1 / κ j) * Gamma η *
+          c₀ ^ (-η) * (1 / |κ j|) * Gamma η *
             ∏ i, w i ^ (r (j.succAbove i) - κ (j.succAbove i) * η)) w := by
       intro w
       by_cases hw : w ∈ Set.pi univ fun _ : Fin k ↦ Ioo (0 : ℝ) ρ
@@ -233,22 +285,22 @@ theorem integrable_vertexDom {ρ D γ q δ c₀ : ℝ} {Q κ r α : Fin (k + 1) 
         rw [hfun, integral_mul_const, integral_indicator measurableSet_Ioi]
         have hint : ∫ v in Ioi (0 : ℝ), v ^ r j *
             exp (-(c₀ * (∏ i, w i ^ κ (j.succAbove i)) * v ^ κ j)) =
-            (c₀ * ∏ i, w i ^ κ (j.succAbove i)) ^ (-(r j + 1) / κ j) * (1 / κ j) *
+            (c₀ * ∏ i, w i ^ κ (j.succAbove i)) ^ (-(r j + 1) / κ j) * (1 / |κ j|) *
               Gamma ((r j + 1) / κ j) := by
-          rw [← integral_rpow_mul_exp_neg_mul_rpow hκj hrj (hA w hw)]
+          rw [← integral_rpow_mul_exp_neg_mul_rpow' hκj hη (hA w hw)]
           exact setIntegral_congr_fun measurableSet_Ioi fun v _ ↦ by simp only [neg_mul]
         rw [hint, Real.mul_rpow hc₀.le hP.le, ← Real.finsetProd_rpow _ _
           (fun i _ ↦ rpow_nonneg (hwpos i).le _)]
-        have e4 : -(r j + 1) / κ j = -η := by rw [hη]; ring
-        rw [e4, ← hη]
+        have e4 : -(r j + 1) / κ j = -η := by rw [hηdef]; ring
+        rw [e4, ← hηdef]
         have e3 : ∀ i, (w i ^ κ (j.succAbove i)) ^ (-η) * w i ^ r (j.succAbove i) =
             w i ^ (r (j.succAbove i) - κ (j.succAbove i) * η) := fun i ↦ by
           rw [← Real.rpow_mul (hwpos i).le, ← Real.rpow_add (hwpos i)]
           congr 1
           ring
-        calc c₀ ^ (-η) * (∏ i, (w i ^ κ (j.succAbove i)) ^ (-η)) * (1 / κ j) * Gamma η *
+        calc c₀ ^ (-η) * (∏ i, (w i ^ κ (j.succAbove i)) ^ (-η)) * (1 / |κ j|) * Gamma η *
               ∏ i, w i ^ r (j.succAbove i)
-            = c₀ ^ (-η) * (1 / κ j) * Gamma η *
+            = c₀ ^ (-η) * (1 / |κ j|) * Gamma η *
               ∏ i, ((w i ^ κ (j.succAbove i)) ^ (-η) * w i ^ r (j.succAbove i)) := by
               rw [Finset.prod_mul_distrib]; ring
           _ = _ := by rw [Finset.prod_congr rfl fun i _ ↦ e3 i]
@@ -258,7 +310,7 @@ theorem integrable_vertexDom {ρ D γ q δ c₀ : ℝ} {Q κ r α : Fin (k + 1) 
     have hI := (integrable_box_prod_rpow' hρ
       (r := fun i ↦ r (j.succAbove i) - κ (j.succAbove i) * η) fun i ↦ by
         have := hgap i
-        linarith).const_mul (c₀ ^ (-η) * (1 / κ j) * Gamma η)
+        linarith).const_mul (c₀ ^ (-η) * (1 / |κ j|) * Gamma η)
     refine hI.congr (Eventually.of_forall fun w ↦ ?_)
     exact (Set.indicator_const_mul _ _ _ w).symm
 
@@ -292,7 +344,7 @@ the limiting domain, the limiting envelope times the Boltzmann factor of the pro
 integrable. -/
 theorem integrable_envelope_of_vertex {m : ℕ} {ρ B D γ q δ c amin : ℝ} {Q κ r α : Fin m → ℝ}
     {a₀ : (Fin m → ℝ) → ℝ} (j : Fin m) (hρ : 0 < ρ) (hB : 0 < B) (hc : 0 < c)
-    (hκj : 0 < κ j) (hrj : -1 < r j) (hδ : 0 < δ)
+    (hκj : κ j ≠ 0) (hη : 0 < (r j + 1) / κ j) (hδκ : 0 < δ / κ j)
     (hα : ∀ i, α i = if i = j then δ / κ j else 0) (hstrict : ∑ i, Q i * α i < γ)
     (hgap : ∀ i, i ≠ j → κ i * ((r j + 1) / κ j) < r i + 1)
     (ha₀m : Measurable a₀) (hamin : 0 < amin)
@@ -304,15 +356,15 @@ theorem integrable_envelope_of_vertex {m : ℕ} {ρ B D γ q δ c amin : ℝ} {Q
   | succ n =>
     have hgap' : ∀ i : Fin n, κ (j.succAbove i) * ((r j + 1) / κ j) < r (j.succAbove i) + 1 :=
       fun i ↦ hgap _ (Fin.succAbove_ne j i)
-    have hI := integrable_vertexDom (D := D) (q := q) j hρ (mul_pos (mul_pos hc hB) hamin) hκj hrj
-      hδ hα hstrict hgap'
+    have hI := integrable_vertexDom (D := D) (q := q) j hρ (mul_pos (mul_pos hc hB) hamin) hκj hη
+      hδκ hα hstrict hgap'
     refine hI.mono' ((measurable_dsEnvelope_one ρ D γ q Q r α).mul (Real.measurable_exp.comp
       ((measurable_const.mul (measurable_dsProfile ha₀m)).neg))).aestronglyMeasurable
       (Eventually.of_forall fun u ↦ ?_)
     unfold vertexDom dsEnvelope
     by_cases hu : u ∈ limitDomain ρ D γ q Q α
     · simp only [Set.indicator_of_mem hu, one_mul]
-      rw [dsProfile_vertex j hα hκj.ne' hu]
+      rw [dsProfile_vertex j hα hκj hu]
       have hprod : 0 ≤ ∏ i, u i ^ r i :=
         Finset.prod_nonneg fun i _ ↦ rpow_nonneg (limitDomain_pos hu i).le _
       have hP : 0 < ∏ i, u i ^ κ i :=
@@ -328,7 +380,7 @@ theorem integrable_envelope_of_vertex {m : ℕ} {ρ B D γ q δ c amin : ℝ} {Q
 Boltzmann factor, through `x e^{-cx} ≤ (2/c) e^{-cx/2}`. -/
 theorem integrable_envelope_mul_profile_of_vertex {m : ℕ} {ρ B D γ q δ c amin : ℝ}
     {Q κ r α : Fin m → ℝ} {a₀ : (Fin m → ℝ) → ℝ} (j : Fin m) (hρ : 0 < ρ) (hB : 0 < B)
-    (hc : 0 < c) (hκj : 0 < κ j) (hrj : -1 < r j) (hδ : 0 < δ)
+    (hc : 0 < c) (hκj : κ j ≠ 0) (hη : 0 < (r j + 1) / κ j) (hδκ : 0 < δ / κ j)
     (hα : ∀ i, α i = if i = j then δ / κ j else 0) (hstrict : ∑ i, Q i * α i < γ)
     (hgap : ∀ i, i ≠ j → κ i * ((r j + 1) / κ j) < r i + 1)
     (ha₀m : Measurable a₀) (hamin : 0 < amin)
@@ -341,7 +393,7 @@ theorem integrable_envelope_mul_profile_of_vertex {m : ℕ} {ρ B D γ q δ c am
     have hgap' : ∀ i : Fin n, κ (j.succAbove i) * ((r j + 1) / κ j) < r (j.succAbove i) + 1 :=
       fun i ↦ hgap _ (Fin.succAbove_ne j i)
     have hc₀ : 0 < c * B * amin / 2 := by positivity
-    have hI := (integrable_vertexDom (D := D) (q := q) j hρ hc₀ hκj hrj hδ hα hstrict
+    have hI := (integrable_vertexDom (D := D) (q := q) j hρ hc₀ hκj hη hδκ hα hstrict
       hgap').const_mul (2 / c)
     have hmP := measurable_dsProfile (ρ := ρ) (B := B) (D := D) (γ := γ) (q := q) (δ := δ)
       (Q := Q) (κ := κ) (α := α) ha₀m
@@ -351,7 +403,7 @@ theorem integrable_envelope_mul_profile_of_vertex {m : ℕ} {ρ B D γ q δ c am
     unfold vertexDom dsEnvelope
     by_cases hu : u ∈ limitDomain ρ D γ q Q α
     · simp only [Set.indicator_of_mem hu, one_mul]
-      rw [dsProfile_vertex j hα hκj.ne' hu]
+      rw [dsProfile_vertex j hα hκj hu]
       have hprod : 0 ≤ ∏ i, u i ^ r i :=
         Finset.prod_nonneg fun i _ ↦ rpow_nonneg (limitDomain_pos hu i).le _
       have hP : 0 < ∏ i, u i ^ κ i :=
@@ -401,8 +453,8 @@ variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : 
 /-- **The vertex certificate for a wall chart**: a strictly optimal LP vertex with tied phase and
 strict truth yields the profile-integrability certificate of the term `(i, ε, b)`. -/
 theorem ProfileIntegrableOf.of_vertex {i : D.ι} {ε : Fin m → Bool} {b : Bool} {σ γ : ℝ}
-    {α : Fin m → ℝ} (hσ : σ ≠ 0) (j : Fin m) (hκj : 0 < P.kappa i j) (hrj : -1 < P.rExp i j)
-    (hδ : 0 < P.phaseExp i γ)
+    {α : Fin m → ℝ} (hσ : σ ≠ 0) (j : Fin m) (hκj : P.kappa i j ≠ 0)
+    (hη : 0 < (P.rExp i j + 1) / P.kappa i j) (hδκ : 0 < P.phaseExp i γ / P.kappa i j)
     (hα : ∀ l, α l = if l = j then P.phaseExp i γ / P.kappa i j else 0)
     (hstrict : ∑ l, D.Qexp i l * α l < γ)
     (hgap : ∀ l, l ≠ j → P.kappa i l * ((P.rExp i j + 1) / P.kappa i j) < P.rExp i l + 1) :
@@ -416,9 +468,9 @@ theorem ProfileIntegrableOf.of_vertex {i : D.ι} {ε : Fin m → Bool} {b : Bool
       P.ma i ≤ P.limitUnit i ε b σ γ α u := fun u hu ↦
     (P.a_bounds i _ (Metric.ball_subset_closedBall (D.limitBranchPt_mem_ball i ε b hu))).1
   exact
-    { int := integrable_envelope_of_vertex j (D.ρ_pos i) hB hc hκj hrj hδ hα hstrict hgap
+    { int := integrable_envelope_of_vertex j (D.ρ_pos i) hB hc hκj hη hδκ hα hstrict hgap
         P.measurable_limitUnit (P.ma_pos i) ha₀
-      Φint := integrable_envelope_mul_profile_of_vertex j (D.ρ_pos i) hB hc hκj hrj hδ hα
+      Φint := integrable_envelope_mul_profile_of_vertex j (D.ρ_pos i) hB hc hκj hη hδκ hα
         hstrict hgap P.measurable_limitUnit (P.ma_pos i) ha₀ }
 
 end WallChartsData.Phase
