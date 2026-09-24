@@ -651,6 +651,13 @@ Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_
   then the limiting measure on the dominant strata, then the degenerate-LP classification
   (integrable ⇔ isolated optimum in the polyhedral monomial model, `h·d < 0` on the recession
   cone with `κ·d ≤ 0`).
+- `LimitingMeasure.lean` (Astra's candidate (iii)): each dominant admissible term `p` carries the
+  finite measure `termMeasure p = (rep ∘ limitBranchPt)_* (A 1_L wt|b| ∏u^r e^{-Φ₀} du)` on the
+  ambient space and `termConst p φ = ∫ φ dμ_p` (`termConst_eq_integral`); `limitMeasure` is the
+  sum over `dominantTerms`; `tendsto_fibre_expectation_measure` restates the main theorem as
+  `⟨ψ⟩_χ → ∫ψ dμ / ∫χ dμ` — the expectations retain the normalised measure `μ/μ(1)` and nothing
+  else (not `λ₀`, not the amplitude); `limitMeasure_eq_zero` (vanishes off the face images) and
+  `tendsto_fibre_expectation_point` (constant face maps ⇒ `ψ(z₀)/χ(z₀)`, the toy/blow-up case).
 Open problems: the chart-level assembly of the log constant (the face point of a fully tied face
 is where the bridge map must extend continuously), the equivalence "profile integrable ⇔ isolated LP optimum" at degenerate (non-vertex) optima — the
 "only if" half is now general (`RecessionDirection`), the "if" half is the vertex case — and
