@@ -690,7 +690,10 @@ certificates for concrete resolved charts beyond the identity chart.
   `integral_comp_rescale` (`flow_eq_rescale`, `prod_flow_rpow`). For the limiting domain,
   `not_integrable_envelope_of_recession_direction`: any `d ≠ 0` supported on the scaled
   coordinates with `d·κ ≤ 0`, `d·(r+1) ≥ 0` forbids the certificate (strict truth). This is the
-  full "only if" direction of the recession-cone reading for the unweighted profile.
+  full "only if" direction of the recession-cone reading for the unweighted profile. Corollary
+  `not_integrable_envelope_of_two_scaled`: two scaled coordinates (strict truth) always forbid
+  the certificate, via `d = ±(κ_j e_i − κ_i e_j)` (or `±e_i`) — an isolated optimum has at most
+  one scaled coordinate, so the vertex certificate covers every isolated strict-truth optimum.
 - `VertexCertificate.lean`: the converse in the generic case. At a *strictly optimal vertex* of
   the constrained LP — one scaled coordinate `j`, `α = (δ/κ_j) e_j > 0` (tied phase), strict truth
   constraint, `η = (r_j+1)/κ_j > 0` (either sign of `κ_j`; for `κ_j < 0` the Gamma integral comes
