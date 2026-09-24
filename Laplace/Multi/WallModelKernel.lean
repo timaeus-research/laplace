@@ -146,8 +146,9 @@ theorem measurable_modelG (hφ : Measurable φ) : Measurable (P.modelG i φ ε b
   measurable_const.mul
     (measurable_modelIntegrand (P.measurable_weightFn hφ) P.measurable_unitFn t)
 
-theorem integrable_modelG (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hφm : Measurable φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ) (ht : 0 < t)
-    (hσ : σ ≠ 0) {C : ℝ} (hC : ∀ u, D.dens i u ≤ C) : Integrable (P.modelG i φ ε b t γ σ) := by
+theorem integrable_modelG (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hφm : Measurable φ)
+    (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ) (ht : 0 < t) (hσ : σ ≠ 0) {C : ℝ}
+    (hC : ∀ u, D.dens i u ≤ C) : Integrable (P.modelG i φ ε b t γ σ) := by
   have hbox : MeasurableSet (Set.pi univ fun _ : Fin m ↦ Ioo (0 : ℝ) (D.ρ i)) :=
     MeasurableSet.pi countable_univ fun _ _ ↦ measurableSet_Ioo
   have hvol : volume (Set.pi univ fun _ : Fin m ↦ Ioo (0 : ℝ) (D.ρ i)) ≠ ⊤ := by
