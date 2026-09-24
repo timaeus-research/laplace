@@ -483,3 +483,35 @@ limiting branch point is the origin, the limiting profile is `σ² u²` on `(0, 
 hypothesis of `tendsto_fibre_expectation` is discharged on an instance ("instances, not names").
 The predicted kernel asymptotic `∫ e^{-tF} φ ~ φ(0) √π/|σ| · t^{-(1−2γ)/2}` over the fibre is the
 sum of the two admissible terms (two orthants, the `+V` branch).
+
+## Status (2026-09-25, close): the ambient theorem on the hironaka branch
+
+hironaka `wall-atlas` (local only), standard axioms:
+
+- `Monomialize/Relative/Wall/Euclid/*` (`f0b503d80`): the analytic layer mirrored (`LinearChange`
+  = the two change-of-variables lemmas of `GaussianMomentsPosDef`; the core of `RescaledData`
+  without the `DivisorData` instance, with the two exponential inequalities it uses copied in;
+  `OrthantSplit`, `ConstrainedLP`, `DominantScale`, `WallModelBridge`, `WallModelKernel`,
+  `WallCertificate`, `PowerAssembly`, `WallFibreExpectation`, `ToyWallRecord`, `ToyWallLimit`).
+  The mirror is built with `warningAsError`; the only edits were `omit [l.IsCountablyGenerated] in`
+  on four `RescaledData` lemmas and one wrapped line.
+- `Monomialize/Relative/Wall/TheoremPhase.lean` (`d72140369`, `28cd700d1`):
+  `wall_fibre_identity_phase` — the record of `wall_fibre_identity` with its `Phase`
+  (`WallAtlas.toPhase`), `|S_i| = 1` (`WallAtlas.sign`) and the truth coordinate on the closed
+  chart balls (`repClamp_apply_truth`), transported across the slab identity by a `PSigma`;
+  **`wall_fibre_expectation`** — for an analytic loss `F` near a wall (the hypotheses of
+  `wall_fibre_identity`, plus `Continuous F`, `F ≥ 0`, `0 ∈ interior B₀`), the resolution produces
+  `D`, `P` such that along `s = σ t^{-γ}` (`σ ≠ 0`, `γ > 0`), for localised observables `ψ, χ`
+  supported in the slab and certified scales for every admissible term of `D`,
+  `∫_{A'} e^{-tF} ψ(·, s_t) / ∫_{A'} e^{-tF} χ(·, s_t) → ∑_{λ_p = λ₀} C^ψ_p / ∑_{λ_p = λ₀} C^χ_p`.
+  This is the general relative push-forward statement of S14 for pure-power dominant faces, end to
+  end: geometric half (resolution, atlas, fibre identity) and analytic half (constrained LP,
+  dominant-scale certificates, assembly) in one theorem, with the per-chart certificates as its
+  hypotheses.
+
+Numerics for the toy (`F = (1 + x²) s² x²`, `σ = 1.3`, `γ = 0.2`): `t^{(1−2γ)/2} K_φ(t)` is
+`1.575, 1.451, 1.399, 1.377` at `t = 10³, 10⁵, 10⁷, 10⁹` against the predicted `√π/σ = 1.363`, and
+the ratio `K_ψ/K_φ` is `1.72, 1.88, 1.95, 1.98` against the predicted `ψ(0)/φ(0) = 2`.
+
+Open: the logarithmic (tied) faces, where the single dominant scale is replaced by the
+single-monomial power–log theorem; certificates for concrete resolved charts beyond the toy.
