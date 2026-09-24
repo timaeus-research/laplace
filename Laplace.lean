@@ -286,6 +286,7 @@ import Laplace.Multi.LogSectorGeneralAux
 import Laplace.Multi.LogSectorGeneralLimit
 import Laplace.Multi.ProfileCertificate
 import Laplace.Multi.WallPhaseData
+import Laplace.Multi.WallKernelNormalised
 import Laplace.Multi.CyclicBlindness
 import Laplace.Multi.OneDimRescaledTests
 import Laplace.Multi.RotationCounterexample
