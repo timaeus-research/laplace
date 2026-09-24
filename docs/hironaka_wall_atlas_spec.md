@@ -1039,3 +1039,25 @@ certificates for concrete resolved charts beyond the identity chart.
   `Theorem*` on the branch (hundreds of lines, mechanical), plus the resolution provider applied to
   `F · T`; the fibre identity `fibre_ae` (product regions) does not transfer and is not needed for
   the push-forward statement.
+- Round-6 consult (`gpt_responses/research_round6_v1.md`, 1d7275f): audit of the parameter
+  theorems, squeeze, certificate, TermData, weighted theorem — consistent; the observable class
+  "vanishes off `L'`" determines the measure **restricted to `L'`** only (a Dirac mass outside
+  `L'` is invisible), and the certificate's `normalise_eq_of_forall_tendsto` indeed concludes about
+  restrictions; honest headline: classifying constructs a certificate, any supported denominator
+  with nonzero leading integral gives the ratio limit. Ranking: (1) package "what expectation
+  values know" [DONE, `ExpectationValuesKnow.lean` 6fc9744, hironaka 450d2c81e:
+  `normalise_restrict_eq_iff_forall_tendsto` — for two certified phases and a supported reference
+  `χ` with positive leading integrals, equal leading expectations of every supported observable
+  **iff** equal normalised leading measures on `L'`; converse direction via
+  `integral_eq_integral_restrict_of_vanish` + `ratio_eq_of_normalise_eq` on the restrictions],
+  (2) the three-coordinate degenerate example [IN PROGRESS, `DegenerateFace.lean`:
+  `I(t) = ∫_{(0,1)³} 1_{xyz > t^{-2}} z² e^{-t³xyz²}`, LP `min α+β+3ζ` s.t. `α+β+ζ ≤ 2`,
+  `α+β+2ζ ≥ 3`, optimal face the segment `ζ = 1, α+β = 1` (both constraints active, `k = 1`),
+  claim `t⁴ I(t)/log t → 1` (numerics `docs/numerics/degenerate_face.py`: 0.70, 0.78, 0.83, 0.86
+  at `t = 10²..10⁵`, i.e. `1 − c/log t` with `c ≈ 1.56`); landed step 1: `lintegral_unitSquare_mul`
+  (`∫_0^1∫_0^1 G(xy) = ∫_0^1 (−log s) G(s) ds`, Tonelli on the triangle `0 < s < y < 1`,
+  `lintegral_Ioo_comp_mul_left`, `lintegral_inv_Ioo`); remaining: scale `u = ts, v = tz`,
+  substitute `w = uv²`, dominated convergence with the bound `1_{v<w}(1 + |log w| + 2|log v|)e^{-w}`
+  (log moments via `|log v| ≤ v + 2/√v`), limit `∫_0^∞ e^{-v} dv = 1`], (3) general-truth hironaka
+  export, (4) variable-unit partial moving version (try a frozen-unit perturbation squeeze before
+  the 436-line substitution), (5) compact-uniform packaging (state as `∀ ε, ∀ᶠ t, ∀ σ ∈ C, …`).
