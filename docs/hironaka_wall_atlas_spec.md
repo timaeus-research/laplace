@@ -843,3 +843,15 @@ certificates for concrete resolved charts beyond the identity chart.
   before atlas weights and dominance selection. Round-3 ranking still open: (2) the canonical
   mixed-truth log endpoint `xy = s` (`J_f(t,σ)/log t → f(0,0)`), (3) the nondegenerate
   certificate–LP equivalence in the constant-unit model, (4) local uniformity in `σ`.
+- `MixedTruthLog.lean` (round-3 target 2, the core lemma; Mathlib only): the mixed truth monomial
+  `xy = s` at the logarithmic endpoint, where the bridge map does not extend continuously to the
+  face point. `mixedScale ρ σ t = log(ρ²t/σ)`; the substitution `x = ρe^{−Lu}` maps `(0,1)` onto
+  the fibre range `(σ/(ρt), ρ)` (`image_mixed`) and turns `∫ g(x) dx/x` into `L ∫_0^1 g(ρe^{−Lu}) du`
+  (`integral_fibre_eq_scale`); the second coordinate is `σ/(tx) = ρe^{−L(1−u)}`
+  (`fibre_second_coord`). `tendsto_mixedLog`: for `f` continuous on the closed box,
+  `(1/log t) ∫_{σ/(ρt)}^{ρ} f(x, σ/(tx)) dx/x → f(0,0)` (dominated convergence on `(0,1)`, both
+  coordinates → 0 for `0 < u < 1`, `L/log t → 1`). `tendsto_mixedLog_ratio`: for `F = xy·a(x,y)`
+  with continuous unit, weight and observables, the fibre expectation on `{xy = σ/t}` (measure
+  `dx/x`) converges to `ψ(0,0)/χ(0,0)` when `w(0,0)χ(0,0) ≠ 0` — concentration at the corner after
+  logarithmic averaging. Open: the bookkeeping into the `totalKernel`/`fibreKernel` conventions
+  (Jacobians, branches, atlas weights).
