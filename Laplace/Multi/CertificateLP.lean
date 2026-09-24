@@ -26,7 +26,7 @@ of `α` that is not worse. With `CertificateNecessity` this closes Astra's round
 the constant-unit model, profile certificate ⇔ unique LP minimiser (nondegenerate cases).
 -/
 
-open Real Finset
+open Real Finset MeasureTheory
 
 namespace Laplace.Multi
 
@@ -59,7 +59,7 @@ theorem vertex_identity {s : ι} (hκs : κ s ≠ 0)
   ring
 
 /-- **Strict truth: unique minimiser iff the vertex certificate conditions.** -/
-theorem uniqueLPMin_vertex_iff (hκ : ∀ i, 0 < κ i) (hQ : ∀ i, 0 ≤ Q i) (s : ι)
+theorem uniqueLPMin_vertex_iff (hκ : ∀ i, 0 < κ i) (s : ι)
     (hα : ∀ i, α i = if i = s then δ / κ s else 0) (hδ : 0 < δ) (hstrict : ∑ i, Q i * α i < γ) :
     UniqueLPMin Q κ γ δ a α ↔ 0 < a s / κ s ∧ ∀ j, j ≠ s → κ j * (a s / κ s) < a j := by
   have hκs := (hκ s).ne'
@@ -83,8 +83,8 @@ theorem uniqueLPMin_vertex_iff (hκ : ∀ i, 0 < κ i) (hQ : ∀ i, 0 ≤ Q i) (
         · exact absurd h2 (not_le.mpr (hκ s))
         · exact h1
       -- perturb along `e_s`
-      obtain ⟨ε, hε⟩ : ∃ ε : ℝ, ε = (γ - ∑ i, Q i * α i) / (Q s + 1) := ⟨_, rfl⟩
-      have hεpos : 0 < ε := by rw [hε]; exact div_pos (by linarith) (by linarith [hQ s])
+      obtain ⟨ε, hε⟩ : ∃ ε : ℝ, ε = (γ - ∑ i, Q i * α i) / (|Q s| + 1) := ⟨_, rfl⟩
+      have hεpos : 0 < ε := by rw [hε]; exact div_pos (by linarith) (by positivity)
       have hβ := hmin (α + Pi.single s ε) ⟨fun i ↦ ?_, ?_, ?_⟩ ?_
       · simp only [Pi.add_apply, mul_add, Finset.sum_add_distrib, sum_mul_pi_single] at hβ
         nlinarith
@@ -93,9 +93,9 @@ theorem uniqueLPMin_vertex_iff (hκ : ∀ i, 0 < κ i) (hQ : ∀ i, 0 ≤ Q i) (
         · subst hi; rw [Pi.single_eq_same]; linarith [hfeas.1 i]
         · rw [Pi.single_eq_of_ne hi, add_zero]; exact hfeas.1 i
       · simp only [Pi.add_apply, mul_add, Finset.sum_add_distrib, sum_mul_pi_single]
-        have : ε * (Q s + 1) = γ - ∑ i, Q i * α i := by
-          rw [hε, div_mul_cancel₀ _ (by linarith [hQ s] : Q s + 1 ≠ 0)]
-        nlinarith [hQ s]
+        have : ε * (|Q s| + 1) = γ - ∑ i, Q i * α i := by
+          rw [hε, div_mul_cancel₀ _ (by positivity : |Q s| + 1 ≠ 0)]
+        nlinarith [le_abs_self (Q s), abs_nonneg (Q s)]
       · simp only [Pi.add_apply, mul_add, Finset.sum_add_distrib, sum_mul_pi_single]
         nlinarith [hfeas.2.2, hκ s]
       · intro h
@@ -185,6 +185,16 @@ theorem uniqueLPMin_vertex_iff (hκ : ∀ i, 0 < κ i) (hQ : ∀ i, 0 ≤ Q i) (
       rw [eq_div_iff hκs]
       linarith
     · rw [hβ0 i his, hα0 i his]
+
+/-- **Profile certificate ⇔ unique LP minimiser** at a strict-truth vertex, in the constant-unit
+model (`a = r + 1`). -/
+theorem integrable_vertexDom_iff_uniqueLPMin {k : ℕ} {ρ D γ q δ c₀ : ℝ}
+    {Q κ r α : Fin (k + 1) → ℝ} (hρ : 0 < ρ) (hD : 0 ≤ D) (hq : 0 < q) (hc₀ : 0 < c₀)
+    (hκ : ∀ i, 0 < κ i) (s : Fin (k + 1)) (hα : ∀ i, α i = if i = s then δ / κ s else 0)
+    (hδ : 0 < δ) (hstrict : ∑ i, Q i * α i < γ) :
+    Integrable (vertexDom ρ D γ q c₀ Q κ r α) ↔ UniqueLPMin Q κ γ δ (fun i ↦ r i + 1) α := by
+  rw [integrable_vertexDom_iff hρ hD hq hc₀ hκ s hα (div_pos hδ (hκ s)) hstrict,
+    uniqueLPMin_vertex_iff hκ s hα hδ hstrict]
 
 end Strict
 
@@ -500,6 +510,22 @@ theorem uniqueLPMin_twoScaled_iff (hαS : ∀ s, 0 < αS s)
     cases i with
     | inl s => exact congrFun hS s
     | inr l => exact hz3 l
+
+/-- **Profile certificate ⇔ unique LP minimiser** at a nondegenerate tied-truth optimum, in the
+constant-unit model (`a = r + 1`). -/
+theorem integrable_tiedDom_twoScaled_iff_uniqueLPMin {ρ D γ q δ c₀ : ℝ} {r : Fin 2 ⊕ ν → ℝ}
+    (hρ : 0 < ρ) (hD : 0 < D) (hq : 0 < q) (hc₀ : 0 < c₀)
+    (hne : (limitDomain ρ D γ q Q (Sum.elim αS 0)).Nonempty) (hαS : ∀ s, 0 < αS s)
+    (hκα : ∑ i, κ i * Sum.elim αS 0 i = δ) (hQα : ∑ i, Q i * Sum.elim αS 0 i = γ)
+    (hΔ : κ (Sum.inl 0) * Q (Sum.inl 1) - κ (Sum.inl 1) * Q (Sum.inl 0) ≠ 0)
+    (haS : ∀ s, r (Sum.inl s) + 1 = η * κ (Sum.inl s) - θ * Q (Sum.inl s)) :
+    Integrable (tiedDom ρ D γ q c₀ Q κ r (Sum.elim αS 0)) ↔
+      UniqueLPMin Q κ γ δ (fun i ↦ r i + 1) (Sum.elim αS 0) := by
+  rw [integrable_tiedDom_twoScaled_iff hρ hD hq hc₀ hne hαS hQα hΔ haS,
+    uniqueLPMin_twoScaled_iff hαS hκα hQα hΔ haS]
+  refine and_congr_right fun _ ↦ and_congr_right fun _ ↦ forall_congr' fun j ↦ ?_
+  unfold resExp
+  constructor <;> intro h <;> linarith
 
 end Tied
 
