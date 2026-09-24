@@ -5,6 +5,7 @@ Authors: Timaeus
 -/
 import Laplace.Multi.PartialTiedVariable
 import Laplace.Multi.WallLogTerm
+import Laplace.Multi.WallFibreExpectation
 
 /-!
 # The partially tied term of a wall chart
@@ -22,7 +23,9 @@ below by `m_a` on the closed ball. Hence (`tendsto_modelKernelOf_partial`)
 `F(pt) = φ(ρ_i(pt)) wt(pt) |b(pt)| (B |a(pt)|)^{-λ}`,
 
 where `pt_z = bridgePt x_z 0` is the face point with solved coordinate `0`, tied coordinates `0`
-and worse coordinates `±z`: the face density of a partially tied face at the chart level.
+and worse coordinates `±z`: the face density of a partially tied face at the chart level. In
+`termKernel` form (`tendsto_termKernel_partial`) this is the certificate of an admissible branch
+at the pair `(γp + δλ, k)` for the lexicographic assembly `tendsto_fibre_expectation_lex`.
 -/
 
 open Real MeasureTheory Set Filter Topology Function
@@ -239,6 +242,33 @@ theorem WallChartsData.Phase.tendsto_modelKernelOf_partial (e : Fin (k + 1) ⊕ 
     rw [P.weightFn_eq_of_mem_closedBall hφL (Metric.ball_subset_closedBall (hface z hzb))]
     rfl
   rw [hint]
+  exact h
+
+open scoped Classical in
+/-- An admissible branch of a chart with a pure truth monomial and a partially tied transverse
+face: the power–log law `(γp + δλ, k)` with the face integral as constant. -/
+theorem WallChartsData.Phase.tendsto_termKernel_partial (e : Fin (k + 1) ⊕ ν ≃ Fin m) (hσ : σ ≠ 0)
+    (hγ : 0 < γ) (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
+    (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {p : WallChartsData.Phase.TermIdx D}
+    (hadm : D.admissible p.1 p.2.1 p.2.2 σ) (hQ : D.Qexp p.1 = 0) (hκ : ∀ j, 0 < P.kappa p.1 j)
+    {lam : ℝ} (hlam : 0 < lam)
+    (htied : ∀ j, (P.rExp p.1 (e (Sum.inl j)) + 1) / P.kappa p.1 (e (Sum.inl j)) = lam)
+    (hgap : ∀ j, lam * P.kappa p.1 (e (Sum.inr j)) < P.rExp p.1 (e (Sum.inr j)) + 1)
+    (hδ : 0 < P.phaseExp p.1 γ) :
+    Tendsto (fun t ↦ t ^ (γ * P.pExp p.1 + P.phaseExp p.1 γ * lam) / log t ^ k *
+        P.termKernel φ σ γ p t) atTop
+      (𝓝 (P.constA p.1 σ * (P.phaseExp p.1 γ ^ k *
+          (Gamma lam / k.factorial * ∏ j, 1 / P.kappa p.1 (e (Sum.inl j)))) *
+        ∫ z in Set.pi univ (fun _ : ν ↦ Ioo (0 : ℝ) (D.ρ p.1)),
+          φ (D.rep p.1 (D.bridgePt p.1 p.2.1 p.2.2 (partialFace e z) 0)) *
+            (P.wt p.1 (D.bridgePt p.1 p.2.1 p.2.2 (partialFace e z) 0) *
+              |P.b p.1 (D.bridgePt p.1 p.2.1 p.2.2 (partialFace e z) 0)|) *
+            (P.constB p.1 σ * |P.a p.1 (D.bridgePt p.1 p.2.1 p.2.2 (partialFace e z) 0)|) ^ (-lam) *
+            ∏ j, z j ^ (P.rExp p.1 (e (Sum.inr j)) - lam * P.kappa p.1 (e (Sum.inr j))))) := by
+  have h := P.tendsto_modelKernelOf_partial (ε := p.2.1) (b := p.2.2) e hσ hγ hQ hκ hlam htied
+    hgap hδ hφc hφ hMφ hφL
+  unfold WallChartsData.Phase.termKernel
+  simp only [if_pos hadm]
   exact h
 
 end PartialTerm
