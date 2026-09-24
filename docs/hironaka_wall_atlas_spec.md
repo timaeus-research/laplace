@@ -805,3 +805,23 @@ certificates for concrete resolved charts beyond the identity chart.
   certify — Astra's recession-cone reading of the LP (`research_partial_v1.md` §(b)) in full. Open:
   Astra's (3) distinguishability (two landscapes have the same limiting normalised expectations
   iff their normalised limiting measures agree).
+- `NormalisedMeasure.lean` (Mathlib only): `normaliseMeasure μ = μ(1)⁻¹ • μ`;
+  `ratio_eq_of_normalise_eq` (equal normalisations give equal ratios `∫ψ/∫χ`);
+  `normalise_eq_iff_forall_ratio` (two nonzero finite Borel measures on a space with outer
+  approximation of closed sets have the same normalised integrals of all bounded continuous
+  functions iff their normalisations agree, `ext_of_forall_integral_eq_of_IsFiniteMeasure`);
+  `restrict_ext_of_forall_integral_eq` (bounded continuous functions supported in an open `U`
+  determine the restrictions to `U`: the cutoffs `min 1 (n·dist(x,Uᶜ))` increase to `1_U`,
+  dominated convergence); `normalise_restrict_eq_of_forall_ratio(_nonneg)` (ratios against a fixed
+  positive reference observable, for all (nonnegative) bounded continuous test functions supported
+  in `U`, determine the normalised restriction to `U`; the nonnegative version by the
+  `ψ = ψ⁺ − ψ⁻` split).
+- `WallDistinguishability.lean` (Astra's target (3)): `fibreRatio D F ψ χ σ γ t` (the ratio of
+  total kernels at `σt^{-γ}`); `tendsto_fibreRatio_sub_of_normalise_eq` — two phases whose
+  limiting measures have the same normalisation have the same leading expectation for every
+  certified pair `(ψ, χ)`; `normalise_restrict_limitMeasure_eq_of_forall_tendsto` — for open `L'`,
+  if the two fibre expectations against a fixed positive reference `χ` have the same limit for
+  every nonnegative bounded continuous `ψ` supported in `L'`, the normalised restrictions to `L'`
+  of the two limiting measures agree. **The leading expectations know exactly the normalised
+  limiting measure on `L'`**: not the mass, not the dominant power or log scale, not what the face
+  maps erase. Astra's three ranked targets of `research_partial_v1.md` are all closed.
