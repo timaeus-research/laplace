@@ -349,3 +349,36 @@ Astra's lemma 4 is therefore complete (both blocks), lemma 6 (`ChartCluster`) to
 lemma 1 (normalised signed branch kernels with the explicit moving cutoff), lemma 2 (moving-unit
 comparison), lemma 3 (certified moving-kernel limit through `RescaledData`), lemma 5 (LP/profile
 compatibility), and the enrichment of `WallChartsData` with the phase data.
+
+## Status (2026-09-25, night): lemma 3, the phase enrichment, and lemmas 1–2
+
+laplace, Mathlib only, standard axioms (`27e35d0`, `52d3db7`, `7260672`); mirrored on the
+hironaka branch `wall-atlas` (`2460ed363`, `ab47d8aad`, local only):
+
+- `ProfileCertificate.lean`: `RescaledData.tendsto_den_moving` (the observable may move with `t`,
+  uniformly bounded and converging pointwise), and the structure
+  `ProfileCertificate l K L X μ G w Φ₀ w₀ W c`: a finite family of `RescaledData` pieces plus
+  `∀ᶠ t, K t = L t · ∑ e ∫ w e t e^{-G e t}`. Theorems: `tendsto_K_div_L` (`K/L → ∑ ∫ w₀ e^{-Φ₀}`),
+  `tendsto_Q_div_L` (same with a moving observable), `tendsto_energy_div_L`, and `tendsto_ratio`:
+  the expectation `Q/K` converges to the ratio of the limiting integrals when the limit is nonzero
+  (`limit_pos` gives it from positivity of one piece). This is Astra's lemma 3 — the certified
+  moving-kernel limit — as a reusable record; a wall kernel is treated by exhibiting a certificate.
+- `WallPhaseData.lean`: `WallChartsData.Phase D F` — the phase data of a chart record: exponents
+  `kF`, `hJ`, continuous units `a`, `b` with bounds `0 < m_a ≤ |a| ≤ M_a`, `0 < m_b ≤ |b| ≤ M_b` on
+  the closed ball, a continuous weight `0 ≤ wt ≤ 1`, and the identities `F (rep u) = a u ∏ u^kF`,
+  `dens u = wt u |b u ∏ u^hJ|` on the closed ball. Lemmas `abs_loss`, `abs_loss_bounds`, `dens_le`.
+  On the hironaka branch `WallAtlas.toPhase` builds it from the atlas (`aClamp`, `bClamp`, `wtClamp`
+  are the clamped units and pushed-down partition weight), so the enriched record is a theorem.
+- `WallKernelNormalised.lean`: **lemmas 1 and 2.** `WallChartsData.solvedPt i σ s w` is the branch
+  point `(w, σ V)`; with `|S| = 1`, `s ≠ 0`, `w_j ≠ 0`, `|σ| = 1` and the point in the closed ball,
+  `loss_solvedPt`: `F (rep u) = |a u| · |s|^ν ∏|w_j|^{κ_j}` (`ν = k_k/q_k`, `κ_j = k_j − q_j ν`),
+  `dens_mul_solvedPt`: `dens u · V/(q_k|s|) = wt u |b u| (1/q_k) |s|^p ∏|w_j|^{r_j}`
+  (`p = (h_k+1)/q_k − 1`, `r_j = h_j − q_j (p+1)`), hence `branch_integrand_eq` for the Boltzmann
+  integrand `e^{-tF} φ · dens · V/(q_k|s|)`, and the sandwich `branch_integrand_ge ≤ · ≤
+  branch_integrand_le` replacing `|a|` by `m_a`/`M_a` and `|b|` by `M_b`/`m_b` (needs `t ≥ 0`,
+  `φ ≥ 0`, `F ≥ 0` at the point). The moving cutoff is the closed-ball hypothesis; the density
+  vanishes off the open ball (`dens_supp`).
+
+Remaining in Astra's plan: lemma 5 (LP/profile compatibility with the constrained LP), and the
+construction of profile certificates for the wall kernels from the sandwich: unique dominant scale,
+truth-boundary critical scale, and the tied block via `tendsto_general`.
