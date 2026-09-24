@@ -16,10 +16,13 @@ Two facts about where the logarithmic mass of a mixed truth monomial can live.
 truth is the coordinate `z ℓ` and the ambient measure on `L'` is Lebesgue; when `L'` is bounded
 the fibre kernel of a bounded observable is bounded almost everywhere
 (`WallChartsData.totalKernel_ae_le`): the push-forward identity bounds `∫⁻_E K_θ` by the measure
-of `L' ∩ {z ℓ ∈ E}`, which is at most `(2R)^m · |E|`. In particular a chart with a genuinely mixed
-truth monomial (`q = (1,1)`, as the blow-up chart `(x, y) ↦ (xy, y)` of `BlowupSectorRecord`)
-always comes with a Jacobian vanishing at the corner, and that Jacobian cancels the `1/w` of the
-coarea formula: the log endpoint of `MixedTruthLog` is not a phenomenon of coordinate truths.
+of `L' ∩ {z ℓ ∈ E}`, which is at most `(2R)^m · |E|`. So a bounded observable has no growing
+logarithmic fibre mass (`K(σ/t)/log t → c > 0` is impossible along the full ray; decaying
+`t^{-λ}(log t)^k` terms from the loss are of course untouched, and the bound is almost everywhere
+in `s`). In a chart with a genuinely mixed truth monomial (`q = (1,1)`, as the blow-up chart
+`(x, y) ↦ (xy, y)` of `BlowupSectorRecord`) the Jacobian vanishes at the corner and cancels the
+`1/w` of the coarea formula: the log endpoint of `MixedTruthLog` is a phenomenon of truth
+functions, not of coordinate truths.
 
 **General truths do.** `TruthChartsData m T L'` is the same Euclidean interface for a truth
 function `T` on `L'` in place of the coordinate `z ℓ` (a `WallChartsData` is the special case

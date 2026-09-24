@@ -905,8 +905,10 @@ certificates for concrete resolved charts beyond the identity chart.
   logarithm**: for `D : WallChartsData m ℓ L'` with `L' ⊆ closedBall 0 R` and `θ ≤ M`,
   `totalKernel θ s ≤ M (2R)^m` for a.e. `s` (`WallChartsData.totalKernel_ae_le`: the push-forward
   identity bounds `∫⁻_E K_θ` by `M · vol(L' ∩ {z ℓ ∈ E}) ≤ M (2R)^m |E|`, via the splitting
-  `piFinSuccAbove` and `Real.volume_pi_closedBall`). So the record-level target as first posed — a
-  wall chart with `q = (1,1)` whose fibre kernel grows like `log t` — cannot exist: a genuinely
+  `piFinSuccAbove` and `Real.volume_pi_closedBall`; the bound is a.e. in `s` and excludes a growing
+  `log t` mass for bounded observables, not the decaying `t^{-λ}(log t)^k` terms of the loss). So
+  the record-level target as first posed — a wall chart with `q = (1,1)` whose fibre kernel grows
+  like `log t` — cannot exist: a genuinely
   mixed truth monomial in a chart of a Euclidean wall atlas comes with a Jacobian vanishing at the
   corner (`z₀ = u₀u₁` has zero differential there), and that Jacobian cancels the coarea `1/w`
   (`BlowupSectorRecord`: `dens = |u₁|`, fibre kernel `∫_{|s|≤|x|≤1} θ(s, x) dx`, no log). The log
@@ -942,3 +944,17 @@ certificates for concrete resolved charts beyond the identity chart.
   the fully tied point mass (`tendsto_modelKernel_tied`), `|T| = 1` a unique LP vertex whose
   coefficient is still a face density in the `ν` variables, intermediate `T` the partial face
   density — "the LP tells which faces carry the measure", with a unique vertex not a point mass.
+- `KernelAtlasIndependence.lean`: `TruthChartsData.totalKernel_ae_eq` / `WallChartsData.totalKernel_ae_eq`
+  — two chart systems over the same truth and region have a.e. equal total fibre kernels (both are
+  densities of the same push-forward; `ae_eq_of_forall_setLIntegral_eq_of_sigmaFinite`). Astra
+  round 5 (`research_round5_v1.md`): the correction of target 1 is right (a.e. bound, growing mass
+  only), `TruthChartsData` should become the observable-facing interface with `WallChartsData` the
+  coordinate specialisation, and the hironaka export must supply simultaneous monomialisation of
+  `(T, F)` (not "Hironaka on `(T)`"); the weighted family `y^h dx dy` is NOT a Lebesgue
+  `TruthChartsData` with the identity chart (the transport identity would represent the weighted
+  measure) — its trichotomy is `h > 0`: finite axis measure `∫ x^{h-1} e^{-σa(0,x)} ψ(0,x) dx`,
+  `h = 0`: log corner mass, `h < 0`: `t^h K → σ^h ∫ u^{-h-1} e^{-σ a(u,0)} ψ(u,0) du`. Ranking:
+  (1) local σ-uniformity (constant-unit tied model first, then partial faces; corollary
+  `σ(t) → σ₀`), (2) the certificate-based assembly theorem (convergence against a class of
+  observables), (3) general-truth Hironaka export, (4) one explicit `Q ≠ 0` degenerate face with
+  its log exponent, (5) the `h > 0` weighted theorem, (6) atlas independence (done, a.e. form).

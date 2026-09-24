@@ -328,6 +328,9 @@ import Laplace.Multi.WallDistinguishability
 import Laplace.Multi.PartialFaceMeasure
 import Laplace.Multi.MixedTruthLog
 import Laplace.Multi.MixedTruthRecord
+import Laplace.Multi.KernelAtlasIndependence
+import Laplace.Multi.ParameterStability
+import Laplace.Multi.WallLogTermParam
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
