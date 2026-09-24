@@ -73,7 +73,7 @@ theorem integrable_exp_mul_exp_neg_exp {η c : ℝ} (hη : 0 < η) (hc : 0 < c) 
   simpa only [Real.rpow_one] using this
 
 /-- `∫_{x > h} e^{−θx} dx = e^{−θh}/θ`. -/
-theorem integral_exp_neg_mul_Ioi {θ : ℝ} (hθ : 0 < θ) (h : ℝ) :
+theorem integral_exp_neg_mul_Ioi_shift {θ : ℝ} (hθ : 0 < θ) (h : ℝ) :
     ∫ x in Ioi h, exp (-(θ * x)) = exp (-(θ * h)) / θ := by
   have := integral_comp_mul_left_Ioi (fun x ↦ exp (-x)) h hθ
   simp only [smul_eq_mul] at this
@@ -244,7 +244,7 @@ theorem integral_twoScaledSplit {η θ c : ℝ} (hη : 0 < η) (hθ : 0 < θ) (h
   refine (integral_fin_two_mul (fun w ↦ exp (η * w) * exp (-(c * exp w)))
     (fun s ↦ (Ioi h).indicator (fun s ↦ exp (-(θ * s))) s)).trans ?_
   rw [integral_exp_mul_exp_neg_exp hη hc, integral_indicator measurableSet_Ioi,
-    integral_exp_neg_mul_Ioi hθ]
+    integral_exp_neg_mul_Ioi_shift hθ]
 
 theorem integrable_twoScaledSplit {η θ c : ℝ} (hη : 0 < η) (hθ : 0 < θ) (hc : 0 < c) (h : ℝ) :
     Integrable (twoScaledSplit η θ c h) := by
