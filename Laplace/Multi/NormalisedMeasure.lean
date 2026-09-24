@@ -10,7 +10,8 @@ import Mathlib
 
 The measure-theoretic core of the distinguishability question: what do ratios of integrals
 `∫ψ dμ / ∫χ dμ` know about a finite measure `μ`? Exactly its normalisation
-`normaliseMeasure μ = μ(1)⁻¹ • μ` (`normalise_eq_iff_forall_ratio`: two nonzero finite Borel measures
+`normaliseMeasure μ = μ(1)⁻¹ • μ` (`normalise_eq_iff_forall_ratio`: two nonzero finite Borel
+measures
 on a space with outer approximation of closed sets have the same normalised integrals of all
 bounded continuous functions iff their normalisations agree, by Mathlib's
 `ext_of_forall_integral_eq_of_IsFiniteMeasure`; conversely equal normalisations give equal ratios
@@ -210,6 +211,44 @@ theorem normalise_restrict_eq_of_forall_ratio {μ ν : Measure X} [IsFiniteMeasu
   rw [Measure.smul_apply, smul_eq_mul, smul_smul, ENNReal.mul_inv (Or.inl hc0) (Or.inl hcT)]
   congr 1
   rw [mul_right_comm, ENNReal.inv_mul_cancel hc0 hcT, one_mul]
+
+/-- The nonnegative test functions suffice: ratios against a fixed positive reference
+observable, for every nonnegative bounded continuous `ψ` supported in the open set `U`,
+determine the normalised restrictions to `U`. -/
+theorem normalise_restrict_eq_of_forall_ratio_nonneg {μ ν : Measure X} [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] {U : Set X} (hU : IsOpen U) {χ : X → ℝ} (hχμ : 0 < ∫ x, χ x ∂μ)
+    (hχν : 0 < ∫ x, χ x ∂ν)
+    (h : ∀ ψ : X → ℝ, Continuous ψ → (∀ x, 0 ≤ ψ x) → (∃ M, ∀ x, ψ x ≤ M) →
+      (∀ x, ψ x ≠ 0 → x ∈ U) →
+      (∫ x, ψ x ∂μ) / ∫ x, χ x ∂μ = (∫ x, ψ x ∂ν) / ∫ x, χ x ∂ν) :
+    normaliseMeasure (μ.restrict U) = normaliseMeasure (ν.restrict U) := by
+  refine normalise_restrict_eq_of_forall_ratio hU hχμ hχν fun ψ hψc ⟨M₀, hM₀⟩ hψU ↦ ?_
+  -- split `ψ = ψ⁺ − ψ⁻`
+  obtain ⟨M, hM⟩ : ∃ M : ℝ, M = max M₀ 0 := ⟨_, rfl⟩
+  have hM0 : 0 ≤ M := by rw [hM]; exact le_max_right _ _
+  have hM : ∀ x, |ψ x| ≤ M := fun x ↦ (hM₀ x).trans (by rw [hM]; exact le_max_left _ _)
+  have hpos := h (fun x ↦ max (ψ x) 0) (hψc.max continuous_const) (fun x ↦ le_max_right _ _)
+    ⟨M, fun x ↦ max_le ((le_abs_self _).trans (hM x)) hM0⟩ fun x hx ↦ hψU x fun h0 ↦ hx (by
+      rw [h0, max_self])
+  have hneg := h (fun x ↦ max (-ψ x) 0) (hψc.neg.max continuous_const) (fun x ↦ le_max_right _ _)
+    ⟨M, fun x ↦ max_le ((neg_le_abs _).trans (hM x)) hM0⟩ fun x hx ↦ hψU x fun h0 ↦ hx (by
+      rw [h0, neg_zero, max_self])
+  have hint : ∀ (κ : Measure X) [IsFiniteMeasure κ] (f : X → ℝ), Continuous f →
+      (∀ x, |f x| ≤ M) → Integrable f κ := fun κ _ f hf hb ↦
+    Integrable.of_bound hf.aestronglyMeasurable M (ae_of_all _ fun x ↦ by
+      rw [Real.norm_eq_abs]; exact hb x)
+  have e : ∀ (κ : Measure X) [IsFiniteMeasure κ],
+      ∫ x, ψ x ∂κ = (∫ x, max (ψ x) 0 ∂κ) - ∫ x, max (-ψ x) 0 ∂κ := fun κ _ ↦ by
+    have h1 : Integrable (fun x ↦ max (ψ x) 0) κ :=
+      hint κ _ (hψc.max continuous_const) fun x ↦ by
+        rw [abs_of_nonneg (le_max_right _ _)]; exact max_le ((le_abs_self _).trans (hM x)) hM0
+    have h2 : Integrable (fun x ↦ max (-ψ x) 0) κ :=
+      hint κ _ (hψc.neg.max continuous_const) fun x ↦ by
+        rw [abs_of_nonneg (le_max_right _ _)]; exact max_le ((neg_le_abs _).trans (hM x)) hM0
+    rw [← integral_sub h1 h2]
+    refine integral_congr_ae (Eventually.of_forall fun x ↦ ?_)
+    exact (max_zero_sub_eq_self (ψ x)).symm
+  rw [e μ, e ν, sub_div, sub_div, hpos, hneg]
 
 end Restrict
 
