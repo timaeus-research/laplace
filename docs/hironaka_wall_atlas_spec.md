@@ -761,3 +761,32 @@ certificates for concrete resolved charts beyond the identity chart.
   admissible partially tied branch at the pair `(γp + δλ, k)` for `tendsto_fibre_expectation_lex`.
   Astra's target (1) is closed at every level (model, chart, assembly input). Open: (2) the
   two-scaled tied-truth certificate, (3) distinguishability.
+- `TwoScaledInner.lean` (Astra's target (2), the analytic core): the substitution `y = e^v` on the
+  whole line (`integral_comp_exp_univ`) and coordinatewise on the positive orthant
+  (`integral_posOrthant_comp_exp`, diagonal Jacobian `∏ e^{v_i}`), the two-constraint matrix
+  `twoMat κ Q = [κ; Q]` with the linear change `(w, s) = (κ·v, Q·v)` (`integral_comp_mulVec`),
+  and the product structure on `Fin 2`. Under the dual decomposition `a = ηκ − θQ` (`η, θ > 0`,
+  `Δ = κ₀Q₁ − κ₁Q₀ ≠ 0`) the quadrant integral with the cutoff in logarithmic form is exact:
+  `∫_{y>0, h<Q·log y} ∏ y^{a−1} e^{−c∏y^κ} dy = Γ(η) c^{−η} e^{−θh}/(θ|Δ|)`
+  (`integral_twoScaledInner`, `integrable_twoScaledInner`).
+- `TiedTruthCertificate.lean`: `tiedDom` (the dominating profile `1_{limitDomain} ∏u^r e^{−c₀∏u^κ}`,
+  general index) with the generic envelope integrabilities `integrable_envelope_of_tiedDom`,
+  `integrable_envelope_mul_profile_of_tiedDom` (the vertex argument, from `Integrable tiedDom`
+  under a tied phase constraint alone); the box monomial integral `integral_box_prod_rpow`; on
+  `Fin 2 ⊕ ν` with `α = (αS, 0)`, `αS > 0` and tied truth `Q·α = γ`, the limiting domain is
+  `{y > 0} × (0,ρ)^ν ∩ {D ∏u^{−Q/q} < ρ}` (`elim_mem_limitDomain`), the cutoff on a slice reads
+  `q log(D ∏_ν z^{−Q/q}/ρ) < Q_S·log y` (`cut_iff_log`), each slice is `∏_ν z^r · twoScaledInner` at
+  the effective constants (`tiedDom_elim`) with value `twoScaledConst · ∏_ν z^{resExp}`
+  (`integral_tiedDom_elim`, `resExp_j = r_j − ηκ_j + θQ_j`). Fubini gives the **two-scaled
+  tied-truth certificate** `integrable_tiedDom_twoScaled` (hypotheses `η, θ > 0`, `Δ ≠ 0`,
+  `−1 < resExp_j`) and the exact value `integral_tiedDom_twoScaled`:
+  `Γ(η) c₀^{−η} (D/ρ)^{−θq}/(θ|Δ|) · ∏_ν ρ^{β_j}/β_j` with `β_j = resExp_j + 1`.
+- `WallTiedTruth.lean`: `limitDomain_reindex`, `tiedDom_reindex`, `integrable_tiedDom_of_reindex`
+  (transport along `e : ι ≃ ι'`), and the chart-level certificate
+  `ProfileIntegrableOf.of_twoScaled`: a wall chart term at a scale `α` supported on two transverse
+  coordinates `e (inl 0), e (inl 1)` (positive there), tied phase `κ·α = δ`, tied truth `Q·α = γ`,
+  dual decomposition `r_S + 1 = ηκ_S − θQ_S`, `Δ ≠ 0`, `β_j > 0` on the boxed coordinates. With
+  `of_vertex` (strict truth, one scaled coordinate) the two isolated-optimum shapes of the LP are
+  certified: one active constraint isolates one scaled coordinate, two isolate two; the
+  obstruction moves to three scaled coordinates (Astra, `research_partial_v1.md` §(b)). Open: the
+  three-scaled obstruction under tied truth; Astra's (3) distinguishability.
