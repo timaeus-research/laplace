@@ -658,8 +658,15 @@ Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_
   `⟨ψ⟩_χ → ∫ψ dμ / ∫χ dμ` — the expectations retain the normalised measure `μ/μ(1)` and nothing
   else (not `λ₀`, not the amplitude); `limitMeasure_eq_zero` (vanishes off the face images) and
   `tendsto_fibre_expectation_point` (constant face maps ⇒ `ψ(z₀)/χ(z₀)`, the toy/blow-up case).
-Open problems: the chart-level assembly of the log constant (the face point of a fully tied face
-is where the bridge map must extend continuously), the equivalence "profile integrable ⇔ isolated LP optimum" at degenerate (non-vertex) optima — the
+- `WallLogTerm.lean`: the log constant at the chart level. `bridgePt 0 0 = 0`; the chart weight
+  (observable supported in `L'`) and the unit are jointly continuous at the face point
+  (`tendsto_weightFn_face`, `tendsto_unitFn_face`); the unit is `≥ m_a` on the box for small cut
+  values (`ma_le_unitFn`, the cut-local form now used by `tendsto_modelKernel_tied`); hence
+  `tendsto_modelKernelOf_tied`: for a chart with `Q = 0` and a fully tied transverse face,
+  `t^{γp+δλ}/(log t)^k K_{i,ε,b}(t) → tiedConst A B δ κ r λ ρ |a(0)| (φ(rep 0) wt(0) |b(0)|)`.
+Open problems: a logarithmic fibre-expectation theorem assembling `(λ, k)`-dominant terms with
+`tendsto_sum_ratio_lex` (vertex terms via `tendsto_term`, fully tied `Q = 0` terms via
+`tendsto_modelKernelOf_tied`; partially tied faces have no term theorem yet), the equivalence "profile integrable ⇔ isolated LP optimum" at degenerate (non-vertex) optima — the
 "only if" half is now general (`RecessionDirection`), the "if" half is the vertex case — and
 certificates for concrete resolved charts beyond the identity chart.
 - `RecessionObstruction.lean`: the coordinate case of Astra's recession-cone characterisation
