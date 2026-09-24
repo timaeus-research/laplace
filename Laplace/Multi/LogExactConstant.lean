@@ -76,7 +76,7 @@ theorem tendsto_modelKernel_tied (hρ : 0 < ρ) (hA : 0 ≤ A) (hD : 0 ≤ D) (h
     {lam : ℝ} (hlam : 0 < lam) (htied : ∀ i, (r i + 1) / κ i = lam) (hB : 0 < B) (hδ : 0 < δ)
     (hγq : 0 < γ / q) {aL wU : ℝ} (haL : 0 < aL) (hW : Measurable (Function.uncurry W))
     (ha : Measurable (Function.uncurry a)) (hW0 : ∀ x v, 0 ≤ W x v) (hWup : ∀ x v, W x v ≤ wU)
-    (halow : ∀ x v, (∀ j, x j ∈ Ioo (0 : ℝ) ρ) → aL ≤ a x v)
+    (halow : ∀ x v, (∀ j, x j ∈ Ioo (0 : ℝ) ρ) → 0 ≤ v → v < ρ → aL ≤ a x v)
     {w₀ a₀ : ℝ} (ha₀ : 0 < a₀) (hw₀ : 0 ≤ w₀)
     (hWlim : Tendsto (Function.uncurry W) (𝓝 (0, 0)) (𝓝 w₀))
     (halim : Tendsto (Function.uncurry a) (𝓝 (0, 0)) (𝓝 a₀)) :
@@ -88,8 +88,6 @@ theorem tendsto_modelKernel_tied (hρ : 0 < ρ) (hA : 0 ≤ A) (hD : 0 ≤ D) (h
     have hk := hκ i
     rw [div_eq_iff hk.ne'] at h
     nlinarith [mul_pos hlam hk]
-  have ha0 : ∀ x v, (∀ j, x j ∈ Ioo (0 : ℝ) ρ) → 0 ≤ a x v := fun x v hx ↦
-    haL.le.trans (halow x v hx)
   have hwU : 0 ≤ wU := (hW0 0 0).trans (hWup 0 0)
   -- the exact constant as a function of the unit and the weight
   set Cf : ℝ → ℝ → ℝ := fun a w ↦
@@ -196,8 +194,6 @@ theorem tendsto_modelKernel_tied (hρ : 0 < ρ) (hA : 0 ≤ A) (hD : 0 ≤ D) (h
     div_nonneg (rpow_pos_of_pos ht0 _).le (pow_pos (Real.log_pos ht) _).le
   have hAt : 0 ≤ A * t ^ (-(γ * p)) := mul_nonneg hA (rpow_pos_of_pos ht0 _).le
   -- integrability of the four integrands
-  have hI := integrable_modelIntegrand_tied (D := D) (γ := γ) (q := q) (δ := δ) (κ := κ) hρ hr
-    hB ht0 hW ha hW0 hWup ha0
   have hI1 := integrable_modelIntegrand_tied (D := D) (γ := γ) (q := q) (δ := δ) (κ := κ)
     (W := fun _ _ ↦ wU') (a := fun _ _ ↦ aL') hρ' hr hB ht0 measurable_const measurable_const
     (wU := wU') (fun _ _ ↦ hwU'0) (fun _ _ ↦ le_rfl) (fun _ _ _ ↦ haL'pos.le)
@@ -215,6 +211,13 @@ theorem tendsto_modelKernel_tied (hρ : 0 < ρ) (hA : 0 ≤ A) (hD : 0 ≤ D) (h
   have hcut' : v₀ < ρ' := hv₀ ▸ hcut
   have hcutρ' : v₀ < ρ := hv₀ ▸ hcutρ
   have hv0' : 0 ≤ v₀ := hv₀ ▸ hv0
+  have hI : Integrable (modelIntegrand ρ B D γ q δ (0 : Fin (k + 1) → ℝ) κ r W a t) := by
+    rw [modelIntegrand_Q_zero_freeze, ← hv₀]
+    exact integrable_modelIntegrand_tied (D := D) (γ := γ) (q := q) (δ := δ) (κ := κ)
+      (W := fun x _ ↦ W x v₀) (a := fun x _ ↦ a x v₀) hρ hr hB ht0
+      (hW.comp (measurable_fst.prodMk measurable_const))
+      (ha.comp (measurable_fst.prodMk measurable_const)) (fun x _ ↦ hW0 x v₀)
+      (fun x _ ↦ hWup x v₀) fun x _ hx ↦ haL.le.trans (halow x v₀ hx hv0' hcutρ')
   have hbox' : ∀ x : Fin (k + 1) → ℝ, x ∈ Set.pi univ (fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) ρ') →
       x ∈ Set.pi univ fun _ : Fin (k + 1) ↦ Ioo (0 : ℝ) ρ := fun x hx ↦
     Set.mem_univ_pi.mpr fun j ↦
@@ -252,7 +255,7 @@ theorem tendsto_modelKernel_tied (hρ : 0 < ρ) (hA : 0 ≤ A) (hD : 0 ≤ D) (h
         have hBt : 0 ≤ B * t ^ δ := mul_nonneg hB.le (rpow_pos_of_pos ht0 _).le
         refine mul_le_mul (mul_le_mul_of_nonneg_right (hWup _ _) hr0) (Real.exp_le_exp.mpr ?_)
           (exp_pos _).le (mul_nonneg hwU hr0)
-        have key := mul_le_mul_of_nonneg_left (halow x v₀ hxj) (mul_nonneg hBt hκ0)
+        have key := mul_le_mul_of_nonneg_left (halow x v₀ hxj hv0' hcutρ') (mul_nonneg hBt hκ0)
         linarith [key]
       · rw [Set.indicator_of_notMem hx, Set.indicator_of_notMem hx]
   have hlow_pt : ∀ x,
