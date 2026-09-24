@@ -664,9 +664,14 @@ Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_
   values (`ma_le_unitFn`, the cut-local form now used by `tendsto_modelKernel_tied`); hence
   `tendsto_modelKernelOf_tied`: for a chart with `Q = 0` and a fully tied transverse face,
   `t^{γp+δλ}/(log t)^k K_{i,ε,b}(t) → tiedConst A B δ κ r λ ρ |a(0)| (φ(rep 0) wt(0) |b(0)|)`.
-Open problems: a logarithmic fibre-expectation theorem assembling `(λ, k)`-dominant terms with
-`tendsto_sum_ratio_lex` (vertex terms via `tendsto_term`, fully tied `Q = 0` terms via
-`tendsto_modelKernelOf_tied`; partially tied faces have no term theorem yet), the equivalence "profile integrable ⇔ isolated LP optimum" at degenerate (non-vertex) optima — the
+- `WallFibreExpectationLog.lean`: `tendsto_fibre_expectation_lex` assembles wall terms certified
+  at their own pairs `(λ_p, k_p)` into the ratio limit over the lexicographically dominant terms
+  (`tendsto_sum_ratio_lex` + `totalKernel_toReal_eq_sum_terms`); the three certifications in
+  `termKernel` form: `tendsto_termKernel_of_not_admissible` (vanishing branch),
+  `tendsto_termKernel_vertex` (`(λ_p, 0)` via `tendsto_term`), `tendsto_termKernel_tied`
+  (`(γp + δλ, k)` via `tendsto_modelKernelOf_tied`, record `WallChartsData (k+1)`).
+Open problems: a term theorem for partially tied faces (some `κ_j α_j` tied, others scaled), the
+equivalence "profile integrable ⇔ isolated LP optimum" at degenerate (non-vertex) optima — the
 "only if" half is now general (`RecessionDirection`), the "if" half is the vertex case — and
 certificates for concrete resolved charts beyond the identity chart.
 - `RecessionObstruction.lean`: the coordinate case of Astra's recession-cone characterisation
