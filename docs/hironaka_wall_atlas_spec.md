@@ -620,12 +620,25 @@ Euclidean half (laplace `Laplace/Multi`, mirrored to `Monomialize/Relative/Wall/
 Consult record: `gpt_responses/research_fibre_identity_v1.md`, `research_kernel_asymptotics_v1.md`,
 `review_endtoend_v1.md`. Open problems: the exact constant of a logarithmic face (face volume ×
 transverse profile integral, unit at the face point; needs a tube/boundary localisation), the
-equivalence "profile integrable ⇔ isolated LP optimum" (recession-cone argument), and certificates
-for concrete resolved charts beyond the identity chart.
+equivalence "profile integrable ⇔ isolated LP optimum" beyond the vertex/coordinate cases (general
+recession direction, degenerate optima), and certificates for concrete resolved charts beyond the
+identity chart.
 - `RecessionObstruction.lean`: the coordinate case of Astra's recession-cone characterisation
   (§1.2). If a scaled coordinate `j` is invisible to the limiting phase (`κ_j ≤ 0`) while its
   density does not decay (`r_j ≥ −1`), the unweighted profile is not integrable
   (`not_integrable_of_coordinate_recession`: the shells `u_j ∈ [eⁿ, eⁿ⁺¹)` each carry a fixed
   positive mass), so `ProfileIntegrableOf` fails (`not_integrable_envelope_of_recession`, strict
   truth constraint). This is the "only if" half for coordinate directions; the general recession
-  direction and the converse (isolated optimum ⇒ integrable) remain open.
+  direction remains open.
+- `VertexCertificate.lean`: the converse in the generic case. At a *strictly optimal vertex* of
+  the constrained LP — one scaled coordinate `j`, `α = (δ/κ_j) e_j` (tied phase), strict truth
+  constraint, and `κ_i (r_j+1)/κ_j < r_i + 1` for `i ≠ j` — the profile certificate holds:
+  `integrable_vertexDom` integrates out `u_j` (a Gamma integral, `integral_rpow_mul_exp_neg_mul_rpow`
+  after `volume_preserving_piFinSuccAbove` + `integrable_prod_iff'`) and is left with the box
+  integral of `∏ u_i^{r_i − κ_i (r_j+1)/κ_j}`, whose exponents exceed `−1` exactly by strict
+  optimality. `integrable_envelope_of_vertex` and `integrable_envelope_mul_profile_of_vertex`
+  (via `x e^{-cx} ≤ (2/c) e^{-cx/2}`) are the two `ProfileIntegrableOf` integrabilities for a unit
+  bounded below on the limiting domain, and `ProfileIntegrableOf.of_vertex` packages them for a
+  wall chart term `(i, ε, b)` from LP data alone (`hκj`, `hrj`, `hδ`, `hα`, `hstrict`, `hgap`).
+  So in the generic (vertex) case the certificate is decided by the LP: isolated vertex optimum
+  ⇒ certificate, coordinate recession direction ⇒ no certificate.
