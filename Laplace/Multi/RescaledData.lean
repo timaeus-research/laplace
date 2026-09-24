@@ -50,6 +50,7 @@ namespace RescaledData
 variable {l : Filter T} [l.IsCountablyGenerated] {μ : Measure X} {G w : T → X → ℝ}
   {Φ₀ w₀ W : X → ℝ} {c : ℝ}
 
+omit [l.IsCountablyGenerated] in
 theorem W_nonneg (hd : RescaledData l μ G w Φ₀ w₀ W c) (t : T) (u : X) : 0 ≤ W u :=
   (abs_nonneg _).trans (hd.w_bd t u)
 
@@ -61,7 +62,8 @@ theorem w₀_meas [l.NeBot] (hd : RescaledData l μ G w Φ₀ w₀ W c) : Measur
 
 /-- Pointwise domination of the weighted Boltzmann factor. -/
 theorem bound_den (hd : RescaledData l μ G w Φ₀ w₀ W c) {t : T}
-    (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (u : X) : |w t u| * Real.exp (-(G t u)) ≤ W u * Real.exp (-(c * Φ₀ u)) := by
+    (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (u : X) :
+    |w t u| * Real.exp (-(G t u)) ≤ W u * Real.exp (-(c * Φ₀ u)) := by
   by_cases hw : w t u = 0
   · rw [hw, abs_zero, zero_mul]
     exact mul_nonneg (hd.W_nonneg t u) (Real.exp_pos _).le
