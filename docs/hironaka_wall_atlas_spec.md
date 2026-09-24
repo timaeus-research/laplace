@@ -382,3 +382,46 @@ hironaka branch `wall-atlas` (`2460ed363`, `ab47d8aad`, local only):
 Remaining in Astra's plan: lemma 5 (LP/profile compatibility with the constrained LP), and the
 construction of profile certificates for the wall kernels from the sandwich: unique dominant scale,
 truth-boundary critical scale, and the tied block via `tendsto_general`.
+
+## Status (2026-09-25, late): lemma 5, the dominant-scale certificate, and the bridge to the model
+
+laplace, Mathlib only, standard axioms (`bd655c9`, `182cb72`, `bf8ac31`, `2aacc97`, `ada83b8`,
+`d62af64`); not yet mirrored on the hironaka branch (the bridge imports the seabed's linear change
+of variables `integral_comp_mulVec` from `GaussianMomentsPosDef`).
+
+- `ConstrainedLP.lean` (Astra's lemma 5): the polyhedron `P_γ = {α ≥ 0, Q·α ≤ γ, κ·α ≥ δ}`
+  (`ConstrainedFeasible`), optimality certificates by dual multipliers with weak duality
+  (`ConstrainedLPCert.le`), the exponent `λ = γp + b·α` (`lpExponent`), and the compatibility
+  theorem `modelKernel_eq_rescaled`: the constrained model kernel on the box of radius `ρ`,
+  `K(t) = A t^{-γp} ∫_{(0,ρ)^d, v_t<ρ} W(x, v_t) ∏x^r e^{-B t^δ a(x, v_t) ∏x^κ}`, equals
+  `A t^{-λ}` (with `b_j = r_j + 1`) times the rescaled integral over `∏(0, ρ t^{α_j})` with cutoff
+  `D t^{-(γ − Q·α)/q} ∏u^{-Q/q} < ρ` and phase `B t^{δ − κ·α} a ∏u^κ` (Lebesgue change of variables
+  `x = t^{-α} u`). Feasibility makes the two remaining `t`-powers `≤ 1` for `t ≥ 1`, and `→ 0`
+  when strict.
+- `DominantScale.lean` (Astra's certificates (1), (2)): `DominantScaleHyp` (feasible `α`, bounded
+  measurable weight and unit converging along the rescaling, unit bounded below by `a₋ > 0` where
+  the weight is nonzero, integrable limiting profile) gives a `RescaledData`
+  (`DominantScaleHyp.rescaledData`) and hence `t^λ K(t) → A ∫ w₀ e^{-Φ₀}`
+  (`DominantScaleHyp.tendsto_modelKernel`). The limiting domain is `(0,ρ)` in the unscaled and
+  `(0,∞)` in the scaled coordinates, cut by the tied cutoff when `Q·α = γ`; the limiting phase is
+  `B a₀(u) ∏u^κ` when `κ·α = δ` and `0` otherwise (the unit is evaluated at the face point through
+  `a₀`, never frozen). Integrability of the profile is the hypothesis encoding uniqueness of the
+  dominant scale.
+- `OrthantSplit.lean`: `∫ f = ∑_ε ∫_{(0,∞)^ι} f(ε·x)` for measurable `f` on `ι → ℝ`
+  (`lintegral_eq_sum_orthants`).
+- `WallModelBridge.lean`, `WallModelKernel.lean` (Astra's step 1.1, completed): along
+  `s = σ t^{-γ}`, the branch kernel on the orthant `ε·x` is the sum over the admissible branches
+  `±V` (`0 < S ∏(±1)^{q_j} (±1)^{q_k} σ`, constant on the orthant) of the real branch integrands,
+  each equal to `A t^{-γp}` times the constrained model integrand with `A = |σ|^p/q_k`,
+  `B = |σ|^ν`, `D = |σ|^{1/q_k}`, `δ = 1 − γν`, `Q_j = q_j`, weight `1_{rep u ∈ L'} φ(rep u) wt |b|`
+  and unit `|a|` at the branch point (`branchKernel_orth_eq`, `branchReal_eq_model`; the solved
+  coordinate is the model cutoff variable and the chart ball is the model domain). Integrated:
+  `fibreKernel_eq_sum_modelKernel`, `totalKernel_eq_sum_modelKernel`, `totalKernel_toReal` — the
+  ambient fibre integral of `e^{-tF} φ` over the truth fibre (through `fibre_eq`) is a finite sum
+  of constrained model kernels, one per chart, orthant and admissible branch.
+
+What remains for the end-to-end statement: for each model kernel, a `DominantScaleHyp` (the
+scale `α` from the constrained LP of the chart, the convergence of `wt |b| φ` and `|a|` along the
+rescaling from continuity, positivity of the unit on the support of the weight, and the
+integrability of the profile), then `ChartAssembly`/`cluster_limit` over the finitely many terms;
+the tied (logarithmic) faces go through `tendsto_general` instead of a single dominant scale.
