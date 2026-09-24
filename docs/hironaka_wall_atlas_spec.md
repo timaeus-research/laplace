@@ -790,3 +790,18 @@ certificates for concrete resolved charts beyond the identity chart.
   certified: one active constraint isolates one scaled coordinate, two isolate two; the
   obstruction moves to three scaled coordinates (Astra, `research_partial_v1.md` §(b)). Open: the
   three-scaled obstruction under tied truth; Astra's (3) distinguishability.
+- `TiedTruthObstruction.lean`: the recession obstruction with a surviving cutoff.
+  `exists_box_subset_of_isOpen` (a positive closed box inside an open set around any of its
+  points); `not_integrable_envelope_of_recession_direction_tied`: for a nonempty limiting domain,
+  any `d ≠ 0` supported on the scaled coordinates with `d·κ ≤ 0`, `d·Q = 0` when the truth
+  constraint is tied, and `d·(r+1) ≥ 0` forbids the certificate (the unit bound is needed on the
+  limiting domain only). `exists_direction_of_three_scaled`: with `3 ≤ #{l | α_l ≠ 0}` the two
+  linear constraints `d·κ = d·Q = 0` have a nonzero solution on the scaled block (rank–nullity for
+  `v ↦ (κ·v, Q·v)`), and one orientation has `d·(r+1) ≥ 0`. Hence
+  `not_integrable_envelope_of_three_scaled` and, at the chart level,
+  `not_profileIntegrableOf_of_three_scaled` (unit bounded by `Ma` on the limiting domain via
+  `limitBranchPt_mem_ball`). **The isolated-optimum count is closed**: `of_vertex` (strict truth,
+  one scaled coordinate), `of_twoScaled` (tied truth, two), and three scaled coordinates never
+  certify — Astra's recession-cone reading of the LP (`research_partial_v1.md` §(b)) in full. Open:
+  Astra's (3) distinguishability (two landscapes have the same limiting normalised expectations
+  iff their normalised limiting measures agree).
