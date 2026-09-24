@@ -1061,3 +1061,25 @@ certificates for concrete resolved charts beyond the identity chart.
   (log moments via `|log v| ≤ v + 2/√v`), limit `∫_0^∞ e^{-v} dv = 1`], (3) general-truth hironaka
   export, (4) variable-unit partial moving version (try a frozen-unit perturbation squeeze before
   the 436-line substitution), (5) compact-uniform packaging (state as `∀ ε, ∀ᶠ t, ∀ σ ∈ C, …`).
+- `DegenerateFace.lean` COMPLETE (b0416e5; hironaka da4b12a85): `tendsto_degI` —
+  `t⁴/log t · I(t) → 1` for `I(t) = ∫_{(0,1)³} 1_{xyz > t^{-2}} z² e^{-t³xyz²}` (iterated
+  `lintegral`, `degIntegrand`/`degI`). Chain: `degI_eq_collapse` (the `xy` collapse with density
+  `−log s`), `degG_scale` + `lintegral_Ioo_one_eq_scale` ⇒ `degI_eq_scale : I = t^{-4} J` with
+  `J = ∫_{(0,t)²} (log t − log u) 1_{uv>1} v² e^{-uv²}`; `degK_eq` + `lintegral_Ioo_comp_mul_left'`
+  ⇒ `degJ_eq_subst` (inner integrand `degM v w = 1_{w>v} e^{-w}` on `w ∈ (0, v²t)`);
+  `degJ_div_log` (normalise, `ENNReal.ofReal_div_of_pos`); the planar form `degN_eq_lintegral_prod`
+  (`lintegral_prod` + indicator/restrict bookkeeping with `degDom t = {0<v<t, 0<w<v²t}`);
+  domination `degΦ_le_degΨ` for `t ≥ e` by `1_{0<v<w}(1 + 3w + 2w^{-1/2} + 4v^{-1/2})e^{-w}` (from
+  `|log v| ≤ v + 2/√v`, `abs_log_le_add_two_div_sqrt`, and `v < w`), finiteness
+  `lintegral_degΨ_ne_top` (inner integral computed exactly, `lintegral_degΨ_inner =
+  ofReal((w + 3w² + 10√w)e^{-w})`, then `Real.GammaIntegral_convergent` at `s = 2, 3, 3/2`),
+  limit `lintegral_degΦlim = 1` (`integral_exp_neg_Ioi`), `tendsto_degN` by
+  `tendsto_lintegral_filter_of_dominated_convergence` (pointwise `(log t − log w + 2 log v)/log t →
+  1`, the domain indicator eventually on), and `tendsto_degI` (`ENNReal.tendsto_toReal`,
+  `ENNReal.eq_div_iff`). Gotchas: identifiers cannot contain `∞`; `lt_mem_nhds`/`gt_mem_nhds`
+  orientation; `lintegral_lintegral_swap` needs `(μ := volume) (ν := volume)` and the
+  `aemeasurable (μ := volume.prod volume)`; `rw [← hsq]` on `√w * √w = w` also rewrites the `w`
+  under the root — use `eq_mul_inv_iff_mul_eq₀`. The LP: `min α+β+3ζ`, `α+β+ζ ≤ 2`, `α+β+2ζ ≥ 3`,
+  optimal segment `ζ = 1, α+β = 1`, `k = 1` — a log from a positive-dimensional face with the
+  truth constraint active, which the `Q = 0` theorems do not cover. Not done: the general theorem
+  behind it (an active-truth partial-face theorem in the model-kernel conventions).
