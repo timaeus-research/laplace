@@ -1016,3 +1016,26 @@ certificates for concrete resolved charts beyond the identity chart.
   `σ/(tx) → 0`; `Ioi_inter_Ioo_eq` for the range). Every positive weight exponent removes the
   logarithm; `h = 0` is the threshold (`MixedTruthLog`). Not a Lebesgue `TruthChartsData` with the
   identity chart (Astra): a model statement.
+- `TermData.lean` (round-5 target 2, the constructor; mirrored): `TermData P σ γ p` (power, log
+  order, finite coefficient measure of one term, certified against observables supported in `L'`);
+  `TermData.ofNotAdmissible` (zero measure), `TermData.vertex` (`(termLam, 0, termMeasure)`, from
+  `tendsto_termKernel_vertex` + `termConst' = termConst` on admissible + `termConst_eq_integral`),
+  `TermData.tied` (`(γp + δλ, k, ofReal c • dirac (rep 0))` with
+  `c = tiedConst A B δ κ r λ ρ |a 0| (wt 0 |b 0|)`, `tiedConst_nonneg`, the linearity
+  `tiedConst … (φ(rep 0) · w) = tiedConst … w · φ(rep 0)` by `unfold tiedConst; ring`),
+  `TermData.partial` (`(γp + δλ, k, partialMeasure)`); `TermMeasureCertificate.ofTermData`
+  assembles certified data for every term into the certificate. So the principal theorem now reads:
+  classify every term of a phase into one of the four shapes ⇒ certificate ⇒ fibre expectation of
+  every supported observable converges to `∫ψ dμ_*/∫χ dμ_*` (`ofTermData` +
+  `TermMeasureCertificate.tendsto_fibre_expectation`).
+- Hironaka contract for a general truth (Astra round 5, item 3; NOT done): the wall atlas resolves
+  the product `F · z_ℓ` (`WallChart.lean` docstring: "Resolving `F · z_ℓ` … with a wall chart at
+  every point over the wall"), and `WallChartAt F ℓ g P` asks for `F ∘ rep = a ∏ u^k`,
+  `rep u ℓ = S ∏ u^q` and the Jacobian monomial simultaneously — unique factorisation in the local
+  ring gives both factors from the normal crossings of the product. The general-truth version is the
+  same statement with an analytic `T` in place of the coordinate: resolve `F · T`, `T ∘ rep =
+  S ∏ u^q`, wall set `C ⊆ {T = 0}`, export `TruthChartsData m T L'` in place of `WallChartsData`.
+  It is a threading of `ℓ ↦ T` through `WallChart`, `WallAtlas`, `WallExport`, `WallIntegral`,
+  `Theorem*` on the branch (hundreds of lines, mechanical), plus the resolution provider applied to
+  `F · T`; the fibre identity `fibre_ae` (product regions) does not transfer and is not needed for
+  the push-forward statement.
