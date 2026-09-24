@@ -60,6 +60,7 @@ theorem Φ₀_meas [l.NeBot] (hd : RescaledData l μ G w Φ₀ w₀ W c) : Measu
 theorem w₀_meas [l.NeBot] (hd : RescaledData l μ G w Φ₀ w₀ W c) : Measurable w₀ :=
   measurable_of_tendsto_metrizable' l hd.w_meas (tendsto_pi_nhds.mpr hd.w_lim)
 
+omit [l.IsCountablyGenerated] in
 /-- Pointwise domination of the weighted Boltzmann factor. -/
 theorem bound_den (hd : RescaledData l μ G w Φ₀ w₀ W c) {t : T}
     (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (u : X) :
@@ -70,6 +71,7 @@ theorem bound_den (hd : RescaledData l μ G w Φ₀ w₀ W c) {t : T}
   · exact mul_le_mul (hd.w_bd t u) (Real.exp_le_exp.mpr (by linarith [hl u hw]))
       (Real.exp_pos _).le (hd.W_nonneg t u)
 
+omit [l.IsCountablyGenerated] in
 /-- Pointwise domination of the weighted energy density. -/
 theorem bound_num (hd : RescaledData l μ G w Φ₀ w₀ W c) {t : T}
     (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (hG : ∀ u, w t u ≠ 0 → 0 ≤ G t u) (u : X) :
@@ -83,6 +85,7 @@ theorem bound_num (hd : RescaledData l μ G w Φ₀ w₀ W c) {t : T}
     exact mul_le_mul (hd.w_bd t u) (mul_exp_neg_le_of_le hz (hl u hw))
       (mul_nonneg (hG u hw) (Real.exp_pos _).le) (hd.W_nonneg t u)
 
+omit [l.IsCountablyGenerated] in
 /-- Integrability of the weighted Boltzmann factor where the comparability bound holds. -/
 theorem integrable_den (hd : RescaledData l μ G w Φ₀ w₀ W c) {t : T}
     (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) :
@@ -94,6 +97,7 @@ theorem integrable_den (hd : RescaledData l μ G w Φ₀ w₀ W c) {t : T}
   rw [Real.norm_eq_abs, abs_mul, Real.abs_exp]
   exact hd.bound_den hl u
 
+omit [l.IsCountablyGenerated] in
 /-- Integrability of the weighted energy density where the comparability bound holds. -/
 theorem integrable_num (hd : RescaledData l μ G w Φ₀ w₀ W c) {t : T}
     (hl : ∀ u, w t u ≠ 0 → c * Φ₀ u ≤ G t u) (hG : ∀ u, w t u ≠ 0 → 0 ≤ G t u) :
