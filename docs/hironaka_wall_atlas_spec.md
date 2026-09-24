@@ -572,3 +572,8 @@ hironaka `wall-atlas` (local): the logarithmic modules and the dominant-set vari
 `WallFibreExpectationDominant`; one wrapped line), and `TheoremPhase.lean` carries the ambient
 `wall_fibre_expectation_dominant` (`64ea01529`): the resolution's record with certificates for a
 dominant set of terms only, the rest assumed negligible at the dominant normalisation.
+- `WallTermPositivity.lean`: `termConst_pos` — the term constant is positive when the limiting
+  weight is positive on the limiting domain and that domain has positive measure (integrand
+  nonnegative, integrable by the certificate's envelope, positive on the domain); with the
+  measurability of `facePt`, `limitCut`, `limitBranchPt`, `limitWeight`, `limitUnit` and
+  `dsProfile`. This supplies the nonzero-denominator hypothesis of both fibre-expectation theorems.
