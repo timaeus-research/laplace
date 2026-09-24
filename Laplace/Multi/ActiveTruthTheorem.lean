@@ -11,7 +11,8 @@ import Laplace.Multi.ActiveTruthLimit
 The assembly of steps 1–5 (`notes/active_truth_handoff.md`). For the constant-unit model kernel
 `K(t) = A t^{-γp} ∫_{(0,ρ)^n, cut} w₀ ∏ x^r e^{-B t^δ a₀ ∏ x^κ} dx` on `n = k + 2` coordinates
 with `r + 1 = βκ − ηQ` (the dual certificate), `κ > 0`, the transverse matrix
-`M = [[κ_a, κ_b], [−Q_a, −Q_b]]` invertible and the two fibre constraints nondegenerate (`(c_j, a_j) ≠ (0, 0)`):
+`M = [[κ_a, κ_b], [−Q_a, −Q_b]]` invertible and the two fibre constraints nondegenerate
+(`(c_j, a_j) ≠ (0, 0)`):
 
 `t^{γp + βδ − ηγ} / (log t)^k · K(t) →
   A w₀ ρ^{∑(r+1)} / |det M| · Γ(β) c₀^{-β} e^{-ηh₀}/η · vol(F')`
