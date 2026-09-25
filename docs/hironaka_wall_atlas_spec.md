@@ -2298,3 +2298,14 @@ certificates for concrete resolved charts beyond the identity chart.
   rewrites the `q/p` inside `-(1 - q/p)` too — prove the exponent identity by a `calc` through
   `Real.rpow_add`; a new module name must be grepped against `Laplace/Multi/` first — creating a
   file with an existing name silently OVERWRITES the landed module (git shows ` M`, not `??`).
+- `ProfileFamily.lean` (NOT mirrored; the wall profile as an EXPONENTIAL FAMILY in the wall variable):
+  `integrableOn_profile` (polynomial-growth observables), **`hasDerivAt_profileNum_poly`** /
+  `hasDerivAt_profilePosterior_poly` (response for `|ψ| ≤ M y^r`), **`iteratedDeriv_profileNum`**
+  (`∂_c^n N_ψ = (−1)^n N_{ψ y^{nq}}`, all orders, by induction with `EventuallyEq.deriv_eq`),
+  `profileNum_one_pos`, `profileLogZ := log Z(c)`, **`profile_expFamily`**
+  (`ρ_c = e^{-y^p} exp(−c y^q − A(c))`), `hasDerivAt_profileLogZ` (`A' = −⟨y^q⟩`),
+  `profileVar_eq/nonneg`, **`profileVar_pos`** (`q > 0`; support argument beyond `max(m^{1/q},0)+1`),
+  `hasDerivAt_deriv_profileLogZ` (`A'' = Var_c(y^q)`), **`profileLogZ_convexOn`** (on `Ioi 0`, via
+  `convexOn_of_deriv2_nonneg` + `interior_Ioi` + `change 0 ≤ deriv (deriv _) c`),
+  **`profileMean_strictAntiOn`** / `profileMean_injOn` (the mean map `c ↦ ⟨y^q⟩_c` is strictly
+  decreasing: the wall is traversed monotonically by one sufficient statistic).

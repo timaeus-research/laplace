@@ -267,6 +267,7 @@ import Laplace.Multi.MixtureRigidity
 import Laplace.Multi.CoupledPhaseDiagram
 import Laplace.Multi.TwoMonomialWall
 import Laplace.Multi.ProfileResponse
+import Laplace.Multi.ProfileFamily
 import Laplace.Multi.ValuationLP
 import Laplace.Multi.WallLogMultiplicity
 import Laplace.Multi.WallSecondCrossover
