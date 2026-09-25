@@ -28,11 +28,11 @@ open Real MeasureTheory Set Filter Topology Function
 
 namespace Laplace.Multi
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable (D : WallChartsData m ℓ L')
+variable {T : (Fin (m + 1) → ℝ) → ℝ} (D : TruthChartsData m T L')
 
 theorem bridgePt_zero (i : D.ι) (ε : Fin m → Bool) (b : Bool) : D.bridgePt i ε b 0 0 = 0 := by
   unfold bridgePt
@@ -68,7 +68,7 @@ theorem weightFn_eq_of_mem_closedBall (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {x
     (h : D.bridgePt i ε b x v ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i)) :
     P.weightFn i φ ε b x v = φ (D.rep i (D.bridgePt i ε b x v)) *
       (P.wt i (D.bridgePt i ε b x v) * |P.b i (D.bridgePt i ε b x v)|) := by
-  unfold WallChartsData.Phase.weightFn
+  unfold TruthChartsData.Phase.weightFn
   by_cases hφ0 : φ (D.rep i (D.bridgePt i ε b x v)) = 0
   · rw [hφ0, zero_mul]
     exact (Set.indicator_apply_eq_zero (s := D.dom i)
@@ -120,18 +120,19 @@ theorem ma_le_abs_a_zero : P.ma i ≤ |P.a i 0| :=
 
 end Phase
 
-end WallChartsData
+end TruthChartsData
 
 section LogTerm
 
-variable {k : ℕ} {ℓ : Fin (k + 1 + 1)} {L' : Set (Fin (k + 1 + 1) → ℝ)}
-  {D : WallChartsData (k + 1) ℓ L'} {F : (Fin (k + 1 + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {k : ℕ} {L' : Set (Fin (k + 1 + 1) → ℝ)}
+  {T : (Fin (k + 1 + 1) → ℝ) → ℝ}
+  {D : TruthChartsData (k + 1) T L'} {F : (Fin (k + 1 + 1) → ℝ) → ℝ} (P : D.Phase F)
   {i : D.ι} {ε : Fin (k + 1) → Bool} {b : Bool} {σ γ : ℝ} {φ : (Fin (k + 1 + 1) → ℝ) → ℝ}
 
 /-- **The logarithmic term asymptotic of a wall chart.** For a chart with a pure truth monomial
 (`Q = 0`) and a fully tied transverse face, the model kernel of the term satisfies
 `t^{γp + δλ}/(log t)^k · K(t) → tiedConst A B δ κ r λ ρ |a(0)| (φ(rep 0) wt(0) |b(0)|)`. -/
-theorem WallChartsData.Phase.tendsto_modelKernelOf_tied (hσ : σ ≠ 0) (hγ : 0 < γ)
+theorem TruthChartsData.Phase.tendsto_modelKernelOf_tied (hσ : σ ≠ 0) (hγ : 0 < γ)
     (hQ : D.Qexp i = 0) (hκ : ∀ j, 0 < P.kappa i j) {lam : ℝ} (hlam : 0 < lam)
     (htied : ∀ j, (P.rExp i j + 1) / P.kappa i j = lam) (hδ : 0 < P.phaseExp i γ)
     (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
@@ -140,7 +141,7 @@ theorem WallChartsData.Phase.tendsto_modelKernelOf_tied (hσ : σ ≠ 0) (hγ : 
         P.modelKernelOf i φ ε b t γ σ) atTop
       (𝓝 (tiedConst (P.constA i σ) (P.constB i σ) (P.phaseExp i γ) (P.kappa i) (P.rExp i) lam
         (D.ρ i) |P.a i 0| (φ (D.rep i 0) * (P.wt i 0 * |P.b i 0|)))) := by
-  unfold WallChartsData.Phase.modelKernelOf
+  unfold TruthChartsData.Phase.modelKernelOf
   rw [hQ]
   refine tendsto_modelKernel_tied (D.ρ_pos i) P.constA_nonneg (D.constD_nonneg i σ) hκ hlam htied
     (P.constB_pos hσ) hδ (div_pos hγ (Nat.cast_pos.mpr (D.q_pos i))) (P.ma_pos i)

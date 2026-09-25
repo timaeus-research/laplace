@@ -23,9 +23,10 @@ open scoped ENNReal Matrix
 
 namespace Laplace.Multi
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {m k : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {m k : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {i : D.ι} {ε : Fin m → Bool} {b : Bool}
   {σ : ℝ → ℝ} {σ₀ γ β η : ℝ} {φ : (Fin (m + 1) → ℝ) → ℝ}
 
@@ -139,7 +140,7 @@ open scoped Classical in
 /-- **The active-truth term along a moving parameter**: an admissible (at `σ₀`) branch. -/
 theorem tendsto_termKernel_activeTruth_param (e : Fin k ⊕ Fin 2 ≃ Fin m)
     (hσ : Tendsto σ atTop (𝓝 σ₀)) (hσ₀ : σ₀ ≠ 0) (hγ : 0 < γ)
-    {p : WallChartsData.Phase.TermIdx D} (hadm : D.admissible p.1 p.2.1 p.2.2 σ₀) (hβ : 0 < β)
+    {p : TruthChartsData.Phase.TermIdx D} (hadm : D.admissible p.1 p.2.1 p.2.2 σ₀) (hβ : 0 < β)
     (hη : 0 < η) (hδ : 0 ≤ P.phaseExp p.1 γ) (hκ : ∀ j, 0 < P.kappa p.1 j)
     (hΔ : (transMat (P.kappa p.1 ∘ e) (D.Qexp p.1 ∘ e)).det ≠ 0)
     (hc₀ : fibreCoef (P.kappa p.1 ∘ e) (D.Qexp p.1 ∘ e) 0 ≠ 0 ∨
@@ -159,6 +160,6 @@ theorem tendsto_termKernel_activeTruth_param (e : Fin k ⊕ Fin 2 ≃ Fin m)
   unfold termKernel
   rw [if_pos (ht.mpr hadm)]
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

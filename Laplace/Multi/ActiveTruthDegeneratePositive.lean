@@ -22,9 +22,10 @@ open scoped ENNReal Matrix
 
 namespace Laplace.Multi
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {m k : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {m k : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {σ γ β η : ℝ}
 
 theorem isOpen_degSet (i : D.ι) (σ : ℝ) (e : Fin k ⊕ Fin 2 ≃ Fin m) :
@@ -114,6 +115,6 @@ theorem activeTruthDegMeasure_eq_zero_of_disjoint (i : D.ι) (ε : Fin m → Boo
   unfold activeTruthDegDensity
   rw [Set.indicator_of_notMem hv', mul_zero, ENNReal.ofReal_zero]
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

@@ -32,9 +32,10 @@ open Real MeasureTheory Set Filter Topology
 
 namespace Laplace.Multi
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} (D : WallChartsData m ℓ L')
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  (D : TruthChartsData m T L')
 variable {k : ℕ} {ν : Type*} [Fintype ν]
 
 omit [Fintype ν] in
@@ -233,7 +234,7 @@ open scoped Classical in
 /-- The `termKernel` form of the partially tied coefficient measure. -/
 theorem tendsto_termKernel_partial_measure (e : Fin (k + 1) ⊕ ν ≃ Fin m) (hσ : σ ≠ 0)
     (hγ : 0 < γ) (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
-    (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {p : WallChartsData.Phase.TermIdx D}
+    (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {p : TruthChartsData.Phase.TermIdx D}
     (hadm : D.admissible p.1 p.2.1 p.2.2 σ) (hQ : D.Qexp p.1 = 0) (hκ : ∀ j, 0 < P.kappa p.1 j)
     (hlam : 0 < lam)
     (htied : ∀ j, (P.rExp p.1 (e (Sum.inl j)) + 1) / P.kappa p.1 (e (Sum.inl j)) = lam)
@@ -244,7 +245,7 @@ theorem tendsto_termKernel_partial_measure (e : Fin (k + 1) ⊕ ν ≃ Fin m) (h
       (𝓝 (∫ x, φ x ∂(P.partialMeasure p.1 p.2.1 p.2.2 σ γ lam e))) := by
   have h := P.tendsto_modelKernelOf_partial_measure (ε := p.2.1) (b := p.2.2) e hσ hγ hQ hκ hlam
     htied hgap hδ hφc hφ hMφ hφL
-  unfold WallChartsData.Phase.termKernel
+  unfold TruthChartsData.Phase.termKernel
   simp only [if_pos hadm]
   exact h
 
@@ -280,6 +281,6 @@ theorem tendsto_fibre_expectation_lex_measure (hS : ∀ i, |D.S i| = 1) (hF : �
 
 end Phase
 
-end WallChartsData
+end TruthChartsData
 
 end Laplace.Multi

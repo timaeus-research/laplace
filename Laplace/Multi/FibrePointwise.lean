@@ -56,15 +56,15 @@ theorem continuous_ambientFibre (ℓ : Fin (m + 1)) (A : Set (Fin m → ℝ))
   · rw [lintegral_indicator_const measurableSet_closedBall]
     exact ENNReal.mul_ne_top hM measure_closedBall_lt_top.ne
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} (D : WallChartsData m ℓ L')
+variable {T : (Fin (m + 1) → ℝ) → ℝ} {L' : Set (Fin (m + 1) → ℝ)} (D : TruthChartsData m T L')
 
 /-- For `θ` supported in `L'`, the chart integrand is `θ ∘ rep · dens` without the indicator. -/
 theorem chartFun_eq {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞} (hθL : ∀ z, θ z ≠ 0 → z ∈ L') (i : D.ι) :
     D.chartFun θ i = fun u ↦ θ (D.rep i u) * ENNReal.ofReal (D.dens i u) := by
   funext u
-  unfold chartFun
+  unfold TruthChartsData.chartFun
   by_cases hu : u ∈ D.dom i
   · rw [indicator_of_mem hu]
   · rw [indicator_of_notMem hu]
@@ -107,7 +107,7 @@ supported in `L'`. -/
 theorem continuousAt_totalKernel {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞} (hθc : Continuous θ) {M : ℝ≥0∞}
     (hM : M ≠ ∞) (hθM : ∀ z, θ z ≤ M) (hθL : ∀ z, θ z ≠ 0 → z ∈ L') {s₀ : ℝ} (hs₀ : s₀ ≠ 0) :
     ContinuousAt (D.totalKernel θ) s₀ := by
-  unfold totalKernel
+  unfold TruthChartsData.totalKernel
   refine tendsto_finsetSum _ fun i _ ↦ ?_
   obtain ⟨C, hC⟩ := D.exists_dens_bound i
   refine continuousAt_fibreKernel (D.k i) (D.S i) (D.q_pos i)
@@ -123,6 +123,12 @@ theorem continuousAt_totalKernel {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞} (h�
       apply hu
       simp only [h, ENNReal.ofReal_zero, mul_zero]
     exact mem_ball_zero_iff.mp (D.dens_supp i u hd)
+
+end TruthChartsData
+
+namespace WallChartsData
+
+variable {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
 
 /-- The coordinate splitting at `ℓ`. -/
 local notation "splitAt" => MeasurableEquiv.piFinSuccAbove (fun _ : Fin (m + 1) ↦ ℝ) ℓ

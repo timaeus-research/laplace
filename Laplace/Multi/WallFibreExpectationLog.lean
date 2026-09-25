@@ -27,11 +27,12 @@ open scoped ENNReal
 
 namespace Laplace.Multi
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 variable {σ γ : ℝ} {φ : (Fin (m + 1) → ℝ) → ℝ}
 
 open scoped Classical in
@@ -50,7 +51,7 @@ theorem tendsto_termKernel_of_not_admissible {p : TermIdx D}
 /-- An admissible branch at a certified isolated scale: the power law `(λ_p, 0)`. -/
 theorem tendsto_termKernel_vertex (hS : ∀ i, |D.S i| = 1) (hσ : σ ≠ 0)
     (htruth : ∀ i, ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
     (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
     (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {α : D.ι → (Fin m → Bool) → Bool → Fin m → ℝ} {p : TermIdx D}
     (hadm : D.admissible p.1 p.2.1 p.2.2 σ)
@@ -89,20 +90,21 @@ theorem tendsto_fibre_expectation_lex (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 �
   rw [P.totalKernel_toReal_eq_sum_terms hS hF hFm hψc.measurable hψ hMψ ht hσ,
     P.totalKernel_toReal_eq_sum_terms hS hF hFm hχc.measurable hχ hMχ ht hσ]
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 section Tied
 
-variable {k : ℕ} {ℓ : Fin (k + 1 + 1)} {L' : Set (Fin (k + 1 + 1) → ℝ)}
-  {D : WallChartsData (k + 1) ℓ L'} {F : (Fin (k + 1 + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {k : ℕ} {L' : Set (Fin (k + 1 + 1) → ℝ)}
+  {T : (Fin (k + 1 + 1) → ℝ) → ℝ}
+  {D : TruthChartsData (k + 1) T L'} {F : (Fin (k + 1 + 1) → ℝ) → ℝ} (P : D.Phase F)
   {σ γ : ℝ} {φ : (Fin (k + 1 + 1) → ℝ) → ℝ}
 
 open scoped Classical in
 /-- An admissible branch of a chart with a pure truth monomial and a fully tied transverse face:
 the power–log law `(γp + δλ, k)` with the constant at the wall point. -/
-theorem WallChartsData.Phase.tendsto_termKernel_tied (hσ : σ ≠ 0) (hγ : 0 < γ)
+theorem TruthChartsData.Phase.tendsto_termKernel_tied (hσ : σ ≠ 0) (hγ : 0 < γ)
     (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
-    (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {p : WallChartsData.Phase.TermIdx D}
+    (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {p : TruthChartsData.Phase.TermIdx D}
     (hadm : D.admissible p.1 p.2.1 p.2.2 σ) (hQ : D.Qexp p.1 = 0) (hκ : ∀ j, 0 < P.kappa p.1 j)
     {lam : ℝ} (hlam : 0 < lam) (htied : ∀ j, (P.rExp p.1 j + 1) / P.kappa p.1 j = lam)
     (hδ : 0 < P.phaseExp p.1 γ) :
@@ -113,7 +115,7 @@ theorem WallChartsData.Phase.tendsto_termKernel_tied (hσ : σ ≠ 0) (hγ : 0 <
         (φ (D.rep p.1 0) * (P.wt p.1 0 * |P.b p.1 0|)))) := by
   have h := P.tendsto_modelKernelOf_tied (ε := p.2.1) (b := p.2.2) hσ hγ hQ hκ hlam htied hδ hφc hφ
     hMφ hφL
-  unfold WallChartsData.Phase.termKernel
+  unfold TruthChartsData.Phase.termKernel
   simp only [if_pos hadm]
   exact h
 

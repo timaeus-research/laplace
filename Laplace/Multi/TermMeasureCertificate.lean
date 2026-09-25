@@ -27,11 +27,11 @@ open Real MeasureTheory Set Filter Topology
 
 namespace Laplace.Multi
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ}
+variable {T : (Fin (m + 1) → ℝ) → ℝ} {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ}
 
 /-- A coefficient certificate of the phase `P` at the parameters `(σ, γ)`. -/
 structure TermMeasureCertificate (P : D.Phase F) (σ γ : ℝ) where
@@ -104,13 +104,14 @@ theorem tendsto_fibre_expectation (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F
 
 end TermMeasureCertificate
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
-open WallChartsData.Phase in
+open TruthChartsData.Phase in
 /-- **Certified phases with the same leading expectations have the same normalised leading
 measure** on an open region. -/
-theorem WallChartsData.Phase.TermMeasureCertificate.normalise_eq_of_forall_tendsto
-    (hL' : IsOpen L') {D₁ D₂ : WallChartsData m ℓ L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
+theorem TruthChartsData.Phase.TermMeasureCertificate.normalise_eq_of_forall_tendsto
+    (hL' : IsOpen L') {T : (Fin (m + 1) → ℝ) → ℝ}
+    {D₁ D₂ : TruthChartsData m T L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
     {P₁ : D₁.Phase F₁} {P₂ : D₂.Phase F₂} {σ₁ γ₁ σ₂ γ₂ : ℝ}
     (C₁ : P₁.TermMeasureCertificate σ₁ γ₁) (C₂ : P₂.TermMeasureCertificate σ₂ γ₂)
     (hS₁ : ∀ i, |D₁.S i| = 1) (hF₁ : ∀ z, 0 ≤ F₁ z) (hFm₁ : Measurable F₁) (hσ₁ : σ₁ ≠ 0)

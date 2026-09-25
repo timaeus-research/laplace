@@ -114,9 +114,10 @@ theorem eventually_uniform_of_moving {C : Set ℝ} (hC : IsCompact C) {F : ℝ �
   rw [dist_zero_right, Real.norm_eq_abs] at hk
   exact absurd (hS (arg (φ k))).2 (not_le.mpr hk)
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {m k : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {m k : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {i : D.ι} {ε : Fin m → Bool} {b : Bool}
   {σ γ β η : ℝ} {φ : (Fin (m + 1) → ℝ) → ℝ}
 
@@ -169,7 +170,7 @@ open scoped Classical in
 is admissible, the normalised active-truth term kernel converges uniformly in `σ`. -/
 theorem tendsto_termKernel_activeTruth_uniform (e : Fin k ⊕ Fin 2 ≃ Fin m) {C : Set ℝ}
     (hC : IsCompact C) (hC0 : ∀ σ ∈ C, σ ≠ 0) (hγ : 0 < γ)
-    {p : WallChartsData.Phase.TermIdx D} (hadm : ∀ σ ∈ C, D.admissible p.1 p.2.1 p.2.2 σ)
+    {p : TruthChartsData.Phase.TermIdx D} (hadm : ∀ σ ∈ C, D.admissible p.1 p.2.1 p.2.2 σ)
     (hβ : 0 < β) (hη : 0 < η) (hδ : 0 ≤ P.phaseExp p.1 γ) (hκ : ∀ j, 0 < P.kappa p.1 j)
     (hΔ : (transMat (P.kappa p.1 ∘ e) (D.Qexp p.1 ∘ e)).det ≠ 0)
     (hc₀ : fibreCoef (P.kappa p.1 ∘ e) (D.Qexp p.1 ∘ e) 0 ≠ 0 ∨
@@ -192,6 +193,6 @@ theorem tendsto_termKernel_activeTruth_uniform (e : Fin k ⊕ Fin 2 ≃ Fin m) {
   exact P.tendsto_termKernel_activeTruth_param e hσ (hC0 σ₀ hσ₀) hγ (hadm σ₀ hσ₀) hβ hη hδ hκ hΔ
     hc₀ hc₁ hr hφc hφ hMφ hφL
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

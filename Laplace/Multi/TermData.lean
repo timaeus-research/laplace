@@ -33,9 +33,10 @@ theorem tiedConst_nonneg {k : ℕ} {A B δ : ℝ} {κ r : Fin (k + 1) → ℝ} {
   exact mul_nonneg (div_nonneg (Real.Gamma_pos_of_pos hlam).le (Nat.cast_nonneg _))
     (Finset.prod_nonneg fun i _ ↦ div_nonneg zero_le_one (hκ i).le)
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {σ γ : ℝ}
 
 /-- The certified data of one term: a power, a logarithmic order and a finite coefficient
@@ -69,7 +70,7 @@ def TermData.ofNotAdmissible {p : TermIdx D} (h : ¬ D.admissible p.1 p.2.1 p.2.
 /-- An admissible branch at a certified isolated scale: `(λ_p, 0, termMeasure)`. -/
 noncomputable def TermData.vertex (hS : ∀ i, |D.S i| = 1) (hσ : σ ≠ 0)
     (htruth : ∀ i, ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
     {α : D.ι → (Fin m → Bool) → Bool → Fin m → ℝ} {p : TermIdx D}
     (hadm : D.admissible p.1 p.2.1 p.2.2 σ)
     (hfeas : ConstrainedFeasible (D.Qexp p.1) (P.kappa p.1) γ (P.phaseExp p.1 γ)
@@ -83,20 +84,21 @@ noncomputable def TermData.vertex (hS : ∀ i, |D.S i| = 1) (hσ : σ ≠ 0)
   tendsto := fun φ hφc hφ ⟨M, hM⟩ hφL ↦ by
     classical
     have h := P.tendsto_termKernel_vertex hS hσ htruth hφc hφ hM hφL hadm hfeas hprof
-    unfold WallChartsData.Phase.termConst' at h
+    unfold TruthChartsData.Phase.termConst' at h
     rwa [if_pos hadm, P.termConst_eq_integral hφc.measurable] at h
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 section Tied
 
-variable {k : ℕ} {ℓ : Fin (k + 1 + 1)} {L' : Set (Fin (k + 1 + 1) → ℝ)}
-  {D : WallChartsData (k + 1) ℓ L'} {F : (Fin (k + 1 + 1) → ℝ) → ℝ} (P : D.Phase F) {σ γ : ℝ}
+variable {k : ℕ} {L' : Set (Fin (k + 1 + 1) → ℝ)}
+  {T : (Fin (k + 1 + 1) → ℝ) → ℝ}
+  {D : TruthChartsData (k + 1) T L'} {F : (Fin (k + 1 + 1) → ℝ) → ℝ} (P : D.Phase F) {σ γ : ℝ}
 
 /-- An admissible branch of a fully tied chart: `(γp + δλ, k, c · δ_{rep 0})` with the tied
 constant `c`. -/
-noncomputable def WallChartsData.Phase.TermData.tied (hσ : σ ≠ 0) (hγ : 0 < γ)
-    {p : WallChartsData.Phase.TermIdx D} (hadm : D.admissible p.1 p.2.1 p.2.2 σ)
+noncomputable def TruthChartsData.Phase.TermData.tied (hσ : σ ≠ 0) (hγ : 0 < γ)
+    {p : TruthChartsData.Phase.TermIdx D} (hadm : D.admissible p.1 p.2.1 p.2.2 σ)
     (hQ : D.Qexp p.1 = 0) (hκ : ∀ j, 0 < P.kappa p.1 j) {lam : ℝ} (hlam : 0 < lam)
     (htied : ∀ j, (P.rExp p.1 j + 1) / P.kappa p.1 j = lam) (hδ : 0 < P.phaseExp p.1 γ) :
     P.TermData σ γ p where
@@ -126,12 +128,13 @@ end Tied
 
 section Partial
 
-variable {m k : ℕ} {ν : Type*} [Fintype ν] {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-  {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {σ γ : ℝ}
+variable {m k : ℕ} {ν : Type*} [Fintype ν] {L' : Set (Fin (m + 1) → ℝ)}
+  {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {σ γ : ℝ}
 
 /-- An admissible branch of a partially tied chart: `(γp + δλ, k, partialMeasure)`. -/
-noncomputable def WallChartsData.Phase.TermData.partial (e : Fin (k + 1) ⊕ ν ≃ Fin m) (hσ : σ ≠ 0)
-    (hγ : 0 < γ) {p : WallChartsData.Phase.TermIdx D} (hadm : D.admissible p.1 p.2.1 p.2.2 σ)
+noncomputable def TruthChartsData.Phase.TermData.partial (e : Fin (k + 1) ⊕ ν ≃ Fin m) (hσ : σ ≠ 0)
+    (hγ : 0 < γ) {p : TruthChartsData.Phase.TermIdx D} (hadm : D.admissible p.1 p.2.1 p.2.2 σ)
     (hQ : D.Qexp p.1 = 0) (hκ : ∀ j, 0 < P.kappa p.1 j) {lam : ℝ} (hlam : 0 < lam)
     (htied : ∀ j, (P.rExp p.1 (e (Sum.inl j)) + 1) / P.kappa p.1 (e (Sum.inl j)) = lam)
     (hgap : ∀ j, lam * P.kappa p.1 (e (Sum.inr j)) < P.rExp p.1 (e (Sum.inr j)) + 1)

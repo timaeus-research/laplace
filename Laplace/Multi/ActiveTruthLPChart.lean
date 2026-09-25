@@ -187,9 +187,9 @@ theorem activeTruth_lam_eq_lpExponent (p : ℝ)
 
 end Spectator
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ} {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {i : D.ι} {ε : Fin m → Bool} {b : Bool}
   {σ γ β η : ℝ}
 
@@ -347,6 +347,6 @@ theorem activeTruthSpecMeasure_ne_zero (i : D.ι) (ε : Fin m → Bool) (b : Boo
       (mul_pos hP (mul_pos hu' (mul_pos hp1' ha)))).ne'
   exact absurd h1 hpos'.ne'
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

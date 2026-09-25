@@ -30,10 +30,10 @@ theorem integral_eq_integral_restrict_of_vanish {X : Type*} [MeasurableSpace X] 
     by_contra h
     exact hx (hψU x h)).symm
 
-namespace WallChartsData.Phase.TermMeasureCertificate
+namespace TruthChartsData.Phase.TermMeasureCertificate
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-  {D₁ D₂ : WallChartsData m ℓ L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
+  {T : (Fin (m + 1) → ℝ) → ℝ} {D₁ D₂ : TruthChartsData m T L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
   {P₁ : D₁.Phase F₁} {P₂ : D₂.Phase F₂} {σ₁ γ₁ σ₂ γ₂ : ℝ}
   (C₁ : P₁.TermMeasureCertificate σ₁ γ₁) (C₂ : P₂.TermMeasureCertificate σ₂ γ₂)
 
@@ -89,9 +89,9 @@ theorem normalise_restrict_eq_iff_forall_tendsto (hL' : IsOpen L')
     exact C₁.tendsto_fibreRatio_sub_of_normalise_restrict_eq C₂ hL' hS₁ hF₁ hFm₁ hσ₁ hS₂ hF₂ hFm₂
       hσ₂ hχc hχ hMχ hχL hpos₁ hpos₂ hnorm hψc hψ hM hψL
   · intro hsame
-    exact WallChartsData.Phase.TermMeasureCertificate.normalise_eq_of_forall_tendsto hL' C₁ C₂ hS₁
+    exact TruthChartsData.Phase.TermMeasureCertificate.normalise_eq_of_forall_tendsto hL' C₁ C₂ hS₁
       hF₁ hFm₁ hσ₁ hS₂ hF₂ hFm₂ hσ₂ hχc hχ hMχ hχL hpos₁ hpos₂ hsame
 
-end WallChartsData.Phase.TermMeasureCertificate
+end TruthChartsData.Phase.TermMeasureCertificate
 
 end Laplace.Multi

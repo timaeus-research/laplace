@@ -444,11 +444,12 @@ theorem integrable_envelope_mul_profile_of_vertex {m : ℕ} {ρ B D γ q δ c am
     · simp only [Set.indicator_of_notMem hu]
       simp
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 
 /-- **The vertex certificate for a wall chart**: a strictly optimal LP vertex with tied phase and
 strict truth yields the profile-integrability certificate of the term `(i, ε, b)`. -/
@@ -473,6 +474,6 @@ theorem ProfileIntegrableOf.of_vertex {i : D.ι} {ε : Fin m → Bool} {b : Bool
       Φint := integrable_envelope_mul_profile_of_vertex j (D.ρ_pos i) hB hc hκj hη hδκ hα
         hstrict hgap P.measurable_limitUnit (P.ma_pos i) ha₀ }
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

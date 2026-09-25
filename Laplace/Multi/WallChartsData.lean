@@ -31,8 +31,11 @@ namespace Laplace.Multi
 
 variable {m : ℕ}
 
-/-- The Euclidean export of a wall atlas over a region `L'`. -/
-structure WallChartsData (m : ℕ) (ℓ : Fin (m + 1)) (L' : Set (Fin (m + 1) → ℝ)) where
+/-- The Euclidean export of a chart system monomialising a truth function `T` over `L'`: finitely
+many continuous chart representatives on closed boxes, chart domains, continuous nonnegative
+densities vanishing off the open box, the exact monomial form `T ∘ rep i = truthMono (S i) (q i)`
+on the domains, and the weighted transport identity. -/
+structure TruthChartsData (m : ℕ) (T : (Fin (m + 1) → ℝ) → ℝ) (L' : Set (Fin (m + 1) → ℝ)) where
   /-- The finite chart index. -/
   ι : Type
   [fin : Fintype ι]
@@ -58,20 +61,22 @@ structure WallChartsData (m : ℕ) (ℓ : Fin (m + 1)) (L' : Set (Fin (m + 1) �
   q : ι → Fin (m + 1) → ℕ
   k : ι → Fin (m + 1)
   q_pos : ∀ i, 0 < q i (k i)
-  /-- On the domain, the truth coordinate of the representative is the exact monomial. -/
-  truth : ∀ i, ∀ u ∈ dom i, rep i u ℓ = truthMono (S i) (q i) u
+  /-- On the domain, the truth function of the representative is the exact monomial. -/
+  truth : ∀ i, ∀ u ∈ dom i, T (rep i u) = truthMono (S i) (q i) u
   /-- The weighted transport identity. -/
   transport : ∀ Ψ : (Fin (m + 1) → ℝ) → ℝ≥0∞, Measurable Ψ →
     ∫⁻ z in L', Ψ z = ∑ i, ∫⁻ u in dom i, Ψ (rep i u) * ENNReal.ofReal (dens i u)
 
-attribute [instance] WallChartsData.fin
+attribute [instance] TruthChartsData.fin
 
-namespace WallChartsData
+/-- The Euclidean export of a wall atlas over a region `L'`: chart data for the coordinate truth
+`z ℓ`. -/
+abbrev WallChartsData (m : ℕ) (ℓ : Fin (m + 1)) (L' : Set (Fin (m + 1) → ℝ)) :=
+  TruthChartsData m (fun z ↦ z ℓ) L'
 
-variable {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} (D : WallChartsData m ℓ L')
+namespace TruthChartsData
 
-/-- The coordinate splitting at `ℓ`. -/
-local notation "splitAt" => MeasurableEquiv.piFinSuccAbove (fun _ : Fin (m + 1) ↦ ℝ) ℓ
+variable {T : (Fin (m + 1) → ℝ) → ℝ} {L' : Set (Fin (m + 1) → ℝ)} (D : TruthChartsData m T L')
 
 /-- The chart integrand of `θ`: `θ ∘ rep` times the density, carried by the domain. -/
 noncomputable def chartFun (θ : (Fin (m + 1) → ℝ) → ℝ≥0∞) (i : D.ι) (u : Fin (m + 1) → ℝ) :
@@ -100,12 +105,12 @@ theorem measurable_totalKernel {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞} (hθ 
   Finset.measurable_sum _ fun i _ ↦
     measurable_fibreKernel (D.k i) (D.S i) (D.q i) (D.measurable_chartFun hθ i)
 
-/-- **The push-forward identity.** For nonnegative measurable `θ` and `η`,
-`∫⁻_{L'} θ(z) η(z ℓ) dz = ∫⁻ η(s) K_θ(s) ds`. -/
-theorem lintegral_mul_comp_coord {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞} (hθ : Measurable θ)
-    {η : ℝ → ℝ≥0∞} (hη : Measurable η) :
-    ∫⁻ z in L', θ z * η (z ℓ) = ∫⁻ s, η s * D.totalKernel θ s := by
-  rw [D.transport (fun z ↦ θ z * η (z ℓ)) (hθ.mul (hη.comp (measurable_pi_apply ℓ)))]
+/-- **The push-forward identity for a general truth.** For nonnegative measurable `θ` and `η`,
+`∫⁻_{L'} θ(z) η(T z) dz = ∫⁻ η(s) K_θ(s) ds`. -/
+theorem lintegral_mul_comp_truth (hT : Measurable T) {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞}
+    (hθ : Measurable θ) {η : ℝ → ℝ≥0∞} (hη : Measurable η) :
+    ∫⁻ z in L', θ z * η (T z) = ∫⁻ s, η s * D.totalKernel θ s := by
+  rw [D.transport (fun z ↦ θ z * η (T z)) (hθ.mul (hη.comp hT))]
   unfold totalKernel
   simp_rw [Finset.mul_sum]
   rw [lintegral_finsetSum (f := fun i s ↦ η s * fibreKernel (D.k i) (D.S i) (D.q i)
@@ -120,6 +125,23 @@ theorem lintegral_mul_comp_coord {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞} (h�
   · rw [indicator_of_mem hu, indicator_of_mem hu, D.truth i u hu]
     ring
   · rw [indicator_of_notMem hu, indicator_of_notMem hu, zero_mul]
+
+
+end TruthChartsData
+
+namespace WallChartsData
+
+variable {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} (D : WallChartsData m ℓ L')
+
+/-- The coordinate splitting at `ℓ`. -/
+local notation "splitAt" => MeasurableEquiv.piFinSuccAbove (fun _ : Fin (m + 1) ↦ ℝ) ℓ
+
+/-- **The push-forward identity.** For nonnegative measurable `θ` and `η`,
+`∫⁻_{L'} θ(z) η(z ℓ) dz = ∫⁻ η(s) K_θ(s) ds`. -/
+theorem lintegral_mul_comp_coord {θ : (Fin (m + 1) → ℝ) → ℝ≥0∞} (hθ : Measurable θ)
+    {η : ℝ → ℝ≥0∞} (hη : Measurable η) :
+    ∫⁻ z in L', θ z * η (z ℓ) = ∫⁻ s, η s * D.totalKernel θ s :=
+  D.lintegral_mul_comp_truth (measurable_pi_apply ℓ) hθ hη
 
 /-- **The fibre identity (almost everywhere).** When `L'` is the product region
 `{z | z ℓ ∈ B ∧ z' ∈ A}` (read through the coordinate splitting at `ℓ`), the ambient fibre integral

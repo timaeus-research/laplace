@@ -22,19 +22,21 @@ open Real MeasureTheory Set Filter Topology
 
 namespace Laplace.Multi
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-  {D₁ D₂ : WallChartsData m ℓ L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
+  {T : (Fin (m + 1) → ℝ) → ℝ} {D₁ D₂ : TruthChartsData m T L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
   (P₁ : D₁.Phase F₁) (P₂ : D₂.Phase F₂) {σ₁ γ₁ σ₂ γ₂ : ℝ}
 
 /-- The lexicographic coefficient measure of a family of term measures. -/
-noncomputable def lexMeasure {D : WallChartsData m ℓ L'} (lam : TermIdx D → ℝ)
+noncomputable def lexMeasure {T : (Fin (m + 1) → ℝ) → ℝ}
+    {D : TruthChartsData m T L'} (lam : TermIdx D → ℝ)
     (kk : TermIdx D → ℕ) (μ : TermIdx D → Measure (Fin (m + 1) → ℝ)) (lam₀ : ℝ) (k₀ : ℕ) :
     Measure (Fin (m + 1) → ℝ) :=
   ∑ p ∈ Finset.univ.filter (fun p ↦ lam p = lam₀ ∧ kk p = k₀), μ p
 
-instance {D : WallChartsData m ℓ L'} (lam : TermIdx D → ℝ) (kk : TermIdx D → ℕ)
+instance {T : (Fin (m + 1) → ℝ) → ℝ}
+    {D : TruthChartsData m T L'} (lam : TermIdx D → ℝ) (kk : TermIdx D → ℕ)
     (μ : TermIdx D → Measure (Fin (m + 1) → ℝ)) [∀ p, IsFiniteMeasure (μ p)] (lam₀ : ℝ)
     (k₀ : ℕ) : IsFiniteMeasure (lexMeasure lam kk μ lam₀ k₀) :=
   inferInstanceAs (IsFiniteMeasure (∑ p ∈ _, μ p))
@@ -110,6 +112,6 @@ theorem normalise_restrict_lexMeasure_eq_of_forall_tendsto (hL' : IsOpen L')
     (hK₂ ψ hψc hψ ⟨M, hM⟩) (hK₂ χ hχc hχ ⟨Mχ, hMχ⟩) hpos₂.ne'
   exact sub_eq_zero.mp (tendsto_nhds_unique (h₁.sub h₂) (hsame ψ hψc hψ ⟨M, hM⟩ hψL))
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

@@ -28,11 +28,11 @@ theorem measurableSet_posOrthant {ι : Type*} [Countable ι] :
     MeasurableSet (posOrthant : Set (ι → ℝ)) :=
   MeasurableSet.pi countable_univ fun _ _ ↦ measurableSet_Ioi
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable (D : WallChartsData m ℓ L')
+variable {T : (Fin (m + 1) → ℝ) → ℝ} (D : TruthChartsData m T L')
 
 theorem measurable_bridgePt (i : D.ι) (ε : Fin m → Bool) (b : Bool) :
     Measurable fun p : (Fin m → ℝ) × ℝ ↦ D.bridgePt i ε b p.1 p.2 := by
@@ -42,11 +42,12 @@ theorem measurable_bridgePt (i : D.ι) (ε : Fin m → Bool) (b : Bool) :
   exact (MeasurableEquiv.measurable _).comp
     ((measurable_const.mul measurable_snd).prodMk ((measurable_orth ε).comp measurable_fst))
 
-end WallChartsData
+end TruthChartsData
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 variable {i : D.ι} {φ : (Fin (m + 1) → ℝ) → ℝ} {ε : Fin m → Bool} {b : Bool} {t γ σ : ℝ}
 
 theorem measurable_weightFn (hφ : Measurable φ) :
@@ -62,7 +63,7 @@ theorem measurable_unitFn : Measurable (uncurry (P.unitFn i ε b)) :=
 omit P in
 theorem branchReal_nonneg (hφ : ∀ z, 0 ≤ φ z) (x : Fin m → ℝ) :
     0 ≤ D.branchReal F i φ ε b t γ σ x := by
-  unfold WallChartsData.branchReal
+  unfold TruthChartsData.branchReal
   exact mul_nonneg (Set.indicator_nonneg (fun u _ ↦
     mul_nonneg (mul_nonneg (exp_pos _).le (hφ _)) (D.dens_nonneg i u)) _)
     (div_nonneg (solvedCoord_nonneg _ _ _) (mul_nonneg (Nat.cast_nonneg _) (abs_nonneg _)))
@@ -77,7 +78,7 @@ theorem branchReal_le (hF : ∀ z, 0 ≤ F z) (ht : 0 < t) {C : ℝ} (hC : ∀ u
   have hq : 0 ≤ (D.q i (D.k i) : ℝ) * |σ * t ^ (-γ)| :=
     mul_nonneg (Nat.cast_nonneg _) (abs_nonneg _)
   have hden : 0 ≤ D.ρ i / (D.q i (D.k i) * |σ * t ^ (-γ)|) := div_nonneg (D.ρ_pos i).le hq
-  unfold WallChartsData.branchReal
+  unfold TruthChartsData.branchReal
   set V := solvedCoord (solvedCoeff (D.k i) (D.S i) (D.q i) (orth ε x)) (D.q i (D.k i))
     (σ * t ^ (-γ)) with hVdef
   have hV0 : 0 ≤ V := solvedCoord_nonneg _ _ _
@@ -90,7 +91,7 @@ theorem branchReal_le (hF : ∀ z, 0 ≤ F z) (ht : 0 < t) {C : ℝ} (hC : ∀ u
     have hVρ : V ≤ D.ρ i := by
       have h1 : ‖u (D.k i)‖ ≤ D.ρ i :=
         (norm_le_pi_norm u (D.k i)).trans (mem_closedBall_zero_iff.mp hcb)
-      rwa [hudef, WallChartsData.bridgePt, Fin.insertNth_apply_same, Real.norm_eq_abs, abs_mul,
+      rwa [hudef, TruthChartsData.bridgePt, Fin.insertNth_apply_same, Real.norm_eq_abs, abs_mul,
         abs_bsign, one_mul, abs_of_nonneg hV0] at h1
     have he : exp (-(t * F (D.rep i u))) ≤ 1 :=
       Real.exp_le_one_iff.mpr (neg_nonpos.mpr (mul_nonneg ht.le (hF _)))
@@ -232,7 +233,7 @@ theorem totalKernel_eq_sum_modelKernel (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 
     D.totalKernel (fun z ↦ ENNReal.ofReal (exp (-(t * F z)) * φ z)) (σ * t ^ (-γ)) =
       ∑ i, ∑ ε : Fin m → Bool, ∑ b : Bool, if D.admissible i ε b σ then
         ENNReal.ofReal (P.modelKernelOf i φ ε b t γ σ) else 0 := by
-  unfold WallChartsData.totalKernel
+  unfold TruthChartsData.totalKernel
   exact Finset.sum_congr rfl fun i _ ↦
     P.fibreKernel_eq_sum_modelKernel (hS i) hF hFm hφm hφ hMφ ht hσ
 
@@ -259,6 +260,6 @@ theorem totalKernel_toReal (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hF
   · exact ENNReal.toReal_ofReal (P.modelKernelOf_nonneg (hS i) hF ht hσ hφ)
   · exact ENNReal.toReal_zero
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

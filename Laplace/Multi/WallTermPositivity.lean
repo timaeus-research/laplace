@@ -19,11 +19,11 @@ open Real MeasureTheory Set Filter Topology
 
 namespace Laplace.Multi
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable (D : WallChartsData m ℓ L')
+variable {T : (Fin (m + 1) → ℝ) → ℝ} (D : TruthChartsData m T L')
 
 theorem measurable_facePt {ι : Type*} (α : ι → ℝ) : Measurable (facePt α) :=
   measurable_pi_lambda _ fun j ↦ by
@@ -51,11 +51,12 @@ theorem measurable_limitBranchPt (i : D.ι) (ε : Fin m → Bool) (b : Bool) (σ
     ((measurable_const.mul (measurable_limitCut _ _ _ _ _)).prodMk
       ((measurable_orth ε).comp (measurable_facePt α)))
 
-end WallChartsData
+end TruthChartsData
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 variable {i : D.ι} {φ : (Fin (m + 1) → ℝ) → ℝ} {ε : Fin m → Bool} {b : Bool} {σ γ : ℝ}
   {α : Fin m → ℝ}
 
@@ -177,6 +178,6 @@ theorem termConst_pos (hσ : σ ≠ 0) (hφm : Measurable φ) (hφ : ∀ z, 0 �
     0 < P.termConst i φ ε b σ γ α :=
   P.termConst_pos_of_subset hσ hφm hφ hMφ hprof subset_rfl hlimW hvol
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

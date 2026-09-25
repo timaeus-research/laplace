@@ -32,11 +32,12 @@ theorem dsEnvelope_const (ρ D γ q : ℝ) (Q r α : ι → ℝ) (c : ℝ) (u : 
   unfold dsEnvelope
   ring
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 
 /-- The profile-integrability certificate of a term at the scale `α` (envelope constant `1`; the
 observable enters only through a constant). -/
@@ -91,7 +92,7 @@ noncomputable def termConst (i : D.ι) (φ : (Fin (m + 1) → ℝ) → ℝ) (ε 
 /-- The asymptotic of an admissible term with a certified scale. -/
 theorem tendsto_term (hS : |D.S i| = 1) (hσ : σ ≠ 0) (hadm : D.admissible i ε b σ)
     (htruth : ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
     {φ : (Fin (m + 1) → ℝ) → ℝ} (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
     (hMφ : ∀ z, φ z ≤ Mφ) (hφL : ∀ z, φ z ≠ 0 → z ∈ L')
     (hfeas : ConstrainedFeasible (D.Qexp i) (P.kappa i) γ (P.phaseExp i γ) α)
@@ -105,7 +106,8 @@ theorem tendsto_term (hS : |D.S i| = 1) (hσ : σ ≠ 0) (hadm : D.admissible i 
 /-! ### The assembly over all terms -/
 
 /-- The term index: chart, orthant, branch. -/
-abbrev TermIdx (D : WallChartsData m ℓ L') : Type := D.ι × (Fin m → Bool) × Bool
+abbrev TermIdx {T : (Fin (m + 1) → ℝ) → ℝ}
+    (D : TruthChartsData m T L') : Type := D.ι × (Fin m → Bool) × Bool
 
 /-- The scale exponent of a term. -/
 noncomputable def termLam (γ : ℝ) (α : D.ι → (Fin m → Bool) → Bool → Fin m → ℝ) (p : TermIdx D) :
@@ -126,7 +128,7 @@ noncomputable def termConst' (φ : (Fin (m + 1) → ℝ) → ℝ) (σ γ : ℝ)
 
 theorem tendsto_termKernel (hS : ∀ i, |D.S i| = 1) (hσ : σ ≠ 0)
     (htruth : ∀ i, ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
     {φ : (Fin (m + 1) → ℝ) → ℝ} (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
     (hMφ : ∀ z, φ z ≤ Mφ) (hφL : ∀ z, φ z ≠ 0 → z ∈ L')
     {α : D.ι → (Fin m → Bool) → Bool → Fin m → ℝ}
@@ -162,7 +164,7 @@ denominator constant, the ratio of the total kernels converges to the ratio of t
 constants. -/
 theorem tendsto_fibre_expectation (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hFm : Measurable F)
     (htruth : ∀ i, ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
     (hσ : σ ≠ 0) {ψ χ : (Fin (m + 1) → ℝ) → ℝ} (hψc : Continuous ψ) (hψ : ∀ z, 0 ≤ ψ z) {Mψ : ℝ}
     (hMψ : ∀ z, ψ z ≤ Mψ) (hψL : ∀ z, ψ z ≠ 0 → z ∈ L') (hχc : Continuous χ)
     (hχ : ∀ z, 0 ≤ χ z) {Mχ : ℝ} (hMχ : ∀ z, χ z ≤ Mχ) (hχL : ∀ z, χ z ≠ 0 → z ∈ L')
@@ -186,6 +188,6 @@ theorem tendsto_fibre_expectation (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F
   rw [P.totalKernel_toReal_eq_sum_terms hS hF hFm hψc.measurable hψ hMψ ht hσ,
     P.totalKernel_toReal_eq_sum_terms hS hF hFm hχc.measurable hχ hMχ ht hσ]
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

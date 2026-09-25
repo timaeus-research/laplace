@@ -62,11 +62,11 @@ theorem tendsto_rescaledCut {ι : Type*} [Fintype ι] {D γ q : ℝ} {Q α : ι 
 theorem continuous_orth {ι : Type*} (ε : ι → Bool) : Continuous (orth ε) :=
   continuous_pi fun j ↦ continuous_const.mul (continuous_apply j)
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable (D : WallChartsData m ℓ L')
+variable {T : (Fin (m + 1) → ℝ) → ℝ} (D : TruthChartsData m T L')
 
 /-- The limiting branch point of the rescaling. -/
 noncomputable def limitBranchPt (i : D.ι) (ε : Fin m → Bool) (b : Bool) (σ γ : ℝ)
@@ -78,7 +78,7 @@ theorem tendsto_bridgePt (i : D.ι) (ε : Fin m → Bool) (b : Bool) {σ γ : �
     Tendsto (fun t : ℝ ↦ D.bridgePt i ε b (rescale t α u)
         (rescaledCut (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α t u)) atTop
       (𝓝 (D.limitBranchPt i ε b σ γ α u)) := by
-  unfold limitBranchPt WallChartsData.bridgePt
+  unfold limitBranchPt TruthChartsData.bridgePt
   exact Tendsto.finInsertNth (D.k i)
     ((tendsto_rescaledCut (Nat.cast_pos.mpr (D.q_pos i)) htruth u).const_mul (bsign b))
     (((continuous_orth ε).tendsto _).comp (tendsto_rescale hα u))
@@ -88,7 +88,7 @@ theorem limitBranchPt_mem_ball (i : D.ι) (ε : Fin m → Bool) (b : Bool) {σ �
     (hu : u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α) :
     D.limitBranchPt i ε b σ γ α u ∈ Metric.ball (0 : Fin (m + 1) → ℝ) (D.ρ i) := by
   rw [mem_ball_zero_iff, pi_norm_lt_iff (D.ρ_pos i), Fin.forall_iff_succAbove (D.k i)]
-  unfold limitBranchPt WallChartsData.bridgePt
+  unfold limitBranchPt TruthChartsData.bridgePt
   simp only [Fin.insertNth_apply_same, Fin.insertNth_apply_succAbove, Real.norm_eq_abs, abs_mul,
     abs_bsign, one_mul, abs_orth]
   refine ⟨?_, fun j ↦ ?_⟩
@@ -115,7 +115,7 @@ theorem truthMono_bridgePt (i : D.ι) (hS : |D.S i| = 1) (ε : Fin m → Bool) (
     truthMono (D.S i) (D.q i) (D.bridgePt i ε b x
         (solvedCoord (solvedCoeff (D.k i) (D.S i) (D.q i) (orth ε x)) (D.q i (D.k i))
           (σ * t ^ (-γ)))) = σ * t ^ (-γ) := by
-  unfold WallChartsData.bridgePt
+  unfold TruthChartsData.bridgePt
   rw [truthMono_insertNth]
   have hc : solvedCoeff (D.k i) (D.S i) (D.q i) (orth ε x) ≠ 0 := by
     rw [D.solvedCoeff_orth]
@@ -134,11 +134,12 @@ theorem truthMono_bridgePt (i : D.ι) (hS : |D.S i| = 1) (ε : Fin m → Bool) (
     rw [mul_one] at this
     exact solvedCoord_pos_spec hc (D.q_pos i) this
 
-end WallChartsData
+end TruthChartsData
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 variable {i : D.ι} {φ : (Fin (m + 1) → ℝ) → ℝ} {ε : Fin m → Bool} {b : Bool} {σ γ : ℝ}
   {α : Fin m → ℝ}
 
@@ -189,8 +190,8 @@ domain: the branch point converges into the chart ball, and the chart-domain ind
 eventually `1` wherever `φ` is nonzero. -/
 theorem tendsto_weightFn (hS : |D.S i| = 1) (hadm : D.admissible i ε b σ)
     (htruth : ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
-    (hLφ : ∀ᶠ t in atTop, ∀ z, z ℓ = σ * t ^ (-γ) → φ z ≠ 0 → z ∈ L')
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
+    (hLφ : ∀ᶠ t in atTop, ∀ z, T z = σ * t ^ (-γ) → φ z ≠ 0 → z ∈ L')
     (hφc : Continuous φ) (hα : ∀ j, 0 ≤ α j) (htr : ∑ j, D.Qexp i j * α j ≤ γ) {u : Fin m → ℝ}
     (hu : u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α) :
     Tendsto (fun t ↦ P.weightFn i φ ε b (rescale t α u)
@@ -232,8 +233,8 @@ theorem tendsto_weightFn (hS : |D.S i| = 1) (hadm : D.admissible i ε b σ)
 /-- **The dominant-scale certificate of a wall model kernel.** -/
 theorem wallDominantScaleHyp (hS : |D.S i| = 1) (hσ : σ ≠ 0) (hadm : D.admissible i ε b σ)
     (htruth : ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
-    (hLφ : ∀ᶠ t in atTop, ∀ z, z ℓ = σ * t ^ (-γ) → φ z ≠ 0 → z ∈ L')
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
+    (hLφ : ∀ᶠ t in atTop, ∀ z, T z = σ * t ^ (-γ) → φ z ≠ 0 → z ∈ L')
     (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
     (hfeas : ConstrainedFeasible (D.Qexp i) (P.kappa i) γ (P.phaseExp i γ) α)
     (hint : Integrable fun u ↦
@@ -277,8 +278,8 @@ theorem wallDominantScaleHyp (hS : |D.S i| = 1) (hσ : σ ≠ 0) (hadm : D.admis
 `λ = γp + ∑ (r_j + 1) α_j` the LP value at the certified scale. -/
 theorem tendsto_modelKernelOf (hS : |D.S i| = 1) (hσ : σ ≠ 0) (hadm : D.admissible i ε b σ)
     (htruth : ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
-    (hLφ : ∀ᶠ t in atTop, ∀ z, z ℓ = σ * t ^ (-γ) → φ z ≠ 0 → z ∈ L')
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
+    (hLφ : ∀ᶠ t in atTop, ∀ z, T z = σ * t ^ (-γ) → φ z ≠ 0 → z ∈ L')
     (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
     (hfeas : ConstrainedFeasible (D.Qexp i) (P.kappa i) γ (P.phaseExp i γ) α)
     (hint : Integrable fun u ↦
@@ -301,6 +302,6 @@ theorem tendsto_modelKernelOf (hS : |D.S i| = 1) (hσ : σ ≠ 0) (hadm : D.admi
   (P.wallDominantScaleHyp hS hσ hadm htruth hLφ hφc hφ hMφ hfeas hint hΦint).tendsto_modelKernel
     (P.constA i σ) (P.pExp i)
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

@@ -50,56 +50,56 @@ theorem bs_qk : bsData.q i (bsData.k i) = 1 := rfl
 theorem bs_qk_real : (bsData.q i (bsData.k i) : ℝ) = 1 := by rw [bs_qk]; simp
 
 theorem bs_Qexp (j : Fin 1) : bsData.Qexp i j = 1 := by
-  unfold WallChartsData.Qexp
+  unfold TruthChartsData.Qexp
   rw [bsData_q, bsData_k, Fin.fin_one_eq_zero j, bs_succAbove]
   simp
 
 theorem bs_nu : bsPhase.nu i = 2 := by
-  unfold WallChartsData.Phase.nu
+  unfold TruthChartsData.Phase.nu
   rw [bsPhase_kF, bsData_q, bsData_k]
   simp
 
 theorem bs_kappa (j : Fin 1) : bsPhase.kappa i j = -2 := by
-  unfold WallChartsData.Phase.kappa
+  unfold TruthChartsData.Phase.kappa
   rw [bsPhase_kF, bsData_q, bsData_k, Fin.fin_one_eq_zero j, bs_succAbove]
   simp
 
 theorem bs_pExp : bsPhase.pExp i = 1 := by
-  unfold WallChartsData.Phase.pExp
+  unfold TruthChartsData.Phase.pExp
   rw [bsPhase_hJ, bsData_q, bsData_k]
   norm_num
 
 theorem bs_rExp (j : Fin 1) : bsPhase.rExp i j = -2 := by
-  unfold WallChartsData.Phase.rExp
+  unfold TruthChartsData.Phase.rExp
   rw [bsPhase_hJ, bsData_q, bsData_k, Fin.fin_one_eq_zero j, bs_succAbove]
   norm_num
 
 theorem bs_phaseExp : bsPhase.phaseExp i γ = 1 - 2 * γ := by
-  unfold WallChartsData.Phase.phaseExp
+  unfold TruthChartsData.Phase.phaseExp
   rw [bs_nu]
   ring
 
 theorem bs_constD : bsData.constD i σ = |σ| := by
-  unfold WallChartsData.constD
+  unfold TruthChartsData.constD
   rw [bs_qk_real]
   simp
 
 theorem bs_constB : bsPhase.constB i σ = σ ^ 2 := by
-  unfold WallChartsData.Phase.constB
+  unfold TruthChartsData.Phase.constB
   rw [bs_nu, Real.rpow_two, sq_abs]
 
 theorem bs_constA : bsPhase.constA i σ = |σ| := by
-  unfold WallChartsData.Phase.constA
+  unfold TruthChartsData.Phase.constA
   rw [bs_pExp, bs_qk_real, Real.rpow_one, div_one]
 
 theorem bs_orthSign : bsData.orthSign i ε = bsign (ε 0) := by
-  unfold WallChartsData.orthSign
+  unfold TruthChartsData.orthSign
   rw [bsData_S, bsData_q, bsData_k, Fin.prod_univ_one, bs_succAbove]
   simp
 
 theorem bs_admissible_iff :
     bsData.admissible i ε b σ ↔ 0 < bsign (ε 0) * (if b then 1 else -1) * σ := by
-  unfold WallChartsData.admissible
+  unfold TruthChartsData.admissible
   rw [bs_orthSign, bs_qk, pow_one]
 
 /-- The vertex scale `α = γ − 1/2`. -/
@@ -159,7 +159,7 @@ theorem bs_limitCut (u : Fin 1 → ℝ) :
 
 theorem bs_limitBranchPt (hγ : 1 / 2 < γ) (u : Fin 1 → ℝ) :
     bsData.limitBranchPt i ε b σ γ (bsAlpha γ) u = 0 := by
-  unfold WallChartsData.limitBranchPt WallChartsData.bridgePt
+  unfold TruthChartsData.limitBranchPt TruthChartsData.bridgePt
   rw [bs_facePt γ hγ u, bs_limitCut i σ γ u, mul_zero, bsData_k]
   funext j
   revert j
@@ -170,7 +170,7 @@ theorem bs_limitBranchPt (hγ : 1 / 2 < γ) (u : Fin 1 → ℝ) :
 
 theorem bs_limitUnit (hγ : 1 / 2 < γ) (u : Fin 1 → ℝ) :
     bsPhase.limitUnit i ε b σ γ (bsAlpha γ) u = 1 := by
-  unfold WallChartsData.Phase.limitUnit
+  unfold TruthChartsData.Phase.limitUnit
   rw [bs_limitBranchPt i ε b σ γ hγ u, bsPhase_a]
   simp
 
@@ -181,7 +181,7 @@ theorem bsRep_zero_pt : bsRep 0 = 0 := by
 
 theorem bs_limitWeight (hγ : 1 / 2 < γ) (φ : (Fin 2 → ℝ) → ℝ) (u : Fin 1 → ℝ) :
     bsPhase.limitWeight i φ ε b σ γ (bsAlpha γ) u = φ 0 := by
-  unfold WallChartsData.Phase.limitWeight
+  unfold TruthChartsData.Phase.limitWeight
   rw [bs_limitBranchPt i ε b σ γ hγ u, bsData_rep, bsPhase_wt, bsPhase_b, bsRep_zero_pt,
     bsCut_eq_one (by rw [norm_zero]; norm_num)]
   simp
@@ -215,7 +215,7 @@ theorem bs_dsWeight₀ (hγ : 1 / 2 < γ) (φ : (Fin 2 → ℝ) → ℝ) (u : Fi
 
 theorem bs_profile (hσ : σ ≠ 0) (hγ : 1 / 2 < γ) :
     bsPhase.ProfileIntegrableOf i ε b σ γ (bsAlpha γ) := by
-  refine WallChartsData.Phase.ProfileIntegrableOf.of_vertex bsPhase hσ (0 : Fin 1) ?_ ?_ ?_ ?_ ?_
+  refine TruthChartsData.Phase.ProfileIntegrableOf.of_vertex bsPhase hσ (0 : Fin 1) ?_ ?_ ?_ ?_ ?_
     ?_
   · rw [bs_kappa]; norm_num
   · rw [bs_kappa, bs_rExp]; norm_num
@@ -249,7 +249,7 @@ theorem integral_invProfile {c : ℝ} (hc : 0 < c) : ∫ x, invProfile c x = √
 
 theorem bs_termConst (hσ : σ ≠ 0) (hγ : 1 / 2 < γ) (φ : (Fin 2 → ℝ) → ℝ) :
     bsPhase.termConst i φ ε b σ γ (bsAlpha γ) = φ 0 * (√π / 2) := by
-  unfold WallChartsData.Phase.termConst
+  unfold TruthChartsData.Phase.termConst
   rw [bs_constA]
   have key : (fun u : Fin 1 → ℝ ↦
       dsWeight₀ (bsData.ρ i) (bsData.constD i σ) γ (bsData.q i (bsData.k i)) (bsData.Qexp i)
@@ -301,33 +301,33 @@ theorem bs_tendsto_fibre_expectation (hσ : 0 < σ) (hγ : 1 / 2 < γ)
       bsData.rep i u 0 = truthMono (bsData.S i) (bsData.q i) u := fun i u _ ↦ bs_truth i u
   set c : ℝ := √π / 2 with hc
   have hcpos : 0 < c := by rw [hc]; positivity
-  set Sc : ℝ := ∑ p : WallChartsData.Phase.TermIdx bsData,
+  set Sc : ℝ := ∑ p : TruthChartsData.Phase.TermIdx bsData,
     if bsData.admissible p.1 p.2.1 p.2.2 σ then c else 0 with hSc
   have hScpos : 0 < Sc := by
     have h1 : c ≤ Sc := by
       rw [hSc]
-      have := Finset.single_le_sum (f := fun p : WallChartsData.Phase.TermIdx bsData ↦
+      have := Finset.single_le_sum (f := fun p : TruthChartsData.Phase.TermIdx bsData ↦
         if bsData.admissible p.1 p.2.1 p.2.2 σ then c else 0)
         (fun p _ ↦ by split_ifs <;> positivity)
-        (Finset.mem_univ (((), fun _ ↦ true, true) : WallChartsData.Phase.TermIdx bsData))
+        (Finset.mem_univ (((), fun _ ↦ true, true) : TruthChartsData.Phase.TermIdx bsData))
       simpa [bs_admissible_true () σ hσ] using this
     exact hcpos.trans_le h1
   have hsum : ∀ φ : (Fin 2 → ℝ) → ℝ,
-      (∑ p : WallChartsData.Phase.TermIdx bsData,
+      (∑ p : TruthChartsData.Phase.TermIdx bsData,
         if bsPhase.termLam γ (fun _ _ _ ↦ bsAlpha γ) p = 1 / 2 then
           bsPhase.termConst' φ σ γ (fun _ _ _ ↦ bsAlpha γ) p else 0) = φ 0 * Sc := by
     intro φ
     rw [hSc, Finset.mul_sum]
     refine Finset.sum_congr rfl fun p _ ↦ ?_
     have hl : bsPhase.termLam γ (fun _ _ _ ↦ bsAlpha γ) p = 1 / 2 := by
-      unfold WallChartsData.Phase.termLam
+      unfold TruthChartsData.Phase.termLam
       exact bs_lpExponent p.1 γ
     rw [if_pos hl]
-    unfold WallChartsData.Phase.termConst'
+    unfold TruthChartsData.Phase.termConst'
     split_ifs with hadm
     · rw [bs_termConst _ _ _ σ γ hσ.ne' hγ φ]
     · rw [mul_zero]
-  have hpos : (∑ p : WallChartsData.Phase.TermIdx bsData,
+  have hpos : (∑ p : TruthChartsData.Phase.TermIdx bsData,
       if bsPhase.termLam γ (fun _ _ _ ↦ bsAlpha γ) p = 1 / 2 then
         bsPhase.termConst' χ σ γ (fun _ _ _ ↦ bsAlpha γ) p else 0) ≠ 0 := by
     rw [hsum χ]
@@ -336,7 +336,7 @@ theorem bs_tendsto_fibre_expectation (hσ : 0 < σ) (hγ : 1 / 2 < γ)
     hMχ hχL (α := fun _ _ _ ↦ bsAlpha γ) (fun i _ _ _ ↦ bs_feasible i γ hγ)
     (fun i ε b _ ↦ bs_profile i ε b σ γ hσ.ne' hγ)
     (lam₀ := 1 / 2) (fun p ↦ by
-      unfold WallChartsData.Phase.termLam
+      unfold TruthChartsData.Phase.termLam
       rw [bs_lpExponent]) hpos
   rw [hsum ψ, hsum χ, mul_div_mul_right _ _ hScpos.ne'] at hlim
   exact hlim

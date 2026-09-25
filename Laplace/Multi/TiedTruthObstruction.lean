@@ -201,12 +201,13 @@ theorem not_integrable_envelope_of_three_scaled {ρ B D γ q δ : ℝ} {Q κ r �
 
 section Chart
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-  {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
+  {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 
 /-- A wall chart term with three or more scaled coordinates and a nonempty limiting domain has no
 profile certificate. -/
-theorem WallChartsData.Phase.not_profileIntegrableOf_of_three_scaled {i : D.ι} {ε : Fin m → Bool}
+theorem TruthChartsData.Phase.not_profileIntegrableOf_of_three_scaled {i : D.ι} {ε : Fin m → Bool}
     {b : Bool} {σ γ : ℝ} {α : Fin m → ℝ}
     (hne : (limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α).Nonempty)
     (hcard : 3 ≤ Fintype.card {l // α l ≠ 0}) : ¬ P.ProfileIntegrableOf i ε b σ γ α := by
@@ -216,7 +217,7 @@ theorem WallChartsData.Phase.not_profileIntegrableOf_of_three_scaled {i : D.ι} 
       (P.a_bounds i 0 (Metric.mem_closedBall_self (D.ρ_pos i).le)).2)
   refine not_integrable_envelope_of_three_scaled hne hcard (rpow_nonneg (abs_nonneg _) _)
     (div_nonneg (P.ma_pos i).le hMa) hMa (fun u hu ↦ ?_) h.int
-  unfold WallChartsData.Phase.limitUnit
+  unfold TruthChartsData.Phase.limitUnit
   rw [abs_abs]
   exact (P.a_bounds i _ (Metric.ball_subset_closedBall (D.limitBranchPt_mem_ball i ε b hu))).2
 

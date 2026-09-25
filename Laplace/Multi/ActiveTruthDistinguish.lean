@@ -40,15 +40,16 @@ theorem normalise_restrict_ne_of_separated {X : Type*} [MeasurableSpace X] {μ�
     Measure.restrict_apply hO, smul_eq_mul, h₂, mul_zero] at this
   exact (mul_ne_zero (ENNReal.inv_ne_zero.mpr hfin) h₁.ne') this
 
-namespace WallChartsData.Phase.TermMeasureCertificate
+namespace TruthChartsData.Phase.TermMeasureCertificate
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-  {D₁ D₂ : WallChartsData m ℓ L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
+  {T : (Fin (m + 1) → ℝ) → ℝ} {D₁ D₂ : TruthChartsData m T L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
   {P₁ : D₁.Phase F₁} {P₂ : D₂.Phase F₂} {σ₁ γ₁ σ₂ γ₂ : ℝ}
   (C₁ : P₁.TermMeasureCertificate σ₁ γ₁) (C₂ : P₂.TermMeasureCertificate σ₂ γ₂)
 
 /-- The leading measure dominates the measure of each leading term. -/
-theorem le_leadingMeasure_of_leading {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ}
+theorem le_leadingMeasure_of_leading {T : (Fin (m + 1) → ℝ) → ℝ}
+    {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ}
     {P : D.Phase F} {σ γ : ℝ} (C : P.TermMeasureCertificate σ γ) {p : TermIdx D}
     (hlam : C.lam p = C.lam₀) (hk : C.kk p = C.k₀) (s : Set (Fin (m + 1) → ℝ)) :
     C.μ p s ≤ C.leadingMeasure s := by
@@ -83,11 +84,12 @@ theorem exists_observable_of_separated (hL' : IsOpen L')
     hFm₂ hσ₂ hχc hχ hMχ hχL hpos₁ hpos₂).mpr hall
   exact normalise_restrict_ne_of_separated hO (measure_ne_top _ _) h₁ h₂ hnorm
 
-end WallChartsData.Phase.TermMeasureCertificate
+end TruthChartsData.Phase.TermMeasureCertificate
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {m k : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {m k : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {σ γ β η : ℝ}
 
 /-- The truth segment of a chart, as a map `(0, ρ) → ℝ^{m+1}` extended to `ℝ`. -/
@@ -161,12 +163,12 @@ theorem activeTruthMeasure_eq_zero_of_disjoint (i : D.ι) (ε : Fin m → Bool) 
   unfold activeTruthDensity
   rw [Set.indicator_of_notMem hu', ENNReal.ofReal_zero]
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
-namespace WallChartsData.Phase.TermMeasureCertificate
+namespace TruthChartsData.Phase.TermMeasureCertificate
 
-variable {m k : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-  {D₁ D₂ : WallChartsData m ℓ L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
+variable {m k : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
+  {T : (Fin (m + 1) → ℝ) → ℝ} {D₁ D₂ : TruthChartsData m T L'} {F₁ F₂ : (Fin (m + 1) → ℝ) → ℝ}
   {P₁ : D₁.Phase F₁} {P₂ : D₂.Phase F₂} {σ₁ γ₁ σ₂ γ₂ β η : ℝ}
   (C₁ : P₁.TermMeasureCertificate σ₁ γ₁) (C₂ : P₂.TermMeasureCertificate σ₂ γ₂)
 
@@ -203,6 +205,6 @@ theorem exists_observable_of_activeTruth_separated (hL' : IsOpen L')
   rw [hμ]
   exact P₁.activeTruthMeasure_pos_of_open p.1 p.2.1 p.2.2 hσ₁ hβ e hκ hΔ hvol hu₀ hpos hO hmem
 
-end WallChartsData.Phase.TermMeasureCertificate
+end TruthChartsData.Phase.TermMeasureCertificate
 
 end Laplace.Multi

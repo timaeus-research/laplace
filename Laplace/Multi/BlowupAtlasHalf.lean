@@ -100,7 +100,7 @@ theorem atA_limitCut_half (u : Fin 1 → ℝ) :
 
 theorem atA_limitBranchPt_half (u : Fin 1 → ℝ) :
     atData.limitBranchPt iA ε b σ (1 / 2) atAlphaA u = ![0, bsign (ε 0) * u 0] := by
-  unfold WallChartsData.limitBranchPt WallChartsData.bridgePt
+  unfold TruthChartsData.limitBranchPt TruthChartsData.bridgePt
   rw [facePt_atAlphaA, atA_limitCut_half, mul_zero, atData_k_iA]
   funext j
   revert j
@@ -116,12 +116,12 @@ theorem repA_of_zero (y : ℝ) : repA ![0, y] = 0 := by
 
 theorem atA_faceMap_half (u : Fin 1 → ℝ) :
     atData.faceMap iA ε b σ (1 / 2) atAlphaA u = 0 := by
-  unfold WallChartsData.faceMap
+  unfold TruthChartsData.faceMap
   rw [atA_limitBranchPt_half, atData_rep_iA, repA_of_zero]
 
 theorem atA_limitUnit_half (u : Fin 1 → ℝ) :
     atPhase.limitUnit iA ε b σ (1 / 2) atAlphaA u = 1 + u 0 ^ 2 := by
-  unfold WallChartsData.Phase.limitUnit
+  unfold TruthChartsData.Phase.limitUnit
   rw [atA_limitBranchPt_half, atPhase_a_zero]
   simp only [Matrix.cons_val_one, Matrix.cons_val_fin_one]
   rw [mul_pow, show bsign (ε 0) ^ 2 = 1 by rw [sq, bsign_mul_self], one_mul,
@@ -138,7 +138,7 @@ theorem atA_dsProfile_half (u : Fin 1 → ℝ) :
     simp only [atA_kappa, zero_mul, Finset.sum_const_zero, atA_phaseExp]
     norm_num
   have hB : atPhase.constB iA σ = σ ^ 2 := by
-    unfold WallChartsData.Phase.constB
+    unfold TruthChartsData.Phase.constB
     rw [atA_nu, Real.rpow_two, sq_abs]
   by_cases hu : u ∈ Set.pi univ fun _ : Fin 1 ↦ Ioo (0 : ℝ) 4
   · rw [if_pos hu, if_pos htied, Set.indicator_of_mem hu]
@@ -246,7 +246,7 @@ theorem atB_limitCut_half (u : Fin 1 → ℝ) :
 
 theorem atB_limitBranchPt_half (u : Fin 1 → ℝ) :
     atData.limitBranchPt iB ε b σ (1 / 2) atAlphaA u = ![bsign (ε 0) * u 0, 0] := by
-  unfold WallChartsData.limitBranchPt WallChartsData.bridgePt
+  unfold TruthChartsData.limitBranchPt TruthChartsData.bridgePt
   rw [facePt_atAlphaA, atB_limitCut_half, mul_zero, atData_k_iB]
   funext j
   revert j
@@ -262,12 +262,12 @@ theorem bsRep_of_zero (x : ℝ) : bsRep ![x, 0] = 0 := by
 
 theorem atB_faceMap_half (u : Fin 1 → ℝ) :
     atData.faceMap iB ε b σ (1 / 2) atAlphaA u = 0 := by
-  unfold WallChartsData.faceMap
+  unfold TruthChartsData.faceMap
   rw [atB_limitBranchPt_half, atData_rep_iB, bsRep_of_zero]
 
 theorem atB_limitUnit_half (u : Fin 1 → ℝ) :
     atPhase.limitUnit iB ε b σ (1 / 2) atAlphaA u = 1 + u 0 ^ 2 := by
-  unfold WallChartsData.Phase.limitUnit
+  unfold TruthChartsData.Phase.limitUnit
   rw [atB_limitBranchPt_half, atPhase_a_one]
   simp only [Matrix.cons_val_zero]
   rw [mul_pow, show bsign (ε 0) ^ 2 = 1 by rw [sq, bsign_mul_self], one_mul,
@@ -384,7 +384,7 @@ theorem atB_profile_half (hσ : σ ≠ 0) : atPhase.ProfileIntegrableOf iB ε b 
 theorem atB_limitWeight_half_pos (φ : (Fin 2 → ℝ) → ℝ) (hφ0 : 0 < φ 0) {u : Fin 1 → ℝ}
     (hu : u ∈ Set.pi univ fun _ : Fin 1 ↦ Ioo (0 : ℝ) (1 / 2)) :
     0 < atPhase.limitWeight iB φ ε b σ (1 / 2) atAlphaA u := by
-  unfold WallChartsData.Phase.limitWeight
+  unfold TruthChartsData.Phase.limitWeight
   rw [atB_limitBranchPt_half, atData_rep_iB, bsRep_of_zero, atPhase_wt_one, atPhase_b, abs_one,
     mul_one]
   have hu0 : u 0 ∈ Ioo (0 : ℝ) (1 / 2) := Set.mem_univ_pi.mp hu 0
@@ -404,7 +404,7 @@ theorem atB_limitWeight_half_pos (φ : (Fin 2 → ℝ) → ℝ) (hφ0 : 0 < φ 0
 
 /-! ### The assembled limit -/
 
-theorem at_termLam_half (p : WallChartsData.Phase.TermIdx atData) :
+theorem at_termLam_half (p : TruthChartsData.Phase.TermIdx atData) :
     atPhase.termLam (1 / 2) (fun i _ _ ↦ atAlpha (1 / 2) i) p = 1 / 2 := by
   rw [at_termLam]
   split_ifs <;> rfl
@@ -439,7 +439,7 @@ theorem at_tendsto_fibre_expectation_half (hσ : 0 < σ)
     refine forall_index.mpr ⟨fun ε b _ ↦ ?_, fun ε b _ ↦ ?_⟩
     · rw [atAlpha_iA]; exact atA_profile_half ε b σ
     · rw [atAlpha_iB, bsAlpha_half]; exact atB_profile_half ε b σ hσ.ne'
-  have hmin : ∀ p : WallChartsData.Phase.TermIdx atData,
+  have hmin : ∀ p : TruthChartsData.Phase.TermIdx atData,
       1 / 2 ≤ atPhase.termLam (1 / 2) (fun i _ _ ↦ atAlpha (1 / 2) i) p := fun p ↦ by
     rw [at_termLam_half]
   have hpt : ∀ p ∈ atPhase.dominantTerms σ (1 / 2) (fun i _ _ ↦ atAlpha (1 / 2) i) (1 / 2),
@@ -455,9 +455,9 @@ theorem at_tendsto_fibre_expectation_half (hσ : 0 < σ)
     · rw [atAlpha_iA]; exact atA_faceMap_half ε b σ u
     · rw [atAlpha_iB, bsAlpha_half]; exact atB_faceMap_half ε b σ u
   -- the dominant mass is positive: the `+` branch of chart `B`
-  set p₀ : WallChartsData.Phase.TermIdx atData := (iB, fun _ ↦ true, true) with hp₀
+  set p₀ : TruthChartsData.Phase.TermIdx atData := (iB, fun _ ↦ true, true) with hp₀
   have hp₀mem : p₀ ∈ atPhase.dominantTerms σ (1 / 2) (fun i _ _ ↦ atAlpha (1 / 2) i) (1 / 2) := by
-    unfold WallChartsData.Phase.dominantTerms
+    unfold TruthChartsData.Phase.dominantTerms
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, at_termLam_half p₀, atB_admissible_true σ hσ⟩
   have hprof₀ := hprof iB (fun _ ↦ true) true (atB_admissible_true σ hσ)
   have hmass : atPhase.limitMeasure σ (1 / 2) (fun i _ _ ↦ atAlpha (1 / 2) i) (1 / 2) univ ≠ 0 := by

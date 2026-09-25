@@ -44,9 +44,10 @@ theorem continuous_reindex {ι ι' : Type*} (e : ι ≃ ι') :
     Continuous fun y : ι → ℝ ↦ fun j ↦ y (e.symm j) :=
   continuous_pi fun j ↦ continuous_apply (e.symm j)
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {m k : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {m k : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {i : D.ι} {ε : Fin m → Bool} {b : Bool}
   {σ γ β η : ℝ} {φ : (Fin (m + 1) → ℝ) → ℝ}
 
@@ -302,7 +303,7 @@ theorem tendsto_modelKernelOf_activeTruth (e : Fin k ⊕ Fin 2 ≃ Fin m) (hσ :
 open scoped Classical in
 /-- **The active-truth term**: `(γp + βδ − ηγ, k, activeTruthMeasure)`. -/
 noncomputable def TermData.activeTruth (e : Fin k ⊕ Fin 2 ≃ Fin m) (hσ : σ ≠ 0)
-    {p : WallChartsData.Phase.TermIdx D} (hadm : D.admissible p.1 p.2.1 p.2.2 σ) (hβ : 0 < β)
+    {p : TruthChartsData.Phase.TermIdx D} (hadm : D.admissible p.1 p.2.1 p.2.2 σ) (hβ : 0 < β)
     (hη : 0 < η) (hδ : 0 ≤ P.phaseExp p.1 γ) (hκ : ∀ j, 0 < P.kappa p.1 j)
     (hΔ : (transMat (P.kappa p.1 ∘ e) (D.Qexp p.1 ∘ e)).det ≠ 0)
     (hc₀ : fibreCoef (P.kappa p.1 ∘ e) (D.Qexp p.1 ∘ e) 0 ≠ 0 ∨
@@ -322,6 +323,6 @@ noncomputable def TermData.activeTruth (e : Fin k ⊕ Fin 2 ≃ Fin m) (hσ : σ
     unfold termKernel
     simp only [if_pos hadm]
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

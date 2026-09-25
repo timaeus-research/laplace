@@ -24,11 +24,12 @@ open Real MeasureTheory Set Filter Topology
 
 namespace Laplace.Multi
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable (D : WallChartsData m ℓ L') {i : D.ι} {ε : Fin m → Bool} {b : Bool} {σ : ℝ → ℝ} {σ₀ : ℝ}
+variable {T : (Fin (m + 1) → ℝ) → ℝ}
+  (D : TruthChartsData m T L') {i : D.ι} {ε : Fin m → Bool} {b : Bool} {σ : ℝ → ℝ} {σ₀ : ℝ}
 
 theorem tendsto_abs_comp (hσ : Tendsto σ atTop (𝓝 σ₀)) :
     Tendsto (fun t ↦ |σ t|) atTop (𝓝 |σ₀|) :=
@@ -88,18 +89,19 @@ theorem tendsto_constB (hσ : Tendsto σ atTop (𝓝 σ₀)) (hσ₀ : σ₀ ≠
 
 end Phase
 
-end WallChartsData
+end TruthChartsData
 
 section Tied
 
-variable {k : ℕ} {ℓ : Fin (k + 1 + 1)} {L' : Set (Fin (k + 1 + 1) → ℝ)}
-  {D : WallChartsData (k + 1) ℓ L'} {F : (Fin (k + 1 + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {k : ℕ} {L' : Set (Fin (k + 1 + 1) → ℝ)}
+  {T : (Fin (k + 1 + 1) → ℝ) → ℝ}
+  {D : TruthChartsData (k + 1) T L'} {F : (Fin (k + 1 + 1) → ℝ) → ℝ} (P : D.Phase F)
   {i : D.ι} {ε : Fin (k + 1) → Bool} {b : Bool} {σ : ℝ → ℝ} {σ₀ γ : ℝ}
   {φ : (Fin (k + 1 + 1) → ℝ) → ℝ}
 
 /-- **The logarithmic term along a moving parameter**: the power–log law of a fully tied chart
 with `σ(t) → σ₀ ≠ 0`, with the constant at `σ₀`. -/
-theorem WallChartsData.Phase.tendsto_modelKernelOf_tied_param (hσ : Tendsto σ atTop (𝓝 σ₀))
+theorem TruthChartsData.Phase.tendsto_modelKernelOf_tied_param (hσ : Tendsto σ atTop (𝓝 σ₀))
     (hσ₀ : σ₀ ≠ 0) (hγ : 0 < γ) (hQ : D.Qexp i = 0) (hκ : ∀ j, 0 < P.kappa i j) {lam : ℝ}
     (hlam : 0 < lam) (htied : ∀ j, (P.rExp i j + 1) / P.kappa i j = lam)
     (hδ : 0 < P.phaseExp i γ) (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ}
@@ -108,7 +110,7 @@ theorem WallChartsData.Phase.tendsto_modelKernelOf_tied_param (hσ : Tendsto σ 
         P.modelKernelOf i φ ε b t γ (σ t)) atTop
       (𝓝 (tiedConst (P.constA i σ₀) (P.constB i σ₀) (P.phaseExp i γ) (P.kappa i) (P.rExp i) lam
         (D.ρ i) |P.a i 0| (φ (D.rep i 0) * (P.wt i 0 * |P.b i 0|)))) := by
-  unfold WallChartsData.Phase.modelKernelOf
+  unfold TruthChartsData.Phase.modelKernelOf
   rw [hQ]
   refine tendsto_modelKernel_tied_param (D.ρ_pos i) hκ hlam htied (P.tendsto_constA hσ hσ₀)
     (Eventually.of_forall fun _ ↦ P.constA_nonneg) (P.tendsto_constB hσ hσ₀) (P.constB_pos hσ₀)
@@ -122,8 +124,8 @@ theorem WallChartsData.Phase.tendsto_modelKernelOf_tied_param (hσ : Tendsto σ 
 
 open scoped Classical in
 /-- An admissible (at `σ₀`) branch of a fully tied chart along a moving parameter. -/
-theorem WallChartsData.Phase.tendsto_termKernel_tied_param (hσ : Tendsto σ atTop (𝓝 σ₀))
-    (hσ₀ : σ₀ ≠ 0) (hγ : 0 < γ) {p : WallChartsData.Phase.TermIdx D}
+theorem TruthChartsData.Phase.tendsto_termKernel_tied_param (hσ : Tendsto σ atTop (𝓝 σ₀))
+    (hσ₀ : σ₀ ≠ 0) (hγ : 0 < γ) {p : TruthChartsData.Phase.TermIdx D}
     (hadm : D.admissible p.1 p.2.1 p.2.2 σ₀) (hQ : D.Qexp p.1 = 0)
     (hκ : ∀ j, 0 < P.kappa p.1 j) {lam : ℝ} (hlam : 0 < lam)
     (htied : ∀ j, (P.rExp p.1 j + 1) / P.kappa p.1 j = lam) (hδ : 0 < P.phaseExp p.1 γ)
@@ -138,32 +140,33 @@ theorem WallChartsData.Phase.tendsto_termKernel_tied_param (hσ : Tendsto σ atT
     hδ hφc hφ hMφ hφL
   refine h.congr' ?_
   filter_upwards [D.admissible_eventually_iff (i := p.1) (ε := p.2.1) (b := p.2.2) hσ hσ₀] with t ht
-  unfold WallChartsData.Phase.termKernel
+  unfold TruthChartsData.Phase.termKernel
   rw [if_pos (ht.mpr hadm)]
 
 open scoped Classical in
 /-- A non-admissible (at `σ₀`) branch is eventually zero along a moving parameter. -/
-theorem WallChartsData.Phase.tendsto_termKernel_of_not_admissible_param
-    (hσ : Tendsto σ atTop (𝓝 σ₀)) (hσ₀ : σ₀ ≠ 0) {p : WallChartsData.Phase.TermIdx D}
+theorem TruthChartsData.Phase.tendsto_termKernel_of_not_admissible_param
+    (hσ : Tendsto σ atTop (𝓝 σ₀)) (hσ₀ : σ₀ ≠ 0) {p : TruthChartsData.Phase.TermIdx D}
     (h : ¬ D.admissible p.1 p.2.1 p.2.2 σ₀) (lam : ℝ) (k' : ℕ) :
     Tendsto (fun t ↦ t ^ lam / log t ^ k' * P.termKernel φ (σ t) γ p t) atTop (𝓝 0) := by
   refine tendsto_const_nhds.congr' ?_
   filter_upwards [D.admissible_eventually_iff (i := p.1) (ε := p.2.1) (b := p.2.2) hσ hσ₀] with t ht
-  unfold WallChartsData.Phase.termKernel
+  unfold TruthChartsData.Phase.termKernel
   rw [if_neg (fun h' ↦ h (ht.mp h')), mul_zero]
 
 end Tied
 
 /-- **The fibre expectation along a moving parameter.** The lexicographic assembly with every
 term certified along `σ(t)`. -/
-theorem WallChartsData.Phase.tendsto_fibre_expectation_lex_param {D : WallChartsData m ℓ L'}
+theorem TruthChartsData.Phase.tendsto_fibre_expectation_lex_param {T : (Fin (m + 1) → ℝ) → ℝ}
+    {D : TruthChartsData m T L'}
     {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {σ : ℝ → ℝ} {σ₀ γ : ℝ}
     (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (hFm : Measurable F)
     (hσ : Tendsto σ atTop (𝓝 σ₀)) (hσ₀ : σ₀ ≠ 0) {ψ χ : (Fin (m + 1) → ℝ) → ℝ}
     (hψc : Continuous ψ) (hψ : ∀ z, 0 ≤ ψ z) {Mψ : ℝ} (hMψ : ∀ z, ψ z ≤ Mψ) (hχc : Continuous χ)
     (hχ : ∀ z, 0 ≤ χ z) {Mχ : ℝ} (hMχ : ∀ z, χ z ≤ Mχ)
-    {lam : WallChartsData.Phase.TermIdx D → ℝ} {kk : WallChartsData.Phase.TermIdx D → ℕ}
-    {Cψ Cχ : WallChartsData.Phase.TermIdx D → ℝ} {lam₀ : ℝ} {k₀ : ℕ}
+    {lam : TruthChartsData.Phase.TermIdx D → ℝ} {kk : TruthChartsData.Phase.TermIdx D → ℕ}
+    {Cψ Cχ : TruthChartsData.Phase.TermIdx D → ℝ} {lam₀ : ℝ} {k₀ : ℕ}
     (hmin : ∀ p, lam₀ ≤ lam p ∧ (lam p = lam₀ → kk p ≤ k₀))
     (hKψ : ∀ p, Tendsto (fun t ↦ t ^ lam p / log t ^ kk p * P.termKernel ψ (σ t) γ p t) atTop
       (𝓝 (Cψ p)))

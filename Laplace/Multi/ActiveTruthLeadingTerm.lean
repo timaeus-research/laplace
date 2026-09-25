@@ -24,9 +24,10 @@ open scoped ENNReal
 
 namespace Laplace.Multi
 
-namespace WallChartsData.Phase.TermMeasureCertificate
+namespace TruthChartsData.Phase.TermMeasureCertificate
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} {P : D.Phase F} {σ γ : ℝ}
 
 open scoped Classical in
@@ -75,6 +76,6 @@ theorem ofTermData_leadingMeasure_eq_of_lt [Nonempty D.ι] (T : ∀ p, P.TermDat
     exact hq
   exact (ne_of_gt (hlt q hqp)) hq2
 
-end WallChartsData.Phase.TermMeasureCertificate
+end TruthChartsData.Phase.TermMeasureCertificate
 
 end Laplace.Multi

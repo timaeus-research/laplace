@@ -43,55 +43,55 @@ theorem toy_qk : toyData.q i (toyData.k i) = 1 := rfl
 theorem toy_qk_real : (toyData.q i (toyData.k i) : ℝ) = 1 := by rw [toy_qk]; simp
 
 theorem toy_Qexp (j : Fin 1) : toyData.Qexp i j = 0 := by
-  unfold WallChartsData.Qexp
+  unfold TruthChartsData.Qexp
   rw [toyData_q, toyData_k, Fin.zero_succAbove, Fin.fin_one_eq_zero j]
   simp
 
 theorem toy_nu : toyPhase.nu i = 2 := by
-  unfold WallChartsData.Phase.nu
+  unfold TruthChartsData.Phase.nu
   rw [toyPhase_kF, toyData_q, toyData_k]
   simp
 
 theorem toy_kappa (j : Fin 1) : toyPhase.kappa i j = 2 := by
-  unfold WallChartsData.Phase.kappa
+  unfold TruthChartsData.Phase.kappa
   rw [toyPhase_kF, toyData_q, toyData_k, Fin.zero_succAbove, Fin.fin_one_eq_zero j]
   simp
 
 theorem toy_pExp : toyPhase.pExp i = 0 := by
-  unfold WallChartsData.Phase.pExp
+  unfold TruthChartsData.Phase.pExp
   rw [toyPhase_hJ, toyData_q, toyData_k]
   simp
 
 theorem toy_rExp (j : Fin 1) : toyPhase.rExp i j = 0 := by
-  unfold WallChartsData.Phase.rExp
+  unfold TruthChartsData.Phase.rExp
   rw [toyPhase_hJ, toyData_q, toyData_k, Fin.zero_succAbove, Fin.fin_one_eq_zero j]
   simp
 
 theorem toy_phaseExp : toyPhase.phaseExp i γ = 1 - 2 * γ := by
-  unfold WallChartsData.Phase.phaseExp
+  unfold TruthChartsData.Phase.phaseExp
   rw [toy_nu]
   ring
 
 theorem toy_constD : toyData.constD i σ = |σ| := by
-  unfold WallChartsData.constD
+  unfold TruthChartsData.constD
   rw [toy_qk_real]
   simp
 
 theorem toy_constB : toyPhase.constB i σ = σ ^ 2 := by
-  unfold WallChartsData.Phase.constB
+  unfold TruthChartsData.Phase.constB
   rw [toy_nu, Real.rpow_two, sq_abs]
 
 theorem toy_constA : toyPhase.constA i σ = 1 := by
-  unfold WallChartsData.Phase.constA
+  unfold TruthChartsData.Phase.constA
   rw [toy_pExp, toy_qk_real, Real.rpow_zero, div_one]
 
 theorem toy_orthSign : toyData.orthSign i ε = 1 := by
-  unfold WallChartsData.orthSign
+  unfold TruthChartsData.orthSign
   rw [toyData_S, toyData_q, toyData_k]
   simp [Fin.zero_succAbove]
 
 theorem toy_admissible_iff : toyData.admissible i ε b σ ↔ 0 < (if b then 1 else -1) * σ := by
-  unfold WallChartsData.admissible
+  unfold TruthChartsData.admissible
   rw [toy_orthSign, toy_qk, one_mul, pow_one]
 
 /-- The toy scale `α = (1 − 2γ)/2`. -/
@@ -142,7 +142,7 @@ theorem toy_limitCut (hγ0 : 0 < γ) (u : Fin 1 → ℝ) :
 
 theorem toy_limitBranchPt (hγ0 : 0 < γ) (hγ : γ < 1 / 2) (u : Fin 1 → ℝ) :
     toyData.limitBranchPt i ε b σ γ (toyAlpha γ) u = 0 := by
-  unfold WallChartsData.limitBranchPt WallChartsData.bridgePt
+  unfold TruthChartsData.limitBranchPt TruthChartsData.bridgePt
   rw [toy_facePt γ hγ u, toy_limitCut i σ γ hγ0 u, mul_zero, toyData_k]
   funext j
   revert j
@@ -153,13 +153,13 @@ theorem toy_limitBranchPt (hγ0 : 0 < γ) (hγ : γ < 1 / 2) (u : Fin 1 → ℝ)
 
 theorem toy_limitUnit (hγ0 : 0 < γ) (hγ : γ < 1 / 2) (u : Fin 1 → ℝ) :
     toyPhase.limitUnit i ε b σ γ (toyAlpha γ) u = 1 := by
-  unfold WallChartsData.Phase.limitUnit
+  unfold TruthChartsData.Phase.limitUnit
   rw [toy_limitBranchPt i ε b σ γ hγ0 hγ u, toyPhase_a]
   simp
 
 theorem toy_limitWeight (hγ0 : 0 < γ) (hγ : γ < 1 / 2) (φ : (Fin 2 → ℝ) → ℝ) (u : Fin 1 → ℝ) :
     toyPhase.limitWeight i φ ε b σ γ (toyAlpha γ) u = φ 0 := by
-  unfold WallChartsData.Phase.limitWeight
+  unfold TruthChartsData.Phase.limitWeight
   rw [toy_limitBranchPt i ε b σ γ hγ0 hγ u, toyData_rep, toyPhase_wt, toyPhase_b,
     toyDens_eq_one (by rw [norm_zero]; norm_num)]
   simp
@@ -266,7 +266,7 @@ theorem toy_profile (hσ : σ ≠ 0) (hγ0 : 0 < γ) (hγ : γ < 1 / 2) :
 
 theorem toy_termConst (hγ0 : 0 < γ) (hγ : γ < 1 / 2) (φ : (Fin 2 → ℝ) → ℝ) :
     toyPhase.termConst i φ ε b σ γ (toyAlpha γ) = φ 0 * (√(π / σ ^ 2) / 2) := by
-  unfold WallChartsData.Phase.termConst
+  unfold TruthChartsData.Phase.termConst
   rw [toy_constA, one_mul]
   have key : (fun u : Fin 1 → ℝ ↦
       dsWeight₀ (toyData.ρ i) (toyData.constD i σ) γ (toyData.q i (toyData.k i)) (toyData.Qexp i)
@@ -316,33 +316,33 @@ theorem toy_tendsto_fibre_expectation (hσ : 0 < σ) (hγ0 : 0 < γ) (hγ : γ <
       toyData.rep i u 0 = truthMono (toyData.S i) (toyData.q i) u := fun i u _ ↦ toy_truth i u
   set c : ℝ := √(π / σ ^ 2) / 2 with hc
   have hcpos : 0 < c := by rw [hc]; positivity
-  set Sc : ℝ := ∑ p : WallChartsData.Phase.TermIdx toyData,
+  set Sc : ℝ := ∑ p : TruthChartsData.Phase.TermIdx toyData,
     if toyData.admissible p.1 p.2.1 p.2.2 σ then c else 0 with hSc
   have hScpos : 0 < Sc := by
     have h1 : c ≤ Sc := by
       rw [hSc]
-      have := Finset.single_le_sum (f := fun p : WallChartsData.Phase.TermIdx toyData ↦
+      have := Finset.single_le_sum (f := fun p : TruthChartsData.Phase.TermIdx toyData ↦
         if toyData.admissible p.1 p.2.1 p.2.2 σ then c else 0)
         (fun p _ ↦ by split_ifs <;> positivity)
-        (Finset.mem_univ (((), fun _ ↦ true, true) : WallChartsData.Phase.TermIdx toyData))
+        (Finset.mem_univ (((), fun _ ↦ true, true) : TruthChartsData.Phase.TermIdx toyData))
       simpa [toy_admissible_true () _ σ hσ] using this
     exact hcpos.trans_le h1
   have hsum : ∀ φ : (Fin 2 → ℝ) → ℝ,
-      (∑ p : WallChartsData.Phase.TermIdx toyData,
+      (∑ p : TruthChartsData.Phase.TermIdx toyData,
         if toyPhase.termLam γ (fun _ _ _ ↦ toyAlpha γ) p = (1 - 2 * γ) / 2 then
           toyPhase.termConst' φ σ γ (fun _ _ _ ↦ toyAlpha γ) p else 0) = φ 0 * Sc := by
     intro φ
     rw [hSc, Finset.mul_sum]
     refine Finset.sum_congr rfl fun p _ ↦ ?_
     have hl : toyPhase.termLam γ (fun _ _ _ ↦ toyAlpha γ) p = (1 - 2 * γ) / 2 := by
-      unfold WallChartsData.Phase.termLam
+      unfold TruthChartsData.Phase.termLam
       exact toy_lpExponent p.1 γ
     rw [if_pos hl]
-    unfold WallChartsData.Phase.termConst'
+    unfold TruthChartsData.Phase.termConst'
     split_ifs with hadm
     · rw [toy_termConst _ _ _ σ γ hγ0 hγ φ]
     · rw [mul_zero]
-  have hpos : (∑ p : WallChartsData.Phase.TermIdx toyData,
+  have hpos : (∑ p : TruthChartsData.Phase.TermIdx toyData,
       if toyPhase.termLam γ (fun _ _ _ ↦ toyAlpha γ) p = (1 - 2 * γ) / 2 then
         toyPhase.termConst' χ σ γ (fun _ _ _ ↦ toyAlpha γ) p else 0) ≠ 0 := by
     rw [hsum χ]
@@ -351,7 +351,7 @@ theorem toy_tendsto_fibre_expectation (hσ : 0 < σ) (hγ0 : 0 < γ) (hγ : γ <
     hMχ hχL (α := fun _ _ _ ↦ toyAlpha γ) (fun i _ _ _ ↦ toy_feasible i γ hγ0 hγ)
     (fun i ε b _ ↦ toy_profile i ε b σ γ hσ.ne' hγ0 hγ)
     (lam₀ := (1 - 2 * γ) / 2) (fun p ↦ by
-      unfold WallChartsData.Phase.termLam
+      unfold TruthChartsData.Phase.termLam
       rw [toy_lpExponent]) hpos
   rw [hsum ψ, hsum χ, mul_div_mul_right _ _ hScpos.ne'] at hlim
   exact hlim

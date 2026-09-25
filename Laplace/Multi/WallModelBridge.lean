@@ -23,7 +23,7 @@ constant on each orthant.
 This file: the pointwise identities. `branchKernel_orth_eq` writes the branch kernel at `w = ε·x`
 as the sum over admissible branches of the real branch integrand `branchReal`;
 `branchReal_eq_model` identifies `branchReal` with `A t^{-γp}` times the model integrand
-(through `WallChartsData.Phase.branch_integrand_eq`).
+(through `TruthChartsData.Phase.branch_integrand_eq`).
 -/
 
 open Real MeasureTheory Set
@@ -31,11 +31,11 @@ open scoped ENNReal
 
 namespace Laplace.Multi
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable (D : WallChartsData m ℓ L')
+variable {T : (Fin (m + 1) → ℝ) → ℝ} (D : TruthChartsData m T L')
 
 /-- The sign of the truth coefficient on the orthant `ε`: `S ∏ (±1)^{q_j}`. -/
 noncomputable def orthSign (i : D.ι) (ε : Fin m → Bool) : ℝ :=
@@ -129,11 +129,12 @@ theorem admissible_iff_pos (i : D.ι) (ε : Fin m → Bool) {σ γ t : ℝ} (ht 
   rw [e]
   exact mul_pos_iff_of_pos_left (mul_pos hP (rpow_pos_of_pos ht _))
 
-end WallChartsData
+end TruthChartsData
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 
 /-- The model weight of a branch: `1_{dom}(u) φ(rep u) wt(u) |b(u)|` at the branch point (the
 chart domain is the closed ball intersected with `rep⁻¹ L'`). -/
@@ -162,7 +163,7 @@ theorem chartFun_mul_ofReal (hφ : ∀ z, 0 ≤ φ z) (b : Bool) :
       ENNReal.ofReal (solvedCoord (solvedCoeff (D.k i) (D.S i) (D.q i) (orth ε x))
         (D.q i (D.k i)) (σ * t ^ (-γ)) / (D.q i (D.k i) * |σ * t ^ (-γ)|)) =
     ENNReal.ofReal (D.branchReal F i φ ε b t γ σ x) := by
-  unfold chartFun WallChartsData.branchReal
+  unfold chartFun TruthChartsData.branchReal
   set u := D.bridgePt i ε b x (solvedCoord (solvedCoeff (D.k i) (D.S i) (D.q i) (orth ε x))
     (D.q i (D.k i)) (σ * t ^ (-γ)))
   by_cases hu : u ∈ D.dom i
@@ -195,7 +196,7 @@ theorem branchKernel_orth_eq (hφ : ∀ z, 0 ≤ φ z) (ht : 0 < t) (hx : ∀ j,
         (D.q i (D.k i)) (σ * t ^ (-γ))) (orth ε x) : Fin (m + 1) → ℝ) =
         D.bridgePt i ε true x (solvedCoord (solvedCoeff (D.k i) (D.S i) (D.q i) (orth ε x))
           (D.q i (D.k i)) (σ * t ^ (-γ))) := by
-      simp only [WallChartsData.bridgePt, bsign, if_true, one_mul]
+      simp only [TruthChartsData.bridgePt, bsign, if_true, one_mul]
     by_cases hadm : D.admissible i ε true σ
     · rw [Set.indicator_of_mem (hset.mpr hadm), if_pos hadm, hpt, chartFun_mul_ofReal hφ]
     · rw [Set.indicator_of_notMem (hset.not.mpr hadm), if_neg hadm]
@@ -208,7 +209,7 @@ theorem branchKernel_orth_eq (hφ : ∀ z, 0 ≤ φ z) (ht : 0 < t) (hx : ∀ j,
         (D.q i (D.k i)) (σ * t ^ (-γ))) (orth ε x) : Fin (m + 1) → ℝ) =
         D.bridgePt i ε false x (solvedCoord (solvedCoeff (D.k i) (D.S i) (D.q i) (orth ε x))
           (D.q i (D.k i)) (σ * t ^ (-γ))) := by
-      simp only [WallChartsData.bridgePt, bsign, Bool.false_eq_true, if_false, neg_one_mul]
+      simp only [TruthChartsData.bridgePt, bsign, Bool.false_eq_true, if_false, neg_one_mul]
     by_cases hadm : D.admissible i ε false σ
     · rw [Set.indicator_of_mem (hset.mpr hadm), if_pos hadm, hpt, chartFun_mul_ofReal hφ]
     · rw [Set.indicator_of_notMem (hset.not.mpr hadm), if_neg hadm]
@@ -243,7 +244,7 @@ theorem branchReal_eq_model (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (ht : 0 <
     rw [Set.indicator_of_mem hxm]
     rw [← hV]
     by_cases hL : D.rep i u ∈ L'
-    · unfold WallChartsData.branchReal
+    · unfold TruthChartsData.branchReal
       rw [Set.indicator_of_mem (hdom.mpr hL), Set.indicator_of_mem (hdom.mpr hL)]
       have hw : ∀ j, orth ε x j ≠ 0 := fun j ↦ by
         rw [orth]; exact mul_ne_zero (bsign_ne_zero _) (hx j).ne'
@@ -268,7 +269,7 @@ theorem branchReal_eq_model (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (ht : 0 <
       unfold constA constB phaseExp
       rw [e1, neg_mul, ← hudef]
       ring_nf
-    · unfold WallChartsData.branchReal
+    · unfold TruthChartsData.branchReal
       rw [Set.indicator_of_notMem (hdom.not.mpr hL), Set.indicator_of_notMem (hdom.not.mpr hL)]
       simp
   · have hxm : x ∉ modelDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) t :=
@@ -277,9 +278,9 @@ theorem branchReal_eq_model (hS : |D.S i| = 1) (hF : ∀ z, 0 ≤ F z) (ht : 0 <
       by_contra h
       exact hb (D.dens_supp i u h)
     rw [Set.indicator_of_notMem hxm, mul_zero]
-    unfold WallChartsData.branchReal
+    unfold TruthChartsData.branchReal
     rw [Set.indicator_apply_eq_zero.mpr fun _ ↦ by rw [hdens, mul_zero], zero_mul]
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

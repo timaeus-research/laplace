@@ -29,11 +29,11 @@ open scoped ENNReal
 
 namespace Laplace.Multi
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable (D : WallChartsData m ℓ L')
+variable {T : (Fin (m + 1) → ℝ) → ℝ} (D : TruthChartsData m T L')
 
 /-- The face map of a term: the chart representative of the limiting branch point. -/
 noncomputable def faceMap (i : D.ι) (ε : Fin m → Bool) (b : Bool) (σ γ : ℝ) (α : Fin m → ℝ)
@@ -51,7 +51,7 @@ variable {i : D.ι} {ε : Fin m → Bool} {b : Bool} {σ γ : ℝ} {α : Fin m �
   {φ : (Fin (m + 1) → ℝ) → ℝ}
 
 theorem constA_nonneg : 0 ≤ P.constA i σ := by
-  unfold WallChartsData.Phase.constA
+  unfold TruthChartsData.Phase.constA
   exact div_nonneg (rpow_nonneg (abs_nonneg _) _) (Nat.cast_nonneg _)
 
 /-- The term integrand `1_L W₀(φ) ∏u^r e^{-Φ₀}` is integrable for a bounded observable. -/
@@ -141,7 +141,7 @@ theorem termDensity_mul_faceMap (u : Fin m → ℝ) :
           (P.limitWeight i φ ε b σ γ α) u *
         exp (-dsProfile (D.ρ i) (P.constB i σ) (D.constD i σ) γ (D.q i (D.k i)) (P.phaseExp i γ)
           (D.Qexp i) (P.kappa i) α (P.limitUnit i ε b σ γ α) u)) := by
-  unfold termDensity dsWeight₀ WallChartsData.Phase.limitWeight WallChartsData.faceMap
+  unfold termDensity dsWeight₀ TruthChartsData.Phase.limitWeight TruthChartsData.faceMap
   by_cases hu : u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α
   · rw [Set.indicator_of_mem hu, Set.indicator_of_mem hu]
     ring
@@ -163,7 +163,7 @@ theorem termConst_eq_integral (hφm : Measurable φ) :
   rw [integral_map (D.measurable_faceMap i ε b σ γ α).aemeasurable hφm.aestronglyMeasurable,
     integral_withDensity_eq_integral_toReal_smul₀ hm.aemeasurable
       (ae_of_all _ fun _ ↦ ENNReal.ofReal_lt_top)]
-  unfold WallChartsData.Phase.termConst
+  unfold TruthChartsData.Phase.termConst
   rw [← integral_const_mul]
   refine integral_congr_ae (Eventually.of_forall fun u ↦ ?_)
   beta_reduce
@@ -204,7 +204,7 @@ theorem termMeasure_univ (hσ : σ ≠ 0) (hprof : P.ProfileIntegrableOf i ε b 
     ← ofReal_integral_eq_lintegral_ofReal (P.integrable_termDensity hσ hprof)
       (ae_of_all _ (P.termDensity_nonneg))]
   congr 1
-  unfold termDensity WallChartsData.Phase.termConst
+  unfold termDensity TruthChartsData.Phase.termConst
   rw [integral_const_mul]
 
 /-! ### The limiting measure -/
@@ -253,7 +253,7 @@ theorem sum_termConst'_eq_integral (hσ : σ ≠ 0) (hφm : Measurable φ) (hφ 
   unfold dominantTerms
   rw [Finset.sum_filter]
   refine Finset.sum_congr rfl fun p _ ↦ ?_
-  unfold WallChartsData.Phase.termConst'
+  unfold TruthChartsData.Phase.termConst'
   by_cases h1 : P.termLam γ αf p = lam₀
   · by_cases h2 : D.admissible p.1 p.2.1 p.2.2 σ
     · rw [if_pos h1, if_pos h2, if_pos ⟨h1, h2⟩]
@@ -298,7 +298,7 @@ the integrals of the observables against the limiting measure on the dominant st
 theorem tendsto_fibre_expectation_measure (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F z)
     (hFm : Measurable F)
     (htruth : ∀ i, ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
     (hσ : σ ≠ 0) {ψ χ : (Fin (m + 1) → ℝ) → ℝ} (hψc : Continuous ψ) (hψ : ∀ z, 0 ≤ ψ z) {Mψ : ℝ}
     (hMψ : ∀ z, ψ z ≤ Mψ) (hψL : ∀ z, ψ z ≠ 0 → z ∈ L') (hχc : Continuous χ)
     (hχ : ∀ z, 0 ≤ χ z) {Mχ : ℝ} (hMχ : ∀ z, χ z ≤ Mχ) (hχL : ∀ z, χ z ≠ 0 → z ∈ L')
@@ -323,7 +323,7 @@ expectation converges to the point evaluation `ψ(z₀)/χ(z₀)`. -/
 theorem tendsto_fibre_expectation_point (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0 ≤ F z)
     (hFm : Measurable F)
     (htruth : ∀ i, ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
-      D.rep i u ℓ = truthMono (D.S i) (D.q i) u)
+      T (D.rep i u) = truthMono (D.S i) (D.q i) u)
     (hσ : σ ≠ 0) {ψ χ : (Fin (m + 1) → ℝ) → ℝ} (hψc : Continuous ψ) (hψ : ∀ z, 0 ≤ ψ z) {Mψ : ℝ}
     (hMψ : ∀ z, ψ z ≤ Mψ) (hψL : ∀ z, ψ z ≠ 0 → z ∈ L') (hχc : Continuous χ)
     (hχ : ∀ z, 0 ≤ χ z) {Mχ : ℝ} (hMχ : ∀ z, χ z ≤ Mχ) (hχL : ∀ z, χ z ≠ 0 → z ∈ L')
@@ -350,6 +350,6 @@ theorem tendsto_fibre_expectation_point (hS : ∀ i, |D.S i| = 1) (hF : ∀ z, 0
 
 end Phase
 
-end WallChartsData
+end TruthChartsData
 
 end Laplace.Multi

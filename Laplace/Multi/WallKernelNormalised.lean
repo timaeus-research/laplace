@@ -14,7 +14,7 @@ nonnegative loss, the Boltzmann integrand of the fibre kernel at truth `s`, on t
 `u = (w, σV)` with `V = (|s|/|c(w)|)^{1/q_k}`, reads
 `e^{−t |a(u)| |s|^ν ∏|w_j|^{κ_j}} · φ(rep u) · wt(u) |b(u)| · (1/q_k) |s|^p ∏ |w_j|^{r_j}`,
 with `ν = k_k/q_k`, `κ_j = k_j − q_j ν`, `p = (h_k+1)/q_k − 1`, `r_j = h_j − q_j (p+1)`
-(`WallChartsData.Phase.branch_integrand_eq`), and the unit bounds sandwich it between the
+(`TruthChartsData.Phase.branch_integrand_eq`), and the unit bounds sandwich it between the
 constant-unit integrands with `a = M_a` and `a = m_a` (`branch_integrand_le`,
 `branch_integrand_ge`). The moving cutoff is the hypothesis `u ∈ closedBall 0 ρ_i`; off the open
 ball the density vanishes.
@@ -27,13 +27,14 @@ namespace Laplace.Multi
 variable {m : ℕ}
 
 /-- The solved point of chart `i` on the branch `σ` at truth `s` over `w`. -/
-noncomputable def WallChartsData.solvedPt {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-    (D : WallChartsData m ℓ L') (i : D.ι) (σ s : ℝ) (w : Fin m → ℝ) : Fin (m + 1) → ℝ :=
+noncomputable def TruthChartsData.solvedPt {L' : Set (Fin (m + 1) → ℝ)}
+    {T : (Fin (m + 1) → ℝ) → ℝ}
+    (D : TruthChartsData m T L') (i : D.ι) (σ s : ℝ) (w : Fin m → ℝ) : Fin (m + 1) → ℝ :=
   (D.k i).insertNth (σ * solvedCoord (solvedCoeff (D.k i) (D.S i) (D.q i) w) (D.q i (D.k i)) s) w
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ} {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 
 /-- The loss exponent `ν = k_k / q_k` of chart `i`. -/
@@ -166,6 +167,6 @@ theorem branch_integrand_ge (i : D.ι) (hS : |D.S i| = 1) {t : ℝ} (ht : 0 ≤ 
       (mul_le_mul_of_nonneg_left (P.b_bounds i _ hu).1 (P.wt_nonneg i _)) hdens
   · exact mul_nonneg (mul_nonneg (P.wt_nonneg i _) (P.mb_pos i).le) hdens
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

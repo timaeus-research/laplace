@@ -51,32 +51,32 @@ theorem atA_qk_real : (atData.q iA (atData.k iA) : ℝ) = 1 := by
   rw [atData_q_iA, atData_k_iA]; simp
 
 theorem atA_Qexp (j : Fin 1) : atData.Qexp iA j = 0 := by
-  unfold WallChartsData.Qexp
+  unfold TruthChartsData.Qexp
   rw [atData_q_iA, atData_k_iA, Fin.fin_one_eq_zero j, atA_succAbove]
   simp
 
 theorem atA_nu : atPhase.nu iA = 2 := by
-  unfold WallChartsData.Phase.nu
+  unfold TruthChartsData.Phase.nu
   rw [atPhase_kF_zero, atData_q_iA, atData_k_iA]
   simp
 
 theorem atA_kappa (j : Fin 1) : atPhase.kappa iA j = 0 := by
-  unfold WallChartsData.Phase.kappa
+  unfold TruthChartsData.Phase.kappa
   rw [atPhase_kF_zero, atData_q_iA, atData_k_iA, Fin.fin_one_eq_zero j, atA_succAbove]
   simp
 
 theorem atA_pExp : atPhase.pExp iA = 1 := by
-  unfold WallChartsData.Phase.pExp
+  unfold TruthChartsData.Phase.pExp
   rw [atPhase_hJ_zero, atData_q_iA, atData_k_iA]
   norm_num
 
 theorem atA_rExp (j : Fin 1) : atPhase.rExp iA j = 0 := by
-  unfold WallChartsData.Phase.rExp
+  unfold TruthChartsData.Phase.rExp
   rw [atPhase_hJ_zero, atData_q_iA, atData_k_iA, Fin.fin_one_eq_zero j, atA_succAbove]
   norm_num
 
 theorem atA_phaseExp : atPhase.phaseExp iA γ = 1 - 2 * γ := by
-  unfold WallChartsData.Phase.phaseExp
+  unfold TruthChartsData.Phase.phaseExp
   rw [atA_nu]
   ring
 
@@ -175,51 +175,51 @@ theorem atB_qk_real : (atData.q iB (atData.k iB) : ℝ) = 1 := by
   rw [atB_qk]; simp
 
 theorem atB_Qexp (j : Fin 1) : atData.Qexp iB j = 1 := by
-  unfold WallChartsData.Qexp
+  unfold TruthChartsData.Qexp
   rw [atData_q_iB, atData_k_iB, Fin.fin_one_eq_zero j, atB_succAbove]
   simp
 
 theorem atB_nu : atPhase.nu iB = 2 := by
-  unfold WallChartsData.Phase.nu
+  unfold TruthChartsData.Phase.nu
   rw [atPhase_kF_one, atData_q_iB, atData_k_iB]
   simp
 
 theorem atB_kappa (j : Fin 1) : atPhase.kappa iB j = -2 := by
-  unfold WallChartsData.Phase.kappa
+  unfold TruthChartsData.Phase.kappa
   rw [atPhase_kF_one, atData_q_iB, atData_k_iB, Fin.fin_one_eq_zero j, atB_succAbove]
   simp
 
 theorem atB_pExp : atPhase.pExp iB = 1 := by
-  unfold WallChartsData.Phase.pExp
+  unfold TruthChartsData.Phase.pExp
   rw [atPhase_hJ_one, atData_q_iB, atData_k_iB]
   norm_num
 
 theorem atB_rExp (j : Fin 1) : atPhase.rExp iB j = -2 := by
-  unfold WallChartsData.Phase.rExp
+  unfold TruthChartsData.Phase.rExp
   rw [atPhase_hJ_one, atData_q_iB, atData_k_iB, Fin.fin_one_eq_zero j, atB_succAbove]
   norm_num
 
 theorem atB_phaseExp : atPhase.phaseExp iB γ = 1 - 2 * γ := by
-  unfold WallChartsData.Phase.phaseExp
+  unfold TruthChartsData.Phase.phaseExp
   rw [atB_nu]
   ring
 
 theorem atB_constB : atPhase.constB iB σ = σ ^ 2 := by
-  unfold WallChartsData.Phase.constB
+  unfold TruthChartsData.Phase.constB
   rw [atB_nu, Real.rpow_two, sq_abs]
 
 theorem atB_constA : atPhase.constA iB σ = |σ| := by
-  unfold WallChartsData.Phase.constA
+  unfold TruthChartsData.Phase.constA
   rw [atB_pExp, atB_qk_real, Real.rpow_one, div_one]
 
 theorem atB_orthSign : atData.orthSign iB ε = bsign (ε 0) := by
-  unfold WallChartsData.orthSign
+  unfold TruthChartsData.orthSign
   rw [atData_S, atData_q_iB, atData_k_iB, Fin.prod_univ_one, atB_succAbove]
   simp
 
 theorem atB_admissible_iff :
     atData.admissible iB ε b σ ↔ 0 < bsign (ε 0) * (if b then 1 else -1) * σ := by
-  unfold WallChartsData.admissible
+  unfold TruthChartsData.admissible
   rw [atB_orthSign, atB_qk, pow_one]
 
 theorem atB_sum_Q_alpha : ∑ j : Fin 1, atData.Qexp iB j * bsAlpha γ j = γ - 1 / 2 := by
@@ -272,7 +272,7 @@ theorem atB_limitCut (u : Fin 1 → ℝ) :
 
 theorem atB_limitBranchPt (hγ : 1 / 2 < γ) (u : Fin 1 → ℝ) :
     atData.limitBranchPt iB ε b σ γ (bsAlpha γ) u = 0 := by
-  unfold WallChartsData.limitBranchPt WallChartsData.bridgePt
+  unfold TruthChartsData.limitBranchPt TruthChartsData.bridgePt
   rw [bs_facePt γ hγ u, atB_limitCut σ γ u, mul_zero, atData_k_iB]
   funext j
   revert j
@@ -283,13 +283,13 @@ theorem atB_limitBranchPt (hγ : 1 / 2 < γ) (u : Fin 1 → ℝ) :
 
 theorem atB_limitUnit (hγ : 1 / 2 < γ) (u : Fin 1 → ℝ) :
     atPhase.limitUnit iB ε b σ γ (bsAlpha γ) u = 1 := by
-  unfold WallChartsData.Phase.limitUnit
+  unfold TruthChartsData.Phase.limitUnit
   rw [atB_limitBranchPt ε b σ γ hγ u, atPhase_a_one]
   simp
 
 theorem atB_limitWeight (hγ : 1 / 2 < γ) (φ : (Fin 2 → ℝ) → ℝ) (u : Fin 1 → ℝ) :
     atPhase.limitWeight iB φ ε b σ γ (bsAlpha γ) u = φ 0 := by
-  unfold WallChartsData.Phase.limitWeight
+  unfold TruthChartsData.Phase.limitWeight
   rw [atB_limitBranchPt ε b σ γ hγ u, atData_rep_iB, atPhase_wt_one, atPhase_b, bsRep_zero_pt,
     bsCut_eq_one (by rw [norm_zero]; norm_num)]
   simp [hB_zero]
@@ -317,7 +317,7 @@ theorem atB_dsWeight₀ (hγ : 1 / 2 < γ) (φ : (Fin 2 → ℝ) → ℝ) (u : F
 
 theorem atB_profile (hσ : σ ≠ 0) (hγ : 1 / 2 < γ) :
     atPhase.ProfileIntegrableOf iB ε b σ γ (bsAlpha γ) := by
-  refine WallChartsData.Phase.ProfileIntegrableOf.of_vertex atPhase hσ (0 : Fin 1) ?_ ?_ ?_ ?_ ?_
+  refine TruthChartsData.Phase.ProfileIntegrableOf.of_vertex atPhase hσ (0 : Fin 1) ?_ ?_ ?_ ?_ ?_
     ?_
   · rw [atB_kappa]; norm_num
   · rw [atB_kappa, atB_rExp]; norm_num
@@ -336,7 +336,7 @@ theorem atB_profile (hσ : σ ≠ 0) (hγ : 1 / 2 < γ) :
 
 theorem atB_termConst (hσ : σ ≠ 0) (hγ : 1 / 2 < γ) (φ : (Fin 2 → ℝ) → ℝ) :
     atPhase.termConst iB φ ε b σ γ (bsAlpha γ) = φ 0 * (√π / 2) := by
-  unfold WallChartsData.Phase.termConst
+  unfold TruthChartsData.Phase.termConst
   rw [atB_constA]
   have key : (fun u : Fin 1 → ℝ ↦
       dsWeight₀ (atData.ρ iB) (atData.constD iB σ) γ
@@ -381,9 +381,9 @@ theorem at_truth (i : atData.ι) (u : Fin 2 → ℝ) :
   · rw [atData_rep_iB, atData_S, atData_q_iB]
     exact truthB u
 
-theorem at_termLam (p : WallChartsData.Phase.TermIdx atData) :
+theorem at_termLam (p : TruthChartsData.Phase.TermIdx atData) :
     atPhase.termLam γ (fun i _ _ ↦ atAlpha γ i) p = if p.1 = iA then γ else 1 / 2 := by
-  unfold WallChartsData.Phase.termLam
+  unfold TruthChartsData.Phase.termLam
   obtain ⟨i, ε, b⟩ := p
   dsimp only
   revert i
@@ -413,19 +413,19 @@ theorem at_tendsto_fibre_expectation (hσ : 0 < σ) (hγ : 1 / 2 < γ)
       atData.rep i u 0 = truthMono (atData.S i) (atData.q i) u := fun i u _ ↦ at_truth i u
   set c : ℝ := √π / 2 with hc
   have hcpos : 0 < c := by rw [hc]; positivity
-  set Sc : ℝ := ∑ p : WallChartsData.Phase.TermIdx atData,
+  set Sc : ℝ := ∑ p : TruthChartsData.Phase.TermIdx atData,
     if p.1 = iA then 0 else if atData.admissible p.1 p.2.1 p.2.2 σ then c else 0 with hSc
   have hScpos : 0 < Sc := by
     have h1 : c ≤ Sc := by
       rw [hSc]
-      have := Finset.single_le_sum (f := fun p : WallChartsData.Phase.TermIdx atData ↦
+      have := Finset.single_le_sum (f := fun p : TruthChartsData.Phase.TermIdx atData ↦
         if p.1 = iA then 0 else if atData.admissible p.1 p.2.1 p.2.2 σ then c else 0)
         (fun p _ ↦ by split_ifs <;> positivity)
-        (Finset.mem_univ ((iB, fun _ ↦ true, true) : WallChartsData.Phase.TermIdx atData))
+        (Finset.mem_univ ((iB, fun _ ↦ true, true) : TruthChartsData.Phase.TermIdx atData))
       dsimp only at this
       rwa [if_neg iB_ne_iA, if_pos (atB_admissible_true σ hσ)] at this
     exact hcpos.trans_le h1
-  have hterm : ∀ (φ : (Fin 2 → ℝ) → ℝ) (p : WallChartsData.Phase.TermIdx atData),
+  have hterm : ∀ (φ : (Fin 2 → ℝ) → ℝ) (p : TruthChartsData.Phase.TermIdx atData),
       (if atPhase.termLam γ (fun i _ _ ↦ atAlpha γ i) p = 1 / 2 then
         atPhase.termConst' φ σ γ (fun i _ _ ↦ atAlpha γ i) p else 0) =
       φ 0 * (if p.1 = iA then 0 else if atData.admissible p.1 p.2.1 p.2.2 σ then c else 0) := by
@@ -437,19 +437,19 @@ theorem at_tendsto_fibre_expectation (hσ : 0 < σ) (hγ : 1 / 2 < γ)
     refine forall_index.mpr ⟨?_, ?_⟩
     · rw [if_pos rfl, if_pos rfl, mul_zero, if_neg (by linarith : γ ≠ 1 / 2)]
     · rw [if_neg iB_ne_iA, if_neg iB_ne_iA, if_pos rfl]
-      unfold WallChartsData.Phase.termConst'
+      unfold TruthChartsData.Phase.termConst'
       dsimp only
       split_ifs with hadm
       · rw [atAlpha_iB, atB_termConst ε b σ γ hσ.ne' hγ φ, hc]
       · rw [mul_zero]
   have hsum : ∀ φ : (Fin 2 → ℝ) → ℝ,
-      (∑ p : WallChartsData.Phase.TermIdx atData,
+      (∑ p : TruthChartsData.Phase.TermIdx atData,
         if atPhase.termLam γ (fun i _ _ ↦ atAlpha γ i) p = 1 / 2 then
           atPhase.termConst' φ σ γ (fun i _ _ ↦ atAlpha γ i) p else 0) = φ 0 * Sc := by
     intro φ
     rw [hSc, Finset.mul_sum]
     exact Finset.sum_congr rfl fun p _ ↦ hterm φ p
-  have hpos : (∑ p : WallChartsData.Phase.TermIdx atData,
+  have hpos : (∑ p : TruthChartsData.Phase.TermIdx atData,
       if atPhase.termLam γ (fun i _ _ ↦ atAlpha γ i) p = 1 / 2 then
         atPhase.termConst' χ σ γ (fun i _ _ ↦ atAlpha γ i) p else 0) ≠ 0 := by
     rw [hsum χ]
@@ -465,7 +465,7 @@ theorem at_tendsto_fibre_expectation (hσ : 0 < σ) (hγ : 1 / 2 < γ)
     refine forall_index.mpr ⟨fun ε b _ ↦ ?_, fun ε b _ ↦ ?_⟩
     · exact atA_profile ε b σ γ hγ
     · exact atB_profile ε b σ γ hσ.ne' hγ
-  have hmin : ∀ p : WallChartsData.Phase.TermIdx atData,
+  have hmin : ∀ p : TruthChartsData.Phase.TermIdx atData,
       1 / 2 ≤ atPhase.termLam γ (fun i _ _ ↦ atAlpha γ i) p := fun p ↦ by
     rw [at_termLam γ p]
     split_ifs

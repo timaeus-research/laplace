@@ -297,9 +297,10 @@ theorem volume_facePolytope_div_det_eq {ι : Type*} {κ Q : ι → ℝ} (hκ : �
   rw [hσ.1, hσ.2] at hΔ₂
   exact volume_facePolytope_div_det_perm (fun s ↦ hκ _) hΔ₁ (e₂.trans e₁.symm) hΔ₂ δ γ
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F) {i : D.ι}
 
 /-- **The face constant does not depend on the solved pair.** -/
@@ -309,6 +310,6 @@ theorem faceConst_eq (γ : ℝ) (hκ : ∀ j, 0 < P.kappa i j) (e₁ e₂ : Fin 
     P.faceConst i γ e₂ = P.faceConst i γ e₁ :=
   volume_facePolytope_div_det_eq hκ e₁ e₂ hΔ₁ hΔ₂ (P.phaseExp i γ) γ
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi

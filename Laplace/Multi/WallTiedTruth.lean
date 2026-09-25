@@ -76,14 +76,15 @@ end Reindex
 
 section Chart
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-  {D : WallChartsData m ℓ L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
+  {T : (Fin (m + 1) → ℝ) → ℝ}
+  {D : TruthChartsData m T L'} {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 
 /-- **The tied-truth two-scaled certificate of a wall chart term.** At a scale `α` supported on
 the two transverse coordinates `e (inl 0), e (inl 1)`, positive there, with tied phase and tied
 truth constraints, the dual decomposition `r_S + 1 = ηκ_S − θQ_S` (`η, θ > 0`, `Δ ≠ 0`) and
 positive residual exponents `β_j` on the boxed coordinates give the profile certificate. -/
-theorem WallChartsData.Phase.ProfileIntegrableOf.of_twoScaled {i : D.ι} {ε : Fin m → Bool}
+theorem TruthChartsData.Phase.ProfileIntegrableOf.of_twoScaled {i : D.ι} {ε : Fin m → Bool}
     {b : Bool} {σ γ : ℝ} {α : Fin m → ℝ} {ν : Type*} [Finite ν] (e : Fin 2 ⊕ ν ≃ Fin m)
     {αS : Fin 2 → ℝ} (hαS : ∀ s, 0 < αS s) (hα : α = fun j ↦ Sum.elim αS 0 (e.symm j))
     (hσ : σ ≠ 0) (htied : ∑ j, P.kappa i j * α j = P.phaseExp i γ)

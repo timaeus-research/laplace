@@ -94,11 +94,11 @@ theorem modelKernel_reindex (e : ι ≃ ι') {ρ A B D γ p q δ : ℝ} (Q κ r 
 
 end Reindex
 
-variable {m : ℕ} {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
+variable {m : ℕ} {L' : Set (Fin (m + 1) → ℝ)}
 
-namespace WallChartsData
+namespace TruthChartsData
 
-variable (D : WallChartsData m ℓ L')
+variable {T : (Fin (m + 1) → ℝ) → ℝ} (D : TruthChartsData m T L')
 
 /-- The bridge point lies in the open ball as soon as all its coordinates do. -/
 theorem bridgePt_mem_ball_of_abs_lt (i : D.ι) (ε : Fin m → Bool) (b : Bool) {ρ : ℝ} (hρ : 0 < ρ)
@@ -144,11 +144,11 @@ theorem ma_le_unitFn_of_mem_ball {x : Fin m → ℝ} {v : ℝ}
 
 end Phase
 
-end WallChartsData
+end TruthChartsData
 
 section PartialTerm
 
-variable {k : ℕ} {ν : Type*} [Fintype ν] {D : WallChartsData m ℓ L'}
+variable {k : ℕ} {ν : Type*} [Fintype ν] {T : (Fin (m + 1) → ℝ) → ℝ} {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
   {i : D.ι} {ε : Fin m → Bool} {b : Bool} {σ γ : ℝ} {φ : (Fin (m + 1) → ℝ) → ℝ}
 
@@ -171,7 +171,7 @@ theorem abs_partialFace_lt (e : Fin (k + 1) ⊕ ν ≃ Fin m) {ρ : ℝ} (hρ : 
 monomial (`Q = 0`) whose transverse coordinates split along `e` into a tied block and a
 strictly worse block, `t^{γp + δλ}/(log t)^k · K(t)` converges to the face integral of the
 weight times the `−λ` power of the unit against the residual monomial. -/
-theorem WallChartsData.Phase.tendsto_modelKernelOf_partial (e : Fin (k + 1) ⊕ ν ≃ Fin m)
+theorem TruthChartsData.Phase.tendsto_modelKernelOf_partial (e : Fin (k + 1) ⊕ ν ≃ Fin m)
     (hσ : σ ≠ 0) (hγ : 0 < γ) (hQ : D.Qexp i = 0) (hκ : ∀ j, 0 < P.kappa i j) {lam : ℝ}
     (hlam : 0 < lam)
     (htied : ∀ j, (P.rExp i (e (Sum.inl j)) + 1) / P.kappa i (e (Sum.inl j)) = lam)
@@ -201,7 +201,7 @@ theorem WallChartsData.Phase.tendsto_modelKernelOf_partial (e : Fin (k + 1) ⊕ 
       D.bridgePt i ε b (partialFace e z) 0 ∈ Metric.ball (0 : Fin (m + 1) → ℝ) (D.ρ i) :=
     fun z hz ↦ D.bridgePt_mem_ball_of_abs_lt i ε b hρ (abs_partialFace_lt e hρ hz)
       (by rw [abs_zero]; exact hρ)
-  unfold WallChartsData.Phase.modelKernelOf
+  unfold TruthChartsData.Phase.modelKernelOf
   rw [hQ]
   have hre : ∀ t, modelKernel (D.ρ i) (P.constA i σ) (P.constB i σ) (D.constD i σ) γ (P.pExp i)
       (D.q i (D.k i)) (P.phaseExp i γ) (0 : Fin m → ℝ) (P.kappa i) (P.rExp i)
@@ -247,9 +247,9 @@ theorem WallChartsData.Phase.tendsto_modelKernelOf_partial (e : Fin (k + 1) ⊕ 
 open scoped Classical in
 /-- An admissible branch of a chart with a pure truth monomial and a partially tied transverse
 face: the power–log law `(γp + δλ, k)` with the face integral as constant. -/
-theorem WallChartsData.Phase.tendsto_termKernel_partial (e : Fin (k + 1) ⊕ ν ≃ Fin m) (hσ : σ ≠ 0)
+theorem TruthChartsData.Phase.tendsto_termKernel_partial (e : Fin (k + 1) ⊕ ν ≃ Fin m) (hσ : σ ≠ 0)
     (hγ : 0 < γ) (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
-    (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {p : WallChartsData.Phase.TermIdx D}
+    (hφL : ∀ z, φ z ≠ 0 → z ∈ L') {p : TruthChartsData.Phase.TermIdx D}
     (hadm : D.admissible p.1 p.2.1 p.2.2 σ) (hQ : D.Qexp p.1 = 0) (hκ : ∀ j, 0 < P.kappa p.1 j)
     {lam : ℝ} (hlam : 0 < lam)
     (htied : ∀ j, (P.rExp p.1 (e (Sum.inl j)) + 1) / P.kappa p.1 (e (Sum.inl j)) = lam)
@@ -267,7 +267,7 @@ theorem WallChartsData.Phase.tendsto_termKernel_partial (e : Fin (k + 1) ⊕ ν 
             ∏ j, z j ^ (P.rExp p.1 (e (Sum.inr j)) - lam * P.kappa p.1 (e (Sum.inr j))))) := by
   have h := P.tendsto_modelKernelOf_partial (ε := p.2.1) (b := p.2.2) e hσ hγ hQ hκ hlam htied
     hgap hδ hφc hφ hMφ hφL
-  unfold WallChartsData.Phase.termKernel
+  unfold TruthChartsData.Phase.termKernel
   simp only [if_pos hadm]
   exact h
 

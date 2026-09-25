@@ -13,7 +13,7 @@ The enrichment of `WallChartsData` by the analytic data of the charts (Astra,
 with a continuous unit `a_i` bounded away from `0` and `∞` on the closed box, and the density is
 `dens_i = wt_i · |b_i ∏ u^{h_i}|` with a continuous partition weight `wt_i ∈ [0, 1]` and a
 continuous
-Jacobian unit `b_i` with two-sided bounds (`WallChartsData.Phase`). This is exactly what
+Jacobian unit `b_i` with two-sided bounds (`TruthChartsData.Phase`). This is exactly what
 `WallAtlas.euclidean_export` provides (hironaka branch `wall-atlas`); the asymptotic analysis of the
 kernels of `wall_fibre_identity` reads the exponents `k_i, h_i, q_i` and the unit bounds from here.
 -/
@@ -25,8 +25,8 @@ namespace Laplace.Multi
 variable {m : ℕ}
 
 /-- The phase data of a wall atlas over `L'`, for the loss `F`. -/
-structure WallChartsData.Phase {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)}
-    (D : WallChartsData m ℓ L') (F : (Fin (m + 1) → ℝ) → ℝ) where
+structure TruthChartsData.Phase {L' : Set (Fin (m + 1) → ℝ)}
+    {T : (Fin (m + 1) → ℝ) → ℝ} (D : TruthChartsData m T L') (F : (Fin (m + 1) → ℝ) → ℝ) where
   /-- Exponents of the loss and of the Jacobian. -/
   kF : D.ι → Fin (m + 1) → ℕ
   hJ : D.ι → Fin (m + 1) → ℕ
@@ -56,9 +56,9 @@ structure WallChartsData.Phase {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → �
   dens_eq : ∀ i, ∀ u ∈ Metric.closedBall (0 : Fin (m + 1) → ℝ) (D.ρ i),
     D.dens i u = wt i u * |b i u * ∏ j, u j ^ hJ i j|
 
-namespace WallChartsData.Phase
+namespace TruthChartsData.Phase
 
-variable {ℓ : Fin (m + 1)} {L' : Set (Fin (m + 1) → ℝ)} {D : WallChartsData m ℓ L'}
+variable {L' : Set (Fin (m + 1) → ℝ)} {T : (Fin (m + 1) → ℝ) → ℝ} {D : TruthChartsData m T L'}
   {F : (Fin (m + 1) → ℝ) → ℝ} (P : D.Phase F)
 
 /-- The absolute value of the loss on the box: `|F ∘ rep_i| = |a_i| ∏ |u_j|^{k_ij}`. -/
@@ -91,6 +91,6 @@ theorem dens_le (i : D.ι) {u : Fin (m + 1) → ℝ}
           (mul_nonneg (abs_nonneg _) hp) zero_le_one
     _ = P.Mb i * ∏ j, |u j| ^ P.hJ i j := one_mul _
 
-end WallChartsData.Phase
+end TruthChartsData.Phase
 
 end Laplace.Multi
