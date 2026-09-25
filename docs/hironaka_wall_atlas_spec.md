@@ -2543,3 +2543,20 @@ certificates for concrete resolved charts beyond the identity chart.
   `continuous_gammaTrunc/logGammaTrunc` (`continuous_primitive`), `continuousOn_logModelJ`,
   **`logModel_length_renormalised`**: `∃ u₀ > 1, ∃ K, ∫_{u₀}^t √Var_u − (log t − ½ log log t) → K`.
   THERMODYNAMIC LENGTH DETECTS MULTIPLICITY (numerically: residual·log²u → −(1−γ) ≈ −0.423).
+- `TauberianVariance.lean` (NOT mirrored; Astra round 25, item 2 second half): `exp_neg_sandwich`
+  (`x e^{-x} ≤ 1 − e^{-x} ≤ x`, all `x`), `lawMoment ν k u := ∫ ℓ^k e^{-uℓ} dν`, **`sandwich_tilt`** (nonneg weight
+  `w`: `(c−1)u ∫ w ℓ e^{-cuℓ} ≤ ∫ w e^{-uℓ} − ∫ w e^{-cuℓ} ≤ (c−1)u ∫ w ℓ e^{-uℓ}` by `integral_mono_ae`),
+  `tendsto_regVar_lower/upper` (`(1 − c^{-λ})/(c−1) → λ` and `c^{λ+1}(…) → λ` as `c ↓ 1`, from
+  `Real.hasDerivAt_rpow_const` + `hasDerivAt_iff_tendsto_slope`), **`tendsto_ratio_of_regVar`** (the
+  monotone-density squeeze with EVENTUAL hypotheses `∀ᶠ u, 0 < F u`, `∀ c > 1, ∀ᶠ u, sandwich`; ε-argument:
+  pick `c` near 1 via `(hA.and hB).and self_mem_nhdsWithin |>.exists` with `NeBot (𝓝[>] 1)`, transport the
+  `cu`-bound to `u` by `eventually_atTop` and `v/c`), `RegVar ν λ`, `tendsto_mul_lawMoment_one_div_of_regVar`
+  (`u N₁/Z → λ`), `tendsto_mul_lawMoment_two_div_of_regVar` (`u N₂/N₁ → λ+1`; `N₁` regularly varying with index
+  `−(λ+1)` via `hR.comp hcu` and `Real.rpow_neg_one`), **`tendsto_sq_mul_lawVar_of_regVar`**
+  (`u² Var → λ(λ+1) − λ² = λ`), `regVar_of_asymptotic` (`Z ~ C u^{-λ}(log u)^k` ⇒ `RegVar`; `log(cu)/log u → 1`),
+  `integrable_lossLaw_iff` (`integrable_map_measure` + `integrable_withDensity_iff`),
+  **`tendsto_sq_mul_priorCov_of_partition_asymptotic`**: the partition-function asymptotic alone gives
+  `u² Var_u(L) → λ` (feeds `thermoLength_neutral_div_log_tendsto`: the RLCT is the featureless-length coefficient).
+  Gotchas: `Tendsto.div`/`.comp` produce Pi-division/`∘` forms — `simp only [Pi.div_apply, Function.comp_apply]`
+  before `field_simp`; `Filter.Eventually` has no `.comp` — use `hcu.eventually hF`; `field_simp` closed several
+  goals outright (drop the trailing `ring`).
