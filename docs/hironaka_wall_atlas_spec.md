@@ -2215,3 +2215,13 @@ certificates for concrete resolved charts beyond the identity chart.
   `IntervalIntegrable.comp_mul_left` takes `{c}` implicit with `finiteness` autoParams — use
   `(c := a)`; `simp_rw [e]` with `e : ∀ y, …` also rewrites the `y = 1` instance on the RHS;
   `Ι` needs `open scoped Interval`.
+- `TermScoreResponse.lean` (NOT mirrored; round-20 package 1): **the score response of an
+  exponential-form term** `dμ_a = H e^{-B U_a(u∞) P} dm`: `termCoef m H P uw h B φ a`,
+  `termScore P uw h B v = B R_v(u∞) P`, `termPosterior`, `termCov`, `ScoreData` (nonneg
+  measurable `H, P`, measurable face map `uw`, bounded `hᵢ`, `B > 0`, `U_a ≥ c > 0`),
+  `envelope φ = |φ| H (1 + P) e^{-B(c/2)P}`; **`ScoreData.hasDerivAt_termCoef`**
+  (`D_v ∫φ dμ_a = −∫ φ S_v dμ_a`, dominated differentiation with the polynomial factor absorbed
+  by halving the decay), **`ScoreData.hasDerivAt_termPosterior`** (`−Cov_{μ̄_a}(φ, S_v)`). The unit
+  bounds are borrowed from `FaceData` on the zero measure (`toFaceData`). Instantiation on an
+  actual `termDensity` (unit = a field of `Phase`) still needs a Phase family affine in the
+  weight.
