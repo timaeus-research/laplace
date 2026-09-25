@@ -1979,3 +1979,40 @@ certificates for concrete resolved charts beyond the identity chart.
   `clear_value y` before `field_simp; ring`, or the let-value is unfolded and `ring` faces
   `c * c^N * c⁻¹ * c⁻¹^N`; `norm_integral_le_of_norm_le` needs `(f := …)` when the bound is
   given by a `fun x ↦ by …` block.
+- **Astra round 17** (d2c6626, `gpt_responses/research_round17_*`): (a) API weakening — do
+  BOTH, separately: observables continuous on a neighbourhood of `closure L'` with no support
+  condition (restrict the measure, not the observable; zero-extension is the WRONG replacement
+  since it kills boundary traces; audit `tendsto_weightFn` = `1_{A_t} · J_t · θ(rep_t)` — the
+  observable needs continuity at the limiting chart image, the indicator limit is a separate
+  geometric argument), and phase nonnegativity only on `L'`/`rep_i(dom_i)` (enforced at the
+  domain-indicated integrand; keep the global theorems as wrappers; note `modelG_nonneg` may not
+  need `F ≥ 0` at all); the linear phase stays inadmissible on a two-branch region even then.
+  (b) Pointwise chart-independence: NO theorem for arbitrary bounded continuous `θ` from
+  "both regions contain a neighbourhood of the wall point" (`T = xy`, `θ = 1`, `L_R = (−R,R)²`:
+  `K_R(s) = 2 log(R²/|s|)`, difference `4 log(R₂/R₁)` — REGION dependence); the sharp statement is
+  "same localised push-forward measure + continuous versions ⇒ pointwise equal", and the cheap
+  route is the truth cutoff (a.e. equality for `θ·χ(T)`, continuity at `s₀`, `χ(s₀) = 1`).
+  (c) CORRECTION of my mixed-sign example: `u₁^{r₁}u₂^{r₂}e^{-cu₂/u₁}` on the box is integrable
+  iff `r₂ > −1 ∧ r₁ + r₂ > −2` (fixed in the docstring, f7dd8a3 / hironaka 0aa3b50f3); the
+  general single-monomial criterion: `b = r + 1`, `C = {v ≥ 0 | κ·v ≥ 0}`, integrable iff
+  `b·v > 0` on `C ∖ 0`. (d) Ranking: (1) version-selection helper + cutoff pointwise theorem
+  [DONE below], then support-free observables, then local `F ≥ 0`; (2) the tied-cut
+  single-scaled certificate (state the tail lemma with `κ > 0` for "every `r`"; the outer
+  domination is a separate hypothesis when the cut depends on unscaled coordinates); (3) the
+  quadratic exported two-branch acceptance test (not a zero-valued supported one); (4) LP
+  optimal-vertex existence (finite attained optimum on a pointed polyhedron has an optimal vertex;
+  this does NOT give `UniqueLPMin` nor handle optimal faces); (5) the recession-cone criterion at
+  `α = 0` after landing the corrected 2D example; (6) closure discipline: a certified zero
+  coefficient is not a certified leading term; LP classification must cover tied constraints and
+  optimal faces before the atlas is "exhaustive".
+- `KernelPointwise.lean` (4a69762; hironaka e821d3562): **pointwise chart-independence through a
+  truth cutoff** (round-17 item 1). `eqOn_of_ae_eq_restrict_of_continuousOn` (continuous
+  versions of an a.e.-specified `ℝ≥0∞`-valued function agree on an open `U`; proof =
+  `eq_of_ae_eq_of_continuousAt`'s Hausdorff argument with `Measure.measure_pos_of_mem_nhds` and
+  `Measure.restrict_apply'`), `totalKernel_eq_of_truthCutoff` (`D₁ : … L₁`, `D₂ : … L₂`, same
+  `T` continuous, `θ` bounded continuous with NO support condition, `χ ≤ 1` continuous with
+  `χ(s₀) = 1`, `θ z ≠ 0 → χ(T z) ≠ 0 → z ∈ L₁ ∩ L₂`, `s₀ ≠ 0` ⇒ `D₁.totalKernel θ s₀ =
+  D₂.totalKernel θ s₀`; products in `ℝ≥0∞` are continuous via `ENNReal.Tendsto.mul` with the
+  `Or.inr` side conditions), `totalKernel_eq_of_thin` / `_eqOn_of_thin` (standard cutoff,
+  `0 < |s₀| ≤ ε/2`, `θ` supported in `L₁ ∩ L₂` on `{|T| < ε}`). This is the general form of the
+  transport step of the mixed regressions.
