@@ -1813,3 +1813,44 @@ certificates for concrete resolved charts beyond the identity chart.
   LESSON: grep the seabed (`normalized_`, `proportional`, the claim's key words) for an existing
   formalisation of a note claim BEFORE building from a missing `\leanref`; the tag audit is not an
   inventory audit.
+- hironaka `TruthTheoremPhase.lean` (d7e5a9124, LOCAL): **the end-to-end theorem for a general
+  analytic truth function** (Astra round-15 item 1b). `exists_truthChartsData_phaseData` = the
+  export with phase data, `|S_i| = 1` (from `WallAtlasT.sign`) and the exact truth monomial on the
+  closed balls (`repClamp_apply_truth`) — the record-level hypotheses of the Euclidean term
+  theorems; then `truth_fibre_expectation` (+ `_dominant`, `_measure`, `_point`,
+  `_certificate`): for `F, T` analytic near `0`, `T 0 = 0`, `F·T ≢ 0`, `F` continuous `≥ 0`, `L`
+  compact in a connected `W`, the resolution gives `D : TruthChartsData m T (L ∩ {|T| ≤ ε})`,
+  `P : D.Phase F`, and along `s = σ t^{-γ}` the fibre-kernel ratio `D.fibreRatio F ψ χ σ γ t`
+  converges to the certified leading ratio (constants / limiting measure / point evaluation /
+  leading measure of any `TermMeasureCertificate`). `truth_fibre_expectation_pushforward`
+  packages, for the SAME `D`, the push-forward identity `∫_{L ∩ {|T| ≤ ε}} θ · η(T) = ∫ η ·
+  D.totalKernel θ` (so the kernel whose ratio converges is the conditional density along `T = s`)
+  with the certificate-form limit. Pure composition (no new analysis); for a general `T` the fibre
+  identity of the coordinate case is replaced by the push-forward characterisation. The remaining
+  gap to a hypothesis-free statement is the certificate: `α`/`TermMeasureCertificate` are still
+  inputs (constructed by `ProfileIntegrableOf.of_vertex`, the tied/active/degenerate `TermData`
+  constructors, from the exponent data of the phase record).
+- `MixedTruthBoundary.lean` (1507293; hironaka c58c724af): **the critical-boundary regression**
+  (Astra round-15 item 3): `T = z₀z₁`, `F = a z₁` (`a > 0`, vanishing on the whole axis `z₁ = 0`
+  of the wall), `θ = z₀^q z₁^p ψ` with `ψ ≥ 0` continuous supported in the closed square.
+  `mix_tendsto_totalKernel_boundary`: `t^p · K_t(σ/t) → σ^q ∫_{2σ}^∞ u^{p−q−1} e^{-au} ψ(σ/u, 0)
+  du` — the mass sits on the whole segment `{z₁ = 0}` weighted by `ψ(σ/u, 0)` (fibre parametrised
+  by `z₁ = u/t`, `z₀ = σ/u`; `e^{-t a z₁} = e^{-au}` is scale-free); with `ψ ≡ 1` on the square and
+  `p = q + 1` the coefficient is `σ^q e^{-2aσ}/a` (lower limit `2σ` = box size `1/2`). Proof: the
+  explicit kernel `∫_{2s}^{1/2} g(s/x, x) dx/x` (`mixData_totalKernel_toReal`), the substitution
+  `x = u/t` (`intervalIntegral.integral_comp_div`, `eq_inv_mul_iff_mul_eq₀`), pointwise algebra
+  (`Real.rpow_sub`, `rpow_natCast`, `div_pow`, `field_simp`), then dominated convergence on
+  `(2σ, ∞)` with `F t = 1_{Iic (t/2)} · G t`, bound `C u^e e^{-au}`
+  (`integrableOn_rpow_mul_exp_neg_mul_Ioi`: any real `e`, `c > 0` — case split `e ≤ 0` via
+  `antitoneOn_rpow_Ioi_of_exponent_nonpos` + `exp_neg_integrableOn_Ioi`, `e > 0` via
+  `integrableOn_rpow_mul_exp_neg_mul_rpow` at `p = 1`), and `integral_indicator` +
+  `Measure.restrict_restrict` + `Ioi_inter_Iic` to identify `∫ F t` with the interval integral.
+  `exported_mix_totalKernel_eq` factors the transport step of `exported_mix_tendsto_totalKernel`
+  (any `θr ≥ 0` continuous supported in `mixLc`, `0 < s`, `|s| ≤ ε/2`);
+  `exported_mix_tendsto_totalKernel_boundary` is the regression for every chart system over
+  `mixThin ε`. Gotchas: `ring` cannot cancel `u^q * u⁻¹^q` — expand `(σ/u)^q` with `div_pow`
+  BEFORE `field_simp` (which then closes the goal; a trailing `ring` errors "no goals"); the
+  substitution identity must be stated as a pure substitution (`∫ f = t⁻¹ ∫ f(u/t)`) and the
+  `t^p` bookkeeping done afterwards under `integral_const_mul`; `∞`/`ℝ≥0∞` need `open scoped
+  ENNReal` (not opened in `Real`-heavy files). In a chained shell command a `$R` that came back
+  EMPTY made `grep … $R` read stdin and hang the whole gate — check variables before use.
