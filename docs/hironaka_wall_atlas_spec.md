@@ -2808,3 +2808,16 @@ certificates for concrete resolved charts beyond the identity chart.
   `simpa only [zero_mul]`), **`wall_phase_negative`** (`a < 0 < b`: `ℓ_t(a,b)/√t → K₋(−a)`; split at `0` with
   `integral_add_adjacent_intervals`, `log t/√t → 0` from `isLittleO_log_rpow_atTop (1/2)` + `Real.sqrt_eq_rpow`),
   **`tendsto_ray_length_dilation`** (`∫_{cu}^{du} √Var_v → √λ log(d/c)`; `continuousOn_lawVar` needs `K ≥ 3`).
+- `QuotientMeanMap.lean` (NOT mirrored; Astra round 28 item 1, core): `invisibleSet μ R := {v | ∃ c, R_v =ᵐ c}`,
+  `dirLoss_zero`, `hasDerivAt_affineLine (a v s) : HasDerivAt (fun s ↦ a + s • v) v s` (`simpa using ((hasDerivAt_id (s :
+  ℝ)).smul_const v).const_add a`; needs `set_option linter.unusedFintypeInType false in` — the Pi norm needs `Fintype`),
+  **`invisibleSubmodule`** (`Submodule ℝ (ι → ℝ)` with `dirLoss_add`/`dirLoss_smul`), `priorExp_congr_loss_ae`,
+  `priorExp_const_add'`, **`priorExp_affLoss_add_of_invisible`** / **`meanMap_add_of_invisible`** (`M(a+k) = M(a)`),
+  `sum_mul_meanMap_of_invisible` (`⟨k, M(a)⟩ = c`, via `priorExp_dirLoss` + `priorExp_congr_ae'` + `priorExp_const_fun`),
+  **`dot_meanMap_sub_of_invisible`**, **`meanMap_eq_iff_invisible`** (`M a = M b ↔ b − a ∈ K`; `⇒` is the
+  `meanMap_injective` argument with `hnd` derived from `π > 0`, `⇐` invariance), `priorCov_self_nonneg'`,
+  **`dot_meanMap_sub_eq_integral`** (`⟨M(b)−M(a), b−a⟩ = −t∫₀¹ Var_{a+s(b−a)}(R_{b−a})`; chain rule
+  `HasFDerivAt.comp_hasDerivAt` needs the `HasFDerivAt` fact named first and then `exact h` — inline it fails to unify
+  `?l ∘ f` with the lambda; every `fun s ↦ … s • v` binder must be typed `s : ℝ` or `HSMul` is stuck; add `Pi.sub_apply`
+  to the final simp), **`dot_meanMap_sub_neg`** (`< 0` off `K`; `intervalIntegral_pos_of_pos_on`). NOT built: the
+  `K^⊥`-restricted open embedding (Lean plumbing over `MeanMapChart`).
