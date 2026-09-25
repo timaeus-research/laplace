@@ -359,6 +359,7 @@ import Laplace.Multi.ActiveTruthGeneral
 import Laplace.Multi.ActiveTruthChart
 import Laplace.Multi.ActiveTruthFacePositive
 import Laplace.Multi.ActiveTruthGeneralUniform
+import Laplace.Multi.ActiveTruthSpectatorGeneral
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
