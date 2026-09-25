@@ -3267,3 +3267,13 @@ certificates for concrete resolved charts beyond the identity chart.
   **`isCompact_reachableResponse`**, `reachableResponse_subset_range/_interior`, **`mem_reachableResponse_iff`**
   (`invFun_meanMap`/`meanMap_invFun`), `response_mixFin_mem`. Omit `[Fintype ι]` on the coefficient-polytope lemmas
   (`linter.unusedFintypeInType`); do NOT omit `[MeasurableSpace X]` where `hℓ : Measurable (uncurry ℓ)` is in scope.
+- `JourneyPotential.lean` (NOT mirrored; Astra round 34 item 4): **`hasDerivAt_natKL_path`** (`d/ds KL(P_{η s}‖P_{η₀}) =
+  Cov_{η s}(S_{η s − η₀}, S_{η'})`; rewrite the KL by `natKL_eq` (Bregman form), differentiate `A ∘ η` with
+  `hasFDerivAt_affLogZ … |>.comp_hasDerivAt`, `m ∘ η` with `hasFDerivAt_meanMap` then `hasDerivAt_pi.1` per component, the
+  coefficient `η₀ j − η s j` with `(hasDerivAt_pi.1 hη j).const_sub (η₀ j)` — a `simpa using … .sub` trips the instance
+  diamond; the value by `← sum_mul_priorCov_eq` + `meanMapDeriv_apply` + two sum identities + `linarith`),
+  **`continuous_natCov_path`** (`Cov_θ(S_u,S_v)` continuous along continuous `θ, u, v`: bilinear expansion through
+  `sum_mul_priorCov_eq` twice, then `Cov_θ(S_j,S_k) = −obsMapDeriv θ (Pi.single k 1)` and `continuous_obsMapDeriv … |>.comp hθ
+  |>.clm_apply continuous_const`; `continuous_finsetSum`), **`natKL_path_eq_integral`** (FTC; `KL(η 0‖η 0) = 0` by `natKL_eq`
+  + `simp`; pass `(u := fun s ↦ η s − η 0) (v := η')` explicitly), `natKL_segment_eq_integral` (`s G(d,d)` via `dirLoss_smul`,
+  `priorCov_const_mul_left`).
