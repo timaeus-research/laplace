@@ -3497,3 +3497,18 @@ certificates for concrete resolved charts beyond the identity chart.
   `hasDerivAt_meanEntropy_line_deriv` (`Pi.neg_apply` before `ring`), `meanEntropy_eq_neg_integral`,
   **`meanEntropy_line_antitoneOn`** (`antitoneOn_of_deriv_nonpos (convex_Icc 0 1) (f := fun s : ℝ ↦ …)` — annotate `s : ℝ`
   in the STATEMENT too, else `s • v` elaborates with `s : ℕ`; `interior_Icc`, FTC on `0..s`, `dotJ_zero_right`).
+- `ResponseStability.lean` (NOT mirrored; Astra round 38 item 3): `integral_one_sub_mul_const` / `integral_id_mul_const`
+  (pure real lemmas BEFORE the section, else every section hypothesis is auto-included), `dotProduct_featCov_mulVec`
+  (`u ⬝ C_a v = Cov(R_u,R_v)`; `omit [Nonempty X]`), **`sq_dotProduct_featCov_le`** (Cauchy–Schwarz for the covariance form
+  from `TiltData.abs_tiltCov_le` + `priorCov_eq_tiltCov_zero`; pass `(t := t)` to `priorCov_self_nonneg'`),
+  `dotProduct_featCov_mulVec_le_of_bounds` (`Var(R_v) ≤ (∑ Mᵢ²)‖v‖²`: `Var ≤ ⟨φ²⟩`, `priorExp_mono_bdd`, `priorExp_const_fun`,
+  `Finset.sum_mul_sq_le_sq_mul_sq`), **`mul_meanSpeed_le`** (`α q ≤ ‖Δ‖²`, dot-product CS + `nlinarith`),
+  **`le_mul_meanSpeed`** (`‖Δ‖² ≤ β q`: covariance-form CS with `u = Δ`, `v = C⁻¹Δ`; `rw [hd] at hcs` rewrites BOTH
+  `C *ᵥ w` — restore with `dotProduct_comm w d, hqw`; the strict case needs `le_of_mul_le_mul_left` through an explicit
+  `calc` — `nlinarith` fails), `sq_dist_meanMap_le_famKL` (`‖Δm‖² ≤ 2β KL`), `famKL_le_sq_dist_meanMap` (`2α KL ≤ ‖Δm‖²`)
+  via `intervalIntegral.integral_mono_on zero_le_one hf hg h` (interval integrability from
+  `Continuous.intervalIntegrable 0 1` — explicit endpoints, and a TYPED `have hc : Continuous fun s ↦ …` or the
+  Pi-product form does not match), `segVar_eq_dotProduct`, `famKL_le_sq_dist_coeff` / `famKL_ge_sq_dist_coeff`
+  (`t²α‖Δa‖² ≤ 2KL ≤ t²β‖Δa‖²`), **`sq_dist_meanMap_le`** / **`le_sq_dist_meanMap`** (bi-Lipschitz
+  `(αt)²‖Δa‖² ≤ ‖Δm‖² ≤ (βt)²‖Δa‖²`), `sq_dist_meanMap_le_of_bounds` (unconditional Lipschitz with `β = ∑ Mᵢ²`).
+  Theorems whose statement has no matrix inverse take `[Nonempty ι]` explicitly and `classical` in the proof.

@@ -309,6 +309,7 @@ import Laplace.Multi.MixtureBending
 import Laplace.Multi.ProductDensity
 import Laplace.Multi.TiltLowerBound
 import Laplace.Multi.MeanJourney
+import Laplace.Multi.ResponseStability
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
