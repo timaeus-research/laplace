@@ -2994,3 +2994,13 @@ certificates for concrete resolved charts beyond the identity chart.
   `ContinuousLinearMap.smul_apply/sub_apply/sum_apply/add_apply` → `_root_.…`), `dualHessian a := −t • invJac a`,
   `hasFDerivAt_dualGradient`, **`dualHessian_apply_cov`** (`D²I (Cov(R_i,R_v))_i = v`, via `meanMapDeriv_apply`),
   **`dualHessian_quadratic_form`** (`⟨Dm v, D²I (Dm v)⟩ = G_a(v,v)`, `sum_mul_priorCov_eq`).
+- `TemperatureSlice.lean` (NOT mirrored; Astra round 30 item 4, coverage half): `tiltedPrior π L₀ t := e^{−tL₀}π`,
+  `tiltedPrior_pos`, `measurable_tiltedPrior`, `integrable_tiltedPrior` (`Integrable.bdd_mul` with `c = e^{tM₀}`),
+  `integral_tiltedPrior_pos` (the `ν_pos` field of `tiltData_aff` is about `baseWeight`, so finish with `simp [baseWeight,
+  affLoss, tiltedPrior]`), **`meanMap_eq_tilted`** (`m(t,a) = m^{π_t}(1, t•a)` with base loss `0`; pointwise
+  `rw [← mul_assoc, ← Real.exp_add]; congr 2; simp only [Pi.smul_apply, smul_eq_mul, zero_add, Finset.mul_sum, mul_add,
+  mul_assoc]; ring`), `essRange_tilted` (both sides via `mem_essRange_iff`, which is prior-independent),
+  `momentBody_tilted`, **`range_meanMap_slice`** (`range (a ↦ m(t,a)) = interior (momentBody μ π R)` for EVERY `t > 0`),
+  `bijOn_meanMap_slice`, **`temperature_slice_graph`** (`∃! a`, the contrast part of the joint response at `Θ(t,a)` is `y`).
+  Section-level `include` with many hypotheses + per-lemma `omit` lists was unmanageable here: give each helper its
+  hypotheses explicitly and reserve `variable … include` for the final three theorems.
