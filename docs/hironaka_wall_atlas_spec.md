@@ -2440,3 +2440,14 @@ certificates for concrete resolved charts beyond the identity chart.
   `[u₀,∞)` given `Z ≠ 0` there and integrability of `L^k e^{-u₀L}π`, `k ≤ 2`),
   **`thermoLength_from_div_log_tendsto`** (`u²Var_u(L) → λ ⇒ (∫_{u₀}^t √Var_u)/log t → √λ`). The concrete
   Gaussian-prior anharmonic instance (λ = d/2) remains to be assembled from `localisedVar_energy_leading`.
+- `AnharmonicFeaturelessLaw.lean` (NOT mirrored; Astra round-24 item B, the concrete instance):
+  `tendsto_of_rate_div`, `gaussPrior g m = e^{-(g/2)|u−m|²}`, `rotatedAnharmonic_one_zero`,
+  **`exp_gaussPrior_eq_localised`** (Gaussian-prior temperature weight = the seabed's localised weight
+  `localisedRotatedAnharmonic 1 0 … t`), `priorExp_gaussPrior`, `priorCov_gaussPrior`,
+  **`tendsto_sq_mul_priorCov_gaussPrior`** (`u² Var_u(L) → d/2` from `localisedVar_energy_leading`),
+  `integrable_energy_pow_gaussPrior` (`L^k e^{-sL}π`, `k ≤ 2`, via `integrable_localised_of_integrable`,
+  `integrable_coord_energy_separableAnharmonic`, `integrable_energy_energy_coord`),
+  **`anharmonic_thermoLength_div_log_tendsto`** (`(∫_{s₀}^t √Var_u)/log t → √(d/2)`: the RLCT `d/2` of a
+  regular model is the growth rate of the thermodynamic length, proper prior, unbounded loss).
+  Gotchas: `ᵀ` needs `open scoped Matrix`; `anharmonicPotential` is `Laplace.OneD.`; `conv_lhs => rw [h]`
+  rewrites every occurrence on the LHS (also inside `exp`) — isolate the product with a `show`.
