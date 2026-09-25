@@ -237,6 +237,7 @@ import Laplace.Multi.CoefficientResponse
 import Laplace.Multi.TraceMixtureResponse
 import Laplace.Multi.TermScoreResponse
 import Laplace.Multi.GammaFaceMarginal
+import Laplace.Multi.AssembledResponse
 import Laplace.Multi.TiltVariance
 import Laplace.Multi.TraceKernel
 import Laplace.Multi.TraceKernelMain

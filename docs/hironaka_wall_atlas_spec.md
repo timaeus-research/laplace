@@ -2238,3 +2238,9 @@ certificates for concrete resolved charts beyond the identity chart.
   (use `hint.norm`); for a.e. positivity of the second coordinate under a product with a
   restricted factor use `ae_prod_mem_iff_ae_ae_mem`; `simp only [abs_mul, …]` beats a hand `rw`
   chain for nested absolute values, and start the `calc` with `_`.
+- `AssembledResponse.lean` (NOT mirrored; Astra round-20 "single most valuable"): `assembledCoef m
+  H P uw h B φ a = ∑_k termCoef_k`, `assembledPosterior`, `assembledScoreCoef` (piecewise score
+  `S_v|_k = B_k R_v(u∞_k) P_k`); **`hasDerivAt_assembledCoef`** (`HasDerivAt.fun_sum` over the
+  terms), **`hasDerivAt_assembledPosterior`** (`D_v⟨φ⟩_a = −(∑_k∫φS_k dμ_k − ⟨φ⟩_a ∑_k∫S_k dμ_k)/∑_k
+  μ_k(X)` = `−Cov_{μ̄_a}(φ, S_v)` on the disjoint union, relative masses of the chart terms
+  included). Terms live on a common base `(X, m)` with a common unit family `h`.
