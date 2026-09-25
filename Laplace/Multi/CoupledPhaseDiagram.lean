@@ -201,4 +201,53 @@ theorem coupled_phase_diagram (σ : ℝ) :
   · rw [if_neg (by linarith), if_neg (by linarith), coupledExponent_of_ge hσ.le]
     exact coupled_quartic_regime hσ
 
+/-! ### The wall profile in the crossover variable `c = s √t` -/
+
+/-- **The crossover profile is exact in the wall variable**:
+`t^{1/4} Z(t, c/√t) = ∫ e^{-(y⁴ + c y²)}` for every `t > 0`, so the family of responses across the
+wall `σ = 1/2` is the single function `c ↦ quartProfile c` of the rescaled coefficient ratio
+`c = s t^{1/2}` — uniform on compact sets of `c` for free. -/
+theorem quartZ_wall_variable {t : ℝ} (ht : 0 < t) (c : ℝ) :
+    t ^ (1 / 4 : ℝ) * quartZ t (c * t ^ (-(1 / 2 : ℝ))) = quartProfile c := by
+  rw [quartZ_eq_quartProfile ht, ← mul_assoc, ← Real.rpow_add ht]
+  norm_num
+  congr 1
+  rw [← mul_assoc, mul_comm (t ^ (1 / 2 : ℝ)) c, mul_assoc, ← Real.rpow_add ht]
+  norm_num
+
+/-- The quartic profile in Gaussian form: `quartProfile c = c^{-1/2} gaussProfile (c^{-2})`. -/
+theorem quartProfile_eq_gaussProfile {c : ℝ} (hc : 0 < c) :
+    quartProfile c = c ^ (-(1 / 2 : ℝ)) * gaussProfile (c ^ (-(2 : ℝ))) := by
+  unfold quartProfile gaussProfile
+  have ha : 0 < c ^ (1 / 2 : ℝ) := Real.rpow_pos_of_pos hc _
+  have key := MeasureTheory.Measure.integral_comp_mul_left
+    (fun z ↦ Real.exp (-(z ^ 2 + c ^ (-(2 : ℝ)) * z ^ 4))) (c ^ (1 / 2 : ℝ))
+  beta_reduce at key
+  rw [abs_of_pos (inv_pos.mpr ha), smul_eq_mul, ← Real.rpow_neg hc.le] at key
+  rw [← key]
+  have h2 : (c ^ (1 / 2 : ℝ)) ^ 2 = c := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hc.le]; norm_num
+  have h4 : (c ^ (1 / 2 : ℝ)) ^ 4 = c ^ (2 : ℝ) := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hc.le]; norm_num
+  have hB : c ^ (-(2 : ℝ)) * c ^ (2 : ℝ) = 1 := by
+    rw [← Real.rpow_add hc]; norm_num
+  congr 1
+  funext y
+  congr 1
+  rw [mul_pow, mul_pow, h2, h4]
+  linear_combination (y ^ 4) * hB
+
+/-- **Matching of the wall profile with the Gaussian regime**: `√c · quartProfile c → √π` as
+`c → ∞`, so the crossover profile interpolates the Gaussian constant at one end. -/
+theorem tendsto_sqrt_mul_quartProfile :
+    Tendsto (fun c : ℝ ↦ c ^ (1 / 2 : ℝ) * quartProfile c) atTop (𝓝 (Real.sqrt Real.pi)) := by
+  have hc : Tendsto (fun c : ℝ ↦ c ^ (-(2 : ℝ))) atTop (𝓝 0) := tendsto_rpow_neg_atTop two_pos
+  rw [← gaussProfile_zero]
+  refine (tendsto_gaussProfile hc ?_).congr' ?_
+  · filter_upwards [eventually_gt_atTop (0 : ℝ)] with c hc0
+    exact (Real.rpow_pos_of_pos hc0 _).le
+  · filter_upwards [eventually_gt_atTop (0 : ℝ)] with c hc0
+    rw [quartProfile_eq_gaussProfile hc0, ← mul_assoc, ← Real.rpow_add hc0]
+    norm_num
+
 end Laplace.Multi

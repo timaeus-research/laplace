@@ -2165,3 +2165,18 @@ certificates for concrete resolved charts beyond the identity chart.
   (`d = 1`, `α = (4,2)`, `b = 1`, `σ = (0, σ)`: image set `= Ici (coupledExponent σ)`, `csInf_Ici`)
   — the LP value equals the analytic exponent of `CoupledPhaseDiagram`. Not done: piecewise
   affinity via the dual polytope's vertices, and log multiplicity = dim of the optimal face.
+- `PathHessian.lean` (NOT mirrored; round-19 package 4b) + `CoupledPhaseDiagram` wall-profile
+  section (package 3 first step): `TiltData.abs_tiltCov_le_of_bound` (`|Cov(f,g)| ≤ 2 Mf Mg`),
+  `PathData2` (`: Prop extends PathData`, new syntax order), `PathData.hasDerivAt_num'`
+  (`d/ds ∫ f_s e^{-tL_s} π = ∫ (ḟ_s − t f_s L̇_s) e^{-tL_s} π`, s-dependent observable),
+  `PathData.hasDerivAt_pathFreeEnergy` (`F' = t E_s[L̇]`), `PathData2.hasDerivAt_pathMean`
+  (`d/ds E_s[L̇] = E_s[L̈] − t Var_s(L̇)`), **`PathData2.hasDerivAt_deriv_pathFreeEnergy`**
+  (`F'' = t E[L̈] − t² Var(L̇)`), **`PathData2.hasDerivAt_neg_mul_pathCov`** (second derivative of
+  the response along any C² path: `t² κ₃(φ,L̇,L̇) − t Cov(φ, L̈)`), `eLoss''` (= `κ₃^{q_s}(ℓ,a,a)`),
+  `eLoss'_hasDerivAt`, `abs_eLoss''_le` (`6 Mℓ Ma²`), `PathData2.eGeodesic`. Wall profile:
+  `quartZ_wall_variable` (`t^{1/4} Z(t, c/√t) = quartProfile c` EXACTLY), `quartProfile_eq_gaussProfile`
+  (`quartProfile c = c^{-1/2} gaussProfile (c^{-2})`), `tendsto_sqrt_mul_quartProfile`
+  (`√c · quartProfile c → √π`: the wall profile matches the Gaussian regime). Gotchas: `hfm.mul hgm`
+  is Pi-form — type the measurability of a product with a `have … : Measurable fun x ↦ f x * g x`
+  before passing it where the observable is inferred from it (else goals show `|(f * g) x|` and
+  `integral_sub` patterns fail); `rw [Real.abs_exp]` rewrites all copies at once.
