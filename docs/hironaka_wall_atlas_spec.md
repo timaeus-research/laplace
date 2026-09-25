@@ -2127,3 +2127,10 @@ certificates for concrete resolved charts beyond the identity chart.
   Gotcha: after `norm_num` an exponent `1/2 − σ` may come back as `1/2 + −σ`; close with
   `rw [sub_eq_add_neg]`. `linear_combination (s * w²) * hh` closes the substitution identities
   once the rpow powers are rewritten by `h4`, `h2`.
+- `ResponseNullspace.lean` (NOT mirrored): **the nullspace of the response form**.
+  `TiltData.tiltCov_self_eq_tiltExp_sq` (`Var f = E[(f − E f)²]`),
+  `TiltData.tiltCov_self_eq_zero_iff` (`Var f = 0 ↔ ∀ᵐ x, ν x ≠ 0 → f x = E f`, via
+  `integral_eq_zero_iff_of_nonneg` and `Filter.eventually_congr`),
+  `TiltData.responseForm_self_eq_zero_iff` (`t ≠ 0`: `g_a(v,v) = 0 ↔ ∀ᵐ x, π x ≠ 0 → R_v x =
+  ⟨R_v⟩_a`): the invisible data directions are those whose loss is a.e. constant on the support
+  of the prior; the response form is a metric on the identifiable quotient.
