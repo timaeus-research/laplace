@@ -2384,3 +2384,6 @@ certificates for concrete resolved charts beyond the identity chart.
   `gibbsCov_first_order_rate_explicit`), `trASig_matCLM_eq_trace` (`= tr(AΣBΣ)` for matrix data;
   `one_apply_eq_self` replaces the deprecated `ContinuousLinearMap.one_apply`; `Matrix.mulVec_single_one`).
   Matches the exact Gaussian value of `GaussianShapeMetric`.
+- `BoundedDistance.lean` (NOT mirrored; Astra A(i)): `thermoLength_le_sqrt_of_fisherSpeed_le` (`g ≤ C` on
+  `[0,1]` ⇒ `ℓ ≤ √C`, via `intervalIntegral.integral_mono_on`), `TiltData.thermoLength_le_sqrt_of_var_le`
+  (mixture line, `t² Var ≤ C`).
