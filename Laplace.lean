@@ -286,6 +286,7 @@ import Laplace.Multi.ThirdCumulant
 import Laplace.Multi.TwoAxisResponse
 import Laplace.Multi.FaceLimit
 import Laplace.Multi.FaceInfinite
+import Laplace.Multi.EffectiveFeatures
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
