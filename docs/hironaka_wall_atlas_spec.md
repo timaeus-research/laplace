@@ -3677,3 +3677,24 @@ certificates for concrete resolved charts beyond the identity chart.
   — `∃ δ > 0` mis-elaborated; `Metric.infDist_pos_iff_notMem_closure`, `disjoint_interior_frontier`,
   `IsCompact.exists_isMinOn` + `isMinOn_iff`, empty sublevel handled separately), **`tendsto_rateFun_nhds_top`**
   (`ENNReal.tendsto_nhds_top_iff_nnreal`; general filter), `…_of_null` wrapper. `ℝ≥0` needs `open scoped NNReal`.
+- `EntropyProjection.lean` (NOT mirrored; round-41 item 2/6, entropy-projection completion): `entropyProj ν R M :=
+  ⨅ ρ [IsProbabilityMeasure ρ] (E_ρ R = M), klDiv ρ ν` (Mathlib `InformationTheory.klDiv`, `open InformationTheory`);
+  `integrable_exp_of_bdd`; **`integral_sub_log_le_toReal_klDiv`** (Donsker–Varadhan for bounded `f`: `KL(ρ‖ν_f) ≥ 0` via
+  `integral_llr_add_sub_measure_univ_nonneg` + `integral_llr_tilted_right` + `absolutelyContinuous_tilted`;
+  `toReal_klDiv_of_measure_eq` needs `ρ univ = ν univ` by `simp [measure_univ]`), `ofReal_integral_sub_log_le_klDiv`
+  (`klDiv_ne_top_iff`, `ENNReal.ofReal_le_iff_le_toReal`), `llr_tilted_ae` (`llr_tilted_left` with `ν ≪ ν := fun _ h ↦ h`,
+  transported by `(tilted_absolutelyContinuous ν f).ae_le`; `llr_self`), `integral_llr_tilted_eq`, `integral_sub_log_nonneg`,
+  **`klDiv_tilted_eq`** (`KL(ν_f‖ν) = E_{ν_f} f − log E_ν e^f`), **`genRate_le_klDiv`** (`unfold genRate featCgf` then
+  `dotJ_integral_eq`), `genRate_le_entropyProj`, `entropyProj_le_klDiv` (`iInf_le_of_le ρ (iInf_le_of_le inferInstance …)`;
+  omit `hR [Fintype ι] [IsProbabilityMeasure ν]`), `faceMeasure_eq_withDensity` (`withDensity_indicator`, `withDensity_const`),
+  **`klDiv_faceMeasure`** (`Measure.rnDeriv_withDensity`, `Measure.ae_smul_measure (ae_restrict_mem hF)` — namespace
+  `Measure`!, `change Real.log (…rnDeriv…).toReal = _` before `rw [hx, Set.indicator_of_mem, ENNReal.toReal_inv, Real.log_inv]`),
+  `entropyProj_condMean`; family section: `integral_exp_neg_mul_dirLoss_familyMeasure_zero` (from `featCgf_familyMeasure … 0
+  ((-t) • a)` + `dirLoss_smul` + `Real.exp_log`), **`familyMeasure_eq_tilted`** (`P_{t,a} = Q.tilted (fun x ↦ -t * dirLoss R a x)`
+  from `familyMeasure_eq_withDensity_tilt … a a t` (TiltLowerBound) after `div_self, one_smul, sub_self`; `unfold Measure.tilted;
+  congr 1; funext x; beta_reduce; congr 1`), **`klDiv_familyMeasure_zero`** (`= ofReal (famKL a 0)`; rewrite into the tilt, apply
+  `klDiv_tilted_eq`, rewrite back, `famKL_eq … (t := t)`, `simp only [dotJ, Pi.zero_apply, zero_sub, neg_mul,
+  Finset.sum_neg_distrib]; ring`), **`entropyProj_meanMap`**, **`klDiv_eq_add_of_mean`** (Pythagoras; three cases `¬ρ ≪ Q`,
+  `¬Integrable llr`, finite — the non-integrable case transfers through `llr_tilted_right` with `Pi.sub_apply, Pi.add_apply`;
+  finite case `← ENNReal.ofReal_add (Gibbs) (integral_sub_log_nonneg)`), **`klDiv_eq_rateFun_iff`** (`nth_rewrite 2 [← zero_add …]`
+  + `ENNReal.add_left_inj` + `klDiv_eq_zero_iff`).

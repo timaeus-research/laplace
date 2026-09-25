@@ -326,6 +326,7 @@ import Laplace.Multi.ExposedFace
 import Laplace.Multi.NullFace
 import Laplace.Multi.FaceTotalVariation
 import Laplace.Multi.BoundaryBarrier
+import Laplace.Multi.EntropyProjection
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
