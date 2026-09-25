@@ -238,6 +238,7 @@ import Laplace.Multi.PathHessian
 import Laplace.Multi.ThermoLength
 import Laplace.Multi.ThermoLengthIntegral
 import Laplace.Multi.ThermoLengthAsymptotic
+import Laplace.Multi.ProfileTailLength
 import Laplace.Multi.IntegratedSusceptibility
 import Laplace.Multi.SqrtIntegralConvergence
 import Laplace.Multi.BoundedDistance

@@ -2387,3 +2387,7 @@ certificates for concrete resolved charts beyond the identity chart.
 - `BoundedDistance.lean` (NOT mirrored; Astra A(i)): `thermoLength_le_sqrt_of_fisherSpeed_le` (`g ≤ C` on
   `[0,1]` ⇒ `ℓ ≤ √C`, via `intervalIntegral.integral_mono_on`), `TiltData.thermoLength_le_sqrt_of_var_le`
   (mixture line, `t² Var ≤ C`).
+- `ProfileTailLength.lean` (NOT mirrored; round-23 item 1, weak form): **`tendsto_integral_div_log_scaled`**
+  (`c h(c) → L` ⇒ `(∫_{c₀}^{a₁ t^σ} h)/log t → σ L`; Cesàro lemma composed with the moving endpoint
+  `T = a₁ t^σ`, `log T = log a₁ + σ log t`; `Tendsto.eventually_gt_atTop` for `0 < log T` — restate the
+  composed-function hypothesis with a typed `have` before `rw`; `integral_interval_sub_left`).
