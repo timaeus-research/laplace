@@ -2309,3 +2309,12 @@ certificates for concrete resolved charts beyond the identity chart.
   `convexOn_of_deriv2_nonneg` + `interior_Ioi` + `change 0 ≤ deriv (deriv _) c`),
   **`profileMean_strictAntiOn`** / `profileMean_injOn` (the mean map `c ↦ ⟨y^q⟩_c` is strictly
   decreasing: the wall is traversed monotonically by one sufficient statistic).
+- `ThermoLengthAsymptotic.lean` (NOT mirrored; THE RLCT AS THE GROWTH RATE OF THERMODYNAMIC LENGTH):
+  `thermoLength μ π L L' t := ∫₀¹ √fisherSpeed`, **`fisherSpeed_neutral`** (on the neutral line
+  `g = t² Var_{ts}(Δ)`), **`thermoLength_neutral_eq`** (`ℓ(t) = ∫₀^t √Var_u(Δ) du`, substitution
+  `u = ts`), **`tendsto_intervalIntegral_div_log`** (Cesàro: `u g(u) → c ⇒ (∫₀^t g)/log t → c`;
+  ε/4 bookkeeping with threshold `max U₀ (exp(4A/ε + 1))`), **`thermoLength_neutral_div_log_tendsto`**
+  (`u² Var_u(Δ) → λ ⇒ ℓ(t)/log t → √λ`), `continuous_neutral_var` (from `PathData.mixture` at
+  `S = |u|+1` and `PathData2.continuousAt_priorCov_self`), `thermoLength_neutral_div_log_tendsto'`
+  (bounded contrast, only the fluctuation law assumed). Gotchas: `intervalIntegrable_inv` lives in
+  `intervalIntegral`; `continuousAt_priorCov_self` is `PathData2.…` although stated for `PathData`.

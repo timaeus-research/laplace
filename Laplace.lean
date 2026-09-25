@@ -234,6 +234,7 @@ import Laplace.Multi.PathResponse
 import Laplace.Multi.PathHessian
 import Laplace.Multi.ThermoLength
 import Laplace.Multi.ThermoLengthIntegral
+import Laplace.Multi.ThermoLengthAsymptotic
 import Laplace.Multi.ResponseMetric
 import Laplace.Multi.ResponseNullspace
 import Laplace.Multi.GibbsVariational
