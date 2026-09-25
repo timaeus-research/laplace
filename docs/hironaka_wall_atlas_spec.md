@@ -3222,3 +3222,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `Set.indicator_of_mem (…) π` takes `f` explicitly; `exists_nat_one_div_lt`), **`tendsto_mixKL_zero_face`**
   (`tendsto_atTop`; neighbourhood with `π̄(A) < e^{−2(|K|+2)}`, eventually `q_λ(A) ≥ 1/2`, then the log arithmetic with
   `Real.log_le_log`, `Real.log_exp`, `log 2 ≤ 1`).
+- `EffectiveFeatures.lean` (NOT mirrored; Astra round 33 item 2): `priorCov_eq_zero_of_ae_const` (`priorExp_congr_ae'` +
+  `priorExp_const_mul_bdd` + `priorExp_const_fun`), `priorExp_eq_of_sub_mem` (`P_b = P_a` for `b − a ∈ N`; from
+  `priorExp_affLoss_add_of_invisible` + `add_sub_cancel`), **`featCov_mulVec_eq_zero_iff`** (`C u = 0 ↔ u ∈ N`; `→` via
+  `u ⬝ C u = Var(R_u)` (`featCov_mulVec_apply`, `sum_mul_priorCov_eq`) and `responseForm_self_eq_zero_iff`; `←` entrywise),
+  **`injOn_meanMap_of_isCompl`** (`meanMap_eq_iff_invisible` + `IsCompl.inf_eq_bot` + `Submodule.mem_inf/mem_bot`),
+  **`image_meanMap_of_isCompl`** (`Submodule.codisjoint_iff_exists_add_eq` — the `Submodule.` prefix is required),
+  `bijOn_meanMap_of_isCompl`, **`responseForm_pos_of_isCompl`**, `finrank_compl_invisible`
+  (`Submodule.finrank_add_eq_of_isCompl` + `Module.finrank_fintype_fun_eq_card`). No `hnd` anywhere.
