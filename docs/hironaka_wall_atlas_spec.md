@@ -1937,3 +1937,45 @@ certificates for concrete resolved charts beyond the identity chart.
   lemma with `omit [Fintype ι] in … [Finite ι]`). NEXT (Astra steps 2–4): a `Phase` record for
   `mixData` with `F = a z₁`, the leading functional of `TermData.zeroScale` on it, and its
   identification with `σ^q ∫_{2σ}^∞ u^{p−q−1} e^{-au} ψ(σ/u,0) du` (acceptance `σ^q e^{-2aσ}/a`).
+- `MixedTruthBoundary.lean` (f8b86dd; hironaka 1f358ba6b): `mix_tendsto_totalKernel_boundary_pow`
+  — the regression for the phase `a(z) z₁^n` along `s = σ/τ`, `t = τ^n`:
+  `τ^p K_{τ^n}(σ/τ) → σ^q ∫_{2σ}^∞ u^{p−q−1} e^{-u^n a(σ/u,0)} ψ(σ/u,0) du` (substitution
+  `x = u/τ`; `integrableOn_rpow_mul_exp_neg_mul_rpow_Ioi`/`_pow_Ioi` for the DCT bound); the linear
+  theorem is the case `n = 1` (`simpa only [pow_one]`).
+- **Acceptance test through the certificate route — analysis (not landed).** Astra's steps 2–4
+  (boundary `TermData` on the mixed record, leading functional = segment integral, recover
+  `σ^q e^{-2aσ}/a`) hit three API facts worth recording. (i) In `mixData` the solved coordinate is
+  `z₀` (`k = 0`), so the phase `a z₁` is a phase on the UNSOLVED coordinate: `κ = 1`, `δ = 1`,
+  scale `α = 1` with tied truth (`Q·α = γ = 1`) and tied phase — a single-scaled vertex with tied
+  cut, covered by NO landed constructor (`of_vertex` needs strict truth, `of_twoScaled` two scaled
+  coordinates); it would be the zero-scale regime only in the chart solving `z₁`. (ii) The term
+  theorems require `F ≥ 0` GLOBALLY (`branchReal_le` bounds `e^{-tF} ≤ 1` at every chart point),
+  and a phase record `F ∘ rep = a(u) ∏u^{kF}` with `kF = (0,1)` and a continuous nonvanishing unit
+  forces `F` to change sign — the linear phase `a z₁` is not admissible as a `Phase`; the squared
+  phase `a z₁²` (`γ = 1/2`) is. (iii) The term theorems take observables supported in `L'`
+  (`hφL`); for `mixData` (`L' = (0,1/2]²`) such observables vanish on the segment, so the
+  certified leading constant of `z₀^q z₁^p ψ` is `0` for every `p ≥ 1` — the `t^{-p}` decay is a
+  SUBLEADING order invisible to the leading-term certificate; the certificate route sees only
+  `p = 0`, and only for a record whose region contains the wall segment in its interior (the
+  exported thin region, two branches `±`). So the honest acceptance test is: exported record over
+  the full thin region, `F = a z₁²`, observable `z₀^q ψ`, tied-cut single-scaled certificate,
+  and `tendsto_nhds_unique` against the by-hand limit; ~400 lines, deferred. Constructive recovery
+  (round-16 item 2) is already covered in 1D (`Laplace/OneD/*Recovery*.lean`: `jet_recovery`,
+  `polynomialJet_recovery`, `smooth_full_jet_recovery`, `base_recovery`, …); the scale API exists
+  as `PowerLogDominance.powLog` (positivity, dominance).
+- `Laplace/OneD/FlatInvisibleSingular.lean` (d0450d6; NOT mirrored — identifiability chain):
+  **flat perturbations are invisible at singular minima** (Astra round-16 item 5).
+  `singular_flat_perturbation_invisible`: `L₁` continuous with `c x^{2k} ≤ L₁` for `|x| ≤ δ₀` and
+  `c₁ ≤ L₁` for `|x| > δ₀`, `f` continuous, `0 ≤ f ≤ M`, flat at `0` ⇒ `|∫ φ e^{-tL₁} − ∫ φ
+  e^{-t(L₁+f)}| ≤ K/t^N` for all `N`; `_superpolynomial` (the `SuperPoly` form) and the witness
+  `singular_flat_witness_superpolynomial k`: `x^{2k}` vs `x^{2k} + e^{-1/x²}`. Proof: pointwise
+  `e^{-tL₁}(1 − e^{-tf})` with `0 ≤ 1 − e^{-tf} ≤ tf` (`Real.add_one_le_exp`), flatness at order
+  `2k(N+1)` near `0` where `t C (x^{2k})^{N+1} e^{-tcx^{2k}} ≤ C (N+1)! c^{-(N+1)} t^{-N}`
+  (`y^m e^{-y} ≤ m!` from `Real.pow_div_factorial_le_exp`), the floor `c₂ = min c₁ (c δ'^{2k})`
+  away from `0` with `t e^{-c₂ t} ≤ t^{-N}` eventually (`tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero`),
+  everything dominated by `1_{tsupport φ} · Mφ A / t^N` (`norm_integral_le_of_norm_le`,
+  `integral_indicator_const`) — no closed-form integral. Gotchas: `rw [← Even.pow_abs h]` rewrites
+  the FIRST power it sees — pass the base (`Even.pow_abs h x`); `set y := … with hy` then
+  `clear_value y` before `field_simp; ring`, or the let-value is unfolded and `ring` faces
+  `c * c^N * c⁻¹ * c⁻¹^N`; `norm_integral_le_of_norm_le` needs `(f := …)` when the bound is
+  given by a `fun x ↦ by …` block.
