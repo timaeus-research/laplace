@@ -1451,3 +1451,18 @@ certificates for concrete resolved charts beyond the identity chart.
   (`modelKernel 1 1 1 1 2 0 1 3 degQ degκ degr 1 1 t = (degI t).toReal`), and
   **`tendsto_degI_of_face`** (`t⁴ I(t)/log t → 1` from the general theorem, the regression test
   against `DegenerateFace.tendsto_degI`). Astra round-11 item (d) CLOSED.
+- `ActiveTruthFaceInvariance.lean` (3dcf449; hironaka d4e736be1): **solved-pair independence of
+  the face constant** (Astra round-11 item (c)). `augMat κ Q = fromBlocks 1 0 A M'`
+  (`α ↦ (α_free, κ·α, Q·α)`, `augMat_mulVec`, `augMat_det = −det transMat`), `faceLift κ Q δ γ w =
+  augMat⁻¹ (w, δ, γ)` (`faceLift_eq_of`: the unique constraint-set point over `w`; `faceLift_inl`,
+  `faceLift_sum_κ/Q`, `faceLift_inr = fibreA − fibreCoef ⬝ w`),
+  `mem_facePolytope_iff_faceLift_nonneg` (`w ∈ F' ↔ 0 ≤ faceLift w`), `transitionMat κ Q σ =
+  augMat (κ∘σ) (Q∘σ) · permMatrix σ · augMat⁻¹` (`transitionMat_mulVec`: `(w, v) ↦
+  ((faceLift w) ∘ σ ∘ inl, v)`, hence `transitionMat_eq_fromBlocks` with lower blocks `0, 1`,
+  `transitionMat_det_eq`, `abs_det_transitionMat = |det M_σ|/|det M|`), `faceLift_transition_eq`
+  (the transition map is affine with linear part the top-left block), `image_facePolytope_transition`
+  (`F'_σ` is the affine image of `F'`), **`volume_facePolytope_div_det_perm`** (`vol(F'_σ)/|det M_σ| =
+  vol(F')/|det M|` by `addHaar_image_linearMap` + `measure_preimage_add_right`),
+  `volume_facePolytope_div_det_eq` (two splittings `e₁ e₂ : Fin k ⊕ Fin 2 ≃ ι`, via
+  `σ = e₂.trans e₁.symm`), **`faceConst_eq`** (`P.faceConst i γ e₂ = P.faceConst i γ e₁`). No LP
+  or nondegeneracy hypotheses beyond `det ≠ 0` and `κ > 0` (finiteness of the volume).
