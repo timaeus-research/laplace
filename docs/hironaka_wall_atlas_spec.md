@@ -2366,3 +2366,7 @@ certificates for concrete resolved charts beyond the identity chart.
   (`g_a(v,u)/t → H(mv, mu)` given `mv = −H⁻¹∇R_v`), **`responseForm_asymptotic_movingMinimizer`**
   (velocities supplied by `Laplace.Patterning.movingMinimizer_deriv`: the stationarity equation of a
   differentiable curve of critical points). Imports `Laplace.Patterning.MovingMinimizer`.
+- `MomentDetermination.lean` (NOT mirrored; round-22 item 7): **`priorZ_pathLoss_eq_of_moments_eq`**
+  (same base moments ⇒ same partition function along the line), **`mixExp_eq_of_moments_eq`** (same
+  mixed moments `∫φΔⁿ…` ⇒ same response `s ↦ ⟨φ⟩_s`); via `HasSum.tsum_eq` on `hasSum_priorZ_pathLoss`
+  / `hasSum_mixNum`.

@@ -231,6 +231,7 @@ import Laplace.Multi.AffineConvexity
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
 import Laplace.Multi.MixtureSeries
+import Laplace.Multi.MomentDetermination
 import Laplace.Multi.PathResponse
 import Laplace.Multi.PathHessian
 import Laplace.Multi.ThermoLength
