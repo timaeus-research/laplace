@@ -1637,3 +1637,31 @@ certificates for concrete resolved charts beyond the identity chart.
   surviving coordinate depends on `v`). Constant traces recover the constant-unit theorem
   (`vWeightTD = w₀ · vWeight β η 0 (c₀ a₀) h₀ · 1_{(M⁻¹v)_1>0}`). Not done: the `j = 0` mirror
   (swap the solved pair), the chart wrapper, a laplace-side bridge consuming the hironaka export.
+- `TruthPushforward.lean` (hironaka `wall-atlas` f81e1f2d5, local): **the exact push-forward
+  theorem for an analytic truth** (Astra round-13 item 2, first half). `exists_truth_pushforward`:
+  under the hypotheses of the export (`F, T` analytic on `U₀ ∋ 0`, `T 0 = 0`, `T` measurable,
+  `F·T ≢ 0`, `W ⊆ U₀` connected open `∋ 0`, `L ⊆ W` compact), `∃ ε > 0, ∃ D : TruthChartsData m T
+  (L ∩ {|T| ≤ ε}), ∀ θ measurable, Measurable (D.totalKernel θ) ∧ ∀ η measurable, ∫⁻_{L ∩ {|T| ≤ ε}}
+  θ(z) η(T z) = ∫⁻ η(s) D.totalKernel θ s` — the composite of `exists_truthChartsData` with the
+  mirrored `TruthChartsData.lintegral_mul_comp_truth`; the total fibre kernel of the exported data
+  is the explicit representative (fixed only a.e. by the identity, per Astra).
+- `ActiveTruthChartDegenerate.lean` (96ec189; hironaka 9b2ea0c71): **the chart wrapper of the
+  boundary regime** (Astra round-13 item 3; the `j = 0` labelling is absorbed by the splitting
+  `e`, so no abstract mirror). `survPt e z = fun j ↦ update 0 (inr 1) z (e.symm j)` (continuous,
+  `|survPt e z j| < ρ` for `z ∈ (0,ρ)`), `degPt i ε b σ e v = bridgePt (survPt e (survCoord ρ κe Qe
+  v)) (truthOf ρ D q Qe (v 1))` (continuous; in the open ball on `degSet = {h > h₀} ∩ {fibreB v 1 >
+  0}`), `activeTruthDegDensity` (indicator of `degSet` of `wt|b|(degPt v) e^{-(βs+ηh+0)}
+  e^{-c₀ |a(degPt v)| e^{-s}}`; measurable, nonnegative, `ofReal dens ≤ ofReal M_b · vWeight β η 0
+  (c₀ m_a) h₀`), `degConst = A ρ^{Σ(r+1)} |det M|⁻¹ vol(F')`, **`activeTruthDegMeasure`** = map of
+  `withDensity (ofReal (degConst · dens))` along `v ↦ rep(degPt v)` (finite), `integral_
+  activeTruthDegMeasure`, `vWeightTD_chart_eq` (`vWeightTD … (weightFn (survPt z) u) (unitFn (survPt
+  z) u) v = ofReal (φ(rep(degPt v)) · dens v)` pointwise, via `weightFn_eq_of_mem_closedBall`),
+  **`tendsto_modelKernelOf_activeTruth_degenerate`** (hypotheses as `tendsto_modelKernelOf_
+  activeTruth` with `hc₁` replaced by `hdeg`; the reindexed kernel `hK` verbatim, partial traces
+  `We (update y (inr 1) z) u → weightFn (survPt e z) u` through `continuousAt_weightFn` at the ball
+  point `bridgePt (survPt z) u`, `Continuous.update`, the general-unit boundary theorem, and
+  `integral_eq_lintegral_of_nonneg_ae` to identify the limit), `TermData.activeTruthDegenerate`.
+  The measure lives on the two-dimensional surface `(z, u) ↦ rep(bridgePt (survPt z) u)` (the
+  nondegenerate one on the one-dimensional truth segment). Gotcha: the push-forward map must go
+  through `D.rep i` (the model point `degPt` is in chart coordinates). Not done: positivity of the
+  degenerate measure (`activeTruthDegMeasure_ne_zero`), the certificate-level mixed example.
