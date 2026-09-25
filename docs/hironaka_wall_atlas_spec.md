@@ -1353,3 +1353,18 @@ certificates for concrete resolved charts beyond the identity chart.
   unfolded body — use `obtain ⟨C, hC⟩ : ∃ C, C = … := ⟨_, rfl⟩` and `rw [hC]`; `if_pos hadm` under
   a `fun t ↦ … t` redex needs `simp only`, not `rw`; ascribe the type of a `Tendsto.max` result
   before rewriting its limit (`uncurry f (0,u)` vs `f 0 u`).
+- Astra round 10 (`gpt_responses/research_round10_{q,v1}.md`, d23b753): audit of the chart term
+  clean — the power is `β + γ(p − νβ − η)`, the constants collapse to `|σ|^{p−νβ−η}` (no leftover
+  `q`), the measure is (LM) for `I = ∅`, supported in the closure of the truth segment. A zero
+  measure at a wrong `(lam, k)` gives a valid but zero global limit and misidentifies the leading
+  order — hence the positive-face lemma and a nonvanishing wrapper (which also needs
+  `(wt|b|)(bridgePt 0 u) > 0` on positive `u`-measure). Ranking: (a) spectators with traces +
+  `TermData.activeTruthSpectator`, (b) LP-to-chart interface, (d) example identification,
+  (f) moving parameter, (e) `c_j = a_j = 0`, (c) solved-pair independence, (g) export. For (a):
+  no continuity in `y`; a.e.-`y` traces; the frozen-`y` domination must include the
+  `y`-dependence of the scale parameters (reuse the spectator majorant); the certificate density
+  must stay `φ`-free.
+- `ActiveTruthFacePositive.lean` (2039ae1; hironaka 09823c8ed): `continuous_dotProduct_left`,
+  `isOpen_poly2_interior`, `volume_poly2_pos_iff` (under `(c_j, a_j) ≠ (0,0)`:
+  `0 < vol(poly2) ↔ ∃ w > 0, c_j·w < a_j` — the boundary lies in the null hyperplanes, the
+  interior is a nonempty open set: `IsOpen.measure_pos`).
