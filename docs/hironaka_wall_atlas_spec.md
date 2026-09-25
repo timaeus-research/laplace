@@ -2851,3 +2851,30 @@ certificates for concrete resolved charts beyond the identity chart.
   (`MonotoneOn.convexOn_of_deriv`), **`lawFree_ge_tangent`** (`ConvexOn.le_slope_of_hasDerivAt`/`slope_le_of_hasDerivAt` +
   `slope_def_field` + `le_div_iff₀`), **`lawKL_zero_eq_legendre`** (`KL(P_u‖P_0) = −u m(u) − F(u) + F(0)`; `omit hpos hint in`),
   **`legendre_isMaxOn`** (`IsMaxOn (fun v ↦ −m(u)v − F v) (Ioi 0) u`), `lawKL_zero_ge_legendre`.
+- `NaturalCoordinates.lean` (NOT mirrored; Astra round 29 item 1): `jointStat L₀ R : Option ι → X → ℝ` (`none ↦ L₀`),
+  `natCoord t a = (t, t a)`, `natTangent t a s v = (s, a s + t v)`, `dataDir v = (0, v)`;
+  `dirLoss_jointStat_natCoord` (`Fintype.sum_option`, `Option.elim`, `Finset.mul_sum`), `affLoss_zero_jointStat_natCoord`
+  (`affLoss 0 S (Θ t a) = fun x ↦ t L_a x + 0`, the shape `priorExp_smul_add` wants), `dirLoss_jointStat_dataDir`,
+  `dirLoss_jointStat_natTangent`, `natCoord_eq_smul` (`omit [MeasurableSpace X] [Fintype ι] in`), `bdd_jointStat`
+  (`omit [Fintype ι]` only — `Bdd` references the measurable structure), **`dataDir_mem_invisibleSet_iff`**,
+  **`invisible_temperature_dir`** (joint invisible `(s,v)` with `s ≠ 0` ⇒ `L₀ =ᵐ c − R_{v/s}`), **`priorExp_natCoord`**,
+  `priorZ_natCoord`, `priorCov_natCoord`, `affLogZ_natCoord`, `meanMap_natCoord_some/none`,
+  **`responseForm_natTangent`** (`g_{Θ}(DΘ(s,v), DΘ(s,v)) = Var_{t,a}(s L_a + t R_v)`), `lawMean_lossLaw_eq`
+  (`m(u) = ⟨L_a⟩_{u,a}` via `priorExp_comp_eq_lawExp` at `f = id`; measurability of `affLoss` is `hL₀m.add (bdd_dirLoss hR a).1`),
+  **`natKL_eq`** (Bregman in natural coordinates: `mixKL_aff_eq` at `L₀ = 0`, `t = 1`; pass `h0 : ∀ x, |(fun _ ↦ 0) x| ≤ 0`
+  as a named `have`, or the `M₀` metavariable is never solved), **`natKL_natCoord`** (slice KL = joint KL),
+  **`hasDerivAt_affLogZ_line`** (line derivative of `A_t` at EVERY point: `TiltData.hasDerivAt_affLogZ_dir` at base
+  `a + s•v` built with `tiltData_baseWeight_of_bounded … measurable_const (fun _ ↦ by simp)`, shifted by
+  `HasDerivAt.comp_sub_const s s` after `rw [sub_self]`, then `congr_of_eventuallyEq` + `change` + `congr 1` + `module`),
+  `priorExp_dirLoss_eq_dot`, **`natKL_zero_eq_integral`** (`KL(P_θ‖P_0) = ∫₀¹ s Var_{sθ}(S_θ) ds`: primitive
+  `g(s) = ψ(0) − ψ(sθ) − s D(s)`, `hasDerivAt_const s (explicit constant)` — an underscore is not inferred —,
+  integrand continuity through `continuous_obsMapDeriv` + `clm_apply`, FTC `integral_eq_sub_of_hasDerivAt`, and the
+  final bookkeeping needs `Pi.zero_apply` for `(0 : Option ι → ℝ) j`), **`lawMean_eq_dot_meanMap`**
+  (`⟨L_a⟩_{u,a} = η₀ + a·M` as the joint mean map on the ray). Astra round 29 (`gpt_responses/research_round29_{q,v1}.md`):
+  ranking (1) joint family [DONE here], (2) `N^⊥` open-embedding packaging + featureless anchor [anchor DONE],
+  (3) ray Cramér curvature `I(x) = −x u(x) − F(u(x))`, `I' = −u`, `I'' = 1/Var`, (4) ess-inf endpoint without regular
+  variation (`m(u) → α` from `ν{ℓ < α+ε} > 0`, lemma `sup_{y≥ε} y e^{−ry} = ε e^{−rε}`) + finite-alphabet endpoint
+  distribution, (5) moment-polytope image theorem, (6) two-term wall law (full coefficient derivation §4: `c₁ = n₂ − h₁²`,
+  odd orders vanish by parity, `O(B⁻²)` needs the order-3 weight polynomial), (7) abstract moving-minimum theorem.
+  Warnings: the joint kernel `N ⊋ {0}×K` unless `L₀ ∉ span{1,R}`; the `t > 0` mean image need NOT be convex (three-atom
+  counterexample); the dual coordinate is `(⟨L₀⟩, M)`, not `(⟨L_a⟩, M)`; Bregman parameter order is reversed.
