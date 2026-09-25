@@ -2821,3 +2821,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `?l ∘ f` with the lambda; every `fun s ↦ … s • v` binder must be typed `s : ℝ` or `HSMul` is stuck; add `Pi.sub_apply`
   to the final simp), **`dot_meanMap_sub_neg`** (`< 0` off `K`; `intervalIntegral_pos_of_pos_on`). NOT built: the
   `K^⊥`-restricted open embedding (Lean plumbing over `MeanMapChart`).
+- `InteriorMinimumTwoMono.lean` (NOT mirrored; Astra round 28 item 2, two-monomial instance): `interiorMin p q a := negScale p q
+  (−a)` (`x_a = (q|a|/p)^{1/(p−q)}`), `interiorHess := p(p−q) x_a^{p−2}`, `interiorMin_rpow` (`x_a^r = (q(−a)/p)^{r/(p−q)}`),
+  `hasDerivAt_interiorMin` (`x_a' = −q x_a^{q−1}/H_a`, from `Real.hasDerivAt_rpow_const` composed with the affine inner map),
+  **`sqrt_interiorHess_mul_abs_deriv`** (`√H_a |x_a'| = k₋ (−a)^{negGamma}`; the `(p−2)/2`-power bookkeeping goes through
+  `x^{(p−2)/2} x^{q−1} = x^{(2q−p)/2} x^{p−2}` and `x^{(2q−p)/2} = (q/p)^γ (−a)^γ`; fold `√(p(p−q))` into an opaque `s` with
+  `set … clear_value` and rewrite `p(p−q) = s²` BEFORE `field_simp`, never `← hsq` which also rewrites inside the radical),
+  `negChamberConst_eq_integral` (`K₋(A) = ∫₀ᴬ k₋ s^γ ds`, `integral_rpow` + `negGamma_add_one`),
+  **`integral_sqrt_interiorHess_mul_abs_deriv`** (`∫_{a₀}^{a₁} √H_a|x_a'| = K₋(−a₀) − K₋(−a₁)`, via `integral_comp_neg` and
+  `integral_interval_sub_left`), **`tendsto_fisherSpeed_div_interior`** (`fisherSpeed t a / t → (q x_a^{q−1})²/H_a` for `a < 0`:
+  rescaling `fisherSpeed t a = (t^σ)² negVar(−a t^σ)`, `(q b/p)^e` with `b = −a t^σ` splits by `Real.mul_rpow`, and the exponent
+  identity `(t^σ)^e = (t^σ)²/t` (`σ e = 2σ − 1`, `e = (p−2q)/(p−q)`) closes with `mul_div_cancel_left₀`, NOT `field_simp`),
+  `wall_phase_negative_pair` (`ℓ_t(a₀,a₁)/√t → K₋(−a₀) − K₋(−a₁)` for `a₀ ≤ a₁ < 0`), **`interior_minimum_length`**
+  (`ℓ_t(a₀,a₁)/√t → ∫_{a₀}^{a₁} √H_a |x_a'| da`). One-liner `have hX : … := by have : … := by linarith; positivity` nests the
+  `positivity` inside the inner `by` — split into two `have`s. Astra's second-order wall coefficient
+  `Var_B(√B(z^q−1)) = q²/(p(p−q)) + q²(p−2)/(2p²(p−q))/B + O(B⁻²)` was CONFIRMED numerically for (4,2), (3,1), (5,2) (not yet
+  formalised; it is the input of the two-term wall law).
