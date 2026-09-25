@@ -3779,4 +3779,8 @@ certificates for concrete resolved charts beyond the identity chart.
   rewritten with `familyMeasure_one_zero`, `rateFun_meanMap`, `klDiv_eq_rateFun_iff`; boundary case via
   `mem_intrinsicInterior_iff_forall_supporting` + `push Not`, `genRate_eq_top_of_null_face`, `genRate_face_eq`,
   `finrank_dirSpan_faceMeasure_lt`, the chain rule, `ENNReal.add_right_inj ENNReal.ofReal_ne_top`), **`entropyProj_eq_genRate`**
-  (`𝓔 = 𝓘` for every `M`, infinite values included).
+  (`𝓔 = 𝓘` for every `M`, infinite values included). The induction is carried by **`exists_pythagorean_minimiser`**
+  (`∃ ρ_M, prob ∧ mean ∧ attains ∧ ∀ ρ prob with mean M, KL(ρ‖ν) = KL(ρ‖ρ_M) + 𝓘(M)`; boundary case: a law with the
+  face mean is carried by `F`, `klDiv_eq_klDiv_faceMeasure_add`, the IH's Pythagoras, `add_assoc`/`add_comm`; a law not
+  `≪ ν` has both sides `⊤` via `klDiv_of_not_ac`); uniqueness then follows from `klDiv_eq_zero_iff` — when deriving it,
+  `rw [zero_add, h]` rewrites BOTH copies of `genRate`; use `rw [zero_add]; exact h`.

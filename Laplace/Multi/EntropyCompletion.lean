@@ -43,15 +43,21 @@ variable {X : Type*} [MeasurableSpace X] [Nonempty X] {J : Type*} [Fintype J] [N
   {S : J → X → ℝ} (hS : ∀ j, Bdd (S j))
 include hS
 
-/-- **The completion principle**: every response of finite rate has a unique entropy minimiser. -/
-theorem exists_unique_entropy_minimiser (ν : Measure X) [IsProbabilityMeasure ν] {M : J → ℝ}
+/-- **The completion principle with its Pythagorean identity**: every response of finite rate has
+an entropy minimiser `ρ_M` such that `KL(ρ ‖ ν) = KL(ρ ‖ ρ_M) + 𝓘_ν(M)` for every probability law
+`ρ` with mean `M` (in `ℝ≥0∞`, all cases). -/
+theorem exists_pythagorean_minimiser (ν : Measure X) [IsProbabilityMeasure ν] {M : J → ℝ}
     (hfin : genRate ν S M ≠ ⊤) :
-    ∃! ρ : Measure X, IsProbabilityMeasure ρ ∧ (fun i ↦ ∫ x, S i x ∂ρ) = M ∧
-      klDiv ρ ν = genRate ν S M := by
+    ∃ ρM : Measure X, IsProbabilityMeasure ρM ∧ (fun i ↦ ∫ x, S i x ∂ρM) = M ∧
+      klDiv ρM ν = genRate ν S M ∧
+      ∀ ρ : Measure X, IsProbabilityMeasure ρ → (fun i ↦ ∫ x, S i x ∂ρ) = M →
+        klDiv ρ ν = klDiv ρ ρM + genRate ν S M := by
   suffices H : ∀ n : ℕ, ∀ (ν : Measure X) [IsProbabilityMeasure ν],
       Module.finrank ℝ (dirSpan ν (fun _ ↦ (1 : ℝ)) S) = n → ∀ M : J → ℝ, genRate ν S M ≠ ⊤ →
-        ∃! ρ : Measure X, IsProbabilityMeasure ρ ∧ (fun i ↦ ∫ x, S i x ∂ρ) = M ∧
-          klDiv ρ ν = genRate ν S M from H _ ν rfl M hfin
+        ∃ ρM : Measure X, IsProbabilityMeasure ρM ∧ (fun i ↦ ∫ x, S i x ∂ρM) = M ∧
+          klDiv ρM ν = genRate ν S M ∧
+          ∀ ρ : Measure X, IsProbabilityMeasure ρ → (fun i ↦ ∫ x, S i x ∂ρ) = M →
+            klDiv ρ ν = klDiv ρ ρM + genRate ν S M from H _ ν rfl M hfin
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>
@@ -85,13 +91,12 @@ theorem exists_unique_entropy_minimiser (ν : Measure X) [IsProbabilityMeasure �
         genRate ν S M := by
       rw [hkl0, hrate, ← hθ,
         rateFun_meanMap measurable_const hπi hπ hπpos measurable_const h0 hS one_pos θ]
-    refine ⟨familyMeasure ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 θ, ⟨hP, hmean, hkl⟩,
-      fun ρ ⟨hρP, hρM, hρkl⟩ ↦ ?_⟩
-    have hiff := klDiv_eq_rateFun_iff measurable_const hπi hπ hπpos measurable_const h0 hS one_pos
+    refine ⟨familyMeasure ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 θ, hP, hmean, hkl,
+      fun ρ hρP hρM ↦ ?_⟩
+    have hpy := klDiv_eq_add_of_mean measurable_const hπi hπ hπpos measurable_const h0 hS one_pos
       θ ρ (hρM.trans hθ.symm)
-    rw [hQ] at hiff
-    refine hiff.1 ?_
-    rw [hρkl, hrate, ← hθ]
+    rw [hQ] at hpy
+    rw [hpy, hkl]
   · rw [mem_intrinsicInterior_iff_forall_supporting (convex_momentBody S)] at hrel
     push Not at hrel
     obtain ⟨e, he, y₁, hy₁, hne⟩ := hrel hMK
@@ -117,22 +122,41 @@ theorem exists_unique_entropy_minimiser (ν : Measure X) [IsProbabilityMeasure �
       exact hfin hface
     have hlt := finrank_dirSpan_faceMeasure_lt ν hF hS hp hFdef hy₁ hMK hne
     rw [hn] at hlt
-    obtain ⟨ρ, ⟨hρP, hρM, hρkl⟩, huniq⟩ := ih _ hlt (faceMeasure ν F) rfl M hfinF
-    have hρac : ρ ≪ faceMeasure ν F := (klDiv_ne_top_iff.1 (by rw [hρkl]; exact hfinF)).1
-    have hchain := klDiv_eq_klDiv_faceMeasure_add ν hF hp ρ hρac
-    refine ⟨ρ, ⟨hρP, hρM, ?_⟩, fun ρ' ⟨hρ'P, hρ'M, hρ'kl⟩ ↦ ?_⟩
+    obtain ⟨ρM, hρP, hρM, hρkl, hpyF⟩ := ih _ hlt (faceMeasure ν F) rfl M hfinF
+    have hρac : ρM ≪ faceMeasure ν F := (klDiv_ne_top_iff.1 (by rw [hρkl]; exact hfinF)).1
+    have hchain := klDiv_eq_klDiv_faceMeasure_add ν hF hp ρM hρac
+    have hac : faceMeasure ν F ≪ ν := by
+      rw [faceMeasure_eq_withDensity ν hF]
+      exact withDensity_absolutelyContinuous _ _
+    refine ⟨ρM, hρP, hρM, ?_, fun ρ hρ'P hρ'M ↦ ?_⟩
     · rw [hchain, hρkl, hface, add_comm]
-    · have hρ'ν : ρ' ≪ ν := (klDiv_ne_top_iff.1 (by rw [hρ'kl]; exact hfin)).1
-      have hcompl : ρ' Fᶜ = 0 := by
-        rw [hFdef]
-        exact compl_eq_zero_of_mean_face ν hS ρ' hρ'ν hβ (by rw [hρ'M])
-      have hρ'F : ρ' ≪ faceMeasure ν F := absolutelyContinuous_faceMeasure ν hF hρ'ν hcompl
-      have hchain' := klDiv_eq_klDiv_faceMeasure_add ν hF hp ρ' hρ'F
-      have hρ'klF : klDiv ρ' (faceMeasure ν F) = genRate (faceMeasure ν F) S M := by
-        have h := hρ'kl
-        rw [hchain', hface, add_comm] at h
-        exact (ENNReal.add_right_inj ENNReal.ofReal_ne_top).1 h
-      exact huniq ρ' ⟨hρ'P, hρ'M, hρ'klF⟩
+    · by_cases hρ'ν : ρ ≪ ν
+      · have hcompl : ρ Fᶜ = 0 := by
+          rw [hFdef]
+          exact compl_eq_zero_of_mean_face ν hS ρ hρ'ν hβ (by rw [hρ'M])
+        have hρ'F : ρ ≪ faceMeasure ν F := absolutelyContinuous_faceMeasure ν hF hρ'ν hcompl
+        rw [klDiv_eq_klDiv_faceMeasure_add ν hF hp ρ hρ'F, hpyF ρ hρ'P hρ'M, hface, add_assoc,
+          add_comm (genRate (faceMeasure ν F) S M)]
+      · have h1 : klDiv ρ ν = ⊤ := klDiv_of_not_ac hρ'ν
+        have h2 : klDiv ρ ρM = ⊤ :=
+          klDiv_of_not_ac fun h ↦ hρ'ν (h.trans (hρac.trans hac))
+        rw [h1, h2, top_add]
+
+/-- **The completion principle**: every response of finite rate has a unique entropy minimiser. -/
+theorem exists_unique_entropy_minimiser (ν : Measure X) [IsProbabilityMeasure ν] {M : J → ℝ}
+    (hfin : genRate ν S M ≠ ⊤) :
+    ∃! ρ : Measure X, IsProbabilityMeasure ρ ∧ (fun i ↦ ∫ x, S i x ∂ρ) = M ∧
+      klDiv ρ ν = genRate ν S M := by
+  obtain ⟨ρM, hρP, hρM, hρkl, hpy⟩ := exists_pythagorean_minimiser hS ν hfin
+  refine ⟨ρM, ⟨hρP, hρM, hρkl⟩, fun ρ ⟨hρ'P, hρ'M, hρ'kl⟩ ↦ ?_⟩
+  have h := hpy ρ hρ'P hρ'M
+  rw [hρ'kl] at h
+  have h0 : klDiv ρ ρM = 0 := by
+    have h' : 0 + genRate ν S M = klDiv ρ ρM + genRate ν S M := by
+      rw [zero_add]
+      exact h
+    exact ((ENNReal.add_left_inj hfin).1 h').symm
+  exact klDiv_eq_zero_iff.1 h0
 
 /-- **The constrained relative entropy is the rate everywhere**: `𝓔_ν(M) = 𝓘_ν(M)` for every
 response `M`, infinite values included. -/
