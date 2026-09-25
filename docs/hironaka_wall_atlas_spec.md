@@ -2433,3 +2433,10 @@ certificates for concrete resolved charts beyond the identity chart.
   `affLoss_chart`, `dirLoss_single`, **`responseForm_chart`** (the response form of the affine family
   `w^p + a w^q + b w^r` pulled back by the chart Jacobian is the profile Fisher matrix, 2×2 with `E = ![q,r]`,
   `fin_cases` for the contrast identification).
+- `ThermoLengthFromBase.lean` (NOT mirrored; Astra round-24 item 1, abstract part):
+  **`tendsto_intervalIntegral_div_log_from`** (Cesàro from any base point `u₀`, no sign hypothesis),
+  `continuousOn_priorNum_Ici` (dominated continuity of `u ↦ ∫ φ e^{-uL} π` on `Ici u₀` for `L ≥ 0`, dominant
+  `|φ| e^{-u₀L} π`), **`continuousOn_priorCov_self_Ici`** (variance of a nonnegative loss continuous on
+  `[u₀,∞)` given `Z ≠ 0` there and integrability of `L^k e^{-u₀L}π`, `k ≤ 2`),
+  **`thermoLength_from_div_log_tendsto`** (`u²Var_u(L) → λ ⇒ (∫_{u₀}^t √Var_u)/log t → √λ`). The concrete
+  Gaussian-prior anharmonic instance (λ = d/2) remains to be assembled from `localisedVar_energy_leading`.
