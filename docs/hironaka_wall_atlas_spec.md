@@ -3798,3 +3798,10 @@ certificates for concrete resolved charts beyond the identity chart.
   **`information_decomposition_path`** (`ENNReal.toReal_add`, finiteness of the residual from `ENNReal.add_ne_top`),
   **`responseProjection_faceMeasure`** (Π_ν(M) = Π_{ν_F}(M) on a positive supporting face; chain rule + uniqueness; no `_` in
   the `have` type of the cancellation step). Several statements need `set_option linter.unusedFintypeInType false in`.
+- `IntrinsicChart.lean` (NOT mirrored; round-43 item 2, chart part): `eq_zero_of_invisible_of_mem_dirSpan` (an a.s.-constant
+  contrast in `𝕍` is zero: `K` in the hyperplane by `momentBody_subset_halfspace` twice, `𝕍 ≤ ker (dotJ e)` via
+  `direction_affineSpan`/`vectorSpan_def`/`Submodule.span_le`, then `dotJ e e = 0`), **`meanMap_injOn_dirSpan`**
+  (`meanMap_eq_iff_invisible … one_pos a b` with the zero base loss), **`intrinsicChart : dirSpan μ π S ≃ intrinsicInterior ℝ K`**
+  (`Equiv.ofBijective`; surjectivity from `exists_min_variational_rel` + `meanMap_eq_of_min_rel`, which give a parameter IN `𝕍`),
+  `intrinsicChart_apply` (rfl), `meanMap_intrinsicChart_symm` (`congrArg Subtype.val (Equiv.apply_symm_apply …)` — a reverse `rw`
+  with the apply lemma leaves the chart's hypotheses as metavariable goals).
