@@ -43,6 +43,7 @@ import Laplace.OneD.Kappa4Asymptotic
 import Laplace.OneD.RecoveryAnharmonicFull
 import Laplace.OneD.FlatInvisible
 import Laplace.OneD.FlatWitness
+import Laplace.OneD.FlatInvisibleSingular
 import Laplace.Multi.Basic
 import Laplace.Multi.Dilation
 import Laplace.Multi.StdGaussian
