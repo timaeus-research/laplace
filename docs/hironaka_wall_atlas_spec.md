@@ -1368,3 +1368,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `isOpen_poly2_interior`, `volume_poly2_pos_iff` (under `(c_j, a_j) ≠ (0,0)`:
   `0 < vol(poly2) ↔ ∃ w > 0, c_j·w < a_j` — the boundary lies in the null hyperplanes, the
   interior is a nonempty open set: `IsOpen.measure_pos`).
+- `ActiveTruthGeneralUniform.lean` (88c1b79; hironaka 079e141de): `normalised_lintegral_eqG`
+  (the normalised general-unit model integral in transverse form, ENNReal),
+  `tendsto_normalised_lintegralG` (limit `ofReal(ρ^Σ|det|⁻¹) · ∫⁻ vWeightT(traces) · vol(F')`),
+  `lintegral_innerKvG_div_le` (pointwise, `L ≥ 1`), `normalised_lintegral_leG` (`t ≥ e`: `W_*`
+  times the constant-unit bound at `c₀ a_-`) — the frozen-spectator ingredients for general units.
