@@ -2964,3 +2964,21 @@ certificates for concrete resolved charts beyond the identity chart.
   reduced potential `J_t(M) = inf_e (I(e,M) + te) + ψ(t,0)`, (5) `N^⊥`, (6) the wall mean band, (7) two-term wall law
   (little-`o` variance lemma suffices; `c₁ = (h₂²/2 + h₁h₃)/λ² − (2h₁h₂μ₃ + h₁²μ₄/2)/λ³ + h₁²μ₃²/λ⁴`), (8) abstract
   moving minimum.
+- `EssentialRange.lean` + `MomentBody.lean` (NOT mirrored; Astra round 30 item 1): `priorMeasure μ π := μ.withDensity (ofReal π)`,
+  `essRange μ π S := ((priorMeasure μ π).map (statPoint S)).support` (Mathlib `Measure.support`), `momentBody := closure
+  (convexHull ℝ essRange)`; `priorMeasure_eq_zero_iff` (`withDensity_apply_eq_zero'`, positive density),
+  **`ae_statPoint_mem_essRange`** (`Measure.measure_compl_support` — needs `HereditarilyLindelofSpace (J → ℝ)`, hence
+  `[Fintype J]` stays although the type does not mention it: `set_option linter.unusedFintypeInType false in`; `unfold essRange
+  at h0 ⊢` before `Measure.map_apply`), `mem_essRange_iff` (`Metric.nhds_basis_ball.mem_measureSupport`), `setIntegral_pi_pos`,
+  `continuous_dotJ_right`, `abs_dotJ_le` (`|⟨e,y⟩| ≤ (∑|e_j|)‖y‖` via `norm_le_pi_norm`), `one_le_sum_abs_of_norm_eq_one`,
+  `sum_abs_le_card_of_norm_le_one`, **`exists_far_point`** (for `ball x δ ⊆ body` and `‖e‖ = 1`: `∃ y₀ ∈ essRange, δ/2 ≤ ⟨e, x − y₀⟩`;
+  contrapositive through the closed half-space `{⟨e,x⟩ − δ/2 ≤ ⟨e,y⟩}` and the test point `x − (3δ/4) sgn(e)`),
+  **`cap_lemma`** (`∃ c > 0, ∃ m > 0, ∀ ‖e‖ = 1, m ≤ ∫_{⟨e, x − S⟩ ≥ c} π`: far point + ball of radius `δ/(4n)` + perturbation
+  radius `δ/(8n(‖x‖+K+1))` + `isCompact_sphere` with `IsCompact.elim_nhds_subcover'` + `Finset.inf'` over the finite subcover;
+  the mass function must be typed `(J → ℝ) → ℝ` and the subcover elements coerced `(e : J → ℝ)`); `affLoss_zero_eq_dotJ`,
+  **`mean_mem_momentBody`** (`geometric_hahn_banach_point_closed`, `pi_eq_sum_univ'` + `map_sum`/`map_smul` for the functional in
+  coordinates, `priorExp_dirLoss`, `integral_mono_ae`), `measurable_cap`, **`coercive_bound_general`** (`c‖θ‖ + log m ≤ ψ(θ) +
+  ⟨θ,x⟩`; direction `e = ‖θ‖⁻¹ • θ` or `Pi.single j₀ 1` when `θ = 0`, `setIntegral_mono_on` + `setIntegral_le_integral`),
+  `continuous_affLogZ_general` (from `hasFDerivAt_affNum` at `φ = 1`), `exists_min_variational_general`
+  (`tendsto_norm_cocompact_atTop.const_mul_atTop`), `meanMap_eq_of_min_general`,
+  **`range_meanMap_eq_interior_momentBody`** (`hnd` in the a.e. form of `MeanMapEmbedding`).
