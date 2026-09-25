@@ -2016,3 +2016,20 @@ certificates for concrete resolved charts beyond the identity chart.
   `Or.inr` side conditions), `totalKernel_eq_of_thin` / `_eqOn_of_thin` (standard cutoff,
   `0 < |s₀| ≤ ε/2`, `θ` supported in `L₁ ∩ L₂` on `{|T| < ε}`). This is the general form of the
   transport step of the mixed regressions.
+- `TiedCutCertificate.lean` (39456ee; hironaka 40b9b23e6): **the tied-cut single-scaled
+  certificate** (round-17 item 2) — the regime of the boundary example in its own chart
+  (`mixData` solves `z₀`; the phase `a z₁` has `κ₀ = 1`, `δ = 1`, scale `α₀ = 1`, tied truth
+  `Q₀α₀ = γ` and tied phase). `limitDomain_single_subset`: for `Fin 1`, `α = (α₀)`, `α₀ > 0`,
+  `Q₀ > 0`, `Q₀α₀ = γ`, the limiting domain lies in `{u₀ > (ρ/D)^{-q/Q₀}}` (the cut
+  `D u₀^{-Q₀/q} < ρ` with the antitone rpow `antitoneOn_rpow_Ioi_of_exponent_nonpos` and
+  `Real.rpow_mul` for `((ρ/D)^{-q/Q₀})^{-Q₀/q} = ρ/D`); `integrable_tiedDom_single`: the
+  tied-cut profile `1_{limitDomain} u₀^r e^{-c₀ u₀^{κ₀}}` is integrable for EVERY `r` (`κ₀ > 0`;
+  dominate by `1_{Ioi c} x^r e^{-c₀x^κ}` transported to `Fin 1 → ℝ` by
+  `volume_preserving_funUnique`/`integrable_comp_emb (MeasurableEquiv.funUnique (Fin 1) ℝ)`
+  from `integrableOn_rpow_mul_exp_neg_mul_rpow_Ioi`), `ProfileIntegrableOf.of_tiedCut₁` (through
+  `integrable_envelope_of_tiedDom` / `_mul_profile_of_tiedDom`, which only need
+  `Integrable tiedDom` + tied phase), `TermData.tiedCut₁` (= `TermData.vertex` at
+  `α := fun _ _ _ _ ↦ α₀`; feasibility from the two ties). Restricted to one unsolved coordinate
+  on purpose (Astra: with further unscaled coordinates the cut depends on them and the lower end
+  can reach `0`; the outer domination is a separate hypothesis). Gotcha: `positivity` cannot see
+  `hc : 0 < ma/Ma`, `hB`, `P.ma_pos i` — give `mul_pos (mul_pos hc hB) (P.ma_pos i)` explicitly.
