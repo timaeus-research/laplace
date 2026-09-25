@@ -2202,3 +2202,16 @@ certificates for concrete resolved charts beyond the identity chart.
   atlas term. Remaining for the full representation theorem: the general `TermData` term (the
   unit sits inside `dsProfile`'s exponential; integrating the scaled coordinate produces the
   `Γ(β) (B a)^{-β}` factor), spectators, and the degenerate regimes.
+- `WallLogMultiplicity.lean` (NOT mirrored; Astra round-19 warning example): `wallZ t s =
+  ∫₀¹∫₀¹ e^{-tx(y+s)}`, `expInt a = ∫₀^a (1−e^{-u})/u`, `wallRem t s = ∫_{ts}^{t(1+s)} e^{-u}/u`;
+  `integral_exp_inner`, `mul_wallZ_eq_expInt` (`tZ = G(t(1+s)) − G(ts)`; the inner formula carries
+  a `1/t` — the first draft lost it), `integral_one_sub_exp_div_eq_log` (`integral_one_div`),
+  **`wallZ_eq`** (`tZ = log((1+s)/s) − wallRem`), `wallRem_nonneg`, `wallRem_le`
+  (`≤ e^{-ts}/(ts)`), `tendsto_wallRem`, **`tendsto_wallZ_wall`** (`σ = 0`: `tZ → log 2`),
+  **`tendsto_wallZ_fixed`** (`0 < σ < 1`: `tZ/log t → σ`), **`tendsto_wallZ_moving`**
+  (`s = e^{-√log t}`: `tZ/√log t → 1`) — the log multiplicity interpolates across the wall; the
+  wall variable is `σ log t`. Gotchas: `integral_const_mul`/`integral_div`/`integral_congr_ae` are
+  ambiguous between `intervalIntegral` and `MeasureTheory` under both opens — qualify;
+  `IntervalIntegrable.comp_mul_left` takes `{c}` implicit with `finiteness` autoParams — use
+  `(c := a)`; `simp_rw [e]` with `e : ∀ y, …` also rewrites the `y = 1` instance on the RHS;
+  `Ι` needs `open scoped Interval`.

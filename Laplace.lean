@@ -258,6 +258,7 @@ import Laplace.Multi.PatternAttenuation
 import Laplace.Multi.MixtureRigidity
 import Laplace.Multi.CoupledPhaseDiagram
 import Laplace.Multi.ValuationLP
+import Laplace.Multi.WallLogMultiplicity
 import Laplace.Multi.WallCrossover
 import Laplace.Multi.WallResponse
 import Laplace.Multi.TwoChartCompetition
