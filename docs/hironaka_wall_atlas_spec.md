@@ -3405,3 +3405,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `chartDomain`; this Mathlib's `PartialHomeomorph` has NO `open_source`/`open_target` fields — only the two `continuousOn`
   fields on top of `PartialEquiv`), simp lemmas `responseChart_apply/symm_apply/source/target`, **`responseChart_bijOn`**
   (`.toPartialEquiv.bijOn`), `continuousOn_sliceInv`, **`continuousOn_lossChart`**, **`continuousOn_relEntropy_chart`**.
+- `ArcsineLength.lean` (NOT mirrored; Astra round 35/36 "arcsine"): **`arcsin_speed_bound`** (pure: `|2·(1/√(1−√(p/d)²))·((m'/d)/(2√(p/d)))| ≤ √G`
+  from `|m'| ≤ √V√G`, `V ≤ pq`, `p+q = d`; `Real.sqrt_div'`, then `set st := √d` + `d = st*st` BEFORE `field_simp` — a
+  `rw [← hdd]` on `√d * √d = d` also rewrites the `d` inside `√d`; `field_simp` closes the identity, no `ring`),
+  **`priorCov_self_le_mul_of_bounds`** (Bhatia–Davis `Var φ ≤ (⟨φ⟩−lo)(hi−⟨φ⟩)`: `E[(φ−lo)(hi−φ)] ≥ 0` via
+  `priorExp_mono_bdd` + linearity), **`natLength_ge_arcsin`** (`2|arcsin√z(1) − arcsin√z(0)| ≤ natLength`, hypothesis
+  `hint : ∀ s, lo < ⟨φ⟩_{η s} < hi`; chart derivative via `Real.hasDerivAt_arcsin (hsqm1) (hsq1) |>.comp s (hz.sqrt …)`,
+  `Real.sqrt_eq_one`, continuity of the chart derivative from `Continuous.div … (h ≠ 0)` and `Continuous.sqrt`; FTC + the
+  pointwise bound).
