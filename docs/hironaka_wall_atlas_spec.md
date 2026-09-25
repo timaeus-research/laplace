@@ -2061,3 +2061,28 @@ certificates for concrete resolved charts beyond the identity chart.
   (`Tendsto.eventually hvan` through `rep ∘ bridgePt`) and the limiting weight is `0`
   (`Filter.Eventually.self_of_nhds`). `tendsto_fibre_expectation_of_interior` takes one such
   hypothesis per observable (`hfaceψ`, `hfaceχ`).
+- `ResponseMap.lean` + `MixtureRigidity.lean` (70e5ba5; NOT mirrored — outside the wall-atlas
+  scope): **the response map over the data manifold, exact layer** (new direction, Astra round 18
+  `gpt_responses/research_round18_v1.md`). With a prior density `π` and the base weight
+  `baseWeight π L₀ t = e^{-tL₀} π`, the mixture posteriors `mixExp μ π L₀ Δ φ t s` (loss
+  `pathLoss L₀ Δ s = L₀ + sΔ`) are the exponential tilts of `TiltInterpolation`
+  (`mixExp_eq_tiltExp`, `mixExp_eq_base_ratio`); a loss-neutral base `L₀ = c` gives the temperature
+  path (`priorExp_neutral`, `mixExp_neutral`, `priorZ_neutral`); `TiltData.hasDerivAt_mixExp`
+  (`−t Cov_s(φ, Δ)`), `hasDerivAt_neg_mul_mixCov` (`t² κ₃`), `mixExp_antitone` (`⟨Δ⟩_s` descends),
+  `hasDerivAt_mixLogZ` (`A' = −t⟨Δ⟩`), `hasDerivAt_deriv_mixLogZ` (`A'' = t² Var`),
+  `mixLogZ_convexOn` / `mixFreeEnergy_concaveOn` (Mathlib `convexOn_univ_of_deriv2_nonneg`),
+  `mixKL_eq` (KL of normalised densities = Bregman divergence of `A`; pointwise where `π > 0`);
+  affine chart `affLoss L₀ R a = L₀ + ∑ aᵢ Rᵢ`, `dirLoss R v = ∑ vᵢ Rᵢ`,
+  `TiltData.hasDerivAt_affExp` (differential `−t Cov_a(φ, R_v)`), `responseForm μ π L₀ R a t v u =
+  t² Cov_a(R_v, R_u)` with `_comm`, `_add_left`, `_smul_left`, `_self_nonneg`,
+  `hasDerivAt_deriv_mixLogZ_dir` (= D²A[v,v]), `sq_response_le` (Cauchy–Schwarz). Hypotheses:
+  `TiltData μ (baseWeight π L₀ t) Δ M` from `tiltData_baseWeight_of_bounded` (integrable prior,
+  bounded measurable losses); `TiltData.changeR` swaps the residual. `MixtureRigidity`:
+  `attZ_family_sandwich` (`Z_G(Ct) ≤ Z_{L_a}(t) ≤ Z_G(ct)` for `aᵢ ∈ [c, C]`, `fᵢ ≥ 0`),
+  `family_isTheta` (Θ-rigidity of `(λ, m)` on `[c, C]^ι`, `0 < c`; generalises `mixture_isTheta`).
+  Gotchas: `open Real` makes `π` the constant — a prior named `π` needs `Real.exp` etc. spelled
+  out and no `open Real`; a theorem named `Bdd.dirLoss` shadows `dirLoss` inside its own proof
+  (`unfold dirLoss` fails) — name it `bdd_dirLoss`; a def after `variable {μ}` takes `μ`
+  implicitly (`responseForm` re-binds `(μ : Measure X)` explicitly); `mixLoss` already exists in
+  `TruthVariation` (hence `pathLoss`); `rw [← priorExp_neutral]` needs `(c := c)` (the constant is
+  not determined by the RHS).
