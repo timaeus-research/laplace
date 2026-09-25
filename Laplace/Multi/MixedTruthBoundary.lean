@@ -9,22 +9,32 @@ import Laplace.Multi.MixedTruthExport
 /-!
 # The critical-boundary regression of the mixed truth
 
-Astra's round-15 regression (item 3): the mixed truth `T = z₀ z₁` with the phase `F = a z₁`
-(`a > 0`), vanishing on the whole axis `z₁ = 0` of the wall, and the monomial observable
-`z₀^q z₁^p ψ`. Along the ray `s = σ/t` the fibre kernel decays like `t^{-p}` with an
-incomplete-Gamma coefficient:
+Astra's round-15 regression (item 3), repaired after the round-16 audit: the mixed truth
+`T = z₀ z₁` with the phase `F = a(z) z₁` (`a` continuous and positive on the closed square),
+vanishing on the whole axis `z₁ = 0` of the wall, and the monomial observable `z₀^q z₁^p ψ`
+with `ψ ≥ 0` continuous — with NO support hypothesis on `ψ`: the restriction to the square is
+internal to the record `mixData` (its kernel only evaluates the observable on the fibre points
+`(s/x, x)`, `x ∈ [2s, 1/2]`), and a globally continuous observable supported in the closed square
+would vanish on the boundary segment `z₁ = 0` that carries the limit. Along the ray `s = σ/t`
+the fibre kernel decays like `t^{-p}` with an incomplete-Gamma coefficient that sees the
+observable and the unit along the whole segment:
 
-`t^p K_t(σ/t) → σ^q ∫_{2σ}^∞ u^{p-q-1} e^{-au} ψ(σ/u, 0) du`
+`t^p K_t(σ/t) → σ^q ∫_{2σ}^∞ u^{p-q-1} e^{-u a(σ/u, 0)} ψ(σ/u, 0) du`
 
-(`mix_tendsto_totalKernel_boundary`). The mass sits on the whole segment `{z₁ = 0}` of the wall
-(the phase is tied along it), weighted by `u ↦ ψ(σ/u, 0)`: the fibre `z₀ z₁ = σ/t` is
-parametrised by `z₁ = u/t`, `z₀ = σ/u`, and `e^{-t a z₁} = e^{-au}` is scale-free. The proof is
-the substitution `x = u/t` in the explicit kernel `∫_{2s}^{1/2} g(s/x, x) dx/x` followed by
-dominated convergence on `(2σ, ∞)`. The transport to the resolution-produced chart data over the
-thin region (`exported_mix_totalKernel_eq`, factored out of `exported_mix_tendsto_totalKernel`)
-gives the same limit for every `TruthChartsData 1 (z₀ z₁) (mixThin ε)`
-(`exported_mix_tendsto_totalKernel_boundary`). With `p = q + 1` the coefficient is
-`σ^q ∫_{2σ}^∞ e^{-au} du = σ^q e^{-2aσ}/a`; the lower limit `2σ` is the size `1/2` of the box.
+(`mix_tendsto_totalKernel_boundary`); the fibre is parametrised by `z₁ = u/t`, `z₀ = σ/u`, on
+which `e^{-t a z₁} = e^{-u a}`. With constant unit, `ψ ≡ 1` and `p = q + 1` the limit is the
+positive constant `σ^q e^{-2aσ}/a` (`mix_tendsto_totalKernel_boundary_const`), the acceptance
+value for the certificate route; the lower limit `2σ` is the size `1/2` of the box. The proof is
+the substitution `x = u/t` in the explicit kernel `∫_{2s}^{1/2} g(s/x, x) dx/x`
+(`mixData_totalKernel_toReal'`, needing nonnegativity only on the positive quadrant) followed by
+dominated convergence on `(2σ, ∞)` against `C u^{p-q-1} e^{-a_min u}`.
+
+`exported_mix_totalKernel_eq` factors the transport step of `exported_mix_tendsto_totalKernel`
+(observables supported in the closed square). It does NOT give an exported form of the boundary
+regression with a nonzero limit: a continuous observable supported in the square has zero
+boundary trace, and for an observable not supported in the region the pointwise identification
+of two chart kernels at `s = σ/t` (as opposed to their a.e. equality) is not available — the
+"pointwise chart-independence of fibre evaluations" item of the round-16 audit.
 -/
 
 open Filter MeasureTheory Set Topology Real
@@ -110,47 +120,89 @@ theorem exported_mix_totalKernel_eq {ε : ℝ} (hε : 0 < ε)
   rw [hcut, hcut] at heq
   rw [← heq, mixDataC_totalKernel_eq hs]
 
-/-- The boundary observable `e^{-t a z₁} z₀^q z₁^p ψ(z)` is nonnegative when `ψ ≥ 0` is
-supported in the closed square. -/
-theorem boundaryObs_nonneg {a t : ℝ} {p q : ℕ} {ψ : (Fin 2 → ℝ) → ℝ} (hψ : ∀ z, 0 ≤ ψ z)
-    (hψL : ∀ z, ψ z ≠ 0 → z ∈ mixLc) (z : Fin 2 → ℝ) :
-    0 ≤ exp (-(t * (a * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z) := by
-  refine mul_nonneg (exp_pos _).le ?_
-  by_cases hz : ψ z = 0
-  · simp [hz]
-  · have hm := hψL z hz
-    exact mul_nonneg (mul_nonneg (pow_nonneg hm.1.1 q) (pow_nonneg hm.2.1 p)) (hψ z)
+/-- The real form of the mixed kernel for a continuous integrand that is nonnegative on the
+positive quadrant `mixL'` (the kernel only evaluates it there). -/
+theorem mixData_totalKernel_toReal' {g : (Fin 2 → ℝ) → ℝ} (hgc : Continuous g)
+    (hg : ∀ z ∈ mixL', 0 ≤ g z) {s : ℝ} (hs : 0 < s) :
+    (mixData.totalKernel (fun z ↦ ENNReal.ofReal (g z)) s).toReal =
+      ∫ x in Icc (2 * s) (1 / 2), g ![s / x, x] / x := by
+  rw [mixData_totalKernel hs]
+  have hmem : ∀ x ∈ Icc (2 * s) (1 / 2), (![s / x, x] : Fin 2 → ℝ) ∈ mixL' := fun x hx ↦ by
+    have hx0 : 0 < x := by linarith [hx.1]
+    rw [mem_mixL'_iff]
+    refine ⟨⟨div_pos hs hx0, ?_⟩, hx0, hx.2⟩
+    rw [div_le_iff₀ hx0]
+    linarith [hx.1]
+  have hvec : ContinuousOn (fun x : ℝ ↦ (![s / x, x] : Fin 2 → ℝ)) (Icc (2 * s) (1 / 2)) := by
+    refine continuousOn_pi.2 fun i ↦ ?_
+    fin_cases i
+    · exact continuousOn_const.div continuousOn_id fun x hx ↦ by
+        have := hx.1
+        exact (by linarith : (0 : ℝ) < x).ne'
+    · exact continuousOn_id
+  have hcont : ContinuousOn (fun x : ℝ ↦ g ![s / x, x] / x) (Icc (2 * s) (1 / 2)) :=
+    (hgc.comp_continuousOn hvec).div continuousOn_id fun x hx ↦ by
+      have := hx.1
+      exact (by linarith : (0 : ℝ) < x).ne'
+  have hint : IntegrableOn (fun x : ℝ ↦ g ![s / x, x] / x) (Icc (2 * s) (1 / 2)) :=
+    hcont.integrableOn_compact isCompact_Icc
+  have hnn : 0 ≤ᵐ[volume.restrict (Icc (2 * s) (1 / 2))] fun x : ℝ ↦ g ![s / x, x] / x := by
+    refine (ae_restrict_iff' measurableSet_Icc).2 (Eventually.of_forall fun x hx ↦ ?_)
+    have := hx.1
+    exact div_nonneg (hg _ (hmem x hx)) (by linarith)
+  have h1 : ∫⁻ x in Icc (2 * s) (1 / 2), ENNReal.ofReal (g ![s / x, x]) * ENNReal.ofReal (1 / x) =
+      ∫⁻ x in Icc (2 * s) (1 / 2), ENNReal.ofReal (g ![s / x, x] / x) :=
+    setLIntegral_congr_fun measurableSet_Icc fun x hx ↦ by
+      rw [← ENNReal.ofReal_mul (hg _ (hmem x hx)), mul_one_div]
+  rw [h1, ← ofReal_integral_eq_lintegral_ofReal hint hnn,
+    ENNReal.toReal_ofReal (integral_nonneg_of_ae hnn)]
 
-/-- **The critical-boundary regression, record level.** For the phase `F = a z₁` (`a > 0`) and
-the observable `z₀^q z₁^p ψ` along the ray `s = σ/t`, `t^p` times the fibre kernel converges to
-`σ^q ∫_{2σ}^∞ u^{p-q-1} e^{-au} ψ(σ/u, 0) du`. -/
-theorem mix_tendsto_totalKernel_boundary {σ a : ℝ} (hσ : 0 < σ) (ha : 0 < a) (p q : ℕ)
-    {ψ : (Fin 2 → ℝ) → ℝ} (hψc : Continuous ψ) (hψ : ∀ z, 0 ≤ ψ z)
-    (hψL : ∀ z, ψ z ≠ 0 → z ∈ mixLc) :
+/-- The boundary observable `e^{-t a(z) z₁} z₀^q z₁^p ψ(z)` is nonnegative on the positive
+quadrant when `ψ ≥ 0`. -/
+theorem boundaryObs_nonneg {a ψ : (Fin 2 → ℝ) → ℝ} {t : ℝ} {p q : ℕ} (hψ : ∀ z, 0 ≤ ψ z)
+    (z : Fin 2 → ℝ) (hz : z ∈ mixL') :
+    0 ≤ exp (-(t * (a z * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z) :=
+  mul_nonneg (exp_pos _).le
+    (mul_nonneg (mul_nonneg (pow_nonneg hz.1.1.le q) (pow_nonneg hz.2.1.le p)) (hψ z))
+
+/-- **The critical-boundary regression, record level.** For the phase `F = a(z) z₁` (`a`
+continuous, positive on the closed square) and the observable `z₀^q z₁^p ψ` (`ψ ≥ 0` continuous,
+no support hypothesis) along the ray `s = σ/t`, `t^p` times the fibre kernel converges to
+`σ^q ∫_{2σ}^∞ u^{p-q-1} e^{-u a(σ/u, 0)} ψ(σ/u, 0) du`. -/
+theorem mix_tendsto_totalKernel_boundary {σ : ℝ} (hσ : 0 < σ) {a ψ : (Fin 2 → ℝ) → ℝ}
+    (hac : Continuous a) (ha : ∀ z ∈ mixLc, 0 < a z) (p q : ℕ) (hψc : Continuous ψ)
+    (hψ : ∀ z, 0 ≤ ψ z) :
     Tendsto (fun t ↦ t ^ p * (mixData.totalKernel
-        (fun z ↦ ENNReal.ofReal (exp (-(t * (a * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z)))
+        (fun z ↦ ENNReal.ofReal (exp (-(t * (a z * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z)))
         (σ / t)).toReal)
       atTop (𝓝 (σ ^ q * ∫ u in Ioi (2 * σ),
-        u ^ ((p : ℝ) - q - 1) * exp (-(a * u)) * ψ ![σ / u, 0])) := by
+        u ^ ((p : ℝ) - q - 1) * exp (-(u * a ![σ / u, 0])) * ψ ![σ / u, 0])) := by
   set e : ℝ := (p : ℝ) - q - 1 with he_def
   -- the rescaled integrand
-  set G : ℝ → ℝ → ℝ := fun t u ↦ u ^ e * exp (-(a * u)) * ψ ![σ / u, u / t] with hG
-  set G₀ : ℝ → ℝ := fun u ↦ u ^ e * exp (-(a * u)) * ψ ![σ / u, 0] with hG₀
-  -- a bound for `ψ`
+  set G : ℝ → ℝ → ℝ :=
+    fun t u ↦ u ^ e * exp (-(u * a ![σ / u, u / t])) * ψ ![σ / u, u / t] with hG
+  set G₀ : ℝ → ℝ := fun u ↦ u ^ e * exp (-(u * a ![σ / u, 0])) * ψ ![σ / u, 0] with hG₀
+  -- bounds for `ψ` and `a` on the square
   obtain ⟨C, hC⟩ := isCompact_mixLc.exists_bound_of_continuousOn hψc.continuousOn
   have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 zero_mem_mixLc)
-  have hψb : ∀ z, |ψ z| ≤ C := fun z ↦ by
-    by_cases hz : z ∈ mixLc
-    · exact (Real.norm_eq_abs _).symm ▸ hC z hz
-    · have : ψ z = 0 := by
-        by_contra h
-        exact hz (hψL z h)
-      rw [this, abs_zero]
-      exact hC0
+  obtain ⟨z₀, hz₀, hmin⟩ := isCompact_mixLc.exists_isMinOn ⟨0, zero_mem_mixLc⟩ hac.continuousOn
+  set amin : ℝ := a z₀ with hamin_def
+  have hamin : 0 < amin := ha z₀ hz₀
+  have hage : ∀ z ∈ mixLc, amin ≤ a z := fun z hz ↦ hmin hz
+  have hpt : ∀ t u : ℝ, 2 * σ ≤ u → u ≤ t / 2 → (![σ / u, u / t] : Fin 2 → ℝ) ∈ mixLc := by
+    intro t u hu1 hu2
+    have hu0 : 0 < u := by linarith
+    have ht0 : 0 < t := by linarith
+    rw [mem_mixLc_iff]
+    refine ⟨⟨(div_pos hσ hu0).le, ?_⟩, (div_pos hu0 ht0).le, ?_⟩
+    · rw [div_le_iff₀ hu0]
+      linarith
+    · rw [div_le_iff₀ ht0]
+      linarith
   -- Step 1: the exact rescaling for `t ≥ 4σ`
   have hkey : ∀ t : ℝ, 4 * σ ≤ t →
       t ^ p * (mixData.totalKernel
-        (fun z ↦ ENNReal.ofReal (exp (-(t * (a * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z)))
+        (fun z ↦ ENNReal.ofReal (exp (-(t * (a z * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z)))
         (σ / t)).toReal = σ ^ q * ∫ u in (2 * σ)..(t / 2), G t u := by
     intro t ht
     have ht0 : 0 < t := by linarith
@@ -158,18 +210,19 @@ theorem mix_tendsto_totalKernel_boundary {σ a : ℝ} (hσ : 0 < σ) (ha : 0 < a
     have h2σ : 2 * (σ / t) ≤ 1 / 2 := by
       rw [← mul_div_assoc, div_le_iff₀ ht0]
       linarith
-    rw [mixData_totalKernel_toReal (by fun_prop) (boundaryObs_nonneg hψ hψL) hs,
+    rw [mixData_totalKernel_toReal' (by fun_prop) (boundaryObs_nonneg hψ) hs,
       integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le h2σ]
     have hsub := intervalIntegral.integral_comp_div (a := 2 * σ) (b := t / 2)
-      (f := fun x ↦ exp (-(t * (a * (![σ / t / x, x] : Fin 2 → ℝ) 1))) *
+      (f := fun x ↦ exp (-(t * (a ![σ / t / x, x] * (![σ / t / x, x] : Fin 2 → ℝ) 1))) *
         ((![σ / t / x, x] : Fin 2 → ℝ) 0 ^ q * (![σ / t / x, x] : Fin 2 → ℝ) 1 ^ p *
           ψ ![σ / t / x, x]) / x) ht0.ne'
     rw [show 2 * (σ / t) = 2 * σ / t by ring, show (1 : ℝ) / 2 = t / 2 / t by field_simp]
     rw [show (∫ x in 2 * σ / t..t / 2 / t,
-        exp (-(t * (a * (![σ / t / x, x] : Fin 2 → ℝ) 1))) *
+        exp (-(t * (a ![σ / t / x, x] * (![σ / t / x, x] : Fin 2 → ℝ) 1))) *
           ((![σ / t / x, x] : Fin 2 → ℝ) 0 ^ q * (![σ / t / x, x] : Fin 2 → ℝ) 1 ^ p *
             ψ ![σ / t / x, x]) / x) = t⁻¹ * ∫ u in (2 * σ)..(t / 2),
-        exp (-(t * (a * (![σ / t / (u / t), u / t] : Fin 2 → ℝ) 1))) *
+        exp (-(t * (a ![σ / t / (u / t), u / t] *
+            (![σ / t / (u / t), u / t] : Fin 2 → ℝ) 1))) *
           ((![σ / t / (u / t), u / t] : Fin 2 → ℝ) 0 ^ q *
             (![σ / t / (u / t), u / t] : Fin 2 → ℝ) 1 ^ p * ψ ![σ / t / (u / t), u / t]) /
           (u / t) by
@@ -180,29 +233,32 @@ theorem mix_tendsto_totalKernel_boundary {σ a : ℝ} (hσ : 0 < σ) (ha : 0 < a
     have hu0 : 0 < u := by linarith [hu.1]
     simp only [hG, Matrix.cons_val_zero, Matrix.cons_val_one]
     have e1 : σ / t / (u / t) = σ / u := by field_simp
-    have e2 : t * (a * (u / t)) = a * u := by field_simp
+    have e2 : t * (a ![σ / u, u / t] * (u / t)) = u * a ![σ / u, u / t] := by field_simp
     rw [e1, e2, he_def, Real.rpow_sub hu0, Real.rpow_sub hu0, Real.rpow_natCast,
       Real.rpow_natCast, Real.rpow_one, div_pow, div_pow]
     field_simp
   -- Step 2: dominated convergence on `(2σ, ∞)`
-  have hbound_int : IntegrableOn (fun u : ℝ ↦ C * (u ^ e * exp (-(a * u)))) (Ioi (2 * σ)) :=
-    (integrableOn_rpow_mul_exp_neg_mul_Ioi ha (by linarith)).const_mul C
-  have hGcont : ∀ t, ContinuousOn (G t) (Ioi (2 * σ)) := fun t ↦ by
-    refine ((continuousOn_id.rpow_const fun u hu ↦ Or.inl (by
-      have : 2 * σ < u := hu
-      exact (by linarith : (0:ℝ) < u).ne')).mul
-      (Real.continuous_exp.comp (continuous_const.mul continuous_id).neg).continuousOn).mul
-      (hψc.comp_continuousOn ?_)
+  have hbound_int : IntegrableOn (fun u : ℝ ↦ C * (u ^ e * exp (-(amin * u)))) (Ioi (2 * σ)) :=
+    (integrableOn_rpow_mul_exp_neg_mul_Ioi hamin (by linarith)).const_mul C
+  have hvec : ∀ t : ℝ, ContinuousOn (fun u : ℝ ↦ (![σ / u, u / t] : Fin 2 → ℝ)) (Ioi (2 * σ)) := by
+    intro t
     refine continuousOn_pi.2 fun i ↦ ?_
     fin_cases i
     · exact continuousOn_const.div continuousOn_id fun u hu ↦ by
         have : 2 * σ < u := hu
         exact (by linarith : (0:ℝ) < u).ne'
     · exact continuousOn_id.div_const _
+  have hGcont : ∀ t, ContinuousOn (G t) (Ioi (2 * σ)) := fun t ↦
+    (((continuousOn_id.rpow_const fun u hu ↦ Or.inl (by
+      have : 2 * σ < u := hu
+      exact (by linarith : (0:ℝ) < u).ne')).mul
+      (Real.continuous_exp.comp_continuousOn
+        (continuousOn_id.mul (hac.comp_continuousOn (hvec t))).neg)).mul
+      (hψc.comp_continuousOn (hvec t)))
   have hdct := tendsto_integral_filter_of_dominated_convergence
     (μ := volume.restrict (Ioi (2 * σ))) (l := atTop)
     (F := fun t u ↦ (Iic (t / 2)).indicator (G t) u) (f := G₀)
-    (fun u ↦ C * (u ^ e * exp (-(a * u))))
+    (fun u ↦ C * (u ^ e * exp (-(amin * u))))
     (Eventually.of_forall fun t ↦
       ((hGcont t).aestronglyMeasurable measurableSet_Ioi).indicator measurableSet_Iic)
     (Eventually.of_forall fun t ↦
@@ -218,14 +274,25 @@ theorem mix_tendsto_totalKernel_boundary {σ a : ℝ} (hσ : 0 < σ) (ha : 0 < a
   · -- the bound
     have hu' : 2 * σ < u := hu
     have hu0 : 0 < u := by linarith
-    have hnn : 0 ≤ u ^ e * exp (-(a * u)) :=
+    have hnn : 0 ≤ u ^ e * exp (-(amin * u)) :=
       mul_nonneg (Real.rpow_nonneg hu0.le _) (exp_pos _).le
-    refine (norm_indicator_le_norm_self _ _).trans ?_
-    simp only [hG]
-    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg hnn]
-    calc u ^ e * exp (-(a * u)) * |ψ ![σ / u, u / t]| ≤ u ^ e * exp (-(a * u)) * C :=
-          mul_le_mul_of_nonneg_left (hψb _) hnn
-      _ = C * (u ^ e * exp (-(a * u))) := by ring
+    by_cases hut : u ∈ Iic (t / 2)
+    · rw [indicator_of_mem hut]
+      have hmem := hpt t u hu'.le hut
+      simp only [hG]
+      rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (mul_nonneg (Real.rpow_nonneg hu0.le _)
+        (exp_pos _).le)]
+      have hexp : exp (-(u * a ![σ / u, u / t])) ≤ exp (-(amin * u)) := by
+        rw [Real.exp_le_exp]
+        nlinarith [hage _ hmem, hu0]
+      calc u ^ e * exp (-(u * a ![σ / u, u / t])) * |ψ ![σ / u, u / t]|
+          ≤ u ^ e * exp (-(amin * u)) * C := by
+            refine mul_le_mul (mul_le_mul_of_nonneg_left hexp (Real.rpow_nonneg hu0.le _)) ?_
+              (abs_nonneg _) hnn
+            exact (Real.norm_eq_abs _).symm ▸ hC _ hmem
+        _ = C * (u ^ e * exp (-(amin * u))) := by ring
+    · rw [indicator_of_notMem hut, norm_zero]
+      exact mul_nonneg hC0 hnn
   · -- the pointwise limit
     have hu' : 2 * σ < u := hu
     have hev : ∀ᶠ t in atTop, (Iic (t / 2)).indicator (G t) u = G t u := by
@@ -233,37 +300,38 @@ theorem mix_tendsto_totalKernel_boundary {σ a : ℝ} (hσ : 0 < σ) (ha : 0 < a
       exact indicator_of_mem (by simp only [mem_Iic]; linarith) _
     refine Tendsto.congr' (hev.mono fun t h ↦ h.symm) ?_
     simp only [hG, hG₀]
-    refine Tendsto.mul tendsto_const_nhds ?_
-    refine hψc.continuousAt.tendsto.comp ?_
-    refine tendsto_pi_nhds.2 fun i ↦ ?_
-    fin_cases i
-    · exact tendsto_const_nhds
-    · exact tendsto_const_nhds.div_atTop tendsto_id
+    have hv : Tendsto (fun t : ℝ ↦ (![σ / u, u / t] : Fin 2 → ℝ)) atTop (𝓝 ![σ / u, 0]) := by
+      refine tendsto_pi_nhds.2 fun i ↦ ?_
+      fin_cases i
+      · exact tendsto_const_nhds
+      · exact tendsto_const_nhds.div_atTop tendsto_id
+    refine (Tendsto.mul tendsto_const_nhds ?_).mul (hψc.continuousAt.tendsto.comp hv)
+    exact (Real.continuous_exp.tendsto _).comp
+      ((tendsto_const_nhds.mul (hac.continuousAt.tendsto.comp hv)).neg)
 
-/-- **The critical-boundary regression for the exported chart data.** Every chart system for the
-mixed truth over the thin region `mixThin ε` — in particular the one produced by the resolution
-of `z₀ z₁ · a z₁` — has the incomplete-Gamma coefficient
-`σ^q ∫_{2σ}^∞ u^{p-q-1} e^{-au} ψ(σ/u, 0) du` at the scale `t^{-p}`. -/
-theorem exported_mix_tendsto_totalKernel_boundary {ε : ℝ} (hε : 0 < ε)
-    (D : TruthChartsData 1 (fun z ↦ z 0 * z 1) (mixThin ε)) {σ a : ℝ} (hσ : 0 < σ) (ha : 0 < a)
-    (p q : ℕ) {ψ : (Fin 2 → ℝ) → ℝ} (hψc : Continuous ψ) (hψ : ∀ z, 0 ≤ ψ z)
-    (hψL : ∀ z, ψ z ≠ 0 → z ∈ mixLc) :
-    Tendsto (fun t ↦ t ^ p * (D.totalKernel
-        (fun z ↦ ENNReal.ofReal (exp (-(t * (a * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z)))
+/-- **The acceptance value**: constant unit, `ψ ≡ 1`, `p = q + 1`: the limit is
+`σ^q e^{-2aσ}/a > 0`. -/
+theorem mix_tendsto_totalKernel_boundary_const {σ a : ℝ} (hσ : 0 < σ) (ha : 0 < a) (q : ℕ) :
+    Tendsto (fun t ↦ t ^ (q + 1) * (mixData.totalKernel
+        (fun z ↦ ENNReal.ofReal (exp (-(t * (a * z 1))) * (z 0 ^ q * z 1 ^ (q + 1) * 1)))
         (σ / t)).toReal)
-      atTop (𝓝 (σ ^ q * ∫ u in Ioi (2 * σ),
-        u ^ ((p : ℝ) - q - 1) * exp (-(a * u)) * ψ ![σ / u, 0])) := by
-  refine (mix_tendsto_totalKernel_boundary hσ ha p q hψc hψ hψL).congr' ?_
-  filter_upwards [eventually_gt_atTop (max 1 (2 * σ / ε))] with t ht
-  have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ((le_max_left _ _).trans ht.le)
-  have hs : 0 < σ / t := div_pos hσ ht0
-  have hsε : |σ / t| ≤ ε / 2 := by
-    rw [abs_of_pos hs, div_le_iff₀ ht0]
-    have h2 : 2 * σ / ε < t := (le_max_right _ _).trans_lt ht
-    rw [div_lt_iff₀ hε] at h2
-    linarith
-  have hL : ∀ z, exp (-(t * (a * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z) ≠ 0 → z ∈ mixLc :=
-    fun z hz ↦ hψL z fun h ↦ hz (by simp [h])
-  rw [exported_mix_totalKernel_eq hε D hs hsε (by fun_prop) (boundaryObs_nonneg hψ hψL) hL]
+      atTop (𝓝 (σ ^ q * (exp (-(a * (2 * σ))) / a))) := by
+  have h := mix_tendsto_totalKernel_boundary hσ (a := fun _ ↦ a) continuous_const
+    (fun _ _ ↦ ha) (q + 1) q (ψ := fun _ ↦ 1) continuous_const (fun _ ↦ zero_le_one)
+  have hI : (∫ u in Ioi (2 * σ), u ^ (((q + 1 : ℕ) : ℝ) - q - 1) *
+      exp (-(u * (fun _ : Fin 2 → ℝ ↦ a) ![σ / u, 0])) * (fun _ : Fin 2 → ℝ ↦ (1 : ℝ)) ![σ / u, 0])
+      = exp (-(a * (2 * σ))) / a := by
+    have h1 : ∀ u ∈ Ioi (2 * σ), u ^ (((q + 1 : ℕ) : ℝ) - q - 1) *
+        exp (-(u * (fun _ : Fin 2 → ℝ ↦ a) ![σ / u, 0])) *
+          (fun _ : Fin 2 → ℝ ↦ (1 : ℝ)) ![σ / u, 0] = (fun x ↦ exp (-x)) (a * u) := by
+      intro u _
+      beta_reduce
+      rw [show (((q + 1 : ℕ) : ℝ) - q - 1) = 0 by push_cast; ring, Real.rpow_zero, mul_comm u a]
+      simp only [one_mul, mul_one]
+    rw [setIntegral_congr_fun measurableSet_Ioi h1,
+      integral_comp_mul_left_Ioi (fun x ↦ exp (-x)) (2 * σ) ha, integral_exp_neg_Ioi, smul_eq_mul,
+      div_eq_inv_mul]
+  rw [hI] at h
+  exact h
 
 end Laplace.Multi
