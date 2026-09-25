@@ -2475,3 +2475,12 @@ certificates for concrete resolved charts beyond the identity chart.
   `hasFDerivAt_integral_of_dominated_of_fderiv_le` (no `_loc_`), hypotheses `(hs : s ∈ 𝓝 x₀)` and
   `∀ᵐ a, ∀ x ∈ s, …`; `Integrable.bdd_mul` needs `(c := …)` when the bound is proved by `nlinarith`;
   `ContinuousLinearMap.smul_apply/neg_apply` are deprecated for root `smul_apply/neg_apply`.
+- `MeanMapJacobian.lean` (NOT mirrored; Astra item D, stage 2): `affNumDeriv` (derivative CLM of a
+  numerator), `meanMapDeriv` (`ContinuousLinearMap.pi` of the quotient-rule combinations),
+  **`hasFDerivAt_meanMap`** (`HasFDerivAt (meanMap) (meanMapDeriv a₀) a₀`; inverse via
+  `(hasDerivAt_inv hZ).comp_hasFDerivAt`, `HasFDerivAt.mul`, `hasFDerivAt_pi`; ascribe the numerator
+  derivative with its `affNumDeriv` name BEFORE `.mul`, else `ring` sees two atoms), **`meanMapDeriv_apply`**
+  (`Dm(a₀)[v]ᵢ = −t Cov_{a₀}(Rᵢ, R_v)`), `sum_mul_priorCov_eq` (`∑ vᵢ Cov(Rᵢ,ψ) = Cov(R_v,ψ)` via
+  `priorExp_dirLoss` on the family `Rᵢψ`), **`meanMapDeriv_injective`** (non-degenerate contrasts ⇒ the
+  Jacobian is injective: the mean map is an injective immersion). Remaining for the full IFT: continuity
+  of `a ↦ meanMapDeriv a` ⇒ `HasStrictFDerivAt` ⇒ local diffeomorphism.
