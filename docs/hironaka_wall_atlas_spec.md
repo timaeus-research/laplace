@@ -2684,3 +2684,18 @@ certificates for concrete resolved charts beyond the identity chart.
   Gotchas: `integrableOn_rpow_mul_exp_neg_mul_rpow` needs `(s := r) (b := 1/2)` when fed to `.mono'` (nothing else fixes
   them); `field_simp` closes `σβ = ½` outright once BOTH `p − q ≠ 0` and `−q + p ≠ 0` are in context; `div_add_one hc`
   for `a/c + 1`; a lemma `omit hq in` must be called without `hq`.
+- `ProductPrior.lean` (NOT mirrored; Astra round 25 item 6): `sqrt_add_le_sqrt_add_sqrt` (all reals; `Real.sqrt_eq_zero'`
+  for the negative cases, `Real.sqrt_le_left` + `nlinarith` otherwise), `mul_sqrt_add_mul_sqrt_le` (2D Cauchy–Schwarz
+  `a√x + b√y ≤ √(a²+b²)√(x+y)`, via `Real.abs_le_sqrt` and `nlinarith [sq_nonneg (a√y − b√x)]`),
+  `integral_sqrt_add_le` (`∫₀ᵗ√(V₁+V₂) ≤ ∫√V₁ + ∫√V₂`, `intervalIntegral.integral_mono_on ht hf hg` with
+  `Continuous.comp_continuousOn` + `intervalIntegrable_of_Icc`), **`sqrt_sq_add_sq_le_integral_sqrt_add`** (Minkowski
+  by scalar CS: `S := D₁² + D₂²`, `S = ∫(D₁√V₁ + D₂√V₂) ≤ √S ∫√(V₁+V₂)`, then divide by `√S`; a `rw [e]` with
+  `e : S = ∫…` also rewrites the `S` under `√S` — use a `calc`), `prodPrior`, `sumLoss`, `prod_weight_eq`,
+  `priorZ_prod` (`integral_prod_mul (f) (g)` — pass the factor functions explicitly, the pattern `?f z.1 * ?g z.2` is
+  not a higher-order pattern), `prod_num_add`, `prod_num_sq` (integrability of the product integrands via
+  `Integrable.mul_prod`; `[SFinite μ₁] [SFinite μ₂]`), `mean_ratio_alg`/`var_ratio_alg` (the ratio algebra on abstract
+  reals — `field_simp` on the goal itself rewrites `exp(−(u L x))` into `exp(−(L x u))` inside ONE integrand and `ring`
+  then sees two atoms), `priorExp_prod_add`, **`priorCov_self_prod`** (`Var_u(L₁+L₂) = Var_u(L₁) + Var_u(L₂)`),
+  `radialLength_prod_eq`, **`radialLength_prod_le`** (`D ≤ D₁ + D₂`), **`sqrt_sq_add_sq_le_radialLength_prod`**
+  (`√(D₁²+D₂²) ≤ D`, needs `0 ≤ Var_u(L_i)` on `[0,t]`). `priorCov` is stated with a product `φ*ψ`, not a square:
+  match the algebra lemma's shape to `n/z * (n/z)`.
