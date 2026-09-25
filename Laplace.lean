@@ -285,6 +285,7 @@ import Laplace.Multi.ProfileGammaTail
 import Laplace.Multi.WallWindowLength
 import Laplace.Multi.WallChart
 import Laplace.Multi.WallRecedes
+import Laplace.Multi.WallRecedesStrong
 import Laplace.Multi.SpectatorWall
 import Laplace.Multi.GaussianShapeMetric
 import Laplace.Multi.ValuationLP

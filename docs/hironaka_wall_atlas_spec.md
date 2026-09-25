@@ -2451,3 +2451,15 @@ certificates for concrete resolved charts beyond the identity chart.
   regular model is the growth rate of the thermodynamic length, proper prior, unbounded loss).
   Gotchas: `ᵀ` needs `open scoped Matrix`; `anharmonicPotential` is `Laplace.OneD.`; `conv_lhs => rw [h]`
   rewrites every occurrence on the LHS (also inside `exp`) — isolate the product with a `show`.
+- `WallRecedesStrong.lean` (NOT mirrored; Astra round-24 items 2/3, THE STRONG-FORM RECEDING WALL):
+  `one_sub_exp_neg_le`, `tailIntegrand_le`, `integrableOn_tailIntegrand`, **`tailIntegral_sub_le`**
+  (`0 ≤ Γ(k+1/q) − I_k(c) ≤ c^{-p/q} Γ(k+1/q+p/q)`), `mul_profileMean_eq` / `sq_mul_profileSecond_eq`
+  (exact ratio identities), `abs_sqrt_sub_sqrt_le`, `ratio_perturb_bound`, `tailThreshold`,
+  `tail_deficit_half`, **`tailRatio_sub_le`**, `tailRateConst`, `gamma_ratio_one/two`, `varRateConst`,
+  **`sq_mul_profileVar_sub_le`** (`|c²Var_c(y^q) − 1/q| ≤ C_V c^{-p/q}`), **`profileSpeed_defect_le`**,
+  `profileSpeed`, `speedThreshold`, **`integrableOn_profileSpeed_defect`**, **`profileLength_renormalised`**
+  (`∫_{c₀}^T h − √(1/q) log T → K`), **`wall_recedes_strong`** (`∃ K, ℓ_t − σ*√(1/q) log t → K`).
+  Gotchas: `field_simp` rewrites exponents inside `rpow` — isolate with `show` + `mul_div_mul_left`; real
+  powers of a possibly negative base need `0 < c`; state `hc₂ : 0 < c₂` AFTER the `set` (else terms built
+  from it mention the unfolded name); `Tendsto.add tendsto_const_nhds` needs `(x := …)`; a "No goals"
+  error's line number may point at an `exact` after a `congr 1` that already closed the goal.
