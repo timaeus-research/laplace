@@ -2391,3 +2391,18 @@ certificates for concrete resolved charts beyond the identity chart.
   (`c h(c) → L` ⇒ `(∫_{c₀}^{a₁ t^σ} h)/log t → σ L`; Cesàro lemma composed with the moving endpoint
   `T = a₁ t^σ`, `log T = log a₁ + σ log t`; `Tendsto.eventually_gt_atTop` for `0 < log T` — restate the
   composed-function hypothesis with a typed `have` before `rw`; `integral_interval_sub_left`).
+- `ProfileGammaTail.lean` (NOT mirrored; the Gamma tail of the wall profile): `profileMoment p q k c`,
+  `tailIntegral`, `profileMoment_subst` (`x = y^q` via `integral_comp_rpow_Ioi_of_pos` with exponent `1/q`),
+  `tail_scale` (`x = z/c` via `integral_comp_mul_left_Ioi`), **`profileMoment_eq_tail`**
+  (`N_k(c) = (1/q) c^{-(k+1/q)} I_k(c)`), `integral_rpow_mul_exp_neg_eq_Gamma`, **`tendsto_tailIntegral`**
+  (`I_k(c) → Γ(k + 1/q)`, dominated convergence), `profileNum_*_eq_moment`, **`tendsto_mul_profileMean`**
+  (`c⟨y^q⟩_c → 1/q`), **`tendsto_sq_mul_profileSecond`**, **`tendsto_sq_mul_profileVar`**
+  (`c² Var_c(y^q) → 1/q` — the response-active exponent). Gotchas: `Tendsto.neg` lands in `𝓝 (-0)`
+  (`rw [neg_zero] at`); pass `(x := z)` to `tendsto_const_nhds` in `div_atTop`; state the ratio identities
+  as `c * (A / B)` (matching `c * profilePosterior`), not `c * A / B`.
+- `WallRecedes.lean` (NOT mirrored; THE RECEDING-WALL LAW, round-23 item 1 weak form):
+  `continuousOn_profileNum` (on `Ici 0`, `continuousOn_of_dominated`), `continuousOn_profileVar`,
+  **`wall_recedes`**: `ℓ_t(c₀t^{-σ*}, a₁)/log t → σ*·√(1/q)` for the two-monomial family — assembled from
+  `wall_window_length` (exact), `tendsto_sq_mul_profileVar` (Gamma tail) and
+  `tendsto_integral_div_log_scaled` (Cesàro along the moving endpoint). The Cesàro lemmas now take
+  `∀ a b, 0 ≤ a → 0 ≤ b → IntervalIntegrable …` (continuity only needed on `[0,∞)`).

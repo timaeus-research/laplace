@@ -71,7 +71,7 @@ theorem thermoLength_neutral_eq (π Δ : X → ℝ) (c : ℝ) {t : ℝ} (ht : 0 
 
 /-- **Cesàro lemma for logarithmic growth**: if `u g(u) → c` then `(∫₀^t g)/log t → c`. -/
 theorem tendsto_intervalIntegral_div_log {g : ℝ → ℝ} {c : ℝ}
-    (hg : ∀ a b : ℝ, 0 ≤ a → IntervalIntegrable g volume a b)
+    (hg : ∀ a b : ℝ, 0 ≤ a → 0 ≤ b → IntervalIntegrable g volume a b)
     (hlim : Tendsto (fun u ↦ u * g u) atTop (𝓝 c)) :
     Tendsto (fun t ↦ (∫ u in (0 : ℝ)..t, g u) / Real.log t) atTop (𝓝 c) := by
   rw [Metric.tendsto_atTop]
@@ -99,7 +99,8 @@ theorem tendsto_intervalIntegral_div_log {g : ℝ → ℝ} {c : ℝ}
     have : 0 ≤ A * 4 / ε := by positivity
     linarith
   have hsplit : ∫ u in (0 : ℝ)..t, g u = K + ∫ u in U₀..t, g u :=
-    (intervalIntegral.integral_add_adjacent_intervals (hg 0 U₀ le_rfl) (hg U₀ t hU₀pos.le)).symm
+    (intervalIntegral.integral_add_adjacent_intervals (hg 0 U₀ le_rfl hU₀pos.le)
+      (hg U₀ t hU₀pos.le htpos.le)).symm
   have hinv : IntervalIntegrable (fun u : ℝ ↦ u⁻¹) volume U₀ t := by
     refine intervalIntegral.intervalIntegrable_inv (f := fun x ↦ x) (fun x hx ↦ ?_) continuousOn_id
     rw [Set.uIcc_of_le htU] at hx
@@ -107,7 +108,7 @@ theorem tendsto_intervalIntegral_div_log {g : ℝ → ℝ} {c : ℝ}
   have hsub : ∫ u in U₀..t, g u =
       (∫ u in U₀..t, (g u - c * u⁻¹)) + c * Real.log (t / U₀) := by
     rw [← integral_inv_of_pos hU₀pos htpos, ← intervalIntegral.integral_const_mul,
-      ← intervalIntegral.integral_add ((hg U₀ t hU₀pos.le).sub (hinv.const_mul c))
+      ← intervalIntegral.integral_add ((hg U₀ t hU₀pos.le htpos.le).sub (hinv.const_mul c))
         (hinv.const_mul c)]
     exact intervalIntegral.integral_congr fun u _ ↦ by simp only [sub_add_cancel]
   have hR : |∫ u in U₀..t, (g u - c * u⁻¹)| ≤ ε / 4 * Real.log (t / U₀) := by
@@ -153,7 +154,7 @@ theorem tendsto_intervalIntegral_div_log {g : ℝ → ℝ} {c : ℝ}
 temperature line of the target loss `c + Δ`, then the thermodynamic length from the featureless
 point to the data at temperature `t` satisfies `ℓ(t)/log t → √λ`. -/
 theorem thermoLength_neutral_div_log_tendsto (π Δ : X → ℝ) (c : ℝ)
-    (hint : ∀ a b : ℝ, 0 ≤ a → IntervalIntegrable
+    (hint : ∀ a b : ℝ, 0 ≤ a → 0 ≤ b → IntervalIntegrable
       (fun u ↦ Real.sqrt (priorCov μ π (fun x ↦ c + Δ x) Δ Δ u)) volume a b)
     {lam : ℝ} (hlam : Tendsto (fun u ↦ u ^ 2 * priorCov μ π (fun x ↦ c + Δ x) Δ Δ u) atTop
       (𝓝 lam)) :
@@ -199,7 +200,7 @@ theorem thermoLength_neutral_div_log_tendsto' [Nonempty X] {π Δ : X → ℝ} (
     Tendsto (fun t ↦ thermoLength μ π (pathLoss (fun _ ↦ c) Δ) (fun _ ↦ Δ) t / Real.log t) atTop
       (𝓝 (Real.sqrt lam)) :=
   thermoLength_neutral_div_log_tendsto π Δ c
-    (fun a b _ ↦ (Real.continuous_sqrt.comp
+    (fun a b _ _ ↦ (Real.continuous_sqrt.comp
       (continuous_neutral_var hπm hπi hπ hπpos hΔm hΔ c)).intervalIntegrable a b) hlam
 
 end Laplace.Multi

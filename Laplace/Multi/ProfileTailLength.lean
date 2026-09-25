@@ -30,9 +30,9 @@ namespace Laplace.Multi
 /-- **The profile-tail wall theorem (weak form)**: if `c h(c) → √κ` then
 `(∫_{c₀}^{a₁ t^σ} h) / log t → σ √κ`. -/
 theorem tendsto_integral_div_log_scaled {h : ℝ → ℝ} {L : ℝ}
-    (hint : ∀ a b : ℝ, 0 ≤ a → IntervalIntegrable h volume a b)
+    (hint : ∀ a b : ℝ, 0 ≤ a → 0 ≤ b → IntervalIntegrable h volume a b)
     (hlim : Tendsto (fun c ↦ c * h c) atTop (𝓝 L)) {σ a₁ : ℝ} (hσ : 0 < σ) (ha₁ : 0 < a₁)
-    (c₀ : ℝ) :
+    {c₀ : ℝ} (hc₀ : 0 ≤ c₀) :
     Tendsto (fun t ↦ (∫ c in c₀..(a₁ * t ^ σ), h c) / Real.log t) atTop (𝓝 (σ * L)) := by
   -- the moving endpoint tends to infinity
   have hT : Tendsto (fun t : ℝ ↦ a₁ * t ^ σ) atTop atTop :=
@@ -61,7 +61,9 @@ theorem tendsto_integral_div_log_scaled {h : ℝ → ℝ} {L : ℝ}
   refine key.congr' ?_
   filter_upwards [eventually_gt_atTop (1 : ℝ), (hlog.comp hT).eventually_gt_atTop 0] with t ht hlT
   have hlT' : 0 < Real.log (a₁ * t ^ σ) := hlT
+  have hTpos : 0 ≤ a₁ * t ^ σ := (mul_pos ha₁ (Real.rpow_pos_of_pos (by linarith) σ)).le
   rw [div_mul_div_comm, mul_comm _ (Real.log (a₁ * t ^ σ)), mul_div_mul_left _ _ hlT'.ne',
-    ← sub_div, intervalIntegral.integral_interval_sub_left (hint 0 _ le_rfl) (hint 0 c₀ le_rfl)]
+    ← sub_div, intervalIntegral.integral_interval_sub_left (hint 0 _ le_rfl hTpos)
+      (hint 0 c₀ le_rfl hc₀)]
 
 end Laplace.Multi
