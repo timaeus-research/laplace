@@ -3378,3 +3378,18 @@ certificates for concrete resolved charts beyond the identity chart.
   unfolded `natb` then `← dotProduct_natC_inv_mulVec`), **`hasDerivAt_lossGrad_line`** (`D²h[X,Y] = κ₃(H, S_X, S_Y)`:
   `hasDerivAt_natVarH_path` + `hasDerivAt_natb_path` through `HasDerivAt.fun_sum`, trilinearity of κ₃ after `natCum3_eq`
   transport, `priorCum3_const_mul_left`, `priorCum3_dirLoss_left`).
+- `InteriorThreshold.lean` (NOT mirrored; Astra round 36 item 2): `priorExp_const_mul_loss` (`⟨φ⟩_{cL, s} = ⟨φ⟩_{L, sc}`,
+  pure), `priorExp_neg_obs`; face section (FaceInfinite variables): **`priorExp_face_ge`** (`α ≤ ⟨V⟩_λ`; `integral_mono_ae`),
+  **`priorExp_face_sub_le`** (`⟨V⟩_λ − α ≤ ε + (M+|α|) q_λ({V<α+ε}ᶜ)`; split with `integral_add_compl₀`, `setIntegral_mono_on`,
+  `setIntegral_le_integral`; Pi-subtraction congruence needs `simp only [Pi.sub_apply]; ring`; `omit hα in`, so callers pass
+  `(α := α)`), **`tendsto_priorExp_face_inf`** (`⟨V⟩_λ → α` with only accessibility `∀ε>0, ∫_{V<α+ε}π > 0` — NO positive-mass
+  face; `tendsto_order`, `tendsto_tilt_mass_compl`, `gt_mem_nhds`); family section: `thresholdFun a u λ := ⟨R_u⟩_{a − (λ/t)u}`,
+  `thresholdFun_zero`, `thresholdFun_eq_sum` (pass the `tiltData_aff` arguments explicitly), `sub_div_smul_eq`,
+  **`hasDerivAt_thresholdFun`** (`= Var_{a_λ}(R_u)` via `hasDerivAt_priorExp_line` with `v := −(1/t)•u`),
+  `thresholdFun_monotone/continuous`, `thresholdFun_strictMono` (`segVar_pos`; `unfold segVar at this; rwa [zero_smul,
+  add_zero]`), `affLoss_affLoss`, **`tendsto_thresholdFun`** (`→ β` = ess sup of `u·R`, hypotheses `hβ : ∀ᵐ x, u·R ≤ β`,
+  `hmass : ∀ε>0, 0 < ∫_{β−ε<u·R} π`; transport to the tilt of `π' = e^{−tL_a}π` by `V' = −u·R` via `affLoss_affLoss`,
+  `priorExp_ray_eq_tilted`, `dirLoss_smul`, `priorExp_const_mul_loss`; mass transfer through
+  `setIntegral_pos_iff_support_of_nonneg_ae` with `support ∩ S = S` by `Set.inter_eq_right`), **`exists_threshold_tilt`**
+  (`intermediate_value_Icc`), **`exists_halfspace_projection`**, **`chernoff_rate_eq_inf_KL`** (`sSup = sInf` via
+  `IsGreatest.csSup_eq`/`IsLeast.csInf_eq`).

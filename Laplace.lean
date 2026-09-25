@@ -298,6 +298,7 @@ import Laplace.Multi.JointChartMetric
 import Laplace.Multi.RelativeEntropyGeometry
 import Laplace.Multi.ChartPathDerivatives
 import Laplace.Multi.LossHessian
+import Laplace.Multi.InteriorThreshold
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
