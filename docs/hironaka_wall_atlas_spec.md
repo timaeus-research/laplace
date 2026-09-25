@@ -1332,3 +1332,24 @@ certificates for concrete resolved charts beyond the identity chart.
   `(∫⁻ z', innerKvG … z' v)/ofReal(L^k)` (measurable via `Measurable.lintegral_prod_right'` of
   the uncurried integrand composed with `measurable_swap`) and unfolded pointwise with
   `lintegral_innerKvG_eq`.
+- `ActiveTruthChart.lean` (912b97e; hironaka 50fe902e3): **the chart-level active-truth term**
+  (Astra round 9 item 4). `modelKernel_congr_unit` (the kernel only sees the unit on the model
+  domain), `continuous_reindex`, `faceConst i γ e = vol(F')/|det M|` for the solved pair chosen by
+  `e : Fin k ⊕ Fin 2 ≃ Fin m`, `activeTruthDensityFn`/`activeTruthDensity` (`(0,ρ)`-indicator of
+  `A Γ(β) B^{-β} q D^{-qη} faceConst · u^{qη−1} (wt|b|)(bridgePt 0 u) |a(bridgePt 0 u)|^{-β}`),
+  `activeTruthMeasure` (push-forward of the density along the truth segment
+  `u ↦ rep(bridgePt 0 u)`), `integral_activeTruthMeasure`, `integrable_activeTruthDensity`,
+  `isFiniteMeasure_activeTruthMeasure`, `tendsto_modelKernelOf_activeTruth` (the general-unit face
+  theorem on the reindexed chart kernel; the unit is replaced by `max(unit, m_a)` off the domain
+  — `modelKernel_congr_unit` — so the global lower bound holds; traces by `continuousAt_weightFn`
+  / `continuousAt_unitFn` at `(0, u)`, `bridgePt 0 u ∈ ball` by `bridgePt_mem_ball_of_abs_lt`),
+  `TermData.activeTruth : (γp + βδ − ηγ, k, activeTruthMeasure)`. **The leading measure of an
+  active-truth chart is supported on the truth segment `{rep(0,…,±u,…,0) : u ∈ (0,ρ)}`, not at
+  the wall point** — the chart coordinate `u_{k}` IS the truth coordinate, so observables see it
+  (Astra round 8 was right; my round-9 framing "φ of the active coordinates only" was wrong).
+  Gotchas: in `facePolytope`/`transMat` the exponent vectors are over the FULL `Fin k ⊕ Fin 2`
+  (`P.kappa i ∘ e`), not the `inr` part; a lemma in `namespace WallChartsData.Phase` not
+  mentioning `P` cannot be called as `P.foo`; `set C := …` before `unfold` does not fold the
+  unfolded body — use `obtain ⟨C, hC⟩ : ∃ C, C = … := ⟨_, rfl⟩` and `rw [hC]`; `if_pos hadm` under
+  a `fun t ↦ … t` redex needs `simp only`, not `rw`; ascribe the type of a `Tendsto.max` result
+  before rewriting its limit (`uncurry f (0,u)` vs `f 0 u`).
