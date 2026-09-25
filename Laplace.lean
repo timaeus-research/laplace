@@ -247,6 +247,7 @@ import Laplace.Multi.InformationProjection
 import Laplace.Multi.AngularBound
 import Laplace.Multi.HalfLineLaplace
 import Laplace.Multi.TwoMonoPotential
+import Laplace.Multi.NegativeChamber
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
