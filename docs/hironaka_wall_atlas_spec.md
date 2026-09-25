@@ -1534,3 +1534,23 @@ certificates for concrete resolved charts beyond the identity chart.
   (on `σ ≠ 0`), **`tendsto_termKernel_activeTruth_uniform`** (compact `C ∌ 0` on which the branch
   is admissible, `γ > 0`: the normalised term kernel converges uniformly in `σ ∈ C` for each fixed
   admissible test function; not uniform over test functions).
+- Correction to the round-12 query: the "`xy = s` total-kernel bookkeeping" was already closed by
+  `MixedTruthRecord.lean` (`mixData_totalKernel`, `mix_tendsto_totalKernel`,
+  `mix_tendsto_fibre_expectation`); item 3 of the round-12 ranking is void.
+- `ActiveTruthDegenerate.lean` (00baf1f; hironaka 7d864c216): **the boundary regime `c_j = a_j = 0`,
+  constant units** (Astra round-12 item 5; second constraint vacuous WLOG). With
+  `fibreCoef κ Q 1 = 0 ∧ fibreA κ Q δ γ 1 = 0` the second fibre constraint reads `0 < (M⁻¹v)_1`
+  (strict, from `mem_fibreSet_iff`), independent of the free coordinates and the scale:
+  `volume_fibreSet_eq_degenerate` (`vol(fibreSet L v) = 1_{(M⁻¹v)_1 > 0} · vol(fibre2 c₀ 0 a₀ 1 b₀
+  0 L)`, null boundary of the remaining constraint only), `facePolytope_eq_of_degenerate`
+  (`F' = poly2 c₀ 0 a₀ 1`, the one-constraint polytope), `poly2_zero_right_subset`,
+  `tendsto_volume_fibreSet_div_degenerate` (the existing `tendsto_volume_poly2` applied with the
+  vacuous constraint written as `0 ⬝ w ≤ 1`, nondegenerate through `a₂ = 1`),
+  `measurable_indicator_fibreB`, `tendsto_lintegral_vWeight_fibre_degenerate` (same majorant),
+  **`tendsto_modelKernel_activeTruth_degenerate`**: `t^{γp+βδ−ηγ}/(log t)^k · K(t) →
+  A w₀ ρ^{Σ(r+1)}/|det M| · (∫⁻ v, vWeight β η 0 c₀ h₀ v · 1_{(M⁻¹v)_1 > 0}).toReal · vol(F')` — the
+  old transverse `(s,h)`-integral restricted to a half-plane (Astra: "a half-space in the linear
+  transverse variables"), no Gamma value in general; the strict inequality makes the indicator
+  exact for every `v` (no a.e. exceptional set). Not done: the general-unit version (needs a partial
+  trace retaining the frozen solved coordinate `z_1(v)`, per Astra), the `j = 0` mirror (swap the
+  solved pair), the chart wrapper.
