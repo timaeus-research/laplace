@@ -97,6 +97,9 @@ theorem abs_faceUnit_le (hd : FaceData ν h a c Mh) (b : ι → ℝ) (y : Y) :
 noncomputable def radius (_hd : FaceData ν h a c Mh) (v : ι → ℝ) : ℝ :=
   c / (2 * ((∑ i, |v i|) * Mh + 1))
 
+theorem radius_eq (hd : FaceData ν h a c Mh) (v : ι → ℝ) :
+    hd.radius v = c / (2 * ((∑ i, |v i|) * Mh + 1)) := rfl
+
 theorem Mh_nonneg [Nonempty ι] [Nonempty Y] (hd : FaceData ν h a c Mh) : 0 ≤ Mh :=
   le_trans (abs_nonneg _) (hd.h_bound (Classical.arbitrary ι) (Classical.arbitrary Y))
 
