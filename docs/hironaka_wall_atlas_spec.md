@@ -1875,3 +1875,40 @@ certificates for concrete resolved charts beyond the identity chart.
   `namespace TruthChartsData.Phase` with the section variable `(P)` explicit are called
   `TruthChartsData.Phase.foo P …`, never `P.ProfileIntegrableOf.foo` (the dot resolves into
   `Function.…`); `TermData.vertex` takes `P` explicitly too.
+- **Astra round 16** (b4a9590, `gpt_responses/research_round16_*`): statement audit + ranking.
+  (1a) `proportional_families_force_eq_near` is the right general form (no `L₁ ≥ 0`, nothing on
+  `C`; do not strengthen to `C = 1`). (1b) `truth_fibre_expectation_pushforward` is correct but is
+  "analytic input ⇒ charts + phase; a certificate ⇒ the limit", not an unconditional theorem;
+  four checks: pointwise (not a.e.) kernel semantics for chart-independence, `toReal` of `∞`,
+  integrability against the leading measure (finite measure ✓), and `0 < γ` for the note-facing
+  reading. (3) **STATEMENT ERROR FOUND**: the landed boundary regression assumed `ψ` globally
+  continuous AND supported in the closed square, which forces the trace `ψ(v, 0) = 0` (approach
+  from `z₁ < 0`), so the theorem always had limit `0`. REPAIRED (0394638; hironaka mirror):
+  `mixData_totalKernel_toReal'` (nonnegativity only on the positive quadrant `mixL'`, since the
+  kernel only evaluates the observable there), `mix_tendsto_totalKernel_boundary` with NO support
+  hypothesis and a unit `a(z)` continuous positive on the square (`isCompact.exists_isMinOn` for
+  `a_min`; the DCT bound `C u^e e^{-a_min u}` on the indicator region, where the fibre points
+  `(σ/u, u/t)` lie in the square), limit `σ^q ∫_{2σ}^∞ u^{p−q−1} e^{-u a(σ/u,0)} ψ(σ/u,0) du`, and
+  the acceptance value `mix_tendsto_totalKernel_boundary_const` (`a` constant, `ψ ≡ 1`,
+  `p = q+1`): `σ^q e^{-2aσ}/a` (`integral_comp_mul_left_Ioi (fun x ↦ exp (-x)) (2σ) ha` — pass
+  the integrand explicitly, `?g (a * x)` is not a higher-order pattern — and
+  `integral_exp_neg_Ioi`). The exported version is WITHDRAWN: a continuous observable supported
+  in the region has zero boundary trace, and pointwise identification of two chart kernels at
+  `s = σ/t` for an observable not supported in the region is not available (the a.e. equality
+  from the push-forward identity does not control a sequence `s_n`). Classification: the boundary
+  example has `κ = 0` on the unsolved coordinate (the phase `a z₁` depends only on the solved
+  coordinate) with `phaseExp = 1 − γ·pExp = 0` at `γ = 1`: EVERY landed term constructor assumes
+  `κ > 0` (`vertex`, `twoScaled`, `tied`, `partial`, `activeTruth*`, `activeTruthDegenerate`), so
+  the regime is uncovered — a unique LP optimum with a positive-dimensional support (segment), not
+  a face of minimisers. Ranking: (1) repair [DONE] then the boundary `TermData` (a new
+  "solved-coordinate phase" term theorem: `κ ≡ 0`, `pExp > 0`, `γ = 1/pExp`, `Q > 0`; limit
+  `∫_{box} W(x,0) x^r e^{-c a(x,0) ∏x^{-Q·pExp}} dx` = the segment integral), (2) a bounded
+  constructive-recovery export — 1D: `L = x^{2k} + b x^{2k+r} + O(x^{2k+r+1})`, `j ≡ r mod 2`,
+  `t^{r/2k}[t^{(j+1)/2k} ∫ χ x^j e^{-tL} − A_j] → −b A_{j+2k+r}` (recovers `b`), (3) LP existence
+  + classification (`exists_optimal_vertex`, then `exists_termMeasureCertificate`; "vertex /
+  two-scaled / face" are not disjoint; unique minimisers with dependent active constraints need
+  coverage too), (4) a minimal scale API `S_{λ,m} = t^{-λ}(log t)^m` (positivity, product,
+  dominance, ratio-of-scaled-limits), (5) the smooth singular counterexample
+  (`L₂ = x^{2k} + e^{-1/x²}`) only if `prop:flat` does not already export it. In "What remains"
+  keep three claims separate: certificate existence, pointwise chart-independence of fibre
+  evaluations, constructive recovery from specified coefficients.
