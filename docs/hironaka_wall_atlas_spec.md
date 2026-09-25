@@ -3529,3 +3529,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `N = 0` case separately), `eventually_measureReal_empMean_le'` (`∀ᶠ n in atTop`, via `max N₀ 1`),
   `eventually_log_measureReal_empMean_div_le` (`log P/n ≤ −(α−ε)` under `0 < P`; `Real.log_le_log`, `Real.log_exp`,
   `div_le_iff₀`). The `limsup ≤ −α` form is deliberately NOT stated through `Real.log 0`.
+- `ContractionIdentity.lean` (NOT mirrored; Astra round 37 item 4 / round 38 item 5): **`priorCum3_dirLoss_slot`** /
+  `priorCum3_dirLoss_slot₃` (κ₃ multilinear over feature combinations, generic `L`/`hν`; rewrite each product as a
+  `dirLoss` of a product family and use `priorExp_dirLoss`, then `simp only [Finset.sum_mul, Finset.mul_sum,
+  ← Finset.sum_sub_distrib, ← Finset.sum_add_distrib]` + termwise `ring`), **`priorCum3_eq_priorCov_centred`**
+  (`κ₃(φ,ψ,χ) = Cov(φ,(ψ−⟨ψ⟩)(χ−⟨χ⟩))`; make the means opaque with `obtain ⟨b, hb⟩ : ∃ b, … = b`, expand with
+  `priorExp_add_bdd`/`priorExp_const_mul_bdd`/`priorExp_const_fun`, `ring`), `cum3Mat` (`T_pq = κ₃(H,R_p,R_q)`), `respHess`
+  (`K_ij` = the response block on `Pi.single`), `contractObs` (`Q = Zᵀ C⁻¹ Z`), `natC_transpose` (use `.transpose`, `ᵀ` needs
+  `open Matrix`), `natC_inv_apply_symm` (`Matrix.transpose_nonsing_inv`), `lossHessian_response_apply_eq_respHess`,
+  **`respHess_eq`** (`K = C⁻¹ T C⁻¹`: `Matrix.mulVec_single_one` + `Matrix.col_apply`, two slot expansions, `Finset.sum_comm`,
+  symmetry, `ring`), **`trace_natC_respHess`** (`tr(CK) = tr(T C⁻¹)`), **`trace_cum3Mat_inv_eq_cov`** (`= Cov(H,Q)`: `Q` as
+  `dirLoss` over `ι × ι` via `Fintype.sum_prod_type'`, `sum_mul_priorCov_eq`, `Laplace.Patterning.trace_mul_eq_double_sum`),
+  `trace_natC_respHess_eq_cov`, **`hasDerivAt_log_det_natC_tempPath`** (`d/dt log det C|_M = −tr(CK)`:
+  `Laplace.Patterning.hasDerivAt_log_det` on `t ↦ natC (tempPath M t)` with `hasDerivAt_natC_path (hθ := hasDerivAt_tempPath)`;
+  the velocity's score is `natH` by `chartScore_eq … 1 0` after `Pi.single none 1 = jointPoint 1 0`; then two
+  `trace_mul_eq_double_sum`, `Finset.sum_comm`, `priorCum3_swap₂₃, priorCum3_swap₁₂`), `hasDerivAt_log_det_natC_tempPath_cov`.
+  Pin `(M₀ := 0)` when passing `(fun x ↦ by simp)` as the zero base-loss bound, else `0 ≤ ?m` is left unsolved.
