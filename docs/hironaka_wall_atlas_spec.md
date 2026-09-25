@@ -2051,3 +2051,13 @@ certificates for concrete resolved charts beyond the identity chart.
   weakening. Gotcha: `⟨…, interior_subset hr⟩` against a `rep⁻¹ L'` membership makes Lean look
   for `interior (rep⁻¹ L')` — write `Set.mem_preimage.mpr (interior_subset hr)`; `faceMap` lives
   in `LimitingMeasure`, not `WallFibreExpectation`.
+- `InteriorObservable.lean` amended (a8296ba; hironaka c8ed52aa6): the face hypothesis is now the
+  DISJUNCTION `faceMap u ∈ interior L' ∨ φ =ᶠ[𝓝 (faceMap u)] 0`. Reason: the limiting domain is
+  cut by the CHART radius `ρ` (`D ∏u^{-Q/q} < ρ`) while the region has its own radius (the
+  density must vanish off `ball ρ` but be `1` on the region, so the region is strictly inside),
+  and the face points in between carry no weight only because the observable is supported inside
+  the region's radius — the interior-only hypothesis was unsatisfiable for exactly the records
+  the acceptance test needs. In the second case the moving weight is eventually `0`
+  (`Tendsto.eventually hvan` through `rep ∘ bridgePt`) and the limiting weight is `0`
+  (`Filter.Eventually.self_of_nhds`). `tendsto_fibre_expectation_of_interior` takes one such
+  hypothesis per observable (`hfaceψ`, `hfaceχ`).
