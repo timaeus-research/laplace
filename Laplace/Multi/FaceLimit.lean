@@ -249,4 +249,51 @@ theorem tendsto_mixKL_face [Nonempty X] (hp : 0 < ∫ x in {x | V x = α}, π x 
 
 end Face
 
+section Ray
+
+variable {ι : Type*} [Fintype ι] [Nonempty X] {π L₀ : X → ℝ} (hπm : Measurable π)
+  (hπi : Integrable π μ) (hπ : ∀ x, 0 < π x) (hπpos : 0 < ∫ x, π x ∂μ) (hL₀m : Measurable L₀)
+  {M₀ : ℝ} (hL₀ : ∀ x, |L₀ x| ≤ M₀) {R : ι → X → ℝ} (hR : ∀ i, Bdd (R i)) {t : ℝ} (ht : 0 < t)
+include hπm hπi hπ hπpos hL₀m hL₀ hR ht
+
+omit [Nonempty X] hπm hπi hπ hπpos hL₀m hL₀ hR ht in
+/-- The feature ray `a = s v` at temperature `t` is the tilt of the tilted prior `e^{−tL₀}π` by
+`R_v` at rate `ts`. -/
+theorem priorExp_ray_eq_tilted (v : ι → ℝ) (s : ℝ) (φ : X → ℝ) :
+    priorExp μ π (affLoss L₀ R (s • v)) φ t =
+      priorExp μ (tiltedPrior π L₀ t) (dirLoss R v) φ (t * s) := by
+  unfold priorExp priorZ tiltedPrior
+  have e : ∀ x, Real.exp (-(t * affLoss L₀ R (s • v) x)) * π x =
+      Real.exp (-(t * s * dirLoss R v x)) * (Real.exp (-(t * L₀ x)) * π x) := by
+    intro x
+    rw [← mul_assoc, ← Real.exp_add]
+    congr 2
+    simp only [affLoss, dirLoss, Pi.smul_apply, smul_eq_mul]
+    rw [mul_add, Finset.mul_sum, Finset.mul_sum]
+    have : ∑ i, t * (s * v i * R i x) = ∑ i, t * s * (v i * R i x) :=
+      Finset.sum_congr rfl fun i _ ↦ by ring
+    rw [this]
+    ring
+  simp only [e, mul_assoc]
+
+omit [Nonempty X] hπpos in
+/-- **The boundary posterior of a feature ray**: if the face `{R_v = α}` of the essential lower
+bound `α` of `R_v` has positive tilted-prior mass, then along `a = s v`, `s → ∞`, every bounded
+observable converges to its conditional expectation on the face under `e^{−tL₀}π`. -/
+theorem tendsto_priorExp_ray_face (v : ι → ℝ) {α : ℝ} (hα : ∀ᵐ x ∂μ, α ≤ dirLoss R v x)
+    (hp : 0 < ∫ x in {x | dirLoss R v x = α}, tiltedPrior π L₀ t x ∂μ) {φ : X → ℝ}
+    (hφm : Measurable φ) {Mφ : ℝ} (hφ : ∀ x, |φ x| ≤ Mφ) :
+    Tendsto (fun s : ℝ ↦ priorExp μ π (affLoss L₀ R (s • v)) φ t) atTop
+      (𝓝 ((∫ x in {x | dirLoss R v x = α}, φ x * tiltedPrior π L₀ t x ∂μ) /
+        ∫ x in {x | dirLoss R v x = α}, tiltedPrior π L₀ t x ∂μ)) := by
+  obtain ⟨hvm, Mv, hvb⟩ := bdd_dirLoss hR v
+  have h := tendsto_priorExp_face (measurable_tiltedPrior hπm hL₀m t)
+    (integrable_tiltedPrior hπi hL₀m hL₀ ht) (tiltedPrior_pos hπ L₀ t) hvm hα hp hφm hφ
+  have h2 := h.comp (tendsto_id.const_mul_atTop ht)
+  refine h2.congr fun s ↦ ?_
+  simp only [Function.comp_def, id_eq]
+  exact (priorExp_ray_eq_tilted v s φ).symm
+
+end Ray
+
 end Laplace.Multi
