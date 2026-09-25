@@ -3458,3 +3458,18 @@ certificates for concrete resolved charts beyond the identity chart.
   `ENNReal.ofReal_prod_of_nonneg`, `ENNReal.ofReal_toReal`), **`measureReal_pi_ge_of_density_ge`** (`c · P^{⊗n}(A) ≤ Q^{⊗n}(A)`
   when `∏ r ≥ c` on `A`; take finiteness from `Q^{⊗n}` BEFORE rewriting it as a density — the rewritten form has no
   `IsFiniteMeasure` instance).
+- `TiltLowerBound.lean` (NOT mirrored; Astra round 37 item 5): **`familyMeasure_eq_withDensity_tilt`** (`P_a = P_b.withDensity
+  (ofReal e^{−(λu·R − Λ_a(λu))})`, `b = a − (λ/t)u`: `withDensity_mul₀` backwards, pointwise `ENNReal.ofReal_mul`, exponent
+  identity and the regrouping as separate `have`s proved by `field_simp; ring` / `ring` — `show … by …` inside `rw` is
+  fragile — `Real.exp_log`, `field_simp`), `famKL_tilt_eq` (`KL(b‖a) = λ u·m(b) − Λ_a(λu)`), `integrable_coord_pi`,
+  `integral_coord_pi` (`integral_map (φ := Function.eval k)` + `measurePreserving_eval`), `integral_empSum` (`= n⟨f⟩`),
+  `memLp_two_of_bdd`, `variance_empSum` (`= n Var f` via Mathlib's `variance_sum_pi`), **`measureReal_empMean_far_le`**
+  (Chebyshev `P(|f̄_n − ⟨f⟩| ≥ ρ) ≤ Var f/(nρ²)` from `meas_ge_le_variance_div_sq`; `field_simp` closes the ratio),
+  `measurableSet_empMean_near` (`MeasurableSet.iInter` needs `Countable ι` from `[Fintype ι]` — keep the instance and
+  `set_option linter.unusedFintypeInType false in`), **`measureReal_empMean_near_ge`** (`1 − ∑ Varᵢ/(nρ²) ≤ P_b^{⊗n}(near)`;
+  `measureReal_compl` + `P.real univ = 1` via `measureReal_def, measure_univ, ENNReal.toReal_one`;
+  `measureReal_iUnion_fintype_le _` takes ONE explicit argument; `omit ht`, so callers pass `(t := t)`),
+  **`tilt_lower_bound`** (`∃ N, ∀ n ≥ N, e^{−n(KL(b‖a)+δ)} ≤ P_a^{⊗n}(∀ i, |R̄ᵢ − mᵢ(b)| < ε)`: radius
+  `ρ = min ε (δ/(2(λS+1)))`, `S = ∑|uᵢ|`; product density `= e^{−n(λ u·R̄_n − Λ)}` via `← Real.exp_sum` and
+  `∑ₖ R_u(xₖ) = n u·R̄_n`; `measureReal_pi_ge_of_density_ge`; Chebyshev with `N = max (⌈2V/ρ²⌉₊+1) (⌈2 log 2/δ⌉₊+1)`;
+  `rw [← Finset.sum_div, ← hV]` to fold the variance budget).

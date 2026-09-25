@@ -307,6 +307,7 @@ import Laplace.Multi.DataLocus
 import Laplace.Multi.NaturalJourney
 import Laplace.Multi.MixtureBending
 import Laplace.Multi.ProductDensity
+import Laplace.Multi.TiltLowerBound
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
