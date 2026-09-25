@@ -350,6 +350,8 @@ import Laplace.Multi.ActiveTruthExample
 import Laplace.Multi.ActiveTruthUniform
 import Laplace.Multi.SpectatorEnvelope
 import Laplace.Multi.ActiveTruthSpectator
+import Laplace.Multi.ActiveTruthTraceModel
+import Laplace.Multi.ActiveTruthTraceAssembly
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
