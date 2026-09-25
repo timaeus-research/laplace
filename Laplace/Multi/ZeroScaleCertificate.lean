@@ -29,9 +29,11 @@ wall, in the mixed example. This file supplies the missing profile certificate:
   admissible branch with a solved-coordinate phase, power `γ p` and coefficient measure the
   unrescaled face measure `termMeasure … 0`.
 
-The mixed-coordinate condition is genuinely needed: with `κ = (−1, 1)` the profile
-`u₁^{r₁} u₂^{r₂} e^{-c u₂/u₁}` is integrable only when `r₁ + r₂ > −2`, which the coordinatewise
-condition does not see; the general criterion is the recession-cone one at `α = 0`.
+The coordinatewise condition is only sufficient: with `κ = (−1, 1)` the profile
+`u₁^{r₁} u₂^{r₂} e^{-c u₂/u₁}` on the box is integrable exactly when `r₂ > −1` and
+`r₁ + r₂ > −2` (substitute `u₂ = u₁ v`: `u₁^{r₁+r₂+1} v^{r₂} e^{-cv}`), a condition the
+coordinatewise one does not see; the general criterion is the recession-cone one at `α = 0`:
+with `b = r + 1` and `C = {v ≥ 0 | κ·v ≥ 0}`, integrable iff `b·v > 0` for every `v ∈ C ∖ {0}`.
 -/
 
 open Filter MeasureTheory Set Topology Real
