@@ -13,12 +13,12 @@ Combining global injectivity (`meanMap_injective`) with the local chart theorem
 (`map_nhds_meanMap`): for an affine data family with non-degenerate contrasts the mean map
 `m : ℝ^k → ℝ^k` is continuous, injective and open, hence an **open embedding**
 (`isOpenEmbedding_meanMap`) with open image (`isOpen_range_meanMap`), a homeomorphism onto its
-image (`meanMapHomeomorph`), and its global inverse `Function.invFun m` is strictly differentiable at
-every
-point of the image with derivative `(Dm(a))⁻¹` (`hasStrictFDerivAt_invFun_meanMap`). The
-response coordinates `y = m(a)` are thus a **global chart** of the affine data manifold: the data
-distribution is recovered from the vector of posterior expectations of the contrasts by a strictly
-differentiable map, everywhere on the (open) response space (Astra, round 25, item 1).
+image (`meanMapHomeomorph`), and its global inverse `Function.invFun m` is strictly
+differentiable at every point of the image with derivative `(Dm(a))⁻¹`
+(`hasStrictFDerivAt_invFun_meanMap`). The response coordinates `y = m(a)` are thus a **global
+chart** of the affine data manifold: the data distribution is recovered from the vector of
+posterior expectations of the contrasts by a strictly differentiable map, everywhere on the (open)
+response space (Astra, round 25, item 1).
 -/
 
 open MeasureTheory Filter Topology Set
