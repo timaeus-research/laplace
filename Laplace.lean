@@ -331,6 +331,8 @@ import Laplace.Multi.ThermalTransport
 import Laplace.Multi.GroundState
 import Laplace.Multi.RelativeInterior
 import Laplace.Multi.RelativeMomentBody
+import Laplace.Multi.ConditioningChainRule
+import Laplace.Multi.EntropyCompletion
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

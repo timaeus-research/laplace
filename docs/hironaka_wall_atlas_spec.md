@@ -3759,3 +3759,24 @@ certificates for concrete resolved charts beyond the identity chart.
   via the supporting characterisation: `e·S ≤ e·m` a.e. with equal `P_θ`-expectation ⇒ `e·S = e·m` a.e.
   (`integral_eq_zero_iff_of_nonneg_ae`, transfer by `familyMeasure_eq_zero_iff`) ⇒ `K` in the hyperplane by
   `momentBody_subset_halfspace` twice).
+- `ConditioningChainRule.lean` (NOT mirrored; round-42 item 3 prerequisites): `faceMeasure_rnDeriv` (density `1_F/ν(F)`),
+  `ae_mem_faceMeasure` (`Measure.ae_smul_measure (ae_restrict_mem hF)`), `absolutelyContinuous_faceMeasure` (`ρ ≪ ν`, `ρ Fᶜ = 0`
+  ⇒ `ρ ≪ ν_F`; `Measure.restrict_apply'`, `measure_le_inter_add_sdiff`, `ENNReal.inv_eq_zero`), **`llr_faceMeasure_ae`**
+  (`Measure.rnDeriv_mul_rnDeriv hρ (κ := ν)`, `Measure.rnDeriv_pos`, `Measure.rnDeriv_lt_top`; `unfold llr` then `Real.log_mul`,
+  `Real.log_inv`, `simp only [measureReal_def]; ring`), **`klDiv_eq_klDiv_faceMeasure_add`** (`KL(ρ‖ν) = KL(ρ‖ν_F) + ofReal(−log ν(F))`;
+  integrable and non-integrable cases; `ν.real F ≤ 1` by `ENNReal.toReal_le_of_le_ofReal zero_le_one` + `prob_le_one`),
+  **`compl_eq_zero_of_mean_face`** (mean on the face hyperplane ⇒ carried by the face; `integral_eq_zero_iff_of_nonneg_ae`,
+  `measure_eq_zero_iff_ae_notMem`, `Set.notMem_compl_iff`), `essRange_faceMeasure_subset`/`momentBody_faceMeasure_subset`
+  (`set_option linter.unusedFintypeInType false in`), `momentBody_faceMeasure_subset_hyperplane`,
+  **`finrank_dirSpan_faceMeasure_lt`** (`W := LinearMap.ker (IsLinearMap.mk' (dotJ e) _)`; `direction_affineSpan`, `vectorSpan_def`,
+  `Submodule.span_le`, `Set.mem_vsub`; `Submodule.finrank_lt_finrank_of_lt`), `familyMeasure_one_zero` (`withDensity_one`),
+  `genRate_eq_rateFun` (`unfold rateFun chernoffScore baseCgf; rw [familyMeasure_one_zero]; rfl`).
+- `EntropyCompletion.lean` (NOT mirrored; round-42 item 3, THE COMPLETION PRINCIPLE): **`exists_unique_entropy_minimiser`**
+  (`genRate ν S M ≠ ⊤ → ∃! ρ, IsProbabilityMeasure ρ ∧ E_ρ S = M ∧ klDiv ρ ν = genRate ν S M`; `suffices` over `n` +
+  `induction n using Nat.strong_induction_on with | _ n ih`, quantifying over all probability laws with
+  `finrank (dirSpan ν 1 S) = n`; family hypotheses for `(ν, π := 1, L₀ := 0, t := 1)` are `measurable_const`, `integrable_const _`,
+  `fun _ ↦ one_pos`, `by simp`, `h0`; interior case via `range_meanMap_eq_intrinsicInterior_momentBody`, `klDiv_familyMeasure_zero`
+  rewritten with `familyMeasure_one_zero`, `rateFun_meanMap`, `klDiv_eq_rateFun_iff`; boundary case via
+  `mem_intrinsicInterior_iff_forall_supporting` + `push Not`, `genRate_eq_top_of_null_face`, `genRate_face_eq`,
+  `finrank_dirSpan_faceMeasure_lt`, the chain rule, `ENNReal.add_right_inj ENNReal.ofReal_ne_top`), **`entropyProj_eq_genRate`**
+  (`𝓔 = 𝓘` for every `M`, infinite values included).
