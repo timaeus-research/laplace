@@ -2142,3 +2142,16 @@ certificates for concrete resolved charts beyond the identity chart.
   `Real.log_le_sub_one_of_pos`; pointwise `ρ − ρ_t ≤ ρ log(ρ/ρ_t)`), **`gibbs_variational`**
   (`−log Z ≤ t E_ρ L + KL(ρ‖π)`), `gibbs_variational_eq` (equality at `ρ_t`). Integrability of
   `ρL`, `ρ log(ρ/π)` are hypotheses.
+- `CoefficientResponse.lean` (NOT mirrored; round-19 package 1, first step): **the coefficient-
+  response calculus**. Face formula model `faceCoef ν φ h lam a = ∫ φ U_a^{-λ} dν` with the
+  affine unit `faceUnit h a = ∑ aᵢ hᵢ` (principalised mixture), `facePosterior = faceCoef φ /
+  faceCoef 1`, `faceCov`; `FaceData ν h a c Mh` (finite face measure, bounded measurable `hᵢ`,
+  `U_a ≥ c > 0`), `radius`, `unit_perturbed_ge` (`U_{a+εv} ≥ c/2` for `|ε| ≤ radius`),
+  **`FaceData.hasDerivAt_faceCoef`** (`d/dε μ_{a+εv}(φ) = −λ ∫ φ U_a^{-λ-1} R_v dν`; dominated
+  differentiation on a closed ball, `HasDerivAt.rpow_const`), **`FaceData.hasDerivAt_facePosterior`**
+  (the SINGULAR fluctuation–response identity: `d/dε [μ(φ)/μ(1)] = −λ Cov_{ν_a}(φ, R_v/U_a)`,
+  `Real.rpow_sub_one` + quotient rule). Gotchas: `(hd.measurable_faceUnit _).pow_const _` with
+  the weight left as `_` makes the unifier unfold `faceUnit` (whnf timeout at the theorem's first
+  line — bisected with truncated scratch copies); pass `(a + ε • v)` and `(-lam)` explicitly, and
+  annotate `∀ ε : ℝ` (otherwise `HSMul ?m (ι → ℝ)` is stuck); `gcongr` on a product of four
+  factors leaves a positivity goal in place of the intended one — spell `mul_le_mul` out.
