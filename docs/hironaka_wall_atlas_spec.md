@@ -3413,3 +3413,9 @@ certificates for concrete resolved charts beyond the identity chart.
   `hint : ∀ s, lo < ⟨φ⟩_{η s} < hi`; chart derivative via `Real.hasDerivAt_arcsin (hsqm1) (hsq1) |>.comp s (hz.sqrt …)`,
   `Real.sqrt_eq_one`, continuity of the chart derivative from `Continuous.div … (h ≠ 0)` and `Continuous.sqrt`; FTC + the
   pointwise bound).
+- `CompactCoverCramer.lean` (NOT mirrored; Astra round 34/36 item "compact-cover Cramér"): `halfspace_chernoff_one` (`λ = 1`,
+  `simpa`), **`finite_union_chernoff`** (`P(R̄_n ∈ ⋃_{k∈s} {θ_k·y ≥ c_k}) ≤ ∑ e^{−n(c_k − Λ(θ_k))}`; set identity by `ext; simp`,
+  `measureReal_biUnion_finset_le`), **`compact_cover_chernoff`** (`∀ x ∈ F, ∃ θ, α < θ·x − Λ(θ)` ⇒ `∃ N, ∀ n ≥ 1,
+  P(R̄_n ∈ F) ≤ N e^{−nα}`: totalise the witness (`∀ x, ∃ θ, x ∈ F → …`) so `choose` yields a plain function, strict
+  halfspaces `U x` open by `isOpen_lt`, `IsCompact.elim_finite_subcover`, `measureReal_mono` (probability measure discharges
+  the finiteness autoparam), `Finset.sum_const, nsmul_eq_mul`).
