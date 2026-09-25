@@ -2484,3 +2484,18 @@ certificates for concrete resolved charts beyond the identity chart.
   `priorExp_dirLoss` on the family `Rᵢψ`), **`meanMapDeriv_injective`** (non-degenerate contrasts ⇒ the
   Jacobian is injective: the mean map is an injective immersion). Remaining for the full IFT: continuity
   of `a ↦ meanMapDeriv a` ⇒ `HasStrictFDerivAt` ⇒ local diffeomorphism.
+- `MeanMapChart.lean` (NOT mirrored; Astra item D, stage 3 — CLOSES D): `continuousAt_affNumDeriv`
+  (`continuousAt_of_dominated` with the same unit-ball majorant `t Mφ S e^{tS} e^{-tL_{a₀}} π` as the
+  derivative; `bound`, `hF_meas` eventually, `h_bound` via `Filter.eventually_of_mem (ball_mem_nhds …)`,
+  pointwise continuity from `(hasFDerivAt_affWeight …).continuousAt.const_mul t |>.neg.smul continuousAt_const`),
+  **`hasStrictFDerivAt_meanMap`** (`hasStrictFDerivAt_pi''` + `ContinuousLinearMap.proj_pi` per component, then
+  `hasStrictFDerivAt_of_hasFDerivAt_of_continuousAt` with `f'` the explicit quotient-rule entry; `hZ a` for ALL
+  `a` from `tiltData_aff … |>.choose_spec.ν_pos`), `meanMapDerivEquiv` (`LinearEquiv.ofInjectiveEndo` +
+  `LinearEquiv.toContinuousLinearEquiv`; `coe_meanMapDerivEquiv` by `ext` + the three coe simp lemmas),
+  `hasStrictFDerivAt_meanMap_equiv`, **`meanMapInverse`** (`HasStrictFDerivAt.localInverse`) with
+  `meanMapInverse_meanMap` (left inverse near `a₀`), `meanMap_meanMapInverse` (right inverse near `m a₀`),
+  `meanMapInverse_apply_meanMap`, `meanMapInverse_continuousAt`, **`hasStrictFDerivAt_meanMapInverse`**
+  (derivative `(meanMapDerivEquiv …).symm`), **`map_nhds_meanMap`** (`map m (𝓝 a₀) = 𝓝 (m a₀)`),
+  `meanMapInverse_deriv_comp` (`ContinuousLinearEquiv.coe_symm_comp_coe`; pass the equivalence explicitly and pin
+  `(μ := μ)` in `coe_meanMapDerivEquiv`, else "Module ?m ?m stuck"). The response coordinates are a local chart of
+  the data manifold: Astra round-24 item D is closed.
