@@ -3004,3 +3004,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `bijOn_meanMap_slice`, **`temperature_slice_graph`** (`∃! a`, the contrast part of the joint response at `Θ(t,a)` is `y`).
   Section-level `include` with many hypotheses + per-lemma `omit` lists was unmanageable here: give each helper its
   hypotheses explicitly and reserve `variable … include` for the final three theorems.
+- `ObservableRegression.lean` (NOT mirrored): `obsMean μ π L₀ φ R t y := ⟨φ⟩_{θ(y)}`, `obsMean_meanMap`,
+  **`hasFDerivAt_obsMean`** (`DΦ(m a) = obsMapDeriv φ a ∘ invJac a`, chain rule on `hasStrictFDerivAt_invFun_meanMap`),
+  **`obsMean_deriv_cov`** (`DΦ(m a)(Cov(R_i,R_v))_i = Cov(φ, R_v)`: the regression identity `DΦ = Cov(φ,R)Cov(R,R)⁻¹`;
+  via `invJac_meanMapDeriv` and `obsMapDeriv_apply`), **`abs_obsMean_deriv_le`** (`|DΦ ṁ| ≤ √Var(φ) √⟨ṁ, D²I ṁ⟩` from
+  `abs_obsMapDeriv_le` + `dualHessian_quadratic_form`).
