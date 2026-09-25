@@ -1564,3 +1564,29 @@ certificates for concrete resolved charts beyond the identity chart.
   variables plus `tendsto_weightedMixed` at `−h` with the coordinates exchanged. Trichotomy
   complete: `h > 0` finite axis measure `x^{h−1} dx` (`tendsto_weightedMixed`), `h = 0` the
   logarithm (`MixedTruthLog`), `h < 0` the other axis at the scale `t^h`.
+- **The general-truth hironaka export** (hironaka `wall-atlas` 70ac670cb, local; Astra round-11 item
+  (g) / round-12 item 2; no laplace code). New files `Monomialize/Relative/Wall/Truth{Chart,Atlas,
+  Partition,Weighted,Integral,Export,Record,Instance,Theorem}.lean` (1446 lines, all zero-warning,
+  standard axioms): the wall layer with the coordinate `z ℓ` replaced by a function
+  `T : (Fin n → ℝ) → ℝ` throughout. `WallChartAtT F T g P`, `exists_wallResolutionT_of_bo` /
+  `exists_wallResolutionT` (hypotheses `hT : AnalyticOnNhd ℝ T U₀`, `hT0 : T 0 = 0`,
+  `hne : ¬ ∀ᶠ z in 𝓝 0, F z * T z = 0` taken directly; the resolution of `G = F * T`, factor
+  separation, `exists_chart_absorbing_unit_pair … (f := T)`), `WallAtlasT F T g C` (field `base :
+  T (watanabeRep g (φ i) u) = S i * ∏ u^qs`), `isCompact_inter_abs_le` (`L ∩ {|T| ≤ c}` compact for
+  `T` continuous on `L`, via `ContinuousOn.preimage_isClosed_of_isClosed`), `exists_wallAtlasT`,
+  `eventually_preimage_subset_of_isCompactT` (needs `hT : ContinuousOn T W`),
+  `exists_partitionOfUnity_smallParameterT`, `offWallT F T = {F z * T z ≠ 0}`, the weighted transport
+  `WallAtlasT.lintegral_eq_sum_charts(_box/_clamp)`, Bochner forms, `euclidean_export`,
+  `WallAtlasT.toTruthChartsData : TruthChartsData m T L'` (fields as `toWallChartsData`, `truth :=
+  repClamp_apply_truth`), `aClamp`/`phase_repClamp` (the monomial form of `F` on the boxes), and
+  **`exists_truthChartsData(_phase)`**: for `F, T` analytic on `U₀ ∋ 0`, `T 0 = 0`, `F·T ≢ 0` near
+  `0`, `W ⊆ U₀` connected open `∋ 0`, `L ⊆ W` compact: `∃ ε > 0, Nonempty (TruthChartsData m T (L ∩
+  {z | |T z| ≤ ε}))`, the `_phase` version adding `kF, a` with `a i` continuous nonvanishing and
+  `F (D.rep i u) = a i u * ∏ u^(kF i)` on the boxes. Mechanically generated from the ℓ-files by a
+  regex transform (`z ℓ → T z`, `watanabeRep … u ℓ → T (watanabeRep … u)`, `(hF) → (hF) (hT)`);
+  hand patches: the `hGne`/`hG0`/`hF₂` lines of the resolution, the two closedness proofs (helper
+  above), and two local names `T` (a set and a sequence) that shadowed the truth function. The
+  fibre identity (`fibre_eq`) does not transfer (the fibre `{T = s}` is a hypersurface); the
+  push-forward identity `lintegral_mul_comp_truth` of the record is the replacement. Not done: a
+  Phase-like record for general truths on the laplace side (the `_phase` conjunct is the raw
+  material), and a mixed instance produced through this export rather than by hand (`mixData`).
