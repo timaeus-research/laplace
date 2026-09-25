@@ -3346,3 +3346,20 @@ certificates for concrete resolved charts beyond the identity chart.
   (`d/dt 𝒮(tempPath M t) = −t Var(H)`: `dirLoss_jointStat_velocity`, `dirLoss_jointStat_natCoord` as a funext `have`,
   `priorCov_const_mul_left`, comm, a `rfl` equation exposing `affLoss a = L₀ + R_a` ONLY in the observable slot (a global
   `rw` would also hit the measure slot), `priorCov_add_right_bdd`, `priorCov_residual_dirLoss` twice).
+- `ChartPathDerivatives.lean` (NOT mirrored; Astra round 35 item 2, part 1): `aOf θ i := θ (some i)/θ none`, `natCoord_aOf`,
+  `natC/natc/natb/natH` (feature covariance, feature–loss covariance, regression coefficients `C⁻¹c`, residual, at a
+  natural-coordinate point; `natb`/`natH` need `[DecidableEq ι]` for the inverse), transports `natC_eq_featCov`,
+  `natc_eq_featObsCov`, `natCov_eq`, `natCum3_eq` (`conv_lhs => rw [← natCoord_aOf hθ]` then `priorCov_natCoord`),
+  `isUnit_natC`, `natC_mulVec_natb` (normal equations), `natC_mulVec_apply`, `natCov_natH_dirLoss` (residual ⊥ features),
+  `natCov_natH_self` (`Var H = Var L₀ − c·b`; `change` to the unfolded residual, a defeq `Bdd` witness for the lambda),
+  `natCum3_natH_slot` (`κ₃(R_k, H, χ) = κ₃(R_k, L₀, χ) − ∑ b_j κ₃(R_k, R_j, χ)`); path section (`hθ : HasDerivAt θ θ' s₀`):
+  **`hasDerivAt_natCov_path`** (`d/ds Cov = −κ₃(φ, ψ, S_{θ'})`, `hasDerivAt_cov_of_hasDerivAt_exp` with `c := 1`,
+  `τ := fun _ ↦ 1`, `hE` from `hasDerivAt_priorExp_natPath`), `hasDerivAt_natC_path`/`natc_path`,
+  **`differentiableAt_natb_path`** (`open scoped Matrix.Norms.Operator in`; `DifferentiableAt.inverse` on the matrix
+  function, entries via `ContinuousLinearMap.proj … |>.differentiableAt.comp`, `Matrix.nonsing_inv_eq_ringInverse` to
+  pass from `Ring.inverse` to `⁻¹`, `DifferentiableAt.fun_sum`), **`hasDerivAt_natb_path`** (`d/ds b = −C⁻¹ κ₃(R, H, S_{θ'})`:
+  `b' := deriv`, differentiate the normal equations with `HasDerivAt.fun_sum` + `HasDerivAt.unique`, solve with
+  `nonsing_inv_mul`; final `rw [← this, hCb', ← Matrix.mulVec_neg]; congr 1` — `congr 1` closes the Pi-negation goal, a
+  following `funext` errors "no goals"), **`hasDerivAt_natVarH_path`** (`d/ds Var H = −κ₃(H,H,S_{θ'})` via
+  `hasDerivAt_residual_form` with `hpos : ∀ s, 0 < θ s none` so the normal equations hold everywhere — no reparametrisation;
+  `conv_rhs => rw [e, natCum3_eq, priorCum3_residual_expand]` then `simp only [← natCum3_eq]`).
