@@ -1482,3 +1482,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `u`-dependent units `D` enters the unit argument `u = cutVar` and the monotonicity in `D` fails
   (Astra: the squeeze needs the units fixed); the general-unit moving version would need the
   parametrised DCT chain.
+- `ActiveTruthGeneralParam.lean` (e418f23; hironaka 52948f46a): **the general-unit face theorem
+  with moving constants**, by a TIME CHANGE instead of the parametrised DCT. `cutTime D₀ γ q D t =
+  t (D₀/D)^{q/γ}`, `rpow_cutTime`, `cutVar_cutTime` (the cut at `(D, t)` is the cut at `(D₀, τ)`),
+  **`modelKernel_cutTime`** (exact: the kernel at `(A, B, D, t)` is the kernel at
+  `(A (D₀/D)^{qp}, B (D₀/D)^{-qδ/γ}, D₀, τ)`, any index type, any units), so a moving `D` is a
+  moving `A, B` along the reparametrised time; `modelIntegrand_anti_B` (the general integrand is
+  antitone in `B` for nonnegative units — `B` enters only through the exponential),
+  `modelKernel_eq_toReal_of_nonneg`, `lintegral_modelIntegrand_general_ne_top` (from
+  `normalised_lintegral_leG`), `modelKernel_anti_B_general`, `tendsto_normaliser_ratio`
+  (`N(t)/N(t c(t)) → 1` for `c → 1`, `N(t) = t^λ/(log t)^k`: `c^{-λ}(1 + log c/log t)^k`), and
+  **`tendsto_modelKernel_general_param`**: `A(t) → A₀`, `B(t) → B₀ > 0`, `D(t) → D₀ > 0`, `γ > 0`,
+  bounded jointly measurable units with traces, the fixed-parameter limit
+  `A₀ Γ(β) B₀^{-β} q D₀^{-qη} vol(F')/|det M| ∫_0^ρ u^{qη−1} W_tr a_tr^{-β}`. Proof: the
+  one-parameter squeeze `tendsto_of_antitone_param` at fixed `D₀` along `τ` (fixed-`b` limits from
+  `tendsto_modelKernel_general` composed with `τ → ∞`), times the normaliser ratio. This is what
+  the chart-level moving-σ wrapper of the active-truth term needs (not yet written).
