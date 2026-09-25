@@ -3698,3 +3698,21 @@ certificates for concrete resolved charts beyond the identity chart.
   `¬Integrable llr`, finite — the non-integrable case transfers through `llr_tilted_right` with `Pi.sub_apply, Pi.add_apply`;
   finite case `← ENNReal.ofReal_add (Gibbs) (integral_sub_log_nonneg)`), **`klDiv_eq_rateFun_iff`** (`nth_rewrite 2 [← zero_add …]`
   + `ENNReal.add_left_inj` + `klDiv_eq_zero_iff`).
+- `ThermalTransport.lean` (NOT mirrored; round-42 item 1): `tiltExp_one_eq_integral_tilted` (seabed `tiltExp ν 1 g f (-1) s` =
+  `∫ g ∂ν.tilted (s * f)`; `integral_tilted`, `div_mul_eq_mul_div`, `integral_div`, per-point goals need `beta_reduce` before
+  `rw`), **`hasDerivAt_integral_tilted`** (master transport `d/ds E_{ν_s} g = Cov_{ν_s}(g,f)` from `TiltData.hasDerivAt_tiltExp`
+  with weight `fun _ ↦ 1`, `R := f`, `t := -1`; `TiltData` anonymous constructor `⟨measurable_const, integrable_const _,
+  fun _ ↦ zero_le_one, by simp, hfm, hfb⟩`), `hasDerivAt_integral_exp_mul` (`d/ds ∫ e^{sf} = ∫ f e^{sf}`, from
+  `hasDerivAt_tiltNum` with `f := 1`), `integral_tilted_eq_div`, **`hasDerivAt_klDiv_tilted_toReal`** (`d/ds KL(ν_s‖ν) = s Var_s f`;
+  representation via `klDiv_tilted_eq` + `toReal_ofReal (integral_sub_log_nonneg)`, then `((hasDerivAt_id s₀).mul h1).sub
+  (h2.log hZpos.ne')`, `congr_of_eventuallyEq`, `congr_deriv`, `simp only [id_eq]; ring`); family: `familyMeasure_natCoord`
+  (`unfold familyMeasure; rw [priorZ_natCoord]; congr 1; funext; rw [affLoss_zero_jointStat_natCoord]; simp`), `natCoord_zero_eq`,
+  **`klDiv_familyMeasure_prior`** (`= ofReal (−relEntropy (natCoord t a))`, via the joint family's `klDiv_familyMeasure_zero` with
+  `(L₀ := 0) (R := jointStat) (t := 1)`; `unfold relEntropy famKL; rw [neg_neg]`), `familyMeasure_zero_temp`,
+  `familyMeasure_eq_tilted_prior` (from the joint `familyMeasure_eq_tilted`), **`hasDerivAt_relEntropy_temp_fixed`**
+  (`hasDerivAt_relEntropy_path` along `t ↦ natCoord t a` (derivative `natCoord 1 a` via `natCoord_eq_smul`); `unfold natForm;
+  rw [priorCov_natCoord]`, `dirLoss_jointStat_natCoord`, `priorCov_const_mul_left`), `relEntropy_natCoord_eq_neg_integral` (FTC
+  with `continuous_priorCov_temp`), **`klDiv_familyMeasure_prior_eq_integral`**, **`hasDerivAt_klDiv_familyMeasure_prior_toReal`**,
+  `rateFun_toReal_eq` (interior `M` at any `t > 0` via `range_meanMap_slice`), **`hasDerivAt_rateFun_temp_toReal`**
+  (`hasDerivAt_dualPotential_temp … hnd ht₀ hM` + `hasDerivAt_affLogZ_temp … 0 t₀`; `congr_of_eventuallyEq` on `Ioi_mem_nhds`),
+  `hasDerivAt_entropyProj_temp_toReal`.
