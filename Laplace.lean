@@ -234,6 +234,8 @@ import Laplace.Multi.MeanMapJacobian
 import Laplace.Multi.MeanMapChart
 import Laplace.Multi.MeanMapEmbedding
 import Laplace.Multi.StateDensity
+import Laplace.Multi.RenormalisedLength
+import Laplace.Multi.LogGammaTails
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
