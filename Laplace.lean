@@ -278,6 +278,7 @@ import Laplace.Multi.ConstrainedResponse
 import Laplace.Multi.FeaturelessPoint
 import Laplace.Multi.MultiConstrainedResponse
 import Laplace.Multi.SliceChart
+import Laplace.Multi.LossSurface
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
