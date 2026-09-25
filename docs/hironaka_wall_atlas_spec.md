@@ -1912,3 +1912,28 @@ certificates for concrete resolved charts beyond the identity chart.
   (`L₂ = x^{2k} + e^{-1/x²}`) only if `prop:flat` does not already export it. In "What remains"
   keep three claims separate: certificate existence, pointwise chart-independence of fibre
   evaluations, constructive recovery from specified coefficients.
+- `ZeroScaleCertificate.lean` (964befc; hironaka e511103e5): **the solved-coordinate phase regime**
+  (Astra round-16 item 1, the boundary `TermData`). Observation: the boundary example `F = a z₁`
+  on the `xy` chart has effective exponent `κ = k − Q·pExp/q = −1 < 0` on the unsolved coordinate
+  and `phaseExp = 1 − γ·pExp = 0` at `γ = 1`, and the dominant-scale theorem `tendsto_modelKernel`
+  applies verbatim at the scale `α = 0` (limiting domain = the whole box since `γ ≠ 0`, tied
+  phase since `κ·0 = 0 = δ`, profile `B a₀(u) ∏u^κ`, face map the UNRESCALED branch point — the
+  segment of the wall). Only the profile certificate was missing.
+  `integrable_box_rpow_mul_exp_neg_prod` (`1_{(0,ρ)^k} ∏u^r e^{-c∏u^κ}` integrable when every
+  `κ_j < 0` or (`κ_j = 0` and `r_j > −1`): choose `N` with `r_j − κ_j N > −1` via
+  `exists_nat_gt (∑ max 0 ((−1−r_j)/(−κ_j)))`, bound `e^{-cP} ≤ N!/(cP)^N` from
+  `Real.pow_div_factorial_le_exp _ hx N` (x explicit), `(cP)^N = c^N ∏ (u^κ)^N` by `mul_pow`,
+  `Finset.prod_pow`, `Real.rpow_mul`, `rpow_natCast`, then `integrable_box_prod_rpow'`),
+  `limitDomain_zero (hγ : γ ≠ 0)`, `integrable_envelope_of_zeroScale`,
+  `integrable_envelope_mul_profile_of_zeroScale` (the vertex proofs with the box in place of
+  `vertexDom`), `ProfileIntegrableOf.of_zeroScale (hσ) (hγ : γ ≠ 0) (hδ : phaseExp = 0) (hκ)`,
+  `TermData.zeroScale` (= `TermData.vertex` at `α := fun _ _ _ ↦ 0`, feasibility `⟨le_rfl, γ ≥ 0,
+  δ = 0⟩`; power `γ·pExp`, no log, measure `termMeasure … 0`). CAVEAT: the coordinatewise
+  condition is only sufficient; with mixed signs (`κ = (−1, 1)`) `u₁^{r₁}u₂^{r₂}e^{-cu₂/u₁}` needs
+  `r₁ + r₂ > −2` — the recession-cone criterion at `α = 0`, not formalised. Gotchas:
+  `limitDomain_zero hγ ▸ hu` leaves `Fintype ?ι` stuck — `rwa [limitDomain_zero (ρ := ρ) (D := D)
+  (q := q) (Q := Q) hγ] at hu`; `dsProfile_of_tied` wants `(a₀ := a₀) (B := B)` named when the
+  tied hypothesis is a `have`; `MeasurableSet.pi countable_univ` needs `[Finite ι]` (state the box
+  lemma with `omit [Fintype ι] in … [Finite ι]`). NEXT (Astra steps 2–4): a `Phase` record for
+  `mixData` with `F = a z₁`, the leading functional of `TermData.zeroScale` on it, and its
+  identification with `σ^q ∫_{2σ}^∞ u^{p−q−1} e^{-au} ψ(σ/u,0) du` (acceptance `σ^q e^{-2aσ}/a`).
