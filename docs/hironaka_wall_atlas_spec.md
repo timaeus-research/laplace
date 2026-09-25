@@ -2878,3 +2878,20 @@ certificates for concrete resolved charts beyond the identity chart.
   odd orders vanish by parity, `O(B⁻²)` needs the order-3 weight polynomial), (7) abstract moving-minimum theorem.
   Warnings: the joint kernel `N ⊋ {0}×K` unless `L₀ ∉ span{1,R}`; the `t > 0` mean image need NOT be convex (three-atom
   counterexample); the dual coordinate is `(⟨L₀⟩, M)`, not `(⟨L_a⟩, M)`; Bregman parameter order is reversed.
+- `RayCramer.lean` (NOT mirrored; Astra round 29 item 3): `rayInv ν := Function.invFunOn (lawMean ν) (Ioi 0)`,
+  `rayRate ν x := −x u(x) − F(u(x))`; section `(hint : ∀ v > 0, ∀ k ≤ 3, …)` with `hint2` (`omit hpos hZ hnd in`) for the `K = 2`
+  lemmas, `continuousOn_lawVar'`; `rayInv_lawMean` (`StrictAntiOn.injOn.leftInvOn_invFunOn`), `rayInv_pos`/`lawMean_rayInv`
+  (`Function.invFunOn_mem/_eq`; `omit hpos hint hZ hnd in`), **`isOpen_image_lawMean`** (`isOpen_iff_mem_nhds`; window
+  `Ioo (m(2u)) (m(u/2))` via `intermediate_value_Ioo'` on `Icc (u/2) (2u)`), `rayInv_antitoneOn` (contrapositive of strict
+  antitonicity; `absurd this (not_lt.2 hxy)`), **`continuousAt_rayInv`** (`continuousAt_of_monotoneOn_of_image_mem_nhds` applied
+  to `−u`, image ⊇ `Iio 0`; there is NO antitone variant; convert back with `ContinuousAt.congr` + `Eventually.of_forall … simp`,
+  since `simp only [neg_neg] at h` does not see through the Pi negation), **`hasDerivAt_rayInv`**
+  (`HasDerivAt.of_local_left_inverse`, `u' = (−Var)⁻¹`), `continuousOn_rayInv`, `rayRate_lawMean`, **`rayRate_lawMean_eq_lawKL`**
+  (`I(m(u)) = KL(P_u‖P_0) − F(0)`), **`rayRate_isMaxOn`** (Cramér sup attained at `u(x)`), **`hasDerivAt_rayRate`** (`I' = −u`;
+  the product/chain-rule derivative carries `(-id) x` — `simp only [Pi.neg_apply, id_eq]` before `ring`),
+  **`hasDerivAt_deriv_rayRate`** (`I'' = 1/Var_{u(x)}`, via `deriv` eventually equal to `−u` on the open image),
+  `rayRate_convexOn` (`MonotoneOn.convexOn_of_deriv` on the `OrdConnected` image, `.convex`, `IsOpen.interior_eq`),
+  **`lawLength_eq_integral_sqrt_curvature`** (`∫_{u₀}^{u₁} √Var = ∫_{m u₁}^{m u₀} √(1/Var(u(x))) dx`:
+  `intervalIntegral.integral_comp_mul_deriv'` with `f = m`, `f' = −Var`, `g = √(1/Var∘u)`; pass
+  `intervalIntegral.integral_symm (m u₀) (m u₁)` with explicit arguments or it rewrites the LEFT integral; pointwise
+  `√(V⁻¹)·V = √V` by `Real.sqrt_inv, mul_neg, inv_mul_eq_div, eq_div_iff, Real.mul_self_sqrt`).
