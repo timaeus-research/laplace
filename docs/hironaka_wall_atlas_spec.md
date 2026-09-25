@@ -3304,3 +3304,18 @@ certificates for concrete resolved charts beyond the identity chart.
   `integrable_mul_affWeight_of_bdd … (t := t) a (Bdd.const 1)` — the implicit `t` must be pinned or `simp` faces
   `?m = t ∨ …`), **`featCgf_familyMeasure`** (`Λ_{P_{t,a}}(θ) = A_t(a − θ/t) − A_t(a)`: `sub_eq_add_neg, ← neg_smul,
   affLoss_add_smul_eq`, `← Real.exp_add`, `field_simp; ring`, `Real.log_div`), **`halfspace_chernoff_family`**.
+- `HalfspaceProjection.lean` (NOT mirrored; Astra round 35 item 1) — NOTE `InformationProjection.lean` already exists
+  (KL Pythagorean theorem, imported by `DataQuotient`): writing a new file under that name creates a Lake build
+  cycle and clobbers the module; grep `Laplace/Multi/<Name>.lean` before creating a file. Content: `famKL μ π L₀ R t a b
+  := mixKL (affLoss a) (dirLoss (b − a)) t 0 1` (= `KL(P_a‖P_b)`), `famCgf … a θ := A_t(a − t⁻¹•θ) − A_t(a)`,
+  `famKL_eq` (Bregman, from `mixKL_aff_eq`), `famKL_nonneg` (`mixKL_eq_integral_mul_var … ht b a`, `segVar_nonneg`),
+  `famCgf_eq_featCgf`, `famCgf_smul` (hypothesis-free: `smul_smul, inv_mul_eq_div`), pure sum identities
+  `sum_sub_smul_mul`/`sum_sub_smul_sub_smul_mul`; with `a* = a − (λ/t)•u` and slackness
+  `hslack : λ (u·m(a*) − r) = 0`: **`famKL_proj_eq`** (`KL(a*‖a) = λr − Λ_a(λu)`; `mul_div_cancel₀` + `linarith`),
+  **`famKL_halfspace_decomp`** (`KL(b‖a) = KL(b‖a*) + λ(u·m(b) − r) + KL(a*‖a)`; `mixKL_three_point … b a a*` then
+  `change` to `famKL` form, `mul_sub, Finset.sum_sub_distrib`, `linarith`), **`famKL_proj_le`** (primal),
+  **`chernoff_rate_le_proj`** (dual: `famKL_nonneg a* c` with `c = a − (μ/t)•u`, `show t * (λ/t − μ/t) = λ − μ by
+  field_simp`, `nlinarith [h0, μ(u·m(a*) − r) ≥ 0, hslack]`), `isLeast_famKL_halfspace`, `isGreatest_chernoffRate`,
+  **`halfspace_chernoff_eq_projection`** (`P_a^{⊗n}(u·R̄_n ≥ r) ≤ exp(−n KL(a*‖a))`).
+  `DataReachability.reachableResponse_ne_range` (`[Nonempty ι]`, inside the `hnd` block): compact = range would be
+  clopen nonempty in `ι → ℝ` hence `univ`, contradicting `IsCompact.ne_univ` (`RealNormedSpace.noncompactSpace`).
