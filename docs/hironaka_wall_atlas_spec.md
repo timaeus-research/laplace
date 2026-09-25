@@ -2406,3 +2406,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `wall_window_length` (exact), `tendsto_sq_mul_profileVar` (Gamma tail) and
   `tendsto_integral_div_log_scaled` (Cesàro along the moving endpoint). The Cesàro lemmas now take
   `∀ a b, 0 ≤ a → 0 ≤ b → IntervalIntegrable …` (continuity only needed on `[0,∞)`).
+- `EntropyDuality.lean` (NOT mirrored; Astra round-23 item E): `priorExp_eq_integral_gibbsDensity`,
+  `priorExp_add_of_integrable`, **`meanMap_legendre`** (`F_t(a) − a·m(a) = ⟨L₀⟩_a + KL(P_a‖π)/t`, from
+  `gibbs_variational_eq`; the log-density term is `ρ·(−tL − log Z)` pointwise, bounded × integrable),
+  `mixExp_zero_eq_dot`, **`affFreeEnergy_le_tangent`** (`F(b) ≤ F(a) + (b−a)·m(a)`: FTC on `mixLogZ` along
+  the line + `mixExp_antitone`), **`affFreeEnergy_sub_dot_le`** (Legendre sup attained at `a`),
+  **`mixKL_aff_eq`** (KL = Bregman divergence of `log Z`, multivariate). Gotchas:
+  `Continuous.intervalIntegrable` needs `(μ := volume)` when the measure is otherwise undetermined;
+  `Integrable.congr` goals carry beta-redexes — `beta_reduce` before `by_cases`/`rw`.
