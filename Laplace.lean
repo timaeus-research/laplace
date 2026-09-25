@@ -250,6 +250,7 @@ import Laplace.Multi.RelativeChartFamily
 import Laplace.Multi.ToyCrossoverResponse
 import Laplace.Multi.PatternAttenuation
 import Laplace.Multi.MixtureRigidity
+import Laplace.Multi.CoupledPhaseDiagram
 import Laplace.Multi.WallCrossover
 import Laplace.Multi.WallResponse
 import Laplace.Multi.TwoChartCompetition

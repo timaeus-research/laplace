@@ -2111,3 +2111,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `PotentialJetApprox (affLoss L₀ R a) (matCLM P)` and `ObservableJetApprox (dirLoss R ·) g`: the
   response metric grows linearly in `t` with limiting shape the pull-back of the inverse Hessian
   under the Jacobian of `q ↦ L_q` at the minimiser.
+- `CoupledPhaseDiagram.lean` (NOT mirrored): **a phase diagram over the data manifold** — the
+  coupled limit `s = t^{-σ}` of the mixture `w⁴ + s w²` (`w⁴` → `w⁴ + w²`, common minimiser).
+  `quartZ t s = ∫ e^{-t(w⁴ + s w²)}`, `quartProfile c = ∫ e^{-(y⁴ + c y²)}`,
+  `gaussProfile c = ∫ e^{-(y² + c y⁴)}`, `coupledExponent σ = max (1/4) ((1−σ)/2)`,
+  `coupledConstant σ` (= `√π` for `σ < 1/2`, `quartProfile 1` at the tie, `quartProfile 0` beyond);
+  scalings `quartZ_eq_quartProfile` (`Z = t^{-1/4} quartProfile (t^{1/2} s)`) and
+  `quartZ_eq_gaussProfile` (`Z(t, t^{-σ}) = t^{-(1−σ)/2} gaussProfile (t^{2σ−1})`) by
+  `Measure.integral_comp_mul_left`; DCT continuity `tendsto_quartProfile` / `tendsto_gaussProfile`
+  (bounds `e^{-y⁴}`, `e^{-y²}`; `integrable_exp_neg_quartic` from the Gaussian via
+  `y⁴ ≥ y² − 1/4`); regimes `coupled_quartic_regime`, `coupled_gaussian_regime`, `coupled_tie`;
+  **`coupled_phase_diagram`**: `t^{λ(σ)} Z(t, t^{-σ}) → C(σ)`. The exponent is continuous
+  piecewise affine with a slope change at the tie `σ = 1/2`; the constant jumps there; the
+  crossover variable is `s t^{1/2}` (Astra round 18: ties change slopes, not values).
+  Gotcha: after `norm_num` an exponent `1/2 − σ` may come back as `1/2 + −σ`; close with
+  `rw [sub_eq_add_neg]`. `linear_combination (s * w²) * hh` closes the substitution identities
+  once the rpow powers are rewritten by `h4`, `h2`.
