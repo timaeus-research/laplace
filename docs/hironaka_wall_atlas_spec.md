@@ -1590,3 +1590,20 @@ certificates for concrete resolved charts beyond the identity chart.
   push-forward identity `lintegral_mul_comp_truth` of the record is the replacement. Not done: a
   Phase-like record for general truths on the laplace side (the `_phase` conjunct is the raw
   material), and a mixed instance produced through this export rather than by hand (`mixData`).
+- `ActiveTruthDistinguish.lean` (cd8f38c; hironaka 76a2c5699): **support-separated
+  distinguishability** (Astra round-12 item 7). `normalise_restrict_ne_of_separated` (measurable `O`
+  with `0 < μ₁ (O ∩ L')`, `μ₂ (O ∩ L') = 0`, `μ₁ L' ≠ ⊤` ⇒ the normalised restrictions to `L'`
+  differ; evaluate both at `O`), `exists_observable_of_separated` (two certified phases whose
+  leading measures are so separated: some continuous nonnegative bounded `ψ` supported in `L'` has
+  `fibreRatio₁ ψ χ − fibreRatio₂ ψ χ ↛ 0`; contrapositive of `normalise_restrict_eq_iff_forall_tendsto`),
+  `le_leadingMeasure_of_leading` (`C.μ p s ≤ C.leadingMeasure s` for a leading term `p`;
+  `Measure.finsetSum_apply` + `Finset.single_le_sum`), `continuous_truthSegment`,
+  `activeTruthMeasure_apply` (`= ∫⁻ u in segment⁻¹' O, ofReal(dens)`), **`activeTruthMeasure_pos_of_open`**
+  (an open `O` containing a truth-segment point `rep(bridgePt 0 u₀)` of positive weight `wt|b|`,
+  positive face polytope: `0 < activeTruthMeasure O`; `setLIntegral_pos_iff` and the open set
+  `{wt|b| > 0} ∩ (0,ρ) ∩ segment⁻¹' O`), `activeTruthMeasure_eq_zero_of_disjoint` (segment misses
+  `O` ⇒ mass `0`), **`exists_observable_of_activeTruth_separated`**: a leading term of `C₁` whose
+  measure is an active-truth measure with a positive-weight segment point in an open `O ⊆ L'` with
+  `C₂.leadingMeasure O = 0` gives the distinguishing observable. Astra's caveat (round 11) is built
+  in: distinguishability needs the explicit support separation (`rep` may identify images, weights
+  may create coincidences); nothing is claimed for different faces per se.
