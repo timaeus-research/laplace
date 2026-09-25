@@ -323,6 +323,7 @@ import Laplace.Multi.TemperatureCompatibility
 import Laplace.Multi.RateFunction
 import Laplace.Multi.CramerTheorem
 import Laplace.Multi.ExposedFace
+import Laplace.Multi.NullFace
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

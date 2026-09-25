@@ -3639,3 +3639,10 @@ certificates for concrete resolved charts beyond the identity chart.
   `q + λu`; `ENNReal.add_iSup`, case split `le_or_gt` with `ENNReal.ofReal_add` / `ENNReal.ofReal_of_nonpos`),
   **`genRate_face_eq`**, **`rateFun_face_eq`** (`𝓘(M) = −log p_F + 𝓘_F(M)` for the response family; a.e. bound transported
   by `withDensity_absolutelyContinuous`).
+- `NullFace.lean` (NOT mirrored; round-41 F1/F2): `integrable_of_bdd_prob`, `dotJ_integral_eq` (`q·E R = E(q·R)`),
+  **`genRate_mean_eq_zero`** (Jensen: `convexOn_exp.map_integral_le` needs `ContinuousOn`, `isClosed_univ`, a.e. membership,
+  and integrability of `f` and `exp ∘ f`; close `ofReal … ≤ 0` by `nonpos_iff_eq_zero, ENNReal.ofReal_eq_zero`; `zero_le`
+  takes NO explicit argument), `dotJ_condMean` (`u·M_F = β`), **`genRate_condMean`** (`𝓘(M_F) = −log p_F`),
+  **`genRate_eq_top_of_null_face`** (`Z_λ = E e^{λ(u·R − β)} → 0` by DCT with bound `1`; `∀ᵐ x, u·R ≠ β` from `ae_iff` on the
+  null face; score at `λu` is `−log Z_λ`; `ENNReal.eq_top_of_forall_nnreal_le` with `λ` from
+  `(hZlim.eventually (gt_mem_nhds (exp_pos (−r)))).exists`).
