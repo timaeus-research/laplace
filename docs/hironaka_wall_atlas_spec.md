@@ -2604,3 +2604,17 @@ certificates for concrete resolved charts beyond the identity chart.
   (moment matching), the two KL integrands integrable ⇒ `relEnt μ q (gibbsDensity … b) = relEnt μ q (gibbsDensity … a) +
   mixKL … a (dirLoss R (b−a)) t 0 1` (= `KL(P_a‖P_b)` by `mixKL_aff_eq`). Pointwise identity by cases on `q x = 0`;
   `gibbsDensity_pos hπ' hZ (hx : π x ≠ 0)` takes the point implicitly. Response coordinates = dual affine coordinates.
+- `AngularBound.lean` (NOT mirrored; Astra round 26 Theorem A, the inequality): `integral_mul_sq_le` (Cauchy–Schwarz for
+  integrals by `discrim_le_zero`; qualify `MeasureTheory.integral_mul_const/const_mul` under `open intervalIntegral`),
+  `affinityExp ν s u := exp(F(m) − (F s + F u)/2)` (= `lawAffinity`, `affinityExp_eq`; `_pos`, `_self = 1`),
+  `affinityExp_lt_one` (`s < u`, non-degenerate `lawVar > 0` ⇒ `ρ < 1`, from the Jensen-gap identity and
+  `intervalIntegral_pos_of_pos_on`; `Real.exp_lt_one` does not exist — `rw [← Real.exp_zero, Real.exp_lt_exp]`),
+  **`hasDerivAt_affinityExp`** (`ρ' = (ρ/2)(⟨ℓ⟩_u − ⟨ℓ⟩_m)` via `HasDerivAt.exp` of the Jensen gap; `simp only
+  [Function.comp_apply, Pi.sub_apply, Pi.add_apply]` before `ring`), **`affinity_cauchy_schwarz`** (moment form
+  `Z(m)²(⟨ℓ⟩_m − ⟨ℓ⟩_u)² ≤ Z_u Var_u (Z_s − Z_m²/Z_u)`, with `f = (ℓ−a)e^{-uℓ/2}`, `g = e^{-sℓ/2} − c e^{-uℓ/2}`; all
+  integrability facts lambda-typed, and the integral values converted to `lawMoment` atoms by `rfl` BEFORE `field_simp`
+  — never `simp only [lawMoment]` there), `affinityExp_sq`, `hasDerivAt_arccos_affinityExp` (`θ' ≤ ½√Var`; `change`
+  not `show` for goal rewriting), **`two_arccos_affinityExp_le`** (`monotoneOn_of_deriv_nonneg` on
+  `Φ = ½∫_s^v √Var − arccos ρ`, `interior_Icc`, `integral_hasDerivAt_right` with
+  `ContinuousOn.stronglyMeasurableAtFilter isOpen_Ioi`). THE LENGTH–DISTANCE THEOREM: `2 arccos ρ(s,t) ≤ ∫_s^t √Var`,
+  with `2 arccos ρ(0,t) → π` (Affinity) and `∫ √Var ~ √λ log t`.
