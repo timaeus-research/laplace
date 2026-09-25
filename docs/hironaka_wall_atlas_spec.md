@@ -2599,3 +2599,8 @@ certificates for concrete resolved charts beyond the identity chart.
   final `ring`), `hasDerivAt_sqrt_lawDensity` (`HasDerivAt.sqrt` then `div_eq_iff` + `linear_combination (ℓ − m) * hsq`),
   `integral_sq_sqrt_speed` (`= Var/4`). Under `open intervalIntegral`, `integral_neg`/`integral_const_mul` are ambiguous:
   write `MeasureTheory.`/`intervalIntegral.` explicitly.
+- `InformationProjection.lean` (NOT mirrored; Astra round 26 Theorem B): `log_gibbsDensity_sub` (`log p_a − log p_b =
+  t R_{b−a} + A(b) − A(a)`, needs `π > 0` pointwise), **`relEnt_pythagoras`**: `q ≥ 0`, `∫ q = 1`, `E_q[R] = m(a)`
+  (moment matching), the two KL integrands integrable ⇒ `relEnt μ q (gibbsDensity … b) = relEnt μ q (gibbsDensity … a) +
+  mixKL … a (dirLoss R (b−a)) t 0 1` (= `KL(P_a‖P_b)` by `mixKL_aff_eq`). Pointwise identity by cases on `q x = 0`;
+  `gibbsDensity_pos hπ' hZ (hx : π x ≠ 0)` takes the point implicitly. Response coordinates = dual affine coordinates.
