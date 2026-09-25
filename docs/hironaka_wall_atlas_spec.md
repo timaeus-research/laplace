@@ -3076,3 +3076,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `dualPotential_prior_le/lt`, **`dualPotential_isMinOn_prior`** (the prior's response is the unique minimiser of `I` on
   `range m`), `eq_zero_of_dualPotential_eq_prior`, `dualPotential_add_affLogZ_zero_nonneg` (`I(y) + A(0) ≥ 0` on the range).
   Section hypotheses use strict `hπ : ∀ x, 0 < π x` (SegmentDivergence) and pass `fun x ↦ (hπ x).le` to the DualPotential API.
+- `MultiConstrainedResponse.lean` (NOT mirrored; Astra round 32 item 1, algebraic engine): `Bdd.sub`,
+  `priorCov_dirLoss_add_left/right`, **`priorCov_dirLoss_sum_smul_left/right`** (`Cov(R_{∑ cₖ wₖ}, ψ) = ∑ cₖ Cov(R_{wₖ}, ψ)`;
+  proof: rewrite every `Cov(R_{wₖ}, ψ)` by `(sum_mul_priorCov_eq …).symm` under the binder with `simp only [e]`, then `←
+  sum_mul_priorCov_eq` on the left, `Finset.sum_apply/Pi.smul_apply/sum_mul/mul_sum`, `Finset.sum_comm`, termwise `ring`),
+  `priorCov_sub_left/right` for bounded observables (from the definition with `integral_sub` on typed lambda integrability
+  facts; `simp only [priorCov, priorExp]` unfolds AND beta-reduces so the `e1/e2` rewrites match), `covMat` (`Matrix.of`),
+  `covVec`, `dotProduct_covMat_mulVec` (`uᵀCu = Var R_{∑ uₖwₖ}`), **`residual_var`** (`Cb = c ⇒ Var(φ − ∑ bₖR_{wₖ}) = Var φ − ∑
+  bₖ Cov(R_{wₖ}, φ)`; the key step `Cov(R_{wₖ}, R_{∑ bₗ wₗ}) = (Cb)ₖ = cₖ` by `congrFun hb k` + `simp only [Matrix.mulVec,
+  dotProduct, covMat, Matrix.of_apply, covVec] at this`), `residual_var_nonneg`, `residual_var_eq_zero_iff`
+  (`ae_eq_const_of_priorCov_self_eq_zero`; the base integrability `h0` needs `(t := t)` pinned or `simp` faces `?t`),
+  **`covMat_mulVec_injective`** (`hnd` + `LinearIndependent ℝ w`; `Fintype.linearIndependent_iff`),
+  **`multi_constrained_response_deriv`** (`d/ds⟨φ⟩ = −t(Cov(φ,R_v) − ∑ bₖ Cov(φ,R_{wₖ}))` along
+  `a₀ + s v + ∑ βₖ(s) wₖ` with all `⟨R_{wₖ}⟩` constant, `Cb = c`, `C` injective; the constraint derivatives vanish
+  (`HasDerivAt.unique`), giving `Cβ' = −c`, so `β' = −b` by injectivity; the path derivative of `∑ βₖ(s) • wₖ` is
+  `HasDerivAt.fun_sum`), `multi_constrained_response_deriv_self` (`= −t Var(residual)`).
+  The `integrable_mul_affWeight_of_bdd` lemma needs `[Nonempty X]` — do not `omit` it on lemmas that use it.
