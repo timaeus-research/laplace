@@ -2341,3 +2341,12 @@ certificates for concrete resolved charts beyond the identity chart.
   (`∫_{c₀t^{-σ*}}^{c₁t^{-σ*}} √g_t da = ∫_{c₀}^{c₁} √Var_c(y^q) dc`, exact for every `t`; substitution via
   `intervalIntegral.integral_comp_mul_right`). Gotcha: an unapplied `twoMonoVel q a` inside `priorExp`
   is not unfolded by `simp only [twoMonoVel]` — `rw [show twoMonoVel q a = fun w ↦ w^q from rfl]`.
+- `SqrtIntegralConvergence.lean` (NOT mirrored; round-22 item 4): `sqrt_sub_min_le` (`√y − min(√y,M) ≤ y/M`),
+  `sqrt_le_one_add`, `integrable_sqrt_of_integrable`, **`tendsto_integral_sqrt_of_mass_bound`** (finite
+  measure, countably generated filter, eventual hypotheses `Integrable`, `≥ 0`, `∫ ≤ C`; a.e. limit `f`
+  with `∫ f ≤ C` ⇒ `∫√F_n → ∫√f`; truncation at `M = 4(|C|+1)/ε` + dominated convergence, no Vitali),
+  **`thermoLength_div_sqrt_tendsto`** (bounded contrast, `t Var_{t,s}(Δ) → κ(s)` a.e. on `(0,1]` with
+  `κ` integrable, `∫κ ≤ 2M` ⇒ `ℓ(t)/√t → ∫₀¹ √κ`; mass bound from `integrated_susceptibility`).
+  Gotchas: `IsFiniteMeasure (volume.restrict (Ioc 0 1))` via `isFiniteMeasure_restrict.mpr
+  measure_Ioc_lt_top.ne` (use `have`, not `haveI`); Bochner `integral_mono` is a `lemma` taking
+  `(hf) (hg) (h : f ≤ g)`; `div_div_eq_mul_div : a/(b/c) = a*c/b`.
