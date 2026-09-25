@@ -334,6 +334,7 @@ import Laplace.Multi.WallLogTermParam
 import Laplace.Multi.PartialTiedParam
 import Laplace.Multi.TermMeasureCertificate
 import Laplace.Multi.MixedTruthWeighted
+import Laplace.Multi.MixedTruthWeightedNeg
 import Laplace.Multi.TermData
 import Laplace.Multi.ExpectationValuesKnow
 import Laplace.Multi.DegenerateFace
