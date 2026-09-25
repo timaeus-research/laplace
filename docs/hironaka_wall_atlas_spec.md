@@ -1314,3 +1314,21 @@ certificates for concrete resolved charts beyond the identity chart.
   type ascribed (`: Measurable fun x : Fin k → ℝ ↦ L • x`); `mul_lt_mul_left` over `ℝ` asks for
   `MulRightStrictMono` — go through `lt_div_iff₀`; `Tendsto.atTop_mul_const_of_neg` (not
   `atTop_mul_neg_const`); a `Function.comp` redex left by `Tendsto.comp` needs a final `rfl`.
+- `ActiveTruthGeneral.lean` (3aefca6; hironaka 61a948d82): **the face theorem with general units**
+  (Astra round 9 item 3, trace replacement). `modelIntegrand_general_negExp`, `logIntegrandG`,
+  `lintegral_modelIntegrand_general`, `innerKvG` (the amplitude at the reconstructed chart point
+  `ρe^{-z(z')}` and truth coordinate `u(h)`), `fibreLift_mulVec_add` (`fibreLift (My + shift) z' =
+  Sum.elim z' y`), `measurable_innerKvG_uncurry`, `lintegral_inner_substG`,
+  `lintegral_innerKvG_swap` (Tonelli without factoring), `lintegral_innerKvG_eq` (the transverse
+  weight times the fibre integral of the amplitude), `ampG` with `ampG_nonneg_le`/`ampG_le`/
+  `measurable_ampG`/`ampG_tendsto`, `innerKvG_eq_mul`, `tendsto_lintegral_innerKvG` (DCT in `v`
+  with `tendsto_lintegral_fibre_weighted` inside, bound `W_*` × the constant-unit bound at
+  `c₀ a_-`), `tendsto_modelKernel_general`: for jointly measurable `W(x,u)`, `a(x,u)`,
+  `0 ≤ W ≤ W_*`, `a ≥ a_- > 0`, traces `W_tr, a_tr` (measurable, same bounds on `(0,ρ)`) as
+  `x → 0` inside the box for each `u ∈ (0,ρ)`:
+  `t^{γp+βδ−ηγ}/(log t)^k · K(t) → A Γ(β) B^{-β} q D^{-qη} vol(F')/|det M| ∫_0^ρ u^{qη−1} W_tr a_tr^{-β}`.
+  The `x`-dependence of the units is handled at fixed `v` by the weighted fibre limit; the
+  `u`-dependence exactly as in the trace model. Gotcha: the DCT function is best written as
+  `(∫⁻ z', innerKvG … z' v)/ofReal(L^k)` (measurable via `Measurable.lintegral_prod_right'` of
+  the uncurried integrand composed with `measurable_swap`) and unfolded pointwise with
+  `lintegral_innerKvG_eq`.
