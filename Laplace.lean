@@ -540,3 +540,4 @@ import Laplace.Multi.GrowingWindow
 import Laplace.Multi.FullLawUpper
 import Laplace.Multi.FullLawResolvent
 import Laplace.Multi.FullLawScaled
+import Laplace.Multi.ActiveTruthDistinguish
