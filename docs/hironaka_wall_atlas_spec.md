@@ -2750,3 +2750,34 @@ certificates for concrete resolved charts beyond the identity chart.
   `Cov(R_i, R_v) = Cov(R_v, R_i)`; `Continuous.clm_apply`; `Continuous.intervalIntegrable (μ := volume) 0 1` — the bare
   `_ _` leaves `IsLocallyFiniteMeasure ?μ` stuck; state the FTC identity with the beta-reduced endpoints as a typed
   `have … := hftc` before `rw`, since `set F := fun s ↦ …` does not fold `F 1`).
+- `LogPowGammaTails.lean` (NOT mirrored): `logPowGammaTrunc j r u := ∫₀ᵘ s^j e^{-s} (log s)^r`, `logPowGammaFull j r`,
+  `log_le_rpow_div' (hy : 1 ≤ y) (ha : 0 < a) : log y ≤ y^a/a`, `abs_log_pow_le_rpow (hr : 1 ≤ r) : |log s|^r ≤ (2r)^r
+  s^{-1/2}` on `(0,1]` (via `log s⁻¹ ≤ (s⁻¹)^{1/(2r)}·2r`, `Real.inv_rpow`, `← Real.rpow_natCast`, `← Real.rpow_mul`),
+  `integrableOn_pow_mul_exp_neg_mul_log_pow_Ioc/Ioi` (dominate by `(2r)^r s^{-1/2}` near 0 — `intervalIntegrable_rpow'`
+  — and by `s^{j+r}e^{-s}` beyond 1 via `log s ≤ s`), `intervalIntegrable_log_pow'` (all intervals, through
+  `intervalIntegrable_of_even (fun x ↦ by simp [Real.log_neg_eq_log])` and the majorant `(2r)^r s^{-1/2} + x^r` on
+  `Ioc 0 x`; `integrableOn_const measure_Ioc_lt_top.ne`), `intervalIntegrable_pow_mul_exp_neg_mul_log_pow`
+  (`.continuousOn_mul`), **`logPowGammaTail_abs_le`** (`≤ (j+r+2)!/u²` from `gammaTail_le (j+r)`),
+  `logPowGammaTrunc_eq`, **`abs_logPowGammaTrunc_sub_le`**, `logPowGammaFull_zero (= j!)`, `logPowGammaFull_one (=
+  logGammaFull j)`, `continuous_logPowGammaTrunc`. Gotcha: a `(by fun_prop : Measurable …)` followed by
+  `.aestronglyMeasurable` on the NEXT line parses as a separate term — write `Measurable.aestronglyMeasurable (by fun_prop …)`.
+- `MultiplicityModelK.lean` (NOT mirrored; Astra round 27 item 4): `logModelMomentK k j u := ∫₀¹ ℓ^j e^{-uℓ} |log ℓ|^k`,
+  `logModelJK k j u := ∑_{r ≤ k} C(k,r)(−1)^r (log u)^{k−r} Λ_{j,r}(u)`, **`logModelMomentK_eq`** (`N = u^{-(j+1)} J`;
+  substitution `s = uℓ`, `|log ℓ|^k = (log u − log s)^k`, binomial `add_pow` after `sub_eq_add_neg, add_comm`, then
+  `neg_pow` and `intervalIntegral.integral_finsetSum`), `priorZ_logModelK`, `priorExp_logModelK_one/two`,
+  `logModelK_sq_mul_var` (`u²Var = J₂/J₀ − (J₁/J₀)²`), `logModelJK_div_pow` (`A_j = ∑ C(k,r)(−1)^r Λ_{j,r} τ^r`, `τ = 1/log u`;
+  `x^k = x^{k−r} x^r` by `← pow_add, Nat.sub_add_cancel`), `logModelJK_div_pow'` (extended to `range (k+2)` by
+  `Nat.choose_succ_self`), **`abs_sum_sub_linear_le`** (a polynomial in `τ ∈ [0,1]` minus its linear part is `≤ (∑|g_r|)τ²`;
+  two `Finset.sum_range_succ'` peelings), `ratioConst`, **`ratio_expansion`** (`A/B = a₀/b₀ + ((a₁b₀ − a₀b₁)/b₀²)τ +
+  O(τ²)` for `B ≥ b₀/2`; `obtain ⟨eA, rfl⟩ : ∃ e, A = a₀ + a₁τ + e`, the key identity by `eq_div_iff` + `field_simp` with
+  BOTH spellings `b₀ + b₁*τ + eB ≠ 0` and `b₀ + τ*b₁ + eB ≠ 0` in context, then `abs_sub` chains and `div_le_div₀`),
+  `sqConst`, **`sq_expansion`**, `logModelD`, **`logModelA_expansion`** (`|A_j − (j! − k M_{j,1} τ)| ≤ D_{j,k} τ²`; the
+  instantiated `abs_sum_sub_linear_le` is already beta-reduced, so rewrite `↑(k.choose 0) * (-1)^0 * Λ₀` and
+  `↑(k.choose 1) * (-1)^1 * Λ₁` with explicit equations, not the lambda forms), `logModelKT` (threshold),
+  `logModelKC`, **`logModelK_var_bound`** (`log u ≥ 4·KT` ⇒ `x^k/2 ≤ J₀ ∧ |u²Var − (1 − k/log u)| ≤ KC/log² u`; the three
+  expansions with common constant `D`, `A₀ ≥ ½`, two `ratio_expansion`s with `b₀ = 1`, `sq_expansion`, and the
+  identity `(2 − 3kτ) − (1 − 2kτ) = 1 − kτ`), `logModelKC_nonneg` (from the bound at one admissible `u`),
+  `logModelKS`, **`logModelK_speed_bound`** (`abs_of_nonneg (by positivity : (0:ℝ) ≤ …)` — a bare `by positivity`
+  inside `rw` runs on a metavariable), `continuousOn_logModelJK` (`continuousOn_finsetSum`; `continuousOn_finset_sum`
+  is deprecated), **`logModelK_length_renormalised`**: `∃ u₀ > 1, ∃ K, ∫_{u₀}^t √Var_u − (log t − (k/2) log log t) → K`.
+  Numerics: residual × log²u ∈ [−0.8, 0.6] for k = 1,2,3 up to u = 10¹².
