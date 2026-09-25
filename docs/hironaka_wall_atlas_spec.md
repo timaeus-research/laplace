@@ -2798,3 +2798,13 @@ certificates for concrete resolved charts beyond the identity chart.
   `lawAffinity_twoAtom_eq_cos` (`Real.cos_sub`), **`twoAtom_length_eq_two_arccos`** (`Real.arccos_cos` with
   `0 ≤ θ_t − θ_s ≤ π` from `Real.monotone_arcsin` and the range lemmas), `twoAtom_two_arccos_affinityExp_eq` (equality case
   of `two_arccos_affinityExp_le`).
+- `WallPhaseDiagram.lean` (NOT mirrored; Astra round 28 §1.3 synthesis): **`tendsto_intervalIntegral_dilation`** (`c h(c) → L`,
+  `h` continuous on `(0,∞)` ⇒ `∫_{aT}^{bT} h → L log(b/a)`; substitution `integral_comp_mul_left (f := h)`, then
+  `intervalIntegral.tendsto_integral_filter_of_dominated_convergence` with the constant bound `(|L|+1)/a` on
+  `Ι a b = uIoc a b` (`uIoc_of_le`, `ContinuousOn.aestronglyMeasurable _ measurableSet_uIoc`), and `integral_inv_of_pos`
+  — do NOT `simp_rw [div_eq_mul_inv]` on the goal, it also rewrites `log (b/a)`; use a `funext` equation),
+  `continuous_sqrt_fisherSpeed_twoMono` (via the identity `√g_t(a) = t^σ √Var(a t^σ)` of `wall_window_length`'s proof),
+  **`wall_phase_positive`** (`0 < a ≤ b`: `ℓ_t(a,b) → √(1/q) log(b/a)`), **`wall_phase_wall`** (`wall_recedes` at `c₀ = 0`,
+  `simpa only [zero_mul]`), **`wall_phase_negative`** (`a < 0 < b`: `ℓ_t(a,b)/√t → K₋(−a)`; split at `0` with
+  `integral_add_adjacent_intervals`, `log t/√t → 0` from `isLittleO_log_rpow_atTop (1/2)` + `Real.sqrt_eq_rpow`),
+  **`tendsto_ray_length_dilation`** (`∫_{cu}^{du} √Var_v → √λ log(d/c)`; `continuousOn_lawVar` needs `K ≥ 3`).
