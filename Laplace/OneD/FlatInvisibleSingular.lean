@@ -236,8 +236,9 @@ theorem singular_flat_perturbation_superpolynomial {k : ℕ} {L₁ f φ : ℝ �
       exact tendsto_inv_atTop_zero
   exact h1.trans_isLittleO h2
 
-/-- **The singular witness.** For every `k` (`k ≥ 1` for a singular minimum), the losses `x^{2k}` and `x^{2k} + e^{-1/x²}`
-have the same singular minimum of order `2k` at `0`, different germs, and unnormalised Laplace
+/-- **The singular witness.** For every `k` (`k ≥ 1` for a singular minimum), the losses
+`x^{2k}` and `x^{2k} + e^{-1/x²}` have the same minimum of order `2k` at `0`, different germs,
+and unnormalised Laplace
 families that agree beyond all orders against every continuous compactly supported observable. -/
 theorem singular_flat_witness_superpolynomial (k : ℕ) {φ : ℝ → ℝ}
     (hφ_c : Continuous φ) (hφ_s : HasCompactSupport φ) :
