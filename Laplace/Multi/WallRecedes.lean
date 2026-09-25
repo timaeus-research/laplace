@@ -105,4 +105,26 @@ theorem wall_recedes {p q : ℝ} (hp : 0 < p) (hq : 0 < q) (hqp : q < p) {a₁ :
   rw [e] at hw
   rw [hw]
 
+/-- **The recession coefficient is the geometric mean of the chamber width and the exponent
+drop**: `σ* √(1/q) = √(σ* (λ₊ − λ_wall))` with `λ₊ = 1/q` (the exponent in the `q`-chamber) and
+`λ_wall = 1/p` (the exponent at the wall), since `σ* λ₊ = λ₊ − λ_wall` (Astra's LP consistency
+relation, round 23). -/
+theorem recession_coefficient_eq {p q : ℝ} (hp : 0 < p) (hq : 0 < q) (hqp : q < p) :
+    (1 - q / p) * Real.sqrt (1 / q) = Real.sqrt ((1 - q / p) * (1 / q - 1 / p)) := by
+  have hσ : 0 < 1 - q / p := by
+    rw [sub_pos, div_lt_one hp]
+    exact hqp
+  have e : (1 - q / p) * (1 / q - 1 / p) = (1 - q / p) ^ 2 * (1 / q) := by
+    field_simp
+  rw [e, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq hσ.le]
+
+/-- The receding-wall law in exponent form: `ℓ_t / log t → √(σ* (λ₊ − λ_wall))`. -/
+theorem wall_recedes_exponent_form {p q : ℝ} (hp : 0 < p) (hq : 0 < q) (hqp : q < p) {a₁ : ℝ}
+    (ha₁ : 0 < a₁) {c₀ : ℝ} (hc₀ : 0 ≤ c₀) :
+    Tendsto (fun t ↦ (∫ a in (c₀ * t ^ (-(1 - q / p)))..a₁, Real.sqrt (fisherSpeed
+      (volume.restrict (Ioi 0)) (fun _ ↦ 1) (twoMonoPath p q) (twoMonoVel q) t a)) / Real.log t)
+      atTop (𝓝 (Real.sqrt ((1 - q / p) * (1 / q - 1 / p)))) := by
+  rw [← recession_coefficient_eq hp hq hqp]
+  exact wall_recedes hp hq hqp ha₁ hc₀
+
 end Laplace.Multi

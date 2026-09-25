@@ -2423,3 +2423,5 @@ certificates for concrete resolved charts beyond the identity chart.
   `σ*√λ = 1/2`). Gotchas: `integral_gaussian t` is stated with `-t * x^2` (`simp only [neg_mul] at`);
   bare numerals in a real exponent `t ^ (-(1 - 2/4))` elaborate as ℕ (`Neg ℕ` error) — annotate `(2:ℝ)`;
   rewrite the product observable `fun x ↦ V a x * V a x` BEFORE the linear one.
+- `WallRecedes.lean` addendum: `recession_coefficient_eq` (`σ*√(1/q) = √(σ*(λ₊ − λ_wall))`, `λ₊ = 1/q`,
+  `λ_wall = 1/p`), `wall_recedes_exponent_form` (Astra's LP consistency relation `σκ = λ₊ − λ_wall`).
