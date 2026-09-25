@@ -2588,3 +2588,14 @@ certificates for concrete resolved charts beyond the identity chart.
   `c = 1/2`; `Real.inv_rpow`, `Real.rpow_neg`; `simp only [div_pow]` BEFORE `Real.sq_sqrt`), `tendsto_lawAffinity_zero`,
   **`tendsto_fisherRao_pi`** (`2 arccos ρ(0,t) → π`). Gotcha: `gt_mem_nhds (h : a < b) : ∀ᶠ x in 𝓝 a, x < b`
   (`lt_mem_nhds` is the other side).
+- `RadialCurvature.lean` (NOT mirrored; Astra round 26 Theorem A, curvature): **`hasDerivAt_lawMoment`** (`N_k' =
+  −N_{k+1}` on `(0,∞)` via `hasDerivAt_integral_of_dominated_loc_of_deriv_le` on `s = Ioi (u/2)` with bound
+  `ℓ^{k+1} e^{-(u/2)ℓ}`; the pointwise derivative MUST be built from a lambda-typed `have hneg : HasDerivAt (fun x ↦
+  -(x*ℓ)) (-ℓ) v := (hasDerivAt_mul_const ℓ).neg` — the bare `.neg.exp` carries a Pi-negation `(-fun x ↦ …) v` that
+  `ring` cannot see through), `hasDerivAt_lawLogZ` (`F' = −⟨ℓ⟩`), `hasDerivAt_lawMean` (`⟨ℓ⟩' = −Var`),
+  `continuousOn_lawVar`, **`bhattacharyya_eq_integral_var`** (`(F s + F t)/2 − F m = ½(∫_s^m (u−s)Var + ∫_m^t (t−u)Var)`
+  by `intervalIntegral.integral_mul_deriv_eq_deriv_mul` — QUALIFY it, the root `integral_mul_deriv_eq_deriv_mul` has
+  `tsupport` hypotheses — with `u = x − s`/`t − x`, `v = mean`, and the FTC for `F`; `set m` then `rw [hm]` before the
+  final `ring`), `hasDerivAt_sqrt_lawDensity` (`HasDerivAt.sqrt` then `div_eq_iff` + `linear_combination (ℓ − m) * hsq`),
+  `integral_sq_sqrt_speed` (`= Var/4`). Under `open intervalIntegral`, `integral_neg`/`integral_const_mul` are ambiguous:
+  write `MeasureTheory.`/`intervalIntegral.` explicitly.
