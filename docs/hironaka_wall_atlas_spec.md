@@ -3277,3 +3277,14 @@ certificates for concrete resolved charts beyond the identity chart.
   |>.clm_apply continuous_const`; `continuous_finsetSum`), **`natKL_path_eq_integral`** (FTC; `KL(η 0‖η 0) = 0` by `natKL_eq`
   + `simp`; pass `(u := fun s ↦ η s − η 0) (v := η')` explicitly), `natKL_segment_eq_integral` (`s G(d,d)` via `dirLoss_smul`,
   `priorCov_const_mul_left`).
+- `RayLength.lean` (NOT mirrored; Astra round 34 item 3): `rayLength μ π L₀ R T := ∫₀ᵀ √Var_u(L₀)` (the Fisher
+  length of the annealing ray); **`priorExp_mono_bdd`** (monotone expectations of bounded observables, `integral_mono`
+  over the nonnegative weight), **`priorCov_self_le_sq_of_bounds`** (Popoviciu: `lo ≤ φ ≤ hi ⇒ Var φ ≤ ((hi−lo)/2)²`;
+  centred second moment expanded by `priorExp_add_bdd`/`priorExp_const_mul_bdd`/`priorExp_const_fun`, pointwise
+  `(φ−c)² ≤ r²` by `nlinarith [mul_nonneg (φ−lo) (hi−φ)]`, then `nlinarith [sq_nonneg (⟨φ⟩ − c)]`),
+  **`abs_priorExp_sub_le_ray`** (`|⟨φ⟩_T − ⟨φ⟩_0| ≤ ∫₀ᵀ √(Var φ · Var L₀)`, the intermediate step of
+  `sq_priorExp_sub_le_ray` exposed), **`sq_rayLength_le`** (`Length(T)² ≤ T(E(0) − E(T))`: `sq_integral_sqrt_mul_le`
+  with `g = 1` after rescaling to `[0,1]`; `simp only [mul_one, intervalIntegral.integral_const, sub_zero, one_smul]`
+  kills `∫₀¹ 1`), `rayLength_le_sqrt`, **`abs_priorExp_sub_le_rayLength`** (`|Δ⟨φ⟩| ≤ ((hi−lo)/2) Length(T)`; `lo ≤ hi`
+  from `Classical.arbitrary X`, `Real.sqrt_le_sqrt` + `Real.sqrt_sq`), **`rayLength_ge`**
+  (`2|Δ⟨φ⟩|/(hi − lo) ≤ Length(T)`; `div_le_iff₀` + `linarith`). Imports `TwoAxisResponse` for `priorExp_add_bdd`.
