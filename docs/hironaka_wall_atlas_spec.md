@@ -3159,3 +3159,18 @@ certificates for concrete resolved charts beyond the identity chart.
   + `← Real.sqrt_mul`, `intervalIntegral.abs_integral_le_integral_abs`, rescale `∫₀ᵀ k = T ∫₀¹ k(Ts)` by
   `intervalIntegral.integral_comp_mul_left k hT.ne'` (the instances `hres k` come out beta-reduced — no `simp only at`), then
   `sq_integral_sqrt_mul_le` (MeanSegment) on `[0,1]`).
+- `DataMixture.lean` (NOT mirrored; Astra round 32 item 2, data-manifold bridge): `dataLoss ℓ ν x := ∫ z, ℓ x z ∂ν` (NOTE
+  `popLoss` is taken by `TruthVariation`), `mixMeasure ν₀ ν₁ s := ofReal (1−s) • ν₀ + ofReal s • ν₁`, `measurable_ℓ_right`,
+  `integrable_ℓ_right` (`Integrable.of_bound` on a probability measure), `measurable_dataLoss`
+  (`hℓ.stronglyMeasurable.integral_prod_right' (ν := ν)` — `Measurable (uncurry ℓ)` is the hypothesis to carry),
+  `abs_dataLoss_le` (`norm_integral_le_of_norm_le_const` + `simpa [dataLoss, measureReal_def]`), **`dataLoss_mixMeasure`**
+  (affine in `s ∈ Icc 0 1`; `integral_add_measure` of `Integrable.smul_measure … ENNReal.ofReal_ne_top`, `integral_smul_measure`,
+  `ENNReal.toReal_ofReal`), `lossContrast ℓ ν₀ ν₁ := L_{ν₁} − L_{ν₀}`, `dataLoss_mixMeasure_eq_pathLoss`,
+  `dataLoss_mixMeasure_eq_affLoss` (the `ι = Unit` affine family), `bdd_lossContrast_unit`, `tiltData_dataMixture`,
+  **`hasDerivAt_dataMixture_exp`** (`d/ds⟨φ⟩_{t,ν_s} = −t Cov(φ, L_{ν₁} − L_{ν₀})` for `s ∈ Ioo 0 1`; `TiltData.hasDerivAt_mixExp`
+  + eventual equality on `Ioo_mem_nhds`), **`dataMixture_KL_eq`/`_eq'`** (`KL(P_{ν₁}‖P_{ν₀}) = t²∫₀¹ s Var_{ν_s}(Δ)`, reverse with
+  `1 − s`; instantiate `mixKL_eq_integral_mul_var` in the Unit family at `a = 0, b = 1`, rewrite the endpoints by `funext; simp
+  [affLoss]`/`[dirLoss]`, then inside `intervalIntegral.integral_congr` convert `s ∈ uIcc 0 1` with `uIcc_of_le (zero_le_one' ℝ)`
+  and rewrite the direction `(fun _ ↦ 0) + s • ((fun _ ↦ 1) − fun _ ↦ 0) = fun _ ↦ s` and `dirLoss (fun _ ↦ Δ) (…) = Δ` by explicit
+  `funext; simp` facts — `congr 2` bullets are fragile there). Section discipline: `variable (hℓ) (hM)` + `include hℓ hM` at the
+  top, `omit hM in`/`omit [MeasurableSpace X] hℓ in` per lemma; the prior hypotheses in a nested section.
