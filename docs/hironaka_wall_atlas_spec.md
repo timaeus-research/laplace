@@ -3450,3 +3450,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `Pi.single i 1` + `dirLoss_pi_single`; unapplied `prodObs` must be unfolded by a `rfl` equation — `simp only [prodObs]`
   only fires on applied occurrences; `beta_reduce at hv hw`; `linear_combination ⟨V_w⟩ * hv + ⟨V_v⟩ * hw`; needs neither
   `hnd` nor `ht`). Calls of `priorExp_mixBend_eq` in a `have` need `(t := t)` and `(φ := …)` pinned.
+- `ProductDensity.lean` (NOT mirrored; infrastructure for the tilt lower bound): `indicator_pi_prod` (indicator of a box =
+  product of coordinate indicators, by cases with `Set.mem_univ_pi`), **`Measure.pi_withDensity_ofReal`**
+  (`(P.withDensity (ofReal ∘ r))^{⊗n} = P^{⊗n}.withDensity (ofReal ∏ r(xₖ))` for bounded nonnegative measurable `r` with the
+  density measure a probability measure — NOT in Mathlib; via `Measure.pi_eq` on boxes, `ofReal_integral_eq_lintegral_ofReal`,
+  and the BOCHNER finite-product Tonelli `integral_fintype_prod_eq_prod` (the `lintegral` version has no findable name),
+  `ENNReal.ofReal_prod_of_nonneg`, `ENNReal.ofReal_toReal`), **`measureReal_pi_ge_of_density_ge`** (`c · P^{⊗n}(A) ≤ Q^{⊗n}(A)`
+  when `∏ r ≥ c` on `A`; take finiteness from `Q^{⊗n}` BEFORE rewriting it as a density — the rewritten form has no
+  `IsFiniteMeasure` instance).
