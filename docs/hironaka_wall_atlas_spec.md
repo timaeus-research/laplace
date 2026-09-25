@@ -2699,3 +2699,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `radialLength_prod_eq`, **`radialLength_prod_le`** (`D ≤ D₁ + D₂`), **`sqrt_sq_add_sq_le_radialLength_prod`**
   (`√(D₁²+D₂²) ≤ D`, needs `0 ≤ Var_u(L_i)` on `[0,t]`). `priorCov` is stated with a product `φ*ψ`, not a square:
   match the algebra lemma's shape to `n/z * (n/z)`.
+- `AffinityKL.lean` (NOT mirrored; Astra round 27 item 3): `relEnt_self` (`KL(p‖p) = 0`), `log_gibbsDensity_eq`,
+  `affLoss_convex_comb` (affine in the parameter; prove the sum identity by `Finset.mul_sum` twice +
+  `← Finset.sum_add_distrib` + termwise `ring`, then `ring` — a bare `simp only [add_mul, Finset.sum_add_distrib, …]; ring`
+  leaves mismatched normal forms), `affJensenGap μ π L₀ R t θ a b := (1−θ)A(a) + θA(b) − A((1−θ)•a + θ•b)`,
+  `affBhat … a b := (A a + A b)/2 − A((1/2)•(a+b))`, `convex_comb_half`, `affJensenGap_half`,
+  `relEnt_integrand_convex_comb` (pointwise identity, `by_cases q x = 0`), `integrable_relEnt_integrand_convex_comb`,
+  **`relEnt_convex_comb`** (`(1−θ)KL(q‖P_a) + θKL(q‖P_b) = KL(q‖P_θ) + C_θ`; lambda-typed `have h1` for the
+  `integral_sub`), **`relEnt_midpoint`**, **`half_relEnt_sub_affBhat`** (`½KL(P_a‖P_b) − B = KL(P_a‖P_m)`; the
+  `p_a log(p_a/p_a)` integrand is `(integrable_zero _ _ _).congr` with `Pi.zero_apply`), **`affBhat_le_half_add`**
+  (via `relEnt_gibbsDensity_nonneg`), **`affBhat_eq_at_mid`**. Part B: `lawKL ν s u := (u−s)N₁(s)/Z(s) + log(Z u/Z s)`,
+  `relEnt_lawDensity_eq_lawKL`, `tendsto_lawMoment_ratio_dilation` (`Z(du)/Z(cu) → (d/c)^{-λ}`, `Real.div_rpow`,
+  `div_div_div_cancel_right₀`), **`tendsto_lawKL_dilation`** (`generalize` the two moment values before `field_simp`),
+  **`tendsto_neg_log_lawAffinity_dilation`** (log identities: `Real.log_sqrt`, explicit `≠ 0` facts — `Real.log_mul (by
+  norm_num) _` with a metavariable base fails), **`tendsto_endpoint_identity`** (`½KL(P_u‖P_0) + log ρ(0,u) → λ(log 2 − ½)`;
+  do NOT `rw [one_div]` on a hypothesis whose function also contains `1/2` — rewrite `log (1/2)` with a `show`).
+  Gotcha: `Filter.Tendsto.log` needs the limit `≠ 0`.
