@@ -284,6 +284,7 @@ import Laplace.Multi.AnnealingRay
 import Laplace.Multi.DataMixture
 import Laplace.Multi.ThirdCumulant
 import Laplace.Multi.TwoAxisResponse
+import Laplace.Multi.FaceLimit
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
