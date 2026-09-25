@@ -234,6 +234,7 @@ import Laplace.Multi.ResponseMetric
 import Laplace.Multi.ResponseNullspace
 import Laplace.Multi.GibbsVariational
 import Laplace.Multi.CoefficientResponse
+import Laplace.Multi.TraceMixtureResponse
 import Laplace.Multi.TiltVariance
 import Laplace.Multi.TraceKernel
 import Laplace.Multi.TraceKernelMain

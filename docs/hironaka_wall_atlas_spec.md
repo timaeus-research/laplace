@@ -2187,3 +2187,18 @@ certificates for concrete resolved charts beyond the identity chart.
   the segment; mean value `norm_image_sub_le_of_norm_deriv_le_segment'` with the bound on `Ico`).
   Not done: the `√t` degeneration of the length at regular points (needs uniform Laplace along
   the path).
+- `TraceMixtureResponse.lean` (NOT mirrored; round-19 package 1, the bridge to the atlas):
+  `traceFaceMeasure ρ e = (volume.restrict (Ioo 0 ρ)).withDensity (ofReal u^e)` (finite for
+  `e > −1`, `integrableOn_rpow_Ioo` via `intervalIntegrable_rpow'`; `integral_traceFaceMeasure`
+  via `integral_withDensity_eq_integral_toReal_smul₀` with `(f := …)` named — otherwise `f` is
+  inferred as an `ℝ≥0∞`-rpow; `traceFaceMeasure_univ_pos` via `lintegral_pos_iff_support` +
+  `Measure.restrict_apply'`), **`trace_integral_eq_faceCoef`** (`∫_0^ρ u^e w U_a^{-β} = faceCoef`),
+  `faceData_trace`, `faceCoef_one_trace_pos` (`integral_pos_iff_support_of_nonneg_ae`),
+  **`tendsto_modelKernel_trace_mixture`** (the trace-regime constant of a mixture with affine
+  unit `U_a = ∑ aᵢ hᵢ` is `C₀ · faceCoef (traceFaceMeasure ρ (qη−1)) w h β a`; the implicit `A`,
+  `p` of `tendsto_modelKernel_trace` must be passed), **`hasDerivAt_traceConstant`**,
+  **`hasDerivAt_tracePosterior`** (singular fluctuation–response on the truth segment:
+  `−β Cov_{ν_a}(w, R_v/U_a)`). First instance of the coefficient-response calculus on an actual
+  atlas term. Remaining for the full representation theorem: the general `TermData` term (the
+  unit sits inside `dsProfile`'s exponential; integrating the scaled coordinate produces the
+  `Γ(β) (B a)^{-β}` factor), spectators, and the degenerate regimes.
