@@ -252,6 +252,7 @@ import Laplace.Multi.NegativeChamberLaw
 import Laplace.Multi.ProductPrior
 import Laplace.Multi.AffinityKL
 import Laplace.Multi.GlobalWallChart
+import Laplace.Multi.DataQuotient
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
