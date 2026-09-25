@@ -266,6 +266,8 @@ import Laplace.Multi.RayEndpoint
 import Laplace.Multi.FiniteEndpoint
 import Laplace.Multi.MomentPolytope
 import Laplace.Multi.SegmentDivergence
+import Laplace.Multi.EssentialRange
+import Laplace.Multi.MomentBody
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
