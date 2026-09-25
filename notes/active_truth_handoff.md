@@ -96,3 +96,5 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
 - `lintegral_lintegral_swap` needs `(μ := volume) (ν := volume)` and `aemeasurable (μ := volume.prod volume)`.
 - Interval scalings: `Real.map_volume_mul_left` + `lintegral_map` (`lintegral_Ioo_comp_mul_left'`).
 - `Set.indicator_of_mem` with an `∈ {p | …}` membership needs a `show … from` ascription.
+
+**2026-09-25 (later):** `ProfileResponse.lean` landed (b5b5186): the profile law `∝ e^{-(y^p+cy^q)}`, `∂_c⟨ψ⟩_c = −Cov_c(ψ,y^q)` with the unbounded score dominated by the profile decay, `wall_posterior_eq_profile` (finite-`t` posterior of the scaled observable at `s = c t^{-σ*}` equals the profile law for every `t`), `hasDerivAt_wall_posterior`. GOTCHA: a module named `WallResponse.lean` already existed (2026-09-22 low-resolution wall arc, imported by `WallCutoff`); creating a same-named file OVERWROTE it and broke the umbrella build — restored from git and renamed mine. Always `ls Laplace/Multi/<Name>.lean` before creating a module. Next: the profile family as an exponential family in the wall variable (all-order derivatives, log-convexity, monotone mean map), then the round-21 list.
