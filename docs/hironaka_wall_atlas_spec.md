@@ -3398,3 +3398,10 @@ certificates for concrete resolved charts beyond the identity chart.
   (`κ₃(H,H,H)`; `chartScore_eq` + `simp only [Matrix.mulVec_zero, dirLoss_zero_vec, one_mul, sub_zero]`),
   **`lossHessian_temp_response`** (`−κ₃(H,H,(C⁻¹v)·R)`), **`lossHessian_response_response`** (`κ₃(H,(C⁻¹v)·R,(C⁻¹w)·R)`; signs
   moved through `priorCum3_swap₁₂/₂₃` + `priorCum3_neg_left`).
+- `ChartSynthesis.lean` (NOT mirrored; Astra round 36 item 1): `continuous_sliceMap`, `continuous_jointLoss`,
+  `continuous_relEntropy` (via `relEntropy_eq`, `continuous_meanMap`, `hasFDerivAt_affLogZ` — both take `∀ x, 0 ≤ π x`),
+  `sliceMap_mem_chartDomain` (`range_meanMap_slice` at `t := θ none`), `sliceInv_mem_source`, `sliceMap_sliceInv'`
+  (chart-domain forms via `jointPoint_eq`), **`responseChart : PartialHomeomorph`** (source `{θ | 0 < θ none}`, target
+  `chartDomain`; this Mathlib's `PartialHomeomorph` has NO `open_source`/`open_target` fields — only the two `continuousOn`
+  fields on top of `PartialEquiv`), simp lemmas `responseChart_apply/symm_apply/source/target`, **`responseChart_bijOn`**
+  (`.toPartialEquiv.bijOn`), `continuousOn_sliceInv`, **`continuousOn_lossChart`**, **`continuousOn_relEntropy_chart`**.
