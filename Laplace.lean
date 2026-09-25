@@ -262,6 +262,7 @@ import Laplace.Multi.InteriorMinimumTwoMono
 import Laplace.Multi.RayChart
 import Laplace.Multi.NaturalCoordinates
 import Laplace.Multi.RayCramer
+import Laplace.Multi.RayEndpoint
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
