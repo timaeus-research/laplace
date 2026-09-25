@@ -3174,3 +3174,12 @@ certificates for concrete resolved charts beyond the identity chart.
   and rewrite the direction `(fun _ ↦ 0) + s • ((fun _ ↦ 1) − fun _ ↦ 0) = fun _ ↦ s` and `dirLoss (fun _ ↦ Δ) (…) = Δ` by explicit
   `funext; simp` facts — `congr 2` bullets are fragile there). Section discipline: `variable (hℓ) (hM)` + `include hℓ hM` at the
   top, `omit hM in`/`omit [MeasurableSpace X] hℓ in` per lemma; the prior hypotheses in a nested section.
+- `ThirdCumulant.lean` (NOT mirrored; Astra round 32 item 4): `priorCum3` (`κ₃(φ,ψ,χ) = ⟨φψχ⟩ − ⟨φψ⟩⟨χ⟩ − ⟨φχ⟩⟨ψ⟩ − ⟨ψχ⟩⟨φ⟩ +
+  2⟨φ⟩⟨ψ⟩⟨χ⟩`, products associated `φ x * ψ x * χ x`), `priorCum3_swap₁₂/₂₃` (funext the products, `ring`),
+  **`hasDerivAt_cov_of_hasDerivAt_exp`** (the algebraic engine: family `L : ℝ → X → ℝ`, temperature `τ : ℝ → ℝ`, generator `D`,
+  rate `c`; from `d/ds E_s[f] = −c Cov(f, D)` for all bounded `f` to `d/ds Cov_s(φ,ψ) = −c κ₃(φ,ψ,D)`; proof `(hE (φψ)).sub ((hE
+  φ).mul (hE ψ))` then `simp only [priorCov, priorCum3]; ring`), `hasDerivAt_priorExp_line`, **`hasDerivAt_priorCov_line`**
+  (`−t κ₃(φ,ψ,R_v)`), **`hasDerivAt_meanMapDeriv_line`** (`D²m[u,v]ᵢ = t² κ₃(Rᵢ,R_u,R_v)`; rewrite the function with
+  `meanMapDeriv_apply` under `funext` — type the lambda binder `fun s : ℝ` or `s • v` is stuck), **`hasDerivAt_responseForm_line`**
+  (`−t³ κ₃(R_u,R_v,R_w)`, totally symmetric: the Amari–Chentsov tensor), `hasDerivAt_segVar_line`,
+  **`hasDerivAt_priorCov_temp`** (`d/dt Cov = −κ₃(φ,ψ,L_a)`, from `hasDerivAt_priorExp_temp` with `c = 1`, `τ = id`).
