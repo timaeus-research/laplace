@@ -316,6 +316,7 @@ import Laplace.Multi.ContractionIdentity
 import Laplace.Multi.ProfileGeometry
 import Laplace.Multi.FluctuationResponse
 import Laplace.Multi.WallRay
+import Laplace.Multi.LargeDeviationBounds
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

@@ -3570,3 +3570,10 @@ certificates for concrete resolved charts beyond the identity chart.
   **`tendsto_segVar_ray`** (squeeze `tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hup`),
   `tendsto_responseForm_ray`. Hypotheses: an EVERYWHERE bound `∀ x, R_u x ≤ β` (Bhatia–Davis is pointwise) and the mass
   condition `∀ ε > 0, 0 < ∫_{β−ε < R_u} π`.
+- `LargeDeviationBounds.lean` (NOT mirrored; round-39 LDP): `abs_empMean_le` (the empirical response lies in the feature
+  box; `omit [MeasurableSpace X] [Fintype ι] … hR` — then `ν` is NOT an argument), **`closed_cover_chernoff`** (closed `F`:
+  `F ∩ B` compact via `isCompact_univ_pi` + `IsCompact.inter_left`; the event set equals `{R̄_n ∈ F ∩ B}` by
+  `Set.mem_univ_pi`; witnesses only needed on `F ∩ B`), `eventually_measureReal_empMean_le_closed`, **`open_lower_bound`**
+  (`tilt_lower_bound` with `u := t•(a−b)`, `lam := 1`; `a − (1/t)•(t•(a−b)) = b` by `smul_smul, one_div_mul_cancel,
+  one_smul, sub_sub_cancel`; `Metric.isOpen_iff`, `dist_pi_lt_iff`, `Real.dist_eq`, `measureReal_mono`),
+  `eventually_le_log_measureReal_empMean_div`.
