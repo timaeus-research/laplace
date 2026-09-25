@@ -3334,3 +3334,15 @@ certificates for concrete resolved charts beyond the identity chart.
   `abs_priorCov_le_sqrt_natForm`, **`abs_priorExp_sub_le_natLength`** (`|Δ⟨φ⟩| ≤ ((hi−lo)/2) natLength`; velocity continuity
   via `(continuous_obsMapDeriv …).comp hηc |>.clm_apply hη'` + `obsMapDeriv_apply`; Popoviciu in the joint family with
   `L₀ := 0`, `R := jointStat`, `t := 1`), **`natLength_ge`** (`2|Δ⟨φ⟩|/(hi−lo) ≤ natLength`).
+- `RelativeEntropyGeometry.lean` (NOT mirrored; Astra round 35 item 3): `relEntropy μ π L₀ R θ := −mixKL (affLoss 0 S θ)
+  (dirLoss S (0 − θ)) 1 0 1` (= `−KL(P_θ‖π̄)`), `natCoord_none/some` (rfl; `omit [MeasurableSpace X] [Fintype ι]`),
+  `affLogZ_joint_zero` (`A(0) = log ∫π`), **`relEntropy_eq`** (`𝒮(θ) = ⟨θ, m(θ)⟩ + A(θ) − A(0)` from `natKL_eq θ 0`),
+  **`relEntropy_natCoord`** (`𝒮 = t⟨L₀⟩ + t⟨a, m_t(a)⟩ + A_t(a) − log∫π`; `Fintype.sum_option`, `meanMap_natCoord_none/some`,
+  `simp only […, mul_assoc]` closes the sum), `relEntropy_zero`, `relEntropy_nonpos` (`famKL_nonneg` in the joint family
+  with `L₀ := 0, R := jointStat, t := 1`, then `unfold famKL`), **`hasDerivAt_relEntropy_path`** (`d𝒮 = −G_θ(θ, η')`;
+  `(hasDerivAt_natKL_path 0 hη).neg` + `simp only [natForm, sub_zero]`), **`relEntropy_sub_eq`**
+  (`𝒮(θ) − 𝒮(ϑ) = KL(ϑ‖θ) − ⟨θ, m(ϑ) − m(θ)⟩`), **`relEntropy_featureless_sub`** / `relEntropy_le_featureless` (Gibbs
+  variational principle: equal loss expectation ⇒ `𝒮(t,0) − 𝒮(ϑ) = KL(ϑ‖(t,0)) ≥ 0`), **`hasDerivAt_relEntropy_temp`**
+  (`d/dt 𝒮(tempPath M t) = −t Var(H)`: `dirLoss_jointStat_velocity`, `dirLoss_jointStat_natCoord` as a funext `have`,
+  `priorCov_const_mul_left`, comm, a `rfl` equation exposing `affLoss a = L₀ + R_a` ONLY in the observable slot (a global
+  `rw` would also hit the measure slot), `priorCov_add_right_bdd`, `priorCov_residual_dirLoss` twice).
