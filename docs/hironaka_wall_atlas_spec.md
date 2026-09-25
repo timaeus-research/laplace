@@ -2360,3 +2360,9 @@ certificates for concrete resolved charts beyond the identity chart.
   the response form of a Gaussian family is Fisher–Rao on covariances, `t`-independent),
   **`fisherSpeed_gaussian`** (`½ tr((H_s⁻¹Ḣ_s)²)`). Instance hygiene: only the theorems mentioning `⁻¹`
   take `[DecidableEq ι]`; `isHermitian_sum_smul` needs neither `Fintype ι` nor `DecidableEq`.
+- `RegularGeometricLimit.lean` (NOT mirrored; Astra's "regular geometric limit", pointwise):
+  `dot_inv_eq_hessian_form` (`⟨g, H⁻¹g'⟩ = ⟨−H⁻¹g, H(−H⁻¹g')⟩`; `Pᵀ = P` from `hP.1.eq` via
+  `conjTranspose_eq_transpose_of_trivial`), **`responseForm_asymptotic_minimizer`**
+  (`g_a(v,u)/t → H(mv, mu)` given `mv = −H⁻¹∇R_v`), **`responseForm_asymptotic_movingMinimizer`**
+  (velocities supplied by `Laplace.Patterning.movingMinimizer_deriv`: the stationarity equation of a
+  differentiable curve of critical points). Imports `Laplace.Patterning.MovingMinimizer`.
