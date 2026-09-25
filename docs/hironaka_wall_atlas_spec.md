@@ -3716,3 +3716,21 @@ certificates for concrete resolved charts beyond the identity chart.
   `rateFun_toReal_eq` (interior `M` at any `t > 0` via `range_meanMap_slice`), **`hasDerivAt_rateFun_temp_toReal`**
   (`hasDerivAt_dualPotential_temp … hnd ht₀ hM` + `hasDerivAt_affLogZ_temp … 0 t₀`; `congr_of_eventuallyEq` on `Ioi_mem_nhds`),
   `hasDerivAt_entropyProj_temp_toReal`.
+- `GroundState.lean` (NOT mirrored; round-42 item 4, positive-mass case): the thermal path `t ↦ P_{t,a}` is the ray of the
+  one-feature family on `Unit` (`affLoss_unit`, `dirLoss_unit`, **`familyMeasure_unit`**: `familyMeasure 0 (fun _ ↦ H_a) 1
+  (s • 1) = familyMeasure L₀ R s a` — `unfold familyMeasure; rw [affLoss_unit]; unfold priorZ; simp only [one_mul, add_zero]`;
+  `face_unit`, `tiltedPrior_zero_one`), `priorExp_affLoss_self` (`⟨H_a⟩ = ⟨L₀⟩ + a·m`; rewrite ONLY the observable with a
+  `rfl`-typed `have e : priorExp … (affLoss a) t = priorExp … (fun x ↦ L₀ x + dirLoss R a x) t` — `conv_lhs => rw` hits the loss
+  slot too), **`mixKL_eq_neg_relEntropy`** (`mixKL 0 H_a t 1 0 = −𝒮(t,a)` via `TiltData.mixKL_eq` + `relEntropy_natCoord`),
+  **`tendsto_energy_temp`** (`⟨H_a⟩_{t,a} → α` from `tendsto_thresholdFun` on the `Unit` family with direction `−1`; identification
+  `thresholdFun … = −⟨H_a⟩` via `priorExp_smul_add`, `priorExp_const_mul`), `tendsto_priorExp_temp_face` (direct instance of
+  `tendsto_priorExp_face` with `V := affLoss a`), `unit_face_pos`, `unit_face_ae`, **`tendsto_familyMeasure_real_ground`**
+  (`P_{t,a}(G) → 1`), **`abs_familyMeasure_real_sub_priorFace_le`**, **`tendsto_familyMeasure_real_temp_face`** (TV convergence to
+  `π̄(·|G)`; instantiate `FaceTotalVariation` with `(L₀ := 0) (R := fun _ : Unit ↦ H_a) (t := 1)` and `simp only [familyMeasure_unit,
+  face_unit, hz] at h` — `simp` rewrites under the `fun s ↦` binder where `rw` cannot), **`tendsto_klDiv_prior_temp_face`**
+  (`KL(P_{t,a}‖π̄) → log ∫π − log ∫_G π`, from `tendsto_mixKL_face`), `familyMeasure_zero_real_eq` (`π̄(A) = ∫_A π/∫π`; after
+  `unfold priorExp priorZ` the factors are `0 * …` and `exp 0 * π`: `zero_mul`, `one_mul`; indicators by `by_cases` +
+  `Set.indicator_of_mem/notMem`, `Set.indicator_apply` needs `Decidable`), **`tendsto_klDiv_prior_temp_face'`**
+  (`KL(P_{t,a}‖π̄) → KL(π̄_G‖π̄)`). OPEN: null ground state `μ G = 0` ⇒ `KL → ∞` (proof plan: KL is monotone in `t`
+  (derivative `t Var ≥ 0`), so unboundedness suffices; tangent-line/Bregman bound `A(s) ≥ A(t) − ⟨H⟩_t (s − t)` at `s = t/2`
+  plus `⟨H − α⟩_t → 0` shows a bounded KL would force `log W_s ≥ −K` for all `s`, contradicting `W_s → ∫_G π = 0`).
