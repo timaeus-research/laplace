@@ -355,6 +355,7 @@ import Laplace.Multi.ActiveTruthTraceAssembly
 import Laplace.Multi.ActiveTruthTraceLimit
 import Laplace.Multi.ActiveTruthTraceTheorem
 import Laplace.Multi.ActiveTruthFibreWeighted
+import Laplace.Multi.ActiveTruthGeneral
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
