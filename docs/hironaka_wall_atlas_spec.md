@@ -3473,3 +3473,27 @@ certificates for concrete resolved charts beyond the identity chart.
   `ρ = min ε (δ/(2(λS+1)))`, `S = ∑|uᵢ|`; product density `= e^{−n(λ u·R̄_n − Λ)}` via `← Real.exp_sum` and
   `∑ₖ R_u(xₖ) = n u·R̄_n`; `measureReal_pi_ge_of_density_ge`; Chebyshev with `N = max (⌈2V/ρ²⌉₊+1) (⌈2 log 2/δ⌉₊+1)`;
   `rw [← Finset.sum_div, ← hV]` to fold the variance budget).
+- `MeanJourney.lean` (NOT mirrored; Astra round 38 top pick, duality capstone part 1): `meanLine y₀ d s := θ(y₀ + s d)`
+  (the coefficient of a mean segment), `meanSpeed := d ⬝ᵥ (featCov (meanLine s))⁻¹ *ᵥ d` (needs `[DecidableEq ι]`),
+  `meanEntropy M := −famKL (θ M) 0`; `segment_mem_interior_momentBody` (`(convex_momentBody R).interior.add_smul_sub_mem`),
+  `meanMap_mem_interior`, `meanMap_meanLine` (`Function.invFun_eq` + `range_meanMap_slice`), `meanLine_zero/one`,
+  **`hasDerivAt_meanLine`** (`hasStrictFDerivAt_invFun_meanMap` at `meanLine s`, point rewritten by `meanMap_meanLine`, then
+  `.comp_hasDerivAt s (hasDerivAt_affineLine …)`; derivative `invJac (meanLine s) d`), `dualHessian_eq_inv_mulVec`
+  (`calc` through `(C⁻¹ C) *ᵥ x`, never `rw [← h]` on a term whose RHS contains the LHS), `invJac_apply_eq`
+  (`= (−t)⁻¹ • C⁻¹ d`), `hasDerivAt_dualPotential_meanLine` (`−t ⟨d, a(s)⟩`), **`hasDerivAt_meanLine_pairing`**
+  (second derivative `= meanSpeed`; `hasDerivAt_pi.mp` per coordinate + `HasDerivAt.fun_sum`, close with `field_simp`
+  after `rw [invJac_apply_eq]`), `meanSpeed_nonneg` (`d = C w`, `d ⬝ C⁻¹ d = Var(R_w)`; make the point and `w` opaque with
+  `obtain ⟨a, ha⟩ : ∃ a, … = a := ⟨_, rfl⟩` before `conv_lhs => rw [← hd]`, or `rw` sees through `set`), `continuous_featCov`
+  (`continuous_matrix` + `continuous_obsMap` on the three products), `continuousOn_meanSpeed` (`continuousAt_matrix_inv _
+  (NormedRing.inverse_continuousAt (Units.mk0 _ hdet))`; compose with `ContinuousAt.comp_continuousWithinAt (g := Inv.inv)
+  (f := …) (x := s)` — all three named, or the unifier takes `f := featCov`), `hasDerivAt_meanJourney_primitive`
+  (`(1−s) I' + I`), **`famKL_eq_integral_meanSpeed`** (FTC `intervalIntegral.integral_eq_sub_of_hasDerivAt` with `f`, `f'`
+  named, `uIcc_of_le zero_le_one`; endpoints via `mixKL_eq_bregman_dual` and `dotJ_comm`; replace the means by opaque `y₀ y₁`
+  with `rw [hy₀, hy₁]` on the goal BEFORE `rw [hFTC]`), **`famKL_e_journey_eq_m_journey`**,
+  **`famKL_add_famKL_eq_integral_meanSpeed`** (Jeffreys; `linear_combination t * hs` with the sums as atoms),
+  `sq_integral_sqrt_meanSpeed_le` (`sq_integral_sqrt_mul_le` with `g = 1`, `simpa`), `meanEntropy_meanMap`,
+  `meanEntropy_eq_dual` (`dotJ_zero_left`), **`meanEntropy_concaveOn`** (`dualPotential_convexOn.neg.add_const` + `.congr`),
+  `hasDerivAt_meanEntropy_line` (eventual equality on the open response space via `preimage_mem_nhds`),
+  `hasDerivAt_meanEntropy_line_deriv` (`Pi.neg_apply` before `ring`), `meanEntropy_eq_neg_integral`,
+  **`meanEntropy_line_antitoneOn`** (`antitoneOn_of_deriv_nonpos (convex_Icc 0 1) (f := fun s : ℝ ↦ …)` — annotate `s : ℝ`
+  in the STATEMENT too, else `s • v` elaborates with `s : ℕ`; `interior_Icc`, FTC on `0..s`, `dotJ_zero_right`).
