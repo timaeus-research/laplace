@@ -18,10 +18,14 @@ globally continuous observable supported in a closed region vanishes on the regi
 which is where the boundary regimes put their mass; the support hypothesis is therefore the
 wrong interface for them.
 
-This file replaces it by the geometric hypothesis Astra asked for: **the limiting face point of
-every certified term lies in the interior of `L'`**,
-`D.faceMap i ε b σ γ α u ∈ interior L'` for `u` in the limiting domain. Then the moving branch
-point is eventually in the region by convergence alone, and the whole chain goes through with an
+This file replaces it by the geometric hypothesis Astra asked for: **at every point of the
+limiting domain, the limiting face point lies in the interior of `L'`, or the observable
+vanishes on a neighbourhood of it** (`D.faceMap i ε b σ γ α u ∈ interior L' ∨ φ =ᶠ[𝓝 (face)] 0`).
+In the first case the moving branch point is eventually in the region by convergence alone; in
+the second the moving weight and the limiting weight both vanish. The second alternative is what
+lets a chart ball larger than the region be used (the limiting domain is cut by the chart radius
+`ρ`, the region by its own radius, and the face points in between carry no weight once the
+observable is supported inside the region's radius). The whole chain then goes through with an
 arbitrary bounded continuous nonnegative `φ`:
 `tendsto_weightFn_of_interior`, `wallDominantScaleHyp_of_interior`,
 `tendsto_modelKernelOf_of_interior`, `tendsto_term_of_interior`,
@@ -47,7 +51,8 @@ variable {i : D.ι} {φ : (Fin (m + 1) → ℝ) → ℝ} {ε : Fin m → Bool} {
 the limiting face point lies in the interior of the region. -/
 theorem tendsto_weightFn_of_interior
     (hface : ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α,
-      D.rep i (D.limitBranchPt i ε b σ γ α u) ∈ interior L')
+      D.rep i (D.limitBranchPt i ε b σ γ α u) ∈ interior L' ∨
+        ∀ᶠ z in 𝓝 (D.rep i (D.limitBranchPt i ε b σ γ α u)), φ z = 0)
     (hφc : Continuous φ) (hα : ∀ j, 0 ≤ α j) (htr : ∑ j, D.Qexp i j * α j ≤ γ) {u : Fin m → ℝ}
     (hu : u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α) :
     Tendsto (fun t ↦ P.weightFn i φ ε b (rescale t α u)
@@ -60,23 +65,38 @@ theorem tendsto_weightFn_of_interior
       (D.bridgePt i ε b (rescale t α u)
         (rescaledCut (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α t u))) atTop
       (𝓝 (P.limitWeight i φ ε b σ γ α u)) := (hg.tendsto _).comp hpt
-  refine hlim.congr' ?_
   have hball := hpt.eventually_mem (Metric.isOpen_ball.mem_nhds
     (D.limitBranchPt_mem_ball i ε b hu))
-  have hreg := (((D.rep_cont i).tendsto _).comp hpt).eventually_mem
-    (isOpen_interior.mem_nhds (hface u hu))
-  filter_upwards [hball, hreg] with t hb hr
-  have hmem : D.bridgePt i ε b (rescale t α u)
-      (rescaledCut (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α t u) ∈ D.dom i := by
-    rw [D.dom_eq]
-    exact ⟨Metric.ball_subset_closedBall hb, Set.mem_preimage.mpr (interior_subset hr)⟩
-  unfold weightFn
-  rw [Set.indicator_of_mem hmem]
+  rcases hface u hu with hin | hvan
+  · refine hlim.congr' ?_
+    have hreg := (((D.rep_cont i).tendsto _).comp hpt).eventually_mem
+      (isOpen_interior.mem_nhds hin)
+    filter_upwards [hball, hreg] with t hb hr
+    have hmem : D.bridgePt i ε b (rescale t α u)
+        (rescaledCut (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α t u) ∈ D.dom i := by
+      rw [D.dom_eq]
+      exact ⟨Metric.ball_subset_closedBall hb, Set.mem_preimage.mpr (interior_subset hr)⟩
+    unfold weightFn
+    rw [Set.indicator_of_mem hmem]
+  · -- the observable vanishes near the face point: both weights are eventually `0`
+    have h0 : P.limitWeight i φ ε b σ γ α u = 0 := by
+      unfold limitWeight
+      rw [hvan.self_of_nhds, zero_mul]
+    rw [h0]
+    have hev := (((D.rep_cont i).tendsto _).comp hpt).eventually hvan
+    refine tendsto_const_nhds.congr' ?_
+    filter_upwards [hev] with t ht
+    unfold weightFn
+    refine ((Set.indicator_apply_eq_zero (s := D.dom i)
+      (f := fun u ↦ φ (D.rep i u) * (P.wt i u * |P.b i u|))).mpr fun _ ↦ ?_).symm
+    rw [show φ (D.rep i (D.bridgePt i ε b (rescale t α u)
+      (rescaledCut (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α t u))) = 0 from ht, zero_mul]
 
 /-- **The dominant-scale certificate, interior form.** -/
 theorem wallDominantScaleHyp_of_interior (hσ : σ ≠ 0)
     (hface : ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α,
-      D.rep i (D.limitBranchPt i ε b σ γ α u) ∈ interior L')
+      D.rep i (D.limitBranchPt i ε b σ γ α u) ∈ interior L' ∨
+        ∀ᶠ z in 𝓝 (D.rep i (D.limitBranchPt i ε b σ γ α u)), φ z = 0)
     (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
     (hfeas : ConstrainedFeasible (D.Qexp i) (P.kappa i) γ (P.phaseExp i γ) α)
     (hint : Integrable fun u ↦
@@ -119,7 +139,8 @@ theorem wallDominantScaleHyp_of_interior (hσ : σ ≠ 0)
 /-- **The asymptotic of a wall model kernel, interior form.** -/
 theorem tendsto_modelKernelOf_of_interior (hσ : σ ≠ 0)
     (hface : ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) α,
-      D.rep i (D.limitBranchPt i ε b σ γ α u) ∈ interior L')
+      D.rep i (D.limitBranchPt i ε b σ γ α u) ∈ interior L' ∨
+        ∀ᶠ z in 𝓝 (D.rep i (D.limitBranchPt i ε b σ γ α u)), φ z = 0)
     (hφc : Continuous φ) (hφ : ∀ z, 0 ≤ φ z) {Mφ : ℝ} (hMφ : ∀ z, φ z ≤ Mφ)
     (hfeas : ConstrainedFeasible (D.Qexp i) (P.kappa i) γ (P.phaseExp i γ) α)
     (hprof : P.ProfileIntegrableOf i ε b σ γ α) :
@@ -141,7 +162,8 @@ theorem tendsto_termKernel_of_interior (hσ : σ ≠ 0)
     (hMφ : ∀ z, φ z ≤ Mφ) {α : D.ι → (Fin m → Bool) → Bool → Fin m → ℝ}
     (hface : ∀ i ε b, D.admissible i ε b σ →
       ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) (α i ε b),
-        D.faceMap i ε b σ γ (α i ε b) u ∈ interior L')
+        D.faceMap i ε b σ γ (α i ε b) u ∈ interior L' ∨
+          ∀ᶠ z in 𝓝 (D.faceMap i ε b σ γ (α i ε b) u), φ z = 0)
     (hfeas : ∀ i ε b, D.admissible i ε b σ →
       ConstrainedFeasible (D.Qexp i) (P.kappa i) γ (P.phaseExp i γ) (α i ε b))
     (hprof : ∀ i ε b, D.admissible i ε b σ → P.ProfileIntegrableOf i ε b σ γ (α i ε b))
@@ -165,9 +187,14 @@ theorem tendsto_fibre_expectation_of_interior (hS : ∀ i, |D.S i| = 1) (hF : �
     (hψ : ∀ z, 0 ≤ ψ z) {Mψ : ℝ} (hMψ : ∀ z, ψ z ≤ Mψ) (hχc : Continuous χ)
     (hχ : ∀ z, 0 ≤ χ z) {Mχ : ℝ} (hMχ : ∀ z, χ z ≤ Mχ)
     {α : D.ι → (Fin m → Bool) → Bool → Fin m → ℝ}
-    (hface : ∀ i ε b, D.admissible i ε b σ →
+    (hfaceψ : ∀ i ε b, D.admissible i ε b σ →
       ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) (α i ε b),
-        D.faceMap i ε b σ γ (α i ε b) u ∈ interior L')
+        D.faceMap i ε b σ γ (α i ε b) u ∈ interior L' ∨
+          ∀ᶠ z in 𝓝 (D.faceMap i ε b σ γ (α i ε b) u), ψ z = 0)
+    (hfaceχ : ∀ i ε b, D.admissible i ε b σ →
+      ∀ u ∈ limitDomain (D.ρ i) (D.constD i σ) γ (D.q i (D.k i)) (D.Qexp i) (α i ε b),
+        D.faceMap i ε b σ γ (α i ε b) u ∈ interior L' ∨
+          ∀ᶠ z in 𝓝 (D.faceMap i ε b σ γ (α i ε b) u), χ z = 0)
     (hfeas : ∀ i ε b, D.admissible i ε b σ →
       ConstrainedFeasible (D.Qexp i) (P.kappa i) γ (P.phaseExp i γ) (α i ε b))
     (hprof : ∀ i ε b, D.admissible i ε b σ → P.ProfileIntegrableOf i ε b σ γ (α i ε b))
@@ -180,8 +207,8 @@ theorem tendsto_fibre_expectation_of_interior (hS : ∀ i, |D.S i| = 1) (hF : �
       (𝓝 ((∑ p : TermIdx D, if P.termLam γ α p = lam₀ then P.termConst' ψ σ γ α p else 0) /
         ∑ p : TermIdx D, if P.termLam γ α p = lam₀ then P.termConst' χ σ γ α p else 0)) := by
   classical
-  have hK := P.tendsto_termKernel_of_interior hσ hχc hχ hMχ hface hfeas hprof
-  have hKψ := P.tendsto_termKernel_of_interior hσ hψc hψ hMψ hface hfeas hprof
+  have hK := P.tendsto_termKernel_of_interior hσ hχc hχ hMχ hfaceχ hfeas hprof
+  have hKψ := P.tendsto_termKernel_of_interior hσ hψc hψ hMψ hfaceψ hfeas hprof
   refine (tendsto_sum_ratio hmin hK hKψ hpos).congr' ?_
   filter_upwards [eventually_gt_atTop 0] with t ht
   rw [P.totalKernel_toReal_eq_sum_terms hS hF hFm hψc.measurable hψ hMψ ht hσ,
