@@ -3615,3 +3615,12 @@ certificates for concrete resolved charts beyond the identity chart.
   (`geometric_hahn_banach_point_closed` gives `f M < u < f y` on `K`; coordinates by `pi_eq_sum_univ'`; the direction is
   `−v`; `ENNReal.eq_top_of_forall_nnreal_le` with `λ = (r+1)/(w·M + u)`; `omit ht`), `lowerSemicontinuous_rateFun`
   (`lowerSemicontinuous_iSup` + `ENNReal.continuous_ofReal.comp`; `unfold chernoffScore dotJ; fun_prop`).
+- `CramerTheorem.lean` (NOT mirrored; round-40 bundle C/D): `chernoffScore_combo` (affine in `M` via `isLinearMap_dotJ`),
+  **`rateFun_combo_le`** (convexity of `𝓘` along segments with finite endpoints; `ENNReal.ofReal_le_iff_le_toReal` turns
+  `le_iSup` into a real bound), `radial_mem_interior` (`Convex.combo_closure_interior_mem_interior`; `omit [Fintype ι]`),
+  `rateFun_radial_le` (towards `m_t(0)` where `𝓘 = 0`, `mul_le_of_le_one_left`), **`cramer_upper`** (closed `F`, `c < 𝓘` on
+  `F` ⇒ eventually `≤ e^{−n(c−ε)}`; witnesses via `lt_iSup_iff` + `ENNReal.ofReal_lt_ofReal_iff'`),
+  `cramer_lower_interior` (tilted mean via `range_meanMap_slice` + `open_lower_bound … 0 b` with `δ = c − KL`),
+  **`cramer_lower`** (open `G`, `𝓘(M) < c` for some `M ∈ G` ⇒ eventually `≥ e^{−nc}`; `M ∈ K` since `𝓘 < ⊤`; the radial
+  point enters `G` by continuity: `(hcont.tendsto 0 |>.eventually (hG.mem_nhds …)).and (eventually_lt_nhds zero_lt_one)`
+  then `Filter.Eventually.exists_gt`).
