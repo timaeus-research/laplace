@@ -366,6 +366,7 @@ import Laplace.Multi.ActiveTruthExampleBridge
 import Laplace.Multi.ActiveTruthFaceInvariance
 import Laplace.Multi.ActiveTruthParam
 import Laplace.Multi.ActiveTruthGeneralParam
+import Laplace.Multi.ActiveTruthChartParam
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
