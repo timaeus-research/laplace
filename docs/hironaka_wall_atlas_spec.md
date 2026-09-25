@@ -3230,3 +3230,28 @@ certificates for concrete resolved charts beyond the identity chart.
   **`image_meanMap_of_isCompl`** (`Submodule.codisjoint_iff_exists_add_eq` — the `Submodule.` prefix is required),
   `bijOn_meanMap_of_isCompl`, **`responseForm_pos_of_isCompl`**, `finrank_compl_invisible`
   (`Submodule.finrank_add_eq_of_isCompl` + `Module.finrank_fintype_fun_eq_card`). No `hnd` anywhere.
+- `ResidualFormDeriv.lean` (NOT mirrored; Astra round 34 item 1, layer B): `residual_form_sub` (exact difference identity
+  `s(t) − s(t₀) = Δv − ⟨b(t),Δc⟩ − ⟨Δc,b(t₀)⟩ + ⟨b(t),ΔC b(t₀)⟩` from the normal equations and symmetry; `Finset.sum_comm` +
+  `hsym` + `hCb'` pointwise), `slope_form_aux` (distribute `h⁻¹` through the identity), **`hasDerivAt_residual_form`**
+  (`d/dt (v − ⟨c,b⟩) = v' − 2⟨b,c'⟩ + ⟨b,C'b⟩` with `b` merely CONTINUOUS: `hasDerivAt_iff_tendsto_slope`, the slope identity
+  via `slope_def_field` + `div_eq_inv_mul` as a `∀ f` rewrite under binders, limits by `HasDerivAt.tendsto_slope`,
+  `tendsto_finsetSum`, `tendsto_pi_nhds.1` for the components of `b`; convert the limit value BEFORE `Tendsto.congr'` — there
+  is no `Tendsto.congr_nhds`).
+- `LossCurvature.lean` (NOT mirrored; Astra round 34 item 1): `priorCum3_dirLoss_left` (`κ₃(R_u,ψ,χ) = ∑ uᵢ κ₃(Rᵢ,ψ,χ)`; each
+  `priorExp` of a product with `dirLoss` via `priorExp_dirLoss` on the product family, then four explicit `Finset.sum_mul`/
+  `mul_sum` normalisations `h2..h5` and `simp only [mul_sub, mul_add, Finset.sum_sub_distrib, Finset.sum_add_distrib]` — a
+  `congr 1` cascade is NOT robust here), `priorCum3_sub_left`, **`priorCum3_residual_expand`**
+  (`κ₃(H,H,χ) = κ₃(L₀,L₀,χ) − 2∑bᵢκ₃(Rᵢ,L₀,χ) + ∑∑bᵢbⱼκ₃(Rᵢ,Rⱼ,χ)`, second slot through `priorCum3_swap₁₂`),
+  `priorCum3_natCoord`, `regCoeff := (featCov …)⁻¹ *ᵥ featObsCov … L₀` (Matrix inverse; `[DecidableEq ι]`),
+  `isUnit_featCov` (needs `DecidableEq` for the matrix ring — do not omit it), `featCov_mulVec_regCoeff` (normal equations, from
+  `Matrix.mul_nonsing_inv` with `(Matrix.isUnit_iff_isUnit_det _).1`), `featCov_symm`, `dirLoss_jointStat_velocity`
+  (`S_u = L₀ − b·R` for the temperature-path velocity), **`hasDerivAt_priorCov_tempPath`** (`d/dt Cov_{t,M}(φ,ψ) = −κ₃(φ,ψ,H)`
+  via `hasDerivAt_cov_of_hasDerivAt_exp` in the joint family with `τ := fun _ ↦ 1` — write the temperature as `((fun _ ↦ 1) t)`
+  in `hE` so the lemma's pattern matches), **`continuousAt_regCoeff`** (`continuousAt_matrix_inv _ (by rw [Ring.inverse_eq_inv'];
+  exact continuousAt_inv₀ hdet)` composed with entrywise continuity `continuousAt_pi.2`; entry of the inverse via
+  `(continuous_id.matrix_elem i j).continuousAt.comp hinv`), `residual_var_eq_form` (`σ² = v − ⟨c, b⟩` from `residual_var`),
+  **`hasDerivAt_residual_var`** (`(σ²)' = −κ₃(H,H,H)`; the normal equations only hold for `t > 0`, so reparametrise by
+  `τ t = if 0 < t then t else t₀` (introduced with `obtain ⟨τ, hτdef⟩ : ∃ τ, τ = … := ⟨_, rfl⟩`) and transfer the derivative,
+  continuity and function by `∀ᶠ t, τ t = t`; the eventual-equality proofs are `by simp only [h]` (a `rw [h]` cannot see the
+  bound variable under the beta-redex)), **`hasDerivAt_deriv_lossSurface`** (`∂_t² h = κ₃(H,H,H)` — `deriv h =ᶠ −σ²` from
+  `hasDerivAt_lossSurface` with `b := regCoeff`).
