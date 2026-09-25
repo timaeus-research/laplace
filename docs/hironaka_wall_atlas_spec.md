@@ -1607,3 +1607,33 @@ certificates for concrete resolved charts beyond the identity chart.
   `C₂.leadingMeasure O = 0` gives the distinguishing observable. Astra's caveat (round 11) is built
   in: distinguishability needs the explicit support separation (`rep` may identify images, weights
   may create coincidences); nothing is claimed for different faces per se.
+- Astra round 13 (b59b87f, `research_round13_{q,v1}.md`): export audit positive (`T 0 = 0` and
+  `F·T ≢ 0` are the right non-degeneracy; no `F 0 = 0`, no positivity in the transport theorem;
+  `TruthChartsData` is sufficient for the EXACT push-forward theorem, an asymptotic consumer needs a
+  density factorisation `dens = ∏|u_j|^{r_j} J(u)` and an explicit fibre-kernel representative — the
+  push-forward identity fixes `K_θ` only a.e.); the general-unit boundary statement (partial trace
+  in `update y (inr 1) z`-form, unit inside the transverse exponential, `x_b = ρ e^{-(M⁻¹v)_1}`
+  with one factor `ρ`, same domination); (h) = a certificate-level assembly example only; ranking:
+  (1) general-unit boundary, (2) laplace-side bridge consuming the export, (3) `j = 0` mirror +
+  chart wrapper, (4) positivity/localisation corollaries, (5) certificate-level mixed example.
+- `ActiveTruthDegenerateGeneral.lean` (d3fe6c9; hironaka 229c09ba5): **the boundary regime with
+  general units** (Astra round-13 item 1). `survCoord ρ κ Q v = ρ e^{-fibreB κ Q v 1}` (in `(0,ρ)`
+  iff `fibreB … 1 > 0`), `fibreSet_eq_empty_of_degenerate` (`(M⁻¹v)_1 ≤ 0` ⇒ empty fibre),
+  `negExpMap_fibreLift_eq_update` (the fibre path is `update (negExpMap (update lift (inr 1) L))
+  (inr 1) (survCoord)`), **`tendsto_lintegral_fibre_weighted_degenerate`** (the weighted fibre limit
+  with trace hypothesis `Tendsto (fun y ↦ Φ (Function.update y (Sum.inr 1) (survCoord ρ κ Q v)))
+  (𝓝[box] 0) (𝓝 Φ₀)`: the nondegenerate proof with the second hyperplane dropped from the null set,
+  the collapsing coordinates `inl ⊔ inr 0` tending to `+∞` in log coordinates and the surviving
+  one replaced by `L` on the auxiliary path), `ampG_tendsto_degenerate`, `vWeightTD ρ D q κ Q β η c₀
+  h₀ Wtr atr v = 1_{h>h₀} 1_{(M⁻¹v)_1>0} ofReal(Wtr(z(v),u(v)) e^{-(βs+ηh)} e^{-c₀ atr(z(v),u(v))
+  e^{-s}})` (measurable, `≠ ⊤`, `vWeightTD_le`: `≤ ofReal W_* · vWeight β η 0 (c₀ a_-) h₀`),
+  `tendsto_lintegral_innerKvG_degenerate` (DCT with the same majorant; `by_cases` on `h > h₀` and
+  on `(M⁻¹v)_1 > 0`, the empty-fibre case giving `0`), **`tendsto_modelKernel_general_degenerate`**:
+  hypotheses as `tendsto_modelKernel_general` with `hc₁` replaced by `hdeg`, traces
+  `Wtr atr : ℝ → ℝ → ℝ` jointly measurable with bounds on `(0,ρ)²` and the partial-trace
+  convergence `∀ z u ∈ (0,ρ), Tendsto (fun y ↦ W (update y (inr 1) z) u) (𝓝[box] 0) (𝓝 (Wtr z u))`;
+  limit `A ρ^{Σ(r+1)} |det M|⁻¹ (∫⁻ vWeightTD … (B ρ^{Σκ}) h₀ Wtr atr).toReal vol(F')` — no Gamma
+  value, the unit inside the exponential (Astra: it cannot be pulled out as `a_tr^{-β}` since the
+  surviving coordinate depends on `v`). Constant traces recover the constant-unit theorem
+  (`vWeightTD = w₀ · vWeight β η 0 (c₀ a₀) h₀ · 1_{(M⁻¹v)_1>0}`). Not done: the `j = 0` mirror
+  (swap the solved pair), the chart wrapper, a laplace-side bridge consuming the hironaka export.
