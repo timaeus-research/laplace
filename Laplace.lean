@@ -552,3 +552,4 @@ import Laplace.Multi.ProportionalFamilies
 import Laplace.Multi.MixedTruthBoundary
 import Laplace.Multi.CertificateFromLP
 import Laplace.Multi.ZeroScaleCertificate
+import Laplace.Multi.KernelPointwise
