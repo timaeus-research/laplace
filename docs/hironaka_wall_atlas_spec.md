@@ -3026,3 +3026,12 @@ certificates for concrete resolved charts beyond the identity chart.
   principle (`∂_e I = −t`, `J_t`, `D²J_t = C_RR⁻¹`, `∂_t h_t(M) = −(residual variance of L₀ after regression on R)`),
   (4) scoped non-steep boundary-extension theorem, (5) `N^⊥`, (6) two-term wall law, (7) mean-segment observable transport
   (`ΔE φ = ∫ Cov_{m_s}(φ, R_{C_s⁻¹ d}) ds`, `|ΔEφ|² ≤ (∫Var φ)(KL + KL)`), (8) Cramér (not cheap).
+- `SliceVariational.lean` (NOT mirrored; Astra round 31 item 3, variational core): **`dualPotential_ge_tangent`**
+  (`I(m b) ≥ I(m a) − t⟨a, m b − m a⟩`, pure algebra on `dual_objective_le_at_mean` with `θ := a` at the mean of `b`),
+  **`dualPotential_convexOn`** (on `range m = interior (momentBody R)` via `range_meanMap_slice`, hence `[Nonempty ι]` and
+  `hπ : ∀ x, 0 < π x`; a convex combination `l₁ m a₁ + l₂ m a₂ = m c`, expand `dotJ c` by `IsLinearMap.map_add/map_smul`,
+  then `nlinarith [mul_le_mul_of_nonneg_left h1 hl₁, …]`), **`partial_base_dualPotential`** (`∂_e I = −t` at `η(Θ(t,a))`:
+  `hasFDerivAt_dualPotential` for the joint family composed with `hasDerivAt_affineLine … (Pi.single none 1) 0` — the base
+  point must be aligned with `have hI' : HasFDerivAt … ((fun s ↦ m + s • e) 0) := by simpa using hI`; the statement needs
+  `[DecidableEq ι]` for `Pi.single none`), **`slice_variational`** (among joint responses with the same contrast part the
+  slice point minimises `e ↦ I(e,M) + te`; the dot product collapses by `Fintype.sum_option` + `hb` + `rfl`).
