@@ -2180,3 +2180,10 @@ certificates for concrete resolved charts beyond the identity chart.
   is Pi-form — type the measurability of a product with a `have … : Measurable fun x ↦ f x * g x`
   before passing it where the observable is inferred from it (else goals show `|(f * g) x|` and
   `integral_sub` patterns fail); `rw [Real.abs_exp]` rewrites all copies at once.
+- `ThermoLength.lean` (NOT mirrored; round-19 package 4c, exact part): `fisherSpeed μ π L L' t s =
+  t² Var_s(L̇_s)`, `PathData.tiltData_base` (the path's base weight as a `TiltData` with zero
+  residual), `PathData.abs_deriv_le_sqrt_fisherSpeed` (`|t Cov_s(φ, L̇)| ≤ √Var_s(φ) √g_s`),
+  **`PathData.abs_priorExp_sub_le`** (`|⟨φ⟩_{s₁} − ⟨φ⟩_{s₀}| ≤ C (s₁ − s₀)` with `C ≥ √Var √g` on
+  the segment; mean value `norm_image_sub_le_of_norm_deriv_le_segment'` with the bound on `Ico`).
+  Not done: the `√t` degeneration of the length at regular points (needs uniform Laplace along
+  the path).
