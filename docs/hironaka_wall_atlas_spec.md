@@ -2134,3 +2134,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `TiltData.responseForm_self_eq_zero_iff` (`t ≠ 0`: `g_a(v,v) = 0 ↔ ∀ᵐ x, π x ≠ 0 → R_v x =
   ⟨R_v⟩_a`): the invisible data directions are those whose loss is a.e. constant on the support
   of the prior; the response form is a metric on the identifiable quotient.
+- `GibbsVariational.lean` (NOT mirrored; round-19 package 4a): **the Gibbs variational principle**.
+  `relEnt μ ρ π = ∫ ρ log(ρ/π)`, `gibbsDensity μ π L t = e^{-tL}π/Z`, `integral_gibbsDensity`,
+  `log_div_gibbsDensity` (pointwise `log(ρ/ρ_t) = log(ρ/π) + tL + log Z` where `ρ, π ≠ 0`),
+  **`gibbs_gap`** (`t E_ρL + KL(ρ‖π) = −log Z + KL(ρ‖ρ_t)` for a probability density `ρ` with
+  `ρ ≠ 0 → π ≠ 0`), `relEnt_gibbsDensity_nonneg` (Gibbs' inequality via
+  `Real.log_le_sub_one_of_pos`; pointwise `ρ − ρ_t ≤ ρ log(ρ/ρ_t)`), **`gibbs_variational`**
+  (`−log Z ≤ t E_ρ L + KL(ρ‖π)`), `gibbs_variational_eq` (equality at `ρ_t`). Integrability of
+  `ρL`, `ρ log(ρ/π)` are hypotheses.
