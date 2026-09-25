@@ -2463,3 +2463,15 @@ certificates for concrete resolved charts beyond the identity chart.
   powers of a possibly negative base need `0 < c`; state `hc₂ : 0 < c₂` AFTER the `set` (else terms built
   from it mention the unfolded name); `Tendsto.add tendsto_const_nhds` needs `(x := …)`; a "No goals"
   error's line number may point at an `exact` after a `congr 1` that already closed the goal.
+- `MeanMapFDeriv.lean` (NOT mirrored; Astra item D, stage 1): `dirCLM R x = ∑ⱼ Rⱼ(x) • proj j` (the direction
+  functional as a CLM), `dirCLM_apply`, `norm_dirCLM_le` (`≤ ∑|Rⱼ(x)|`, sup norm via `norm_le_pi_norm`),
+  `aestronglyMeasurable_dirCLM` (`Finset.aestronglyMeasurable_sum` + `.congr` with `Finset.sum_apply`),
+  `affLoss_eq_dirCLM`, `hasFDerivAt_affWeight` (pointwise Fréchet derivative via `(dirCLM).hasFDerivAt`,
+  `.const_add/.const_mul/.neg/.exp/.mul_const`, then `congr_fderiv` + `ext v; simp [smul_apply, neg_apply]`),
+  **`hasFDerivAt_affNum`** (`Integrable F' ∧ HasFDerivAt (a ↦ ∫ φ e^{-tL_a} π) (∫ F' a₀) a₀` by
+  `hasFDerivAt_integral_of_dominated_of_fderiv_le` on the unit ball with bound
+  `t Mφ S e^{tS} e^{-tL_{a₀}} π`), **`affNum_fderiv_apply`** (`(∫ F') v = −t ∫ φ R_v e π` via
+  `ContinuousLinearMap.integral_apply`). Gotchas: the Fréchet parametric theorem is
+  `hasFDerivAt_integral_of_dominated_of_fderiv_le` (no `_loc_`), hypotheses `(hs : s ∈ 𝓝 x₀)` and
+  `∀ᵐ a, ∀ x ∈ s, …`; `Integrable.bdd_mul` needs `(c := …)` when the bound is proved by `nlinarith`;
+  `ContinuousLinearMap.smul_apply/neg_apply` are deprecated for root `smul_apply/neg_apply`.
