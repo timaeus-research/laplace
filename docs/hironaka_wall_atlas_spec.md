@@ -3438,3 +3438,15 @@ certificates for concrete resolved charts beyond the identity chart.
   (`𝒮(t,a) = 𝒮(t,0) − famKL a 0 + t(⟨L₀⟩_{t,a} − ⟨L₀⟩_{t,0})`; `mixKL_three_point … (t := 1) (natCoord t a) 0 (natCoord t 0)`,
   `Fintype.sum_option`, `natKL_natCoord` to `famKL`; `simp` turns `0 − x` into `−x`, so `simp only [zero_sub]` on the goal
   before `linarith`).
+- `MixtureBending.lean` (NOT mirrored; Astra round 37 item 3): `centredFeat Zᵢ = Rᵢ − ⟨Rᵢ⟩`, `whitenedDir V_v = R_{C⁻¹v}`,
+  `prodObs = V_vV_w`, `mixBend 𝓑(v,w) = V_vV_w − ⟨V_vV_w⟩ − dirLoss Z (C⁻¹⟨Z V_vV_w⟩)`; `prodObs_comm`, **`mixBend_comm`**
+  (`unfold mixBend; rw [prodObs_comm …]` — `simp only [mixBend, prodObs_comm]` makes no progress), `bdd_centredFeat`,
+  `priorExp_centredFeat` (= 0), **`priorExp_centredFeat_mul`** (`⟨Zᵢφ⟩ = Cov(Rᵢ,φ)`), `priorExp_centredFeat_mul_centredFeat`
+  (`⟨ZᵢZⱼ⟩ = Cᵢⱼ`; final `rfl` through `Matrix.of_apply`), **`priorExp_mixBend_eq`** (the linear structure `⟨φ𝓑⟩ = ⟨φV_vV_w⟩ −
+  ⟨V_vV_w⟩⟨φ⟩ − ∑ dᵢ⟨φZᵢ⟩`; identity proved after `rw [← hd, ← hc]` to refold the `set` variables that `unfold` re-exposes,
+  `priorExp_dirLoss` for the sum), **`priorExp_mixBend`** (`⟨𝓑⟩ = 0`), **`priorExp_centredFeat_mul_mixBend`** (Fisher-normality
+  `⟨Zⱼ𝓑⟩ = 0`: the sum is `(C(C⁻¹e))ⱼ = eⱼ`, `change` to the `mulVec` sum then `Finset.sum_congr … mul_comm`),
+  **`priorExp_residual_mul_mixBend`** (`⟨H𝓑(v,w)⟩ = κ₃(H,V_v,V_w)`: `⟨HZᵢ⟩ = 0` by `priorCov_residual_dirLoss` at
+  `Pi.single i 1` + `dirLoss_pi_single`; unapplied `prodObs` must be unfolded by a `rfl` equation — `simp only [prodObs]`
+  only fires on applied occurrences; `beta_reduce at hv hw`; `linear_combination ⟨V_w⟩ * hv + ⟨V_v⟩ * hw`; needs neither
+  `hnd` nor `ht`). Calls of `priorExp_mixBend_eq` in a `have` need `(t := t)` and `(φ := …)` pinned.
