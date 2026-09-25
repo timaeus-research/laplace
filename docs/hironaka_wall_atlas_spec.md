@@ -1271,3 +1271,32 @@ certificates for concrete resolved charts beyond the identity chart.
   `simp_rw [foo_eq]` makes no progress on an unapplied `Measurable (f t)` — `rw [show f t = fun ξ ↦ _
   from funext …]`; `Set.indicator_of_mem hξ` rewrites all copies at once (a second call fails);
   `rw [hval] at h` fails on association — `rw [← mul_assoc, hval] at h`.
+- Astra round 9 (`gpt_responses/research_round9_{q,v1}.md`, c0f5e33): the trace formula is
+  correct; hypotheses for the exact trace model: `w, a` measurable on `(0,ρ)`, `0 ≤ w ≤ W_*`,
+  `a ≥ a_- > 0` (no continuity, no upper bound on `a`); signed `w` by linearity. Chart observables
+  `φ(x)`: the limit IS Dirac at `x = 0` for `I = ∅` (the "not Dirac" warning was about observables
+  that see `u`); with spectators the density is `∏ y^{d−1} ∫_0^ρ u^{qη−1} W₀(y,0,u) a₀(y,0,u)^{-β}`.
+  Trace replacement needs, for a.e. `w ∈ F'`, all reconstructed coordinates `α_j(w) > 0` — NOT
+  implied by relative-boundary nullity (a face may lie in `{α_j = 0}`); apply the scaled-fibre DCT
+  to the whole amplitude `W e^{-C a e^{-s}}`. Order: (1) exact trace model, (2) weighted fibre
+  lemma, (3) general trace replacement, (4) no-spectator chart wrapper, (5) spectators.
+- `ActiveTruthTraceModel.lean` + `ActiveTruthTraceAssembly.lean` (28849dc; hironaka 76b37a5e0):
+  `logTruth` (`u_t(z)`), `modelIntegrand_trace_negExp`, `logIntegrandT`,
+  `lintegral_modelIntegrand_trace`; `truthOf ρ D q Q h = D ρ^{-∑Q/q} e^{-h/q}`,
+  `logTruth_sum_elim` (`u_t = u(h)` on the affine change — the `t`-dependence cancels),
+  `innerKvT`, `lintegral_inner_substT`, `vWeightT`, `innerKvT_eq`, `lintegral_innerKvT_swap`
+  (the fibre set is unchanged). Gotcha: after `set v := … with hvdef`, hypotheses obtained
+  BEFORE the `set` are folded automatically — a later `rw [← hvdef] at hu` then fails.
+- `ActiveTruthTraceLimit.lean` + `ActiveTruthTraceTheorem.lean` (32db66d; hironaka 4c04d8a92):
+  **the face theorem for the trace model.** `truthOf_mem_Ioo` (`h > h₀ ⇒ u(h) ∈ (0,ρ)`),
+  `vWeightT_le` (domination by `W_*` × the constant-unit weight at `c₀ a_-`),
+  `tendsto_lintegral_vWeightT_fibre`, `lintegral_vWeightT_zero` (Fubini via
+  `volume_preserving_finTwoArrow` + `lintegral_prod_symm'`, the `s`-integral first),
+  `integral_Ioi_truthOf : ∫_{h>h₀} e^{-ηh} f(u(h)) = q C^{-qη} ∫_0^ρ u^{qη−1} f(u)` (any `f`, by
+  `Measure.integral_comp_mul_left`, `integral_sub_right_eq_self`, `integral_comp_exp_univ`),
+  `trace_const_eq`, `tendsto_modelKernel_trace`:
+  `t^{γp+βδ−ηγ}/(log t)^k · K(t) → A Γ(β) B^{-β} q D^{-qη} vol(F')/|det M| ∫_0^ρ u^{qη−1} w a^{-β}`.
+  Gotchas: `0 ≤ᵐ[μ.restrict s] f` is `EventuallyLE` — `refine (ae_restrict_iff' hs).mpr …` then
+  `change (0 : ℝ) ≤ _`; `linarith` sees `-h₀ / q` and `h₀ / q` as different atoms (`neg_div`);
+  `measurable_modelIntegrand` wants `Measurable (uncurry W)` — give it as
+  `show Measurable (Function.uncurry fun _ u ↦ w u) from hwm.comp measurable_snd`.
