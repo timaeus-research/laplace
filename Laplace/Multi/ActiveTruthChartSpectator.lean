@@ -444,7 +444,7 @@ theorem tendsto_modelKernelOf_activeTruthSpectator (e : Fin n ⊕ (Fin k ⊕ Fin
     congr 1
     rw [hC]
     unfold faceConstSpec
-    ring
+    ring_nf
   rw [hval]
   refine hgen.congr' ?_
   filter_upwards [hK] with t ht
