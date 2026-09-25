@@ -2715,3 +2715,20 @@ certificates for concrete resolved charts beyond the identity chart.
   norm_num) _` with a metavariable base fails), **`tendsto_endpoint_identity`** (`½KL(P_u‖P_0) + log ρ(0,u) → λ(log 2 − ½)`;
   do NOT `rw [one_div]` on a hypothesis whose function also contains `1/2` — rewrite `log (1/2)` with a `show`).
   Gotcha: `Filter.Tendsto.log` needs the limit `≠ 0`.
+- `GlobalWallChart.lean` (NOT mirrored; Astra round 27 item 5, chart half): **`hasDerivAt_profileNum_all`** /
+  **`hasDerivAt_profilePosterior_all`** (the wall response `∂_c⟨ψ⟩_c = −Cov_c(ψ, y^q)` for EVERY real `c`, via
+  `hasDerivAt_integral_of_dominated_loc_of_deriv_le` on `Metric.ball c₀ 1` with the negative-side majorant
+  `abs_profile_integrand_le` applied to `ψ y^q` (growth `r + q`) and `b₁ = |c₀| + 2`), **`profileVar_pos'`**
+  (`Var_c(y^q) > 0` on all of `ℝ`; the variance-as-centred-second-moment identity needs the integrals folded to atoms
+  BEFORE `field_simp`, and `simp only [one_mul] at hm ⊢` after `unfold profilePosterior profileNum at hm ⊢`),
+  **`profileMean_strictAnti`** (`strictAnti_of_deriv_neg`), `continuous_profileMean`, `profileMean_pos`
+  (`setIntegral_pos_iff_support_of_nonneg_ae` with the nonnegativity stated through `ae_restrict_iff'` — `y^q` is NOT
+  nonnegative for `y < 0`), `tendsto_profileMean_atTop` (`m → 0`, from `tendsto_mul_profileMean`),
+  `tendsto_profileMean_neg_div` (`⟨y^q⟩_{-b}/y_b^q → 1`, from `negA_eq` at `j = 0, 1`: `⟨z^q⟩_B − 1 = A₁/(√B A₀)`),
+  `tendsto_profileMean_atBot` (`m → +∞`; `hy.atTop_mul_pos one_pos hlim`, `tendsto_neg_atBot_atTop`, `neg_neg` in
+  the final simp), **`profileMean_bijOn`** (surjectivity onto `Ioi 0` through `log ∘ m` and `Continuous.surjective'`
+  with `Real.tendsto_log_nhdsGT_zero` + `tendsto_nhdsWithin_iff`), `profileMeanPos`, **`profileMeanOrderIso : ℝ ≃o
+  (Ioi 0)ᵒᵈ`** (`StrictMono.orderIsoOfSurjective`; `OrderDual.toDual_lt_toDual`, `Subtype.mk_lt_mk`,
+  `OrderDual.ofDual.injective (Subtype.ext hc)`), **`profileMeanHomeomorph : ℝ ≃ₜ Ioi 0`** (`OrderIso.toHomeomorph` then
+  `.trans ⟨OrderDual.ofDual, continuous_ofDual, continuous_toDual⟩`), `profileMeanHomeomorph_apply` (rfl),
+  `continuous_profileMeanHomeomorph_symm`.
