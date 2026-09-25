@@ -2333,3 +2333,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`TiltData.hasDerivAt_affLogZ_dir`** (`D_v A = −t⟨R_v⟩_a`), **`TiltData.hasDerivAt_deriv_affLogZ_dir`**
   (`D_v² A = responseForm a v v`). Gotcha: `tiltData_baseWeight_of_bounded` takes `μ` EXPLICITLY;
   `omit [MeasurableSpace X]` is refused when the statement mentions `μ`.
+- `WallWindowLength.lean` (NOT mirrored; round-22 item 5): `priorExp_const_mul`, `priorExp_congr_ae`,
+  `twoMonoPath p q a w = w^p + a w^q`, `twoMonoVel q _ w = w^q` (NB `wallPath` is taken by `WallCutoff`),
+  `scaled_rpow` (`(t^{1/p} w)^q = t^{q/p} w^q`), `priorExp_twoMonoPath_score(_sq)` (window moments
+  `= t^{-q/p}⟨y^q⟩_c`, `t^{-2q/p}⟨y^q y^q⟩_c`), **`fisherSpeed_twoMonoPath`**
+  (`g_t(c t^{-σ*}) = t^{2σ*} Var_c(y^q)`), **`wall_window_length`**
+  (`∫_{c₀t^{-σ*}}^{c₁t^{-σ*}} √g_t da = ∫_{c₀}^{c₁} √Var_c(y^q) dc`, exact for every `t`; substitution via
+  `intervalIntegral.integral_comp_mul_right`). Gotcha: an unapplied `twoMonoVel q a` inside `priorExp`
+  is not unfolded by `simp only [twoMonoVel]` — `rw [show twoMonoVel q a = fun w ↦ w^q from rfl]`.
