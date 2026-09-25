@@ -3784,3 +3784,17 @@ certificates for concrete resolved charts beyond the identity chart.
   face mean is carried by `F`, `klDiv_eq_klDiv_faceMeasure_add`, the IH's Pythagoras, `add_assoc`/`add_comm`; a law not
   `≪ ν` has both sides `⊤` via `klDiv_of_not_ac`); uniqueness then follows from `klDiv_eq_zero_iff` — when deriving it,
   `rw [zero_add, h]` rewrites BOTH copies of `genRate`; use `rw [zero_add]; exact h`.
+- `DataResponseMap.lean` (NOT mirrored; round-43 item 1): **`responseProjection hS ν M`** (instance-free: `open Classical in`,
+  `if h : IsProbabilityMeasure ν ∧ genRate ν S M ≠ ⊤ then (haveI := h.1; Classical.choose (exists_pythagorean_minimiser …))
+  else 0` — a def taking `[IsProbabilityMeasure ν]` cannot be applied to `faceMeasure ν F` in a statement;
+  `responseProjection_spec` via `dif_pos ⟨inferInstance, hfin⟩` + `Classical.choose_spec`), `klDiv_eq_top_of_genRate_eq_top`
+  (`top_le_iff.1 (h ▸ genRate_le_klDiv …)`), **`information_decomposition`** (`KL(D‖ν) = 𝓘(E_D S) + KL(D‖Π(E_D S))`, one `rw` of
+  the spec's Pythagoras + `add_comm`), `essRange_eq_of_equiv`, `mean_mem_momentBody_general` (`change priorExp … = _` before
+  `rw [← integral_familyMeasure …, familyMeasure_one_zero]`, which then closes the goal — no trailing `rfl`),
+  **`mean_mem_intrinsicInterior_of_equiv`** (supporting characterisation + `compl_eq_zero_of_mean_face` + `ae_iff` transfer by
+  `ν ≪ D`), **`mean_tilted_mem_intrinsicInterior`**, **`hasDerivAt_dataResponsePath`** (= `hasDerivAt_integral_tilted`; omit
+  `[Fintype J] [Nonempty J]`), **`klDiv_tilted_eq_integral`** (FTC with `hasDerivAt_klDiv_tilted_toReal`; continuity of the integrand
+  from the tilt derivatives; `ν.tilted (0 * f) = ν` via `tilted_const'`, `measure_univ`, `inv_one`, `one_smul`; `klDiv_self`),
+  **`information_decomposition_path`** (`ENNReal.toReal_add`, finiteness of the residual from `ENNReal.add_ne_top`),
+  **`responseProjection_faceMeasure`** (Π_ν(M) = Π_{ν_F}(M) on a positive supporting face; chain rule + uniqueness; no `_` in
+  the `have` type of the cancellation step). Several statements need `set_option linter.unusedFintypeInType false in`.
