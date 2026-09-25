@@ -3624,3 +3624,18 @@ certificates for concrete resolved charts beyond the identity chart.
   **`cramer_lower`** (open `G`, `𝓘(M) < c` for some `M ∈ G` ⇒ eventually `≥ e^{−nc}`; `M ∈ K` since `𝓘 < ⊤`; the radial
   point enters `G` by continuity: `(hcont.tendsto 0 |>.eventually (hG.mem_nhds …)).and (eventually_lt_nhds zero_lt_one)`
   then `Filter.Eventually.exists_gt`).
+- `ExposedFace.lean` (NOT mirrored; round-40 bundle E): `genRate ν R M` (generic Chernoff rate; `rateFun` is `genRate
+  (familyMeasure t 0)` DEFINITIONALLY), `faceMeasure ν F := (ν F)⁻¹ • ν.restrict F` (`isProbabilityMeasure_faceMeasure`
+  needs `ν F ≠ 0`; from `0 < ν.real F` via `(ENNReal.toReal_pos_iff.1 hp).1.ne'`), `integral_faceMeasure`
+  (`integral_smul_measure`, `ENNReal.toReal_inv`), `integrable_exp_dirLoss`, `setIntegral_exp_dirLoss_pos` (constant lower
+  bound + `setIntegral_const` + `integral_mono` on the restricted measure), `featCgf_faceMeasure`
+  (`Λ_F(q) = log ∫_F e^{q·R} − log p_F`), `log_add_featCgf_face_le`, **`genRate_le_face`** (everywhere;
+  `ENNReal.ofReal_add_le`, `add_le_add le_rfl …`), **`tendsto_featCgf_ray`** (`Λ(q+λu) − λβ → log p_F + Λ_F(q)`: split the
+  integral with `integral_add_compl`, rewrite on the face with `setIntegral_congr_fun` and `simp only [dirLoss_add,
+  dirLoss_smul, hx', ← Real.exp_add]` (beta-redexes block `rw`), DCT `tendsto_integral_filter_of_dominated_convergence` on
+  `ν.restrict Fᶜ` with `ae_restrict_of_ae`, `ae_restrict_mem hF.compl`, `Real.tendsto_exp_atBot.comp
+  (tendsto_id.atTop_mul_const_of_neg hlt)`; log-limit via a named `h1 : Tendsto (fun lam ↦ A + G lam) atTop (𝓝 A)`),
+  `featCgf_zero'`, **`face_le_genRate`** (on `{u·M = β}`: `le_of_tendsto'` — NOT `ge_of_tendsto'` — of the scores along
+  `q + λu`; `ENNReal.add_iSup`, case split `le_or_gt` with `ENNReal.ofReal_add` / `ENNReal.ofReal_of_nonpos`),
+  **`genRate_face_eq`**, **`rateFun_face_eq`** (`𝓘(M) = −log p_F + 𝓘_F(M)` for the response family; a.e. bound transported
+  by `withDensity_absolutelyContinuous`).
