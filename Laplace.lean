@@ -232,6 +232,7 @@ import Laplace.Multi.MeanMapInjective
 import Laplace.Multi.MeanMapFDeriv
 import Laplace.Multi.MeanMapJacobian
 import Laplace.Multi.MeanMapChart
+import Laplace.Multi.MeanMapEmbedding
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
