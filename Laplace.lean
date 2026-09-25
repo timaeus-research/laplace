@@ -248,6 +248,7 @@ import Laplace.Multi.AngularBound
 import Laplace.Multi.HalfLineLaplace
 import Laplace.Multi.TwoMonoPotential
 import Laplace.Multi.NegativeChamber
+import Laplace.Multi.NegativeChamberLaw
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
