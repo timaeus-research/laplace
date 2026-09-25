@@ -2573,3 +2573,9 @@ certificates for concrete resolved charts beyond the identity chart.
   the product into four bounded×base-weight terms with lambda-typed `Integrable` facts (`I3 I2 I1 I0`, `I32`,
   `I321`), `integral_add/sub/const_mul`, then substitute `mv`, `mw` (forward `rw [hmv, hmw]`) and `field_simp; ring`.
   The response form is the Fisher–Rao metric of the posterior family pulled back to the data manifold.
+- `RadialLaws.lean` (NOT mirrored; Astra round 25 item 6): `priorExp_smul_add` (`⟨φ⟩_u^{aL+b} = ⟨φ⟩_{au}^L`),
+  `priorCov_self_smul_add` (`Var_u(aL+b) = a² Var_{au}(L)`; fold the three integral values with `set … ;
+  clear_value` BEFORE `field_simp`, else it rewrites inside the integrands and `ring` sees different atoms),
+  **`radialLength_smul_add`** (`D_t(aL+b) = D_{at}(L)`, `a > 0`, via `integral_comp_mul_left (f := …)`),
+  `radialLength_const_add` (from scaling with `a = 1`), `wall_window_length_two_sided` (instance of
+  `wall_window_length` at `−c₋`; subscript `₋` is not an identifier character — use `cm`/`cp`).
