@@ -294,6 +294,7 @@ import Laplace.Multi.JourneyPotential
 import Laplace.Multi.RayLength
 import Laplace.Multi.HalfspaceChernoff
 import Laplace.Multi.HalfspaceProjection
+import Laplace.Multi.JointChartMetric
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
