@@ -11,8 +11,8 @@ import Laplace.Multi.EntropyDuality
 
 For the affine posterior family `P_a ∝ e^{-t L_a} π`, `L_a = L₀ + a·R`, the seabed's Bregman
 identity (`mixKL_aff_eq`) reads `KL(P_a ‖ P_b) = A(b) − A(a) + t (b − a)·m(a)`, with `A = log Z`
-and `m` the mean map. Here we add the **information-projection (Pythagorean) theorem**: if a probability
-density `q` matches the moments of `P_a`, `E_q[R] = m(a)`, then for every `b`
+and `m` the mean map. Here we add the **information-projection (Pythagorean) theorem**: if a
+probability density `q` matches the moments of `P_a`, `E_q[R] = m(a)`, then for every `b`
 
   `KL(q ‖ P_b) = KL(q ‖ P_a) + KL(P_a ‖ P_b)`   (`relEnt_pythagoras`).
 
