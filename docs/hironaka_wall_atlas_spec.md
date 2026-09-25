@@ -3560,3 +3560,13 @@ certificates for concrete resolved charts beyond the identity chart.
   pairing vanishes by `hM`), **`hasFDerivAt_relEntropy_fullMean`** (gradient `dotCLM θ` in full mean coordinates; eventual
   equality on the open range, `unfold fullMean` BEFORE `meanEntropy_eq_dual`), `hasDerivAt_relEntropy_fullMean_path`
   (`d𝒮/ds = ⟨θ, μ'⟩` along any differentiable full mean path). `[Nonempty ι]` is NOT needed anywhere here.
+- `FluctuationResponse.lean` (NOT mirrored; round-39 small corollary): `variance_familyMeasure` (Mathlib's
+  `variance_eq_sub (hX : MemLp X 2 μ)` — `variance_def'` does not exist; `Pi.pow_apply`, `integral_familyMeasure (t := t)`),
+  `sum_mul_empMean_eq` (`v·R̄_n = (1/n) ∑ₖ R_v(xₖ)`), **`variance_empMean_dir`** (`Var(v·R̄_n) = v⬝Cov v / n` via
+  `variance_const_mul`, `variance_empSum`; `omit ht`), **`variance_empMean_dir_eq_meanMapDeriv`** (`= −v⬝Dm v/(nt)`).
+- `WallRay.lean` (NOT mirrored; round-39 first wall theorem): `thresholdFun_le` (`omit ht`, callers pass `(t := t)`),
+  **`segVar_ray_le`** (Bhatia–Davis `priorCov_self_le_mul_of_bounds` with `lo = −‖R_u‖∞`, `hi = β`:
+  `Var ≤ (Mu+|β|)(β − u·m)`; `omit ht`), `tendsto_dot_meanMap_ray` (`tendsto_thresholdFun` + `thresholdFun_eq_sum (t := t)`),
+  **`tendsto_segVar_ray`** (squeeze `tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hup`),
+  `tendsto_responseForm_ray`. Hypotheses: an EVERYWHERE bound `∀ x, R_u x ≤ β` (Bhatia–Davis is pointwise) and the mass
+  condition `∀ ε > 0, 0 < ∫_{β−ε < R_u} π`.
