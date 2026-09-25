@@ -243,6 +243,57 @@ variable [Nonempty X] {π L₀ : X → ℝ} (hπm : Measurable π) (hπi : Integ
   {R : ι → X → ℝ} (hR : ∀ i, Bdd (R i)) {t : ℝ} (ht : 0 < t)
 include hπm hπi hπ hπpos hL₀m hL₀ hR ht
 
+/-- **The multi-constrained response, path form**: along a differentiable path whose velocity at `s`
+is `v + ∑ₖ γₖ w k` and along which every `⟨R_{w k}⟩` is locally constant, if `C b = c` with `C`
+injective then `d/ds ⟨φ⟩ = −t (Cov(φ, R_v) − ∑ₖ bₖ Cov(φ, R_{w k}))`. -/
+theorem multi_constrained_response_deriv_path (a : ℝ → ι → ℝ) (v : ι → ℝ) (w : κ → ι → ℝ)
+    (γ : κ → ℝ) (s : ℝ) (hpath : HasDerivAt a (v + ∑ k, γ k • w k) s) {c : κ → ℝ}
+    (hconst : ∀ k, ∀ᶠ s' in 𝓝 s, priorExp μ π (affLoss L₀ R (a s')) (dirLoss R (w k)) t = c k)
+    {b : κ → ℝ}
+    (hb : (covMat μ π L₀ R t (a s) w).mulVec b = covVec μ π L₀ R t (a s) w (dirLoss R v))
+    (hinj : Function.Injective (covMat μ π L₀ R t (a s) w).mulVec)
+    {φ : X → ℝ} (hφ : Bdd φ) :
+    HasDerivAt (fun s ↦ priorExp μ π (affLoss L₀ R (a s)) φ t)
+      (-t * (priorCov μ π (affLoss L₀ R (a s)) φ (dirLoss R v) t -
+        ∑ k, b k * priorCov μ π (affLoss L₀ R (a s)) φ (dirLoss R (w k)) t)) s := by
+  -- the response rule along the path, for any bounded observable
+  have hD : ∀ {ψ : X → ℝ}, Bdd ψ → HasDerivAt (fun s ↦ priorExp μ π (affLoss L₀ R (a s)) ψ t)
+      (-t * (priorCov μ π (affLoss L₀ R (a s)) ψ (dirLoss R v) t +
+        ∑ k, γ k * priorCov μ π (affLoss L₀ R (a s)) ψ (dirLoss R (w k)) t)) s := by
+    intro ψ hψ
+    obtain ⟨hψm, Mψ, hψb⟩ := hψ
+    have h := (hasFDerivAt_obsMap hπm hπi hπ hπpos hL₀m hL₀ hR hψm hψb ht (a s)).comp_hasDerivAt
+      s hpath
+    refine h.congr_deriv ?_
+    rw [obsMapDeriv_apply hπm hπi hπ hπpos hL₀m hL₀ hR hψm hψb ht,
+      priorCov_dirLoss_add_right hπm hπi hπ hπpos hL₀m hL₀ hR _ v _ ⟨hψm, Mψ, hψb⟩,
+      priorCov_dirLoss_sum_smul_right hπm hπi hπ hπpos hL₀m hL₀ hR _ _ w ⟨hψm, Mψ, hψb⟩]
+  -- the constraints force `C γ = −c`
+  have hzero : ∀ k, priorCov μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) (dirLoss R v) t +
+      ∑ l, γ l * priorCov μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) (dirLoss R (w l)) t =
+        0 := by
+    intro k
+    have h1 := hD (bdd_dirLoss hR (w k))
+    have h2 : HasDerivAt (fun s ↦ priorExp μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) t) 0 s :=
+      (hasDerivAt_const s (c k)).congr_of_eventuallyEq ((hconst k).mono fun s' h ↦ h)
+    rcases mul_eq_zero.1 (h1.unique h2) with h | h
+    · exact absurd h (by linarith)
+    · exact h
+  have hγ : γ = -b := by
+    apply hinj
+    rw [Matrix.mulVec_neg, hb]
+    funext k
+    simp only [Matrix.mulVec, dotProduct, covMat, Matrix.of_apply, covVec, Pi.neg_apply]
+    have e : ∑ l, priorCov μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) (dirLoss R (w l)) t *
+        γ l = ∑ l, γ l * priorCov μ π (affLoss L₀ R (a s)) (dirLoss R (w k))
+          (dirLoss R (w l)) t := Finset.sum_congr rfl fun l _ ↦ mul_comm _ _
+    rw [e]
+    linarith [hzero k]
+  refine (hD hφ).congr_deriv ?_
+  rw [hγ]
+  simp only [Pi.neg_apply, neg_mul, Finset.sum_neg_distrib]
+  ring
+
 /-- **The multi-constrained response**: along `a(s) = a₀ + s v + ∑ₖ βₖ(s) w k` with every
 `⟨R_{w k}⟩` constant, and `C b = c` with `C` injective,
 `d/ds ⟨φ⟩ = −t (Cov(φ, R_v) − ∑ₖ bₖ Cov(φ, R_{w k}))`. -/
@@ -259,58 +310,16 @@ theorem multi_constrained_response_deriv (a₀ v : ι → ℝ) (w : κ → ι �
       (-t * (priorCov μ π (affLoss L₀ R (a₀ + s • v + ∑ k, β s k • w k)) φ (dirLoss R v) t -
         ∑ k, b k * priorCov μ π (affLoss L₀ R (a₀ + s • v + ∑ k, β s k • w k)) φ
           (dirLoss R (w k)) t)) s := by
-  set a : ℝ → ι → ℝ := fun s ↦ a₀ + s • v + ∑ k, β s k • w k with ha
-  have hconst' : ∀ s k, priorExp μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) t = c k := hconst
-  have hb' : (covMat μ π L₀ R t (a s) w).mulVec b = covVec μ π L₀ R t (a s) w (dirLoss R v) := hb
-  have hinj' : Function.Injective (covMat μ π L₀ R t (a s) w).mulVec := hinj
-  change HasDerivAt (fun s ↦ priorExp μ π (affLoss L₀ R (a s)) φ t)
-    (-t * (priorCov μ π (affLoss L₀ R (a s)) φ (dirLoss R v) t -
-      ∑ k, b k * priorCov μ π (affLoss L₀ R (a s)) φ (dirLoss R (w k)) t)) s
-  have hpath : HasDerivAt a (v + ∑ k, β' s k • w k) s := by
+  have hpath : HasDerivAt (fun s : ℝ ↦ a₀ + s • v + ∑ k, β s k • w k)
+      (v + ∑ k, β' s k • w k) s := by
     have h1 : HasDerivAt (fun s : ℝ ↦ a₀ + s • v) v s := by
       simpa using ((hasDerivAt_id s).smul_const v).const_add a₀
     have h2 : HasDerivAt (fun s : ℝ ↦ ∑ k, β s k • w k) (∑ k, β' s k • w k) s :=
       HasDerivAt.fun_sum fun k _ ↦ (hβ s k).smul_const (w k)
     exact h1.add h2
-  -- the response rule along the path, for any bounded observable
-  have hD : ∀ {ψ : X → ℝ}, Bdd ψ → HasDerivAt (fun s ↦ priorExp μ π (affLoss L₀ R (a s)) ψ t)
-      (-t * (priorCov μ π (affLoss L₀ R (a s)) ψ (dirLoss R v) t +
-        ∑ k, β' s k * priorCov μ π (affLoss L₀ R (a s)) ψ (dirLoss R (w k)) t)) s := by
-    intro ψ hψ
-    obtain ⟨hψm, Mψ, hψb⟩ := hψ
-    have h := (hasFDerivAt_obsMap hπm hπi hπ hπpos hL₀m hL₀ hR hψm hψb ht (a s)).comp_hasDerivAt
-      s hpath
-    refine h.congr_deriv ?_
-    rw [obsMapDeriv_apply hπm hπi hπ hπpos hL₀m hL₀ hR hψm hψb ht,
-      priorCov_dirLoss_add_right hπm hπi hπ hπpos hL₀m hL₀ hR _ v _ ⟨hψm, Mψ, hψb⟩,
-      priorCov_dirLoss_sum_smul_right hπm hπi hπ hπpos hL₀m hL₀ hR _ _ w ⟨hψm, Mψ, hψb⟩]
-  -- the constraints force `C β' = −c`
-  have hzero : ∀ k, priorCov μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) (dirLoss R v) t +
-      ∑ l, β' s l * priorCov μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) (dirLoss R (w l)) t =
-        0 := by
-    intro k
-    have h1 := hD (bdd_dirLoss hR (w k))
-    have h2 : HasDerivAt (fun s ↦ priorExp μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) t) 0 s := by
-      have : (fun s ↦ priorExp μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) t) = fun _ ↦ c k :=
-        funext fun s ↦ hconst' s k
-      rw [this]; exact hasDerivAt_const s (c k)
-    rcases mul_eq_zero.1 (h1.unique h2) with h | h
-    · exact absurd h (by linarith)
-    · exact h
-  have hβ'eq : β' s = -b := by
-    apply hinj'
-    rw [Matrix.mulVec_neg, hb']
-    funext k
-    simp only [Matrix.mulVec, dotProduct, covMat, Matrix.of_apply, covVec, Pi.neg_apply]
-    have e : ∑ l, priorCov μ π (affLoss L₀ R (a s)) (dirLoss R (w k)) (dirLoss R (w l)) t *
-        β' s l = ∑ l, β' s l * priorCov μ π (affLoss L₀ R (a s)) (dirLoss R (w k))
-          (dirLoss R (w l)) t := Finset.sum_congr rfl fun l _ ↦ mul_comm _ _
-    rw [e]
-    linarith [hzero k]
-  refine (hD hφ).congr_deriv ?_
-  rw [hβ'eq]
-  simp only [Pi.neg_apply, neg_mul, Finset.sum_neg_distrib]
-  ring
+  exact multi_constrained_response_deriv_path hπm hπi hπ hπpos hL₀m hL₀ hR ht
+    (fun s ↦ a₀ + s • v + ∑ k, β s k • w k) v w (β' s) s hpath
+    (fun k ↦ Eventually.of_forall fun s' ↦ hconst s' k) hb hinj hφ
 
 /-- For `φ = R_v` the constrained response rate is minus the residual variance. -/
 theorem multi_constrained_response_deriv_self (a₀ v : ι → ℝ) (w : κ → ι → ℝ)
