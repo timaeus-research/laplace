@@ -3128,3 +3128,17 @@ certificates for concrete resolved charts beyond the identity chart.
   regression vector at each `t` from surjectivity), `featCov_mulVec_apply` (`(Cv)_i = Cov(R_i, R_v)`),
   **`obsMean_fderiv_eq_regression`** (`D_M⟨φ⟩[d] = ∑ bₖ dₖ` for `C b = Cov(R, φ)`; write `d = Cv`, use `obsMean_deriv_cov`,
   and the symmetry `∑ₖ bₖ(Cv)ₖ = ∑ₗ vₗ(Cb)ₗ` by `Finset.sum_comm`).
+- `ReducedPotential.lean` (NOT mirrored; Astra round 32 item 1, block Hessian): **`hasDerivAt_affLogZ_temp`** (`∂_t A_t(a) =
+  −(⟨L₀⟩_{t,a} + ⟨a, m(t,a)⟩)`; chain rule through the joint family: `t ↦ natCoord t a = t • natCoord 1 a` composed with
+  `hasFDerivAt_affLogZ` at `t = 1`, then `simp only [_root_.smul_apply, smul_eq_mul, dotCLM_apply, dotJ, Fintype.sum_option,
+  natCoord, Option.elim, meanMap_natCoord_none, meanMap_natCoord_some]; ring_nf`), **`featCov_mulVec_dualHessian`** (`C (D²I d) = d`:
+  write `d = C v` by surjectivity, `featCov_mulVec_apply`, `dualHessian_apply_cov`), `dualPotential_eq_tempPath`
+  (`J(t,M) = −⟨θ(t,M), (0,M)⟩ − B(θ(t,M))`; `Finset.sum_neg_distrib` before the termwise `ring`), **`hasDerivAt_dualPotential_temp`**
+  (`∂_t J = h`: `J(t) = G(θ(t))` with `G(θ) = −⟨θ,(0,M)⟩ − B(θ)`, `DG(θ(t)) = ⟨·, m_J(θ) − (0,M)⟩ = ⟨·, (h, 0)⟩`, `θ'(t)_none = 1`; the
+  function `θ ↦ dotJ θ y` is `⇑(dotCLM y)` by `funext … (dotCLM_apply _ θ).symm`; do NOT unfold `meanMap` in the final simp —
+  it destroys the `tempPath_response` pattern for the `some` slots; give the `none` slot as a separate `rfl` fact `hnone`),
+  **`hasDerivAt_infoRel_temp`** (`∂_t(J + A_t(0)) = h − ⟨L₀⟩_{t,0}`), **`tempPath_velocity_some`** (`∂_t β = −b`, the mixed
+  partial, via `constrained_velocity_eq` — factored out of `multi_constrained_response_deriv_path` in `MultiConstrainedResponse`;
+  needs `[DecidableEq ι]` in the statement for `Pi.single`). With `hasDerivAt_lossSurface` (`∂_t² J = −σ²`),
+  `obsMean_fderiv_eq_regression` (`∇_M h = b`) and `hasFDerivAt_dualPotential` (`∇_M J = −ta`) this is the whole block Hessian
+  `[[−σ², bᵀ],[b, C⁻¹]]`.
