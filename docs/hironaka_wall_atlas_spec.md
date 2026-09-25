@@ -2781,3 +2781,20 @@ certificates for concrete resolved charts beyond the identity chart.
   inside `rw` runs on a metavariable), `continuousOn_logModelJK` (`continuousOn_finsetSum`; `continuousOn_finset_sum`
   is deprecated), **`logModelK_length_renormalised`**: `∃ u₀ > 1, ∃ K, ∫_{u₀}^t √Var_u − (log t − (k/2) log log t) → K`.
   Numerics: residual × log²u ∈ [−0.8, 0.6] for k = 1,2,3 up to u = 10¹².
+- `TwoValuedGeodesic.lean` (NOT mirrored; Astra round 27 item 2, computable core): `twoValued_of_quadratic` (`X² − v = cX`
+  a.e., `v ≥ 0` ⇒ `X ∈ {(c ± √(c²+4v))/2}` a.e.; `quadratic_eq_zero_iff one_ne_zero hd` with `discrim` unfolded),
+  `quadratic_of_twoValued`, `twoAtom p q α β := ofReal p • dirac α + ofReal q • dirac β`, `integral_twoAtom`
+  (`integral_add_measure` with `(integrable_dirac (by simp)).smul_measure ENNReal.ofReal_ne_top`, `integral_smul_measure`,
+  `integral_dirac`, `ENNReal.toReal_ofReal`), `atomWeight` (`w_u`), `twoAtomZ`, `lawMoment_twoAtom_zero`,
+  `lawExp_twoAtom`, `atomWeight_pos/lt_one`, **`lawVar_twoAtom`** (`(β−α)² w(1−w)`), **`hasDerivAt_atomWeight`**
+  (`w' = (β−α)w(1−w)`; state `hZ'`/`hdiv` with lambda types — `hN.div (hN.add hM)` is Pi-form and `field_simp` then sees
+  `((fun …) + fun …) u` atoms), `continuous_atomWeight`, `atomWeight_monotone` (`monotone_of_deriv_nonneg`), `atomAngle :=
+  arcsin √w` (`omit hp hq in` for the range lemmas), `sin_atomAngle`, `cos_atomAngle` (`Real.cos_arcsin` + `Real.sq_sqrt`),
+  **`hasDerivAt_two_atomAngle`** (`d(2θ)/du = √Var`; `Real.hasDerivAt_arcsin (hx1 : x ≠ −1) (hx2 : x ≠ 1)` composed with
+  `HasDerivAt.sqrt`; `Real.sqrt_eq_one`; then `set a := √w, b := √(1−w)`, `rw [← ha2] at hb2 ⊢; rw [← hb2]; field_simp`),
+  `continuous_sqrt_lawVar_twoAtom`, **`twoAtom_length_eq`** (`∫_s^t √Var = 2θ_t − 2θ_s`, FTC), **`lawAffinity_twoAtom`**
+  (`ρ = √(w_s w_t) + √((1−w_s)(1−w_t))`; rewrite `atomWeight` by `show … from rfl` so `Real.sqrt_div' _ hZst.le` sees the
+  folded `twoAtomZ`; `unfold … at *` inside a `have` MUTATES the outer hypotheses — use `at this ⊢`),
+  `lawAffinity_twoAtom_eq_cos` (`Real.cos_sub`), **`twoAtom_length_eq_two_arccos`** (`Real.arccos_cos` with
+  `0 ≤ θ_t − θ_s ≤ π` from `Real.monotone_arcsin` and the range lemmas), `twoAtom_two_arccos_affinityExp_eq` (equality case
+  of `two_arccos_affinityExp_le`).
