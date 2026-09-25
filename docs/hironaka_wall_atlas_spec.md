@@ -3009,3 +3009,20 @@ certificates for concrete resolved charts beyond the identity chart.
   **`obsMean_deriv_cov`** (`DΦ(m a)(Cov(R_i,R_v))_i = Cov(φ, R_v)`: the regression identity `DΦ = Cov(φ,R)Cov(R,R)⁻¹`;
   via `invJac_meanMapDeriv` and `obsMapDeriv_apply`), **`abs_obsMean_deriv_le`** (`|DΦ ṁ| ≤ √Var(φ) √⟨ṁ, D²I ṁ⟩` from
   `abs_obsMapDeriv_le` + `dualHessian_quadratic_form`).
+- `LegendreMaximum.lean` (NOT mirrored; Astra round 31 item 1): **`dual_objective_le_at_mean`** (`−t⟨θ,m(a₀)⟩ − A(θ) ≤
+  −t⟨a₀,m(a₀)⟩ − A(a₀)`; the 1-D tangent inequality `ConvexOn.le_slope_of_hasDerivAt` on the segment
+  `s ↦ mixLogZ … s` with `TiltData.mixLogZ_convexOn`, `TiltData.hasDerivAt_mixLogZ 0`, `slope_def_field`, `mixExp_zero_eq_dot`,
+  `affLogZ_line`), **`legendre_isMaxOn_aff`** (name: `legendre_isMaxOn` already exists in `RayChart`),
+  **`eq_of_isMaxOn_dual_objective`** (uniqueness: `IsLocalMax.hasFDerivAt_eq_zero` on `hasFDerivAt_affLogZ` + the CLM
+  `dotCLM`, evaluate on `Pi.single j 1`, cancel `−t` by `mul_eq_zero`, then `meanMap_injective`), `dualPotential_isMaxOn`,
+  `affLoss_zero_eq`, `affLoss_sub_affLoss_zero`, `log_gibbsDensity_div_zero` (`log(p_a/p_0) = −tR_a − A(a) + A(0)`),
+  **`relEnt_eq_relEnt_gibbs_add`** (`KL(q‖P_0) = KL(q‖P_a) + (−t⟨a,m(a)⟩ − A(a) + A(0))` for a probability density `q` with
+  the contrast means of `P_a`; pointwise identity with a case split on `q x = 0`; typed `Integrable (fun x ↦ …)` facts
+  for `integral_add`/`integral_sub`), **`dual_add_le_relEnt`** (`relEnt_gibbsDensity_nonneg`). Astra round 31
+  (`gpt_responses/research_round31_{q,v1}.md`): corrections — the gamma-boundary means of the wall are INTERIOR points of
+  the moment body (missed by the open family), the observable-segment integrand needs `Cov(φ, R_{C⁻¹d})`; ranking (1)
+  Legendre + constrained entropy [DONE], (2) wall mean band (Schur-complement fixed-mean monotonicity
+  `∂_α U = −(Var F − Cov(F,z)²/Var z) < 0`, endpoints by entropy competitors, IVT), (3) temperature-slice variational
+  principle (`∂_e I = −t`, `J_t`, `D²J_t = C_RR⁻¹`, `∂_t h_t(M) = −(residual variance of L₀ after regression on R)`),
+  (4) scoped non-steep boundary-extension theorem, (5) `N^⊥`, (6) two-term wall law, (7) mean-segment observable transport
+  (`ΔE φ = ∫ Cov_{m_s}(φ, R_{C_s⁻¹ d}) ds`, `|ΔEφ|² ≤ (∫Var φ)(KL + KL)`), (8) Cramér (not cheap).
