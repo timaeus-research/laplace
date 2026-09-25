@@ -2286,3 +2286,15 @@ certificates for concrete resolved charts beyond the identity chart.
   (the regular model `L_a = a w^p` on `(0,∞)`: the bridge is an IDENTITY under `y = t^{1/p} w`,
   the physical score `t v w^p` is exactly `v y^p`). Gotcha: `field_simp` rewrites inside
   integrands — `set` the four integrals and `clear_value` before `field_simp`.
+- `ProfileResponse.lean` (NOT mirrored; round-21 package 3, response part; NB the name `WallResponse`
+  was already taken by the 2026-09-22 low-resolution wall module): `profileNum p q ψ c =
+  ∫₀^∞ ψ e^{-(y^p + c y^q)}`, `profilePosterior`; `integrableOn_rpow_mul_exp_neg_rpow_nonneg`;
+  **`hasDerivAt_profileNum`** (`d/dc N_ψ = −∫ ψ y^q e^{…}` for `c > 0`; dominated differentiation
+  with the UNBOUNDED score `y^q` dominated by the profile decay `e^{-y^p}`),
+  **`hasDerivAt_profilePosterior`** (`∂_c⟨ψ⟩_c = −Cov_c(ψ, y^q)`), `wall_numerator_scaled`,
+  **`wall_posterior_eq_profile`** (the finite-`t` posterior of `ψ(t^{1/p} w)` at `s = c t^{-σ*}` IS
+  the profile law, for every `t`), **`hasDerivAt_wall_posterior`** (the renormalised wall response
+  `∂_c` at finite `t` equals the profile response). Gotchas: `rw [show q/p = 1 + -(1 - q/p) …]`
+  rewrites the `q/p` inside `-(1 - q/p)` too — prove the exponent identity by a `calc` through
+  `Real.rpow_add`; a new module name must be grepped against `Laplace/Multi/` first — creating a
+  file with an existing name silently OVERWRITES the landed module (git shows ` M`, not `??`).
