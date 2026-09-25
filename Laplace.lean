@@ -554,3 +554,4 @@ import Laplace.Multi.CertificateFromLP
 import Laplace.Multi.ZeroScaleCertificate
 import Laplace.Multi.KernelPointwise
 import Laplace.Multi.TiedCutCertificate
+import Laplace.Multi.InteriorObservable
