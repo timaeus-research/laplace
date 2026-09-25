@@ -2982,3 +2982,15 @@ certificates for concrete resolved charts beyond the identity chart.
   `continuous_affLogZ_general` (from `hasFDerivAt_affNum` at `φ = 1`), `exists_min_variational_general`
   (`tendsto_norm_cocompact_atTop.const_mul_atTop`), `meanMap_eq_of_min_general`,
   **`range_meanMap_eq_interior_momentBody`** (`hnd` in the a.e. form of `MeanMapEmbedding`).
+- `DualPotential.lean` (NOT mirrored; Astra round 30 item 2): `dotCLM y := ∑ y_j • proj j` (`dotCLM_apply : dotCLM y v = dotJ v y`),
+  **`hasFDerivAt_affLogZ`** (`DA(a₀) = −t • dotCLM (m a₀)`: `hasFDerivAt_affNum` at `φ = 1`, `.log`, `congr_fderiv`, `ext v`,
+  `affNum_fderiv_apply`; identify `dotJ v (m a₀)` with `priorExp (dirLoss R v)` by `change` + `priorExp_dirLoss` + `rfl`),
+  `dualPotential μ π L₀ R t y := −t⟨θ(y), y⟩ − A(θ(y))` with `θ = Function.invFun (meanMap …)`, `dualPotential_meanMap`,
+  **`mixKL_eq_bregman_dual`** (`KL(P_b‖P_a) = I(m_b) − I(m_a) + t⟨a, m_b − m_a⟩`; finish with a SECOND `simp only [neg_mul,
+  Finset.sum_neg_distrib]` pass — inside one simp set the lemma never fires), `invJac` (`(meanMapDerivEquiv …).symm` as a CLM),
+  `invJac_meanMapDeriv` (from `meanMapInverse_deriv_comp`), **`hasFDerivAt_dualPotential`** (`DI(m a) = −t • dotCLM a`; chain
+  rule on `hasStrictFDerivAt_invFun_meanMap`, `HasFDerivAt.fun_sum` + `HasFDerivAt.mul` for `⟨θ(y), y⟩` with
+  `hasFDerivAt_apply (𝕜 := ℝ) (F' := fun _ : ι ↦ ℝ) j` — without `F'` the instance search is stuck; deprecated
+  `ContinuousLinearMap.smul_apply/sub_apply/sum_apply/add_apply` → `_root_.…`), `dualHessian a := −t • invJac a`,
+  `hasFDerivAt_dualGradient`, **`dualHessian_apply_cov`** (`D²I (Cov(R_i,R_v))_i = v`, via `meanMapDeriv_apply`),
+  **`dualHessian_quadratic_form`** (`⟨Dm v, D²I (Dm v)⟩ = G_a(v,v)`, `sum_mul_priorCov_eq`).
