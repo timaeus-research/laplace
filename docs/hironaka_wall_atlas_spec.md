@@ -2033,3 +2033,21 @@ certificates for concrete resolved charts beyond the identity chart.
   on purpose (Astra: with further unscaled coordinates the cut depends on them and the lower end
   can reach `0`; the outer domination is a separate hypothesis). Gotcha: `positivity` cannot see
   `hc : 0 < ma/Ma`, `hB`, `P.ma_pos i` — give `mul_pos (mul_pos hc hB) (P.ma_pos i)` explicitly.
+- `InteriorObservable.lean` (55079dc; hironaka 06504af86): **support-free observables, the interior form of
+  the term chain** (round-17 item 1, stage 2). The support hypothesis `hφL : φ z ≠ 0 → z ∈ L'`
+  enters the term chain ONLY in `tendsto_weightFn` (to put the moving branch point into
+  `dom_i = closedBall ∩ rep_i⁻¹ L'` where `φ ≠ 0`). Replaced by the geometric hypothesis
+  `hface : ∀ u ∈ limitDomain, D.rep i (D.limitBranchPt i ε b σ γ α u) ∈ interior L'` (the limiting
+  face point in the interior of the region): the branch point converges to it, so it is eventually
+  in the region by `Tendsto.eventually_mem (isOpen_interior.mem_nhds …)` — no `hS`, `hadm`,
+  `htruth` are needed for this step. Chain: `tendsto_weightFn_of_interior`,
+  `wallDominantScaleHyp_of_interior`, `tendsto_modelKernelOf_of_interior`,
+  `tendsto_term`-equivalent inside it, `tendsto_termKernel_of_interior` (per admissible term
+  `faceMap … u ∈ interior L'`), `tendsto_fibre_expectation_of_interior` (bounded continuous
+  nonnegative `ψ, χ`, no support). The restriction to `L'` is internal to the kernel (the
+  chart-domain indicator), never a property of the observable — the interface under which a
+  boundary trace is visible to the certificate route. Not done: a support-free `TermData`
+  structure (its `tendsto` field quantifies over supported observables) and the local `F ≥ 0`
+  weakening. Gotcha: `⟨…, interior_subset hr⟩` against a `rep⁻¹ L'` membership makes Lean look
+  for `interior (rep⁻¹ L')` — write `Set.mem_preimage.mpr (interior_subset hr)`; `faceMap` lives
+  in `LimitingMeasure`, not `WallFibreExpectation`.
