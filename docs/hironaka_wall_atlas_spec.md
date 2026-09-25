@@ -2560,3 +2560,16 @@ certificates for concrete resolved charts beyond the identity chart.
   Gotchas: `Tendsto.div`/`.comp` produce Pi-division/`∘` forms — `simp only [Pi.div_apply, Function.comp_apply]`
   before `field_simp`; `Filter.Eventually` has no `.comp` — use `hcu.eventually hF`; `field_simp` closed several
   goals outright (drop the trailing `ring`).
+- `FeaturelessLawFromPartition.lean` (NOT mirrored): **`featureless_law_of_partition_asymptotic`** —
+  `Z(u) ~ C u^{-λ}(log u)^k` (`hasym`), `L ≥ 0`, moments `L^k e^{-uL} π` integrable, `Z > 0` ⇒
+  `(∫_{u₀}^t √Var_u(L))/log t → √λ` for every base `u₀ > 0` (`continuousOn_priorCov_self_Ici` +
+  `thermoLength_from_div_log_tendsto` + the Tauberian theorem). THE RLCT IS THE FEATURELESS-LENGTH COEFFICIENT
+  under the free-energy asymptotic alone.
+- `FisherInformation.lean` (NOT mirrored; Astra round 25 item 5, intrinsic form): `affLogDensity` (`−t L_a − log Z(a)`),
+  `affScore μ π L₀ R t a v x := −t (R_v x − ⟨R_v⟩_a)`, **`hasDerivAt_affLogDensity`** (score = directional
+  derivative of the log-density along `a + εv`; `affLoss_add_smul` + `TiltData.hasDerivAt_affLogZ_dir` with the
+  `R`-slot changed to `fun _ ↦ 0` via `TiltData.changeR`), `priorExp_affScore` (mean zero),
+  **`fisherInformation_eq_responseForm`** (`E_a[score_v score_w] = t² Cov_a(R_v, R_w) = responseForm`): expand
+  the product into four bounded×base-weight terms with lambda-typed `Integrable` facts (`I3 I2 I1 I0`, `I32`,
+  `I321`), `integral_add/sub/const_mul`, then substitute `mv`, `mw` (forward `rw [hmv, hmw]`) and `field_simp; ring`.
+  The response form is the Fisher–Rao metric of the posterior family pulled back to the data manifold.
