@@ -3319,3 +3319,18 @@ certificates for concrete resolved charts beyond the identity chart.
   **`halfspace_chernoff_eq_projection`** (`P_a^{⊗n}(u·R̄_n ≥ r) ≤ exp(−n KL(a*‖a))`).
   `DataReachability.reachableResponse_ne_range` (`[Nonempty ι]`, inside the `hnd` block): compact = range would be
   clopen nonempty in `ι → ℝ` hence `univ`, contradicting `IsCompact.ne_univ` (`RealNormedSpace.noncompactSpace`).
+- `JointChartMetric.lean` (NOT mirrored; Astra round 35 item 4): `natForm μ π L₀ R θ u v := Cov_θ(S_u, S_v)` (Fisher
+  form in natural coordinates), `natLength η η' := ∫₀¹ √G(η', η')`, `dirLoss_jointStat_jointPoint`
+  (`S_{(τ,ω)} = τ L₀ + R_ω`), `dirLoss_neg_mul_sub` (`R_{−τb − w} = −τ R_b − R_w`; `simp only [dirLoss, Finset.mul_sum,
+  ← Finset.sum_sub_distrib]` then `sum_congr; ring`), `priorCov_residual_dirLoss` (`Cov(H, R_u) = 0` when `Cb = c`:
+  `sum_mul_priorCov_eq` + `featCov_mulVec_apply` + `featObsCov` unfold + `priorCov_comm`), **`sliceInv_deriv_jointPoint`**
+  (`D sliceInv (τ, v) = (τ, −τ b − C⁻¹ v)`: `ContinuousLinearEquiv.symm_apply_eq`, `hcoe` from `← coe_sliceMapEquiv; rfl`,
+  `cases j`, `meanMapDeriv_apply` at `t = 1`, `priorCov_natCoord`, then `simp only [dirLoss_jointStat_jointPoint,
+  dirLoss_neg_mul_sub, jointPoint_some]` — a `rw` leaves a beta-redex that blocks `priorCov_add_right_bdd` — bilinearity,
+  `C b = c`, `C C⁻¹ v = v`), `dirLoss_jointStat_sliceInv_deriv` (score `τ H − R_{C⁻¹v}`), **`natForm_sliceInv_deriv`**
+  (`G((τ,v),(τ',v')) = ττ' Var(H) + v'·C⁻¹v`; orthogonality lemmas oriented by a typed `have` + `rw [priorCov_comm]`),
+  `natForm_temp_response_orth` (`omit [DecidableEq ι]` + `classical`), `natForm_temp_temp` (`= Var(H)`),
+  `natForm_response_response` (`= v'·C⁻¹v`); path section: `hasDerivAt_priorExp_natPath` (`d/ds⟨φ⟩_{η s} = −Cov(φ, S_{η'})`),
+  `abs_priorCov_le_sqrt_natForm`, **`abs_priorExp_sub_le_natLength`** (`|Δ⟨φ⟩| ≤ ((hi−lo)/2) natLength`; velocity continuity
+  via `(continuous_obsMapDeriv …).comp hηc |>.clm_apply hη'` + `obsMapDeriv_apply`; Popoviciu in the joint family with
+  `L₀ := 0`, `R := jointStat`, `t := 1`), **`natLength_ge`** (`2|Δ⟨φ⟩|/(hi−lo) ≤ natLength`).
