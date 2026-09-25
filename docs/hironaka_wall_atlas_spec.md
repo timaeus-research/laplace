@@ -3183,3 +3183,14 @@ certificates for concrete resolved charts beyond the identity chart.
   `meanMapDeriv_apply` under `funext` — type the lambda binder `fun s : ℝ` or `s • v` is stuck), **`hasDerivAt_responseForm_line`**
   (`−t³ κ₃(R_u,R_v,R_w)`, totally symmetric: the Amari–Chentsov tensor), `hasDerivAt_segVar_line`,
   **`hasDerivAt_priorCov_temp`** (`d/dt Cov = −κ₃(φ,ψ,L_a)`, from `hasDerivAt_priorExp_temp` with `c = 1`, `τ = id`).
+- `TwoAxisResponse.lean` (NOT mirrored; Astra round 33 item 3): `affLoss_add_smul_eq` (`affLoss (a + s•v) = fun x ↦ affLoss a x +
+  s * dirLoss R v x`; NOTE `affLoss_add_smul` in ResponseMap is a different statement), `priorExp_add_bdd`
+  (`priorExp_add_of_integrable` + `integrable_mul_affWeight_of_bdd`), `priorExp_const_mul_bdd` (NOTE `priorExp_const_mul` is taken
+  by WallWindowLength, outside this closure), `priorCov_add_right_bdd`, `priorCov_const_mul_right'`, `priorCov_affLoss_line`,
+  `priorExp_affLoss_line`, `priorCum3_affLoss_line` (linearity in the moving loss `L_{a+sv} = L_a + sR_v`; ALWAYS state these with
+  a separate base point `b` — `rw [affLoss_add_smul_eq L₀ R a v s]` otherwise rewrites the family loss too),
+  **`hasDerivAt_exp_temp_line`** / **`hasDerivAt_exp_line_temp`** (the mixed partials of `⟨φ⟩` in both orders, common value
+  `−Cov(φ,R_v) + t κ₃(φ,R_v,L_{a+sv})`; the `t`-order one is `((hasDerivAt_id t₀).neg).mul (hasDerivAt_priorCov_temp …)` and
+  needs `simp only [Pi.neg_apply, id_eq]` before `ring`), **`hasDerivAt_affLogZ_temp_line`** / **`hasDerivAt_affLogZ_line_temp`**
+  (mixed partials of `A`, common value `−⟨R_v⟩ + t Cov(R_v, L_{a+sv})`). The three-point identity Astra ranked 4th is already
+  `mixKL_three_point`/`mixKL_pythagoras` (SegmentDivergence).
