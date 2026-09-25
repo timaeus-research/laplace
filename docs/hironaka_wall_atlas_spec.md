@@ -1686,3 +1686,40 @@ certificates for concrete resolved charts beyond the identity chart.
   With these, every item of the round-13 ranking is closed; the Euclidean programme of the
   active-truth and mixed-truth claims is complete at this layer per Astra's closure criterion
   (exact transport supported by the export; asymptotic consumers have the certified data).
+- Astra round 14 (db67154, `research_round14_{q,v1}.md`): closure confirmed at the round-13
+  criterion (with two qualifications: the general-truth consumer interface was still missing, and
+  push-forward identifies densities a.e. only); a `TruthChartsData.Phase` is the right consumer
+  interface (no obstruction: `bridgePt`/`solvedCoord` only use the monomial form `T ∘ rep = S ∏ u^q`
+  with a scalar sign `S`); the exported `xy` regression is the acceptance test (the identity chart of
+  `xy` is the two-way TIED logarithmic regime, ratios `(h_j+1)/q_j = 1` twice, not the degenerate
+  boundary regime; the resolved sector charts `(u,v) ↦ (u,uv)`, `(uv,u)` each contribute
+  `½ log(1/t)`); the anchored unquotiented profile `Ψ_{p*}` is the right object for "LP uniqueness ⇔
+  integrability" (the quotiented transverse profile version is FALSE); the exact log-face constant is
+  `vol_d(F) ∫_N 1_{z_j ≥ 0, j ∈ J₀} e^{-c·z} exp(-∑_{i∈A₀} a_i e^{-α_i·z}) dz`. Ranking: (1) the
+  general-truth Phase interface, (2) exported `xy` regression, (3) an a.e.-transport/limit
+  identification lemma, (4) anchored-profile statement, (5) exact log-face constant.
+- **The term layer generalised to an arbitrary truth function** (laplace 9c4c1ff, 39 files;
+  hironaka a3877ad74, ca845cfdc): `WallChartsData m ℓ L'` is now `abbrev … := TruthChartsData m
+  (fun z ↦ z ℓ) L'` (the general record and its kernel API `chartFun`, `totalKernel`,
+  `measurable_fibreKernel`, `lintegral_mul_comp_truth` live in `WallChartsData.lean`,
+  namespace `TruthChartsData`; the coordinate push-forward `lintegral_mul_comp_coord` is its
+  instance; `fibre_ae`, `fibre_eqOn`, `fibre_eq`, `totalKernel_ae_le/_eq`, `toTruth` (now `:= D`)
+  stay in namespace `WallChartsData`; `FibrePointwise` split into a generic `TruthChartsData` block
+  and the coordinate fibre identities). `TruthChartsData.Phase {T} (D : TruthChartsData m T L') F`
+  and the whole term layer (`bridgePt`, `modelKernelOf`, `termKernel`, `TermData.vertex/tied/
+  partial/activeTruth/activeTruthDegenerate`, `TermMeasureCertificate`, `fibreRatio`, the
+  distinguishability and expectation theorems, the LP interface) are stated for
+  `{T : (Fin (m + 1) → ℝ) → ℝ} {D : TruthChartsData m T L'}`, namespaces `TruthChartsData` /
+  `TruthChartsData.Phase`; the truth hypotheses `D.rep i u ℓ = truthMono …` became `T (D.rep i u) =
+  truthMono …`, `z ℓ = σ t^{-γ}` became `T z = …`. No statement changed for coordinate truths (the
+  records `toyData`, `atData`, `bsData : WallChartsData 1 0 _` are untouched; dot notation resolves
+  through the abbrev). Mechanics: `abbrev` + regex rename of namespaces/binders + rename of explicit
+  `WallChartsData.<moved name>` references (`Qexp` was the one missed on the first pass); only
+  `FibrePointwise` needed a hand split. Mirror-chain gotcha: the import rule `Laplace.Multi.` →
+  `Monomialize.Relative.Wall.Euclid.` also hits nested `namespace Laplace.Multi.ToyWall` and `open …
+  Laplace.Multi.ToyWall` lines, which must become `Monomialize.Wall.ToyWall` (four files). **The
+  consumer**: hironaka `WallAtlasT.toPhase` (`TruthInstance.lean`; fields `kF hJ aClamp bClamp
+  wtClamp` with the bounds `ma Ma mb Mb` of the atlas, `phase`, `dens_eq`) and
+  **`exists_truthChartsData_withPhase`** (`TruthTheorem.lean`): `∃ ε > 0, ∃ D : TruthChartsData m T
+  (L ∩ {|T| ≤ ε}), Nonempty (D.Phase F)` — the resolution of `F · T` for an analytic `T` with
+  `T 0 = 0` now feeds the term theorems directly (Astra round-14 item 1). Standard axioms.
