@@ -1507,3 +1507,30 @@ certificates for concrete resolved charts beyond the identity chart.
   the rest; the value identification `hval` is the fixed-`σ₀` one. The analogue of
   `tendsto_termKernel_tied_param` for the active-truth term (parameter stability, Astra round 5
   item 1, now for all three term shapes).
+- Astra round 12 (`gpt_responses/research_round12_v1.md`, f96245f): time-change audit clean
+  (exponents `qp`, `−qδ/γ` right; keep `γ > 0`: at `γ = 0` a moving `D` changes the unit
+  evaluation with no compensating time change). Closure verdict: the Euclidean analytic
+  active-truth claim is closed for the nondegenerate strictly-positive-exponent regime; the
+  hypothesis-discharge checklist for charts from a resolution: (1) the strict LP regime
+  (`β, η > 0`, `κ > 0`, spectators separated) must be supplied by the classification, endpoints
+  `β = 0`/`η = 0` not covered; (2) `hc₀, hc₁` are substantive (else (e)); (3) unit positivity on the
+  branch (analytic ≠ positive) and the global measurable extension must preserve the kernel; (4)
+  traces from continuity (with spectators retained); (5) `hWb` is a nonnegative-weight theorem —
+  signed tests need the ± decomposition; (6) all admissible `(ε, b)` branches, Jacobians, cutoffs
+  exactly once. Ranking: (1) compact-σ uniformity [DONE below], (2) export, (3) `xy = s` total-kernel
+  bookkeeping on `mixData`, (4) mixed example, (5) the `c_j = a_j = 0` constant-unit boundary
+  theorem with the explicit formula `A q D^{-qη} vol(F')/|det M| ∫_0^ρ u^{qη−1} ∫_0^∞ v^{β−1} e^{-Bv}
+  ∏_{j∈J} 1_{(0,ρ)}(z_j(v,u)) dv du` (frozen solved coordinates `z_j(v,u) = exp[M⁻¹(log v,
+  q log(D/u))]_j`; general units then need a partial trace retaining `z_J`), (6) `h < 0` weighted
+  mixed truth, (7) support-separated distinguishability.
+- `ActiveTruthChartUniform.lean` (c0ff89a; hironaka 58bf50473): **uniformity in the parameter on
+  compact sets**. `eventually_uniform_of_moving` (generic: if `F t (σ t) → L σ₀` along every path
+  `σ` in a compact `C` with `σ → σ₀`, and `L` is continuous on `C`, then `∀ ε > 0, ∀ᶠ t, ∀ σ ∈ C,
+  |F t σ − L σ| < ε`; proof by contradiction with strictly increasing escaping times built by
+  `Nat.rec` from `Filter.frequently_atTop`, a convergent subsequence of the bad parameters by
+  `IsCompact.tendsto_subseq`, and the interpolating path `σpath t = if ∃ k, tₖ = t then σₖ else σ₀`
+  — well defined by injectivity of the times), `integral_activeTruthMeasure_eq` (the explicit
+  coefficient formula, extracted from the chart proof), `continuousOn_integral_activeTruthMeasure`
+  (on `σ ≠ 0`), **`tendsto_termKernel_activeTruth_uniform`** (compact `C ∌ 0` on which the branch
+  is admissible, `γ > 0`: the normalised term kernel converges uniformly in `σ ∈ C` for each fixed
+  admissible test function; not uniform over test functions).
