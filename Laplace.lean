@@ -228,6 +228,7 @@ import Laplace.Multi.TiltInterpolation
 import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.ResponseMap
 import Laplace.Multi.HigherResponse
+import Laplace.Multi.MixtureSeries
 import Laplace.Multi.PathResponse
 import Laplace.Multi.PathHessian
 import Laplace.Multi.ThermoLength

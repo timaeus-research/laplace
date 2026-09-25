@@ -2266,3 +2266,10 @@ certificates for concrete resolved charts beyond the identity chart.
   a.e., through `integral_eq_zero_iff_of_nonneg` on the nonnegative defect),
   **`ae_eq_gibbsDensity_of_variational_eq`** (the variational bound is attained only at the
   posterior). Gotcha: `Integrable.sub` is Pi-form — ascribe the lambda before `integral_sub`.
+- `MixtureSeries.lean` (NOT mirrored; round-20 package 5, concrete form): `hasSum_exp_series`
+  (`Real.exp_eq_exp_ℝ` + `NormedSpace.expSeries_div_hasSum_exp x`), **`TiltData.hasSum_tiltNum`**
+  (`∫ f e^{-tuR}ν = ∑ (−tu)^n/n! ∫ f R^n ν` for every `u`, by
+  `hasSum_integral_of_dominated_convergence` with bound `(|tu|M)^n/n! · Mf ν` and
+  `Real.summable_pow_div_factorial`), **`hasSum_mixNum`**, **`hasSum_priorZ_pathLoss`** (the
+  partition function along the mixture path is the exponential generating function of the base
+  moments of `Δ`: entire in the weight).
