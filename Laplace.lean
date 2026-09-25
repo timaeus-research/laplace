@@ -227,6 +227,7 @@ import Laplace.Multi.TraceVisibility
 import Laplace.Multi.TiltInterpolation
 import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.ResponseMap
+import Laplace.Multi.AffineConvexity
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
 import Laplace.Multi.MixtureSeries
@@ -235,6 +236,7 @@ import Laplace.Multi.PathHessian
 import Laplace.Multi.ThermoLength
 import Laplace.Multi.ThermoLengthIntegral
 import Laplace.Multi.ThermoLengthAsymptotic
+import Laplace.Multi.IntegratedSusceptibility
 import Laplace.Multi.ResponseMetric
 import Laplace.Multi.ResponseNullspace
 import Laplace.Multi.GibbsVariational

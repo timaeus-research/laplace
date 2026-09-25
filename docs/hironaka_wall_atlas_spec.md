@@ -2318,3 +2318,18 @@ certificates for concrete resolved charts beyond the identity chart.
   `S = |u|+1` and `PathData2.continuousAt_priorCov_self`), `thermoLength_neutral_div_log_tendsto'`
   (bounded contrast, only the fluctuation law assumed). Gotchas: `intervalIntegrable_inv` lives in
   `intervalIntegral`; `continuousAt_priorCov_self` is `PathData2.…` although stated for `PathData`.
+- `IntegratedSusceptibility.lean` (NOT mirrored; Astra round-22 bundle items 2+3):
+  `sq_intervalIntegral_le_intervalIntegral_sq` (Cauchy–Schwarz on `[0,1]` via `Var ≥ 0`),
+  **`TiltData.integrated_susceptibility`** (`∫₀¹ t Var_{t,s}(Δ) ds = ⟨Δ⟩_{t,0} − ⟨Δ⟩_{t,1}`, FTC on the
+  master identity), `fisherSpeed_mixture` (rfl), `TiltData.continuous_mixCov`,
+  **`TiltData.thermoLength_sq_le`** (`ℓ² ≤ t(⟨Δ⟩_0 − ⟨Δ⟩_1)`), **`TiltData.thermoLength_le_sqrt_osc`**
+  (`ℓ ≤ √(2Mt)`: the `√t` scale), **`TiltData.mixCov_self_pos`** (non-degenerate contrast ⇒ `Var > 0`
+  everywhere, from the nullspace theorem), **`TiltData.mixExp_strictAnti`** / `mixExp_injective`
+  (strict identifiability along the line). Needs `import ResponseNullspace` and `[Nonempty X]`.
+- `AffineConvexity.lean` (NOT mirrored; round-22 item 1): `affLogZ μ π L₀ R t a = log Z_t(L₀ + ∑ aᵢRᵢ)`,
+  `affFreeEnergy = −A/t`, `affLogZ_line` (line restriction = `mixLogZ`), `bdd_affLoss`, `tiltData_aff`,
+  **`affLogZ_convexOn`** (`ConvexOn ℝ univ`, by restriction to mixture lines through `affLoss_add_smul`;
+  the segment point `a•x + b•y = x + b•(y−x)` by `module`), **`affFreeEnergy_concaveOn`**,
+  **`TiltData.hasDerivAt_affLogZ_dir`** (`D_v A = −t⟨R_v⟩_a`), **`TiltData.hasDerivAt_deriv_affLogZ_dir`**
+  (`D_v² A = responseForm a v v`). Gotcha: `tiltData_baseWeight_of_bounded` takes `μ` EXPLICITLY;
+  `omit [MeasurableSpace X]` is refused when the statement mentions `μ`.
