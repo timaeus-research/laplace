@@ -2086,3 +2086,28 @@ certificates for concrete resolved charts beyond the identity chart.
   implicitly (`responseForm` re-binds `(μ : Measure X)` explicitly); `mixLoss` already exists in
   `TruthVariation` (hence `pathLoss`); `rw [← priorExp_neutral]` needs `(c := c)` (the constant is
   not determined by the RHS).
+- `PathResponse.lean` (80098f5; NOT mirrored): **the master fluctuation–response identity along
+  any `C¹` path of losses** and the e-geodesic data path. `PathData μ π L L' S ML M'` (prior
+  data; `L s` measurable, `|L s x| ≤ ML`, `|L' s x| ≤ M'` and `HasDerivAt (L · x) (L' s x) s` for
+  `s ∈ (−S, S)`); `PathData.hasDerivAt_num` (dominated differentiation on `Ioo (−S) S`),
+  `PathData.hasDerivAt_priorExp` (`d/ds ⟨φ⟩_{L_s} = −t Cov_{L_s}(φ, L̇_s)`), `PathData.priorZ_pos`,
+  `PathData.mixture` (the affine path is an instance on every interval, bound `M₀ + S MΔ`).
+  E-geodesic: `eLoss ν q₀ a ℓ s w = tiltExp ν q₀ (ℓ w) a (−1) s` (`q_s ∝ e^{sa} q₀` IS the
+  data-side tilt at temperature `−1`), `eLoss' = tiltCov ν q₀ (ℓ w) a a (−1) s`,
+  `eLoss_hasDerivAt` (`L̇_s(w) = Cov_{q_s}(ℓ(w,·), a)`), bounds `Mℓ` and `2 Mℓ Ma`
+  (`abs_eLoss_le`, `abs_eLoss'_le` via the new `TiltData.abs_tiltExp_le_of_bound`),
+  `PathData.eGeodesic` (parameter-measurability of the data-averaged losses is a hypothesis),
+  `hasDerivAt_priorExp_eGeodesic` (`d/ds ⟨φ⟩_{q_s} = −t Cov_{L_s}(φ, Cov_{q_s}(ℓ, a))`).
+  Gotchas: `measurable_const` leaves the constant undetermined — pass `(f := fun _ ↦ (1 : ℝ))`
+  with `(Mf := 1)`; `((hasDerivAt_id s).mul_const c).const_add b` lands in the `RCLike` module
+  instance and `simpa` rejects it against `pathLoss` — prove `HasDerivAt (fun s ↦ s * c) c s` by
+  `simpa using` first and finish with `.congr_deriv rfl`; the set `s` of
+  `hasDerivAt_integral_of_dominated_loc_of_deriv_le` can be `Ioo (−S) S` with
+  `Ioo_mem_nhds hs₀.1 hs₀.2`.
+- `ResponseMetric.lean` (NOT mirrored): **the asymptotic response metric at a regular minimum**.
+  `priorExp_volume_one` / `priorCov_volume_one` / `responseForm_volume_one` (prior density `1` on
+  `ι → ℝ` = the seabed's `gibbsExpectation`/`gibbsCov`), `responseForm_asymptotic`:
+  `|g_a(v,u)/t − ⟨∇R_v, P⁻¹ ∇R_u⟩| ≤ K/t` from `gibbsCov_first_order_rate_sharp_posDef` with
+  `PotentialJetApprox (affLoss L₀ R a) (matCLM P)` and `ObservableJetApprox (dirLoss R ·) g`: the
+  response metric grows linearly in `t` with limiting shape the pull-back of the inverse Hessian
+  under the Jacobian of `q ↦ L_q` at the minimiser.
