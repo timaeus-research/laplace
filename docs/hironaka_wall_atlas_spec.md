@@ -1466,3 +1466,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `volume_facePolytope_div_det_eq` (two splittings `e₁ e₂ : Fin k ⊕ Fin 2 ≃ ι`, via
   `σ = e₂.trans e₁.symm`), **`faceConst_eq`** (`P.faceConst i γ e₂ = P.faceConst i γ e₁`). No LP
   or nondegeneracy hypotheses beyond `det ≠ 0` and `κ > 0` (finiteness of the volume).
+- `ActiveTruthParam.lean` (d061e6a; hironaka 366149be5): **the face theorem with moving constants**
+  (Astra round-11 item (f), by squeezing). `tendsto_of_antitone_param2` (a kernel antitone in two
+  positive parameters, fixed-parameter limits `L b d` continuous at `(B₀, D₀)`: the moving kernel
+  is trapped between the corner kernels at `(B₀ ∓ d, D₀ ∓ d)`), `modelIntegrand_const_anti_of_le`
+  (the constant-unit integrand is antitone in `B` — the exponential — and in `D` — the cut
+  shrinks the domain — pointwise, any index type), `one_lt_of_exp_one_le`,
+  `lintegral_modelIntegrand_const_ne_top` / `_spectator_ne_top` (finiteness from
+  `normalised_lintegral_le`, resp. `specF_le` + `lintegral_specG_ne_top`),
+  `modelKernel_const_anti_active` / `_spectator` (the Bochner kernels with `A = 1` compared through
+  `lintegral` and `ENNReal.toReal_mono`), **`tendsto_modelKernel_activeTruth_param`** and
+  **`tendsto_modelKernel_activeTruth_spectator_param`**: with `A(t) → A₀` (no sign condition),
+  `B(t) → B₀ > 0`, `D(t) → D₀ > 0`, constant units `w₀ ≥ 0`, `a₀ > 0`, the normalised moving
+  kernel converges to the fixed-constant limit at `(A₀, B₀, D₀)`. Constant units only: with
+  `u`-dependent units `D` enters the unit argument `u = cutVar` and the monotonicity in `D` fails
+  (Astra: the squeeze needs the units fixed); the general-unit moving version would need the
+  parametrised DCT chain.
