@@ -3349,3 +3349,11 @@ matrix version is `whiteningOf`.
   `[l.IsCountablyGenerated]` on lemmas laplace accepts; `omit … in` goes BEFORE the docstring.
   Mirror only Mathlib-only files; copy the two change-of-variables lemmas of `GaussianMomentsPosDef`
   (`LinearChange`) and the core of `RescaledData` (without `DivisorData`) instead of importing them.
+
+### Primed norm lemmas are multiplicative (MomentPolytope)
+
+`pi_norm_le_iff_of_nonneg'`, `tendsto_norm_cocompact_atTop'`, `Pi.norm_def'` and friends are the
+`SeminormedGroup` (multiplicative) versions; applying them to `J → ℝ` yields a bare
+`(deterministic) timeout at whnf/isDefEq` on the theorem header with no other diagnostic. The
+additive lemmas are the unprimed names (`pi_norm_le_iff_of_nonneg`, `tendsto_norm_cocompact_atTop`).
+Bisect a header-level timeout by stubbing proof bodies in a scratch copy (`namespace … open Laplace.Multi`).

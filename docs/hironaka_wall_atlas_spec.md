@@ -2922,3 +2922,20 @@ certificates for concrete resolved charts beyond the identity chart.
   ray parameter MUST be typed `fun r : ℝ ↦ …` or `atTop` has a stuck `Preorder ?m`), **`tendsto_priorExp_natural_ray`**,
   **`tendsto_meanMap_natural_ray_finite`** (`M(rh) → E_π[S | S_h = min S_h]`: natural directions select faces of the moment
   polytope, the prior resolves ties on the face).
+- `MomentPolytope.lean` (NOT mirrored; Astra round 29 item 5): finite alphabet, `Measure.count`, `[Nonempty X] [Nonempty J]`,
+  `set_option linter.unusedFintypeInType false` file-wide (count/integral_count need `Fintype X` invisibly); `statPoint S x :=
+  fun j ↦ S j x`, `dotJ θ y := ∑ θ_j y_j` (`isLinearMap_dotJ`, `dotJ_add_left`, `dotJ_smul_left`, `dotJ_single_left`),
+  `piMin π := univ.inf' … π` (`piMin_le` = `Finset.inf'_le`, `piMin_pos` = `(Finset.lt_inf'_iff _).2`), finite-alphabet
+  instances of the affine hypotheses (`count_hπpos`, `bdd_finite` via `Finset.exists_max_image`, `zero_bdd`, `hnd_count` via
+  `Measure.ae_count_iff`), `meanMap_eq_sum_weights`, `priorZ_count_pos`, **`meanMap_mem_convexHull`** (`Convex.sum_mem`),
+  **`affLogZ_ge_of_mem_convexHull`** (`ψ(θ) ≥ log π_min − ⟨θ,y⟩` on the polytope: `convexHull_min` into the half-space
+  `convex_halfSpace_ge (isLinearMap_dotJ θ)`; atoms via `Finset.single_le_sum` + `Real.log_le_log`), **`coercive_bound`**
+  (`ψ(θ) + ⟨θ,x⟩ ≥ log π_min + (δ/2)‖θ‖` when `ball x δ ⊆ conv`: test point `y = x − (δ/2) sgn(θ_{j₀}) e_{j₀}` with the
+  max-modulus coordinate; `sgn` as an `if`, NOT `SignType`; the test point via `obtain ⟨y, hy⟩ : ∃ y, y = …` not `set`),
+  `continuous_affLogZ_count`, `continuous_dotJ_left`, **`exists_min_variational`** (`Continuous.exists_forall_le` +
+  `tendsto_atTop_mono` + `tendsto_norm_cocompact_atTop.const_mul_atTop`), **`meanMap_eq_of_min`** (first-order condition:
+  `IsLocalMin.hasDerivAt_eq_zero` along `e_j` with `TiltData.hasDerivAt_affLogZ_dir'`),
+  **`range_meanMap_eq_interior_convexHull`** (`interior_maximal` + `isOpen_range_meanMap` for `⊆`; variational argument
+  for `⊇`). GOTCHA (cost a bisection): `pi_norm_le_iff_of_nonneg'`, `tendsto_norm_cocompact_atTop'` and the other PRIMED
+  norm lemmas are the MULTIPLICATIVE (`SeminormedGroup`) versions — using them on `J → ℝ` produces `(deterministic) timeout
+  at whnf/isDefEq` with no other symptom; the additive names are the unprimed ones.
