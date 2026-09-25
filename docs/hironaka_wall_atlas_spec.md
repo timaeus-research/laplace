@@ -3035,3 +3035,21 @@ certificates for concrete resolved charts beyond the identity chart.
   point must be aligned with `have hI' : HasFDerivAt … ((fun s ↦ m + s • e) 0) := by simpa using hI`; the statement needs
   `[DecidableEq ι]` for `Pi.single none`), **`slice_variational`** (among joint responses with the same contrast part the
   slice point minimises `e ↦ I(e,M) + te`; the dot product collapses by `Fintype.sum_option` + `hb` + `rfl`).
+- `MeanSegment.lean` (NOT mirrored; Astra round 31 item 7): **`continuous_meanMapDeriv`** (entry continuity copied from
+  `hasStrictFDerivAt_meanMap`; the assembly `ContinuousLinearMap.pi` is a linear map between finite-dimensional spaces, so
+  `LinearMap.continuous_of_finiteDimensional` — build the `LinearMap` structure with `ext v i; simp [pi_apply]`),
+  `meanMapDeriv_comp_invJac` (`ContinuousLinearEquiv.coe_comp_coe_symm`), `meanMapDerivUnit` (the Jacobian as a unit of the
+  endomorphism algebra; `ContinuousLinearMap.mul_def`, `one_def`), `invJac_eq_inverse` (`Ring.inverse_unit`),
+  **`continuous_invJac`** (`NormedRing.inverse_continuousAt u` — state `ContinuousAt Ring.inverse (meanMapDeriv a)` as a
+  typed `have` before `.comp`, otherwise the coercion `↑u` is read as `Units.val` applied), `sq_integral_sqrt_mul_le`
+  (`(∫₀¹√(fg))² ≤ (∫f)(∫g)` for `ContinuousOn … (Icc 0 1)`, AM–GM with weight `λ = √((B+ε)/(A+ε))`, `(B+ε)/λ = λ(A+ε)`, no
+  square roots of products), `dotJ_comm`, `meanSeg`, `dataPath := m⁻¹ ∘ meanSeg`, `meanSeg_eq_comb` (`module`),
+  `meanSeg_mem_range` (convexity of `range m = interior body`), `meanMap_dataPath`, `dataPath_zero/one`,
+  **`hasDerivAt_dataPath`** (velocity `(Dm(γ_s))⁻¹ d`), `continuousOn_dataPath`, `continuousOn_dataPath_velocity`,
+  **`obsMean_segment_eq`** (transport `⟨φ⟩_{a₁} − ⟨φ⟩_{a₀} = ∫₀¹ D⟨φ⟩(γ_s)[(Dm)⁻¹ d]`; FTC on `uIcc 0 1` with
+  `ContinuousOn.intervalIntegrable`), `dualQuad s := ⟨d, D²I(y_s) d⟩`, `dualQuad_eq`, `continuousOn_dualQuad`,
+  `hasDerivAt_dualPotential_meanSeg`, `hasDerivAt_dot_dataPath` (`dotJ d y = dotCLM d y` by `dotJ_comm`),
+  **`mixKL_eq_integral_dual_one_sub`** (`KL(P_{a₁}‖P_{a₀}) = ∫₀¹(1−s)Q`; NOTE the seabed's `mixKL (affLoss a) (dirLoss (b−a))`
+  is `KL(P_a‖P_b)`, so `KL(P_{a₁}‖P_{a₀})` is `mixKL (affLoss a₁) (dirLoss (a₀ − a₁))` — the first draft had the two
+  identities swapped), **`mixKL_eq_integral_dual_mul`**, **`integral_dualQuad_eq`** (`∫₀¹Q = KL + KL`),
+  `continuousOn_var_dataPath`, **`sq_obsMean_sub_le_jeffreys`** (`|Δ⟨φ⟩|² ≤ (∫₀¹Var_{γ_s}φ)(KL + KL)`).
