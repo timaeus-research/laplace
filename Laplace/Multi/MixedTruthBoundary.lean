@@ -165,10 +165,189 @@ theorem boundaryObs_nonneg {a ψ : (Fin 2 → ℝ) → ℝ} {t : ℝ} {p q : ℕ
   mul_nonneg (exp_pos _).le
     (mul_nonneg (mul_nonneg (pow_nonneg hz.1.1.le q) (pow_nonneg hz.2.1.le p)) (hψ z))
 
-/-- **The critical-boundary regression, record level.** For the phase `F = a(z) z₁` (`a`
-continuous, positive on the closed square) and the observable `z₀^q z₁^p ψ` (`ψ ≥ 0` continuous,
-no support hypothesis) along the ray `s = σ/t`, `t^p` times the fibre kernel converges to
-`σ^q ∫_{2σ}^∞ u^{p-q-1} e^{-u a(σ/u, 0)} ψ(σ/u, 0) du`. -/
+/-- Integrability of `u^e e^{-a u^κ}` on `(c, ∞)` for `c > 0`, `a > 0`, `κ > 0` and any real
+exponent `e`. -/
+theorem integrableOn_rpow_mul_exp_neg_mul_rpow_Ioi {e κ a c : ℝ} (hκ : 0 < κ) (ha : 0 < a)
+    (hc : 0 < c) : IntegrableOn (fun u : ℝ ↦ u ^ e * exp (-(a * u ^ κ))) (Ioi c) := by
+  have hcont : ContinuousOn (fun u : ℝ ↦ u ^ e * exp (-(a * u ^ κ))) (Ioi c) :=
+    (continuousOn_id.rpow_const fun u hu ↦ Or.inl (hc.trans hu).ne').mul
+      (Real.continuous_exp.comp_continuousOn
+        (continuousOn_const.mul (continuousOn_id.rpow_const fun u hu ↦
+          Or.inl (hc.trans hu).ne')).neg)
+  rcases le_or_gt e 0 with he | he
+  · have hint : IntegrableOn (fun u : ℝ ↦ c ^ e * (u ^ (0 : ℝ) * exp (-a * u ^ κ))) (Ioi c) :=
+      ((integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num : (-1 : ℝ) < 0) hκ ha).mono_set
+        (Ioi_subset_Ioi hc.le)).const_mul (c ^ e)
+    refine hint.mono' (hcont.aestronglyMeasurable measurableSet_Ioi) ?_
+    refine (ae_restrict_iff' measurableSet_Ioi).2 (Eventually.of_forall fun u hu ↦ ?_)
+    have hu : c < u := hu
+    have hu0 : 0 < u := hc.trans hu
+    rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (Real.rpow_nonneg hu0.le _) (exp_pos _).le),
+      Real.rpow_zero, one_mul, neg_mul]
+    exact mul_le_mul_of_nonneg_right
+      (antitoneOn_rpow_Ioi_of_exponent_nonpos he hc hu0 hu.le) (exp_pos _).le
+  · have hint := (integrableOn_rpow_mul_exp_neg_mul_rpow (by linarith : -1 < e) hκ ha).mono_set
+      (Ioi_subset_Ioi hc.le)
+    refine hint.congr_fun (fun u _ ↦ ?_) measurableSet_Ioi
+    simp only [neg_mul]
+
+/-- The natural-power form: `u^e e^{-a u^n}` is integrable on `(c, ∞)`. -/
+theorem integrableOn_rpow_mul_exp_neg_mul_pow_Ioi {e a c : ℝ} {n : ℕ} (hn : 0 < n) (ha : 0 < a)
+    (hc : 0 < c) : IntegrableOn (fun u : ℝ ↦ u ^ e * exp (-(a * u ^ n))) (Ioi c) :=
+  (integrableOn_rpow_mul_exp_neg_mul_rpow_Ioi (e := e) (κ := n) (by exact_mod_cast hn) ha
+    hc).congr_fun
+    (fun u _ ↦ by simp only [Real.rpow_natCast]) measurableSet_Ioi
+
+/-- **The critical-boundary regression, record level, for the phase `a(z) z₁^n`.** Along the ray
+`s = σ/τ` with `t = τ^n`, `τ^p` times the fibre kernel of `e^{-tF} z₀^q z₁^p ψ` converges to
+`σ^q ∫_{2σ}^∞ u^{p-q-1} e^{-u^n a(σ/u, 0)} ψ(σ/u, 0) du`. -/
+theorem mix_tendsto_totalKernel_boundary_pow {σ : ℝ} (hσ : 0 < σ) {a ψ : (Fin 2 → ℝ) → ℝ}
+    (hac : Continuous a) (ha : ∀ z ∈ mixLc, 0 < a z) {n : ℕ} (hn : 0 < n) (p q : ℕ)
+    (hψc : Continuous ψ) (hψ : ∀ z, 0 ≤ ψ z) :
+    Tendsto (fun τ ↦ τ ^ p * (mixData.totalKernel
+        (fun z ↦ ENNReal.ofReal (exp (-(τ ^ n * (a z * z 1 ^ n))) * (z 0 ^ q * z 1 ^ p * ψ z)))
+        (σ / τ)).toReal)
+      atTop (𝓝 (σ ^ q * ∫ u in Ioi (2 * σ),
+        u ^ ((p : ℝ) - q - 1) * exp (-(u ^ n * a ![σ / u, 0])) * ψ ![σ / u, 0])) := by
+  set e : ℝ := (p : ℝ) - q - 1 with he_def
+  -- the rescaled integrand
+  set G : ℝ → ℝ → ℝ :=
+    fun τ u ↦ u ^ e * exp (-(u ^ n * a ![σ / u, u / τ])) * ψ ![σ / u, u / τ] with hG
+  set G₀ : ℝ → ℝ := fun u ↦ u ^ e * exp (-(u ^ n * a ![σ / u, 0])) * ψ ![σ / u, 0] with hG₀
+  -- bounds for `ψ` and `a` on the square
+  obtain ⟨C, hC⟩ := isCompact_mixLc.exists_bound_of_continuousOn hψc.continuousOn
+  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 zero_mem_mixLc)
+  obtain ⟨z₀, hz₀, hmin⟩ := isCompact_mixLc.exists_isMinOn ⟨0, zero_mem_mixLc⟩ hac.continuousOn
+  set amin : ℝ := a z₀ with hamin_def
+  have hamin : 0 < amin := ha z₀ hz₀
+  have hage : ∀ z ∈ mixLc, amin ≤ a z := fun z hz ↦ hmin hz
+  have hpt : ∀ τ u : ℝ, 2 * σ ≤ u → u ≤ τ / 2 → (![σ / u, u / τ] : Fin 2 → ℝ) ∈ mixLc := by
+    intro τ u hu1 hu2
+    have hu0 : 0 < u := by linarith
+    have hτ0 : 0 < τ := by linarith
+    rw [mem_mixLc_iff]
+    refine ⟨⟨(div_pos hσ hu0).le, ?_⟩, (div_pos hu0 hτ0).le, ?_⟩
+    · rw [div_le_iff₀ hu0]
+      linarith
+    · rw [div_le_iff₀ hτ0]
+      linarith
+  -- Step 1: the exact rescaling for `τ ≥ 4σ`
+  have hkey : ∀ τ : ℝ, 4 * σ ≤ τ →
+      τ ^ p * (mixData.totalKernel
+        (fun z ↦ ENNReal.ofReal (exp (-(τ ^ n * (a z * z 1 ^ n))) * (z 0 ^ q * z 1 ^ p * ψ z)))
+        (σ / τ)).toReal = σ ^ q * ∫ u in (2 * σ)..(τ / 2), G τ u := by
+    intro τ hτ
+    have hτ0 : 0 < τ := by linarith
+    have hs : 0 < σ / τ := div_pos hσ hτ0
+    have h2σ : 2 * (σ / τ) ≤ 1 / 2 := by
+      rw [← mul_div_assoc, div_le_iff₀ hτ0]
+      linarith
+    have hnn : ∀ z ∈ mixL', 0 ≤ exp (-(τ ^ n * (a z * z 1 ^ n))) * (z 0 ^ q * z 1 ^ p * ψ z) :=
+      fun z hz ↦ mul_nonneg (exp_pos _).le
+        (mul_nonneg (mul_nonneg (pow_nonneg hz.1.1.le q) (pow_nonneg hz.2.1.le p)) (hψ z))
+    rw [mixData_totalKernel_toReal' (by fun_prop) hnn hs,
+      integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le h2σ]
+    have hsub := intervalIntegral.integral_comp_div (a := 2 * σ) (b := τ / 2)
+      (f := fun x ↦ exp (-(τ ^ n * (a ![σ / τ / x, x] * (![σ / τ / x, x] : Fin 2 → ℝ) 1 ^ n))) *
+        ((![σ / τ / x, x] : Fin 2 → ℝ) 0 ^ q * (![σ / τ / x, x] : Fin 2 → ℝ) 1 ^ p *
+          ψ ![σ / τ / x, x]) / x) hτ0.ne'
+    rw [show 2 * (σ / τ) = 2 * σ / τ by ring, show (1 : ℝ) / 2 = τ / 2 / τ by field_simp]
+    rw [show (∫ x in 2 * σ / τ..τ / 2 / τ,
+        exp (-(τ ^ n * (a ![σ / τ / x, x] * (![σ / τ / x, x] : Fin 2 → ℝ) 1 ^ n))) *
+          ((![σ / τ / x, x] : Fin 2 → ℝ) 0 ^ q * (![σ / τ / x, x] : Fin 2 → ℝ) 1 ^ p *
+            ψ ![σ / τ / x, x]) / x) = τ⁻¹ * ∫ u in (2 * σ)..(τ / 2),
+        exp (-(τ ^ n * (a ![σ / τ / (u / τ), u / τ] *
+            (![σ / τ / (u / τ), u / τ] : Fin 2 → ℝ) 1 ^ n))) *
+          ((![σ / τ / (u / τ), u / τ] : Fin 2 → ℝ) 0 ^ q *
+            (![σ / τ / (u / τ), u / τ] : Fin 2 → ℝ) 1 ^ p * ψ ![σ / τ / (u / τ), u / τ]) /
+          (u / τ) by
+      rw [eq_inv_mul_iff_mul_eq₀ hτ0.ne', ← smul_eq_mul, ← hsub]]
+    rw [← mul_assoc, ← intervalIntegral.integral_const_mul, ← intervalIntegral.integral_const_mul]
+    refine intervalIntegral.integral_congr fun u hu ↦ ?_
+    rw [Set.uIcc_of_le (by linarith)] at hu
+    have hu0 : 0 < u := by linarith [hu.1]
+    simp only [hG, Matrix.cons_val_zero, Matrix.cons_val_one]
+    have e1 : σ / τ / (u / τ) = σ / u := by field_simp
+    have e2 : τ ^ n * (a ![σ / u, u / τ] * (u / τ) ^ n) = u ^ n * a ![σ / u, u / τ] := by
+      rw [div_pow]
+      field_simp
+    rw [e1, e2, he_def, Real.rpow_sub hu0, Real.rpow_sub hu0, Real.rpow_natCast,
+      Real.rpow_natCast, Real.rpow_one, div_pow, div_pow]
+    field_simp
+  -- Step 2: dominated convergence on `(2σ, ∞)`
+  have hbound_int : IntegrableOn (fun u : ℝ ↦ C * (u ^ e * exp (-(amin * u ^ n))))
+      (Ioi (2 * σ)) :=
+    (integrableOn_rpow_mul_exp_neg_mul_pow_Ioi hn hamin (by linarith)).const_mul C
+  have hvec : ∀ τ : ℝ, ContinuousOn (fun u : ℝ ↦ (![σ / u, u / τ] : Fin 2 → ℝ)) (Ioi (2 * σ)) := by
+    intro τ
+    refine continuousOn_pi.2 fun i ↦ ?_
+    fin_cases i
+    · exact continuousOn_const.div continuousOn_id fun u hu ↦ by
+        have : 2 * σ < u := hu
+        exact (by linarith : (0:ℝ) < u).ne'
+    · exact continuousOn_id.div_const _
+  have hGcont : ∀ τ, ContinuousOn (G τ) (Ioi (2 * σ)) := fun τ ↦
+    (((continuousOn_id.rpow_const fun u hu ↦ Or.inl (by
+      have : 2 * σ < u := hu
+      exact (by linarith : (0:ℝ) < u).ne')).mul
+      (Real.continuous_exp.comp_continuousOn
+        ((continuousOn_id.pow n).mul (hac.comp_continuousOn (hvec τ))).neg)).mul
+      (hψc.comp_continuousOn (hvec τ)))
+  have hdct := tendsto_integral_filter_of_dominated_convergence
+    (μ := volume.restrict (Ioi (2 * σ))) (l := atTop)
+    (F := fun τ u ↦ (Iic (τ / 2)).indicator (G τ) u) (f := G₀)
+    (fun u ↦ C * (u ^ e * exp (-(amin * u ^ n))))
+    (Eventually.of_forall fun τ ↦
+      ((hGcont τ).aestronglyMeasurable measurableSet_Ioi).indicator measurableSet_Iic)
+    (Eventually.of_forall fun τ ↦
+      (ae_restrict_iff' measurableSet_Ioi).2 (Eventually.of_forall fun u hu ↦ ?_))
+    hbound_int
+    ((ae_restrict_iff' measurableSet_Ioi).2 (Eventually.of_forall fun u hu ↦ ?_))
+  · refine ((hdct.const_mul (σ ^ q)).congr' ?_)
+    filter_upwards [eventually_ge_atTop (4 * σ)] with τ hτ
+    rw [hkey τ hτ]
+    congr 1
+    rw [integral_indicator measurableSet_Iic, Measure.restrict_restrict measurableSet_Iic,
+      inter_comm, Ioi_inter_Iic, intervalIntegral.integral_of_le (by linarith)]
+  · -- the bound
+    have hu' : 2 * σ < u := hu
+    have hu0 : 0 < u := by linarith
+    have hnn : 0 ≤ u ^ e * exp (-(amin * u ^ n)) :=
+      mul_nonneg (Real.rpow_nonneg hu0.le _) (exp_pos _).le
+    by_cases hut : u ∈ Iic (τ / 2)
+    · rw [indicator_of_mem hut]
+      have hmem := hpt τ u hu'.le hut
+      simp only [hG]
+      rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (mul_nonneg (Real.rpow_nonneg hu0.le _)
+        (exp_pos _).le)]
+      have hexp : exp (-(u ^ n * a ![σ / u, u / τ])) ≤ exp (-(amin * u ^ n)) := by
+        rw [Real.exp_le_exp, neg_le_neg_iff, mul_comm amin]
+        exact mul_le_mul_of_nonneg_left (hage _ hmem) (pow_nonneg hu0.le n)
+      calc u ^ e * exp (-(u ^ n * a ![σ / u, u / τ])) * |ψ ![σ / u, u / τ]|
+          ≤ u ^ e * exp (-(amin * u ^ n)) * C := by
+            refine mul_le_mul (mul_le_mul_of_nonneg_left hexp (Real.rpow_nonneg hu0.le _)) ?_
+              (abs_nonneg _) hnn
+            exact (Real.norm_eq_abs _).symm ▸ hC _ hmem
+        _ = C * (u ^ e * exp (-(amin * u ^ n))) := by ring
+    · rw [indicator_of_notMem hut, norm_zero]
+      exact mul_nonneg hC0 hnn
+  · -- the pointwise limit
+    have hu' : 2 * σ < u := hu
+    have hev : ∀ᶠ τ in atTop, (Iic (τ / 2)).indicator (G τ) u = G τ u := by
+      filter_upwards [eventually_ge_atTop (2 * u)] with τ hτ
+      exact indicator_of_mem (by simp only [mem_Iic]; linarith) _
+    refine Tendsto.congr' (hev.mono fun τ h ↦ h.symm) ?_
+    simp only [hG, hG₀]
+    have hv : Tendsto (fun τ : ℝ ↦ (![σ / u, u / τ] : Fin 2 → ℝ)) atTop (𝓝 ![σ / u, 0]) := by
+      refine tendsto_pi_nhds.2 fun i ↦ ?_
+      fin_cases i
+      · exact tendsto_const_nhds
+      · exact tendsto_const_nhds.div_atTop tendsto_id
+    refine (Tendsto.mul tendsto_const_nhds ?_).mul (hψc.continuousAt.tendsto.comp hv)
+    exact (Real.continuous_exp.tendsto _).comp
+      ((tendsto_const_nhds.mul (hac.continuousAt.tendsto.comp hv)).neg)
+
+/-- **The critical-boundary regression, record level** (linear phase `a(z) z₁`). -/
 theorem mix_tendsto_totalKernel_boundary {σ : ℝ} (hσ : 0 < σ) {a ψ : (Fin 2 → ℝ) → ℝ}
     (hac : Continuous a) (ha : ∀ z ∈ mixLc, 0 < a z) (p q : ℕ) (hψc : Continuous ψ)
     (hψ : ∀ z, 0 ≤ ψ z) :
@@ -177,137 +356,7 @@ theorem mix_tendsto_totalKernel_boundary {σ : ℝ} (hσ : 0 < σ) {a ψ : (Fin 
         (σ / t)).toReal)
       atTop (𝓝 (σ ^ q * ∫ u in Ioi (2 * σ),
         u ^ ((p : ℝ) - q - 1) * exp (-(u * a ![σ / u, 0])) * ψ ![σ / u, 0])) := by
-  set e : ℝ := (p : ℝ) - q - 1 with he_def
-  -- the rescaled integrand
-  set G : ℝ → ℝ → ℝ :=
-    fun t u ↦ u ^ e * exp (-(u * a ![σ / u, u / t])) * ψ ![σ / u, u / t] with hG
-  set G₀ : ℝ → ℝ := fun u ↦ u ^ e * exp (-(u * a ![σ / u, 0])) * ψ ![σ / u, 0] with hG₀
-  -- bounds for `ψ` and `a` on the square
-  obtain ⟨C, hC⟩ := isCompact_mixLc.exists_bound_of_continuousOn hψc.continuousOn
-  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 zero_mem_mixLc)
-  obtain ⟨z₀, hz₀, hmin⟩ := isCompact_mixLc.exists_isMinOn ⟨0, zero_mem_mixLc⟩ hac.continuousOn
-  set amin : ℝ := a z₀ with hamin_def
-  have hamin : 0 < amin := ha z₀ hz₀
-  have hage : ∀ z ∈ mixLc, amin ≤ a z := fun z hz ↦ hmin hz
-  have hpt : ∀ t u : ℝ, 2 * σ ≤ u → u ≤ t / 2 → (![σ / u, u / t] : Fin 2 → ℝ) ∈ mixLc := by
-    intro t u hu1 hu2
-    have hu0 : 0 < u := by linarith
-    have ht0 : 0 < t := by linarith
-    rw [mem_mixLc_iff]
-    refine ⟨⟨(div_pos hσ hu0).le, ?_⟩, (div_pos hu0 ht0).le, ?_⟩
-    · rw [div_le_iff₀ hu0]
-      linarith
-    · rw [div_le_iff₀ ht0]
-      linarith
-  -- Step 1: the exact rescaling for `t ≥ 4σ`
-  have hkey : ∀ t : ℝ, 4 * σ ≤ t →
-      t ^ p * (mixData.totalKernel
-        (fun z ↦ ENNReal.ofReal (exp (-(t * (a z * z 1))) * (z 0 ^ q * z 1 ^ p * ψ z)))
-        (σ / t)).toReal = σ ^ q * ∫ u in (2 * σ)..(t / 2), G t u := by
-    intro t ht
-    have ht0 : 0 < t := by linarith
-    have hs : 0 < σ / t := div_pos hσ ht0
-    have h2σ : 2 * (σ / t) ≤ 1 / 2 := by
-      rw [← mul_div_assoc, div_le_iff₀ ht0]
-      linarith
-    rw [mixData_totalKernel_toReal' (by fun_prop) (boundaryObs_nonneg hψ) hs,
-      integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le h2σ]
-    have hsub := intervalIntegral.integral_comp_div (a := 2 * σ) (b := t / 2)
-      (f := fun x ↦ exp (-(t * (a ![σ / t / x, x] * (![σ / t / x, x] : Fin 2 → ℝ) 1))) *
-        ((![σ / t / x, x] : Fin 2 → ℝ) 0 ^ q * (![σ / t / x, x] : Fin 2 → ℝ) 1 ^ p *
-          ψ ![σ / t / x, x]) / x) ht0.ne'
-    rw [show 2 * (σ / t) = 2 * σ / t by ring, show (1 : ℝ) / 2 = t / 2 / t by field_simp]
-    rw [show (∫ x in 2 * σ / t..t / 2 / t,
-        exp (-(t * (a ![σ / t / x, x] * (![σ / t / x, x] : Fin 2 → ℝ) 1))) *
-          ((![σ / t / x, x] : Fin 2 → ℝ) 0 ^ q * (![σ / t / x, x] : Fin 2 → ℝ) 1 ^ p *
-            ψ ![σ / t / x, x]) / x) = t⁻¹ * ∫ u in (2 * σ)..(t / 2),
-        exp (-(t * (a ![σ / t / (u / t), u / t] *
-            (![σ / t / (u / t), u / t] : Fin 2 → ℝ) 1))) *
-          ((![σ / t / (u / t), u / t] : Fin 2 → ℝ) 0 ^ q *
-            (![σ / t / (u / t), u / t] : Fin 2 → ℝ) 1 ^ p * ψ ![σ / t / (u / t), u / t]) /
-          (u / t) by
-      rw [eq_inv_mul_iff_mul_eq₀ ht0.ne', ← smul_eq_mul, ← hsub]]
-    rw [← mul_assoc, ← intervalIntegral.integral_const_mul, ← intervalIntegral.integral_const_mul]
-    refine intervalIntegral.integral_congr fun u hu ↦ ?_
-    rw [Set.uIcc_of_le (by linarith)] at hu
-    have hu0 : 0 < u := by linarith [hu.1]
-    simp only [hG, Matrix.cons_val_zero, Matrix.cons_val_one]
-    have e1 : σ / t / (u / t) = σ / u := by field_simp
-    have e2 : t * (a ![σ / u, u / t] * (u / t)) = u * a ![σ / u, u / t] := by field_simp
-    rw [e1, e2, he_def, Real.rpow_sub hu0, Real.rpow_sub hu0, Real.rpow_natCast,
-      Real.rpow_natCast, Real.rpow_one, div_pow, div_pow]
-    field_simp
-  -- Step 2: dominated convergence on `(2σ, ∞)`
-  have hbound_int : IntegrableOn (fun u : ℝ ↦ C * (u ^ e * exp (-(amin * u)))) (Ioi (2 * σ)) :=
-    (integrableOn_rpow_mul_exp_neg_mul_Ioi hamin (by linarith)).const_mul C
-  have hvec : ∀ t : ℝ, ContinuousOn (fun u : ℝ ↦ (![σ / u, u / t] : Fin 2 → ℝ)) (Ioi (2 * σ)) := by
-    intro t
-    refine continuousOn_pi.2 fun i ↦ ?_
-    fin_cases i
-    · exact continuousOn_const.div continuousOn_id fun u hu ↦ by
-        have : 2 * σ < u := hu
-        exact (by linarith : (0:ℝ) < u).ne'
-    · exact continuousOn_id.div_const _
-  have hGcont : ∀ t, ContinuousOn (G t) (Ioi (2 * σ)) := fun t ↦
-    (((continuousOn_id.rpow_const fun u hu ↦ Or.inl (by
-      have : 2 * σ < u := hu
-      exact (by linarith : (0:ℝ) < u).ne')).mul
-      (Real.continuous_exp.comp_continuousOn
-        (continuousOn_id.mul (hac.comp_continuousOn (hvec t))).neg)).mul
-      (hψc.comp_continuousOn (hvec t)))
-  have hdct := tendsto_integral_filter_of_dominated_convergence
-    (μ := volume.restrict (Ioi (2 * σ))) (l := atTop)
-    (F := fun t u ↦ (Iic (t / 2)).indicator (G t) u) (f := G₀)
-    (fun u ↦ C * (u ^ e * exp (-(amin * u))))
-    (Eventually.of_forall fun t ↦
-      ((hGcont t).aestronglyMeasurable measurableSet_Ioi).indicator measurableSet_Iic)
-    (Eventually.of_forall fun t ↦
-      (ae_restrict_iff' measurableSet_Ioi).2 (Eventually.of_forall fun u hu ↦ ?_))
-    hbound_int
-    ((ae_restrict_iff' measurableSet_Ioi).2 (Eventually.of_forall fun u hu ↦ ?_))
-  · refine ((hdct.const_mul (σ ^ q)).congr' ?_)
-    filter_upwards [eventually_ge_atTop (4 * σ)] with t ht
-    rw [hkey t ht]
-    congr 1
-    rw [integral_indicator measurableSet_Iic, Measure.restrict_restrict measurableSet_Iic,
-      inter_comm, Ioi_inter_Iic, intervalIntegral.integral_of_le (by linarith)]
-  · -- the bound
-    have hu' : 2 * σ < u := hu
-    have hu0 : 0 < u := by linarith
-    have hnn : 0 ≤ u ^ e * exp (-(amin * u)) :=
-      mul_nonneg (Real.rpow_nonneg hu0.le _) (exp_pos _).le
-    by_cases hut : u ∈ Iic (t / 2)
-    · rw [indicator_of_mem hut]
-      have hmem := hpt t u hu'.le hut
-      simp only [hG]
-      rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (mul_nonneg (Real.rpow_nonneg hu0.le _)
-        (exp_pos _).le)]
-      have hexp : exp (-(u * a ![σ / u, u / t])) ≤ exp (-(amin * u)) := by
-        rw [Real.exp_le_exp]
-        nlinarith [hage _ hmem, hu0]
-      calc u ^ e * exp (-(u * a ![σ / u, u / t])) * |ψ ![σ / u, u / t]|
-          ≤ u ^ e * exp (-(amin * u)) * C := by
-            refine mul_le_mul (mul_le_mul_of_nonneg_left hexp (Real.rpow_nonneg hu0.le _)) ?_
-              (abs_nonneg _) hnn
-            exact (Real.norm_eq_abs _).symm ▸ hC _ hmem
-        _ = C * (u ^ e * exp (-(amin * u))) := by ring
-    · rw [indicator_of_notMem hut, norm_zero]
-      exact mul_nonneg hC0 hnn
-  · -- the pointwise limit
-    have hu' : 2 * σ < u := hu
-    have hev : ∀ᶠ t in atTop, (Iic (t / 2)).indicator (G t) u = G t u := by
-      filter_upwards [eventually_ge_atTop (2 * u)] with t ht
-      exact indicator_of_mem (by simp only [mem_Iic]; linarith) _
-    refine Tendsto.congr' (hev.mono fun t h ↦ h.symm) ?_
-    simp only [hG, hG₀]
-    have hv : Tendsto (fun t : ℝ ↦ (![σ / u, u / t] : Fin 2 → ℝ)) atTop (𝓝 ![σ / u, 0]) := by
-      refine tendsto_pi_nhds.2 fun i ↦ ?_
-      fin_cases i
-      · exact tendsto_const_nhds
-      · exact tendsto_const_nhds.div_atTop tendsto_id
-    refine (Tendsto.mul tendsto_const_nhds ?_).mul (hψc.continuousAt.tendsto.comp hv)
-    exact (Real.continuous_exp.tendsto _).comp
-      ((tendsto_const_nhds.mul (hac.continuousAt.tendsto.comp hv)).neg)
+  simpa only [pow_one] using mix_tendsto_totalKernel_boundary_pow hσ hac ha one_pos p q hψc hψ
 
 /-- **The acceptance value**: constant unit, `ψ ≡ 1`, `p = q + 1`: the limit is
 `σ^q e^{-2aσ}/a > 0`. -/
