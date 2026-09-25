@@ -3656,3 +3656,24 @@ certificates for concrete resolved charts beyond the identity chart.
   ENNReal.toReal_inv`), **`abs_familyMeasure_real_sub_faceLaw_le`** (`|P_s(A) − Q_F(A)| ≤ 1 − P_s(F)`;
   `measureReal_inter_add_sdiff (s := A) hF`, `measureReal_compl`, `nlinarith` with the two product facts as hypotheses),
   **`tendsto_familyMeasure_real_ray`** (squeeze).
+- `BoundaryBarrier.lean` (NOT mirrored; round-41 F3/F4): `exists_supporting_direction` (Hahn–Banach
+  `geometric_hahn_banach_open_point` on `interior K`; the functional is `dotJ u` with `u j = f (Pi.single j 1)` via
+  `pi_eq_sum_univ'`; closure step by `Convex.closure_interior_eq_closure_of_nonempty_interior` and
+  `closure_minimal (t := {z | f z ≤ f M})`), `essRange_subset_closedBall` (`mem_essRange_iff` + `nonempty_of_measure_ne_zero`
+  + `le_of_forall_pos_le_add`; sup-norm via `pi_norm_le_iff_of_nonneg`), **`isCompact_momentBody`**
+  (`set_option linter.unusedFintypeInType false in`; `isCompact_closedBall … |>.of_isClosed_subset`), **`momentBody_subset_halfspace`**
+  (`convexHull_min` + `convex_halfSpace_le (isLinearMap_dotJ u)`; a point of the essential range outside the half-space
+  has a ball of positive prior mass inside the open complement, contradicting the a.e. bound via `measure_mono_null` and
+  `ae_iff`), `familyMeasure_eq_zero_iff` (`withDensity_apply_eq_zero'` + `measurable_familyDensity`; `omit [Nonempty X] ht`),
+  `familyMeasure_real_pos_of_ne_zero`, **`rateFun_eq_top_of_mem_frontier`** (needs `hnd` for a nonempty interior and
+  `[Nonempty ι]`; supporting direction + `genRate_eq_top_of_null_face` with the a.e. bound transported by
+  `withDensity_absolutelyContinuous _ _`), `rateFun_eq_top_of_not_mem_interior`, **`exists_frontier_rateFun_lt_top`**
+  (conditional mean `M_F` has finite rate by `genRate_condMean`, lies in `K` by the contrapositive of
+  `rateFun_eq_top_of_not_mem`, and is not interior because `M_F + c•u ∈ K` would violate the half-space bound;
+  `c = ε/(2(‖u‖+1))`, `dotJ u u > 0` via `Finset.sum_pos'` + `Function.ne_iff`), **`rateFun_frontier_eq_top_iff`**
+  (boundary infinity ⇔ all supporting faces `μ`-null), `frontier_momentBody_nonempty` (`isClopen_iff_frontier_eq_empty`,
+  `isClopen_iff`, `noncompact_univ (ι → ℝ)`), `isCompact_rateFun_sublevel` (`LowerSemicontinuous.isClosed_preimage`),
+  `rateFun_sublevel_subset_interior`, **`exists_pos_forall_infDist_lt_imp_lt_rateFun`** (statement `∃ δ : ℝ, 0 < δ ∧ …`
+  — `∃ δ > 0` mis-elaborated; `Metric.infDist_pos_iff_notMem_closure`, `disjoint_interior_frontier`,
+  `IsCompact.exists_isMinOn` + `isMinOn_iff`, empty sublevel handled separately), **`tendsto_rateFun_nhds_top`**
+  (`ENNReal.tendsto_nhds_top_iff_nnreal`; general filter), `…_of_null` wrapper. `ℝ≥0` needs `open scoped NNReal`.
