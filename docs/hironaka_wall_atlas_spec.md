@@ -2618,3 +2618,53 @@ certificates for concrete resolved charts beyond the identity chart.
   `Φ = ½∫_s^v √Var − arccos ρ`, `interior_Icc`, `integral_hasDerivAt_right` with
   `ContinuousOn.stronglyMeasurableAtFilter isOpen_Ioi`). THE LENGTH–DISTANCE THEOREM: `2 arccos ρ(s,t) ≤ ∫_s^t √Var`,
   with `2 arccos ρ(0,t) → π` (Affinity) and `∫ √Var ~ √λ log t`.
+- `HalfLineLaplace.lean` (NOT mirrored; Astra round 26 §3, the centred saddle lemma in abstract form):
+  `integrable_dominating n hc₁ hc₂ hα` (the majorant `(1+|w|)^n (e^{-c₁w²} + 𝟙_{w>0} e^{-c₂ w^α})`), and
+  **`tendsto_sqrt_mul_integral`**: for a measurable potential `φ` with `φ 1 = 0`, quadratic below `c₁(z−1)²` on `(0, z₁]`,
+  coercive `c₂(z−1)^α` (`0 < α ≤ 1`) beyond `z₁`, and `φ(1+h)/h² → κ/2`, and observables `G B w` measurable, polynomially
+  bounded `|G B w| ≤ C(1+|w|)^n` for `B ≥ 1`, `w > −√B`, converging pointwise to `Ginf`:
+  `√B ∫₀^∞ G B (√B(z−1)) e^{-Bφ(z)} dz → ∫ Ginf w e^{-κw²/2} dw`. Proof: substitute `w = √B(z−1)`
+  (`Measure.integral_comp_mul_left`, `integral_add_right_eq_self F 1`), dominated convergence with the majorant (local
+  Gaussian bound from `hquad` on `z ≤ z₁`, stretched-exponential tail from `hlin`, `Real.exp_le_exp`,
+  `Real.rpow_le_rpow_left_iff`). Gaussian moments `integral_exp_neg_half_mul_sq (hκ) : ∫ e^{-κw²/2} = √2√π/√κ`,
+  `integral_mul_exp_neg_half_mul_sq κ = 0`, `integral_sq_mul_exp_neg_half_mul_sq (hκ) : ∫ w² e = (1/κ) ∫ e`.
+  Gotchas: `integral_comp_mul_left` (interval) needs `(f := G)` when the integrand is a beta-redex; `Integrable.sub/add`
+  give Pi-form functions — state combined integrability with lambda-typed `have`s; `.congr_fun` fails on `Integrable` (an
+  `And`) — ascribe `IntegrableOn`.
+- `TwoMonoPotential.lean` (NOT mirrored): the rescaled two-monomial potential `twoMonoPsi p q z := z^p − (p/q) z^q`,
+  `twoMonoPhi := ψ z − ψ 1` (so `φ 1 = 0`, `φ' 1 = 0`, `φ''(1) = p(p−q)`): `hasDerivAt_twoMonoPsi/Phi/Psi'`,
+  `twoMonoPhi_div_sq_tendsto (hq) : φ(1+h)/h² → p(p−q)/2` (`HasDerivAt.lhopital_zero_nhdsNE`; pass `(p := p)` to
+  `hasDerivAt_twoMonoPhi` inside `have :=`; `simpa` on `HasDerivAt` gives instance-path mismatches — use
+  `exact this.congr_deriv (mul_one _)`; state continuity limits as `𝓝 (twoMonoPhi p q 1)` not `1 + 0`),
+  `rpow_sub_one_ge (hr) (hv : 1 ≤ v) : r(v−1)/v ≤ v^r − 1`, `one_sub_rpow_ge`, `rpow_antitone_of_nonpos`,
+  `twoMonoPhi_sub_eq_integral` (FTC), `twoMonoPsi'_nonpos` on `(0,1]`, **`twoMonoPhi_quad_bound (hq hqp) (hz₁ : 1 ≤ z₁) :
+  ∃ c₁ > 0, ∀ z ∈ (0, z₁], c₁(z−1)² ≤ φ z`** (left: `ψ'(v) ≤ −p(1−v)` … via `one_sub_rpow_ge`; right: `ψ'(v) ≥ p(v−1)/v ·
+  min`), **`twoMonoPhi_coercive (hq hqp) (hz : max 2 ((2p/q)^{1/(p−q)}) ≤ z) : ½(z−1)^{min p 1} ≤ φ z`**,
+  `abs_rpow_sub_one_le (hq) (hn : q ≤ n) (hz : 0 < z) : |z^q − 1| ≤ max q 1 · |z−1| · (1+z)^n` (Bernoulli lemmas are
+  root-namespace: `one_add_mul_self_le_rpow_one_add`, `rpow_one_add_le_one_add_mul_self`; `Real.rpow_sub_one hv0.ne'
+  (q−1)` needs the explicit exponent), `tendsto_sqrt_mul_rpow_sub_one q w : √B((1 + w/√B)^q − 1) → q w`.
+  `gcongr` side goals with nonnegativity from hypotheses need explicit `mul_le_mul_of_nonneg_left`; goal-changing `show`
+  is linted — use `change`.
+- `NegativeChamber.lean` (NOT mirrored; Astra round 25 item 4 / round 26 §3, **profile matching**): `negScale p q b :=
+  (qb/p)^{1/(p−q)}` (= `y_b`, the interior minimiser of `y^p − b y^q`), `negB := y_b^p`, `zNum p q g B := ∫₀^∞ g(z)
+  e^{-Bφ(z)} dz`, `negVar p q b := ⟨y^q y^q⟩_{-b} − ⟨y^q⟩_{-b}²` (profile variance at `c = −b`). `negScale_rpow_sub`
+  (`y_b^{p−q} = qb/p`), `mul_negScale_rpow` (`b y_b^q = (p/q) B`), **`profileNum_neg_eq`** (the rescaling identity
+  `N_g(−b) = y_b e^{-Bψ(1)} ∫₀^∞ g(y_b z) e^{-Bφ(z)} dz`, from `integral_comp_mul_left_Ioi`),
+  `integrableOn_rpow_mul_exp_neg_twoMonoPhi` (`z^s e^{-Bφ}` integrable for `s > −1`, `B > 0`, via `φ ≥ ½z^p − ½z₁^p`
+  and `integrableOn_rpow_mul_exp_neg_mul_rpow`), `zNum_one_pos`, `profilePosterior_neg_eq` (the prefactor cancels:
+  `mul_div_mul_left`), `zNum_rpow_scale`/`zNum_rpow_sq_scale` (`Real.mul_rpow`), **`negVar_mul_eq`**
+  (`Var_{-b}(y^q) · y_b^{p−2q} = B · Var_B(z^q)`, by `linear_combination (N₂/N₀ − (N₁/N₀)²) * hyp` with `hyp : y^q y^q
+  y^{p−2q} = y^p`), `negA p q j B := √B ∫ (√B(z^q−1))^j e^{-Bφ}`, `negA_eq`, `zNum_sub_one`, `zNum_sub_one_sq`,
+  `mul_zVar_eq_negA` (`B·Var_B(z^q) = A₂/A₀ − (A₁/A₀)²`; `set s := √B`, `subst` of `s*s = B`, `field_simp; ring`),
+  `abs_sqrt_mul_rpow_sub_one_pow_le` (the polynomial envelope `|(√B((1+w/√B)^q−1))^j| ≤ (max q 1 · 2^{⌈q⌉})^j
+  (1+|w|)^{j(⌈q⌉+1)}` for `B ≥ 1`, `w > −√B`; `pow_mul'` then `← mul_pow` then `pow_le_pow_left₀`),
+  **`tendsto_negA j`** (three applications of `tendsto_sqrt_mul_integral` with `z₁ = max 2 ((2p/q)^{1/(p−q)})`,
+  `c₂ = ½`, `α = min p 1`, `κ = p(p−q)`; the integrand identity `1 + √B(z−1)/√B = z` by `field_simp; ring`),
+  **`tendsto_mul_zVar`** (`B·Var_B(z^q) → q²/(p(p−q))`), `tendsto_negB`, **`tendsto_negVar_mul_rpow`**
+  (`Var_{-b}(y^q) · y_b^{p−2q} → q²/(p(p−q))`) and **`tendsto_negVar_mul_rpow'`** (`Var_{-b}(y^q) · (qb/p)^{(p−2q)/(p−q)}
+  → q²/(p(p−q))`, i.e. `h(−b) ~ K_{p,q} b^{β−1}` with `β = p/(2(p−q))`, `K_{p,q} = (q²/(p(p−q))) (q/p)^{(2q−p)/(p−q)}`).
+  Gotchas: `← MeasureTheory.integral_const_mul` without arguments leaves the integrand's type a metavariable and the
+  following `setIntegral_congr_fun` is stuck (`NormedSpace ℝ ?m`) — pass `(r) (f)` explicitly, then
+  `apply setIntegral_congr_fun (measurableSet_Ioi (a := (0 : ℝ)))`; `intro z hz`; `dsimp only` before `rw`;
+  `rw [pow_one]` hits `√B ^ 1` first, so state `zNum (fun z ↦ (z^q−1)^1) = zNum (fun z ↦ z^q−1)` separately;
+  `fun_prop` has no theorems for `twoMonoPhi` — use `measurable_twoMonoPhi` explicitly.
