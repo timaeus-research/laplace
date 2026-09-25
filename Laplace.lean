@@ -227,6 +227,7 @@ import Laplace.Multi.TraceVisibility
 import Laplace.Multi.TiltInterpolation
 import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.ResponseMap
+import Laplace.Multi.HigherResponse
 import Laplace.Multi.PathResponse
 import Laplace.Multi.PathHessian
 import Laplace.Multi.ThermoLength
@@ -262,6 +263,7 @@ import Laplace.Multi.MixtureRigidity
 import Laplace.Multi.CoupledPhaseDiagram
 import Laplace.Multi.ValuationLP
 import Laplace.Multi.WallLogMultiplicity
+import Laplace.Multi.WallSecondCrossover
 import Laplace.Multi.WallCrossover
 import Laplace.Multi.WallResponse
 import Laplace.Multi.TwoChartCompetition

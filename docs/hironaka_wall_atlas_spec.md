@@ -2244,3 +2244,14 @@ certificates for concrete resolved charts beyond the identity chart.
   terms), **`hasDerivAt_assembledPosterior`** (`D_v⟨φ⟩_a = −(∑_k∫φS_k dμ_k − ⟨φ⟩_a ∑_k∫S_k dμ_k)/∑_k
   μ_k(X)` = `−Cov_{μ̄_a}(φ, S_v)` on the disjoint union, relative masses of the chart terms
   included). Terms live on a common base `(X, m)` with a common unit family `h`.
+- `HigherResponse.lean` (NOT mirrored; round-20 package 3, unnormalised layer):
+  `TiltData.bdd_mul_pow`, `TiltData.iteratedDeriv_const_mul_tiltNum` (induction with the constant
+  carried, avoiding `iteratedDeriv_const_mul`'s `ContDiffAt` hypothesis), **`iteratedDeriv_tiltNum`**
+  (`(d/du)^n ∫ f e^{-tuR}ν = (−t)^n ∫ f R^n e^{-tuR} ν`), `mixNum_eq_tiltNum`,
+  **`iteratedDeriv_mixNum`**, **`iteratedDeriv_priorZ_pathLoss`** (`Z^{(n)} = (−t)^n ∫ Δ^n e^{-tL_s}π`),
+  `priorExp_const` (neutral base ⇒ posterior = prior: the map starts at the prior mean).
+- `WallSecondCrossover.lean` (NOT mirrored; Astra round-20 correction): `expIntE1 c = ∫_c^∞ e^{-u}/u`,
+  `integrableOn_exp_neg_div_Ioi` (from `exp_neg_integrableOn_Ioi`), **`tendsto_wallZ_second`**
+  (`tZ(t, c/t) − log t → −log c − E₁(c)`; `intervalIntegral_tendsto_integral_Ioi` with
+  `b t = t + c`): the log coefficient saturates at `1` for `σ ≥ 1`, i.e. the coupled-limit log
+  multiplicity is `min(σ, 1)` with a second wall at `σ = 1`.
