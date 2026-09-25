@@ -1496,5 +1496,14 @@ certificates for concrete resolved charts beyond the identity chart.
   bounded jointly measurable units with traces, the fixed-parameter limit
   `A₀ Γ(β) B₀^{-β} q D₀^{-qη} vol(F')/|det M| ∫_0^ρ u^{qη−1} W_tr a_tr^{-β}`. Proof: the
   one-parameter squeeze `tendsto_of_antitone_param` at fixed `D₀` along `τ` (fixed-`b` limits from
-  `tendsto_modelKernel_general` composed with `τ → ∞`), times the normaliser ratio. This is what
-  the chart-level moving-σ wrapper of the active-truth term needs (not yet written).
+  `tendsto_modelKernel_general` composed with `τ → ∞`), times the normaliser ratio.
+- `ActiveTruthChartParam.lean` (3fd2c59; hironaka d3876ceb3): **the chart-level active-truth term
+  along a moving parameter** — `tendsto_modelKernelOf_activeTruth_param` and
+  `tendsto_termKernel_activeTruth_param`: for `σ(t) → σ₀ ≠ 0`, `γ > 0`, the normalised chart kernel
+  (resp. the admissible-at-`σ₀` term kernel) converges to `∫ φ d(activeTruthMeasure … σ₀ …)`. The
+  chart constants are continuous in `σ` (`tendsto_constA/B/D`), the reindexed weight and unit are
+  `σ`-free, the unit modification `max(unitFn, ma)` off the domain is done at each `t` with `σ(t)`
+  (`σ(t) ≠ 0` eventually by `Tendsto.eventually_ne`), and `tendsto_modelKernel_general_param` does
+  the rest; the value identification `hval` is the fixed-`σ₀` one. The analogue of
+  `tendsto_termKernel_tied_param` for the active-truth term (parameter stability, Astra round 5
+  item 1, now for all three term shapes).
