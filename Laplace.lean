@@ -548,3 +548,4 @@ import Laplace.Multi.ActiveTruthLeadingTerm
 import Laplace.Multi.MixedTruthExport
 import Laplace.Multi.ProfileIntegrability
 import Laplace.Multi.ProportionalFamilies
+import Laplace.Multi.MixedTruthBoundary
