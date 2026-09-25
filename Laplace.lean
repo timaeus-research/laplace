@@ -282,6 +282,7 @@ import Laplace.Multi.LossSurface
 import Laplace.Multi.ReducedPotential
 import Laplace.Multi.AnnealingRay
 import Laplace.Multi.DataMixture
+import Laplace.Multi.ThirdCumulant
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
