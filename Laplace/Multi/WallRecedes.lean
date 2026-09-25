@@ -13,8 +13,9 @@ import Laplace.Multi.WallWindowLength
 
 For the two-monomial data family `L_a(w) = w^p + a w^q` on `(0,∞)`, `0 < q < p`, the thermodynamic
 length from the wall window `a = c₀ t^{-σ*}` (`σ* = 1 − q/p`) to a fixed data point `a₁ > 0` is,
-by the exact window identity (`wall_window_length`), the profile length `∫_{c₀}^{a₁ t^{σ*}} √Var_c(y^q) dc`,
-and the profile speed has the Gamma tail `c √Var_c(y^q) → √(1/q)` (`ProfileGammaTail`). Hence
+by the exact window identity (`wall_window_length`), the profile length
+`∫_{c₀}^{a₁ t^{σ*}} √Var_c(y^q) dc`, and the profile speed has the Gamma tail
+`c √Var_c(y^q) → √(1/q)` (`ProfileGammaTail`). Hence
 
   `ℓ_t(c₀ t^{-σ*}, a₁) / log t → σ* · √(1/q) = σ* √λ_q`   (`wall_recedes`),
 
