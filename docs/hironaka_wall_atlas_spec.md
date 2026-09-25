@@ -2895,3 +2895,17 @@ certificates for concrete resolved charts beyond the identity chart.
   `intervalIntegral.integral_comp_mul_deriv'` with `f = m`, `f' = −Var`, `g = √(1/Var∘u)`; pass
   `intervalIntegral.integral_symm (m u₀) (m u₁)` with explicit arguments or it rewrites the LEFT integral; pointwise
   `√(V⁻¹)·V = √V` by `Real.sqrt_inv, mul_neg, inv_mul_eq_div, eq_div_iff, Real.mul_self_sqrt`).
+- `RayEndpoint.lean` (NOT mirrored; Astra round 29 item 4): **`mul_exp_le_of_le`** (`y e^{−ry} ≤ ε e^{−rε}` for `ε ≤ y`,
+  `1/ε ≤ r`, from `Real.add_one_le_exp (r(y−ε))`), section `(hint : ∀ v > 0, ∀ k ≤ 1, …) (hα : ∀ᵐ ℓ, α ≤ ℓ)
+  (hmass : ∀ ε > 0, 0 < ν {ℓ | ℓ < α + ε})`; `integrable_exp_tilt`, `integrable_mul_exp_tilt`, `lawMoment_zero_pos'`
+  (positivity of `Z` from mass: `integral_pos_iff_support_of_nonneg_ae`, `support = univ` by `ext ℓ; simp [(exp_pos _).ne']`
+  — `Function.support_eq_univ` does NOT exist), `lawMean_sub_eq` (`m(u) − α = ∫(ℓ−α)e^{−uℓ}/Z`; `omit hα hmass in`, and the
+  implicit `α` must be passed `(α := α)` at call sites), `le_lawMean` (`α ≤ m(u)`), **`lawMean_sub_le`** (the tilt estimate
+  `m(u) − α ≤ ε + (εW/c_ε) e^{−(u−1)ε/2}` for `u ≥ 1 + 1/ε`: pointwise a.e. bound by cases `ℓ − α ≤ ε` / `> ε` with
+  `mul_exp_le_of_le` and the factorisation `e^{−uℓ} = e^{−r(ℓ−α)} e^{−rα} e^{−ℓ}`, `integral_mono_ae`; denominator
+  `Z ≥ e^{−r(α+ε/2)} c_ε` by `setIntegral_mono_on` + `setIntegral_le_integral`; `c_ε > 0` via
+  `setIntegral_pos_iff_support_of_nonneg_ae` and `measure_mono` from `hmass (ε/2)` — the membership needs
+  `show ℓ < α + ε/2 from hℓ`; a one-line `have … := by rw [hr]; have : … := by positivity; linarith` nests the `linarith`
+  in the inner `by` — split it; after `unfold lawMoment; simp only [pow_zero, one_mul]` the `set` variable `W` is folded by
+  `rfl`), **`tendsto_lawMean_atTop`** (`tendsto_order`; `ε := (b−α)/3`; `Tendsto.atTop_div_const (r := 2)` — without the
+  named `r` the unifier picks `ε`; `simp only [id_eq]` before `ring` in the `congr`).
