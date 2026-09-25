@@ -259,6 +259,7 @@ import Laplace.Multi.TwoValuedGeodesic
 import Laplace.Multi.WallPhaseDiagram
 import Laplace.Multi.QuotientMeanMap
 import Laplace.Multi.InteriorMinimumTwoMono
+import Laplace.Multi.RayChart
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
