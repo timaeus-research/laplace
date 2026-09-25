@@ -3429,3 +3429,12 @@ certificates for concrete resolved charts beyond the identity chart.
   **`hasFDerivAt_dataLoss`**, `dataLoss_deriv_apply`, **`hasDerivAt_dataLossGrad_line`** (e-Hessian `t²κ₃(L₀, R_{Lh}, R_{Lk})`;
   pass the observable to `bdd_dirLoss` explicitly), **`hasDerivAt_dataEntropy_line`** (`−t² Cov(L_w, R_{Lk})` via
   `hasDerivAt_relEntropy_path`, `dirLoss_jointStat_natCoord/natTangent`).
+- `NaturalJourney.lean` (NOT mirrored; Astra round 37 item 2): `hasDerivAt_natRay` (`fun s ↦ s • θ`; the Pi norm needs
+  `Fintype (Option ι)` so keep the instance and `set_option linter.unusedFintypeInType false in`),
+  **`relEntropy_natRay_eq_integral`** (`𝒮(θ) = −∫₀¹ s G_{sθ}(θ,θ)`; `natKL_segment_eq_integral 0 θ` + `simp only [zero_add]`),
+  **`hasDerivAt_relEntropy_natRay`** (`−s G_{sθ}(θ,θ)`; `dirLoss_smul` + `priorCov_const_mul_left`),
+  **`relEntropy_natRay_antitoneOn`** (`antitoneOn_of_deriv_nonpos (convex_Ici 0)`, `interior_Ici`), `abs_priorExp_sub_le_natRay`,
+  `natRay_ge_arcsin` (instances with `simpa only [one_smul, zero_smul]`), **`relEntropy_natCoord_decomp`**
+  (`𝒮(t,a) = 𝒮(t,0) − famKL a 0 + t(⟨L₀⟩_{t,a} − ⟨L₀⟩_{t,0})`; `mixKL_three_point … (t := 1) (natCoord t a) 0 (natCoord t 0)`,
+  `Fintype.sum_option`, `natKL_natCoord` to `famKL`; `simp` turns `0 − x` into `−x`, so `simp only [zero_sub]` on the goal
+  before `linarith`).
