@@ -1771,3 +1771,45 @@ certificates for concrete resolved charts beyond the identity chart.
   `∏ f^r = (∏ f)^r` (use `←`); `intervalIntegral.integrableOn_Ioo_rpow_iff` needs
   `Mathlib.Analysis.SpecialFunctions.Integrability.Basic`; pass `(Φ := …)` to the recession theorem
   or `le_rfl` sticks on `Preorder ?m`; `-0 ≤ 0` after `split_ifs` is `simp`, not `le_rfl`.
+- **Round-15 note-to-Lean audit** (consult bfeaf99, `gpt_responses/research_round15_*`): Astra ranked
+  (1) a statement audit of the note against the inventory plus an end-to-end analytic-input
+  theorem, (2) a certificate-coverage audit, (3) the boundary regression `T = xy`, `F = ax`,
+  `θ = x^p y^q` (`t^p K_t(σ/t) → σ^q ∫_σ^∞ u^{p−q−1} e^{-au} du`), (4) constructive-recovery export
+  or the smooth counterexample, (5) asymptotic-scale cleanup. Audit of the singular, identifiability
+  and summary sections: every displayed claim of `lem:pencil`, `lem:sector`, `thm:singular`,
+  `rem:singular-scope` (c), `prop:one-point`, constructive recovery (a) and the retained fragment
+  of (b) carries a `\leanref`; the Morse–Bott and SQH-induction items are commented out in the note
+  (not formalised, by design). The one untagged proof is the "No" answer to `q:proportional`
+  (integration by parts + sector bound). It IS formalised: `NormalizedSingular.lean`
+  (`normalized_families_force_germ_eq_at`, `normalized_families_force_eq_near`,
+  `normalized_expectations_force_eq_near`; hypotheses: global `C^∞`, both losses `≥ 0`, the
+  derivative difference vanishing at `p` because `p` is a minimum) and the test-class variants in
+  `SingularSufficientTests`, `LocalizedSingular`, `PositiveWeightFamily`, `CutoffMonomialFamily`
+  — but no `\leanref` points at it. Tag suggestion for the note (the main tex is not edited from
+  here): `normalized_expectations_force_eq_near` at the end of the proof of `q:proportional`.
+- `ProportionalFamilies.lean` (dc95fcb, 0910141; NOT mirrored to hironaka — it sits on the
+  singular-pencil chain `Anchoring/Decay/Sector/LeadingPart/SingularPrep/SingularPoint`, outside the
+  wall-atlas scope): the same theorem under the hypotheses of the unnormalised pencil theorem.
+  **`proportional_families_force_eq_near`**: `L₁, L₂` continuous, `L₂ ≥ 0`, both analytic at each
+  point of a set `W₀` of common zeros, ANY `C : ℝ → ℝ` with `SuperPoly (∫ φ e^{-tL₂} − C t ∫ φ
+  e^{-tL₁})` for all `φ ∈ C_c^∞` ⇒ `L₁ = L₂` on an open neighbourhood of `W₀` (no global
+  smoothness, no `L₁ ≥ 0`, no structure on `C`). Pieces: `SuperPoly.id_mul` / `of_id_mul`,
+  `continuous/contDiff_mul_of_*On_tsupport_subset` (a test function glues regularity from an open
+  set), `exists_least_nonzero_diagonal'` (no `g 0 = 0`: degree `0` with the vector `fun _ ↦ 3/2`,
+  `[Nonempty ι]`; the empty case is trivial since then `v = 0`),
+  `analytic_square_not_superpolynomial` (quantitative: `∫ ψ a² e^{-tK} ≥ vol(S) c² e^{-4C₀}
+  t^{-m-d/2}` via `leading_part_scaled_set` + `sector_lower_bound_multi`),
+  `integral_fderiv_mul_exp_neg` (IBP with `L` analytic on an open `V ⊇ tsupport φ`; Mathlib's
+  `integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable` needs `f` differentiable only on
+  `tsupport g`), `proportional_families_superPoly_derivative` (`t ∫ φ ∂_v(L₂−L₁) e^{-tL₂}` beyond
+  all orders), `proportional_families_fderiv_apply_eventually_eq` (`ContDiffBump p` with radii
+  `min R (ε/3)`, `2 min R (ε/3)` inside the analyticity ball, integrability shifted by
+  `measurePreserving_add_left`), then `IsOpen.is_const_of_fderiv_eq_zero` on the ball. Gotchas:
+  `HasCompactSupport.fderiv` has an implicit field — write `hφs.fderiv (𝕜 := ℝ)`, otherwise the
+  error is a stuck `NontriviallyNormedField 𝕜✝` reported at an unrelated line; `open scoped
+  ENNReal` together with `open scoped ContDiff` makes `∞` ambiguous (write `ENNReal`); `u • S` for
+  sets needs `open scoped Pointwise`; `contDiff_mul_of_tsupport_subset` already exists in
+  `SingularSmooth` (different hypotheses) — the umbrella build is the only place the clash shows.
+  LESSON: grep the seabed (`normalized_`, `proportional`, the claim's key words) for an existing
+  formalisation of a note claim BEFORE building from a missing `\leanref`; the tag audit is not an
+  inventory audit.
