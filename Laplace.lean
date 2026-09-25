@@ -337,6 +337,7 @@ import Laplace.Multi.DataResponseMap
 import Laplace.Multi.IntrinsicChart
 import Laplace.Multi.ConditioningCertificate
 import Laplace.Multi.MixtureBridge
+import Laplace.Multi.EndpointConvergence
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

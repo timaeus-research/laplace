@@ -3837,3 +3837,17 @@ certificates for concrete resolved charts beyond the identity chart.
   `lowerSemicontinuous_rateFun` transported along the continuous path, upper half by `ENNReal.Tendsto.mul_const` and
   `Ioo_mem_nhdsLT (zero_lt_one' ℝ)`; write real numerals `(1 : ℝ)` in the `have` type or `1 - 1` elaborates in `ℕ`).
   OPEN: TV convergence of the representatives (needs Pinsker, not in Mathlib).
+- `EndpointConvergence.lean` (NOT mirrored; round-44 items 1–2): **`klDiv_tilted_right_eq`** (`KL(ρ‖ν_f) = KL(ρ‖ν) − E_ρ f +
+  log E_ν e^f` for `ρ ≪ ν` of finite information and bounded `f`; Mathlib `integral_llr_tilted_right`,
+  `integrable_llr_tilted_right`, `klDiv_of_ac_of_integrable`; the `ν.real univ − ρ.real univ` terms are `1 − 1`, close with
+  `congr 1; ring`), **`genRate_eq_zero_iff`** (`𝓘_ν(M) = 0 ↔ M = E_ν S`; via `responseProjection_spec` + `klDiv_eq_zero_iff`),
+  **`responseProjection_eq_tilted`** (a relative-interior response is `ν.tilted (−dirLoss S θ)`: the root of `ExposedChain`
+  in `responseProjection_eq_of_exposedChain`, `faceMeasure_univ`, `familyMeasure_eq_tilted`, `familyMeasure_one_zero`),
+  **`klDiv_responseProjection_segment_le`** (`KL(Π(M)‖Π(M_s)) ≤ 𝓘(M) − 𝓘(M_s)` for `0 < s < 1`: three means of `f`
+  (`dotJ_integral_eq`), the rate of the path point from `klDiv_tilted_eq`, Gibbs at `ν` from
+  `integral_sub_log_le_toReal_klDiv ν ν` + `klDiv_self`, linearity of `dotJ` along the segment, then `nlinarith`/`linarith`;
+  ENNReal wrap-up with `nth_rewrite 2 [hI]` (the `← ofReal_toReal` copy inside the KL formula must NOT be rewritten) and
+  `← ENNReal.ofReal_sub _ hb`), **`tendsto_klDiv_responseProjection_segment`** (squeeze with `ENNReal.Tendsto.sub`,
+  `tsub_self`, `Ioo_mem_nhdsLT`). GOTCHA: `obtain ⟨Q, hQ⟩ : ∃ Q, Q = responseProjection …` loses the probability instance;
+  re-derive it with `have hQP' : IsProbabilityMeasure Q := by rw [hQ]; exact hQP`. `haveI` for a Prop is linted: use `have`.
+  OPEN: TV convergence (Pinsker), the C¹ Legendre chart on 𝕍, the differential data response, the cubic tensor.
