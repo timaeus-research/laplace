@@ -1749,3 +1749,25 @@ certificates for concrete resolved charts beyond the identity chart.
   the resolution produces. Gotchas: `Continuous.mul` is unavailable on `ℝ≥0∞` (no `ContinuousMul`)
   — write the product as one `ofReal` of a real product; `simp` turns `|r/2|` into `|r|/2` (use
   `abs_of_pos hr`); `continuousOn_univ.mp` for continuity from analyticity on `univ`.
+- `ProfileIntegrability.lean` (388acda; hironaka af5fdfe95): **the recession-cone criterion for the
+  single-scale profile** (Astra round-14 item 4: "LP uniqueness ⇔ profile integrability" for the
+  anchored unquotiented profile; under a strict truth constraint an integrable profile has one
+  scaled coordinate by `not_integrable_envelope_of_two_scaled`). `singleScaleDomain ρ j` (`u_j >
+  0`, `0 < u_i < ρ` otherwise), `singleScaleProfile ρ c j r κ = 1_{dom} ∏ u^r e^{-c ∏ u^κ}`,
+  `singleScaleProfile_insertNth` (the split `(v, w)` form through `Fin.prod_univ_succAbove`),
+  `integral_singleScale_inner` (`∫ v = (c ∏_{i≠j} w^κ)^{-(r_j+1)/κ_j} Γ((r_j+1)/κ_j)/κ_j ∏ w^r`,
+  from `integral_rpow_mul_exp_neg_mul_rpow`), `integrable_singleScaleProfile` (transfer along
+  `piFinSuccAbove`, `integrable_prod_iff'`, inner integrability by
+  `integrableOn_rpow_mul_exp_neg_mul_rpow`, outer product of powers by `Integrable.fintype_prod`
+  and `intervalIntegral.integrableOn_Ioo_rpow_iff`), `not_integrable_singleScaleProfile_of_le`
+  (direction `−e_j`) and `_of_effective_le` (direction `κ_i e_j − κ_j e_i`), both through
+  `not_integrable_of_recession_direction` with `Φ := c ∏ u^κ`, and
+  **`integrable_singleScaleProfile_iff`**: `Integrable Ψ ↔ −1 < r_j ∧ ∀ i ≠ j, −1 < r_i − κ_i
+  (r_j+1)/κ_j` (`c > 0`, `κ_j > 0`) — the ratio of the scaled coordinate strictly below every other
+  ratio with `κ_i > 0` (the unique vertex optimum of `min ∑(r+1)α, α ≥ 0, κ·α ≥ δ`), coordinates
+  with `κ_i ≤ 0` needing only their phase-improved effective exponent above `−1` (NOT `r_i > −1`:
+  a negative `κ_i` makes the phase kill the small-`u_i` region). Gotchas: big-operator bodies
+  swallow a trailing `* exp …` — parenthesise `(∏ i, …) *`; `Real.finsetProd_rpow` is stated
+  `∏ f^r = (∏ f)^r` (use `←`); `intervalIntegral.integrableOn_Ioo_rpow_iff` needs
+  `Mathlib.Analysis.SpecialFunctions.Integrability.Basic`; pass `(Φ := …)` to the recession theorem
+  or `le_rfl` sticks on `Preorder ?m`; `-0 ≤ 0` after `split_ifs` is `simp`, not `le_rfl`.
