@@ -30,6 +30,13 @@ The hypothesis is formulated with an arbitrary function `C : ℝ → ℝ` and th
 `SuperPoly` predicate (decay faster than every negative power): no
 positivity, power-log structure, or leading-coefficient assumption on `C`
 is needed, and only `L₂` needs to be nonnegative.
+
+This generalises `Laplace.Multi.NormalizedSingular` (the same argument under
+global smoothness of both losses and `L₁ ≥ 0`, with the normalised-expectation
+corollaries `normalized_families_force_eq_near`,
+`normalized_expectations_force_eq_near`): here the losses are only continuous
+and analytic near the common zero locus, the hypotheses of the unnormalised
+pencil theorem `pencil_families_force_eq_near`.
 -/
 
 open Asymptotics Filter MeasureTheory Set
