@@ -2350,3 +2350,13 @@ certificates for concrete resolved charts beyond the identity chart.
   Gotchas: `IsFiniteMeasure (volume.restrict (Ioc 0 1))` via `isFiniteMeasure_restrict.mpr
   measure_Ioc_lt_top.ne` (use `have`, not `haveI`); Bochner `integral_mono` is a `lemma` taking
   `(hf) (hg) (h : f ≤ g)`; `div_div_eq_mul_div : a/(b/c) = a*c/b`.
+- `GaussianShapeMetric.lean` (NOT mirrored; Astra round-22 "order-one shape metric", EXACT for Gaussians):
+  `gaussLoss H = ½ wᵀHw`, `priorExp_gaussLoss_eq_tilted` (flat-prior posterior of a Gaussian loss at
+  temperature `t` = tilted Gaussian of precision `tH`, zero tilt), `isHermitian_sum_smul`,
+  **`sq_mul_priorCov_gaussLoss`** (`t² Var_t(½wᵀBw) = ½ tr((BH⁻¹)²)` for EVERY `t > 0`, from
+  `Laplace.Sampler.tiltedVar_quadForm` with `tiltMean _ 0 = 0` and `(t•H)⁻¹ = t⁻¹•H⁻¹` proved inline —
+  the seabed's `smul_inv_of_isUnit` is `Fin d`-specific and produced a universe-mismatch whnf timeout),
+  `affLoss_gaussLoss`, `dirLoss_gaussLoss`, **`responseForm_gaussian_self`** (`g_a(v,v) = ½ tr((B_v H_a⁻¹)²)`:
+  the response form of a Gaussian family is Fisher–Rao on covariances, `t`-independent),
+  **`fisherSpeed_gaussian`** (`½ tr((H_s⁻¹Ḣ_s)²)`). Instance hygiene: only the theorems mentioning `⁻¹`
+  take `[DecidableEq ι]`; `isHermitian_sum_smul` needs neither `Fintype ι` nor `DecidableEq`.
