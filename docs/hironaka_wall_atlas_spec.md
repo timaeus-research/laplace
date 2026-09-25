@@ -2425,3 +2425,11 @@ certificates for concrete resolved charts beyond the identity chart.
   rewrite the product observable `fun x ↦ V a x * V a x` BEFORE the linear one.
 - `WallRecedes.lean` addendum: `recession_coefficient_eq` (`σ*√(1/q) = √(σ*(λ₊ − λ_wall))`, `λ₊ = 1/q`,
   `λ_wall = 1/p`), `wall_recedes_exponent_form` (Astra's LP consistency relation `σκ = λ₊ − λ_wall`).
+- `WallChart.lean` (NOT mirrored; Astra round-24 "singular response-chart theorem", exact homogeneous case):
+  `chartNum/chartPosterior p q r ψ c d` (two-parameter profile `∝ e^{-(y^p + cy^q + dy^r)}`),
+  `chartPath p q r a b`, `chart_numerator_scaled`, **`chart_posterior_eq_profile`** (finite-t posterior in
+  the window `a = ct^{-σ_q}, b = dt^{-σ_r}` = profile law), `priorExp_chart_rpow(_mul)`, **`chart_cov`**
+  (`t^{-σ_{e₁}} t^{-σ_{e₂}} · t² Cov_t(w^{e₁}, w^{e₂}) = Cov_{c,d}(y^{e₁}, y^{e₂})`, any exponents),
+  `affLoss_chart`, `dirLoss_single`, **`responseForm_chart`** (the response form of the affine family
+  `w^p + a w^q + b w^r` pulled back by the chart Jacobian is the profile Fisher matrix, 2×2 with `E = ![q,r]`,
+  `fin_cases` for the contrast identification).
