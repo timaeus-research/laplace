@@ -1227,3 +1227,47 @@ certificates for concrete resolved charts beyond the identity chart.
   `simp [fibreCoef, degTransMat_inv, degκ]` unfolds `degκ` inside `transMat` before the inverse
   lemma fires — `simp only [fibreCoef, degTransMat_inv]` first; `norm_num at h` turns
   `t ^ (2*0 + (2*3 − 1*2))` into the ℕ-power `t ^ 4`, so state the instance with `t ^ 4`.
+- Astra round 8 (`gpt_responses/research_round8_{q,v1}.md`, 4074050): audit of the face theorem
+  clean; `fibreCoef j ≠ 0 ∨ fibreA j ≠ 0` is strictly weaker than "the face has a positive point"
+  (it says the `j`-th solved coordinate is not identically zero on the equality plane; the face may
+  still be a point of zero projected volume); `δ ≥ 0` not analytically necessary; certificate +
+  nonempty face ⇒ the face is the LP-optimal set (no separate optimality hypothesis at the analytic
+  layer). Ranking: (1) identify the example's kernel with `degI`, (2) spectators, (3) face traces,
+  (4) chart-level leading-measure theorem (the truth coordinate `u_t` stays of order one — the
+  limit is NOT Dirac at the wall point), (5) `TermData.activeTruth` scalar wrapper, (6) export.
+  Also suggested: coordinate independence of `vol(F')/|det M|` by an affine change of the solved
+  pair; the `c_j = a_j = 0` case by keeping the transverse half-plane indicator.
+- `ActiveTruthUniform.lean` (7e13b4d; hironaka e471f98c3): the face theorem in `lintegral` form.
+  `lintegral_box_eq_orthant` (`lintegral_image_eq_lintegral_abs_det_fderiv_mul`),
+  `lintegral_modelIntegrand_const` (`∫⁻ ofReal(modelIntegrand(1, a₀)) = ofReal(ρ^{∑(r+1)}) ·
+  ∫⁻ logIntegrand`), `normalised_lintegral_eq`, `tendsto_normalised_lintegral` (ENNReal limit),
+  `sWeight_add_log`, `integral_sWeight_mul_pow_le` (`∫ e^{-βs} e^{-ce^{-s}} (|s|+δ)^k ≤ c^{-β}
+  (1 + δ + |log c|)^k C_k`, by the shift `s ↦ s + log c`), `lintegral_vWeight_mul_pow`,
+  `normalised_lintegral_le` (`t ≥ e`). Gotcha: `/ ∏ i, κ (Sum.inl i) * (…)` parses the `* (…)`
+  INTO the product body — parenthesise `(∏ i, κ (Sum.inl i))` in statements; when `rw` reports an
+  identical-looking pattern not found, look for this.
+- `SpectatorEnvelope.lean` (e16bf00; hironaka 93f84768a): `integrable_indicator_Iio_exp`
+  (`e^{cv}` on `(−∞, b)` via `comp_neg` of the `Ioi` fact), `integrable_indicator_Iio_exp_mul_pow`,
+  `integrableOn_rpow_mul_log_pow` (`x^{d−1}(C + a|log x|)^k` on `(0,ρ)`, `d > 0`, through
+  `integrable_comp_exp_univ_iff`), `add_sum_le_prod : C + ∑ aᵢ ≤ C ∏ (1 + aᵢ)` (`C ≥ 1`),
+  `integral_Ioo_rpow_sub_one` (`integral_Ioo_rpow` already existed in `TiedTruthCertificate` —
+  the root build caught the clash). Gotcha: `Finset.one_le_prod'` needs `MulLeftMono`; over `ℝ`
+  use `Finset.prod_le_prod` against the constant-one product.
+- `ActiveTruthSpectator.lean` (83b9f6b; hironaka 73c4ef726): **the face theorem with spectators.**
+  Index `Fin m ⊕ (Fin k ⊕ Fin 2)`, spectators first. `specB B κ ξ = B ∏ ξ^{κ_I}`,
+  `specD D q Q ξ = D ∏ ξ^{−Q_I/q}`, `cutVar_sum_elim`, `modelIntegrand_sum_elim`
+  (`= 1_{(0,ρ)^m}(ξ) ∏ ξ^{r_I} · modelIntegrand(B_ξ, D_ξ)`), `lintegral_modelIntegrand_spectator`
+  (Fubini via `lintegral_sum_split` with `F` given explicitly), `spec_const_factor`
+  (`∏ξ^{r} c₀(ξ)^{-β} e^{-ηh₀(ξ)} = c_J^{-β} e^{-ηh₀J} ∏ ξ^{d−1}`), `abs_log_specC_le`,
+  `specInner`/`specF`/`specFlim`, `measurable_specF` (`Measurable.lintegral_prod_right` with the
+  uncurried integrand written as `(ofReal ∘ modelIntegrand) ∘ (sumPiEquivProdPi).symm`),
+  `specd` (reduced costs), `specK`/`specG` (dominating function
+  `K ∏ 1_{(0,ρ)}(ξᵢ) ξᵢ^{dᵢ−1}(1 + |κᵢ||log ξᵢ|)^k`), `specF_le`, `specF_tendsto`,
+  `integrable_specG`, `tendsto_lintegral_specF` (DCT), `lintegral_specFlim`,
+  `modelKernel_const_eq_toReal`, `tendsto_modelKernel_activeTruth_spectator`:
+  `t^{γp+βδ−ηγ}/(log t)^k · K(t) → A w₀ Γ(β)(Ba₀)^{-β}(ρ/D)^{qη}/η · vol(F')/|det M| · ∏ ρ^{dᵢ}/dᵢ`
+  under the J-hypotheses of the face theorem and `dᵢ > 0`. Gotchas: `Real.log_prod` takes only
+  `hf` explicitly; `Real.finset_prod_rpow` is deprecated for `Real.finsetProd_rpow`;
+  `simp_rw [foo_eq]` makes no progress on an unapplied `Measurable (f t)` — `rw [show f t = fun ξ ↦ _
+  from funext …]`; `Set.indicator_of_mem hξ` rewrites all copies at once (a second call fails);
+  `rw [hval] at h` fails on association — `rw [← mul_assoc, hval] at h`.

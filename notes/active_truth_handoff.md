@@ -1,6 +1,6 @@
 # Handoff: the transverse active-truth face theorem (analytic half)
 
-**STATUS 2026-09-26: the constant-unit, `I = ∅` theorem is landed (`ActiveTruthTheorem.lean`, `tendsto_modelKernel_activeTruth'`). Remaining: the items under "Then".**
+**STATUS 2026-09-25: the constant-unit theorem is landed for `I = ∅` (`ActiveTruthTheorem.lean`, `tendsto_modelKernel_activeTruth'`) AND with spectators (`ActiveTruthSpectator.lean`, `tendsto_modelKernel_activeTruth_spectator`, extra factor `∏ ρ^{dᵢ}/dᵢ`; route: `ActiveTruthUniform` = lintegral form + uniform bound, `SpectatorEnvelope` = one-variable integrability, outer DCT in `ξ`). Remaining: face traces, the chart-level leading measure (Astra round 8: not Dirac), the example identification with `degI`.**
 
 **TL;DR.** Astra (round 7, `gpt_responses/research_round7_v1.md`) gave the general statement behind
 the degenerate example (`DegenerateFace.lean`, `t⁴ I(t)/log t → 1`): with a dual certificate
