@@ -2273,3 +2273,16 @@ certificates for concrete resolved charts beyond the identity chart.
   `Real.summable_pow_div_factorial`), **`hasSum_mixNum`**, **`hasSum_priorZ_pathLoss`** (the
   partition function along the mixture path is the exponential generating function of the base
   moments of `Δ`: entire in the weight).
+- `TwoMonomialWall.lean` (NOT mirrored; round-21 package 3, first step): `twoZ p q t s =
+  ∫₀^∞ e^{-t(w^p + s w^q)}`, `twoProfile p q c = ∫₀^∞ e^{-(y^p + c y^q)}`, `twoProfileQ`,
+  `twoExponent = max(1/p, (1−σ)/q)`; `integrableOn_exp_neg_rpow`; scalings `twoZ_eq_twoProfile`
+  (`Z = t^{-1/p} F(t^{1−q/p} s)`) and `twoZ_eq_twoProfileQ` (`Z = (ts)^{-1/q} F_q(t (ts)^{-p/q})`)
+  by `integral_comp_mul_left_Ioi`; **`twoZ_wall_variable`** (exact profile in `c = s t^{1−q/p}`),
+  **`two_p_regime`**, **`two_q_regime`** (DCT). The general real-exponent two-monomial wall.
+- `ScoreBridge.lean` (NOT mirrored; round-21 package 1, interface): **`tendsto_scaled_cov_of_four`**
+  (quotient-limit algebra: four normalised limits ⇒ the scaled covariance converges),
+  **`tendsto_response_of_four`** (for Gibbs laws `e^{-tL}π` with physical score `Q_t = t D_vL`:
+  `−t Cov_t(φ_t, D_vL) → −Cov_{limit}`), `regular_scaled_integral`, **`regular_scaled_cov_eq`**
+  (the regular model `L_a = a w^p` on `(0,∞)`: the bridge is an IDENTITY under `y = t^{1/p} w`,
+  the physical score `t v w^p` is exactly `v y^p`). Gotcha: `field_simp` rewrites inside
+  integrands — `set` the four integrals and `clear_value` before `field_simp`.

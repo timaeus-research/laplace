@@ -227,6 +227,7 @@ import Laplace.Multi.TraceVisibility
 import Laplace.Multi.TiltInterpolation
 import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.ResponseMap
+import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
 import Laplace.Multi.MixtureSeries
 import Laplace.Multi.PathResponse
@@ -264,6 +265,7 @@ import Laplace.Multi.ToyCrossoverResponse
 import Laplace.Multi.PatternAttenuation
 import Laplace.Multi.MixtureRigidity
 import Laplace.Multi.CoupledPhaseDiagram
+import Laplace.Multi.TwoMonomialWall
 import Laplace.Multi.ValuationLP
 import Laplace.Multi.WallLogMultiplicity
 import Laplace.Multi.WallSecondCrossover
