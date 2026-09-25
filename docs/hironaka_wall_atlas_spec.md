@@ -1665,3 +1665,24 @@ certificates for concrete resolved charts beyond the identity chart.
   nondegenerate one on the one-dimensional truth segment). Gotcha: the push-forward map must go
   through `D.rep i` (the model point `degPt` is in chart coordinates). Not done: positivity of the
   degenerate measure (`activeTruthDegMeasure_ne_zero`), the certificate-level mixed example.
+- Round-13 closure (laplace 68c136e; hironaka abdef59af, fb7fd025d, local): **the density
+  certificate of the export** — hironaka `TruthInstance.lean` gains `WallAtlasT.bClamp`, `wtClamp`
+  (continuous; `bClamp ≠ 0`, `wt ∈ [0,1]`) and `chartDensityClamp_eq` (`dens i u = wt i u *
+  |bClamp i u * ∏ u^(hJ i)|` on the box), `TruthTheorem.lean` gains
+  **`exists_truthChartsData_certified`** (the phase data of `F` and the density factorisation with
+  a continuous nonvanishing Jacobian unit and a `[0,1]` partition weight — Astra's "density
+  structure" for asymptotic consumers, exported without changing `TruthChartsData`);
+  **positivity of the degenerate measure** (`ActiveTruthDegeneratePositive.lean`: `isOpen_degSet`,
+  `degConst_pos` (positive face polytope), `activeTruthDegMeasure_apply`,
+  `activeTruthDegMeasure_pos_of_open` (an open set containing `rep(degPt v₀)` for `v₀ ∈ degSet`
+  with `wt|b|(degPt v₀) > 0` is charged), `activeTruthDegMeasure_ne_zero`,
+  `activeTruthDegMeasure_eq_zero_of_disjoint` — the distinguishability ingredients for the boundary
+  regime); **the certificate-level dominant term** (`ActiveTruthLeadingTerm.lean`:
+  `leadingMeasure_eq_sum_filter` (the definition), `leadingMeasure_eq_of_unique`,
+  `ofTermData_leadingMeasure_eq_of_lt`: in `ofTermData T`, a term `p` with `(T p).lam < (T q).lam`
+  for all `q ≠ p` has `leadingMeasure = (T p).μ` — `lam₀ = (T p).lam` by `Finset.le_inf'
+  univ_nonempty`, `k₀ = (T p).kk` by `Finset.sup_le` on the singleton filter; this is the
+  "which shape leads" assembly statement Astra asked for in place of a hand-built mixed atlas).
+  With these, every item of the round-13 ranking is closed; the Euclidean programme of the
+  active-truth and mixed-truth claims is complete at this layer per Astra's closure criterion
+  (exact transport supported by the export; asymptotic consumers have the certified data).
