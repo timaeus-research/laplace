@@ -542,3 +542,4 @@ import Laplace.Multi.FullLawResolvent
 import Laplace.Multi.FullLawScaled
 import Laplace.Multi.ActiveTruthDistinguish
 import Laplace.Multi.ActiveTruthDegenerateGeneral
+import Laplace.Multi.ActiveTruthChartDegenerate
