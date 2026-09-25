@@ -320,6 +320,7 @@ import Laplace.Multi.LargeDeviationBounds
 import Laplace.Multi.SchurComplement
 import Laplace.Multi.JourneyEnergy
 import Laplace.Multi.TemperatureCompatibility
+import Laplace.Multi.RateFunction
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

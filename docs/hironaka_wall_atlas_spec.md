@@ -3602,3 +3602,16 @@ certificates for concrete resolved charts beyond the identity chart.
 - LANDING-CHAIN GOTCHA: a `sed -i 's/^import X$/…\nimport Y/' Laplace.lean && grep -n Y Laplace.lean && lake build …`
   chain fails SILENTLY when the sed does not match (grep exits 1 and the `&&` chain stops) — always verify the
   registration line explicitly (python assert) and never gate on a chain that can skip the build without output.
+- `RateFunction.lean` (NOT mirrored; round-40 top pick, parts A/B): `baseCgf q := featCgf (familyMeasure t 0) R q`,
+  `chernoffScore M q := q·M − Λ(q)`, `rateFun M := ⨆ q, ENNReal.ofReal (chernoffScore M q)` (the `q = 0` score is `0`,
+  so the nonnegative clipping loses nothing); `dotJ_neg_left`, `mul_sum_zero_sub_mul` (`dotJ_smul_left` and `dirLoss_smul`
+  ALREADY EXIST — `dirLoss_smul` is a FUNCTION equality, `rw` works pointwise anyway), `baseCgf_eq` (`Λ(q) = A_t(−q/t) − A_t 0`
+  from `featCgf_familyMeasure … 0 q`), **`chernoffScore_le_famKL`** (score at `q` = dual objective at `b = −q/t`, `≤` by
+  `dual_objective_le_at_mean` (takes `hπ` NONNEG) — `field_simp` needs `t ≠ 0` as a HYPOTHESIS in context),
+  `chernoffScore_neg_smul` (equality at `q = −t a`), **`rateFun_meanMap`** (`𝓘(m_t a) = ofReal (KL(P_a‖P_0))`; `le_antisymm
+  (iSup_le …) (le_iSup_of_le …)`), `rateFun_meanMap_zero`, `rateFun_meanMap_toReal`, `convexOn_dualPotential_add`,
+  `baseCgf_smul_le` (`Λ(λw) ≤ λc` when `w·R ≤ c` a.e.; `withDensity_absolutelyContinuous` transports the a.e. bound,
+  `integral_mono_ae`, `Real.log_le_iff_le_exp (integral_exp_pos hint)`), **`rateFun_eq_top_of_not_mem`**
+  (`geometric_hahn_banach_point_closed` gives `f M < u < f y` on `K`; coordinates by `pi_eq_sum_univ'`; the direction is
+  `−v`; `ENNReal.eq_top_of_forall_nnreal_le` with `λ = (r+1)/(w·M + u)`; `omit ht`), `lowerSemicontinuous_rateFun`
+  (`lowerSemicontinuous_iSup` + `ENNReal.continuous_ofReal.comp`; `unfold chernoffScore dotJ; fun_prop`).
