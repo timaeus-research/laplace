@@ -1854,3 +1854,24 @@ certificates for concrete resolved charts beyond the identity chart.
   `t^p` bookkeeping done afterwards under `integral_const_mul`; `∞`/`ℝ≥0∞` need `open scoped
   ENNReal` (not opened in `Real`-heavy files). In a chained shell command a `$R` that came back
   EMPTY made `grep … $R` read stdin and hang the whole gate — check variables before use.
+- `CertificateFromLP.lean` (7b22892; hironaka 11ad4063d): **certificates from the chart's LP**
+  (Astra round-15 item 2, the coverage audit). Inventory: the profile certificate
+  `ProfileIntegrableOf` had constructors from explicit dual conditions at the two nondegenerate
+  shapes (`of_vertex`, `of_twoScaled`) and `CertificateLP` had the equivalences with unique LP
+  minimality (`uniqueLPMin_vertex_iff`, `uniqueLPMin_twoScaled_iff`); the missing link was the
+  composition. `UniqueLPMin.comp_equiv` (reindexing along `e : ι' ≃ ι`; `Equiv.sum_comp` with the
+  summand `fun i ↦ f i * g i`, the reverse direction via `β' ∘ e.symm`),
+  `ProfileIntegrableOf.of_uniqueLPMin_vertex` (all `κ > 0`, `α = (δ/κ_j) e_j`, `δ > 0`, strict
+  truth, `UniqueLPMin (Qexp) (kappa) γ (phaseExp) (r + 1) α` ⇒ certificate),
+  `ProfileIntegrableOf.of_uniqueLPMin_twoScaled` (two scaled coordinates, `Δ ≠ 0`, the dual
+  decomposition `r_S + 1 = ηκ_S − θQ_S` as data, `UniqueLPMin` ⇒ certificate — `η, θ > 0` and the
+  residual gaps come out of the equivalence), `TermData.vertexOfUniqueLPMin` /
+  `twoScaledOfUniqueLPMin` (term data from LP uniqueness alone; feasibility = `hmin.1`). Verdict
+  of the audit: at both nondegenerate shapes the certificate is read off the chart exponents; the
+  degenerate shapes (a face of minimisers) are the log regimes with their own constructors
+  (`TermData.tied/partial/activeTruth(Spectator)/activeTruthDegenerate`); what is NOT there is a
+  decision procedure "given exponent data, which shape" (LP theory: existence of an optimal vertex
+  of the polytope), so `truth_fibre_expectation` still takes `α` as input. Gotchas: theorems in
+  `namespace TruthChartsData.Phase` with the section variable `(P)` explicit are called
+  `TruthChartsData.Phase.foo P …`, never `P.ProfileIntegrableOf.foo` (the dot resolves into
+  `Function.…`); `TermData.vertex` takes `P` explicitly too.
