@@ -2837,3 +2837,17 @@ certificates for concrete resolved charts beyond the identity chart.
   `positivity` inside the inner `by` — split into two `have`s. Astra's second-order wall coefficient
   `Var_B(√B(z^q−1)) = q²/(p(p−q)) + q²(p−2)/(2p²(p−q))/B + O(B⁻²)` was CONFIRMED numerically for (4,2), (3,1), (5,2) (not yet
   formalised; it is the input of the two-term wall law).
+- `RayChart.lean` (NOT mirrored; Astra round 28 items 5 and 6, algebraic core): `lawMean ν u := N₁/Z`, `lawFree ν u := log Z(u)`,
+  **`lawVar_eq_integral_sq`** (`Var_u = Z⁻¹∫(ℓ−m)²e^{−uℓ}`; from `integral_sq_sqrt_speed` after rewriting the integrand by
+  `mul_pow, Real.sq_sqrt` and `integral_const_mul, integral_div`), `integrable_sq_sub_mul_exp`, `lawVar_nonneg`,
+  **`lawVar_pos`** (hypothesis `¬ ∃ c, ∀ᵐ ℓ ∂ν, ℓ = c`; `integral_pos_iff_support_of_nonneg_ae` + `pos_iff_ne_zero` +
+  `ae_iff` + `measure_mono_null` into `Function.mem_support`), `hasDerivAt_lawMean'`/`hasDerivAt_lawFree` (wrappers of
+  `RadialCurvature` at `K = 2`), `lawMoments_at` (`omit hpos hZ in`), `lawMean_antitoneOn` (`antitoneOn_of_deriv_nonpos
+  (convex_Ioi 0)`, `interior_Ioi`, `HasDerivAt.deriv`), **`lawMean_strictAntiOn`** (`strictAntiOn_of_deriv_neg`),
+  `ordConnected_image_lawMean` (`isPreconnected_Ioi.image` + `isPreconnected_iff_ordConnected`), **`exists_rayChart`**
+  (`∃ e : Ioi 0 ≃ₜ (lawMean ν '' Ioi 0), e u = m u`: `StrictMonoOn.orderIso` of `−m`, `.toHomeomorph` once the image is
+  `OrdConnected` (instance `orderTopology_of_ordConnected` fires from a plain `have`), then `(Homeomorph.neg ℝ).image _` and
+  `Homeomorph.setCongr` with `Set.image_image`; the final coercion goal is `change -(-(m u)) = m u`), **`lawFree_convexOn`**
+  (`MonotoneOn.convexOn_of_deriv`), **`lawFree_ge_tangent`** (`ConvexOn.le_slope_of_hasDerivAt`/`slope_le_of_hasDerivAt` +
+  `slope_def_field` + `le_div_iff₀`), **`lawKL_zero_eq_legendre`** (`KL(P_u‖P_0) = −u m(u) − F(u) + F(0)`; `omit hpos hint in`),
+  **`legendre_isMaxOn`** (`IsMaxOn (fun v ↦ −m(u)v − F v) (Ioi 0) u`), `lawKL_zero_ge_legendre`.
