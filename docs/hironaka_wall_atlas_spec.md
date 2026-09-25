@@ -2499,3 +2499,47 @@ certificates for concrete resolved charts beyond the identity chart.
   `meanMapInverse_deriv_comp` (`ContinuousLinearEquiv.coe_symm_comp_coe`; pass the equivalence explicitly and pin
   `(μ := μ)` in `coe_meanMapDerivEquiv`, else "Module ?m ?m stuck"). The response coordinates are a local chart of
   the data manifold: Astra round-24 item D is closed.
+- `MeanMapEmbedding.lean` (NOT mirrored; Astra round 25, item 1): `continuous_meanMap`,
+  `isOpenMap_meanMap` (`isOpenMap_iff_nhds_le` + `map_nhds_meanMap`), **`isOpenEmbedding_meanMap`**
+  (`IsOpenEmbedding.of_continuous_injective_isOpenMap`), `isOpen_range_meanMap`, `meanMapHomeomorph`
+  (`IsEmbedding.toHomeomorph`), `invFun_meanMap`/`meanMap_invFun` (`Function.leftInverse_invFun`,
+  `invFun_eq`), **`hasStrictFDerivAt_invFun_meanMap`** (`HasStrictFDerivAt.to_local_left_inverse` with the
+  global left inverse), `continuousOn_invFun_meanMap`, `meanMapInverse_eventuallyEq_invFun`. The response
+  coordinates are a GLOBAL chart of the affine data manifold.
+- `StateDensity.lean` (NOT mirrored; Astra round 25, item 2): `lossLaw μ π L := (μ.withDensity (ofReal ∘ π)).map L`
+  (the state density), `lawExp ν f u`, `lawVar ν u`, `lawLength ν t`, `radialLength μ π L t := ∫₀ᵗ √Var_u(L)`;
+  `integral_lossLaw` (`integral_map` + `integral_withDensity_eq_integral_toReal_smul₀`), **`priorZ_eq_lossLaw`**
+  (Z = Laplace transform of the state density), **`priorExp_comp_eq_lawExp`**, `priorCov_self_eq_lawVar`,
+  `priorExp_const_add`/`priorCov_const_add`, `thermoLength_neutral_eq_radialLength`, `radialLength_eq_lawLength`,
+  **`thermoLength_neutral_eq_of_lossLaw_eq`** (same state density ⇒ same featureless-line geometry). Pass
+  `(g := …)`/`(f := …)` explicitly when rewriting with `integral_lossLaw`/`priorExp_comp_eq_lawExp` (beta-redex
+  integrands).
+- `RenormalisedLength.lean` (Mathlib-only; mirrorable): `hasDerivAt_log_sub_loglog` (`d/du[A log u − B log log u]`),
+  `integrableOn_inv_mul_log_sq` (`C/(u log² u)` on `(u₀,∞)` via `integrableOn_Ioi_deriv_of_nonneg'` with `−C/log u`),
+  **`tendsto_renormalised_length`**: `ContinuousOn f (Ici u₀)`, `|f u − (A − B/log u)| ≤ C/log² u` ⇒
+  `∃ K, ∫_{u₀}^t f/u − (A log t − B log log t) → K` (split off the remainder, `intervalIntegral_tendsto_integral_Ioi`,
+  FTC `integral_eq_sub_of_hasDerivAt`).
+- `LogGammaTails.lean` (Mathlib-only; mirrorable): `gammaTrunc j u = ∫₀ᵘ s^j e^{-s}`, `logGammaTrunc j u`,
+  `logGammaFull j`; `integrableOn_pow_mul_exp_neg_Ioi` (`Real.GammaIntegral_convergent`),
+  `integral_pow_mul_exp_neg_Ioi = j!` (`Real.Gamma_eq_integral` + `Gamma_nat_eq_factorial`),
+  `integrableOn_log_Ioc_zero_one` (`intervalIntegrable_log'`), `integrableOn_pow_mul_exp_neg_mul_log_Ioi`
+  (split at 1: `|log| ≤ |log|` on `(0,1]`, `log s ≤ s` beyond), **`gammaTail_le`** (`∫_u^∞ s^j e^{-s} ≤ (j+2)!/u²`
+  by inserting `(s/u)² ≥ 1` — no exponential asymptotics), `logGammaTail_abs_le` (`(j+3)!/u²`),
+  `gammaTrunc_eq`/`logGammaTrunc_eq` (`Ioc_union_Ioi_eq_Ioi` + `setIntegral_union`), `abs_gammaTrunc_sub_le`,
+  `abs_logGammaTrunc_sub_le`, the boundary limits `tendsto_pow_mul_exp_neg_mul_log_nhdsGT_zero`
+  (`tendsto_log_mul_rpow_nhdsGT_zero`) / `_atTop` (`Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero`, squeeze),
+  **`logGammaFull_succ`** (`Λ_{j+1}(∞) = (j+1)Λ_j(∞) + j!` by `integral_Ioi_mul_deriv_eq_deriv_mul` with
+  `u = log`, `v = s^{j+1}e^{-s}`; state the `IntegrableOn` of the Pi-products with typed `have`s).
+- `MultiplicityModel.lean` (NOT mirrored; Astra round 25, item 3, `k = 1`): the state density `(−log ℓ)dℓ` on
+  `(0,1)` as `priorExp (volume.restrict (Ioo 0 1)) (fun ℓ ↦ |log ℓ|) id`; `logModelMoment j u`, `logModelJ j u =
+  log u · Γ_j(u) − Λ_j(u)`; **`logModelMoment_eq`** (`M_j(u) = u^{-(j+1)} J_j(u)`, substitution `s = uℓ` via
+  `integral_comp_mul_left (f := G)` — the integrand MUST be named, the beta-redex is not a higher-order pattern),
+  `logModel_sq_mul_var` (`u²Var = (J₂J₀ − J₁²)/J₀²`), `abs_mul_le_of_abs_le`, **`var_ratio_numerator_bound`**
+  (pure algebra: `x_j = g_j − l_j τ + O(τ²)`, `g = (1,1,2)`, `l = (l₀, l₀+1, 2l₀+3)` ⇒ `(x₂x₀ − x₁²) − (1−τ)x₀² =
+  O(τ²)` with explicit constant; `obtain ⟨d, rfl⟩ : ∃ d, x = y + d` then one `ring` identity `P + Q`),
+  `logGammaFull_one/two`, `logModelC`, **`logModel_var_bound`** (`log u ≥ 481 + 2|Λ₀(∞)|` ⇒ `J₀ ≥ log u/2` and
+  `|u²Var_u − (1 − 1/log u)| ≤ C/log² u`; tails `≤ 120/u² ≤ 120/log² u` since `log u ≤ u`),
+  `abs_sqrt_sub_le_of_abs_sub_sq_le`, `logModel_speed_bound` (`u√Var = 1 − 1/(2 log u) + O(1/log² u)`),
+  `continuous_gammaTrunc/logGammaTrunc` (`continuous_primitive`), `continuousOn_logModelJ`,
+  **`logModel_length_renormalised`**: `∃ u₀ > 1, ∃ K, ∫_{u₀}^t √Var_u − (log t − ½ log log t) → K`.
+  THERMODYNAMIC LENGTH DETECTS MULTIPLICITY (numerically: residual·log²u → −(1−γ) ≈ −0.423).
