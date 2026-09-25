@@ -1412,3 +1412,21 @@ certificates for concrete resolved charts beyond the identity chart.
   limit is identified with `∫ φ dμ` through `integral_prod` and the indicator bookkeeping in `ξ`
   then `u`), `TermData.activeTruthSpectator : (γp + βδ − ηγ, k, activeTruthSpecMeasure)` under
   `d_l > 0` and the active certificate. Astra round-10 item (a) CLOSED.
+- `ActiveTruthLPChart.lean` (f7f4e41; hironaka 8a3e0b5bd): **the LP-to-chart interface and the
+  nonvanishing wrappers** (Astra round-10 item (b)). `exists_face_point_of_volume_pos` (a positive
+  face polytope yields a face point `Sum.elim w y` with `w > 0` and the solved pair
+  `y = M⁻¹(−transShift … 1 w)`, i.e. `y_j = fibreA j − fibreCoef j ⬝ w`, via
+  `transMat_mulVec_add_shift`), `sum_cost_eq_of_face` (`∑ c_i α_i = βδ − ηγ` on the face),
+  `reducedCost_eq` (reduced costs along `e`: `specd` on the spectators, `0` on the active
+  coordinates), `lpOptimal_activeTruth_spectator_iff` (over any finite index with
+  `e : Fin n ⊕ (Fin k ⊕ Fin 2) ≃ ι`: `LPOptimal Q κ γ δ (r + 1) α ↔ α ≥ 0 ∧ κ·α = δ ∧ Q·α = γ ∧
+  α ∘ e ∘ inl = 0` under `hr`, `hd` and a face point — a wrapper of `lpOptimal_activeTruth_iff`),
+  `activeTruth_lam_eq_lpExponent` (`γp + βδ − ηγ = lpExponent γ p (r+1) α` for every face point,
+  so the active-truth power is the LP value of the face, the same power as the vertex terms of
+  that face), the chart form `lpOptimal_iff_activeFace` (with `hvol` in place of the face point),
+  `faceConst_pos`/`faceConstSpec_pos`/`constA_pos`, and **`activeTruthMeasure_ne_zero`**,
+  **`activeTruthSpecMeasure_ne_zero`**: a positive face polytope and one truth point
+  (`u₀ ∈ (0,ρ)`, resp. `(ξ₀, u₀)` with `ξ₀` in the box) where `wt |b| > 0` make the coefficient
+  measure nonzero (`integral_pos_iff_support_of_nonneg`; the open set `{wt|b| > 0} ∩ (0,ρ)` lies in
+  the support of the density, `IsOpen.measure_pos`). This is the guard Astra asked for: a term
+  certified at `(λ, k)` with a zero measure would misidentify the leading order.
