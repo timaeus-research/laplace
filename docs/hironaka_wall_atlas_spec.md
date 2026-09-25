@@ -2909,3 +2909,16 @@ certificates for concrete resolved charts beyond the identity chart.
   in the inner `by` — split it; after `unfold lawMoment; simp only [pow_zero, one_mul]` the `set` variable `W` is folded by
   `rfl`), **`tendsto_lawMean_atTop`** (`tendsto_order`; `ε := (b−α)/3`; `Tendsto.atTop_div_const (r := 2)` — without the
   named `r` the unifier picks `ε`; `simp only [id_eq]` before `ring` in the `congr`).
+- `FiniteEndpoint.lean` (NOT mirrored; Astra round 29 §5 "finite-alphabet face endpoints"): finite `X` with
+  `Measure.count` (needs `[MeasurableSingletonClass X]` for `integral_count`, which is `@[simp]`); `groundAvg π L φ m₀ :=
+  (∑_{L = m₀} φ π)/(∑_{L = m₀} π)`; hypotheses `(hπ : ∀ x, 0 < π x) (hm₀ : ∀ x, m₀ ≤ L x) (hex : ∃ x, L x = m₀)` (the ground
+  level is a hypothesis — `Finset.inf'`/`exists_mem_eq_inf'` were not worth the plumbing); `ground_filter_nonempty`,
+  `ground_sum_pos` (`Finset.sum_pos`), `tendsto_tilt_weight` (`c x e^{−r(L x − m₀)} → if L x = m₀ then c x else 0`;
+  `omit [Fintype X] [MeasurableSpace X] [MeasurableSingletonClass X] hπ hex in`), `tendsto_tilt_sum` (`Finset.sum_filter` +
+  `tendsto_finsetSum`), `priorExp_count_eq` (ratio of tilted sums; `mul_div_mul_left` with `c = e^{r m₀}` and the per-term
+  identity `e^{rm₀} e^{−rL} = e^{−r(L−m₀)}` — pass `(m₀ := m₀)` at call sites), **`tendsto_priorExp_atTop_finite`**
+  (`⟨φ⟩_r → E_π[φ | L = min]`; `Tendsto.div` + `congr'` with `Pi.div_apply`), **`tendsto_gibbsDensity_atTop_finite`**
+  (`φ = 1_{x}`, `Finset.sum_eq_single`), `priorExp_natural_ray` (`affLoss 0 S (r•h) = r · S_h`, `priorExp_smul_add`; the
+  ray parameter MUST be typed `fun r : ℝ ↦ …` or `atTop` has a stuck `Preorder ?m`), **`tendsto_priorExp_natural_ray`**,
+  **`tendsto_meanMap_natural_ray_finite`** (`M(rh) → E_π[S | S_h = min S_h]`: natural directions select faces of the moment
+  polytope, the prior resolves ties on the face).
