@@ -2414,3 +2414,12 @@ certificates for concrete resolved charts beyond the identity chart.
   **`mixKL_aff_eq`** (KL = Bregman divergence of `log Z`, multivariate). Gotchas:
   `Continuous.intervalIntegrable` needs `(μ := volume)` when the measure is otherwise undetermined;
   `Integrable.congr` goals carry beta-redexes — `beta_reduce` before `by_cases`/`rw`.
+- `SpectatorWall.lean` (NOT mirrored; Astra's spectator example): `spectatorPath a (x,y) = x² + y⁴ + a y²`,
+  `spectatorVel = y²`, `spectator_num` (Fubini: the `x`-Gaussian factors out; `Measure.volume_eq_prod`
+  + `integral_prod_mul`, no integrability needed), `integral_even_eq_two_Ioi` (`integral_comp_abs`),
+  `spectator_weight_even`, `twoMono_num_eq`/`twoMono_den_eq` (rpow → npow on `Ioi 0`),
+  **`spectator_priorExp`** (2D posterior of an even function of `y` = half-line two-monomial posterior),
+  **`spectator_fisherSpeed`**, **`spectator_wall_recedes`** (`ℓ_t/log t → (1/2)·√(1/2) = 1/(2√2)`, not
+  `σ*√λ = 1/2`). Gotchas: `integral_gaussian t` is stated with `-t * x^2` (`simp only [neg_mul] at`);
+  bare numerals in a real exponent `t ^ (-(1 - 2/4))` elaborate as ℕ (`Neg ℕ` error) — annotate `(2:ℝ)`;
+  rewrite the product observable `fun x ↦ V a x * V a x` BEFORE the linear one.
