@@ -349,6 +349,7 @@ import Laplace.Multi.ActiveTruthTheorem
 import Laplace.Multi.ActiveTruthExample
 import Laplace.Multi.ActiveTruthUniform
 import Laplace.Multi.SpectatorEnvelope
+import Laplace.Multi.ActiveTruthSpectator
 import Laplace.Multi.CertificateNecessity
 import Laplace.Multi.CertificateLP
 import Laplace.Multi.ProductChartLP
