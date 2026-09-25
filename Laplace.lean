@@ -258,6 +258,7 @@ import Laplace.Multi.MultiplicityModelK
 import Laplace.Multi.TwoValuedGeodesic
 import Laplace.Multi.WallPhaseDiagram
 import Laplace.Multi.QuotientMeanMap
+import Laplace.Multi.InteriorMinimumTwoMono
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
