@@ -3805,3 +3805,20 @@ certificates for concrete resolved charts beyond the identity chart.
   (`Equiv.ofBijective`; surjectivity from `exists_min_variational_rel` + `meanMap_eq_of_min_rel`, which give a parameter IN `𝕍`),
   `intrinsicChart_apply` (rfl), `meanMap_intrinsicChart_symm` (`congrArg Subtype.val (Equiv.apply_symm_apply …)` — a reverse `rw`
   with the apply lemma leaves the chart's hypotheses as metavariable goals).
+- `ConditioningCertificate.lean` (NOT mirrored; round-43 item 3): face algebra `faceMeasure_univ`, `faceMeasure_apply`,
+  `faceMeasure_real_apply` (`ν_A(B) = ν(B ∩ A)/ν(A)`), **`faceMeasure_faceMeasure`** (`(ν_A)_B = ν_{A ∩ B}`; `Measure.restrict_smul`,
+  `Measure.restrict_restrict hB`, `smul_smul`, then the ENNReal scalar identity via `ENNReal.mul_inv (Or.inl …) (Or.inl …)`,
+  `inv_inv`, `mul_right_comm`, `ENNReal.mul_inv_cancel`), `faceMeasure_real_le_one`, `prob_real_le_one`.
+  **`inductive ExposedChain ν S M : Set X → ℕ → Prop`** (`root : univ 0`; `step` adds `A ∩ {dirLoss S e = β}` under
+  `∀ᵐ x ∂ν_A, e·S ≤ β`, a point of `K_{ν_A}` off the hyperplane, positive `ν_A`-mass of the face, and `e·M = β`). The inductive
+  references `[Fintype J]` (via `dotJ`/`momentBody`), so it cannot be omitted in the section; name constructor implicits with
+  `| @step A n hA e β hβ hproper hpos hM ih` or the goal's `A` and the case's `A✝` diverge; `ExposedChain.castSet` (a lemma named
+  `cast` collides with the root `cast` under dot notation). `ExposedChain.measurableSet`, `ExposedChain.pos`
+  (`div_pos_iff_of_pos_right`), **`ExposedChain.finrank_add_le`** (`n + dim 𝕍_{ν_A} ≤ dim 𝕍_ν`; the second point for the strict
+  drop is the conditional mean of the new face, `mean_mem_momentBody_general` + `momentBody_faceMeasure_subset(_hyperplane)`;
+  finish by `omega`), **`ExposedChain.genRate_eq`** (`𝓘_ν(M) = ofReal(−log ν(A)) + 𝓘_{ν_A}(M)`; `genRate_face_eq` at `ν_A`,
+  `← ENNReal.ofReal_add`, `Real.log_div`, `ring`), **`ExposedChain.prefix`** (prefix a chain of `ν_F` by the first face: root via
+  `step root` and `faceMeasure_univ`, step via `faceMeasure_faceMeasure` rewriting the hypotheses and `Set.inter_assoc`),
+  **`exists_exposedChain`** (same strong induction as the completion, now producing the chain with `M ∈ relint K_{ν_A}`),
+  **`responseProjection_eq_of_exposedChain`** (`∃ θ ∈ 𝕍_{ν_A}, Π_ν(M) = familyMeasure ν_A 1 0 S 1 θ`; the tilt attains the rate by
+  the chain rule + `ExposedChain.genRate_eq`, then the spec's Pythagoras and `klDiv_eq_zero_iff`).

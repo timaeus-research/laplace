@@ -335,6 +335,7 @@ import Laplace.Multi.ConditioningChainRule
 import Laplace.Multi.EntropyCompletion
 import Laplace.Multi.DataResponseMap
 import Laplace.Multi.IntrinsicChart
+import Laplace.Multi.ConditioningCertificate
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
