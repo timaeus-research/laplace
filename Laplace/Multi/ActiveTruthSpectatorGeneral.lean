@@ -265,9 +265,9 @@ theorem specFG_tendsto {ρ B D γ q δ β η : ℝ} {Q κ r : Fin m ⊕ (Fin k �
     (hWm : Measurable (Function.uncurry W)) (ham : Measurable (Function.uncurry a))
     (hWb : ∀ x u, 0 ≤ W x u ∧ W x u ≤ Wstar) (hab : ∀ x u, amin ≤ a x u)
     {Wtr atr : (Fin m → ℝ) → ℝ → ℝ} (ξ : Fin m → ℝ)
-    (hWtr : ∀ u ∈ Ioo (0 : ℝ) ρ, Tendsto (fun x' ↦ W (Sum.elim ξ x') u)
+    (hWtr : ξ ∈ specBox m ρ → ∀ u ∈ Ioo (0 : ℝ) ρ, Tendsto (fun x' ↦ W (Sum.elim ξ x') u)
       (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (Wtr ξ u)))
-    (hatr : ∀ u ∈ Ioo (0 : ℝ) ρ, Tendsto (fun x' ↦ a (Sum.elim ξ x') u)
+    (hatr : ξ ∈ specBox m ρ → ∀ u ∈ Ioo (0 : ℝ) ρ, Tendsto (fun x' ↦ a (Sum.elim ξ x') u)
       (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (atr ξ u))) :
     Tendsto (fun t ↦ specFG ρ B D γ q δ β η Q κ r W a t ξ) atTop
       (𝓝 (specFGlim ρ B D γ q δ β η Q κ r Wtr atr ξ)) := by
@@ -279,7 +279,7 @@ theorem specFG_tendsto {ρ B D γ q δ β η : ℝ} {Q κ r : Fin m ⊕ (Fin k �
       (κ := fun j ↦ κ (Sum.inr j)) (r := fun j ↦ r (Sum.inr j)) hρ (specD_pos hD q Q hξ') hq
       (specB_pos hB κ hξ') hβ hη hδ (fun j ↦ hκ _) hΔ hc₀ hc₁ hrJ hamin
       (measurable_specW_uncurry hWm ξ) (measurable_specW_uncurry ham ξ) (fun x u ↦ hWb _ _)
-      (fun x u ↦ hab _ _) hWtr hatr) (Or.inr ENNReal.ofReal_ne_top)
+      (fun x u ↦ hab _ _) (hWtr hξ) (hatr hξ)) (Or.inr ENNReal.ofReal_ne_top)
   · simp only [specFG, specFGlim, Set.indicator_of_notMem hξ, zero_mul]
     exact tendsto_const_nhds
 
@@ -520,10 +520,12 @@ theorem tendsto_lintegral_specFG {ρ B D γ q δ β η : ℝ} {Q κ r : Fin m �
     (hWm : Measurable (Function.uncurry W)) (ham : Measurable (Function.uncurry a))
     (hWb : ∀ x u, 0 ≤ W x u ∧ W x u ≤ Wstar) (hab : ∀ x u, amin ≤ a x u)
     {Wtr atr : (Fin m → ℝ) → ℝ → ℝ}
-    (hWtr : ∀ᵐ ξ : Fin m → ℝ, ∀ u ∈ Ioo (0 : ℝ) ρ, Tendsto (fun x' ↦ W (Sum.elim ξ x') u)
-      (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (Wtr ξ u)))
-    (hatr : ∀ᵐ ξ : Fin m → ℝ, ∀ u ∈ Ioo (0 : ℝ) ρ, Tendsto (fun x' ↦ a (Sum.elim ξ x') u)
-      (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (atr ξ u))) :
+    (hWtr : ∀ᵐ ξ : Fin m → ℝ, ξ ∈ specBox m ρ → ∀ u ∈ Ioo (0 : ℝ) ρ,
+      Tendsto (fun x' ↦ W (Sum.elim ξ x') u)
+        (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (Wtr ξ u)))
+    (hatr : ∀ᵐ ξ : Fin m → ℝ, ξ ∈ specBox m ρ → ∀ u ∈ Ioo (0 : ℝ) ρ,
+      Tendsto (fun x' ↦ a (Sum.elim ξ x') u)
+        (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (atr ξ u))) :
     Tendsto (fun t ↦ ∫⁻ ξ, specFG ρ B D γ q δ β η Q κ r W a t ξ) atTop
       (𝓝 (∫⁻ ξ, specFGlim ρ B D γ q δ β η Q κ r Wtr atr ξ)) :=
   tendsto_lintegral_filter_of_dominated_convergence
@@ -566,10 +568,12 @@ theorem tendsto_modelKernel_general_spectator {ρ A B D γ p q δ β η : ℝ}
     (hatrm : Measurable (Function.uncurry atr))
     (hWtrb : ∀ ξ, ∀ u ∈ Ioo (0 : ℝ) ρ, 0 ≤ Wtr ξ u ∧ Wtr ξ u ≤ Wstar)
     (hatrb : ∀ ξ, ∀ u ∈ Ioo (0 : ℝ) ρ, amin ≤ atr ξ u)
-    (hWtr : ∀ᵐ ξ : Fin m → ℝ, ∀ u ∈ Ioo (0 : ℝ) ρ, Tendsto (fun x' ↦ W (Sum.elim ξ x') u)
-      (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (Wtr ξ u)))
-    (hatr : ∀ᵐ ξ : Fin m → ℝ, ∀ u ∈ Ioo (0 : ℝ) ρ, Tendsto (fun x' ↦ a (Sum.elim ξ x') u)
-      (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (atr ξ u))) :
+    (hWtr : ∀ᵐ ξ : Fin m → ℝ, ξ ∈ specBox m ρ → ∀ u ∈ Ioo (0 : ℝ) ρ,
+      Tendsto (fun x' ↦ W (Sum.elim ξ x') u)
+        (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (Wtr ξ u)))
+    (hatr : ∀ᵐ ξ : Fin m → ℝ, ξ ∈ specBox m ρ → ∀ u ∈ Ioo (0 : ℝ) ρ,
+      Tendsto (fun x' ↦ a (Sum.elim ξ x') u)
+        (𝓝[Set.pi univ fun _ : Fin k ⊕ Fin 2 ↦ Ioo (0 : ℝ) ρ] 0) (𝓝 (atr ξ u))) :
     Tendsto (fun t ↦ t ^ (γ * p + (β * δ - η * γ)) / log t ^ k *
         modelKernel ρ A B D γ p q δ Q κ r W a t) atTop
       (𝓝 (A * Gamma β * B ^ (-β) * q * D ^ (-(q * η)) *
