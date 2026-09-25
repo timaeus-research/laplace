@@ -2939,3 +2939,28 @@ certificates for concrete resolved charts beyond the identity chart.
   for `⊇`). GOTCHA (cost a bisection): `pi_norm_le_iff_of_nonneg'`, `tendsto_norm_cocompact_atTop'` and the other PRIMED
   norm lemmas are the MULTIPLICATIVE (`SeminormedGroup`) versions — using them on `J → ℝ` produces `(deterministic) timeout
   at whnf/isDefEq` with no other symptom; the additive names are the unprimed ones.
+- `SegmentDivergence.lean` (NOT mirrored; Astra round 30 item 3): `sq_integral_sqrt_le_integral` (`(∫₀¹√f)² ≤ ∫₀¹ f`
+  by AM–GM with a free weight `λ = √(∫f + ε)` and `le_of_forall_pos_le_add`), `segVar μ π L₀ R t a v s :=
+  Var_{a+sv}(R_v)`, `hasDerivAt_segMean` (`d/ds ⟨R_v⟩_{a+sv} = −t V(s)`; NOT `omit ht` — the obsMap lemmas need `0 < t`),
+  `continuous_segVar` (through `continuous_obsMapDeriv`), `segVar_nonneg`, **`mixKL_eq_integral_mul_var`**
+  (`KL(P_b‖P_a) = t²∫₀¹ s V`; primitive `A(a) − A(a+sv) − t s D(s)`), **`mixKL_eq_integral_one_sub_mul_var`**
+  (`KL(P_a‖P_b) = t²∫₀¹(1−s)V`; primitive `A(a+sv) − A(a) − t(1−s)D(s) + tD(0)` — the sign of the last two terms was
+  wrong on the first attempt; finish by `simp only [one_smul, zero_smul, …, hv]` FIRST, then
+  `rw [priorExp_dirLoss_eq_dot … a (b − a)]`), `segmentLength := t∫₀¹√V`, **`sq_segmentLength_le_jeffreys`**
+  (`Length² ≤ KL(a‖b) + KL(b‖a)`; typed `IntervalIntegrable (fun s ↦ …)` facts for `integral_add`),
+  **`mixKL_three_point`** (`KL(a‖b) − KL(a‖c) − KL(c‖b) = t⟨b−c, m(a)−m(c)⟩`, pure algebra on `mixKL_aff_eq`),
+  **`mixKL_pythagoras`**, `hasDerivAt_mixKL_line` (`d/ds KL(P_a‖P_{c+sv}) = t⟨v, m(a) − m(c+sv)⟩`; lambdas must be typed
+  `fun s : ℝ ↦` or `s • v` picks `ℕ`; `neg_mul` + `Finset.sum_neg_distrib` in the final simp),
+  **`orthogonal_of_isMinOn_line`** (first-order condition of an information projection onto a line gives
+  `⟨v, m(a) − m(c)⟩ = 0`). Astra round 30 (`gpt_responses/research_round30_{q,v1}.md`): CORRECTIONS — the wall family
+  `(x^p, x^q)` on `(0,∞)` is NON-STEEP: natural domain `{θ₁ > 0} ∪ {θ₁ = 0, θ₂ > 0}`, mean image the curved band
+  `{v^r < u ≤ C_Γ v^r}` (r = p/q, `C_Γ = Γ(k+r)/(Γ(k)k^r)`, k = 1/q), a PROPER subset of the convex support
+  `{u ≥ v^r}`; the wall is the homogeneous curve `u = C_W v^r` splitting the band; temperature rays have `√κ_a log T`
+  Fisher length in ALL three chambers (`κ_a = 1/q, 1/p, 1/2`), the three-regime law concerns data segments at fixed `t`;
+  `L² ≤ 2KL` is FALSE (Bernoulli tilt: `L → π/2`, `KL → log 2`), the correct bound is Jeffreys. Ranking: (1) bounded-
+  statistic moment-body theorem `range η = int cl conv (essRange S)` via a uniform positive-mass cap lemma, (2) full
+  mean-coordinate potential (inverse chart, `I = ψ*(−m)`, `∇I = −θ`, `D²I = G⁻¹`, dual Bregman, path-length transport),
+  (3) segment identities [DONE here], (4) fixed-temperature image as the graph `η₀ = h_t(M)` = level set `∂_{η₀}I = −t`,
+  reduced potential `J_t(M) = inf_e (I(e,M) + te) + ψ(t,0)`, (5) `N^⊥`, (6) the wall mean band, (7) two-term wall law
+  (little-`o` variance lemma suffices; `c₁ = (h₂²/2 + h₁h₃)/λ² − (2h₁h₂μ₃ + h₁²μ₄/2)/λ³ + h₁²μ₃²/λ⁴`), (8) abstract
+  moving minimum.

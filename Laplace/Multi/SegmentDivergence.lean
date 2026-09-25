@@ -143,7 +143,7 @@ theorem mixKL_eq_integral_mul_var (a b : ι → ℝ) :
     priorExp_dirLoss_eq_dot hπm hπi hπ hπpos hL₀m hL₀ hR t (a + 1 • v) v]
   simp only [one_smul, zero_smul, add_zero, zero_mul, mul_zero, sub_zero, hv, add_sub_cancel]
   simp only [mul_sub, Finset.sum_sub_distrib, Pi.sub_apply, sub_mul, Finset.mul_sum]
-  ring
+  ring_nf
 
 /-- **Reverse segment identity**: `KL(P_a ‖ P_b) = t² ∫₀¹ (1 − s) V(s) ds`. -/
 theorem mixKL_eq_integral_one_sub_mul_var (a b : ι → ℝ) :
@@ -174,7 +174,7 @@ theorem mixKL_eq_integral_one_sub_mul_var (a b : ι → ℝ) :
     add_sub_cancel]
   rw [priorExp_dirLoss_eq_dot hπm hπi hπ hπpos hL₀m hL₀ hR t a (b - a)]
   simp only [Finset.mul_sum, Pi.sub_apply]
-  ring
+  ring_nf
 
 /-- The response length of a data segment, `t ∫₀¹ √V(s) ds`. -/
 noncomputable def segmentLength (μ : Measure X) (π L₀ : X → ℝ) (R : ι → X → ℝ) (t : ℝ)
@@ -254,7 +254,7 @@ theorem hasDerivAt_mixKL_line (a c v : ι → ℝ) (s : ℝ) :
       funext s
       simp only [Finset.mul_sum, mul_add, mul_sub, sub_mul, add_mul, Finset.sum_add_distrib,
         Finset.sum_sub_distrib]
-      ring
+      ring_nf
     rw [e2]
     simpa using ((hasDerivAt_id s).mul_const (t * ∑ i, v i * meanMap μ π L₀ R t a i)).const_add
       (t * ∑ i, (c i - a i) * meanMap μ π L₀ R t a i)
