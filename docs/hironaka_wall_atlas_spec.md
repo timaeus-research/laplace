@@ -2370,3 +2370,10 @@ certificates for concrete resolved charts beyond the identity chart.
   (same base moments ⇒ same partition function along the line), **`mixExp_eq_of_moments_eq`** (same
   mixed moments `∫φΔⁿ…` ⇒ same response `s ↦ ⟨φ⟩_s`); via `HasSum.tsum_eq` on `hasSum_priorZ_pathLoss`
   / `hasSum_mixNum`.
+- `MeanMapInjective.lean` (NOT mirrored; multivariate strict identifiability / Legendre duality):
+  `meanMap μ π L₀ R t a = (⟨Rᵢ⟩_{t,a})ᵢ`, `priorExp_dirLoss` (linearity in the observable via
+  `Integrable.bdd_mul` + `integral_finsetSum`), **`TiltData.hasDerivAt_affLogZ_dir'`**
+  (`D_v log Z = −t ∑ vᵢ mᵢ(a)`), **`meanMap_injective`** (no nonzero direction with a.s.-constant
+  contrast on the prior support ⇒ the mean map is injective; proof: `mixExp_strictAnti` on the line
+  from `a` to `b` with contrast `R_{b−a}` and the endpoint identifications `pathLoss _ _ 0 = L`,
+  `affLoss_add_smul` at `ε = 1`).

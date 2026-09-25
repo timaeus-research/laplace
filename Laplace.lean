@@ -228,6 +228,7 @@ import Laplace.Multi.TiltInterpolation
 import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.ResponseMap
 import Laplace.Multi.AffineConvexity
+import Laplace.Multi.MeanMapInjective
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
 import Laplace.Multi.MixtureSeries
