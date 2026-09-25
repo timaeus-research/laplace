@@ -3577,3 +3577,13 @@ certificates for concrete resolved charts beyond the identity chart.
   (`tilt_lower_bound` with `u := t•(a−b)`, `lam := 1`; `a − (1/t)•(t•(a−b)) = b` by `smul_smul, one_div_mul_cancel,
   one_smul, sub_sub_cancel`; `Metric.isOpen_iff`, `dist_pi_lt_iff`, `Real.dist_eq`, `measureReal_mono`),
   `eventually_le_log_measureReal_empMean_div`.
+- `SchurComplement.lean` (NOT mirrored; round-39 bundle item C): `jointCov_mulVec_none/some` (block rows of the joint
+  `featCov` by `simp only [Matrix.mulVec, dotProduct, featCov, Matrix.of_apply, Fintype.sum_option, natc, natC, jointStat,
+  Option.elim_none, Option.elim_some]`), **`natVarH_pos`** (`Var(H) > 0` under `hjnd`: `ae_eq_const_of_priorCov_self_eq_zero`
+  returns `∀ᵐ x, φ x = ⟨φ⟩` — NOT `∃ c`; the witness direction is `fun j ↦ j.elim 1 (fun i ↦ −b i)`; the `.congr` for the
+  weight integrability needs its TARGET TYPE annotated), **`dotProduct_jointCov_inv`** (`d ⬝ G⁻¹ d = d_R ⬝ C⁻¹ d_R +
+  (d₀ − b·d_R)²/Var(H)`: exhibit `w = (τ, C⁻¹(d_R − τc))` with `τ δ = d₀ − b·d_R`, verify `G w = d` blockwise
+  (`linear_combination hτ − τ * hδeq` on the base row), then `G⁻¹ d = w` by a `calc` — never `rw [← hGw]` when `d` also sits
+  inside `w`'s definition), `dotProduct_natC_inv_le_jointCov_inv` (minimal lift), `dotProduct_jointCov_inv_slice_tangent`
+  (equality at `d₀ = b·d_R`). Symmetry of `C⁻¹` via `Matrix.dotProduct_mulVec, ← Matrix.mulVec_transpose,
+  Matrix.transpose_nonsing_inv, natC_transpose`.
