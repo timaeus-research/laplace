@@ -2155,3 +2155,13 @@ certificates for concrete resolved charts beyond the identity chart.
   line — bisected with truncated scratch copies); pass `(a + ε • v)` and `(-lam)` explicitly, and
   annotate `∀ ε : ℝ` (otherwise `HSMul ?m (ι → ℝ)` is stuck); `gcongr` on a product of four
   factors leaves a positivity goal in place of the intended one — spell `mul_le_mul` out.
+- `ValuationLP.lean` (NOT mirrored; round-19 package 2, first step): **the valuation LP**.
+  `offsetFeasible α σ = {r ≥ 0 : α_j·r + σ_j ≥ 1}`, `offsetLP α b σ = sInf (b·r '' offsetFeasible)`
+  (named to avoid the clash with `LPExponent.lpValue`, which broke the umbrella build);
+  `offsetFeasible_convex_combo` (joint affinity), `offsetLP_le`/`le_offsetLP`,
+  **`offsetLP_antitone`**, **`offsetLP_convexOn`** (no LP duality: the value function of a jointly
+  affine parametric LP is convex — a two-step `le_offsetLP` argument dividing by the positive
+  weights, with the degenerate weights handled by `subst` + `simp`), **`offsetLP_quartic`**
+  (`d = 1`, `α = (4,2)`, `b = 1`, `σ = (0, σ)`: image set `= Ici (coupledExponent σ)`, `csInf_Ici`)
+  — the LP value equals the analytic exponent of `CoupledPhaseDiagram`. Not done: piecewise
+  affinity via the dual polytope's vertices, and log multiplicity = dim of the optimal face.
