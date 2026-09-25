@@ -1430,3 +1430,24 @@ certificates for concrete resolved charts beyond the identity chart.
   measure nonzero (`integral_pos_iff_support_of_nonneg`; the open set `{wt|b| > 0} ∩ (0,ρ)` lies in
   the support of the density, `IsOpen.measure_pos`). This is the guard Astra asked for: a term
   certified at `(λ, k)` with a zero measure would misidentify the leading order.
+- Astra round 11 (`gpt_responses/research_round11_v1.md`, e47fce9): audit of (a), (b) clean (no
+  Jacobian for the push-forward, a.e.-in-the-box traces sufficient, global trace bounds harmless);
+  strong duality (deriving `(β,η)` from LP optimality) is a separate project — scope the result to
+  faces admitting the displayed certificate; the `c_j = a_j = 0` case is a different boundary
+  regime (the solved coordinate does not collapse, so the general-unit trace must retain it):
+  DEFERRED as a scoped exclusion; solved-pair independence via the augmented linear map
+  `H_e(α) = (α_free, κ·α, Q·α)` with `|det H_e| = |det M_e|` (Jacobian ratio
+  `|det M_{e₂}|/|det M_{e₁}|`); moving parameters by SQUEEZING between fixed-parameter corner
+  kernels (monotone in `B`, monotone in `D` through the cut) rather than a parameter-uniform DCT.
+  Ranking: (d) example identification, (g) export, (f) moving parameters, (c) solved-pair
+  independence, (h) one mixed vertex/tied/active example, (e) deferred.
+- `ActiveTruthExampleBridge.lean` (97b89e7; hironaka f219e5b77): **the three-coordinate example is
+  an instance** — `lintegral_indicator_one_mul`, `deg_cutVar_lt_iff`
+  (`t^{-2}(xyz)^{-1} < 1 ↔ xyz > t^{-2}`), `degIntegrand_eq` (the example's `ofReal ∘ modelIntegrand`
+  is the three `(0,1)` indicators times `degIntegrand`), `lintegral_degExample`
+  (`∫⁻ ofReal (modelIntegrand …) = degI t`: `lintegral_sum_split`, `volume_preserving_funUnique`
+  for `Fin 1 → ℝ`, `volume_preserving_finTwoArrow` for `Fin 2 → ℝ`, `lintegral_lintegral_swap`,
+  `lintegral_prod_symm'`, then the indicators to set integrals), `modelKernel_degExample_eq`
+  (`modelKernel 1 1 1 1 2 0 1 3 degQ degκ degr 1 1 t = (degI t).toReal`), and
+  **`tendsto_degI_of_face`** (`t⁴ I(t)/log t → 1` from the general theorem, the regression test
+  against `DegenerateFace.tendsto_degI`). Astra round-11 item (d) CLOSED.
