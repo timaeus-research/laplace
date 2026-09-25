@@ -271,6 +271,7 @@ import Laplace.Multi.MomentBody
 import Laplace.Multi.DualPotential
 import Laplace.Multi.TemperatureSlice
 import Laplace.Multi.ObservableRegression
+import Laplace.Multi.LegendreMaximum
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
