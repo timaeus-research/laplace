@@ -3363,3 +3363,18 @@ certificates for concrete resolved charts beyond the identity chart.
   following `funext` errors "no goals"), **`hasDerivAt_natVarH_path`** (`d/ds Var H = −κ₃(H,H,S_{θ'})` via
   `hasDerivAt_residual_form` with `hpos : ∀ s, 0 < θ s none` so the normal equations hold everywhere — no reparametrisation;
   `conv_rhs => rw [e, natCum3_eq, priorCum3_residual_expand]` then `simp only [← natCum3_eq]`).
+- `LossHessian.lean` (NOT mirrored; Astra round 35 item 2, part 2 — THE UNIFIED HESSIAN): `chartDomain` (open:
+  `isOpen_lt` ∩ preimage of `isOpen_interior`), `jointPoint_eq`, `lossChart p := ⟨L₀⟩_{sliceInv p}`,
+  `lossGrad θ τ v := −τ Var_θ(H_θ) + v·b_θ`, `priorCum3_const_mul_left`, `dotProduct_natC_inv_mulVec` (symmetric inverse
+  across `⬝ᵥ`: `dotProduct_comm, Matrix.dotProduct_mulVec, ← Matrix.mulVec_transpose, Matrix.transpose_nonsing_inv`;
+  `ᵀ` needs `open Matrix` — use `.transpose`), `tempPath_none_pos`, `aOf_tempPath`, `natC_tempPath`, `natb_tempPath`
+  (`natb (tempPath M t) = regCoeff M t`), **`chartScore_eq`** (`S_{(τ,v)} = τ H − (C⁻¹v)·R` in `natH/natC` form),
+  **`exists_chartLine`** (σ-trick: `σ s := if p₀ + s•Y ∈ chartDomain then s else 0`, `∀ s, 0 < θ s none`,
+  `θ 0 = tempPath`, `HasDerivAt θ (D sliceInv Y) 0`; the strict-derivative point must be rewritten through a `have hsm :
+  sliceMap (tempPath M t₀) = jointPoint t₀ M` since `tempPath` is not syntactically `sliceInv (jointPoint …)`; write
+  `fun s : ℝ ↦ … + s • Y` and `(0 : ℝ)` in ALL statements or `s` and `0` elaborate as `ℕ`), **`hasDerivAt_lossChart_line`**
+  (`D h[(τ,v)] = −τ Var(H) + v·b`; eventual equality named with an explicit type before `congr_of_eventuallyEq`;
+  `Cov(L₀,H) = Var H` via a `rfl` equation unfolding only the FIRST slot; `Cov(L₀, R_{C⁻¹v}) = v·b` via `change` to the
+  unfolded `natb` then `← dotProduct_natC_inv_mulVec`), **`hasDerivAt_lossGrad_line`** (`D²h[X,Y] = κ₃(H, S_X, S_Y)`:
+  `hasDerivAt_natVarH_path` + `hasDerivAt_natb_path` through `HasDerivAt.fun_sum`, trilinearity of κ₃ after `natCum3_eq`
+  transport, `priorCum3_const_mul_left`, `priorCum3_dirLoss_left`).
