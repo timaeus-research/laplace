@@ -2225,3 +2225,16 @@ certificates for concrete resolved charts beyond the identity chart.
   bounds are borrowed from `FaceData` on the zero measure (`toFaceData`). Instantiation on an
   actual `termDensity` (unit = a field of `Phase`) still needs a Phase family affine in the
   weight.
+- `GammaFaceMarginal.lean` (NOT mirrored; round-20 package 2): `integral_rpow_mul_exp_neg_mul`
+  (`∫₀^∞ z^{β−1}e^{-bz} = b^{-β}Γ(β)` from `integral_rpow_mul_exp_neg_mul_rpow` at `p = 1`),
+  `integrableOn_rpow_mul_exp_neg_mul` (arguments of the Mathlib lemma are `(hs) (hp) (hb)` with
+  `s` the exponent), **`gamma_score`** (`E[B R z | u] = β R/U`), `prodMeasure ν = ν.prod
+  (volume.restrict (Ioi 0))`, `ae_snd_pos` (`Measure.ae_prod_mem_iff_ae_ae_mem` with the set
+  given), **`termCoef_prod_eq_faceCoef`** (Fubini `integral_prod` [needs `SFinite ν`]: the
+  product-domain term integral is `Γ(β)B^{-β} · faceCoef (φ w)`), **`termScoreCoef_prod_eq`** (the
+  score-weighted term integral is `Γ(β)B^{-β} · β ∫ φ w U^{-β-1} R_v`) — the exponential score
+  `B R_v z` marginalises to the face score `β R_v/U_a`, so the two singular fluctuation–response
+  identities agree. Gotchas: `Integrable.mono'` bounds need the integrable majorant NONNEGATIVE
+  (use `hint.norm`); for a.e. positivity of the second coordinate under a product with a
+  restricted factor use `ae_prod_mem_iff_ae_ae_mem`; `simp only [abs_mul, …]` beats a hand `rw`
+  chain for nested absolute values, and start the `calc` with `_`.
