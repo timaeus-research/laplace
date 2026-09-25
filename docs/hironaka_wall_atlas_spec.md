@@ -3738,3 +3738,24 @@ certificates for concrete resolved charts beyond the identity chart.
   not_and, not_le] at hcon`, `ge_of_tendsto` along `⟨H⟩_t → α` (`tendsto_energy_temp`) gives `log∫π − C ≤ A_s + sα` for all
   `s`, while `Real.tendsto_log_nhdsNE_zero.comp (tendsto_nhdsWithin_iff.2 ⟨tendsto_shifted_priorZ, pos⟩)` sends
   `log(e^{sα} Z_s) → −∞`; `Measure.restrict_eq_zero`, `integral_zero_measure`; finish with `tendsto_atTop_atTop`).
+- `RelativeInterior.lean` (NOT mirrored; round-42 item 2, geometry): **`mem_intrinsicInterior_iff_exists_ball`** (`x ∈ relint K ↔
+  x ∈ K ∧ ∃ δ > 0, ∀ v ∈ (affineSpan ℝ K).direction, ‖v‖ < δ → x + v ∈ K`; `mem_intrinsicInterior` + `mem_nhds_subtype` +
+  `AffineSubspace.vadd_mem_iff_mem_direction`/`vsub_mem_direction` with `simpa [vadd_eq_add, add_comm]`/`[vsub_eq_sub]`; write
+  `interior_subset hy` with the preimage type, not `↑y ∈ K`), `displacements K x : Set (direction)` (convex:
+  `push_cast` then `calc … (a + b) • x … := by module`), `mem_interior_displacements`
+  (`set_option linter.unusedFintypeInType false in` — the metric on the direction needs `Fintype J`),
+  **`mem_intrinsicInterior_iff_forall_supporting`** (`K` convex: `x ∈ relint K ↔ x ∈ K ∧ ∀ e, (∀ y ∈ K, e·y ≤ e·x) → ∀ y ∈ K,
+  e·y = e·x`; converse via `geometric_hahn_banach_open_point` on the direction subspace, `intrinsicInterior_nonempty` for a
+  relint point, `LinearMap.exists_extend (f : V →ₗ[ℝ] ℝ)` to extend the functional and `pi_eq_sum_univ'` to read it as `dotJ e`).
+- `RelativeMomentBody.lean` (NOT mirrored; round-42 item 2): `dirSpan μ π S := (affineSpan ℝ (momentBody μ π S)).direction`
+  (an `abbrev`; a `local notation` for the projection fails quotPrecheck), `one_le_dotJ_self` (`Finset.exists_max_image` +
+  `pi_norm_le_iff_of_nonneg`), `exists_far_point_rel` (test point `x + (−3δ/4) • e`, `e ∈ 𝕍`), **`cap_lemma_rel`** (copy of
+  `cap_lemma` over the compact `E = 𝕍 ∩ sphere` (`IsCompact.inter_left`, `Submodule.closed_of_finiteDimensional`); `E = ∅`
+  handled first; omits `hπpos`), **`coercive_bound_rel`** (nonzero `θ ∈ 𝕍`, `e := ‖θ‖⁻¹ • θ`), **`exists_min_variational_rel`**
+  (minimise on the subtype `𝕍`: `Continuous.exists_forall_le' hf 0 hcoer` with `tendsto_norm_cocompact_atTop`; write the
+  function with binder `fun θ : dirSpan μ π S ↦ …`; `simp only [hfdef] at h1 ⊢` before `linarith` so both sides are
+  beta-reduced), **`meanMap_eq_of_min_rel`** (first-order condition along `e ∈ 𝕍` gives `e·(x − m) = 0`; apply to
+  `e := x − m ∈ 𝕍` and `Finset.sum_eq_zero_iff_of_nonneg`), **`range_meanMap_eq_intrinsicInterior_momentBody`** (no `hnd`; `⊆`
+  via the supporting characterisation: `e·S ≤ e·m` a.e. with equal `P_θ`-expectation ⇒ `e·S = e·m` a.e.
+  (`integral_eq_zero_iff_of_nonneg_ae`, transfer by `familyMeasure_eq_zero_iff`) ⇒ `K` in the hyperplane by
+  `momentBody_subset_halfspace` twice).

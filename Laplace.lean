@@ -329,6 +329,8 @@ import Laplace.Multi.BoundaryBarrier
 import Laplace.Multi.EntropyProjection
 import Laplace.Multi.ThermalTransport
 import Laplace.Multi.GroundState
+import Laplace.Multi.RelativeInterior
+import Laplace.Multi.RelativeMomentBody
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
