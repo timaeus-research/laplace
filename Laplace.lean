@@ -291,6 +291,7 @@ import Laplace.Multi.ResidualFormDeriv
 import Laplace.Multi.LossCurvature
 import Laplace.Multi.DataReachability
 import Laplace.Multi.JourneyPotential
+import Laplace.Multi.RayLength
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
