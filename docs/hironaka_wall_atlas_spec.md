@@ -3142,3 +3142,20 @@ certificates for concrete resolved charts beyond the identity chart.
   needs `[DecidableEq ι]` in the statement for `Pi.single`). With `hasDerivAt_lossSurface` (`∂_t² J = −σ²`),
   `obsMean_fderiv_eq_regression` (`∇_M h = b`) and `hasFDerivAt_dualPotential` (`∇_M J = −ta`) this is the whole block Hessian
   `[[−σ², bᵀ],[b, C⁻¹]]`.
+- `AnnealingRay.lean` (NOT mirrored; Astra round 32 item 2, fixed-energy part): `affLoss_zero_eq_fun` (`affLoss L₀ R 0 = L₀`;
+  NOTE `affLoss_zero_eq` lives in `LegendreMaximum`, outside this closure), **`hasDerivAt_priorExp_temp`** (`d/dt⟨φ⟩_{t,a} =
+  −Cov_{t,a}(φ, L_a)`; chain rule through the joint family along `t ↦ natCoord t a = t • natCoord 1 a`, `hasFDerivAt_obsMap` at
+  `t = 1`, `obsMapDeriv_apply`, `priorCov_natCoord`, `dirLoss_jointStat_natCoord … 1 a` + `one_mul`), `hasDerivAt_energy_temp`
+  (`E' = −Var_t(L₀)`; `.congr_deriv (by rw [affLoss_zero_eq_fun L₀ R])` — a rewrite that makes both sides identical closes the
+  goal), **`energy_antitone`** (on ALL of `ℝ`, `antitone_of_deriv_nonpos`), `continuous_priorCov_temp` (from differentiability of
+  the three expectations; `exact h1.sub (h2.mul h3)` unifies with `priorCov` by defeq), **`integral_var_eq_energy_drop`**
+  (`∫₀ᵀ Var = E(0) − E(T)`; FTC with `f := fun u ↦ −E u`, `f'` given explicitly), **`rayKL_eq`** (`mixKL μ π L₀ (fun x ↦ −L₀ x) T
+  0 1 = ∫₀ᵀ u Var_u`; Bregman form from `tiltData_baseWeight_of_bounded (μ := μ) (Δ := fun x ↦ −L₀ x)` — type the direction as
+  the lambda, `hL₀m.neg` alone infers the Pi-negation `−L₀` — and `TiltData.mixKL_eq`; primitive `g(u) = log∫π − A_u(0) − u E(u)`
+  with `g' = u Var_u` from `hasDerivAt_affLogZ_temp` and `hasDerivAt_energy_temp`; endpoints `pathLoss L₀ (−L₀) 1 = 0`,
+  `priorZ 0 T = ∫π`, `A_0(0) = log ∫π`; `unfold affLogZ` last), **`rayKL_le`** (`KL ≤ T(E(0) − E(T))`,
+  `intervalIntegral.integral_mono_on`), **`sq_priorExp_sub_le_ray`** (`(⟨φ⟩_T − ⟨φ⟩_0)² ≤ (∫₀ᵀ Var φ)(E(0) − E(T))`: FTC for the
+  change, pointwise Cauchy–Schwarz `TiltData.abs_tiltCov_le` via `tiltData_aff … (0 : ι → ℝ) 0 u` + `← priorCov_eq_tiltCov_zero` ×3
+  + `← Real.sqrt_mul`, `intervalIntegral.abs_integral_le_integral_abs`, rescale `∫₀ᵀ k = T ∫₀¹ k(Ts)` by
+  `intervalIntegral.integral_comp_mul_left k hT.ne'` (the instances `hres k` come out beta-reduced — no `simp only at`), then
+  `sq_integral_sqrt_mul_le` (MeanSegment) on `[0,1]`).
