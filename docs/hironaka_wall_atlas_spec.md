@@ -3393,3 +3393,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `setIntegral_pos_iff_support_of_nonneg_ae` with `support ∩ S = S` by `Set.inter_eq_right`), **`exists_threshold_tilt`**
   (`intermediate_value_Icc`), **`exists_halfspace_projection`**, **`chernoff_rate_eq_inf_KL`** (`sSup = sInf` via
   `IsGreatest.csSup_eq`/`IsLeast.csInf_eq`).
+- `LossHessianBlocks.lean` (NOT mirrored; Astra round 36 audit): `dirLoss_zero_vec`, `priorCum3_neg_left`,
+  **`lossHessian_symm`** (`κ₃(H,S_X,S_Y) = κ₃(H,S_Y,S_X)`, `priorCum3_swap₂₃`; no `ht`/`hM` needed), **`lossHessian_temp_temp`**
+  (`κ₃(H,H,H)`; `chartScore_eq` + `simp only [Matrix.mulVec_zero, dirLoss_zero_vec, one_mul, sub_zero]`),
+  **`lossHessian_temp_response`** (`−κ₃(H,H,(C⁻¹v)·R)`), **`lossHessian_response_response`** (`κ₃(H,(C⁻¹v)·R,(C⁻¹w)·R)`; signs
+  moved through `priorCum3_swap₁₂/₂₃` + `priorCum3_neg_left`).
