@@ -3067,3 +3067,12 @@ certificates for concrete resolved charts beyond the identity chart.
   the second, so the right-slot bilinearity is the one needed; a `set a := fun s ↦ …` does not fold the literal
   `a₀ + s • v + β s • w` in the goal — `change` the goal to the `a s` form and restate `hw` as `hw' : … (a s) … ≠ 0 := hw`
   before `field_simp`).
+- `FeaturelessPoint.lean` (NOT mirrored): `segVar_pos` (response variance along a segment in a nonzero direction is positive;
+  `responseForm_self_eq_zero_iff` + the `hnd` form with the vacuous `π x ≠ 0 →` premise discharged by `hc.mono`),
+  **`mixKL_pos`** (`0 < KL(P_b‖P_a)` for `a ≠ b`; forward segment identity + `intervalIntegral.intervalIntegral_pos_of_pos_on`
+  with `IntervalIntegrable` from `Continuous.intervalIntegrable`), `mixKL_eq_zero_iff` (`←` by the Bregman identity at `a = a`,
+  `simp [dotJ]`), `dualPotential_meanMap_zero` (`I(m 0) = −A(0)`), **`dualPotential_sub_prior_eq_mixKL`**
+  (`I(m b) − I(m 0) = KL(P_b‖P_0)`, from `mixKL_eq_bregman_dual 0 b`), the `y`-coordinate form `…'` (`meanMap_invFun hy`),
+  `dualPotential_prior_le/lt`, **`dualPotential_isMinOn_prior`** (the prior's response is the unique minimiser of `I` on
+  `range m`), `eq_zero_of_dualPotential_eq_prior`, `dualPotential_add_affLogZ_zero_nonneg` (`I(y) + A(0) ≥ 0` on the range).
+  Section hypotheses use strict `hπ : ∀ x, 0 < π x` (SegmentDivergence) and pass `fun x ↦ (hπ x).le` to the DualPotential API.
