@@ -1300,3 +1300,17 @@ certificates for concrete resolved charts beyond the identity chart.
   `change (0 : ℝ) ≤ _`; `linarith` sees `-h₀ / q` and `h₀ / q` as different atoms (`neg_div`);
   `measurable_modelIntegrand` wants `Measurable (uncurry W)` — give it as
   `show Measurable (Function.uncurry fun _ u ↦ w u) from hwm.comp measurable_snd`.
+- `ActiveTruthFibreWeighted.lean` (9944c59; hironaka 268a70ffb): the weighted fibre limit (Astra
+  round 9 item 2). `fibreLift κ Q δ γ L v z' = Sum.elim z' (N(v − shift z'))` (the reconstructed
+  log coordinate over `v`; `fibreLift_inr : … = a_j L + b_j(v) − c_j·z'`), `lintegral_comp_smul_fin`
+  (scaling `∫⁻ F(L•y) = L^{-k} ∫⁻ F` from `lintegral_comp_mulVec_add` with `M = L•1`),
+  `negExpMap_mem_box_iff`, `tendsto_lintegral_fibre_weighted`: for measurable `Φ` with
+  `0 ≤ Φ ≤ M` and `Tendsto Φ (𝓝[(0,ρ)^n] 0) (𝓝 Φ₀)`,
+  `L^{-k} ∫_{fibreSet_L(v)} Φ(ρe^{-z(z')}) dz' → Φ₀ · vol(F')`. Proof: scale `z' = Lw`; off the
+  null hyperplanes `{c_j·w = a_j} ∪ {w_i = 0}`, every reconstructed coordinate `L(a_j − c_j·w) + b_j`
+  and `L w_i` tends to `+∞` (so `x → 0` inside the box) or the point leaves the fibre; dominated by
+  `M 1_{F'(a+1)}`. The a.e. positivity Astra asked for is exactly the existing nondegeneracy
+  `(c_j, a_j) ≠ (0,0)` (through `volume_hyperplane'`). Gotchas: `measurable_const_smul L` needs its
+  type ascribed (`: Measurable fun x : Fin k → ℝ ↦ L • x`); `mul_lt_mul_left` over `ℝ` asks for
+  `MulRightStrictMono` — go through `lt_div_iff₀`; `Tendsto.atTop_mul_const_of_neg` (not
+  `atTop_mul_neg_const`); a `Function.comp` redex left by `Tendsto.comp` needs a final `rfl`.
