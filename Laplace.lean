@@ -303,6 +303,7 @@ import Laplace.Multi.LossHessianBlocks
 import Laplace.Multi.ChartSynthesis
 import Laplace.Multi.ArcsineLength
 import Laplace.Multi.CompactCoverCramer
+import Laplace.Multi.DataLocus
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

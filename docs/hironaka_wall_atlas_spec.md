@@ -3419,3 +3419,13 @@ certificates for concrete resolved charts beyond the identity chart.
   P(R̄_n ∈ F) ≤ N e^{−nα}`: totalise the witness (`∀ x, ∃ θ, x ∈ F → …`) so `choose` yields a plain function, strict
   halfspaces `U x` open by `isOpen_lt`, `IsCompact.elim_finite_subcover`, `measureReal_mono` (probability measure discharges
   the finiteness autoparam), `Finset.sum_const, nsmul_eq_mul`).
+- `DataLocus.lean` (NOT mirrored; Astra round 37 item 1 — the data → posterior arrow): `dataCoeff a : (J → ℝ) →L[ℝ] (ι → ℝ)`
+  (`∑ j, (proj j).smulRight (a j)`, `dataCoeff_apply` by `simp [dataCoeff]`), `dataCoeff_mem_reachableCoeff`, `dataResponse`,
+  `dataMetric` (`responseForm` pulled back), `dataLoss'` (NOTE `dataLoss` is taken by DataMixture), `dataLossGrad`, `dataEntropy`,
+  `hasDerivAt_natCoord_line` (`HasDerivAt (fun s ↦ natCoord t (b + s•v)) (natTangent t b 0 v) 0`, `hasDerivAt_pi` + `cases`),
+  **`hasFDerivAt_dataResponse`** (`(hasFDerivAt_meanMap … hZ).comp w (dataCoeff a).hasFDerivAt`), `dataResponse_deriv_apply`,
+  **`dataResponse_deriv_eq_zero_iff`** (kernel = `L⁻¹(N)` via `featCov_mulVec_eq_zero_iff` + `featCov_mulVec_apply`),
+  `dataResponse_add_of_invisible` (`meanMap_add_of_invisible` takes NO hypotheses), **`dataMetric_self_eq_zero_iff`**,
+  **`hasFDerivAt_dataLoss`**, `dataLoss_deriv_apply`, **`hasDerivAt_dataLossGrad_line`** (e-Hessian `t²κ₃(L₀, R_{Lh}, R_{Lk})`;
+  pass the observable to `bdd_dirLoss` explicitly), **`hasDerivAt_dataEntropy_line`** (`−t² Cov(L_w, R_{Lk})` via
+  `hasDerivAt_relEntropy_path`, `dirLoss_jointStat_natCoord/natTangent`).
