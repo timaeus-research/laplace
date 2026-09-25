@@ -3288,3 +3288,19 @@ certificates for concrete resolved charts beyond the identity chart.
   kills `∫₀¹ 1`), `rayLength_le_sqrt`, **`abs_priorExp_sub_le_rayLength`** (`|Δ⟨φ⟩| ≤ ((hi−lo)/2) Length(T)`; `lo ≤ hi`
   from `Classical.arbitrary X`, `Real.sqrt_le_sqrt` + `Real.sqrt_sq`), **`rayLength_ge`**
   (`2|Δ⟨φ⟩|/(hi − lo) ≤ Length(T)`; `div_le_iff₀` + `linarith`). Imports `TwoAxisResponse` for `priorExp_add_bdd`.
+- `HalfspaceChernoff.lean` (NOT mirrored; Astra round 34 item 5): `featCgf ν R θ := log ∫ e^{dirLoss R θ} dν`,
+  `empMean R n x i := (∑ₖ R i (x k))/n`, `sum_mul_empMean` (`u·R̄_n = (∑ₖ R_u(xₖ))/n`, `← mul_div_assoc, ← Finset.sum_div,
+  Finset.mul_sum` then `Finset.sum_comm`), `integrable_exp_mul_of_bdd` (`Integrable.of_bound` with `e^{|λ|M}`),
+  **`halfspace_chernoff`** (`(Measure.pi fun _ : Fin n ↦ ν).real {r ≤ u·R̄_n} ≤ exp(−n(λr − Λ_ν(λu)))`, `λ ≥ 0`:
+  coordinates independent by `iIndepFun_pi (X := fun _ ↦ dirLoss R u)`, `mgf (Xₖ) P = mgf Y ν` through
+  `integral_map (μ := P) (φ := Function.eval k) (f := …)` + `(measurePreserving_eval _ k).map_eq` (pass `μ φ f`
+  explicitly — the eval is otherwise inferred as `fun f ↦ f k` and the rewrite fails), `iIndepFun.mgf_sum` +
+  `Finset.prod_const`, `iIndepFun.integrable_exp_mul_sum`, Mathlib's `measure_ge_le_exp_mul_mgf`, event rewritten
+  by `le_div_iff₀` + `linarith`, then `conv_lhs => rw [← Real.exp_log hpos]`, `← Real.exp_nat_mul, ← Real.exp_add`),
+  `halfspace_chernoff_iInf` (`le_ciInf` over `Set.Ici 0`, `⟨0, Set.mem_Ici.2 le_rfl⟩`), `familyMeasure μ π L₀ R t a :=
+  μ.withDensity (ofReal (e^{−t L_a} π / Z))`, `measurable_familyDensity` (needs `hπm`; `fun_prop`),
+  `integral_familyMeasure` (`integral_withDensity_eq_integral_toReal_smul₀`, no boundedness needed), 
+  `isProbabilityMeasure_familyMeasure` (`withDensity_apply _ MeasurableSet.univ`, `← ofReal_integral_eq_lintegral_ofReal`;
+  `integrable_mul_affWeight_of_bdd … (t := t) a (Bdd.const 1)` — the implicit `t` must be pinned or `simp` faces
+  `?m = t ∨ …`), **`featCgf_familyMeasure`** (`Λ_{P_{t,a}}(θ) = A_t(a − θ/t) − A_t(a)`: `sub_eq_add_neg, ← neg_smul,
+  affLoss_add_smul_eq`, `← Real.exp_add`, `field_simp; ring`, `Real.log_div`), **`halfspace_chernoff_family`**.
