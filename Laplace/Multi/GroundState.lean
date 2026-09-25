@@ -119,6 +119,27 @@ theorem mixKL_eq_neg_relEntropy (a : ι → ℝ) (t : ℝ) :
   rw [hZ0, hA, priorExp_affLoss_self hπm hπi hπ hπpos hL₀m hL₀ hR a t]
   ring
 
+/-- **The tangent bound of the log-partition in temperature** (Bregman nonnegativity of the joint
+family along the thermal path): `A_t(a) − (s − t)⟨H_a⟩_{t,a} ≤ A_s(a)`. -/
+theorem affLogZ_tangent_temp (a : ι → ℝ) (s t : ℝ) :
+    affLogZ μ π L₀ R t a - (s - t) * priorExp μ π (affLoss L₀ R a) (affLoss L₀ R a) t ≤
+      affLogZ μ π L₀ R s a := by
+  have hS' := bdd_jointStat hL₀m hL₀ hR
+  have h0 : ∀ x, |(fun _ : X ↦ (0 : ℝ)) x| ≤ 0 := fun x ↦ by simp
+  have h := famKL_nonneg hπm hπi hπ hπpos measurable_const h0 hS' one_pos (natCoord t a)
+    (natCoord s a)
+  rw [famKL_eq hπm hπi hπ hπpos measurable_const h0 hS' (t := 1) (natCoord t a) (natCoord s a),
+    affLogZ_natCoord, affLogZ_natCoord, Fintype.sum_option] at h
+  simp only [natCoord_none, natCoord_some, meanMap_natCoord_none, meanMap_natCoord_some,
+    one_mul] at h
+  rw [priorExp_affLoss_self hπm hπi hπ hπpos hL₀m hL₀ hR a t]
+  have e : ∑ i, (s * a i - t * a i) * meanMap μ π L₀ R t a i =
+      (s - t) * ∑ i, a i * meanMap μ π L₀ R t a i := by
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun i _ ↦ by ring
+  rw [e] at h
+  linarith
+
 variable (a : ι → ℝ) {α : ℝ} (hα : ∀ᵐ x ∂μ, α ≤ affLoss L₀ R a x)
 include hα
 
@@ -284,6 +305,73 @@ theorem tendsto_klDiv_prior_temp_face'
   · rw [familyMeasure_zero_real_eq hπm hπi hπ hπpos hL₀m hL₀ hR hG, Real.log_div hp.ne' hπpos.ne',
       neg_sub, sub_nonneg]
     exact Real.log_le_log hp (setIntegral_le_integral hπi (Eventually.of_forall fun x ↦ (hπ x).le))
+
+/-- **A null ground state is infinitely far**: if `π(H_a = α) = 0` then `KL(P_{t,a} ‖ π̄) → +∞`. The
+divergence is monotone in `t`, and a bounded divergence would, through the tangent bound of the
+log-partition and `⟨H_a⟩_t → α`, keep `log ∫ e^{−s(H_a − α)} π` bounded below for all `s`,
+contradicting its convergence to `log π(G) = −∞`. -/
+theorem tendsto_klDiv_prior_temp_null
+    (hmass : ∀ ε > 0, 0 < ∫ x in {x | affLoss L₀ R a x < α + ε}, π x ∂μ)
+    (h0 : μ {x | affLoss L₀ R a x = α} = 0) :
+    Tendsto (fun t ↦ (klDiv (familyMeasure μ π L₀ R t a) (familyMeasure μ π L₀ R 0 0)).toReal)
+      atTop atTop := by
+  obtain ⟨hHm, MH, hHb⟩ := bdd_affLoss hL₀m hL₀ hR a
+  have hH : Bdd (affLoss L₀ R a) := ⟨hHm, MH, hHb⟩
+  have hrep : ∀ t, (klDiv (familyMeasure μ π L₀ R t a) (familyMeasure μ π L₀ R 0 0)).toReal =
+      Real.log (∫ x, π x ∂μ) - affLogZ μ π L₀ R t a -
+        t * priorExp μ π (affLoss L₀ R a) (affLoss L₀ R a) t := fun t ↦ by
+    rw [klDiv_familyMeasure_prior hπm hπi hπ hπpos hL₀m hL₀ hR,
+      ENNReal.toReal_ofReal (neg_nonneg.2 (relEntropy_nonpos hπm hπi hπ hπpos hL₀m hL₀ hR _)),
+      relEntropy_natCoord hπm hπi hπ hπpos hL₀m hL₀ hR,
+      priorExp_affLoss_self hπm hπi hπ hπpos hL₀m hL₀ hR a t]
+    ring
+  have hderiv := hasDerivAt_klDiv_familyMeasure_prior_toReal hπm hπi hπ hπpos hL₀m hL₀ hR a
+  have hmono : MonotoneOn (fun t ↦ (klDiv (familyMeasure μ π L₀ R t a)
+      (familyMeasure μ π L₀ R 0 0)).toReal) (Ici 0) := by
+    refine monotoneOn_of_deriv_nonneg (convex_Ici 0)
+      (fun t _ ↦ (hderiv t).continuousAt.continuousWithinAt)
+      (fun t _ ↦ (hderiv t).differentiableAt.differentiableWithinAt) fun t ht ↦ ?_
+    rw [interior_Ici] at ht
+    rw [(hderiv t).deriv]
+    exact mul_nonneg ht.le (priorCov_self_nonneg' hπm hπi hπ hπpos hL₀m hL₀ hR (t := t) a hH)
+  have hunb : ∀ C : ℝ, ∃ t, 0 ≤ t ∧
+      C ≤ (klDiv (familyMeasure μ π L₀ R t a) (familyMeasure μ π L₀ R 0 0)).toReal := by
+    intro C
+    by_contra hcon
+    simp only [not_exists, not_and, not_le] at hcon
+    have hE := tendsto_energy_temp hπm hπi hπ hπpos hL₀m hL₀ hR a hα hmass
+    have hbound : ∀ s, Real.log (∫ x, π x ∂μ) - C ≤ affLogZ μ π L₀ R s a + s * α := by
+      intro s
+      have hlim : Tendsto (fun t ↦ affLogZ μ π L₀ R s a +
+          s * priorExp μ π (affLoss L₀ R a) (affLoss L₀ R a) t) atTop
+          (𝓝 (affLogZ μ π L₀ R s a + s * α)) := (hE.const_mul s).const_add _
+      refine ge_of_tendsto hlim ?_
+      filter_upwards [eventually_ge_atTop (0 : ℝ)] with t ht
+      have h1 := hcon t ht
+      rw [hrep t] at h1
+      have h2 := affLogZ_tangent_temp hπm hπi hπ hπpos hL₀m hL₀ hR a s t
+      linarith
+    have hW := tendsto_shifted_priorZ hπm hπi hπ hHm hα
+    have hG0 : (∫ x in {x | affLoss L₀ R a x = α}, π x ∂μ) = 0 := by
+      rw [Measure.restrict_eq_zero.2 h0, integral_zero_measure]
+    rw [hG0] at hW
+    have hWpos : ∀ s, 0 < Real.exp (s * α) * priorZ μ π (affLoss L₀ R a) s := fun s ↦
+      mul_pos (Real.exp_pos _) (affZ_pos hπm hπi hπ hπpos hL₀m hL₀ hR (t := s) a)
+    have hlog : Tendsto (fun s ↦ Real.log (Real.exp (s * α) * priorZ μ π (affLoss L₀ R a) s))
+        atTop atBot :=
+      Real.tendsto_log_nhdsNE_zero.comp
+        (tendsto_nhdsWithin_iff.2 ⟨hW, Eventually.of_forall fun s ↦ (hWpos s).ne'⟩)
+    obtain ⟨s, hs⟩ := (tendsto_atBot.1 hlog (Real.log (∫ x, π x ∂μ) - C - 1)).exists
+    have hb := hbound s
+    rw [Real.log_mul (Real.exp_pos _).ne' (affZ_pos hπm hπi hπ hπpos hL₀m hL₀ hR (t := s) a).ne',
+      Real.log_exp] at hs
+    have e : affLogZ μ π L₀ R s a = Real.log (priorZ μ π (affLoss L₀ R a) s) := rfl
+    rw [e] at hb
+    linarith
+  rw [tendsto_atTop_atTop]
+  intro b
+  obtain ⟨t₀, ht₀, hb⟩ := hunb b
+  exact ⟨t₀, fun t ht ↦ hb.trans (hmono ht₀ (ht₀.trans ht) ht)⟩
 
 end Family
 

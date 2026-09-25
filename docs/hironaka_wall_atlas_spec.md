@@ -3731,6 +3731,10 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL(P_{t,a}‖π̄) → log ∫π − log ∫_G π`, from `tendsto_mixKL_face`), `familyMeasure_zero_real_eq` (`π̄(A) = ∫_A π/∫π`; after
   `unfold priorExp priorZ` the factors are `0 * …` and `exp 0 * π`: `zero_mul`, `one_mul`; indicators by `by_cases` +
   `Set.indicator_of_mem/notMem`, `Set.indicator_apply` needs `Decidable`), **`tendsto_klDiv_prior_temp_face'`**
-  (`KL(P_{t,a}‖π̄) → KL(π̄_G‖π̄)`). OPEN: null ground state `μ G = 0` ⇒ `KL → ∞` (proof plan: KL is monotone in `t`
-  (derivative `t Var ≥ 0`), so unboundedness suffices; tangent-line/Bregman bound `A(s) ≥ A(t) − ⟨H⟩_t (s − t)` at `s = t/2`
-  plus `⟨H − α⟩_t → 0` shows a bounded KL would force `log W_s ≥ −K` for all `s`, contradicting `W_s → ∫_G π = 0`).
+  (`KL(P_{t,a}‖π̄) → KL(π̄_G‖π̄)`), **`affLogZ_tangent_temp`** (Bregman tangent bound `A_t − (s − t)⟨H⟩_t ≤ A_s` from the
+  joint family's `famKL_nonneg`/`famKL_eq` at `natCoord t a`, `natCoord s a`; `Fintype.sum_option`, `meanMap_natCoord_*`),
+  **`tendsto_klDiv_prior_temp_null`** (null ground state ⇒ `KL → +∞`: `monotoneOn_of_deriv_nonneg (convex_Ici 0)` from
+  `hasDerivAt_klDiv_familyMeasure_prior_toReal` (`interior_Ici`), unboundedness by contradiction: `simp only [not_exists,
+  not_and, not_le] at hcon`, `ge_of_tendsto` along `⟨H⟩_t → α` (`tendsto_energy_temp`) gives `log∫π − C ≤ A_s + sα` for all
+  `s`, while `Real.tendsto_log_nhdsNE_zero.comp (tendsto_nhdsWithin_iff.2 ⟨tendsto_shifted_priorZ, pos⟩)` sends
+  `log(e^{sα} Z_s) → −∞`; `Measure.restrict_eq_zero`, `integral_zero_measure`; finish with `tendsto_atTop_atTop`).
