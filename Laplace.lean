@@ -274,6 +274,7 @@ import Laplace.Multi.ObservableRegression
 import Laplace.Multi.LegendreMaximum
 import Laplace.Multi.SliceVariational
 import Laplace.Multi.MeanSegment
+import Laplace.Multi.ConstrainedResponse
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
