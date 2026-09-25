@@ -3255,3 +3255,15 @@ certificates for concrete resolved charts beyond the identity chart.
   continuity and function by `∀ᶠ t, τ t = t`; the eventual-equality proofs are `by simp only [h]` (a `rw [h]` cannot see the
   bound variable under the beta-redex)), **`hasDerivAt_deriv_lossSurface`** (`∂_t² h = κ₃(H,H,H)` — `deriv h =ᶠ −σ²` from
   `hasDerivAt_lossSurface` with `b := regCoeff`).
+- `DataReachability.lean` (NOT mirrored; Astra round 34 item 2): `mixFin ν w := ∑ j, ofReal (w j) • ν j`, `reachableCoeff a :=
+  (fun w ↦ ∑ j, w j • a j) '' stdSimplex ℝ J`, `reachableResponse := meanMap t '' reachableCoeff a`,
+  **`reachableCoeff_eq_convexHull`** (`= convexHull ℝ (range a)`: the coefficient map as a `LinearMap` structure literal,
+  `convexHull_basis_eq_stdSimplex`, `LinearMap.image_convexHull`, `Set.range_comp`, `Finset.sum_eq_single` with `Ne.symm hk`
+  for the off-diagonal `if j = k`), `isCompact_reachableCoeff` (`isCompact_stdSimplex ℝ J |>.image (by fun_prop)`),
+  `integrable_mixFin_partial`, `dataLoss_mixFin` (integral against a finite sum of measures by `Finset.induction_on` +
+  `integral_add_measure`/`integral_smul_measure` — no `integral_finset_sum_measure` in this Mathlib; `classical` for
+  `insert`), **`dataLoss_mixFin_eq_affLoss`** (`L₀ + (∑ wⱼaⱼ)·R + ∑ wⱼkⱼ`; `∑ w = 1` via `← Finset.sum_mul`, then normalise
+  the inner association with an explicit `∀ y` sum identity before `ring`), **`priorExp_mixFin`**, `reachableResponse_eq_image_convexHull`,
+  **`isCompact_reachableResponse`**, `reachableResponse_subset_range/_interior`, **`mem_reachableResponse_iff`**
+  (`invFun_meanMap`/`meanMap_invFun`), `response_mixFin_mem`. Omit `[Fintype ι]` on the coefficient-polytope lemmas
+  (`linter.unusedFintypeInType`); do NOT omit `[MeasurableSpace X]` where `hℓ : Measurable (uncurry ℓ)` is in scope.
