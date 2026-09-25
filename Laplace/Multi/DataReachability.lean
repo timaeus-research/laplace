@@ -197,6 +197,17 @@ theorem response_mixFin_mem {ν : J → Measure Z} [∀ j, IsProbabilityMeasure 
   unfold meanMap
   exact (priorExp_mixFin hℓ hM hrep hw (R i) t).symm
 
+/-- **Reachable responses are a proper subset of the response space**: a compact set cannot
+exhaust the open range of the mean map (`ι` nonempty). -/
+theorem reachableResponse_ne_range [Nonempty ι] (a : J → ι → ℝ) :
+    reachableResponse μ π L₀ R t a ≠ Set.range (meanMap μ π L₀ R t) := by
+  intro h
+  have hcpt := isCompact_reachableResponse hπm hπi hπ hπpos hL₀m hL₀ hR ht a
+  rw [h] at hcpt
+  have hopen := isOpen_range_meanMap hπm hπi (fun x ↦ (hπ x).le) hπpos hL₀m hL₀ hR ht hnd
+  have hclopen : IsClopen (Set.range (meanMap μ π L₀ R t)) := ⟨hcpt.isClosed, hopen⟩
+  exact hcpt.ne_univ (hclopen.eq_univ (Set.range_nonempty _))
+
 end Response
 
 end Laplace.Multi
