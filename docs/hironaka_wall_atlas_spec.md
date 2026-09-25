@@ -1554,3 +1554,13 @@ certificates for concrete resolved charts beyond the identity chart.
   exact for every `v` (no a.e. exceptional set). Not done: the general-unit version (needs a partial
   trace retaining the frozen solved coordinate `z_1(v)`, per Astra), the `j = 0` mirror (swap the
   solved pair), the chart wrapper.
+- `MixedTruthWeightedNeg.lean` (a174683; hironaka 320887224): **the weighted mixed truth with a
+  negative exponent** (Astra round-12 item 6; the third case of the round-5 trichotomy).
+  `image_fibreInv` (`x ↦ σ/(tx)` is an involution of the fibre interval `(σ/(bt), b)`),
+  `weightedMixed_change_of_variables` (`∫ x^{h−1} f(x, σ/(tx)) dx = (σ/t)^h ∫ u^{−h−1} f(σ/(tu), u) du`
+  on that interval, by `integral_image_eq_integral_abs_deriv_smul`), **`tendsto_weightedMixed_neg`**:
+  for `h < 0`, `t^h ∫_{σ/(bt)}^b x^{h−1} f(x, σ/(tx)) dx → σ^h ∫_0^b u^{−h−1} f(0, u) du` — the mass
+  moves to the other axis with the finite density `σ^h u^{−h−1}`; the proof is the change of
+  variables plus `tendsto_weightedMixed` at `−h` with the coordinates exchanged. Trichotomy
+  complete: `h > 0` finite axis measure `x^{h−1} dx` (`tendsto_weightedMixed`), `h = 0` the
+  logarithm (`MixedTruthLog`), `h < 0` the other axis at the scale `t^h`.
