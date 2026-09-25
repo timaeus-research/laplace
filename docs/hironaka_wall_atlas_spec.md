@@ -3206,3 +3206,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `tendsto_const_nhds (x := …)` pinned), `priorExp_ray_eq_tilted` (`⟨φ⟩_{t,sv} = ⟨φ⟩` under `tiltedPrior` tilted by `R_v` at rate
   `ts`), **`tendsto_priorExp_ray_face`**. Section discipline: no `[Nonempty X]` in the section; add it as an instance binder only on
   the KL theorem; `omit hπpos hV in` on the dominated-convergence lemmas.
+- `FaceInfinite.lean` (NOT mirrored; Astra round 33 item 1, zero-mass half): `mul_log_ge_tangent` (`r log c + r − c ≤ r log r`
+  from `Real.log_le_sub_one_of_pos (c/r)`, finish with `nlinarith [h2, h3]` where `h3 : r * (c/r) = c`), `tiltData_face`,
+  `priorZ_face_pos`, `integrable_face_weight` (from `TiltData.integrable_tilt` + `.congr (… by simp [baseWeight])`; pass `(f := …)`
+  when `hfm := measurable_const`), **`mixKL_face_eq_integral`** (`KL = (∫ ℓ w)/Z`, `ℓ = −λV + log Z₀ − log Z`; from
+  `TiltData.mixKL_eq` with the `TiltData` TYPE-ASCRIBED so `L₀ = 0` is fixed; the last `field_simp` needs `ring` after it),
+  **`tangent_weight_le`** (the weighted pointwise tangent inequality `Z⁻¹(log c + 1) w − c Z₀⁻¹ π ≤ Z⁻¹ ℓ w`, with `ℓ = log r`,
+  `r = e^{−λV}Z₀/Z`; two `field_simp; ring` identities), `setIntegral_linear_form`, **`mixKL_ge_two_event`**
+  (`KL ≥ q_λ(A) log(q_λ(A)/π̄(A)) − 1`: `integral_add_compl`, `setIntegral_mono_on` on `A` with `c = q_λ(A)/π̄(A)` and on `Aᶜ`
+  with `c = 1`; `q_λ(A) > 0` via the lower bound `e^{−|λ|M}π ≤ w`; `setIntegral_le_integral` for `π̄(Aᶜ) ≤ 1`),
+  `exp_neg_mul_le_of_le`, **`tilt_mass_compl_le`** (`q_λ({V < α+ε}ᶜ) ≤ e^{−λε/2} Z₀/∫_{V<α+ε/2}π`; `div_le_div₀` with the
+  numerator/denominator bounds; split `e^{−λ(α+ε)} = e^{−λε/2}e^{−λ(α+ε/2)}`), `tendsto_tilt_mass_compl` (squeeze),
+  `tilt_mass_eq_one_sub` (`rw [eq_sub_iff_add_eq, ← add_div, h, div_self]`; `div_add_div_same` no longer exists),
+  **`tendsto_face_nbhd_mass`** (`∫_{V<α+1/(n+1)} π → ∫_{V=α} π = 0`, DCT on indicators along `ℕ`;
+  `Set.indicator_of_mem (…) π` takes `f` explicitly; `exists_nat_one_div_lt`), **`tendsto_mixKL_zero_face`**
+  (`tendsto_atTop`; neighbourhood with `π̄(A) < e^{−2(|K|+2)}`, eventually `q_λ(A) ≥ 1/2`, then the log arithmetic with
+  `Real.log_le_log`, `Real.log_exp`, `log 2 ≤ 1`).
