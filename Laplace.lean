@@ -241,6 +241,7 @@ import Laplace.Multi.TauberianVariance
 import Laplace.Multi.FeaturelessLawFromPartition
 import Laplace.Multi.FisherInformation
 import Laplace.Multi.RadialLaws
+import Laplace.Multi.Affinity
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
