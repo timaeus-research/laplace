@@ -10,9 +10,12 @@ import Laplace.Multi.RayLength
 /-!
 # Quantitative stability: how far the response moves under a change of the data
 
-Under a **uniform ellipticity** bound `α ‖v‖² ≤ Var_a(R_v) ≤ β ‖v‖²` on the covariance form
-`v ⬝ C_a v = Cov_a(R_v, R_v)` (`dotProduct_featCov_mulVec`), the two journeys of `MeanJourney`
-bound the information distance from both sides:
+Under an **ellipticity** bound `α ‖v‖² ≤ Var_a(R_v) ≤ β ‖v‖²` on the covariance form
+`v ⬝ C_a v = Cov_a(R_v, R_v)` (`dotProduct_featCov_mulVec`) — required only along the relevant
+segment (the lifted mean segment `θ(m(a₀) + s Δm)` for the mean side, the natural segment
+`a₀ + s Δa` for the natural side; for bounded features a global lower bound is impossible, so the
+segmentwise form is the substantive one) — the two journeys of `MeanJourney` bound the information
+distance from both sides:
 
 * along the mean journey, `‖Δ‖²/β ≤ Δ ⬝ C⁻¹ Δ ≤ ‖Δ‖²/α` (`mul_meanSpeed_le`, `le_mul_meanSpeed`,
   by the Cauchy–Schwarz inequality of the covariance form `sq_dotProduct_featCov_le`), hence
@@ -189,11 +192,12 @@ theorem le_mul_meanSpeed [DecidableEq ι] {β : ℝ} (hβ : 0 ≤ β) (y₀ d : 
         _ = _ := by ring
     exact le_of_mul_le_mul_left h1 h0
 
-/-- **Response displacement is at most the information, mean side**: under the global upper
-ellipticity `w ⬝ C_a w ≤ β ‖w‖²`, `‖m(a₁) − m(a₀)‖² ≤ 2 β KL(P_{a₁} ‖ P_{a₀})`. -/
-theorem sq_dist_meanMap_le_famKL [Nonempty ι] {β : ℝ} (hβ : 0 ≤ β)
-    (h : ∀ a w, dotProduct w ((featCov μ π L₀ R t a).mulVec w) ≤ β * dotProduct w w)
-    (a₀ a₁ : ι → ℝ) :
+/-- **Response displacement is at most the information, mean side**: under the upper ellipticity
+`w ⬝ C w ≤ β ‖w‖²` along the lifted mean segment, `‖m(a₁) − m(a₀)‖² ≤ 2 β KL(P_{a₁} ‖ P_{a₀})`. -/
+theorem sq_dist_meanMap_le_famKL [Nonempty ι] {β : ℝ} (hβ : 0 ≤ β) (a₀ a₁ : ι → ℝ)
+    (h : ∀ s ∈ Icc (0 : ℝ) 1, ∀ w, dotProduct w ((featCov μ π L₀ R t (meanLine μ π L₀ R t
+      (meanMap μ π L₀ R t a₀) (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) s)).mulVec w) ≤
+      β * dotProduct w w) :
     dotProduct (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀)
       (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) ≤ 2 * β * famKL μ π L₀ R t a₁ a₀ := by
   classical
@@ -214,7 +218,7 @@ theorem sq_dist_meanMap_le_famKL [Nonempty ι] {β : ℝ} (hβ : 0 ≤ β)
       (hcont.const_mul β |>.congr fun s _ ↦ by ring).intervalIntegrable ?_
     intro s hs
     exact mul_le_mul_of_nonneg_left
-      (le_mul_meanSpeed hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hβ _ d s fun w ↦ h _ w)
+      (le_mul_meanSpeed hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hβ _ d s fun w ↦ h s hs w)
       (by linarith [hs.2])
   rw [integral_one_sub_mul_const] at hmono
   have e : ∫ s in (0 : ℝ)..1, (1 - s) * (β * meanSpeed μ π L₀ R t (meanMap μ π L₀ R t a₀) d s) =
@@ -224,11 +228,12 @@ theorem sq_dist_meanMap_le_famKL [Nonempty ι] {β : ℝ} (hβ : 0 ≤ β)
   rw [e] at hmono
   linarith
 
-/-- **Information is at most the response displacement, mean side**: under the global lower
-ellipticity `α ‖w‖² ≤ w ⬝ C_a w`, `2 α KL(P_{a₁} ‖ P_{a₀}) ≤ ‖m(a₁) − m(a₀)‖²`. -/
-theorem famKL_le_sq_dist_meanMap [Nonempty ι] {α : ℝ} (hα : 0 < α)
-    (h : ∀ a w, α * dotProduct w w ≤ dotProduct w ((featCov μ π L₀ R t a).mulVec w))
-    (a₀ a₁ : ι → ℝ) :
+/-- **Information is at most the response displacement, mean side**: under the lower ellipticity
+`α ‖w‖² ≤ w ⬝ C w` along the lifted mean segment, `2 α KL(P_{a₁} ‖ P_{a₀}) ≤ ‖m(a₁) − m(a₀)‖²`. -/
+theorem famKL_le_sq_dist_meanMap [Nonempty ι] {α : ℝ} (hα : 0 < α) (a₀ a₁ : ι → ℝ)
+    (h : ∀ s ∈ Icc (0 : ℝ) 1, ∀ w, α * dotProduct w w ≤ dotProduct w ((featCov μ π L₀ R t
+      (meanLine μ π L₀ R t (meanMap μ π L₀ R t a₀)
+        (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) s)).mulVec w)) :
     2 * α * famKL μ π L₀ R t a₁ a₀ ≤ dotProduct (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀)
       (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) := by
   classical
@@ -250,7 +255,7 @@ theorem famKL_le_sq_dist_meanMap [Nonempty ι] {α : ℝ} (hα : 0 < α)
       (hc1.intervalIntegrable 0 1) ?_
     intro s hs
     exact mul_le_mul_of_nonneg_left
-      (mul_meanSpeed_le hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hα _ d s fun w ↦ h _ w)
+      (mul_meanSpeed_le hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hα _ d s fun w ↦ h s hs w)
       (by linarith [hs.2])
   rw [integral_one_sub_mul_const] at hmono
   have e : ∫ s in (0 : ℝ)..1, (1 - s) * (α * meanSpeed μ π L₀ R t (meanMap μ π L₀ R t a₀) d s) =
@@ -269,9 +274,9 @@ theorem segVar_eq_dotProduct (a v : ι → ℝ) (s : ℝ) :
 omit hnd in
 /-- **Information is at most the data displacement, natural side**:
 `2 KL(P_{a₁} ‖ P_{a₀}) ≤ t² β ‖a₁ − a₀‖²`. -/
-theorem famKL_le_sq_dist_coeff {β : ℝ}
-    (h : ∀ a w, dotProduct w ((featCov μ π L₀ R t a).mulVec w) ≤ β * dotProduct w w)
-    (a₀ a₁ : ι → ℝ) :
+theorem famKL_le_sq_dist_coeff {β : ℝ} (a₀ a₁ : ι → ℝ)
+    (h : ∀ s ∈ Icc (0 : ℝ) 1, ∀ w,
+      dotProduct w ((featCov μ π L₀ R t (a₀ + s • (a₁ - a₀))).mulVec w) ≤ β * dotProduct w w) :
     2 * famKL μ π L₀ R t a₁ a₀ ≤ t ^ 2 * β * dotProduct (a₁ - a₀) (a₁ - a₀) := by
   rw [famKL, mixKL_eq_integral_mul_var hπm hπi hπ hπpos hL₀m hL₀ hR ht a₀ a₁]
   have hc1 : Continuous fun s : ℝ ↦ s * segVar μ π L₀ R t a₀ (a₁ - a₀) s :=
@@ -283,16 +288,16 @@ theorem famKL_le_sq_dist_coeff {β : ℝ}
     refine intervalIntegral.integral_mono_on zero_le_one (hc1.intervalIntegrable 0 1)
       (hc2.intervalIntegrable 0 1) fun s hs ↦ ?_
     rw [segVar_eq_dotProduct hπm hπi hπ hπpos hL₀m hL₀ hR]
-    exact mul_le_mul_of_nonneg_left (h _ _) hs.1
+    exact mul_le_mul_of_nonneg_left (h s hs _) hs.1
   rw [integral_id_mul_const] at hmono
   nlinarith [sq_nonneg t]
 
 omit hnd in
 /-- **Data displacement is at most the information, natural side**:
 `t² α ‖a₁ − a₀‖² ≤ 2 KL(P_{a₁} ‖ P_{a₀})`. -/
-theorem famKL_ge_sq_dist_coeff {α : ℝ}
-    (h : ∀ a w, α * dotProduct w w ≤ dotProduct w ((featCov μ π L₀ R t a).mulVec w))
-    (a₀ a₁ : ι → ℝ) :
+theorem famKL_ge_sq_dist_coeff {α : ℝ} (a₀ a₁ : ι → ℝ)
+    (h : ∀ s ∈ Icc (0 : ℝ) 1, ∀ w,
+      α * dotProduct w w ≤ dotProduct w ((featCov μ π L₀ R t (a₀ + s • (a₁ - a₀))).mulVec w)) :
     t ^ 2 * α * dotProduct (a₁ - a₀) (a₁ - a₀) ≤ 2 * famKL μ π L₀ R t a₁ a₀ := by
   rw [famKL, mixKL_eq_integral_mul_var hπm hπi hπ hπpos hL₀m hL₀ hR ht a₀ a₁]
   have hc1 : Continuous fun s : ℝ ↦ s * segVar μ π L₀ R t a₀ (a₁ - a₀) s :=
@@ -304,32 +309,51 @@ theorem famKL_ge_sq_dist_coeff {α : ℝ}
     refine intervalIntegral.integral_mono_on zero_le_one (hc2.intervalIntegrable 0 1)
       (hc1.intervalIntegrable 0 1) fun s hs ↦ ?_
     rw [segVar_eq_dotProduct hπm hπi hπ hπpos hL₀m hL₀ hR]
-    exact mul_le_mul_of_nonneg_left (h _ _) hs.1
+    exact mul_le_mul_of_nonneg_left (h s hs _) hs.1
   rw [integral_id_mul_const] at hmono
   nlinarith [sq_nonneg t]
 
-/-- **The mean map is Lipschitz**: `‖m(a₁) − m(a₀)‖ ≤ β t ‖a₁ − a₀‖` under the upper ellipticity. -/
-theorem sq_dist_meanMap_le [Nonempty ι] {β : ℝ} (hβ : 0 ≤ β)
-    (h : ∀ a w, dotProduct w ((featCov μ π L₀ R t a).mulVec w) ≤ β * dotProduct w w)
-    (a₀ a₁ : ι → ℝ) :
+/-- **The mean map is Lipschitz**: `‖m(a₁) − m(a₀)‖ ≤ β t ‖a₁ − a₀‖` under the upper ellipticity
+along the lifted mean segment and along the natural segment. -/
+theorem sq_dist_meanMap_le [Nonempty ι] {β : ℝ} (hβ : 0 ≤ β) (a₀ a₁ : ι → ℝ)
+    (hm : ∀ s ∈ Icc (0 : ℝ) 1, ∀ w, dotProduct w ((featCov μ π L₀ R t (meanLine μ π L₀ R t
+      (meanMap μ π L₀ R t a₀) (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) s)).mulVec w) ≤
+      β * dotProduct w w)
+    (hn : ∀ s ∈ Icc (0 : ℝ) 1, ∀ w,
+      dotProduct w ((featCov μ π L₀ R t (a₀ + s • (a₁ - a₀))).mulVec w) ≤ β * dotProduct w w) :
     dotProduct (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀)
       (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) ≤
       (β * t) ^ 2 * dotProduct (a₁ - a₀) (a₁ - a₀) := by
-  have h1 := sq_dist_meanMap_le_famKL hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hβ h a₀ a₁
-  have h2 := famKL_le_sq_dist_coeff hπm hπi hπ hπpos hL₀m hL₀ hR ht h a₀ a₁
+  have h1 := sq_dist_meanMap_le_famKL hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hβ a₀ a₁ hm
+  have h2 := famKL_le_sq_dist_coeff hπm hπi hπ hπpos hL₀m hL₀ hR ht a₀ a₁ hn
   nlinarith [mul_le_mul_of_nonneg_left h2 hβ]
 
 /-- **The mean map is co-Lipschitz (quantitative identifiability)**:
-`α t ‖a₁ − a₀‖ ≤ ‖m(a₁) − m(a₀)‖` under the lower ellipticity. -/
-theorem le_sq_dist_meanMap [Nonempty ι] {α : ℝ} (hα : 0 < α)
+`α t ‖a₁ − a₀‖ ≤ ‖m(a₁) − m(a₀)‖` under the lower ellipticity along the lifted mean segment and
+along the natural segment. -/
+theorem le_sq_dist_meanMap [Nonempty ι] {α : ℝ} (hα : 0 < α) (a₀ a₁ : ι → ℝ)
+    (hm : ∀ s ∈ Icc (0 : ℝ) 1, ∀ w, α * dotProduct w w ≤ dotProduct w ((featCov μ π L₀ R t
+      (meanLine μ π L₀ R t (meanMap μ π L₀ R t a₀)
+        (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) s)).mulVec w))
+    (hn : ∀ s ∈ Icc (0 : ℝ) 1, ∀ w,
+      α * dotProduct w w ≤ dotProduct w ((featCov μ π L₀ R t (a₀ + s • (a₁ - a₀))).mulVec w)) :
+    (α * t) ^ 2 * dotProduct (a₁ - a₀) (a₁ - a₀) ≤
+      dotProduct (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀)
+        (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) := by
+  have h1 := famKL_le_sq_dist_meanMap hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hα a₀ a₁ hm
+  have h2 := famKL_ge_sq_dist_coeff hπm hπi hπ hπpos hL₀m hL₀ hR ht a₀ a₁ hn
+  nlinarith [mul_le_mul_of_nonneg_left h2 hα.le]
+
+/-- The global-ellipticity corollary of the co-Lipschitz bound (for bounded features a global
+lower bound cannot hold, so the segmentwise theorem is the substantive one). -/
+theorem le_sq_dist_meanMap_of_global [Nonempty ι] {α : ℝ} (hα : 0 < α)
     (h : ∀ a w, α * dotProduct w w ≤ dotProduct w ((featCov μ π L₀ R t a).mulVec w))
     (a₀ a₁ : ι → ℝ) :
     (α * t) ^ 2 * dotProduct (a₁ - a₀) (a₁ - a₀) ≤
       dotProduct (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀)
-        (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) := by
-  have h1 := famKL_le_sq_dist_meanMap hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hα h a₀ a₁
-  have h2 := famKL_ge_sq_dist_coeff hπm hπi hπ hπpos hL₀m hL₀ hR ht h a₀ a₁
-  nlinarith [mul_le_mul_of_nonneg_left h2 hα.le]
+        (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) :=
+  le_sq_dist_meanMap hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd hα a₀ a₁ (fun _ _ w ↦ h _ w)
+    (fun _ _ w ↦ h _ w)
 
 /-- **The unconditional Lipschitz bound**: for bounded features `|Rᵢ| ≤ Mᵢ`,
 `‖m(a₁) − m(a₀)‖ ≤ t (∑ Mᵢ²) ‖a₁ − a₀‖`. -/
@@ -339,8 +363,9 @@ theorem sq_dist_meanMap_le_of_bounds [Nonempty ι] {M : ι → ℝ} (hM : ∀ i 
       (meanMap μ π L₀ R t a₁ - meanMap μ π L₀ R t a₀) ≤
       ((∑ i, M i ^ 2) * t) ^ 2 * dotProduct (a₁ - a₀) (a₁ - a₀) :=
   sq_dist_meanMap_le hπm hπi hπ hπpos hL₀m hL₀ hR ht hnd
-    (Finset.sum_nonneg fun _ _ ↦ sq_nonneg _)
-    (fun a w ↦ dotProduct_featCov_mulVec_le_of_bounds hπm hπi hπ hπpos hL₀m hL₀ hR hM a w) a₀ a₁
+    (Finset.sum_nonneg fun _ _ ↦ sq_nonneg _) a₀ a₁
+    (fun _ _ w ↦ dotProduct_featCov_mulVec_le_of_bounds hπm hπi hπ hπpos hL₀m hL₀ hR hM _ w)
+    (fun _ _ w ↦ dotProduct_featCov_mulVec_le_of_bounds hπm hπi hπ hπpos hL₀m hL₀ hR hM _ w)
 
 end
 

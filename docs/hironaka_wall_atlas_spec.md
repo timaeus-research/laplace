@@ -3545,3 +3545,18 @@ certificates for concrete resolved charts beyond the identity chart.
   the velocity's score is `natH` by `chartScore_eq … 1 0` after `Pi.single none 1 = jointPoint 1 0`; then two
   `trace_mul_eq_double_sum`, `Finset.sum_comm`, `priorCum3_swap₂₃, priorCum3_swap₁₂`), `hasDerivAt_log_det_natC_tempPath_cov`.
   Pin `(M₀ := 0)` when passing `(fun x ↦ by simp)` as the zero base-loss bound, else `0 ≤ ?m` is left unsolved.
+- `ResponseStability.lean` LOCALISED (Astra round 39 audit: a GLOBAL covariance lower bound is impossible for bounded
+  features — the global co-Lipschitz bound would map an unbounded parameter space into a bounded response body): the
+  mean-side theorems now assume ellipticity only along the lifted mean segment `meanLine (m a₀) (m a₁ − m a₀) s`, the
+  natural-side ones only along `a₀ + s(a₁ − a₀)`, the bi-Lipschitz theorems take both (`hm`, `hn`); global versions are
+  wrappers (`le_sq_dist_meanMap_of_global`, `sq_dist_meanMap_le_of_bounds`).
+- `ProfileGeometry.lean` (NOT mirrored; Astra round 39 top pick): **`profile_gap_eq_famKL`**
+  (`J(μ(θ)) + t u(θ) − I_t(m_t a) = KL(P_θ ‖ P_{t,a})` when `θ` and `a` share the response; `unfold fullMean at hM ⊢`,
+  `natKL_eq`, `affLogZ_natCoord`, both `dualPotential_meanMap`, then `simp only [dotJ, Fintype.sum_option, natCoord_none,
+  natCoord_some, hM, sub_mul, Finset.sum_sub_distrib, mul_assoc, ← Finset.mul_sum]; ring`), `profile_gap_self`
+  (`meanMap_natCoord_some π L₀ R t a i` — EXPLICIT `π L₀ R t a`), `profile_le` (from `famKL_nonneg` of the joint family),
+  `dualPotential_add_affLogZ_zero` (`I_t(m a) + A_t 0 = KL(P_a‖P_0)`), `profile_rate_contraction`,
+  **`famKL_pythagoras_slice`** (`KL(P_θ‖P_{t,b}) = KL(P_θ‖P_{t,a}) + KL(P_{t,a}‖P_{t,b})`; pure Bregman algebra, the cross
+  pairing vanishes by `hM`), **`hasFDerivAt_relEntropy_fullMean`** (gradient `dotCLM θ` in full mean coordinates; eventual
+  equality on the open range, `unfold fullMean` BEFORE `meanEntropy_eq_dual`), `hasDerivAt_relEntropy_fullMean_path`
+  (`d𝒮/ds = ⟨θ, μ'⟩` along any differentiable full mean path). `[Nonempty ι]` is NOT needed anywhere here.
