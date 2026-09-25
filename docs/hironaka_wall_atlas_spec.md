@@ -1391,5 +1391,24 @@ certificates for concrete resolved charts beyond the identity chart.
   A Γ(β) B^{-β} q D^{-qη} vol(F')/|det M| · ∫_{(0,ρ)^m} ∏ ξ_i^{d_i−1} ∫_0^ρ u^{qη−1}
   W_tr(ξ,u) a_tr(ξ,u)^{-β} du dξ` under `d_i > 0`, the active certificate `r_j+1 = βκ_j−ηQ_j`,
   bounded jointly measurable units with a.e.-spectator traces (jointly measurable, same bounds on
-  `(0,ρ)`). Astra round-10 item (a), abstract half; the chart wrapper
-  `TermData.activeTruthSpectator` is next.
+  `(0,ρ)`). Astra round-10 item (a), abstract half. (64d8ae9: the trace hypotheses are only asked
+  for spectators in the box, `∀ᵐ ξ, ξ ∈ specBox → …`, which is what the chart wrapper can supply.)
+- `ActiveTruthChartSpectator.lean` (64d8ae9; hironaka 4f6bde84c): **`TermData.activeTruthSpectator`**
+  — the chart-level active-truth term for a chart whose coordinates split through
+  `e : Fin n ⊕ (Fin k ⊕ Fin 2) ≃ Fin m` into `n` spectators, `k` free and two solved active
+  coordinates. `specPt e ξ = fun j ↦ Sum.elim ξ 0 (e.symm j)` (spectators `ξ`, active coordinates
+  `0`), `continuous_specPt`, `continuous_elim_reindex`, `faceConstSpec` (`vol(F')/|det M|` of the
+  active pair), `activeTruthSpecDensityFn ξ u = A Γ(β) B^{-β} q D^{-qη} faceConstSpec ·
+  ∏ ξ_l^{d_l−1} u^{qη−1} (wt|b|)(bridgePt (specPt e ξ) u) |a(bridgePt (specPt e ξ) u)|^{-β}`,
+  `activeTruthSpecDensity` (cut to `specBox n ρ ×ˢ Ioo 0 ρ`), `activeTruthSpecMeasure` (push-forward
+  of the density on `(Fin n → ℝ) × ℝ` along `(ξ,u) ↦ rep(bridgePt (specPt e ξ) u)`),
+  `specTruthPt_mem_ball`, measurability/nonnegativity, `integral_activeTruthSpecMeasure`,
+  `integrable_activeTruthSpecDensity` (product density `∏ 1_{Ioo} ξ^{d−1} ⊗ 1_{Ioo} u^{qη−1}` via
+  `Integrable.mul_prod` after `Measure.volume_eq_prod`, times the bounded chart factors),
+  `isFiniteMeasure_activeTruthSpecMeasure`, `tendsto_modelKernelOf_activeTruthSpectator` (kernel
+  reindexed along `e`, unit replaced by `max(unitFn, ma)` off the domain, traces
+  `W_tr(ξ,u) = weightFn (specPt e ξ) u`, `a_tr(ξ,u) = max(unitFn (specPt e ξ) u, ma)` from the
+  joint continuity at the spectator truth points, which lie in the ball for `ξ` in the box; the
+  limit is identified with `∫ φ dμ` through `integral_prod` and the indicator bookkeeping in `ξ`
+  then `u`), `TermData.activeTruthSpectator : (γp + βδ − ηγ, k, activeTruthSpecMeasure)` under
+  `d_l > 0` and the active certificate. Astra round-10 item (a) CLOSED.
