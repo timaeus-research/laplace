@@ -3512,3 +3512,20 @@ certificates for concrete resolved charts beyond the identity chart.
   (`t²α‖Δa‖² ≤ 2KL ≤ t²β‖Δa‖²`), **`sq_dist_meanMap_le`** / **`le_sq_dist_meanMap`** (bi-Lipschitz
   `(αt)²‖Δa‖² ≤ ‖Δm‖² ≤ (βt)²‖Δa‖²`), `sq_dist_meanMap_le_of_bounds` (unconditional Lipschitz with `β = ∑ Mᵢ²`).
   Theorems whose statement has no matrix inverse take `[Nonempty ι]` explicitly and `classical` in the proof.
+- `FullMeanGeometry.lean` (NOT mirrored; round-38 capstone in the FULL geometry): the joint family is the affine family
+  `(L₀ := 0, R := jointStat L₀ R, t := 1)`, so `DualPotential`/`MeanJourney` instantiate under the JOINT nondegeneracy
+  `hjnd : ∀ v : Option ι → ℝ, v ≠ 0 → ¬∃ c, ∀ᵐ x, π x ≠ 0 → dirLoss (jointStat L₀ R) v x = c`. `fullMean θ := meanMap 0 S 1 θ`,
+  `abs_zero_fun_le` (pass as the base-loss bound with `measurable_const`, `bdd_jointStat hL₀m hL₀ hR`, `one_pos`),
+  `relEntropy_eq_meanEntropy` (`meanEntropy_meanMap` + `rfl`: `relEntropy θ = −famKL_joint θ 0` definitionally),
+  `fullMean_mem_interior`, **`relEntropy_concaveOn_fullMean`** (`meanEntropy_concaveOn` by defeq — `exact` unfolds `fullMean`),
+  **`hasDerivAt_relEntropy_fullMean_line`** (gradient `⟨Δ, θ(s)⟩`; `congr_deriv (one_mul _)`),
+  **`hasDerivAt_relEntropy_fullMean_line_deriv`** (`−Δ ⬝ G⁻¹ Δ`; `congr_of_eventuallyEq (of_forall fun u ↦ (one_mul _).symm)`),
+  **`natRay_cost_eq_fullMean_cost`** (`∫ s G_{sθ}(θ,θ) = ∫ (1−s) Δ·G⁻¹Δ`; from `famKL_e_journey_eq_m_journey 0 θ`,
+  `one_pow, one_mul`, `simp [segVar, natForm]` under `intervalIntegral.integral_congr`),
+  `relEntropy_eq_neg_integral_fullMean`, `relEntropy_fullMean_line_antitoneOn`. Everything is by instantiation — zero new
+  analysis; the joint nondegeneracy is the only new hypothesis.
+- `AsymptoticUpperBound.lean` (NOT mirrored; round-38 item 4, compact case): `eventually_measureReal_empMean_le`
+  (`∃ N₀, ∀ n ≥ N₀, 0 < n → P(R̄_n ∈ F) ≤ e^{−n(α−ε)}`, `N₀ = ⌈log N/ε⌉₊`, `Nat.ceil_le`, `Real.log_le_iff_le_exp`,
+  `N = 0` case separately), `eventually_measureReal_empMean_le'` (`∀ᶠ n in atTop`, via `max N₀ 1`),
+  `eventually_log_measureReal_empMean_div_le` (`log P/n ≤ −(α−ε)` under `0 < P`; `Real.log_le_log`, `Real.log_exp`,
+  `div_le_iff₀`). The `limsup ≤ −α` form is deliberately NOT stated through `Real.log 0`.

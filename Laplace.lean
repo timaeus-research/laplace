@@ -310,6 +310,8 @@ import Laplace.Multi.ProductDensity
 import Laplace.Multi.TiltLowerBound
 import Laplace.Multi.MeanJourney
 import Laplace.Multi.ResponseStability
+import Laplace.Multi.FullMeanGeometry
+import Laplace.Multi.AsymptoticUpperBound
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
