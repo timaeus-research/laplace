@@ -280,6 +280,14 @@ theorem TiltData.hasDerivAt_neg_mul_mixCov (h : TiltData μ (baseWeight π L₀ 
   unfold tiltCov
   ring
 
+/-- The mixture path is continuous at the reference: the response map starts at the base
+posterior. -/
+theorem TiltData.tendsto_mixExp_zero (h : TiltData μ (baseWeight π L₀ t) Δ M) {φ : X → ℝ}
+    (hφ : Bdd φ) :
+    Tendsto (fun s ↦ mixExp μ π L₀ Δ φ t s) (𝓝 0) (𝓝 (priorExp μ π L₀ φ t)) := by
+  have := (h.hasDerivAt_mixExp hφ 0).continuousAt.tendsto
+  rwa [mixExp_zero] at this
+
 /-- **The loss contrast descends**: `s ↦ ⟨Δ⟩_{t,s}` is antitone for `t ≥ 0`, since its derivative
 is `−t Var_{t,s}(Δ) ≤ 0`. -/
 theorem TiltData.mixExp_antitone (h : TiltData μ (baseWeight π L₀ t) Δ M) (ht : 0 ≤ t) :
