@@ -2579,3 +2579,12 @@ certificates for concrete resolved charts beyond the identity chart.
   **`radialLength_smul_add`** (`D_t(aL+b) = D_{at}(L)`, `a > 0`, via `integral_comp_mul_left (f := …)`),
   `radialLength_const_add` (from scaling with `a = 1`), `wall_window_length_two_sided` (instance of
   `wall_window_length` at `−c₋`; subscript `₋` is not an identifier character — use `cm`/`cp`).
+- `Affinity.lean` (NOT mirrored; Astra round 26 Theorem A, affinity + asymptotics): `lawDensity ν u ℓ`,
+  `lawAffinity ν s t := Z((s+t)/2)/√(Z s · Z t)`, **`integral_sqrt_lawDensity_mul`** and
+  **`integral_sqrt_posterior_mul`** (`∫√(p_s p_t) = ρ(s,t)`; `div_mul_div_comm`, `Real.sqrt_div'`, `← Real.exp_add`,
+  `← Real.exp_half`, `Real.sqrt_mul_self (hπ x)`), `log_lawAffinity` (Bhattacharyya divergence = midpoint Jensen gap of
+  `log Z`), `tendsto_lawMoment_zero_of_regVar` (doubling: `Z(2u) ≤ r Z(u)` eventually with `r < 1`, induction
+  `Z(2^n U) ≤ r^n Z(U)`, antitone `Z`), `tendsto_lawAffinity_sq_div` (`ρ(0,t)²/Z(t) → 2^{2λ}/Z(0)` from `RegVar` at
+  `c = 1/2`; `Real.inv_rpow`, `Real.rpow_neg`; `simp only [div_pow]` BEFORE `Real.sq_sqrt`), `tendsto_lawAffinity_zero`,
+  **`tendsto_fisherRao_pi`** (`2 arccos ρ(0,t) → π`). Gotcha: `gt_mem_nhds (h : a < b) : ∀ᶠ x in 𝓝 a, x < b`
+  (`lt_mem_nhds` is the other side).
