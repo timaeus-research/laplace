@@ -3646,3 +3646,13 @@ certificates for concrete resolved charts beyond the identity chart.
   **`genRate_eq_top_of_null_face`** (`Z_λ = E e^{λ(u·R − β)} → 0` by DCT with bound `1`; `∀ᵐ x, u·R ≠ β` from `ae_iff` on the
   null face; score at `λu` is `−log Z_λ`; `ENNReal.eq_top_of_forall_nnreal_le` with `λ` from
   `(hZlim.eventually (gt_mem_nhds (exp_pos (−r)))).exists`).
+- `FaceTotalVariation.lean` (NOT mirrored; round-41 G): `familyMeasure_real_eq_priorExp` (mass = expectation of the
+  indicator via `integral_indicator_one`; `omit [Nonempty X] ht`), `ray_numerator_subset_face` (`∫ 1_B e^{−t L_{sv}} π =
+  e^{−tsα} ∫_B tiltedPrior` for `B ⊆ F`; `integral_indicator`, `setIntegral_congr_fun`), **`familyMeasure_real_inter_face`**
+  (`P_s(A ∩ F) = P_s(F) · Q_F(A)`; call the numerator lemma at `0` and `rw [zero_smul] at h` before using it),
+  **`tendsto_familyMeasure_real_face`** (`P_s(F) → 1` from `tendsto_priorExp_ray_face` with `φ = 1_F`; its section omits
+  `hπpos`; give `setIntegral_congr_fun` its target `(g := …)` or the congruence proof fixes the wrong function),
+  `faceLaw_real_eq` (`faceMeasure` unfolded: `Measure.smul_apply, Measure.restrict_apply, ENNReal.toReal_mul,
+  ENNReal.toReal_inv`), **`abs_familyMeasure_real_sub_faceLaw_le`** (`|P_s(A) − Q_F(A)| ≤ 1 − P_s(F)`;
+  `measureReal_inter_add_sdiff (s := A) hF`, `measureReal_compl`, `nlinarith` with the two product facts as hypotheses),
+  **`tendsto_familyMeasure_real_ray`** (squeeze).
