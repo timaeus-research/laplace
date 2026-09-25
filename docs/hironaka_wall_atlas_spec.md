@@ -2377,3 +2377,10 @@ certificates for concrete resolved charts beyond the identity chart.
   contrast on the prior support ⇒ the mean map is injective; proof: `mixExp_strictAnti` on the line
   from `a` to `b` with contrast `R_{b−a}` and the endpoint identifications `pathLoss _ _ 0 = L`,
   `affLoss_add_smul` at `ε = 1`).
+- `ShapeMetricLimit.lean` (NOT mirrored; Astra's "next scale: common-minimiser shape geometry" for general
+  regular families): `cov2Coefficient_grad_zero` (with `a = b = 0` the three cubic terms vanish:
+  `simp [cov2Coefficient, dot]`), **`responseForm_shape_asymptotic`**
+  (`g_a(v,u) → ½ trASig(A_v Σ A_u Σ)` at rate `O(1/t)` when both direction gradients vanish, from
+  `gibbsCov_first_order_rate_explicit`), `trASig_matCLM_eq_trace` (`= tr(AΣBΣ)` for matrix data;
+  `one_apply_eq_self` replaces the deprecated `ContinuousLinearMap.one_apply`; `Matrix.mulVec_single_one`).
+  Matches the exact Gaussian value of `GaussianShapeMetric`.

@@ -242,6 +242,7 @@ import Laplace.Multi.IntegratedSusceptibility
 import Laplace.Multi.SqrtIntegralConvergence
 import Laplace.Multi.ResponseMetric
 import Laplace.Multi.RegularGeometricLimit
+import Laplace.Multi.ShapeMetricLimit
 import Laplace.Multi.ResponseNullspace
 import Laplace.Multi.GibbsVariational
 import Laplace.Multi.GibbsUniqueness
