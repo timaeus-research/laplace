@@ -3194,3 +3194,15 @@ certificates for concrete resolved charts beyond the identity chart.
   needs `simp only [Pi.neg_apply, id_eq]` before `ring`), **`hasDerivAt_affLogZ_temp_line`** / **`hasDerivAt_affLogZ_line_temp`**
   (mixed partials of `A`, common value `−⟨R_v⟩ + t Cov(R_v, L_{a+sv})`). The three-point identity Astra ranked 4th is already
   `mixKL_three_point`/`mixKL_pythagoras` (SegmentDivergence).
+- `FaceLimit.lean` (NOT mirrored; Astra round 33 item 1, positive-mass half): `mul_exp_neg_le_exp_neg_one` (`y e^{−y} ≤ e^{−1}`,
+  from `Real.add_one_le_exp (y − 1)`), `exp_mul_priorZ` (`e^{λα}Z_λ = ∫e^{−λ(V−α)}π`), `priorExp_sub_const`,
+  `aestronglyMeasurable_shift_weight`, `tendsto_shift_weight` (pointwise `e^{−λ(V−α)} → 1_{V=α}`; the indicator rewrites need the
+  membership spelled `show x ∈ {x | V x = α} from hxF`), `tendsto_shift_integral` (`tendsto_integral_filter_of_dominated_convergence`
+  along `atTop : Filter ℝ`, bound `Mφ π`, `Real.exp_le_one_iff` + `nlinarith` for the domination), **`tendsto_shifted_priorZ`**
+  (`e^{λα}Z_λ → ∫_F π`), **`tendsto_priorExp_face`** (`⟨φ⟩_λ → (∫_F φπ)/(∫_F π)`; ratio of shifted numerators via `mul_div_mul_left`),
+  **`tendsto_mul_priorExp_shift`** (`λ⟨V−α⟩_λ → 0`, bound `e^{−1}π`, `Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1`),
+  **`tendsto_mixKL_face`** (`KL(q_λ‖π̄) → log∫π − log∫_Fπ`; `TiltData.mixKL_eq` with `L₀ := 0`, the tilted `TiltData` for
+  integrability `hT'.integrable_tilt (f := …)` — pass `f` explicitly when `hfm := measurable_const`; the final assembly needs
+  `tendsto_const_nhds (x := …)` pinned), `priorExp_ray_eq_tilted` (`⟨φ⟩_{t,sv} = ⟨φ⟩` under `tiltedPrior` tilted by `R_v` at rate
+  `ts`), **`tendsto_priorExp_ray_face`**. Section discipline: no `[Nonempty X]` in the section; add it as an instance binder only on
+  the KL theorem; `omit hπpos hV in` on the dominated-convergence lemmas.
