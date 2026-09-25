@@ -1723,3 +1723,29 @@ certificates for concrete resolved charts beyond the identity chart.
   **`exists_truthChartsData_withPhase`** (`TruthTheorem.lean`): `∃ ε > 0, ∃ D : TruthChartsData m T
   (L ∩ {|T| ≤ ε}), Nonempty (D.Phase F)` — the resolution of `F · T` for an analytic `T` with
   `T 0 = 0` now feeds the term theorems directly (Astra round-14 item 1). Standard axioms.
+- `MixedTruthExport.lean` (2b39256; hironaka 412e9cefb) and hironaka `TruthMixedRegression.lean`:
+  **limit identification through transport and the exported `xy` regression** (Astra round-14
+  items 2–3). `TruthChartsData.totalKernel_ae_eq_of_support` (two chart systems for the same `T`
+  over measurable regions `L₁`, `L₂`: kernels a.e. equal for `θ` supported in `L₁ ∩ L₂`; both set
+  integrals equal the full-space integral of `θ · 1_E(T)`), **`totalKernel_mul_comp_truth`**
+  (`D.totalKernel (θ · η∘T) s = η s · D.totalKernel θ s` for `η s ≠ ⊤`: on each branch the solved
+  point has `truthMono = s` by `solvedCoord_pos/neg_spec`, so `T (rep u) = s` on the domain),
+  `eq_of_ae_eq_of_continuousAt` (a.e. equal + both continuous at `s₀` ⇒ equal at `s₀`, via
+  `isClosed_diagonal.isOpen_compl` and `Measure.measure_pos_of_mem_nhds`), the truth cutoff
+  `truthCutoff ε s = min 1 (max 0 (2 − 2|s|/ε))` (`= 1` on `|s| ≤ ε/2`, `= 0` off `|s| < ε`), the
+  closed square `mixLc = [0,1/2]²` (compact) and its identity-chart record `mixDataC` with the same
+  logarithmic kernel `∫_{2s}^{1/2} θ(s/x, x) dx/x` as `mixData` (`mixDataC_totalKernel_eq`),
+  `mixThin ε = closedBall 0 (1/2) ∩ {|z₀z₁| ≤ ε}`, and **`exported_mix_tendsto_totalKernel`**: for
+  ANY `D : TruthChartsData 1 (z₀z₁) (mixThin ε)`, `(D.totalKernel (e^{-t z₀z₁ a} ψ) (σ/t)).toReal /
+  log t → e^{-σ a(0)} ψ(0)` (`a` continuous, `ψ ≥ 0` continuous supported in `mixLc`). Proof: cut
+  off with `θ_ε = θ · ofReal(truthCutoff ε (z₀z₁))` (supported in `mixLc ∩ mixThin ε`, bounded by the
+  sup of `θ` on the compact square), a.e. equality of the `mixDataC`- and `D`-kernels of `θ_ε`,
+  continuity of both at `σ/t ≠ 0` (`continuousAt_totalKernel`), pointwise equality, the cutoff
+  factor `= 1` at `σ/t ≤ ε/2` (eventually), and `mix_tendsto_totalKernel`. Hironaka
+  **`exists_mixed_export_regression`** (`a` analytic on `univ`, `a 0 ≠ 0`): `∃ ε > 0, ∃ D :
+  TruthChartsData 1 (z₀z₁) (mixThin ε), Nonempty (D.Phase (z₀z₁ a)) ∧ ∀ σ > 0, ∀ ψ …, Tendsto …` —
+  the export (`W = ⊤`, `L = closedBall 0 (1/2)`, `hne` from `a 0 ≠ 0` at the point `(r/2, r/2)`)
+  composed with the regression: the coefficient of the mixed truth is reproduced by whatever charts
+  the resolution produces. Gotchas: `Continuous.mul` is unavailable on `ℝ≥0∞` (no `ContinuousMul`)
+  — write the product as one `ofReal` of a real product; `simp` turns `|r/2|` into `|r|/2` (use
+  `abs_of_pos hr`); `continuousOn_univ.mp` for continuity from analyticity on `univ`.
