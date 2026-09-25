@@ -3587,3 +3587,18 @@ certificates for concrete resolved charts beyond the identity chart.
   inside `w`'s definition), `dotProduct_natC_inv_le_jointCov_inv` (minimal lift), `dotProduct_jointCov_inv_slice_tangent`
   (equality at `d₀ = b·d_R`). Symmetry of `C⁻¹` via `Matrix.dotProduct_mulVec, ← Matrix.mulVec_transpose,
   Matrix.transpose_nonsing_inv, natC_transpose`.
+- `JourneyEnergy.lean` (NOT mirrored; round-40 item 4): `natural_energy_eq` (`t²∫₀¹ Var_{a(s)}(R_{Δa}) = −t Δa·Δm` via FTC on
+  `hasDerivAt_segMean`, `priorExp_dirLoss`, then `simp only [dotJ, Pi.sub_apply, mul_sub, Finset.sum_sub_distrib, meanMap]`
+  — `meanMap` must be in the simp set), `famKL_add_famKL_eq_neg_mul_dot` (Jeffreys `= −t Δa·Δm`; `omit ht`),
+  **`natural_energy_eq_mean_energy`** (`E_e = E_m`), `sq_natural_length_le_jeffreys`.
+- `TemperatureCompatibility.lean` (NOT mirrored; round-40 item 2; the first law `∂_t I_t(M) = u_t(M)` was ALREADY
+  `hasDerivAt_dualPotential_temp` in ReducedPotential, and the general fixed-response derivative
+  `hasDerivAt_obsMean_temp` in LossSurface — grep before naming): `lossChart_eq_obsMean` (`obsMean_eq_tempPath … L₀`),
+  **`hasDerivAt_lossChart_temp`** (`∂_t h(t,M) = −Var(H)` from `hasDerivAt_lossChart_line … 1 0` reparametrised by
+  `s = t − t₀`: state the line derivative at the point `(fun t ↦ t − t₀) t₀` (prove by `simp only [sub_self]; exact h`)
+  and call `HasDerivAt.comp (h := fun t ↦ t − t₀) t₀ h0 hh` with the inner function NAMED — otherwise higher-order
+  unification of `?h t₀ = t₀ − t₀` picks `HSub.hSub t₀`; close with `zero_dotProduct, neg_one_mul, mul_one`),
+  `hasDerivAt_obsMean_base_temp`, `lossChart_temp_deriv_neg` (strict concavity of `t ↦ I_t(M)` from `natVarH_pos`).
+- LANDING-CHAIN GOTCHA: a `sed -i 's/^import X$/…\nimport Y/' Laplace.lean && grep -n Y Laplace.lean && lake build …`
+  chain fails SILENTLY when the sed does not match (grep exits 1 and the `&&` chain stops) — always verify the
+  registration line explicitly (python assert) and never gate on a chain that can skip the build without output.
