@@ -2668,3 +2668,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `apply setIntegral_congr_fun (measurableSet_Ioi (a := (0 : ℝ)))`; `intro z hz`; `dsimp only` before `rw`;
   `rw [pow_one]` hits `√B ^ 1` first, so state `zNum (fun z ↦ (z^q−1)^1) = zNum (fun z ↦ z^q−1)` separately;
   `fun_prop` has no theorems for `twoMonoPhi` — use `measurable_twoMonoPhi` explicitly.
+- `NegativeChamberLaw.lean` (NOT mirrored; the `√t` chamber law): **`tendsto_intervalIntegral_div_rpow`** (power-law
+  Cesàro: `g(u) u^{-γ} → L`, `γ > −1` ⇒ `(∫₀ᵗ g)/t^{γ+1} → L/(γ+1)`; mirror of `tendsto_intervalIntegral_div_log` with
+  `integral_rpow (Or.inl hγ)`, `intervalIntegral.intervalIntegrable_rpow'`; take the tolerance `δ = ε(γ+1)/4` so that the
+  remainder bound `δ (T−U)/(γ+1) ≤ ε T/4` does not depend on whether `γ+1 ≶ 1`; threshold `t ≥ (A·4/ε+1)^{1/(γ+1)}` via
+  `Real.rpow_le_rpow` + `← Real.rpow_mul`), `mul_rpow_le_half_rpow_add` (`b y^q ≤ ½y^p + b(2b)^{q/(p−q)}`, case split at
+  `Y₀ = (2b)^{1/(p−q)}`), `abs_profile_integrand_le` (uniform majorant on `c ≥ −b₁`), `integrableOn_profile'` (every
+  coupling), **`continuous_profileNum`** (on all of `ℝ`, via `continuousOn_of_dominated` on `Ici (−(|c₀|+1))` and
+  `ContinuousOn.continuousAt (Ici_mem_nhds …)`), `profileNum_one_pos'`, **`continuous_profileVar`**, `negBeta := p/(2(p−q))`,
+  `negGamma := (2q−p)/(2(p−q))`, `negSpeedCoeff := (q/√(p(p−q)))(q/p)^γ`, `negChamberConst A := L A^β/β`,
+  `negGamma_add_one`, `sigma_mul_negBeta` (`σβ = ½`), **`tendsto_sqrt_negVar_mul_rpow`** (`√Var_{-b}(y^q) b^{-γ} → L`),
+  **`negative_chamber_law`**: `(∫_{−A}^{0} √fisherSpeed(twoMonoPath) t a da)/√t → K₋(A)` (window isometry with
+  `c₀ = −A t^σ`, `c₁ = 0`; reflection `intervalIntegral.integral_comp_neg (f) (a := 0) (b := A t^σ)` then `rfl` for
+  `√(V(−b)) = √(negVar b)`; `(A t^σ)^β = A^β √t` by `Real.mul_rpow`, `← Real.rpow_mul`, `Real.sqrt_eq_rpow`).
+  Gotchas: `integrableOn_rpow_mul_exp_neg_mul_rpow` needs `(s := r) (b := 1/2)` when fed to `.mono'` (nothing else fixes
+  them); `field_simp` closes `σβ = ½` outright once BOTH `p − q ≠ 0` and `−q + p ≠ 0` are in context; `div_add_one hc`
+  for `a/c + 1`; a lemma `omit hq in` must be called without `hq`.
