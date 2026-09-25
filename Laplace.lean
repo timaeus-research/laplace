@@ -227,6 +227,7 @@ import Laplace.Multi.TraceVisibility
 import Laplace.Multi.TiltInterpolation
 import Laplace.Multi.TiltCauchySchwarz
 import Laplace.Multi.ResponseMap
+import Laplace.Multi.PathResponse
 import Laplace.Multi.TiltVariance
 import Laplace.Multi.TraceKernel
 import Laplace.Multi.TraceKernelMain
