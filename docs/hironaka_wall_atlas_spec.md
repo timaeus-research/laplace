@@ -3053,3 +3053,17 @@ certificates for concrete resolved charts beyond the identity chart.
   is `KL(P_a‖P_b)`, so `KL(P_{a₁}‖P_{a₀})` is `mixKL (affLoss a₁) (dirLoss (a₀ − a₁))` — the first draft had the two
   identities swapped), **`mixKL_eq_integral_dual_mul`**, **`integral_dualQuad_eq`** (`∫₀¹Q = KL + KL`),
   `continuousOn_var_dataPath`, **`sq_obsMean_sub_le_jeffreys`** (`|Δ⟨φ⟩|² ≤ (∫₀¹Var_{γ_s}φ)(KL + KL)`).
+- `ConstrainedResponse.lean` (NOT mirrored; Astra round 31 item 2, abstract core): `priorCov_dirLoss_add_smul` /
+  `_right` (bilinearity of `priorCov` in the contrast direction, from `sum_mul_priorCov_eq` three times +
+  `Finset.mul_sum` + `← Finset.sum_add_distrib`; the right slot via `priorCov_comm π _ φ ψ t` — its explicit arguments are
+  `(π L φ ψ : X → ℝ) (t : ℝ)`, `μ` implicit), **`schur_eq_var_residual`** (`Var R_v − Cov(R_v,R_w)²/Var R_w = Var R_{v−λw}`,
+  `λ = Cov/Var`; introduce `λ` by `obtain ⟨lam, hlam⟩ : ∃ lam, lam = … := ⟨_, rfl⟩`, expand with the two bilinearity lemmas,
+  `field_simp; ring`), **`schur_pos_iff`** (positive iff `R_{v−λw}` is not a.e. constant, i.e. `R_v` not a.e. affine in `R_w`;
+  from `responseForm_self_eq_zero_iff` and `priorCov_self_nonneg' … (t := t)` — `t` must be named),
+  **`constrained_response_deriv`** (along `a(s) = a₀ + s v + β(s) w` with `⟨R_w⟩` constant,
+  `d/ds⟨R_v⟩ = −t(Var R_v − Cov²/Var R_w)`; both responses differentiate by `hasFDerivAt_obsMap … |>.comp_hasDerivAt` with
+  path velocity `v + β' w`, the constant one has derivative `0` by `HasDerivAt.unique`, which identifies
+  `β' = −Cov(R_v,R_w)/Var R_w`; NOTE `obsMapDeriv_apply` puts the observable in the FIRST covariance slot and the direction in
+  the second, so the right-slot bilinearity is the one needed; a `set a := fun s ↦ …` does not fold the literal
+  `a₀ + s • v + β s • w` in the goal — `change` the goal to the `a s` form and restate `hw` as `hw' : … (a s) … ≠ 0 := hw`
+  before `field_simp`).
