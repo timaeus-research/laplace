@@ -3822,3 +3822,18 @@ certificates for concrete resolved charts beyond the identity chart.
   **`exists_exposedChain`** (same strong induction as the completion, now producing the chain with `M ∈ relint K_{ν_A}`),
   **`responseProjection_eq_of_exposedChain`** (`∃ θ ∈ 𝕍_{ν_A}, Π_ν(M) = familyMeasure ν_A 1 0 S 1 θ`; the tilt attains the rate by
   the chain rule + `ExposedChain.genRate_eq`, then the spec's Pythagoras and `klDiv_eq_zero_iff`).
+- `MixtureBridge.lean` (NOT mirrored; round-43 item 4, minus the TV part): `mixture_absolutelyContinuous`,
+  `isProbabilityMeasure_mixture` (`ℝ≥0`-scalars; normalise `•` with `simp only [ENNReal.smul_def, smul_eq_mul, mul_one]`
+  then `← ENNReal.coe_add`), **`klDiv_mixture_le`** (convexity of `klDiv` in the first argument: `klDiv_eq_lintegral_klFun_of_ac`
+  on all three laws, `Measure.rnDeriv_add'` + `rnDeriv_smul_left'` for the density of the mixture, pointwise
+  `convexOn_klFun.2` with the points pinned by `(ENNReal.toReal_nonneg (a := …))`, `lintegral_mono_ae`, then
+  `lintegral_add_left`/`lintegral_const_mul` with `Measurable.ennreal_ofReal` of `by fun_prop`), `mean_mixture`
+  (`integral_add_measure` with `Integrable` facts typed for the `ℝ≥0`-smul measure, `integral_smul_nnreal_measure`,
+  `NNReal.smul_def`), **`genRate_segment_le`** (`𝓘((1−s) m₀ + s M) ≤ ofReal s * 𝓘(M)`; via `entropyProj_eq_genRate`,
+  `entropyProj_le_klDiv` at the mixture `a • ν + b • Π(M)`, `klDiv_mixture_le`, `klDiv_self`; infinite-rate case by
+  `ENNReal.mul_top`), **`genRate_segment_mono`** (reparametrise `M_s` as the point `s/t` of the segment to `M_t`; `gcongr`
+  with `ENNReal.ofReal_le_one`), **`segment_mem_intrinsicInterior`** (mixture law equivalent to `ν` for `s < 1`;
+  `mean_mem_intrinsicInterior_of_equiv`), **`tendsto_genRate_segment`** (`tendsto_order`; lower half by
+  `lowerSemicontinuous_rateFun` transported along the continuous path, upper half by `ENNReal.Tendsto.mul_const` and
+  `Ioo_mem_nhdsLT (zero_lt_one' ℝ)`; write real numerals `(1 : ℝ)` in the `have` type or `1 - 1` elaborates in `ℕ`).
+  OPEN: TV convergence of the representatives (needs Pinsker, not in Mathlib).
