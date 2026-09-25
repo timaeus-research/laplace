@@ -3092,3 +3092,39 @@ certificates for concrete resolved charts beyond the identity chart.
   (`HasDerivAt.unique`), giving `Cβ' = −c`, so `β' = −b` by injectivity; the path derivative of `∑ βₖ(s) • wₖ` is
   `HasDerivAt.fun_sum`), `multi_constrained_response_deriv_self` (`= −t Var(residual)`).
   The `integrable_mul_affWeight_of_bdd` lemma needs `[Nonempty X]` — do not `omit` it on lemmas that use it.
+- `SliceChart.lean` (NOT mirrored; Astra round 32 item 1, IFT step): `jointPoint t M := Option.elim t M`,
+  `sliceMap θ := (θ none, ⟨R⟩_θ)` in the joint natural coordinates (`meanMap μ π 0 (jointStat L₀ R) 1`), `sliceMapDeriv`
+  (`ContinuousLinearMap.pi` with `proj none` in the temperature slot and `proj (some i) ∘ meanMapDeriv` in the feature slots;
+  the `proj`s need `(R := ℝ) (φ := fun _ : Option ι ↦ ℝ)`), **`hasStrictFDerivAt_sliceMap`** (`hasStrictFDerivAt_pi'.2`, then
+  `cases j`; each slot is `hasStrictFDerivAt_apply (𝕜 := ℝ) (F' := …) j _` (composed with `hasStrictFDerivAt_meanMap`, which needs
+  NO nondegeneracy) followed by `.congr_fderiv (by ext u; rfl)`), **`sliceMapDeriv_injective`** under FEATURE nondegeneracy only
+  (kernel vector has `u none = 0`, so `u = dataDir u_some`; `Var(dirLoss S u) = ∑_j u_j Cov(S_j, dirLoss S u)` via
+  `sum_mul_priorCov_eq` + `Fintype.sum_option` vanishes, `responseForm_self_eq_zero_iff` + `dirLoss_jointStat_dataDir` + `hnd`),
+  `sliceMapEquiv` (`LinearEquiv.ofInjectiveEndo … |>.toContinuousLinearEquiv`, as `meanMapDerivEquiv`), `natCoord_of_pos`
+  (`θ = natCoord (θ none) (θ_some/θ none)`), `sliceMap_natCoord`, **`sliceMap_injOn`** on `{θ none > 0}` (reduce both points to
+  `natCoord` form with `obtain ⟨t, a, rfl⟩ : ∃ t a, θ = natCoord t a`, then `meanMap_injective`), `sliceMap_surj` (from
+  `bijOn_meanMap_slice`), `sliceInv := Function.invFunOn sliceMap {θ none > 0}` — a `def` inside a hypothesis section takes only the
+  variables it USES, so it and `tempPath` live outside the section with explicit `(μ π L₀ R)` — `sliceInv_sliceMap`
+  (`InjOn.leftInvOn_invFunOn`), `sliceMap_sliceInv` (`Function.invFunOn_eq`), `sliceInv_none_pos`,
+  **`hasStrictFDerivAt_sliceInv`** (`HasStrictFDerivAt.to_local_left_inverse` with the eventual left-inverse on the open half-space
+  `isOpen_lt continuous_const (continuous_apply none)`), `tempPath μ π L₀ R M t := sliceInv (jointPoint t M)`, `tempPath_none`,
+  `tempPath_response`, **`tempPath_eq_natCoord`** (`= natCoord t (invFun (meanMap t) M)` by `sliceMap_injOn`; needs
+  `range_meanMap_slice` to get `M ∈ range`), `obsMean_eq_tempPath`, `hasDerivAt_jointPoint` (`jointPoint t M = jointPoint 0 M + t •
+  Pi.single none 1`; keep `set_option linter.unusedFintypeInType false in`), **`hasDerivAt_tempPath`** (velocity
+  `(sliceMapEquiv θ₀).symm (Pi.single none 1)`), `tempPath_velocity_none` (`= 1`), `velocity_decomp`.
+- `LossSurface.lean` (NOT mirrored; Astra round 32 item 1): `dirLoss_pi_single` (NOTE `dirLoss_single` already exists in
+  `WallChart` — the clash surfaces only at the umbrella build), `dirLoss_jointStat_single_some/none`, `featCov` (`Cov(R_k, R_l)`
+  as `Matrix.of`), `featObsCov`, `sum_smul_single_eq`, `featCov_eq_covMat`, `featObsCov_eq_covVec`, `covMat_joint_eq`,
+  `covVec_joint_eq` (joint-family covariances at `natCoord t a` = `a`-family covariances, by `priorCov_natCoord`),
+  **`featCov_mulVec_injective`** (via `covMat_mulVec_injective` + `Pi.linearIndependent_single_one ι ℝ`; `classical`),
+  `featCov_mulVec_surjective` (`Matrix.mulVec_surjective_iff_isUnit`; needs `classical` for the matrix ring),
+  **`hasDerivAt_obsMean_temp`** (`∂_t⟨φ⟩|_M = −(Cov(φ,L₀) − ∑ bₖ Cov(φ,Rₖ))`, `C b = Cov(R,L₀)` at `(t₀, m_{t₀}⁻¹ M)`: apply
+  `multi_constrained_response_deriv_path` in the joint family (`L₀ := 0`, `R := jointStat`, `t := 1`) along `tempPath M` with
+  `v = Pi.single none 1`, `w k = Pi.single (some k) 1`, `γ k = u (some k)`; the feature constraints hold eventually
+  (`lt_mem_nhds ht₀`); transfer back with `obsMean_eq_tempPath` (eventually equal functions) and `priorCov_natCoord`; a
+  `set θ₀ := tempPath … t₀` does NOT fold occurrences created later by `key`, so restate `hθ₀eq'` on the unfolded term),
+  **`hasDerivAt_lossSurface`** (`∂_t h = −Var(L₀ − dirLoss R b)` via `residual_var` + `sum_smul_single_eq`),
+  `lossSurface_deriv_nonpos`, **`lossSurface_antitoneOn`** (`antitoneOn_of_deriv_nonpos (convex_Ioi 0)`, `interior_Ioi`, the
+  regression vector at each `t` from surjectivity), `featCov_mulVec_apply` (`(Cv)_i = Cov(R_i, R_v)`),
+  **`obsMean_fderiv_eq_regression`** (`D_M⟨φ⟩[d] = ∑ bₖ dₖ` for `C b = Cov(R, φ)`; write `d = Cv`, use `obsMean_deriv_cov`,
+  and the symmetry `∑ₖ bₖ(Cv)ₖ = ∑ₗ vₗ(Cb)ₗ` by `Finset.sum_comm`).
