@@ -2732,3 +2732,21 @@ certificates for concrete resolved charts beyond the identity chart.
   `OrderDual.ofDual.injective (Subtype.ext hc)`), **`profileMeanHomeomorph : ℝ ≃ₜ Ioi 0`** (`OrderIso.toHomeomorph` then
   `.trans ⟨OrderDual.ofDual, continuous_ofDual, continuous_toDual⟩`), `profileMeanHomeomorph_apply` (rfl),
   `continuous_profileMeanHomeomorph_symm`.
+- `DataQuotient.lean` (NOT mirrored; Astra round 27 item 1): `priorExp_congr_ae'`, **`priorCov_self_eq_integral_sq`**
+  (`Var = ∫(φ−m)² e^{-tL}π / Z`; fold the three integrals into atoms and `unfold priorZ at hZ` separately — `unfold
+  priorCov … at hZ` fails when `hZ` has no `priorCov`), **`ae_eq_const_of_priorCov_self_eq_zero`**
+  (`integral_eq_zero_iff_of_nonneg` + `mul_eq_zero`), `priorExp_const_fun`, `priorCov_self_eq_zero_of_ae_const`,
+  `integrable_mul_affWeight_of_bdd` (from `tiltData_aff … a a t` + `TiltData.integrable_of_bdd hf t 0`, then
+  `simp only [baseWeight, mul_zero, neg_zero, Real.exp_zero, mul_one]; ring`), `affZ_pos` (`.choose_spec.ν_pos`),
+  **`responseForm_self_eq_zero_iff`** (`G_a(v,v) = 0 ↔ ∃ c, R_v =ᵐ c`), `responseForm_self_eq_zero_iff_of_ne`,
+  **`gibbsDensity_eq_iff`** (`P_a = P_b ↔ ∃ c, ∀ x, R_{b−a} x = c`; `Real.log_injOn_pos (mem_Ioi.mpr hpa)
+  (mem_Ioi.mpr hpb)`; the `priorZ` shift needs `dsimp only` before `rw [hL y]` under `integral_congr_ae`),
+  `obsMapDeriv` (mirror of `meanMapDeriv` for one observable), **`hasFDerivAt_obsMap`**, **`obsMapDeriv_apply`**
+  (`D_a⟨φ⟩[v] = −t Cov_a(φ, R_v)`), **`abs_obsMapDeriv_le`** (`≤ √Var_a(φ) √G_a(v,v)` via
+  `TiltData.abs_tiltCov_le` and `← priorCov_eq_tiltCov_zero` three times), `continuous_obsMap`,
+  `continuous_obsMapDeriv` (`ContinuousAt.inv₀`, `.smul`, `continuousAt_affNumDeriv`),
+  **`abs_priorExp_sub_le_integral`** (path inequality; FTC `intervalIntegral.integral_eq_sub_of_hasDerivAt`; the
+  response form along the path as `t² ∑ᵢ γ'ᵢ ∑ⱼ γ'ⱼ Cov(Rⱼ, Rᵢ)` via `sum_mul_priorCov_eq` twice with the symmetry
+  `Cov(R_i, R_v) = Cov(R_v, R_i)`; `Continuous.clm_apply`; `Continuous.intervalIntegrable (μ := volume) 0 1` — the bare
+  `_ _` leaves `IsLocallyFiniteMeasure ?μ` stuck; state the FTC identity with the beta-reduced endpoints as a typed
+  `have … := hftc` before `rw`, since `set F := fun s ↦ …` does not fold `F 1`).
