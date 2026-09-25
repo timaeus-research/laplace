@@ -1373,3 +1373,23 @@ certificates for concrete resolved charts beyond the identity chart.
   `tendsto_normalised_lintegralG` (limit `ofReal(ρ^Σ|det|⁻¹) · ∫⁻ vWeightT(traces) · vol(F')`),
   `lintegral_innerKvG_div_le` (pointwise, `L ≥ 1`), `normalised_lintegral_leG` (`t ≥ e`: `W_*`
   times the constant-unit bound at `c₀ a_-`) — the frozen-spectator ingredients for general units.
+- `ActiveTruthSpectatorGeneral.lean` (efe45b9; hironaka 7a0aef068): **the face theorem with
+  spectators and general units** — `specW` (units with the spectators frozen),
+  `modelIntegrand_sum_elim_general` (`1_{(0,ρ)^m}(ξ) ∏ ξ^{r_I}` times the active integrand at
+  `B_ξ, D_ξ, W(ξ,·,·), a(ξ,·,·)`), `lintegral_modelIntegrand_spectator_general` (Fubini),
+  `specInnerG`/`specFG`/`specFG_eq`/`measurable_specFG`, `modelIntegrand_le_const_units`
+  (pointwise: general integrand `≤ W_*` × constant-unit integrand at `a₀ = a_-`, any index type),
+  `specFG_le` (`≤ ofReal W_* · ofReal (specG … a_- …)`: the constant-unit majorant is reused
+  verbatim), `specFGlim`, `specFG_tendsto` (via `tendsto_normalised_lintegralG` at `B_ξ, D_ξ`),
+  `spec_const_factor'` (`∏ ξ^{r_I} · B_ξ^{-β} D_ξ^{-qη} = B^{-β} D^{-qη} ∏ ξ^{d_i−1}`),
+  `lintegral_specFGlim` (limit integral `= ofReal(|det M|⁻¹ Γ(β) B^{-β} q D^{-qη} ·
+  ∫_{(0,ρ)^m} ∏ ξ^{d−1} ∫_0^ρ u^{qη−1} W_tr(ξ,u) a_tr(ξ,u)^{-β}) · vol(F')`; the inner integral is
+  measurable in `ξ` by `StronglyMeasurable.integral_prod_right` against `volume.restrict (Ioo 0 ρ)`
+  and bounded by `W_* a_-^{-β} ρ^{qη}/(qη)`, so `Integrable.bdd_mul` against the product density),
+  `tendsto_lintegral_specFG` (outer DCT; the traces are only assumed for a.e. `ξ`),
+  **`tendsto_modelKernel_general_spectator`**: `t^{γp+βδ−ηγ}/(log t)^k · K(t) →
+  A Γ(β) B^{-β} q D^{-qη} vol(F')/|det M| · ∫_{(0,ρ)^m} ∏ ξ_i^{d_i−1} ∫_0^ρ u^{qη−1}
+  W_tr(ξ,u) a_tr(ξ,u)^{-β} du dξ` under `d_i > 0`, the active certificate `r_j+1 = βκ_j−ηQ_j`,
+  bounded jointly measurable units with a.e.-spectator traces (jointly measurable, same bounds on
+  `(0,ρ)`). Astra round-10 item (a), abstract half; the chart wrapper
+  `TermData.activeTruthSpectator` is next.
