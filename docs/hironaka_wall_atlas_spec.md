@@ -2255,3 +2255,14 @@ certificates for concrete resolved charts beyond the identity chart.
   (`tZ(t, c/t) − log t → −log c − E₁(c)`; `intervalIntegral_tendsto_integral_Ioi` with
   `b t = t + c`): the log coefficient saturates at `1` for `σ ≥ 1`, i.e. the coupled-limit log
   multiplicity is `min(σ, 1)` with a second wall at `σ = 1`.
+- `ThermoLengthIntegral.lean` (NOT mirrored; Astra round-20 side landing): `PathData2.differentiableAt_priorExp_sq`
+  (via `hasDerivAt_num'` with `f = L'L'`), `continuousAt_fisherSpeed`, `continuousAt_priorCov_self`,
+  **`abs_priorExp_sub_le_integral`** (`|⟨φ⟩_{s₁} − ⟨φ⟩_{s₀}| ≤ ∫_{s₀}^{s₁} √Var_s(φ) √g_s ds`; FTC
+  `integral_eq_sub_of_hasDerivAt` + `norm_integral_le_integral_norm` + `integral_mono_on`; the C²
+  hypothesis gives continuity of the speed). Gotcha: `ContinuousOn.intervalIntegrable` leaves the
+  measure stuck unless the result is ascribed with `volume`.
+- `GibbsUniqueness.lean` (NOT mirrored): `defect_eq_zero_iff` (pointwise, via
+  `Real.log_lt_sub_one_of_pos`), **`ae_eq_gibbsDensity_of_relEnt_eq_zero`** (`KL(ρ‖ρ_t) = 0 ⇒ ρ = ρ_t`
+  a.e., through `integral_eq_zero_iff_of_nonneg` on the nonnegative defect),
+  **`ae_eq_gibbsDensity_of_variational_eq`** (the variational bound is attained only at the
+  posterior). Gotcha: `Integrable.sub` is Pi-form — ascribe the lambda before `integral_sub`.

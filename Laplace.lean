@@ -231,9 +231,11 @@ import Laplace.Multi.HigherResponse
 import Laplace.Multi.PathResponse
 import Laplace.Multi.PathHessian
 import Laplace.Multi.ThermoLength
+import Laplace.Multi.ThermoLengthIntegral
 import Laplace.Multi.ResponseMetric
 import Laplace.Multi.ResponseNullspace
 import Laplace.Multi.GibbsVariational
+import Laplace.Multi.GibbsUniqueness
 import Laplace.Multi.CoefficientResponse
 import Laplace.Multi.TraceMixtureResponse
 import Laplace.Multi.TermScoreResponse
