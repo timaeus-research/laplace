@@ -244,6 +244,7 @@ import Laplace.Multi.RadialLaws
 import Laplace.Multi.Affinity
 import Laplace.Multi.RadialCurvature
 import Laplace.Multi.InformationProjection
+import Laplace.Multi.AngularBound
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
