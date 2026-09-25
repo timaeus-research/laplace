@@ -549,3 +549,4 @@ import Laplace.Multi.MixedTruthExport
 import Laplace.Multi.ProfileIntegrability
 import Laplace.Multi.ProportionalFamilies
 import Laplace.Multi.MixedTruthBoundary
+import Laplace.Multi.CertificateFromLP
