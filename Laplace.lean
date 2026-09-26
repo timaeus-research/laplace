@@ -354,6 +354,7 @@ import Laplace.Multi.DataFisherBudget
 import Laplace.Multi.PinskerObservable
 import Laplace.Multi.ProjectionPythagoras
 import Laplace.Multi.VisibleBudget
+import Laplace.Multi.InformationBudget
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

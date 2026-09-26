@@ -3989,3 +3989,11 @@ certificates for concrete resolved charts beyond the identity chart.
   with `Set.indicator_of_mem/notMem`; `exists_nat_one_div_lt`; a subset used in `Set.inter_eq_left.2` must be a NAMED `have`
   or the interval unfolds to its set-builder form), `integrableOn_atlasCurv_weighted` (`integrable_toReal_of_lintegral_ne_top`),
   **`genRate_toReal_eq_integral_atlasCurv`** (`integral_eq_lintegral_of_nonneg_ae`).
+- `InformationBudget.lean` (NOT mirrored; round-46 item 1, the capstone): `measurable_dataFisher` (`Measurable.lintegral_prod_right'`
+  on the swapped integrand; needs `SFinite ν`, so keep `[IsProbabilityMeasure ν]`), `measurable_dataFisher_weighted`,
+  `klDiv_eq_lintegral_dataFisher_Ioo` (`setLIntegral_congr Ioo_ae_eq_Ioc`), `dataFisher_ae_ne_top` (`ae_lt_top'` +
+  `ENNReal.mul_lt_top_iff` case split; `ae_restrict_mem`), **`toReal_klDiv_eq_integral_dataFisher`**
+  (`integral_eq_lintegral_of_nonneg_ae`, `lintegral_congr_ae` with `ENNReal.ofReal_mul`, `ofReal_toReal`),
+  `integrableOn_dataFisher_weighted`, **`klDiv_projection_eq_integral_budget`** (`KL(D‖Π(M_D)).toReal = ∫_{Ioo 0 1}
+  ((1−s)𝓕_D(s).toReal − (1−s)κ(s))` for finite `KL(D‖ν)`; `integral_sub` of the two `IntegrableOn` facts). GOTCHA: `Π` is a
+  reserved token — an identifier `hDΠ` breaks parsing (`hDP`).
