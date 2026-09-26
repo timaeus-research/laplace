@@ -4611,3 +4611,10 @@ certificates for concrete resolved charts beyond the identity chart.
   between finite-rate responses, boundary endpoints included).
 - `ObservableTaylorUniform.lean` (NOT mirrored; round-58 "named corollary"): **`integral_response_peano_uniform`**
   (`E_{Π(M+z)}F = E_Q F + E_Q[Fℓ_z] + ½E_Q[F N(ℓ_z²)] + o(‖z‖²)B_F` uniformly on compact convex interior sets).
+- `DualCurveComparison.lean` (NOT mirrored; round-58 rank 3/§3(iv) "matched-velocity comparison"): `densTrunc_smul`
+  (`T_θ(tη) = 1 + ta + ½t²(a² − Var)`), `responseScore_eq_affScoreAt`, `covQ_responseScore`,
+  **`abs_famDens_exponential_line_le`** (exponential curve `P_{θ+tRu}` to second order, relative-uniform, `O(t³)`),
+  **`famDens_response_peano_line`** (mixture curve `Π(M+tu)` to second order, `o(t²)`), **`normalProj_sub_centred_sq`**
+  (`N(ℓ²) − (ℓ² − Eℓ²) = −B(ℓ²)`), **`integral_responseScore_mul_normalProj_sub`** (pairing with the velocity = `−E_Qℓ³`),
+  `dual_curve_comparison` (package). Both curves have velocity `Qℓ_u`; their second-order coefficients differ by the
+  regression part of the squared score (a third-cumulant vector), whose pairing with the velocity is minus the skewness.

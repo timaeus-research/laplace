@@ -756,3 +756,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   needs `(s := Iio 1)`; a section variable `ν` not mentioned in a statement is NOT an argument of that theorem.
   Round-58 remaining: moment-normality at all orders / analyticity (rank 3), observable delta method (needs CLT), dual
   curve comparison. NEXT: round-59 consult or all-orders audit.
+- `DualCurveComparison` landed (round-58 §3(iv)/(6)). Gotchas: after `rw` closes a goal by rfl a following `congr 1`/`exact`
+  errors "No goals"; `IsLittleO.comp_tendsto` + `IsBigO.of_bound` with `simp only [Function.comp_def, Real.norm_eq_abs,
+  norm_smul]` then `abs_of_nonneg (sq_nonneg (|t| * ‖u‖))`, `abs_of_nonneg (sq_nonneg t)`, `mul_pow, sq_abs`.
+  Round-58 remaining: all-orders/moment-normality (large; smooth IFT `ContDiffAt.to_localInverse` exists, no Banach
+  analytic IFT, no CLT in Mathlib → delta method out of reach). NEXT: round-59 consult.
