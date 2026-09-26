@@ -401,6 +401,7 @@ import Laplace.Multi.ExponentialPath
 import Laplace.Multi.GlobalChart
 import Laplace.Multi.AtlasVelocityDerivative
 import Laplace.Multi.AtlasHessian
+import Laplace.Multi.BoundaryBlowup
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

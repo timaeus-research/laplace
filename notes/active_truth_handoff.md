@@ -543,3 +543,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (general conditional variational), the polarised mixed Hessian `D²q_M[u,z]` in response coordinates
   (needs the second Fréchet derivative of the inverse chart — the path version is the diagonal `u = z = Δ`),
   observable-defect second order as a corollary. NEXT: round-54 consult or rank 4.
+- Round-54 consult (`gpt_responses/research_round54_{q,v1}.md`): ranking 1 polarised response Hessian +
+  observable-defect second order (Fréchet route: differentiate `M ↦ Σ_M`, then `A_M = Σ_M⁻¹`, then
+  `Dq_M[u] = q_M ℓ_{M,u}`; est. 370–680 lines), 2 universal boundary blow-up (DONE), 3 Fisher normal geometry /
+  second fundamental form (factor 1/2), 4 conditional variational for general densities (sup, clipping), 5
+  Fisher–Rao great circle, 6 unbounded bridge split; §7 repackage as one structure theorem (global
+  reconstruction / differential duality / normal geometry / pathwise accounting / boundary obstruction).
+- `BoundaryBlowup` landed (rank 2): `κ(s) ≥ δ/(R(1−s))` from a supporting normal, `κ → ∞`, `∫₀¹ κ = ∞`,
+  `−⟨θ_s,Δ⟩ ≥ (δ/R) log(1/(1−s))`. Gotchas: `not_imp` is `Classical.not_imp` (root deprecated);
+  `intervalIntegral.integral_comp_sub_left f d` leaves `d − 0` in the bounds (`sub_zero` before
+  `integral_inv_of_pos`); `continuous_sub_left (1:ℝ)` gives the lambda `fun s ↦ 1 − s`; a `Nonempty X`
+  witness plus `+ 1` makes the bound `R` strictly positive without extra argument.
+  NEXT: rank 1 (polarised Hessian) — the path machinery (`AtlasVelocityDerivative`, `AtlasHessian`) is the diagonal;
+  or rank 3 packaging, or §7 structure theorem; or rank 4.

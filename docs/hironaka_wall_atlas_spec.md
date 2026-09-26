@@ -4397,3 +4397,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `atlasCurv_eq_integral_score_sq`, `cumulantVec_atlasVel_eq` (`(D_s β_s)_j = E_{Q_s}[(S_j − M_j) ℓ_s²]`),
   `lawCov_stat_atlasBend` (`Cov_{Q_s}(S_j, ⟨w_s,S⟩) = −(D_s β_s)_j`), **`integral_atlasHess`** (`∫ q'' dν = 0`),
   **`integral_mul_atlasHess`** (`∫ S_j q'' dν = 0`): all second-order bending of the atlas is response-invisible.
+- `BoundaryBlowup.lean` (NOT mirrored; round-54 rank 2): `lawCov_eq_integral_centred`, **`lawCov_sq_le`**
+  (Cauchy–Schwarz for covariances), **`exists_supporting_normal`** (a finite-rate response on the relative
+  boundary has a supporting functional `e` with `⟨e, m₀⟩ < ⟨e, M⟩`, from `mem_intrinsicInterior_iff_forall_supporting`
+  at `M` and at `m₀`), `ae_dirLoss_le_of_supporting` (`⟨e,S⟩ ≤ ⟨e,M⟩` a.e.), **`atlasCurv_ge_of_supporting`**
+  (`κ(s) ≥ δ/(R(1−s))`: `E_{Q_s} Y = (1−s)δ`, `Var Y ≤ R E Y`, `Cov_{Q_s}(⟨e,S⟩, f_s) = −δ`, Cauchy–Schwarz),
+  **`atlasCurv_ge_boundary`**, **`tendsto_atlasCurv_nhdsLT_one`** (`κ(s) → ∞` as `s → 1⁻`),
+  **`not_intervalIntegrable_atlasCurv`** (`∫₀¹ κ = ∞`, via `intervalIntegrable_sub_inv_iff`),
+  **`neg_dotJ_atlasTheta_ge_log`** (`−⟨θ_s, Δ⟩ ≥ (δ/R) log(1/(1−s))`: logarithmic escape of the natural coordinates).
