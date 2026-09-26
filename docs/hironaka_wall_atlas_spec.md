@@ -4820,3 +4820,13 @@ certificates for concrete resolved charts beyond the identity chart.
   `atlasPath_eq_add_smul_atlasInc`, **`contDiffOn_atlasTheta`** (`s ↦ θ(M_s)` is `C^∞` where the atlas is interior),
   `Ioo_subset_atlas_interior`, **`contDiffOn_integral_atlasTheta`** (the response of every bounded observable is `C^∞` along
   the atlas): the response calculus exists to all orders.
+- `InvisibleTower.lean` (NOT mirrored; the all-orders invisibility in `L¹` form): `weightL1` (`θ ↦ [g e^{−⟨θ,S⟩}] ∈ L¹`),
+  `weightDeriv`, `weightDeriv_apply`, `exists_dirLoss_bound`, **`norm_weightL1_remainder_le`** (quadratic remainder from
+  `|e^{−u} − 1 + u| ≤ u²`), **`hasFDerivAt_weightL1`**, **`contDiff_weightL1`** (`C^n` into `L¹` by induction — the derivative
+  is a weighted weight again), `contDiff_infty_weightL1`, `densL1`, `densL1_eq` (`[q_θ] = Z⁻¹ • [e^{−⟨θ,S⟩}]`),
+  **`contDiff_densL1`** (the reconstruction density is a `C^∞` map into `L¹(ν)`), `reconstructionL1_eq_densL1`,
+  `atlasDomain` (`{s | M_s ∈ Ω}`), **`contDiffOn_reconstructionL1_atlas`** (`s ↦ [q_{M_s}]` is `C^∞` in `L¹` on the interior atlas
+  domain), `isOpen_atlas_interior`, `momentL1_reconstructionL1_atlas`, `iteratedDerivWithin_affine_eq_zero`,
+  `clm_iteratedDerivWithin_reconstructionL1_atlas` (CLMs commute with `iteratedDerivWithin` on the open domain),
+  **`invisible_tower`** (every derivative of order `≥ 2` of the reconstruction along the atlas has zero feature moments and
+  zero mass), **`momentL1_iteratedDerivWithin_one`** (the first derivative carries exactly `M − m₀`).

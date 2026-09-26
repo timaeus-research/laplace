@@ -1001,3 +1001,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   density form (`iteratedDeriv k (fun s ↦ ∫ (1,S) q_{M_s})=0`, k ≥ 2, needs differentiation under the integral to all
   orders — the `famNum` induction gives it for free since `s ↦ q_s(x)` and `s ↦ ∫ g q_s` are both smooth); curved-path
   second-order transport; analyticity.
+- `InvisibleTower` landed (the round-63/64 "all-orders invisible tower", in Bochner `L¹` form). Gotchas: `Lp.ext` + a.e.
+  `Lp.coeFn_neg/coeFn_finsetSum/coeFn_smul` (with `eventually_all` over the finite index) + `Integrable.coeFn_toL1` identify a
+  finite `L¹` combination pointwise; `Integrable.toL1_sub` twice then `Integrable.toL1_eq_toL1_iff` for the remainder identity;
+  `hasFDerivAt_iff_isLittleO_nhds_zero` + `IsBigO.of_bound` + `isLittleO_norm_pow_id (E' := …) one_lt_two` turn a quadratic
+  remainder bound (on a ball where `B‖η‖ ≤ 1`) into the derivative; `Real.abs_exp_sub_one_sub_id_le` needs `|x| ≤ 1`;
+  `ContinuousLinearMap.smulRightL ℝ E F (proj j)` is the CLM `W ↦ (proj j).smulRight W` (its application is `rfl`);
+  `famWeight_pos θ x` has `S` implicit; set-builder sets cannot be `local notation` (define `atlasDomain S ν M`);
+  `ContinuousLinearMap.iteratedFDerivWithin_comp_left L (hf.contDiffWithinAt hs) hU.uniqueDiffOn hs (i := k) (cast ≤ ∞)` +
+  `iteratedDerivWithin_eq_iteratedFDerivWithin` + `Function.comp_def` give `L (iteratedDerivWithin k f U s) =
+  iteratedDerivWithin k (L ∘ f) U s`; higher `iteratedDerivWithin` of an affine curve vanish via `iteratedDerivWithin_succ`,
+  `derivWithin_congr`, `derivWithin_fun_const _ _`; `L1.integralCLM f = ∫ f` by `← L1.integral_eq, L1.integral_eq_integral`.
+  NEXT: round-65 consult (what remains: curved-path second-order transport `q̈ = H[Ṁ,Ṁ] + JM̈` now cheap from `contDiff_densL1`
+  and the smooth chart; analyticity; the explicit Bell/cumulant recursion for the tower; the `L¹` bias in Bochner form).
