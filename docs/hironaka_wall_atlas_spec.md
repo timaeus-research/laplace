@@ -5165,3 +5165,11 @@ certificates for concrete resolved charts beyond the identity chart.
   featureless response), `atlasPath_mem_convexHull`, **`tendsto_integral_linForm_atlasPath`** (THE ACCUMULATED-RESPONSE FORMULA:
   on a charged polytope, for EVERY `M ∈ P`, `E_{q_M} F − E_ν F = lim_{r↑1} ∫₀^r lin_{F,M_s}(M − m₀) ds`, an improper identity
   valid up to and including boundary responses).
+- `SusceptibilityFisherBound.lean` (NOT mirrored; round-74 rank 1, the Fisher companion): `sqrt_lawCov_self_le` (`√Var F ≤ ‖F‖_∞`),
+  `linForm_eq_lawCov_responseScore` (the susceptibility is `Cov_{q_M}(F, ℓ_{M,u})`), **`abs_linForm_le_sqrt_var_mul_sqrt`**
+  (COORDINATE-FREE SUSCEPTIBILITY BOUND `|lin_{F,M}(u)| ≤ √Var_{q_M}(F) · √⟨u, C_M⁻¹ u⟩`, Cauchy–Schwarz against the response
+  score), `abs_linForm_atlasPath_le` (along the straight path: `≤ √Var · √κ(s)`, `κ` = Fisher speed²), `continuousOn_sqrt_atlasCurv`,
+  **`abs_integral_responseProjection_atlasPath_sub_le`** (`|E_{q_{M_r}}F − E_νF| ≤ ‖F‖_∞ ∫₀^r √κ`),
+  **`abs_integral_responseProjection_sub_featureless_le`** (on a charged polytope, for EVERY completed response whose straight path
+  has Fisher length ≤ L: `|E_{q_M}F − E_νF| ≤ ‖F‖_∞ · L` — posterior expectations move at most as far as the Fisher length of the
+  path from the featureless law).

@@ -496,6 +496,7 @@ import Laplace.Multi.PolytopeProjectionSupport
 import Laplace.Multi.PolytopeFaceOrder
 import Laplace.Multi.ResponseAtlas
 import Laplace.Multi.PolytopeResponseTransport
+import Laplace.Multi.SusceptibilityFisherBound
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

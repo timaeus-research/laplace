@@ -1489,3 +1489,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   over `Ioo_mem_nhdsLT`; `Convex.add_smul_sub_mem` + `module` shows the straight path stays in the polytope. NEXT: Statement 2
   facewise (instantiate the interior derivative on `ν(·|S∈F)`), the coordinate-free Fisher bound `|D R_f(M)[h]| ≤ √Var f ·
   √⟨h,C⁻¹h⟩`, then rank 2 (vertex-gap criterion) and rank 3 (shell-mass Fisher classification).
+- `SusceptibilityFisherBound` landed (round-74 rank 1 companion). Gotchas: `integral_mul_responseScore_eq_linForm hS ν hF u`
+  needs no `hrel` but `integral_responseScore`/`integral_responseScore_mul` do; `Real.abs_le_sqrt : x² ≤ y → |x| ≤ √y` +
+  `← Real.sqrt_mul (lawCov_self_nonneg _ hF)`; `atlasCurv`/`atlasVel`/`atlasTheta` unfold to exactly `−⟨R_{M_s} u, u⟩` with
+  `u = ⟨M − m₀, _⟩` (`unfold atlasCurv atlasVel atlasTheta; exact this`); `|a|·|a| = a·a` is `abs_mul_abs_self`; `omit [Nonempty X]`
+  is wrong for a lemma whose PROOF extracts a point (`obtain ⟨x⟩ := ‹Nonempty X›`); `le_of_tendsto` on `𝓝[<] 1` needs the instance
+  `nhdsWithin_Iio_neBot le_rfl` supplied by `have`. NEXT: rank 2 (vertex-gap convergence criterion in face-adapted natural
+  coordinates), rank 3 (shell-mass Fisher classification: variance sandwich `A C₂/(A+B)² ≤ Var ≤ C₂/(A+B)` then
+  `finite length ↔ Σ √a_k < ∞`), rank 4 (response potential `I(M) = D(q_M‖ν)`, `∇I = η`, `D²I = C⁻¹`).
