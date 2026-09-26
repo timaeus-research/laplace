@@ -556,3 +556,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   witness plus `+ 1` makes the bound `R` strictly positive without extra argument.
   NEXT: rank 1 (polarised Hessian) — the path machinery (`AtlasVelocityDerivative`, `AtlasHessian`) is the diagonal;
   or rank 3 packaging, or §7 structure theorem; or rank 4.
+- `NormalGeometry` landed (round-54 rank 3, stage 1): response scores `ℓ_{M,u} = ⟨R u, M − S⟩`, differential
+  duality `E_Q[ℓ_u ℓ_z] = ⟨Σ_M⁻¹ u, z⟩` (positive definite), regression/normal projections `B_M`, `N_M`
+  (zero mass, zero feature moments, kill tangent scores), and the density-acceleration theorem
+  `q_s''/q_s = N_{M_s}(ℓ_s²)` (via `atlasBend = R Cov(S, ℓ²)`). Gotchas: a `local notation` for the
+  reconstruction measure / inverse chart derivative must avoid `.symm` projection syntax (write
+  `ContinuousLinearEquiv.symm (…)`); `covVec` was taken by `MultiConstrainedResponse` (→ `respCov`); defs whose
+  `M` is not determined by their arguments must take `M` explicitly (`regProj hS ν M hf`); `unfold atlasTheta`
+  lines up `atlasTheta`-stated seabed lemmas with `responseTheta … (atlasPath …)`-stated new ones before `ring`.
+  NEXT: rank 1 (polarised Hessian `D²q_M[u,z] = q_M N_M(ℓ_u ℓ_z)`, Fréchet route) — the atlas diagonal now reads
+  `N_M(ℓ²)`; rank 3 stage 2 (Fisher–Rao second fundamental form `II = ½ N_M(ℓ_u ℓ_z)` via `q ↦ 2√q`); §7 structure
+  theorem; rank 4.

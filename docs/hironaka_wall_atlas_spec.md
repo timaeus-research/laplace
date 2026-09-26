@@ -4405,3 +4405,16 @@ certificates for concrete resolved charts beyond the identity chart.
   **`atlasCurv_ge_boundary`**, **`tendsto_atlasCurv_nhdsLT_one`** (`κ(s) → ∞` as `s → 1⁻`),
   **`not_intervalIntegrable_atlasCurv`** (`∫₀¹ κ = ∞`, via `intervalIntegrable_sub_inv_iff`),
   **`neg_dotJ_atlasTheta_ge_log`** (`−⟨θ_s, Δ⟩ ≥ (δ/R) log(1/(1−s))`: logarithmic escape of the natural coordinates).
+- `NormalGeometry.lean` (NOT mirrored; round-54 rank 3, stage 1 — the normal geometry of the response map):
+  `lawCov_const_left_eq_zero`, **`responseScore`** (`ℓ_{M,u} = ⟨R u, M − S⟩`, `R = (Dm(θ(M))|_𝕍)⁻¹ = −Σ_M⁻¹`),
+  `bdd_responseScore`, `respCov` (`Cov_Q(S, f)`), `chartDeriv_symm_apply`, `respCov_mem_dirSpan` (via the
+  regression coefficient), **`regProj`** (`B_M f = ℓ_{M, Cov_Q(S,f)}`), **`normalProj`** (`N_M f = f − E_Q f − B_M f`),
+  `integral_stat_responseTheta`, `integral_dirLoss_responseTheta`, `integral_responseScore` (`E_Q ℓ_{M,u} = 0`),
+  `lawCov_stat_responseScore` (`Cov_Q(S_j, ℓ_{M,u}) = u_j`), **`integral_responseScore_mul`** (differential
+  duality: `E_Q[ℓ_{M,u} ℓ_{M,z}] = −⟨R u, z⟩ = ⟨Σ_M⁻¹ u, z⟩`), **`integral_responseScore_sq_pos`** (the
+  response-space Fisher metric is positive definite on `𝕍`), `respCov_responseScore`, `regProj_responseScore`,
+  `normalProj_responseScore`, **`integral_normalProj`**, **`integral_stat_mul_normalProj`** (zero mass, zero
+  feature moments), `atlasScore` (`ℓ_s`), `atlasScore_eq_responseScore` (rfl), `bdd_atlasScore(_sq)`,
+  **`atlasBend_eq_respCov`** (`w_s = R Cov_{Q_s}(S, ℓ_s²)`), **`atlasHess_eq_normalProj`** (the density-acceleration
+  theorem `q_s''/q_s = N_{M_s}(ℓ_s²)`: the second derivative of the reconstruction density is the normal projection
+  of the squared score).
