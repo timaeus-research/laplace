@@ -4479,3 +4479,12 @@ certificates for concrete resolved charts beyond the identity chart.
   at every interior `z₀`, independent of `D`), `hasFDerivAt_klDiv_fibre_zero` (critical at the reconstruction),
   **`hasFDerivAt_klDiv_fibre_field`** (the derivative field's derivative at `0` is `u ↦ E_Q[ℓ_u ℓ_w] = ⟨Σ_M⁻¹u,w⟩`:
   the transverse KL profile is the Fisher metric, the same on the whole fibre; no fibre-specific normal term).
+- `ResponseTaylor.lean` (NOT mirrored; round-55 rank 1, stage 2 — the Peano expansion):
+  **`isLittleO_peano_of_hasFDerivAt`** (generic: a derivative field `A` differentiable at `0` with derivative `B`
+  gives `F z − F 0 − A 0 z − ½ B z z = o(‖z‖²)`, by the mean value inequality along the segment),
+  **`responseDerivField`** (`A_z(w) = E_{Π(M+z)}[φ ℓ_{M+z,w}]` as a functional, defined for every `z`),
+  `responseDerivField_apply`, **`hasFDerivAt_integral_response_at`** (the response of `φ` is differentiable at
+  every interior point with derivative the field), **`hasFDerivAt_responseDerivField`** (the field is differentiable
+  at `0` with derivative the response Hessian `B u w = E_Q[φ N_M(ℓ_u ℓ_w)]`, assembled on a basis and identified by
+  uniqueness of derivatives), **`response_peano`**
+  (`E_{Π(M+z)}φ = E_Qφ + E_Q[φ ℓ_{M,z}] + ½ E_Q[φ N_M(ℓ_{M,z}²)] + o(‖z‖²)`).

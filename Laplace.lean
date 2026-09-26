@@ -408,6 +408,7 @@ import Laplace.Multi.ObservableHessian
 import Laplace.Multi.FisherRaoCurvature
 import Laplace.Multi.FiniteResponse
 import Laplace.Multi.FibreHessian
+import Laplace.Multi.ResponseTaylor
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

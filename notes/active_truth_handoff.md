@@ -633,3 +633,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   when `InformationTheory` is open; `-(A ∘SL B)` applied needs `neg_apply, neg_apply, comp_apply` in that order;
   `dotJ_comm` for `dotJ w θ` vs `dotJ θ w`. NEXT: Peano expansion (operator-valued assembly of
   `hasFDerivAt_integral_responseScore` on a basis + generic second-order Peano lemma), dual-flat package, §7.
+- `ResponseTaylor` landed (round-55 rank 1 COMPLETE with FiniteResponse): generic Peano lemma from a
+  differentiable derivative field (mean value on `[0,1]`: `norm_image_sub_le_of_norm_deriv_le_segment'` with the
+  segment function `g t = F(tz) − t A0 z − (t²/2) Bzz`), `responseDerivField`, differentiability of the response at
+  interior points, Fréchet derivative of the field = Hessian (basis assembly with `smulRightL (c i)` into `ℝ`,
+  value by `hB.clm_apply (hasFDerivAt_const w 0)` + `.unique`), `response_peano`. Gotchas:
+  `Metric.eventually_nhds_iff` gives `∀ ⦃y⦄, dist y x < ε → …` (strict-implicit `y`: pass only the distance
+  proof); `hasFDerivAt_iff_isLittleO_nhds_zero` leaves `A (0 + h)` — `rw [zero_add]`; `abs_of_nonneg (sq_nonneg _)`
+  inside `rw` grabs the first `|·|` — give the argument.
+  NEXT: dual-flat package (`∇𝓘 = −θ` (have: `hasFDerivAt_genRate_response_at`), `D²𝓘 = G` = Fisher metric,
+  `DG[z](u,w) = −C(u,w,z)` cubic tensor), §7 structure-theorem packaging, `L¹` density Peano, compact-uniform
+  remainders, round-56 consult.
