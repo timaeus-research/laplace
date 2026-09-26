@@ -4501,3 +4501,16 @@ certificates for concrete resolved charts beyond the identity chart.
   package (`∇𝓘 = −θ`, `D²𝓘 = G`, `DG = −C`); (3) the polarised density Hessian `q_M N_M(ℓ_uℓ_w)` and the Peano
   expansion of every bounded observable; (4) the accounting identity for every data law with interior response;
   (5) the boundary obstruction (`κ → ∞`, `∫₀¹κ = ∞`).
+- `InformationAlongAtlas.lean` (NOT mirrored; round-56 "information companion"): `continuousOn_atlasCurv`,
+  `intervalIntegrable_one_sub_mul_atlasCurv`, **`klDiv_data_atlas_eq_integral`** (`KL(D‖Q_s) = KL(D‖Π(M)) +
+  ∫_s^1 (1−t)κ(t)dt` for a data law with response `M`), **`klDiv_data_eq_add_integral`** (the information budget
+  `KL(D‖ν) = KL(D‖Π(M)) + ∫₀¹(1−t)κ`), `klDiv_data_atlas_antitone`, **`hasDerivAt_klDiv_data_atlas`**
+  (`d/ds KL(D‖Q_s) = −(1−s)κ(s)` on `(0,1)`). Built on EndpointTail's
+  `toReal_klDiv_responseProjection_atlas_eq_integral`.
+- Round-56 consult (`gpt_responses/research_round56_{q,v1}.md`): sanity checks confirmed (geodesic claim is
+  "affinely parametrised geodesic of the family iff `B(ℓ²) = 0`"; `Γ^{LC} = −½ Cov_Q(S, ℓ_uℓ_w)`, `Γ^{(m)} = 0`,
+  `Γ^{(e)} = −Cov_Q(S,ℓ_uℓ_w)`; "normal part responds at second order" with two qualifications); NEXT flagship =
+  the total-variation density Peano `∫|q_{M+z} − q_M − q_Mℓ_z − ½q_MN(ℓ_z²)| = o(‖z‖²)` via integrated continuity
+  of the pointwise Hessian on a finite basis (no `Lp`), then compact-uniform remainders; boundary: the triangular
+  endpoint `lim_{t↑1}[t E_ν(φℓ_0) + ∫₀ᵗ(t−s)…]` is the safe statement (needs TV convergence `Q_t → Q_*`); the
+  information companion (done); `KL(Q_*‖Q_s) = ∫_s^1(1−t)κ` and `(1−s)i'(s) → 0` at finite-rate boundary points.

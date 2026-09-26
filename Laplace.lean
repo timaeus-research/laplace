@@ -411,6 +411,7 @@ import Laplace.Multi.FibreHessian
 import Laplace.Multi.ResponseTaylor
 import Laplace.Multi.DualFlat
 import Laplace.Multi.ResponseStructure
+import Laplace.Multi.InformationAlongAtlas
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

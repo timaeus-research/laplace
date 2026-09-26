@@ -657,3 +657,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   normal geometry (polarised Hessian + Peano) ∧ accounting identity ∧ boundary obstruction. Gotcha: a binder
   `∀ M (hrel : M ∈ K) …` whose `hrel` is used only in the proof trips the unused-variable linter — write
   `∀ M ∈ K, ∀ hfin : …,` instead. Round-56 consult running/landed (`research_round56_{q,v1}`). NEXT per consult.
+- `InformationAlongAtlas` landed (round-56 companion): `KL(D‖Q_s) = KL(D‖Π(M)) + ∫_s^1(1−t)κ`, budget
+  `KL(D‖ν) = KL(D‖Π(M)) + ∫₀¹(1−t)κ`, antitone, `d/ds = −(1−s)κ`. Gotchas: EndpointTail ALREADY had
+  `toReal_klDiv_responseProjection_atlas(_eq_integral)` (`KL(Π(M)‖Q_s) = ∫_s^1(1−t)κ`) — grep before writing;
+  `rw [← familyMeasure_zero_eq hS ν] at h` rewrites every `ν` (motive error) — prove
+  `responseProjection (atlasPath 0) = ν` as a separate `have` and rewrite with it;
+  `ContinuousOn.stronglyMeasurableAtFilter (μ := volume) isOpen_Ioo hcontOn s hs` for the FTC-left lemma.
+  NEXT (round 56): the TV density Peano (`∫|q_{M+z} − q_M − q_Mℓ_z − ½q_MN(ℓ_z²)| = o(‖z‖²)`): (1) pointwise
+  Hessian field `H_z[u,w] = q_z N_{M+z}(ℓ_uℓ_w)` at interior `z` (repackage `hasFDerivAt_famDens_responseScore`
+  at base `M+z`), (2) domination `q_z ≤ C q_0`, `|H_z[u,w]| ≤ C q_0 ‖u‖‖w‖` on a small ball (bounded features,
+  `R` locally bounded), (3) integrated continuity `∫|H_z[e_i,e_j] − H_0[e_i,e_j]| → 0` by dominated convergence,
+  (4) pointwise scalar Taylor with integral remainder along `t ↦ tz` + Fubini ⇒ `o(‖z‖²)`; then compact-uniform;
+  then the triangular boundary endpoint.
