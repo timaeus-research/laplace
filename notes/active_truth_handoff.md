@@ -871,3 +871,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Ioc` + `HasDerivAt.deriv` on the interval; `ae_restrict_iff' measurableSet_Ioc`. NEXT: round-62 rank 3 (the atlas is
   the natural-gradient flow of `KL(Q_{M*}‖Q_M)`: `grad_g L = M − M*`, explicit flow with `s = 1 − e^{−τ}`, dissipation),
   then the `L²` invisible expansion, then the `C²` flagship.
+- `NaturalGradientAtlas` landed (round-62 rank 3). Gotchas: `klDiv` needs `open InformationTheory`; the family-KL
+  chain `klDiv_familyMeasure` → `ENNReal.toReal_ofReal (famKL_nonneg …)` → `famKL_eq` gives the real Bregman form
+  (pass `(M₀ := 0) (fun _ ↦ by simp)` for `L₀ = 0`; DualPotential's `hπ` is `0 ≤ π`, FamilyBregman's is `0 < π`);
+  `hasFDerivAt_affLogZ` needs `(π := …) (L₀ := …) (R := S) (t := 1)` pinned; compose at the point `θr (M + ↑0)` and
+  `simp only [h0]` afterwards; `HasFDerivAt.congr_fderiv` (not `congr_deriv`); `HasDerivAt.scomp` for a vector path
+  composed with a real reparametrisation; a `def` whose statement does not mention `S` needs `variable (S) in`.
+  Round-62 status: ranks 2, 3, 4 DONE; remaining: rank 1 flagship (`C²` `L¹`-Hessian as invisible signed measure),
+  rank 5 (invisible `L²` expansion), rank 6 (tilt diagnostics). NEXT: rank 5 (`R(t) = ½t²‖N_{m₀}h‖² + o(t²)`) since it is
+  short and independent, then the `C²` flagship.

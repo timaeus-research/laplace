@@ -4728,3 +4728,8 @@ certificates for concrete resolved charts beyond the identity chart.
   **`integral_response_atlas_taylor`** (Taylor with integral remainder, via `measurable_deriv` + a uniform bound),
   **`obsResponse_atlas_eq_second_order`** (`G_F(M_t) = G_F(m₀) + t lin_{F,m₀}(δ) + ∫₀ᵗ (t−r) b_{F,M_r}(δ,δ) dr`),
   **`hasDerivAt_deriv_obsResponse_atlas`** (`(G_F ∘ M)''(s) = b_{F,M_s}(δ,δ)` on `(0,1)`).
+- `NaturalGradientAtlas.lean` (NOT mirrored; round-62 rank 3): `natLoss` (`L(M) = KL(Q_{M*}‖Q_M)`), `natLoss_eq` (Bregman
+  form `A(θ(M)) − A(θ*) + ⟨θ(M) − θ*, M*⟩`), **`hasFDerivAt_natLoss`** (`dL_M[u] = ⟨R_M u, M* − M⟩`), `fisherForm_neg_right`,
+  **`natLoss_deriv_eq_fisherForm`** (`dL_M[u] = g_M(M − M*, u)`: the natural gradient is the displacement), `natFlow`
+  (`M(τ) = atlasPath(1 − e^{−τ})`), `natFlow_zero`, **`hasDerivAt_natFlow`** (`M' = −(M − M*)`), `tendsto_natFlow`,
+  `natFlow_mem_intrinsicInterior`, **`hasDerivAt_natLoss_natFlow`** (dissipation `dL/dτ = −g_{M(τ)}(M(τ)−M*, M(τ)−M*)`).
