@@ -737,3 +737,6 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   and `hasFDerivAt_inverse_response hS ν hz` translate to arbitrary interior base points with the
   `HasFDerivAt.comp (f := fun w ↦ w − z)` + `congr 4; abel` idiom. NEXT: all-orders analyticity (rank 3) or round-58
   consult; also the compact-uniform observable Taylor corollary is immediate from the TV statement.
+- `ResponseAtlasTheorem` landed: the one-theorem packaging (§6 of round 57) of the whole "featureless → data" programme.
+  Round-57 items 1, 2, 2b, 4 and the packaging are DONE; remaining: rank 3 (all-orders relative-uniform analyticity, with
+  `E_Q A_n = 0`, `E_Q[S A_n] = 0` for `n ≥ 2`). NEXT: round-58 consult, then per ranking.

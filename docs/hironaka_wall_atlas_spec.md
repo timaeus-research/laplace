@@ -4586,3 +4586,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `4K(Λ+1)‖z‖ ≤ 1`), `exists_bound_inverse_of_isCompact`, **`famDens_response_peano_uniform`** (∀ compact convex
   `C ⊂ ri K`, ∀ ε ∃ δ ∀ M ∈ C, M+z ∈ C, ‖z‖ ≤ δ, ∀ x: `|q_{M+z} − q_M(1+ℓ+½N(ℓ²))| ≤ ε‖z‖²q_M`),
   **`integral_abs_famDens_response_peano_uniform`** (the compact-uniform TV expansion).
+- `ResponseAtlasTheorem.lean` (NOT mirrored; the CAPSTONE of the response-map programme): `klDiv_data_eq_add_integral_of_ne_top`
+  (information budget `KL(D‖ν) = KL(D‖Π(M)) + ∫₀¹(1−s)κ` at EVERY finite-rate response, from Pythagoras +
+  `genRate_toReal_eq_integral_atlasCurv`), **`response_atlas_reconstruction`** — the four-layer package: B (retraction,
+  derivative projection, compact-uniform TV-Lipschitz), A (compact-uniform relative second-order expansion), C (accounting on
+  `[0,t]`, TV speed ≤ Fisher speed, information budget), D (boundary completion, eight parts).
