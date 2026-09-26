@@ -480,3 +480,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Integrable.congr` pointwise goals are beta-redexes (`beta_reduce` before `rw [Real.sq_sqrt]`).
   Remaining round 52: item 5 (conditional variational formula), 6 (observable-defect second order),
   7 (mixed Hessian), 10 (skewness).
+- `ConditionalVariational` landed (round-52 item 5): exact identity `KL(D‖T_g) = L − E_D g + E_D log E_ν[e^g|σ(S)]`
+  for the conditional tilt, hence the conditional Donsker–Varadhan inequality and attainment at `g = log(d/a)`
+  (bounded densities make the clipping unnecessary); `IsGreatest` packaging with the true conditional expectation
+  (a.e. versions transported to `D` by `hDν.ae_eq`). Gotchas: `=ᵐ[ν] fun _ ↦ 1 ∧ …` parses the `∧` INTO the lambda
+  (parenthesise); `klDiv_self` needs `SigmaFinite` (provide the probability instance first);
+  `condExp_mul_of_stronglyMeasurable_left` uses Pi-multiplication `f * g` (state the function equality with
+  `Pi.mul_apply`); `Real.exp_le_one_iff`, `Real.one_le_exp`, `inv_anti₀` for the clamp bounds.
+  Round 52 landed: 1, 2, 3, 4, 5, 8, 9, 12. Remaining: 6 (observable-defect second order), 7 (mixed Hessian),
+  10 (skewness). NEXT: round-53 consult (re-rank; ask for the next depth targets beyond 6/7/10).

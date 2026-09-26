@@ -4344,3 +4344,13 @@ certificates for concrete resolved charts beyond the identity chart.
 - `AtlasLength.lean` (NOT mirrored; round-52 item 12): `atlasLength = ∫₀¹ √κ`, **`atlasLength_sq_le_integral_atlasCurv`**
   (Cauchy–Schwarz via `integral_mul_le_Lp_mul_Lq_of_nonneg` with `Real.HolderConjugate.two_two`),
   **`atlasLength_sq_le_symm_klDiv`** (`Len² ≤ KL(Π(M)‖ν) + KL(ν‖Π(M))`).
+- `ConditionalVariational.lean` (NOT mirrored; round-52 item 5): `densLaw_eq_tilted_log` (a normalised positive
+  density law is `ν.tilted (log p)`), `abs_log_le_of_mem`, `isProbabilityMeasure_densLaw`, `integral_condDens`
+  (`∫ a = 1`), **`statisticLift_densLaw_eq_condDens`** (`(dν)↑ = aν`), `integrable_densLaw_of_abs_le`; for bounded
+  `g` with a `σ(S)`-measurable version `cg` of `E_ν[e^g|σ(S)]`: `condTilt_pos`, **`integral_condTilt`** (the
+  conditional tilt `T_g = e^g/cg · aν` is normalised, by `integral_mul_condExp_statSigma`), `condTilt_eq_tilted`
+  (`T_g = ν.tilted (g + log a − log cg)`), **`toReal_klDiv_condTilt`** (`KL(D‖T_g) = KL(D‖aν) − E_D g + E_D log cg`,
+  via `klDiv_tilted_right_eq` twice and Donsker–Varadhan for the `toReal_ofReal` side conditions),
+  **`condDV_le`** (conditional Donsker–Varadhan inequality), **`condDV_attained`** (`E_ν[e^{log d − log a}|σ(S)] = 1`
+  a.e. by the pull-out property, and `E_D(log d − log a) = KL(D‖aν)` since `T_{g₀} = D`),
+  **`fibre_isGreatest_condDV`** (`L = max_g {E_D g − E_D log E_ν[e^g|σ(S)]}` over bounded tests, `IsGreatest`).
