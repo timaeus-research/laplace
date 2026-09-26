@@ -470,6 +470,29 @@ theorem reconstruction_bias [DecidableEq J] (hDν : D ≪ ν)
         gcongr
     _ < η := by nlinarith
 
+omit [IsProbabilityMeasure P] hXm hind hid hlaw in
+/-- **The bias coefficient is intrinsic**: `Σ_{a,b} Γ_ab b_F(e_a, e_b) = E_D b_F(S(x) − M, S(x) − M)`,
+the data expectation of the bias form on the centred feature vector (independent of `π`). -/
+theorem sum_dataCov_mul_biasForm_eq [DecidableEq J] {F : X → ℝ}
+    (hF : Bdd F) (M : J → ℝ) :
+    ∑ a, ∑ b, (∫ x, (S a x - dataMoment D S a) * (S b x - dataMoment D S b) ∂D) *
+        biasForm hS ν M hF (coordUnit a) (coordUnit b) =
+      ∫ x, biasForm hS ν M hF (fun j ↦ S j x - dataMoment D S j)
+        (fun j ↦ S j x - dataMoment D S j) ∂D := by
+  have hint : ∀ a b, Integrable (fun x ↦ (S a x - dataMoment D S a) * (S b x - dataMoment D S b) *
+      biasForm hS ν M hF (coordUnit a) (coordUnit b)) D := fun a b ↦
+    (integrable_of_bdd_prob _ (((hS a).sub (Bdd.const _)).mul ((hS b).sub (Bdd.const _)))).mul_const
+      _
+  rw [show (fun x ↦ biasForm hS ν M hF (fun j ↦ S j x - dataMoment D S j)
+      (fun j ↦ S j x - dataMoment D S j)) = fun x ↦ ∑ a, ∑ b,
+      (S a x - dataMoment D S a) * (S b x - dataMoment D S b) *
+        biasForm hS ν M hF (coordUnit a) (coordUnit b) from
+    funext fun x ↦ biasForm_eq_sum hS ν hF _ _]
+  rw [integral_finsetSum _ fun a _ ↦ integrable_finsetSum _ fun b _ ↦ hint a b]
+  refine Finset.sum_congr rfl fun a _ ↦ ?_
+  rw [integral_finsetSum _ fun b _ ↦ hint a b]
+  exact Finset.sum_congr rfl fun b _ ↦ by rw [integral_mul_const]
+
 end Assembly
 
 end Laplace.Multi

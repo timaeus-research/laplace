@@ -4666,3 +4666,5 @@ certificates for concrete resolved charts beyond the identity chart.
   **`reconstruction_bias`**: for iid samples of `D ≪ ν` with interior `M = E_D S`, `∃ C` compact convex interior
   neighbourhood of `M` with `n (E Ĝ_n − G_F(M)) → ½ Σ_{ab} Γ_ab b_F(e_a, e_b)`, `Γ = Cov_D(S)`. No CLT: unbiasedness +
   `Γ/n` second moments + Hoeffding tail on the exceptional set + compact-uniform Peano.
+- `ReconstructionBias.lean` addendum: **`sum_dataCov_mul_biasForm_eq`** (`Σ_ab Γ_ab b_F(e_a,e_b) = E_D b_F(S(x)−M, S(x)−M)`:
+  the bias coefficient is the data expectation of the bias form on the centred feature vector, independent of `π`).

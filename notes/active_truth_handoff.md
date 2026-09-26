@@ -804,3 +804,6 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   integrand; `plugIn` takes `[DecidablePred (· ∈ C)]` so `ContinuousOn.measurable_piecewise` unifies. NEXT: bias
   coefficient as `½ E_D b_F(S(x) − M, S(x) − M)` (π-free form), `C²` via differentiating the score, all-orders prototype,
   round-61 consult.
+- `sum_dataCov_mul_biasForm_eq` landed (π-free bias coefficient). Round-60 remaining: `C²` via differentiating the score,
+  all-orders prototype (unnormalised Laplace transform `ContDiff ⊤`); then round-61 consult. NEXT: round-61 consult
+  (reconstruction-bias theorem done; ask for the next core feature of `D ↦ Π(D)` across the data manifold).
