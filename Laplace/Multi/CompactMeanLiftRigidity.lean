@@ -29,6 +29,7 @@ variable {X : Type*} [MeasurableSpace X] [Nonempty X] {J : Type*} [Fintype J] [N
   {S : J → X → ℝ} (hS : ∀ j, Bdd (S j)) (ν : Measure X) [IsProbabilityMeasure ν]
 include hS
 
+omit [Nonempty J] [IsProbabilityMeasure ν] in
 set_option linter.unusedFintypeInType false in
 /-- **A compact mean lift forces finitely many extreme points.** -/
 theorem finite_extremePoints_of_compact_mean_lift {K : Set (X →₁[ν] ℝ)} (hK : IsCompact K)
@@ -57,6 +58,7 @@ theorem finite_extremePoints_of_compact_mean_lift {K : Set (X →₁[ν] ℝ)} (
   simp only [Function.comp_apply] at h1 h2
   linarith
 
+omit [Nonempty J] in
 set_option linter.unusedFintypeInType false in
 /-- **The extreme points of a compactly lifted body are charged and generate it.** -/
 theorem exists_charged_generators_of_compact_mean_lift {K : Set (X →₁[ν] ℝ)} (hK : IsCompact K)
@@ -75,6 +77,7 @@ theorem exists_charged_generators_of_compact_mean_lift {K : Set (X →₁[ν] �
     obtain ⟨f, hf, hfe⟩ := himage (extremePoints_subset hv)
     exact statFibre_pos_of_mean_extreme hS ν (hKp hf) hv hfe
 
+omit [Nonempty J] in
 set_option linter.unusedFintypeInType false in
 /-- A continuous absolutely-continuous mean section on the moment body forces a charged polytope. -/
 theorem exists_charged_generators_of_continuous_section (σ : (J → ℝ) → (X →₁[ν] ℝ))
