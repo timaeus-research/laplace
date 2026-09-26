@@ -4740,3 +4740,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`tendsto_klDiv_bridge_div_sq`** (`KL(D_s‖ν)/s² → ½ E_ν(d−1)²`), `respCov_featureless_sub_one` (`Cov_ν(S, d−1) = M_D − m₀`),
   **`integral_sub_one_sq_eq_fisher_add_normal`** (tangent Pythagoras at `m₀`), **`tendsto_invisibleBridge_div_sq`**
   (`R(s)/s² → ½ ‖N_{m₀}(d−1)‖²_{L²(ν)}`: the invisible information is the squared normal data displacement).
+- Round-63 consult (`gpt_responses/research_round63_{q,v1}.md`): flagship = uniform `L¹` second jet (already
+  `integral_abs_famDens_response_peano_uniform`); `L¹` signed-measure bias = observable-uniform scalar bias; retraction
+  differential; closing main theorem "Response geometry: projection, invisible bending, averaged curvature".
+- `UniformBias.lean` (NOT mirrored; round-63 rank 1 in dual form): **`integral_response_peano_uniform_all`** /
+  **`integral_response_peano_biasForm_all`** (the observable Taylor expansion with a modulus independent of the observable),
+  `abs_linForm_le_of_bound` (`|lin_F(u)| ≤ ‖F‖∞ ∫|ℓ_{πu}|`), `abs_biasForm_le_of_bound` (`|b_F(u,v)| ≤ ‖F‖∞ ∫|N(ℓ_{πu}ℓ_{πv})|`),
+  **`reconstruction_bias_uniform_of_nhd`** (`sup_{‖F‖∞≤1} |n(EĜ_{F,n} − G_F(M)) − ½ΣΓ_ab b_F(e_a,e_b)| → 0`: the dual form of
+  the `L¹`-valued signed-measure bias `n(E[q̃_n] − q_M) → ½E_D[H_M[S−M,S−M]]`).

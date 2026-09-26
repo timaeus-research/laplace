@@ -901,3 +901,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   averaged curvature"; five parts, most landed). NEXT: `UniformBias` — the F-uniform scalar bias (dual form of the `L¹`
   signed-measure bias): restate the observable Peano with `∀ F` inside the `∃ δ`, bound `|lin_F(e_a)| ≤ BF ∫|ℓ|`,
   `|b_F(e_a,e_b)| ≤ BF ∫|N(ℓℓ)|`, and rerun the schema with `K = BF · K₀`.
+- `UniformBias` landed (round-63 rank 1, dual form): the bias limit is uniform over the unit ball of bounded observables,
+  from the observable-uniform Peano (copy of `integral_response_peano_uniform`'s proof with `F` quantified inside `∃ δ`) and
+  the trivial bounds `|lin_F| ≤ ‖F‖∞ ∫|ℓ|`, `|b_F| ≤ ‖F‖∞ ∫|N(ℓℓ)|` (via `N` self-adjoint); the schema's constant becomes
+  `‖F‖∞ · K₀`. Gotcha: `∀ {F} (hF : Bdd F) {BF} (hBF : …)` in a statement trips the unused-binder linter when `hBF` is not
+  referenced in the conclusion — write `(∀ x, |F x| ≤ BF) →` anonymously. NEXT: (i) the closing package theorem in the
+  consult's five-part form (parts 1–5 assembled from landed pieces: `hasDerivAt_reconstructionL1_curve`/`ResponseTransport`
+  for whole-law transport, `SecondOrderTransport` for bending, `UniformBias` for averaged bending, `NaturalGradientAtlas`);
+  (ii) rank 2 retraction differential `R(d) = q_{m(d)}`, `DR_d[h] = q_M ℓ_{M,∫Sh}`; (iii) the `L¹` Bochner form of the bias.

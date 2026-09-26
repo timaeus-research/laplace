@@ -448,6 +448,7 @@ import Laplace.Multi.TangentPythagoras
 import Laplace.Multi.SecondOrderTransport
 import Laplace.Multi.NaturalGradientAtlas
 import Laplace.Multi.InvisibleQuadratic
+import Laplace.Multi.UniformBias
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
