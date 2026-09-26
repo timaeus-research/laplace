@@ -4212,3 +4212,15 @@ certificates for concrete resolved charts beyond the identity chart.
   `eq_starProjection_of_mem_of_inner_eq_zero` and `span_le` into `(ℝ ∙ (φ − reg))ᗮ`), `norm_sq_regressionLp_sub`
   (`‖Bφ − Eφ‖² = Var⟨a,S⟩`), **`norm_sq_regressionLp_sub_eq_dotJ`** (`= ⟨a, Cov(S,φ)⟩`, the Fisher energy of the
   response velocity), `starProjection_statSpan_toLp_atlas` (on the atlas path, via `exists_regression_coefficient`).
+- `AtlasEnergy.lean` (NOT mirrored; round-50 item 5, mean-path half): `tendsto_one_sub_one_div_nat`, `atlasTheta_one`,
+  `atlasPath_eq_add_smul`, **`hasDerivAt_genRate_atlasPath_one`** (`𝓘(M_s)` differentiable at the interior endpoint
+  `s = 1`, derivative `−⟨θ(M), Δ⟩`, from `hasFDerivAt_genRate_chart` composed with the line `s ↦ s•Δ` in `𝕍`),
+  `neg_dotJ_atlasTheta_le_one` (interior slopes ≤ endpoint slope: EndpointTail identity + interior Bregman identity),
+  `slope_le_neg_dotJ_atlasTheta` (chord slopes ≤ right slope: Bregman identity between two atlas points),
+  **`tendsto_neg_dotJ_atlasTheta`** (`−⟨θ_s,Δ⟩ → −⟨θ(M),Δ⟩` as `s → 1⁻`, by `tendsto_order` from the two bounds and the
+  derivative at 1 — no continuity of the inverse chart), **`integrableOn_atlasCurv`**
+  (`integrableOn_Ioc_of_intervalIntegral_norm_bounded_right` along `r_n = 1 − 1/(n+1)`),
+  **`integral_atlasCurv_eq_neg_dotJ`** (`∫₀¹ κ = −⟨θ(M), Δ⟩`, `tendsto_setIntegral_of_monotone` + uniqueness of limits),
+  **`toReal_klDiv_featureless_responseProjection_eq_integral`** (`KL(ν‖Π(M)) = ∫₀¹ s κ(s) ds`),
+  `integral_atlasCurv_eq_symm_klDiv`, **`integral_atlasCurv_eq_integral_var_segment`** (equal Fisher energies of the
+  atlas path and the exponential path).

@@ -396,3 +396,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `⟪u, A + B − C⟫` with `inner_sub_right` BEFORE `inner_add_right` (top symbol is the subtraction). NEXT: item 4
   (quadratic splitting of KL/𝓘/L/R along bounded tilts, `KL(D_t‖ν) = t²/2 ‖h‖² + o(t²)` etc.), then item 5 mean-path
   half, item 6 mixed Hessian, item 7 boundary completion.
+- `AtlasEnergy` landed (item 5 complete: equal Fisher energies; `KL(ν‖Π(M)) = ∫ s κ`). Gotchas: `Ioo_mem_nhdsLT h`
+  is a filter membership — ascribe it as `∀ᶠ s in 𝓝[<] 1, s ∈ Ioo 0 1` before `.and`/`.exists`; `hasDerivAt_id'
+  (x := 1)` elaborates `1 : ℕ` — write `(x := (1 : ℝ))`; `((s • ⟨_, h⟩ : 𝕍) : J → ℝ)` elaborates as `s • ↑⟨_,h⟩`
+  (smul outside), reconcile with `Submodule.coe_smul`; `rw [← hf] at this` fails on beta-reduced statements — `rw [hf]`
+  in the goal and `exact`. NEXT: item 4 (quadratic splitting along bounded tilts), item 6 (mixed Hessian), round-49
+  item 4 (conditional variational formula), round-51 consult.
