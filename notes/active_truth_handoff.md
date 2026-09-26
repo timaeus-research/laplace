@@ -1544,3 +1544,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `genRate_ne_top_of_mem_intrinsicInterior` lives in `EmpiricalProjection` (import it). NEXT: rank 2 vertex-gap criterion (five
   lemmas of round 75 §2, strong extinction bound), or the Bregman identity `D(q_M‖q_N) = I(M) − I(N) − DI(N)[M − N]`, or the
   defect's Taylor form `ℰ(t) = ½ t² Var(residual) + o(t²)`.
+- `VertexGapExtinction` landed (round-75 rank 2, reverse direction). Gotchas: `rw [hc']` with `hc' : c = Σ w y * c` rewrites
+  EVERY `c`, and `rw [hβ']` hits the `β` inside `if dotJ u y < β` — state the needed split as `have e : β − Σ … = Σ (w y β −
+  w y dotJ u y)` and `rw [e]`; termwise `split_ifs <;> ring`/`nlinarith [hw0 y hy]`; `Finset.exists_mem_eq_inf' hFne f` +
+  `choose w hwmem hwc` picks the minimising tight vertex per `n`; the gap sequence `γ n := if hoff : Voff.Nonempty then
+  Voff.inf' hoff … else n` (needs `classical`, `dif_pos/dif_neg`) with `tendsto_atTop.2` + `eventually_all_finset` +
+  `Finset.le_inf'`; `Finset.le_sup' f hv` gives the beta-redex `(fun v ↦ …) v` — `simp only [hv₀β, sub_self] at h`;
+  `mean_familyMeasure_one_zero hS μ θ` for the FACE measure needs `have := isProbabilityMeasure_faceMeasure ν hF0`; sup-norm
+  convergence of means via `tendsto_pi_nhds` + `tendsto_iff_norm_sub_tendsto_zero` + `squeeze_zero'`. NEXT: forward direction
+  (`meanMap ν η_n → M ∈ ri F` ⇒ face means converge and gaps diverge): `tendsto_projL1_of_tendsto` + conditioning `L¹`-continuity
+  + charged fibre ratios `P_η(S=v)/P_η(S=v₀) = e^{−⟨η,v−v₀⟩} ν(S=v)/ν(S=v₀)` + `Real.tendsto_exp_comp_nhds_zero`; then the iff.

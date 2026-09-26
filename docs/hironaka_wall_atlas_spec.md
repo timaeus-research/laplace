@@ -5205,3 +5205,12 @@ certificates for concrete resolved charts beyond the identity chart.
   `hasDerivAt_responseDefect_zero` (`ℰ'(0) = 0`), `exists_hasDerivAt_lawCov_dataPath`, **`hasDerivAt_deriv_responseDefect_zero`**
   (`ℰ''(0) = Var_ν(h) − Var_ν(regressor)`), **`deriv_deriv_responseDefect_zero_eq_residual`** (`ℰ''(0) = Var_ν(h − regressor)`:
   to second order the defect is half the variance of the score the observables cannot see), nonneg and `≤ Var_ν h`.
+- `VertexGapExtinction.lean` (NOT mirrored; round-75 rank 2, the reverse half of the vertex-gap criterion):
+  **`sub_dotJ_le_of_vertexGaps`** (the deterministic gap inequality `c − ⟨η,s⟩ ≤ −γ d(s)/D` on the polytope, `c = min_{V∩F}⟨η,·⟩`,
+  `γ ≤` every off-face gap `⟨η,v⟩ − c`, `d(s) = β − ⟨u,s⟩ ≤ D` on `V`; proved from any convex representation, no measurable choice),
+  `abs_ratio_sub_ratio_le`, `offFaceMass_zero`, `famZ_eq_faceMass_add` (`Z = A + B₀`), **`offFaceRatio_le`**
+  (`P_η(Aᶜ) ≤ (1/m) ∫_{Aᶜ} e^{−γ d(S)/D} dν`, `m` a lower bound on the tight-vertex fibre mass), **`tendsto_integral_exp_gap`**
+  (dominated convergence: divergent gaps kill the off-face integral), **`abs_integral_family_sub_faceFamily_le`**
+  (`|E_{P_η} f − E_{P_η(·|A)} f| ≤ 2‖f‖_∞ P_η(Aᶜ)`, with `P_η(·|A) = ν_F.tilted` through `familyMeasure_faceMeasure_eq`),
+  **`tendsto_meanMap_of_faceMean_of_vertexGaps`** (THE REVERSE VERTEX-GAP CRITERION: face-conditional means `→ M` and all
+  off-face gaps `⟨η_n, v − v₀⟩ → +∞` ⇒ `meanMap ν (η_n) → M`, for every target on the face).

@@ -501,6 +501,7 @@ import Laplace.Multi.RayVarianceSandwich
 import Laplace.Multi.ShellMassClassification
 import Laplace.Multi.RayFisherLengthClassification
 import Laplace.Multi.ResponseDefect
+import Laplace.Multi.VertexGapExtinction
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
