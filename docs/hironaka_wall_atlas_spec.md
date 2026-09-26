@@ -4270,3 +4270,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `tilted_eq_withDensity_tiltDens` (rfl), **`tiltDens_sub_le`** (`|p_t − 1 − t(f − Ef)| ≤ 9B²t²` for
   `|t| ≤ 1/(4(B+1))`: `Real.abs_exp_sub_one_sub_id_le`, `Z ≥ 1/2`, explicit numerator algebra),
   `toReal_klDiv_withDensity_ofReal_ae` (`KL(rν‖ν) = ∫ klFun r` under a.e. bounds).
+- `LiftQuadratic.lean` (NOT mirrored; round-51 item 3, COMPLETE): `tiltErr`, `integral_condExp_mul_self`
+  (`∫ g h = ∫ g²` for `g = E[h|σ(S)]`, via `condExp_stronglyMeasurable_mul_of_bound` + `integral_condExp`),
+  **`condExp_tiltDens_ae_eq`** (`E[p_t|σ(S)] = 1 + t E[h|σ(S)] + E[e_t|σ(S)]`), `tiltDens_mem_Icc`
+  (`1/2 ≤ p_t ≤ 2` for `|t| ≤ 1/(8(B+1))`), **`tendsto_klDiv_statisticLift_tilt_div_sq`** (`KL(ν_t↑‖ν)/t² → (∫ g²)/2`,
+  from `statisticLift_eq_withDensity_condExp`, `toReal_klDiv_withDensity_ofReal_ae`, `condExp_mono` bounds and the
+  entropy-Taylor engine), **`tendsto_klDiv_tilt_statisticLift_div_sq`** (fibre: `KL(ν_t‖ν_t↑)/t² → (∫ (h−g)²)/2`),
+  **`tendsto_klDiv_map_tilt_div_sq`** (marginal: `KL(S_*ν_t‖S_*Π(M_t))/t² → (∫ g² − ⟨a,u⟩)/2`). With
+  `TiltQuadratic`/`TiltRateQuadratic`/`ResidualQuadratic` this is the full quadratic shadow of `KL = 𝓘 + R + L`.

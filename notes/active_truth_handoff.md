@@ -425,3 +425,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `linear_combination k * mul_inv_cancel₀ h` instead; `integral_congr_ae` goals are beta-redexes (`beta_reduce`).
 - NEXT: item 3 (needs `‖p_t − 1 − th‖_∞ = O(t²)` and the entropy-Taylor lemma), item 6 (cheap: instances of
   `TargetPythagoras` and `klDiv_statisticLift_tower`), item 5, item 4.
+- Round-51 item 3 COMPLETE (`EntropyTaylor`, `LiftDensity`, `LiftQuadratic`): all four quadratic limits
+  (`‖h‖²`, `‖B₀h‖²`, fibre `∫(h−g)²`, marginal `∫g² − ⟨a,u⟩`, `g = E_ν[h|σ(S)]`). Gotchas: `Bdd` is an `And`, so
+  `Bdd.sub h₁ h₂`, not `h₁.sub h₂`; `Π` is reserved even inside hypothesis names (`hΠne`); `0 ≤ᵐ f` goals show
+  `0 x` (add `Pi.zero_apply`); `ae_eq_condLExp hm ν X hY hXY` takes `hm` explicitly; state `hsplit` with the
+  `tiltResponse` spelling by type ascription (defeq) before `rw`. NEXT: round-51 items 6 (towers), 5 (conditional
+  variational), 4 (`L¹` derivative); L² identification of `∫ g²` with `‖condExpL2 h‖²` (`MemLp.condExpL2_ae_eq_condExp`).
