@@ -1119,3 +1119,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `(s − 0)`; `Real.sqrt_div (hx : 0 ≤ x) y`, `Real.sqrt_mul (hx) y`, `pow_le_pow_left₀`. Round 66: ranks 3, 1-pre DONE. NEXT:
   rank 1 flagship (analyticity of `P : Ω → L¹`; grep Mathlib `HasFPowerSeriesAt`/`AnalyticAt` inverse-function API first), rank 2
   face completion (finite `X`), rank 4 CLT.
+- Round-67 consult landed (`research_round67_{q,v1}`). Route for the ANALYTIC ATLAS: (1) analytic tilt via the Banach algebra
+  `A = C(K, ℝ)`, `K = closedBall (0 : J → ℝ) R` (compact): `featureCLM : (J → ℝ) →L A`, `h ↦ (z ↦ −⟨h,z⟩)`; `T_g : A →L L¹`,
+  `u ↦ [g (u ∘ S₀)]` with `S₀ : X → K`; `weightL1 θ = T_g (NormedSpace.exp (featureCLM θ))` (evaluate `exp` through the
+  evaluation ring hom, `NormedSpace.map_exp`, `Real.exp_eq_exp_ℝ`); analyticity by `ContinuousLinearMap.analyticAt`,
+  `NormedSpace.exp_analytic`, `AnalyticAt.comp`; scalar `famNum` by `L1.integralCLM`; (2) grade-ω inversion by
+  `ContDiffAt.to_localInverse` at each point + identification with `chartVInv` through injectivity of `chartV` (eventual
+  equality), NOT the successor bootstrap; state results as `AnalyticOnNhd` on OPEN subsets of `𝕍` (`m₀ + 𝕍` coordinates);
+  (3) `M ↦ [q_M]` analytic on interior displacements, `s ↦ p(s)` analytic on `atlasDomain`, bounded-observable responses
+  analytic. Quantitative: natural-parameter theorem at `Q_a` with `|S − M_a| ≤ L`: `q_{a+h} = q_a e^{−⟨h,T⟩}/E e^{−⟨h,T⟩}`,
+  coefficients majorised by `e^{Lt}/(2 − e^{Lt})`, radius `ρ = log(3/2)/L`, `Σ‖A_n‖ρ^n ≤ 3`, remainder `3 (t/ρ)^{N+1}`. Re-ranking:
+  1 qualitative analytic atlas; 2 finite-`X` face completion (KL-projection `q*(m)` on `conv S(X)`, continuous moment-preserving
+  retraction `R(p) = q*(E_p S)` of the simplex, strong deformation retraction `H_t = (1−t)p + tR(p)`); 3 explicit estimates;
+  4 moving-projection tower `B_{k+1} = N_s(∂_s B_k + ℓ_s B_k)`; 5 reconstruction CLT. NEXT: `AnalyticTilt` module.
