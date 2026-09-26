@@ -356,6 +356,7 @@ import Laplace.Multi.ProjectionPythagoras
 import Laplace.Multi.VisibleBudget
 import Laplace.Multi.InformationBudget
 import Laplace.Multi.TiltDensityBounds
+import Laplace.Multi.InverseStability
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

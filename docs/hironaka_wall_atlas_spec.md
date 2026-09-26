@@ -4003,3 +4003,14 @@ certificates for concrete resolved charts beyond the identity chart.
   via `le_div_iff₀`; the measurability of `e^{−⟨θ,S⟩}/Z` needs `(bdd_dirLoss hS θ).1` named for `fun_prop`),
   **`lawCov_familyMeasure_ge`** (`Var_{P_θ} g ≥ e^{−2Br} Var_ν g`; variance = second moment about its own mean, then
   `lawCov_self_le_integral_sq`). NEXT: coercivity constant `λ₀` on the unit sphere of `𝕍`, segment integration, `κ_r = e^{−2Br}λ₀`.
+- `InverseStability.lean` (NOT mirrored; round-46 item 3): `dotJ_segment_eq`/`dotJ_segment_le` (the `dotJ`-ball is convex),
+  `dotJ_smul_smul`, `sq_dotJ_le` (Cauchy–Schwarz squared), `lawCov_dirLoss_eq_neg_dotJ_chartDeriv`, `continuous_lawCov_dirLoss`
+  (quadratic form through `chartDeriv 0`; `continuous_finsetSum`), `lawCov_dirLoss_smul`, **`exists_coercive_variance`**
+  (`∃ λ₀ > 0, λ₀⟨u,u⟩ ≤ Var_ν⟨u,S⟩` on `𝕍`: minimise the ratio over `Metric.sphere 0 1` with `isCompact_sphere`,
+  `IsCompact.exists_isMinOn`, `isMinOn_iff`, `NormedSpace.sphere_nonempty`; the `𝕍 = 0` case separately with `dirLoss_zero`;
+  scale by `‖u‖⁻¹`, `dotJ_smul_smul` + `field_simp`), **`variance_familyMeasure_ge_coercive`** (`Var_{P_θ}⟨u,S⟩ ≥ e^{−2Br}λ₀⟨u,u⟩`),
+  `hasDerivAt_dotJ_meanMap_segment` (`hasDerivAt_id' (x := t)` for the affine line; `hasStrictFDerivAt_meanMap` needs `hπ : 0 ≤ π`),
+  **`dotJ_sub_meanMap_ge`** (strong monotonicity `κ_r⟨θ−η,θ−η⟩ ≤ ⟨θ−η, m(η)−m(θ)⟩`; FTC with `(f := …) (f' := …)`; `IsLinearMap.map_sub`
+  must be given its two arguments or it expands the wrong difference; `omit [Nonempty J] hlam0 in`),
+  **`sq_dotJ_sub_le_dotJ_meanMap_sub`** (`κ_r²⟨θ−η,θ−η⟩ ≤ ⟨mθ−mη, mθ−mη⟩`, needs `0 ≤ λ₀`). Subtype coercions: write
+  `((θ : J → ℝ) - (η : J → ℝ))`.
