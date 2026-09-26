@@ -644,3 +644,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: dual-flat package (`∇𝓘 = −θ` (have: `hasFDerivAt_genRate_response_at`), `D²𝓘 = G` = Fisher metric,
   `DG[z](u,w) = −C(u,w,z)` cubic tensor), §7 structure-theorem packaging, `L¹` density Peano, compact-uniform
   remainders, round-56 consult.
+- `DualFlat` landed: `∇𝓘 = −θ`, `D²𝓘 = G` (Fisher form), `DG = −C` (cubic score tensor, totally symmetric),
+  `B_M` = L²(Q)-orthogonal projection onto tangent scores, Bregman canonical divergence — packaged as
+  `dual_flat_structure`. Gotchas: `cubicForm` exists in `Patterning/GaussianFourth` (→ `cubicScore`); the
+  identification `dotJ (R⟨c⟩) w = −C` goes through `fisherForm_eq_neg_dotJ` at `⟨respCov(ℓ_vℓ_u), _⟩` and
+  `integral_regProj_mul_responseScore` (regProj unfolds to `responseScore ⟨respCov f, _⟩` with the SAME
+  membership proof term), closed by `linarith`; `.neg` on `HasFDerivAt` gives a Pi-negated function
+  (`Pi.neg_apply` in the congr simp set); `fun M' hM' ↦ lemma … hM'` trips the unused-variable linter on `M'`.
+  NEXT: §7 structure-theorem packaging (global chart ∧ differential duality ∧ normal geometry ∧ accounting ∧
+  boundary blow-up), `L¹` density Peano, compact-uniform remainders, round-56 consult.

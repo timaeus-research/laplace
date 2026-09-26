@@ -4488,3 +4488,10 @@ certificates for concrete resolved charts beyond the identity chart.
   at `0` with derivative the response Hessian `B u w = E_Q[φ N_M(ℓ_u ℓ_w)]`, assembled on a basis and identified by
   uniqueness of derivatives), **`response_peano`**
   (`E_{Π(M+z)}φ = E_Qφ + E_Q[φ ℓ_{M,z}] + ½ E_Q[φ N_M(ℓ_{M,z}²)] + o(‖z‖²)`).
+- `DualFlat.lean` (NOT mirrored; round-55 rank 4 — the dual-flat package): **`fisherForm`** (`G_M(u,w) =
+  E_Q[ℓ_u ℓ_w]`), `fisherForm_comm`, **`cubicScore`** (`C_M(u,v,w) = E_Q[ℓ_u ℓ_v ℓ_w]`, name `cubicForm` taken by
+  Patterning/GaussianFourth), `cubicScore_symm`, `fisherForm_eq_neg_dotJ`, **`hasFDerivAt_genRate_response`**
+  (`∇𝓘(M) = −θ(M)`), **`hasFDerivAt_neg_dotJ_responseTheta`** (`D²𝓘 = G`), `integral_normalProj_mul_responseScore`
+  (`N_M f ⊥ ℓ_w` in `L²(Q)`), `integral_regProj_mul_responseScore` (`B_M` is the `L²(Q)`-orthogonal projection onto
+  tangent scores), **`hasFDerivAt_fisherForm_response`** (`DG_M[v](u,w) = −C_M(u,v,w)`), **`dual_flat_structure`**
+  (potential + Hessian = Fisher + derivative of Fisher = −cubic + symmetry + Bregman canonical divergence).
