@@ -5005,3 +5005,9 @@ certificates for concrete resolved charts beyond the identity chart.
   entropy, via `x log x` bounded on `[0, C]`), `mem_convexHull_iff_exists_vertexWeights` (finset hull = simplex combinations),
   **`genRate_ne_top_of_mem_convexHull_vertices`**, **`genRate_ne_top_of_mem_momentBody_polytope`** (EVERY point of a charged
   polytope has finite rate: the response projection exists on the whole closed moment body).
+- `PolyhedralVertexSection.lean` (NOT mirrored; polyhedral completion module 2 of 5): `vertexStat V j v = v j` (tautological
+  features on the vertex set), `statPoint_vertexStat`, `range_statPoint_vertexStat` (`= V`), `bdd_vertexStat`, `vertexUniform`
+  (uniform law on `V`, an instance `IsProbabilityMeasure`), `vertexUniform_singleton_pos`, **`vertexSection V M`** (the finite
+  completion `qStarVec` on the vertex simplex: a canonical choice of barycentric coordinates), `genRate_vertexStat_ne_top`,
+  `vertexSection_mem_stdSimplex`, **`sum_vertexSection_smul`** (`Σ_v a_v(M) v = M` on `conv V`),
+  **`continuousOn_vertexSection`** (continuous on the polytope), `vertexSection_nonneg`, `vertexSection_le_one`.

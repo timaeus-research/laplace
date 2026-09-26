@@ -1291,3 +1291,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `integrable_withDensity_iff_integrable_smul₀'` first `change Integrable _ (ν.withDensity fun x ↦ …)`; finite KL of a bounded
   density: `isCompact_Icc.exists_bound_of_continuousOn Real.continuous_mul_log.continuousOn` + `integrable_of_bdd_prob` +
   `.congr` along `llr =ᵐ log h`. NEXT: module 2 `PolyhedralVertexSection`.
+- `PolyhedralVertexSection` landed (module 2). Gotchas: the finite completion is reused on `X' := ↥V` with the subtype
+  measurable space; `MeasurableSingletonClass ↥V` needs countable `J`, so `bdd_vertexStat`, the `IsProbabilityMeasure`
+  instance and `vertexUniform_singleton_pos` are stated with `omit [Fintype J] [Nonempty J] in … [Finite J] … := by cases
+  nonempty_fintype J; …`; `rw [← vecMoment_qStarVec …]` rewrites the `M` inside `vertexSection V M` too — use
+  `refine Eq.trans ?_ (vecMoment_qStarVec …)` then `rw [vecMoment_eq_sum_smul]; rfl`. NEXT: module 3
+  `ProjectionDensityBounds` (explicit bounded representative `f = 1_A e^{−⟨θ,S⟩}/(Z ν(A))` of `dq_M/dν` from
+  `responseProjection_eq_of_exposedChain` + `faceMeasure_eq_withDensity` + `withDensity_mul` as in
+  `responseProjection_eq_withDensity_comp`; domination `δ·h_a ≤ f` a.e. for any feasible bounded-density `r = vertexLaw a`
+  via Pythagoras ⇒ `r ≪ q_M` ⇒ `r(Aᶜ) = 0`).
