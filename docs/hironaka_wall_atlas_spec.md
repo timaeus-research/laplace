@@ -4354,3 +4354,12 @@ certificates for concrete resolved charts beyond the identity chart.
   **`condDV_le`** (conditional Donsker–Varadhan inequality), **`condDV_attained`** (`E_ν[e^{log d − log a}|σ(S)] = 1`
   a.e. by the pull-out property, and `E_D(log d − log a) = KL(D‖aν)` since `T_{g₀} = D`),
   **`fibre_isGreatest_condDV`** (`L = max_g {E_D g − E_D log E_ν[e^g|σ(S)]}` over bounded tests, `IsGreatest`).
+- `AtlasSkewness.lean` (NOT mirrored; round-52 item 10 / round-53 rank 1): `abs_thirdCentral_self_le` (`|T(f,f,f)| ≤ 8B³`),
+  `neg_thirdCentral_self_eq` (`−T(f,f,f) = ∫ (Ef − f)³`), **`atlasCurv_sub_eq`** (exact increment
+  `κ(t) − κ(s) = Cov_{Q_s}(f_t,f_s) − Cov_{Q_t}(f_t,f_s)`, from `lawCov_dirLoss_atlasVel`), **`hasDerivAt_atlasCurv_of`**
+  (frozen-argument covariance derivative + bilinear remainder `o(t−s)` via `IsLittleO.mul_isBigO`/`IsLittleO.sum`),
+  **`hasDerivAt_atlasCurv`** (`κ'(s) = T_{Q_s}(f_s,f_s,f_s)` on `[0,1)`), the primed lemmas `atlas_mem_intrinsicInterior'`,
+  `hasDerivAt_atlasTheta'`, `hasDerivAt_atlasTheta_coe'`, `continuousAt_atlasVel'`, `hasDerivAt_atlasCurv'` (on `[0,1]`
+  for interior targets), `exists_bound_atlasVel`, `intervalIntegrable_deriv_atlasCurv` (via `measurable_deriv` + bound),
+  **`toReal_klDiv_responseProjection_sub_symm_eq_skew`**
+  (`KL(Π(M)‖ν) − KL(ν‖Π(M)) = ∫₀¹ s(1−s) E_{Q_s} ℓ_s³ ds`, `ℓ_s = E f_s − f_s`, by `integral_mul_deriv_eq_deriv_mul`).

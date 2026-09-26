@@ -489,3 +489,18 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Pi.mul_apply`); `Real.exp_le_one_iff`, `Real.one_le_exp`, `inv_anti₀` for the clamp bounds.
   Round 52 landed: 1, 2, 3, 4, 5, 8, 9, 12. Remaining: 6 (observable-defect second order), 7 (mixed Hessian),
   10 (skewness). NEXT: round-53 consult (re-rank; ask for the next depth targets beyond 6/7/10).
+- Round-53 consult (`gpt_responses/research_round53_{q,v1}.md`): ranking 1 skewness (`κ' = T(f,f,f)`, asymmetry =
+  accumulated skewness), 2 mixed Hessian `D²q_M[u,z] = q_M(I − P₀ − B_M)(ℓ_u ℓ_z)` (P₀ = constant projection, NOT
+  conditional expectation) with the observable-defect second order as a corollary, 3 global response-chart theorem
+  (diffeomorphism modulo gauge; section + unique fibrewise minimiser; boundary), 4 unbounded densities for the bridge
+  curvature split, 5 conditional variational formula for general densities (sup, not max), 6 four-path comparison
+  package (e-path `e^{s log d}ν/Z` in the full simplex), 7 further curvature tensors.
+- `AtlasSkewness` landed (rank 1): `κ'(s) = T_{Q_s}(f_s,f_s,f_s)` via the exact increment
+  `κ(t) − κ(s) = Cov_{Q_s}(f_t,f_s) − Cov_{Q_t}(f_t,f_s)` (no inverse-covariance differentiation), and
+  `KL(Π‖ν) − KL(ν‖Π) = ∫₀¹ s(1−s) E ℓ³`. Gotchas: `isLittleO_one_iff` takes the codomain `F` explicitly
+  (`(isLittleO_one_iff ℝ).2`); `IsLittleO.sum` gives the Pi-sum (`congr_left` with `Finset.sum_apply`); a `have hP :=
+  isProbabilityMeasure_familyMeasure …` without an expected type leaves `L₀` a metavariable (`by simp` fails with
+  `?m = 0`) — ascribe the type; IBP on `[0,1]` needs `IntervalIntegrable (deriv κ)`: get it from `measurable_deriv` +
+  a pointwise bound rather than continuity of the third moment.
+  NEXT (round 53): rank 2 mixed Hessian (natural chart first: `D²p_θ[η,ζ] = p_θ(ℓ_η ℓ_ζ − Cov(ℓ_η,ℓ_ζ) − ⟨…⟩)`, then
+  response coordinates), rank 3 global chart, rank 4 unbounded bridge split, rank 6 four-path package.
