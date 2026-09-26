@@ -3964,3 +3964,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `(y−1)²`; pass a NAMED `Measurable` fact, the inline `(by fun_prop : …).aestronglyMeasurable` misparses), `Filter.EventuallyLE`
   must be unfolded before `ae_restrict_iff'`, Tonelli `lintegral_lintegral_swap (f := fun x s ↦ …)`, `setLIntegral_congr_fun`,
   `lintegral_const_mul` with a named measurable integrand, `ENNReal.ofReal_mul`).
+- `PinskerObservable.lean` (NOT mirrored; round-45 item 5, observable form): **`pinsker_observable`** (`(E_μF − E_ηF)²/(2L²) ≤ KL(μ‖η)`
+  for `|F − c| ≤ L`: Donsker–Varadhan at `g = t F`, `t = d/L²`, Hoeffding with centre `t c` and radius `|t| L`; the final
+  algebra via named identities `e1/e2/e3` and `linarith`), **`sq_integral_responseProjection_segment_le`**,
+  **`tendsto_integral_responseProjection_segment`** (every bounded posterior expectation converges at the endpoint of the bridge).
+  Round-45 item 5 fully closed.
