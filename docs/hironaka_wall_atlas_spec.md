@@ -5190,3 +5190,10 @@ certificates for concrete resolved charts beyond the identity chart.
   (`Σ √a_k ≤ 2e ∫_{1/R}^∞ √C₂`), **`lintegral_sqrt_secondMomentE_lt_top_iff`** (THE SHELL-MASS CLASSIFICATION:
   `∫ √C₂ < ∞ ↔ Σ_k √a_k < ∞`; with the variance sandwich this is "the natural ray has finite Fisher length iff the dyadic shell
   masses of the boundary layer have summable square roots").
+- `RayFisherLengthClassification.lean` (NOT mirrored; round-74 rank 3, closing): `faceFibre_compl_ae_eq_slackPos`,
+  `secondMomentE_eq_ofReal_slackMoment`, `ofReal_sqrt_slackMoment_eq`, `lintegral_sqrt_raySpeedSq_le` (`∫₀^∞ √Var ≤ (1/√A) ∫ √C₂`),
+  `le_lintegral_sqrt_raySpeedSq` (`(√A/(A+B₀)) ∫ √C₂ ≤ ∫ √Var`), `sqrt_raySpeedSq_le` (Fisher speed ≤ the statistic bound),
+  `lintegral_sqrt_raySpeedSq_Ioi_lt_top_iff` (tail and whole ray have the same finiteness),
+  **`lintegral_sqrt_raySpeedSq_lt_top_iff`** (THE EXACT CLASSIFICATION OF FISHER ACCESSIBILITY ALONG A NATURAL RAY:
+  `∫^∞ √Var_{p_t}⟨u,S⟩ dt < ∞ ↔ Σ_k √a_k < ∞`, `a_k` the dyadic shell masses of the boundary layer; topological completion
+  (always) vs Fisher completion (iff): for `H(r) ∼ c(log 1/r)^{−β}`, `a_k ≍ k^{−β−1}`, threshold `β > 1`).

@@ -1519,3 +1519,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `shell`/`measurableSet_shell` already exist in `RecessionObstruction` (hence `dyadicShell`). NEXT: link `secondMomentE` to
   `slackMoment 2`/`raySpeedSq` (a.e.-equal sets `{⟨u,S⟩ = β}ᶜ` vs `{0 < β − ⟨u,S⟩}` under `hβ`) to state the classification on
   the seabed's natural rays; then rank 2 (vertex-gap criterion) and rank 4 (response potential).
+- `RayFisherLengthClassification` landed (round-74 rank 3 CLOSED on the seabed's rays). Gotchas: `Filter.eventuallyEq_set` as
+  a `rw` fails on `=ᵐ[ν]` of sets (elaboration as `Set` vs `X → Prop`) — use `refine Filter.eventuallyEq_set.2 ?_`; after
+  `Measure.restrict_congr_set` + `ofReal_integral_eq_lintegral_ofReal` the goal is closed by `rfl` (beta-redexes of the slack
+  lambda); `lintegral_const_mul' _ _ ENNReal.ofReal_ne_top` pulls an `ofReal` constant out; `lintegral_union measurableSet_Ioi
+  Ioc_disjoint_Ioi_same` + `Ioc_union_Ioi_eq_Ioi` splits a tail; `ENNReal.add_lt_top`. NEXT: rank 2 (vertex-gap convergence
+  criterion in face-adapted natural coordinates: `meanMap η_n → M ∈ ri F ↔ τ_n → η_F(M) ∧ ⟨ζ_n, v₀ − v⟩ → +∞ ∀ v ∉ F`), rank 4
+  (response potential `I(M) = D(q_M‖ν)`, `∇I = η`, `D²I = C⁻¹`), or a round-75 consult.
