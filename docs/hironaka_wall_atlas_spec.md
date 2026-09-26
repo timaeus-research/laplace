@@ -4720,3 +4720,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `integral_influence` (centred), **`lawCov_influence_self`** (`Var_Q ψ_F = g_M(c_F, c_F)`),
   `linForm_statPoint_sub_eq_influence`, `ae_statPoint_sub_mem_dirSpan`, **`plugIn_covariance_tendsto_influence`**
   (`n Cov(Ĝ_F, Ĝ_G) → E_D[ψ_F ψ_G]`).
+- `SecondOrderTransport.lean` (NOT mirrored; round-62 rank 4): `abs_thirdCentral_le` (`|T(g,k,f)| ≤ 8 B_g B_k B_f`),
+  `atlasInc`, `atlasLin` (`−Cov_{Q_s}(F, ⟨v_s, S⟩)` = the first-order transport), `atlasLin_eq_linForm`, `atlasBeta`
+  (the canonical regression coefficient `−R_{M_s} Cov_{Q_s}(S,F)`), `atlasBeta_regression`, `atlasQuad`
+  (`thirdCentral` second derivative), `hasDerivAt_atlasLin`, **`atlasQuad_eq_biasForm`** (the seabed's third-central
+  second derivative IS the bias form `b_{F,M_s}(δ,δ) = E_{Q_s}[N F ℓ_δ²]`), `exists_bound_atlasQuad`,
+  **`integral_response_atlas_taylor`** (Taylor with integral remainder, via `measurable_deriv` + a uniform bound),
+  **`obsResponse_atlas_eq_second_order`** (`G_F(M_t) = G_F(m₀) + t lin_{F,m₀}(δ) + ∫₀ᵗ (t−r) b_{F,M_r}(δ,δ) dr`),
+  **`hasDerivAt_deriv_obsResponse_atlas`** (`(G_F ∘ M)''(s) = b_{F,M_s}(δ,δ)` on `(0,1)`).

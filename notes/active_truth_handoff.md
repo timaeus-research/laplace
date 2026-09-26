@@ -863,3 +863,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   second-order formula `G_F(M_t) = G_F(m₀) + t lin_{F,m₀}(δ) + ∫₀ᵗ (t−r) b_{F,M_r}(δ,δ) dr`; seabed has
   `hasDerivAt_deriv_integral_familyMeasure_atlas` with a `thirdCentral` second derivative and `atlasHess_eq_normalProj`),
   then rank 3 (natural-gradient atlas), then the `C²` flagship.
+- `SecondOrderTransport` landed (rank 4). Gotchas: a `local notation` whose body is an anonymous constructor fails
+  ("no quot_precheck") — use a `def` (`atlasInc`); `atlasTheta s` and `θr (atlasPath s)` are defeq but not syntactic —
+  state intermediate integrals in whichever form the goal has after `unfold`, and pass instances by a typed `have`
+  (`IsProbabilityMeasure (Pfam (atlasTheta s)) := isProbabilityMeasure_family_responseTheta …`); interval integrability
+  of a second derivative without proving its continuity: `measurable_deriv` + `Measure.integrableOn_of_bounded` on
+  `Ioc` + `HasDerivAt.deriv` on the interval; `ae_restrict_iff' measurableSet_Ioc`. NEXT: round-62 rank 3 (the atlas is
+  the natural-gradient flow of `KL(Q_{M*}‖Q_M)`: `grad_g L = M − M*`, explicit flow with `s = 1 − e^{−τ}`, dissipation),
+  then the `L²` invisible expansion, then the `C²` flagship.
