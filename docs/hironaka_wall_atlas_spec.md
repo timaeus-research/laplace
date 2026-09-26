@@ -4062,3 +4062,16 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL(Q‖P_{η−ta}) = ofReal(−log p_t)` via `klDiv_eq_klDiv_faceMeasure_add` + `klDiv_self`),
   `tendsto_klDiv_familyMeasure_fixedNormal`. `isProbabilityMeasure_familyMeasure` takes `(t := 1)` named and then the
   parameter, no `ht`; name `(π := …) (L₀ := …)` or the `by simp` for `hL₀` sees a metavariable.
+- `EndpointTail.lean` (NOT mirrored; round-47 item 4): `atlasPath_eq_sub` (`M_s = M − (1−s)Δ`, `module`),
+  **`toReal_klDiv_responseProjection_atlas`** (exact: `KL(Π(M)‖Π(M_s)) = 𝓘(M) − 𝓘(M_s) − (1−s)(−⟨θ_s,Δ⟩)` for every
+  finite-rate `M`, `0 ≤ s < 1`; the certificate `klDiv_responseProjection_segment_le` is this identity minus a nonneg term;
+  `klDiv_tilted_right_eq` + `genRate_atlasPath_toReal_eq` + `gap_ge_atlasVelocity` for the `toReal_ofReal` side goal;
+  `change` turns `responseTheta … (atlasPath …)` into `atlasTheta`), `intervalIntegrable_atlasCurv_weighted_tail`
+  (`intervalIntegrable_iff_integrableOn_Ioc_of_le`, `integrableOn_Ioc_iff_integrableOn_Ioo`),
+  **`toReal_klDiv_responseProjection_atlas_eq_integral`** (`KL(Π(M)‖Π(M_s)) = ∫_s^1 (1−u) κ(u) du`;
+  `integral_add_adjacent_intervals`, `intervalIntegral.integral_congr` with `change` for the integrand identity),
+  **`atlasCurv_le_of_dotJ_le`** (`κ(u) ≤ ‖Δ‖²/κ_r` on the ball: `variance_familyMeasure_ge_coercive` — which does NOT take
+  `hlam0` — plus `sq_dotJ_le`, `le_of_mul_le_mul_left`), **`toReal_klDiv_responseProjection_atlas_le`**
+  (`KL ≤ ‖Δ‖²(1−s)²/(2κ_r)` when `θ_u` stays in the ball on `Ico s 1`; `intervalIntegral.integral_mono_on`,
+  `intervalIntegral.integral_const`, root `integral_id`). Under `open intervalIntegral`, `integral_const_mul` and
+  `integral_const` are ambiguous: qualify them.
