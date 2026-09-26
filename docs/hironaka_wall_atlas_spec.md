@@ -4618,3 +4618,8 @@ certificates for concrete resolved charts beyond the identity chart.
   (`N(ℓ²) − (ℓ² − Eℓ²) = −B(ℓ²)`), **`integral_responseScore_mul_normalProj_sub`** (pairing with the velocity = `−E_Qℓ³`),
   `dual_curve_comparison` (package). Both curves have velocity `Qℓ_u`; their second-order coefficients differ by the
   regression part of the squared score (a third-cumulant vector), whose pairing with the velocity is minus the skewness.
+- `EntropyGapTotalVariation.lean` (NOT mirrored): `integral_responseProjection_eq_rnDeriv`, **`sq_integral_abs_rnDeriv_sub_le`**
+  (the entropy-gap inequality in TOTAL VARIATION: `(∫|r_A − r_B|dν)² ≤ (2/(ab))[a𝓘(A) + b𝓘(B) − 𝓘(aA+bB)]` on the whole
+  finite-rate domain, densities as Radon–Nikodym derivatives), `tendsto_entropy_gap_zero`,
+  **`tendsto_integral_abs_rnDeriv_sub_of_tendsto_genRate`** (TV continuity of `M ↦ Π(M)` on the finite-rate domain for the
+  topology of `(M, 𝓘(M))`).

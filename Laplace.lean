@@ -429,6 +429,7 @@ import Laplace.Multi.EntropyGapStability
 import Laplace.Multi.SegmentStability
 import Laplace.Multi.ObservableTaylorUniform
 import Laplace.Multi.DualCurveComparison
+import Laplace.Multi.EntropyGapTotalVariation
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

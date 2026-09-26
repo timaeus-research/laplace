@@ -761,3 +761,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   norm_smul]` then `abs_of_nonneg (sq_nonneg (|t| * ‖u‖))`, `abs_of_nonneg (sq_nonneg t)`, `mul_pow, sq_abs`.
   Round-58 remaining: all-orders/moment-normality (large; smooth IFT `ContDiffAt.to_localInverse` exists, no Banach
   analytic IFT, no CLT in Mathlib → delta method out of reach). NEXT: round-59 consult.
+- `EntropyGapTotalVariation` landed: TV form of the entropy gap and TV continuity on the finite-rate domain. Gotchas:
+  `responseProjection_absolutelyContinuous hS ν hfin` already exists (StraightPathAtlas); rnDeriv lemmas need the
+  `IsProbabilityMeasure (responseProjection …)` instance in scope (`have hP := (responseProjection_spec …).1`);
+  `integral_rnDeriv_smul` is in namespace `MeasureTheory` (not `Measure`). Round-59 consult landed
+  (`research_round59_v1`) — NEXT per its ranking.
