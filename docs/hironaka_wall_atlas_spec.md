@@ -5028,3 +5028,15 @@ certificates for concrete resolved charts beyond the identity chart.
   the polytope: recovery gives upper semicontinuity, `lowerSemicontinuous_genRate` the rest, via `tendsto_order`),
   **`continuousOn_genRate_polytope`**, **`continuousOn_genRate_momentBody`** (THE RATE IS CONTINUOUS ON THE WHOLE CLOSED MOMENT
   BODY of a charged polytope, general `X`).
+- `PolyhedralCompletion.lean` (NOT mirrored; polyhedral completion module 5 of 5 — THE GENERAL-`X` COMPLETION): Pinsker in `L¹`
+  form `measureReal_withDensity_ofReal`, **`ofReal_sq_integral_abs_sub_le_klDiv`** (`(∫|p−q|)²/2 ≤ KL(pν‖qν)`),
+  **`integral_abs_sub_le_sqrt_klDiv`**; the projection in `L¹(ν)`: instance `isFiniteMeasure_responseProjection`, `projDens`
+  (`= (dq_M/dν).toReal`), `measurable_projDens`, `projDens_nonneg`, `integrable_projDens`, **`projL1`** (`[dq_M/dν] ∈ L¹(ν)` for
+  EVERY `M`), `responseProjection_eq_withDensity_projDens`, `isProbabilityMeasure_withDensity_projDens`, `projDens_ae_eq`,
+  `integral_stat_mul_projDens`, `norm_projL1_sub` (`= ∫|p_M − p_{M'}|`); **`tendsto_projL1_of_tendsto`** (Pythagoras at the
+  moving mean `KL(g_n ν‖q_{M_n}) = KL(g_n ν‖ν) − 𝓘(M_n) → 0` + Pinsker + uniform recovery ⇒ `‖q_{M_n} − q_M‖₁ → 0`),
+  **`continuousOn_projL1_polytope`**, **`continuousOn_projL1_momentBody`** (`M ↦ [dq_M/dν]` IS CONTINUOUS IN `L¹` ON THE WHOLE
+  CLOSED MOMENT BODY of a charged polytope, general `X`); `meanL1` (the mean map on `L¹`, continuous), `meanL1_projL1`,
+  `completedFamilyL1 = projL1 '' P`, `isCompact_polytope`, **`isCompact_completedFamilyL1`**, `meanL1_mem_of_mem_completedFamilyL1`,
+  `projL1_meanL1_of_mem`, **`completedHomeomorphL1`** (`P ≃ₜ completedFamilyL1` via response map / mean map),
+  **`closure_image_intrinsicInterior`** (the completed family is the closure of the interior exponential family, along atlas rays).

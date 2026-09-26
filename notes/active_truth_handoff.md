@@ -1317,3 +1317,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `klDiv_withDensity_eq_ofReal_of_bdd`; `tendsto_order.2 ⟨lsc, upper⟩` with `hlim.eventually (lowerSemicontinuous_genRate ν S M a
   ha)` and `hKL.eventually_lt_const ha`. NEXT: module 5 `PolyhedralCompletion` (Pinsker ⇒ `L¹` continuity of `M ↦ dq_M/dν`;
   compactness, homeomorphism, closure, mean-preserving strong deformation retraction on all probability densities in `L¹(ν)`).
+- `PolyhedralCompletion` landed: THE GENERAL-`X` POLYHEDRAL COMPLETION IS COMPLETE (five modules; round-70 plan executed
+  verbatim). Gotchas: `responseProjection` carries `[Nonempty X] [Nonempty J]` — never `omit` them on statements mentioning
+  `responseProjection`/`projDens`/`projL1` ("cannot omit referenced section variable"); the `IsFiniteMeasure` instance for
+  the projection at arbitrary `M` is `by_cases hfin` + `rw [responseProjection, dif_neg fun h ↦ hfin h.2]`; `q_M =
+  ν.withDensity (ofReal ∘ projDens)` via `Measure.withDensity_rnDeriv_eq _ _ hac` (conv_lhs) + `withDensity_congr_ae` +
+  `Measure.rnDeriv_ne_top`; `Integrable.toL1_sub` + `L1.norm_of_fun_eq_integral_norm` turn `‖projL1 M − projL1 M'‖` into
+  `∫|p_M − p_M'|`; Pinsker in `L¹` from `pinsker_event` on `A = {q ≤ p}` with `∫|p−q| = 2∫_A (p−q)` (`integral_add_compl₀`
+  twice, `setIntegral_congr_fun`, `abs_of_nonneg`/`abs_of_neg`), `ENNReal.ofReal_le_iff_le_toReal`, `Real.le_sqrt_of_sq_le`;
+  ENNReal difference limits via `ENNReal.Tendsto.sub hKL hrate (Or.inl hfin)` + `tsub_self` + `ENNReal.add_sub_cancel_right`;
+  `V.finite_toSet.isCompact_convexHull (𝕜 := ℝ)`; pointwise goals from `Integrable.coeFn_toL1.mono` are beta-redexes
+  (`beta_reduce` first). NEXT: optional `PolyhedralRetraction` (mean-preserving strong deformation retraction of ALL
+  probability densities in `L¹(ν)` onto `completedFamilyL1`: `R f = projL1 (meanL1 f)`, `H t f = (1−t) f + t R f`; needs
+  `meanL1 f ∈ P` for probability densities — mean of an a.e.-`P`-valued statistic, e.g. via `momentBody` monotonicity under
+  `≪` or `Convex.integral_mem`), then a round-71 consult (rank 3 facewise Fisher geometry / boundary-ray formula; CLT; capstone).
