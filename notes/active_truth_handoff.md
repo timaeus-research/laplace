@@ -682,3 +682,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   uniformly (algebraic identity for `densTrunc` at `Rz + ζ` + bounds on `ℓ_c`, covariances of `⟨ζ,S⟩`), then
   `∀ ε > 0, ∀ᶠ z, ∀ x, |q_{M+z} − q_M − q_Mℓ_z − ½q_MN(ℓ_z²)| ≤ ε‖z‖² q_M` and the TV corollary
   `∫|…| = o(‖z‖²)`.
+- `DensityPeanoAlgebra` + `DensityPeano` landed (round-56 FLAGSHIP): `famDens_response_peano` (pointwise-uniform
+  relative `o(‖z‖²)` remainder of `q_{M+z}` against `q_M(1 + ℓ_z + ½N(ℓ_z²))`) and
+  `isLittleO_integral_famDens_response_peano` (TV Peano `∫|…| = o(‖z‖²)`). Gotchas: `maxHeartbeats` is a
+  per-DECLARATION budget — a 300-line proof dies with a `whnf` timeout at the header and at whatever line the
+  budget ran out (looks like a local unification problem; it is not) → `set_option maxHeartbeats 2400000 in`
+  with the mandatory comment BEFORE the docstring; `∀ z, … θr (M + z) …` infers `z : J → ℝ` from `M + z` —
+  annotate `∀ z : 𝕍` / `fun z : 𝕍 ↦` everywhere; `mul_le_mul` against a goal `… ≤ c ^ 2` whnf's the square to
+  `c * npowRec 1 c` (rewrite `sq` first); `abs_lawCov_le` needs the `IsProbabilityMeasure` instance of
+  `P_{θ(M)}` in scope (`have := isProbabilityMeasure_family_responseTheta hS ν (M := M)`); `rw` closing
+  `(fun z ↦ …) z` redexes needs an explicit `rfl`; `Metric.eventually_nhds_iff` gives `dist z 0 < δ` (strict) —
+  `.le`. ‖ζ z‖ ≤ ‖z‖ needs the threshold `1/(BK₂²‖R‖³+1)`, NOT `‖z‖ ≤ 1/2`.
+  NEXT (round 56): compact-uniform remainders (M in a compact of ri K: uniform `R`, uniform `v = o` via the
+  strict derivative), the triangular boundary endpoint, round-57 consult.

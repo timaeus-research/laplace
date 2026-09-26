@@ -4523,3 +4523,16 @@ certificates for concrete resolved charts beyond the identity chart.
   `densTrunc` (`T_θ(η) = 1 + ⟨η, m − S⟩ + ½(⟨η, m−S⟩² − Var_θ⟨η,S⟩)`), `famZ_add_div`, `integral_dirLoss_mul_famDens`,
   **`abs_famDens_second_remainder_le`** (POINTWISE-UNIFORM second order in natural coordinates:
   `|p_{θ+η} − p_θ T_θ(η)| ≤ 13 (K‖η‖)³ p_θ` for `K‖η‖ ≤ 1/4`).
+- `DensityPeanoAlgebra.lean` (NOT mirrored): `affScoreAt` (`⟨v, m − S(x)⟩`), `covQ` (`Cov_{P_θ}(⟨v,S⟩,⟨w,S⟩)`),
+  linearity/symmetry lemmas, `covQ_self_eq`, **`densTrunc_add`** (the exact splitting of the truncation at
+  `η = v + ζ`), `abs_affScoreAt_le`, `abs_covQ_le`.
+- `DensityPeano.lean` (NOT mirrored; round-56 flagship): **`famDens_response_peano`** — the POINTWISE-UNIFORM
+  Peano expansion of the reconstruction density: `∃ φ = o(‖z‖²), ∀ᶠ z, ∀ x, |q_{M+z}(x) − q_M(x)(1 + ℓ_z(x) +
+  ½N_M(ℓ_z²)(x))| ≤ φ(z) q_M(x)`; **`isLittleO_integral_famDens_response_peano`** — the TOTAL-VARIATION Peano
+  expansion `∫|q_{M+z} − q_M − q_Mℓ_z − ½q_MN_M(ℓ_z²)| dν = o(‖z‖²)` (the score is the first derivative of the
+  reconstructed law and the normalised squared score its second derivative, as signed measures). Route: explicit
+  composition `η = Rz + ζ`, `ζ = −½R c_z + v`, `c_z = Cov_Q(S,ℓ_z²)`, `v = o(‖z‖²)`; `densTrunc_add` splits
+  `T_θ(Rz + ζ)` into the target plus `⟨v,m−S⟩ + ℓ_z⟨ζ,m−S⟩ + ½⟨ζ,m−S⟩² − Cov(Rz,ζ) − ½Cov(ζ,ζ)`, each term
+  bounded by `K₂‖v‖`, `K₂²‖R‖‖z‖‖ζ‖`, `K₃‖R‖‖z‖‖ζ‖`, `½(K₂²+K₃)‖ζ‖²`; the cubic remainder is
+  `13(K(‖R‖+1)‖z‖)³` once `‖ζ z‖ ≤ ‖z‖` (threshold `δ ≤ 1/(BK₂²‖R‖³+1)`) and `K‖η‖ ≤ 1/4` (threshold
+  `δ ≤ 1/(4K(‖R‖+1)+1)`).
