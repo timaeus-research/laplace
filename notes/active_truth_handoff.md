@@ -1073,3 +1073,7 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (cast 2)`; `variable {γ : ℝ → 𝕍}` lines must spell `dirSpan ν (fun _ ↦ 1) S`. Round 65: ranks 1, 2, 4 DONE. NEXT: `C^∞`
   upgrade of `NormalForm` (assembly), then round-66 consult (analyticity via contraction + majorant; boundary completion for finite
   `X`; reconstruction CLT; explicit `p'''(0)`).
+- `SmoothNormalForm` landed (assembly; no new gotchas — `ContDiffOn.comp` with a `MapsTo` from the set membership, `prodMk`,
+  `contDiffOn_fst/snd`, and `rfl` unfoldings of `normalForm`/`normalFormInv`). Round 65: ranks 1, 2, 4 fully DONE. NEXT: round-66
+  consult — remaining candidates: analyticity of the response chart (contraction + majorant), boundary completion for finite `X`,
+  reconstruction CLT (delta method; Mathlib CLT status?), explicit `p'''(0)` / cumulant recursion, and anything deeper.

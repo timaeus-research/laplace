@@ -4870,3 +4870,7 @@ certificates for concrete resolved charts beyond the identity chart.
   (second-order transport along any `C²` interior path: `d²/dt²[q_{M_t}] = [q N(ℓ_{Ṁ}²)] + [q ℓ_{M̈}]`),
   **`momentL1_deriv_deriv_reconstructionL1_path`** (`∫ S d²/dt²[q_{M_t}] = M̈`: the bending is invisible, the response
   acceleration is visible).
+- `SmoothNormalForm.lean` (NOT mirrored; round-65 rank 1, the `C^∞` upgrade): `eq_add_dirProjL_sub_of_mem`,
+  `dirProjL_sub_mem_addDomain`, **`contDiffOn_reconstructionL1_interior`** (`M ↦ [q_M]` is `C^∞` on `Ω`),
+  **`contDiffOn_dataRecon`** (`R` is `C^∞` on the data space), **`contDiffOn_normalForm`** / **`contDiffOn_normalFormInv`**,
+  **`smooth_normal_form`** (the package: `Φ`, `Ψ` mutually inverse `C^∞` bijections `U ≃ Ω × K`, `R ∘ Ψ = p ∘ fst`).
