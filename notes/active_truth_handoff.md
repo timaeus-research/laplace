@@ -350,3 +350,19 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
 **2026-09-26 (bridge residual, round 49):** consult `gpt_responses/research_round49_{q,v1}.md` (ranking: 1 bridge residual/affine lift, 2 nested Fisher projections in L², 3 second-order expansions of fibre/marginal/total residual along tilt paths, 4 conditional variational formula for fibre information (`dD↑/dν = E_ν[dD/dν | σ(S)]`), 5 empirical projection consistency, 6 dual affine coordinates). `BridgeResidual`: log bound for dominated laws, entropy moduli `bH − h₂ ≤ KL(D_s‖ν) ≤ bH`, affine lift `(aν+bD)↑ = aν + bD↑`, fibre moduli `bL₁ − h₂ ≤ L_s ≤ bL₁ + h₂`, total-residual modulus. NEXT: joint convexity of KL (perspective inequality for `klFun`) to remove the `h₂` slack and get convexity of `L_s`; then items 2–4.
 
 **2026-09-26 (joint convexity):** `KLJointConvexity`: joint convexity of KL (perspective inequality for `klFun`, no integrability), `L_s ≤ b L₁` without slack. NEXT (round-49 ranking): convexity of `s ↦ L_s` as a function (needs `D_s = (1−s/t)ν + (s/t)D_t` re-mixing — cheap corollary), then nested Fisher projections in L² (item 2), second-order expansions of fibre/marginal/total residual along tilt paths (item 3), conditional variational formula for the fibre information (item 4), empirical projection consistency (item 5).
+
+## 2026-09-26 (cont.): LiftConditional + EmpiricalProjection landed
+
+- `LiftConditional.lean`: `rnDeriv_statisticLift_eq_condLExp` (the lifted density is `ν⁻[dD/dν | σ(S)]`),
+  `bridge_remix`, `fibreInformation_bridge_le_remix` (convexity of `s ↦ L_s` in re-mixed form).
+- `EmpiricalProjection.lean`: interior divergence identity `KL(Π(M)‖Π(M')) = 𝓘(M) − 𝓘(M') + ⟨θ(M'), M − M'⟩`,
+  `sampleResponse`, SLLN for the empirical response, a.s. membership in the moment body, eventual relint
+  membership, and the consistency theorem `ae_tendsto_klDiv_responseProjection_sampleResponse`.
+- Gotchas: `Pairwise ((· ⟂ᵢ[P] ·) on X)` needs `open Function` for `on` — write `Pairwise fun i k ↦ IndepFun …`
+  instead; `empMean` already exists in `HalfspaceChernoff` (named ours `sampleResponse`); `continuous_dotJ_right`
+  exists in `EssentialRange`; `ENNReal.toReal_ofReal_eq_max` does not exist — get the sign from
+  `featCgf_eq_dotJ_sub_genRate_meanMap` instead; `ae_statPoint_mem_essRange` carries `[Fintype J]` in its type
+  (use `set_option linter.unusedFintypeInType false in` on consumers whose type doesn't need it).
+- NEXT (round-49 ranking): nested Fisher projections in L² (item 2), second-order expansions of fibre/marginal/total
+  residual along tilt paths (item 3), conditional variational formula for the fibre information (item 4: sup over
+  bounded σ(S)-measurable tests), then a round-50 consult on the "featureless → data" mapping programme.

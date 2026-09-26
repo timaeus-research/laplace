@@ -371,6 +371,7 @@ import Laplace.Multi.GeneralResidualSplit
 import Laplace.Multi.BridgeResidual
 import Laplace.Multi.KLJointConvexity
 import Laplace.Multi.LiftConditional
+import Laplace.Multi.EmpiricalProjection
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

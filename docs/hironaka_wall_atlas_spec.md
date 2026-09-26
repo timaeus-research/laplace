@@ -4165,3 +4165,15 @@ certificates for concrete resolved charts beyond the identity chart.
   `MeasureTheory`, not `Measure`) + `rnDeriv_withDensity`), `bridge_remix` (`aν + bD = lν + m(cν + dD)` from the linear
   relations `a + b = c + d = l + m = 1`, `b = md` — no truncated subtraction in `ℝ≥0`), **`fibreInformation_bridge_le_remix`**
   (`L_b ≤ m L_d` for `b = m d`: convexity of `s ↦ L_s` in re-mixed form, from joint convexity + the affine lift).
+- `EmpiricalProjection.lean` (NOT mirrored; round-49 item 5, **the atlas under sampling**):
+  `genRate_ne_top_of_mem_intrinsicInterior`, **`toReal_klDiv_responseProjection_interior`**
+  (`KL(Π(M)‖Π(M')) = 𝓘(M) − 𝓘(M') + ⟨θ(M'), M − M'⟩` for finite-rate `M` and interior `M'`; the
+  endpoint identity of `EndpointTail` with a general interior target), `klDiv_responseProjection_interior_ne_top`,
+  `eventually_mem_intrinsicInterior_of_tendsto` (a sequence in `K` converging to a relint point is eventually in
+  relint: `tendsto_subtype_rng` into the affine span), `sampleResponse S Xs n ω = (1/n) ∑_{i<n} S(Xᵢ ω)`,
+  `ae_tendsto_sampleResponse` (`strong_law_ae_real` coordinatewise, `IndepFun.comp`/`IdentDistrib.comp`,
+  `ae_all_iff`, `tendsto_pi_nhds`), `ae_sampleResponse_mem_momentBody` (`ae_statPoint_mem_essRange` transported
+  through `D ≪ ν` and `P.map (Xs i) = D`, then `Convex.sum_mem`), **`ae_tendsto_klDiv_responseProjection_sampleResponse`**
+  (`KL(Π(M̂_n)‖Π(M_D)) → 0` a.s. when `M_D ∈ relint`: continuity of `𝓘` along `𝕍` from
+  `hasFDerivAt_genRate_chart` at `chartV (responseTheta M_D) = toV M_D`, plus `ENNReal.tendsto_ofReal` on the
+  interior identity). Consistency of the empirical representative in information, hence in total variation.
