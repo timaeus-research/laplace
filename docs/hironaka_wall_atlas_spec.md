@@ -4105,3 +4105,19 @@ certificates for concrete resolved charts beyond the identity chart.
   Gotchas: `lawCov_dirLoss_left hS ν v ψ hψ` (hS explicit); `rw [← hr₀]` on the goal BEFORE working with the named residual, or
   the final `thirdCentral_dirLoss_left` rewrite sees the lambda; `rw [← hP]` on a goal stated with `familyMeasure` before
   `linarith` against facts stated with the abbreviation `P`.
+- `StatisticLift.lean` (NOT mirrored; Astra round-48 item 2 + 5A): `statisticLift ν D S := ν.withDensity (d(S_*D)/d(S_*ν) ∘ S)`
+  (section needs `[IsFiniteMeasure ν] [IsFiniteMeasure D]` for the Lebesgue decomposition of the pushforwards),
+  `map_withDensity_comp` (`S_*(ν.withDensity (g ∘ S)) = (S_*ν).withDensity g` by `Measure.ext` + `setLIntegral_map`),
+  `map_absolutelyContinuous` (`AbsolutelyContinuous.mk`), **`map_statisticLift`** (`S_*D↑ = S_*D`),
+  `isProbabilityMeasure_statisticLift`, `measure_liftDensity_eq_zero` (`D{r∘S = 0} = 0`: rewrite the withDensity form of
+  `S_*D` in a separate `key` and transport, never `rw [← withDensity_rnDeriv_eq]` on a goal whose set mentions `S_*D`),
+  **`absolutelyContinuous_statisticLift`** (`D ≪ D↑` via `withDensity_apply_eq_zero`), **`klDiv_statisticLift_eq_map`**
+  (`KL(D↑‖ν) = KL(S_*D‖S_*ν)` unconditionally, `klFun` form + `lintegral_map`), **`klDiv_eq_klDiv_statisticLift_add_map`**
+  (base split `KL(D‖ν) = KL(D‖D↑) + KL(S_*D‖S_*ν)` for finite `KL(D‖ν)`: chain rule `rnDeriv_mul_rnDeriv`, `rnDeriv_pos`,
+  `ae_of_ae_map`, `hD.ae_le` to transport `ν`-a.e. facts to `D`, `toReal_klDiv` + `probReal_univ`, `integral_map`,
+  `ENNReal.ofReal_add`), **`klDiv_statisticLift_le`** / **`eq_statisticLift_of_klDiv_eq`** (least-informative realisation
+  and uniqueness via `ENNReal.add_left_inj` + `klDiv_eq_zero_iff`), `map_tilted_comp` (`S_*(ν.tilted (f∘S)) = (S_*ν).tilted f`;
+  name the measurable density first or `exact` times out), **`klDiv_tilted_comp_eq_statisticLift_add_map`** (residual split
+  for bounded tilts via `klDiv_tilted_right_eq` on both spaces and `toReal_klDiv_tilted_right` for the sign). Gotchas:
+  `λ`/`μ` in identifiers (`hλμ`, `hPλ`) are reserved tokens; `klDiv_map_le (μ := D) (ν := ν) hS`;
+  `Measure.isProbabilityMeasure_map hS.aemeasurable`; `zero_le` has an implicit argument.
