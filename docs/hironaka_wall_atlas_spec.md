@@ -4570,3 +4570,19 @@ certificates for concrete resolved charts beyond the identity chart.
   `atlasCurv_eq_integral_score_sq_of_lt` (`κ_u = E_{Q_u}ℓ_u²` under `hfin` only), `continuousOn_integral_mul_atlasScore`,
   **`integral_abs_famDens_atlas_sub_le`** (`∫|q_s − q_t| dν ≤ ∫_t^s √κ_u du`, `0 ≤ t ≤ s < 1`: FTC + sign test),
   `half_integral_abs_famDens_atlas_sub_le` (`d_TV(Q_s,Q_t) ≤ ½∫_t^s √κ`).
+- `UniformPeano.lean` (generic, Mathlib-only): `norm_sub_deriv_le_of_uniform`, **`uniform_peano_of_hasFDerivAt`**
+  (a `C²` map on a compact convex set with continuous second derivative has a uniformly `ε‖z'−z‖²`-small second-order
+  Peano remainder; two mean value inequalities + uniform continuity of `B` on the compact).
+- `ThetaUniformPeano.lean` (NOT mirrored): `continuous_integral_family`, **`continuous_thirdOp`** (the third-cumulant
+  operator is continuous in `θ`: `continuous_clm_apply` twice + `thirdCentral_eq` + continuity of the family responses),
+  `isCompact_preimage_add_mean`/`convex_preimage_add_mean` (the direction picture `{z : m₀ + z ∈ C}`),
+  `hasFDerivAt_inverse_add_at` (`D R` at every interior point, by translation of `hasFDerivAt_inverse_response`),
+  `continuousOn_inverse_add`, `continuousOn_responseTheta_add`, **`uniform_responseTheta_peano`** (compact-uniform
+  second-order expansion of `θ`).
+- `DensityPeanoUniform.lean` (NOT mirrored; round-57 rank 2b, the compact-uniform relative-uniform Peano):
+  `densPeanoBound`/`densPeanoLead`/`densPeanoBound_le` (explicit remainder coefficient and its `(D r + n(Mb+B)ε) r²`
+  bound), **`abs_famDens_response_remainder_le`** (QUANTITATIVE pointwise second-order bound with explicit constants:
+  `B`, `Λ ≥ ‖R_M‖`, `Mb ≥ ‖M‖`, natural-coordinate remainder `≤ ε‖z‖²`, thresholds `(BK₂²Λ³+ε)‖z‖ ≤ 1`,
+  `4K(Λ+1)‖z‖ ≤ 1`), `exists_bound_inverse_of_isCompact`, **`famDens_response_peano_uniform`** (∀ compact convex
+  `C ⊂ ri K`, ∀ ε ∃ δ ∀ M ∈ C, M+z ∈ C, ‖z‖ ≤ δ, ∀ x: `|q_{M+z} − q_M(1+ℓ+½N(ℓ²))| ≤ ε‖z‖²q_M`),
+  **`integral_abs_famDens_response_peano_uniform`** (the compact-uniform TV expansion).

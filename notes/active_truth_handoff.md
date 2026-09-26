@@ -727,3 +727,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `hasFDerivAt_integral_response_at` at base `m₀` along `t ↦ t • ⟨M − m₀, _⟩` (no reparametrisation needed).
   NEXT: compact-uniform relative-uniform Peano (consult §3 lemma route: uniform `‖R‖`, `‖T‖`, uniform θ-Peano via
   continuity of `D²θ`), all-orders analyticity (rank 3), round-58 consult.
+- `UniformPeano` + `ThetaUniformPeano` + `DensityPeanoUniform` landed (round-57 rank 2b): the compact-uniform
+  relative-uniform second-order expansion of the reconstruction density. Route: generic uniform Peano (mean value ×2 +
+  uniform continuity of `D²F`), `continuous_thirdOp`, quantitative version of `famDens_response_peano` with the
+  θ-remainder as a hypothesis (`abs_famDens_response_remainder_le`), then assembly with explicit thresholds
+  (`densPeanoBound_le`). Gotchas: `(1/2) • v` without a type ascription elaborates the numeral in ℕ (`= 0 • v`) — write
+  `(1 / 2 : ℝ) • v` in every `have`; `continuous_induced_rng.2` presents the goal as `Subtype.val ∘ f` — `change` to the
+  lambda before `rw`; `thirdCentral_eq` takes the measure explicitly first; `hasFDerivAt_responseTheta_add_at hS ν hz`
+  and `hasFDerivAt_inverse_response hS ν hz` translate to arbitrary interior base points with the
+  `HasFDerivAt.comp (f := fun w ↦ w − z)` + `congr 4; abel` idiom. NEXT: all-orders analyticity (rank 3) or round-58
+  consult; also the compact-uniform observable Taylor corollary is immediate from the TV statement.

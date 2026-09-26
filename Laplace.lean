@@ -420,6 +420,9 @@ import Laplace.Multi.BoundaryTaylor
 import Laplace.Multi.BoundaryCompletion
 import Laplace.Multi.ReconstructionLipschitz
 import Laplace.Multi.AtlasTotalVariation
+import Laplace.Multi.UniformPeano
+import Laplace.Multi.ThetaUniformPeano
+import Laplace.Multi.DensityPeanoUniform
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
