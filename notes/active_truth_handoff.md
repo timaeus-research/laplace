@@ -743,3 +743,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
 - `EmpiricalTotalVariation` landed: TV consistency of the empirical reconstruction (SLLN + compact-uniform Lipschitz on a
   compact convex neighbourhood). Gotcha: `filter_upwards [h.eventually (Metric.closedBall_mem_nhds …)]` hands the
   membership already unfolded to `dist … ≤ r`. Round-58 consult running (`research_round58_{q,v1}`).
+- `EntropyGapStability` landed (round-58 rank 1): lsc of the rate, entropy-gap inequality, non-radial stability under
+  `(M, 𝓘(M))`-convergence. Gotchas: `genRate_mixture_gap` is stated with `a b : ℝ≥0` weights, `(a : ℝ) • M₀` and
+  `(a : ℝ≥0∞) * 𝓘`; `ENNReal.Tendsto.const_mul` needs the constant pinned via a typed `have`; `add_le_add_left/right`
+  orientation is unreliable — use `add_le_add h le_rfl`; `Real.continuous_sqrt.tendsto 0 |>.comp` then
+  `rw [Real.sqrt_zero]`. Round-58 consult (`research_round58_v1`) remaining: named observable Taylor corollary,
+  moment-normality at all orders (needs C^n), analyticity route (a), segment continuity of the rate (4.2), observable
+  delta method (5.3, needs CLT), dual-curve comparison (6).

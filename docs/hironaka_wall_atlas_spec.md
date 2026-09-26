@@ -4597,3 +4597,10 @@ certificates for concrete resolved charts beyond the identity chart.
   (TV consistency `∫|q_{M̂_n} − q_{M_D}| → 0` a.s. for i.i.d. samples with interior data response, via the Lipschitz constant on
   the neighbourhood), **`ae_tendsto_integral_responseProjection_sampleResponse`** (`E_{Π(M̂_n)}φ → E_{Π(M_D)}φ` a.s. for bounded
   `φ`).
+- `EntropyGapStability.lean` (NOT mirrored; round-58 rank 1 §4.3–4.4): **`lowerSemicontinuous_genRate`** (the rate is a
+  supremum of continuous affine functions), `integral_mixture_eq`, **`ofReal_sq_sub_le_gap`** (the ENTROPY-GAP INEQUALITY
+  `ab(E_{Π(A)}F − E_{Π(B)}F)²/(2L²) + 𝓘(aA+bB) ≤ a𝓘(A) + b𝓘(B)` from the mixture compensation identity + Pinsker, no
+  boundary natural parameter), **`tendsto_integral_responseProjection_of_tendsto_genRate`** (NON-RADIAL boundary stability:
+  finite-rate `M_i → M_*` with `𝓘(M_i) → 𝓘(M_*) < ∞` ⇒ `E_{Π(M_i)}F → E_{Π(M_*)}F` for every bounded `F`, any filter;
+  the completion topology is that of `M ↦ (M, 𝓘(M))`). NB Astra's counterexample: response convergence alone does NOT
+  give TV convergence at finite-rate boundary points.
