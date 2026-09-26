@@ -402,3 +402,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (smul outside), reconcile with `Submodule.coe_smul`; `rw [← hf] at this` fails on beta-reduced statements — `rw [hf]`
   in the goal and `exact`. NEXT: item 4 (quadratic splitting along bounded tilts), item 6 (mixed Hessian), round-49
   item 4 (conditional variational formula), round-51 consult.
+- `TiltQuadratic` + `TiltRateQuadratic` landed (item 4: `KL(ν_t‖ν)/t² → Var f/2`, `𝓘(M_t)/t² → ⟨a,u⟩/2`; hence
+  `(L+R)(ν_t)/t² → ½‖(I − B₀)(f − Ef)‖²` is a short corollary via Pythagoras — TODO state it, plus the individual
+  `L`/`R` expansions which need the condExp of the tilt density). Gotchas: `hasDerivAt_pi` lives in
+  `Analysis/Calculus/Deriv/Prod.lean`; `HasStrictFDerivAt.exists_lipschitzOnWith` gives `∃ K, ∃ s ∈ 𝓝 x, …`;
+  `conv_lhs => rw [← h0]` to rewrite the argument `0` but not the RHS `0`; Lipschitz→`IsBigO.of_bound K` then
+  `.trans (hM.isBigO_sub)`; `IsLittleO.congr_right (fun t ↦ by ring)` to turn `t * t` into `t ^ 2`; omits cascade —
+  drop `[Nonempty J]` from a section's `variable` line instead of omitting it on every theorem.

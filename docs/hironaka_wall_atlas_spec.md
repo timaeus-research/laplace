@@ -4233,3 +4233,12 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL(ν_{tf}‖ν)/t² → Var_ν f / 2`, L'Hôpital `HasDerivAt.lhopital_zero_nhdsNE` on
   `hasDerivAt_klDiv_tilted_toReal` with `hasDerivAt_var_tilted` for continuity), `klDiv_tilted_isLittleO_sq`
   (`KL = t²/2 Var + o(t²)` via `isLittleO_iff_tendsto'`), `norm_sq_toLp_sub_mean` (`Var_ν f = ‖f − Ef‖²_{L²}`).
+- `TiltRateQuadratic.lean` (NOT mirrored; round-50 item 4, second expansion): `eventually_mem_intrinsicInterior_of_tendsto_filter`,
+  `tiltResponse S ν f t = E_{ν_t} S`, `tiltResponse_zero`, **`hasDerivAt_tiltResponse`** (`M_t'(0) = Cov_ν(S,f)`),
+  `genRate_tiltResponse_ne_top`, `familyMeasure_neg_smul_eq_tilted` (`P_{−ta} = ν_{t⟨a,S⟩}`),
+  `meanMap_neg_smul_eq_tiltResponse`, `genRate_tiltResponse_dirLoss_toReal` (`𝓘(N_t) = KL(ν_{t⟨a,S⟩}‖ν)`),
+  `genRate_tiltResponse_dirLoss_add_le` (Fenchel lower bound), `abs_dotJ_le_card_mul`,
+  **`isBigO_responseTheta_tiltResponse`** (`θ(M_t) = O(t)` from `hasStrictFDerivAt_chartVInv.exists_lipschitzOnWith`),
+  **`tendsto_genRate_tiltResponse_div_sq`** (`𝓘(M_t)/t² → ⟨a, Cov_ν(S,f)⟩/2`, sandwich between Fenchel and the Bregman
+  identity with `M_t − N_t = o(t)`; asymptotics via `IsBigO.of_bound`, `IsBigO.mul_isLittleO`, `IsLittleO.add`,
+  `IsLittleO.tendsto_div_nhds_zero`).
