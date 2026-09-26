@@ -416,6 +416,7 @@ import Laplace.Multi.ThetaPeano
 import Laplace.Multi.DensitySecondOrder
 import Laplace.Multi.DensityPeanoAlgebra
 import Laplace.Multi.DensityPeano
+import Laplace.Multi.BoundaryTaylor
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

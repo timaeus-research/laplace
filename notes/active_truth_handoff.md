@@ -695,3 +695,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `.le`. ‖ζ z‖ ≤ ‖z‖ needs the threshold `1/(BK₂²‖R‖³+1)`, NOT `‖z‖ ≤ 1/2`.
   NEXT (round 56): compact-uniform remainders (M in a compact of ri K: uniform `R`, uniform `v = o` via the
   strict derivative), the triangular boundary endpoint, round-57 consult.
+- `BoundaryTaylor` landed (round-56 boundary item A, reparametrisation route): accounting identity on `[0,t]` for every
+  `t < 1` at finite-rate (boundary) responses + triangular endpoint limit. Gotchas: `atlasTheta`/`responseTheta` need
+  `[Nonempty J]` (cannot `omit`); `module` fails after `ext` has gone down to coordinates (`(t • M) j` atoms) — stop at
+  `Subtype.ext` and let `module` work in `J → ℝ`; `intervalIntegral.integral_comp_mul_right` needs `f` explicit when the
+  integrand is a beta-redex `(fun u ↦ …) (s * t)`. Round-57 consult landed (`research_round57_v1`): rank 1 = finite-rate
+  boundary COMPLETION (endpoint law by TV-Cauchy, `(1−s)i'(s) → 0`, `KL(Q_*‖Q_s) = ∫_s^1(1−t)κ`), rank 2 = reconstruction
+  as compact-uniformly Lipschitz retraction of distribution space, rank 3 = all-orders relative-uniform analyticity,
+  rank 4 = TV atlas curve. NEXT: rank 1 per §2 of the consult.

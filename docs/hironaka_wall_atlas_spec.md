@@ -4536,3 +4536,10 @@ certificates for concrete resolved charts beyond the identity chart.
   bounded by `K₂‖v‖`, `K₂²‖R‖‖z‖‖ζ‖`, `K₃‖R‖‖z‖‖ζ‖`, `½(K₂²+K₃)‖ζ‖²`; the cubic remainder is
   `13(K(‖R‖+1)‖z‖)³` once `‖ζ z‖ ≤ ‖z‖` (threshold `δ ≤ 1/(BK₂²‖R‖³+1)`) and `K‖η‖ ≤ 1/4` (threshold
   `δ ≤ 1/(4K(‖R‖+1)+1)`).
+- `BoundaryTaylor.lean` (NOT mirrored; round-56 boundary item A): scaling lemmas `responseScore_smul`,
+  `respCov_congr_smul`, `regProj_congr_smul`, `normalProj_congr_smul`; the reparametrised atlas
+  `atlasPath (atlasPath M t) s = atlasPath M (st)`, `atlasTheta`/`atlasVel`/`atlasScore` of the atlas point
+  (`ℓ'_s = t ℓ_{st}`), `integral_normalProj_atlasPath` (`t² N(ℓ_{st}²)`); **`integral_atlas_taylor_of_lt`**: for
+  a FINITE-RATE response (boundary allowed) and every `t < 1`, `E_{Q_t}φ − E_νφ = t E_ν[φℓ_0] + ∫₀ᵗ(t−u)E_{Q_u}[φN(ℓ_u²)]du`
+  (change of variables `u = st` in the interior identity for `M_t`); **`tendsto_atlas_taylor_endpoint`**: if
+  `E_{Q_t}φ → L` as `t ↑ 1` then the triangular accounting expression converges to `L − E_νφ`.
