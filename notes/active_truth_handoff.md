@@ -623,3 +623,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `hasFDerivAt_integral_responseScore` on a basis + generic second-order Peano lemma from a differentiable
   derivative field), the fibre-independent KL Hessian `D²_z KL(D‖Π(M+z)) = ⟨Σ_M⁻¹u,w⟩`, dual-flat package
   (`∇𝓘 = −θ`, `D²𝓘 = G`, `DG[z](u,w) = −C(u,w,z)`), §7 structure theorem.
+- `FibreHessian` landed: relative interior open in `𝕍` (`eventually_add_mem_intrinsicInterior`, via
+  `map_nhds_eq_of_equiv` on `chartV` + `range_meanMap_eq_intrinsicInterior_momentBody`), interior-point derivatives of
+  `θ(M+·)` and `𝓘(M+·)`, Pythagoras–Bregman `klDiv_fibre_eq`, KL derivative field `−⟨R_{M+z}w, z⟩`, Fisher Hessian.
+  Gotchas: `HasFDerivAt.comp` with inner map `fun z ↦ z − z₀` needs `(f := fun z ↦ z - z₀)` (unifier picks
+  `HSub.hSub z₀`); align the outer point by `rw [show (0 : 𝕍) = z₀ - z₀ by simp] at h`; a bare `0` derivative in a
+  `HasFDerivAt` statement is a stuck `Module ?m ℝ` — ascribe `(0 : 𝕍 →L[ℝ] ℝ)`; `hasFDerivAt_const c x` takes the
+  constant FIRST; `HasFDerivAt.const_sub` avoids zero maps; `rw` with root `sub_apply` needs `_root_.sub_apply`
+  when `InformationTheory` is open; `-(A ∘SL B)` applied needs `neg_apply, neg_apply, comp_apply` in that order;
+  `dotJ_comm` for `dotJ w θ` vs `dotJ θ w`. NEXT: Peano expansion (operator-valued assembly of
+  `hasFDerivAt_integral_responseScore` on a basis + generic second-order Peano lemma), dual-flat package, §7.

@@ -4470,3 +4470,12 @@ certificates for concrete resolved charts beyond the identity chart.
   ∫₀¹(1−s)E_{Q_s}[φ N(ℓ_s²)]ds`), **`response_accounting`** (THE ACCOUNTING IDENTITY:
   `E_D φ − E_ν φ = E_ν[φ ℓ_0] + ∫₀¹ (1−s) E_{Q_s}[φ N_{M_s}(ℓ_s²)] ds + E_D[N_M φ]` — baseline susceptibility,
   accumulated nonlinear response along the atlas, feature-invisible residual).
+- `FibreHessian.lean` (NOT mirrored; round-55 rank "land immediately" — the fibre-independent KL Hessian):
+  **`eventually_add_mem_intrinsicInterior`** (the relative interior is open in `𝕍`: `M + z ∈ ri K` for `z` near `0`,
+  from `HasStrictFDerivAt.map_nhds_eq_of_equiv` for the chart), `hasFDerivAt_responseTheta_add_at` (`z ↦ θ(M+z)`
+  differentiable at every interior `z₀`), `hasFDerivAt_genRate_response_at` (`∇𝓘(M+z₀) = −θ(M+z₀)`),
+  `hasFDerivAt_dotJ_responseTheta_at`, **`klDiv_fibre_eq`** (Pythagoras–Bregman: `KL(D‖Π(M+z)) = KL(D‖Π(M)) + 𝓘(M) −
+  𝓘(M+z) − ⟨θ(M+z), z⟩` for `D` with response `M`), **`hasFDerivAt_klDiv_fibre`** (derivative `w ↦ −⟨R_{M+z₀}w, z₀⟩`
+  at every interior `z₀`, independent of `D`), `hasFDerivAt_klDiv_fibre_zero` (critical at the reconstruction),
+  **`hasFDerivAt_klDiv_fibre_field`** (the derivative field's derivative at `0` is `u ↦ E_Q[ℓ_u ℓ_w] = ⟨Σ_M⁻¹u,w⟩`:
+  the transverse KL profile is the Fisher metric, the same on the whole fibre; no fibre-specific normal term).
