@@ -3868,3 +3868,16 @@ certificates for concrete resolved charts beyond the identity chart.
   (`d/ds 𝓘(M(s)) = −⟨θ(M(s)), Cov_{D_s}(S,h)⟩`). `HasFDerivAt.comp_hasDerivAt` needs the base point passed explicitly
   (`hl.comp_hasDerivAt s₀ hf`). `include` does not apply to defs: a def includes only the variables its body uses.
   NEXT: basepoint second derivative `d²/ds² 𝓘(M(s))|₀ = ⟨b, C₀⁻¹ b⟩ ≤ Var h`, residual variance.
+- `BasepointCurvature.lean` (NOT mirrored; round-44 item 3, basepoint theorem): `lawCov` (`Cov_ν(φ,ψ) = Eφψ − EφEψ`),
+  `lawCov_comm`, `lawCov_neg_left`, `lawCov_self_nonneg` (write `Var φ = ∫ (φ − Eφ)²`; the `integral_add` witness must be a
+  lambda-typed `have hA : Integrable (fun x ↦ …)`), `lawCov_sub_self`, `one_integral_pos ν` (the featureless `hπpos`, PINNED to
+  `ν` — a bare `(by simp)` inside a `def` leaves `Measure.real ?m univ`), `tilted_zero_mul` (`tilted_const'`), `priorCov_one_zero`,
+  `dirLoss_neg` (S implicit: call `dirLoss_neg (S := S) _ x`), `lawCov_dirLoss_left`, `dataCov_zero`, `pathV_zero`, `dataTheta_zero`,
+  `hasDerivAt_genRate_dataPath_zero` (zero velocity at the featureless law), `basepointVelocity` (`θ'(0)`),
+  `chartDeriv_basepointVelocity`, `regressor` (`⟨−θ'(0), S⟩`), **`lawCov_dirLoss_regressor`** (regression identity
+  `Cov(⟨e,S⟩, g) = Cov(⟨e,S⟩, h)` ∀ e; `rw [dotJ_chartDeriv, Submodule.coe_zero, priorCov_one_zero, dataCov_zero]`),
+  `hasDerivAt_dataCov` (existence form, three `hasDerivAt_integral_tilted`), **`hasDerivAt_rateVel_zero`** (product rule with
+  `HasDerivAt.mul` ascribed to the lambda type, `dataTheta_zero` kills the unknown second factor),
+  **`hasDerivAt_deriv_genRate_dataPath_zero`** (`deriv` of the rate along the path has derivative `Var_ν(regressor)` at `0`),
+  **`residual_variance`** (`Var h − Var g = Var(h − g)`), **`regressor_variance_le`**. GOTCHA: `rw [lawCov_comm]` bare rewrites
+  the FIRST `lawCov`, which is usually not the one meant — give the arguments.
