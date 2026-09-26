@@ -3904,3 +3904,16 @@ certificates for concrete resolved charts beyond the identity chart.
   **`hasDerivAt_deriv_invisible_dataPath_zero`** (curvature at the featureless law = `Var_ν(h − regressor)`; product rule with
   `hasDerivAt_var_tilted`, the negation of `hasDerivAt_rateVel_zero` via `congr_of_eventuallyEq (… by simp)` — `simpa` cannot
   see through `-fun s ↦ -…`). At second order `Var h = Var(regressor) + Var(h − regressor)` is the visible/invisible split.
+- `ResponsePathDifferential.lean` (NOT mirrored; round-45 item 3; consult `gpt_responses/research_round45_v1.md`, ranking:
+  1 atlas package, 2 dual Fisher metric + inverse stability `κ_r = e^{−2Br} λ₀`, 3 response differential for arbitrary paths and
+  observables, 4 integrated Fisher budget `𝓘(M) = ∫₀¹ (1−s)⟨Δ, C_{θ_s}⁻¹Δ⟩ ds` and `KL(D‖ν) = ∫₀¹ (1−s) 𝓕_data(s) ds`, 5 Pinsker via
+  binary KL + `klDiv_map_le`, 6 strict-convexity gap identity). Contents: `toV μ π S M` (a `dite` on `M − m₀ ∈ 𝕍`; explicit
+  `(μ π S)` via `variable (μ π S) in` because `include` does not reach defs; `toV_apply`, `deriv_mem_dirSpan_of_path`,
+  `hasDerivAt_toV_path` take only the membership/path hypotheses), `responseTheta M = chartVInv (toV M)`, `chartV_responseTheta`,
+  `meanMap_responseTheta` (`m(θ(M)) = M` on the relint), **`hasDerivAt_responseTheta_path`** (`θ' = (Dm|_𝕍)⁻¹ M'` for ANY
+  differentiable response path with `M s − m₀ ∈ 𝕍` and `M s₀ ∈ relint`), **`hasDerivAt_rateFun_path`/`hasDerivAt_genRate_path`**
+  (`−⟨θ(M s₀), M'⟩`), `obsV φ v = E_{P_{θ(v)}} φ`, **`hasFDerivAt_obsV`** (`hasFDerivAt_obsMap` from DataQuotient composed with
+  `chartVInv`), `obsV_deriv_apply` (`= −priorCov_{θ}(φ, ⟨(Dm|_𝕍)⁻¹u, S⟩)`), **`responseProjection_eq_familyMeasure_responseTheta`**
+  (via `klDiv_eq_rateFun_iff` and `responseProjection_spec`, no exposed chain needed), `integral_responseProjection_eq`,
+  `priorCov_eq_lawCov_familyMeasure`, **`hasDerivAt_integral_responseProjection_path`** (`d/ds E_{Π(M s)} φ = −Cov_{Π(M s₀)}(φ, ⟨θ', S⟩)`,
+  relint only eventually).
