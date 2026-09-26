@@ -4224,3 +4224,8 @@ certificates for concrete resolved charts beyond the identity chart.
   **`toReal_klDiv_featureless_responseProjection_eq_integral`** (`KL(ν‖Π(M)) = ∫₀¹ s κ(s) ds`),
   `integral_atlasCurv_eq_symm_klDiv`, **`integral_atlasCurv_eq_integral_var_segment`** (equal Fisher energies of the
   atlas path and the exponential path).
+- `SusceptibilityDefect.lean` (NOT mirrored; round-50 item 3 at `s = 0`): `lawCov_neg_right_eq`, `lawCov_sub_left_eq`,
+  `lawCov_residual_dirLoss` (the regression residual is uncorrelated with every visible contrast),
+  **`hasDerivAt_observableDefect_zero`** (`Δ'_φ(0) = E_D(φ − ⟨a,S⟩) − E_ν(φ − ⟨a,S⟩)` with `a ∈ 𝕍` the regression
+  coefficient of `φ` under `ν`: the initial susceptibility defect is the change of the expectation of `(I − B₀)φ`;
+  from `hasDerivAt_observableDefect`, `exists_regression_coefficient` at `s₀ = 0`, `lawCov_dirLoss_neg_atlasVel`).
