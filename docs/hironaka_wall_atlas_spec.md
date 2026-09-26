@@ -4278,3 +4278,10 @@ certificates for concrete resolved charts beyond the identity chart.
   entropy-Taylor engine), **`tendsto_klDiv_tilt_statisticLift_div_sq`** (fibre: `KL(ν_t‖ν_t↑)/t² → (∫ (h−g)²)/2`),
   **`tendsto_klDiv_map_tilt_div_sq`** (marginal: `KL(S_*ν_t‖S_*Π(M_t))/t² → (∫ g² − ⟨a,u⟩)/2`). With
   `TiltQuadratic`/`TiltRateQuadratic`/`ResidualQuadratic` this is the full quadratic shadow of `KL = 𝓘 + R + L`.
+- `AtlasRefinement.lean` (NOT mirrored; round-51 item 6, atlas refinement): `dirLoss_affine_coarse`
+  (`⟨θ,S⟩ = ⟨Tᵀθ,S'⟩ + ⟨θ,b⟩` for `S = TS' + b`), **`familyMeasure_coarse_eq_fine`** (`P^S_θ = P^{S'}_{Tᵀθ}`, via
+  `tilted_add_const`), **`responseProjection_mean_familyMeasure`** (a fine family member is its own projection:
+  `𝓘(m(θ)) = KL(P_θ‖ν)` + Pythagoras + `klDiv_eq_zero_iff`), **`klDiv_responseProjection_coarse_eq`**
+  (`KL(D‖Π_S(M_D)) = KL(D‖Π_{S'}(M'_D)) + KL(Π_{S'}(M'_D)‖Π_S(M_D))`, from `TargetPythagoras` with the coarse
+  representative as fine target), **`genRate_fine_eq_coarse_add`** (`𝓘_{S'} = 𝓘_S + KL(Π_{S'}‖Π_S)`).
+  The observational tower `L_G = L_H + KL(D^H‖D^G)` is `klDiv_statisticLift_tower` (ResidualInformation).

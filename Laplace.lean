@@ -386,6 +386,7 @@ import Laplace.Multi.MixturePathEnergy
 import Laplace.Multi.EntropyTaylor
 import Laplace.Multi.LiftDensity
 import Laplace.Multi.LiftQuadratic
+import Laplace.Multi.AtlasRefinement
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

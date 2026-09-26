@@ -431,3 +431,7 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `0 x` (add `Pi.zero_apply`); `ae_eq_condLExp hm ν X hY hXY` takes `hm` explicitly; state `hsplit` with the
   `tiltResponse` spelling by type ascription (defeq) before `rw`. NEXT: round-51 items 6 (towers), 5 (conditional
   variational), 4 (`L¹` derivative); L² identification of `∫ g²` with `‖condExpL2 h‖²` (`MemLp.condExpL2_ae_eq_condExp`).
+- `AtlasRefinement` landed (round-51 item 6). Remaining from round 51: item 5 (conditional variational formula
+  `L = sup_g E_D[g − log E_ν(e^g|σ(S))]`), item 4 (`L¹` derivative of the reconstruction density), then a round-52
+  consult. Gotcha: `⟨_, by rw [...]⟩` for an existential witness leaves the metavariable unassigned after `rw` — give
+  the witness explicitly.
