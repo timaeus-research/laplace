@@ -481,6 +481,7 @@ import Laplace.Multi.NaturalParameterTaylor
 import Laplace.Multi.PolyhedralVertexWitness
 import Laplace.Multi.PolyhedralVertexSection
 import Laplace.Multi.ProjectionDensityBounds
+import Laplace.Multi.PolyhedralRecovery
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

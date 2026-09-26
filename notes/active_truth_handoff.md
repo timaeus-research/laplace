@@ -1307,3 +1307,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (state it as a separate `have`); `Z > 0` by `unfold priorZ; simp only [mul_one]; exact integral_exp_pos hint`;
   `lintegral_eq_zero_iff` yields an `EventuallyEq` — restate it as `∀ᵐ x ∂ν.restrict Aᶜ, … = 0` before `ae_restrict_iff'`;
   `r ≪ q` from `(klDiv_ne_top_iff.1 hkq).1`, applied as `hrq hqA`. NEXT: module 4 `PolyhedralRecovery`.
+- `PolyhedralRecovery` landed (module 4). Gotchas: local definitions via `obtain ⟨f, hf_def⟩ : ∃ f, f = fun x ↦ … := ⟨_, rfl⟩`
+  and `rw [hf_def]` + `beta_reduce` (a `set` would not fold under binders); the pointwise domination is obtained by replacing
+  `f₀` with `max f₀ (δ h_a)` (a.e. equal, `withDensity_congr_ae`); implicit weight arguments must be pinned
+  (`neg_mul_vertexDensity_le … (b := an n - a) hn x`, otherwise unification picks a lambda and `linarith` sees different atoms);
+  `Tendsto.eventually_const_lt` outputs are stated on the lambda — restate with `have hn' : … := hn` before `linarith`;
+  `Filter.eventually_all` for the finitely many vertices; DCT via `tendsto_integral_filter_of_dominated_convergence (fun _ ↦ K)`
+  with the eventual bound from `filter_upwards [hgnn, hgC]`; the ENNReal limit via `(ENNReal.tendsto_ofReal hKL).congr'` and
+  `klDiv_withDensity_eq_ofReal_of_bdd`; `tendsto_order.2 ⟨lsc, upper⟩` with `hlim.eventually (lowerSemicontinuous_genRate ν S M a
+  ha)` and `hKL.eventually_lt_const ha`. NEXT: module 5 `PolyhedralCompletion` (Pinsker ⇒ `L¹` continuity of `M ↦ dq_M/dν`;
+  compactness, homeomorphism, closure, mean-preserving strong deformation retraction on all probability densities in `L¹(ν)`).

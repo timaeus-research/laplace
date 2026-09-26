@@ -5017,3 +5017,14 @@ certificates for concrete resolved charts beyond the identity chart.
   (DOMINATION: a feasible law `hν` with bounded density and finite relative entropy satisfies `δ h ≤ f` a.e.; Pythagoras ⇒
   `KL(r‖q_M) < ∞` ⇒ `r ≪ q_M` ⇒ `h = 0` a.e. off `A`), **`exists_pos_mul_vertexDensity_le`** (the vertex law of any simplex
   weights with barycentre `M` is dominated by `q_M`).
+- `PolyhedralRecovery.lean` (NOT mirrored; polyhedral completion module 4 of 5): general bounded-density entropy calculus
+  `llr_withDensity_ofReal_ae`, `integrable_mul_log_of_bdd`, `integrable_llr_withDensity_of_bdd`, `klDiv_withDensity_ne_top_of_bdd`,
+  **`toReal_klDiv_withDensity_of_bdd`** (`KL(gν‖ν) = ∫ g log g dν`), `klDiv_withDensity_eq_ofReal_of_bdd`,
+  `integral_withDensity_ofReal`, `isProbabilityMeasure_withDensity_ofReal`, `integral_eq_one_of_isProbabilityMeasure_withDensity`;
+  vertex densities `neg_mul_vertexDensity_le` (termwise lower bounds), `abs_vertexDensity_le` (`|h_b| ≤ Σ|b_v|/ν{S=v}`);
+  **`exists_recovery`** (LOCAL ENTROPY RECOVERY: along `M_n → M` in the polytope, bounded densities `g_n = f + h_{a(M_n)} − h_{a(M)}`
+  with mean `M_n`, eventually `≥ 0`, `|g_n − f| ≤ ε_n → 0` uniformly, `KL(g_n ν‖ν) → 𝓘(M)`; `f` a pointwise-dominated
+  representative `max(f₀, δ h_{a(M)})` of `dq_M/dν`), **`tendsto_genRate_of_tendsto`** (the rate is sequentially continuous on
+  the polytope: recovery gives upper semicontinuity, `lowerSemicontinuous_genRate` the rest, via `tendsto_order`),
+  **`continuousOn_genRate_polytope`**, **`continuousOn_genRate_momentBody`** (THE RATE IS CONTINUOUS ON THE WHOLE CLOSED MOMENT
+  BODY of a charged polytope, general `X`).
