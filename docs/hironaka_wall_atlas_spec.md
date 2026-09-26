@@ -4645,3 +4645,10 @@ certificates for concrete resolved charts beyond the identity chart.
   `hasDerivAt_reconstructionL1_curve` (chain rule in `L¹` along a differentiable curve of interior responses),
   **`integral_abs_famDens_curve_le`** (TV length ≤ Fisher–Rao length along every interior `C¹` curve:
   `∫|q_{M+γ(1)} − q_{M+γ(0)}| ≤ ∫₀¹ √g_{M+γ(t)}(γ',γ')`).
+- `EmpiricalMoments.lean` (NOT mirrored; probabilistic inputs of the reconstruction-bias theorem): `map_Xs_eq`,
+  `integral_comp_Xs`, `measurable_sampleResponse`, **`integral_sampleResponse`** (`E M̂_n = M_D`), `sampleResponse_sub_eq`,
+  `integral_comp_Xs_sub`, `integrable_comp_Xs_mul`, **`integral_sampleResponse_sub_mul_sub`**
+  (`E[(M̂_n − M)_a(M̂_n − M)_b] = Γ_ab/n`, `Γ = Cov_D(S)`, pairwise independence suffices),
+  **`measureReal_abs_sampleResponse_sub_gt_le`** / **`measureReal_norm_sampleResponse_sub_gt_le`** (Hoeffding:
+  `P(‖M̂_n − M‖ > δ) ≤ 2|J| exp(−nδ²/(8B²))` for features bounded by `B`, sup norm on `J → ℝ`, `iIndepFun`),
+  `exists_tail_sampleResponse` (`∃ c > 0` with the rate `exp(−c n δ²)`).

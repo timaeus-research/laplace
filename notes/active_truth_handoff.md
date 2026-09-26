@@ -789,3 +789,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   Round-60 remaining: reconstruction-bias theorem (Hoeffding via `measure_sum_range_ge_le_of_iIndepFun` +
   `hasSubgaussianMGF_of_mem_Icc_of_integral_eq_zero`; needs `iIndepFun`), `C²` via differentiating the score,
   all-orders prototype. NEXT: reconstruction-bias theorem (probability lemmas first).
+- `EmpiricalMoments` landed (unbiasedness, `Γ/n` second moments, Hoeffding tails of `M̂_n`). Gotchas: the Hoeffding lemma is
+  `HasSubgaussianMGF.measure_sum_range_ge_le_of_iIndepFun` (namespaced); its constant `((‖b − a‖₊/2)^2 : ℝ≥0)` casts to
+  `4B²` by `push_cast; rw [Real.norm_eq_abs, abs_of_nonneg]`; the `B = 0` case of the tail is NOT dominated by
+  `exp(−c n δ²)` (it gives `exp 0 = 1`) — use the bound `B + 1` in the existential corollary; `iIndepFun.comp` gives the
+  centred family, `HasSubgaussianMGF.neg` the lower tail. NEXT: reconstruction-bias theorem assembly
+  (`integral_response_peano_uniform` + `Γ/n` + tail with fallback outside the compact convex neighbourhood).
