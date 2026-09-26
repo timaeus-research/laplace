@@ -5243,3 +5243,7 @@ certificates for concrete resolved charts beyond the identity chart.
   **`sq_dotJ_le_lawCov_mul_fisher`** (THE SCALAR FISHER LOWER BOUND `⟨u,v⟩² ≤ Var_{q_M}⟨u,S⟩ · ⟨v, C_M⁻¹v⟩`: any path's Fisher speed
   dominates the progress of an exposing functional divided by the normal standard deviation — path-dependent denominator, exactly
   as Astra's charged-square example requires), `abs_dotJ_le_sqrt_lawCov_mul_sqrt_fisher`.
+- `ResponseSpeedDistortion.lean` (NOT mirrored; round-76 rank 4, general part): `dataThetaVel` (`θ'_t = C_{θ_t}⁻¹ Cov_{ρ_t}(S,h)`),
+  `chartDeriv_dataThetaVel`, `responseSpeedSq` (Fisher speed² of the response path `t ↦ P_{θ_t}`),
+  **`responseSpeedSq_eq_neg_dotJ`** (`|q'_t|²_F = −⟨θ'_t, Cov_{ρ_t}(S,h)⟩ = bᵀC⁻¹b`), `responseSpeedSq_nonneg`,
+  `lawCov_const_mul_const_mul`, **`responseSpeedSq_eq_div_of_unique`** (1-D: `|q'_t|²_F = Cov_{ρ_t}(S,h)²/Var_{q_t}(S)`).

@@ -1589,3 +1589,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   : lawCov ρ (dirLoss S u) ψ = Σ u i * lawCov ρ (S i) ψ` + `respCov_responseScore hS ν (M := M) v` (no `hrel`) give `⟨u,v⟩ = Cov(⟨u,S⟩,
   ℓ_v)`; the Fisher form is nonneg via `← integral_responseScore_mul` + `integral_nonneg (mul_self_nonneg)`. NEXT: the three-point
   counterexample (response projection not Fisher-contracting), the facet accessibility theorem, or the charged-square example.
+- `ResponseSpeedDistortion` landed (round-76 rank 4, general part). Gotchas: `chartDeriv θ v = CDE θ v` needs
+  `rw [← coe_chartDerivEquiv …]; rfl`; `dotJ_chartDeriv … θ e v` + `priorCov_eq_lawCov_familyMeasure hS ν` turn the chart pairing
+  into a family variance; a `Pfam θ` probability instance from `isProbabilityMeasure_familyMeasure measurable_const (integrable_const
+  1) (fun _ ↦ one_pos) (one_integral_pos ν) measurable_const h0 hS (t := 1) θ` with `h0 : ∀ x, |(fun _ : X ↦ (0:ℝ)) x| ≤ 0` (the
+  lambda type MUST be ascribed); in `[Unique J]`, `simp [dirLoss]` collapses `Σ i` to `default`; two consecutive docstrings are a
+  parse error ("expected 'lemma'"). NEXT: `ThreePointNotContracting` (X = Fin 3, ν uniform via `vecMeasure`, S = x − 1,
+  h = 1_{x=2}, t = log 4: `responseSpeedSq > Var_{ρ_t} h`, using `dataTheta t = ⟨fun _ ↦ −log x₀, _⟩` with `x₀ = (1+√13)/2` via
+  `chartVInv_chartV`), then the facet accessibility theorem.

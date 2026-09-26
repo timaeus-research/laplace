@@ -508,6 +508,7 @@ import Laplace.Multi.VertexGapCriterion
 import Laplace.Multi.ResponseBregman
 import Laplace.Multi.ResponseDefectPythagoras
 import Laplace.Multi.FisherPathBounds
+import Laplace.Multi.ResponseSpeedDistortion
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
