@@ -4083,3 +4083,9 @@ certificates for concrete resolved charts beyond the identity chart.
   `atlasVel`, `← coe_chartDerivEquiv`, `ContinuousLinearEquiv.apply_symm_apply`, `dotJ_chartDeriv`),
   **`atlasCurv_le_integral_sq`** (`κ(s) ≤ E_{P_{θ_s}} h²` for every score perturbation producing `Δ`: the budget integrates
   minimal Fisher costs). The variational section needs no `[Nonempty X]`.
+- `LegendreClosure.lean` (NOT mirrored; round-47 item 6): `dotJ_sub_genRate_le_featCgf` (Fenchel inequality from the
+  `iSup` definition via `ENNReal.ofReal_le_iff_le_toReal`), `genRate_meanMap_neg` (`𝓘(m(−q)) = ofReal(⟨q,m(−q)⟩ − Λ(q))`
+  from `genRate_eq_rateFun` + `rateFun_meanMap` + `famKL_eq`), **`featCgf_eq_dotJ_sub_genRate_meanMap`** (attainment),
+  **`eq_meanMap_of_dotJ_sub_genRate_eq`** (uniqueness by `genRate_mixture_lt` at `a = b = 1/2`;
+  `ENNReal.toReal_strict_mono`, one `ENNReal.coe_toReal` rewrites both coercions; the only theorem needing `[Nonempty J]`),
+  **`isGreatest_featCgf`** (`Λ(q) = max {⟨q,M⟩ − 𝓘(M) : 𝓘(M) < ∞}`).
