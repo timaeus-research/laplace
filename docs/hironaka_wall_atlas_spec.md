@@ -5220,3 +5220,13 @@ certificates for concrete resolved charts beyond the identity chart.
   `tendsto_measureReal_family_statFibre`, `responseProjection_statFibre_eq_zero` (no mass off the exposing face),
   `responseProjection_statFibre_pos` (charged vertices keep positive mass), **`tendsto_vertexGap_of_tendsto_meanMap`**
   (THE FORWARD VERTEX-GAP CRITERION: means → `M` ⇒ `⟨η_n, v − v₀⟩ → +∞` for every off-face `v` and every `v₀` charged by `M`).
+- `VertexGapConditioning.lean` (NOT mirrored; round-75 rank 2, conditioning half): **`integral_abs_indicator_div_sub_le`** (generic:
+  `‖1_A g/a − f‖₁ ≤ 2‖g − f‖₁` when `∫_A f = 1`, `a = ∫_A g > 0` — conditioning is `L¹`-continuous at a law carried by `A`),
+  `faceDens_eq_indicator_famDens_div` (`faceDens η = 1_A p_η / P_η(A)`), `integral_famDens_faceFibre_pos`,
+  `setIntegral_projDens_faceFibre` (`∫_A dq_M/dν = 1`, `∫_{Aᶜ} = 0`), **`tendsto_integral_abs_faceDens_sub`** (face-conditional
+  family laws → `q_M` in `L¹`), **`tendsto_meanMap_faceMeasure_of_tendsto_meanMap`** (face-conditional means → `M`).
+- `VertexGapCriterion.lean` (NOT mirrored; round-75 rank 2 COMPLETE): **`tendsto_meanMap_iff_faceMean_and_vertexGaps`**
+  (THE VERTEX-GAP CRITERION: on a charged polytope with `(u,β)` exposing the minimal face of `M` and a tight `v₀`,
+  `m_ν(η_n) → M ↔ m_{ν_F}(η_n) → M ∧ ∀ v ∈ V, ⟨u,v⟩ < β → ⟨η_n, v − v₀⟩ → +∞`), **`exists_vertexGap_criterion`** (for every
+  `M ∈ P` the exposing data exists and the criterion holds for every sequence): the topology of natural-parameter escape towards
+  a face has a finite certificate, complement-free.

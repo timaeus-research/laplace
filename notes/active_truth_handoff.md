@@ -1562,3 +1562,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `rw [Pi.div_apply]`; `Real.tendsto_exp_comp_nhds_zero.1` + `tendsto_neg_atBot_iff.1` turn `e^{−g_n} → 0` into `g_n → +∞`.
   NEXT: the conditioning half (face-conditional means converge: generic `‖1_A g/a − f‖₁ ≤ 2‖g − f‖₁` for `∫_A f = 1`, then
   `faceDens η = 1_A famDens η / P_η(A)`), then the iff.
+- `VertexGapConditioning` + `VertexGapCriterion` landed: round-75 rank 2 (the vertex-gap criterion) is COMPLETE in four modules
+  (Extinction, Forward, Conditioning, Criterion). Gotchas: `integral_add (h1.add h2) h3` fails on Pi-sums — ascribe
+  `have hint12 : Integrable (fun x ↦ A x + B x) ν := h1.add h2`; `|1/a − 1| * a = |1 − a|` via `have e : (1/a − 1) * a = 1 − a :=
+  by field_simp` then `rw [← e, abs_mul, abs_of_pos ha0]`; `Integrable.bdd_mul (hg) (hf_meas) (bound)` puts the BOUNDED factor
+  first in `fun x ↦ f x * g x`; `Set.indicator_of_notMem (Set.notMem_compl_iff.2 hx)` for the complement; the `|(f − g) x|` Pi
+  redex needs `Pi.sub_apply` before `abs_sub_comm`. NEXT (Astra round 75): E Bregman identity `D(q_M‖q_N) = I(M) − I(N) −
+  DI(N)[M − N]` (sign `DI(M)[u] = −⟨θ(M),u⟩`), flags (lexicographic exposure, corollary), the defect Taylor form, F intrinsic
+  Fisher boundary geometry; or a round-76 consult.
