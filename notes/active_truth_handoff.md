@@ -1462,3 +1462,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   pass `(V := V)` when only `hF` is given. NEXT: the thin `ResponseAtlas` capstone (rigidity + completion + retraction + rays +
   layers + Fisher + Hellinger + minimal faces + face order + `L^p`), then facewise Fisher/analytic charts on `ν(·|S ∈ F)`, the
   Fisher-boundary classification, natural-parameter convergence by face flags; or a round-74 consult.
+- `ResponseAtlas` landed (round-73 capstone; thin `Prop`-structure `ChargedPolytopeAtlas` with 12 fields, every field a
+  previously landed theorem, plus the facewise exponential representation and the rigidity corollary). Gotchas: a
+  `structure … : Prop` whose fields quantify `∀ M ∈ P, …` is filled with `where` clauses `field M hM := …`; `⟨completedHomeomorphL1
+  hS ν V hcharged, fun _ ↦ rfl⟩` proves the `e M = projL1 M` clause by defeq of `toFun`; `Nonempty V` from a polytope moment body:
+  `mean_mem_momentBody_general hS ν` + `convexHull_empty` after `Set.not_nonempty_iff_eq_empty`. NEXT (Astra round 73 §3–4):
+  facewise differential structure (instantiate the mean-map charts on `ν(·|S∈F)`), natural-parameter convergence by face
+  flags (topology of the compactification `⨆_F Θ_F ↔ P`), Fisher-boundary classification (the `1/(x log²(1/x))` example:
+  TV/Hellinger convergence with infinite Fisher length), CLTs uniform near stratum changes; or a round-74 consult.

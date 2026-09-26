@@ -5151,3 +5151,10 @@ certificates for concrete resolved charts beyond the identity chart.
   (THE FACE ORDER `q_M ≪ q_N ↔ F_M ⊆ F_N`), **`responseProjection_equivalent_iff`** (mutual absolute continuity ↔ equal minimal
   faces: the strata of the completed family are the faces of the polytope), `responseProjection_absolutelyContinuous_iff_charged`
   (the order read off the vertex section).
+- `ResponseAtlas.lean` (NOT mirrored; round-73 CAPSTONE): **`exists_faceMeasure_tilted_eq_responseProjection`** (facewise
+  exponential representation: `q_M = ν(·|⟨u,S⟩=β).tilted(−⟨θ,S⟩)`); **`structure ChargedPolytopeAtlas hS ν V : Prop`** with
+  fields `strata` (`M ∈ ri F_M`, `F_M` extreme and minimal), `charged_iff` (Csiszár), `exposed` (`F_M = P ∩ {⟨u,·⟩=β}`, charged
+  fibre), `facewise_exponential`, `support` (`q_M ∼ ν|_{Φ_M}`), `face_order` (`q_M ≪ q_N ↔ F_M ⊆ F_N`), `density_bound`,
+  `homeomorph` (`P ≃ₜ` completed family in `L¹`, `e M = projL1 M`), `compact`, `hellinger`, `lp`, `ray` (exact TV rate);
+  **`chargedPolytopeAtlas hpoly hcharged : ChargedPolytopeAtlas hS ν V`**; **`exists_chargedPolytopeAtlas_of_compact_mean_lift`**
+  (rigidity: a compact a.c. mean lift ⇒ the moment body is a charged polytope carrying the atlas).
