@@ -4197,3 +4197,11 @@ certificates for concrete resolved charts beyond the identity chart.
   (reconstructed laws see only `ψ = E_ν[φ|σ(S)]`), **`observableDefect_eq`**
   (`E_{D_s}φ − E_{Π(M_s)}φ = b(E_Dφ − E_Dψ) + (E_{D_s}ψ − E_{Π(M_s)}ψ)` along the bridge `aν + bD`),
   **`hasDerivAt_observableDefect`** (`Δ'_φ(s) = E_Dφ − E_νφ + Cov_{Π(M_s)}(φ,⟨v_s,S⟩)` on the atlas path).
+- `NestedProjections.lean` (NOT mirrored; round-50 item 1, first half): `norm_sq_eq_three_starProjection`
+  (three-way Pythagoras for nested subspaces `U ≤ V` of a real inner product space:
+  `norm_sq_eq_add_norm_sq_starProjection` twice + `orthogonalProjectionOnto_starProjection_of_le`),
+  `memLp_two_bdd`, `statSpan hS Q = span{1, S_j} ⊆ Lp ℝ 2 Q` (finite-dimensional, complete, hence
+  `HasOrthogonalProjection`), `statSpan_le_lpMeas` (`A ⊆ L²(σ(S))` via `mem_lpMeas_iff_aestronglyMeasurable`),
+  **`norm_sq_eq_statSpan_add_condExpL2`** (`‖h‖² = ‖Bh‖² + ‖Ch − Bh‖² + ‖h − Ch‖²`, `B` = projection onto
+  the affine span, `C = condExpL2` = projection onto `lpMeas`; `condExpL2 … h = (lpMeas …).starProjection h` is `rfl`),
+  `norm_sub_statSpan_starProjection` (best affine predictor, `starProjection_minimal`), `norm_sq_eq_integral_sq`.

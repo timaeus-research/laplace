@@ -386,3 +386,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `ae_bdd_abs_condExp_of_ae_bdd_abs` (real bound, no `ℝ≥0`); `Integrable.of_bound` needs `[IsFiniteMeasure D]`;
   a `def` of type `MeasurableSpace X` trips `warn.classDefReducibility` (disable per-def). NEXT: item 1 (L² spine:
   nested Fisher projections), item 4 (quadratic splitting), item 5 mean-path half (continuity of `atlasTheta` at 1).
+- `NestedProjections` landed (round-50 item 1, abstract half). Gotchas: `Submodule.complete_of_finiteDimensional`
+  returns `IsComplete ↑s` (use `.completeSpace_coe`); `Submodule.starProjection_apply U v` explicit to rewrite one
+  occurrence; `condExpL2 E 𝕜 hm` is definitionally `(lpMeas …).orthogonalProjectionOnto` (instances via
+  `Fact (m ≤ m0)`). NEXT: identify `B h` for `h = toLp φ` with the regression `E φ + ⟨a, S − M⟩` (normal equations,
+  `eq_starProjection_of_mem_of_inner_eq_zero`), `‖Bh − Eh‖² = Var⟨a,S⟩ = g_M(u,u)`, and the minimum-energy
+  characterisation of `ℓ_{M,u}`; then item 4 (quadratic splitting along bounded tilts).
