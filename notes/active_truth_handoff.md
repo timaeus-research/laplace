@@ -1470,3 +1470,22 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   facewise differential structure (instantiate the mean-map charts on `ν(·|S∈F)`), natural-parameter convergence by face
   flags (topology of the compactification `⨆_F Θ_F ↔ P`), Fisher-boundary classification (the `1/(x log²(1/x))` example:
   TV/Hellinger convergence with infinite Fisher length), CLTs uniform near stratum changes; or a round-74 consult.
+- Round-74 consult (`research_round74_{q,v1}`): rank 1 = stratified susceptibility + canonical transport from `m₀`
+  (Statement 1 global continuity, Statement 2 facewise derivative `b_{f,M}∘C_M⁻¹` — the interior version already exists as
+  `ObservableHessian.hasFDerivAt_integral_response`/`ResponseTransport.hasDerivAt_integral_response_path` — Statement 3 the
+  improper accumulated-response identity), rank 2 = vertex-gap convergence criterion in face-adapted natural coordinates
+  (`meanMap η_n → M ∈ ri F ↔ τ_n → η_F(M) ∧ ⟨ζ_n, v₀ − v⟩ → +∞ ∀ v ∈ V∖F`; NOT "normal part diverges in the polar cone"),
+  rank 3 = Fisher classification by dyadic shell masses (`finite Fisher ray length ↔ Σ_k √a_k < ∞`, with the variance sandwich
+  `A C₂/(A+B)² ≤ Var_{p_t} g ≤ C₂/(A+B)`; the cumulative-layer criteria are only sufficient), rank 4 = response potential
+  `I(M) = D(q_M‖ν)`, `∇I = η`, `D²I = C⁻¹`; rank 5 = uniform CLT (deferred). §4 confirms the `1/m` bound and gives the facewise
+  sharpening `1/min_{v ∈ V∩F} ν(S=v)`.
+- `PolytopeResponseTransport` landed (round-74 rank 1, Statements 1 and 3). Gotchas: `obsL1_apply` is `rfl` with the
+  `F x * d x` order; identify `projL1` with `projDens` through `(Integrable.coeFn_toL1 _).mono` and a `have hx' : (projL1 hS ν M) x
+  = projDens … := hx` (the `rw` needs the def folded); the interior FTC `integral_response_sub_eq_integral_linForm` is stated on
+  `[0,1]` — redo it on `[0,r]` with `continuousOn_linForm_path` (generic `I`) and `ContinuousOn.intervalIntegrable` after
+  `rwa [uIcc_of_le hr0]`; `Pfam (θr (atlasPath M r)) = q_{M_r}` by `responseProjection_eq_familyMeasure_responseTheta` and
+  `Pfam (θr m₀) = ν` by `familyMeasure_responseTheta_featureless` (InvisibleQuadratic); the endpoint limit is
+  `ContinuousOn.comp` on `Icc 0 1` + `nhdsWithin_Ioo_eq_nhdsLT` + `nhdsWithin_mono _ Ioo_subset_Icc_self` and `Tendsto.congr'`
+  over `Ioo_mem_nhdsLT`; `Convex.add_smul_sub_mem` + `module` shows the straight path stays in the polytope. NEXT: Statement 2
+  facewise (instantiate the interior derivative on `ν(·|S∈F)`), the coordinate-free Fisher bound `|D R_f(M)[h]| ≤ √Var f ·
+  √⟨h,C⁻¹h⟩`, then rank 2 (vertex-gap criterion) and rank 3 (shell-mass Fisher classification).

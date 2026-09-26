@@ -5158,3 +5158,10 @@ certificates for concrete resolved charts beyond the identity chart.
   `homeomorph` (`P ≃ₜ` completed family in `L¹`, `e M = projL1 M`), `compact`, `hellinger`, `lp`, `ray` (exact TV rate);
   **`chargedPolytopeAtlas hpoly hcharged : ChargedPolytopeAtlas hS ν V`**; **`exists_chargedPolytopeAtlas_of_compact_mean_lift`**
   (rigidity: a compact a.c. mean lift ⇒ the moment body is a charged polytope carrying the atlas).
+- `PolytopeResponseTransport.lean` (NOT mirrored; round-74 rank 1, first half): `integral_responseProjection_eq_obsL1`
+  (`E_{q_M} F = obsL1 F (dq_M/dν)`), **`continuousOn_integral_responseProjection`** (posterior expectations of bounded
+  observables are continuous on the whole charged polytope), **`integral_responseProjection_atlasPath_sub_eq`** (for every
+  response of finite rate and `r < 1`: `E_{q_{M_r}} F − E_ν F = ∫₀^r lin_{F,M_s}(M − m₀) ds` along the straight path from the
+  featureless response), `atlasPath_mem_convexHull`, **`tendsto_integral_linForm_atlasPath`** (THE ACCUMULATED-RESPONSE FORMULA:
+  on a charged polytope, for EVERY `M ∈ P`, `E_{q_M} F − E_ν F = lim_{r↑1} ∫₀^r lin_{F,M_s}(M − m₀) ds`, an improper identity
+  valid up to and including boundary responses).
