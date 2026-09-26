@@ -1014,3 +1014,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `derivWithin_congr`, `derivWithin_fun_const _ _`; `L1.integralCLM f = ∫ f` by `← L1.integral_eq, L1.integral_eq_integral`.
   NEXT: round-65 consult (what remains: curved-path second-order transport `q̈ = H[Ṁ,Ṁ] + JM̈` now cheap from `contDiff_densL1`
   and the smooth chart; analyticity; the explicit Bell/cumulant recursion for the tower; the `L¹` bias in Bochner form).
+- Round-65 consult landed (`research_round65_{q,v1}`). Ranking: 1 = explicit global Hessian `D²p_M[u,v] = [q_M N_M(ℓ_uℓ_v)] ∈ K`,
+  `D²R_d[h,k] = H_{m(d)}[m(h), m(k)]`, curved-path `d²/dt² p(M_t) = H[Ṁ,Ṁ] + J M̈`, and the `C^∞` upgrade of the normal form
+  (route: polarisation from `atlasHess` lifted to `L¹`, second-order chain rule); 2 = constructive featureless jets with `L¹`
+  Taylor remainder: `p'(0) = [ℓ]`, `p''(0) = [N(ℓ²)]`, `p'''(0) = [N(ℓ³ − 3ℓr)]` (`r = ⟨b, X⟩`, `b = C⁻¹E[Xℓ²]` = the bend),
+  `f^{(k)}(0) = E_ν[F P_k]`, and `‖p(s) − Σ_{j≤n} s^j/j! p^{(j)}(0)‖₁ ≤ s^{n+1}/(n+1)! sup‖p^{(n+1)}‖₁` (controls all bounded
+  observables at once); 3 = quantitative local analyticity + finite-step continuation (contraction + majorant for the inverse);
+  4 = boundary completion (finite sample space: the section extends continuously to the polytope; FALSE in `L¹` for general
+  bounded features); 5 = reconstruction CLT (delta method). Sanity: the normal form is for SIGNED unit-mass densities
+  (probability densities are the constrained subset `p(M) + k ≥ 0`); normal-form derivatives are tangent maps on the affine
+  tangent space; `invisible_tower` correct for affine paths, for curved paths `m(p^{(k)}) = M^{(k)}`; "maximal entropy" = maximal
+  RELATIVE entropy w.r.t. the reference. NEXT: `FeaturelessTaylor` — pairing CLM `obsL1`, duality lemma (`L¹` element killed by
+  all bounded observables is 0), `p''(s) = [atlasHess s]` in `L¹` via duality + `hasDerivAt_deriv_obsResponse_atlas`, and the
+  `L¹` Taylor remainder on `[0,1]` via `taylor_mean_remainder_bound`; then the Hessian in all directions by polarisation.
