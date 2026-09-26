@@ -740,3 +740,6 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
 - `ResponseAtlasTheorem` landed: the one-theorem packaging (§6 of round 57) of the whole "featureless → data" programme.
   Round-57 items 1, 2, 2b, 4 and the packaging are DONE; remaining: rank 3 (all-orders relative-uniform analyticity, with
   `E_Q A_n = 0`, `E_Q[S A_n] = 0` for `n ≥ 2`). NEXT: round-58 consult, then per ranking.
+- `EmpiricalTotalVariation` landed: TV consistency of the empirical reconstruction (SLLN + compact-uniform Lipschitz on a
+  compact convex neighbourhood). Gotcha: `filter_upwards [h.eventually (Metric.closedBall_mem_nhds …)]` hands the
+  membership already unfolded to `dist … ≤ r`. Round-58 consult running (`research_round58_{q,v1}`).

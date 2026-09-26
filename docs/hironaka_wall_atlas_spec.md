@@ -4591,3 +4591,9 @@ certificates for concrete resolved charts beyond the identity chart.
   `genRate_toReal_eq_integral_atlasCurv`), **`response_atlas_reconstruction`** — the four-layer package: B (retraction,
   derivative projection, compact-uniform TV-Lipschitz), A (compact-uniform relative second-order expansion), C (accounting on
   `[0,t]`, TV speed ≤ Fisher speed, information budget), D (boundary completion, eight parts).
+- `EmpiricalTotalVariation.lean` (NOT mirrored; round-58 candidate (v), done ahead of the consult): `exists_compact_convex_nhd`
+  (every interior response has a compact convex interior neighbourhood catching all moment-body responses within `r`, from
+  `eventually_add_mem_intrinsicInterior` and the closed ball in `𝕍`), **`ae_tendsto_integral_abs_famDens_sampleResponse`**
+  (TV consistency `∫|q_{M̂_n} − q_{M_D}| → 0` a.s. for i.i.d. samples with interior data response, via the Lipschitz constant on
+  the neighbourhood), **`ae_tendsto_integral_responseProjection_sampleResponse`** (`E_{Π(M̂_n)}φ → E_{Π(M_D)}φ` a.s. for bounded
+  `φ`).
