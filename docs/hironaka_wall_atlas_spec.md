@@ -4229,3 +4229,7 @@ certificates for concrete resolved charts beyond the identity chart.
   **`hasDerivAt_observableDefect_zero`** (`Δ'_φ(0) = E_D(φ − ⟨a,S⟩) − E_ν(φ − ⟨a,S⟩)` with `a ∈ 𝕍` the regression
   coefficient of `φ` under `ν`: the initial susceptibility defect is the change of the expectation of `(I − B₀)φ`;
   from `hasDerivAt_observableDefect`, `exists_regression_coefficient` at `s₀ = 0`, `lawCov_dirLoss_neg_atlasVel`).
+- `TiltQuadratic.lean` (NOT mirrored; round-50 item 4, first expansion): **`tendsto_klDiv_tilted_div_sq`**
+  (`KL(ν_{tf}‖ν)/t² → Var_ν f / 2`, L'Hôpital `HasDerivAt.lhopital_zero_nhdsNE` on
+  `hasDerivAt_klDiv_tilted_toReal` with `hasDerivAt_var_tilted` for continuity), `klDiv_tilted_isLittleO_sq`
+  (`KL = t²/2 Var + o(t²)` via `isLittleO_iff_tendsto'`), `norm_sq_toLp_sub_mean` (`Var_ν f = ‖f − Ef‖²_{L²}`).
