@@ -1216,3 +1216,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `field_simp` the unit-mass goal is `(2 − q x₀)/(2 − q x₀) = 1` (`div_self`). NEXT: the closure statement
   (`completedFamily = closure (interior family)`: needs `momentBody = conv S(X)` for finite full-support `X` and density of the
   relative interior along rays), then round-67 rank 3 (explicit natural-parameter radius) or a round-69 consult.
+- `FiniteCompletionClosure` landed: round-68 face completion COMPLETE (five modules). Gotchas: `mem_essRange_iff measurable_const
+  (fun _ ↦ one_pos) hS` (section variables `hπm hπ hS`); a finite range is closed (`(finite_range _).isClosed`) and its complement
+  open gives the ball missing the range (`Metric.isOpen_iff`); `Set.image_mono` (not `image_subset`); `1/(n+2) → 0` by
+  `tendsto_const_nhds.div_atTop (tendsto_natCast_atTop_atTop.atTop_add tendsto_const_nhds)`; density along the atlas ray via
+  `atlas_mem_intrinsicInterior hS ν hfin hs0 (hs1 : s < 1)` + `tendsto_qStarVec` + `mem_closure_of_tendsto`. NEXT: round-69
+  consult (re-rank: explicit natural-parameter radius; general-`X` face completion; reconstruction CLT; a capstone package
+  theorem "the response atlas of the data manifold"), or land the explicit radius directly.

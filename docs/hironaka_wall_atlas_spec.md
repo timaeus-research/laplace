@@ -4969,3 +4969,8 @@ certificates for concrete resolved charts beyond the identity chart.
   **`carriedResponses_supportSet_subset_of_isExtreme`** (contained in every face containing `M`), `minimalFace` (intersection of
   all faces containing `M`), **`minimalFace_eq`**, `isExtreme_minimalFace`, `mem_minimalFace`,
   **`qStarVec_pos_iff_mem_minimalFace`** (CSISZÁR'S SUPPORT THEOREM: `q*(M) x > 0 ↔ S(x) ∈ minimalFace M`).
+- `FiniteCompletionClosure.lean` (NOT mirrored; round-68 face completion, closure statement): **`essRange_eq_range_statPoint`**
+  (the essential range of a full-support finite alphabet is the whole feature set), **`momentBody_eq_convexHull`** (the moment
+  body is the moment polytope), `intrinsicInterior_subset_hull`, `vecMeasure_qStarVec_eq_familyMeasure` (on the relative interior
+  the completed family is the exponential family), `interiorFamily`, **`closure_interiorFamily`** (the completed family is the
+  closure of the interior exponential family: every boundary law is the limit of family members along the atlas ray).
