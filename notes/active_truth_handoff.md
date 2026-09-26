@@ -592,3 +592,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: rank 3 stage 2 (Fisher–Rao second fundamental form along the atlas: `r = 2√q`, `r'' = (r/4)N(ℓ²) −
   (κ/4) r − (r/4) B(ℓ²)` with the three pieces L²(ν)-orthogonal), §7 structure theorem, rank 4 (general
   conditional variational), rank 6 (unbounded bridge); round-55 consult.
+- `FisherRaoCurvature` landed (round-54 rank 3 COMPLETE): square-root embedding `r_s = 2√q_s` on the sphere of
+  radius 2, speed² = κ, acceleration = normal `(r/4)N(ℓ²)` + radial `−(κ/4)r` + tangential `−(r/4)B(ℓ²)`,
+  pairwise orthogonal. Gotchas: `rw [← h]` with `h : ∫ … = 0` rewrites the `0` inside `familyMeasure ν 1
+  (fun _ ↦ 0)` — use `(integral_congr_ae …).trans h`; `unfold atlasTheta` fails ("no atlasTheta") when the only
+  occurrences sit inside `sqrtDens`/`atlasVel` applications — unfold only what is syntactically present and
+  `unfold atlasTheta at hκ` for the hypothesis instead; `field_simp` closed the `√q` derivative identity once
+  `√q` was `obtain`ed as an opaque `r` with `r² = q` and `q` rewritten to `r²` (`rw [← hr, ← hsq]`).
+  Round-55 consult landed (`research_round55_v1`): NEXT = `FiniteResponse`: (1) path derivatives
+  `d/ds E_{Q_s}φ = E_{Q_s}[φ ℓ_s]`, `d²/ds² = E_{Q_s}[φ N(ℓ_s²)]` (finite-combination trick as in
+  ObservableHessian), (2) bound on `s ↦ R_s` over `[0,1]` (continuity of `Ring.inverse ∘ chartDeriv ∘ θ_s`,
+  `NormedRing.inverse_continuousAt`) ⇒ `IntervalIntegrable` of the second derivative, (3) IBP
+  `F(1) − F(0) = F'(0) + ∫₀¹(1−s)F''`, (4) fibre identity `E_D[N_M φ] = E_D φ − E_Q φ` for `E_D S = M`,
+  (5) the accounting identity (*); then the Peano expansion (operator-valued assembly + generic lemma), the
+  fibre-independent KL Hessian, dual-flat package.

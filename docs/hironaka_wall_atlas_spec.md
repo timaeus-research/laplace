@@ -4443,3 +4443,18 @@ certificates for concrete resolved charts beyond the identity chart.
   `0` with derivative `u ↦ E_Q[φ · N_M(ℓ_{M,u} ℓ_{M,w})]`: the second-order response of an observable is its pairing
   with the normal projection of the product of the response scores, so only the normal part of `φ` responds at
   second order).
+- `FisherRaoCurvature.lean` (NOT mirrored; round-54 rank 3, stage 2 — the Fisher–Rao second fundamental form
+  along the atlas): `famDens_pos`, `bdd_normalProj`, **`sqrtDens`** (`r_s = 2√q_s`), `sqrtDens_sq`,
+  `integral_sqrtDens_sq` (`∫ r_s² dν = 4`: the curve lies on the sphere of radius 2 in `L²(ν)`),
+  `integral_sqrtDens_sq_mul` (`∫ r_s² g dν = 4 E_{Q_s} g`), **`hasDerivAt_sqrtDens`** (`r_s' = r_s ℓ_s/2`),
+  `integral_sqrtDens_velocity_sq` (`∫ (r_s')² dν = κ(s)`: the Fisher energy is the speed squared),
+  **`hasDerivAt_sqrtDens_velocity`** (`r_s'' = (r_s/4) N(ℓ_s²) − (κ/4) r_s − (r_s/4) B(ℓ_s²)`),
+  `integral_sqrtDens_mul_normal`, `integral_sqrtDens_mul_tangential`, `integral_normal_mul_tangential` (the
+  three pieces are mutually orthogonal in `L²(ν)`: normal = second fundamental form of the family in the sphere,
+  radial = curvature of the sphere, tangential = the atlas is not a geodesic of the family unless `B(ℓ²) = 0`).
+- Round-55 consult (`gpt_responses/research_round55_{q,v1}.md`): the missing heart is FINITE RESPONSE — the
+  accounting identity `E_D φ − E_ν φ = Cov_ν(φ, ℓ_{m₀,Δ}) + ∫₀¹ (1−s) E_{Q_s}[φ N_{M_s}(ℓ_s²)] ds + E_D[N_M φ]`
+  (baseline susceptibility + accumulated nonlinear response + feature-invisible residual), plus the Peano
+  expansion `F_φ(M+z) = F + A z + ½H(z,z) + o(‖z‖²)` (operator-valued assembly + generic Peano lemma), compact
+  uniform remainders, the `L¹` density version; candidate (c) is FALSE: `D²_z KL(D‖Π(M+z)) = ⟨Σ_M⁻¹u,w⟩` is
+  fibre-independent (Pythagoras); dual-flat package `∇𝓘 = −θ`, `D²𝓘 = G`, `DG[z](u,w) = −C(u,w,z)`.
