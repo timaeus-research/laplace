@@ -1200,3 +1200,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `J_m = {x | ∃ r feasible, r_x > 0}`, `supp q*(m) = J_m`, `x ∈ J_m ↔ S(x) ∈ minimal face`) and module 4
   `FiniteCompletionRetraction` (range qStarVec = closure of the interior family, homeomorphic to the polytope; `R(p) = q*(E_p S)`
   continuous moment-preserving retraction; strong deformation retraction `H_t`).
+- `FiniteCompletionRetraction` landed (face completion module 4). Gotchas: `Set.Finite.isCompact_convexHull (𝕜 := ℝ)`; a
+  `Homeomorph` between subtypes by `where` fields (`toFun`, `invFun`, `left_inv`, `right_inv`, `continuous_toFun` via
+  `ContinuousOn.comp_continuous continuous_subtype_val (fun M ↦ M.2) |>.subtype_mk _`); `convex_stdSimplex ℝ X hp hq ha hb hab`
+  unfolds `Convex`/`StarConvex` directly. Round-68 modules 1, 2, 4 DONE. OPEN: module 3 `FiniteMinimalFace` (support of `q*(m)` =
+  the minimal face; accessible set `J_m`); "completed family = closure of the interior family" needs `momentBody = conv S(X)`
+  for finite full-support `X` (essRange = range statPoint) and density of the relative interior (ray argument via
+  `atlas_mem_intrinsicInterior`). NEXT: minimal face, or the explicit natural-parameter radius (round-67 rank 3), or a
+  round-69 consult for the next deepening.

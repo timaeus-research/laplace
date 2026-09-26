@@ -4951,3 +4951,13 @@ certificates for concrete resolved charts beyond the identity chart.
   (unique minimiser), **`qStarVec_limit_eq`** (limits of minimisers are minimisers), **`tendsto_qStarVec`**,
   **`continuousOn_qStarVec`** (THE COMPLETED FAMILY IS CONTINUOUS ON THE MOMENT POLYTOPE), **`continuousOn_genRate_toReal`**
   (the rate is continuous on the polytope).
+- `FiniteCompletionRetraction.lean` (NOT mirrored; round-68 face completion, module 4): `vecMoment_add`, `vecMoment_smul`,
+  `completedFamily` (`q*(conv S(X))`), **`retract`** (`p ↦ q*(E_p S)`), `retract_mem_stdSimplex`, **`vecMoment_retract`**
+  (moment-preserving), `retract_qStarVec`, `retract_mem_completedFamily`, `completedFamily_subset_stdSimplex`,
+  `retract_of_mem_completedFamily`, `retract_idempotent`, **`retract_eq_self_iff`** (fixed points = completed family),
+  **`continuousOn_retract`**, `isCompact_completedFamily`, `vecMoment_mem_hull_of_mem_completedFamily`,
+  **`completedHomeomorph`** (`conv S(X) ≃ₜ completedFamily` via `q*` / the response map), **`deformation`**
+  (`H_t p = (1−t)p + t·retract p`), `deformation_zero`, `deformation_one`, `deformation_mem_stdSimplex`,
+  **`vecMoment_deformation`**, **`retract_deformation`** (`retract ∘ H_t = retract`), `deformation_of_mem_completedFamily`,
+  **`continuousOn_deformation`** — the strong deformation retraction of the simplex onto the completed family, fibrewise
+  moment-preserving.
