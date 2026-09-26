@@ -4974,3 +4974,16 @@ certificates for concrete resolved charts beyond the identity chart.
   body is the moment polytope), `intrinsicInterior_subset_hull`, `vecMeasure_qStarVec_eq_familyMeasure` (on the relative interior
   the completed family is the exponential family), `interiorFamily`, **`closure_interiorFamily`** (the completed family is the
   closure of the interior exponential family: every boundary law is the limit of family members along the atlas ray).
+- `NaturalParameterMajorant.lean` (NOT mirrored; round-69 rank 2, series-free factorial bounds in natural coordinates): numerics
+  `sum_range_convolution`, **`sum_weighted_le_three`** (any sequence obeying the Leibniz recurrence `b_k ≤ L^k + Σ_{i<k}
+  C(k,i+1) L^{i+1} b_{k−(i+1)}` has `Σ_{k≤N} ρ^k b_k/k! ≤ 3`, `ρ = log(3/2)/L`); line objects `natCurve` (`t ↦ [q_{θ+tv}]` in
+  `L¹`), `natZ` (`Z(θ+tv)/Z(θ)`), `natW` (`Z(θ)⁻¹ • w_{θ+tv}`), `natZ_pos`, **`natZ_smul_natCurve`** (`Z(t)·p(t) = w(t)`),
+  `natW_eq_smul`, `contDiff_natCurve/natZ/natW` (grade ∞), `famDens_mul_exp_eq`, `natWJet` (`q_θ (−Y)^k e^{−tY}`),
+  `hasDerivAt_natWJet`, `coeFn_natW`, **`coeFn_iteratedDeriv_natW`** (the `k`-th `L¹` derivative of `w` is `q_θ(−Y)^k e^{−tY}`
+  a.e., by the L¹-pointwise principle), `integrable_natWJet`, `natZ_eq_integral`, **`norm_iteratedDeriv_natW_le`**
+  (`‖w^{(k)}(t)‖₁ ≤ L^k Z(t)`), `iteratedDeriv_natZ_eq` (`Z^{(j)} = ∫ w^{(j)}` via `iteratedFDeriv_comp_left`),
+  **`abs_iteratedDeriv_natZ_le`** (`|Z^{(j)}(t)| ≤ L^j Z(t)`), **`iteratedDeriv_natW_eq_sum`** (Leibniz in `L¹`),
+  **`norm_iteratedDeriv_natCurve_le_rec`** (the Leibniz recurrence for `b_k = ‖p^{(k)}(t)‖₁`, all `t`),
+  **`sum_norm_iteratedDeriv_natCurve_le`** (`Σ_{k≤N} ρ^k ‖p^{(k)}(t)‖₁/k! ≤ 3` for every `t` and `N`),
+  **`norm_iteratedDeriv_natCurve_le`** (Cauchy-type estimate `‖p^{(k)}(t)‖₁ ≤ 3 k! ρ^{−k}`, uniform in `t`). No power series,
+  no analyticity input: the constants are explicit in the sup bound `L` of the feature `Y = ⟨v, S⟩` alone.

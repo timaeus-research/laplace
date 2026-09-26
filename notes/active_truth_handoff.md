@@ -1239,3 +1239,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `‖q_t − q_F‖₁ = 2B_t/(A + B_t)`; 4 = CLT (deterministic delta lemma first; no multivariate CLT assumed); 5 = capstone
   `ResponseAtlas` structure (documentation-level). Also: `H_t` (vertical fibre contraction) vs natural-gradient flow (horizontal
   transport) are complementary. NEXT: module `NaturalParameterMajorant` (rank 2, one module), then rank 1.
+- `NaturalParameterMajorant` landed (round-69 rank 2 COMPLETE): `Σ_{k≤N} ρ^k ‖p^{(k)}(t)‖₁/k! ≤ 3` and `‖p^{(k)}(t)‖₁ ≤ 3 k! ρ^{−k}`
+  with `ρ = log(3/2)/L` along every natural-parameter line, series-free, all `t`. Gotchas: `open scoped Nat` makes `φ` the
+  totient notation (named `(φ := …)` arguments fail) — write `k.factorial`; defs not using `hfin`/`hS` need
+  `omit hfin in variable (M) in` / `omit hS in variable (S) in` so the parameters stay explicit (`natZ S ν θ v`,
+  `natWJet S ν θ v`); the type ascription `(iteratedDeriv k (natW …) t : X → ℝ)` mis-elaborates — write
+  `((… : X →₁[ν] ℝ) : X → ℝ) a`; Leibniz for `Z • p` is `iteratedDerivWithin_smul (mem_univ t) uniqueDiffOn_univ
+  hZ'.contDiffWithinAt hC'.contDiffWithinAt (n := k)` + `iteratedDerivWithin_univ`, with `ContDiff.of_le (m := k) (by
+  exact_mod_cast natCast_le_infty k)`; `Z^{(j)}` from `ContinuousLinearMap.iteratedFDeriv_comp_left` + `iteratedDeriv_eq_iteratedFDeriv`
+  + `change … (L1.integralCLM ∘ natW …)`; the top Leibniz term is isolated by `sum_range_succ'` + `add_sub_cancel_left`, the nsmul
+  by `← Nat.cast_smul_eq_nsmul ℝ, norm_smul`; `omit [Nonempty J] in` before docstrings on every lemma not using `Classical.arbitrary J`
+  (an over-omit of `[Nonempty X]` on `iteratedDeriv_natW_eq_sum` fails because `contDiff_natZ` needs it). NEXT: round-69 rank 1
+  (general-`X` polyhedral completion with charged vertices; hardest lemma is the face-restriction transport) or rank 3 (stratified
+  Fisher geometry on faces + boundary-ray TV formula `‖q_t − q_F‖₁ = 2B_t/(A+B_t)`); optionally the Taylor-remainder corollary
+  `‖p(s+t) − Σ_{k≤N} p^{(k)}(s)t^k/k!‖₁ ≤ 3(|t|/ρ)^{N+1}` via `norm_L1_le_of_forall_integral_mul_le` (second module per Astra).
