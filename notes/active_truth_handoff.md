@@ -1142,3 +1142,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Integrable.toL1_eq_toL1_iff`. NEXT: `AnalyticFamily` (mirror `SmoothFamily` at grade ω: famMean, meanMap, meanMapDeriv, chartV,
   chartDeriv, `(CDE θ)⁻¹`), then `AnalyticChart` (grade-ω `to_localInverse` + injectivity ⇒ `chartVInv` analytic on `range chartV`;
   `θ(m₀+z)`, `atlasTheta`, `densL1`, `M ↦ [q_M]` AnalyticOnNhd on addDomain, `s ↦ p s` analytic on atlasDomain, observables).
+- `AnalyticChart` landed (round-67 rank 1 DONE: the qualitative analytic response atlas). Gotchas: at grade ω use
+  `ContDiff.fderiv_right le_top` (`ω + 1 ≤ ω` is `le_top`), `contDiffAt_map_inverse (n := ω)`, `(ω : WithTop ℕ∞) ≠ 0 := by simp`;
+  `hf.to_localInverse hf' hn` with `hf' : HasFDerivAt chV (CDE θ₀ : 𝕍 →L 𝕍) θ₀` (the equiv is inferred), `hf.localInverse hf' hn`
+  is DEFINITIONALLY `(hf.hasStrictFDerivAt' hf' hn).localInverse chV (CDE θ₀) θ₀`, so `hstrict.eventually_right_inverse` transfers
+  by a typed `have hy' : chV (hf.localInverse hf' hn y) = y := hy` (never `change` with the coerced CLM in the equiv slot: whnf
+  timeout); `ContDiffAt.congr_of_eventuallyEq h (hg : f₁ =ᶠ f)` then `.contDiffWithinAt`; `AnalyticOnNhd` from `ContDiffOn ω` on
+  an OPEN set via `.contDiffAt (hU.mem_nhds hz) |>.analyticAt`. `[Nonempty J]` is genuinely used (featPt's `0 ≤ B`), so do not
+  omit it; `[Nonempty X]` omits only where the linter asks (famMean, meanMap, densL1) — over-omitting errors with "cannot omit
+  referenced section variable". NEXT: round-67 rank 2 finite-`X` face completion (KL projection `q*(m)` on `conv S(X)`, continuity,
+  moment-preserving retraction `R(p) = q*(E_p S)`, strong deformation retraction), or rank 3 explicit natural-parameter radius
+  `ρ = log(3/2)/L` with `Σ‖A_n‖ρ^n ≤ 3`.

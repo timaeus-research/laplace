@@ -469,6 +469,7 @@ import Laplace.Multi.ThirdJet
 import Laplace.Multi.QuantitativeJets
 import Laplace.Multi.CubicRemainder
 import Laplace.Multi.AnalyticTilt
+import Laplace.Multi.AnalyticChart
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

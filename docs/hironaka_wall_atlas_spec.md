@@ -4916,3 +4916,14 @@ certificates for concrete resolved charts beyond the identity chart.
   **`weightL1_eq_pullback_exp`** (`[g e^{−⟨θ,S⟩}] = T_g(exp_A(featureCLM θ))`), **`analyticAt_weightL1`** /
   **`contDiff_omega_weightL1`** (the tilt map is real-analytic), `famNum_eq_integralCLM_weightL1`, **`analyticAt_famNum`**,
   `contDiff_omega_famNum`, **`contDiff_omega_famZ`**.
+- `AnalyticChart.lean` (NOT mirrored; round-67 rank 1, THE ANALYTIC RESPONSE ATLAS): `contDiff_omega_famMean`,
+  `contDiff_omega_meanMap`, `contDiff_omega_meanMapDeriv` (`fderiv_right le_top` at grade ω), `contDiff_omega_chartV`,
+  `contDiff_omega_chartDeriv`, `contDiff_omega_chartDerivEquiv_symm` (`contDiffAt_map_inverse (n := ω)`),
+  **`contDiffOn_omega_chartVInv`** (grade-ω `ContDiffAt.to_localInverse` at each point, the local inverse identified with
+  `chartVInv` through `chartVInv ∘ chartV = id` on `eventually_right_inverse`), **`contDiffOn_omega_responseTheta_add`** /
+  `isOpen_interior_displacements` / **`analyticOnNhd_responseTheta_add`** (`z ↦ θ(m₀+z)` analytic on the open interior
+  displacements), **`contDiff_omega_densL1`** (`θ ↦ [q_θ]` analytic into `L¹`), **`contDiffOn_omega_reconstructionL1_add`** /
+  **`analyticOnNhd_reconstructionL1_add`** / `analyticAt_reconstructionL1_add` (`z ↦ [q_{M+z}]` real-analytic on `addDomain`),
+  `contDiffOn_omega_atlasTheta`, `contDiffOn_omega_reconstructionL1_atlas`, **`analyticAt_reconstructionL1_atlas`** (the atlas
+  curve is real-analytic on the interior atlas domain), **`analyticAt_obsResponse_atlas`** (every bounded-observable response
+  `s ↦ E_{Q_{M_s}}F` is real-analytic).
