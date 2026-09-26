@@ -86,11 +86,13 @@ theorem exists_exposing_polytope [Nonempty V] (hcharged : ∀ v ∈ V, 0 < ν.re
     ∃ u : J → ℝ, ∃ β : ℝ, (∀ v ∈ V, dotJ u v ≤ β) ∧ dotJ u M = β ∧ (∃ v ∈ V, dotJ u v = β) ∧
       0 < ν.real {x | dirLoss S u x = β} ∧
       M ∈ intrinsicInterior ℝ
-        (convexHull ℝ ((V.filter fun v ↦ dotJ u v = β : Finset (J → ℝ)) : Set (J → ℝ))) := by
+        (convexHull ℝ ((V.filter fun v ↦ dotJ u v = β : Finset (J → ℝ)) : Set (J → ℝ))) ∧
+      minimalFacePoly V M =
+        convexHull ℝ ((V.filter fun v ↦ dotJ u v = β : Finset (J → ℝ)) : Set (J → ℝ)) := by
   obtain ⟨u, β, hV, hMβ, hvert, hF⟩ := exists_exposing_minimalFacePoly hM
   obtain ⟨v, hv⟩ := exists_charged_vertex V hM
   refine ⟨u, β, hV, hMβ, ⟨v, v.2, (hvert v).2 hv⟩,
-    faceFibre_pos_of_charged ν V hcharged v.2 ((hvert v).2 hv), ?_⟩
+    faceFibre_pos_of_charged ν V hcharged v.2 ((hvert v).2 hv), ?_, hF⟩
   rw [← hF]
   exact mem_intrinsicInterior_minimalFacePoly hM
 
@@ -107,7 +109,7 @@ theorem exists_ray_tendsto_responseProjection_of_mem_polytope [Nonempty V]
         2 * offFaceMass S ν θ u β t / (faceMass S ν θ u β + offFaceMass S ν θ u β t)) ∧
       Tendsto (fun t : ℝ ↦ ∫ x, |famDens S ν (θ - t • u) x - faceDens S ν θ u β x| ∂ν) atTop
         (𝓝 0) := by
-  obtain ⟨u, β, hV, hMβ, -, hp, hrel⟩ := exists_exposing_polytope ν V hcharged hM
+  obtain ⟨u, β, hV, hMβ, -, hp, hrel, -⟩ := exists_exposing_polytope ν V hcharged hM
   obtain ⟨θ, hθ⟩ :=
     exists_ray_tendsto_responseProjection_polytope hS ν V u β hpoly hcharged hV hp hMβ hrel
   exact ⟨u, β, θ, hV, hMβ, hp, hθ⟩
@@ -155,7 +157,7 @@ theorem responseProjection_eq_faceMeasure_of_mem_polytope [Nonempty V]
       responseProjection hS ν M {x | dirLoss S u x = β}ᶜ = 0 ∧
       responseProjection hS ν M =
         responseProjection hS (faceMeasure ν {x | dirLoss S u x = β}) M := by
-  obtain ⟨u, β, hV, hMβ, -, hp, hrel⟩ := exists_exposing_polytope ν V hcharged hM
+  obtain ⟨u, β, hV, hMβ, -, hp, hrel, -⟩ := exists_exposing_polytope ν V hcharged hM
   exact ⟨u, β, hV, hMβ, hp, responseProjection_compl_faceFibre_eq_zero hS ν V hpoly hcharged hV hM
     hMβ, responseProjection_eq_faceMeasure_of_exposed hS ν V hpoly hcharged hV hp hMβ hrel⟩
 
@@ -238,7 +240,7 @@ theorem ae_projDens_le_of_mem_polytope [Nonempty V]
     (hcharged : ∀ v ∈ V, 0 < ν.real (statFibre S v)) {m : ℝ} (hm0 : 0 < m)
     (hm : ∀ v ∈ V, m ≤ ν.real (statFibre S v)) {M : J → ℝ}
     (hM : M ∈ convexHull ℝ (V : Set (J → ℝ))) : ∀ᵐ x ∂ν, projDens hS ν M x ≤ 1 / m := by
-  obtain ⟨u, β, hV, hMβ, ⟨v₀, hv₀V, hv₀β⟩, hp, hrel⟩ := exists_exposing_polytope ν V hcharged hM
+  obtain ⟨u, β, hV, hMβ, ⟨v₀, hv₀V, hv₀β⟩, hp, hrel, -⟩ := exists_exposing_polytope ν V hcharged hM
   obtain ⟨θ, hq, -, -⟩ :=
     exists_ray_tendsto_responseProjection_polytope hS ν V u β hpoly hcharged hV hp hMβ hrel
   have hae := projDens_ae_eq hS ν (measurable_faceDens hS ν θ u β) (faceDens_nonneg ν θ u β) hq

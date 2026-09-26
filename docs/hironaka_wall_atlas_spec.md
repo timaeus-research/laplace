@@ -5141,3 +5141,13 @@ certificates for concrete resolved charts beyond the identity chart.
   **`ae_projDens_le_of_mem_polytope`** (UNIFORM DENSITY BOUND `dq_M/dν ≤ 1/m`), `exists_uniform_projDens_bound`
   (`∃ C, ∀ M ∈ P, dq_M/dν ≤ C` a.e.), `integral_abs_projDens_sub_pow_le` (`‖f−g‖_{p+1}^{p+1} ≤ C^p ‖f−g‖₁`),
   **`tendsto_integral_abs_projDens_sub_pow`** (`L^p` CONTINUITY of the completed family for every finite `p`).
+- `PolytopeFaceOrder.lean` (NOT mirrored; round-73 downstream, THE STRATIFICATION): `minimalFaceFibre V S M = {x | S x ∈ F_M}`,
+  `measurableSet_minimalFaceFibre`, `statFibre_subset_minimalFaceFibre`, `statFibre_subset_compl_minimalFaceFibre`,
+  `minimalFaceFibre_mono`, `minimalFacePoly_subset_iff` (`F_M ⊆ F_N ↔` every vertex charged by `M` is charged by `N`);
+  `responseProjection_absolutelyContinuous_of_mem_polytope`, **`responseProjection_compl_minimalFaceFibre_eq_zero`**
+  (`q_M` is carried by the fibre of its minimal face), **`responseProjection_absolutelyContinuous_restrict`** (`q_M ≪ ν|_{Φ_M}`),
+  `minimalFaceFibre_subset_faceFibre`, **`restrict_minimalFaceFibre_absolutelyContinuous`** (`ν|_{Φ_M} ≪ q_M`: on the face `q_M`
+  is a bounded exponential tilt of the conditioned law, `absolutelyContinuous_tilted`); **`responseProjection_absolutelyContinuous_iff`**
+  (THE FACE ORDER `q_M ≪ q_N ↔ F_M ⊆ F_N`), **`responseProjection_equivalent_iff`** (mutual absolute continuity ↔ equal minimal
+  faces: the strata of the completed family are the faces of the polytope), `responseProjection_absolutelyContinuous_iff_charged`
+  (the order read off the vertex section).

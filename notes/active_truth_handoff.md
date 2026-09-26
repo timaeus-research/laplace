@@ -1450,3 +1450,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   accepted at the lambda type by defeq. No `measurable_faceDens`/`faceDens_nonneg` existed in `BoundaryRayFormula` (added
   here). NEXT: the face order `q_M ≪ q_N ↔ F_M ⊆ F_N` (mutual a.c. `q_M ∼ ν|_{S∈F_M}` via the tilt on the face measure), then
   the thin `ResponseAtlas`, facewise charts, the Fisher-boundary classification.
+- `PolytopeFaceOrder` landed (round-73 downstream: `q_M ≪ q_N ↔ F_M ⊆ F_N`). `exists_exposing_polytope` now also returns
+  `minimalFacePoly V M = conv (V.filter (⟨u,·⟩ = β))` (last conjunct). Gotchas: `responseProjection_absolutelyContinuous`
+  already exists in `StraightPathAtlas` (with `hfin`), hence the `_of_mem_polytope` name; `ae_iff.2 hnull` turns
+  `μ {p}ᶜ = 0` into `∀ᵐ p` and `ae_iff.1` back (the `{a | ¬ p a}` / `sᶜ` forms are defeq); `hac.ae_le h` transports a `∀ᵐ ∂ν`
+  fact along `μ ≪ ν`; `Measure.AbsolutelyContinuous.mk` only needs measurable sets; `Measure.restrict_mono hsub le_rfl` +
+  `absolutelyContinuous_of_le`; `ν|_F ≪ (ν F)⁻¹ • ν|_F` via `Measure.smul_apply, smul_eq_mul, mul_eq_zero` and
+  `ENNReal.inv_ne_zero.2 (measure_ne_top _ _)`; `absolutelyContinuous_tilted (integrable_exp_of_bdd μ (Bdd.const_mul (-1)
+  (bdd_dirLoss hS θ)))` with `responseProjection_eq_tilted` on the FACE measure (`momentBody_faceMeasure_eq_of_exposed` makes
+  `M` relatively interior there); a set-valued def in a section with `{S}` implicit needs `(S)` explicit in the def and callers
+  pass `(V := V)` when only `hF` is given. NEXT: the thin `ResponseAtlas` capstone (rigidity + completion + retraction + rays +
+  layers + Fisher + Hellinger + minimal faces + face order + `L^p`), then facewise Fisher/analytic charts on `ν(·|S ∈ F)`, the
+  Fisher-boundary classification, natural-parameter convergence by face flags; or a round-74 consult.

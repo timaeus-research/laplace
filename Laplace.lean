@@ -493,6 +493,7 @@ import Laplace.Multi.FisherAccessibility
 import Laplace.Multi.HellingerComparison
 import Laplace.Multi.PolytopeMinimalFace
 import Laplace.Multi.PolytopeProjectionSupport
+import Laplace.Multi.PolytopeFaceOrder
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
