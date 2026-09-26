@@ -4894,3 +4894,18 @@ certificates for concrete resolved charts beyond the identity chart.
   **`iteratedDeriv_three_reconstructionL1_atlas_cubic`** (`p'''(s) = [q_s N_{M_s}(ℓ_s³ − 3 ℓ_s r_s)]`),
   `integral_mul_iteratedDeriv_three_atlas`, **`iteratedDeriv_three_obsResponse_atlas`** (the third derivative of every observable
   response along the atlas is `E_{Q_s}[N_s F · (ℓ³ − 3ℓr)]`).
+- `QuantitativeJets.lean` (NOT mirrored; round-66 rank 1 pre-theorem, explicit `L¹` jet bounds): `le_sq_div_of_coercive`
+  (`λb ≤ a ≤ √b K ⇒ a ≤ K²/λ`), `dotJ_self_nonneg`, `abs_dotJ_le_sqrt_mul` (Cauchy–Schwarz), `lawCov_dirLoss_self_eq_neg_dotJ`
+  (`Var_θ⟨v,S⟩ = −⟨v, Dm(θ)v⟩`), `norm_toL1_famDens_mul` (`‖[q_M g]‖₁ = E_{Q_M}|g|`), **`integral_abs_normalProj_le_sqrt`**
+  (`E|N g| ≤ √(E g²)`, Cauchy–Schwarz + tangent Pythagoras); with `λ|v|² ≤ Var_{Q_s}⟨v,S⟩` on `𝕍`, `|S − M_s| ≤ L`, `|M − m₀| ≤ D`:
+  `chartDerivEquiv_atlasVel`, `atlasCurv_eq_lawCov`, `lam_mul_dotJ_atlasVel_le`, `atlasCurv_le_sqrt_mul`, **`atlasCurv_le`**
+  (`c_s ≤ D²/λ`), `dotJ_atlasVel_self_le` (`|β|² ≤ D²/λ²`), `atlasScore_eq_dotJ`, **`abs_atlasScore_le`** (`|ℓ_s| ≤ DL/λ`),
+  `integral_atlasScore_sq`, `integral_atlasScore_sq_sq_le`, **`norm_iteratedDeriv_one_atlas_le`** (`‖p'‖₁ ≤ D/√λ`),
+  **`norm_iteratedDeriv_two_atlas_le`** (`‖p''‖₁ ≤ LD²/λ^{3/2}`), `integral_atlasRho_sq_eq_lawCov`, `chartDerivEquiv_atlasVelD`
+  (`Dm(θ_s)β' = −Cov(S, ℓ²)`), `dotJ_respCov_atlasScore_sq`, `abs_dotJ_respCov_atlasScore_sq_le`, `sqrt_dotJ_respCov_atlasScore_sq_le`
+  (`|Cov(S,ℓ²)| ≤ Lc`), **`integral_atlasRho_sq_le`** (`E r² ≤ L²c²/λ`), **`norm_iteratedDeriv_three_atlas_le`**
+  (`‖p'''‖₁ ≤ 4L²D³/λ^{5/2}`).
+- `CubicRemainder.lean` (NOT mirrored): **`norm_L1_le_of_forall_integral_mul_le`** (norm duality via the sign observable),
+  `norm_iteratedDeriv_three_atlas_le_uniform`, `contDiffOn_obsL1_atlas`, **`reconstructionL1_cubic_remainder`**
+  (`‖p(s) − p(0) − s p'(0) − ½s² p''(0)‖₁ ≤ (4L²D³/λ^{5/2}) s³/6` on `[0,1]`: pair with `|F| ≤ 1`, real Lagrange remainder of
+  `t ↦ E_{Q_{M_t}}F`, third jet bound, dualise — the sharp `1/3!` constant, not Mathlib's Banach `1/n!`).

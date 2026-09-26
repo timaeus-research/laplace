@@ -1107,3 +1107,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `← atlasScore_eq_responseScore` needs `hS ν hfin`; `Integrable.toL1_eq_toL1_iff f g hf hg`. Round 66: rank 3 DONE. NEXT: rank 1
   cheap pre-theorem (explicit `‖p^{(k)}‖₁` bounds in terms of `λ`, `L`, `D`) then the analytic atlas (contraction + majorant;
   check Mathlib for `HasFPowerSeriesAt` inverse-function API), then rank 2 face completion (finite `X`), rank 4 CLT.
+- `QuantitativeJets` + `CubicRemainder` landed (round-66 rank 1 pre-theorem DONE): explicit `‖p'‖₁ ≤ D/√λ`, `‖p''‖₁ ≤ LD²/λ^{3/2}`,
+  `‖p'''‖₁ ≤ 4L²D³/λ^{5/2}` and the cubic remainder `(4L²D³/λ^{5/2}) s³/6` with Lagrange's `1/3!` (via pairing with `|F| ≤ 1`,
+  `taylor_mean_remainder_lagrange` on the REAL response, then norm duality `norm_L1_le_of_forall_integral_mul_le`). Hypotheses:
+  `hcov : ∀ v : 𝕍, λ⟨v,v⟩ ≤ lawCov Q_s (dirLoss v)(dirLoss v)`, `hSb : ∀ x, ⟨M_s − S x, M_s − S x⟩ ≤ L²`, `⟨M−m₀,M−m₀⟩ ≤ D²`
+  (Euclidean `dotJ`; uniform in `t ∈ [0,1]` for the remainder). Gotchas: local notations (`𝕍`, `Pfam`, `m₀`) inside a `variable`
+  line give "Failed to infer binder type"/panics — spell them out; `rw [lemma_with_Prop_arg]` where the Prop arg is a `{g}`-dependent
+  `hg : Bdd g` leaves an unassigned `case hg` goal (proof irrelevance blocks assignment) — pass `hg` explicitly; `rw [e] at h` with
+  `e : a = √a * √a` rewrites the `a` inside `√a` too — rewrite the goal side with `Real.mul_self_sqrt` instead; `abs_of_nonneg
+  (sq_nonneg _)` in a `rw` list picks the first `|·|` — give the argument; `rw [taylor_within_apply, sub_zero]` already kills
+  `(s − 0)`; `Real.sqrt_div (hx : 0 ≤ x) y`, `Real.sqrt_mul (hx) y`, `pow_le_pow_left₀`. Round 66: ranks 3, 1-pre DONE. NEXT:
+  rank 1 flagship (analyticity of `P : Ω → L¹`; grep Mathlib `HasFPowerSeriesAt`/`AnalyticAt` inverse-function API first), rank 2
+  face completion (finite `X`), rank 4 CLT.
