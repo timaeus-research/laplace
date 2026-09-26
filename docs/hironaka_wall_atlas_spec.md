@@ -5197,3 +5197,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`lintegral_sqrt_raySpeedSq_lt_top_iff`** (THE EXACT CLASSIFICATION OF FISHER ACCESSIBILITY ALONG A NATURAL RAY:
   `∫^∞ √Var_{p_t}⟨u,S⟩ dt < ∞ ↔ Σ_k √a_k < ∞`, `a_k` the dyadic shell masses of the boundary layer; topological completion
   (always) vs Fisher completion (iff): for `H(r) ∼ c(log 1/r)^{−β}`, `a_k ≍ k^{−β−1}`, threshold `β > 1`).
+- `ResponseDefect.lean` (NOT mirrored; round-75 rank 1 (G), the data-law path): `responseDefect S ν h t = D(ρ_t‖ν) − I(m_t)` for
+  `ρ_t = ν.tilted(t h)`, `m_t = E_{ρ_t}S`; `isProbabilityMeasure_dataPath`, `klDiv_dataPath_ne_top`, `genRate_dataPath_ne_top`,
+  **`responseDefect_eq_klDiv`** (`ℰ(t) = D(ρ_t ‖ q_{m_t})`, Pythagoras), **`klDiv_tilted_eq_genRate_add_responseDefect`**
+  (`D(ρ_t‖ν) = I(m_t) + ℰ(t)`: data information = response information + irreducible defect), `responseDefect_nonneg`,
+  `responseDefect_zero`, **`hasDerivAt_responseDefect`** (`ℰ'(t) = t Var_{ρ_t}(h) + ⟨θ(m_t), Cov_{ρ_t}(S,h)⟩`),
+  `hasDerivAt_responseDefect_zero` (`ℰ'(0) = 0`), `exists_hasDerivAt_lawCov_dataPath`, **`hasDerivAt_deriv_responseDefect_zero`**
+  (`ℰ''(0) = Var_ν(h) − Var_ν(regressor)`), **`deriv_deriv_responseDefect_zero_eq_residual`** (`ℰ''(0) = Var_ν(h − regressor)`:
+  to second order the defect is half the variance of the score the observables cannot see), nonneg and `≤ Var_ν h`.

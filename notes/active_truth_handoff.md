@@ -1526,3 +1526,21 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   Ioc_disjoint_Ioi_same` + `Ioc_union_Ioi_eq_Ioi` splits a tail; `ENNReal.add_lt_top`. NEXT: rank 2 (vertex-gap convergence
   criterion in face-adapted natural coordinates: `meanMap η_n → M ∈ ri F ↔ τ_n → η_F(M) ∧ ⟨ζ_n, v₀ − v⟩ → +∞ ∀ v ∉ F`), rank 4
   (response potential `I(M) = D(q_M‖ν)`, `∇I = η`, `D²I = C⁻¹`), or a round-75 consult.
+- Round-75 consult (`research_round75_{q,v1}`): (1) the vertex-gap sign is `⟨η_n, v − v₀⟩ → +∞` (we tilt by `e^{−⟨η,S⟩}`);
+  complement-free criterion TRUE for `M ∈ ri F`: `m_ν(η_n) → M ↔ m_{ν_F}(η_n) → M ∧ ∀ v ∈ V∖F, ⟨η_n, v − v₀⟩ → +∞`; the reverse
+  direction holds for every `M ∈ F` via the STRONG extinction bound `e^{c_n − ⟨η_n,s⟩} ≤ exp(−γ_n d(s)/D)` with
+  `c_n = min_{w∈V∩F}⟨η_n,w⟩`, `γ_n = min_{v∉F}(⟨η_n,v⟩ − c_n)`, `d(s) = β − ⟨u,s⟩`, `D = max_V d` (a deterministic inequality for
+  every `s ∈ P`, no measurable choice of weights), then `P_{η_n}(Aᶜ) ≤ (1/p_*) ∫_{Aᶜ} exp(−γ_n d(S)/D) dν → 0` by DCT; forward
+  direction via `tendsto_projL1_of_tendsto` + "conditioning on a full-measure set is `L¹`-continuous" (`‖1_A f_n/a_n − f‖₁ ≤
+  2‖f_n − f‖₁`) + charged fibre ratios. Five Lean-shaped lemmas listed in §2. (2) flags = lexicographic exposure theorem, a
+  corollary. (3) Re-ranking: G (data-path response defect) > A (vertex gaps) > F (intrinsic Fisher boundary geometry) > E
+  (Bregman packaging; sign: `DI(M)[u] = −⟨θ(M),u⟩`). Straight-path Fisher length is NOT automatically finite (1-D: same curve as
+  the ray).
+- `ResponseDefect` landed (round-75 rank 1). Almost everything was in `BasepointCurvature` (`regressor`, `residual_variance`,
+  `hasDerivAt_rateVel_zero`) and `ThermalTransport` (`hasDerivAt_klDiv_tilted_toReal`); the module is the Pythagorean assembly.
+  Gotchas: `responseProjection_spec … |>.2.2.2 ρ hP rfl` is the Pythagorean identity with the mean hypothesis discharged by `rfl`;
+  `ENNReal.eq_sub_of_add_eq (hc : c ≠ ⊤) (h : a + c = b) : a = b − c` then `ENNReal.toReal_sub_of_le`; `genRate_atlasPath_zero hS ν
+  (M := 0)` + `atlasPath_zero` + `meanMap_zero_eq_mean` gives `I(m₀) = 0`; `mean_tilted_mem_intrinsicInterior hS ν hf` (hS first);
+  `genRate_ne_top_of_mem_intrinsicInterior` lives in `EmpiricalProjection` (import it). NEXT: rank 2 vertex-gap criterion (five
+  lemmas of round 75 §2, strong extinction bound), or the Bregman identity `D(q_M‖q_N) = I(M) − I(N) − DI(N)[M − N]`, or the
+  defect's Taylor form `ℰ(t) = ½ t² Var(residual) + o(t²)`.
