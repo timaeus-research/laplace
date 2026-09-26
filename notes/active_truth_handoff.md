@@ -1416,3 +1416,24 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Real.sqrt_eq_rpow`; `Real.rpow_le_rpow (hx : 0 ≤ x) (h : x ≤ y) (hz : 0 ≤ z)` for the second factor. NEXT: minimal faces
   (round-72 rank 1) or a round-73 consult; the capstone `ResponseAtlas` is now well-motivated (rigidity + completion +
   retraction + boundary rays + boundary-layer rates + Fisher accessibility + Hellinger).
+- Round-73 consult (`research_round73_{q,v1}`): route (b) for the minimal-face theorem (charged vertices `T`, `F = conv T`,
+  `M ∈ ri F` from absorption, affine saturation, exposure by separating `aff F` from `conv (V∖T)`), then essential support
+  `q_M ∼ ν|_{S∈F}`, the uniform bound `dq_M/dν ≤ 1/m_*`, the face order `q_M ≪ q_N ↔ F_M ⊆ F_N`, `L^p` continuity, then a
+  thin `ResponseAtlas`, facewise Fisher/analytic charts, the Fisher-boundary classification (sharper 1-D counterexample
+  `ν = p₀δ₀ + p₁δ₁ + c·1_{(0,e^{-1})}/(x log²(1/x)) dx`), and natural-parameter convergence by face flags.
+- `PolytopeMinimalFace` landed (round-73 route (b), first module). The minimal face needed NO absorption for `M ∈ ri F`:
+  `mem_intrinsicInterior_iff_forall_supporting` reduces it to "a functional maximised at `M = Σ a_v v` (a_v > 0 on T) is
+  constant on T" (`Finset.sum_lt_sum` contradiction). Exposure: `geometric_hahn_banach_compact_closed` separating
+  `conv (V∖T)` (compact: `(Set.toFinite _).image _` + `Set.Finite.isCompact_convexHull ℝ`) from `aff F` (closed:
+  `AffineSubspace.closed_of_finiteDimensional`, convex: `(affineSpan ℝ s).convex`); disjointness from
+  `mem_intrinsicInterior_iff_exists_ball` (copy the `ε = δ/(2(‖M−x‖+1))` block of `RelativeInterior`) + `IsExtreme.
+  left_mem_of_mem_openSegment` with weights `ε/(1+ε), 1/(1+ε)` (`module` after `smul_add, smul_smul, smul_sub` and
+  `1/(1+ε)*ε = ε/(1+ε)` by `ring`; the `calc` must use the goal's RIGHT association `a • x + (b • M + …)`), then
+  `support_absorb` gives the contradiction. A functional bounded below on `aff F` is constant: move along `s • (y − x) +ᵥ x`
+  with `s = (c − f x − 1)/(f y − f x)` (`AffineSubspace.vadd_mem_iff_mem_direction`, `div_mul_cancel₀`). `StrongDual ℝ (J→ℝ)`
+  to `dotJ`: `LinearMap.pi_apply_eq_sum_univ f.toLinearMap` (needs `classical`), `u j := f (fun i ↦ if j = i then 1 else 0)`.
+  `carriedResponses S A = conv (val '' A)` via `Finset.sum_subset` onto `univ.filter (· ∈ A)` and `Convex.sum_mem`; the
+  reverse inclusion by `convexHull_min` with `deltaVec` (needs `classical`). Section `variable (V) [Nonempty V]`: lemmas
+  not mentioning `vertexSection` need `omit [Nonempty J] [Nonempty V] in`. NEXT: entropy consequences of the exposed
+  minimal face (essential support `q_M ∼ ν|_{S ∈ F_M}` via `exists_ray_tendsto_responseProjection_polytope`/
+  `responsProjection_faceMeasure`, the `1/m_*` bound, the face order), then the thin `ResponseAtlas`.

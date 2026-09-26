@@ -5112,3 +5112,20 @@ certificates for concrete resolved charts beyond the identity chart.
   **`tendsto_hellingerSq_projDens`** (Hellinger continuity on the charged polytope), **`tendsto_projL1_of_tendsto_hellingerSq`**
   (Hellinger convergence of projections is `L¹` convergence): the `L¹` and Hellinger topologies coincide on the completed
   family, which is therefore the ambient-Hellinger closure of the interior family.
+- `PolytopeMinimalFace.lean` (NOT mirrored; round-73 route (b), the minimal-face theorem): `carriedResponses_vertexStat`
+  (responses carried by a vertex set = its hull); `chargedVertices V M = {v ∈ V | vertexSection V M v > 0}`,
+  `minimalFacePoly V M = conv (charged)`; **`minimalFace_vertexStat_eq`** (the abstract minimal face of the vertex
+  statistic IS the charged hull), `isExtreme_minimalFacePoly`, `mem_minimalFacePoly`,
+  **`minimalFacePoly_subset_of_isExtreme`** (contained in every face through `M`),
+  **`vertexSection_pos_iff_mem_minimalFacePoly`** (Csiszár's support theorem for polytopes: a vertex is charged iff it lies
+  on the minimal face), `vertexSection_eq_zero_iff`; **`mem_intrinsicInterior_minimalFacePoly`** (`M ∈ ri F`, via the
+  supporting-functional criterion: a functional maximised at `M` is constant on the charged vertices, hence on `F`);
+  `unchargedVertices`, `notMem_minimalFacePoly_of_mem_uncharged` (absorption: no point of `conv (V∖T)` lies on `F`),
+  **`disjoint_uncharged_affineSpan`** (`conv (V∖T) ∩ aff F = ∅`, from `M ∈ ri F` + extremality: a point of `aff F` is an
+  endpoint of an open segment through `M` inside `P`); `exists_dotJ_eq` (every functional is a `dotJ`),
+  `dotJ_eq_of_forall_lt_on_affineSpan` (a functional bounded below on an affine subspace is constant on it);
+  **`exists_exposing_minimalFacePoly`** (EXPOSURE: `∃ u β, (∀ v ∈ V, ⟨u,v⟩ ≤ β) ∧ ⟨u,M⟩ = β ∧ (∀ v, ⟨u,v⟩ = β ↔ v charged)
+  ∧ F = conv {v ∈ V | ⟨u,v⟩ = β}`, by strong separation of `aff F` from `conv (V∖T)`), and
+  `exists_minimalFacePoly_eq_inter_hyperplane` (`F = P ∩ {⟨u,·⟩ = β}`). This is the input `hrel`/`hV`/`hM` of
+  `exists_ray_tendsto_responseProjection_polytope` for EVERY `M ∈ P`: every response projection on a charged polytope is the
+  total-variation limit of an explicit natural ray.
