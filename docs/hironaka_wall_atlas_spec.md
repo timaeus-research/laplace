@@ -5173,3 +5173,10 @@ certificates for concrete resolved charts beyond the identity chart.
   **`abs_integral_responseProjection_sub_featureless_le`** (on a charged polytope, for EVERY completed response whose straight path
   has Fisher length ≤ L: `|E_{q_M}F − E_νF| ≤ ‖F‖_∞ · L` — posterior expectations move at most as far as the Fisher length of the
   path from the featureless law).
+- `RayVarianceSandwich.lean` (NOT mirrored; round-74 rank 3, first half): `lawCov_const_sub_self`; `slackMoment S ν θ u β j t =
+  ∫_{Fᶜ} g^j e^{−⟨θ,S⟩} e^{−tg}` (`slackMoment_zero` = `offFaceMass`), `integrable_slack_pow_mul`, `slackMoment_nonneg`,
+  `integral_slack_pow_famDens_ray` (`∫ g^j dp_t = C_j/(A+B_t)`), **`raySpeedSq_eq`** (EXACT Fisher speed
+  `Var_{p_t}(g) = C₂/(A+B) − (C₁/(A+B))²`), **`slackMoment_one_sq_le`** (`C₁² ≤ B C₂`, Cauchy–Schwarz via
+  `integral_mul_le_Lp_mul_Lq_of_nonneg` with `√w`, `g√w` on the off-face set), **`raySpeedSq_sandwich`**
+  (`A C₂/(A+B)² ≤ Var ≤ C₂/(A+B)`), `offFaceMass_le_zero` (`B_t ≤ B_0`), **`sqrt_raySpeedSq_comparable`**
+  (`√A/(A+B_0) √C₂ ≤ √Var_{p_t} ≤ √C₂/√A` for `t ≥ 0`: the ray has finite Fisher length iff `∫^∞ √C₂(t) dt < ∞`).

@@ -1497,3 +1497,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `nhdsWithin_Iio_neBot le_rfl` supplied by `have`. NEXT: rank 2 (vertex-gap convergence criterion in face-adapted natural
   coordinates), rank 3 (shell-mass Fisher classification: variance sandwich `A C₂/(A+B)² ≤ Var ≤ C₂/(A+B)` then
   `finite length ↔ Σ √a_k < ∞`), rank 4 (response potential `I(M) = D(q_M‖ν)`, `∇I = η`, `D²I = C⁻¹`).
+- `RayVarianceSandwich` landed (round-74 rank 3, first half: the exact Fisher speed of the ray and its two-sided comparison
+  with `√C₂`). Gotchas: `Integrable.bdd_mul` needs `(c := …)` pinned when the bound is a power; a lemma whose statement has no
+  `hS`/probability must `omit hS [IsProbabilityMeasure ν]` and callers drop `hS`; goals from `integral_congr_ae` are beta-redexes —
+  `beta_reduce` before `rw [pow_one]`/`rw [sq]`; `Real.sqrt_div' x (hy : 0 ≤ y)`, `Real.sqrt_sq`, `Real.sqrt_mul (hx) y`;
+  `div_le_div_of_nonneg_left (ha : 0 ≤ a) (hc : 0 < c) (h : c ≤ b) : a / b ≤ a / c`. NEXT: the shell-mass classification
+  (`finite Fisher length ↔ Σ_k √a_k < ∞`, `a_k = μ(R2^{−(k+1)} < g ≤ R2^{−k})`, lower-bound `C₂(t)` by shell `k` at `t ≍ 2^k/R`,
+  upper by `√(Σ b_k) ≤ Σ √b_k`), rank 2 (vertex-gap criterion), rank 4 (response potential).
