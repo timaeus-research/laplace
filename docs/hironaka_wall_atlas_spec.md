@@ -4604,3 +4604,10 @@ certificates for concrete resolved charts beyond the identity chart.
   finite-rate `M_i → M_*` with `𝓘(M_i) → 𝓘(M_*) < ∞` ⇒ `E_{Π(M_i)}F → E_{Π(M_*)}F` for every bounded `F`, any filter;
   the completion topology is that of `M ↦ (M, 𝓘(M))`). NB Astra's counterexample: response convergence alone does NOT
   give TV convergence at finite-rate boundary points.
+- `SegmentStability.lean` (NOT mirrored; round-58 §4.2): `genRate_segment_le_of_ne_top` (convexity of the rate between any two
+  finite-rate responses, from `genRate_mixture_gap` with `ℝ≥0` weights), `tendsto_segment_nhdsLT`,
+  **`tendsto_genRate_segment_of_ne_top`** (`𝓘((1−t)A + tB) → 𝓘(B)` as `t ↑ 1`; lsc + convexity via `tendsto_order`),
+  **`tendsto_integral_responseProjection_segment_of_ne_top`** (continuity of the reconstruction along every segment
+  between finite-rate responses, boundary endpoints included).
+- `ObservableTaylorUniform.lean` (NOT mirrored; round-58 "named corollary"): **`integral_response_peano_uniform`**
+  (`E_{Π(M+z)}F = E_Q F + E_Q[Fℓ_z] + ½E_Q[F N(ℓ_z²)] + o(‖z‖²)B_F` uniformly on compact convex interior sets).

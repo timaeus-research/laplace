@@ -750,3 +750,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `rw [Real.sqrt_zero]`. Round-58 consult (`research_round58_v1`) remaining: named observable Taylor corollary,
   moment-normality at all orders (needs C^n), analyticity route (a), segment continuity of the rate (4.2), observable
   delta method (5.3, needs CLT), dual-curve comparison (6).
+- `SegmentStability` + `ObservableTaylorUniform` landed (round-58 §4.2 and the named observable corollary). Gotchas:
+  `ENNReal.ofReal_eq_coe_nnreal` rewrites leave `↑⟨x,p⟩ = ↑⟨x,q⟩` unsolved — go through `ENNReal.coe_nnreal_eq` + the
+  real coercion identity instead; `(⟨x, h⟩ : ℝ≥0) : ℝ) = x` is `rfl` after `rw`; `Tendsto.mono_left nhdsWithin_le_nhds`
+  needs `(s := Iio 1)`; a section variable `ν` not mentioned in a statement is NOT an argument of that theorem.
+  Round-58 remaining: moment-normality at all orders / analyticity (rank 3), observable delta method (needs CLT), dual
+  curve comparison. NEXT: round-59 consult or all-orders audit.

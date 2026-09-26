@@ -426,6 +426,8 @@ import Laplace.Multi.DensityPeanoUniform
 import Laplace.Multi.ResponseAtlasTheorem
 import Laplace.Multi.EmpiricalTotalVariation
 import Laplace.Multi.EntropyGapStability
+import Laplace.Multi.SegmentStability
+import Laplace.Multi.ObservableTaylorUniform
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
