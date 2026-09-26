@@ -4652,3 +4652,17 @@ certificates for concrete resolved charts beyond the identity chart.
   **`measureReal_abs_sampleResponse_sub_gt_le`** / **`measureReal_norm_sampleResponse_sub_gt_le`** (Hoeffding:
   `P(‖M̂_n − M‖ > δ) ≤ 2|J| exp(−nδ²/(8B²))` for features bounded by `B`, sup norm on `J → ℝ`, `iIndepFun`),
   `exists_tail_sampleResponse` (`∃ c > 0` with the rate `exp(−c n δ²)`).
+- `BiasForm.lean` (NOT mirrored): `dirProj S ν` (linear projection `(J → ℝ) → 𝕍`, `dirProj_coe`), `linForm` (the linear
+  Peano term as a linear functional on `J → ℝ`), `coordUnit`, `linearMap_eq_sum_coordUnit`, **`biasForm`**
+  (`b_F(u,v) = ∫ N_M F · ℓ_{πu} ℓ_{πv} dQ_M`, a `LinearMap.mk₂` bilinear form on `J → ℝ`), `biasForm_eq_sum` (coordinate
+  expansion), **`integral_mul_normalProj_comm`** (`N_M` is self-adjoint in `L²(Q_M)`: `∫ f N g = ∫ N f · g`),
+  `integral_mul_normalProj_sq_eq_biasForm`, **`integral_response_peano_biasForm`** (the compact-uniform Peano expansion
+  `G(M+z) = G(M) + linForm(z) + ½ b_F(z,z) + O(ε‖z‖²)`).
+- `ReconstructionBias.lean` (NOT mirrored; round-60 §4 third item, the reconstruction-bias theorem): `obsResponse`
+  (`G_F(M') = ∫ F dQ_{M'}`), `abs_obsResponse_le`, `continuousOn_obsResponse` (continuity on interior sets, via `dirProj`
+  and `continuousOn_responseTheta_add`), `dataMoment D S = E_D S`, `plugIn` (truncated plug-in estimator, `Set.piecewise`),
+  `norm_sq_le_sum_sq`, `abs_sampleResponse_le`, **`reconstruction_bias_core`** (fixed-`n` estimate:
+  `|n(EĜ_n − G(M)) − ½ΣΓ_ab b_F(e_a,e_b)| ≤ BF ε Σ_a Γ_aa + n K P(‖M̂_n − M‖ > min r δ)`),
+  **`reconstruction_bias`**: for iid samples of `D ≪ ν` with interior `M = E_D S`, `∃ C` compact convex interior
+  neighbourhood of `M` with `n (E Ĝ_n − G_F(M)) → ½ Σ_{ab} Γ_ab b_F(e_a, e_b)`, `Γ = Cov_D(S)`. No CLT: unbiasedness +
+  `Γ/n` second moments + Hoeffding tail on the exceptional set + compact-uniform Peano.

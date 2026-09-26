@@ -795,3 +795,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `exp(−c n δ²)` (it gives `exp 0 = 1`) — use the bound `B + 1` in the existential corollary; `iIndepFun.comp` gives the
   centred family, `HasSubgaussianMGF.neg` the lower tail. NEXT: reconstruction-bias theorem assembly
   (`integral_response_peano_uniform` + `Γ/n` + tail with fallback outside the compact convex neighbourhood).
+- `BiasForm` + `ReconstructionBias` landed: THE RECONSTRUCTION-BIAS THEOREM (round-60 §4). Gotchas: `Submodule.linearProjOfIsCompl`
+  is deprecated for `Submodule.projectionOnto p q h` (`projectionOnto_apply_left h x`); `continuousOn_responseTheta_add` is
+  based at the featureless response `m₀ = meanMap …` (obtain `M = m₀` and `subst`); after `obtain ⟨M, hM⟩ : ∃ M, M = …`
+  the abbreviation is OPAQUE, so `change` between `M j` and its definition fails — rewrite with `hM` instead; state
+  abbreviations of families pointwise (`∀ a b, Γ a b = …`) so `simp only [← hΓ]` folds applied occurrences;
+  `simp_rw [linearMap_eq_sum_coordUnit L]` loops (RHS contains `L (coordUnit a)`) — use a `funext` rewrite of the
+  integrand; `plugIn` takes `[DecidablePred (· ∈ C)]` so `ContinuousOn.measurable_piecewise` unifies. NEXT: bias
+  coefficient as `½ E_D b_F(S(x) − M, S(x) − M)` (π-free form), `C²` via differentiating the score, all-orders prototype,
+  round-61 consult.
