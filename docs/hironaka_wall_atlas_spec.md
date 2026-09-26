@@ -4285,3 +4285,7 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL(D‖Π_S(M_D)) = KL(D‖Π_{S'}(M'_D)) + KL(Π_{S'}(M'_D)‖Π_S(M_D))`, from `TargetPythagoras` with the coarse
   representative as fine target), **`genRate_fine_eq_coarse_add`** (`𝓘_{S'} = 𝓘_S + KL(Π_{S'}‖Π_S)`).
   The observational tower `L_G = L_H + KL(D^H‖D^G)` is `klDiv_statisticLift_tower` (ResidualInformation).
+- `InformationDistance.lean` (NOT mirrored; the one-line map): **`toReal_klDiv_eq_integral_atlasCurv_add`**
+  (`KL(D‖ν) = ∫₀¹ (1−s) κ(s) ds + L + R` for every finite-information `D`, boundary responses included),
+  `atlasPath_eq_mixture_mean`, **`toReal_klDiv_bridge_eq_integral_atlasCurv_add`**
+  (`KL(D_s‖ν) = ∫₀ˢ (s−u) κ(u) du + L_s + R_s` along the bridge `aν + bD`, `b < 1`).
