@@ -472,6 +472,7 @@ import Laplace.Multi.AnalyticTilt
 import Laplace.Multi.AnalyticChart
 import Laplace.Multi.PointwiseJets
 import Laplace.Multi.FiniteEntropySupport
+import Laplace.Multi.FiniteCompletionContinuity
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

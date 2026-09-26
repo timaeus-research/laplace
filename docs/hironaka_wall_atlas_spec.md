@@ -4943,3 +4943,11 @@ certificates for concrete resolved charts beyond the identity chart.
   has finite rate under a full-support law), **`responseProjection_singleton_pos`** / `responseProjection_singleton_pos_of_vec`
   (MAXIMAL SUPPORT: any feasible law charging `x` forces `q*(M) {x} > 0`, from Pythagoras `KL(r‖ν) = KL(r‖q*) + 𝓘 < ∞` ⇒ `r ≪ q*`),
   `qStarVec` (the completed family as probability vectors), `qStarVec_mem_stdSimplex`, `vecMeasure_qStarVec`, `vecMoment_qStarVec`.
+- `FiniteCompletionContinuity.lean` (NOT mirrored; round-68 face completion, module 2): `entVec` (`Σ p x log(p x/ν{x})`),
+  `measureReal_singleton_pos`, `entVec_eq`, **`continuous_entVec`**, `forall_of_ae_full_support`, `count_withDensity_singleton`,
+  `vecMeasure_eq_withDensity`, `llr_vecMeasure`, **`toReal_klDiv_vecMeasure`** (the bridge `(klDiv (vecMeasure p) ν).toReal = entVec`),
+  **`eventually_add_sub_mem_stdSimplex`** (additive recovery `p + a_n − r ∈ Δ` eventually when `supp r ⊆ supp p`), `tendsto_add_sub`,
+  `vecMoment_add_sub`, `continuous_vecMoment`, **`entVec_qStarVec_le`** (q* minimises over its fibre), **`eq_qStarVec_of_entVec_le`**
+  (unique minimiser), **`qStarVec_limit_eq`** (limits of minimisers are minimisers), **`tendsto_qStarVec`**,
+  **`continuousOn_qStarVec`** (THE COMPLETED FAMILY IS CONTINUOUS ON THE MOMENT POLYTOPE), **`continuousOn_genRate_toReal`**
+  (the rate is continuous on the polytope).

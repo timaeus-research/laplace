@@ -1187,3 +1187,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `(klDiv (vecMeasure p) ν).toReal = entVec` (rnDeriv of `withDensity`, `llr`, full support ⇒ a.e. = everywhere), continuity
   (`Real.continuous_mul_log`), additive recovery `b_n = p + a_n − r`, limits of minimisers, `tendsto_of_subseq_tendsto` +
   `IsCompact.tendsto_subseq` ⇒ `Continuous (qStarVec)` on the polytope.
+- `FiniteCompletionContinuity` landed (face completion module 2, the crux). Gotchas: `isClosed_stdSimplex ℝ X` takes explicit
+  arguments; `continuousOn_iff_continuous_restrict` is deprecated → `continuousOn_iff_continuous_domRestrict` (then
+  `continuous_iff_seqContinuous` and `tendsto_qStarVec` on `fun n ↦ (u n : J → ℝ)`); `tendsto_of_subseq_tendsto fun ns hns ↦
+  ⟨φ, …⟩` with `IsCompact.tendsto_subseq (x := …)`; `ENNReal.mul_div_cancel (ha₀) (ha) : a * (b / a) = b`; the density identity
+  `vecMeasure p = ν.withDensity (ofReal p / ν{·})` via `count_withDensity` + `Measure.sum_smul_dirac` and `withDensity_mul` in a
+  `calc` (a `conv_rhs` rewrite of `ν` also rewrites inside the density); `Measure.rnDeriv_withDensity ν (f := …)
+  (measurable_of_countable _)` then `forall_of_ae_full_support` to make the a.e. identity pointwise; `toReal_klDiv` has the
+  `+ ν.real univ − μ.real univ` tail (kill with `probReal_univ`); `IsFiniteMeasure` instances for `vecMeasure (qStarVec …)` and
+  `responseProjection` must be `have`d before `measure_ne_top`/`klDiv_ne_top_of_full_support`; `Fintype`-free statements need
+  `omit [Fintype X] in … [Finite X] … cases nonempty_fintype X`. NEXT: module 3 `FiniteMinimalFace` (accessible set
+  `J_m = {x | ∃ r feasible, r_x > 0}`, `supp q*(m) = J_m`, `x ∈ J_m ↔ S(x) ∈ minimal face`) and module 4
+  `FiniteCompletionRetraction` (range qStarVec = closure of the interior family, homeomorphic to the polytope; `R(p) = q*(E_p S)`
+  continuous moment-preserving retraction; strong deformation retraction `H_t`).
