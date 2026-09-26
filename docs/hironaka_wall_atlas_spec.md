@@ -4388,3 +4388,12 @@ certificates for concrete resolved charts beyond the identity chart.
   (the restricted covariance operator is differentiable along the atlas, assembled from `Module.finBasis` and
   `ContinuousLinearMap.smulRightL`), `atlasVel_eq_ringInverse`, **`hasDerivAt_atlasVel`**
   (`β_s' = −Σ_s⁻¹ D_s β_s`, by `hasFDerivAt_ringInverse` composed with the operator path).
+- `AtlasHessian.lean` (NOT mirrored; round-53 rank 2, stage 2 — the mixed Hessian on the atlas diagonal):
+  `measurable_famDens`, `integral_famDens_mul` (`∫ f dP_θ = ∫ p_θ f dν`), **`hasFDerivAt_famZ`**
+  (`DZ(θ)[η] = −Z(θ)⟨η, m(θ)⟩`, from `hasFDerivAt_affNum`), `hasDerivAt_famZ_atlas`, `hasDerivAt_dirLoss_atlas`,
+  `hasDerivAt_famWeight_atlas`, **`hasDerivAt_famDens_atlas`** (`d/ds q_s = q_s ℓ_s`, `ℓ_s = ⟨β_s, M_s⟩ − ⟨β_s,S⟩`),
+  `atlasAccel` (`β_s'`), `hasDerivAt_score_atlas`, `atlasBend` (`w_s = Σ_s⁻¹ D_s β_s`), **`atlasHess`**
+  (`q_s(ℓ_s² − κ(s) + ⟨w_s, S − M_s⟩)`), **`hasDerivAt_famDens_deriv_atlas`** (`d²/ds² q_s = atlasHess`),
+  `atlasCurv_eq_integral_score_sq`, `cumulantVec_atlasVel_eq` (`(D_s β_s)_j = E_{Q_s}[(S_j − M_j) ℓ_s²]`),
+  `lawCov_stat_atlasBend` (`Cov_{Q_s}(S_j, ⟨w_s,S⟩) = −(D_s β_s)_j`), **`integral_atlasHess`** (`∫ q'' dν = 0`),
+  **`integral_mul_atlasHess`** (`∫ S_j q'' dν = 0`): all second-order bending of the atlas is response-invisible.

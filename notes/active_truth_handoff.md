@@ -533,3 +533,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `integral_dirLoss_mul_famWeight` and dominated differentiation or `hasFDerivAt_obsMap`), then
   `d²/ds² q_s = q_s(ℓ_s² − κ(s) − ⟨Σ_s⁻¹ c_s, S − M_s⟩)` with `c_s = D_s β_s` (as vector `= E_s[(S−M_s) ℓ_s²]`),
   and the orthogonality `∫ q'' = 0`, `∫ S q'' = 0` by direct algebra.
+- `AtlasHessian` landed (round-53 rank 2 complete on the atlas diagonal): `d²/ds² q_s = q_s(ℓ_s² − κ + ⟨w_s, S − M_s⟩)`
+  with `w_s = Σ_s⁻¹ D_s β_s`, zero mass and zero feature moments. Gotchas: `have h : Integrable f _ := …`
+  leaves the measure a metavariable (`IsProbabilityMeasure ?m` stuck) — always write the measure;
+  `Bdd.const _` inside `.sub` needs the constant given; `(hasDerivAt …).neg.exp` produces a Pi-negated
+  function — restate the negated `HasDerivAt` with a lambda type before `.exp`; `chartDeriv θ (e.symm y) = y`
+  via `rw [← coe_chartDerivEquiv]; exact ContinuousLinearEquiv.apply_symm_apply _ _`.
+  Round 53 landed: ranks 1, 2 (atlas diagonal), 3, 6. Remaining: rank 4 (unbounded bridge split), rank 5
+  (general conditional variational), the polarised mixed Hessian `D²q_M[u,z]` in response coordinates
+  (needs the second Fréchet derivative of the inverse chart — the path version is the diagonal `u = z = Δ`),
+  observable-defect second order as a corollary. NEXT: round-54 consult or rank 4.
