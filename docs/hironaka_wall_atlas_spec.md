@@ -4700,3 +4700,15 @@ certificates for concrete resolved charts beyond the identity chart.
   (`n Cov(Ĝ_F, Ĝ_G) → Σ Γ_ab lin_F(e_a) lin_G(e_b)`, the bias product being `O(1/n²)`), `sum_dataCov_mul_linForm_eq_integral`
   (`= E_D[lin_F(S−M) lin_G(S−M)]`, the sandwich covariance of the influence functions), **`plugIn_covariance_tendsto`**
   (existential package: one `C` for all pairs of bounded observables).
+- `InformationTaylor.lean` (NOT mirrored): `pairLin` (`θ ↦ (v ↦ −⟨v,θ⟩)`), `hasFDerivAt_rate_add`, `hasFDerivAt_pairLin_theta`,
+  **`uniform_rate_peano`** (compact-uniform second-order expansion of `𝓘` in the direction picture, from
+  `uniform_peano_of_hasFDerivAt`), `pairLin_comp_inverse_apply` (Hessian = Fisher form), **`fisherAmb`** (ambient Fisher form
+  `g_M(πu, πv) = −⟨R_M πu, πv⟩`, a `LinearMap.mk₂`), `fisherAmb_coe`, **`rate_peano_at`**
+  (`|𝓘(M+h) − 𝓘(M) + ⟨h,θ(M)⟩ − ½ g_M(h,h)| ≤ ε‖h‖²` uniformly on a compact convex interior neighbourhood).
+- `PlugInBias.lean` (NOT mirrored): **the plug-in bias schema** `plugInGen`, `plugInGen_bias_core`,
+  **`plugInGen_bias_tendsto_of_nhd`**: any functional `Φ` continuous on `C` with a uniform second-order expansion
+  `Φ(M+z) = Φ(M) + Lz + ½ b(z,z) + o(‖z‖²)` has `n(EΦ̃_n − Φ(M)) → ½ Σ Γ_ab b(e_a,e_b)`.
+- `InformationBias.lean` (NOT mirrored; round-61 rank 4): `continuousOn_toReal_genRate`, `rateGrad`,
+  `information_bias_tendsto_of_nhd`, `sum_dataCov_mul_bilinear_eq_integral`, **`information_bias_tendsto`**
+  (`n(E 𝓘(M̂_n) − 𝓘(M)) → ½ E_D[g_M(S−M, S−M)]`: the expected excess visible information of a sample is half the
+  Fisher-quadratic mean of the centred features, i.e. `½ tr(Γ H_M)`).

@@ -839,3 +839,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   the invisible information, the `tR'(t)` identity. NEXT: rank 4 — first check which Taylor data for `genRate` exist
   (`hasFDerivAt_genRate_chart`, `genRate_atlasPath_eq_integral`); the uniform second-order Peano for `𝓘` may follow from
   `uniform_responseTheta_peano` + the dual-gradient identity `D𝓘 = θ`.
+- `InformationTaylor` + `PlugInBias` + `InformationBias` landed (rank 4). Gotchas: a `def` in a section with `include hS`
+  does NOT take `hS` unless its statement mentions it (`pairLin ν`, not `pairLin hS ν`); `rw [h]` with `h : m₀ + ↑z = M`
+  rewrites ALL occurrences — do not list it twice; the generic `uniform_peano_of_hasFDerivAt` works verbatim for the rate
+  with `A z := pairLin (θr (m₀+z))`, `B z := pairLin.comp (Rat z)`; a theorem whose statement does not mention `ν` has
+  no `ν` argument even inside the `(ν)` section (`sum_dataCov_mul_bilinear_eq_integral hS D b`). Round-61 remaining:
+  rank 3 (`C²` of the reconstruction in `L¹`), the `L²` local expansion of the invisible information, the `tR'(t)`
+  identity; the round-61 programme is otherwise CLOSED (ranks 1, 2, 4, 5 done). NEXT: round-62 consult with the
+  full picture; candidates: `C²` in `L¹`, the diagnostic identity, the invisible `L²` expansion, and the referee-level
+  restatement of the bias/covariance theorems with an intrinsic (`π`-free) `L`.
