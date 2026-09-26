@@ -3969,3 +3969,11 @@ certificates for concrete resolved charts beyond the identity chart.
   algebra via named identities `e1/e2/e3` and `linarith`), **`sq_integral_responseProjection_segment_le`**,
   **`tendsto_integral_responseProjection_segment`** (every bounded posterior expectation converges at the endpoint of the bridge).
   Round-45 item 5 fully closed.
+- `ProjectionPythagoras.lean` (NOT mirrored; round-46 item 2; consult `gpt_responses/research_round46_v1.md` — verdict: the atlas
+  is defensible; ranking 1 complete information budget (visible ∫(1−s)κ as an improper integral + data budget + invisible =
+  difference, and the local `KL(D_s‖Π) ~ s²/2 Var(h−g)`), 2 reference-independent Pythagoras + metric packaging, 3 inverse
+  stability, 4 parameter escape at the boundary (`‖θ(M_s)‖ → ∞`, accumulation directions in the normal cone), 5 boundary
+  strict-convexity gap identity, 6 C^∞ + `D_θ C_θ[w] = −T_θ(·,·,w)` (sign!)): `toReal_klDiv_tilted_right` (real form with the
+  Donsker–Varadhan nonnegativity from `integral_sub_log_le_toReal_klDiv`), **`klDiv_familyMeasure_eq_add_projection`**
+  (`KL(D‖P_η) = KL(D‖Π(E_D S)) + KL(Π(E_D S)‖P_η)` for finite-information `D`, every `η`, boundary responses included; equality in
+  `ℝ≥0∞` via `ENNReal.toReal_eq_toReal_iff'` on finite terms).

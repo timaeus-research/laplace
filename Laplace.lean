@@ -352,6 +352,7 @@ import Laplace.Multi.PinskerEvent
 import Laplace.Multi.DualFisherMetric
 import Laplace.Multi.DataFisherBudget
 import Laplace.Multi.PinskerObservable
+import Laplace.Multi.ProjectionPythagoras
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
