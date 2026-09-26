@@ -4242,3 +4242,7 @@ certificates for concrete resolved charts beyond the identity chart.
   **`tendsto_genRate_tiltResponse_div_sq`** (`𝓘(M_t)/t² → ⟨a, Cov_ν(S,f)⟩/2`, sandwich between Fenchel and the Bregman
   identity with `M_t − N_t = o(t)`; asymptotics via `IsBigO.of_bound`, `IsBigO.mul_isLittleO`, `IsLittleO.add`,
   `IsLittleO.tendsto_div_nhds_zero`).
+- `ResidualQuadratic.lean` (NOT mirrored; round-50 item 4, headline): `norm_sq_sub_starProjection_statSpan`
+  (`‖h − B₀h‖² = Var f − ⟨a,u⟩` for the centred score, Pythagoras in `L²` + `RegressionProjection`),
+  `klDiv_tilt_eq_genRate_add` (Pythagoras for the tilt), **`tendsto_klDiv_tilt_responseProjection_div_sq`**
+  (`KL(ν_t‖Π(M_t))/t² → ‖h − B₀h‖²/2`: the projection defect along a tilt is the energy of the residual score).

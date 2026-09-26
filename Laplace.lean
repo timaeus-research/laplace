@@ -381,6 +381,7 @@ import Laplace.Multi.AtlasEnergy
 import Laplace.Multi.SusceptibilityDefect
 import Laplace.Multi.TiltQuadratic
 import Laplace.Multi.TiltRateQuadratic
+import Laplace.Multi.ResidualQuadratic
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
