@@ -409,3 +409,19 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `conv_lhs => rw [← h0]` to rewrite the argument `0` but not the RHS `0`; Lipschitz→`IsBigO.of_bound K` then
   `.trans (hM.isBigO_sub)`; `IsLittleO.congr_right (fun t ↦ by ring)` to turn `t * t` into `t ^ 2`; omits cascade —
   drop `[Nonempty J]` from a section's `variable` line instead of omitting it on every theorem.
+
+## Round 51 (`gpt_responses/research_round51_{q,v1}.md`)
+
+- Astra's ranking: 1–2 compact Chernoff upper bound + tilted lower bound (ALREADY in the seabed: `CramerTheorem.lean`
+  `cramer_upper`/`cramer_lower`, `LargeDeviationBounds.open_lower_bound`, `AsymptoticUpperBound`), 3 separate `L`/`R`
+  quadratic limits (`p_t = 1 + th + O_{L^∞}(t²)`, condExp preserves the bound, entropy-Taylor lemma), 4 `L¹`-valued
+  reconstruction derivative `Dq(m)[u] = q_m ℓ_{m,u}`, 5 conditional variational formula
+  `L = sup_g E_D[g − log E_ν(e^g|σ(S))]` (clip `log(d/c)`), 6 coarse-graining towers (atlas refinement needs affine
+  feature inclusion: `𝓘_f − 𝓘_c = KL(P_f‖P_c)`; observational refinement `L_G = L_H + KL(D^H‖D^G)`; `R` not monotone),
+  7 full-simplex mixture-path identities (DONE: `MixturePathEnergy`).
+- Gotchas: Tonelli for real integrals over `(volume.restrict (Ioc 0 1)).prod ν`: `Integrable.of_bound` with the a.e.
+  bound obtained from `Measure.prod_restrict` + `ae_restrict_iff'`; `isCompact_Icc (a := c) (b := C)` (named args on
+  `isCompact_Icc`, not on `exists_bound_of_continuousOn`); `field_simp` may not clear `1 + s*(r-1)` — use
+  `linear_combination k * mul_inv_cancel₀ h` instead; `integral_congr_ae` goals are beta-redexes (`beta_reduce`).
+- NEXT: item 3 (needs `‖p_t − 1 − th‖_∞ = O(t²)` and the entropy-Taylor lemma), item 6 (cheap: instances of
+  `TargetPythagoras` and `klDiv_statisticLift_tower`), item 5, item 4.

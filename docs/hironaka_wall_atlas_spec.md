@@ -4246,3 +4246,14 @@ certificates for concrete resolved charts beyond the identity chart.
   (`‖h − B₀h‖² = Var f − ⟨a,u⟩` for the centred score, Pythagoras in `L²` + `RegressionProjection`),
   `klDiv_tilt_eq_genRate_add` (Pythagoras for the tilt), **`tendsto_klDiv_tilt_responseProjection_div_sq`**
   (`KL(ν_t‖Π(M_t))/t² → ‖h − B₀h‖²/2`: the projection defect along a tilt is the energy of the residual score).
+- `MixturePathEnergy.lean` (NOT mirrored; round-51 item 7): `klKernel r s = (r−1)²/(1+s(r−1))`, `klKernel_denom_pos`,
+  `continuousOn_klKernel`, **`integral_one_sub_mul_klKernel`** (`∫₀¹ (1−s) klKernel = klFun r`, FTC with antiderivative
+  `r log(1+s(r−1)) − (r−1)s`), **`integral_mul_klKernel`** (`∫₀¹ s klKernel = r − 1 − log r`), `integral_klKernel`;
+  `densLaw ν r = ν.withDensity (ofReal ∘ r)`, `mixSpeed ν r s = ∫ klKernel (r x) s dν`, `klKernel_le`,
+  `measurable_klKernel_uncurry`, `integral_weight_mul_mixSpeed` (Tonelli via `integral_integral_swap` on
+  `(volume.restrict (Ioc 0 1)).prod ν` with `Measure.prod_restrict` + `ae_restrict_iff'` for the bound),
+  `isFiniteMeasure_densLaw`, `integrable_klFun_comp`, `integrable_sub_one_sub_log`, `toReal_klDiv_densLaw`
+  (`KL(rν‖ν) = ∫ klFun r`), `toReal_klDiv_densLaw_symm` (`KL(ν‖rν) = ∫ (r − 1 − log r)`, via `Measure.inv_rnDeriv`,
+  `withDensity_inv_same`, `lintegral_withDensity_eq_lintegral_mul`), **`toReal_klDiv_densLaw_eq_integral_mixSpeed`**,
+  **`toReal_klDiv_symm_densLaw_eq_integral_mixSpeed`**, **`integral_mixSpeed_eq_symm_klDiv`** (the bridge in the full
+  simplex obeys the same weighted identities as the atlas and exponential paths; bounded positive density).
