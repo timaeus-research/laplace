@@ -4927,3 +4927,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `contDiffOn_omega_atlasTheta`, `contDiffOn_omega_reconstructionL1_atlas`, **`analyticAt_reconstructionL1_atlas`** (the atlas
   curve is real-analytic on the interior atlas domain), **`analyticAt_obsResponse_atlas`** (every bounded-observable response
   `s ↦ E_{Q_{M_s}}F` is real-analytic).
+- `PointwiseJets.lean` (NOT mirrored; round-67 rank 4, structural Bell tower): `contDiffOn_iteratedDeriv_of_isOpen`,
+  `hasDerivAt_iteratedDeriv_of_contDiffOn` (iterated derivatives of a `C^∞` map on an open set), `contDiff_famDens_apply`,
+  `contDiffOn_famDens_atlas` (`s ↦ q_{M_s}(x)` is `C^∞` on the interior atlas domain), **`coeFn_iteratedDeriv_reconstructionL1_atlas`**
+  (`p^{(k)}(s) = [x ↦ ∂_s^k q_{M_s}(x)]` for EVERY `k` at every interior atlas point — the `L¹` jets are the pointwise jets, by
+  induction through the `L¹`-pointwise principle), `integrable_iteratedDeriv_famDens_atlas`, `iteratedDeriv_reconstructionL1_atlas_eq_toL1`,
+  `atlasJet` (`∂_s^k q_s`), `atlasBell` (`B_k = q_s⁻¹ ∂_s^k q_s`), `atlasJet_zero`, `atlasBell_zero`, `hasDerivAt_atlasJet`,
+  **`integral_atlasJet`** / **`integral_stat_mul_atlasJet`** (pointwise jets of order `≥ 2` have zero mass and zero feature moments),
+  `atlasBell_one` (`B_1 = ℓ_s`), **`atlasBell_succ`** (the Bell tower `B_{k+1} = ∂_s B_k + ℓ_s B_k` on `[0,1]`).

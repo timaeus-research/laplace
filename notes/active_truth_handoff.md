@@ -1153,3 +1153,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   referenced section variable". NEXT: round-67 rank 2 finite-`X` face completion (KL projection `q*(m)` on `conv S(X)`, continuity,
   moment-preserving retraction `R(p) = q*(E_p S)`, strong deformation retraction), or rank 3 explicit natural-parameter radius
   `ρ = log(3/2)/L` with `Σ‖A_n‖ρ^n ≤ 3`.
+- `PointwiseJets` landed (round-67 rank 4 in structural form): `p^{(k)}(s) = [∂_s^k q_s]` for all `k` (induction with the principle,
+  `hasDerivAt_iteratedDeriv_of_contDiffOn` from `iteratedDeriv_succ'` + `contDiffOn_infty_iff_deriv_of_isOpen`), Bell tower
+  `B_{k+1} = ∂B_k + ℓB_k`, pointwise invisible tower. Gotchas: `coeFn_hasDerivAt_L1_ae` needs `(φ := fun t x ↦ …)` named (the
+  representative is not inferable from `?_`); a `def` in a section with `(hfin)` that does not use it must be declared
+  `omit hfin in variable (M) in` so that `M` is an explicit argument (`atlasJet hS ν M k s x`); after `rw [hx]` with
+  `coeFn_toL1`, close `atlasJet … = iteratedDeriv …` by `rfl`. NEXT: round-67 rank 2 face completion (finite `X`; the seabed
+  already has `EntropyCompletion` — unique minimiser `q*(M)` for every finite-rate `M` — and `BoundaryCompletion` — the atlas
+  completes at `s = 1`; missing: continuity of `M ↦ q*(M)` on the closed polytope, support = minimal face, the retraction
+  `R(p) = q*(E_p S)` of the simplex and the strong deformation retraction), or rank 3 explicit natural-parameter radius.
