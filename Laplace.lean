@@ -460,6 +460,7 @@ import Laplace.Multi.SmoothFamily
 import Laplace.Multi.SmoothChart
 import Laplace.Multi.InvisibleTower
 import Laplace.Multi.AtlasJetL1
+import Laplace.Multi.FeaturelessJet
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

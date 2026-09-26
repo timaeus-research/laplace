@@ -1039,3 +1039,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   expansion `integral_response_peano_biasForm` + `taylor_isLittleO` + uniqueness of Peano coefficients, since
   `hasDerivAt_deriv_obsResponse_atlas` is only on `(0,1)`), then the explicit second-order featureless expansion for observables;
   then round-65 rank 1 (Hessian in all directions by polarisation) or rank 3/4.
+- `FeaturelessJet` landed (round-65 rank 2 complete except `p'''(0)`). Gotchas: `p''(0)` cannot come from
+  `hasDerivAt_deriv_obsResponse_atlas` (only on `(0,1)`); use the TV Peano `isLittleO_integral_famDens_response_peano hS ν hrel₀`
+  composed with `s ↦ s • δ` (`IsLittleO.comp_tendsto`, `‖s•δ‖² = O(s²)`), pair with `F` (`abs_integral_le_integral_abs` +
+  `integral_mono` — `norm_integral_le_of_norm_le` gets stuck on `NormedSpace ℝ ?m` unless `(f := …)` is given), and compare with
+  `taylor_isLittleO (convex_Icc 0 1) (left_mem_Icc.2 zero_le_one) hf` paired via `(obsL1 ν hF).isBigO_comp _ _ |>.trans_isLittleO`;
+  the difference is `0·s + b s²` (`simp only [Finset.sum_range_succ, Finset.sum_range_zero, hc0, hc1, Nat.factorial]; push_cast;
+  ring` inside `IsLittleO.congr_left`), and `eq_zero_of_isLittleO_sq` (via `IsLittleO.tendsto_div_nhds_zero` + `tendsto_nhds_unique`
+  on the `NeBot` filter `𝓝[Ioo 0 1] 0`, from `mem_closure_iff_nhdsWithin_neBot` + `closure_Ioo`) finishes; `field_simp` closes
+  `(a s + b s²)/s = a + b s` outright but needs `ring` for `(0 s + b s²)/s² = b`; lemmas in an `include hrel` section whose
+  statement mentions only `M` via the local notation need `(M := M)` at call sites. Round 65: rank 2 DONE (modulo `p'''(0)`),
+  rank 4 (`ResponseChernoff`) done earlier as part of round 64. NEXT: rank 1 — the Hessian of `p` in all directions
+  `D²p_M[u,v] = [q_M N_M(ℓ_uℓ_v)]` by polarisation from the affine lines through `M` (re-centred atlases) plus the second-order
+  chain rule for curved paths; or rank 3 (analyticity: contraction + majorant for the inverse mean map).

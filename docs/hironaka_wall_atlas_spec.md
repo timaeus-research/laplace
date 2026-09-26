@@ -4841,3 +4841,13 @@ certificates for concrete resolved charts beyond the identity chart.
   `taylorWithinEval_reconstructionL1_atlas`, **`reconstructionL1_taylor_remainder`** (`‖p(s) − Σ_{k≤n} s^k/k! p^{(k)}(0)‖₁ ≤ C s^{n+1}/n!`
   on `[0,1]`), **`obsResponse_atlas_taylor`** (the featureless expansion of the response of every bounded observable with the
   SAME constant: `|E_{Q_{M_s}}F − Σ_k s^k/k! ∫ F p^{(k)}(0)| ≤ ‖F‖∞ C s^{n+1}/n!`).
+- `FeaturelessJet.lean` (NOT mirrored; round-65 rank 2, the jets at maximal entropy): **`eq_zero_of_isLittleO_sq`**
+  (uniqueness of Peano coefficients: `a s + b s² = o(s²)` as `s → 0⁺` ⇒ `a = b = 0`), `famDens_featureless` (`q_{m₀} = 1`),
+  **`reconstructionL1_featureless`** (`p(0) = [1]`), `integral_mul_iteratedDeriv_zero_atlas_zero`,
+  **`iteratedDeriv_one_reconstructionL1_atlas_zero`** (`p'(0) = [ℓ_{m₀,M−m₀}]`), `integral_mul_iteratedDeriv_one_atlas_zero`
+  (`∫ F p'(0) = lin_{F,m₀}(δ)`), **`isLittleO_obsResponse_atlas_zero`** (observable Peano at `m₀` along the atlas from the
+  TV Peano `isLittleO_integral_famDens_response_peano` composed with `s ↦ s•δ`), `isLittleO_obsResponse_atlas_taylor_two`
+  (`taylor_isLittleO` paired with `F`), **`integral_mul_iteratedDeriv_two_atlas_zero`** (`∫ F p''(0) = b_{F,m₀}(δ,δ)` by
+  uniqueness), **`iteratedDeriv_two_reconstructionL1_atlas_zero`** (`p''(0) = [atlasHess_0] = [N_{m₀}(ℓ²)]`),
+  **`obsResponse_atlas_second_order_featureless`** (the explicit second-order featureless expansion
+  `|E_{Q_{M_s}}F − (E_ν F + s lin_F(δ) + ½ s² b_F(δ,δ))| ≤ ‖F‖∞ C s³/2` on `[0,1]`, `C` independent of `F`).
