@@ -4160,3 +4160,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `Q = aQ₀ + bQ₁` itself, `dQ/dQ = 1 = a q₀ + b q₁`, chain rule `rnDeriv_mul_rnDeriv`, all in `lintegral` form with no
   integrability; the helper quantifying over `Qi` needs `[IsFiniteMeasure Qi]` for the Lebesgue decomposition; get
   `rnDeriv_add'` for the mixture with `rw [← hQ] at h`, not `hQ ▸`), **`fibreInformation_bridge_le'`** (`L_s ≤ b L₁`, no slack).
+- `LiftConditional.lean` (NOT mirrored; round-49 item 4a + convexity of the fibre information):
+  **`rnDeriv_statisticLift_eq_condLExp`** (`dD↑/dν = ν⁻[dD/dν | comap S]` a.e.: Mathlib's `rnDeriv_map` (namespace
+  `MeasureTheory`, not `Measure`) + `rnDeriv_withDensity`), `bridge_remix` (`aν + bD = lν + m(cν + dD)` from the linear
+  relations `a + b = c + d = l + m = 1`, `b = md` — no truncated subtraction in `ℝ≥0`), **`fibreInformation_bridge_le_remix`**
+  (`L_b ≤ m L_d` for `b = m d`: convexity of `s ↦ L_s` in re-mixed form, from joint convexity + the affine lift).
