@@ -4075,3 +4075,11 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL ≤ ‖Δ‖²(1−s)²/(2κ_r)` when `θ_u` stays in the ball on `Ico s 1`; `intervalIntegral.integral_mono_on`,
   `intervalIntegral.integral_const`, root `integral_id`). Under `open intervalIntegral`, `integral_const_mul` and
   `integral_const` are ambiguous: qualify them.
+- `FisherVariational.lean` (NOT mirrored; round-47 item 5): `lawCov_self_eq_integral_sq` (`Var g = ∫ (g − Eg)²`),
+  **`sq_dotJ_le_lawCov_mul_integral_sq`** (Cauchy–Schwarz `⟨v,Ṁ⟩² ≤ Var⟨v,S⟩ · E h²` for score perturbations `h` with
+  `E h = 0`, `E[h⟨e,S⟩] = ⟨e,Ṁ⟩`; `integral_mul_sq_le` from AngularBound with `(f := …) (g := …)` named),
+  **`lawCov_le_integral_sq_of_cov_eq`** (minimal Fisher cost: `C v = Ṁ ⟹ Var⟨v,S⟩ ≤ E h²`; `le_of_mul_le_mul_left`),
+  **`centred_dirLoss_attains`** (the centred score attains it), `lawCov_dirLoss_neg_atlasVel` (`C_{θ_s}(−θ_s') = Δ`: unfold
+  `atlasVel`, `← coe_chartDerivEquiv`, `ContinuousLinearEquiv.apply_symm_apply`, `dotJ_chartDeriv`),
+  **`atlasCurv_le_integral_sq`** (`κ(s) ≤ E_{P_{θ_s}} h²` for every score perturbation producing `Δ`: the budget integrates
+  minimal Fisher costs). The variational section needs no `[Nonempty X]`.
