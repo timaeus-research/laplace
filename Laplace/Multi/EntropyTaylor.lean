@@ -68,16 +68,15 @@ end Scalar
 
 section Density
 
-variable {X : Type*} [MeasurableSpace X] [Nonempty X] (ν : Measure X) [IsProbabilityMeasure ν]
+variable {X : Type*} [MeasurableSpace X] (ν : Measure X) [IsProbabilityMeasure ν]
 
 /-- **The entropy of `1 + tg + O(t²)` is quadratic**: `(∫ klFun (q_t) dν)/t² → (∫ g²)/2`. -/
 theorem tendsto_integral_klFun_div_sq {q : ℝ → X → ℝ} {g : X → ℝ} {e : ℝ → X → ℝ}
-    (hg : Bdd g) (hq : ∀ t, ∀ᵐ x ∂ν, q t x = 1 + t * g x + e t x) {δ K : ℝ} (hδ : 0 < δ)
+    (hgm : AEStronglyMeasurable g ν) {B : ℝ} (hB0 : 0 ≤ B) (hB : ∀ᵐ x ∂ν, |g x| ≤ B)
+    (hq : ∀ t, ∀ᵐ x ∂ν, q t x = 1 + t * g x + e t x) {δ K : ℝ} (hδ : 0 < δ)
     (hK : 0 ≤ K) (he : ∀ t, |t| ≤ δ → ∀ᵐ x ∂ν, |e t x| ≤ K * t ^ 2)
     (hqm : ∀ t, AEStronglyMeasurable (q t) ν) :
     Tendsto (fun t ↦ (∫ x, klFun (q t x) ∂ν) / t ^ 2) (𝓝[≠] 0) (𝓝 ((∫ x, g x ^ 2 ∂ν) / 2)) := by
-  obtain ⟨hgm, B, hB⟩ := hg
-  have hB0 : 0 ≤ B := (abs_nonneg _).trans (hB (Classical.arbitrary X))
   obtain ⟨C, hC⟩ : ∃ C : ℝ, C = B * K + K ^ 2 / 2 + 4 * (B + K) ^ 3 := ⟨_, rfl⟩
   have hC0 : 0 ≤ C := by rw [hC]; positivity
   obtain ⟨η, hη0, hηδ, hη1, hηBK⟩ : ∃ η : ℝ, 0 < η ∧ η ≤ δ ∧ η ≤ 1 ∧ η * (B + K) ≤ 1 / 2 := by
@@ -93,8 +92,7 @@ theorem tendsto_integral_klFun_div_sq {q : ℝ → X → ℝ} {g : X → ℝ} {e
           nlinarith
   have hpt : ∀ t, |t| ≤ η → ∀ᵐ x ∂ν, |klFun (q t x) - t ^ 2 / 2 * g x ^ 2| ≤ C * |t| ^ 3 := by
     intro t ht
-    filter_upwards [hq t, he t (ht.trans hηδ)] with x hx hex
-    have hgx := hB x
+    filter_upwards [hq t, he t (ht.trans hηδ), hB] with x hx hex hgx
     have ht1 : |t| ≤ 1 := ht.trans hη1
     have ht0 : 0 ≤ |t| := abs_nonneg t
     have ht2 : t ^ 2 ≤ |t| := by
@@ -145,16 +143,17 @@ theorem tendsto_integral_klFun_div_sq {q : ℝ → X → ℝ} {g : X → ℝ} {e
           (abs_add_le _ _).trans (add_le_add hkl h3)
       _ ≤ 4 * (B + K) ^ 3 * |t| ^ 3 + (B * K * |t| ^ 3 + K ^ 2 / 2 * |t| ^ 3) := by gcongr
       _ = C * |t| ^ 3 := by rw [hC]; ring
-  have hg2 : Integrable (fun x ↦ g x ^ 2) ν :=
-    integrable_of_bdd_prob ν (Bdd.mul ⟨hgm, B, hB⟩ ⟨hgm, B, hB⟩) |>.congr
-      (Eventually.of_forall fun x ↦ by simp [sq])
+  have hg2 : Integrable (fun x ↦ g x ^ 2) ν := by
+    refine Integrable.of_bound (hgm.pow 2) (B ^ 2) ?_
+    filter_upwards [hB] with x hx
+    rw [Real.norm_eq_abs, abs_pow]
+    exact pow_le_pow_left₀ (abs_nonneg _) hx 2
   have hint : ∀ t, |t| ≤ η → Integrable (fun x ↦ klFun (q t x)) ν := by
     intro t ht
     refine Integrable.of_bound (measurable_klFun.comp_aemeasurable (hqm t).aemeasurable
       |>.aestronglyMeasurable) (B ^ 2 / 2 + C) ?_
-    filter_upwards [hpt t ht] with x hx
+    filter_upwards [hpt t ht, hB] with x hx hgx
     have ht1 : |t| ≤ 1 := ht.trans hη1
-    have hgx := hB x
     rw [Real.norm_eq_abs]
     have h1 : |t ^ 2 / 2 * g x ^ 2| ≤ B ^ 2 / 2 := by
       rw [abs_mul, abs_div, abs_two, abs_pow, abs_pow, sq_abs t]

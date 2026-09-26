@@ -4262,3 +4262,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`tendsto_integral_klFun_div_sq`** (for a.e. `q_t = 1 + t g + e_t`, `|e_t| ≤ K t²` on `|t| ≤ δ`, `g` bounded:
   `(∫ klFun (q_t) dν)/t² → (∫ g²)/2`; pointwise bound `C|t|³`, integrated with `norm_integral_le_of_norm_le`, limit by
   `Metric.tendsto_nhdsWithin_nhds`).
+- `EntropyTaylor` generalised: the score `g` is only a.e. bounded (`hgm : AEStronglyMeasurable g ν`, `∀ᵐ x, |g x| ≤ B`).
+- `LiftDensity.lean` (NOT mirrored; round-51 item 3, densities): **`condLExp_ofReal_ae_eq`** (`ν⁻[ofReal ∘ f | m] =ᵐ
+  ofReal ∘ ν[f|m]` for nonnegative integrable `f`, via `ae_eq_condLExp` and `setIntegral_condExp`),
+  **`statisticLift_eq_withDensity_condExp`** (the statistic lift of `pν` is `E_ν[p|σ(S)]ν`; from
+  `rnDeriv_statisticLift_eq_condLExp` + `withDensity_rnDeriv_eq`), `tiltDens ν f t = e^{tf}/Z_t`,
+  `tilted_eq_withDensity_tiltDens` (rfl), **`tiltDens_sub_le`** (`|p_t − 1 − t(f − Ef)| ≤ 9B²t²` for
+  `|t| ≤ 1/(4(B+1))`: `Real.abs_exp_sub_one_sub_id_le`, `Z ≥ 1/2`, explicit numerator algebra),
+  `toReal_klDiv_withDensity_ofReal_ae` (`KL(rν‖ν) = ∫ klFun r` under a.e. bounds).
