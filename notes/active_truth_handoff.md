@@ -1357,3 +1357,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (convex_momentBody (μ := ν) (π := …) S)` + `(hfin.isCompact_convexHull (𝕜 := ℝ)).isClosed.closure_eq`; `V` nonempty from
   `mean_mem_momentBody_general hS ν` + `convexHull_nonempty_iff` + `Finset.Nonempty.to_subtype`. NEXT: round-71 rank 2
   (facewise support / uniform density bound / `momentBody (ν_F) = F` / stratified Fisher), then the capstone.
+- `BoundaryRayFormula` landed (round-71 rank 3). The seabed ALREADY had the face-support lemma (`compl_eq_zero_of_mean_face`
+  in ConditioningChainRule: a law whose mean lies on a supporting hyperplane is carried by the face) — so rank 2's first module
+  was free. Gotchas: a def/theorem that never mentions `ν` in its statement drops it even inside `include` (`measurableSet_faceFibre
+  hS u β`, not `… hS ν u β`); `famWeight_pos θ x` has `S` implicit; `Function.support_eq_univ` is an implication, not an iff
+  (`Function.support_eq_univ (f := …) fun x ↦ …`); `fun t ↦ …` inside a `Tendsto … atTop` statement needs `fun t : ℝ ↦` or
+  "Preorder ?m" is stuck, likewise `(l := (atTop : Filter ℝ))` in the DCT; `Real.tendsto_exp_neg_atTop_nhds_zero.comp
+  (Tendsto.atTop_mul_const hg tendsto_id)` for `e^{−tg} → 0`; `familyMeasure` of a `faceMeasure`: make `priorZ` opaque first
+  (`obtain ⟨Z, hZdef⟩`, `rw [← hZdef]`) or `faceMeasure_eq_withDensity` rewrites inside it and `withDensity_mul` fails;
+  `familyMeasure_eq_tilted … (one_pos : (0:ℝ) < 1) θ` + `familyMeasure_one_zero` turn `face.tilted (−dirLoss θ)` into the
+  family measure; folding integrals back to defs for `field_simp` via `change`. NEXT: capstone `ResponseAtlas` (package
+  rigidity + completion + retraction + boundary rays), or rank 2's remaining pieces (uniform bound `dq_M/dν ≤ 1/m_*`,
+  `momentBody (ν_F) = F`, essential support = face fibre, stratified Fisher), or a round-72 consult.

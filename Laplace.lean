@@ -486,6 +486,7 @@ import Laplace.Multi.PolyhedralCompletion
 import Laplace.Multi.PolyhedralRetraction
 import Laplace.Multi.ExtremeMeanSupport
 import Laplace.Multi.CompactMeanLiftRigidity
+import Laplace.Multi.BoundaryRayFormula
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

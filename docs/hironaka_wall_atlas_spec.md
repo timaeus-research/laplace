@@ -5070,3 +5070,12 @@ certificates for concrete resolved charts beyond the identity chart.
   COMPACT ABSOLUTELY-CONTINUOUS MEAN LIFT; ⇒ via the completed family, ⇐ via rigidity). The hypotheses of the general-`X`
   completion are necessary: strictly convex bodies, or any body with infinitely many extreme points, admit NO whole-body
   `L¹`-continuous completion.
+- `BoundaryRayFormula.lean` (NOT mirrored; round-71 rank 3 — THE EXACT BOUNDARY-RAY FORMULA): `dirLoss_ray`, `famWeight_ray`
+  (`w_{θ−tu} = e^{tβ} w_θ e^{−t g}` with slack `g = β − ⟨u,S⟩`), `measurableSet_faceFibre`, `faceMass` (`A = ∫_F w`),
+  `offFaceMass` (`B_t = ∫_{Fᶜ} w e^{−tg}`), `faceDens` (`1_F w/A`), `faceMass_pos`, `integrable_offFace`, `offFaceMass_nonneg`,
+  **`famZ_ray`** (`Z(θ − tu) = e^{tβ}(A + B_t)`), **`famDens_ray`** (`p_{θ−tu} = w e^{−tg}/(A + B_t)`), `integrable_faceDens`,
+  **`integral_abs_famDens_ray_sub_faceDens`** (`‖p_{θ−tu} − 1_F w/A‖₁ = 2B_t/(A + B_t)` EXACTLY, every `t`),
+  **`tendsto_offFaceMass`** (`B_t → 0`, dominated convergence), **`tendsto_tv_ray`**, **`familyMeasure_faceMeasure_eq`** (the face
+  law is the exponential family of the conditioned reference measure), **`exists_ray_tendsto_responseProjection`** (every
+  boundary response in the relative interior of a charged exposed face is the TV-limit of an explicit natural ray `θ − t u`,
+  with the exact distance `2B_t/(A+B_t)`).
