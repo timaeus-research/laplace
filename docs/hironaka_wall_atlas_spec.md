@@ -4121,3 +4121,11 @@ certificates for concrete resolved charts beyond the identity chart.
   for bounded tilts via `klDiv_tilted_right_eq` on both spaces and `toReal_klDiv_tilted_right` for the sign). Gotchas:
   `λ`/`μ` in identifiers (`hλμ`, `hPλ`) are reserved tokens; `klDiv_map_le (μ := D) (ν := ν) hS`;
   `Measure.isProbabilityMeasure_map hS.aemeasurable`; `zero_le` has an implicit argument.
+- `ResidualInformation.lean` (NOT mirrored; Astra round-48 items 2, 5B): `klDiv_tilted_comp_eq_statisticLift_add_map'`
+  (residual split for tilts by `f ∘ S` with `f` bounded only along `S`: clamp `f` to `max (−L) (min L f)`),
+  **`klDiv_responseProjection_eq_statisticLift_add_map`** (`KL(D‖Π(M_D)) = KL(D‖D↑) + KL(S_*D‖S_*Π(M_D))` for finite-information
+  `D` with response in the relint; `responseProjection_eq_tilted`, the identification `dirLoss S θ x = dotJ θ (statPoint S x)`
+  by `simp only [dirLoss, dotJ, statPoint]` — NOT `rfl` — and the tilt function passed as `(f := …)`: leaving it to
+  higher-order unification `?f (statPoint S x)` is a whnf timeout), `statisticLift_congr`, `statisticLift_statisticLift`
+  (`(D↑ˢ)↑ᵀ = D↑ᵀ` for `T = h ∘ S`, `Measure.map_map`), **`klDiv_statisticLift_tower`** (`KL(D‖D↑ᵀ) = KL(D‖D↑ˢ) + KL(D↑ˢ‖D↑ᵀ)`:
+  three base splits and `ENNReal.add_left_inj`; `ring` closes in `ℝ≥0∞`).
