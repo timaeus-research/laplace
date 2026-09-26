@@ -4634,3 +4634,6 @@ certificates for concrete resolved charts beyond the identity chart.
   fine statistics, refinement of the error `KL(D‖Π_c) = KL(D‖Π_f) + KL(Π_f‖Π_c)`, refinement of the visible information
   `𝓘_f = 𝓘_c + KL(Π_f‖Π_c)` (both from `AtlasRefinement`): feature refinement converts invisible information into
   visible information by exactly the divergence between the reconstructions.
+- `ReconstructionC1.lean` (NOT mirrored; round-60 §2): `responseScore_sub_responseScore`, **`norm_reconstructionDeriv_sub_le`**
+  (explicit operator-norm modulus of the `L¹` derivative), `continuousOn_inverse_chart` (`M ↦ R_M` continuous on `ri K`),
+  **`continuousWithinAt_reconstructionDeriv`** (`p : M ↦ [q_M]` is `C¹` into `L¹(ν)` on the relative interior).

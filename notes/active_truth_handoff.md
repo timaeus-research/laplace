@@ -774,3 +774,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `AtlasRefinement`), `C¹`/`C²` of `reconstructionL1`, all-orders prototype; round-60 consult.
 - `RefinementTower` landed (package of `AtlasRefinement` + `responseProjection_spec`). Round-59 ranks 1–3 DONE; remaining:
   `C¹`/`C²` of `reconstructionL1`, all-orders prototype. NEXT: round-60 consult.
+- `ReconstructionC1` landed. Gotchas: `continuousOn_iff_continuous_domRestrict` + `Set.domRestrict_apply` (the `restrict`
+  names are deprecated); `eventually_mem_nhdsWithin.and h2` (not `self_mem_nhdsWithin.and`); coercion of a 𝕍-difference
+  in a statement is elaborated leafwise (`↑a − ↑b`), so fold with `← Submodule.coe_sub` before `Submodule.norm_coe`.
+  Round-60 consult landed (`research_round60_v1`): converse of entropy-graph stability is FALSE; reconstruction-bias theorem
+  reachable without CLT; all-orders prototype = option (a) unnormalised. NEXT per consult.

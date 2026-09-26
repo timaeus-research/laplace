@@ -432,6 +432,7 @@ import Laplace.Multi.DualCurveComparison
 import Laplace.Multi.EntropyGapTotalVariation
 import Laplace.Multi.DifferentialRetraction
 import Laplace.Multi.RefinementTower
+import Laplace.Multi.ReconstructionC1
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
