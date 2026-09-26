@@ -1162,3 +1162,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   already has `EntropyCompletion` — unique minimiser `q*(M)` for every finite-rate `M` — and `BoundaryCompletion` — the atlas
   completes at `s = 1`; missing: continuity of `M ↦ q*(M)` on the closed polytope, support = minimal face, the retraction
   `R(p) = q*(E_p S)` of the simplex and the strong deformation retraction), or rank 3 explicit natural-parameter radius.
+- Round-68 consult landed (`research_round68_{q,v1}`): FACE COMPLETION (finite `X`, full-support `ν`) without any polyhedral
+  continuity theory. Route: (1) all fibres over `C = conv S(X)` are nonempty (image of the simplex under the linear moment map)
+  and every `m ∈ C` has finite rate (any probability vector has finite KL against full-support `ν`); (2) MAXIMAL SUPPORT from
+  Pythagoras: for `r` feasible at `m`, `KL(r‖ν) = KL(r‖q*(m)) + 𝓘(m) < ∞` ⇒ `r ≪ q*(m)` ⇒ `r_x > 0 → q*(m)_x > 0`;
+  (3) additive recovery on the finite simplex: `a_n → r`, `supp r ⊆ supp p` ⇒ `b_n = p + a_n − r ∈ Δ` eventually, `b_n → p`,
+  `A b_n = A p + A a_n − A r`; (4) limits of minimisers are minimisers: `m_n → m`, `q*(m_n) → r` (subsequence) ⇒ `A r = m`,
+  `supp r ⊆ supp q*(m)`, `b_n` feasible at `m_n`, `D(q*(m_n)) ≤ D(b_n) → D(q*(m))` ⇒ `D(r) ≤ D(q*(m))` ⇒ `r = q*(m)` by
+  uniqueness; compactness ⇒ `qStar` continuous, value continuous by composition. (5) support = minimal face via the accessible
+  set `J_m = {x | ∃ r feasible at m, r_x > 0}` and an elementary face construction `D = conv S(supp q*(m))`. (6) probability
+  VECTORS `stdSimplex ℝ X` as the primary type (compactness, convex combinations), bridge to `responseProjection`; completed
+  family = range `qStar` = closure of the interior family, homeomorphic to `C`; retraction `R(p) = q*(E_p S)`, strong deformation
+  retraction `H_t = (1−t)p + tR(p)` with `R ∘ H_t = R`. Modules: `FiniteEntropySupport` (bridge, finite rate, maximal support),
+  `FiniteCompletionContinuity`, `FiniteMinimalFace`, `FiniteCompletionRetraction`. Explicit radius deferred after face completion.
+  NEXT: `FiniteEntropySupport`.
