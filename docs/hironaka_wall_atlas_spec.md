@@ -4458,3 +4458,15 @@ certificates for concrete resolved charts beyond the identity chart.
   expansion `F_φ(M+z) = F + A z + ½H(z,z) + o(‖z‖²)` (operator-valued assembly + generic Peano lemma), compact
   uniform remainders, the `L¹` density version; candidate (c) is FALSE: `D²_z KL(D‖Π(M+z)) = ⟨Σ_M⁻¹u,w⟩` is
   fibre-independent (Pythagoras); dual-flat package `∇𝓘 = −θ`, `D²𝓘 = G`, `DG[z](u,w) = −C(u,w,z)`.
+- `FiniteResponse.lean` (NOT mirrored; round-55 rank 1, stage 1 — the accounting identity along the atlas):
+  `familyMeasure_zero_eq` (`P_0 = ν`), `atlas_zero_eq` (`Q_0 = ν`), `integral_mul_atlasScore_eq`
+  (`E_{Q_t}[φ ℓ_t] = ⟨β_t, M_t⟩E_{Q_t}φ − Σⱼ β_{t,j}E_{Q_t}[φ Sⱼ]`), **`hasDerivAt_integral_atlas`**
+  (`d/ds E_{Q_s}φ = E_{Q_s}[φ ℓ_s]`), **`hasDerivAt_integral_atlasScore`** (`d²/ds² E_{Q_s}φ = E_{Q_s}[φ N_{M_s}(ℓ_s²)]`),
+  **`integral_normalProj_eq_sub`** (the fibre identity `E_D[N_M φ] = E_D φ − E_{Π(M)} φ` for every data law with
+  response `M`), `abs_lawCov_le`, `abs_integral_le_of_abs_le`, `continuousOn_ringInverse_chartDeriv_atlas`,
+  `exists_bound_ringInverse_atlas` (`s ↦ Σ_s⁻¹` bounded on `[0,1]`), `norm_atlasPath_le`,
+  `intervalIntegrable_integral_normalProj_atlas` (the second-derivative field is bounded on `[0,1]`),
+  **`integral_atlas_taylor`** (Taylor with integral remainder: `E_{Q_1}φ − E_{Q_0}φ = E_{Q_0}[φ ℓ_0] +
+  ∫₀¹(1−s)E_{Q_s}[φ N(ℓ_s²)]ds`), **`response_accounting`** (THE ACCOUNTING IDENTITY:
+  `E_D φ − E_ν φ = E_ν[φ ℓ_0] + ∫₀¹ (1−s) E_{Q_s}[φ N_{M_s}(ℓ_s²)] ds + E_D[N_M φ]` — baseline susceptibility,
+  accumulated nonlinear response along the atlas, feature-invisible residual).

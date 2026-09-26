@@ -606,3 +606,20 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `F(1) − F(0) = F'(0) + ∫₀¹(1−s)F''`, (4) fibre identity `E_D[N_M φ] = E_D φ − E_Q φ` for `E_D S = M`,
   (5) the accounting identity (*); then the Peano expansion (operator-valued assembly + generic lemma), the
   fibre-independent KL Hessian, dual-flat package.
+- `FiniteResponse` landed (round-55 rank 1, stage 1 — the ACCOUNTING IDENTITY `E_D φ − E_ν φ = E_ν[φ ℓ_0] +
+  ∫₀¹(1−s)E_{Q_s}[φ N(ℓ_s²)] + E_D[N_M φ]`). Gotchas: `HasDerivAt.clm_apply` on
+  `(dotCLMlin.hasFDerivAt.comp_hasDerivAt s hM)` hits a whnf timeout — use the coordinate-sum route
+  (`HasDerivAt.fun_sum` of `(hasDerivAt_pi.1 hβ i).mul (hasDerivAt_pi.1 hM i)` + `simp only [dotJ,
+  Finset.sum_add_distrib]`) as AtlasHessian does; `ring` normalises INSIDE integrals under binders and can
+  desynchronise two integrals that differ only by `atlasScore` vs its unfolding — restate the curvature identity
+  in the exact syntactic form first (`hκ'` via `unfold atlasTheta at hκ; exact hκ`) and `rw [← hκ']`;
+  `ContinuousAt.comp h hG` mis-parses `chartDeriv (atlasTheta t)` as `f x` with `f = chartDeriv` — pass
+  `(f := fun t ↦ …)`; `NormedRing.inverse_continuousAt u` + `isCompact_Icc.exists_bound_of_continuousOn`
+  bounds `s ↦ Σ_s⁻¹` on `[0,1]`; `‖⟨c, h⟩‖` in a submodule: `rw [← Submodule.norm_coe, Submodule.coe_mk]`;
+  interval integrability of a derivative field: `Integrable.of_bound (measurable_deriv _).aestronglyMeasurable`
+  + `.congr` with the pointwise `deriv = field` identity on `Ioc`; in `integral_eq_sub_of_hasDerivAt` the
+  integrability is of the DERIVATIVE (`HasDerivAt.continuousOn h2` for the derivative field, not `h3`).
+  NEXT (round 55): Peano expansion `F_φ(M+z) = F + A z + ½H(z,z) + o(‖z‖²)` (operator-valued assembly of
+  `hasFDerivAt_integral_responseScore` on a basis + generic second-order Peano lemma from a differentiable
+  derivative field), the fibre-independent KL Hessian `D²_z KL(D‖Π(M+z)) = ⟨Σ_M⁻¹u,w⟩`, dual-flat package
+  (`∇𝓘 = −θ`, `D²𝓘 = G`, `DG[z](u,w) = −C(u,w,z)`), §7 structure theorem.

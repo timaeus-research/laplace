@@ -406,6 +406,7 @@ import Laplace.Multi.NormalGeometry
 import Laplace.Multi.CovarianceFrechet
 import Laplace.Multi.ObservableHessian
 import Laplace.Multi.FisherRaoCurvature
+import Laplace.Multi.FiniteResponse
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
