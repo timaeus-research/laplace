@@ -5277,3 +5277,16 @@ certificates for concrete resolved charts beyond the identity chart.
   `IntegrableOn g (Ioi (r a))`, via `integrableOn_Ioi_of_intervalIntegral_norm_bounded`). The real-analysis step of facet
   accessibility: a normal-speed lower bound `|η'|_F ≥ c |r'| g(r)` plus finite path length gives finite ray length, with no
   monotonicity of `r` and no coarea formula.
+- `DataDissipation.lean` (NOT mirrored; round-77 §2.2 "interior limit" preliminaries, the dissipation identity): with `h ≤ H`
+  and the charged top set `p_* = ν.real {h = H} > 0`: `tilted_data_eq_tilted_neg_gap` (`ν.tilted(t h) = ν.tilted(−t(H − h))`),
+  `integral_gap_dataPath`, `hasDerivAt_integral_gap_dataPath`, `integral_exp_neg_gap_eq`, **`intervalIntegral_gap_dataPath`**
+  (`∫₀^T E_{ρ_t}(H − h) dt = −log ∫ e^{−T(H−h)} dν`, by FTC on `H t − log Z(t)` with `hasDerivAt_log_integral_exp`),
+  `tendsto_integral_exp_neg_gap` (`∫ e^{−T(H−h)} → p_*`, DCT), `top_mass_le_integral_exp_neg_gap`,
+  `intervalIntegral_gap_dataPath_le` (`≤ log(1/p_*)` on every window), `tendsto_intervalIntegral_gap_dataPath`,
+  `integrableOn_gap_dataPath`, **`integral_Ioi_gap_dataPath`** (`∫₀^∞ E_{ρ_t}(H − h) dt = log(1/p_*)`),
+  `integral_dataPath_eq_div`, **`tendsto_integral_dataPath_atTop`** (`E_{ρ_T} g → E_ν[g 1_{h=H}]/p_*` for bounded `g`: the data
+  path converges to the conditional law on the top set); moment curve: `abs_lawCov_le_mul_integral_of_nonneg`
+  (`|Cov_ρ(f,g)| ≤ 2‖f‖ E_ρ g` for `g ≥ 0`), `lawCov_const_sub_right`, **`abs_dataCov_le_gap`**
+  (`|Cov_{ρ_t}(S_j,h)| ≤ 2‖S_j‖ E_{ρ_t}(H − h)`), `continuous_dataCov`, `integrableOn_dataCov`, **`integral_abs_dataCov_le`**
+  (`∫₀^∞ |Cov_{ρ_t}(S_j,h)| dt ≤ 2‖S_j‖ log(1/p_*)`: FINITE VARIATION of the moment curve), `hasDerivAt_integral_dataPath`,
+  **`integral_Ioi_dataCov`** (`∫₀^∞ Cov_{ρ_t}(S_j,h) dt = E_ν[S_j | h = H] − E_ν S_j`, the total displacement).

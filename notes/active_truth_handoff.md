@@ -1637,3 +1637,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   I a (b := id) (l := atTop)` wants `∀ i, IntegrableOn f (Ioc a (b i))` (`hg.integrableOn_Ioc`) and the eventual bound on `∫ ‖f‖`.
   NEXT: `DataDissipation` (`∫₀^∞ E_{ρ_t}δ = log(1/p_*)`, finite Euclidean variation of the moment curve), then the 1-D
   infinite-distortion example, then FacetFisherAccess Lemmas B/D and assembly.
+- `DataDissipation` landed (round-77 §2.2 (16)–(17)): dissipation identity `∫₀^∞ E_{ρ_t}(H−h) = log(1/p_*)`, convergence of
+  the data path to the top-set conditional law, finite variation and total displacement of the moment curve. Gotchas: the
+  seabed pattern for `HasDerivAt` of `H s − log Z(s)` is `((hasDerivAt_id s).const_mul H).sub (hasDerivAt_log_integral_exp ν hh s)`
+  then `refine h1.congr_deriv ?_` (a `simpa using h1` dies on the RCLike-vs-Semiring `Module ℝ ℝ` instance mismatch);
+  `intervalIntegral.integral_eq_sub_of_hasDerivAt` needs its namespace; DCT template = `tendsto_integral_exp_gap`
+  (`tendsto_integral_filter_of_dominated_convergence (μ := ν) (l := atTop) (F := …) (f := s.indicator g) (fun _ ↦ K)`), limit
+  `integral_indicator hmeas`/`integral_indicator_one`; `integral_Ioi_of_hasDerivAt_of_tendsto' (hderiv : ∀ x ∈ Ici a, …) f'int hf`
+  computes `∫_{Ioi a} f' = lim − f a`; `intervalIntegral_tendsto_integral_Ioi 0 hint (tendsto_id (α := ℝ))` + `tendsto_nhds_unique`
+  to evaluate an improper integral from window limits; `Integrable.congr` inside `integral_mono` must be parenthesised or the `?_`
+  lands in the wrong slot; section theorems with `(ν) (hS) (hh) (hH)` take `ν` FIRST (`abs_dataCov_le_gap ν hS hh hH`).
+  NEXT: the 1-D infinite-distortion example (round-77 rank 2), then facet Lemmas B/D (component convergence, Schur bound).
