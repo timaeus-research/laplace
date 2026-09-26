@@ -489,6 +489,7 @@ import Laplace.Multi.CompactMeanLiftRigidity
 import Laplace.Multi.BoundaryRayFormula
 import Laplace.Multi.PolytopeFaceCut
 import Laplace.Multi.BoundaryLayerBounds
+import Laplace.Multi.FisherAccessibility
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

@@ -1399,3 +1399,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   a def whose statement omits `S` needs `variable (S) in` or `S` cannot be inferred at call sites. NEXT: round-72 rank 1
   minimal faces / face order, or Fisher-length accessibility `Length_Fisher(p_[T,∞)) = O(T^{−α/2})` from `Var_{p_t}(g) ≤
   (16/(A t²)) B_{t/2}`, or the Hellinger completion (rank 3), or a round-73 consult.
+- `FisherAccessibility` landed (round-72 rank 2 dividend). Gotchas: `lawCov_self_le_integral_sq ρ (hg : Bdd g) (c) :
+  lawCov ρ g g ≤ ∫ (g − c)²` gives the variance bound with the shift for free; family integrals via
+  `familyMeasure_eq_withDensity_famDens` + `integral_withDensity_ofReal ν (measurable_famDens hS ν _) (famDens_nonneg hS ν _)`;
+  the elementary bound from `Real.add_one_le_exp (t s/4)` squared (`pow_le_pow_left₀`, `sq, ← Real.exp_add`); the integrand
+  vanishes on the face (`setIntegral_eq_zero_of_forall_eq_zero`) and the a.e. bound off the face uses `integral_mono_ae` on
+  the restricted measure with `ae_restrict_of_ae hβ`; `div_le_div₀ (hc : 0 ≤ c) (hac : a ≤ c) (hd : 0 < d) (hbd : d ≤ b)`;
+  power algebra `(t^(−1−α/2))^2 = t^{−α}/t²` via `← Real.rpow_natCast, ← Real.rpow_mul, Real.rpow_add, Real.rpow_neg,
+  Real.rpow_two` then `field_simp; ring`; `integral_Ioi_rpow_of_lt (ha : a < −1) hT : ∫_{Ioi T} t^a = −T^(a+1)/(a+1)`;
+  `integral_mono_of_nonneg` needs no integrability of the smaller function. NEXT: Hellinger comparison (rank 3), minimal
+  faces (rank 1), or round-73.

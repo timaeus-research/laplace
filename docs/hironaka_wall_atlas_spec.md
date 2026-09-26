@@ -5097,3 +5097,9 @@ certificates for concrete resolved charts beyond the identity chart.
   for `r ≤ 1/t₀`): the layer growth exponent and the tilt decay exponent coincide; on the natural ray: `raySlack`,
   `measurable_raySlack`, `raySlack_nonneg`, `offFaceMass_eq_tiltMass`, **`integral_abs_famDens_ray_sub_faceDens_le`**
   (a polynomial boundary layer gives the polynomial TV rate `‖p_{θ−tu} − p_F‖₁ ≤ (2/A)(K Γ(α+1) t^{−α} + W e^{−t r₀})`).
+- `FisherAccessibility.lean` (NOT mirrored; round-72 rank 2, geometric dividend): `sq_mul_exp_neg_le`
+  (`s² e^{−ts} ≤ (16/t²) e^{−ts/2}`), **`raySpeedSq`** (Fisher speed² of the natural ray = `Var_{p_t}⟨u,S⟩`),
+  `raySpeedSq_le_integral_sq` (≤ second moment of the slack), `integral_sq_slack_le` (`∫ g² p_t ≤ 16 B_{t/2}/(A t²)`),
+  **`raySpeedSq_le_offFaceMass`**, **`integral_sqrt_raySpeedSq_le`** (FISHER ACCESSIBILITY: `B_{t/2} ≤ C t^{−α}` for `t ≥ T`
+  ⇒ `∫_T^∞ √(Var_{p_t}⟨u,S⟩) dt ≤ (8/α)√(C/A) T^{−α/2}` — a polynomial boundary layer puts the face at finite Fisher distance
+  along the natural ray; without one the distance can be infinite, Astra's 1-D example).
