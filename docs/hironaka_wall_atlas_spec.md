@@ -4129,3 +4129,13 @@ certificates for concrete resolved charts beyond the identity chart.
   higher-order unification `?f (statPoint S x)` is a whnf timeout), `statisticLift_congr`, `statisticLift_statisticLift`
   (`(D↑ˢ)↑ᵀ = D↑ᵀ` for `T = h ∘ S`, `Measure.map_map`), **`klDiv_statisticLift_tower`** (`KL(D‖D↑ᵀ) = KL(D‖D↑ˢ) + KL(D↑ˢ‖D↑ᵀ)`:
   three base splits and `ENNReal.add_left_inj`; `ring` closes in `ℝ≥0∞`).
+- `GeneralResidualSplit.lean` (NOT mirrored; Astra round-48 general-density extension): **`klDiv_withDensity_comp_eq_statisticLift_add_map`**
+  (`KL(D‖ν.withDensity (g∘S)) = KL(D‖D↑) + KL(S_*D‖S_*P)` for any probability `P` with measurable `g : Y → ℝ≥0∞`; case split on
+  finiteness of the marginal term with `klDiv_map_le`, `D ≪ P` from `withDensity_apply_eq_zero` + `D{g∘S = 0} = 0`, the two
+  chain rules, finiteness of `g` a.e. from `ae_lt_top` and the probability normalisation, `Pi.sub_apply` before rewriting an a.e.
+  identity into an `Integrable.sub`), `ExposedChain.exists_preimage` (chain sets are `statPoint S ⁻¹' B`; after `rw [Set.preimage_inter]`
+  a bare `congr 1` closes the step), **`responseProjection_eq_withDensity_comp`** (every finite-rate projection is
+  `ν.withDensity (g ∘ statPoint S)` with `g = 1_B e^{−⟨θ,·⟩}/(ν(A) Z)`: `unfold familyMeasure`, `← hZ` for the normaliser BEFORE
+  `faceMeasure_eq_withDensity`, `← withDensity_mul` with a hand-written measurability of the family density; the indicator of a
+  preimage is `rfl` after `rw`), and **`klDiv_responseProjection_eq_statisticLift_add_map'`** (the invisible-information split with
+  NO interiority hypothesis). `Π` in identifiers (`hΠ`) is a reserved token.
