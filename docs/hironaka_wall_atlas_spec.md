@@ -3977,3 +3977,15 @@ certificates for concrete resolved charts beyond the identity chart.
   Donsker–Varadhan nonnegativity from `integral_sub_log_le_toReal_klDiv`), **`klDiv_familyMeasure_eq_add_projection`**
   (`KL(D‖P_η) = KL(D‖Π(E_D S)) + KL(Π(E_D S)‖P_η)` for finite-information `D`, every `η`, boundary responses included; equality in
   `ℝ≥0∞` via `ENNReal.toReal_eq_toReal_iff'` on finite terms).
+- `VisibleBudget.lean` (NOT mirrored; round-46 item 1, visible half): `affLogZ_one_zero_eq_featCgf` (`A(θ) = Λ(−θ)`),
+  `genRate_atlasPath_toReal_eq` (rate of a path point in Chernoff form at its own coordinate; `unfold atlasTheta` then
+  `conv_lhs => rw [← hm]` with `hm : m(θ(M_r)) = M_r`, `rateFun_meanMap`, `famKL_eq`, `featCgf_zero' ν`),
+  **`gap_ge_atlasVelocity`** (`(1−r)(−⟨θ_r,Δ⟩) ≤ 𝓘(M) − 𝓘(M_r)` from `le_iSup` in `genRate` at `q = −θ_r`),
+  `integral_one_sub_mul_atlasCurv` (`∫₀ʳ (1−s)κ = 𝓘(M_r) + (1−r)(−⟨θ_r,Δ⟩)`; the `integral_add` witness must be a lambda-typed
+  `have hA` from `IntervalIntegrable.continuousOn_mul (by fun_prop)`), `continuousOn_atlasCurv_weighted`,
+  `lintegral_Ioc_atlasCurv_weighted`, **`genRate_eq_lintegral_atlasCurv`** (`𝓘(M) = ∫⁻ s in Ioo 0 1, ofReal ((1−s)κ s)`: `≤` by
+  `le_of_tendsto` on `tendsto_genRate_segment` with `lintegral_mono_set`; `≥` by monotone convergence `lintegral_iSup'` on
+  indicators of `Ioc 0 (1 − 1/(n+2))` — write the sequence as `fun n : ℕ ↦ …` and prove indicator monotonicity/sup by `by_cases`
+  with `Set.indicator_of_mem/notMem`; `exists_nat_one_div_lt`; a subset used in `Set.inter_eq_left.2` must be a NAMED `have`
+  or the interval unfolds to its set-builder form), `integrableOn_atlasCurv_weighted` (`integrable_toReal_of_lintegral_ne_top`),
+  **`genRate_toReal_eq_integral_atlasCurv`** (`integral_eq_lintegral_of_nonneg_ae`).
