@@ -406,26 +406,22 @@ theorem reconstruction_bias_core [DecidableEq J] (hDν : D ≪ ν)
     _ = BF * ε * ∑ a, (∫ x, (S a x - M a) ^ 2 ∂D) + (n : ℝ) * K * P.real {ω | δ' < ‖h ω‖} := by
         field_simp
 
-/-- **The reconstruction-bias theorem.** For i.i.d. samples of `D ≪ ν` with interior response
-`M = E_D S`, there is a compact convex interior neighbourhood `C` of `M` such that the truncated
-plug-in estimator `Ĝ_n = G_F(M̂_n)` (fallback `G_F(M)` off `C`) has
-`n (E Ĝ_n − G_F(M)) → ½ Σ_{a,b} Γ_{ab} b_F(e_a, e_b)`, `Γ = Cov_D(S)`. -/
-theorem reconstruction_bias [DecidableEq J] (hDν : D ≪ ν)
+/-- **The reconstruction-bias theorem, on a given compact convex interior neighbourhood** `C` of
+the response: `n (E Ĝ_n − G_F(M)) → ½ Σ_{a,b} Γ_{ab} b_F(e_a, e_b)`. -/
+theorem reconstruction_bias_of_nhd [DecidableEq J] (hDν : D ≪ ν)
     (hrel : dataMoment D S ∈ intrinsicInterior ℝ (momentBody ν (fun _ ↦ (1 : ℝ)) S))
-    {F : X → ℝ} (hF : Bdd F) {BF : ℝ} (hBF : ∀ x, |F x| ≤ BF) :
-    ∃ C : Set (J → ℝ), IsCompact C ∧ Convex ℝ C ∧
-      C ⊆ intrinsicInterior ℝ (momentBody ν (fun _ ↦ (1 : ℝ)) S) ∧ dataMoment D S ∈ C ∧
-      ∀ [DecidablePred (· ∈ C)], Tendsto (fun n : ℕ ↦ (n : ℝ) *
+    {F : X → ℝ} (hF : Bdd F) {BF : ℝ} (hBF : ∀ x, |F x| ≤ BF) {C : Set (J → ℝ)}
+    [DecidablePred (· ∈ C)] (hC : IsCompact C) (hCc : Convex ℝ C)
+    (hCK : C ⊆ intrinsicInterior ℝ (momentBody ν (fun _ ↦ (1 : ℝ)) S)) {r : ℝ} (hr : 0 < r)
+    (hCnhd : ∀ M' ∈ momentBody ν (fun _ ↦ (1 : ℝ)) S, ‖M' - dataMoment D S‖ ≤ r → M' ∈ C) :
+    Tendsto (fun n : ℕ ↦ (n : ℝ) *
         ((∫ ω, plugIn hS ν F C (dataMoment D S) (sampleResponse S Xs n ω) ∂P) -
           obsResponse hS ν F (dataMoment D S))) atTop
         (𝓝 ((1 / 2) * ∑ a, ∑ b,
           (∫ x, (S a x - dataMoment D S a) * (S b x - dataMoment D S b) ∂D) *
             biasForm hS ν (dataMoment D S) hF (coordUnit a) (coordUnit b))) := by
-  obtain ⟨r, hr, C, hC, hCc, hCK, hCnhd⟩ := exists_compact_convex_nhd hS ν hrel
   have hMmb := intrinsicInterior_subset hrel
   have hMC : dataMoment D S ∈ C := hCnhd _ hMmb (by simp [hr.le])
-  refine ⟨C, hC, hCc, hCK, hMC, ?_⟩
-  intro _
   have hB' : ∀ j, ∃ M, ∀ x, |S j x| ≤ M := fun j ↦ (hS j).2
   choose Bj hBj using hB'
   obtain ⟨B, hBdef⟩ : ∃ B : ℝ, B = ∑ j, |Bj j| := ⟨_, rfl⟩
@@ -486,6 +482,27 @@ theorem reconstruction_bias [DecidableEq J] (hDν : D ≪ ν)
     _ ≤ BF * ε * T + (n : ℝ) * KK * (2 * Fintype.card J * Real.exp (-(c * n * δ' ^ 2))) := by
         gcongr
     _ < η := by nlinarith
+
+/-- **The reconstruction-bias theorem.** For i.i.d. samples of `D ≪ ν` with interior response
+`M = E_D S`, there is a compact convex interior neighbourhood `C` of `M` such that the truncated
+plug-in estimator `Ĝ_n = G_F(M̂_n)` (fallback `G_F(M)` off `C`) has
+`n (E Ĝ_n − G_F(M)) → ½ Σ_{a,b} Γ_{ab} b_F(e_a, e_b)`, `Γ = Cov_D(S)`. -/
+theorem reconstruction_bias [DecidableEq J] (hDν : D ≪ ν)
+    (hrel : dataMoment D S ∈ intrinsicInterior ℝ (momentBody ν (fun _ ↦ (1 : ℝ)) S))
+    {F : X → ℝ} (hF : Bdd F) {BF : ℝ} (hBF : ∀ x, |F x| ≤ BF) :
+    ∃ C : Set (J → ℝ), IsCompact C ∧ Convex ℝ C ∧
+      C ⊆ intrinsicInterior ℝ (momentBody ν (fun _ ↦ (1 : ℝ)) S) ∧ dataMoment D S ∈ C ∧
+      ∀ [DecidablePred (· ∈ C)], Tendsto (fun n : ℕ ↦ (n : ℝ) *
+        ((∫ ω, plugIn hS ν F C (dataMoment D S) (sampleResponse S Xs n ω) ∂P) -
+          obsResponse hS ν F (dataMoment D S))) atTop
+        (𝓝 ((1 / 2) * ∑ a, ∑ b,
+          (∫ x, (S a x - dataMoment D S a) * (S b x - dataMoment D S b) ∂D) *
+            biasForm hS ν (dataMoment D S) hF (coordUnit a) (coordUnit b))) := by
+  obtain ⟨r, hr, C, hC, hCc, hCK, hCnhd⟩ := exists_compact_convex_nhd hS ν hrel
+  have hMC : dataMoment D S ∈ C := hCnhd _ (intrinsicInterior_subset hrel) (by simp [hr.le])
+  refine ⟨C, hC, hCc, hCK, hMC, ?_⟩
+  intro _
+  exact reconstruction_bias_of_nhd hS ν P D Xs hXm hind hid hlaw hDν hrel hF hBF hC hCc hCK hr hCnhd
 
 omit [IsProbabilityMeasure P] hXm hind hid hlaw in
 /-- **The bias coefficient is intrinsic**:

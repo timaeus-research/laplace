@@ -4692,3 +4692,11 @@ certificates for concrete resolved charts beyond the identity chart.
   (interior mixtures leave the family: the log-linear identity `p₀p₂ = p₁²` of family members, `loglinear_mul`, versus the
   strict hump `q₁² < q₀q₂` of a positive mixture, `hump_mul`), **`humpResidual_not_antitone`** (¬Antitone ∧ ¬Monotone):
   the invisible information along the affine data path is NOT monotone.
+- `ReconstructionBias.lean` refactor: `reconstruction_bias_of_nhd` (explicit compact convex neighbourhood) + wrapper.
+- `PlugInCovariance.lean` (NOT mirrored; round-61 rank 5): `abs_linearMap_le_norm`, `abs_bilinear_le_norm_sq`,
+  `linearMap_mul_linearMap_eq_sum`, `exists_first_order_remainder` (`|G_F(M+z) − G_F(M) − lin(z)| ≤ (B_F + ½‖b_F‖)‖z‖²`),
+  `integrable_plugIn_sampleResponse`, **`plugIn_product_core`** (fixed-`n` estimate of the scaled second moment of the two
+  plug-in deviations), **`plugIn_product_tendsto_of_nhd`**, **`plugIn_covariance_tendsto_of_nhd`**
+  (`n Cov(Ĝ_F, Ĝ_G) → Σ Γ_ab lin_F(e_a) lin_G(e_b)`, the bias product being `O(1/n²)`), `sum_dataCov_mul_linForm_eq_integral`
+  (`= E_D[lin_F(S−M) lin_G(S−M)]`, the sandwich covariance of the influence functions), **`plugIn_covariance_tendsto`**
+  (existential package: one `C` for all pairs of bounded observables).

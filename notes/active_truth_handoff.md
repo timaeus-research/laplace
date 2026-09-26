@@ -831,3 +831,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   Round-61 remaining: `L²` local expansion `R(t) = ½t²‖N_{m₀}h‖² + o(t²)`, diagnostic `tR'(t)` identity, `C²` (rank 3),
   `𝓘`-bias (rank 4), joint plug-in covariance (rank 5). NEXT: rank 5 (cheap, 250–500 LOC: joint covariance of plug-ins with
   the sandwich form), then rank 4, then `C²`.
+- `PlugInCovariance` landed (rank 5): `n Cov(Ĝ_F, Ĝ_G) → E_D[lin_F(S−M) lin_G(S−M)]`. Gotchas: an anonymous constructor
+  `⟨…, fun _ ↦ tendsto_proof⟩` for `∀ [inst], Tendsto …` unfolds `Tendsto` into its filter definition — use
+  `refine ⟨…, ?_⟩; intro _; exact …`; `Set.piecewise` lemmas need the instance in the statement (`[DecidablePred (· ∈ C)]`);
+  `all_goals first | exact … | exact …` discharges the four `integral_sub` side goals. Round-61 remaining: rank 4 (`𝓘`-bias:
+  needs a compact-uniform second-order Peano for `𝓘` in response coordinates), rank 3 (`C²`), the `L²` local expansion of
+  the invisible information, the `tR'(t)` identity. NEXT: rank 4 — first check which Taylor data for `genRate` exist
+  (`hasFDerivAt_genRate_chart`, `genRate_atlasPath_eq_integral`); the uniform second-order Peano for `𝓘` may follow from
+  `uniform_responseTheta_peano` + the dual-gradient identity `D𝓘 = θ`.
