@@ -4289,3 +4289,7 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL(D‖ν) = ∫₀¹ (1−s) κ(s) ds + L + R` for every finite-information `D`, boundary responses included),
   `atlasPath_eq_mixture_mean`, **`toReal_klDiv_bridge_eq_integral_atlasCurv_add`**
   (`KL(D_s‖ν) = ∫₀ˢ (s−u) κ(u) du + L_s + R_s` along the bridge `aν + bD`, `b < 1`).
+- `BregmanGeometry.lean` (NOT mirrored; round-52 items 4 and 8): **`toReal_klDiv_responseProjection_three_point`**
+  (`KL(Π(A)‖Π(C)) = KL(Π(A)‖Π(B)) + KL(Π(B)‖Π(C)) + ⟨θ(C) − θ(B), A − B⟩`),
+  **`klDiv_responseProjection_three_point_eq_iff`** (generalised Pythagoras iff the mixed pairing vanishes = Fisher
+  orthogonality at `B`), **`toReal_klDiv_responseProjection_sub_symm`** (`KL(Π(M)‖ν) − KL(ν‖Π(M)) = ∫₀¹ (1−2s) κ`).
