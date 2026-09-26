@@ -521,3 +521,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `ChartSynthesis` — the umbrella build is the only place a `def` clash surfaces (`_proof_2` collision).
   NEXT (round 53): rank 2 mixed Hessian (C² of the chart via `Ring.inverse` differentiation), rank 4 unbounded
   bridge split, rank 5 general conditional variational formula; or round-54 consult.
+- `AtlasVelocityDerivative` landed (round-53 rank 2, stage 1 of the mixed Hessian): the covariance operator
+  `Σ_s = −chartDeriv θ_s` is differentiable along the atlas with derivative the third-cumulant operator
+  `D_s`, and `β_s' = −Σ_s⁻¹ D_s β_s`. Gotchas: `rw [← integral_const_mul]` picks the FIRST `c * ∫` (use
+  `conv_rhs`); `ext v` on CLMs into a submodule descends into coordinates — use `ContinuousLinearMap.ext fun v ↦`;
+  `sum_apply` (root) replaces the deprecated `ContinuousLinearMap.sum_apply`; the derivative identity for
+  `−mulLeftRight x x G` applied to a vector is `rfl` (state it as an explicit `have … := rfl`, then `rw`);
+  `Ring.inverse_unit`, `ContinuousLinearEquiv.unitsEquiv` for the unit; `Module.finBasis`, `Module.Basis.coord`,
+  `LinearMap.toContinuousLinearMap` for the basis decomposition of an operator.
+  NEXT: stage 2 — the density along the atlas: `d/ds q_s = q_s ℓ_s` (needs the derivative of `famZ θ_s`, via
+  `integral_dirLoss_mul_famWeight` and dominated differentiation or `hasFDerivAt_obsMap`), then
+  `d²/ds² q_s = q_s(ℓ_s² − κ(s) − ⟨Σ_s⁻¹ c_s, S − M_s⟩)` with `c_s = D_s β_s` (as vector `= E_s[(S−M_s) ℓ_s²]`),
+  and the orthogonality `∫ q'' = 0`, `∫ S q'' = 0` by direct algebra.

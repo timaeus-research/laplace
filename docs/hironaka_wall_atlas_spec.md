@@ -4380,3 +4380,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`global_response_chart`** (∃ homeomorphism with: forward = mean map, strict derivative, inverse = natural
   coordinate of `Π`, `Π(M)` has response `M` and is the unique entropy minimiser in its fibre).
   (`responseChart` was already taken by `ChartSynthesis`.)
+- `AtlasVelocityDerivative.lean` (NOT mirrored; round-53 rank 2, stage 1): `hasDerivAt_of_subtype_val` (a curve into a
+  submodule is differentiable once its coercion is), `thirdCentral_add₂`/`thirdCentral_smul₂` (trilinearity in the
+  middle slot), `chartDeriv_coe_apply` (`(Σ_θ v)_j = −Cov_{P_θ}(S_j, ⟨v,S⟩)`), `cumulantVec`/`cumulantLin`
+  (`(D_s v)_j = T_{Q_s}(S_j, ⟨v,S⟩, f_s)`), `hasDerivAt_chartDeriv_coe`, `cumulantVec_mem_dirSpan` (closedness of
+  `𝕍`, via `hasDerivAt_iff_tendsto_slope`), **`cumulantOp`** (`D_s : 𝕍 →L 𝕍`), **`hasDerivAt_chartDeriv_atlas`**
+  (the restricted covariance operator is differentiable along the atlas, assembled from `Module.finBasis` and
+  `ContinuousLinearMap.smulRightL`), `atlasVel_eq_ringInverse`, **`hasDerivAt_atlasVel`**
+  (`β_s' = −Σ_s⁻¹ D_s β_s`, by `hasFDerivAt_ringInverse` composed with the operator path).
