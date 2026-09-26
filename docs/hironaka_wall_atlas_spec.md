@@ -4668,3 +4668,12 @@ certificates for concrete resolved charts beyond the identity chart.
   `Γ/n` second moments + Hoeffding tail on the exceptional set + compact-uniform Peano.
 - `ReconstructionBias.lean` addendum: **`sum_dataCov_mul_biasForm_eq`** (`Σ_ab Γ_ab b_F(e_a,e_b) = E_D b_F(S(x)−M, S(x)−M)`:
   the bias coefficient is the data expectation of the bias form on the centred feature vector, independent of `π`).
+- `ReconstructionBias.lean` addendum 2: **`dataMoment_mixture_eq_atlasPath`** (`E_{(1−t)ν+tD} S = atlasPath t`: the affine
+  data path from the featureless law to the data has the straight atlas as its response path; round-61 rank 1 opener).
+- Round-61 consult (`gpt_responses/research_round61_{q,v1}.md`): rank 1 data-path transport (`d/dt G_F(M_t) = ∫ ψ_{F,M_t} dḊ_t`,
+  mixture path = straight atlas, `𝓘(M_t) = ∫_0^t (t−r) H_{M_r}(δ,δ) dr` convex nondecreasing); rank 2 information splitting
+  along the atlas `KL(D_t‖ν) = 𝓘(M_t) + R(t)` with `R` NOT monotone (three-point counterexample: mixture of two family members
+  leaves the family), `R(t) ≤ t KL(D‖ν)`, `tR'(t) = R(t) + KL(ν‖D_t) − KL(ν‖Q_{M_t})`; rank 3 `L¹`-`C²` + uniform whole-atlas
+  response theorem; rank 4 visible-information bias `n(E𝓘(M̂_n) − 𝓘(M)) → ½ Σ Γ_ab H_M(e_a,e_b)`; rank 5 joint plug-in
+  covariance (sandwich `Σ Γ_ab lin_F(e_a) lin_G(e_b)`, Fisher-dual only when `Γ = C_M`). Referee notes: localisation is
+  legitimate (any bounded fallback gives the same limit), `π` is scaffolding (intrinsic coefficient proved), sup norm harmless.

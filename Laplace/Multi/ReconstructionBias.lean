@@ -6,6 +6,8 @@ Authors: Timaeus
 import Laplace.Multi.BiasForm
 import Laplace.Multi.EmpiricalMoments
 import Laplace.Multi.EmpiricalTotalVariation
+import Laplace.Multi.EntropyGapStability
+import Laplace.Multi.StraightPathAtlas
 
 /-!
 # The reconstruction-bias theorem
@@ -22,6 +24,7 @@ unbiasedness and the `Γ/n` second moments of `M̂_n`, and the Hoeffding tail fo
 -/
 
 open MeasureTheory Filter Topology Set ProbabilityTheory
+open scoped NNReal
 
 namespace Laplace.Multi
 
@@ -108,6 +111,20 @@ theorem norm_sq_le_sum_sq (h : J → ℝ) : ‖h‖ ^ 2 ≤ ∑ a, h a ^ 2 := by
       (fun a _ ↦ sq_nonneg _) (Finset.mem_univ a))
   calc ‖h‖ ^ 2 ≤ Real.sqrt (∑ a, h a ^ 2) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) this 2
     _ = ∑ a, h a ^ 2 := Real.sq_sqrt hs
+
+omit [Nonempty X] [Nonempty J] in
+/-- **The mixture path from the prior to the data has the straight atlas as its response path**:
+`E_{(1−t)ν + tD} S = (1 − t) m₀ + t E_D S`, so the atlas `s ↦ Π((1−s)m₀ + sM)` is the response
+reconstruction of the affine path of data distributions from the featureless law to the data. -/
+theorem dataMoment_mixture_eq_atlasPath (D : Measure X) [IsProbabilityMeasure D] {t : ℝ}
+    (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
+    dataMoment (Real.toNNReal (1 - t) • ν + Real.toNNReal t • D) S =
+      atlasPath S ν (dataMoment D S) t := by
+  funext j
+  rw [atlasPath_eq]
+  simp only [dataMoment, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+  rw [integral_mixture_eq ν D _ _ (hS j), Real.coe_toNNReal _ (by linarith),
+    Real.coe_toNNReal _ ht0]
 
 section Assembly
 

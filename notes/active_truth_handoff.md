@@ -807,3 +807,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
 - `sum_dataCov_mul_biasForm_eq` landed (π-free bias coefficient). Round-60 remaining: `C²` via differentiating the score,
   all-orders prototype (unnormalised Laplace transform `ContDiff ⊤`); then round-61 consult. NEXT: round-61 consult
   (reconstruction-bias theorem done; ask for the next core feature of `D ↦ Π(D)` across the data manifold).
+- `dataMoment_mixture_eq_atlasPath` landed (mixture path ↔ straight atlas). Round-61 consult landed (`research_round61_v1`):
+  NEXT in order: (1) data-path transport: for a TV-`C¹` curve `t ↦ D_t` with interior responses, `Ṁ_t = ∫ S dḊ_t`,
+  `d/dt G_F(M_t) = lin_{F,M_t}(Ṁ_t) = ∫ ψ_{F,M_t} dḊ_t` with `ψ_{F,M} = ⟨C_M⁻¹ c_F(M), S − M⟩`, and
+  `G_F(M_1) − G_F(M_0) = ∫_0^1 lin_{F,M_t}(Ṁ_t) dt`; along the mixture path `𝓘(M_t)' = ⟨θ_t, δ⟩`, `𝓘(M_t)'' = H_{M_t}(δ,δ)`,
+  `𝓘(M_t) = ∫_0^t (t−r) H_{M_r}(δ,δ) dr` (convex, nondecreasing, `𝓘(M_t) ≤ t 𝓘(M)`); (2) information splitting along the
+  atlas with the NON-monotonicity of the invisible part (counterexample to record in the slop note) and the identity
+  `tR'(t) = R(t) + KL(ν‖D_t) − KL(ν‖Q_{M_t})`; (3) `C²`; (4) `𝓘`-bias; (5) joint plug-in covariance. Mathlib-facing
+  extractions suggested: empirical bilinear contraction `E B(Z̄_n, Z̄_n) = (1/n) E B(Z,Z)`; localised second-order delta lemma.
