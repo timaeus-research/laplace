@@ -3881,3 +3881,13 @@ certificates for concrete resolved charts beyond the identity chart.
   **`hasDerivAt_deriv_genRate_dataPath_zero`** (`deriv` of the rate along the path has derivative `Var_ν(regressor)` at `0`),
   **`residual_variance`** (`Var h − Var g = Var(h − g)`), **`regressor_variance_le`**. GOTCHA: `rw [lawCov_comm]` bare rewrites
   the FIRST `lawCov`, which is usually not the one meant — give the arguments.
+- `QuadraticInformationBound.lean` (NOT mirrored; round-44 item 4): `hasDerivAt_log_integral_exp` (`HasDerivAt.log` of
+  `hasDerivAt_integral_exp_mul`, `integral_tilted_eq_div`), **`log_integral_exp_le_of_var_le`** (two `antitoneOn_of_deriv_nonpos`
+  integrations on `Icc 0 1` with `interior_Icc`; state the `HasDerivAt` of `f − K·s` with the LAMBDA type in a `have` — the
+  `.sub (…const_mul K)` form is Pi-subtraction and `rw [….deriv]` fails; the final `simp only` at `s = 1`, `s = 0` needs
+  `zero_pow`, `one_pow`, `Real.log_one`, `integral_const`), `lawCov_self_le_integral_sq` (`Var g ≤ E(g − c)²`, product form
+  `(g − c) * (g − c)` because `Bdd` has no `congr`), **`lawCov_dirLoss_le_of_bdd`** (`Var_ρ⟨q,S⟩ ≤ B²‖q‖²` for every `ρ ≪ ν`
+  when `‖S − m₀‖ ≤ B` a.s.; `Finset.sum_mul_sq_le_sq_mul_sq univ q w`, `hρ.ae_le hB`, `integral_mono_ae`),
+  **`featCgf_le_quadratic`** (`Λ(q) ≤ ⟨q,m₀⟩ + B²‖q‖²/2`; the tilted probability instance must be supplied by
+  `isProbabilityMeasure_tilted` inside the lambda), **`genRate_ge_quadratic`** (`ofReal (‖M − m₀‖²/(2B²)) ≤ 𝓘(M)` for EVERY `M`,
+  via `le_iSup_of_le ((B²)⁻¹ • v)`, `dotJ_smul_left`, `dotJ_comm`, `field_simp; ring`). `‖·‖` throughout is `dotJ v v`.
