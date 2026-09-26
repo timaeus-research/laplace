@@ -4189,3 +4189,11 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL(P_θ‖ν) + KL(ν‖P_θ) = −⟨θ, m(θ) − m₀⟩`), **`integral_var_familyMeasure_segment`** (`∫₀¹ Var_{P_{sθ}}⟨θ,S⟩ ds =
   −⟨θ, m(θ) − m₀⟩` by FTC on `hasDerivAt_dotJ_meanMap_segment`, continuity from
   `hasDerivAt_lawCov_familyMeasure_path`), `integral_var_familyMeasure_segment_eq_symm_klDiv` (energy = symmetrised KL).
+- `ObservableDefect.lean` (NOT mirrored; round-50 item 3): `statSigma S = comap (statPoint S)`, `statSigma_le`,
+  `integral_mul_condExp_statSigma` (bounded `σ(S)`-measurable weights pass through `condExp`:
+  `condExp_stronglyMeasurable_mul_of_bound` + `integral_condExp`), `integral_tilted_dirLoss_condExp`
+  (`E_{ν_f} φ = E_{ν_f} E_ν[φ|σ(S)]` for the affine tilt, via Mathlib `integral_tilted`), `integral_mixture_of_integrable`,
+  `integrable_condExp_of_ac` (`ae_bdd_abs_condExp_of_ae_bdd_abs`), **`integral_responseProjection_condExp`**
+  (reconstructed laws see only `ψ = E_ν[φ|σ(S)]`), **`observableDefect_eq`**
+  (`E_{D_s}φ − E_{Π(M_s)}φ = b(E_Dφ − E_Dψ) + (E_{D_s}ψ − E_{Π(M_s)}ψ)` along the bridge `aν + bD`),
+  **`hasDerivAt_observableDefect`** (`Δ'_φ(s) = E_Dφ − E_νφ + Cov_{Π(M_s)}(φ,⟨v_s,S⟩)` on the atlas path).

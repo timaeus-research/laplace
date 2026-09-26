@@ -381,3 +381,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   already is (`atlasCurv_eq_priorCov` with `atlasVel`); only the consult's prose summary was sloppy.
 - NEXT: item 3 (observable defect: needs `∫ φ g dν = ∫ E_ν[φ|σ(S)] g dν` for bounded σ(S)-measurable `g` —
   `condExp` + `integral_condExp`/`condExp_mul_of_stronglyMeasurable_left`), then item 1 (L² spine), item 4.
+- `ObservableDefect` landed (round-50 item 3). Gotchas: `Measurable[m] f` works with `comap_measurable`,
+  `.const_mul/.exp/.div_const/.stronglyMeasurable`; `ae_bdd_condExp_of_ae_bdd` is deprecated for
+  `ae_bdd_abs_condExp_of_ae_bdd_abs` (real bound, no `ℝ≥0`); `Integrable.of_bound` needs `[IsFiniteMeasure D]`;
+  a `def` of type `MeasurableSpace X` trips `warn.classDefReducibility` (disable per-def). NEXT: item 1 (L² spine:
+  nested Fisher projections), item 4 (quadratic splitting), item 5 mean-path half (continuity of `atlasTheta` at 1).
