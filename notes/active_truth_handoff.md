@@ -848,3 +848,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   identity; the round-61 programme is otherwise CLOSED (ranks 1, 2, 4, 5 done). NEXT: round-62 consult with the
   full picture; candidates: `C²` in `L¹`, the diagnostic identity, the invisible `L²` expansion, and the referee-level
   restatement of the bias/covariance theorems with an intrinsic (`π`-free) `L`.
+- Round-62 consult landed (`research_round62_v1`): flagship = `C²` of the `L¹`-valued reconstruction with Hessian an
+  invisible signed measure (`½ Σ Γ_ab ∂²q` uniform-in-`F` bias); cheap structural items: (2) tangent Pythagoras
+  `E_Q[a²] = g_M(u,u) + ‖N_M a‖²`, `u = E_Q[T a]`, `ψ_{F,M} = P_M(F − EF)` (= our `regProj F`!), `E_Q[ψ_F ℓ_u] = lin_F(u)`,
+  `Var_Q ψ_F = g_M(c_F,c_F)` (metric on the covariance VECTOR, not inverse); (3) the atlas is the exact natural-gradient
+  flow of `L(M) = KL(Q_{M*}‖Q_M)` with `grad_g L = M − M*`, `M(τ) = m₀ + (1−e^{−τ})(M* − m₀)`, dissipation
+  `dL/dτ = −g(M−M*, M−M*)`; `κ(s) = g_{M_s}(δ,δ)` = squared Fisher speed, `𝓘(M_s) = ∫₀ˢ(s−r)κ` a weighted kinetic energy;
+  (4) second-order transport; (5) invisible information = squared normal data displacement (`L²` expansion);
+  (6) tilt-path diagnostics. Order: tangent geometry → second transport → natural-gradient atlas, with `C²` in parallel.
+  Sanity: information-bias coefficient `½ tr_V(C_M⁻¹ Γ_D)` confirmed, `= ½ dim 𝕍` when `Γ = C_M`. Referee: state on `𝕍`
+  with `Z = S − M`, `Γ_D = E_D[Z⊗Z]`, `dG_F ∈ 𝕍*`, `b_F ∈ Sym²(𝕍*)` (affine mean-coordinate Hessian, not Levi-Civita).
