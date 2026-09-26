@@ -3997,3 +3997,9 @@ certificates for concrete resolved charts beyond the identity chart.
   `integrableOn_dataFisher_weighted`, **`klDiv_projection_eq_integral_budget`** (`KL(D‖Π(M_D)).toReal = ∫_{Ioo 0 1}
   ((1−s)𝓕_D(s).toReal − (1−s)κ(s))` for finite `KL(D‖ν)`; `integral_sub` of the two `IntegrableOn` facts). GOTCHA: `Π` is a
   reserved token — an identifier `hDΠ` breaks parsing (`hDP`).
+- `TiltDensityBounds.lean` (NOT mirrored; round-46 item 3, analytic half): `abs_dotJ_le_of_sq_le` (Cauchy–Schwarz in `dotJ` form),
+  `exp_neg_dirLoss_bounds` (`e^{−⟨θ,m₀⟩} e^{∓Br} ≤ e^{−⟨θ,S⟩} ≤ …` a.s. for `⟨θ,θ⟩ ≤ r²`, `‖S − m₀‖ ≤ B` a.s.),
+  **`integral_familyMeasure_ge`** (`E_{P_θ} φ ≥ e^{−2Br} E_ν φ` for nonneg bounded `φ`; `integral_tilted`, pointwise density bound
+  via `le_div_iff₀`; the measurability of `e^{−⟨θ,S⟩}/Z` needs `(bdd_dirLoss hS θ).1` named for `fun_prop`),
+  **`lawCov_familyMeasure_ge`** (`Var_{P_θ} g ≥ e^{−2Br} Var_ν g`; variance = second moment about its own mean, then
+  `lawCov_self_le_integral_sq`). NEXT: coercivity constant `λ₀` on the unit sphere of `𝕍`, segment integration, `κ_r = e^{−2Br}λ₀`.
