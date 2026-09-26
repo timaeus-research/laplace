@@ -4790,3 +4790,13 @@ certificates for concrete resolved charts beyond the identity chart.
   `q_M φ` with `E_Q φ = 0` is `Cov_Q(S, φ)`), **`dataReconDeriv_section`** (`DR_{q_M}[q_M φ] = [q_M · B_M φ]`: the retraction
   differential at the section is the regression projection), **`fisher_orthogonal_splitting`** (`E_Q φ² = g(c_φ,c_φ) +
   E_Q(φ − B_M φ)²`: the data tangent space at the section splits orthogonally into the family tangent and the fibre).
+- `NormalForm.lean` (NOT mirrored; round-64 rank 1, the global visible–invisible normal form): `invisibleDirs`
+  (`K = {∫k = 0, ∫Sk = 0}`), `dataSet` (`U = {∫d = 1, m(d) ∈ Ω}`), **`normalForm`** (`Φ(d) = (m(d), d − p(m(d)))`),
+  **`normalFormInv`** (`Ψ(M,k) = p(M) + k`), `integral_reconstructionL1` (unit mass), `integral_L1_add/sub`,
+  **`normalForm_mem`** / **`normalFormInv_mem`** / **`normalFormInv_normalForm`** / **`normalForm_normalFormInv`** (`Φ`, `Ψ`
+  are mutually inverse bijections `U ≃ Ω × K`), **`dataRecon_normalFormInv`** (`R(Ψ(M,k)) = p(M)`: in normal-form
+  coordinates the reconstruction is the projection onto the response), `normalForm_dataRecon` (`Φ(R d) = (m d, 0)`),
+  **`hasFDerivWithinAt_normalForm`** (`DΦ_d[h] = (m(h), h − DR_d[h])` within `U`),
+  `hasFDerivWithinAt_reconstructionL1_dirProjL` (`p` differentiable within `Ω` with derivative `Dp_M ∘ π`),
+  **`hasFDerivWithinAt_normalFormInv`** (`DΨ_{(M,k)}[u,k'] = Dp_M(πu) + k'` within `Ω × K`): the response family is a
+  global section of the data space and every datum is response coordinates plus an exactly invisible residual.

@@ -965,3 +965,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `ENNReal.add_right_inj (h : a ≠ ⊤)` for cancellation; `klDiv_eq_zero_iff` for uniqueness. NEXT: round-64 rank 1 (global
   normal form `Φ(d) = (m(d), d − p(m(d)))`, `Φ⁻¹(M,k) = p(M) + k`, `U ≃ Ω × K`, both directions differentiable within the
   fixed-mass set; needs `∫ reconstructionL1 M = 1`), then Chernoff (rank 4), then the bootstrap tower (rank 3).
+- `NormalForm` landed (round-64 rank 1). Gotchas: `invisibleSet` already exists (QuotientMeanMap) — the `L¹` set is
+  `invisibleDirs hS ν`; `HasFDerivWithinAt.comp` needs `(g := …) (f := …) (t := …) (s := …)` named when composing with
+  `Prod.fst` (`hasFDerivWithinAt_fst`), else the unifier cannot see through `fun Mk ↦ p Mk.1`; `HasFDerivWithinAt.prodMk`
+  for the pair; `(CLM).hasFDerivWithinAt` for the linear parts; `HasFDerivWithinAt.mono` to shrink the fixed-mass set to
+  `dataSet`; `abel`/`abel_nf` close the `p + (d − p) = d` and `p + k − p = k` identities in `L¹`. NEXT: round-64 rank 4
+  Chernoff (`P(⟨θ(M), M̂_n⟩ ≥ ⟨θ(M), M⟩) ≤ e^{−n𝓘(M)}` via `measure_ge_le_exp_mul_mgf` and `mgf` of iid sums), then rank 3
+  bootstrap smoothness of `θ(M)`, then round-65.
