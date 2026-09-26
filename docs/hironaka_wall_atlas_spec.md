@@ -4257,3 +4257,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `withDensity_inv_same`, `lintegral_withDensity_eq_lintegral_mul`), **`toReal_klDiv_densLaw_eq_integral_mixSpeed`**,
   **`toReal_klDiv_symm_densLaw_eq_integral_mixSpeed`**, **`integral_mixSpeed_eq_symm_klDiv`** (the bridge in the full
   simplex obeys the same weighted identities as the atlas and exponential paths; bounded positive density).
+- `EntropyTaylor.lean` (NOT mirrored; round-51 item 3, engine): **`abs_klFun_one_add_sub_le`**
+  (`|klFun(1+u) − u²/2| ≤ 4|u|³` for `|u| ≤ 1/2`, from `Real.abs_log_sub_add_sum_range_le` at order 2),
+  **`tendsto_integral_klFun_div_sq`** (for a.e. `q_t = 1 + t g + e_t`, `|e_t| ≤ K t²` on `|t| ≤ δ`, `g` bounded:
+  `(∫ klFun (q_t) dν)/t² → (∫ g²)/2`; pointwise bound `C|t|³`, integrated with `norm_integral_le_of_norm_le`, limit by
+  `Metric.tendsto_nhdsWithin_nhds`).
