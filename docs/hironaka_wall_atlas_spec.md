@@ -5214,3 +5214,9 @@ certificates for concrete resolved charts beyond the identity chart.
   (`|E_{P_η} f − E_{P_η(·|A)} f| ≤ 2‖f‖_∞ P_η(Aᶜ)`, with `P_η(·|A) = ν_F.tilted` through `familyMeasure_faceMeasure_eq`),
   **`tendsto_meanMap_of_faceMean_of_vertexGaps`** (THE REVERSE VERTEX-GAP CRITERION: face-conditional means `→ M` and all
   off-face gaps `⟨η_n, v − v₀⟩ → +∞` ⇒ `meanMap ν (η_n) → M`, for every target on the face).
+- `VertexGapForward.lean` (NOT mirrored; round-75 rank 2, forward half): `projDens_meanMap_ae_eq` (the family density is the projection
+  density of its mean), `measureReal_family_statFibre` (`P_η(S=v) = e^{−⟨η,v⟩} ν(S=v)/Z`), `meanMap_mem_polytope`,
+  **`tendsto_integral_abs_famDens_sub`** (means → `M` ⇒ `‖p_{η_n} − dq_M/dν‖₁ → 0`, from the atlas' `L¹` continuity),
+  `tendsto_measureReal_family_statFibre`, `responseProjection_statFibre_eq_zero` (no mass off the exposing face),
+  `responseProjection_statFibre_pos` (charged vertices keep positive mass), **`tendsto_vertexGap_of_tendsto_meanMap`**
+  (THE FORWARD VERTEX-GAP CRITERION: means → `M` ⇒ `⟨η_n, v − v₀⟩ → +∞` for every off-face `v` and every `v₀` charged by `M`).

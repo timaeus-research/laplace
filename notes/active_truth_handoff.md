@@ -1554,3 +1554,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   convergence of means via `tendsto_pi_nhds` + `tendsto_iff_norm_sub_tendsto_zero` + `squeeze_zero'`. NEXT: forward direction
   (`meanMap ν η_n → M ∈ ri F` ⇒ face means converge and gaps diverge): `tendsto_projL1_of_tendsto` + conditioning `L¹`-continuity
   + charged fibre ratios `P_η(S=v)/P_η(S=v₀) = e^{−⟨η,v−v₀⟩} ν(S=v)/ν(S=v₀)` + `Real.tendsto_exp_comp_nhds_zero`; then the iff.
+- `VertexGapForward` landed (round-75 rank 2, forward gaps). Gotchas: `responseProjection_mean_familyMeasure hS ν θ` (AtlasRefinement)
+  + `mean_familyMeasure_one_zero` identify `q_{meanMap η} = P_η`, so `projDens (meanMap η) =ᵐ famDens η` via `projDens_ae_eq`;
+  `meanMap_mem_convexHull` already exists in `MomentPolytope` (hence `meanMap_mem_polytope`); `setIntegral_congr_fun hs (fun x hx ↦ …)
+  (g := fun _ ↦ c)` needs `g` named when the constant is not inferable; ratios of fibre masses: `Real.exp_sub` then `Real.exp_neg`
+  twice, `field_simp` closes (no `ring`); `Tendsto.div h1 h2 (hb : b ≠ 0)` yields the Pi-division function — `.congr` with
+  `rw [Pi.div_apply]`; `Real.tendsto_exp_comp_nhds_zero.1` + `tendsto_neg_atBot_iff.1` turn `e^{−g_n} → 0` into `g_n → +∞`.
+  NEXT: the conditioning half (face-conditional means converge: generic `‖1_A g/a − f‖₁ ≤ 2‖g − f‖₁` for `∫_A f = 1`, then
+  `faceDens η = 1_A famDens η / P_η(A)`), then the iff.
