@@ -1027,3 +1027,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   RELATIVE entropy w.r.t. the reference. NEXT: `FeaturelessTaylor` — pairing CLM `obsL1`, duality lemma (`L¹` element killed by
   all bounded observables is 0), `p''(s) = [atlasHess s]` in `L¹` via duality + `hasDerivAt_deriv_obsResponse_atlas`, and the
   `L¹` Taylor remainder on `[0,1]` via `taylor_mean_remainder_bound`; then the Hessian in all directions by polarisation.
+- `AtlasJetL1` landed (round-65 rank 2, minus the explicit `p'''(0)`). Gotchas: the sign observable `F = if 0 ≤ f x then 1 else −1`
+  (measurable via `Measurable.ite (measurableSet_le measurable_const hm)`) gives `∫ F f = ∫ |f| = ‖f‖₁` and hence duality;
+  after `rw [hF]` on a `set`/`obtain`-defined function the goal is a beta-redex — `beta_reduce` before `split_ifs`/`rw [sq]`;
+  `hasDerivAt_reconstructionL1_curve` needs `(γ := …) (γ' := …) (t := s)` named (higher-order unification); `iteratedDeriv 2 g =
+  deriv (deriv g)` by `iteratedDeriv_succ, iteratedDeriv_one`; `iteratedDerivWithin_of_isOpen hU hs` converts the InvisibleTower
+  `Within` statements to `iteratedDeriv`; `taylor_mean_remainder_bound (C := …)` needs its bound named;
+  `iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_Icc_zero_one (contDiffAt) (left_mem_Icc.2 zero_le_one)` turns the Taylor
+  coefficients into ordinary `iteratedDeriv k p 0`; an `(hF : Bdd F)` binder unused in the conclusion must be anonymous `Bdd F →`.
+  NEXT: the featureless values `p(0) = [1]`, `p'(0) = [ℓ_{m₀,δ}]`, `p''(0) = [N_{m₀}(ℓ²)]` (the last via the second-order Peano
+  expansion `integral_response_peano_biasForm` + `taylor_isLittleO` + uniqueness of Peano coefficients, since
+  `hasDerivAt_deriv_obsResponse_atlas` is only on `(0,1)`), then the explicit second-order featureless expansion for observables;
+  then round-65 rank 1 (Hessian in all directions by polarisation) or rank 3/4.

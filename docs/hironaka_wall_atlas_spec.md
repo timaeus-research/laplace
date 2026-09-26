@@ -4830,3 +4830,14 @@ certificates for concrete resolved charts beyond the identity chart.
   `clm_iteratedDerivWithin_reconstructionL1_atlas` (CLMs commute with `iteratedDerivWithin` on the open domain),
   **`invisible_tower`** (every derivative of order `≥ 2` of the reconstruction along the atlas has zero feature moments and
   zero mass), **`momentL1_iteratedDerivWithin_one`** (the first derivative carries exactly `M − m₀`).
+- `AtlasJetL1.lean` (NOT mirrored; round-65 rank 2, the `L¹` jets and the featureless expansion): `integrable_bdd_mul_L1`,
+  `obsLin`/**`obsL1`** (pairing with a bounded observable as a CLM on `L¹`, `abs_obsL1_le : |⟨F, d⟩| ≤ ‖F‖∞‖d‖₁`),
+  `obsL1_reconstructionL1`, **`L1_eq_zero_of_forall_integral_mul`** / **`L1_ext_of_forall_integral_mul`** (duality: an `L¹`
+  element is determined by its pairings with bounded observables, via the sign observable), `hasDerivAt_reconstructionL1_atlas`,
+  **`iteratedDeriv_one_reconstructionL1_atlas`** (`p'(s) = [q_{M_s} ℓ_{M_s, M−m₀}]`), `clm_iteratedDeriv_reconstructionL1_atlas`,
+  **`integral_mul_atlasHess_eq_biasForm`** (`∫ F · atlasHess_s dν = b_{F,M_s}(δ,δ)`), **`iteratedDeriv_two_reconstructionL1_atlas`**
+  (`p''(s) = [atlasHess_s] = [q_{M_s} N_{M_s}(ℓ_s²)]` on `(0,1)`: the density-acceleration theorem in `L¹`, by duality),
+  `Icc_subset_atlasDomain`, `contDiffOn_reconstructionL1_atlas_Icc`, `contDiffAt_reconstructionL1_atlas_zero`,
+  `taylorWithinEval_reconstructionL1_atlas`, **`reconstructionL1_taylor_remainder`** (`‖p(s) − Σ_{k≤n} s^k/k! p^{(k)}(0)‖₁ ≤ C s^{n+1}/n!`
+  on `[0,1]`), **`obsResponse_atlas_taylor`** (the featureless expansion of the response of every bounded observable with the
+  SAME constant: `|E_{Q_{M_s}}F − Σ_k s^k/k! ∫ F p^{(k)}(0)| ≤ ‖F‖∞ C s^{n+1}/n!`).
