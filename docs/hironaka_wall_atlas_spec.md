@@ -4554,3 +4554,13 @@ certificates for concrete resolved charts beyond the identity chart.
   the boundary information projection (`responseProjection_spec` needs only `hfin`), the tail identity
   (`EndpointTail`, `hfin` only) and the segment Pinsker convergence (`PinskerObservable`) — the consult's
   "TV-Cauchy construction" and "(1−s)i'(s) → 0" were unnecessary.
+- `ReconstructionLipschitz.lean` (NOT mirrored; round-57 rank 2): `integral_abs_responseScore_le_sqrt`
+  (`E_Q|ℓ_u| ≤ √E_Qℓ_u²`, via `variance_nonneg`), `fisherForm_self_le` (`≤ |J|‖R_M‖‖u‖²`),
+  **`abs_integral_sub_le_of_segment`** (mean value inequality along an interior segment:
+  `|E_{Π(M')}F − E_{Π(M)}F| ≤ √(|J|Λ)‖M'−M‖` for `|F| ≤ 1`), **`integral_abs_famDens_sub_le_of_segment`** (TV form
+  via the sign test), **`exists_tv_lipschitz_of_isCompact_convex`** (compact convex `C ⊂ ri K` ⇒ TV-Lipschitz
+  constant; `‖R‖` continuous on `ri K` through `relintChart`), `norm_density_response_sub_le`
+  (`‖E_{d'ν}S − E_{dν}S‖ ≤ B∫|d'−d|`), **`integral_abs_famDens_density_sub_le`** (`d ↦ Π(E_{dν}S)` TV-Lipschitz on
+  compact convex interior response sets), **`reconstruction_retraction`** (retraction `Π(E_{P_θ}S) = P_θ` [from
+  `AtlasRefinement.responseProjection_mean_familyMeasure`] ∧ derivative has zero mass and transmits the moment
+  perturbation ∧ compact-uniform TV-Lipschitz).

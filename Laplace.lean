@@ -418,6 +418,7 @@ import Laplace.Multi.DensityPeanoAlgebra
 import Laplace.Multi.DensityPeano
 import Laplace.Multi.BoundaryTaylor
 import Laplace.Multi.BoundaryCompletion
+import Laplace.Multi.ReconstructionLipschitz
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

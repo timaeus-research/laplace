@@ -711,3 +711,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   integration of the density derivative), `‖E_DS − E_{D'}S‖ ≤ L‖D − D'‖_var`, `D ↦ Π(E_DS)` TV-Lipschitz on
   compacts; derivative `DR_D[H] = Q ℓ_{M,m(H)}` is a projection (`L_Q² = L_Q`, kernel = moment-invisible
   perturbations); then rank 3 (all-orders) / rank 4 (TV atlas curve).
+- `ReconstructionLipschitz` landed (round-57 rank 2): TV-Lipschitz retraction of distribution space. Gotchas: local
+  notations that mention section variables cannot be used inside a later `variable (h : …)` binder ("Unknown constant
+  ν✝") — write the terms out there; `hasFDerivAt_integral_response_at hS ν hF hz` takes no `hrel`;
+  `Subtype.image_preimage_coe` (not `Set.`); `norm_integral_le_integral_norm` + `simpa only [Real.norm_eq_abs]` for
+  `|∫f| ≤ ∫|f|` (the `abs_` name is interval-only); after `rw [hF]` with `hF : F = fun x ↦ if …` the goal is a
+  beta-redex — `beta_reduce` before `split_ifs`; `responseProjection_mean_familyMeasure` ALREADY EXISTS in
+  `AtlasRefinement` (for any `θ : K → ℝ`) — the duplicate-name grep printed it and I overlooked the line: read the grep
+  output, not just "dupdone". NEXT: compact-uniform relative-uniform Peano (consult §3 lemma route), all-orders
+  analyticity (rank 3), TV atlas curve `d_TV(Q_s,Q_t) ≤ ½∫√κ` (rank 4); round-58 consult.
