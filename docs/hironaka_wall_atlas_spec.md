@@ -3943,3 +3943,13 @@ certificates for concrete resolved charts beyond the identity chart.
   (`2 (Π(M) A − Π(M_s) A)² ≤ (𝓘(M) − 𝓘(M_s)).toReal`, via `ENNReal.ofReal_le_iff_le_toReal (ENNReal.sub_ne_top hfin)`),
   **`tendsto_real_responseProjection_segment`** (every event probability converges at the endpoint; squeeze, `Tendsto.sqrt`,
   `Real.sqrt_sq_eq_abs`, `(tendsto_zero_iff_abs_tendsto_zero _).2`).
+- `DualFisherMetric.lean` (NOT mirrored; round-45 item 2, Hessian half): `fderiv_rateFun_chart_eventually` (`∇𝓘(m₀+v) = −θ(v)` as a
+  functional, eventually near every image point: `hasFDerivAt_rateFun_chart` at `chartVInv v` + `chartV_chartVInv`),
+  **`hasFDerivAt_fderiv_rateFun_chart`** (`D_v[∇𝓘(m₀+v)(w)] = −(dotCLM w) ∘ subtypeL ∘ (chartDerivEquiv θ₀).symm`; the
+  `congr_of_eventuallyEq` goal needs `Function.comp_apply, Pi.neg_apply` in the simp set then one `rw [dotJ_comm]`),
+  **`hessian_rateFun_chart_eq`** (= `priorCov_{θ₀}(⟨u',S⟩, ⟨w',S⟩)` with `u' = (Dm|_𝕍)⁻¹u`: rewrite `w` as `chartDeriv θ₀ w'`
+  with `conv_lhs`, then `dotJ_chartDeriv` — do NOT `dotJ_comm` first, the pattern wants `chartDeriv` in the second slot),
+  `hessian_rateFun_chart_symm`, **`hessian_rateFun_chart_pos`** (positive definite on `𝕍`: `ContinuousLinearEquiv.symm_apply_eq`
+  + `map_zero` for `u' ≠ 0`, `priorCov_dirLoss_self_pos`). OPEN (item 2 second half): inverse-stability constant
+  `κ_r = e^{−2Br} λ₀` (density bound of `P_θ` w.r.t. `ν`, variance comparison, coercivity of `C_0` on the unit sphere of `𝕍`, segment
+  integration of `⟨θ−η, m(η)−m(θ)⟩`).

@@ -349,6 +349,7 @@ import Laplace.Multi.ResponsePathDifferential
 import Laplace.Multi.ChartContinuity
 import Laplace.Multi.StraightPathAtlas
 import Laplace.Multi.PinskerEvent
+import Laplace.Multi.DualFisherMetric
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
