@@ -947,3 +947,21 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   lists now fully landed except the all-orders tower. NEXT: round-64 consult (what remains for depth: all-orders invisible
   tower via smooth inverse function theorem, Fisher contraction `Cov_D(S) ⪯ C_M`?, CLT of the reconstruction law, geodesic
   vs atlas), or the tower directly.
+- Round-64 consult landed (`research_round64_{q,v1}`). Ranking: 1 = GLOBAL NORMAL FORM of the retraction
+  `U ≃ Ω × K`, `Φ(d) = (m(d), d − p(m(d)))`, `Φ⁻¹(M,k) = p(M) + k`, `R(M,k) = (M,0)` (C¹ from DataRetraction + `m∘p = id`),
+  plus curved-path second-order transport `d²/dt² p(m(d_t)) = H[Ṁ,Ṁ] + J M̈` (needs `p ∈ C²`); 2 = exact KL splitting against
+  EVERY family member `KL(d‖q_N) = KL(d‖q_M) + KL(q_M‖q_N)` (route: `log(q_M/q_N)` affine in `S`, so `E_d = E_{q_M}`), uniqueness
+  of both minimisers, and Fisher orthogonality at `q_M`: `⟨J_M u, k⟩_{q_M} = ∫ ℓ_u k dν = 0` for `∫k = 0 = ∫Sk`, `⟨J u, J v⟩ = g(u,v)`,
+  so `DR_{q_M}` is the Fisher-orthogonal projection onto the family tangent (NOT a submersion at general `d`); 3 = smooth tower via
+  the BOOTSTRAP `θ' = A(θ)⁻¹δ` (`C^r ⇒ C^{r+1}`), recursions `v_k = −A⁻¹ Σ_{|π|≥2} K_{|π|}[v_{|B_i|}]`, `a_j = ⟨v_j, T − μ_s⟩ − (j−1)⟨δ, v_{j−1}⟩`,
+  `P_{k+1} = ∂P_k + ℓ P_k` (Bell polynomials); 4 = Chernoff `P(⟨θ(M), M̂_n⟩ ≥ ⟨θ(M), M⟩) ≤ e^{−n𝓘(M)}`. Sanity: signed base
+  points fine; state identities on the fixed-mass interior-response set; `‖DR h‖₁ ≤ √g(m̄(h), m̄(h))` notation. NEXT: rank 2
+  (FibreOrthogonality), then rank 1 normal form, then Chernoff, then the bootstrap tower.
+- `FibreOrthogonality` landed (round-64 rank 2). Gotchas: `responseScore`/`responseTheta` need `[Nonempty X]` and `[Nonempty J]`
+  (an `omit` of either fails with "cannot omit referenced section variable"); `Integrable.toL1 f` takes the function
+  EXPLICITLY (`hf.toL1 (fun x ↦ …)`, an `_` leaves `NormedAddCommGroup ?m` stuck); `sub_mul` before `Finset.sum_mul` when
+  distributing `(a − ∑ f) * k`; `klDiv_self` + `ENNReal.toReal_zero` turn `toReal_klDiv_tilted_right ν Q_M … (−dirLoss θ_M)` into
+  the closed form of `KL(Q_M‖ν)`; `ENNReal.toReal_eq_toReal_iff' h1 h2` + `ENNReal.toReal_add` lift a real identity to `ℝ≥0∞`;
+  `ENNReal.add_right_inj (h : a ≠ ⊤)` for cancellation; `klDiv_eq_zero_iff` for uniqueness. NEXT: round-64 rank 1 (global
+  normal form `Φ(d) = (m(d), d − p(m(d)))`, `Φ⁻¹(M,k) = p(M) + k`, `U ≃ Ω × K`, both directions differentiable within the
+  fixed-mass set; needs `∫ reconstructionL1 M = 1`), then Chernoff (rank 4), then the bootstrap tower (rank 3).

@@ -4780,3 +4780,13 @@ certificates for concrete resolved charts beyond the identity chart.
   (`sR'(s) − R(s) = KL(ν‖D_s) − KL(ν‖Q_{M_s})`), **`hasDerivAt_invisibleBridge_div`** (`d/ds (R(s)/s) = (KL(ν‖D_s) −
   KL(ν‖Q_{M_s}))/s²`: the invisible information per unit displacement grows exactly where the reverse information of the
   data exceeds that of its reconstruction — the tilt diagnostic).
+- `FibreOrthogonality.lean` (NOT mirrored; round-64 rank 2, the dual foliation): `integral_dirLoss_of_response`,
+  `klDiv_familyMeasure_ne_top`, **`toReal_klDiv_split_family`** / **`klDiv_split_family`** (for `ρ ≪ ν` of finite information
+  with response `M` and EVERY natural parameter `θ`: `KL(ρ‖Q_θ) = KL(ρ‖Q_M) + KL(Q_M‖Q_θ)`; route: three tilted-reference
+  formulas `toReal_klDiv_tilted_right` + `∫ dirLoss θ dρ = ⟨θ, M⟩ = ∫ dirLoss θ dQ_M`), `klDiv_family_ne_top`,
+  **`klDiv_family_le`** (the reconstruction is the information projection onto the whole family), **`klDiv_family_eq_iff`**
+  (uniqueness), **`integral_responseScore_mul_invisible`** (`∫ ℓ_{M,u} k dν = 0` for zero-mass zero-moment `k`: invisible
+  directions ⟂ tangent scores), `integrable_famDens_mul_of_bdd`, **`momentL1_toL1_famDens_mul`** (the visible part of
+  `q_M φ` with `E_Q φ = 0` is `Cov_Q(S, φ)`), **`dataReconDeriv_section`** (`DR_{q_M}[q_M φ] = [q_M · B_M φ]`: the retraction
+  differential at the section is the regression projection), **`fisher_orthogonal_splitting`** (`E_Q φ² = g(c_φ,c_φ) +
+  E_Q(φ − B_M φ)²`: the data tangent space at the section splits orthogonally into the family tangent and the fibre).
