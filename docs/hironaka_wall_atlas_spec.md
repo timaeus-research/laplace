@@ -4543,3 +4543,14 @@ certificates for concrete resolved charts beyond the identity chart.
   a FINITE-RATE response (boundary allowed) and every `t < 1`, `E_{Q_t}φ − E_νφ = t E_ν[φℓ_0] + ∫₀ᵗ(t−u)E_{Q_u}[φN(ℓ_u²)]du`
   (change of variables `u = st` in the interior identity for `M_t`); **`tendsto_atlas_taylor_endpoint`**: if
   `E_{Q_t}φ → L` as `t ↑ 1` then the triangular accounting expression converges to `L − E_νφ`.
+- `BoundaryCompletion.lean` (NOT mirrored; round-57 rank 1, mostly ASSEMBLY of existing seabed pieces):
+  `atlas_eq_responseProjection` (`Q_s = Π(M_s)` for `s < 1`), **`tendsto_integral_atlas_endpoint`** (`E_{Q_t}φ →
+  E_{Q_*}φ`, `Q_* = Π(M)` the information projection, via PinskerObservable's segment theorem),
+  **`tendsto_atlas_taylor_responseProjection`** (triangular accounting at the endpoint with `L = E_{Q_*}φ`),
+  **`tendsto_klDiv_responseProjection_atlas`** (`KL(Q_*‖Q_s) → 0`, squeeze by `𝓘(M) − 𝓘(M_s)`),
+  **`sq_integral_sub_responseProjection_atlas_le`** (Pinsker at the endpoint: `(E_{Q_*}F − E_{Q_s}F)² ≤
+  2L²∫_s^1(1−u)κ`), **`boundary_completion`** (eight-part package: projection spec, Pythagoras, tail identity
+  `KL(Q_*‖Q_s) = ∫_s^1(1−u)κ`, KL → 0, observable convergence, triangular accounting). NB: the seabed ALREADY had
+  the boundary information projection (`responseProjection_spec` needs only `hfin`), the tail identity
+  (`EndpointTail`, `hfin` only) and the segment Pinsker convergence (`PinskerObservable`) — the consult's
+  "TV-Cauchy construction" and "(1−s)i'(s) → 0" were unnecessary.

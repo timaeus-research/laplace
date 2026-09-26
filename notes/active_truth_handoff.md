@@ -703,3 +703,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   boundary COMPLETION (endpoint law by TV-Cauchy, `(1−s)i'(s) → 0`, `KL(Q_*‖Q_s) = ∫_s^1(1−t)κ`), rank 2 = reconstruction
   as compact-uniformly Lipschitz retraction of distribution space, rank 3 = all-orders relative-uniform analyticity,
   rank 4 = TV atlas curve. NEXT: rank 1 per §2 of the consult.
+- `BoundaryCompletion` landed (round-57 rank 1; assembly): `Q_s → Q_* = Π(M)` for bounded observables at every
+  finite-rate response, `KL(Q_*‖Q_s) → 0`, Pinsker tail bound, triangular accounting at the endpoint,
+  `boundary_completion` package. Gotcha: `zero_le` takes its argument implicitly (`fun _ ↦ zero_le`).
+  NEXT (round 57 rank 2): the reconstruction as a compact-uniformly TV-Lipschitz retraction of distribution space:
+  `‖Π(M') − Π(M)‖_var ≤ √Λ_H ‖M' − M‖` on compact convex `H ⊂ ri K` (via `E_Q|ℓ_u| ≤ √⟨u,Σ⁻¹u⟩` and segment
+  integration of the density derivative), `‖E_DS − E_{D'}S‖ ≤ L‖D − D'‖_var`, `D ↦ Π(E_DS)` TV-Lipschitz on
+  compacts; derivative `DR_D[H] = Q ℓ_{M,m(H)}` is a projection (`L_Q² = L_Q`, kernel = moment-invisible
+  perturbations); then rank 3 (all-orders) / rank 4 (TV atlas curve).
