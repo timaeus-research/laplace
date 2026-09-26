@@ -4757,3 +4757,15 @@ certificates for concrete resolved charts beyond the identity chart.
   transport `G_F(M*) − G_F(m₀) = ∫₀¹ lin_{F,M_s}(δ) ds`; (3) invisible bending (second-order transport + the exact
   invisibility identity); (4) sampling averages the bending, uniformly over `‖F‖∞ ≤ 1`; (5) the atlas is the
   natural-gradient trajectory of `KL(Q_{M*}‖Q_M)` (start, ODE, convergence, Fisher dissipation).
+- `DataRetraction.lean` (NOT mirrored; round-63 rank 2, the reconstruction as a retraction of the DATA manifold):
+  `exists_feature_bound`, `integrable_stat_mul_L1`, `momentLin`/**`momentL1`** (the moment functional `d ↦ ∫ S d dν` as a CLM
+  `L¹(ν) → (J → ℝ)`, `momentL1_apply`), `dirProjL` (`dirProj` as a CLM), **`visibleL1`** (the visible part `π ∫ S h dν ∈ 𝕍` of
+  a data direction), **`dataRecon`** (`R(d) = [q_{m(d)}]` on `L¹(ν)`), `momentL1_reconstructionL1` / **`momentL1_dataRecon`**
+  (`m ∘ R = m`), **`dataRecon_dataRecon`** (`R ∘ R = R`), `momentL1_reconstructionDeriv` / `visibleL1_reconstructionDeriv`
+  (`π m(Dp_M u) = u`), **`momentL1_sub_mem_dirSpan`** (zero-mass data directions have visible moments in `𝕍`, via the a.e.
+  membership `S(x) − m₀ ∈ 𝕍` and the projection trick `∫ f = ι P ∫ f`), `momentL1_mem_dirSpan`,
+  **`hasFDerivWithinAt_dataRecon`** (on the fixed-mass affine subspace, `DR_d[h] = Dp_{m(d)}(π ∫ S h dν)`: the pushforward of a
+  data tangent is the reconstruction derivative of its visible part), **`dataReconDeriv_comp_self`** (`DR ∘ DR = DR`),
+  **`dataReconDeriv_eq_zero_iff`** (`ker DR = {∫ S h dν = 0}`, the invisible data directions), **`momentL1_sub_dataReconDeriv`**
+  (every zero-mass direction = visible tangent score + invisible remainder), `norm_dataReconDeriv_le` (`‖DR h‖₁ ≤ √g(πh, πh)`),
+  **`hasDerivAt_dataRecon_path`** (the chain rule along any differentiable constant-mass path of `L¹` densities).

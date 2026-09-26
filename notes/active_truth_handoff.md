@@ -922,3 +922,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   flow lemmas omit `hS`, so they are `natFlow_zero ν Mt` etc. NEXT: (i) rank 3 whole-law `L¹` transport / invisible
   acceleration in Bochner form (`hasDerivAt_reconstructionL1_curve` + FTC in `L¹`, `atlasHess` domination); (ii) the tilt
   diagnostic `tR'(t) = R(t) + KL(ν‖D_t) − KL(ν‖Q_{M_t})`; (iii) Bochner `L¹` form of the bias; (iv) round-64 consult.
+- `DataRetraction` landed (round-63 rank 2): the response map as a map on `L¹(ν)`, `R(d) = [q_{m(d)}]`, is a differentiable
+  retraction of the fixed-mass affine subspace with `DR_d[h] = Dp_{m(d)}(π ∫ S h dν)`, `R∘R = R`, `m∘R = m`, `DR∘DR = DR`,
+  `ker DR = {∫ S h = 0}`, visible/invisible splitting, chain rule along data paths. Gotchas: a `def` in an `include hS` section
+  whose statement and body do not mention `hS` drops it (`dirProjL S ν` needs `variable (S) in`; theorems about it need
+  `omit hS in`); `Integrable.bdd_mul (c := …) (f := …)` must have both named or `abs_sub` leaves `(fun x ↦ ?m) x`; a `set f := fun x ↦
+  (…) • (…)` on `J → ℝ` in a long proof caused whnf/isDefEq timeouts — use `obtain ⟨f, hf⟩ : ∃ f, f = … := ⟨_, rfl⟩` and
+  `rw [hf]` where needed; `integrable_pi_iff` for vector-valued integrands; `ContinuousLinearMap.integral_comp_comm` twice
+  (`ι ∘ P`) shows an a.e.-`𝕍`-valued integrand integrates into `𝕍`; `HasFDerivWithinAt.comp_hasDerivWithinAt` needs
+  `(s := univ) (l := …) (f := …) (x := …)` named, then `hasDerivWithinAt_univ`; `L1.norm_eq_integral_norm`,
+  `Lp.coeFn_add/smul/zero`, `Integrable.coeFn_toL1`, `LinearMap.mkContinuousOfExistsBound`. NEXT: Bochner `L¹` whole-law
+  transport (`reconstructionL1 M − reconstructionL1 m₀ = ∫₀¹ Dp_{M_s} δ ds`, the `hftc` inside `integral_abs_famDens_curve_le`,
+  factor it out), tilt diagnostic `tR'`, round-64 consult.
