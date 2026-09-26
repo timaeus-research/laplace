@@ -5265,3 +5265,15 @@ certificates for concrete resolved charts beyond the identity chart.
   from `hasDerivAt_integral_tilted`; `θ'_t` from `hasDerivAt_dataTheta_vel` through `(dirSpan …).subtypeL`; the pairing termwise
   via `HasDerivAt.fun_sum` + `hasDerivAt_pi`; `⟨θ'_t, b_t⟩ = −|q'_t|²` by `responseSpeedSq_eq_neg_dotJ`; the covariance term
   expanded with the two `integral_sub_sq*` lemmas.
+- `TiltVarianceComparison.lean` (NOT mirrored; round-77 Lemma C): `exp_neg_le_integral_exp` / `integral_exp_le_exp`
+  (`e^{−c} ≤ ∫ e^{g} dQ ≤ e^{c}` for `|g| ≤ c`), `tilt_density_le` / `le_tilt_density` (`e^{−2c} ≤ e^{g}/Z ≤ e^{2c}`),
+  `integral_tilted_le_of_nonneg` / `le_integral_tilted_of_nonneg` (nonnegative bounded integrands move by at most `e^{±2c}`
+  under the tilt), **`lawCov_tilted_le`** / **`le_lawCov_tilted`** (`e^{−2c} Var_Q f ≤ Var_{Q.tilted g} f ≤ e^{2c} Var_Q f`,
+  through `Var = inf_c E(f − c)²` centred at the other law's mean). The "bounded tangential tilt" step of facet accessibility.
+- `PathLengthPrimitive.lean` (NOT mirrored; round-77 Lemma E, Mathlib-only): `abs_integral_comp_le_integral_abs_deriv_mul`
+  (`|∫_{r a}^{r b} g| ≤ ∫_a^b |r'| g(r)` for continuous `g ≥ 0`, `C¹` `r`; by `integral_comp_mul_deriv'`),
+  `integral_le_integral_abs_deriv_mul_of_le` (`∫_{r a}^{R} g ≤ ∫_a^b |r'| g(r)` whenever `R ≤ r b`),
+  **`integrableOn_Ioi_of_tendsto_atTop_of_integral_abs_deriv_mul_le`** (`r → ∞`, `∫_a^b |r'| g(r) ≤ I` for all `b` ⇒
+  `IntegrableOn g (Ioi (r a))`, via `integrableOn_Ioi_of_intervalIntegral_norm_bounded`). The real-analysis step of facet
+  accessibility: a normal-speed lower bound `|η'|_F ≥ c |r'| g(r)` plus finite path length gives finite ray length, with no
+  monotonicity of `r` and no coarea formula.

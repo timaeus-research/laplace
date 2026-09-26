@@ -1617,3 +1617,23 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   the two per-index forms with a `Finset.sum_congr … ring` equation, `rw [Finset.sum_add_distrib, e6]`, then `ring`.
   NEXT: facet accessibility (codimension one, Schur complement), charged-square counterexample, flags corollary, or a
   round-77 consult.
+- Round 77 (`gpt_responses/research_round77_{q,v1}.md`): Astra's ranking — (1) FacetFisherAccess (facet `F`, `M ∈ ri F`: some
+  finite-Fisher-length interior path reaches `q_M` ⟺ the normal ray `v_M − r n` has finite length ⟺ `Σ√a_k < ∞`; proof: face
+  chart gives tangential convergence `v_s → v_M` and uncharged-vertex gaps give `r_s → ∞` (codim one: kernel after fixing the
+  tangential parameter is the line `ℝn`); bounded tangential tilt ⇒ variances comparable (`TiltVarianceComparison`); Schur
+  complement by scalar completion of squares with `‖Cov_q(ℓ,Y)‖ ≤ 2B E_q ℓ`, `(E_q ℓ)² ≤ ε E_q ℓ²`, `Var_q ℓ ≥ p E_q ℓ²`
+  (`ε = 1 − q(A)`), and `Var_q⟨w,S⟩ ≥ q(A) Var_{q(·|A)}⟨w,S⟩` for the tangential lower bound; real-analysis step
+  `PathLengthPrimitive`), then its data-ray strengthening (the data path's response has finite length ⟺ the ray does, via the
+  dissipation identity `∫₀^∞ E_{ρ_t}δ dt = log(1/p_*)`, `δ = max h − h`, `p_* = ν{h = max}`, and `‖m'_t‖ ≤ 2‖S‖ E_{ρ_t} δ`);
+  (2) finite data length, infinite response length: one statistic `S ∈ [0,1]`, atoms at `0`, `1`, `2^{−k}` with masses `c/k²`,
+  `h = 1_{S=0}`: `L_data = 2 arccos √p₀ < π` but `L_resp = ∞` (`Σ√a_k = ∞`); (3) intrinsic Fisher completion; (4) charged square;
+  (5) flags; (6) higher-codim total response length. Sign convention CHECKED: our `Pfam θ ∝ e^{−⟨θ,S⟩}`, so the ray `θ − t u`
+  concentrates on the MAX-exposed face `{⟨u,·⟩ = β}` and uncharged gaps read `⟨η, v − v₀⟩ → +∞` — consistent with the seabed.
+- `TiltVarianceComparison` + `PathLengthPrimitive` landed (round-77 Lemmas C and E). Gotchas: `integrable_exp_of_bdd` already
+  exists in `EntropyProjection` (import it); `integral_tilted f g : ∫ g ∂μ.tilted f = ∫ (e^{f}/Z) • g ∂μ` then
+  `← integral_const_mul` and `integral_mono` with `Integrable.bdd_mul (c := …)` for the density factor; `integral_comp_mul_deriv'
+  (h : ∀ x ∈ uIcc a b, HasDerivAt f (f' x) x) (h' : ContinuousOn f' (uIcc a b)) (hg : ContinuousOn g (f '' [[a, b]]))` is the
+  substitution theorem; `integral_mono_interval` for shrinking a nonnegative interval integral; `integrableOn_Ioi_of_intervalIntegral_norm_bounded
+  I a (b := id) (l := atTop)` wants `∀ i, IntegrableOn f (Ioc a (b i))` (`hg.integrableOn_Ioc`) and the eventual bound on `∫ ‖f‖`.
+  NEXT: `DataDissipation` (`∫₀^∞ E_{ρ_t}δ = log(1/p_*)`, finite Euclidean variation of the moment curve), then the 1-D
+  infinite-distortion example, then FacetFisherAccess Lemmas B/D and assembly.
