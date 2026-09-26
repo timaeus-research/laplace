@@ -880,3 +880,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   Round-62 status: ranks 2, 3, 4 DONE; remaining: rank 1 flagship (`C²` `L¹`-Hessian as invisible signed measure),
   rank 5 (invisible `L²` expansion), rank 6 (tilt diagnostics). NEXT: rank 5 (`R(t) = ½t²‖N_{m₀}h‖² + o(t²)`) since it is
   short and independent, then the `C²` flagship.
+- `InvisibleQuadratic` landed (round-62 rank 5). Gotchas: `h ▸ proof` inside a subtype literal in a THEOREM STATEMENT causes a
+  kernel deterministic timeout — name the membership proof as its own theorem (`sub_one_dir_mem`); `LinearMap.map_smul₂`
+  already applies to the doubly-applied bilinear form (`f (c•x) y = c • f x y`), so no `LinearMap.smul_apply` afterwards;
+  `Integrable.bdd_mul (hg) (hf_meas) (bound)` needs the BOUNDED factor first; `mean_densLaw_bridge ν hd hc0 hc hC hS`;
+  `integrable_of_bounds ν hd hc hC`; `Ioo_mem_nhdsGT one_pos : Ioo 0 1 ∈ 𝓝[>] 0`; `Metric.tendsto_nhdsWithin_nhds` binds
+  `⦃x⦄ (hx : x ∈ s) (hd : dist x a < δ)`. Round-62 status: ranks 2, 3, 4, 5 DONE; remaining rank 1 flagship (`C²`
+  `L¹`-Hessian as invisible signed measure; the atlas-level facts `integral_atlasHess = 0`, `integral_mul_atlasHess = 0`
+  already exist in `AtlasHessian`) and rank 6 (tilt-path diagnostics). NEXT: round-63 consult with the full picture, or
+  begin the `C²` flagship via the atlas: `hasDerivAt_famDens_deriv_atlas` + dominated convergence for the `L¹` second
+  derivative along the atlas (a "C² along lines" version), before the full Fréchet `C²`.

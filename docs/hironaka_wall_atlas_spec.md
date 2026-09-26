@@ -4733,3 +4733,10 @@ certificates for concrete resolved charts beyond the identity chart.
   **`natLoss_deriv_eq_fisherForm`** (`dL_M[u] = g_M(M − M*, u)`: the natural gradient is the displacement), `natFlow`
   (`M(τ) = atlasPath(1 − e^{−τ})`), `natFlow_zero`, **`hasDerivAt_natFlow`** (`M' = −(M − M*)`), `tendsto_natFlow`,
   `natFlow_mem_intrinsicInterior`, **`hasDerivAt_natLoss_natFlow`** (dissipation `dL/dτ = −g_{M(τ)}(M(τ)−M*, M(τ)−M*)`).
+- `InvisibleQuadratic.lean` (NOT mirrored; round-62 rank 5): `genRate_featureless_ne_top`, `featureless_mem_intrinsicInterior`,
+  `responseTheta_featureless` (`θ(m₀) = 0`), `familyMeasure_responseTheta_featureless` (`Q_{m₀} = ν`),
+  **`tendsto_genRate_atlas_div_sq`** (`𝓘(m₀ + sδ)/s² → ½ g_{m₀}(δ,δ)`), `bdd_sub_one`, `mean_densLaw_mem_intrinsicInterior`,
+  `invisibleBridge` (`R(s) = KL(D_s‖Π(M_s))` for `D_s = (1 + s(d−1))ν`), `invisibleBridge_eq` (Pythagoras),
+  **`tendsto_klDiv_bridge_div_sq`** (`KL(D_s‖ν)/s² → ½ E_ν(d−1)²`), `respCov_featureless_sub_one` (`Cov_ν(S, d−1) = M_D − m₀`),
+  **`integral_sub_one_sq_eq_fisher_add_normal`** (tangent Pythagoras at `m₀`), **`tendsto_invisibleBridge_div_sq`**
+  (`R(s)/s² → ½ ‖N_{m₀}(d−1)‖²_{L²(ν)}`: the invisible information is the squared normal data displacement).
