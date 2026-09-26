@@ -823,3 +823,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Topology.IsInducing.subtypeVal.continuousOn_iff` + `ContinuousOn.congr`. NEXT: rank 2 (information splitting along
   the atlas with the non-monotone invisible part: record the three-point counterexample in Lean, `R(t) ≤ t KL(D‖ν)`,
   `tR'(t)` identity), then `C²`, `𝓘`-bias, joint plug-in covariance.
+- `InvisibleHump` landed (rank 2: envelopes + the three-point non-monotonicity counterexample). Gotchas: `Measure.count` on
+  `Fin 3` with `(3:ℝ≥0∞)⁻¹ • count`; `tilted_apply_eq_ofReal_integral'` + `integral_singleton` (`μ.real {a} • f a`) give
+  point masses; `ℝ≥0`-smul on `ℝ≥0∞` unfolds with `ENNReal.smul_def` THEN `smul_eq_mul`; never `rw [hump3D]` in a goal that
+  later needs `klDiv_self` (the `IsProbabilityMeasure` instance is on the def, the unfolded `familyMeasure` has no
+  `SigmaFinite` instance) — restate the projection identity for the def by `:= h` (defeq); `θ' : 𝕍` needs `(θ' : J → ℝ) 0`.
+  Round-61 remaining: `L²` local expansion `R(t) = ½t²‖N_{m₀}h‖² + o(t²)`, diagnostic `tR'(t)` identity, `C²` (rank 3),
+  `𝓘`-bias (rank 4), joint plug-in covariance (rank 5). NEXT: rank 5 (cheap, 250–500 LOC: joint covariance of plug-ins with
+  the sandwich form), then rank 4, then `C²`.

@@ -4685,3 +4685,10 @@ certificates for concrete resolved charts beyond the identity chart.
   `continuousOn_linForm_path`, **`integral_response_sub_eq_integral_linForm`** (FTC: `G_F(M(1)) − G_F(M(0)) = ∫₀¹ lin(M') ds`
   for `C¹` paths), `integral_response_sub_featureless_eq_integral_atlas` (atlas transport from `m₀` to `M`),
   **`hasDerivAt_integral_response_atlas_influence`** (`d/dt G_F(M_t) = ∫ψ_{F,M_t} dD − ∫ψ_{F,M_t} dν` along the affine data path).
+- `InvisibleHump.lean` (NOT mirrored; round-61 rank 2): `invisibleInformation_bridge_le_total` (`R_s ≤ s KL(D‖ν) − 𝓘(M_s)`),
+  **`invisibleInformation_bridge_le`** (`R_s ≤ s R₁ + s 𝓘(M) − 𝓘(M_s)`, from the bridge modulus); the THREE-POINT COUNTEREXAMPLE:
+  `uniform3`, `coordFeature` (`S(x) = x` on `Fin 3`), `hump3D = Pfam(−1) ∝ e^x`, `humpMix t = (1−t)ν + tD`,
+  `humpResidual t = KL(humpMix t ‖ Π(E_{humpMix t} S))`, `humpResidual_zero`, `humpResidual_one`, **`humpResidual_pos`**
+  (interior mixtures leave the family: the log-linear identity `p₀p₂ = p₁²` of family members, `loglinear_mul`, versus the
+  strict hump `q₁² < q₀q₂` of a positive mixture, `hump_mul`), **`humpResidual_not_antitone`** (¬Antitone ∧ ¬Monotone):
+  the invisible information along the affine data path is NOT monotone.
