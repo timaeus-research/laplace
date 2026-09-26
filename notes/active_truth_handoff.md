@@ -1300,3 +1300,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `responseProjection_eq_of_exposedChain` + `faceMeasure_eq_withDensity` + `withDensity_mul` as in
   `responseProjection_eq_withDensity_comp`; domination `δ·h_a ≤ f` a.e. for any feasible bounded-density `r = vertexLaw a`
   via Pythagoras ⇒ `r ≪ q_M` ⇒ `r(Aᶜ) = 0`).
+- `ProjectionDensityBounds` landed (module 3). Gotchas: the representative is built exactly as in
+  `responseProjection_eq_withDensity_comp` (`unfold familyMeasure; rw [← hZ, faceMeasure_eq_withDensity ν hAm,
+  ← withDensity_mul ν (measurable_const.indicator hAm) hdens]; congr 1; funext x; simp only [Pi.mul_apply]` + `by_cases hx`);
+  `(ν A)⁻¹ = ofReal (ν.real A)⁻¹` needs `ENNReal.ofReal_inv_of_pos hApos, measureReal_def, ENNReal.ofReal_toReal` in that order
+  (state it as a separate `have`); `Z > 0` by `unfold priorZ; simp only [mul_one]; exact integral_exp_pos hint`;
+  `lintegral_eq_zero_iff` yields an `EventuallyEq` — restate it as `∀ᵐ x ∂ν.restrict Aᶜ, … = 0` before `ae_restrict_iff'`;
+  `r ≪ q` from `(klDiv_ne_top_iff.1 hkq).1`, applied as `hrq hqA`. NEXT: module 4 `PolyhedralRecovery`.

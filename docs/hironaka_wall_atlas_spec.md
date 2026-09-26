@@ -5011,3 +5011,9 @@ certificates for concrete resolved charts beyond the identity chart.
   completion `qStarVec` on the vertex simplex: a canonical choice of barycentric coordinates), `genRate_vertexStat_ne_top`,
   `vertexSection_mem_stdSimplex`, **`sum_vertexSection_smul`** (`Σ_v a_v(M) v = M` on `conv V`),
   **`continuousOn_vertexSection`** (continuous on the polytope), `vertexSection_nonneg`, `vertexSection_le_one`.
+- `ProjectionDensityBounds.lean` (NOT mirrored; polyhedral completion module 3 of 5): **`exists_projection_density_bounds`**
+  (every finite-rate projection has a representative `f = 1_A e^{−⟨θ,S⟩}/(Z ν(A))` with `c 1_A ≤ f ≤ C 1_A`, `c > 0`, `f = 0`
+  off `A`, `ν(A) > 0`: the bounded tilt on the terminal law of an exposed chain), **`exists_pos_mul_le_projection_density`**
+  (DOMINATION: a feasible law `hν` with bounded density and finite relative entropy satisfies `δ h ≤ f` a.e.; Pythagoras ⇒
+  `KL(r‖q_M) < ∞` ⇒ `r ≪ q_M` ⇒ `h = 0` a.e. off `A`), **`exists_pos_mul_vertexDensity_le`** (the vertex law of any simplex
+  weights with barycentre `M` is dominated by `q_M`).
