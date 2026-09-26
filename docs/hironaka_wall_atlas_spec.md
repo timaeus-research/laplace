@@ -4851,3 +4851,14 @@ certificates for concrete resolved charts beyond the identity chart.
   uniqueness), **`iteratedDeriv_two_reconstructionL1_atlas_zero`** (`p''(0) = [atlasHess_0] = [N_{m₀}(ℓ²)]`),
   **`obsResponse_atlas_second_order_featureless`** (the explicit second-order featureless expansion
   `|E_{Q_{M_s}}F − (E_ν F + s lin_F(δ) + ½ s² b_F(δ,δ))| ≤ ‖F‖∞ C s³/2` on `[0,1]`, `C` independent of `F`).
+- `ResponseHessian.lean` (NOT mirrored; round-65 rank 1, the Hessian in all directions): `biasForm_comm`, `addDomain`
+  (`{z ∈ 𝕍 | M + z ∈ Ω}`), `lineCLM`, **`isOpen_addDomain`**, **`contDiffOn_reconstructionL1_add`** /
+  **`contDiffAt_reconstructionL1_add`** (`z ↦ [q_{M+z}]` is `C^∞` on the interior displacements of every interior `M`),
+  `isSymmSndFDerivAt_reconstructionL1_add`, **`iteratedDeriv_two_line_eq`** (`d²/ds² P(sw)|₀ = D²P_0[w,w]`, via
+  `ContinuousLinearMap.iteratedFDerivWithin_comp_right`), `hasDerivAt_reconstructionL1_line`, `contDiffOn_line_Icc`,
+  `integral_mul_iteratedDeriv_zero/one_line`, `isLittleO_obsResponse_line` (TV Peano at `M` along the line, paired),
+  `isLittleO_obsResponse_line_taylor_two`, **`integral_mul_fderiv_fderiv_diag_of_line`** / **`integral_mul_fderiv_fderiv_diag`**
+  (the diagonal Hessian pairs to `b_F(w,w)`; general `w` by rescaling into the interior), **`integral_mul_fderiv_fderiv_eq_biasForm`**
+  (polarisation + symmetry of second derivatives: `∫ F · D²P_M[u,v] = b_{F,M}(u,v)`), **`fderiv_fderiv_reconstructionL1_add`**
+  (`D²P_M[u,v] = [q_M N_M(ℓ_{M,u} ℓ_{M,v})]`), **`momentL1_fderiv_fderiv_eq_zero`** (the Hessian is invisible: zero mass, zero
+  feature moments).

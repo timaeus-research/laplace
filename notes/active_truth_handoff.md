@@ -1052,3 +1052,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   rank 4 (`ResponseChernoff`) done earlier as part of round 64. NEXT: rank 1 — the Hessian of `p` in all directions
   `D²p_M[u,v] = [q_M N_M(ℓ_uℓ_v)]` by polarisation from the affine lines through `M` (re-centred atlases) plus the second-order
   chain rule for curved paths; or rank 3 (analyticity: contraction + majorant for the inverse mean map).
+- `ResponseHessian` landed (round-65 rank 1, the explicit invisible Hessian). Gotchas: set-builder sets and projections
+  (`(…).smulRight`) cannot be `local notation` — use defs (`addDomain S ν M`, `lineCLM ν w`); a `variable {w : 𝕍}` line in a
+  nested section must spell `dirSpan ν (fun _ ↦ 1) S` (the local notation yields "Unknown constant ν✝"); the diagonal Hessian
+  along a line uses `ContinuousLinearMap.iteratedFDerivWithin_comp_right (lineCLM ν w) hP hU.uniqueDiffOn hpre.uniqueDiffOn hx
+  (i := 2) (cast)`, `ContinuousMultilinearMap.compContinuousLinearMap_apply`, `iteratedFDerivWithin_eq_iteratedFDeriv`,
+  `iteratedFDeriv_two_apply`; symmetry from `ContDiffAt.isSymmSndFDerivAt` with `minSmoothness_of_isRCLikeNormedField`; the
+  general direction by rescaling `c = r/(2(‖u‖+1))` into the ball of `Metric.isOpen_iff`, bilinearity `map_smul, map_smul,
+  smul_apply, smul_smul` (root `smul_apply`), `LinearMap.map_smul₂`; polarisation `simp only [map_add, add_apply]` then
+  `hsymm v u`, `two_smul`, `abel`; coercions of `u + v`/`c • u` must be written `((u + v : 𝕍) : J → ℝ)` to match
+  `Submodule.coe_add/coe_smul`. Round 65: ranks 1 (Hessian; curved-path chain rule still open), 2, 4 DONE. NEXT: the curved-path
+  second-order transport `(P∘γ)'' = D²P[γ',γ'] + DP[γ'']` (assembly from `contDiffAt_reconstructionL1_add` + `HasDerivAt.clm_apply`),
+  the `C^∞` upgrade of NormalForm, then round-66 consult (analyticity / boundary completion / CLT).
