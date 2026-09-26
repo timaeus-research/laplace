@@ -455,6 +455,7 @@ import Laplace.Multi.TiltDiagnostic
 import Laplace.Multi.TransportL1
 import Laplace.Multi.FibreOrthogonality
 import Laplace.Multi.NormalForm
+import Laplace.Multi.ResponseChernoff
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

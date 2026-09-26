@@ -972,3 +972,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `dataSet`; `abel`/`abel_nf` close the `p + (d − p) = d` and `p + k − p = k` identities in `L¹`. NEXT: round-64 rank 4
   Chernoff (`P(⟨θ(M), M̂_n⟩ ≥ ⟨θ(M), M⟩) ≤ e^{−n𝓘(M)}` via `measure_ge_le_exp_mul_mgf` and `mgf` of iid sums), then rank 3
   bootstrap smoothness of `θ(M)`, then round-65.
+- `ResponseChernoff` landed (round-64 rank 4; note the seabed ALREADY had `HalfspaceChernoff`, `HalfspaceProjection`,
+  `CompactCoverCramer` — grep before planning LD work). Gotcha: `Set.mem_setOf_eq` is deprecated (`Set.mem_ofPred_eq`).
+  Round 64: ranks 1, 2, 4 DONE. NEXT: rank 3, the smooth bootstrap — plan: (i) `θ ↦ ∫ g e^{−⟨θ,S⟩} dν` is `ContDiff ℝ n` for
+  every bounded `g` by induction on `n` with `contDiff_succ_iff_fderiv` (fderiv = −Σ_j (∫ g S_j e^{…}) • proj_j, same class);
+  (ii) `famZ`, `meanMap`, the covariance operator `A(θ)` smooth; `A(θ)⁻¹` smooth via `contDiffAt_ring_inverse`; (iii)
+  bootstrap on `Ω₀ = {z ∈ 𝕍 | m₀ + z ∈ Ω}` (open in `𝕍`): `Θ(z) = θr (m₀ + z)`, `fderivWithin Θ = A(Θ)⁻¹`, so `C^n ⇒ C^{n+1}`
+  by `contDiffOn_succ_iff_fderiv_of_isOpen`; (iv) then `s ↦ [q_{M_s}]` smooth in `L¹` and all-orders invisibility.

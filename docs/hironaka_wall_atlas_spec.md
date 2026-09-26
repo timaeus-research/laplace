@@ -4800,3 +4800,7 @@ certificates for concrete resolved charts beyond the identity chart.
   `hasFDerivWithinAt_reconstructionL1_dirProjL` (`p` differentiable within `Ω` with derivative `Dp_M ∘ π`),
   **`hasFDerivWithinAt_normalFormInv`** (`DΨ_{(M,k)}[u,k'] = Dp_M(πu) + k'` within `Ω × K`): the response family is a
   global section of the data space and every datum is response coordinates plus an exactly invisible residual.
+- `ResponseChernoff.lean` (NOT mirrored; round-64 rank 4): **`toReal_genRate_eq_neg_dotJ_sub_featCgf`** (`𝓘(M) = −⟨θ(M), M⟩ −
+  Λ_ν(−θ(M))`: the rate is the Chernoff exponent at its own natural parameter), **`response_chernoff`**
+  (`ν^{⊗n}(⟨θ(M), R̄_n⟩ ≤ ⟨θ(M), M⟩) ≤ e^{−n𝓘(M)}`: the visible information is the exponential cost of producing the
+  response from the featureless law; the seabed's `halfspace_chernoff` at direction `−θ(M)`, multiplier 1).
