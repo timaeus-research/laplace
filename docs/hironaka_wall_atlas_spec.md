@@ -3953,3 +3953,14 @@ certificates for concrete resolved charts beyond the identity chart.
   + `map_zero` for `u' ≠ 0`, `priorCov_dirLoss_self_pos`). OPEN (item 2 second half): inverse-stability constant
   `κ_r = e^{−2Br} λ₀` (density bound of `P_θ` w.r.t. `ν`, variance comparison, coercivity of `C_0` on the unit sphere of `𝕍`, segment
   integration of `⟨θ−η, m(η)−m(θ)⟩`).
+- `DataFisherBudget.lean` (NOT mirrored; round-45 item 4, data-side half): **`klFun_eq_integral`** (`x log x − x + 1 =
+  ∫₀¹ (1−s)(x−1)²/(1−s+sx) ds` for `x ≥ 0`; `x = 0` by `intervalIntegral.integral_congr_ae'` off the null endpoint
+  (`Real.volume_singleton`), `x > 0` by the FTC with antiderivative `−(x−1)s + x log(1+(x−1)s)`; for the derivative identity
+  name the denominator `d` with `obtain ⟨d, hdd⟩`, `field_simp`, then `rw [hdd]; ring` — `field_simp` cannot match `1+(x−1)s`
+  against its own normal form `1 + xs − s`; `add_sub_cancel : a + (b − a) = b` at the end), `dataFisher ν D s`
+  (`∫⁻ ofReal ((f−1)²/(1−s+sf)) dν`, `f = (D.rnDeriv ν).toReal`), `measurable_dataFisher_integrand`,
+  **`klDiv_eq_lintegral_dataFisher`** (`KL(D‖ν) = ∫⁻ s in Ioc 0 1, ofReal (1−s) * dataFisher s` in `ℝ≥0∞`, for `D ≪ ν`;
+  `klDiv_eq_lintegral_klFun_of_ac`, `ofReal_integral_eq_lintegral_ofReal` with `Measure.integrableOn_of_bounded` (bound
+  `(y−1)²`; pass a NAMED `Measurable` fact, the inline `(by fun_prop : …).aestronglyMeasurable` misparses), `Filter.EventuallyLE`
+  must be unfolded before `ae_restrict_iff'`, Tonelli `lintegral_lintegral_swap (f := fun x s ↦ …)`, `setLIntegral_congr_fun`,
+  `lintegral_const_mul` with a named measurable integrand, `ENNReal.ofReal_mul`).
