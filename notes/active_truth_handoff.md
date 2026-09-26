@@ -669,3 +669,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `R` locally bounded), (3) integrated continuity `∫|H_z[e_i,e_j] − H_0[e_i,e_j]| → 0` by dominated convergence,
   (4) pointwise scalar Taylor with integral remainder along `t ↦ tz` + Fubini ⇒ `o(‖z‖²)`; then compact-uniform;
   then the triangular boundary endpoint.
+- `ThetaPeano` + `DensitySecondOrder` landed (steps 1–2 of the TV density Peano, EXPLICIT route instead of the
+  Fubini/dominated-convergence route): vector-valued Peano lemma; `θ(M+z) = θ + Rz − ½R T(Rz)(Rz) + o(‖z‖²)`;
+  pointwise-uniform second order `|p_{θ+η} − p_θ T_θ(η)| ≤ 13(K‖η‖)³ p_θ` via the abstract ratio lemma
+  `abs_ratio_sub_second_order_le` (core cubic identity from sympy, monomials bounded one by one; `nlinarith`
+  avoided). Gotchas: an appended `section` after `end Laplace.Multi` silently loses the namespace (all names
+  unknown) — insert before the final `end`; `Real.exp_bound (x := −w) … (n := 3)` gives the constant
+  `4/(6·3) = 2/9`; after `rw [hε]` there is no `ε` left for a later `rw [← hε]` inside a calc step — keep `ε`
+  abstract until the end.
+  NEXT (step 3): `DensityPeano.lean` — compose: with `η(z) = θ(M+z) − θ(M) = Rz − ½R c_z + v(z)` (`c_z =
+  Cov_Q(S,ℓ_z²)`, `v = o(‖z‖²)`), expand `T_{θ(M)}(η)` = `1 + ℓ_z + ½N_M(ℓ_z²) + ⟨v, m − S⟩ + O(‖z‖³)` pointwise-
+  uniformly (algebraic identity for `densTrunc` at `Rz + ζ` + bounds on `ℓ_c`, covariances of `⟨ζ,S⟩`), then
+  `∀ ε > 0, ∀ᶠ z, ∀ x, |q_{M+z} − q_M − q_Mℓ_z − ½q_MN(ℓ_z²)| ≤ ε‖z‖² q_M` and the TV corollary
+  `∫|…| = o(‖z‖²)`.

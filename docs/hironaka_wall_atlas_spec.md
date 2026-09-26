@@ -4514,3 +4514,12 @@ certificates for concrete resolved charts beyond the identity chart.
   of the pointwise Hessian on a finite basis (no `Lp`), then compact-uniform remainders; boundary: the triangular
   endpoint `lim_{t↑1}[t E_ν(φℓ_0) + ∫₀ᵗ(t−s)…]` is the safe statement (needs TV convergence `Q_t → Q_*`); the
   information companion (done); `KL(Q_*‖Q_s) = ∫_s^1(1−t)κ` and `(1−s)i'(s) → 0` at finite-rate boundary points.
+- `ThetaPeano.lean` (NOT mirrored; towards the TV density Peano): **`isLittleO_peano_of_hasFDerivAt'`** (the generic
+  Peano lemma, vector-valued), **`isLittleO_responseTheta_peano`** (`θ(M+z) = θ(M) + Rz − ½R T(Rz)(Rz) + o(‖z‖²)`),
+  `responseTheta_peano_quadratic` (`T(Rz)(Rz) = Cov_Q(S, ℓ_z²)` as an element of `𝕍`).
+- `DensitySecondOrder.lean` (NOT mirrored): `ratio_core_identity`, `abs_ratio_core_le`,
+  **`abs_ratio_sub_second_order_le`** (a ratio of two second-order truncated exponentials differs from the
+  second-order truncation of the ratio by `≤ 13ε³`), `abs_exp_neg_sub_second_le` (`|e^{−w} − (1 − w + w²/2)| ≤ |w|³/4`),
+  `densTrunc` (`T_θ(η) = 1 + ⟨η, m − S⟩ + ½(⟨η, m−S⟩² − Var_θ⟨η,S⟩)`), `famZ_add_div`, `integral_dirLoss_mul_famDens`,
+  **`abs_famDens_second_remainder_le`** (POINTWISE-UNIFORM second order in natural coordinates:
+  `|p_{θ+η} − p_θ T_θ(η)| ≤ 13 (K‖η‖)³ p_θ` for `K‖η‖ ≤ 1/4`).
