@@ -504,3 +504,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   a pointwise bound rather than continuity of the third moment.
   NEXT (round 53): rank 2 mixed Hessian (natural chart first: `D²p_θ[η,ζ] = p_θ(ℓ_η ℓ_ζ − Cov(ℓ_η,ℓ_ζ) − ⟨…⟩)`, then
   response coordinates), rank 3 global chart, rank 4 unbounded bridge split, rank 6 four-path package.
+- `ExponentialPath` landed (round-53 rank 6): exponential path `E_s = ν.tilted(s log d)`; equal energies of the
+  mixture and exponential paths `ν → D` and `ν → D↑`; `KL(D↑‖ν)+KL(ν‖D↑) ≤ KL(D‖ν)+KL(ν‖D)`; generic
+  length ≤ √energy on `Ioo 0 1`. Gotcha: `sq_integral_sqrt_le_integral` already existed in `SegmentDivergence`
+  (continuous version) — name clashes surface only at the umbrella build or the daemon; grep first.
+  NEXT (round 53): rank 2 mixed Hessian (needs C² of the chart: derivative of `chartDeriv θ_s` along the path via
+  `hasDerivAt_lawCov_familyMeasure_path` on the entries and `Ring.inverse` differentiation of the CLM —
+  `hasFDerivAt_ring_inverse`), rank 3 global chart packaging (`meanMapHomeomorph`,
+  `range_meanMap_eq_intrinsicInterior_momentBody`, strict derivatives, uniqueness of the fibrewise minimiser),
+  rank 4 unbounded bridge split (interior-time identities via nonnegative kernels), rank 5 general conditional
+  variational (sup, clipping).

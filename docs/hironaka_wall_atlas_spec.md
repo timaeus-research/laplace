@@ -4363,3 +4363,12 @@ certificates for concrete resolved charts beyond the identity chart.
   for interior targets), `exists_bound_atlasVel`, `intervalIntegrable_deriv_atlasCurv` (via `measurable_deriv` + bound),
   **`toReal_klDiv_responseProjection_sub_symm_eq_skew`**
   (`KL(Π(M)‖ν) − KL(ν‖Π(M)) = ∫₀¹ s(1−s) E_{Q_s} ℓ_s³ ds`, `ℓ_s = E f_s − f_s`, by `integral_mul_deriv_eq_deriv_mul`).
+- `ExponentialPath.lean` (NOT mirrored; round-53 rank 6, four-path package): `sq_setIntegral_sqrt_le_setIntegral_Ioo`
+  (generic `(∫₀¹ √g)² ≤ ∫₀¹ g`, nonnegativity only on the interval), `expPath ν f s = ν.tilted (s f)`,
+  **`integral_var_expPath_eq_symm_klDiv`** (`∫₀¹ Var_{E_s} f = KL(ν.tilted f‖ν) + KL(ν‖ν.tilted f)` for bounded `f`, by
+  FTC on `E_{E_s} f` and Donsker–Varadhan at `ρ = ν` for the sign), `bdd_log_of_bounds`, `expPath_log_one`
+  (`E_1 = D`), **`integral_mixSpeed_eq_integral_var_expPath`** (mixture and exponential paths `ν → D` have equal
+  energy), `mixSpeed_nonneg`, `integrableOn_mixSpeed_Ioo`, `sq_integral_sqrt_mixSpeed_le_symm_klDiv` (bridge length
+  ≤ √energy), `integral_mixSpeed_condDens_eq_integral_var_expPath` (the same for `ν → D↑`),
+  **`symm_klDiv_statisticLift_le`** (`KL(D↑‖ν) + KL(ν‖D↑) ≤ KL(D‖ν) + KL(ν‖D)`: conditioning contracts the
+  symmetrised divergence, from `k_a ≤ k_d`).
