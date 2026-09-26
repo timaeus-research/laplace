@@ -3934,3 +3934,12 @@ certificates for concrete resolved charts beyond the identity chart.
   FIRST negated integral — derive the sign flip as a separate `have` with `← integral_neg` + `integral_congr`),
   **`tendsto_integral_atlasCurv`** (`→ 𝓘(M).toReal` as `r ↑ 1`, via `ENNReal.tendsto_toReal` and `tendsto_genRate_segment`),
   **`atlas_decomposition_mixture`** (`KL(D_b‖ν) = 𝓘(M_b) + KL(D_b‖Π(M_b))` for the mixtures of a data law with response `M`).
+- `PinskerEvent.lean` (NOT mirrored; round-45 item 5): **`log_integral_exp_le_of_ae_abs_sub_le`** (Hoeffding's lemma in cumulant form,
+  `log E e^g ≤ E g + r²/2` when `|g − c| ≤ r` a.e.; from `log_integral_exp_le_of_var_le` + `lawCov_self_le_integral_sq`;
+  `abs_mul_abs_self`, `mul_self_le_mul_self`), **`pinsker_event`** (`ofReal (2 (μ A − η A)²) ≤ klDiv μ η`: Donsker–Varadhan
+  `ofReal_integral_sub_log_le_klDiv η μ hg` at `g = A.indicator (fun _ ↦ 4 d)`, `integral_indicator_const`,
+  `norm_indicator_le_norm_self`; `Set.indicator_apply` needs `Decidable` — use `by_cases` + `indicator_of_mem/notMem`; feed
+  `nlinarith` the substitution `μ.real A = d + η.real A`), **`sq_real_responseProjection_segment_le`**
+  (`2 (Π(M) A − Π(M_s) A)² ≤ (𝓘(M) − 𝓘(M_s)).toReal`, via `ENNReal.ofReal_le_iff_le_toReal (ENNReal.sub_ne_top hfin)`),
+  **`tendsto_real_responseProjection_segment`** (every event probability converges at the endpoint; squeeze, `Tendsto.sqrt`,
+  `Real.sqrt_sq_eq_abs`, `(tendsto_zero_iff_abs_tendsto_zero _).2`).
