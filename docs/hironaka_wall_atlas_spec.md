@@ -4641,3 +4641,7 @@ certificates for concrete resolved charts beyond the identity chart.
   (`g − E_Qg = B_Mg + N_Mg`), `integral_regProj_mul_normalProj` (`⟨B_Mg, N_Mg⟩_{L²(Q)} = 0`),
   **`integral_sq_sub_eq_regProj_add_normalProj`** (Pythagoras `E_Q(g − E_Qg)² = E_Q(B_Mg)² + E_Q(N_Mg)²`): `B_M` is the
   `L²(Q)`-orthogonal projection onto the tangent scores.
+- `CurveLength.lean` (NOT mirrored; round-60 §4 second item): `norm_reconstructionDeriv_apply_le` (`‖Dp_M u‖₁ ≤ √g_M(u,u)`),
+  `hasDerivAt_reconstructionL1_curve` (chain rule in `L¹` along a differentiable curve of interior responses),
+  **`integral_abs_famDens_curve_le`** (TV length ≤ Fisher–Rao length along every interior `C¹` curve:
+  `∫|q_{M+γ(1)} − q_{M+γ(0)}| ≤ ∫₀¹ √g_{M+γ(t)}(γ',γ')`).

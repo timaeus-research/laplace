@@ -784,3 +784,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   Round-60 remaining: length control for `C¹` curves, reconstruction-bias theorem (fourth-moment bound of iid bounded sums
   + compact-uniform observable Peano), `C²` via differentiating the score, all-orders prototype (unnormalised Laplace
   transform `ContDiff ⊤`). NEXT: reconstruction-bias theorem.
+- `CurveLength` landed. Gotchas: `ContinuousWithinAt.comp` needs `(g := …) (f := …)` explicit when the goal is a lambda
+  (else it unifies `g := HAdd.hAdd M`); `congr 1; abel` for the argument of `reconstructionL1` after the chain rule.
+  Round-60 remaining: reconstruction-bias theorem (Hoeffding via `measure_sum_range_ge_le_of_iIndepFun` +
+  `hasSubgaussianMGF_of_mem_Icc_of_integral_eq_zero`; needs `iIndepFun`), `C²` via differentiating the score,
+  all-orders prototype. NEXT: reconstruction-bias theorem (probability lemmas first).
