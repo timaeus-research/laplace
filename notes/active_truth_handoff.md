@@ -1575,3 +1575,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `∫ −1 * dirLoss θ dq_M = −⟨θ,M⟩` by `integral_const_mul` + `← dotJ_integral_eq _ hS` + `responseProjection_spec … .2.1`;
   `dotJ (a − b) c = dotJ a c − dotJ b c` by `simp only [dotJ, Pi.sub_apply, sub_mul, Finset.sum_sub_distrib]`; `rw [h.map_sub]`
   rewrites only the first instance of the pattern — `simp only [h.map_sub]` for all. NEXT: round-76 consult.
+- Round-76 consult (`research_round76_{q,v1}`): F is deepest but the ray/path equivalence is FALSE in codimension ≥ 2 (charged
+  square: diagonal ray to the vertex has infinite Fisher length, the edge ray finite, and a curved interior path reaches the vertex
+  with finite length); codimension-one (facet) path-independent criterion is TRUE (Schur complement + vertex-gap tangential
+  boundedness); response projection is NOT Fisher-contracting (exact distortion `‖DΠ_ρ[a]‖²_F = bᵀC_q⁻¹b`, contraction ⟺
+  `C_ρ ⪯ C_q`; three-point counterexample on {−1,0,1} at `t = log 4`, `x = (1+√13)/2`, `C_q = (13 − 2√13)/12 < 1/2`); no universal
+  `D ≤ L_F²`; `ℰ` not convex; `ℰ'' = Var h − bᵀC_q⁻¹b + Cov_ρ((h − Eh)², L_t)`; global Pythagoras `D(ρ‖q_N) = D(ρ‖q_M) + D(q_M‖q_N)`;
+  defect-splitting `D(ρ‖q_M) = D(ρ‖ρ^S) + D(ρ^S‖q_M)`. Recommended: FisherPathBounds, FisherAccessCounterexample (charged square),
+  FacetFisherAccess, ResponseProjectionDifferential (+ three-point counterexample), ResponseDefectEvolution.
+- `ResponseDefectPythagoras` + `FisherPathBounds` landed (round-76 ranks 5a and 1). Gotchas: `klDiv_familyMeasure_eq_add_projection
+  hS ν ρ hρ η` + `responseProjection_eq_familyMeasure_responseTheta` give the mean-coordinate Pythagoras; `le_self_add`/`le_add_self`
+  in `ℝ≥0∞`; `⨅` over the subtype `intrinsicInterior …` with `le_iInf`/`iInf_le_of_le ⟨_, hM⟩ le_rfl`; `lawCov_dirLoss_left hS ρ u ψ hψ
+  : lawCov ρ (dirLoss S u) ψ = Σ u i * lawCov ρ (S i) ψ` + `respCov_responseScore hS ν (M := M) v` (no `hrel`) give `⟨u,v⟩ = Cov(⟨u,S⟩,
+  ℓ_v)`; the Fisher form is nonneg via `← integral_responseScore_mul` + `integral_nonneg (mul_self_nonneg)`. NEXT: the three-point
+  counterexample (response projection not Fisher-contracting), the facet accessibility theorem, or the charged-square example.

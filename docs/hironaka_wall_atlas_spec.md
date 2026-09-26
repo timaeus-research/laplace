@@ -5235,3 +5235,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`toReal_klDiv_responseProjection_eq`** (THE BREGMAN IDENTITY `D(q_M‖q_N) = I(M) − I(N) + ⟨θ(N), M − N⟩ = I(M) − I(N) −
   DI(N)[M−N]`), **`genRate_toReal_ge_tangent`** (convexity: `I(N) − ⟨θ(N), M − N⟩ ≤ I(M)`), `toReal_klDiv_responseProjection_add_symm`
   (`D(q_M‖q_N) + D(q_N‖q_M) = ⟨θ(N) − θ(M), M − N⟩`).
+- `ResponseDefectPythagoras.lean` (NOT mirrored; round-76 rank 5, global part): **`klDiv_responseProjection_eq_add`** (for a data
+  law `ρ` of finite information and every interior `N`: `D(ρ‖q_N) = D(ρ‖q_{E_ρS}) + D(q_{E_ρS}‖q_N)`),
+  **`klDiv_responseProjection_le`** (the response projection is the closest family member), **`klDiv_responseProjection_le_klDiv`**
+  (one-sided KL contraction `D(Πρ‖q_N) ≤ D(ρ‖q_N)`), **`responseDefect_eq_iInf`** (`ℰ(ρ) = ⨅_{N ∈ ri} D(ρ‖q_N)`).
+- `FisherPathBounds.lean` (NOT mirrored; round-76 rank 1): `dotJ_eq_lawCov_dirLoss_responseScore` (`⟨u,v⟩ = Cov_{q_M}(⟨u,S⟩, ℓ_{M,v})`),
+  **`sq_dotJ_le_lawCov_mul_fisher`** (THE SCALAR FISHER LOWER BOUND `⟨u,v⟩² ≤ Var_{q_M}⟨u,S⟩ · ⟨v, C_M⁻¹v⟩`: any path's Fisher speed
+  dominates the progress of an exposing functional divided by the normal standard deviation — path-dependent denominator, exactly
+  as Astra's charged-square example requires), `abs_dotJ_le_sqrt_lawCov_mul_sqrt_fisher`.
