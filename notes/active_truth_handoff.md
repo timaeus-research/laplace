@@ -766,3 +766,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `IsProbabilityMeasure (responseProjection …)` instance in scope (`have hP := (responseProjection_spec …).1`);
   `integral_rnDeriv_smul` is in namespace `MeasureTheory` (not `Measure`). Round-59 consult landed
   (`research_round59_v1`) — NEXT per its ranking.
+- `DifferentialRetraction` landed (round-59 rank 2, prototype-level: `C¹` continuity of the derivative NOT stated). Gotchas:
+  convert an `L¹`-valued `HasFDerivAt` goal to the seabed's real little-o via
+  `rw [hasFDerivAt_iff_isLittleO_nhds_zero, ← isLittleO_norm_left, ← isLittleO_norm_right]`; `Integrable.toL1_sub` etc. are
+  `rfl` lemmas in Pi form (use `← toL1_sub` then `L1.norm_of_fun_eq_integral_norm`); `LinearMap.toContinuousLinearMap`
+  for a linear map out of the finite-dimensional `𝕍`. NEXT: refinement tower package (already have both identities in
+  `AtlasRefinement`), `C¹`/`C²` of `reconstructionL1`, all-orders prototype; round-60 consult.

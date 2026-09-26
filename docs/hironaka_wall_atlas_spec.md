@@ -4623,3 +4623,10 @@ certificates for concrete resolved charts beyond the identity chart.
   finite-rate domain, densities as Radon–Nikodym derivatives), `tendsto_entropy_gap_zero`,
   **`tendsto_integral_abs_rnDeriv_sub_of_tendsto_genRate`** (TV continuity of `M ↦ Π(M)` on the finite-rate domain for the
   topology of `(M, 𝓘(M))`).
+- `DifferentialRetraction.lean` (NOT mirrored; round-59 rank 2): `responseScore_add`, `integrable_famDens_mul_responseScore`,
+  `reconstructionL1` (`[q_M] ∈ L¹(ν)` via `Integrable.toL1`), `reconstructionDerivLin`/`reconstructionDeriv`
+  (`u ↦ [q_M ℓ_{M,u}]` as a CLM, finite-dimensional domain), **`hasFDerivAt_reconstructionL1`** (`L¹`-Fréchet
+  differentiability of the reconstruction density at every interior response, from
+  `isLittleO_reconstruction_density_remainder` + `L1.norm_of_fun_eq_integral_norm`), **`moment_famDens_mul_responseScore`**
+  (`H(q_Mℓ_u) = u`: the moment map inverts the derivative), `famDens_mul_regProj_eq` (`P_M(q_M g) = q_M B_M g` for centred
+  bounded `g`), `famDens_mul_responseScore_moment_eq` (idempotence of `P_M = Dp_M ∘ H`).
