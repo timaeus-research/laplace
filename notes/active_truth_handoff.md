@@ -1409,3 +1409,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   Real.rpow_two` then `field_simp; ring`; `integral_Ioi_rpow_of_lt (ha : a < −1) hT : ∫_{Ioi T} t^a = −T^(a+1)/(a+1)`;
   `integral_mono_of_nonneg` needs no integrability of the smaller function. NEXT: Hellinger comparison (rank 3), minimal
   faces (rank 1), or round-73.
+- `HellingerComparison` landed (round-72 rank 3). Gotchas: `Real.continuous_sqrt.measurable.comp hp` (there is no
+  `Real.measurable_sqrt`); Hölder with `p = q = 2`: `integral_mul_le_Lp_mul_Lq_of_nonneg Real.HolderConjugate.two_two`
+  needs `MemLp f (ENNReal.ofReal 2)` — `rw [ENNReal.ofReal_ofNat]` then `memLp_two_iff_integrable_sq`; its RHS uses real
+  exponents (`^ (2:ℝ)`, `^ (1/(2:ℝ))`): `Real.rpow_two` under `integral_congr_ae` after `beta_reduce`, and
+  `Real.sqrt_eq_rpow`; `Real.rpow_le_rpow (hx : 0 ≤ x) (h : x ≤ y) (hz : 0 ≤ z)` for the second factor. NEXT: minimal faces
+  (round-72 rank 1) or a round-73 consult; the capstone `ResponseAtlas` is now well-motivated (rigidity + completion +
+  retraction + boundary rays + boundary-layer rates + Fisher accessibility + Hellinger).

@@ -5103,3 +5103,12 @@ certificates for concrete resolved charts beyond the identity chart.
   **`raySpeedSq_le_offFaceMass`**, **`integral_sqrt_raySpeedSq_le`** (FISHER ACCESSIBILITY: `B_{t/2} ≤ C t^{−α}` for `t ≥ T`
   ⇒ `∫_T^∞ √(Var_{p_t}⟨u,S⟩) dt ≤ (8/α)√(C/A) T^{−α/2}` — a polynomial boundary layer puts the face at finite Fisher distance
   along the natural ray; without one the distance can be infinite, Astra's 1-D example).
+- `HellingerComparison.lean` (NOT mirrored; round-72 rank 3): pointwise `abs_sub_eq_abs_sqrt_sub_mul`,
+  `sq_sqrt_sub_sqrt_le_abs_sub` (`(√a−√b)² ≤ |a−b|`), `sq_sqrt_add_sqrt_le`, `sq_sqrt_sub_sqrt_le_two_mul`; `hellingerSq`
+  (`d_H² = ∫ (√p − √q)²`), `hellingerSq_nonneg`, **`hellingerSq_le_integral_abs_sub`** (`d_H² ≤ ‖p−q‖₁`),
+  **`integral_abs_sub_le_sqrt_mul_sqrt_hellingerSq`** (`‖p−q‖₁ ≤ √(2(∫p+∫q)) d_H`, Cauchy–Schwarz via
+  `integral_mul_le_Lp_mul_Lq_of_nonneg`), `integral_abs_sub_le_two_sqrt_hellingerSq` (`≤ 2 d_H` for probability densities);
+  on the completed family `hellingerSq_projDens_le_norm`, `norm_projL1_sub_le_two_sqrt_hellingerSq`,
+  **`tendsto_hellingerSq_projDens`** (Hellinger continuity on the charged polytope), **`tendsto_projL1_of_tendsto_hellingerSq`**
+  (Hellinger convergence of projections is `L¹` convergence): the `L¹` and Hellinger topologies coincide on the completed
+  family, which is therefore the ambient-Hellinger closure of the interior family.
