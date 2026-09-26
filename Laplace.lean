@@ -477,6 +477,7 @@ import Laplace.Multi.FiniteCompletionRetraction
 import Laplace.Multi.FiniteMinimalFace
 import Laplace.Multi.FiniteCompletionClosure
 import Laplace.Multi.NaturalParameterMajorant
+import Laplace.Multi.NaturalParameterTaylor
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

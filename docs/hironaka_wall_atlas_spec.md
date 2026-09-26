@@ -4987,3 +4987,10 @@ certificates for concrete resolved charts beyond the identity chart.
   **`sum_norm_iteratedDeriv_natCurve_le`** (`Σ_{k≤N} ρ^k ‖p^{(k)}(t)‖₁/k! ≤ 3` for every `t` and `N`),
   **`norm_iteratedDeriv_natCurve_le`** (Cauchy-type estimate `‖p^{(k)}(t)‖₁ ≤ 3 k! ρ^{−k}`, uniform in `t`). No power series,
   no analyticity input: the constants are explicit in the sup bound `L` of the feature `Y = ⟨v, S⟩` alone.
+- `NaturalParameterTaylor.lean` (NOT mirrored; round-69 rank 2, second module — explicit radius in natural coordinates):
+  `clm_iteratedDeriv_of_contDiff` (a CLM commutes with iterated derivatives of a `C^∞` curve), `natCurve_neg`,
+  `iteratedDeriv_natCurve_neg` (reflection `v ↦ −v`), `norm_natCurve_sub_taylor_le_of_nonneg`,
+  **`norm_natCurve_sub_taylor_le`** (`‖p(s+t) − Σ_{k≤N} p^{(k)}(s) t^k/k!‖₁ ≤ 3 (|t|/ρ)^{N+1}` for ALL `s, t`, `ρ = log(3/2)/L`;
+  norm duality + scalar Lagrange remainder), **`tendsto_taylor_natCurve`** (the `L¹` Taylor series of the tilt map converges to
+  `p(s+t)` for `|t| < ρ`: an explicit, `s`-uniform radius of analyticity in natural coordinates),
+  **`abs_obsL1_natCurve_sub_taylor_le`** (the same geometric error, times the sup bound, for every bounded observable's response).

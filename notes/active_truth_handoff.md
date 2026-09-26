@@ -1253,3 +1253,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (general-`X` polyhedral completion with charged vertices; hardest lemma is the face-restriction transport) or rank 3 (stratified
   Fisher geometry on faces + boundary-ray TV formula `‖q_t − q_F‖₁ = 2B_t/(A+B_t)`); optionally the Taylor-remainder corollary
   `‖p(s+t) − Σ_{k≤N} p^{(k)}(s)t^k/k!‖₁ ≤ 3(|t|/ρ)^{N+1}` via `norm_L1_le_of_forall_integral_mul_le` (second module per Astra).
+- `NaturalParameterTaylor` landed (round-69 rank 2 second module; also closes round-67 rank 3 "explicit natural-parameter
+  radius"): `‖p(s+t) − Σ_{k≤N} p^{(k)}(s)t^k/k!‖₁ ≤ 3(|t|/ρ)^{N+1}` for all `s, t`, hence the `L¹` Taylor series converges on
+  `|t| < ρ = log(3/2)/L`. Gotchas: the template is `reconstructionL1_cubic_remainder` (norm duality via
+  `norm_L1_le_of_forall_integral_mul_le`, scalar `taylor_mean_remainder_lagrange (n := N) hlt.ne hg2 hg'` with `uIcc_of_le`/
+  `uIoo_of_le`, `taylor_within_apply`, `add_sub_cancel_left` for `(s + t − s)`); on the whole line `hg'` is
+  `(hg.differentiable_iteratedDeriv N (by exact_mod_cast natCast_lt_infty N)).differentiableOn.congr` +
+  `iteratedDerivWithin_eq_iteratedDeriv (uniqueDiffOn_Icc hlt) (hg.of_le …).contDiffAt`; a general
+  `clm_iteratedDeriv_of_contDiff L hf k t` replaces the atlas-specific pairing lemma; negative `t` by reflection
+  (`iteratedDeriv_comp_neg`, `dirLoss_neg`, and `(−1)^k (−1)^k = 1` via `← mul_pow; norm_num` + `linear_combination`); the
+  closing identity `3(N+1)!/ρ^{N+1} · t^{N+1}/(N+1)! = 3(t/ρ)^{N+1}` needs `div_pow; field_simp; rw [div_pow, mul_pow]; field_simp`
+  with `log(3/2) ≠ 0` in context. NEXT: round-69 rank 1 (general-`X` polyhedral completion with charged vertices) or rank 3
+  (facewise Fisher geometry `D²I_F = Cov|_{V_F}⁻¹`, face lattice `M ∈ F ↔ q_M{S ∈ F} = 1`, boundary-ray formula
+  `‖q_t − q_F‖₁ = 2B_t/(A + B_t)`); a round-70 consult should fix the Lean shape of the face-restriction transport first.
