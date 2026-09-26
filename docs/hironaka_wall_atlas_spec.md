@@ -3898,3 +3898,9 @@ certificates for concrete resolved charts beyond the identity chart.
   from three `hasDerivAt_integral_tilted` (g·k, g, k) and `unfold lawCov; congr_deriv; rw [thirdCentral_eq]; ring`),
   `hasDerivAt_var_tilted` (`κ₃`), `hasDerivAt_lawCov_dataPath` (`omit [Fintype J]`), `hasDerivAt_lawCov_dirLoss_dataPath`.
   Round-44 items 1–6 ALL DONE (TV/Pinsker and the local inverse-stability constant remain open).
+- `InvisibleInformation.lean` (NOT mirrored): `invisible_dataPath_eq` (`KL(D_s‖Π(M s)).toReal = KL(D_s‖ν).toReal − 𝓘(M s).toReal`,
+  by `linarith` from `information_decomposition_path` and `klDiv_tilted_eq_integral`), **`hasDerivAt_invisible_dataPath`**
+  (`s Var_{D_s} h + ⟨θ(M(s)), Cov_{D_s}(S,h)⟩`), `hasDerivAt_invisible_dataPath_zero`,
+  **`hasDerivAt_deriv_invisible_dataPath_zero`** (curvature at the featureless law = `Var_ν(h − regressor)`; product rule with
+  `hasDerivAt_var_tilted`, the negation of `hasDerivAt_rateVel_zero` via `congr_of_eventuallyEq (… by simp)` — `simpa` cannot
+  see through `-fun s ↦ -…`). At second order `Var h = Var(regressor) + Var(h − regressor)` is the visible/invisible split.
