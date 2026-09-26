@@ -1437,3 +1437,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   not mentioning `vertexSection` need `omit [Nonempty J] [Nonempty V] in`. NEXT: entropy consequences of the exposed
   minimal face (essential support `q_M ∼ ν|_{S ∈ F_M}` via `exists_ray_tendsto_responseProjection_polytope`/
   `responsProjection_faceMeasure`, the `1/m_*` bound, the face order), then the thin `ResponseAtlas`.
+- `PolytopeProjectionSupport` landed (round-73 downstream: essential support, face law, uniform density bound, `L^p`).
+  Gotchas: `dirLoss S θ x = dotJ θ (statPoint S x)` is `rfl`; `measureReal_mono (h) (autoParam finiteness)`; a lower bound
+  on the face mass by one vertex fibre is `setIntegral_mono_set (hfi.integrableOn) (of_forall nonneg) (of_forall subset)` +
+  `setIntegral_congr_fun (measurableSet_statFibre hS w)` + `setIntegral_const` (`smul_eq_mul`); the extremum of a functional
+  over a finite hull via `Finset.exists_min_image` + `convexHull_min` into the half-space `{y | dotJ ((-1) • θ) y ≤ −c}`
+  (`dotJ_smul_left, neg_one_mul, neg_le_neg_iff`); `div_le_div₀ (hc : 0 ≤ c) (hac : a ≤ c) (hd : 0 < d) (hbd : d ≤ b) :
+  a/b ≤ c/d` then `div_mul_eq_div_div, div_self`; `positivity` cannot see `0 < m` from a hypothesis — use `mul_pos`/
+  `one_div_pos.2`; `Finset.lt_inf'_iff hVne` needs the nonemptiness proof passed; `integral_mono_ae` against `C^p * ∫` needs
+  `rw [← integral_const_mul]` first; `Measurable.pow_const`; `tendsto_iff_norm_sub_tendsto_zero` + `simpa only
+  [norm_projL1_sub]` turns `L¹`-convergence of `projL1` into `∫|f_n − f| → 0`; `Integrable.abs` of a `Pi`-difference is
+  accepted at the lambda type by defeq. No `measurable_faceDens`/`faceDens_nonneg` existed in `BoundaryRayFormula` (added
+  here). NEXT: the face order `q_M ≪ q_N ↔ F_M ⊆ F_N` (mutual a.c. `q_M ∼ ν|_{S∈F_M}` via the tilt on the face measure), then
+  the thin `ResponseAtlas`, facewise charts, the Fisher-boundary classification.

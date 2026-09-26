@@ -5129,3 +5129,15 @@ certificates for concrete resolved charts beyond the identity chart.
   `exists_minimalFacePoly_eq_inter_hyperplane` (`F = P ∩ {⟨u,·⟩ = β}`). This is the input `hrel`/`hV`/`hM` of
   `exists_ray_tendsto_responseProjection_polytope` for EVERY `M ∈ P`: every response projection on a charged polytope is the
   total-variation limit of an explicit natural ray.
+- `PolytopeProjectionSupport.lean` (NOT mirrored; round-73 downstream): `dirLoss_eq_dotJ_statPoint`, `statFibre_subset_faceFibre`,
+  `famWeight_eq_of_mem_statFibre`, `faceFibre_pos_of_charged` (a tight charged vertex charges the face fibre),
+  `exists_charged_vertex`; **`exists_exposing_polytope`** (every `M ∈ P` on a charged polytope has an exposing `u, β` with a
+  tight vertex, a charged face fibre, and `M ∈ ri conv{v ∈ V | ⟨u,v⟩ = β}`); **`exists_ray_tendsto_responseProjection_of_mem_polytope`**
+  (EVERY response projection on a charged polytope is the TV-limit of an explicit natural ray, with the exact rate);
+  **`responseProjection_compl_faceFibre_eq_zero`** (ESSENTIAL SUPPORT: `q_M({⟨u,S⟩ = β}ᶜ) = 0`);
+  **`responseProjection_eq_faceMeasure_of_exposed`**/`_of_mem_polytope` (`q_M` = projection of the conditioned law `ν(·|S ∈ F)`);
+  `ae_statPoint_mem_tightHull`, `measurable_faceDens`, `faceDens_nonneg`, **`ae_faceDens_le`** (the face density is `≤ 1/m` when
+  every vertex fibre has mass `≥ m`: the weight `e^{−⟨θ,S⟩}` peaks at a tight vertex whose fibre sits inside the normaliser),
+  **`ae_projDens_le_of_mem_polytope`** (UNIFORM DENSITY BOUND `dq_M/dν ≤ 1/m`), `exists_uniform_projDens_bound`
+  (`∃ C, ∀ M ∈ P, dq_M/dν ≤ C` a.e.), `integral_abs_projDens_sub_pow_le` (`‖f−g‖_{p+1}^{p+1} ≤ C^p ‖f−g‖₁`),
+  **`tendsto_integral_abs_projDens_sub_pow`** (`L^p` CONTINUITY of the completed family for every finite `p`).
