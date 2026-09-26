@@ -360,6 +360,7 @@ import Laplace.Multi.InverseStability
 import Laplace.Multi.MixtureCompensation
 import Laplace.Multi.BoundaryEscape
 import Laplace.Multi.NormalCone
+import Laplace.Multi.FixedNormalLimit
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

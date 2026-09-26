@@ -4047,3 +4047,18 @@ certificates for concrete resolved charts beyond the identity chart.
   **`dotJ_le_of_tendsto_normalized_atlasTheta`** (the atlas instance: escape from `tendsto_norm_atlasTheta_atTop` composed
   with `tendsto_nhdsWithin_iff`, means from `meanMap_atlasTheta`). The `.congr` goals of `integrable_exp_mul_of_bdd` are
   beta-redexes: `simp only [neg_mul]`, not `rw`. `[Nonempty J]` is needed only by the atlas theorem.
+- `FixedNormalLimit.lean` (NOT mirrored; round-47 item 1A): `tilted_add_const`, **`faceMeasure_tilted`** (conditioning
+  commutes with tilting: `(ν.tilted f)(·|F) = (ν(·|F)).tilted f`; both sides as `ν.withDensity` of a product via
+  `withDensity_mul`, pointwise `ofReal` algebra with `ENNReal.ofReal_inv_of_pos`/`ofReal_mul` and `field_simp`; rewrite the
+  tilt normaliser `∫ … ∂faceMeasure` by `integral_faceMeasure` BEFORE `faceMeasure_eq_withDensity`, or the density's integral
+  is rewritten too), `real_inter_add_diff` (`measure_inter_add_sdiff`), `abs_real_sub_faceMeasure_real_le`
+  (`|P(A) − P(A|F)| ≤ 1 − P(F)`), `abs_integral_sub_faceMeasure_integral_le` (`≤ 2L(1 − P(F))`;
+  `norm_setIntegral_le_of_norm_le_const`, `integral_add_compl`, `measureReal_compl`, `probReal_univ`),
+  `familyMeasure_one_zero_eq_tilted`, **`faceMeasure_familyMeasure_fixedNormal`** (`P_{η−ta}(·|F) = Q` for every `t`;
+  `tilted_congr` under `ae_mem_faceMeasure` + `tilted_add_const`), **`real_familyMeasure_fixedNormal`**
+  (`p_t = exp(th + log ν(F) + Λ_F(−η) − Λ(−η + ta))`), `tendsto_real_familyMeasure_fixedNormal_face` (`p_t → 1` from
+  `tendsto_featCgf_ray`), **`tendsto_real_familyMeasure_fixedNormal`**, **`tendsto_integral_familyMeasure_fixedNormal`**
+  (events and bounded observables converge to the conditioned tilt), **`klDiv_familyMeasure_fixedNormal`**
+  (`KL(Q‖P_{η−ta}) = ofReal(−log p_t)` via `klDiv_eq_klDiv_faceMeasure_add` + `klDiv_self`),
+  `tendsto_klDiv_familyMeasure_fixedNormal`. `isProbabilityMeasure_familyMeasure` takes `(t := 1)` named and then the
+  parameter, no `ht`; name `(π := …) (L₀ := …)` or the `by simp` for `hL₀` sees a metavariable.
