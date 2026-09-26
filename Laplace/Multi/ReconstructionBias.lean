@@ -471,8 +471,9 @@ theorem reconstruction_bias [DecidableEq J] (hDν : D ≪ ν)
     _ < η := by nlinarith
 
 omit [IsProbabilityMeasure P] hXm hind hid hlaw in
-/-- **The bias coefficient is intrinsic**: `Σ_{a,b} Γ_ab b_F(e_a, e_b) = E_D b_F(S(x) − M, S(x) − M)`,
-the data expectation of the bias form on the centred feature vector (independent of `π`). -/
+/-- **The bias coefficient is intrinsic**:
+`Σ_{a,b} Γ_ab b_F(e_a, e_b) = E_D b_F(S(x) − M, S(x) − M)`, the data expectation of the bias form
+on the centred feature vector (independent of `π`). -/
 theorem sum_dataCov_mul_biasForm_eq [DecidableEq J] {F : X → ℝ}
     (hF : Bdd F) (M : J → ℝ) :
     ∑ a, ∑ b, (∫ x, (S a x - dataMoment D S a) * (S b x - dataMoment D S b) ∂D) *
