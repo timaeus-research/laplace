@@ -1077,3 +1077,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `contDiffOn_fst/snd`, and `rfl` unfoldings of `normalForm`/`normalFormInv`). Round 65: ranks 1, 2, 4 fully DONE. NEXT: round-66
   consult — remaining candidates: analyticity of the response chart (contraction + majorant), boundary completion for finite `X`,
   reconstruction CLT (delta method; Mathlib CLT status?), explicit `p'''(0)` / cumulant recursion, and anything deeper.
+- Round-66 consult landed (`research_round66_{q,v1}`). Ranking: 1 = QUANTITATIVE ANALYTIC RESPONSE ATLAS (real-analyticity of
+  `P : Ω → L¹` via complexified local tilt around `Q_M`, contraction `η = G⁻¹z − G⁻¹(h(η) − Gη)` with radius `r = cλ²/L³`;
+  uniform charts along the compact atlas; cheap pre-theorem: explicit bounds `‖p'‖₁ ≤ D/√λ`, `‖p''‖₁ ≤ LD²/λ^{3/2}`,
+  `‖p'''‖₁ ≤ 4L²D³/λ^{5/2}`); 2 = finite-`X` FACE COMPLETION (continuous retraction of the whole simplex onto the completed
+  family, smooth on strata, KL splitting, feasible recovery sequences); 3 = MOVING NORMAL PROJECTION + THIRD JET (short):
+  `d/ds (N_s f_s) = N_s f_s' − L_s(ℓ_s N_s f_s)`, `d/ds [q_s N_s f_s] = [q_s N_s(f_s' + ℓ_s N_s f_s)]`, `ℓ' = −c − r`,
+  `p'''(s) = [q_s N_s(ℓ³ − 3ℓr)]`; or "projection after differentiation": `q'''/q = ℓ³ + 3ℓℓ' + ℓ''` is already normal (k ≥ 2
+  invisible), so apply `N_s` and kill the affine `ℓ''` and the `cℓ` term; tower `H_{k+1} = N_s(H_k' + ℓ H_k)`; 4 = reconstruction
+  CLT (`√n(P(M̂_n) − P(M)) ⇒ [q ℓ_Z]`, second order `n(…) ⇒ ½[q N(ℓ_Z²)]`; finite-dim CLT + delta method). Sanity: global
+  `fderiv` at locally smooth points is fine; curved paths need only local interior membership; the normal form is for SIGNED
+  unit-mass data (positivity constrains the kernel slices). NEXT (per Astra): land 3 (third jet) via "projection after
+  differentiation": the L¹-derivative = pointwise-derivative principle (L¹ convergence ⇒ a.e. subsequence), the pointwise
+  `q''' = q(ℓ³ + 3ℓℓ' + ℓ'')` with `ℓ'' ` affine in `S` (smoothness of `s ↦ atlasVel s`), then `N` of the affine part vanishes;
+  then the quantitative bounds; then analyticity (flagship) and face completion (capstone).
