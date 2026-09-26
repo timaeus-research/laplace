@@ -4909,3 +4909,10 @@ certificates for concrete resolved charts beyond the identity chart.
   `norm_iteratedDeriv_three_atlas_le_uniform`, `contDiffOn_obsL1_atlas`, **`reconstructionL1_cubic_remainder`**
   (`‖p(s) − p(0) − s p'(0) − ½s² p''(0)‖₁ ≤ (4L²D³/λ^{5/2}) s³/6` on `[0,1]`: pair with `|F| ≤ 1`, real Lagrange remainder of
   `t ↦ E_{Q_{M_t}}F`, third jet bound, dualise — the sharp `1/3!` constant, not Mathlib's Banach `1/n!`).
+- `AnalyticTilt.lean` (NOT mirrored; round-67 rank 1, step 1 of the analytic atlas): `featureBall J B` (compact ball, instance
+  `compactSpace_featureBall`), `featureLin`/**`featureCLM`** (`θ ↦ (z ↦ −⟨θ,z⟩) ∈ C(K,ℝ)`), **`exp_apply_featureBall`** (the
+  Banach-algebra exponential of `C(K,ℝ)` evaluates pointwise, via `NormedSpace.map_exp` on the evaluation ring hom), `featPt`
+  (`S(x) ∈ K`), `measurable_featPt`, `integrable_pullback`, `pullbackLin`/**`pullbackCLM`** (`u ↦ [g (u ∘ S)] : C(K,ℝ) →L L¹`),
+  **`weightL1_eq_pullback_exp`** (`[g e^{−⟨θ,S⟩}] = T_g(exp_A(featureCLM θ))`), **`analyticAt_weightL1`** /
+  **`contDiff_omega_weightL1`** (the tilt map is real-analytic), `famNum_eq_integralCLM_weightL1`, **`analyticAt_famNum`**,
+  `contDiff_omega_famNum`, **`contDiff_omega_famZ`**.

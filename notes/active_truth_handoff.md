@@ -1132,3 +1132,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   1 qualitative analytic atlas; 2 finite-`X` face completion (KL-projection `q*(m)` on `conv S(X)`, continuous moment-preserving
   retraction `R(p) = q*(E_p S)` of the simplex, strong deformation retraction `H_t = (1−t)p + tR(p)`); 3 explicit estimates;
   4 moving-projection tower `B_{k+1} = N_s(∂_s B_k + ℓ_s B_k)`; 5 reconstruction CLT. NEXT: `AnalyticTilt` module.
+- `AnalyticTilt` landed (analytic atlas step 1). Gotchas: a `def` in an `include hS` section drops `hS` when unused
+  (`featPt hB x`, not `featPt hS hB x`), so downstream `theorem`s that DO use `hS` have it back (`measurable_featPt hS hB`);
+  `include hS` at the top does not prevent `unusedSectionVars` warnings for `[Nonempty X]` — `omit [Nonempty X] in` BEFORE the
+  docstring on every theorem that does not integrate over a probability space; `isCompact_closedBall` is the exported root name;
+  `continuous_eval_const z` is the root `ContinuousEval` lemma; `NormedSpace.map_exp e (continuous_eval_const z) u` with a hand-made
+  `RingHom` `v ↦ v z`; `NormedSpace.exp_analytic (𝕂 := ℝ) _`; `ContinuousMap.norm_le _ (nonneg)`, `ContinuousMap.norm_coe_le_norm`;
+  `integral_mul_const` (no `integral_mul_right`); `Integrable.toL1_add/smul` reversed inside `map_add'/map_smul'` then
+  `Integrable.toL1_eq_toL1_iff`. NEXT: `AnalyticFamily` (mirror `SmoothFamily` at grade ω: famMean, meanMap, meanMapDeriv, chartV,
+  chartDeriv, `(CDE θ)⁻¹`), then `AnalyticChart` (grade-ω `to_localInverse` + injectivity ⇒ `chartVInv` analytic on `range chartV`;
+  `θ(m₀+z)`, `atlasTheta`, `densL1`, `M ↦ [q_M]` AnalyticOnNhd on addDomain, `s ↦ p s` analytic on atlasDomain, observables).
