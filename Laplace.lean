@@ -390,6 +390,7 @@ import Laplace.Multi.AtlasRefinement
 import Laplace.Multi.InformationDistance
 import Laplace.Multi.BregmanGeometry
 import Laplace.Multi.CurvatureSplit
+import Laplace.Multi.ConditionalFisherLoss
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

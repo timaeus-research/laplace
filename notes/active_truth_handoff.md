@@ -447,3 +447,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   constant bound given (`integrable_const c`); after `rw [meanMap_zero_eq_mean]` `beta_reduce` before `ring`.
   NEXT (round 52): item 3 (L¹ derivative of the reconstruction density along the atlas), item 2 (local retraction),
   item 5 (conditional variational formula), item 6, item 7, item 10 (skewness), item 12.
+- `ConditionalFisherLoss` landed (round-52 item 9): `k_d − k_a = ∫ (d−a)²/(d_w a_w²) dν` (conditional variance of the
+  mixture score), `k_a ≤ k_d`, `L_s = ∫₀ˢ (s−w) · condVar`, existence of a clamped `σ(S)`-measurable conditional
+  density. Gotchas: `field_simp` did not clear `1 + w*(y−1)` even with the `≠ 0` fact in context — use
+  `div_sub_div`/`div_eq_div_iff` + `ring`; `positivity` cannot see `0 < (w*z+1)^2` (use `pow_pos`);
+  `Measurable.max`/`.min` under `statSigma S` need the constant FIRST when the term is `max c (min C f)`;
+  `(measurable_klKernel_uncurry hr).comp (prodMk …)` does not infer `f` — build the measurability by hand.
+  NEXT: item 3 (L¹ derivative of the family density: θ-chart `O(‖η‖²)` bound, then `responseTheta` chain rule),
+  item 2 (local retraction), item 5 (conditional variational formula), items 6, 7, 10, 12.

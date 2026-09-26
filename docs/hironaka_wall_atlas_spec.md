@@ -4305,3 +4305,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`marginal_eq_integral_curvature`** (`R_s = ∫₀ˢ (s−w)(k_a(w) − κ(w)) dw`, `s < 1`). Together with
   `genRate_atlasPath_eq_integral`: the three terms of `KL(D_s‖ν) = 𝓘(M_s) + R_s + L_s` are the accumulated curvatures
   of three nested straight paths (full simplex `k_d`, observable simplex `k_a`, atlas `κ`), and `k_d ≥ k_a ≥ κ`.
+- `ConditionalFisherLoss.lean` (NOT mirrored; round-52 item 9): `kernelSlope`, **`klKernel_sub_tangent`** (tangent-line
+  identity of the convex mixture kernel: `k(y) − k(z) − k'(z)(y−z) = (y−z)²/((1+w(y−1))(1+w(z−1))²)`),
+  `abs_kernelSlope_le`, **`exists_condDens`** (a `σ(S)`-measurable version of `E_ν[d|σ(S)]` with the pointwise bounds
+  of `d` exists: clamp), `integral_mul_sub_condDens` (`∫ g(a)(d − a) = 0` for bounded `σ(S)`-measurable `g`),
+  **`mixSpeed_sub_mixSpeed_condDens`** (`k_d(w) − k_a(w) = ∫ (d−a)²/(d_w a_w²) dν` = the conditional variance of the
+  mixture score `h_w = (d−1)/d_w` under `D_w`, since `E_{D_w}[h_w|σ(S)] = (a−1)/a_w`), `mixSpeed_condDens_le`
+  (`k_a ≤ k_d` pointwise), **`fibre_eq_integral_condVar`** (`L_s = ∫₀ˢ (s−w) ∫ (d−a)²/(d_w a_w²) dν dw`). NOTE (Astra):
+  `k_a ≥ κ` does NOT follow pointwise (different laws); `R_s ≥ 0` only in accumulated form.
