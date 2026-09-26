@@ -1091,3 +1091,19 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   differentiation": the L¹-derivative = pointwise-derivative principle (L¹ convergence ⇒ a.e. subsequence), the pointwise
   `q''' = q(ℓ³ + 3ℓℓ' + ℓ'')` with `ℓ'' ` affine in `S` (smoothness of `s ↦ atlasVel s`), then `N` of the affine part vanishes;
   then the quantitative bounds; then analyticity (flagship) and face completion (capstone).
+- `L1PointwiseDeriv` + `ThirdJet` landed (round-66 rank 3 DONE). Principle: `coeFn_hasDerivAt_L1_ae` (eventual representatives
+  near `s₀`; sequence `s₀ + ε/2·(1/(n+1))` inside the `Metric.eventually_nhds_iff` ball; `hasDerivAt_iff_tendsto_slope` ∘ sequence,
+  `tendstoInMeasure_of_tendsto_Lp (p := 1)`, `.exists_seq_tendsto_ae`, `slope_def_module` + `Lp.coeFn_smul/sub`, `ae_all_iff`,
+  `tendsto_nhds_unique`). Third jet: `s ↦ atlasVel s` is `C^∞` on `atlasDomain` (`contDiff_chartDerivEquiv_symm.comp_contDiffOn
+  contDiffOn_atlasTheta |>.clm_apply contDiffOn_const`), `β' := deriv atlasVel`, `β'' := deriv (deriv atlasVel)` via
+  `contDiffOn_infty_iff_deriv_of_isOpen`; `atlasVelD = atlasAccel` on `[0,1]` by `(hasDerivAt_atlasVel …).deriv`; pointwise
+  `q''' = q(ℓ³ + 3ℓℓ' + ℓ'')`; `p''' = deriv (iteratedDeriv 2 p)` from `iteratedDeriv_succ` twice + `iteratedDeriv_one` (state the
+  equalities `e2`, `e3` as `have`s, never bare `rw [iteratedDeriv_succ]` on a goal with two matches); apply the principle to
+  `f := iteratedDeriv 2 p`, `φ := atlasHess'` (`= atlasHess` on `(0,1)` by `iteratedDeriv_two_reconstructionL1_atlas`);
+  `invisible_tower` k = 3 gives zero mass/moments, so `q H₃ = q N H₃` pointwise (`famDens_mul_normalProj_of_invisible`);
+  `H₃ = (ℓ³ − 3ℓr) + responseScore(u) + const` with `u = (−3c)•δ + CDE β''`, killed by `normalProj_add/const/responseScore`.
+  Gotchas: `HasDerivAt.mul` on lambdas yields Pi products — `simp only [Pi.mul_apply, Pi.add_apply]` before `unfold; ring`;
+  `rw [normalProj_add hS ν _ _ x]` leaves `Bdd` side goals — name the bounded proofs (`hA1`, `hA2`) and pass them; a `rw` with
+  `← atlasScore_eq_responseScore` needs `hS ν hfin`; `Integrable.toL1_eq_toL1_iff f g hf hg`. Round 66: rank 3 DONE. NEXT: rank 1
+  cheap pre-theorem (explicit `‖p^{(k)}‖₁` bounds in terms of `λ`, `L`, `D`) then the analytic atlas (contraction + majorant;
+  check Mathlib for `HasFPowerSeriesAt` inverse-function API), then rank 2 face completion (finite `X`), rank 4 CLT.

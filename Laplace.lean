@@ -464,6 +464,8 @@ import Laplace.Multi.FeaturelessJet
 import Laplace.Multi.ResponseHessian
 import Laplace.Multi.CurvedTransport
 import Laplace.Multi.SmoothNormalForm
+import Laplace.Multi.L1PointwiseDeriv
+import Laplace.Multi.ThirdJet
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

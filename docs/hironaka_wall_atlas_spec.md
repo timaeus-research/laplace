@@ -4874,3 +4874,23 @@ certificates for concrete resolved charts beyond the identity chart.
   `dirProjL_sub_mem_addDomain`, **`contDiffOn_reconstructionL1_interior`** (`M ↦ [q_M]` is `C^∞` on `Ω`),
   **`contDiffOn_dataRecon`** (`R` is `C^∞` on the data space), **`contDiffOn_normalForm`** / **`contDiffOn_normalFormInv`**,
   **`smooth_normal_form`** (the package: `Φ`, `Ψ` mutually inverse `C^∞` bijections `U ≃ Ω × K`, `R ∘ Ψ = p ∘ fst`).
+- `L1PointwiseDeriv.lean` (NOT mirrored; round-66 rank 3, the principle): **`coeFn_hasDerivAt_L1_ae`** (an `L¹`-differentiable
+  curve `f : ℝ → L¹(ν)` with pointwise representatives `φ t` near `s₀` that are differentiable in `t` at every `x` has
+  `L¹`-derivative `= [h]` a.e.: `L¹` convergence of the difference quotients ⇒ a.e.-convergent subsequence ⇒ uniqueness of limits),
+  **`hasDerivAt_L1_eq_toL1`**, `integrable_of_hasDerivAt_L1`.
+- `ThirdJet.lean` (NOT mirrored; round-66 rank 3, projection after differentiation): `responseScore_zero`,
+  `respCov_eq_zero_of_invisible`, **`normalProj_eq_self_of_invisible`** (zero mean + zero feature moments under `Q_M` ⇒ `N_M F = F`),
+  **`famDens_mul_normalProj_of_invisible`** (`q_M F` invisible ⇒ `q_M N_M F = q_M F` pointwise), `respCov_add`, **`normalProj_add`**,
+  **`normalProj_const`**, `normalProj_const_mul`, `normalProj_congr`, **`contDiffOn_atlasVel`** (`s ↦ β_s` is `C^∞` on the interior
+  atlas domain), `atlasVelD`/`atlasVelDD` (`β'`, `β''`), `hasDerivAt_atlasVel(D)_of_mem`, `atlasVelD_eq_atlasAccel`,
+  `atlasScoreD`/`atlasScoreDD` (`ℓ' = ⟨β',M_s⟩ + ⟨β,δ⟩ − ⟨β',S⟩`, `ℓ'' = ⟨β'',M_s⟩ + 2⟨β',δ⟩ − ⟨β'',S⟩`),
+  `hasDerivAt_atlasScore(D)_of_mem`, `atlasHess'` (`= atlasHess` on `[0,1]`), `atlasH3` (`ℓ³ + 3ℓℓ' + ℓ''`), `atlasThird`,
+  **`hasDerivAt_atlasHess'`** (`q''' = q(ℓ³ + 3ℓℓ' + ℓ'')` pointwise), `hasDerivAt_iteratedDeriv_two_reconstructionL1_atlas`,
+  **`iteratedDeriv_three_reconstructionL1_atlas`** (`p'''(s) = [q_s H₃]` in `L¹` on `(0,1)`, via the principle),
+  `integral_atlasThird` / `integral_stat_mul_atlasThird` (zero mass, zero feature moments, from `invisible_tower` k = 3),
+  **`atlasThird_eq_normalProj`** / **`iteratedDeriv_three_reconstructionL1_atlas_normal`** (`p''' = [q_s N_s H₃]`),
+  `atlasRho` (the bending score `r_s = ⟨β'_s, S − M_s⟩`, `atlasScoreD_eq : ℓ' = −c − r`, `atlasRho_eq_responseScore`),
+  `atlasCubicRho` (`ℓ³ − 3ℓr`), `atlasH3_decomp` (`H₃ = (ℓ³ − 3ℓr) + (tangent score + const)`), **`normalProj_atlasH3_eq`**,
+  **`iteratedDeriv_three_reconstructionL1_atlas_cubic`** (`p'''(s) = [q_s N_{M_s}(ℓ_s³ − 3 ℓ_s r_s)]`),
+  `integral_mul_iteratedDeriv_three_atlas`, **`iteratedDeriv_three_obsResponse_atlas`** (the third derivative of every observable
+  response along the atlas is `E_{Q_s}[N_s F · (ℓ³ − 3ℓr)]`).
