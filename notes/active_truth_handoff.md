@@ -653,3 +653,7 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (`Pi.neg_apply` in the congr simp set); `fun M' hM' ↦ lemma … hM'` trips the unused-variable linter on `M'`.
   NEXT: §7 structure-theorem packaging (global chart ∧ differential duality ∧ normal geometry ∧ accounting ∧
   boundary blow-up), `L¹` density Peano, compact-uniform remainders, round-56 consult.
+- `ResponseStructure` landed: `response_structure_theorem` packages global chart ∧ differential duality/dual-flat ∧
+  normal geometry (polarised Hessian + Peano) ∧ accounting identity ∧ boundary obstruction. Gotcha: a binder
+  `∀ M (hrel : M ∈ K) …` whose `hrel` is used only in the proof trips the unused-variable linter — write
+  `∀ M ∈ K, ∀ hfin : …,` instead. Round-56 consult running/landed (`research_round56_{q,v1}`). NEXT per consult.

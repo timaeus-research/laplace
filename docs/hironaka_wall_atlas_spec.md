@@ -4495,3 +4495,9 @@ certificates for concrete resolved charts beyond the identity chart.
   (`N_M f ⊥ ℓ_w` in `L²(Q)`), `integral_regProj_mul_responseScore` (`B_M` is the `L²(Q)`-orthogonal projection onto
   tangent scores), **`hasFDerivAt_fisherForm_response`** (`DG_M[v](u,w) = −C_M(u,v,w)`), **`dual_flat_structure`**
   (potential + Hessian = Fisher + derivative of Fisher = −cubic + symmetry + Bregman canonical divergence).
+- `ResponseStructure.lean` (NOT mirrored; round-55 rank 2 — the §7 packaging): **`response_structure_theorem`**, one
+  statement in five parts: (1) the global chart `𝕍 ≃ₜ ri K` with strict derivatives, `Π = P_{θ}` and unique entropy
+  minimiser on each fibre; (2) differential duality (`E_Q[ℓ_uℓ_z] = −⟨Ru,z⟩`, positive definite) and the dual-flat
+  package (`∇𝓘 = −θ`, `D²𝓘 = G`, `DG = −C`); (3) the polarised density Hessian `q_M N_M(ℓ_uℓ_w)` and the Peano
+  expansion of every bounded observable; (4) the accounting identity for every data law with interior response;
+  (5) the boundary obstruction (`κ → ∞`, `∫₀¹κ = ∞`).
