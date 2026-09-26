@@ -3917,3 +3917,20 @@ certificates for concrete resolved charts beyond the identity chart.
   (via `klDiv_eq_rateFun_iff` and `responseProjection_spec`, no exposed chain needed), `integral_responseProjection_eq`,
   `priorCov_eq_lawCov_familyMeasure`, **`hasDerivAt_integral_responseProjection_path`** (`d/ds E_{Π(M s)} φ = −Cov_{Π(M s₀)}(φ, ⟨θ', S⟩)`,
   relint only eventually).
+- `ChartContinuity.lean` (NOT mirrored): `norm_chartDeriv_sub_le` (restriction does not increase the operator norm;
+  `ContinuousLinearMap.opNorm_le_bound`, `le_opNorm`), **`continuous_chartDeriv`** (from `continuous_meanMapDeriv`, `Metric.continuous_iff`),
+  `coe_chartDerivEquiv_symm` (`= Ring.inverse (chartDeriv θ)`: `ContinuousLinearMap.ringInverse_eq_inverse` then `inverse_equiv`),
+  **`continuous_chartDerivEquiv_symm`** (`NormedRing.inverse_continuousAt` at the unit `(ContinuousLinearEquiv.unitsEquiv ℝ V).symm e`).
+- `StraightPathAtlas.lean` (NOT mirrored; round-45 items 1 + 4 visible half): `atlasPath S ν M s = (1−s)•m₀ + s•M` (explicit `S ν M`),
+  `atlasPath_zero/one/eq/sub`, `hasDerivAt_atlasPath`, `responseProjection_absolutelyContinuous`, `atlas_mem_intrinsicInterior`
+  (needs `import Laplace.Multi.EndpointConvergence` for `segment_mem_intrinsicInterior`), `mem_momentBody_of_genRate_ne_top`
+  (closedness + limit along `𝓝[<] 1`; the `Tendsto` `have` must be typed or `mono_left nhdsWithin_le_nhds` leaves metavariables),
+  `sub_mem_dirSpan_of_genRate_ne_top`, `atlasPath_sub_mem_dirSpan`, `atlasTheta hS ν M s` (explicit `M`), `atlasVel hS ν hfin s`
+  (`(Dm|_𝕍)⁻¹ Δ`), `atlasCurv` (`−⟨atlasVel, Δ⟩`), `atlasTheta_zero`, **`hasDerivAt_atlasTheta`**, **`hasDerivAt_atlasRate`**
+  (`−⟨θ_s, Δ⟩`), **`hasDerivAt_atlasVelocity`** (derivative = `atlasCurv`), **`atlasCurv_eq_priorCov`** (variance of `⟨atlasVel, S⟩`
+  under `P_{θ_s}`), `atlasCurv_nonneg`, `continuousAt_atlasCurv` (`ContinuousAt.clm_apply`), `genRate_atlasPath_zero`,
+  `neg_dotJ_atlasTheta_eq_integral`, **`genRate_atlasPath_eq_integral`** (`𝓘(M_r) = ∫₀ʳ (r−s) atlasCurv s`; FTC twice with `(f := …)`
+  pinned, IBP `intervalIntegral.integral_deriv_mul_eq_sub` with `u s = s − r`; `intervalIntegral.integral_neg` in a `rw` list hits the
+  FIRST negated integral — derive the sign flip as a separate `have` with `← integral_neg` + `integral_congr`),
+  **`tendsto_integral_atlasCurv`** (`→ 𝓘(M).toReal` as `r ↑ 1`, via `ENNReal.tendsto_toReal` and `tendsto_genRate_segment`),
+  **`atlas_decomposition_mixture`** (`KL(D_b‖ν) = 𝓘(M_b) + KL(D_b‖Π(M_b))` for the mixtures of a data law with response `M`).

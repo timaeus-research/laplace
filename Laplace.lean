@@ -346,6 +346,8 @@ import Laplace.Multi.QuadraticInformationBound
 import Laplace.Multi.CubicResponse
 import Laplace.Multi.InvisibleInformation
 import Laplace.Multi.ResponsePathDifferential
+import Laplace.Multi.ChartContinuity
+import Laplace.Multi.StraightPathAtlas
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
