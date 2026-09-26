@@ -4769,3 +4769,14 @@ certificates for concrete resolved charts beyond the identity chart.
   **`dataReconDeriv_eq_zero_iff`** (`ker DR = {∫ S h dν = 0}`, the invisible data directions), **`momentL1_sub_dataReconDeriv`**
   (every zero-mass direction = visible tangent score + invisible remainder), `norm_dataReconDeriv_le` (`‖DR h‖₁ ≤ √g(πh, πh)`),
   **`hasDerivAt_dataRecon_path`** (the chain rule along any differentiable constant-mass path of `L¹` densities).
+- `TransportL1.lean` (NOT mirrored; round-63 rank 3 in Bochner form): **`reconstructionL1_curve_sub_eq_integral`** (the
+  Bochner FTC in `L¹(ν)` along a `C¹` curve of interior responses, `[q_{M+γ(1)}] − [q_{M+γ(0)}] = ∫₀¹ Dp_{M+γ(t)} γ'(t) dt`),
+  `hasDerivAt_dirProjL_atlasPath` (the atlas as a `𝕍`-valued curve via `dirProjL`),
+  **`reconstructionL1_sub_featureless_eq_integral_atlas`** (`[q_M] − [q_{m₀}] = ∫₀¹ [q_{M_s} ℓ_{M_s, M−m₀}] ds` in `L¹`).
+- `TiltDiagnostic.lean` (NOT mirrored; round-62 rank 6): `dotJ_smul_right`, **`atlas_rate_euler`** (`s𝓘'(s) − 𝓘(s) =
+  KL(ν‖Q_{M_s})`), `abs_log_bridgeDens_le`, `toReal_klDiv_bridge_eq_integral_klFun`, **`hasDerivAt_integral_klFun_bridge`**
+  (differentiation under the integral: `A'(s) = ∫ (d−1) log(1 + s(d−1)) dν`), `hasDerivAt_klDiv_bridge`,
+  **`bridge_information_euler`** (`sA'(s) − A(s) = KL(ν‖D_s)`), **`hasDerivAt_invisibleBridge`**, **`invisibleBridge_euler`**
+  (`sR'(s) − R(s) = KL(ν‖D_s) − KL(ν‖Q_{M_s})`), **`hasDerivAt_invisibleBridge_div`** (`d/ds (R(s)/s) = (KL(ν‖D_s) −
+  KL(ν‖Q_{M_s}))/s²`: the invisible information per unit displacement grows exactly where the reverse information of the
+  data exceeds that of its reconstruction — the tilt diagnostic).

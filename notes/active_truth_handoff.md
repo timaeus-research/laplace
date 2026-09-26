@@ -934,3 +934,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Lp.coeFn_add/smul/zero`, `Integrable.coeFn_toL1`, `LinearMap.mkContinuousOfExistsBound`. NEXT: Bochner `L¹` whole-law
   transport (`reconstructionL1 M − reconstructionL1 m₀ = ∫₀¹ Dp_{M_s} δ ds`, the `hftc` inside `integral_abs_famDens_curve_le`,
   factor it out), tilt diagnostic `tR'`, round-64 consult.
+- `TransportL1` + `TiltDiagnostic` landed. TransportL1: the Bochner FTC factored out of `integral_abs_famDens_curve_le`;
+  the atlas as a `𝕍`-valued curve is `s ↦ dirProjL S ν (atlasPath s − m₀)` (derivative via `(dirProjL S ν).hasFDerivAt.comp_hasDerivAt`,
+  `Subtype.ext` + `dirProjL_of_mem`); `simp only [hcoe, atlasPath_one] at h` rewrites inside-out and kills the outer pattern —
+  do `rw [hcoe 1, hcoe 0, atlasPath_one, atlasPath_zero] at h` then `simp only [hcoe] at h` for the binder occurrence.
+  TiltDiagnostic: `hasDerivAt_integral_of_dominated_loc_of_deriv_le` with ball radius `min s₀ (1 − s₀)` so the bridge bounds
+  apply; `hasDerivAt_klFun (hx : x ≠ 0)` composed with `((hasDerivAt_id s).mul_const h).const_add 1`; `toReal_klDiv_densLaw`
+  and `toReal_klDiv_densLaw_symm` (MixturePathEnergy) give `A = ∫ klFun r`, `KL(ν‖D) = ∫ (r − 1 − log r)`; the Euler identity
+  is a pointwise `ring` after `← integral_const_mul, ← integral_sub`; `toReal_klDiv_familyMeasure_symm` + `atlasPath_sub` +
+  `dotJ_smul_right` give the rate Euler identity; `Pfam (atlasTheta … : J → ℝ)` needs the explicit coercion or instance
+  search sticks; `meanMap_responseTheta … hrel` is accepted by `exact` for `meanMap … (atlasTheta …)` (defeq). Round-62/63
+  lists now fully landed except the all-orders tower. NEXT: round-64 consult (what remains for depth: all-orders invisible
+  tower via smooth inverse function theorem, Fisher contraction `Cov_D(S) ⪯ C_M`?, CLT of the reconstruction law, geodesic
+  vs atlas), or the tower directly.
