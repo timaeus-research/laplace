@@ -890,3 +890,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   already exist in `AtlasHessian`) and rank 6 (tilt-path diagnostics). NEXT: round-63 consult with the full picture, or
   begin the `C²` flagship via the atlas: `hasDerivAt_famDens_deriv_atlas` + dominated convergence for the `L¹` second
   derivative along the atlas (a "C² along lines" version), before the full Fréchet `C²`.
+- Round-63 consult landed (`research_round63_v1`): the missing bridge is the UNIFORM `L¹` SECOND JET at a fixed base,
+  `sup_{‖h‖≤ρ} ‖q_{M+h} − q_M − J_M h − ½H_M[h,h]‖₁/‖h‖² → 0` with `H_M[u,v] = q_M N_M(ℓ_uℓ_v)` — which the seabed's
+  `integral_abs_famDens_response_peano_uniform` (DensityPeanoUniform) ALREADY provides (compact-uniform TV Peano); linewise
+  second derivatives + polarisation do NOT suffice; the signed-measure bias in `L¹` is the sup over `‖F‖∞ ≤ 1` of the
+  scalar bias with F-UNIFORM remainder/tail constants (`‖f‖₁ = sup_F |∫Ff|`). Rank 2: reconstruction as a smooth retraction
+  `R(d) = q_{m(d)}`, `DR_d[h] = q_M ℓ_{M,∫Sh}`, `R∘R = R`, `m∘R = m`, `P_M² = P_M`, `ker P_M = {∫h = 0, ∫Sh = 0}`; Fisher
+  contraction only at `Q_M` (from general `D` needs `Cov_D(S) ⪯ C_M`). Rank 3: whole-law transport + invisible acceleration.
+  Rank 4: all-orders invisible tower. Closing main theorem proposed ("Response geometry: projection, invisible bending,
+  averaged curvature"; five parts, most landed). NEXT: `UniformBias` — the F-uniform scalar bias (dual form of the `L¹`
+  signed-measure bias): restate the observable Peano with `∀ F` inside the `∃ δ`, bound `|lin_F(e_a)| ≤ BF ∫|ℓ|`,
+  `|b_F(e_a,e_b)| ≤ BF ∫|N(ℓℓ)|`, and rerun the schema with `K = BF · K₀`.
