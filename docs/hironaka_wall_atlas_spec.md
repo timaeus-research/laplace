@@ -4862,3 +4862,11 @@ certificates for concrete resolved charts beyond the identity chart.
   (polarisation + symmetry of second derivatives: `∫ F · D²P_M[u,v] = b_{F,M}(u,v)`), **`fderiv_fderiv_reconstructionL1_add`**
   (`D²P_M[u,v] = [q_M N_M(ℓ_{M,u} ℓ_{M,v})]`), **`momentL1_fderiv_fderiv_eq_zero`** (the Hessian is invisible: zero mass, zero
   feature moments).
+- `CurvedTransport.lean` (NOT mirrored; round-65 rank 1, curved paths): `fderiv_comp_sub_const'` (translation invariance of
+  `fderiv`), `contDiffAt_reconstructionL1_add_of_mem`, `reconstructionL1_add_eq_sub`, **`fderiv_reconstructionL1_add_of_mem`**
+  (`DP_{z₀} = Dp_{M+z₀}` at every interior displacement), **`fderiv_fderiv_reconstructionL1_add_of_mem`** (the invisible Hessian
+  at every interior displacement, by translation to the base point), **`hasDerivAt_reconstructionL1_path`** /
+  `deriv_reconstructionL1_path` (first-order transport along any `C¹` interior path), **`hasDerivAt_deriv_reconstructionL1_path`**
+  (second-order transport along any `C²` interior path: `d²/dt²[q_{M_t}] = [q N(ℓ_{Ṁ}²)] + [q ℓ_{M̈}]`),
+  **`momentL1_deriv_deriv_reconstructionL1_path`** (`∫ S d²/dt²[q_{M_t}] = M̈`: the bending is invisible, the response
+  acceleration is visible).

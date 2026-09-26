@@ -462,6 +462,7 @@ import Laplace.Multi.InvisibleTower
 import Laplace.Multi.AtlasJetL1
 import Laplace.Multi.FeaturelessJet
 import Laplace.Multi.ResponseHessian
+import Laplace.Multi.CurvedTransport
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

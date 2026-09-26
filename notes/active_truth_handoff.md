@@ -1064,3 +1064,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Submodule.coe_add/coe_smul`. Round 65: ranks 1 (Hessian; curved-path chain rule still open), 2, 4 DONE. NEXT: the curved-path
   second-order transport `(P∘γ)'' = D²P[γ',γ'] + DP[γ'']` (assembly from `contDiffAt_reconstructionL1_add` + `HasDerivAt.clm_apply`),
   the `C^∞` upgrade of NormalForm, then round-66 consult (analyticity / boundary completion / CLT).
+- `CurvedTransport` landed (round-65 rank 1 complete: Hessian everywhere + curved-path chain rule). Gotchas: no
+  `fderiv_comp_sub_const` in Mathlib — proved `fderiv_comp_sub_const'` by cases on differentiability (`DifferentiableAt.comp (x - a)
+  (g := …) (f := fun y ↦ y + a)` for the converse); a rebased map `fun z ↦ f (z − z₀)` must be STATED with `((z − z₀ : 𝕍) : J → ℝ)`
+  and the lemma instantiated with an explicit `(fun w ↦ …)` then `beta_reduce at h` before `rw`; `HasFDerivAt.comp_hasDerivAt`
+  takes the point FIRST (`comp_hasDerivAt t (l := P) (f := γ) hl hf`); the second derivative of `t ↦ DP(γ t)(γ' t)` is
+  `(HasFDerivAt.comp_hasDerivAt t₀ hP2 (hγ t₀)).clm_apply hγ'` with `hP2` from `ContDiffAt.fderiv_right_succ` after `.of_le
+  (cast 2)`; `variable {γ : ℝ → 𝕍}` lines must spell `dirSpan ν (fun _ ↦ 1) S`. Round 65: ranks 1, 2, 4 DONE. NEXT: `C^∞`
+  upgrade of `NormalForm` (assembly), then round-66 consult (analyticity via contraction + majorant; boundary completion for finite
+  `X`; reconstruction CLT; explicit `p'''(0)`).
