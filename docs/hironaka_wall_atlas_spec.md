@@ -4748,3 +4748,12 @@ certificates for concrete resolved charts beyond the identity chart.
   `abs_linForm_le_of_bound` (`|lin_F(u)| ≤ ‖F‖∞ ∫|ℓ_{πu}|`), `abs_biasForm_le_of_bound` (`|b_F(u,v)| ≤ ‖F‖∞ ∫|N(ℓ_{πu}ℓ_{πv})|`),
   **`reconstruction_bias_uniform_of_nhd`** (`sup_{‖F‖∞≤1} |n(EĜ_{F,n} − G_F(M)) − ½ΣΓ_ab b_F(e_a,e_b)| → 0`: the dual form of
   the `L¹`-valued signed-measure bias `n(E[q̃_n] − q_M) → ½E_D[H_M[S−M,S−M]]`).
+- `ResponseGeometry.lean` (NOT mirrored; round-63 closing theorem): **`integral_deviation_eq_zero`** /
+  **`integral_stat_mul_deviation_eq_zero`** / **`deviation_invisible`** (the exact, non-asymptotic invisibility identity
+  `∫ (1, S)(q_{M+h} − q_M − q_M ℓ_{M,h}) dν = 0` for interior `M`, `M + h`: every nonlinear deviation of the reconstruction
+  from its tangent prediction is invisible to the features), and **`response_geometry`** — "Response geometry: projection,
+  invisible bending, and averaged curvature", the five-part package assembled from landed pieces: (1) `Π(M*) = Q_{M*}`,
+  response `M*`, idempotence `Π(E_{Q_θ}S) = Q_θ`, `L¹`-differential `u ↦ [q ℓ_u]`, moment map inverts it; (2) whole-law
+  transport `G_F(M*) − G_F(m₀) = ∫₀¹ lin_{F,M_s}(δ) ds`; (3) invisible bending (second-order transport + the exact
+  invisibility identity); (4) sampling averages the bending, uniformly over `‖F‖∞ ≤ 1`; (5) the atlas is the
+  natural-gradient trajectory of `KL(Q_{M*}‖Q_M)` (start, ODE, convergence, Fisher dissipation).

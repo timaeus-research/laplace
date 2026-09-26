@@ -909,3 +909,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   consult's five-part form (parts 1–5 assembled from landed pieces: `hasDerivAt_reconstructionL1_curve`/`ResponseTransport`
   for whole-law transport, `SecondOrderTransport` for bending, `UniformBias` for averaged bending, `NaturalGradientAtlas`);
   (ii) rank 2 retraction differential `R(d) = q_{m(d)}`, `DR_d[h] = q_M ℓ_{M,∫Sh}`; (iii) the `L¹` Bochner form of the bias.
+- `ResponseGeometry` landed (round-63 closing theorem): the exact invisibility identity (mass via `integral_famDens` +
+  `integral_responseScore`; feature moments via `integral_famDens_mul` + `integral_stat_responseTheta` +
+  `moment_famDens_mul_responseScore`) and the five-part `response_geometry` package (pure assembly of
+  `responseProjection_eq_familyMeasure_responseTheta`, `integral_stat_responseTheta`, `responseProjection_mean_familyMeasure`
+  (called as `hS ν θ` with `S' := S`), `hasFDerivAt_reconstructionL1`, `famDens_mul_responseScore_moment_eq`,
+  `integral_response_sub_featureless_eq_integral_atlas`, `obsResponse_atlas_eq_second_order`,
+  `reconstruction_bias_uniform_of_nhd`, `natFlow_zero ν _`, `hasDerivAt_natFlow ν _`, `tendsto_natFlow ν _`,
+  `hasDerivAt_natLoss_natFlow`). Gotchas: `integral_sub` needs the `Integrable (fun x ↦ f x - g x)` witness typed as a
+  lambda (`Integrable.sub` gives the Pi form); a theorem in an `include hrel` section whose proof uses `hrel` takes it as an
+  argument even when the STATEMENT does not mention it (`integral_deviation_eq_zero hS ν hrel h`); the NaturalGradientAtlas
+  flow lemmas omit `hS`, so they are `natFlow_zero ν Mt` etc. NEXT: (i) rank 3 whole-law `L¹` transport / invisible
+  acceleration in Bochner form (`hasDerivAt_reconstructionL1_curve` + FTC in `L¹`, `atlasHess` domination); (ii) the tilt
+  diagnostic `tR'(t) = R(t) + KL(ν‖D_t) − KL(ν‖Q_{M_t})`; (iii) Bochner `L¹` form of the bias; (iv) round-64 consult.
