@@ -372,6 +372,8 @@ import Laplace.Multi.BridgeResidual
 import Laplace.Multi.KLJointConvexity
 import Laplace.Multi.LiftConditional
 import Laplace.Multi.EmpiricalProjection
+import Laplace.Multi.TargetPythagoras
+import Laplace.Multi.PathEnergy
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

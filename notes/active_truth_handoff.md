@@ -366,3 +366,18 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
 - NEXT (round-49 ranking): nested Fisher projections in L² (item 2), second-order expansions of fibre/marginal/total
   residual along tilt paths (item 3), conditional variational formula for the fibre information (item 4: sup over
   bounded σ(S)-measurable tests), then a round-50 consult on the "featureless → data" mapping programme.
+
+## 2026-09-26 (cont.): round-50 consult (`gpt_responses/research_round50_{q,v1}.md`), TargetPythagoras + PathEnergy landed
+
+- Astra's round-50 ranking (deepest formulation = "retraction onto the exponential family with exact information defect
+  and infinitesimal orthogonal decomposition"): 1 nested Fisher projections in L² (three-way Pythagoras
+  `‖h‖² = ‖Bh‖² + ‖(C−B)h‖² + ‖(I−C)h‖²`, minimum-energy response lift); 2 Pythagoras against an arbitrary
+  reconstructed target (DONE: `TargetPythagoras`); 3 exact observable defect
+  `Δ_φ(s) = s E_D(φ−ψ) + (E_{D_s}ψ − E_{Q_s}ψ)`, `ψ = E_ν[φ|σ(S)]`, and `Δ'_φ`; 4 quadratic splitting of
+  `KL`, `𝓘`, `L`, `R` along bounded tilts; 5 equal Fisher energies (exponential path DONE: `PathEnergy`; mean path
+  needs continuity of `atlasTheta` at `s = 1`); 6 mixed response Hessian via the frozen residual; 7 finite-rate
+  boundary completion of the curvature integral; 8 `L¹`-valued derivative of the reconstruction density.
+- Astra's consistency note: `κ(s) = Var_{Q_s}⟨Σ⁻¹v, S⟩` (natural-parameter velocity), which is what `atlasCurv`
+  already is (`atlasCurv_eq_priorCov` with `atlasVel`); only the consult's prose summary was sloppy.
+- NEXT: item 3 (observable defect: needs `∫ φ g dν = ∫ E_ν[φ|σ(S)] g dν` for bounded σ(S)-measurable `g` —
+  `condExp` + `integral_condExp`/`condExp_mul_of_stronglyMeasurable_left`), then item 1 (L² spine), item 4.

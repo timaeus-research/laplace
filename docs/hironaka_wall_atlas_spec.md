@@ -4177,3 +4177,15 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL(Π(M̂_n)‖Π(M_D)) → 0` a.s. when `M_D ∈ relint`: continuity of `𝓘` along `𝕍` from
   `hasFDerivAt_genRate_chart` at `chartV (responseTheta M_D) = toV M_D`, plus `ENNReal.tendsto_ofReal` on the
   interior identity). Consistency of the empirical representative in information, hence in total variation.
+- `TargetPythagoras.lean` (NOT mirrored; round-50 item 2): **`klDiv_responseProjection_target_eq`**
+  (`KL(D‖Π(N)) = KL(D‖D↑) + KL(S_*D‖S_*Π(M_D)) + KL(Π(M_D)‖Π(N))` for finite-information `D` and interior `N`:
+  the log-density of `Π(N)` is affine in `S`, so its `D`- and `Π(M_D)`-expectations agree; two `klDiv_tilted_right_eq`
+  identities + the general residual split), `klDiv_bridge_responseProjection_target_eq` (the same along the bridge
+  `aν + bD`, response `a m₀ + b M_D` via `mean_mixture`).
+- `PathEnergy.lean` (NOT mirrored; round-50 item 5, exponential path): `mean_familyMeasure_one_zero`,
+  `log_integral_exp_neg_dirLoss`, `klDiv_familyMeasure_featureless` (`KL(P_θ‖ν) = −⟨θ,m(θ)⟩ − Λ(−θ)`, via
+  `klDiv_tilted_eq`), `klDiv_featureless_familyMeasure` (`KL(ν‖P_θ) = ⟨θ,m₀⟩ + Λ(−θ)`), both nonnegativity facts
+  (Fenchel at `m(θ)` / at `m₀` with `genRate_mean_eq_zero`), **`toReal_klDiv_familyMeasure_symm`**
+  (`KL(P_θ‖ν) + KL(ν‖P_θ) = −⟨θ, m(θ) − m₀⟩`), **`integral_var_familyMeasure_segment`** (`∫₀¹ Var_{P_{sθ}}⟨θ,S⟩ ds =
+  −⟨θ, m(θ) − m₀⟩` by FTC on `hasDerivAt_dotJ_meanMap_segment`, continuity from
+  `hasDerivAt_lawCov_familyMeasure_path`), `integral_var_familyMeasure_segment_eq_symm_klDiv` (energy = symmetrised KL).
