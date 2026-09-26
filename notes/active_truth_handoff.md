@@ -1570,3 +1570,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   redex needs `Pi.sub_apply` before `abs_sub_comm`. NEXT (Astra round 75): E Bregman identity `D(q_M‖q_N) = I(M) − I(N) −
   DI(N)[M − N]` (sign `DI(M)[u] = −⟨θ(M),u⟩`), flags (lexicographic exposure, corollary), the defect Taylor form, F intrinsic
   Fisher boundary geometry; or a round-76 consult.
+- `ResponseBregman` landed (round-75 rank 4). Gotchas: `familyMeasure_one_zero_eq_tilted hS ν θ` takes `hS ν`;
+  `toReal_klDiv_tilted_right ν ρ hρν hfin hf` gives `D(ρ‖ν.tilted f) = D(ρ‖ν) − ∫ f dρ + log ∫ e^f dν`; the mean pairing
+  `∫ −1 * dirLoss θ dq_M = −⟨θ,M⟩` by `integral_const_mul` + `← dotJ_integral_eq _ hS` + `responseProjection_spec … .2.1`;
+  `dotJ (a − b) c = dotJ a c − dotJ b c` by `simp only [dotJ, Pi.sub_apply, sub_mul, Finset.sum_sub_distrib]`; `rw [h.map_sub]`
+  rewrites only the first instance of the pattern — `simp only [h.map_sub]` for all. NEXT: round-76 consult.

@@ -505,6 +505,7 @@ import Laplace.Multi.VertexGapExtinction
 import Laplace.Multi.VertexGapForward
 import Laplace.Multi.VertexGapConditioning
 import Laplace.Multi.VertexGapCriterion
+import Laplace.Multi.ResponseBregman
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

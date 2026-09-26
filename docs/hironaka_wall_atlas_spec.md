@@ -5230,3 +5230,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `m_ν(η_n) → M ↔ m_{ν_F}(η_n) → M ∧ ∀ v ∈ V, ⟨u,v⟩ < β → ⟨η_n, v − v₀⟩ → +∞`), **`exists_vertexGap_criterion`** (for every
   `M ∈ P` the exposing data exists and the criterion holds for every sequence): the topology of natural-parameter escape towards
   a face has a finite certificate, complement-free.
+- `ResponseBregman.lean` (NOT mirrored; round-75 rank 4 (E)): `responseProjection_eq_tilted_responseTheta`,
+  `integral_neg_dirLoss_responseProjection`, **`genRate_toReal_eq_neg_dotJ_sub_log`** (`I(M) = −⟨θ(M),M⟩ − log Z(θ(M))`),
+  **`toReal_klDiv_responseProjection_eq`** (THE BREGMAN IDENTITY `D(q_M‖q_N) = I(M) − I(N) + ⟨θ(N), M − N⟩ = I(M) − I(N) −
+  DI(N)[M−N]`), **`genRate_toReal_ge_tangent`** (convexity: `I(N) − ⟨θ(N), M − N⟩ ≤ I(M)`), `toReal_klDiv_responseProjection_add_symm`
+  (`D(q_M‖q_N) + D(q_N‖q_M) = ⟨θ(N) − θ(M), M − N⟩`).
