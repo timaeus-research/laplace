@@ -514,3 +514,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `range_meanMap_eq_intrinsicInterior_momentBody`, strict derivatives, uniqueness of the fibrewise minimiser),
   rank 4 unbounded bridge split (interior-time identities via nonnegative kernels), rank 5 general conditional
   variational (sup, clipping).
+- `GlobalChart` landed (round-53 rank 3, packaging of existing pieces): `relintChart : 𝕍 ≃ₜ ri K`, strict
+  derivatives, inverse = `responseTheta`, section + unique fibrewise minimiser (`global_response_chart`).
+  Gotchas: `continuous_meanMap` wants `hπ : ∀ x, 0 ≤ π x` (`zero_le_one`), unlike the chart lemmas (`one_pos`);
+  in an `∃ e, … ∧ ∀ M, … e.symm M …` statement annotate `M`'s type; `responseChart` already existed in
+  `ChartSynthesis` — the umbrella build is the only place a `def` clash surfaces (`_proof_2` collision).
+  NEXT (round 53): rank 2 mixed Hessian (C² of the chart via `Ring.inverse` differentiation), rank 4 unbounded
+  bridge split, rank 5 general conditional variational formula; or round-54 consult.

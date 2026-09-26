@@ -4372,3 +4372,11 @@ certificates for concrete resolved charts beyond the identity chart.
   ≤ √energy), `integral_mixSpeed_condDens_eq_integral_var_expPath` (the same for `ν → D↑`),
   **`symm_klDiv_statisticLift_le`** (`KL(D↑‖ν) + KL(ν‖D↑) ≤ KL(D‖ν) + KL(ν‖D)`: conditioning contracts the
   symmetrised divergence, from `k_a ≤ k_d`).
+- `GlobalChart.lean` (NOT mirrored; round-53 rank 3, packaging): `relintToV`, `intrinsicChart_symm_eq_chartVInv`,
+  **`relintChart : 𝕍 ≃ₜ intrinsicInterior ℝ K`** (the gauge-fixed mean map is a homeomorphism onto the relative
+  interior; inverse continuity from `hasStrictFDerivAt_chartVInv`), `relintChart_apply`, `relintChart_symm_apply`
+  (`= responseTheta`), `responseProjection_eq_familyMeasure_relintChart_symm`, `hasStrictFDerivAt_relintChart_coe`
+  (derivative `subtypeL ∘ chartDeriv θ`), `dotJ_relintChart_deriv` (`⟨e, Dm(θ)v⟩ = −Cov_{P_θ}(⟨e,S⟩,⟨v,S⟩)`),
+  **`global_response_chart`** (∃ homeomorphism with: forward = mean map, strict derivative, inverse = natural
+  coordinate of `Π`, `Π(M)` has response `M` and is the unique entropy minimiser in its fibre).
+  (`responseChart` was already taken by `ChartSynthesis`.)
