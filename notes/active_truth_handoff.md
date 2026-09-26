@@ -1208,3 +1208,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   for finite full-support `X` (essRange = range statPoint) and density of the relative interior (ray argument via
   `atlas_mem_intrinsicInterior`). NEXT: minimal face, or the explicit natural-parameter radius (round-67 rank 3), or a
   round-69 consult for the next deepening.
+- `FiniteMinimalFace` landed (face completion module 3; round-68 package COMPLETE except the closure statement). Gotchas:
+  `facePolytope` already exists in `ActiveTruthTheorem` (found only by the umbrella build) → `carriedResponses`;
+  `IsExtreme` is a structure `⟨subset, left_mem_of_mem_openSegment⟩` with `openSegment` as `∃ a b, 0 < a ∧ 0 < b ∧ a + b = 1 ∧
+  a • x + b • y = z`; `isExtreme_sInter`/`sInter_subset_of_mem`/`subset_sInter` for the minimal face; the absorption parameter
+  `ε = ½ min_{supp} q*` via `Finset.exists_min_image` on `univ.filter (0 < q ·)`, nonempty because `Σ q = 1`; after
+  `field_simp` the unit-mass goal is `(2 − q x₀)/(2 − q x₀) = 1` (`div_self`). NEXT: the closure statement
+  (`completedFamily = closure (interior family)`: needs `momentBody = conv S(X)` for finite full-support `X` and density of the
+  relative interior along rays), then round-67 rank 3 (explicit natural-parameter radius) or a round-69 consult.

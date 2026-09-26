@@ -4961,3 +4961,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`vecMoment_deformation`**, **`retract_deformation`** (`retract ∘ H_t = retract`), `deformation_of_mem_completedFamily`,
   **`continuousOn_deformation`** — the strong deformation retraction of the simplex onto the completed family, fibrewise
   moment-preserving.
+- `FiniteMinimalFace.lean` (NOT mirrored; round-68 face completion, module 3): `deltaVec`, `deltaVec_mem_stdSimplex`,
+  `vecMoment_deltaVec`, `supportSet` (`{x | q*(M) x > 0}`), `carriedResponses S A` (responses of probability vectors carried by
+  `A`), `carriedResponses_subset_hull`, `qStarVec_eq_zero_of_notMem`, `mem_carriedResponses_supportSet`, **`exists_absorb`**
+  (`q*(M) = ε b + (1−ε) z` for every `b` carried by the support), **`support_absorb`** (same response as a carried vector ⇒
+  carried), **`isExtreme_carriedResponses_supportSet`** (the carried responses of the support form a face),
+  **`carriedResponses_supportSet_subset_of_isExtreme`** (contained in every face containing `M`), `minimalFace` (intersection of
+  all faces containing `M`), **`minimalFace_eq`**, `isExtreme_minimalFace`, `mem_minimalFace`,
+  **`qStarVec_pos_iff_mem_minimalFace`** (CSISZÁR'S SUPPORT THEOREM: `q*(M) x > 0 ↔ S(x) ∈ minimalFace M`).
