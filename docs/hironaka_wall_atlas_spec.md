@@ -4293,3 +4293,15 @@ certificates for concrete resolved charts beyond the identity chart.
   (`KL(Π(A)‖Π(C)) = KL(Π(A)‖Π(B)) + KL(Π(B)‖Π(C)) + ⟨θ(C) − θ(B), A − B⟩`),
   **`klDiv_responseProjection_three_point_eq_iff`** (generalised Pythagoras iff the mixed pairing vanishes = Fisher
   orthogonality at `B`), **`toReal_klDiv_responseProjection_sub_symm`** (`KL(Π(M)‖ν) − KL(ν‖Π(M)) = ∫₀¹ (1−2s) κ`).
+- `CurvatureSplit.lean` (NOT mirrored; round-52 item 1, simultaneous curvature formulas): `bridgeDens d s = 1 + s(d−1)`,
+  `klKernel_bridge`/`mixSpeed_bridge` (the bridge of a bridge rescales the kernel: `k_{d_s}(u) = s² k_d(us)`),
+  `bridgeDens_bounds`, **`toReal_klDiv_densLaw_bridge`** (`KL(D_s‖ν) = ∫₀ˢ (s−w) k_d(w) dw`, by the substitution
+  `intervalIntegral.integral_comp_mul_left`), `isProbabilityMeasure_densLaw_bridge`, `integral_densLaw_of_bounds`,
+  **`mean_densLaw_bridge`** (the response of `D_s` is the atlas point `M_s`), `klDiv_densLaw_ne_top`,
+  `measurable_mixSpeed`, `abs_mixSpeed_le`, `intervalIntegrable_sub_mul_mixSpeed`,
+  **`statisticLift_densLaw_bridge`** (`(D_s)↑ = (1 + s(a−1))ν` with `a = E_ν[d|σ(S)]`: the lift of the bridge is the
+  bridge of the conditional density, via `statisticLift_eq_withDensity_condExp` + `condExp_add/smul/const`),
+  **`fibre_eq_integral_curvature`** (`L_s = ∫₀ˢ (s−w)(k_d(w) − k_a(w)) dw`),
+  **`marginal_eq_integral_curvature`** (`R_s = ∫₀ˢ (s−w)(k_a(w) − κ(w)) dw`, `s < 1`). Together with
+  `genRate_atlasPath_eq_integral`: the three terms of `KL(D_s‖ν) = 𝓘(M_s) + R_s + L_s` are the accumulated curvatures
+  of three nested straight paths (full simplex `k_d`, observable simplex `k_a`, atlas `κ`), and `k_d ≥ k_a ≥ κ`.

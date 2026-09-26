@@ -435,3 +435,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `L = sup_g E_D[g − log E_ν(e^g|σ(S))]`), item 4 (`L¹` derivative of the reconstruction density), then a round-52
   consult. Gotcha: `⟨_, by rw [...]⟩` for an existential witness leaves the metavariable unassigned after `rw` — give
   the witness explicitly.
+- Round-52 consult (`gpt_responses/research_round52_{q,v1}.md`; ranking: 1 simultaneous curvature formulas for
+  𝓘, L, R; 2 local Fisher-orthogonal retraction theorem; 3 L¹ Fréchet derivative `Dq(m)[u] = q_m ℓ_{m,u}`;
+  4 Fisher orthogonality iff Pythagoras; 5 conditional variational formula; 6 observable-defect second order;
+  7 mixed Hessian `D²q = q_m(I − C_m − B_m)(ℓ_u ℓ_z)`; 8 reverse divergence/asymmetry; 9 conditional Fisher-loss
+  identity; 10 skewness `KL(Q₁‖ν) − KL(ν‖Q₁) = ∫ s(1−s) E ℓ³`; 11 reverse-divergence correction; 12 length–energy).
+  `BregmanGeometry` landed (items 4, 8). `CurvatureSplit` landed (item 1): `KL(D_s‖ν) = ∫₀ˢ (s−w) k_d`,
+  `L_s = ∫₀ˢ (s−w)(k_d − k_a)`, `R_s = ∫₀ˢ (s−w)(k_a − κ)` with `a = E_ν[d|σ(S)]`, the lift of the bridge being the
+  bridge of `a` (`statisticLift_densLaw_bridge`). Gotchas: `omit hc0 in` changes call arity (drop the argument at
+  every call site); `Integrable.const_add` does not exist on the `And`; `norm_integral_le_of_norm_le` needs its
+  constant bound given (`integrable_const c`); after `rw [meanMap_zero_eq_mean]` `beta_reduce` before `ring`.
+  NEXT (round 52): item 3 (L¹ derivative of the reconstruction density along the atlas), item 2 (local retraction),
+  item 5 (conditional variational formula), item 6, item 7, item 10 (skewness), item 12.
