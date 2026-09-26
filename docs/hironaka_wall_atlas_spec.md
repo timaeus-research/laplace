@@ -4804,3 +4804,10 @@ certificates for concrete resolved charts beyond the identity chart.
   Λ_ν(−θ(M))`: the rate is the Chernoff exponent at its own natural parameter), **`response_chernoff`**
   (`ν^{⊗n}(⟨θ(M), R̄_n⟩ ≤ ⟨θ(M), M⟩) ≤ e^{−n𝓘(M)}`: the visible information is the exponential cost of producing the
   response from the featureless law; the seabed's `halfspace_chernoff` at direction `−θ(M)`, multiplier 1).
+- `SmoothFamily.lean` (NOT mirrored; round-64 rank 3, stage A): `famNum` (`N_g(θ) = ∫ g e^{−⟨θ,S⟩} dν`), `famZ_eq_famNum`,
+  `integrable_mul_famWeight`, `integral_mul_dirLoss_mul_famWeight`, **`hasFDerivAt_famNum`** (`DN_g(θ) = −⟨·, (N_{gS_j}(θ))_j⟩`),
+  **`contDiff_famNum`** (`C^n` for every `n` by induction — the derivative is a weighted normaliser again, so no
+  differentiation under the integral beyond first order), `contDiff_infty_famNum`, **`contDiff_famZ`**, `famMean_eq_famNum_div`,
+  **`contDiff_famMean`** / **`contDiff_meanMap`** (the mean map is `C^∞`), `meanMapDeriv_eq_fderiv`, **`contDiff_meanMapDeriv`**,
+  **`contDiff_chartV`** (the intrinsic chart `𝕍 → 𝕍`), `chartDeriv_eq_dirProjL`, **`contDiff_chartDeriv`**,
+  **`contDiff_chartDerivEquiv_symm`** (`θ ↦ (Dm(θ)|_𝕍)⁻¹` is `C^∞`, via `contDiffAt_map_inverse`).

@@ -979,3 +979,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (ii) `famZ`, `meanMap`, the covariance operator `A(θ)` smooth; `A(θ)⁻¹` smooth via `contDiffAt_ring_inverse`; (iii)
   bootstrap on `Ω₀ = {z ∈ 𝕍 | m₀ + z ∈ Ω}` (open in `𝕍`): `Θ(z) = θr (m₀ + z)`, `fderivWithin Θ = A(Θ)⁻¹`, so `C^n ⇒ C^{n+1}`
   by `contDiffOn_succ_iff_fderiv_of_isOpen`; (iv) then `s ↦ [q_{M_s}]` smooth in `L¹` and all-orders invisibility.
+- `SmoothFamily` landed (rank 3 stage A). Gotchas: the induction `contDiff_famNum (n) : ∀ {g}, Bdd g → ContDiff ℝ n (famNum g)`
+  generalises over `g` (the derivative involves `g S_j`); `contDiff_succ_iff_fderiv` after `rw [Nat.cast_succ]`, its `n = ω`
+  clause is `fun h ↦ absurd h (WithTop.natCast_ne_top n)`; `fderiv` is identified pointwise by `(hasFDerivAt …).fderiv` and
+  `dotCLMlin_apply` so the derivative reads `θ ↦ −dotCLMlin (V θ)` (a CLM composed with a `contDiff_pi` vector); `ContDiff.div`
+  needs `∀ θ, famZ θ ≠ 0`; `contDiff_infty_iff_fderiv` gives smoothness of `fderiv` = `meanMapDeriv` (`hasFDerivAt_meanMap` needs
+  `hZ : priorZ … ≠ 0` from `famZ_eq_priorZ ν`); `contDiff_clm_apply_iff` (finite-dim domain) reduces `θ ↦ chartDeriv θ` to
+  vectors; `contDiffAt_map_inverse (n := ∞) (CDE θ₀)` + `coe_chartDerivEquiv` + `ContinuousLinearMap.inverse_equiv` give the
+  smooth inverse; deprecations `ContinuousLinearMap.smul_apply/neg_apply` → root `smul_apply/neg_apply`. NEXT (stage B,
+  `SmoothChart`): `U = range chartV` open via `HasStrictFDerivAt.map_nhds_eq_of_equiv`; `fderiv chartVInv = (CDE ∘ chartVInv).symm`
+  on `U`; bootstrap `ContDiffOn n chartVInv U` by `contDiffOn_succ_iff_fderiv_of_isOpen`; then `z ↦ θr (m₀ + z)` and the atlas
+  coordinate `s ↦ atlasTheta s` are `C^∞`, and observable responses `G_F ∘ atlas` are `C^∞` on `(0,1)`.
