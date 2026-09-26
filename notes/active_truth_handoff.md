@@ -1597,3 +1597,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   parse error ("expected 'lemma'"). NEXT: `ThreePointNotContracting` (X = Fin 3, ν uniform via `vecMeasure`, S = x − 1,
   h = 1_{x=2}, t = log 4: `responseSpeedSq > Var_{ρ_t} h`, using `dataTheta t = ⟨fun _ ↦ −log x₀, _⟩` with `x₀ = (1+√13)/2` via
   `chartVInv_chartV`), then the facet accessibility theorem.
+- `ThreePointNotContracting` landed (round-76 rank 4, the explicit counterexample). Gotchas: `vecMeasure (fun _ ↦ 1/3)` on `Fin 3`
+  with `isProbabilityMeasure_vecMeasure ⟨fun _ ↦ by norm_num, by simp [Finset.sum_const]⟩`; `Measurable.of_discrete` for any
+  function on `Fin n`; `integral_tilted f g` (Mathlib) + `integral_vecMeasure` + `Fin.sum_univ_three` reduce every tilted integral to
+  an explicit ratio (`field_simp` closes, no `ring`); `positivity` cannot see `0 < x₀` for a `def` — `nlinarith [x₀_pos, sq_nonneg
+  x₀]`; `linear_combination (1/2 : ℝ) * x₀_sq` after `rw [div_eq_iff]; norm_num` (read the residual to fix the coefficient);
+  `dataTheta t₀ = ⟨θ₀,_⟩` via `Subtype.ext` + `pathV_apply`/`chartV_apply`/`mean_familyMeasure_one_zero` + `chartVInv_chartV`;
+  `Subsingleton.elim i 0` for `Fin 1` indices; the `unnecessarySeqFocus` linter rejects `fin_cases x <;> simp <;> norm_num` when only
+  one branch survives. NEXT: the facet accessibility theorem (codimension one, Schur complement), the charged-square counterexample,
+  or the `ℰ''` identity / defect splitting `D(ρ‖q_M) = D(ρ‖ρ^S) + D(ρ^S‖q_M)`.

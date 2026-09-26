@@ -5247,3 +5247,10 @@ certificates for concrete resolved charts beyond the identity chart.
   `chartDeriv_dataThetaVel`, `responseSpeedSq` (Fisher speed² of the response path `t ↦ P_{θ_t}`),
   **`responseSpeedSq_eq_neg_dotJ`** (`|q'_t|²_F = −⟨θ'_t, Cov_{ρ_t}(S,h)⟩ = bᵀC⁻¹b`), `responseSpeedSq_nonneg`,
   `lawCov_const_mul_const_mul`, **`responseSpeedSq_eq_div_of_unique`** (1-D: `|q'_t|²_F = Cov_{ρ_t}(S,h)²/Var_{q_t}(S)`).
+- `ThreePointNotContracting.lean` (NOT mirrored; round-76 rank 4, the counterexample): uniform `ν3` on `Fin 3` (via `vecMeasure`),
+  `S3 = x − 1`, `h3 = 1_{x=2}`, `t₀ = log 4`; `integral_tilted_ν3` (integrals against tilts of the uniform law), `integral_data`
+  (`E_ρ g = (g 0 + g 1 + 4 g 2)/6`), `mean_data` (`= 1/2`), `cov_data` (`Cov_ρ(S,h) = 1/3`), `var_data` (`Var_ρ h = 2/9`); `x₀ = (1+√13)/2`,
+  `x₀_sq`, `two_lt_x₀`; `θ₀ = −log x₀`, `integral_resp` (`E_q g = (g 0 + x₀ g 1 + x₀² g 2)/(1 + x₀ + x₀²)`), `mean_resp` (`= 1/2`),
+  `var_resp_lt` (`Var_q S < 1/2`), `var_resp_pos`; `θ₀_mem`, **`dataTheta_eq`** (`dataTheta t₀ = θ₀`, by `chartVInv_chartV`);
+  **`responseSpeedSq_gt_dataSpeedSq`** (THE RESPONSE PATH IS STRICTLY FASTER THAN THE DATA PATH: the response projection is not a
+  Fisher contraction off the family, even for bounded `h`).
