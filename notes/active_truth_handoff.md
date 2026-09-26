@@ -1385,3 +1385,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `have`. NEXT: minimal faces (via the vertex section's support: `vertexSection V M v > 0 ↔ v ∈ minimalFace` from
   `FiniteMinimalFace` on the vertex set) + exposure of the minimal face, then `q_M ∼ ν|_{S ∈ F_M}`, the uniform bound, and the
   face order; or rank 2 `BoundaryLayerBounds`.
+- `BoundaryLayerBounds` landed (round-72 rank 2). Gotchas: `∫ x in s, ∫ r in Ioi 0, … ∂ν` attaches `∂ν` to the INNER
+  integral — parenthesise `(∫ r in Ioi 0, …)`; `HasDerivAt.neg` on ℝ lands in a different `AddCommGroup` instance path
+  (`simpa` fails): build `fun r ↦ -(t * r)` as `(hasDerivAt_id r).const_mul (-t)` + `simp only [id_eq, mul_one, neg_mul] at h`;
+  `IntegrableOn.congr_fun` needs the `IntegrableOn` type stated (a `.const_mul` result is an `And`); `Set.indicator_of_mem hx`
+  with `hx : g x < r` is ambiguous between `r ∈ Ioi (g x)` and `x ∈ {x | g x < r}` — pass `(s := …)`; `congr 2; ext` on set
+  equalities under `∫ … ∂ν.restrict` misfires — prove the set identity as a `have` and `rw`; `Function.uncurry_def` (not
+  `uncurry_apply_pair`) for a variable pair; `Real.integral_rpow_mul_exp_neg_mul_Ioi (ha : 0 < a) (hr : 0 < r) : ∫ t^(a−1)
+  e^{−rt} = (1/r)^a Γ(a)` (namespace `Real`) and `integrableOn_rpow_mul_exp_neg_mul_rpow (hs : −1 < s) (hp : 0 < p) (hb : 0 < b)`
+  with `p = 1` + `Real.rpow_one`; `setIntegral_union Ioc_disjoint_Ioi_same measurableSet_Ioi` + `Ioc_union_Ioi_eq_Ioi`;
+  nonnegativity of `r^α` only on `Ioi 0` — use `(ae_restrict_iff' measurableSet_Ioi).2` for `setIntegral_mono_set`'s
+  `0 ≤ᵐ` argument; a.e.-equal sets via `Filter.eventuallyEq_set.2` and `(setIntegral_congr_set hset).trans` (not `rw`);
+  a def whose statement omits `S` needs `variable (S) in` or `S` cannot be inferred at call sites. NEXT: round-72 rank 1
+  minimal faces / face order, or Fisher-length accessibility `Length_Fisher(p_[T,∞)) = O(T^{−α/2})` from `Var_{p_t}(g) ≤
+  (16/(A t²)) B_{t/2}`, or the Hellinger completion (rank 3), or a round-73 consult.

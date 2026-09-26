@@ -5086,3 +5086,14 @@ certificates for concrete resolved charts beyond the identity chart.
   **`momentBody_faceMeasure_eq_of_exposed`** (THE MOMENT BODY OF THE CONDITIONED LAW IS THE EXPOSED FACE `conv {v ∈ V | ⟨u,v⟩ = β}`),
   **`exists_ray_tendsto_responseProjection_polytope`** (boundary rays for every response in the relative interior of an exposed
   face of the polytope, exact rate `2B_t/(A+B_t)`).
+- `BoundaryLayerBounds.lean` (NOT mirrored; round-72 rank 2 — THE BOUNDARY-LAYER CALCULUS): exponential tails
+  `hasDerivAt_neg_exp_neg_mul`, `tendsto_neg_exp_neg_mul`, `integral_Ioi_mul_exp_neg_mul` (`∫_a^∞ t e^{−tr} = e^{−ta}`),
+  `integrableOn_Ioi_mul_exp_neg_mul`, `integrableOn_Ioi_exp_neg_mul`; for a nonnegative slack `g` and weight `w`: `layerMass`
+  (`H(r) = ∫_{0<g<r} w`), `tiltMass` (`B_t = ∫_{g>0} w e^{−tg}`), `offMass` (`W`), `layerMass_nonneg/mono/le_offMass`,
+  `integrable_tilt`, `tiltMass_nonneg`, **`layerMass_le_exp_mul_tiltMass`** (`H(r) ≤ e^{tr} B_t`),
+  **`tiltMass_eq_laplace_layerMass`** (`B_t = t ∫₀^∞ e^{−tr} H(r) dr`, Tonelli via the tail integral of `t e^{−tr}`),
+  `integrableOn_exp_mul_layerMass`, **`tiltMass_le_of_layerMass_le`** (`H ≤ K r^α` on `(0,r₀]` ⇒
+  `B_t ≤ K Γ(α+1) t^{−α} + W e^{−t r₀}`), **`layerMass_le_of_tiltMass_le`** (`B_t ≤ C t^{−α}` for `t ≥ t₀` ⇒ `H(r) ≤ e C r^α`
+  for `r ≤ 1/t₀`): the layer growth exponent and the tilt decay exponent coincide; on the natural ray: `raySlack`,
+  `measurable_raySlack`, `raySlack_nonneg`, `offFaceMass_eq_tiltMass`, **`integral_abs_famDens_ray_sub_faceDens_le`**
+  (a polynomial boundary layer gives the polynomial TV rate `‖p_{θ−tu} − p_F‖₁ ≤ (2/A)(K Γ(α+1) t^{−α} + W e^{−t r₀})`).
