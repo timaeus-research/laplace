@@ -4089,3 +4089,19 @@ certificates for concrete resolved charts beyond the identity chart.
   **`eq_meanMap_of_dotJ_sub_genRate_eq`** (uniqueness by `genRate_mixture_lt` at `a = b = 1/2`;
   `ENNReal.toReal_strict_mono`, one `ENNReal.coe_toReal` rewrites both coercions; the only theorem needing `[Nonempty J]`),
   **`isGreatest_featCgf`** (`Λ(q) = max {⟨q,M⟩ − 𝓘(M) : 𝓘(M) < ∞}`).
+- `ObservableCurvature.lean` (NOT mirrored; round-47 item 2 via Astra round-48's frozen-residual trick):
+  `hasDerivAt_mul_of_eq_zero_of_continuousAt` (product of a differentiable factor vanishing at `s₀` with a merely continuous
+  one; `hasDerivAt_iff_isLittleO`, `HasDerivAt.isBigO_sub`, `IsBigO.mul_isLittleO`, `Asymptotics.isLittleO_one_iff`),
+  `thirdCentral_dirLoss_left` (linearity of the third central moment in a visible contrast), `integral_familyMeasure_one_zero`,
+  **`hasDerivAt_integral_familyMeasure_path`** (`d/ds E_{P_{θ_s}}φ = −Cov(φ,⟨θ_s',S⟩)` along any `C¹` path via
+  `hasFDerivAt_obsMap … |>.comp_hasDerivAt`, `obsMapDeriv_apply`), **`hasDerivAt_lawCov_familyMeasure_path`**
+  (`d/ds Cov_{P_{θ_s}}(f,g) = −T(f,g,⟨θ_s',S⟩)`; product/sub rules + `thirdCentral_eq` + `ring`), `hasDerivAt_atlasTheta_coe`,
+  `continuousAt_atlasVel`, `hasDerivAt_integral_familyMeasure_atlas` (first order along the atlas), `lawCov_dirLoss_atlasVel`
+  (`Cov_{P_s}(⟨e,S⟩,⟨v_s,S⟩) = −⟨e,Δ⟩` for all `s`), **`hasDerivAt_neg_lawCov_atlasVel`** (frozen residual: for `β₀` with
+  `Cov_{s₀}(S_i,⟨β₀,S⟩) = Cov_{s₀}(S_i,φ)`, `F'(s) = ⟨β₀,Δ⟩ − Σ_i Cov_{P_s}(S_i,r₀)·v_s(i)`, each summand a vanishing
+  differentiable factor times a continuous one), **`hasDerivAt_deriv_integral_familyMeasure_atlas`**
+  (`F''(s₀) = T_{P_{s₀}}(r₀,⟨v_{s₀},S⟩,⟨v_{s₀},S⟩)` for `s₀ ∈ (0,1)`), **`exists_regression_coefficient`** (the covariance vector
+  lies in `𝕍` by the dual-annihilator argument of `meanMapDeriv_mem_dirSpan`; `β₀ := (chartDerivEquiv θ_{s₀}).symm (−c)`).
+  Gotchas: `lawCov_dirLoss_left hS ν v ψ hψ` (hS explicit); `rw [← hr₀]` on the goal BEFORE working with the named residual, or
+  the final `thirdCentral_dirLoss_left` rewrite sees the lambda; `rw [← hP]` on a goal stated with `familyMeasure` before
+  `linarith` against facts stated with the abbreviation `P`.

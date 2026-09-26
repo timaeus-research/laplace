@@ -364,6 +364,7 @@ import Laplace.Multi.FixedNormalLimit
 import Laplace.Multi.EndpointTail
 import Laplace.Multi.FisherVariational
 import Laplace.Multi.LegendreClosure
+import Laplace.Multi.ObservableCurvature
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
