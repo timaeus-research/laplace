@@ -1223,3 +1223,19 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `atlas_mem_intrinsicInterior hS ν hfin hs0 (hs1 : s < 1)` + `tendsto_qStarVec` + `mem_closure_of_tendsto`. NEXT: round-69
   consult (re-rank: explicit natural-parameter radius; general-`X` face completion; reconstruction CLT; a capstone package
   theorem "the response atlas of the data manifold"), or land the explicit radius directly.
+- Round-69 consult landed (`research_round69_{q,v1}`). Ranking: 1 = GENERAL-`X` POLYHEDRAL COMPLETION WITH CHARGED VERTICES
+  (moment body a polytope, every vertex fibre `{S = v}` of positive `ν`-mass ⇒ `q_M ∼ ν|_{S ∈ F_M}` with an explicit face tilt,
+  `M ↦ q_M` TV-continuous on the whole polytope, homeomorphism/closure/deformation retraction as in the finite case; route:
+  vertex witnesses `L(a) = Σ a_i ν(·|S = v_i)`, conditional tilt on the minimal face (HARDEST: transporting conditional measure,
+  affine hull, moment body, relative interior through one face-restriction construction), reuse the finite completion as a
+  continuous vertex section `a(M)`, bounded-density additive recovery `b_n = q_M + L(a(M_n) − a(M))`, lower semicontinuity of
+  the rate, Pythagoras + Pinsker instead of compactness; COUNTEREXAMPLE: `X = ℕ`, `S(n) = (cos(1/n), sin(1/n))`, all points
+  charged, every face charged, yet `q_{S(n)} = δ_n` does not converge in TV — "all faces positive" is NOT enough, polyhedrality
+  + charged vertices is the right hypothesis); 2 = SERIES-FREE EXPLICIT FACTORIAL BOUNDS IN NATURAL COORDINATES: along
+  `p(t) = [q_{a+tv}]`, `Y = ⟨v,T⟩`, `|Y| ≤ L`, `ρ = log(3/2)/L`: `Σ_{k≤N} ρ^k ‖p^{(k)}(s)‖₁/k! ≤ 3`, hence `‖p^{(k)}‖₁ ≤ 3 k! ρ^{−k}`
+  and remainder `3(|t|/ρ)^{N+1}`; route: `Z(t)p(s+t) = p(s)e^{−tY}`, `|Z^{(j)}(0)| ≤ L^j`, Leibniz ⇒ `b_k ≤ L^k + Σ_{j≥1} C(k,j) L^j
+  b_{k−j}`, weighted sums `B_N ≤ 3/2 + ½ B_{N−1}` ⇒ `B_N ≤ 3` (no power series; NOT a response-coordinate radius); 3 = stratified
+  Fisher geometry on faces (`D²I_F = Cov|_{V_F}⁻¹`, face lattice `M ∈ F ↔ q_M{S ∈ F} = 1`), exact boundary-ray formula
+  `‖q_t − q_F‖₁ = 2B_t/(A + B_t)`; 4 = CLT (deterministic delta lemma first; no multivariate CLT assumed); 5 = capstone
+  `ResponseAtlas` structure (documentation-level). Also: `H_t` (vertical fibre contraction) vs natural-gradient flow (horizontal
+  transport) are complementary. NEXT: module `NaturalParameterMajorant` (rank 2, one module), then rank 1.
