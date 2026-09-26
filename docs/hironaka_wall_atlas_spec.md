@@ -4014,3 +4014,15 @@ certificates for concrete resolved charts beyond the identity chart.
   must be given its two arguments or it expands the wrong difference; `omit [Nonempty J] hlam0 in`),
   **`sq_dotJ_sub_le_dotJ_meanMap_sub`** (`κ_r²⟨θ−η,θ−η⟩ ≤ ⟨mθ−mη, mθ−mη⟩`, needs `0 ≤ λ₀`). Subtype coercions: write
   `((θ : J → ℝ) - (η : J → ℝ))`.
+- `MixtureCompensation.lean` (NOT mirrored; round-46 item 5): `klFun_mixture_identity` (pointwise real identity
+  `a klFun f₀ + b klFun f₁ = klFun g + a g klFun h₀ + b g klFun h₁` for `g = a f₀ + b f₁`, `fᵢ = hᵢ g`, `a + b = 1`; the
+  `f log f` splitting by `by_cases f = 0` + `Real.log_mul`, then one `linear_combination`), `ofReal_klFun_mixture_identity`
+  (the `ℝ≥0∞` form; `obtain ⟨F, hF, rfl⟩ : ∃ F, 0 ≤ F ∧ f = ofReal F` for each finite density, then both sides folded to one
+  `ofReal` and `congr 1`), **`klDiv_mixture_compensation`** (`a KL(P₀‖ν) + b KL(P₁‖ν) = KL(Q‖ν) + a KL(P₀‖Q) + b KL(P₁‖Q)`,
+  `Q = a P₀ + b P₁`, in `ℝ≥0∞` with NO integrability hypotheses: `klDiv_eq_lintegral_klFun_of_ac` (needs `IsFiniteMeasure ν`),
+  `Measure.rnDeriv_add'`/`rnDeriv_smul_left'`, chain rule `Measure.rnDeriv_mul_rnDeriv hP₀Q`, `Q = ν.withDensity (Q.rnDeriv ν)`
+  via `lintegral_withDensity_eq_lintegral_mul` rewritten by `Measure.withDensity_rnDeriv_eq`; measurability facts must be
+  stated in lambda form or `← lintegral_const_mul` fails on the Pi product), **`genRate_mixture_gap`** (the gap identity
+  `a 𝓘(M₀) + b 𝓘(M₁) = 𝓘(aM₀+bM₁) + [a KL(P₀‖Q) + b KL(P₁‖Q) + KL(Q‖Π(aM₀+bM₁))]`; finiteness of the mixture rate from
+  the identity itself + `klDiv_eq_top_of_genRate_eq_top`; `ring` closes in `ℝ≥0∞`), **`genRate_mixture_lt`** (strict convexity
+  of the rate on its finite domain: `ENNReal.lt_add_right`, `add_eq_zero`, `klDiv_eq_zero_iff`, and the means).
