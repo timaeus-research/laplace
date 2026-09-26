@@ -720,3 +720,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `AtlasRefinement` (for any `θ : K → ℝ`) — the duplicate-name grep printed it and I overlooked the line: read the grep
   output, not just "dupdone". NEXT: compact-uniform relative-uniform Peano (consult §3 lemma route), all-orders
   analyticity (rank 3), TV atlas curve `d_TV(Q_s,Q_t) ≤ ½∫√κ` (rank 4); round-58 consult.
+- `AtlasTotalVariation` landed (round-57 rank 4): TV speed of the atlas ≤ Fisher speed. Gotchas: `atlasCurv_eq_integral_score_sq`
+  (AtlasHessian) needs `hrel` — the `hfin`-only version for `u < 1` goes through `atlasCurv_eq_priorCov`,
+  `priorCov_eq_lawCov_familyMeasure`, `lawCov_self_eq_integral_sq`, `dotJ_integral_eq` + `mean_familyMeasure_one_zero` +
+  `meanMap_atlasTheta`; the atlas derivative at finite-rate (boundary) `M` for `u < 1` comes from
+  `hasFDerivAt_integral_response_at` at base `m₀` along `t ↦ t • ⟨M − m₀, _⟩` (no reparametrisation needed).
+  NEXT: compact-uniform relative-uniform Peano (consult §3 lemma route: uniform `‖R‖`, `‖T‖`, uniform θ-Peano via
+  continuity of `D²θ`), all-orders analyticity (rank 3), round-58 consult.

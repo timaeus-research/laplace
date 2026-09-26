@@ -4564,3 +4564,9 @@ certificates for concrete resolved charts beyond the identity chart.
   compact convex interior response sets), **`reconstruction_retraction`** (retraction `Π(E_{P_θ}S) = P_θ` [from
   `AtlasRefinement.responseProjection_mean_familyMeasure`] ∧ derivative has zero mass and transmits the moment
   perturbation ∧ compact-uniform TV-Lipschitz).
+- `AtlasTotalVariation.lean` (NOT mirrored; round-57 rank 4): `integral_abs_le_sqrt_integral_sq` (generic Cauchy–Schwarz
+  `∫|f| ≤ √∫f²` on a probability space), **`hasDerivAt_integral_atlas_of_lt`** (response derivative `E_{Q_u}[Fℓ_u]` along
+  the atlas of ANY finite-rate response for `u < 1`, from the interior response derivative at the base point `m₀`),
+  `atlasCurv_eq_integral_score_sq_of_lt` (`κ_u = E_{Q_u}ℓ_u²` under `hfin` only), `continuousOn_integral_mul_atlasScore`,
+  **`integral_abs_famDens_atlas_sub_le`** (`∫|q_s − q_t| dν ≤ ∫_t^s √κ_u du`, `0 ≤ t ≤ s < 1`: FTC + sign test),
+  `half_integral_abs_famDens_atlas_sub_le` (`d_TV(Q_s,Q_t) ≤ ½∫_t^s √κ`).
