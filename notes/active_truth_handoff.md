@@ -1176,3 +1176,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   retraction `H_t = (1−t)p + tR(p)` with `R ∘ H_t = R`. Modules: `FiniteEntropySupport` (bridge, finite rate, maximal support),
   `FiniteCompletionContinuity`, `FiniteMinimalFace`, `FiniteCompletionRetraction`. Explicit radius deferred after face completion.
   NEXT: `FiniteEntropySupport`.
+- `FiniteEntropySupport` landed (face completion module 1). Gotchas: the `unusedFintypeInType` linter wants `[Finite X]` (+
+  `cases nonempty_fintype X`) on theorems whose TYPE has no `Fintype` sum (measure statements), and `omit [Fintype X] in`;
+  `vecMeasure` via `count.withDensity` (singleton value by `withDensity_apply`, `Measure.restrict_singleton`,
+  `lintegral_smul_measure`, `lintegral_dirac`, `Measure.count_singleton`), integrals by
+  `integral_withDensity_eq_integral_toReal_smul₀` + `integral_count`; `Measure.AbsolutelyContinuous.mk`; `zero_le` has an
+  implicit argument; hull ↔ simplex via the seabed's `reachableCoeff_eq_convexHull` + `mem_reachableCoeff_of_mem_stdSimplex`
+  (`[Finite J]` + `cases nonempty_fintype J`); `ENNReal.add_ne_top`, `klDiv_ne_top_iff` for `r ≪ q*`. NEXT: module 2
+  `FiniteCompletionContinuity`: real entropy `entVec ν p = Σ p x log(p x/ν.real{x})` with the bridge
+  `(klDiv (vecMeasure p) ν).toReal = entVec` (rnDeriv of `withDensity`, `llr`, full support ⇒ a.e. = everywhere), continuity
+  (`Real.continuous_mul_log`), additive recovery `b_n = p + a_n − r`, limits of minimisers, `tendsto_of_subseq_tendsto` +
+  `IsCompact.tendsto_subseq` ⇒ `Continuous (qStarVec)` on the polytope.

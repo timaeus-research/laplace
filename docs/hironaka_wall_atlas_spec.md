@@ -4935,3 +4935,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `atlasJet` (`∂_s^k q_s`), `atlasBell` (`B_k = q_s⁻¹ ∂_s^k q_s`), `atlasJet_zero`, `atlasBell_zero`, `hasDerivAt_atlasJet`,
   **`integral_atlasJet`** / **`integral_stat_mul_atlasJet`** (pointwise jets of order `≥ 2` have zero mass and zero feature moments),
   `atlasBell_one` (`B_1 = ℓ_s`), **`atlasBell_succ`** (the Bell tower `B_{k+1} = ∂_s B_k + ℓ_s B_k` on `[0,1]`).
+- `FiniteEntropySupport.lean` (NOT mirrored; round-68 face completion, module 1): `vecMeasure` (`count.withDensity (ofReal ∘ p)`),
+  `vecMeasure_apply_singleton`, `vecMeasure_apply_univ`, `isProbabilityMeasure_vecMeasure`, `integral_vecMeasure`
+  (`∫ f = Σ p x f x`), `vecMoment` (`Σ_x p x S(x)`), `integral_stat_vecMeasure`, `absolutelyContinuous_of_full_support`,
+  `klDiv_ne_top_of_full_support`, `vecMoment_eq_sum_smul`, `vecMoment_mem_convexHull`, `exists_stdSimplex_vecMoment_eq`
+  (responses of probability vectors = the moment polytope), **`genRate_ne_top_of_mem_convexHull`** (every point of the polytope
+  has finite rate under a full-support law), **`responseProjection_singleton_pos`** / `responseProjection_singleton_pos_of_vec`
+  (MAXIMAL SUPPORT: any feasible law charging `x` forces `q*(M) {x} > 0`, from Pythagoras `KL(r‖ν) = KL(r‖q*) + 𝓘 < ∞` ⇒ `r ≪ q*`),
+  `qStarVec` (the completed family as probability vectors), `qStarVec_mem_stdSimplex`, `vecMeasure_qStarVec`, `vecMoment_qStarVec`.
