@@ -4152,3 +4152,11 @@ certificates for concrete resolved charts beyond the identity chart.
   **`fibreInformation_bridge_le`/`_ge`** (`b L₁ − h₂ ≤ L_s ≤ b L₁ + h₂`), **`invisibleInformation_bridge_modulus`**
   (`aH − δ𝓘 ≤ R₁ − R_s ≤ aH + h₂ − δ𝓘`; supply `a·H = H − b·H` before `linarith`). Joint convexity of KL (which would give
   `L_s ≤ b L₁` without slack and convexity of `s ↦ L_s`) is NOT in Mathlib and not yet landed.
+- `KLJointConvexity.lean` (NOT mirrored; general measure theory, not in Mathlib): `klFun_perspective_le` (the perspective
+  inequality `q klFun H ≤ a q₀ klFun H₀ + b q₁ klFun H₁` for `q = a q₀ + b q₁`, `qH = a q₀ H₀ + b q₁ H₁`, from `convexOn_klFun`
+  with weights `a q₀/q, b q₁/q`; `a + b = 1` NOT needed), `ofReal_klFun_perspective_le` (`ℝ≥0∞` form with `1 = a q₀ + b q₁`;
+  `ENNReal.toReal_mul` is unconditional so `⊤ · 0` never matters), **`klDiv_mixture_mixture_le`** (JOINT CONVEXITY
+  `KL(aP₀+bP₁ ‖ aQ₀+bQ₁) ≤ a KL(P₀‖Q₀) + b KL(P₁‖Q₁)` for probability laws with `Pᵢ ≪ Qᵢ`, `a, b > 0`: reference measure
+  `Q = aQ₀ + bQ₁` itself, `dQ/dQ = 1 = a q₀ + b q₁`, chain rule `rnDeriv_mul_rnDeriv`, all in `lintegral` form with no
+  integrability; the helper quantifying over `Qi` needs `[IsFiniteMeasure Qi]` for the Lebesgue decomposition; get
+  `rnDeriv_add'` for the mixture with `rw [← hQ] at h`, not `hQ ▸`), **`fibreInformation_bridge_le'`** (`L_s ≤ b L₁`, no slack).
