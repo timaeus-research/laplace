@@ -4329,3 +4329,15 @@ certificates for concrete resolved charts beyond the identity chart.
   derivative of the reconstruction density in `L¹(ν)` is `q_M ℓ_{M,z}`. Chain rule: the natural-chart remainder is
   `O(‖η‖²)`, `η(z)` is Lipschitz in `z` (`HasStrictFDerivAt.exists_lipschitzOnWith`) and `η(z) − Dθ z = o(‖z‖)`
   (`hasFDerivAt_iff_isLittleO_nhds_zero`).
+- `RetractionDerivative.lean` (NOT mirrored; round-52 item 2, the retraction theorem): `abs_score_le`
+  (`|⟨v,m(θ)⟩ − ⟨v,S⟩| ≤ 2K‖v‖`), `score_sub`, `integrable_famDens_mul_score`, `integral_famDens_mul_abs_score_le`
+  (`∫ p_θ |score_v| ≤ 2K‖v‖`), `dotJ_single`, `tiltResponse_familyMeasure_mem_momentBody` (a bounded tilt of a family
+  member has a response in the moment body: `tilted_tilted` + `klDiv_tilted_eq` + `genRate_le_klDiv`),
+  **`lawCov_eq_chartDeriv_neg`** (the velocity `u = Cov_Q(S, h)` of the tilt response is `chartDeriv θ(M) (−a)` for the
+  regression coefficient `a`, via `dotJ_chartDeriv` + `priorCov_eq_lawCov_familyMeasure` + `lawCov_dirLoss_left`),
+  **`isLittleO_retraction_remainder`**: for interior `M`, `Q = Π(M)`, bounded `h`, `M_t = E_{Q.tilted(th)} S`:
+  `∃ a ∈ 𝕍, Cov_Q(S_j, ⟨a,S⟩) = Cov_Q(S_j, h) ∧ ∫ |q_{M_t} − q_M − t q_M(⟨a,S⟩ − ⟨a,M⟩)| dν = o(t)`;
+  **`tendsto_retraction_quotient`** (`(1/t) ∫ |…| → 0`). Proof: `isLittleO_reconstruction_density_remainder` composed
+  with the curve `z(t) = M_t − M ∈ 𝕍` (`comp_tendsto`, `trans_isBigO` with `HasDerivAt.isBigO_sub`), the chart
+  derivative sends `u` to `−a` (`ContinuousLinearEquiv.symm_apply_apply`), and the linearisation error
+  `‖L(z(t) − t u)‖ ≤ ‖L‖ · o(t)` is integrated against `q_M` with the score bound.

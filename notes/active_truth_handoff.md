@@ -466,3 +466,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   the derivative along tilts `D_t = e^{th}Q_m/Z` gives `(dΠ(M_{D_t})/dQ_m − 1)/t → B_m h` in `L¹(Q_m)` — combine
   `isLittleO_reconstruction_density_remainder` with `hasDerivAt_tiltResponse` and the regression identification),
   item 5 (conditional variational formula), items 6, 7, 10, 12.
+- `RetractionDerivative` landed (round-52 item 2): the differential of reconstruction at `Π(M)` along tilts
+  `e^{th}Π(M)/Z` is `q_M ⟨a, S − M⟩` with `a` the regression coefficient (`Σ_M a = Cov_{Π(M)}(S,h)`), i.e. the
+  `L²(Π(M))` projection of `h` onto the centred features: `∫ |q_{M_t} − q_M − t q_M(⟨a,S⟩ − ⟨a,M⟩)| = o(t)`.
+  Gotchas: a `by rw …; exact …` in an argument slot whose implicit is undetermined fails (`?m ∈ momentBody`) —
+  hoist to a typed `have`; `tiltResponse_zero ν f` (hS omitted); pull `t` inside sums with `mul_sub, Finset.mul_sum,
+  mul_assoc` before `ring` when both sides carry sums. Round 52 landed: items 1, 2, 3, 4, 8, 9.
+  NEXT: item 5 (conditional variational formula `L = sup_g E_D[g − log E_ν(e^g|σ(S))]`, clip `w = d/a`),
+  item 6 (observable-defect second-order term), item 7 (mixed Hessian), item 10 (skewness
+  `KL(Q₁‖ν) − KL(ν‖Q₁) = ∫ s(1−s) E ℓ³`), item 12 (length–energy); then round-53 consult.
