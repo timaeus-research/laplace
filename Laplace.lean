@@ -376,6 +376,7 @@ import Laplace.Multi.TargetPythagoras
 import Laplace.Multi.PathEnergy
 import Laplace.Multi.ObservableDefect
 import Laplace.Multi.NestedProjections
+import Laplace.Multi.RegressionProjection
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

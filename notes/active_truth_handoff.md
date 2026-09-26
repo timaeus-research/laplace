@@ -392,3 +392,7 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Fact (m ≤ m0)`). NEXT: identify `B h` for `h = toLp φ` with the regression `E φ + ⟨a, S − M⟩` (normal equations,
   `eq_starProjection_of_mem_of_inner_eq_zero`), `‖Bh − Eh‖² = Var⟨a,S⟩ = g_M(u,u)`, and the minimum-energy
   characterisation of `ℓ_{M,u}`; then item 4 (quadratic splitting along bounded tilts).
+- `RegressionProjection` landed (item 1 complete: B = regression, `‖Bφ − Eφ‖² = ⟨a, Cov(S,φ)⟩`). Gotcha: expand
+  `⟪u, A + B − C⟫` with `inner_sub_right` BEFORE `inner_add_right` (top symbol is the subtraction). NEXT: item 4
+  (quadratic splitting of KL/𝓘/L/R along bounded tilts, `KL(D_t‖ν) = t²/2 ‖h‖² + o(t²)` etc.), then item 5 mean-path
+  half, item 6 mixed Hessian, item 7 boundary completion.

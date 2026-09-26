@@ -4205,3 +4205,10 @@ certificates for concrete resolved charts beyond the identity chart.
   **`norm_sq_eq_statSpan_add_condExpL2`** (`‖h‖² = ‖Bh‖² + ‖Ch − Bh‖² + ‖h − Ch‖²`, `B` = projection onto
   the affine span, `C = condExpL2` = projection onto `lpMeas`; `condExpL2 … h = (lpMeas …).starProjection h` is `rfl`),
   `norm_sub_statSpan_starProjection` (best affine predictor, `starProjection_minimal`), `norm_sq_eq_integral_sq`.
+- `RegressionProjection.lean` (NOT mirrored; round-50 item 1, second half): `inner_toLp_toLp` (`⟪toLp f, toLp g⟫ = ∫ fg`),
+  `oneLp`, `oneLp_mem_statSpan`, `toLp_stat_mem_statSpan`, `toLp_dirLoss_eq_sum` (`Lp.ext` + `Lp.coeFn_finsetSum` +
+  `Lp.coeFn_smul`), `toLp_dirLoss_mem_statSpan`, `regressionLp hS Q a φ = Eφ·1 + (⟨a,S⟩ − E⟨a,S⟩)`,
+  **`starProjection_statSpan_toLp`** (`B φ = regression` when `a` solves the normal equations; via
+  `eq_starProjection_of_mem_of_inner_eq_zero` and `span_le` into `(ℝ ∙ (φ − reg))ᗮ`), `norm_sq_regressionLp_sub`
+  (`‖Bφ − Eφ‖² = Var⟨a,S⟩`), **`norm_sq_regressionLp_sub_eq_dotJ`** (`= ⟨a, Cov(S,φ)⟩`, the Fisher energy of the
+  response velocity), `starProjection_statSpan_toLp_atlas` (on the atlas path, via `exists_regression_coefficient`).
