@@ -4994,3 +4994,14 @@ certificates for concrete resolved charts beyond the identity chart.
   norm duality + scalar Lagrange remainder), **`tendsto_taylor_natCurve`** (the `L¹` Taylor series of the tilt map converges to
   `p(s+t)` for `|t| < ρ`: an explicit, `s`-uniform radius of analyticity in natural coordinates),
   **`abs_obsL1_natCurve_sub_taylor_le`** (the same geometric error, times the sup bound, for every bounded observable's response).
+- `PolyhedralVertexWitness.lean` (NOT mirrored; round-70 polyhedral completion, module 1 of 5): `statFibre S v = {S = v}`,
+  `measurableSet_statFibre`, `stat_eq_of_mem_statFibre`, `statFibre_disjoint`; for a finite vertex set `V` with every vertex
+  charged (`hV : ∀ v ∈ V, 0 < ν.real (statFibre S v)`): `vertexDensity S ν V a = Σ_v a_v 1_{S=v}/ν{S=v}`, **`vertexLaw`**
+  (`L(a) = Σ_v a_v ν(·|S=v)` as `ν.withDensity`), `measurable_vertexDensity`, `vertexDensity_nonneg`, **`vertexDensity_le`**
+  (coarse uniform bound `Σ_v 1/ν{S=v}`), `vertexDensity_of_mem` (`= a_v/ν{S=v}` on the fibre), `integral_indicator_statFibre`,
+  `integrable_vertexDensity`, `integral_vertexDensity` (mass `Σ a_v`), **`integral_stat_mul_vertexDensity`** (mean `Σ a_v v`),
+  `integral_vertexLaw` (no integrability needed), `isProbabilityMeasure_vertexLaw`, `integral_stat_vertexLaw`,
+  `vertexLaw_absolutelyContinuous`, `llr_vertexLaw_ae`, **`klDiv_vertexLaw_ne_top`** (bounded density ⇒ finite relative
+  entropy, via `x log x` bounded on `[0, C]`), `mem_convexHull_iff_exists_vertexWeights` (finset hull = simplex combinations),
+  **`genRate_ne_top_of_mem_convexHull_vertices`**, **`genRate_ne_top_of_mem_momentBody_polytope`** (EVERY point of a charged
+  polytope has finite rate: the response projection exists on the whole closed moment body).

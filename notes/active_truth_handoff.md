@@ -1266,3 +1266,28 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   with `log(3/2) ≠ 0` in context. NEXT: round-69 rank 1 (general-`X` polyhedral completion with charged vertices) or rank 3
   (facewise Fisher geometry `D²I_F = Cov|_{V_F}⁻¹`, face lattice `M ∈ F ↔ q_M{S ∈ F} = 1`, boundary-ray formula
   `‖q_t − q_F‖₁ = 2B_t/(A + B_t)`); a round-70 consult should fix the Lean shape of the face-restriction transport first.
+- Round-70 consult landed (`research_round70_{q,v1}`): the charged-vertex polyhedral completion in FIVE modules —
+  1 `PolyhedralVertexWitness` (DONE), 2 `PolyhedralVertexSection` (finite completion on the vertex set gives a continuous
+  simplex-valued section `a(M)`, `Σ a_v(M) v = M`; Csiszár NOT needed), 3 `ProjectionDensityBounds` (from an exposed chain:
+  `q_M = f ν` with `c 1_A ≤ f ≤ C 1_A`; Pythagoras + finite KL ⇒ `r ≪ q_M` ⇒ `r(Aᶜ) = 0`; hence **domination** `δ·h_{a(M)} ≤ f`
+  a.e. for `r = vertexLaw (a M)`, `δ = c/(H+1)`), 4 `PolyhedralRecovery` (`f_N = f + h_{a(N)} − h_{a(M)}` eventually `≥ 0`
+  since `a_v(N) − a_v(M) ≥ −δ a_v(M)` eventually; mass/mean linear; `|f_N − f| ≤ Σ_v |a_v(N) − a_v(M)|/ν{S=v}`; KL by uniform
+  continuity of `x log x` on `[0, C]`; upper semicontinuity of the rate + `lowerSemicontinuous_genRate` ⇒ rate continuous),
+  5 `PolyhedralCompletion` (Pythagoras `klDiv b_N q_{M_N} = klDiv b_N ν − 𝓘(M_N) → 0` — establish finiteness BEFORE any
+  ℝ≥0∞ subtraction — + Pinsker ⇒ `L¹` continuity of `M ↦ [q_M]`; then compactness/homeomorphism/closure and the
+  mean-preserving strong deformation retraction on ALL probability densities in `L¹(ν)`, `R(f) = reconstructionL1 (mean f)`).
+  Corrections from Astra: `{S ∈ F} = {u·S = β}` only ν-a.e.; `momentBody (faceMeasure ν {S ∈ F}) = F` needs charged generators;
+  under charged vertices `dq_M/dν ≤ 1/min_v ν{S=v}` uniformly on the polytope (later corollary). Optional sixth module
+  `PolyhedralFaceGeometry`. Rank 3 bits: `M ∈ F ↔ ρ{S ∈ F} = 1` for every feasible `ρ` (small lemma), facewise Fisher after the
+  face moment-body identification, boundary-ray formula `‖q_t − q_F‖₁ = 2B_t/(A+B_t)` is near-free algebra (no exponential
+  rate without a gap).
+- `PolyhedralVertexWitness` landed. Gotchas: fibre measurability `measurableSet_eq_fun (measurable_statPoint hS)
+  measurable_const` needs `MeasurableEq (J → ℝ)`, available only for countable `J`: state it as `omit [Fintype J] in theorem …
+  [Finite J] … := by cases nonempty_fintype J; …` and use `[Finite J]` as the section instance for everything downstream
+  (`omit [Finite J] … in` on the defs and the pointwise lemmas); `Finset.mem_convexHull'` + `Finset.sum_coe_sort V f` bridge
+  the finset hull to `stdSimplex ℝ V`, with the weights `fun y ↦ if h : y ∈ V then a ⟨y, h⟩ else 0` and `beta_reduce` before
+  `rw [dif_pos hy]`; `integral_withDensity_eq_integral_toReal_smul₀` wants `(hm.ennreal_ofReal).aemeasurable`;
+  `Measure.rnDeriv_withDensity ν hf` needs `SigmaFinite ν` (keep `[IsProbabilityMeasure ν]`); to rewrite with
+  `integrable_withDensity_iff_integrable_smul₀'` first `change Integrable _ (ν.withDensity fun x ↦ …)`; finite KL of a bounded
+  density: `isCompact_Icc.exists_bound_of_continuousOn Real.continuous_mul_log.continuousOn` + `integrable_of_bdd_prob` +
+  `.congr` along `llr =ᵐ log h`. NEXT: module 2 `PolyhedralVertexSection`.
