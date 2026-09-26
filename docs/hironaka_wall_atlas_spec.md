@@ -4712,3 +4712,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `information_bias_tendsto_of_nhd`, `sum_dataCov_mul_bilinear_eq_integral`, **`information_bias_tendsto`**
   (`n(E 𝓘(M̂_n) − 𝓘(M)) → ½ E_D[g_M(S−M, S−M)]`: the expected excess visible information of a sample is half the
   Fisher-quadratic mean of the centred features, i.e. `½ tr(Γ H_M)`).
+- Round-62 consult (`gpt_responses/research_round62_{q,v1}.md`): flagship `C²` `L¹`-Hessian as an invisible signed measure;
+  tangent Pythagoras; natural-gradient atlas; second-order transport; invisible `L²` expansion; tilt-path diagnostics.
+- `TangentPythagoras.lean` (NOT mirrored; round-62 rank 2): `integral_regProj_sq_eq_fisherForm`, **`influence_eq_regProj`**
+  (`ψ_{F,M} = B_M F`), **`tangent_pythagoras`** (`E_Q(a − E_Q a)² = g_M(u,u) + E_Q(N_M a)²`, `u = Cov_Q(S,a)`),
+  **`integral_influence_mul_responseScore`** (`E_Q[ψ_F ℓ_u] = lin_F(u)`: Riesz representation on tangent scores),
+  `integral_influence` (centred), **`lawCov_influence_self`** (`Var_Q ψ_F = g_M(c_F, c_F)`),
+  `linForm_statPoint_sub_eq_influence`, `ae_statPoint_sub_mem_dirSpan`, **`plugIn_covariance_tendsto_influence`**
+  (`n Cov(Ĝ_F, Ĝ_G) → E_D[ψ_F ψ_G]`).

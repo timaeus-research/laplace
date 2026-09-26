@@ -858,3 +858,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (6) tilt-path diagnostics. Order: tangent geometry → second transport → natural-gradient atlas, with `C²` in parallel.
   Sanity: information-bias coefficient `½ tr_V(C_M⁻¹ Γ_D)` confirmed, `= ½ dim 𝕍` when `Γ = C_M`. Referee: state on `𝕍`
   with `Z = S − M`, `Γ_D = E_D[Z⊗Z]`, `dG_F ∈ 𝕍*`, `b_F ∈ Sym²(𝕍*)` (affine mean-coordinate Hessian, not Levi-Civita).
+- `TangentPythagoras` landed (round-62 rank 2; the influence function IS `regProj`, so the whole regression API applies).
+  NEXT: rank 4 second-order transport along the affine data path (`d²/dt² G_F(M_t) = b_{F,M_t}(δ,δ)` and the exact
+  second-order formula `G_F(M_t) = G_F(m₀) + t lin_{F,m₀}(δ) + ∫₀ᵗ (t−r) b_{F,M_r}(δ,δ) dr`; seabed has
+  `hasDerivAt_deriv_integral_familyMeasure_atlas` with a `thirdCentral` second derivative and `atlasHess_eq_normalProj`),
+  then rank 3 (natural-gradient atlas), then the `C²` flagship.
