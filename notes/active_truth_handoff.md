@@ -583,3 +583,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: observable-defect second order (`z ↦ E_{Q_z}[φ ℓ_{z,w}]` differentiable with derivative
   `∫ φ N_M(ℓ_u ℓ_w) dQ`; needs one integral-expansion helper `∫ ψ(a − ⟨v,S⟩) = a∫ψ − Σ v_j ∫ψ S_j`); then rank 3
   stage 2 (Fisher–Rao second fundamental form), §7 structure theorem, rank 4.
+- `ObservableHessian` landed (round-54 rank 1 COMPLETE): `D_M E_{Π(M)}φ[u] = Cov_Q(φ, ℓ_u)` and the second
+  derivative `E_Q[φ N_M(ℓ_u ℓ_w)]` (via the finite-combination identity `E_Q[φ ℓ_{M,w}] = ⟨R_M w, M⟩E_Qφ −
+  Σⱼ (R_M w)ⱼ E_Q[φ Sⱼ]` and the integral-expansion helper). Gotchas: `HasFDerivAt.fun_sum` gives the lambda
+  form (`.sum` the Pi form); when summands must match under `Σ` for `ring`, state helper identities with the
+  factor order the derivative produces (`(∫ φ Sⱼ) * (Rc)ⱼ`) and fix with `Finset.sum_congr … mul_comm`;
+  `(ContinuousLinearMap.proj j).hasFDerivAt` needs `(R := ℝ) (φ := fun _ : J ↦ ℝ)`.
+  NEXT: rank 3 stage 2 (Fisher–Rao second fundamental form along the atlas: `r = 2√q`, `r'' = (r/4)N(ℓ²) −
+  (κ/4) r − (r/4) B(ℓ²)` with the three pieces L²(ν)-orthogonal), §7 structure theorem, rank 4 (general
+  conditional variational), rank 6 (unbounded bridge); round-55 consult.

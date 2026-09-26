@@ -4434,3 +4434,12 @@ certificates for concrete resolved charts beyond the identity chart.
   **`hasFDerivAt_responseScore_response`** (`D_M ℓ_{M,w}(x)[u] = −E_Q[ℓ_u ℓ_w] − B_M(ℓ_u ℓ_w)(x)`),
   **`hasFDerivAt_famDens_responseScore`** (THE POLARISED HESSIAN: the derivative field `z ↦ q_{M+z} ℓ_{M+z,w}` is
   differentiable at `0` with derivative `u ↦ q_M · N_M(ℓ_{M,u} ℓ_{M,w})(x)`).
+- `ObservableHessian.lean` (NOT mirrored; round-54 rank 1, stage 2 — the observable defect to second order):
+  `integral_mul_dirLoss` (`∫ ψ⟨v,S⟩ = Σ vⱼ ∫ ψ Sⱼ`), `integral_mul_sub_dirLoss`, `hasFDerivAt_dotCLM_add`,
+  **`hasFDerivAt_integral_response`** (`z ↦ E_{Π(M+z)} φ` differentiable in response coordinates),
+  `integral_response_deriv_apply` (derivative `u ↦ E_Q[φ ℓ_{M,u}] = Cov_Q(φ, ℓ_{M,u})`),
+  `hasFDerivAt_inverse_response_coord`, `hasFDerivAt_dotJ_inverse_response`,
+  **`hasFDerivAt_integral_responseScore`** (the derivative field `z ↦ E_{Π(M+z)}[φ ℓ_{M+z,w}]` is differentiable at
+  `0` with derivative `u ↦ E_Q[φ · N_M(ℓ_{M,u} ℓ_{M,w})]`: the second-order response of an observable is its pairing
+  with the normal projection of the product of the response scores, so only the normal part of `φ` responds at
+  second order).
