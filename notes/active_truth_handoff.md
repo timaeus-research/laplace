@@ -455,3 +455,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `(measurable_klKernel_uncurry hr).comp (prodMk …)` does not infer `f` — build the measurability by hand.
   NEXT: item 3 (L¹ derivative of the family density: θ-chart `O(‖η‖²)` bound, then `responseTheta` chain rule),
   item 2 (local retraction), item 5 (conditional variational formula), items 6, 7, 10, 12.
+- `DensityDerivative` + `ReconstructionDerivative` landed (round-52 item 3): `L¹` derivative of the family density
+  `p_θ` in the natural chart (`O(‖η‖²)` remainder, explicit constant `10K²`) and of the reconstruction density
+  `q_M = p_{θ(M)}` in response coordinates (`o(‖z‖)`, derivative `q_M(⟨Dθ z, M⟩ − ⟨Dθ z, S⟩)`). Gotchas: clear two
+  denominators with `simp only [div_eq_mul_inv]; linear_combination (…) * hZ'inv − (…) * hZinv` rather than
+  `field_simp`; `h1.comp 0 h2` needs the base point of `h1` written as `f 0` (`rw [show toV M = toV M + 0 …] at h1`);
+  `∀ z, … (M + z)` infers `z : J → ℝ` unless annotated `z : dirSpan …`; `unfold` outer definitions before inner
+  ones (`famZ` before `famWeight`); `IsBigO.congr_left h (fun z ↦ …)` then `.trans (hlip.pow 2)`.
+  NEXT (round 52): item 2 (local Fisher-orthogonal retraction: `Π(M_{Q_m}) = Q_m` is `responseProjection_mean_familyMeasure`;
+  the derivative along tilts `D_t = e^{th}Q_m/Z` gives `(dΠ(M_{D_t})/dQ_m − 1)/t → B_m h` in `L¹(Q_m)` — combine
+  `isLittleO_reconstruction_density_remainder` with `hasDerivAt_tiltResponse` and the regression identification),
+  item 5 (conditional variational formula), items 6, 7, 10, 12.

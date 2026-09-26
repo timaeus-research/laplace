@@ -4313,3 +4313,19 @@ certificates for concrete resolved charts beyond the identity chart.
   mixture score `h_w = (d−1)/d_w` under `D_w`, since `E_{D_w}[h_w|σ(S)] = (a−1)/a_w`), `mixSpeed_condDens_le`
   (`k_a ≤ k_d` pointwise), **`fibre_eq_integral_condVar`** (`L_s = ∫₀ˢ (s−w) ∫ (d−a)²/(d_w a_w²) dν dw`). NOTE (Astra):
   `k_a ≥ κ` does NOT follow pointwise (different laws); `R_s ≥ 0` only in accumulated form.
+- `DensityDerivative.lean` (NOT mirrored; round-52 item 3, natural chart): `famWeight S θ = e^{−⟨θ,S⟩}`, `famZ`,
+  `famDens S ν θ = e^{−⟨θ,S⟩}/Z(θ)`, `famMean S ν θ = E_{P_θ} S`; `famWeight_add`, `integrable_famWeight`, `famZ_pos`,
+  `integral_famDens`, `abs_dirLoss_le_card_mul` (`|⟨η,S(x)⟩| ≤ |J| B ‖η‖`), `abs_famMean_le`, `abs_dotJ_famMean_le`,
+  `integral_dirLoss_mul_famWeight` (`∫ ⟨η,S⟩ e^{−⟨θ,S⟩} = Z(θ)⟨η,m(θ)⟩`), `abs_famWeight_add_sub_le` (second order in
+  the weight, `Real.abs_exp_sub_one_sub_id_le`), `abs_famZ_add_sub_le` (second order in the normaliser),
+  **`abs_famDens_remainder_le`** (`|p_{θ+η} − p_θ − p_θ(⟨η,m(θ)⟩ − ⟨η,S⟩)| ≤ 10 (K‖η‖)² p_θ` for `K‖η‖ ≤ 1/4`, by
+  clearing both denominators with `linear_combination`), **`integral_abs_famDens_remainder_le`** (the `L¹(ν)` bound
+  `≤ 10 K² ‖η‖²`, since `∫ p_θ = 1`), **`isBigO_famDens_remainder`** (`=O[𝓝 0] ‖η‖²`).
+- `ReconstructionDerivative.lean` (NOT mirrored; round-52 item 3, response coordinates):
+  `familyMeasure_eq_withDensity_famDens`, `famMean_eq_meanMap`, `responseProjection_eq_withDensity_famDens`
+  (`Π(M) = p_{θ(M)} ν` for interior `M`), `responseTheta_add` (`θ(M + z) = chartVInv(toV M + z)` for `z ∈ 𝕍`),
+  **`isLittleO_reconstruction_density_remainder`**: for interior `M` and `z ∈ 𝕍`,
+  `∫ |q_{M+z} − q_M − q_M(⟨Dθ z, M⟩ − ⟨Dθ z, S⟩)| dν = o(‖z‖)`, `Dθ = (chartDerivEquiv θ(M))⁻¹` — the Fréchet
+  derivative of the reconstruction density in `L¹(ν)` is `q_M ℓ_{M,z}`. Chain rule: the natural-chart remainder is
+  `O(‖η‖²)`, `η(z)` is Lipschitz in `z` (`HasStrictFDerivAt.exists_lipschitzOnWith`) and `η(z) − Dθ z = o(‖z‖)`
+  (`hasFDerivAt_iff_isLittleO_nhds_zero`).
