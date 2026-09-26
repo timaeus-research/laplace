@@ -1504,3 +1504,18 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `div_le_div_of_nonneg_left (ha : 0 ≤ a) (hc : 0 < c) (h : c ≤ b) : a / b ≤ a / c`. NEXT: the shell-mass classification
   (`finite Fisher length ↔ Σ_k √a_k < ∞`, `a_k = μ(R2^{−(k+1)} < g ≤ R2^{−k})`, lower-bound `C₂(t)` by shell `k` at `t ≍ 2^k/R`,
   upper by `√(Σ b_k) ≤ Σ √b_k`), rank 2 (vertex-gap criterion), rank 4 (response potential).
+- `ShellMassClassification` landed (round-74 rank 3, second half). Gotchas: `local notation "f" k t => …` with arguments does not
+  parse as a function — use `noncomputable def`s (`dAmp R k t`, `eAmp R k`); section `variable (w g R)` leaves `w` EXPLICIT in
+  every theorem (calls failed with "expected `X → ℝ`") — `variable {w g R}` after the defs; `exists_nat_pow_near (x := R/g) (y := 2)
+  (1 ≤ R/g) one_lt_two` gives `2^n ≤ R/g < 2^{n+1}` — convert with `div_lt_iff₀`/`le_div_iff₀` and `linarith`; the countable
+  subadditivity of `rpow` on `ℝ≥0∞` is `ENNReal.tsum_eq_iSup_sum` + `Monotone.map_iSup_of_continuousAt continuous_rpow_const.
+  continuousAt (monotone_rpow_of_nonneg) (by simp [zero_rpow_of_pos])` + a `Finset.induction_on` with `rpow_add_le_add_rpow`;
+  `lintegral_iUnion_le` needs no disjointness (upper bounds), `lintegral_iUnion` (equality) needs `Pairwise (Disjoint on s)` —
+  prove it by a `key : i < j → Disjoint` and `lt_or_gt_of_ne`; `lintegral_mono_ae` + `(ae_restrict_iff' hs).2 (of_forall …)` for
+  pointwise bounds on a set without measurability of the larger integrand; `setLIntegral_const s c : ∫⁻ in s, c = c * μ s`,
+  `Real.volume_Ico`; `ENNReal.ofReal_rpow_of_nonneg hx hp : ofReal x ^ p = ofReal (x ^ p)` then `← Real.sqrt_eq_rpow, Real.sqrt_sq`;
+  `IntegrableOn.const_mul` returns `Integrable` (an `And`) — ascribe the `IntegrableOn` type before `.congr_fun`; a `field_simp`
+  on an equation containing an integral rewrites INSIDE the integral — isolate the integral value with `eq_div_iff` instead;
+  `shell`/`measurableSet_shell` already exist in `RecessionObstruction` (hence `dyadicShell`). NEXT: link `secondMomentE` to
+  `slackMoment 2`/`raySpeedSq` (a.e.-equal sets `{⟨u,S⟩ = β}ᶜ` vs `{0 < β − ⟨u,S⟩}` under `hβ`) to state the classification on
+  the seabed's natural rays; then rank 2 (vertex-gap criterion) and rank 4 (response potential).

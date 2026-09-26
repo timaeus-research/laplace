@@ -5180,3 +5180,13 @@ certificates for concrete resolved charts beyond the identity chart.
   `integral_mul_le_Lp_mul_Lq_of_nonneg` with `√w`, `g√w` on the off-face set), **`raySpeedSq_sandwich`**
   (`A C₂/(A+B)² ≤ Var ≤ C₂/(A+B)`), `offFaceMass_le_zero` (`B_t ≤ B_0`), **`sqrt_raySpeedSq_comparable`**
   (`√A/(A+B_0) √C₂ ≤ √Var_{p_t} ≤ √C₂/√A` for `t ≥ 0`: the ray has finite Fisher length iff `∫^∞ √C₂(t) dt < ∞`).
+- `ShellMassClassification.lean` (NOT mirrored; round-74 rank 3, second half — Astra's exact classification): `ENNReal.rpow_sum_le_sum_rpow`,
+  **`ENNReal.rpow_tsum_le_tsum_rpow`** (countable subadditivity of `x ↦ x^p`, `0 < p ≤ 1`, via `tsum_eq_iSup_sum` +
+  `Monotone.map_iSup_of_continuousAt`); `dyadicShell g R k = g⁻¹(R/2^{k+1}, R/2^k]`, `shellMass` (`a_k`), `secondMomentE` (`C₂(t)` as a
+  Lebesgue integral), `pos_subset_iUnion_dyadicShell` (`exists_nat_pow_near`), `dAmp`/`eAmp` amplitudes, `integrand_le_on_shell`,
+  `secondMomentE_le_tsum` (`C₂(t) ≤ Σ d_k(t)² a_k`), `sqrt_secondMomentE_le_tsum`, `lintegral_dAmp` (`∫₀^∞ d_k = 4`),
+  **`lintegral_sqrt_secondMomentE_le`** (`∫₀^∞ √C₂ ≤ 4 Σ √a_k`), `le_integrand_on_shell`, `le_secondMomentE`
+  (`e_k² a_k ≤ C₂(t)` on `[2^k/R, 2^{k+1}/R]`), `pairwise_disjoint_dyadicIco`, **`tsum_sqrt_shellMass_le`**
+  (`Σ √a_k ≤ 2e ∫_{1/R}^∞ √C₂`), **`lintegral_sqrt_secondMomentE_lt_top_iff`** (THE SHELL-MASS CLASSIFICATION:
+  `∫ √C₂ < ∞ ↔ Σ_k √a_k < ∞`; with the variance sandwich this is "the natural ray has finite Fisher length iff the dyadic shell
+  masses of the boundary layer have summable square roots").

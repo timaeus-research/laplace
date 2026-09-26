@@ -498,6 +498,7 @@ import Laplace.Multi.ResponseAtlas
 import Laplace.Multi.PolytopeResponseTransport
 import Laplace.Multi.SusceptibilityFisherBound
 import Laplace.Multi.RayVarianceSandwich
+import Laplace.Multi.ShellMassClassification
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
