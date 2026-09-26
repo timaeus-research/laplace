@@ -394,6 +394,7 @@ import Laplace.Multi.ConditionalFisherLoss
 import Laplace.Multi.DensityDerivative
 import Laplace.Multi.ReconstructionDerivative
 import Laplace.Multi.RetractionDerivative
+import Laplace.Multi.AtlasLength
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

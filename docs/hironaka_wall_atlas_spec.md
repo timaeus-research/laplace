@@ -4341,3 +4341,6 @@ certificates for concrete resolved charts beyond the identity chart.
   with the curve `z(t) = M_t − M ∈ 𝕍` (`comp_tendsto`, `trans_isBigO` with `HasDerivAt.isBigO_sub`), the chart
   derivative sends `u` to `−a` (`ContinuousLinearEquiv.symm_apply_apply`), and the linearisation error
   `‖L(z(t) − t u)‖ ≤ ‖L‖ · o(t)` is integrated against `q_M` with the score bound.
+- `AtlasLength.lean` (NOT mirrored; round-52 item 12): `atlasLength = ∫₀¹ √κ`, **`atlasLength_sq_le_integral_atlasCurv`**
+  (Cauchy–Schwarz via `integral_mul_le_Lp_mul_Lq_of_nonneg` with `Real.HolderConjugate.two_two`),
+  **`atlasLength_sq_le_symm_klDiv`** (`Len² ≤ KL(Π(M)‖ν) + KL(ν‖Π(M))`).

@@ -475,3 +475,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: item 5 (conditional variational formula `L = sup_g E_D[g − log E_ν(e^g|σ(S))]`, clip `w = d/a`),
   item 6 (observable-defect second-order term), item 7 (mixed Hessian), item 10 (skewness
   `KL(Q₁‖ν) − KL(ν‖Q₁) = ∫ s(1−s) E ℓ³`), item 12 (length–energy); then round-53 consult.
+- `AtlasLength` landed (round-52 item 12): `Len² ≤ ∫κ = KL(Π‖ν) + KL(ν‖Π)`. Gotcha: `integral_const` gives
+  `(volume.restrict s).real univ • c`; rewrite `measureReal_def` BEFORE `Measure.restrict_apply_univ`;
+  `Integrable.congr` pointwise goals are beta-redexes (`beta_reduce` before `rw [Real.sq_sqrt]`).
+  Remaining round 52: item 5 (conditional variational formula), 6 (observable-defect second order),
+  7 (mixed Hessian), 10 (skewness).
