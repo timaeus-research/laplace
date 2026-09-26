@@ -567,3 +567,19 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: rank 1 (polarised Hessian `D²q_M[u,z] = q_M N_M(ℓ_u ℓ_z)`, Fréchet route) — the atlas diagonal now reads
   `N_M(ℓ²)`; rank 3 stage 2 (Fisher–Rao second fundamental form `II = ½ N_M(ℓ_u ℓ_z)` via `q ↦ 2√q`); §7 structure
   theorem; rank 4.
+- `CovarianceFrechet` landed (round-54 rank 1, stage 1): Fréchet differentiability in natural coordinates of
+  `E_{P_θ}φ`, `Cov_{P_θ}`, `p_θ(x)`; the third-cumulant operator `T_θ` as Fréchet derivative of `Σ_θ|_𝕍`
+  (basis assembly + `thirdOp_coe_apply` by uniqueness of derivatives); response coordinates via
+  `hasStrictFDerivAt_responseTheta_add`; `D R_M[u] = −R T(Ru) R`; the polarised Hessian
+  `D²q_M[u,w] = q_M N_M(ℓ_u ℓ_w)` (`hasFDerivAt_famDens_responseScore`). Gotchas: `.congr_deriv` is for
+  `HasDerivAt`; for `HasFDerivAt` use `.congr_fderiv`; dot-notation `.sub/.mul` on a `have h := …` whose type
+  is displayed as `HasFDerivAtFilter` yields Pi-form functions — ascribe the `HasFDerivAt` type with lambdas;
+  defs placed under `include hS` get `hS` only if their body uses it (put `S ν` explicit on defs that don't);
+  `local notation` cannot contain `.symm` projection syntax (use `ContinuousLinearEquiv.symm (…)`); align
+  base points `θ(M + 0)` vs `θ(M)` by instantiating the outer derivative at `θ(M + 0)` and rewriting AFTER `comp`
+  (rewriting before `comp` with `← h0` also hits the derivative's own occurrences and causes whnf timeouts);
+  `(-mulLeftRight R R) G w = -(R (G (R w)))` as an explicit `rfl` lemma for `simp`; `dotCLM (M + z)` with
+  `z : 𝕍` needs `(z : J → ℝ)` (dotCLM's index type is implicit).
+  NEXT: observable-defect second order (`z ↦ E_{Q_z}[φ ℓ_{z,w}]` differentiable with derivative
+  `∫ φ N_M(ℓ_u ℓ_w) dQ`; needs one integral-expansion helper `∫ ψ(a − ⟨v,S⟩) = a∫ψ − Σ v_j ∫ψ S_j`); then rank 3
+  stage 2 (Fisher–Rao second fundamental form), §7 structure theorem, rank 4.

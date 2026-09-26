@@ -4418,3 +4418,19 @@ certificates for concrete resolved charts beyond the identity chart.
   **`atlasBend_eq_respCov`** (`w_s = R Cov_{Q_s}(S, ℓ_s²)`), **`atlasHess_eq_normalProj`** (the density-acceleration
   theorem `q_s''/q_s = N_{M_s}(ℓ_s²)`: the second derivative of the reconstruction density is the normal projection
   of the squared score).
+- `CovarianceFrechet.lean` (NOT mirrored; round-54 rank 1, stage 1 — the polarised response Hessian by the Fréchet
+  route): `hasFDerivAt_of_subtypeL_comp`, `mem_of_hasFDerivAt_val` (derivatives of submodule-valued maps stay in
+  the submodule), `covCLM`/`covCLM_apply` (`v ↦ −Cov_ρ(φ,⟨v,S⟩)`), `cumCLM`/`cumCLM_apply` (`v ↦ −T_ρ(f,g,⟨v,S⟩)`),
+  **`hasFDerivAt_integral_family`** (`θ ↦ E_{P_θ}φ` Fréchet, derivative `covCLM`), **`hasFDerivAt_lawCov_family`**
+  (`θ ↦ Cov_{P_θ}(f,g)`, derivative `cumCLM`), **`hasFDerivAt_famDens`** (`θ ↦ p_θ(x)`, derivative
+  `p_θ(x)(⟨·,m(θ)⟩ − ⟨·,S(x)⟩)`, from `abs_famDens_remainder_le`), `thirdVec`, `thirdCoordCLM`,
+  `hasFDerivAt_chartDeriv_coe`, `thirdVec_mem_dirSpan`, `thirdDir`, `hasFDerivAt_chartDeriv_apply`,
+  **`thirdOp`** (`T_θ : 𝕍 →L (𝕍 →L 𝕍)`, the Fréchet derivative of the restricted covariance operator,
+  `hasFDerivAt_chartDeriv`; `thirdOp_coe_apply` by uniqueness of derivatives), `dotCLMlin`, `dotCLM_add`,
+  **`hasStrictFDerivAt_responseTheta_add`** (`z ↦ θ(M+z)` strictly differentiable with derivative
+  `R = (Dm(θ)|_𝕍)⁻¹`), `hasFDerivAt_famDens_response` + `famDens_response_deriv_apply` (`D_M q_M(x)[u] = q_M(x) ℓ_{M,u}(x)`),
+  `hasFDerivAt_chartDeriv_response`, **`hasFDerivAt_inverse_response`** (`D_M R_M[u] = −R T_{θ(M)}(Ru) R`, by
+  `hasFDerivAt_ringInverse`), `thirdVec_eq_respCov` (`T_{θ(M)}(Ru, Rw) = Cov_Q(S, ℓ_u ℓ_w)`),
+  **`hasFDerivAt_responseScore_response`** (`D_M ℓ_{M,w}(x)[u] = −E_Q[ℓ_u ℓ_w] − B_M(ℓ_u ℓ_w)(x)`),
+  **`hasFDerivAt_famDens_responseScore`** (THE POLARISED HESSIAN: the derivative field `z ↦ q_{M+z} ℓ_{M+z,w}` is
+  differentiable at `0` with derivative `u ↦ q_M · N_M(ℓ_{M,u} ℓ_{M,w})(x)`).

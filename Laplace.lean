@@ -403,6 +403,7 @@ import Laplace.Multi.AtlasVelocityDerivative
 import Laplace.Multi.AtlasHessian
 import Laplace.Multi.BoundaryBlowup
 import Laplace.Multi.NormalGeometry
+import Laplace.Multi.CovarianceFrechet
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
