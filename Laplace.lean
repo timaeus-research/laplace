@@ -368,6 +368,7 @@ import Laplace.Multi.ObservableCurvature
 import Laplace.Multi.StatisticLift
 import Laplace.Multi.ResidualInformation
 import Laplace.Multi.GeneralResidualSplit
+import Laplace.Multi.BridgeResidual
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

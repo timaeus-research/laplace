@@ -4139,3 +4139,16 @@ certificates for concrete resolved charts beyond the identity chart.
   `faceMeasure_eq_withDensity`, `← withDensity_mul` with a hand-written measurability of the family density; the indicator of a
   preimage is `rfl` after `rw`), and **`klDiv_responseProjection_eq_statisticLift_add_map'`** (the invisible-information split with
   NO interiority hypothesis). `Π` in identifiers (`hΠ`) is a reserved token.
+- `BridgeResidual.lean` (NOT mirrored; Astra round-49 item 1, without joint convexity): `binEnt a b` (binary entropy),
+  **`klDiv_le_log_of_smul_le`** (`a P ≤ Q ⟹ KL(P‖Q) ≤ log(1/a)`: `rnDeriv_le_one_of_le` + `rnDeriv_smul_left'`, the pointwise
+  bound `klFun x ≤ x log c + 1 − x` for `x ≤ c`, `Measure.integrable_toReal_rnDeriv`, `Measure.integral_toReal_rnDeriv`;
+  integrability witnesses must be lambda-typed `have`s), `klDiv_mixture_self_le` (`KL(aν+bD‖ν) ≤ b KL(D‖ν)`),
+  **`toReal_klDiv_mixture_ge`** (`b H ≤ KL(aν+bD‖ν) + h₂(a,b)` from mixture compensation + the log bounds),
+  **`statisticLift_mixture`** (the lift is affine; no absolute continuity needed; `Measure.map_add`, `Measure.map_smul`,
+  `rnDeriv_add'`/`rnDeriv_smul_left'` transported by `ae_of_ae_map`, split the summed density into a Pi-sum by `rfl`
+  before `withDensity_add_left`, `withDensity_smul'`, closing `rfl` for `ℝ≥0` vs `ℝ≥0∞` scalar action on measures),
+  `statisticLift_self` (needs `Measurable S`: for non-measurable `S` the lift is `0`), `statisticLift_bridge`
+  (`(aν + bD)↑ = aν + bD↑`), `toReal_fibreInformation_bridge_eq` (`L_s = KL(D_s‖ν) − KL(D_s↑‖ν)`),
+  **`fibreInformation_bridge_le`/`_ge`** (`b L₁ − h₂ ≤ L_s ≤ b L₁ + h₂`), **`invisibleInformation_bridge_modulus`**
+  (`aH − δ𝓘 ≤ R₁ − R_s ≤ aH + h₂ − δ𝓘`; supply `a·H = H − b·H` before `linarith`). Joint convexity of KL (which would give
+  `L_s ≤ b L₁` without slack and convexity of `s ↦ L_s`) is NOT in Mathlib and not yet landed.
