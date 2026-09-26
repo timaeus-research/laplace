@@ -343,6 +343,7 @@ import Laplace.Multi.IntrinsicLegendre
 import Laplace.Multi.ResponseSusceptibility
 import Laplace.Multi.BasepointCurvature
 import Laplace.Multi.QuadraticInformationBound
+import Laplace.Multi.CubicResponse
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

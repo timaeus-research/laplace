@@ -3891,3 +3891,10 @@ certificates for concrete resolved charts beyond the identity chart.
   **`featCgf_le_quadratic`** (`Λ(q) ≤ ⟨q,m₀⟩ + B²‖q‖²/2`; the tilted probability instance must be supplied by
   `isProbabilityMeasure_tilted` inside the lambda), **`genRate_ge_quadratic`** (`ofReal (‖M − m₀‖²/(2B²)) ≤ 𝓘(M)` for EVERY `M`,
   via `le_iSup_of_le ((B²)⁻¹ • v)`, `dotJ_smul_left`, `dotJ_comm`, `field_simp; ring`). `‖·‖` throughout is `dotJ v v`.
+- `CubicResponse.lean` (NOT mirrored; round-44 item 6): `thirdCentral ρ g k f = E[(g−Eg)(k−Ek)(f−Ef)]`, `thirdCentral_comm₁₂/₂₃`,
+  `thirdCentral_eq` (moment expansion: name the three means with `obtain ⟨a, ha⟩`, one pointwise `ring` identity `e`,
+  `simp_rw [e]`, then a chain of lambda-typed `Integrable` facts `i1 … i6` and `integral_add`/`integral_sub` outermost-first,
+  `integral_const_mul` ×6, `integral_const`, `ring`), **`hasDerivAt_lawCov_tilted`** (`d/ds Cov_{ν_{sf}}(g,k) = thirdCentral (ν_{sf}) g k f`
+  from three `hasDerivAt_integral_tilted` (g·k, g, k) and `unfold lawCov; congr_deriv; rw [thirdCentral_eq]; ring`),
+  `hasDerivAt_var_tilted` (`κ₃`), `hasDerivAt_lawCov_dataPath` (`omit [Fintype J]`), `hasDerivAt_lawCov_dirLoss_dataPath`.
+  Round-44 items 1–6 ALL DONE (TV/Pinsker and the local inverse-stability constant remain open).
