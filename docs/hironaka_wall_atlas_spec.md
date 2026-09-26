@@ -4035,3 +4035,15 @@ certificates for concrete resolved charts beyond the identity chart.
   `range_meanMap_eq_intrinsicInterior_momentBody`. `continuous_atlasPath ν (S := S) (M := M)` needs both implicits named.
   The directional refinement (normalised parameters accumulate in the normal cone at `M`) and the fixed-normal conditioning
   limit are NOT yet formalised.
+- `NormalCone.lean` (NOT mirrored; round-46 item 4, directional refinement): `dotJ_meanMap_le_neg_featCgf`
+  (`⟨θ, m(θ)⟩ ≤ −featCgf ν S (−θ)` from `famKL_nonneg` + `famKL_eq` with `(π := …) (L₀ := …)` named — the `by simp` for
+  `hL₀` needs `L₀` fixed), `exp_mul_real_le_integral_exp_neg` (Laplace lower bound `e^{−rc} ν(g<c) ≤ ∫ e^{−rg}`;
+  `setIntegral_const`, `setIntegral_mono_on`, `setIntegral_le_integral`), `dirLoss_sub'`, `featCgf_neg_smul_ge`
+  (`−rδ − rc + log ν(⟨u,S⟩<c) ≤ featCgf ν S (−(r • w))` when `⟨w,S⟩ ≤ ⟨u,S⟩ + δ`; `Real.log_le_log`, `Real.log_mul`),
+  **`dotJ_le_of_escape`** (general: `‖θ_n‖ → ∞`, `m(θ_n) → M`, `θ_n/‖θ_n‖ → u` ⟹ `⟨u,M⟩ ≤ c` whenever
+  `ν(⟨u,S⟩ < c+ε) > 0 ∀ε`; `le_of_forall_pos_le_add`, `inv_mul_le_iff₀`, `le_of_tendsto_of_tendsto` with `hev.mono key`,
+  `tendsto_iff_norm_sub_tendsto_zero`, `tendsto_const_nhds.div_atTop`), **`dotJ_sub_nonneg_of_escape`** (`0 ≤ ⟨u, x − M⟩` on the
+  moment body; contrapositive of `momentBody_subset_halfspace` via `measureReal_eq_zero_iff` + `ae_iff`),
+  **`dotJ_le_of_tendsto_normalized_atlasTheta`** (the atlas instance: escape from `tendsto_norm_atlasTheta_atTop` composed
+  with `tendsto_nhdsWithin_iff`, means from `meanMap_atlasTheta`). The `.congr` goals of `integrable_exp_mul_of_bdd` are
+  beta-redexes: `simp only [neg_mul]`, not `rw`. `[Nonempty J]` is needed only by the atlas theorem.
