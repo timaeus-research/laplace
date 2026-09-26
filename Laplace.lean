@@ -340,6 +340,7 @@ import Laplace.Multi.MixtureBridge
 import Laplace.Multi.EndpointConvergence
 import Laplace.Multi.FamilyBregman
 import Laplace.Multi.IntrinsicLegendre
+import Laplace.Multi.ResponseSusceptibility
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

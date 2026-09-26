@@ -3851,3 +3851,20 @@ certificates for concrete resolved charts beyond the identity chart.
   `tsub_self`, `Ioo_mem_nhdsLT`). GOTCHA: `obtain ⟨Q, hQ⟩ : ∃ Q, Q = responseProjection …` loses the probability instance;
   re-derive it with `have hQP' : IsProbabilityMeasure Q := by rw [hQ]; exact hQP`. `haveI` for a Prop is linted: use `have`.
   OPEN: TV convergence (Pinsker), the C¹ Legendre chart on 𝕍, the differential data response, the cubic tensor.
+- `ResponseSusceptibility.lean` (NOT mirrored; round-44 item 3, first half): `mem_of_hasDerivAt_subtype` (velocity of a path in a
+  closed submodule stays in it: `hasDerivAt_iff_tendsto_slope`, `IsClosed.mem_of_tendsto`, `slope_def_module`),
+  `hasDerivAt_subtype_of_hasDerivAt` (`HasDerivAt` version of the subtype helper, `Submodule.coe_smul`),
+  **`hasFDerivAt_famKL_zero`** (envelope identity `D_θ 𝓘(m(θ))[w] = −⟨θ, Dm(θ) w⟩`: `famKL_eq`, `hasFDerivAt_affLogZ`
+  (DualPotential, `dotCLM`), `HasFDerivAt.fun_sum` + `HasFDerivAt.mul` + `hasFDerivAt_apply` + `hasFDerivAt_pi'`; close with
+  `congr_fderiv`, `ext w`, simp with ROOT `add_apply/smul_apply/neg_apply` (the `ContinuousLinearMap.` forms are deprecated),
+  `FunLike.coe_sum`, two `mul_comm` sum identities, `ring`), `hasStrictFDerivAt_chartV_equiv`,
+  `eventually_mem_intrinsicInterior_chartV` (`eventually_right_inverse`; binder MUST be written `∀ᶠ v : dirSpan μ π S in …`
+  or `v` elaborates in `J → ℝ`), `rateFun_eq_famKL_chartVInv`, **`hasFDerivAt_rateFun_chart`/`hasFDerivAt_genRate_chart`**
+  (`D_M 𝓘(M)[u] = −⟨θ(M), u⟩` on `𝕍`; chain rule through `chartVInv`, `congr_of_eventuallyEq` + `congr_fderiv`; rewrites
+  with `chartDeriv_apply`/`coe_chartDerivEquiv` need their explicit arguments or leave `case hπm` goals),
+  `meanMap_zero_eq_mean`, `pathV` (`M(s) − m₀ ∈ 𝕍`), `dataCov` (`variable (S) in` so `S` is explicit: `dataCov S ν h s`),
+  `hasDerivAt_pathV(_val)`, `dataCov_mem_dirSpan`, `dataTheta` (= `chartVInv (pathV s)`), `chartV_dataTheta`,
+  **`hasDerivAt_dataTheta`** (`θ'(s) = (Dm|_𝕍)⁻¹ Cov_{D_s}(S,h)`), **`hasDerivAt_genRate_dataPath`**
+  (`d/ds 𝓘(M(s)) = −⟨θ(M(s)), Cov_{D_s}(S,h)⟩`). `HasFDerivAt.comp_hasDerivAt` needs the base point passed explicitly
+  (`hl.comp_hasDerivAt s₀ hf`). `include` does not apply to defs: a def includes only the variables its body uses.
+  NEXT: basepoint second derivative `d²/ds² 𝓘(M(s))|₀ = ⟨b, C₀⁻¹ b⟩ ≤ Var h`, residual variance.
