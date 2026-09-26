@@ -16,7 +16,8 @@ the visible direction of `a` (`tangent_pythagoras`): the differential version of
 of the information projection. The influence function of an observable is exactly its regression
 part `ψ_{F,M} = B_M F` (`influence_eq_regProj`), it represents the differential of the reconstructed
 response on tangent scores, `E_Q[ψ_{F,M} ℓ_{M,u}] = lin_{F,M}(u)`
-(`integral_influence_mul_responseScore`), and its variance is the Fisher form of the covariance vector, `Var_Q ψ_{F,M} = g_M(c_F, c_F)`
+(`integral_influence_mul_responseScore`), and its variance is the Fisher form of the covariance
+vector, `Var_Q ψ_{F,M} = g_M(c_F, c_F)`
 (`lawCov_influence_self`). Under the data law the sandwich covariance of plug-in
 reconstructions is `E_D[ψ_F ψ_G]` (`plugIn_covariance_tendsto_influence`).
 -/
