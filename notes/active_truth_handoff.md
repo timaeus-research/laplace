@@ -1340,3 +1340,20 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   whose proof needs `mem_essRange_iff`; `[Nonempty V]` only on the two continuity theorems (explicit instance binder), not
   as a section variable. NEXT: round-71 consult (facewise Fisher geometry / boundary-ray formula / CLT / capstone), or the
   uniform density bound `dq_M/dν ≤ 1/min_v ν{S=v}` and the face lattice `M ∈ F ↔ q_M{S ∈ F} = 1`.
+- Round-71 consult landed (`research_round71_{q,v1}`): ranking 1 = RIGIDITY (charged polytopes are EXACTLY the compact moment
+  bodies with a compact absolutely-continuous mean lift), 2 = facewise support/Fisher (`M ∈ F ↔ μ{S ∈ F} = 1`; essential
+  support of `q_M` = face fibre via a full-face witness `r = ε ν_F + (1−ε) r_N`; uniform bound `dq_M/dν ≤ 1/m_*`;
+  `momentBody (ν_F) = F`; stratified Fisher), 3 = exact natural-ray degeneration `‖q_t − q_M‖₁ = 2B_t/(A+B_t)` (no universal
+  TV modulus in `P, m_*`; response rays only sandwiched), 4 = capstone, 5 = facewise delta method/CLT (Cramér–Wold).
+- `ExtremeMeanSupport` + `CompactMeanLiftRigidity` landed: RIGIDITY COMPLETE (round-71 rank 1). Gotchas:
+  `mem_extremePoints.1 he : e ∈ P ∧ ∀ x₁ ∈ P, ∀ x₂ ∈ P, e ∈ openSegment ℝ x₁ x₂ → x₁ = e ∧ x₂ = e`, open-segment witness
+  `⟨D.real A, D.real Aᶜ, pos, pos, measureReal_add_measureReal_compl hA ▸ probReal_univ, split⟩`; strict mean inequalities from
+  `integral_pos_iff_support_of_nonneg_ae` with `0 ≤ᵐ f` via `Filter.EventuallyLE, ae_iff` + `measure_mono_null`;
+  `Set.mem_setOf_eq` → `Set.mem_ofPred_eq`; state measurability of the `ae_iff` set as `{a | ¬ p a}` so `rw` matches;
+  `set_option linter.unusedFintypeInType false in` where the proof needs `mean_mem_momentBody_general`; `Set.Infinite s` is
+  `¬ s.Finite` (so `by_contra` gives it directly), `hinf.natEmbedding _ : ℕ ↪ s`, `choose g hgK hge using hlift`,
+  `hK.tendsto_subseq hgK` + `Metric.tendsto_atTop` at `1/2` vs the 2-separation; Krein–Milman
+  `closure_convexHull_extremePoints (isCompact_momentBody (μ := ν) measurable_const (fun _ ↦ one_pos) hS)
+  (convex_momentBody (μ := ν) (π := …) S)` + `(hfin.isCompact_convexHull (𝕜 := ℝ)).isClosed.closure_eq`; `V` nonempty from
+  `mean_mem_momentBody_general hS ν` + `convexHull_nonempty_iff` + `Finset.Nonempty.to_subtype`. NEXT: round-71 rank 2
+  (facewise support / uniform density bound / `momentBody (ν_F) = F` / stratified Fisher), then the capstone.

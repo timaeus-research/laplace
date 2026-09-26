@@ -5051,3 +5051,22 @@ certificates for concrete resolved charts beyond the identity chart.
   **`meanL1_deformationL1`**, **`retractL1_deformationL1`** (`R ∘ H_t = R`), `deformationL1_of_mem_completedFamilyL1`,
   **`continuousOn_deformationL1`** — the mean-preserving STRONG DEFORMATION RETRACTION of all `L¹` probability densities onto
   the completed family, general `X`.
+- `ExtremeMeanSupport.lean` (NOT mirrored; round-71 rank 1, rigidity part I): `faceMeasure_absolutelyContinuous_of`,
+  `mean_mem_momentBody_of_ac` (mean of any `ν`-dominated law in the moment body), `mean_eq_split` (mean = convex combination
+  of the conditional means on `A`, `Aᶜ`), **`conditional_mean_eq_of_extreme`** (extremality ⇒ conditional means equal the
+  mean), `lt_integral_of_carried`, `integral_lt_of_carried`, `measure_gt_eq_zero_of_mean_extreme`,
+  `measure_lt_eq_zero_of_mean_extreme`, **`ae_statPoint_eq_of_mean_extreme`** (AN EXTREME MEAN FORCES CONCENTRATION ON ITS
+  FIBRE: any `ν`-dominated law with extreme mean `e` is carried by `{S = e}`; no entropy involved),
+  `isProbabilityMeasure_withDensity_of_mem_probL1`, `mean_withDensity_eq_meanL1`, **`ae_eq_zero_off_fibre_of_mean_extreme`**,
+  **`statFibre_pos_of_mean_extreme`** (every extreme point carrying an `L¹` density is charged),
+  **`norm_sub_eq_two_of_mean_extreme`** (densities over distinct extreme points are at `L¹`-distance exactly 2).
+- `CompactMeanLiftRigidity.lean` (NOT mirrored; round-71 rank 1, rigidity part II — THE CHARACTERISATION):
+  **`finite_extremePoints_of_compact_mean_lift`** (a compact set of `L¹` probability densities whose means cover the moment
+  body forces finitely many extreme points: 2-separation vs. `IsCompact.tendsto_subseq`),
+  **`exists_charged_generators_of_compact_mean_lift`** (the extreme points are charged and generate the body: Krein–Milman
+  `closure_convexHull_extremePoints` + a finite hull is closed), `exists_charged_generators_of_continuous_section` (any
+  continuous absolutely-continuous mean section forces a charged polytope),
+  **`exists_charged_polytope_iff_exists_compact_mean_lift`** (CHARGED POLYTOPES ARE EXACTLY THE COMPACT MOMENT BODIES WITH A
+  COMPACT ABSOLUTELY-CONTINUOUS MEAN LIFT; ⇒ via the completed family, ⇐ via rigidity). The hypotheses of the general-`X`
+  completion are necessary: strictly convex bodies, or any body with infinitely many extreme points, admit NO whole-body
+  `L¹`-continuous completion.
