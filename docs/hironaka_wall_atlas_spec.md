@@ -4677,3 +4677,11 @@ certificates for concrete resolved charts beyond the identity chart.
   response theorem; rank 4 visible-information bias `n(E𝓘(M̂_n) − 𝓘(M)) → ½ Σ Γ_ab H_M(e_a,e_b)`; rank 5 joint plug-in
   covariance (sandwich `Σ Γ_ab lin_F(e_a) lin_G(e_b)`, Fisher-dual only when `Γ = C_M`). Referee notes: localisation is
   legitimate (any bounded fallback gives the same limit), `π` is scaffolding (intrinsic coefficient proved), sup norm harmless.
+- `ResponseTransport.lean` (NOT mirrored; round-61 rank 1): **`linForm_eq_neg_dotJ_respCov`** (`lin_{F,M}(u) = −⟨R_M u, Cov_{Q_M}(S,F)⟩`),
+  `dotJ_inverse_chart_symm` (`R_M` is `dotJ`-symmetric), **`influence`** (`ψ_{F,M}(x) = −⟨R_M Cov(S,F), S(x) − M⟩`),
+  `linForm_eq_neg_dotJ_influenceDir`, `integral_dotJ_statPoint_sub`, **`linForm_sub_featureless_eq_integral_influence`**
+  (`lin_{F,M}(E_D S − m₀) = ∫ψ dD − ∫ψ dν`), **`hasDerivAt_integral_response_path`** (chain rule: `d/ds G_F(M(s)) =
+  lin_{F,M(s)}(M'(s))` along any differentiable curve of interior responses), `continuousOn_responseTheta_path`,
+  `continuousOn_linForm_path`, **`integral_response_sub_eq_integral_linForm`** (FTC: `G_F(M(1)) − G_F(M(0)) = ∫₀¹ lin(M') ds`
+  for `C¹` paths), `integral_response_sub_featureless_eq_integral_atlas` (atlas transport from `m₀` to `M`),
+  **`hasDerivAt_integral_response_atlas_influence`** (`d/dt G_F(M_t) = ∫ψ_{F,M_t} dD − ∫ψ_{F,M_t} dν` along the affine data path).

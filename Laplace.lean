@@ -438,6 +438,7 @@ import Laplace.Multi.CurveLength
 import Laplace.Multi.EmpiricalMoments
 import Laplace.Multi.BiasForm
 import Laplace.Multi.ReconstructionBias
+import Laplace.Multi.ResponseTransport
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

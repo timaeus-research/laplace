@@ -815,3 +815,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   atlas with the NON-monotonicity of the invisible part (counterexample to record in the slop note) and the identity
   `tR'(t) = R(t) + KL(ν‖D_t) − KL(ν‖Q_{M_t})`; (3) `C²`; (4) `𝓘`-bias; (5) joint plug-in covariance. Mathlib-facing
   extractions suggested: empirical bilinear contraction `E B(Z̄_n, Z̄_n) = (1/n) E B(Z,Z)`; localised second-order delta lemma.
+- `ResponseTransport` landed (round-61 rank 1: chain rule + FTC for `G_F` along response paths, influence function,
+  influence form along the affine data path). Gotchas: state algebraic identities with the DIRECT `(CDE …).symm u` rather
+  than the CLM coercion `(… : 𝕍 →L 𝕍) u` (otherwise `linarith` sees two atoms); bridge in continuity proofs with
+  `ContinuousLinearEquiv.coe_coe`; `deriv_mem_dirSpan_of_path hV hM'` takes only two explicit args; `hasDerivAt_atlasPath ν
+  (M := M) s`; `lawCov_dirLoss_left hS Q v ψ hψ`; subtype-valued paths are continuous via
+  `Topology.IsInducing.subtypeVal.continuousOn_iff` + `ContinuousOn.congr`. NEXT: rank 2 (information splitting along
+  the atlas with the non-monotone invisible part: record the three-point counterexample in Lean, `R(t) ≤ t KL(D‖ν)`,
+  `tR'(t)` identity), then `C²`, `𝓘`-bias, joint plug-in covariance.
