@@ -4026,3 +4026,12 @@ certificates for concrete resolved charts beyond the identity chart.
   `a 𝓘(M₀) + b 𝓘(M₁) = 𝓘(aM₀+bM₁) + [a KL(P₀‖Q) + b KL(P₁‖Q) + KL(Q‖Π(aM₀+bM₁))]`; finiteness of the mixture rate from
   the identity itself + `klDiv_eq_top_of_genRate_eq_top`; `ring` closes in `ℝ≥0∞`), **`genRate_mixture_lt`** (strict convexity
   of the rate on its finite domain: `ENNReal.lt_add_right`, `add_eq_zero`, `klDiv_eq_zero_iff`, and the means).
+- `BoundaryEscape.lean` (NOT mirrored; round-46 item 4, robust part): `meanMap_atlasTheta` (`m(θ_s) = M_s` for `s < 1`),
+  `continuous_atlasPath`, **`tendsto_norm_atlasTheta_atTop`** (`‖θ(M_s)‖ → ∞` along `𝓝[<] 1` when the finite-rate `M` is
+  not in `intrinsicInterior ℝ (momentBody …)`): negate `Filter.tendsto_atTop` (`not_forall, Filter.not_eventually, not_le`),
+  `Frequently.and_eventually (Ioo_mem_nhdsLT zero_lt_one)`, `Filter.exists_seq_forall_of_frequently` (𝓝[<] 1 is countably
+  generated), Bolzano–Weierstrass `tendsto_subseq_of_bounded (Metric.isBounded_closedBall (x := (0 : 𝕍)) (r := b))` in the
+  proper space `𝕍`, `continuous_meanMap … (M₀ := 0) (fun _ ↦ by simp) hS one_pos`, `tendsto_nhds_unique`, and
+  `range_meanMap_eq_intrinsicInterior_momentBody`. `continuous_atlasPath ν (S := S) (M := M)` needs both implicits named.
+  The directional refinement (normalised parameters accumulate in the normal cone at `M`) and the fixed-normal conditioning
+  limit are NOT yet formalised.

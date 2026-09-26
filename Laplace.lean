@@ -358,6 +358,7 @@ import Laplace.Multi.InformationBudget
 import Laplace.Multi.TiltDensityBounds
 import Laplace.Multi.InverseStability
 import Laplace.Multi.MixtureCompensation
+import Laplace.Multi.BoundaryEscape
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
