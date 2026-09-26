@@ -5079,3 +5079,10 @@ certificates for concrete resolved charts beyond the identity chart.
   law is the exponential family of the conditioned reference measure), **`exists_ray_tendsto_responseProjection`** (every
   boundary response in the relative interior of a charged exposed face is the TV-limit of an explicit natural ray `θ − t u`,
   with the exact distance `2B_t/(A+B_t)`).
+- `PolytopeFaceCut.lean` (NOT mirrored; round-72 rank 1, first module): geometry `dotJ_finset_sum_smul`, `convex_hyperplane_dotJ`,
+  `convex_halfspace_dotJ`, **`convexHull_inter_hyperplane`** (a supporting hyperplane cuts a finite hull along the hull of its
+  tight generators: weighted slacks are nonnegative and sum to zero); measure theory `ae_dirLoss_le_of_polytope` (a half-space
+  bound on the polytope is an a.e. bound on `S`), `faceMeasure_statFibre_pos` (tight generators stay charged after conditioning),
+  **`momentBody_faceMeasure_eq_of_exposed`** (THE MOMENT BODY OF THE CONDITIONED LAW IS THE EXPOSED FACE `conv {v ∈ V | ⟨u,v⟩ = β}`),
+  **`exists_ray_tendsto_responseProjection_polytope`** (boundary rays for every response in the relative interior of an exposed
+  face of the polytope, exact rate `2B_t/(A+B_t)`).
