@@ -1331,3 +1331,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   probability densities in `L¹(ν)` onto `completedFamilyL1`: `R f = projL1 (meanL1 f)`, `H t f = (1−t) f + t R f`; needs
   `meanL1 f ∈ P` for probability densities — mean of an a.e.-`P`-valued statistic, e.g. via `momentBody` monotonicity under
   `≪` or `Convex.integral_mem`), then a round-71 consult (rank 3 facewise Fisher geometry / boundary-ray formula; CLT; capstone).
+- `PolyhedralRetraction` landed (module 6): the charged-polytope programme is COMPLETE including the ambient `L¹`
+  deformation retraction. Gotchas: `0 ≤ᵐ[ν] ⇑f` unfolds to `∀ᵐ x, (0 : X → ℝ) x ≤ f x` (`rw [Pi.zero_apply] at hx`);
+  convex combinations in `L¹`: one ae lemma `coeFn_combo_ae` from `Lp.coeFn_add`/`Lp.coeFn_smul` and `integral_add`
+  with `.const_mul`; the mean of an `L¹` density is in the moment body via `mean_mem_momentBody_general hS (ν.withDensity
+  (ofReal ∘ f))` + monotonicity of `essRange` under `≪` (`mem_essRange_iff measurable_const (fun _ ↦ one_pos) hS`,
+  `pos_iff_ne_zero`); `set_option linter.unusedFintypeInType false in` for statements whose type has no Fintype sum but
+  whose proof needs `mem_essRange_iff`; `[Nonempty V]` only on the two continuity theorems (explicit instance binder), not
+  as a section variable. NEXT: round-71 consult (facewise Fisher geometry / boundary-ray formula / CLT / capstone), or the
+  uniform density bound `dq_M/dν ≤ 1/min_v ν{S=v}` and the face lattice `M ∈ F ↔ q_M{S ∈ F} = 1`.

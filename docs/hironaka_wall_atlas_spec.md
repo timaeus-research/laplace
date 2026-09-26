@@ -5040,3 +5040,14 @@ certificates for concrete resolved charts beyond the identity chart.
   `completedFamilyL1 = projL1 '' P`, `isCompact_polytope`, **`isCompact_completedFamilyL1`**, `meanL1_mem_of_mem_completedFamilyL1`,
   `projL1_meanL1_of_mem`, **`completedHomeomorphL1`** (`P ≃ₜ completedFamilyL1` via response map / mean map),
   **`closure_image_intrinsicInterior`** (the completed family is the closure of the interior exponential family, along atlas rays).
+- `PolyhedralRetraction.lean` (NOT mirrored; polyhedral completion module 6, the ambient retraction): `probL1 ν` (all
+  probability densities in `L¹(ν)`), `coeFn_combo_ae`, `combo_mem_probL1` (convex), `meanL1_apply`, `meanL1_add`, `meanL1_smul`,
+  `projL1_mem_probL1`, `essRange_subset_of_absolutelyContinuous`, `momentBody_subset_of_absolutelyContinuous`,
+  **`meanL1_mem_momentBody`** (the mean of ANY `L¹` probability density lies in the moment body), **`retractL1`**
+  (`f ↦ [dq_{E_f S}/dν]`), `meanL1_mem_polytope`, `genRate_meanL1_ne_top`, `retractL1_mem_completedFamilyL1`,
+  **`meanL1_retractL1`** (mean-preserving), `completedFamilyL1_subset_probL1`, `retractL1_of_mem_completedFamilyL1`,
+  `retractL1_idempotent`, **`retractL1_eq_self_iff`** (fixed points = completed family), **`continuousOn_retractL1`**,
+  **`deformationL1`** (`H_t f = (1−t) f + t R f`), `deformationL1_zero/one`, `deformationL1_mem_probL1`,
+  **`meanL1_deformationL1`**, **`retractL1_deformationL1`** (`R ∘ H_t = R`), `deformationL1_of_mem_completedFamilyL1`,
+  **`continuousOn_deformationL1`** — the mean-preserving STRONG DEFORMATION RETRACTION of all `L¹` probability densities onto
+  the completed family, general `X`.
