@@ -4637,3 +4637,7 @@ certificates for concrete resolved charts beyond the identity chart.
 - `ReconstructionC1.lean` (NOT mirrored; round-60 §2): `responseScore_sub_responseScore`, **`norm_reconstructionDeriv_sub_le`**
   (explicit operator-norm modulus of the `L¹` derivative), `continuousOn_inverse_chart` (`M ↦ R_M` continuous on `ri K`),
   **`continuousWithinAt_reconstructionDeriv`** (`p : M ↦ [q_M]` is `C¹` into `L¹(ν)` on the relative interior).
+- `RegressionOrthogonality.lean` (NOT mirrored; round-60 §4 first item): `sub_integral_eq_regProj_add_normalProj`
+  (`g − E_Qg = B_Mg + N_Mg`), `integral_regProj_mul_normalProj` (`⟨B_Mg, N_Mg⟩_{L²(Q)} = 0`),
+  **`integral_sq_sub_eq_regProj_add_normalProj`** (Pythagoras `E_Q(g − E_Qg)² = E_Q(B_Mg)² + E_Q(N_Mg)²`): `B_M` is the
+  `L²(Q)`-orthogonal projection onto the tangent scores.

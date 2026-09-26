@@ -779,3 +779,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   in a statement is elaborated leafwise (`↑a − ↑b`), so fold with `← Submodule.coe_sub` before `Submodule.norm_coe`.
   Round-60 consult landed (`research_round60_v1`): converse of entropy-graph stability is FALSE; reconstruction-bias theorem
   reachable without CLT; all-orders prototype = option (a) unnormalised. NEXT per consult.
+- `RegressionOrthogonality` landed (cheap Hilbert-space meaning of the tangent retraction). Gotcha: `rw [← h]` with
+  `h : ∫ … = 0` rewrites the zeros inside `familyMeasure ν 1 (fun _ ↦ 0)` — use `(integral_congr_ae …).trans h`.
+  Round-60 remaining: length control for `C¹` curves, reconstruction-bias theorem (fourth-moment bound of iid bounded sums
+  + compact-uniform observable Peano), `C²` via differentiating the score, all-orders prototype (unnormalised Laplace
+  transform `ContDiff ⊤`). NEXT: reconstruction-bias theorem.
