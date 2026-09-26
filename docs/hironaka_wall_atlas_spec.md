@@ -4630,3 +4630,7 @@ certificates for concrete resolved charts beyond the identity chart.
   `isLittleO_reconstruction_density_remainder` + `L1.norm_of_fun_eq_integral_norm`), **`moment_famDens_mul_responseScore`**
   (`H(q_Mℓ_u) = u`: the moment map inverts the derivative), `famDens_mul_regProj_eq` (`P_M(q_M g) = q_M B_M g` for centred
   bounded `g`), `famDens_mul_responseScore_moment_eq` (idempotence of `P_M = Dp_M ∘ H`).
+- `RefinementTower.lean` (NOT mirrored; round-59 rank 3 package): **`refinement_tower`** — base splits for the coarse and
+  fine statistics, refinement of the error `KL(D‖Π_c) = KL(D‖Π_f) + KL(Π_f‖Π_c)`, refinement of the visible information
+  `𝓘_f = 𝓘_c + KL(Π_f‖Π_c)` (both from `AtlasRefinement`): feature refinement converts invisible information into
+  visible information by exactly the divergence between the reconstructions.

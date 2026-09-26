@@ -772,3 +772,5 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `rfl` lemmas in Pi form (use `← toL1_sub` then `L1.norm_of_fun_eq_integral_norm`); `LinearMap.toContinuousLinearMap`
   for a linear map out of the finite-dimensional `𝕍`. NEXT: refinement tower package (already have both identities in
   `AtlasRefinement`), `C¹`/`C²` of `reconstructionL1`, all-orders prototype; round-60 consult.
+- `RefinementTower` landed (package of `AtlasRefinement` + `responseProjection_spec`). Round-59 ranks 1–3 DONE; remaining:
+  `C¹`/`C²` of `reconstructionL1`, all-orders prototype. NEXT: round-60 consult.
