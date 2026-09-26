@@ -990,3 +990,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `SmoothChart`): `U = range chartV` open via `HasStrictFDerivAt.map_nhds_eq_of_equiv`; `fderiv chartVInv = (CDE ∘ chartVInv).symm`
   on `U`; bootstrap `ContDiffOn n chartVInv U` by `contDiffOn_succ_iff_fderiv_of_isOpen`; then `z ↦ θr (m₀ + z)` and the atlas
   coordinate `s ↦ atlasTheta s` are `C^∞`, and observable responses `G_F ∘ atlas` are `C^∞` on `(0,1)`.
+- `SmoothChart` landed (rank 3 stage B). Gotchas: openness of `range chartV` from `HasStrictFDerivAt.map_nhds_eq_of_equiv`
+  (rewrite `chartDeriv θ₀ = ↑(CDE θ₀)` with `← coe_chartDerivEquiv` first) + `Set.image_univ` + `Filter.image_mem_map univ_mem`;
+  the bootstrap step is `(contDiffOn_succ_iff_fderiv_of_isOpen hU).2 ⟨diffOn, fun h ↦ absurd h (WithTop.natCast_ne_top n),
+  ((G.of_le (by exact_mod_cast natCast_le_infty n)).comp_contDiffOn ih).congr (fderiv formula)⟩`; `responseTheta M =
+  chartVInv (toV M)` and `toV (m₀ + z) = z` by `Subtype.ext` + `toV_apply` + `add_sub_cancel_left`; the atlas is
+  `(fun z ↦ θr (m₀ + z)) ∘ (s ↦ s • atlasInc)` (`ContDiffOn.comp` with the `MapsTo` from `atlas_mem_intrinsicInterior`).
+  Round 64: ranks 1–4 ALL DONE (rank 3 as smoothness; the explicit Bell/Faà-di-Bruno tower and the all-orders invisibility in
+  density form remain unformalised). NEXT: round-65 consult with the full picture; candidates: all-orders invisibility in
+  density form (`iteratedDeriv k (fun s ↦ ∫ (1,S) q_{M_s})=0`, k ≥ 2, needs differentiation under the integral to all
+  orders — the `famNum` induction gives it for free since `s ↦ q_s(x)` and `s ↦ ∫ g q_s` are both smooth); curved-path
+  second-order transport; analyticity.

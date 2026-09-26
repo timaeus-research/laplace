@@ -4811,3 +4811,12 @@ certificates for concrete resolved charts beyond the identity chart.
   **`contDiff_famMean`** / **`contDiff_meanMap`** (the mean map is `C^∞`), `meanMapDeriv_eq_fderiv`, **`contDiff_meanMapDeriv`**,
   **`contDiff_chartV`** (the intrinsic chart `𝕍 → 𝕍`), `chartDeriv_eq_dirProjL`, **`contDiff_chartDeriv`**,
   **`contDiff_chartDerivEquiv_symm`** (`θ ↦ (Dm(θ)|_𝕍)⁻¹` is `C^∞`, via `contDiffAt_map_inverse`).
+- `SmoothChart.lean` (NOT mirrored; round-64 rank 3, stage B — the smooth bootstrap): `mem_range_chartV_iff`
+  (`v ∈ range chartV ↔ m₀ + v ∈ Ω`), **`isOpen_range_chartV`** (inverse function theorem), `fderiv_chartVInv_of_mem`
+  (`D chartVInv(v) = (Dm(θ)|_𝕍)⁻¹` at `θ = chartVInv v`), `differentiableOn_chartVInv`, **`contDiffOn_chartVInv`**
+  (`C^n ⇒ C^{n+1}` via `contDiffOn_succ_iff_fderiv_of_isOpen` and the `C^∞` inverse covariance),
+  **`contDiffOn_infty_chartVInv`**, `responseTheta_add_eq_chartVInv`, **`contDiffOn_responseTheta_add`** (`z ↦ θ(m₀ + z)` is
+  `C^∞` on the interior displacements), **`contDiff_integral_familyMeasure`** (`θ ↦ E_{Q_θ} F` is `C^∞`),
+  `atlasPath_eq_add_smul_atlasInc`, **`contDiffOn_atlasTheta`** (`s ↦ θ(M_s)` is `C^∞` where the atlas is interior),
+  `Ioo_subset_atlas_interior`, **`contDiffOn_integral_atlasTheta`** (the response of every bounded observable is `C^∞` along
+  the atlas): the response calculus exists to all orders.

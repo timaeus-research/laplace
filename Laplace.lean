@@ -457,6 +457,7 @@ import Laplace.Multi.FibreOrthogonality
 import Laplace.Multi.NormalForm
 import Laplace.Multi.ResponseChernoff
 import Laplace.Multi.SmoothFamily
+import Laplace.Multi.SmoothChart
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
