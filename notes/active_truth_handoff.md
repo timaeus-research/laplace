@@ -1606,3 +1606,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Subsingleton.elim i 0` for `Fin 1` indices; the `unnecessarySeqFocus` linter rejects `fin_cases x <;> simp <;> norm_num` when only
   one branch survives. NEXT: the facet accessibility theorem (codimension one, Schur complement), the charged-square counterexample,
   or the `ℰ''` identity / defect splitting `D(ρ‖q_M) = D(ρ‖ρ^S) + D(ρ^S‖q_M)`.
+- `ResponseDefectEvolution` landed (round-76 rank 5: the exact `ℰ''` identity at every `t`, `ℰ'' = Var_{ρ_t}h − |q'_t|²_F +
+  Cov_{ρ_t}((h − Eh)², t h + ⟨θ_t, S⟩)`). Gotchas: keep the moment atoms as `obtain ⟨A, hA⟩ : ∃ A, A = ∫ …` and state the
+  per-index atoms as `∀ j` equations (`hPj : ∀ j, ∫ S j = P j`) so `simp only [hPj]` rewrites under binders; `HasDerivAt.mul`
+  of two tilted-integral derivatives gives the value `(B − A A) * A + A * (B − A A)` — state `hV` with exactly that shape and
+  `exact` (the function side matches by defeq, only the value must be syntactic); `HasDerivAt.fun_sum` over
+  `(hasDerivAt_pi.1 hθ j).mul (hasDerivAt_pi.1 hb j)` for the pairing; `hasDerivAt_integral_tilted ν hh ((hS j).mul hh)`
+  yields `∫ S j * h * h` (left-assoc), so state the square expansion as `∫ g f f − 2c ∫ g f + c² ∫ g`; never `rw [mul_add,
+  Finset.mul_sum]` on a goal with several sums — prove the distribution as its own `have e5` and `rw [e5]`; at the end reconcile
+  the two per-index forms with a `Finset.sum_congr … ring` equation, `rw [Finset.sum_add_distrib, e6]`, then `ring`.
+  NEXT: facet accessibility (codimension one, Schur complement), charged-square counterexample, flags corollary, or a
+  round-77 consult.

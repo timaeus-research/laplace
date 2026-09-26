@@ -5254,3 +5254,14 @@ certificates for concrete resolved charts beyond the identity chart.
   `var_resp_lt` (`Var_q S < 1/2`), `var_resp_pos`; `θ₀_mem`, **`dataTheta_eq`** (`dataTheta t₀ = θ₀`, by `chartVInv_chartV`);
   **`responseSpeedSq_gt_dataSpeedSq`** (THE RESPONSE PATH IS STRICTLY FASTER THAN THE DATA PATH: the response projection is not a
   Fisher contraction off the family, even for bounded `h`).
+- `ResponseDefectEvolution.lean` (NOT mirrored; round-76 rank 5, the exact `ℰ''` identity): `integral_sub_sq_mul` /
+  `integral_sub_sq` (expansions of `∫ (f − c)² g`, `∫ (f − c)²` for bounded `f, g`); **`hasDerivAt_deriv_responseDefect`**
+  (`ℰ''(t) = Var_{ρ_t}(h) − |q'_t|²_F + Cov_{ρ_t}((h − E_{ρ_t}h)², t h + ⟨θ_t, S⟩)` for EVERY `t`: data speed squared minus
+  response speed squared plus the off-family correction — the covariance of the squared centred score with
+  `log dρ_t/dq_t = t h + ⟨θ_t, S⟩ + const`; at `t = 0` the correction vanishes and the identity reduces to the residual-variance
+  theorem `hasDerivAt_deriv_responseDefect_zero`); `deriv_deriv_responseDefect` (value form); `deriv_deriv_responseDefect_le`
+  (`ℰ'' ≤ Var_{ρ_t} h + correction`, since the response speed is a variance). Proof: `deriv ℰ = t Var_t h + ⟨θ_t, b_t⟩` from
+  `hasDerivAt_responseDefect`; `Var'_t = E h³ − E h² E h − 2 E h Var_t h` and `b'_j = (E S_j h² − E S_j h E h) − (b_j E h + E S_j Var_t h)`
+  from `hasDerivAt_integral_tilted`; `θ'_t` from `hasDerivAt_dataTheta_vel` through `(dirSpan …).subtypeL`; the pairing termwise
+  via `HasDerivAt.fun_sum` + `hasDerivAt_pi`; `⟨θ'_t, b_t⟩ = −|q'_t|²` by `responseSpeedSq_eq_neg_dotJ`; the covariance term
+  expanded with the two `integral_sub_sq*` lemmas.
