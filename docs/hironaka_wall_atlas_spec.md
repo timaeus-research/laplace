@@ -6951,3 +6951,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `mul_meas_ge_le_integral_of_nonneg (μ := P) (f := …) … (r²)` + `measureReal_mono`; `le_div_iff₀`),
     **`measureReal_sampleResponse_notMem_chamber_le`** (`ball m_D r ⊆ C ⇒ P(M̂ ∉ C) ≤ tr/(n r²)`; the name
     `measureReal_sampleResponse_notMem_le` already existed in `ResponseClassResolution`).
+  - `ResponseResolutionEllipsoid.lean` (post-M rank 6, THE OBSERVABLE RESOLUTION ELLIPSOID): `bdd_sum_mul s c hF`
+    (`choose hm M hM using hF` destructures `∀ i, Measurable ∧ ∃ M, …`), `covFunctional_add/const_mul/zero`
+    (`LinearMap.ext` + `covFunctional_apply` + `lawCov` linearity), **`regressionDir_add`**, **`regressionDir_const_mul`**,
+    `regressionDir_zero`, **`regressionDir_sum`** (`u_{Σ c_iF_i} = Σ c_i u_{F_i}` by `Finset.induction_on`), section
+    `Ellipsoid` (M5 variables; `resolutionMat hS ν D F i i' := Σ_D(u_{F_i}, u_{F_{i'}})` defined BEFORE the
+    `(hDν) (hνD)` variables are introduced — an `omit hDν hνD in` on a def in their scope fails with "cannot omit
+    referenced section variable inst✝"), **`dataBilin_regressionDir_sum`** (`Σ_D(u_{F_c},u_{F_c}) = Σ_ii' c_i c_i' V_ii'`;
+    after `map_sum/map_smul/LinearMap.sum_apply` the inner form appears TRANSPOSED — `dataBilin_comm` with explicit
+    arguments, then `ring`), **`minimax_two_point_contrast`** (M5 for every contrast with `cᵀVc > 0`: `√n L_n →
+    (a cᵀVc/2)(1 − √(a²cᵀVc/2))`, every estimator's two-point risk `≥ L_n`; `rwa [dataBilin_regressionDir_sum] at h`).
