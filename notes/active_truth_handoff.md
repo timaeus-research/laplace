@@ -1755,3 +1755,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   integrability to `(0,∞)`; `Real.le_sqrt_of_sq_le` for `c |r'| g ≤ speed`.
   NEXT: the converse (the ray `s ↦ v_M − s • u` is a path with `meanMap → M` — need a ray mean-convergence lemma — and speed
   `raySpeedSq`), then the `iff`, the slop paragraph, and round-78 §5 (data-ray strengthening).
+- `FacetFisherAccess` COMPLETE (`facet_fisher_access_iff`, both directions). Converse gotchas: `tendsto_tv_ray hS ν θ u β hβ hp`
+  gives the L¹ convergence of `famDens (θ − t u)` to `faceDens θ` for ANY `θ`; means via `mean_familyMeasure_one_zero` +
+  `familyMeasure_eq_withDensity_famDens`/`familyMeasure_faceMeasure_eq` + `integral_withDensity_ofReal ν hmeas hnonneg`
+  (PolyhedralRecovery) + `mul_comm`; the L¹-to-mean squeeze mirrors `tendsto_meanMap_faceMeasure_of_tendsto_meanMap`;
+  the ray's derivative: `((hasDerivAt_id s).smul_const u).const_sub vM` + `simpa`; `Var(dirLoss (−u)) = Var(dirLoss u)` by
+  `funext (dirLoss_neg u)`, `lawCov_neg_left`, `lawCov_neg_right_eq`, `neg_neg`.
+  NEXT: slop paragraph (in progress), then round-78 §5 (data-ray strengthening: the DATA path's response has finite length iff the
+  ray does — needs the one-sided radial-variation argument with `DataDissipation`), or a round-79 consult for the next ranking
+  (intrinsic Fisher completion, higher codimension, flags).

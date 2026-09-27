@@ -5372,3 +5372,9 @@ certificates for concrete resolved charts beyond the identity chart.
   speed identity `Var⟨η',S⟩ = Var(r' ℓ⁺ + ⟨v',S⟩)` (a.e. positive part of the slack, `lawCov_congr_ae`); `facet_schur_bound` with
   `κ = (card J · B)²/λ` and the eventual factor `≥ 1/2`; Lemma C to the ray `v_M − r u`; `speed ≥ (e^{−1}/√2)|r'| g(r)`;
   `PathLengthPrimitive` on `[s₀,∞)`; extension to `(0,∞)`; `RayTiltInvariance` to any lift.
+- `FacetFisherAccess.lean` (cont.): **`tendsto_meanMap_ray`** (`meanMap (θ − t u) → meanMap_A θ`, from the total-variation
+  convergence of the ray to the face law), **`exists_path_of_lintegral_sqrt_raySpeedSq_lt_top`** (CONVERSE: a finite-length normal
+  ray is a `C¹` path `s ↦ v_M − s u` in `W` with means → `M` and Fisher length `∫⁻ √raySpeedSq(v_M,u,·) < ⊤`), and
+  **`facet_fisher_access_iff`**: THE FACET ACCESSIBILITY THEOREM — on a charged polytope with an exposed facet, `M ∈ ri F` is
+  reached by some `C¹` path of finite Fisher length in the direction space iff the normal ray has finite Fisher length (hence,
+  with `RayFisherLengthClassification`, iff `Σ_k √a_k < ∞`; with `RayTiltInvariance`, all-or-nothing on `ri F`).

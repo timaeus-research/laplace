@@ -464,4 +464,140 @@ theorem lintegral_sqrt_raySpeedSq_lt_top_of_path {u : J → ℝ} {β : ℝ} (hV 
 
 end Assembly
 
+section Converse
+
+variable {X : Type*} [MeasurableSpace X] [Nonempty X] {J : Type*} [Fintype J] [Nonempty J]
+  {S : J → X → ℝ} (hS : ∀ j, Bdd (S j)) (ν : Measure X) [IsProbabilityMeasure ν]
+include hS
+
+omit [Nonempty X] [Nonempty J] in
+/-- **Means along a natural ray converge to the face-family mean.** -/
+theorem tendsto_meanMap_ray (θ u : J → ℝ) (β : ℝ) (hβ : ∀ᵐ x ∂ν, dirLoss S u x ≤ β)
+    (hp : 0 < ν.real {x | dirLoss S u x = β}) :
+    Tendsto (fun t : ℝ ↦ meanMap ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 (θ - t • u)) atTop
+      (𝓝 (meanMap (faceMeasure ν {x | dirLoss S u x = β}) (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ))
+        S 1 θ)) := by
+  have hF0 : ν {x | dirLoss S u x = β} ≠ 0 := (ENNReal.toReal_pos_iff.1 hp).1.ne'
+  have hPF := isProbabilityMeasure_faceMeasure ν hF0
+  have hL1 := tendsto_tv_ray hS ν θ u β hβ hp
+  refine tendsto_pi_nhds.2 fun j ↦ ?_
+  obtain ⟨-, B, hB⟩ := hS j
+  have hcoord : ∀ t : ℝ, meanMap ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 (θ - t • u) j =
+      ∫ x, S j x * famDens S ν (θ - t • u) x ∂ν := fun t ↦ by
+    rw [← mean_familyMeasure_one_zero hS ν (θ - t • u)]
+    simp only
+    rw [familyMeasure_eq_withDensity_famDens, integral_withDensity_ofReal ν
+      (measurable_famDens hS ν _) (famDens_nonneg hS ν _)]
+    exact integral_congr_ae (Eventually.of_forall fun x ↦ mul_comm _ _)
+  have hface : meanMap (faceMeasure ν {x | dirLoss S u x = β}) (fun _ ↦ (1 : ℝ))
+      (fun _ ↦ (0 : ℝ)) S 1 θ j = ∫ x, S j x * faceDens S ν θ u β x ∂ν := by
+    rw [← mean_familyMeasure_one_zero hS (faceMeasure ν {x | dirLoss S u x = β}) θ]
+    simp only
+    rw [familyMeasure_faceMeasure_eq hS ν θ u β hp, integral_withDensity_ofReal ν
+      (measurable_faceDens hS ν θ u β) (faceDens_nonneg ν θ u β)]
+    exact integral_congr_ae (Eventually.of_forall fun x ↦ mul_comm _ _)
+  simp only [hcoord]
+  rw [hface, tendsto_iff_norm_sub_tendsto_zero]
+  refine squeeze_zero' (Eventually.of_forall fun t ↦ norm_nonneg _)
+    (Eventually.of_forall fun t ↦ ?_) (by simpa using hL1.const_mul B)
+  have hbound : ∀ᵐ x ∂ν, ‖S j x‖ ≤ B := Eventually.of_forall fun x ↦ by
+    rw [Real.norm_eq_abs]
+    exact hB x
+  have h1 : Integrable (fun x ↦ S j x * famDens S ν (θ - t • u) x) ν :=
+    (integrable_famDens hS ν _).bdd_mul (hS j).1.aestronglyMeasurable hbound
+  have h2 : Integrable (fun x ↦ S j x * faceDens S ν θ u β x) ν :=
+    (integrable_faceDens hS ν θ u β).bdd_mul (hS j).1.aestronglyMeasurable hbound
+  have h3 : Integrable (fun x ↦ |famDens S ν (θ - t • u) x - faceDens S ν θ u β x|) ν :=
+    ((integrable_famDens hS ν _).sub (integrable_faceDens hS ν θ u β)).abs
+  rw [Real.norm_eq_abs, ← integral_sub h1 h2]
+  refine abs_integral_le_integral_abs.trans ?_
+  rw [← integral_const_mul]
+  refine integral_mono (h1.sub h2).abs (h3.const_mul B) fun x ↦ ?_
+  rw [← mul_sub, abs_mul]
+  exact mul_le_mul_of_nonneg_right (hB x) (abs_nonneg _)
+
+variable (V : Finset (J → ℝ)) [Nonempty V]
+  (hpoly : momentBody ν (fun _ ↦ (1 : ℝ)) S = convexHull ℝ (V : Set (J → ℝ)))
+  (hcharged : ∀ v ∈ V, 0 < ν.real (statFibre S v))
+include hpoly hcharged
+
+omit [Nonempty V] in
+/-- **Facet accessibility (converse)**: a finite-length normal ray is itself a `C¹` path in the
+direction space of finite Fisher length whose means converge to `M`. -/
+theorem exists_path_of_lintegral_sqrt_raySpeedSq_lt_top {u : J → ℝ} {β : ℝ}
+    (hV : ∀ v ∈ V, dotJ u v ≤ β) {M : J → ℝ}
+    (hMint : M ∈ intrinsicInterior ℝ
+      (convexHull ℝ ((V.filter fun v ↦ dotJ u v = β : Finset (J → ℝ)) : Set (J → ℝ))))
+    {v₀ : J → ℝ} (hv₀V : v₀ ∈ V) (hv₀β : dotJ u v₀ = β) (huW : u ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S)
+    (hray : (∫⁻ r in Ioi (0 : ℝ), ENNReal.ofReal (√(raySpeedSq S ν (0 : J → ℝ) u r))) < ⊤) :
+    ∃ η η' : ℝ → J → ℝ, (∀ s, η s ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) ∧
+      (∀ s, HasDerivAt η (η' s) s) ∧ Continuous η' ∧
+      Tendsto (fun s ↦ meanMap ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 (η s)) atTop (𝓝 M) ∧
+      (∫⁻ s in Ioi (0 : ℝ), ENNReal.ofReal
+        (√(lawCov (familyMeasure ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 (η s))
+          (dirLoss S (η' s)) (dirLoss S (η' s))))) < ⊤ := by
+  have hp : 0 < ν.real {x | dirLoss S u x = β} := faceFibre_pos_of_charged ν V hcharged hv₀V hv₀β
+  have hF' := measurableSet_faceFibre hS u β
+  have hA0 : ν {x | dirLoss S u x = β} ≠ 0 := (ENNReal.toReal_pos_iff.1 hp).1.ne'
+  have hPA := isProbabilityMeasure_faceMeasure ν hA0
+  have hβ := ae_dirLoss_le_of_polytope hS ν V u β hpoly hV
+  have hM' : M ∈ intrinsicInterior ℝ
+      (momentBody (faceMeasure ν {x | dirLoss S u x = β}) (fun _ ↦ (1 : ℝ)) S) := by
+    rw [momentBody_faceMeasure_eq_of_exposed hS ν V u β hpoly hcharged hV hp]
+    exact hMint
+  set vM : J → ℝ := (faceThetaOf hS ν {x | dirLoss S u x = β} hM' : J → ℝ) with hvM
+  have hvMW : vM ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S :=
+    dirSpan_faceMeasure_le hS ν _ hF' hp (faceThetaOf hS ν {x | dirLoss S u x = β} hM').2
+  have hPf : ∀ θ : J → ℝ,
+      IsProbabilityMeasure (familyMeasure ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 θ) := by
+    intro θ
+    rw [familyMeasure_one_zero_eq_tilted hS ν]
+    exact isProbabilityMeasure_tilted
+      (integrable_exp_of_bdd ν ((bdd_dirLoss hS _).const_mul (-1)))
+  refine ⟨fun s ↦ vM - s • u, fun _ ↦ -u,
+    fun s ↦ Submodule.sub_mem _ hvMW (Submodule.smul_mem _ _ huW), fun s ↦ ?_, continuous_const,
+    ?_, ?_⟩
+  · have := ((hasDerivAt_id s).smul_const u).const_sub vM
+    simpa using this
+  · have h := tendsto_meanMap_ray hS ν vM u β hβ hp
+    rwa [meanMap_faceThetaOf hS ν _ hM'] at h
+  · have e : ∀ s : ℝ, lawCov (familyMeasure ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 (vM - s • u))
+        (dirLoss S (-u)) (dirLoss S (-u)) = raySpeedSq S ν vM u s := fun s ↦ by
+      have := hPf (vM - s • u)
+      have hn : dirLoss S (-u) = fun x ↦ -dirLoss S u x := funext (dirLoss_neg u)
+      rw [raySpeedSq, hn, lawCov_neg_left, lawCov_neg_right_eq, neg_neg]
+    simp_rw [e]
+    exact (lintegral_sqrt_raySpeedSq_lt_top_iff_tilt hS ν vM 0 u).2 hray
+
+/-- **Facet accessibility**: on a charged polytope with an exposed facet, a point of the relative
+interior of the facet is reached by some `C¹` path of finite Fisher length in the direction space
+iff the normal ray has finite Fisher length. -/
+theorem facet_fisher_access_iff {u : J → ℝ} {β : ℝ} (hV : ∀ v ∈ V, dotJ u v ≤ β)
+    {M : J → ℝ} (hM : M ∈ convexHull ℝ (V : Set (J → ℝ))) (hMβ : dotJ u M = β)
+    (hF : minimalFacePoly V M =
+      convexHull ℝ ((V.filter fun v ↦ dotJ u v = β : Finset (J → ℝ)) : Set (J → ℝ)))
+    (hMint : M ∈ intrinsicInterior ℝ
+      (convexHull ℝ ((V.filter fun v ↦ dotJ u v = β : Finset (J → ℝ)) : Set (J → ℝ))))
+    {v₀ : J → ℝ} (hv₀V : v₀ ∈ V) (hv₀β : dotJ u v₀ = β) {z : J → ℝ} (hzV : z ∈ V)
+    (hz : dotJ u z < β) (huW : u ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) (hu : dotJ u u ≠ 0)
+    (hT : ∀ w ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S, dotJ w u = 0 →
+      w ∈ dirSpan (faceMeasure ν {x | dirLoss S u x = β}) (fun _ ↦ (1 : ℝ)) S) :
+    (∃ η η' : ℝ → J → ℝ, (∀ s, η s ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) ∧
+      (∀ s, 0 ≤ s → HasDerivAt η (η' s) s) ∧ ContinuousOn η' (Ici 0) ∧
+      Tendsto (fun s ↦ meanMap ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 (η s)) atTop (𝓝 M) ∧
+      (∫⁻ s in Ioi (0 : ℝ), ENNReal.ofReal
+        (√(lawCov (familyMeasure ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 (η s))
+          (dirLoss S (η' s)) (dirLoss S (η' s))))) < ⊤) ↔
+    (∫⁻ r in Ioi (0 : ℝ), ENNReal.ofReal (√(raySpeedSq S ν (0 : J → ℝ) u r))) < ⊤ := by
+  constructor
+  · rintro ⟨η, η', hη, hd, hd', hlim, hI⟩
+    exact lintegral_sqrt_raySpeedSq_lt_top_of_path hS ν V hpoly hcharged hV hM hMβ hF hMint hv₀V
+      hv₀β hzV hz huW hu hT hη hd hd' hlim hI
+  · intro hray
+    obtain ⟨η, η', hη, hd, hd', hlim, hI⟩ := exists_path_of_lintegral_sqrt_raySpeedSq_lt_top hS ν
+      V hpoly hcharged hV hMint hv₀V hv₀β huW hray
+    exact ⟨η, η', hη, fun s _ ↦ hd s, hd'.continuousOn, hlim, hI⟩
+
+end Converse
+
 end Laplace.Multi
