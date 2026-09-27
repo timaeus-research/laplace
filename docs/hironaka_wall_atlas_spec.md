@@ -5617,3 +5617,9 @@ certificates for concrete resolved charts beyond the identity chart.
     THE VARIATIONAL RESPONSE AT ITS EXTENDED MEAN: `Q_x = Π(meanExt x)`), **`klDiv_completionLaw_eq_genRate`**
     (`D(Q_x‖ν) = 𝓘(meanExt x)`), **`klDiv_completionLaw_le`** (`Q_x` is the KL-minimiser among laws with its mean).
     The completed Fisher response is the restriction of the variational response to the accessible extended means.
+  - `ResponseCompactification.lean` (round 83, Q2(i) in its true form): `projL1Poly` (the variational response on the
+    closed polytope, in `L¹(ν)`), **`continuous_projL1Poly`** (sequential continuity from `tendsto_projL1_of_tendsto`),
+    `coe_eq_integral_projDens_mul`, **`injective_projL1Poly`** (the mean recovers the point),
+    **`isClosedEmbedding_projL1Poly`** (THE RESPONSE COMPACTIFICATION: the closed moment polytope embeds as a compact
+    subset of `L¹(ν)` through `M ↦ Π(M)`), `isCompact_range_projL1Poly`, `tendsto_of_tendsto_projL1Poly` (continuity of
+    the inverse: laws close in `L¹` have close means).

@@ -2022,3 +2022,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `ClosedMeanResponseContinuity` is essentially done. NEXT: `ResponseCompactification` (the closed polytope embeds as a
   closed subset of L¹(ν) via `M ↦ projL1 M`: continuity + injectivity via means + compactness), Hellinger form via
   `(√a−√b)² ≤ |a−b|`, then `FacetResponseLengthBudget`.
+- LANDED (2026-09-27): `ResponseCompactification` (c7b600c). Gotchas: `Integrable.toL1_eq_toL1_iff f g hf hg` (functions
+  explicit first); `continuous_iff_seqContinuous.2 fun m M hm ↦ …` with `tendsto_subtype_rng.1 hm`;
+  `Set.Finite.isCompact_convexHull (𝕜 := ℝ)`; `Continuous.isClosedEmbedding` (compact → T2, injective); `have` not
+  `haveI` for `CompactSpace` facts (linter). NEXT: `DataManifoldResponseLaw` — the response law along the whole data
+  manifold `t ↦ Π(m(ρ_t))` is continuous on `[0,∞]` with `Π(m(ρ_0)) = ν` and limit `Π(E[S | h = H])` at `t = ∞`
+  (no accessibility), agreeing with the Fisher endpoint where accessible; then `FacetResponseLengthBudget`.
