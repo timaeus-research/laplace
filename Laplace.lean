@@ -555,6 +555,7 @@ import Laplace.Multi.FaceResponsePythagoras
 import Laplace.Multi.ResponsePullbackMetric
 import Laplace.Multi.VertexFibreUnique
 import Laplace.Multi.FaceFibreUnique
+import Laplace.Multi.ResponseLocalMetricControl
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
