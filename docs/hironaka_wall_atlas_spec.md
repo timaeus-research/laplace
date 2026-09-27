@@ -6390,3 +6390,13 @@ certificates for concrete resolved charts beyond the identity chart.
     definition of `m = ∫ F`), **`concaveOn_lineVariance_of_flat`** (residual-flat ⇒ posterior variance concave on every
     interval in the domain; `concaveOn_of_deriv2_nonpos` with `deriv^[2]` handled by `change`). Not done: Loewner
     concavity of covariance matrices; the mixture identity.
+  - `ResponseSaturatedDimension.lean` (I5 part 1): **`exists_modelScore_eq_of_spansAffine`** (every bounded observable
+    is, after `P_θ`-centring, a centred score `f_w` for a unique `w ∈ W` — the regression representation for an
+    arbitrary observable), `bdd_of_fintype`, `familyMeasure_singleton_ne_zero`, `forall_of_ae_familyMeasure`
+    (`ae_iff_of_countable`), **`scoreEval hS ν θ : W →ₗ (X → ℝ)`** (`w ↦ f_w`; its field proofs use `modelScore_add hS ν`
+    so hS IS included), `scoreEval_injective hS ν θ` (kernel = invisible ∩ W = 0 via `eq_zero_of_invisible_of_mem_dirSpan
+    (μ := ν) measurable_const (fun _ ↦ one_pos) hS`), `meanFunctional ν θ` (`Σ P_θ{x} a x`), `meanFunctional_apply` (= ∫),
+    `meanFunctional_range_eq_top`, **`range_scoreEval`** (= `ker meanFunctional`: the centred scores are exactly the centred
+    functions), **`finrank_dirSpan_eq_card_sub_one`** (`dim W = |X| − 1` for finite X with all atoms charged and
+    `SpansAffine`; rank–nullity). Gotcha: a local notation `f` makes the named argument `(f := …)` unparsable.
+    Not done: barycentric identification `W ≅ Δ°`, the featureless journey as the mixture `(1−t)ν + tp`, I6 sphere.
