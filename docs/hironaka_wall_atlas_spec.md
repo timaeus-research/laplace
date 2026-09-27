@@ -6066,3 +6066,14 @@ certificates for concrete resolved charts beyond the identity chart.
     `A_θ θ'`), `hasDerivAt_chartDeriv_path`, **`hasDerivAt_deriv_chartV_path`** (MEAN PATH LAW `(m∘θ)'' = A θ'' + T(θ',θ')`),
     **`mean_accel_eq_zero_iff_mGeodesic`** (m-GEODESICS = MEAN-AFFINE PATHS), `hasDerivAt_deriv_chartV_path_of_mGeodesic`,
     `hasDerivAt_deriv_chartV_path_of_lcGeodesic` (LC geodesics: `(m∘θ)'' = ½T(θ',θ')`).
+  - `ResponseFisherCurvature.lean` (D03): `chartDeriv_eq_fderiv_chartV`, `thirdOp_eq_fderiv_chartDeriv`,
+    **`contDiff_thirdOp`** (`T_θ` is `C^∞` in θ), **`fourthOp θ := fderiv (θ ↦ thirdOp θ) θ`** (`Q_θ(u,v,w) = ∂_uT_θ(v,w)`),
+    `hasFDerivAt_thirdOp`, **`fourthOp_symm`** (`Q(u,v,·) = Q(v,u,·)` via `isSymmSndFDerivAt` of the smooth `CD`),
+    `hasDerivAt_thirdOp_line`, **`hasFDerivAt_inverse_natural`** (`∂_u A_θ⁻¹ = −A⁻¹T_θ(u)A⁻¹` via
+    `hasFDerivAt_ringInverse`), `hasDerivAt_inverse_line`, `mChristoffel_smul_right/sub_right`,
+    **`hasDerivAt_mChristoffel_line`** (`∂_uC(v,w) = −C(u,C(v,w)) + A⁻¹Q(u,v,w)`), `hasDerivAt_alphaChristoffel_line`,
+    **`alphaCurvature α θ u v w := ∂_uΓ^α(v,w) − ∂_vΓ^α(u,w) + Γ^α(u,Γ^α(v,w)) − Γ^α(v,Γ^α(u,w))`** (as `deriv`s along
+    lines), **`alphaCurvature_eq`** (`R^α = −((1−α²)/4)(C(u,C(v,w)) − C(v,C(u,w)))`: fourth-order terms cancel by
+    `fourthOp_symm`, closed by `module`), `alphaCurvature_one`/`_neg_one` (e/m FLAT), **`alphaCurvature_zero`**
+    (Riemannian curvature of the Fisher metric `= −¼[C,C]`), `alphaCurvature_neg` (`R^{−α} = R^α`),
+    `alphaCurvature_antisymm`.

@@ -2483,10 +2483,13 @@ D01 `ResponseFisherJets` LANDED: builds on the existing `fisherInner S ν θ u v
   `(m∘θ)'' = Aθ'' + T(θ',θ')` via `hasFDerivAt_chartDeriv.comp_hasDerivAt` then `HasDerivAt.clm_apply`, m-geodesics ⇔
   mean-affine). GOTCHA: `variable {θ θ' : ℝ → 𝕍} {θ'' : 𝕍} {t₀ : ℝ}` declared as SECTION VARIABLES (with 𝕍 a local
   notation) makes every statement in the section time out at `isDefEq`/`whnf` — even statements not mentioning them;
-  explicit per-theorem binders `{θ θ' : ℝ → 𝕍}` elaborate instantly. NEXT: D03 `ResponseFisherCurvature`
-  (`R^α(u,v)w = −((1−α²)/4)(C(u,C(v,w)) − C(v,C(u,w)))` in the natural chart: `alphaCurvature α θ u v w :=
-  ∂_u Γ^α(v,w) − ∂_v Γ^α(u,w) + Γ^α(u,Γ^α(v,w)) − Γ^α(v,Γ^α(u,w))`; needs `hasDerivAt` of `mChristoffel (θ+tu) v w` —
-  derivative of `(CDE θ).symm` (`hasFDerivAt_inverse_response`-style, or `ContinuousLinearEquiv` inverse derivative
-  `HasFDerivAt.inverse`) and of `thirdOp` (fourth cumulant: `fderiv (fderiv CD)` symmetric via `isSymmSndFDerivAt` of
-  the smooth `chartV`) — the fourth-derivative terms cancel by symmetry, leaving the quadratic term; e/m flatness
-  `alphaCurvature (±1) = 0`).
+  explicit per-theorem binders `{θ θ' : ℝ → 𝕍}` elaborate instantly. D03 `ResponseFisherCurvature` LANDED (fourthOp = fderiv of thirdOp, symmetric via `isSymmSndFDerivAt` of the
+  existing `contDiff_chartDeriv` (SmoothFamily — DUP if redeclared); inverse derivative in natural coords copied from
+  `hasFDerivAt_inverse_response` with `hasFDerivAt_ringInverse`; `hasDerivAt_mChristoffel_line` by `clm_apply` +
+  `congr_deriv rfl`; `alphaCurvature_eq` closed by `simp only [alphaChristoffel, mChristoffel_smul_right]; module`).
+  GOTCHA: `(hF.comp_hasDerivAt t₀ hline : HasDerivAt (fun t ↦ f (θ + t•u)) _ _)` as a direct term fails to unify
+  `?f ∘ line` with the lambda — bind with `have h0 := …` first, then `have h1 : … := h0`. NEXT: D04
+  `ResponseDensityTopology` (normalised densities `normDens ν g` in `L¹(ν)`; `DataLaw := {p ∈ Lp ℝ 1 ν // p ∈ range
+  normDens}`; `lawResponse p := θr (fun i ↦ ∫ S i · p dν)` continuous (bounded S ⇒ `p ↦ ∫ S_i p` is a CLM on L¹, so
+  continuous; `responseTheta = chartVInv` continuous on its open range via `contDiffOn_infty_chartVInv`); `modelLaw θ :=
+  normalised density of Pfam θ` continuous section), D05 `ResponseFibreDeformation`, D06 `ResponseTopologicalQuotient`.
