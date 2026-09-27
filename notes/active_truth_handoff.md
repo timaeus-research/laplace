@@ -2495,10 +2495,16 @@ D01 `ResponseFisherJets` LANDED: builds on the existing `fisherInner S ν θ u v
   `2 exp(2(‖θ₀‖+1)|J|B)` from `famDens_le_of_norm_le`; `L1.dist_eq_integral_dist` + `MemLp.coeFn_toLp` turn the L¹
   distance into `∫ |p_θ − p_θ₀|`. GOTCHAS: `momentL1` already exists (renamed `lawMomentFun`);
   `norm_integral_le_of_norm_le hint (f := …)` needs the explicit `f`; `mean_tilted_mem_intrinsicInterior hS ν hg`
-  takes hS; `famDens_pos hS ν θ x`; `normDens_modelTilt ν θ` (hS omitted). NEXT: D05 `ResponseFibreDeformation`
-  (`deform : unitInterval × DataLaw ν → DataLaw ν`, `(1−t)•p + t•modelLaw(lawResponse p)` — stays in DataLaw via
-  `mixTilt` (`normDens (mixTilt g h t) = (1−t) normDens g + t normDens h`, needs a lemma `lawDens_mixTilt`); continuity
-  from `continuous_lawResponse`, `continuous_modelLaw`, Lp module ops; fibre-preserving via `responseOf_mixTilt_of_eq`;
-  `deform 0 p = p`, `deform 1 p = modelLaw (lawResponse p)`, `deform t (modelLaw θ) = modelLaw θ`), then D06
-  `ResponseTopologicalQuotient` (`IsQuotientMap (lawResponse hS ν)` via `IsQuotientMap.of_inverse continuous_modelLaw
-  continuous_lawResponse lawResponse_modelLaw`-style (check argument roles), fibres contractible from D05).
+  takes hS; `famDens_pos hS ν θ x`; `normDens_modelTilt ν θ` (hS omitted). D05 `ResponseFibreDeformation` LANDED (mixtures of data laws are data laws; `dataLawSet`/`responseFibre` convex ⇒
+  contractible via `Convex.contractibleSpace` — no homotopy construction needed; `deform` on `unitInterval` with
+  `continuous_deform` by `Continuous.subtype_mk` (NOT `continuous_induced_rng`, the DataLaw instance is
+  `inferInstanceAs` and not syntactically induced); `Real.exp_log` on `mixTilt … x` by `exact`, not `rw`). NEXT: D06
+  `ResponseTopologicalQuotient`: `isQuotientMap_lawResponse : IsQuotientMap (lawResponse hS ν)` from
+  `IsQuotientMap.of_inverse (continuous_modelLaw) (continuous_lawResponse) (lawResponse_modelLaw : LeftInverse
+  lawResponse modelLaw)` (signature: `of_inverse {g : Y → X} (hf : Continuous f) (hg : Continuous g) (h : LeftInverse g
+  f) : IsQuotientMap g` with f = modelLaw, g = lawResponse); `Function.Surjective lawResponse`; the quotient
+  `Quotient (Setoid.ker lawResponse) ≃ₜ W` — Mathlib: `IsQuotientMap.homeomorph`? else build via
+  `Homeomorph.homeomorphOfContinuousOpen`/`Quotient.lift` + `IsQuotientMap.continuous_iff`; `IsQuotientMap.lift`?
+  (grep `Setoid.ker`, `Quotient.lift`, `IsQuotientMap` in Topology/Homeomorph); also a homotopy-equivalence statement
+  `DataLaw ν ≃ₕ W` from the strong deformation retraction (ContinuousMap.HomotopyEquiv with `deform`) and the response
+  `lawResponse` as its map.

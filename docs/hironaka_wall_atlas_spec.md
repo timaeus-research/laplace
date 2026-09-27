@@ -6088,3 +6088,12 @@ certificates for concrete resolved charts beyond the identity chart.
     (= `famDens`), **`modelLaw hS ν θ := toDataLaw (modelTilt θ)`**, **`lawResponse_modelLaw`** (`Φ(p_θ) = θ`),
     `abs_dirLoss_le_of_norm_le`, `famDens_le_of_norm_le` (uniform bound `exp(2R|J|B)` on a ball),
     **`continuous_lawDens_modelTilt`** (θ ↦ p_θ continuous into L¹ by dominated convergence), **`continuous_modelLaw`**.
+  - `ResponseFibreDeformation.lean` (D05): **`normDens_mixTilt`** (the density of the mixture tilt is the mixture),
+    **`lawDens_mixTilt`** (`lawDens (mixTilt g h t) = (1−t)•lawDens g + t•lawDens h` in L¹), `dataLawSet ν`,
+    `mem_dataLawSet_iff`, **`convex_dataLawSet`**, `nonempty_dataLawSet`, **`contractibleSpace_dataLaw`** (via
+    `Convex.contractibleSpace`), **`deform hS ν t p := (1−t)•p + t•modelLaw(lawResponse p)`** (`t : unitInterval`),
+    `deform_coe`, `deform_zero`, `deform_one`, `deform_modelLaw` (fixes the family), `deform_toDataLaw` (= law of the
+    mixture tilt), **`lawResponse_deform`** (FIBRE-PRESERVING), **`continuous_deform`** (jointly continuous: a strong
+    deformation retraction of DataLaw onto the family, fibrewise), `responseFibre hS ν θ : Set (Lp ℝ 1 ν)`,
+    `modelLaw_mem_responseFibre`, `toDataLaw_mem_responseFibre`, **`convex_responseFibre`**,
+    **`contractibleSpace_responseFibre`** (EVERY RESPONSE FIBRE IS CONTRACTIBLE).
