@@ -5655,3 +5655,13 @@ certificates for concrete resolved charts beyond the identity chart.
     ORTHOGONAL SCORE DECOMPOSITION `Var k = G^{resp}_g(k) + Var(k − k_vis)`), **`lawCov_residual_dirLoss_eq_zero`**
     (the residual is uncorrelated with every visible contrast), `pullbackForm_le_lawCov_self` (contraction). Response
     formation at a matched law is orthogonal projection of the data score onto the structural tangent space.
+  - `FisherNormalisedSampling.lean` (round 84, rank 4): `exists_retraction` (a linear retraction `p` of `J → ℝ` onto
+    `W`), `samplingOp` (`R_θ = ι∘(Dm(θ)|_W)⁻¹∘p`), `samplingEnergy` (`q_θ(z) = −⟨R_θ z, z⟩`),
+    `meanMapDeriv_chartDerivEquiv_symm`, **`samplingEnergy_eq_fisherVar`** (on `W`: `q_θ(z) = |(Dm|_W)⁻¹z|²_F`,
+    retraction-independent), `matchedOp` (`N_θ = ι∘(Dm|_W)⁻¹∘Dm`), `samplingOp_meanMapDeriv`, **`isProj_matchedOp`**,
+    **`trace_matchedOp`** (`tr N_θ = dim W`), `samplingOp_apply_eq_sum`, `dotJ_samplingOp_eq`, `trace_eq_sum_single`,
+    `dirLoss_single_one`, `lawCov_family_eq_neg_meanMapDeriv` (`Cov_θ(S_a,S_b) = −(Dm(θ)e_a)_b`),
+    **`sum_samplingOp_lawCov_family`** (`∑(R_θ)_{ab}Cov_θ(S_a,S_b) = −dim W`), **`integral_samplingEnergy`** /
+    **`integral_samplingEnergy_eq_trace`** (`E q_θ(M̂_n − m) = −tr(R_θ C_D)/n` for ANY data law `D`),
+    **`integral_samplingEnergy_family`** (THE MATCHED TRACE IDENTITY `E q_θ(M̂_n − m) = dim W / n`, basis-free, for
+    every `θ` and every retraction). The Fisher-normalised sampling noise is scale-free: `√(dim W/n)`.

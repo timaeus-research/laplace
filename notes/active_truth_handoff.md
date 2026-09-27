@@ -2066,3 +2066,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `omit [Nonempty X] [Nonempty J] in` + `set_option linter.unusedFintypeInType false in`. NEXT: `FisherNormalisedSampling`
   (basis-free trace identity `E⟨M̂−m, R_θ(M̂−m)⟩ = tr(R_θ C_ρ)/n`, `= dim W/n` at matching; `R_θ = ι∘C_θ⁻¹∘proj_W` =
   `(CDE θ).symm` composed with `dotJ`), `ResponseLocalTesting`, `TiltedFisherCompactConvergence`.
+- FisherNormalisedSampling landed (round 84 rank 4): basis-free trace identity via a retraction `p : (J→ℝ) →ₗ W`
+  (`LinearMap.exists_leftInverse_of_injective W.subtype W.ker_subtype`), `samplingOp := W.subtype ∘ₗ
+  (CDE θ).symm.toLinearEquiv.toLinearMap ∘ₗ p`, `matchedOp := … ∘ₗ (Dm θ).toLinearMap.codRestrict W mem`;
+  `LinearMap.IsProj.trace` gives `tr = finrank W` (Free/Finite instances automatic over ℝ); coordinates via
+  `LinearMap.trace_eq_matrix_trace ℝ (Pi.basisFun ℝ J)` + `LinearMap.toMatrix_apply, Pi.basisFun_apply,
+  Pi.basisFun_repr`; expansion `R z = ∑ z_b • R e_b` from `pi_eq_sum_univ'` + `map_sum`/`map_smul`. GOTCHAS:
+  `dirLoss_single` (WallChart) and `dotJ_single` (RetractionDerivative) are NOT in the closure — `dotJ_single_left`
+  (MomentPolytope) is; a section lemma with explicit `hS ν` must be passed them inside `rw` or `Nonempty ?m` sticks;
+  `[DecidableEq J]` section var ⇒ `omit [DecidableEq J] in` + `classical` on theorems without `Pi.single`.
+  NEXT: `ResponseLocalTesting` (Hellinger sandwich on coercive patches `√λ/(2B) d_F ≤ H ≤ ½ d_F`), then
+  `TiltedFisherCompactConvergence`, `ResponseClassResolution` (class-change probability ≤ tr(C_θ⁻¹C_ρ)/(n r²)).
+
