@@ -2744,10 +2744,9 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   (noiseless detection off the annihilator), `annihilator_of_lift` + `isLeast_information_lift_sing`). Round 103
   DONE (audit clean; M3 sign-cell route sound; M4/M7 statements; post-M ranks 1–6, see spec). M3
   `ResponseRegressionUniformBound` LANDED (`exists_uniform_regressionDir_bound`: `‖u_F(θ)‖ ≤ L_F` over the whole
-  model on a finite configuration, vertex-free sign cells + direct termwise bound). NEXT: M3b `ResponseGlobalLipschitz`
-  (Euclidean Lipschitz `|E_{θr N}F − E_{θr M}F| ≤ |J|L_F‖N − M‖` on Ω via `hasDerivAt_lineObservable` +
-  `fisherInner_chartDerivEquiv_symm'`, then the closed polytope via `continuousOn_qStarVec` + segment approximation;
-  law-valued `‖R_M − R_N‖₁ ≤ L‖M − N‖` from atom indicators); M4 facewise tangential convergence (law-level
+  model on a finite configuration, vertex-free sign cells + direct termwise bound). M3b `ResponseGlobalLipschitz`
+  LANDED (`abs_responseObs_sub_le`/`lipschitzOnWith_responseObs`: `|E_{R_N}F − E_{R_M}F| ≤ L‖N − M‖` on the CLOSED
+  polytope; `sum_abs_qStarVec_sub_le`: `Σ_x|R_N{x} − R_M{x}| ≤ L‖N − M‖`). NEXT: M4 facewise tangential convergence (law-level
   regression stability lemma); M7 (common-base representation, relative-base Pythagoras, `θ'(0) = −u_h`,
   response-to-base quadratic limit, DEFECT THEOREM, ladder); then post-M ranks 2–6. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:

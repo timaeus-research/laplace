@@ -667,6 +667,7 @@ import Laplace.Multi.ResponseMinimaxTwoPoint
 import Laplace.Multi.ResponseRefinementCompanions
 import Laplace.Multi.ResponseSingularCovariance
 import Laplace.Multi.ResponseRegressionUniformBound
+import Laplace.Multi.ResponseGlobalLipschitz
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

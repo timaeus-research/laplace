@@ -6848,3 +6848,20 @@ certificates for concrete resolved charts beyond the identity chart.
     `‖·‖` on `X → ℝ` needs `[Fintype X]` (cannot be omitted); `obtain ⟨x⟩ := ‹Nonempty X›` fails inside this
     section (`?m` not inductive) — use `have x : X := Classical.arbitrary X`; `Finset.single_le_sum` needs `(f := …)`
     when the summand is `|bound σ|`.
+  - `ResponseGlobalLipschitz.lean` (M3b, THE GLOBAL LIPSCHITZ RESPONSE; section variables as K1's `Boundary`,
+    `hν : ∀ x, 0 < ν {x}`): **`abs_integral_familyMeasure_sub_le_of_mem`** (interior: `|E_{θ(N)}F − E_{θ(M)}F| ≤
+    L‖N − M‖` for `M, N ∈ Ω` and `L ≥ Σ_j|u_F(θ)_j|` uniformly — response line `θ₀ = θr M`, `e = ⟨N − M, _⟩`,
+    segment interior by `mem_intrinsicInterior_segment_of_mem (convex_momentBody S)` (+ `t = 1` by `change M + (N − M)
+    ∈ Ω`), derivative `hasDerivAt_lineObservable` rewritten to `dotJ u_F e` by `← fisherInner_regressionDir`,
+    `responseLineVel`, `fisherInner_chartDerivEquiv_symm'`, `neg_neg`; mean value
+    `norm_image_sub_le_of_norm_deriv_le_segment'` on `Icc 0 1`; endpoints by `change` to `M + (1:ℝ)•(N − M)`),
+    `tendsto_segment_mem_hull` (general-`M` version of K1's `tendsto_segment_dataMean`), `segment_mem_Ω_of_mem_hull`,
+    `integral_responseProjection_eq_sum` (`E_{R_M}F = Σ q*(M)_x F x` for `M ∈ hull`), `tendsto_sum_qStarVec_segment`
+    (`continuousOn_qStarVec` composed with the segment), **`abs_responseObs_sub_le`** (closed polytope:
+    `|E_{R_N}F − E_{R_M}F| ≤ L‖N − M‖` via `le_of_tendsto` along `𝓝[<] 1`, `Filter.Tendsto.abs`,
+    `Ioo_mem_nhdsLT`, `atomMass_responseTheta_eq_qStarVec`, `‖t•(N − M)‖ = t‖N − M‖ ≤ ‖N − M‖`),
+    **`exists_lipschitz_responseObs`** (`∃ L ≥ 0` from M3's `exists_uniform_sum_abs_regressionDir_bound`),
+    `lipschitzOnWith_responseObs` (`∃ K : NNReal, LipschitzOnWith K (M ↦ E_{R_M}F) hull`,
+    `LipschitzOnWith.of_dist_le_mul`), **`sum_abs_qStarVec_sub_le`** (law-valued: `Σ_x |R_N{x} − R_M{x}| ≤
+    L‖N − M‖`, from atom indicators `fun y ↦ if y = x then 1 else 0` with `bdd_of_fintype`, `Finset.sum_ite_eq'`,
+    `choose` over `x`). Gotcha: `rw [smul_sub, smul_sub]` rewrites the RHS instance first — `simp only [smul_sub]`.
