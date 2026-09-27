@@ -2581,6 +2581,12 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   by `toReal_klDiv_tilted_tilted ν (Bdd.const 0) (bdd_modelTilt hS θ)` and `ν.tilted 0 = ν` by `simp`; the sum of the two
   `∫` needs typed `IntervalIntegrable (fun t ↦ (1−t) * e t)` haves; `dotJ_smul_right` does not exist — use
   `(isLinearMap_dotJ _).map_smul` + `smul_eq_mul`; `sq_integral_sqrt_mul_le` (MeanSegment) has NO named `X`/`ν` args).
-  NEXT: F4 `ResponseTruthShiftResolution`, F5 `ResponseSimplexCurvature` (affine-basis family has sectional curvature ¼),
-  F6 `ResponseFisherEnergyStationarity` (converse of E6 via test fields `φ(t)z`); then a round-96 consult. Optional:
+  F4 `ResponseTruthShiftResolution` LANDED (wrong-sign event `(M̂−b)(M_D−b) ≤ 0` = E5's event `M̂ ≤ b` when `M_D > b`
+  and the mirrored event `dotJ (−a) M̂ ≤ −b` otherwise, via `dotJ_neg_left` (RateFunction), `dirLoss_neg`
+  (BasepointCurvature), `lawCov_neg_left` + `lawCov_neg_right_eq` (SusceptibilityDefect); sign lemma from
+  `hasDerivAt_iff_tendsto_slope_zero` restricted with `nhdsWithin_mono` to `𝓝[>] 0`, ball membership already arrives
+  as `dist … < r`; `integral_dirLoss_eq_dotJ (u := a) ρ hS` (DataRayBlocks) has `u` implicit; complement probability via
+  `measureReal_compl` + `probReal_univ`; path samples `Xs : ℝ → ℕ → Ω → X` with all hypotheses quantified over `t`).
+  NEXT: F5 `ResponseSimplexCurvature` (affine-basis family has sectional curvature ¼), F6
+  `ResponseFisherEnergyStationarity` (converse of E6 via test fields `φ(t)z`); then a round-96 consult. Optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

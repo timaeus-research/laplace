@@ -6190,3 +6190,11 @@ certificates for concrete resolved charts beyond the identity chart.
     = ∫₀¹ t G dt`), **`jeffreys_eq_action`** (Jeffreys = `∫₀¹ G(θ',θ')`), **`toReal_klDiv_eq_defect_add_action`** (HEADLINE
     `KL(ρ_g‖ν) = KL(ρ_g‖P_{Φ(g)}) + ∫₀¹ (1−t) G_{θ_t}(θ'_t,θ'_t) dt` via E2 Pythagoras), `sq_journeyLength_le_jeffreys`
     (Fisher length² ≤ Jeffreys, Cauchy–Schwarz).
+  - `ResponseTruthShiftResolution.lean` (F4, the user's resolution story: two sources of shift of the structural coordinate —
+    a moving truth vs sampling): `eventually_sign_of_hasDerivAt` (real path with `c'(0) = d ≠ 0`: eventually
+    `(c t − c 0) d > 0` and `|c t − c 0| ≥ |d| t/2` along `𝓝[>] 0`), **`measureReal_wrongSign_le`** (both orientations of
+    the E5 wall bound: `P((M̂−b)(M_D−b) ≤ 0) ≤ Var_D⟨a,S⟩/(n(M_D−b)²)` for any `b ≠ ⟨a,M_D⟩`; the negative case by `−a`, `−b`),
+    `pathCoord S D a t := ⟨a, E_{D t} S⟩`, `pathCoord_eq_integral`, **`eventually_measureReal_wrongTruthSign_le`** (THE
+    LOCAL-ALTERNATIVE BOUND `P((M̂_t − c(0)) d ≤ 0) ≤ 4 Var_t/(n d² t²)` for small `t > 0`),
+    **`truthShift_sign_resolved_of_sampleSize`** (`4V ≤ ε n d² t²` ⇒ `P(correct sign) ≥ 1 − ε`), `hasDerivAt_pathCoord_tilted`
+    (truth velocity of an exponential journey `= Cov_{ρ_0}(⟨w,S⟩, ⟨a'_0,h⟩)`).

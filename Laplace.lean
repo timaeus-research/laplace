@@ -627,6 +627,7 @@ import Laplace.Multi.ResponseFisherEnergyVariation
 import Laplace.Multi.ResponseInformationHessian
 import Laplace.Multi.ResponseFeaturelessJourney
 import Laplace.Multi.ResponseInformationAction
+import Laplace.Multi.ResponseTruthShiftResolution
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
