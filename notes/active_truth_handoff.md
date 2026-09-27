@@ -1715,3 +1715,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: `FaceMassConcentration` (`P_{η n}(A) → 1` from `faceTheta → vM`, `normalDepth → ∞`: ray mass `faceMass/(faceMass + offFaceMass r)
   → 1` by `tendsto_offFaceMass`, transferred through the bounded tilt `⟨faceTheta − vM, S⟩` by `le_integral_tilted_of_nonneg`), then
   the tangential coercivity and the assembly.
+- `FaceMassConcentration` landed. Gotchas: `Tendsto (fun t ↦ … (θ − t • u) …)` needs `t : ℝ` annotated or `Preorder ?m` is stuck;
+  `measureReal_le_one` needs the probability instance of the family law (`familyMeasure_one_zero_eq_tilted` +
+  `isProbabilityMeasure_tilted`); `integral_indicator_one hA` matches `A.indicator (1 : X → ℝ)` (Pi one), not
+  `A.indicator fun _ ↦ 1`; `Tendsto.mul` gives `𝓝 (1 * 1)` — `rw [mul_one] at`; `(Real.continuous_exp.tendsto 0).comp h`
+  then `rw [Real.exp_zero] at this; exact this` (not `simpa`).
+  KEY SIMPLIFICATION for the assembly: since the face directions satisfy `⟨u, z⟩ = 0` (face body in the hyperplane), the normal
+  depth is LINEAR in `η`: `normalDepth η = −⟨η,u⟩/⟨u,u⟩` and `faceTheta η = η + normalDepth η • u` on `W`, so along a `C¹` path
+  `r' = −⟨η',u⟩/⟨u,u⟩`, `v' = η' + r' u` with no chart derivative needed.
+  NEXT: `FaceCoercivity` (`Var_q f ≥ q(A) Var_{q(·|A)} f`; `Var_{P^A_{vM}}⟨w,S⟩ ≥ λ_M (Σ|wᵢ|)²` on `T'` by compactness; eventual
+  uniform coercivity along the sequence via `faceMeasure_tilted` + Lemma C), then `FacetFisherAccess` (assembly with
+  `lawCov_congr_ae` for the a.e. slack).

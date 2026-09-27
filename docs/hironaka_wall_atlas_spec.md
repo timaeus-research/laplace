@@ -5346,3 +5346,8 @@ certificates for concrete resolved charts beyond the identity chart.
   `∀ w ∈ W, w invisible on the face → ∃ c, w = c • u`), **`tendsto_normalDepth_atTop`** (an off-face vertex gap forces
   `normalDepth → +∞`), **`tendsto_faceTheta_normalDepth_of_tendsto_meanMap`** (charged polytope, exposed facet, `M ∈ ri F`:
   `meanMap(η n) → M` ⇒ tangential coordinates → `faceThetaOf M` and normal depths → ∞, through the vertex-gap criterion).
+- `FaceMassConcentration.lean` (NOT mirrored; round-78 "prove `q_n(A) → 1` separately"): `exists_uniform_bound`,
+  `abs_dirLoss_le_sum_mul` (`|⟨w,S x⟩| ≤ (Σ|wᵢ|) B`), `exp_mul_measureReal_le_measureReal_tilted` (`e^{−2c} μ(A) ≤ (μ.tilted g)(A)`),
+  `measureReal_family_ray_faceFibre` (`P_{θ − tu}(A) = faceMass/(faceMass + offFaceMass t)`),
+  **`tendsto_measureReal_family_ray_faceFibre`** (`→ 1` along the ray), **`tendsto_measureReal_family_faceFibre_of_components`**
+  (`v_n → v_M`, `r_n → ∞` ⇒ `P_{v_n − r_n u}(A) → 1`, by the bounded-tilt transfer from the ray).
