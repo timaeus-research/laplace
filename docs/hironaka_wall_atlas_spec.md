@@ -6773,3 +6773,17 @@ certificates for concrete resolved charts beyond the identity chart.
     **`iid_integral_dotJ_mul_locInc_sub_le`** (`|E[⟨u,ξ⟩f̂_{F,loc}] − Σ_D(u,u_F)/n| ≤ (Σ|u_j|)c_F√3|J|³(2B)³/(n√n)`). Gotcha: a
     `have h := norm_nonneg z` for `z : W` fails with "failed to infer have declaration type" — ascribe `(0 : ℝ) ≤ ‖z‖`; a
     `fun z ↦ …` binder whose body contains `(z : J → ℝ)` is inferred as `J → ℝ` — write `fun z : 𝕍 ↦`.
+  - `ResponseMinimaxTwoPoint.lean` (M5, THE MINIMAX SCALE): `clipTest T ψ₀ ψ₁ z := max 0 (min 1 ((T z − ψ₀)/(ψ₁ − ψ₀)))`,
+    `clipTest_nonneg/le_one`, `measurable_clipTest`, `mul_clipTest_le` (`Δ·φ ≤ |T − ψ₀|`), `mul_one_sub_clipTest_le`
+    (`Δ(1−φ) ≤ |T − ψ₁|`), **`lecam_two_point`** (`ψ₀ < ψ₁`: `((ψ₁−ψ₀)/2)(1 − √(nKL(μ‖η))) ≤ max(E_{μⁿ}|T−ψ₀|, E_{ηⁿ}|T−ψ₁|)`
+    from L7's `testing_error_data_ge_of_klDiv`; pairing (μ,ψ₀),(η,ψ₁)), **`lecam_two_point_rev`** (`ψ₁ < ψ₀`, test
+    `1 − clipTest T ψ₁ ψ₀`), `tendsto_scale` (`a/√n → 0` in `𝓝[≠] 0`, top-level), `bdd_dataInfluence`,
+    `lawCov_dataInfluence_self` (`Var_D(IF) = Σ_D(u_F,u_F)`), `hasDerivAt_dataObs_tilted_dataInfluence`,
+    **`minimax_two_point_tilted`** (`∃ L, Tendsto (√n·L n) (𝓝 ((aσ²/2)(1 − √(a²σ²/2)))) ∧ ∀ᶠ n, ∀ T measurable integrable,
+    L n ≤ max(E_{Dⁿ}|T − Ψ_F(D)|, E_{D_{t_n}ⁿ}|T − Ψ_F(D_{t_n})|)` with `D_t ∝ e^{t·IF}D`, `t_n = a/√n`; proof via
+    `hasDerivAt_iff_tendsto_slope_zero` composed with `tendsto_scale` for `√nΔ_n → aσ²`, `tendsto_klDiv_tilted_div_sq`
+    for `nKL_n → a²σ²/2`, `field_simp` for the two scale identities, eventual positivity of `Δ_n` from the limit, and
+    `lecam_two_point_rev` with (μ = D_t, ψ₀ = Ψ(D_t)), (η = D, ψ₁ = Ψ(D))). Gotcha: Le Cam's pairing is (law, its value) —
+    the first version needs `ψ₀ < ψ₁` for the law with the smaller value first; hoist limits shared by several bullets
+    above the `refine ⟨…⟩` (a `set` abbreviation `h := dataInfluence …` makes `field_simp` leave `h` vs `dataInfluence`
+    residues in later copies).
