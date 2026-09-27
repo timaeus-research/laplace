@@ -2121,4 +2121,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   tr(psd·psd) ≥ 0, i.e. square roots or a Fisher-ON basis). NEXT: `TiltedFisherCompactConvergence`
   (`|lawCov Q₁ f g − lawCov Q₂ f g| ≤ 3KL‖q₁−q₂‖₁` for laws `ν.withDensity (ofReal ∘ qᵢ)`), then the bounded-tilt
   adapter for the length budget, `ResponseFormContinuity`, `AccessibleFaceNonexpansion`.
+- TiltedFisherCompactConvergence landed (round 85 rank 3). Reuse: `integral_withDensity_ofReal ν hg hg0 F`
+  (PolyhedralRecovery), `isProbabilityMeasure_withDensity_ofReal ν hq0 hqi hq1` (already existed — my duplicate
+  clashed at the dup-check), `lawCov_sub_const_self`, `lawCov_const_left_eq_zero` (NormalGeometry),
+  `Integrable.mul_bdd hf hg.aestronglyMeasurable bound` (density first). GOTCHAS: `tiltDens` name taken
+  (LiftDensity) → `tiltedDens`; `set Z₁ := … with hZ₁` then `have hZ₁ : 0 < Z₁` shadows the equation — name
+  the `set` equations `hZ₁def`; `integral_sub` may present `(f - g) x` (Pi) — `simp only [Pi.sub_apply]` before
+  `ring` where needed, but drop it where `rw` already beta-reduced (unusedSimpArgs is fatal).
+  NEXT: `ResponseIntrinsicResolution` (frozen ellipsoid margin → intrinsic Fisher-ball margin with condition
+  number `√(Λ/λ)`; two-class separation `P(both resolved) ≥ 1 − Σ d_eff,i/(n_i r_i²)`), then
+  `AccessibleFaceNonexpansion`, `ResponseFormContinuity`, the bounded-tilt adapter for the length budget.
 

@@ -572,6 +572,7 @@ import Laplace.Multi.ResponseClassResolution
 import Laplace.Multi.ResponseHorizontalLift
 import Laplace.Multi.ResponsePathLengthBudget
 import Laplace.Multi.ResponseBilinearForm
+import Laplace.Multi.TiltedFisherCompactConvergence
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

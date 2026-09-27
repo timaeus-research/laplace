@@ -5715,3 +5715,11 @@ certificates for concrete resolved charts beyond the identity chart.
     **`pullbackBilin_sq_le`** (Cauchy–Schwarz), `lawCov_visible_visible_of_matched`,
     **`lawCov_eq_pullbackBilin_add`** (THE BILINEAR SCORE DECOMPOSITION at a matched law:
     `Cov_D(k,ℓ) = G_g(k,ℓ) + Cov_D(k − k_vis, ℓ − ℓ_vis)`).
+  - `TiltedFisherCompactConvergence.lean` (round 85, rank 3, in `L¹`-density form):
+    **`abs_integral_withDensity_sub_le`** (`|E_{Q₁}F − E_{Q₂}F| ≤ ‖F‖_∞‖q₁−q₂‖₁`),
+    **`abs_lawCov_withDensity_sub_le`** (`|Cov_{Q₁}(f,g) − Cov_{Q₂}(f,g)| ≤ 3‖f‖_∞‖g‖_∞‖q₁−q₂‖₁`),
+    **`abs_lawCov_dirLoss_sub_le`** (`|Var_{Q₁}⟨w,S⟩ − Var_{Q₂}⟨w,S⟩| ≤ 3B²‖w‖₂²‖q₁−q₂‖₁`),
+    `abs_lawCov_dirLoss_sub_le_of_le` (COMPACT-UNIFORM `L¹` STABILITY of the covariance forms), `tiltedDens`,
+    `integrable_mul_exp`, `exp_neg_le_integral_mul_exp`, **`integral_abs_tiltedDens_sub_le`** (tilting by a common
+    `|h| ≤ K` is `L¹`-Lipschitz: `‖tilt_h q₁ − tilt_h q₂‖₁ ≤ 2e^{2K}‖q₁−q₂‖₁`, uniform over all such tilts).
+    Measure-level identification `(ν.withDensity q).tilted h = ν.withDensity (tilt_h q)` not stated.
