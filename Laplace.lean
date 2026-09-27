@@ -605,6 +605,7 @@ import Laplace.Multi.ResponseDataHessian
 import Laplace.Multi.ResponsePullbackVariation
 import Laplace.Multi.ResponseHigherDefectVariation
 import Laplace.Multi.ResponseSecondOrderLifts
+import Laplace.Multi.ResponseDataSmooth
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

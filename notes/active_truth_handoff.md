@@ -2407,7 +2407,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   i).smul (Hessian)` with a typed `have` absorbing the Pi-smul form; jets on `Fin 3` with `fin_cases` + `exact
   hasDerivAt_const/id` (NOT `simpa`, instance-diamond mismatch) and `change ((2:ℕ):ℝ) * t^(2-1)/2 = t; norm_num`).
   GOTCHA: `have h := …` SHADOWS the section family `h : ι → X → ℝ` and produces bogus isDefEq/whnf timeouts — name
-  derivative facts `hD`. NEXT: `ResponseDataSmooth` (finite slices `z ↦ responseOf (g + Σ z_i k_i)` are `C^∞`: rebase at
-  `ν.tilted g`, `SmoothFamily.contDiff_meanMap`-style smoothness of the tilted moment numerator/denominator in `z`, compose
-  with the smooth local inverse `contDiff_chartDerivEquiv_symm`/`hasStrictFDerivAt_meanMapInverse`; Taylor
-  `Φ(g+tk) = Φ(g) + tV + t²/2 H + o(t²)` as `IsLittleO`), then `ResponseLengthSecondVariation` (fourth cumulants; last).
+  derivative facts `hD`. `ResponseDataSmooth` landed: slice expectations `∫ φ ∂ν.tilted (g + Σ z_i k_i) = famNum k ν (φ e^g)
+  (−z) / famNum k ν (e^g) (−z)` (Mathlib `integral_tilted` + `simp_rw` + `integral_div` + `rfl`), `contDiff_infty_famNum hk ν …`
+  composed with `contDiff_neg`, `ContDiff.div`; `sliceZ := dirProjL S ν (sliceMean z − m₀)`; `contDiffOn_responseTheta_add hS ν`
+  (SmoothChart, base `m₀ = meanMap 0` FIXED) `.comp_contDiff`. Fréchet identification via `HasFDerivAt.comp_hasDerivAt_of_eq 0
+  (hasDerivAt_line z i 0) (by simp : z = z + 0 • e)` + `HasDerivAt.unique` + `responseVel_congr`; second derivative via
+  `fderiv_clm_apply … (differentiableAt_const _)` + `simp` (kills the `.comp 0` term) + `ContDiff.clm_apply contDiff_const`;
+  symmetry `ContDiffAt.isSymmSndFDerivAt (by rw [minSmoothness_of_isRCLikeNormedField]; exact natCast_le_infty 2)`.
+  GOTCHAS: a `def` in a section with `{g} {k}` implicit needs `variable (S g k) in` or the call `sliceMean S ν g k z`
+  misparses; `include` does NOT force section hypotheses into `def`s (`sliceZ S ν g k`, no `hS`); `rw [coe_sliceZ]` with
+  explicit-hypothesis lemmas leaves `case hS` — pass all args. Taylor `o(t²)` expansion NOT done (optional).
+  NEXT: `ResponseLengthSecondVariation` (fourth cumulants; Astra's last/optional) — or round-92 consult first, since B1–B5 of
+  Astra's ranked list are complete.

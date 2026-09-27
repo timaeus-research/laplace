@@ -6002,3 +6002,9 @@ certificates for concrete resolved charts beyond the identity chart.
     journeys), jet coefficients `jetCoeff/jetCoeff'/jetCoeff''` with derivative lemmas, **`hasDerivAt_jetVel_zero`**
     (`(Φ∘(g+tk+t²b/2))''(0) = DΦ_g[b] + H_g(k,k)`), **`exists_jet_accel`** (every response acceleration prescribable via
     the horizontal lift), `exists_jet_stationary`.
+  - `ResponseDataSmooth.lean` (B1/B6, Astra's #1): `sliceFun`, `bdd_slice`, `exp_slice`, `sliceMean`, `integral_tilted_slice`
+    (slice expectations = quotients of `famNum k ν · (−z)`), `famNum_exp_pos`, **`contDiff_integral_tilted_slice`**,
+    **`contDiff_sliceMean`**, `sliceZ`, `coe_sliceZ`, `contDiff_sliceZ`, `responseOf_slice_eq`, **`contDiff_responseOf_slice`**
+    (FINITE DATA SLICES OF THE RESPONSE MAP ARE `C^∞`), `sliceFun_add_single`, `hasDerivAt_slice_line`, `hasDerivAt_line`,
+    **`fderiv_slice_single`** (`DΦ(z)[eᵢ] = DΦ_{g_z}[kᵢ]`), **`fderiv_fderiv_slice_single`** (`D²Φ(z)[eⱼ,eᵢ] = H_{g_z}(kⱼ,kᵢ)`),
+    `isSymmSndFDerivAt_slice`, **`responseHess_symm_of_slice`** (Hessian symmetry recovered from `C²` calculus).
