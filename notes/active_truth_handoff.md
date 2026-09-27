@@ -2626,8 +2626,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   rewrite `mean (coeffResponse t)` only after `unfold coeffResponse at hm` since the goal shows `responseOf`;
   `omit … in` must precede `set_option … in`, which precedes the docstring). G5 `ResponseIntrinsicDistance` LANDED
   (e-segment competitor; `sphericalDist_comm ν` takes ν only; `sq_integral_sqrt_mul_le` wants `∀ t : ℝ` typed
-  nonnegativity; `Real.le_sqrt_of_sq_le`; `fisherDist_eq_zero_iff hS ν` needs `[Nonempty J]`). NEXT: G6
-  `ResponseSamplingGeometry` (exact tangent risk `E G(ξ_n,ξ_n) = tr(H⁻¹B)/n`, sandwich `d_eff`, chamber guarantee via
-  mean-space metric `H⁻¹`, second jet for truth vs sampling), then round-97 consult. Old NEXT:
+  nonnegativity; `Real.le_sqrt_of_sq_le`; `fisherDist_eq_zero_iff hS ν` needs `[Nonempty J]`). G6
+  `ResponseSamplingGeometry` LANDED (second jet only — the sampling risk identities already existed: E5,
+  FisherNormalisedSampling, ResponseClassResolution; `taylor_isLittleO` needs `Convex s` — use a ball inside the open
+  domain, then `Metric.isOpen_ball.nhdsWithin_eq`, `iteratedDerivWithin_of_isOpen`, `Filter.EventuallyEq.deriv_eq`;
+  `(−mulLeftRight R R (T V)) z'` needs TWO `neg_apply` rewrites: `simp only [_root_.neg_apply]`;
+  `ContinuousLinearMap.neg_apply` is deprecated). PROGRAMME G COMPLETE (G1–G6). NEXT: round-97 consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

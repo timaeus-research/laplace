@@ -6275,3 +6275,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `responseDist_eq_zero_iff` ⇔ same response), `sphericalDist_le_responseDist_le_sqrt_jeffreys`. Competitor is the
     e-segment (globally C¹), NOT the mean-affine journey (only C¹ on an open domain ⊇ [0,1]; `FisherPath` needs global
     `HasDerivAt`, and `smoothStep` leaves [0,1] outside [0,1]). Saturated sharpening `d_F = 2 arccos Σ√pq` NOT done.
+  - `ResponseSamplingGeometry.lean` (G6, the second jet of the response to a mean displacement):
+    **`hasDerivAt_responseTheta_meanPath`** (`θ' = A_θ⁻¹ z'` along `μ = m(θ₀) + z(t)`, needs interiority only at `t₀`;
+    re-centring at `t₀` as in `hasDerivAt_coeffResponse`), **`hasDerivAt_meanPathVel`** (THE TRUTH SECOND JET
+    `V' = A⁻¹ z'' − C(V,V)` via `hasFDerivAt_inverse_natural` + `clm_apply`; needs `simp only [_root_.neg_apply]` for
+    the two negation layers), `responseLine θ₀ e t := θr(m(θ₀) + t•e)`, `responseLineDomain` (open ∋ 0),
+    `contDiffOn_responseLine`, `responseLineVel := (CDE θ_t).symm e`, `hasDerivAt_responseLine`,
+    `hasDerivAt_responseLineVel` (`V' = −C(V,V)`), **`responseLine_taylor_two`** (`θ(m+te) = θ₀ + tA⁻¹e − (t²/2)C(A⁻¹e,A⁻¹e)
+    + o(t²)`: `taylor_isLittleO` on a ball inside the domain, `iteratedDerivWithin_of_isOpen`, `EventuallyEq.deriv_eq`).
+    The sampling side (`integral_samplingEnergy`, `measureReal_sampleResponse_notMem_le`) was already in the seabed; the
+    sandwich `d_eff ≠ dim W` off-model is `integral_samplingEnergy` vs `_eq_trace` (not restated). PROGRAMME G COMPLETE.

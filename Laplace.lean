@@ -635,6 +635,7 @@ import Laplace.Multi.ResponseFiniteSaturation
 import Laplace.Multi.ResponseCurvatureDefect
 import Laplace.Multi.ResponseGlobalInformationLandscape
 import Laplace.Multi.ResponseIntrinsicDistance
+import Laplace.Multi.ResponseSamplingGeometry
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
