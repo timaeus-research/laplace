@@ -148,19 +148,18 @@ set_option linter.unusedFintypeInType false
 /-- The moment polytope `conv S(X)`. -/
 local notation "hull" => convexHull ℝ (range (statPoint S))
 
-/-- **THE FACEWISE DERIVATIVE OF THE RESPONSE MAP**: for `M'` in the relative interior of the
-face of `M`, `A = supp q*(M)`, and a face direction `e ∈ W_A`, the posterior expectation of `F` is
-differentiable along `M' + t e` at `t = 0` with derivative `⟨u_F^{A}(M'), e⟩`, the pairing of the
-displacement with the regression direction of `F` relative to the conditioned law `ν_A` at the
-chart point of `M'`. -/
-theorem hasDerivAt_responseObs_face {A : Set X} [IsProbabilityMeasure (faceMeasure ν A)]
+/-- **The response map near a relative-interior point of a face is the line observable of the
+conditioned law**: for `M'` in the relative interior of the face of `M`, `A = supp q*(M)`, and a
+face direction `e ∈ W_A`, `t ↦ E_{R_{M' + te}} F` agrees near `t = 0` with the line observable of
+the base law `ν_A` at the chart point of `M'`. -/
+theorem eventuallyEq_responseObs_face {A : Set X} [IsProbabilityMeasure (faceMeasure ν A)]
     {M M' : J → ℝ} (hM : M ∈ hull) (hA : A = supportSet hS ν M)
-    (hM' : M' ∈ intrinsicInterior ℝ (carriedResponses S A)) {F : X → ℝ} (hF : Bdd F)
+    (hM' : M' ∈ intrinsicInterior ℝ (carriedResponses S A)) (F : X → ℝ)
     (e : dirSpan (faceMeasure ν A) (fun _ ↦ (1 : ℝ)) S) :
-    HasDerivAt (fun t : ℝ ↦ ∫ x, F x ∂responseProjection hS ν (M' + t • (e : J → ℝ)))
-      (dotJ (regressionDir hS (faceMeasure ν A) F
+    (fun t : ℝ ↦ ∫ x, F x ∂responseProjection hS ν (M' + t • (e : J → ℝ))) =ᶠ[𝓝 0]
+      lineObservable hS (faceMeasure ν A) F
         (responseTheta measurable_const (integrable_const 1) (fun _ ↦ one_pos)
-          (one_integral_pos (faceMeasure ν A)) hS M') : J → ℝ) (e : J → ℝ)) 0 := by
+          (one_integral_pos (faceMeasure ν A)) hS M') e := by
   have hrel : M' ∈ intrinsicInterior ℝ (momentBody (faceMeasure ν A) (fun _ ↦ (1 : ℝ)) S) := by
     rwa [intrinsicInterior_momentBody_faceMeasure hS ν hν A]
   set θ₀ := responseTheta measurable_const (integrable_const 1) (fun _ ↦ one_pos)
@@ -169,7 +168,6 @@ theorem hasDerivAt_responseObs_face {A : Set X} [IsProbabilityMeasure (faceMeasu
       (θ₀ : J → ℝ) = M' :=
     meanMap_responseTheta measurable_const (integrable_const 1) (fun _ ↦ one_pos)
       (one_integral_pos (faceMeasure ν A)) hS hrel
-  refine (hasDerivAt_lineObservable_zero hS (faceMeasure ν A) hF θ₀ e).congr_of_eventuallyEq ?_
   filter_upwards [(isOpen_responseLineDomain hS (faceMeasure ν A) θ₀ e).mem_nhds
     (zero_mem_responseLineDomain hS (faceMeasure ν A) θ₀ e)] with t ht
   have ht' : M' + t • (e : J → ℝ) ∈
@@ -184,6 +182,22 @@ theorem hasDerivAt_responseObs_face {A : Set X} [IsProbabilityMeasure (faceMeasu
   rw [hmean, ← responseProjection_eq_familyMeasure_responseTheta hS (faceMeasure ν A) ht']
   subst hA
   rw [responseProjection_eq_faceMeasure_of_mem_intrinsicInterior hS ν hν hM ht'']
+
+/-- **THE FACEWISE DERIVATIVE OF THE RESPONSE MAP**: for `M'` in the relative interior of the
+face of `M`, `A = supp q*(M)`, and a face direction `e ∈ W_A`, the posterior expectation of `F` is
+differentiable along `M' + t e` at `t = 0` with derivative `⟨u_F^{A}(M'), e⟩`, the pairing of the
+displacement with the regression direction of `F` relative to the conditioned law `ν_A` at the
+chart point of `M'`. -/
+theorem hasDerivAt_responseObs_face {A : Set X} [IsProbabilityMeasure (faceMeasure ν A)]
+    {M M' : J → ℝ} (hM : M ∈ hull) (hA : A = supportSet hS ν M)
+    (hM' : M' ∈ intrinsicInterior ℝ (carriedResponses S A)) {F : X → ℝ} (hF : Bdd F)
+    (e : dirSpan (faceMeasure ν A) (fun _ ↦ (1 : ℝ)) S) :
+    HasDerivAt (fun t : ℝ ↦ ∫ x, F x ∂responseProjection hS ν (M' + t • (e : J → ℝ)))
+      (dotJ (regressionDir hS (faceMeasure ν A) F
+        (responseTheta measurable_const (integrable_const 1) (fun _ ↦ one_pos)
+          (one_integral_pos (faceMeasure ν A)) hS M') : J → ℝ) (e : J → ℝ)) 0 :=
+  (hasDerivAt_lineObservable_zero hS (faceMeasure ν A) hF _ e).congr_of_eventuallyEq
+    (eventuallyEq_responseObs_face hS ν hν hM hA hM' F e)
 
 end FaceDerivative
 

@@ -7059,3 +7059,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `HasDerivAt.le_of_lipschitzOn` bounds `deriv g`, integrability via `Measure.integrableOn_of_bounded (f := deriv g)` +
     `congr_fun_ae`, FTC `MeasureTheory.integral_eq_of_hasDerivAt_off_countable_of_le`),
     **`stratified_transport_of_locally_constant_support`** (finitely many crossings ⇒ tangency automatic).
+  - `ResponseHessianResidual.lean` (N2, THE RESPONSE HESSIAN IS A RESIDUAL THIRD MOMENT): `regResidual hS ν F θ :=
+    F − E_θF − f_θ(u_F(θ))` (centred regression residual), `bdd_regResidual`, `integral_regResidual` (mean zero),
+    **`integral_regResidual_mul_modelScore`** (orthogonal to every score; via `lawCov_eq_integral_centred` +
+    `lawCov_regressionResidual_dirLoss`), **`secondResponse_eq_integral_regResidual`** (`secondResponse F θ u v =
+    E_θ[r_F ℓ_u ℓ_v]`; pointwise identity `(F − EF) r_uv = r_F ℓ_uℓ_v − G·r_F + r_F f_C + r_uv f_{u_F}` and the three
+    orthogonalities), **`secondResponse_dirLoss_add_const`** (affine feature observables have zero response curvature),
+    `deriv_lineObservable_eventuallyEq`, **`hasDerivAt_deriv_lineObservable_zero_residual`** (`d²/dt² E_{θ_t}F|₀ =
+    E[r_F ℓ_V²]`, `V = A⁻¹e`), **`hasDerivAt_deriv_responseObs_face`** (facewise second derivative on each open face
+    stratum with base law `ν_A`; via `eventuallyEq_responseObs_face` (factored out of `ResponseFaceCalculus`) and
+    `Filter.EventuallyEq.deriv`).
