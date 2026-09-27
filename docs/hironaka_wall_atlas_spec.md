@@ -5913,3 +5913,19 @@ certificates for concrete resolved charts beyond the identity chart.
     (`A(x,y) = ∫Ψ_xΨ_y`), `affinityExt_eq` (`= 1 − H²/2`), `affinityExt_ge` (`≥ 1 − d̂²/8`),
     **`integral_sampleLaw_sub_le_sqrt`** (`n`-sample: `≤ √(1 − A^{2n})`), **`testing_error_sampleLaw_ge_sqrt`**
     (error `≥ (1 − √(1 − A(x,y)^{2n}))/2`). ROUND 88 COMPLETE (all six ranked modules landed 2026-09-27).
+  - Round 89 consult (`research_round89_{q,v1}`, c36a8de): audit of round 88 clean (stratification = set-theoretic
+    accessible-face decomposition; `faceChart_eq` removes seed dependence for the fixed conditioned family; KL
+    monotonicity on `[0,∞)` correct; sharp bound is for `[0,1]`-valued tests, equal-prior error). VERDICT: THE
+    RESPONSE-MAP SECTION IS COMPLETE at its scope. Final items: global injectivity + discharge of `huniq`; the explicit
+    accessible-face union wrapper; canonical-journey defect corollary; close the note with the sharp affinity tail
+    theorem. Declined: per-face accessibility for finite-range statistics (a separate theorem), 1-D length comparison,
+    completion-valued journeys.
+  - `ResponseAtlasClosure.lean` (round 89, closing): **`meanExt_injective`** / **`completionLaw_injective`** (GLOBAL
+    INJECTIVITY ON A CHARGED POLYTOPE, no accessibility hypothesis), `isClosedEmbedding_rootDensExt_polytope`,
+    `tendsto_iff_tendsto_rootDensExt_polytope` (Hellinger package with `huniq` discharged), **`faceMeasure_charged`**
+    (face models are charged polytope models), `nonempty_tight`, `completionLaw_faceMeasure_injective`,
+    **`faceEmbedExt_injective_of_charged_face`**, `faceStratum`, `Accessible`, **`iUnion_faceStratum`**
+    (`Ŵ = ⋃_{F accessible} X_F`), `faceStratum_eq_range` (`X_F = range j_F`), `journey_defect_curvature_zero`
+    (`Δ''(0) = Var_ν(log q − (log q)_reg)`), **`affinityExt_pathEndpoint_ge`** (`A_t ≥ 1 − R(t)²/8`),
+    **`testing_error_pathEndpoint_ge_sqrt`** (THE CLOSING STATEMENT: `err ≥ (1 − √(1 − A_t^{2n}))/2`).
+    RESPONSE-MAP SECTION COMPLETE (rounds 84–89).

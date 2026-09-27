@@ -2334,3 +2334,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   product roots is `A^n` via `inner_prodRoot` (`rfl` after `← inner_eq_integral_mul`). NEXT: round-89 consult
   (query to draft: audit of round 88, what remains for the note's six-part shape, and whether the response-map
   section is complete).
+- Round 89 consulted (c36a8de) and `ResponseAtlasClosure` landed: THE RESPONSE-MAP SECTION IS COMPLETE per Astra.
+  Global injectivity is three lines from `exists_faceChart_range_eq` + `eq_of_meanExt_eq_of_mem_ri` (the point's own
+  face witnesses accessibility); law injectivity via `integral_completionLaw_eq_meanExt`; face models are charged
+  polytope models (`faceMeasure_charged` from `faceMeasure_statFibre_pos` + `ENNReal.toReal_pos`), so
+  `completionLaw_injective` applies to `FisherCompletion hS ν_E` with `V := V.filter tight` and discharges `huniq` in
+  `faceEmbedExt_injective`. GOTCHA: theorems whose STATEMENT mentions `completionLaw hS ν_E` need the
+  `[IsProbabilityMeasure (faceMeasure ν {…})]` binder (a `have` in the proof is too late); a `[Nonempty V]` section
+  instance must be omitted on every theorem not using it. Declined per Astra: per-face accessibility for
+  finite-range statistics (reopen only if the note promises an all-faces conclusion), the 1-D length comparison,
+  completion-valued journeys, typed chain compatibility of face charts (the general `faceEmbedExt_faceEmbedExt`
+  already covers nested sub-models). NEXT: nothing pending in the response-map programme; possible follow-ups are
+  new projects (second-order/curvature calculus; finite-range accessibility).

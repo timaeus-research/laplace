@@ -594,6 +594,7 @@ import Laplace.Multi.AbsolutelyContinuousForcing
 import Laplace.Multi.ResponseChamberClearance
 import Laplace.Multi.MixtureResponseJourney
 import Laplace.Multi.SharpAffinityTesting
+import Laplace.Multi.ResponseAtlasClosure
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
