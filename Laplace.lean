@@ -591,6 +591,7 @@ import Laplace.Multi.ResponseHellingerAtlas
 import Laplace.Multi.AccessibleFaceStratification
 import Laplace.Multi.CanonicalDataJourney
 import Laplace.Multi.AbsolutelyContinuousForcing
+import Laplace.Multi.ResponseChamberClearance
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

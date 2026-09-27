@@ -5894,3 +5894,9 @@ certificates for concrete resolved charts beyond the identity chart.
     `retraction_densForcing` (every retraction is inert), **`densVel_eq_symm`** / `densVel_eq` (THE DENSITY VELOCITY IS
     RETRACTION-FREE), `tilted_eq_withDensity_tq`, `integral_tq`, `densForcing_tiltDens`, `densResponse_tiltDens`,
     **`densVel_tiltDens`** (at a normalised tilt density the density objects are the tilt objects).
+  - `ResponseChamberClearance.lean` (round 88, rank 4): `mem_of_fisherClearance` (Fisher `δ`-ball in a coefficient chamber
+    + segment bound `Λ` + `√Λ r < δ` ⇒ the Euclidean `r`-ball is in the chamber),
+    **`frozen_margin_of_euclidean_clearance`** (VISIBLE EUCLIDEAN CLEARANCE `r` OF THE MEAN CHAMBER DISCHARGES THE
+    FROZEN-MARGIN HYPOTHESIS with frozen radius `r/√Λ`, via `‖z‖₂² ≤ Λ q_θ(z)`),
+    **`measureReal_sampleResponse_notMem_fisherBall_le_of_clearance`** (THE EXPLICIT EXIT BOUND: under clearance `r`,
+    coercivity `λ`, bound `Λ`, `P(M̂ ∉ B_F(θ(m_D), r/√λ)) ≤ Λ tr(R C_D)/(n r²)`, every hypothesis geometric).

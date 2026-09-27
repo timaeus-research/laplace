@@ -2311,3 +2311,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (`⟨z,z⟩ ≤ Λ · samplingEnergy θ p z` from `dotJ_chartDeriv_self_le` ⇒ Euclidean clearance of a mean chamber discharges
   the frozen-margin hypothesis `hell` with frozen radius `r/√Λ`, giving an explicit exit bound `Λ tr(RC_D)/(n r²)`),
   rank 5 mixture journey, rank 6 sharp affinity; then round-89.
+- ResponseChamberClearance landed (round 88 rank 4): `dotJ_self_le_mul_samplingEnergy` (already in
+  ResponseIntrinsicResolution) is exactly `‖z‖₂² ≤ Λ q_θ(z)`, so Euclidean clearance `r` gives the frozen margin at
+  radius `r/√Λ` (`div_pow, Real.sq_sqrt, lt_div_iff₀`), and the exit bound instantiates with `r' := r/√Λ` and the
+  two identities `√(Λ/λ)·(r/√Λ) = r/√λ`, `tr/n/(r/√Λ)² = Λ·tr/(n r²)` (both `field_simp` after `Real.sqrt_div`).
+  NEXT: rank 5 `MixtureResponseJourney` (mixture `(1−t)ν + tD`, mean segment, response `θr(m_t)`, derivative
+  `(CDE θ_t).symm (m_D − m_ν)`, interior segment via the supporting-functional criterion, length via the clamp
+  path), rank 6 sharp affinity; then round-89.
