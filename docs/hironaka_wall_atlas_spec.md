@@ -5623,3 +5623,9 @@ certificates for concrete resolved charts beyond the identity chart.
     **`isClosedEmbedding_projL1Poly`** (THE RESPONSE COMPACTIFICATION: the closed moment polytope embeds as a compact
     subset of `L¹(ν)` through `M ↦ Π(M)`), `isCompact_range_projL1Poly`, `tendsto_of_tendsto_projL1Poly` (continuity of
     the inverse: laws close in `L¹` have close means).
+  - `DataManifoldResponseLaw.lean` (the user's "featureless → data" curve, in law form): `dataMean` (`E_{ρ_t}S`),
+    `meanMap_dataTheta_eq_dataMean` (`m(θ_t) = E_{ρ_t}S`), **`completionLaw_dataPathCompletion_eq`** (the completion law
+    of the Fisher response at time `t` is `Π(E_{ρ_t}S)`), `continuous_dataMean`, `topMean` (`E[S | h = H]`),
+    `tendsto_dataMean`, `dataMean_mem_polytope`, `topMean_mem_polytope`, **`tendsto_projL1_dataMean`** (THE RESPONSE LAW
+    ALONG THE DATA MANIFOLD CONVERGES IN `L¹(ν)` TO `Π(E[S | h = H])`, no accessibility), `continuous_projL1_dataMean`,
+    **`responseProjection_dataMean_zero`** (starts at `ν`).

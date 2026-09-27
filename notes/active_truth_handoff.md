@@ -2028,3 +2028,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `haveI` for `CompactSpace` facts (linter). NEXT: `DataManifoldResponseLaw` — the response law along the whole data
   manifold `t ↦ Π(m(ρ_t))` is continuous on `[0,∞]` with `Π(m(ρ_0)) = ν` and limit `Π(E[S | h = H])` at `t = ∞`
   (no accessibility), agreeing with the Fisher endpoint where accessible; then `FacetResponseLengthBudget`.
+- LANDED (2026-09-27): `DataManifoldResponseLaw` (4e77435). Gotchas: a def in a section with `{S} {h}` implicit needs
+  `variable (S h) in` to make them explicit; `continuous_meanMap … (fun _ ↦ zero_le_one) …` (`hπ` is nonnegativity);
+  `Filter.tendsto_iff_seq_tendsto` transfers ℕ-sequence lemmas to `atTop` on ℝ; `meanMap_dataTheta` was taken (renamed
+  `meanMap_dataTheta_eq_dataMean`). NEXT: round-84 consult; candidates `FacetResponseLengthBudget`, Le Cam form of the
+  resolution floor, multi-parameter data manifold (response Jacobian / pullback tensor), stratified structure of Ŵ.
