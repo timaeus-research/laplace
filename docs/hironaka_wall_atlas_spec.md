@@ -6917,3 +6917,21 @@ certificates for concrete resolved charts beyond the identity chart.
     `lawCov_congr_ae`, `Bdd.const`, `lawCov_const_left_eq_zero`, `lawCov_dirLoss_regressor` for both families; the
     `lawCov_comm` rewrites need all arguments explicit or they hit the wrong product),
     **`tendsto_klDiv_responseProjection_refine_div_sq'`** (`→ ½Var_D(g_T − g_S)`).
+  - `ResponseJourneyIntegral.lean` (post-M rank 2, THE CANONICAL JOURNEY INTEGRAL; K1 variables, finite `X`):
+    `journeyObs F t := E_{P_{θ(M_t)}}F` along the polytope journey `M_t = m₀ + t(m_D − m₀)`, `journeyField F t :=
+    ⟨u_F(θ(M_t)), m_D − m₀⟩` (both defs take `hS ν D`, NOT `hν` — `include` does not attach an unused hypothesis to a
+    def), `journeyObs_zero` (`polytopeJourney_zero hS ν _` takes the target explicitly; `familyMeasure_zero_eq`),
+    **`hasDerivAt_journeyObs`** (`d/dt E_{Q_t}F = ⟨u_F(θ_t), m_D − m₀⟩` on `[0,1)`: `hasDerivAt_polytopeJourney_lt_one`
+    coerced through `(𝕍).subtypeL.hasFDerivAt.comp_hasDerivAt`, `hasDerivAt_integral_familyMeasure_path`,
+    `← fisherInner_regressionDir`, `fisherInner_chartDerivEquiv_symm'`), `tendsto_journeyObs_one` (`→ E_{R_{m_D}}F`
+    from `tendsto_atomMass_polytopeJourney`), `exists_journeyField_bound` (M3), `intervalIntegrable_journeyField`
+    (the field agrees a.e. on `Ι 0 T` with the MEASURABLE `deriv (journeyObs F)` — `measurable_deriv`,
+    `ae_restrict_mem measurableSet_uIoc`, `∀ᵐ t, t ≠ 1` by `rw [ae_iff]; simp` — then
+    `Measure.integrableOn_of_bounded (f := deriv …) (M := C)` and `IntegrableOn.congr_fun_ae`; `open scoped Interval`
+    for `Ι`), `journeyObs_sub_eq_integral` (FTC on `[0,T]`, `T < 1`, `intervalIntegral.integral_eq_sub_of_hasDerivAt`),
+    **`integral_responseProjection_sub_eq_journey`** (`E_{R_{m_D}}F − E_νF = ∫₀¹ journeyField`, endpoint included:
+    `tendsto_nhds_unique` along `𝓝[<] 1` of the pre-endpoint FTC, the endpoint limit, and
+    `‖∫₀^T − ∫₀¹‖ = ‖∫_T^1‖ ≤ C(1 − T)` via `← norm_neg, neg_sub, integral_interval_sub_left`,
+    `norm_integral_le_of_norm_le_const`). Gotcha: a blanket `replace('journeyField hS ν hν D', …)` also hits
+    `intervalIntegrable_journeyField hS ν hν D` and `hasDerivAt_journeyObs hS ν hν D` — theorem names ending in a
+    def name.
