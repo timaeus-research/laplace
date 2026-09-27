@@ -684,6 +684,7 @@ import Laplace.Multi.ResponseFaceSupportConstancy
 import Laplace.Multi.ResponseFaceCalculus
 import Laplace.Multi.ResponseStratifiedTransport
 import Laplace.Multi.ResponseHessianResidual
+import Laplace.Multi.ResponseFaceCarried
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
