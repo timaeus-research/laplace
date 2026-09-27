@@ -2681,7 +2681,12 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   hypothesis; `Real.cos_nonneg_of_neg_pi_div_two_le_of_le` takes two explicit bounds; a pure-real lemma inside an
   `include hS` section acquires `hS`; the unused-section-variable linter reports ONE theorem per check — drop the
   unneeded `[Nonempty X] [Nonempty J]` from the section `variable` line and put `[Nonempty X]` on the theorems that
-  use `affinity_le_one`). NEXT: the good-event strengthening of `measureReal_sign_certified_ge` (export chart
-  validity `M̂ ∈ Ω ∧ m(θr M̂) = M̂`), then J2 `ResponseSimplexIdentification`. Old NEXT:
+  use `affinity_le_one`). The good-event strengthening LANDED as `ResponseCertifiedChart`
+  (`measureReal_goodEvent_certified_ge`, `measureReal_chartValid_ge`, engine `measureReal_ge_of_energy_lt_ae_le`;
+  gotcha: with `open scoped ContDiff` a binder named `ω` elaborates as the analytic grade `⊤` — drop the scope or
+  rename the sample point) and the I3 hypothesis is named `varianceCurvaturePairing` with the inequality theorem
+  `concaveOn_lineVariance_of_pairing_nonpos`. NEXT: J2 `ResponseSimplexIdentification` (finite X: `B : W → Δ°`,
+  `B(θ)_x = P_θ{x}`, homeomorphism/smoothness, featureless journey `P_{θ_t} = (1−t)ν + tp`), then J3
+  `ResponseSimplexSphere`. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
