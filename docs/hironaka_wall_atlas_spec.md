@@ -5948,3 +5948,10 @@ certificates for concrete resolved charts beyond the identity chart.
     finite-length normal ray), `tendsto_rayEndpoint`, `dist_rayEndpoint_le_tail`, **`meanExt_rayEndpoint`** (its extended mean
     is the face-family mean `m_F(θ)`), `meanExt_rayEndpoint_mem` (∈ ri of the face body), **`accessible_of_ray`** (the face
     stratum is nonempty), **`completionLaw_rayEndpoint`** (its law is `P^F_θ`; charged polytope, any codimension).
+  - `FiniteRangeAllFacesAccessible.lean` (A4): **`exists_mem_dotJ_eq_on`** (Riesz on a subspace of `J → ℝ` via the
+    Euclidean orthogonal projection), `vertex_sub_mem_dirSpan`, **`dotJ_eq_add_const_of_finiteRange`** (an exposing
+    functional agrees on the vertices with a direction-space functional plus a constant), `faceFibre_ae_eq_of_finiteRange`,
+    `faceMeasure_congr_ae`, `faceStratum_eq_of_finiteRange`, **`face_accessible_of_finiteRange`** (EVERY EXPOSED FACE WITH A
+    TIGHT VERTEX IS ACCESSIBLE, any codimension), **`exists_meanExt_eq_of_mem_ri_face_finiteRange`** (every point of an open
+    face is an extended mean), **`meanExt_surjective_of_finiteRange`**, **`range_meanExt_eq_convexHull_of_finiteRange`**
+    (the extended mean map is onto the polytope).

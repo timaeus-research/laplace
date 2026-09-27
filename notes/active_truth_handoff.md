@@ -2361,6 +2361,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `responseProjection_eq_faceFamily … rfl θ`. GOTCHAS: `(Ioi 0)` in a `variable` defaults to ℕ — write `(Ioi (0 : ℝ))`;
   `measurable_faceDens`/`faceDens_nonneg`/`tendsto_meanMap_ray` already exist (reuse); the HasDerivAt lemma on `J → ℝ`
   needs `[Fintype J]` for the Pi norm (`set_option linter.unusedFintypeInType false in`); omit `hθW huW` on the
-  integrability lemma or the endpoint `def` cannot be applied. NEXT: A4 `FiniteRangeAllFacesAccessible` (every exposed
-  face with a tight vertex is accessible; needs an exposing vector IN W — project `u` by `dirProjL` or use
-  `⟨u_W,·⟩ = ⟨u,·⟩ + const` on the polytope), A5 `FiniteRangeFaceIncidence`, A6 `FiniteRangeCompletionAtlas`.
+  integrability lemma or the endpoint `def` cannot be applied. A4 `FiniteRangeAllFacesAccessible` landed: Riesz step `exists_mem_dotJ_eq_on W u` via
+  `K := W.comap (WithLp.linearEquiv 2 ℝ (J → ℝ))` in `EuclideanSpace ℝ J`, `K.starProjection`,
+  `starProjection_inner_eq_zero` + `EuclideanSpace.inner_eq_star_dotProduct` (`⟪x,y⟫ = ofLp y ⬝ᵥ star (ofLp x)`,
+  `star_trivial`, `WithLp.ofLp_sub/ofLp_toLp`); `CompleteSpace K` from
+  `completeSpace_coe_iff_isComplete.2 K.complete_of_finiteDimensional` (NOT `haveI`, and the lemma gives `IsComplete`).
+  Face fibres a.e. equal ⇒ `faceMeasure` equal (`measure_congr` + `Measure.restrict_congr_set`) ⇒ `faceStratum` equal
+  (`unfold faceStratum; rw`). `faceStratum`/`Accessible` need `[Nonempty J]` (cannot omit). `Nonempty V` from
+  `convexHull_nonempty_iff.1 ⟨M, hM⟩` before calling `exists_charged_vertex_on_face`. NEXT: A5
+  `FiniteRangeFaceIncidence` (`closure X_F = meanExt⁻¹(F) = ⋃_{E ⊆ F} X_E`), A6 `FiniteRangeCompletionAtlas`.
