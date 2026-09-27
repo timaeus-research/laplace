@@ -5385,3 +5385,6 @@ certificates for concrete resolved charts beyond the identity chart.
   `meanMap_dataTheta` (`= E_{ρ_t} S`), **`tendsto_meanMap_dataTheta`** (response means → `E_ν[S | h = H]`),
   **`lintegral_sqrt_raySpeedSq_lt_top_of_responseLength`** (FORWARD data-ray theorem: `M = E[S | h = H] ∈ ri F` facet and
   `∫⁻ √responseSpeedSq < ⊤` ⇒ the normal ray has finite Fisher length), from `FacetFisherAccess` with `η = dataTheta`.
+- `DataRayHelpers.lean` (NOT mirrored; round-79 Lemma 7 + Lemma 8 inputs): `abs_eq_add_two_mul_max_neg`,
+  **`integral_mul_abs_deriv_le`** (one-sided weighted variation: `∫_a^b g(r)|r'| ≤ ∫_R^∞ g + 2∫_a^b g(r)(r')₋` for `r ≥ R`),
+  **`sqrt_lawCov_add_self_le`** (standard-deviation triangle inequality), `lawCov_self_le_sq` (`Var f ≤ K²` for `|f| ≤ K`).
