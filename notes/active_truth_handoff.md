@@ -2540,8 +2540,14 @@ E3 = C6 `ResponseFibreSecondJet` LANDED (the long-open item). Route that worked:
   `integral_mul_sq_le` (AngularBound, general measure), `real_family_eq_integral_rootDens_mul_self`,
   `continuous_fisherNorm_comp`, `Continuous.integral_hasStrictDerivAt`, `InnerProductGeometry.angle_le_angle_add_angle`,
   `L2.inner_def` + `RCLike.inner_apply`/`conj_trivial`. `Real.le_sqrt hx hy`, `pow_lt_one₀ h0 h1 two_ne_zero`,
-  `mul_le_of_le_one_right`. NEXT: E5 `ResponseSamplingResolution` (A: `E‖Z_n‖²_G = d_eff/n` for the linearised
-  response noise `Z_n = A⁻¹ (1/n)Σ U_i` with iid centred features; Markov bound; B: affine-wall margin `δ/√G(a,a)`;
-  C: `empiricalMean ∈ F ↔ ∀ i, S(x_i) ∈ F` for an exposed face and `P(empirical mean ∈ F) = P_D(S ∈ F)^n` under iid
-  sampling — check `FisherNormalisedSampling`, `effDim_eq_sum_lawCov`, `EmpiricalProjection`, `SampleResponse` for
-  the existing sampling layer first), then E6 `ResponseFisherEnergyVariation`.
+  `mul_le_of_le_one_right`. E5 `ResponseSamplingBoundary` LANDED (the name `ResponseSamplingResolution` was TAKEN — existing module with the
+  response-side resolution floor; `SamplingResolution` has `integral_sq_dotJ_sampleResponse_sub` = `Var_D⟨w,S⟩/n`,
+  `FisherNormalisedSampling` has `integral_samplingEnergy(_eq_trace/_family)` = the `d_eff/n` identity). Signatures:
+  `measurable_sampleResponse hS Xs hXm n`, `abs_sampleResponse_sub_le D Xs hn a hB ω`, `map_Xs_eq P D Xs hid hlaw i`,
+  `integral_sq_dotJ_sampleResponse_sub hS P D Xs hXm hid hlaw hind hn w`; `measurableSet_face` exists (dirLoss form);
+  `Set.mem_setOf_eq` deprecated → `Set.mem_ofPred_eq`. NEXT: E6 `ResponseFisherEnergyVariation` (first variation of
+  the Fisher energy `E(θ) = ½∫₀¹ G_θ(θ',θ')` for a two-parameter `C²` family `Θ(s,t)`; derivative
+  `G(U,V)|₀¹ − ∫ G(U, θ'' + ½C(θ',θ'))`; LC Euler–Lagrange; needs differentiation under the interval integral
+  (`intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le`) and `hasDerivAt_fisherInner_line_mChristoffel`
+  along the path (metric derivative along `θ(t)` in direction `U`) plus `hasDerivAt_deriv_chartV_path`-style path
+  lemmas; integration by parts `intervalIntegral.integral_eq_sub_of_hasDerivAt`).

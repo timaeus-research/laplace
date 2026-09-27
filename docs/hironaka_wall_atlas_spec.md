@@ -6144,3 +6144,12 @@ certificates for concrete resolved charts beyond the identity chart.
     `A`), `two_arccos_sqrt_real_le`, `faceCondDens`, **`integral_rootDens_mul_sqrt_faceCondDens`** (margin attained by the
     conditioned law), **`two_arccos_sqrt_real_le_integral_add`** (FACE SEPARATION: any Fisher path from θ₀ ending at affinity
     ρ₁ with a face-supported law has length ≥ `2 arccos √P_{θ₀}(A) − 2 arccos ρ₁`).
+  - `ResponseSamplingBoundary.lean` (E5; the expectation identity `E q_θ(M̂_n−m) = d_eff/n` and the resolution floors already
+    existed in `FisherNormalisedSampling`/`SamplingResolution`/`ResponseSamplingResolution`): `measurable_dotJ_sampleResponse`,
+    **`measureReal_dotJ_sampleResponse_le_le`** (WALL CROSSING: `P(⟨a,M̂_n⟩ ≤ b) ≤ Var_D⟨a,S⟩/(n(⟨a,M_D⟩−b)²)`, Chebyshev via
+    `mul_meas_ge_le_integral_of_nonneg` + `integral_sq_dotJ_sampleResponse_sub`), `dotJ_sampleResponse` (average of sample
+    coordinates), **`dotJ_sampleResponse_eq_iff`** (on an exposed face `⟨u,S⟩ ≤ β`: `⟨u,M̂_n⟩ = β ↔ ∀ i<n, ⟨u,S(X_i)⟩ = β`, via
+    `Finset.sum_eq_sum_iff_of_le`), `measurableSet_dotJ_statistic_eq`, **`measure_dotJ_sampleResponse_eq`** /
+    **`measureReal_dotJ_sampleResponse_eq`** (EXACT FACE-HIT PROBABILITY `P(M̂_n ∈ F) = P_D(⟨u,S⟩=β)^n` under `iIndepFun`, via
+    `iIndepFun.measure_inter_preimage_eq_mul`), `measureReal_dotJ_sampleResponse_eq_lt_one` (exponential decay unless the face is
+    fully charged).

@@ -622,6 +622,7 @@ import Laplace.Multi.ResponseFisherCurvatureSign
 import Laplace.Multi.ResponseInformationPythagoras
 import Laplace.Multi.ResponseFibreSecondJet
 import Laplace.Multi.ResponseFaceFisherSeparation
+import Laplace.Multi.ResponseSamplingBoundary
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
