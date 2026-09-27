@@ -6244,3 +6244,13 @@ certificates for concrete resolved charts beyond the identity chart.
     scores ⇒ its covariance vector (in `W`) is `dotJ`-orthogonal to `W` ⇒ zero ⇒ zero variance ⇒ a.s. constant),
     **`fisherSectional_of_spansAffine`** (`K = ¼`), `fisherInner_alphaCurvature_of_spansAffine`. NOT done: `dim W = |X| − 1`
     and the identification with the strictly positive simplex (Astra G2 items 3, 5).
+  - `ResponseCurvatureDefect.lean` (G3, THE GAUSS-TYPE IDENTITY): **`scoreResidual θ u v := f_u f_v − G(u,v) + f_{C(u,v)}`**
+    (`bdd_scoreResidual`, `scoreResidual_symm`), `integral_scoreResidual` (centred),
+    **`integral_scoreResidual_mul_modelScore`** (ORTHOGONAL TO EVERY SCORE, from `G(C(u,v),w) = −∫f_uf_vf_w`),
+    `integral_centredProd_mul_centredProd` (`∫(f_uf_v − G_uv)(f_xf_y − G_xy) = E4 − G_uvG_xy`),
+    **`fisherInner_mChristoffel_mChristoffel_eq_sub_residual`** (`G(C(u,v),C(x,y)) = E4 − G_uvG_xy − ∫ r_uv r_xy`; proof:
+    `f_C = r − p`, orthogonality kills the cross terms), **`fisherInner_alphaCurvature_eq_round_add_residual`**
+    (`G(R^α(u,v)w,x) = ((1−α²)/4)[(G_uxG_vw − G_vxG_uw) + (∫r_ux r_vw − ∫r_vx r_uw)]`),
+    **`fisherSectional_eq_quarter_add_residual`** (`K = ¼ + (∫r_uu r_vv − ∫r_uv²)/(4D)`),
+    `scoreResidual_eq_zero_ae_of_saturated` (saturation = `r ≡ 0` a.e.). Not done: the `|K| ≤ (‖C(u,v)‖² +
+    ‖C(u,u)‖‖C(v,v)‖)/(4D)` bound (Cauchy–Schwarz for `G` needed).

@@ -2616,6 +2616,10 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `lawCov_dirLoss_left hS ρ v ψ hψ` (BasepointCurvature; hS explicit) + `lawCov_congr_ae`/`lawCov_sub_const_self`
   (FacetFisherAccess) + `lawCov_add_right_eq/sub_left_eq/const_mul_left_eq` (ResponseBilinearForm/SusceptibilityDefect)
   + `lawCov_const_left_eq_zero` (NormalGeometry) + `dirLoss_sub'` (NormalCone) + Mathlib `integral_eq_zero_iff_of_nonneg`,
-  `AbsolutelyContinuous.ae_eq`, `withDensity_absolutelyContinuous _ _ : Pfam θ ≪ ν`). NEXT: G3 `ResponseCurvatureDefect`, G4
+  `AbsolutelyContinuous.ae_eq`, `withDensity_absolutelyContinuous _ _ : Pfam θ ≪ ν`). G3 `ResponseCurvatureDefect`
+  LANDED (residual `r_uv = f_uf_v − G + f_C`; `rw [← this]` with `this : ∫ … = 0` rewrites the `0` INSIDE the family
+  measure's `fun _ ↦ 0` — use a `calc` ending in `_ = 0 := h0`; `mul_comm _ _` under `integral_congr_ae` leaves a
+  stuck `CommMagma ?m` — give both arguments; a `set r := …` local is defeq-transparent for `exact` against the
+  unfolded statement). NEXT: G4
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
