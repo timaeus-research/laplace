@@ -5900,3 +5900,10 @@ certificates for concrete resolved charts beyond the identity chart.
     FROZEN-MARGIN HYPOTHESIS with frozen radius `r/√Λ`, via `‖z‖₂² ≤ Λ q_θ(z)`),
     **`measureReal_sampleResponse_notMem_fisherBall_le_of_clearance`** (THE EXPLICIT EXIT BOUND: under clearance `r`,
     coercivity `λ`, bound `Λ`, `P(M̂ ∉ B_F(θ(m_D), r/√λ)) ≤ Λ tr(R C_D)/(n r²)`, every hypothesis geometric).
+  - `MixtureResponseJourney.lean` (round 88, rank 5): **`mem_intrinsicInterior_segment`** (a segment between two
+    relative-interior points is relative-interior, via the supporting-functional criterion), `mixLaw`
+    (`(1−t)ν + tD`), `isProbabilityMeasure_mixLaw`, `integral_mixLaw`, **`mean_mixLaw`** (`m_t = m_ν + t(m_D − m_ν)`),
+    `mean_sub_mean_mem_dirSpan`, **`mixResponse`** (`θ(m_ν + t(m_D−m_ν))`), `mixResponse_eq` (= response of the mixture
+    law), `mixResponse_zero`, `mixResponse_one`, `mean_segment_mem_intrinsicInterior`, **`hasDerivAt_mixResponse`**
+    (`Φ(D_t)' = (Dm(Φ(D_t))|_W)⁻¹(m_D − m_ν)`), **`fisherDist_mixResponse_le`** (LENGTH BOUND via the clamp path and
+    `intervalIntegral.integral_comp_mul_deriv'`). The mixture response depends only on the endpoint means.

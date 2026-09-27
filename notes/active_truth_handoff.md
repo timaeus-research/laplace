@@ -2318,3 +2318,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: rank 5 `MixtureResponseJourney` (mixture `(1−t)ν + tD`, mean segment, response `θr(m_t)`, derivative
   `(CDE θ_t).symm (m_D − m_ν)`, interior segment via the supporting-functional criterion, length via the clamp
   path), rank 6 sharp affinity; then round-89.
+- MixtureResponseJourney landed (round 88 rank 5). Pattern: derivative along a mean path is
+  `hasDerivAt_responseTheta_path measurable_const (integrable_const 1) (fun _ ↦ one_pos) (one_integral_pos ν) hS hV
+  hrel hM'` (needs `hV : ∀ s, M s − meanMap 0 ∈ 𝕍`, rewrite `meanMap_zero_eq_mean`); the length bound follows
+  `fisherDist_responseTheta_le`'s clamp-path proof verbatim and then `intervalIntegral.integral_comp_mul_deriv'
+  (fun s _ ↦ hasDerivAt_clampStep s) continuous_clampStepDeriv.continuousOn hg` with
+  `hg : ContinuousOn g (clampStep '' [[0,1]])` obtained by `ContinuousOn.mono (s := Icc 0 1)` + `obtain ⟨s,-,rfl⟩`.
+  GOTCHAS: `Measure.AbsolutelyContinuous.rfl` (namespaced); `hK.add_smul_mem ha (by rw [add_sub_cancel]; exact hb)
+  ⟨ht0, ht1⟩` for segment membership; a `variable` binder must NOT use a local notation (`mD`) — spell it out;
+  `Filter`/`Set` `image_subset_iff` leaves the target set a metavariable inside `ContinuousOn.mono` — pin `(s := …)`;
+  composing `continuous_fisherNorm` with `prodMk` needs the `change` to `(fun p ↦ fisherNorm S ν p.1 p.2) (x u, y u)`.
+  NEXT: rank 6 `SharpAffinityTesting`; then the round-89 consult.
