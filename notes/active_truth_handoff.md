@@ -1901,3 +1901,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: module 3 `FacetCompletionLaw` (`rootDensExt x_M = toLp faceRootDens`, `completionLaw x_M = familyMeasure
   (faceMeasure ν A) 1 0 S 1 v_M`), module 4 `CompletionSupportingFace`, module 5 `DataResponseEndpoint`, then the
   normal-translation injectivity programme (6–9).
+- Module 3 `FacetCompletionLaw` landed 2026-09-27. Gotchas: `familyMeasure_eq_withDensity_famDens (μ) (θ)` takes the
+  measure explicitly and no `hS`; `rw [faceMeasure]` unfolds EVERY occurrence (also inside `famZ S (faceMeasure …)`),
+  so prove the scaling identity `(faceMeasure ν A).withDensity g = (ν A)⁻¹ • ν.withDensity (A.indicator g)` as a closed
+  `have` (`withDensity_smul_measure`, `← withDensity_indicator hA`) and rewrite with it; `← withDensity_smul' _ _
+  (ENNReal.inv_ne_top.2 hA0)` folds the scalar into the density; the pointwise ENNReal identity is
+  `ENNReal.ofReal_mul measureReal_nonneg`, `measureReal_def`, `ENNReal.ofReal_toReal`, `ENNReal.inv_mul_cancel`.
+  NEXT: module 4 `CompletionSupportingFace` (`∫ (β − ⟨u,S⟩) Ψ̄² = 0` ⇒ `completionLaw x A = 1` for every exposed face
+  containing `m̄ x`), module 5 `DataResponseEndpoint`, then the normal-translation injectivity programme (6–9).

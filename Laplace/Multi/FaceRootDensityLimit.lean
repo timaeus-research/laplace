@@ -177,18 +177,22 @@ theorem integral_rootDens_mul_faceRootDens (hp : 0 < ν.real {x | dirLoss S u x 
     mul_comm (√(rayNorm S ν u β v r)) (√(faceZ S ν u β v)), ← mul_assoc,
     Real.mul_self_sqrt hZ.le]
 
+/-- `q_F² = 1_A e^{−⟨v,S⟩}/Z_F(v)`. -/
+theorem faceRootDens_mul_self (hp : 0 < ν.real {x | dirLoss S u x = β}) (v : J → ℝ) (x : X) :
+    faceRootDens S ν u β v x * faceRootDens S ν u β v x =
+      {x | dirLoss S u x = β}.indicator (famWeight S v) x / faceZ S ν u β v := by
+  have hZ := faceZ_pos hS ν u β hp v
+  by_cases hx : x ∈ {x | dirLoss S u x = β}
+  · simp only [faceRootDens, Set.indicator_of_mem hx]
+    rw [div_mul_div_comm, ← Real.exp_add, Real.mul_self_sqrt hZ.le, famWeight,
+      show -dirLoss S v x / 2 + -dirLoss S v x / 2 = -dirLoss S v x by ring]
+  · simp [faceRootDens, Set.indicator_of_notMem hx]
+
 theorem integral_faceRootDens_mul_self (hp : 0 < ν.real {x | dirLoss S u x = β}) (v : J → ℝ) :
     ∫ x, faceRootDens S ν u β v x * faceRootDens S ν u β v x ∂ν = 1 := by
   have hA := measurableSet_faceFibre hS u β
   have hZ := faceZ_pos hS ν u β hp v
-  have e : ∀ x, faceRootDens S ν u β v x * faceRootDens S ν u β v x =
-      {x | dirLoss S u x = β}.indicator (famWeight S v) x / faceZ S ν u β v := fun x ↦ by
-    by_cases hx : x ∈ {x | dirLoss S u x = β}
-    · simp only [faceRootDens, Set.indicator_of_mem hx]
-      rw [div_mul_div_comm, ← Real.exp_add, Real.mul_self_sqrt hZ.le, famWeight,
-        show -dirLoss S v x / 2 + -dirLoss S v x / 2 = -dirLoss S v x by ring]
-    · simp [faceRootDens, Set.indicator_of_notMem hx]
-  simp_rw [e]
+  simp_rw [faceRootDens_mul_self hS ν u β hp v]
   rw [integral_div, integral_indicator hA, ← faceZ, div_self hZ.ne']
 
 /-- **The norm identity** `‖q_{θ_r} − q_F‖² = 2 − 2√(Z_F/A_r)`. -/

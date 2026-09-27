@@ -5479,3 +5479,8 @@ certificates for concrete resolved charts beyond the identity chart.
     `integral_faceRootDens_mul_self = 1`, **`integral_rootDens_sub_faceRootDens_sq`** (`‖q_{θ_r} − q_F‖² = 2 − 2√(Z_F/A_r)`),
     **`tendsto_rootDensLp_ray`** (the ray's square-root densities converge in `L²(ν)` to the face root density — no
     accessibility needed).
+  - `FacetCompletionLaw.lean` (round 81, module 3): **`cauchySeq_ray`** (a normal ray of finite Fisher length is
+    Fisher–Cauchy at the integers), **`rootDensExt_eq_faceRootDens`** (the extended square-root density of the accessible
+    facet point is `1_A e^{−⟨v_M,S⟩/2}/√Z_F(v_M)`), **`completionLaw_eq_faceFamily`** (`completionLaw x_M = familyMeasure
+    (faceMeasure ν A) 1 0 S 1 v_M`, i.e. THE BOUNDARY POINT OVER `M ∈ ri F` IS THE FACE EXPONENTIAL-FAMILY LAW — the
+    maximum-relative-entropy law on the face with mean `M`).
