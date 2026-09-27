@@ -6890,3 +6890,30 @@ certificates for concrete resolved charts beyond the identity chart.
     `familyMeasure_eq_vecMeasure_atomMass` + `atomMass_responseTheta_eq_qStarVec`). Note: `faceProj` is the
     `Σ_{R_M}`-projection; it coincides with the Euclidean projection (the discarded component has a face-constant
     feature) but that identification is not formalised.
+  - `ResponseModelBaseDefect.lean` (M7a, THE DEFECT THEOREM AT A MODEL BASE): **`tendsto_responseDefect_div_sq`**
+    (base `ν`: `ℰ(t)/t² → ½Var_ν(h − regressor)` by `HasDerivAt.lhopital_zero_nhdsNE` with `f' := deriv ℰ`, `g' := 2t`,
+    from `hasDerivAt_responseDefect`, `responseDefect_zero hS ν (h := h)` (the score is implicit there),
+    `hasDerivAt_responseDefect_zero`, `hasDerivAt_deriv_responseDefect_zero` + `residual_variance`,
+    `hasDerivAt_iff_tendsto_slope` + `slope_def_field`), `toReal_klDiv_familyMeasure_eq_add` (`KL(ρ‖P_θ₀) = KL(ρ‖ν)
+    + ⟨θ₀,M⟩ + A(θ₀)` for `ρ` of mean `M`; `integral_dirLoss_eq_dotJ θ₀ ρ hS` — `u` comes first),
+    `klDiv_familyMeasure_ne_top_of_ne_top`, `eq_tilted_familyMeasure` (`ν = P_θ₀.tilted(⟨θ₀,S⟩)`, `tilted_tilted` +
+    `tilted_zero`), **`responseProjection_familyMeasure_base`** (BASE CHANGE: `Π^{P_θ₀}(M) = Π^ν(M)` for finite
+    `ν`-rate; `D`-minimality via `entropyProj_eq_genRate hS D M` + `entropyProj_le_klDiv D _ hmean`, transported by the
+    additive identity, then the `ν`-Pythagoras forces `KL(Π^D‖Π^ν) = 0`, `klDiv_eq_zero_iff`; rewriting `ν` by
+    `eq_tilted_familyMeasure` must be done through `congrArg (fun μ ↦ klDiv R' μ)` since `ν` also occurs inside
+    `P_θ₀`), `genRate_tilted_familyMeasure_ne_top`, **`tendsto_klDiv_tilted_familyMeasure_responseProjection_div_sq`**
+    (`(θ₀) (D) [IsProbabilityMeasure D] (hD : D = Pfam θ₀)`: `KL(D_t‖R^ν_{m(D_t)})/t² → ½Var_D(h − regressor hS D hh)`;
+    stated with an explicit base `D` so that the same theorem serves both families of a refinement without rewriting
+    inside instance arguments).
+  - `ResponseInfinitesimalLadder.lean` (M7b, THE INFINITESIMAL LADDER): `exists_dirLoss_ae_eq_of_refines` (`choose b c`,
+    `Filter.eventually_all`, `Finset.sum_comm`), **`exists_familyMeasure_eq_of_refines`** (`P^T_b = P^S_θ₀` with
+    `b = Σ_j θ₀_j b_j`; `tilted_add_const` backwards + `tilted_congr`), `tilted_familyMeasure_eq_tilted`,
+    `toReal_klDiv_responseProjection_refine_eq` (L5's ladder at `D_t` in real form; finiteness of both defects from the
+    Pythagoras of `responseProjection_spec` and `klDiv_tilted_ne_top`), **`tendsto_klDiv_responseProjection_refine_div_sq`**
+    (`KL(R^T_t‖R^S_t)/t² → ½(Var_D g_T − Var_D g_S)`; prove the scalar identity between the two limit expressions
+    FIRST, `rw` it, then `Tendsto.congr'` with `beta_reduce` before the rewrite — a `have key := … congr' …` without
+    expected type leaves the target function a metavariable), **`lawCov_regressor_sub_regressor`** (nested Pythagoras
+    `Var(g_T − g_S) = Var g_T − Var g_S`: `Cov(g_S,g_T) = Var g_S` via `AbsolutelyContinuous.ae_eq`,
+    `lawCov_congr_ae`, `Bdd.const`, `lawCov_const_left_eq_zero`, `lawCov_dirLoss_regressor` for both families; the
+    `lawCov_comm` rewrites need all arguments explicit or they hit the wrong product),
+    **`tendsto_klDiv_responseProjection_refine_div_sq'`** (`→ ½Var_D(g_T − g_S)`).

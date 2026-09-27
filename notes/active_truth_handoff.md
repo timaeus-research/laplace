@@ -2748,10 +2748,15 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   LANDED (`abs_responseObs_sub_le`/`lipschitzOnWith_responseObs`: `|E_{R_N}F − E_{R_M}F| ≤ L‖N − M‖` on the CLOSED
   polytope; `sum_abs_qStarVec_sub_le`: `Σ_x|R_N{x} − R_M{x}| ≤ L‖N − M‖`). M4 `ResponseFacewiseRegression` LANDED
   (`tendsto_faceProj_regressionDir`: tangential projections of `u_H(θr M_k)` converge to the face regression direction;
-  quantitative law-level `norm_faceProj_sub_faceReg_le`). NEXT: M7 (common-base representation under refinement,
-  relative-base Pythagoras `KL(R_T(t)‖D) = KL(R_T(t)‖R_S(t)) + KL(R_S(t)‖D)`, `θ'(0) = −u_h`, response-to-base
-  quadratic limit `KL(R_S(t)‖D)/t² → ½Var_D(g_S)`, DEFECT THEOREM `KL(D_t‖R_S(t))/t² → ½Var_D(h − g_S)`, ladder
-  `KL(R_T(t)‖R_S(t))/t² → ½Var_D(g_T − g_S)`); then post-M ranks 2–6 (canonical base-to-data journey integral,
-  uniform unlocalised risk, margin chamber theorem, global refinement budget, resolution ellipsoid). Old NEXT:
+  quantitative law-level `norm_faceProj_sub_faceReg_le`). M7 LANDED: `ResponseModelBaseDefect` (DEFECT THEOREM
+  `KL(D_t‖R_{m(D_t)})/t² → ½Var_D(h − g_h)` at every model base `D = P_θ₀`, via BASE CHANGE
+  `responseProjection_familyMeasure_base : Π^{P_θ₀}(M) = Π^ν(M)` and the base-`ν` L'Hôpital of the seabed's
+  `ℰ''(0)`), `ResponseInfinitesimalLadder` (`exists_familyMeasure_eq_of_refines`; INFINITESIMAL LADDER
+  `KL(R^T_t‖R^S_t)/t² → ½(Var_D g_T − Var_D g_S) = ½Var_D(g_T − g_S)`). PROGRAMME M COMPLETE (M1–M7). NEXT: post-M
+  ranks (round 103): 2 canonical base-to-data journey with exact response integral
+  `E_{Q_1}F − E_{Q_0}F = ∫₀¹⟨u_F(θr M_t), m_D − m_ν⟩dt` (M3b gives the Lipschitz endpoint), 3 uniform unlocalised
+  risk `E|E_{R_{M̂_n}}F − Ψ_F(D)| ≤ L_F√(tr Cov_D(S)/n)`, 4 margin chamber theorem `P(wrong) ≤ tr Cov_D/(n r_D²)` +
+  attainable-direction lower bound, 5 global refinement budget + `|E_DF − E_{R_K}F| ≤ osc(F)√(KL/2)`, 6 observable
+  resolution ellipsoid; then round-104 consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
