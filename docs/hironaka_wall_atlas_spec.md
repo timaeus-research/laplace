@@ -5428,3 +5428,10 @@ certificates for concrete resolved charts beyond the identity chart.
     `exists_fisherPath_length_lt`, `fisherDist_self`, `fisherDist_comm`, **`fisherDist_triangle`**, `fisherDist_le_mul_norm`
     (`≤ K‖y − x‖`), **`norm_meanMap_sub_le_fisherDist`** (`‖m y − m x‖ ≤ B d_F`), **`eq_of_fisherDist_eq_zero`**,
     `fisherDist_eq_zero_iff` — `d_F` IS A METRIC ON `W`.
+  - `FisherTopology.lean`: wrapper `structure FisherPoint hS ν` (`param : W`), **`instance : MetricSpace (FisherPoint hS ν)`**
+    (dist = `fisherDist`), `lipschitzWith_fisherPoint_mk` (`W → FisherPoint` Lipschitz), `lipschitzWith_meanMap_param`
+    (the mean is `B`-Lipschitz on the Fisher space), `continuous_fisherPoint_param` (via the inverse chart),
+    **`FisherPoint.homeomorphW : FisherPoint hS ν ≃ₜ W`** (the Fisher topology is the usual one),
+    **`FisherCompletion hS ν := UniformSpace.Completion (FisherPoint hS ν)`**, `meanExt` (Lipschitz extension of the
+    mean, `meanExt_coe`, `lipschitzWith_meanExt`, `continuous_meanExt`), `meanExt_mem_closure`,
+    **`exists_meanExt_eq_iff`** (`∃ x ∈ Ŵ_F, m̄ x = M ⇔ ∃ Fisher–Cauchy (θ_n) with m(θ_n) → M`).

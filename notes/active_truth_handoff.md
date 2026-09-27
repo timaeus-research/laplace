@@ -1822,3 +1822,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: module 6 `FisherTopology` (wrapper `FisherPoint`, `MetricSpace` instance from `fisherDist`, homeomorphism with `W`
   via the chart, `FisherCompletion := UniformSpace.Completion FisherPoint`, Lipschitz extension of the mean), then 7–8
   (Hellinger), 10–11 (completion accessibility), 13 (uniqueness).
+- Module 6 `FisherTopology` landed: `FisherPoint hS ν` wrapper with `MetricSpace` instance (the 5-field `where` with
+  `eq_of_dist_eq_zero` suffices; `FisherPoint.dist_eq` is `rfl`), `FisherPoint.homeomorphW`, `FisherCompletion`,
+  `meanExt` (+ `exists_meanExt_eq_iff`). Gotchas: an anonymous `⟨K, hK0⟩ : NNReal` elaborates as a subtype and
+  `NNReal.coe_mk` fails — use `K.toNNReal` + `Real.coe_toNNReal K hK0`; `ContinuousAt.comp` unifies `g (f x)` with the
+  wrong split (`f := chartV`) unless `(f := …) (x := p)` are named; Cauchy transfer to the completion is by
+  `Metric.cauchySeq_iff` + `UniformSpace.Completion.dist_eq` (no uniform-inducing lemma needed);
+  `mem_closure_iff_seq_limit` + `denseRange_coe.closure_range` extract the approximating sequence.
+  NEXT: module 10 `FisherCauchyRealisation` (countable concatenation of near-optimal flat paths on `[n,n+1]`, constant for
+  `t ≤ 0`, into one `C¹` path on `[0,∞)` of finite length with means → M), module 11 `FacetCompletionAccess`
+  (`∃ x ∈ Ŵ_F, m̄ x = M ⇔ normal ray finite` via `facet_fisher_access_iff`), then Hellinger (7–8) and uniqueness (13).

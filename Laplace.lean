@@ -533,6 +533,7 @@ import Laplace.Multi.FlatC1Paths
 import Laplace.Multi.FisherPathLength
 import Laplace.Multi.FisherMeanControl
 import Laplace.Multi.FisherDistance
+import Laplace.Multi.FisherTopology
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
