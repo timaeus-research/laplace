@@ -2189,4 +2189,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   fine way to unfold definitions under a `Continuous fun t ↦ …` binder. NEXT: `ResponseNoiseCalibration`
   (`d_eff ≤ κ dim W` via a Fisher-orthonormal basis / InnerProductSpace.Core on `W`), seed independence,
   `ResponsePatchMargins`; then round-87 consult.
+- ResponseNoiseCalibration landed (round 86 rank 5). GOTCHAS: a custom inner product on `𝕍` (a Submodule of `J → ℝ`,
+  which already has the sup norm) MUST go through a type synonym `FisherSpace S ν hS θ := 𝕍` (`def` with `_hS _θ`
+  phantom params so instances can find `hS`); build `NormedAddCommGroup`/`InnerProductSpace` instances as structure
+  updates `{ Core.toNormedAddCommGroup with toAddCommGroup := inferInstanceAs (AddCommGroup 𝕍) }` and
+  `{ InnerProductSpace.ofCore c with toModule := inferInstanceAs (Module ℝ 𝕍) }` so that
+  `FiniteDimensional ℝ (FisherSpace …)` (stated with the synonym's `Module`) is found by `stdOrthonormalBasis`;
+  `fisherForm` name is taken (DualFlat) → `fisherInner`; `rw [← hone i]` on `κ * 1` rewrites the `1` inside
+  `dirSpan ν (fun _ ↦ 1) S` (motive error) — use `simp only [hone]` in a calc step. NEXT: round-87 consult; seed
+  independence; `ResponsePatchMargins` (Euclidean clearance); `L¹`-in-the-law form continuity; HellingerAtlas.
 

@@ -5787,3 +5787,10 @@ certificates for concrete resolved charts beyond the identity chart.
     **`continuous_pullbackBilin_coeff`** (`t ↦ G_{g_t}(k,ℓ)`), **`continuous_pullbackForm_coeff`** (`t ↦ G_{g_t}(ġ_t)`),
     **`continuous_effDim_coeff`** (`t ↦ tr(R_{Φ(g_t)}C_{ρ_t})`). The quotient geometry and its noise floor vary
     continuously along any journey through data.
+  - `ResponseNoiseCalibration.lean` (round 86, rank 5): `fisherInner` (the Fisher form `⟪u,v⟫_θ = Cov_{P_θ}(⟨u,S⟩,⟨v,S⟩)`
+    on `W`), `fisherInner_self/comm/add_left/smul_left/eq_neg_dotJ/chartDerivEquiv_symm`, **`fisherCore`** (THE FISHER
+    FORM IS AN INNER PRODUCT ON `W`), `FisherSpace` (type synonym carrying the Fisher inner product; instances built
+    reducibly over the synonym's module so `stdOrthonormalBasis` applies), `ofFisher`/`toFisher`, `inner_fisherSpace`,
+    **`effDim_le_of_relCov`** (`d_eff(D) = ∑_i Var_D⟨e_i,S⟩` over a Fisher-orthonormal basis, hence
+    `Var_D⟨w,S⟩ ≤ κ Var_{P_θ}⟨w,S⟩ ∀w ⇒ d_eff(D) ≤ κ dim W`). The covariance-mismatch factor controls both differential
+    amplification and sampling noise.
