@@ -2439,7 +2439,20 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   statement uses `eventually_eventually_nhds.2` to get a neighbourhood identity for `congr_of_eventuallyEq`. GOTCHAS: a
   `local notation` cannot contain an anonymous constructor `⟨…⟩` (make it a def); after a text substitution `Fv →
   forcingV hS ν hg hk` PARENTHESISE (application precedence); implicit `{t₀}` at `0` must be passed `(t₀ := 0)`). C4 `ResponseEMAccelerationGap` landed (pure algebra on `responseHess`; `map_eq_zero_iff` of the CLE for the iff;
-  invisible ⇒ forcing 0 ⇒ local mixture journey constant response). NEXT: C5 `ResponseSliceSubmersion` (augmented slice
-  `Ψ(z,u) = Φ(g + Σ z_i k_i + hor_g u)`, derivative `(ξ,w) ↦ V(Kξ) + w`, inverse function theorem for `Ξ(z,u) = (z, Ψ(z,u))`
-  via `HasStrictFDerivAt.localInverse` / `ContDiffAt.to_localInverse`; local product; then C6 fibre graph Hessian `−H`),
-  C0 Taylor. The dup-name gate regex must strip a trailing prime (`[^ ']+`) or `foo'` false-flags `foo`.
+  invisible ⇒ forcing 0 ⇒ local mixture journey constant response). C5 `ResponseSliceSubmersion` landed. Pattern: augmented directions `Sum.elim k (hor ∘ wBasis)` on
+  `ι ⊕ Fin n`, coefficient CLM `augCoeffL S ν ι` from `(LinearEquiv.sumArrowLequivProdArrow ι (Fin n) ℝ ℝ).symm ∘ₗ
+  LinearMap.prodMap id b.equivFun` (`LinearMap.toContinuousLinearMap`; apply lemma by `rcases a with i | j <;> rfl`);
+  derivative via `HasFDerivAt.comp` + expansion `v = Σ v a • Pi.single a 1` (own lemma, `simp [Finset.sum_apply,
+  Pi.single_apply]`) + `Fintype.sum_sum_type` + `Module.Basis.sum_equivFun`; IFT: `hasStrictFDerivAt_fst.prodMk
+  (contDiffAt.hasStrictFDerivAt (by simp))`, `HasStrictFDerivAt.congr_fderiv` with `ContinuousLinearMap.ext`,
+  `ContinuousLinearEquiv.equivOfInverse` (coe = f₁ by rfl), `HasStrictFDerivAt.localInverse f f' a hf`,
+  `eventually_left/right_inverse`, `localInverse_apply_image`, `ContDiffAt.to_localInverse hf' (by simp)`,
+  `to_localInverse` + `hasStrictFDerivAt_snd.comp x h` (typed `have` then `exact`). GOTCHAS: `def`s include NO
+  `include`d hypotheses — declare `variable (S) in` / `variable (k) in` and check the real signature with `lean-state
+  hover` (order follows section declaration order: `augCoeffL S ν ι`); a global text rename `augDir hS ν hg hk → … k`
+  also hits `bdd_augDir hS ν hg hk` (theorems DO take hk); `(0, 0)` pairs must be typed `((0 : ι → ℝ), (0 : 𝕍))` or the
+  first component defaults to ℕ; `rw [augSlice]` fails ("equation theorems") — use a typed `have hΨ : HasFDerivAt
+  (augSlice …) _ p := hcomp` then `hΨ.fderiv`; `Prod.mk_zero_zero` before `map_zero`; `rw` with congr lemmas whose proof
+  args are `_` fails — use `exact (…).trans (…)`. NEXT: C6 `ResponseFibreSecondJet` (fibre graph `σ₀ z := σ(z, Φg)`; with
+  invisible slice directions `D²σ₀(0)[ξ,η] = −H_g(Kξ,Kη) = −A⁻¹B`; route: differentiate `Ψ(z, σ₀ z) = Φ g` twice, or
+  curvewise via `hasDerivAt_coeffVel`), C0 Taylor, then round-93 consult.

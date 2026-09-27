@@ -6034,3 +6034,11 @@ certificates for concrete resolved charts beyond the identity chart.
     **`responseHess_eq_mixResponseAccel_iff`** (accelerations agree iff `B_g(k,k) = 0`), `mixResponseVel_zero_eq_responseVel`,
     `forcing_eq_zero_of_responseVel_eq_zero`, **`eventually_responseOf_localMixTilt_of_invisible`** (INVISIBLE DIRECTIONS
     INTEGRATE TO STRAIGHT LINES INSIDE A FIBRE in density coordinates).
+  - `ResponseSliceSubmersion.lean` (C5): `wBasis` (a basis of `W`), `augDir` (slice directions + horizontal lifts of the
+    basis), `bdd_augDir`, `augCoeffL` (`(z,u) ↦ (z, coords u)` as a CLM), **`augSlice`** (`Ψ(z,u) = Φ(g + Σz_ik_i + hor_g u)`),
+    `contDiff_augSlice`, `augSlice_zero`, `sliceVelL` (`ξ ↦ DΦ_g[⟨ξ,k⟩]` as a CLM), **`fderiv_augSlice_zero`**
+    (`DΨ(0,0)[ξ,w] = DΦ_g[⟨ξ,k⟩] + w`, onto), `augChart` (`Ξ(z,u) = (z,Ψ(z,u))`), `augDerivL`/`augDerivInvL`,
+    **`augDerivEquiv`** (invertible derivative, explicit inverse), **`hasStrictFDerivAt_augChart`**, **`fibreSection`** (`σ`),
+    **`eventually_augSlice_fibreSection`** (`Ψ(z,σ(z,θ)) = θ` near `(0,Φg)`), **`eventually_fibreSection_augSlice`**
+    (`σ(z,Ψ(z,u)) = u` near `0`), `fibreSection_base`, **`contDiffAt_fibreSection`** (`C^∞`), `hasStrictFDerivAt_fibreSection`
+    (derivative `(ξ,η) ↦ η − DΦ_g[⟨ξ,k⟩]`): THE LOCAL PRODUCT STRUCTURE OF HORIZONTALLY AUGMENTED SLICES.
