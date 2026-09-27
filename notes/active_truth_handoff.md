@@ -2427,4 +2427,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   6 `ResponseFibreSecondJet` (fibre graph Hessian `−H = −A⁻¹B` on invisible directions; invisible directions integrate to
   straight lines in a fibre in density coordinates). Corrections: arbitrary slices need not be submersions (augment by the
   horizontal lift); the pull-back form is degenerate (no O'Neill); converse tail theorem FALSE without chord-arc hypotheses;
-  skewness criterion only at calibrated bases. NEXT: C1 `ResponseMixtureCoordinates`.
+  skewness criterion only at calibrated bases. C1 `ResponseMixtureCoordinates` landed (rebase `ν.tilted (g + log φ) = (ν.tilted g).tilted (log φ)` via
+  `tilted_tilted` + `rfl`; `integral_tilted` + `simp_rw [Real.exp_log …]` + normaliser `= 1` + `div_one`; `bdd_log_of_bounds
+  hd hc0 hc hC` (ExponentialPath) with the density pinched in `[1/2, 3/2]` for `|t| < 1/(2(K+1))` via `Metric.ball_mem_nhds`;
+  uniform bounds `e^{−K}/Z ≤ normDens ≤ e^{K}/Z`). NEXT: C2 `ResponseGlobalFibres` (`Φ g = Φ h ↔ M g = M h` via
+  `integral_stat_responseTheta`/`meanMap_responseTheta`; `responseOf (mixTilt g h t) = responseOf g` when `Φ g = Φ h`;
+  model tilt `−⟨θ,S⟩` has response `θ` (`familyMeasure_one_zero_eq_tilted` + `chartVInv_chartV`); `responseOf (mixTilt g
+  (modelTilt (Φ g)) t) = Φ g`), then C3–C6.

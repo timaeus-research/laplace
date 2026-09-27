@@ -6008,3 +6008,12 @@ certificates for concrete resolved charts beyond the identity chart.
     (FINITE DATA SLICES OF THE RESPONSE MAP ARE `C^∞`), `sliceFun_add_single`, `hasDerivAt_slice_line`, `hasDerivAt_line`,
     **`fderiv_slice_single`** (`DΦ(z)[eᵢ] = DΦ_{g_z}[kᵢ]`), **`fderiv_fderiv_slice_single`** (`D²Φ(z)[eⱼ,eᵢ] = H_{g_z}(kⱼ,kᵢ)`),
     `isSymmSndFDerivAt_slice`, **`responseHess_symm_of_slice`** (Hessian symmetry recovered from `C²` calculus).
+  - PROGRAMME C (round 92: mixture geometry and the fibres of the response map; corrections: arbitrary slices need not be
+    submersions, the pull-back form is degenerate, converse tail theorem false without chord-arc hypotheses).
+    `ResponseMixtureCoordinates.lean` (C1): `centred` (`k̄ = k − E_{ρ_g}k`), `integral_centred`, `integral_mul_centred`
+    (`E[f k̄] = Cov(f,k)`), **`localMixTilt`** (`g + log(1 + t k̄)`), `eventually_localMix_bounds`, `bdd_localMixTilt`,
+    **`integral_localMixTilt`** (`E_{ρ_{g^m(t)}} f = E_{ρ_g} f + t Cov_{ρ_g}(f,k)`, exact for small `t`),
+    **`mean_localMixTilt`** / `eventually_mean_localMixTilt` (mean affine with slope the forcing), `normDens`
+    (`e^g/Z_g`), `normDens_pos/bounds`, `bdd_normDens`, `integral_normDens`, `integral_tilted_eq_normDens`, **`mixTilt`**
+    (`log((1−t)e^g/Z_g + t e^h/Z_h)`), `mixDens_pos`, `bdd_mixTilt`, **`integral_mixTilt`** (law `(1−t)ρ_g + tρ_h`),
+    **`mean_mixTilt`** (mean segment).

@@ -606,6 +606,7 @@ import Laplace.Multi.ResponsePullbackVariation
 import Laplace.Multi.ResponseHigherDefectVariation
 import Laplace.Multi.ResponseSecondOrderLifts
 import Laplace.Multi.ResponseDataSmooth
+import Laplace.Multi.ResponseMixtureCoordinates
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
