@@ -6305,3 +6305,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `‖ξ_n‖ ≤ r`; two-scale expansion at `t_n = h/√n`; CAUTION: bias is O(1/n), sign CLT sees O(n^{-1/2}) — no
     second-order sign probabilities without Edgeworth). Deferred: LC ODEs (add the criterion `C(θ̇,θ̇) ∈ span θ̇`),
     Gauss–Bonnet.
+  - `ResponseObservableTransport.lean` (H1): `lineObservable F θ₀ e t := ∫ F ∂P_{θ_t}` along G6's `responseLine`,
+    `hasDerivAt_responseLine_coe`, **`hasDerivAt_lineObservable`** (`d/dt E_{θ_t}F = −Cov_{θ_t}(F, ⟨V_t,S⟩)`, from
+    ObservableCurvature's `hasDerivAt_integral_familyMeasure_path`), `lawCov_dirLoss_eq_sum`,
+    **`hasDerivAt_deriv_lineObservable`** (THE RESIDUAL IS THE SECOND RESPONSE OF EVERY OBSERVABLE:
+    `d²/dt² E_{θ_t}F = ∫ (F − EF) r_{V_tV_t} dP_{θ_t}`; proof: coordinate expansion of the first response, product rule
+    with `hasDerivAt_lawCov_familyMeasure_path`, `V' = −C(V,V)`, then `−Cov(F,⟨V',S⟩) + T(F,f_V,f_V) = E[(F−EF) r]`),
+    **`abs_secondResponse_le`** (`|E[(F−EF)r]| ≤ √Var F √E[r²]`), `secondResponse_eq_zero_of_saturated`,
+    **`saturatedAt_iff_secondResponse_eq_zero`** (SATURATION ⇔ UNIVERSAL RESPONSE FLATNESS; converse tests `F = r`),
+    **`hasDerivAt_lineVariance`** (`d/dt Var_{θ_t}F = −T_{θ_t}(F,F,⟨V_t,S⟩)`). Not done: mixed directions `D²𝓡_F[e,d]`
+    (polarisation), second derivative of the variance.

@@ -2633,6 +2633,10 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `(−mulLeftRight R R (T V)) z'` needs TWO `neg_apply` rewrites: `simp only [_root_.neg_apply]`;
   `ContinuousLinearMap.neg_apply` is deprecated). PROGRAMME G COMPLETE (G1–G6). Round 97 (ed2fa0f) = PROGRAMME H
   (see atlas spec): H1 `ResponseObservableTransport`, H2 `ResponseMaximumEntropyPotential`, H3 `ResponseFiniteSimplex`,
-  H4 `ResponseSimplexSphere`, H5 `ResponseLocalizedSamplingBias`, H6 `ResponseTwoScaleResolution`. NEXT: H1. Old NEXT:
+  H4 `ResponseSimplexSphere`, H5 `ResponseLocalizedSamplingBias`, H6 `ResponseTwoScaleResolution`. H1
+  `ResponseObservableTransport` LANDED (`thirdCentral_dirLoss_left ρ hS v hk hf` — hS explicit AFTER ρ;
+  `lawCov_dirLoss_left hS ρ v ψ hψ`; `integral_eq_zero_of_ae` is not a rewrite lemma — `refine … ?_`; `sub_zero`
+  under an integral binder needs `simp only … at h`, not `rw`; `obsResponse` (mean-coordinate observable response)
+  already exists in ReconstructionBias). NEXT: H2 `ResponseMaximumEntropyPotential`. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
