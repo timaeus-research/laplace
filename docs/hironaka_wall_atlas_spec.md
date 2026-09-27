@@ -5610,3 +5610,10 @@ certificates for concrete resolved charts beyond the identity chart.
     `sq_signal_le_mul_noise_response` (samples from the model law), **`response_resolution_floor`** (`δ² n |θ'_t|²_F ≥ 1`
     for a resolvable shift: the response displacement must exceed `1/√n`), `sq_signal_eq_mul_noise_response_vel` (equality
     along `w = θ'_t`).
+  - `CompletionLawEqProjection.lean` (round 83, Q4 item 5): **`familyMeasure_eq_responseProjection_meanMap`**
+    (`P_θ = Π(m(θ))` for every θ, by invisible-shift invariance), `meanExt_mem_polytope`,
+    `tendsto_integral_mul_projDens` (bounded integrals against `projDens` are continuous along convergent means, from
+    the L¹ continuity `tendsto_projL1_of_tendsto`), **`completionLaw_eq_responseProjection`** (EVERY COMPLETION LAW IS
+    THE VARIATIONAL RESPONSE AT ITS EXTENDED MEAN: `Q_x = Π(meanExt x)`), **`klDiv_completionLaw_eq_genRate`**
+    (`D(Q_x‖ν) = 𝓘(meanExt x)`), **`klDiv_completionLaw_le`** (`Q_x` is the KL-minimiser among laws with its mean).
+    The completed Fisher response is the restriction of the variational response to the accessible extended means.

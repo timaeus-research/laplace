@@ -2015,3 +2015,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   attained along the response velocity. NEXT: decide between `ClosedMeanResponseContinuity` (needs polyhedral entropy
   recovery + lsc of the rate on the closed polytope) and `FacetResponseLengthBudget` (extract `hwin` of DataRayReverse
   as a standalone quantitative theorem with `integral_Ioi_gap_dataPath`).
+- LANDED (2026-09-27): `CompletionLawEqProjection` (6742a40). Gotchas: `meanMap_eq_iff_invisible … a b : mean a = mean b ↔
+  b − a ∈ invisibleSet`; `familyMeasure_add_of_invisible hS μ a hk` needs the base point `a` explicitly;
+  `Set.Finite.isClosed_convexHull (𝕜 := ℝ)`; the seabed ALREADY has L¹ continuity of `M ↦ Π(M)` on the closed polytope
+  (`tendsto_projL1_of_tendsto`, PolyhedralCompletion) and lsc of the rate (`lowerSemicontinuous_genRate`), so Astra's
+  `ClosedMeanResponseContinuity` is essentially done. NEXT: `ResponseCompactification` (the closed polytope embeds as a
+  closed subset of L¹(ν) via `M ↦ projL1 M`: continuity + injectivity via means + compactness), Hellinger form via
+  `(√a−√b)² ≤ |a−b|`, then `FacetResponseLengthBudget`.
