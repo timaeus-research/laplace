@@ -2461,5 +2461,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   C6 `ResponseFibreSecondJet` NOT done: the coefficient-journey lemmas need GLOBAL `∀ t, HasDerivAt a (a' t) t`, while the
   fibre section is smooth only near the base — route = smooth bump extension (`ContDiffBump`) of `σ₀`, then
   `hasDerivAt_coeffResponse`/`hasDerivAt_coeffVel` on `a t = (1, augCoeffL (tξ, σ̃(tξ)))`, giving `0 = V(hor(σ₀''[ξ,ξ])) +
-  H(Kξ,Kξ)` hence `σ₀''[ξ,ξ] = −H_g(Kξ,Kξ) = −A⁻¹B_g(Kξ,Kξ)`. NEXT: round-93 consult (programme C essentially complete:
-  C0–C5 landed; C6 pending as above).
+  H(Kξ,Kξ)` hence `σ₀''[ξ,ξ] = −H_g(Kξ,Kξ) = −A⁻¹B_g(Kξ,Kξ)`. Round 93 (7eb416e): PROGRAMME D = the curved response quotient. Queue: D01 `ResponseFisherJets` (bilinear Fisher
+  form `G_θ(u,v) = Cov_{P_θ}(L_u,L_v) = −⟨A_θ u, v⟩`, positive definite, `d/dt G_{θ+tu}(v,w)|₀ = −⟨T_θ(u,v), w⟩`, the
+  m-Christoffel operator `C_θ(u,v) = A_θ⁻¹ T_θ(u,v)` with `G(C(u,v),w) = −⟨T(u,v),w⟩`, total symmetry), D02
+  `ResponseDualConnections` (`Γ^α = ((1−α)/2) C`; duality `−⟨T(u,v),w⟩ = G(Γ^α(u,v),w) + G(v, Γ^{−α}(u,w))`; mean-path
+  second derivative `(μ∘θ)'' = A_θ θ'' + T_θ(θ',θ')` via `hasFDerivAt_chartDeriv` + `HasDerivAt.clm_apply`; mixture
+  journeys are m-geodesics), D03 `ResponseFisherCurvature` (`R^α(u,v)w = −((1−α²)/4)(C(u,C(v,w)) − C(v,C(u,w)))`, fourth
+  derivatives cancel by symmetry of `fderiv (fderiv CD)`; e/m flat), D04 `ResponseDensityTopology` (normalised densities
+  in `L¹(ν)`, continuous response and model section), D05 `ResponseFibreDeformation` (continuous fibre-preserving strong
+  deformation retraction), D06 `ResponseTopologicalQuotient` (quotient homeomorphic to `W`, contractible fibres). C6
+  correction: in general `D²σ₀(0)[ξ,η] = −H_g(Jξ,Jη)`, `Jξ = Kξ − hor(DΦ[Kξ])`. NEXT: D01.
