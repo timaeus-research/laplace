@@ -2199,3 +2199,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `dirSpan ν (fun _ ↦ 1) S` (motive error) — use `simp only [hone]` in a calc step. NEXT: round-87 consult; seed
   independence; `ResponsePatchMargins` (Euclidean clearance); `L¹`-in-the-law form continuity; HellingerAtlas.
 
+- Round 87 consulted (8fedebf) and `SeedIndependentAtlas` landed (round 87 rank 1). Pattern: the finite embedding is
+  `j(w) = tiltExt (faceDir v₀ w) x₀`, and `faceDir v₀ w + faceDir w w' = faceDir v₀ w'` (Subtype.ext + ring) gives
+  `tiltExt (faceDir w w') (j w) = j w'` in one `rw [tiltExt_tiltExt, faceDir_add]`; seed classification is
+  `UniformSpace.Completion.ext` (both extensions continuous) + `faceEmbedExt_coe` on the coe points, and the converse
+  is `congrFun h ↑(⟨v₀'⟩ : FisherPoint hS μ')` followed by `change … at this` (the `.param` of the literal does not
+  reduce syntactically for `rw`). A charged vertex on the exposed face of `M` comes from
+  `convexHull_nonempty_iff.1 ⟨M, mem_minimalFacePoly hM⟩` + `mem_intrinsicInterior_iff_forall_supporting` (all points
+  of the minimal face have `dotJ u = β`); `familyMeasure_one_zero_eq_tilted hS μ' w` +
+  `mean_tilted_mem_intrinsicInterior hS μ' ((bdd_dirLoss hS w).const_mul (-1))` put every finite face mean in the
+  relative interior. GOTCHA: a theorem in a section whose only mention of `u β` is through `faceMeasure ν {x | …}`
+  needs `(u := u) (β := β)` at call sites ("typeclass instance problem is stuck"). NEXT (round 87): rank 2
+  `ResponseProductAffinity` (Fisher → Hellinger on completion laws, product affinity `A^n`, TV lower bound),
+  rank 3 `ResponseJourneyResolution` (the tail theorem `TV(Q_{x_t}^{⊗n},Q_{x_∞}^{⊗n}) ≤ min{1,√n R(t)/2}` + separation
+  certificate `D > r₁ + r₂` + patch margins), rank 4 `L¹` law continuity, 5 HellingerAtlas, 6 SubmersionCalculus.

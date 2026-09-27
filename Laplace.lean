@@ -582,6 +582,7 @@ import Laplace.Multi.CoefficientTiltDifferentiation
 import Laplace.Multi.ResponseTiltPathBudget
 import Laplace.Multi.ResponseFormContinuity
 import Laplace.Multi.ResponseNoiseCalibration
+import Laplace.Multi.SeedIndependentAtlas
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

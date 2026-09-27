@@ -5794,3 +5794,17 @@ certificates for concrete resolved charts beyond the identity chart.
     **`effDim_le_of_relCov`** (`d_eff(D) = ∑_i Var_D⟨e_i,S⟩` over a Fisher-orthonormal basis, hence
     `Var_D⟨w,S⟩ ≤ κ Var_{P_θ}⟨w,S⟩ ∀w ⇒ d_eff(D) ≤ κ dim W`). The covariance-mismatch factor controls both differential
     amplification and sampling noise.
+  - Round 87 consult (`research_round87_{q,v1}`, 8fedebf): seed independence = tilt-orbit compatibility of seeds
+    (one singleton fibre suffices; charged faces give a CANONICAL atlas); no dimension-dependent "iff" resolution
+    threshold; the closing statement of the note is the tail theorem (remaining Fisher length bounds displacement and
+    projected-law distinguishability: `TV(Q_{x_t}^{⊗n}, Q_{x_∞}^{⊗n}) ≤ min{1, √n R(t)/2}`). Ranks: 1 SeedIndependentAtlas,
+    2 ResponseProductAffinity, 3 ResponseJourneyResolution (+ patch margins), 4 ResponseLawContinuity (L¹),
+    5 ResponseHellingerAtlas (stratumwise only), 6 ResponseSubmersionCalculus (+ invisible tangent space).
+  - `SeedIndependentAtlas.lean` (round 87, rank 1): `faceDir_add`, `faceDir_self`, `faceEmbed_self` (`j(v₀) = x₀`),
+    **`tiltExt_faceEmbed`** (finite equivariance `T_{w'−w} j(w) = j(w')`), `faceEmbed_transport`,
+    **`faceEmbedExt_eq_iff`** (TILT-ORBIT CLASSIFICATION OF SEEDS: `ĵ = ĵ' ⇔ x₀' = T_{v₀'−v₀} x₀`),
+    **`faceEmbedExt_eq_of_faceEmbed_eq`** (agreement at one finite parameter), `faceEmbedExt_transport`,
+    **`faceEmbedExt_eq_of_completionLaw_unique`** / **`faceEmbedExt_eq_of_meanExt_unique`** (ONE SINGLETON FIBRE
+    SUFFICES), `faceEmbedExt_injective` (unique source law fibres ⇒ injective), `exists_charged_vertex_on_face`,
+    `meanMap_faceMeasure_mem_intrinsicInterior`, **`faceEmbedExt_eq_of_charged_face`** (THE CANONICAL CHARGED-FACE
+    ATLAS: every seed pair gives the same `ĵ_F`, via `meanExt_eq_face_unique` at the finite face mean `m_F(v₀)`).
