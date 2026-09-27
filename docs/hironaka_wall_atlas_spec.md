@@ -6206,3 +6206,13 @@ certificates for concrete resolved charts beyond the identity chart.
     **`fisherInner_mChristoffel_mChristoffel_of_saturated`** (`G(C(u,v),C(x,y)) = E[f_uf_vf_xf_y] − G(u,v)G(x,y)`),
     **`fisherInner_alphaCurvature_of_saturated`** (CONSTANT-CURVATURE TENSOR `G(R^α(u,v)w,x) = ((1−α²)/4)(G(u,x)G(v,w) −
     G(v,x)G(u,w))`: fourth moments cancel), **`fisherSectional_of_saturated`** (`K = 1/4` on every nondegenerate plane).
+  - `ResponseFisherEnergyStationarity.lean` (F6, converse of E6): `lcAccel hS ν θ V A t := A t + ½ C_{θ t}(V t, V t)`,
+    `structure TestField` (`C²` scalar with explicit `φ' φ''`, `φ'' ` continuous, vanishing outside `Ioo 0 1`;
+    `TestField.continuous/continuous'/zero/one`), **`TestField.ofBump`** (a Mathlib `ContDiffBump c` with `closedBall c rOut
+    ⊆ Ioo 0 1`, derivatives from `contDiff_infty_iff_deriv`), `variable (S) in structure C2Path S ν` (`θ V A`, two
+    `HasDerivAt`s, `A` continuous), **`testVariation ν γ φ z`** (`Θ(s,t) = θ t + (s φ t) • z` as a `FisherVariation`),
+    **`hasDerivAt_fisherEnergy_testVariation`** (`E'(0) = −∫₀¹ φ G_{θ}(z, a)`), **`lcAccel_eq_zero_of_testPairings`** (THE
+    ANALYTIC CORE: vanishing test pairings ⇒ `a = 0` on `Ioo 0 1`, via `fisherInner_self_pos`, continuity, an open ball,
+    a bump with `rOut = r/2`, `intervalIntegral.integral_pos_iff_support_of_nonneg_ae'` + `Metric.measure_ball_pos`),
+    `StationaryFixedEndpoints ν γ`, **`stationary_fisherEnergy_iff_lcGeodesic`** (STATIONARITY ⇔ LC GEODESIC on `(0,1)`).
+    PROGRAMME F COMPLETE (F1–F6).

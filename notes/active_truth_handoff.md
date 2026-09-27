@@ -2593,6 +2593,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   before `rw [← hx]` under `integral_congr_ae (hc.mono …)`), and the fourth moments cancel in E1's tensor formula.
   NOT DONE: the concrete finite instance (X finite, ν charging every point, features an affine basis ⇒ `SaturatedAt`);
   needs `dirProjL` to land the product's coefficient vector in `𝕍` up to an a.e. constant.
-  NEXT: F6 `ResponseFisherEnergyStationarity` (converse of E6 via test fields `φ(t)z`); then a round-96 consult
-  (ask about the finite saturation instance). Optional:
+  F6 `ResponseFisherEnergyStationarity` LANDED (test fields as a structure with explicit derivatives, `ofBump` from
+  `ContDiffBump` via `contDiff_infty_iff_deriv` twice; `C2Path` needs `variable (S) in` (S implicit otherwise
+  unsynthesisable) and its continuity lemmas need `set_option linter.unusedFintypeInType false in` — omitting `[Fintype J]`
+  makes them whnf-time-out; a text replace of `testVariation hS ν` also hit `hasDerivAt_fisherEnergy_testVariation hS ν`
+  (substring, again); `continuous_const (y := z)` pins the constant; `Continuous.const_smul`, not `continuous_const.smul`;
+  `Metric.closedBall` must be qualified). PROGRAMME F COMPLETE.
+  NEXT: round-96 consult (ask about the finite saturation instance and what follows programme F). Optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
