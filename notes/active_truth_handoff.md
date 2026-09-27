@@ -1971,3 +1971,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   explicitly. Slop paragraphs pushed (Overleaf c235103). NEXT: `FaceNormalForm` at a charged vertex (vertex-gap
   criterion `⟨θ_n, w − M⟩ → +∞`, then eventual cone membership + `P(A) → 1`), then general faces (tangential
   convergence), `FacetResponseLengthBudget`, product corner; consider a round-83 consult after the vertex form.
+- LANDED (2026-09-27): `VertexFibreUnique` (37d3ed0). Gotchas: `mem_minimalFacePoly (V := V) hM` (V implicit there);
+  `measure_mono_null` wants the subset as `intro x hx' hx` (a 3-binder lambda is rejected against `⊆`); `FisherPoint.ext
+  (Subtype.ext (by simp [hadef]))` — `rw [hadef]` hits a motive error inside the subtype proof; `omit huniq` only when
+  the PROOF does not use it. NEXT: round-83 consult (general-face normal form: tangential part = projection to the face
+  direction space `W_A`, normal part `a_n ∈ W_A^⊥` constant on `A` a.e., replace `τ_n + a_n` by `v_M + a_n` via
+  `fisherDist_le_mul_norm`; needs properness of the face mean map), then `FaceFibreUnique`.

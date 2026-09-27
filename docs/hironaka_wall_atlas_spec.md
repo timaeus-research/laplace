@@ -5544,3 +5544,10 @@ certificates for concrete resolved charts beyond the identity chart.
     **`responseSpeedSq_le_distortion_mul`** (response speed ≤ data speed × variance distortion of the contrast the
     response moves along), **`responseSpeedSq_le_of_matched`** (contraction at a matched law `ρ_t = P_{θ_t}`).
   - Slop paragraphs for round 81 module 6/9 and the round-82 batch pushed (Overleaf c235103).
+  - `VertexFibreUnique.lean` (round 82, item 5 at a vertex): `le_dotJ_of_mem_convexHull` (a linear functional on the
+    polytope is bounded below by its vertex bound), **`eq_of_dotJ_eq_of_mem_convexHull`** (an exposed vertex is the only
+    polytope point on its exposing face), `ae_statPoint_mem_polytope`, `ae_dotJ_le_dirLoss_of_cone`,
+    **`eventually_cone_of_tendsto_meanMap`** (VERTEX NORMAL FORM: means → exposed vertex ⇒ eventually `⟨θ_n, w − M⟩ ≥ 0`
+    for all vertices, via the forward vertex-gap criterion), `responseProjection_statFibre_eq_one`,
+    **`tendsto_real_statFibre_one`** (vertex-fibre mass → 1), **`meanExt_eq_vertex_unique`** (THE COMPLETION FIBRE OVER A
+    CHARGED VERTEX IS A SINGLE POINT, every codimension: shifted sequences + coalescence with base `0`).
