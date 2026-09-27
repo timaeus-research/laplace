@@ -6380,3 +6380,13 @@ certificates for concrete resolved charts beyond the identity chart.
     a.e. inclusion of the small-energy event into the certified event via `ae_sampleResponse_sub_mem_dirSpan`,
     `measure_mono_ae`, `measureReal_union_le` for `1 ≤ P(s) + P(sᶜ)`; no measurability of the event needed). The
     constants use the single coercivity constant `c` (Astra's `B₀ = ‖A‖/√c`, `γ_ℓ = ‖ℓ‖/√c` bounds; not the sharp sups).
+  - `ResponseObservableHessian.lean` (I3): `modelScore_add hS ν`, `modelScore_smul ν` (NO hS), `mChristoffel_add_right/left`,
+    `mChristoffel_smul_left`, **`scoreResidual_add_left`**, **`scoreResidual_smul_left`** (the residual is bilinear),
+    **`secondResponse F θ u v := ∫ (F − EF) r_uv`** (`_symm`, `_add_left`, `_smul_left`), **`secondResponse_polarisation`**
+    (`E[(F−EF) r_uv] = ½(Q(u+v) − Q(u) − Q(v))`: the mixed second response as polarisation of the diagonal one — an
+    algebraic identity, no C² regularity statement needed), `lineVariance`, `lineVarianceDeriv`, `lineVariance_eq`,
+    `hasDerivAt_lineVariance'`, **`hasDerivAt_lineVarianceDeriv`** (VARIANCE HESSIAN `d²/dt² Var_{θ_t}F = E[(F−EF)² r_VV] −
+    2(d/dt EF)²`; `clear_value m m2` before the integral algebra or `← integral_const_mul` rewrites INSIDE the `set`
+    definition of `m = ∫ F`), **`concaveOn_lineVariance_of_flat`** (residual-flat ⇒ posterior variance concave on every
+    interval in the domain; `concaveOn_of_deriv2_nonpos` with `deriv^[2]` handled by `change`). Not done: Loewner
+    concavity of covariance matrices; the mixture identity.

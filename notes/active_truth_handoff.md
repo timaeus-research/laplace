@@ -2665,6 +2665,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `Real.sqrt_div (hx : 0 ≤ x) y`; prove `‖v‖ ≤ √q/√c` via `‖v‖ = √(‖v‖²)` + `Real.sqrt_le_sqrt` rather than
   `Real.le_sqrt` juggling; the CLE-apply vs CLM-apply issue again — insert `have : ℓ (Bop e) = ℓ (((CDE θ₀).symm : 𝕍 →L 𝕍) e)
   := rfl; rw [this] at *` before `linarith`). NEXT: I3 `ResponseObservableHessian` (mixed second responses by polarisation
-  after C²; variance Hessian; residual-flat ⇒ variance concave), then I4/I5/I6. Old NEXT:
+  after C²; variance Hessian; residual-flat ⇒ variance concave), then I4/I5/I6. I3 LANDED as
+  `ResponseObservableHessian` (mixed second response = polarisation — algebraic, via bilinearity of the residual;
+  `HasDerivAt.congr_of_eventuallyEq h h₁` wants `h₁ : f₁ =ᶠ f` (new function on the LEFT); `omit` refused on statements
+  mentioning `lineObservable`/`responseLine` — they reference the instances). NEXT: I4 `ResponseLocalizedSamplingBias`
+  (reset localisation, needs cubic remainder + 4th-moment bookkeeping — expensive), I5/I6 (finite simplex: `dim W =
+  |I| − 1`, sphere), or round-99 consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

@@ -642,6 +642,7 @@ import Laplace.Multi.ResponseSaturatedIdentification
 import Laplace.Multi.ResponseLineGeodesicCriterion
 import Laplace.Multi.ResponseTwoScaleCertificate
 import Laplace.Multi.ResponseFisherNoiseBridge
+import Laplace.Multi.ResponseObservableHessian
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
