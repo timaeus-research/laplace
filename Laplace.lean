@@ -564,6 +564,7 @@ import Laplace.Multi.ResponseSamplingResolution
 import Laplace.Multi.CompletionLawEqProjection
 import Laplace.Multi.ResponseCompactification
 import Laplace.Multi.DataManifoldResponseLaw
+import Laplace.Multi.AccessibleFaceStrata
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
