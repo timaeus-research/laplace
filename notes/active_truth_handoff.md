@@ -2522,5 +2522,18 @@ E1 `ResponseFisherCurvatureSign` LANDED (first pass: all tensor identities by `r
   `toNNReal • x = ofReal * x`); `klDiv_eq_zero_iff` needs both `IsProbabilityMeasure` instances as `have`s; `klDiv_self`
   needs `SigmaFinite` — supply the family's probability instance). NOT done: the Hessian-of-KL-is-Fisher statement
   (`t ↦ KL(ρ_g‖P_{θ+tu})`: derivative `⟨u, E_ρS − m(θ+tu)⟩` via `hasFDerivAt_famZ` (`(-famZ θ) • dotCLM (famMean θ)`),
-  second derivative `G(u,u)`) — a small follow-up module `ResponseInformationHessian` if wanted. NEXT: E3 C6
-  `ResponseFibreSecondJet`.
+  second derivative `G(u,u)`) — a small follow-up module `ResponseInformationHessian` if wanted.
+E3 = C6 `ResponseFibreSecondJet` LANDED (the long-open item). Route that worked: differentiate the first-order fibre
+  identity `N z := Dsl(L(z,σ₀ z))[L(ξ, Dσ₀(z)ξ)] = 0` (eventually, from `Filter.Eventually.eventually_nhds` of the
+  graph identity + `HasFDerivAt.unique` against the constant) ONCE MORE via `HasFDerivAt.clm_apply` (c := Dsl∘L∘graph,
+  u := L(ξ, Dσ₀ ξ)) and uniqueness again; NO derivative of CLM-valued `prod`/`comp` needed. Regularity near 0 from
+  `(contDiffAt.of_le 2).eventually (by simp)` (`ContDiffAt.eventually` needs `n ≠ ∞`), second derivative from
+  `ContDiffAt.fderiv_right (m := 1)` + `differentiableAt one_ne_zero`. Bilinear expansion of `fderiv (fderiv sl) 0 a b`:
+  expand `a` first as a CLM identity (`e1`), then `_root_.sum_apply`/`smul_apply`, then expand `b` per term; the RHS
+  through `responseHess_dirLoss` + `responseHess_symm` twice + `Finset.sum_comm`. Deprecated: `ContinuousLinearMap.
+  add_apply/zero_apply/neg_apply/sum_apply` → `_root_.…`. `congr 1` closes `responseVel hg (bdd_augDir (inl i)) =
+  responseVel hg (hk i)` by itself (proof irrelevance + defeq). NEXT: E4 `ResponseFaceFisherSeparation` (spherical
+  statistical distance `d_sph(p,q) = 2 arccos ∫√(pq)dν`; `2 arccos √(P_θ(S∈F)) ≤ d_sph(p_θ, q)` for `q` supported on
+  `{S ∈ F}` by Cauchy–Schwarz on the face; equality for the conditioned density; `d_sph ≤ fisherLength` along `C¹`
+  paths via the √-density speed `‖d/dt √p_θ‖₂ = ½√G(θ',θ')` — check the seabed's Affinity/RadialCurvature/AngularBound
+  modules (round 26: `2 arccos ρ ≤ length`) for what already exists before writing).

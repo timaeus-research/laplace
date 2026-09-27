@@ -6123,3 +6123,14 @@ certificates for concrete resolved charts beyond the identity chart.
     **`toReal_klDiv_model_eq_iff`** (UNIQUE information projection), **`responseInformationDefect g := KL(ρ_g‖P_Φg)`**,
     `_nonneg`, **`_eq_zero_iff`** (= 0 iff the data law is a model law), `_modelTilt` (= 0), **`responseInformationDefect_mix_le`**
     (`defect(mixture at t) ≤ (1−t)·defect`, via `klDiv_mixture_le`).
+  - `ResponseFibreSecondJet.lean` (E3 = C6, CLOSED): **`fibreGraph hS ν hg hk z := fibreSection (z, Φg)`** (σ₀),
+    `fibreGraph_zero`, `contDiffAt_fibreGraph`, **`hasFDerivAt_fibreGraph_zero`** (`Dσ₀(0) = −sliceVelL`),
+    `fderiv_fibreGraph_zero`, `eventually_augSlice_fibreGraph` (`Ψ(z,σ₀ z) = Φg` near 0), `eventually_hasFDerivAt_fibreGraph`,
+    `hasFDerivAt_fderiv_fibreGraph`, `contDiff_sl`, `hasFDerivAt_sl`, `hasFDerivAt_fderiv_sl`,
+    **`eventually_fderiv_sl_fibreGraph`** (first-order fibre identity near 0), `fderiv_sl_zero_horizontal`
+    (`Dsl(0)[L(0,w)] = w`), **`fderiv_fderiv_fibreGraph_zero_eq_neg`** (`D²σ₀(0)[η,ξ] = −D²sl(0)[L(η,−Vη),L(ξ,−Vξ)]`, via
+    `HasFDerivAt.clm_apply` + uniqueness against the constant), **`fderiv_fderiv_sl_zero`** (`D²sl(0)[a,b] = H_g(⟨a,k'⟩,⟨b,k'⟩)`,
+    bilinearity through `fderiv_fderiv_slice_single` + `responseHess_dirLoss` + `responseHess_symm`), `responseVel_augDir_coeff`
+    (`DΦ_g[⟨ξ,k⟩ + hor_g w] = Vξ + w`), **`fibreTangent ξ := ⟨L(ξ,−Vξ), k'⟩`** (= `Jξ = ⟨ξ,k⟩ − hor(Vξ)`), `bdd_fibreTangent`,
+    **`responseVel_fibreTangent`** (`DΦ_g[Jξ] = 0`: vertical), **`fderiv_fderiv_fibreGraph_zero`**
+    (`D²σ₀(0)[η,ξ] = −H_g(Jη, Jξ)`: THE SECOND JET OF THE RESPONSE FIBRE).
