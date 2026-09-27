@@ -5698,3 +5698,12 @@ certificates for concrete resolved charts beyond the identity chart.
     `forcing_eq_of_responseVel_eq`, **`lawCov_self_ge_horizontalLift`** (VARIANCE-MINIMISING LIFT), matched:
     `dataCovOp_eq_neg_of_matched`, `horizontalLift_of_matched` (`= −⟨v,S⟩`),
     **`lawCov_horizontalLift_self_of_matched`** (THE MATCHED SUBMERSION `Var_D hor_g(v) = |v|²_F`).
+  - `ResponsePathLengthBudget.lean` (round 85, rank 4; core theorem on `W`-paths): `pathCompletion`,
+    `meanExt_pathCompletion`, **`dist_pathCompletion_le`** (`d̂(η(a),η(b)) ≤ ∫_a^b |η'|_F`),
+    `intervalIntegral_speed_le_tail`, **`tendsto_tail`** (tail length → 0, via `tendsto_setIntegral_of_antitone` on
+    `Ioi a`), `tail_nonneg`, **`cauchy_map_pathCompletion`** (finite length ⇒ Cauchy at infinity), **`pathEndpoint`** +
+    **`tendsto_pathEndpoint`** (THE LENGTH BUDGET: a locally `C¹` path in `W` with integrable Fisher speed on `[0,∞)`
+    converges in `Ŵ`), **`dist_pathEndpoint_le_tail`** (`d̂(η(t), endpoint) ≤ ∫_t^∞ |η'|_F`),
+    **`tendsto_meanMap_pathEndpoint`** (means → `meanExt endpoint`), **`completionLaw_pathEndpoint_eq`** (the law of the
+    endpoint is `Π(lim m(η(t)))`). Bridge from paths through data to endpoints in the stratified atlas; finite LENGTH
+    (not energy) is the hypothesis. Bounded-tilt adapter (multi-parameter chain rule) still to do.

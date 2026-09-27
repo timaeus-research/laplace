@@ -2105,4 +2105,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT (round 85): `ResponseBilinearForm` (`G(k,ℓ) = ⟨b(k), C⁻¹b(ℓ)⟩`, symmetric, `d_eff ≤ κ dim W`),
   `TiltedFisherCompactConvergence` (`|Var_{Qn} − Var_Q| ≤ 3B²R²‖qn−q‖₁`), `ResponsePathLengthBudget` (finite length
   on `[0,∞)` ⇒ completion endpoint + tail bound + law `Π(lim m)`), `ResponseFormContinuity`.
+- ResponsePathLengthBudget landed (core on `W`-paths). GOTCHAS: NEVER use a local notation that mentions section
+  variables (`𝕍`) inside a `variable` binder — it elaborates to `dirSpan sorry … sorry` SILENTLY and every dependent
+  declaration then times out at whnf / reports "Unknown identifier"; spell `dirSpan ν (fun _ ↦ (1 : ℝ)) S` out.
+  Tail of an integrable function: `tendsto_setIntegral_of_antitone (s := fun a ↦ Ioi a)` + `⋂ Ioi = ∅`; Cauchy at
+  infinity via `Metric.cauchy_iff` with the set `f '' Ici T` (`image_mem_map (Ici_mem_atTop T)`); endpoint via
+  `CompleteSpace.complete`; tail bound via `le_of_tendsto (tendsto_const_nhds.dist hlim)`.
+  `completionLaw_eq_responseProjection hS ν V hpoly hcharged` wants `hpoly : momentBody = convexHull V`, `[Nonempty V]`,
+  `hcharged : ∀ v ∈ V, 0 < ν.real (statFibre S v)`. NEXT: `ResponseBilinearForm` (rank 2), the bounded-tilt adapter
+  for the length budget (multi-parameter `g_t = ∑ a_j(t) h_j`, chain rule `d/dt E_{ρ_{g_t}}S = Cov(S, ġ_t)`),
+  `TiltedFisherCompactConvergence` (rank 3), `ResponseFormContinuity`, `AccessibleFaceNonexpansion`.
 
