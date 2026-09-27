@@ -575,6 +575,7 @@ import Laplace.Multi.ResponseBilinearForm
 import Laplace.Multi.TiltedFisherCompactConvergence
 import Laplace.Multi.ResponseIntrinsicResolution
 import Laplace.Multi.TiltedCovarianceStability
+import Laplace.Multi.AccessibleFaceNonexpansion
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

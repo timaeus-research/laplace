@@ -2145,4 +2145,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   name was taken (VertexGapForward). NEXT: `AccessibleFaceNonexpansion`: for `x₀` with `Q_{x₀} = Qface v₀`
   (`v₀ ∈ W_A`), `j w := tiltExt (w − v₀) x₀` on `W_A`; prove `dist (j w) (j w') ≤ fisherDist S ν_A w w'` via
   ambient paths `θ_n + (γ_t − v₀)` + `fisherDist_le_integral` + uniform covariance stability + `le_csInf`.
+- AccessibleFaceNonexpansion landed (round 85 rank 6, the deep one). Proof shape: `le_csInf fisherLengths_nonempty
+  (fun _ ⟨γ, hγ⟩ ↦ hγ ▸ …)`; per-`n` bound `dist ≤ γ.length + √(c n)` with `c n → 0` from
+  `tendsto_integral_abs_famDens_sub_completionDens`; `fisherDist_le_integral hS ν hmem hder hcont zero_le_one` with
+  the explicit lambda path (no `obtain`-opaque `η`, so defeq with `θ + ↑(faceDir …)` holds); uniform bounds from
+  `isCompact_Icc.exists_bound_of_continuousOn (E := J → ℝ) (….continuousOn (s := Icc 0 1))` +
+  `abs_dirLoss_le_card_mul hB0 hB`; `√a ≤ √b + √c` via `Real.sqrt_le_left` + `nlinarith [Real.sq_sqrt …]`;
+  `intervalIntegral.integral_mono_on zero_le_one h1 h2 hpt`; `le_of_tendsto_of_tendsto' hd hlim hdn`.
+  GOTCHAS: `Subtype.ext (by rw [… hθ …])` hits a dependent motive — `change` the coerced goal first;
+  `γ.hasDerivAt_coe (faceMeasure ν A) t` (ν explicit); `exists_seq_tendsto_completion` is in FacetCompletionUnique.
+  NEXT: `FaceChainAccessibility` (compose `faceEmbed` along face inclusions; intrinsic accessibility transfers),
+  `1`-Lipschitz extension of `faceEmbed` to `Ŵ_A`, `ResponseFormContinuity`, bounded-tilt adapter for the length
+  budget; then round-86 consult.
 

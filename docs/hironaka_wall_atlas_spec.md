@@ -5738,3 +5738,10 @@ certificates for concrete resolved charts beyond the identity chart.
     `tendsto_integral_abs_famDens_sub_completionDens`, `aemeasurable_completionDens`,
     **`abs_lawCov_family_add_sub_completion_tiltExt_le`** (COVARIANCE STABILITY ALONG THE COMPLETION ACTION:
     `|Cov_{P_{θ+a}}(f,f') − Cov_{Q_{tiltExt a x}}(f,f')| ≤ 6‖f‖‖f'‖e^{2K}‖p_θ − ρ_x‖₁`, `|⟨a,S⟩| ≤ K`).
+  - `AccessibleFaceNonexpansion.lean` (round 85, rank 6): `faceDir` (face direction `w − v₀` as an ambient direction,
+    via `dirSpan_faceMeasure_le`), **`faceEmbed`** (THE FACE EMBEDDING `j_A(w) = tiltExt (w − v₀) x₀` on the face's own
+    direction space `W_A`), **`completionLaw_faceEmbed`** (`Q_{j_A w} = P^A_w`), **`dist_faceEmbed_le`** (THE
+    NONEXPANSION `d̂(j_A w, j_A w') ≤ d_F^{(A)}(w,w')`: approximate `x₀` by family points, transport a face path to the
+    ambient path `θ_n + (γ_t − v₀)`, bound by the ambient length, and pass to the limit with the covariance stability
+    along the completion action; infimum over face paths). Boundary paths are controlled by the face Fisher metric;
+    `j_A` extends `1`-Lipschitz to the face completion (extension not yet written).
