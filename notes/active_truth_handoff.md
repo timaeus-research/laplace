@@ -1918,3 +1918,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `NormalTiltFisherComparison` (`fisherVar (θ + a) w ≤ fisherVar θ w / P_θ(A)` for `a` with `⟨a,S⟩ = c` on `A`,
   `⟨a,S⟩ ≥ c` a.e.), 7 `CompletionFaceParameters`, 8 `CompletionFaceUnique`, 9 `CompletionHellingerEmbedding`,
   10 `ProductCornerCompletion`.
+- Slop paragraph (round-81 batch) pushed (Overleaf 0a6d620). Module 6 `NormalTiltFisherComparison` landed 2026-09-27
+  (the uniform estimate `fisherVar (θ + a) w ≤ fisherVar θ w / P_θ(A)`); `FacetCompletionLaw` refactored to expose
+  `rayTail`, `fisherDist_ray_le_rayTail`, `tendsto_ray_completion`, `dist_ray_completion_le`. Gotchas: `obtain ⟨-, K, hK⟩
+  := hg` DESTROYS `hg` (use `hg.2`); there is no `Bdd.div_const` — pull the constant out of the integral instead
+  (`integral_const_mul` after a pointwise `simp only [smul_eq_mul]; ring`); `set c := ∫ f` is not folded into later
+  rewrites (`lawCov_eq_integral_centred` reintroduces `∫ f`) — use `obtain ⟨c, hc⟩ : ∃ c, c = ∫ f` and `rw [← hc]`;
+  `intervalIntegral.integral_mono_interval` needs `(μ := volume)` when nothing else pins the measure;
+  `tendsto_const_nhds.dist hlim` for `dist c (ray n) → dist c x` (the `Continuous.dist` route leaves the constant
+  unsynthesised); omitting `[Nonempty J]` cascades through the whole ray section — omit it on every ray lemma that
+  does not mention `FisherPoint`.
+  NEXT: module 9-facet `FacetHellingerEmbedding` (Hellinger convergence to the facet law ⇒ Fisher convergence to `x_M`,
+  via the mean continuity on `L²`, the facet asymptotics and `dist_ray_completion_le`); then the general normal-cone
+  programme (7–8) and the product corner (10).

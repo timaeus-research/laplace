@@ -5493,3 +5493,12 @@ certificates for concrete resolved charts beyond the identity chart.
     monotone primitive), **`exists_tendsto_dataPathCompletion_iff`** (THE ENDPOINT THEOREM: the data response path has a
     limit in the Fisher completion, lying over `E[S | h = H]`, iff the response length is finite),
     **`completionLaw_dataPathCompletion_limit`** (the endpoint's law is the face exponential-family law `P^A_{v_M}`).
+  - `FacetCompletionLaw.lean` (refactored): `raySpeed`, **`rayTail`** (remaining ray length beyond depth `a`),
+    `continuous_raySpeed`, `integrableOn_raySpeed`, `tendsto_rayTail`, `rayTail_nonneg`, **`fisherDist_ray_le_rayTail`**,
+    `cauchySeq_ray`, **`tendsto_ray_completion`** (the ray converges in the completion to the point over `M`),
+    **`dist_ray_completion_le`** (`dist([v_M − a u], x_M) ≤ rayTail a`).
+  - `NormalTiltFisherComparison.lean` (round 81, module 6): **`lawCov_tilted_le_div`** (variance under a sub-unit tilt:
+    `e^g ≤ 1` a.e., `p ≤ ∫ e^g` ⇒ `Var_{P.tilted g} f ≤ Var_P f / p`), `familyMeasure_add_eq_tilted`,
+    **`fisherVar_add_le_div`** (FACE-NORMAL TRANSLATIONS ARE UNIFORMLY FISHER-LIPSCHITZ: `⟨a,S⟩ = c` on `A`, `⟨a,S⟩ ≥ c`
+    a.e. ⇒ `Var_{P_{θ+a}}⟨w,S⟩ ≤ Var_{P_θ}⟨w,S⟩ / P_θ(A)`), `fisherNorm_add_le_div_sqrt`, `fisherVar_sub_smul_le_div`
+    (deep normal translations towards an exposed face).
