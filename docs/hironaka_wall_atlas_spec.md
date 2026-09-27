@@ -5589,3 +5589,15 @@ certificates for concrete resolved charts beyond the identity chart.
     `dotJ_dataCov_eq_lawCov_dir` (`⟨w, b_t⟩ = Cov_{ρ_t}(⟨w,S⟩, h)`), `sq_dotJ_dataCov_le`, **`sq_signal_le_mul_noise`**
     (`⟨w,b_t⟩² ≤ n · E[⟨w, M̂_n − m⟩²] · Var_{ρ_t} h`), **`resolution_floor`** (a truth shift `δ` visible above the sampling
     noise in some observable direction has `δ² n Var_{ρ_t} h ≥ 1`: the data Fisher–Rao floor).
+  - `BoundedTiltFisherComparison.lean` (round 83, rank 1 infrastructure): **`lawCov_tilted_le_exp_osc`**
+    (`Var_{P.tilted g} f ≤ e^{hi−lo} Var_P f` for `lo ≤ g ≤ hi` a.e.), `fisherVar_add_le_exp` (`≤ e^{2K}`),
+    `fisherNorm_add_le_exp` (`≤ e^K`), **`fisherDist_add_le_exp`** (`d_F(x + h, y + h) ≤ e^K d_F(x, y)` for
+    `|⟨h,S⟩| ≤ K`, by translating near-minimising paths), `exists_fisherDist_add_le`.
+  - `BoundedTiltCompletionAction.lean` (round 83, rank 1): `tiltPoint`, **`tiltExt`** (`Completion.map` of translation
+    by `h ∈ W`; `tiltExt_coe`, `continuous_tiltExt`, `lipschitzWith_tiltExt`, `tiltExt_tiltExt` (additive),
+    `tiltExt_zero`, `tiltExt_neg_tiltExt` (inverse)), `continuous_integral_completionLaw` (`x ↦ ∫ f dQ_x` continuous
+    for bounded `f`), `integral_exp_completionLaw_ge`, **`integral_completionLaw_tiltExt`**,
+    **`completionLaw_tiltExt`** (`Q_{tiltExt h x} = Q_x.tilted (−⟨h,S⟩)`), `meanExt_tiltExt`,
+    **`completionLaw_tiltExt_faceFamily`** (`Q_x = P^A_{v₀} ⇒ Q_{tiltExt h x} = P^A_{v₀+h}`),
+    `meanExt_tiltExt_faceFamily`, **`exists_meanExt_eq_faceFamily`** (ONE ACCESSIBLE FACE LAW CARRIES THE WHOLE OPEN
+    FACE FAMILY: every `m_A(v₀ + h)` is an extended mean).

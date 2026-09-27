@@ -2000,3 +2000,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   𝕍 — not yet done. NEXT: `BoundedTiltCompletionAction` (round 83 rank 1), then `AccessibleFaceOrbit`,
   `PolyhedralEntropyRecovery`/`ClosedMeanResponseContinuity`, `FacetResponseLengthBudget`; slop paragraph for
   metric control + resolution.
+- LANDED (2026-09-27): `BoundedTiltFisherComparison` (e583b47), `BoundedTiltCompletionAction` (68a468e). Gotchas:
+  `FisherPath.continuous_speed` is namespaced; `UniformSpace.Completion.map_coe (huc : UniformContinuous f) a`,
+  `LipschitzWith.completion_map`, `Completion.induction_on x (isClosed_eq hf hg) (fun p ↦ …)` for identities on the
+  completion; the completion-law probability instance is found by instance search (no `isProbabilityMeasure_completionLaw`
+  name); `integral_indicator_one hA` produces `A.indicator 1` (Pi one) — pass `(f := A.indicator 1)` and
+  `measurable_one.indicator hA`; `tilted_apply_eq_ofReal_integral' g hA` + `ENNReal.toReal_eq_toReal_iff'` to compare
+  finite measures setwise. NEXT: corollary `exists_meanExt_eq_of_facet_accessible` (facet accessibility ⇒ all of the
+  open face family accessible), then `PolyhedralEntropyRecovery`/`ClosedMeanResponseContinuity`,
+  `FacetResponseLengthBudget`, `AccessibleFaceOrbit` nonexpansion (needs compact-uniform covariance convergence).
