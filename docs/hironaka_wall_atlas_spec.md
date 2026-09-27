@@ -5629,3 +5629,17 @@ certificates for concrete resolved charts beyond the identity chart.
     `tendsto_dataMean`, `dataMean_mem_polytope`, `topMean_mem_polytope`, **`tendsto_projL1_dataMean`** (THE RESPONSE LAW
     ALONG THE DATA MANIFOLD CONVERGES IN `L¹(ν)` TO `Π(E[S | h = H])`, no accessibility), `continuous_projL1_dataMean`,
     **`responseProjection_dataMean_zero`** (starts at `ν`).
+  - Round 84 (`research_round84_{q,v1}`): testing sandwich + `H ≤ ½d_F` (one-way indistinguishability at `d_F ≪ n^{−1/2}`),
+    local converse on coercive patches (`√λ/(2B) d_F ≤ H ≤ ½ d_F`), basis-free trace identity via `R_θ = ι∘C_θ⁻¹∘proj_W`
+    (`E⟨M̂−m,R_θ(M̂−m)⟩ = tr(R_θC_ρ)/n`, `= dim W/n` at matching), Fisher speed = best structural SNR per sample, "chamber
+    size" = class MARGIN with class-change probability `≤ tr(C_θ⁻¹C_ρ)/(n r²)`; multi-parameter pull-back form
+    `G^{resp}_g(k,ℓ) = ⟨b_g(k), C⁻¹b_g(ℓ)⟩` with kernel = covariance-invisible directions, relative-covariance
+    amplification `G^{resp} ≤ κ G^{data}`, matched orthogonal score decomposition `Var_ρ k = G^{resp}(k,k) + E k_inv²`;
+    accessible strata via tilt action; ranked: 1 ResponsePullbackForm, 2 ResponseScoreProjection, 3 AccessibleFaceStrata,
+    4 FisherNormalisedSampling, 5 ResponseLocalTesting, 6 TiltedFisherCompactConvergence, 7 AccessibleFaceNonexpansion,
+    8 FaceChainAccessibility, 9 ResponseClassResolution, 10 ResponsePathLengthBudget.
+  - `AccessibleFaceStrata.lean` (round 84, rank 3): **`responseProjection_eq_faceFamily`** (`Π(m_A(v)) = P^A_v`: the two
+    Pythagorean identities + uniqueness of the information projection), **`exists_meanExt_eq_of_mem_ri_face`** (ONE
+    EXTENDED MEAN IN `ri(momentBody ν_A)` MAKES ALL OF IT ACCESSIBLE, from an arbitrary accessible point, every
+    codimension: `Q_x = Π(M₀) = P^A_{v₀}`, then `tiltExt (v − v₀)`). Accessible extended means = union of relative face
+    interiors.

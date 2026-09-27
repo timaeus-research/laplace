@@ -2051,3 +2051,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   TiltedFisherCompactConvergence, 7 AccessibleFaceNonexpansion, 8 FaceChainAccessibility, 9 ResponseClassResolution,
   10 ResponsePathLengthBudget (`∫√(bᵀC⁻¹b) < ∞ ⇒ completion limit, law Π(M_∞)`). NEXT: AccessibleFaceStrata, then
   ResponsePullbackForm + ResponseScoreProjection, FisherNormalisedSampling.
+- LANDED (2026-09-27): `AccessibleFaceStrata` (387416a). Gotchas: `hΠac` — `Π` is a reserved token (like `λ`, `Σ`);
+  rewriting `M₀` when `faceThetaOf hM₀` depends on it → motive error: use a `calc` step `Π M₀ = Π (m_A(θ)) := by rw [e]`;
+  `ae_dirLoss_le_of_polytope hS ν V (u := u) (β := β) hpoly hV`. NEXT: `ResponsePullbackForm` (general bounded tilt
+  `ρ_g`, `responseDiff g k := (CDE (Φ g)).symm ⟨Cov_{ρ_g}(S,k)⟩`, form `= bᵀC⁻¹b`, kernel = invisible, relative-covariance
+  comparison, matched score decomposition), `FisherNormalisedSampling`, `ResponseLocalTesting`.
