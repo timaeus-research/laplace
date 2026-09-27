@@ -6416,3 +6416,15 @@ certificates for concrete resolved charts beyond the identity chart.
     J6 `ResponseMeanPolytopeJourney` (nonsaturated finite family: `m : W ≅ relint conv{S(x)}` via the strictly convex
     dual objective; `P_{θ_t} ≠ (1−t)ν + tp` in general though means agree — the response atlas is a QUOTIENT of data
     space by feature means). Careful-reader desideratum: a global domain-and-continuation theorem for the journey.
+  - `ResponseTestingResolution.lean` (J1, THE TESTING LOWER BOUND): `one_sub_mul_sq_le_cos_pow` (`1 − n x² ≤ cos^{2n} x`,
+    Bernoulli `one_add_mul_le_pow` + `sin² ≤ x²`; pure-real lemma placed OUTSIDE the `include hS` section),
+    `rootLaw_rootDensL2` (`rootLaw ν (√p_θ) = P_θ` via `familyMeasure_eq_withDensity_famDens ν θ` + `withDensity_congr_ae`),
+    `pi_familyMeasure_eq_rootLaw` (n-fold product as a root law, `rootLaw_prodRoot`), **`testing_error_model_ge`**
+    (`(1 − √(1 − A^{2n}))/2 ≤ average error` for any test `φ` with values in [0,1]; from SharpAffinityTesting's
+    `testing_error_ge_sqrt` on `Measure.pi`, `inner_prodRoot`, `inner_rootDensL2`),
+    **`cos_half_fisherDist_le_affinity`** (`d_F ≤ π ⇒ cos(d_F/2) ≤ Aff`, from `sphericalDist_le_fisherDist` +
+    `Real.cos_le_cos_of_nonneg_of_le_pi` + `Real.cos_arccos`), **`testing_error_model_ge_of_fisherDist`**
+    (`(1 − √(1 − cos^{2n}(d_F/2)))/2 ≤ error` for `d_F ≤ π`), **`testing_error_model_ge_half_sub`**
+    (THE RESOLUTION SCALE `1/2 − √n d_F/4 ≤ error`). Together with `measureReal_sign_certified_ge`: the two-sided
+    resolution story (certificate ⇒ resolved w.p. ≥ 1 − τ/(nr²); separation below 1/√n ⇒ unresolvable). Equal-prior
+    average error; complementary, not a matched minimax theorem.

@@ -2676,6 +2676,12 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   great-circle path, constant speed 2α, then transport) or I4, or round-99 consult. Round 99 (0966bf3) = PROGRAMME J
   (see atlas spec): J1 TestingResolution, J2 SimplexIdentification, J3 SimplexSphere, J4 LocalizedSamplingBias, J5
   GeometrySummary, J6 MeanPolytopeJourney; plus the audit fix: export the GOOD event (chart validity + sign) in the
-  probabilistic resolution theorem. NEXT: J1 + the good-event strengthening. Old NEXT:
+  probabilistic resolution theorem. J1 `ResponseTestingResolution` LANDED (gotchas: `sphericalDist` unfolds by `rfl` —
+  state the bound as `2 * arccos A ≤ d` with `:= sphericalDist_le_fisherDist …`; `linarith` needs `0 ≤ d` as an explicit
+  hypothesis; `Real.cos_nonneg_of_neg_pi_div_two_le_of_le` takes two explicit bounds; a pure-real lemma inside an
+  `include hS` section acquires `hS`; the unused-section-variable linter reports ONE theorem per check — drop the
+  unneeded `[Nonempty X] [Nonempty J]` from the section `variable` line and put `[Nonempty X]` on the theorems that
+  use `affinity_le_one`). NEXT: the good-event strengthening of `measureReal_sign_certified_ge` (export chart
+  validity `M̂ ∈ Ω ∧ m(θr M̂) = M̂`), then J2 `ResponseSimplexIdentification`. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
