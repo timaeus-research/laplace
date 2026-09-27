@@ -674,6 +674,7 @@ import Laplace.Multi.ResponseInfinitesimalLadder
 import Laplace.Multi.ResponseJourneyIntegral
 import Laplace.Multi.ResponseEmpiricalRisk
 import Laplace.Multi.ResponseResolutionEllipsoid
+import Laplace.Multi.ResponseRefinementBudget
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

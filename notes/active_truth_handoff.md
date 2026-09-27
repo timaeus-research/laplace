@@ -2757,10 +2757,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   ∫₀¹⟨u_F(θ(M_t)), m_D − m₀⟩dt`, endpoint included, along the polytope journey). Ranks 3+4 LANDED: `ResponseEmpiricalRisk`
   (`integral_abs_empiricalObs_sub_le`: `E|E_{R_{M̂_n}}F − E_{R_{m_D}}F| ≤ L_F√(tr Cov_D(S)/n)`, second-moment form,
   Chebyshev, MARGIN CHAMBER THEOREM `measureReal_sampleResponse_notMem_chamber_le`). Rank 6 LANDED: `ResponseResolutionEllipsoid` (`regressionDir_sum`,
-  `dataBilin_regressionDir_sum : Σ_D(u_{F_c},u_{F_c}) = cᵀVc`, `minimax_two_point_contrast`). NEXT: rank 5 global
-  refinement budget (chain of refinements, telescoping `KL(D‖ν) = KL(D‖R_K) + Σ KL(R_{k+1}‖R_k)`, saturation ⇒
-  `R_K = D`, Pinsker certificate `|E_DF − E_{R_K}F| ≤ osc(F)√(KL/2)`); attainable-direction chamber lower bound
-  (M6 least-information score + L7 tilt expansion + Le Cam for a chamber classifier); then round-104 consult. Was: 3 uniform unlocalised
+  `dataBilin_regressionDir_sum : Σ_D(u_{F_c},u_{F_c}) = cᵀVc`, `minimax_two_point_contrast`). Rank 5 LANDED: `ResponseRefinementBudget`
+  (`klDiv_levelResponse_telescope`, saturated form, `pinsker_budget` stopping criterion). ALL round-103 post-M ranks
+  DONE except the attainable-direction chamber LOWER bound (M6 least-information score + L7 tilt expansion + Le Cam
+  for a chamber classifier). NEXT: round-104 consult (report M3–M7 + ranks 2–6; ask for the next programme), then the
+  chamber lower bound if ranked. Was: 3 uniform unlocalised
   risk `E|E_{R_{M̂_n}}F − Ψ_F(D)| ≤ L_F√(tr Cov_D(S)/n)`, 4 margin chamber theorem `P(wrong) ≤ tr Cov_D/(n r_D²)` +
   attainable-direction lower bound, 5 global refinement budget + `|E_DF − E_{R_K}F| ≤ osc(F)√(KL/2)`, 6 observable
   resolution ellipsoid; then round-104 consult. Old NEXT:

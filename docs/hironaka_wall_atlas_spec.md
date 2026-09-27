@@ -6961,3 +6961,14 @@ certificates for concrete resolved charts beyond the identity chart.
     after `map_sum/map_smul/LinearMap.sum_apply` the inner form appears TRANSPOSED — `dataBilin_comm` with explicit
     arguments, then `ring`), **`minimax_two_point_contrast`** (M5 for every contrast with `cᵀVc > 0`: `√n L_n →
     (a cᵀVc/2)(1 − √(a²cᵀVc/2))`, every estimator's two-point risk `≥ L_n`; `rwa [dataBilin_regressionDir_sum] at h`).
+  - `ResponseRefinementBudget.lean` (post-M rank 5, THE GLOBAL REFINEMENT BUDGET; chain `S : (k : ℕ) → J k → X → ℝ`
+    with dependent index types `{J : ℕ → Type*} [∀ k, Fintype (J k)] [∀ k, Nonempty (J k)]`, `hS : ∀ k j, Bdd (S k j)`,
+    `hchain : ∀ k, Refines (S k) (S (k+1)) ν`): `levelResponse hS ν D k := R^{S_k}_{m_k(D)}`,
+    `genRate_level_ne_top_of_le` (finite rate propagates down the chain by `genRate_ne_top_of_refines`),
+    **`klDiv_levelResponse_telescope`** (`KL(D‖R_0) = KL(D‖R_K) + Σ_{k<K} KL(R_{k+1}‖R_k)` in `ℝ≥0∞`, induction with
+    L5's `klDiv_data_responseProjection_refine` + `Finset.sum_range_succ` + `ring`),
+    **`klDiv_levelResponse_telescope_of_spansAffine`** (saturated finest level: `KL(D‖R_0) = Σ KL(R_{k+1}‖R_k)` via
+    the companions' `responseProjection_eq_self_of_spansAffine`), `isProbabilityMeasure_levelResponse`,
+    `sq_integral_sub_levelResponse_le` (Pinsker `(E_DF − E_{R_K}F)²/(2L²) ≤ KL(D‖R_K)` from `pinsker_observable`),
+    **`pinsker_budget`** (stopping criterion: `ofReal(…) + Σ_{k<K} KL(R_{k+1}‖R_k) ≤ KL(D‖R_0)`; on this pin
+    `add_le_add h le_rfl`, not `add_le_add_right`).
