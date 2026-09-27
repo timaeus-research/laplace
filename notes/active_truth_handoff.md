@@ -2438,5 +2438,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `hasFDerivAt_inverse_response_apply` composed with `comp_hasDerivAt_of_eq t₀ hz (by simp)`; the eventual derivative
   statement uses `eventually_eventually_nhds.2` to get a neighbourhood identity for `congr_of_eventuallyEq`. GOTCHAS: a
   `local notation` cannot contain an anonymous constructor `⟨…⟩` (make it a def); after a text substitution `Fv →
-  forcingV hS ν hg hk` PARENTHESISE (application precedence); implicit `{t₀}` at `0` must be passed `(t₀ := 0)`). NEXT:
-  C4 `ResponseEMAccelerationGap` (drafted), C5 `ResponseSliceSubmersion`, C6 `ResponseFibreSecondJet`, C0 Taylor.
+  forcingV hS ν hg hk` PARENTHESISE (application precedence); implicit `{t₀}` at `0` must be passed `(t₀ := 0)`). C4 `ResponseEMAccelerationGap` landed (pure algebra on `responseHess`; `map_eq_zero_iff` of the CLE for the iff;
+  invisible ⇒ forcing 0 ⇒ local mixture journey constant response). NEXT: C5 `ResponseSliceSubmersion` (augmented slice
+  `Ψ(z,u) = Φ(g + Σ z_i k_i + hor_g u)`, derivative `(ξ,w) ↦ V(Kξ) + w`, inverse function theorem for `Ξ(z,u) = (z, Ψ(z,u))`
+  via `HasStrictFDerivAt.localInverse` / `ContDiffAt.to_localInverse`; local product; then C6 fibre graph Hessian `−H`),
+  C0 Taylor. The dup-name gate regex must strip a trailing prime (`[^ ']+`) or `foo'` false-flags `foo`.

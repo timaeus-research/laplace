@@ -6028,3 +6028,9 @@ certificates for concrete resolved charts beyond the identity chart.
     `hasDerivAt_displacement`, `mpath_eq`, `hasDerivAt_responseTheta_mpath`, **`eventually_hasDerivAt_responseOf_localMixTilt`**
     (velocity of the mixture journey's response), **`hasDerivAt_mixResponseVel`** (THE MIXTURE-CONNECTION CORRECTION
     `v_m' = −A⁻¹ T_θ(v_m, v_m)`), `hasDerivAt_mixResponseVel_zero`.
+  - `ResponseEMAccelerationGap.lean` (C4): `mixResponseAccel` (`−A⁻¹T(V,V)`), `hasDerivAt_mixResponseVel_zero'`,
+    `hasDerivAt_expResponseVel_zero`, **`responseHess_sub_mixResponseAccel`** (THE E/M ACCELERATION GAP `H_g(k,k) − a_m =
+    A⁻¹B_g(k,k)`), **`responseHess_add_mConnection`** (mixture-covariant acceleration of the exponential journey = `A⁻¹B`),
+    **`responseHess_eq_mixResponseAccel_iff`** (accelerations agree iff `B_g(k,k) = 0`), `mixResponseVel_zero_eq_responseVel`,
+    `forcing_eq_zero_of_responseVel_eq_zero`, **`eventually_responseOf_localMixTilt_of_invisible`** (INVISIBLE DIRECTIONS
+    INTEGRATE TO STRAIGHT LINES INSIDE A FIBRE in density coordinates).

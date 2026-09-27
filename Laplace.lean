@@ -609,6 +609,7 @@ import Laplace.Multi.ResponseDataSmooth
 import Laplace.Multi.ResponseMixtureCoordinates
 import Laplace.Multi.ResponseGlobalFibres
 import Laplace.Multi.ResponseMixtureConnection
+import Laplace.Multi.ResponseEMAccelerationGap
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
