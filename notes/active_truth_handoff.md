@@ -2646,6 +2646,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   given). NOT done: `dim W = |X|−1`, simplex ≅ moment body. NEXT: H4 `ResponseSimplexSphere` (`d_F = 2 arccos Σ√pq`:
   route = every positive law is a model law (H3) + great-circle path of laws `p_t = s_t²` lifted by `θr ∘ mean` +
   Fisher speed `Σ ṗ²/p = 4α²` via `−⟨θ'_t,S⟩ − (log Z)' = ṗ/p` from `P_{θ_t} = p_t`), or H5/H6 (localised sampling
-  bias, two-scale sign certification). Old NEXT:
+  bias, two-scale sign certification). `ResponseLineGeodesicCriterion` LANDED (mean-straight journeys are LC
+  geodesics iff `C(θ',θ') = 0`; trivial from G6/F2 + `module`). NEXT: H6 first deliverable = generic quadratic
+  remainder `‖F(z) − F(0) − DF(0)z‖ ≤ K‖z‖²` on a ball inside the open domain (twice
+  `Convex.norm_image_sub_le_of_norm_fderiv_le`, bound on `fderiv (fderiv F)` from `ContDiffOn.continuousOn_fderiv_of_isOpen`
+  + `IsCompact.exists_bound_of_continuousOn`), then the deterministic sign certificate
+  `ℓ(F(te+ξ)) − ℓθ₀ ≥ tℓ(Be) − ‖ℓ‖‖B‖r − ‖ℓ‖K(|t|‖e‖+r)²` on `‖ξ‖ ≤ r`. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

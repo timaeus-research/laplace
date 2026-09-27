@@ -6335,3 +6335,7 @@ certificates for concrete resolved charts beyond the identity chart.
     **`lawResponse_injective_of_spansAffine`**, **`saturatedHomeomorph : DataLaw ν ≃ₜ W`** (inverse `modelLaw`; no
     Mathlib quotient lemma needed), `eq_of_lawResponse_eq_of_spansAffine`. NOT done: `dim W = |X|−1`, the barycentric
     identification with the positive simplex (H3 items 1–4 of round 97), H4 `d_F = 2 arccos Σ√pq`.
+  - `ResponseLineGeodesicCriterion.lean` (round-97 "deferred" corollary): `responseLine_lcAccel` (LC acceleration of a
+    response line `= −½ C(V,V)`), **`responseLine_lcGeodesic_iff`** (LC geodesic at `t` ⇔ `C_θ(V,V) = 0`),
+    `featurelessJourney_lcAccel`, **`featurelessJourney_lcGeodesic_iff`**, `mChristoffel_self_eq_zero_iff` (⇔ `T(v,v) = 0`).
+    Not done: the unparametrised criterion `C(θ̇,θ̇) ∈ span θ̇`.
