@@ -7028,3 +7028,18 @@ certificates for concrete resolved charts beyond the identity chart.
     (supports shrink outward, from `carriedResponses_supportSet_subset_of_isExtreme` + Csiszár's support theorem),
     **`supportSet_eq_of_mem_intrinsicInterior`** (SUPPORT CONSTANT ON THE RELATIVE INTERIOR OF A FACE),
     **`responseProjection_eq_faceMeasure_of_mem_intrinsicInterior`** (one base law `ν_A` per open face stratum).
+  - `ResponseFaceCalculus.lean` (N1 part 3, FACEWISE INTERIOR CALCULUS): `faceMeasure_singleton`
+    (`ν_A{x} = (νA)⁻¹ ν{x}` on `A`, `0` off `A`), `faceMeasure_compl_self`, **`essRange_faceMeasure_eq_image`**
+    (`essRange ν_A = S(A)`, mirror of `essRange_eq_range_statPoint`; no `ν A ≠ 0` needed),
+    **`carriedResponses_eq_convexHull_image`** (`carriedResponses S A = conv S(A)`; ⊆ via `vecMoment_eq_sum_smul`
+    + `Finset.sum_filter_of_ne` + `Convex.sum_mem`, ⊇ via `convexHull_min` with Dirac `Pi.single x 1`),
+    **`momentBody_faceMeasure_eq_carriedResponses`** (`momentBody ν_A = conv S(A)`),
+    **`dirSpan_faceMeasure_eq_vectorSpan_image`** (`𝕍^{ν_A} = W_A = span(S(A) − S(A))`),
+    `intrinsicInterior_momentBody_faceMeasure` (relint(face) = `Ω^{ν_A}`), `measure_supportSet_ne_zero`,
+    **`hasDerivAt_responseObs_face`** (THE FACEWISE DERIVATIVE: for `M' ∈ relint(face of M)`, `A = supp q*(M)`,
+    `e ∈ W_A`: `d/dt ∫F dR_{M'+te}|₀ = ⟨u_F^{ν_A}(θr^{ν_A} M'), e⟩`; proof: `hasDerivAt_lineObservable_zero` at
+    base `ν_A`, `meanMap_responseTheta`, eventual equality on the open `responseLineDomain` via
+    `responseProjection_eq_familyMeasure_responseTheta` (base `ν_A`) + `responseProjection_eq_faceMeasure_of_mem_intrinsicInterior`;
+    the statement carries `[IsProbabilityMeasure (faceMeasure ν A)]` + `hA : A = supportSet hS ν M` so that
+    `regressionDir`/`responseTheta` at base `ν_A` elaborate; supply the instance by `isProbabilityMeasure_faceMeasure ν
+    (measure_supportSet_ne_zero …)`).

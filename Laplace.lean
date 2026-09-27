@@ -681,6 +681,7 @@ import Laplace.Multi.ResponseChamberClassifier
 import Laplace.Multi.ResponseFaceRestriction
 import Laplace.Multi.ResponseTrivialFamily
 import Laplace.Multi.ResponseFaceSupportConstancy
+import Laplace.Multi.ResponseFaceCalculus
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
