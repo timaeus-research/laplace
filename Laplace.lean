@@ -656,6 +656,7 @@ import Laplace.Multi.ResponseIIDSamplingBias
 import Laplace.Multi.ResponseFiniteFibres
 import Laplace.Multi.ResponseJourneyInformationCost
 import Laplace.Multi.ResponseObservableSamplingGeometry
+import Laplace.Multi.ResponseSimplexCompletion
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

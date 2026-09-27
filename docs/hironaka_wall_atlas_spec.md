@@ -6630,3 +6630,27 @@ certificates for concrete resolved charts beyond the identity chart.
     `lawCov_dirLoss_left hS ν v ψ hψ` takes `hS` first; `lawCov_comm` in a `rw` chain needs explicit arguments (it otherwise
     rewrites `Cov(F,F)` to itself); `simp_rw [integral_finsetSum _ fun b _ ↦ …]` with a metavariable index fails — state the
     inner integral as `∀ a, …` and `simp_rw` that.
+  - `ResponseSimplexCompletion.lean` (K6, THE FISHER COMPLETION IS THE SPHERICAL CLOSED SIMPLEX): `structure SphSimplex X`
+    (`law`, `nonneg`, `sum_one`; a structure, not a subtype, so no Pi-topology diamond), `rootVec p := toLp 2 (√p)`,
+    `inner_rootVec` (`EuclideanSpace.inner_toLp_toLp` — the bare `inner_toLp_toLp` is the `MemLp` one), `norm_rootVec = 1`,
+    `rootVec_injective`, **`instance : MetricSpace (SphSimplex X)`** with `dist p q := 2 * angle (rootVec p) (rootVec q)`
+    (`InnerProductGeometry.angle_le_angle_add_angle` for the triangle inequality, `angle_eq_zero_iff` + `norm_smul` for
+    separation; the structure-field goals are already beta-reduced — no `change`), `dist_eq` (`= 2 arccos Σ√(p_x q_x)`),
+    `dist_le_pi` (via `Real.arccos_le_pi_div_two.2` of affinity ≥ 0), `dirac`, **`dist_dirac`** (distinct vertices at distance
+    exactly `π`), `norm_sub_rootVec_sq` (`= 2 − 2cos ∠`), **`dist_rootVec_le`** (chord ≤ arc via `one_sub_sq_div_two_le_cos`),
+    **`le_dist_rootVec`** (arc ≤ π·chord: `cos_two_mul` + `cos_sq'` + Jordan `Real.mul_le_sin`; NOTE the constant is π, not
+    π/2, because the root vectors are unit vectors while the Fisher sphere has radius 2), `lipschitzWith_rootVec` (1),
+    `antilipschitzWith_rootVec` (π), `isUniformInducing_rootVec`, `range_rootVec` (nonnegative unit vectors),
+    `isClosed_range_rootVec` (`Set.ofPred_and`/`ofPred_forall` + `PiLp.continuous_apply 2 _`), `isCompact_range_rootVec`
+    (`isCompact_sphere … |>.of_isClosed_subset`), **`instance compactSpace : CompactSpace (SphSimplex X)`**
+    (`IsInducing.isCompact_iff`), `pos`, `mix p h0 h1` (uniform mixture), `mix_mem_pos`, `step_mem`, `mixSeq`, `tendsto_step`,
+    `tendsto_mixSeq` (through `PiLp.continuous_toLp` + `tendsto_pi_nhds` + `Real.continuous_sqrt` and the arc ≤ π·chord bound),
+    **`dense_pos`**. Completion section (J3 variables, `[MeasurableSingletonClass X]`, `hν`, `hspan`): `toSph θ := ⟨atomMass θ,…⟩`,
+    **`isometry_toSph`** (`Isometry.of_dist_eq` + `fisherDist_eq_two_arccos`, closes by `rfl`), `range_toSph = pos`
+    (`simplexInv`), `completionToSph := UniformSpace.Completion.extension toSph`, `isometry_completionToSph`
+    (`Isometry.completion_extension`), `completionToSph_coe`, **`surjective_completionToSph`** (closed range via
+    `Isometry.isClosedEmbedding.isClosed_range` ⊇ dense `pos`, `closure_minimal`, `Dense.closure_eq`, `Set.range_eq_univ`),
+    **`fisherCompletionIso : FisherCompletion hS ν ≃ᵢ SphSimplex X`** (`Equiv.ofBijective`), `fisherCompletionIso_apply`,
+    **`compactSpace_fisherCompletion`** (`IsometryEquiv.toHomeomorph.symm.compactSpace`), `dist_fisherCompletion_le_pi`.
+    Section variables: `[Nonempty X]` only on the mixture lemmas (per-declaration instance binders); the two completion
+    corollaries need `set_option linter.unusedFintypeInType false in`.

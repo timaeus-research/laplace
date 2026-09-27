@@ -2712,7 +2712,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `integrableOn_Ioc_of_intervalIntegral_norm_bounded_right` + `aecover_Ioc_of_Ioc`). K5
   `ResponseObservableSamplingGeometry` LANDED (Fisher–Riesz regression direction `u_F` with `G(u_F,v) = Cov(F,⟨v,S⟩)`;
   influence `d/dt E_{θ(m₀+te)}F|₀ = ⟨u_F,e⟩`; `E[⟨u,ξ_n⟩⟨w,ξ_n⟩] = Cov_D/n`; matched Gram matrix `G(u_F,u_F')/n ≤ VarF/n`;
-  `observable_resolution_floor`). NEXT: K6 `ResponseSimplexCompletion`, K7 `ResponseExtrinsicGauss`, then round-101
-  consult. Old NEXT:
+  `observable_resolution_floor`). K6 `ResponseSimplexCompletion` LANDED (`SphSimplex X` closed simplex with
+  `dist = 2∠(√p,√q) = 2 arccos Σ√(pq)`, compact, diameter π at distinct Diracs, positive part dense;
+  `fisherCompletionIso : FisherCompletion ≃ᵢ SphSimplex X` for saturated finite families; the Fisher completion is
+  compact). K7's intrinsic Gauss equation ALREADY EXISTS (`fisherSectional_eq_quarter_add_residual` in
+  ResponseCurvatureDefect); only the extrinsic second-fundamental-form reading (`2√P` embedding, `½√P r_uv`) is open.
+  NEXT: round-101 consult (report K1–K6, ask for programme L), then K7-extrinsic or whatever Astra ranks. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
