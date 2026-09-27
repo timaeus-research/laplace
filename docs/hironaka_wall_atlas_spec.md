@@ -6056,3 +6056,13 @@ certificates for concrete resolved charts beyond the identity chart.
     **`responseHess_eq_sub_mChristoffel`** (`H_g(k,ℓ) = A⁻¹B_g(k,ℓ) − C_θ(DΦ_g k, DΦ_g ℓ)`: the response Hessian is the
     m-covariant Hessian), **`mixResponseAccel_eq_neg_mChristoffel`** + `hasDerivAt_mixResponseVel_zero_mChristoffel`
     (MIXTURE JOURNEYS ARE m-GEODESICS: `θ'' + C_θ(θ',θ') = 0`).
+  - `ResponseDualConnections.lean` (D02): `fisherDeriv θ u v w := −⟨v,T_θ(u,w)⟩` (= `∂_uG(v,w)`,
+    `hasDerivAt_fisherInner_line_fisherDeriv`), `fisherDeriv_swap₁₂/₂₃/₁₃`, **`alphaChristoffel α θ u v :=
+    ((1−α)/2) • mChristoffel`** (`alphaChristoffel_one = 0` e-flat, `_neg_one = mChristoffel`, `_zero = ½ C`,
+    `alphaChristoffel_symm` torsion-free), `fisherInner_alphaChristoffel`, **`fisherInner_alphaChristoffel_dual`** +
+    **`hasDerivAt_fisherInner_line_dual`** (METRIC DUALITY `∂_uG(v,w) = G(Γ^α(u,v),w) + G(v,Γ^{−α}(u,w))`),
+    **`koszul_alphaChristoffel_zero`** (Koszul formula: `Γ⁰` is Levi-Civita), `chartDeriv_chartDerivEquiv_symm`,
+    `chartDerivEquiv_symm_chartDeriv`, `chartDeriv_mChristoffel` (`A C = T`), `hasDerivAt_chartV_path` (mean path velocity
+    `A_θ θ'`), `hasDerivAt_chartDeriv_path`, **`hasDerivAt_deriv_chartV_path`** (MEAN PATH LAW `(m∘θ)'' = A θ'' + T(θ',θ')`),
+    **`mean_accel_eq_zero_iff_mGeodesic`** (m-GEODESICS = MEAN-AFFINE PATHS), `hasDerivAt_deriv_chartV_path_of_mGeodesic`,
+    `hasDerivAt_deriv_chartV_path_of_lcGeodesic` (LC geodesics: `(m∘θ)'' = ½T(θ',θ')`).

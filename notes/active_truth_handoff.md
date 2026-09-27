@@ -2479,6 +2479,14 @@ D01 `ResponseFisherJets` LANDED: builds on the existing `fisherInner S ν θ u v
   `hasDerivAt_fisherInner_line_mChristoffel`, `mChristoffel_unique`, `responseHess_eq_sub_mChristoffel`,
   `mixResponseAccel_eq_neg_mChristoffel` (rfl). Gotcha: `hasDerivAt_line` already exists (ResponseDataSmooth) —
   named the natural-coordinate line `hasDerivAt_natLine ν θ u t₀` (hS omitted, ν explicit); the `dotJ_thirdOp_symm`
-  rewrites need explicit `(θ w u v)` arguments or `rw` hits the wrong side. NEXT: D02 `ResponseDualConnections`
-  (`alphaChristoffel α := ((1−α)/2) • mChristoffel`, duality `−⟨T(u,v),w⟩ = G(Γ^α(u,v),w) + G(v,Γ^{−α}(u,w))`, mean-path
-  law `(μ∘θ)'' = A θ'' + T(θ',θ')` via `hasFDerivAt_chartDeriv` + `HasDerivAt.clm_apply` — or coordinate-level).
+  rewrites need explicit `(θ w u v)` arguments or `rw` hits the wrong side. D02 `ResponseDualConnections` LANDED (α-family, metric duality, Koszul, mean path law
+  `(m∘θ)'' = Aθ'' + T(θ',θ')` via `hasFDerivAt_chartDeriv.comp_hasDerivAt` then `HasDerivAt.clm_apply`, m-geodesics ⇔
+  mean-affine). GOTCHA: `variable {θ θ' : ℝ → 𝕍} {θ'' : 𝕍} {t₀ : ℝ}` declared as SECTION VARIABLES (with 𝕍 a local
+  notation) makes every statement in the section time out at `isDefEq`/`whnf` — even statements not mentioning them;
+  explicit per-theorem binders `{θ θ' : ℝ → 𝕍}` elaborate instantly. NEXT: D03 `ResponseFisherCurvature`
+  (`R^α(u,v)w = −((1−α²)/4)(C(u,C(v,w)) − C(v,C(u,w)))` in the natural chart: `alphaCurvature α θ u v w :=
+  ∂_u Γ^α(v,w) − ∂_v Γ^α(u,w) + Γ^α(u,Γ^α(v,w)) − Γ^α(v,Γ^α(u,w))`; needs `hasDerivAt` of `mChristoffel (θ+tu) v w` —
+  derivative of `(CDE θ).symm` (`hasFDerivAt_inverse_response`-style, or `ContinuousLinearEquiv` inverse derivative
+  `HasFDerivAt.inverse`) and of `thirdOp` (fourth cumulant: `fderiv (fderiv CD)` symmetric via `isSymmSndFDerivAt` of
+  the smooth `chartV`) — the fourth-derivative terms cancel by symmetry, leaving the quadratic term; e/m flatness
+  `alphaCurvature (±1) = 0`).
