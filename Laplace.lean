@@ -672,6 +672,7 @@ import Laplace.Multi.ResponseFacewiseRegression
 import Laplace.Multi.ResponseModelBaseDefect
 import Laplace.Multi.ResponseInfinitesimalLadder
 import Laplace.Multi.ResponseJourneyIntegral
+import Laplace.Multi.ResponseEmpiricalRisk
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

@@ -6935,3 +6935,19 @@ certificates for concrete resolved charts beyond the identity chart.
     `norm_integral_le_of_norm_le_const`). Gotcha: a blanket `replace('journeyField hS ν hν D', …)` also hits
     `intervalIntegrable_journeyField hS ν hν D` and `hasDerivAt_journeyObs hS ν hν D` — theorem names ending in a
     def name.
+  - `ResponseEmpiricalRisk.lean` (post-M ranks 3+4, THE UNIFORM UNLOCALISED RISK + THE MARGIN CHAMBER THEOREM; finite
+    `X`, sampling variables `P D Xs hXm hid hlaw hind`): `sampleResponse_mem_convexHull Xs hn ω` (`Convex.sum_mem` with
+    weights `1/n`; `S` implicit), `traceCov S D := Σ_j Var_D(S_j)` (`variable (S) in` — a def with an implicit `S`
+    in its body is otherwise uncallable), **`integral_sum_sq_sampleResponse_sub`** (`E Σ_j(M̂_j − m_j)² = tr/n` from
+    `integral_sq_dotJ_sampleResponse_sub … (Pi.single j 1)`; `integrable_sampleResponse_sub_mul hS P D Xs hXm hn a b`
+    takes NO `hid hlaw`), `empiricalObs F n ω := E_{R_{M̂_n(ω)}}F` (the plug-in estimator), `abs_empiricalObs_sub_le`
+    (Lipschitz in `M̂`, via M3b at `m_D ∈ hull` and `M̂ ∈ hull`), **`integral_sq_empiricalObs_sub_le`**
+    (`E(Ψ̂ − Ψ)² ≤ L²tr/n`, `integral_mono_of_nonneg` needs NO measurability of the estimator; `norm_sq_le_sum_sq`
+    from `ReconstructionBias`), `measurable_empiricalObs` (`continuousOn_iff_continuous_domRestrict` + `Set.domRestrict
+    hull (qStarVec)` + `Measurable.subtype_mk`; `hid hlaw hind` omitted or `P D` become explicit args),
+    `abs_empiricalObs_le` (`abs_sum_mul_le_of_stdSimplex`), **`integral_abs_empiricalObs_sub_le`** (`E|Ψ̂ − Ψ| ≤
+    L√(tr/n)` via `(E|Z|)² ≤ EZ²` = `lawCov_self_nonneg P (Bdd |Z|)`, `Real.abs_le_sqrt`, `Real.sqrt_mul (sq_nonneg L)`),
+    **`measureReal_norm_sampleResponse_sub_ge_le`** (Chebyshev `P(‖M̂ − m_D‖ ≥ r) ≤ tr/(n r²)` from
+    `mul_meas_ge_le_integral_of_nonneg (μ := P) (f := …) … (r²)` + `measureReal_mono`; `le_div_iff₀`),
+    **`measureReal_sampleResponse_notMem_chamber_le`** (`ball m_D r ⊆ C ⇒ P(M̂ ∉ C) ≤ tr/(n r²)`; the name
+    `measureReal_sampleResponse_notMem_le` already existed in `ResponseClassResolution`).
