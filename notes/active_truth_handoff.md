@@ -2569,11 +2569,16 @@ E3 = C6 `ResponseFibreSecondJet` LANDED (the long-open item). Route that worked:
   embedding.
 F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dotJ` lives in
   `ResponsePullbackVariation` — import it; `(dotCLMlin.hasFDerivAt.comp θ (…)).fderiv` needs a typed `have` with the
-  lambda function, as always; `show (famZ)⁻¹ * (−famZ) = −1` is `mul_neg` not `neg_mul`). NEXT: F2
-  `ResponseFeaturelessJourney` (`featurelessJourney g t := θr (m₀ + t • (tiltedMean g − m₀))`; `= lawResponse` of the
-  mixture `(1−t)ν + tρ_g` by `tilted_mixTilt` + moment matching (`mean_mixTilt` with h := 0-tilt); mean-affine
-  `mean (θ_t) = m₀ + tΔ` from `chartV_responseTheta`/`meanMap_responseTheta` (needs `m₀ + tΔ ∈ Ω` — convexity of the
-  intrinsic interior between `m₀` and the interior point `tiltedMean g`, for t ∈ [0,1]; for smoothness on a
-  neighbourhood use openness of Ω in the affine span and `contDiffOn_responseTheta_add`/`contDiffOn_infty_chartVInv`);
-  velocity `A θ' = Δ` (`hasFDerivAt_inverse_response`-style or `hasStrictFDerivAt_chartVInv`); m-geodesic
-  `θ'' + C(θ',θ') = 0` from `mean_accel_eq_zero_iff_mGeodesic` (D02) since the mean path is affine).
+  lambda function, as always; `show (famZ)⁻¹ * (−famZ) = −1` is `mul_neg` not `neg_mul`). F2 `ResponseFeaturelessJourney` LANDED (no Mathlib convexity of `intrinsicInterior` needed: segment membership from
+  `mean_tilted_mem_intrinsicInterior` of the mixture tilt; openness of the domain from `isOpen_range_chartV` pulled back
+  along `t ↦ t • journeyDir`; velocity from `HasDerivAt.unique` of the mean-affine identity; acceleration from
+  `hasFDerivAt_inverse_natural` + `clm_apply` + `simp only [map_zero, add_zero]; rfl`). NEXT: F3
+  `ResponseInformationAction` (for model endpoints `θ₀ θ₁ ∈ 𝕍` the mean-affine path `θ_t = θr((1−t)m(θ₀) + t m(θ₁))`
+  (generalise `featurelessJourney`: base point `m(θ₀)` instead of `m₀`, `Δ := m(θ₁) − m(θ₀)`; domain open ⊇ [0,1] by
+  convexity — here use `mean_tilted_mem_intrinsicInterior` of `mixTilt (modelTilt θ₀) (modelTilt θ₁) t`);
+  `q(t) := KL(P_θt ‖ P_θ0) = ⟨θ₀ − θ_t, m(θ_t)⟩ + log Z(θ₀) − log Z(θ_t)` (`toReal_klDiv_model_model`), `q' =
+  ⟨θ₀ − θ_t, Δ⟩` (log Z derivative cancels via `hasFDerivAt_famZ` — check), `q'' = −⟨θ', Δ⟩ = G(θ',θ')`; `q(0) = q'(0) = 0`
+  ⇒ `q(1) = ∫₀¹ (1−t) q''(t)` (Taylor with integral remainder / integrate by parts twice:
+  `intervalIntegral.integral_eq_sub_of_hasDerivAt` on `(1−t)q' + q`); reverse orientation by `t ↦ 1−t`; Jeffreys =
+  `∫ G(θ',θ')` = `−⟨θ₁−θ₀, m(θ₁)−m(θ₀)⟩`; specialise θ₀ = 0, θ₁ = Φ(g) with E2 Pythagoras for the HEADLINE
+  `KL(ρ_g‖ν) = defect + ∫(1−t)G(θ̇,θ̇)`; `fisherLength² ≤ Jeffreys` by Cauchy–Schwarz).

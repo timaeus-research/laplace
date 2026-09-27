@@ -6171,3 +6171,13 @@ certificates for concrete resolved charts beyond the identity chart.
     **`fderiv_informationObjective_eq_zero_iff`** (`DK(θ) = 0 ↔ θ = Φ(g)` on W), `hasDerivAt_informationObjective_line`,
     `hasDerivAt_deriv_informationObjective_line` (second derivative = `fisherVar`), **`strictConvexOn_informationObjective_line`**
     (strictly convex along every nonconstant natural line of W, via `strictConvexOn_of_deriv2_pos`).
+  - `ResponseFeaturelessJourney.lean` (F2): `tiltedMean_zero_tilt` (= `m₀`), `tiltedMean_sub_featureless_mem`, `journeyDir hg :=
+    ⟨E_{ρ_g}S − m₀, _⟩`, **`featurelessJourney g t := θr (m₀ + t•(E_{ρ_g}S − m₀))`**, **`featurelessJourney_eq_responseOf_mixTilt`**
+    (= response of the mixture tilt `log((1−t) + t p_g)` on [0,1]), `featurelessJourney_eq_lawResponse` (= `lawResponse` of the
+    mixture data law), `featurelessJourney_zero` (= 0), `featurelessJourney_one` (= `responseOf g`), `featureless_segment_mem`,
+    **`journeyDomain S ν g := {t | m₀ + tΔ ∈ Ω}`**, `Icc_subset_journeyDomain`, **`isOpen_journeyDomain`** (preimage of
+    `range chV`), **`meanMap_featurelessJourney`** (MEAN-AFFINE `m(θ_t) = m₀ + tΔ`), **`contDiffOn_featurelessJourney`** (`C^∞`
+    on the open domain via `contDiffOn_responseTheta_add`), `journeyVel hg t := (CDE θ_t).symm Δ`, `chartDeriv_journeyVel`
+    (`A θ' = Δ`), **`hasDerivAt_featurelessJourney`** (velocity = `A⁻¹Δ`, by differentiating the mean-affine identity),
+    **`hasDerivAt_journeyVel`** (`θ'' = −C(θ',θ')` via `hasFDerivAt_inverse_natural`), **`featurelessJourney_mGeodesic`**
+    (THE FEATURELESS JOURNEY IS A GLOBAL m-GEODESIC).
