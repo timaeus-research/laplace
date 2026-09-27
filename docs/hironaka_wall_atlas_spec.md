@@ -6787,3 +6787,25 @@ certificates for concrete resolved charts beyond the identity chart.
     the first version needs `ψ₀ < ψ₁` for the law with the smaller value first; hoist limits shared by several bullets
     above the `refine ⟨…⟩` (a `set` abbreviation `h := dataInfluence …` makes `field_simp` leave `h` vs `dataInfluence`
     residues in later copies).
+  - `ResponseRefinementCompanions.lean` (round-102 companions): `Refines_trans` (refinement is transitive),
+    `responseProjection_mean_self` (idempotence: `R_{m(R_M)} = R_M`, i.e. projecting a projection changes nothing),
+    `integral_eq_of_ae_affine` (two laws agreeing on the affine span of the features agree on all bounded observables),
+    **`responseProjection_eq_self_of_spansAffine`** (saturation reaches the data: `SpansAffine S ν ⇒ R_D = D` for every
+    `D ≪ ν` with finite rate, via `Measure.ext` on indicators, `integral_indicator_one`, `ENNReal.toReal_eq_toReal_iff'`).
+  - `ResponseSingularCovariance.lean` (M6, SINGULAR DATA COVARIANCE): `dataKer := ker Σ_D` (`mem_dataKer_iff`:
+    `u ∈ N ⇔ Σ_D(u,u) = 0`, the `D`-a.s. constant features), `dataBilin_eq_zero_of_mem_dataKer`, `dataKer_le_ker`,
+    `dataKer_le_ker_flip`, `quotBilin : BilinForm ℝ (W ⧸ N)` (double `liftQ` + `flip`; `quotBilin_mk` is `rfl`),
+    `quotBilin_comm`, **`quotBilin_nondegenerate`** (`IsRefl.nondegenerate_iff_separatingLeft`), `pairFunctional ν e :=
+    (pairCLM ν e).toLinearMap` (`pairFunctional_apply`), `dataKer_le_ker_pairFunctional` (annihilation hypothesis
+    `he : ∀ u ∈ N, ⟨u,e⟩ = 0`), **`dataDualSing he := Quotient.out ((quotBilin.toDual _).symm (liftQ (pairFunctional e)))`**
+    with `dataBilin_dataDualSing` (`Σ_D(e*,u) = ⟨u,e⟩` for all `u`; proof: `apply_toDual_symm_apply`, `liftQ_apply`,
+    `← quotBilin_mk`, `congr 2`, `Submodule.Quotient.mk_out` with the representative given EXPLICITLY — a bare `_` leaves
+    `Module ?m ?m` stuck), `dataBilin_dataDualSing_self`, `sq_dotJ_le_dataBilin_mul_sing` (CS on the annihilator),
+    **`isGreatest_snr_sing`** (`sup_{Σ_D(u,u) ≤ 1} ⟨u,e⟩² = Σ_D(e*,e*) = ⟨e,Σ_D⁺e⟩`), **`not_bddAbove_snr_of_not_annihilator`**
+    (some `u ∈ N` with `⟨u,e⟩ ≠ 0` ⇒ SNRs unbounded: a displacement along a `D`-a.s. constant feature is detected without
+    noise and is not a regular local alternative), **`annihilator_of_lift`** (a bounded `h` with `Cov_D(⟨u,S⟩,h) = ⟨u,e⟩`
+    for all `u` forces `⟨u,e⟩ = 0` on `N`), **`isLeast_information_lift_sing`** (on the annihilator the least variance of
+    such a lift is `Σ_D(e*,e*)`, attained at `⟨e*,S⟩`). Gotchas: goals of the shape `liftQ B _ (mk v) u = 0` are closed by
+    `change dataBilin … v u = 0` (liftQ on `mk` reduces definitionally; `Submodule.liftQ_apply` in a simp set is unused);
+    `(∑ j, e j • LinearMap.proj j : (J → ℝ) →ₗ[ℝ] ℝ) ∘ₗ (𝕍).subtype` as a `Module.Dual` gives "Module ?m ?m stuck" — reuse
+    K5's `pairCLM`; `congr 1` on `B (mk d) (mk u) = B X (mk u)` peels only one application, use `congr 2`.

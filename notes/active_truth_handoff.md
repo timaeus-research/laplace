@@ -2737,9 +2737,13 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `Cov(f̂_{F,loc},f̂_{H,loc}) = Σ_D(u_F,u_H)/n + O(n^{-3/2})` with explicit constants, no fourth moments; cross term
   `E[⟨u,ξ⟩f̂_{F,loc}] = Σ_D(u,u_F)/n + O(n^{-3/2})`). M5 `ResponseMinimaxTwoPoint` LANDED (`lecam_two_point(_rev)`,
   `minimax_two_point_tilted`: `√n·L_n → (aσ_F²/2)(1 − √(a²σ_F²/2))`, every estimator's two-point risk ≥ L_n
-  eventually). NEXT: M3 `ResponseRegressionConvexHull` (hyperplane-arrangement cell argument ⇒ `u_F(p) ∈ conv{u_B}`,
-  uniform bound, global Lipschitz response) → M4 facewise convergence; M6 singular Σ_D (range/kernel); M7 infinitesimal
-  ladder; cheap companions (`R_D = D` saturated, ladder telescoping, `Refines` transitivity, projection idempotent);
-  round-103 consult after M3/M4. Old NEXT:
+  eventually). Companions `ResponseRefinementCompanions` LANDED (`Refines_trans`, `responseProjection_mean_self`
+  idempotence, `responseProjection_eq_self_of_spansAffine`: saturation reaches the data, `R_D = D`). M6
+  `ResponseSingularCovariance` LANDED (kernel `N = ker Σ_D`, nondegenerate quotient form on `W ⧸ N`, covariance dual `e*`
+  on the annihilator `dataDualSing`, `isGreatest_snr_sing` `sup ⟨u,e⟩² = ⟨e,Σ_D⁺e⟩`, `not_bddAbove_snr_of_not_annihilator`
+  (noiseless detection off the annihilator), `annihilator_of_lift` + `isLeast_information_lift_sing`). NEXT: round-103
+  consult (report M1/M2/M5/companions/M6; ask the Lean route for M3 `ResponseRegressionConvexHull` — Mathlib has no
+  polyhedral vertex theory — and M7 infinitesimal ladder design, M4 facewise convergence); then M7 / M3→M4 per Astra;
+  optional companions: global ladder telescoping, product-KL additivity for the sharper testing constant. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
