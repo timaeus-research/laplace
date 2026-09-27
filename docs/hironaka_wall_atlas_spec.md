@@ -6017,3 +6017,9 @@ certificates for concrete resolved charts beyond the identity chart.
     (`e^g/Z_g`), `normDens_pos/bounds`, `bdd_normDens`, `integral_normDens`, `integral_tilted_eq_normDens`, **`mixTilt`**
     (`log((1−t)e^g/Z_g + t e^h/Z_h)`), `mixDens_pos`, `bdd_mixTilt`, **`integral_mixTilt`** (law `(1−t)ρ_g + tρ_h`),
     **`mean_mixTilt`** (mean segment).
+  - `ResponseGlobalFibres.lean` (C2): `tiltedMean`, **`responseOf_eq_iff`** (THE RESPONSE IS A FIXED-MOMENT MAP:
+    `Φ g = Φ h ↔ E_{ρ_g}S = E_{ρ_h}S`), `tiltedMean_mixTilt`, **`responseOf_mixTilt_of_eq`** (FIBRES CONVEX UNDER MIXING),
+    `modelTilt` (`−⟨θ,S⟩`), `bdd_modelTilt`, `tilted_modelTilt` (law `P_θ`), `tiltedMean_modelTilt`, `responseTheta_meanMap`
+    (`θ(m(θ)) = θ`), **`responseOf_modelTilt`** (the model tilt is a section of `Φ`), **`responseOf_mix_model`** (the fibre
+    retracts onto its model representative along `(1−t)ρ_g + tP_{Φ(g)}`), `integral_mix_model`,
+    `responseOf_eq_iff_tiltedMean_eq_meanMap`.

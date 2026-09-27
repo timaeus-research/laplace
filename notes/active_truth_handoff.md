@@ -2430,7 +2430,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   skewness criterion only at calibrated bases. C1 `ResponseMixtureCoordinates` landed (rebase `ν.tilted (g + log φ) = (ν.tilted g).tilted (log φ)` via
   `tilted_tilted` + `rfl`; `integral_tilted` + `simp_rw [Real.exp_log …]` + normaliser `= 1` + `div_one`; `bdd_log_of_bounds
   hd hc0 hc hC` (ExponentialPath) with the density pinched in `[1/2, 3/2]` for `|t| < 1/(2(K+1))` via `Metric.ball_mem_nhds`;
-  uniform bounds `e^{−K}/Z ≤ normDens ≤ e^{K}/Z`). NEXT: C2 `ResponseGlobalFibres` (`Φ g = Φ h ↔ M g = M h` via
-  `integral_stat_responseTheta`/`meanMap_responseTheta`; `responseOf (mixTilt g h t) = responseOf g` when `Φ g = Φ h`;
-  model tilt `−⟨θ,S⟩` has response `θ` (`familyMeasure_one_zero_eq_tilted` + `chartVInv_chartV`); `responseOf (mixTilt g
-  (modelTilt (Φ g)) t) = Φ g`), then C3–C6.
+  uniform bounds `e^{−K}/Z ≤ normDens ≤ e^{K}/Z`). C2 `ResponseGlobalFibres` landed (fixed-moment iff via `meanMap_responseTheta`; `responseTheta_meanMap` from
+  `toV_apply` + `chartV_apply` + `chartVInv_chartV`; `modelTilt` must match `familyMeasure_one_zero_eq_tilted`'s
+  `fun x ↦ -1 * dirLoss S θ x` form and be `noncomputable`). NEXT: C3 `ResponseMixtureConnection` (velocity of
+  `t ↦ Φ(localMixTilt g k t)` = `A_{g^m(t)}⁻¹ Cov_{ρ_g}(S,k)` (mean path affine: `mean_localMixTilt` + the
+  `hasStrictFDerivAt_responseTheta_add` route with `z t := t • forcing`), acceleration `−A⁻¹T(v,v)` via
+  `hasFDerivAt_inverse_response` — mirror of the Hessian proof with a CONSTANT forcing), C4 `ResponseEMAccelerationGap`
+  (`H_g(k,k) − a_m = A⁻¹ B_g(k,k)`: algebra from `responseHess` + C3 at `t = 0`), C5, C6, C0.
