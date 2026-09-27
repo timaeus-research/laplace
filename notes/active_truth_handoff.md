@@ -1849,3 +1849,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: modules 7–8 (Hellinger: `sqrtDensity`, affinity identity `∫ q_θ q_η = Z((θ+η)/2)/√(Z θ Z η)`, chord derivative,
   `H ≤ ½ L`, ½-Lipschitz `Ψ` into `Lp ℝ 2 ν` and its completion extension), module 9 (completion laws), module 13
   (uniqueness of accessible facet fibres, face-conditioned Hellinger limit).
+- Slop paragraph on the intrinsic completion pushed (Overleaf 598ad89). Module 13 `FacetCompletionUnique` landed
+  2026-09-27 (`meanExt_eq_facet_unique`). Gotchas: `Submodule.coe_norm` is `‖x‖ = ‖↑x‖` (forward rewrite turns a subtype
+  norm into the ambient one); `rw [hθ]` with `hθ : ↑θ = faceTheta ↑θ − r•u` also rewrites the `↑θ` inside `faceTheta ↑θ`
+  on the other side — `conv_lhs => rw [hθ]`; a `(fun r ↦ …) r` beta-redex from `obtain ⟨g, hg⟩ … ; rw [hg]` blocks
+  `rw [fisherNorm_neg]` — `simp only [hg]` first; `Filter.Tendsto.congr_dist` + `UniformSpace.Completion.dist_eq`
+  identify limits of two sequences whose distance → 0.
+  NEXT: Hellinger modules 7–9 (`sqrtDensity`, affinity identity, chord derivative, `H ≤ ½ L`, `Ψ` ½-Lipschitz into
+  `Lp ℝ 2 ν`, extension to the completion, completion points as probability laws with the extended mean, and the
+  face-conditioned Hellinger limit over accessible facets); then a slop paragraph for uniqueness + Hellinger; then
+  round-81 (charged square / flags / what the completion looks like in codimension ≥ 2).

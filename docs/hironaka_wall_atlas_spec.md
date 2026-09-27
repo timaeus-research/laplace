@@ -5444,3 +5444,8 @@ certificates for concrete resolved charts beyond the identity chart.
     for `M ∈ ri F` (facet): COMPLETION ACCESSIBILITY OF A FACET; **`exists_meanExt_eq_iff_responseLength`** — for the
     top-set conditional mean of a data path, `E[S | h = H]` is an extended mean of the Fisher completion ⇔ the response
     path from the featureless law has finite Fisher length.
+  - `FacetCompletionUnique.lean`: `exists_seq_tendsto_completion`, `tendsto_meanMap_of_tendsto_completion`,
+    **`meanExt_eq_facet_unique`** — the fibre of the extended mean over `M ∈ ri F` (facet) is at most a point: two
+    approximating sequences decompose as `v_n − r_n u`, `v'_n − r'_n u` with `v, v' → v_M`, `r, r' → ∞`, and
+    `d_F ≤ K‖v_n − v_M‖ + tail(r_n) + tail(r'_n) + K‖v'_n − v_M‖ → 0` (tail = remaining normal-ray length). With
+    `exists_meanExt_eq_iff_ray`: ACCESSIBLE FACET INTERIORS ARE CANONICAL SINGLE-POINT FIBRES OF THE FISHER COMPLETION.
