@@ -5449,3 +5449,15 @@ certificates for concrete resolved charts beyond the identity chart.
     approximating sequences decompose as `v_n − r_n u`, `v'_n − r'_n u` with `v, v' → v_M`, `r, r' → ∞`, and
     `d_F ≤ K‖v_n − v_M‖ + tail(r_n) + tail(r'_n) + K‖v'_n − v_M‖ → 0` (tail = remaining normal-ray length). With
     `exists_meanExt_eq_iff_ray`: ACCESSIBLE FACET INTERIORS ARE CANONICAL SINGLE-POINT FIBRES OF THE FISHER COMPLETION.
+  - `SqrtDensityAffinity.lean`: `rootDens S ν θ = √(dP_θ/dν) = e^{−⟨θ,S⟩/2}/√Z(θ)` (`rootDens_eq`, `rootDens_sq`,
+    `measurable_rootDens`, `bdd_rootDens`, `integral_rootDens_sq = 1`), `rootDens_mul` (product = midpoint weight over
+    `√(Z θ Z η)`), **`integral_rootDens_mul`** (THE AFFINITY IDENTITY `∫ q_θ q_η = Z((θ+η)/2)/√(Z θ Z η)`),
+    `integral_famDens_mul_dirLoss` (`E_θ⟨v,S⟩ = ⟨v,m(θ)⟩`), `integral_famWeight_mul_dirLoss`,
+    **`integral_rootDens_mul_centred_sq`** (`∫ q_θ²(⟨v,S⟩ − E⟨v,S⟩)² = fisherVar θ v`), **`sq_integral_mul_le`**
+    (Cauchy–Schwarz for integrals of bounded functions, by the discriminant).
+  - `HellingerFisherControl.lean`: `hellingerDist S ν θ η = ‖q_θ − q_η‖₂`, `bdd_famWeight`, `continuous_famZ`,
+    `hasDerivAt_famZ_comp` (`d/dt Z(γ_t) = −Z ⟨γ', m⟩`), **`hasDerivAt_integral_rootDens_mul`** (the chord derivative
+    `d/dt ∫ q_{γ_t} q_z = −½ ∫ q_z q_{γ_t}(ℓ − Eℓ)`, from the affinity identity by the quotient rule),
+    **`abs_chord_deriv_le`** (`|A'| ≤ H · F`), **`hellingerDist_le_half_integral`** (`H(γ_1,γ_0) ≤ ½ ∫₀¹ F` — monotonicity
+    of `B − A` with `B' = ½ H F`, no integrability of `A'` needed), **`hellingerDist_le_half_fisherDist`**
+    (`H ≤ ½ d_F` on `W`).

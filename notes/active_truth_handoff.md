@@ -1859,3 +1859,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Lp ℝ 2 ν`, extension to the completion, completion points as probability laws with the extended mean, and the
   face-conditioned Hellinger limit over accessible facets); then a slop paragraph for uniqueness + Hellinger; then
   round-81 (charged square / flags / what the completion looks like in codimension ≥ 2).
+- Modules 7–8 landed 2026-09-27: `SqrtDensityAffinity` (`rootDens` — `sqrtDens` is a 1-D name already on the seabed
+  (FisherRaoCurvature); the affinity identity; centred second moment = Fisher form; Cauchy–Schwarz by `discrim_le_zero`)
+  and `HellingerFisherControl` (`hellingerDist_le_half_fisherDist`). Gotchas: `Real.exp_half : exp (x/2) = √(exp x)`;
+  `Real.sqrt_div' x hy`; `HasDerivAt.div` value `(c' d − c d')/d²` — make the square root an opaque `s` with
+  `hs : s * s = Z₁ Z₂`, substitute `Z₂ = s*s/Z₁` (`eq_div_iff`) BEFORE `field_simp; ring`; `HasFDerivAt.comp_hasDerivAt`
+  with `(−Z) • dotCLM m` needs `simp only [smul_apply, smul_eq_mul, dotCLM_apply]` (`ContinuousLinearMap.smul_apply` is
+  deprecated); the FTC step is cheaper as monotonicity of `B − A` (`monotone_of_deriv_nonneg` with a typed
+  `HasDerivAt (fun t ↦ B t − A t)`) than as `integral_eq_sub_of_hasDerivAt`, which would need `IntervalIntegrable A'`;
+  `Continuous.integral_hasStrictDerivAt hF 0 t` for `d/dt ∫₀ᵗ F = F t`.
+  NEXT: module 9 `FisherCompletionLaws` (`Ψ : FisherPoint → Lp ℝ 2 ν` with `dist (Ψ p) (Ψ q) = hellingerDist`,
+  `LipschitzWith ½`, extension `rootDensExt` to the completion, a.e. nonnegativity and unit norm of the limits,
+  `meanExt x i = ∫ S i · (rootDensExt x)² dν`), face-conditioned Hellinger limit over accessible facets, slop
+  paragraph, round-81.

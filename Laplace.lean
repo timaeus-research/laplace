@@ -537,6 +537,8 @@ import Laplace.Multi.FisherTopology
 import Laplace.Multi.FisherCauchyRealisation
 import Laplace.Multi.FacetCompletionAccess
 import Laplace.Multi.FacetCompletionUnique
+import Laplace.Multi.SqrtDensityAffinity
+import Laplace.Multi.HellingerFisherControl
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
