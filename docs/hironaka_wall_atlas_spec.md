@@ -5506,3 +5506,27 @@ certificates for concrete resolved charts beyond the identity chart.
     if `q_{θ_n} → q_F(v_M)` in `L²(ν)` then `[θ_n] → x_M` in the Fisher completion (means converge by the `L²`
     continuity of `f ↦ ∫ S_i f²`; facet asymptotics; `dist([θ_n], x_M) ≤ K‖v_n − v_M‖ + rayTail(r_n)`): THE COMPLETION
     EMBEDS TOPOLOGICALLY INTO `L²(ν)` AT EVERY ACCESSIBLE FACET POINT (Fisher topology = Hellinger topology there).
+  - `NormalShiftBoundaryCost.lean` (round 82, item 6, the dependency): `measureReal_le_measureReal_tilted`
+    (tilting by a nonpositive function vanishing on `A` does not decrease `P(A)`), `measureReal_tilted_compl_le`,
+    `fisherNorm_add_smul_normal_le` (`|h|_F ≤ B √P_θ(A^c)` along the whole segment `θ + s h`),
+    **`fisherDist_add_normal_le`** (A FIXED NORMAL SHIFT COSTS AT MOST `B_h √(1 − P_θ(A))`: `⟨h,S⟩ = c` on `A`, `≥ c`
+    a.e., `|⟨h,S⟩ − c| ≤ B` ⇒ `d_F(θ, θ + h) ≤ B √(P_θ(A^c))`).
+  - `FaceMassHellinger.lean` (round 82, module 2 of the coalescence trio): `real_family_eq_integral_rootDens_mul_self`,
+    **`abs_sqrt_real_sub_le_hellingerDist`** (`|√P_θ(A) − √P_η(A)| ≤ H(θ,η)`, the `L²(ν.restrict A)` norm of the root
+    densities), `sqrt_real_sub_half_integral_le` (`√P_{γ s}(A) ≥ √P_{γ 0}(A) − ½ length`),
+    `fisherDist_add_le_integral_div_sqrt` (translating a path by a normal-cone vector along which `P(A) ≥ q` costs
+    `1/√q`), **`fisherDist_add_le_two_mul_length`** (a path of length `≤ 1/2` from a point with `P(A) ≥ 3/4` stays in
+    `P(A) ≥ 1/4`, so its normal translate has at most twice its length).
+  - `NormalConeCauchyCoalescence.lean` (round 82, item 1): `tendsto_real_compl_of_tendsto_real`,
+    `eventually_fisherDist_add_normal_lt`, `cauchySeq_of_tendsto_completion`, **`tendsto_dist_normalCone`** (NORMAL-CONE
+    CAUCHY COALESCENCE: `v + a n`, `v + b n` with `a n, b n` in the normal cone of a measurable face event `A`, both
+    Fisher-Cauchy with `P(A) → 1` ⇒ `d_F(θ n, η n) → 0`; translated grid with `δ = min(ε/8, 1/4)`),
+    **`completion_limit_eq_of_normalCone`** (the two completion limits coincide). Codimension-free: no preferred normal
+    ray, no quantitative gaps, `A` any measurable set.
+  - `ResponseAtFeaturelessLaw.lean` (round 82, item 4): `dataThetaVel_zero` (`θ'_0` = basepoint velocity),
+    `familyMeasure_dataTheta_zero` (`P_{θ_0} = ν`), **`responseSpeedSq_zero`** (response speed² at `t = 0` is
+    `Var_ν(regressor)`), `responseSpeedSq_zero_eq_fisherVar` (`= |θ'_0|²_F`),
+    **`lawCov_self_eq_responseSpeedSq_zero_add`** (FEATURELESS PYTHAGORAS `Var_ν h = |θ'_0|²_F + Var_ν(h − regressor)`),
+    `lawCov_residual_dirLoss_zero` (the residual is invisible), **`lawCov_sub_dirLoss_self_eq`** (the regressor is the
+    best visible approximation: `Var(h − ⟨e,S⟩) = Var(h − reg) + Var(reg − ⟨e,S⟩)`), `lawCov_residual_le`,
+    `responseSpeedSq_zero_le`, `responseSpeedSq_zero_eq_iff` (response speed = data speed at `t = 0` iff `h` visible).

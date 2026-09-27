@@ -1954,3 +1954,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   8 `FacetResponseLengthBudget`, 9 `NormalRayFaceAccessibility`, 10–11 product, 12 `FaceChainAccessibility`.
   NEXT: `NormalShiftBoundaryCost`, then `NormalConeCauchyCoalescence`, `ResponseAtFeaturelessLaw`,
   `FaceResponsePythagoras`, `ResponsePullbackMetric`.
+- LANDED (2026-09-27, round-82 batch A): `NormalShiftBoundaryCost` (5aa8834), `FaceMassHellinger` (76f9fc1),
+  `NormalConeCauchyCoalescence` (1848682), `ResponseAtFeaturelessLaw` (9d8cb67). Gotchas: `measureReal_def` rewrites
+  the LHS `.real` too — state the tilted-real identity as a closed `have`; `Real.le_sqrt (hx : 0 ≤ x) (hy : 0 ≤ y)`;
+  `IsUniformEmbedding.cauchySeq_iff` does not exist — go through `Metric.cauchySeq_iff` +
+  `UniformSpace.Completion.dist_eq`; `FisherPoint` needs `[Nonempty J]` for its `MetricSpace`; `dirLoss_sub'` takes
+  `(S := S) v w x` (hS ν omitted); `tendsto_const_nhds.sub h` needs `(x := (1 : ℝ))`; `lawCov_add_self ν hφ hψ`
+  (FacetSchurBound) with a measure argument. NEXT: `FaceResponsePythagoras` (boundary KL Pythagoras
+  `D(Q‖ν) = D(Q‖Q_M) + D(Q_M‖ν)` for `Q ≪ ν` with mean `M ∈ ri F`), `ResponsePullbackMetric` (`G^{resp} = bᵀC⁻¹b`,
+  contraction at a matched law), `FaceNormalForm` (vertex first), slop paragraph for the batch.
