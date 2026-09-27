@@ -1648,3 +1648,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   to evaluate an improper integral from window limits; `Integrable.congr` inside `integral_mono` must be parenthesised or the `?_`
   lands in the wrong slot; section theorems with `(ν) (hS) (hh) (hH)` take `ν` FIRST (`abs_dataCov_le_gap ν hS hh hH`).
   NEXT: the 1-D infinite-distortion example (round-77 rank 2), then facet Lemmas B/D (component convergence, Schur bound).
+- `ScalarResponseRay` landed (1-D: response path ≥ ray, via `PathLengthPrimitive`). Gotchas: with `[Unique J]` drop `[Nonempty J]`
+  from the section (Unique supplies it); defs that should not depend on `hS` go BEFORE `variable (hS) … include hS` with
+  `variable (S) in`; after restructuring, section-variable ORDER changes the explicit argument order of every theorem
+  (`ν hS hh` here versus the seabed's `hS ν hh`) — never global-replace argument lists; `Bdd.neg` does not exist (`bdd_neg` added);
+  `∞` is not an identifier (`mInf`); `IntegrableOn f (Ioi 0)` with an unannotated `0` elaborates `0 : ℕ` and asks for
+  `MeasureSpace ℕ` — write `(0 : ℝ)`; `StrictAnti.lt_iff_gt (hf) : f a < f b ↔ b < a` (there is no `lt_iff_lt`); `Fintype.sum_unique`
+  is a simp lemma already (`simp [dirLoss]`); `Integrable.lintegral_lt_top : ∫⁻ ofReal (f a) < ⊤` is the bridge from `IntegrableOn`
+  to the ray classification's `lintegral` form; rewrite under `∫⁻` by `funext` + `rw`, not `simp_rw` (no progress).
+  NEXT: `AtomicIntervalDistortion` (ν on ℕ with `w 0 = 1/2`, `w (k+1) = 1/(2(k+1)(k+2))`, `S 0 = 0`, `S (k+1) = 2^{−k}`,
+  `h = 1_{0}`; shell masses `= w(k+1)`, `Σ√ = ∞`; hvar via two atoms; `tendsto_integral_dataPath_atTop` gives `m_t → 0`;
+  conclude `¬ ∃ I, ∀ b ≥ 0, ∫₀^b |q'_t|_F ≤ I`), then `BinaryTiltLength` (`L_data = 2 arccos √p₀`).

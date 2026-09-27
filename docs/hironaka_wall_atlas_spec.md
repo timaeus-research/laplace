@@ -5290,3 +5290,15 @@ certificates for concrete resolved charts beyond the identity chart.
   (`|Cov_{ρ_t}(S_j,h)| ≤ 2‖S_j‖ E_{ρ_t}(H − h)`), `continuous_dataCov`, `integrableOn_dataCov`, **`integral_abs_dataCov_le`**
   (`∫₀^∞ |Cov_{ρ_t}(S_j,h)| dt ≤ 2‖S_j‖ log(1/p_*)`: FINITE VARIATION of the moment curve), `hasDerivAt_integral_dataPath`,
   **`integral_Ioi_dataCov`** (`∫₀^∞ Cov_{ρ_t}(S_j,h) dt = E_ν[S_j | h = H] − E_ν S_j`, the total displacement).
+- `ScalarResponseRay.lean` (NOT mirrored; round-77 rank 2 preliminaries, `[Unique J]`): `scalarMean S ν θ = E_{P_θ} S`,
+  `scalarFisherWeight S ν θ = √Var_{P_θ} S`, `bdd_neg`, `scalarTheta ν hS hh t` (the scalar natural coordinate of the response
+  along the data path), `scalarThetaVel`, `coe_dataTheta_eq`, `hasDerivAt_scalarTheta`, `dirLoss_unique`,
+  `family_scalar_eq_tilted` (`P_θ = ν.tilted(θ · (−S))`), `isProbabilityMeasure_family_scalar`, `hasDerivAt_scalarMean`
+  (`(E_{P_θ}S)' = −Var_{P_θ} S`), `continuous_scalarVar`, `continuous_scalarFisherWeight`, `strictAnti_scalarMean`,
+  `scalarMean_scalarTheta` (`E_{P_{θ_t}} S = E_{ρ_t} S`), **`tendsto_scalarTheta_atTop`** (data means converging below the range
+  of the mean map force `θ_t → +∞`), `scalarThetaVel_mul_var` / `scalarThetaVel_eq` (`θ'_t = −Cov_{ρ_t}(S,h)/Var_{P_{θ_t}} S`),
+  `continuous_scalarThetaVel`, **`sqrt_responseSpeedSq_eq`** (`|q'_t|_F = |θ'_t| √Var_{P_{θ_t}} S`), `sqrt_raySpeedSq_eq`
+  (the ray `θ ↦ P_θ`, i.e. `raySpeedSq S ν 0 (−1) t`, has speed `scalarFisherWeight t`), `scalarTheta_zero`,
+  `integrableOn_scalarFisherWeight_of_length_le`, **`lintegral_sqrt_raySpeedSq_lt_top_of_length_le`** (a finite total response
+  length `∀ b ≥ 0, ∫₀^b |q'_t|_F ≤ I` forces finite Fisher length of the ray on `(0, ∞)`: IN ONE DIMENSION THE RESPONSE PATH IS
+  AT LEAST AS LONG AS THE RAY).
