@@ -2396,6 +2396,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   inverse_response_deriv_apply, responseHess, map_sub, responseOf_add_eq, responseVel_add_eq (explicit args, else
   `case hg` side goals), sub_eq_neg_add` and `rfl` (CLE-vs-CLM coercion). `hasDerivAt_lawCov_tilted (ν.tilted g)` +
   `tilted_tilted` rebase gives the data cumulant; `responseVel_congr`/`responseHess_congr` (`subst; rfl`) transport
-  between `fun x ↦ 0 + t*h x` and `fun x ↦ t*h x`. NEXT: `ResponsePullbackVariation` (derivative of `pullbackBilin
-  (g+tk) h ℓ`), then `ResponseHigherDefectVariation`, `ResponseSecondOrderLifts`, `ResponseDataSmooth`,
+  between `fun x ↦ 0 + t*h x` and `fun x ↦ t*h x`. `ResponsePullbackVariation` landed (product rule `hasDerivAt_dotJ` on
+  `G = −⟨V h, F ℓ⟩`, Hessian for `V`, `dataThird` for `F`, then `⟨A⁻¹w, A v⟩ = ⟨w,v⟩` from
+  `dotJ_chartDeriv_eq_neg_lawCov` + `lawCov_comm` + `ContinuousLinearEquiv.apply_symm_apply` through `coe_chartDerivEquiv`;
+  the identification `pullbackVar_eq` is one `rw` chain + `ring`). NEXT: `ResponseHigherDefectVariation` (`Δ'''(0)`:
+  route = `deriv (deriv Δ) = Var_{ρ_t}h − responseSpeedSq t + Q t` (funext of `hasDerivAt_deriv_responseDefect`), (i)
+  `hasDerivAt_var_tilted`, (ii) `responseSpeedSq t = pullbackForm (t•h) h` via `responseOf (t h) = dataTheta t` (copy
+  `responseOf_eq_dataTheta`'s proof for general `h`) + `hasDerivAt_pullbackForm_add` at `g = 0` with the `fun x ↦ 0 + t*h x`
+  congr trick, (iii) `Q t = t·κ_{ρ_t}(h,h,h) + Σ θ_t,i κ_{ρ_t}(h,h,S_i)` (lawCov right-linearity + `lawCov_eq_integral_centred`),
+  continuity of `t ↦ κ_{ρ_t}(g,k,f)` from `thirdCentral_eq` + `hasDerivAt_integral_tilted`, and a slope lemma
+  `HasDerivAt (u·w) (u'·w 0) 0` for `u 0 = 0`, `w` continuous at 0), then `ResponseSecondOrderLifts`, `ResponseDataSmooth`,
   `ResponseLengthSecondVariation`.

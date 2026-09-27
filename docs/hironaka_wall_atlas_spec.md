@@ -5981,3 +5981,9 @@ certificates for concrete resolved charts beyond the identity chart.
     **`hasDerivAt_responseOf_add`** (`d/dt Φ(g+tk) = DΦ_{g+tk}[k]`), **`hasDerivAt_responseVel_add`** (THE RESPONSE HESSIAN
     THEOREM: `d/dt DΦ_{g+tk}[ℓ] = H_{g+tk}(k,ℓ)`), `hasDerivAt_responseVel_add_self`, `hasDerivAt_responseVel_exp`
     (exponential journey: straight to second order iff data and model cumulants agree on the matched velocity).
+  - `ResponsePullbackVariation.lean` (B3): `hasDerivAt_dotJ` (product rule for the pairing), **`dotJ_chartDeriv_symm`**
+    (`⟨u, A_θ v⟩ = ⟨A_θ u, v⟩`), **`dotJ_symm_chartDeriv`** (`⟨A⁻¹w, A v⟩ = ⟨w,v⟩`), `dotJ_dataThird`
+    (`⟨v,B_g(k,ℓ)⟩ = κ_ρ(L_v,k,ℓ)`), `dotJ_thirdOp` (`⟨u,T_θ(v,w)⟩ = κ_q(L_u,L_w,L_v)`), **`pullbackVar`**
+    (`D_k G_g(h,ℓ) = κ_q(L_{Vℓ},L_{Vh},L_{Vk}) − κ_ρ(L_{Vℓ},k,h) − κ_ρ(L_{Vh},k,ℓ)`), `pullbackVar_eq`,
+    **`hasDerivAt_pullbackBilin_add`** (THE PULL-BACK VARIATION THEOREM), **`hasDerivAt_pullbackForm_add`** (speed²
+    variation `κ_q(L_v,L_v,L_v) − 2κ_ρ(L_v,k,k)`).

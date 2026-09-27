@@ -602,6 +602,7 @@ import Laplace.Multi.FiniteRangeAllFacesAccessible
 import Laplace.Multi.FiniteRangeFaceIncidence
 import Laplace.Multi.FiniteRangeCompletionAtlas
 import Laplace.Multi.ResponseDataHessian
+import Laplace.Multi.ResponsePullbackVariation
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
