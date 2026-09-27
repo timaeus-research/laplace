@@ -5551,3 +5551,18 @@ certificates for concrete resolved charts beyond the identity chart.
     for all vertices, via the forward vertex-gap criterion), `responseProjection_statFibre_eq_one`,
     **`tendsto_real_statFibre_one`** (vertex-fibre mass → 1), **`meanExt_eq_vertex_unique`** (THE COMPLETION FIBRE OVER A
     CHARGED VERTEX IS A SINGLE POINT, every codimension: shifted sequences + coalescence with base `0`).
+  - a.e. refactor (17522c7): the normal-cone chain (`fisherVar_add_le_div`, `fisherNorm_add_le_div_sqrt`,
+    `measureReal_le_measureReal_tilted`, `fisherNorm_add_smul_normal_le`, `fisherDist_add_normal_le`,
+    `fisherDist_add_le_integral_div_sqrt`, `fisherDist_add_le_two_mul_length`, `eventually_fisherDist_add_normal_lt`,
+    `tendsto_dist_normalCone`, `completion_limit_eq_of_normalCone`) now takes `hc : ∀ᵐ x ∂ν, x ∈ A → dirLoss S h x = c`
+    (a.e. face constancy) instead of pointwise.
+  - `FaceFibreUnique.lean` (round 82, item 5 for general faces): `tendsto_real_of_norm_sub_tendsto` (set masses are
+    stable under vanishing Euclidean perturbations, via Hellinger ≤ ½ d_F ≤ ½K‖·‖), `tendsto_completion_of_norm_sub_tendsto`,
+    `tendsto_measureReal_family_set` (L¹ convergence ⇒ mass of every measurable set → projection mass),
+    `faceMeasure_statFibre_ne_zero`, `dotJ_eq_of_ae_const`, **`ae_dirLoss_eq_of_mem_invisible`** (an invisible direction
+    on the face has `⟨a,S⟩ = ⟨a,z₀⟩` a.e. on `A`), `dotJ_eq_dotJ_of_mem_invisible`, **`eventually_face_cone`** (FACE
+    NORMAL FORM: the normal parts `θ_n − τ_n` eventually lie in the normal cone, vertex gaps minus a convergent
+    tangential term), **`tendsto_real_faceFibre_one`**, **`meanExt_eq_face_unique`** (THE COMPLETION FIBRE OVER EVERY
+    CHARGED FACE INTERIOR IS A SINGLE POINT: `A = {⟨u,S⟩ = β}`, `z₀ ∈ V` a charged vertex of the minimal face of `M`
+    on it, `M ∈ ri(momentBody ν_A)`; tangential convergence by `tendsto_faceTheta`, replace `τ_n` by `v_M`, coalesce).
+    Codimension-free, no normal ray, no gap estimates: the uniqueness half of the boundary completion is done.

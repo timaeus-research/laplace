@@ -1977,3 +1977,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   the PROOF does not use it. NEXT: round-83 consult (general-face normal form: tangential part = projection to the face
   direction space `W_A`, normal part `a_n ∈ W_A^⊥` constant on `A` a.e., replace `τ_n + a_n` by `v_M + a_n` via
   `fisherDist_le_mul_norm`; needs properness of the face mean map), then `FaceFibreUnique`.
+- LANDED (2026-09-27): a.e. refactor of the normal-cone chain (17522c7), `FaceFibreUnique` (37b8b7a): the completion
+  fibre over every charged face interior is a single point. Gotchas: `Measure.ae_smul_measure_iff` needs `IsDomain R`
+  (fails for `ℝ≥0∞`) — go through `ae_iff` + `Measure.smul_apply` + `mul_eq_zero`; `(hc.and hc').exists` needs
+  `NeBot (ae μ)` — restate the invisible-constant lemma with the constant as an argument (`dotJ_eq_of_ae_const`);
+  section-variable ARGUMENT ORDER is declaration order (`hV` declared before `hz₀V` comes first even if `include`d
+  later); `Submodule.coe_norm` then `Submodule.coe_sub` to turn a subtype norm into the ambient one; a `‖(v + a n) −
+  θ‖` identity: prove `∀ n, … = −(τ − v)` by `simp only [hadef]; abel` and rewrite with `norm_neg`. NEXT: round-83
+  consult (accessibility/existence side: face-chain accessibility, product corner, `FacetResponseLengthBudget`; the
+  global response map on the closed moment body; what is deepest for "mapping responses across the data manifold").
