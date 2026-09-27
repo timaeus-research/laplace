@@ -20,7 +20,9 @@ response line with the pairing `E[(F − EF) r_{uu}]` against the score residual
 * **the variance Hessian along a response line** (`hasDerivAt_lineVarianceDeriv`):
   `d²/dt² Var_{θ_t}(F) = E[(F − EF)² r_{V_tV_t}] − 2 (d/dt E_{θ_t}F)²`;
 * **residual-flat families have concave posterior variances** along mean segments
-  (`concaveOn_lineVariance_of_flat`): if `E[(F − EF)² r_{uu}] = 0` along the line, the variance
+  (`concaveOn_lineVariance_of_pairing_nonpos`, `concaveOn_lineVariance_of_flat`): if the
+  **variance–curvature pairing** `E[(F − EF)² r_{uu}]` (`varianceCurvaturePairing`) is `≤ 0`
+  (in particular `= 0`, the residual-flat case) along the line, the variance
   has nonpositive second derivative `−2 (E F)'²` and is concave on every interval in the domain.
 -/
 
@@ -228,13 +230,29 @@ theorem hasDerivAt_lineVarianceDeriv {F : X → ℝ} (hF : Bdd F) (θ₀ e : �
   rw [hlin, e1, e2, e3, hr0]
   ring
 
-/-- **Residual-flat families have concave posterior variances along mean segments**: if the
-diagonal second responses of `(F − EF)²` vanish along the line, the variance is concave on every
-interval inside the domain. -/
-theorem concaveOn_lineVariance_of_flat {F : X → ℝ} (hF : Bdd F) (θ₀ e : 𝕍) {a b : ℝ}
+/-- **The variance–curvature pairing** of an observable along a response line:
+`E_t[(F − E_t F)² r_{V_t V_t}]`, the pairing of the centred square of `F` with the diagonal
+score residual of the line velocity. It is the only term of the second derivative of the
+posterior variance that can be positive. -/
+noncomputable def varianceCurvaturePairing (F : X → ℝ) (θ₀ e : 𝕍) (t : ℝ) : ℝ :=
+  ∫ x, (F x - ∫ y, F y ∂Pfam (θl θ₀ e t : J → ℝ)) ^ 2 *
+    scoreResidual hS ν (θl θ₀ e t) (Vl θ₀ e t) (Vl θ₀ e t) x ∂Pfam (θl θ₀ e t : J → ℝ)
+
+/-- The second derivative of the posterior variance along a response line is the
+variance–curvature pairing minus twice the squared covariance with the line score. -/
+theorem hasDerivAt_lineVarianceDeriv' {F : X → ℝ} (hF : Bdd F) (θ₀ e : 𝕍) {t : ℝ}
+    (ht : t ∈ responseLineDomain S ν θ₀ e) :
+    HasDerivAt (lineVarianceDeriv hS ν F θ₀ e)
+      (varianceCurvaturePairing hS ν F θ₀ e t -
+        2 * (lawCov (Pfam (θl θ₀ e t : J → ℝ)) F (dirLoss S (Vl θ₀ e t : J → ℝ))) ^ 2) t :=
+  hasDerivAt_lineVarianceDeriv hS ν hF θ₀ e ht
+
+/-- **Nonpositive variance–curvature pairing gives concave posterior variances along mean
+segments**: if `E_t[(F − E_t F)² r_{V_t V_t}] ≤ 0` along the line, the variance is concave on
+every interval inside the domain. -/
+theorem concaveOn_lineVariance_of_pairing_nonpos {F : X → ℝ} (hF : Bdd F) (θ₀ e : 𝕍) {a b : ℝ}
     (hab : Icc a b ⊆ responseLineDomain S ν θ₀ e)
-    (hflat : ∀ t ∈ Icc a b, ∫ x, (F x - ∫ y, F y ∂Pfam (θl θ₀ e t : J → ℝ)) ^ 2 *
-      scoreResidual hS ν (θl θ₀ e t) (Vl θ₀ e t) (Vl θ₀ e t) x ∂Pfam (θl θ₀ e t : J → ℝ) = 0) :
+    (hpair : ∀ t ∈ Icc a b, varianceCurvaturePairing hS ν F θ₀ e t ≤ 0) :
     ConcaveOn ℝ (Icc a b) (lineVariance hS ν F θ₀ e) := by
   have hU := isOpen_responseLineDomain hS ν θ₀ e
   have hderiv : ∀ t ∈ responseLineDomain S ν θ₀ e,
@@ -253,18 +271,28 @@ theorem concaveOn_lineVariance_of_flat {F : X → ℝ} (hF : Bdd F) (θ₀ e : �
       |>.differentiableWithinAt
   · intro t ht
     rw [interior_Icc] at ht
-    have hd := (hasDerivAt_lineVarianceDeriv hS ν hF θ₀ e (hab (Ioo_subset_Icc_self ht)))
+    have hd := (hasDerivAt_lineVarianceDeriv' hS ν hF θ₀ e (hab (Ioo_subset_Icc_self ht)))
     exact (hd.congr_of_eventuallyEq (hev t (hab (Ioo_subset_Icc_self ht)))).differentiableAt
       |>.differentiableWithinAt
   · intro t ht
     rw [interior_Icc] at ht
-    have hd := (hasDerivAt_lineVarianceDeriv hS ν hF θ₀ e (hab (Ioo_subset_Icc_self ht)))
+    have hd := (hasDerivAt_lineVarianceDeriv' hS ν hF θ₀ e (hab (Ioo_subset_Icc_self ht)))
     have hd' := hd.congr_of_eventuallyEq (hev t (hab (Ioo_subset_Icc_self ht)))
     change deriv (deriv (lineVariance hS ν F θ₀ e)) t ≤ 0
-    rw [hd'.deriv, hflat t (Ioo_subset_Icc_self ht), zero_sub]
+    rw [hd'.deriv]
+    have h1 := hpair t (Ioo_subset_Icc_self ht)
     have : 0 ≤ (lawCov (Pfam (θl θ₀ e t : J → ℝ)) F (dirLoss S (Vl θ₀ e t : J → ℝ))) ^ 2 :=
       sq_nonneg _
     linarith
+
+/-- **Vanishing variance–curvature pairing gives concave posterior variances along mean
+segments** (the residual-flat case): if `E_t[(F − E_t F)² r_{V_t V_t}] = 0` along the line, the
+variance is concave on every interval inside the domain. -/
+theorem concaveOn_lineVariance_of_flat {F : X → ℝ} (hF : Bdd F) (θ₀ e : 𝕍) {a b : ℝ}
+    (hab : Icc a b ⊆ responseLineDomain S ν θ₀ e)
+    (hflat : ∀ t ∈ Icc a b, varianceCurvaturePairing hS ν F θ₀ e t = 0) :
+    ConcaveOn ℝ (Icc a b) (lineVariance hS ν F θ₀ e) :=
+  concaveOn_lineVariance_of_pairing_nonpos hS ν hF θ₀ e hab fun t ht ↦ (hflat t ht).le
 
 end Variance
 

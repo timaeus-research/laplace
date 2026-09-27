@@ -6428,3 +6428,17 @@ certificates for concrete resolved charts beyond the identity chart.
     (THE RESOLUTION SCALE `1/2 − √n d_F/4 ≤ error`). Together with `measureReal_sign_certified_ge`: the two-sided
     resolution story (certificate ⇒ resolved w.p. ≥ 1 − τ/(nr²); separation below 1/√n ⇒ unresolvable). Equal-prior
     average error; complementary, not a matched minimax theorem.
+  - `ResponseCertifiedChart.lean` (round-99 AUDIT FIX, THE GOOD EVENT): `exists_quadratic_remainder_subset`
+    (generic remainder with `closedBall 0 δ ⊆ U`), **`exists_responseTheta_quadratic_remainder_dom`** (the certified
+    ball is inside the chart domain: `‖z‖ ≤ δ ⇒ m(θ₀) + z ∈ Ω`), `chart_valid_of_norm_le` (`m(θr(m(θ₀)+z)) = m(θ₀)+z`
+    via `meanMap_responseTheta`), `norm_smul_add_le_of_meanNoiseEnergy` (`‖t e + ξ‖ ≤ δ` from the Fisher radius),
+    **`twoScale_goodEvent_fisher`** (deterministic good event: interior ∧ chart valid ∧ sign),
+    **`measureReal_ge_of_energy_lt_ae_le`** (THE RESOLUTION ENGINE: any event a.s. containing the small-energy event has
+    `P ≥ 1 − τ/(n r²)`; factors the bridge proof), `sampleResponse_eq_add_add`,
+    **`measureReal_goodEvent_certified_ge`** (the probabilistic resolution theorem with the GOOD EVENT
+    `M̂ ∈ Ω ∧ m(θr M̂) = M̂ ∧ ℓθ₀ < ℓ(θr M̂)`; the bridge's sign-only theorem is its projection),
+    **`measureReal_chartValid_ge`** (certificate-free: chart validity alone w.p. ≥ 1 − τ/(nr²)). Also
+    `ResponseObservableHessian`: the I3 hypothesis is now NAMED `varianceCurvaturePairing hS ν F θ₀ e t :=
+    E_t[(F − E_tF)² r_{V_tV_t}]`, `hasDerivAt_lineVarianceDeriv'` (second derivative = pairing − 2 Cov²),
+    **`concaveOn_lineVariance_of_pairing_nonpos`** (the INEQUALITY version, pairing ≤ 0 ⇒ concave), and
+    `concaveOn_lineVariance_of_flat` is its `= 0` corollary.
