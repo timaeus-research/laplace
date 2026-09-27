@@ -557,6 +557,7 @@ import Laplace.Multi.VertexFibreUnique
 import Laplace.Multi.FaceFibreUnique
 import Laplace.Multi.ResponseLocalMetricControl
 import Laplace.Multi.SamplingResolution
+import Laplace.Multi.BoundedTiltFisherComparison
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
