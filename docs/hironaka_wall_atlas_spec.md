@@ -5334,3 +5334,15 @@ certificates for concrete resolved charts beyond the identity chart.
   `sqrt_raySpeedSq_le_tilt`, `lintegral_sqrt_raySpeedSq_lt_top_of_tilt`, **`lintegral_sqrt_raySpeedSq_lt_top_iff_tilt`**
   (finite Fisher length of a normal ray is independent of the tangential lift: accessibility is all-or-nothing on `ri F`).
   `bdd_neg` moved to `TiltVarianceComparison`.
+- `FaceGauge.lean` (NOT mirrored; round-78 Lemma B): `familyMeasure_add_of_invisible` (the family law is invariant under
+  invisible shifts), `dotJ_sub_left`; for a face set `A` with `[IsProbabilityMeasure (faceMeasure ν A)]`:
+  **`faceTheta hS ν A η ∈ dirSpan (ν(·|A))`** (the face natural coordinate of the face mean of `η`, via `chartVInv`),
+  `chartV_faceTheta`, `meanMap_faceTheta` (same face mean), `sub_faceTheta_mem_invisible` (`η − faceTheta η` is invisible on
+  the face), **`familyMeasure_faceMeasure_faceTheta`** (face gauge invariance `P^A_η = P^A_{faceTheta η}`),
+  `faceThetaOf hM` (tangential coordinate of a point of the relative interior of the face body), `meanMap_faceThetaOf`,
+  **`tendsto_faceTheta`** (convergent face means ⇒ convergent tangential coordinates, by continuity of the inverse face chart),
+  `dirSpan_faceMeasure_le`, **`normalDepth hS ν A u η = −⟨η − faceTheta η, u⟩/⟨u,u⟩`**, **`eq_faceTheta_sub_smul`** (the facet
+  decomposition `η = faceTheta η − normalDepth η • u` for `η ∈ W` under the FACET HYPOTHESIS
+  `∀ w ∈ W, w invisible on the face → ∃ c, w = c • u`), **`tendsto_normalDepth_atTop`** (an off-face vertex gap forces
+  `normalDepth → +∞`), **`tendsto_faceTheta_normalDepth_of_tendsto_meanMap`** (charged polytope, exposed facet, `M ∈ ri F`:
+  `meanMap(η n) → M` ⇒ tangential coordinates → `faceThetaOf M` and normal depths → ∞, through the vertex-gap criterion).

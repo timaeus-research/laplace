@@ -1701,3 +1701,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `dirLoss_sub'`, `dirLoss_smul` for the ray identity; `lintegral_const_mul' _ _ ENNReal.ofReal_ne_top` + `ENNReal.mul_lt_top`;
   a section `[Nonempty J]` nobody uses cascades `omit` lints — drop it from the `variable` line instead.
   NEXT: Lemma B (`FaceGauge`: `P^A_η = P^A_{proj_{T'} η}`; component convergence; `q_n(A) → 1`), then the assembly.
+- `FaceGauge` landed (round-78 Lemma B). Gotchas: `include` does not attach hypotheses to `def`s, and a def whose body fails to
+  elaborate silently drops its variables (spurious "expected `J → ℝ`" errors downstream) — fix the first error first; set-builder
+  `{x | …}` cannot appear inside `local notation` (quotPrecheck) and `setOf` is a DEPRECATED alias of `Set.ofPred` — carry the face as
+  a plain variable `(A : Set X)` with the instance `[IsProbabilityMeasure (faceMeasure ν A)]` as a section variable (callers
+  discharge it with `haveI := isProbabilityMeasure_faceMeasure ν hA0`); `dotJ_smul_left`, `continuous_dotJ_left` already exist in
+  `MomentPolytope`; `chartV_chartVInv` needs `m₀ + (M − m₀) ∈ intrinsicInterior` (`simp only [add_sub_cancel]` then
+  `range_meanMap_eq_intrinsicInterior_momentBody`); `meanMap_eq_iff_invisible measurable_const (integrable_const 1) (fun _ ↦ one_pos)
+  (one_integral_pos _) measurable_const h0 hS one_pos a b : meanMap a = meanMap b ↔ b − a ∈ invisibleSet`; continuity of `chartVInv`
+  at `chartV θ₀` from `hasStrictFDerivAt_chartVInv`, transported with `tendsto_subtype_rng.2`; `Tendsto.atTop_div_const (hr : 0 < r)`;
+  `hgap.atTop_add hcont.neg` + `simpa [sub_eq_add_neg]` for `f − g → ∞`; an implicit `{vM}` determined only by a later argument must
+  be supplied as a named `have` before the application.
+  NEXT: `FaceMassConcentration` (`P_{η n}(A) → 1` from `faceTheta → vM`, `normalDepth → ∞`: ray mass `faceMass/(faceMass + offFaceMass r)
+  → 1` by `tendsto_offFaceMass`, transferred through the bounded tilt `⟨faceTheta − vM, S⟩` by `le_integral_tilted_of_nonneg`), then
+  the tangential coercivity and the assembly.
