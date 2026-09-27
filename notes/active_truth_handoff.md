@@ -2300,3 +2300,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   one_mul _`; `dirLoss_unit` name taken. NEXT: rank 3 `AbsolutelyContinuousForcing` (`Cov_D(S,k) ∈ W` for `D ≪ ν`
   via `Convex.average_mem` on `ae_statPoint_sub_mem_dirSpan` or the annihilator; then retraction-free `densVel`),
   rank 4 chamber clearance, 5 mixture journey, 6 sharp affinity; round-89 consult after.
+- AbsolutelyContinuousForcing landed (round 88 rank 3). Pattern: a vector integral in a closed subspace —
+  `(𝕍).convex.integral_mem (Submodule.closed_of_finiteDimensional _) (ae membership) (Integrable in J → ℝ via
+  integrable_pi_iff)`; components via `(ContinuousLinearMap.proj (R := ℝ) (φ := fun _ ↦ ℝ) i).integral_comp_comm
+  hint` + `simp only [ContinuousLinearMap.proj_apply, Pi.smul_apply, Pi.sub_apply, smul_eq_mul, statPoint]`.
+  `Measure.tilted g` is DEFINITIONALLY `withDensity (ofReal (exp g / ∫ exp g))`, so the density objects at
+  `q := exp g / Z` are the tilt objects by `rfl`. GOTCHAS: theorems whose type mentions only `dirSpan` but whose
+  proof needs `FiniteDimensional (J → ℝ)` trip `unusedFintypeInType` — use `set_option linter.unusedFintypeInType
+  false in`; `rw [responseVel]` fails — `unfold densVel responseVel`. NEXT: rank 4 `ResponseChamberClearance`
+  (`⟨z,z⟩ ≤ Λ · samplingEnergy θ p z` from `dotJ_chartDeriv_self_le` ⇒ Euclidean clearance of a mean chamber discharges
+  the frozen-margin hypothesis `hell` with frozen radius `r/√Λ`, giving an explicit exit bound `Λ tr(RC_D)/(n r²)`),
+  rank 5 mixture journey, rank 6 sharp affinity; then round-89.

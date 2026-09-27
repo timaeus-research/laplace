@@ -5888,3 +5888,9 @@ certificates for concrete resolved charts beyond the identity chart.
     **`lawCov_logDens_eq_fisherVar_add_residual`** (INITIAL REGRESSION: `Var_ν log q = |DΦ_0[log q]|²_F + Var_ν(residual)`),
     **`hasDerivAt_klDiv_journey`** (`d/dt D(ρ_t‖ν) = t Var_{ρ_t} log q`), **`monotoneOn_klDiv_journey`**,
     `klDiv_journey_le` (`D(ρ_t‖ν) ≤ D(D‖ν)` on `[0,1]`).
+  - `AbsolutelyContinuousForcing.lean` (round 88, rank 3): `lawCov_stat_eq_integral` (`Cov_D(S_i,k) = ∫ k (S_i − E S_i)`),
+    **`covVec_mem_dirSpan`** (`Cov_D(S,k) ∈ W` FOR EVERY `D ≪ ν`, via `Convex.integral_mem` on the a.e. `W`-valued
+    integrand `k(x)(S(x) − E_D S)` and `ContinuousLinearMap.proj … |>.integral_comp_comm`), **`densForcing_mem_dirSpan`**,
+    `retraction_densForcing` (every retraction is inert), **`densVel_eq_symm`** / `densVel_eq` (THE DENSITY VELOCITY IS
+    RETRACTION-FREE), `tilted_eq_withDensity_tq`, `integral_tq`, `densForcing_tiltDens`, `densResponse_tiltDens`,
+    **`densVel_tiltDens`** (at a normalised tilt density the density objects are the tilt objects).
