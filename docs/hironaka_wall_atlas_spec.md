@@ -6325,3 +6325,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `journeySlope_zero`, `monotoneOn_journeySlope`, `journeySlope_nonneg`, **`monotoneOn_journeyKL`** (THE MODEL
     INFORMATION RISES MONOTONICALLY ALONG THE FEATURELESS JOURNEY on [0,1]; two `monotoneOn_of_deriv_nonneg`s).
     NOT formalised: the three-point counterexample to monotonicity along the power-tilt path.
+  - `ResponseSaturatedIdentification.lean` (H3, abstract form of Astra's `ResponseFiniteSimplex`):
+    `tilted_dirLoss_eq_familyMeasure_neg` (`ν.tilted ⟨b,S⟩ = P_{−b}`), **`tilted_eq_familyMeasure_responseOf_of_spansAffine`**
+    (EVERY DATA LAW IS A MODEL LAW: `ρ_g = P_{Φ(g)}`; proof: `g = ⟨b,S⟩ + k` a.e. ⇒ `ρ_g = P_{−b}` (`tilted_congr`,
+    `tilted_add_const`), means agree ⇒ `−b − Φ(g)` invisible (`meanMap_eq_iff_invisible measurable_const (integrable_const 1)
+    (fun _ ↦ one_pos) (one_integral_pos ν) measurable_const h0 hS one_pos a b`) ⇒ `familyMeasure_add_of_invisible hS ν a hk`),
+    `responseInformationDefect_eq_zero_of_spansAffine`, **`totalInfo_eq_responseInfo_of_spansAffine`** (all information is
+    carried by the response), `normDens_ae_eq_of_tilted_eq` (density injectivity via the squared-difference integral),
+    **`lawResponse_injective_of_spansAffine`**, **`saturatedHomeomorph : DataLaw ν ≃ₜ W`** (inverse `modelLaw`; no
+    Mathlib quotient lemma needed), `eq_of_lawResponse_eq_of_spansAffine`. NOT done: `dim W = |X|−1`, the barycentric
+    identification with the positive simplex (H3 items 1–4 of round 97), H4 `d_F = 2 arccos Σ√pq`.

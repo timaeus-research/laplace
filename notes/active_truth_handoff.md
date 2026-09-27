@@ -2640,7 +2640,12 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   already exists in ReconstructionBias). H2 `ResponseMaximumEntropyPotential` LANDED (a `have h := monotoneOn … ht ht.1`
   carries beta-redexes — `beta_reduce at h` before `rw`; `monotoneOn_of_deriv_nonneg (convex_Icc 0 1)` with
   `interior_Icc` and `Ioo_subset_Icc_self`; `klDiv_eq_zero_iff` needs both `IsFiniteMeasure` instances in scope).
-  NEXT: H3 `ResponseFiniteSimplex` (dim W = |X|−1, affine independence, simplex ≅ moment body) and H4
-  `ResponseSimplexSphere` (`d_F = 2 arccos Σ√pq`); then H5/H6. Old NEXT:
+  H3 landed in ABSTRACT form as `ResponseSaturatedIdentification` (every data law is a model law under `SpansAffine`;
+  `DataLaw ν ≃ₜ W`; `familyMeasure_add_of_invisible hS ν a hk` has hS FIRST; a structure-field binder used only via
+  `_` trips the unused-variable linter — reference it explicitly; `MemLp.toLp_congr` needs both `MemLp` proofs
+  given). NOT done: `dim W = |X|−1`, simplex ≅ moment body. NEXT: H4 `ResponseSimplexSphere` (`d_F = 2 arccos Σ√pq`:
+  route = every positive law is a model law (H3) + great-circle path of laws `p_t = s_t²` lifted by `θr ∘ mean` +
+  Fisher speed `Σ ṗ²/p = 4α²` via `−⟨θ'_t,S⟩ − (log Z)' = ṗ/p` from `P_{θ_t} = p_t`), or H5/H6 (localised sampling
+  bias, two-scale sign certification). Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
