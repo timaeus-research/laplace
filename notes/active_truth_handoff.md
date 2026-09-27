@@ -2709,8 +2709,10 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   = |X| − 1 − dim W). K4 `ResponseJourneyInformationCost` LANDED (`journey_information_budget`:
   `KL(D‖ν) = KL(D‖R_D) + ∫₀¹(1−t)G_{θ_t}(θ̇,θ̇)dt` for every finite data law; interior action at a cutoff
   `KL(P_{θ_T}‖ν) = ∫₀^T(T−t)g`, squeeze `KL(T) ≤ ∫₀^T(1−t)g ≤ KL(R_D‖ν)`, Lebesgue integrability on `(0,1]` via
-  `integrableOn_Ioc_of_intervalIntegral_norm_bounded_right` + `aecover_Ioc_of_Ioc`). NEXT: K5
-  `ResponseObservableSamplingGeometry`, K6 `ResponseSimplexCompletion`, K7 `ResponseExtrinsicGauss`, then round-101
+  `integrableOn_Ioc_of_intervalIntegral_norm_bounded_right` + `aecover_Ioc_of_Ioc`). K5
+  `ResponseObservableSamplingGeometry` LANDED (Fisher–Riesz regression direction `u_F` with `G(u_F,v) = Cov(F,⟨v,S⟩)`;
+  influence `d/dt E_{θ(m₀+te)}F|₀ = ⟨u_F,e⟩`; `E[⟨u,ξ_n⟩⟨w,ξ_n⟩] = Cov_D/n`; matched Gram matrix `G(u_F,u_F')/n ≤ VarF/n`;
+  `observable_resolution_floor`). NEXT: K6 `ResponseSimplexCompletion`, K7 `ResponseExtrinsicGauss`, then round-101
   consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

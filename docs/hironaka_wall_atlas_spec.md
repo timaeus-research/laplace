@@ -6605,3 +6605,28 @@ certificates for concrete resolved charts beyond the identity chart.
     stuck); `integral_add_adjacent_intervals` with an inline `mono_set` proof picks `c := b` — name both
     `IntervalIntegrable` facts with typed `have`s; `[MeasurableSingletonClass X]` only on the five theorems touching
     `klDiv`/`responseProjection` (per-theorem instance binders, not a section variable).
+  - `ResponseObservableSamplingGeometry.lean` (K5, SAMPLING GEOMETRY OF ANY POSTERIOR EXPECTATION): `fisherBilin θ :
+    BilinForm ℝ W` (Fisher form as `LinearMap.mk₂`; `fisherBilin_nondegenerate` via `IsRefl.nondegenerate_iff_separatingLeft`
+    + `fisherInner_self_pos`), **`fisherRiesz θ : Dual W ≃ₗ W`** (`(fisherBilin.toDual _).symm`, `fisherInner_fisherRiesz`
+    from `LinearMap.BilinForm.apply_toDual_symm_apply`), `regressionCovVec F θ := (Cov(F,S_j))_j`, `covFunctional F θ :=
+    (Σ_j γ_j • proj j) ∘ₗ W.subtype` (`covFunctional_apply` via `lawCov_dirLoss_eq_sum`), **`regressionDir F θ := fisherRiesz
+    (covFunctional)`** — the Fisher–Riesz representative `u_F ∈ W` with `G(u_F, v) = Cov(F, ⟨v,S⟩)` ∀ v
+    (`fisherInner_regressionDir`), `lawCov_dirLoss_regressionDir`, **`lawCov_regressionResidual_dirLoss`** (residual ⟂ every
+    feature direction), `fisherInner_regressionDir_self` (`G(u_F,u_F) = Cov(F,⟨u_F,S⟩)`), `fisherInner_sq_le` (CS for G),
+    **`fisherInner_regressionDir_self_le`** (explained variance ≤ Var F), **`lawCov_regressionResidual_self`** (Pythagoras
+    `Var(F − ⟨u_F,S⟩) = Var F − G(u_F,u_F)`), `responseLine_zero`, `responseLineVel_zero`,
+    `fisherInner_chartDerivEquiv_symm'` (`G(u, A⁻¹e) = −⟨u,e⟩` for `e : W`), **`hasDerivAt_lineObservable_zero`**
+    (`d/dt E_{θ(m₀+te)}F|₀ = ⟨u_F, e⟩`: the influence of a mean displacement on any observable is the Euclidean pairing with
+    the regression direction), **`sq_dotJ_regressionDir_le`** (`⟨u_F,e⟩² ≤ G(u_F,u_F)·|A⁻¹e|²_F`). Sampling section
+    (EmpiricalMoments variables `P D Xs hXm hid hlaw`, `hind : ∀ i k, i ≠ k → IndepFun`): `integrable_sampleResponse_sub_mul_sub`
+    (product of two coordinates of `M̂_n − m_D`, via `sampleResponse_sub_eq` + `integrable_comp_Xs_mul`),
+    **`integral_dotJ_sampleResponse_sub_mul`** (`E[⟨u,ξ_n⟩⟨w,ξ_n⟩] = Cov_D(⟨u,S⟩,⟨w,S⟩)/n`, any law),
+    `integral_influence_mul_influence` (sampling covariance matrix of linearised posterior expectations),
+    **`integral_influence_mul_influence_matched`** (`= G_{θ₀}(u_F,u_{F'})/n` at `D = P_{θ₀}`; `rfl` after `rw [hD]`),
+    **`integral_sq_influence_matched_le`** (`≤ Var_{θ₀}F/n`), **`observable_resolution_floor`** (if `E[⟨u_F,ξ⟩²] ≤ ⟨u_F,e⟩²`
+    and `G(u_F,u_F) > 0` then `1 ≤ n·|A⁻¹e|²_F`: no posterior expectation resolves a truth shift the structural coordinate
+    does not). Gotchas: `fisherForm` (DualFlat) and `covVec` (MultiConstrainedResponse) already exist — renamed;
+    `LinearMap.BilinForm.Nondegenerate` is `SeparatingLeft ∧ SeparatingRight` (no `intro`) — go through `IsRefl`;
+    `lawCov_dirLoss_left hS ν v ψ hψ` takes `hS` first; `lawCov_comm` in a `rw` chain needs explicit arguments (it otherwise
+    rewrites `Cov(F,F)` to itself); `simp_rw [integral_finsetSum _ fun b _ ↦ …]` with a metavariable index fails — state the
+    inner integral as `∀ a, …` and `simp_rw` that.
