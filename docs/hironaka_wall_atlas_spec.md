@@ -5601,3 +5601,6 @@ certificates for concrete resolved charts beyond the identity chart.
     **`completionLaw_tiltExt_faceFamily`** (`Q_x = P^A_{v₀} ⇒ Q_{tiltExt h x} = P^A_{v₀+h}`),
     `meanExt_tiltExt_faceFamily`, **`exists_meanExt_eq_faceFamily`** (ONE ACCESSIBLE FACE LAW CARRIES THE WHOLE OPEN
     FACE FAMILY: every `m_A(v₀ + h)` is an extended mean).
+  - `FacetFamilyAccessible.lean` (round 83, orbit corollary): **`forall_exists_meanExt_eq_of_facet`** (ONE ACCESSIBLE
+    FACET POINT MAKES THE WHOLE OPEN FACET ACCESSIBLE: finite normal-ray length ⇒ every `M' ∈ ri(momentBody ν_A)` is an
+    extended mean; the completion point over `M` has law `P^A_{v_M}`, `tiltExt (v_{M'} − v_M)` moves it to `P^A_{v_{M'}}`).

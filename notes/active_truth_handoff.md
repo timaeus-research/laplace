@@ -2009,3 +2009,5 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   finite measures setwise. NEXT: corollary `exists_meanExt_eq_of_facet_accessible` (facet accessibility ⇒ all of the
   open face family accessible), then `PolyhedralEntropyRecovery`/`ClosedMeanResponseContinuity`,
   `FacetResponseLengthBudget`, `AccessibleFaceOrbit` nonexpansion (needs compact-uniform covariance convergence).
+- LANDED (2026-09-27): `FacetFamilyAccessible` (b466ed6). NEXT: `FacetResponseLengthBudget` (+ `WeightedDepthVariation`),
+  then `PolyhedralEntropyRecovery`/`ClosedMeanResponseContinuity`.
