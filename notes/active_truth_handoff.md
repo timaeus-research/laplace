@@ -2620,6 +2620,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   LANDED (residual `r_uv = f_uf_v − G + f_C`; `rw [← this]` with `this : ∫ … = 0` rewrites the `0` INSIDE the family
   measure's `fun _ ↦ 0` — use a `calc` ending in `_ = 0 := h0`; `mul_comm _ _` under `integral_congr_ae` leaves a
   stuck `CommMagma ?m` — give both arguments; a `set r := …` local is defeq-transparent for `exact` against the
-  unfolded statement). NEXT: G4
+  unfolded statement). G4 `ResponseGlobalInformationLandscape` LANDED (derivatives of `T, I, D` along coefficient
+  paths; gotchas: `coeffMean h ν h a` (S := h) gives the h-means with `hasDerivAt_coeffMean hh ν hh ha ha'`;
+  `meanMap_coeffResponse hS ν hh (a := a) t` needs the path named (implicit `a` not inferable in a bare `have`);
+  rewrite `mean (coeffResponse t)` only after `unfold coeffResponse at hm` since the goal shows `responseOf`;
+  `omit … in` must precede `set_option … in`, which precedes the docstring). NEXT: G5 `ResponseIntrinsicDistance`, G6
+  `ResponseSamplingGeometry` (see round 96). Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

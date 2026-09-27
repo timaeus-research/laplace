@@ -633,6 +633,7 @@ import Laplace.Multi.ResponseFisherEnergyStationarity
 import Laplace.Multi.ResponseEndpointInformationAction
 import Laplace.Multi.ResponseFiniteSaturation
 import Laplace.Multi.ResponseCurvatureDefect
+import Laplace.Multi.ResponseGlobalInformationLandscape
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

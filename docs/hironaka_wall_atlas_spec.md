@@ -6254,3 +6254,14 @@ certificates for concrete resolved charts beyond the identity chart.
     **`fisherSectional_eq_quarter_add_residual`** (`K = ¼ + (∫r_uu r_vv − ∫r_uv²)/(4D)`),
     `scoreResidual_eq_zero_ae_of_saturated` (saturation = `r ≡ 0` a.e.). Not done: the `|K| ≤ (‖C(u,v)‖² +
     ‖C(u,u)‖‖C(v,v)‖)/(4D)` bound (Cauchy–Schwarz for `G` needed).
+  - `ResponseGlobalInformationLandscape.lean` (G4): `totalInfo ν g := KL(ρ_g‖ν)`, `responseInfo hS ν g := KL(P_{Φ(g)}‖ν)`,
+    **`totalInfo_eq_defect_add_responseInfo`** (`T = D + I` globally), `responseInfo_eq_of_responseOf_eq` (constant on
+    fibres), `responseInfo_eq_action` (= weighted action, F3), `responseInfo_le_totalInfo`, `famZ_zero_eq_one`,
+    `totalInfo_eq` (`T = E_{ρ_g}g − log∫e^g`); along coefficient paths `g_t = ⟨a_t,h⟩` (TiltPathBudget's `coeffMean`,
+    `coeffResponse`): `integral_dirLoss_deriv_eq_dotJ`, `integral_dirLoss_self_eq_dotJ`,
+    **`hasDerivAt_totalInfo_coeff`** (`T' = Cov_{ρ_t}(g_t, ġ_t)`; log-partition derivative = `E_t ġ_t` via
+    `hasDerivAt_integral_mul_exp_dirLoss` with `φ = 1` + `HasDerivAt.log` + `integral_tilted_dirLoss_eq_div`),
+    `hasDerivAt_coeffResponse_coe`, `meanMap_coeffResponse` (matching), **`hasDerivAt_responseInfo_coeff`**
+    (`I' = −⟨θ_t, δμ_t⟩`, `δμ = forcing = Cov_{ρ_t}(S, ġ_t)`), **`hasDerivAt_defect_coeff`**
+    (`D' = Cov_{ρ_t}(g_t + ⟨θ_t,S⟩, ġ_t)`). Note: stated on the bounded-tilt chart, not on `DataLaw` (no smooth
+    structure there); `KL` continuity in `L¹` NOT claimed.
