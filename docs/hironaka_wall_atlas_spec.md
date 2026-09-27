@@ -7020,3 +7020,11 @@ certificates for concrete resolved charts beyond the identity chart.
     (transport along `h0 : S 0 = fun _ _ ↦ 0` via a generalised `∀ T hT, T = 0 → …` and `subst`; a direct `subst h0`
     fails since `S 0` is an application), **`klDiv_levelResponse_telescope_of_zero`** (the budget from the featureless
     law: `KL(D‖ν) = KL(D‖R_K) + Σ_{k<K} KL(R_{k+1}‖R_k)`).
+  - `ResponseFaceSupportConstancy.lean` (N1 part 2): `exists_mem_openSegment_of_mem_intrinsicInterior` (relint
+    point lies on an open segment from any point of the set to another: `mem_intrinsicInterior_iff_exists_ball`,
+    `z := x + t(x − y)`, `match_scalars <;> (field_simp; try ring)`), `convex_carriedResponses`,
+    **`supportSet_subset_of_mem_openSegment`** (supports grow inward: endpoints of a segment through `M` have
+    support ⊆ `supp M`; `support_absorb` with `w = a q*(M') + c q*(z)`), **`supportSet_subset_of_mem_carriedResponses`**
+    (supports shrink outward, from `carriedResponses_supportSet_subset_of_isExtreme` + Csiszár's support theorem),
+    **`supportSet_eq_of_mem_intrinsicInterior`** (SUPPORT CONSTANT ON THE RELATIVE INTERIOR OF A FACE),
+    **`responseProjection_eq_faceMeasure_of_mem_intrinsicInterior`** (one base law `ν_A` per open face stratum).

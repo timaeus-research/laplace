@@ -2764,7 +2764,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `ResponseFaceProjectionIdentification` (faceProj = Euclidean projection at boundary means),
   `ResponseChamberClassifier` (classification floor with the label-separation hypothesis)). N1 part 1 LANDED: `ResponseFaceRestriction`
   (`responseProjection_faceMeasure_supportSet : Π^{ν_A}(M) = Π^ν(M)` for `A = supp q*(M)`). Audit 6 LANDED:
-  `ResponseTrivialFamily` (`R^{S₀}_0 = ν`; budget from the featureless law). NEXT: N1 capstone
+  `ResponseTrivialFamily` (`R^{S₀}_0 = ν`; budget from the featureless law). N1 part 2 LANDED:
+  `ResponseFaceSupportConstancy` (support constant on the relative interior of each face; one base law per open
+  stratum). NEXT: N1 part 3 facewise interior calculus (identify `momentBody ν_A = carriedResponses S A`, so
+  relint(face) = Ω^{ν_A}; then `hasDerivAt_lineObservable_zero` at base `ν_A` gives the facewise derivative of
+  `M ↦ E_{R_M}F` along `e ∈ W_A` with the face regression direction), then the capstone
   STRATIFIED TRANSPORT (`f_F(M(1)) − f_F(M(0)) = ∫₀¹⟨u_F^{A_t}(M(t)), Ṁ(t)⟩dt` along absolutely continuous journeys;
   route: finitely many face strata, facewise interior calculus for the face family via N1, global Lipschitz (M3b),
   `Ṁ(t) ∈ W_{A_t}` a.e. from "an a.c. nonnegative function has derivative zero a.e. on its zero set"); then N2 Hessian
