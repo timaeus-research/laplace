@@ -540,6 +540,8 @@ import Laplace.Multi.FacetCompletionUnique
 import Laplace.Multi.SqrtDensityAffinity
 import Laplace.Multi.HellingerFisherControl
 import Laplace.Multi.FisherCompletionLaws
+import Laplace.Multi.FisherCompletionMeasure
+import Laplace.Multi.FaceRootDensityLimit
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

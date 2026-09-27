@@ -1883,3 +1883,21 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (`rootDensExt` at the facet point = `√(1_F e^{−⟨v_M,S⟩}/Z_F)`, dominated convergence along the fixed-base ray);
   round-81 consult (charged square: small intrinsic diameter of deep normal regions; flags; the boundary of the
   completion in codimension ≥ 2).
+- Slop paragraph (uniqueness/Hellinger/laws) pushed (Overleaf cf678c6). Round 81 (`research_round81_{q,v1}`): identify
+  the facet law by the affinity (`‖q_r − q_F‖² = 2 − 2√(Z_F/A_r)`, scalar DCT for `A_r → Z_F`), `completionLaw` via
+  `withDensity`, concentration of boundary laws on supporting faces (`∫ g q² = 0` with `g = β − ⟨u,S⟩ ≥ 0`), data-response
+  endpoint at `t = ∞`, and a NORMAL-TRANSLATION programme for injectivity of `meanExt` under charged polytopes
+  (`fisherVar(θ + a, w) ≤ fisherVar(θ, w)/P_θ(A_F)` for `a` in the sign-adjusted normal cone; translated-grid argument);
+  explicit product-square example `μ = c(δ₀ + δ₁ + Σ 2^{−4n} δ_{2^{−n}})`, `ν = μ ⊗ μ`; 10-module landing order
+  (FisherCompletionMeasure, FaceRootDensityLimit, FacetCompletionLaw, CompletionSupportingFace, DataResponseEndpoint,
+  NormalTiltFisherComparison, CompletionFaceParameters, CompletionFaceUnique, CompletionHellingerEmbedding,
+  ProductCornerCompletion). Modules 1–2 landed 2026-09-27. Gotchas: `integral_withDensity_eq_integral_toReal_smul₀`
+  (root namespace) with `(aemeasurable).ennreal_ofReal` and `Eventually.of_forall fun _ ↦ ENNReal.ofReal_lt_top`;
+  `withDensity_congr_ae`; `setIntegral_ge_of_const_le hA (measure_ne_top ν _) (bound) (int.integrableOn)` returns
+  `μ.real s • c ≤ ∫`; `Real.exp_le_one_iff`; `Tendsto.atTop_mul_const_of_neg` for `n·c → −∞`;
+  `Real.tendsto_exp_atBot.comp`; `positivity` cannot see `0 < famWeight` (use `famWeight_pos`); `congr 1; ring` fails on
+  `exp a = exp b` — rewrite the exponent with `show a = b by ring`; `field_simp` closes the affinity product identity
+  outright (no trailing `ring`).
+  NEXT: module 3 `FacetCompletionLaw` (`rootDensExt x_M = toLp faceRootDens`, `completionLaw x_M = familyMeasure
+  (faceMeasure ν A) 1 0 S 1 v_M`), module 4 `CompletionSupportingFace`, module 5 `DataResponseEndpoint`, then the
+  normal-translation injectivity programme (6–9).

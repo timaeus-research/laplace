@@ -5469,3 +5469,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `continuous_rootDensExt`), **`norm_rootDensExt = 1`**, **`rootDensExt_nonneg`**, `integral_rootDensExt_sq = 1`,
     **`meanExt_eq_integral_rootDensExt`** (`m̄(x)_i = ∫ S_i Ψ̄(x)²`): EVERY COMPLETION POINT IS A PROBABILITY LAW
     `Ψ̄(x)² ν ≪ ν` WITH MEAN `m̄(x)`.
+  - `FisherCompletionMeasure.lean` (round 81, module 1): **`completionLaw x := ν.withDensity (ofReal Ψ̄(x)²)`**,
+    `completionLaw_absolutelyContinuous`, `integral_completionLaw`, `completionLaw_univ = 1` (+ `IsProbabilityMeasure`
+    instance), **`integral_completionLaw_eq_meanExt`** (`∫ S_i ∂law = m̄ x i`), **`completionLaw_coe`** (`= P_θ` at interior
+    points).
+  - `FaceRootDensityLimit.lean` (round 81, module 2): `faceZ S ν u β v = ∫_A e^{−⟨v,S⟩}`, `faceRootDens = 1_A e^{−⟨v,S⟩/2}/√Z_F`,
+    `rayNorm v r = ∫ e^{−⟨v,S⟩} e^{r(⟨u,S⟩−β)} = e^{−rβ} Z(v − ru)`, **`tendsto_rayNorm`** (`A_n → Z_F` by dominated convergence),
+    `rootDens_mul_faceRootDens`, **`integral_rootDens_mul_faceRootDens`** (`∫ q_{θ_r} q_F = √(Z_F/A_r)`),
+    `integral_faceRootDens_mul_self = 1`, **`integral_rootDens_sub_faceRootDens_sq`** (`‖q_{θ_r} − q_F‖² = 2 − 2√(Z_F/A_r)`),
+    **`tendsto_rootDensLp_ray`** (the ray's square-root densities converge in `L²(ν)` to the face root density — no
+    accessibility needed).
