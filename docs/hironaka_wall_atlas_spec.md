@@ -6113,3 +6113,13 @@ certificates for concrete resolved charts beyond the identity chart.
     CURVATURE ⇔ reverse Gram inequality `G*(T(u,v),T(u,v)) ≤ G*(T(u,u),T(v,v))`), `fisherSectional` (def with the Gram
     denominator), `fisherSectional_nonpos_iff`, `fisherInner_alphaCurvature_antisymm_right`, `fisherInner_alphaCurvature_pair`,
     **`alphaCurvature_bianchi`** (first Bianchi for every α; `module`), `alphaCurvature_eq_zero_of_comm`.
+  - `ResponseInformationPythagoras.lean` (E2): `klDiv_tilted_ne_top`, **`toReal_klDiv_tilted_tilted`** (`KL(ρ_g‖ρ_h) =
+    E_{ρ_g}(g−h) − log Z_g + log Z_h`), `klDiv_tilted_tilted_ne_top`, **`tilted_mixTilt`** (the law of the mixture tilt is the
+    `ℝ≥0`-mixture of the laws), `integral_exp_modelTilt` (= `famZ`), `integral_modelTilt` (= `−⟨θ, E_ρ S⟩`),
+    **`toReal_klDiv_tilted_model`** (`KL(ρ_g‖P_θ) = E g − log Z_g + ⟨θ,E_{ρ_g}S⟩ + log Z(θ)`), `toReal_klDiv_model_featureless`,
+    **`toReal_klDiv_model_model`** (Bregman form), **`toReal_klDiv_pythagoras`** (`KL(ρ_g‖P_θ) = KL(ρ_g‖P_Φg) + KL(P_Φg‖P_θ)`),
+    **`toReal_klDiv_pythagoras_featureless`** (HEADLINE: `KL(ρ_g‖ν) = KL(ρ_g‖P_Φg) + KL(P_Φg‖ν)`), `toReal_klDiv_model_ge`,
+    `familyMeasure_injective_dirSpan`, `klDiv_model_model_eq_zero_iff`, `klDiv_tilted_model_ne_top`, `klDiv_model_model_ne_top`,
+    **`toReal_klDiv_model_eq_iff`** (UNIQUE information projection), **`responseInformationDefect g := KL(ρ_g‖P_Φg)`**,
+    `_nonneg`, **`_eq_zero_iff`** (= 0 iff the data law is a model law), `_modelTilt` (= 0), **`responseInformationDefect_mix_le`**
+    (`defect(mixture at t) ≤ (1−t)·defect`, via `klDiv_mixture_le`).

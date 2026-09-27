@@ -619,6 +619,7 @@ import Laplace.Multi.ResponseDensityTopology
 import Laplace.Multi.ResponseFibreDeformation
 import Laplace.Multi.ResponseTopologicalQuotient
 import Laplace.Multi.ResponseFisherCurvatureSign
+import Laplace.Multi.ResponseInformationPythagoras
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
