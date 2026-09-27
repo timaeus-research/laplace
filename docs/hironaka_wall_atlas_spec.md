@@ -5530,3 +5530,17 @@ certificates for concrete resolved charts beyond the identity chart.
     `lawCov_residual_dirLoss_zero` (the residual is invisible), **`lawCov_sub_dirLoss_self_eq`** (the regressor is the
     best visible approximation: `Var(h − ⟨e,S⟩) = Var(h − reg) + Var(reg − ⟨e,S⟩)`), `lawCov_residual_le`,
     `responseSpeedSq_zero_le`, `responseSpeedSq_zero_eq_iff` (response speed = data speed at `t = 0` iff `h` visible).
+  - `FaceResponsePythagoras.lean` (round 82, item 2): `isProbabilityMeasure_faceMeasure_of_real_pos`,
+    `faceFamily_absolutelyContinuous`, `dotJ_meanMap_faceFamily` (the face family's mean lies on the supporting
+    hyperplane), **`klDiv_eq_add_faceFamily`** (BOUNDARY KL PYTHAGORAS: for `A = {⟨u,S⟩ = β}` charged and exposed and
+    every probability `Q ≪ ν` with mean `m_A(v)`, `D(Q‖ν) = D(Q‖P^A_v) + D(P^A_v‖ν)` in `ℝ≥0∞`; proof = face
+    concentration + conditioning chain rule + interior Pythagoras of the face family on `ν_A`),
+    `klDiv_faceFamily_ne_top`, **`klDiv_faceFamily_le`** (the face family member is the information projection),
+    **`eq_faceFamily_of_klDiv_eq`** (uniqueness). The variational response law exists at every face-family mean,
+    accessible or not.
+  - `ResponsePullbackMetric.lean` (round 82, item 3): `responseSpeedSq_eq_fisherVar` (rfl), `dataCov_eq_lawCov`,
+    **`responseSpeedSq_eq_lawCov_data`** (`|θ'_t|²_F = Cov_{ρ_t}(⟨−θ'_t,S⟩, h)`, a covariance under the DATA law),
+    **`responseSpeedSq_sq_le`** (`(|θ'_t|²_F)² ≤ Var_{ρ_t}⟨θ'_t,S⟩ · Var_{ρ_t} h`),
+    **`responseSpeedSq_le_distortion_mul`** (response speed ≤ data speed × variance distortion of the contrast the
+    response moves along), **`responseSpeedSq_le_of_matched`** (contraction at a matched law `ρ_t = P_{θ_t}`).
+  - Slop paragraphs for round 81 module 6/9 and the round-82 batch pushed (Overleaf c235103).

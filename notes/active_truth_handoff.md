@@ -1963,3 +1963,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (FacetSchurBound) with a measure argument. NEXT: `FaceResponsePythagoras` (boundary KL Pythagoras
   `D(Q‖ν) = D(Q‖Q_M) + D(Q_M‖ν)` for `Q ≪ ν` with mean `M ∈ ri F`), `ResponsePullbackMetric` (`G^{resp} = bᵀC⁻¹b`,
   contraction at a matched law), `FaceNormalForm` (vertex first), slop paragraph for the batch.
+- LANDED (2026-09-27, round-82 batch B): `FaceResponsePythagoras` (7dc12b7; `{A} (hA : A = {x | dirLoss S u x = β})`
+  parametrisation keeps statements short — set-builder terms cannot sit inside `local notation`), `ResponsePullbackMetric`
+  (766d197). Gotchas: `ENNReal.add_left_inj hfin : b + a = c + a ↔ b = c` cancels on the RIGHT (`add_right_inj` on the
+  left); `mul_le_mul_left` is no longer the ordered-field iff — use `le_of_mul_le_mul_left h hpos`; `omit
+  [IsProbabilityMeasure ν]` drops `ν` from the explicit arguments; `measurableSet_faceFibre hS u β` takes `u β`
+  explicitly. Slop paragraphs pushed (Overleaf c235103). NEXT: `FaceNormalForm` at a charged vertex (vertex-gap
+  criterion `⟨θ_n, w − M⟩ → +∞`, then eventual cone membership + `P(A) → 1`), then general faces (tangential
+  convergence), `FacetResponseLengthBudget`, product corner; consider a round-83 consult after the vertex form.
