@@ -6097,3 +6097,10 @@ certificates for concrete resolved charts beyond the identity chart.
     deformation retraction of DataLaw onto the family, fibrewise), `responseFibre hS ν θ : Set (Lp ℝ 1 ν)`,
     `modelLaw_mem_responseFibre`, `toDataLaw_mem_responseFibre`, **`convex_responseFibre`**,
     **`contractibleSpace_responseFibre`** (EVERY RESPONSE FIBRE IS CONTRACTIBLE).
+  - `ResponseTopologicalQuotient.lean` (D06, PROGRAMME D COMPLETE): `surjective_lawResponse`, `rightInverse_modelLaw`,
+    **`isQuotientMap_lawResponse`** (`IsQuotientMap.of_inverse` with the continuous section), `continuous_iff_comp_lawResponse`,
+    **`responseQuotientHomeomorph : Quotient (Setoid.ker lawResponse) ≃ₜ 𝕍`** (`Setoid.quotientKerEquivOfRightInverse`),
+    `responseQuotientHomeomorph_mk`, `lawResponseCM`/`modelLawCM` (as `C(·,·)`), **`deformHomotopy`** (`Homotopy id
+    (modelLaw ∘ lawResponse)`), **`deformHomotopyWith`** (through response-preserving maps), **`deformHomotopyRel`**
+    (relative to `range modelLaw`: strong deformation retraction), **`responseHomotopyEquiv : DataLaw ν ≃ₕ 𝕍`**,
+    `contractibleSpace_responseQuotient`.

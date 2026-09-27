@@ -2498,13 +2498,10 @@ D01 `ResponseFisherJets` LANDED: builds on the existing `fisherInner S ν θ u v
   takes hS; `famDens_pos hS ν θ x`; `normDens_modelTilt ν θ` (hS omitted). D05 `ResponseFibreDeformation` LANDED (mixtures of data laws are data laws; `dataLawSet`/`responseFibre` convex ⇒
   contractible via `Convex.contractibleSpace` — no homotopy construction needed; `deform` on `unitInterval` with
   `continuous_deform` by `Continuous.subtype_mk` (NOT `continuous_induced_rng`, the DataLaw instance is
-  `inferInstanceAs` and not syntactically induced); `Real.exp_log` on `mixTilt … x` by `exact`, not `rw`). NEXT: D06
-  `ResponseTopologicalQuotient`: `isQuotientMap_lawResponse : IsQuotientMap (lawResponse hS ν)` from
-  `IsQuotientMap.of_inverse (continuous_modelLaw) (continuous_lawResponse) (lawResponse_modelLaw : LeftInverse
-  lawResponse modelLaw)` (signature: `of_inverse {g : Y → X} (hf : Continuous f) (hg : Continuous g) (h : LeftInverse g
-  f) : IsQuotientMap g` with f = modelLaw, g = lawResponse); `Function.Surjective lawResponse`; the quotient
-  `Quotient (Setoid.ker lawResponse) ≃ₜ W` — Mathlib: `IsQuotientMap.homeomorph`? else build via
-  `Homeomorph.homeomorphOfContinuousOpen`/`Quotient.lift` + `IsQuotientMap.continuous_iff`; `IsQuotientMap.lift`?
-  (grep `Setoid.ker`, `Quotient.lift`, `IsQuotientMap` in Topology/Homeomorph); also a homotopy-equivalence statement
-  `DataLaw ν ≃ₕ W` from the strong deformation retraction (ContinuousMap.HomotopyEquiv with `deform`) and the response
-  `lawResponse` as its map.
+  `inferInstanceAs` and not syntactically induced); `Real.exp_log` on `mixTilt … x` by `exact`, not `rw`). D06 `ResponseTopologicalQuotient` LANDED — PROGRAMME D COMPLETE (D01–D06). Notes: `Setoid.quotientKerEquivOfRightInverse
+  f g hf` takes f EXPLICITLY; `Continuous.quotient_lift h (fun _ _ h ↦ h)` for the kernel setoid; `Homeomorph` fields
+  `continuous_toFun/invFun` given by `by exact …`; `HomotopyWith.prop'` accepts `fun t p ↦ lawResponse_deform t p` directly;
+  `HomotopyEquiv.right_inv` from `rw [ContinuousMap.ext …]` (goal becomes `Homotopic id id`, closed by the rewrite's
+  rfl). NEXT: round-94 consult (programme D complete; candidates: C6 `ResponseFibreSecondJet` with Astra's corrected
+  formula; Fisher-Rao length/distance on the quotient; the deformation as a Wasserstein/mixture flow; sectional
+  curvature sign analysis `G(R⁰(u,v)v,u)`; extension of the density topology to the ray/face completion).
