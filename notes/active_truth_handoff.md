@@ -2717,6 +2717,14 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `fisherCompletionIso : FisherCompletion ≃ᵢ SphSimplex X` for saturated finite families; the Fisher completion is
   compact). K7's intrinsic Gauss equation ALREADY EXISTS (`fisherSectional_eq_quarter_add_residual` in
   ResponseCurvatureDefect); only the extrinsic second-fundamental-form reading (`2√P` embedding, `½√P r_uv`) is open.
-  NEXT: round-101 consult (report K1–K6, ask for programme L), then K7-extrinsic or whatever Astra ranks. Old NEXT:
+  Round 101 DONE (`gpt_responses/research_round101_{q,v1}.md`): K4–K6 audited OK; programme L ranked L1 (regression
+  convex hull ⇒ global Lipschitz; needs Cauchy–Binet, not in Mathlib — deferred), L2 observable delta method, L3
+  remaining information + Pinsker with affine predictors subtracted, L4 mismatch resolution + chamber certificates,
+  L5 nested-feature refinement ladder, L6 facewise response calculus, L7 testing obstruction. L2
+  `ResponseObservableIIDExpansion` LANDED (`fderiv_fderiv_obsChart_zero`: D²f_F = second response;
+  `exists_obsChart_cubic_remainder`; `obsBias_hessian`; `iid_obsBias_hessian`: bias = (1/2n)tr(Σ_D D²f_F) +
+  O(n^{-3/2})). NEXT: L5 `ResponseFeatureRefinement` (cheap from `responseProjection_spec` Pythagoras), L4
+  `ResponseMismatchResolution` (Σ_D-Riesz like K5's fisherRiesz), L3 remaining-information in polytope-journey language
+  (`KL(R_D‖P_t) = ∫_t^1(1−s)g`, `KL(D‖P_t) = δ_D + R(t)`, derivative `−(1−t)g`), L7, L6, then L1. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

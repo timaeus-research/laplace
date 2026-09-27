@@ -6654,3 +6654,32 @@ certificates for concrete resolved charts beyond the identity chart.
     **`compactSpace_fisherCompletion`** (`IsometryEquiv.toHomeomorph.symm.compactSpace`), `dist_fisherCompletion_le_pi`.
     Section variables: `[Nonempty X]` only on the mixture lemmas (per-declaration instance binders); the two completion
     corollaries need `set_option linter.unusedFintypeInType false in`.
+  - Round 101 (Astra): K4 weight `(1−t)` CORRECT; K5 sign `⟨u_F,e⟩ = −G(u_F,A⁻¹e)` (consistent with
+    `fisherInner_chartDerivEquiv_symm'`); K6 correct under saturation; K7's intrinsic Gauss equation already existed
+    (`fisherSectional_eq_quarter_add_residual`). PROGRAMME L (ranked): L1 regression convex-hull ⇒ global Lipschitz
+    response (needs Cauchy–Binet, NOT in Mathlib — deferred), L2 observable delta method (LANDED below), L3 remaining
+    information `KL(R_D‖P_t) = ∫_t^1 (1−s)g` + Pinsker transfer subtracting affine predictors (mostly in the seabed as
+    `BoundaryCompletion`/`PinskerObservable` in atlas language), L4 mismatch resolution `sup_u n⟨u,e⟩²/Σ_D(u,u) =
+    n⟨e,Σ_D⁻¹e⟩` + chamber certificates, L5 nested-feature refinement ladder `KL(D‖R_S) = KL(D‖R_T) + KL(R_T‖R_S)`,
+    L6 facewise response calculus, L7 testing-theoretic resolution obstruction `error ≥ 1 − √(n KL(D₀‖D₁)/2)`.
+  - `ResponseObservableIIDExpansion.lean` (L2, THE OBSERVABLE DELTA METHOD): `obsChart F θ₀ z := ∫F dP_{θr(m₀+z)}`,
+    `obsChart_zero`, `lineObservable_eq_obsChart`, `contDiffOn_obsChart` (`contDiff_integral_familyMeasure` ∘
+    `contDiffOn_responseTheta_meanAdd` — write the grade `(⊤ : ℕ∞)`, NOT `∞` with `open scoped ContDiff`, or the sample
+    point `ω` parses as the analytic grade), `obsHessForm F θ₀ z := secondResponse F θ₀ (A⁻¹z) (A⁻¹z)`,
+    `secondResponseBilin` (`LinearMap.mk₂` from `secondResponse_add_left/smul_left/symm`), **`obsHessCLM : W →L W →L ℝ`**
+    (`LinearMap.toContinuousLinearMap` of `toContinuousLinearMap.toLinearMap ∘ₗ (bilin.compl₂ A⁻¹) ∘ₗ A⁻¹`;
+    `obsHessCLM_apply` by `simp [LinearMap.coe_toContinuousLinearMap', compl₂_apply]; rfl`), `continuous_obsHessForm`,
+    `abs_obsHessForm_le` (`le_opNorm₂`), **`fderiv_fderiv_obsChart_zero`** (`D²f_F(m₀)[e,e] = E[(F−EF) r_{A⁻¹e,A⁻¹e}]`,
+    mirror of K2's `fderiv_fderiv_responseTheta_meanAdd_zero` with `hasDerivAt_deriv_lineObservable`),
+    `fderiv_obsChart_zero` (`= ⟨u_F,e⟩` from K5), **`exists_obsChart_cubic_remainder`** (δ, K with
+    `|f(m₀+z) − f(m₀) − ⟨u_F,z⟩ − ½H_F(z)| ≤ K‖z‖³`). Law section (`{δ}`, `cball`): `obsBias_decomposition` (integrability on
+    the ball from continuity via `ContinuousOn.integrableOn_compact hcpt` — dot-notation, the compactness argument comes
+    SECOND), `pairCLM u : W →L ℝ` (`dotCLM` already exists in DualPotential!), `pairCLM_apply`,
+    `abs_setIntegral_dotJ_le_of_centred` (`|∫_cball ⟨u,z⟩| ≤ (Σ|u_j|) M₃/δ²` via `ContinuousLinearMap.integral_comp_comm`
+    + K2's `norm_setIntegral_id_le_of_centred`), `abs_setIntegral_obsHessForm_sub_le` (`≤ ‖H_F‖M₃/δ`),
+    **`obsBias_hessian`** (`|E[f̂_loc − f(m₀)] − ½E_μ H_F| ≤ ((Σ|u_{F,j}|)/δ² + K + ½‖H_F‖/δ) M₃`). IID section
+    (K2b variables + `[DecidableEq J]` + `linter.unusedDecidableInType false`): `obsHessForm_proj_eq_sum`,
+    `hessContraction hF p θ₀ := Σ_ab Cov_D(S_a,S_b) H_F(pe_a,pe_b)` (= `tr(Σ_D D²f_F)`),
+    `integral_obsHessForm_sampleResponse` (`= (1/n)·hessContraction`), **`iid_obsBias_hessian`** (headline:
+    `|E[f̂_{F,loc}] − f_F(m₀) − (1/2n)hessContraction| ≤ (…)·√3|J|³(2B)³/n^{3/2}` — the observable bias is `+½` the
+    Hessian contraction; the outer observable's own curvature enters).
