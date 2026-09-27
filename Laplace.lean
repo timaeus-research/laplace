@@ -550,6 +550,7 @@ import Laplace.Multi.FacetHellingerEmbedding
 import Laplace.Multi.NormalShiftBoundaryCost
 import Laplace.Multi.FaceMassHellinger
 import Laplace.Multi.NormalConeCauchyCoalescence
+import Laplace.Multi.ResponseAtFeaturelessLaw
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
