@@ -6265,3 +6265,13 @@ certificates for concrete resolved charts beyond the identity chart.
     (`I' = −⟨θ_t, δμ_t⟩`, `δμ = forcing = Cov_{ρ_t}(S, ġ_t)`), **`hasDerivAt_defect_coeff`**
     (`D' = Cov_{ρ_t}(g_t + ⟨θ_t,S⟩, ġ_t)`). Note: stated on the bounded-tilt chart, not on `DataLaw` (no smooth
     structure there); `KL` continuity in `L¹` NOT claimed.
+  - `ResponseIntrinsicDistance.lean` (G5): **`sphericalDist_le_fisherDist`** (`2 arccos Aff(P_θ₀,P_θ₁) ≤ d_F(θ₀,θ₁)`: E4's
+    bound for every `FisherPath` competitor, then `le_csInf`), `hasDerivAt_dotJ_meanMap_natSegment` (`d/dt ⟨Δθ, m(θ_t)⟩ =
+    −G_{θ_t}(Δθ,Δθ)` along the NATURAL segment via `hasStrictFDerivAt_meanMap` + `dotJ_meanMapDeriv` +
+    `priorCov_eq_lawCov_familyMeasure`), `continuous_natSegment_speed`, **`jeffreys_model_eq_natSegment_action`** (Jeffreys
+    = `∫₀¹ G_{θ₀+tΔθ}(Δθ,Δθ)` — the e-segment gives the same Fisher action as the m-journey), `length_segment_eq`,
+    **`sq_length_segment_le_jeffreys`**, **`sq_fisherDist_le_jeffreys`**, **`sphericalDist_le_fisherDist_le_sqrt_jeffreys`**
+    (THE CHAIN `2 arccos Aff ≤ d_F ≤ √J`), **`responseDist g k := d_F(Φ(g), Φ(k))`** (`_self/_comm/_nonneg/_triangle`,
+    `responseDist_eq_zero_iff` ⇔ same response), `sphericalDist_le_responseDist_le_sqrt_jeffreys`. Competitor is the
+    e-segment (globally C¹), NOT the mean-affine journey (only C¹ on an open domain ⊇ [0,1]; `FisherPath` needs global
+    `HasDerivAt`, and `smoothStep` leaves [0,1] outside [0,1]). Saturated sharpening `d_F = 2 arccos Σ√pq` NOT done.

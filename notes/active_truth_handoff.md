@@ -2624,7 +2624,10 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   paths; gotchas: `coeffMean h ν h a` (S := h) gives the h-means with `hasDerivAt_coeffMean hh ν hh ha ha'`;
   `meanMap_coeffResponse hS ν hh (a := a) t` needs the path named (implicit `a` not inferable in a bare `have`);
   rewrite `mean (coeffResponse t)` only after `unfold coeffResponse at hm` since the goal shows `responseOf`;
-  `omit … in` must precede `set_option … in`, which precedes the docstring). NEXT: G5 `ResponseIntrinsicDistance`, G6
-  `ResponseSamplingGeometry` (see round 96). Old NEXT:
+  `omit … in` must precede `set_option … in`, which precedes the docstring). G5 `ResponseIntrinsicDistance` LANDED
+  (e-segment competitor; `sphericalDist_comm ν` takes ν only; `sq_integral_sqrt_mul_le` wants `∀ t : ℝ` typed
+  nonnegativity; `Real.le_sqrt_of_sq_le`; `fisherDist_eq_zero_iff hS ν` needs `[Nonempty J]`). NEXT: G6
+  `ResponseSamplingGeometry` (exact tangent risk `E G(ξ_n,ξ_n) = tr(H⁻¹B)/n`, sandwich `d_eff`, chamber guarantee via
+  mean-space metric `H⁻¹`, second jet for truth vs sampling), then round-97 consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
