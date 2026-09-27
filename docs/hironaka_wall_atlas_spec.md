@@ -5878,3 +5878,13 @@ certificates for concrete resolved charts beyond the identity chart.
     independence), `stratum`, `mem_stratum_self`, `stratum_eq_or_disjoint`, `iUnion_stratum`,
     **`exists_faceChart_range_eq`** (THE ACCESSIBLE-FACE STRATIFICATION: every stratum of `Ŵ` is the image of the canonical
     chart of the minimal face of its extended mean, `Ŵ = ⨆_{F accessible} j_F(W_F)`).
+  - `CanonicalDataJourney.lean` (round 88, rank 2): `logDens`, `bdd_logDens` (density in `[c, C]` ⇒ bounded log-density),
+    **`journeyLaw_one`** (`ν.tilted (1·log q) = q ν`: THE JOURNEY ENDS AT THE DATA LAW), `journeyLaw_zero`,
+    `responseVel_congr`, `pullbackForm_congr`, `dirLoss_unit_logDens`, **`responseOf_eq_dataTheta`** (the journey's
+    response path IS the seabed's data path), `coeffResponse_unit` (and a coefficient journey), **`journeyResponse_zero`**
+    (`Φ(ρ_0) = 0`), **`journeyResponse_one`** (`Φ(ρ_1) = θ(E_D S)`), **`hasDerivAt_journeyResponse`** (`C¹`, velocity
+    `DΦ_{t log q}[log q]`), **`fisherDist_journey_le`** / `fisherDist_zero_dataResponse_le`
+    (`d_F(0, θ(E_D S)) ≤ ∫_0^1 √G^{resp}_{t log q}(log q)`), `journeyLaw_zero_matched`,
+    **`lawCov_logDens_eq_fisherVar_add_residual`** (INITIAL REGRESSION: `Var_ν log q = |DΦ_0[log q]|²_F + Var_ν(residual)`),
+    **`hasDerivAt_klDiv_journey`** (`d/dt D(ρ_t‖ν) = t Var_{ρ_t} log q`), **`monotoneOn_klDiv_journey`**,
+    `klDiv_journey_le` (`D(ρ_t‖ν) ≤ D(D‖ν)` on `[0,1]`).

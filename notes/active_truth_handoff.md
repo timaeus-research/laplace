@@ -2288,3 +2288,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   velocity, length bound, initial regression, KL monotonicity `d/dt D(ρ_t‖ν) = t Var_{ρ_t} log q`), rank 3
   `AbsolutelyContinuousForcing` (`Cov_D(S,k) ∈ W` for `D ≪ ν` via the annihilator: `a ∈ W^⊥ ⇒ ⟨a,S⟩` a.e. constant),
   rank 4 chamber clearance, 5 mixture journey, 6 sharp affinity.
+- CanonicalDataJourney landed (round 88 rank 2). Pattern: the featureless→data e-segment is
+  `ν.tilted (fun x ↦ t * logDens q x)`; `Measure.tilted` unfolds by `rw [Measure.tilted]` to
+  `withDensity (ofReal (exp f / ∫ exp f))`, and `simp only [he, hq1, div_one]` with `he : ∀ y, exp (1 * log q y) = q y`
+  rewrites under the integral; `responseOf … = dataTheta …` needs `unfold responseOf responseTheta dataTheta; congr 1;
+  Subtype.ext; rw [toV]; split_ifs` (the `dif_pos` pattern does not match through `pathV`'s coercion); one-coefficient
+  journeys use `ι := Unit` with `dirLoss (fun _ ↦ h) (fun _ ↦ t) = fun x ↦ t * h x` (`Finset.univ_unique,
+  Finset.sum_singleton`) and `responseVel_congr`/`pullbackForm_congr` (subst-based) to move Bdd proofs across function
+  equalities; KL monotonicity is `monotoneOn_of_deriv_nonneg (convex_Ici 0)` on `hasDerivAt_klDiv_tilted_toReal`.
+  GOTCHAS: `Real.log_le_log (hx : 0 < x) (h : x ≤ y)`; `rw [one_mul]` cannot rewrite under a lambda — `funext fun x ↦
+  one_mul _`; `dirLoss_unit` name taken. NEXT: rank 3 `AbsolutelyContinuousForcing` (`Cov_D(S,k) ∈ W` for `D ≪ ν`
+  via `Convex.average_mem` on `ae_statPoint_sub_mem_dirSpan` or the annihilator; then retraction-free `densVel`),
+  rank 4 chamber clearance, 5 mixture journey, 6 sharp affinity; round-89 consult after.
