@@ -547,6 +547,7 @@ import Laplace.Multi.CompletionSupportingFace
 import Laplace.Multi.DataResponseEndpoint
 import Laplace.Multi.NormalTiltFisherComparison
 import Laplace.Multi.FacetHellingerEmbedding
+import Laplace.Multi.NormalShiftBoundaryCost
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
