@@ -552,6 +552,7 @@ import Laplace.Multi.FaceMassHellinger
 import Laplace.Multi.NormalConeCauchyCoalescence
 import Laplace.Multi.ResponseAtFeaturelessLaw
 import Laplace.Multi.FaceResponsePythagoras
+import Laplace.Multi.ResponsePullbackMetric
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
