@@ -2033,3 +2033,21 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Filter.tendsto_iff_seq_tendsto` transfers ℕ-sequence lemmas to `atTop` on ℝ; `meanMap_dataTheta` was taken (renamed
   `meanMap_dataTheta_eq_dataMean`). NEXT: round-84 consult; candidates `FacetResponseLengthBudget`, Le Cam form of the
   resolution floor, multi-parameter data manifold (response Jacobian / pullback tensor), stratified structure of Ŵ.
+- Round 84 (`research_round84_{q,v1}`): three layers (law space = closed polytope in L¹ — done; response metric /
+  accessibility; statistical observation map). Q1: testing sandwich `1 − √(1 − A^{2n}) ≤ R*_n ≤ A^n` with `H ≤ ½d_F`
+  gives one-way indistinguishability at `d_F ≪ n^{−1/2}`; local converse from coercivity: `√λ/(2B) d_F ≤ H ≤ ½ d_F` on
+  a coercive convex patch; trace identity basis-free via `R_θ = ι ∘ C_θ⁻¹ ∘ proj_W` and standard-basis expansion:
+  `E⟨M̂−m, R_θ(M̂−m)⟩ = tr(R_θ C_ρ)/n`, `= dim W/n` at matching; optimal directional SNR `sup_w … = n δ² |θ'|²_F`
+  (Fisher speed = best structural SNR per sample); "chamber size" = a MARGIN `r_C(M) = inf_{N∉C} ‖N−M‖_{C_θ⁻¹}`, class
+  change probability ≤ tr(C_θ⁻¹C_ρ)/(n r²). Q2: pull-back form `G^{resp}_g(k,ℓ) = ⟨b_g(k), C⁻¹ b_g(ℓ)⟩`, kernel =
+  covariance-invisible directions (PSD tensor, not a metric); relative covariance `C_ρ ⪯ κ C_Φ` ⇒ `G^{resp} ≤ κ G^{data}`
+  (via `⟨b,C⁻¹b⟩ = sup_w Cov(⟨w,S⟩,k)²/Var_{P_Φ}⟨w,S⟩`); matched orthogonal decomposition
+  `Var_ρ k = G^{resp}(k,k) + E k_inv²`. Q3: `AccessibleFaceStrata` cheap now (Q_x = Π(M₀) = P^F_{v₀} via Pythagoras
+  uniqueness, then tilt); nonexpansion `j_{F,x}` from any accessible lift needs compact-uniform covariance convergence;
+  face chains = composition. Q5: compactification is of the LAW space (docstring); DataManifoldResponseLaw is a law
+  limit, not a completion limit; resolution hypotheses = "linearised directional SNR ≥ 1" (name it so); equality at
+  `w ∝ θ'` is for the response bound, not the data-score CS bound. Ranked: 1 ResponsePullbackForm, 2
+  ResponseScoreProjection, 3 AccessibleFaceStrata, 4 FisherNormalisedSampling, 5 ResponseLocalTesting, 6
+  TiltedFisherCompactConvergence, 7 AccessibleFaceNonexpansion, 8 FaceChainAccessibility, 9 ResponseClassResolution,
+  10 ResponsePathLengthBudget (`∫√(bᵀC⁻¹b) < ∞ ⇒ completion limit, law Π(M_∞)`). NEXT: AccessibleFaceStrata, then
+  ResponsePullbackForm + ResponseScoreProjection, FisherNormalisedSampling.
