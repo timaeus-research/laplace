@@ -2502,6 +2502,16 @@ D01 `ResponseFisherJets` LANDED: builds on the existing `fisherInner S ν θ u v
   f g hf` takes f EXPLICITLY; `Continuous.quotient_lift h (fun _ _ h ↦ h)` for the kernel setoid; `Homeomorph` fields
   `continuous_toFun/invFun` given by `by exact …`; `HomotopyWith.prop'` accepts `fun t p ↦ lawResponse_deform t p` directly;
   `HomotopyEquiv.right_inv` from `rw [ContinuousMap.ext …]` (goal becomes `Homotopic id id`, closed by the rewrite's
-  rfl). NEXT: round-94 consult (programme D complete; candidates: C6 `ResponseFibreSecondJet` with Astra's corrected
-  formula; Fisher-Rao length/distance on the quotient; the deformation as a Wasserstein/mixture flow; sectional
-  curvature sign analysis `G(R⁰(u,v)v,u)`; extension of the density topology to the ray/face completion).
+  rfl). Round 94 (9ef3371, `research_round94_{q,v1}.md`): PROGRAMME E. Queue: E1 `ResponseFisherCurvatureSign`
+  (`inverseFisherInner θ x y := G(A⁻¹x, A⁻¹y)`; `G(C(u,v),C(x,y)) = G*(T(u,v),T(x,y))` (rfl); **`G(R⁰(u,v)v,u) =
+  ¼(G(C(u,v),C(u,v)) − G(C(u,u),C(v,v)))`** — sectional curvature = third-cumulant inverse-Fisher inequality defect, NO
+  universal sign (categorical family has +¼); lowered-tensor symmetries, Bianchi, commuting-C ⇒ flat), E2
+  `ResponseInformationPythagoras` (`lawKL p (modelLaw θ) = lawKL p (modelLaw Φp) + lawKL (modelLaw Φp) (modelLaw θ)`,
+  unique KL minimiser, `responseInformationDefect (deform t p) ≤ (1−t)·defect p` by convexity of x log x, Hessian of KL =
+  Fisher), E3 C6 `ResponseFibreSecondJet` (`D²σ₀(0)[ξ,η] = −D²Φ_g[Jξ,Jη]`, `Jξ = Kξ − hor(DΦ Kξ)`), E4
+  `ResponseFaceFisherSeparation` (`2 arccos √(P_θ(S∈F)) ≤ d_sph(p_θ, q)` for q supported on the face; equality for the
+  conditioned density; `d_sph ≤ fisherLength`), E5 `ResponseSamplingResolution` (`E‖Z_n‖²_G = d_eff/n`, Markov bound,
+  affine-wall margin `δ/√G(a,a)`, exact `P(empirical mean ∈ F) = P_D(S∈F)^n`), E6 `ResponseFisherEnergyVariation` (first
+  variation of Fisher energy ⇒ LC Euler–Lagrange `θ'' + ½C(θ',θ') = 0`). Headline: `KL(P_D‖P_0) = KL(P_D‖P_Φ(D)) +
+  KL(P_Φ(D)‖P_0)`. Corrections: faces are boundary strata not interior walls; `√(d_eff/n)` is RMS not a confidence
+  radius; section + deformation retraction ≠ Hurewicz fibration. NEXT: E1.
