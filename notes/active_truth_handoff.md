@@ -1936,3 +1936,21 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `generalize hr : normalDepth … (θ n) = r at hdec ⊢` first, then `rw [hdec, sub_sub_sub_cancel_right, norm_sub_rev]`.
   NEXT: round-82 consult (what is deepest after the facet theory is complete: codimension ≥ 2, the product corner,
   multi-parameter data manifolds, the response map as a map on the closure of the data manifold).
+- Round 82 (`research_round82_{q,v1}`): the codim ≥ 2 uniqueness engine is NORMAL-CONE COALESCENCE via the FIXED
+  normal-shift lemma `d_F(θ, θ + h) ≤ B_h √(1 − P_θ(A))` (`h` in the sign-adjusted cone; tilting by `s h` increases
+  `P(A)`; `Var Y_h ≤ B_h² P(A^c)`), NOT a bound on the growing direction; translated grid
+  `d(θ_n, η_m) ≤ d(θ_n, θ_n + b_m) + d(θ_n + b_m, θ_N + b_m) + d(θ_N + b_m, η_m)` (first → 0 as n → ∞ for fixed m; middle
+  ≤ 2·Cauchy tail via `NormalTiltFisherComparison` on short paths that stay in `P(A) ≥ 1/4` by the Hellinger control;
+  last = `d(η_m + a_N, η_m)` → 0 as m → ∞); eventual cone membership at a vertex from the vertex-gap criterion
+  (`⟨θ_n, w − M⟩ → +∞` for other vertices), general faces need a `FaceNormalForm` theorem (tangential convergence +
+  divergent outside-vertex gaps). Ray necessity FAILS in codim 2 (charged-square architecture with groups of atoms:
+  Σ√a_j < ∞, Σ√(a_j N_j) = ∞); face-chain accessibility is the right next sufficient principle; product corner:
+  accessible iff both 1-D endpoints accessible. Global response map: locally Hellinger→Fisher Lipschitz in the
+  interior (`d_F ≤ λ^{−1/2}‖E_QS − E_RS‖ ≤ 2Bλ^{−1/2}H`); pullback metric `G^{resp} = bᵀC⁻¹b`; boundary KL Pythagoras
+  `D(Q‖ν) = D(Q‖Q_M) + D(Q_M‖ν)` for `Q ≪ ν` with mean `M ∈ ri F` (the face family law is the unique KL minimiser);
+  at the featureless end `Var_ν h = |θ'_0|²_F + ‖h − Eh − h_resp‖²` (response = orthogonal projection). Ranked:
+  1 `NormalConeCauchyCoalescence`, 2 `FaceResponsePythagoras`, 3 `ResponsePullbackMetric`, 4 `ResponseAtFeaturelessLaw`,
+  5 `FaceNormalForm`, 6 `NormalShiftBoundaryCost` (dependency, first), 7 `ResponseLocalHellingerLipschitz`,
+  8 `FacetResponseLengthBudget`, 9 `NormalRayFaceAccessibility`, 10–11 product, 12 `FaceChainAccessibility`.
+  NEXT: `NormalShiftBoundaryCost`, then `NormalConeCauchyCoalescence`, `ResponseAtFeaturelessLaw`,
+  `FaceResponsePythagoras`, `ResponsePullbackMetric`.
