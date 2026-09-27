@@ -5351,3 +5351,11 @@ certificates for concrete resolved charts beyond the identity chart.
   `measureReal_family_ray_faceFibre` (`P_{θ − tu}(A) = faceMass/(faceMass + offFaceMass t)`),
   **`tendsto_measureReal_family_ray_faceFibre`** (`→ 1` along the ray), **`tendsto_measureReal_family_faceFibre_of_components`**
   (`v_n → v_M`, `r_n → ∞` ⇒ `P_{v_n − r_n u}(A) → 1`, by the bounded-tilt transfer from the ray).
+- `FaceCoercivity.lean` (NOT mirrored; round-78 tangential coercivity): **`mul_lawCov_faceMeasure_le_lawCov`**
+  (`q(A) Var_{q(·|A)} f ≤ Var_q f`), `faceMeasure_familyMeasure_eq` (the face-conditional law of a family member is the face
+  family member: conditioning commutes with tilting), `continuous_lawCov_dirLoss_self`, `lawCov_dirLoss_smul_self`,
+  **`exists_coercive_familyMeasure`** (`∃ λ > 0, ∀ w ∈ dirSpan, λ‖w‖² ≤ Var_{P_θ}⟨w,S⟩`, by compactness of the unit sphere of
+  the direction space and strict positivity of visible variances; `T' = ⊥` handled separately), `neg_smul_mem_invisible_faceMeasure`,
+  **`eventually_coercive_of_components`** (for any filter: `v_i → v_M`, `r_i → ∞` ⇒ eventually `λ‖w‖² ≤ Var_{P_{v_i − r_i u}}⟨w,S⟩`
+  for all face directions `w`, with `λ = ½ e^{−2} λ_M`). The decomposition lemmas `tendsto_normalDepth_atTop`,
+  `tendsto_measureReal_family_faceFibre_of_components` are now stated for an arbitrary filter.

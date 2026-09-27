@@ -180,13 +180,14 @@ theorem eq_faceTheta_sub_smul (hA : MeasurableSet A) (hp : 0 < ν.real A)
   abel
 
 /-- **Normal divergence**: an off-face vertex gap forces the normal depth to `+∞`. -/
-theorem tendsto_normalDepth_atTop (hA : MeasurableSet A) (hp : 0 < ν.real A)
+theorem tendsto_normalDepth_atTop {ι : Type*} {l : Filter ι} (hA : MeasurableSet A)
+    (hp : 0 < ν.real A)
     (hfacet : ∀ w ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S, w ∈ invisibleSet νA S → ∃ c : ℝ, w = c • u)
-    (hu : dotJ u u ≠ 0) {η : ℕ → J → ℝ} (hη : ∀ n, η n ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S)
+    (hu : dotJ u u ≠ 0) {η : ι → J → ℝ} (hη : ∀ n, η n ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S)
     {β : ℝ} {z z₀ : J → ℝ} (hz : dotJ u z < β) (hz₀ : dotJ u z₀ = β)
-    (hgap : Tendsto (fun n ↦ dotJ (η n) (z - z₀)) atTop atTop) {vM : J → ℝ}
-    (hv : Tendsto (fun n ↦ (faceTheta hS ν A (η n) : J → ℝ)) atTop (𝓝 vM)) :
-    Tendsto (fun n ↦ normalDepth hS ν A u (η n)) atTop atTop := by
+    (hgap : Tendsto (fun n ↦ dotJ (η n) (z - z₀)) l atTop) {vM : J → ℝ}
+    (hv : Tendsto (fun n ↦ (faceTheta hS ν A (η n) : J → ℝ)) l (𝓝 vM)) :
+    Tendsto (fun n ↦ normalDepth hS ν A u (η n)) l atTop := by
   have hd : 0 < β - dotJ u z := sub_pos.2 hz
   have e : ∀ n, normalDepth hS ν A u (η n) =
       (dotJ (η n) (z - z₀) - dotJ (faceTheta hS ν A (η n) : J → ℝ) (z - z₀)) /
@@ -201,7 +202,7 @@ theorem tendsto_normalDepth_atTop (hA : MeasurableSet A) (hp : 0 < ν.real A)
     ring
   simp_rw [e]
   refine Tendsto.atTop_div_const hd ?_
-  have hcont : Tendsto (fun n ↦ dotJ (faceTheta hS ν A (η n) : J → ℝ) (z - z₀)) atTop
+  have hcont : Tendsto (fun n ↦ dotJ (faceTheta hS ν A (η n) : J → ℝ) (z - z₀)) l
       (𝓝 (dotJ vM (z - z₀))) :=
     ((continuous_dotJ_left (z - z₀)).tendsto _).comp hv
   simpa [sub_eq_add_neg] using hgap.atTop_add hcont.neg

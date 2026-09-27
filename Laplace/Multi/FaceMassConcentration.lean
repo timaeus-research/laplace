@@ -99,21 +99,22 @@ theorem tendsto_measureReal_family_ray_faceFibre (θ : J → ℝ) (hβ : ∀ᵐ 
 
 /-- **Concentration along a decomposed sequence**: convergent tangential part and diverging depth
 give face mass tending to one. -/
-theorem tendsto_measureReal_family_faceFibre_of_components (hβ : ∀ᵐ x ∂ν, dirLoss S u x ≤ β)
-    (hp : 0 < ν.real {x | dirLoss S u x = β}) {v : ℕ → J → ℝ} {vM : J → ℝ}
-    (hv : Tendsto v atTop (𝓝 vM)) {r : ℕ → ℝ} (hr : Tendsto r atTop atTop) :
+theorem tendsto_measureReal_family_faceFibre_of_components {ι : Type*} {l : Filter ι}
+    (hβ : ∀ᵐ x ∂ν, dirLoss S u x ≤ β)
+    (hp : 0 < ν.real {x | dirLoss S u x = β}) {v : ι → J → ℝ} {vM : J → ℝ}
+    (hv : Tendsto v l (𝓝 vM)) {r : ι → ℝ} (hr : Tendsto r l atTop) :
     Tendsto (fun n ↦ (familyMeasure ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : ℝ)) S 1 (v n - r n • u)).real
-      {x | dirLoss S u x = β}) atTop (𝓝 1) := by
+      {x | dirLoss S u x = β}) l (𝓝 1) := by
   obtain ⟨B, hB0, hB⟩ := exists_uniform_bound hS
   have hF := measurableSet_faceFibre hS u β
   -- the tilt sizes tend to zero
-  have hc : Tendsto (fun n ↦ (∑ i, |(v n - vM) i|) * B) atTop (𝓝 0) := by
-    have h0 : Tendsto (fun n ↦ v n - vM) atTop (𝓝 0) := by simpa using hv.sub_const vM
-    have h1 : Tendsto (fun n ↦ ∑ i, |(v n - vM) i|) atTop (𝓝 (∑ i, |(0 : J → ℝ) i|)) :=
+  have hc : Tendsto (fun n ↦ (∑ i, |(v n - vM) i|) * B) l (𝓝 0) := by
+    have h0 : Tendsto (fun n ↦ v n - vM) l (𝓝 0) := by simpa using hv.sub_const vM
+    have h1 : Tendsto (fun n ↦ ∑ i, |(v n - vM) i|) l (𝓝 (∑ i, |(0 : J → ℝ) i|)) :=
       tendsto_finsetSum _ fun i _ ↦
         ((continuous_abs.comp (continuous_apply i)).tendsto _).comp h0
     simpa using h1.mul_const B
-  have hexp : Tendsto (fun n ↦ exp (-(2 * ((∑ i, |(v n - vM) i|) * B)))) atTop (𝓝 1) := by
+  have hexp : Tendsto (fun n ↦ exp (-(2 * ((∑ i, |(v n - vM) i|) * B)))) l (𝓝 1) := by
     have h2 := (hc.const_mul 2).neg
     rw [mul_zero, neg_zero] at h2
     have := (Real.continuous_exp.tendsto 0).comp h2

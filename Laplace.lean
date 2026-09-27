@@ -521,6 +521,7 @@ import Laplace.Multi.FacetSchurBound
 import Laplace.Multi.RayTiltInvariance
 import Laplace.Multi.FaceGauge
 import Laplace.Multi.FaceMassConcentration
+import Laplace.Multi.FaceCoercivity
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

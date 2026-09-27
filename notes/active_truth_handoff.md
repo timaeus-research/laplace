@@ -1726,3 +1726,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: `FaceCoercivity` (`Var_q f ≥ q(A) Var_{q(·|A)} f`; `Var_{P^A_{vM}}⟨w,S⟩ ≥ λ_M (Σ|wᵢ|)²` on `T'` by compactness; eventual
   uniform coercivity along the sequence via `faceMeasure_tilted` + Lemma C), then `FacetFisherAccess` (assembly with
   `lawCov_congr_ae` for the a.e. slack).
+- `FaceCoercivity` landed; `tendsto_normalDepth_atTop`, `tendsto_measureReal_family_faceFibre_of_components`,
+  `eventually_coercive_of_components` generalised from `ℕ` to `{ι} {l : Filter ι}` (proofs were filter-generic). Gotchas:
+  `IsMinOn` is a set-builder membership — use `(isMinOn_iff.1 hmin) _ hw'`; `Submodule.closed_of_finiteDimensional _` +
+  `(isCompact_sphere 0 1).inter_right` for the compact unit sphere of a submodule of `J → ℝ`; `dirLoss_zero_vec` is in
+  `LossHessianBlocks` (not imported) — `funext (dirLoss_zero S)`; `lawCov_const_mul_const_mul` lives in `ResponseSpeedDistortion`,
+  `lawCov_const_mul_self` in `FacetSchurBound`; `exists_coercive_familyMeasure hS (faceMeasure ν {…}) vM` needs the set written out
+  (the instance argument cannot fix a metavariable); `le_lawCov_tilted` needs its measure explicit.
+  NEXT: `FacetFisherAccess` assembly. Plan: linear normal depth `r η = −⟨η,u⟩/⟨u,u⟩` (face directions satisfy `⟨u,z⟩ = 0`, so
+  `normalDepth = r` on `W` and `faceTheta η = η + r η • u`); for a `C¹` path `η : ℝ → W` on `Ici 0` with `meanMap (η s) → M`
+  (atTop): `r' = −⟨η',u⟩/⟨u,u⟩`, `v' = η' + r' u ∈ T'`; speed `Var_{q_s}⟨η',S⟩ = Var_{q_s}(r' ℓ + ⟨v',S⟩)` (a.e. under `q_s`,
+  needs `lawCov_congr_ae`); Schur (`facet_schur_bound` with `κ = (card J · B)²/λ`) once `q_s(A) ≥ 1/2` and `4κε/p ≤ 1/2`;
+  Lemma C to the ray `v_M − r_s u` (tilt `⟨v_s − v_M,S⟩ ≤ 1` eventually); `PathLengthPrimitive` with `g = √raySpeedSq(v_M,u,·)`
+  (continuity of `raySpeedSq` in `t`: check `hasDerivAt`/continuity lemmas); ℕ-criterion → ℝ-path via
+  `Filter.tendsto_iff_seq_tendsto`.
