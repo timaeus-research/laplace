@@ -5407,3 +5407,24 @@ certificates for concrete resolved charts beyond the identity chart.
   integrability; `integrableOn_Ioi_of_intervalIntegral_norm_bounded`) and **`data_fisher_length_lt_top_iff_ray`**: along the
   data path `ρ_t = ν.tilted(t h)` towards a facet `F ∋ E[S|h = H]` (relative interior), the response path from the featureless
   law has finite Fisher length ⇔ the facet's normal ray has finite Fisher length ⇔ `Σ_k √a_k < ∞` (dyadic shell masses).
+- **Intrinsic Fisher completion programme** (Astra round 80; NOT mirrored):
+  - `FisherSpeedForm.lean`: `fisherVar S ν θ w = Var_{P_θ}⟨w,S⟩`, `fisherNorm = √fisherVar`; `fisherVar_eq_neg_dotJ`
+    (`= −⟨w, Dm(θ) w⟩`), **`continuous_fisherVar`/`continuous_fisherNorm`** (joint continuity in `(θ,w)`), homogeneity
+    `fisherNorm_smul` (`|c|`), `fisherNorm_neg`, `fisherNorm_zero`, **`fisherNorm_le`** (`≤ card J · B · ‖w‖`),
+    `exists_fisherNorm_bound`, `fisherVar_coercive` (on `W`).
+  - `FlatC1Paths.lean` (Mathlib-only): smoothstep `φ = 3t² − 2t³` (`hasDerivAt_smoothStep`, endpoint values/derivatives,
+    `smoothStepDeriv_nonneg`, `smoothStep_mem_Icc`), **`integral_comp_smoothStep`** (`∫₀¹ f(φ)φ' = ∫₀¹ f`),
+    `hasDerivAt_comp_smoothStep`, `hasDerivAt_rev`, `catPath`/`catVel` (double-speed concatenation),
+    **`hasDerivAt_catPath`** (pasting: `HasDerivWithinAt.union` on `Iic ∪ Ici`), `continuous_catVel`.
+  - `FisherPathLength.lean`: `structure FisherPath S ν x y` (global `C¹` path in `W` with continuous velocity vanishing
+    at both ends), `length = ∫₀¹ fisherNorm(γ,γ')`, `const`, `flat` (smoothstep flattening), `rev`, `cat`, `segment`;
+    `length_nonneg`, `length_const`, **`length_flat`**, **`length_rev`**, **`length_cat`** (`= L p + L q`),
+    **`length_segment_le`** (`≤ K‖y − x‖`).
+  - `FisherMeanControl.lean`: `meanMapDeriv_apply_eq_neg_lawCov`, **`abs_meanMapDeriv_le`** (`|∂m_i| ≤ B F(θ,w)`, covariance
+    Cauchy–Schwarz), `hasDerivAt_meanMap_comp`, **`abs_meanMap_sub_le_integral`**, **`norm_meanMap_sub_le_integral`**
+    (`‖m(γ_b) − m(γ_a)‖ ≤ B ∫_a^b F`, sup norm, every subinterval), `FisherPath.hasDerivAt_coe`,
+    `norm_meanMap_sub_le_length`.
+  - `FisherDistance.lean`: `fisherLengths`, **`fisherDist S ν x y = sInf {L(p)}`**; `fisherDist_le_length`, `fisherDist_nonneg`,
+    `exists_fisherPath_length_lt`, `fisherDist_self`, `fisherDist_comm`, **`fisherDist_triangle`**, `fisherDist_le_mul_norm`
+    (`≤ K‖y − x‖`), **`norm_meanMap_sub_le_fisherDist`** (`‖m y − m x‖ ≤ B d_F`), **`eq_of_fisherDist_eq_zero`**,
+    `fisherDist_eq_zero_iff` — `d_F` IS A METRIC ON `W`.

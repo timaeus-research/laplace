@@ -528,6 +528,11 @@ import Laplace.Multi.DataRayHelpers
 import Laplace.Multi.DataRayBlocks
 import Laplace.Multi.DataRayEstimates
 import Laplace.Multi.DataRayReverse
+import Laplace.Multi.FisherSpeedForm
+import Laplace.Multi.FlatC1Paths
+import Laplace.Multi.FisherPathLength
+import Laplace.Multi.FisherMeanControl
+import Laplace.Multi.FisherDistance
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

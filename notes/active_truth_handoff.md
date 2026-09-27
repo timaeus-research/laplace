@@ -1799,3 +1799,26 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: slop paragraph for the data-ray equivalence; then the intrinsic Fisher completion programme (Astra round-79 §5.1:
   `d_F` metric on `W`, Lipschitz `‖m(θ)−m(η)‖ ≤ B d_F`, `‖√p_θ − √p_η‖₂ ≤ ½ d_F`, extension to the completion), charged
   square, flags; or a round-80 consult.
+- Slop paragraph for the data-ray equivalence pushed (Overleaf 8b715bc). Round 80 (`research_round80_{q,v1}`): Lean route
+  for the intrinsic completion — flat `C¹` paths (zero endpoint velocities) + smoothstep flattening + double-speed pasting;
+  Hellinger by the scalar chord `A(t) = ∫ q_{γ t} (q_b − q_a)` with `A' ≤ ½ H F` and `A(1) − A(0) = H²`, using the exact
+  affinity `∫ q_θ q_η = Z((θ+η)/2)/√(Z θ Z η)`; wrapper structure `FisherPoint` for the metric (never a type synonym of
+  `W`); completion accessibility by countable concatenation of near-optimal paths on `[n,n+1]` (constant for `t < 0`);
+  uniqueness of accessible facet fibres needs only `d_F(v − ru, vM − ru) ≤ K‖v − vM‖` + ray tail (and the arbitrary-
+  sequence facet asymptotics, which we HAVE: `tendsto_faceTheta_normalDepth_of_tendsto_meanMap`). 13-module landing order
+  (FisherSpeed, FlatC1Paths, FisherPathLength, FisherMeanControl, FisherDistance, FisherTopology, SqrtDensityAffinity,
+  HellingerFisherControl, FisherCompletionLaws, FisherCauchyRealisation, FacetCompletionAccess, FacetMeanAsymptotics (done),
+  FacetCompletionUnique). Audit: the shell criterion needs its charged-face hypotheses (uniform ν on [0,1], slack x: Σ√m_n
+  finite but ray speed ~ 1/r — the landed theorem carries the hypotheses).
+- Modules 1–5 landed 2026-09-27: `FisherSpeedForm`, `FlatC1Paths`, `FisherPathLength`, `FisherMeanControl`,
+  `FisherDistance` (`fisherDist` is a metric on `W`; `‖m y − m x‖ ≤ B d_F`; `d_F ≤ K‖y − x‖`). Gotchas: `fisherSpeed`/
+  `fisherForm` already exist on the seabed (ThermoLength/DualFlat) — hence `fisherVar`/`fisherNorm`; a `def` in a section
+  with an explicit `(ν)` variable gets `ν` as an explicit argument even under `include hS` — put hS-free defs/lemmas in
+  a section with `variable {S ν}`; `continuous_fisherNorm.comp (hγ.prodMk hγ')` hits an `isDefEq` timeout while
+  `.comp₂ hγ hγ'` is instant; `Continuous.neg` gives a Pi-negation: `.congr` goals need a final `rfl`;
+  `lawCov_dirLoss_smul_self P c w` takes the measure first (no hS); `chartV`/`chartVInv` need `[Nonempty J]` (add it per
+  theorem, not in the section); `hasDerivAt_pow` derivative needs `simp; ring`; the segment `length_segment_le` needs
+  `Submodule.coe_norm`; `intervalIntegral.integral_comp_mul_left g two_ne_zero` (function explicit) then `norm_num; ring`.
+  NEXT: module 6 `FisherTopology` (wrapper `FisherPoint`, `MetricSpace` instance from `fisherDist`, homeomorphism with `W`
+  via the chart, `FisherCompletion := UniformSpace.Completion FisherPoint`, Lipschitz extension of the mean), then 7–8
+  (Hellinger), 10–11 (completion accessibility), 13 (uniqueness).
