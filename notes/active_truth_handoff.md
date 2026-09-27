@@ -2432,8 +2432,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   hd hc0 hc hC` (ExponentialPath) with the density pinched in `[1/2, 3/2]` for `|t| < 1/(2(K+1))` via `Metric.ball_mem_nhds`;
   uniform bounds `e^{−K}/Z ≤ normDens ≤ e^{K}/Z`). C2 `ResponseGlobalFibres` landed (fixed-moment iff via `meanMap_responseTheta`; `responseTheta_meanMap` from
   `toV_apply` + `chartV_apply` + `chartVInv_chartV`; `modelTilt` must match `familyMeasure_one_zero_eq_tilted`'s
-  `fun x ↦ -1 * dirLoss S θ x` form and be `noncomputable`). NEXT: C3 `ResponseMixtureConnection` (velocity of
-  `t ↦ Φ(localMixTilt g k t)` = `A_{g^m(t)}⁻¹ Cov_{ρ_g}(S,k)` (mean path affine: `mean_localMixTilt` + the
-  `hasStrictFDerivAt_responseTheta_add` route with `z t := t • forcing`), acceleration `−A⁻¹T(v,v)` via
-  `hasFDerivAt_inverse_response` — mirror of the Hessian proof with a CONSTANT forcing), C4 `ResponseEMAccelerationGap`
-  (`H_g(k,k) − a_m = A⁻¹ B_g(k,k)`: algebra from `responseHess` + C3 at `t = 0`), C5, C6, C0.
+  `fun x ↦ -1 * dirLoss S θ x` form and be `noncomputable`). C3 `ResponseMixtureConnection` landed (affine mean path `Mpath t := tiltedMean g + t • forcing` as a local
+  notation with a parameter — a literal `0` fed to it elaborates as ℕ, write `(Mpath (0 : ℝ))`; displacement
+  `(t − t₀) • forcingV` via `((hasDerivAt_id t₀).sub_const t₀).smul_const`; `hasStrictFDerivAt_responseTheta_add` /
+  `hasFDerivAt_inverse_response_apply` composed with `comp_hasDerivAt_of_eq t₀ hz (by simp)`; the eventual derivative
+  statement uses `eventually_eventually_nhds.2` to get a neighbourhood identity for `congr_of_eventuallyEq`. GOTCHAS: a
+  `local notation` cannot contain an anonymous constructor `⟨…⟩` (make it a def); after a text substitution `Fv →
+  forcingV hS ν hg hk` PARENTHESISE (application precedence); implicit `{t₀}` at `0` must be passed `(t₀ := 0)`). NEXT:
+  C4 `ResponseEMAccelerationGap` (drafted), C5 `ResponseSliceSubmersion`, C6 `ResponseFibreSecondJet`, C0 Taylor.

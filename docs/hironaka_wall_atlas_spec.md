@@ -6023,3 +6023,8 @@ certificates for concrete resolved charts beyond the identity chart.
     (`θ(m(θ)) = θ`), **`responseOf_modelTilt`** (the model tilt is a section of `Φ`), **`responseOf_mix_model`** (the fibre
     retracts onto its model representative along `(1−t)ρ_g + tP_{Φ(g)}`), `integral_mix_model`,
     `responseOf_eq_iff_tiltedMean_eq_meanMap`.
+  - `ResponseMixtureConnection.lean` (C3): `forcingV`, `coe_forcingV`, **`responseOf_localMixTilt_eq`** (`Φ(g^m(t)) =
+    θ(M(g) + tF)`), `mpath_mem`, **`mixResponseVel`** (`v_m(t) = A_{θ_t}⁻¹ F`), `mixResponseVel_zero`,
+    `hasDerivAt_displacement`, `mpath_eq`, `hasDerivAt_responseTheta_mpath`, **`eventually_hasDerivAt_responseOf_localMixTilt`**
+    (velocity of the mixture journey's response), **`hasDerivAt_mixResponseVel`** (THE MIXTURE-CONNECTION CORRECTION
+    `v_m' = −A⁻¹ T_θ(v_m, v_m)`), `hasDerivAt_mixResponseVel_zero`.
