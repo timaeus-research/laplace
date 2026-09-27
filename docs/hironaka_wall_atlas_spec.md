@@ -6400,3 +6400,19 @@ certificates for concrete resolved charts beyond the identity chart.
     functions), **`finrank_dirSpan_eq_card_sub_one`** (`dim W = |X| − 1` for finite X with all atoms charged and
     `SpansAffine`; rank–nullity). Gotcha: a local notation `f` makes the named argument `(f := …)` unparsable.
     Not done: barycentric identification `W ≅ Δ°`, the featureless journey as the mixture `(1−t)ν + tp`, I6 sphere.
+  - Round 99 consult (`research_round99_{q,v1}.md`, 0966bf3): AUDIT — (a) the probabilistic resolution theorem's event
+    should be the GOOD event `{M̂ ∈ Ω, m(θr M̂) = M̂, ℓθ₀ < ℓ(θr M̂)}` (chart validity + sign), not the sign-only event of
+    the total function `θr` (which can pick up accidental signs outside Ω); export `noise_good_subset_valid_sign_event`
+    and make the strengthened statement primary; check the closed-ball-in-domain convention; (b) I3's hypothesis is
+    "vanishing variance-curvature pairing" (observable-specific), weaker than `r ≡ 0` — name it so; also state the
+    inequality version (pairing ≤ 2(EF')²); (c) dimension theorem nonvacuous (one-point X gives W = 0; SpansAffine is
+    the substantive hypothesis; forces affine independence of distinct atoms' feature vectors). PROGRAMME J ranked: J1
+    `ResponseTestingResolution` (`A(P_θ₀,P_θ₁) ≥ cos(d_F/2)` for `d_F ≤ π` from `sphericalDist_le_fisherDist` + product
+    affinity ⇒ Bayes error ≥ `(1 − √(1 − cos^{2n}(d/2)))/2`; DISTANCE TRAP: for d > π use `cos(min(d,π)/2)`; corollary
+    `err ≥ ½ − √n d/4`; equal-prior average error, not per-hypothesis), J2 `ResponseSimplexIdentification` (`B : W →
+    Δ°`, `B(θ)_x = P_θ{x}`, homeomorphism + smoothness via `L : W ≅ ℝ^X/ℝ1`, `L(θ) = [−⟨θ,S(x)⟩]`; featureless journey
+    `P_{θ_t} = (1−t)ν + tp` pointwise; NOT a linear identification), J3 `ResponseSimplexSphere` (`d_F = 2 arccos Σ√pq`;
+    needs the smooth inverse of J2), J4 `ResponseLocalizedSamplingBias`, J5 `ResponseGeometrySummary` (theorem-first),
+    J6 `ResponseMeanPolytopeJourney` (nonsaturated finite family: `m : W ≅ relint conv{S(x)}` via the strictly convex
+    dual objective; `P_{θ_t} ≠ (1−t)ν + tp` in general though means agree — the response atlas is a QUOTIENT of data
+    space by feature means). Careful-reader desideratum: a global domain-and-continuation theorem for the journey.

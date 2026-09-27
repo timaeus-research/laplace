@@ -2673,6 +2673,9 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   |I| − 1`, sphere), or round-99 consult. I5 part 1 LANDED (`ResponseSaturatedDimension`: `dim W = |X| − 1`; a `def`
   whose FIELD PROOFS use `hS` includes hS even if the type doesn't; a local notation `f` breaks `(f := …)` named args;
   `bdd_of_fintype h` has no ν). NEXT: I6 `ResponseSimplexSphere` (abstract positive simplex first: `Σ ṗ²/p` metric,
-  great-circle path, constant speed 2α, then transport) or I4, or round-99 consult. Old NEXT:
+  great-circle path, constant speed 2α, then transport) or I4, or round-99 consult. Round 99 (0966bf3) = PROGRAMME J
+  (see atlas spec): J1 TestingResolution, J2 SimplexIdentification, J3 SimplexSphere, J4 LocalizedSamplingBias, J5
+  GeometrySummary, J6 MeanPolytopeJourney; plus the audit fix: export the GOOD event (chart validity + sign) in the
+  probabilistic resolution theorem. NEXT: J1 + the good-event strengthening. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
