@@ -2763,7 +2763,8 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `chamber_resolution_floor`, mean displacement `a e/√n`, cost `⟨e,Σ_D⁺e⟩/2`). Round 104 DONE (audit clean up to sup-norm wording; two audit corollaries LANDED:
   `ResponseFaceProjectionIdentification` (faceProj = Euclidean projection at boundary means),
   `ResponseChamberClassifier` (classification floor with the label-separation hypothesis)). N1 part 1 LANDED: `ResponseFaceRestriction`
-  (`responseProjection_faceMeasure_supportSet : Π^{ν_A}(M) = Π^ν(M)` for `A = supp q*(M)`). NEXT: N1 capstone
+  (`responseProjection_faceMeasure_supportSet : Π^{ν_A}(M) = Π^ν(M)` for `A = supp q*(M)`). Audit 6 LANDED:
+  `ResponseTrivialFamily` (`R^{S₀}_0 = ν`; budget from the featureless law). NEXT: N1 capstone
   STRATIFIED TRANSPORT (`f_F(M(1)) − f_F(M(0)) = ∫₀¹⟨u_F^{A_t}(M(t)), Ṁ(t)⟩dt` along absolutely continuous journeys;
   route: finitely many face strata, facewise interior calculus for the face family via N1, global Lipschitz (M3b),
   `Ṁ(t) ∈ W_{A_t}` a.e. from "an a.c. nonnegative function has derivative zero a.e. on its zero set"); then N2 Hessian

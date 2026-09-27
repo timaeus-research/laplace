@@ -7013,3 +7013,10 @@ certificates for concrete resolved charts beyond the identity chart.
     at the face law, the `ν`-Pythagoras, `ENNReal.le_of_add_le_add_right hfin (h.trans_eq (zero_add _).symm)`,
     `nonpos_iff_eq_zero`, `klDiv_eq_zero_iff`). Every set of a finite `MeasurableSingletonClass` space is measurable:
     `(Set.toFinite A).measurableSet`. Remaining N1 capstone: STRATIFIED TRANSPORT along absolutely continuous journeys.
+  - `ResponseTrivialFamily.lean` (audit 6): **`responseProjection_zero_family`** (`R^{S₀}_0 = ν` for the zero family;
+    `familyMeasure_eq_responseProjection_meanMap` + `familyMeasure_zero_eq` + `mean_familyMeasure_one_zero`; pass the
+    family as `(S := fun _ : J ↦ fun _ : X ↦ (0 : ℝ))` and the boundedness proof `(fun _ ↦ Bdd.const 0)` inline — a
+    named lemma whose statement does not mention `ν` mis-assigns a supplied `ν` to `J`), `levelResponse_zero_of_zero`
+    (transport along `h0 : S 0 = fun _ _ ↦ 0` via a generalised `∀ T hT, T = 0 → …` and `subst`; a direct `subst h0`
+    fails since `S 0` is an application), **`klDiv_levelResponse_telescope_of_zero`** (the budget from the featureless
+    law: `KL(D‖ν) = KL(D‖R_K) + Σ_{k<K} KL(R_{k+1}‖R_k)`).
