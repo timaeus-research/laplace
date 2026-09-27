@@ -5943,3 +5943,8 @@ certificates for concrete resolved charts beyond the identity chart.
     **`integrableOn_sqrt_raySpeedSq_of_gap`** (A SUPPORT GAP GIVES A NORMAL RAY OF FINITE FISHER LENGTH),
     **`integrableOn_sqrt_raySpeedSq_of_finiteRange`** (every exposed face of a finitely supported model is reached in finite
     Fisher length from any base point).
+  - `ExposedFaceRayEndpoint.lean` (A3): `rayPath_mem`, `hasDerivAt_rayPath`, **`fisherNorm_rayPath`** (Fisher speed of the
+    normal ray `θ − su` is `√raySpeedSq`), `integrableOn_fisherNorm_rayPath`, **`rayEndpoint`** (the completion endpoint of a
+    finite-length normal ray), `tendsto_rayEndpoint`, `dist_rayEndpoint_le_tail`, **`meanExt_rayEndpoint`** (its extended mean
+    is the face-family mean `m_F(θ)`), `meanExt_rayEndpoint_mem` (∈ ri of the face body), **`accessible_of_ray`** (the face
+    stratum is nonempty), **`completionLaw_rayEndpoint`** (its law is `P^F_θ`; charged polytope, any codimension).

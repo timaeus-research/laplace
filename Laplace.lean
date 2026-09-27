@@ -597,6 +597,7 @@ import Laplace.Multi.SharpAffinityTesting
 import Laplace.Multi.ResponseAtlasClosure
 import Laplace.Multi.FiniteRangeFaceGeometry
 import Laplace.Multi.FiniteRangeRayDecay
+import Laplace.Multi.ExposedFaceRayEndpoint
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

@@ -2354,5 +2354,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   reuses `BoundaryRayFormula` (`faceMass`, `offFaceMass`, `famDens_ray`, `integrable_offFace`) mirroring
   `integral_sq_slack_le`; integrability from `exp_neg_integrableOn_Ioi 0 (half_pos hδ)` + `Integrable.mono'`.
   GOTCHAS: `Real.sqrt_eq_iff_mul_self_eq` after `congr 1` for `√(exp a) = exp (a/2)`; omit `hδ` wherever only the gap
-  inequality is used (the linter cascades through call sites). NEXT: A3 `ExposedFaceRayEndpoint` (finite-length normal
-  ray ⇒ completion endpoint with law `P^F_{θ|F}` and mean in ri F, any codimension), then A4–A6.
+  inequality is used (the linter cascades through call sites).
+  A3 `ExposedFaceRayEndpoint` landed: `rayEndpoint := pathEndpoint` along `s ↦ θ − s•u` (Fisher speed `√raySpeedSq` by
+  `lawCov_neg_left`/`lawCov_comm`), mean = face-family mean via `tendsto_nhds_unique` with the existing
+  `tendsto_meanMap_ray hS ν θ u β hβ hp` (FacetFisherAccess), law = `P^F_θ` via `completionLaw_pathEndpoint_eq` +
+  `responseProjection_eq_faceFamily … rfl θ`. GOTCHAS: `(Ioi 0)` in a `variable` defaults to ℕ — write `(Ioi (0 : ℝ))`;
+  `measurable_faceDens`/`faceDens_nonneg`/`tendsto_meanMap_ray` already exist (reuse); the HasDerivAt lemma on `J → ℝ`
+  needs `[Fintype J]` for the Pi norm (`set_option linter.unusedFintypeInType false in`); omit `hθW huW` on the
+  integrability lemma or the endpoint `def` cannot be applied. NEXT: A4 `FiniteRangeAllFacesAccessible` (every exposed
+  face with a tight vertex is accessible; needs an exposing vector IN W — project `u` by `dirProjL` or use
+  `⟨u_W,·⟩ = ⟨u,·⟩ + const` on the polytope), A5 `FiniteRangeFaceIncidence`, A6 `FiniteRangeCompletionAtlas`.
