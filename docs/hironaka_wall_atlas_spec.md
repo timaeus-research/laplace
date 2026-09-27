@@ -6584,3 +6584,24 @@ certificates for concrete resolved charts beyond the identity chart.
     **`finrank_direction_affineSpan_fibre`** (fibre dimension `|X| − 1 − dim W`). Gotchas: `Submodule.mem_map` refine
     goals carry `∈ ↑p` (use `SetLike.mem_coe`); `inf_le_right` ascribed to a `def`-abbreviated inf unfolds it — state
     `hle : fibreDirection S ≤ sumZero X := inf_le_right` first; `vectorSpan_eq_span_vsub_set_right` takes `k` explicitly.
+  - `ResponseJourneyInformationCost.lean` (K4, THE BOUNDARY INFORMATION BUDGET): for finite charged X and ANY data law
+    D, along `θ_t = polytopeJourney mD t` with velocity `journeyVelD t := (CDE θ_t).symm ⟨mD − m₀,_⟩` and energy
+    `journeyEnergy t := fisherVar θ_t (journeyVelD t)` (≥ 0): `polytopeJourney_mul_eq_modelJourney` (the cut journey
+    `t ↦ θ_{Ts}` IS `modelJourney 0 θ_T s`), `modelVel_eq_smul_journeyVelD` (`= T • v(Ts)`),
+    `fisherInner_modelVel_eq_journeyEnergy` (`= T² g(Ts)`), **`toReal_klDiv_polytopeJourney_eq_action`**
+    (`KL(P_{θ_T}‖ν) = ∫₀^T (T−t) g(t) dt` for `T < 1`, from `toReal_klDiv_modelJourney_eq_action` at `θ₀ = 0` + the
+    change of variables `intervalIntegral.smul_integral_comp_mul_left`), `continuousOn_journeyEnergy` (on `[0,T]`, from
+    `continuousOn_modelSpeed` composed with `t/T`), `journeyAction T := ∫₀^T (1−t) g`,
+    `toReal_klDiv_polytopeJourney_le_journeyAction` (`KL(T) ≤ A(T)`), **`journeyAction_le_toReal_klDiv`**
+    (`A(T) ≤ KL(R_D‖ν)`: `∫₀^T (T'−t)g ≤ KL(T')` for `T<T'<1` by dropping the `[T,T']` piece, affine in `T'`, then
+    `le_of_tendsto_of_tendsto` along `T' ↑ 1` with K1's `tendsto_klDiv_polytopeJourney`), **`tendsto_journeyAction`**
+    (squeeze), `tendsto_cutoff`/`cutoff_mem` (`1 − 1/(k+2) ↑ 1`), **`integrableOn_journeyEnergy`** (Lebesgue
+    integrability of `(1−t)g` on `Ioc 0 1` via `integrableOn_Ioc_of_intervalIntegral_norm_bounded_right`),
+    **`integral_journeyEnergy`** (`∫_{(0,1]} (1−t) g = KL(R_D‖ν)` via `aecover_Ioc_of_Ioc` +
+    `AECover.integral_tendsto_of_countably_generated` + `tendsto_nhds_unique`), **`journey_information_budget`**
+    (`KL(D‖ν) = KL(D‖R_D) + ∫₀¹ (1−t) G_{θ_t}(θ̇_t,θ̇_t) dt` — the flagship, no interior-mean hypothesis). Gotchas:
+    `unfold modelJourney polytopeJourney` also unfolds the `θ_T` inside `modelJourney` — unfold in two steps with the
+    mean rewrite in between; `tendsto_one_div_add_atTop_nhds_zero_nat` needs `(𝕜 := ℝ)` (else `ContinuousSMul ℚ≥0 ?m`
+    stuck); `integral_add_adjacent_intervals` with an inline `mono_set` proof picks `c := b` — name both
+    `IntervalIntegrable` facts with typed `have`s; `[MeasurableSingletonClass X]` only on the five theorems touching
+    `klDiv`/`responseProjection` (per-theorem instance binders, not a section variable).

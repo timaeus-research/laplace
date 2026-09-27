@@ -2706,7 +2706,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `klDiv`; `Ioo_mem_nhdsLT`; defeq `exact` for `polytopeJourney` vs `θr`). K2a `IIDFourthMoment` + K2b `ResponseIIDSamplingBias` LANDED (the i.i.d. sampling bias:
   `‖E[θ̂_loc − θ₀] + (1/2n)∑Cov_D(S_a,S_b)C(A⁻¹pe_a,A⁻¹pe_b)‖ ≤ const·n^{-3/2}`; gotcha: section variables typed
   through the `𝕍` notation (μ, p) cause statement-level timeouts — use theorem binders). K3 `ResponseFiniteFibres` LANDED (quotient map with entropy section; fibre direction dim
-  = |X| − 1 − dim W). NEXT: K4 `ResponseJourneyInformationCost` (boundary budget
-  `KL(R_D‖ν) = ∫₀¹(1−t)G` via `f(T) = ∫₀^T (T−s)G` + monotone convergence), K5–K7. Old NEXT:
+  = |X| − 1 − dim W). K4 `ResponseJourneyInformationCost` LANDED (`journey_information_budget`:
+  `KL(D‖ν) = KL(D‖R_D) + ∫₀¹(1−t)G_{θ_t}(θ̇,θ̇)dt` for every finite data law; interior action at a cutoff
+  `KL(P_{θ_T}‖ν) = ∫₀^T(T−t)g`, squeeze `KL(T) ≤ ∫₀^T(1−t)g ≤ KL(R_D‖ν)`, Lebesgue integrability on `(0,1]` via
+  `integrableOn_Ioc_of_intervalIntegral_norm_bounded_right` + `aecover_Ioc_of_Ioc`). NEXT: K5
+  `ResponseObservableSamplingGeometry`, K6 `ResponseSimplexCompletion`, K7 `ResponseExtrinsicGauss`, then round-101
+  consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
