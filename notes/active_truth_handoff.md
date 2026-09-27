@@ -2417,5 +2417,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   GOTCHAS: a `def` in a section with `{g} {k}` implicit needs `variable (S g k) in` or the call `sliceMean S ν g k z`
   misparses; `include` does NOT force section hypotheses into `def`s (`sliceZ S ν g k`, no `hS`); `rw [coe_sliceZ]` with
   explicit-hypothesis lemmas leaves `case hS` — pass all args. Taylor `o(t²)` expansion NOT done (optional).
-  NEXT: `ResponseLengthSecondVariation` (fourth cumulants; Astra's last/optional) — or round-92 consult first, since B1–B5 of
-  Astra's ranked list are complete.
+  Round 92 (a02e6d3): PROGRAMME C = mixture geometry and the fibres of the response map. Queue: 0 `ResponseDataTaylor`
+  (small: `Φ(g+tk) − Φ(g) − tV − t²/2 H = o(t²)`), 1 `ResponseMixtureCoordinates` (local mixture tilt `g + log(1 + t k̄)`,
+  `E_{ρ_{g^m(t)}} f = E_{ρ_g} f + t Cov_{ρ_g}(f,k)`; endpoint mixture tilt `log((1−t)e^g/Z_g + t e^h/Z_h)` with affine mean),
+  2 `ResponseGlobalFibres` (`Φ g = Φ h ↔ M g = M h`; fibres convex under mixing; retraction to the model tilt `−⟨θ,S⟩`),
+  3 `ResponseMixtureConnection` (mixture journey response velocity `A_{g^m(t)}⁻¹ Cov_{ρ_g}(S,k)`, acceleration
+  `−A⁻¹T(v,v)`), 4 `ResponseEMAccelerationGap` (`H_g(k,k) − a_m = A⁻¹ B_g(k,k)`: the data third cumulant is the exact e/m
+  acceleration gap), 5 `ResponseSliceSubmersion` (horizontally augmented slices: inverse function theorem, local product),
+  6 `ResponseFibreSecondJet` (fibre graph Hessian `−H = −A⁻¹B` on invisible directions; invisible directions integrate to
+  straight lines in a fibre in density coordinates). Corrections: arbitrary slices need not be submersions (augment by the
+  horizontal lift); the pull-back form is degenerate (no O'Neill); converse tail theorem FALSE without chord-arc hypotheses;
+  skewness criterion only at calibrated bases. NEXT: C1 `ResponseMixtureCoordinates`.
