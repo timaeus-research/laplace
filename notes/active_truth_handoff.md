@@ -1659,3 +1659,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: `AtomicIntervalDistortion` (ν on ℕ with `w 0 = 1/2`, `w (k+1) = 1/(2(k+1)(k+2))`, `S 0 = 0`, `S (k+1) = 2^{−k}`,
   `h = 1_{0}`; shell masses `= w(k+1)`, `Σ√ = ∞`; hvar via two atoms; `tendsto_integral_dataPath_atTop` gives `m_t → 0`;
   conclude `¬ ∃ I, ∀ b ≥ 0, ∫₀^b |q'_t|_F ≤ I`), then `BinaryTiltLength` (`L_data = 2 arccos √p₀`).
+- `AtomicIntervalDistortion` landed (round-77 rank 2). Gotchas: `Measure.sum (fun k ↦ ofReal (w k) • dirac k)` with
+  `Measure.sum_apply _ (measurableSet_singleton k)` + `tsum_eq_single k` + `Measure.dirac_apply_of_mem` / `Measure.dirac_apply'` +
+  `Set.indicator_of_notMem`; probability via `ENNReal.ofReal_tsum_of_nonneg` + `HasSum.tsum_eq`; telescoping `HasSum` through
+  `hasSum_iff_tendsto_nat_of_nonneg` and an explicit partial-sum formula by induction, then `hasSum_nat_add_iff' 1` to prepend the
+  first atom; `integral_singleton f a : ∫ x in {a}, f x ∂μ = μ.real {a} • f a`, `lintegral_singleton`, `setIntegral_union` (not
+  `integral_union`), `setIntegral_le_integral`; `tilted_apply_eq_ofReal_integral' f (measurableSet_singleton x)` for singleton
+  masses under a tilt; after `simp only [atomS]` the powers appear as `1 / 2 ^ n` — `simp only [← one_div_pow]` before
+  `pow_lt_pow_iff_right_of_lt_one₀`/`pow_le_pow_iff_right_of_lt_one₀`; `ENNReal.ofReal r` is defeq `↑(Real.toNNReal r)`, so
+  `ENNReal.tsum_coe_ne_top_iff_summable.1 hne` applies directly and `NNReal.summable_coe` + `Real.coe_toNNReal` bring it to ℝ;
+  `summable_nat_add_iff 2` + `not_summable_one_div_natCast` for the harmonic tail; `ENNReal.ofReal_rpow_of_nonneg` +
+  `← Real.sqrt_eq_rpow` for `ofReal x ^ (1/2)`; `faceMass_pos` already exists (renamed `endpointMass_pos`).
+  NEXT: `BinaryTiltLength` (`L_data = 2 arccos √p₀` for an indicator data direction), then the facet Lemmas B/D.

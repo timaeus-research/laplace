@@ -5302,3 +5302,15 @@ certificates for concrete resolved charts beyond the identity chart.
   `integrableOn_scalarFisherWeight_of_length_le`, **`lintegral_sqrt_raySpeedSq_lt_top_of_length_le`** (a finite total response
   length `∀ b ≥ 0, ∫₀^b |q'_t|_F ≤ I` forces finite Fisher length of the ray on `(0, ∞)`: IN ONE DIMENSION THE RESPONSE PATH IS
   AT LEAST AS LONG AS THE RAY).
+- `AtomicIntervalDistortion.lean` (NOT mirrored; round-77 rank 2: FINITE DATA MOTION, INFINITE RESPONSE MOTION): general
+  `measureReal_tilted_singleton` (`(μ.tilted f).real {x} = μ.real {x} e^{f x}/Z`), **`two_atoms_le_lawCov_self`**
+  (`Var_P f ≥ P{x₀}P{x₁}(f x₀ − f x₁)²/(P{x₀} + P{x₁})`); namespace `AtomicInterval`: `atomW` (`1/2`, `1/(2(k+1)(k+2))`),
+  `hasSum_atomW` (`= 1`, telescoping), `νA = Measure.sum (ofReal (atomW k) • dirac k)` on `ℕ` (probability instance,
+  `νA_real_singleton`), `atomS` (`0`, `2^{−k}`), `SA : Unit → ℕ → ℝ`, `hA = 1_{0}`, `topSet_eq`, `family_real_singleton_pos`,
+  `var_pos` (every tilt has positive variance, by the two atoms `0, 1`), `tendsto_mean_zero` (`E_{ρ_t} S → 0`, from
+  `tendsto_integral_dataPath_atTop`), `scalarMean_pos`, `tendsto_scalarTheta` (`θ_t → +∞`), `uA = −1`, `dyadicShell_eq`
+  (`shell k = {k+1}`), `shellMass_eq` (`= ofReal (atomW (k+1))`), `sqrt_atomW_ge` (`√w_{k+1} ≥ 1/(2(k+2))`),
+  `not_summable_shifted`, `tsum_shifted_eq_top`, **`tsum_sqrt_shellMass_eq_top`**, **`lintegral_sqrt_raySpeedSq_eq_top`**
+  (the ray to the endpoint has infinite Fisher length), **`not_length_bounded`**, **`tendsto_responseLength_atTop`**
+  (`∫₀^b |q'_t|_F dt → ∞`: the response path from the featureless law has infinite Fisher length although the data path is a
+  binary mixture of bounded length).
