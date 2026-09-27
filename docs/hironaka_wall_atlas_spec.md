@@ -6551,3 +6551,20 @@ certificates for concrete resolved charts beyond the identity chart.
     `measurable_pi_apply` for a projection map needs a typed `have` (implicit family not inferable); `rw [mul_pow]` without
     arguments hits the wrong product — pass the factors; `le_of_pow_le_pow_left` doesn't exist here — go through
     `Real.sqrt_sq`/`Real.sqrt_le_sqrt`.
+  - `ResponseIIDSamplingBias.lean` (K2b, THE i.i.d. SAMPLING BIAS): `curvBilin hS ν θ₀ : 𝕍 →ₗ 𝕍 →ₗ 𝕍` (`LinearMap.mk₂`
+    from the four `mChristoffel_add/smul_left/right` lemmas; `curvatureForm z = curvBilin z z` rfl),
+    `curvatureForm_proj_eq_sum` (expansion over `Pi.single` via `pi_eq_sum_univ'`, `map_sum`, `LinearMap.sum_apply`,
+    `Finset.sum_comm` + `mul_comm` for the index order), **`covContraction hS ν D p θ₀ := ∑_{ab} Cov_D(S_a,S_b) •
+    curvBilin (p e_a) (p e_b)`**, **`integral_curvatureForm_sampleResponse`** (`E[C(A⁻¹ξ̄,A⁻¹ξ̄)] = (1/n) • covContraction`;
+    pairwise independence via `integral_sampleResponse_sub_mul_sub`), `ae_proj_eq_raw`/`ae_norm_proj_eq` (the retraction is
+    the identity a.s.), `measurable_proj_raw` (`LinearMap.continuous_of_finiteDimensional`),
+    **`integral_norm_pow_three_proj_le`** (`E‖ξ̄‖³ ≤ √3|J|³(2B)³/(n√n)`), `norm_proj_raw_le`, `integrable_proj_raw`,
+    `integrable_norm_pow_three_proj_raw`, `integrable_raw`, **`integral_raw_eq_zero`/`integral_proj_raw_eq_zero`** (centred;
+    coordinates via `ContinuousLinearMap.proj … |>.integral_comp_comm`), **`setIntegral_map_proj`** (law-level set integral =
+    integral over the good event `ξ⁻¹' ball`; `Measure.restrict_map` + `ContinuousOn.aestronglyMeasurable`),
+    **`iid_localizedBias_curvature`** (HEADLINE: `‖E[θ̂_loc − θ₀] + (1/2n)·covContraction‖ ≤ (‖A⁻¹‖/δ² + K + ½κ/δ)·√3|J|³(2B)³/n^{3/2}`).
+    Gotchas: a section `variable (p : (J → ℝ) →ₗ[ℝ] 𝕍)` through the notation causes statement timeouts (same as `μ`) —
+    theorem binders only; `Measure.isProbabilityMeasure_map` (namespace `Measure`); `integral_map` needs the
+    `AEStronglyMeasurable` fact stated with the exact lambda (`aestronglyMeasurable_id` gives `id`, `continuous_norm.pow 3`
+    gives a Pi-power — ascribe typed `have`s); after omitting `hn` the implicit `n` must be passed `(n := n)`;
+    `Integrable.add` is Pi-form (`Pi.add_apply` before `sub_add_cancel`).
