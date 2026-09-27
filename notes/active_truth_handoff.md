@@ -2453,6 +2453,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   also hits `bdd_augDir hS ν hg hk` (theorems DO take hk); `(0, 0)` pairs must be typed `((0 : ι → ℝ), (0 : 𝕍))` or the
   first component defaults to ℕ; `rw [augSlice]` fails ("equation theorems") — use a typed `have hΨ : HasFDerivAt
   (augSlice …) _ p := hcomp` then `hΨ.fderiv`; `Prod.mk_zero_zero` before `map_zero`; `rw` with congr lemmas whose proof
-  args are `_` fails — use `exact (…).trans (…)`. NEXT: C6 `ResponseFibreSecondJet` (fibre graph `σ₀ z := σ(z, Φg)`; with
-  invisible slice directions `D²σ₀(0)[ξ,η] = −H_g(Kξ,Kη) = −A⁻¹B`; route: differentiate `Ψ(z, σ₀ z) = Φ g` twice, or
-  curvewise via `hasDerivAt_coeffVel`), C0 Taylor, then round-93 consult.
+  args are `_` fails — use `exact (…).trans (…)`. C0 `ResponseDataTaylor` landed (`taylor_isLittleO_univ (x₀ := 0) (h2 : ContDiff ℝ 2 f)`, `taylorWithinEval_succ`
+  ×2 + `taylor_within_zero_eval`, `iteratedDerivWithin_univ`, `iteratedDeriv_one/succ`, `beta_reduce` before rewriting the
+  `deriv`-lambda at 0, finish `simp only [Nat.factorial, …]; norm_num [sub_sub]; module`; ContDiff at grade 2 from ∞ by
+  `.of_le (by exact_mod_cast natCast_le_infty 2)`; 1-D slice = `sliceFun g (fun _ : Unit ↦ k) (fun _ ↦ t)` composed with
+  `contDiff_pi.2 fun _ ↦ contDiff_id`; `ContDiff` has no `.congr` field — rewrite the function by `funext` first).
+  C6 `ResponseFibreSecondJet` NOT done: the coefficient-journey lemmas need GLOBAL `∀ t, HasDerivAt a (a' t) t`, while the
+  fibre section is smooth only near the base — route = smooth bump extension (`ContDiffBump`) of `σ₀`, then
+  `hasDerivAt_coeffResponse`/`hasDerivAt_coeffVel` on `a t = (1, augCoeffL (tξ, σ̃(tξ)))`, giving `0 = V(hor(σ₀''[ξ,ξ])) +
+  H(Kξ,Kξ)` hence `σ₀''[ξ,ξ] = −H_g(Kξ,Kξ) = −A⁻¹B_g(Kξ,Kξ)`. NEXT: round-93 consult (programme C essentially complete:
+  C0–C5 landed; C6 pending as above).
