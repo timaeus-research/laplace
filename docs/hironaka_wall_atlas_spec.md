@@ -5970,3 +5970,14 @@ certificates for concrete resolved charts beyond the identity chart.
     (completion laws = face-family laws of all faces), `completionLaw_injective_of_finiteRange`,
     **`bijOn_meanExt_of_finiteRange`** (`meanExt : Ŵ → conv V` bijective; no homeomorphism claim). A4 gained
     `nonempty_of_finiteRange`, `meanExt_mem_polytope'`.
+  - PROGRAMME B (round 91, second-order response calculus; Astra's plan: ResponseDataSmooth, ResponseHessian,
+    ResponsePullbackVariation, ResponseHigherDefectVariation, ResponseSecondOrderLifts, ResponseLengthSecondVariation;
+    headline = the symmetric response Hessian). `ResponseDataHessian.lean` (B2 + the B1 bridge; the name `ResponseHessian`
+    was already taken by the invisible-Hessian module): `centredProd`, **`dataThird`** (`B_g(k,ℓ) = Cov_{ρ_g}(S,(k−Ek)(ℓ−Eℓ)) ∈ W`),
+    **`dataThird_apply`** (`= κ_{ρ_g}(S_j,k,ℓ)`), `dataThird_symm`, `tilted_add_mul`, **`hasDerivAt_forcing_add`**
+    (`d/dt Cov_{ρ_{g+tk}}(S,ℓ) = B_{g+tk}(k,ℓ)`), `thirdOp_apply_apply`, `thirdOp_symm`, **`responseHess`**
+    (`H_g(k,ℓ) = (Dm)⁻¹(B_g(k,ℓ) − T_{Φ(g)}(DΦ[k],DΦ[ℓ]))`), **`responseHess_symm`**, `addMean`, `responseOf_add_eq`,
+    `responseVel_add_eq`, `responseHess_congr`, `hasDerivAt_addMean`, `addMean_mem_intrinsicInterior`,
+    **`hasDerivAt_responseOf_add`** (`d/dt Φ(g+tk) = DΦ_{g+tk}[k]`), **`hasDerivAt_responseVel_add`** (THE RESPONSE HESSIAN
+    THEOREM: `d/dt DΦ_{g+tk}[ℓ] = H_{g+tk}(k,ℓ)`), `hasDerivAt_responseVel_add_self`, `hasDerivAt_responseVel_exp`
+    (exponential journey: straight to second order iff data and model cumulants agree on the matched velocity).

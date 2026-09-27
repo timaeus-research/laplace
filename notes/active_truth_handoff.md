@@ -2382,6 +2382,20 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `hβ : a * β + b * β = β`. A6 `FiniteRangeCompletionAtlas` landed (routine assembly of A4+A5:
   all-faces union, `faceStratum_eq_iff` via `minimalFacePoly_eq_of_mem_ri_face` on a common point, partition,
   `X_F = range j_F`, `range completionLaw = ⋃_F range (w ↦ P^F_w)`, `BijOn meanExt univ (conv V)`). PROGRAMME A
-  COMPLETE (A1–A6). NEXT: round-91 consult (programme B: ResponseCumulantCalculus, ResponseHessian,
-  ResponseMixtureAffine, ResponseExponentialDefect, ResponseFisherCurvature, ResponseHigherDefectVariation), then land
-  in Astra's order.
+  COMPLETE (A1–A6). Round 91 (9fb363b): Astra's programme B = ResponseDataSmooth (finite slices C^∞ + bridge),
+  ResponseHessian (central), ResponsePullbackVariation (`D_k G_g(h,ℓ) = κ_q(L_{Vk},L_{Vh},L_{Vℓ}) − κ_ρ(L_{Vℓ},h,k) −
+  κ_ρ(L_{Vh},ℓ,k)`), ResponseHigherDefectVariation (`Δ'''(0) = 2κ_ν(e,e,e) + 3κ_ν(e,e,r)`, `e = h + L_v`, `r = −L_v`),
+  ResponseSecondOrderLifts (`(Φ∘g)''(0) = V_g(b) + H_g(k,k)`; prescribed two-jets via `horLin`),
+  ResponseLengthSecondVariation (fourth cumulants; last). Mixture/exponential "defect" modules are corollaries
+  (mixture acceleration = `AtlasVelocityDerivative.hasDerivAt_atlasVel`). Sign audit: with `Pfam θ = ν.tilted(−⟨θ,S⟩)`,
+  `CD_θ = −Cov`, so `H_g(k,ℓ) = A⁻¹(B − T(Vk,Vℓ))`, `A = CDE` (minus the covariance).
+  `ResponseDataHessian` landed (B2+B1; `ResponseHessian.lean` already exists = invisible Hessian, DON'T reuse the name;
+  `git checkout --` on a name-clashed draft DELETES the draft — rename first). Proof pattern: mean path `addMean`,
+  `z t := ⟨addMean t − addMean t₀, _⟩`, `hasFDerivAt_inverse_response hS ν hrel` rewritten at `z t₀` via `rw [← hz0]`,
+  `.comp_hasDerivAt`, `HasDerivAt.clm_apply` with the forcing path, then `← ContinuousLinearMap.flip_apply,
+  inverse_response_deriv_apply, responseHess, map_sub, responseOf_add_eq, responseVel_add_eq (explicit args, else
+  `case hg` side goals), sub_eq_neg_add` and `rfl` (CLE-vs-CLM coercion). `hasDerivAt_lawCov_tilted (ν.tilted g)` +
+  `tilted_tilted` rebase gives the data cumulant; `responseVel_congr`/`responseHess_congr` (`subst; rfl`) transport
+  between `fun x ↦ 0 + t*h x` and `fun x ↦ t*h x`. NEXT: `ResponsePullbackVariation` (derivative of `pullbackBilin
+  (g+tk) h ℓ`), then `ResponseHigherDefectVariation`, `ResponseSecondOrderLifts`, `ResponseDataSmooth`,
+  `ResponseLengthSecondVariation`.
