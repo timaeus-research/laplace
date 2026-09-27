@@ -662,6 +662,7 @@ import Laplace.Multi.ResponseFeatureRefinement
 import Laplace.Multi.ResponseMismatchResolution
 import Laplace.Multi.ResponseTestingData
 import Laplace.Multi.ResponseDataInfluence
+import Laplace.Multi.ResponseObservableJointCovariance
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

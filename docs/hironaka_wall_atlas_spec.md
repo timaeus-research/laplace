@@ -6754,3 +6754,22 @@ certificates for concrete resolved charts beyond the identity chart.
     `HasDerivAt.congr_deriv` + `simp only [meanPath_zero, …]` + `fisherInner_regressionDir`/`fisherInner_chartDerivEquiv_symm'`),
     `integral_dataInfluence` (centred), `lawCov_dataInfluence`, **`sq_lawCov_influence_le`** (`|Ψ̇_F|² ≤ Σ_D(u_F,u_F)Var_D h`),
     **`isLeast_information_lift`** (`IsLeast {Var_D h | Cov_D(⟨u,S⟩,h) = ⟨u,e⟩ ∀u ∈ W} ⟨e,Σ_D⁻¹e⟩`, attained at `⟨Σ_D⁻¹e,S⟩`).
+  - `ResponseObservableJointCovariance.lean` (M2, THE JOINT SAMPLING COVARIANCE, no fourth moments): real lemma
+    `abs_mul_sub_mul_le` (`|AA' − ℓℓ'| ≤ (cd + ac')r³` from `|A−ℓ| ≤ cr²`, `|A'| ≤ dr`, `|ℓ| ≤ ar`, `|A'−ℓ'| ≤ c'r²`; the
+    side conditions come from `(abs_nonneg _).trans h1`, NOT positivity), `sqrt_le_self_nat`; `locInc F θ₀ δ z :=
+    1_{cball}(f_F(m₀+z) − f_F(m₀))`, `linSize F θ₀ := Σ_j|u_{F,j}|` (`a_F`), `quadSize hF θ₀ K δ := ½‖H_F‖ + Kδ` (`b_F`),
+    `globQuad := max b_F (a_F/δ)` (`c_F`), `globLin := a_F + b_F δ` (`d_F`); **`abs_locInc_sub_dotJ_le`** (`|A_F − ℓ_F| ≤
+    c_F‖z‖²` globally: on the ball via the cubic remainder + `‖z‖³ ≤ δ‖z‖²`, off the ball `A_F = 0` and `a_F‖z‖ ≤ (a_F/δ)‖z‖²`),
+    **`abs_locInc_le`** (`|A_F| ≤ d_F‖z‖`), `abs_locInc_le_const`, `aestronglyMeasurable_locInc` (`aestronglyMeasurable_indicator_iff`
+    + `ContinuousOn.aestronglyMeasurable` on the closed ball), `aestronglyMeasurable_dotJ`, `abs_integral_locInc_mul_sub_le`
+    (`|∫A_FA_H − ∫ℓ_Fℓ_H| ≤ (c_F d_H + a_F c_H)M₃`; integrability by `Integrable.of_bound` — products bounded on the ball,
+    zero outside), `integral_dotJ_eq_zero` (centred law via `pairCLM`), `abs_integral_locInc_le` (`|∫A_F| ≤ c_F M₂`),
+    **`abs_lawCov_locInc_sub_le`** (`|Cov(A_F,A_H) − E[ℓ_Fℓ_H]| ≤ (c_F d_H + a_F c_H)M₃ + c_F c_H M₂²`),
+    **`abs_integral_dotJ_mul_locInc_sub_le`** (cross term `≤ (Σ|u_j|)c_F M₃`, via `abs_mul_sub_mul_le` with `c := 0`). IID
+    section (K2b variables + `hB0 hB hn`): `integrable_norm_sq_proj_raw`, `integral_norm_sq_proj_le` (`M₂ ≤ |J|²(2B)²/n`),
+    **`iid_lawCov_locInc_sub_le`** (`|Cov_P(f̂_{F,loc}, f̂_{H,loc}) − Σ_D(u_F,u_H)/n| ≤ ((c_F d_H + a_F c_H)√3|J|³(2B)³ +
+    c_F c_H(|J|²(2B)²)²)/(n√n)`; `lawCov P (A_F ∘ pξ) (A_H ∘ pξ) = lawCov μ A_F A_H` via three `integral_map`s with the
+    measurability facts stated as lambdas — `AEStronglyMeasurable.mul` is Pi-form and `integral_map` then fails to match),
+    **`iid_integral_dotJ_mul_locInc_sub_le`** (`|E[⟨u,ξ⟩f̂_{F,loc}] − Σ_D(u,u_F)/n| ≤ (Σ|u_j|)c_F√3|J|³(2B)³/(n√n)`). Gotcha: a
+    `have h := norm_nonneg z` for `z : W` fails with "failed to infer have declaration type" — ascribe `(0 : ℝ) ≤ ‖z‖`; a
+    `fun z ↦ …` binder whose body contains `(z : J → ℝ)` is inferred as `J → ℝ` — write `fun z : 𝕍 ↦`.

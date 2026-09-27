@@ -2733,8 +2733,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   via hyperplane-arrangement cells (no Cauchy–Binet), M4 facewise tangential convergence, M5 Le Cam two-point minimax,
   M6 singular covariance, M7 infinitesimal ladder; skip L3 translation, fibres ≠ indistinguishability). M1
   `ResponseDataInfluence` LANDED (`hasDerivAt_dataObs_tilted`: `d/dt E_{R_{m(D_t)}}F|₀ = Cov_D(⟨u_F,S⟩,h)`; CS bound;
-  `isLeast_information_lift`). NEXT: M2 `ResponseObservableJointCovariance` (`Cov(f̂_F,f̂_H) = Σ_D(u_F,u_H)/n + O(n^{-3/2})`
-  and `E[⟨u,ξ⟩(f̂_F − f_F)] = Σ_D(u,u_F)/n + O(n^{-3/2})` via `|A_F A_H − ℓ_F ℓ_H| ≤ (c_F d_H + a_F c_H)‖z‖³`), then M5,
-  M3→M4, M6, M7, cheap companions (`R_D = D` saturated, ladder telescoping). Old NEXT:
+  `isLeast_information_lift`). M2 `ResponseObservableJointCovariance` LANDED (`iid_lawCov_locInc_sub_le`:
+  `Cov(f̂_{F,loc},f̂_{H,loc}) = Σ_D(u_F,u_H)/n + O(n^{-3/2})` with explicit constants, no fourth moments; cross term
+  `E[⟨u,ξ⟩f̂_{F,loc}] = Σ_D(u,u_F)/n + O(n^{-3/2})`). NEXT: M5 `ResponseMinimaxTwoPoint` (Le Cam:
+  `max_i E_{D_i^n}|T − ψ(D_i)| ≥ (Δ/2)(1 − √(nKL))` from L7's `testing_error_data_ge_of_klDiv` with the clipped test
+  built from `T`; then the local alternatives along `IF_{F,D}/σ_F` give `√n·risk ≥ σ_F/4`-type bound), M3→M4 (uniform
+  regression via hyperplane cells), M6, M7, cheap companions (`R_D = D` saturated, ladder telescoping). Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
