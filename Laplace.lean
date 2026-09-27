@@ -560,6 +560,7 @@ import Laplace.Multi.SamplingResolution
 import Laplace.Multi.BoundedTiltFisherComparison
 import Laplace.Multi.BoundedTiltCompletionAction
 import Laplace.Multi.FacetFamilyAccessible
+import Laplace.Multi.ResponseSamplingResolution
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
