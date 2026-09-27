@@ -6285,3 +6285,23 @@ certificates for concrete resolved charts beyond the identity chart.
     + o(t²)`: `taylor_isLittleO` on a ball inside the domain, `iteratedDerivWithin_of_isOpen`, `EventuallyEq.deriv_eq`).
     The sampling side (`integral_samplingEnergy`, `measureReal_sampleResponse_notMem_le`) was already in the seabed; the
     sandwich `d_eff ≠ dim W` off-model is `integral_samplingEnergy` vs `_eq_trace` (not restated). PROGRAMME G COMPLETE.
+  - Round 97 consult (`research_round97_{q,v1}.md`, ed2fa0f): AUDIT — G2 regression proof sound (d need not lie in W; a.e.
+    `SpansAffine` right; finite dim is `|supp ν| − 1`); G6 needs the wording "applicable to empirical moments whenever
+    they lie in the interior domain; sampling applications need an interior event, localisation or a regularised
+    estimator" (empirical laws need not be bounded tilts; zero counts ⇒ boundary only in the saturated case); G5:
+    `d_F² ≤ J` infinitesimally sharp (constant 1), strict at distinct endpoints for bounded features (constant speed on a
+    natural segment would make log Z quadratic ⇒ contradiction; NOT proved), `√J` not a metric in general (Bernoulli
+    p=.1,q=.2,r=.5 violates the triangle inequality) but IS one for Gaussian location. PROGRAMME H ranked: H1
+    `ResponseObservableTransport` (`D𝓡_F(μ)[e] = −Cov(F, f_u)`, `D²𝓡_F(μ)[e,d] = E[(F−EF) r_uv]`, `u = Be`, `v = Bd`: THE
+    RESIDUAL IS THE SECOND RESPONSE OF EVERY OBSERVABLE; variance response `d/dt Var F = −Cov((F−EF)², f_θ')`,
+    `d²/dt² Var F = E[(F−EF)² r_uu] − 2(d/dt EF)²`), H2 `ResponseMaximumEntropyPotential` (`H_ν = −KL(·‖ν)` maximised
+    by ν; model = max-entropy section of fibres; `𝓘(μ) = KL(P_{m⁻¹μ}‖ν)` strictly convex in mean coordinates with
+    `D𝓘[e] = −⟨θ,e⟩`, `D²𝓘 = G(Be,Bd)`; CAUTION: projected information along the power-tilt path is NOT monotone —
+    3-point counterexample), H3 `ResponseFiniteSimplex` (`dim W = |X|−1`, affine independence, simplex ≅ moment body),
+    H4 `ResponseSimplexSphere` (`d_F(p,q) = 2 arccos Σ√pq` via the explicit great-circle `FisherPath`, positivity on
+    [0,1] ⇒ slightly larger open interval), H5 `ResponseLocalizedSamplingBias` (localised estimator, cubic remainder
+    `‖R(e)‖ ≤ K‖e‖³`, bias `−(1/2n)Σ Σ_ij C(Bb_i,Bb_j) + o(1/n)` under `Ee=0, E[e⊗e]=Σ/n, E‖e‖⁴ = O(n⁻²)`), H6
+    `ResponseTwoScaleResolution` (finite-sample sign certification `⟨a,θ̂−θ⟩ ≥ tλ(e) − ‖λ‖r − K(|t|‖e‖+r)²` on
+    `‖ξ_n‖ ≤ r`; two-scale expansion at `t_n = h/√n`; CAUTION: bias is O(1/n), sign CLT sees O(n^{-1/2}) — no
+    second-order sign probabilities without Edgeworth). Deferred: LC ODEs (add the criterion `C(θ̇,θ̇) ∈ span θ̇`),
+    Gauss–Bonnet.

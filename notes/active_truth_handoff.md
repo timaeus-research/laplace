@@ -2631,6 +2631,8 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   FisherNormalisedSampling, ResponseClassResolution; `taylor_isLittleO` needs `Convex s` — use a ball inside the open
   domain, then `Metric.isOpen_ball.nhdsWithin_eq`, `iteratedDerivWithin_of_isOpen`, `Filter.EventuallyEq.deriv_eq`;
   `(−mulLeftRight R R (T V)) z'` needs TWO `neg_apply` rewrites: `simp only [_root_.neg_apply]`;
-  `ContinuousLinearMap.neg_apply` is deprecated). PROGRAMME G COMPLETE (G1–G6). NEXT: round-97 consult. Old NEXT:
+  `ContinuousLinearMap.neg_apply` is deprecated). PROGRAMME G COMPLETE (G1–G6). Round 97 (ed2fa0f) = PROGRAMME H
+  (see atlas spec): H1 `ResponseObservableTransport`, H2 `ResponseMaximumEntropyPotential`, H3 `ResponseFiniteSimplex`,
+  H4 `ResponseSimplexSphere`, H5 `ResponseLocalizedSamplingBias`, H6 `ResponseTwoScaleResolution`. NEXT: H1. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
