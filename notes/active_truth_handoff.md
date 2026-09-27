@@ -2741,9 +2741,14 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   idempotence, `responseProjection_eq_self_of_spansAffine`: saturation reaches the data, `R_D = D`). M6
   `ResponseSingularCovariance` LANDED (kernel `N = ker Σ_D`, nondegenerate quotient form on `W ⧸ N`, covariance dual `e*`
   on the annihilator `dataDualSing`, `isGreatest_snr_sing` `sup ⟨u,e⟩² = ⟨e,Σ_D⁺e⟩`, `not_bddAbove_snr_of_not_annihilator`
-  (noiseless detection off the annihilator), `annihilator_of_lift` + `isLeast_information_lift_sing`). NEXT: round-103
-  consult (report M1/M2/M5/companions/M6; ask the Lean route for M3 `ResponseRegressionConvexHull` — Mathlib has no
-  polyhedral vertex theory — and M7 infinitesimal ladder design, M4 facewise convergence); then M7 / M3→M4 per Astra;
-  optional companions: global ladder telescoping, product-KL additivity for the sharper testing constant. Old NEXT:
+  (noiseless detection off the annihilator), `annihilator_of_lift` + `isLeast_information_lift_sing`). Round 103
+  DONE (audit clean; M3 sign-cell route sound; M4/M7 statements; post-M ranks 1–6, see spec). M3
+  `ResponseRegressionUniformBound` LANDED (`exists_uniform_regressionDir_bound`: `‖u_F(θ)‖ ≤ L_F` over the whole
+  model on a finite configuration, vertex-free sign cells + direct termwise bound). NEXT: M3b `ResponseGlobalLipschitz`
+  (Euclidean Lipschitz `|E_{θr N}F − E_{θr M}F| ≤ |J|L_F‖N − M‖` on Ω via `hasDerivAt_lineObservable` +
+  `fisherInner_chartDerivEquiv_symm'`, then the closed polytope via `continuousOn_qStarVec` + segment approximation;
+  law-valued `‖R_M − R_N‖₁ ≤ L‖M − N‖` from atom indicators); M4 facewise tangential convergence (law-level
+  regression stability lemma); M7 (common-base representation, relative-base Pythagoras, `θ'(0) = −u_h`,
+  response-to-base quadratic limit, DEFECT THEOREM, ladder); then post-M ranks 2–6. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

@@ -6809,3 +6809,42 @@ certificates for concrete resolved charts beyond the identity chart.
     `change dataBilin … v u = 0` (liftQ on `mk` reduces definitionally; `Submodule.liftQ_apply` in a simp set is unused);
     `(∑ j, e j • LinearMap.proj j : (J → ℝ) →ₗ[ℝ] ℝ) ∘ₗ (𝕍).subtype` as a `Module.Dual` gives "Module ?m ?m stuck" — reuse
     K5's `pairCLM`; `congr 1` on `B (mk d) (mk u) = B X (mk u)` peels only one application, use `congr 2`.
+  - Round 103 (`gpt_responses/research_round103_{q,v1}.md`): audit of M1/M2/M5/companions/M6 clean (M5 limit
+    positive only for `aσ_F < √2`; optimised `a = 1/(√2σ_F)` gives `√n L_n → σ_F/(4√2)`; M6's `dataDualSing` is a
+    representative, its energy canonical); M3 sign-cell route SOUND (exact-pattern witness essential; normalised
+    sequence or, better, the direct `Σ p r s = E` termwise bound); Fisher-Lipschitz `|Df_F[θ̇]| ≤ B√G(θ̇,θ̇)` is free but
+    Fisher distance to the boundary is FINITE (Bernoulli `√m`), so the Euclidean bound has real content and M4 needs it;
+    M4 statement: `π_A(u_H(θr M_k)) → u_H^A(v)` (Euclidean projection onto the face direction space, limit = face
+    regression direction), proof = law-level regression stability (`L¹` covariance continuity + uniform bound +
+    face covariance positive definite), quantitative `‖π_A u_k − u^A‖ ≤ λ_A⁻¹(‖c_k − c_A‖ + ‖C_k − C_A‖L_H)`;
+    boundary continuity of `M ↦ R_M` from M3 applied to atom indicators (not from K1's path alone); M7: base
+    `D = P^S_{θ₀}` (a model law of the coarse family; interior means alone are NOT enough), relative-base Pythagoras
+    `KL(R_T(t)‖D) = KL(R_T(t)‖R_S(t)) + KL(R_S(t)‖D)` (no cross term), `θ'(0) = −u_h^S`, response-to-base
+    `KL(R_S(t)‖D)/t² → ½Var_D(g_S)`, DEFECT THEOREM `KL(D_t‖R_S(t))/t² → ½Var_D(h − g_S)` (invisible information =
+    residual variance), ladder `KL(R_T(t)‖R_S(t))/t² → ½Var_D(g_T − g_S)`; post-M ranks: 1 closed-polytope Lipschitz
+    response + law-valued retraction `‖R_M − R_N‖₁ ≤ L‖M − N‖`, 2 canonical base-to-data journey with exact response
+    integral `E_{Q_1}F − E_{Q_0}F = ∫₀¹⟨u_F(θr M_t), m_D − m_ν⟩dt`, 3 uniform unlocalised risk
+    `E|Ψ̂_F − Ψ_F(D)| ≤ L_F√(tr Cov_D(S)/n)`, 4 chamber theorem by MARGIN `P(wrong) ≤ tr Cov_D/(n r_D²)` + attainable-direction
+    lower bound (no universal width statement), 5 global refinement budget + observable certificate
+    `|E_DF − E_{R_K}F| ≤ osc(F)√(KL/2)`, 6 observable resolution ellipsoid `V_ij = Σ_D(u_{F_i},u_{F_j})`.
+  - `ResponseRegressionUniformBound.lean` (M3, THE UNIFORM REGRESSION BOUND, vertex-free): section `Design`
+    (`design S ν : ℝ × W →ₗ (X → ℝ)`, `(c,u) ↦ c + ⟨u,S(x)⟩`; `signCell S ν F σ := {b | ∀ x, 0 ≤ σ_x(F x − design b x)
+    ∧ (σ_x = 0 → F x = design b x)}` with `σ : X → SignType`); finite configuration `[Fintype X]
+    [MeasurableSingletonClass X]`, `hν : ∀ x, ν {x} ≠ 0` as an explicit binder: `design_ker` (via `logLift_injective`),
+    `exists_design_bound` (`LinearMap.exists_antilipschitzWith` + `AntilipschitzWith.le_mul_dist b 0`),
+    `intercept F θ := E_θF − E_θ⟨u_F,S⟩`, `regCoef := (intercept, u_F)`, `regResid := F − design regCoef`,
+    **`sum_atomMass_mul_regResid_mul_design`** (normal equations in barycentric form `Σ p r (c + ⟨v,S⟩) = 0`, from
+    `lawCov_regressionResidual_dirLoss` via `integral_familyMeasure_eq_sum`, `sum_atomMass`, `linear_combination`),
+    `regPattern := sign ∘ regResid`, `regCoef_mem_signCell` (`sign_mul_self`, `sign_eq_zero_iff`), `residEnergy
+    := Σ p r²`, **`abs_design_le_of_mem_signCell`** (`|design b x| ≤ |F x| + E/(p_x|r_x|)` — the direct termwise
+    bound: `Σ p r s = E` with `s` the cell residual, each term `≥ 0` by `abs_mul_sign`, `Finset.single_le_sum`;
+    at `r_x = 0` both sides are `0` since `E/(p·0) = 0`), `cellRadius K F θ`, **`norm_le_cellRadius`**
+    (`pi_norm_le_iff_of_nonneg`), **`exists_uniform_regCoef_bound`** (finite max over realised patterns:
+    `bound σ := if h : ∃ θ, pattern θ = σ then cellRadius h.choose else 0`, `L := Σ_σ |bound σ|`, `classical` for
+    `Fintype (X → SignType)`), **`exists_uniform_regressionDir_bound`** (`‖u_F(θ)‖ ≤ L_F ∀ θ`, `norm_snd_le`),
+    `exists_uniform_sum_abs_regressionDir_bound` (`Σ_j|u_j| ≤ |J|·|L|`). Gotchas: the normal-equation vector must be
+    `regCoef − b` (not `b − regCoef`) for `Σ p r s − E = Σ p r design(β − b)`; split the covariance sum atoms in the
+    pointwise identity exactly as `simp only [mul_sub, sub_mul, Finset.sum_sub_distrib] at hcov` splits them;
+    `‖·‖` on `X → ℝ` needs `[Fintype X]` (cannot be omitted); `obtain ⟨x⟩ := ‹Nonempty X›` fails inside this
+    section (`?m` not inductive) — use `have x : X := Classical.arbitrary X`; `Finset.single_le_sum` needs `(f := …)`
+    when the summand is `|bound σ|`.
