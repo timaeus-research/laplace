@@ -2685,8 +2685,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   (`measureReal_goodEvent_certified_ge`, `measureReal_chartValid_ge`, engine `measureReal_ge_of_energy_lt_ae_le`;
   gotcha: with `open scoped ContDiff` a binder named `ω` elaborates as the analytic grade `⊤` — drop the scope or
   rename the sample point) and the I3 hypothesis is named `varianceCurvaturePairing` with the inequality theorem
-  `concaveOn_lineVariance_of_pairing_nonpos`. NEXT: J2 `ResponseSimplexIdentification` (finite X: `B : W → Δ°`,
-  `B(θ)_x = P_θ{x}`, homeomorphism/smoothness, featureless journey `P_{θ_t} = (1−t)ν + tp`), then J3
-  `ResponseSimplexSphere`. Old NEXT:
+  `concaveOn_lineVariance_of_pairing_nonpos`. J2 `ResponseSimplexIdentification` LANDED (B : W ≃ₜ Δ°, smooth both
+  ways via the log-lift `W ≃ₗ (X→ℝ)⧸ℝ∙1`; featureless journey = mixture segment; exact mixture variance identity).
+  NEXT: J3 `ResponseSimplexSphere` (`d_F(B⁻¹p, B⁻¹q) = 2 arccos ∑√(pq)`: great-circle path `u_s = (sin((1−s)α)√p +
+  sin(sα)√q)/sin α`, `p_s = u_s²`, lift `θ_s = simplexInv p_s` is a smooth Fisher path with speed `2α`, attains
+  `sphericalDist_le_fisherDist`; then J4 LocalizedBias, J5 GeometrySummary, J6 MeanPolytopeJourney, round-100 consult).
+  Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

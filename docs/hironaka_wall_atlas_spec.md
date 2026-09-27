@@ -6442,3 +6442,23 @@ certificates for concrete resolved charts beyond the identity chart.
     E_t[(F − E_tF)² r_{V_tV_t}]`, `hasDerivAt_lineVarianceDeriv'` (second derivative = pairing − 2 Cov²),
     **`concaveOn_lineVariance_of_pairing_nonpos`** (the INEQUALITY version, pairing ≤ 0 ⇒ concave), and
     `concaveOn_lineVariance_of_flat` is its `= 0` corollary.
+  - `ResponseSimplexIdentification.lean` (J2, THE SIMPLEX IDENTIFICATION; finite X, charged atoms `hν`, `SpansAffine`):
+    `posSimplex X := {p | p > 0 ∧ ∑ p = 1}`, **`atomMass S ν θ x := (Pfam θ).real {x}`** (the barycentric map B),
+    `atomMass_eq` (`= p_θ(x) ν{x}` via `withDensity_apply` + `lintegral_singleton`), `atomMass_pos`, `sum_atomMass`
+    (`sum_measureReal_singleton`), `integral_familyMeasure_eq_sum` (`integral_fintype`),
+    **`meanMap_eq_sum_atomMass`** (`m(θ) = ∑ B(θ)_x S(x)`), `meanMap_injective_dirSpan` (via `responseTheta_meanMap`),
+    `atomMass_injective`, `atomMass_zero` (`= ν.real{·}`), `dirLossLin S ν : W →ₗ (X → ℝ)`, **`logLift S ν : W →ₗ (X→ℝ)⧸ℝ∙1`**
+    (`L(θ) = [⟨θ,S⟩]`), `logLift_injective` (constant loss contrast ⇒ invisible ⇒ 0), `finrank_quotient_constants`
+    (`= |X| − 1`), `logLift_bijective` (dimension count with `finrank_dirSpan_eq_card_sub_one`), `logEquiv` (≃ₗ),
+    `logInv`, **`simplexInv hS ν hν hspan p := L⁻¹[−log(p/ν)]`**, `dirLoss_simplexInv` (`= −log(p/ν) + c`),
+    `measureReal_singleton_pos_of_ne_zero ν hν x`, `famZ_eq_sum ν θ`, **`atomMass_simplexInv`** (`B ∘ B⁻¹ = id` on Δ°),
+    `atomMass_mem_posSimplex`, **`simplexInv_atomMass`**, **`simplexEquiv : W ≃ Δ°`**, `contDiff_dirLoss_coe`,
+    **`contDiff_atomMass`** (B is C^∞), **`contDiffOn_simplexInv`** (B⁻¹ is C^∞ on the positive orthant;
+    `LinearMap.toContinuousLinearMap logInv` + `ContDiffOn.log`), **`simplexHomeomorph : W ≃ₜ Δ°`**,
+    **`atomMass_modelJourney_zero`** (THE FEATURELESS JOURNEY IS THE MIXTURE SEGMENT: `B(θ_t) = (1−t)ν{·} + tB(θ₁)`),
+    **`integral_familyMeasure_modelJourney_zero`** (affine expectations), **`lawCov_modelJourney_zero`** (exact mixture
+    variance identity `Var_t = (1−t)Var_ν + tVar_{θ₁} + t(1−t)(ΔE)²`). Gotchas: `variable (S) in` for defs whose types
+    mention only `𝕍`; `omit hν` on everything not charging atoms; `set_option linter.unusedFintypeInType false in` on
+    theorems whose statements do not need `Fintype X` but whose proofs sum over `X`; `LinearEquiv.ofBijective` applied
+    is defeq to the underlying map, so `change … = _; rw [LinearEquiv.apply_symm_apply]; rfl` beats `simp` (which
+    collapses the hypothesis to `True`).
