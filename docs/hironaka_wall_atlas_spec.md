@@ -5763,3 +5763,12 @@ certificates for concrete resolved charts beyond the identity chart.
     `lipschitzWith_faceEmbedPoint`, `faceEmbedExt_coe`, **`lipschitzWith_faceEmbedExt`** (`1`-Lipschitz),
     `continuous_faceEmbedExt`, `meanExt_faceEmbed`, **`meanExt_faceEmbedExt`** (MEAN COMPATIBILITY `meanExt ∘ ĵ_A =
     meanExt_A`, by density), **`exists_meanExt_eq_of_faceCompletion`** (INTRINSIC ACCESSIBILITY TRANSFERS TO AMBIENT).
+  - REFACTOR: `AccessibleFaceNonexpansion`/`FaceEmbedExtension` now take an arbitrary SUB-MODEL `μ'` with
+    `hle : dirSpan μ' S ≤ dirSpan ν S` (faces `ν_A` are the instance via `dirSpan_faceMeasure_le`);
+    `completionLaw_tiltExt_subFamily` replaces the face-specific action lemma; `faceDir ν μ' hle v₀ w`.
+  - `FaceChainAccessibility.lean` (round 86, rank 1, second half): `bdd_indicator_one`,
+    **`completionLaw_faceEmbedExt`** (LAW COMPATIBILITY AT COMPLETION POINTS `Q_{ĵ y} = Q'_y`, by density through
+    indicator integrals), **`faceEmbedExt_tiltExt`** (EQUIVARIANCE `ĵ (tiltExt' h y) = tiltExt h (ĵ y)`),
+    `completionLaw_faceEmbedExt_seed`, **`faceEmbedExt_faceEmbedExt`** (CHAIN COMPATIBILITY `ĵ_A ∘ ĵ^A_E = ĵ_E` with the
+    transported seed), `faceMeasure_faceMeasure_of_subset`, **`dirSpan_faceMeasure_le_of_subset`** (nested faces are
+    nested sub-models). The coherent nonexpanding boundary atlas: law, mean, nonexpansion, chain compatibilities.

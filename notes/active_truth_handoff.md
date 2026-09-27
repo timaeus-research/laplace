@@ -2163,4 +2163,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (isClosed_eq …) …`, accessibility transfer). NEXT: chain compatibility `ĵ_A ∘ ĵ^A_E = ĵ_E` (uniqueness on the dense
   interior via `meanExt_eq_face_unique` + continuity; needs `(ν_A)_E = ν_E` as measures and `W_E ≤ W_A`), then
   `ResponseTiltPathBudget` (finite-dimensional coefficient differentiation), `ResponseFormContinuity`.
+- Sub-model refactor + FaceChainAccessibility landed. GOTCHAS: a `def` only includes section variables it USES (an
+  `include hS` does not force `hS` into `faceDir` once its body no longer mentions it) — update call sites; a lemma
+  with `include hS` but statement/proof not using hS still takes it (omit it explicitly, e.g. `faceDir_coe`);
+  `faceMeasure_faceMeasure ν hA hB hA0 : faceMeasure (faceMeasure ν A) B = faceMeasure ν (A ∩ B)` exists
+  (ConditioningCertificate, needs `[IsProbabilityMeasure ν]`); law equality of completion laws by density:
+  `Measure.ext` + `(ENNReal.toReal_eq_toReal_iff' (measure_ne_top _ _) (measure_ne_top _ _)).1` + continuity of
+  `y ↦ ∫ B.indicator 1 dQ_y` (`integral_indicator_one hB` + `measureReal_def`). NEXT (round 86): seed independence
+  (via `meanExt_eq_face_unique`), `ResponseTiltPathBudget` (finite-dim coefficient differentiation), `ResponseFormContinuity`,
+  `ResponseNoiseCalibration` (`d_eff ≤ κ dim W` via a Fisher-orthonormal basis), `ResponsePatchMargins`.
 
