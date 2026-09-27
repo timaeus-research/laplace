@@ -5987,3 +5987,10 @@ certificates for concrete resolved charts beyond the identity chart.
     (`D_k G_g(h,ℓ) = κ_q(L_{Vℓ},L_{Vh},L_{Vk}) − κ_ρ(L_{Vℓ},k,h) − κ_ρ(L_{Vh},k,ℓ)`), `pullbackVar_eq`,
     **`hasDerivAt_pullbackBilin_add`** (THE PULL-BACK VARIATION THEOREM), **`hasDerivAt_pullbackForm_add`** (speed²
     variation `κ_q(L_v,L_v,L_v) − 2κ_ρ(L_v,k,k)`).
+  - `ResponseHigherDefectVariation.lean` (B4): `hasDerivAt_mul_of_eq_zero` (slope lemma: `u·w` with `u t₀ = 0`, `w`
+    continuous), `continuous_integral_tilted_mul`, **`continuous_thirdCentral_tilted`**, `lawCov_centredSq_eq_thirdCentral`
+    (`Cov((h−Eh)²,b) = κ(h,h,b)`), `responseOf_smul_eq_dataTheta` (general `h`), `responseVel_smul_eq_dataThetaVel`,
+    `responseSpeedSq_eq_pullbackForm`, **`hasDerivAt_responseSpeedSq`** (speed² of the data path moves by
+    `κ_q(L_v,L_v,L_v) − 2κ_ρ(L_v,h,h)`), `defectBracket_eq`, `hasDerivAt_defectBracket_zero`,
+    **`hasDerivAt_deriv_deriv_responseDefect_zero`** / **`deriv_deriv_deriv_responseDefect_zero`** (THE THIRD DEFECT
+    DERIVATIVE `Δ'''(0) = 2κ_ν(h,h,h) + 3κ_ν(h,h,L_v) − κ_ν(L_v,L_v,L_v)`, `v = θ'_0`; no fourth cumulant).

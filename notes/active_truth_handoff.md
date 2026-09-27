@@ -2399,11 +2399,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   between `fun x ↦ 0 + t*h x` and `fun x ↦ t*h x`. `ResponsePullbackVariation` landed (product rule `hasDerivAt_dotJ` on
   `G = −⟨V h, F ℓ⟩`, Hessian for `V`, `dataThird` for `F`, then `⟨A⁻¹w, A v⟩ = ⟨w,v⟩` from
   `dotJ_chartDeriv_eq_neg_lawCov` + `lawCov_comm` + `ContinuousLinearEquiv.apply_symm_apply` through `coe_chartDerivEquiv`;
-  the identification `pullbackVar_eq` is one `rw` chain + `ring`). NEXT: `ResponseHigherDefectVariation` (`Δ'''(0)`:
-  route = `deriv (deriv Δ) = Var_{ρ_t}h − responseSpeedSq t + Q t` (funext of `hasDerivAt_deriv_responseDefect`), (i)
-  `hasDerivAt_var_tilted`, (ii) `responseSpeedSq t = pullbackForm (t•h) h` via `responseOf (t h) = dataTheta t` (copy
-  `responseOf_eq_dataTheta`'s proof for general `h`) + `hasDerivAt_pullbackForm_add` at `g = 0` with the `fun x ↦ 0 + t*h x`
-  congr trick, (iii) `Q t = t·κ_{ρ_t}(h,h,h) + Σ θ_t,i κ_{ρ_t}(h,h,S_i)` (lawCov right-linearity + `lawCov_eq_integral_centred`),
-  continuity of `t ↦ κ_{ρ_t}(g,k,f)` from `thirdCentral_eq` + `hasDerivAt_integral_tilted`, and a slope lemma
-  `HasDerivAt (u·w) (u'·w 0) 0` for `u 0 = 0`, `w` continuous at 0), then `ResponseSecondOrderLifts`, `ResponseDataSmooth`,
+  the identification `pullbackVar_eq` is one `rw` chain + `ring`). `ResponseHigherDefectVariation` landed exactly along the planned route (slope lemma via
+  `hasDerivAt_iff_tendsto_slope` + `slope_def_field` + `simp only`; `HasDerivAt.fun_sum (u := Finset.univ)` needs the finset
+  named; `rw` with a congr-lemma whose proof args are `_` fails against a beta-redex RHS — pass the proofs and `exact
+  (…).symm`; `thirdCentral_comm₂₃, thirdCentral_comm₁₂` (in that order) takes `κ(h,h,S)` to `κ(S,h,h)`). NEXT:
+  `ResponseSecondOrderLifts` (`(Φ∘g)''(0) = V_g(b) + H_g(k,k)` for `g(t) = g + t k + t²/2 b`; prescribed two-jets via
+  `horLin`/`horizontalLift` with `velLin_horLin`, `responseVel_horizontalLift`), then `ResponseDataSmooth`,
   `ResponseLengthSecondVariation`.
