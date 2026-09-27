@@ -5484,3 +5484,12 @@ certificates for concrete resolved charts beyond the identity chart.
     facet point is `1_A e^{−⟨v_M,S⟩/2}/√Z_F(v_M)`), **`completionLaw_eq_faceFamily`** (`completionLaw x_M = familyMeasure
     (faceMeasure ν A) 1 0 S 1 v_M`, i.e. THE BOUNDARY POINT OVER `M ∈ ri F` IS THE FACE EXPONENTIAL-FAMILY LAW — the
     maximum-relative-entropy law on the face with mean `M`).
+  - `CompletionSupportingFace.lean` (round 81, module 4): `integral_dirLoss_completionLaw`,
+    **`completionLaw_face_eq_one`** (a completion law is concentrated on every exposed face containing its mean:
+    `∫ (β − ⟨u,S⟩) dQ = 0` with nonnegative integrand), **`faceFibre_pos_of_meanExt`** (boundary extended means lie on faces
+    charged by `ν`).
+  - `DataResponseEndpoint.lean` (round 81, module 5): `dataPathCompletion t = [θ_t]`, `meanExt_dataPathCompletion`,
+    **`cauchySeq_dataPathCompletion`** (finite response length ⇒ Cauchy at `t → ∞`, via `d_F(θ_s,θ_t) ≤ ∫_s^t F` and the
+    monotone primitive), **`exists_tendsto_dataPathCompletion_iff`** (THE ENDPOINT THEOREM: the data response path has a
+    limit in the Fisher completion, lying over `E[S | h = H]`, iff the response length is finite),
+    **`completionLaw_dataPathCompletion_limit`** (the endpoint's law is the face exponential-family law `P^A_{v_M}`).

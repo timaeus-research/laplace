@@ -543,6 +543,8 @@ import Laplace.Multi.FisherCompletionLaws
 import Laplace.Multi.FisherCompletionMeasure
 import Laplace.Multi.FaceRootDensityLimit
 import Laplace.Multi.FacetCompletionLaw
+import Laplace.Multi.CompletionSupportingFace
+import Laplace.Multi.DataResponseEndpoint
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

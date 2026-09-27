@@ -1909,3 +1909,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `ENNReal.ofReal_mul measureReal_nonneg`, `measureReal_def`, `ENNReal.ofReal_toReal`, `ENNReal.inv_mul_cancel`.
   NEXT: module 4 `CompletionSupportingFace` (`∫ (β − ⟨u,S⟩) Ψ̄² = 0` ⇒ `completionLaw x A = 1` for every exposed face
   containing `m̄ x`), module 5 `DataResponseEndpoint`, then the normal-translation injectivity programme (6–9).
+- Modules 4–5 landed 2026-09-27 (`CompletionSupportingFace`, `DataResponseEndpoint`), both clean on the first check.
+  Idioms: `integral_eq_zero_iff_of_nonneg_ae` + `ae_iff` + `prob_compl_eq_zero_iff (measurableSet_faceFibre hS u β)`
+  for concentration; for an ℝ-indexed Cauchy curve use `cauchySeq_of_le_tendsto_0 (fun N : ℝ ↦ ∫_{Ioi 0} g − F N)`
+  with the primitive `F t = ∫₀ᵗ g` MONOTONE by `monotone_of_deriv_nonneg` (handles negative `N`) and
+  `intervalIntegral_tendsto_integral_Ioi 0 hgint tendsto_id`.
+  NEXT: slop paragraph for the round-81 batch; then the normal-translation injectivity programme: module 6
+  `NormalTiltFisherComparison` (`fisherVar (θ + a) w ≤ fisherVar θ w / P_θ(A)` for `a` with `⟨a,S⟩ = c` on `A`,
+  `⟨a,S⟩ ≥ c` a.e.), 7 `CompletionFaceParameters`, 8 `CompletionFaceUnique`, 9 `CompletionHellingerEmbedding`,
+  10 `ProductCornerCompletion`.
