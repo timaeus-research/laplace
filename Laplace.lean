@@ -659,6 +659,7 @@ import Laplace.Multi.ResponseObservableSamplingGeometry
 import Laplace.Multi.ResponseSimplexCompletion
 import Laplace.Multi.ResponseObservableIIDExpansion
 import Laplace.Multi.ResponseFeatureRefinement
+import Laplace.Multi.ResponseMismatchResolution
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

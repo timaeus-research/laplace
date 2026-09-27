@@ -6696,3 +6696,17 @@ certificates for concrete resolved charts beyond the identity chart.
     **`sq_integral_sub_responseProjection_refine_le`** (`ofReal((E_{R_T}F − E_{R_S}F)²/(2L²)) ≤ KL(R_T‖R_S)` for any affine
     predictor `⟨a,S⟩ + c` with `|F − ⟨a,S⟩ − c| ≤ L`, from `pinsker_observable`). Only `hT hDν hfinT` are `include`d;
     `hS` enters through statements or `include hS in`.
+  - `ResponseMismatchResolution.lean` (L4, RESOLUTION OFF THE MODEL): `dataBilin D : BilinForm ℝ W` (`Σ_D(u,v) =
+    Cov_D(⟨u,S⟩,⟨v,S⟩)`, `LinearMap.mk₂` from `lawCov_add_left_eq`/`lawCov_const_mul_left_eq`), `dataBilin_comm`,
+    `dataBilin_self_nonneg`, `dataBilin_sq_le` (CS), positive definiteness `hpd : ∀ u ≠ 0, 0 < Σ_D(u,u)` as an EXPLICIT
+    theorem binder (a `variable` through the `𝕍` notation gave "Unknown constant ν✝" + whnf timeouts),
+    `dataBilin_nondegenerate`, **`dataDual hpd e`** (`Σ_D⁻¹e`: Riesz representative of `u ↦ ⟨u,e⟩`, a plain
+    `Module.Dual` — no `toContinuousLinearMap` wrapper, or `simp` cannot unfold the application), `dataBilin_dataDual`,
+    `dataBilin_dataDual_self` (`Σ_D(e*,e*) = ⟨e*,e⟩`), **`sq_dotJ_le_dataBilin_mul`** (`⟨u,e⟩² ≤ Σ_D(u,u)⟨e,Σ_D⁻¹e⟩`),
+    `dataDual_ne_zero`, **`isGreatest_snr`** (`⟨e,Σ_D⁻¹e⟩ = max_{u≠0} ⟨u,e⟩²/Σ_D(u,u)`, attained at `e*`),
+    **`obsChart_gt_of_norm_le`** (deterministic local chamber certificate: margin `γ`, radius `r ≤ δ` with
+    `(Σ|u_{F,j}|)r + ½‖H_F‖r² + Kr³ < γ`; `hK : 0 ≤ K` is a hypothesis — it cannot be derived from the remainder at 0).
+    Sampling: `integral_sq_dotJ_sampleResponse_sub_eq` (`E⟨u,ξ⟩² = Σ_D(u,u)/n`), **`mismatch_resolution_floor`** (K5's
+    floor with the correct off-model geometry: `1 ≤ n⟨e,Σ_D⁻¹e⟩`), **`measureReal_obsChart_gt_ge`** (probabilistic chamber
+    certificate `≥ 1 − 2|J|exp(−nr²/(8B²))` via `measureReal_norm_sampleResponse_sub_gt_le`, `measure_mono_ae` +
+    `ENNReal.toReal_mono`, `measureReal_compl`, `probReal_univ`).
