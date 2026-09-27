@@ -5435,3 +5435,12 @@ certificates for concrete resolved charts beyond the identity chart.
     **`FisherCompletion hS ν := UniformSpace.Completion (FisherPoint hS ν)`**, `meanExt` (Lipschitz extension of the
     mean, `meanExt_coe`, `lipschitzWith_meanExt`, `continuous_meanExt`), `meanExt_mem_closure`,
     **`exists_meanExt_eq_iff`** (`∃ x ∈ Ŵ_F, m̄ x = M ⇔ ∃ Fisher–Cauchy (θ_n) with m(θ_n) → M`).
+  - `FisherCauchyRealisation.lean`: `realise p`/`realiseVel p` (piece `p n` on `[n,n+1]`, constant before `0`),
+    **`hasDerivAt_realise`** (globally `C¹`, junction derivatives `0`), **`continuous_realiseVel`**, `hasDerivAt_coe_realise`,
+    **`lintegral_realise_le`** (`∫_0^∞ F ≤ Σ L(p n)`), `lintegral_realise_lt_top`, `norm_meanMap_realise_sub_le`,
+    **`tendsto_meanMap_realise`** (means along the realised path → M), **`fisherDist_le_integral`** (`d_F(η a, η b) ≤ ∫_a^b F`
+    for a global `C¹` path in `W`), **`exists_subseq_fisherDist_le`** (Cauchy ⇒ subsequence with `d_F ≤ 2^{−n}`).
+  - `FacetCompletionAccess.lean`: **`exists_meanExt_eq_iff_ray`** — `∃ x ∈ Ŵ_F, m̄ x = M ⇔ ∫_0^∞ √raySpeedSq(0,u,r) dr < ∞`
+    for `M ∈ ri F` (facet): COMPLETION ACCESSIBILITY OF A FACET; **`exists_meanExt_eq_iff_responseLength`** — for the
+    top-set conditional mean of a data path, `E[S | h = H]` is an extended mean of the Fisher completion ⇔ the response
+    path from the featureless law has finite Fisher length.

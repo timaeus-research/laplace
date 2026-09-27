@@ -1832,3 +1832,20 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: module 10 `FisherCauchyRealisation` (countable concatenation of near-optimal flat paths on `[n,n+1]`, constant for
   `t ≤ 0`, into one `C¹` path on `[0,∞)` of finite length with means → M), module 11 `FacetCompletionAccess`
   (`∃ x ∈ Ŵ_F, m̄ x = M ⇔ normal ray finite` via `facet_fisher_access_iff`), then Hellinger (7–8) and uniqueness (13).
+- Modules 10–11 landed 2026-09-27: `FisherCauchyRealisation` (floor-indexed piecewise path; `HasDerivAt` at integer
+  junctions by `HasDerivWithinAt.union` on `Iic ∪ Ici` with `Ico_mem_nhdsGE`/`Ioc_mem_nhdsLE`, continuity of the velocity
+  by `continuousAt_iff_continuous_left_right`; length by `lintegral_iUnion_le` over `Ico n (n+1)` + `integral_comp_sub_right`;
+  `fisherDist_le_integral` by affine reparametrisation + `flat` + `integral_comp_add_mul`; subsequence by
+  `CauchySeq.subseq_mem` with `Metric.dist_mem_uniformity`) and `FacetCompletionAccess` (`exists_meanExt_eq_iff_ray`,
+  `exists_meanExt_eq_iff_responseLength`; Cauchy-ness of the integer samples by `cauchySeq_of_le_tendsto_0` with
+  `b N = ∫_{Ioi 0} g − ∫_0^N g` and `intervalIntegral_tendsto_integral_Ioi`). Gotchas: dropping `[Fintype J]` from a
+  section whose statements mention `HasDerivAt` into `dirSpan` breaks the normed instance (timeouts) — keep it and
+  `set_option linter.unusedFintypeInType false` + `linter.unusedSectionVars false` for the section; `rw [← (p n).target]`
+  fails (motive: the endpoint appears in the type of `p n`) — use a `calc` through `(p n).target.symm`;
+  `continuousWithinAt_const.congr_of_eventuallyEq` needs `(f := fun _ ↦ 0)` named; `Continuous.smul`/`fun_prop` produce
+  Pi-forms — `(hd'.comp hlin).const_smul c` with a typed `hlin`; a `calc` proving `=` inside a `≤` goal leaves a
+  `calc.step` — `refine le_of_eq ?_` first; `hasDerivAt_subtype_of_hasDerivAt`/`mem_of_hasDerivAt_subtype`
+  (ResponseSusceptibility) lift ambient derivatives to `W`.
+  NEXT: modules 7–8 (Hellinger: `sqrtDensity`, affinity identity `∫ q_θ q_η = Z((θ+η)/2)/√(Z θ Z η)`, chord derivative,
+  `H ≤ ½ L`, ½-Lipschitz `Ψ` into `Lp ℝ 2 ν` and its completion extension), module 9 (completion laws), module 13
+  (uniqueness of accessible facet fibres, face-conditioned Hellinger limit).
