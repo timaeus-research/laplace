@@ -6216,3 +6216,23 @@ certificates for concrete resolved charts beyond the identity chart.
     a bump with `rOut = r/2`, `intervalIntegral.integral_pos_iff_support_of_nonneg_ae'` + `Metric.measure_ball_pos`),
     `StationaryFixedEndpoints ν γ`, **`stationary_fisherEnergy_iff_lcGeodesic`** (STATIONARITY ⇔ LC GEODESIC on `(0,1)`).
     PROGRAMME F COMPLETE (F1–F6).
+  - Round 96 consult (`research_round96_{q,v1}.md`): audit clean with caveats (F5 conditional until the finite instance;
+    F4 pointwise-in-t, positive-time; F6 stationarity not minimality; "featureless = max entropy" needs the
+    reference-relative reading). PROGRAMME G ranked: G1 `ResponseEndpointInformationAction`, G2 `ResponseFiniteSaturation`
+    (representation lemma via `dirProjL`, `dim W = |X|−1`), G3 `ResponseCurvatureDefect` (`K = ¼ + (E[r_uu r_vv] −
+    E[r_uv²])/(4D)`, `r_uv = f_uf_v − G(u,v) + f_{C(u,v)}` orthogonal to scores), G4 `ResponseGlobalInformationLandscape`
+    (`KL(ρ‖ν) = D(ρ) + I(ρ)` on `DataLaw`, `DI_g[h] = −⟨θ,δμ⟩`, `DD_g[h] = Cov_{ρ_g}(g + ⟨θ,S⟩, h)`), G5
+    `ResponseIntrinsicDistance` (`2 arccos Aff ≤ d_F ≤ L_F ≤ √Jeffreys`; saturated: `d_F = 2 arccos Σ√pq`), G6
+    `ResponseSamplingGeometry` (`E G(ξ_n,ξ_n) = tr(H⁻¹B)/n`, sandwich `d_eff ≠ dim W` off-model; second jet applied to
+    truth and sampling displacements).
+  - `ResponseEndpointInformationAction.lean` (G1): `meanMap_sub_meanMap_mem`, `modelDir θ₀ θ₁ := ⟨m(θ₁) − m(θ₀), _⟩`,
+    **`modelJourney θ₀ θ₁ t := θr(m(θ₀) + tΔ)`**, `modelJourney_eq_responseOf_mixTilt` (mixture of the two model tilts),
+    `modelJourney_zero/one`, `model_segment_mem`, `modelJourneyDomain` (open ⊇ [0,1]: `Icc_subset_modelJourneyDomain`,
+    `isOpen_modelJourneyDomain`; NB `modelDomain` is TAKEN by ConstrainedLP), **`meanMap_modelJourney`** (mean-affine),
+    **`contDiffOn_modelJourney`**, `modelVel := (CDE θ_t).symm Δ`, `chartDeriv_modelVel`, **`hasDerivAt_modelJourney`**,
+    `hasDerivAt_modelJourney_coe`, `hasDerivAt_meanMap_modelJourney`, `fisherInner_modelVel` (`G(θ',θ') = −⟨θ',Δ⟩`),
+    **`hasDerivAt_modelJourneyKL`** (`d/dt KL(P_{θ_t}‖P_{θ₀}) = ⟨θ₀ − θ_t, Δ⟩`), `hasDerivAt_modelJourneyMoment`,
+    `continuousOn_modelVel/Speed`, **`toReal_klDiv_modelJourney_eq_action`** (`KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G`),
+    **`toReal_klDiv_modelJourney_eq_action'`** (`KL(P_{θ₀}‖P_{θ₁}) = ∫₀¹ t G`), **`jeffreys_model_eq_action`** (`= ∫₀¹ G`),
+    `jeffreys_model_eq_neg_dotJ` (`= −⟨θ₁−θ₀, m(θ₁)−m(θ₀)⟩`), **`toReal_klDiv_eq_defect_add_model_action`** (INFORMATION
+    DECOMPOSITION FROM ANY MODEL BASE POINT).

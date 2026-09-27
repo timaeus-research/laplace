@@ -2599,5 +2599,15 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   makes them whnf-time-out; a text replace of `testVariation hS ν` also hit `hasDerivAt_fisherEnergy_testVariation hS ν`
   (substring, again); `continuous_const (y := z)` pins the constant; `Continuous.const_smul`, not `continuous_const.smul`;
   `Metric.closedBall` must be qualified). PROGRAMME F COMPLETE.
-  NEXT: round-96 consult (ask about the finite saturation instance and what follows programme F). Optional:
+  Round 96 (19fb1d3) = PROGRAMME G (six modules, see atlas spec). G1 `ResponseEndpointInformationAction` LANDED
+  (verbatim base-point generalisation of F2+F3: base `m(θ₀)`, `Δ = m(θ₁) − m(θ₀)`; segment membership from the mixture
+  of the two MODEL tilts; `KL(P_{θ_t}‖P_{θ₀})` via `toReal_klDiv_model_model` and its derivative `⟨θ₀ − θ_t, Δ⟩`;
+  gotchas: `∞` in `ContDiffOn ℝ ∞` needs `open scoped ContDiff` ("expected token"); `(θ₀ : J → ℝ) − modelJourney …`
+  needs the coercion on the journey too (HSub instance failure cascades into every later `set`); split `dotJ` of
+  sums/differences with `simp only [dotJ_sub_left, (isLinearMap_dotJ _).map_sub, …]` rather than `rw` chains, since
+  `rw` rewrites all instances of one instantiation at once and the next identical rewrite fails; `chartV_apply` writes
+  `chV θ = mean θ − mean (0 : J → ℝ)`; `convert ht using 2` against a set membership yields an iff — prove the
+  identity with `module` and `rw`; `modelDomain` was TAKEN (ConstrainedLP) — the dup gate caught it, the root build
+  confirmed; renamed `modelJourneyDomain`). NEXT: G2 `ResponseFiniteSaturation`, G3 `ResponseCurvatureDefect`, G4
+  `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
