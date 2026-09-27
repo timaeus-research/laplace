@@ -2703,7 +2703,8 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   argument greedily swallows `⊆ …`. Round 100 consulted (programme K; audit fixes applied to J3 docstrings). K1
   `ResponseBoundaryJourney` LANDED (every finite data law reachable in response: `P_t → R_D = q*(m_D)`, all posterior
   expectations and KL converge, exact budget `KL(D‖ν) = KL(D‖R_D) + KL(R_D‖ν)`; gotchas: `open InformationTheory` for
-  `klDiv`; `Ioo_mem_nhdsLT`; defeq `exact` for `polytopeJourney` vs `θr`). NEXT: K2 `ResponseIIDSamplingBias`
+  `klDiv`; `Ioo_mem_nhdsLT`; defeq `exact` for `polytopeJourney` vs `θr`). K2a `IIDFourthMoment` LANDED (E T_n⁴ ≤ 3n²M⁴ under iIndepFun; E‖ξ̄‖³ ≤ √3|J|³(2B)³/n^{3/2}).
+  NEXT: K2b `ResponseIIDSamplingBias`
   (bilinear contraction `E[Q(ξ̄,ξ̄)] = (1/n)E[Q(ξ,ξ)]` under pairwise independence via
   `integral_sampleResponse_sub_mul_sub`; fourth moment `E(∑Y)⁴ = nEY⁴ + 3n(n−1)(EY²)²` under `iIndepFun`; CS
   `M₃ ≤ √M₂√M₄`; instantiate J4), K3 `ResponseFiniteFibres`, K4 `ResponseJourneyInformationCost` (boundary budget

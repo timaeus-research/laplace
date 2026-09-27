@@ -6535,3 +6535,19 @@ certificates for concrete resolved charts beyond the identity chart.
     **`boundary_journey`** (flagship bundle). Gotchas: `klDiv` needs `open InformationTheory`;
     `Ioo_mem_nhdsLT (h : a < b) : Ioo a b ∈ 𝓝[<] b`; a `polytopeJourney` goal vs a `θr` lemma is closed by `exact` (defeq)
     not `rw`; `ENNReal.add_ne_top.1` splits finiteness of a KL sum; `dataMean_mem_polytope` was TAKEN (dup gate).
+  - `IIDFourthMoment.lean` (K2a): `iidPartialSum Y n ω := ∑_{i<n} Y_i ω`; for mutually independent (`iIndepFun`)
+    measurable `|Y_i| ≤ M` centred variables: `indepFun_iidPartialSum` (`T_n ⟂ Y_n` via `iIndepFun.indepFun_finset (range n)
+    {n}` + `IndepFun.comp` with the sum/projection maps; `Finset.sum_coe_sort`), `integral_iidPartialSum_pow_mul_pow`
+    (mixed moments factorise, `IndepFun.integral_fun_mul_eq_mul_integral`), `integral_sq_iidPartialSum_le` (`E T_n² ≤ nM²`),
+    **`integral_pow_four_iidPartialSum_le`** (`E T_n⁴ ≤ 3n²M⁴`, induction: `E T_{n+1}⁴ = E T_n⁴ + 6E T_n² E Y² + E Y⁴`).
+    Empirical response (sup norm, `hB : ∀ j x, |S j x| ≤ B`, `hind : iIndepFun Xs P`): `norm_le_sum_abs`,
+    `norm_pow_four_le` (`‖v‖⁴ ≤ |J|³∑v_j⁴` via `pow_sum_div_card_le_sum_pow`), `norm_sq_le`, `abs_comp_Xs_sub_le` (`≤ 2B`),
+    `integral_pow_four/sq_sampleResponse_sub_le` (coordinates), `measurable_sampleResponse_sub`,
+    `norm_sampleResponse_sub_le` (`≤ |J|·2B`), `bdd_norm_sampleResponse_sub_pow`,
+    **`integral_norm_pow_four_sampleResponse_sub_le`** (`E‖ξ̄‖⁴ ≤ 3|J|⁴(2B)⁴/n²`),
+    **`integral_norm_sq_sampleResponse_sub_le`** (`≤ |J|²(2B)²/n`), **`integral_norm_pow_three_sampleResponse_sub_le`**
+    (`E‖ξ̄‖³ ≤ √3|J|³(2B)³/(n√n)` by CS `sq_integral_mul_le`). Gotchas: binder types over a coerced finset must be written
+    `{i // i ∈ Finset.range n} → ℝ` (a `(Finset.range n : Finset ℕ) → ℝ` binder is "invalid binder name");
+    `measurable_pi_apply` for a projection map needs a typed `have` (implicit family not inferable); `rw [mul_pow]` without
+    arguments hits the wrong product — pass the factors; `le_of_pow_le_pow_left` doesn't exist here — go through
+    `Real.sqrt_sq`/`Real.sqrt_le_sqrt`.
