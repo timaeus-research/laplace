@@ -2762,10 +2762,13 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   DONE, including the attainable-direction chamber LOWER bound (`ResponseAttainableChamber`:
   `chamber_resolution_floor`, mean displacement `a e/√n`, cost `⟨e,Σ_D⁺e⟩/2`). Round 104 DONE (audit clean up to sup-norm wording; two audit corollaries LANDED:
   `ResponseFaceProjectionIdentification` (faceProj = Euclidean projection at boundary means),
-  `ResponseChamberClassifier` (classification floor with the label-separation hypothesis)). NEXT: PROGRAMME N
-  (see spec, round 104): N1 exact face restriction `R^ν_M = R^{ν_A}_M` (laws with mean in a face are supported on
-  `X_A`; `KL(Q‖ν) = KL(Q‖ν_A) − log ν(X_A)`; minimisers coincide) → STRATIFIED TRANSPORT capstone (journey integral
-  along absolutely continuous paths with the tangential field of the minimal face); then N2–N6. Also: fix the note's
+  `ResponseChamberClassifier` (classification floor with the label-separation hypothesis)). N1 part 1 LANDED: `ResponseFaceRestriction`
+  (`responseProjection_faceMeasure_supportSet : Π^{ν_A}(M) = Π^ν(M)` for `A = supp q*(M)`). NEXT: N1 capstone
+  STRATIFIED TRANSPORT (`f_F(M(1)) − f_F(M(0)) = ∫₀¹⟨u_F^{A_t}(M(t)), Ṁ(t)⟩dt` along absolutely continuous journeys;
+  route: finitely many face strata, facewise interior calculus for the face family via N1, global Lipschitz (M3b),
+  `Ṁ(t) ∈ W_{A_t}` a.e. from "an a.c. nonnegative function has derivative zero a.e. on its zero set"); then N2 Hessian
+  = residual third moment, N3 face-adaptive risk, N4 joint ellipsoids incl. null directions, N5 Cauchy–Binet
+  barycentric regression, N6 local price of refinement. Also: fix the note's
   wording (sup norm, "maximal entropy relative to ν"), add `e ∈ W` to the attainable-direction reading, constant-feature
   `R_0 = ν` lemma. Was: 3 uniform unlocalised
   risk `E|E_{R_{M̂_n}}F − Ψ_F(D)| ≤ L_F√(tr Cov_D(S)/n)`, 4 margin chamber theorem `P(wrong) ≤ tr Cov_D/(n r_D²)` +

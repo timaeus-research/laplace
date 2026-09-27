@@ -7004,3 +7004,12 @@ certificates for concrete resolved charts beyond the identity chart.
   - `ResponseChamberClassifier.lean` (audit 5): **`chamber_classifier_error_ge`** (`ℓ₀ ≠ ℓ₁` ⇒ every measurable
     two-label classifier has `P_{D_{a/√n}}(c ≠ ℓ₁) + P_D(c ≠ ℓ₀) ≥ 2L_n`, `2L_n → 1 − √(a²⟨e,Σ_D⁺e⟩/2)`; test =
     indicator of `{c = ℓ₀}`, `integral_indicator_one`, Bool case split, `measureReal_compl` + `probReal_univ`).
+  - `ResponseFaceRestriction.lean` (N1, EXACT FACE RESTRICTION; finite `X`, `hν : 0 < ν{x}`):
+    `measureReal_supportSet_pos` (the support of `q*(M)` is charged), `responseProjection_compl_supportSet` (`R_M(Aᶜ) = 0`
+    via `vecMeasure_qStarVec`, `Set.Finite.coe_toFinset`, `sum_measure_singleton`, `qStarVec_eq_zero_of_notMem`),
+    **`responseProjection_faceMeasure_supportSet`** (`Π^{ν_A}(M) = Π^ν(M)` with `ν_A = faceMeasure ν A`; the M7a
+    base-change skeleton in `ℝ≥0∞`: `absolutelyContinuous_faceMeasure`, the chain rule
+    `klDiv_eq_klDiv_faceMeasure_add ν hAm hp ρ hρA : KL(ρ‖ν) = KL(ρ‖ν_A) + ofReal(−log ν.real A)`, `entropyProj_le_klDiv`
+    at the face law, the `ν`-Pythagoras, `ENNReal.le_of_add_le_add_right hfin (h.trans_eq (zero_add _).symm)`,
+    `nonpos_iff_eq_zero`, `klDiv_eq_zero_iff`). Every set of a finite `MeasurableSingletonClass` space is measurable:
+    `(Set.toFinite A).measurableSet`. Remaining N1 capstone: STRATIFIED TRANSPORT along absolutely continuous journeys.
