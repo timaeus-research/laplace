@@ -2470,4 +2470,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   derivatives cancel by symmetry of `fderiv (fderiv CD)`; e/m flat), D04 `ResponseDensityTopology` (normalised densities
   in `L¹(ν)`, continuous response and model section), D05 `ResponseFibreDeformation` (continuous fibre-preserving strong
   deformation retraction), D06 `ResponseTopologicalQuotient` (quotient homeomorphic to `W`, contractible fibres). C6
-  correction: in general `D²σ₀(0)[ξ,η] = −H_g(Jξ,Jη)`, `Jξ = Kξ − hor(DΦ[Kξ])`. NEXT: D01.
+  correction: in general `D²σ₀(0)[ξ,η] = −H_g(Jξ,Jη)`, `Jξ = Kξ − hor(DΦ[Kξ])`.
+D01 `ResponseFisherJets` LANDED: builds on the existing `fisherInner S ν θ u v` (ResponseNoiseCalibration; positivity
+  `fisherInner_self_pos`); `hasDerivAt_fisherInner_line` via `hasFDerivAt_chartDeriv_coe` + `thirdCoordCLM_apply` +
+  `thirdOp_coe_apply` (the CLM-valued `hasFDerivAt_chartDeriv.clm_apply` route hit a whnf timeout at the coercion —
+  use the coordinate-level Fréchet derivative), `mChristoffel θ u v := (CDE θ).symm (thirdOp θ u v)`,
+  `fisherInner_mChristoffel` (from `fisherInner_chartDerivEquiv_symm θ w (thirdOp θ u v).2`),
+  `hasDerivAt_fisherInner_line_mChristoffel`, `mChristoffel_unique`, `responseHess_eq_sub_mChristoffel`,
+  `mixResponseAccel_eq_neg_mChristoffel` (rfl). Gotcha: `hasDerivAt_line` already exists (ResponseDataSmooth) —
+  named the natural-coordinate line `hasDerivAt_natLine ν θ u t₀` (hS omitted, ν explicit); the `dotJ_thirdOp_symm`
+  rewrites need explicit `(θ w u v)` arguments or `rw` hits the wrong side. NEXT: D02 `ResponseDualConnections`
+  (`alphaChristoffel α := ((1−α)/2) • mChristoffel`, duality `−⟨T(u,v),w⟩ = G(Γ^α(u,v),w) + G(v,Γ^{−α}(u,w))`, mean-path
+  law `(μ∘θ)'' = A θ'' + T(θ',θ')` via `hasFDerivAt_chartDeriv` + `HasDerivAt.clm_apply` — or coordinate-level).

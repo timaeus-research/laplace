@@ -6045,3 +6045,14 @@ certificates for concrete resolved charts beyond the identity chart.
   - `ResponseDataTaylor.lean` (C0): `sliceFun_unit`, **`contDiff_responseOf_add`** (the response along a data journey is
     `C^∞`), `deriv_responseOf_add`, `deriv_deriv_responseOf_add_zero`, **`responseOf_add_taylor_two`** (`Φ(g+tk) = Φ(g) +
     tDΦ_g[k] + (t²/2)H_g(k,k) + o(t²)`, via Mathlib's `taylor_isLittleO_univ`).
+  - `ResponseFisherJets.lean` (D01, programme D = the curved response quotient): `fisherInner_self_pos`,
+    `dotJ_thirdOp_symm₁₂`/`dotJ_thirdOp_symm₂₃` (`⟨u,T_θ(v,w)⟩` totally symmetric), `hasDerivAt_natLine`,
+    `hasDerivAt_chartDeriv_line`, **`hasDerivAt_fisherInner_line`** (`d/dt G_{θ+tu}(v,w) = −⟨v, T_{θ+tu}(u,w)⟩`),
+    `hasDerivAt_fisherInner_line_zero` (as a third cumulant of `P_θ`), `hasDerivAt_fisherInner_line_swap` (Hessian
+    metric: `∂_uG(v,w) = ∂_vG(u,w)`), **`mChristoffel`** (`C_θ(u,v) = A_θ⁻¹T_θ(u,v)`), `mChristoffel_symm`,
+    **`fisherInner_mChristoffel`** (`G_θ(C_θ(u,v),w) = −⟨w,T_θ(u,v)⟩`), `fisherInner_mChristoffel_eq_thirdCentral`,
+    `fisherInner_mChristoffel_swap`, **`hasDerivAt_fisherInner_line_mChristoffel`** (`∂_uG(v,w) = G(C(u,v),w)`: the
+    m-Christoffel operator IS the metric derivative), `fisherInner_sub_left`, **`mChristoffel_unique`**,
+    **`responseHess_eq_sub_mChristoffel`** (`H_g(k,ℓ) = A⁻¹B_g(k,ℓ) − C_θ(DΦ_g k, DΦ_g ℓ)`: the response Hessian is the
+    m-covariant Hessian), **`mixResponseAccel_eq_neg_mChristoffel`** + `hasDerivAt_mixResponseVel_zero_mChristoffel`
+    (MIXTURE JOURNEYS ARE m-GEODESICS: `θ'' + C_θ(θ',θ') = 0`).
