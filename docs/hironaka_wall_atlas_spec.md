@@ -5929,3 +5929,17 @@ certificates for concrete resolved charts beyond the identity chart.
     (`Δ''(0) = Var_ν(log q − (log q)_reg)`), **`affinityExt_pathEndpoint_ge`** (`A_t ≥ 1 − R(t)²/8`),
     **`testing_error_pathEndpoint_ge_sqrt`** (THE CLOSING STATEMENT: `err ≥ (1 − √(1 − A_t^{2n}))/2`).
     RESPONSE-MAP SECTION COMPLETE (rounds 84–89).
+  - Round 90 consult (`research_round90_{q,v1}`, 67a0139): next programme = A, FINITE-RANGE ACCESSIBILITY AND FACE
+    INCIDENCE (six modules: FiniteRangeFaceGeometry → FiniteRangeRayDecay → ExposedFaceRayEndpoint →
+    FiniteRangeAllFacesAccessible → FiniteRangeFaceIncidence → FiniteRangeCompletionAtlas), target
+    `closure (X_F) = meanExt⁻¹(F) = ⋃_{E ⊆ F} X_E`; corrections: variance decays like `e^{−δt}` (not `e^{−2δt}`), the
+    atlas is a set-theoretic disjoint union; then B (second-order calculus), then C(2), C(4), C(1), C(3).
+  - `FiniteRangeFaceGeometry.lean` (A1): `offFaceVertices`, **`faceGap`**, `faceGap_pos`, `faceGap_le`,
+    `essRange_subset_of_finiteRange`, `subset_essRange_of_charged`, **`essRange_eq_of_finiteRange`**,
+    **`momentBody_eq_convexHull_of_finiteRange`** (FINITE ESSENTIAL SUPPORT ⇒ CHARGED POLYTOPE), `ae_dirLoss_le_of_finiteRange`,
+    **`ae_face_or_le_sub_gap`**, `ae_statPoint_mem_tight_faceMeasure` (face models have finite support on the tight vertices).
+  - `FiniteRangeRayDecay.lean` (A2): `ae_dirLoss_le_of_gap`, **`offFaceMass_le_exp`** (`B_t ≤ e^{−δt} B_0`),
+    **`integral_sq_slack_le_exp`**, **`raySpeedSq_le_exp`** (`≤ D²(B_0/A)e^{−δt}`), `sqrt_raySpeedSq_le_exp`,
+    **`integrableOn_sqrt_raySpeedSq_of_gap`** (A SUPPORT GAP GIVES A NORMAL RAY OF FINITE FISHER LENGTH),
+    **`integrableOn_sqrt_raySpeedSq_of_finiteRange`** (every exposed face of a finitely supported model is reached in finite
+    Fisher length from any base point).

@@ -2346,3 +2346,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   completion-valued journeys, typed chain compatibility of face charts (the general `faceEmbedExt_faceEmbedExt`
   already covers nested sub-models). NEXT: nothing pending in the response-map programme; possible follow-ups are
   new projects (second-order/curvature calculus; finite-range accessibility).
+- Round 90 consulted (67a0139): programme A (finite-range accessibility/incidence). A1 `FiniteRangeFaceGeometry` and
+  A2 `FiniteRangeRayDecay` landed. Pattern: finite essential support = `hae : ∀ᵐ x ∂ν, statPoint S x ∈ V` + `hcharged`;
+  `essRange = V` by the `essRange_eq_range_statPoint` pattern; `faceGap` is a `dite` on
+  `(V.filter (dotJ u · < β)).Nonempty` with `Finset.min'` (positivity via `Finset.lt_min'_iff`); ae transfer to the face
+  measure by `rw [faceMeasure, ae_iff, Measure.smul_apply, ae_iff.1 (ae_restrict_of_ae hae), smul_zero]`. Ray decay
+  reuses `BoundaryRayFormula` (`faceMass`, `offFaceMass`, `famDens_ray`, `integrable_offFace`) mirroring
+  `integral_sq_slack_le`; integrability from `exp_neg_integrableOn_Ioi 0 (half_pos hδ)` + `Integrable.mono'`.
+  GOTCHAS: `Real.sqrt_eq_iff_mul_self_eq` after `congr 1` for `√(exp a) = exp (a/2)`; omit `hδ` wherever only the gap
+  inequality is used (the linter cascades through call sites). NEXT: A3 `ExposedFaceRayEndpoint` (finite-length normal
+  ray ⇒ completion endpoint with law `P^F_{θ|F}` and mean in ri F, any codimension), then A4–A6.
