@@ -6972,3 +6972,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `sq_integral_sub_levelResponse_le` (Pinsker `(E_DF − E_{R_K}F)²/(2L²) ≤ KL(D‖R_K)` from `pinsker_observable`),
     **`pinsker_budget`** (stopping criterion: `ofReal(…) + Σ_{k<K} KL(R_{k+1}‖R_k) ≤ KL(D‖R_0)`; on this pin
     `add_le_add h le_rfl`, not `add_le_add_right`).
+  - `ResponseAttainableChamber.lean` (post-M rank 4 LOWER BOUND, THE RESOLUTION FLOOR ALONG AN ATTAINABLE DIRECTION;
+    M6 variables): local notation `hE he := ⟨e*,S⟩` (the least-information score of an annihilated displacement),
+    `tendsto_klDiv_tilted_dataDualSing_div_sq` (`KL(D_s‖D)/s² → Σ(e*,e*)/2 = ⟨e,Σ_D⁺e⟩/2`, `tendsto_klDiv_tilted_div_sq`
+    + `dataBilin_dataDualSing_self`), `hasDerivAt_dotJ_mean_tilted_dataDualSing` (`d/ds⟨u,m(D_s)⟩|₀ = ⟨u,e⟩`, copy of
+    L7's PD proof with `dataBilin_dataDualSing`), `tendsto_sqrt_mul_dotJ_mean_sub` (`√n(⟨u,m(D_{a/√n})⟩ − ⟨u,m_D⟩) →
+    a⟨u,e⟩`, M5's slope pattern with `tendsto_scale`), **`chamber_resolution_floor`** (`L_n = (1 − √(nKL_n))/2 →
+    (1 − √(a²⟨e,Σ_D⁺e⟩/2))/2` and every `[0,1]`-test between `n` samples of `D` and `D_{a/√n}` has error `≥ L_n`, from
+    L7's `testing_error_tilted_ge`). Together with `measureReal_sampleResponse_notMem_chamber_le` this is the corrected
+    chamber story: margin upper bound, attainable-direction lower bound at the pseudo-inverse scale. Note: all
+    theorems here need `[Nonempty X]` (`tendsto_klDiv_tilted_div_sq`, `hasDerivAt_dataResponsePath`).
