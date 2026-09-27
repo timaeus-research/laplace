@@ -5323,3 +5323,14 @@ certificates for concrete resolved charts beyond the identity chart.
   **`integral_Ioi_sqrt_var_indicator`** (`∫₀^∞ √Var_{ρ_t} 1_A dt = 2 arccos √p₀`), `two_arccos_sqrt_lt_pi`;
   `AtomicInterval.hA_eq_indicator`, **`integral_Ioi_sqrt_var_hA`** (`L_data = 2 arccos √(1/2)`), **`dataLength_lt_pi`**.
   TOGETHER WITH `AtomicIntervalDistortion`: finite data length, infinite response length — no constant bounds `L_resp` by `L_data`.
+- `FacetSchurBound.lean` (NOT mirrored; round-78 Lemma D, scalar): `lawCov_const_mul_left'`, `lawCov_const_mul_self`,
+  `lawCov_add_self` (`Var(φ+ψ) = Var φ + 2Cov + Var ψ`), `sq_integral_le_compl_mul_integral_sq` (`(E_q ℓ)² ≤ q(Aᶜ) E_q ℓ²`,
+  `A = {ℓ = 0}`, Cauchy–Schwarz on the off-face set), `mass_mul_integral_sq_le_lawCov` (`q(A) E_q ℓ² ≤ Var_q ℓ`),
+  `sq_integral_le_div_mul_lawCov` (`(E_q ℓ)² ≤ (ε/p) Var_q ℓ`), `lawCov_add_self_ge` (completing the square with
+  `|Cov(ℓ,f)| ≤ 2K E ℓ`, `K² ≤ κ Var f`: `Var(a₀ℓ + f) ≥ a₀²(Var ℓ − 4κ (E ℓ)²)`), **`facet_schur_bound`**
+  (`Var_q(a₀ ℓ + f) ≥ a₀² Var_q ℓ (1 − 4κ ε/p)`): the Schur complement estimate without matrices.
+- `RayTiltInvariance.lean` (NOT mirrored; round-78 §6): `familyMeasure_sub_smul_eq_tilted` (`P_{v − ru} = (P_{w − ru}).tilted(−⟨v − w,S⟩)`),
+  **`raySpeedSq_tilt_comparable`** (`e^{−2c} raySpeedSq(w) ≤ raySpeedSq(v) ≤ e^{2c} raySpeedSq(w)`, uniformly in `r`),
+  `sqrt_raySpeedSq_le_tilt`, `lintegral_sqrt_raySpeedSq_lt_top_of_tilt`, **`lintegral_sqrt_raySpeedSq_lt_top_iff_tilt`**
+  (finite Fisher length of a normal ray is independent of the tangential lift: accessibility is all-or-nothing on `ri F`).
+  `bdd_neg` moved to `TiltVarianceComparison`.

@@ -6,6 +6,7 @@ Authors: Timaeus
 import Laplace.Multi.ResponseSpeedDistortion
 import Laplace.Multi.DataDissipation
 import Laplace.Multi.RayFisherLengthClassification
+import Laplace.Multi.TiltVarianceComparison
 
 /-!
 # The one-dimensional response path is a reparametrised ray
@@ -39,11 +40,6 @@ noncomputable def scalarMean (θ : ℝ) : ℝ := ∫ x, S default x ∂(Pf θ)
 variable (S) in
 /-- The Fisher weight `√Var_{P_θ} S` along the natural coordinate. -/
 noncomputable def scalarFisherWeight (θ : ℝ) : ℝ := √(lawCov (Pf θ) (S default) (S default))
-
-omit [Nonempty X] in
-theorem bdd_neg {f : X → ℝ} (hf : Bdd f) : Bdd fun x ↦ -f x := by
-  obtain ⟨hm, M, hM⟩ := hf
-  exact ⟨hm.neg, M, fun x ↦ by rw [abs_neg]; exact hM x⟩
 
 variable (hS : ∀ j, Bdd (S j)) {h : X → ℝ} (hh : Bdd h)
 include hS hh

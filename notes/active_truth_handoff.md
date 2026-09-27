@@ -1682,3 +1682,22 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: facet Lemmas B (component convergence via the face chart and uncharged-vertex gaps) and D (Schur bound by scalar
   completion of squares), then the assembly `FacetFisherAccess`; or a round-78 consult first on the exact Lean shape of
   Lemma B (tangential parameter identifiability on a facet).
+- Round 78 (`gpt_responses/research_round78_{q,v1}.md`): the facet route is CONFIRMED with additions — facet condition
+  `T' = W ∩ u^⊥` (equivalently `dim T' + 1 = dim W` given a nonempty PROPER exposed face; `u ∈ W` needed for the decomposition
+  `η = v − r u`, WLOG by projecting `u` onto `W` with `β_W = β − ⟨u − u_W, m₀⟩`); B2 gauge invariance `P^A_η = P^A_{proj_{T'} η}`
+  (no facet hypothesis); B3 = the landed `momentBody_faceMeasure_eq_of_exposed` (conditional moment body = F, needs vertex
+  charging); B4 `r_n → +∞` from off-face vertex gaps; ALSO prove `q_n(A) → 1` from `v_n → v_M`, `r_n → ∞` (DCT), not from mean
+  convergence; Lemma D constants confirmed (landed as `FacetSchurBound`); tangential coercivity from
+  `Var_q⟨z,S⟩ ≥ q(A) Var_{q(·|A)}⟨z,S⟩` + Lemma C + compactness of the unit sphere of `T'` (handle `T' = {0}` separately);
+  assembly `|η'|_F ≥ (e^{−c}/√2)|r'| g_M(r)` then Lemma E (reparametrise `s = t/(1+t)` if needed); converse = the ray with
+  `r = s/(1−s)`. §5 data-ray strengthening needs a one-sided radial-variation argument (`L' ≤ L E_{ρ_t} d`, Schur `D ≥ V/2`,
+  `√V (r')₋ ≤ 2(L/√V)(E d + (2B/λ)‖m_T'‖)`, both integrable by DataDissipation). §6 all-or-nothing landed (`RayTiltInvariance`).
+- `FacetSchurBound` + `RayTiltInvariance` landed. Gotchas: `bdd_neg` now lives in `TiltVarianceComparison` (import it);
+  `lawCov_const_mul_const_mul` is in `ResponseSpeedDistortion` — use `lawCov_const_mul_self` here; for the AM–GM step introduce
+  `√κ`, `√Vf` and expand `(√κ u − √Vf)²` by `ring` then `rw [Real.sq_sqrt]` (a bare `nlinarith` with the square hints failed);
+  `integral_mul_sq_le` (AngularBound) is the Cauchy–Schwarz for `(∫ fg)² ≤ ∫f² ∫g²` with three integrability facts;
+  `measureReal_add_measureReal_compl (μ := q) hA` + `probReal_univ` for `p + ε = 1`, then `rw [h3, sub_mul, …] at *; linarith`;
+  `tilted_tilted (hf : Integrable (exp ∘ f) μ) g : (μ.tilted f).tilted g = μ.tilted (f + g)` with `Pi.add_apply`,
+  `dirLoss_sub'`, `dirLoss_smul` for the ray identity; `lintegral_const_mul' _ _ ENNReal.ofReal_ne_top` + `ENNReal.mul_lt_top`;
+  a section `[Nonempty J]` nobody uses cascades `omit` lints — drop it from the `variable` line instead.
+  NEXT: Lemma B (`FaceGauge`: `P^A_η = P^A_{proj_{T'} η}`; component convergence; `q_n(A) → 1`), then the assembly.

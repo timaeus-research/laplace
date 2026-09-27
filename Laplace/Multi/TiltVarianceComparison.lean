@@ -29,6 +29,11 @@ section Tilt
 
 variable {X : Type*} [MeasurableSpace X] (Q : Measure X) [IsProbabilityMeasure Q]
 
+omit [IsProbabilityMeasure Q] in
+theorem bdd_neg {f : X → ℝ} (hf : Bdd f) : Bdd fun x ↦ -f x := by
+  obtain ⟨hm, M, hM⟩ := hf
+  exact ⟨hm.neg, M, fun x ↦ by rw [abs_neg]; exact hM x⟩
+
 /-- The normaliser of a tilt by `g` with `|g| ≤ c` lies in `[e^{−c}, e^{c}]`. -/
 theorem exp_neg_le_integral_exp {g : X → ℝ} (hg : Measurable g) {c : ℝ}
     (hc : ∀ x, |g x| ≤ c) : exp (-c) ≤ ∫ x, exp (g x) ∂Q := by
