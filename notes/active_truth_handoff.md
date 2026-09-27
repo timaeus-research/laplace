@@ -2660,6 +2660,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   PROGRAMME I (see atlas spec): I1 FisherNoiseBridge, I2 ProbabilisticResolution, I3 ObservableHessian, I4
   LocalizedSamplingBias, I5 SaturatedSimplex, I6 SimplexSphere. NEXT: I1 (coercivity constant `c₀‖v‖² ≤ G_θ₀(v,v)` on W
   by compactness of the unit sphere; identify `samplingEnergy` with `G(Bz,Bz)`; certificate in Fisher radius), then I2
-  (Chebyshev on `samplingEnergy` via `mul_measureReal_samplingEnergy_ge_le` + `ae_sampleResponse_sub_mem_dirSpan`). Old NEXT:
+  (Chebyshev on `samplingEnergy` via `mul_measureReal_samplingEnergy_ge_le` + `ae_sampleResponse_sub_mem_dirSpan`).
+  I1+I2 LANDED as `ResponseFisherNoiseBridge` (gotchas: `omit [Nonempty J]` refused on statements mentioning `CDE`;
+  `Real.sqrt_div (hx : 0 ≤ x) y`; prove `‖v‖ ≤ √q/√c` via `‖v‖ = √(‖v‖²)` + `Real.sqrt_le_sqrt` rather than
+  `Real.le_sqrt` juggling; the CLE-apply vs CLM-apply issue again — insert `have : ℓ (Bop e) = ℓ (((CDE θ₀).symm : 𝕍 →L 𝕍) e)
+  := rfl; rw [this] at *` before `linarith`). NEXT: I3 `ResponseObservableHessian` (mixed second responses by polarisation
+  after C²; variance Hessian; residual-flat ⇒ variance concave), then I4/I5/I6. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

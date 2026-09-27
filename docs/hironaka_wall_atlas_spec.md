@@ -6369,3 +6369,14 @@ certificates for concrete resolved charts beyond the identity chart.
     evaluation map `b ↦ ⟨b, S − E_νS⟩` onto `{a : Σ ν_i a_i = 0}`), I6 `ResponseSimplexSphere` (abstract positive simplex
     first). Deferred: length-defect-from-curvature estimates (need convex normal neighbourhoods etc.), two-scale CLT
     (build the finite-sample certificate first), testing lower bounds for genuine unresolvability.
+  - `ResponseFisherNoiseBridge.lean` (I1 + I2): **`meanNoiseEnergy θ z := G_θ(A⁻¹z, A⁻¹z)`**,
+    **`meanNoiseEnergy_eq_samplingEnergy`** (= the seabed's `samplingEnergy hS ν θ p z` for `z ∈ W`, any retraction `p`),
+    `meanNoiseEnergy_nonneg`, **`exists_fisher_coercive`** (`∃ c > 0, c‖v‖² ≤ G_θ(v,v)` on W, from `fisherVar_coercive hS ν θ`),
+    `norm_inv_le_of_meanNoiseEnergy` (`‖A⁻¹z‖ ≤ √q/√c`), **`norm_le_of_meanNoiseEnergy`** (`‖z‖ ≤ (‖A‖/√c)√q`),
+    **`abs_apply_inv_le_of_meanNoiseEnergy`** (`|ℓ(A⁻¹z)| ≤ (‖ℓ‖/√c)√q`), **`twoScale_sign_certificate_fisher`**
+    (on `q_{θ₀}(ξ) ≤ r²`: `ℓ(θ̂) − ℓθ₀ ≥ tℓ(A⁻¹e) − (‖ℓ‖/√c) r − ‖ℓ‖K(|t|‖e‖ + (‖A‖/√c) r)²`), `measureReal_samplingEnergy_ge_le`
+    (Chebyshev `P(q ≥ r²) ≤ τ/(n r²)`), **`measureReal_sign_certified_ge`** (THE PROBABILISTIC RESOLUTION THEOREM: data
+    mean `m(θ₀) + te`, positive Fisher-radius certificate, `|t|‖e‖ + (‖A‖/√c)r ≤ δ` ⇒ `P(ℓθ₀ < ℓ(θr M̂_n)) ≥ 1 − τ/(nr²)`;
+    a.e. inclusion of the small-energy event into the certified event via `ae_sampleResponse_sub_mem_dirSpan`,
+    `measure_mono_ae`, `measureReal_union_le` for `1 ≤ P(s) + P(sᶜ)`; no measurability of the event needed). The
+    constants use the single coercivity constant `c` (Astra's `B₀ = ‖A‖/√c`, `γ_ℓ = ‖ℓ‖/√c` bounds; not the sharp sups).
