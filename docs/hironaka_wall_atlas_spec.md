@@ -5907,3 +5907,9 @@ certificates for concrete resolved charts beyond the identity chart.
     law), `mixResponse_zero`, `mixResponse_one`, `mean_segment_mem_intrinsicInterior`, **`hasDerivAt_mixResponse`**
     (`Φ(D_t)' = (Dm(Φ(D_t))|_W)⁻¹(m_D − m_ν)`), **`fisherDist_mixResponse_le`** (LENGTH BOUND via the clamp path and
     `intervalIntegral.integral_comp_mul_deriv'`). The mixture response depends only on the endpoint means.
+  - `SharpAffinityTesting.lean` (round 88, rank 6): `norm_add_sq_eq` (`‖f+g‖² = 2 + 2A`), `abs_integral_mul_le_one`,
+    **`integral_abs_mul_self_sub_le_sqrt`** (SHARP TV: `∫|f²−g²| ≤ 2√(1−A²)`), `integral_rootLaw_sub_le_half`,
+    **`integral_rootLaw_sub_le_sqrt`** (`∫φ d(f²μ) − ∫φ d(g²μ) ≤ √(1−A²)`), `testing_error_ge_sqrt`, `affinityExt`
+    (`A(x,y) = ∫Ψ_xΨ_y`), `affinityExt_eq` (`= 1 − H²/2`), `affinityExt_ge` (`≥ 1 − d̂²/8`),
+    **`integral_sampleLaw_sub_le_sqrt`** (`n`-sample: `≤ √(1 − A^{2n})`), **`testing_error_sampleLaw_ge_sqrt`**
+    (error `≥ (1 − √(1 − A(x,y)^{2n}))/2`). ROUND 88 COMPLETE (all six ranked modules landed 2026-09-27).

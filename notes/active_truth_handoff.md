@@ -2329,3 +2329,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `Filter`/`Set` `image_subset_iff` leaves the target set a metavariable inside `ContinuousOn.mono` — pin `(s := …)`;
   composing `continuous_fisherNorm` with `prodMk` needs the `change` to `(fun p ↦ fisherNorm S ν p.1 p.2) (x u, y u)`.
   NEXT: rank 6 `SharpAffinityTesting`; then the round-89 consult.
+- SharpAffinityTesting landed (round 88 rank 6) — ROUND 88 COMPLETE. Pattern: `norm_add_sq_real` + `inner_eq_integral_mul`
+  for `‖f+g‖² = 2 + 2A`; `Real.sqrt_mul (sq_nonneg _)` + `Real.sqrt_sq` to write `‖f−g‖‖f+g‖ = √(…)`; the affinity of
+  product roots is `A^n` via `inner_prodRoot` (`rfl` after `← inner_eq_integral_mul`). NEXT: round-89 consult
+  (query to draft: audit of round 88, what remains for the note's six-part shape, and whether the response-map
+  section is complete).
