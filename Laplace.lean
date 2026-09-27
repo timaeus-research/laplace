@@ -615,6 +615,7 @@ import Laplace.Multi.ResponseDataTaylor
 import Laplace.Multi.ResponseFisherJets
 import Laplace.Multi.ResponseDualConnections
 import Laplace.Multi.ResponseFisherCurvature
+import Laplace.Multi.ResponseDensityTopology
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

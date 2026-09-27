@@ -6077,3 +6077,14 @@ certificates for concrete resolved charts beyond the identity chart.
     `fourthOp_symm`, closed by `module`), `alphaCurvature_one`/`_neg_one` (e/m FLAT), **`alphaCurvature_zero`**
     (Riemannian curvature of the Fisher metric `= −¼[C,C]`), `alphaCurvature_neg` (`R^{−α} = R^α`),
     `alphaCurvature_antisymm`.
+  - `ResponseDensityTopology.lean` (D04): `lawMomentFun S ν i p := ∫ S_i p dν` on `Lp ℝ 1 ν`,
+    `integrable_statistic_mul`, **`lipschitzWith_lawMomentFun`** (bounded S ⇒ Lipschitz on L¹), `continuous_lawMomentFun`,
+    `lawMomentL1 S ν p := (i ↦ lawMomentFun i p)`, `continuous_lawMomentL1`, `memLp_normDens`, **`lawDens ν g hg`** (the
+    tilted law as an L¹ density), `lawMomentL1_lawDens` (= `tiltedMean`), **`DataLaw ν := {p : Lp ℝ 1 ν // ∃ g hg, p = lawDens
+    ν g hg}`** (subspace topology; depends on ν only), `toDataLaw ν g hg`, **`lawResponse hS ν p := θr (lawMomentL1 p.1)`**,
+    `lawResponse_toDataLaw` (= `responseOf`), `lawMomentL1_mem_intrinsicInterior`, `lawMomentL1_sub_mem`,
+    `lawResponse_eq_chartVInv` (`Φ(p) = chVInv (π(E_pS − m₀))`), `dirProjL_lawMomentL1_mem_range`,
+    **`continuous_lawResponse`** (via `contDiffOn_infty_chartVInv.continuousOn.comp_continuous`), `normDens_modelTilt`
+    (= `famDens`), **`modelLaw hS ν θ := toDataLaw (modelTilt θ)`**, **`lawResponse_modelLaw`** (`Φ(p_θ) = θ`),
+    `abs_dirLoss_le_of_norm_le`, `famDens_le_of_norm_le` (uniform bound `exp(2R|J|B)` on a ball),
+    **`continuous_lawDens_modelTilt`** (θ ↦ p_θ continuous into L¹ by dominated convergence), **`continuous_modelLaw`**.

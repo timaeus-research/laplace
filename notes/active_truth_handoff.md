@@ -2488,8 +2488,17 @@ D01 `ResponseFisherJets` LANDED: builds on the existing `fisherInner S ν θ u v
   `hasFDerivAt_inverse_response` with `hasFDerivAt_ringInverse`; `hasDerivAt_mChristoffel_line` by `clm_apply` +
   `congr_deriv rfl`; `alphaCurvature_eq` closed by `simp only [alphaChristoffel, mChristoffel_smul_right]; module`).
   GOTCHA: `(hF.comp_hasDerivAt t₀ hline : HasDerivAt (fun t ↦ f (θ + t•u)) _ _)` as a direct term fails to unify
-  `?f ∘ line` with the lambda — bind with `have h0 := …` first, then `have h1 : … := h0`. NEXT: D04
-  `ResponseDensityTopology` (normalised densities `normDens ν g` in `L¹(ν)`; `DataLaw := {p ∈ Lp ℝ 1 ν // p ∈ range
-  normDens}`; `lawResponse p := θr (fun i ↦ ∫ S i · p dν)` continuous (bounded S ⇒ `p ↦ ∫ S_i p` is a CLM on L¹, so
-  continuous; `responseTheta = chartVInv` continuous on its open range via `contDiffOn_infty_chartVInv`); `modelLaw θ :=
-  normalised density of Pfam θ` continuous section), D05 `ResponseFibreDeformation`, D06 `ResponseTopologicalQuotient`.
+  `?f ∘ line` with the lambda — bind with `have h0 := …` first, then `have h1 : … := h0`. D04 `ResponseDensityTopology` LANDED. Design: `DataLaw ν` is a subtype of `Lp ℝ 1 ν` (ν only — S is not
+  in the type; `variable (S) in` on a def whose body does not mention S adds nothing), `lawResponse hS ν p`,
+  `modelLaw hS ν θ`, `toDataLaw ν g hg`, `lawDens ν g hg`, `lawMomentL1 S ν p`, `lawMomentL1_lawDens ν hg` (hS omitted).
+  Continuity of the section by `tendsto_integral_filter_of_dominated_convergence` along `𝓝 θ₀` with the constant bound
+  `2 exp(2(‖θ₀‖+1)|J|B)` from `famDens_le_of_norm_le`; `L1.dist_eq_integral_dist` + `MemLp.coeFn_toLp` turn the L¹
+  distance into `∫ |p_θ − p_θ₀|`. GOTCHAS: `momentL1` already exists (renamed `lawMomentFun`);
+  `norm_integral_le_of_norm_le hint (f := …)` needs the explicit `f`; `mean_tilted_mem_intrinsicInterior hS ν hg`
+  takes hS; `famDens_pos hS ν θ x`; `normDens_modelTilt ν θ` (hS omitted). NEXT: D05 `ResponseFibreDeformation`
+  (`deform : unitInterval × DataLaw ν → DataLaw ν`, `(1−t)•p + t•modelLaw(lawResponse p)` — stays in DataLaw via
+  `mixTilt` (`normDens (mixTilt g h t) = (1−t) normDens g + t normDens h`, needs a lemma `lawDens_mixTilt`); continuity
+  from `continuous_lawResponse`, `continuous_modelLaw`, Lp module ops; fibre-preserving via `responseOf_mixTilt_of_eq`;
+  `deform 0 p = p`, `deform 1 p = modelLaw (lawResponse p)`, `deform t (modelLaw θ) = modelLaw θ`), then D06
+  `ResponseTopologicalQuotient` (`IsQuotientMap (lawResponse hS ν)` via `IsQuotientMap.of_inverse continuous_modelLaw
+  continuous_lawResponse lawResponse_modelLaw`-style (check argument roles), fibres contractible from D05).
