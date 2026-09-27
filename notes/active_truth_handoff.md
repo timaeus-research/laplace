@@ -2532,8 +2532,16 @@ E3 = C6 `ResponseFibreSecondJet` LANDED (the long-open item). Route that worked:
   expand `a` first as a CLM identity (`e1`), then `_root_.sum_apply`/`smul_apply`, then expand `b` per term; the RHS
   through `responseHess_dirLoss` + `responseHess_symm` twice + `Finset.sum_comm`. Deprecated: `ContinuousLinearMap.
   add_apply/zero_apply/neg_apply/sum_apply` → `_root_.…`. `congr 1` closes `responseVel hg (bdd_augDir (inl i)) =
-  responseVel hg (hk i)` by itself (proof irrelevance + defeq). NEXT: E4 `ResponseFaceFisherSeparation` (spherical
-  statistical distance `d_sph(p,q) = 2 arccos ∫√(pq)dν`; `2 arccos √(P_θ(S∈F)) ≤ d_sph(p_θ, q)` for `q` supported on
-  `{S ∈ F}` by Cauchy–Schwarz on the face; equality for the conditioned density; `d_sph ≤ fisherLength` along `C¹`
-  paths via the √-density speed `‖d/dt √p_θ‖₂ = ½√G(θ',θ')` — check the seabed's Affinity/RadialCurvature/AngularBound
-  modules (round 26: `2 arccos ρ ≤ length`) for what already exists before writing).
+  responseVel hg (hk i)` by itself (proof irrelevance + defeq). E4 `ResponseFaceFisherSeparation` LANDED. Key trick for `arccos` non-differentiability at affinity 1: compare with
+  `Φ_ε(v) = L(v)/2 − arccos((1−ε)·ρ(v))` (differentiable since `(1−ε)ρ ∈ [0,1−ε]`), monotone by
+  `monotoneOn_of_deriv_nonneg` using `abs_affinity_deriv_le` + `√(1−ρ²) ≤ √(1−((1−ε)ρ)²)`, then `ε → 0⁺` via
+  `le_of_tendsto_of_tendsto` on `𝓝[>] 0` (eventual inequality from `self_mem_nhdsWithin` and `eventually_lt_nhds`).
+  Reused: `hasDerivAt_integral_rootDens_mul`, `integral_rootDens_mul_centred_sq`, `sq_integral_mul_le ν` (NO hS),
+  `integral_mul_sq_le` (AngularBound, general measure), `real_family_eq_integral_rootDens_mul_self`,
+  `continuous_fisherNorm_comp`, `Continuous.integral_hasStrictDerivAt`, `InnerProductGeometry.angle_le_angle_add_angle`,
+  `L2.inner_def` + `RCLike.inner_apply`/`conj_trivial`. `Real.le_sqrt hx hy`, `pow_lt_one₀ h0 h1 two_ne_zero`,
+  `mul_le_of_le_one_right`. NEXT: E5 `ResponseSamplingResolution` (A: `E‖Z_n‖²_G = d_eff/n` for the linearised
+  response noise `Z_n = A⁻¹ (1/n)Σ U_i` with iid centred features; Markov bound; B: affine-wall margin `δ/√G(a,a)`;
+  C: `empiricalMean ∈ F ↔ ∀ i, S(x_i) ∈ F` for an exposed face and `P(empirical mean ∈ F) = P_D(S ∈ F)^n` under iid
+  sampling — check `FisherNormalisedSampling`, `effDim_eq_sum_lawCov`, `EmpiricalProjection`, `SampleResponse` for
+  the existing sampling layer first), then E6 `ResponseFisherEnergyVariation`.

@@ -6134,3 +6134,13 @@ certificates for concrete resolved charts beyond the identity chart.
     (`DΦ_g[⟨ξ,k⟩ + hor_g w] = Vξ + w`), **`fibreTangent ξ := ⟨L(ξ,−Vξ), k'⟩`** (= `Jξ = ⟨ξ,k⟩ − hor(Vξ)`), `bdd_fibreTangent`,
     **`responseVel_fibreTangent`** (`DΦ_g[Jξ] = 0`: vertical), **`fderiv_fderiv_fibreGraph_zero`**
     (`D²σ₀(0)[η,ξ] = −H_g(Jη, Jξ)`: THE SECOND JET OF THE RESPONSE FIBRE).
+  - `ResponseFaceFisherSeparation.lean` (E4): **`affinity S ν θ η := ∫ √(p_θ p_η)`** (`_comm`, `_nonneg`, `_self = 1`,
+    `_le_one`), `hellingerDist_sq_eq_affinity` (`H² = 2 − 2ρ`), **`sphericalDist S ν θ η := 2 arccos ρ`** (`_nonneg`, `_comm`,
+    `_self`, `_le_pi`), `rootDensL2` (root density as a unit vector of L²), `inner_rootDensL2`, `norm_rootDensL2`,
+    `sphericalDist_eq_angle` (= 2·`InnerProductGeometry.angle`), **`sphericalDist_triangle`**, **`abs_affinity_deriv_le`**
+    (orthogonal-component bound `|∫ q_z q_θ(ℓ − Eℓ)| ≤ √(1−ρ²)‖ℓ‖_θ`), **`two_arccos_affinity_le_integral`** (ANGLE ≤ FISHER
+    LENGTH: `2 arccos ρ(γ1,γ0) ≤ ∫₀¹ ‖γ'‖_γ`; proof by the monotone comparison `L/2 − arccos((1−ε)ρ)` and `ε → 0⁺`),
+    `sphericalDist_le_integral`, **`integral_rootDens_mul_sqrt_le`** (face margin `ρ(p_θ,q) ≤ √P_θ(A)` for `q` supported on
+    `A`), `two_arccos_sqrt_real_le`, `faceCondDens`, **`integral_rootDens_mul_sqrt_faceCondDens`** (margin attained by the
+    conditioned law), **`two_arccos_sqrt_real_le_integral_add`** (FACE SEPARATION: any Fisher path from θ₀ ending at affinity
+    ρ₁ with a face-supported law has length ≥ `2 arccos √P_{θ₀}(A) − 2 arccos ρ₁`).
