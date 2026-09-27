@@ -2056,3 +2056,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `ae_dirLoss_le_of_polytope hS ν V (u := u) (β := β) hpoly hV`. NEXT: `ResponsePullbackForm` (general bounded tilt
   `ρ_g`, `responseDiff g k := (CDE (Φ g)).symm ⟨Cov_{ρ_g}(S,k)⟩`, form `= bᵀC⁻¹b`, kernel = invisible, relative-covariance
   comparison, matched score decomposition), `FisherNormalisedSampling`, `ResponseLocalTesting`.
+- ResponsePullbackForm landed (round 84 ranks 1+2): `pullbackForm` = fisherVar at `responseOf g` of `responseVel`
+  `= (CDE Φ).symm ⟨forcing⟩`; identities `= −dotJ vel b = Cov_{ρ_g}(⟨−vel,S⟩,k)`; kernel ↔ `forcing = 0` (via
+  `dotJ_chartDeriv_self_neg` + equiv injectivity); relCov comparison via `lawCov_sq_le` + `le_of_mul_le_mul_left`;
+  matched decomposition via `dotJ_chartDeriv_eq_neg_lawCov` + `lawCov_sub_self`. GOTCHAS: `local notation "Matched"`
+  clashes with `section Matched` (`end Matched` parses as the notation) — name notations `IsMatched`; a section
+  `variable (hm : ν.tilted g = Pfam …)` mentioning `responseOf hS ν g` gives SILENT `declaration uses sorry` on every
+  theorem (binder elaboration failure) — pass such hypotheses explicitly; `dirSpan_tilted_eq` needs
+  `omit [Nonempty X] [Nonempty J] in` + `set_option linter.unusedFintypeInType false in`. NEXT: `FisherNormalisedSampling`
+  (basis-free trace identity `E⟨M̂−m, R_θ(M̂−m)⟩ = tr(R_θ C_ρ)/n`, `= dim W/n` at matching; `R_θ = ι∘C_θ⁻¹∘proj_W` =
+  `(CDE θ).symm` composed with `dotJ`), `ResponseLocalTesting`, `TiltedFisherCompactConvergence`.

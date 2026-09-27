@@ -5643,3 +5643,15 @@ certificates for concrete resolved charts beyond the identity chart.
     EXTENDED MEAN IN `ri(momentBody ν_A)` MAKES ALL OF IT ACCESSIBLE, from an arbitrary accessible point, every
     codimension: `Q_x = Π(M₀) = P^A_{v₀}`, then `tiltExt (v − v₀)`). Accessible extended means = union of relative face
     interiors.
+  - `ResponsePullbackForm.lean` (round 84, rank 1 + rank 2 merged): `dirSpan_tilted_eq` (the direction space is
+    invariant under bounded tilts), `forcing` (`b_g(k) = Cov_{ρ_g}(S,k)`), `forcing_mem_dirSpan`, `responseOf`
+    (`Φ(g) = θ(E_{ρ_g}S)`), `responseVel` (`DΦ_g[k] = (Dm(Φ(g)))⁻¹ b_g(k)`), `pullbackForm` (`|DΦ_g[k]|²_F`),
+    `chartDeriv_responseVel`, **`pullbackForm_eq_neg_dotJ`** (`G^{resp}_g(k) = −⟨DΦ_g[k], b_g(k)⟩ = bᵀC⁻¹b`),
+    **`pullbackForm_eq_lawCov`** (`= Cov_{ρ_g}(⟨−DΦ_g[k],S⟩, k)`), `pullbackForm_nonneg`, `fisherVar_pos_of_ne_zero`,
+    **`pullbackForm_eq_zero_iff`** (KERNEL = COVARIANCE-INVISIBLE DIRECTIONS `Cov_{ρ_g}(S,k) = 0`),
+    **`pullbackForm_le_of_relCov`** (relative-covariance amplification: `Var_{ρ_g}⟨w,S⟩ ≤ κ Var_{P_Φ}⟨w,S⟩ ∀w ⇒
+    G^{resp}_g(k) ≤ κ Var_{ρ_g} k`), and at a MATCHED law (`ρ_g = P_{Φ(g)}`): `lawCov_dirLoss_visible` (the visible
+    part `k_vis = ⟨−DΦ_g[k],S⟩` is the regression of `k` on `S`), **`lawCov_self_eq_pullbackForm_add`** (THE MATCHED
+    ORTHOGONAL SCORE DECOMPOSITION `Var k = G^{resp}_g(k) + Var(k − k_vis)`), **`lawCov_residual_dirLoss_eq_zero`**
+    (the residual is uncorrelated with every visible contrast), `pullbackForm_le_lawCov_self` (contraction). Response
+    formation at a matched law is orthogonal projection of the data score onto the structural tangent space.
