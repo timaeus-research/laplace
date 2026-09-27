@@ -2545,9 +2545,15 @@ E3 = C6 `ResponseFibreSecondJet` LANDED (the long-open item). Route that worked:
   `FisherNormalisedSampling` has `integral_samplingEnergy(_eq_trace/_family)` = the `d_eff/n` identity). Signatures:
   `measurable_sampleResponse hS Xs hXm n`, `abs_sampleResponse_sub_le D Xs hn a hB ω`, `map_Xs_eq P D Xs hid hlaw i`,
   `integral_sq_dotJ_sampleResponse_sub hS P D Xs hXm hid hlaw hind hn w`; `measurableSet_face` exists (dirLoss form);
-  `Set.mem_setOf_eq` deprecated → `Set.mem_ofPred_eq`. NEXT: E6 `ResponseFisherEnergyVariation` (first variation of
-  the Fisher energy `E(θ) = ½∫₀¹ G_θ(θ',θ')` for a two-parameter `C²` family `Θ(s,t)`; derivative
-  `G(U,V)|₀¹ − ∫ G(U, θ'' + ½C(θ',θ'))`; LC Euler–Lagrange; needs differentiation under the interval integral
-  (`intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le`) and `hasDerivAt_fisherInner_line_mChristoffel`
-  along the path (metric derivative along `θ(t)` in direction `U`) plus `hasDerivAt_deriv_chartV_path`-style path
-  lemmas; integration by parts `intervalIntegral.integral_eq_sub_of_hasDerivAt`).
+  `Set.mem_setOf_eq` deprecated → `Set.mem_ofPred_eq`. E6 `ResponseFisherEnergyVariation` LANDED — PROGRAMME E COMPLETE (E1–E6). Gotchas: a global text replace of
+  `fisherEnergy hS ν` also hits `hasDerivAt_fisherEnergy hS ν` (substring!); continuity of composites
+  `(continuous_fisherInner).comp hmap` against a lambda target TIMES OUT at whnf — close with
+  `simpa only [Function.comp_def] using …`; keep structure continuity fields as `Continuous fun p : ℝ × ℝ ↦ f p.1 p.2`
+  (not `uncurry`); `integral_const_mul` is ambiguous under `open MeasureTheory intervalIntegral` — qualify;
+  `integral_add` (interval) needs the integrability facts typed in lambda form (Pi-sum otherwise);
+  `MeasureTheory.integral_zero` vs `intervalIntegral.integral_zero`. The pairing trick: `G θ v w = −(dotCLMlin ∘ subtypeL)(v)
+  (subtypeL (CD θ w))` and `HasDerivAt.clm_apply` avoids all coercion derivatives. NEXT: round-95 consult (programme E
+  complete; candidates: KL Hessian = Fisher (`ResponseInformationHessian`), fundamental-lemma converse for E6, sectional
+  curvature sign examples (categorical family `+¼`), the topology of the Fisher completion vs `DataLaw`, journey lifting /
+  fibration question, and the user's open threads: negative-profile saddle lemma, general k multiplicity law, product
+  inequality).

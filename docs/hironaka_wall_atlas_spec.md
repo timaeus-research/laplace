@@ -6153,3 +6153,13 @@ certificates for concrete resolved charts beyond the identity chart.
     **`measureReal_dotJ_sampleResponse_eq`** (EXACT FACE-HIT PROBABILITY `P(M̂_n ∈ F) = P_D(⟨u,S⟩=β)^n` under `iIndepFun`, via
     `iIndepFun.measure_inter_preimage_eq_mul`), `measureReal_dotJ_sampleResponse_eq_lt_one` (exponential decay unless the face is
     fully charged).
+  - `ResponseFisherEnergyVariation.lean` (E6, PROGRAMME E COMPLETE): `fisherInner_add_right`, `fisherInner_smul_right`,
+    `fisherInner_zero_left/right`, **`continuous_fisherInner`** (jointly in `(θ,v,w)`), **`continuous_mChristoffel`**,
+    **`FisherVariation S ν`** (explicit `C²` package: `Θ V A U W` with `hasDerivAt_t/tt/s/st/ts` and joint continuity of all
+    five; the equality of mixed partials is encoded by the shared `W`), **`fisherEnergy ν Λ s := ½∫₀¹ G(V,V)`**,
+    **`hasDerivAt_energyIntegrand`** (`∂_s G(V,V) = 2G(W,V) + G(C(U,V),V)`, via `HasDerivAt.clm_apply` on the pairing
+    `dotCLMlin ∘ subtypeL`), **`hasDerivAt_energyPairing`** (`∂_t G(U,V) = G(W,V) + G(U,A) + G(C(U,V),V)`),
+    `continuous_energyIntegrand(Deriv)`, **`hasDerivAt_fisherEnergy`** (differentiation under the integral,
+    `intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le` with the compact-rectangle bound),
+    **`fisherEnergy_variation`** (FIRST VARIATION `E'(0) = G(U,V)|₀¹ − ∫ G(U, θ'' + ½C(θ',θ'))`),
+    **`hasDerivAt_fisherEnergy_of_lcGeodesic`** and **`_fixed`** (LEVI-CIVITA = EULER–LAGRANGE of the Fisher energy).
