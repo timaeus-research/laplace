@@ -640,6 +640,7 @@ import Laplace.Multi.ResponseObservableTransport
 import Laplace.Multi.ResponseMaximumEntropyPotential
 import Laplace.Multi.ResponseSaturatedIdentification
 import Laplace.Multi.ResponseLineGeodesicCriterion
+import Laplace.Multi.ResponseTwoScaleCertificate
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

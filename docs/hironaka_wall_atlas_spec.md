@@ -6339,3 +6339,13 @@ certificates for concrete resolved charts beyond the identity chart.
     response line `= −½ C(V,V)`), **`responseLine_lcGeodesic_iff`** (LC geodesic at `t` ⇔ `C_θ(V,V) = 0`),
     `featurelessJourney_lcAccel`, **`featurelessJourney_lcGeodesic_iff`**, `mChristoffel_self_eq_zero_iff` (⇔ `T(v,v) = 0`).
     Not done: the unparametrised criterion `C(θ̇,θ̇) ∈ span θ̇`.
+  - `ResponseTwoScaleCertificate.lean` (H6 deterministic core): **`exists_quadratic_remainder`** (GENERIC: `C²` on an
+    open set ∋ 0 in a proper normed space ⇒ `∃ δ > 0, ∃ K ≥ 0, ‖z‖ ≤ δ → ‖F z − F 0 − DF(0)z‖ ≤ K‖z‖²`; two applications of
+    `Convex.norm_image_sub_le_of_norm_fderiv_le` (namespace `Convex`, `hs` explicit after `bound`), the second-derivative
+    bound from `ContDiffOn.fderiv_of_isOpen` + `continuousOn_fderiv_of_isOpen` + `IsCompact.exists_bound_of_continuousOn`
+    on `closedBall 0 (δ/2)`), `responseBallDomain θ₀ := {z | m(θ₀) + z ∈ Ω}` (open ∋ 0), `contDiffOn_responseTheta_meanAdd`,
+    `fderiv_responseTheta_meanAdd_zero` (`= (CDE θ₀).symm`), **`exists_responseTheta_quadratic_remainder`**,
+    **`twoScale_sign_certificate`** (`ℓ(θ̂) − ℓ(θ₀) ≥ tℓ(Be) − ‖ℓ‖‖B‖r − ‖ℓ‖K(|t|‖e‖+r)²` for `θ̂ = m⁻¹(m(θ₀)+te+ξ)`,
+    `‖ξ‖ ≤ r`, `‖te+ξ‖ ≤ δ`), **`twoScale_sign_of_certificate`** (positive certificate ⇒ `ℓθ₀ < ℓθ̂`). Not done: the
+    probability of `‖ξ‖ ≤ r` in this norm (existing bounds are in the Fisher-normalised `samplingEnergy`), the cubic
+    remainder, H5's bias formula, the two-scale CLT.

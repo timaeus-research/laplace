@@ -2651,6 +2651,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   remainder `‖F(z) − F(0) − DF(0)z‖ ≤ K‖z‖²` on a ball inside the open domain (twice
   `Convex.norm_image_sub_le_of_norm_fderiv_le`, bound on `fderiv (fderiv F)` from `ContDiffOn.continuousOn_fderiv_of_isOpen`
   + `IsCompact.exists_bound_of_continuousOn`), then the deterministic sign certificate
-  `ℓ(F(te+ξ)) − ℓθ₀ ≥ tℓ(Be) − ‖ℓ‖‖B‖r − ‖ℓ‖K(|t|‖e‖+r)²` on `‖ξ‖ ≤ r`. Old NEXT:
+  `ℓ(F(te+ξ)) − ℓθ₀ ≥ tℓ(Be) − ‖ℓ‖‖B‖r − ‖ℓ‖K(|t|‖e‖+r)²` on `‖ξ‖ ≤ r`. `ResponseTwoScaleCertificate` LANDED (gotchas:
+  `ContDiffOn.differentiableOn` takes `n ≠ 0` (`one_ne_zero`), `.fderiv_of_isOpen hU (by norm_num : 1 + 1 ≤ 2)`; CLE-apply
+  `(CDE θ).symm e` and CLM-apply `((CDE θ).symm : 𝕍 →L 𝕍) e` are defeq but NOT syntactically equal — `linarith` sees two
+  atoms; state everything in the CLM form; `hasStrictFDerivAt_responseTheta_add` at `M = mean θ₀ + ↑0` needs
+  `simp only [Submodule.coe_zero, add_zero, responseTheta_meanMap hS ν] at h`). NEXT: H4 `ResponseSimplexSphere` or H5
+  (localised bias needs the cubic remainder + moment bookkeeping) or a round-98 consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
