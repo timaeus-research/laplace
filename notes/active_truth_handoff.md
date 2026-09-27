@@ -2693,11 +2693,15 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `ring` after it errors; `HasDerivAt.comp`+`.pow 2` derivative normalises with `simp only [Nat.cast_ofNat,
   Nat.reduceSub, pow_one, Function.comp_def]`). J6 `ResponseMeanPolytopeJourney` LANDED (thin: `W ≃ₜ relint conv S(X)`,
   polytope journey lift with velocity and max-entropy law; the seabed already had `relintChart` and
-  `momentBody_eq_convexHull`). NEXT: J4 `ResponseLocalizedSamplingBias` — plan: (a) generic CUBIC remainder from the
-  quadratic one applied to `fderiv F` (`‖F z − F 0 − DF₀ z − ½D²F₀(z,z)‖ ≤ K‖z‖³` on a ball); (b) identify
-  `D²F₀(e,e) = −C(A⁻¹e, A⁻¹e)` for `F z = θr(m₀ + z)` via `hasDerivAt_responseLineVel`; (c) reset-localised
-  estimator `θ̂_loc = θ₀ + 1_E(θr(m₀+ξ) − θ₀)` on `E = {‖ξ‖ ≤ δ}`: `E[θ̂_loc] − θ₀ = A⁻¹E[1_E ξ] − ½E[1_E C(A⁻¹ξ,A⁻¹ξ)] + R`,
-  `‖R‖ ≤ K E[1_E‖ξ‖³] ≤ Kδ E‖ξ‖²`, `‖E[1_E ξ]‖ ≤ E‖ξ‖²/δ` (truncated linear term); then the i.i.d. instance with
-  `E‖ξ‖² ≤ ∑_j Var_D S_j / n`. Then J5 summary (optional) and the round-100 consult. Old NEXT:
+  `momentBody_eq_convexHull`). J4 `ResponseLocalizedSamplingBias` LANDED (cubic remainder; `D²θr = −C(A⁻¹·,A⁻¹·)`;
+  law-level localised bias = curvature term up to `(‖A⁻¹‖/δ² + K + ½κ/δ)M₃`). GOTCHAS: NEVER declare
+  `variable (μ : Measure 𝕍)` through the local notation — every integral over 𝕍 then times out at
+  isDefEq/whnf; take `(μ : Measure 𝕍) [IsFiniteMeasure μ]` as explicit theorem binders. `set R := fun z ↦ …` is fine
+  here but rewrite with `simp only [hR]` (rw leaves a beta-redex that `abel` can't see). `Integrable.smul c hf`
+  needs a typed `have hI' : IntegrableOn (fun z ↦ c • f z) s μ := hf.smul c`. A nullary `local notation "cball"`
+  with `δ` a section variable is the clean way to abbreviate `Metric.closedBall (0 : 𝕍) δ`; a notation WITH an
+  argument greedily swallows `⊆ …`. NEXT: the i.i.d. instance of J4 (`E[C(A⁻¹ξ̄,A⁻¹ξ̄)] = (1/n)∑C_{ab}Cov_D(S_a,S_b)` via
+  `integral_sampleResponse_sub_mul_sub`; `E‖ξ̄‖³ = O(n^{-3/2})` via a fourth-moment bound), J5 summary (optional),
+  round-100 consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

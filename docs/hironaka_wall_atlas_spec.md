@@ -6491,3 +6491,20 @@ certificates for concrete resolved charts beyond the identity chart.
     `polytopeJourney_meanMap_eq_modelJourney` (rfl; saturated case ⇒ mixture segment via J2). Gotcha: never `omit`
     `[Fintype X]`/`[Fintype J]` when `𝕍`/`θr` appear (referenced instances); use a section-wide
     `set_option linter.unusedFintypeInType false` instead of per-theorem `in`s.
+  - `ResponseLocalizedSamplingBias.lean` (J4, CURVATURE AS BIAS): generic **`exists_cubic_remainder`** (C³ on an open
+    set ∋ 0 ⇒ `‖F z − F 0 − DF₀ z − ½ D²F₀ z z‖ ≤ K‖z‖³` on a closed ball inside U; proof = quadratic remainder of
+    `fderiv F` + mean value along `t ↦ F(tz) − t DF₀ z − (t²/2) D²F₀ z z` via `norm_image_sub_le_of_norm_deriv_le_segment'`),
+    `responseLine_eq_meanAdd`, `smul_mem_responseBallDomain_iff` (`Iff.rfl`),
+    **`fderiv_fderiv_responseTheta_meanAdd_zero`** (`D²(m⁻¹)(m θ₀)[e,e] = −C_{θ₀}(A⁻¹e, A⁻¹e)`; second derivative along
+    the ray via `HasDerivAt.clm_apply`, matched with `hasDerivAt_responseLineVel` by `HasDerivAt.unique`),
+    **`exists_responseTheta_cubic_remainder`** (`‖θr(m₀+z) − θ₀ − A⁻¹z + ½C(A⁻¹z,A⁻¹z)‖ ≤ K‖z‖³` with certified domain);
+    Law section (`μ : Measure 𝕍` EXPLICIT binder — a section `variable (μ : Measure 𝕍)` through the `𝕍` notation makes
+    every integral statement time out at `isDefEq`/`whnf`!): `curvatureForm hS ν θ₀ z := C(A⁻¹z,A⁻¹z)`,
+    `continuous_curvatureForm` (`Continuous.clm_apply`), `norm_curvatureForm_le` (`≤ ‖A⁻¹‖‖T‖‖A⁻¹‖²‖z‖²`),
+    **`localizedBias_decomposition`** (`∫_{‖z‖≤δ}(θr(m₀+z)−θ₀) = A⁻¹∫_{ball} z − ½∫_{ball} C + R`, `‖R‖ ≤ K∫_{ball}‖z‖³`;
+    integrability on the ball by `ContinuousOn.integrableOn_compact`), **`norm_setIntegral_id_le_of_centred`**
+    (truncated linear term `‖∫_{ball} z‖ ≤ M₃/δ²` — the localisation does NOT preserve centring),
+    `norm_setIntegral_curvatureForm_sub_le` (curvature tail `≤ ‖A⁻¹‖‖T‖‖A⁻¹‖² M₃/δ`),
+    **`localizedBias_curvature`** (HEADLINE: `‖E[θ̂_loc − θ₀] + ½E_μ[C(A⁻¹Z,A⁻¹Z)]‖ ≤ (‖A⁻¹‖/δ² + K + ½κ/δ) M₃`).
+    NOT DONE: the i.i.d. instance (`E[C(A⁻¹ξ̄,A⁻¹ξ̄)] = (1/n)∑ C_{ab} Cov_D(S_a,S_b)` via `integral_sampleResponse_sub_mul_sub`;
+    `E‖ξ̄‖³ = O(n^{-3/2})` needs a fourth-moment bound for bounded i.i.d. sample means).
