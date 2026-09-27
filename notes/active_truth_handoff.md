@@ -1671,3 +1671,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `summable_nat_add_iff 2` + `not_summable_one_div_natCast` for the harmonic tail; `ENNReal.ofReal_rpow_of_nonneg` +
   `← Real.sqrt_eq_rpow` for `ofReal x ^ (1/2)`; `faceMass_pos` already exists (renamed `endpointMass_pos`).
   NEXT: `BinaryTiltLength` (`L_data = 2 arccos √p₀` for an indicator data direction), then the facet Lemmas B/D.
+- `BinaryTiltLength` landed (`L_data = 2 arccos √p₀`; atomic instance `< π`). Gotchas: `include hA` does NOT attach `hA` to a
+  `def` (`binMean ν A t` takes the set, `variable (A) in`); `Real.hasDerivAt_sqrt (hx : x ≠ 0)` is about `(√·)` and
+  `Real.hasDerivAt_arccos (h₁ : x ≠ -1) (h₂ : x ≠ 1)`; the chain-rule value contains `√(1 − √m ^ 2)` — `rw [Real.sq_sqrt]`
+  then `Real.sqrt_mul`, and prove the identity by first factoring `m(1 − m) = (√m √(1−m))²` (`mul_mul_mul_comm`,
+  `Real.mul_self_sqrt`) so that `field_simp` closes it with no relation left (a `linear_combination` guess failed);
+  `Real.sqrt_lt' one_pos` for `√m < 1`; `Tendsto.div` gives Pi-division — finish with `rw [zero_mul, zero_add, div_self] at this;
+  exact this` (defeq), not `simpa`; `rw [lemma]` with an `include`d hypothesis that the statement does not determine leaves a
+  `case hA` goal — pass it (`binMean_eq ν hA`).
+  NEXT: facet Lemmas B (component convergence via the face chart and uncharged-vertex gaps) and D (Schur bound by scalar
+  completion of squares), then the assembly `FacetFisherAccess`; or a round-78 consult first on the exact Lean shape of
+  Lemma B (tangential parameter identifiability on a facet).

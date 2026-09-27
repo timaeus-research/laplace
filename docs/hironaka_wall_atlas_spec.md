@@ -5314,3 +5314,12 @@ certificates for concrete resolved charts beyond the identity chart.
   (the ray to the endpoint has infinite Fisher length), **`not_length_bounded`**, **`tendsto_responseLength_atTop`**
   (`∫₀^b |q'_t|_F dt → ∞`: the response path from the featureless law has infinite Fisher length although the data path is a
   binary mixture of bounded length).
+- `BinaryTiltLength.lean` (NOT mirrored; round-77 rank 2, the data side): for `h = 1_A`, `p₀ = ν.real A ∈ (0,1)`:
+  `bdd_indicator`, `exp_mul_indicator` (`e^{t 1_A} = 1 + (e^t − 1) 1_A`), `binMean ν A t = E_{ρ_t} 1_A`, **`binMean_eq`**
+  (`= p₀ e^t/(1 + (e^t − 1)p₀)`), `binMean_pos/lt_one`, **`hasDerivAt_binMean`** (logistic `m' = m(1 − m)`),
+  `lawCov_indicator_dataPath` (`Var_{ρ_t} 1_A = m_t(1 − m_t)`), **`hasDerivAt_neg_two_arccos_sqrt_binMean`**
+  (`(−2 arccos √m_t)' = √(m_t(1 − m_t))`), `intervalIntegral_sqrt_var_indicator` (`∫₀^T = 2 arccos √p₀ − 2 arccos √m_T`),
+  `tendsto_binMean_one`, `tendsto_intervalIntegral_sqrt_var_indicator`, `integrableOn_sqrt_var_indicator`,
+  **`integral_Ioi_sqrt_var_indicator`** (`∫₀^∞ √Var_{ρ_t} 1_A dt = 2 arccos √p₀`), `two_arccos_sqrt_lt_pi`;
+  `AtomicInterval.hA_eq_indicator`, **`integral_Ioi_sqrt_var_hA`** (`L_data = 2 arccos √(1/2)`), **`dataLength_lt_pi`**.
+  TOGETHER WITH `AtomicIntervalDistortion`: finite data length, infinite response length — no constant bounds `L_resp` by `L_data`.

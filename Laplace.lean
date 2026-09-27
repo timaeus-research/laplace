@@ -516,6 +516,7 @@ import Laplace.Multi.PathLengthPrimitive
 import Laplace.Multi.DataDissipation
 import Laplace.Multi.ScalarResponseRay
 import Laplace.Multi.AtomicIntervalDistortion
+import Laplace.Multi.BinaryTiltLength
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
