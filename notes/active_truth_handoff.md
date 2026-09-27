@@ -2723,8 +2723,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   L5 nested-feature refinement ladder, L6 facewise response calculus, L7 testing obstruction. L2
   `ResponseObservableIIDExpansion` LANDED (`fderiv_fderiv_obsChart_zero`: D²f_F = second response;
   `exists_obsChart_cubic_remainder`; `obsBias_hessian`; `iid_obsBias_hessian`: bias = (1/2n)tr(Σ_D D²f_F) +
-  O(n^{-3/2})). NEXT: L5 `ResponseFeatureRefinement` (cheap from `responseProjection_spec` Pythagoras), L4
-  `ResponseMismatchResolution` (Σ_D-Riesz like K5's fisherRiesz), L3 remaining-information in polytope-journey language
-  (`KL(R_D‖P_t) = ∫_t^1(1−s)g`, `KL(D‖P_t) = δ_D + R(t)`, derivative `−(1−t)g`), L7, L6, then L1. Old NEXT:
+  O(n^{-3/2})). L5 `ResponseFeatureRefinement` LANDED (`Refines S T ν`; ladder `KL(D‖R_S) = KL(D‖R_T) + KL(R_T‖R_S)`,
+  `KL(R_T‖ν) = KL(R_S‖ν) + KL(R_T‖R_S)`, coarse rate finite, Pinsker certificate with affine predictors subtracted).
+  NEXT: L4 `ResponseMismatchResolution` (Σ_D-Riesz like K5's fisherRiesz; `sup_u n⟨u,e⟩²/Σ_D(u,u) = n⟨e,Σ_D⁻¹e⟩`;
+  chamber certificate), L3 remaining-information in polytope-journey language (`KL(R_D‖P_t) = ∫_t^1(1−s)g`,
+  `KL(D‖P_t) = δ_D + R(t)`, derivative `−(1−t)g`), L7 testing obstruction, L6 face calculus, then L1 (needs
+  Cauchy–Binet). Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

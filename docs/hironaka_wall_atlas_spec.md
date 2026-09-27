@@ -6683,3 +6683,16 @@ certificates for concrete resolved charts beyond the identity chart.
     `integral_obsHessForm_sampleResponse` (`= (1/n)·hessContraction`), **`iid_obsBias_hessian`** (headline:
     `|E[f̂_{F,loc}] − f_F(m₀) − (1/2n)hessContraction| ≤ (…)·√3|J|³(2B)³/n^{3/2}` — the observable bias is `+½` the
     Hessian contraction; the outer observable's own curvature enters).
+  - `ResponseFeatureRefinement.lean` (L5, THE INFORMATION LADDER): two families `S : J → X → ℝ`, `T : K → X → ℝ` on the
+    same `(X, ν)`; `Refines S T ν := ∀ j, ∃ b c, S j =ᵐ[ν] dirLoss T b + c`; `integral_eq_of_refines` (equal `T`-means ⇒
+    equal `S`-means for laws `≪ ν`, via `AbsolutelyContinuous.ae_eq`), section variables `D [IsProbabilityMeasure D]
+    (hDν : D ≪ ν) (hfinT : genRate ν T m_T ≠ ⊤)` with NULLARY notations `mT`/`mS` (a parametrised `local notation "mT" D`
+    silently produced sorried declarations — never parametrise local notations by section variables),
+    `isProbabilityMeasure_responseProjection_T`, `responseProjection_T_absolutelyContinuous` (`klDiv_of_not_ac`),
+    **`mean_S_responseProjection_T`** (`R_T` has the `S`-mean of `D`), **`genRate_ne_top_of_refines`**
+    (`𝓘_S ≤ KL(R_T‖ν) = 𝓘_T < ⊤` via `genRate_le_klDiv`), **`klDiv_responseProjection_refine`**
+    (`KL(R_T‖ν) = KL(R_S‖ν) + KL(R_T‖R_S)`), **`klDiv_data_responseProjection_refine`** (THE LADDER:
+    `KL(D‖R_S) = KL(D‖R_T) + KL(R_T‖R_S)`, in `ℝ≥0∞`, cancelling `𝓘_S` with `WithTop.add_right_cancel`),
+    **`sq_integral_sub_responseProjection_refine_le`** (`ofReal((E_{R_T}F − E_{R_S}F)²/(2L²)) ≤ KL(R_T‖R_S)` for any affine
+    predictor `⟨a,S⟩ + c` with `|F − ⟨a,S⟩ − c| ≤ L`, from `pinsker_observable`). Only `hT hDν hfinT` are `include`d;
+    `hS` enters through statements or `include hS in`.
