@@ -2241,3 +2241,20 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   forcing, response forms, `d_eff` in the data law, on regular chambers — via `abs_lawCov_withDensity_sub_le`),
   rank 5 `ResponseHellingerAtlas` (stratumwise topology agreement), rank 6 `ResponseSubmersionCalculus`
   (invisible tangent space `{k : Cov_D(S,k) = 0}` = ker of forcing, horizontal complement); then round-88 consult.
+- ResponseLawContinuity landed (round 87 rank 4). Pattern: parametrise the geometry by the density `q` with the
+  admissibility quadruple `(AEMeasurable q ν, 0 ≤ q, Integrable q ν, ∫ q = 1)` exactly as
+  `TiltedFisherCompactConvergence`; Lipschitz bounds are `abs_integral_withDensity_sub_le` /
+  `abs_lawCov_withDensity_sub_le` + `pi_norm_le_iff_of_nonneg`; convergence along ANY filter via
+  `tendsto_iff_norm_sub_tendsto_zero` + `squeeze_zero` + `hL1.const_mul C`; the response through
+  `(hasStrictFDerivAt_responseTheta_add hS ν hrel).continuousAt.tendsto.comp` on the 𝕍-valued difference
+  `⟨m(q n) − m(q₀), sub_mem_dirSpan_of_mem_momentBody' …⟩ → 0` (`tendsto_subtype_rng`), then
+  `simp only [Function.comp_def, Submodule.coe_zero, add_zero]` and `.congr … add_sub_cancel`. GOTCHAS: `lawMean`
+  is taken (a `Measure ℝ` object) → `dens*` names; a `def` applying a `ContinuousLinearEquiv` directly
+  (`(CDE θ).symm v`) makes every later unification against the `(… : 𝕍 →L[ℝ] 𝕍) v` form a whnf TIMEOUT — define
+  with the CLM coercion; compose `Continuous.tendsto` with `prodMk_nhds` into a typed `have` at the explicit
+  limit point and finish with `h.congr fun n ↦ rfl`; a lemma placed inside a `variable … include` block inherits
+  every hypothesis (move joint-continuity helpers above the block). Round-87 ranks 1–4 DONE. NEXT: rank 6
+  `ResponseSubmersionCalculus` (invisible tangent space `{k : Cov_D(S,k) = 0}` = ker forcing; onto `W`; canonical
+  horizontal lift; orthogonal decomposition — mostly packaging of `ResponseHorizontalLift`), rank 5
+  `ResponseHellingerAtlas` (stratumwise: on a finite regular stratum Fisher and Hellinger convergence agree); then
+  round-88 consult.

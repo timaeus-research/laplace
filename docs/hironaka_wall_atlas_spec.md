@@ -5833,3 +5833,12 @@ certificates for concrete resolved charts beyond the identity chart.
     **`measureReal_ballClassifier_ne_false_le`** (both error probabilities bounded by ball exits), `disjoint_fisherBall`
     (`ρ₀ + ρ₁ ≤ d_F(θ₀,θ₁)` ⇒ disjoint balls). Estimation radii (dimension-dependent) and the testing bound
     (dimension-free, `ResponseProductAffinity`) now sit side by side.
+  - `ResponseLawContinuity.lean` (round 87, rank 4): the covariance-quotient geometry as a function of the DENSITY
+    `q ∈ L¹(ν)`: `densMean`, `densForcing` (`b_q(k) = Cov_{qν}(S,k)`), `densResponse` (`Φ(q) = θ(E_{qν}S)`), `densVel`
+    (`(Dm(Φ(q))|_W)⁻¹ p b_q(k)` through a retraction `p`), `densBilin`, `densEffDim`; **`abs_densMean_sub_le`** /
+    `norm_densMean_sub_le` (`‖m(q₁)−m(q₂)‖ ≤ B‖q₁−q₂‖₁`), **`abs_densForcing_sub_le`** / `norm_densForcing_sub_le`
+    (`≤ 3BK‖q₁−q₂‖₁`), `abs_densCov_stat_sub_le`; `continuous_susceptibility_apply` (joint continuity of
+    `(θ,b) ↦ (Dm(θ)|_W)⁻¹ p b`), `densMean_mem_momentBody`; along any filter with `‖q_n − q‖₁ → 0`:
+    `tendsto_densMean`, `tendsto_densForcing`, `tendsto_densCov_stat`, **`tendsto_densResponse`** (at interior means,
+    via `hasStrictFDerivAt_responseTheta_add`), **`tendsto_densVel`**, **`tendsto_densBilin`**, **`tendsto_densEffDim`**.
+    The response geometry is `L¹`-robust in the data law on regular chambers; nothing across singular boundary limits.
