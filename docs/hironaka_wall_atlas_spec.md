@@ -5994,3 +5994,11 @@ certificates for concrete resolved charts beyond the identity chart.
     `κ_q(L_v,L_v,L_v) − 2κ_ρ(L_v,h,h)`), `defectBracket_eq`, `hasDerivAt_defectBracket_zero`,
     **`hasDerivAt_deriv_deriv_responseDefect_zero`** / **`deriv_deriv_deriv_responseDefect_zero`** (THE THIRD DEFECT
     DERIVATIVE `Δ'''(0) = 2κ_ν(h,h,h) + 3κ_ν(h,h,L_v) − κ_ν(L_v,L_v,L_v)`, `v = θ'_0`; no fourth cumulant).
+  - `ResponseSecondOrderLifts.lean` (B5): `hasDerivAt_lawCov_coeff` (covariances move by third cumulants along
+    coefficient journeys), `hasDerivAt_forcing_coeff`, `responseOf_coeff_eq`, `responseVel_coeff_eq`,
+    **`hasDerivAt_responseVel_coeff`** (Hessian theorem along any `C¹` coefficient journey), `bddSpace_dirLoss_eq`,
+    **`responseVel_dirLoss`** / `dataThird_dirLoss` / **`responseHess_dirLoss`** (linearity in the direction),
+    `responseHess_congr'`, **`hasDerivAt_coeffVel`** (RESPONSE ACCELERATION `(Φ∘g)'' = DΦ[g''] + H(g',g')` along `C²`
+    journeys), jet coefficients `jetCoeff/jetCoeff'/jetCoeff''` with derivative lemmas, **`hasDerivAt_jetVel_zero`**
+    (`(Φ∘(g+tk+t²b/2))''(0) = DΦ_g[b] + H_g(k,k)`), **`exists_jet_accel`** (every response acceleration prescribable via
+    the horizontal lift), `exists_jet_stationary`.

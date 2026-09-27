@@ -2402,7 +2402,12 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   the identification `pullbackVar_eq` is one `rw` chain + `ring`). `ResponseHigherDefectVariation` landed exactly along the planned route (slope lemma via
   `hasDerivAt_iff_tendsto_slope` + `slope_def_field` + `simp only`; `HasDerivAt.fun_sum (u := Finset.univ)` needs the finset
   named; `rw` with a congr-lemma whose proof args are `_` fails against a beta-redex RHS — pass the proofs and `exact
-  (…).symm`; `thirdCentral_comm₂₃, thirdCentral_comm₁₂` (in that order) takes `κ(h,h,S)` to `κ(S,h,h)`). NEXT:
-  `ResponseSecondOrderLifts` (`(Φ∘g)''(0) = V_g(b) + H_g(k,k)` for `g(t) = g + t k + t²/2 b`; prescribed two-jets via
-  `horLin`/`horizontalLift` with `velLin_horLin`, `responseVel_horizontalLift`), then `ResponseDataSmooth`,
-  `ResponseLengthSecondVariation`.
+  (…).symm`; `thirdCentral_comm₂₃, thirdCentral_comm₁₂` (in that order) takes `κ(h,h,S)` to `κ(S,h,h)`). `ResponseSecondOrderLifts` landed (coefficient-journey Hessian theorem mirrors the straight one with
+  `coeffMean`; linearity via `velLin` + `map_sum`; acceleration = `HasDerivAt.fun_sum` of `(hasDerivAt_pi.1 (ha'' t₀)
+  i).smul (Hessian)` with a typed `have` absorbing the Pi-smul form; jets on `Fin 3` with `fin_cases` + `exact
+  hasDerivAt_const/id` (NOT `simpa`, instance-diamond mismatch) and `change ((2:ℕ):ℝ) * t^(2-1)/2 = t; norm_num`).
+  GOTCHA: `have h := …` SHADOWS the section family `h : ι → X → ℝ` and produces bogus isDefEq/whnf timeouts — name
+  derivative facts `hD`. NEXT: `ResponseDataSmooth` (finite slices `z ↦ responseOf (g + Σ z_i k_i)` are `C^∞`: rebase at
+  `ν.tilted g`, `SmoothFamily.contDiff_meanMap`-style smoothness of the tilted moment numerator/denominator in `z`, compose
+  with the smooth local inverse `contDiff_chartDerivEquiv_symm`/`hasStrictFDerivAt_meanMapInverse`; Taylor
+  `Φ(g+tk) = Φ(g) + tV + t²/2 H + o(t²)` as `IsLittleO`), then `ResponseLengthSecondVariation` (fourth cumulants; last).
