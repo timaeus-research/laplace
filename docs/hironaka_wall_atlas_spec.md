@@ -5707,3 +5707,11 @@ certificates for concrete resolved charts beyond the identity chart.
     **`tendsto_meanMap_pathEndpoint`** (means → `meanExt endpoint`), **`completionLaw_pathEndpoint_eq`** (the law of the
     endpoint is `Π(lim m(η(t)))`). Bridge from paths through data to endpoints in the stratified atlas; finite LENGTH
     (not energy) is the hypothesis. Bounded-tilt adapter (multi-parameter chain rule) still to do.
+  - `ResponseBilinearForm.lean` (round 85, rank 2): `lawCov_add_left_eq`/`lawCov_add_right_eq`/`lawCov_const_mul_left_eq`,
+    `forcing_add`, `forcing_const_mul`, `responseVel_add`, `responseVel_const_mul` (`DΦ_g` is linear),
+    **`pullbackBilin`** (`G_g(k,ℓ) = −⟨DΦ_g[k], b_g(ℓ)⟩`), `pullbackBilin_self` (diagonal = pull-back form),
+    **`pullbackBilin_eq_lawCov_family`** (`= Cov_{P_Φ}(⟨DΦ[k],S⟩,⟨DΦ[ℓ],S⟩)`), `pullbackBilin_comm`,
+    `pullbackBilin_eq_lawCov_data`, bilinearity (`_add_right/_left`, `_const_mul_right/_left`),
+    **`pullbackBilin_sq_le`** (Cauchy–Schwarz), `lawCov_visible_visible_of_matched`,
+    **`lawCov_eq_pullbackBilin_add`** (THE BILINEAR SCORE DECOMPOSITION at a matched law:
+    `Cov_D(k,ℓ) = G_g(k,ℓ) + Cov_D(k − k_vis, ℓ − ℓ_vis)`).

@@ -2115,4 +2115,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `hcharged : ∀ v ∈ V, 0 < ν.real (statFibre S v)`. NEXT: `ResponseBilinearForm` (rank 2), the bounded-tilt adapter
   for the length budget (multi-parameter `g_t = ∑ a_j(t) h_j`, chain rule `d/dt E_{ρ_{g_t}}S = Cov(S, ġ_t)`),
   `TiltedFisherCompactConvergence` (rank 3), `ResponseFormContinuity`, `AccessibleFaceNonexpansion`.
+- ResponseBilinearForm landed (round 85 rank 2). GOTCHAS: a def argument unused in the body (`hℓ` in `pullbackBilin`)
+  must be `_hℓ` or the unusedVariables linter fires; `pullbackBilin_comm` with implicit Bdd args inside `rw` leaves
+  `Bdd k` goals — pass all explicit; after `omit hg in` the call drops `hg`. `d_eff ≤ κ dim W` NOT done (needs
+  tr(psd·psd) ≥ 0, i.e. square roots or a Fisher-ON basis). NEXT: `TiltedFisherCompactConvergence`
+  (`|lawCov Q₁ f g − lawCov Q₂ f g| ≤ 3KL‖q₁−q₂‖₁` for laws `ν.withDensity (ofReal ∘ qᵢ)`), then the bounded-tilt
+  adapter for the length budget, `ResponseFormContinuity`, `AccessibleFaceNonexpansion`.
 
