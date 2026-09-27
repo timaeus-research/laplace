@@ -6198,3 +6198,11 @@ certificates for concrete resolved charts beyond the identity chart.
     LOCAL-ALTERNATIVE BOUND `P((M̂_t − c(0)) d ≤ 0) ≤ 4 Var_t/(n d² t²)` for small `t > 0`),
     **`truthShift_sign_resolved_of_sampleSize`** (`4V ≤ ε n d² t²` ⇒ `P(correct sign) ≥ 1 − ε`), `hasDerivAt_pathCoord_tilted`
     (truth velocity of an exponential journey `= Cov_{ρ_0}(⟨w,S⟩, ⟨a'_0,h⟩)`).
+  - `ResponseSimplexCurvature.lean` (F5): `modelScore S ν θ u := ⟨u,S⟩ − E_θ⟨u,S⟩`, **`SaturatedAt S ν θ`** (centred scores
+    closed under products up to constants: `∀ u v, ∃ c, f_u f_v − G(u,v) = f_c` `P_θ`-a.e. — the abstract form of "the
+    features are an affine basis on a finite X"; the concrete finite instance is NOT yet formalised), `bdd_modelScore`,
+    `integral_modelScore` (= 0), `fisherInner_eq_integral_modelScore` (`G = ∫ f_u f_v`), `fisherInner_mChristoffel_eq_integral`
+    (`G(C(u,v),w) = −∫ f_u f_v f_w`), **`mChristoffel_eq_neg_of_saturated`** (`C(u,v) = −c`, by `mChristoffel_unique`),
+    **`fisherInner_mChristoffel_mChristoffel_of_saturated`** (`G(C(u,v),C(x,y)) = E[f_uf_vf_xf_y] − G(u,v)G(x,y)`),
+    **`fisherInner_alphaCurvature_of_saturated`** (CONSTANT-CURVATURE TENSOR `G(R^α(u,v)w,x) = ((1−α²)/4)(G(u,x)G(v,w) −
+    G(v,x)G(u,w))`: fourth moments cancel), **`fisherSectional_of_saturated`** (`K = 1/4` on every nondegenerate plane).

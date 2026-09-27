@@ -2587,6 +2587,12 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `hasDerivAt_iff_tendsto_slope_zero` restricted with `nhdsWithin_mono` to `𝓝[>] 0`, ball membership already arrives
   as `dist … < r`; `integral_dirLoss_eq_dotJ (u := a) ρ hS` (DataRayBlocks) has `u` implicit; complement probability via
   `measureReal_compl` + `probReal_univ`; path samples `Xs : ℝ → ℕ → Ω → X` with all hypotheses quantified over `t`).
-  NEXT: F5 `ResponseSimplexCurvature` (affine-basis family has sectional curvature ¼), F6
-  `ResponseFisherEnergyStationarity` (converse of E6 via test fields `φ(t)z`); then a round-96 consult. Optional:
+  F5 `ResponseSimplexCurvature` LANDED with the ABSTRACT saturation hypothesis `SaturatedAt` (scores closed under
+  products up to constants, a.e.); proof = `mChristoffel_unique` identifies `C(u,v) = −c`, then `G(C,C')` is a
+  four-term integral expansion (typed `Integrable (fun z ↦ A − B − C)` haves for `integral_add/sub`; `beta_reduce`
+  before `rw [← hx]` under `integral_congr_ae (hc.mono …)`), and the fourth moments cancel in E1's tensor formula.
+  NOT DONE: the concrete finite instance (X finite, ν charging every point, features an affine basis ⇒ `SaturatedAt`);
+  needs `dirProjL` to land the product's coefficient vector in `𝕍` up to an a.e. constant.
+  NEXT: F6 `ResponseFisherEnergyStationarity` (converse of E6 via test fields `φ(t)z`); then a round-96 consult
+  (ask about the finite saturation instance). Optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
