@@ -2077,4 +2077,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `[DecidableEq J]` section var ⇒ `omit [DecidableEq J] in` + `classical` on theorems without `Pi.single`.
   NEXT: `ResponseLocalTesting` (Hellinger sandwich on coercive patches `√λ/(2B) d_F ≤ H ≤ ½ d_F`), then
   `TiltedFisherCompactConvergence`, `ResponseClassResolution` (class-change probability ≤ tr(C_θ⁻¹C_ρ)/(n r²)).
+- ResponseLocalTesting landed (round 84 rank 5): mean control by Hellinger via `sq_integral_mul_le ν hf hg`
+  (bounded-function Cauchy–Schwarz, SqrtDensityAffinity) with `f = q_θ − q_η`, `g = (q_θ+q_η)(⟨w,S⟩−c)`,
+  `(q_θ+q_η)² ≤ 2q_θ² + 2q_η²`; vector form by `sq_dotJ_le` + `Real.sqrt_sq_eq_abs`; local converse from
+  `fisherDist_responseTheta_le` + `meanMap_responseTheta`. GOTCHAS: `Real.abs_le_sqrt` does not exist — go through
+  `Real.sqrt_sq_eq_abs`/`pow_le_pow_iff_left₀ (abs_nonneg _) _ two_ne_zero`; `fisherDist_nonneg` has NO explicit
+  arguments (section vars implicit); `Integrable.add` Pi-form again — type the sum witness. NEXT:
+  `TiltedFisherCompactConvergence`, `ResponseClassResolution` (class margin + change probability
+  ≤ tr(C_θ⁻¹C_ρ)/(n r²): combine `integral_samplingEnergy` with Markov/Chebyshev on the Fisher-normalised error),
+  `AccessibleFaceNonexpansion`, `FaceChainAccessibility`, `ResponsePathLengthBudget`.
 

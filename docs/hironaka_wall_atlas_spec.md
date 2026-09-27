@@ -5665,3 +5665,11 @@ certificates for concrete resolved charts beyond the identity chart.
     **`integral_samplingEnergy_eq_trace`** (`E q_θ(M̂_n − m) = −tr(R_θ C_D)/n` for ANY data law `D`),
     **`integral_samplingEnergy_family`** (THE MATCHED TRACE IDENTITY `E q_θ(M̂_n − m) = dim W / n`, basis-free, for
     every `θ` and every retraction). The Fisher-normalised sampling noise is scale-free: `√(dim W/n)`.
+  - `ResponseLocalTesting.lean` (round 84, rank 5): `hellingerDist_comm`, `integral_rootDens_mul_self`,
+    `dotJ_meanMap_eq_integral_rootDens` (`⟨w,m(θ)⟩ = ∫q_θ²(⟨w,S⟩−c) + c`), **`abs_dotJ_meanMap_sub_le_hellinger`**
+    (MEAN CONTROL BY HELLINGER `|⟨w, m(θ)−m(η)⟩| ≤ 2‖⟨w,S⟩−c‖_∞ H`), **`sqrt_dotJ_meanMap_sub_le_hellinger`**
+    (`‖m(θ)−m(η)‖₂ ≤ 2B H` for `‖S−a‖₂ ≤ B`), `integral_rootDens_mul_eq_one_sub` (affinity `= 1 − H²/2`),
+    `pow_affinity_le_exp` (`A^n ≤ exp(−nH²/2)`), **`sqrt_mul_fisherDist_le_hellinger`** (THE LOCAL CONVERSE on a
+    coercive convex patch: `√λ d_F(θ(M₀),θ(M₁)) ≤ 2B H`), **`hellinger_fisher_sandwich`** (`√λ d_F ≤ 2B H ≤ B d_F`),
+    **`pow_affinity_le_exp_fisher`** (`n`-sample affinity of two responses `≤ exp(−nλ d_F²/(8B²))`: the binary
+    testing scale between responses is `n^{−1/2}` in Fisher distance with explicit patch constants).
