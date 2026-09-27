@@ -5680,3 +5680,21 @@ certificates for concrete resolved charts beyond the identity chart.
     Fisher-normalised ball of radius `r` around `m` lies in the class `C`, then `P(M̂_n ∉ C) ≤ −tr(R_θC_D)/(n r²)`,
     abstract class partition), **`measureReal_sampleResponse_notMem_le_family`** (matched law:
     `P(M̂_n ∉ C) ≤ dim W/(n r²)`). Chamber "typical size" = Fisher margin `r`, compared with `√(dim W/n)`.
+  - Round 85 (`research_round85_{q,v1}`): centrepiece = THE COVARIANCE QUOTIENT THEOREM (`DΦ_g` discards exactly the
+    feature-invisible scores; horizontal lift `hor_g(v) = −⟨C_D⁻¹Cv, S−m_D⟩` is a canonical right inverse and the
+    variance-minimising contrast; at matched laws a Riemannian submersion); one relative-covariance operator
+    `T_g = C^{−1/2}C_D C^{−1/2}` controls amplification (λ_max) and noise (`d_eff = tr(C⁻¹C_D)`); two-class margin bound
+    `≥ 1 − d_eff,0/(n₀r₀²) − d_eff,1/(n₁r₁²)`; margins are frozen mean-ellipsoid margins (not intrinsic Fisher balls);
+    length budget needs FINITE LENGTH on `[0,∞)` (finite energy insufficient); compact covariance convergence via
+    `‖C_{Qn} − C_Q‖ ≤ 3B²‖q_n − q‖₁`. Ranked: 1 ResponseHorizontalLift, 2 ResponseBilinearForm/QuotientNoise,
+    3 TiltedFisherCompactConvergence, 4 ResponsePathLengthBudget, 5 ResponseFormContinuity, 6 AccessibleFaceNonexpansion,
+    7 ResponseIntrinsicResolution, 8 FaceChainAccessibility, 9 ResponseProductAffinity, 10 ResponseHellingerAtlas.
+  - `ResponseHorizontalLift.lean` (round 85, rank 1): `covLin` (ambient covariance map), `covLin_eq_forcing`,
+    `dataCovOp` (`C_{ρ_g}` on `W`), `dotJ_dataCovOp` (`⟨w,C_D w⟩ = Var_D⟨w,S⟩`), **`lawCov_dirLoss_tilted_pos`** (positive
+    definite for every bounded tilt, via `tilted_neg_same` + `lawCov_tilted_le_exp_osc`), `dataCovOp_injective`,
+    `dataCovEquiv`, **`horizontalLift`** (`hor_g(v) = ⟨C_D⁻¹ Dm(Φ(g)) v, S⟩`), `forcing_horizontalLift`,
+    **`responseVel_horizontalLift`** (`DΦ_g[hor_g v] = v`), **`exists_responseVel_eq`** (`DΦ_g` ONTO `W`),
+    `pullbackForm_horizontalLift` (`= |v|²_F`), `lawCov_horizontalLift_self` (`Var_D hor = ⟨C_D⁻¹Dm v, Dm v⟩`),
+    `forcing_eq_of_responseVel_eq`, **`lawCov_self_ge_horizontalLift`** (VARIANCE-MINIMISING LIFT), matched:
+    `dataCovOp_eq_neg_of_matched`, `horizontalLift_of_matched` (`= −⟨v,S⟩`),
+    **`lawCov_horizontalLift_self_of_matched`** (THE MATCHED SUBMERSION `Var_D hor_g(v) = |v|²_F`).

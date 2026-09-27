@@ -569,6 +569,7 @@ import Laplace.Multi.ResponsePullbackForm
 import Laplace.Multi.FisherNormalisedSampling
 import Laplace.Multi.ResponseLocalTesting
 import Laplace.Multi.ResponseClassResolution
+import Laplace.Multi.ResponseHorizontalLift
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

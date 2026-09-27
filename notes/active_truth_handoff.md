@@ -2095,4 +2095,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   Finset/function is a stuck metavariable; `familyMeasure_eq_withDensity_famDens` takes no explicit args in `rw`.
   NEXT: `TiltedFisherCompactConvergence`, `AccessibleFaceNonexpansion`, `FaceChainAccessibility`,
   `ResponsePathLengthBudget`; then a round-85 consult.
+- Round 85 consulted (0c1e70a). ResponseHorizontalLift landed: `dataCovOp := ((covLin S (ν.tilted g)).comp
+  W.subtype).codRestrict W _`, `dataCovEquiv := LinearEquiv.ofInjectiveEndo`, `horizontalLift v := dirLoss S
+  ((dataCovEquiv).symm (CDE Φ v))`. GOTCHAS: `tilted_zero'` gives `(ν univ)⁻¹ • ν` — use `tilted_neg_same
+  (integrable_exp_of_bdd ν hg) : (ν.tilted g).tilted (-g) = ν` (accepts `fun x ↦ -g x` by defeq via a typed
+  `have`); `rw [horizontalLift]` unfolds EVERY occurrence (also inside the residual) — instantiate
+  `lawCov_dirLoss_left` with the explicit direction and finish by `exact h.trans …` (defeq); a section
+  `variable (hm : … responseOf hS ν g …)` fails with "Unknown constant ν✝" — pass via `local notation "IsMatched"`.
+  NEXT (round 85): `ResponseBilinearForm` (`G(k,ℓ) = ⟨b(k), C⁻¹b(ℓ)⟩`, symmetric, `d_eff ≤ κ dim W`),
+  `TiltedFisherCompactConvergence` (`|Var_{Qn} − Var_Q| ≤ 3B²R²‖qn−q‖₁`), `ResponsePathLengthBudget` (finite length
+  on `[0,∞)` ⇒ completion endpoint + tail bound + law `Π(lim m)`), `ResponseFormContinuity`.
 
