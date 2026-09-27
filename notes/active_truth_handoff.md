@@ -1872,3 +1872,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `LipschitzWith ½`, extension `rootDensExt` to the completion, a.e. nonnegativity and unit norm of the limits,
   `meanExt x i = ∫ S i · (rootDensExt x)² dν`), face-conditioned Hellinger limit over accessible facets, slop
   paragraph, round-81.
+- Module 9 `FisherCompletionLaws` landed 2026-09-27 (Ψ ½-Lipschitz, `rootDensExt`, nonneg unit vectors, extended mean =
+  mean of the extended law). Gotchas: `L2.inner_def` then `simp only [RCLike.inner_apply, conj_trivial]` (a `rw` hits the
+  beta-redex); `‖toLp |h|‖ = ‖h‖` via `Lp.norm_toLp`, `Lp.norm_def`, `eLpNorm_norm`, `eLpNorm_congr_ae (Lp.coeFn_sub f g)`
+  with the `MemLp` stated for `fun x ↦ ‖(⇑f − ⇑g) x‖`; `Lp.coeFn_nonneg : 0 ≤ᵐ ⇑f ↔ 0 ≤ f` + `isClosed_nonneg` for the
+  positive cone; `pow_eq_one_iff_of_nonneg`; `Real.toNNReal (1/2)` with `Real.coe_toNNReal _ (by norm_num)` for the
+  Lipschitz constant; after `rw [← mean_familyMeasure_one_zero]` a `beta_reduce` is needed before `integral_famDens_mul`;
+  `MemLp.toLp_sub` reversed then `norm_toLp_sq` and `rfl` closes the Pi-vs-lambda gap.
+  NEXT: slop paragraph (uniqueness + Hellinger + laws); face-conditioned Hellinger limit over accessible facets
+  (`rootDensExt` at the facet point = `√(1_F e^{−⟨v_M,S⟩}/Z_F)`, dominated convergence along the fixed-base ray);
+  round-81 consult (charged square: small intrinsic diameter of deep normal regions; flags; the boundary of the
+  completion in codimension ≥ 2).

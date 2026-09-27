@@ -5461,3 +5461,11 @@ certificates for concrete resolved charts beyond the identity chart.
     **`abs_chord_deriv_le`** (`|A'| ≤ H · F`), **`hellingerDist_le_half_integral`** (`H(γ_1,γ_0) ≤ ½ ∫₀¹ F` — monotonicity
     of `B − A` with `B' = ½ H F`, no integrability of `A'` needed), **`hellingerDist_le_half_fisherDist`**
     (`H ≤ ½ d_F` on `W`).
+  - `FisherCompletionLaws.lean`: `norm_sq_eq_integral_mul_self`, `norm_toLp_sq`, **`integral_abs_sub_mul_abs_add_le`**
+    (`L²` Cauchy–Schwarz), `abs_integral_mul_sq_sub_le`, **`continuous_integral_mul_sq`** (`f ↦ ∫ φ f²` continuous on
+    `L²` for bounded `φ`), `memLp_rootDens`, `rootDensLp` (Ψ into `Lp ℝ 2 ν`), `norm_rootDensLp = 1`,
+    **`dist_rootDensLp`** (`L²` distance = Hellinger), **`lipschitzWith_rootDensLp`** (Ψ is ½-Lipschitz for `d_F`),
+    **`rootDensExt`** (extension to the completion; `rootDensExt_coe`, `lipschitzWith_rootDensExt`,
+    `continuous_rootDensExt`), **`norm_rootDensExt = 1`**, **`rootDensExt_nonneg`**, `integral_rootDensExt_sq = 1`,
+    **`meanExt_eq_integral_rootDensExt`** (`m̄(x)_i = ∫ S_i Ψ̄(x)²`): EVERY COMPLETION POINT IS A PROBABILITY LAW
+    `Ψ̄(x)² ν ≪ ν` WITH MEAN `m̄(x)`.
