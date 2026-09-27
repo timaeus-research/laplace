@@ -523,6 +523,7 @@ import Laplace.Multi.FaceGauge
 import Laplace.Multi.FaceMassConcentration
 import Laplace.Multi.FaceCoercivity
 import Laplace.Multi.FacetFisherAccess
+import Laplace.Multi.DataRayFacet
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

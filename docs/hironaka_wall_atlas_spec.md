@@ -5378,3 +5378,10 @@ certificates for concrete resolved charts beyond the identity chart.
   **`facet_fisher_access_iff`**: THE FACET ACCESSIBILITY THEOREM — on a charged polytope with an exposed facet, `M ∈ ri F` is
   reached by some `C¹` path of finite Fisher length in the direction space iff the normal ray has finite Fisher length (hence,
   with `RayFisherLengthClassification`, iff `Σ_k √a_k < ∞`; with `RayTiltInvariance`, all-or-nothing on `ri F`).
+- `DataRayFacet.lean` (NOT mirrored; round-79 §2 + forward of §4): `dotJ_chartDeriv_eq_neg_lawCov`, `continuous_coe_dataTheta`,
+  `hasDerivAt_coe_dataTheta`, `continuous_dataCov_vec`, **`continuous_coe_dataThetaVel`** (the response velocity is continuous:
+  it solves the coercive linear equation `Dm(θ_t) θ'_t = Cov_{ρ_t}(S,h)`, coercivity of `Dm(θ_{t₀})` transported to nearby `t` by
+  the bounded-tilt comparison, and `‖θ'_t − θ'_{t₀}‖ ≤ (2 card J/λ)(‖b_t − b_{t₀}‖ + ‖(A_t − A_{t₀}) θ'_{t₀}‖)`),
+  `meanMap_dataTheta` (`= E_{ρ_t} S`), **`tendsto_meanMap_dataTheta`** (response means → `E_ν[S | h = H]`),
+  **`lintegral_sqrt_raySpeedSq_lt_top_of_responseLength`** (FORWARD data-ray theorem: `M = E[S | h = H] ∈ ri F` facet and
+  `∫⁻ √responseSpeedSq < ⊤` ⇒ the normal ray has finite Fisher length), from `FacetFisherAccess` with `η = dataTheta`.

@@ -1764,3 +1764,19 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: slop paragraph (in progress), then round-78 §5 (data-ray strengthening: the DATA path's response has finite length iff the
   ray does — needs the one-sided radial-variation argument with `DataDissipation`), or a round-79 consult for the next ranking
   (intrinsic Fisher completion, higher codimension, flags).
+- Round 79 (`gpt_responses/research_round79_{q,v1}.md`): sign fix `a' = Cov_{ρ_t}(ℓ,h) = −Cov(ℓ,d) ≤ a E_{ρ_t} d` and
+  `⟨u, dataCov t⟩ = −a'`; continuity of `dataThetaVel` by a coercive-linear-equation estimate (LANDED, `DataRayFacet`); the reverse
+  data-ray direction closes WITHOUT a Schur inverse: scalar block identities `r' V = −a' + c`, `Var⟨v',S⟩ = −⟨v', dataCov⟩ + r' c`
+  with `c = Cov_q(⟨u,S⟩,⟨v',S⟩)`, `|c| ≤ 2 B a ‖v'‖`, `‖v'‖ ≤ λ⁻¹(D + 2Ba|r'|)`, `p a² ≤ (1−p) V`, absorption
+  `√V (r')₋ ≤ 2e + (4B/λ) D` (eventually), tilt comparison `c₀ g(r) ≤ √V ≤ C₀ g(r)`, the generic one-sided weighted-variation
+  lemma `g(r)|r'| = (G∘r)' + 2 g(r)(r')₋`, and the speed upper bound `√responseSpeedSq ≤ B‖v'‖ + √V|r'|`. Ranking by depth:
+  intrinsic completion (first theorem: `d_F` metric on `W`, Lipschitz bounds `‖m(θ)−m(η)‖ ≤ B d_F`, `‖√p_θ − √p_η‖₂ ≤ ½ d_F`,
+  extension to the completion), charged square, flags, data-ray, layer classification (= our shell criterion; explicit examples
+  `m_n ~ n^{−α}` accessible iff `α > 2`). Astra: land the data-ray theorem next.
+- `DataRayFacet` (forward) landed. Gotchas: `continuous_meanMapDeriv (μ := ν) measurable_const (integrable_const 1)
+  (fun _ ↦ zero_le_one) (one_integral_pos ν) measurable_const h0 hS one_pos` (the `hπ` there is `0 ≤ π`, and `ht : 0 < t` is
+  explicit); operator application `ContinuousLinearMap.apply ℝ (J → ℝ) z` with `ContinuousLinearMap.apply_apply` in the simp set;
+  avoid `set` abbreviations for `dataTheta`/`dataThetaVel` inside long `Tendsto` proofs (spurious mismatches) — write the coercions
+  out; `hb.sub_const c` needs `c` explicit inside `.norm.add`; a `0 * lam ≤ …` goal is not a positivity goal — `zero_mul` first;
+  `nlinarith [h1, mul_pos hpos hlam]` divides a squared estimate by a positive norm.
+  NEXT: the reverse data-ray direction (`OneSidedVariation` generic lemma, block identities, absorption, assembly).
