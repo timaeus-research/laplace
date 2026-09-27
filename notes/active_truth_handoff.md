@@ -2258,3 +2258,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   horizontal lift; orthogonal decomposition — mostly packaging of `ResponseHorizontalLift`), rank 5
   `ResponseHellingerAtlas` (stratumwise: on a finite regular stratum Fisher and Hellinger convergence agree); then
   round-88 consult.
+- ResponseSubmersionCalculus landed (round 87 rank 6). Pattern: `Bdd` is a Prop, so the score space is the
+  `Submodule ℝ (X → ℝ)` with carrier `{f | Bdd f}` (`Bdd.add`, `Bdd.const_mul`, zero by hand); linear maps out of
+  it are built with `Subtype.ext` + `change` spelled with explicit coercions `(k : X → ℝ) x` (a bare `k x` for
+  `k : bddSpace X` does not elaborate); the splitting is `LinearMap.isCompl_of_proj (f := horLin.rangeRestrict ∘ₗ
+  velLin)` followed by `LinearMap.ker_comp, ker_rangeRestrict, ker_eq_bot.2 inj, Submodule.comap_bot`.
+  GOTCHAS: `rw [responseVel]` fails ("equation theorems") — `simp only [responseVel]`; `lawCov_add_right_eq
+  (hf hg hk) : lawCov ρ k (f + g) = …` takes the SUMMANDS first and the fixed argument last; `lawCov_comm` in a
+  `rw` chain needs both functions spelled out or it flips the wrong covariance. Round-87 ranks 1–4, 6 DONE.
+  NEXT: rank 5 `ResponseHellingerAtlas` (finite-stratum bi-Lipschitz equivalence as a `Tendsto` iff; completion
+  contraction `x_n → x ⇒ Ψ_{x_n} → Ψ_x ⇒ laws converge in TV`; conditional inverse-continuity package: compact
+  completion + unique law fibres ⇒ `rootDensExt` is a closed embedding); then round-88 consult.

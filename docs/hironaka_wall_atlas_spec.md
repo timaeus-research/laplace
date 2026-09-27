@@ -5842,3 +5842,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `tendsto_densMean`, `tendsto_densForcing`, `tendsto_densCov_stat`, **`tendsto_densResponse`** (at interior means,
     via `hasStrictFDerivAt_responseTheta_add`), **`tendsto_densVel`**, **`tendsto_densBilin`**, **`tendsto_densEffDim`**.
     The response geometry is `L¹`-robust in the data law on regular chambers; nothing across singular boundary limits.
+  - `ResponseSubmersionCalculus.lean` (round 87, rank 6): `bddSpace X` (bounded measurable contrasts as a submodule),
+    `forcing_sub`, **`forcingLin`** (`k ↦ Cov_{ρ_g}(S,k)` linear into `W`), **`velLin`** (`k ↦ DΦ_g[k]`),
+    **`mem_ker_velLin_iff`** / `mem_ker_velLin_iff'` (THE INVISIBLE TANGENT SPACE IS THE KERNEL:
+    `DΦ_g[k] = 0 ↔ Cov_{ρ_g}(S,k) = 0`), **`velLin_surjective`**, **`horLin`** (canonical horizontal lift as a linear
+    section), `velLin_horLin`, `horLin_injective`, `horProj`, `isProj_horProj`,
+    **`isCompl_range_horLin_ker_velLin`** (SCORE SPACE SPLITS `= range(hor) ⊕ ker DΦ_g`),
+    `lawCov_horizontalLift_of_forcing_eq_zero` (horizontal ⟂ invisible), `forcing_residual_eq_zero`,
+    **`lawCov_self_eq_horizontal_add_residual`** (PYTHAGORAS IN SCORE SPACE at any data law),
+    `lawCov_self_eq_dotJ_add_residual` (`Var k = ⟨C⁻¹Dm v,Dm v⟩ + Var(residual)`), **`velQuotEquiv`**
+    (`bddSpace ⧸ ker DΦ_g ≃ W`: response directions = score directions modulo invisible ones).
