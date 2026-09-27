@@ -5394,3 +5394,16 @@ certificates for concrete resolved charts beyond the identity chart.
   (`a'_t ≤ a_t E_{ρ_t}(H − h)`, from `ℓ, H − h ≥ 0`), `depthVel hS ν hh u t = −⟨θ'_t,u⟩/⟨u,u⟩`, `tangentVel = θ'_t + r'_t u`,
   `coe_dataThetaVel_eq_tangentVel_sub`, `dotJ_tangentVel_u`, `lawCov_dirLoss_sub_smul`, **`depthVel_mul_var_eq`**
   (`r'_t V_t = ⟨u, Cov_{ρ_t}(S,h)⟩ + c_t`), **`var_tangentVel_eq`** (`Var⟨v'_t,S⟩ = −⟨v'_t, Cov_{ρ_t}(S,h)⟩ + r'_t c_t`).
+- `DataRayEstimates.lean` (NOT mirrored; the eventual pointwise estimates of the reverse data-ray theorem):
+  **`eventually_dataRay_estimates`** — under the facet hypotheses, there are constants `C₁..C₄ ≥ 0` with, eventually in `t`,
+  `√responseSpeedSq_t ≤ C₁‖Cov_{ρ_t}(S,h)‖ + C₂ g(r_t)|r'_t|`, `g(r_t)(r'_t)₋ ≤ C₃ E_{ρ_t}(H−h) + C₄‖Cov_{ρ_t}(S,h)‖`, and
+  `r_t ≥ 0`, where `g = √raySpeedSq(v_M,u,·)` is the reference normal ray and `r_t = normalDepth(θ_t)`. Internals: the
+  tangential-velocity estimate `‖v'‖ ≤ (card J/λ)(D + 2Ba|r'|)`, the cross covariance `|c| ≤ 2K₀‖v'‖a`, the face-mass control
+  `a² ≤ 2δV`, the absorption `4K₀²a²/λ ≤ V/2`, `a ≤ √V`, the weighted negative depth velocity `√V (r')₋ ≤ 2(e + C₀D)`, the
+  standard-deviation triangle inequality, and the tilt comparison `e^{−1}g(r) ≤ √V ≤ e g(r)`.
+- `DataRayReverse.lean` (NOT mirrored; **THE DATA-RAY EQUIVALENCE**): `lintegral_sqrt_responseSpeedSq_lt_top_of_ray` (finite
+  normal-ray length ⇒ finite response length: window bound `∫_{t₀}^b √speed ≤ C₁∫D + C₂(∫_0^∞ g + 2(C₃∫e + C₄∫D))` from the
+  one-sided variation lemma, dissipation integrability `∫_0^∞ E_{ρ_t}(H−h) = log(1/p_*)` and the per-coordinate data-forcing
+  integrability; `integrableOn_Ioi_of_intervalIntegral_norm_bounded`) and **`data_fisher_length_lt_top_iff_ray`**: along the
+  data path `ρ_t = ν.tilted(t h)` towards a facet `F ∋ E[S|h = H]` (relative interior), the response path from the featureless
+  law has finite Fisher length ⇔ the facet's normal ray has finite Fisher length ⇔ `Σ_k √a_k < ∞` (dyadic shell masses).

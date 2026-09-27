@@ -1780,3 +1780,22 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   out; `hb.sub_const c` needs `c` explicit inside `.norm.add`; a `0 * lam ≤ …` goal is not a positivity goal — `zero_mul` first;
   `nlinarith [h1, mul_pos hpos hlam]` divides a squared estimate by a positive norm.
   NEXT: the reverse data-ray direction (`OneSidedVariation` generic lemma, block identities, absorption, assembly).
+- `DataRayHelpers` (one-sided variation `∫ g(r)|r'| ≤ ∫_{Ioi R} g + 2∫ g(r)(r')₋`, √-triangle inequality, `Var ≤ K²`),
+  `DataRayBlocks` (slack mean and its derivative, `slackMeanVel_le`, `depthVel`/`tangentVel`, the two block identities) and
+  the REVERSE DATA-RAY THEOREM landed 2026-09-27: `DataRayEstimates.eventually_dataRay_estimates` (eventual estimates with
+  explicit constants, third conjunct `0 ≤ r_t`) and `DataRayReverse.lintegral_sqrt_responseSpeedSq_lt_top_of_ray`,
+  `data_fisher_length_lt_top_iff_ray` (the iff with the forward direction of `DataRayFacet`). Gotchas: in a long scalar
+  proof make EVERY time-`t` quantity opaque — `set … with h` then `clear_value` (or `obtain ⟨x, hx⟩ : ∃ x, x = … := ⟨_, rfl⟩`
+  for constants) BEFORE the estimates, after first instantiating every `∀ w`-lemma at `θ_t` and rewriting `← hdecomp t`; a
+  let-bound `set` variable inside `nlinarith`/`linarith` (Gauss tableau) times out at 200000 heartbeats and the theorem header
+  then reports a spurious `whnf` timeout; `rw [← hsq]` with `hsq : √V * √V = V` also rewrites the `V` inside `√V` — write the
+  calc step as `= -r' * (√V * √V)` by `ring` then `rw [hsq]`; after `clear_value c`, close `-lawCov … = -c` by `rw [hc_def]`;
+  `tendsto_finsetSum _ fun i _ ↦ …` needs the `Tendsto` type ascribed (no `(l := …)` argument); `(hac w).ae_le hβ` must be
+  typed as `∀ᵐ x ∂Pfam w, …` or `.mono` fails with `Eq.mono`; `HasSubset.Subset.eventuallyLE` is deprecated for
+  `LE.le.eventuallyLE`; `intervalIntegral.integral_add` wants `IntervalIntegrable` facts typed with the lambda (not
+  `Continuous.mul`'s Pi form); `Continuous.congr` after `responseSpeedSq_eq_neg_dotJ` needs `simp only [Pi.neg_apply, …]`
+  (the `.neg` produces a Pi negation); functions of time defined by `obtain ⟨f, hf⟩ : ∃ f, f = fun t ↦ …` and the eventual
+  estimate restated by `rw [hf, …]; exact hev` (the `∀ᶠ` binder blocks `set` folding).
+  NEXT: slop paragraph for the data-ray equivalence; then the intrinsic Fisher completion programme (Astra round-79 §5.1:
+  `d_F` metric on `W`, Lipschitz `‖m(θ)−m(η)‖ ≤ B d_F`, `‖√p_θ − √p_η‖₂ ≤ ½ d_F`, extension to the completion), charged
+  square, flags; or a round-80 consult.
