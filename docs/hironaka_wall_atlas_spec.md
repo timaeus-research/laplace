@@ -6462,3 +6462,20 @@ certificates for concrete resolved charts beyond the identity chart.
     theorems whose statements do not need `Fintype X` but whose proofs sum over `X`; `LinearEquiv.ofBijective` applied
     is defeq to the underlying map, so `change … = _; rw [LinearEquiv.apply_symm_apply]; rfl` beats `simp` (which
     collapses the hypothesis to `True`).
+  - `ResponseSimplexSphere.lean` (J3, THE SPHERE THEOREM): trig identities `sin_sq_add_sin_sq_add_two_mul_cos_add`,
+    `cos_sq_add_cos_sq_sub_two_mul_cos_add` (`linear_combination` with the two Pythagorean relations); the cosine step
+    `cosStep s := (1 − cos πs)/2` (GLOBAL C¹ map into [0,1]; the seabed's `smoothStep` is the bare cubic and leaves
+    [0,1] outside it — do NOT use it as a clamp); `sphereAffinity p q := ∑ √p √q`, `sphereAngle := arccos`, `_pos`,
+    `_le_one` (CS `Finset.sum_mul_sq_le_sq_mul_sq`), `_lt_one` for `p ≠ q` (`∑(√p−√q)² = 2 − 2A`), `cos_sphereAngle`,
+    `sin_sphereAngle_pos`; **`greatCircle p q t x := (sin((1−t)α)√p + sin(tα)√q)/sin α`**, `greatCircle_pos` on [0,1],
+    `sum_sq_greatCircle` (= 1), `greatCircleDeriv`, `sum_sq_greatCircleDeriv` (= α²), `hasDerivAt_greatCircle`;
+    `spherePath p q s x := greatCircle (cosStep s) x ^ 2` (global C¹ path of simplex points), `spherePathDeriv`,
+    `spherePath_mem_posSimplex`, `sum_spherePathDeriv` (= 0 via `HasDerivAt.unique` against the constant 1),
+    **`sum_sq_div_spherePath`** (`∑ ṗ²/p = 4α²φ'²`); Lift: **`dirLoss_logInv`** (`⟨L⁻¹g, S⟩ = g + c`),
+    **`affinity_eq_sum_sqrt_atomMass`** (affinity = simplex affinity of the atom masses), `sphereLift := B⁻¹ ∘ spherePath`,
+    `sphereLiftDeriv := L⁻¹[−ṗ/p]`, `hasDerivAt_sphereLift` (chain rule through `toContinuousLinearMap logInv` and
+    `subtypeL`), `continuous_sphereLiftDeriv`, `sphereLift_zero/one`, **`fisherVar_sphereLift`**
+    (`G(θ̇,θ̇) = ∑ ṗ²/p`, via the log-lift: velocity contrast = −ṗ/p + c and ∑ṗ = 0), `fisherNorm_sphereLift` (= 2αφ'),
+    **`fisherDist_simplexInv`** (`d_F(B⁻¹p,B⁻¹q) = 2 arccos ∑√(pq)`; ≤ by `fisherDist_le_integral` + FTC on `cosStep`,
+    ≥ by `sphericalDist_le_fisherDist`), **`fisherDist_eq_two_arccos`** (θ-form), **`fisherDist_eq_sphericalDist`**
+    (the Hellinger-angle bound is ATTAINED), **`fisherDist_lt_pi`** (Fisher diameter < π: bounded, hence incomplete).

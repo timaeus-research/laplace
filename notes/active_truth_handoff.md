@@ -2687,9 +2687,12 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   rename the sample point) and the I3 hypothesis is named `varianceCurvaturePairing` with the inequality theorem
   `concaveOn_lineVariance_of_pairing_nonpos`. J2 `ResponseSimplexIdentification` LANDED (B : W ≃ₜ Δ°, smooth both
   ways via the log-lift `W ≃ₗ (X→ℝ)⧸ℝ∙1`; featureless journey = mixture segment; exact mixture variance identity).
-  NEXT: J3 `ResponseSimplexSphere` (`d_F(B⁻¹p, B⁻¹q) = 2 arccos ∑√(pq)`: great-circle path `u_s = (sin((1−s)α)√p +
-  sin(sα)√q)/sin α`, `p_s = u_s²`, lift `θ_s = simplexInv p_s` is a smooth Fisher path with speed `2α`, attains
-  `sphericalDist_le_fisherDist`; then J4 LocalizedBias, J5 GeometrySummary, J6 MeanPolytopeJourney, round-100 consult).
-  Old NEXT:
+  J3 `ResponseSimplexSphere` LANDED (`fisherDist_eq_two_arccos`: `d_F = 2 arccos ∑√(B₀B₁)` for saturated finite
+  families; the spherical bound is attained; `d_F < π`; gotchas: `smoothStep` is the bare cubic — use `cosStep
+  s = (1 − cos πs)/2` for a global C¹ clamp into [0,1]; `field_simp` closes some `p·(g+c)` identities outright,
+  `ring` after it errors; `HasDerivAt.comp`+`.pow 2` derivative normalises with `simp only [Nat.cast_ofNat,
+  Nat.reduceSub, pow_one, Function.comp_def]`). NEXT: J4 `ResponseLocalizedSamplingBias` (localised estimator
+  theorem: `E[h(θ̂) − h(θ₀)] = ½ tr(H_h Σ)/n + o(1/n)` on the good event), J5 `ResponseGeometrySummary`, J6
+  `ResponseMeanPolytopeJourney`, then the round-100 consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
