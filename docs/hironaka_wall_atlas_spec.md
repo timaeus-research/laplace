@@ -5808,3 +5808,17 @@ certificates for concrete resolved charts beyond the identity chart.
     SUFFICES), `faceEmbedExt_injective` (unique source law fibres ⇒ injective), `exists_charged_vertex_on_face`,
     `meanMap_faceMeasure_mem_intrinsicInterior`, **`faceEmbedExt_eq_of_charged_face`** (THE CANONICAL CHARGED-FACE
     ATLAS: every seed pair gives the same `ĵ_F`, via `meanExt_eq_face_unique` at the finite face mean `m_F(v₀)`).
+  - `ResponseProductAffinity.lean` (round 87, rank 2 + the tail theorem of rank 3): `rootLaw` (`f²μ`),
+    `integral_rootLaw`, `integral_mul_self_eq_one`, `rootLaw_univ`, `isProbabilityMeasure_rootLaw`,
+    `inner_eq_integral_mul`, `norm_sub_sq_eq` (`‖f−g‖² = 2 − 2A`), **`integral_abs_mul_self_sub_le`**
+    (`∫|f²−g²| ≤ 2‖f−g‖`), **`integral_rootLaw_sub_le`** (TESTING BOUND: `∫φ d(f²μ) − ∫φ d(g²μ) ≤ ‖f−g‖`),
+    **`testing_error_ge`** (every test has error `≥ (1−‖f−g‖)/2`); product layer: `prodRootFun`, `prodRoot`
+    (`∏ f(z_i)` in `L²(μ^{⊗n})`), **`integral_prodRootFun_mul`** / `inner_prodRoot` (PRODUCT AFFINITY `A^n`),
+    `norm_prodRoot`, `norm_sub_prodRoot_sq` (`= 2 − 2A^n`), **`norm_sub_prodRoot_sq_le`** (Bernoulli:
+    `≤ n‖f−g‖²`), `norm_sub_prodRoot_le` (`≤ √n‖f−g‖`), **`rootLaw_prodRoot`** (`R²μ^{⊗n} = (f²μ)^{⊗n}`, via
+    `Measure.pi_eq` on boxes and real product integrals); completion layer: `dist_rootDensExt_le`
+    (`H(Q_x,Q_y) ≤ d̂/2`), `sampleLaw` (`Q_x^{⊗n}`), `sampleLaw_eq_rootLaw`, **`integral_sampleLaw_sub_le`**
+    (`∫φ dQ_x^{⊗n} − ∫φ dQ_y^{⊗n} ≤ √n d̂(x,y)/2`), `testing_error_sampleLaw_ge`; journeys:
+    **`integral_sampleLaw_pathEndpoint_sub_le`** and **`testing_error_pathEndpoint_ge`** (THE TAIL THEOREM:
+    every test on `n` samples between the present and the limiting projected law has error
+    `≥ (1 − √n R(t)/2)/2`, `R(t) = ∫_t^∞ √G^{resp}`).

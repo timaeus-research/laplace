@@ -2213,3 +2213,18 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `ResponseProductAffinity` (Fisher → Hellinger on completion laws, product affinity `A^n`, TV lower bound),
   rank 3 `ResponseJourneyResolution` (the tail theorem `TV(Q_{x_t}^{⊗n},Q_{x_∞}^{⊗n}) ≤ min{1,√n R(t)/2}` + separation
   certificate `D > r₁ + r₂` + patch margins), rank 4 `L¹` law continuity, 5 HellingerAtlas, 6 SubmersionCalculus.
+- ResponseProductAffinity landed (round 87 rank 2 + tail theorem). Pattern: work with `Lp ℝ 2 μ` elements
+  throughout (coeFn is `Lp.stronglyMeasurable`), `rootLaw f := μ.withDensity (ofReal (f y * f y))`, and the
+  Hellinger/affinity algebra is `norm_sub_sq_real` + `inner_eq_integral_mul` (`L2.inner_def`, `beta_reduce`,
+  `RCLike.inner_apply, conj_trivial, mul_comm`). Product root `∏ f (z i)`: `Finset.prod_mul_distrib` turns
+  `R·S` into `∏ (f·g)(z i)`, then `integral_fintype_prod_eq_pow` / `Integrable.fintype_prod (f := fun _ y ↦ …)`.
+  `Measure.pi_eq` needs `SigmaFinite` of the factor: give `instance : IsFiniteMeasure (rootLaw μ f)` via
+  `isFiniteMeasure_withDensity` + `hasFiniteIntegral_iff_ofReal`. Product-law identification on boxes: NO
+  `lintegral` product lemma in Mathlib — go through `ofReal_integral_eq_lintegral_ofReal`,
+  `integral_fintype_prod_eq_prod (fun _ y ↦ f y * f y)` on `Measure.pi fun i ↦ μ.restrict (s i)`
+  (after `Measure.restrict_pi_pi`) and `ENNReal.ofReal_prod_of_nonneg`. Bernoulli `one_add_mul_le_pow
+  (a := A − 1)` with `|A| ≤ 1` from `abs_real_inner_le_norm`. GOTCHAS: `integral_congr_ae` goals are
+  beta-redexes (`beta_reduce` before every `rw`); an `AEMeasurable` built inline is stored with the Pi product
+  `↑↑f * ↑↑f` — name it with a lambda type first. NEXT: `ResponseJourneyResolution` (separation certificate
+  `D > r₁ + r₂` from the two-class theorem + `D ≤ L`; patch margins `√Λ r < δ`), `L¹` law continuity,
+  HellingerAtlas (stratumwise), SubmersionCalculus; then round-88 consult.
