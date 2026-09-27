@@ -6236,3 +6236,11 @@ certificates for concrete resolved charts beyond the identity chart.
     **`toReal_klDiv_modelJourney_eq_action'`** (`KL(P_{θ₀}‖P_{θ₁}) = ∫₀¹ t G`), **`jeffreys_model_eq_action`** (`= ∫₀¹ G`),
     `jeffreys_model_eq_neg_dotJ` (`= −⟨θ₁−θ₀, m(θ₁)−m(θ₀)⟩`), **`toReal_klDiv_eq_defect_add_model_action`** (INFORMATION
     DECOMPOSITION FROM ANY MODEL BASE POINT).
+  - `ResponseFiniteSaturation.lean` (G2): `ae_eq_integral_of_lawCov_self_eq_zero` (zero variance ⇒ a.s. constant),
+    `eq_zero_of_dotJ_self_eq_zero`, **`SpansAffine S ν`** (every bounded `h` is `ν`-a.e. `⟨b,S⟩ + k` — the expressivity
+    hypothesis; the finite affine-basis simplex satisfies it pointwise: `spansAffine_of_forall`, NO finiteness needed),
+    **`saturatedAt_of_spansAffine`** (REGRESSION PROOF, no orthogonal decomposition of `J → ℝ`: coefficient
+    `c = (CDE θ).symm(−Cov_θ(S, f_uf_v))` via `covVec_mem_dirSpan`; residual `⟨d,S⟩`, `d = b − c`, is uncorrelated with all
+    scores ⇒ its covariance vector (in `W`) is `dotJ`-orthogonal to `W` ⇒ zero ⇒ zero variance ⇒ a.s. constant),
+    **`fisherSectional_of_spansAffine`** (`K = ¼`), `fisherInner_alphaCurvature_of_spansAffine`. NOT done: `dim W = |X| − 1`
+    and the identification with the strictly positive simplex (Astra G2 items 3, 5).

@@ -2608,6 +2608,14 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `rw` rewrites all instances of one instantiation at once and the next identical rewrite fails; `chartV_apply` writes
   `chV θ = mean θ − mean (0 : J → ℝ)`; `convert ht using 2` against a set membership yields an iff — prove the
   identity with `module` and `rw`; `modelDomain` was TAKEN (ConstrainedLP) — the dup gate caught it, the root build
-  confirmed; renamed `modelJourneyDomain`). NEXT: G2 `ResponseFiniteSaturation`, G3 `ResponseCurvatureDefect`, G4
+  confirmed; renamed `modelJourneyDomain`). G2 `ResponseFiniteSaturation` LANDED (Astra's route needed `dirProjL` to
+  change `dirLoss` by an a.e. constant — FALSE for the seabed's `dirProj`, which projects along an ARBITRARY complement
+  (`Classical.choose (Submodule.exists_isCompl _)`, BiasForm); `invisibleSet ν S = {v | ∃ c, ∀ᵐ x ∂ν, ⟨v,S x⟩ = c}` and
+  only `dirSpan ∩ invisible = 0` + `dirSpanᗮ_{dotJ} ⊆ invisible` are available. Used instead: regression on the scores
+  through `covVec_mem_dirSpan hS ν D hDν hk` (AbsolutelyContinuousForcing) + `fisherInner_chartDerivEquiv_symm` +
+  `lawCov_dirLoss_left hS ρ v ψ hψ` (BasepointCurvature; hS explicit) + `lawCov_congr_ae`/`lawCov_sub_const_self`
+  (FacetFisherAccess) + `lawCov_add_right_eq/sub_left_eq/const_mul_left_eq` (ResponseBilinearForm/SusceptibilityDefect)
+  + `lawCov_const_left_eq_zero` (NormalGeometry) + `dirLoss_sub'` (NormalCone) + Mathlib `integral_eq_zero_iff_of_nonneg`,
+  `AbsolutelyContinuous.ae_eq`, `withDensity_absolutelyContinuous _ _ : Pfam θ ≪ ν`). NEXT: G3 `ResponseCurvatureDefect`, G4
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
