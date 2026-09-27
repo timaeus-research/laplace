@@ -5604,3 +5604,9 @@ certificates for concrete resolved charts beyond the identity chart.
   - `FacetFamilyAccessible.lean` (round 83, orbit corollary): **`forall_exists_meanExt_eq_of_facet`** (ONE ACCESSIBLE
     FACET POINT MAKES THE WHOLE OPEN FACET ACCESSIBLE: finite normal-ray length ⇒ every `M' ∈ ri(momentBody ν_A)` is an
     extended mean; the completion point over `M` has law `P^A_{v_M}`, `tiltExt (v_{M'} − v_M)` moves it to `P^A_{v_{M'}}`).
+  - `ResponseSamplingResolution.lean` (response side of the resolution story): **`dotJ_dataCov_eq_neg_lawCov_response`**
+    (`⟨w,b_t⟩ = −Cov_{P_{θ_t}}(⟨w,S⟩,⟨θ'_t,S⟩)`), **`sq_dotJ_dataCov_le_responseSpeedSq`** (`⟨w,b_t⟩² ≤ Var_{P_θ}⟨w,S⟩ ·
+    |θ'_t|²_F`, no matching needed), `dotJ_dataThetaVel_dataCov` (`= −|θ'|²_F` along the velocity),
+    `sq_signal_le_mul_noise_response` (samples from the model law), **`response_resolution_floor`** (`δ² n |θ'_t|²_F ≥ 1`
+    for a resolvable shift: the response displacement must exceed `1/√n`), `sq_signal_eq_mul_noise_response_vel` (equality
+    along `w = θ'_t`).

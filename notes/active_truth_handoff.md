@@ -2011,3 +2011,7 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `FacetResponseLengthBudget`, `AccessibleFaceOrbit` nonexpansion (needs compact-uniform covariance convergence).
 - LANDED (2026-09-27): `FacetFamilyAccessible` (b466ed6). NEXT: `FacetResponseLengthBudget` (+ `WeightedDepthVariation`),
   then `PolyhedralEntropyRecovery`/`ClosedMeanResponseContinuity`.
+- LANDED (2026-09-27): `ResponseSamplingResolution` (8c561f3): resolution floor in response form `δ² n |θ'_t|²_F ≥ 1`,
+  attained along the response velocity. NEXT: decide between `ClosedMeanResponseContinuity` (needs polyhedral entropy
+  recovery + lsc of the rate on the closed polytope) and `FacetResponseLengthBudget` (extract `hwin` of DataRayReverse
+  as a standalone quantitative theorem with `integral_Ioi_gap_dataPath`).
