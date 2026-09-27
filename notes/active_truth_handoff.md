@@ -2157,4 +2157,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: `FaceChainAccessibility` (compose `faceEmbed` along face inclusions; intrinsic accessibility transfers),
   `1`-Lipschitz extension of `faceEmbed` to `Ŵ_A`, `ResponseFormContinuity`, bounded-tilt adapter for the length
   budget; then round-86 consult.
+- Round 86 consulted (877d590): ranked 1 FaceChainAccessibility, 2 ResponseTiltPathBudget, 3 ResponseFormContinuity,
+  4 ResponseSubmersionCalculus, 5 ResponseNoiseCalibration, 6 HellingerAtlas, 7 ProductAffinity, 8 PatchMargins.
+  FaceEmbedExtension landed (1-Lipschitz `faceEmbedExt`, mean compatibility by `UniformSpace.Completion.induction_on y
+  (isClosed_eq …) …`, accessibility transfer). NEXT: chain compatibility `ĵ_A ∘ ĵ^A_E = ĵ_E` (uniqueness on the dense
+  interior via `meanExt_eq_face_unique` + continuity; needs `(ν_A)_E = ν_E` as measures and `W_E ≤ W_A`), then
+  `ResponseTiltPathBudget` (finite-dimensional coefficient differentiation), `ResponseFormContinuity`.
 

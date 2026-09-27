@@ -5745,3 +5745,21 @@ certificates for concrete resolved charts beyond the identity chart.
     ambient path `θ_n + (γ_t − v₀)`, bound by the ambient length, and pass to the limit with the covariance stability
     along the completion action; infimum over face paths). Boundary paths are controlled by the face Fisher metric;
     `j_A` extends `1`-Lipschitz to the face completion (extension not yet written).
+  - Round 86 (`research_round86_{q,v1}`): main theorems of the response-map section: I covariance quotient + canonical
+    horizontal lift (HEADLINE: "the response differential is an onto covariance quotient with a canonical minimum-variance
+    horizontal lift; at matched laws its horizontal geometry is exactly the fitted Fisher geometry"; write "pointwise
+    Riemannian-submersion identity", not the unqualified phrase), II Fisher-normalised sampling + intrinsic resolution,
+    III local statistical geometry, IV completion laws + accessible face geometry (stop at nonexpansion until the
+    extension lands), V finite Fisher length ⇒ endpoint. Face chains: `ĵ_A ∘ ĵ^A_E = ĵ_E` by uniqueness on the dense
+    interior + continuity; coherent nonexpanding boundary atlas = law/mean/nonexpansion/chain/seed-independence
+    compatibilities. Form continuity: state in the data law (`L¹` densities); horizontal lifts need `D(q) ≥ δI`. Tilt
+    path adapter: finite-dimensional coefficient differentiation `g_a = ∑ a_j h_j`, `DM(a)[u] = Cov(S, ∑ u_j h_j)`, then
+    the chart's strict derivative. Ranked: 1 FaceChainAccessibility, 2 ResponseTiltPathBudget, 3 ResponseFormContinuity,
+    4 ResponseSubmersionCalculus, 5 ResponseNoiseCalibration (`d_eff ≤ κ dim W` via Fisher-ON basis),
+    6 ResponseHellingerAtlas, 7 ResponseProductAffinity, 8 ResponsePatchMargins (Euclidean clearance `√Λ r < δ`).
+    Cautions: `d_eff ≤ dim W` needs a covariance comparison; nonexpansion ≠ isometry; general seeds `v₀` reduce to
+    `W_A` by projecting along the face-invisible directions.
+  - `FaceEmbedExtension.lean` (round 86, rank 1, first half): `faceEmbedPoint`, **`faceEmbedExt`** (`ĵ_A : Ŵ_A → Ŵ`),
+    `lipschitzWith_faceEmbedPoint`, `faceEmbedExt_coe`, **`lipschitzWith_faceEmbedExt`** (`1`-Lipschitz),
+    `continuous_faceEmbedExt`, `meanExt_faceEmbed`, **`meanExt_faceEmbedExt`** (MEAN COMPATIBILITY `meanExt ∘ ĵ_A =
+    meanExt_A`, by density), **`exists_meanExt_eq_of_faceCompletion`** (INTRINSIC ACCESSIBILITY TRANSFERS TO AMBIENT).
