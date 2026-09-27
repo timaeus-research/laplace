@@ -2172,4 +2172,14 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `y ↦ ∫ B.indicator 1 dQ_y` (`integral_indicator_one hB` + `measureReal_def`). NEXT (round 86): seed independence
   (via `meanExt_eq_face_unique`), `ResponseTiltPathBudget` (finite-dim coefficient differentiation), `ResponseFormContinuity`,
   `ResponseNoiseCalibration` (`d_eff ≤ κ dim W` via a Fisher-orthonormal basis), `ResponsePatchMargins`.
+- CoefficientTiltDifferentiation + ResponseTiltPathBudget landed (round 86 rank 2). Pattern: dominated
+  differentiation `hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := ν) (F := …) (F' := …) (bound := fun _ ↦ C)
+  (Metric.ball_mem_nhds t₀ one_pos) hmeasF hint hmeasF' hbound (integrable_const _) hdiff` with local bounds from
+  `(isCompact_closedBall t₀ 1).exists_bound_of_continuousOn`; quotient rule `hN.div hD hZ.ne'` needs the pointwise
+  equalities in `Pi.div_apply` form (`by rw [Pi.div_apply]; exact …`); chart chain rule via
+  `hasStrictFDerivAt_responseTheta_add hS ν hrel` at `z t₀ = 0` (`rw [hz0]` trick) + `HasFDerivAt.comp_hasDerivAt`
+  + `congr_of_eventuallyEq` with `change`. GOTCHAS: `tiltMean`/`tiltResponse`/`hasDerivAt_tiltResponse` names taken
+  (one-parameter versions) → `coeffMean`/`coeffResponse`; a sed rename of `X hS ν hh ha ha'` also hits `foo_X …`
+  call sites; `field_simp` closed the covariance quotient outright (no `ring`). NEXT: `ResponseFormContinuity`
+  (in the data law, `L¹`), `ResponseNoiseCalibration` (`d_eff ≤ κ dim W`), seed independence, `ResponsePatchMargins`.
 

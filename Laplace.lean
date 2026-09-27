@@ -578,6 +578,8 @@ import Laplace.Multi.TiltedCovarianceStability
 import Laplace.Multi.AccessibleFaceNonexpansion
 import Laplace.Multi.FaceEmbedExtension
 import Laplace.Multi.FaceChainAccessibility
+import Laplace.Multi.CoefficientTiltDifferentiation
+import Laplace.Multi.ResponseTiltPathBudget
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

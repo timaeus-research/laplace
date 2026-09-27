@@ -5772,3 +5772,13 @@ certificates for concrete resolved charts beyond the identity chart.
     `completionLaw_faceEmbedExt_seed`, **`faceEmbedExt_faceEmbedExt`** (CHAIN COMPATIBILITY `ĵ_A ∘ ĵ^A_E = ĵ_E` with the
     transported seed), `faceMeasure_faceMeasure_of_subset`, **`dirSpan_faceMeasure_le_of_subset`** (nested faces are
     nested sub-models). The coherent nonexpanding boundary atlas: law, mean, nonexpansion, chain compatibilities.
+  - `CoefficientTiltDifferentiation.lean` (round 86, rank 2, analytic core): `bdd_exp_of_bdd`, `exists_bound_dirLoss_ball`,
+    **`hasDerivAt_integral_mul_exp_dirLoss`** (dominated differentiation of `t ↦ ∫ φ e^{⟨a(t),h⟩}`),
+    `integral_tilted_dirLoss_eq_div`, **`hasDerivAt_integral_tilted_dirLoss`** (`d/dt E_{ρ_t}φ = Cov_{ρ_t}(φ, ⟨a'(t),h⟩)`),
+    `continuous_integral_tilted_dirLoss`, **`continuous_lawCov_tilted_dirLoss`** (forcing covariances continuous).
+  - `ResponseTiltPathBudget.lean` (round 86, rank 2): `coeffMean` (`E_{ρ_t}S`), `hasDerivAt_coeffMean`
+    (`= forcing g_t ġ_t`), `coeffMean_mem_intrinsicInterior`, **`coeffResponse`** (THE RESPONSE PATH `t ↦ Φ(g_t)`),
+    **`hasDerivAt_coeffResponse`** (`C¹` with velocity `responseVel`, via `hasStrictFDerivAt_responseTheta_add` and
+    `hasDerivAt_subtype_of_hasDerivAt`), `continuous_coeffResponse`, **`continuous_responseVel_tilt`**,
+    `fisherNorm_coeffResponse` (speed `= √G^{resp}_{g_t}(ġ_t)`), **`tendsto_coeffResponse_endpoint`** (THE LENGTH BUDGET
+    FOR JOURNEYS THROUGH DATA: `∫_0^∞ √G^{resp} < ∞ ⇒` completion endpoint, tail bound, data means → extended mean).
