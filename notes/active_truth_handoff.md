@@ -2368,5 +2368,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `completeSpace_coe_iff_isComplete.2 K.complete_of_finiteDimensional` (NOT `haveI`, and the lemma gives `IsComplete`).
   Face fibres a.e. equal ⇒ `faceMeasure` equal (`measure_congr` + `Measure.restrict_congr_set`) ⇒ `faceStratum` equal
   (`unfold faceStratum; rw`). `faceStratum`/`Accessible` need `[Nonempty J]` (cannot omit). `Nonempty V` from
-  `convexHull_nonempty_iff.1 ⟨M, hM⟩` before calling `exists_charged_vertex_on_face`. NEXT: A5
-  `FiniteRangeFaceIncidence` (`closure X_F = meanExt⁻¹(F) = ⋃_{E ⊆ F} X_E`), A6 `FiniteRangeCompletionAtlas`.
+  `convexHull_nonempty_iff.1 ⟨M, hM⟩` before calling `exists_charged_vertex_on_face`. A5 `FiniteRangeFaceIncidence` landed: lower inclusion = A4 applied INSIDE the face model
+  `νE` (finite range on `Vt` by `ae_statPoint_mem_tight_faceMeasure`, charged by `faceMeasure_charged hS ν V hcharged
+  hz₀V hz₀β`), face-of-face body via `momentBody_faceMeasure_eq hS νE Vt hpolyE hchargedE hVE hz'E hz'β` +
+  `filter_tight_subface`; the point is `faceEmbedExt hS ν νE hle x₀ (faceThetaOf hS ν _ hx₀') y` with
+  `hlaw := completionLaw_eq_faceFamily_faceThetaOf … hx₀' rfl`, identified by `meanExt_injective`, in the closure by
+  `UniformSpace.Completion.denseRange_coe` + `image_closure_subset_closure_image` + `closure_mono
+  (Set.image_subset_iff.2 (Set.range_subset_iff.2 …))`. GOTCHAS: `minimalFacePoly` needs `[Nonempty V]` in the STATEMENT
+  (error reported at the statement line as "failed to synthesize Nonempty V"); `change … ∈ _` with a metavariable set
+  sticks on `Membership` — spell the set out; a `Vt.filter` on a local notation is "Unknown identifier"; membership goals
+  `y ∈ {y | dotJ e y = γ}` need `change dotJ e y = γ` before `rw`; `isExtreme_face` closes by `le_antisymm` +
+  `nlinarith [mul_lt_mul_of_pos_left hlt ha, mul_le_mul_of_nonneg_left h2 hb.le]` after
+  `hβ : a * β + b * β = β`. NEXT: A6 `FiniteRangeCompletionAtlas` (union over ALL nonempty faces, pairwise disjoint
+  strata, `X_F = range j_F`, `range completionLaw = ⋃_F face-family laws`; NO homeomorphism claim), then round-91
+  consult and programme B.

@@ -599,6 +599,7 @@ import Laplace.Multi.FiniteRangeFaceGeometry
 import Laplace.Multi.FiniteRangeRayDecay
 import Laplace.Multi.ExposedFaceRayEndpoint
 import Laplace.Multi.FiniteRangeAllFacesAccessible
+import Laplace.Multi.FiniteRangeFaceIncidence
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

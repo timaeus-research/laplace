@@ -5955,3 +5955,11 @@ certificates for concrete resolved charts beyond the identity chart.
     TIGHT VERTEX IS ACCESSIBLE, any codimension), **`exists_meanExt_eq_of_mem_ri_face_finiteRange`** (every point of an open
     face is an extended mean), **`meanExt_surjective_of_finiteRange`**, **`range_meanExt_eq_convexHull_of_finiteRange`**
     (the extended mean map is onto the polytope).
+  - `FiniteRangeFaceIncidence.lean` (A5): **`isExtreme_face`** (an exposed face of a polytope is an extreme set),
+    **`minimalFacePoly_eq_of_mem_ri_face`** (a relative-interior point of an exposed face has that face as its minimal
+    face), `faceStratum_eq_preimage_ri` (`X_F = meanExt⁻¹(ri F)`), `closure_faceStratum_subset_preimage`,
+    **`preimage_face_eq_iUnion_faceStratum`** (`meanExt⁻¹(F) = ⋃_{E ⊆ F} X_E`), `tight_subface`, `filter_tight_subface`,
+    **`faceStratum_subset_closure_of_subset`** (LOWER INCLUSION: `E ⊆ F ⇒ X_E ⊆ closure X_F`, via the face model, A4 inside
+    it, and the extended face embedding), **`closure_faceStratum_eq_preimage`** (`closure X_F = meanExt⁻¹(F)`),
+    **`closure_faceStratum_eq_iUnion`** (FACE INCIDENCE `closure X_F = ⋃_{E ⊆ F} X_E`), **`faceStratum_subset_closure_iff`**
+    (`X_E ⊆ closure X_F ⇔ E ⊆ F`).
