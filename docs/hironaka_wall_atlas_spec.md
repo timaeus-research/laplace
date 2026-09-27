@@ -5723,3 +5723,11 @@ certificates for concrete resolved charts beyond the identity chart.
     `integrable_mul_exp`, `exp_neg_le_integral_mul_exp`, **`integral_abs_tiltedDens_sub_le`** (tilting by a common
     `|h| ≤ K` is `L¹`-Lipschitz: `‖tilt_h q₁ − tilt_h q₂‖₁ ≤ 2e^{2K}‖q₁−q₂‖₁`, uniform over all such tilts).
     Measure-level identification `(ν.withDensity q).tilted h = ν.withDensity (tilt_h q)` not stated.
+  - `ResponseIntrinsicResolution.lean` (round 85, rank 7): **`dotJ_chartDeriv_self_le`** (`‖Dm(θ)u‖₂² ≤ Λ|u|²_F` from
+    `|w|²_F ≤ Λ‖w‖₂²`, via Fisher Cauchy–Schwarz), **`dotJ_self_le_mul_samplingEnergy`** (`‖z‖₂² ≤ Λ q_θ(z)` on `W`),
+    **`fisherDist_responseTheta_le_sqrt_samplingEnergy`** (FROZEN → INTRINSIC MARGIN with condition-number loss:
+    `d_F(θ(M),θ(M+z)) ≤ √(Λ/λ)√(q_θ(z))` on a coercive convex patch), `mem_fisherBall_of_samplingEnergy_lt`,
+    `measureReal_inter_ge_one_sub` (union bound, no measurability), **`measureReal_both_resolved_ge`** (THE TWO-CLASS
+    SEPARATION THEOREM: responses at intrinsic distance `≥ √(Λ₀/λ₀)r₀ + √(Λ₁/λ₁)r₁` are resolved by `n₀,n₁` samples —
+    the empirical responses fall in the DISJOINT intrinsic balls — with probability
+    `≥ 1 − tr(R₀C_{D₀})/(n₀r₀²) − tr(R₁C_{D₁})/(n₁r₁²)`).

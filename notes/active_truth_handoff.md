@@ -2131,4 +2131,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: `ResponseIntrinsicResolution` (frozen ellipsoid margin → intrinsic Fisher-ball margin with condition
   number `√(Λ/λ)`; two-class separation `P(both resolved) ≥ 1 − Σ d_eff,i/(n_i r_i²)`), then
   `AccessibleFaceNonexpansion`, `ResponseFormContinuity`, the bounded-tilt adapter for the length budget.
+- ResponseIntrinsicResolution landed (round 85 rank 7): the user's resolution story in intrinsic two-class form.
+  Union bound without measurability: `univ ⊆ (A ∩ B) ∪ (Aᶜ ∪ Bᶜ)` + `measureReal_mono` + `measureReal_union_le` +
+  `probReal_univ` + `linarith`. GOTCHAS: `fisherDist_comm hS ν (x := …)` (x y implicit); `Set.mem_setOf_eq` is
+  deprecated → `mem_ofPred_eq`; Fisher CS for `‖Cu‖² ≤ Λ F(u,u)`: `dotJ z z = −F(z,u)` with `z = CD θ u` via
+  `dotJ_chartDeriv_eq_neg_lawCov` then `lawCov_sq_le`. NEXT: `AccessibleFaceNonexpansion` (rank 6; needs measure-level
+  `tilted` of `withDensity` + face Fisher metric), `ResponseFormContinuity` (rank 5), bounded-tilt adapter for the
+  length budget, `FaceChainAccessibility`; then round-86 consult.
 
