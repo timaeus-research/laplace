@@ -2552,8 +2552,18 @@ E3 = C6 `ResponseFibreSecondJet` LANDED (the long-open item). Route that worked:
   (not `uncurry`); `integral_const_mul` is ambiguous under `open MeasureTheory intervalIntegral` — qualify;
   `integral_add` (interval) needs the integrability facts typed in lambda form (Pi-sum otherwise);
   `MeasureTheory.integral_zero` vs `intervalIntegral.integral_zero`. The pairing trick: `G θ v w = −(dotCLMlin ∘ subtypeL)(v)
-  (subtypeL (CD θ w))` and `HasDerivAt.clm_apply` avoids all coercion derivatives. NEXT: round-95 consult (programme E
-  complete; candidates: KL Hessian = Fisher (`ResponseInformationHessian`), fundamental-lemma converse for E6, sectional
-  curvature sign examples (categorical family `+¼`), the topology of the Fisher completion vs `DataLaw`, journey lifting /
-  fibration question, and the user's open threads: negative-profile saddle lemma, general k multiplicity law, product
-  inequality).
+  (subtypeL (CD θ w))` and `HasDerivAt.clm_apply` avoids all coercion derivatives. Round 95 (b6c8bb8, `research_round95_{q,v1}.md`): PROGRAMME F = the information cost of a response journey. Queue:
+  F1 `ResponseInformationHessian` (`K_g(θ) = KL(ρ_g‖P_θ) = const + log Z(θ) + ⟨θ, m_D(g)⟩`; full Fréchet derivative
+  `DK[u] = ⟨u, m_D(g) − m(θ)⟩`, Hessian `= G_θ`, critical iff `θ = Φ(g)` on 𝕍, strict convexity along natural lines),
+  F2 `ResponseFeaturelessJourney` (`θ_t = lawResponse((1−t)ν + tρ_g)` = `m⁻¹(m(0) + tΔ)`, mean-affine, `C^∞` on a
+  neighbourhood of [0,1] via the mean-coordinate curve, `A θ' = Δ`, m-geodesic `θ'' + C(θ',θ') = 0` (coefficient ONE);
+  NO defect monotonicity — false in general), F3 `ResponseInformationAction` (HEADLINE: `KL(P_θ₁‖P_θ₀) = ∫₀¹ (1−t)
+  G_{θ_t}(θ̇,θ̇) dt` along the mean-affine path, reverse with weight `t`, Jeffreys = unweighted action = `−⟨θ₁−θ₀,
+  m(θ₁)−m(θ₀)⟩`; `KL(ρ_g‖ν) = defect + ∫(1−t)G(θ̇,θ̇)`; `fisherLength² ≤ Jeffreys`; proof via `q(t) = KL(P_θt‖P_θ0)`,
+  `q' = ⟨θ₀−θ_t, Δ⟩`, `q'' = e(t)`, integration by parts), F4 `ResponseTruthShiftResolution` (sign resolution of a
+  truth shift: wrong-sign probability `≤ Var/(n(c−b)²)`, local alternative `≤ 4V/(n d² t²)`, sample size `n ≥ 4V/(ε d²
+  t²)`), F5 `ResponseSimplexCurvature` (affine-basis/saturated finite family: `G(R^α(u,v)w,x) = ((1−α²)/4)(G(v,w)G(u,x) −
+  G(u,w)G(v,x))`, sectional curvature `¼`; key: centred products of scores are scores, `G(C(u,v),C(x,y)) = E[f_u f_v f_x
+  f_y] − G(u,v)G(x,y)`), F6 `ResponseFisherEnergyStationarity` (converse of E6 via test fields `φ(t)z`, fixed z, bump).
+  Cautions: E2's defect contraction is within-fibre only; completion→sphere map is distance-decreasing but not an
+  embedding. NEXT: F1.
