@@ -2656,6 +2656,10 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `(CDE θ).symm e` and CLM-apply `((CDE θ).symm : 𝕍 →L 𝕍) e` are defeq but NOT syntactically equal — `linarith` sees two
   atoms; state everything in the CLM form; `hasStrictFDerivAt_responseTheta_add` at `M = mean θ₀ + ↑0` needs
   `simp only [Submodule.coe_zero, add_zero, responseTheta_meanMap hS ν] at h`). NEXT: H4 `ResponseSimplexSphere` or H5
-  (localised bias needs the cubic remainder + moment bookkeeping) or a round-98 consult. Old NEXT:
+  (localised bias needs the cubic remainder + moment bookkeeping) or a round-98 consult. Round 98 (2043f18) =
+  PROGRAMME I (see atlas spec): I1 FisherNoiseBridge, I2 ProbabilisticResolution, I3 ObservableHessian, I4
+  LocalizedSamplingBias, I5 SaturatedSimplex, I6 SimplexSphere. NEXT: I1 (coercivity constant `c₀‖v‖² ≤ G_θ₀(v,v)` on W
+  by compactness of the unit sphere; identify `samplingEnergy` with `G(Bz,Bz)`; certificate in Fisher radius), then I2
+  (Chebyshev on `samplingEnergy` via `mul_measureReal_samplingEnergy_ge_le` + `ae_sampleResponse_sub_mem_dirSpan`). Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

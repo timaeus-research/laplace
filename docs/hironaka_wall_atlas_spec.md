@@ -6349,3 +6349,23 @@ certificates for concrete resolved charts beyond the identity chart.
     `‖ξ‖ ≤ r`, `‖te+ξ‖ ≤ δ`), **`twoScale_sign_of_certificate`** (positive certificate ⇒ `ℓθ₀ < ℓθ̂`). Not done: the
     probability of `‖ξ‖ ≤ r` in this norm (existing bounds are in the Fisher-normalised `samplingEnergy`), the cubic
     remainder, H5's bias formula, the two-scale CLT.
+  - Round 98 consult (`research_round98_{q,v1}.md`, 2043f18): AUDIT — H3's "every data law" means the seabed's `DataLaw`
+    (bounded tilts), not every probability measure (boundary/singular laws excluded); no finiteness of X needed but
+    finite-dim `SpansAffine` forces a finite atomic measure algebra, so the dimension statement is `|{x | ν{x} > 0}| − 1`
+    (atoms, not topological support); H1's converse test `F = r_uu` frozen at the base point is legitimate, the
+    equivalence is pointwise in θ; CRUCIAL DISTINCTION: residual saturation ("response-flat") ≠ `SpansAffine` ("full
+    data-law saturation") — 4-point example X = {1,2,3,4}, ν uniform, S = 1_{1,2}: all second responses vanish but
+    laws distinguishing 1 from 2 are not model laws; "geodesic at t" = zero affine-parameter LC acceleration (stronger
+    than unparametrised); H6 bridge: the right Fisher-normalised norm for MEAN noise is the pullback `q₀(z) =
+    G_{θ₀}(A⁻¹z, A⁻¹z)` = the seabed's `samplingEnergy` (prove the identification, `samplingEnergy_eq_fisherVar`), constants
+    `B₀ = sup_{q₀=1}‖z‖`, `γ_ℓ = sup_{G=1}|ℓ v|`, improved certificate `ℓ(θ̂) − ℓθ₀ ≥ tℓ(A⁻¹e) − γ_ℓ r − ‖ℓ‖K(|t|‖e‖ + B₀r)²`
+    on `|ξ|_{*,0} ≤ r`. PROGRAMME I ranked: I1 `ResponseFisherNoiseBridge`, I2 `ResponseProbabilisticResolution`
+    (`P(|ξ|_* > r) ≤ τ₀(D)/(nr²)`, `τ₀ = tr(R_θ₀ C_D)`; certify local EXISTENCE and sign w.p. ≥ 1 − τ₀/(nr²); failure =
+    not certified, not impossibility), I3 `ResponseObservableHessian` (mixed `D²𝓡_F[e,d] = E[(F−EF)r_uv]` by polarisation
+    AFTER C² + symmetric Hessian; variance Hessian `E[(F−EF)² r_uv] − 2D𝓡_F[e]D𝓡_F[d]`; residual-flat ⇒ posterior
+    variance concave, covariance matrix concave in Loewner order; mixture identity), I4 `ResponseLocalizedSamplingBias`
+    (reset localisation `θ̂ = θ + 1_E(h(y+ξ) − θ)`, bias `−(1/2n)E_D[C(A⁻¹Z,A⁻¹Z)] + remainder` with the three remainder
+    terms bounded by 4th moments; NEVER `E[ξ | ‖ξ‖ ≤ δ] = 0`), I5 `ResponseSaturatedSimplex` (`dim W = |I|−1` via the
+    evaluation map `b ↦ ⟨b, S − E_νS⟩` onto `{a : Σ ν_i a_i = 0}`), I6 `ResponseSimplexSphere` (abstract positive simplex
+    first). Deferred: length-defect-from-curvature estimates (need convex normal neighbourhoods etc.), two-scale CLT
+    (build the finite-sample certificate first), testing lower bounds for genuine unresolvability.
