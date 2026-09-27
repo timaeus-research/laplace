@@ -2727,8 +2727,9 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `KL(R_T‖ν) = KL(R_S‖ν) + KL(R_T‖R_S)`, coarse rate finite, Pinsker certificate with affine predictors subtracted).
   L4 `ResponseMismatchResolution` LANDED (`dataBilin`, `dataDual` = Σ_D⁻¹e, `isGreatest_snr`
   `max_u ⟨u,e⟩²/Σ_D(u,u) = ⟨e,Σ_D⁻¹e⟩`, `mismatch_resolution_floor`, local chamber certificate + Hoeffding).
-  NEXT: L3 remaining-information in polytope-journey language (`KL(R_D‖P_t) = ∫_t^1(1−s)g`, `KL(D‖P_t) = δ_D + R(t)`,
-  derivative `−(1−t)g`), L7 testing obstruction (`error ≥ 1 − √(nKL/2)` via Pinsker on products), L6 face calculus,
-  then L1 (needs Cauchy–Binet); then round-102 consult. Old NEXT:
+  L7 `ResponseTestingData` LANDED (Hellinger affinity testing bound for ANY `μ ≪ η`, Hellinger ≤ KL,
+  `error ≥ (1 − √(n KL))/2`; local alternatives along the covariance dual: `KL(D_s‖D)/s² → ⟨e,Σ_D⁻¹e⟩/2`, mean moves
+  in direction `e`). NEXT: round-102 consult (report L2, L4, L5, L7; L3 exists in atlas language — ask whether to
+  translate; L6 face calculus; L1 needs Cauchy–Binet), then whatever Astra ranks. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

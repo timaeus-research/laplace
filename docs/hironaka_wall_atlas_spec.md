@@ -6710,3 +6710,21 @@ certificates for concrete resolved charts beyond the identity chart.
     floor with the correct off-model geometry: `1 ≤ n⟨e,Σ_D⁻¹e⟩`), **`measureReal_obsChart_gt_ge`** (probabilistic chamber
     certificate `≥ 1 − 2|J|exp(−nr²/(8B²))` via `measureReal_norm_sampleResponse_sub_gt_le`, `measure_mono_ae` +
     `ENNReal.toReal_mono`, `measureReal_compl`, `probReal_univ`).
+  - `ResponseTestingData.lean` (L7, THE TESTING OBSTRUCTION FOR DATA LAWS): general `μ ≪ η` probability laws on `Ω`:
+    `rootFun μ η := √((μ.rnDeriv η).toReal)`, `integrable_rnDeriv_toReal` (via `integrable_rnDeriv_smul_iff` with `f = 1`;
+    `Measure.integrable_toReal_rnDeriv` is NOT a name on this pin), `integral_rnDeriv_toReal` (`Measure.integral_toReal_rnDeriv`
+    + `probReal_univ`), `memLp_rootFun` (`memLp_two_iff_integrable_sq`), **`dataRoot hμη : Lp ℝ 2 η`**, `norm_dataRoot = 1`,
+    **`rootLaw_dataRoot = μ`** (`withDensity_congr_ae` + `Measure.rnDeriv_lt_top` + `Measure.withDensity_rnDeriv_eq`),
+    `oneRoot η` (`memLp_const 1`; `variable (η) in` since the section has `{μ η}`), `norm_oneRoot`, `rootLaw_oneRoot`
+    (`withDensity_one`, needs `open scoped ENNReal` for `(1 : Ω → ℝ≥0∞)`), **`dataAffinity μ η := ∫ rootFun dη`**,
+    `dataAffinity_nonneg`, `dataAffinity_le_one` (`abs_real_inner_le_norm`), **`testing_error_data_ge`**
+    (`(1 − √(1 − ρ^{2n}))/2 ≤ error` from `testing_error_ge_sqrt` + `prodRoot`), `two_mul_sub_two_mul_sqrt_le_mul_log`
+    (`2r − 2√r ≤ r log r`, from `Real.log_le_sub_one_of_pos` at `(√r)⁻¹` + `Real.div_sqrt`),
+    **`two_sub_two_mul_dataAffinity_le`** (Hellinger ≤ KL: `2(1−ρ) ≤ KL(μ‖η)`, via `toReal_klDiv`, `integral_toReal_rnDeriv_mul`,
+    `integrable_toReal_rnDeriv_mul_iff` — all in namespace `MeasureTheory`, not `Measure`), `one_sub_dataAffinity_pow_le`
+    (`1 − ρ^{2n} ≤ n·KL` by Bernoulli `one_add_mul_le_pow`), **`testing_error_data_ge_of_klDiv`** (`(1 − √(n·KL))/2 ≤ error`).
+    Tilt section: `klDiv_tilted_data_ne_top`, **`testing_error_tilted_ge`** (`tilted_absolutelyContinuous`, `tilted_zero` — namespace
+    `MeasureTheory`), **`tendsto_klDiv_tilted_dataDual_div_sq`** (`KL(D_s‖D)/s² → ⟨e,Σ_D⁻¹e⟩/2` for `D_s ∝ e^{s⟨e*,S⟩}D`),
+    **`hasDerivAt_dotJ_mean_tilted_dataDual`** (`d/ds⟨u,m(D_s)⟩|₀ = ⟨u,e⟩` — the tilt along the covariance dual moves the mean
+    in direction `e`). Gotcha: a two-parameter `local notation "Dt" f s` fails to parse at use sites — write the tilted
+    measure out.
