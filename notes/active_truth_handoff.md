@@ -2572,13 +2572,15 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   lambda function, as always; `show (famZ)⁻¹ * (−famZ) = −1` is `mul_neg` not `neg_mul`). F2 `ResponseFeaturelessJourney` LANDED (no Mathlib convexity of `intrinsicInterior` needed: segment membership from
   `mean_tilted_mem_intrinsicInterior` of the mixture tilt; openness of the domain from `isOpen_range_chartV` pulled back
   along `t ↦ t • journeyDir`; velocity from `HasDerivAt.unique` of the mean-affine identity; acceleration from
-  `hasFDerivAt_inverse_natural` + `clm_apply` + `simp only [map_zero, add_zero]; rfl`). NEXT: F3
-  `ResponseInformationAction` (for model endpoints `θ₀ θ₁ ∈ 𝕍` the mean-affine path `θ_t = θr((1−t)m(θ₀) + t m(θ₁))`
-  (generalise `featurelessJourney`: base point `m(θ₀)` instead of `m₀`, `Δ := m(θ₁) − m(θ₀)`; domain open ⊇ [0,1] by
-  convexity — here use `mean_tilted_mem_intrinsicInterior` of `mixTilt (modelTilt θ₀) (modelTilt θ₁) t`);
-  `q(t) := KL(P_θt ‖ P_θ0) = ⟨θ₀ − θ_t, m(θ_t)⟩ + log Z(θ₀) − log Z(θ_t)` (`toReal_klDiv_model_model`), `q' =
-  ⟨θ₀ − θ_t, Δ⟩` (log Z derivative cancels via `hasFDerivAt_famZ` — check), `q'' = −⟨θ', Δ⟩ = G(θ',θ')`; `q(0) = q'(0) = 0`
-  ⇒ `q(1) = ∫₀¹ (1−t) q''(t)` (Taylor with integral remainder / integrate by parts twice:
-  `intervalIntegral.integral_eq_sub_of_hasDerivAt` on `(1−t)q' + q`); reverse orientation by `t ↦ 1−t`; Jeffreys =
-  `∫ G(θ',θ')` = `−⟨θ₁−θ₀, m(θ₁)−m(θ₀)⟩`; specialise θ₀ = 0, θ₁ = Φ(g) with E2 Pythagoras for the HEADLINE
-  `KL(ρ_g‖ν) = defect + ∫(1−t)G(θ̇,θ̇)`; `fisherLength² ≤ Jeffreys` by Cauchy–Schwarz).
+  `hasFDerivAt_inverse_natural` + `clm_apply` + `simp only [map_zero, add_zero]; rfl`). F3 `ResponseInformationAction`
+  LANDED (featureless endpoint θ₀ = 0 only — the general model-endpoint path `θr((1−t)m(θ₀)+tm(θ₁))` is NOT done;
+  `q(t) = KL(P_{θ_t}‖ν) = ⟨θ_t, m_t⟩ − log Z(θ_t)` via `toReal_klDiv_model_featureless`, `q' = −⟨θ_t,Δ⟩` (the `log Z`
+  derivative `−⟨famMean, θ'⟩` cancels against `⟨θ',m_t⟩`; needs `rw [← mul_assoc, hZ]` since the goal has `Z⁻¹ * (−Z * x)`),
+  `q'' = G(θ',θ')` from `fisherInner_journeyVel : G(θ',θ') = −⟨θ',Δ⟩`; FTC on `(1−t)q' + q` with
+  `integral_eq_sub_of_hasDerivAt` and `ContinuousOn.intervalIntegrable_of_Icc`; the reverse KL `KL(ν‖P_θ) = ⟨θ,m₀⟩ + log Z`
+  by `toReal_klDiv_tilted_tilted ν (Bdd.const 0) (bdd_modelTilt hS θ)` and `ν.tilted 0 = ν` by `simp`; the sum of the two
+  `∫` needs typed `IntervalIntegrable (fun t ↦ (1−t) * e t)` haves; `dotJ_smul_right` does not exist — use
+  `(isLinearMap_dotJ _).map_smul` + `smul_eq_mul`; `sq_integral_sqrt_mul_le` (MeanSegment) has NO named `X`/`ν` args).
+  NEXT: F4 `ResponseTruthShiftResolution`, F5 `ResponseSimplexCurvature` (affine-basis family has sectional curvature ¼),
+  F6 `ResponseFisherEnergyStationarity` (converse of E6 via test fields `φ(t)z`); then a round-96 consult. Optional:
+  model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

@@ -6181,3 +6181,12 @@ certificates for concrete resolved charts beyond the identity chart.
     (`A θ' = Δ`), **`hasDerivAt_featurelessJourney`** (velocity = `A⁻¹Δ`, by differentiating the mean-affine identity),
     **`hasDerivAt_journeyVel`** (`θ'' = −C(θ',θ')` via `hasFDerivAt_inverse_natural`), **`featurelessJourney_mGeodesic`**
     (THE FEATURELESS JOURNEY IS A GLOBAL m-GEODESIC).
+  - `ResponseInformationAction.lean` (F3, THE HEADLINE OF PROGRAMME F): `toReal_klDiv_featureless_model` (`KL(ν‖P_θ) =
+    ⟨θ,m₀⟩ + log Z(θ)`), `hasDerivAt_meanMap_featurelessJourney` (mean velocity `Δ`), `hasDerivAt_featurelessJourney_coe`,
+    `fisherInner_journeyVel` (`G_{θ_t}(θ',θ') = −⟨θ',Δ⟩`), **`hasDerivAt_journeyKL`** (`d/dt KL(P_{θ_t}‖ν) = −⟨θ_t,Δ⟩`,
+    log Z derivative cancels via `hasFDerivAt_famZ`), `hasDerivAt_journeyMoment` (`d/dt ⟨θ_t,Δ⟩ = −G(θ',θ')`),
+    `continuousOn_journeyVel/Speed`, **`toReal_klDiv_response_featureless_eq_action`** (`KL(P_{Φ(g)}‖ν) = ∫₀¹ (1−t)
+    G_{θ_t}(θ',θ') dt`, FTC on the primitive `(1−t)p + q`), **`toReal_klDiv_featureless_response_eq_action`** (`KL(ν‖P_{Φ(g)})
+    = ∫₀¹ t G dt`), **`jeffreys_eq_action`** (Jeffreys = `∫₀¹ G(θ',θ')`), **`toReal_klDiv_eq_defect_add_action`** (HEADLINE
+    `KL(ρ_g‖ν) = KL(ρ_g‖P_{Φ(g)}) + ∫₀¹ (1−t) G_{θ_t}(θ'_t,θ'_t) dt` via E2 Pythagoras), `sq_journeyLength_le_jeffreys`
+    (Fisher length² ≤ Jeffreys, Cauchy–Schwarz).
