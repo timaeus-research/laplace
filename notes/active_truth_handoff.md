@@ -2379,6 +2379,9 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   sticks on `Membership` — spell the set out; a `Vt.filter` on a local notation is "Unknown identifier"; membership goals
   `y ∈ {y | dotJ e y = γ}` need `change dotJ e y = γ` before `rw`; `isExtreme_face` closes by `le_antisymm` +
   `nlinarith [mul_lt_mul_of_pos_left hlt ha, mul_le_mul_of_nonneg_left h2 hb.le]` after
-  `hβ : a * β + b * β = β`. NEXT: A6 `FiniteRangeCompletionAtlas` (union over ALL nonempty faces, pairwise disjoint
-  strata, `X_F = range j_F`, `range completionLaw = ⋃_F face-family laws`; NO homeomorphism claim), then round-91
-  consult and programme B.
+  `hβ : a * β + b * β = β`. A6 `FiniteRangeCompletionAtlas` landed (routine assembly of A4+A5:
+  all-faces union, `faceStratum_eq_iff` via `minimalFacePoly_eq_of_mem_ri_face` on a common point, partition,
+  `X_F = range j_F`, `range completionLaw = ⋃_F range (w ↦ P^F_w)`, `BijOn meanExt univ (conv V)`). PROGRAMME A
+  COMPLETE (A1–A6). NEXT: round-91 consult (programme B: ResponseCumulantCalculus, ResponseHessian,
+  ResponseMixtureAffine, ResponseExponentialDefect, ResponseFisherCurvature, ResponseHigherDefectVariation), then land
+  in Astra's order.

@@ -5963,3 +5963,10 @@ certificates for concrete resolved charts beyond the identity chart.
     it, and the extended face embedding), **`closure_faceStratum_eq_preimage`** (`closure X_F = meanExt⁻¹(F)`),
     **`closure_faceStratum_eq_iUnion`** (FACE INCIDENCE `closure X_F = ⋃_{E ⊆ F} X_E`), **`faceStratum_subset_closure_iff`**
     (`X_E ⊆ closure X_F ⇔ E ⊆ F`).
+  - `FiniteRangeCompletionAtlas.lean` (A6, PROGRAMME A COMPLETE): **`iUnion_faceStratum_of_finiteRange`** (`Ŵ = ⋃_F X_F`
+    over ALL exposed faces with a tight vertex, no accessibility hypothesis), **`faceStratum_eq_iff_of_finiteRange`**
+    (`X_F = X_F' ⇔ F = F'`), **`faceStratum_eq_or_disjoint_of_finiteRange`** (the strata partition `Ŵ`),
+    **`exists_faceStratum_eq_range_of_finiteRange`** (`X_F = range j_F`), **`range_completionLaw_eq_of_finiteRange`**
+    (completion laws = face-family laws of all faces), `completionLaw_injective_of_finiteRange`,
+    **`bijOn_meanExt_of_finiteRange`** (`meanExt : Ŵ → conv V` bijective; no homeomorphism claim). A4 gained
+    `nonempty_of_finiteRange`, `meanExt_mem_polytope'`.

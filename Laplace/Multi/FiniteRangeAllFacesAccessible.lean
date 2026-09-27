@@ -163,22 +163,31 @@ theorem meanExt_surjective_of_finiteRange {M : J → ℝ} (hM : M ∈ convexHull
     exact mem_intrinsicInterior_minimalFacePoly hM
   exact exists_meanExt_eq_of_mem_ri_face_finiteRange hS ν V hae hcharged hV hz₀V hz₀β hri
 
+omit [Nonempty X] [Fintype J] [Nonempty J] hS hcharged in
+/-- A finite-range model has a vertex. -/
+theorem nonempty_of_finiteRange : Nonempty V := by
+  obtain ⟨z₀, hz₀V⟩ : ∃ z₀, z₀ ∈ V := by
+    by_contra hV
+    push Not at hV
+    have h0 : ∀ᵐ x ∂ν, False := by
+      filter_upwards [hae] with x hx
+      exact hV _ hx
+    rw [ae_iff] at h0
+    simp at h0
+  exact ⟨⟨z₀, hz₀V⟩⟩
+
+/-- Every extended mean lies in the polytope (finite range). -/
+theorem meanExt_mem_polytope' (x : FisherCompletion hS ν) :
+    meanExt hS ν x ∈ convexHull ℝ (V : Set (J → ℝ)) := by
+  have : Nonempty V := nonempty_of_finiteRange ν V hae
+  exact meanExt_mem_polytope hS ν V (momentBody_eq_convexHull_of_finiteRange hS ν V hae hcharged) x
+
 /-- **The range of the extended mean map is the whole polytope** (finite range). -/
 theorem range_meanExt_eq_convexHull_of_finiteRange :
     Set.range (meanExt hS ν) = convexHull ℝ (V : Set (J → ℝ)) := by
   refine Set.Subset.antisymm ?_ fun M hM ↦ meanExt_surjective_of_finiteRange hS ν V hae hcharged hM
   rintro _ ⟨x, rfl⟩
-  have : Nonempty V := by
-    obtain ⟨z₀, hz₀V⟩ : ∃ z₀, z₀ ∈ V := by
-      by_contra hV
-      push Not at hV
-      have h0 : ∀ᵐ x ∂ν, False := by
-        filter_upwards [hae] with x hx
-        exact hV _ hx
-      rw [ae_iff] at h0
-      simp at h0
-    exact ⟨⟨z₀, hz₀V⟩⟩
-  exact meanExt_mem_polytope hS ν V (momentBody_eq_convexHull_of_finiteRange hS ν V hae hcharged) x
+  exact meanExt_mem_polytope' hS ν V hae hcharged x
 
 end FiniteRange
 
