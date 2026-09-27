@@ -5359,3 +5359,16 @@ certificates for concrete resolved charts beyond the identity chart.
   **`eventually_coercive_of_components`** (for any filter: `v_i → v_M`, `r_i → ∞` ⇒ eventually `λ‖w‖² ≤ Var_{P_{v_i − r_i u}}⟨w,S⟩`
   for all face directions `w`, with `λ = ½ e^{−2} λ_M`). The decomposition lemmas `tendsto_normalDepth_atTop`,
   `tendsto_measureReal_family_faceFibre_of_components` are now stated for an arbitrary filter.
+- `FacetFisherAccess.lean` (NOT mirrored; round-78 rank 1, FORWARD DIRECTION): helpers `familyMeasure_sub_smul_eq_tilted_base`
+  (`P_{θ − tu} = P_θ.tilted(t⟨u,S⟩)`), `continuous_raySpeedSq` / `continuous_sqrt_raySpeedSq`, `dotJ_comm'`,
+  **`dotJ_eq_zero_of_mem_dirSpan_faceMeasure`** (face directions are `u`-orthogonal), `lawCov_congr_ae`, `lawCov_sub_const_self`,
+  **`normalDepth_eq`** (`normalDepth η = −⟨η,u⟩/⟨u,u⟩`: the depth is linear), **`facet_invisible_of_orth`** (the facet condition
+  `T' = W ∩ u^⊥` with `u ∈ W` makes the normals the only directions of `W` invisible on the face), `sum_abs_le_card_mul_norm`,
+  `abs_max_sub_zero_le`; **`lintegral_sqrt_raySpeedSq_lt_top_of_path`**: for a charged polytope, an exposed facet (`hT`, `u ∈ W`,
+  `⟨u,u⟩ ≠ 0`, an off-face vertex), `M ∈ ri F`, and a `C¹` path `η : ℝ → W` on `[0,∞)` with `meanMap (η s) → M` and finite Fisher
+  length `∫⁻_0^∞ √Var_{P_{η s}}⟨η'_s,S⟩ < ⊤`, the normal ray `θ − r u` (any lift `θ`, stated for `θ = 0`) has finite Fisher length.
+  Proof: linear depth `r s = −⟨η s,u⟩/⟨u,u⟩`, tangential part `v s = η s + r s • u = faceTheta (η s)`; the ℕ vertex-gap criterion
+  transported to the real parameter by `tendsto_iff_seq_tendsto`; `v → v_M`, `r → ∞`, face mass → 1, uniform coercivity;
+  speed identity `Var⟨η',S⟩ = Var(r' ℓ⁺ + ⟨v',S⟩)` (a.e. positive part of the slack, `lawCov_congr_ae`); `facet_schur_bound` with
+  `κ = (card J · B)²/λ` and the eventual factor `≥ 1/2`; Lemma C to the ray `v_M − r u`; `speed ≥ (e^{−1}/√2)|r'| g(r)`;
+  `PathLengthPrimitive` on `[s₀,∞)`; extension to `(0,∞)`; `RayTiltInvariance` to any lift.

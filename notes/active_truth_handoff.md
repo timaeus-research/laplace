@@ -1740,3 +1740,18 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   Lemma C to the ray `v_M − r_s u` (tilt `⟨v_s − v_M,S⟩ ≤ 1` eventually); `PathLengthPrimitive` with `g = √raySpeedSq(v_M,u,·)`
   (continuity of `raySpeedSq` in `t`: check `hasDerivAt`/continuity lemmas); ℕ-criterion → ℝ-path via
   `Filter.tendsto_iff_seq_tendsto`.
+- `FacetFisherAccess` (forward direction) landed — THE FACET ACCESSIBILITY THEOREM (round-78 rank 1), ~450 lines. Gotchas:
+  `open Real` turns `π` into notation, so a named argument `(π := …)` fails to parse — drop it; `ae_dirLoss_le_of_polytope hS ν V u β
+  hpoly hV` and `momentBody_faceMeasure_eq_of_exposed hS ν V u β hpoly hcharged hV hp` take `u β` explicitly; `Set.mem_vsub`
+  destructs as `⟨y₁, hy₁, y₂, hy₂, rfl⟩` but leaves `(fun a b ↦ a -ᵥ b) y₁ y₂` — `change` to `y₁ -ᵥ y₂` before `vsub_eq_sub`;
+  `Filter.EventuallyEq.mul` gives a Pi-product — type the product a.e. equality as a lambda `have`; `lawCov_comm q f (fun _ ↦ c)`
+  must name both observables or it rewrites `lawCov q f f`; `ae_dirLoss_le_of_polytope` already exists (PolytopeFaceCut);
+  `mem_of_hasDerivAt_subtype (Submodule.closed_of_finiteDimensional _) (γ := fun s ↦ ⟨η s, hη s⟩) (hd s hs)` puts the derivative
+  in `W`; the depth derivative is `HasDerivAt.fun_sum` of `(hasDerivAt_pi.1 (hd s hs) i).mul_const (u i)`; face-tangential
+  orthogonality of `v' = η' + r' u`: `dotJ_comm'`, `map_add`, `map_smul`, `field_simp; ring`; `hcs` is stated for
+  `Pfam (v s − r s • u)` — `rw [← hdecomp s] at this`; `Ioc_subset_Ici_self` does not exist (`fun x hx ↦ hx.1.le`);
+  ENNReal `mul_le_mul' le_rfl h`; `integral_eq_lintegral_of_nonneg_ae` + `ContinuousOn.aestronglyMeasurable` avoid every
+  integrability hypothesis on the speed (state path length as an `lintegral`); `Set.Ioc_union_Ioi_eq_Ioi` to extend the tail
+  integrability to `(0,∞)`; `Real.le_sqrt_of_sq_le` for `c |r'| g ≤ speed`.
+  NEXT: the converse (the ray `s ↦ v_M − s • u` is a path with `meanMap → M` — need a ray mean-convergence lemma — and speed
+  `raySpeedSq`), then the `iff`, the slop paragraph, and round-78 §5 (data-ray strengthening).
