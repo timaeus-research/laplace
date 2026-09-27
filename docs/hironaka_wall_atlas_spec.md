@@ -5673,3 +5673,10 @@ certificates for concrete resolved charts beyond the identity chart.
     coercive convex patch: `√λ d_F(θ(M₀),θ(M₁)) ≤ 2B H`), **`hellinger_fisher_sandwich`** (`√λ d_F ≤ 2B H ≤ B d_F`),
     **`pow_affinity_le_exp_fisher`** (`n`-sample affinity of two responses `≤ exp(−nλ d_F²/(8B²))`: the binary
     testing scale between responses is `n^{−1/2}` in Fisher distance with explicit patch constants).
+  - `ResponseClassResolution.lean` (round 84, rank 9; the user's resolution story in chamber form):
+    `ae_sampleResponse_sub_mem_dirSpan` (`M̂_n − m ∈ W` a.s.), `integrable_samplingEnergy`,
+    **`mul_measureReal_samplingEnergy_ge_le`** (Markov for the Fisher-normalised error:
+    `r² P(q_θ(M̂_n−m) ≥ r²) ≤ −tr(R_θC_D)/n`), **`measureReal_sampleResponse_notMem_le`** (CHAMBER RESOLUTION: if the
+    Fisher-normalised ball of radius `r` around `m` lies in the class `C`, then `P(M̂_n ∉ C) ≤ −tr(R_θC_D)/(n r²)`,
+    abstract class partition), **`measureReal_sampleResponse_notMem_le_family`** (matched law:
+    `P(M̂_n ∉ C) ≤ dim W/(n r²)`). Chamber "typical size" = Fisher margin `r`, compared with `√(dim W/n)`.

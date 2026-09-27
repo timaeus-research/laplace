@@ -2086,4 +2086,13 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `TiltedFisherCompactConvergence`, `ResponseClassResolution` (class margin + change probability
   ≤ tr(C_θ⁻¹C_ρ)/(n r²): combine `integral_samplingEnergy` with Markov/Chebyshev on the Fisher-normalised error),
   `AccessibleFaceNonexpansion`, `FaceChainAccessibility`, `ResponsePathLengthBudget`.
+- ResponseClassResolution landed (round 84 rank 9): Markov `mul_meas_ge_le_integral_of_nonneg` (real form,
+  `ε * μ.real {ε ≤ f} ≤ ∫ f`) on `samplingEnergy` of `M̂ − m`, a.s. in `W` via `ae_sampleResponse_mem_momentBody
+  hS ν P D hDν Xs hXm hid hlaw` + `mean_mem_momentBody_of_ac` + `sub_mem_dirSpan_of_mem_momentBody'` (the Pi
+  subtraction is defeq to the lambda: `exact`); a.e. set inclusion → `measure_mono_ae` + `ENNReal.toReal_mono`.
+  GOTCHAS: parametrised `local notation "err" n ω => …` does not parse at use sites — inline the lambda;
+  `Integrable.congr` needs the sum witness TYPED (`have hint : Integrable (fun ω ↦ ∑ a, ∑ b, …) P`), else every
+  Finset/function is a stuck metavariable; `familyMeasure_eq_withDensity_famDens` takes no explicit args in `rw`.
+  NEXT: `TiltedFisherCompactConvergence`, `AccessibleFaceNonexpansion`, `FaceChainAccessibility`,
+  `ResponsePathLengthBudget`; then a round-85 consult.
 
