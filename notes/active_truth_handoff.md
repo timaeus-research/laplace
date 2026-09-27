@@ -2729,7 +2729,12 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `max_u ⟨u,e⟩²/Σ_D(u,u) = ⟨e,Σ_D⁻¹e⟩`, `mismatch_resolution_floor`, local chamber certificate + Hoeffding).
   L7 `ResponseTestingData` LANDED (Hellinger affinity testing bound for ANY `μ ≪ η`, Hellinger ≤ KL,
   `error ≥ (1 − √(n KL))/2`; local alternatives along the covariance dual: `KL(D_s‖D)/s² → ⟨e,Σ_D⁻¹e⟩/2`, mean moves
-  in direction `e`). NEXT: round-102 consult (report L2, L4, L5, L7; L3 exists in atlas language — ask whether to
-  translate; L6 face calculus; L1 needs Cauchy–Binet), then whatever Astra ranks. Old NEXT:
+  in direction `e`). Round 102 DONE (programme M: M1 influence, M2 joint nonlinear covariance, M3 uniform regression
+  via hyperplane-arrangement cells (no Cauchy–Binet), M4 facewise tangential convergence, M5 Le Cam two-point minimax,
+  M6 singular covariance, M7 infinitesimal ladder; skip L3 translation, fibres ≠ indistinguishability). M1
+  `ResponseDataInfluence` LANDED (`hasDerivAt_dataObs_tilted`: `d/dt E_{R_{m(D_t)}}F|₀ = Cov_D(⟨u_F,S⟩,h)`; CS bound;
+  `isLeast_information_lift`). NEXT: M2 `ResponseObservableJointCovariance` (`Cov(f̂_F,f̂_H) = Σ_D(u_F,u_H)/n + O(n^{-3/2})`
+  and `E[⟨u,ξ⟩(f̂_F − f_F)] = Σ_D(u,u_F)/n + O(n^{-3/2})` via `|A_F A_H − ℓ_F ℓ_H| ≤ (c_F d_H + a_F c_H)‖z‖³`), then M5,
+  M3→M4, M6, M7, cheap companions (`R_D = D` saturated, ladder telescoping). Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

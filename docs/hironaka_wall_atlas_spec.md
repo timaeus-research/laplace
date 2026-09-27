@@ -6728,3 +6728,29 @@ certificates for concrete resolved charts beyond the identity chart.
     **`hasDerivAt_dotJ_mean_tilted_dataDual`** (`d/ds⟨u,m(D_s)⟩|₀ = ⟨u,e⟩` — the tilt along the covariance dual moves the mean
     in direction `e`). Gotcha: a two-parameter `local notation "Dt" f s` fails to parse at use sites — write the tilted
     measure out.
+  - Round 102 (Astra, `gpt_responses/research_round102_{q,v1}.md`): L2/L4/L5/L7 audited correct. Corrections: response
+    fibres are NOT statistical indistinguishability classes (counterexample X = {−1,0,1}, S = id, δ₀ vs ½(δ₋₁+δ₁)); the
+    minimax scale for ⟨w,m_D⟩ is √(Σ_D(w,w)/n); `1 − ρ² ≤ KL/2` is FALSE (μ = η(·|A), a = ½); the sharper testing constant
+    needs product-KL additivity (Pinsker on products). PROGRAMME M (ranked): M1 data-law influence (LANDED below), M2 joint
+    nonlinear covariance (no fourth moments: `|A_F A_H − ℓ_F ℓ_H| ≤ (c_F d_H + a_F c_H)‖z‖³`), M3 uniform finite-configuration
+    regression WITHOUT Cauchy–Binet (hyperplane-arrangement cell argument: the sign cell of the weighted LS fit is bounded ⇒
+    fit ∈ conv of interpolating fits), M4 facewise convergence of tangential regression directions, M5 two-point Le Cam
+    minimax `≥ (Δ/2)(1 − √(nKL/2))` ⇒ `σ_F/4` at scale `1/√n`, M6 singular covariance (range/kernel), M7 infinitesimal
+    orthogonal information ladder. Cheap companions: `Refines` transitivity, response projection idempotent, `R_D = D`
+    for saturated finite families (via bounded integrals, not KL subtraction), telescoped global ladder. L3: skip a
+    translation module; add only `d/ds KL(D‖Q_s) = −(1−s)κ(s)` and the affine-residual tail with the changing predictor
+    mean subtracted.
+  - `ResponseDataInfluence.lean` (M1, THE INFLUENCE FUNCTION ON DATA LAWS): `dataObs F D := ∫F dR_{m_D}` (Ψ_F),
+    `dataInfluence F x := ⟨u_F, S(x)⟩ − ⟨u_F, m_D⟩` with `u_F = regressionDir F (θr m_D)`; hypotheses `hDν : D ≪ ν`,
+    `hνD : ν ≪ D` (equivalence ⇒ all tilts have interior means via `mean_mem_intrinsicInterior_of_equiv`);
+    `tilted_absolutelyContinuous_base`, `mean_tilted_sub_mem`, **`meanPath hh t := ⟨m(D_t) − m_D, _⟩ : W`**, `meanPath_coe`,
+    `tilted_zero_mul_eq` (`tilted_zero_mul` exists in BasepointCurvature for ν), `meanPath_zero`, `hasDerivAt_meanPath_coe`
+    (`hasDerivAt_pi` + `hasDerivAt_dataResponsePath`), **`exists_hasDerivAt_meanPath`** (derivative in `W` for ALL `t` via the
+    retraction `p` of `exists_retraction ν`: `z = p ∘ val ∘ z`, `(toContinuousLinearMap p).hasFDerivAt` with the point given
+    `(x := …)`; the value at 0 is the covariance vector by `HasDerivAt.unique` against the coordinate derivative),
+    **`hasDerivAt_dataObs_tilted`** (`d/dt Ψ_F(D_t)|₀ = Cov_D(⟨u_F,S⟩,h)`; proof: `responseProjection_eq_familyMeasure_responseTheta`
+    on every tilt, `hasDerivAt_responseTheta_meanPath` with `z := meanPath` (needs `∀ t` derivative), `subtypeL` composition
+    with the target ascribed and `rw [← hm, meanPath_zero, …] at h2`, then `hasDerivAt_integral_familyMeasure_path` and
+    `HasDerivAt.congr_deriv` + `simp only [meanPath_zero, …]` + `fisherInner_regressionDir`/`fisherInner_chartDerivEquiv_symm'`),
+    `integral_dataInfluence` (centred), `lawCov_dataInfluence`, **`sq_lawCov_influence_le`** (`|Ψ̇_F|² ≤ Σ_D(u_F,u_F)Var_D h`),
+    **`isLeast_information_lift`** (`IsLeast {Var_D h | Cov_D(⟨u,S⟩,h) = ⟨u,e⟩ ∀u ∈ W} ⟨e,Σ_D⁻¹e⟩`, attained at `⟨Σ_D⁻¹e,S⟩`).
