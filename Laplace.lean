@@ -587,6 +587,7 @@ import Laplace.Multi.ResponseProductAffinity
 import Laplace.Multi.ResponseJourneyResolution
 import Laplace.Multi.ResponseLawContinuity
 import Laplace.Multi.ResponseSubmersionCalculus
+import Laplace.Multi.ResponseHellingerAtlas
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

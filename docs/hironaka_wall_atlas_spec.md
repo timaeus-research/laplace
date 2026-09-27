@@ -5852,3 +5852,12 @@ certificates for concrete resolved charts beyond the identity chart.
     **`lawCov_self_eq_horizontal_add_residual`** (PYTHAGORAS IN SCORE SPACE at any data law),
     `lawCov_self_eq_dotJ_add_residual` (`Var k = ⟨C⁻¹Dm v,Dm v⟩ + Var(residual)`), **`velQuotEquiv`**
     (`bddSpace ⧸ ker DΦ_g ≃ W`: response directions = score directions modulo invisible ones).
+  - `ResponseHellingerAtlas.lean` (round 87, rank 5): **`tendsto_fisherDist_iff_hellingerDist`** (TOPOLOGY AGREEMENT
+    ON A FINITE REGULAR STRATUM: on a coercive convex patch, Fisher convergence of responses ⇔ Hellinger convergence
+    of their laws, via `hellinger_fisher_sandwich`), `tendsto_rootDensLp_iff_fisherDist` (`L²` form), `hellingerExt`
+    (`H(Q_x,Q_y) = ‖Ψ_x − Ψ_y‖₂` on the completion), `hellingerExt_coe`, `hellingerExt_le` (`≤ d̂/2`),
+    `tendsto_rootDensExt`, **`tendsto_integral_completionLaw`** (completion convergence ⇒ every bounded test
+    converges, i.e. TV convergence of the laws), **`isClosedEmbedding_rootDensExt`** (CONDITIONAL INVERSE
+    CONTINUITY: compact completion + singleton law fibres ⇒ `x ↦ Ψ_x` is a closed embedding),
+    `tendsto_iff_tendsto_rootDensExt`. Neither compactness nor fibre uniqueness is claimed.
+  - ROUND 87 COMPLETE (all six ranked modules landed 2026-09-27).

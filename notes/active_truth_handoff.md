@@ -2269,3 +2269,10 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: rank 5 `ResponseHellingerAtlas` (finite-stratum bi-Lipschitz equivalence as a `Tendsto` iff; completion
   contraction `x_n → x ⇒ Ψ_{x_n} → Ψ_x ⇒ laws converge in TV`; conditional inverse-continuity package: compact
   completion + unique law fibres ⇒ `rootDensExt` is a closed embedding); then round-88 consult.
+- ResponseHellingerAtlas landed (round 87 rank 5) — ROUND 87 COMPLETE. Pattern: squeeze both directions of the
+  sandwich (`squeeze_zero … (by simpa using h.const_mul c)`, and `rw [div_mul_eq_mul_div, le_div_iff₀ hsq,
+  mul_comm]` for the `2B/√λ` constant); the completion contraction is `continuous_rootDensExt` and the TV
+  statement is two applications of `integral_rootLaw_sub_le` under `abs_sub_le_iff`; the conditional package is
+  `(continuous_rootDensExt hS ν).isClosedEmbedding inj` + `.isEmbedding.tendsto_nhds_iff`. NEXT: round-88 consult
+  (query drafted at `gpt_responses/research_round88_q.md`): audit of round 87, the STRATIFICATION theorem
+  `Ŵ = ⊔_F j_F(W_F)` for charged polytopes, the featureless→data tilt segment as the canonical journey, next ranking.
