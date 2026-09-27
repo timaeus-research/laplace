@@ -584,6 +584,7 @@ import Laplace.Multi.ResponseFormContinuity
 import Laplace.Multi.ResponseNoiseCalibration
 import Laplace.Multi.SeedIndependentAtlas
 import Laplace.Multi.ResponseProductAffinity
+import Laplace.Multi.ResponseJourneyResolution
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

@@ -2228,3 +2228,16 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `↑↑f * ↑↑f` — name it with a lambda type first. NEXT: `ResponseJourneyResolution` (separation certificate
   `D > r₁ + r₂` from the two-class theorem + `D ≤ L`; patch margins `√Λ r < δ`), `L¹` law continuity,
   HellingerAtlas (stratumwise), SubmersionCalculus; then round-88 consult.
+- ResponseJourneyResolution landed (round 87 rank 3). Pattern: the segment bound with a LOCAL Fisher bound is
+  `fisherDist_le_length (FisherPath.segment x y)` + `FisherPath.length_flat` + `intervalIntegral.integral_mono_on`
+  with the pointwise `fisherNorm = √fisherVar ≤ √(Λ dotJ w w)` (`← Real.sqrt_mul hΛ0`); the coefficient-journey
+  displacement bound is `fisherDist_le_integral` on the coerced path (the `hη hd hd'` triple from
+  `tendsto_coeffResponse_endpoint`'s proof, `(𝕍).subtypeL.hasFDerivAt.comp_hasDerivAt`), accepted by `exact` since
+  `⟨↑c, _⟩ = c` is structure eta. GOTCHAS: `open Classical in` / `by classical` do NOT supply `Decidable` for a
+  `decide` in a `def` body — write `@decide p (Classical.propDecidable _)` and use
+  `@decide_eq_true_iff _ (Classical.propDecidable _)`; `measureReal_mono` needs `[IsFiniteMeasure P]` (its
+  autoParam `measure_ne_top`); `omit [IsProbabilityMeasure ν]` is refused on anything mentioning `θr`
+  (`one_integral_pos ν`). Round-87 ranks 1–3 DONE. NEXT: rank 4 `ResponseLawContinuity` (`L¹`/TV continuity of
+  forcing, response forms, `d_eff` in the data law, on regular chambers — via `abs_lawCov_withDensity_sub_le`),
+  rank 5 `ResponseHellingerAtlas` (stratumwise topology agreement), rank 6 `ResponseSubmersionCalculus`
+  (invisible tangent space `{k : Cov_D(S,k) = 0}` = ker of forcing, horizontal complement); then round-88 consult.

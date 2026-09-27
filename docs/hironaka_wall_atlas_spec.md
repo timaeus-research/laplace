@@ -5822,3 +5822,14 @@ certificates for concrete resolved charts beyond the identity chart.
     **`integral_sampleLaw_pathEndpoint_sub_le`** and **`testing_error_pathEndpoint_ge`** (THE TAIL THEOREM:
     every test on `n` samples between the present and the limiting projected law has error
     `≥ (1 − √n R(t)/2)/2`, `R(t) = ∫_t^∞ √G^{resp}`).
+  - `ResponseJourneyResolution.lean` (round 87, rank 3): **`fisherDist_le_sqrt_mul_of_segment`** (chamber Fisher
+    bound `Λ` along a segment ⇒ `d_F(x,y) ≤ √Λ ‖y−x‖₂`), **`fisherDist_lt_of_dotJ_lt`** (PATCH CLEARANCE:
+    `√Λ r < δ` puts the Euclidean `r`-ball inside the Fisher `δ`-ball), **`fisherDist_coeffResponse_le`**
+    (DISPLACEMENT ≤ LENGTH along journeys through data), `fisherDist_coeffResponse_lt_of_length_lt` (a short journey
+    admits no disjoint-ball certificate), **`measureReal_sampleResponse_notMem_fisherBall_le`** (THE INTRINSIC
+    CONFIDENCE RADIUS `√(Λ/λ) r` with exit probability `≤ tr(R C_D)/(n r²)`), `fisherBall`, `ballClassifier`
+    (class `0` iff the empirical response lies in the first ball), `ballClassifier_eq_true_iff`,
+    `ballClassifier_eq_false_of_disjoint`, **`measureReal_ballClassifier_ne_true_le`** /
+    **`measureReal_ballClassifier_ne_false_le`** (both error probabilities bounded by ball exits), `disjoint_fisherBall`
+    (`ρ₀ + ρ₁ ≤ d_F(θ₀,θ₁)` ⇒ disjoint balls). Estimation radii (dimension-dependent) and the testing bound
+    (dimension-free, `ResponseProductAffinity`) now sit side by side.
