@@ -653,6 +653,7 @@ import Laplace.Multi.ResponseLocalizedSamplingBias
 import Laplace.Multi.ResponseBoundaryJourney
 import Laplace.Multi.IIDFourthMoment
 import Laplace.Multi.ResponseIIDSamplingBias
+import Laplace.Multi.ResponseFiniteFibres
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

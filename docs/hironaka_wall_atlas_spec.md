@@ -6568,3 +6568,19 @@ certificates for concrete resolved charts beyond the identity chart.
     `AEStronglyMeasurable` fact stated with the exact lambda (`aestronglyMeasurable_id` gives `id`, `continuous_norm.pow 3`
     gives a Pi-power — ascribe typed `have`s); after omitting `hn` the implicit `n` must be passed `(n := n)`;
     `Integrable.add` is Pi-form (`Pi.add_apply` before `sub_add_cancel`).
+  - `ResponseFiniteFibres.lean` (K3, WHAT THE RESPONSE FORGETS): `momentMap S : (X→ℝ) →ₗ (J→ℝ)` (= `vecMoment`),
+    `sumFunctional X`, `sumZero X := ker sumFunctional` (`finrank_sumZero = |X| − 1`), **`fibreDirection S := ker momentMap
+    ⊓ sumZero`** (`mem_fibreDirection_iff`), `statPoint_sub_statPoint_mem_map`, **`map_momentMap_sumZero`**
+    (`momentMap(sumZero) = vectorSpan (range statPoint)` via `vectorSpan_eq_span_vsub_set_right ℝ` / `vectorSpan_def`),
+    `finrank_fibreDirection_add_finrank_vectorSpan` (rank–nullity on `momentMap ∘ₗ sumZero.subtype` with
+    `LinearMap.range_comp`, `Submodule.range_subtype`, `LinearMap.ker_comp`, `Submodule.comap_inf`, `comap_subtype_self`,
+    `Submodule.comapSubtypeEquivOfLe`), **`dirSpan_eq_vectorSpan`** (`W = vectorSpan (range S)` for finite charged X via
+    `affineSpan_convexHull` + `direction_affineSpan`), **`finrank_fibreDirection_add`** (`dim F₀ + dim W = |X| − 1`),
+    `momentMapSimplex S : stdSimplex → hull`, `entropySection` (`q*`, continuous by `continuous_domRestrict`),
+    **`isQuotientMap_momentMapSimplex`** (`IsQuotientMap.of_inverse` with the entropy section — the atlas is a literal
+    quotient `Δ/∼ ≅ conv S(X)`), `fibre S M`, `qStarVec_mem_fibre`, `sub_mem_fibreDirection_of_mem_fibre`,
+    `qStarVec_pos_of_mem_intrinsicInterior` (from K1's `atomMass_responseTheta_eq_qStarVec`), `eventually_add_smul_mem_fibre`
+    (`eventually_all` + continuity), **`direction_affineSpan_fibre`** (`= F₀` for interior means),
+    **`finrank_direction_affineSpan_fibre`** (fibre dimension `|X| − 1 − dim W`). Gotchas: `Submodule.mem_map` refine
+    goals carry `∈ ↑p` (use `SetLike.mem_coe`); `inf_le_right` ascribed to a `def`-abbreviated inf unfolds it — state
+    `hle : fibreDirection S ≤ sumZero X := inf_le_right` first; `vectorSpan_eq_span_vsub_set_right` takes `k` explicitly.
