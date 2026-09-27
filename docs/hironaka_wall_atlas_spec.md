@@ -5782,3 +5782,8 @@ certificates for concrete resolved charts beyond the identity chart.
     `hasDerivAt_subtype_of_hasDerivAt`), `continuous_coeffResponse`, **`continuous_responseVel_tilt`**,
     `fisherNorm_coeffResponse` (speed `= √G^{resp}_{g_t}(ġ_t)`), **`tendsto_coeffResponse_endpoint`** (THE LENGTH BUDGET
     FOR JOURNEYS THROUGH DATA: `∫_0^∞ √G^{resp} < ∞ ⇒` completion endpoint, tail bound, data means → extended mean).
+  - `ResponseFormContinuity.lean` (round 86, rank 3, along coefficient paths): `continuous_lawCov_coeff`,
+    **`continuous_forcing_coeff`**, **`continuous_responseVel_coeff`** (fixed contrasts), `continuous_dotJ_comp`,
+    **`continuous_pullbackBilin_coeff`** (`t ↦ G_{g_t}(k,ℓ)`), **`continuous_pullbackForm_coeff`** (`t ↦ G_{g_t}(ġ_t)`),
+    **`continuous_effDim_coeff`** (`t ↦ tr(R_{Φ(g_t)}C_{ρ_t})`). The quotient geometry and its noise floor vary
+    continuously along any journey through data.

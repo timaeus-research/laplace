@@ -2182,4 +2182,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   (one-parameter versions) → `coeffMean`/`coeffResponse`; a sed rename of `X hS ν hh ha ha'` also hits `foo_X …`
   call sites; `field_simp` closed the covariance quotient outright (no `ring`). NEXT: `ResponseFormContinuity`
   (in the data law, `L¹`), `ResponseNoiseCalibration` (`d_eff ≤ κ dim W`), seed independence, `ResponsePatchMargins`.
+- ResponseFormContinuity landed (along coefficient paths; the `L¹`-in-the-law form is not done). GOTCHAS:
+  `Continuous.dotJ` does not exist — `continuous_dotJ_comp` (unfold `dotJ`, `continuous_finsetSum`); composing
+  `continuous_fisherVar` with a `prodMk` times out at whnf unless the goal is first `change`d to the explicit
+  `(fun p ↦ fisherVar S ν p.1 p.2) (x t, y t)` form; `simp only [e]` with `e : ∀ t, … = …` proved by `rfl` is a
+  fine way to unfold definitions under a `Continuous fun t ↦ …` binder. NEXT: `ResponseNoiseCalibration`
+  (`d_eff ≤ κ dim W` via a Fisher-orthonormal basis / InnerProductSpace.Core on `W`), seed independence,
+  `ResponsePatchMargins`; then round-87 consult.
 
