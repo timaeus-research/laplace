@@ -525,6 +525,7 @@ import Laplace.Multi.FaceCoercivity
 import Laplace.Multi.FacetFisherAccess
 import Laplace.Multi.DataRayFacet
 import Laplace.Multi.DataRayHelpers
+import Laplace.Multi.DataRayBlocks
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

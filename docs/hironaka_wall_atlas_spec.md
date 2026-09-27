@@ -5388,3 +5388,9 @@ certificates for concrete resolved charts beyond the identity chart.
 - `DataRayHelpers.lean` (NOT mirrored; round-79 Lemma 7 + Lemma 8 inputs): `abs_eq_add_two_mul_max_neg`,
   **`integral_mul_abs_deriv_le`** (one-sided weighted variation: `∫_a^b g(r)|r'| ≤ ∫_R^∞ g + 2∫_a^b g(r)(r')₋` for `r ≥ R`),
   **`sqrt_lawCov_add_self_le`** (standard-deviation triangle inequality), `lawCov_self_le_sq` (`Var f ≤ K²` for `|f| ≤ K`).
+- `DataRayBlocks.lean` (NOT mirrored; round-79 Lemma 1 and the data-side sign identity): `slackMean S ν h u β t = E_{ρ_t}(β − ⟨u,S⟩)`,
+  `integral_dirLoss_eq_dotJ`, `slackMean_eq`, `integral_slack_family_eq` (model and data slack means agree),
+  **`hasDerivAt_slackMean`** (`a'_t = −⟨u, Cov_{ρ_t}(S,h)⟩`), `dotJ_dataCov_eq_lawCov`, **`slackMeanVel_le`**
+  (`a'_t ≤ a_t E_{ρ_t}(H − h)`, from `ℓ, H − h ≥ 0`), `depthVel hS ν hh u t = −⟨θ'_t,u⟩/⟨u,u⟩`, `tangentVel = θ'_t + r'_t u`,
+  `coe_dataThetaVel_eq_tangentVel_sub`, `dotJ_tangentVel_u`, `lawCov_dirLoss_sub_smul`, **`depthVel_mul_var_eq`**
+  (`r'_t V_t = ⟨u, Cov_{ρ_t}(S,h)⟩ + c_t`), **`var_tangentVel_eq`** (`Var⟨v'_t,S⟩ = −⟨v'_t, Cov_{ρ_t}(S,h)⟩ + r'_t c_t`).
