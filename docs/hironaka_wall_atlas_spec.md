@@ -5566,3 +5566,26 @@ certificates for concrete resolved charts beyond the identity chart.
     CHARGED FACE INTERIOR IS A SINGLE POINT: `A = {⟨u,S⟩ = β}`, `z₀ ∈ V` a charged vertex of the minimal face of `M`
     on it, `M ∈ ri(momentBody ν_A)`; tangential convergence by `tendsto_faceTheta`, replace `τ_n` by `v_M`, coalesce).
     Codimension-free, no normal ray, no gap estimates: the uniqueness half of the boundary completion is done.
+  - Round 83 (`research_round83_{q,v1}`): existence in codim ≥ 2 via a BOUNDED-TILT ACTION on the completion
+    (`Var_{P_{θ+h}} ≤ e^{R_h} Var_{P_θ}`, `d_F(θ+h, η+h) ≤ e^{R_h/2} d_F(θ,η)`, so `T_h` extends to `Ŵ` and tilts the
+    completion laws; one accessible face law ⇒ the whole open face family is accessible (`j_A(v) = T_{v−v₀} x₀`),
+    face lifts `Ŵ_A → Ŵ` nonexpanding via compact-uniform covariance convergence, face-chain accessibility); the
+    variational response `M ↦ Q_M` should be GLOBALLY Hellinger-continuous on the closed moment polytope (conjugate
+    lsc + polyhedral entropy recovery + Pythagoras + Pinsker), response information is NOT monotone along the data
+    path (three-atom counterexample), data information is; ray-plus-log budget
+    `∫_T^∞ v ≤ (C₁+2C₂C₄)∫c + C₂ rayTail(r_T) + 2C₂C₃ ∫(H − E_ρ h) dt` with the last term `= log 1/ρ_T{h = H}`;
+    coercivity `λ⟨w,w⟩ ≤ fisherVar` is the right Lean interface for local metric control. Ranked: 1
+    BoundedTiltCompletionAction, 2 TiltedFisherCompactConvergence, 3 AccessibleFaceOrbit, 4 FaceCompletionLift, 5
+    FaceChainAccessibility, 6 PolyhedralEntropyRecovery, 7 ClosedMeanResponseContinuity, 8 ResponseLocalMetricControl,
+    9 WeightedDepthVariation, 10 FacetResponseLengthBudget.
+  - `ResponseLocalMetricControl.lean` (round 83, item 8): `clampArg/clampStep/clampStepDeriv` (a globally `C¹` step,
+    constant outside `[0,1]`, `hasDerivAt_clampStep`, `integral_clampStepDeriv = 1`), **`fisherNorm_symm_le`**
+    (`|(Dm θ)⁻¹ v|_F ≤ ‖v‖₂/√λ` under coercivity `λ⟨w,w⟩ ≤ Var_{P_θ}⟨w,S⟩`, via `|w|²_F = −⟨w, v⟩` and Cauchy–Schwarz),
+    **`fisherDist_responseTheta_le`** (LOCAL METRIC CONTROL: on a convex `U ⊆ ri(momentBody)` with coercivity,
+    `d_F(θ(M₀), θ(M₁)) ≤ ‖M₁ − M₀‖₂/√λ`; the mean segment pulled back through the inverse chart, differentiability by
+    `hasStrictFDerivAt_responseTheta_add`, continuity by `continuous_chartDerivEquiv_symm` + `continuousOn_responseTheta_path`).
+  - `SamplingResolution.lean` (user's resolution story, 2026-09-27): `abs_sampleResponse_sub_le`,
+    `integrable_sampleResponse_sub_mul`, **`integral_sq_dotJ_sampleResponse_sub`** (`E[⟨w, M̂_n − m⟩²] = Var_D⟨w,S⟩/n`),
+    `dotJ_dataCov_eq_lawCov_dir` (`⟨w, b_t⟩ = Cov_{ρ_t}(⟨w,S⟩, h)`), `sq_dotJ_dataCov_le`, **`sq_signal_le_mul_noise`**
+    (`⟨w,b_t⟩² ≤ n · E[⟨w, M̂_n − m⟩²] · Var_{ρ_t} h`), **`resolution_floor`** (a truth shift `δ` visible above the sampling
+    noise in some observable direction has `δ² n Var_{ρ_t} h ≥ 1`: the data Fisher–Rao floor).

@@ -1986,3 +1986,17 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   θ‖` identity: prove `∀ n, … = −(τ − v)` by `simp only [hadef]; abel` and rewrite with `norm_neg`. NEXT: round-83
   consult (accessibility/existence side: face-chain accessibility, product corner, `FacetResponseLengthBudget`; the
   global response map on the closed moment body; what is deepest for "mapping responses across the data manifold").
+- Round 83 consult (409c74d) + LANDED (2026-09-27): `ResponseLocalMetricControl` (6d6ef7c), `SamplingResolution` (0f814e8).
+  Gotchas: `HasFDerivWithinAt.of_notMem_closure` (no `HasDerivWithinAt` version; the FDeriv one is accepted by defeq);
+  `Icc_union_Ici_eq_Ici zero_le_one` + `Iic_union_Ici` + `hasDerivWithinAt_univ.1` for a three-piece clamp;
+  `Convex.add_smul_mem hU hx (hy : x + y ∈ U) (ht : t ∈ Icc 0 1)`; `Continuous.clm_apply` for `s ↦ (L s) v`; the
+  responseTheta chain rule: `have hF : HasFDerivAt (fun z ↦ θr (M s + ↑z)) _ (z s) := by rw [hz0]; exact
+  hstrict.hasFDerivAt` then `hF.comp_hasDerivAt s hzd`; after `rw [hη', map_smul]` finish with `rfl` (CLE-apply vs
+  coe-apply); `dotJ v v ≥ 0` by `unfold dotJ; Finset.sum_nonneg`; `norm_integral_le_of_norm_le_const (μ := D) (f := …)
+  (C := …)`; `open ProbabilityTheory` for `IdentDistrib/IndepFun`; DUP names surface only at the umbrella build
+  (`dotJ_dataCov_eq_lawCov` was taken by DataRayBlocks). The user's mid-turn message (resolution story: truth shift
+  vs sampling shift of the structural coordinate) is answered by SamplingResolution; the response-side version
+  (Fisher-normalised noise `tr(C_θ⁻¹C_ρ)/n`, chamber Fisher diameter vs `√(d/n)`) needs a Fisher-orthonormal basis of
+  𝕍 — not yet done. NEXT: `BoundedTiltCompletionAction` (round 83 rank 1), then `AccessibleFaceOrbit`,
+  `PolyhedralEntropyRecovery`/`ClosedMeanResponseContinuity`, `FacetResponseLengthBudget`; slop paragraph for
+  metric control + resolution.
