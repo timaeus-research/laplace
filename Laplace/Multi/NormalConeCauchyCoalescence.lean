@@ -10,7 +10,7 @@ import Laplace.Multi.FaceMassHellinger
 # Normal-cone Cauchy coalescence
 
 Two Fisher-Cauchy sequences `v + a n` and `v + b n` with a common base `v`, offsets in the
-normal cone of a face event `A` (each `⟨a n, S⟩` constant on `A`, `≥` that constant a.e., and
+normal cone of a face event `A` (each `⟨a n, S⟩` constant a.e. on `A`, `≥` that constant a.e., and
 bounded), both concentrating on the face (`P(A) → 1`), are asymptotically at Fisher distance
 zero from each other, hence **have the same limit in the Fisher completion**.
 
@@ -50,7 +50,7 @@ theorem tendsto_real_compl_of_tendsto_real {θ : ℕ → J → ℝ} {A : Set X} 
 theorem eventually_fisherDist_add_normal_lt {θ : ℕ → J → ℝ}
     (hθ : ∀ n, θ n ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {A : Set X} (hA : MeasurableSet A)
     (hcompl : Tendsto (fun n ↦ (Pfam (θ n)).real Aᶜ) atTop (𝓝 0)) {h : J → ℝ}
-    (hh : h ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {c B : ℝ} (hc : ∀ x ∈ A, dirLoss S h x = c)
+    (hh : h ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {c B : ℝ} (hc : ∀ᵐ x ∂ν, x ∈ A → dirLoss S h x = c)
     (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S h x) (hB : ∀ x, |dirLoss S h x - c| ≤ B) {δ : ℝ}
     (hδ : 0 < δ) :
     ∀ᶠ n in atTop,
@@ -77,10 +77,10 @@ common base and normal-cone offsets are asymptotically at Fisher distance zero. 
 theorem tendsto_dist_normalCone (v : J → ℝ) (hv : v ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S)
     {a b : ℕ → J → ℝ} (ha : ∀ n, a n ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S)
     (hb : ∀ n, b n ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {A : Set X} (hA : MeasurableSet A)
-    {ca cb Ba Bb : ℕ → ℝ} (hca : ∀ n, ∀ x ∈ A, dirLoss S (a n) x = ca n)
+    {ca cb Ba Bb : ℕ → ℝ} (hca : ∀ n, ∀ᵐ x ∂ν, x ∈ A → dirLoss S (a n) x = ca n)
     (hgea : ∀ n, ∀ᵐ x ∂ν, ca n ≤ dirLoss S (a n) x)
     (hBa : ∀ n x, |dirLoss S (a n) x - ca n| ≤ Ba n)
-    (hcb : ∀ n, ∀ x ∈ A, dirLoss S (b n) x = cb n)
+    (hcb : ∀ n, ∀ᵐ x ∂ν, x ∈ A → dirLoss S (b n) x = cb n)
     (hgeb : ∀ n, ∀ᵐ x ∂ν, cb n ≤ dirLoss S (b n) x)
     (hBb : ∀ n x, |dirLoss S (b n) x - cb n| ≤ Bb n)
     (hθ : CauchySeq fun n ↦ (⟨⟨v + a n, Submodule.add_mem _ hv (ha n)⟩⟩ : FisherPoint hS ν))
@@ -165,10 +165,10 @@ Fisher completion. -/
 theorem completion_limit_eq_of_normalCone (v : J → ℝ) (hv : v ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S)
     {a b : ℕ → J → ℝ} (ha : ∀ n, a n ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S)
     (hb : ∀ n, b n ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {A : Set X} (hA : MeasurableSet A)
-    {ca cb Ba Bb : ℕ → ℝ} (hca : ∀ n, ∀ x ∈ A, dirLoss S (a n) x = ca n)
+    {ca cb Ba Bb : ℕ → ℝ} (hca : ∀ n, ∀ᵐ x ∂ν, x ∈ A → dirLoss S (a n) x = ca n)
     (hgea : ∀ n, ∀ᵐ x ∂ν, ca n ≤ dirLoss S (a n) x)
     (hBa : ∀ n x, |dirLoss S (a n) x - ca n| ≤ Ba n)
-    (hcb : ∀ n, ∀ x ∈ A, dirLoss S (b n) x = cb n)
+    (hcb : ∀ n, ∀ᵐ x ∂ν, x ∈ A → dirLoss S (b n) x = cb n)
     (hgeb : ∀ n, ∀ᵐ x ∂ν, cb n ≤ dirLoss S (b n) x)
     (hBb : ∀ n x, |dirLoss S (b n) x - cb n| ≤ Bb n)
     (hθA : Tendsto (fun n ↦ (Pfam (v + a n)).real A) atTop (𝓝 1))

@@ -9,7 +9,7 @@ import Laplace.Multi.FisherCauchyRealisation
 /-!
 # A fixed normal shift costs at most `B_h √(1 − P_θ(A))`
 
-For `h` in the sign-adjusted normal cone of a face event `A` (`⟨h,S⟩ = c` on `A`, `⟨h,S⟩ ≥ c` a.e.,
+For `h` in the sign-adjusted normal cone of a face event `A` (`⟨h,S⟩ = c` a.e. on `A`, `⟨h,S⟩ ≥ c` a.e.,
 `|⟨h,S⟩ − c| ≤ B`), the Fisher distance from `θ` to `θ + h` is at most `B √(P_θ(A^c))`: along the
 segment `θ + s h` the tilt only increases the mass of `A`, and the Fisher speed is the standard
 deviation of `Y_h = ⟨h,S⟩ − c`, which vanishes on `A` and is bounded by `B`, so
@@ -28,7 +28,7 @@ variable {X : Type*} [MeasurableSpace X]
 /-- Tilting by a nonpositive function vanishing on `A` does not decrease the mass of `A`. -/
 theorem measureReal_le_measureReal_tilted (P : Measure X) [IsProbabilityMeasure P] {g : X → ℝ}
     (hg : Bdd g) (hg1 : ∀ᵐ x ∂P, g x ≤ 0) {A : Set X} (hA : MeasurableSet A)
-    (hgA : ∀ x ∈ A, g x = 0) : P.real A ≤ (P.tilted g).real A := by
+    (hgA : ∀ᵐ x ∂P, x ∈ A → g x = 0) : P.real A ≤ (P.tilted g).real A := by
   have hZpos : 0 < ∫ x, Real.exp (g x) ∂P := integral_exp_pos (integrable_exp_of_bdd P hg)
   have hZle : ∫ x, Real.exp (g x) ∂P ≤ 1 := by
     calc ∫ x, Real.exp (g x) ∂P ≤ ∫ _, (1 : ℝ) ∂P :=
@@ -40,7 +40,7 @@ theorem measureReal_le_measureReal_tilted (P : Measure X) [IsProbabilityMeasure 
     rw [integral_div]
     congr 1
     calc ∫ x in A, Real.exp (g x) ∂P = ∫ _ in A, (1 : ℝ) ∂P :=
-          setIntegral_congr_fun hA fun x hx ↦ by rw [hgA x hx, Real.exp_zero]
+          setIntegral_congr_ae hA (hgA.mono fun x hx hxA ↦ by rw [hx hxA, Real.exp_zero])
       _ = P.real A := by rw [setIntegral_const, smul_eq_mul, mul_one]
   have : (P.tilted g).real A = P.real A / ∫ y, Real.exp (g y) ∂P := by
     rw [measureReal_def, tilted_apply_eq_ofReal_integral' g hA,
@@ -51,7 +51,7 @@ theorem measureReal_le_measureReal_tilted (P : Measure X) [IsProbabilityMeasure 
 /-- Tilting by a nonpositive function vanishing on `A` does not increase the mass of `A^c`. -/
 theorem measureReal_tilted_compl_le (P : Measure X) [IsProbabilityMeasure P] {g : X → ℝ}
     (hg : Bdd g) (hg1 : ∀ᵐ x ∂P, g x ≤ 0) {A : Set X} (hA : MeasurableSet A)
-    (hgA : ∀ x ∈ A, g x = 0) : (P.tilted g).real Aᶜ ≤ P.real Aᶜ := by
+    (hgA : ∀ᵐ x ∂P, x ∈ A → g x = 0) : (P.tilted g).real Aᶜ ≤ P.real Aᶜ := by
   have hPt : IsProbabilityMeasure (P.tilted g) :=
     isProbabilityMeasure_tilted (integrable_exp_of_bdd P hg)
   rw [measureReal_compl hA, measureReal_compl hA, probReal_univ, probReal_univ]
@@ -70,7 +70,7 @@ local notation "Pfam" => familyMeasure ν (fun _ ↦ (1 : ℝ)) (fun _ ↦ (0 : 
 
 /-- **The Fisher speed of a normal shift** is at most `B √(P_θ(A^c))` along the whole segment. -/
 theorem fisherNorm_add_smul_normal_le (θ h : J → ℝ) {c B : ℝ} {A : Set X} (hA : MeasurableSet A)
-    (hc : ∀ x ∈ A, dirLoss S h x = c) (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S h x)
+    (hc : ∀ᵐ x ∂ν, x ∈ A → dirLoss S h x = c) (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S h x)
     (hB : ∀ x, |dirLoss S h x - c| ≤ B) {s : ℝ} (hs : 0 ≤ s) :
     fisherNorm S ν (θ + s • h) h ≤ B * √((Pfam θ).real Aᶜ) := by
   have hPθ := isProbabilityMeasure_family hS ν θ
@@ -85,10 +85,12 @@ theorem fisherNorm_add_smul_normal_le (θ h : J → ℝ) {c B : ℝ} {A : Set X}
     have hgb : Bdd fun x ↦ -(dirLoss S (s • h) x - s * c) :=
       bdd_neg ((bdd_dirLoss hS (s • h)).sub (Bdd.const _))
     have hge' : ∀ᵐ x ∂Pfam θ, c ≤ dirLoss S h x := hac.ae_le hge
-    refine measureReal_tilted_compl_le (Pfam θ) hgb (hge'.mono fun x hx ↦ ?_) hA fun x hx ↦ ?_
+    have hc' : ∀ᵐ x ∂Pfam θ, x ∈ A → dirLoss S h x = c := hac.ae_le hc
+    refine measureReal_tilted_compl_le (Pfam θ) hgb (hge'.mono fun x hx ↦ ?_) hA
+      (hc'.mono fun x hx hxA ↦ ?_)
     · simp only [dirLoss_smul]
       nlinarith
-    · simp only [dirLoss_smul, hc x hx, sub_self, neg_zero]
+    · simp only [dirLoss_smul, hx hxA, sub_self, neg_zero]
   -- the speed is the standard deviation of `Y = ⟨h,S⟩ − c`, which vanishes on `A`
   have hY : Bdd fun x ↦ dirLoss S h x - c := (bdd_dirLoss hS h).sub (Bdd.const c)
   have hvar : fisherVar S ν (θ + s • h) h ≤ B ^ 2 * (Pfam (θ + s • h)).real Aᶜ := by
@@ -100,11 +102,16 @@ theorem fisherNorm_add_smul_normal_le (θ h : J → ℝ) {c B : ℝ} {A : Set X}
     rw [← hind]
     have hYY : Bdd fun x ↦ (dirLoss S h x - c - 0) * (dirLoss S h x - c - 0) :=
       (hY.sub (Bdd.const 0)).mul (hY.sub (Bdd.const 0))
-    refine integral_mono (integrable_of_bdd_prob _ hYY)
-      ((integrable_const _).indicator hA.compl) fun x ↦ ?_
+    have hcs : ∀ᵐ x ∂Pfam (θ + s • h), x ∈ A → dirLoss S h x = c := by
+      have hac' : Pfam (θ + s • h) ≪ ν := by
+        rw [familyMeasure_eq_withDensity_famDens]
+        exact withDensity_absolutelyContinuous _ _
+      exact hac'.ae_le hc
+    refine integral_mono_ae (integrable_of_bdd_prob _ hYY)
+      ((integrable_const _).indicator hA.compl) (hcs.mono fun x hcx ↦ ?_)
     simp only [sub_zero]
     by_cases hx : x ∈ A
-    · rw [Set.indicator_of_notMem (by simpa using hx), hc x hx, sub_self, mul_zero]
+    · rw [Set.indicator_of_notMem (by simpa using hx), hcx hx, sub_self, mul_zero]
     · rw [Set.indicator_of_mem (by simpa using hx), ← sq, ← sq_abs]
       exact pow_le_pow_left₀ (abs_nonneg _) (hB x) 2
   rw [fisherNorm, ← Real.sqrt_sq hB0, ← Real.sqrt_mul (sq_nonneg _)]
@@ -113,7 +120,7 @@ theorem fisherNorm_add_smul_normal_le (θ h : J → ℝ) {c B : ℝ} {A : Set X}
 /-- **A fixed normal shift costs at most `B √(P_θ(A^c))`.** -/
 theorem fisherDist_add_normal_le (θ h : J → ℝ) (hθ : θ ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S)
     (hh : h ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {c B : ℝ} {A : Set X} (hA : MeasurableSet A)
-    (hc : ∀ x ∈ A, dirLoss S h x = c) (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S h x)
+    (hc : ∀ᵐ x ∂ν, x ∈ A → dirLoss S h x = c) (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S h x)
     (hB : ∀ x, |dirLoss S h x - c| ≤ B) :
     fisherDist S ν ⟨θ, hθ⟩ ⟨θ + h, Submodule.add_mem _ hθ hh⟩ ≤ B * √((Pfam θ).real Aᶜ) := by
   have hmem : ∀ s : ℝ, θ + s • h ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S := fun s ↦

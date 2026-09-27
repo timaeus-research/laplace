@@ -182,12 +182,14 @@ theorem meanExt_eq_vertex_unique {x x' : FisherCompletion hS ν} (hx : meanExt h
     rw [hbdef]
     exact hN₂ (n + N) (by omega) w hw
   have hA := measurableSet_statFibre hS M
-  have hca : ∀ n, ∀ y ∈ statFibre S M, dirLoss S (a n) y = dotJ (a n) M := fun n y hy ↦ by
-    rw [dirLoss_eq_dotJ_statPoint]
-    exact congrArg (dotJ (a n)) hy
-  have hcb : ∀ n, ∀ y ∈ statFibre S M, dirLoss S (b n) y = dotJ (b n) M := fun n y hy ↦ by
-    rw [dirLoss_eq_dotJ_statPoint]
-    exact congrArg (dotJ (b n)) hy
+  have hca : ∀ n, ∀ᵐ y ∂ν, y ∈ statFibre S M → dirLoss S (a n) y = dotJ (a n) M := fun n ↦
+    Eventually.of_forall fun y hy ↦ by
+      rw [dirLoss_eq_dotJ_statPoint]
+      exact congrArg (dotJ (a n)) hy
+  have hcb : ∀ n, ∀ᵐ y ∂ν, y ∈ statFibre S M → dirLoss S (b n) y = dotJ (b n) M := fun n ↦
+    Eventually.of_forall fun y hy ↦ by
+      rw [dirLoss_eq_dotJ_statPoint]
+      exact congrArg (dotJ (b n)) hy
   have hgea : ∀ n, ∀ᵐ y ∂ν, dotJ (a n) M ≤ dirLoss S (a n) y := fun n ↦
     ae_dotJ_le_dirLoss_of_cone hS ν V hpoly (hconea n)
   have hgeb : ∀ n, ∀ᵐ y ∂ν, dotJ (b n) M ≤ dirLoss S (b n) y := fun n ↦

@@ -99,7 +99,7 @@ costs at most the factor `1/√q`. -/
 theorem fisherDist_add_le_integral_div_sqrt {η η' : ℝ → J → ℝ}
     (hη : ∀ s, η s ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) (hd : ∀ s, HasDerivAt η (η' s) s)
     (hd' : Continuous η') {b : J → ℝ} (hb : b ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {c : ℝ}
-    {A : Set X} (hA : MeasurableSet A) (hc : ∀ x ∈ A, dirLoss S b x = c)
+    {A : Set X} (hA : MeasurableSet A) (hc : ∀ᵐ x ∂ν, x ∈ A → dirLoss S b x = c)
     (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S b x) {q : ℝ} (hq : 0 < q)
     (hq' : ∀ s ∈ Icc (0 : ℝ) 1, q ≤ (Pfam (η s)).real A) :
     fisherDist S ν ⟨η 0 + b, Submodule.add_mem _ (hη 0) hb⟩
@@ -129,7 +129,7 @@ normal-cone vector `b`. -/
 theorem fisherDist_add_le_two_mul_length {x y : dirSpan ν (fun _ ↦ (1 : ℝ)) S}
     (p : FisherPath S ν x y) {A : Set X} (hA : MeasurableSet A)
     (hxA : 3 / 4 ≤ (Pfam (x : J → ℝ)).real A) (hlen : p.length ≤ 1 / 2) {b : J → ℝ}
-    (hb : b ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {c : ℝ} (hc : ∀ x ∈ A, dirLoss S b x = c)
+    (hb : b ∈ dirSpan ν (fun _ ↦ (1 : ℝ)) S) {c : ℝ} (hc : ∀ᵐ x ∂ν, x ∈ A → dirLoss S b x = c)
     (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S b x) :
     fisherDist S ν ⟨(x : J → ℝ) + b, Submodule.add_mem _ x.2 hb⟩
         ⟨(y : J → ℝ) + b, Submodule.add_mem _ y.2 hb⟩ ≤ 2 * p.length := by

@@ -84,9 +84,9 @@ theorem familyMeasure_add_eq_tilted (θ a : J → ℝ) (c : ℝ) :
   ring
 
 /-- **Face-normal translations are uniformly Fisher-Lipschitz**:
-`Var_{P_{θ+a}}⟨w,S⟩ ≤ Var_{P_θ}⟨w,S⟩ / P_θ(A)` when `⟨a,S⟩ = c` on `A` and `⟨a,S⟩ ≥ c` a.e. -/
+`Var_{P_{θ+a}}⟨w,S⟩ ≤ Var_{P_θ}⟨w,S⟩ / P_θ(A)` when `⟨a,S⟩ = c` a.e. on `A` and `⟨a,S⟩ ≥ c` a.e. -/
 theorem fisherVar_add_le_div (θ a w : J → ℝ) {c : ℝ} {A : Set X} (hA : MeasurableSet A)
-    (hc : ∀ x ∈ A, dirLoss S a x = c) (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S a x)
+    (hc : ∀ᵐ x ∂ν, x ∈ A → dirLoss S a x = c) (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S a x)
     (hp : 0 < (Pfam θ).real A) :
     fisherVar S ν (θ + a) w ≤ fisherVar S ν θ w / (Pfam θ).real A := by
   have hPθ := isProbabilityMeasure_family hS ν θ
@@ -96,6 +96,7 @@ theorem fisherVar_add_le_div (θ a w : J → ℝ) {c : ℝ} {A : Set X} (hA : Me
   have hgb : Bdd fun x ↦ -(dirLoss S a x - c) := bdd_neg ((bdd_dirLoss hS a).sub (Bdd.const c))
   rw [fisherVar, familyMeasure_add_eq_tilted hS ν θ a c, fisherVar]
   have hge' : ∀ᵐ x ∂Pfam θ, c ≤ dirLoss S a x := hac.ae_le hge
+  have hc' : ∀ᵐ x ∂Pfam θ, x ∈ A → dirLoss S a x = c := hac.ae_le hc
   refine lawCov_tilted_le_div (Pfam θ) hgb ?_ (bdd_dirLoss hS w) hp ?_
   · exact hge'.mono fun x hx ↦ by linarith
   · have hind : Integrable (A.indicator fun _ : X ↦ (1 : ℝ)) (Pfam θ) :=
@@ -103,15 +104,15 @@ theorem fisherVar_add_le_div (θ a w : J → ℝ) {c : ℝ} {A : Set X} (hA : Me
     calc (Pfam θ).real A = ∫ x, A.indicator (fun _ ↦ (1 : ℝ)) x ∂Pfam θ :=
           (integral_indicator_one hA).symm
       _ ≤ ∫ x, Real.exp (-(dirLoss S a x - c)) ∂Pfam θ := by
-          refine integral_mono hind (integrable_exp_of_bdd _ hgb) fun x ↦ ?_
+          refine integral_mono_ae hind (integrable_exp_of_bdd _ hgb) (hc'.mono fun x hcx ↦ ?_)
           by_cases hx : x ∈ A
-          · simp only [Set.indicator_of_mem hx, hc x hx, sub_self, neg_zero, Real.exp_zero, le_refl]
+          · simp only [Set.indicator_of_mem hx, hcx hx, sub_self, neg_zero, Real.exp_zero, le_refl]
           · simp only [Set.indicator_of_notMem hx]
             exact (Real.exp_pos _).le
 
 /-- The Fisher norm form of the estimate. -/
 theorem fisherNorm_add_le_div_sqrt (θ a w : J → ℝ) {c : ℝ} {A : Set X} (hA : MeasurableSet A)
-    (hc : ∀ x ∈ A, dirLoss S a x = c) (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S a x)
+    (hc : ∀ᵐ x ∂ν, x ∈ A → dirLoss S a x = c) (hge : ∀ᵐ x ∂ν, c ≤ dirLoss S a x)
     (hp : 0 < (Pfam θ).real A) :
     fisherNorm S ν (θ + a) w ≤ fisherNorm S ν θ w / √((Pfam θ).real A) := by
   rw [fisherNorm, fisherNorm, ← Real.sqrt_div' _ hp.le]
@@ -126,7 +127,7 @@ theorem fisherVar_sub_smul_le_div (θ u w : J → ℝ) {β : ℝ} (hβ : ∀ᵐ 
   have e : θ - r • u = θ + (-r) • u := by rw [neg_smul, sub_eq_add_neg]
   rw [e]
   refine fisherVar_add_le_div hS ν θ ((-r) • u) w (measurableSet_faceFibre hS u β) (c := -r * β)
-    (fun x hx ↦ ?_) (hβ.mono fun x hx ↦ ?_) hp
+    (Eventually.of_forall fun x hx ↦ ?_) (hβ.mono fun x hx ↦ ?_) hp
   · simp only [dirLoss_smul]
     rw [show dirLoss S u x = β from hx]
   · simp only [dirLoss_smul]
