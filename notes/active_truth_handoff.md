@@ -2566,4 +2566,14 @@ E3 = C6 `ResponseFibreSecondJet` LANDED (the long-open item). Route that worked:
   G(u,w)G(v,x))`, sectional curvature `¼`; key: centred products of scores are scores, `G(C(u,v),C(x,y)) = E[f_u f_v f_x
   f_y] − G(u,v)G(x,y)`), F6 `ResponseFisherEnergyStationarity` (converse of E6 via test fields `φ(t)z`, fixed z, bump).
   Cautions: E2's defect contraction is within-fibre only; completion→sphere map is distance-decreasing but not an
-  embedding. NEXT: F1.
+  embedding.
+F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dotJ` lives in
+  `ResponsePullbackVariation` — import it; `(dotCLMlin.hasFDerivAt.comp θ (…)).fderiv` needs a typed `have` with the
+  lambda function, as always; `show (famZ)⁻¹ * (−famZ) = −1` is `mul_neg` not `neg_mul`). NEXT: F2
+  `ResponseFeaturelessJourney` (`featurelessJourney g t := θr (m₀ + t • (tiltedMean g − m₀))`; `= lawResponse` of the
+  mixture `(1−t)ν + tρ_g` by `tilted_mixTilt` + moment matching (`mean_mixTilt` with h := 0-tilt); mean-affine
+  `mean (θ_t) = m₀ + tΔ` from `chartV_responseTheta`/`meanMap_responseTheta` (needs `m₀ + tΔ ∈ Ω` — convexity of the
+  intrinsic interior between `m₀` and the interior point `tiltedMean g`, for t ∈ [0,1]; for smoothness on a
+  neighbourhood use openness of Ω in the affine span and `contDiffOn_responseTheta_add`/`contDiffOn_infty_chartVInv`);
+  velocity `A θ' = Δ` (`hasFDerivAt_inverse_response`-style or `hasStrictFDerivAt_chartVInv`); m-geodesic
+  `θ'' + C(θ',θ') = 0` from `mean_accel_eq_zero_iff_mGeodesic` (D02) since the mean path is affine).

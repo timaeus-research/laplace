@@ -6163,3 +6163,11 @@ certificates for concrete resolved charts beyond the identity chart.
     `intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le` with the compact-rectangle bound),
     **`fisherEnergy_variation`** (FIRST VARIATION `E'(0) = G(U,V)|₀¹ − ∫ G(U, θ'' + ½C(θ',θ'))`),
     **`hasDerivAt_fisherEnergy_of_lcGeodesic`** and **`_fixed`** (LEVI-CIVITA = EULER–LAGRANGE of the Fisher energy).
+  - `ResponseInformationHessian.lean` (F1, programme F = the information cost of a response journey):
+    **`informationObjective S ν g θ := KL(ρ_g‖P_θ)`**, `informationObjective_eq` (= `const + ⟨θ,E_ρS⟩ + log Z(θ)`),
+    `dotCLM_sub`, `dotCLM_eq_zero_iff`, **`hasFDerivAt_informationObjective`** (`DK[u] = ⟨u, E_ρS − m(θ)⟩`, via
+    `hasFDerivAt_famZ` + `HasFDerivAt.log`), `fderiv_informationObjective`, **`fderiv_fderiv_informationObjective`**
+    (`D²K(θ)[u,v] = Cov_{P_θ}(⟨u,S⟩,⟨v,S⟩)`), `fderiv_fderiv_informationObjective_dirSpan` (= `fisherInner`),
+    **`fderiv_informationObjective_eq_zero_iff`** (`DK(θ) = 0 ↔ θ = Φ(g)` on W), `hasDerivAt_informationObjective_line`,
+    `hasDerivAt_deriv_informationObjective_line` (second derivative = `fisherVar`), **`strictConvexOn_informationObjective_line`**
+    (strictly convex along every nonconstant natural line of W, via `strictConvexOn_of_deriv2_pos`).
