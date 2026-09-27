@@ -6315,3 +6315,13 @@ certificates for concrete resolved charts beyond the identity chart.
     **`saturatedAt_iff_secondResponse_eq_zero`** (SATURATION ⇔ UNIVERSAL RESPONSE FLATNESS; converse tests `F = r`),
     **`hasDerivAt_lineVariance`** (`d/dt Var_{θ_t}F = −T_{θ_t}(F,F,⟨V_t,S⟩)`). Not done: mixed directions `D²𝓡_F[e,d]`
     (polarisation), second derivative of the variance.
+  - `ResponseMaximumEntropyPotential.lean` (H2): `relativeEntropy ν g := −KL(ρ_g‖ν)`, `relativeEntropy_nonpos`,
+    **`relativeEntropy_eq_zero_iff`** (`= 0 ↔ ρ_g = ν`: ν is the unique maximiser on the data manifold),
+    `totalInfo_modelTilt`, **`totalInfo_model_le`** (THE MODEL IS THE MAX-ENTROPY SECTION OF THE FIBRES:
+    `KL(P_{Φ(g)}‖ν) ≤ KL(ρ_g‖ν)`), `totalInfo_model_eq_iff` (equality iff `ρ_g = P_{Φ(g)}`), `modelInfoLine θ₀ e t :=
+    KL(P_{θ_t}‖ν)` along G6's response line, `meanMap_responseLine`, `hasDerivAt_meanMap_responseLine`,
+    `hasDerivAt_responseLine_coe'`, **`hasDerivAt_modelInfoLine`** (`𝓘' = −⟨θ_t, e⟩`), **`hasDerivAt_deriv_modelInfoLine`**
+    (`𝓘'' = G_{θ_t}(V_t,V_t)`: CONVEX POTENTIAL IN MEAN COORDINATES), `fisherInner_responseLineVel_nonneg`,
+    `journeySlope_zero`, `monotoneOn_journeySlope`, `journeySlope_nonneg`, **`monotoneOn_journeyKL`** (THE MODEL
+    INFORMATION RISES MONOTONICALLY ALONG THE FEATURELESS JOURNEY on [0,1]; two `monotoneOn_of_deriv_nonneg`s).
+    NOT formalised: the three-point counterexample to monotonicity along the power-tilt path.

@@ -637,6 +637,7 @@ import Laplace.Multi.ResponseGlobalInformationLandscape
 import Laplace.Multi.ResponseIntrinsicDistance
 import Laplace.Multi.ResponseSamplingGeometry
 import Laplace.Multi.ResponseObservableTransport
+import Laplace.Multi.ResponseMaximumEntropyPotential
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

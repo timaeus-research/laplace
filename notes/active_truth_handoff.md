@@ -2637,6 +2637,10 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `ResponseObservableTransport` LANDED (`thirdCentral_dirLoss_left ρ hS v hk hf` — hS explicit AFTER ρ;
   `lawCov_dirLoss_left hS ρ v ψ hψ`; `integral_eq_zero_of_ae` is not a rewrite lemma — `refine … ?_`; `sub_zero`
   under an integral binder needs `simp only … at h`, not `rw`; `obsResponse` (mean-coordinate observable response)
-  already exists in ReconstructionBias). NEXT: H2 `ResponseMaximumEntropyPotential`. Old NEXT:
+  already exists in ReconstructionBias). H2 `ResponseMaximumEntropyPotential` LANDED (a `have h := monotoneOn … ht ht.1`
+  carries beta-redexes — `beta_reduce at h` before `rw`; `monotoneOn_of_deriv_nonneg (convex_Icc 0 1)` with
+  `interior_Icc` and `Ioo_subset_Icc_self`; `klDiv_eq_zero_iff` needs both `IsFiniteMeasure` instances in scope).
+  NEXT: H3 `ResponseFiniteSimplex` (dim W = |X|−1, affine independence, simplex ≅ moment body) and H4
+  `ResponseSimplexSphere` (`d_F = 2 arccos Σ√pq`); then H5/H6. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.
