@@ -5861,3 +5861,20 @@ certificates for concrete resolved charts beyond the identity chart.
     CONTINUITY: compact completion + singleton law fibres ⇒ `x ↦ Ψ_x` is a closed embedding),
     `tendsto_iff_tendsto_rootDensExt`. Neither compactness nor fibre uniqueness is claimed.
   - ROUND 87 COMPLETE (all six ranked modules landed 2026-09-27).
+  - Round 88 consult (`research_round88_{q,v1}`, d004e63): audit of round 87 clean (label `TV ≤ H` the coarse bound;
+    `1 − Aⁿ = (1−A)Σ Aᵏ ≤ n(1−A)` for signed roots; classifier = "sufficient Fisher-ball separation"; the retraction `p`
+    in `densVel` should be removed by proving `Cov_D(S,k) ∈ W` for `D ≪ ν`; covariance-orthogonality under the DATA law
+    is not Fisher orthogonality). Stratification target = decomposition over ACCESSIBLE faces (six steps). Canonical
+    journey = e-geodesic `ρ_t = q^t ν/Z(t)` (KL monotone: `d/dt D(ρ_t‖ν) = t Var_{ρ_t} log q`). Ranks: 1
+    AccessibleFaceStratification, 2 CanonicalDataJourney, 3 AbsolutelyContinuousForcing, 4 ResponseChamberClearance,
+    5 MixtureResponseJourney, 6 SharpAffinityTesting. Last theorem of the note: the tail theorem.
+  - `AccessibleFaceStratification.lean` (round 88, rank 1): **`minimalFacePoly_eq_of_mem_intrinsicInterior`** /
+    `mem_intrinsicInterior_minimalFacePoly_iff` (`N ∈ ri(F_M) ↔ F_N = F_M`), `faceFibre_pos'`, `faceDirSpan_le`,
+    `tight_vertex_mem_momentBody_faceMeasure`, **`momentBody_faceMeasure_eq`** (THE FACE MOMENT BODY IS THE FACE POLYTOPE
+    `conv{v ∈ V : ⟨u,v⟩ = β}`), **`completionLaw_eq_faceFamily_faceThetaOf`** (seed bridge: a completion point with
+    face-interior mean has law `P^F_{θ_F(M)}`), **`faceChart`** (the canonical finite face chart `j_F`), `completionLaw_faceChart`,
+    `meanExt_faceChart`, `meanExt_faceChart_mem`, `eq_of_meanExt_eq_of_mem_ri`, **`range_faceChart`** /
+    `range_faceChart_eq_ri_face` (`j_F(W_F) = {x : meanExt x ∈ ri F}`), `faceChart_injective`, `faceChart_eq` (seed
+    independence), `stratum`, `mem_stratum_self`, `stratum_eq_or_disjoint`, `iUnion_stratum`,
+    **`exists_faceChart_range_eq`** (THE ACCESSIBLE-FACE STRATIFICATION: every stratum of `Ŵ` is the image of the canonical
+    chart of the minimal face of its extended mean, `Ŵ = ⨆_{F accessible} j_F(W_F)`).

@@ -2276,3 +2276,15 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `(continuous_rootDensExt hS ν).isClosedEmbedding inj` + `.isEmbedding.tendsto_nhds_iff`. NEXT: round-88 consult
   (query drafted at `gpt_responses/research_round88_q.md`): audit of round 87, the STRATIFICATION theorem
   `Ŵ = ⊔_F j_F(W_F)` for charged polytopes, the featureless→data tilt segment as the canonical journey, next ranking.
+- Round 88 consulted (d004e63) and `AccessibleFaceStratification` landed (rank 1). Pattern: set-builder sets inside
+  `local notation` need `set_option quotPrecheck false` (file-level); a `def` includes only the section variables it
+  USES (`faceChart` takes `hS ν V hcharged hz₀V hz₀β hx₀`, not `hpoly hV`) — a global `sed` on
+  `faceChart hS ν V hpoly …` also rewrites `meanExt_faceChart hS ν V hpoly …` (use a `(?<!_)` regex); lemmas whose
+  STATEMENT mentions `faceThetaOf` need `[IsProbabilityMeasure (faceMeasure ν {…})]` as a binder and a def body can
+  supply it with `haveI := isProbabilityMeasure_faceMeasure_of_real_pos ν hp`; `rw [meanExt_faceChart]` with explicit
+  hypotheses leaves `case hpoly`/`case hV` goals — pass all arguments. The minimal-face lemma uses
+  `exists_minimalFacePoly_eq_inter_hyperplane` + `mem_intrinsicInterior_iff_forall_supporting`. NEXT (round 88):
+  rank 2 `CanonicalDataJourney` (`ρ_t = ν.tilted (t·log q)` for `c ≤ q ≤ C`: endpoints `θ_0 = 0`, `θ_1 = θr(E_D S)`,
+  velocity, length bound, initial regression, KL monotonicity `d/dt D(ρ_t‖ν) = t Var_{ρ_t} log q`), rank 3
+  `AbsolutelyContinuousForcing` (`Cov_D(S,k) ∈ W` for `D ≪ ν` via the annihilator: `a ∈ W^⊥ ⇒ ⟨a,S⟩` a.e. constant),
+  rank 4 chamber clearance, 5 mixture journey, 6 sharp affinity.
