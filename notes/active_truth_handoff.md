@@ -2746,8 +2746,12 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `ResponseRegressionUniformBound` LANDED (`exists_uniform_regressionDir_bound`: `‖u_F(θ)‖ ≤ L_F` over the whole
   model on a finite configuration, vertex-free sign cells + direct termwise bound). M3b `ResponseGlobalLipschitz`
   LANDED (`abs_responseObs_sub_le`/`lipschitzOnWith_responseObs`: `|E_{R_N}F − E_{R_M}F| ≤ L‖N − M‖` on the CLOSED
-  polytope; `sum_abs_qStarVec_sub_le`: `Σ_x|R_N{x} − R_M{x}| ≤ L‖N − M‖`). NEXT: M4 facewise tangential convergence (law-level
-  regression stability lemma); M7 (common-base representation, relative-base Pythagoras, `θ'(0) = −u_h`,
-  response-to-base quadratic limit, DEFECT THEOREM, ladder); then post-M ranks 2–6. Old NEXT:
+  polytope; `sum_abs_qStarVec_sub_le`: `Σ_x|R_N{x} − R_M{x}| ≤ L‖N − M‖`). M4 `ResponseFacewiseRegression` LANDED
+  (`tendsto_faceProj_regressionDir`: tangential projections of `u_H(θr M_k)` converge to the face regression direction;
+  quantitative law-level `norm_faceProj_sub_faceReg_le`). NEXT: M7 (common-base representation under refinement,
+  relative-base Pythagoras `KL(R_T(t)‖D) = KL(R_T(t)‖R_S(t)) + KL(R_S(t)‖D)`, `θ'(0) = −u_h`, response-to-base
+  quadratic limit `KL(R_S(t)‖D)/t² → ½Var_D(g_S)`, DEFECT THEOREM `KL(D_t‖R_S(t))/t² → ½Var_D(h − g_S)`, ladder
+  `KL(R_T(t)‖R_S(t))/t² → ½Var_D(g_T − g_S)`); then post-M ranks 2–6 (canonical base-to-data journey integral,
+  uniform unlocalised risk, margin chamber theorem, global refinement budget, resolution ellipsoid). Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

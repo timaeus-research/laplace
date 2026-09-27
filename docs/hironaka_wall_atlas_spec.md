@@ -6865,3 +6865,28 @@ certificates for concrete resolved charts beyond the identity chart.
     `LipschitzOnWith.of_dist_le_mul`), **`sum_abs_qStarVec_sub_le`** (law-valued: `Σ_x |R_N{x} − R_M{x}| ≤
     L‖N − M‖`, from atom indicators `fun y ↦ if y = x then 1 else 0` with `bdd_of_fintype`, `Finset.sum_ite_eq'`,
     `choose` over `x`). Gotcha: `rw [smul_sub, smul_sub]` rewrites the RHS instance first — `simp only [smul_sub]`.
+  - `ResponseFacewiseRegression.lean` (M4, FACEWISE CONVERGENCE OF THE REGRESSION DIRECTIONS): section `Stability`
+    (finite `X`, no measure): `abs_sum_mul_le_of_stdSimplex`, `abs_sum_mul_sub_sum_mul_le`,
+    **`abs_lawCov_vecMeasure_sub_le`** (`|Cov_p(f,g) − Cov_q(f,g)| ≤ 3K_fK_g Σ_x|p_x − q_x|` for probability vectors),
+    `abs_dirLoss_le_sum_norm` (`|⟨u,S(x)⟩| ≤ (Σ_jΣ_y|S_j(y)|)‖u‖`), `eq_of_lawCov_vecMeasure_self_eq_zero` (zero variance
+    ⇒ constant on the support); section `FaceForm` (`hq : q ∈ stdSimplex`, law `Q = vecMeasure q`): `covForm S hq :
+    BilinForm ℝ (J → ℝ)` (`LinearMap.mk₂` with `lawCov_add_left_eq`/`lawCov_const_mul_left_eq`/`lawCov_comm`;
+    `haveI := isProbabilityMeasure_vecMeasure hq` inside), `covForm_apply/comm`, `PosDefOn S hq V`,
+    `covForm_restrict_nondegenerate` (goals about `B.restrict V` are closed by `change covForm … = 0` — the restriction
+    unfolds to `domRestrict` and `restrict_apply` does not rewrite), `covFun`/`projFun : Module.Dual ℝ V`,
+    **`faceReg hq hpd H : V`** (`Σ_q`-Riesz of `w ↦ Cov_q(H,⟨w,S⟩)`), **`faceProj hq hpd u : V`** (`Σ_q`-Riesz of
+    `w ↦ Σ_q(u,w)`, the tangential projection), `covForm_faceReg`, `covForm_faceProj`, `faceProj_of_mem`,
+    `exists_coercive_covForm` (`λ‖w‖² ≤ Σ_q(w,w)` on `V`, sphere-minimum pattern of `exists_coercive_familyMeasure`),
+    **`norm_faceProj_sub_faceReg_le`** (`‖π_V u − u_H^V‖ ≤ (3B(LB + K_H)/λ) Σ|p − q|` for `u` solving the normal
+    equations on `V` under `p`; defect functional + `le_of_mul_le_mul_right`), **`tendsto_faceProj`** (filter version,
+    `squeeze_zero` + `tendsto_pi_nhds`); section `Boundary` (K1 variables, `hν : 0 < ν{x}`): `mem_hull_of_mem_Ω`,
+    `qStarVec_mem_stdSimplex_of_mem_hull`, `familyMeasure_eq_vecMeasure_atomMass` (`Measure.ext_iff_singleton`),
+    `faceSpan S hS ν M := vectorSpan ℝ (statPoint S '' supportSet M)`, `faceSpan_le_dirSpan` (via
+    `dirSpan_eq_vectorSpan`, needs `ResponseFiniteFibres`), **`posDefOn_faceSpan`** (zero variance ⇒ constant on the
+    support ⇒ `dotJ w` kills the generators `S(x) − S(y)` ⇒ `dotJ w w = 0` ⇒ `w = 0`; `vectorSpan_def`,
+    `Submodule.span_le`, `IsLinearMap.mk' (dotJ w) (isLinearMap_dotJ w)`, `beta_reduce` before `vsub_eq_sub`),
+    **`tendsto_faceProj_regressionDir`** (`π_A(u_H(θr M_k)) → u_H^A` for `M_k ∈ Ω`, `M_k → M ∈ hull`, from
+    `exists_uniform_regressionDir_bound`, `continuousOn_qStarVec`, `fisherInner_regressionDir` rewritten through
+    `familyMeasure_eq_vecMeasure_atomMass` + `atomMass_responseTheta_eq_qStarVec`). Note: `faceProj` is the
+    `Σ_{R_M}`-projection; it coincides with the Euclidean projection (the discarded component has a face-constant
+    feature) but that identification is not formalised.
