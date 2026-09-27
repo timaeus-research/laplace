@@ -2514,4 +2514,12 @@ D01 `ResponseFisherJets` LANDED: builds on the existing `fisherInner S ν θ u v
   affine-wall margin `δ/√G(a,a)`, exact `P(empirical mean ∈ F) = P_D(S∈F)^n`), E6 `ResponseFisherEnergyVariation` (first
   variation of Fisher energy ⇒ LC Euler–Lagrange `θ'' + ½C(θ',θ') = 0`). Headline: `KL(P_D‖P_0) = KL(P_D‖P_Φ(D)) +
   KL(P_Φ(D)‖P_0)`. Corrections: faces are boundary strata not interior walls; `√(d_eff/n)` is RMS not a confidence
-  radius; section + deformation retraction ≠ Hurewicz fibration. NEXT: E1.
+  radius; section + deformation retraction ≠ Hurewicz fibration.
+E1 `ResponseFisherCurvatureSign` LANDED (first pass: all tensor identities by `rw` with explicit symmetry args + `ring`/
+  `module`; `div_nonpos_iff` is `0 ≤ a ∧ b ≤ 0 ∨ a ≤ 0 ∧ 0 ≤ b`). NEXT: E2 `ResponseInformationPythagoras` (define
+  `lawKL` on bounded tilts: `KL(ρ_g‖ρ_h) = ∫ (g − h) dρ_g − log Z_g + log Z_h` with `Z_g = ∫ e^g dν`; Pythagoras from
+  the affine log-ratio of two model densities `log(p_φ/p_θ) = ⟨θ−φ,S⟩ + ψ(θ) − ψ(φ)` whose ρ_g-expectation equals its
+  P_{Φ(g)}-expectation by moment matching (`responseOf_eq_iff_tiltedMean_eq_meanMap`); unique minimiser from strict
+  convexity / `KL ≥ 0` with equality iff equal laws (Gibbs inequality: `∫ p log(p/q) ≥ 0`, Mathlib `klDiv`?); defect
+  decrease along `deform` from convexity of `x log x` (`(1−t)p + tq`), needs `KL((1−t)p+tq ‖ q) ≤ (1−t) KL(p‖q)`; Hessian of
+  `θ ↦ KL(p‖P_θ)` = Fisher form: `KL(p‖P_θ) = ∫ log p dp + ⟨θ, E_p S⟩ + ψ(θ)`, so `D² = D²ψ = −A = G`).

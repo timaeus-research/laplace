@@ -6104,3 +6104,12 @@ certificates for concrete resolved charts beyond the identity chart.
     (modelLaw ∘ lawResponse)`), **`deformHomotopyWith`** (through response-preserving maps), **`deformHomotopyRel`**
     (relative to `range modelLaw`: strong deformation retraction), **`responseHomotopyEquiv : DataLaw ν ≃ₕ 𝕍`**,
     `contractibleSpace_responseQuotient`.
+  - `ResponseFisherCurvatureSign.lean` (E1, programme E = information geometry of the response quotient):
+    **`inverseFisherInner θ x y := G(A⁻¹x, A⁻¹y)`** (`_comm`, `_eq_neg_dotJ` (`= −⟨x,A⁻¹y⟩`), `_self_nonneg`, `_self_pos`),
+    **`fisherInner_mChristoffel_mChristoffel`** (`G(C(u,v),C(x,y)) = G*(T(u,v),T(x,y))`, rfl), `fisherInner_mChristoffel_symm₁₂`,
+    `fisherInner_mChristoffel_apply_eq`, **`fisherInner_alphaCurvature`** (lowered tensor `G(R^α(u,v)w,x) =
+    −((1−α²)/4)(G*(T(u,x),T(v,w)) − G*(T(v,x),T(u,w)))`), **`fisherCurvature_numerator`** (`G(R⁰(u,v)v,u) = ¼(G(C(u,v),C(u,v)) −
+    G(C(u,u),C(v,v)))`), `fisherCurvature_numerator_eq_inverse`, **`fisherCurvature_numerator_nonpos_iff`** (NONPOSITIVE
+    CURVATURE ⇔ reverse Gram inequality `G*(T(u,v),T(u,v)) ≤ G*(T(u,u),T(v,v))`), `fisherSectional` (def with the Gram
+    denominator), `fisherSectional_nonpos_iff`, `fisherInner_alphaCurvature_antisymm_right`, `fisherInner_alphaCurvature_pair`,
+    **`alphaCurvature_bianchi`** (first Bianchi for every α; `module`), `alphaCurvature_eq_zero_of_comm`.
