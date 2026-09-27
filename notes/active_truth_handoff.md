@@ -2769,7 +2769,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   stratum). N1 part 3 LANDED: `ResponseFaceCalculus` (`momentBody ν_A = carriedResponses S A = conv S(A)`,
   `𝕍^{ν_A} = W_A`, relint(face) = Ω^{ν_A}; `hasDerivAt_responseObs_face`: facewise derivative of `M ↦ E_{R_M}F`
   along `e ∈ W_A` with the face regression direction `u_F^{ν_A}(θr^{ν_A} M')`; the statement takes
-  `[IsProbabilityMeasure (faceMeasure ν A)]` and `hA : A = supportSet hS ν M`). NEXT: the capstone
+  `[IsProbabilityMeasure (faceMeasure ν A)]` and `hA : A = supportSet hS ν M`). N1 CAPSTONE LANDED:
+  `ResponseStratifiedTransport` (`tangentField` on the whole polytope; every point is relint of its minimal face;
+  `hasDerivAt_responseObs_path`; `stratified_transport`: `E_{R_{M1}}F − E_{R_{M0}}F = ∫₀¹⟨u_F(M t), V t⟩dt` for C¹
+  journeys with velocity tangent to the current face off a countable set; locally-constant-support corollary).
+  NEXT: N2–N6. Old NEXT text: the capstone
   STRATIFIED TRANSPORT (`f_F(M(1)) − f_F(M(0)) = ∫₀¹⟨u_F^{A_t}(M(t)), Ṁ(t)⟩dt` along absolutely continuous journeys;
   route: finitely many face strata, facewise interior calculus for the face family via N1, global Lipschitz (M3b),
   `Ṁ(t) ∈ W_{A_t}` a.e. from "an a.c. nonnegative function has derivative zero a.e. on its zero set"); then N2 Hessian

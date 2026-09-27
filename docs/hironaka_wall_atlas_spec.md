@@ -7043,3 +7043,19 @@ certificates for concrete resolved charts beyond the identity chart.
     the statement carries `[IsProbabilityMeasure (faceMeasure ν A)]` + `hA : A = supportSet hS ν M` so that
     `regressionDir`/`responseTheta` at base `ν_A` elaborate; supply the instance by `isProbabilityMeasure_faceMeasure ν
     (measure_supportSet_ne_zero …)`).
+  - `ResponseStratifiedTransport.lean` (N1 CAPSTONE, STRATIFIED TRANSPORT): generic
+    **`hasDerivAt_comp_of_lipschitzOnWith_line`** (a Lipschitz function on `K` composed with a differentiable path is
+    differentiable wherever it is differentiable along the tangent line: `IsBigO.of_bound` + `hM.isLittleO` +
+    `HasDerivAt.comp_of_eq` + `IsLittleO.add`), **`faceField hS ν A F M`** (dite on `IsProbabilityMeasure (faceMeasure ν
+    A)`, `faceField_eq`), **`tangentField hS ν F M := faceField (supportSet M) F M`** (defined on the whole closed
+    polytope), `dotJ_sum_smul`, **`mem_intrinsicInterior_carriedResponses_supportSet`** (every polytope point is in the
+    relint of its minimal face; via `mem_intrinsicInterior_iff_forall_supporting` + `Finset.sum_eq_zero_iff_of_nonneg`),
+    `vectorSpan_carriedResponses` (= `vectorSpan (S '' A)`), **`hasDerivAt_mem_vectorSpan_of_supportSet_eventually_eq`**
+    (velocities are tangent where the support is locally constant; `Submodule.closed_of_finiteDimensional` +
+    `hasDerivAt_iff_tendsto_slope`), **`hasDerivAt_responseObs_path`** (`d/ds E_{R_{M s}}F = ⟨u_F(M t), Ṁ t⟩` for any
+    differentiable path with tangent velocity), **`stratified_transport`** (`E_{R_{M 1}}F − E_{R_{M 0}}F = ∫₀¹ ⟨u_F(M t),
+    V t⟩ dt` for `C¹` journeys `M : [0,1] → hull` with `‖V‖ ≤ B` and `V t ∈ W_{A_t}` off a countable set `s`; proof:
+    `M` Lipschitz by `Convex.norm_image_sub_le_of_norm_hasDerivWithin_le`, `g = E∘M` Lipschitz with constant `C·B`,
+    `HasDerivAt.le_of_lipschitzOn` bounds `deriv g`, integrability via `Measure.integrableOn_of_bounded (f := deriv g)` +
+    `congr_fun_ae`, FTC `MeasureTheory.integral_eq_of_hasDerivAt_off_countable_of_le`),
+    **`stratified_transport_of_locally_constant_support`** (finitely many crossings ⇒ tangency automatic).
