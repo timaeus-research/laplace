@@ -611,6 +611,7 @@ import Laplace.Multi.ResponseGlobalFibres
 import Laplace.Multi.ResponseMixtureConnection
 import Laplace.Multi.ResponseEMAccelerationGap
 import Laplace.Multi.ResponseSliceSubmersion
+import Laplace.Multi.ResponseDataTaylor
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

@@ -6042,3 +6042,6 @@ certificates for concrete resolved charts beyond the identity chart.
     **`eventually_augSlice_fibreSection`** (`Ψ(z,σ(z,θ)) = θ` near `(0,Φg)`), **`eventually_fibreSection_augSlice`**
     (`σ(z,Ψ(z,u)) = u` near `0`), `fibreSection_base`, **`contDiffAt_fibreSection`** (`C^∞`), `hasStrictFDerivAt_fibreSection`
     (derivative `(ξ,η) ↦ η − DΦ_g[⟨ξ,k⟩]`): THE LOCAL PRODUCT STRUCTURE OF HORIZONTALLY AUGMENTED SLICES.
+  - `ResponseDataTaylor.lean` (C0): `sliceFun_unit`, **`contDiff_responseOf_add`** (the response along a data journey is
+    `C^∞`), `deriv_responseOf_add`, `deriv_deriv_responseOf_add_zero`, **`responseOf_add_taylor_two`** (`Φ(g+tk) = Φ(g) +
+    tDΦ_g[k] + (t²/2)H_g(k,k) + o(t²)`, via Mathlib's `taylor_isLittleO_univ`).
