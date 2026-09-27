@@ -6508,3 +6508,30 @@ certificates for concrete resolved charts beyond the identity chart.
     **`localizedBias_curvature`** (HEADLINE: `‖E[θ̂_loc − θ₀] + ½E_μ[C(A⁻¹Z,A⁻¹Z)]‖ ≤ (‖A⁻¹‖/δ² + K + ½κ/δ) M₃`).
     NOT DONE: the i.i.d. instance (`E[C(A⁻¹ξ̄,A⁻¹ξ̄)] = (1/n)∑ C_{ab} Cov_D(S_a,S_b)` via `integral_sampleResponse_sub_mul_sub`;
     `E‖ξ̄‖³ = O(n^{-3/2})` needs a fourth-moment bound for bounded i.i.d. sample means).
+  - **Round 100 (Astra, `research_round100_{q,v1}.md`)**: audit — J3 correct (ν-uniformity irrelevant; the global path
+    convention is fine since `spherePath` uses the `cosStep` clamp); docstring corrections applied ("diameter below π" →
+    every pair < π, supremal diameter = π; "bounded hence incomplete" is not an implication); J4 correct (RESET, ORACLE
+    localisation at the true response; coordinate-dependent estimator bias, not a Riemannian invariant; finite-measure
+    integral statement); J2 correct (max RELATIVE entropy w.r.t. ν; t = 1 fine because target positive); good-event
+    theorem sound but pointwise (not journey-uniform), one-sided orientation, τ nonnegativity should be exported, pairwise
+    independence is only for second moments, misspecification ⇒ sandwich covariance. PROGRAMME K ranking: K1
+    `ResponseBoundaryJourney` (headline: every finite data law reachable in response, `P_t → R(D)`), K2
+    `ResponseIIDSamplingBias`, K3 `ResponseFiniteFibres` (quotient `Δ/∼ ≅ conv S(X)`, fibre dim `|X_F| − 1 − dim F`),
+    K4 `ResponseJourneyInformationCost` (boundary budget `KL(R_D‖ν) = ∫₀¹(1−t)G`), K5 `ResponseObservableSamplingGeometry`,
+    K6 `ResponseSimplexCompletion`, K7 `ResponseExtrinsicGauss`. Do NOT: generic non-saturated sphere equality (false),
+    blanket `0 ≤ K ≤ ¼` (false), summary module yet.
+  - `ResponseBoundaryJourney.lean` (K1, THE BOUNDARY JOURNEY — the headline "the chart may end, but the response journey
+    does not"): pure `mem_intrinsicInterior_segment_of_mem` (open segment from a relative-interior point to ANY point of a
+    convex set is relative-interior; via `mem_intrinsicInterior_iff_forall_supporting`); finite charged X, ANY data law D
+    (`absolutelyContinuous_of_full_support hν D`): `dataLawMean_mem_polytope`, `dataMean_mem_momentBody`,
+    `dataMean_sub_featureless_mem`, **`boundary_segment_mem(_Ω)`** (`m_t ∈ ri hull` for `t < 1`),
+    **`meanMap_polytopeJourney_lt_one`**, **`hasDerivAt_polytopeJourney_lt_one`**, `atomMass_responseTheta_eq_qStarVec`
+    (interior response atom masses = entropy projection `qStarVec`), `atomMass_polytopeJourney_eq_qStarVec`,
+    `tendsto_segment_dataMean` (`𝓝[<] 1 → 𝓝[hull] m_D`), **`tendsto_atomMass_polytopeJourney`** (`B(θ_t) → q*(m_D)` as
+    `t ↑ 1` via `continuousOn_qStarVec`), `vecMeasure_qStarVec_dataMean`, `integral_responseProjection_dataMean`,
+    **`tendsto_integral_polytopeJourney`** (every posterior expectation converges), `toReal_klDiv_responseTheta`,
+    `toReal_klDiv_responseProjection_dataMean`, **`tendsto_klDiv_polytopeJourney`**,
+    **`toReal_klDiv_data_eq_defect_add_response`** (`KL(D‖ν) = KL(D‖R_D) + KL(R_D‖ν)` from `responseProjection_spec`),
+    **`boundary_journey`** (flagship bundle). Gotchas: `klDiv` needs `open InformationTheory`;
+    `Ioo_mem_nhdsLT (h : a < b) : Ioo a b ∈ 𝓝[<] b`; a `polytopeJourney` goal vs a `θr` lemma is closed by `exact` (defeq)
+    not `rw`; `ENNReal.add_ne_top.1` splits finiteness of a KL sum; `dataMean_mem_polytope` was TAKEN (dup gate).

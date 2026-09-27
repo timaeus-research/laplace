@@ -2700,8 +2700,13 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   here but rewrite with `simp only [hR]` (rw leaves a beta-redex that `abel` can't see). `Integrable.smul c hf`
   needs a typed `have hI' : IntegrableOn (fun z ↦ c • f z) s μ := hf.smul c`. A nullary `local notation "cball"`
   with `δ` a section variable is the clean way to abbreviate `Metric.closedBall (0 : 𝕍) δ`; a notation WITH an
-  argument greedily swallows `⊆ …`. NEXT: the i.i.d. instance of J4 (`E[C(A⁻¹ξ̄,A⁻¹ξ̄)] = (1/n)∑C_{ab}Cov_D(S_a,S_b)` via
-  `integral_sampleResponse_sub_mul_sub`; `E‖ξ̄‖³ = O(n^{-3/2})` via a fourth-moment bound), J5 summary (optional),
-  round-100 consult. Old NEXT:
+  argument greedily swallows `⊆ …`. Round 100 consulted (programme K; audit fixes applied to J3 docstrings). K1
+  `ResponseBoundaryJourney` LANDED (every finite data law reachable in response: `P_t → R_D = q*(m_D)`, all posterior
+  expectations and KL converge, exact budget `KL(D‖ν) = KL(D‖R_D) + KL(R_D‖ν)`; gotchas: `open InformationTheory` for
+  `klDiv`; `Ioo_mem_nhdsLT`; defeq `exact` for `polytopeJourney` vs `θr`). NEXT: K2 `ResponseIIDSamplingBias`
+  (bilinear contraction `E[Q(ξ̄,ξ̄)] = (1/n)E[Q(ξ,ξ)]` under pairwise independence via
+  `integral_sampleResponse_sub_mul_sub`; fourth moment `E(∑Y)⁴ = nEY⁴ + 3n(n−1)(EY²)²` under `iIndepFun`; CS
+  `M₃ ≤ √M₂√M₄`; instantiate J4), K3 `ResponseFiniteFibres`, K4 `ResponseJourneyInformationCost` (boundary budget
+  `KL(R_D‖ν) = ∫₀¹(1−t)G` via `f(T) = ∫₀^T (T−s)G` + monotone convergence), K5–K7. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

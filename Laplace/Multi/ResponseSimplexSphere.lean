@@ -29,10 +29,12 @@ and lifted through the smooth inverse of the atom-mass map
 contrast of the velocity is `−ṗ/p` up to a constant, so `G(θ̇,θ̇) = ∑ ṗ_x²/p_x`
 (`fisherVar_sphereLift`), which for `p = u²` is `4|u̇|²φ'² = 4α²φ'²`. The length is `2α`.
 
-Consequences: `fisherDist_lt_pi` — the response space of a saturated finite family has Fisher
-diameter at most `π`, so it is bounded and (being homeomorphic to an open simplex) not complete;
-the geodesic between two responses is the great circle of their square-root laws, whereas the
-featureless (mixture) journey is the straight segment — the two answer different questions.
+Consequences: `fisherDist_lt_pi` — any two responses of a saturated finite family are at Fisher
+distance strictly below `π` (the supremal diameter is exactly `π` for `|X| ≥ 2`, approached at two
+distinct vertices; the space is bounded, and its Fisher completion is the closed simplex with the
+same formula — not proved here); the geodesic between two responses is the great circle of their
+square-root laws, whereas the featureless (mixture) journey is the straight segment — the two
+answer different questions.
 -/
 
 open MeasureTheory Filter Topology Set
@@ -535,8 +537,8 @@ theorem fisherDist_eq_sphericalDist (θ₀ θ₁ : 𝕍) :
   rw [affinity_eq_sum_sqrt_atomMass hS ν]
 
 set_option linter.unusedFintypeInType false in
-/-- **The response space of a saturated finite family has Fisher diameter below `π`**: it is
-bounded, hence (being an open simplex) not complete. -/
+/-- **Any two responses of a saturated finite family are at Fisher distance below `π`** (the
+supremal diameter is `π`, approached at distinct vertices, which are not responses). -/
 theorem fisherDist_lt_pi (θ₀ θ₁ : 𝕍) : fisherDist S ν θ₀ θ₁ < Real.pi := by
   rw [fisherDist_eq_two_arccos hS ν hν hspan]
   have h := sphereAngle_lt_pi_div_two (atomMass_mem_posSimplex hS ν hν (θ₀ : J → ℝ))

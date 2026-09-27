@@ -650,6 +650,7 @@ import Laplace.Multi.ResponseSimplexIdentification
 import Laplace.Multi.ResponseSimplexSphere
 import Laplace.Multi.ResponseMeanPolytopeJourney
 import Laplace.Multi.ResponseLocalizedSamplingBias
+import Laplace.Multi.ResponseBoundaryJourney
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse
