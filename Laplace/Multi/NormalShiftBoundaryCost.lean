@@ -9,7 +9,8 @@ import Laplace.Multi.FisherCauchyRealisation
 /-!
 # A fixed normal shift costs at most `B_h √(1 − P_θ(A))`
 
-For `h` in the sign-adjusted normal cone of a face event `A` (`⟨h,S⟩ = c` a.e. on `A`, `⟨h,S⟩ ≥ c` a.e.,
+For `h` in the sign-adjusted normal cone of a face event `A` (`⟨h,S⟩ = c` a.e. on `A`,
+`⟨h,S⟩ ≥ c` a.e.,
 `|⟨h,S⟩ − c| ≤ B`), the Fisher distance from `θ` to `θ + h` is at most `B √(P_θ(A^c))`: along the
 segment `θ + s h` the tilt only increases the mass of `A`, and the Fisher speed is the standard
 deviation of `Y_h = ⟨h,S⟩ − c`, which vanishes on `A` and is bounded by `B`, so
