@@ -35,8 +35,21 @@ section Density
 
 variable {X : Type*} [MeasurableSpace X] (ν : Measure X) [IsProbabilityMeasure ν]
 
-variable {q₁ q₂ : X → ℝ} (hq₁m : Measurable q₁) (hq₁0 : ∀ x, 0 ≤ q₁ x) (hq₁i : Integrable q₁ ν)
-  (hq₂m : Measurable q₂) (hq₂0 : ∀ x, 0 ≤ q₂ x) (hq₂i : Integrable q₂ ν)
+omit [IsProbabilityMeasure ν] in
+/-- Integrals against a law with an a.e.-measurable nonnegative density. -/
+theorem integral_withDensity_ofReal_ae {g : X → ℝ} (hg : AEMeasurable g ν) (hg0 : ∀ x, 0 ≤ g x)
+    (F : X → ℝ) :
+    ∫ x, F x ∂(ν.withDensity fun x ↦ ENNReal.ofReal (g x)) = ∫ x, g x * F x ∂ν := by
+  have hg' : AEMeasurable (fun x ↦ ENNReal.ofReal (g x)) ν :=
+    ENNReal.measurable_ofReal.comp_aemeasurable hg
+  rw [integral_withDensity_eq_integral_toReal_smul₀ hg'
+    (Eventually.of_forall fun _ ↦ ENNReal.ofReal_lt_top) F]
+  refine integral_congr_ae (Eventually.of_forall fun x ↦ ?_)
+  beta_reduce
+  rw [ENNReal.toReal_ofReal (hg0 x), smul_eq_mul]
+
+variable {q₁ q₂ : X → ℝ} (hq₁m : AEMeasurable q₁ ν) (hq₁0 : ∀ x, 0 ≤ q₁ x) (hq₁i : Integrable q₁ ν)
+  (hq₂m : AEMeasurable q₂ ν) (hq₂0 : ∀ x, 0 ≤ q₂ x) (hq₂i : Integrable q₂ ν)
 include hq₁m hq₁0 hq₁i hq₂m hq₂0 hq₂i
 
 omit [IsProbabilityMeasure ν] in
@@ -46,7 +59,7 @@ theorem abs_integral_withDensity_sub_le {F : X → ℝ} (hF : Measurable F) {K :
     |(∫ x, F x ∂(ν.withDensity fun x ↦ ENNReal.ofReal (q₁ x))) -
         ∫ x, F x ∂(ν.withDensity fun x ↦ ENNReal.ofReal (q₂ x))| ≤
       K * ∫ x, |q₁ x - q₂ x| ∂ν := by
-  rw [integral_withDensity_ofReal ν hq₁m hq₁0 F, integral_withDensity_ofReal ν hq₂m hq₂0 F]
+  rw [integral_withDensity_ofReal_ae ν hq₁m hq₁0 F, integral_withDensity_ofReal_ae ν hq₂m hq₂0 F]
   have h1 : Integrable (fun x ↦ q₁ x * F x) ν :=
     hq₁i.mul_bdd hF.aestronglyMeasurable (Eventually.of_forall fun x ↦ by
       rw [Real.norm_eq_abs]; exact hK x)
@@ -123,8 +136,8 @@ section Visible
 
 variable {X : Type*} [MeasurableSpace X] {J : Type*} [Fintype J] {S : J → X → ℝ}
   (hS : ∀ j, Bdd (S j)) (ν : Measure X)
-  {q₁ q₂ : X → ℝ} (hq₁m : Measurable q₁) (hq₁0 : ∀ x, 0 ≤ q₁ x) (hq₁i : Integrable q₁ ν)
-  (hq₁1 : ∫ x, q₁ x ∂ν = 1) (hq₂m : Measurable q₂) (hq₂0 : ∀ x, 0 ≤ q₂ x)
+  {q₁ q₂ : X → ℝ} (hq₁m : AEMeasurable q₁ ν) (hq₁0 : ∀ x, 0 ≤ q₁ x) (hq₁i : Integrable q₁ ν)
+  (hq₁1 : ∫ x, q₁ x ∂ν = 1) (hq₂m : AEMeasurable q₂ ν) (hq₂0 : ∀ x, 0 ≤ q₂ x)
   (hq₂i : Integrable q₂ ν) (hq₂1 : ∫ x, q₂ x ∂ν = 1)
 include hS hq₁m hq₁0 hq₁i hq₁1 hq₂m hq₂0 hq₂i hq₂1
 

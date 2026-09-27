@@ -2138,4 +2138,11 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   `dotJ_chartDeriv_eq_neg_lawCov` then `lawCov_sq_le`. NEXT: `AccessibleFaceNonexpansion` (rank 6; needs measure-level
   `tilted` of `withDensity` + face Fisher metric), `ResponseFormContinuity` (rank 5), bounded-tilt adapter for the
   length budget, `FaceChainAccessibility`; then round-86 consult.
+- TiltedCovarianceStability landed (analytic input for AccessibleFaceNonexpansion). `Measure.tilted μ g` unfolds by
+  `rw [Measure.tilted]` to `withDensity (ofReal (exp g / ∫ exp g dμ))`; combine with `← withDensity_mul₀ hf hg'`
+  (both AEMeasurable wrt ν, typed `have`s) and `ENNReal.ofReal_mul`. `ENNReal.measurable_ofReal.comp_aemeasurable
+  hg` must be stored in a typed `have` (else the rewrite pattern is `ofReal ∘ g`). `tendsto_integral_abs_famDens_sub`
+  name was taken (VertexGapForward). NEXT: `AccessibleFaceNonexpansion`: for `x₀` with `Q_{x₀} = Qface v₀`
+  (`v₀ ∈ W_A`), `j w := tiltExt (w − v₀) x₀` on `W_A`; prove `dist (j w) (j w') ≤ fisherDist S ν_A w w'` via
+  ambient paths `θ_n + (γ_t − v₀)` + `fisherDist_le_integral` + uniform covariance stability + `le_csInf`.
 

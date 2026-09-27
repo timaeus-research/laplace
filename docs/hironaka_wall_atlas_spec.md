@@ -5731,3 +5731,10 @@ certificates for concrete resolved charts beyond the identity chart.
     SEPARATION THEOREM: responses at intrinsic distance `≥ √(Λ₀/λ₀)r₀ + √(Λ₁/λ₁)r₁` are resolved by `n₀,n₁` samples —
     the empirical responses fall in the DISJOINT intrinsic balls — with probability
     `≥ 1 − tr(R₀C_{D₀})/(n₀r₀²) − tr(R₁C_{D₁})/(n₁r₁²)`).
+  - `TiltedCovarianceStability.lean` (measure-level form of the `L¹` stability; `TiltedFisherCompactConvergence`
+    relaxed to a.e.-measurable densities): **`tilted_withDensity_ofReal`** (`(qν).tilted g = (tiltedDens g q) ν`),
+    `aemeasurable/nonneg/integrable/integral_tiltedDens`, **`abs_lawCov_tilted_withDensity_sub_le`** (covariances of
+    tilted laws `L¹`-stable uniformly over `|g| ≤ K`), **`integral_abs_famDens_sub_le`** (`‖p_θ − ρ_x‖₁ ≤ 2‖√p_θ − √ρ_x‖₂`),
+    `tendsto_integral_abs_famDens_sub_completionDens`, `aemeasurable_completionDens`,
+    **`abs_lawCov_family_add_sub_completion_tiltExt_le`** (COVARIANCE STABILITY ALONG THE COMPLETION ACTION:
+    `|Cov_{P_{θ+a}}(f,f') − Cov_{Q_{tiltExt a x}}(f,f')| ≤ 6‖f‖‖f'‖e^{2K}‖p_θ − ρ_x‖₁`, `|⟨a,S⟩| ≤ K`).
