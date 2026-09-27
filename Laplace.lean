@@ -676,6 +676,8 @@ import Laplace.Multi.ResponseEmpiricalRisk
 import Laplace.Multi.ResponseResolutionEllipsoid
 import Laplace.Multi.ResponseRefinementBudget
 import Laplace.Multi.ResponseAttainableChamber
+import Laplace.Multi.ResponseFaceProjectionIdentification
+import Laplace.Multi.ResponseChamberClassifier
 import Laplace.Multi.EntropyDuality
 import Laplace.Multi.ScoreBridge
 import Laplace.Multi.HigherResponse

@@ -2760,8 +2760,14 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `dataBilin_regressionDir_sum : Σ_D(u_{F_c},u_{F_c}) = cᵀVc`, `minimax_two_point_contrast`). Rank 5 LANDED: `ResponseRefinementBudget`
   (`klDiv_levelResponse_telescope`, saturated form, `pinsker_budget` stopping criterion). ALL round-103 post-M ranks
   DONE, including the attainable-direction chamber LOWER bound (`ResponseAttainableChamber`:
-  `chamber_resolution_floor`, mean displacement `a e/√n`, cost `⟨e,Σ_D⁺e⟩/2`). NEXT: round-104 consult (report
-  M3–M7 + post-M 2–6; ask for the next programme), then whatever Astra ranks. Was: 3 uniform unlocalised
+  `chamber_resolution_floor`, mean displacement `a e/√n`, cost `⟨e,Σ_D⁺e⟩/2`). Round 104 DONE (audit clean up to sup-norm wording; two audit corollaries LANDED:
+  `ResponseFaceProjectionIdentification` (faceProj = Euclidean projection at boundary means),
+  `ResponseChamberClassifier` (classification floor with the label-separation hypothesis)). NEXT: PROGRAMME N
+  (see spec, round 104): N1 exact face restriction `R^ν_M = R^{ν_A}_M` (laws with mean in a face are supported on
+  `X_A`; `KL(Q‖ν) = KL(Q‖ν_A) − log ν(X_A)`; minimisers coincide) → STRATIFIED TRANSPORT capstone (journey integral
+  along absolutely continuous paths with the tangential field of the minimal face); then N2–N6. Also: fix the note's
+  wording (sup norm, "maximal entropy relative to ν"), add `e ∈ W` to the attainable-direction reading, constant-feature
+  `R_0 = ν` lemma. Was: 3 uniform unlocalised
   risk `E|E_{R_{M̂_n}}F − Ψ_F(D)| ≤ L_F√(tr Cov_D(S)/n)`, 4 margin chamber theorem `P(wrong) ≤ tr Cov_D/(n r_D²)` +
   attainable-direction lower bound, 5 global refinement budget + `|E_DF − E_{R_K}F| ≤ osc(F)√(KL/2)`, 6 observable
   resolution ellipsoid; then round-104 consult. Old NEXT:

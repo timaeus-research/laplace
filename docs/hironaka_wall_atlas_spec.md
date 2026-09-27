@@ -6982,3 +6982,25 @@ certificates for concrete resolved charts beyond the identity chart.
     L7's `testing_error_tilted_ge`). Together with `measureReal_sampleResponse_notMem_chamber_le` this is the corrected
     chamber story: margin upper bound, attainable-direction lower bound at the pseudo-inverse scale. Note: all
     theorems here need `[Nonempty X]` (`tendsto_klDiv_tilted_div_sq`, `hasDerivAt_dataResponsePath`).
+  - Round 104 (`gpt_responses/research_round104_{q,v1}.md`): audit — (1) the norm on `J → ℝ` is the SUP norm: M3b's
+    Lipschitz, the chamber ball and `tr Cov/n` are sup-norm statements (correct; Euclidean versions by norm
+    conversion; the note must not call them Euclidean); (2) `faceProj` = Euclidean projection is cheap and special to
+    the support geometry (landed below); (3) base change fine at finite-rate boundary means; (4) journey endpoint junk
+    harmless, but do NOT replace inward derivatives by tangential ones; (5) the floor needs the chamber-separation
+    hypothesis to become a classification floor (landed below) and `e ∈ W` for the "mean speed e" reading; (6) budget
+    informative only for finite total budget; "maximal entropy" = relative to ν. PROGRAMME N (next): N1 exact face
+    restriction `R^ν_M = R^{ν_A}_M` + STRATIFIED TRANSPORT capstone `f_F(M(1)) − f_F(M(0)) = ∫₀¹⟨u_F^{A_t}(M(t)), Ṁ(t)⟩dt`
+    along absolutely continuous journeys (Ṁ ∈ W_{A_t} a.e.) + law-valued transport `d/dt R_{M(t)}{x} = R_{M(t)}{x}
+    ℓ^{A_t}_{Ṁ}(x)`; N2 response Hessian = residual third moment (no ambient boundary Hessian); N3 face-adaptive
+    asymptotic linearity/bias/sharp risk; N4 joint resolution ellipsoids incl. null directions; N5 explicit barycentric
+    regression (Cauchy–Binet) + configuration condition numbers; N6 local statistical price of refinement. Skip:
+    general-`X` global Lipschitz (FALSE without stronger assumptions), infinite `KL(D‖ν)` journeys (separate input
+    entropy from mean rate). Eight-theorem spine for the note recorded in the response §4.
+  - `ResponseFaceProjectionIdentification.lean` (audit 2): `lawCov_vecMeasure_eq_zero_of_const_on_support`,
+    **`faceProj_eq_of_dotJ_eq_zero`** (`z ∈ V`, `⟨u − z, ·⟩ = 0` on `V`, feature differences on `supp q` in `V` ⇒
+    `faceProj u = z`), **`faceProj_faceSpan_eq_of_dotJ_eq_zero`** (at boundary means: the tangential projection IS the
+    Euclidean orthogonal projection onto the face direction space; `vsub_mem_vectorSpan`). Coercions `u − (z : J → ℝ)`
+    must be explicit (`HSub (J → ℝ) ↥V` otherwise).
+  - `ResponseChamberClassifier.lean` (audit 5): **`chamber_classifier_error_ge`** (`ℓ₀ ≠ ℓ₁` ⇒ every measurable
+    two-label classifier has `P_{D_{a/√n}}(c ≠ ℓ₁) + P_D(c ≠ ℓ₀) ≥ 2L_n`, `2L_n → 1 − √(a²⟨e,Σ_D⁺e⟩/2)`; test =
+    indicator of `{c = ℓ₀}`, `integral_indicator_one`, Bool case split, `measureReal_compl` + `probReal_univ`).
