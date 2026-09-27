@@ -1931,3 +1931,8 @@ where `F' = {α' ∈ ℝ^k_{≥0} | α_a(α') ≥ 0, α_b(α') ≥ 0}` is the pr
   NEXT: module 9-facet `FacetHellingerEmbedding` (Hellinger convergence to the facet law ⇒ Fisher convergence to `x_M`,
   via the mean continuity on `L²`, the facet asymptotics and `dist_ray_completion_le`); then the general normal-cone
   programme (7–8) and the product corner (10).
+- Module 9-facet `FacetHellingerEmbedding` landed 2026-09-27. Gotcha: `conv_lhs => rw [hdec]` with `hdec : θ n = w − r•u`
+  also rewrites the `θ n` inside `normalDepth … (θ n)`; `generalize hw : faceTheta … (θ n) = w at hdec ⊢` and
+  `generalize hr : normalDepth … (θ n) = r at hdec ⊢` first, then `rw [hdec, sub_sub_sub_cancel_right, norm_sub_rev]`.
+  NEXT: round-82 consult (what is deepest after the facet theory is complete: codimension ≥ 2, the product corner,
+  multi-parameter data manifolds, the response map as a map on the closure of the data manifold).

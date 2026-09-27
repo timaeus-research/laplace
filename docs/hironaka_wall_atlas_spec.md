@@ -5502,3 +5502,7 @@ certificates for concrete resolved charts beyond the identity chart.
     **`fisherVar_add_le_div`** (FACE-NORMAL TRANSLATIONS ARE UNIFORMLY FISHER-LIPSCHITZ: `⟨a,S⟩ = c` on `A`, `⟨a,S⟩ ≥ c`
     a.e. ⇒ `Var_{P_{θ+a}}⟨w,S⟩ ≤ Var_{P_θ}⟨w,S⟩ / P_θ(A)`), `fisherNorm_add_le_div_sqrt`, `fisherVar_sub_smul_le_div`
     (deep normal translations towards an exposed face).
+  - `FacetHellingerEmbedding.lean` (round 81, module 9 for facets): **`tendsto_completion_of_tendsto_rootDensLp`** —
+    if `q_{θ_n} → q_F(v_M)` in `L²(ν)` then `[θ_n] → x_M` in the Fisher completion (means converge by the `L²`
+    continuity of `f ↦ ∫ S_i f²`; facet asymptotics; `dist([θ_n], x_M) ≤ K‖v_n − v_M‖ + rayTail(r_n)`): THE COMPLETION
+    EMBEDS TOPOLOGICALLY INTO `L²(ν)` AT EVERY ACCESSIBLE FACET POINT (Fisher topology = Hellinger topology there).
