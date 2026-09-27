@@ -2691,8 +2691,13 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   families; the spherical bound is attained; `d_F < π`; gotchas: `smoothStep` is the bare cubic — use `cosStep
   s = (1 − cos πs)/2` for a global C¹ clamp into [0,1]; `field_simp` closes some `p·(g+c)` identities outright,
   `ring` after it errors; `HasDerivAt.comp`+`.pow 2` derivative normalises with `simp only [Nat.cast_ofNat,
-  Nat.reduceSub, pow_one, Function.comp_def]`). NEXT: J4 `ResponseLocalizedSamplingBias` (localised estimator
-  theorem: `E[h(θ̂) − h(θ₀)] = ½ tr(H_h Σ)/n + o(1/n)` on the good event), J5 `ResponseGeometrySummary`, J6
-  `ResponseMeanPolytopeJourney`, then the round-100 consult. Old NEXT:
+  Nat.reduceSub, pow_one, Function.comp_def]`). J6 `ResponseMeanPolytopeJourney` LANDED (thin: `W ≃ₜ relint conv S(X)`,
+  polytope journey lift with velocity and max-entropy law; the seabed already had `relintChart` and
+  `momentBody_eq_convexHull`). NEXT: J4 `ResponseLocalizedSamplingBias` — plan: (a) generic CUBIC remainder from the
+  quadratic one applied to `fderiv F` (`‖F z − F 0 − DF₀ z − ½D²F₀(z,z)‖ ≤ K‖z‖³` on a ball); (b) identify
+  `D²F₀(e,e) = −C(A⁻¹e, A⁻¹e)` for `F z = θr(m₀ + z)` via `hasDerivAt_responseLineVel`; (c) reset-localised
+  estimator `θ̂_loc = θ₀ + 1_E(θr(m₀+ξ) − θ₀)` on `E = {‖ξ‖ ≤ δ}`: `E[θ̂_loc] − θ₀ = A⁻¹E[1_E ξ] − ½E[1_E C(A⁻¹ξ,A⁻¹ξ)] + R`,
+  `‖R‖ ≤ K E[1_E‖ξ‖³] ≤ Kδ E‖ξ‖²`, `‖E[1_E ξ]‖ ≤ E‖ξ‖²/δ` (truncated linear term); then the i.i.d. instance with
+  `E‖ξ‖² ≤ ∑_j Var_D S_j / n`. Then J5 summary (optional) and the round-100 consult. Old NEXT:
   `ResponseGlobalInformationLandscape`, G5 `ResponseIntrinsicDistance`, G6 `ResponseSamplingGeometry`. Old optional:
   model-endpoint action `KL(P_{θ₁}‖P_{θ₀}) = ∫₀¹(1−t)G` along the mean-affine path between two model laws.

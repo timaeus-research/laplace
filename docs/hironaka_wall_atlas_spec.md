@@ -6479,3 +6479,15 @@ certificates for concrete resolved charts beyond the identity chart.
     **`fisherDist_simplexInv`** (`d_F(B⁻¹p,B⁻¹q) = 2 arccos ∑√(pq)`; ≤ by `fisherDist_le_integral` + FTC on `cosStep`,
     ≥ by `sphericalDist_le_fisherDist`), **`fisherDist_eq_two_arccos`** (θ-form), **`fisherDist_eq_sphericalDist`**
     (the Hellinger-angle bound is ATTAINED), **`fisherDist_lt_pi`** (Fisher diameter < π: bounded, hence incomplete).
+  - `ResponseMeanPolytopeJourney.lean` (J6, thin packaging over the seabed's `GlobalChart.relintChart` +
+    `FiniteCompletionClosure.momentBody_eq_convexHull`): **`intrinsicInterior_momentBody_eq_polytope`**
+    (`Ω = relint conv S(X)` for finite full-support `hν : ∀ x, 0 < ν {x}`), **`meanPolytopeHomeomorph : W ≃ₜ relint hull`**
+    (+ `_apply` = mean, `_symm_apply` = θr), `contDiffOn_responseTheta_polytope` (inverse smooth on the polytope; the
+    forward smoothness is the seabed's `SmoothFamily.contDiff_meanMap` — grep before naming!), `featureless_mem_polytope`,
+    `sub_featureless_mem_dirSpan`, `polytope_segment_mem`, **`polytopeJourney p t := θr(m₀ + t(p − m₀))`**, `_zero`, `_one`,
+    **`meanMap_polytopeJourney`** (prescribed means), **`hasDerivAt_polytopeJourney`** (velocity `(Dm|_W)⁻¹(p − m₀)`),
+    **`familyMeasure_polytopeJourney_eq_responseProjection`** (max-entropy law along the journey),
+    `meanMap_polytopeJourney_eq_mixLaw` (feature means agree with the mixture; laws do not in general),
+    `polytopeJourney_meanMap_eq_modelJourney` (rfl; saturated case ⇒ mixture segment via J2). Gotcha: never `omit`
+    `[Fintype X]`/`[Fintype J]` when `𝕍`/`θr` appear (referenced instances); use a section-wide
+    `set_option linter.unusedFintypeInType false` instead of per-theorem `in`s.
