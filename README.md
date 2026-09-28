@@ -1,3 +1,6 @@
+> **Archived.** This repository was merged into the resolution monorepo on 2026-09-27:
+> it now lives at [`lean/laplace/`](https://github.com/resolutionorg/resolution/tree/main/lean/laplace).
+
 # laplace
 
 A Lean 4 + Mathlib formalisation of the Laplace asymptotics of Gibbs
