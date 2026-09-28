@@ -7088,3 +7088,12 @@ certificates for concrete resolved charts beyond the identity chart.
     **`abs_integral_sq_empiricalObs_sub_sub_le`** (`|MSE − V/n| ≤ (V + 2C₄)/(n√n)`; proof by the pointwise
     `(L+R)² ≶ (1 ± 1/s)L² ± (1+s)R²` with `s = √n`, no Cauchy–Schwarz for integrals). Hypotheses: mutual
     independence `iIndepFun` (fourth moment), feature bound `hB : ∀ j x, |S j x| ≤ B`.
+  - `ResponseJointResolution.lean` (N4, JOINT RESOLUTION): `abs_integral_mul_le_of_sq` (`|∫fg| ≤ ½(ε∫f² + ∫g²/ε)`),
+    `QuadRem hS ν D F C` (the quadratic-remainder property as a Prop), `jointError hS ν D Xs F n ω i`, `linTerm`,
+    `fourthConst (J := J) (B := B) C = 3C²|J|⁴(2B)⁴`, `influenceCov hS ν D F i j = Cov_D(ψ_i, ψ_j)`, `bdd_linTerm`,
+    `bdd_jointError`, `integrable_*`, **`abs_integral_jointError_mul_sub_le`** (`|E δᵢδⱼ − V_ij/n| ≤ ½(V_ii + V_jj +
+    2C₄ᵢ + 2C₄ⱼ)/(n√n)`), `dotJ_finset_sum_smul_left`, **`integral_sq_sum_smul_jointError_le`** (null directions: if
+    `Var_D(Σ wᵢψᵢ) = 0` then `E(Σ wᵢδᵢ)² ≤ |ι| Σ wᵢ²C₄ᵢ/n²`; the linear term vanishes a.s. by
+    `integral_eq_zero_iff_of_nonneg`, then `sq_sum_le_card_mul_sum_sq`), **`measureReal_quadForm_jointError_ge_le`**
+    (`P(n δᵀAδ ≥ r²) ≤ (tr(AV) + Σ|A_ij| c_ij/√n)/r²` for any nonneg quadratic form `A`; Markov via
+    `mul_meas_ge_le_integral_of_nonneg`).
