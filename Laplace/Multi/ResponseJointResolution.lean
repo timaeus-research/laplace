@@ -12,10 +12,11 @@ For finitely many bounded observables `F i` with plug-in errors `δ_n(i) = Ψ̂_
 (`jointError`) and face influence functions `ψ_i`, the asymptotic linearity of
 `ResponseAsymptoticLinearity` gives the joint second moments:
 
-* **the sampling covariance matrix** (`abs_integral_jointError_mul_sub_le`):
-  `|E_D[δ_n(i) δ_n(j)] − Cov_D(ψ_i, ψ_j)/n| ≤ ½ (V_ii + V_jj + 2 C₄ᵢ + 2 C₄ⱼ) / n^{3/2}`;
+* **the joint error second-moment expansion** (`abs_integral_jointError_mul_sub_le`):
+  `|E_D[δ_n(i) δ_n(j)] − Cov_D(ψ_i, ψ_j)/n| ≤ ½ (V_ii + V_jj + 2 C₄ᵢ + 2 C₄ⱼ) / n^{3/2}` (the second
+  moment, not the covariance of the errors; the two differ by the product of the `O(1/n)` biases);
 * **null directions carry no first-order fluctuation** (`integral_sq_sum_smul_jointError_le`):
-  for a weight vector `w` with `Var_D(∑ wᵢ ψᵢ) = 0`, `E_D (∑ wᵢ δ_n(i))² ≤ (∑|wᵢ|)(∑|wᵢ| C₄ᵢ)/n²` —
+  for a weight vector `w` with `Var_D(∑ wᵢ ψᵢ) = 0`, `E_D (∑ wᵢ δ_n(i))² ≤ |ι| ∑ wᵢ² C₄ᵢ / n²` —
   the linear term vanishes almost surely and only the quadratic response error remains;
 * **the resolution ellipsoid** (`measureReal_quadForm_jointError_ge_le`): for every nonnegative
   quadratic form `A` on the observables and `r > 0`,

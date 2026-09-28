@@ -2778,8 +2778,18 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   restriction on the whole face polytope) + `ResponseAsymptoticLinearity` (quadratic remainder on the face polytope,
   `Ψ̂ − Ψ = (1/n)Σψ_F(Xᵢ) + ℛ_n`, `Eℛ_n² ≤ C₄/n²`, bias `O(1/n)`, `|MSE − Var ψ_F/n| ≤ (V + 2C₄)/n^{3/2}`, at EVERY
   data law). N4 LANDED: `ResponseJointResolution` (sampling covariance matrix of the plug-ins to `O(n^{-3/2})`, null
-  directions `O(n^{-2})`, resolution-ellipsoid Markov bound for any nonneg quadratic form). NEXT: N5 Cauchy–Binet
-  barycentric regression, N6 local price of refinement; then a round-105 consult. Old NEXT text: the capstone
+  directions `O(n^{-2})`, resolution-ellipsoid Markov bound for any nonneg quadratic form). ROUND 105 DONE
+  (`gpt_responses/research_round105_v1.md`): audit clean except docstring wording (fixed: joint error = second moment
+  not covariance; null-direction constant is `|ι|Σw²C₄`); corrections to carry: (i) the tangency hypothesis of
+  `stratified_transport` is REDUNDANT on a polytope (velocity of a differentiable curve in a polytope is automatically
+  tangent to the minimal face; and the theorem needs only differentiability + bounded velocity, not C¹) — prove
+  `hasDerivAt_mem_vectorSpan_of_mem_polytope` and drop `htan`; (ii) `u_F` is the mean-coordinate differential, NOT the
+  Fisher gradient in mean coordinates (they differ by the model covariance) — keep the two tangent spaces distinct.
+  NEXT PROGRAMME (ranked): 1 `ResponseRegressionDeletion` (configuration-only regression stability via LEVERAGE-SCORE
+  DELETION, determinant-free N5); 2 uniform facewise jets + unlocalised refined bias `(1/2n)tr(Cov_D(S)D²f_F)`; 3 the
+  actual local price of refinement (needs the local uniformity of rank 2); 4 information geometry with the correct
+  metric and signs; 5 genuine resolution LOWER bounds incl. boundary leakage; 6 unrestricted journey calculus and
+  boundary gluing. Old NEXT text: the capstone
   STRATIFIED TRANSPORT (`f_F(M(1)) − f_F(M(0)) = ∫₀¹⟨u_F^{A_t}(M(t)), Ṁ(t)⟩dt` along absolutely continuous journeys;
   route: finitely many face strata, facewise interior calculus for the face family via N1, global Lipschitz (M3b),
   `Ṁ(t) ∈ W_{A_t}` a.e. from "an a.c. nonnegative function has derivative zero a.e. on its zero set"); then N2 Hessian
