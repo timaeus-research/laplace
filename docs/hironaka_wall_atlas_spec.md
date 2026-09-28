@@ -7069,3 +7069,22 @@ certificates for concrete resolved charts beyond the identity chart.
     E[r_F ℓ_V²]`, `V = A⁻¹e`), **`hasDerivAt_deriv_responseObs_face`** (facewise second derivative on each open face
     stratum with base law `ν_A`; via `eventuallyEq_responseObs_face` (factored out of `ResponseFaceCalculus`) and
     `Filter.EventuallyEq.deriv`).
+  - `ResponseFaceCarried.lean` (N3 part 1): **`responseProjection_faceMeasure_of_supportSet_subset`** (face
+    restriction on the whole face polytope: `supp q*(N) ⊆ A ⇒ Π^{ν_A}(N) = Π^ν(N)`; same proof as the point version with
+    `measure_mono_null`), `responseProjection_faceMeasure_of_mem_carriedResponses`, `atomVec_mem_stdSimplex`,
+    `dataMean_eq_vecMoment_atomVec` (`integral_fintype`), **`measure_singleton_eq_zero_of_notMem_supportSet`**
+    (Csiszár for data laws: `D{x} = 0` off `supp q*(m_D)`, via `support_absorb`), `measure_compl_supportSet_dataMean`,
+    `absolutelyContinuous_faceMeasure_dataMean`.
+  - `ResponseAsymptoticLinearity.lean` (N3, FACE-ADAPTIVE ASYMPTOTIC LINEARITY): `dotJ_finset_sum`, `dotJ_sub_right`,
+    **`exists_face_quadratic_remainder`** (`|f_F(N) − f_F(m_D) − ⟨u_F, N − m_D⟩| ≤ C‖N − m_D‖²` on the face polytope;
+    cubic expansion `exists_obsChart_cubic_remainder` at base `ν_A` + `abs_obsHessForm_le` near, global Lipschitz far;
+    `C = max(C_H/2 + Kδ, (L + ‖u‖₁)/δ)`), **`faceInfluence hS ν D F x := ⟨u_F, S(x) − m_D⟩`**,
+    **`linearityRemainder`**, `ae_sampleResponse_mem_carriedResponses` (samples in `A` a.s. via `map_Xs_eq` +
+    `ae_of_ae_map`, so `M̂ ∈ conv S(A)`), `dotJ_tangentField_sampleResponse_sub` (linear term = empirical average of
+    `ψ_F`), **`empiricalObs_sub_eq_sum_faceInfluence_add`** (`Ψ̂ − Ψ = (1/n)Σψ(Xᵢ) + ℛ_n`),
+    `ae_abs_linearityRemainder_le` (`|ℛ_n| ≤ C‖M̂ − m_D‖²` a.s.), `measurable_linearityRemainder`,
+    **`integral_sq_linearityRemainder_le`** (`E ℛ_n² ≤ C²·3|J|⁴(2B)⁴/n²`), `integral_dotJ_tangentField_sampleResponse_sub`
+    (centred), `integrable_*`, **`abs_integral_empiricalObs_sub_le`** (bias `≤ C|J|²(2B)²/n`),
+    **`abs_integral_sq_empiricalObs_sub_sub_le`** (`|MSE − V/n| ≤ (V + 2C₄)/(n√n)`; proof by the pointwise
+    `(L+R)² ≶ (1 ± 1/s)L² ± (1+s)R²` with `s = √n`, no Cauchy–Schwarz for integrals). Hypotheses: mutual
+    independence `iIndepFun` (fourth moment), feature bound `hB : ∀ j x, |S j x| ≤ B`.

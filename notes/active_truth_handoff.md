@@ -2774,9 +2774,11 @@ F1 `ResponseInformationHessian` LANDED (first pass nearly clean; `hasDerivAt_dot
   `hasDerivAt_responseObs_path`; `stratified_transport`: `E_{R_{M1}}F − E_{R_{M0}}F = ∫₀¹⟨u_F(M t), V t⟩dt` for C¹
   journeys with velocity tangent to the current face off a countable set; locally-constant-support corollary).
   N2 LANDED: `ResponseHessianResidual` (`secondResponse F θ u v = E_θ[r_F ℓ_u ℓ_v]`, affine observables flat, line
-  and facewise second derivatives). NEXT: N3 face-adaptive asymptotic linearity/bias/sharp risk, N4 joint ellipsoids
-  incl. null directions, N5 Cauchy–Binet barycentric regression, N6 local price of refinement. Old NEXT text: the
-  capstone
+  and facewise second derivatives). N3 LANDED: `ResponseFaceCarried` (data laws carried by the minimal face; face
+  restriction on the whole face polytope) + `ResponseAsymptoticLinearity` (quadratic remainder on the face polytope,
+  `Ψ̂ − Ψ = (1/n)Σψ_F(Xᵢ) + ℛ_n`, `Eℛ_n² ≤ C₄/n²`, bias `O(1/n)`, `|MSE − Var ψ_F/n| ≤ (V + 2C₄)/n^{3/2}`, at EVERY
+  data law). NEXT: N4 joint ellipsoids incl. null directions, N5 Cauchy–Binet barycentric regression, N6 local price of
+  refinement; then a round-105 consult. Old NEXT text: the capstone
   STRATIFIED TRANSPORT (`f_F(M(1)) − f_F(M(0)) = ∫₀¹⟨u_F^{A_t}(M(t)), Ṁ(t)⟩dt` along absolutely continuous journeys;
   route: finitely many face strata, facewise interior calculus for the face family via N1, global Lipschitz (M3b),
   `Ṁ(t) ∈ W_{A_t}` a.e. from "an a.c. nonnegative function has derivative zero a.e. on its zero set"); then N2 Hessian
